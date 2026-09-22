@@ -109,8 +109,14 @@ Repository = "https://github.com/cloudQuant/opendata"
 include = ["opendata*", "akshare*"]
 
 [tool.setuptools.package-data]
+# §5.5: *.js must be explicit - the previous config missed it and wheels
+# shipped without the ported site scripts. package-data patterns are
+# per-package (no recursion), so subpackages with resources need their
+# own entries.
 opendata = ["py.typed", "data/authority.json", "data/domains.yaml"]
-akshare = ["*.dat", "*.json", "category_mapping/*"]
+akshare = ["*.dat", "*.json", "*.js", "category_mapping/*"]
+opendata_http = ["*.dat", "*.json", "*.js"]
+"opendata_http.file_fold" = ["*.json"]
 
 [tool.ruff]
 line-length = 100
