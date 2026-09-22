@@ -52,6 +52,20 @@ typecheck:
 security:
 	bandit -c bandit.yaml -r opendata scripts
 
+# B-layer (ported) one-off full scan with manual triage (A2.6). The daily
+# `security` target excludes opendata_http by design (quality spec §4: the
+# ported tree is byte-faithful to upstream and gets one full review per
+# sync, not per-commit debt accounting). Re-run on re-sync:
+#   make security-ported
+security-ported:
+	@# bandit exits 1 when it finds anything; findings are the expected
+	@# output here, so tolerate the status and validate the artefact below.
+	-bandit -r opendata_http -f json -o docs/evidence/A2/bandit-ported.json
+	@python -c "import json;d=json.load(open('docs/evidence/A2/bandit-ported.json'));r=d['results'];from collections import Counter;print('ported scan:', len(r), 'findings ->', dict(Counter(x['test_id'] for x in r)))"
+
+js-points-check:
+	python scripts/quality/scan_js_points.py --check
+
 deps-audit:
 	@command -v pip-audit >/dev/null 2>&1 && pip-audit || echo "pip-audit not installed (pip install pip-audit)"
 
@@ -107,6 +121,8 @@ gate:
 	@$(MAKE) --no-print-directory brand-check
 	@echo "===== gate: zero-dep-check ====="
 	@$(MAKE) --no-print-directory zero-dep-check
+	@echo "===== gate: js-points-check ====="
+	@$(MAKE) --no-print-directory js-points-check
 	@echo "===== gate: a2-check ====="
 	@$(MAKE) --no-print-directory a2-check
 	@echo "===== gate: quality-ratchet ====="
@@ -124,7 +140,7 @@ gate:
 	@echo "===== gate: PASSED ====="
 
 # Backwards-compatible aliases
-quality: a2-check
+quality: a2-check js-points-check
 quality-full: a2-check frontend-lint frontend-typecheck frontend-test
 
 pre-commit:
