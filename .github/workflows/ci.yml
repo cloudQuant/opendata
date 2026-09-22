@@ -65,8 +65,20 @@ jobs:
       APP_ENV: testing
       ENABLE_SCHEDULER: "false"
       SCHEDULER_BOOTSTRAP_ON_STARTUP: "false"
+      # On pull requests, diff the A2 gate against the target branch's merge base.
+      # On pushes this is empty, so a2-check falls back to docs/quality/baseline.json.
+      A2_BASE_REF: ${{ github.base_ref }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # a2-check resolves the baseline commit by SHA, so the full history is required.
+          fetch-depth: 0
+
+      - name: Fetch PR base branch (A2 gate needs it as a diff base)
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --no-tags origin \
+            "+refs/heads/${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
 
       - uses: actions/setup-python@v5
         with:

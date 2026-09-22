@@ -18,6 +18,9 @@ the A2 set is everything added or modified since then, plus untracked files.
 Set ``A2_BASE_REF`` in CI to the target branch so a pull request is checked
 against its merge base instead.
 
+The gate fails closed: if a configured baseline cannot be resolved (shallow
+clone, stale ``A2_BASE_REF``), it errors instead of reporting "nothing changed".
+
 Before the baseline commit exists, A1 and A2 are indistinguishable, so the gate
 reports that state explicitly instead of failing on the whole tree.
 
@@ -99,19 +102,58 @@ def changed_files(base: str | None) -> list[str]:
     return sorted({name.strip() for name in names if _is_a2_candidate(name.strip())})
 
 
+class BaselineError(RuntimeError):
+    """Raised when the A2 baseline cannot be resolved.
+
+    The gate must fail closed: a shallow clone (``fetch-depth: 1``) or a stale
+    ``A2_BASE_REF`` would otherwise make the check silently pass by reporting
+    "no A2 files changed".
+    """
+
+
+def _resolve_ref(ref: str) -> str | None:
+    """Return ``ref`` or ``origin/<ref>``, whichever resolves to a commit."""
+    for candidate in (ref, f"origin/{ref}"):
+        resolved = _git("rev-parse", "--verify", "--quiet", f"{candidate}^{{commit}}").strip()
+        if resolved:
+            return candidate
+    return None
+
+
 def resolve_files(explicit: list[str] | None) -> list[str] | None:
-    """Resolve the A2 file list, or ``None`` when the baseline is not established."""
+    """Resolve the A2 file list.
+
+    Returns:
+        The A2 file paths, or ``None`` when no baseline has been recorded yet
+        (i.e. before milestone A0.11, when A1 and A2 are indistinguishable).
+
+    Raises:
+        BaselineError: When a baseline is configured but cannot be resolved.
+    """
     if explicit is not None:
         return [name for name in explicit if _is_a2_candidate(name)]
 
     env_base = os.environ.get("A2_BASE_REF", "").strip()
     if env_base:
-        merge_base = _git("merge-base", env_base, "HEAD").strip()
-        return changed_files(merge_base or None)
+        resolved = _resolve_ref(env_base)
+        if resolved is None:
+            raise BaselineError(
+                f"A2_BASE_REF={env_base!r} does not resolve to a commit; "
+                "fetch it first (actions/checkout with fetch-depth: 0)."
+            )
+        merge_base = _git("merge-base", resolved, "HEAD").strip()
+        if not merge_base:
+            raise BaselineError(f"no merge base between {resolved} and HEAD")
+        return changed_files(merge_base)
 
     baseline = baseline_commit()
     if baseline is None:
         return None
+    if not _git("rev-parse", "--verify", "--quiet", f"{baseline}^{{commit}}").strip():
+        raise BaselineError(
+            f"baseline commit {baseline} is not present in this clone; "
+            "check out with full history (actions/checkout with fetch-depth: 0)."
+        )
     return changed_files(baseline)
 
 
@@ -152,7 +194,12 @@ def _bandit(files: list[str]) -> tuple[bool, str]:
 
 def run(explicit: list[str] | None = None) -> int:
     """Run the A2 zero-tolerance gate and report the result."""
-    files = resolve_files(explicit)
+    try:
+        files = resolve_files(explicit)
+    except BaselineError as exc:
+        print(f"FAIL: {exc}", file=sys.stderr)
+        return 1
+
     if files is None:
         print(
             "NOTE: A2 gating is inactive until the baseline commit is recorded in "
