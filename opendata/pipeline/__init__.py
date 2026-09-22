@@ -14,9 +14,14 @@ from opendata.pipeline.ddl import (
     ods_table_ddl,
     year_partitions,
 )
+from opendata.pipeline.runner import DataPipeline, PipelineOutcome, PipelineSpec, Window
 
 __all__ = [
     "DWD_TRACE_COLUMNS",
+    "DataPipeline",
+    "PipelineOutcome",
+    "PipelineSpec",
+    "Window",
     "ODS_METADATA_COLUMNS",
     "Column",
     "contract_columns",
