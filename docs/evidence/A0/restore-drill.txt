@@ -1,0 +1,120 @@
+# 备份与恢复演练记录（AC-19 / A0 DoD）
+
+date: 2026-09-22
+环境：macOS arm64 | MySQL **9.4.0**（Homebrew，`root@localhost`）| Python 3.13.5
+执行者：见 `docs/evidence/A0/README.md`
+
+> 本文件记录**真实执行**的演练过程与原始输出，不是计划文本。
+
+## 1. 演练检查单结果
+
+| # | 步骤 | 通过判据 | 结果 |
+|---|------|---------|------|
+| 1 | 执行一次备份，产出两个 `.sql.gz` | 文件非空、`gzip -t` 通过 | ✅ metadata 2950 B / warehouse 502 B，`gzip -t` OK |
+| 2 | 在隔离库导入元数据库备份 | 导入无错误 | ✅ `opendata_restore_check` |
+| 3 | 比对关键表行数 | 与备份源一致 | ✅ 9/9 对象一致（见 §3） |
+| 4 | 导入数据仓库备份 | 导入无错误 | ✅ `opendata_data_restore_check` |
+| 5 | 启动后端指向恢复库，`/health` 通过 | HTTP 200 且 `status=healthy` | ✅ 2 秒内就绪，二次请求同样成功 |
+| 6 | 记录耗时/行数/异常与处置 | 记录归档 | ✅ 本文件 |
+
+## 2. 实际执行的命令与输出
+
+```text
+# 1) 迁移（本次修复后）
+$ alembic upgrade head
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001, initial schema
+$ alembic current
+0001 (head)
+$ alembic check
+No new upgrade operations detected.        # 迁移与模型零漂移
+
+# 2) 种子数据（经应用 ORM，非裸 SQL）
+$ python - <<'PY' ... PY
+seeded: 1 user, 1 data_script, 3 scheduled_tasks, 5 task_executions
+
+# 3) 备份
+$ bash scripts/ops/backup_mysql.sh
+opendata backup started at 20260922T084648Z
+==> dumping opendata from 127.0.0.1:3306
+    4.0K  .../metadata_20260922T084648Z.sql.gz
+==> dumping opendata_data from 127.0.0.1:3306
+    4.0K  .../warehouse_20260922T084648Z.sql.gz
+==> pruning backups older than 30 days
+opendata backup finished
+$ gzip -t backups/*.sql.gz && echo "gzip -t OK"
+gzip -t OK
+
+# 4) 恢复到隔离库并比对行数
+$ gunzip -c backups/metadata_*.sql.gz | mysql ... opendata_restore_check
+$ gunzip -c backups/warehouse_*.sql.gz | mysql ... opendata_data_restore_check
+
+# 5) 启动后端指向恢复库
+$ MYSQL_DATABASE=opendata_restore_check DATA_MYSQL_DATABASE=opendata_data_restore_check \
+  APP_ENV=development ENABLE_SCHEDULER=false SCHEDULER_BOOTSTRAP_ON_STARTUP=false \
+  python -m uvicorn opendata.main:app --host 127.0.0.1 --port 8123
+health reachable after 2s
+$ curl -fsS http://127.0.0.1:8123/health
+{"status":"healthy","app_name":"opendata","version":"0.1.0","environment":"development",
+ "checks":{"database":"connected","scheduler":"running"},
+ "pool":{"main":{"size":5,"checked_in":1,"checked_out":0,"overflow":-4},
+         "data":{"size":5,"checked_in":0,"checked_out":0,"overflow":-5}},
+ "timestamp":"2026-09-22T09:00:21.599187+00:00"}
+$ curl -fsS http://127.0.0.1:8123/health >/dev/null && echo "second request OK"
+second request OK        # 连接池复用路径已验证
+```
+
+启动日志（幂等修复生效的直接证据）：
+
+```text
+INFO | opendata.core.database:init_db:214 - Database initialized successfully
+       (admin_created=True, categories_added=0)
+INFO | opendata.main:lifespan:153 - Application startup complete
+```
+
+## 3. 行数比对（恢复库 vs 源库）
+
+| 对象 | 源库 | 恢复库 | 一致 |
+|------|-----:|-------:|:----:|
+| `alembic_version` | 0001 | 0001 | ✅ |
+| `users` | 1 | 1 | ✅ |
+| `data_scripts` | 1 | 1 | ✅ |
+| `scheduled_tasks` | 3 | 3 | ✅ |
+| `task_executions` | 5 | 5 | ✅ |
+| `interface_categories` | 8 | 8 | ✅ |
+| `data_interfaces` | 0 | 0 | ✅ |
+| `data_tables` | 0 | 0 | ✅ |
+| `interface_parameters` | 0 | 0 | ✅ |
+
+## 4. 演练过程中发现并修复的缺陷（7 项）
+
+演练的价值恰在此：以下缺陷全部是**既有问题**，此前因测试走 SQLite、应用未真正对 MySQL 启动过而长期隐藏。
+
+| # | 缺陷 | 影响 | 处置 |
+|---|------|------|------|
+| 1 | `alembic/versions/003_add_indexes.py` 的 `down_revision` 引用了不存在的 revision id | `alembic upgrade head` 直接 `KeyError`，迁移链不可用 | 修为 `"002"`；新增 `tests/test_alembic_migrations.py`（5 项图论测试）防回归 |
+| 2 | `op.create_index(..., if_not_exists=True)` 生成 `CREATE INDEX IF NOT EXISTS` | MySQL 不支持该语法，迁移 003 必然失败 | 移除该参数（重跑由 `alembic_version` 保证幂等） |
+| 3 | `alembic/script.py.mako` 模板顶部多出一段 docstring | 新建的迁移文件语法错误、无法导入 | 修正模板为可导入形态 |
+| 4 | **schema 漂移**：`001_initial` 建的表与当前模型差两代（如 `task_executions.start_time` 根本不存在；枚举值小写 `success` vs 模型 `COMPLETED`） | 迁移无法达到应用可用结构；`create_all` 与 alembic 长期不一致 | 按决策"重建迁移基线"：删除 001–004，`--autogenerate` 生成单一 `0001_initial_schema`（8 表 + 19 索引）；`alembic check` 报零漂移 |
+| 5 | **`pool_pre_ping` + aiomysql 连接复用崩溃**：SQLAlchemy `do_ping()` 依据同步 pymysql 签名决定调用 `ping()` 还是 `ping(False)`，而异步适配器 `ping(self, reconnect)` 参数必填；pymysql ≥1.2 默认 `reconnect=False` 使探测走无参分支 | **应用只能处理第一个请求**，第二个请求即 `TypeError` | 改用 `pool_recycle=1800`（覆盖服务端空闲超时这一主要失效模式），不依赖 SQLAlchemy 私有 API；详见 `opendata/core/database.py` 注释 |
+| 6 | **`init_db()` 非幂等**：以"是否存在 admin"作为整体初始化开关，但同时又插入有唯一约束的 8 条 `interface_categories` | 处于"分类已存在、admin 不存在"状态时，**每次启动都因重复键崩溃且无法自愈** | 改为逐资源幂等供给；新增 `tests/test_database_bootstrap.py`（首次/二次/半初始化 3 项） |
+| 7 | `tests/test_cli.py` 三个测试直接调用真实 CLI 命令，断言仅 `exit_code in [0,1,2]` | 既是空壳断言（规范 §5.1 禁止），又**可能写入开发者真实数据库**（本地 8 条 `interface_categories` 即由此产生） | 改为 mock 依赖 + 断言真实行为（`create_tables`/`init_db` 被 await、loader 被调用） |
+| 8 | `scripts/ops/backup_mysql.sh`：无依赖前置检查、失败残留 0 字节文件、口令经命令行暴露 | 失败会被误认为备份成功；口令出现在进程列表（违反规范 S1xx） | 增加 `mysqldump`/`gzip` 前置检查、失败清理、改用 0600 临时配置文件 |
+
+## 5. 记录但不在 A0 修复的发现（移交 A4）
+
+| # | 发现 | 证据 | A4 处置方向 |
+|---|------|------|------------|
+| 1 | `opendata/main.py:145` 的 `await init_db()` 在**生产模式也会执行**，即启动时仍会写库 | lifespan 源码；`Database initialized successfully` 日志 | 设计 §8.1：启动只校验版本不建表；`ensure-table` 仅在 development 且显式开关下可用 |
+| 2 | `ENABLE_SCHEDULER=false` 未生效，`/health` 仍报 `"scheduler":"running"` | 上述 `/health` 响应 | 决策 D8：调度归属由显式 `ENABLE_SCHEDULER` 控制，生产未配置则启动即失败 |
+| 3 | `interface_categories` 的 8 条种子来自某次真实启动，说明种子逻辑曾被非预期触发 | 库内数据 + `init_db` 源码 | 随笔 1 一并收口 |
+
+## 6. 清理
+
+演练使用的隔离恢复库（`opendata_restore_check`、`opendata_data_restore_check`）在验证完成后删除；
+`opendata` / `opendata_data` 保留为本地开发库。备份产物位于 gitignored 的 `backups/`。
+
+## 7. 能力与限制
+
+- ✅ 已验证：逻辑备份 → 隔离恢复 → 行数一致性 → 应用对恢复库可用。
+- ⚠️ 未覆盖：binlog 时间点恢复（PITR）演练；双库（数据仓库）在 A4 引入 ods/dwd 表后的体量级恢复耗时；跨主机恢复。
+- ⚠️ RPO 当前依赖每日全量（≤24h）；收紧需启用 binlog 并演练 PITR。

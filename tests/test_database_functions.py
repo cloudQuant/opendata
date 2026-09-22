@@ -14,35 +14,19 @@ class TestCreateTables:
 
     @pytest.mark.asyncio
     async def test_create_tables(self):
-        """Test create_tables function."""
-        from opendata.core.database import create_tables
+        """create_tables runs the model DDL inside an engine transaction."""
+        from opendata.core.database import Base, create_tables
 
-        # Mock the engine
-        with patch("opendata.core.database.engine") as mock_engine:
-            result = await create_tables()
+        connection = AsyncMock()
+        engine = MagicMock()
+        engine.begin.return_value.__aenter__ = AsyncMock(return_value=connection)
+        engine.begin.return_value.__aexit__ = AsyncMock(return_value=False)
 
-            # Function should complete without error
-            assert result is None
+        with patch("opendata.core.database.engine", engine):
+            assert await create_tables() is None
 
-
-class TestInitDB:
-    """Test init_db function."""
-
-    @pytest.mark.asyncio
-    async def test_init_db(self):
-        """Test init_db function."""
-        from opendata.core.database import init_db
-
-        # Mock async session
-        with patch("opendata.core.database.async_session_maker") as mock_maker:
-            mock_session = AsyncMock()
-            mock_maker.__aenter__ = AsyncMock(return_value=mock_session)
-            mock_maker.__aexit__ = AsyncMock()
-
-            result = await init_db()
-
-            # Function should complete without error
-            assert result is None
+        engine.begin.assert_called_once()
+        connection.run_sync.assert_awaited_once_with(Base.metadata.create_all)
 
 
 class TestCloseDB:

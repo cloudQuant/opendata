@@ -1,5 +1,4 @@
-"""
-Database connection and session management.
+"""Database connection and session management.
 
 Provides async database session management using SQLAlchemy.
 """
@@ -28,12 +27,27 @@ class Base(DeclarativeBase):
     metadata = metadata
 
     # Allow table redefinition for development (SQLAlchemy expects this dict)
-    __table_args__ = {  # noqa: RUF012
+    __table_args__ = {
         "extend_existing": True,
         "mysql_charset": "utf8mb4",
         "mysql_collate": "utf8mb4_unicode_ci",
     }
 
+
+# Connection reuse relies on pool_recycle rather than pool_pre_ping.
+#
+# SQLAlchemy's MySQL do_ping() decides how to call the DBAPI by inspecting the
+# *sync* pymysql signature, then calls either ping(False) or ping(). The async
+# aiomysql adapter, however, declares ping(self, reconnect) with the argument
+# required, so whenever the probe decides "ping()" every pooled-connection reuse
+# raises TypeError: AsyncAdapt_aiomysql_connection.ping() missing 1 required
+# positional argument: 'reconnect'. pymysql >= 1.2 defaults reconnect to False,
+# which makes the probe take exactly that branch.
+#
+# pool_recycle covers the dominant real-world failure (server-side idle
+# timeout) without depending on SQLAlchemy internals. Revisit if upstream makes
+# the async dialect compute the flag itself.
+_POOL_RECYCLE_SECONDS = 1800
 
 # Create async engine
 engine = create_async_engine(
@@ -41,7 +55,7 @@ engine = create_async_engine(
     pool_size=settings.database_pool_size,
     max_overflow=settings.database_max_overflow,
     echo=settings.app_debug,
-    pool_pre_ping=True,
+    pool_recycle=_POOL_RECYCLE_SECONDS,
 )
 
 # Create async session factory
@@ -59,7 +73,7 @@ data_engine = create_async_engine(
     pool_size=settings.database_pool_size,
     max_overflow=settings.database_max_overflow,
     echo=settings.app_debug,
-    pool_pre_ping=True,
+    pool_recycle=_POOL_RECYCLE_SECONDS,
 )
 
 # Data warehouse async session factory
@@ -73,8 +87,7 @@ data_session_maker = async_sessionmaker(
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """
-    Get database session for dependency injection.
+    """Get database session for dependency injection.
 
     Yields:
         Async database session
@@ -111,8 +124,7 @@ async def get_data_db() -> AsyncGenerator[AsyncSession, None]:
 
 @asynccontextmanager
 async def get_db_context() -> AsyncGenerator[AsyncSession, None]:
-    """
-    Get database session for use in background tasks.
+    """Get database session for use in background tasks.
 
     Yields:
         Async database session
@@ -127,8 +139,7 @@ async def get_db_context() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def init_db() -> None:
-    """
-    Initialize database with default data.
+    """Initialize database with default data.
 
     Creates database tables if they don't exist and initializes
     default data like admin user and system settings.
@@ -140,36 +151,43 @@ async def init_db() -> None:
     from opendata.models.user import User, UserRole
 
     async with async_session_maker() as session:
-        # Check if database is already initialized
-        result = await session.execute(select(User).where(User.username == "admin"))
-        if result.scalar_one_or_none() is not None:
-            logger.info("Database already initialized")
-            return
+        # Each default resource is provisioned independently. Guarding the whole
+        # function on the admin user alone was not idempotent: a database that
+        # already had the categories but not the admin (e.g. a first run that
+        # died mid-way) failed on every later startup with a duplicate key on
+        # the unique interface_categories.name index.
 
-        # Create default admin user (password from env or generated)
+        # Create default admin user if missing (password from env or generated)
         import os
         import secrets
 
-        default_pw = os.getenv("ADMIN_DEFAULT_PASSWORD") or secrets.token_urlsafe(16)
-        if not os.getenv("ADMIN_DEFAULT_PASSWORD"):
-            logger.warning(
-                "No ADMIN_DEFAULT_PASSWORD set. Generated random password: "
-                f"{default_pw[:3]}{'*' * (len(default_pw) - 3)} "
-                "(set ADMIN_DEFAULT_PASSWORD env var to control this)"
+        existing_admin = await session.execute(select(User).where(User.username == "admin"))
+        admin_created = False
+        if existing_admin.scalar_one_or_none() is None:
+            default_pw = os.getenv("ADMIN_DEFAULT_PASSWORD") or secrets.token_urlsafe(16)
+            if not os.getenv("ADMIN_DEFAULT_PASSWORD"):
+                logger.warning(
+                    "No ADMIN_DEFAULT_PASSWORD set. Generated random password: "
+                    f"{default_pw[:3]}{'*' * (len(default_pw) - 3)} "
+                    "(set ADMIN_DEFAULT_PASSWORD env var to control this)"
+                )
+            admin_user = User(
+                username="admin",
+                email="admin@opendata.com",
+                hashed_password=hash_password(default_pw),
+                full_name="System Administrator",
+                role=UserRole.ADMIN,
+                is_active=True,
+                is_verified=True,
             )
-        admin_user = User(
-            username="admin",
-            email="admin@akshare.com",
-            hashed_password=hash_password(default_pw),
-            full_name="System Administrator",
-            role=UserRole.ADMIN,
-            is_active=True,
-            is_verified=True,
-        )
-        session.add(admin_user)
+            session.add(admin_user)
+            admin_created = True
 
-        # Create default interface categories
-        categories = [
+        # Create whichever default interface categories are still missing
+        existing_names = set(
+            (await session.execute(select(InterfaceCategory.name))).scalars().all()
+        )
+        default_categories = [
             InterfaceCategory(name="stock", description="股票数据", sort_order=1),
             InterfaceCategory(name="fund", description="基金数据", sort_order=2),
             InterfaceCategory(name="futures", description="期货数据", sort_order=3),
@@ -179,10 +197,20 @@ async def init_db() -> None:
             InterfaceCategory(name="economic", description="经济数据", sort_order=7),
             InterfaceCategory(name="macro", description="宏观数据", sort_order=8),
         ]
-        session.add_all(categories)
+        missing_categories = [
+            category for category in default_categories if category.name not in existing_names
+        ]
+        session.add_all(missing_categories)
+
+        if not admin_created and not missing_categories:
+            logger.info("Database already initialized")
+            return
 
         await session.commit()
-        logger.info("Database initialized successfully")
+        logger.info(
+            f"Database initialized successfully "
+            f"(admin_created={admin_created}, categories_added={len(missing_categories)})"
+        )
 
 
 async def create_tables() -> None:
@@ -200,8 +228,7 @@ async def close_db() -> None:
 
 
 async def check_db_connection() -> bool:
-    """
-    Check if database connection is healthy.
+    """Check if database connection is healthy.
 
     Returns:
         True if connection is successful, False otherwise

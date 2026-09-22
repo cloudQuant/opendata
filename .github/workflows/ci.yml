@@ -107,5 +107,8 @@ jobs:
       - name: Verify metadata migrations apply on MySQL
         run: alembic upgrade head
 
+      - name: Verify migrations match the models (no drift)
+        run: alembic check
+
       - name: Run fail-closed quality gate
         run: make gate

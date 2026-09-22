@@ -4,6 +4,8 @@ CLI module tests.
 Tests for command-line interface functions.
 """
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 from click.testing import CliRunner
 
 
@@ -66,31 +68,44 @@ class TestCLI:
         from opendata.cli import cli
 
         runner = CliRunner()
-        result = runner.invoke(cli, ["check-health"])
+        with patch(
+            "opendata.core.database.check_db_connection",
+            new_callable=AsyncMock,
+            return_value=True,
+        ):
+            result = runner.invoke(cli, ["check-health"])
 
-        # May fail if server not running
-        assert result.exit_code in [0, 1, 2]
+        assert result.exit_code == 0
+        assert "Status: healthy" in result.output
 
     def test_cli_init_db_command(self):
         """Test init-db command."""
         from opendata.cli import cli
 
         runner = CliRunner()
-        result = runner.invoke(cli, ["init-db"])
+        with (
+            patch("opendata.cli.create_tables", new_callable=AsyncMock) as create_tables,
+            patch("opendata.cli.init_db", new_callable=AsyncMock) as init_db,
+        ):
+            result = runner.invoke(cli, ["init-db"])
 
-        # May fail due to database not being available in test
-        # but command should exist
-        assert result.exit_code in [0, 1, 2]
+        assert result.exit_code == 0
+        create_tables.assert_awaited_once()
+        init_db.assert_awaited_once()
 
     def test_cli_load_interfaces_command(self):
         """Test load-interfaces command."""
         from opendata.cli import cli
 
-        runner = CliRunner()
-        result = runner.invoke(cli, ["load-interfaces"])
+        loader = MagicMock()
+        loader.load_from_akshare = AsyncMock(return_value=10)
 
-        # May fail due to database not being available in test
-        assert result.exit_code in [0, 1, 2]
+        runner = CliRunner()
+        with patch("opendata.cli.InterfaceLoader", return_value=loader):
+            result = runner.invoke(cli, ["load-interfaces"])
+
+        assert result.exit_code == 0
+        loader.load_from_akshare.assert_awaited_once()
 
     def test_cli_create_admin_command(self):
         """Test create-admin command."""

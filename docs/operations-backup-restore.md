@@ -87,6 +87,10 @@ gunzip -c backups/warehouse_<STAMP>.sql.gz | \
 
 > 数据仓库 DDL 由独立 alembic 环境管理（`alembic_data/`，迭代 1A-A4 交付）。
 > 在 A4 之前，ods/dwd 表结构尚未引入，恢复演练以"元数据库 + 备份/恢复链路可用"为准。
+>
+> 元数据库迁移现已可用：`alembic upgrade head` 之后用 `alembic check` 可验证"迁移与模型零漂移"。
+> A0 阶段重建了迁移基线（原 001–004 与实际模型差两代，无一条链路可执行），详见
+> `docs/evidence/A0/restore-drill.txt`。
 
 ### 3.3 binlog 时间点恢复（需要时）
 
@@ -122,9 +126,12 @@ mysqlbinlog --start-datetime="<备份完成时刻>" /var/lib/mysql/mysql-bin.* |
 容量预算（设计 §8.5）：日线双源 + dwd 约 4.5 GB；分钟线走文件存储约 1.2 TB。
 建议为备份单独预留 ≥100 GB，并纳入磁盘水位告警（`FR-14` 告警矩阵）。
 
-## 6. 当前状态（A0 阶段如实记录）
+## 6. 当前状态
 
-- ✅ 备份脚本已交付：`scripts/ops/backup_mysql.sh`
+- ✅ 备份脚本已交付：`scripts/ops/backup_mysql.sh`（含依赖前置检查、失败清理、0600 临时凭证文件）
 - ✅ 恢复步骤与演练检查单已成文
-- ⏳ **演练尚未执行**：缺少可用的 MySQL 实例（本机未启动），且仓库在 A0 阶段尚未建立 ods/dwd 表。
-  演练应在具备 MySQL 的环境（CI 或运维主机）执行一次并归档记录，方满足 A0 DoD。
+- ✅ **恢复演练已于 2026-09-22 执行一次并通过**：备份 → 隔离库恢复 → 9/9 对象行数一致 → 应用指向恢复库 `/health` 通过。
+  原始输出与发现的问题见 `docs/evidence/A0/restore-drill.txt`
+- ⚠️ 该次演练同时暴露并修复了 8 个既有缺陷（含"应用只能处理第一个请求"的连接池缺陷与"启动即崩溃"的
+  初始化幂等缺陷），并在 A4 待办中记录了 3 项发现（生产启动仍写库、`ENABLE_SCHEDULER` 未生效等）
+- ⏳ 未覆盖：binlog 时间点恢复演练；A4 引入 ods/dwd 后的体量级恢复耗时
