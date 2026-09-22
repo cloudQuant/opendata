@@ -14,14 +14,14 @@
 | `quality-gates.txt` | `brand-check` / `zero-dep-check` / `quality-ratchet` / `public-api-quality` | 全部 OK |
 | `frontend.txt` | `npx eslint .` / `npx vue-tsc --noEmit` / `npx vitest run` | 0 error / 0 error / 73 passed |
 | `rename-verification.txt` | 与参照副本逐文件归一化比对 | 103 文件、0 处非改名差异 |
-| `secret-audit.txt` | `git add -A -n` 审计 + `detect-secrets scan` | 凭证未入库；扫描 0 命中 |
+| `secret-audit.txt` | `gitleaks detect --source . --config .gitleaks.toml`（全历史，CI 同款 v8.21.2）+ `git add -A -n` 审计 | **0 命中**；5 处上游硬编码凭证已处置；含凭证字面量的历史提交已重写清除 |
 | `restore-drill.txt` | 备份 → 隔离恢复 → 行数比对 → 对恢复库跑 `/health` | **通过**，并暴露 8 个既有缺陷（均已修） |
 
 ## 2. AC 逐项对照
 
 | AC | 范围 | 状态 | 证据 / 说明 |
 |----|------|------|------------|
-| AC-1 品牌·许可·合规 | A0 | **完成**（按本仓库实现的白名单口径） | 品牌残留零（`quality-gates.txt`）；BSL 1.1 四要素齐备；`LICENSE-AKSHARE` + `THIRD_PARTY_NOTICES.md`；数据权利登记表 `docs/data-rights-registry.md`；双库四处一致。白名单口径差异见 §3-1 |
+| AC-1 品牌·许可·合规 | A0 | **完成**（按本仓库实现的扫描面口径） | 品牌残留零（`quality-gates.txt`）；BSL 1.1 四要素齐备；`LICENSE-AKSHARE` + `THIRD_PARTY_NOTICES.md`；数据权利登记表 `docs/data-rights-registry.md`；双库四处一致；**凭证未入版本库**（`secret-audit.txt`：5 处上游凭证处置 + 历史清除 + 全历史 0 命中）。扫描面口径差异见 §3-1 |
 | AC-16 零上游依赖 | A2 | **已建立护栏**（全量生效在 A2） | AST 扫描器 + 违规样本自测通过；存量 6 处 `import akshare` 冻结为基线（`docs/quality/zero-dep-baseline.json`），只降不升 |
 | AC-17 工程质量门禁 | A0 | **完成** | `make gate` 全绿且逐项阻断；A1 基线与 A2 零容忍分层落地；`F821` 不再忽略；`F821`/RUF100 等新增规则已驱动 2 处修正 |
 | AC-19 备份与恢复 | A0 | **完成** | 脚本 `scripts/ops/backup_mysql.sh` + 手册 `docs/operations-backup-restore.md` + **演练已执行通过**（`restore-drill.txt`） |
@@ -31,9 +31,9 @@
 
 | # | 项 | 原因 | 建议 |
 |---|----|------|------|
-| 1 | **AC-1 的 `grep -ri akshare` 白名单口径** | 验收文档白名单只列 `opendata_http/`、`THIRD_PARTY_NOTICES.md`、`LICENSE-AKSHARE`；但零依赖扫描器自身的白名单（质量规范 §10）还含 `scripts/codemod/`、`tests/`、`docs/`，且 README／CODE_QUALITY 需**引用前身平台名**说明沿革、`docs/evidence/` 需逐字记录含 token 名的输出 | 统一为扫描器口径并登记"沿革引用／证据"白名单。本仓库已按此实现（`scripts/quality/check_brand.py`） |
+| 1 | **AC-1 的 `grep -ri akshare` 扫描面口径** | 验收文档白名单只列 `opendata_http/`、`THIRD_PARTY_NOTICES.md`、`LICENSE-AKSHARE`；但零依赖扫描器自身的扫描面还含 `scripts/codemod/`、`tests/`、`docs/`，且 README／CODE_QUALITY 需**引用前身平台名**说明沿革、`docs/evidence/` 需逐字记录命令输出 | 已统一为扫描器口径并登记"沿革引用／证据"白名单（`scripts/quality/check_brand.py`）；**密钥扫描白名单已反向收紧**（见 §4-14） |
 | 2 | **内嵌 `akshare/` 目录仍在根目录** | A2 才做 `akshare/` → `opendata_http/` 的 codemod 搬运与删除 | A2 执行；届时同步移除 `pyproject.toml` 的 `packages = ["akshare"]` |
-| 3 | **CI 尚未真实跑过** | 仓库尚无 remote push；`alembic upgrade head` + `alembic check` 已在本地对 MySQL 9.4 验证通过，但 GitHub Actions 的 `mysql:8.0` 组合待首次 CI 验证 | 首次 push 后确认；CI 已含前端三项与全历史密钥扫描 |
+| 3 | **CI 尚未真实跑过** | 仓库尚无 remote push；`alembic upgrade head` + `alembic check` 已在本地对 MySQL 9.4 验证通过，但 GitHub Actions 的 `mysql:8.0` 组合待首次 CI 验证。已按 CI 语义本地复现：`fetch-depth: 0` 全历史、`A2_BASE_REF` 回退、浅克隆 fail-closed（见 §4-12/13） | 首次 push 后确认；CI 已含前端三项与全历史密钥扫描 |
 | 4 | **scheduler 显式开关（D8）** | A4 范围 | 见 §5 移交项 |
 | 5 | **前端 48 条 eslint warning** | 存量（`no-floating-promises` 等），非 error，不阻断门禁 | B4 随前端测试框架收口 |
 | 6 | **`ENABLE_SCHEDULER` / 生产启动写库** | A4 范围（设计 §8.1） | 见 §5 移交项 |
@@ -54,6 +54,10 @@ A0 过程中发现并修复的既有缺陷（均非本轮引入）：
 | 8 | **`init_db()` 非幂等** | "分类存在但 admin 缺失"时**启动即崩溃且无法自愈** | `tests/test_database_bootstrap.py`（3 项） |
 | 9 | `tests/test_cli.py` 三个空壳测试可写真实库 | 空壳断言（规范 §5.1）+ 副作用 | 改为 mock + 真实行为断言 |
 | 10 | 备份脚本无前置检查／失败残留空文件／口令进进程列表 | 失败被误认为成功；凭证泄露面 | `scripts/ops/backup_mysql.sh` |
+| 11 | **上游硬编码凭证 4 处未处置**（集思录用户名+密码含手机号、中国货币网 key、东财 token×2） | 真实凭证入库；CI 全历史扫描必然失败 | 改为环境变量读取 + 登记；见 `secret-audit.txt` §1 |
+| 12 | **`a2_check` 在基线不可解析时静默通过** | 浅克隆或失效基线会使 **A2 门禁整体失效且无提示**（`git diff` 失败被当成"无变更"） | 改为 fail-closed：先 `rev-parse --verify` 校验基线/base ref，失败即 FAIL；`--no-git` 与浅克隆两种场景已实测拦截 |
+| 13 | CI `actions/checkout` 默认 `fetch-depth: 1` | 取不到 A2 基线 commit → 门禁静默失效（与 #12 叠加） | 加 `fetch-depth: 0`；job env 设 `A2_BASE_REF: ${{ github.base_ref }}`（push 时为空则回落 `baseline.json`）；PR 额外 fetch 基线分支 |
+| 14 | **`.gitleaks.toml` 白名单过宽**（`^docs/`） | 真实 token 字面量长期藏在 `docs/evidence/` 内**不被任何扫描发现**（本文件 §1 即实例） | 收紧为「仅占位符模板 + 构建产物」，并对 `curl-auth-header` 规则**按规则**放行 markdown；反向测试：向 `docs/`、`tests/` 注入假凭证均被抓到 |
 
 ## 5. 移交 A4 的发现（记录未修）
 
@@ -75,3 +79,31 @@ A0 过程中发现并修复的既有缺陷（均非本轮引入）：
 
 指标**只降不升**；扫描范围（包集合、文件数、工具版本）变更即失败。棘轮的两种拦截均已实测：
 A2 门禁对注入的违例报错；棘轮对注入的债务报 `ruff_selfdev: 404 -> 406`。
+
+## 7. 收口轮：历史重写与 CI 加固（2026-09-22）
+
+| 动作 | 内容 | 依据 |
+|------|------|------|
+| 提交树重写 | A0 地基提交（原 `e1e49f7`）被重写，剔除 4 处上游凭证字面量**及证据文件自身记录的 token 原值**；重写后 SHA 见 `docs/quality/baseline.json` | AC-1「凭证未入版本库」；本地 `dev` 无远端跟踪，重写不影响远端 |
+| 对象回收 | 旧历史打包到仓库外 `pre-credential-rewrite.bundle`（含凭证，**用完应删除**）后 `reflog expire --expire=now --all` + `gc --prune=now` | 防止旧对象被误恢复或误推 |
+| 门禁 fail-closed | `a2_check` 先校验基线/base ref 可解析，不可解析即 FAIL，不再静默放过 | 见 §4-12 |
+| CI 加固 | `fetch-depth: 0`、`A2_BASE_REF`、PR 基线分支 fetch | 见 §4-13 |
+| 扫描面收紧 | `.gitleaks.toml` 只放行占位符与构建产物；markdown 仅对 `curl-auth-header` 规则放行 | 见 §4-14 |
+
+**对 CI 的本地等价复现**（CI 尚未在 GitHub 上真实运行，见 §3-3）：
+
+```text
+1. 全新克隆 dev（等价 actions/checkout + fetch-depth: 0）
+2. gitleaks detect --source . --config .gitleaks.toml   → 7 commits scanned, no leaks found
+3. python scripts/quality/a2_check.py                  → OK（A2 文件 6 个）
+4. make gate                                           → PASSED, gate_exit=0
+```
+
+未复现项：GitHub Actions 的 `mysql:8.0` 服务组合、`ubuntu-latest` 上的依赖安装（含
+`mini-racer` 在 Linux 的 wheel 可用性，属 A2 依赖收敛范围）。
+
+### 重写带来的 SHA 影响
+
+历史重写会改变提交 SHA。当前仓库内所有对 A0 地基提交的引用都已改为指向重写后的提交；
+阅读旧文档若见到 `e1e49f7`，即重写前的 A0 地基提交。`dev` 与 `origin/master` 的唯一共同
+祖先是 `a2cf824`（Initial commit），重写未触及已推送内容。
