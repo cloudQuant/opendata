@@ -85,12 +85,16 @@ def _is_a2_candidate(name: str) -> bool:
 
 
 def changed_files(base: str | None) -> list[str]:
-    """Return A2 Python files as repo-relative POSIX paths, sorted."""
+    """Return A2 Python files as repo-relative POSIX paths, sorted.
+
+    The comparison is against the *working tree* rather than ``base..HEAD``, so
+    uncommitted local edits are gated too. Comparing two commits would silently
+    pass during development and only fire after a commit — the wrong feedback
+    loop for a pre-commit-style gate.
+    """
     names: set[str] = set()
-    if base:
-        names.update(_git("diff", "--name-only", "--diff-filter=ACMR", base, "HEAD").splitlines())
-    else:
-        names.update(_git("diff", "--name-only", "HEAD").splitlines())
+    revision = base or "HEAD"
+    names.update(_git("diff", "--name-only", "--diff-filter=ACMR", revision).splitlines())
     names.update(_git("ls-files", "--others", "--exclude-standard").splitlines())
     return sorted({name.strip() for name in names if _is_a2_candidate(name.strip())})
 
