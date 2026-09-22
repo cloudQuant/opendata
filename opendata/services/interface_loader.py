@@ -10,7 +10,7 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import akshare as ak
+import opendata_http as ak
 from opendata.core.database import async_session_maker
 from opendata.models.interface import (
     DataInterface,
@@ -202,7 +202,7 @@ class InterfaceLoader:
             display_name=self._generate_display_name(func_name),
             description=self._parse_description(docstring),
             category_id=category.id if category else 1,
-            module_path="akshare",
+            module_path="opendata_http",
             function_name=func_name,
             parameters=self._parse_parameters(sig, docstring) if sig else {},
             return_type="DataFrame",

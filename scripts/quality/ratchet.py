@@ -43,7 +43,9 @@ SNAPSHOT_VERSION = 1
 SELFDEV_PATHS = ("opendata", "scripts", "tests")
 MYPY_PATHS = ("opendata",)
 BANDIT_PATHS = ("opendata", "scripts")
-PORTED_PATHS = ("akshare",)
+# A2.2: the ported tree moved from akshare/ to opendata_http/;
+# the scope switch was re-frozen with --force-update (controlled event).
+PORTED_PATHS = ("opendata_http",)
 
 HTTP_VERBS = frozenset({"get", "post", "put", "delete", "head", "patch", "request"})
 
@@ -202,7 +204,7 @@ def measure() -> tuple[dict[str, int], dict[str, int], dict[str, str]]:
         "mypy_selfdev": count_mypy(MYPY_PATHS),
         "bandit_selfdev": count_bandit(BANDIT_PATHS),
         "ruff_ported": count_ruff(PORTED_PATHS, select="E,F"),
-        "direct_http_ported": count_direct_http("akshare"),
+        "direct_http_ported": count_direct_http(PORTED_PATHS[0]),
     }
     tools = {
         "ruff": _tool_version("ruff"),

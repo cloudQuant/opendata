@@ -1,6 +1,6 @@
-"""
-Akshare data provider for data fetch operations
-Supports MySQL storage with automatic table creation
+"""Akshare data provider for data fetch operations.
+
+Supports MySQL storage with automatic table creation.
 """
 
 import logging
@@ -17,7 +17,7 @@ from loguru import logger as _default_logger
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import akshare as ak
+import opendata_http as ak
 from opendata.core.config import settings
 
 # Connection pool singleton
@@ -55,9 +55,10 @@ def _get_connection_pool(db_config: dict[str, Any]) -> Any:
 
 
 class FuncThread(threading.Thread):
-    """Thread for executing function with timeout"""
+    """Thread for executing a function with a timeout."""
 
     def __init__(self, func: Any, *args: Any, **kwargs: Any) -> None:
+        """Store the callable and its arguments."""
         super().__init__()
         self.func = func
         self.args = args
@@ -67,6 +68,7 @@ class FuncThread(threading.Thread):
         self.daemon = True
 
     def run(self) -> None:
+        """Execute the function and capture its result or error."""
         try:
             result = self.func(*self.args, **self.kwargs)
             self.result.put(("success", result))
@@ -74,6 +76,7 @@ class FuncThread(threading.Thread):
             self.result.put(("error", str(e)))
 
     def get_result(self, timeout: float | None = None) -> tuple[str, Any]:
+        """Wait for the thread result within the timeout."""
         try:
             return self.result.get(timeout=timeout)
         except queue.Empty:
@@ -81,14 +84,13 @@ class FuncThread(threading.Thread):
 
 
 class AkshareProvider:
-    """
-    Akshare数据提供者
-    支持从akshare获取数据并存储到数据库
+    """Akshare数据提供者.
+
+    支持从opendata_http获取数据并存储到数据库。
     """
 
     def __init__(self, db_url: str | None = None, logger: logging.Logger | None = None) -> None:
-        """
-        初始化数据提供者
+        """初始化数据提供者.
 
         Args:
             db_url: 数据库连接URL
@@ -107,7 +109,7 @@ class AkshareProvider:
             self._parse_db_url()
 
     def _parse_db_url(self) -> None:
-        """解析数据库URL"""
+        """解析数据库URL."""
         from urllib.parse import urlparse
 
         parsed = urlparse(self.db_url)
@@ -121,7 +123,7 @@ class AkshareProvider:
         }
 
     def connect_db(self) -> bool:
-        """建立数据库连接（优先使用连接池）"""
+        """建立数据库连接（优先使用连接池）."""
         if not self.db_url.startswith("mysql"):
             self.logger.warning("Only MySQL is supported for data storage")
             return False
@@ -140,7 +142,7 @@ class AkshareProvider:
             raise
 
     def disconnect_db(self) -> None:
-        """归还连接到连接池（或关闭直接连接）"""
+        """归还连接到连接池（或关闭直接连接）."""
         if self.cursor:
             self.cursor.close()
             self.cursor = None
@@ -149,19 +151,21 @@ class AkshareProvider:
             self.connection = None
 
     def __enter__(self) -> "AkshareProvider":
+        """Connect on context entry."""
         self.connect_db()
         return self
 
     def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+        """Disconnect on context exit."""
         self.disconnect_db()
 
     def fetch_ak_data(self, function_name: str, *args: Any, **kwargs: Any) -> pd.DataFrame:
-        """
-        从Akshare获取数据
+        """从Akshare获取数据.
 
         Args:
             function_name: Akshare函数名
-            *args, **kwargs: 函数参数
+            *args: 位置参数，透传给目标函数
+            **kwargs: 关键字参数，透传给目标函数
 
         Returns:
             pd.DataFrame: 获取的数据
@@ -202,7 +206,7 @@ class AkshareProvider:
             raise
 
     def _auto_create_table(self, table_name: str, df: pd.DataFrame) -> None:
-        """根据DataFrame自动创建表"""
+        """根据DataFrame自动创建表."""
         type_map = {
             "int64": "BIGINT",
             "int32": "INT",
@@ -239,7 +243,7 @@ class AkshareProvider:
             self.logger.warning(f"自动建表失败 {table_name}: {err}")
 
     def _execute_batch(self, insert_sql: str, batch: list) -> bool:
-        """执行批量插入"""
+        """执行批量插入."""
         try:
             self.cursor.executemany(insert_sql, batch)
             self.connection.commit()
@@ -360,8 +364,7 @@ class AkshareProvider:
         ignore_duplicates: bool = False,
         create_table: bool = True,
     ) -> int:
-        """
-        保存数据到数据库
+        """保存数据到数据库.
 
         Args:
             df: 要保存的数据
@@ -435,7 +438,7 @@ class AkshareProvider:
             self.disconnect_db()
 
     def table_exists(self, table_name: str) -> bool:
-        """检查表是否存在"""
+        """检查表是否存在."""
         try:
             self.connect_db()
             self.cursor.execute("SHOW TABLES LIKE %s", (table_name,))
@@ -448,7 +451,7 @@ class AkshareProvider:
             self.disconnect_db()
 
     def get_table_row_count(self, table_name: str) -> int:
-        """获取表的行数"""
+        """获取表的行数."""
         if not table_name:
             return 0
 
@@ -465,7 +468,7 @@ class AkshareProvider:
     def create_table_if_not_exists(
         self, table_name: str = None, create_table_sql: str = None
     ) -> bool:
-        """创建表（如果不存在）"""
+        """创建表（如果不存在）."""
         if not self.table_exists(table_name):
             try:
                 self.connect_db()
@@ -483,7 +486,7 @@ class AkshareProvider:
     async def get_table_row_count_async(
         self, table_name: str, db_session: AsyncSession
     ) -> int | None:
-        """异步获取表的行数"""
+        """异步获取表的行数."""
         if not table_name:
             return None
 
@@ -497,10 +500,10 @@ class AkshareProvider:
 
     @staticmethod
     def get_uuid() -> str:
-        """生成UUID"""
+        """生成UUID."""
         return str(uuid.uuid4()).replace("-", "").upper()
 
     def safe_date_format(self, series: pd.Series) -> pd.Series:
-        """安全格式化日期序列"""
+        """安全格式化日期序列."""
         datetime_series = pd.to_datetime(series, errors="coerce")
         return datetime_series.apply(lambda x: x.strftime("%Y-%m-%d") if not pd.isnull(x) else None)

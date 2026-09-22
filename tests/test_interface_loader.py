@@ -154,7 +154,7 @@ class TestInterfaceLoaderIntegration:
             "macro",
         ]
 
-        for _func_name, category in InterfaceLoader.CATEGORY_MAPPING.items():
+        for category in InterfaceLoader.CATEGORY_MAPPING.values():
             assert category in valid_categories
 
 
@@ -198,21 +198,21 @@ class TestAkshareIntegration:
     """Test akshare integration."""
 
     def test_akshare_importable(self):
-        """Test akshare can be imported."""
-        import akshare as ak
+        """Test the ported package can be imported."""
+        import opendata_http as ak
 
         assert ak is not None
 
     def test_akshare_has_functions(self):
         """Test akshare module has functions."""
-        import akshare as ak
+        import opendata_http as ak
 
         # Should have stock functions
         assert hasattr(ak, "stock_zh_a_hist") or hasattr(ak, "stock")
 
     def test_akshare_function_callable(self):
         """Test akshare functions are callable."""
-        import akshare as ak
+        import opendata_http as ak
 
         if hasattr(ak, "stock_zh_a_hist"):
             func = ak.stock_zh_a_hist

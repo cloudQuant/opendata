@@ -16,7 +16,7 @@ import pandas as pd
 from loguru import logger
 from sqlalchemy import text
 
-import akshare as ak
+import opendata_http as ak
 from opendata.models.data_table import DataTable
 from opendata.models.interface import DataInterface
 from opendata.models.task import TaskExecution, TaskStatus
@@ -46,7 +46,7 @@ class DataAcquisitionService:
     """
 
     # Dedicated thread pool for blocking akshare calls (avoids starving default pool)
-    _akshare_executor = ThreadPoolExecutor(max_workers=8, thread_name_prefix="akshare")
+    _akshare_executor = ThreadPoolExecutor(max_workers=8, thread_name_prefix="interface")
 
     def __init__(self) -> None:
         """Initialize the service with empty active-execution tracking."""
@@ -243,7 +243,7 @@ class DataAcquisitionService:
             func = getattr(ak, interface.name, None)
 
             if func is None:
-                raise AttributeError(f"akshare function {interface.name} not found")
+                raise AttributeError(f"interface function {interface.name} not found")
 
             # Build arguments, skipping None values
             kwargs = {
@@ -271,7 +271,7 @@ class DataAcquisitionService:
                     result = await asyncio.wait_for(coro, timeout=effective_timeout)
                 except TimeoutError as e:
                     raise TimeoutError(
-                        f"akshare function {interface.name} timed out after {effective_timeout}s"
+                        f"interface function {interface.name} timed out after {effective_timeout}s"
                     ) from e
             else:
                 result = await coro
@@ -284,10 +284,10 @@ class DataAcquisitionService:
             return result
 
         except AttributeError:
-            logger.error(f"Function {interface.name} not found in akshare")
+            logger.error(f"Function {interface.name} not found in opendata_http")
             raise
         except Exception as e:
-            logger.error(f"Error calling akshare function {interface.name}: {e}")
+            logger.error(f"Error calling interface function {interface.name}: {e}")
             raise
 
     async def _store_data(

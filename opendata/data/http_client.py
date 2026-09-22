@@ -28,7 +28,7 @@ import threading
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 from urllib.parse import urlsplit
 
 import requests
@@ -311,7 +311,9 @@ class GovernedHttpClient:
             attempt += 1
             response, error = self._attempt_once(method, url, host, params, headers, attempt)
             if error is None:
-                return response
+                # _attempt_once returns a response exactly when no error;
+                # environments where requests is untyped see Any here.
+                return cast("requests.Response", response)
             if not is_get or not error.retryable or attempt >= attempts:
                 raise error
             logger.warning(f"{error} - retrying in backoff (attempt {attempt}/{attempts})")
