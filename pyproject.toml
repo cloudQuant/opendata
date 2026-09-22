@@ -191,6 +191,11 @@ runtime-evaluated-base-classes = [
 # dq_diff_report insert: column names come from the module's REPORT_COLUMNS
 # constant and every value is a bind parameter.
 "opendata/pipeline/diff_report.py" = ["S608"]
+# Query builders: identifiers pass the word-character whitelist before quoting
+# and every value (symbols included) is a bind parameter; S608 flags the
+# f-strings that assemble those validated identifiers.
+"opendata/pipeline/query.py" = ["S608"]
+"opendata/api/data_query.py" = ["S608"]
 # page_sql builds ORDER BY from inspector-validated column names and binds the
 # pagination values; S608 flags the f-string that assembles those identifiers.
 "opendata/pipeline/table_page.py" = ["S608"]
