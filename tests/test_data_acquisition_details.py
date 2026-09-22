@@ -26,6 +26,7 @@ class TestDataAcquisitionExecuteDownload:
                 interface_id=999,
                 parameters={},
                 db=test_db,
+                data_db=test_db,
             )
 
 
@@ -74,6 +75,7 @@ class TestDataAcquisitionStoreData:
                 interface=interface,
                 execution_id=1,
                 db=test_db,
+                data_db=test_db,
             )
 
         assert rows_affected == 3

@@ -26,7 +26,7 @@ class TestExecuteDownload:
         mock_db.execute.return_value = mock_result
 
         with pytest.raises(ValueError, match="not found"):
-            await svc.execute_download(1, 999, {}, mock_db)
+            await svc.execute_download(1, 999, {}, mock_db, data_db=mock_db)
 
     @pytest.mark.asyncio
     async def test_execution_not_found(self, svc):
@@ -40,7 +40,7 @@ class TestExecuteDownload:
         mock_db.execute.side_effect = results
 
         with pytest.raises(ValueError, match="not found"):
-            await svc.execute_download(999, 1, {}, mock_db)
+            await svc.execute_download(999, 1, {}, mock_db, data_db=mock_db)
 
     @pytest.mark.asyncio
     async def test_empty_data_returned(self, svc):
@@ -61,7 +61,7 @@ class TestExecuteDownload:
         with patch.object(
             svc, "_call_akshare_function", new_callable=AsyncMock, return_value=pd.DataFrame()
         ):
-            result = await svc.execute_download(1, 1, {}, mock_db)
+            result = await svc.execute_download(1, 1, {}, mock_db, data_db=mock_db)
 
         assert result == 0
         assert mock_execution.status == TaskStatus.COMPLETED
@@ -87,7 +87,7 @@ class TestExecuteDownload:
             patch.object(svc, "_call_akshare_function", new_callable=AsyncMock, return_value=df),
             patch.object(svc, "_store_data", new_callable=AsyncMock, return_value=3),
         ):
-            result = await svc.execute_download(1, 1, {}, mock_db)
+            result = await svc.execute_download(1, 1, {}, mock_db, data_db=mock_db)
 
         assert result == 3
         assert 1 not in svc._active_executions  # cleaned up
@@ -116,7 +116,7 @@ class TestExecuteDownload:
             ),
             pytest.raises(RuntimeError),
         ):
-            await svc.execute_download(1, 1, {}, mock_db)
+            await svc.execute_download(1, 1, {}, mock_db, data_db=mock_db)
 
         assert mock_execution.status == TaskStatus.FAILED
 
@@ -171,7 +171,7 @@ class TestStoreData:
             patch.object(svc, "_insert_data", new_callable=AsyncMock, return_value=2),
             patch.object(svc, "_update_table_metadata", new_callable=AsyncMock),
         ):
-            result = await svc._store_data(df, mock_interface, 1, mock_db)
+            result = await svc._store_data(df, mock_interface, 1, mock_db, data_db=mock_db)
 
         assert result == 2
 
@@ -218,7 +218,7 @@ class TestInsertData:
     async def test_insert_rows(self, svc):
         mock_db = AsyncMock()
         df = pd.DataFrame({"a": [1, 2], "b": ["x", "y"]})
-        result = await svc._insert_data("ak_test", df, mock_db)
+        await svc._insert_data("ak_test", df, mock_db)
         # result is based on rowcount from execute; mock returns 0 by default
         mock_db.execute.assert_called_once()
         # Note: commit is now handled by the caller for transaction consistency
@@ -250,7 +250,7 @@ class TestUpdateTableMetadata:
         results[1].scalar.return_value = 100  # total rows
         mock_db.execute.side_effect = results
 
-        await svc._update_table_metadata("ak_test", 1, 1, 50, mock_db)
+        await svc._update_table_metadata("ak_test", 1, 1, 50, mock_db, data_db=mock_db)
         assert mock_meta.row_count == 100
         # Note: commit is now handled by the caller for transaction consistency
 
@@ -263,6 +263,6 @@ class TestUpdateTableMetadata:
         results[1].scalar.return_value = 50
         mock_db.execute.side_effect = results
 
-        await svc._update_table_metadata("ak_test", 1, 1, 50, mock_db)
+        await svc._update_table_metadata("ak_test", 1, 1, 50, mock_db, data_db=mock_db)
         mock_db.add.assert_called_once()
         # Note: commit is now handled by the caller for transaction consistency

@@ -1,12 +1,11 @@
-"""
-Data acquisition API routes.
+"""Data acquisition API routes.
 
 Provides endpoints for manual data download and progress tracking.
 """
 
 import asyncio
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
@@ -50,8 +49,7 @@ async def trigger_download(
     current_user: CurrentUser,
     db: AsyncSession = Depends(get_db),
 ) -> DataDownloadResponse:
-    """
-    Trigger manual data download.
+    """Trigger manual data download.
 
     Initiates data acquisition for the specified interface.
     Returns execution ID immediately for progress tracking.
@@ -92,17 +90,21 @@ async def trigger_download(
     iface_id = iface.id
     params = request.parameters
 
-    # Launch download in the background with its own db session
+    # Launch download in the background with its own sessions: main db
+    # for metadata/execution state, data warehouse for the data table
+    # (FR-17 session routing fix).
     async def _bg_download() -> None:
         from opendata.core.database import async_session_maker as _sm
+        from opendata.core.database import data_session_maker as _dsm
 
-        async with _sm() as bg_db:
+        async with _sm() as bg_db, _dsm() as bg_data_db:
             try:
                 await data_service.execute_download(
                     execution_id=exec_id,
                     interface_id=iface_id,
                     parameters=params,
                     db=bg_db,
+                    data_db=bg_data_db,
                 )
             except Exception as e:
                 logger.error(
@@ -129,8 +131,7 @@ async def get_download_progress(
     current_user: CurrentUser,
     db: AsyncSession = Depends(get_db),
 ) -> DownloadProgressResponse:
-    """
-    Get download progress.
+    """Get download progress.
 
     Returns current status and progress of data download.
     """
@@ -149,11 +150,11 @@ async def get_download_progress(
         progress = 100.0
     elif execution.status == TaskStatus.RUNNING:
         if execution.start_time:
-            now = datetime.now(UTC)
+            now = datetime.now(timezone.utc)
             st = execution.start_time
             # Handle naive vs aware datetime comparison
             if st.tzinfo is None:
-                st = st.replace(tzinfo=UTC)
+                st = st.replace(tzinfo=timezone.utc)
             elapsed = (now - st).total_seconds()
             # Simple progress estimate (could be improved with actual progress tracking)
             progress = min(50.0, elapsed * 2)
@@ -172,7 +173,7 @@ async def get_download_progress(
         message=execution.error_message if execution.status == TaskStatus.FAILED else None,
         rows_processed=execution.rows_after,
         started_at=execution.start_time,
-        estimated_completion=datetime.fromtimestamp(estimated_completion, UTC)
+        estimated_completion=datetime.fromtimestamp(estimated_completion, timezone.utc)
         if estimated_completion
         else None,
     )
@@ -184,8 +185,7 @@ async def get_download_result(
     current_user: CurrentUser,
     db: AsyncSession = Depends(get_db),
 ) -> APIResponse:
-    """
-    Get download result data.
+    """Get download result data.
 
     Returns the actual data from completed download.
     For successful downloads, returns the data rows.

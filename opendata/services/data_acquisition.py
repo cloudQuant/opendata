@@ -1,5 +1,4 @@
-"""
-Data acquisition service.
+"""Data acquisition service.
 
 Handles execution of akshare data interface calls and database storage.
 """
@@ -8,7 +7,7 @@ import asyncio
 import functools
 import hashlib
 from concurrent.futures import ThreadPoolExecutor
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 
 import pandas as pd
@@ -35,8 +34,7 @@ from opendata.utils.helpers import (
 
 
 class DataAcquisitionService:
-    """
-    Service for acquiring financial data using akshare.
+    """Service for acquiring financial data using akshare.
 
     Handles data retrieval, validation, and storage with progress tracking.
     """
@@ -45,7 +43,8 @@ class DataAcquisitionService:
     _akshare_executor = ThreadPoolExecutor(max_workers=8, thread_name_prefix="akshare")
 
     def __init__(self) -> None:
-        self._active_executions: dict[int, dict] = {}
+        """Initialize the service with empty active-execution tracking."""
+        self._active_executions: dict[int, dict[str, Any]] = {}
 
     async def execute_download(
         self,
@@ -53,15 +52,22 @@ class DataAcquisitionService:
         interface_id: int,
         parameters: dict[str, Any],
         db: AsyncSession,
+        *,
+        data_db: AsyncSession,
     ) -> int | None:
-        """
-        Execute data download for an interface.
+        """Execute a data download for one interface.
+
+        Metadata (interface, execution status, table registry) is read
+        and written on the main-database session; the interface data
+        table itself is created and filled on the data-warehouse
+        session (FR-17 session routing fix).
 
         Args:
             execution_id: Task execution record ID
             interface_id: Data interface to execute
             parameters: Parameters for the interface
-            db: Database session
+            db: Main-database session (metadata and execution state)
+            data_db: Data-warehouse session (interface data tables)
 
         Returns:
             Number of rows affected or None if failed
@@ -91,7 +97,7 @@ class DataAcquisitionService:
         self._active_executions[execution_id] = {
             "interface_id": interface_id,
             "parameters": parameters,
-            "started_at": datetime.now(UTC),
+            "started_at": datetime.now(timezone.utc),
         }
 
         try:
@@ -104,18 +110,22 @@ class DataAcquisitionService:
             if data is None or (isinstance(data, pd.DataFrame) and data.empty):
                 logger.warning(f"Interface {interface.name} returned no data")
                 execution.status = TaskStatus.COMPLETED
-                execution.end_time = datetime.now(UTC)
+                execution.end_time = datetime.now(timezone.utc)
                 execution.rows_after = 0
                 await db.commit()
                 return 0
 
-            # Store data in database (single transaction for consistency)
+            # Store data (data table on the warehouse session, metadata
+            # on the main session); commit the warehouse transaction
+            # first so a later main-db failure leaves idempotent data.
             rows_affected = await self._store_data(
                 data=data,
                 interface=interface,
                 execution_id=execution_id,
                 db=db,
+                data_db=data_db,
             )
+            await data_db.commit()
             await db.commit()
 
             return rows_affected
@@ -124,7 +134,7 @@ class DataAcquisitionService:
             logger.error(f"Data acquisition failed for {interface.name}: {e}")
             execution.status = TaskStatus.FAILED
             execution.error_message = str(e)
-            execution.end_time = datetime.now(UTC)
+            execution.end_time = datetime.now(timezone.utc)
             await db.commit()
             raise
 
@@ -138,29 +148,35 @@ class DataAcquisitionService:
         parameters: dict[str, Any],
         timeout: int | None = None,
     ) -> pd.DataFrame | None:
-        """
-        Call akshare function with parameters.
+        """Call an upstream interface function with parameters.
+
+        A1.7 staging: fetches run through the legacy akshare call until
+        P0 fetchers register with the provider registry (A2.4); the
+        direct import is quarantined here and tracked by the zero-dep
+        baseline.
 
         Args:
             interface: Data interface definition
             parameters: Function parameters
+            timeout: Optional timeout in seconds; the configured
+                default applies when None or non-positive
 
         Returns:
             DataFrame with data or None
         """
         try:
-            # Get the akshare module function
+            # Get the upstream module function
             func = getattr(ak, interface.name, None)
 
             if func is None:
                 raise AttributeError(f"akshare function {interface.name} not found")
 
-            # Build arguments
-            kwargs = {}
-            for param_name, param_value in parameters.items():
-                # Skip None values
-                if param_value is not None:
-                    kwargs[param_name] = param_value
+            # Build arguments, skipping None values
+            kwargs = {
+                param_name: param_value
+                for param_name, param_value in parameters.items()
+                if param_value is not None
+            }
 
             # Call function (run in dedicated thread pool for blocking calls)
             # Use functools.partial instead of lambda to snapshot kwargs
@@ -206,17 +222,20 @@ class DataAcquisitionService:
         interface: DataInterface,
         execution_id: int,
         db: AsyncSession,
+        *,
+        data_db: AsyncSession,
     ) -> int:
-        """
-        Store data in database.
+        """Store fetched data and refresh its table registry entry.
 
-        Creates table if needed and inserts data.
+        The data table is created and filled on the data-warehouse
+        session; the registry metadata lives on the main session.
 
         Args:
             data: DataFrame to store
             interface: Source interface
             execution_id: Associated execution record
-            db: Database session
+            db: Main-database session (metadata)
+            data_db: Data-warehouse session (data table)
 
         Returns:
             Number of rows inserted
@@ -227,36 +246,37 @@ class DataAcquisitionService:
         # Clean column names
         data.columns = self._clean_column_names(data.columns)
 
-        # Create table if not exists
+        # Create table if not exists (data warehouse)
         await self._create_table_if_not_exists(
             table_name=table_name,
             data=data,
-            db=db,
+            data_db=data_db,
         )
 
-        # Insert data
+        # Insert data (data warehouse)
         rows_affected = await self._insert_data(
             table_name=table_name,
             data=data,
-            db=db,
+            data_db=data_db,
         )
 
-        # Update or create data table metadata
+        # Update or create data table metadata (main database)
         await self._update_table_metadata(
             table_name=table_name,
             interface_id=interface.id,
             execution_id=execution_id,
             row_count=rows_affected,
             db=db,
+            data_db=data_db,
         )
 
         return rows_affected
 
     def _generate_table_name(self, interface_name: str) -> str:
-        """Generate SQL table name from interface name."""
+        """Generate a SQL table name from an interface name."""
         return generate_table_name(interface_name)
 
-    def _clean_column_names(self, columns) -> list[str]:
+    def _clean_column_names(self, columns: object) -> list[str]:
         """Clean DataFrame column names for SQL."""
         return clean_column_names(columns)
 
@@ -264,9 +284,9 @@ class DataAcquisitionService:
         self,
         table_name: str,
         data: pd.DataFrame,
-        db: AsyncSession,
+        data_db: AsyncSession,
     ) -> None:
-        """Create table if it doesn't exist."""
+        """Create the data table on the warehouse session if missing."""
         # Build CREATE TABLE statement
         columns_defs = []
         for col in data.columns:
@@ -304,15 +324,15 @@ class DataAcquisitionService:
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         """
 
-        await db.execute(text(create_sql))
+        await data_db.execute(text(create_sql))
 
     async def _insert_data(
         self,
         table_name: str,
         data: pd.DataFrame,
-        db: AsyncSession,
+        data_db: AsyncSession,
     ) -> int:
-        """Insert data into table using INSERT IGNORE to avoid duplicates."""
+        """Insert data into the warehouse table with INSERT IGNORE dedup."""
         if data.empty:
             return 0
 
@@ -339,6 +359,7 @@ class DataAcquisitionService:
         placeholders = ", ".join([f":{col}" for col in columns])
 
         quoted_name = safe_table_name(table_name)
+        # safe_table_name validates against ^[A-Za-z_][A-Za-z0-9_]*$ (bandit B608 skip rationale).
         insert_sql = f"""
             INSERT IGNORE INTO {quoted_name} ({columns_str})
             VALUES ({placeholders})
@@ -352,10 +373,10 @@ class DataAcquisitionService:
 
         for i in range(0, total_records, batch_size):
             batch = records[i : i + batch_size]
-            result = await db.execute(text(insert_sql), batch)
+            result = await data_db.execute(text(insert_sql), batch)
             rows_inserted += get_rowcount(result)
             if i > 0 and i % flush_interval == 0:
-                await db.flush()
+                await data_db.flush()
                 logger.debug(
                     f"Insert progress: {i + len(batch)}/{total_records} "
                     f"({rows_inserted} new rows so far)"
@@ -372,23 +393,37 @@ class DataAcquisitionService:
         execution_id: int,
         row_count: int,
         db: AsyncSession,
+        *,
+        data_db: AsyncSession,
     ) -> None:
-        """Update data table metadata record."""
+        """Refresh the main-database table registry for a warehouse table.
+
+        The registry row lives on the main session; the row count is
+        queried on the warehouse session where the table resides.
+
+        Args:
+            table_name: Data table name
+            interface_id: Source interface ID
+            execution_id: Associated execution record
+            row_count: Rows inserted by this run
+            db: Main-database session (registry row)
+            data_db: Data-warehouse session (row count query)
+        """
         from sqlalchemy import select
 
         # Get existing metadata
         result = await db.execute(select(DataTable).where(DataTable.table_name == table_name))
         table_meta = result.scalar_one_or_none()
 
-        # Get current total row count
+        # Get current total row count from the warehouse table
         quoted_name = safe_table_name(table_name)
-        count_result = await db.execute(text(f"SELECT COUNT(*) FROM {quoted_name}"))
+        count_result = await data_db.execute(text(f"SELECT COUNT(*) FROM {quoted_name}"))
         total_rows = count_result.scalar() or 0
 
         if table_meta:
             # Update existing
             table_meta.row_count = total_rows
-            table_meta.last_update_time = datetime.now(UTC)
+            table_meta.last_update_time = datetime.now(timezone.utc)
             table_meta.last_update_status = "success"
         else:
             # Create new
@@ -396,7 +431,7 @@ class DataAcquisitionService:
                 table_name=table_name,
                 table_comment=table_name.replace("ak_", "").replace("_", " ").title(),
                 row_count=total_rows,
-                last_update_time=datetime.now(UTC),
+                last_update_time=datetime.now(timezone.utc),
                 last_update_status="success",
             )
             db.add(table_meta)
@@ -404,8 +439,7 @@ class DataAcquisitionService:
         # Note: commit handled by caller for transaction consistency
 
     def get_progress(self, execution_id: int) -> dict[str, Any]:
-        """
-        Get progress of an active execution.
+        """Get progress of an active execution.
 
         Args:
             execution_id: Execution record ID
@@ -429,8 +463,7 @@ class DataAcquisitionService:
         }
 
     def cancel_execution(self, execution_id: int) -> bool:
-        """
-        Cancel an active execution.
+        """Cancel an active execution.
 
         Args:
             execution_id: Execution record ID
@@ -442,6 +475,3 @@ class DataAcquisitionService:
             self._active_executions.pop(execution_id, None)
             return True
         return False
-
-
-# Note: asyncio import moved to top of file

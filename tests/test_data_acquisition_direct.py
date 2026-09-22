@@ -143,7 +143,7 @@ class TestExecuteDownload:
         mock_result.scalar_one_or_none.return_value = None
         mock_db.execute.return_value = mock_result
         with pytest.raises(ValueError, match="Interface.*not found"):
-            await svc.execute_download(1, 999, {}, mock_db)
+            await svc.execute_download(1, 999, {}, mock_db, data_db=mock_db)
 
     @pytest.mark.asyncio
     async def test_execution_not_found(self):
@@ -156,7 +156,7 @@ class TestExecuteDownload:
         mock_result2.scalar_one_or_none.return_value = None
         mock_db.execute.side_effect = [mock_result1, mock_result2]
         with pytest.raises(ValueError, match="Execution.*not found"):
-            await svc.execute_download(999, 1, {}, mock_db)
+            await svc.execute_download(999, 1, {}, mock_db, data_db=mock_db)
 
 
 class TestInsertData:

@@ -169,6 +169,9 @@ runtime-evaluated-base-classes = [
 "tests/*" = ["B017", "N806", "S1", "S2", "ANN", "D"]
 # B layer: ported akshare code is checked for syntax/undefined names only.
 "akshare/**" = ["E501"]
+# Dynamic DDL for regex-validated identifiers (safe_table_name/safe_column_name,
+# ^[A-Za-z_][A-Za-z0-9_]*$) - same rationale as bandit.yaml's B608 skip.
+"opendata/services/data_acquisition.py" = ["S608"]
 # Legacy dynamic typing (upstream SDK calls, APScheduler jobs) — Any is intentional.
 "opendata/data_fetch/providers/akshare_provider.py" = ["ANN401"]
 "opendata/data_fetch/scripts/*" = ["ANN401"]
