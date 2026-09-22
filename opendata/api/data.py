@@ -19,6 +19,8 @@ from opendata.api.schemas import (
     DataDownloadResponse,
     DownloadProgressResponse,
 )
+from opendata.data.capability import Capability
+from opendata.data.registry import get_registry
 from opendata.models.interface import DataInterface
 from opendata.models.task import TaskExecution, TaskStatus
 from opendata.services.data_acquisition import DataAcquisitionService
@@ -28,6 +30,17 @@ router = APIRouter()
 
 # Service instance
 data_service = DataAcquisitionService()
+
+
+@router.get("/capabilities")
+async def list_capabilities(current_user: CurrentUser) -> list[Capability]:
+    """List registered provider capabilities (design §4.3, FR-2).
+
+    Every registered data-source capability with its routing fields
+    and verification state; unverified capabilities do not serve
+    ``source="auto"`` requests (FR-3).
+    """
+    return get_registry().capabilities()
 
 
 def _log_task_exception(task: asyncio.Task) -> None:

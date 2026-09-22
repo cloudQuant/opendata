@@ -1,5 +1,4 @@
-"""
-FastAPI application main entry point.
+"""FastAPI application main entry point.
 
 Initializes and configures the FastAPI application with all routes,
 middleware, and startup/shutdown events.
@@ -10,7 +9,7 @@ import sys
 import traceback
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -24,6 +23,7 @@ from opendata.api import api_router
 from opendata.api.rate_limit import get_limiter
 from opendata.core.config import settings
 from opendata.core.database import close_db, init_db
+from opendata.middleware.security import SecurityHeadersMiddleware
 from opendata.services.scheduler import task_scheduler
 from opendata.utils.constants import DEFAULT_SECRET_KEY
 
@@ -89,8 +89,7 @@ limiter = get_limiter()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    """
-    Application lifespan manager.
+    """Application lifespan manager.
 
     Handles startup and shutdown events.
     """
@@ -139,6 +138,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         await create_tables()
 
     await init_db()
+
+    # Register provider capabilities (A2.4): P0 domain fetchers enter
+    # the registry unverified (FR-3: excluded from source="auto"
+    # routing until cross-validation) so the capabilities API and the
+    # registry-mode interface scan can see them.
+    from opendata.data.providers import register_providers
+
+    registered = register_providers()
+    if registered:
+        logger.info(f"Registered {len(registered)} provider capabilities")
 
     # Start task scheduler (only safe in single-worker mode or with external job store)
     if settings.workers > 1 and not settings.redis_url:
@@ -216,7 +225,6 @@ if not TESTING:
     app.add_middleware(RequestLoggingMiddleware)
 
 # Security headers middleware (applied on all requests)
-from opendata.middleware.security import SecurityHeadersMiddleware
 app.add_middleware(SecurityHeadersMiddleware)
 
 # Rate limit exception handler (only in production)
@@ -283,8 +291,7 @@ async def deprecation_header_middleware(
 
 @app.get("/health")
 async def health_check() -> dict:
-    """
-    Health check endpoint.
+    """Health check endpoint.
 
     Returns application health status.
     """
@@ -316,7 +323,7 @@ async def health_check() -> dict:
             "scheduler": "running" if scheduler_running else "stopped",
         },
         "pool": pool_status,
-        "timestamp": datetime.now(UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 

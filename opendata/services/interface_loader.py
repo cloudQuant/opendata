@@ -12,6 +12,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import opendata_http as ak
 from opendata.core.database import async_session_maker
+from opendata.data.capability import Capability
+from opendata.data.domains import contract_model, display_name, require_domain
 from opendata.models.interface import (
     DataInterface,
     InterfaceCategory,
@@ -65,9 +67,15 @@ class InterfaceLoader:
     async def load_from_registry(self) -> int:
         """Load the catalog from provider-registry capabilities (FR-17).
 
-        A1.7 staging: the registry is empty until P0 fetchers
-        register (A2.4), so this branch logs and loads nothing today;
-        the row-creation shape lands with the capability registration.
+        Registry-mode interfaces are named by their domain
+        identifier so the acquisition seam routes their fetches
+        through ``ProviderRegistry.resolve_domain`` (A1.7);
+        display names and contract models come from the domain
+        registry (domains.yaml). Capabilities of the same domain
+        with different sources fold into one row.
+
+        Returns:
+            Number of interfaces loaded.
         """
         from opendata.data.registry import get_registry
 
@@ -78,8 +86,72 @@ class InterfaceLoader:
                 "(A2.4 pending); nothing to load"
             )
             return 0
+        async with async_session_maker() as db:
+            count = 0
+            for capability in capabilities:
+                if await self._load_capability_interface(capability, db):
+                    count += 1
+            await db.commit()
         logger.info(f"registry scan found {len(capabilities)} capabilities")
-        return 0
+        return count
+
+    async def _load_capability_interface(self, capability: Capability, db: AsyncSession) -> bool:
+        """Create the interface row for one capability, idempotently.
+
+        Args:
+            capability: The registered capability.
+            db: Session for the catalog write.
+
+        Returns:
+            True when a new row was created.
+        """
+        result = await db.execute(
+            select(DataInterface).where(DataInterface.name == capability.domain)
+        )
+        if result.scalar_one_or_none() is not None:
+            return False  # Already loaded
+
+        require_domain(capability.domain)  # fail closed on unregistered domains
+        category = await self._ensure_category(capability.asset_class, db)
+        contract_name = contract_model(capability.domain).__name__
+        interface = DataInterface(
+            name=capability.domain,
+            display_name=display_name(capability.domain),
+            description=(
+                f"{capability.source} capability for {capability.domain} "
+                f"({contract_name}); "
+                f"verified={capability.verified}"
+            ),
+            category_id=category.id,
+            module_path="opendata.data.providers",
+            function_name=capability.domain,
+            parameters={},
+            return_type=contract_name,
+            is_active=True,
+        )
+        db.add(interface)
+        return True
+
+    async def _ensure_category(self, name: str, db: AsyncSession) -> InterfaceCategory:
+        """Find or create an interface category by name.
+
+        Args:
+            name: Category name (registry mode: the asset class).
+            db: Session for the lookup and creation.
+
+        Returns:
+            The existing or freshly created category.
+        """
+        result = await db.execute(select(InterfaceCategory).where(InterfaceCategory.name == name))
+        category = result.scalar_one_or_none()
+        if category is not None:
+            return category
+        category = InterfaceCategory(
+            name=name, description=f"{name} data domains (registry mode)", sort_order=10
+        )
+        db.add(category)
+        await db.flush()
+        return category
 
     async def load_from_akshare(self) -> int:
         """Load all akshare interfaces into the database (legacy scan).

@@ -200,10 +200,6 @@ exclude = ["akshare", "opendata_http", "tests", "alembic", "opendata/data_fetch"
 # A1 debt is managed by docs/quality/ratchet.json (quality spec §7), not by
 # relaxing the rules above.
 
-[[tool.mypy.overrides]]
-module = "akshare.*"
-follow_imports = "skip"
-
 # A2.2: the ported tree replaces akshare/; mypy's exclude does not stop
 # import-following, so silence it explicitly like the old vendored tree.
 [[tool.mypy.overrides]]
