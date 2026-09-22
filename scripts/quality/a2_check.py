@@ -16,7 +16,9 @@ A2 is defined relative to the recorded baseline commit
 (``docs/quality/baseline.json``, written when the A0 baseline commit is created):
 the A2 set is everything added or modified since then, plus untracked files.
 Set ``A2_BASE_REF`` in CI to the target branch so a pull request is checked
-against its merge base instead.
+against its merge base instead. The A2 base is the *later* of that merge base
+and the recorded baseline, so a PR whose target predates the baseline cannot
+sweep frozen A1 files into the A2 set.
 
 The gate fails closed: if a configured baseline cannot be resolved (shallow
 clone, stale ``A2_BASE_REF``), it errors instead of reporting "nothing changed".
@@ -120,8 +122,35 @@ def _resolve_ref(ref: str) -> str | None:
     return None
 
 
+def _baseline_is_ahead(merge_base: str, baseline: str) -> bool:
+    """True when the A0 baseline is a descendant of ``merge_base``.
+
+    A merge base *older* than the A0 baseline (e.g. a pull request targeting a
+    branch that predates the baseline) would drag pre-baseline A1 files into the
+    A2 set and apply zero tolerance to legacy debt. The later of the two wins.
+    """
+    return _git("rev-list", "--count", f"{merge_base}..{baseline}").strip() not in ("", "0")
+
+
+def _checked_baseline() -> str | None:
+    """Return the recorded baseline commit, failing closed if it is unreachable."""
+    baseline = baseline_commit()
+    if baseline is None:
+        return None
+    if not _git("rev-parse", "--verify", "--quiet", f"{baseline}^{{commit}}").strip():
+        raise BaselineError(
+            f"baseline commit {baseline} is not present in this clone; "
+            "check out with full history (actions/checkout with fetch-depth: 0)."
+        )
+    return baseline
+
+
 def resolve_files(explicit: list[str] | None) -> list[str] | None:
     """Resolve the A2 file list.
+
+    The A2 base is the later of the A0 baseline commit (``docs/quality/baseline.json``)
+    and, when ``A2_BASE_REF`` is set, the merge base with that ref. The earlier
+    one would sweep already-frozen A1 files into the A2 set.
 
     Returns:
         The A2 file paths, or ``None`` when no baseline has been recorded yet
@@ -133,28 +162,24 @@ def resolve_files(explicit: list[str] | None) -> list[str] | None:
     if explicit is not None:
         return [name for name in explicit if _is_a2_candidate(name)]
 
-    env_base = os.environ.get("A2_BASE_REF", "").strip()
-    if env_base:
-        resolved = _resolve_ref(env_base)
-        if resolved is None:
-            raise BaselineError(
-                f"A2_BASE_REF={env_base!r} does not resolve to a commit; "
-                "fetch it first (actions/checkout with fetch-depth: 0)."
-            )
-        merge_base = _git("merge-base", resolved, "HEAD").strip()
-        if not merge_base:
-            raise BaselineError(f"no merge base between {resolved} and HEAD")
-        return changed_files(merge_base)
+    baseline = _checked_baseline()
 
-    baseline = baseline_commit()
-    if baseline is None:
-        return None
-    if not _git("rev-parse", "--verify", "--quiet", f"{baseline}^{{commit}}").strip():
+    env_base = os.environ.get("A2_BASE_REF", "").strip()
+    if not env_base:
+        return None if baseline is None else changed_files(baseline)
+
+    resolved = _resolve_ref(env_base)
+    if resolved is None:
         raise BaselineError(
-            f"baseline commit {baseline} is not present in this clone; "
-            "check out with full history (actions/checkout with fetch-depth: 0)."
+            f"A2_BASE_REF={env_base!r} does not resolve to a commit; "
+            "fetch it first (actions/checkout with fetch-depth: 0)."
         )
-    return changed_files(baseline)
+    merge_base = _git("merge-base", resolved, "HEAD").strip()
+    if not merge_base:
+        raise BaselineError(f"no merge base between {resolved} and HEAD")
+    if baseline is not None and _baseline_is_ahead(merge_base, baseline):
+        return changed_files(baseline)
+    return changed_files(merge_base)
 
 
 def _run(args: list[str]) -> tuple[bool, str]:
