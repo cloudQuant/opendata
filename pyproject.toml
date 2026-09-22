@@ -174,6 +174,10 @@ runtime-evaluated-base-classes = [
 # Dynamic DDL for regex-validated identifiers (safe_table_name/safe_column_name,
 # ^[A-Za-z_][A-Za-z0-9_]*$) - same rationale as bandit.yaml's B608 skip.
 "opendata/services/data_acquisition.py" = ["S608"]
+# ods writer DDL/DML builders: every identifier passes _quote()'s word-character
+# whitelist (Unicode letters allowed for source column names, backticks and
+# separators refused) and every value is a bind parameter.
+"opendata/pipeline/ods_writer.py" = ["S608"]
 # Legacy dynamic typing (upstream SDK calls, APScheduler jobs) — Any is intentional.
 "opendata/data_fetch/providers/akshare_provider.py" = ["ANN401", "S608"]
 "opendata/data_fetch/scripts/*" = ["ANN401"]
