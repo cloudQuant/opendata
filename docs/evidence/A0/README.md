@@ -58,6 +58,7 @@ A0 过程中发现并修复的既有缺陷（均非本轮引入）：
 | 12 | **`a2_check` 在基线不可解析时静默通过** | 浅克隆或失效基线会使 **A2 门禁整体失效且无提示**（`git diff` 失败被当成"无变更"） | 改为 fail-closed：先 `rev-parse --verify` 校验基线/base ref，失败即 FAIL；`--no-git` 与浅克隆两种场景已实测拦截 |
 | 13 | CI `actions/checkout` 默认 `fetch-depth: 1` | 取不到 A2 基线 commit → 门禁静默失效（与 #12 叠加） | 加 `fetch-depth: 0`；job env 设 `A2_BASE_REF: ${{ github.base_ref }}`（push 时为空则回落 `baseline.json`）；PR 额外 fetch 基线分支 |
 | 14 | **`.gitleaks.toml` 白名单过宽**（`^docs/`） | 真实 token 字面量长期藏在 `docs/evidence/` 内**不被任何扫描发现**（本文件 §1 即实例） | 收紧为「仅占位符模板 + 构建产物」，并对 `curl-auth-header` 规则**按规则**放行 markdown；反向测试：向 `docs/`、`tests/` 注入假凭证均被抓到 |
+| 15 | **`A2_BASE_REF` 直接取 PR 目标的 merge-base** | 目标分支早于 A0 基线时（`dev → master`），diff 覆盖 **161 个**文件，把冻结的 A1 存量按 A2 零容忍判 → 门禁必然失败 | 基准改为「merge-base 与基线 commit 中**较新者**」；实测：空 ref → 6、`master` → 6（原 161）、分支场景 → 1 |
 
 ## 5. 移交 A4 的发现（记录未修）
 
@@ -88,14 +89,19 @@ A2 门禁对注入的违例报错；棘轮对注入的债务报 `ruff_selfdev: 4
 | 对象回收 | 旧历史打包到仓库外 `pre-credential-rewrite.bundle`（含凭证，**用完应删除**）后 `reflog expire --expire=now --all` + `gc --prune=now` | 防止旧对象被误恢复或误推 |
 | 门禁 fail-closed | `a2_check` 先校验基线/base ref 可解析，不可解析即 FAIL，不再静默放过 | 见 §4-12 |
 | CI 加固 | `fetch-depth: 0`、`A2_BASE_REF`、PR 基线分支 fetch | 见 §4-13 |
+| A2 基准修正 | 基准取「merge-base 与 A0 基线中较新者」，避免 `dev → master` 把 A1 存量划入 A2 | 见 §4-15 |
 | 扫描面收紧 | `.gitleaks.toml` 只放行占位符与构建产物；markdown 仅对 `curl-auth-header` 规则放行 | 见 §4-14 |
 
 **对 CI 的本地等价复现**（CI 尚未在 GitHub 上真实运行，见 §3-3）：
 
 ```text
 1. 全新克隆 dev（等价 actions/checkout + fetch-depth: 0）
-2. gitleaks detect --source . --config .gitleaks.toml   → 7 commits scanned, no leaks found
-3. python scripts/quality/a2_check.py                  → OK（A2 文件 6 个）
+2. gitleaks detect --source . --config .gitleaks.toml   → 8 commits scanned, no leaks found
+3. a2_check 四种场景（均在全新克隆内实测）：
+     A2_BASE_REF 为空        → 6 个 A2 文件（回落 baseline.json）
+     A2_BASE_REF=master      → 6 个 A2 文件（原为 161 → 门禁失败，见 §4-15）
+     A2_BASE_REF=nope        → FAIL + 提示 fetch-depth: 0（fail-closed）
+     分支场景（自 0a9fba2 起） → 1 个 A2 文件（仅分支改动）
 4. make gate                                           → PASSED, gate_exit=0
 ```
 
