@@ -10,6 +10,7 @@
 | 证据文件 | 命令 | 结果 |
 |---------|------|------|
 | `gate.txt` | `make gate` | **PASSED**，`gate_exit=0`（9 项逐项通过） |
+| GitHub Actions | `CI` 工作流（push 到 dev） | **run #3 全绿**：`secret-scan`（全历史）+ `quality-gate`（mysql:8.0、alembic、`make gate`）均 success，见 §7 |
 | `pytest.txt` | `pytest tests -n 8 -m "not e2e" --cov-branch --cov-fail-under=84` | 1342 passed，覆盖率 **84.62%** ≥ 84% |
 | `quality-gates.txt` | `brand-check` / `zero-dep-check` / `quality-ratchet` / `public-api-quality` | 全部 OK |
 | `frontend.txt` | `npx eslint .` / `npx vue-tsc --noEmit` / `npx vitest run` | 0 error / 0 error / 73 passed |
@@ -23,7 +24,7 @@
 |----|------|------|------------|
 | AC-1 品牌·许可·合规 | A0 | **完成**（按本仓库实现的扫描面口径） | 品牌残留零（`quality-gates.txt`）；BSL 1.1 四要素齐备；`LICENSE-AKSHARE` + `THIRD_PARTY_NOTICES.md`；数据权利登记表 `docs/data-rights-registry.md`；双库四处一致；**凭证未入版本库**（`secret-audit.txt`：5 处上游凭证处置 + 历史清除 + 全历史 0 命中）。扫描面口径差异见 §3-1 |
 | AC-16 零上游依赖 | A2 | **已建立护栏**（全量生效在 A2） | AST 扫描器 + 违规样本自测通过；存量 6 处 `import akshare` 冻结为基线（`docs/quality/zero-dep-baseline.json`），只降不升 |
-| AC-17 工程质量门禁 | A0 | **完成** | `make gate` 全绿且逐项阻断；A1 基线与 A2 零容忍分层落地；`F821` 不再忽略；`F821`/RUF100 等新增规则已驱动 2 处修正 |
+| AC-17 工程质量门禁 | A0 | **完成** | `make gate` 全绿且逐项阻断；A1 基线与 A2 零容忍分层落地；`F821` 不再忽略；`F821`/RUF100 等新增规则已驱动 2 处修正；**CI 真实通过**（run #3，`b42ac32`，两 job 全绿） |
 | AC-19 备份与恢复 | A0 | **完成** | 脚本 `scripts/ops/backup_mysql.sh` + 手册 `docs/operations-backup-restore.md` + **演练已执行通过**（`restore-drill.txt`） |
 | AC-2/3/4/5/6/7/8/9/10/11/12/13/14/15/18 | 1A~1C | 待后续迭代 | A0 不含 |
 
@@ -33,7 +34,7 @@
 |---|----|------|------|
 | 1 | **AC-1 的 `grep -ri akshare` 扫描面口径** | 验收文档白名单只列 `opendata_http/`、`THIRD_PARTY_NOTICES.md`、`LICENSE-AKSHARE`；但零依赖扫描器自身的扫描面还含 `scripts/codemod/`、`tests/`、`docs/`，且 README／CODE_QUALITY 需**引用前身平台名**说明沿革、`docs/evidence/` 需逐字记录命令输出 | 已统一为扫描器口径并登记"沿革引用／证据"白名单（`scripts/quality/check_brand.py`）；**密钥扫描白名单已反向收紧**（见 §4-14） |
 | 2 | **内嵌 `akshare/` 目录仍在根目录** | A2 才做 `akshare/` → `opendata_http/` 的 codemod 搬运与删除 | A2 执行；届时同步移除 `pyproject.toml` 的 `packages = ["akshare"]` |
-| 3 | **CI 尚未真实跑过** | 仓库尚无 remote push；`alembic upgrade head` + `alembic check` 已在本地对 MySQL 9.4 验证通过，但 GitHub Actions 的 `mysql:8.0` 组合待首次 CI 验证。已按 CI 语义本地复现：`fetch-depth: 0` 全历史、`A2_BASE_REF` 回退、浅克隆 fail-closed（见 §4-12/13） | 首次 push 后确认；CI 已含前端三项与全历史密钥扫描 |
+| 3 | ~~CI 尚未真实跑过~~ **已闭合**：run #3（`b42ac32`）两个 job 全绿 | 首次两次失败暴露了"本地环境 ≠ 全新安装"的三处盲区（§4-16/17/18），修复后通过。本地用 py311 + 全新依赖集构建的**CI 孪生环境**复现并预演（`make gate`、a2、ratchet、全量测试均与 CI 一致） | 后续依赖漂移可先用孪生环境预演 |
 | 4 | **scheduler 显式开关（D8）** | A4 范围 | 见 §5 移交项 |
 | 5 | **前端 48 条 eslint warning** | 存量（`no-floating-promises` 等），非 error，不阻断门禁 | B4 随前端测试框架收口 |
 | 6 | **`ENABLE_SCHEDULER` / 生产启动写库** | A4 范围（设计 §8.1） | 见 §5 移交项 |
@@ -59,6 +60,9 @@ A0 过程中发现并修复的既有缺陷（均非本轮引入）：
 | 13 | CI `actions/checkout` 默认 `fetch-depth: 1` | 取不到 A2 基线 commit → 门禁静默失效（与 #12 叠加） | 加 `fetch-depth: 0`；job env 设 `A2_BASE_REF: ${{ github.base_ref }}`（push 时为空则回落 `baseline.json`）；PR 额外 fetch 基线分支 |
 | 14 | **`.gitleaks.toml` 白名单过宽**（`^docs/`） | 真实 token 字面量长期藏在 `docs/evidence/` 内**不被任何扫描发现**（本文件 §1 即实例） | 收紧为「仅占位符模板 + 构建产物」，并对 `curl-auth-header` 规则**按规则**放行 markdown；反向测试：向 `docs/`、`tests/` 注入假凭证均被抓到 |
 | 15 | **`A2_BASE_REF` 直接取 PR 目标的 merge-base** | 目标分支早于 A0 基线时（`dev → master`），diff 覆盖 **161 个**文件，把冻结的 A1 存量按 A2 零容忍判 → 门禁必然失败 | 基准改为「merge-base 与基线 commit 中**较新者**」；实测：空 ref → 6、`master` → 6（原 161）、分支场景 → 1 |
+| 16 | **`aiohttp` 从未声明**，但 vendored `akshare/__init__.py` 在模块级导入它 | CI（全新安装）上 `import akshare` 即 `ModuleNotFoundError`，测试全挂；本地环境恰好装过所以从未暴露 | 声明 `aiohttp>=3.9.0`；用 CI 孪生环境（py311+全新依赖）迭代找全缺失项 |
+| 17 | **pyjwt 类型标注跨版本漂移** | CI 解析 pyjwt 2.14（`decode() -> dict[str, Any]`），本地 2.10（返回 `Any`）→ 同一 `# type: ignore[no-any-return]` 在 CI 变"unused"，mypy 计数 35→36，棘轮失败 | 改为显式注解中间变量（两版 typing 下都成立），不依赖 ignore；连带清理被触碰文件的存量债务（UTC→timezone 等），棘轮改善 ruff 404→385 / mypy 35→34 / bandit 6→5 |
+| 18 | **FastAPI 0.141/starlette 1.6 的 `include_router` 不再平铺路由** | `app.routes` 里是惰性 `_IncludedRouter`（无 `path` 属性）→ 9 个内省 `app.routes` 的测试看到 0 路由而失败（真实请求路径 1333 个测试全过） | 改为断言 `app.openapi()["paths"]`（跨版本稳定）；顺带把 `test_cors_configured` 修成真正断言 CORSMiddleware 在栈中 |
 
 ## 5. 移交 A4 的发现（记录未修）
 
@@ -92,7 +96,7 @@ A2 门禁对注入的违例报错；棘轮对注入的债务报 `ruff_selfdev: 4
 | A2 基准修正 | 基准取「merge-base 与 A0 基线中较新者」，避免 `dev → master` 把 A1 存量划入 A2 | 见 §4-15 |
 | 扫描面收紧 | `.gitleaks.toml` 只放行占位符与构建产物；markdown 仅对 `curl-auth-header` 规则放行 | 见 §4-14 |
 
-**对 CI 的本地等价复现**（CI 尚未在 GitHub 上真实运行，见 §3-3）：
+**对 CI 的本地等价复现**（CI 已于 run #3 真实通过，本地复现作为快速回路保留）：
 
 ```text
 1. 全新克隆 dev（等价 actions/checkout + fetch-depth: 0）
@@ -105,8 +109,18 @@ A2 门禁对注入的违例报错；棘轮对注入的债务报 `ruff_selfdev: 4
 4. make gate                                           → PASSED, gate_exit=0
 ```
 
-未复现项：GitHub Actions 的 `mysql:8.0` 服务组合、`ubuntu-latest` 上的依赖安装（含
-`mini-racer` 在 Linux 的 wheel 可用性，属 A2 依赖收敛范围）。
+### CI 首次真实运行（run #1 → #3）
+
+| run | 提交 | 结果 | 失败原因 → 修复 |
+|-----|------|------|----------------|
+| #1 | `5a76aca` | failure（secret-scan **success**） | 棘轮工具版本守卫：CI 解析 ruff 0.16.8 vs 快照 0.15.20 → §4-16 前置；**pin 工具版本**（`d3ede07`） |
+| #2 | `d3ede07` | failure | pyjwt typing 漂移致 mypy 35→36（§4-17）→ 版本无关修复（`b42ac32`，同批修 aiohttp §4-16 与路由内省 §4-18） |
+| #3 | `b42ac32` | **success**（两 job 全绿） | — |
+
+`alembic upgrade head` + `alembic check` 对 CI 的 `mysql:8.0` 亦通过（此前仅在本地 9.4 验证过）。
+诊断方法：无 admin token 无法下载 CI 日志，改用 **CI 孪生环境**（conda py311 + 全新
+`pip install -e ".[web,dev]"`，工具按 pin 解析）在本地逐步复现 `make gate` 的失败点，
+修复后在孪生环境全绿后再推送——避免在慢网络上反复试错。
 
 ### 重写带来的 SHA 影响
 

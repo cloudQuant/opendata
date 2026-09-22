@@ -1,7 +1,7 @@
 # pytest (A0 baseline)
 
-date: 2026-09-22T11:01:17Z
-commit: 80ed966
+date: 2026-09-22T12:14:02Z
+commit: b42ac32
 
 ```text
 $ pytest tests -n 8 -m "not e2e" --cov-branch --cov-report=term --cov-fail-under=84
@@ -10,13 +10,12 @@ opendata/utils/helpers.py                               54      2     28      2 
 opendata/utils/serialization.py                         19      3     12      3    81%   28, 45, 47
 opendata/utils/validators.py                            80      2     44      0    98%   61-62
 ------------------------------------------------------------------------------------------------
-TOTAL                                                 4115    546    962     99    85%
+TOTAL                                                 4116    546    962     99    85%
 Coverage HTML written to dir htmlcov
 Required test coverage of 84% reached. Total coverage: 84.62%
-============================ 1342 passed in 34.43s =============================
+============================ 1342 passed in 31.86s =============================
 
 ```
 
 注：`--cov=opendata` 不统计 `akshare/`（A2 起为 `opendata_http/`）搬运层。
-连续两次独立运行均为 84.62%（546 missed）；曾观测到一次 546 → 547（84.60%），
-与 xdist `LoadScheduling` 下模块导入时机有关，属 ±1 行波动。阈值 84% 余量充足。
+本地 Python 3.13 与 CI 孪生环境（Python 3.11 + 全新依赖集）均通过。
