@@ -27,10 +27,12 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 from scripts.codemod.port_module import (  # noqa: E402
+    _INIT_UPSTREAM_PATH,
     DEFAULT_UPSTREAM_REPO,
     PORTED_PACKAGE,
     PORTED_ROOT,
     UpstreamLock,
+    _subset_init,
     port_source,
     sha256_text,
 )
@@ -137,9 +139,13 @@ def collect_drift(
                 }
             )
             continue
-        expected, result = port_source(
-            pristine_bytes.decode("utf-8"), upstream_path, lock.url, lock.commit
-        )
+        replay_text = pristine_bytes.decode("utf-8")
+        if upstream_path == _INIT_UPSTREAM_PATH:
+            # The aggregator is ported with subset filtering; the replay
+            # must apply the same deterministic filter.
+            ported_modules = {rel.removesuffix(".py") for rel in lock.files}
+            replay_text, _kept, _dropped = _subset_init(replay_text, ported_modules)
+        expected, result = port_source(replay_text, upstream_path, lock.url, lock.commit)
         actual = ported.read_text(encoding="utf-8")
         matches = sha256_text(actual) == result.ported_sha256 == sha256_text(expected)
         if not matches:

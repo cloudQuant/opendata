@@ -40,6 +40,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from loguru import logger
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 UPSTREAM_PACKAGE = "akshare"
 PORTED_PACKAGE = "opendata_http"
@@ -97,6 +99,22 @@ MANUAL_EDITS: tuple[ManualEdit, ...] = (
         upstream_path="akshare/option/option_em.py",
         description="eastmoney site token -> EM_API_TOKEN env var",
         transforms=((r'"token": "[^"]*",', '"token": os.environ.get("EM_API_TOKEN", ""),'),),
+    ),
+    ManualEdit(
+        upstream_path="akshare/datasets.py",
+        description="akshare.data resource package never existed upstream; "
+        "fail closed with a clear error (A2.3 标注不可用)",
+        transforms=(
+            (
+                r'    with resources\.path\("opendata_http\.data", file\) as f:\n'
+                r"        data_file_path = f\n"
+                r"        return data_file_path",
+                "    raise RuntimeError(\n"
+                '        f"resource {file!r} is unavailable: the upstream akshare.data "\n'
+                '        "package never existed (A2.3); see docs/port-report.md"\n'
+                "    )",
+            ),
+        ),
     ),
 )
 
@@ -402,6 +420,108 @@ def verify_upstream(upstream_repo: Path, lock: UpstreamLock) -> None:
         )
 
 
+_INIT_UPSTREAM_PATH = f"{UPSTREAM_PACKAGE}/__init__.py"
+
+
+_ALIAS_LINE_RE = re.compile(r"^([A-Za-z_]\w*) = ([A-Za-z_]\w*)\s*$")
+
+
+def _imported_names(block: list[str]) -> set[str]:
+    """Collect the names a from-import block binds.
+
+    Handles ``from x import a, b as c`` (defines b's alias c) and
+    parenthesized multi-line blocks.
+    """
+    joined = "".join(block)
+    head, _, names_part = joined.partition(" import ")
+    names_part = names_part.strip()
+    if names_part.startswith("("):
+        names_part = names_part.removeprefix("(").removesuffix(")")
+    bound: set[str] = set()
+    for name in names_part.split(","):
+        name = name.strip()
+        if not name:
+            continue
+        if " as " in name:
+            name = name.split(" as ")[1].strip()
+        bound.add(name)
+    return bound
+
+
+def _subset_init(source: str, ported_modules: set[str]) -> tuple[str, int, int]:
+    """Filter the aggregator ``__init__.py`` to the ported modules only.
+
+    Design §5.2 rule 2: the mirror keeps the same-name exports for
+    the ported subset; imports of unported modules are dropped so the
+    flat ``opendata_http.<function>`` API works without pulling the
+    whole upstream tree. Matching is MODULE-level (``a/b/c``), so a
+    partially ported submodule (single files) keeps exactly its own
+    imports. Handles one-line and parenthesized multi-line import
+    blocks, and drops module-level alias assignments (``new = old``)
+    whose right-hand name is no longer defined after filtering.
+
+    Args:
+        source: The pristine upstream ``__init__.py`` text.
+        ported_modules: Ported module paths without ``.py`` (e.g.
+            ``{"utils/token_process", "stock/cons"}``).
+
+    Returns:
+        The filtered source, kept-import count, dropped-statement count.
+    """
+    lines = source.splitlines(keepends=True)
+    # Pass 1: decide import blocks and collect the names they bind.
+    blocks: dict[int, tuple[list[str], bool, int]] = {}
+    defined: set[str] = set()
+    kept = 0
+    dropped = 0
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        match = re.match(rf"^from ({UPSTREAM_PACKAGE}[.\w]*) import ", line)
+        if match is None:
+            index += 1
+            continue
+        block = [line]
+        end = index
+        if line.rstrip().endswith("("):
+            end = index + 1
+            while end < len(lines) and not lines[end].rstrip().endswith(")"):
+                block.append(lines[end])
+                end += 1
+            if end < len(lines):
+                block.append(lines[end])
+        module_path = match.group(1).removeprefix(UPSTREAM_PACKAGE + ".")
+        keep = module_path == "" or module_path.replace(".", "/") in ported_modules
+        blocks[index] = (block, keep, end)
+        if keep:
+            defined |= _imported_names(block)
+            kept += 1
+        else:
+            dropped += 1
+        index = end + 1
+
+    # Pass 2: rebuild, dropping unported blocks and dangling aliases.
+    out: list[str] = []
+    index = 0
+    while index < len(lines):
+        entry = blocks.get(index)
+        if entry is not None:
+            block, keep, end = entry
+            if keep:
+                out.extend(block)
+            index = end + 1
+            continue
+        line = lines[index]
+        alias = _ALIAS_LINE_RE.match(line.strip())
+        if alias is not None and alias.group(2) not in defined:
+            dropped += 1
+            index += 1
+            continue
+        out.append(line)
+        index += 1
+    return "".join(out), kept, dropped
+
+
 def port_submodule(
     submodule: str,
     *,
@@ -409,10 +529,13 @@ def port_submodule(
     lock: UpstreamLock,
     dry_run: bool = False,
 ) -> list[PortResult]:
-    """Port one upstream submodule directory into the target package.
+    """Port one upstream submodule (or top-level file) into the target.
 
     Args:
-        submodule: Submodule name under ``akshare/`` (e.g. ``utils``).
+        submodule: Submodule name under ``akshare/`` (e.g. ``utils``)
+            or a top-level file name (e.g. ``datasets``); the special
+            name ``__init__`` ports the aggregator with subset
+            filtering.
         upstream_repo: Clean local clone at the locked commit.
         lock: The baseline lock, updated in place for every file.
         dry_run: Compute results without writing files.
@@ -424,10 +547,24 @@ def port_submodule(
         ValueError: If the submodule does not exist upstream.
     """
     source_dir = upstream_repo / UPSTREAM_PACKAGE / submodule
-    if not source_dir.is_dir():
+    if not source_dir.exists() and source_dir.with_suffix(".py").is_file():
+        source_dir = source_dir.with_suffix(".py")
+    if not source_dir.exists():
+        # Dotted submodule-internal path, e.g. stock_feature.stock_hist_em.
+        dotted = upstream_repo / UPSTREAM_PACKAGE / Path(*submodule.split("."))
+        if not dotted.exists() and dotted.with_suffix(".py").is_file():
+            dotted = dotted.with_suffix(".py")
+        if dotted.exists():
+            source_dir = dotted
+    if source_dir.is_file():
+        candidates = [source_dir]
+    elif source_dir.is_dir():
+        candidates = sorted(source_dir.rglob("*"))
+    else:
         raise ValueError(f"unknown submodule {submodule!r}: {source_dir} does not exist")
+    ported_modules = {rel.removesuffix(".py") for rel in lock.files}
     results: list[PortResult] = []
-    for path in sorted(source_dir.rglob("*")):
+    for path in candidates:
         if not path.is_file() or "__pycache__" in path.parts:
             continue
         upstream_path = path.relative_to(upstream_repo).as_posix()
@@ -450,8 +587,19 @@ def port_submodule(
                 result.status = "skipped-identical"
         else:
             text = path.read_text(encoding="utf-8")
+            pristine_sha = sha256_text(text)
+            if upstream_path == _INIT_UPSTREAM_PATH:
+                text, kept_imports, dropped_imports = _subset_init(text, ported_modules)
+                logger.info(
+                    f"init subset: kept {kept_imports} import blocks "
+                    f"({dropped_imports} dropped for unported submodules)"
+                )
             payload, result = port_source(text, upstream_path, lock.url, lock.commit)
             result.ported_path = target.relative_to(PORTED_ROOT.parent).as_posix()
+            if upstream_path == _INIT_UPSTREAM_PATH:
+                # The lock's baseline must reference the PRISTINE upstream
+                # file, not the subset-filtered porting input.
+                result.upstream_sha256 = pristine_sha
             existing_text = target.read_text(encoding="utf-8") if target.exists() else None
             if existing_text is not None and sha256_text(existing_text) == result.ported_sha256:
                 result.status = "skipped-identical"
