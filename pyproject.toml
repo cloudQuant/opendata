@@ -116,7 +116,13 @@ include = ["opendata*", "opendata_http*"]
 # shipped without the ported site scripts. package-data patterns are
 # per-package (no recursion), so subpackages with resources need their
 # own entries.
-opendata = ["py.typed", "data/authority.json", "data/domains.yaml", "data/mappings/*.yaml"]
+opendata = [
+    "py.typed",
+    "data/authority.json",
+    "data/domains.yaml",
+    "data/mappings/*.yaml",
+    "pipeline/schedules.yaml",
+]
 opendata_http = ["*.dat", "*.json", "*.js"]
 "opendata_http.file_fold" = ["*.json"]
 

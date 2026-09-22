@@ -149,15 +149,22 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     if registered:
         logger.info(f"Registered {len(registered)} provider capabilities")
 
-    # Start task scheduler (only safe in single-worker mode or with external job store)
-    if settings.workers > 1 and not settings.redis_url:
-        logger.warning(
-            f"⚠️  Scheduler DISABLED: running {settings.workers} workers without Redis. "
-            "APScheduler in-memory store would cause duplicate task execution. "
-            "Set WORKERS=1 or configure REDIS_URL."
-        )
-    else:
+    # Scheduler ownership is explicit (design §9.3): production without
+    # ENABLE_SCHEDULER fails startup instead of silently disabling, and
+    # multi-worker without Redis degrades to "scheduler off + warning"
+    # rather than running every job once per worker.
+    from opendata.pipeline.scheduling import scheduler_decision
+
+    decision = scheduler_decision(
+        enable_scheduler=settings.enable_scheduler,
+        is_production=settings.is_production,
+        redis_url=settings.redis_url,
+        workers=settings.workers,
+    )
+    if decision.enabled:
         await task_scheduler.start()
+    else:
+        logger.warning(f"Scheduler DISABLED: {decision.reason}")
 
     logger.info("Application startup complete")
 

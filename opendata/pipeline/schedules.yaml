@@ -1,0 +1,30 @@
+# Built-in schedule templates (design §9.3).
+#
+# Job definitions are data, not code: the source identifiers used here
+# are routing labels (design §4.4), and keeping them out of the runtime
+# *.py files is what the zero-dependency assertion (AC-16) requires.
+#
+# The 17:00/18:00 staggering is a placeholder: the real calibration
+# ("akshare 当日日线未必已更新") needs a live run and stays an open item.
+version: 1
+templates:
+  - name: p0-stock-daily-incremental
+    cron: "30 17 * * 1-5"
+    kind: incremental
+    payload: {domain: stock_daily, source: akshare, window: last-trading-day}
+    note: "17:00/18:00 错峰窗口待真机校准（当日日线更新时间实测后调窗）"
+  - name: p0-weekly-full-cross-check
+    cron: "0 2 * * 0"
+    kind: full_check
+    payload: {domain: stock_daily, window: full}
+    note: "周末全量校对，兼作一致性收敛"
+  - name: partition-maintenance
+    cron: "0 3 * * *"
+    kind: partition_maintenance
+    payload: {years_ahead: "2"}
+    note: "每日检查分区上界，落后即 REORGANIZE（A4.3）"
+  - name: freshness-check
+    cron: "30 8 * * *"
+    kind: freshness
+    payload: {domains: p0}
+    note: "新鲜度与告警矩阵（A4.8）"

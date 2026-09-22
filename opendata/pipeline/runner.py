@@ -47,7 +47,9 @@ if TYPE_CHECKING:
     #: Write one shard frame into ods; returns rows written.
     WriteOds = Callable[["pd.DataFrame"], int]
     #: Step hooks (A4.5 / A4.6 / §10.2); None means the step is skipped.
-    Hook = Callable[["PipelineContext"], Awaitable[None]]
+    #: Hooks may return a value (their stats/summary) - the runner
+    #: ignores it, callers and tests use it.
+    Hook = Callable[["PipelineContext"], Awaitable[object]]
 
 
 @dataclass(frozen=True)
@@ -84,6 +86,13 @@ class PipelineSpec:
     key: tuple[str, ...]
     symbols: Sequence[str]
     shard_size: int = 500
+
+    @property
+    def table(self) -> str:
+        """The ods table this pipeline writes (derived, design §8.1)."""
+        from opendata.data.domains import ods_table
+
+        return ods_table(self.domain, self.source)
 
 
 @dataclass(frozen=True)

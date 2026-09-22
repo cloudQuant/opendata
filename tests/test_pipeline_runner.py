@@ -250,9 +250,13 @@ class TestPipelineRun:
 
 @pytest.mark.e2e
 class TestInterruptedResumeAgainstMysql:
-    """Design verification: interrupt, then resume skips done shards."""
+    """Design verification: interrupt, then resume skips done shards.
 
-    TABLE = "ods_stock_daily_akshare"
+    The fixture uses a probe table (never the shipped one): an e2e suite
+    must not drop a migrated table it did not create.
+    """
+
+    TABLE = "_probe_pipeline_runner"
 
     @pytest.fixture
     def warehouse(self):
@@ -273,7 +277,7 @@ class TestInterruptedResumeAgainstMysql:
                 Column("close", "double", nullable=False),
             ],
             key=("symbol", "trade_date"),
-        )
+        ).replace("ods_stock_daily_akshare", self.TABLE)
         with engine.begin() as connection:
             connection.execute(text(f"DROP TABLE IF EXISTS `{self.TABLE}`"))
             connection.execute(text(ddl))
@@ -363,7 +367,7 @@ class TestInterruptedResumeAgainstMysql:
         with warehouse.connect() as connection:
             rows = (
                 connection.execute(
-                    text("SELECT symbol FROM `ods_stock_daily_akshare` ORDER BY symbol")
+                    text("SELECT symbol FROM `_probe_pipeline_runner` ORDER BY symbol")
                 )
                 .scalars()
                 .all()

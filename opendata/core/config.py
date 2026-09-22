@@ -100,7 +100,13 @@ class Settings(BaseSettings):
     emails_from_name: str = Field(default="opendata", description="From email name")
 
     # Task Scheduler Settings
-    enable_scheduler: bool = Field(default=True, description="Enable task scheduler")
+    enable_scheduler: bool | None = Field(
+        default=None,
+        description=(
+            "ENABLE_SCHEDULER: explicit scheduler ownership (design §9.3). "
+            "Required in production; unset means the scheduler must not start."
+        ),
+    )
     scheduler_bootstrap_on_startup: bool = Field(
         default=True, description="Bootstrap scheduler on startup"
     )
