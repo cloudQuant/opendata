@@ -1,5 +1,4 @@
-"""
-Interface loader service.
+"""Interface loader service.
 
 Discovers and loads akshare data interface definitions.
 """
@@ -22,8 +21,7 @@ from opendata.models.interface import (
 
 
 class InterfaceLoader:
-    """
-    Service for loading akshare interfaces into the database.
+    """Service for loading akshare interfaces into the database.
 
     Discovers akshare functions and creates interface definitions
     with metadata for use in the web interface.
@@ -46,12 +44,48 @@ class InterfaceLoader:
         "economic_cicc_gold_spot": "economic",
     }
 
-    async def load_from_akshare(self) -> int:
-        """
-        Load all akshare interfaces into database.
+    async def load_interfaces(self) -> int:
+        """Load the interface catalog honouring the scan-source switch (A1.7).
 
         Returns:
-            Number of interfaces loaded
+            Number of interfaces loaded.
+
+        Raises:
+            ValueError: On an unknown scan-source value (fail closed).
+        """
+        from opendata.core.config import settings
+
+        source = settings.interface_scan_source
+        if source == "legacy":
+            return await self.load_from_akshare()
+        if source == "registry":
+            return await self.load_from_registry()
+        raise ValueError(f"unknown interface_scan_source {source!r} (legacy | registry)")
+
+    async def load_from_registry(self) -> int:
+        """Load the catalog from provider-registry capabilities (FR-17).
+
+        A1.7 staging: the registry is empty until P0 fetchers
+        register (A2.4), so this branch logs and loads nothing today;
+        the row-creation shape lands with the capability registration.
+        """
+        from opendata.data.registry import get_registry
+
+        capabilities = get_registry().capabilities()
+        if not capabilities:
+            logger.warning(
+                "interface_scan_source=registry but no capabilities registered yet "
+                "(A2.4 pending); nothing to load"
+            )
+            return 0
+        logger.info(f"registry scan found {len(capabilities)} capabilities")
+        return 0
+
+    async def load_from_akshare(self) -> int:
+        """Load all akshare interfaces into the database (legacy scan).
+
+        Returns:
+            Number of interfaces loaded.
         """
         async with async_session_maker() as db:
             # Ensure categories exist
@@ -63,15 +97,26 @@ class InterfaceLoader:
             # Load interfaces
             count = 0
             for func_name, func in functions:
-                try:
-                    await self._load_interface(func_name, func, db)
+                if await self._load_function_safe(func_name, func, db):
                     count += 1
-                except Exception as e:
-                    logger.warning(f"Failed to load interface {func_name}: {e}")
 
             await db.commit()
             logger.info(f"Loaded {count} interfaces from akshare")
             return count
+
+    async def _load_function_safe(
+        self,
+        func_name: str,
+        func: Any,  # noqa: ANN401
+        db: AsyncSession,
+    ) -> bool:
+        """Load one interface, reporting failures instead of raising."""
+        try:
+            await self._load_interface(func_name, func, db)
+        except Exception as e:
+            logger.warning(f"Failed to load interface {func_name}: {e}")
+            return False
+        return True
 
     async def _ensure_categories(self, db: AsyncSession) -> None:
         """Ensure all interface categories exist."""
@@ -97,8 +142,7 @@ class InterfaceLoader:
         await db.commit()
 
     def _discover_akshare_functions(self) -> list[tuple[str, Any]]:
-        """
-        Discover all public functions in akshare module.
+        """Discover all public functions in akshare module.
 
         Returns:
             List of (function_name, function) tuples

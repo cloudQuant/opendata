@@ -3,17 +3,18 @@
 Handles execution of akshare data interface calls and database storage.
 """
 
+from __future__ import annotations
+
 import asyncio
 import functools
 import hashlib
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 from loguru import logger
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
 import akshare as ak
 from opendata.models.data_table import DataTable
@@ -31,6 +32,11 @@ from opendata.utils.helpers import (
     safe_column_name,
     safe_table_name,
 )
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from opendata.data.protocol import Fetcher, FetchResult
 
 
 class DataAcquisitionService:
@@ -101,11 +107,11 @@ class DataAcquisitionService:
         }
 
         try:
-            # Execute akshare function
+            # Execute the interface fetch (registry-routed with legacy
+            # fallback, A1.7)
             logger.info(f"Executing interface {interface.name} with parameters: {parameters}")
 
-            # Call akshare function
-            data = await self._call_akshare_function(interface, parameters)
+            data = await self._fetch_interface_data(interface, parameters)
 
             if data is None or (isinstance(data, pd.DataFrame) and data.empty):
                 logger.warning(f"Interface {interface.name} returned no data")
@@ -141,6 +147,74 @@ class DataAcquisitionService:
         finally:
             # Cleanup tracking
             self._active_executions.pop(execution_id, None)
+
+    async def _fetch_interface_data(
+        self,
+        interface: DataInterface,
+        parameters: dict[str, Any],
+    ) -> pd.DataFrame | None:
+        """Fetch interface data through the provider routing layer.
+
+        A1.7 seam: registry-catalog interfaces are named by their
+        domain identifier, so the fetch dispatches through
+        ``ProviderRegistry.resolve_domain``. Until P0 fetchers
+        register (A2.4) the lookup misses and the legacy direct call
+        covers - its import is quarantined in
+        ``_call_akshare_function`` and tracked by the zero-dep
+        baseline.
+
+        Args:
+            interface: Data interface definition
+            parameters: Fetch parameters (None values skipped)
+
+        Returns:
+            DataFrame with data or None
+        """
+        fetcher = self._resolve_fetcher(interface)
+        if fetcher is None:
+            return await self._call_akshare_function(interface, parameters)
+        kwargs = {name: value for name, value in parameters.items() if value is not None}
+        result = fetcher.fetch(**kwargs)
+        return self._as_frame(result)
+
+    def _resolve_fetcher(self, interface: DataInterface) -> Fetcher[Any, Any] | None:
+        """Resolve the registry fetcher for an interface, None when unregistered.
+
+        Args:
+            interface: Data interface definition
+
+        Returns:
+            The routed fetcher, or None when no capability serves the
+            interface's domain (legacy fallback applies).
+        """
+        from opendata.data.registry import get_registry
+
+        try:
+            fetcher = get_registry().resolve_domain(interface.name)
+        except LookupError:
+            logger.debug(f"no registry capability for interface {interface.name}; legacy path")
+            return None
+        logger.info(
+            f"routing interface {interface.name} to source "
+            f"{fetcher.capability.source} via provider registry"
+        )
+        return fetcher
+
+    def _as_frame(self, result: FetchResult) -> pd.DataFrame | None:
+        """Convert a fetcher result into the DataFrame the storage path expects.
+
+        Args:
+            result: Contract models or a ready DataFrame.
+
+        Returns:
+            The DataFrame, or None for an empty model sequence.
+        """
+        if isinstance(result, pd.DataFrame):
+            return result
+        rows = list(result)
+        if not rows:
+            return None
+        return type(rows[0]).to_frame(rows)
 
     async def _call_akshare_function(
         self,

@@ -195,6 +195,28 @@ class ProviderRegistry:
             )
         raise LookupError(f"all auto candidates for {asset_class}/{domain} are unavailable")
 
+    def resolve_domain(self, domain: str, *, source: str = "auto") -> Fetcher[Any, Any]:
+        """Route by domain identifier alone (catalog-facing, FR-17).
+
+        Domains are unique across asset classes (domains.yaml), so
+        matching by domain is unambiguous: the first capability found
+        supplies the asset class for the full routing rules.
+
+        Args:
+            domain: Domain identifier, e.g. ``stock_daily``.
+            source: ``"auto"`` or an explicit source name.
+
+        Returns:
+            The resolved fetcher.
+
+        Raises:
+            LookupError: If no capability is registered for the domain.
+        """
+        for fetcher in self._fetchers.values():
+            if fetcher.capability.domain == domain:
+                return self.resolve(fetcher.capability.asset_class, domain, source=source)
+        raise LookupError(f"no capability registered for domain {domain!r}")
+
     def _matches(
         self,
         capability: Capability,

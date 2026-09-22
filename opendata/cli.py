@@ -1,5 +1,4 @@
-"""
-Command-line interface for opendata.
+"""Command-line interface for opendata.
 
 Provides CLI commands for managing the application.
 """
@@ -18,7 +17,7 @@ from opendata.services.interface_loader import InterfaceLoader
 
 @click.group()
 def cli() -> None:
-    """opendata CLI - financial data platform."""
+    """Opendata CLI - financial data platform."""
 
 
 @cli.command()
@@ -74,7 +73,7 @@ def load_interfaces(categories: str) -> None:
 
     async def _load() -> None:
         loader = InterfaceLoader()
-        count = await loader.load_from_akshare()
+        count = await loader.load_interfaces()
         logger.info(f"Loaded {count} interfaces from akshare")
 
     asyncio.run(_load())

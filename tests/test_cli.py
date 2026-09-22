@@ -98,14 +98,14 @@ class TestCLI:
         from opendata.cli import cli
 
         loader = MagicMock()
-        loader.load_from_akshare = AsyncMock(return_value=10)
+        loader.load_interfaces = AsyncMock(return_value=10)
 
         runner = CliRunner()
         with patch("opendata.cli.InterfaceLoader", return_value=loader):
             result = runner.invoke(cli, ["load-interfaces"])
 
         assert result.exit_code == 0
-        loader.load_from_akshare.assert_awaited_once()
+        loader.load_interfaces.assert_awaited_once()
 
     def test_cli_create_admin_command(self):
         """Test create-admin command."""

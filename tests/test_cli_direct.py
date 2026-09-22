@@ -71,7 +71,7 @@ class TestLoadInterfaces:
     def test_load(self):
         runner = CliRunner()
         mock_loader = MagicMock()
-        mock_loader.load_from_akshare = AsyncMock(return_value=10)
+        mock_loader.load_interfaces = AsyncMock(return_value=10)
         with patch("opendata.cli.InterfaceLoader", return_value=mock_loader):
             result = runner.invoke(cli, ["load-interfaces"])
         assert result.exit_code == 0
