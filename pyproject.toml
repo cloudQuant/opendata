@@ -33,6 +33,9 @@ dependencies = [
     "beautifulsoup4>=4.12.0",
     "lxml>=5.0.0",
     "openpyxl>=3.1.0",
+    # The ported tree reads legacy .xls files (CSI index files) via
+    # pandas.read_excel, which needs xlrd for the old binary format.
+    "xlrd>=2.0.1",
     "pandas>=2.2.3",
     "numpy>=2.1.3",
     "html5lib>=1.1",
