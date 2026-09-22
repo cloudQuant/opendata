@@ -107,7 +107,7 @@ Repository = "https://github.com/cloudQuant/opendata"
 include = ["opendata*", "akshare*"]
 
 [tool.setuptools.package-data]
-opendata = ["py.typed"]
+opendata = ["py.typed", "data/authority.json"]
 akshare = ["*.dat", "*.json", "category_mapping/*"]
 
 [tool.ruff]
