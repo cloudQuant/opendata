@@ -154,7 +154,12 @@ class TestLiveReplay:
                 version = connection.execute(
                     text("SELECT version_num FROM alembic_version_data")
                 ).scalar()
-            assert version == "0001_ods_dwd_p0"
+            revisions = {revision for revision, _ in _load_migrations().values()}
+            downs = {down for _, down in _load_migrations().values() if down is not None}
+            assert version in revisions - downs  # the single head of the chain
         finally:
+            # Leave the shared warehouse at head: other e2e suites
+            # (diff report, ods writer) assume the schema exists.
             _render(["downgrade", "base"])
+            _render(["upgrade", "head"])
             engine.dispose()

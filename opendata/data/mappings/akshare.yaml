@@ -1,0 +1,38 @@
+# akshare source field mapping (design §8.2 口径映射表).
+#
+# Per domain: the contract key, the source-column/contract-field
+# table (with the unit conversion the source needs) and per-field
+# tolerances for the cross-check. Column names are the real upstream
+# spellings, taken from the recorded fidelity fixtures (A2.5) - never
+# guessed. Adding a field here is a reviewed edit; a source column
+# that is not listed is dropped from the contract view, and a mapped
+# column the frame lacks fails the normalization closed.
+version: 1
+source: akshare
+domains:
+  stock_daily:
+    key: [symbol, trade_date]
+    fields:
+      symbol: {from: 股票代码, normalize: plain}
+      trade_date: {from: 日期}
+      open: {from: 开盘}
+      high: {from: 最高}
+      low: {from: 最低}
+      close: {from: 收盘}
+      # 成交量 arrives in lots (手); the contract stores shares.
+      volume: {from: 成交量, scale: 100}
+      amount: {from: 成交额}
+    tolerances:
+      open: 0.0001
+      high: 0.0001
+      low: 0.0001
+      close: 0.0001
+  index_constituent:
+    key: [index_symbol, symbol, as_of]
+    fields:
+      index_symbol: {from: 指数代码, normalize: plain}
+      symbol: {from: 成分券代码, normalize: plain}
+      as_of: {from: 日期}
+      weight: {from: 权重}
+    tolerances:
+      weight: 0.0001
