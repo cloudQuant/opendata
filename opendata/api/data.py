@@ -18,9 +18,10 @@ from opendata.api.schemas import (
     DataDownloadRequest,
     DataDownloadResponse,
     DownloadProgressResponse,
+    SourceCatalog,
 )
 from opendata.data.capability import Capability
-from opendata.data.registry import get_registry
+from opendata.data.registry import authority_baseline, get_registry
 from opendata.models.interface import DataInterface
 from opendata.models.task import TaskExecution, TaskStatus
 from opendata.services.data_acquisition import DataAcquisitionService
@@ -41,6 +42,23 @@ async def list_capabilities(current_user: CurrentUser) -> list[Capability]:
     ``source="auto"`` requests (FR-3).
     """
     return get_registry().capabilities()
+
+
+@router.get("/sources")
+async def list_sources(current_user: CurrentUser) -> SourceCatalog:
+    """List the authority baseline and the registered sources (design §4.4).
+
+    ``authority`` is the domain -> ordered-sources table that drives
+    ``source="auto"`` routing; ``registered`` inverts the live
+    registry into a source -> domains view.
+    """
+    registered: dict[str, list[str]] = {}
+    for capability in get_registry().capabilities():
+        registered.setdefault(capability.source, []).append(capability.domain)
+    return SourceCatalog(
+        authority={domain: list(sources) for domain, sources in authority_baseline().items()},
+        registered={source: sorted(domains) for source, domains in registered.items()},
+    )
 
 
 def _log_task_exception(task: asyncio.Task) -> None:

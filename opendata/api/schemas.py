@@ -1,5 +1,4 @@
-"""
-Common API schemas and Pydantic models.
+"""Common API schemas and Pydantic models.
 
 Defines request/response schemas used across API endpoints.
 """
@@ -83,10 +82,12 @@ class RegisterRequest(BaseModel):
     @field_validator("password")
     @classmethod
     def check_password(cls, v: str) -> str:
+        """Validate password complexity (delegates to the shared helper)."""
         return validate_password_complexity(v)
 
     @model_validator(mode="after")
     def check_password_match(self) -> "RegisterRequest":
+        """Ensure the confirmation field matches the password."""
         if self.password != self.password_confirm:
             raise ValueError("Passwords do not match")
         return self
@@ -97,7 +98,7 @@ class TokenResponse(BaseModel):
 
     access_token: str
     refresh_token: str
-    token_type: str = "bearer"
+    token_type: str = "bearer"  # noqa: S105  # OAuth2 field name, not a credential
     expires_in: int  # seconds
 
 
@@ -159,6 +160,7 @@ class ResetPasswordRequest(BaseModel):
     @field_validator("new_password")
     @classmethod
     def check_password(cls, v: str) -> str:
+        """Validate the new password's complexity."""
         return validate_password_complexity(v)
 
 
@@ -340,6 +342,18 @@ class DataDownloadResponse(BaseModel):
     execution_id: int
     status: str
     message: str | None = None
+
+
+class SourceCatalog(BaseModel):
+    """Source list and authority (design §4.4, FR-2).
+
+    ``authority`` maps each domain to its ordered sources (authority
+    first); ``registered`` maps each live source to the domains it
+    currently serves.
+    """
+
+    authority: dict[str, list[str]] = Field(default_factory=dict)
+    registered: dict[str, list[str]] = Field(default_factory=dict)
 
 
 class DownloadProgressResponse(BaseModel):

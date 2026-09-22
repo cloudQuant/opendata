@@ -445,3 +445,23 @@ class TestCapabilitiesEndpoint:
         response = await test_client.get("/api/v1/data/capabilities")
 
         assert response.status_code == 401
+
+    async def test_sources_api_exposes_authority_and_registered(self, test_client, test_user_token):
+        from opendata.data.providers import register_providers
+
+        register_providers()
+
+        response = await test_client.get(
+            "/api/v1/data/sources",
+            headers={"Authorization": f"Bearer {test_user_token}"},
+        )
+
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload["authority"]["stock_daily"] == ["ths", "akshare"]
+        assert set(payload["registered"]["akshare"]) >= P0_DOMAINS
+
+    async def test_sources_requires_authentication(self, test_client):
+        response = await test_client.get("/api/v1/data/sources")
+
+        assert response.status_code == 401
