@@ -1,9 +1,11 @@
 {
-  "_comment": "Design §4.4 authority baseline (domestic domains): sources in authority order. Domains not listed (macro / overseas) declare authority per provider at registration time; until then they route in registration order. Loaded by opendata/data/registry.py.",
+  "_comment": "Design §4.4 authority baseline (domestic domains): sources in authority order. Domain identifiers must exist in opendata/data/domains.yaml (cross-checked by tests). Domains not listed (macro / overseas) declare authority per provider at registration time; until then they route in registration order. Loaded by opendata/data/registry.py.",
   "domains": {
     "stock_daily": ["ths", "akshare"],
     "stock_adjust": ["ths", "akshare"],
-    "stock_financial": ["ths", "akshare"],
+    "stock_action": ["ths", "akshare"],
+    "financial_statement": ["ths", "akshare"],
+    "financial_indicator": ["ths", "akshare"],
     "index_constituent": ["ths", "akshare"],
     "futures_daily": ["ths", "akshare"],
     "futures_fundamentals": ["ths", "akshare"],

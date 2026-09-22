@@ -42,6 +42,8 @@ dependencies = [
     "scipy>=1.13.0",
     "decorator>=5.1.1",
     "mini-racer>=0.6.0",
+    # opendata/data/domains.yaml and later mapping configs are YAML.
+    "PyYAML>=6.0",
 ]
 
 [project.optional-dependencies]
@@ -107,7 +109,7 @@ Repository = "https://github.com/cloudQuant/opendata"
 include = ["opendata*", "akshare*"]
 
 [tool.setuptools.package-data]
-opendata = ["py.typed", "data/authority.json"]
+opendata = ["py.typed", "data/authority.json", "data/domains.yaml"]
 akshare = ["*.dat", "*.json", "category_mapping/*"]
 
 [tool.ruff]

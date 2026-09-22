@@ -1,0 +1,52 @@
+# Domain registry (design §4.3, FR-2) - the single source of derived names.
+#
+# Each key is the unique domain identifier used by routing, the WS
+# subscribe protocol ({domain, ...}, FR-16) and the data catalog.
+# Derived names (see opendata/data/domains.py):
+#   ods table   : ods_<domain>_<source>
+#   dwd table   : dwd_<domain>
+#   REST path   : /api/v1/data/<rest_path>
+#   WS event    : data.<domain>
+#   frontend    : display_name
+version: 1
+domains:
+  stock_daily:
+    display_name: A股日线行情
+    rest_path: stock/daily
+    contract: Bar
+  stock_adjust:
+    display_name: A股复权因子
+    rest_path: stock/adjust
+    contract: AdjustFactor
+  stock_action:
+    display_name: A股除权除息事件
+    rest_path: stock/actions
+    contract: CorporateAction
+  financial_statement:
+    display_name: 财务报表
+    rest_path: financial/statements
+    contract: FinancialStatement
+  financial_indicator:
+    display_name: 财务指标
+    rest_path: financial/indicators
+    contract: FinancialIndicator
+  index_constituent:
+    display_name: 指数成分股
+    rest_path: index/constituents
+    contract: IndexConstituent
+  futures_daily:
+    display_name: 期货日线行情
+    rest_path: futures/daily
+    contract: Bar
+  futures_fundamentals:
+    display_name: 期货合约基本面
+    rest_path: futures/fundamentals
+    contract: FuturesFundamentals
+  instrument:
+    display_name: 标的元数据
+    rest_path: meta/instruments
+    contract: Instrument
+  trading_calendar:
+    display_name: 交易日历
+    rest_path: meta/calendar
+    contract: TradingCalendar
