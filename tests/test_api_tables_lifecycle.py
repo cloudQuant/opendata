@@ -86,7 +86,10 @@ class TestGetTableSchema:
     async def test_get_schema_table_exists(
         self, test_client: AsyncClient, test_user_token: str, test_db
     ):
-        """Test getting schema for existing table (DESCRIBE will fail on SQLite but should handle gracefully)."""
+        """Test getting schema for an existing table.
+
+        DESCRIBE fails on SQLite, so the endpoint must degrade gracefully.
+        """
         table = await _create_table(test_db, "ak_schema_test", 1020)
 
         headers = {"Authorization": f"Bearer {test_user_token}"}
@@ -146,13 +149,46 @@ class TestGetTableData:
         assert data["rows"][0]["id"] == 1
 
     @pytest.mark.asyncio
+    async def test_get_data_from_a_table_without_id_column(
+        self, test_client: AsyncClient, test_user_token: str, test_db
+    ):
+        """ods/dwd tables are keyed by their business key, not an id (A4.3)."""
+        await test_db.execute(
+            text(
+                "CREATE TABLE IF NOT EXISTS ods_stock_daily_akshare ("
+                "symbol TEXT NOT NULL, trade_date TEXT NOT NULL, close REAL NOT NULL, "
+                "PRIMARY KEY (symbol, trade_date))"
+            )
+        )
+        for symbol in ("600519", "000001", "600000"):
+            await test_db.execute(
+                text(
+                    "INSERT INTO ods_stock_daily_akshare (symbol, trade_date, close) "
+                    "VALUES (:symbol, '2024-01-02', 1.0)"
+                ),
+                {"symbol": symbol},
+            )
+        await test_db.commit()
+
+        table = await _create_table(test_db, "ods_stock_daily_akshare", 1032, row_count=3)
+
+        headers = {"Authorization": f"Bearer {test_user_token}"}
+        response = await test_client.get(
+            f"/api/tables/{table.id}/data?page=1&page_size=2", headers=headers
+        )
+
+        assert response.status_code == 200
+        data = response.json().get("data", response.json())
+        assert [row["symbol"] for row in data["rows"]] == ["000001", "600000"]
+
+    @pytest.mark.asyncio
     async def test_get_data_pagination(
         self, test_client: AsyncClient, test_user_token: str, test_db
     ):
         """Test getting data with pagination."""
         await test_db.execute(text("CREATE TABLE IF NOT EXISTS ak_paginated (id INTEGER)"))
         for i in range(10):
-            await test_db.execute(text(f"INSERT INTO ak_paginated VALUES ({i})"))
+            await test_db.execute(text("INSERT INTO ak_paginated VALUES (:value)"), {"value": i})
         await test_db.commit()
 
         table = await _create_table(test_db, "ak_paginated", 1032, row_count=10)

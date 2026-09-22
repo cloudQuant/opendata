@@ -178,6 +178,13 @@ runtime-evaluated-base-classes = [
 # whitelist (Unicode letters allowed for source column names, backticks and
 # separators refused) and every value is a bind parameter.
 "opendata/pipeline/ods_writer.py" = ["S608"]
+# page_sql builds ORDER BY from inspector-validated column names and binds the
+# pagination values; S608 flags the f-string that assembles those identifiers.
+"opendata/pipeline/table_page.py" = ["S608"]
+# /tables export and metadata queries: table names come from _get_safe_table_name
+# (safe_table_name validates ^[A-Za-z_][A-Za-z0-9_]*$) and page ordering goes
+# through page_sql; every value is a bind parameter.
+"opendata/api/tables.py" = ["S608"]
 # Legacy dynamic typing (upstream SDK calls, APScheduler jobs) — Any is intentional.
 "opendata/data_fetch/providers/akshare_provider.py" = ["ANN401", "S608"]
 "opendata/data_fetch/scripts/*" = ["ANN401"]

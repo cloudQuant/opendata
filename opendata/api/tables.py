@@ -1,5 +1,4 @@
-"""
-Data table API routes.
+"""Data table API routes.
 
 Provides endpoints for managing data tables created by data acquisition.
 """
@@ -16,7 +15,11 @@ from sqlalchemy import func, select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from opendata.api.dependencies import get_current_admin_user, get_current_user, get_db
+from opendata.api.dependencies import (
+    CurrentAdmin,
+    CurrentUser,
+    get_db,
+)
 from opendata.api.schemas import (
     APIResponse,
     PaginatedParams,
@@ -25,6 +28,7 @@ from opendata.api.schemas import (
 )
 from opendata.core.database import get_data_db
 from opendata.models.data_table import DataTable
+from opendata.pipeline.table_page import page_sql, table_shape
 from opendata.utils.constants import CSV_EXPORT_BATCH_SIZE, XLSX_EXPORT_ROW_LIMIT
 from opendata.utils.db_result import get_columns_from_result
 from opendata.utils.helpers import safe_table_name
@@ -90,8 +94,7 @@ async def _csv_export_stream(
 
 
 def _get_safe_table_name(table_name: str) -> str:
-    """
-    Get safe table name for SQL, raising HTTP 400 on invalid input.
+    """Get safe table name for SQL, raising HTTP 400 on invalid input.
 
     Args:
         table_name: Raw table name from metadata
@@ -115,15 +118,14 @@ def _get_safe_table_name(table_name: str) -> str:
     "/",
 )
 async def list_tables(
+    current_user: CurrentUser,
     search: str | None = Query(
         None, description="Search in table name, display name, or description"
     ),
     params: PaginatedParams = Depends(),
     db: AsyncSession = Depends(get_db),
-    current_user=Depends(get_current_user),
 ) -> APIResponse:
-    """
-    List data tables.
+    """List data tables.
 
     Returns paginated list of data tables with metadata.
     """
@@ -172,11 +174,10 @@ async def list_tables(
 )
 async def get_table(
     table_id: int,
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db),
-    current_user=Depends(get_current_user),
 ) -> APIResponse:
-    """
-    Get data table details.
+    """Get data table details.
 
     Returns detailed information about a specific data table.
     """
@@ -201,12 +202,11 @@ async def get_table(
 )
 async def get_table_schema(
     table_id: int,
+    current_user: CurrentUser,
     db: AsyncSession = Depends(get_db),
     data_db: AsyncSession = Depends(get_data_db),
-    current_user=Depends(get_current_user),
 ) -> TableSchemaResponse:
-    """
-    Get data table schema.
+    """Get data table schema.
 
     Returns the database schema for a specific table including
     column names, types, and constraints.
@@ -250,14 +250,13 @@ async def get_table_schema(
 @router.get("/{table_id}/data")
 async def get_table_data(
     table_id: int,
+    current_user: CurrentUser,
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     data_db: AsyncSession = Depends(get_data_db),
-    current_user=Depends(get_current_user),
 ) -> APIResponse:
-    """
-    Get data from table.
+    """Get data from table.
 
     Returns actual data rows from the specified table.
     """
@@ -273,10 +272,14 @@ async def get_table_data(
     offset = (page - 1) * page_size
     limit = page_size
 
-    # Query actual data from data warehouse
-    safe_name = _get_safe_table_name(table.table_name)
+    # Query actual data from data warehouse. ods/dwd tables have no
+    # surrogate id, so the order comes from the table shape (A4.3);
+    # page_sql validates and quotes the identifier itself.
     try:
-        query = text(f"SELECT * FROM {safe_name} ORDER BY id LIMIT :limit OFFSET :offset")
+        columns, key_columns = await data_db.run_sync(
+            lambda session: table_shape(session.connection(), table.table_name)
+        )
+        query = text(page_sql(table.table_name, columns=columns, key_columns=key_columns))
         data_result = await data_db.execute(query, {"limit": limit, "offset": offset})
 
         # Get column names from cursor description
@@ -311,12 +314,11 @@ async def get_table_data(
 )
 async def delete_table(
     table_id: int,
+    current_user: CurrentAdmin,
     db: AsyncSession = Depends(get_db),
     data_db: AsyncSession = Depends(get_data_db),
-    current_user=Depends(get_current_admin_user),
 ) -> APIResponse:
-    """
-    Delete data table.
+    """Delete data table.
 
     Admin only endpoint for dropping tables and metadata.
     """
@@ -354,14 +356,13 @@ async def delete_table(
 @router.get("/{table_id}/export")
 async def export_table_data(
     table_id: int,
+    current_user: CurrentUser,
     format: str = Query("csv", pattern="^(csv|xlsx)$", description="Export format: csv or xlsx"),
     limit: int = Query(100000, ge=1, le=1000000, description="Maximum rows to export"),
     db: AsyncSession = Depends(get_db),
     data_db: AsyncSession = Depends(get_data_db),
-    current_user=Depends(get_current_user),
 ) -> StreamingResponse:
-    """
-    Export table data as CSV or Excel file.
+    """Export table data as CSV or Excel file.
 
     CSV uses streaming to keep memory bounded for large tables.
     Excel is limited to 50,000 rows due to in-memory requirement.
@@ -390,7 +391,7 @@ async def export_table_data(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to query table data: {e!s}",
             ) from e
-        return _stream_xlsx_export(safe_filename, columns, rows)
+        return _stream_xlsx_export(safe_filename, columns, [tuple(row) for row in rows])
 
     return StreamingResponse(
         _csv_export_stream(data_db, safe_name, limit),
@@ -399,16 +400,36 @@ async def export_table_data(
     )
 
 
+async def _refresh_row_count(table: DataTable, data_db: AsyncSession) -> bool:
+    """Refresh one table's row count; False when it is absent.
+
+    Args:
+        table: Registry row to update.
+        data_db: Data-warehouse session.
+
+    Returns:
+        True when the count was refreshed.
+    """
+    safe_name = _get_safe_table_name(table.table_name)
+    count_query = text(f"SELECT COUNT(*) FROM {safe_name}")
+    try:
+        count_result = await data_db.execute(count_query)
+    except SQLAlchemyError as error:
+        logger.debug("Table %s not in warehouse, skipping: %s", table.table_name, error)
+        return False
+    table.row_count = count_result.scalar() or 0
+    return True
+
+
 @router.post(
     "/refresh",
 )
 async def refresh_table_metadata(
+    current_user: CurrentAdmin,
     db: AsyncSession = Depends(get_db),
     data_db: AsyncSession = Depends(get_data_db),
-    current_user=Depends(get_current_admin_user),
 ) -> APIResponse:
-    """
-    Refresh table metadata.
+    """Refresh table metadata.
 
     Admin only endpoint to update row counts and schema info
     from actual database tables.
@@ -420,15 +441,8 @@ async def refresh_table_metadata(
     updated_count = 0
 
     for table in tables:
-        try:
-            safe_name = _get_safe_table_name(table.table_name)
-            count_query = text(f"SELECT COUNT(*) FROM {safe_name}")
-            count_result = await data_db.execute(count_query)
-            table.row_count = count_result.scalar() or 0
-
+        if await _refresh_row_count(table, data_db):
             updated_count += 1
-        except SQLAlchemyError as e:
-            logger.debug("Table %s not in warehouse, skipping: %s", table.table_name, e)
 
     await db.commit()
 
