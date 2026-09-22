@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: [dev, master, "feature/**", "fix/**", "docs/**", "refactor/**", "test/**"]
+  pull_request:
+    branches: [dev, master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secret-scan:
+    name: secret scan (full history)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install gitleaks
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz" -o /tmp/gitleaks.tar.gz
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          sudo install -m 0755 /tmp/gitleaks /usr/local/bin/gitleaks
+      - name: Scan git history for credentials
+        run: gitleaks detect --source . --config .gitleaks.toml --redact --verbose
+
+  quality-gate:
+    name: quality gate
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci_root_password
+          MYSQL_DATABASE: opendata
+          MYSQL_USER: opendata_user
+          MYSQL_PASSWORD: ci_password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      # Metadata database (main)
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_PORT: "3306"
+      MYSQL_USER: opendata_user
+      MYSQL_PASSWORD: ci_password
+      MYSQL_DATABASE: opendata
+      # Data warehouse
+      DATA_MYSQL_HOST: 127.0.0.1
+      DATA_MYSQL_PORT: "3306"
+      DATA_MYSQL_USER: opendata_user
+      DATA_MYSQL_PASSWORD: ci_password
+      DATA_MYSQL_DATABASE: opendata_data
+      # Non-secret CI-only values
+      SECRET_KEY: ci-only-secret-key
+      APP_ENV: testing
+      ENABLE_SCHEDULER: "false"
+      SCHEDULER_BOOTSTRAP_ON_STARTUP: "false"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[web,dev]"
+
+      - name: Install frontend dependencies
+        run: npm ci --prefix frontend
+
+      - name: Create data warehouse database
+        run: |
+          python - <<'PY'
+          import pymysql
+          conn = pymysql.connect(
+              host="127.0.0.1", port=3306, user="root", password="ci_root_password"
+          )
+          with conn.cursor() as cur:
+              cur.execute(
+                  "CREATE DATABASE IF NOT EXISTS opendata_data "
+                  "CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+              )
+          conn.commit()
+          conn.close()
+          print("opendata_data is ready")
+          PY
+
+      - name: Verify metadata migrations apply on MySQL
+        run: alembic upgrade head
+
+      - name: Run fail-closed quality gate
+        run: make gate

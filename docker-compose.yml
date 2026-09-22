@@ -1,0 +1,151 @@
+services:
+  # Metadata database: users / tasks / executions / data catalog
+  mysql:
+    image: mysql:8.0
+    container_name: opendata_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD must be set (see .env.example)}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-opendata}
+      MYSQL_USER: ${MYSQL_USER:-opendata_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD must be set (see .env.example)}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Data warehouse: ods_* / dwd_* / dq_diff_report tables.
+  # Started by default (no --profile) because the platform is unusable without it.
+  mysql_warehouse:
+    image: mysql:8.0
+    container_name: opendata_warehouse
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${WAREHOUSE_ROOT_PASSWORD:?WAREHOUSE_ROOT_PASSWORD must be set (see .env.example)}
+      MYSQL_DATABASE: ${WAREHOUSE_DATABASE:-opendata_data}
+      MYSQL_USER: ${WAREHOUSE_USER:-opendata_user}
+      MYSQL_PASSWORD: ${WAREHOUSE_PASSWORD:?WAREHOUSE_PASSWORD must be set (see .env.example)}
+    ports:
+      - "3307:3306"
+    volumes:
+      - warehouse_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (rate-limit / token blacklist / optional cache)
+  redis:
+    image: redis:7-alpine
+    container_name: opendata_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API (single process: API + scheduler + WebSocket, decision D8)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: opendata_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: ${MYSQL_USER:-opendata_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD must be set (see .env.example)}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-opendata}
+      DATA_MYSQL_HOST: mysql_warehouse
+      DATA_MYSQL_PORT: 3306
+      DATA_MYSQL_USER: ${WAREHOUSE_USER:-opendata_user}
+      DATA_MYSQL_PASSWORD: ${WAREHOUSE_PASSWORD:?WAREHOUSE_PASSWORD must be set (see .env.example)}
+      DATA_MYSQL_DATABASE: ${WAREHOUSE_DATABASE:-opendata_data}
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be set in .env or environment}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      APP_ENV: ${APP_ENV:-production}
+      WORKERS: ${WORKERS:-1}
+      ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD:-}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mysql_warehouse:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./logs:/opendata/logs
+      - ./data:/opendata/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend (Nginx)
+  frontend:
+    image: nginx:alpine
+    container_name: opendata_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./frontend/dist:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - certbot_www:/var/www/certbot:ro
+      - certbot_conf:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Let's Encrypt certificate auto-renewal (optional, opt in with --profile ssl)
+  certbot:
+    image: certbot/certbot
+    container_name: opendata_certbot
+    volumes:
+      - certbot_www:/var/www/certbot
+      - certbot_conf:/etc/letsencrypt
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    profiles:
+      - ssl
+
+volumes:
+  mysql_data:
+    driver: local
+  warehouse_data:
+    driver: local
+  redis_data:
+    driver: local
+  certbot_www:
+    driver: local
+  certbot_conf:
+    driver: local
+
+networks:
+  default:
+    name: opendata_network

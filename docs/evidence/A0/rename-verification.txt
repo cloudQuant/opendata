@@ -1,0 +1,61 @@
+# A0.3 改名验证证据
+
+date: 2026-09-22
+依据：AC-1（品牌/包名）、实施计划 A0.3
+
+## 方法
+
+对`opendata/`、`tests/`、`alembic/`、`scripts/` 与根配置文件，逐个文件与重构起点副本
+`../akshare_web` 比对：把新文件的 `opendata` 还原为 `app` 后，要求与参照**逐字节相等**。
+这样任何"非改名"的改动都会被暴露出来。
+
+## 结论 1：纯改名验证（A0.3 执行时刻）
+
+```text
+$ python3 <normalise-and-compare vs ../akshare_web>
+checked files            : 103
+unexpected differences   : 0
+```
+
+即改名本身是**纯机械替换**，无额外副作用。
+
+## 结论 2：改名之后的功能性改动（清单，逐条可追溯）
+
+以下 22 个文件在改名之后又被**刻意修改**，因此归一化比对不再相等。每一项都可追溯到
+具体任务，属于预期改动而非改名事故：
+
+| 文件 | 变更依据 |
+|------|---------|
+| `.github/workflows/ci.yml` | A0.9 CI 从零搭建（新增文件） |
+| `Dockerfile` | 容器工作目录 `/app` → `/opendata` 一致性修正 |
+| `Makefile` | A0.10 门禁聚合（`gate` 等） |
+| `bandit.yaml` | A0.10 搬运层排除项 |
+| `docker-compose.yml` | A0.8 容器名/库名收敛、去 `profiles`、弱口令强制注入 |
+| `pyproject.toml` | A0.3/A0.10 项目名与质量配置 |
+| `pytest.ini` | A0.3 `--cov=opendata`；A0.10 注册 `e2e` marker |
+| `dev_start.sh` / `start_app.sh` / `restart_app.sh` | A0.4 品牌统一（含 pid 文件名） |
+| `scripts/init_tasks_and_tables.py` | A0.4 品牌统一 |
+| `tests/__init__.py` | A0.4 品牌统一（docstring） |
+| `tests/test_api_schemas.py` | A0 测试修复：密码不一致由 schema 校验（`ValidationError`） |
+| `tests/test_auth_direct.py` | A0 测试修复：同上（原断言路由返回 400，实际由 schema 拦截） |
+| `tests/test_cli_direct.py` | A0 测试修复：patch 目标改为 `opendata.cli.*`（原 patch 未生效，测试真连 MySQL） |
+| `tests/test_cli_extended.py` | A0.4 品牌统一 |
+| `tests/test_config.py` / `tests/test_core.py` | A0.4 品牌统一（`app_name`/`app.title` 断言） |
+| `tests/test_main_app.py` | A0 测试修复：`asyncio.get_event_loop()` → `asyncio.run()`（Python 3.13 已移除隐式事件循环） |
+| `tests/test_retry_service.py` | A0 测试修复：清理阶段改捕获 `CancelledError`（`except Exception` 抓不到 `BaseException`） |
+| `tests/test_services_full.py` | A0 测试修复：mock 改为 `result.one()`（服务实现读的是行对象，不是 `scalar()`） |
+| `tests/test_tables_direct.py` | A0 测试修复：`_safe_table_name` → `_get_safe_table_name`，异常类型改 `HTTPException` |
+
+> `opendata/` 下的功能性改动（`config.py`、`cli.py`、`notification_service.py`、
+> `data_fetch/*`）未出现在上表，因为其改动内容本身就是品牌 token（例如邮件标题
+> `[akshare_web]` → `[opendata]`），归一化还原后与原文件一致 —— 归入"纯改名"类别。
+
+## 结论 3：无残留
+
+```text
+$ python scripts/quality/check_brand.py
+OK: no brand residue and no rename leftovers.
+```
+
+覆盖 13 个旧品牌标识符 + `from app.` / `import app.` 残留。详见
+`docs/evidence/A0/quality-gates.txt`。

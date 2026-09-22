@@ -1,0 +1,155 @@
+/* Dark theme CSS variables */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #303133;
+  --text-secondary: #606266;
+  --border-color: #dcdfe6;
+  --sidebar-bg: #001529;
+  --sidebar-text: rgba(255, 255, 255, 0.65);
+  --sidebar-active-bg: #1890ff;
+  --content-bg: #f0f2f5;
+  --card-bg: #ffffff;
+  --hover-bg: #f5f7fa;
+}
+
+html.dark {
+  --bg-color: #141414;
+  --text-color: #e5eaf3;
+  --text-secondary: #a3a6ad;
+  --border-color: #4c4d4f;
+  --sidebar-bg: #1d1e1f;
+  --sidebar-text: rgba(255, 255, 255, 0.65);
+  --sidebar-active-bg: #1890ff;
+  --content-bg: #0a0a0a;
+  --card-bg: #1d1e1f;
+  --hover-bg: #262727;
+}
+
+/* Element Plus dark mode compatibility */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark .el-card {
+  --el-card-bg-color: var(--card-bg);
+  --el-border-color-lighter: var(--border-color);
+}
+
+html.dark .el-table {
+  --el-table-bg-color: var(--card-bg);
+  --el-table-tr-bg-color: var(--card-bg);
+  --el-table-header-bg-color: var(--hover-bg);
+  --el-table-row-hover-bg-color: var(--hover-bg);
+  --el-table-border-color: var(--border-color);
+}
+
+html.dark .el-input__wrapper {
+  --el-input-bg-color: var(--card-bg);
+  --el-border-color: var(--border-color);
+}
+
+html.dark .el-select-dropdown {
+  --el-bg-color: var(--card-bg);
+  --el-border-color-lighter: var(--border-color);
+}
+
+html.dark .el-dialog {
+  --el-dialog-bg-color: var(--card-bg);
+}
+
+html.dark .el-drawer {
+  --el-drawer-bg-color: var(--card-bg);
+}
+
+html.dark .el-menu {
+  --el-menu-bg-color: var(--sidebar-bg);
+  --el-menu-text-color: var(--sidebar-text);
+  --el-menu-active-color: #ffffff;
+}
+
+html.dark .el-dropdown-menu {
+  --el-dropdown-menu-box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.3);
+  --el-bg-color: var(--card-bg);
+}
+
+html.dark .el-message-box {
+  --el-messagebox-bg-color: var(--card-bg);
+}
+
+html.dark .el-pagination {
+  --el-pagination-bg-color: var(--card-bg);
+}
+
+html.dark .el-form-item__label {
+  --el-text-color-regular: var(--text-color);
+}
+
+html.dark .el-empty__description {
+  --el-text-color-secondary: var(--text-secondary);
+}
+
+/* Layout dark mode */
+html.dark .sidebar {
+  background-color: var(--sidebar-bg);
+}
+
+html.dark .logo {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+html.dark .header {
+  border-bottom-color: var(--border-color);
+  background-color: var(--card-bg);
+}
+
+html.dark .main-content {
+  background-color: var(--content-bg);
+}
+
+html.dark .username {
+  color: var(--text-color);
+}
+
+/* Common components dark mode */
+html.dark .stat-card {
+  background-color: var(--card-bg);
+}
+
+html.dark .stat-value {
+  color: var(--text-color);
+}
+
+html.dark .page-header {
+  border-bottom-color: var(--border-color);
+}
+
+html.dark .page-header .title {
+  color: var(--text-color);
+}
+
+html.dark .page-header .subtitle {
+  color: var(--text-secondary);
+}
+
+html.dark .filter-bar {
+  background-color: transparent;
+}
+
+/* Scrollbar dark mode */
+html.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: var(--content-bg);
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}

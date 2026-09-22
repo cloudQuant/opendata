@@ -1,0 +1,71 @@
+# Pre-commit hooks for code quality
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+#
+# Ported akshare code lives in opendata_http/ and must stay diffable against
+# upstream (design §5.2 rule 7), so every reformatting hook is excluded there.
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+        exclude: ^opendata_http/
+      - id: ruff-format
+        exclude: ^opendata_http/
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.10
+    hooks:
+      - id: bandit
+        args: ["-c", "bandit.yaml", "-r", "opendata/"]
+        additional_dependencies: ["bandit[toml]"]
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^opendata_http/
+      - id: end-of-file-fixer
+        exclude: ^opendata_http/
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+        args: ["--maxkb=1000"]
+      - id: debug-statements
+      - id: detect-private-key
+
+  - repo: local
+    hooks:
+      - id: pip-audit
+        name: pip-audit (dependency security)
+        entry: bash -c 'command -v pip-audit >/dev/null 2>&1 && pip-audit -r requirements.txt || echo "pip-audit not installed (pip install pip-audit)"'
+        language: system
+        files: ^(requirements\.txt|pyproject\.toml)$
+
+      - id: mypy
+        name: mypy (Python type check)
+        entry: mypy opendata/
+        language: system
+        files: ^opendata/.*\.py$
+
+  # Frontend: ESLint + Prettier
+  - repo: local
+    hooks:
+      - id: eslint
+        name: ESLint (frontend)
+        entry: bash -c 'cd frontend && npm run lint'
+        language: system
+        files: ^frontend/.*\.(vue|ts|js|mjs|cjs|tsx|jsx)$
+
+      - id: prettier
+        name: Prettier (frontend)
+        entry: bash -c 'npx -C frontend prettier --write "$@"' bash
+        language: system
+        files: ^frontend/src/.*\.(vue|ts|js|json|css|scss)$

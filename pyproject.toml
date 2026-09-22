@@ -1,0 +1,192 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opendata"
+version = "0.1.0"
+description = "opendata: multi-source financial data platform (ingestion, warehousing, REST/WS serving)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "BSL-1.1"}
+authors = [
+    {name = "cloud", email = "cloud@example.com"}
+]
+maintainers = [
+    {name = "cloud", email = "cloud@example.com"}
+]
+keywords = ["opendata", "financial data", "market data", "quantitative trading", "data platform"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: Developers",
+    "Topic :: Office/Business :: Financial",
+    "License :: Other/Proprietary License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=5.0.0",
+    "openpyxl>=3.1.0",
+    "pandas>=2.2.3",
+    "numpy>=2.1.3",
+    "html5lib>=1.1",
+    "jsonpath>=0.82",
+    "tqdm>=4.66.0",
+    "tabulate>=0.9.0",
+    "scipy>=1.13.0",
+    "decorator>=5.1.1",
+    "mini-racer>=0.6.0",
+]
+
+[project.optional-dependencies]
+web = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.9.2",
+    "pydantic-settings>=2.6.0",
+    "sqlalchemy>=2.0.35",
+    # SQLAlchemy's async engine needs greenlet. SQLAlchemy only pulls it in for
+    # specific platform_machine values, so macOS arm64 (Apple Silicon) misses it
+    # and every async DB test dies with ValueError; declare it explicitly.
+    "greenlet>=3.0",
+    "alembic>=1.14.0",
+    "pymysql>=1.1.1",
+    "cryptography>=44.0.0",
+    "PyJWT>=2.8.0",
+    "python-multipart>=0.0.17",
+    "apscheduler>=3.10.4",
+    "croniter>=3.0.3",
+    "httpx>=0.27.2",
+    "python-dotenv>=1.0.1",
+    "loguru>=0.7.2",
+    "email-validator>=2.2.0",
+    "slowapi>=0.1.9",
+    "sqlalchemy-utils>=0.36.1",
+    "aiomysql>=0.2.0",
+    "aiosqlite>=0.20.0",
+    "click>=8.1.7",
+    "DBUtils>=3.1.0",
+    "bcrypt>=4.0.0",
+    "redis>=5.0.0",
+    "gunicorn>=22.0.0",
+]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "pytest-xdist>=3.6.0",
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "bandit>=1.7.0",
+    "pip-audit>=2.7.0",
+    "pre-commit>=4.0.0",
+]
+
+# Install the platform:      pip install ".[web]"
+# Install with dev tooling:  pip install ".[web,dev]"
+
+[project.urls]
+Homepage = "https://github.com/cloudQuant/opendata"
+Repository = "https://github.com/cloudQuant/opendata"
+
+[tool.setuptools]
+# "akshare" is the vendored upstream source tree; it is renamed to
+# opendata_http/ in milestone A2, after which it must be removed here.
+packages = ["opendata", "akshare"]
+
+[tool.setuptools.package-data]
+opendata = ["py.typed"]
+akshare = ["*.dat", "*.json", "category_mapping/*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+exclude = ["akshare", "opendata_http", "alembic/versions", "frontend", ".venv", "htmlcov"]
+
+[tool.ruff.lint]
+# A2 layer runs the full set (quality spec §2.1); A1 debt is tracked by the
+# ratchet snapshot instead of being grandfathered in the config.
+select = [
+    "E", "W",     # pycodestyle
+    "F",          # pyflakes (F821 undefined-name must NOT be ignored)
+    "I",          # isort
+    "N",          # pep8-naming
+    "UP",         # pyupgrade
+    "B",          # flake8-bugbear
+    "C4",         # flake8-comprehensions
+    "SIM",        # flake8-simplify
+    "TC",         # flake8-type-checking
+    "RUF100",     # unused noqa
+    "S",          # flake8-bandit
+    "PERF",       # perflint
+    "ANN",        # type annotations
+    "D",          # pydocstyle (Google style)
+]
+ignore = [
+    # FastAPI's Depends() in default arguments is framework idiom; ignoring this
+    # is explicitly sanctioned by the quality spec §2.1.
+    "B008",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# C layer: tests keep the full rule set minus security-smell and annotation rules.
+"tests/*" = ["B017", "N806", "S1", "S2", "ANN", "D"]
+# B layer: ported akshare code is checked for syntax/undefined names only.
+"akshare/**" = ["E501"]
+# Legacy dynamic typing (upstream SDK calls, APScheduler jobs) — Any is intentional.
+"opendata/data_fetch/providers/akshare_provider.py" = ["ANN401"]
+"opendata/data_fetch/scripts/*" = ["ANN401"]
+"opendata/services/scheduler_service.py" = ["ANN401"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.10"
+explicit_package_bases = true
+warn_return_any = true
+warn_unused_configs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+strict_equality = true
+no_implicit_optional = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+ignore_missing_imports = true
+exclude = ["akshare", "opendata_http", "tests", "alembic", "opendata/data_fetch"]
+
+# A1 debt is managed by docs/quality/ratchet.json (quality spec §7), not by
+# relaxing the rules above.
+
+[[tool.mypy.overrides]]
+module = "akshare.*"
+follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = "opendata.data_fetch.*"
+follow_imports = "skip"
+
+[tool.coverage.run]
+source = ["opendata"]
+omit = ["opendata/__init__.py", "tests/*"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 84
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+]

@@ -1,0 +1,19 @@
+# pytest (A0 baseline)
+
+date: 2026-09-22T08:10:10Z
+
+```text
+$ pytest tests -n 8 -m "not e2e" --cov-branch --cov-report=term --cov-fail-under=84
+opendata/utils/__init__.py                               4      0      0      0   100%
+opendata/utils/cache.py                                 31      8      4      1    69%   26-30, 40-41, 50
+opendata/utils/constants.py                              8      0      0      0   100%
+opendata/utils/db_result.py                             10      2      4      2    71%   35, 39
+opendata/utils/helpers.py                               54      2     28      2    95%   83, 122
+opendata/utils/serialization.py                         19      3     12      3    81%   28, 45, 47
+opendata/utils/validators.py                            80      2     44      0    98%   61-62
+------------------------------------------------------------------------------------------------
+TOTAL                                                 4109    548    960    101    85%
+Coverage HTML written to dir htmlcov
+Required test coverage of 84% reached. Total coverage: 84.51%
+============================ 1335 passed in 35.48s =============================
+```

@@ -1,0 +1,50 @@
+# brand check / zero-dep / ratchet / public-api
+
+date: 2026-09-22T08:12:02Z
+
+```text
+$ python scripts/quality/check_brand.py
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:96
+  .env.example:97
+  .env.example:98
+  .env.example:99
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+```
+
+```text
+$ python scripts/codemod/verify_no_akshare.py --self-test
+OK: scanner self-test passed (8 violations detected, 4 compliant samples clean).
+```
+
+```text
+$ python scripts/codemod/verify_no_akshare.py
+OK: no new upstream references (frozen baseline: 6).
+```
+
+```text
+$ python scripts/quality/ratchet.py
+OK: quality debt did not increase.
+  ruff_selfdev: 404 (snapshot 404)
+  mypy_selfdev: 35 (snapshot 35)
+  bandit_selfdev: 6 (snapshot 6)
+  ruff_ported: 1418 (snapshot 1418)
+  direct_http_ported: 1270 (snapshot 1270)
+```
+
+```text
+$ python scripts/quality/public_api.py
+A2 public callables : 39
+docstring coverage  : 100.0% (39/39)
+annotation coverage : 100.0% (39/39)
+OK: docstring and annotation coverage are both 100%.
+```
+

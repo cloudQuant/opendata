@@ -1,0 +1,45 @@
+[Unit]
+Description=opendata Financial Data Platform
+After=network.target mysql.service
+Wants=mysql.service
+
+[Service]
+Type=notify
+User=opendata
+Group=opendata
+WorkingDirectory=/opt/opendata
+Environment="PATH=/opt/opendata/venv/bin"
+EnvironmentFile=/opt/opendata/.env
+
+# Single-process deployment (decision D8): API + scheduler + WebSocket share one
+# process. Multi-worker deployments are explicitly out of scope for iteration 1.
+ExecStart=/opt/opendata/venv/bin/uvicorn opendata.main:app \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --workers 1 \
+    --log-config logging_config.ini
+
+# Restart configuration
+Restart=always
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/opendata/logs /opt/opendata/data
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+
+# Performance
+LimitNOFILE=65536
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=opendata
+
+[Install]
+WantedBy=multi-user.target

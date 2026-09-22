@@ -1,0 +1,22 @@
+# Bandit security scanner configuration
+# https://bandit.readthedocs.io/
+
+# Directories to exclude from scanning
+exclude_dirs:
+  - ".git"
+  - "__pycache__"
+  - "node_modules"
+  # Vendored upstream source (renamed akshare/ -> opendata_http/ in milestone A2).
+  # Ported code is not rescanned daily (quality spec §4); it gets a one-off full
+  # scan with manual triage in A2 instead.
+  - "akshare"
+  - "opendata_http"
+
+# Tests to skip with rationale
+skips:
+  # B608: Table/column names use safe_table_name() which validates against
+  # ^[A-Za-z_][A-Za-z0-9_]*$ - identifiers are never from raw user input.
+  - B608
+  # B104: Binding to 0.0.0.0 is intentional for Docker/cloud - listen on all
+  # interfaces. Production deployments use reverse proxy (nginx) and firewall.
+  - B104
