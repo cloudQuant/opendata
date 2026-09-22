@@ -99,10 +99,12 @@ dev = [
 Homepage = "https://github.com/cloudQuant/opendata"
 Repository = "https://github.com/cloudQuant/opendata"
 
-[tool.setuptools]
+[tool.setuptools.packages.find]
+# Explicit list previously named only the two top-level packages, so
+# opendata.api/core/... were never packaged (editable installs hid it).
 # "akshare" is the vendored upstream source tree; it is renamed to
 # opendata_http/ in milestone A2, after which it must be removed here.
-packages = ["opendata", "akshare"]
+include = ["opendata*", "akshare*"]
 
 [tool.setuptools.package-data]
 opendata = ["py.typed"]
@@ -140,6 +142,19 @@ ignore = [
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.ruff.lint.flake8-type-checking]
+# Pydantic resolves field annotations at class-creation time, so imports
+# referenced by model fields must remain runtime imports; without this,
+# TC002/TC003 would move them into TYPE_CHECKING and break pydantic.
+# Matching is by the base's qualified name as imported, so all import
+# forms of the contract base are listed.
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+    "ContractModel",
+    "opendata.data.models.base.ContractModel",
+    "opendata.data.models.ContractModel",
+]
 
 [tool.ruff.lint.per-file-ignores]
 # C layer: tests keep the full rule set minus security-smell and annotation rules.

@@ -227,7 +227,8 @@ __marimo__/
 .streamlit/secrets.toml
 
 # opendata local runtime state (never commit data assets or dumps)
+# Root-anchored: must not swallow the opendata/data/ contract package.
 backups/
-data/
+/data/
 uploads/
 ssl/
