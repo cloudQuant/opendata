@@ -49,62 +49,62 @@ class TestDatabaseFunctions:
 
 
 class TestAPIRoutes:
-    """Test API route registration."""
+    """Test API route registration.
+
+    Asserts against ``app.openapi()["paths"]`` rather than ``app.routes``:
+    newer FastAPI (0.141+/starlette 1.x) keeps included routers as lazy
+    ``_IncludedRouter`` wrappers without a ``path`` attribute, so route
+    flattening is an implementation detail. The OpenAPI schema is the
+    version-stable view of "which endpoints exist".
+    """
 
     def test_auth_router_registered(self):
         """Test auth router is registered."""
         from opendata.main import app
 
-        routes = [r for r in app.routes if hasattr(r, "path")]
-        auth_routes = [r.path for r in routes if r.path.startswith("/api/auth")]
+        auth_routes = [p for p in app.openapi()["paths"] if p.startswith("/api/auth")]
         assert len(auth_routes) > 0
 
     def test_users_router_registered(self):
         """Test users router is registered."""
         from opendata.main import app
 
-        routes = [r for r in app.routes if hasattr(r, "path")]
-        users_routes = [r.path for r in routes if r.path.startswith("/api/users")]
+        users_routes = [p for p in app.openapi()["paths"] if p.startswith("/api/users")]
         assert len(users_routes) > 0
 
     def test_tasks_router_registered(self):
         """Test tasks router is registered."""
         from opendata.main import app
 
-        routes = [r for r in app.routes if hasattr(r, "path")]
-        tasks_routes = [r.path for r in routes if r.path.startswith("/api/tasks")]
+        tasks_routes = [p for p in app.openapi()["paths"] if p.startswith("/api/tasks")]
         assert len(tasks_routes) > 0
 
     def test_scripts_router_registered(self):
         """Test scripts router is registered."""
         from opendata.main import app
 
-        routes = [r for r in app.routes if hasattr(r, "path")]
-        scripts_routes = [r.path for r in routes if r.path.startswith("/api/scripts")]
+        scripts_routes = [p for p in app.openapi()["paths"] if p.startswith("/api/scripts")]
         assert len(scripts_routes) > 0
 
     def test_executions_router_registered(self):
         """Test executions router is registered."""
         from opendata.main import app
 
-        routes = [r for r in app.routes if hasattr(r, "path")]
-        exec_routes = [r.path for r in routes if r.path.startswith("/api/executions")]
+        exec_routes = [p for p in app.openapi()["paths"] if p.startswith("/api/executions")]
         assert len(exec_routes) > 0
 
     def test_tables_router_registered(self):
         """Test tables router is registered."""
         from opendata.main import app
 
-        routes = [r for r in app.routes if hasattr(r, "path")]
-        tables_routes = [r.path for r in routes if r.path.startswith("/api/tables")]
+        tables_routes = [p for p in app.openapi()["paths"] if p.startswith("/api/tables")]
         assert len(tables_routes) > 0
 
     def test_data_router_registered(self):
         """Test data router is registered."""
         from opendata.main import app
 
-        routes = [r for r in app.routes if hasattr(r, "path")]
-        data_routes = [r.path for r in routes if r.path.startswith("/api/data")]
+        data_routes = [p for p in app.openapi()["paths"] if p.startswith("/api/data")]
         assert len(data_routes) > 0
 
 

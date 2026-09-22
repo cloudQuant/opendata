@@ -39,16 +39,18 @@ class TestAppStartup:
         """Test CORS middleware is configured."""
         from opendata.main import app
 
-        # Check that CORSMiddleware is in the middleware stack
-        middleware_classes = [type(m).__name__ for m in app.user_middleware]
-        # The middleware is added via app.add_middleware, check routes exist
-        assert len(app.routes) > 0
+        # app.user_middleware holds the (unbuilt) middleware stack;
+        # each entry wraps the class in .cls on every starlette version.
+        middleware_classes = [m.cls.__name__ for m in app.user_middleware]
+        assert "CORSMiddleware" in middleware_classes
 
     def test_routes_registered(self):
         """Test that API routes are registered."""
         from opendata.main import app
 
-        route_paths = [route.path for route in app.routes if hasattr(route, "path")]
+        # OpenAPI paths: stable across FastAPI versions (app.routes is not;
+        # newer FastAPI keeps included routers as lazy wrappers).
+        route_paths = list(app.openapi()["paths"])
         assert "/api/health" in route_paths or any("/api" in p for p in route_paths)
 
 

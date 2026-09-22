@@ -1,10 +1,9 @@
-"""
-Security utilities for authentication and authorization.
+"""Security utilities for authentication and authorization.
 
 Provides password hashing, JWT token creation/verification, and permission checking.
 """
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import bcrypt
@@ -17,8 +16,7 @@ from opendata.models.user import UserRole
 
 
 def hash_password(password: str) -> str:
-    """
-    Hash a password using bcrypt.
+    """Hash a password using bcrypt.
 
     Args:
         password: Plain text password
@@ -36,8 +34,7 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """
-    Verify a password against its hash.
+    """Verify a password against its hash.
 
     Args:
         plain_password: Plain text password to verify
@@ -58,8 +55,7 @@ def create_access_token(
     data: dict[str, Any],
     expires_delta: timedelta | None = None,
 ) -> str:
-    """
-    Create a JWT access token.
+    """Create a JWT access token.
 
     Args:
         data: Data to encode in the token (typically user_id, email, etc.)
@@ -71,9 +67,11 @@ def create_access_token(
     to_encode = data.copy()
 
     if expires_delta:
-        expire = datetime.now(UTC) + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
+        expire = datetime.now(timezone.utc) + timedelta(
+            minutes=settings.access_token_expire_minutes
+        )
 
     to_encode.update(
         {
@@ -94,8 +92,7 @@ def create_refresh_token(
     data: dict[str, Any],
     expires_delta: timedelta | None = None,
 ) -> str:
-    """
-    Create a JWT refresh token.
+    """Create a JWT refresh token.
 
     Args:
         data: Data to encode in the token (typically user_id)
@@ -107,9 +104,9 @@ def create_refresh_token(
     to_encode = data.copy()
 
     if expires_delta:
-        expire = datetime.now(UTC) + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.now(UTC) + timedelta(days=settings.refresh_token_expire_days)
+        expire = datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_expire_days)
 
     to_encode.update(
         {
@@ -126,8 +123,7 @@ def create_refresh_token(
 
 
 def decode_token(token: str) -> dict[str, Any] | None:
-    """
-    Decode and verify a JWT token.
+    """Decode and verify a JWT token.
 
     Args:
         token: JWT token to decode
@@ -136,19 +132,25 @@ def decode_token(token: str) -> dict[str, Any] | None:
         Decoded token payload or None if invalid
     """
     try:
-        return jwt.decode(  # type: ignore[no-any-return]
+        # Annotated intermediate: pyjwt 2.10 stubs declare decode() as
+        # returning Any (needing an ignore here), while 2.14+ returns
+        # dict[str, Any] (making that ignore "unused"). The annotation is
+        # correct under both, keeping mypy counts stable across versions.
+        payload: dict[str, Any] = jwt.decode(
             token,
             settings.secret_key,
             algorithms=[settings.algorithm],
         )
+        return payload
     except PyJWTError as e:
         logger.warning(f"Token decode failed: {e}")
         return None
 
 
-def verify_token(token: str, token_type: str = "access") -> dict[str, Any] | None:
-    """
-    Verify and decode a JWT token of specific type.
+# "token_type" is a label of which JWT kind is expected ("access"/"refresh"),
+# not a secret; the S107/B107 name pattern match is a false positive.
+def verify_token(token: str, token_type: str = "access") -> dict[str, Any] | None:  # noqa: S107  # nosec B107
+    """Verify and decode a JWT token of specific type.
 
     Args:
         token: JWT token to verify
@@ -169,8 +171,7 @@ def verify_token(token: str, token_type: str = "access") -> dict[str, Any] | Non
 
 
 class PermissionChecker:
-    """
-    Permission checker for user authorization.
+    """Permission checker for user authorization.
 
     Supports role-based and ownership-based access control.
     """
@@ -195,8 +196,7 @@ class PermissionChecker:
     def can_access_resource(
         user_role: UserRole | str, user_id: int, resource_owner_id: int
     ) -> bool:
-        """
-        Check if user can access a resource.
+        """Check if user can access a resource.
 
         Admins can access any resource. Regular users can only
         access their own resources.
@@ -217,8 +217,7 @@ class PermissionChecker:
     def can_modify_user(
         current_user_role: UserRole | str, current_user_id: int, target_user_id: int
     ) -> bool:
-        """
-        Check if current user can modify target user.
+        """Check if current user can modify target user.
 
         Only admins can modify other users. Users can modify themselves.
 

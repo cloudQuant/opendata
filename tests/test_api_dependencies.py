@@ -174,7 +174,9 @@ class TestMainApp:
         """Test all expected routes are registered."""
         from opendata.main import app
 
-        routes = [r.path for r in app.routes if hasattr(r, "path")]
+        # OpenAPI paths: stable across FastAPI versions (app.routes is not;
+        # newer FastAPI keeps included routers as lazy wrappers).
+        routes = list(app.openapi()["paths"])
 
         expected_routes = [
             "/api/auth",
