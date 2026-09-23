@@ -1,0 +1,32 @@
+C1 OECD unemployment exploration, session 5 (2026-09-23)
+=======================================================
+Breakthrough facts
+------------------
+1. THE ERROR BODY WAS THE ANSWER ALL ALONG: the v2 404 body is the
+   literal word "NoResultsFound" - SDMX distinguishes syntax errors
+   (400/403) from "correct key, no such series" (404 NoResultsFound).
+   Every session-2..4 key was grammatically VALID; the combinations
+   simply have no data. The v3 endpoint answers a plain
+   UnsupportedApiVersion for this flow - v3 is closed for DF_LFS.
+2. WEAPON FOUND: GET /data/{flow}?detail=serieskeysonly (no key, no
+   startPeriod) with the structure-specific XML Accept returns 200 and
+   streams the flow's COMPLETE series-key catalogue as self-closing
+   attribute elements:
+       <Series REF_AREA="DNK" MEASURE="POP" UNIT_MEASURE="PS"
+               SEX="_T" AGE="Y_GE80" LABOUR_FORCE_STATUS="EMP"/>
+   The first chunk already proves live dimension values differ from
+   the codelist guesses: DF_LFS carries MEASURE=POP/LF/EMP with
+   UNIT_MEASURE=PS (persons) - the UNE_RATE pairing's real
+   UNIT_MEASURE/AGE values are IN this stream, unguessed.
+3. Cross-country check: DEU/GBR/JPN with the PC._T.Y15T64.UNE tail
+   also NoResultsFound - the wrong piece is in the tail, not the
+   country. First-chunk scan saw no USA UNE_RATE (stream cut before
+   completion; the catalogue is large).
+
+Next session (one move)
+-----------------------
+Stream the full serieskeysonly catalogue with a generous read timeout
+(or accept the chunked scan - grep only for MEASURE="UNE_RATE") and
+read off the real UNIT_MEASURE/AGE/LABOUR_FORCE_STATUS triples. Then
+the USA key assembles from FACTS, the fetcher mirrors the ecb/imf
+skeleton, and GDP follows the same way with DF_TABLE1's own catalogue.
