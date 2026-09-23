@@ -1,0 +1,20 @@
+C1 oecd CPI provider live verification (2026-09-23, manual + e2e)
+=================================================================
+Endpoint : GET https://sdmx.oecd.org/public/rest/data/
+           OECD.SDD.TPS,DSD_PRICES@DF_PRICES_HICP/
+           GBR.M.HICP.CPI.PC.CP09.N.G1
+           ?format=csvfile&startPeriod=2025-06 (public, no key)
+Basis    : verified=True - adapter output asserted against the API's own
+           raw CSV in the live e2e (same source, self-checking the parse).
+Facts    : (from the exploration record, confirmed by the working adapter)
+           - keyless requests stream unpruned history; full-key requests
+             with startPeriod work fine (GBR window 2025-06+ returned
+             through 2026-03, DEU through 2025-12);
+           - trailing dimension values observed: ADJUSTMENT=N (neither
+             seasonally nor calendar adjusted), TRANSFORMATION=G1 (growth
+             rate period-on-period);
+           - the HICP aggregate is NOT CP00 (404 NoRecordsFound) - the
+             aggregate code stays a per-query choice, not hardcoded;
+           - rows are NOT guaranteed date-ordered (latest-first observed),
+             so the adapter sorts and the e2e aligns on max(TIME_PERIOD).
+Test     : tests/test_oecd_provider.py::TestLive (11 passed incl. live)

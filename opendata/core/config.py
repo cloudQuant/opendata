@@ -153,6 +153,18 @@ class Settings(BaseSettings):
         description="IMF_API_BASE_URL: override the IMF DataMapper base URL",
     )
 
+    # oecd transport endpoint (C1 P0). The OECD SDMX API is public (no
+    # key); the flow override exists because the CPI family may move from
+    # the HICP dataflow to the all-measures one (DF_PRICES_ALL).
+    oecd_api_base_url: str | None = Field(
+        default=None,
+        description="OECD_API_BASE_URL: override the OECD SDMX base URL",
+    )
+    oecd_cpi_flow: str | None = Field(
+        default=None,
+        description="OECD_CPI_FLOW: override the CPI dataflow id (default HICP)",
+    )
+
     # Consumer API keys (design §10.3, FR-19)
     api_key_pepper: str | None = Field(
         default=None,
