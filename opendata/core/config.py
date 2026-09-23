@@ -139,6 +139,13 @@ class Settings(BaseSettings):
         description="FRED_API_BASE_URL: override the FRED base URL (default api.stlouisfed.org)",
     )
 
+    # ecb transport endpoint (C1 P0). The ECB Data Portal is public (no key);
+    # the override exists for tests and proxies.
+    ecb_api_base_url: str | None = Field(
+        default=None,
+        description="ECB_API_BASE_URL: override the ECB Data Portal base URL",
+    )
+
     # Consumer API keys (design §10.3, FR-19)
     api_key_pepper: str | None = Field(
         default=None,

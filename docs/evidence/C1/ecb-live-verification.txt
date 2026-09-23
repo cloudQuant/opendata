@@ -1,0 +1,12 @@
+C1 ecb CPI provider live verification (2026-09-23T08:48:10+00:00)
+================================================================================
+Endpoint : GET https://data-api.ecb.europa.eu/service/data/ICP/M.U2.N.000000.4.ANR
+           ?format=csvdata&startPeriod=2025-01 (public, no key)
+Basis    : verified=True - adapter output asserted equal to the portal's own
+           raw CSV in the live e2e (same source, self-checking the parse);
+           window filtering (camelCase startPeriod), dotted-KEY series_id,
+           empty-OBS_VALUE -> None, monthly TIME_PERIOD widened to -01.
+Facts    : lowercase 'startperiod' is silently ignored upstream (full history
+           returned); camelCase works. ANR series currently ends 2025-12 (1.9).
+Test    :
+============================== 1 passed in 1.30s ===============================

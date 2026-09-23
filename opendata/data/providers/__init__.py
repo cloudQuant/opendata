@@ -23,8 +23,15 @@ def register_providers() -> list[Capability]:
     # Lazy import: registration must not pull the ported tree (or any
     # heavy module) into processes that never fetch (design §7.1).
     from opendata.data.providers.akshare import register as register_akshare
+    from opendata.data.providers.ecb import register as register_ecb
     from opendata.data.providers.fred import register as register_fred
     from opendata.data.providers.ths import register as register_ths
     from opendata.data.providers.yfinance import register as register_yfinance
 
-    return [*register_akshare(), *register_fred(), *register_ths(), *register_yfinance()]
+    return [
+        *register_akshare(),
+        *register_ecb(),
+        *register_fred(),
+        *register_ths(),
+        *register_yfinance(),
+    ]

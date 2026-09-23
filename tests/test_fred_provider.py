@@ -31,8 +31,11 @@ def _document(observations: list[dict[str, str]]) -> str:
 
 @pytest.fixture(autouse=True)
 def registry() -> ProviderRegistry:
-    """Registered fetchers for every test, isolated per test via the singleton."""
+    """Registered fetchers for every test (plus the verified sibling source)."""
+    from opendata.data.providers.ecb import register as register_ecb
+
     register()
+    register_ecb()
     return get_registry()
 
 
@@ -56,8 +59,11 @@ class TestRegistration:
         assert register() == []
 
     def test_unverified_capability_is_not_auto_routed(self) -> None:
-        with pytest.raises(LookupError):
-            get_registry().resolve_domain("economy_cpi")
+        """Auto routing must prefer a verified source (ecb) over fred."""
+        from opendata.data.providers.ecb.models.cpi import EcbCpiFetcher
+
+        assert not isinstance(get_registry().resolve_domain("economy_cpi"), FredCpiFetcher)
+        assert isinstance(get_registry().resolve_domain("economy_cpi"), EcbCpiFetcher)
 
 
 class TestQuery:
