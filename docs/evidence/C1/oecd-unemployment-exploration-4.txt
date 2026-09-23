@@ -1,0 +1,30 @@
+C1 OECD unemployment exploration, session 4 (2026-09-23)
+=======================================================
+Hypotheses from session 3, tested and resolved
+-----------------------------------------------
+1. Version-suffixed flow ref
+   (.../OECD.ELS.SAE,DSD_LFS@DF_LFS,1.0/USA.UNE_RATE.PC._T.Y15T64.UNE)
+   -> 404. REJECTED.
+2. v3 endpoint
+   (/public/rest/v3/data/dataflow/OECD.ELS.SAE/DSD_LFS@DF_LFS/1.0/<key>)
+   -> 400 (endpoint EXISTS; key/parameter syntax differs - v3 uses
+   its own query syntax, unexplored). OPEN, needs the v3 key grammar.
+3. Unemployment series in the SDD.TPS short-term-statistics family
+   (the CPI provenance) -> full catalog streamed and grepped: the TPS
+   family contains only PRICES/RHPI/BD/TEC flows. REJECTED.
+
+Standing puzzle
+---------------
+All six component values verified in codelists, all four flow/endpoint
+variants tried, still no 2xx for USA unemployment. The v3 400 is the
+only signal the server has given that the data path exists.
+
+Next session (in order)
+-----------------------
+a. Learn the v3 key grammar (one webfetch of the OECD SDMX API docs or
+   the Data Explorer's "API" button URL for a USA unemployment series -
+   the portal generates the exact working query, which removes ALL
+   guessing).
+b. If v3 works, implement the OECD skeleton with per-flow ClassVars
+   (the ecb/imf pattern) and land unemployment + GDP (GDP still needs
+   its 12-dim key assembled from NAMAIN10 codelists).
