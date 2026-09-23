@@ -82,7 +82,7 @@
 | # | 风险/待决 | 处置建议 |
 |---|-----------|----------|
 | R1 | 全量 175~195 人日 vs 1C 估算 35~55 | 需你确认里程碑切分（§5 表）；否则 1C 无法按期收口 |
-| R2 | 商业源 Key（fmp/intrinio/tiingo/alpha_vantage） | 有 Key 才联调；无 Key 的 provider 只做"骨架 + 契约"或移出（待你给 Key 清单） |
+| R2 | 商业源 Key（fmp/intrinio/tiingo/alpha_vantage） | **决策（2026-09-23）：实现先全部做完**（含 P0/P1/P2 的取数实现与 mock 单测）；**待你补充 Key 后再补真机对照测试**与 `verified` 标记，未对照前不参与 auto 路由（沿用 A2.4 口径） |
 | R3 | 数据权利：海外行情/宏观/商业源再分发条款 | 每个 provider 在实现前登记 `docs/data-rights-registry.md`（AC-1 门禁） |
 | R4 | `openbb-platform-api` 依赖（cftc/imf/nasdaq） | 自研为直连 HTTP；对照表注明该依赖不可引入 |
 | R5 | 对照基准的可获得性（部分上游无稳定公开输出） | 采用"官方文档字段 + 真机录制样本"双证据；无法对照者标注 `unverified` 不参与 auto 路由（沿用 A2.4 口径） |
