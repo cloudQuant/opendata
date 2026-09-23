@@ -1,0 +1,14 @@
+# A5.1 消费方 provider 适配器真机联调（adapter 级）
+# 复算：本地 opendata uvicorn 127.0.0.1:8124 + 真机 API Key（scopes=[stock_daily]）+ dwd 探针 3 根日线
+# provider: src/backend/app/services/market_data/opendata_provider.py（httpx 直连，不引新依赖）
+# 契约: opendata_contracts.py（page_size 与中台 MAX_PAGE_SIZE=1000 对齐）
+
+provider_id      : opendata
+source_revision  : opendata-rest-v1
+contract         : opendata.stock.daily.contract-v1 (opendata-stock-daily-v1)
+observations     : 3
+  - event_at=2026-01-02T00:00:00+00:00 close=10.15 turnover=100000.0
+  - event_at=2026-01-03T00:00:00+00:00 close=10.25 turnover=100001.0
+  - event_at=2026-01-04T00:00:00+00:00 close=10.35 turnover=100002.0
+warnings         : ['OPENDATA_IDENTITY_SOURCE_RESPONSE_BOUND']
+pages            : [{"page": 1, "page_size": 1000, "count": 3, "columns": ["symbol", "trade_date", "open", "high", "low", "close", "volume", "amount", "source", "_merged_at", "_diff_flag", "_as_of"]}]
