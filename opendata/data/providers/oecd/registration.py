@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from opendata.data.providers.oecd.models.cpi import OecdCpiFetcher
+from opendata.data.providers.oecd.models.unemployment import OecdUnemploymentFetcher
 
 if TYPE_CHECKING:
     from opendata.data.capability import Capability
@@ -16,7 +17,10 @@ if TYPE_CHECKING:
     from opendata.data.registry import ProviderRegistry
 
 #: The implemented oecd fetchers.
-FETCHERS: tuple[Fetcher[Any, Any], ...] = (OecdCpiFetcher(),)
+FETCHERS: tuple[Fetcher[Any, Any], ...] = (
+    OecdCpiFetcher(),
+    OecdUnemploymentFetcher(),
+)
 
 
 def register(registry: ProviderRegistry | None = None) -> list[Capability]:

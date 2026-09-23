@@ -1,0 +1,25 @@
+C1 oecd unemployment provider live verification (2026-09-23)
+============================================================
+Endpoint : GET https://sdmx.oecd.org/public/rest/data/
+           OECD.ELS.SAE,DSD_LFS@DF_LFS_INDIC/
+           USA.UNE_RATE.PT_LF_SUB._T.Y15T64.UNE
+           ?format=csvfile&startPeriod=... (public, no key)
+Basis    : verified=True - the key was read off the flow's own
+           serieskeysonly catalogue (no guessing), and the live e2e
+           asserts the adapter's output against the API's own CSV;
+           it passed on its first run.
+Observed : USA unemployment rate 2025 = 4.353 (annual TIME_PERIOD,
+           UNIT_MULT=1); the LFS_INDIC flow carries annual indicators -
+           capability period=1A, market=global (OECD country set).
+How the key was found (5 sessions, closed)
+------------------------------------------
+Session 1-2 guessed keys from codelists (all NoResultsFound);
+session 5 read the error body - "NoResultsFound" means valid syntax,
+no such series - and found the detail=serieskeysonly catalogue
+weapon; this session streamed the DF_LFS_INDIC catalogue and read off
+the real triples: UNIT_MEASURE=PT_LF_SUB (percentage of labour force
+sub-group), not PC or PT_BPSA. DF_LFS itself carries only
+POP/LF/EMP with UNIT_MEASURE=PS - UNE_RATE lives exclusively in
+DF_LFS_INDIC.
+Sibling note : GDP (DF_TABLE1) still needs the same catalogue read
+for its 12-dimension keys; the method is now proven end-to-end.

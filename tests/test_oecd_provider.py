@@ -20,12 +20,24 @@ from opendata.data.providers.oecd import register
 from opendata.data.providers.oecd._source import SOURCE
 from opendata.data.providers.oecd.models._client import OecdProviderError
 from opendata.data.providers.oecd.models.cpi import OecdCpiFetcher
+from opendata.data.providers.oecd.models.unemployment import OecdUnemploymentFetcher
 from opendata.data.registry import get_registry
 
 if TYPE_CHECKING:
     from opendata.data.registry import ProviderRegistry
 
 GBR_CPI_KEY = "GBR.M.HICP.CPI.PC.CP09.N.G1"
+USA_UNEMPLOYMENT_KEY = "USA.UNE_RATE.PT_LF_SUB._T.Y15T64.UNE"
+
+#: The six LFS key dimensions of the USA unemployment series.
+_UNEMP_DIMS = {
+    "REF_AREA": "USA",
+    "MEASURE": "UNE_RATE",
+    "UNIT_MEASURE": "PT_LF_SUB",
+    "SEX": "_T",
+    "AGE": "Y15T64",
+    "LABOUR_FORCE_STATUS": "UNE",
+}
 
 #: The seven non-REF_AREA key dimensions of the GBR CPI series.
 _KEY_DIMS = {
@@ -151,8 +163,55 @@ class TestTransform:
         assert fetcher.transform_data([], fetcher.transform_query(series_key=GBR_CPI_KEY)) == ()
 
 
+class TestUnemploymentDomain:
+    def test_capability_fields(self) -> None:
+        capability = OecdUnemploymentFetcher().capability
+        assert capability.domain == "economy_unemployment"
+        assert capability.period == "1A"
+        assert capability.market == "global"
+        assert capability.verified is True
+
+    def test_auto_routing_prefers_a_verified_source(self) -> None:
+        resolved = get_registry().resolve_domain("economy_unemployment")
+        assert resolved.capability.source in {"imf", "oecd"}
+
+    def test_series_id_is_the_six_dimension_key(self) -> None:
+        fetcher = OecdUnemploymentFetcher()
+        raw = [dict(_UNEMP_DIMS, TIME_PERIOD="2025", OBS_VALUE="4.353")]
+        result = fetcher.transform_data(
+            raw, fetcher.transform_query(series_key=USA_UNEMPLOYMENT_KEY)
+        )
+        assert result[0].series_id == USA_UNEMPLOYMENT_KEY
+        assert result[0].date.isoformat() == "2025-01-01"
+        assert result[0].value == pytest.approx(4.353)
+
+    def test_missing_value_becomes_none(self) -> None:
+        fetcher = OecdUnemploymentFetcher()
+        raw = [dict(_UNEMP_DIMS, TIME_PERIOD="2024", OBS_VALUE="")]
+        result = fetcher.transform_data(
+            raw, fetcher.transform_query(series_key=USA_UNEMPLOYMENT_KEY)
+        )
+        assert result[0].value is None
+
+
 @pytest.mark.e2e
 class TestLive:
+    def test_usa_unemployment_matches_the_api(self) -> None:
+        """Unemployment adapter output equals the API's own CSV."""
+        import datetime
+
+        fetcher = OecdUnemploymentFetcher()
+        query = fetcher.transform_query(
+            series_key=USA_UNEMPLOYMENT_KEY, start_date=datetime.date(2020, 1, 1)
+        )
+        raw = fetcher.extract_data(query, FetchContext(timeout=25.0))
+        result = fetcher.transform_data(raw, query)
+        assert len(result) >= 5
+        assert [point.date for point in result] == sorted(point.date for point in result)
+        assert all(point.series_id == USA_UNEMPLOYMENT_KEY for point in result)
+        latest = max(raw, key=lambda row: str(row["TIME_PERIOD"]))
+        assert result[-1].value == pytest.approx(float(latest["OBS_VALUE"]))
+
     def test_gbr_cpi_matches_the_api(self) -> None:
         """Adapter output equals the SDMX API's own CSV (verified=True basis)."""
         import datetime

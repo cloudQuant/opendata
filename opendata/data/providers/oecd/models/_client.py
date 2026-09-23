@@ -24,6 +24,36 @@ if TYPE_CHECKING:
 OECD_DEFAULT_BASE_URL = "https://sdmx.oecd.org/public/rest"
 
 
+def normalize_period(period: str) -> str:
+    """Widen an SDMX period to a full date.
+
+    SDMX publishes ``YYYY``, ``YYYY-MM`` and ``YYYY-Qn`` periods; monthly
+    and quarterly observations land on the first of the period, the same
+    convention FRED's own dates use.
+
+    Args:
+        period: The published ``TIME_PERIOD`` value.
+
+    Returns:
+        The value widened to ``YYYY-MM-DD``.
+
+    Raises:
+        ValueError: The period does not match a known granularity.
+    """
+    if len(period) == 10:
+        return period
+    if len(period) == 7 and period[5] == "Q":
+        quarter = int(period[6:])
+        if not 1 <= quarter <= 4:
+            raise ValueError(period)
+        return f"{period[:4]}-{3 * quarter - 2:02d}-01"
+    if len(period) == 7:
+        return f"{period}-01"
+    if len(period) == 4:
+        return f"{period}-01-01"
+    raise ValueError(period)
+
+
 class OecdProviderError(RuntimeError):
     """Stable failures of the oecd provider adapter."""
 
@@ -50,6 +80,7 @@ def fetch_observations(
     start: date | None,
     end: date | None,
     timeout: float | None,
+    flow: str | None = None,
 ) -> list[dict[str, Any]]:
     """Fetch one series' observations as CSV rows.
 
@@ -59,6 +90,8 @@ def fetch_observations(
         start: Inclusive start period.
         end: Inclusive end period.
         timeout: Optional request timeout override.
+        flow: Optional dataflow reference override (defaults to the CPI
+            flow; per-domain fetchers declare their own).
 
     Returns:
         Parsed CSV dicts; ``TIME_PERIOD``/``OBS_VALUE`` as published.
@@ -70,7 +103,7 @@ def fetch_observations(
     """
     from opendata.core.config import get_settings
 
-    flow = get_settings().oecd_cpi_flow or "OECD.SDD.TPS,DSD_PRICES@DF_PRICES_HICP"
+    flow = flow or get_settings().oecd_cpi_flow or "OECD.SDD.TPS,DSD_PRICES@DF_PRICES_HICP"
     base_url = get_settings().oecd_api_base_url or OECD_DEFAULT_BASE_URL
     params = {"format": "csvfile"}
     if start is not None:

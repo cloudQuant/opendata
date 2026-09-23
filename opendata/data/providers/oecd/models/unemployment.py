@@ -1,9 +1,11 @@
-"""CPI fetcher (domain ``economy_cpi``, contract ``MacroSeries``).
+"""Unemployment fetcher (domain ``economy_unemployment``, contract ``MacroSeries``).
 
-Serves the macro CPI scenario (AI research / asset allocation) through
-the OECD SDMX API (HICP dataflow, monthly). Series keys are position-
-strict 8-dimension dotted strings carried whole by the query; the
-contract's ``series_id`` is that dotted key.
+Serves the macro unemployment scenario through the OECD LFS indicators
+dataflow (``DF_LFS_INDIC``, annual). The working unemployment-rate key
+was read off the flow's own serieskeysonly catalogue after five
+exploration sessions: ``USA.UNE_RATE.PT_LF_SUB._T.Y15T64.UNE`` - the
+unit is ``PT_LF_SUB`` (percentage of labour force), not a plain
+percentage code.
 
 Clean-room note (design §1.3): self-written; only the OECD SDMX API's
 public interface is referenced.
@@ -23,31 +25,34 @@ from opendata.data.providers.oecd.models._client import (
     normalize_period,
 )
 
+#: The LFS indicators dataflow hosting the unemployment-rate series.
+LFS_INDIC_FLOW = "OECD.ELS.SAE,DSD_LFS@DF_LFS_INDIC"
 
-class CpiQuery(QueryParams):
-    """Validated query for the macro CPI domain."""
+
+class UnemploymentQuery(QueryParams):
+    """Validated query for the macro unemployment domain."""
 
     series_key: str
 
 
-class OecdCpiFetcher(Fetcher[CpiQuery, list[dict[str, object]]]):
-    """HICP observations for one OECD series (a full 8-dimension key)."""
+class OecdUnemploymentFetcher(Fetcher[UnemploymentQuery, list[dict[str, object]]]):
+    """Unemployment-rate observations for one LFS_INDIC series key."""
 
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
-        domain="economy_cpi",
-        period="1M",
-        market="eu",
+        domain="economy_unemployment",
+        period="1A",
+        market="global",
         source=SOURCE,
         verified=True,
     )
 
-    def transform_query(self, **kwargs: object) -> CpiQuery:
+    def transform_query(self, **kwargs: object) -> UnemploymentQuery:
         """Build and validate the query (the validate stage).
 
         Args:
-            **kwargs: ``series_key`` (required, the full position-strict
-                key, for example ``GBR.M.HICP.CPI.PC.CP09.N.G1``),
+            **kwargs: ``series_key`` (required, the full six-dimension key,
+                for example ``USA.UNE_RATE.PT_LF_SUB._T.Y15T64.UNE``),
                 ``start_date``, ``end_date``.
 
         Returns:
@@ -56,9 +61,9 @@ class OecdCpiFetcher(Fetcher[CpiQuery, list[dict[str, object]]]):
         Raises:
             ValidationError: On unknown fields.
         """
-        return CpiQuery.model_validate(kwargs)
+        return UnemploymentQuery.model_validate(kwargs)
 
-    def extract_data(self, params: CpiQuery, ctx: FetchContext) -> list[dict[str, object]]:
+    def extract_data(self, params: UnemploymentQuery, ctx: FetchContext) -> list[dict[str, object]]:
         """Fetch the upstream observations (the fetch_raw stage).
 
         Args:
@@ -77,15 +82,17 @@ class OecdCpiFetcher(Fetcher[CpiQuery, list[dict[str, object]]]):
             start=params.start_date,
             end=params.end_date,
             timeout=ctx.timeout,
+            flow=LFS_INDIC_FLOW,
         )
 
-    def transform_data(self, raw: list[dict[str, object]], params: CpiQuery) -> FetchResult:
+    def transform_data(
+        self, raw: list[dict[str, object]], params: UnemploymentQuery
+    ) -> FetchResult:
         """Normalize the observations (the normalize stage).
 
-        The contract's ``series_id`` is the dotted ``REF_AREA``-prefixed
-        key; SDMX publishes monthly ``TIME_PERIOD`` values, widened to the
-        first of the month (same convention as FRED/ECB), and missing
-        observations as an empty ``OBS_VALUE``, which becomes ``None``.
+        ``series_id`` is the dotted six-dimension LFS key; annual
+        ``TIME_PERIOD`` values widen to January 1st and missing values
+        become ``None``.
 
         Args:
             raw: Parsed CSV rows.
@@ -108,7 +115,7 @@ class OecdCpiFetcher(Fetcher[CpiQuery, list[dict[str, object]]]):
         """Map one CSV row onto a contract record.
 
         Args:
-            row: Parsed CSV row (``REF_AREA``/``TIME_PERIOD``/``OBS_VALUE``).
+            row: Parsed CSV row (six LFS key columns plus period/value).
 
         Returns:
             The record for :meth:`MacroSeries.from_frame`.
@@ -120,7 +127,7 @@ class OecdCpiFetcher(Fetcher[CpiQuery, list[dict[str, object]]]):
         try:
             value_text = str(row["OBS_VALUE"]).strip()
             return {
-                "series_id": OecdCpiFetcher._series_id(row),
+                "series_id": OecdUnemploymentFetcher._series_id(row),
                 "date": normalize_period(str(row["TIME_PERIOD"]).strip()),
                 "value": float(value_text) if value_text else None,
             }
@@ -129,22 +136,6 @@ class OecdCpiFetcher(Fetcher[CpiQuery, list[dict[str, object]]]):
 
     @staticmethod
     def _series_id(row: dict[str, object]) -> str:
-        """Build the dotted series identifier from the row's dimensions.
-
-        Args:
-            row: Parsed CSV row carrying the eight key columns.
-
-        Returns:
-            The dotted key, ``REF_AREA`` first, as published.
-        """
-        parts = [
-            "REF_AREA",
-            "FREQ",
-            "METHODOLOGY",
-            "MEASURE",
-            "UNIT_MEASURE",
-            "EXPENDITURE",
-            "ADJUSTMENT",
-            "TRANSFORMATION",
-        ]
+        """Build the dotted six-dimension LFS series identifier."""
+        parts = ["REF_AREA", "MEASURE", "UNIT_MEASURE", "SEX", "AGE", "LABOUR_FORCE_STATUS"]
         return ".".join(str(row[part]).strip() for part in parts)

@@ -33,8 +33,9 @@ entries:
   - openbb: {model: TBD}
     scenario: 宏观失业率（AI 研究 / 资产配置）
     ours:
-      - {provider: fred, domain: economy_unemployment, contract: MacroSeries, status: registered}
       - {provider: imf, domain: economy_unemployment, contract: MacroSeries, status: verified}
+      - {provider: oecd, domain: economy_unemployment, contract: MacroSeries, status: verified}
+      - {provider: fred, domain: economy_unemployment, contract: MacroSeries, status: registered}
   - openbb: {model: TBD}
     scenario: 宏观利率（AI 研究 / 资产配置 / 回测融资成本）
     ours:
