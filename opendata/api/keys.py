@@ -14,10 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession  # noqa: TC002  # FastAPI resolves it at runtime
 
-from opendata.api.dependencies import (  # noqa: TC001  # FastAPI resolves them at runtime
-    CurrentUser,
-    get_db,
-)
+from opendata.api.dependencies import CurrentUser, get_db
 from opendata.models.user import User, UserRole
 from opendata.services.api_key_service import ApiKeyError, ApiKeyService
 
