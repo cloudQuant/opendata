@@ -1,0 +1,10 @@
+# AC-14 降级验收：opendata_client 模拟消费方取数 + 回测数据准备
+# 复算：python examples/consumer_handoff.py --base-url http://127.0.0.1:8123 --symbol HANDOFF_PROBE --fast 2 --slow 5 --api-key <KEY>
+# 数据：dwd_stock_daily 探针 40 根日线（真实全市场数据受 em 网络阻塞，见 README §3）
+
+symbol      : HANDOFF_PROBE
+calls       : 1
+rows        : 40
+date range  : 2024-01-02 .. 2024-02-10
+elapsed     : 0.14s
+backtest    : final value 100,001.15

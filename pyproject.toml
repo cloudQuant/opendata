@@ -225,6 +225,9 @@ quote-style = "double"
 
 [tool.mypy]
 python_version = "3.10"
+# The consumer client is a sibling package (design §10.4), not a dependency
+# of the app: mypy needs the same path pytest uses to resolve it.
+mypy_path = "opendata_client"
 explicit_package_bases = true
 warn_return_any = true
 warn_unused_configs = true
