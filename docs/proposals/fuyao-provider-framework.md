@@ -1,7 +1,8 @@
 # fuyao 客户端与 provider 框架设计提案（研究稿）
 
 > 迭代 1A/1B/1C · FR-6/FR-7 · AC-7/AC-10 · 日期 2026-09-23
-> 状态：**研究稿，待决策**（第 7 节开放项未确认前不进入实现）
+> 状态：**决策已落档**（D1–D5 见 §7；OpenBB 全量内化的范围另见
+> [`../openbb-migration/README.md`](../openbb-migration/README.md)）
 
 ## 1. 结论摘要
 
@@ -118,12 +119,12 @@ entries:
 3. **门禁扩展**：把 `zero-dep-baseline` 的 AST 断言从"零 akshare"扩展到"零 openbb"；`openbb_map.yaml` 纳入校验（每个已启用 provider 必须有条目且场景非空）。
 4. **数据权利**：新增 provider 的许可/再分发条款登记到 `docs/data-rights-registry.md`（AC-1 已建）。
 
-## 7. 开放决策项（需确认后再实现）
+## 7. 决策记录（已确认 2026-09-23）
 
-| # | 决策 | 选项 |
+| # | 决策 | 结论 |
 |---|------|------|
-| D1 | 框架落点与命名 | (a) 新包 `opendata_providers/`（每 provider 一子包）；(b) 并入 `opendata/data/providers/<source>/` |
-| D2 | fuyao 的推进方式 | (a) A3 先 transport，A3.4 再 provider 化；(b) A3 直接按 provider 形式一步到位 |
-| D3 | OpenBB 移植本期范围 | (a) 只做 yfinance + 宏观四家（P0）；(b) P0 + 有 Key 的商业源；(c) 追加 P2 |
-| D4 | 兼容入口 | (a) 只提供静态对照表（FR-7 原文要求）；(b) 另提供 OpenBB 调用名兼容入口（运行时路由） |
-| D5 | 消费者侧角色 | (a) 只保留 provider 契约/台账与适配，不再自建数据源实现；(b) 消费者继续保留自有 provider |
+| D1 | 框架落点与命名 | 新包 `opendata_providers/`（每 provider 一子包），传输层独立（`opendata_fuyao/`） |
+| D2 | fuyao 推进方式 | A3 先 transport（A3.1→A3.3），A3.4 再 provider 化 |
+| D3 | OpenBB 移植范围 | **P0/P1/P2 全量**纳入规划与实现（清单与工作量见 `../openbb-migration/`） |
+| D4 | 兼容入口 | **整体源代码级迁移并整合** → 经澄清后落为**功能级全量内化**（自研、零 OpenBB 源码，保 BSL 1.1）；形态与命名对照，不提供源码级兼容层 |
+| D5 | 消费者侧角色 | 消费者只保留 provider 契约/台账与适配，数据源实现统一在 opendata（D1/需求 §1） |
