@@ -11,6 +11,7 @@ from opendata.api.data import router as data_router
 from opendata.api.data_query import router as data_query_router
 from opendata.api.executions import router as executions_router
 from opendata.api.interfaces import router as interfaces_router
+from opendata.api.keys import router as keys_router
 from opendata.api.metrics import router as metrics_router
 from opendata.api.scripts import router as scripts_router
 from opendata.api.tables import router as tables_router
@@ -28,6 +29,7 @@ api_router.include_router(data_router, prefix="/data", tags=["Data Acquisition"]
 api_router.include_router(data_query_router, prefix="/data", tags=["Data Query"])
 api_router.include_router(tables_router, prefix="/tables", tags=["Data Tables"])
 api_router.include_router(users_router, prefix="/users", tags=["User Management"])
+api_router.include_router(keys_router, prefix="/keys", tags=["API Keys"])
 api_router.include_router(scripts_router, prefix="/scripts", tags=["Data Scripts"])
 api_router.include_router(executions_router, prefix="/executions", tags=["Task Executions"])
 api_router.include_router(settings_api.router, prefix="/settings", tags=["Settings"])

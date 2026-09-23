@@ -118,6 +118,22 @@ class Settings(BaseSettings):
     )
     task_retry_base_delay: int = Field(default=60, description="Base delay for retry in seconds")
 
+    # Consumer API keys (design §10.3, FR-19)
+    api_key_pepper: str | None = Field(
+        default=None,
+        description=(
+            "API_KEY_PEPPER: additional secret mixed into the api_keys "
+            "hash; falls back to SECRET_KEY when unset"
+        ),
+    )
+    api_key_failure_delay_seconds: float = Field(
+        default=0.05,
+        description=(
+            "API_KEY_FAILURE_DELAY_SECONDS: constant delay on failed API-key "
+            "authentication, flattening the timing signal used for enumeration"
+        ),
+    )
+
     # Retention (design §8.5, milestone A4.10)
     cache_dir: Path = Field(
         default=Path(os.environ.get("LOCALAPPDATA", Path.home() / ".cache")) / "opendata",

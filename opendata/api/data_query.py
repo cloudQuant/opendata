@@ -30,7 +30,10 @@ from loguru import logger
 from sqlalchemy import create_engine, text
 from sqlalchemy.pool import NullPool
 
-from opendata.api.dependencies import CurrentUser  # noqa: TC001  # FastAPI resolves it at runtime
+from opendata.api.dependencies import (  # FastAPI resolves them at runtime
+    CurrentPrincipal,
+    require_domain_access,
+)
 from opendata.api.schemas import APIResponse
 from opendata.data.domains import contract_model, dwd_table, ods_table, require_domain
 from opendata.data.registry import get_registry
@@ -71,12 +74,17 @@ def get_warehouse_engine() -> Engine:
 
 @router.get("/catalog")
 async def data_catalog(
-    current_user: CurrentUser,
+    principal: CurrentPrincipal,
     engine: Engine = Depends(get_warehouse_engine),
 ) -> APIResponse:
-    """List domains with their capabilities and freshness (FR-20)."""
+    """List domains with their capabilities and freshness (FR-20).
+
+    An API key only sees the domains its scopes cover.
+    """
     rows = []
     for capability in get_registry().capabilities():
+        if not principal.allows_domain(capability.domain):
+            continue
         table = dwd_table(capability.domain)
         freshness = await _freshness(engine, capability.domain, table, source=capability.source)
         rows.append(
@@ -98,11 +106,14 @@ async def data_catalog(
 @router.get("/domains/{domain}/freshness")
 async def domain_freshness(
     domain: str,
-    current_user: CurrentUser,
+    principal: CurrentPrincipal,
     source: str | None = Query(None, description="Source for the ods layer"),
     engine: Engine = Depends(get_warehouse_engine),
 ) -> APIResponse:
     """Report how current one domain's data is (design §9.4)."""
+    # Scope comes first: a key that may not read the domain gets the
+    # same 403 whether or not the domain exists.
+    require_domain_access(principal, domain)
     try:
         require_domain(domain)
     except LookupError as exc:
@@ -132,12 +143,15 @@ async def domain_freshness(
 @router.get("/domains/{domain}/diff-report")
 async def domain_diff_report(
     domain: str,
-    current_user: CurrentUser,
+    principal: CurrentPrincipal,
     batch_id: str | None = Query(None, description="Filter one cross-check batch"),
     limit: int = Query(100, ge=1, le=MAX_PAGE_SIZE),
     engine: Engine = Depends(get_warehouse_engine),
 ) -> APIResponse:
     """Query the cross-check differences of one domain (design §8.2)."""
+    # Scope comes first: a key that may not read the domain gets the
+    # same 403 whether or not the domain exists.
+    require_domain_access(principal, domain)
     try:
         require_domain(domain)
     except LookupError as exc:
@@ -165,7 +179,7 @@ async def domain_diff_report(
 async def query_domain_data(
     asset_class: str,
     domain: str,
-    current_user: CurrentUser,
+    principal: CurrentPrincipal,
     symbols: str | None = Query(None, description="Comma separated symbols"),
     start: date | None = Query(None),
     end: date | None = Query(None),
@@ -180,6 +194,9 @@ async def query_domain_data(
     engine: Engine = Depends(get_warehouse_engine),
 ) -> APIResponse:
     """Query one domain's data (design §10.1)."""
+    # Scope comes first: a key that may not read the domain gets the
+    # same 403 whether or not the domain exists.
+    require_domain_access(principal, domain)
     try:
         require_domain(domain)
     except LookupError as exc:
