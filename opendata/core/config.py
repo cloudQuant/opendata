@@ -146,6 +146,13 @@ class Settings(BaseSettings):
         description="ECB_API_BASE_URL: override the ECB Data Portal base URL",
     )
 
+    # imf transport endpoint (C1 P0). The DataMapper is public (no key);
+    # the override exists for tests and proxies.
+    imf_api_base_url: str | None = Field(
+        default=None,
+        description="IMF_API_BASE_URL: override the IMF DataMapper base URL",
+    )
+
     # Consumer API keys (design §10.3, FR-19)
     api_key_pepper: str | None = Field(
         default=None,

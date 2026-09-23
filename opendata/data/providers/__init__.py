@@ -25,6 +25,7 @@ def register_providers() -> list[Capability]:
     from opendata.data.providers.akshare import register as register_akshare
     from opendata.data.providers.ecb import register as register_ecb
     from opendata.data.providers.fred import register as register_fred
+    from opendata.data.providers.imf import register as register_imf
     from opendata.data.providers.ths import register as register_ths
     from opendata.data.providers.yfinance import register as register_yfinance
 
@@ -32,6 +33,7 @@ def register_providers() -> list[Capability]:
         *register_akshare(),
         *register_ecb(),
         *register_fred(),
+        *register_imf(),
         *register_ths(),
         *register_yfinance(),
     ]
