@@ -128,6 +128,17 @@ class Settings(BaseSettings):
         description="FUYAO_API_BASE_URL: override the fuyao base URL (default fuyao.aicubes.cn)",
     )
 
+    # fred transport credentials (C1 P0). Read from .env by pydantic-settings;
+    # unset disables fred routing (R2: implemented first, verified when the
+    # key is provided).
+    fred_api_key: str | None = Field(
+        default=None, description="FRED_API_KEY: FRED web service key; unset disables fred"
+    )
+    fred_api_base_url: str | None = Field(
+        default=None,
+        description="FRED_API_BASE_URL: override the FRED base URL (default api.stlouisfed.org)",
+    )
+
     # Consumer API keys (design §10.3, FR-19)
     api_key_pepper: str | None = Field(
         default=None,

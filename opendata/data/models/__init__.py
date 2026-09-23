@@ -11,12 +11,14 @@ from opendata.data.models.base import ContractModel
 from opendata.data.models.financial import FinancialIndicator, FinancialStatement
 from opendata.data.models.futures import FuturesFundamentals
 from opendata.data.models.index import IndexConstituent
+from opendata.data.models.macro import MacroSeries
 from opendata.data.models.market import Bar, OverseasBar
 from opendata.data.models.metadata import Instrument, TradingCalendar
 
 __all__ = [
     "AdjustFactor",
     "Bar",
+    "MacroSeries",
     "OverseasBar",
     "ContractModel",
     "CorporateAction",
