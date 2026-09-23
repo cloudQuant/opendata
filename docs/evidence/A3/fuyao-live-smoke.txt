@@ -1,0 +1,14 @@
+# A3.2 fuyao P0 端点真机冒烟（价格/日历/标的检索/除复权）
+# 复算：set -a; . ./.env; set +a; python -m pytest tests/test_fuyao_endpoints.py -m e2e -q
+# Key：backtrader_web/.env 的 THS_API_KEY（同生态同一把，已写入本项目 .env，未入库）
+# 上游：https://fuyao.aicubes.cn（只读）
+
+============================= test session starts ==============================
+collected 30 items / 26 deselected / 4 selected
+
+tests/test_fuyao_endpoints.py ....                                       [100%]
+
+======================= 4 passed, 26 deselected in 1.84s =======================
+
+# 抖动记录：同一批用例在连续调用后曾出现 2/4 ConnectError（网络抖动，非代码问题；
+#   重试与指数退避按设计执行了 3 次尝试，随后单次探针立即恢复 HTTP 200）。

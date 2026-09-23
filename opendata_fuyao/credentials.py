@@ -80,6 +80,27 @@ class FuyaoCredentials:
         return f"FuyaoCredentials(api_key={_CREDENTIAL_MASK})"
 
     @classmethod
+    def from_settings(
+        cls, *, api_key: str | None, base_url: str | None = None
+    ) -> FuyaoCredentials | None:
+        """从应用配置构造凭据（``.env`` 经 pydantic-settings 读取）.
+
+        与 :meth:`from_environment` 的分工：本方法由应用层（settings）调用，
+        传输包本身不反向依赖应用配置。
+
+        Args:
+            api_key: 配置中的 Key；未配置返回 ``None``（失败关闭）.
+            base_url: 配置中的 base URL；空值回落默认值.
+
+        Returns:
+            凭据对象；``api_key`` 为空时返回 ``None``.
+        """
+        if not api_key or not api_key.strip():
+            return None
+        normalized = (base_url or "").strip() or DEFAULT_FUYAO_API_BASE_URL
+        return cls(api_key.strip(), base_url=normalized)
+
+    @classmethod
     def from_environment(
         cls, *, environment: Mapping[str, str] | None = None
     ) -> FuyaoCredentials | None:

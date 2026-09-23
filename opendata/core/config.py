@@ -118,6 +118,16 @@ class Settings(BaseSettings):
     )
     task_retry_base_delay: int = Field(default=60, description="Base delay for retry in seconds")
 
+    # fuyao (同花顺扶摇) transport credentials (A3.1/A3.2). Read from .env by
+    # pydantic-settings so the app path has the key without exporting it.
+    fuyao_api_key: str | None = Field(
+        default=None, description="FUYAO_API_KEY: fuyao (THS) API key; unset disables fuyao"
+    )
+    fuyao_api_base_url: str | None = Field(
+        default=None,
+        description="FUYAO_API_BASE_URL: override the fuyao base URL (default fuyao.aicubes.cn)",
+    )
+
     # Consumer API keys (design §10.3, FR-19)
     api_key_pepper: str | None = Field(
         default=None,
