@@ -1,0 +1,13 @@
+# A3.4 fuyao provider 化：经注册表路由取数（真机）
+# 复算：set -a; . ./.env; set +a; python -m pytest tests/test_ths_provider.py -m e2e -q
+# 上游：https://fuyao.aicubes.cn（只读；Key 来自本项目 .env 的 FUYAO_API_KEY）
+
+collected 25 items / 23 deselected / 2 selected
+
+tests/test_ths_provider.py ..
+
+======================= 2 passed, 23 deselected in 1.27s =======================
+
+# 覆盖：source=ths 的 stock_daily（日线 4 根，闭区间日 2024-01-02..01-05 校验）
+#       source=ths 的 stock_action（除权除息事件，按除权日降序）
+# 路由：authority.json 声明 ths 为国内域权威；capabilities 现报 ths/verified=true

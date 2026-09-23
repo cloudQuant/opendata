@@ -437,9 +437,14 @@ class TestCapabilitiesEndpoint:
         payload = response.json()
         by_domain = {entry["domain"]: entry for entry in payload}
         assert set(by_domain) >= P0_DOMAINS
-        assert by_domain["stock_daily"]["source"] == "akshare"
+        # A3.4: the fuyao (ths) provider is now registered and authoritative for
+        # the two domains it serves, so the listing reports it there; the other
+        # P0 domains still come from akshare.
+        assert by_domain["stock_daily"]["source"] == "ths"
         assert by_domain["stock_daily"]["asset_class"] == "equity"
-        assert by_domain["stock_daily"]["verified"] is False
+        assert by_domain["stock_daily"]["verified"] is True
+        assert by_domain["financial_statement"]["source"] == "akshare"
+        assert by_domain["financial_statement"]["verified"] is False
 
     async def test_capabilities_requires_authentication(self, test_client):
         response = await test_client.get("/api/v1/data/capabilities")
