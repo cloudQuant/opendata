@@ -1,0 +1,53 @@
+C1 OECD SDMX exploration record (2026-09-23, P0 preparation)
+=============================================================
+Goal    : find the correct CPI dataflow and key syntax on
+          https://sdmx.oecd.org/public/rest (public, no key).
+
+Facts established live
+----------------------
+1. Dataflow catalog: GET /public/rest/dataflow/all with
+   Accept: application/vnd.sdmx.structure+json; version=2.1 -> 200,
+   1548 flows. CPI-relevant candidates (agency OECD.SDD.TPS):
+     - DSD_PRICES@DF_PRICES_ALL     (all price measures incl. CPI)
+     - DSD_PRICES@DF_PRICES_HICP    (Eurostat HICP)
+     - DSD_CPI_COU_WEIGHTS@DF_CPI_CTRY_WEIGHTS (country weights,
+       not observations)
+   Note: /dataflow/OECD (agency form) returned 404; use /dataflow/all.
+
+2. DSD_PRICES dimension order (8 dimensions):
+     REF_AREA . FREQ . METHODOLOGY . MEASURE . UNIT_MEASURE .
+     EXPENDITURE . ADJUSTMENT . TRANSFORMATION
+   (Accept: application/vnd.sdmx.structure+json without "; version=2.1"
+   is accepted; the versioned Accept on this path returns 406.)
+
+3. Partial key with the value in the wrong dimension
+   ("..CPI...", MEASURE value placed in METHODOLOGY slot) -> 403.
+   OECD is strict about key positions.
+
+4. Keyless data request (/data/{flow}?format=csvfilewithlabels) is
+   ALLOWED (200) but streams an enormous body: reading the full
+   response times out even with startPeriod set (the window does not
+   prune a keyless request usefully). The default first slice starts
+   at REF_AREA=GBR.
+
+5. Streaming read of the first rows is instant and reveals the real
+   dimension values (csvfilewithlabels, first data row):
+     DATAFLOW,OECD.SDD.TPS:DSD_PRICES@DF_PRICES_HICP(1.0),...,I,
+     GBR,United Kingdom,M,Monthly,HICP,...,CPI,Consumer price index,
+     PC,Percentage change,CP09,...
+   So a full CPI key looks like:
+     {REF_AREA}.M.HICP.CPI.PC.{EXPENDITURE}.{ADJUSTMENT}.{TRANSFORMATION}
+   with EXPENDITURE=CP09/CP044 (COICOP classes; CP00 = all items is
+   the expected aggregate), and ADJUSTMENT/TRANSFORMATION values not
+   yet observed (columns truncated at read width).
+
+Next session's path
+-------------------
+a. Stream one more page to read ADJUSTMENT/TRANSFORMATION values, or
+   fetch the DSD codelists for the two trailing dimensions.
+b. Validate a full key, e.g. USA.M.HICP.CPI.PC.CP00.... (expect 200
+   with csvfile) - then implement the provider mirroring ecb (CSV,
+   no key, verified via live self-checking e2e; OECD=verified candidate).
+c. HICP covers OECD/EU only: for USA-style national CPI use
+   DF_PRICES_ALL with the right METHODOLOGY (value to be confirmed
+   from the catalog/codelists, not guessed).
