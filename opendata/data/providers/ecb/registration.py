@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from opendata.data.providers.ecb.models.cpi import EcbCpiFetcher
+from opendata.data.providers.ecb.models.gdp import EcbGdpFetcher
 from opendata.data.providers.ecb.models.rate import EcbRateFetcher
 
 if TYPE_CHECKING:
@@ -19,6 +20,7 @@ if TYPE_CHECKING:
 #: The implemented ecb fetchers.
 FETCHERS: tuple[Fetcher[Any, Any], ...] = (
     EcbCpiFetcher(),
+    EcbGdpFetcher(),
     EcbRateFetcher(),
 )
 

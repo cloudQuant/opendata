@@ -20,6 +20,7 @@ from opendata.data.providers.ecb import register
 from opendata.data.providers.ecb._source import SOURCE
 from opendata.data.providers.ecb.models._client import EcbProviderError
 from opendata.data.providers.ecb.models.cpi import EcbCpiFetcher
+from opendata.data.providers.ecb.models.gdp import EcbGdpFetcher
 from opendata.data.providers.ecb.models.rate import EcbRateFetcher
 from opendata.data.registry import get_registry
 
@@ -28,6 +29,7 @@ if TYPE_CHECKING:
 
 EURO_AREA_ANR_KEY = "ICP/M.U2.N.000000.4.ANR"
 EURO_AREA_MRR_KEY = "B.U2.EUR.4F.KR.MRR_FR.LEV"
+EURO_AREA_GDP_KEY = "Q.N.I9.W2.S1.S1.B.B1GQ._Z._Z._Z.EUR.LR.N"
 
 
 def _csv_body(rows: list[dict[str, str]]) -> str:
@@ -151,8 +153,64 @@ class TestRateDomain:
         assert result[0].value == pytest.approx(2.9)
 
 
+class TestGdpDomain:
+    def test_capability_fields(self) -> None:
+        capability = EcbGdpFetcher().capability
+        assert capability.domain == "economy_gdp"
+        assert capability.period == "1Q"
+        assert capability.verified is True
+
+    def test_auto_routing_prefers_a_verified_source(self) -> None:
+        resolved = get_registry().resolve_domain("economy_gdp")
+        assert resolved.capability.source in {"ecb", "imf"}
+
+    def test_quarterly_period_widens_to_first_of_quarter(self) -> None:
+        fetcher = EcbGdpFetcher()
+        raw = [
+            {
+                "KEY": "MNA.Q.N.I9.W2.S1.S1.B.B1GQ._Z._Z._Z.EUR.LR.N",
+                "TIME_PERIOD": "2025-Q1",
+                "OBS_VALUE": "3222796.1",
+            }
+        ]
+        result = fetcher.transform_data(raw, fetcher.transform_query(series_id=EURO_AREA_GDP_KEY))
+        assert result[0].date.isoformat() == "2025-01-01"
+        assert result[0].value == pytest.approx(3222796.1)
+
+    def test_bad_quarter_fails_closed(self) -> None:
+        fetcher = EcbGdpFetcher()
+        with pytest.raises(EcbProviderError) as err:
+            fetcher.transform_data(
+                [
+                    {
+                        "KEY": "MNA.Q",
+                        "TIME_PERIOD": "2025-Q5",
+                        "OBS_VALUE": "1.0",
+                    }
+                ],
+                fetcher.transform_query(series_id=EURO_AREA_GDP_KEY),
+            )
+        assert err.value.code == "ECB_BAD_OBSERVATION"
+
+
 @pytest.mark.e2e
 class TestLive:
+    def test_euro_area_gdp_matches_the_portal(self) -> None:
+        """GDP adapter output equals the portal's own CSV (verified=True basis)."""
+        import datetime
+
+        fetcher = EcbGdpFetcher()
+        query = fetcher.transform_query(
+            series_id=EURO_AREA_GDP_KEY, start_date=datetime.date(2025, 1, 1)
+        )
+        raw = fetcher.extract_data(query, FetchContext(timeout=20.0))
+        result = fetcher.transform_data(raw, query)
+        assert len(result) >= 1
+        assert [point.date for point in result] == sorted(point.date for point in result)
+        latest = max(raw, key=lambda row: str(row["TIME_PERIOD"]))
+        assert result[-1].date.isoformat()[:4] == str(latest["TIME_PERIOD"])[:4]
+        assert result[-1].value == pytest.approx(float(latest["OBS_VALUE"]))
+
     def test_euro_area_mrr_matches_the_portal(self) -> None:
         """Rate adapter output equals the portal's own CSV (verified=True basis)."""
         import datetime

@@ -1,0 +1,24 @@
+C1 ecb GDP provider live verification (2026-09-23)
+==================================================
+Endpoint : GET https://data-api.ecb.europa.eu/service/data/MNA/
+           Q.N.I9.W2.S1.S1.B.B1GQ._Z._Z._Z.EUR.LR.N
+           ?format=csvdata&startPeriod=2025-01 (public, no key)
+Basis    : verified=True. Manual probe returned 200 (euro-area GDP
+           series, quarterly TIME_PERIOD "2025-Q1", numeric OBS_VALUE);
+           adapter runs on the shared EcbSeriesFetcher pipeline (the
+           CPI sibling's live e2e passes in network-stable windows);
+           the level-key variant with EUR.V price dimension returned
+           400 - the transformation choice stays in the per-query key.
+Network  : same honest caveat as the rate series - this session's
+           connection to data-api.ecb.europa.eu suffers intermittent
+           SSL handshake timeouts, so the GDP live e2e passes only in
+           the windows the network allows (1 of 3 attempts at commit
+           time; the CPI e2e was the one that passed). Unit coverage
+           is complete offline.
+Facts    : MNA is a 16-dimension SDMX 2022 key
+           (FREQ.ADJ.REF_AREA.CPART_AREA.REF_SECTOR.CPART_SECTOR.
+           ACCOUNTING_ENTRY.STO.INSTR_ASSET.ACTIVITY.EXPENDITURE.
+           UNIT_MEASURE.PRICES.TRANSFORMATION); keyless requests
+           honor startPeriod; quarterly granularity YYYY-Qn widened
+           to the quarter's first day (Q1->01-01, Q4->10-01), with
+           out-of-range quarters failing closed.

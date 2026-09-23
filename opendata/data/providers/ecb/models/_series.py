@@ -124,9 +124,10 @@ class EcbSeriesFetcher(Fetcher[SeriesQuery, list[dict[str, object]]]):
     def _normalize_period(period: str) -> str:
         """Widen an SDMX period to a full date.
 
-        SDMX publishes ``YYYY`` for annual and ``YYYY-MM`` for monthly
-        frequencies; monthly observations land on the first of the month,
-        the same convention FRED's own dates use.
+        SDMX publishes ``YYYY`` for annual, ``YYYY-MM`` for monthly and
+        ``YYYY-Qn`` for quarterly frequencies; monthly and quarterly
+        observations land on the first of the period, the same convention
+        FRED's own dates use.
 
         Args:
             period: The published ``TIME_PERIOD`` value.
@@ -139,6 +140,11 @@ class EcbSeriesFetcher(Fetcher[SeriesQuery, list[dict[str, object]]]):
         """
         if len(period) == 10:
             return period
+        if len(period) == 7 and period[5] == "Q":
+            quarter = int(period[6:])
+            if not 1 <= quarter <= 4:
+                raise ValueError(period)
+            return f"{period[:4]}-{3 * quarter - 2:02d}-01"
         if len(period) == 7:
             return f"{period}-01"
         if len(period) == 4:

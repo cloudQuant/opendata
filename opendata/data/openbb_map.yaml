@@ -27,6 +27,7 @@ entries:
   - openbb: {model: TBD}
     scenario: 宏观 GDP（AI 研究 / 资产配置）
     ours:
+      - {provider: ecb, domain: economy_gdp, contract: MacroSeries, status: verified}
       - {provider: fred, domain: economy_gdp, contract: MacroSeries, status: registered}
       - {provider: imf, domain: economy_gdp, contract: MacroSeries, status: verified}
   - openbb: {model: TBD}
