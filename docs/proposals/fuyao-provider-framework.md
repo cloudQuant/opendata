@@ -123,7 +123,7 @@ entries:
 
 | # | 决策 | 结论 |
 |---|------|------|
-| D1 | 框架落点与命名 | 新包 `opendata_providers/`（每 provider 一子包），传输层独立（`opendata_fuyao/`） |
+| D1 | 框架落点与命名 | ~~新包 `opendata_providers/`~~ **修正（2026-09-23，A3.4 落地后）**：provider 一律落现有 `opendata/data/providers/<source>/`（每 provider 一子包）；现有三段式协议（`protocol.py`，其文档已把三段映射为 OpenBB Fetcher 四方法）即"OpenBB 形态等价自研"，A3.4 的 ths provider 已在其上真机验证。单一框架/单一注册表避免双轨；transport 层独立不变（`opendata_fuyao/`、`opendata_http/`、海外 SDK 直用） |
 | D2 | fuyao 推进方式 | A3 先 transport（A3.1→A3.3），A3.4 再 provider 化 |
 | D3 | OpenBB 移植范围 | **P0/P1/P2 全量**纳入规划与实现（清单与工作量见 `../openbb-migration/`） |
 | D4 | 兼容入口 | **整体源代码级迁移并整合** → 经澄清后落为**功能级全量内化**（自研、零 OpenBB 源码，保 BSL 1.1）；形态与命名对照，不提供源码级兼容层 |

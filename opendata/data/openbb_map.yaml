@@ -1,0 +1,45 @@
+# OpenBB 接口名 ↔ 本项目接口名对照表（FR-7 / AC-10，设计 §10.4）。
+#
+# 只描述契约，不含实现。准入规则（AC-10）：每个**已启用**（注册）的
+# provider×domain 必须出现在某条目中，且每个条目的 scenario 非空——
+# 标不出消费场景的能力不进本表（tests/test_openbb_map.py 强制）。
+#
+# OpenBB 模型名只写**确凿**的名字：来自对上游各 provider 包
+# ``Provider(fetcher_dict=...)`` 声明的机械解析（见
+# docs/proposals/openbb-migration/provider-inventory.yaml，基线
+# openbb_platform @ 3e071fcc）。未从该清单确认的名字一律写 ``TBD``，
+# 待从上游公开文档核实后替换——不猜测接口名。
+version: 1
+entries:
+  - openbb: {model: EquityHistorical}
+    scenario: 行情日线（回测数据准备 / dwd 日线域）
+    ours:
+      - {provider: ths, domain: stock_daily, contract: Bar, status: verified}
+      - {provider: akshare, domain: stock_daily, contract: Bar, status: registered}
+      - {provider: yfinance, domain: stock_daily, contract: Bar, status: pending, batch: P0}
+  - openbb: {model: ConsumerPriceIndex}
+    scenario: 宏观 CPI（AI 研究 / 资产配置）
+    ours:
+      - {provider: fred, domain: economy.cpi, contract: MacroSeries, status: pending, batch: P0}
+      - {provider: imf, domain: economy.cpi, contract: MacroSeries, status: pending, batch: P0}
+      - {provider: oecd, domain: economy.cpi, contract: MacroSeries, status: pending, batch: P0}
+  - openbb: {model: TBD}
+    scenario: 除权除息事件（dwd 事件域）
+    ours:
+      - {provider: ths, domain: stock_action, contract: CorporateAction, status: verified}
+      - {provider: akshare, domain: stock_action, contract: CorporateAction, status: registered}
+  - openbb: {model: TBD}
+    scenario: 财务报表（dwd 财务域）
+    ours:
+      - {provider: akshare, domain: financial_statement, contract: FinancialStatement, status: registered}
+      - {provider: ths, domain: financial_statement, contract: FinancialStatement, status: pending}
+  - openbb: {model: TBD}
+    scenario: 财务指标（dwd 财务域）
+    ours:
+      - {provider: akshare, domain: financial_indicator, contract: FinancialIndicator, status: registered}
+      - {provider: ths, domain: financial_indicator, contract: FinancialIndicator, status: pending}
+  - openbb: {model: TBD}
+    scenario: 指数成分股（dwd 指数域）
+    ours:
+      - {provider: akshare, domain: index_constituent, contract: IndexConstituent, status: registered}
+      - {provider: ths, domain: index_constituent, contract: IndexConstituent, status: pending}

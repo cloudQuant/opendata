@@ -35,7 +35,7 @@
 |-------------|------------------|------------|------|
 | `core/openbb_core/provider`（抽象/Fetcher/模型基类） | core 351 py / 3.4 万行 | `opendata_providers/core/`：Provider 接口类、QueryParams、Fetcher 四方法、注册（entry points） | 自研子集（只实现我们路由需要的部分） |
 | `core` 其余（api/app/build/env/路由组装） | 同上 | 由 `opendata/data/registry.py` + `opendata_providers/core/` 承担；REST 走现有 FastAPI（A4.9） | 形态对齐，不照搬 |
-| `providers/*`（32 个） | **348 个 fetcher 模型** | `opendata_providers/<provider>/`，逐个自研 | 见 `provider-inventory.yaml` 与 §5 批次 |
+| `providers/*`（32 个） | **348 个 fetcher 模型** | `opendata/data/providers/<provider>/`（现有三段式协议，D1 修正后单一框架），逐个自研 | 见 `provider-inventory.yaml` 与 §5 批次 |
 | `extensions/*`（命令层 equity/crypto/economy…） | 189 py | 统一的 domain 路由（现有 Capability：asset_class/domain/period/market/source）+ REST/WS | 以"能力面等价"验收，不逐命令照搬 |
 | `cli` | — | `opendata/cli.py` 扩展 provider 子命令（列能力/取数/自检） | 覆盖主要工作流 |
 | `desktop`（Electron 前端） | — | 无 | **建议移出**：与数据中台定位无关且无消费场景（AC-10 准入：标不出场景即移出本迭代）；如需"桌面体验"，由消费方前端承接 |
@@ -50,7 +50,7 @@
 | 取数器 | `DomainFetcher.prepare_query / fetch_sync / fetch_async / normalize` | `transform_query / extract_data / aextract_data / transform_data` | 现有三段式 `extract_data` 直接落位 |
 | 标准化模型 | 现有契约模型（Bar/AdjustFactor/…）+ 新增宏观/海外模型 | `standard_models/*` | 不重复建模 |
 | 插件注册 | 现有 `ProviderRegistry`（`asset_class:domain:period:market:source`）+ entry points | extension entry point | 路由语义不变 |
-| 对照表 | `openbb_map.yaml`（OpenBB provider+model ↔ 本项目 provider+domain+契约） | 无 | 新增；**只描述契约，不含实现** |
+| 对照表 | `opendata/data/openbb_map.yaml`（OpenBB model ↔ 本项目 provider+domain+契约；已落地并由 `tests/test_openbb_map.py` 强制"已启用必须覆盖+场景非空"） | 无 | 已落地（C1.1） |
 
 ## 5. 批次、工作量与里程碑
 
