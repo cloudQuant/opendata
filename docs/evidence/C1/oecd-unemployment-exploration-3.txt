@@ -1,0 +1,38 @@
+C1 OECD unemployment exploration, session 3 (2026-09-23)
+=======================================================
+Correction to session 2's record
+--------------------------------
+Session 2 wrote "Y15T64 exists" from an unverified assumption. Verified
+now: Y15T64 DOES exist, but PT_BPSA / PT_BSA / Y1574S / 1574 do NOT
+exist in CL_UNIT_MEASURE / CL_AGE - the session-2 404s were primarily
+wrong unit codes. PC (percentage) exists and is confirmed.
+
+New exclusions (network was stable; all codelists read successfully)
+---------------------------------------------------------------------
+With every component value now verified in its codelist
+(USA . UNE_RATE . PC . _T . Y15T64 . UNE), the full key STILL returns
+404 on all three LFS flows:
+     DF_LFS        (also with LABOUR_FORCE_STATUS=TOTAL: 404)
+     DF_LFS_INDIC  (404)
+     DF_LFS_COMP   (404)
+Prefix + trailing-dots wildcard (USA.UNE_RATE....) also 404 - the
+cheapest probe from session 2's record is now exhausted.
+
+Remaining hypotheses (untested, in priority order)
+---------------------------------------------------
+1. The data endpoint requires a version-suffixed flow ref
+   (OECD.ELS.SAE,DSD_LFS@DF_LFS,1.0/...) - HICP worked without it, but
+   these flows are stricter in everything else.
+2. The v3 endpoint (/public/rest/v3/data/dataflow/...) has different
+   key semantics for these flows.
+3. USA's unemployment series lives in a different flow family entirely
+   (the SDD.TPS short-term statistics flow hosts many MEASURE values
+   the way DF_PRICES_ALL hosts CPI; grep the catalog for
+   unemployment-rate series under OECD.SDD.TPS instead of ELS.SAE).
+4. DF_LFS is a structural flow with no direct USA data (INDIC/COMP
+   siblings hold it) - but the same key 404'd there, so this only
+   holds together with hypothesis 1 or 2.
+
+Next session: try hypothesis 1 first (one request), then 2, then grep
+the SDD.TPS catalog for unemployment measures - the STES pattern is
+the proven one (HICP came from there).
