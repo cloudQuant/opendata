@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import Any
 
 from opendata_fuyao.errors import error_for_transport, error_for_upstream_code
@@ -33,6 +34,7 @@ class FuyaoEnvelope:
         request_id: 上游请求 ID。
         items: ``data.item`` 业务数据行（元组，可能为空）。
         data_timestamp_ms: ``data.timestamp`` 毫秒戳（可能为 ``None``）。
+        data: 原始 ``data`` 映射（只读），供 ``presigned_url`` 等非行字段使用。
     """
 
     code: int
@@ -40,6 +42,7 @@ class FuyaoEnvelope:
     request_id: str
     items: tuple[Any, ...]
     data_timestamp_ms: int | None
+    data: Mapping[str, Any]
 
 
 def parse_envelope(payload: Mapping[str, Any]) -> FuyaoEnvelope:
@@ -67,9 +70,11 @@ def parse_envelope(payload: Mapping[str, Any]) -> FuyaoEnvelope:
     data = payload.get("data")
     items: tuple[Any, ...] = ()
     timestamp: int | None = None
+    frozen_data: Mapping[str, Any] = MappingProxyType({})
     if data is not None:
         if not isinstance(data, Mapping):
             raise error_for_transport("envelope_invalid", detail="data")
+        frozen_data = MappingProxyType(dict(data))
         raw_items = data.get("item", ())
         if isinstance(raw_items, (list, tuple)):
             items = tuple(raw_items)
@@ -84,6 +89,7 @@ def parse_envelope(payload: Mapping[str, Any]) -> FuyaoEnvelope:
         request_id=request_id if isinstance(request_id, str) else "",
         items=items,
         data_timestamp_ms=timestamp,
+        data=frozen_data,
     )
 
 

@@ -1,0 +1,9 @@
+# A3.3 fuyao market-dumps 真机冒烟（最近 10 交易日全市场日 K + 复权因子全量）
+# 复算：set -a; . ./.env; set +a; python -m pytest tests/test_fuyao_dumps.py -m e2e -q
+# 上游：https://fuyao.aicubes.cn 预签名链接（o.thsi.cn），链接 300s 有效、不缓存
+
+collected 18 items / 16 deselected / 2 selected
+
+tests/test_fuyao_dumps.py ..
+
+======================= 2 passed, 16 deselected in 7.08s =======================
