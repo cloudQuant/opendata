@@ -1,0 +1,48 @@
+C1 OECD GDP/unemployment exploration record (2026-09-23, session 2)
+===================================================================
+Goal : implement economy_gdp + economy_unemployment on OECD (verified
+       candidates, public no-key API).
+
+Established this session
+------------------------
+1. Catalog (XML stream grep, /dataflow/all; the JSON Accept that worked
+   in session 1 now returns 406 - the portal negotiates erratically):
+     - GDP          : OECD.SDD.NAD, DSD_NAMAIN10@DF_TABLE1 (+_EXPENDITURE)
+     - unemployment : OECD.ELS.SAE, DSD_LFS@DF_LFS
+2. Dimension orders (datastructure/{agency}/{DSD}, JSON Accept works):
+     - DSD_NAMAIN10 (12): FREQ.REF_AREA.SECTOR.COUNTERPART_SECTOR.
+       TRANSACTION.INSTR_ASSET.ACTIVITY.EXPENDITURE.UNIT_MEASURE.
+       PRICE_BASE.TRANSFORMATION.TABLE_IDENTIFIER
+     - DSD_LFS (6): REF_AREA.MEASURE.UNIT_MEASURE.SEX.AGE.
+       LABOUR_FORCE_STATUS
+3. Truncated keys (USA only) -> 403, keyless -> 404: these flows are
+   stricter than the HICP flow (full keys only).
+4. Codelist values confirmed:
+     - CL_MEASURE_LFS: UNE_RATE "Unemployment rate" (4 codes total)
+     - CL_LABOUR_FORCE_STATUS: UNE "Unemployment" (20 codes)
+     - CL_SEX: _T "Total"
+     - CL_AGE: Y15T64 exists (633 codes; also Y15T24, Y1574 unclear)
+     - CL_UNIT_MEASURE: PT_* prefix is NOT percentage; 1164 codes,
+       plain "PC" presumed percentage but NOT yet confirmed in list.
+5. Full-key attempts that returned 404 (wrong combo somewhere):
+     USA.UNE_RATE.PT_BPSA._T.Y1574S.UNE
+     USA.UNE_RATE.PT_BPSA._T.1574.UNE
+     USA.UNE_RATE.PT_BSA._T.Y1574S.UNE
+     USA.UNE_RATE.PT_BPSA._T.Y15T64.UNE
+     USA.UNE_RATE.PT_BSA._T.Y15T64.UNE
+     USA.UNE_RATE.PC._T.Y15T64.UNE
+
+Next session's path (cheapest first)
+------------------------------------
+a. Stream the LFS flow with keyless+startPeriod on the /v2 API path or
+   accept a wider wildcard key (e.g. USA.UNE_RATE....) - if the flow
+   allows prefix-with-trailing-dots, one row reveals all six values.
+   (Trailing-dot wildcard keys were NOT tried - only left-truncation,
+   which 403'd.)
+b. Grep CL_UNIT_MEASURE full list for the exact percentage code and
+   CL_AGE for the working-age code (Y15T64 exists; confirm Y1574S?).
+c. GDP: TABLE1's TRANSACTION + TABLE_IDENTIFIER values are needed -
+   pull the DSD's codelists the same way before assembling the 12-dim
+   key, or switch to DF_TABLE1_EXPENDITURE (GDP expenditure side).
+d. Implementation afterwards mirrors ecb/imf: OECD gains a shared
+   series skeleton (FLOW as a per-domain ClassVar), 20-line fetchers.
