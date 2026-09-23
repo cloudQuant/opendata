@@ -10,6 +10,7 @@
 
 | DoD 项 | 状态 | 证据 |
 |--------|------|------|
+| 保留策略声明并实现（A4.10，承接 AC-19） | **完成** | `opendata/pipeline/retention.py` + `tests/test_retention.py`；设计 §8.5 四类资产生命周期全部落地，永久资产在任何清理路径上 fail-closed |
 | A 股日线双源落库 | **部分**：单源（akshare）链路真机贯通；双源待 A3 THS 凭证（见 §4） | A4.2 ods 写入真机、A4.6 dwd 真机合并、A4.9 真机查询；模板已按「有第二源才接校对」接线（A4.7） |
 | 校对与 dwd 可查 | **完成** | A4.5 校对 + `dq_diff_report`（真机报表用例）、A4.6 dwd 合并、A4.9 REST 查询（`layer=ods|dwd`） |
 | 新鲜度告警生效 | **完成** | A4.8 新鲜度 + 告警矩阵（真机滞后计算、缺表告警、分区缺失、磁盘水位、连续失败） |
@@ -27,6 +28,7 @@
 | A4.6 | dwd 合并服务（权威优先/降级填补/留痕/`_diff_flag`/`_as_of`/修订传播/单源直通） | `1b56477` | `dwd_merge.py` + `DwdMergeService.affected_keys` 传播 + 复用 `DwdWriter`；13 测试（真机 `dwd_stock_daily`） |
 | A4.7 | P0 模板（双源）+ 显式 `ENABLE_SCHEDULER` + 调度时间真机校准 | `f3c4bef`（部分） | `templates.py`（模板接线 ods→merge→校对）、`schedules.yaml`（4 个内置任务）、`scheduling.py`（显式决策）、配置默认由 `true` 改为未显式 + `main.py` lifespan 接入；15 测试。**真机校准与全市场双源待网络/凭证**（见 §4） |
 | A4.8 | 新鲜度检查 + 告警矩阵 | `d9b9480` | `freshness.py`（`freshness_field` 由契约派生、ods 用映射源列名、缺表报 missing 不抛）+ `evaluate_alerts`（freshness/pipeline_failure/consecutive_failures/partition_missing/disk_water）；15 测试 |
+| A4.10 | 保留策略声明与实现（AC-19 保留策略） | 见本节下方 | `opendata/pipeline/retention.py`：策略声明（日线/财务/元数据与 dwd 永久；`dq_diff_report` 聚合 N 天；分钟线归档 N 年；原始响应缓存 TTL）+ 执行器（`purge_expired_rows`/`purge_diff_report`/`purge_minute_archives`/`purge_raw_response_cache`/`export_diff_details`）；**永久资产拒绝清理**、窗口越界拒绝、标识符白名单；配置 `CACHE_DIR`/`CACHE_TTL_SECONDS`/`RETENTION_DIFF_REPORT_DAYS`/`RETENTION_MINUTE_YEARS`；25 测试（含真机清理与导出） |
 | A4.9 | REST 最小集 + 参数白名单 + 注入用例 | `40d6542` | `query.py` + `api/data_query.py`：`GET /api/v1/data/{asset_class}/{domain}`、`/catalog`、`/{domain}/freshness`、`/{domain}/diff-report`；字段白名单（键恒选）、`symbols` 绑定参数、页码/页大小上限、枚举校验；27 测试 |
 
 ## 3. 门禁与覆盖率
@@ -46,7 +48,7 @@
 | AC-8「A 股日线**双源**（ths + akshare）全市场落 ods 两表」 | 缺 A3 同花顺 fuyao 凭证（当前仅 akshare 单源）；单源链路已真机贯通，模板在第二源存在时自动接入 A4.5 校对 | 凭证到位后跑 A4.7 模板全市场 dry run，双表落库并生成 `dq_diff_report` |
 | AC-13「调度时间业务校准」 | 需真机观测「当日日线何时可拉」，而 `push2his/push2delay.eastmoney.com` 对本网络持续 `RemoteDisconnected`（sina、em datacenter、中证站点正常） | 恢复后实测调窗；当前 cron 为占位值（`schedules.yaml` 已注明） |
 | A2.5 两个 kline 保真用例 | 同上网络原因 | `python scripts/codemod/compare_with_upstream.py --record` 一条命令补齐（`--compare` 存在 pending 时返回非零，不会静默通过） |
-| AC-19「保留策略声明并实现」（计划将该项划入 A4） | A4 任务表（A4.1~A4.9）未列该任务，**计划与 AC 映射不一致**；当前仅有既有的执行记录保留（`retention="30 days"`），数仓侧（日线永久/分钟线 N 年/缓存 TTL/差异明细导出）未实现 | 待决策：补 A4.10 任务实现，或明确改由 1B/B3 承接 |
+| ~~AC-19「保留策略声明并实现」~~ **已闭合** | 原计划与 AC 映射不一致（A4 任务表无对应任务） | 已按决策新增 **A4.10** 并实现（`retention.py` + 25 测试）；任务表与 DoD 已同步（实施计划 A4.10 行）；运营侧（备份自动化/配额监控/配置项清单）仍归 B3 |
 
 ## 5. 本里程碑修复的缺陷与门禁收益
 

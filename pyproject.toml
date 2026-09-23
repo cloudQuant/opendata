@@ -205,6 +205,9 @@ runtime-evaluated-base-classes = [
 # page_sql builds ORDER BY from inspector-validated column names and binds the
 # pagination values; S608 flags the f-string that assembles those identifiers.
 "opendata/pipeline/table_page.py" = ["S608"]
+# Retention purge/export: table and column names pass _identifier()'s
+# word-character whitelist before quoting, and the cutoff is a bind parameter.
+"opendata/pipeline/retention.py" = ["S608"]
 # /tables export and metadata queries: table names come from _get_safe_table_name
 # (safe_table_name validates ^[A-Za-z_][A-Za-z0-9_]*$) and page ordering goes
 # through page_sql; every value is a bind parameter.

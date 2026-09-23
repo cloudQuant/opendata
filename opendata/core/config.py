@@ -118,6 +118,23 @@ class Settings(BaseSettings):
     )
     task_retry_base_delay: int = Field(default=60, description="Base delay for retry in seconds")
 
+    # Retention (design §8.5, milestone A4.10)
+    cache_dir: Path = Field(
+        default=Path(os.environ.get("LOCALAPPDATA", Path.home() / ".cache")) / "opendata",
+        description="CACHE_DIR: root for raw-response cache files (never versioned)",
+    )
+    cache_ttl_seconds: int = Field(
+        default=900, description="CACHE_TTL_SECONDS: raw-response cache TTL in seconds"
+    )
+    retention_diff_report_days: int = Field(
+        default=90,
+        description="RETENTION_DIFF_REPORT_DAYS: dq_diff_report aggregate retention in days",
+    )
+    retention_minute_years: int = Field(
+        default=10,
+        description="RETENTION_MINUTE_YEARS: minute-line archive retention in years",
+    )
+
     # Rate Limiting
     rate_limit_per_minute: int = Field(default=100, description="Rate limit per minute per user")
     rate_limit_burst: int = Field(default=200, description="Rate limit burst size")
@@ -183,6 +200,19 @@ class Settings(BaseSettings):
                     "SECURITY ERROR: Default secret key detected in production! "
                     "Set SECRET_KEY to a unique random value."
                 )
+        return v
+
+    @field_validator(
+        "cache_ttl_seconds",
+        "retention_diff_report_days",
+        "retention_minute_years",
+        mode="after",
+    )
+    @classmethod
+    def validate_positive_retention(cls, v: int, info: ValidationInfo) -> int:
+        """Reject non-positive retention limits (a zero would purge everything)."""
+        if v <= 0:
+            raise ValueError(f"{info.field_name} must be positive, got {v}")
         return v
 
     @field_validator("cors_origins", mode="before")
