@@ -1,0 +1,14 @@
+# A3.3b fuyao dump 入库（真机全市场 dump → ods，键级幂等）
+# 复算：set -a; . ./.env; set +a; python -m pytest tests/test_dump_import.py -q（e2e 用例走本地 MySQL）
+# 上游：fuyao market-dumps 预签名链接（300s 有效，不缓存）
+
+## 真机导入结果（本地数据仓库）
+a_share_daily_k_1d_none_10d        : 下载 1.0 MB  | dump 55510 行 → 选中 55510 → 写入 55510
+  重复导入同一 dump               : 仍 55510 行（ods_stock_daily_ths 行数=55510，批次数=1）
+a_share_adjustment_factors_event_none_all: 下载 0.3 MB  | dump 57442 行 → 选中 57442 → 写入 57442
+  落库行数=57441（完全重复行被 event_key 塌陷为 1 行；同日不同事件保留）
+
+## 说明
+- 日 K 只取 adjusted=none（D10），派生 trade_date 作为分区键；
+- 事件表键为 (thscode, ex_date, event_key)，event_key = 事件载荷 sha256 前 32 位；
+- 未导入 10 年全量 dump（约 1300 万行，按 30k 行/s 需数分钟），需要时用同一导入器执行。

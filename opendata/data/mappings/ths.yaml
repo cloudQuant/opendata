@@ -1,0 +1,41 @@
+# fuyao (THS) source field mapping (design §8.2 口径映射表).
+#
+# Column names are the real Parquet spellings from the market-dumps that
+# A3.3 pulled from the live API - never guessed. The daily K dump keeps
+# the unadjusted basis only (D10); the adjustment dump carries the event
+# columns and the ods table adds a derived ``event_key`` for idempotency.
+#
+# Adding a field here is a reviewed edit; a source column that is not
+# listed is dropped from the contract view, and a mapped column the frame
+# lacks fails the normalization closed.
+version: 1
+source: ths
+domains:
+  stock_daily:
+    key: [symbol, trade_date]
+    fields:
+      symbol: {from: thscode, normalize: plain}
+      trade_date: {from: trade_date}
+      open: {from: open_price}
+      high: {from: high_price}
+      low: {from: low_price}
+      close: {from: close_price}
+      volume: {from: volume}
+      amount: {from: turnover}
+    tolerances:
+      open: 0.0001
+      high: 0.0001
+      low: 0.0001
+      close: 0.0001
+  stock_action:
+    key: [symbol, ex_date]
+    fields:
+      symbol: {from: thscode, normalize: plain}
+      ex_date: {from: ex_date}
+      cash_dividend: {from: dividend_per_share}
+      stock_dividend: {from: per_share_bonus}
+      rights_shares: {from: allotment_ratio}
+      rights_price: {from: allotment_price}
+    tolerances:
+      cash_dividend: 0.000001
+      stock_dividend: 0.000001
