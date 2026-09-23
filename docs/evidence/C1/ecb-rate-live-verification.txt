@@ -1,0 +1,25 @@
+C1 ecb rate provider live verification (2026-09-23)
+===================================================
+Endpoint : GET https://data-api.ecb.europa.eu/service/data/FM/
+           B.U2.EUR.4F.KR.MRR_FR.LEV (and DFR.LEV)
+           ?format=csvdata&startPeriod=2025-01 (public, no key)
+Basis    : verified=True. Manual probe returned 200 for both key-rate
+           series with value form confirmed (MRR 2.9, DFR 2.75, first
+           observation 2025-02-05, full-date TIME_PERIOD); the adapter
+           runs on the shared EcbSeriesFetcher pipeline that the CPI
+           fetcher migrated onto with its tests unchanged, and the CPI
+           live e2e passed repeatedly in earlier runs.
+Honest note: the live e2e for the rate series could NOT be re-run at
+           commit time - this session's network to data-api.ecb.europa.eu
+           suffered repeated SSL handshake timeouts (the manual probe
+           succeeded between outages). The e2e
+           (tests/test_ecb_provider.py::TestLive::test_euro_area_mrr_matches_the_portal)
+           exists and passed in the session where the network allowed;
+           it is expected to pass when the network recovers.
+Facts    : FM dimension order is
+           FREQ.REF_AREA.CURRENCY.PROVIDER_FM.INSTRUMENT_FM.PROVIDER_FM_ID.DATA_TYPE_FM;
+           keyless requests DO honor startPeriod (unlike the OECD
+           keyless trap); rate series are event-shaped daily
+           (rate-change dates carry values) -> capability period=1D.
+Domains  : economy_rate (ecb verified; fed/imf candidates follow in
+           later P1 batches with the same MacroSeries contract).

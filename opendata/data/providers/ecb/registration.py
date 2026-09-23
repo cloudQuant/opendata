@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from opendata.data.providers.ecb.models.cpi import EcbCpiFetcher
+from opendata.data.providers.ecb.models.rate import EcbRateFetcher
 
 if TYPE_CHECKING:
     from opendata.data.capability import Capability
@@ -16,7 +17,10 @@ if TYPE_CHECKING:
     from opendata.data.registry import ProviderRegistry
 
 #: The implemented ecb fetchers.
-FETCHERS: tuple[Fetcher[Any, Any], ...] = (EcbCpiFetcher(),)
+FETCHERS: tuple[Fetcher[Any, Any], ...] = (
+    EcbCpiFetcher(),
+    EcbRateFetcher(),
+)
 
 
 def register(registry: ProviderRegistry | None = None) -> list[Capability]:

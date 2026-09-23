@@ -35,6 +35,10 @@ entries:
       - {provider: fred, domain: economy_unemployment, contract: MacroSeries, status: registered}
       - {provider: imf, domain: economy_unemployment, contract: MacroSeries, status: verified}
   - openbb: {model: TBD}
+    scenario: 宏观利率（AI 研究 / 资产配置 / 回测融资成本）
+    ours:
+      - {provider: ecb, domain: economy_rate, contract: MacroSeries, status: verified}
+  - openbb: {model: TBD}
     scenario: 除权除息事件（dwd 事件域）
     ours:
       - {provider: ths, domain: stock_action, contract: CorporateAction, status: verified}

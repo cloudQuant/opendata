@@ -20,12 +20,14 @@ from opendata.data.providers.ecb import register
 from opendata.data.providers.ecb._source import SOURCE
 from opendata.data.providers.ecb.models._client import EcbProviderError
 from opendata.data.providers.ecb.models.cpi import EcbCpiFetcher
+from opendata.data.providers.ecb.models.rate import EcbRateFetcher
 from opendata.data.registry import get_registry
 
 if TYPE_CHECKING:
     from opendata.data.registry import ProviderRegistry
 
 EURO_AREA_ANR_KEY = "ICP/M.U2.N.000000.4.ANR"
+EURO_AREA_MRR_KEY = "B.U2.EUR.4F.KR.MRR_FR.LEV"
 
 
 def _csv_body(rows: list[dict[str, str]]) -> str:
@@ -123,8 +125,51 @@ class TestTransform:
         )
 
 
+class TestRateDomain:
+    def test_capability_fields(self) -> None:
+        capability = EcbRateFetcher().capability
+        assert capability.domain == "economy_rate"
+        assert capability.period == "1D"
+        assert capability.market == "eu"
+        assert capability.verified is True
+
+    def test_auto_routing_prefers_a_verified_source(self) -> None:
+        resolved = get_registry().resolve_domain("economy_rate")
+        assert isinstance(resolved, EcbRateFetcher)
+
+    def test_full_date_period_passes_through(self) -> None:
+        fetcher = EcbRateFetcher()
+        raw = [
+            {
+                "KEY": "FM.B.U2.EUR.4F.KR.MRR_FR.LEV",
+                "TIME_PERIOD": "2025-02-05",
+                "OBS_VALUE": "2.9",
+            },
+        ]
+        result = fetcher.transform_data(raw, fetcher.transform_query(series_id=EURO_AREA_MRR_KEY))
+        assert result[0].date.isoformat() == "2025-02-05"
+        assert result[0].value == pytest.approx(2.9)
+
+
 @pytest.mark.e2e
 class TestLive:
+    def test_euro_area_mrr_matches_the_portal(self) -> None:
+        """Rate adapter output equals the portal's own CSV (verified=True basis)."""
+        import datetime
+
+        fetcher = EcbRateFetcher()
+        query = fetcher.transform_query(
+            series_id=EURO_AREA_MRR_KEY, start_date=datetime.date(2025, 1, 1)
+        )
+        raw = fetcher.extract_data(query, FetchContext(timeout=20.0))
+        result = fetcher.transform_data(raw, query)
+        assert len(result) >= 1
+        assert all(point.series_id == "FM.B.U2.EUR.4F.KR.MRR_FR.LEV" for point in result)
+        assert [point.date for point in result] == sorted(point.date for point in result)
+        latest = max(raw, key=lambda row: str(row["TIME_PERIOD"]))
+        assert result[-1].date.isoformat() == str(latest["TIME_PERIOD"])
+        assert result[-1].value == pytest.approx(float(latest["OBS_VALUE"]))
+
     def test_euro_area_anr_matches_the_portal(self) -> None:
         """Adapter output equals the portal's own CSV (verified=True basis).
 
