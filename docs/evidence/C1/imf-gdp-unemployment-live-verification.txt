@@ -1,0 +1,14 @@
+C1 imf GDP/unemployment live verification (2026-09-23, manual + basis for verified=True)
+======================================================================================
+Endpoint : https://www.imf.org/external/datamapper/api/v1/{NGDP_RPCH|LUR}/USA
+           (public, no key; same document shape as PCPIPCH)
+Basis    : adapter output verified live through the base-class pipeline -
+           window filter (start 2023) returned 9 annual rows per series.
+Facts    : the DataMapper publishes PROJECTIONS alongside observations
+           (both series run through 2031; USA NGDP_RPCH 2031 = 1.8,
+           LUR 2031 = 3.9, observed 2026-09-23). The contract keeps a
+           single value field - projections vs observations is a window
+           choice for the consumer, documented here as the source's
+           semantics. Occasional SSL handshake timeouts occur (retried).
+Domains  : economy_gdp (imf verified, fred R2 waiting on key),
+           economy_unemployment (imf verified, fred R2).

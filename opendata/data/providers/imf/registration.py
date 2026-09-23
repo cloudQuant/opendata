@@ -9,6 +9,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from opendata.data.providers.imf.models.cpi import ImfCpiFetcher
+from opendata.data.providers.imf.models.gdp import ImfGdpFetcher
+from opendata.data.providers.imf.models.unemployment import ImfUnemploymentFetcher
 
 if TYPE_CHECKING:
     from opendata.data.capability import Capability
@@ -16,7 +18,11 @@ if TYPE_CHECKING:
     from opendata.data.registry import ProviderRegistry
 
 #: The implemented imf fetchers.
-FETCHERS: tuple[Fetcher[Any, Any], ...] = (ImfCpiFetcher(),)
+FETCHERS: tuple[Fetcher[Any, Any], ...] = (
+    ImfCpiFetcher(),
+    ImfGdpFetcher(),
+    ImfUnemploymentFetcher(),
+)
 
 
 def register(registry: ProviderRegistry | None = None) -> list[Capability]:

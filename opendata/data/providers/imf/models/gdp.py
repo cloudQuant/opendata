@@ -1,7 +1,8 @@
-"""CPI fetcher (domain ``economy_cpi``, contract ``MacroSeries``).
+"""GDP fetcher (domain ``economy_gdp``, contract ``MacroSeries``).
 
 The generic pipeline lives on :class:`ImfIndicatorFetcher`; this module
-only declares the capability (indicator ``PCPIPCH``).
+only declares the capability (indicator ``NGDP_RPCH``, annual real GDP
+growth).
 """
 
 from typing import ClassVar
@@ -11,12 +12,12 @@ from opendata.data.providers.imf._source import SOURCE
 from opendata.data.providers.imf.models._indicator import ImfIndicatorFetcher
 
 
-class ImfCpiFetcher(ImfIndicatorFetcher):
-    """Annual CPI observations for one country (``PCPIPCH``)."""
+class ImfGdpFetcher(ImfIndicatorFetcher):
+    """Annual real GDP growth for one country (``NGDP_RPCH``)."""
 
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
-        domain="economy_cpi",
+        domain="economy_gdp",
         period="1A",
         market="global",
         source=SOURCE,

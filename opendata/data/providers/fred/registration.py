@@ -9,6 +9,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from opendata.data.providers.fred.models.cpi import FredCpiFetcher
+from opendata.data.providers.fred.models.gdp import FredGdpFetcher
+from opendata.data.providers.fred.models.unemployment import FredUnemploymentFetcher
 
 if TYPE_CHECKING:
     from opendata.data.capability import Capability
@@ -16,7 +18,11 @@ if TYPE_CHECKING:
     from opendata.data.registry import ProviderRegistry
 
 #: The implemented fred fetchers.
-FETCHERS: tuple[Fetcher[Any, Any], ...] = (FredCpiFetcher(),)
+FETCHERS: tuple[Fetcher[Any, Any], ...] = (
+    FredCpiFetcher(),
+    FredGdpFetcher(),
+    FredUnemploymentFetcher(),
+)
 
 
 def register(registry: ProviderRegistry | None = None) -> list[Capability]:

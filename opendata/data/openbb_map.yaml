@@ -25,6 +25,16 @@ entries:
       - {provider: imf, domain: economy_cpi, contract: MacroSeries, status: verified}
       - {provider: oecd, domain: economy_cpi, contract: MacroSeries, status: verified}
   - openbb: {model: TBD}
+    scenario: 宏观 GDP（AI 研究 / 资产配置）
+    ours:
+      - {provider: fred, domain: economy_gdp, contract: MacroSeries, status: registered}
+      - {provider: imf, domain: economy_gdp, contract: MacroSeries, status: verified}
+  - openbb: {model: TBD}
+    scenario: 宏观失业率（AI 研究 / 资产配置）
+    ours:
+      - {provider: fred, domain: economy_unemployment, contract: MacroSeries, status: registered}
+      - {provider: imf, domain: economy_unemployment, contract: MacroSeries, status: verified}
+  - openbb: {model: TBD}
     scenario: 除权除息事件（dwd 事件域）
     ours:
       - {provider: ths, domain: stock_action, contract: CorporateAction, status: verified}
