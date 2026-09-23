@@ -53,6 +53,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Per-source SDK extras (FR-7: provider SDKs stay optional; providers fail
+# closed with a stable code when the extra is not installed).
+providers = [
+    "yfinance>=0.2.40",
+]
 web = [
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.32.0",

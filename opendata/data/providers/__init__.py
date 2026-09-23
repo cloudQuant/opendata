@@ -24,5 +24,6 @@ def register_providers() -> list[Capability]:
     # heavy module) into processes that never fetch (design §7.1).
     from opendata.data.providers.akshare import register as register_akshare
     from opendata.data.providers.ths import register as register_ths
+    from opendata.data.providers.yfinance import register as register_yfinance
 
-    return [*register_akshare(), *register_ths()]
+    return [*register_akshare(), *register_ths(), *register_yfinance()]

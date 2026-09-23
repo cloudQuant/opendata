@@ -16,7 +16,7 @@ entries:
     ours:
       - {provider: ths, domain: stock_daily, contract: Bar, status: verified}
       - {provider: akshare, domain: stock_daily, contract: Bar, status: registered}
-      - {provider: yfinance, domain: stock_daily, contract: Bar, status: pending, batch: P0}
+      - {provider: yfinance, domain: stock_daily_overseas, contract: OverseasBar, status: registered}
   - openbb: {model: ConsumerPriceIndex}
     scenario: 宏观 CPI（AI 研究 / 资产配置）
     ours:

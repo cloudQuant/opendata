@@ -1,0 +1,28 @@
+C1 yfinance provider live probe (2026-09-23T08:18:36+00:00)
+================================================================================
+
+Environment
+-----------
+yfinance 0.2.66 (installed in py313; declared as the optional
+`providers` extra in pyproject.toml, FR-7).
+
+Probe
+-----
+First anonymous request through the adapter path
+(Ticker("AAPL").history(start=2026-09-14, end=2026-09-22, interval=1d,
+auto_adjust=True, timeout=10)) failed immediately:
+
+    YFRateLimitError: Too Many Requests. Rate limited. Try after a while.
+
+Yahoo's anonymous access is currently rate limited from this host. No
+retries were attempted (hammering a 429 only deepens it).
+
+Consequence (R2 applied as designed)
+------------------------------------
+The provider is registered with verified=false, so auto routing skips it;
+explicit-source routing works and fails closed with stable codes when the
+SDK or the upstream is unavailable. Live verification against official
+values stays open, exactly like the commercial sources (R2: implement
+first, verify when fixtures/keys are available). If the rate limit
+persists, P0 verification needs either cookie/crumb handling or a
+low-frequency verification window.
