@@ -40,9 +40,11 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOT_PATH = "docs/quality/ratchet.json"
 SNAPSHOT_VERSION = 1
 
-SELFDEV_PATHS = ("opendata", "scripts", "tests")
-MYPY_PATHS = ("opendata",)
-BANDIT_PATHS = ("opendata", "scripts")
+# A3.1: the fuyao transport package is self-developed, so it joins the
+# self-dev scope (controlled scope switch; counts must not rise because of it).
+SELFDEV_PATHS = ("opendata", "opendata_fuyao", "scripts", "tests")
+MYPY_PATHS = ("opendata", "opendata_fuyao")
+BANDIT_PATHS = ("opendata", "opendata_fuyao", "scripts")
 # A2.2: the ported tree moved from akshare/ to opendata_http/;
 # the scope switch was re-frozen with --force-update (controlled event).
 PORTED_PATHS = ("opendata_http",)

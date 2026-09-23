@@ -1,0 +1,97 @@
+# fuyao（同花顺扶摇）错误业务文案表（FR-21 / A3.1）
+#
+# 设计 §A3.1：错误码/失败分类 → 中文业务文案 + 处置建议，供前端提示、
+# 执行记录与 WS 错误帧统一使用。本文件是数据，不是代码；加载时 fail-closed
+# 校验（缺字段/重复码直接报错），并由测试断言"每个已登记错误码都有条目"。
+version: 1
+messages:
+  0:
+    category: ok
+    message: 成功
+    advice: 无需处置
+  # 请求构造错误：应在本地前置拦截，不应发送到上游
+  1001:
+    category: request
+    message: 请求参数缺失或格式非法
+    advice: 检查端点的必填参数与格式后重试；此类错误不应发送到上游
+  1002:
+    category: request
+    message: 请求参数超出取值域
+    advice: 按端点文档收敛参数取值范围（如窗口跨度、数量上限）
+  1003:
+    category: request
+    message: 查询窗口超出上限（单次不超过 10 年）
+    advice: 客户端按 10 年切块后逐块请求并合并
+  1004:
+    category: request
+    message: 请求的标的或字段不受支持
+    advice: 核对标的信息与端点支持的数据域，必要时降级到其它端点
+  # 鉴权/权限：不可重试，立即失败
+  2001:
+    category: auth
+    message: 接口鉴权失败（API Key 无效或已失效）
+    advice: 检查 FUYAO_API_KEY 是否有效、是否过期；不要在日志中输出 Key 明文
+  2003:
+    category: permission
+    message: 无该数据端点的访问权限
+    advice: 联系数据提供方确认账号权限或接口采购范围
+  # 领域结果（标的问题）：不重试，按业务语义处理
+  3001:
+    category: empty
+    message: 查询区间内确认无数据
+    advice: 属正常业务结果；不要重试，按缺失语义记录
+  3002:
+    category: not_ready
+    message: 数据尚未就绪（上游当日数据未生成）
+    advice: 稍后在采集窗口重试；不要在高频循环中重试
+  3004:
+    category: unsupported
+    message: 该标的身份不被此端点支持
+    advice: 检查标的市场/类型与端点匹配关系，改为受支持的端点
+  # 限流：与 HTTP 429 等效，指数退避 + 熔断
+  4001:
+    category: rate_limited
+    message: 请求频率超限（限流）
+    advice: 按退避策略降低请求频率；检查是否触发配额上限
+  # 暂时性错误（服务端/上游）：可限次重试
+  5001:
+    category: transient
+    message: 上游服务内部错误
+    advice: 指数退避后限次重试；持续失败则记录并降级
+  5002:
+    category: transient
+    message: 上游服务响应超时
+    advice: 增大超时或退避重试；批量任务降低并发
+  5003:
+    category: transient
+    message: 上游服务暂时不可用
+    advice: 退避重试并观察；必要时切换到备用数据源
+  # 传输层（本地客户端）分类
+  rate_limited:
+    category: rate_limited
+    message: 请求频率超限（HTTP 429）
+    advice: 按 Retry-After 或退避策略降低请求频率，冷却期内不再发起请求
+  network:
+    category: network
+    message: 网络连接失败或中断
+    advice: 检查网络/代理与目标域名可达性后重试
+  timeout:
+    category: timeout
+    message: 请求超时
+    advice: 检查网络质量与超时配置；批量任务降低并发
+  response_too_large:
+    category: response_too_large
+    message: 响应体超出大小上限
+    advice: 收敛查询窗口或标的数量，避免单次拉取过大
+  envelope_invalid:
+    category: envelope_invalid
+    message: 响应信封格式非法（无法解析）
+    advice: 记录请求 ID 与原始响应片段，必要时联系数据提供方
+  http:
+    category: http
+    message: HTTP 层返回异常状态码
+    advice: 按状态码分类处置：401/403 检查鉴权与权限，429 退避，5xx 重试
+  unknown:
+    category: unknown
+    message: 未登记的错误码
+    advice: 记录错误码与请求 ID，补充进错误业务文案表后按分类处置

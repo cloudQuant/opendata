@@ -109,7 +109,7 @@ Repository = "https://github.com/cloudQuant/opendata"
 # opendata.api/core/... were never packaged (editable installs hid it).
 # "akshare" is the vendored upstream source tree; it is renamed to
 # opendata_http/ in milestone A2, after which it must be removed here.
-include = ["opendata*", "opendata_http*"]
+include = ["opendata*", "opendata_http*", "opendata_fuyao*"]
 
 [tool.setuptools.package-data]
 # §5.5: *.js must be explicit - the previous config missed it and wheels
@@ -124,6 +124,8 @@ opendata = [
     "pipeline/schedules.yaml",
 ]
 opendata_http = ["*.dat", "*.json", "*.js"]
+# A3.1: the fuyao error-message table is data shipped with the package.
+opendata_fuyao = ["*.yaml"]
 "opendata_http.file_fold" = ["*.json"]
 
 [tool.ruff]
