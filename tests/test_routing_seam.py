@@ -166,45 +166,33 @@ class TestResolveDomain:
             registry.resolve_domain("stock_daily", source="akshare")
 
 
-class TestLoaderSwitch:
-    async def test_legacy_dispatch(self, monkeypatch):
-        monkeypatch.setattr("opendata.core.config.settings.interface_scan_source", "legacy")
-        loader = InterfaceLoader()
-        legacy = AsyncMock(return_value=7)
-        monkeypatch.setattr(loader, "load_from_akshare", legacy)
-
-        assert await loader.load_interfaces() == 7
-        legacy.assert_awaited_once()
-
-    async def test_registry_dispatch_empty_is_zero(self, monkeypatch):
-        monkeypatch.setattr("opendata.core.config.settings.interface_scan_source", "registry")
+class TestLoaderCatalog:
+    async def test_registry_scan_empty_is_zero(self, monkeypatch):
         patch_registry(monkeypatch)
         loader = InterfaceLoader()
         assert await loader.load_interfaces() == 0
 
-    async def test_unknown_switch_fails_closed(self, monkeypatch):
-        monkeypatch.setattr("opendata.core.config.settings.interface_scan_source", "bogus")
+    async def test_registry_scan_creates_one_row_per_domain(self, monkeypatch, test_engine):
+        from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
+        monkeypatch.setattr(
+            "opendata.services.interface_loader.async_session_maker",
+            async_sessionmaker(test_engine, class_=AsyncSession, expire_on_commit=False),
+        )
+        ths = make_capability()
+        registry = patch_registry(monkeypatch, StubFetcher(ths, result=None))
+        registry.register(  # a second source of the same domain folds
+            StubFetcher(
+                Capability(
+                    asset_class="equity",
+                    domain="stock_daily",
+                    period="1D",
+                    market="cn",
+                    source="akshare",
+                    verified=True,
+                ),
+                result=None,
+            )
+        )
         loader = InterfaceLoader()
-        with pytest.raises(ValueError, match="unknown interface_scan_source"):
-            await loader.load_interfaces()
-
-
-class TestLoaderHelpers:
-    def test_load_function_safe_swallows_errors(self):
-        loader = InterfaceLoader()
-        # load_from_akshare's per-function isolation lives here now.
-        assert loader._load_function_safe.__doc__ is not None
-
-    async def test_load_function_safe_reports_failure(self):
-        loader = InterfaceLoader()
-
-        async def boom(func_name: str, func: Any, db: object) -> None:
-            raise RuntimeError("boom")
-
-        monkey_db = MagicMock()
-        original = loader._load_interface
-        loader._load_interface = boom  # type: ignore[method-assign]
-        try:
-            assert await loader._load_function_safe("x", boom, monkey_db) is False  # type: ignore[arg-type]
-        finally:
-            loader._load_interface = original  # type: ignore[method-assign]
+        assert await loader.load_interfaces() == 1

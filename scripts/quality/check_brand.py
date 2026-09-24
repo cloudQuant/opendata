@@ -80,10 +80,15 @@ PROVENANCE_FILES = (
 )
 
 # These tools have to name the identifiers they search for or rewrite, so the
-# tokens legitimately appear in their own source.
+# tokens legitimately appear in their own source. ``legacy_transfer.py`` (and
+# its test) migrate data OUT of the pre-migration database, which is a real,
+# existing artifact literally named ``akshare_data`` - naming it is factual,
+# not a stale brand claim (AC-15 / C3).
 WHITELISTED_FILES = (
     "scripts/codemod/rename_app_to_opendata.py",
+    "scripts/codemod/legacy_transfer.py",
     "scripts/quality/check_brand.py",
+    "tests/test_legacy_transfer.py",
 )
 
 

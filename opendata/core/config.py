@@ -244,14 +244,6 @@ class Settings(BaseSettings):
     akshare_call_timeout: int = Field(default=120, description="akshare call timeout")
     akshare_retry_attempts: int = Field(default=3, description="akshare retry attempts")
 
-    # A1.7 compatibility switch (FR-17): legacy akshare reflection vs
-    # provider-registry capabilities as the interface catalog source.
-    # registry stays empty until P0 fetchers register (A2.4).
-    interface_scan_source: str = Field(
-        default="legacy",
-        description="Interface catalog scan source: legacy | registry",
-    )
-
     @field_validator("secret_key", mode="after")
     @classmethod
     def validate_secret_key(cls, v: str, info: ValidationInfo) -> str:

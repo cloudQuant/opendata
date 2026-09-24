@@ -48,6 +48,12 @@ class TestFreshnessField:
 
 
 class TestCheckFreshness:
+    #: The freshness probes run on a scratch table, never on the real
+    #: ods table: real data (for example the AC-15 legacy migration)
+    #: legitimately carries rows newer than a probe date, and a check
+    #: must not depend on the warehouse being empty to be assertable.
+    TABLE = "ods_stock_daily_akshare_freshness_probe"
+
     @pytest.fixture
     def warehouse(self):
         from opendata.core.config import settings
@@ -58,10 +64,20 @@ class TestCheckFreshness:
                 connection.execute(text("SELECT 1"))
         except Exception as exc:  # any connection failure means skip
             pytest.skip(f"warehouse database unreachable: {type(exc).__name__}")
+        with engine.begin() as connection:
+            connection.execute(
+                text("DROP TABLE IF EXISTS `ods_stock_daily_akshare_freshness_probe`")
+            )
+            connection.execute(
+                text(
+                    "CREATE TABLE `ods_stock_daily_akshare_freshness_probe` "
+                    "LIKE `ods_stock_daily_akshare`"
+                )
+            )
         yield engine
         with engine.begin() as connection:
             connection.execute(
-                text("DELETE FROM `ods_stock_daily_akshare` WHERE 股票代码 = 'FRESHNESS_PROBE'")
+                text("DROP TABLE IF EXISTS `ods_stock_daily_akshare_freshness_probe`")
             )
         engine.dispose()
 
@@ -69,7 +85,7 @@ class TestCheckFreshness:
         with warehouse.begin() as connection:
             connection.execute(
                 text(
-                    "INSERT INTO `ods_stock_daily_akshare` "
+                    "INSERT INTO `ods_stock_daily_akshare_freshness_probe` "
                     "(`日期`, `股票代码`, `开盘`, `收盘`, `最高`, `最低`, `成交量`, `成交额`, "
                     "`_source`, `_fetched_at`, `_batch_id`) VALUES "
                     "('2024-01-05', 'FRESHNESS_PROBE', 1, 1, 1, 1, 1, 1, "
@@ -81,7 +97,7 @@ class TestCheckFreshness:
             warehouse,
             "stock_daily",
             "akshare",
-            table="ods_stock_daily_akshare",
+            table="ods_stock_daily_akshare_freshness_probe",
             expected=EXPECTED,
         )
 
@@ -94,7 +110,7 @@ class TestCheckFreshness:
         with warehouse.begin() as connection:
             connection.execute(
                 text(
-                    "INSERT INTO `ods_stock_daily_akshare` "
+                    "INSERT INTO `ods_stock_daily_akshare_freshness_probe` "
                     "(`日期`, `股票代码`, `开盘`, `收盘`, `最高`, `最低`, `成交量`, `成交额`, "
                     "`_source`, `_fetched_at`, `_batch_id`) VALUES "
                     "(:day, 'FRESHNESS_PROBE', 1, 1, 1, 1, 1, 1, "
@@ -107,7 +123,7 @@ class TestCheckFreshness:
             warehouse,
             "stock_daily",
             "akshare",
-            table="ods_stock_daily_akshare",
+            table="ods_stock_daily_akshare_freshness_probe",
             expected=EXPECTED,
         )
 

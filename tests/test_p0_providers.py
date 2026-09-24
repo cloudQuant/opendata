@@ -388,17 +388,17 @@ class TestRegistryScan:
         monkeypatch.setattr(loader_module, "async_session_maker", test_maker)
         yield loader, registry
 
-    async def test_load_from_registry_creates_domain_named_rows(self, registry_loader):
+    async def test_load_interfaces_creates_domain_named_rows(self, registry_loader):
         loader, _ = registry_loader
 
-        count = await loader.load_from_registry()
+        count = await loader.load_interfaces()
 
         assert count == 5
 
     async def test_rows_are_named_by_domain_with_contract_models(self, registry_loader, test_db):
         loader, _ = registry_loader
 
-        await loader.load_from_registry()
+        await loader.load_interfaces()
 
         async with async_sessionmaker(
             test_db.bind, class_=AsyncSession, expire_on_commit=False
@@ -413,11 +413,11 @@ class TestRegistryScan:
         assert by_name["stock_daily"].return_type == "Bar"
         assert by_name["stock_daily"].category_id is not None
 
-    async def test_load_from_registry_is_idempotent(self, registry_loader):
+    async def test_load_interfaces_is_idempotent(self, registry_loader):
         loader, _ = registry_loader
 
-        await loader.load_from_registry()
-        assert await loader.load_from_registry() == 0
+        await loader.load_interfaces()
+        assert await loader.load_interfaces() == 0
 
 
 class TestCapabilitiesEndpoint:

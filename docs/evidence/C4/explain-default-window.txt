@@ -1,0 +1,36 @@
+# AC-11 默认时间窗 EXPLAIN 证据（2026-09-24）
+
+需求：不带日期区间的查询强制默认窗口（365 天），避免全分区扫描。
+
+查询构造：`opendata/pipeline/query.py::build_data_select` 在无 start/end 时
+强制 `window_bounds`（默认 365 天）。
+
+## 结果（dwd_stock_daily，年分区 p2024/p2025/p2026 + pmax）
+
+带默认窗口（start=2025-09-24, end=2026-09-24）：
+  EXPLAIN type = `p2025,p2026`（仅 2 个分区被访问）
+
+不带窗口（仅 symbol 过滤）：
+  EXPLAIN type = `p2024,p2025,p2026,pmax`（全部分区）
+
+## 复算
+
+set -a; . ./.env; set +a; python - <<'PY'
+from sqlalchemy import create_engine, text
+from opendata.core.config import settings
+from opendata.pipeline.query import DataQuery, build_data_select
+from opendata.data.domains import dwd_table
+from sqlalchemy import inspect
+engine = create_engine(settings.data_database_url)
+with engine.connect() as c:
+    table = dwd_table("stock_daily")
+    columns = [col["name"] for col in inspect(c).get_columns(table)]
+    q = DataQuery(domain="stock_daily", layer="dwd", symbols=("600519",), page=1, page_size=100)
+    sql, params = build_data_select(q, table=table, columns=columns, key=("symbol","trade_date"))
+    row = c.execute(text("EXPLAIN " + sql), params).fetchone()
+    print("with default window partitions:", row[5])
+    sql2 = f"SELECT * FROM `{table}` WHERE `symbol` IN (:s0)"
+    e2 = c.execute(text("EXPLAIN " + sql2), {"s0": "600519"}).fetchone()
+    print("without window partitions:", e2[5])
+engine.dispose()
+PY

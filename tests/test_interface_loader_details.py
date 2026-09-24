@@ -1,171 +1,104 @@
-"""
-Interface loader detailed tests.
+"""Interface loader tests (B5.1: registry-only catalog, FR-17).
 
-Tests for InterfaceLoader functionality.
+The legacy reflection scan and its parsing helpers were removed with
+the compatibility switch; what remains is the registry-derived catalog,
+so the tests cover its idempotency and fail-closed behaviour instead.
 """
+
+from __future__ import annotations
 
 import pytest
 
+from opendata.data.registry import ProviderRegistry
+from opendata.services.interface_loader import InterfaceLoader
 
-class TestInterfaceLoaderInit:
-    """Test InterfaceLoader initialization."""
 
+def _capability(**overrides):
+    from opendata.data.capability import Capability
+
+    defaults = {
+        "asset_class": "equity",
+        "domain": "stock_daily",
+        "period": "1D",
+        "market": "cn",
+        "source": "ths",
+        "verified": True,
+    }
+    defaults.update(overrides)
+    return Capability(**defaults)
+
+
+class TestLoaderInit:
     def test_interface_loader_init(self):
-        """Test InterfaceLoader can be initialized."""
-        from opendata.services.interface_loader import InterfaceLoader
-
         loader = InterfaceLoader()
         assert loader is not None
 
-    def test_category_mapping_constant(self):
-        """Test CATEGORY_MAPPING constant exists."""
-        from opendata.services.interface_loader import InterfaceLoader
+    def test_loader_is_a_singleton(self):
+        from opendata.services.interface_loader import interface_loader
 
-        assert hasattr(InterfaceLoader, "CATEGORY_MAPPING")
-        assert isinstance(InterfaceLoader.CATEGORY_MAPPING, dict)
+        assert isinstance(interface_loader, InterfaceLoader)
 
 
-class TestInterfaceLoaderCategories:
-    """Test InterfaceLoader category functionality."""
-
-    def test_category_mapping_has_common_categories(self):
-        """Test category mapping has common data categories."""
-        from opendata.services.interface_loader import InterfaceLoader
-
-        mapping = InterfaceLoader.CATEGORY_MAPPING
-
-        # Check for common financial data categories
-        categories = list(mapping.keys())
-        category_values = list(mapping.values())
-
-        # Should have at least some categories
-        assert len(categories) > 0
-
-    def test_get_category_method(self):
-        """Test _get_category method."""
-        from opendata.services.interface_loader import InterfaceLoader
-
+class TestLoadCapabilityInterface:
+    async def test_creates_one_row_per_domain(self, test_db):
         loader = InterfaceLoader()
 
-        # Test getting category from function name
-        category = loader._get_category("stock_zh_a_hist")
+        first = await loader._load_capability_interface(_capability(), test_db)
+        second = await loader._load_capability_interface(_capability(source="akshare"), test_db)
 
-        # Should return a category
-        assert category is not None
-        assert isinstance(category, str)
+        assert first is True
+        assert second is False  # same domain folds into the existing row
 
-    def test_get_category_unknown_function(self):
-        """Test _get_category with unknown function."""
-        from opendata.services.interface_loader import InterfaceLoader
-
+    async def test_unknown_domain_fails_closed(self, test_db):
         loader = InterfaceLoader()
 
-        # Unknown function should still return a category
-        category = loader._get_category("unknown_function_xyz")
+        with pytest.raises(LookupError):
+            await loader._load_capability_interface(_capability(domain="not_a_domain"), test_db)
 
-        assert category is not None
+    async def test_category_is_created_from_the_asset_class(self, test_db):
+        from sqlalchemy import select
 
-
-class TestInterfaceLoaderDisplayName:
-    """Test display name generation."""
-
-    def test_generate_display_name(self):
-        """Test generating display names."""
-        from opendata.services.interface_loader import InterfaceLoader
+        from opendata.models.interface import InterfaceCategory
 
         loader = InterfaceLoader()
+        await loader._load_capability_interface(_capability(), test_db)
 
-        # Test underscore to space conversion
-        display_name = loader._generate_display_name("stock_zh_a_hist")
+        result = await test_db.execute(
+            select(InterfaceCategory).where(InterfaceCategory.name == "equity")
+        )
+        assert result.scalar_one_or_none() is not None
 
-        assert display_name is not None
-        assert " " in display_name or display_name == display_name
 
+class TestLoadInterfaces:
+    async def test_empty_registry_is_an_empty_catalog(self, monkeypatch):
+        from opendata.data import registry as registry_module
 
-class TestInterfaceLoaderParameterParsing:
-    """Test parameter parsing."""
-
-    def test_get_type_name(self):
-        """Test _get_type_name method."""
-        from opendata.services.interface_loader import InterfaceLoader
-
+        registry = ProviderRegistry()
+        monkeypatch.setattr(registry_module, "get_registry", lambda: registry)
         loader = InterfaceLoader()
 
-        # Test with basic types
-        str_type = loader._get_type_name(str)
-        assert str_type is not None
+        assert await loader.load_interfaces() == 0
 
-        int_type = loader._get_type_name(int)
-        assert int_type is not None
+    async def test_load_interfaces_commits_the_catalog(self, monkeypatch, test_engine):
+        from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-    def test_map_parameter_type(self):
-        """Test _map_parameter_type method."""
-        from opendata.services.interface_loader import InterfaceLoader
+        from opendata.data import registry as registry_module
 
+        monkeypatch.setattr(
+            "opendata.services.interface_loader.async_session_maker",
+            async_sessionmaker(test_engine, class_=AsyncSession, expire_on_commit=False),
+        )
+        registry = ProviderRegistry()
+        registry.register(StubFetcher())
+        monkeypatch.setattr(registry_module, "get_registry", lambda: registry)
         loader = InterfaceLoader()
 
-        # Test type mapping
-        param_type = loader._map_parameter_type(str)
-        assert param_type is not None
+        count = await loader.load_interfaces()
 
-        int_type = loader._map_parameter_type(int)
-        assert int_type is not None
+        assert count == 1
 
 
-class TestInterfaceLoaderDocParsing:
-    """Test docstring parsing."""
+class StubFetcher:
+    """Minimal capability carrier for the registry tests."""
 
-    def test_parse_description_empty(self):
-        """Test parsing empty description."""
-        from opendata.services.interface_loader import InterfaceLoader
-
-        loader = InterfaceLoader()
-
-        description = loader._parse_description("")
-
-        assert description == ""
-
-    def test_parse_example_with_no_example(self):
-        """Test parsing docstring without example."""
-        from opendata.services.interface_loader import InterfaceLoader
-
-        loader = InterfaceLoader()
-
-        example = loader._parse_example("This is a docstring without example")
-
-        # Should return None
-        assert example is None
-
-
-class TestInterfaceLoaderLoadFromAkshare:
-    """Test loading from akshare."""
-
-    @pytest.mark.asyncio
-    async def test_load_from_akshare_method_exists(self):
-        """Test load_from_akshare method exists and is async."""
-        import inspect
-
-        from opendata.services.interface_loader import InterfaceLoader
-
-        loader = InterfaceLoader()
-
-        # Verify method exists and is async
-        assert hasattr(loader, "load_from_akshare")
-        assert inspect.iscoroutinefunction(loader.load_from_akshare)
-
-
-class TestInterfaceLoaderDiscoverFunctions:
-    """Test function discovery."""
-
-    def test_discover_akshare_functions(self):
-        """Test discovering akshare functions."""
-        from opendata.services.interface_loader import InterfaceLoader
-
-        loader = InterfaceLoader()
-
-        functions = loader._discover_akshare_functions()
-
-        # Should return a list
-        assert isinstance(functions, list)
-        # Should have at least some functions
-        assert len(functions) > 0
+    capability = _capability()

@@ -160,12 +160,11 @@ class TestInterfaceLoaderService:
         loader = InterfaceLoader()
         assert loader is not None
 
-    def test_interface_loader_categories(self):
-        """Test category mapping."""
+    def test_interface_loader_is_registry_backed(self):
+        """The legacy reflection scan was removed (B5.1)."""
         from opendata.services.interface_loader import InterfaceLoader
 
-        assert hasattr(InterfaceLoader, "CATEGORY_MAPPING")
-        assert isinstance(InterfaceLoader.CATEGORY_MAPPING, dict)
+        assert not hasattr(InterfaceLoader, "CATEGORY_MAPPING")
 
 
 class TestProviderIntegration:
