@@ -204,6 +204,41 @@ class TestDownload:
     def test_default_size_cap_is_512mb(self):
         assert DEFAULT_MAX_DUMP_BYTES == 512 * 1024 * 1024
 
+    def test_transport_error_is_translated_and_leaves_no_partial_file(self, tmp_path: Path):
+        """流式下载中途炸掉：翻译为 network 且半成品必须删掉，否则断点续传会读到坏文件."""
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            raise httpx.ReadError("connection reset", request=request)
+
+        with pytest.raises(FuyaoError, match="ReadError") as exc:
+            download_dump(
+                presigned=PresignedDownload(url="https://o.thsi.cn/x.parquet"),
+                dump_id="a_share_daily_k_1d_none_10d",
+                dest_dir=tmp_path,
+                transport=httpx.MockTransport(handler),
+            )
+
+        assert exc.value.category == "network"
+        assert list(tmp_path.iterdir()) == []
+
+    def test_malformed_expiry_is_refused(self):
+        """预签名有效期只认 ISO-8601，坏值不能悄悄当成「永不过期」."""
+        from opendata_fuyao import parse_envelope
+
+        payload = {
+            "code": 0,
+            "message": "ok",
+            "request_id": "r",
+            "data": {
+                "presigned_url": "https://o.thsi.cn/x.parquet",
+                "presigned_url_expires_at": "not-a-date",
+                "expires_in_seconds": 300,
+            },
+        }
+
+        with pytest.raises(FuyaoError, match="expires_at"):
+            parse_download_url(parse_envelope(payload))
+
 
 @requires_pyarrow
 class TestParquetReaders:
@@ -280,6 +315,50 @@ class TestParquetReaders:
         pq.write_table(table, path)
 
         with pytest.raises(FuyaoError, match="adjustment_columns"):
+            read_adjustment_factors_dump(path)
+
+    def test_unreadable_parquet_fails_closed(self, tmp_path: Path):
+        """截断/非 Parquet 文件必须报 parquet_unreadable，而不是让 pyarrow 异常外溢."""
+        path = tmp_path / "truncated.parquet"
+        path.write_bytes(b"PAR1\x00\x00not really a parquet file")
+
+        with pytest.raises(FuyaoError, match="parquet_unreadable"):
+            read_daily_k_dump(path)
+
+    def test_daily_k_rejects_a_row_with_unparseable_price(self, tmp_path: Path):
+        """列名齐但值坏（上游改了类型）：失败关闭，不把 NaN/0 塞进 ods 主键."""
+        columns = {column: ["600519.SH"] for column in DAILY_K_COLUMNS}
+        columns |= {
+            "date_ms": [_ms("2024-01-02")],
+            "adjusted": ["none"],
+            "open_price": ["n/a"],
+        }
+
+        path = tmp_path / "bad-value.parquet"
+        pq.write_table(pa.table(columns), path)
+
+        with pytest.raises(FuyaoError, match="daily_k_row"):
+            read_daily_k_dump(path)
+
+    def test_adjustment_rejects_a_row_with_unparseable_number(self, tmp_path: Path):
+        columns = {column: ["600519.SH"] for column in ADJUSTMENT_FACTOR_COLUMNS}
+        columns |= {"ex_date_ms": [_ms("2024-06-19")], "dividend_per_share": ["n/a"]}
+
+        path = tmp_path / "bad-adjustment.parquet"
+        pq.write_table(pa.table(columns), path)
+
+        with pytest.raises(FuyaoError, match="adjustment_row"):
+            read_adjustment_factors_dump(path)
+
+    def test_empty_adjustment_dump_fails_closed(self, tmp_path: Path):
+        """列齐但零行：空 dump 不能当成「今日无除权」写入水位."""
+        path = tmp_path / "empty-adjustment.parquet"
+        pq.write_table(
+            pa.table({column: [] for column in ADJUSTMENT_FACTOR_COLUMNS}),
+            path,
+        )
+
+        with pytest.raises(FuyaoError, match="adjustment_empty"):
             read_adjustment_factors_dump(path)
 
     def test_missing_pyarrow_is_reported_clearly(self, tmp_path: Path, monkeypatch):

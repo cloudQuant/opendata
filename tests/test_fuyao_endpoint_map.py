@@ -191,3 +191,79 @@ def test_planned_entry_with_path_fails_closed(tmp_path: Path) -> None:
 
     with pytest.raises(FuyaoEndpointMapError, match="must not carry a path"):
         load_endpoint_map(str(_mutate(tmp_path, fake)))
+
+
+def test_planned_entry_with_method_fails_closed(tmp_path: Path) -> None:
+    def fake(payload: dict) -> None:
+        planned = next(e for e in payload["entries"] if e["status"] == "planned")
+        planned["method"] = "GET"
+
+    with pytest.raises(FuyaoEndpointMapError, match="must not carry a path or method"):
+        load_endpoint_map(str(_mutate(tmp_path, fake)))
+
+
+def test_unreadable_map_fails_closed(tmp_path: Path) -> None:
+    with pytest.raises(FuyaoEndpointMapError, match="is unreadable"):
+        load_endpoint_map(str(tmp_path / "nowhere" / "endpoint_map.yaml"))
+
+
+def test_map_must_declare_version_one(tmp_path: Path) -> None:
+    for bump in (lambda p: p.update(version=2), lambda p: p.pop("version")):
+        with pytest.raises(FuyaoEndpointMapError, match="must declare version 1"):
+            load_endpoint_map(str(_mutate(tmp_path, bump)))
+
+
+def test_map_must_be_a_mapping(tmp_path: Path) -> None:
+    target = tmp_path / "endpoint_map.yaml"
+    target.write_text("- just\n- a\n- list\n", encoding="utf-8")
+
+    with pytest.raises(FuyaoEndpointMapError, match="must declare version 1"):
+        load_endpoint_map(str(target))
+
+
+@pytest.mark.parametrize(
+    ("mutate", "expected"),
+    [
+        (lambda p: p.pop("sections"), r"needs a non-empty 'sections' list"),
+        (lambda p: p.update(sections=[]), r"needs a non-empty 'sections' list"),
+        (lambda p: p.update(entries=[]), r"needs a non-empty 'entries' list"),
+        (
+            lambda p: p["sections"].append("not-a-mapping"),
+            r"section row 'not-a-mapping' in .* is not a mapping",
+        ),
+        (
+            lambda p: p["sections"].append(
+                {"slug": "ghost", "title": "幽灵页", "family": "星际", "doc_endpoints": 0}
+            ),
+            r"has unknown family '星际'",
+        ),
+        (lambda p: p["sections"][0].update(slug="   "), r"has blank slug/family"),
+        (lambda p: p["sections"][0].update(doc_endpoints="many"), r"needs a non-negative count"),
+        (
+            lambda p: p["entries"].append("not-a-mapping"),
+            r"entry row 'not-a-mapping' in .* is not a mapping",
+        ),
+        (lambda p: _first_real_entry(p).update(path="api/no-leading-slash"), r"needs METHOD /path"),
+        (lambda p: _first_real_entry(p).update(path="   "), r"needs METHOD /path"),
+        (lambda p: _first_real_entry(p).pop("method"), r"needs METHOD /path"),
+        (lambda p: _first_real_entry(p).update(section="no-such-page"), r"must be known"),
+    ],
+)
+def test_malformed_rows_fail_closed(tmp_path: Path, mutate, expected: str) -> None:
+    """映射表的每一条声明式校验都必须真的会响：漏一条就是台账造假."""
+    with pytest.raises(FuyaoEndpointMapError, match=expected):
+        load_endpoint_map(str(_mutate(tmp_path, mutate)))
+
+
+def test_non_string_domain_is_read_as_absent(tmp_path: Path) -> None:
+    """``domain: 0`` 这类脏值按「未填」处理，而不是把 0 当域名去查注册表."""
+
+    def dirty(payload: dict) -> None:
+        entry = _first_real_entry(payload)
+        if "domain" in entry:
+            entry["domain"] = 0
+        else:
+            entry["currency"] = 0  # 无 domain 字段时留一个非空脏值，保证表仍可加载
+
+    loaded = load_endpoint_map(str(_mutate(tmp_path, dirty)))
+    assert len(loaded.entries) == len(load_endpoint_map().entries)

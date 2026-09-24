@@ -272,7 +272,9 @@ module = "opendata.data_fetch.*"
 follow_imports = "skip"
 
 [tool.coverage.run]
-source = ["opendata"]
+# 与 pytest.ini 的 --cov 保持一致（命令行优先级更高）：只改这里不会生效，
+# 裸 `coverage run -m pytest` 才会读到本行。
+source = ["opendata", "opendata_fuyao"]
 omit = ["opendata/__init__.py", "tests/*"]
 branch = true
 
