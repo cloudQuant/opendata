@@ -1,0 +1,25 @@
+AC-10 trading_calendar (ths) vs the bars an independent vendor landed
+
+script: scripts/ops/ths_trading_calendar_cross_check.py
+ours: get_registry().resolve_domain('trading_calendar', source='ths').fetch()
+          (the routing path; endpoint /api/a-share/calendar/trading-days)
+reference: 本库已落库的 bar 日期 —— 有 bar 的那天市场必然开市
+          (akshare 链为独立 vendor，判 PASS/FAIL；ths 链同 vendor，只观测)
+hard criteria: 独立 vendor 落在日历休市日的 bar 日期数 == 0；
+          每条判定腿在日历覆盖窗口内至少 20 个日期（否则算不可判）；
+          日历行严格递增、无重复、全为开市、prev/next 与相邻行一致。
+observe only: 「日历说开市但该区段无 bar」列在最后一栏，不计入 result——
+          搬运缺日与日历多报开市日在 bar 侧无法区分。
+
+calendar      : 242 rows, coverage 2025-09-25..2026-09-24, 1 天前为最后一个开市日
+
+| 参照数据集 | 全表日期数 | 窗口内 | 窗口外 | 休市日有bar | 明细 | 开市日无bar(自身区段) | result |
+|---|---|---|---|---|---|---|---|
+| ods_stock_daily_akshare | 131 | 131 | 0 | 0 | - | 0 | PASS |
+| dwd_stock_daily（source=akshare） | 110 | 110 | 0 | 0 | - | 9 | PASS |
+| dwd_stock_daily（source=ths） | 132 | 132 | 0 | 0 | - | 46 | OBSERVE |
+| ods_stock_daily_ths | 2430 | 242 | 2188 | 0 | - | 0 | OBSERVE |
+
+反向核对（只观测，不判定）：某日日历说开市而本库没有任何 bar，可能是搬运缺日，也可能是日历多报了一个开市日，单凭 bar 无法区分，故不计入 result。
+
+result: PASS (0 failing checks)

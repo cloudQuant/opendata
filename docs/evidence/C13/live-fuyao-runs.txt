@@ -1,0 +1,14 @@
+# C13 真机只读运行（fuyao 凭证经 settings/.env 解析，全程不打印凭证值）
+# branch: dev  HEAD: 500dd10
+# dirty:  M opendata/data/openbb_map.yaml  M opendata/data/providers/ths/registration.py  M tests/test_ths_provider.py ?? docs/evidence/C13/ ?? opendata/data/providers/ths/models/trading_calendar.py ?? scripts/ops/ths_trading_calendar_cross_check.py 
+# python: Python 3.13.5
+
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_daily_bars_to_the_fuyao_source PASSED [ 33%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_corporate_actions_to_the_fuyao_source PASSED [ 66%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_the_trading_calendar_to_the_fuyao_source PASSED [100%]
+======================= 3 passed, 68 deselected in 3.48s =======================
+
+# 夹具更正前后的解析差异（本轮自我更正的实据，只打印是否为 None / 是否抛错）:
+# 本机 FUYAO_API_KEY 不在进程环境里（凭证放在 .env），故：
+#   旧夹具 FuyaoCredentials.from_environment() -> None（于是 pytest.skip，真机腿从未跑过）
+#   新夹具 credentials() -> 解析成功（适配层用的就是它）⇒ 真机腿会真的执行
