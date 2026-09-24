@@ -37,10 +37,14 @@ LAYERS = ("dwd", "ods")
 ADJUST_METHODS = ("none", "qfq", "hfq")
 #: Default window when the caller gives no range (avoids full scans).
 DEFAULT_WINDOW_DAYS = 365
-#: Hard page-size ceiling.
+#: Hard page-size ceiling of the interactive query.
 MAX_PAGE_SIZE = 1_000
 #: Default page size.
 DEFAULT_PAGE_SIZE = 200
+#: Rows one export request may pull (design §10.1 "异步导出" cap).
+EXPORT_MAX_ROWS = 200_000
+#: Rows an export reads per round trip.
+EXPORT_BATCH_ROWS = 10_000
 
 
 @dataclass(frozen=True)
@@ -158,6 +162,7 @@ def build_data_select(
     columns: Sequence[str],
     key: Sequence[str],
     today: date | None = None,
+    max_rows: int = MAX_PAGE_SIZE,
 ) -> tuple[str, dict[str, object]]:
     """Build the paginated SELECT and its bind parameters.
 
@@ -167,6 +172,8 @@ def build_data_select(
         columns: Columns the table has, in table order.
         key: Business-key columns used for deterministic ordering.
         today: Current date (injected for deterministic tests).
+        max_rows: Page-size ceiling; the interactive query keeps the
+            default, the export raises it deliberately.
 
     Returns:
         The SQL text and its parameters.
@@ -184,11 +191,12 @@ def build_data_select(
     start, end = window_bounds(query, today=today or date.today())
     selected = validate_fields(query.fields, available=columns, always_include=key)
     time_field = resolve_time_field(query.domain)
+    page_size = min(query.page_size, max_rows)
     params: dict[str, object] = {
         "start": start,
         "end": end,
-        "limit": min(query.page_size, MAX_PAGE_SIZE),
-        "offset": (query.page - 1) * min(query.page_size, MAX_PAGE_SIZE),
+        "limit": page_size,
+        "offset": (query.page - 1) * page_size,
     }
     where = [f"`{time_field}` >= :start", f"`{time_field}` <= :end"]
     if query.symbols:
@@ -280,7 +288,13 @@ def apply_adjust_to_rows(
     }
     output: list[dict[str, object]] = []
     for row in rows:
-        bar = by_key[(row.get("symbol"), row.get("trade_date"))]
+        # The adjusted bars carry real ``date`` objects (pydantic
+        # coerced them); the query rows still hold the ISO strings the
+        # JSON serializer produced, so the keys are normalized here.
+        trade_date = row.get("trade_date")
+        if isinstance(trade_date, str):
+            trade_date = date.fromisoformat(trade_date)
+        bar = by_key[(row.get("symbol"), trade_date)]
         adjusted_row = dict(row)
         adjusted_row.update(
             {"open": bar.open, "high": bar.high, "low": bar.low, "close": bar.close}

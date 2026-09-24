@@ -21,17 +21,20 @@ reason instead of returning a silently wrong series.
 from __future__ import annotations
 
 import asyncio
+from dataclasses import replace
 from datetime import date
 from functools import lru_cache
 from typing import TYPE_CHECKING, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import StreamingResponse
 from loguru import logger
 from sqlalchemy import create_engine, text
 from sqlalchemy.pool import NullPool
 
 from opendata.api.dependencies import (  # FastAPI resolves them at runtime
     CurrentPrincipal,
+    Principal,
     require_domain_access,
 )
 from opendata.api.schemas import APIResponse
@@ -40,16 +43,19 @@ from opendata.data.registry import get_registry
 from opendata.pipeline.freshness import STATUS_MISSING, check_freshness, ods_freshness
 from opendata.pipeline.query import (
     DEFAULT_PAGE_SIZE,
+    EXPORT_BATCH_ROWS,
+    EXPORT_MAX_ROWS,
     MAX_PAGE_SIZE,
     DataQuery,
     apply_adjust_to_rows,
     build_data_select,
     resolve_time_field,
+    validate_fields,
 )
 from opendata.utils.serialization import serialize_for_json
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import AsyncIterator, Sequence
 
     from sqlalchemy import Engine
 
@@ -194,55 +200,25 @@ async def query_domain_data(
     engine: Engine = Depends(get_warehouse_engine),
 ) -> APIResponse:
     """Query one domain's data (design §10.1)."""
-    # Scope comes first: a key that may not read the domain gets the
-    # same 403 whether or not the domain exists.
-    require_domain_access(principal, domain)
-    try:
-        require_domain(domain)
-    except LookupError as exc:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
-    if layer == "ods" and source == "auto":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="layer=ods needs an explicit source (auto is the merged dwd view)",
-        )
-    registered = {
-        capability.asset_class
-        for capability in get_registry().capabilities()
-        if capability.domain == domain
-    }
-    if not registered:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"domain {domain!r} has no registered capability",
-        )
-    if asset_class not in registered:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"domain {domain!r} is not registered under asset class {asset_class!r}",
-        )
-    table = ods_table(domain, source) if layer == "ods" else dwd_table(domain)
-    columns = await _table_columns(engine, table)
-    if not columns:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"table {table!r} is not available"
-        )
-    query = DataQuery(
+    query = await _validated_query(
+        engine,
+        principal,
+        asset_class=asset_class,
         domain=domain,
-        layer=layer,
-        source=source,
-        symbols=tuple(item.strip() for item in symbols.split(",") if item.strip())
-        if symbols
-        else (),
+        symbols=symbols,
         start=start,
         end=end,
-        fields=tuple(item.strip() for item in fields.split(",") if item.strip()) if fields else (),
-        page=page,
-        page_size=page_size,
+        source=source,
+        layer=layer,
         adjust=adjust,
+        fields=fields,
         period=period,
         report_date=report_date,
+        page=page,
+        page_size=page_size,
     )
+    table = ods_table(domain, source) if layer == "ods" else dwd_table(domain)
+    columns = await _table_columns(engine, table)
     try:
         sql, params = build_data_select(query, table=table, columns=columns, key=_key(domain))
     except ValueError as exc:
@@ -282,6 +258,234 @@ async def query_domain_data(
     )
 
 
+@router.get("/{asset_class}/{domain}/export")
+async def export_domain_data(
+    asset_class: str,
+    domain: str,
+    principal: CurrentPrincipal,
+    symbols: str | None = Query(None, description="Comma separated symbols"),
+    start: date | None = Query(None),
+    end: date | None = Query(None),
+    source: str = Query("auto"),
+    layer: Literal["dwd", "ods"] = Query("dwd"),
+    adjust: Literal["none", "qfq", "hfq"] = Query("none"),
+    fields: str | None = Query(None, description="Comma separated field filter"),
+    period: str | None = Query(None),
+    report_date: date | None = Query(None),
+    limit: int = Query(EXPORT_MAX_ROWS, ge=1, le=EXPORT_MAX_ROWS),
+    engine: Engine = Depends(get_warehouse_engine),
+) -> StreamingResponse:
+    """Stream one domain's rows as CSV (design §10.1, AC-11).
+
+    Same parameters and the same safety rules as the JSON query -
+    field whitelist, enum layers/adjust, bound symbols, always a
+    window - but read in batches so a large export does not have to fit
+    in memory. Cells go through :func:`serialize_for_csv`, which
+    neutralizes spreadsheet formula prefixes (``=``/``+``/``-``/``@``):
+    a data source must not be able to run code in the analyst's Excel.
+    """
+    query = await _validated_query(
+        engine,
+        principal,
+        asset_class=asset_class,
+        domain=domain,
+        symbols=symbols,
+        start=start,
+        end=end,
+        source=source,
+        layer=layer,
+        adjust=adjust,
+        fields=fields,
+        period=period,
+        report_date=report_date,
+        page=1,
+        page_size=min(limit, EXPORT_BATCH_ROWS),
+    )
+    table = ods_table(domain, source) if layer == "ods" else dwd_table(domain)
+    columns = await _table_columns(engine, table)
+    # The whitelist runs here, not inside the generator: once the
+    # response has started streaming there is no way left to answer 400.
+    try:
+        selected = validate_fields(query.fields, available=columns, always_include=_key(domain))
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    filename = f"{asset_class}_{domain}.csv"
+    return StreamingResponse(
+        _csv_stream(
+            engine,
+            query,
+            table=table,
+            columns=columns,
+            key=_key(domain),
+            selected=selected,
+            limit=limit,
+        ),
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+async def _csv_stream(
+    engine: Engine,
+    query: DataQuery,
+    *,
+    table: str,
+    columns: list[str],
+    key: tuple[str, ...],
+    selected: list[str],
+    limit: int,
+) -> AsyncIterator[str]:
+    """Yield the CSV text of a query, one batch at a time.
+
+    Args:
+        engine: Warehouse engine.
+        query: The validated query (its page fields are driven here).
+        table: Warehouse table.
+        columns: Table columns.
+        key: Business-key columns (ordering and always-selected fields).
+        selected: Columns to write, already whitelisted by the caller.
+        limit: Row ceiling of the export.
+
+    Yields:
+        CSV fragments: a header first, then one buffer per batch.
+    """
+    import csv
+    import io
+
+    from opendata.utils.serialization import serialize_for_csv
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(selected)
+    yield buffer.getvalue()
+
+    written = 0
+    page = 1
+    while written < limit:
+        batch = min(EXPORT_BATCH_ROWS, limit - written)
+        page_query = replace(query, page=page, page_size=batch)
+        try:
+            sql, params = build_data_select(
+                page_query,
+                table=table,
+                columns=columns,
+                key=key,
+                max_rows=EXPORT_BATCH_ROWS,
+            )
+            rows = await asyncio.to_thread(_fetch_rows, engine, sql, params)
+        except ValueError as exc:
+            logger.error(f"export of {table} failed: {exc}")
+            return
+        if not rows:
+            return
+        if query.adjust != "none":
+            try:
+                rows = await _adjusted_rows(engine, query.domain, rows, query.adjust)
+            except (NotImplementedError, ValueError) as exc:
+                logger.error(f"export adjust failed for {query.domain}: {exc}")
+                return
+        buffer = io.StringIO()
+        writer = csv.writer(buffer)
+        for row in rows:
+            writer.writerow([serialize_for_csv(row.get(column)) for column in selected])
+        yield buffer.getvalue()
+        written += len(rows)
+        page += 1
+
+
+async def _validated_query(
+    engine: Engine,
+    principal: Principal,
+    *,
+    asset_class: str,
+    domain: str,
+    symbols: str | None,
+    start: date | None,
+    end: date | None,
+    source: str,
+    layer: str,
+    adjust: str,
+    fields: str | None,
+    period: str | None,
+    report_date: date | None,
+    page: int,
+    page_size: int,
+) -> DataQuery:
+    """Run every guard the data endpoints share and build the query.
+
+    Args:
+        engine: Warehouse engine.
+        principal: The authenticated caller.
+        asset_class: Asset class segment of the path.
+        domain: Domain identifier.
+        symbols: Comma separated symbols.
+        start: Inclusive start date.
+        end: Inclusive end date.
+        source: Source for the ods layer, or ``auto``.
+        layer: ``dwd`` or ``ods``.
+        adjust: ``none`` / ``qfq`` / ``hfq``.
+        fields: Comma separated field filter.
+        period: Period filter for financial domains.
+        report_date: Report-date filter for financial domains.
+        page: One-based page number.
+        page_size: Rows per page.
+
+    Returns:
+        The validated query.
+
+    Raises:
+        HTTPException: 400/403/404 exactly as the JSON endpoint answers.
+    """
+    # Scope comes first: a key that may not read the domain gets the
+    # same 403 whether or not the domain exists.
+    require_domain_access(principal, domain)
+    try:
+        require_domain(domain)
+    except LookupError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    if layer == "ods" and source == "auto":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="layer=ods needs an explicit source (auto is the merged dwd view)",
+        )
+    registered = {
+        capability.asset_class
+        for capability in get_registry().capabilities()
+        if capability.domain == domain
+    }
+    if not registered:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"domain {domain!r} has no registered capability",
+        )
+    if asset_class not in registered:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"domain {domain!r} is not registered under asset class {asset_class!r}",
+        )
+    table = ods_table(domain, source) if layer == "ods" else dwd_table(domain)
+    if not await _table_columns(engine, table):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"table {table!r} is not available"
+        )
+    return DataQuery(
+        domain=domain,
+        layer=layer,
+        source=source,
+        symbols=tuple(item.strip() for item in symbols.split(",") if item.strip())
+        if symbols
+        else (),
+        start=start,
+        end=end,
+        fields=tuple(item.strip() for item in fields.split(",") if item.strip()) if fields else (),
+        page=page,
+        page_size=page_size,
+        adjust=adjust,
+        period=period,
+        report_date=report_date,
+    )
+
+
 async def _adjusted_rows(engine: Engine, domain: str, rows: list[dict], method: str) -> list[dict]:
     """Synthesize an adjusted series (D10) or explain why it cannot."""
     if domain != "stock_daily":
@@ -298,7 +502,13 @@ async def _adjusted_rows(engine: Engine, domain: str, rows: list[dict], method: 
 
 
 def _factor_rows(engine: Engine, symbols: list[str]) -> list[dict] | None:
-    """Read the factor rows of the queried symbols, None when absent."""
+    """Read the factor rows of the queried symbols, None when absent.
+
+    The rows are serialized with the same helper as the queried bars:
+    the adjust synthesis keys on (symbol, trade_date), and a raw MySQL
+    DATE object would never match the ISO string the query layer
+    returns, silently failing every adjustment.
+    """
     if not symbols:
         return []
     names = ", ".join(f":symbol_{index}" for index in range(len(symbols)))
@@ -313,7 +523,7 @@ def _factor_rows(engine: Engine, symbols: list[str]) -> list[dict] | None:
                 params,
             )
             columns = list(result.keys())
-            return [dict(zip(columns, row, strict=True)) for row in result.fetchall()]
+            return [_serialize_row(columns, row) for row in result.fetchall()]
     except Exception:  # table absent: the caller decides the status code
         return None
 

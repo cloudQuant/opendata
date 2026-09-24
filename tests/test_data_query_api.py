@@ -196,9 +196,12 @@ class TestAgainstTheWarehouse:
         with warehouse.connect() as connection:  # the table is still there
             connection.execute(text("SELECT COUNT(*) FROM `dwd_stock_daily`"))
 
-    async def test_adjust_without_factors_answers_501(
+    async def test_adjust_without_factor_rows_fails_closed(
         self, warehouse, test_client, test_user_token
     ):
+        """The factor table exists (migration 0005); a bar without its
+        factor row must fail rather than serve a partially adjusted
+        series (fail-closed, design D10)."""
         response = await test_client.get(
             "/api/v1/data/equity/stock_daily",
             params={
@@ -210,8 +213,8 @@ class TestAgainstTheWarehouse:
             headers=_auth(test_user_token),
         )
 
-        assert response.status_code == 501
-        assert "factor" in response.json()["detail"]
+        assert response.status_code == 400
+        assert "no adjust factor" in response.json()["detail"]
 
     async def test_catalog_lists_capabilities_with_freshness(
         self, warehouse, test_client, test_user_token
@@ -255,3 +258,171 @@ def test_freshness_default_lag_is_computed_against_today():
 
     assert check_freshness.__doc__ is not None
     assert date.today() >= date(2024, 1, 1)
+
+
+class TestExportContract:
+    """The CSV export surface (AC-11: 导出 + 公式注入转义).
+
+    The safety rules and the response shape need no warehouse; the
+    actual rows are read in the e2e class below.
+    """
+
+    async def test_export_requires_authentication(self, test_client):
+        response = await test_client.get("/api/v1/data/equity/stock_daily/export")
+
+        assert response.status_code == 401
+
+    async def test_export_is_published_in_the_openapi_document(self):
+        parameters = app.openapi()["paths"]["/api/v1/data/{asset_class}/{domain}/export"]["get"][
+            "parameters"
+        ]
+        by_name = {parameter["name"]: parameter for parameter in parameters}
+
+        assert set(by_name["layer"]["schema"]["enum"]) == {"dwd", "ods"}
+        assert set(by_name["adjust"]["schema"]["enum"]) == {"none", "qfq", "hfq"}
+        assert {"symbols", "start", "end", "source", "fields", "limit"} <= set(by_name)
+
+    async def test_export_rejects_an_unknown_domain(self, test_client, test_user_token):
+        response = await test_client.get(
+            "/api/v1/data/equity/not_a_domain/export", headers=_auth(test_user_token)
+        )
+
+        assert response.status_code == 404
+
+    async def test_export_limit_is_bounded(self, test_client, test_user_token):
+        response = await test_client.get(
+            "/api/v1/data/equity/stock_daily/export",
+            params={"limit": 10_000_000},
+            headers=_auth(test_user_token),
+        )
+
+        assert response.status_code == 422
+
+
+@pytest.mark.e2e
+class TestExportAgainstTheWarehouse:
+    SYMBOL = "EXPORT_PROBE"
+
+    @pytest.fixture(autouse=True)
+    def registered_capabilities(self):
+        from opendata.data.providers import register_providers
+
+        register_providers()
+
+    @pytest.fixture
+    def warehouse(self):
+        from opendata.core.config import settings
+
+        engine = create_engine(settings.data_database_url, poolclass=pool.NullPool)
+        try:
+            with engine.connect() as connection:
+                connection.execute(text("SELECT 1"))
+        except Exception as exc:
+            pytest.skip(f"warehouse database unreachable: {type(exc).__name__}")
+        with engine.begin() as connection:
+            connection.execute(
+                text("DELETE FROM `dwd_stock_daily` WHERE `symbol` = :probe"),
+                {"probe": self.SYMBOL},
+            )
+            connection.execute(
+                text(
+                    "INSERT INTO `dwd_stock_daily` "
+                    "(`symbol`, `trade_date`, `open`, `high`, `low`, `close`, `volume`, `amount`, "
+                    "`source`, `_merged_at`, `_diff_flag`, `_as_of`) VALUES "
+                    "(:probe, '2024-01-05', 1, 1, 1, 1, 1, 1, 'akshare', NOW(), 0, '2024-01-31'), "
+                    "(:probe, '2024-01-04', 2, 2, 2, 2, 2, 2, 'akshare', NOW(), 0, '2024-01-31')"
+                ),
+                {"probe": self.SYMBOL},
+            )
+        yield engine
+        with engine.begin() as connection:
+            connection.execute(
+                text("DELETE FROM `dwd_stock_daily` WHERE `symbol` = :probe"),
+                {"probe": self.SYMBOL},
+            )
+        engine.dispose()
+
+    async def test_export_streams_a_header_and_the_rows(
+        self, warehouse, test_client, test_user_token
+    ):
+        response = await test_client.get(
+            "/api/v1/data/equity/stock_daily/export",
+            params={"symbols": self.SYMBOL, "start": "2024-01-01", "end": "2024-01-31"},
+            headers=_auth(test_user_token),
+        )
+
+        assert response.status_code == 200
+        assert response.headers["content-type"].startswith("text/csv")
+        assert "attachment" in response.headers["content-disposition"]
+        lines = response.text.strip().splitlines()
+        assert lines[0].split(",")[0] == "symbol"
+        assert len(lines) == 3  # header + two rows
+        assert all(self.SYMBOL in line for line in lines[1:])
+
+    async def test_export_honours_the_field_filter(self, warehouse, test_client, test_user_token):
+        response = await test_client.get(
+            "/api/v1/data/equity/stock_daily/export",
+            params={
+                "symbols": self.SYMBOL,
+                "start": "2024-01-01",
+                "end": "2024-01-31",
+                "fields": "close",
+            },
+            headers=_auth(test_user_token),
+        )
+
+        header = response.text.splitlines()[0].split(",")
+
+        assert "close" in header
+        assert "amount" not in header
+
+    async def test_export_rejects_an_unknown_field(self, warehouse, test_client, test_user_token):
+        response = await test_client.get(
+            "/api/v1/data/equity/stock_daily/export",
+            params={
+                "symbols": self.SYMBOL,
+                "start": "2024-01-01",
+                "end": "2024-01-31",
+                "fields": "close;DROP TABLE",
+            },
+            headers=_auth(test_user_token),
+        )
+
+        assert response.status_code == 400
+
+    async def test_exported_cells_cannot_run_as_spreadsheet_formulas(
+        self, warehouse, test_client, test_user_token
+    ):
+        """A symbol carrying a formula payload must come back inert."""
+        payload = "=cmd|'/c calc'!A0"
+        with warehouse.begin() as connection:
+            connection.execute(
+                text("DELETE FROM `dwd_stock_daily` WHERE `symbol` = :probe"),
+                {"probe": payload},
+            )
+            connection.execute(
+                text(
+                    "INSERT INTO `dwd_stock_daily` "
+                    "(`symbol`, `trade_date`, `open`, `high`, `low`, `close`, `volume`, `amount`, "
+                    "`source`, `_merged_at`, `_diff_flag`, `_as_of`) VALUES "
+                    "(:probe, '2024-01-06', 1, 1, 1, 1, 1, 1, 'akshare', NOW(), 0, '2024-01-31')"
+                ),
+                {"probe": payload},
+            )
+        try:
+            response = await test_client.get(
+                "/api/v1/data/equity/stock_daily/export",
+                params={"symbols": payload, "start": "2024-01-01", "end": "2024-01-31"},
+                headers=_auth(test_user_token),
+            )
+        finally:
+            with warehouse.begin() as connection:
+                connection.execute(
+                    text("DELETE FROM `dwd_stock_daily` WHERE `symbol` = :probe"),
+                    {"probe": payload},
+                )
+
+        body = response.text
+        assert response.status_code == 200
+        assert "'=cmd|'/c calc'!A0" in body
+        assert "\n=cmd|" not in body and ",=cmd|" not in body
