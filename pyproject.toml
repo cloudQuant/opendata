@@ -278,6 +278,10 @@ branch = true
 
 [tool.coverage.report]
 fail_under = 84
+# 阈值比较按两位小数进行：coverage 默认 precision=0 会把 83.96% 四舍五入成 84%
+# 判定通过，而 pytest 终端摘要仍按原始值打印 "FAIL ... not reached"，
+# 于是出现过"门禁打印 FAIL、make 退出 0"的假绿（C6 轮实测）。
+precision = 2
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
