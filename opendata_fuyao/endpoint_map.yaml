@@ -1,0 +1,178 @@
+# fuyao（同花顺）REST 端点映射表 —— AC-7 迭代 1B「端点映射表覆盖官方文档全部分组 100%」。
+#
+# 数据来源：https://fuyao.aicubes.cn/llms-full.txt 的「REST API 参考」一节，
+# 由 scripts/ops/fuyao_endpoint_inventory.py 机械抽取为
+# docs/evidence/B2/fuyao-endpoint-inventory.txt（含文档 sha256），本表逐条对齐该清单。
+#
+# status 口径：
+#   implemented  已在 opendata_fuyao/endpoints.py | dumps.py 落地并进 provider 注册表；
+#   available    上游端外已开放、本项目尚未接入（1C/迭代 2 候选）；
+#   client_only  文档标注端外未开放（仅同花顺 AI 客户端），不纳入接入范围；
+#   planned      文档标注「敬请期待」，上游尚无端点。
+# domain 为本项目中台数据域名（无对应域则留空，不虚构）。
+version: 1
+doc:
+  url: https://fuyao.aicubes.cn/llms-full.txt
+  section: REST API 参考
+  inventory: docs/evidence/B2/fuyao-endpoint-inventory.txt
+sections:
+  - {slug: overview, title: '接口总览', family: 基础, doc_endpoints: 0}
+  - {slug: prices, title: '股票行情数据', family: A股, doc_endpoints: 2}
+  - {slug: market-dumps, title: '全市场数据导出', family: 导出, doc_endpoints: 3}
+  - {slug: ticker-search, title: '标的检索', family: 基础, doc_endpoints: 1}
+  - {slug: corporate-actions, title: '除复权', family: A股, doc_endpoints: 1}
+  - {slug: ticker-list, title: '标的列表获取', family: 基础, doc_endpoints: 1}
+  - {slug: financials, title: '财务报表', family: A股, doc_endpoints: 3}
+  - {slug: calendar, title: '交易日历', family: 基础, doc_endpoints: 1}
+  - {slug: a-share-index, title: '指数数据', family: 指数, doc_endpoints: 4}
+  - {slug: funds, title: '基金总览', family: 基金, doc_endpoints: 0}
+  - {slug: special-data, title: '特色数据', family: A股, doc_endpoints: 0}
+  - {slug: anomaly-analysis, title: '个股异动原因', family: A股, doc_endpoints: 2}
+  - {slug: auction, title: '集合竞价数据', family: A股, doc_endpoints: 2}
+  - {slug: capital-flow, title: '主力资金', family: A股, doc_endpoints: 2}
+  - {slug: dragon-tiger-data, title: '龙虎榜数据', family: A股, doc_endpoints: 1}
+  - {slug: financial-indicators, title: '财务指标数据', family: A股, doc_endpoints: 1}
+  - {slug: fund-backtest, title: '基金在线回测', family: 基金, doc_endpoints: 2}
+  - {slug: fund-company, title: '基金公司详情', family: 基金, doc_endpoints: 1}
+  - {slug: fund-corporate-actions, title: '基金分红记录', family: 基金, doc_endpoints: 1}
+  - {slug: fund-diagnostics, title: '基金诊断详情', family: 基金, doc_endpoints: 1}
+  - {slug: fund-financials, title: '基金财务数据', family: 基金, doc_endpoints: 3}
+  - {slug: fund-holders, title: '基金持有人数据', family: 基金, doc_endpoints: 2}
+  - {slug: fund-holdings, title: '基金重仓持仓', family: 基金, doc_endpoints: 1}
+  - {slug: fund-indicators, title: '基金通用指标', family: 基金, doc_endpoints: 2}
+  - {slug: fund-managers, title: '基金经理数据', family: 基金, doc_endpoints: 4}
+  - {slug: fund-market, title: '基金行情数据', family: 基金, doc_endpoints: 2}
+  - {slug: fund-news, title: '基金资讯列表', family: 基金, doc_endpoints: 1}
+  - {slug: fund-offerings, title: '基金募集列表', family: 基金, doc_endpoints: 1}
+  - {slug: fund-performance, title: '基金业绩与回撤', family: 基金, doc_endpoints: 4}
+  - {slug: fund-portfolio, title: '基金持仓与资产配置', family: 基金, doc_endpoints: 6}
+  - {slug: fund-profile, title: '基金基本资料', family: 基金, doc_endpoints: 1}
+  - {slug: fund-quota, title: 'QDII 额度', family: 基金, doc_endpoints: 2}
+  - {slug: futures-basis, title: '期货基差', family: 期货, doc_endpoints: 2}
+  - {slug: futures-calendar, title: '期货交易日', family: 期货, doc_endpoints: 1}
+  - {slug: futures-contracts-extended, title: '期货主力与指数合约', family: 期货, doc_endpoints: 4}
+  - {slug: futures-fundamentals, title: '期货F10宏观指标历史数据', family: 期货, doc_endpoints: 1}
+  - {slug: futures-overview, title: '期货总览', family: 期货, doc_endpoints: 0}
+  - {slug: futures-positions, title: '期货持仓', family: 期货, doc_endpoints: 5}
+  - {slug: futures-prices, title: '期货行情', family: 期货, doc_endpoints: 2}
+  - {slug: futures-reference, title: '期货合约基础资料', family: 期货, doc_endpoints: 2}
+  - {slug: futures-session-timeline, title: '期货交易时间轴', family: 期货, doc_endpoints: 1}
+  - {slug: futures-varieties, title: '期货品种资料', family: 期货, doc_endpoints: 1}
+  - {slug: futures-variety-plates, title: '期货品种板块', family: 期货, doc_endpoints: 1}
+  - {slug: futures-warehouse-receipts, title: '期货历史仓单', family: 期货, doc_endpoints: 1}
+  - {slug: high-frequency, title: '高频动向', family: A股, doc_endpoints: 2}
+  - {slug: hot-list-data, title: '同花顺热榜', family: A股, doc_endpoints: 4}
+  - {slug: index-overview, title: '指数概况', family: 指数, doc_endpoints: 0}
+  - {slug: limit-up-data, title: '涨跌停与炸板数据', family: A股, doc_endpoints: 4}
+  - {slug: news-events, title: '资讯事件库', family: 资讯, doc_endpoints: 1}
+  - {slug: options-overview, title: '期权总览', family: 期权, doc_endpoints: 0}
+  - {slug: options-prices, title: '期权行情', family: 期权, doc_endpoints: 2}
+  - {slug: options-reference, title: '期权合约基础资料', family: 期权, doc_endpoints: 2}
+  - {slug: options-session-timeline, title: '期权交易时间轴', family: 期权, doc_endpoints: 1}
+  - {slug: options-varieties, title: '期权品种资料', family: 期权, doc_endpoints: 1}
+  - {slug: stock-basics, title: '股票基础信息', family: A股, doc_endpoints: 0}
+  - {slug: ths-index-membership, title: '股票所属同花顺指数查询', family: 指数, doc_endpoints: 0}
+  - {slug: valuations, title: '估值数据', family: A股, doc_endpoints: 1}
+entries:
+  - {section: index-overview, family: 指数, method: null, path: null, title: '指数基本信息', status: planned, domain: null, scenario: '指数代码/名称/发布机构/基日基点主数据'}
+  - {section: index-overview, family: 指数, method: null, path: null, title: '指数成分股', status: planned, domain: null, scenario: '成分股历史时点回溯：point-in-time 选股域'}
+  - {section: index-overview, family: 指数, method: null, path: null, title: '指数权重', status: planned, domain: null, scenario: '成分权重快照与历史序列：指数增强跟踪误差'}
+  - {section: stock-basics, family: A股, method: null, path: null, title: '股票基础信息', status: planned, domain: null, scenario: 'A 股基本资料/上市状态/行业归属/市值：Instrument 增强域'}
+  - {section: ths-index-membership, family: 指数, method: null, path: null, title: '股票所属同花顺指数查询', status: planned, domain: null, scenario: '个股→行业/概念指数反查：板块归属因子'}
+  - {section: prices, family: A股, method: GET, path: /api/a-share/prices/snapshot, title: '行情快照', status: available, domain: null, scenario: '盘中/收盘后实时快照页与涨跌监控；当前由 akshare 实时通道供数'}
+  - {section: prices, family: A股, method: GET, path: /api/a-share/prices/historical, title: '历史 K 线', status: implemented, domain: stock_daily, scenario: 'A 股日线主源：ods_stock_daily_ths → dwd_stock_daily 增量与回补'}
+  - {section: market-dumps, family: 导出, method: GET, path: /dump/market-dumps/daily-k/download-url, title: 'Parquet 文件结构', status: implemented, domain: stock_daily, scenario: '冷启动/重建：全市场 10 年日 K Parquet 一次性灌数'}
+  - {section: market-dumps, family: 导出, method: GET, path: /dump/market-dumps/daily-k-10d/download-url, title: 'Parquet 文件结构', status: implemented, domain: stock_daily, scenario: '漏数补偿：最近 10 交易日全市场窗口对账与补口'}
+  - {section: market-dumps, family: 导出, method: GET, path: /dump/market-dumps/adjustment-factors/download-url, title: 'Parquet 文件结构', status: implemented, domain: stock_adjust, scenario: '复权因子事件全量回补（D10：只存因子，不存复权价）'}
+  - {section: ticker-search, family: 基础, method: GET, path: /api/meta/tickers/search, title: '标的检索', status: implemented, domain: instrument, scenario: '标的消歧：thscode/ticker/名称互查，入库前校验代码'}
+  - {section: corporate-actions, family: A股, method: GET, path: /api/a-share/corporate-actions/adjustment-factors, title: '除复权', status: implemented, domain: stock_action, scenario: '除权除息事件流：复权因子与事件窗口的权威来源'}
+  - {section: ticker-list, family: 基础, method: GET, path: /api/meta/tickers/list, title: '标的列表获取', status: implemented, domain: instrument, scenario: '标的目录增量：按资产类型分页刷新 Instrument'}
+  - {section: financials, family: A股, method: GET, path: /api/a-share/financials/income-statements, title: '利润表', status: available, domain: financial_statement, scenario: '利润表多期序列：dwd 财务域 ths 副源候选'}
+  - {section: financials, family: A股, method: GET, path: /api/a-share/financials/balance-sheets, title: '资产负债表', status: available, domain: financial_statement, scenario: '资产负债表多期序列：dwd 财务域 ths 副源候选'}
+  - {section: financials, family: A股, method: GET, path: /api/a-share/financials/cash-flow-statements, title: '现金流量表', status: available, domain: financial_statement, scenario: '现金流量表多期序列：dwd 财务域 ths 副源候选'}
+  - {section: calendar, family: 基础, method: GET, path: /api/a-share/calendar/trading-days, title: '交易日历', status: implemented, domain: trading_calendar, scenario: '交易日历：调度窗口、回填区间与收盘基准'}
+  - {section: a-share-index, family: 指数, method: GET, path: /api/a-share-index/catalog/ths-index-list, title: '同花顺指数列表', status: available, domain: index_constituent, scenario: '同花顺行业/概念指数目录：板块指数清单前置查询'}
+  - {section: a-share-index, family: 指数, method: GET, path: /api/a-share-index/constituents/ths-stock-list, title: '同花顺指数成分股', status: available, domain: index_constituent, scenario: '指数成分股（含沪深300 等标准指数）：成分因子与指数增强选股'}
+  - {section: a-share-index, family: 指数, method: GET, path: /api/a-share-index/prices/snapshot, title: '指数行情快照', status: available, domain: index_daily, scenario: '指数实时快照：业绩基准盘中监控'}
+  - {section: a-share-index, family: 指数, method: GET, path: /api/a-share-index/prices/historical, title: '指数历史 K 线', status: available, domain: index_daily, scenario: '指数日线：业绩基准与超额收益计算主源候选'}
+  - {section: anomaly-analysis, family: A股, method: GET, path: /api/a-share/special-data/anomaly-analysis-list, title: '个股异动原因列表', status: available, domain: null, scenario: '当日异动原因清单：事件研究与舆情归因（迭代 2 候选）'}
+  - {section: anomaly-analysis, family: A股, method: GET, path: /api/a-share/special-data/anomaly-analysis-stock, title: '按股票查询个股异动原因', status: available, domain: null, scenario: '按个股反查异动原因：单票事件标注'}
+  - {section: auction, family: A股, method: GET, path: /api/a-share/auction/snapshot, title: 'A股集合竞价快照', status: available, domain: null, scenario: '集合竞价快照：开盘价形成与日内策略因子（迭代 2 候选）'}
+  - {section: auction, family: A股, method: GET, path: /api/a-share/auction/short-term-benchmark, title: '短线风向标竞价基准', status: available, domain: null, scenario: '短线风向标竞价基准：竞价强度对照基准'}
+  - {section: capital-flow, family: A股, method: GET, path: /api/a-share/capital-flow/snapshot, title: '资金流向实时快照', status: client_only, domain: null, scenario: '主力资金实时快照：端外未开放，暂不接入'}
+  - {section: capital-flow, family: A股, method: GET, path: /api/a-share/capital-flow/historical, title: '资金流向历史', status: client_only, domain: null, scenario: '主力资金历史序列：端外未开放，暂不接入'}
+  - {section: dragon-tiger-data, family: A股, method: GET, path: /api/a-share/special-data/dragon-tiger-list, title: '龙虎榜数据', status: available, domain: null, scenario: '龙虎榜事件：机构/游资行为因子（迭代 2 候选）'}
+  - {section: financial-indicators, family: A股, method: GET, path: /api/a-share/financials/indicators, title: '财务指标数据', status: available, domain: financial_indicator, scenario: '五类财务指标：dwd 财务指标域 ths 副源候选'}
+  - {section: fund-backtest, family: 基金, method: GET, path: /api/fund/backtest/result, title: '基金在线回测', status: available, domain: null, scenario: '基金在线回测：上游托管回测，非中台链路'}
+  - {section: fund-backtest, family: 基金, method: GET, path: /api/fund/backtest/indicators, title: '基金回测可用指标', status: available, domain: null, scenario: '回测可用指标目录：回测参数选择'}
+  - {section: fund-company, family: 基金, method: GET, path: /api/fund/companies/detail, title: '基金公司详情', status: available, domain: null, scenario: '基金公司资料：FOF 管理人尽调维度'}
+  - {section: fund-corporate-actions, family: 基金, method: GET, path: /api/fund/corporate-actions/dividends, title: '基金分红记录', status: available, domain: null, scenario: '基金分红记录：现金流与净值口径校正'}
+  - {section: fund-diagnostics, family: 基金, method: GET, path: /api/fund/diagnostics/detail, title: '基金诊断详情', status: available, domain: null, scenario: '基金诊断：同类对比与韧性指标（研究侧）'}
+  - {section: fund-financials, family: 基金, method: GET, path: /api/fund/financials/indicators, title: '基金财务指标', status: available, domain: null, scenario: '基金财务报表指标：基金基本面研究'}
+  - {section: fund-financials, family: 基金, method: GET, path: /api/fund/financials/income-statements, title: '基金利润表', status: available, domain: null, scenario: '基金利润表：基金基本面研究'}
+  - {section: fund-financials, family: 基金, method: GET, path: /api/fund/financials/balance-sheets, title: '基金资产负债表', status: available, domain: null, scenario: '基金资产负债表：基金基本面研究'}
+  - {section: fund-holders, family: 基金, method: GET, path: /api/fund/holders/detail, title: '基金持有人结构', status: available, domain: null, scenario: '持有人结构：机构持有比例因子'}
+  - {section: fund-holders, family: 基金, method: GET, path: /api/fund/holders/top, title: '基金前十大持有人', status: available, domain: null, scenario: '前十大持有人：集中度与流动性风险'}
+  - {section: fund-holdings, family: 基金, method: GET, path: /api/fund/portfolio/holdings, title: '基金重仓持仓', status: available, domain: null, scenario: '基金重仓持仓：持仓穿透与风格归因'}
+  - {section: fund-indicators, family: 基金, method: GET, path: /api/fund/indicators/line, title: '基金画线指标', status: available, domain: null, scenario: '基金画线指标：净值曲线叠加指标'}
+  - {section: fund-indicators, family: 基金, method: GET, path: /api/fund/indicators/table, title: '基金表格指标', status: available, domain: null, scenario: '基金表格指标：筛选面板列'}
+  - {section: fund-managers, family: 基金, method: GET, path: /api/fund/managers/investment-style, title: '投资风格', status: available, domain: null, scenario: '基金经理投资风格：FOF 选人维度'}
+  - {section: fund-managers, family: 基金, method: GET, path: /api/fund/managers/performance, title: '基金经理业绩', status: available, domain: null, scenario: '基金经理业绩：FOF 选人维度'}
+  - {section: fund-managers, family: 基金, method: GET, path: /api/fund/managers/experience, title: '从业经历', status: available, domain: null, scenario: '基金经理从业经历：任职稳定性核查'}
+  - {section: fund-managers, family: 基金, method: GET, path: /api/fund/managers/detail, title: '基金经理详情', status: available, domain: null, scenario: '基金经理详情：在册经理主数据'}
+  - {section: fund-market, family: 基金, method: GET, path: /api/fund/market/snapshot, title: '场内基金行情快照', status: available, domain: fund_etf_daily, scenario: '场内基金实时快照：ETF/LOF 盘中监控'}
+  - {section: fund-market, family: 基金, method: GET, path: /api/fund/market/historical, title: '场内基金历史日线行情', status: available, domain: fund_etf_daily, scenario: '场内基金前复权日线：ETF 域 ths 副源候选（需转不复权口径，D10）'}
+  - {section: fund-news, family: 基金, method: GET, path: /api/fund/news/article-list, title: '基金资讯列表', status: available, domain: null, scenario: '基金资讯：研究侧舆情，不进行情链路'}
+  - {section: fund-offerings, family: 基金, method: GET, path: /api/fund/offerings/list, title: '基金募集列表', status: available, domain: null, scenario: '新发基金募集清单：产品池增量'}
+  - {section: fund-performance, family: 基金, method: GET, path: /api/fund/performance/nav, title: '基金净值', status: available, domain: null, scenario: '基金净值序列：场外基金净值主源候选'}
+  - {section: fund-performance, family: 基金, method: GET, path: /api/fund/performance/returns, title: '基金区间收益', status: available, domain: null, scenario: '基金区间收益：业绩评价'}
+  - {section: fund-performance, family: 基金, method: GET, path: /api/fund/performance/indicators-historical, title: '基金历史业绩指标', status: available, domain: null, scenario: '基金历史业绩指标：夏普/波动等因子'}
+  - {section: fund-performance, family: 基金, method: GET, path: /api/fund/performance/drawdowns, title: '基金最大回撤', status: available, domain: null, scenario: '基金最大回撤：风险评价'}
+  - {section: fund-portfolio, family: 基金, method: GET, path: /api/fund/portfolio/stock-history, title: '基金历史股票持仓', status: available, domain: null, scenario: '基金历史股票持仓：季度持仓演变'}
+  - {section: fund-portfolio, family: 基金, method: GET, path: /api/fund/portfolio/bond-history, title: '基金历史债券持仓', status: available, domain: null, scenario: '基金历史债券持仓：久期与信用暴露'}
+  - {section: fund-portfolio, family: 基金, method: GET, path: /api/fund/portfolio/stock-report-dates, title: '基金股票持仓报告日期', status: available, domain: null, scenario: '股票持仓报告期清单：增量拉取的游标'}
+  - {section: fund-portfolio, family: 基金, method: GET, path: /api/fund/portfolio/bond-report-dates, title: '基金债券持仓报告日期', status: available, domain: null, scenario: '债券持仓报告期清单：增量拉取的游标'}
+  - {section: fund-portfolio, family: 基金, method: GET, path: /api/fund/portfolio/asset-allocation, title: '基金资产配置', status: available, domain: null, scenario: '资产配置：股债仓位漂移监控'}
+  - {section: fund-portfolio, family: 基金, method: GET, path: /api/fund/portfolio/industry-allocation, title: '基金行业配置', status: available, domain: null, scenario: '行业配置：行业暴露归因'}
+  - {section: fund-profile, family: 基金, method: GET, path: /api/fund/profile/detail, title: '基金基本资料', status: available, domain: null, scenario: '基金基本资料：Fund 主数据'}
+  - {section: fund-quota, family: 基金, method: GET, path: /api/fund/quota/summary, title: 'QDII额度汇总', status: available, domain: null, scenario: 'QDII 额度汇总：可申购性判断'}
+  - {section: fund-quota, family: 基金, method: GET, path: /api/fund/quota/list, title: 'QDII额度列表', status: available, domain: null, scenario: 'QDII 额度明细：可申购性判断'}
+  - {section: futures-basis, family: 期货, method: GET, path: /api/futures/basis/main-continuous-latest, title: '期货主连最新基差', status: available, domain: null, scenario: '主连最新基差：期限结构因子（迭代 2 候选）'}
+  - {section: futures-basis, family: 期货, method: GET, path: /api/futures/basis/historical, title: '期货历史基差', status: available, domain: null, scenario: '期货历史基差：基差收敛策略数据'}
+  - {section: futures-calendar, family: 期货, method: GET, path: /api/futures/calendar/trading-schedule, title: '期货交易日', status: available, domain: trading_calendar, scenario: '期货交易日：期货域调度窗口'}
+  - {section: futures-contracts-extended, family: 期货, method: GET, path: /api/futures/contracts/main-continuous-list, title: '期货主连资料', status: available, domain: null, scenario: '主连合约资料：连续合约映射'}
+  - {section: futures-contracts-extended, family: 期货, method: GET, path: /api/futures/contracts/main-list, title: '期货主力合约', status: available, domain: null, scenario: '主力合约列表：换月规则与展期回测'}
+  - {section: futures-contracts-extended, family: 期货, method: GET, path: /api/futures/contracts/secondary-main-list, title: '期货次主力合约', status: available, domain: null, scenario: '次主力合约列表：展期候选'}
+  - {section: futures-contracts-extended, family: 期货, method: GET, path: /api/futures/contracts/commodity-index-list, title: '商品指数合约列表', status: available, domain: index_daily, scenario: '商品指数合约清单：商品指数基准'}
+  - {section: futures-fundamentals, family: 期货, method: GET, path: /api/futures/fundamentals/indicators-historical, title: '期货F10宏观指标历史数据', status: client_only, domain: futures_fundamentals, scenario: '期货 F10 宏观指标：端外暂不开放'}
+  - {section: futures-positions, family: 期货, method: GET, path: /api/futures/positions/variety-daily, title: '期货品种日持仓', status: available, domain: null, scenario: '品种日持仓：持仓量因子'}
+  - {section: futures-positions, family: 期货, method: GET, path: /api/futures/positions/company-variety-daily, title: '期货公司品种日持仓', status: available, domain: null, scenario: '公司×品种日持仓：会员持仓因子'}
+  - {section: futures-positions, family: 期货, method: GET, path: /api/futures/positions/contract-daily, title: '期货公司合约日持仓', status: available, domain: null, scenario: '公司×合约日持仓：席位行为因子'}
+  - {section: futures-positions, family: 期货, method: GET, path: /api/futures/positions/contract-historical, title: '期货公司合约历史持仓', status: available, domain: null, scenario: '公司×合约历史持仓：因子回溯'}
+  - {section: futures-positions, family: 期货, method: GET, path: /api/futures/positions/company-list, title: '期货公司列表', status: available, domain: null, scenario: '期货公司目录：持仓因子维度主数据'}
+  - {section: futures-prices, family: 期货, method: GET, path: /api/futures/prices/intraday, title: '期货分时', status: available, domain: null, scenario: '期货分时（端外仅当前交易日）：日内监控，不适合回补'}
+  - {section: futures-prices, family: 期货, method: GET, path: /api/futures/prices/daily, title: '期货K线', status: available, domain: futures_daily, scenario: '期货日线：futures_daily 域 ths 副源候选（当前 akshare 单源）'}
+  - {section: futures-reference, family: 期货, method: GET, path: /api/futures/contracts/detail, title: '期货合约详情', status: available, domain: instrument, scenario: '期货合约详情：合约主数据（乘数/交割月）'}
+  - {section: futures-reference, family: 期货, method: GET, path: /api/futures/contracts/list, title: '期货合约基础信息列表', status: available, domain: instrument, scenario: '期货合约目录分页：Instrument 增量'}
+  - {section: futures-session-timeline, family: 期货, method: GET, path: /api/futures/calendar/session-timeline, title: '期货交易时间轴', status: available, domain: trading_calendar, scenario: '期货交易时间轴：夜盘/日盘调度边界'}
+  - {section: futures-varieties, family: 期货, method: GET, path: /api/futures/varieties/list, title: '期货品种资料', status: available, domain: instrument, scenario: '期货品种目录：品种属性与交易参数'}
+  - {section: futures-variety-plates, family: 期货, method: GET, path: /api/futures/variety-plates/list, title: '期货品种板块', status: available, domain: null, scenario: '品种板块归属：板块因子分组'}
+  - {section: futures-warehouse-receipts, family: 期货, method: GET, path: /api/futures/warehouse-receipts/historical, title: '期货历史仓单', status: available, domain: null, scenario: '历史仓单：供需因子（迭代 2 候选）'}
+  - {section: high-frequency, family: A股, method: GET, path: /api/a-share/high-frequency/historical, title: '高频历史', status: client_only, domain: null, scenario: '高频历史：端外未开放，暂不接入'}
+  - {section: high-frequency, family: A股, method: GET, path: /api/a-share/high-frequency/intraday, title: '单日高频分时', status: client_only, domain: null, scenario: '单日高频分时：端外未开放，暂不接入'}
+  - {section: hot-list-data, family: A股, method: GET, path: /api/a-share/special-data/skyrocket-list, title: '飙升榜', status: available, domain: null, scenario: '飙升榜：市场情绪监控看板'}
+  - {section: hot-list-data, family: A股, method: GET, path: /api/a-share/special-data/hot-stock-list, title: 'A股热股榜单', status: available, domain: null, scenario: '热股榜：情绪因子与关注度过半（迭代 2 候选）'}
+  - {section: hot-list-data, family: A股, method: GET, path: /api/a-share/special-data/hot-stock-list-history, title: '历史热股排行', status: available, domain: null, scenario: '历史热股排行：情绪因子回溯'}
+  - {section: hot-list-data, family: A股, method: GET, path: /api/a-share/special-data/hot-stock-rank-trend, title: '个股排名走势', status: available, domain: null, scenario: '个股热榜排名走势：单票关注度序列'}
+  - {section: limit-up-data, family: A股, method: GET, path: /api/a-share/special-data/limit-up-pool, title: '涨停股票池', status: available, domain: null, scenario: '涨停池：打板策略事件集（迭代 2 候选）'}
+  - {section: limit-up-data, family: A股, method: GET, path: /api/a-share/special-data/limit-down-pool, title: '跌停股票池', status: available, domain: null, scenario: '跌停池：流动性风险与极端事件监控'}
+  - {section: limit-up-data, family: A股, method: GET, path: /api/a-share/special-data/limit-break-pool, title: '炸板股票池', status: available, domain: null, scenario: '炸板池：情绪强度因子'}
+  - {section: limit-up-data, family: A股, method: GET, path: /api/a-share/special-data/limit-up-ladder, title: '连板天梯', status: available, domain: null, scenario: '连板天梯：近 30 交易日连板矩阵'}
+  - {section: news-events, family: 资讯, method: GET, path: /api/news/events/search, title: '资讯事件库', status: client_only, domain: null, scenario: '资讯事件库：仅在同花顺 AI 客户端内提供，端外不接入'}
+  - {section: options-prices, family: 期权, method: GET, path: /api/options/prices/intraday, title: '期权分时', status: available, domain: null, scenario: '期权分时（端外仅当前交易日）：日内监控'}
+  - {section: options-prices, family: 期权, method: GET, path: /api/options/prices/daily, title: '期权K线', status: available, domain: option_daily, scenario: '期权日线：option_daily 域 ths 副源候选（当前 akshare 单源）'}
+  - {section: options-reference, family: 期权, method: GET, path: /api/options/contracts/detail, title: '期权合约详情', status: available, domain: instrument, scenario: '期权合约详情：行权价/到期日主数据'}
+  - {section: options-reference, family: 期权, method: GET, path: /api/options/contracts/list, title: '期权合约基础信息列表', status: available, domain: instrument, scenario: '期权合约目录分页：Instrument 增量'}
+  - {section: options-session-timeline, family: 期权, method: GET, path: /api/options/calendar/session-timeline, title: '期权交易时间轴', status: available, domain: trading_calendar, scenario: '期权交易时间轴：调度边界'}
+  - {section: options-varieties, family: 期权, method: GET, path: /api/options/varieties/list, title: '期权品种资料', status: available, domain: instrument, scenario: '期权品种目录：标的与合约属性'}
+  - {section: valuations, family: A股, method: GET, path: /api/a-share/valuations/snapshot, title: '估值数据', status: available, domain: null, scenario: '估值快照（PE TTM/MRQ、PB、PS、PCF）：基本面筛选实时列'}

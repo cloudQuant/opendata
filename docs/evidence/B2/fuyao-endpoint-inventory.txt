@@ -1,0 +1,161 @@
+# fuyao REST API 端点清单（官方文档机器抽取快照）
+# 来源：https://fuyao.aicubes.cn/llms-full.txt
+# 抓取日期：2026-09-24
+# llms-full.txt sha256：599fe34d0a497535f795cde31f938a7fe8ee6441eedb67882e934b4e58c002c3
+# 抽取脚本：python scripts/ops/fuyao_endpoint_inventory.py --input <llms-full.txt>
+# 分组页数：57  端点数：97
+
+SECTION	overview	接口总览	0
+SECTION	prices	股票行情数据	2
+ENDPOINT	prices	GET	/api/a-share/prices/snapshot	行情快照
+ENDPOINT	prices	GET	/api/a-share/prices/historical	历史 K 线
+SECTION	market-dumps	全市场数据导出	3
+ENDPOINT	market-dumps	GET	/dump/market-dumps/daily-k/download-url	Parquet 文件结构
+ENDPOINT	market-dumps	GET	/dump/market-dumps/daily-k-10d/download-url	Parquet 文件结构
+ENDPOINT	market-dumps	GET	/dump/market-dumps/adjustment-factors/download-url	Parquet 文件结构
+SECTION	ticker-search	标的检索	1
+ENDPOINT	ticker-search	GET	/api/meta/tickers/search	标的检索
+SECTION	corporate-actions	除复权	1
+ENDPOINT	corporate-actions	GET	/api/a-share/corporate-actions/adjustment-factors	除复权
+SECTION	ticker-list	标的列表获取	1
+ENDPOINT	ticker-list	GET	/api/meta/tickers/list	标的列表获取
+SECTION	financials	财务报表	3
+ENDPOINT	financials	GET	/api/a-share/financials/income-statements	利润表
+ENDPOINT	financials	GET	/api/a-share/financials/balance-sheets	资产负债表
+ENDPOINT	financials	GET	/api/a-share/financials/cash-flow-statements	现金流量表
+SECTION	calendar	交易日历	1
+ENDPOINT	calendar	GET	/api/a-share/calendar/trading-days	交易日历
+SECTION	a-share-index	指数数据	4
+ENDPOINT	a-share-index	GET	/api/a-share-index/catalog/ths-index-list	同花顺指数列表
+ENDPOINT	a-share-index	GET	/api/a-share-index/constituents/ths-stock-list	同花顺指数成分股
+ENDPOINT	a-share-index	GET	/api/a-share-index/prices/snapshot	指数行情快照
+ENDPOINT	a-share-index	GET	/api/a-share-index/prices/historical	指数历史 K 线
+SECTION	funds	基金总览	0
+SECTION	special-data	特色数据	0
+SECTION	anomaly-analysis	个股异动原因	2
+ENDPOINT	anomaly-analysis	GET	/api/a-share/special-data/anomaly-analysis-list	个股异动原因列表
+ENDPOINT	anomaly-analysis	GET	/api/a-share/special-data/anomaly-analysis-stock	按股票查询个股异动原因
+SECTION	auction	集合竞价数据	2
+ENDPOINT	auction	GET	/api/a-share/auction/snapshot	A股集合竞价快照
+ENDPOINT	auction	GET	/api/a-share/auction/short-term-benchmark	短线风向标竞价基准
+SECTION	capital-flow	主力资金	2
+ENDPOINT	capital-flow	GET	/api/a-share/capital-flow/snapshot	资金流向实时快照
+ENDPOINT	capital-flow	GET	/api/a-share/capital-flow/historical	资金流向历史
+SECTION	dragon-tiger-data	龙虎榜数据	1
+ENDPOINT	dragon-tiger-data	GET	/api/a-share/special-data/dragon-tiger-list	龙虎榜数据
+SECTION	financial-indicators	财务指标数据	1
+ENDPOINT	financial-indicators	GET	/api/a-share/financials/indicators	财务指标数据
+SECTION	fund-backtest	基金在线回测	2
+ENDPOINT	fund-backtest	GET	/api/fund/backtest/result	基金在线回测
+ENDPOINT	fund-backtest	GET	/api/fund/backtest/indicators	基金回测可用指标
+SECTION	fund-company	基金公司详情	1
+ENDPOINT	fund-company	GET	/api/fund/companies/detail	基金公司详情
+SECTION	fund-corporate-actions	基金分红记录	1
+ENDPOINT	fund-corporate-actions	GET	/api/fund/corporate-actions/dividends	基金分红记录
+SECTION	fund-diagnostics	基金诊断详情	1
+ENDPOINT	fund-diagnostics	GET	/api/fund/diagnostics/detail	基金诊断详情
+SECTION	fund-financials	基金财务数据	3
+ENDPOINT	fund-financials	GET	/api/fund/financials/indicators	基金财务指标
+ENDPOINT	fund-financials	GET	/api/fund/financials/income-statements	基金利润表
+ENDPOINT	fund-financials	GET	/api/fund/financials/balance-sheets	基金资产负债表
+SECTION	fund-holders	基金持有人数据	2
+ENDPOINT	fund-holders	GET	/api/fund/holders/detail	基金持有人结构
+ENDPOINT	fund-holders	GET	/api/fund/holders/top	基金前十大持有人
+SECTION	fund-holdings	基金重仓持仓	1
+ENDPOINT	fund-holdings	GET	/api/fund/portfolio/holdings	基金重仓持仓
+SECTION	fund-indicators	基金通用指标	2
+ENDPOINT	fund-indicators	GET	/api/fund/indicators/line	基金画线指标
+ENDPOINT	fund-indicators	GET	/api/fund/indicators/table	基金表格指标
+SECTION	fund-managers	基金经理数据	4
+ENDPOINT	fund-managers	GET	/api/fund/managers/investment-style	投资风格
+ENDPOINT	fund-managers	GET	/api/fund/managers/performance	基金经理业绩
+ENDPOINT	fund-managers	GET	/api/fund/managers/experience	从业经历
+ENDPOINT	fund-managers	GET	/api/fund/managers/detail	基金经理详情
+SECTION	fund-market	基金行情数据	2
+ENDPOINT	fund-market	GET	/api/fund/market/snapshot	场内基金行情快照
+ENDPOINT	fund-market	GET	/api/fund/market/historical	场内基金历史日线行情
+SECTION	fund-news	基金资讯列表	1
+ENDPOINT	fund-news	GET	/api/fund/news/article-list	基金资讯列表
+SECTION	fund-offerings	基金募集列表	1
+ENDPOINT	fund-offerings	GET	/api/fund/offerings/list	基金募集列表
+SECTION	fund-performance	基金业绩与回撤	4
+ENDPOINT	fund-performance	GET	/api/fund/performance/nav	基金净值
+ENDPOINT	fund-performance	GET	/api/fund/performance/returns	基金区间收益
+ENDPOINT	fund-performance	GET	/api/fund/performance/indicators-historical	基金历史业绩指标
+ENDPOINT	fund-performance	GET	/api/fund/performance/drawdowns	基金最大回撤
+SECTION	fund-portfolio	基金持仓与资产配置	6
+ENDPOINT	fund-portfolio	GET	/api/fund/portfolio/stock-history	基金历史股票持仓
+ENDPOINT	fund-portfolio	GET	/api/fund/portfolio/bond-history	基金历史债券持仓
+ENDPOINT	fund-portfolio	GET	/api/fund/portfolio/stock-report-dates	基金股票持仓报告日期
+ENDPOINT	fund-portfolio	GET	/api/fund/portfolio/bond-report-dates	基金债券持仓报告日期
+ENDPOINT	fund-portfolio	GET	/api/fund/portfolio/asset-allocation	基金资产配置
+ENDPOINT	fund-portfolio	GET	/api/fund/portfolio/industry-allocation	基金行业配置
+SECTION	fund-profile	基金基本资料	1
+ENDPOINT	fund-profile	GET	/api/fund/profile/detail	基金基本资料
+SECTION	fund-quota	QDII 额度	2
+ENDPOINT	fund-quota	GET	/api/fund/quota/summary	QDII额度汇总
+ENDPOINT	fund-quota	GET	/api/fund/quota/list	QDII额度列表
+SECTION	futures-basis	期货基差	2
+ENDPOINT	futures-basis	GET	/api/futures/basis/main-continuous-latest	期货主连最新基差
+ENDPOINT	futures-basis	GET	/api/futures/basis/historical	期货历史基差
+SECTION	futures-calendar	期货交易日	1
+ENDPOINT	futures-calendar	GET	/api/futures/calendar/trading-schedule	期货交易日
+SECTION	futures-contracts-extended	期货主力与指数合约	4
+ENDPOINT	futures-contracts-extended	GET	/api/futures/contracts/main-continuous-list	期货主连资料
+ENDPOINT	futures-contracts-extended	GET	/api/futures/contracts/main-list	期货主力合约
+ENDPOINT	futures-contracts-extended	GET	/api/futures/contracts/secondary-main-list	期货次主力合约
+ENDPOINT	futures-contracts-extended	GET	/api/futures/contracts/commodity-index-list	商品指数合约列表
+SECTION	futures-fundamentals	期货F10宏观指标历史数据	1
+ENDPOINT	futures-fundamentals	GET	/api/futures/fundamentals/indicators-historical	期货F10宏观指标历史数据
+SECTION	futures-overview	期货总览	0
+SECTION	futures-positions	期货持仓	5
+ENDPOINT	futures-positions	GET	/api/futures/positions/variety-daily	期货品种日持仓
+ENDPOINT	futures-positions	GET	/api/futures/positions/company-variety-daily	期货公司品种日持仓
+ENDPOINT	futures-positions	GET	/api/futures/positions/contract-daily	期货公司合约日持仓
+ENDPOINT	futures-positions	GET	/api/futures/positions/contract-historical	期货公司合约历史持仓
+ENDPOINT	futures-positions	GET	/api/futures/positions/company-list	期货公司列表
+SECTION	futures-prices	期货行情	2
+ENDPOINT	futures-prices	GET	/api/futures/prices/intraday	期货分时
+ENDPOINT	futures-prices	GET	/api/futures/prices/daily	期货K线
+SECTION	futures-reference	期货合约基础资料	2
+ENDPOINT	futures-reference	GET	/api/futures/contracts/detail	期货合约详情
+ENDPOINT	futures-reference	GET	/api/futures/contracts/list	期货合约基础信息列表
+SECTION	futures-session-timeline	期货交易时间轴	1
+ENDPOINT	futures-session-timeline	GET	/api/futures/calendar/session-timeline	期货交易时间轴
+SECTION	futures-varieties	期货品种资料	1
+ENDPOINT	futures-varieties	GET	/api/futures/varieties/list	期货品种资料
+SECTION	futures-variety-plates	期货品种板块	1
+ENDPOINT	futures-variety-plates	GET	/api/futures/variety-plates/list	期货品种板块
+SECTION	futures-warehouse-receipts	期货历史仓单	1
+ENDPOINT	futures-warehouse-receipts	GET	/api/futures/warehouse-receipts/historical	期货历史仓单
+SECTION	high-frequency	高频动向	2
+ENDPOINT	high-frequency	GET	/api/a-share/high-frequency/historical	高频历史
+ENDPOINT	high-frequency	GET	/api/a-share/high-frequency/intraday	单日高频分时
+SECTION	hot-list-data	同花顺热榜	4
+ENDPOINT	hot-list-data	GET	/api/a-share/special-data/skyrocket-list	飙升榜
+ENDPOINT	hot-list-data	GET	/api/a-share/special-data/hot-stock-list	A股热股榜单
+ENDPOINT	hot-list-data	GET	/api/a-share/special-data/hot-stock-list-history	历史热股排行
+ENDPOINT	hot-list-data	GET	/api/a-share/special-data/hot-stock-rank-trend	个股排名走势
+SECTION	index-overview	指数概况	0
+SECTION	limit-up-data	涨跌停与炸板数据	4
+ENDPOINT	limit-up-data	GET	/api/a-share/special-data/limit-up-pool	涨停股票池
+ENDPOINT	limit-up-data	GET	/api/a-share/special-data/limit-down-pool	跌停股票池
+ENDPOINT	limit-up-data	GET	/api/a-share/special-data/limit-break-pool	炸板股票池
+ENDPOINT	limit-up-data	GET	/api/a-share/special-data/limit-up-ladder	连板天梯
+SECTION	news-events	资讯事件库	1
+ENDPOINT	news-events	GET	/api/news/events/search	资讯事件库
+SECTION	options-overview	期权总览	0
+SECTION	options-prices	期权行情	2
+ENDPOINT	options-prices	GET	/api/options/prices/intraday	期权分时
+ENDPOINT	options-prices	GET	/api/options/prices/daily	期权K线
+SECTION	options-reference	期权合约基础资料	2
+ENDPOINT	options-reference	GET	/api/options/contracts/detail	期权合约详情
+ENDPOINT	options-reference	GET	/api/options/contracts/list	期权合约基础信息列表
+SECTION	options-session-timeline	期权交易时间轴	1
+ENDPOINT	options-session-timeline	GET	/api/options/calendar/session-timeline	期权交易时间轴
+SECTION	options-varieties	期权品种资料	1
+ENDPOINT	options-varieties	GET	/api/options/varieties/list	期权品种资料
+SECTION	stock-basics	股票基础信息	0
+SECTION	ths-index-membership	股票所属同花顺指数查询	0
+SECTION	valuations	估值数据	1
+ENDPOINT	valuations	GET	/api/a-share/valuations/snapshot	估值数据
