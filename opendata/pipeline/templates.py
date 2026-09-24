@@ -281,9 +281,13 @@ def build_stock_daily_pipeline(
         cross_check = CrossCheckService(
             "stock_daily",
             sources=(resolved_source, second_source),
-            mappings={resolved_source: mapping},
+            mappings={
+                resolved_source: mapping,
+                second_source: require_domain_mapping(second_source, "stock_daily"),
+            },
             readers={
-                resolved_source: ods_frame_reader(engine, "stock_daily", resolved_source),
+                source: ods_raw_reader(engine, "stock_daily", source)
+                for source in (resolved_source, second_source)
             },
             write_report=DiffReportWriter(engine).write,
         )
@@ -316,12 +320,67 @@ def ods_frame_reader(engine: Engine, domain: str, source: str) -> Callable:
         A reader ``(start, end, affected_keys) -> contract frame``.
     """
     from opendata.data.domains import ods_table
+    from opendata.pipeline.query import resolve_time_field
+
+    # The ods table keeps the SOURCE's column names, so the window filter
+    # must use the source's mapped date column - not the contract field
+    # name, which only matches for sources that happen to name it the
+    # same (the ths tables do; the akshare ones use 日期).
+    mapping = require_domain_mapping(source, domain)
+    contract_date_field = resolve_time_field(domain)
+    source_date_column = mapping.fields[contract_date_field].source_column
 
     def read(start: date, end: date, affected_keys: set[tuple]) -> pd.DataFrame:
-        rows = _load_ods_rows(engine, ods_table(domain, source), domain, start, end, affected_keys)
+        rows = _load_ods_rows(
+            engine,
+            ods_table(domain, source),
+            domain,
+            start,
+            end,
+            affected_keys,
+            time_column=source_date_column,
+        )
         if not rows:
             return pd.DataFrame()
         return normalize_ods_rows(rows, domain=domain, source=source)
+
+    return read
+
+
+def ods_raw_reader(engine: Engine, domain: str, source: str) -> Callable[[Window], pd.DataFrame]:
+    """Build the RAW ods reader the cross-check needs.
+
+    ``CrossCheckService`` normalizes each side itself (it owns the
+    per-source field mappings), so its readers must hand back the
+    source's own columns. Handing it :func:`ods_frame_reader` instead
+    double-normalizes and fails closed on every run.
+
+    Args:
+        engine: Warehouse engine.
+        domain: Registered domain identifier.
+        source: Source identifier.
+
+    Returns:
+        A reader ``(window) -> raw ods frame``.
+    """
+    from opendata.data.domains import ods_table
+    from opendata.pipeline.query import resolve_time_field
+
+    mapping = require_domain_mapping(source, domain)
+    source_date_column = mapping.fields[resolve_time_field(domain)].source_column
+    table = ods_table(domain, source)
+
+    def read(window: Window) -> pd.DataFrame:
+        rows = _load_ods_rows(
+            engine,
+            table,
+            domain,
+            window.start,
+            window.end,
+            set(),
+            time_column=source_date_column,
+        )
+        return pd.DataFrame(rows)
 
     return read
 
@@ -333,13 +392,29 @@ def _load_ods_rows(
     start: date,
     end: date,
     affected_keys: set[tuple],
+    *,
+    time_column: str | None = None,
 ) -> list[dict]:
-    """Read ods rows for the window plus the affected keys."""
+    """Read ods rows for the window plus the affected keys.
+
+    Args:
+        engine: Warehouse engine.
+        table: Ods table (source column names).
+        domain: Registered domain identifier.
+        start: Window start (inclusive).
+        end: Window end (inclusive).
+        affected_keys: Business keys to read (empty reads the window).
+        time_column: Source's date column; defaults to the contract
+            field name (only correct for sources that name it the same).
+
+    Returns:
+        The raw ods rows.
+    """
     from sqlalchemy import text
 
     from opendata.pipeline.query import resolve_time_field
 
-    field = resolve_time_field(domain)
+    field = time_column or resolve_time_field(domain)
     params: dict[str, object] = {"start": start, "end": end}
     sql = f"SELECT * FROM `{table}` WHERE `{field}` >= :start AND `{field}` <= :end"  # noqa: S608
     keys = sorted(affected_keys)

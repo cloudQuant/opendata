@@ -75,8 +75,21 @@ class TestMigrationGraph:
 
 def _render(args: list[str]) -> str:
     """Run alembic offline against the ini and return its SQL output."""
+    return _render_with(INI, args)
+
+
+def _render_with(ini: Path, args: list[str]) -> str:
+    """Run alembic against an explicit ini and return its stdout.
+
+    Args:
+        ini: Alembic config file.
+        args: Alembic arguments.
+
+    Returns:
+        The command's stdout.
+    """
     completed = subprocess.run(  # noqa: S603  # literal argv, no shell
-        [sys.executable, "-m", "alembic", "-c", str(INI), *args],
+        [sys.executable, "-m", "alembic", "-c", str(ini), *args],
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
@@ -133,33 +146,71 @@ class TestOfflineReplay:
 
 @pytest.mark.e2e
 class TestLiveReplay:
-    def test_upgrade_then_downgrade_against_the_warehouse(self):
+    """The replay runs on a SCRATCH database, never on the warehouse.
+
+    ``downgrade base`` drops every ods/dwd table, so replaying it on
+    the configured warehouse destroys whatever data lives there (it
+    wiped a 617k-row migration once). The scratch database keeps the
+    proof - the chain applies and rolls back - without touching real
+    data.
+    """
+
+    SCRATCH_DB = "opendata_data_migration_replay"
+
+    @pytest.fixture
+    def scratch_ini(self, tmp_path):
+        """Create the scratch database and an ini pointing at it."""
+        from sqlalchemy.engine import make_url
+
         from opendata.core.config import settings
 
-        url = settings.data_database_url
+        url = make_url(settings.data_database_url)
         try:
-            engine = create_engine(url, poolclass=pool.NullPool)
-            with engine.connect() as connection:
+            server = create_engine(url.set(database=None), poolclass=pool.NullPool)
+            with server.connect() as connection:
                 connection.execute(text("SELECT 1"))
+                connection.execute(text(f"DROP DATABASE IF EXISTS `{self.SCRATCH_DB}`"))
+                connection.execute(
+                    text(f"CREATE DATABASE `{self.SCRATCH_DB}` CHARACTER SET utf8mb4")
+                )
         except Exception as exc:  # any connection failure means skip
             pytest.skip(f"warehouse database unreachable: {type(exc).__name__}")
+        scratch_url = url.set(database=self.SCRATCH_DB).render_as_string(hide_password=False)
+        # Rewrite the ini's URL: drop the commented template line and put
+        # the scratch URL right under [alembic] so it actually applies.
+        lines = [
+            line
+            for line in INI.read_text(encoding="utf-8").splitlines()
+            if not line.strip().lstrip("#").strip().startswith("sqlalchemy.url")
+        ]
+        for index, line in enumerate(lines):
+            if line.strip() == "[alembic]":
+                lines.insert(index + 1, f"sqlalchemy.url = {scratch_url}")
+                break
+        ini = tmp_path / "alembic_data_scratch.ini"
+        ini.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        yield ini, server, url
+        with server.begin() as connection:
+            connection.execute(text(f"DROP DATABASE IF EXISTS `{self.SCRATCH_DB}`"))
+        server.dispose()
 
+    def test_upgrade_then_downgrade_on_a_scratch_database(self, scratch_ini):
+        ini, server, url = scratch_ini
+        scratch = create_engine(url.set(database=self.SCRATCH_DB), poolclass=pool.NullPool)
         try:
-            _render(["downgrade", "base"])
-            _render(["upgrade", "head"])
-            names = set(inspect(engine).get_table_names())
+            _render_with(ini, ["upgrade", "head"])
+            names = set(inspect(scratch).get_table_names())
             assert set(P0_DWD_TABLES) <= names
             assert set(P0_ODS_TABLES) <= names
-            with engine.connect() as connection:
+            with scratch.connect() as connection:
                 version = connection.execute(
                     text("SELECT version_num FROM alembic_version_data")
                 ).scalar()
             revisions = {revision for revision, _ in _load_migrations().values()}
             downs = {down for _, down in _load_migrations().values() if down is not None}
             assert version in revisions - downs  # the single head of the chain
+
+            _render_with(ini, ["downgrade", "base"])
+            assert not (set(P0_DWD_TABLES) & set(inspect(scratch).get_table_names()))
         finally:
-            # Leave the shared warehouse at head: other e2e suites
-            # (diff report, ods writer) assume the schema exists.
-            _render(["downgrade", "base"])
-            _render(["upgrade", "head"])
-            engine.dispose()
+            scratch.dispose()

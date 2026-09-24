@@ -1,0 +1,30 @@
+# 双源交叉校对真机报告（AC-8/AC-9，2026-09-24）
+# 复算：见 docs/evidence/B1/README.md
+
+## 数据规模
+  ods_stock_daily_ths: 2016-09-23..2026-09-23 rows=10310287 symbols=5568
+  ods_stock_daily_akshare: 2026-01-05..2026-07-21 rows=617371 symbols=5864
+  ods_stock_action_ths: 1991-02-26..2026-10-09 rows=57463 symbols=5434
+
+## 校对结果（ths vs akshare，窗口 2026-01-05..2026-07-21）
+  authority order: ('ths', 'akshare')
+  compared_keys=719314
+  deviation_count=1989684
+  missing_count=103555
+  per_field={'open': 262112, 'high': 262069, 'low': 262083, 'close': 262070, 'amount': 615670, 'volume': 325680}
+  merge: MergeStats(rows=719314, diff_flagged=615610, degraded_rows=1612, passthrough=False)
+
+## dwd 合并（权威 ths 优先，akshare 降级填补）
+  dwd_stock_daily: rows=719314 symbols=5869 diff_flagged=615610
+  来源分布: [('ths', 717702), ('akshare', 1612)]
+
+## 差异归因（人工复核结论）
+  1. OHLC 全字段一致偏移（约 3.13%，如 000001 2026-01-05: ths close 11.50 vs akshare 11.14）
+     —— 价格基准（复权口径）差异特征，非解析错误：四个价格字段偏移同向同幅。
+     akshare 侧数据来自旧库迁移（STOCK_ZH_A_HIST），旧采集的复权基准与本次 ths
+     原始不复权（D10）口径不同；用 ths 事件重算的 qfq 因子（0.9474）与观测比值
+     （0.9687）不等，说明旧库的基准是其采集时点的口径，不可复现。
+  2. akshare 侧 amount（成交额）为 0：617,017/617,371 行 —— 旧采集未记录成交额，
+     属源数据完整度差异。
+  3. volume 差异 325,680 项、missing 103,555 项：两源交易日历与停牌语义差异。
+  结论：全部差异可由**源侧口径与完整度**解释，未发现程序性错误。

@@ -192,3 +192,69 @@ def test_normalize_ods_rows_keeps_unknown_source_columns_out():
     frame = normalize_ods_rows(raw_rows, domain="stock_daily", source="akshare")
 
     assert "涨跌幅" not in frame.columns
+
+
+class TestOdsReadersUseTheSourceDateColumn:
+    """The ods tables keep SOURCE column names, so the window filter must
+    use the source's mapped date column (the akshare tables use 日期) -
+    the contract field name only happens to match for the ths tables."""
+
+    def _mapping(self):
+        from opendata.data.mapping import DomainMapping, FieldMapping
+
+        return DomainMapping(
+            domain="stock_daily",
+            key=("symbol", "trade_date"),
+            fields={
+                "symbol": FieldMapping("股票代码", normalize="plain"),
+                "trade_date": FieldMapping("日期"),
+                "close": FieldMapping("收盘"),
+            },
+        )
+
+    def test_raw_reader_filters_on_the_mapped_column(self, monkeypatch):
+        from opendata.pipeline import templates
+
+        captured: dict[str, object] = {}
+
+        def fake_load(engine, table, domain, start, end, keys, *, time_column=None):
+            captured["time_column"] = time_column
+            captured["table"] = table
+            return []
+
+        monkeypatch.setattr(templates, "_load_ods_rows", fake_load)
+        monkeypatch.setattr(
+            templates, "require_domain_mapping", lambda source, domain: self._mapping()
+        )
+        monkeypatch.setattr(
+            "opendata.data.domains.ods_table", lambda domain, source: f"ods_{domain}_{source}"
+        )
+
+        reader = templates.ods_raw_reader(object(), "stock_daily", "akshare")
+        reader(templates.Window(start=date(2026, 1, 5), end=date(2026, 1, 9)))
+
+        assert captured["time_column"] == "日期"
+        assert captured["table"] == "ods_stock_daily_akshare"
+
+    def test_raw_reader_returns_source_columns_not_contract_ones(self, monkeypatch):
+        from opendata.pipeline import templates
+
+        monkeypatch.setattr(
+            templates,
+            "_load_ods_rows",
+            lambda *a, **k: [{"股票代码": "000001", "日期": date(2026, 1, 5), "收盘": 11.14}],
+        )
+        monkeypatch.setattr(
+            templates, "require_domain_mapping", lambda source, domain: self._mapping()
+        )
+        monkeypatch.setattr(
+            "opendata.data.domains.ods_table", lambda domain, source: f"ods_{domain}_{source}"
+        )
+
+        frame = templates.ods_raw_reader(object(), "stock_daily", "akshare")(
+            templates.Window(start=date(2026, 1, 5), end=date(2026, 1, 5))
+        )
+
+        # the cross-check owns normalization; handing it contract columns
+        # would make it normalize twice and fail closed
+        assert list(frame.columns) == ["股票代码", "日期", "收盘"]
