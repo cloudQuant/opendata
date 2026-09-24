@@ -4,14 +4,20 @@ Declares the fetchers that a live call has verified and registers them into
 the process registry. Domains whose upstream endpoints are not implemented
 yet (financial statements/indicators, index constituents) are deliberately
 absent: routing them to a half-checked adapter would be worse than leaving
-them to the akshare provider until A3.4 continues.
+them to the akshare provider until A3.4 continues. ``fund_etf_daily`` is a
+deliberate addition to that list: the upstream ETF K-line endpoint publishes
+a forward-adjusted series only (measured, see ``docs/evidence/C6``), which
+D10 forbids storing, so it stays on the akshare chain until a factor route
+exists.
 """
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from opendata.data.providers.ths.models.futures_daily import ThsFuturesDailyFetcher
 from opendata.data.providers.ths.models.index_daily import ThsIndexDailyFetcher
+from opendata.data.providers.ths.models.option_daily import ThsOptionDailyFetcher
 from opendata.data.providers.ths.models.stock_action import ThsStockActionFetcher
 from opendata.data.providers.ths.models.stock_daily import ThsStockDailyFetcher
 
@@ -25,6 +31,8 @@ FETCHERS: tuple[Fetcher[Any, Any], ...] = (
     ThsStockDailyFetcher(),
     ThsStockActionFetcher(),
     ThsIndexDailyFetcher(),
+    ThsFuturesDailyFetcher(),
+    ThsOptionDailyFetcher(),
 )
 
 

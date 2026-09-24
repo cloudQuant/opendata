@@ -165,6 +165,8 @@ def implemented_paths_in_code() -> frozenset[str]:
     rest = (
         endpoints.PRICES_ENDPOINT,
         endpoints.INDEX_PRICES_ENDPOINT,
+        endpoints.FUTURES_PRICES_ENDPOINT,
+        endpoints.OPTIONS_PRICES_ENDPOINT,
         endpoints.ADJUSTMENT_FACTORS_ENDPOINT,
         endpoints.TICKERS_LIST_ENDPOINT,
         endpoints.TICKERS_SEARCH_ENDPOINT,

@@ -151,7 +151,7 @@ entries:
   - {section: futures-positions, family: 期货, method: GET, path: /api/futures/positions/contract-historical, title: '期货公司合约历史持仓', status: available, domain: null, scenario: '公司×合约历史持仓：因子回溯'}
   - {section: futures-positions, family: 期货, method: GET, path: /api/futures/positions/company-list, title: '期货公司列表', status: available, domain: null, scenario: '期货公司目录：持仓因子维度主数据'}
   - {section: futures-prices, family: 期货, method: GET, path: /api/futures/prices/intraday, title: '期货分时', status: available, domain: null, scenario: '期货分时（端外仅当前交易日）：日内监控，不适合回补'}
-  - {section: futures-prices, family: 期货, method: GET, path: /api/futures/prices/daily, title: '期货K线', status: available, domain: futures_daily, scenario: '期货日线：futures_daily 域 ths 副源候选（当前 akshare 单源）'}
+  - {section: futures-prices, family: 期货, method: GET, path: /api/futures/prices/daily, title: '期货K线', status: implemented, domain: futures_daily, scenario: '期货日线：期货回测与基差/展期因子（ths 主源，akshare 降级）'}
   - {section: futures-reference, family: 期货, method: GET, path: /api/futures/contracts/detail, title: '期货合约详情', status: available, domain: instrument, scenario: '期货合约详情：合约主数据（乘数/交割月）'}
   - {section: futures-reference, family: 期货, method: GET, path: /api/futures/contracts/list, title: '期货合约基础信息列表', status: available, domain: instrument, scenario: '期货合约目录分页：Instrument 增量'}
   - {section: futures-session-timeline, family: 期货, method: GET, path: /api/futures/calendar/session-timeline, title: '期货交易时间轴', status: available, domain: trading_calendar, scenario: '期货交易时间轴：夜盘/日盘调度边界'}
@@ -170,7 +170,7 @@ entries:
   - {section: limit-up-data, family: A股, method: GET, path: /api/a-share/special-data/limit-up-ladder, title: '连板天梯', status: available, domain: null, scenario: '连板天梯：近 30 交易日连板矩阵'}
   - {section: news-events, family: 资讯, method: GET, path: /api/news/events/search, title: '资讯事件库', status: client_only, domain: null, scenario: '资讯事件库：仅在同花顺 AI 客户端内提供，端外不接入'}
   - {section: options-prices, family: 期权, method: GET, path: /api/options/prices/intraday, title: '期权分时', status: available, domain: null, scenario: '期权分时（端外仅当前交易日）：日内监控'}
-  - {section: options-prices, family: 期权, method: GET, path: /api/options/prices/daily, title: '期权K线', status: available, domain: option_daily, scenario: '期权日线：option_daily 域 ths 副源候选（当前 akshare 单源）'}
+  - {section: options-prices, family: 期权, method: GET, path: /api/options/prices/daily, title: '期权K线', status: implemented, domain: option_daily, scenario: '期权日线：期权策略回测与波动率因子（ths 主源，akshare 降级）'}
   - {section: options-reference, family: 期权, method: GET, path: /api/options/contracts/detail, title: '期权合约详情', status: available, domain: instrument, scenario: '期权合约详情：行权价/到期日主数据'}
   - {section: options-reference, family: 期权, method: GET, path: /api/options/contracts/list, title: '期权合约基础信息列表', status: available, domain: instrument, scenario: '期权合约目录分页：Instrument 增量'}
   - {section: options-session-timeline, family: 期权, method: GET, path: /api/options/calendar/session-timeline, title: '期权交易时间轴', status: available, domain: trading_calendar, scenario: '期权交易时间轴：调度边界'}

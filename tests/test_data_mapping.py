@@ -206,6 +206,43 @@ class TestDenormalizeFrame:
         assert back["amount"].tolist() == [535708360000.0]
         assert back["volume"].tolist() == [21486958000.0]  # 股，无 手 换算
 
+    def test_the_derivative_legs_keep_their_exchange_suffix(self):
+        """C6: futures/option bars round-trip with the qualified code intact.
+
+        Stripping the suffix (what ``index_daily`` does) would collide across
+        exchanges and recycle codes after delivery, so these two mappings
+        declare no ``normalize`` and the row read back must still say
+        ``RB2610.SHF``.
+        """
+        from opendata.data.mapping import denormalize_frame
+        from opendata.pipeline.dump_import import shanghai_dates
+
+        legs = (("futures_daily", "RB2610.SHF"), ("option_daily", "MO2612-C-7600.CFE"))
+        for domain, symbol in legs:
+            mapping = require_domain_mapping("ths", domain)
+            assert mapping.source_key == ("thscode", "trade_date")
+            contract = pd.DataFrame(
+                {
+                    "symbol": [symbol],
+                    "trade_date": [date(2026, 6, 1)],
+                    "open": [3156.0],
+                    "high": [3189.0],
+                    "low": [3156.0],
+                    "close": [3177.0],
+                    "volume": [679167.0],
+                    "amount": [21554984000.0],
+                }
+            )
+
+            source = denormalize_frame(contract, mapping)
+            back = normalize_frame(source, mapping)
+
+            assert source["thscode"].tolist() == [symbol]
+            assert list(shanghai_dates(source["timestamp"])) == [date(2026, 6, 1)]
+            assert back["symbol"].tolist() == [symbol]
+            assert back["close"].tolist() == [3177.0]
+            assert back["amount"].tolist() == [21554984000.0]
+
     def test_a_missing_contract_field_fails_closed(self):
         from opendata.data.mapping import denormalize_frame
 

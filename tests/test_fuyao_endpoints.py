@@ -20,20 +20,24 @@ from opendata_fuyao import FuyaoCredentials, FuyaoError, FuyaoHttpClient
 from opendata_fuyao.endpoints import (
     ADJUSTMENT_FACTORS_ENDPOINT,
     CALENDAR_ENDPOINT,
+    FUTURES_PRICES_ENDPOINT,
     INDEX_PRICES_ENDPOINT,
     MAX_LIST_LIMIT,
     MAX_SEARCH_LIMIT,
+    OPTIONS_PRICES_ENDPOINT,
     PRICES_ENDPOINT,
     TICKERS_LIST_ENDPOINT,
     TICKERS_SEARCH_ENDPOINT,
     build_adjustment_factors_request,
     build_index_prices_request,
+    build_period_daily_request,
     build_prices_request,
     build_tickers_list_request,
     build_tickers_search_request,
     fetch_adjustment_factors,
     fetch_daily_bars,
     fetch_index_daily_bars,
+    fetch_period_daily_bars,
     fetch_trading_calendar,
     list_instruments,
     millis_to_trading_date,
@@ -148,6 +152,29 @@ class TestRequestBuilders:
         with pytest.raises(FuyaoError, match="FUYAO_ENVELOPE_INVALID_window"):
             build_index_prices_request(
                 symbol="000300.SH", start=date(2024, 1, 3), end=date(2024, 1, 3)
+            )
+
+    def test_period_request_uses_time_period_and_no_adjust(self):
+        params = build_period_daily_request(
+            symbol="IF2610.CFE", start=date(2024, 1, 2), end=date(2024, 1, 5)
+        )
+
+        assert params == {
+            "thscode": "IF2610.CFE",
+            "time_period": "day_1",
+            "start": _ms("2024-01-02"),
+            "end": _ms("2024-01-05") - 1,
+        }
+        # 期货/期权价是观测值：既无复权，也不能带 interval（上游按字段拒绝）。
+        assert "adjust" not in params
+        assert "interval" not in params
+
+    def test_period_request_symbol_and_window_fail_closed(self):
+        with pytest.raises(FuyaoError, match="FUYAO_ENVELOPE_INVALID_symbol"):
+            build_period_daily_request(symbol="", start=date(2024, 1, 2), end=date(2024, 1, 3))
+        with pytest.raises(FuyaoError, match="FUYAO_ENVELOPE_INVALID_window"):
+            build_period_daily_request(
+                symbol="IF2610.CFE", start=date(2024, 1, 4), end=date(2024, 1, 3)
             )
 
     def test_tickers_search_bounds(self):
@@ -385,6 +412,90 @@ class TestFetchers:
             )
 
         assert len(windows) == 3  # 21 年 → 三块（各 ≤ 10 年）
+
+    def test_period_bars_read_the_timestamp_field(self):
+        seen: dict[str, Any] = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen["path"] = request.url.path
+            seen["params"] = dict(request.url.params)
+            row = {
+                "timestamp": _ms("2024-01-02"),
+                "open_price": 3500.0,
+                "high_price": 3560.0,
+                "low_price": 3490.0,
+                "close_price": 3520.0,
+                "volume": 1200.0,
+                "turnover": 4.2e7,
+            }
+            return httpx.Response(200, content=_envelope([row]))
+
+        with _client(handler) as client:
+            bars = fetch_period_daily_bars(
+                client,
+                endpoint=FUTURES_PRICES_ENDPOINT,
+                symbol="IF2610.CFE",
+                start=date(2024, 1, 2),
+                end=date(2024, 1, 4),
+            )
+
+        assert seen["path"] == FUTURES_PRICES_ENDPOINT
+        assert seen["params"]["time_period"] == "day_1"
+        assert bars == (
+            Bar(
+                symbol="IF2610.CFE",
+                trade_date=date(2024, 1, 2),
+                open=3500.0,
+                high=3560.0,
+                low=3490.0,
+                close=3520.0,
+                volume=1200.0,
+                amount=4.2e7,
+            ),
+        )
+
+    def test_period_fetch_is_a_single_request_for_21_years(self):
+        """期货/期权日 K 实测不受 10 年上限约束，故不切块（少一半请求）。"""
+        calls: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            calls.append(str(dict(request.url.params)["start"]))
+            return httpx.Response(200, content=_envelope([]))
+
+        with _client(handler) as client:
+            fetch_period_daily_bars(
+                client,
+                endpoint=OPTIONS_PRICES_ENDPOINT,
+                symbol="90007464.SZ",
+                start=date(2005, 1, 1),
+                end=date(2026, 1, 1),
+            )
+
+        assert len(calls) == 1
+
+    def test_period_bars_reject_a_null_turnover(self):
+        """商品指数类标的 turnover 为 null：契约要求 amount 非空，故失败关闭。"""
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            row = {
+                "timestamp": _ms("2024-01-02"),
+                "open_price": 120.0,
+                "high_price": 121.0,
+                "low_price": 119.0,
+                "close_price": 120.5,
+                "volume": 3.0e7,
+                "turnover": None,
+            }
+            return httpx.Response(200, content=_envelope([row]))
+
+        with _client(handler) as client, pytest.raises(FuyaoError, match="FUYAO_ENVELOPE_INVALID"):
+            fetch_period_daily_bars(
+                client,
+                endpoint=FUTURES_PRICES_ENDPOINT,
+                symbol="850002.TI",
+                start=date(2024, 1, 2),
+                end=date(2024, 1, 4),
+            )
 
     def test_long_windows_are_chunked(self):
         windows: list[tuple[str, str]] = []

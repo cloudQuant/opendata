@@ -1,14 +1,17 @@
-"""fuyao P0 端点：日线、指数日线、除复权事件、标的、交易日历（A3.2）.
+"""fuyao P0 端点：日线、指数日线、期货/期权日 K、除复权事件、标的、交易日历（A3.2）.
 
 每个端点都是"请求构造 + 响应归一化"两段，直接产出中台契约模型
 （``Bar`` / ``CorporateAction`` / ``Instrument`` / ``TradingCalendar``），
 供 A3.4 的 provider 层直接注册路由。
 
-时间语义（同生态 API 事实，A3.2 实测确认）：
-- 请求窗口 ``start`` / ``end`` 为**毫秒戳**，闭区间，跨度 ≤ 10 年（超过 code=1003）；
+时间语义（同生态 API 事实，A3.2/C6 实测确认）：
+- 请求窗口 ``start`` / ``end`` 为**毫秒戳**，闭区间；股票/指数日线跨度 ≤ 10 年
+  （超过 code=1003），期货/期权日 K 实测不受该上限约束；
   平台内部为半开窗口，故 ``end`` 取 ``end_date`` 上海零点 - 1ms。
-- 响应 ``date_ms`` 为交易日的 ``Asia/Shanghai`` 零点，归一化为该交易日 date。
-- 复权请求值 ``none|forward|backward``，中台语义 ``unadjusted|qfq|hfq``。
+- 股票/指数日线响应行内日期字段是 ``date_ms``，期货/期权日 K 是 ``timestamp``，
+  两者都是交易日的 ``Asia/Shanghai`` 零点，归一化为该交易日 date。
+- 复权请求值 ``none|forward|backward``，中台语义 ``unadjusted|qfq|hfq``；
+  指数、期货、期权三类标的均无复权语义，请求不接受 ``adjust``。
 
 D10：``Bar`` 只存不复权价，复权序列由本地因子合成；入库路径不应持久化
 ``adjust != unadjusted`` 的结果。
@@ -36,6 +39,8 @@ _SHANGHAI = ZoneInfo("Asia/Shanghai")
 #: 端点路径（A3.2 实测确认）。
 PRICES_ENDPOINT = "/api/a-share/prices/historical"
 INDEX_PRICES_ENDPOINT = "/api/a-share-index/prices/historical"
+FUTURES_PRICES_ENDPOINT = "/api/futures/prices/daily"
+OPTIONS_PRICES_ENDPOINT = "/api/options/prices/daily"
 ADJUSTMENT_FACTORS_ENDPOINT = "/api/a-share/corporate-actions/adjustment-factors"
 TICKERS_LIST_ENDPOINT = "/api/meta/tickers/list"
 TICKERS_SEARCH_ENDPOINT = "/api/meta/tickers/search"
@@ -57,6 +62,16 @@ MAX_LIST_LIMIT = 10_000
 
 #: 指数标的的上游 ``asset_type`` 取值（A 股指数、同花顺指数与板块共用）。
 INDEX_ASSET_TYPE = "a-share-index"
+
+#: 期货/期权标的的上游 ``asset_type`` 取值（目录列举用，实测为复数）。
+FUTURES_ASSET_TYPE = "futures"
+OPTIONS_ASSET_TYPE = "options"
+
+#: 期货/期权日 K 周期；端外只允许 ``day_1``（``week_1`` 等被拒但错误文案失真）。
+DAILY_TIME_PERIOD = "day_1"
+
+#: 期货/期权日 K 的日期字段名（与股票/指数日线的 ``date_ms`` 不同）。
+PERIOD_BAR_DATE_KEY = "timestamp"
 
 #: 日线响应字段 → 中台 ``Bar`` 字段。
 _BAR_FIELDS: Mapping[str, str] = {
@@ -184,6 +199,37 @@ def build_index_prices_request(*, symbol: str, start: date, end: date) -> dict[s
     }
 
 
+def build_period_daily_request(*, symbol: str, start: date, end: date) -> dict[str, Any]:
+    """构造期货/期权日 K 请求参数（``time_period=day_1``，**无** ``interval``）.
+
+    与股票/指数日线端点的三处差异（A3.2/C6 实测）：周期参数名是
+    ``time_period``（传 ``interval`` 直接 ``标的或字段不受支持``）；``start``/``end``
+    必须**成对**给出，否则只回最近 100 根；实测 10.7 年窗口不被拒，故本函数
+    不切块。合约价格本身即观测值，无复权语义，故不接受 ``adjust``。
+
+    Args:
+        symbol: 上游完整代码（须带市场/交易所后缀）。
+        start: 起始交易日（含）。
+        end: 结束交易日（不含）。
+
+    Returns:
+        查询参数。
+
+    Raises:
+        FuyaoError: 标的为空或窗口非法。
+    """
+    if not isinstance(symbol, str) or not symbol.strip():
+        raise error_for_transport("envelope_invalid", detail="symbol")
+    if start >= end:
+        raise error_for_transport("envelope_invalid", detail="window")
+    return {
+        "thscode": symbol.strip(),
+        "time_period": DAILY_TIME_PERIOD,
+        "start": shanghai_midnight_millis(start),
+        "end": shanghai_midnight_millis(end) - 1,
+    }
+
+
 def build_tickers_search_request(
     *,
     query: str,
@@ -290,7 +336,9 @@ def _require_value(row: Mapping[str, Any], key: str, *, context: str) -> Any:  #
     return row[key]
 
 
-def normalize_bars(envelope: FuyaoEnvelope, *, symbol: str) -> tuple[Bar, ...]:
+def normalize_bars(
+    envelope: FuyaoEnvelope, *, symbol: str, date_key: str = "date_ms"
+) -> tuple[Bar, ...]:
     """把日线响应归一化为 ``Bar``（按交易日升序）.
 
     上游行内**不含** ``thscode``（只在 ``data.thscode`` 回显），故标的自请求
@@ -299,6 +347,8 @@ def normalize_bars(envelope: FuyaoEnvelope, *, symbol: str) -> tuple[Bar, ...]:
     Args:
         envelope: 成功信封。
         symbol: 请求使用的上游标的代码。
+        date_key: 行内交易日字段名（股票/指数为 ``date_ms``，期货/期权日 K
+            为 ``timestamp``）。
 
     Returns:
         未复权日线行。
@@ -311,7 +361,7 @@ def normalize_bars(envelope: FuyaoEnvelope, *, symbol: str) -> tuple[Bar, ...]:
     resolved_symbol = symbol.strip()
     bars: list[Bar] = []
     for row in _items(envelope, context="bar"):
-        trade_date = millis_to_trading_date(_require_value(row, "date_ms", context="bar"))
+        trade_date = millis_to_trading_date(_require_value(row, date_key, context="bar"))
         try:
             bars.append(
                 Bar(
@@ -503,6 +553,32 @@ def fetch_index_daily_bars(
     return tuple(bars)
 
 
+def fetch_period_daily_bars(
+    client: FuyaoHttpClient, *, endpoint: str, symbol: str, start: date, end: date
+) -> tuple[Bar, ...]:
+    """取期货/期权日 K（单次请求，行内日期字段为 ``timestamp``）.
+
+    Args:
+        client: 传输层客户端。
+        endpoint: :data:`FUTURES_PRICES_ENDPOINT` 或 :data:`OPTIONS_PRICES_ENDPOINT`。
+        symbol: 上游完整代码（须带交易所后缀）。
+        start: 起始交易日（含）。
+        end: 结束交易日（不含）。
+
+    Returns:
+        按交易日升序的 ``Bar``。合约价为观测值，无复权口径。
+        商品指数一类标的上游把 ``turnover`` 回成 ``null``，而 ``Bar.amount``
+        非空，故这类标的在此失败关闭（不归零、不补估）。
+
+    Raises:
+        FuyaoError: 行结构非法或缺字段。
+    """
+    response = client.get(
+        endpoint, params=build_period_daily_request(symbol=symbol, start=start, end=end)
+    )
+    return normalize_bars(response.envelope, symbol=symbol, date_key=PERIOD_BAR_DATE_KEY)
+
+
 def search_instruments(
     client: FuyaoHttpClient,
     *,
@@ -602,22 +678,30 @@ __all__ = [
     "ADJUSTMENTS",
     "ADJUSTMENT_FACTORS_ENDPOINT",
     "CALENDAR_ENDPOINT",
+    "DAILY_TIME_PERIOD",
+    "FUTURES_ASSET_TYPE",
+    "FUTURES_PRICES_ENDPOINT",
     "INDEX_ASSET_TYPE",
     "INDEX_PRICES_ENDPOINT",
     "MAX_LIST_LIMIT",
     "MAX_SEARCH_LIMIT",
     "MAX_WINDOW",
+    "OPTIONS_ASSET_TYPE",
+    "OPTIONS_PRICES_ENDPOINT",
+    "PERIOD_BAR_DATE_KEY",
     "PRICES_ENDPOINT",
     "TICKERS_LIST_ENDPOINT",
     "TICKERS_SEARCH_ENDPOINT",
     "build_adjustment_factors_request",
     "build_index_prices_request",
+    "build_period_daily_request",
     "build_prices_request",
     "build_tickers_list_request",
     "build_tickers_search_request",
     "fetch_adjustment_factors",
     "fetch_daily_bars",
     "fetch_index_daily_bars",
+    "fetch_period_daily_bars",
     "fetch_trading_calendar",
     "list_instruments",
     "millis_to_trading_date",

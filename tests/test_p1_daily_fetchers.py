@@ -1,9 +1,12 @@
 """Akshare P1 daily-bar fetcher tests (B1.2 注册: index / ETF / option / bond).
 
-All four capabilities carry ``verified=False`` until the AC-6 P1 fidelity
-sampling covers them, so the tests pin the routing semantics (explicit
-source resolves, ``auto`` refuses - same contract as the futures daily
-chain) and the normalize stage against recorded upstream frame shapes.
+These capabilities were registered with ``verified=False`` until real
+cross-vendor coverage arrived, so the tests pin the routing semantics (explicit
+source always resolves; ``auto`` refuses while nothing verified serves the
+domain) and the normalize stage against recorded upstream frame shapes. The
+ths legs added since then graduate a domain out of the refusal branch -
+``index_daily`` in C5 and ``option_daily`` in C6 - and
+``_AUTO_ROUTABLE_DOMAINS`` tracks which side of that fork each domain is on.
 """
 
 from __future__ import annotations
@@ -112,8 +115,8 @@ CASES: tuple[tuple[Any, ...], ...] = (
 )
 
 
-#: P1 域中已有 verified 数据源的（ths 指数日线腿，C5）：auto 路由应当命中它们。
-_AUTO_ROUTABLE_DOMAINS = frozenset({"index_daily"})
+#: P1 域中已有 verified 数据源的（ths 指数腿 C5、期权腿 C6）：auto 路由应当命中它们。
+_AUTO_ROUTABLE_DOMAINS = frozenset({"index_daily", "option_daily"})
 
 
 def _latest(fetcher: Any, case: tuple[Any, ...]) -> Bar:

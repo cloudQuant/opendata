@@ -108,7 +108,7 @@ def test_each_family_has_consuming_scenarios(endpoint_map) -> None:
 def test_implemented_entries_match_the_shipped_constants(endpoint_map) -> None:
     mapped = {e.path for e in endpoint_map.by_status("implemented")}
     assert mapped == set(implemented_paths_in_code())
-    assert len(mapped) == 9  # 6 个 REST 端点 + 3 个 market-dumps 下载端点
+    assert len(mapped) == 11  # 8 个 REST 端点 + 3 个 market-dumps 下载端点
 
 
 def test_domains_are_registered(endpoint_map) -> None:

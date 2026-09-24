@@ -1,0 +1,48 @@
+AC-10 ths futures_daily / option_daily legs vs the official sina series
+
+script: scripts/ops/ths_futures_option_cross_check.py
+window: 2026-06-01 .. 2026-08-31
+ours: get_registry().resolve_domain(domain, source='ths').fetch(...)  (the routing path)
+official: sina futures_zh_daily_sina / option_commodity_hist_sina /
+          option_cffex_zz1000_daily_sina / option_sse_daily_sina
+          -- different vendor, different aggregation chain
+code mapping: RB2610 -> RB2610.SHF via the fuyao futures listing; the rest pass the
+          qualified thscode through. L2611-P-7200.DCE -> L2611P7200 and
+          CU2611P102000.SHF -> CU2611P102000 drop the separators;
+          MO2612-C-7600.CFE -> mo2612C7600 also lower-cases the underlying;
+          10011514.SH -> 10011514 because the fuyao prefix is the SSE contract number.
+hard criteria: overlap >= 0.95 of our trading days; relative deviation <=
+          1e-06 on OHLC, 0.001 on volume for
+          futures_daily (volume is observed only on
+          option_daily legs, see the notes section).
+
+| domain | ths code | sina symbol | sina channel | days | overlap | max dev OHLC | max dev volume | volume ratio ths/sina | result |
+|---|---|---|---|---|---|---|---|---|---|
+| futures_daily | RB2610 | RB2610 | futures_zh_daily_sina | 65 | 1.000 | 0.00e+00 | 4.65e-04 | 1.000000 .. 1.000465 | PASS |
+| futures_daily | CU2610.SHF | CU2610 | futures_zh_daily_sina | 65 | 1.000 | 0.00e+00 | 7.71e-05 | 1.000000 .. 1.000077 | PASS |
+| futures_daily | IF2612.CFE | IF2612 | futures_zh_daily_sina | 65 | 1.000 | 0.00e+00 | 0.00e+00 | 1.000000 .. 1.000000 | PASS |
+| option_daily | L2611-P-7200.DCE | L2611P7200 | option_commodity_hist_sina | 15 | 1.000 | 0.00e+00 | 0.00e+00 | 1.000000 .. 1.000000 | PASS |
+| option_daily | CU2611P102000.SHF | CU2611P102000 | option_commodity_hist_sina | 48 | 1.000 | 0.00e+00 | 2.50e-01 | 1.000000 .. 1.250000 | PASS (volume observed) |
+| option_daily | MO2612-C-7600.CFE | mo2612C7600 | option_cffex_zz1000_daily_sina | 65 | 1.000 | 0.00e+00 | 1.27e-01 | 1.000000 .. 1.126984 | PASS (volume observed) |
+| option_daily | 10011514.SH | 10011514 | option_sse_daily_sina | 65 | 1.000 | 0.00e+00 | n/a | n/a | PASS |
+
+## 逐日偏差明细
+
+- CU2611P102000.SHF 2026-06-01 volume: ths 46.0000 vs sina 44.0000 (dev=4.55e-02)
+- CU2611P102000.SHF 2026-06-02 volume: ths 18.0000 vs sina 17.0000 (dev=5.88e-02)
+- CU2611P102000.SHF 2026-06-03 volume: ths 96.0000 vs sina 94.0000 (dev=2.13e-02)
+- CU2611P102000.SHF 2026-06-04 volume: ths 5.0000 vs sina 4.0000 (dev=2.50e-01)
+- CU2611P102000.SHF 2026-07-17 volume: ths 19.0000 vs sina 18.0000 (dev=5.56e-02)
+- MO2612-C-7600.CFE 2026-06-01 volume: ths 46.0000 vs sina 44.0000 (dev=4.55e-02)
+- MO2612-C-7600.CFE 2026-06-03 volume: ths 46.0000 vs sina 43.0000 (dev=6.98e-02)
+- MO2612-C-7600.CFE 2026-06-04 volume: ths 49.0000 vs sina 46.0000 (dev=6.52e-02)
+- MO2612-C-7600.CFE 2026-06-05 volume: ths 133.0000 vs sina 131.0000 (dev=1.53e-02)
+- MO2612-C-7600.CFE 2026-06-10 volume: ths 71.0000 vs sina 63.0000 (dev=1.27e-01)
+
+## 成交量口径说明
+
+- CU2611P102000.SHF（CU2611P102000 / option_commodity_hist_sina）：成交量比值 1.000000 .. 1.250000（最大相对偏差 2.50e-01），比例非常数且单侧偏离，属两侧成交量口径差异（ths 侧含参考侧未并入的量），非程序换算错误：同窗口四个价格字段逐日完全一致。
+- MO2612-C-7600.CFE（mo2612C7600 / option_cffex_zz1000_daily_sina）：成交量比值 1.000000 .. 1.126984（最大相对偏差 1.27e-01），比例非常数且单侧偏离，属两侧成交量口径差异（ths 侧含参考侧未并入的量），非程序换算错误：同窗口四个价格字段逐日完全一致。
+- 10011514.SH（10011514 / option_sse_daily_sina）：sina 该路由的成交量列与 ths 无恒定比例（实测 ths/sina 0.0002 .. 0.0207 且无规律漂移），单位语义不可确认，故本腿只对照 OHLC；详见 docs/evidence/C6/README.md。
+
+result: PASS (0 failing legs)

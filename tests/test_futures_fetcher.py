@@ -1,8 +1,8 @@
 """Akshare futures fetcher tests (B1.2 注册).
 
-The capability is ``verified=False`` (P1 sampling pending), so the
-tests pin the routing semantics - explicit source resolves, ``auto``
-refuses - and the normalize stage against a recorded Sina frame shape.
+The akshare leg stays ``verified=False`` and is reachable by explicit source;
+the ths leg that C6 verified owns ``auto``. These tests pin that routing
+split and the normalize stage against a recorded Sina frame shape.
 """
 
 from __future__ import annotations
@@ -121,10 +121,13 @@ class TestRouting:
 
         assert isinstance(fetcher, AkshareFuturesDailyFetcher)
 
-    def test_auto_refuses_the_unverified_capability(self):
-        import pytest
-
+    def test_auto_routes_to_the_verified_ths_leg(self):
+        """C6 graduated ``futures_daily``, so auto now resolves instead of refusing."""
+        from opendata.data.providers import register_providers
         from opendata.data.registry import get_registry
 
-        with pytest.raises(LookupError):
-            get_registry().resolve("futures", "futures_daily", source="auto")
+        register_providers()
+
+        resolved = get_registry().resolve("futures", "futures_daily", source="auto")
+
+        assert resolved.capability.source == "ths"

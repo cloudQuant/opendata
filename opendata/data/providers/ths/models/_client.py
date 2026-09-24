@@ -6,8 +6,12 @@ short-lived sync client per call, and the plain-code to ``thscode``
 resolution. The latter is never guessed: a code that already carries the
 exchange suffix is used as-is, and anything else is resolved through the
 upstream ticker search - exactly one exact ``ticker`` match, otherwise the
-call fails closed. Indices resolve through a separate route because the
-search endpoint is name-based there; see :func:`resolve_index_code`.
+call fails closed. Indices and futures resolve through a separate route
+because the search endpoint is name-based there; see
+:func:`resolve_index_code` and :func:`resolve_futures_code`. Option
+contracts carry an opaque numeric ``thscode`` (the human-readable code
+lives in ``ticker``) over a catalog too large to enumerate per call, so
+they must be requested qualified; see :func:`resolve_option_code`.
 """
 
 from __future__ import annotations
@@ -18,6 +22,7 @@ from typing import TYPE_CHECKING
 from opendata.core.config import settings
 from opendata_fuyao import FuyaoCredentials, FuyaoHttpClient
 from opendata_fuyao.endpoints import (
+    FUTURES_ASSET_TYPE,
     INDEX_ASSET_TYPE,
     MAX_LIST_LIMIT,
     list_instruments,
@@ -96,9 +101,7 @@ def resolve_code(active: FuyaoHttpClient, symbol: str) -> str:
             field is the plain code, so index codes - which share the
             numeric prefix but carry a non-stock suffix - cannot slip in).
     """
-    if not isinstance(symbol, str) or not symbol.strip():
-        raise ThsProviderError("THS_SYMBOL_INVALID")
-    candidate = symbol.strip().upper()
+    candidate = _candidate_symbol(symbol)
     if "." in candidate:
         return candidate
     matches = [
@@ -109,6 +112,29 @@ def resolve_code(active: FuyaoHttpClient, symbol: str) -> str:
     ]
     if len(matches) != 1:
         raise ThsProviderError("THS_SYMBOL_UNRESOLVED")
+    return matches[0]
+
+
+def _candidate_symbol(symbol: str) -> str:
+    """Trim and upper-case a caller-supplied code, failing closed on blank."""
+    if not isinstance(symbol, str) or not symbol.strip():
+        raise ThsProviderError("THS_SYMBOL_INVALID")
+    return symbol.strip().upper()
+
+
+def _resolve_by_listing(
+    active: FuyaoHttpClient, candidate: str, *, asset_type: str, unresolved_code: str
+) -> str:
+    """Match a bare code against one asset class' listing (unique or fail)."""
+    matches = [
+        instrument.symbol.upper()
+        for instrument in list_instruments(
+            active, limit=MAX_LIST_LIMIT, offset=0, asset_type=asset_type
+        )
+        if instrument.symbol.upper().rpartition(".")[0] == candidate
+    ]
+    if len(matches) != 1:
+        raise ThsProviderError(unresolved_code)
     return matches[0]
 
 
@@ -134,21 +160,74 @@ def resolve_index_code(active: FuyaoHttpClient, symbol: str) -> str:
         ThsProviderError: The symbol is blank, or the index universe does
             not contain exactly one match.
     """
-    if not isinstance(symbol, str) or not symbol.strip():
-        raise ThsProviderError("THS_SYMBOL_INVALID")
-    candidate = symbol.strip().upper()
+    candidate = _candidate_symbol(symbol)
     if "." in candidate:
         return candidate
-    matches = [
-        instrument.symbol.upper()
-        for instrument in list_instruments(
-            active, limit=MAX_LIST_LIMIT, offset=0, asset_type=INDEX_ASSET_TYPE
-        )
-        if instrument.symbol.upper().rpartition(".")[0] == candidate
-    ]
-    if len(matches) != 1:
-        raise ThsProviderError("THS_INDEX_SYMBOL_UNRESOLVED")
-    return matches[0]
+    return _resolve_by_listing(
+        active,
+        candidate,
+        asset_type=INDEX_ASSET_TYPE,
+        unresolved_code="THS_INDEX_SYMBOL_UNRESOLVED",
+    )
+
+
+def resolve_futures_code(active: FuyaoHttpClient, symbol: str) -> str:
+    """Resolve a futures contract symbol to the upstream ``thscode`` form.
+
+    Same route as the index one: the futures catalog lists about 1.1k
+    contracts in a single call and every ``thscode`` prefix (``IF2610``,
+    ``CU2609``, ``SC2612``) is unique across the exchanges, so a bare
+    contract code resolves without guessing the exchange.
+
+    Args:
+        active: Client used for the lookup when needed.
+        symbol: ``IF2610``-style contract code, or an already-qualified
+            ``IF2610.CFE`` / ``CU2609.SHF`` code.
+
+    Returns:
+        The qualified code.
+
+    Raises:
+        ThsProviderError: The symbol is blank, or the futures catalog does
+            not contain exactly one match.
+    """
+    candidate = _candidate_symbol(symbol)
+    if "." in candidate:
+        return candidate
+    return _resolve_by_listing(
+        active,
+        candidate,
+        asset_type=FUTURES_ASSET_TYPE,
+        unresolved_code="THS_FUTURES_SYMBOL_UNRESOLVED",
+    )
+
+
+def resolve_option_code(active: FuyaoHttpClient, symbol: str) -> str:
+    """Validate a qualified option ``thscode`` (no bare-code lookup).
+
+    The option catalog holds well over the 10k per-call listing cap and
+    its ``thscode`` is an opaque number (``90007464.SZ``) while the
+    readable contract code lives in ``ticker``
+    (``159922P2612M003800``), so a bare code cannot be resolved cheaply or
+    unambiguously. Callers pass the qualified contract code.
+
+    Args:
+        active: Client, unused - kept for signature parity with the other
+            resolvers.
+        symbol: ``IO2601-C-4000.CFE`` / ``90007464.SZ`` style code.
+
+    Returns:
+        The qualified code.
+
+    Raises:
+        ThsProviderError: The symbol is blank or carries no exchange
+            suffix.
+    """
+    del active
+    candidate = _candidate_symbol(symbol)
+    if "." not in candidate:
+        raise ThsProviderError("THS_OPTION_SYMBOL_QUALIFIED_REQUIRED")
+    return candidate
 
 
 __all__ = [
@@ -156,5 +235,7 @@ __all__ = [
     "client",
     "credentials",
     "resolve_code",
+    "resolve_futures_code",
     "resolve_index_code",
+    "resolve_option_code",
 ]

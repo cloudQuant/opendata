@@ -20,11 +20,16 @@ from opendata.data.models import Bar, CorporateAction
 from opendata.data.protocol import FetchContext
 from opendata.data.providers.ths.models._client import (
     ThsProviderError,
+    client,
     credentials,
     resolve_code,
+    resolve_futures_code,
     resolve_index_code,
+    resolve_option_code,
 )
+from opendata.data.providers.ths.models.futures_daily import ThsFuturesDailyFetcher
 from opendata.data.providers.ths.models.index_daily import ThsIndexDailyFetcher
+from opendata.data.providers.ths.models.option_daily import ThsOptionDailyFetcher
 from opendata.data.providers.ths.models.stock_action import ThsStockActionFetcher
 from opendata.data.providers.ths.models.stock_daily import ThsStockDailyFetcher
 from opendata.data.providers.ths.registration import FETCHERS, register
@@ -59,6 +64,13 @@ def _bar_row() -> dict:
         "low_price": 9.5,
         "close_price": 10.2,
     }
+
+
+def _period_row() -> dict:
+    """期货/期权日 K 行：日期字段是 ``timestamp``,与日线的 ``date_ms`` 不同."""
+    row = {key: value for key, value in _bar_row().items() if key != "date_ms"}
+    row["timestamp"] = DAY_MS
+    return row
 
 
 def _event_row() -> dict:
@@ -105,6 +117,8 @@ class TestRegistration:
             ("stock_daily", "ths"),
             ("stock_action", "ths"),
             ("index_daily", "ths"),
+            ("futures_daily", "ths"),
+            ("option_daily", "ths"),
         }
         assert all(capability.verified for capability in registered)
 
@@ -122,12 +136,35 @@ class TestRegistration:
             ("equity", "stock_daily", "1D", "cn"),
             ("equity", "stock_action", "1D", "cn"),
             ("index", "index_daily", "1D", "cn"),
+            ("futures", "futures_daily", "1D", "cn"),
+            ("option", "option_daily", "1D", "cn"),
         }
+
+    def test_every_verified_domain_auto_routes_to_ths(self):
+        """A verified ths capability must win ``source=auto`` for its domain."""
+        from opendata.data.providers import register_providers
+        from opendata.data.registry import get_registry
+
+        register_providers()
+        registry = get_registry()
+
+        for fetcher in FETCHERS:
+            capability = fetcher.capability
+            resolved = registry.resolve(
+                capability.asset_class, capability.domain, source="auto"
+            ).capability
+            assert resolved.source == "ths"
+            assert (resolved.asset_class, resolved.domain) == (
+                capability.asset_class,
+                capability.domain,
+            )
 
     def test_ths_is_the_declared_domestic_authority(self):
         assert authority_baseline()["stock_daily"][0] == "ths"
         assert authority_baseline()["stock_action"][0] == "ths"
         assert authority_baseline()["index_daily"][0] == "ths"
+        assert authority_baseline()["futures_daily"][0] == "ths"
+        assert authority_baseline()["option_daily"][0] == "ths"
 
     def test_bundled_registration_includes_the_fuyao_source(self):
         from opendata.data.providers import register_providers
@@ -273,6 +310,72 @@ class TestSymbolResolution:
         ):
             resolve_index_code(active, "  ")
 
+    def test_qualified_derivative_codes_pass_through(self):
+        """C6: 带后缀的合约代码直接用,不查目录."""
+
+        def handler(request: httpx.Request) -> httpx.Response:  # pragma: no cover
+            raise AssertionError("a qualified code must not trigger a lookup")
+
+        with _mock_client(handler) as active:
+            assert resolve_futures_code(active, "rb2610.shf") == "RB2610.SHF"
+            assert resolve_option_code(active, "MO2612-c-7600.CFE") == "MO2612-C-7600.CFE"
+            assert resolve_futures_code(active, "850002.TI") == "850002.TI"
+
+    def test_plain_futures_code_resolves_from_the_futures_catalog(self):
+        """C6: 期货裸码按 ``asset_type=futures`` 列表解析,和股票检索不是一条路."""
+        asset_types: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            asset_types.append(str(request.url.params["asset_type"]))
+            return httpx.Response(
+                200, content=_envelope([{"thscode": "CU2610.SHF", "name": "沪铜2610"}])
+            )
+
+        with _mock_client(handler) as active:
+            assert resolve_futures_code(active, "cu2610") == "CU2610.SHF"
+
+        assert asset_types == ["futures"]
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            [],
+            [{"thscode": "CU2611.SHF", "name": "沪铜2611"}],
+            [
+                {"thscode": "CU2610.SHF", "name": "沪铜2610"},
+                {"thscode": "CU2610.INE", "name": "国际铜2610"},
+            ],
+        ],
+    )
+    def test_unresolved_or_ambiguous_futures_codes_fail_closed(self, payload):
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, content=_envelope(payload))
+
+        with (
+            _mock_client(handler) as active,
+            pytest.raises(ThsProviderError, match="THS_FUTURES_SYMBOL_UNRESOLVED"),
+        ):
+            resolve_futures_code(active, "CU2610")
+
+    def test_blank_futures_symbol_is_refused(self):
+        with (
+            _mock_client(lambda request: httpx.Response(200, content=_envelope([]))) as active,
+            pytest.raises(ThsProviderError, match="THS_SYMBOL_INVALID"),
+        ):
+            resolve_futures_code(active, " ")
+
+    def test_bare_option_contract_is_refused_without_a_lookup(self):
+        """C6: 期权目录超过单次列举上限,裸码解析不做,必须带交易所后缀."""
+
+        def handler(request: httpx.Request) -> httpx.Response:  # pragma: no cover
+            raise AssertionError("option codes are never looked up")
+
+        with (
+            _mock_client(handler) as active,
+            pytest.raises(ThsProviderError, match="THS_OPTION_SYMBOL_QUALIFIED_REQUIRED"),
+        ):
+            resolve_option_code(active, "10011514")
+
 
 class TestCredentials:
     def test_missing_key_fails_closed(self, monkeypatch: pytest.MonkeyPatch):
@@ -294,6 +397,36 @@ class TestCredentials:
         )
 
         assert credentials().api_key == "settings-key"
+
+    @pytest.mark.parametrize("timeout", [None, 3.0])
+    def test_client_builds_with_the_resolved_key_and_always_closes(
+        self, monkeypatch: pytest.MonkeyPatch, timeout: float | None
+    ):
+        """每次 fetch 一个短生命周期客户端，退出时必须关闭."""
+        from opendata.data.providers.ths.models import _client as client_module
+        from opendata_fuyao import FuyaoCredentials
+
+        expected = FuyaoCredentials("ths-test-key", base_url="https://fuyao.test")
+        built: dict[str, object] = {}
+
+        class SpyClient:
+            def __init__(self, *, credentials, timeout_seconds=None):
+                built["credentials"] = credentials
+                built["timeout"] = timeout_seconds
+                built["closed"] = False
+
+            def close(self) -> None:
+                built["closed"] = True
+
+        monkeypatch.setattr(client_module, "credentials", lambda: expected)
+        monkeypatch.setattr(client_module, "FuyaoHttpClient", SpyClient)
+
+        with client(timeout_seconds=timeout):
+            assert built["credentials"] is expected
+            assert built["timeout"] == timeout
+            assert built["closed"] is False
+
+        assert built["closed"] is True
 
 
 class TestFetchStages:
@@ -389,6 +522,57 @@ class TestFetchStages:
     def test_index_empty_response_fails_closed(self):
         fetcher = ThsIndexDailyFetcher()
         query = fetcher.transform_query(symbol="000300.SH")
+
+        with pytest.raises(ThsProviderError, match="THS_EMPTY_RESPONSE"):
+            fetcher.transform_data((), query)
+
+    @pytest.mark.parametrize(
+        ("module", "fetcher", "endpoint"),
+        [
+            ("futures_daily", ThsFuturesDailyFetcher(), "/api/futures/prices/daily"),
+            ("option_daily", ThsOptionDailyFetcher(), "/api/options/prices/daily"),
+        ],
+    )
+    def test_derivative_fetch_reads_the_timestamp_field(
+        self, monkeypatch: pytest.MonkeyPatch, module: str, fetcher, endpoint: str
+    ):
+        """C6: 期货/期权腿走 ``time_period=day_1``,行内日期是 ``timestamp``."""
+        seen: dict[str, str] = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen["path"] = request.url.path
+            seen["params"] = str(request.url.params)
+            return httpx.Response(
+                200,
+                content=_envelope(
+                    [{**_period_row(), "timestamp": DAY_MS + 86_400_000}, _period_row()]
+                ),
+            )
+
+        monkeypatch.setattr(
+            f"opendata.data.providers.ths.models.{module}.client", _factory(handler)
+        )
+        rows = fetcher.fetch(
+            symbol="CU2610.SHF" if module == "futures_daily" else "10011514.SH",
+            start_date=date(2024, 1, 2),
+            end_date=date(2024, 1, 3),
+        )
+
+        assert seen["path"] == endpoint
+        assert "time_period=day_1" in seen["params"]
+        assert "interval" not in seen["params"] and "adjust" not in seen["params"]
+        assert [row.trade_date for row in rows] == [date(2024, 1, 2), date(2024, 1, 3)]
+        assert all(isinstance(row, Bar) for row in rows)
+        assert {row.symbol for row in rows} == {rows[0].symbol}
+
+    @pytest.mark.parametrize("fetcher", [ThsFuturesDailyFetcher(), ThsOptionDailyFetcher()])
+    def test_derivative_query_rejects_adjust(self, fetcher):
+        with pytest.raises(ValidationError):
+            fetcher.transform_query(symbol="CU2610.SHF", adjust="qfq")
+
+    @pytest.mark.parametrize("fetcher", [ThsFuturesDailyFetcher(), ThsOptionDailyFetcher()])
+    def test_derivative_empty_response_fails_closed(self, fetcher):
+        query = fetcher.transform_query(symbol="CU2610.SHF")
 
         with pytest.raises(ThsProviderError, match="THS_EMPTY_RESPONSE"):
             fetcher.transform_data((), query)

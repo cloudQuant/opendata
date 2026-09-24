@@ -44,10 +44,15 @@ entries:
     scenario: 期货日线（期货回测数据准备 / dwd 期货域）
     ours:
       - {provider: akshare, domain: futures_daily, contract: Bar, status: registered}
+      - {provider: ths, domain: futures_daily, contract: Bar, status: verified}
   - openbb: {model: EtfHistorical}
     scenario: ETF 日线（场内基金回测数据准备 / dwd ETF 域）
     ours:
       - {provider: akshare, domain: fund_etf_daily, contract: Bar, status: registered}
+      # ths/fuyao 侧 /api/fund/market/historical 实测只给前复权序列（比值 ≤1 且
+      # 在每个除息日阶跃、右端收敛到 1），D10 禁止入库复权价，故不接：
+      # 等 ETF 因子通道（分红事件 → 因子）建立后再转正。见 docs/evidence/C6。
+      - {provider: ths, domain: fund_etf_daily, contract: Bar, status: pending}
   - openbb: {model: TBD}
     scenario: 指数日线（业绩基准与指数增强回测 / dwd 指数域）
     ours:
@@ -57,6 +62,7 @@ entries:
     scenario: 期权合约日线（期权策略回测数据准备 / dwd 期权域）
     ours:
       - {provider: akshare, domain: option_daily, contract: Bar, status: registered}
+      - {provider: ths, domain: option_daily, contract: Bar, status: verified}
   - openbb: {model: TBD}
     scenario: 可转债日线（转债轮动策略数据准备 / dwd 债券域）
     ours:

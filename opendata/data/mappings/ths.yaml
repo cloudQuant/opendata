@@ -58,3 +58,39 @@ domains:
       high: 0.0001
       low: 0.0001
       close: 0.0001
+  # 期货/期权日 K：上游 item 的日期字段叫 timestamp（不是 date_ms），其余与
+  # 股票/指数 K 线同源。合约标识保留交易所后缀（IF2610.CFE / 90007464.SZ）：
+  # 衍生品交易所是标的身份的一部分，剥后缀会让 90007464 这类不透明数字码失去
+  # 可读性与跨所唯一性，故这两域不做 plain 归一（区别于 A 股/指数）。
+  futures_daily:
+    key: [symbol, trade_date]
+    fields:
+      symbol: {from: thscode}
+      trade_date: {from: trade_date, ms_column: timestamp}
+      open: {from: open_price}
+      high: {from: high_price}
+      low: {from: low_price}
+      close: {from: close_price}
+      volume: {from: volume}
+      amount: {from: turnover}
+    tolerances:
+      open: 0.0001
+      high: 0.0001
+      low: 0.0001
+      close: 0.0001
+  option_daily:
+    key: [symbol, trade_date]
+    fields:
+      symbol: {from: thscode}
+      trade_date: {from: trade_date, ms_column: timestamp}
+      open: {from: open_price}
+      high: {from: high_price}
+      low: {from: low_price}
+      close: {from: close_price}
+      volume: {from: volume}
+      amount: {from: turnover}
+    tolerances:
+      open: 0.0001
+      high: 0.0001
+      low: 0.0001
+      close: 0.0001
