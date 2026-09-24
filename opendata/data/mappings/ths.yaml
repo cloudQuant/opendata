@@ -39,3 +39,22 @@ domains:
     tolerances:
       cash_dividend: 0.000001
       stock_dividend: 0.000001
+  # 指数日线：REST item 与股票 K 线同构，但指数无复权语义（上游 data.adjust
+  # 恒为 null），故没有 adjust 字段；成交量单位是股、成交额是元，与契约一致，
+  # 不需要 scale（区别于 akshare 侧的“手”）。
+  index_daily:
+    key: [symbol, trade_date]
+    fields:
+      symbol: {from: thscode, normalize: plain}
+      trade_date: {from: trade_date, ms_column: date_ms}
+      open: {from: open_price}
+      high: {from: high_price}
+      low: {from: low_price}
+      close: {from: close_price}
+      volume: {from: volume}
+      amount: {from: turnover}
+    tolerances:
+      open: 0.0001
+      high: 0.0001
+      low: 0.0001
+      close: 0.0001

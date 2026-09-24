@@ -20,17 +20,20 @@ from opendata_fuyao import FuyaoCredentials, FuyaoError, FuyaoHttpClient
 from opendata_fuyao.endpoints import (
     ADJUSTMENT_FACTORS_ENDPOINT,
     CALENDAR_ENDPOINT,
+    INDEX_PRICES_ENDPOINT,
     MAX_LIST_LIMIT,
     MAX_SEARCH_LIMIT,
     PRICES_ENDPOINT,
     TICKERS_LIST_ENDPOINT,
     TICKERS_SEARCH_ENDPOINT,
     build_adjustment_factors_request,
+    build_index_prices_request,
     build_prices_request,
     build_tickers_list_request,
     build_tickers_search_request,
     fetch_adjustment_factors,
     fetch_daily_bars,
+    fetch_index_daily_bars,
     fetch_trading_calendar,
     list_instruments,
     millis_to_trading_date,
@@ -125,6 +128,27 @@ class TestRequestBuilders:
             build_prices_request(symbol="600519.SH", start=date(2024, 1, 3), end=date(2024, 1, 3))
         with pytest.raises(FuyaoError, match="FUYAO_ENVELOPE_INVALID_symbol"):
             build_prices_request(symbol="  ", start=date(2024, 1, 2), end=date(2024, 1, 3))
+
+    def test_index_request_carries_no_adjust(self):
+        params = build_index_prices_request(
+            symbol="000300.SH", start=date(2024, 1, 2), end=date(2024, 1, 5)
+        )
+
+        assert params == {
+            "thscode": "000300.SH",
+            "interval": "1d",
+            "start": _ms("2024-01-02"),
+            "end": _ms("2024-01-05") - 1,
+        }
+        assert "adjust" not in params  # 指数无复权语义（上游 data.adjust 恒为 null）
+
+    def test_index_request_symbol_and_window_fail_closed(self):
+        with pytest.raises(FuyaoError, match="FUYAO_ENVELOPE_INVALID_symbol"):
+            build_index_prices_request(symbol=" ", start=date(2024, 1, 2), end=date(2024, 1, 3))
+        with pytest.raises(FuyaoError, match="FUYAO_ENVELOPE_INVALID_window"):
+            build_index_prices_request(
+                symbol="000300.SH", start=date(2024, 1, 3), end=date(2024, 1, 3)
+            )
 
     def test_tickers_search_bounds(self):
         assert build_tickers_search_request(query="茅台", limit=5)["q"] == "茅台"
@@ -318,6 +342,49 @@ class TestFetchers:
         assert seen["params"]["adjust"] == "none"
         assert seen["key"] == "fuyao-test-key"
         assert len(bars) == 1
+
+    def test_index_bars_hit_the_index_endpoint(self):
+        seen: dict[str, Any] = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen["path"] = request.url.path
+            seen["params"] = dict(request.url.params)
+            return httpx.Response(200, content=_envelope([_bar_row("2024-01-02")]))
+
+        with _client(handler) as client:
+            bars = fetch_index_daily_bars(
+                client, symbol="000300.SH", start=date(2024, 1, 2), end=date(2024, 1, 4)
+            )
+
+        assert seen["path"] == INDEX_PRICES_ENDPOINT
+        assert "adjust" not in seen["params"]
+        assert bars == (
+            Bar(
+                symbol="000300.SH",
+                trade_date=date(2024, 1, 2),
+                open=10.0,
+                high=10.5,
+                low=9.5,
+                close=10.0,
+                volume=1000.0,
+                amount=10500.0,
+            ),
+        )
+
+    def test_index_long_windows_are_chunked(self):
+        windows: list[tuple[str, str]] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            params = dict(request.url.params)
+            windows.append((params["start"], params["end"]))
+            return httpx.Response(200, content=_envelope([]))
+
+        with _client(handler) as client:
+            fetch_index_daily_bars(
+                client, symbol="000300.SH", start=date(2005, 1, 1), end=date(2026, 1, 1)
+            )
+
+        assert len(windows) == 3  # 21 年 → 三块（各 ≤ 10 年）
 
     def test_long_windows_are_chunked(self):
         windows: list[tuple[str, str]] = []

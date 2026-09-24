@@ -1,4 +1,4 @@
-"""fuyao P0 端点：日线、除复权事件、标的、交易日历（A3.2）.
+"""fuyao P0 端点：日线、指数日线、除复权事件、标的、交易日历（A3.2）.
 
 每个端点都是"请求构造 + 响应归一化"两段，直接产出中台契约模型
 （``Bar`` / ``CorporateAction`` / ``Instrument`` / ``TradingCalendar``），
@@ -35,6 +35,7 @@ _SHANGHAI = ZoneInfo("Asia/Shanghai")
 
 #: 端点路径（A3.2 实测确认）。
 PRICES_ENDPOINT = "/api/a-share/prices/historical"
+INDEX_PRICES_ENDPOINT = "/api/a-share-index/prices/historical"
 ADJUSTMENT_FACTORS_ENDPOINT = "/api/a-share/corporate-actions/adjustment-factors"
 TICKERS_LIST_ENDPOINT = "/api/meta/tickers/list"
 TICKERS_SEARCH_ENDPOINT = "/api/meta/tickers/search"
@@ -53,6 +54,9 @@ ADJUSTMENTS: Mapping[str, str] = {
 #: 标的检索/列表的参数边界（上游约束）。
 MAX_SEARCH_LIMIT = 50
 MAX_LIST_LIMIT = 10_000
+
+#: 指数标的的上游 ``asset_type`` 取值（A 股指数、同花顺指数与板块共用）。
+INDEX_ASSET_TYPE = "a-share-index"
 
 #: 日线响应字段 → 中台 ``Bar`` 字段。
 _BAR_FIELDS: Mapping[str, str] = {
@@ -148,6 +152,35 @@ def build_prices_request(
         "start": shanghai_midnight_millis(start),
         "end": shanghai_midnight_millis(end) - 1,
         "adjust": ADJUSTMENTS[adjust],
+    }
+
+
+def build_index_prices_request(*, symbol: str, start: date, end: date) -> dict[str, Any]:
+    """构造指数日线请求参数（毫秒戳闭区间，**无** ``adjust``）.
+
+    指数没有复权语义（上游 ``data.adjust`` 固定为 ``null``），故不接受
+    ``adjust``；窗口约束与股票日线一致（≤ 10 年，超过 ``code=1003``）。
+
+    Args:
+        symbol: 上游指数代码（如 ``000300.SH``、``886042.TI``）。
+        start: 起始交易日（含）。
+        end: 结束交易日（不含）。
+
+    Returns:
+        查询参数。
+
+    Raises:
+        FuyaoError: 标的为空或窗口非法。
+    """
+    if not isinstance(symbol, str) or not symbol.strip():
+        raise error_for_transport("envelope_invalid", detail="symbol")
+    if start >= end:
+        raise error_for_transport("envelope_invalid", detail="window")
+    return {
+        "thscode": symbol.strip(),
+        "interval": "1d",
+        "start": shanghai_midnight_millis(start),
+        "end": shanghai_midnight_millis(end) - 1,
     }
 
 
@@ -445,6 +478,31 @@ def fetch_daily_bars(
     return tuple(bars)
 
 
+def fetch_index_daily_bars(
+    client: FuyaoHttpClient, *, symbol: str, start: date, end: date
+) -> tuple[Bar, ...]:
+    """取指数日线（窗口超 10 年自动切块合并）.
+
+    Args:
+        client: 传输层客户端。
+        symbol: 上游指数代码（须带市场后缀）。
+        start: 起始交易日（含）。
+        end: 结束交易日（不含）。
+
+    Returns:
+        按交易日升序的 ``Bar``。指数价格本身即为可观测序列，无复权口径。
+    """
+    bars: list[Bar] = []
+    for chunk_start, chunk_end in _split_window(start, end):
+        response = client.get(
+            INDEX_PRICES_ENDPOINT,
+            params=build_index_prices_request(symbol=symbol, start=chunk_start, end=chunk_end),
+        )
+        bars.extend(normalize_bars(response.envelope, symbol=symbol))
+    bars.sort(key=lambda bar: bar.trade_date)
+    return tuple(bars)
+
+
 def search_instruments(
     client: FuyaoHttpClient,
     *,
@@ -544,6 +602,8 @@ __all__ = [
     "ADJUSTMENTS",
     "ADJUSTMENT_FACTORS_ENDPOINT",
     "CALENDAR_ENDPOINT",
+    "INDEX_ASSET_TYPE",
+    "INDEX_PRICES_ENDPOINT",
     "MAX_LIST_LIMIT",
     "MAX_SEARCH_LIMIT",
     "MAX_WINDOW",
@@ -551,11 +611,13 @@ __all__ = [
     "TICKERS_LIST_ENDPOINT",
     "TICKERS_SEARCH_ENDPOINT",
     "build_adjustment_factors_request",
+    "build_index_prices_request",
     "build_prices_request",
     "build_tickers_list_request",
     "build_tickers_search_request",
     "fetch_adjustment_factors",
     "fetch_daily_bars",
+    "fetch_index_daily_bars",
     "fetch_trading_calendar",
     "list_instruments",
     "millis_to_trading_date",

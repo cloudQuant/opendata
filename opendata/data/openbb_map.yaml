@@ -52,6 +52,7 @@ entries:
     scenario: 指数日线（业绩基准与指数增强回测 / dwd 指数域）
     ours:
       - {provider: akshare, domain: index_daily, contract: Bar, status: registered}
+      - {provider: ths, domain: index_daily, contract: Bar, status: verified}
   - openbb: {model: TBD}
     scenario: 期权合约日线（期权策略回测数据准备 / dwd 期权域）
     ours:

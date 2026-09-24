@@ -112,6 +112,10 @@ CASES: tuple[tuple[Any, ...], ...] = (
 )
 
 
+#: P1 域中已有 verified 数据源的（ths 指数日线腿，C5）：auto 路由应当命中它们。
+_AUTO_ROUTABLE_DOMAINS = frozenset({"index_daily"})
+
+
 def _latest(fetcher: Any, case: tuple[Any, ...]) -> Bar:
     """Normalize the case frame and return its newest bar."""
     raw = fetcher.transform_data(case[4](), fetcher.transform_query(**case[3]))
@@ -122,7 +126,12 @@ def _latest(fetcher: Any, case: tuple[Any, ...]) -> Bar:
 
 
 class TestP1DailyRegistration:
-    """One unverified cn/1D capability per new domain, wired into routing."""
+    """One unverified cn/1D capability per new domain, wired into routing.
+
+    ``index_daily`` is the exception: the ths leg (C5) is verified, so auto
+    routing now resolves it - the akshare leg stays unverified and only
+    answers an explicit ``source=akshare``.
+    """
 
     @pytest.mark.parametrize("case", CASES, ids=_case_id)
     def test_capability_shape(self, case: tuple[Any, ...]) -> None:
@@ -155,6 +164,9 @@ class TestP1DailyRegistration:
         assert registry.resolve(case[2], case[1], source="akshare") is fetcher or isinstance(
             registry.resolve(case[2], case[1], source="akshare"), type(fetcher)
         )
+        if case[1] in _AUTO_ROUTABLE_DOMAINS:
+            assert registry.resolve(case[2], case[1], source="auto").capability.source == "ths"
+            return
         with pytest.raises(LookupError):
             registry.resolve(case[2], case[1], source="auto")
 

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from opendata.data.providers.ths.models.index_daily import ThsIndexDailyFetcher
 from opendata.data.providers.ths.models.stock_action import ThsStockActionFetcher
 from opendata.data.providers.ths.models.stock_daily import ThsStockDailyFetcher
 
@@ -23,6 +24,7 @@ if TYPE_CHECKING:
 FETCHERS: tuple[Fetcher[Any, Any], ...] = (
     ThsStockDailyFetcher(),
     ThsStockActionFetcher(),
+    ThsIndexDailyFetcher(),
 )
 
 

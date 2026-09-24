@@ -22,7 +22,9 @@ from opendata.data.providers.ths.models._client import (
     ThsProviderError,
     credentials,
     resolve_code,
+    resolve_index_code,
 )
+from opendata.data.providers.ths.models.index_daily import ThsIndexDailyFetcher
 from opendata.data.providers.ths.models.stock_action import ThsStockActionFetcher
 from opendata.data.providers.ths.models.stock_daily import ThsStockDailyFetcher
 from opendata.data.providers.ths.registration import FETCHERS, register
@@ -102,6 +104,7 @@ class TestRegistration:
         assert {(capability.domain, capability.source) for capability in registered} == {
             ("stock_daily", "ths"),
             ("stock_action", "ths"),
+            ("index_daily", "ths"),
         }
         assert all(capability.verified for capability in registered)
 
@@ -118,11 +121,13 @@ class TestRegistration:
         assert {(cap.asset_class, cap.domain, cap.period, cap.market) for cap in capabilities} == {
             ("equity", "stock_daily", "1D", "cn"),
             ("equity", "stock_action", "1D", "cn"),
+            ("index", "index_daily", "1D", "cn"),
         }
 
     def test_ths_is_the_declared_domestic_authority(self):
         assert authority_baseline()["stock_daily"][0] == "ths"
         assert authority_baseline()["stock_action"][0] == "ths"
+        assert authority_baseline()["index_daily"][0] == "ths"
 
     def test_bundled_registration_includes_the_fuyao_source(self):
         from opendata.data.providers import register_providers
@@ -214,6 +219,60 @@ class TestSymbolResolution:
         ):
             resolve_code(active, "   ")
 
+    def test_qualified_index_codes_pass_through(self):
+        def handler(request: httpx.Request) -> httpx.Response:  # pragma: no cover
+            raise AssertionError("a qualified code must not trigger a lookup")
+
+        with _mock_client(handler) as active:
+            assert resolve_index_code(active, "000300.SH") == "000300.SH"
+            assert resolve_index_code(active, " 886042.ti ") == "886042.TI"
+
+    def test_plain_index_code_resolves_from_the_index_universe(self):
+        """指数走列表解析：search 端点是按名称检索的，数字代码查不到."""
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            assert request.url.params["asset_type"] == "a-share-index"
+            return httpx.Response(
+                200,
+                content=_envelope(
+                    [
+                        {"thscode": "886042.TI", "name": "存储芯片"},
+                        {"thscode": "000300.SH", "name": "沪深300"},
+                    ]
+                ),
+            )
+
+        with _mock_client(handler) as active:
+            assert resolve_index_code(active, "000300") == "000300.SH"
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            [],
+            [{"thscode": "000301.SH", "name": "别的指数"}],
+            [
+                {"thscode": "000300.SH", "name": "沪深300"},
+                {"thscode": "000300.CSI", "name": "沪深300（中证）"},
+            ],
+        ],
+    )
+    def test_unresolved_or_ambiguous_index_codes_fail_closed(self, payload):
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, content=_envelope(payload))
+
+        with (
+            _mock_client(handler) as active,
+            pytest.raises(ThsProviderError, match="THS_INDEX_SYMBOL_UNRESOLVED"),
+        ):
+            resolve_index_code(active, "000300")
+
+    def test_blank_index_symbol_is_refused(self):
+        with (
+            _mock_client(lambda request: httpx.Response(200, content=_envelope([]))) as active,
+            pytest.raises(ThsProviderError, match="THS_SYMBOL_INVALID"),
+        ):
+            resolve_index_code(active, "  ")
+
 
 class TestCredentials:
     def test_missing_key_fails_closed(self, monkeypatch: pytest.MonkeyPatch):
@@ -296,6 +355,43 @@ class TestFetchStages:
 
         assert all(isinstance(event, CorporateAction) for event in events)
         assert [event.ex_date for event in events] == [date(2024, 1, 3), date(2024, 1, 2)]
+
+    def test_index_fetch_returns_contract_rows(self, monkeypatch: pytest.MonkeyPatch):
+        seen: dict[str, str] = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen["path"] = request.url.path
+            seen["params"] = str(request.url.params)
+            return httpx.Response(
+                200,
+                content=_envelope([_bar_row(), {**_bar_row(), "date_ms": DAY_MS + 86_400_000}]),
+            )
+
+        monkeypatch.setattr(
+            "opendata.data.providers.ths.models.index_daily.client", _factory(handler)
+        )
+        rows = ThsIndexDailyFetcher().fetch(
+            symbol="000300.SH", start_date=date(2024, 1, 2), end_date=date(2024, 1, 3)
+        )
+
+        assert seen["path"] == "/api/a-share-index/prices/historical"
+        assert "adjust" not in seen["params"]
+        assert all(isinstance(row, Bar) for row in rows)
+        assert [row.trade_date for row in rows] == [date(2024, 1, 2), date(2024, 1, 3)]
+        assert rows[0].symbol == "000300.SH"
+
+    def test_index_query_rejects_adjust(self):
+        """指数没有复权口径，请求里出现 adjust 应当直接拒掉."""
+
+        with pytest.raises(ValidationError):
+            ThsIndexDailyFetcher().transform_query(symbol="000300.SH", adjust="qfq")
+
+    def test_index_empty_response_fails_closed(self):
+        fetcher = ThsIndexDailyFetcher()
+        query = fetcher.transform_query(symbol="000300.SH")
+
+        with pytest.raises(ThsProviderError, match="THS_EMPTY_RESPONSE"):
+            fetcher.transform_data((), query)
 
     def test_context_timeout_is_accepted(self):
         fetcher = ThsStockDailyFetcher()

@@ -6,7 +6,8 @@ short-lived sync client per call, and the plain-code to ``thscode``
 resolution. The latter is never guessed: a code that already carries the
 exchange suffix is used as-is, and anything else is resolved through the
 upstream ticker search - exactly one exact ``ticker`` match, otherwise the
-call fails closed.
+call fails closed. Indices resolve through a separate route because the
+search endpoint is name-based there; see :func:`resolve_index_code`.
 """
 
 from __future__ import annotations
@@ -16,7 +17,12 @@ from typing import TYPE_CHECKING
 
 from opendata.core.config import settings
 from opendata_fuyao import FuyaoCredentials, FuyaoHttpClient
-from opendata_fuyao.endpoints import search_instruments
+from opendata_fuyao.endpoints import (
+    INDEX_ASSET_TYPE,
+    MAX_LIST_LIMIT,
+    list_instruments,
+    search_instruments,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -106,4 +112,49 @@ def resolve_code(active: FuyaoHttpClient, symbol: str) -> str:
     return matches[0]
 
 
-__all__ = ["ThsProviderError", "client", "credentials", "resolve_code"]
+def resolve_index_code(active: FuyaoHttpClient, symbol: str) -> str:
+    """Resolve an index symbol to the upstream ``thscode`` form.
+
+    Index codes cannot go through :func:`resolve_code`: ticker search is
+    name-based (a numeric query returns nothing for indices), and the
+    suffixes differ (``SH`` / ``SZ`` / ``BJ`` / ``TI`` / ``CSI``). The
+    upstream index universe is small enough to enumerate (about 1.4k
+    instruments in one list call), so a bare code is matched against that
+    listing and resolves only when exactly one index carries it.
+
+    Args:
+        active: Client used for the lookup when needed.
+        symbol: ``000300``-style code, or an already-qualified
+            ``000300.SH`` / ``886042.TI`` code.
+
+    Returns:
+        The qualified code.
+
+    Raises:
+        ThsProviderError: The symbol is blank, or the index universe does
+            not contain exactly one match.
+    """
+    if not isinstance(symbol, str) or not symbol.strip():
+        raise ThsProviderError("THS_SYMBOL_INVALID")
+    candidate = symbol.strip().upper()
+    if "." in candidate:
+        return candidate
+    matches = [
+        instrument.symbol.upper()
+        for instrument in list_instruments(
+            active, limit=MAX_LIST_LIMIT, offset=0, asset_type=INDEX_ASSET_TYPE
+        )
+        if instrument.symbol.upper().rpartition(".")[0] == candidate
+    ]
+    if len(matches) != 1:
+        raise ThsProviderError("THS_INDEX_SYMBOL_UNRESOLVED")
+    return matches[0]
+
+
+__all__ = [
+    "ThsProviderError",
+    "client",
+    "credentials",
+    "resolve_code",
+    "resolve_index_code",
+]

@@ -164,6 +164,48 @@ class TestDenormalizeFrame:
         assert list(shanghai_dates(projected["date_ms"])) == [date(2024, 1, 2)]
         assert projected["date_ms"].dtype == "int64"
 
+    def test_the_index_leg_lands_in_ods_and_reads_back_as_contract_rows(self):
+        """C5: the ths index bars take the same write path as the stock bars."""
+        from opendata.data.mapping import denormalize_frame
+        from opendata.pipeline.dump_import import shanghai_dates
+
+        mapping = require_domain_mapping("ths", "index_daily")
+        assert mapping.source_key == ("thscode", "trade_date")
+
+        contract = pd.DataFrame(
+            {
+                "symbol": ["000300.SH"],
+                "trade_date": [date(2026, 9, 24)],
+                "open": [4618.73],
+                "high": [4640.08],
+                "low": [4604.77],
+                "close": [4611.44],
+                "volume": [21486958000.0],
+                "amount": [535708360000.0],
+            }
+        )
+        source = denormalize_frame(contract, mapping)
+
+        assert list(source.columns[:8]) == [
+            "thscode",
+            "trade_date",
+            "open_price",
+            "high_price",
+            "low_price",
+            "close_price",
+            "volume",
+            "turnover",
+        ]
+        assert source["thscode"].tolist() == ["000300.SH"]  # ods keeps the source spelling
+        assert list(shanghai_dates(source["date_ms"])) == [date(2026, 9, 24)]
+
+        back = normalize_frame(source, mapping)
+
+        assert back["symbol"].tolist() == ["000300"]  # dwd keeps the plain key
+        assert back["close"].tolist() == [4611.44]
+        assert back["amount"].tolist() == [535708360000.0]
+        assert back["volume"].tolist() == [21486958000.0]  # 股，无 手 换算
+
     def test_a_missing_contract_field_fails_closed(self):
         from opendata.data.mapping import denormalize_frame
 
