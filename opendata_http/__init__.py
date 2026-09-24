@@ -3284,14 +3284,24 @@ TapTap 游戏榜单
 """
 期货结算
 """
+from opendata_http.futures.futures_settle import (
+    futures_settle,
+    futures_settle_gfex,
+    futures_settle_ine,
+    futures_settle_czce,
+    futures_settle_cffex,
+    futures_settle_shfe,
+)
 
 """
 国债收益率
 """
+from opendata_http.bond.bond_gb_sina import bond_gb_zh_sina, bond_gb_us_sina
 
 """
 openctp-合约信息接口
 """
+from opendata_http.option.option_contract_info_ctp import option_contract_info_ctp
 
 """
 中国外汇交易中心暨全国银行间同业拆借中心-基准-外汇市场-外汇掉期曲线-外汇掉漆 C-Swap 定盘曲线
@@ -3300,10 +3310,12 @@ openctp-合约信息接口
 """
 上海证券交易所-产品-股票期权-信息披露-当日合约
 """
+from opendata_http.option.option_current_sse import option_current_day_sse
 
 """
 深圳证券交易所-期权子网-行情数据-当日合约
 """
+from opendata_http.option.option_current_szse import option_current_day_szse
 
 """
 东方财富-A股-财务分析-主要指标
@@ -3313,6 +3325,7 @@ from opendata_http.stock_fundamental.stock_finance_sina import stock_financial_a
 """
 期权保证金
 """
+from opendata_http.option.option_margin import option_margin, option_margin_symbol
 
 """
 东方财富-港股-证券资料
@@ -3345,6 +3358,7 @@ from opendata_http.stock.stock_zh_comparison_em import (stock_zh_growth_comparis
 """
 东方财富网-行情中心-债券市场-质押式回购
 """
+from opendata_http.bond.bond_buy_back_em import bond_sh_buy_back_em, bond_sz_buy_back_em, bond_buy_back_hist_em
 
 """
 东方财富-A股数据-股本结构
@@ -3390,6 +3404,7 @@ from opendata_http.stock_fundamental.stock_finance_us_em import (
 """
 期货行情-内盘-历史行情数据-东财
 """
+from opendata_http.futures.futures_hist_em import futures_hist_table_em, futures_hist_em
 
 """
 巨潮资讯-数据中心-专题统计-股东股本-股本变动
@@ -3399,14 +3414,17 @@ from opendata_http.stock.stock_hold_control_cninfo import stock_hold_change_cnin
 """
 天天基金-基金档案-基金基本概况
 """
+from opendata_http.fund.fund_overview_em import fund_overview_em
 
 """
 基金费率
 """
+from opendata_http.fund.fund_fee_em import fund_fee_em
 
 """
 东方财富网-数据中心-估值分析-每日互动-每日互动-估值分析
 """
+from opendata_http.stock_feature.stock_value_em import stock_value_em
 
 """
 已实现波动率
@@ -3433,30 +3451,37 @@ from opendata_http.stock.stock_hk_famous import stock_hk_famous_spot_em
 """
 同花顺-数据中心-宏观数据-股票筹资
 """
+from opendata_http.economic.macro_finance_ths import macro_stock_finance, macro_rmb_loan, macro_rmb_deposit
 
 """
 富途牛牛-主题投资-概念板块-成分股
 """
+from opendata_http.stock_feature.stock_concept_futu import stock_concept_cons_futu
 
 """
 商品期权手续费
 """
+from opendata_http.option.option_comm_qihuo import option_comm_info, option_comm_symbol
 
 """
 上海证券交易所-产品-股票期权-每日统计
 """
+from opendata_http.option.option_daily_stats_sse_szse import option_daily_stats_sse, option_daily_stats_szse
 
 """
 同花顺理财-基金数据-每日净值-ETF
 """
+from opendata_http.fund.fund_etf_ths import fund_etf_spot_ths, fund_etf_category_ths
 
 """
 同花顺-基金数据-基金基本信息
 """
+from opendata_http.fund.fund_info_ths import fund_info_ths
 
 """
 东方财富网-数据中心-融资融券-融资融券账户统计-两融账户信息
 """
+from opendata_http.stock_feature.stock_margin_em import stock_margin_account_info
 
 """
 现货走势
@@ -3465,6 +3490,7 @@ from opendata_http.stock.stock_hk_famous import stock_hk_famous_spot_em
 """
 华尔街见闻-日历-宏观
 """
+from opendata_http.economic.macro_info_ws import macro_info_ws
 
 """
 数库-A股新闻情绪指数
@@ -3479,6 +3505,14 @@ from opendata_http.index.index_research_fund_sw import index_hist_fund_sw, index
 """
 东方财富-财经早餐
 """
+from opendata_http.stock_feature.stock_info import (
+    stock_info_cjzc_em,
+    stock_info_global_em,
+    stock_info_global_ths,
+    stock_info_global_futu,
+    stock_info_global_sina,
+    stock_info_global_cls,
+)
 
 """
 期货交易-参数汇总查询
@@ -3487,18 +3521,22 @@ from opendata_http.index.index_research_fund_sw import index_hist_fund_sw, index
 """
 上海期货交易所-指定交割仓库-库存周报
 """
+from opendata_http.futures.futures_stock_js import futures_stock_shfe_js
 
 """
 金十数据-期货手续费
 """
+from opendata_http.futures.futures_comm_js import futures_comm_js
 
 """
 东方财富-数据中心-沪深港通-市场概括-分时数据
 """
+from opendata_http.stock_feature.stock_hsgt_min_em import stock_hsgt_fund_min_em
 
 """
 东方财富网-行情中心-期货市场-国际期货
 """
+from opendata_http.futures.futures_hf_em import futures_global_spot_em, futures_global_hist_em
 
 """
 雪球行情数据
@@ -3515,6 +3553,10 @@ from opendata_http.stock_fundamental.stock_profit_forecast_hk_etnet import stock
 """
 巨潮资讯-首页-公告查询-信息披露
 """
+from opendata_http.stock_feature.stock_disclosure_cninfo import (
+    stock_zh_a_disclosure_relation_cninfo,
+    stock_zh_a_disclosure_report_cninfo,
+)
 
 """
 东财财富-分时数据
@@ -3524,10 +3566,12 @@ from opendata_http.stock.stock_intraday_sina import stock_intraday_sina
 """
 股票日行情
 """
+from opendata_http.stock_feature.stock_hist_tx import stock_zh_a_hist_tx
 
 """
 筹码分布
 """
+from opendata_http.stock_feature.stock_cyq_em import stock_cyq_em
 
 """
 东财财富-分时数据
@@ -3551,14 +3595,17 @@ from opendata_http.stock.stock_share_hold import (
 """
 东方财富网-数据中心-研究报告-个股研报
 """
+from opendata_http.stock_feature.stock_research_report_em import stock_research_report_em
 
 """
 东方财富网-数据中心-重大合同-重大合同明细
 """
+from opendata_http.stock_feature.stock_zdhtmx_em import stock_zdhtmx_em
 
 """
 东方财富网-数据中心-股东大会
 """
+from opendata_http.stock_feature.stock_gddh_em import stock_gddh_em
 
 """
 东方财富网-数据中心-股市日历
@@ -3576,34 +3623,55 @@ from opendata_http.stock.stock_hold_control_em import (
 """
 新浪财经-债券-可转债
 """
+from opendata_http.bond.bond_cb_sina import bond_cb_profile_sina, bond_cb_summary_sina
 
 """
 上证e互动
 """
+from opendata_http.stock_feature.stock_sns_sseinfo import stock_sns_sseinfo
 
 """
 互动易-提问与回答
 """
+from opendata_http.stock_feature.stock_irm_cninfo import (
+    stock_irm_cninfo,
+    stock_irm_ans_cninfo,
+)
 
 """
 基金公告-分红配送
 """
+from opendata_http.fund.fund_announcement_em import fund_announcement_dividend_em
 
 """
 基金公告-定期报告
 """
+from opendata_http.fund.fund_announcement_em import fund_announcement_report_em
 
 """
 基金公告-人事公告
 """
+from opendata_http.fund.fund_announcement_em import fund_announcement_personnel_em
 
 """
 新浪财经-ESG评级中心
 """
+from opendata_http.stock_feature.stock_esg_sina import (
+    stock_esg_msci_sina,
+    stock_esg_rft_sina,
+    stock_esg_rate_sina,
+    stock_esg_zd_sina,
+    stock_esg_hz_sina,
+)
 
 """
 LOF 行情数据
 """
+from opendata_http.fund.fund_lof_em import (
+    fund_lof_hist_em,
+    fund_lof_spot_em,
+    fund_lof_hist_min_em,
+)
 
 """
 同花顺-财务指标-主要指标
@@ -3634,6 +3702,7 @@ from opendata_http.index.index_stock_hk import (
 """
 同花顺-数据中心-可转债
 """
+from opendata_http.bond.bond_cb_ths import bond_zh_cov_info_ths
 
 """
 同花顺-港股-分红派息
@@ -3643,6 +3712,7 @@ from opendata_http.stock.stock_hk_fhpx_ths import stock_hk_fhpx_detail_ths
 """
 同花顺-分红融资
 """
+from opendata_http.stock_feature.stock_fhps_ths import stock_fhps_detail_ths
 
 """
 东方财富-行情报价
@@ -3659,6 +3729,7 @@ from opendata_http.stock_fundamental.stock_profit_forecast_ths import (
 """
 期货资讯
 """
+from opendata_http.futures.futures_news_shmet import futures_news_shmet
 
 """
 主营介绍
@@ -3668,34 +3739,50 @@ from opendata_http.stock_fundamental.stock_zyjs_ths import stock_zyjs_ths
 """
 东方财富-ETF 行情
 """
+from opendata_http.fund.fund_etf_em import (
+    fund_etf_hist_em,
+    fund_etf_hist_min_em,
+    fund_etf_spot_em,
+)
 
 """
 上海证券交易所-ETF基金份额数据
 """
+from opendata_http.fund.fund_etf_sse import fund_etf_scale_sse
 
 """
 深圳证券交易所-ETF基金份额数据
 """
+from opendata_http.fund.fund_etf_szse import fund_etf_scale_szse
 
 """
 深圳证券交易所-基金规模日频数据
 """
+from opendata_http.fund.fund_scale_szse import fund_scale_daily_szse
 
 """
 乐咕乐股-股债利差
 """
+from opendata_http.stock_feature.stock_ebs_lg import stock_ebs_lg
 
 """
 乐咕乐股-基金仓位
 """
+from opendata_http.fund.fund_position_lg import (
+    fund_stock_position_lg,
+    fund_balance_position_lg,
+    fund_linghuo_position_lg,
+)
 
 """
 乐咕乐股-大盘拥挤度
 """
+from opendata_http.stock_feature.stock_congestion_lg import stock_a_congestion_lg
 
 """
 乐咕乐股-股息率-A 股股息率
 """
+from opendata_http.stock_feature.stock_gxl_lg import stock_a_gxl_lg, stock_hk_gxl_lg
 
 """
 东方财富-限售解禁股
@@ -3710,6 +3797,9 @@ from opendata_http.stock_fundamental.stock_restricted_em import (
 """
 同花顺行业一览表
 """
+from opendata_http.stock_feature.stock_board_industry_ths import (
+    stock_board_industry_summary_ths,
+)
 
 """
 生猪市场价格指数
@@ -3719,6 +3809,11 @@ from opendata_http.index.index_hog import index_hog_spot_price
 """
 债券信息查询
 """
+from opendata_http.bond.bond_info_cm import (
+    bond_info_detail_cm,
+    bond_info_cm,
+    bond_info_cm_query,
+)
 
 """
 申万宏源研究-指数系列
@@ -3765,6 +3860,7 @@ from opendata_http.index.index_option_qvix import (
 """
 乐估乐股-底部研究-巴菲特指标
 """
+from opendata_http.stock_feature.stock_buffett_index_lg import stock_buffett_index_lg
 
 """
 百度股市通-热搜股票
@@ -3774,18 +3870,22 @@ from opendata_http.stock.stock_hot_search_baidu import stock_hot_search_baidu
 """
 百度股市通- A 股或指数-股评-投票
 """
+from opendata_http.stock_feature.stock_zh_vote_baidu import stock_zh_vote_baidu
 
 """
 百度股市通-A 股-财务报表-估值数据
 """
+from opendata_http.stock_feature.stock_zh_valuation_baidu import stock_zh_valuation_baidu
 
 """
 百度股市通-港股-财务报表-估值数据
 """
+from opendata_http.stock_feature.stock_hk_valuation_baidu import stock_hk_valuation_baidu
 
 """
 百度股市通-美股-财务报表-估值数据
 """
+from opendata_http.stock_feature.stock_us_valuation_baidu import stock_us_valuation_baidu
 
 """
 巨潮资讯-个股-公司概况
@@ -3805,14 +3905,28 @@ from opendata_http.stock.stock_allotment_cninfo import stock_allotment_cninfo
 """
 沪深港股通-参考汇率和结算汇率
 """
+from opendata_http.stock_feature.stock_hsgt_exchange_rate import (
+    stock_sgt_reference_exchange_rate_sse,
+    stock_sgt_settlement_exchange_rate_sse,
+    stock_sgt_reference_exchange_rate_szse,
+    stock_sgt_settlement_exchange_rate_szse,
+)
 
 """
 中国债券信息网-中债指数-中债指数族系
 """
+from opendata_http.bond.bond_cbond import (
+    bond_new_composite_index_cbond,
+    bond_composite_index_cbond,
+    bond_available_index_cbond,
+    bond_index_general_cbond,
+    bond_treasury_index_cbond,
+)
 
 """
 行业板块
 """
+from opendata_http.stock_feature.stock_classify_sina import stock_classify_sina
 
 """
 主营构成
@@ -3826,10 +3940,12 @@ from opendata_http.stock_fundamental.stock_zygc import stock_zygc_em
 """
 期权-上海证券交易所-风险指标
 """
+from opendata_http.option.option_risk_indicator_sse import option_risk_indicator_sse
 
 """
 期权-上海证券交易所-当日合约
 """
+from opendata_http.option.option_risk_indicator_sse import option_risk_indicator_sse
 
 """
 
@@ -3839,18 +3955,49 @@ from opendata_http.stock_fundamental.stock_zygc import stock_zygc_em
 """
 东方财富-股票-财务分析
 """
+from opendata_http.stock_feature.stock_three_report_em import (
+    stock_balance_sheet_by_report_em,
+    stock_balance_sheet_by_yearly_em,
+    stock_profit_sheet_by_report_em,
+    stock_profit_sheet_by_quarterly_em,
+    stock_profit_sheet_by_yearly_em,
+    stock_cash_flow_sheet_by_report_em,
+    stock_cash_flow_sheet_by_quarterly_em,
+    stock_cash_flow_sheet_by_yearly_em,
+    stock_balance_sheet_by_report_delisted_em,
+    stock_profit_sheet_by_report_delisted_em,
+    stock_cash_flow_sheet_by_report_delisted_em,
+)
 
 """
 内部交易
 """
+from opendata_http.stock_feature.stock_inner_trade_xq import stock_inner_trade_xq
 
 """
 股票热度-雪球
 """
+from opendata_http.stock_feature.stock_hot_xq import (
+    stock_hot_deal_xq,
+    stock_hot_follow_xq,
+    stock_hot_tweet_xq,
+)
 
 """
 东方财富-股票数据-龙虎榜
 """
+from opendata_http.stock_feature.stock_lhb_em import (
+    stock_lhb_hyyyb_em,
+    stock_lhb_detail_em,
+    stock_lhb_stock_detail_em,
+    stock_lhb_jgmmtj_em,
+    stock_lhb_stock_statistic_em,
+    stock_lhb_stock_detail_date_em,
+    stock_lhb_yybph_em,
+    stock_lhb_jgstatistic_em,
+    stock_lhb_traderstatistic_em,
+    stock_lhb_yyb_detail_em,
+)
 
 """
 指数行情数据
@@ -3912,22 +4059,42 @@ from opendata_http.index.index_cx import (
 """
 期权折溢价分析
 """
+from opendata_http.option.option_premium_analysis_em import (
+    option_premium_analysis_em,
+)
 
 """
 期权风险分析
 """
+from opendata_http.option.option_risk_analysis_em import option_risk_analysis_em
 
 """
 期权价值分析
 """
+from opendata_http.option.option_value_analysis_em import option_value_analysis_em
 
 """
 期权龙虎榜
 """
+from opendata_http.option.option_lhb_em import option_lhb_em
 
 """
 东方财富网-数据中心-股东分析
 """
+from opendata_http.stock_feature.stock_gdfx_em import (
+    stock_gdfx_holding_analyse_em,
+    stock_gdfx_free_holding_analyse_em,
+    stock_gdfx_free_top_10_em,
+    stock_gdfx_top_10_em,
+    stock_gdfx_free_holding_detail_em,
+    stock_gdfx_holding_detail_em,
+    stock_gdfx_free_holding_change_em,
+    stock_gdfx_holding_change_em,
+    stock_gdfx_free_holding_statistics_em,
+    stock_gdfx_holding_statistics_em,
+    stock_gdfx_free_holding_teamwork_em,
+    stock_gdfx_holding_teamwork_em,
+)
 
 """
 中国食糖指数
@@ -3966,10 +4133,15 @@ from opendata_http.stock.stock_board_industry_em import (
 """
 天天基金网-基金数据-规模变动
 """
+from opendata_http.fund.fund_scale_em import (
+    fund_scale_change_em,
+    fund_hold_structure_em,
+)
 
 """
 天天基金网-基金数据-分红送配
 """
+from opendata_http.fund.fund_fhsp_em import fund_cf_em, fund_fh_rank_em, fund_fh_em
 
 """
 艺恩-艺人
@@ -3982,22 +4154,57 @@ from opendata_http.stock.stock_board_industry_em import (
 """
 同花顺-数据中心-技术选股
 """
+from opendata_http.stock_feature.stock_technology_ths import (
+    stock_rank_cxg_ths,
+    stock_rank_cxd_ths,
+    stock_rank_lxsz_ths,
+    stock_rank_lxxd_ths,
+    stock_rank_cxfl_ths,
+    stock_rank_cxsl_ths,
+    stock_rank_xstp_ths,
+    stock_rank_xxtp_ths,
+    stock_rank_ljqd_ths,
+    stock_rank_ljqs_ths,
+    stock_rank_xzjp_ths,
+)
 
 """
 沪深港通持股
 """
+from opendata_http.stock_feature.stock_hsgt_em import (
+    stock_hsgt_individual_em,
+    stock_hsgt_individual_detail_em,
+    stock_hsgt_fund_flow_summary_em,
+)
 
 """
 基金规模
 """
+from opendata_http.fund.fund_scale_sina import (
+    fund_scale_open_sina,
+    fund_scale_close_sina,
+    fund_scale_structured_sina,
+)
 
 """
 巨潮资讯-数据中心-专题统计-基金报表
 """
+from opendata_http.fund.fund_report_cninfo import (
+    fund_report_stock_cninfo,
+    fund_report_industry_allocation_cninfo,
+    fund_report_asset_allocation_cninfo,
+)
 
 """
 巨潮资讯-数据中心-专题统计-债券报表-债券发行
 """
+from opendata_http.bond.bond_issue_cninfo import (
+    bond_treasure_issue_cninfo,
+    bond_local_government_issue_cninfo,
+    bond_corporate_issue_cninfo,
+    bond_cov_issue_cninfo,
+    bond_cov_stock_issue_cninfo,
+)
 
 """
 巨潮资讯-数据中心-专题统计-公司治理-股权质押
@@ -4028,6 +4235,8 @@ from opendata_http.stock.stock_zh_b_sina import (
 """
 期货手续费
 """
+from opendata_http.futures.futures_comm_qihuo import futures_comm_info
+from opendata_http.futures.futures_comm_ctp import futures_fees_info
 
 """
 实际控制人持股变动
@@ -4104,10 +4313,24 @@ REITs
 全部 A 股-等权重市盈率、中位数市盈率
 全部 A 股-等权重、中位数市净率
 """
+from opendata_http.stock_feature.stock_ttm_lyr import stock_a_ttm_lyr
+from opendata_http.stock_feature.stock_all_pb import stock_a_all_pb
 
 """
 宏观-加拿大
 """
+from opendata_http.economic.macro_canada import (
+    macro_canada_cpi_monthly,
+    macro_canada_core_cpi_monthly,
+    macro_canada_bank_rate,
+    macro_canada_core_cpi_yearly,
+    macro_canada_cpi_yearly,
+    macro_canada_gdp_monthly,
+    macro_canada_new_house_rate,
+    macro_canada_retail_rate_monthly,
+    macro_canada_trade,
+    macro_canada_unemployment_rate,
+)
 
 """
 猪肉价格信息
@@ -4116,22 +4339,68 @@ REITs
 """
 宏观-澳大利亚
 """
+from opendata_http.economic.macro_australia import (
+    macro_australia_bank_rate,
+    macro_australia_unemployment_rate,
+    macro_australia_trade,
+    macro_australia_cpi_quarterly,
+    macro_australia_cpi_yearly,
+    macro_australia_ppi_quarterly,
+    macro_australia_retail_rate_monthly,
+)
 
 """
 融资融券-深圳
 """
+from opendata_http.stock_feature.stock_margin_szse import (
+    stock_margin_underlying_info_szse,
+    stock_margin_detail_szse,
+    stock_margin_szse,
+)
 
 """
 英国-宏观
 """
+from opendata_http.economic.macro_uk import (
+    macro_uk_gdp_yearly,
+    macro_uk_gdp_quarterly,
+    macro_uk_retail_yearly,
+    macro_uk_rightmove_monthly,
+    macro_uk_rightmove_yearly,
+    macro_uk_unemployment_rate,
+    macro_uk_halifax_monthly,
+    macro_uk_bank_rate,
+    macro_uk_core_cpi_monthly,
+    macro_uk_core_cpi_yearly,
+    macro_uk_cpi_monthly,
+    macro_uk_cpi_yearly,
+    macro_uk_halifax_yearly,
+    macro_uk_retail_monthly,
+    macro_uk_trade,
+)
 
 """
 日本-宏观
 """
+from opendata_http.economic.macro_japan import (
+    macro_japan_bank_rate,
+    macro_japan_core_cpi_yearly,
+    macro_japan_cpi_yearly,
+    macro_japan_head_indicator,
+    macro_japan_unemployment_rate,
+)
 
 """
 瑞士-宏观
 """
+from opendata_http.economic.macro_swiss import (
+    macro_swiss_trade,
+    macro_swiss_svme,
+    macro_swiss_cpi_yearly,
+    macro_swiss_gbd_yearly,
+    macro_swiss_gbd_bank_rate,
+    macro_swiss_gdp_quarterly,
+)
 
 """
 东方财富-概念板块
@@ -4147,10 +4416,25 @@ from opendata_http.stock.stock_board_concept_em import (
 """
 德国-经济指标
 """
+from opendata_http.economic.macro_germany import (
+    macro_germany_gdp,
+    macro_germany_ifo,
+    macro_germany_cpi_monthly,
+    macro_germany_retail_sale_monthly,
+    macro_germany_trade_adjusted,
+    macro_germany_retail_sale_yearly,
+    macro_germany_cpi_yearly,
+    macro_germany_zew,
+)
 
 """
 基金规模和规模趋势
 """
+from opendata_http.fund.fund_aum_em import (
+    fund_aum_em,
+    fund_aum_trend_em,
+    fund_aum_hist_em,
+)
 
 """
 CME 比特币成交量
@@ -4159,6 +4443,10 @@ CME 比特币成交量
 """
 盘口异动
 """
+from opendata_http.stock_feature.stock_pankou_em import (
+    stock_changes_em,
+    stock_board_change_em,
+)
 
 """
 A 股东方财富
@@ -4196,6 +4484,10 @@ from opendata_http.stock_feature.stock_hist_em import (
 """
 股东户数
 """
+from opendata_http.stock_feature.stock_gdhs import (
+    stock_zh_a_gdhs,
+    stock_zh_a_gdhs_detail_em,
+)
 
 """
 两网及退市
@@ -4205,14 +4497,34 @@ from opendata_http.stock.stock_stop import stock_staq_net_stop
 """
 涨停板行情
 """
+from opendata_http.stock_feature.stock_ztb_em import (
+    stock_zt_pool_em,
+    stock_zt_pool_previous_em,
+    stock_zt_pool_dtgc_em,
+    stock_zt_pool_zbgc_em,
+    stock_zt_pool_strong_em,
+    stock_zt_pool_sub_new_em,
+)
 
 """
 中国-香港-宏观
 """
+from opendata_http.economic.macro_china_hk import (
+    macro_china_hk_cpi,
+    macro_china_hk_cpi_ratio,
+    macro_china_hk_trade_diff_ratio,
+    macro_china_hk_gbp_ratio,
+    macro_china_hk_building_amount,
+    macro_china_hk_building_volume,
+    macro_china_hk_gbp,
+    macro_china_hk_ppi,
+    macro_china_hk_rate_of_unemployment,
+)
 
 """
 增发和配股
 """
+from opendata_http.stock_feature.stock_zf_pg import stock_qbzf_em, stock_pg_em
 
 """
 汽车销量
@@ -4226,6 +4538,7 @@ from opendata_http.index.index_cflp import index_price_cflp, index_volume_cflp
 """
 赚钱效应分析
 """
+from opendata_http.stock_feature.stock_market_legu import stock_market_activity_legu
 
 """
 浙江省排污权交易指数
@@ -4246,14 +4559,23 @@ from opendata_http.index.index_kq_ss import index_kq_fashion
 """
 新发基金
 """
+from opendata_http.fund.fund_init_em import fund_new_found_em
+from opendata_http.fund.fund_init_ths import fund_new_found_ths
 
 """
 高管持股
 """
+from opendata_http.stock_feature.stock_gdzjc_em import stock_ggcg_em
 
 """
 同花顺-数据中心-资金流向-概念资金流
 """
+from opendata_http.stock_feature.stock_fund_flow import (
+    stock_fund_flow_concept,
+    stock_fund_flow_industry,
+    stock_fund_flow_big_deal,
+    stock_fund_flow_individual,
+)
 
 """
 比特币持仓
@@ -4262,6 +4584,11 @@ from opendata_http.index.index_kq_ss import index_kq_fashion
 """
 证券交易营业部排行
 """
+from opendata_http.stock_feature.stock_lh_yybpm import (
+    stock_lh_yyb_capital,
+    stock_lh_yyb_most,
+    stock_lh_yyb_control,
+)
 
 """
 沪深 A 股公告
@@ -4284,26 +4611,48 @@ from opendata_http.stock_fundamental.stock_ipo_tutor import stock_ipo_tutor_em
 """
 三大报表
 """
+from opendata_http.stock_feature.stock_report_em import (
+    stock_zcfz_em,
+    stock_zcfz_bj_em,
+    stock_lrb_em,
+    stock_xjll_em,
+)
 
 """
 业绩报告
 """
+from opendata_http.stock_feature.stock_yjbb_em import stock_yjbb_em
 
 """
 同花顺-概念板块
 """
+from opendata_http.stock_feature.stock_board_concept_ths import (
+    stock_board_concept_info_ths,
+    stock_board_concept_summary_ths,
+    stock_board_concept_index_ths,
+    stock_board_concept_name_ths,
+)
 
 """
 同花顺-行业板块
 """
+from opendata_http.stock_feature.stock_board_industry_ths import (
+    stock_board_industry_name_ths,
+    stock_board_industry_info_ths,
+    stock_board_industry_index_ths,
+    stock_ipo_benefit_ths,
+    stock_xgsr_ths,
+)
 
 """
 分红配送
 """
+from opendata_http.stock_feature.stock_fhps_em import stock_fhps_em, stock_fhps_detail_em
 
 """
 中美国债收益率
 """
+from opendata_http.bond.bond_em import bond_zh_us_rate
 
 """
 盈利预测
@@ -4315,26 +4664,58 @@ from opendata_http.stock_fundamental.stock_profit_forecast_em import (
 """
 基金经理
 """
+from opendata_http.fund.fund_manager import fund_manager_em
 
 """
 基金评级
 """
+from opendata_http.fund.fund_rating import (
+    fund_rating_sh,
+    fund_rating_zs,
+    fund_rating_ja,
+    fund_rating_all,
+)
 
 """
 融资融券数据
 """
+from opendata_http.stock_feature.stock_margin_sse import (
+    stock_margin_detail_sse,
+    stock_margin_sse,
+    stock_margin_ratio_pa,
+)
 
 """
 期货交割和期转现
 """
+from opendata_http.futures.futures_to_spot import (
+    futures_to_spot_czce,
+    futures_to_spot_shfe,
+    futures_to_spot_dce,
+    futures_delivery_dce,
+    futures_delivery_shfe,
+    futures_delivery_czce,
+    futures_delivery_match_dce,
+    futures_delivery_match_czce,
+)
 
 """
 基金持仓
 """
+from opendata_http.fund.fund_portfolio_em import (
+    fund_portfolio_hold_em,
+    fund_portfolio_change_em,
+    fund_portfolio_bond_hold_em,
+    fund_portfolio_industry_allocation_em,
+)
 
 """
 债券概览
 """
+from opendata_http.bond.bond_summary import (
+    bond_deal_summary_sse,
+    bond_cash_summary_sse,
+)
 
 """
 新闻-个股新闻
@@ -4343,6 +4724,7 @@ from opendata_http.stock_fundamental.stock_profit_forecast_em import (
 """
 股票数据-一致行动人
 """
+from opendata_http.stock_feature.stock_yzxdr_em import stock_yzxdr_em
 
 """
 大宗交易
@@ -4370,6 +4752,7 @@ from opendata_http.index.index_cni import (
 """
 东方财富-期权
 """
+from opendata_http.option.option_em import option_current_em
 
 """
 科创板报告
@@ -4379,6 +4762,7 @@ from opendata_http.stock.stock_zh_kcb_report import stock_zh_kcb_report_em
 """
 期货合约详情
 """
+from opendata_http.futures.futures_contract_detail import futures_contract_detail, futures_contract_detail_em
 
 """
 胡润排行榜
@@ -4403,6 +4787,14 @@ from opendata_http.stock.stock_zh_kcb_report import stock_zh_kcb_report_em
 """
 公募基金排行
 """
+from opendata_http.fund.fund_rank_em import (
+    fund_exchange_rank_em,
+    fund_money_rank_em,
+    fund_open_fund_rank_em,
+    fund_hk_rank_em,
+    fund_lcx_rank_em,
+)
+fund_em_hk_rank = fund_hk_rank_em
 
 """
 电影票房
@@ -4415,10 +4807,18 @@ from opendata_http.stock.stock_zh_kcb_report import stock_zh_kcb_report_em
 """
 债券收盘收益率曲线历史数据
 """
+from opendata_http.bond.bond_china_money import (
+    bond_china_close_return,
+    macro_china_bond_public,
+    macro_china_swap_rate,
+    bond_china_close_return_map,
+
+)
 
 """
 COMEX黄金-白银库存
 """
+from opendata_http.futures.futures_comex_em import futures_comex_inventory
 
 """
 A 股-特别标的
@@ -4459,6 +4859,13 @@ from opendata_http.stock_fundamental.stock_ipo_ths import (
 """
 新浪财经-龙虎榜
 """
+from opendata_http.stock_feature.stock_lhb_sina import (
+    stock_lhb_detail_daily_sina,
+    stock_lhb_ggtj_sina,
+    stock_lhb_jgmx_sina,
+    stock_lhb_jgzz_sina,
+    stock_lhb_yytj_sina,
+)
 
 """
 中证指数
@@ -4479,14 +4886,28 @@ from opendata_http.stock.stock_fund_hold import (
 """
 期货分钟数据
 """
+from opendata_http.futures.futures_zh_sina import (
+    futures_zh_minute_sina,
+    futures_zh_daily_sina,
+    futures_zh_realtime,
+    futures_symbol_mark,
+    match_main_contract,
+    futures_zh_spot,
+)
 
 """
 股票财务报告预约披露
 """
+from opendata_http.stock_feature.stock_yjyg_cninfo import stock_report_disclosure
 
 """
 基金行情
 """
+from opendata_http.fund.fund_etf_sina import (
+    fund_etf_hist_sina,
+    fund_etf_category_sina,
+    fund_etf_dividend_sina,
+)
 
 """
 交易日历
@@ -4495,10 +4916,28 @@ from opendata_http.stock.stock_fund_hold import (
 """
 commodity option
 """
+from opendata_http.option.option_commodity_sina import (
+    option_commodity_contract_table_sina,
+    option_commodity_contract_sina,
+    option_commodity_hist_sina,
+)
 
 """
 A 股PE和PB
 """
+from opendata_http.stock_feature.stock_a_pe_and_pb import (
+    stock_market_pb_lg,
+    stock_index_pb_lg,
+    stock_market_pe_lg,
+    stock_index_pe_lg,
+)
+from opendata_http.stock_feature.stock_a_indicator import (
+    stock_hk_indicator_eniu,
+)
+from opendata_http.stock_feature.stock_a_high_low import stock_a_high_low_statistics
+from opendata_http.stock_feature.stock_a_below_net_asset_statistics import (
+    stock_a_below_net_asset_statistics,
+)
 
 """
 彭博亿万富豪指数
@@ -4507,10 +4946,17 @@ A 股PE和PB
 """
 stock-券商业绩月报
 """
+from opendata_http.stock_feature.stock_qsjy_em import stock_qsjy_em
 
 """
 futures-warehouse-receipt
 """
+from opendata_http.futures.futures_warehouse_receipt import (
+    futures_warehouse_receipt_czce,
+    futures_warehouse_receipt_dce,
+    futures_shfe_warehouse_receipt,
+    futures_gfex_warehouse_receipt,
+)
 
 """
 stock-js
@@ -4613,10 +5059,19 @@ hf
 """
 stock_yjyg_em
 """
+from opendata_http.stock_feature.stock_yjyg_em import (
+    stock_yjyg_em,
+    stock_yysj_em,
+    stock_yjkb_em,
+)
 
 """
 stock
 """
+from opendata_http.stock_feature.stock_dxsyl_em import (
+    stock_dxsyl_em,
+    stock_xgsglb_em,
+)
 
 """
 article
@@ -4625,10 +5080,12 @@ article
 """
 中证商品指数
 """
+from opendata_http.futures.futures_index_ccidx import futures_index_ccidx
 
 """
 futures_em_spot_stock
 """
+from opendata_http.futures.futures_spot_stock_em import futures_spot_stock
 
 """
 energy_oil
@@ -4637,26 +5094,51 @@ energy_oil
 """
 futures-foreign
 """
+from opendata_http.futures.futures_foreign import (
+    futures_foreign_detail,
+    futures_foreign_hist,
+)
 
 """
 stock-em-tfp
 """
+from opendata_http.stock_feature.stock_tfp_em import stock_tfp_em
 
 """
 stock-em-hsgt
 """
+from opendata_http.stock_feature.stock_hsgt_em import (
+    stock_hk_ggt_components_em,
+    stock_hsgt_hold_stock_em,
+    stock_hsgt_hist_em,
+    stock_hsgt_institution_statistics_em,
+    stock_hsgt_stock_statistics_em,
+    stock_hsgt_board_rank_em,
+)
 
 """
 stock-em-comment
 """
+from opendata_http.stock_feature.stock_comment_em import (
+    stock_comment_em,
+    stock_comment_detail_zlkp_jgcyd_em,
+    stock_comment_detail_scrd_focus_em,
+    stock_comment_detail_zhpj_lspf_em,
+    stock_comment_detail_scrd_desire_em,
+)
 
 """
 stock-em-analyst
 """
+from opendata_http.stock_feature.stock_analyst_em import (
+    stock_analyst_detail_em,
+    stock_analyst_rank_em,
+)
 
 """
 新加坡期货交易所
 """
+from opendata_http.futures.futures_settlement_price_sgx import futures_settlement_price_sgx
 
 """
 currency interface
@@ -4677,14 +5159,69 @@ from opendata_http.stock.stock_weibo_nlp import (
 """
 金融期权-新浪
 """
+from opendata_http.option.option_finance_sina import (
+    option_cffex_sz50_list_sina,
+    option_cffex_sz50_spot_sina,
+    option_cffex_sz50_daily_sina,
+    option_cffex_hs300_list_sina,
+    option_cffex_hs300_spot_sina,
+    option_cffex_hs300_daily_sina,
+    option_cffex_zz1000_list_sina,
+    option_cffex_zz1000_spot_sina,
+    option_cffex_zz1000_daily_sina,
+    option_sse_list_sina,
+    option_sse_expire_day_sina,
+    option_sse_codes_sina,
+    option_sse_spot_price_sina,
+    option_sse_underlying_spot_price_sina,
+    option_sse_greeks_sina,
+    option_sse_minute_sina,
+    option_sse_daily_sina,
+    option_finance_minute_sina,
+    option_minute_em,
+)
 
 """
 债券-沪深债券
 """
+from opendata_http.bond.bond_zh_sina import bond_zh_hs_daily, bond_zh_hs_spot
+from opendata_http.bond.bond_zh_cov import (
+    bond_zh_hs_cov_daily,
+    bond_zh_hs_cov_spot,
+    bond_cov_comparison,
+    bond_zh_cov,
+    bond_zh_cov_info,
+    bond_zh_hs_cov_min,
+    bond_zh_hs_cov_pre_min,
+    bond_zh_cov_value_analysis,
+)
+from opendata_http.bond.bond_convert import (
+    bond_cb_jsl,
+    bond_cb_adj_logs_jsl,
+    bond_cb_index_jsl,
+    bond_cb_redeem_jsl,
+)
 
 """
 基金数据接口
 """
+from opendata_http.fund.fund_em import (
+    fund_open_fund_daily_em,
+    fund_open_fund_info_em,
+    fund_etf_fund_daily_em,
+    fund_etf_fund_info_em,
+    fund_financial_fund_daily_em,
+    fund_financial_fund_info_em,
+    fund_name_em,
+    fund_info_index_em,
+    fund_graded_fund_daily_em,
+    fund_graded_fund_info_em,
+    fund_money_fund_daily_em,
+    fund_money_fund_info_em,
+    fund_value_estimation_em,
+    fund_hk_fund_hist_em,
+    fund_purchase_em,
+)
 
 """
 百度迁徙地图接口
@@ -4697,6 +5234,7 @@ from opendata_http.stock.stock_weibo_nlp import (
 """
 商品期权-郑州商品交易所-期权-历史数据
 """
+from opendata_http.option.option_czce import option_hist_yearly_czce
 
 """
 宏观-经济数据-银行间拆借利率
@@ -4705,14 +5243,47 @@ from opendata_http.stock.stock_weibo_nlp import (
 """
 金十数据中心-外汇情绪
 """
+from opendata_http.economic.macro_other import macro_fx_sentiment
 
 """
 金十数据中心-经济指标-欧元区
 """
+from opendata_http.economic.macro_euro import (
+    macro_euro_gdp_yoy,
+    macro_euro_cpi_mom,
+    macro_euro_cpi_yoy,
+    macro_euro_current_account_mom,
+    macro_euro_employment_change_qoq,
+    macro_euro_industrial_production_mom,
+    macro_euro_manufacturing_pmi,
+    macro_euro_ppi_mom,
+    macro_euro_retail_sales_mom,
+    macro_euro_sentix_investor_confidence,
+    macro_euro_services_pmi,
+    macro_euro_trade_balance,
+    macro_euro_unemployment_rate_mom,
+    macro_euro_zew_economic_sentiment,
+    macro_euro_lme_holding,
+    macro_euro_lme_stock,
+)
 
 """
 金十数据中心-经济指标-央行利率-主要央行利率
 """
+from opendata_http.economic.macro_bank import (
+    macro_bank_australia_interest_rate,
+    macro_bank_brazil_interest_rate,
+    macro_bank_brazil_interest_rate,
+    macro_bank_china_interest_rate,
+    macro_bank_english_interest_rate,
+    macro_bank_euro_interest_rate,
+    macro_bank_india_interest_rate,
+    macro_bank_japan_interest_rate,
+    macro_bank_newzealand_interest_rate,
+    macro_bank_russia_interest_rate,
+    macro_bank_switzerland_interest_rate,
+    macro_bank_usa_interest_rate,
+)
 
 """
 义乌小商品指数
@@ -4741,22 +5312,44 @@ from opendata_http.index.index_cons import (
 """
 东方财富-股票账户
 """
+from opendata_http.stock_feature.stock_account_em import stock_account_statistics_em
 
 """
 期货规则
 """
+from opendata_http.futures.futures_rule import futures_rule
 
 """
 东方财富-商誉专题
 """
+from opendata_http.stock_feature.stock_sy_em import (
+    stock_sy_profile_em,
+    stock_sy_yq_em,
+    stock_sy_jz_em,
+    stock_sy_em,
+    stock_sy_hy_em,
+)
 
 """
 东方财富-股票质押
 """
+from opendata_http.stock_feature.stock_gpzy_em import (
+    stock_gpzy_pledge_ratio_em,
+    stock_gpzy_profile_em,
+    stock_gpzy_distribute_statistics_bank_em,
+    stock_gpzy_distribute_statistics_company_em,
+    stock_gpzy_industry_data_em,
+    stock_gpzy_pledge_ratio_detail_em,
+    stock_gpzy_individual_pledge_ratio_detail_em,
+)
 
 """
 东方财富-机构调研
 """
+from opendata_http.stock_feature.stock_jgdy_em import (
+    stock_jgdy_tj_em,
+    stock_jgdy_detail_em,
+)
 
 """
 新浪主力连续接口
@@ -4765,6 +5358,7 @@ from opendata_http.index.index_cons import (
 """
 中国宏观杠杆率数据
 """
+from opendata_http.economic.marco_cnbs import macro_cnbs
 
 """
 大宗商品-现货价格指数
@@ -4778,6 +5372,22 @@ from opendata_http.index.index_spot import spot_goods
 """
 中国证券投资基金业协会-信息公示
 """
+from opendata_http.fund.fund_amac import (
+    amac_manager_info,
+    amac_member_info,
+    amac_member_sub_info,
+    amac_aoin_info,
+    amac_fund_account_info,
+    amac_fund_info,
+    amac_fund_sub_info,
+    amac_futures_info,
+    amac_manager_cancelled_info,
+    amac_securities_info,
+    amac_fund_abs,
+    amac_manager_classify_info,
+    amac_person_fund_org_list,
+    amac_person_bond_org_list,
+)
 
 """
 申万行业一级
@@ -4827,7 +5437,13 @@ from opendata_http.index.index_stock_zh import (
 """
 外盘期货实时行情
 """
+from opendata_http.futures.futures_hq_sina import (
+    futures_foreign_commodity_realtime,
+    futures_foreign_commodity_subscribe_exchange_symbol,
+    futures_hq_subscribe_exchange_symbol,
+)
 
+hf_subscribe_exchange_symbol = futures_hq_subscribe_exchange_symbol
 
 """
 FF多因子数据接口
@@ -4871,10 +5487,15 @@ from opendata_http.stock.stock_zh_ah_tx import (
 """
 加密货币
 """
+from opendata_http.economic.macro_other import crypto_js_spot
 
 """
 金融期权
 """
+from opendata_http.option.option_finance import (
+    option_finance_board,
+    option_finance_sse_underlying,
+)
 
 """
 新浪-美股实时行情数据和历史行情数据(前复权)
@@ -4897,18 +5518,157 @@ from opendata_http.stock.stock_hk_sina import stock_hk_daily, stock_hk_spot
 """
 全球宏观-机构宏观
 """
+from opendata_http.economic.macro_constitute import (
+    macro_cons_gold,
+    macro_cons_silver,
+    macro_cons_opec_month,
+)
 
 """
 全球宏观-美国宏观
 """
+from opendata_http.economic.macro_usa import (
+    macro_usa_eia_crude_rate,
+    macro_usa_non_farm,
+    macro_usa_unemployment_rate,
+    macro_usa_adp_employment,
+    macro_usa_core_pce_price,
+    macro_usa_cpi_monthly,
+    macro_usa_cpi_yoy,
+    macro_usa_crude_inner,
+    macro_usa_gdp_monthly,
+    macro_usa_initial_jobless,
+    macro_usa_lmci,
+    macro_usa_api_crude_stock,
+    macro_usa_building_permits,
+    macro_usa_business_inventories,
+    macro_usa_cb_consumer_confidence,
+    macro_usa_core_cpi_monthly,
+    macro_usa_core_ppi,
+    macro_usa_current_account,
+    macro_usa_durable_goods_orders,
+    macro_usa_trade_balance,
+    macro_usa_spcs20,
+    macro_usa_services_pmi,
+    macro_usa_rig_count,
+    macro_usa_retail_sales,
+    macro_usa_real_consumer_spending,
+    macro_usa_ppi,
+    macro_usa_pmi,
+    macro_usa_personal_spending,
+    macro_usa_pending_home_sales,
+    macro_usa_nfib_small_business,
+    macro_usa_new_home_sales,
+    macro_usa_nahb_house_market_index,
+    macro_usa_michigan_consumer_sentiment,
+    macro_usa_exist_home_sales,
+    macro_usa_export_price,
+    macro_usa_factory_orders,
+    macro_usa_house_price_index,
+    macro_usa_house_starts,
+    macro_usa_import_price,
+    macro_usa_industrial_production,
+    macro_usa_ism_non_pmi,
+    macro_usa_ism_pmi,
+    macro_usa_job_cuts,
+    macro_usa_cftc_nc_holding,
+    macro_usa_cftc_c_holding,
+    macro_usa_cftc_merchant_currency_holding,
+    macro_usa_cftc_merchant_goods_holding,
+    macro_usa_cme_merchant_goods_holding,
+    macro_usa_phs,
+)
 
 """
 全球宏观-中国宏观
 """
+from opendata_http.economic.macro_china import (
+    macro_china_bank_financing,
+    macro_china_insurance_income,
+    macro_china_mobile_number,
+    macro_china_vegetable_basket,
+    macro_china_agricultural_product,
+    macro_china_agricultural_index,
+    macro_china_energy_index,
+    macro_china_commodity_price_index,
+    macro_global_sox_index,
+    macro_china_yw_electronic_index,
+    macro_china_construction_index,
+    macro_china_construction_price_index,
+    macro_china_lpi_index,
+    macro_china_bdti_index,
+    macro_china_bsi_index,
+    macro_china_cpi_monthly,
+    macro_china_cpi_yearly,
+    macro_china_m2_yearly,
+    macro_china_fx_reserves_yearly,
+    macro_china_cx_pmi_yearly,
+    macro_china_pmi_yearly,
+    macro_china_daily_energy,
+    macro_china_non_man_pmi,
+    macro_china_rmb,
+    macro_china_gdp_yearly,
+    macro_china_shrzgm,
+    macro_china_ppi_yearly,
+    macro_china_cx_services_pmi_yearly,
+    macro_china_market_margin_sh,
+    macro_china_market_margin_sz,
+    macro_china_au_report,
+    macro_china_exports_yoy,
+    macro_china_hk_market_info,
+    macro_china_imports_yoy,
+    macro_china_trade_balance,
+    macro_china_shibor_all,
+    macro_china_industrial_production_yoy,
+    macro_china_gyzjz,
+    macro_china_lpr,
+    macro_china_new_house_price,
+    macro_china_enterprise_boom_index,
+    macro_china_national_tax_receipts,
+    macro_china_new_financial_credit,
+    macro_china_fx_gold,
+    macro_china_money_supply,
+    macro_china_stock_market_cap,
+    macro_china_cpi,
+    macro_china_gdp,
+    macro_china_ppi,
+    macro_china_pmi,
+    macro_china_gdzctz,
+    macro_china_hgjck,
+    macro_china_czsr,
+    macro_china_whxd,
+    macro_china_wbck,
+    macro_china_xfzxx,
+    macro_china_reserve_requirement_ratio,
+    macro_china_consumer_goods_retail,
+    macro_china_society_electricity,
+    macro_china_society_traffic_volume,
+    macro_china_postal_telecommunicational,
+    macro_china_international_tourism_fx,
+    macro_china_passenger_load_factor,
+    macro_china_freight_index,
+    macro_china_central_bank_balance,
+    macro_china_insurance,
+    macro_china_supply_of_money,
+    macro_china_foreign_exchange_gold,
+    macro_china_retail_price_index,
+    macro_china_real_estate,
+    macro_china_qyspjg,
+    macro_china_fdi,
+    macro_shipping_bci,
+    macro_shipping_bcti,
+    macro_shipping_bdi,
+    macro_shipping_bpi,
+    macro_china_urban_unemployment,
+)
 
 """
 全球宏观-中国宏观-国家统计局
 """
+from opendata_http.economic.macro_china_nbs import (
+    macro_china_nbs_nation,
+    macro_china_nbs_region
+)
 
 """
 外汇
@@ -4917,22 +5677,39 @@ from opendata_http.stock.stock_hk_sina import stock_hk_daily, stock_hk_spot
 """
 债券行情
 """
+from opendata_http.bond.bond_china import (
+    bond_spot_quote,
+    bond_spot_deal,
+    bond_china_yield,
+)
 
 """
 商品期权
 """
+from opendata_http.option.option_commodity import (
+    option_hist_dce,
+    option_hist_czce,
+    option_hist_shfe,
+    option_vol_gfex,
+    option_hist_gfex,
+    option_vol_shfe,
+)
 
 """
 99期货-期货库存数据
 """
+from opendata_http.futures.futures_inventory_99 import futures_inventory_99
 
 """
 东方财富-期货库存数据
 """
+from opendata_http.futures.futures_inventory_em import futures_inventory_em
+from opendata_http.futures.futures_inventory_em_varieties import futures_inventory_em_varieties
 
 """
 中国银行间市场交易商协会
 """
+from opendata_http.bond.bond_nafmii import bond_debt_nafmii
 
 """
 奇货可查-工具模块
@@ -4949,26 +5726,65 @@ from opendata_http.stock.stock_hk_sina import stock_hk_daily, stock_hk_spot
 """
 大宗商品现货价格及基差
 """
+from opendata_http.futures.futures_basis import (
+    futures_spot_price_daily,
+    futures_spot_price,
+    futures_spot_price_previous,
+)
 
 """
 期货持仓成交排名数据
 """
+from opendata_http.futures.cot import (
+    get_rank_sum_daily,
+    get_rank_sum,
+    get_shfe_rank_table,
+    get_rank_table_czce,
+    get_dce_rank_table,
+    get_cffex_rank_table,
+    futures_dce_position_rank,
+    futures_dce_position_rank_other,
+    futures_gfex_position_rank,
+)
 
 """
 大宗商品期货仓单数据
 """
+from opendata_http.futures.receipt import get_receipt
 
 """
 大宗商品期货展期收益率数据
 """
+from opendata_http.futures.futures_roll_yield import (
+    get_roll_yield_bar,
+    get_roll_yield,
+)
 
 """
 交易所日线行情数据
 """
+from opendata_http.futures.futures_daily_bar import (
+    get_cffex_daily,
+    get_czce_daily,
+    get_shfe_daily,
+    get_dce_daily,
+    get_futures_daily,
+    get_ine_daily,
+    get_gfex_daily,
+    futures_hist_daily_cffex
+)
 
 """
 雪球基金数据
 """
+from opendata_http.fund.fund_xq import (
+    fund_individual_basic_info_xq,
+    fund_individual_achievement_xq,
+    fund_individual_analysis_xq,
+    fund_individual_profit_probability_xq,
+    fund_individual_detail_info_xq,
+    fund_individual_detail_hold_xq,
+)
 
 """
 异常处理模块

@@ -2,13 +2,13 @@
 
 - 上游基线：`https://github.com/cloudQuant/akshare.git` @ `c4f6a631c259783dbc2507b6b27d179b3e88079d`
 - 已搬运文件：315（含资源）
-- 人工待办：**1**（A1.6 验收要求为 0）
+- 人工待办：**0**（A1.6 验收要求为 0）
 
 ## 逐文件对照（改写计数与重放一致性）
 
 | 文件 | 上游路径 | import 改写 | 字符串改写 | 人工改动 | 重放一致 |
 |------|---------|------------|-----------|---------|---------|
-| `__init__.py` | `akshare/__init__.py` | 284 | 0 | False | ✗ |
+| `__init__.py` | `akshare/__init__.py` | 284 | 0 | False | ✓ |
 | `_version.py` | `akshare/_version.py` | 0 | 0 | False | ✓ |
 | `bond/__init__.py` | `akshare/bond/__init__.py` | 0 | 0 | False | ✓ |
 | `bond/bond_buy_back_em.py` | `akshare/bond/bond_buy_back_em.py` | 0 | 0 | False | ✓ |
@@ -326,4 +326,4 @@
 
 ## 人工待办清单
 
-- [ ] __init__.py: ported content differs from the codemod replay (manual edit?)
+（无 —— 待办清零）
