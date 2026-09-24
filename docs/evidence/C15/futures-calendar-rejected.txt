@@ -1,0 +1,28 @@
+# C15 候选否决：ths 期货交易日历腿（/api/futures/calendar/trading-schedule）
+
+## 1. 参数面（文档未标必填参数名，逐个试到位）
+
+| 入参 | 结果 |
+| --- | --- |
+| `（不带参数）` | FuyaoError: FUYAO_REQUEST: 请求参数缺失或格式非法 |
+| `{'start_date': '2026-09-01', 'end_date': '2026-09-24'}` | FuyaoError: FUYAO_REQUEST: 请求参数缺失或格式非法 |
+| `{'start': '2026-09-01', 'end': '2026-09-24'}` | FuyaoError: FUYAO_REQUEST: 请求参数缺失或格式非法 |
+| `{'begin_date': '2026-09-01', 'end_date': '2026-09-24'}` | FuyaoError: FUYAO_REQUEST: 请求参数缺失或格式非法 |
+| `{'start_date': '2026-09-01'}` | FuyaoError: FUYAO_REQUEST: 请求参数缺失或格式非法 |
+| `{'start_date': '20260901', 'end_date': '20260924'}` | FuyaoError: FUYAO_REQUEST: 请求参数缺失或格式非法 |
+| `{'start_date': '2026-09-01', 'end_date': '2026-09-24', 'exchange': 'CNFE'}` | FuyaoError: FUYAO_REQUEST: 请求参数缺失或格式非法 |
+| `{'date': '2026-09-24'}` | FuyaoError: FUYAO_REQUEST: 请求参数缺失或格式非法 |
+| `{'year': 2026}` | FuyaoError: FUYAO_REQUEST: 请求参数缺失或格式非法 |
+
+## 2. 信息量：期货日线交易日 vs A 股交易日历（同窗口）
+
+- A 股日历：242 天，coverage 2025-09-25～2026-09-24
+- 落在对照窗口 2026-06-01～2026-09-24 内的 A 股开市日：82 天
+- CU2610.SHF：日线 82 根；仅期货有 0 天 []；仅 A 股有 0 天 []
+- IF2612.CFE：日线 82 根；仅期货有 0 天 []；仅 A 股有 0 天 []
+
+## 判定
+
+- 参数面：9 种写法（含不带参数）全部被拒 ⇒ 现在接不进来，接入需先向对方要参数定义。
+- 信息量：两条期货日线的交易日集合完全落在 A 股日历的开市日之内（差集为空）⇒ 即便接通，也只会得到一份与 A 股日历逐日相同的副本，不会新增判据。
+- 综合：本轮**不接**该端点，映射表状态维持 ``available``；夜间时段（夜盘）属**日内**维度而非额外交易日，故不构成差异（观察，非判据）。

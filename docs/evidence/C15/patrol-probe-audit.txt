@@ -1,0 +1,40 @@
+# C15 附带发现：巡检探针参数面审计（离线，无网络、不连数仓）
+# 命令: python（本文件即脚本；判据=patrol 探测的第一步 transform_query 是否吃得住 PROBE_PARAMS 给的参数）
+# 机制: opendata/pipeline/patrol.py:166  params = PROBE_PARAMS.get(domain, {})
+#       opendata/pipeline/patrol.py:138-141  探测成功 -> mark_available / 抛错 -> mark_unavailable
+
+- 注册表 verified 能力：19 条；探针可过的：7；探针必抛的：12
+- `PROBE_PARAMS` 条目：8（键是**域名**，不含 source）
+
+| source/domain | 探针实际发出的参数 | transform_query 结果 |
+| --- | --- | --- |
+| ecb/economy_cpi | {'series_id': 'CPIAUCSL'} | 通过 |
+| ecb/economy_gdp | {'series_id': 'GDP'} | 通过 |
+| ecb/economy_rate | {'series_id': 'IRSTCI01USM156N'} | 通过 |
+| ths/stock_daily | {'symbol': '600519'} | 通过 |
+| ths/stock_action | {'symbol': '600519'} | 通过 |
+| ths/trading_calendar | {}（空） | 通过 |
+| yfinance/stock_daily_overseas | {'symbol': 'AAPL'} | 通过 |
+| imf/economy_cpi | {'series_id': 'CPIAUCSL'} | 抛 ValidationError（必填字段缺） |
+| imf/economy_gdp | {'series_id': 'GDP'} | 抛 ValidationError（必填字段缺） |
+| imf/economy_unemployment | {'series_id': 'UNRATE'} | 抛 ValidationError（必填字段缺） |
+| oecd/economy_cpi | {'series_id': 'CPIAUCSL'} | 抛 ValidationError（必填字段缺） |
+| oecd/economy_unemployment | {'series_id': 'UNRATE'} | 抛 ValidationError（必填字段缺） |
+| ths/index_daily | {}（空） | 抛 ValidationError（必填字段缺） |
+| ths/index_constituent | {}（空） | 抛 ValidationError（必填字段缺） |
+| ths/financial_statement | {}（空） | 抛 ValidationError（必填字段缺） |
+| ths/fund_action | {}（空） | 抛 ValidationError（必填字段缺） |
+| ths/instrument | {}（空） | 抛 ValidationError（必填字段缺） |
+| ths/futures_daily | {}（空） | 抛 ValidationError（必填字段缺） |
+| ths/option_daily | {}（空） | 抛 ValidationError（必填字段缺） |
+
+- 两类根因同为「参数按域取、不按 (域, source) 取」：
+  1) 7 条 ths 腿所在的域**根本不在** `PROBE_PARAMS` 里 ⇒ 空参数 ⇒ `symbol` / `asset_type` 必填字段缺失；
+  2) `economy_*` 一组的参数是 fred/ecb 口径的 `series_id`，而 imf 的 `IndicatorQuery` 要 `indicator`、
+     oecd 的 `CpiQuery`/`UnemploymentQuery` 要 `series_key` ⇒ 同域不同源、字段名不同，一条参数喂不了三家。
+- 另：`PROBE_PARAMS` 里的 `stock_adjust` 在当前注册表中**没有** verified 能力 ⇒ 死配置（不影响判定，登记备查）。
+- 后果：每跑一轮巡检，`mark_unavailable()` 会把这 12 条**已验证**的腿标成不可用（进程内、非持久），
+  而 `source="auto"` 恰好跳过不可用的 fetcher ⇒ 巡检本身在削弱它刚验过的路由；
+  同时 `scripts/ops/health_patrol.py` 的「失败累计即非零退出」会天天报 12 条**假故障**。
+- 处置：本轮只登记不修（属 AC-4 缺陷，另立 C16 轮：参数按 (domain, source) 取 + 一条按注册表参数化的守卫用例
+  「verified 能力必须有可过的探针参数」+ 真机跑一轮巡检留档）。

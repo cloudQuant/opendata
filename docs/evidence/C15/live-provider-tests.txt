@@ -1,0 +1,27 @@
+# C15 真机 e2e 只读冒烟（不含任何数仓写入用例：warehouse e2e 一律不在本机 ad hoc 跑）
+# 命令: pytest tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi -m e2e -v --no-cov
+# 注：test_fuyao_endpoints 的 live 夹具本轮由 from_environment() 改为适配层同一入口 credentials()（见 README §5）——该类的 4 条既有真机冒烟是首次真正执行
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0 -- /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python3.13
+cachedir: .pytest_cache
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 11 items
+
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_daily_bars_come_back_as_contract_rows PASSED [  9%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_trading_calendar_comes_back_as_rows PASSED [ 18%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_instrument_search_finds_an_a_share PASSED [ 27%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_adjustment_factors_are_events PASSED [ 36%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_fund_dividends_are_per_unit_cash_events PASSED [ 45%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_fund_without_any_dividend_comes_back_empty PASSED [ 54%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_daily_bars_to_the_fuyao_source PASSED [ 63%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_corporate_actions_to_the_fuyao_source PASSED [ 72%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_the_trading_calendar_to_the_fuyao_source PASSED [ 81%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_the_instrument_catalog_to_the_fuyao_source PASSED [ 90%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_fund_distributions_to_the_fuyao_source PASSED [100%]
+
+============================= 11 passed in 13.05s ==============================
+PYTEST_EXIT=0
