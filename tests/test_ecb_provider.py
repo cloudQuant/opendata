@@ -28,8 +28,8 @@ if TYPE_CHECKING:
     from opendata.data.registry import ProviderRegistry
 
 EURO_AREA_ANR_KEY = "ICP/M.U2.N.000000.4.ANR"
-EURO_AREA_MRR_KEY = "B.U2.EUR.4F.KR.MRR_FR.LEV"
-EURO_AREA_GDP_KEY = "Q.N.I9.W2.S1.S1.B.B1GQ._Z._Z._Z.EUR.LR.N"
+EURO_AREA_MRR_KEY = "FM/B.U2.EUR.4F.KR.MRR_FR.LEV"  # full key: dataflow prefix required
+EURO_AREA_GDP_KEY = "MNA/Q.N.I9.W2.S1.S1.B.B1GQ._Z._Z._Z.EUR.LR.N"  # dataflow prefix required
 
 
 def _csv_body(rows: list[dict[str, str]]) -> str:
@@ -203,7 +203,7 @@ class TestLive:
         query = fetcher.transform_query(
             series_id=EURO_AREA_GDP_KEY, start_date=datetime.date(2025, 1, 1)
         )
-        raw = fetcher.extract_data(query, FetchContext(timeout=20.0))
+        raw = fetcher.extract_data(query, FetchContext(timeout=60.0))
         result = fetcher.transform_data(raw, query)
         assert len(result) >= 1
         assert [point.date for point in result] == sorted(point.date for point in result)
@@ -219,7 +219,7 @@ class TestLive:
         query = fetcher.transform_query(
             series_id=EURO_AREA_MRR_KEY, start_date=datetime.date(2025, 1, 1)
         )
-        raw = fetcher.extract_data(query, FetchContext(timeout=20.0))
+        raw = fetcher.extract_data(query, FetchContext(timeout=60.0))
         result = fetcher.transform_data(raw, query)
         assert len(result) >= 1
         assert all(point.series_id == "FM.B.U2.EUR.4F.KR.MRR_FR.LEV" for point in result)
@@ -241,7 +241,7 @@ class TestLive:
         query = fetcher.transform_query(
             series_id=EURO_AREA_ANR_KEY, start_date=datetime.date(2025, 1, 1)
         )
-        raw = fetcher.extract_data(query, FetchContext(timeout=20.0))
+        raw = fetcher.extract_data(query, FetchContext(timeout=60.0))
         result = fetcher.transform_data(raw, query)
         assert len(result) >= 12
         assert [point.date for point in result] == sorted(point.date for point in result)
