@@ -6,9 +6,10 @@ short-lived sync client per call, and the plain-code to ``thscode``
 resolution. The latter is never guessed: a code that already carries the
 exchange suffix is used as-is, and anything else is resolved through the
 upstream ticker search - exactly one exact ``ticker`` match, otherwise the
-call fails closed. Indices and futures resolve through a separate route
-because the search endpoint is name-based there; see
-:func:`resolve_index_code` and :func:`resolve_futures_code`. Option
+call fails closed. Indices, futures and on-exchange funds resolve through a
+separate route because the search endpoint is name-based there and plain codes
+repeat across asset classes; see :func:`resolve_index_code`,
+:func:`resolve_futures_code` and :func:`resolve_fund_code`. Option
 contracts carry an opaque numeric ``thscode`` (the human-readable code
 lives in ``ticker``) over a catalog too large to enumerate per call, so
 they must be requested qualified; see :func:`resolve_option_code`.
@@ -22,6 +23,7 @@ from typing import TYPE_CHECKING
 from opendata.core.config import settings
 from opendata_fuyao import FuyaoCredentials, FuyaoHttpClient
 from opendata_fuyao.endpoints import (
+    FUND_ASSET_TYPE,
     FUTURES_ASSET_TYPE,
     INDEX_ASSET_TYPE,
     MAX_LIST_LIMIT,
@@ -202,6 +204,40 @@ def resolve_futures_code(active: FuyaoHttpClient, symbol: str) -> str:
     )
 
 
+def resolve_fund_code(active: FuyaoHttpClient, symbol: str) -> str:
+    """Resolve an on-exchange fund symbol to the upstream ``thscode`` form.
+
+    Not :func:`resolve_code`: its suffix filter is the stock one, and a plain
+    six-digit code is shared across asset classes (``000001`` is a stock, an
+    index and an OTC fund), so a search hit could let a stock answer for a
+    fund. The ETF listing is the bounded universe instead - 1,696 rows in one
+    call, bare codes unique across the two exchanges (measured 2026-09-25) -
+    so resolution only ever lands on a listed ETF.
+
+    Args:
+        active: Client used for the lookup when needed.
+        symbol: ``510300``-style code, or an already-qualified
+            ``510300.SH`` code.
+
+    Returns:
+        The qualified code.
+
+    Raises:
+        ThsProviderError: The symbol is blank, or the ETF listing does not
+            contain exactly one match - which includes OTC fund codes, as
+            those are not in this universe and must be passed qualified.
+    """
+    candidate = _candidate_symbol(symbol)
+    if "." in candidate:
+        return candidate
+    return _resolve_by_listing(
+        active,
+        candidate,
+        asset_type=FUND_ASSET_TYPE,
+        unresolved_code="THS_FUND_SYMBOL_UNRESOLVED",
+    )
+
+
 def resolve_option_code(active: FuyaoHttpClient, symbol: str) -> str:
     """Validate a qualified option ``thscode`` (no bare-code lookup).
 
@@ -235,6 +271,7 @@ __all__ = [
     "client",
     "credentials",
     "resolve_code",
+    "resolve_fund_code",
     "resolve_futures_code",
     "resolve_index_code",
     "resolve_option_code",

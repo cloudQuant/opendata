@@ -105,3 +105,10 @@ entries:
       # status 由快照日推导，故 period=snapshot、不接受日期窗。akshare 侧的
       # 名称表未做同口径对照，不并列（见 docs/evidence/C14）。
       - {provider: ths, domain: instrument, contract: Instrument, status: verified}
+  - openbb: {model: TBD}
+    scenario: 基金分红事件（ETF 前复权序列换回不复权的因子来源，D10 前置件）
+    ours:
+      # 只有 ths 一条腿：akshare 侧的 `fund_etf_dividend_sina` 是新浪**累计**分红流
+      # （要逐笔金额需相邻两年相减），形状与契约不同，故只做对照 vendor 不并列注册
+      # （实测 510300 两侧 14 笔除息日与每份金额逐位相同，见 docs/evidence/C15）。
+      - {provider: ths, domain: fund_action, contract: CorporateAction, status: verified}

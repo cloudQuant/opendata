@@ -106,7 +106,7 @@ entries:
   - {section: fund-backtest, family: 基金, method: GET, path: /api/fund/backtest/result, title: '基金在线回测', status: available, domain: null, scenario: '基金在线回测：上游托管回测，非中台链路'}
   - {section: fund-backtest, family: 基金, method: GET, path: /api/fund/backtest/indicators, title: '基金回测可用指标', status: available, domain: null, scenario: '回测可用指标目录：回测参数选择'}
   - {section: fund-company, family: 基金, method: GET, path: /api/fund/companies/detail, title: '基金公司详情', status: available, domain: null, scenario: '基金公司资料：FOF 管理人尽调维度'}
-  - {section: fund-corporate-actions, family: 基金, method: GET, path: /api/fund/corporate-actions/dividends, title: '基金分红记录', status: available, domain: null, scenario: '基金分红记录：现金流与净值口径校正'}
+  - {section: fund-corporate-actions, family: 基金, method: GET, path: /api/fund/corporate-actions/dividends, title: '基金分红记录', status: implemented, domain: fund_action, scenario: '基金分红事件流：ETF 前复权序列换回不复权的因子来源（D10 前置件，C15 与新浪逐笔对账）'}
   - {section: fund-diagnostics, family: 基金, method: GET, path: /api/fund/diagnostics/detail, title: '基金诊断详情', status: available, domain: null, scenario: '基金诊断：同类对比与韧性指标（研究侧）'}
   - {section: fund-financials, family: 基金, method: GET, path: /api/fund/financials/indicators, title: '基金财务指标', status: available, domain: null, scenario: '基金财务报表指标：基金基本面研究'}
   - {section: fund-financials, family: 基金, method: GET, path: /api/fund/financials/income-statements, title: '基金利润表', status: available, domain: null, scenario: '基金利润表：基金基本面研究'}
@@ -121,7 +121,7 @@ entries:
   - {section: fund-managers, family: 基金, method: GET, path: /api/fund/managers/experience, title: '从业经历', status: available, domain: null, scenario: '基金经理从业经历：任职稳定性核查'}
   - {section: fund-managers, family: 基金, method: GET, path: /api/fund/managers/detail, title: '基金经理详情', status: available, domain: null, scenario: '基金经理详情：在册经理主数据'}
   - {section: fund-market, family: 基金, method: GET, path: /api/fund/market/snapshot, title: '场内基金行情快照', status: available, domain: fund_etf_daily, scenario: '场内基金实时快照：ETF/LOF 盘中监控'}
-  - {section: fund-market, family: 基金, method: GET, path: /api/fund/market/historical, title: '场内基金历史日线行情', status: available, domain: fund_etf_daily, scenario: '场内基金前复权日线：ETF 域 ths 副源候选（需转不复权口径，D10）'}
+  - {section: fund-market, family: 基金, method: GET, path: /api/fund/market/historical, title: '场内基金历史日线行情', status: available, domain: fund_etf_daily, scenario: '场内基金前复权日线：仍不接入——C15 实测该序列是不复权价逐根减去后续分红（0.211=0.088+0.123），D10 要求入库不复权，故等 fund_action 因子路（已接入）落地后由本地换算'}
   - {section: fund-news, family: 基金, method: GET, path: /api/fund/news/article-list, title: '基金资讯列表', status: available, domain: null, scenario: '基金资讯：研究侧舆情，不进行情链路'}
   - {section: fund-offerings, family: 基金, method: GET, path: /api/fund/offerings/list, title: '基金募集列表', status: available, domain: null, scenario: '新发基金募集清单：产品池增量'}
   - {section: fund-performance, family: 基金, method: GET, path: /api/fund/performance/nav, title: '基金净值', status: available, domain: null, scenario: '基金净值序列：场外基金净值主源候选'}

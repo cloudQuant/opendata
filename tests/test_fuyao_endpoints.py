@@ -30,6 +30,7 @@ from opendata_fuyao.endpoints import (
     CALENDAR_ENDPOINT,
     CASH_FLOW_STATEMENTS_ENDPOINT,
     FINANCIAL_STATEMENT_ITEMS,
+    FUND_DIVIDENDS_ENDPOINT,
     FUTURES_PRICES_ENDPOINT,
     INCOME_STATEMENTS_ENDPOINT,
     INDEX_CONSTITUENTS_ENDPOINT,
@@ -42,6 +43,7 @@ from opendata_fuyao.endpoints import (
     TICKERS_SEARCH_ENDPOINT,
     build_adjustment_factors_request,
     build_financial_statements_request,
+    build_fund_dividends_request,
     build_index_constituents_request,
     build_index_prices_request,
     build_period_daily_request,
@@ -51,6 +53,7 @@ from opendata_fuyao.endpoints import (
     fetch_adjustment_factors,
     fetch_daily_bars,
     fetch_financial_statements,
+    fetch_fund_dividends,
     fetch_index_constituents,
     fetch_index_daily_bars,
     fetch_period_daily_bars,
@@ -61,6 +64,7 @@ from opendata_fuyao.endpoints import (
     normalize_bars,
     normalize_calendar,
     normalize_financial_statements,
+    normalize_fund_dividends,
     normalize_index_constituents,
     normalize_instruments,
     search_instruments,
@@ -146,6 +150,38 @@ def _statement_row(statement: str = "income", **overrides: Any) -> dict[str, Any
     row["net_profit"] = 86_228_150_000.0
     row.update(overrides)
     return row
+
+
+def _dividend_row(day: str, *, per_ten: float = 1.0, **overrides: Any) -> dict[str, Any]:
+    """一笔基金分红记录：字段集与 2026-09-25 实测的 510300.SH 响应逐字一致。"""
+    row: dict[str, Any] = {
+        "per_ten_cash_before_tax": per_ten,
+        "per_ten_cash_after_tax": per_ten,
+        "progress": "2",
+        "publish_date_ms": _ms(day) - 604_800_000,
+        "registration_date_ms": _ms(day) - 267_840_000,
+        "ex_dividend_date_ms": _ms(day),
+        "payment_date_ms": _ms(day) + 691_200_000,
+        "reinvestment_date_ms": None,
+        "profit_base_date_ms": _ms(day) - 1_642_560_000,
+        "in_dividend_date_ms": _ms(day),
+    }
+    row.update(overrides)
+    return row
+
+
+def _dividend_envelope(
+    rows: Sequence[Mapping[str, Any]], *, count: int | None = None, total: float | None = None
+) -> bytes:
+    """分红信封：``data`` 里带上游自带的 ``dividend_count`` / ``dividend_total`` 自校验字段。"""
+    data: dict[str, Any] = {"timestamp": None, "item": list(rows)}
+    if count is not None:
+        data["dividend_count"] = count
+    if total is not None:
+        data["dividend_total"] = total
+    return json.dumps(
+        {"code": 0, "message": "success", "request_id": "req-1", "data": data}
+    ).encode()
 
 
 class TestRequestBuilders:
@@ -341,6 +377,14 @@ class TestRequestBuilders:
         for detail, kwargs in cases:
             with pytest.raises(FuyaoError, match=detail):
                 build_financial_statements_request(**kwargs)
+
+    def test_fund_dividends_request_needs_a_qualified_code(self):
+        """分红端点只收 ``thscode``：裸码上游回 1002，本地先拦。"""
+        assert build_fund_dividends_request(symbol=" 510300.sh ") == {"thscode": "510300.sh"}
+        with pytest.raises(FuyaoError, match="fund_symbol_qualified"):
+            build_fund_dividends_request(symbol="510300")
+        with pytest.raises(FuyaoError, match="FUYAO_ENVELOPE_INVALID_symbol"):
+            build_fund_dividends_request(symbol="  ")
 
 
 class TestNormalizers:
@@ -796,6 +840,107 @@ class TestNormalizers:
                 statement_type="income",
             )
 
+    def test_fund_dividends_map_per_ten_to_per_unit_sorted_desc(self):
+        """上游给每 10 份税前，契约要每份 → 除以 10；其余字段留 0（ETF 只有现金分发）。"""
+        events = normalize_fund_dividends(
+            _parse(
+                _dividend_envelope(
+                    [
+                        _dividend_row("2025-01-17", per_ten=1.23),
+                        _dividend_row("2024-01-19", per_ten=0.88),
+                    ],
+                    count=2,
+                    total=0.211,
+                )
+            ),
+            symbol="510300.SH",
+        )
+
+        assert all(isinstance(event, CorporateAction) for event in events)
+        assert [event.ex_date for event in events] == [date(2025, 1, 17), date(2024, 1, 19)]
+        assert [event.cash_dividend for event in events] == [0.123, 0.088]
+        assert all(event.symbol == "510300.SH" for event in events)
+        assert events[0].stock_dividend == 0.0
+        assert events[0].rights_price == 0.0
+
+    def test_fund_dividends_skip_the_all_null_placeholder(self):
+        """无分红基金回的不空数组，而是一行十字段全 ``null`` 的占位记录（实测 159915.SZ）。"""
+        placeholder = dict.fromkeys(_dividend_row("2024-01-19"))
+
+        events = normalize_fund_dividends(
+            _parse(_dividend_envelope([placeholder], count=0, total=0.0)), symbol="159915.SZ"
+        )
+
+        assert events == ()
+
+    def test_fund_dividends_reconcile_against_the_upstream_totals(self):
+        """``dividend_count`` / ``dividend_total`` 是上游自带的自校验：对不上即失败关闭。"""
+        rows = [
+            _dividend_row("2025-01-17", per_ten=1.23),
+            _dividend_row("2024-01-19", per_ten=0.88),
+        ]
+        with pytest.raises(FuyaoError, match="fund_dividend_count_mismatch"):
+            normalize_fund_dividends(_parse(_dividend_envelope(rows, count=3)), symbol="510300.SH")
+        with pytest.raises(FuyaoError, match="fund_dividend_total_mismatch"):
+            normalize_fund_dividends(
+                _parse(_dividend_envelope(rows, count=2, total=0.311)), symbol="510300.SH"
+            )
+        # 逐笔求和留末位容差：上游汇总值是浮点（实测 0.8800000000000001）。
+        assert (
+            len(
+                normalize_fund_dividends(
+                    _parse(_dividend_envelope(rows, count=2, total=0.21100000000000002)),
+                    symbol="510300.SH",
+                )
+            )
+            == 2
+        )
+
+    def test_fund_dividend_declared_count_must_be_an_integer(self):
+        with pytest.raises(FuyaoError, match="fund_dividend_count"):
+            normalize_fund_dividends(
+                _parse(_dividend_envelope([_dividend_row("2025-01-17")], count=2)),
+                symbol="510300.SH",
+            )
+
+    def test_fund_dividends_only_published_events_become_rows(self):
+        """``progress`` 未知码不猜语义：预案落地前写进事件流就是把预案当既成事实。"""
+        with pytest.raises(FuyaoError, match="fund_dividend_progress"):
+            normalize_fund_dividends(
+                _parse(_dividend_envelope([_dividend_row("2025-01-17", progress="1")])),
+                symbol="510300.SH",
+            )
+
+    def test_fund_dividends_reject_unusable_rows(self):
+        missing_date = {
+            key: value
+            for key, value in _dividend_row("2025-01-17").items()
+            if key != "ex_dividend_date_ms"
+        }
+        with pytest.raises(FuyaoError, match="fund_dividend_ex_dividend_date_ms"):
+            normalize_fund_dividends(_parse(_dividend_envelope([missing_date])), symbol="510300.SH")
+        with pytest.raises(FuyaoError, match="fund_dividend_per_ten_cash_before_tax"):
+            normalize_fund_dividends(
+                _parse(
+                    _dividend_envelope(
+                        [{"ex_dividend_date_ms": _ms("2025-01-17"), "progress": "2"}]
+                    )
+                ),
+                symbol="510300.SH",
+            )
+        with pytest.raises(FuyaoError, match="fund_dividend_fields"):
+            normalize_fund_dividends(
+                _parse(_dividend_envelope([_dividend_row("2025-01-17", per_ten="待补充")])),
+                symbol="510300.SH",
+            )
+        with pytest.raises(FuyaoError, match="fund_dividend_cash"):
+            normalize_fund_dividends(
+                _parse(_dividend_envelope([_dividend_row("2025-01-17", per_ten=0)])),
+                symbol="510300.SH",
+            )
+        with pytest.raises(FuyaoError, match="FUYAO_ENVELOPE_INVALID_symbol"):
+            normalize_fund_dividends(_parse(_dividend_envelope([])), symbol=" ")
+
 
 class TestFetchers:
     def test_daily_bars_hits_the_prices_endpoint(self):
@@ -1148,6 +1293,39 @@ class TestFetchers:
         assert exc.value.category == "request"
         assert exc.value.upstream_code == 1003
 
+    def test_fund_dividends_endpoint(self):
+        seen: dict[str, Any] = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen["path"] = request.url.path
+            seen["params"] = dict(request.url.params)
+            return httpx.Response(
+                200,
+                content=_dividend_envelope(
+                    [_dividend_row("2025-01-17", per_ten=1.23)], count=1, total=0.123
+                ),
+            )
+
+        with _client(handler) as client:
+            events = fetch_fund_dividends(client, symbol="510300.SH")
+
+        assert seen["path"] == FUND_DIVIDENDS_ENDPOINT
+        assert seen["params"] == {"thscode": "510300.SH"}
+        assert events[0].cash_dividend == 0.123
+
+    def test_fund_dividends_fail_before_any_request(self):
+        """裸码不该白跑一次网络：本地校验就在请求之前。"""
+        requested: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            requested.append(request.url.path)
+            return httpx.Response(200, content=_dividend_envelope([]))
+
+        with _client(handler) as client, pytest.raises(FuyaoError, match="fund_symbol_qualified"):
+            fetch_fund_dividends(client, symbol="510300")
+
+        assert requested == []
+
 
 @pytest.mark.e2e
 class TestAgainstTheLiveFuyaoApi:
@@ -1155,10 +1333,19 @@ class TestAgainstTheLiveFuyaoApi:
 
     @pytest.fixture
     def client(self):
-        credentials = FuyaoCredentials.from_environment()
-        if credentials is None:
-            pytest.skip("FUYAO_API_KEY is not configured")
-        with FuyaoHttpClient(credentials=credentials) as live:
+        """Gate on the same resolution the adapters use.
+
+        ``FuyaoCredentials.from_environment()`` alone misses a key that lives
+        in ``.env``, which made this whole live class skip on this machine
+        while looking like it had run.
+        """
+        from opendata.data.providers.ths.models._client import ThsProviderError, credentials
+
+        try:
+            resolved = credentials()
+        except ThsProviderError as exc:
+            pytest.skip(f"no fuyao credentials: {exc!s}")
+        with FuyaoHttpClient(credentials=resolved) as live:
             yield live
 
     def test_daily_bars_come_back_as_contract_rows(self, client):
@@ -1193,3 +1380,18 @@ class TestAgainstTheLiveFuyaoApi:
 
         assert events, "上游应返回除权除息事件"
         assert all(event.ex_date <= date.today() for event in events)
+
+    def test_fund_dividends_are_per_unit_cash_events(self, client):
+        """每份口径漂移会大 10 倍：ETF 单笔每份分红实测都在 0～1 元区间。"""
+        events = fetch_fund_dividends(client, symbol="510300.SH")
+
+        assert events, "上游应返回分红事件"
+        assert [event.ex_date for event in events] == sorted(
+            (event.ex_date for event in events), reverse=True
+        )
+        assert all(0.0 < event.cash_dividend < 1.0 for event in events)
+        assert all(event.symbol == "510300.SH" for event in events)
+
+    def test_fund_without_any_dividend_comes_back_empty(self, client):
+        """无分红基金回的是全 null 占位行而不是空数组 → 必须落成空事件流而非一条坏事件。"""
+        assert fetch_fund_dividends(client, symbol="159915.SZ") == ()

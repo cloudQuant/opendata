@@ -30,11 +30,13 @@ from opendata.data.providers.ths.models._client import (
     client,
     credentials,
     resolve_code,
+    resolve_fund_code,
     resolve_futures_code,
     resolve_index_code,
     resolve_option_code,
 )
 from opendata.data.providers.ths.models.financial_statement import ThsFinancialStatementFetcher
+from opendata.data.providers.ths.models.fund_action import ThsFundActionFetcher
 from opendata.data.providers.ths.models.futures_daily import ThsFuturesDailyFetcher
 from opendata.data.providers.ths.models.index_constituent import ThsIndexConstituentFetcher
 from opendata.data.providers.ths.models.index_daily import ThsIndexDailyFetcher
@@ -116,6 +118,43 @@ def _event_row() -> dict:
     }
 
 
+def _fund_dividend_row(ms: int, *, per_ten: float = 1.23) -> dict:
+    """一笔 ETF 分红：字段集与 2026-09-25 实测的 510300.SH 响应一致."""
+    return {
+        "per_ten_cash_before_tax": per_ten,
+        "per_ten_cash_after_tax": per_ten,
+        "progress": "2",
+        "publish_date_ms": ms - 604_800_000,
+        "registration_date_ms": ms - 267_840_000,
+        "ex_dividend_date_ms": ms,
+        "payment_date_ms": ms + 691_200_000,
+        "reinvestment_date_ms": None,
+        "profit_base_date_ms": ms - 1_642_560_000,
+        "in_dividend_date_ms": ms,
+    }
+
+
+def _dividend_envelope(items: list[dict], *, count: int | None = None) -> bytes:
+    """分红信封：``data`` 里带上游自校验的 ``dividend_count`` / ``dividend_total``."""
+    amounts = [
+        row["per_ten_cash_before_tax"] for row in items if row.get("per_ten_cash_before_tax")
+    ]
+    total = round(sum(value / 10.0 for value in amounts), 10)
+    return json.dumps(
+        {
+            "code": 0,
+            "message": "success",
+            "request_id": "req-1",
+            "data": {
+                "timestamp": None,
+                "dividend_count": len(items) if count is None else count,
+                "dividend_total": total,
+                "item": items,
+            },
+        }
+    ).encode()
+
+
 #: 财务报表的宽行：一行一个报告期，日期同样是上海零点毫秒戳。
 PERIOD_END_MS = 1703952000000  # 2023-12-31
 DISCLOSE_MS = 1713196800000  # 2024-04-16
@@ -181,6 +220,7 @@ class TestRegistration:
             ("option_daily", "ths"),
             ("trading_calendar", "ths"),
             ("instrument", "ths"),
+            ("fund_action", "ths"),
         }
         assert all(capability.verified for capability in registered)
 
@@ -204,6 +244,7 @@ class TestRegistration:
             ("option", "option_daily", "1D", "cn"),
             ("metadata", "trading_calendar", "snapshot", "cn"),
             ("metadata", "instrument", "snapshot", "cn"),
+            ("fund", "fund_action", "1D", "cn"),
         }
 
     def test_every_verified_domain_auto_routes_to_ths(self):
@@ -443,6 +484,58 @@ class TestSymbolResolution:
             pytest.raises(ThsProviderError, match="THS_OPTION_SYMBOL_QUALIFIED_REQUIRED"),
         ):
             resolve_option_code(active, "10011514")
+
+    def test_qualified_fund_codes_pass_through(self):
+        """C15：带后缀的基金代码直接用；裸码才查 ETF 目录。"""
+
+        def handler(request: httpx.Request) -> httpx.Response:  # pragma: no cover
+            raise AssertionError("a qualified code must not trigger a lookup")
+
+        with _mock_client(handler) as active:
+            assert resolve_fund_code(active, " 510300.sh ") == "510300.SH"
+
+    def test_plain_fund_code_resolves_from_the_etf_listing(self):
+        """C15：场内基金走 ``asset_type=fund-etf`` 目录（实测 1,696 行、裸码在沪深间唯一）。"""
+        seen: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(str(request.url.params["asset_type"]))
+            return httpx.Response(
+                200, content=_envelope([{"thscode": "510300.SH", "name": "沪深300ETF"}])
+            )
+
+        with _mock_client(handler) as active:
+            assert resolve_fund_code(active, "510300") == "510300.SH"
+
+        assert seen == ["fund-etf"]
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            [],
+            [{"thscode": "510330.SH", "name": "沪深300ETF"}],
+            [
+                {"thscode": "510300.SH", "name": "沪深300ETF"},
+                {"thscode": "510300.SZ", "name": "别的300"},
+            ],
+        ],
+    )
+    def test_unresolved_or_ambiguous_fund_codes_fail_closed(self, payload):
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, content=_envelope(payload))
+
+        with (
+            _mock_client(handler) as active,
+            pytest.raises(ThsProviderError, match="THS_FUND_SYMBOL_UNRESOLVED"),
+        ):
+            resolve_fund_code(active, "510300")
+
+    def test_blank_fund_symbol_is_refused(self):
+        with (
+            _mock_client(lambda request: httpx.Response(200, content=_envelope([]))) as active,
+            pytest.raises(ThsProviderError, match="THS_SYMBOL_INVALID"),
+        ):
+            resolve_fund_code(active, " ")
 
 
 class TestCredentials:
@@ -1125,6 +1218,130 @@ class TestInstrumentCatalogAdapter:
         assert rows[0].currency == "CNY"  # 上游为 null 的本地补值
 
 
+class TestFundActionAdapter:
+    """C15：ETF 分红腿 —— 每份口径换算、裸码解析、无分红回空、窗口只切片。"""
+
+    LAST_YEAR_MS = DAY_MS - 86_400_000 * 365
+
+    def _patch(self, monkeypatch: pytest.MonkeyPatch, handler) -> ThsFundActionFetcher:
+        monkeypatch.setattr(
+            "opendata.data.providers.ths.models.fund_action.client", _factory(handler)
+        )
+        return ThsFundActionFetcher()
+
+    def test_events_land_per_unit_newest_first(self, monkeypatch: pytest.MonkeyPatch):
+        seen: dict[str, str] = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen["path"] = request.url.path
+            seen["params"] = str(request.url.params)
+            return httpx.Response(
+                200,
+                content=_dividend_envelope(
+                    [
+                        _fund_dividend_row(DAY_MS, per_ten=1.23),
+                        _fund_dividend_row(self.LAST_YEAR_MS, per_ten=0.88),
+                    ]
+                ),
+            )
+
+        events = self._patch(monkeypatch, handler).fetch(symbol="510300.SH")
+
+        assert seen["path"] == "/api/fund/corporate-actions/dividends"
+        assert "thscode=510300.SH" in seen["params"]
+        assert all(isinstance(event, CorporateAction) for event in events)
+        assert [event.cash_dividend for event in events] == [0.123, 0.088]
+        assert events[0].ex_date > events[1].ex_date
+
+    def test_a_bare_code_is_resolved_before_the_history_call(self, monkeypatch: pytest.MonkeyPatch):
+        seen: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request.url.path)
+            if request.url.path.endswith("/tickers/list"):
+                return httpx.Response(
+                    200, content=_envelope([{"thscode": "510300.SH", "name": "沪深300ETF"}])
+                )
+            assert dict(request.url.params)["thscode"] == "510300.SH"
+            return httpx.Response(200, content=_dividend_envelope([_fund_dividend_row(DAY_MS)]))
+
+        events = self._patch(monkeypatch, handler).fetch(symbol="510300")
+
+        assert len(events) == 1
+        assert events[0].symbol == "510300.SH"
+        assert len(seen) == 2  # 先解析、再取历史
+
+    def test_a_fund_that_never_distributed_comes_back_empty(self, monkeypatch: pytest.MonkeyPatch):
+        """上游把「从未分红」发成一整行 null，而不是空数组——那不是事件，也不该报错。"""
+        placeholder = dict.fromkeys(_fund_dividend_row(DAY_MS))
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, content=_dividend_envelope([placeholder], count=0))
+
+        assert self._patch(monkeypatch, handler).fetch(symbol="159915.SZ") == ()
+
+    def test_a_window_slices_the_history_without_a_second_call(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
+        """上游没有窗口参数：一次全量返回，窗口靠切片，不该重跑网络。"""
+        calls: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            calls.append(request.url.path)
+            return httpx.Response(
+                200,
+                content=_dividend_envelope(
+                    [
+                        _fund_dividend_row(DAY_MS, per_ten=1.23),
+                        _fund_dividend_row(self.LAST_YEAR_MS, per_ten=0.88),
+                    ]
+                ),
+            )
+
+        events = self._patch(monkeypatch, handler).fetch(
+            symbol="510300.SH", start_date=date(2024, 1, 1), end_date=date(2024, 1, 2)
+        )
+
+        assert [event.cash_dividend for event in events] == [0.123]  # 2023 那笔在窗口之外
+        assert len(calls) == 1
+
+    def test_a_window_with_no_distribution_is_a_fact_not_a_failure(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                200, content=_dividend_envelope([_fund_dividend_row(DAY_MS, per_ten=1.23)])
+            )
+
+        assert (
+            self._patch(monkeypatch, handler).fetch(symbol="510300.SH", start_date=date(2030, 1, 1))
+            == ()
+        )
+
+    def test_rows_the_upstream_cannot_reconcile_fail_closed(self, monkeypatch: pytest.MonkeyPatch):
+        """自带的 ``dividend_count`` 与逐笔对不上时不发事件流：宁可挂，不发半截分红。"""
+        from opendata_fuyao import FuyaoError
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                200,
+                content=_dividend_envelope(
+                    [_fund_dividend_row(DAY_MS), _fund_dividend_row(self.LAST_YEAR_MS)], count=1
+                ),
+            )
+
+        with pytest.raises(FuyaoError, match="fund_dividend_count_mismatch"):
+            self._patch(monkeypatch, handler).fetch(symbol="510300.SH")
+
+    def test_query_requires_a_symbol(self):
+        fetcher = ThsFundActionFetcher()
+
+        with pytest.raises(ValidationError):
+            fetcher.transform_query()
+        with pytest.raises(ValidationError):
+            fetcher.transform_query(symbol="510300.SH", adjust="qfq")
+
+
 @pytest.mark.e2e
 class TestAgainstTheLiveFuyaoApi:
     """真机：经注册表路由取数（需要 fuyao 凭证，环境变量或 ``.env`` 均可）。"""
@@ -1199,3 +1416,20 @@ class TestAgainstTheLiveFuyaoApi:
         assert rows[0].symbol < rows[-1].symbol  # 按 thscode 升序
         # 上市区间的左端：实测整表仅 9 行为 null（新股未回填），留冗余不误判
         assert sum(1 for row in rows if row.list_date is None) <= 20
+
+    def test_registry_routes_fund_distributions_to_the_fuyao_source(self):
+        """真机：300ETF 分红经注册表路由，每份口径与量级成立（实测 14 笔、Σ 0.88）。"""
+        from opendata.data.providers import register_providers
+        from opendata.data.registry import get_registry
+
+        register_providers()
+        routed = get_registry().resolve_domain("fund_action", source="ths")
+        events = routed.fetch(symbol="510300.SH")
+
+        assert len(events) >= 14
+        assert all(isinstance(event, CorporateAction) for event in events)
+        assert [event.ex_date for event in events] == sorted(
+            (event.ex_date for event in events), reverse=True
+        )
+        assert all(0.0 < event.cash_dividend < 1.0 for event in events)
+        assert sum(event.cash_dividend for event in events) >= 0.88 - 1e-9

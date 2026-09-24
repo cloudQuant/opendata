@@ -1,4 +1,4 @@
-"""fuyao P0 端点：日线、指数/期货/期权 K 线、除复权、标的、日历、成分股、财务报表（A3.2）.
+"""fuyao P0 端点：日线、指数/期货/期权 K 线、除复权、标的、日历、成分股、财务报表、基金分红（A3.2）.
 
 每个端点都是"请求构造 + 响应归一化"两段，直接产出中台契约模型
 （``Bar`` / ``CorporateAction`` / ``Instrument`` / ``TradingCalendar`` /
@@ -21,7 +21,10 @@
   指数、期货、期权三类标的均无复权语义，请求不接受 ``adjust``。
 
 D10：``Bar`` 只存不复权价，复权序列由本地因子合成；入库路径不应持久化
-``adjust != unadjusted`` 的结果。
+``adjust != unadjusted`` 的结果。ETF 日线端点（``/api/fund/market/historical``）
+只发前复权序列且无 ``adjust`` 参数，故其 ETF 腿必须等 :func:`fetch_fund_dividends`
+这条分红腿（实测：前复权价 = 不复权价 − 该日之后每份分红之和，逐笔可对）先把
+序列换回不复权，才谈得上入库。
 """
 
 from __future__ import annotations
@@ -63,6 +66,7 @@ CALENDAR_ENDPOINT = "/api/a-share/calendar/trading-days"
 INCOME_STATEMENTS_ENDPOINT = "/api/a-share/financials/income-statements"
 BALANCE_SHEETS_ENDPOINT = "/api/a-share/financials/balance-sheets"
 CASH_FLOW_STATEMENTS_ENDPOINT = "/api/a-share/financials/cash-flow-statements"
+FUND_DIVIDENDS_ENDPOINT = "/api/fund/corporate-actions/dividends"
 
 #: 财务报表三张表（``statement_type`` → 端点）。
 FINANCIAL_STATEMENT_ENDPOINTS: Mapping[str, str] = {
@@ -147,6 +151,10 @@ INDEX_ASSET_TYPE = "a-share-index"
 #: 期货/期权标的的上游 ``asset_type`` 取值（目录列举用，实测为复数）。
 FUTURES_ASSET_TYPE = "futures"
 OPTIONS_ASSET_TYPE = "options"
+
+#: 场内 ETF 的上游 ``asset_type`` 取值（实测 1,696 行、裸码在交易所间唯一、
+#: 后缀只有 ``SH``/``SZ``，故一次列举即可解析）。
+FUND_ASSET_TYPE = "fund-etf"
 
 #: 期货/期权日 K 周期；端外只允许 ``day_1``（``week_1`` 等被拒但错误文案失真）。
 DAILY_TIME_PERIOD = "day_1"
@@ -1154,6 +1162,127 @@ def fetch_adjustment_factors(
     return normalize_adjustment_factors(response.envelope, symbol=symbol)
 
 
+#: 上游 ``progress`` 的「已实施」码（2026-09-25 实测：510300.SH 的 14 笔、
+#: 510050.SH 的 18 笔全部为 ``"2"``；文档响应示例写的是中文「实施」，实际发的是
+#: 数字码）。未知码不猜语义——分红尚未落地就写进事件流，等于把预案当既成事实。
+IMPLEMENTED_PROGRESS = frozenset({"2"})
+
+#: ``dividend_total`` 与逐笔现金分红求和的容差：上游汇总值是浮点，实测
+#: ``0.8800000000000001`` 这类末位噪声，故比对留位而非逐字相等。
+DIVIDEND_TOTAL_TOLERANCE = 1e-6
+
+
+def build_fund_dividends_request(*, symbol: str) -> dict[str, Any]:
+    """构造基金分红请求参数（单标的、必须带市场后缀）.
+
+    Args:
+        symbol: 上游基金代码（``510300.SH``）。
+
+    Returns:
+        查询参数。
+
+    Raises:
+        FuyaoError: 标的为空或无市场后缀（裸码上游回 ``code=1002``，本地先拦）。
+    """
+    if not isinstance(symbol, str) or not symbol.strip():
+        raise error_for_transport("envelope_invalid", detail="symbol")
+    candidate = symbol.strip()
+    if "." not in candidate:
+        raise error_for_transport("envelope_invalid", detail="fund_symbol_qualified")
+    return {"thscode": candidate}
+
+
+def _is_placeholder_dividend(row: Mapping[str, Any]) -> bool:
+    """这一行是不是「该基金从无分红」的占位行（每个字段都是 ``null``）.
+
+    实测（2026-09-25）：159915.SZ 与 512880.SH 都回 ``dividend_count: 0`` 但
+    ``item`` 里躺着一行十字段全 ``null`` 的记录，而不是 ``item: []``。若按行归一化，
+    这条空记录会变成一条 ``ex_date`` 缺失的事件——合法无数据必须落成空事件流。
+
+    Args:
+        row: 上游响应行。
+
+    Returns:
+        全字段为空时为 ``True``。
+    """
+    return all(value is None for value in row.values())
+
+
+def normalize_fund_dividends(
+    envelope: FuyaoEnvelope, *, symbol: str
+) -> tuple[CorporateAction, ...]:
+    """把基金分红记录归一化为 ``CorporateAction``（按除息日降序）.
+
+    口径都是 2026-09-25 实测后落地的，不照抄文档：
+
+    * 上游给的是**每 10 份**现金分红（``per_ten_cash_before_tax``），契约要的是
+      每份，故除以 10；落**税前**值，与 A 股 :func:`normalize_adjustment_factors`
+      同口径，税后只在实测中与税前逐笔相等（ETF 分发），故不作为契约字段。
+    * ``dividend_count`` 与 ``dividend_total`` 是上游自带的两道自校验：前者须等于
+      非占位行数，后者须等于逐笔求和（元/份口径，不是每 10 份）。
+    * 只有 ``progress`` 为「已实施」码的行才成为事件；未知码失败关闭。
+
+    Args:
+        envelope: 成功信封。
+        symbol: 请求使用的上游基金代码。
+
+    Returns:
+        分红事件；该基金无分红时为空元组。
+
+    Raises:
+        FuyaoError: 标的为空、行缺除息日或金额、进度码未知、自带汇总与逐笔对不上。
+    """
+    if not isinstance(symbol, str) or not symbol.strip():
+        raise error_for_transport("envelope_invalid", detail="symbol")
+    resolved_symbol = symbol.strip()
+    declared = envelope.data.get("dividend_count")
+    if declared is not None and (not isinstance(declared, int) or isinstance(declared, bool)):
+        raise error_for_transport("envelope_invalid", detail="fund_dividend_count")
+    events: list[CorporateAction] = []
+    for row in _items(envelope, context="fund_dividend"):
+        if _is_placeholder_dividend(row):
+            continue
+        progress = row.get("progress")
+        if progress not in IMPLEMENTED_PROGRESS:
+            raise error_for_transport("envelope_invalid", detail="fund_dividend_progress")
+        ex_date = millis_to_trading_date(
+            _require_value(row, "ex_dividend_date_ms", context="fund_dividend")
+        )
+        try:
+            per_ten = _require_value(row, "per_ten_cash_before_tax", context="fund_dividend")
+            cash = float(per_ten) / 10.0
+        except (TypeError, ValueError) as exc:
+            raise error_for_transport("envelope_invalid", detail="fund_dividend_fields") from exc
+        if cash <= 0.0:
+            raise error_for_transport("envelope_invalid", detail="fund_dividend_cash")
+        events.append(CorporateAction(symbol=resolved_symbol, ex_date=ex_date, cash_dividend=cash))
+    events.sort(key=lambda event: event.ex_date, reverse=True)
+    if declared is not None and declared != len(events):
+        raise error_for_transport("envelope_invalid", detail="fund_dividend_count_mismatch")
+    total = envelope.data.get("dividend_total")
+    if isinstance(total, (int, float)) and not isinstance(total, bool):
+        summed = sum(event.cash_dividend for event in events)
+        if abs(summed - float(total)) > DIVIDEND_TOTAL_TOLERANCE:
+            raise error_for_transport("envelope_invalid", detail="fund_dividend_total_mismatch")
+    return tuple(events)
+
+
+def fetch_fund_dividends(client: FuyaoHttpClient, *, symbol: str) -> tuple[CorporateAction, ...]:
+    """取单只基金的历史分红事件流（按除息日降序）.
+
+    Args:
+        client: 传输层客户端。
+        symbol: 上游基金代码（``510300.SH``）。
+
+    Returns:
+        分红事件；无分红的基金为空元组。
+    """
+    response = client.get(
+        FUND_DIVIDENDS_ENDPOINT, params=build_fund_dividends_request(symbol=symbol)
+    )
+    return normalize_fund_dividends(response.envelope, symbol=symbol)
+
+
 __all__ = [
     "ADJUSTMENTS",
     "ADJUSTMENT_FACTORS_ENDPOINT",
@@ -1161,17 +1290,21 @@ __all__ = [
     "CALENDAR_ENDPOINT",
     "CASH_FLOW_STATEMENTS_ENDPOINT",
     "DAILY_TIME_PERIOD",
+    "DIVIDEND_TOTAL_TOLERANCE",
     "FINANCIAL_PERIODS",
     "FINANCIAL_PERIOD_END",
     "FINANCIAL_STATEMENT_ENDPOINTS",
     "FINANCIAL_STATEMENT_ITEMS",
     "FINANCIAL_STATEMENT_MAX_LIMIT",
+    "FUND_ASSET_TYPE",
+    "FUND_DIVIDENDS_ENDPOINT",
     "FUTURES_ASSET_TYPE",
     "FUTURES_PRICES_ENDPOINT",
     "INCOME_STATEMENTS_ENDPOINT",
     "INDEX_ASSET_TYPE",
     "INDEX_CONSTITUENTS_ENDPOINT",
     "INDEX_PRICES_ENDPOINT",
+    "IMPLEMENTED_PROGRESS",
     "MAX_LIST_LIMIT",
     "MAX_SEARCH_LIMIT",
     "MAX_WINDOW",
@@ -1185,6 +1318,7 @@ __all__ = [
     "TICKERS_SEARCH_ENDPOINT",
     "build_adjustment_factors_request",
     "build_financial_statements_request",
+    "build_fund_dividends_request",
     "build_index_constituents_request",
     "build_index_prices_request",
     "build_period_daily_request",
@@ -1195,6 +1329,7 @@ __all__ = [
     "fetch_adjustment_factors",
     "fetch_daily_bars",
     "fetch_financial_statements",
+    "fetch_fund_dividends",
     "fetch_index_constituents",
     "fetch_index_daily_bars",
     "fetch_period_daily_bars",
@@ -1205,6 +1340,7 @@ __all__ = [
     "normalize_bars",
     "normalize_calendar",
     "normalize_financial_statements",
+    "normalize_fund_dividends",
     "normalize_index_constituents",
     "normalize_instruments",
     "search_instruments",

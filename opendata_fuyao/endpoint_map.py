@@ -175,6 +175,7 @@ def implemented_paths_in_code() -> frozenset[str]:
         endpoints.TICKERS_LIST_ENDPOINT,
         endpoints.TICKERS_SEARCH_ENDPOINT,
         endpoints.CALENDAR_ENDPOINT,
+        endpoints.FUND_DIVIDENDS_ENDPOINT,
     )
     dumps_paths = tuple(spec.download_path for spec in dumps.DUMP_SPECS.values())
     return frozenset(doc_path_for(p) for p in (*rest, *dumps_paths))
