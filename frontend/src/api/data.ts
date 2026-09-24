@@ -67,3 +67,40 @@ export const dataApi = {
     })
   },
 }
+
+// ---------------------------------------------------------------------------
+// Pipeline operations (B3.2 / AC-13: 失败清单一键重试)
+// ---------------------------------------------------------------------------
+
+export interface FailedShard {
+  pipeline_id: string
+  domain: string
+  source: string
+  shard: number
+  window: { start: string; end: string }
+  error: string | null
+}
+
+export interface FailuresResponse {
+  count: number
+  failures: FailedShard[]
+}
+
+export const pipelineApi = {
+  // List the shards an earlier pipeline run left failed.
+  async failures(params: { domain?: string; source?: string; limit?: number } = {}): Promise<FailuresResponse> {
+    const response = await request.get<{ success: boolean; data: FailuresResponse }>(
+      '/pipeline/failures',
+      { params },
+    )
+    return response.data?.data ?? { count: 0, failures: [] }
+  },
+
+  // Reset failed shards so the next run of their window retries them.
+  async retryFailed(): Promise<{ reset: number }> {
+    const response = await request.post<{ success: boolean; data: { reset: number } }>(
+      '/pipeline/retry-failed',
+    )
+    return response.data?.data ?? { reset: 0 }
+  },
+}

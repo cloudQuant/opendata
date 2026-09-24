@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { dataApi } from '@/api/data'
+import { dataApi, pipelineApi, type FailedShard } from '@/api/data'
 import { getApiErrorMessage } from '@/utils/error'
 import { logger } from '@/utils/logger'
 import type { Execution, ExecutionStats, PaginatedResponse } from '@/types'
@@ -11,6 +11,9 @@ const executions = ref<Execution[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 const stats = ref<ExecutionStats | null>(null)
+const failures = ref<FailedShard[]>([])
+const failuresLoading = ref(false)
+const retrying = ref(false)
 const currentPage = ref(1)
 const pageSize = ref(PAGINATION.DEFAULT_PAGE_SIZE)
 const total = ref(0)
@@ -40,6 +43,31 @@ async function loadExecutions() {
     error.value = e instanceof Error ? e.message : getApiErrorMessage(e)
   } finally {
     loading.value = false
+  }
+}
+
+async function loadFailures() {
+  failuresLoading.value = true
+  try {
+    const data = await pipelineApi.failures({ limit: 100 })
+    failures.value = data.failures
+  } catch (e) {
+    logger.error('Failed to load pipeline failures:', e)
+  } finally {
+    failuresLoading.value = false
+  }
+}
+
+async function handleRetryFailed() {
+  retrying.value = true
+  try {
+    const result = await pipelineApi.retryFailed()
+    ElMessage.success(`已重置 ${result.reset} 个失败分片，下次运行将自动重试`)
+    await loadFailures()
+  } catch (e) {
+    ElMessage.error(getApiErrorMessage(e))
+  } finally {
+    retrying.value = false
   }
 }
 
@@ -76,6 +104,7 @@ async function handleRetry(execution: Execution) {
 }
 
 onMounted(async () => {
+  await loadFailures()
   await Promise.all([loadExecutions(), loadStats()])
 })
 </script>
@@ -128,6 +157,35 @@ onMounted(async () => {
         </div>
       </el-card>
     </div>
+
+    <!-- Failed pipeline shards (B3.2 / AC-13 一键重试) -->
+    <el-card v-if="failures.length > 0 || failuresLoading" class="failures-card">
+      <template #header>
+        <div class="failures-header">
+          <span>失败分片（管线断点续拉）</span>
+          <el-button
+            type="danger"
+            size="small"
+            :loading="retrying"
+            @click="handleRetryFailed"
+          >
+            一键重试
+          </el-button>
+        </div>
+      </template>
+      <el-table v-loading="failuresLoading" :data="failures" size="small" max-height="240">
+        <el-table-column prop="domain" label="域" width="140" />
+        <el-table-column prop="source" label="源" width="90" />
+        <el-table-column prop="shard" label="分片" width="70" />
+        <el-table-column label="窗口" width="200">
+          <template #default="{ row }">
+            {{ row.window.start }} .. {{ row.window.end }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="pipeline_id" label="管线" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="error" label="错误" min-width="220" show-overflow-tooltip />
+      </el-table>
+    </el-card>
 
     <!-- Executions Table -->
     <el-card>
@@ -291,5 +349,13 @@ onMounted(async () => {
   margin-top: 16px;
   display: flex;
   justify-content: center;
+}
+.failures-card {
+  margin-bottom: 16px;
+}
+.failures-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>

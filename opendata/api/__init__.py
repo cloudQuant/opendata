@@ -14,6 +14,7 @@ from opendata.api.executions import router as executions_router
 from opendata.api.interfaces import router as interfaces_router
 from opendata.api.keys import router as keys_router
 from opendata.api.metrics import router as metrics_router
+from opendata.api.pipeline import router as pipeline_router
 from opendata.api.scripts import router as scripts_router
 from opendata.api.tables import router as tables_router
 from opendata.api.tasks import router as tasks_router
@@ -41,3 +42,4 @@ api_router.include_router(scripts_router, prefix="/scripts", tags=["Data Scripts
 api_router.include_router(executions_router, prefix="/executions", tags=["Task Executions"])
 api_router.include_router(settings_api.router, prefix="/settings", tags=["Settings"])
 api_router.include_router(metrics_router, tags=["Metrics"])
+api_router.include_router(pipeline_router, tags=["Pipeline"])
