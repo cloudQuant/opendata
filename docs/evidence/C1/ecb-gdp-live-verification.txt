@@ -22,3 +22,11 @@ Facts    : MNA is a 16-dimension SDMX 2022 key
            honor startPeriod; quarterly granularity YYYY-Qn widened
            to the quarter's first day (Q1->01-01, Q4->10-01), with
            out-of-range quarters failing closed.
+
+============================================================
+更正（2026-09-24，验收复核）
+============================================================
+同 ecb-rate：失败根因是 series key 缺数据流前缀（GDP 为 `MNA/`），
+门户返回 400 而非网络超时。修复：`EURO_AREA_GDP_KEY` →
+`MNA/Q.N.I9.W2.S1.S1.B.B1GQ._Z._Z._Z.EUR.LR.N`（提交 64a0e89）。
+修复后本用例通过；全 e2e 套件 63 passed / 0 failed。

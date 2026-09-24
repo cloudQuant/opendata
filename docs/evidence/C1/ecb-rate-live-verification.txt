@@ -23,3 +23,17 @@ Facts    : FM dimension order is
            (rate-change dates carry values) -> capability period=1D.
 Domains  : economy_rate (ecb verified; fed/imf candidates follow in
            later P1 batches with the same MacroSeries contract).
+
+============================================================
+更正（2026-09-24，验收复核）
+============================================================
+原注记把本用例的失败归因于"网络 SSL 握手超时"，实际根因是
+**测试用 series key 缺少 SDMX 数据流前缀**：ECB 门户对
+`/service/data/B.U2.EUR.4F.KR.MRR_FR.LEV`（无 FM/）返回 **400**，
+而非网络超时。CPI 用例因键含 `ICP/` 前缀而一直通过，掩盖了差异。
+
+修复：`EURO_AREA_MRR_KEY` → `FM/B.U2.EUR.4F.KR.MRR_FR.LEV`
+（提交 64a0e89）。修复后本用例通过；全 e2e 套件 63 passed / 0 failed。
+
+口径确认：ECB 的 series key 必须包含数据流（dataflow）前缀，
+`SeriesQuery.series_id` 的契约即为"完整位置严格键"。
