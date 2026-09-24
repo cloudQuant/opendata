@@ -1,0 +1,52 @@
+# A4.7 / AC-13 交易日期望判据真机度量 2026-09-24T18:23:19Z
+# cmd: python scripts/ops/calendar_expectation_check.py --limit 500 --date <D>
+
+===== --date 2026-09-25 =====
+# calendar expectation check @ 2026-09-25 (scripts/ops/calendar_expectation_check.py)
+calendar        : 242 open days, coverage 2025-09-25..2026-09-24
+warehouse bars  : 132 distinct trade_date inside coverage (from dwd_stock_daily)
+agreement       : bars-on-closed-day=0 open-day-without-bars=110
+false-stale cost: 19 weekday holidays a Mon..Fri rule reports as lagging
+expectation @2026-09-25: calendar tier -> 2026-09-25 (weekday-rule); weekday tier -> 2026-09-25
+  NOTE expectation 2026-09-25 is outside upstream coverage (2025-09-25..2026-09-24): answered by the weekday rule, unverifiable here
+  NOTE open days with no bars yet (backfill gap, not a calendar fault): [datetime.date(2025, 9, 25), datetime.date(2025, 9, 26), datetime.date(2025, 9, 29), datetime.date(2025, 9, 30), datetime.date(2025, 10, 9)] ... [datetime.date(2026, 9, 17), datetime.date(2026, 9, 18), datetime.date(2026, 9, 21), datetime.date(2026, 9, 22), datetime.date(2026, 9, 23)]
+  old logic reported stale on: 2025-10-01..2025-10-08, 2026-01-01..2026-01-02, 2026-02-16..2026-02-23, 2026-04-06, 2026-05-01..2026-05-05, 2026-06-19
+verdict: PASS
+exit=0
+
+===== --date 2026-09-24 =====
+# calendar expectation check @ 2026-09-24 (scripts/ops/calendar_expectation_check.py)
+calendar        : 242 open days, coverage 2025-09-25..2026-09-24
+warehouse bars  : 132 distinct trade_date inside coverage (from dwd_stock_daily)
+agreement       : bars-on-closed-day=0 open-day-without-bars=110
+false-stale cost: 19 weekday holidays a Mon..Fri rule reports as lagging
+expectation @2026-09-24: calendar tier -> 2026-09-24 (warehouse-calendar); weekday tier -> 2026-09-24
+  NOTE open days with no bars yet (backfill gap, not a calendar fault): [datetime.date(2025, 9, 25), datetime.date(2025, 9, 26), datetime.date(2025, 9, 29), datetime.date(2025, 9, 30), datetime.date(2025, 10, 9)] ... [datetime.date(2026, 9, 17), datetime.date(2026, 9, 18), datetime.date(2026, 9, 21), datetime.date(2026, 9, 22), datetime.date(2026, 9, 23)]
+  old logic reported stale on: 2025-10-01..2025-10-08, 2026-01-01..2026-01-02, 2026-02-16..2026-02-23, 2026-04-06, 2026-05-01..2026-05-05, 2026-06-19
+verdict: PASS
+exit=0
+
+===== --date 2026-02-17 =====
+# calendar expectation check @ 2026-02-17 (scripts/ops/calendar_expectation_check.py)
+calendar        : 242 open days, coverage 2025-09-25..2026-09-24
+warehouse bars  : 132 distinct trade_date inside coverage (from dwd_stock_daily)
+agreement       : bars-on-closed-day=0 open-day-without-bars=110
+false-stale cost: 19 weekday holidays a Mon..Fri rule reports as lagging
+expectation @2026-02-17: calendar tier -> 2026-02-13 (warehouse-calendar); weekday tier -> 2026-02-17
+  NOTE open days with no bars yet (backfill gap, not a calendar fault): [datetime.date(2025, 9, 25), datetime.date(2025, 9, 26), datetime.date(2025, 9, 29), datetime.date(2025, 9, 30), datetime.date(2025, 10, 9)] ... [datetime.date(2026, 9, 17), datetime.date(2026, 9, 18), datetime.date(2026, 9, 21), datetime.date(2026, 9, 22), datetime.date(2026, 9, 23)]
+  old logic reported stale on: 2025-10-01..2025-10-08, 2026-01-01..2026-01-02, 2026-02-16..2026-02-23, 2026-04-06, 2026-05-01..2026-05-05, 2026-06-19
+verdict: PASS
+exit=0
+
+===== --date 2025-10-01 =====
+# calendar expectation check @ 2025-10-01 (scripts/ops/calendar_expectation_check.py)
+calendar        : 242 open days, coverage 2025-09-25..2026-09-24
+warehouse bars  : 132 distinct trade_date inside coverage (from dwd_stock_daily)
+agreement       : bars-on-closed-day=0 open-day-without-bars=110
+false-stale cost: 19 weekday holidays a Mon..Fri rule reports as lagging
+expectation @2025-10-01: calendar tier -> 2025-09-30 (warehouse-calendar); weekday tier -> 2025-10-01
+  NOTE open days with no bars yet (backfill gap, not a calendar fault): [datetime.date(2025, 9, 25), datetime.date(2025, 9, 26), datetime.date(2025, 9, 29), datetime.date(2025, 9, 30), datetime.date(2025, 10, 9)] ... [datetime.date(2026, 9, 17), datetime.date(2026, 9, 18), datetime.date(2026, 9, 21), datetime.date(2026, 9, 22), datetime.date(2026, 9, 23)]
+  old logic reported stale on: 2025-10-01..2025-10-08, 2026-01-01..2026-01-02, 2026-02-16..2026-02-23, 2026-04-06, 2026-05-01..2026-05-05, 2026-06-19
+verdict: PASS
+exit=0
+
