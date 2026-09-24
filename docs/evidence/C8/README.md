@@ -183,9 +183,10 @@ python scripts/ops/yfinance_overseas_cross_check.py --counterfactual
 替换 SDK），按类分组：注册与 auto 路由（4）、查询校验（1）、拆分因子规则（6）、
 normalize 阶段（5）、extract 阶段（3）、`_sdk` seam 翻译（5）、`OverseasBar` 契约（3）。
 
-钉住的实测值（不是自造数）：2020-06-02 收盘 80.1875 → **320.75**、成交量
-87,642,800 → **21,910,700**（×4 / ÷4），除权日 2020-08-31 当天 f=1，两次更晚拆分
-复合为 ×8/×2/×1，未定盘 NaN bar 被丢，`as_traded_bars` 不改入参。三条 fail-closed
+钉住的实测值（不是自造数）：2020-06-02 开盘 80.1875 → **320.75**、收盘
+80.835003 → **323.34**、成交量 87,642,800 → **21,910,700**（sina 该日实发
+320.75 / 323.34 / 21,910,704），除权日 2020-08-31 当天 f=1，两次更晚拆分复合为
+×8/×2/×1，未定盘 NaN bar 被丢，`as_traded_bars` 不改入参。三条 fail-closed
 码（`YFINANCE_SDK_MISSING` / `YFINANCE_EMPTY_RESPONSE` / `YFINANCE_COLUMNS_MISSING`）
 与两路拆分来源对账失败（`YFINANCE_SPLITS_UNAVAILABLE`）、负比例
 （`YFINANCE_BAD_SPLIT_RATIO`）逐条断言稳定码本身。
