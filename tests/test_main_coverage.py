@@ -9,9 +9,13 @@ import pytest
 
 class TestLifespan:
     @pytest.mark.asyncio
-    async def test_lifespan_startup_shutdown(self):
+    async def test_lifespan_startup_shutdown(self, monkeypatch):
         from opendata.main import lifespan
 
+        # The bootstrap is guarded on TESTING (read at startup, not at import:
+        # tests/conftest.py sets the variable after importing opendata.main),
+        # so this test has to state which process it is pretending to be.
+        monkeypatch.setenv("TESTING", "false")
         with (
             patch("opendata.core.database.create_tables", new_callable=AsyncMock) as mock_ct,
             patch("opendata.main.init_db", new_callable=AsyncMock) as mock_init,
@@ -36,6 +40,44 @@ class TestLifespan:
             mock_sched.start.assert_called_once()
             mock_sched.shutdown.assert_called_once()
             mock_close.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_lifespan_skips_the_database_bootstrap_in_a_test_process(self, monkeypatch):
+        """A test process must not touch the configured warehouse on startup.
+
+        ``TestClient(app)`` runs this lifespan on a fresh event loop, while the
+        module-level async engine pools aiomysql connections bound to the loop
+        that opened them - so every startup query both races under xdist and
+        reaches ``settings.database_url`` from tests that never asked for it.
+        The scheduler is off for the same reason: starting it reloads the active
+        tasks from the database.
+        """
+        from opendata.main import lifespan
+
+        monkeypatch.setenv("TESTING", "true")
+        with (
+            patch("opendata.core.database.create_tables", new_callable=AsyncMock) as mock_ct,
+            patch("opendata.main.init_db", new_callable=AsyncMock) as mock_init,
+            patch("opendata.main.task_scheduler") as mock_sched,
+            patch("opendata.main.close_db", new_callable=AsyncMock),
+            patch("opendata.main.settings") as mock_settings,
+        ):
+            mock_settings.app_name = "test"
+            mock_settings.app_version = "1.0"
+            mock_settings.app_env = "test"
+            mock_settings.secret_key = "a-real-secret-key-here"
+            mock_settings.is_production = False
+            mock_settings.enable_scheduler = True
+            mock_settings.workers = 1
+            mock_sched.start = AsyncMock()
+            mock_sched.shutdown = AsyncMock()
+
+            async with lifespan(MagicMock()):
+                pass
+
+            mock_ct.assert_not_called()
+            mock_init.assert_not_called()
+            mock_sched.start.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_lifespan_safe_secret(self):
@@ -68,7 +110,9 @@ class TestHealthCheckBranches:
 
         with (
             patch(
-                "opendata.core.database.check_db_connection", new_callable=AsyncMock, return_value=True
+                "opendata.core.database.check_db_connection",
+                new_callable=AsyncMock,
+                return_value=True,
             ),
             patch("opendata.main.task_scheduler") as mock_sched,
         ):
@@ -82,7 +126,9 @@ class TestHealthCheckBranches:
 
         with (
             patch(
-                "opendata.core.database.check_db_connection", new_callable=AsyncMock, return_value=True
+                "opendata.core.database.check_db_connection",
+                new_callable=AsyncMock,
+                return_value=True,
             ),
             patch("opendata.main.task_scheduler") as mock_sched,
         ):
@@ -96,7 +142,9 @@ class TestHealthCheckBranches:
 
         with (
             patch(
-                "opendata.core.database.check_db_connection", new_callable=AsyncMock, return_value=False
+                "opendata.core.database.check_db_connection",
+                new_callable=AsyncMock,
+                return_value=False,
             ),
             patch("opendata.main.task_scheduler") as mock_sched,
         ):

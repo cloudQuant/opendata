@@ -42,6 +42,17 @@ def _get_pool_stats(pool: object) -> dict[str, object]:
 # Check if we're in testing mode
 TESTING = os.getenv("TESTING", "false").lower() == "true"
 
+
+def _testing_mode() -> bool:
+    """Whether this process is a test process, read at application startup.
+
+    The module-level :data:`TESTING` cannot answer that: ``tests/conftest.py``
+    sets the environment variable *after* it imports this module, so the import
+    time value is already frozen to ``False`` inside a test worker.
+    """
+    return os.getenv("TESTING", "false").lower() == "true"
+
+
 # Configure loguru logging (file rotation + level from settings)
 logger.remove()  # Remove default stderr handler
 
@@ -101,8 +112,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     if settings.secret_key == DEFAULT_SECRET_KEY:
         logger.warning("⚠️  USING DEFAULT SECRET KEY! Change this in production!")
 
-    # Initialize database
-    if settings.is_production:
+    # Initialize database. A test process skips the bootstrap: it would send
+    # DDL and seed writes to settings.database_url - the shared warehouse -
+    # from tests that never ask for a database, and every startup query runs on
+    # the module-level async engine whose pooled aiomysql connections stay
+    # bound to the loop that opened them, while each TestClient brings up a
+    # fresh one (the failure reads "Future attached to a different loop").
+    test_process = _testing_mode()
+    bootstraps_database = not test_process
+    if not bootstraps_database:
+        logger.info("Testing mode: skipping database bootstrap (tests own their database)")
+    elif settings.is_production:
         # In production, rely on alembic migrations (run `alembic upgrade head` before deploy)
         logger.info("Production mode: skipping create_tables (use alembic migrations)")
         # Check for pending migrations
@@ -137,7 +157,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
         await create_tables()
 
-    await init_db()
+    if bootstraps_database:
+        await init_db()
 
     # Register provider capabilities (A2.4): P0 domain fetchers enter
     # the registry unverified (FR-3: excluded from source="auto"
@@ -152,11 +173,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Scheduler ownership is explicit (design §9.3): production without
     # ENABLE_SCHEDULER fails startup instead of silently disabling, and
     # multi-worker without Redis degrades to "scheduler off + warning"
-    # rather than running every job once per worker.
+    # rather than running every job once per worker. A test process is
+    # explicitly off as well: start() reloads the active tasks from the
+    # warehouse, which is the same cross-loop pooled connection the bootstrap
+    # above is kept away from.
     from opendata.pipeline.scheduling import scheduler_decision
 
     decision = scheduler_decision(
-        enable_scheduler=settings.enable_scheduler,
+        enable_scheduler=False if test_process else settings.enable_scheduler,
         is_production=settings.is_production,
         redis_url=settings.redis_url,
         workers=settings.workers,
