@@ -24,6 +24,7 @@ from opendata.data.providers.ths.models.financial_statement import (
 from opendata.data.providers.ths.models.futures_daily import ThsFuturesDailyFetcher
 from opendata.data.providers.ths.models.index_constituent import ThsIndexConstituentFetcher
 from opendata.data.providers.ths.models.index_daily import ThsIndexDailyFetcher
+from opendata.data.providers.ths.models.instrument import ThsInstrumentFetcher
 from opendata.data.providers.ths.models.option_daily import ThsOptionDailyFetcher
 from opendata.data.providers.ths.models.stock_action import ThsStockActionFetcher
 from opendata.data.providers.ths.models.stock_daily import ThsStockDailyFetcher
@@ -41,6 +42,7 @@ FETCHERS: tuple[Fetcher[Any, Any], ...] = (
     ThsIndexDailyFetcher(),
     ThsIndexConstituentFetcher(),
     ThsFinancialStatementFetcher(),
+    ThsInstrumentFetcher(),
     ThsFuturesDailyFetcher(),
     ThsOptionDailyFetcher(),
     ThsTradingCalendarFetcher(),

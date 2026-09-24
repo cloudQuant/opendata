@@ -408,48 +408,187 @@ class TestNormalizers:
                 _parse(_envelope([{"ticker": "600519"}])), symbol="600519.SH"
             )
 
-    def test_instruments_map_with_derived_status(self):
-        instruments = normalize_instruments(
+    def test_instruments_map_with_snapshot_derived_status(self):
+        """``status`` 与快照日比较，不再由「``end_date`` 是否为空」派生。
+
+        旧判据把期货目录 1,139 行里 874 个在市月份合约全标 ``delisted``、
+        265 个无日期的合成序列（连续/主连/加权）全标 ``active``（恰好全反），
+        实测见 ``docs/evidence/C14/``。
+        """
+        active, pending, last_trade_today, placeholder = normalize_instruments(
             _parse(
-                _envelope(
+                _envelope_at(
                     [
                         {
                             "thscode": "600519.SH",
                             "ticker": "600519",
                             "name": "贵州茅台",
-                            "exchange": "SSE",
+                            "exchange": "SH",
                             "asset_type": "a-share",
                             "currency": "CNY",
                             "list_date": "2001-08-27",
                             "end_date": None,
                         },
-                        {
-                            "thscode": "000001.SZ",
-                            "name": None,
-                            "exchange": None,
-                            "asset_type": "a-share",
+                        {  # 未到期合约：end_date 有值但仍是「在市」，旧判据在此翻面
+                            "thscode": "IC2612.CFE",
+                            "ticker": "IC2612",
+                            "name": "中证500 2612",
+                            "exchange": "CFFEX",
+                            "asset_type": "futures",
+                            "currency": None,
+                            "list_date": "2026-04-20",
+                            "end_date": "2026-12-21",
+                            "last_trade_date": "2026-12-18",
+                        },
+                        {  # 当日为最后交易日：delist_date 取最后交易日而非 09-28 交割日
+                            "thscode": "BZ2609.DCE",
+                            "ticker": "BZ2609",
+                            "name": "纯碱2609",
+                            "exchange": "DCE",
+                            "asset_type": "futures",
+                            "currency": None,
+                            "list_date": "2026-01-08",
+                            "end_date": "2026-09-28",
+                            "last_trade_date": "2026-09-24",
+                        },
+                        {  # 连续合约（合成序列）：上游不给任何日期，展示码另有一套
+                            "thscode": "AP00.CZC",
+                            "ticker": "AP7777",
+                            "name": "苹果连续",
+                            "exchange": "CZCE",
+                            "asset_type": "futures",
                             "currency": None,
                             "list_date": None,
-                            "end_date": "2020-01-01",
+                            "end_date": None,
                         },
-                    ]
+                    ],
+                    _ms("2026-09-24"),
                 )
             )
         )
 
-        assert all(isinstance(item, Instrument) for item in instruments)
-        active, delisted = instruments
+        assert all(
+            isinstance(row, Instrument) for row in (active, pending, last_trade_today, placeholder)
+        )
         assert active.symbol == "600519.SH"
         assert active.name == "贵州茅台"
         assert active.status == "active"
         assert active.list_date == date(2001, 8, 27)
-        assert delisted.status == "delisted"
-        assert delisted.delist_date == date(2020, 1, 1)
-        assert delisted.currency == "CNY"  # 缺省回落
+        assert active.delist_date is None
+        assert pending.status == "active"
+        assert pending.delist_date == date(2026, 12, 18)  # 最后交易日，非 12-21 交割日
+        assert pending.currency == "CNY"  # 上游为 null 的本地补值
+        # 最后交易日就是快照日 ⇒ 当日仍可交易，判 active；翻面由 as_of 用例覆盖
+        assert last_trade_today.status == "active"
+        assert last_trade_today.delist_date == date(2026, 9, 24)
+        assert placeholder.status == "active"  # 无日期即无从判定到期，不猜
+        assert placeholder.delist_date is None
+
+    def test_instrument_status_can_be_pinned_to_another_day(self):
+        """基准日由调用方给出时可复算：同一份快照在 09-25 判 delisted。"""
+        rows = [
+            {
+                "thscode": "BZ2609.DCE",
+                "ticker": "BZ2609",
+                "asset_type": "futures",
+                "last_trade_date": "2026-09-24",
+            }
+        ]
+        envelope = _parse(_envelope(rows))
+
+        same_day = normalize_instruments(envelope, as_of=date(2026, 9, 24))
+        next_day = normalize_instruments(envelope, as_of=date(2026, 9, 25))
+
+        assert [row.status for row in same_day] == ["active"]
+        assert [row.status for row in next_day] == ["delisted"]
+
+    def test_instruments_without_snapshot_date_leave_status_unknown(self):
+        """没有基准日就不写状态：回落墙上时钟会让同一份快照在不同日子改口。
+
+        ``status`` 判不了不等于这一行不可用 —— 代码消歧路径只消费 ``symbol``，
+        不该因为一个状态字段没有依据而整体失败，故回落到 ``"unknown"``；
+        需要基准日的调用方（标的目录适配器）自己关在门外。
+        """
+        rows = normalize_instruments(_parse(_envelope([{"thscode": "600519.SH"}])))
+
+        assert [row.status for row in rows] == ["unknown"]
+        assert rows[0].symbol == "600519.SH"
+
+    def test_instruments_reconcile_thscode_against_ticker(self):
+        """裸码与 thscode 去后缀必须一致：期货/股票落库以裸码为键，猜错不报错。"""
+        with pytest.raises(FuyaoError, match="ticker_code_mismatch"):
+            normalize_instruments(
+                _parse(
+                    _envelope_at(
+                        [{"thscode": "600519.SH", "ticker": "600520", "asset_type": "a-share"}],
+                        _ms("2026-09-24"),
+                    )
+                )
+            )
+
+    def test_option_codes_are_exempt_from_the_reconciliation(self):
+        """期权 thscode 是不透明序号（``90007464.SZ``），可读码只在 ``ticker``。"""
+        rows = normalize_instruments(
+            _parse(
+                _envelope_at(
+                    [
+                        {
+                            "thscode": "90007464.SZ",
+                            "ticker": "159922P2612M003800",
+                            "asset_type": "options",
+                            "exchange": "SZSE",
+                        }
+                    ],
+                    _ms("2026-09-24"),
+                )
+            )
+        )
+
+        assert rows[0].symbol == "90007464.SZ"
+        assert rows[0].exchange == "SZSE"
+
+    def test_synthetic_series_are_exempt_from_the_reconciliation(self):
+        """连续/主连的合成展示码（``7777`` / ``9999``）与 thscode 本就不同."""
+        rows = normalize_instruments(
+            _parse(
+                _envelope_at(
+                    [
+                        {"thscode": "AP00.CZC", "ticker": "AP7777", "asset_type": "futures"},
+                        {"thscode": "ICZL.CFE", "ticker": "IC9999", "asset_type": "futures"},
+                        {"thscode": "IC8888.CFE", "ticker": "IC8888", "asset_type": "futures"},
+                    ],
+                    _ms("2026-09-24"),
+                )
+            )
+        )
+
+        assert [row.symbol for row in rows] == ["AP00.CZC", "ICZL.CFE", "IC8888.CFE"]
+        assert [row.status for row in rows] == ["active"] * 3  # 无日期，不判退市
+
+    def test_a_real_contract_with_a_wrong_code_still_fails(self):
+        """豁免只看合成码尾标：真实月份合约（``AP612``）对不上照样失败关闭。"""
+        with pytest.raises(FuyaoError, match="ticker_code_mismatch"):
+            normalize_instruments(
+                _parse(
+                    _envelope_at(
+                        [
+                            {
+                                "thscode": "AP612.CZC",
+                                "ticker": "AP611",
+                                "asset_type": "futures",
+                                "end_date": "2026-06-12",
+                            }
+                        ],
+                        _ms("2026-09-24"),
+                    )
+                )
+            )
 
     def test_instruments_require_thscode(self):
         with pytest.raises(FuyaoError, match="ticker_thscode"):
-            normalize_instruments(_parse(_envelope([{"name": "无名"}])))
+            normalize_instruments(
+                _parse(_envelope_at([{"name": "无名"}], _ms("2026-09-24"))),
+            )
 
     def test_calendar_maps_trading_days(self):
         days = normalize_calendar(
@@ -827,12 +966,16 @@ class TestFetchers:
         def handler(request: httpx.Request) -> httpx.Response:
             paths.append(request.url.path)
             return httpx.Response(
-                200, content=_envelope([{"thscode": "600519.SH", "name": "贵州茅台"}])
+                200,
+                content=_envelope_at(
+                    [{"thscode": "600519.SH", "ticker": "600519", "name": "贵州茅台"}],
+                    _ms("2026-09-24"),
+                ),
             )
 
         with _client(handler) as client:
             found = search_instruments(client, query="茅台")
-            listed = list_instruments(client, limit=5)
+            listed = list_instruments(client, limit=5, asset_type="a-share")
 
         assert paths == [TICKERS_SEARCH_ENDPOINT, TICKERS_LIST_ENDPOINT]
         assert found[0].symbol == "600519.SH"

@@ -98,3 +98,10 @@ entries:
       # （实测见 docs/evidence/C12/calendar-check.txt），故 coverage 之外不承诺
       # next_trade_date，也不接 akshare 侧的日历（口径未对照）。
       - {provider: ths, domain: trading_calendar, contract: TradingCalendar, status: verified}
+  - openbb: {model: TBD}
+    scenario: 标的目录（上市区间谓词：空窗是「未上市/已退市」还是丢数的判据；入库前代码消歧）
+    ours:
+      # 上游只发**当前**清单：a-share 5,578 行无一行带 end_date（不含已退市），
+      # status 由快照日推导，故 period=snapshot、不接受日期窗。akshare 侧的
+      # 名称表未做同口径对照，不并列（见 docs/evidence/C14）。
+      - {provider: ths, domain: instrument, contract: Instrument, status: verified}

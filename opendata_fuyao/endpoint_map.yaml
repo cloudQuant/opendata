@@ -86,7 +86,7 @@ entries:
   - {section: market-dumps, family: 导出, method: GET, path: /dump/market-dumps/adjustment-factors/download-url, title: 'Parquet 文件结构', status: implemented, domain: stock_adjust, scenario: '复权因子事件全量回补（D10：只存因子，不存复权价）'}
   - {section: ticker-search, family: 基础, method: GET, path: /api/meta/tickers/search, title: '标的检索', status: implemented, domain: instrument, scenario: '标的消歧：thscode/ticker/名称互查，入库前校验代码'}
   - {section: corporate-actions, family: A股, method: GET, path: /api/a-share/corporate-actions/adjustment-factors, title: '除复权', status: implemented, domain: stock_action, scenario: '除权除息事件流：复权因子与事件窗口的权威来源'}
-  - {section: ticker-list, family: 基础, method: GET, path: /api/meta/tickers/list, title: '标的列表获取', status: implemented, domain: instrument, scenario: '标的目录增量：按资产类型分页刷新 Instrument'}
+  - {section: ticker-list, family: 基础, method: GET, path: /api/meta/tickers/list, title: '标的列表获取', status: implemented, domain: instrument, scenario: '标的目录快照：按资产类型分页刷新 Instrument（实测上游只发在册标的，不含已退市，故是快照不是增量）'}
   - {section: financials, family: A股, method: GET, path: /api/a-share/financials/income-statements, title: '利润表', status: implemented, domain: financial_statement, scenario: '利润表多期序列：dwd 财务域 ths 源（C10 与新浪逐科目对照一致）'}
   - {section: financials, family: A股, method: GET, path: /api/a-share/financials/balance-sheets, title: '资产负债表', status: implemented, domain: financial_statement, scenario: '资产负债表多期序列：dwd 财务域 ths 源（C10 与新浪逐科目对照一致）'}
   - {section: financials, family: A股, method: GET, path: /api/a-share/financials/cash-flow-statements, title: '现金流量表', status: implemented, domain: financial_statement, scenario: '现金流量表多期序列：dwd 财务域 ths 源（C10 与新浪逐科目对照一致）'}

@@ -21,6 +21,7 @@ from opendata.data.models import (
     CorporateAction,
     FinancialStatement,
     IndexConstituent,
+    Instrument,
     TradingCalendar,
 )
 from opendata.data.protocol import FetchContext
@@ -37,6 +38,7 @@ from opendata.data.providers.ths.models.financial_statement import ThsFinancialS
 from opendata.data.providers.ths.models.futures_daily import ThsFuturesDailyFetcher
 from opendata.data.providers.ths.models.index_constituent import ThsIndexConstituentFetcher
 from opendata.data.providers.ths.models.index_daily import ThsIndexDailyFetcher
+from opendata.data.providers.ths.models.instrument import ThsInstrumentFetcher
 from opendata.data.providers.ths.models.option_daily import ThsOptionDailyFetcher
 from opendata.data.providers.ths.models.stock_action import ThsStockActionFetcher
 from opendata.data.providers.ths.models.stock_daily import ThsStockDailyFetcher
@@ -86,6 +88,22 @@ def _period_row() -> dict:
     """期货/期权日 K 行：日期字段是 ``timestamp``,与日线的 ``date_ms`` 不同."""
     row = {key: value for key, value in _bar_row().items() if key != "date_ms"}
     row["timestamp"] = DAY_MS
+    return row
+
+
+def _instrument_row(code: str, **overrides) -> dict:
+    """目录行：``ticker`` 是 ``thscode`` 去后缀（除期权外必须一致，见 C14）."""
+    row = {
+        "thscode": code,
+        "ticker": code.partition(".")[0],
+        "name": f"标的{code}",
+        "exchange": code.partition(".")[2],
+        "asset_type": "a-share",
+        "currency": "CNY",
+        "list_date": "2001-08-27",
+        "end_date": None,
+    }
+    row.update(overrides)
     return row
 
 
@@ -162,6 +180,7 @@ class TestRegistration:
             ("futures_daily", "ths"),
             ("option_daily", "ths"),
             ("trading_calendar", "ths"),
+            ("instrument", "ths"),
         }
         assert all(capability.verified for capability in registered)
 
@@ -184,6 +203,7 @@ class TestRegistration:
             ("futures", "futures_daily", "1D", "cn"),
             ("option", "option_daily", "1D", "cn"),
             ("metadata", "trading_calendar", "snapshot", "cn"),
+            ("metadata", "instrument", "snapshot", "cn"),
         }
 
     def test_every_verified_domain_auto_routes_to_ths(self):
@@ -955,6 +975,156 @@ class TestTradingCalendarAdapter:
         ]
 
 
+class TestInstrumentCatalogAdapter:
+    """C14：标的目录腿 —— 一页一资产类型、分页到尽、快照语义与失败关闭路径。"""
+
+    def _patch(self, monkeypatch: pytest.MonkeyPatch, handler) -> ThsInstrumentFetcher:
+        monkeypatch.setattr(
+            "opendata.data.providers.ths.models.instrument.client", _factory(handler)
+        )
+        return ThsInstrumentFetcher()
+
+    def test_pages_are_read_until_one_comes_back_short(self, monkeypatch: pytest.MonkeyPatch):
+        """短页即止：目录长度不写死，靠「本页不满」收敛。"""
+        from opendata.data.providers.ths.models import instrument as module
+
+        monkeypatch.setattr(module, "PAGE_LIMIT", 2)
+        seen: list[str] = []
+        pages = {
+            "0": [_instrument_row("600519.SH"), _instrument_row("600000.SH")],
+            "2": [_instrument_row("000001.SZ")],
+        }
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            offset = request.url.params["offset"]
+            seen.append(offset)
+            return httpx.Response(200, content=_envelope_at(pages[offset], SNAPSHOT_MS))
+
+        rows = self._patch(monkeypatch, handler).fetch(asset_type="a-share")
+
+        assert seen == ["0", "2"]
+        assert all(isinstance(row, Instrument) for row in rows)
+        assert [row.symbol for row in rows] == ["000001.SZ", "600000.SH", "600519.SH"]
+        assert [row.status for row in rows] == ["active"] * 3
+
+    def test_the_asset_type_filter_is_sent_as_asked(self, monkeypatch: pytest.MonkeyPatch):
+        seen: dict[str, str] = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen["path"] = request.url.path
+            seen["params"] = str(request.url.params)
+            rows = [_instrument_row("600519.SH")]
+            return httpx.Response(200, content=_envelope_at(rows, SNAPSHOT_MS))
+
+        self._patch(monkeypatch, handler).fetch(asset_type="futures")
+
+        assert seen["path"] == "/api/meta/tickers/list"
+        assert "asset_type=futures" in seen["params"]
+        assert "limit=10000" in seen["params"]  # 单页取上游上限，小目录一次拿完
+
+    def test_pagination_that_never_ends_fails_closed(self, monkeypatch: pytest.MonkeyPatch):
+        """offset 被上游忽略时页页都满：到顶即失败，而不是无限翻页。"""
+        from opendata.data.providers.ths.models import instrument as module
+
+        monkeypatch.setattr(module, "PAGE_LIMIT", 2)
+        monkeypatch.setattr(module, "MAX_PAGES", 4)
+        calls: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            calls.append(request.url.params["offset"])
+            return httpx.Response(
+                200,
+                content=_envelope_at(
+                    [_instrument_row("600519.SH"), _instrument_row("600000.SH")], SNAPSHOT_MS
+                ),
+            )
+
+        with pytest.raises(ThsProviderError, match="THS_INSTRUMENT_PAGINATION_STUCK"):
+            self._patch(monkeypatch, handler).fetch(asset_type="a-share")
+
+        assert len(calls) == 4
+
+    def test_a_repeated_code_across_pages_fails_closed(self, monkeypatch: pytest.MonkeyPatch):
+        """分页期间快照重载 ⇒ 同一 thscode 出现两次；不去重，直接关在门外。"""
+        from opendata.data.providers.ths.models import instrument as module
+
+        monkeypatch.setattr(module, "PAGE_LIMIT", 2)
+        pages = {
+            "0": [_instrument_row("600519.SH"), _instrument_row("600000.SH")],
+            "2": [_instrument_row("600519.SH")],
+        }
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                200, content=_envelope_at(pages[request.url.params["offset"]], SNAPSHOT_MS)
+            )
+
+        with pytest.raises(ThsProviderError, match="THS_INSTRUMENT_DUPLICATE_SYMBOL"):
+            self._patch(monkeypatch, handler).fetch(asset_type="a-share")
+
+    def test_query_requires_a_documented_asset_type(self):
+        fetcher = ThsInstrumentFetcher()
+
+        assert fetcher.transform_query(asset_type="a-share").asset_type == "a-share"
+        with pytest.raises(ValidationError):
+            fetcher.transform_query()
+        with pytest.raises(ThsProviderError, match="THS_INSTRUMENT_ASSET_TYPE_UNSUPPORTED"):
+            fetcher.transform_query(asset_type="everything")
+
+    def test_query_rejects_a_date_range(self):
+        """目录只有当前清单：给了窗口就假装给的是历史快照，不接。"""
+        fetcher = ThsInstrumentFetcher()
+
+        with pytest.raises(ThsProviderError, match="THS_INSTRUMENT_SNAPSHOT_ONLY"):
+            fetcher.transform_query(asset_type="a-share", start_date=date(2024, 1, 2))
+        with pytest.raises(ThsProviderError, match="THS_INSTRUMENT_SNAPSHOT_ONLY"):
+            fetcher.transform_query(asset_type="a-share", end_date=date(2024, 1, 2))
+
+    def test_empty_catalog_fails_closed(self, monkeypatch: pytest.MonkeyPatch):
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, content=_envelope_at([], SNAPSHOT_MS))
+
+        with pytest.raises(ThsProviderError, match="THS_EMPTY_RESPONSE"):
+            self._patch(monkeypatch, handler).fetch(asset_type="a-share")
+
+    def test_a_catalog_without_a_snapshot_date_fails_closed(self, monkeypatch: pytest.MonkeyPatch):
+        """status 由快照日推导：信封不给基准日，这一页就不可用。"""
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, content=_envelope([_instrument_row("600519.SH")]))
+
+        with pytest.raises(ThsProviderError, match="THS_INSTRUMENT_SNAPSHOT_DATE_MISSING"):
+            self._patch(monkeypatch, handler).fetch(asset_type="a-share")
+
+    def test_an_in_market_contract_is_not_labelled_delisted(self, monkeypatch: pytest.MonkeyPatch):
+        """旧判据（``end_date`` 非空即退市）把 874 个在市月份合约全标 delisted。"""
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                200,
+                content=_envelope_at(
+                    [
+                        _instrument_row(
+                            "IC2612.CFE",
+                            exchange="CFFEX",
+                            asset_type="futures",
+                            currency=None,
+                            list_date="2026-04-20",
+                            end_date="2026-12-21",
+                            last_trade_date="2026-12-18",
+                        )
+                    ],
+                    SNAPSHOT_MS,
+                ),
+            )
+
+        rows = self._patch(monkeypatch, handler).fetch(asset_type="futures")
+
+        assert [row.status for row in rows] == ["active"]
+        assert rows[0].delist_date == date(2026, 12, 18)  # 最后交易日，不是 12-21 交割日
+        assert rows[0].currency == "CNY"  # 上游为 null 的本地补值
+
+
 @pytest.mark.e2e
 class TestAgainstTheLiveFuyaoApi:
     """真机：经注册表路由取数（需要 fuyao 凭证，环境变量或 ``.env`` 均可）。"""
@@ -1013,3 +1183,19 @@ class TestAgainstTheLiveFuyaoApi:
         assert days[0].date < days[-1].date
         assert days[0].prev_trade_date is None
         assert days[-1].next_trade_date is None  # 上游不含当日，右端之外无从得知
+
+    def test_registry_routes_the_instrument_catalog_to_the_fuyao_source(self):
+        """真机：a-share 目录经注册表路由，一分钟内可翻完（实测 5,578 行/1 页）。"""
+        from opendata.data.providers import register_providers
+        from opendata.data.registry import get_registry
+
+        register_providers()
+        routed = get_registry().resolve_domain("instrument", source="ths")
+        rows = routed.fetch(asset_type="a-share")
+
+        assert len(rows) > 5000
+        assert all(isinstance(row, Instrument) and row.symbol for row in rows)
+        assert {row.status for row in rows} == {"active"}  # 上游不发布已退市 A 股
+        assert rows[0].symbol < rows[-1].symbol  # 按 thscode 升序
+        # 上市区间的左端：实测整表仅 9 行为 null（新股未回填），留冗余不误判
+        assert sum(1 for row in rows if row.list_date is None) <= 20

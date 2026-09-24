@@ -528,40 +528,127 @@ def normalize_adjustment_factors(
     return tuple(events)
 
 
-def normalize_instruments(envelope: FuyaoEnvelope) -> tuple[Instrument, ...]:
+#: 上游对期权合约的 ``thscode`` 是不透明序号（可读码在 ``ticker``，实测
+#: ``90007464.SZ`` ↔ ``159922P2612M003800``），故「去后缀等于 ticker」这条对账
+#: 只对其余资产类型成立（C6 实测，见 ``resolve_option_code``）。
+OPAQUE_CODE_ASSET_TYPES = frozenset({"options"})
+
+#: 期货**合成序列**的展示码尾标（2026-09-25 实测：期货目录 1,139 行里有 265 行
+#: 无任何日期，全属这三类，且 874 个真实合约的行 100% 对账相等）：
+#: ``AP00.CZC`` ↔ ``AP7777``（连续）、``ICZL.CFE`` ↔ ``IC9999``（主连）、
+#: ``IC8888.CFE`` ↔ ``IC8888``（加权，两个写法恰好相同）。前两类两个写法本就
+#: 不同，是上游约定而非脏数据；真实月份合约（``AP612`` / ``IF2612``）的尾四位
+#: 是年月，不可能是这四个数，故只豁免这三类尾标。
+SYNTHETIC_SERIES_TICKER_TAILS = frozenset({"7777", "8888", "9999"})
+
+
+def _codes_agree(symbol: str, plain: object, asset_type: str) -> bool:
+    """这一行的两个代码写法是否可接受（代码对账是否成立）.
+
+    Args:
+        symbol: 上游 ``thscode``（带交易所后缀）。
+        plain: 上游 ``ticker``（展示码，可能不是字符串）。
+        asset_type: 上游规范化资产类型。
+
+    Returns:
+        期权（不透明序号）、合成序列尾标与 ``ticker`` 缺失的行返回 ``True``
+        （不参与对账）；其余要求去后缀后逐字相等。
+    """
+    if asset_type in OPAQUE_CODE_ASSET_TYPES or not isinstance(plain, str) or not plain:
+        return True
+    if plain[-4:] in SYNTHETIC_SERIES_TICKER_TAILS:
+        return True
+    return symbol.partition(".")[0] == plain
+
+
+def normalize_instruments(
+    envelope: FuyaoEnvelope, *, as_of: date | None = None
+) -> tuple[Instrument, ...]:
     """把标的列表/检索归一化为 ``Instrument``.
 
-    ``status`` 由 ``end_date`` 推导（无退市日 = ``active``），``list_date`` /
-    ``delist_date`` 直接取上游日期；``name`` 可能为空字符串。
+    2026-09-25 实测后改写了三处口径（原实现把「在册」当成「在市」）：
+
+    * ``delist_date``：上游 ``end_date`` 是**合约到期（交割）日**，
+      ``last_trade_date`` 才是**停止可交易之日**，中台字段的语义是后者，故取
+      ``last_trade_date``、无该字段时回落到 ``end_date``。实测两者可以差四天
+      （``BZ2609.DCE`` 最后交易日 2026-09-24、到期日 2026-09-28），按 ``end_date``
+      判「在市」会把已停牌的合约多算四个可交易日。
+    * ``status``：不再由「``end_date`` 是否为空」派生。该判据把期货目录 1,139 行
+      里 **874 个在市月份合约全标成 ``delisted``**，而 265 个无任何日期的合成序列
+      （连续/主连/加权）全标成 ``active`` —— 恰好全反。现与快照观测日比较：
+      ``delist_date`` **早于**观测日才算停止交易（最后一天当天仍可交易，故取严格
+      小于）。观测日默认取信封 ``data.timestamp``（实测是**快照加载时刻**，本例
+      2026-09-24 16:00，不是请求时刻）；信封不带该字段时状态判不了，回落到
+      ``"unknown"`` 而不是墙上时钟 —— 代码消歧路径（``search_instruments``）只消费
+      ``symbol``，不该因为一个状态字段无从派生而整体失败。
+    * 代码对账：``thscode`` 去后缀必须等于 ``ticker``，否则整页失败关闭；期权与
+      合成序列按 :data:`SYNTHETIC_SERIES_TICKER_TAILS` 豁免（见该常量与
+      :func:`_codes_agree` 的实测依据）。
 
     Args:
         envelope: 成功信封。
+        as_of: 状态判定基准日；缺省取信封快照日，两者都没有则 ``status`` 为
+            ``"unknown"``。
 
     Returns:
-        标的信息。
+        标的信息（按 ``item`` 原序）。
 
     Raises:
-        FuyaoError: 行缺 ``thscode``。
+        FuyaoError: 行缺 ``thscode``，或两个代码写法对不上（非豁免类）。
     """
+    snapshot = as_of if as_of is not None else envelope_snapshot(envelope)
     instruments: list[Instrument] = []
     for row in _items(envelope, context="ticker"):
         symbol = _require_value(row, "thscode", context="ticker")
         if not isinstance(symbol, str) or not symbol.strip():
             raise error_for_transport("envelope_invalid", detail="ticker_thscode")
         exchange = row.get("exchange") or row.get("asset_type") or ""
-        delist = _parse_optional_date(row.get("end_date"))
+        if not _codes_agree(symbol, row.get("ticker"), str(row.get("asset_type") or "")):
+            raise error_for_transport("envelope_invalid", detail="ticker_code_mismatch")
+        delist = _parse_optional_date(row.get("last_trade_date")) or _parse_optional_date(
+            row.get("end_date")
+        )
         instruments.append(
             Instrument(
                 symbol=symbol.strip(),
                 exchange=str(exchange),
                 name=str(row.get("name") or ""),
-                status="active" if delist is None else "delisted",
+                status=_instrument_status(delist, snapshot),
                 currency=str(row.get("currency") or "CNY"),
                 list_date=_parse_optional_date(row.get("list_date")),
                 delist_date=delist,
             )
         )
     return tuple(instruments)
+
+
+def _instrument_status(delist: date | None, snapshot: date | None) -> str:
+    """按基准日给出在册标的的可交易状态.
+
+    Args:
+        delist: 停止可交易之日（``None`` 表示上游未发布）。
+        snapshot: 基准日（``None`` 表示无观测时刻）。
+
+    Returns:
+        ``active`` / ``delisted`` / ``unknown``。
+    """
+    if snapshot is None:
+        return "unknown"
+    return "delisted" if delist is not None and delist < snapshot else "active"
+
+
+def envelope_snapshot(envelope: FuyaoEnvelope) -> date | None:
+    """从信封 ``data.timestamp`` 取快照观测日（上海时区语义）.
+
+    Args:
+        envelope: 成功信封。
+
+    Returns:
+        快照观测日；信封不带 ``data.timestamp`` 时为 ``None``。
+    """
+    if envelope.data_timestamp_ms is None:
+        return None
+    return millis_to_trading_date(envelope.data_timestamp_ms)
 
 
 def _parse_optional_date(value: object) -> date | None:
@@ -1090,8 +1177,10 @@ __all__ = [
     "MAX_WINDOW",
     "OPTIONS_ASSET_TYPE",
     "OPTIONS_PRICES_ENDPOINT",
+    "OPAQUE_CODE_ASSET_TYPES",
     "PERIOD_BAR_DATE_KEY",
     "PRICES_ENDPOINT",
+    "SYNTHETIC_SERIES_TICKER_TAILS",
     "TICKERS_LIST_ENDPOINT",
     "TICKERS_SEARCH_ENDPOINT",
     "build_adjustment_factors_request",
@@ -1102,6 +1191,7 @@ __all__ = [
     "build_prices_request",
     "build_tickers_list_request",
     "build_tickers_search_request",
+    "envelope_snapshot",
     "fetch_adjustment_factors",
     "fetch_daily_bars",
     "fetch_financial_statements",
