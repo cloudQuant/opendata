@@ -44,6 +44,15 @@ P0_DOMAINS = {
     "index_constituent",
 }
 
+#: B1.2 registrations: ported P1 daily-bar domains, verified=False.
+B1_DOMAINS = {
+    "futures_daily",
+    "index_daily",
+    "fund_etf_daily",
+    "option_daily",
+    "bond_daily",
+}
+
 
 def _em_klines_frame() -> pd.DataFrame:
     """Upstream-shaped eastmoney kline frame (volume in lots)."""
@@ -146,8 +155,8 @@ class TestRegistration:
         registry = ProviderRegistry()
         registered = register(registry)
 
-        # P0 closure + the B1.2 futures registration (verified=False)
-        assert {cap.domain for cap in registered} == P0_DOMAINS | {"futures_daily"}
+        # P0 closure + the B1.2 P1 registrations (verified=False)
+        assert {cap.domain for cap in registered} == P0_DOMAINS | B1_DOMAINS
         assert all(cap.source == "akshare" for cap in registered)
         assert all(cap.market == "cn" for cap in registered)
 
@@ -179,7 +188,7 @@ class TestRegistration:
             registry.resolve("equity", "stock_daily")
 
     def test_fetchers_match_fetcher_count(self):
-        assert len(FETCHERS) == 6  # 5 P0 + futures_daily (B1.2)
+        assert len(FETCHERS) == 5 + len(B1_DOMAINS)  # 5 P0 + B1.2
 
 
 class TestStockDailyFetcher:
@@ -394,7 +403,7 @@ class TestRegistryScan:
 
         count = await loader.load_interfaces()
 
-        assert count == 6  # 5 P0 + futures_daily (B1.2)
+        assert count == 5 + len(B1_DOMAINS)  # 5 P0 + B1.2
 
     async def test_rows_are_named_by_domain_with_contract_models(self, registry_loader, test_db):
         loader, _ = registry_loader

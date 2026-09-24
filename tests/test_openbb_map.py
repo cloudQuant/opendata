@@ -39,8 +39,15 @@ class TestShippedMap:
     def test_confirmed_models_are_never_guesses(self):
         confirmed = {entry.model for entry in load_openbb_map() if entry.model != "TBD"}
 
-        # 这些名字来自对上游 fetcher_dict 声明的机械解析（provider-inventory.yaml）
-        assert confirmed <= {"EquityHistorical", "ConsumerPriceIndex", "FuturesHistorical"}
+        # 这些名字来自对上游 fetcher_dict 声明的机械解析（provider-inventory.yaml）：
+        # EquityHistorical/ConsumerPriceIndex/FuturesHistorical/EtfHistorical
+        # （后者由 alpha_vantage、tiingo、cboe 三个 provider 声明）
+        assert confirmed <= {
+            "EquityHistorical",
+            "ConsumerPriceIndex",
+            "FuturesHistorical",
+            "EtfHistorical",
+        }
 
     def test_enabled_capabilities_are_covered(self):
         """AC-10 准入：每个已启用 provider×domain 必须在对照表中。"""

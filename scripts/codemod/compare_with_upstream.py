@@ -33,6 +33,7 @@ import base64
 import gzip
 import json
 import sys
+from collections.abc import Sequence  # noqa: TC003 - no future annotations in this script
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -127,6 +128,48 @@ CASES = (
         function="index_stock_cons_weight_csindex",
         kwargs={"symbol": "000300"},
         note="CSI 300 close-weight file (index_constituent fetcher)",
+    ),
+    # --- B1.3 P1 sampling: one case per registered P1 daily-bar domain ---
+    Case(
+        name="futures_daily_sina",
+        function="futures_zh_daily_sina",
+        kwargs={"symbol": "RB0"},
+        note="sina commodity futures daily line (futures_daily fetcher)",
+    ),
+    Case(
+        name="option_daily_sina",
+        function="option_sse_daily_sina",
+        kwargs={"symbol": "10003889"},
+        note="sina SSE stock-option daily line (option_daily fetcher)",
+    ),
+    Case(
+        name="bond_daily_sina",
+        function="bond_zh_hs_cov_daily",
+        kwargs={"symbol": "sh010107"},
+        note="sina convertible-bond daily line (bond_daily fetcher)",
+    ),
+    Case(
+        name="index_daily_em",
+        function="index_zh_a_hist",
+        kwargs={
+            "symbol": "000300",
+            "period": "daily",
+            "start_date": "20240101",
+            "end_date": "20240229",
+        },
+        note="em China index daily klines (index_daily fetcher)",
+    ),
+    Case(
+        name="fund_etf_daily_em",
+        function="fund_etf_hist_em",
+        kwargs={
+            "symbol": "510300",
+            "period": "daily",
+            "start_date": "20240101",
+            "end_date": "20240229",
+            "adjust": "",
+        },
+        note="em on-exchange ETF daily klines (fund_etf_daily fetcher)",
     ),
 )
 
@@ -291,7 +334,7 @@ def _git_head(path: Path) -> str:
     return str(completed.stdout).strip()
 
 
-def record(upstream_path: Path) -> int:
+def record(upstream_path: Path, *, only: Sequence[str] | None = None) -> int:
     """Record reference fixtures from the upstream checkout.
 
     Per-case fault tolerance: a case that cannot be recorded (network
@@ -301,66 +344,94 @@ def record(upstream_path: Path) -> int:
     commonly throttled after a burst; re-run ``--record`` later to
     fill them in.
 
+    Args:
+        upstream_path: Checkout of the pinned upstream.
+        only: Restrict the run to these case names, leaving the other
+            fixtures (and their ``meta.json`` status) untouched.
+
     Returns:
-        Process exit code: 0 when every case recorded, 1 otherwise.
+        Process exit code: 0 when every attempted case recorded, 1 otherwise.
     """
     pinned = _assert_upstream_pinned(upstream_path)
     _pin_pure_requests_channel()
     sys.path.insert(0, str(upstream_path))
     pending: list[str] = []
     for case in CASES:
+        if only is not None and case.name not in only:
+            continue
         target = FIXTURES_DIR / case.name
         target.mkdir(parents=True, exist_ok=True)
         function = _load_case_function(_UPSTREAM_CASE_MODULE, case.function)
         print(f"recording {case.name} ({case.function})...", flush=True)
         recorder = HttpRecorder()
+        reason: str | None
         try:
             with recorder:
                 frame = function(**case.kwargs)
         except Exception as exc:  # network refusal or upstream error
             reason = f"{type(exc).__name__}: {exc}"
-            pending.append(case.name)
-            (target / "meta.json").write_text(
-                json.dumps(
-                    {
-                        "function": case.function,
-                        "kwargs": case.kwargs,
-                        "upstream_commit": pinned,
-                        "status": "pending",
-                        "reason": reason,
-                        "recorded_at": date.today().isoformat(),
+        else:
+            if frame is None or len(frame) == 0:
+                # An empty reference frame is not evidence: replaying it
+                # would compare zero rows and pass vacuously, so the case
+                # stays pending (fail closed, re-run --record later).
+                reason = "EmptyReferenceFrame: upstream returned 0 rows"
+            else:
+                reason = None
+                _write_transcript(target / "responses.json.gz", recorder.entries)
+                _write_reference_frame(target / "reference.csv.gz", frame)
+                _write_case_meta(
+                    target,
+                    case,
+                    pinned,
+                    status="recorded",
+                    extra={
+                        "n_calls": len(recorder.entries),
+                        "rows": len(frame),
+                        # The text round trip cannot carry dtypes, so the
+                        # live ones are pinned here and asserted on replay.
+                        "dtypes": {str(name): str(frame[name].dtype) for name in frame.columns},
                     },
-                    ensure_ascii=False,
-                    indent=1,
-                ),
-                encoding="utf-8",
-            )
+                )
+                print(f"  -> {len(frame)} rows, {len(recorder.entries)} HTTP calls")
+        if reason is not None:
+            pending.append(case.name)
+            _write_case_meta(target, case, pinned, status="pending", extra={"reason": reason})
             print(f"  PENDING: {reason[:90]}")
-            continue
-        _write_transcript(target / "responses.json.gz", recorder.entries)
-        _write_reference_frame(target / "reference.csv.gz", frame)
-        (target / "meta.json").write_text(
-            json.dumps(
-                {
-                    "function": case.function,
-                    "kwargs": case.kwargs,
-                    "upstream_commit": pinned,
-                    "status": "recorded",
-                    "n_calls": len(recorder.entries),
-                    "rows": len(frame),
-                    "dtypes": {str(name): str(frame[name].dtype) for name in frame.columns},
-                    "recorded_at": date.today().isoformat(),
-                },
-                ensure_ascii=False,
-                indent=1,
-            ),
-            encoding="utf-8",
-        )
-        print(f"  -> {len(frame)} rows, {len(recorder.entries)} HTTP calls")
     if pending:
         print(f"\nPENDING (re-run --record later): {', '.join(pending)}")
         return 1
     return 0
+
+
+def _write_case_meta(
+    target: Path,
+    case: Case,
+    pinned: str,
+    *,
+    status: str,
+    extra: dict[str, Any],
+) -> None:
+    """Write one case's ``meta.json`` (recorded or pending).
+
+    Args:
+        target: Fixture directory of the case.
+        case: The case being recorded.
+        pinned: Upstream commit the recording is pinned to.
+        status: ``"recorded"`` or ``"pending"``.
+        extra: Status-specific fields (row count, failure reason).
+    """
+    payload: dict[str, Any] = {
+        "function": case.function,
+        "kwargs": case.kwargs,
+        "upstream_commit": pinned,
+        "status": status,
+        **extra,
+        "recorded_at": date.today().isoformat(),
+    }
+    (target / "meta.json").write_text(
+        json.dumps(payload, ensure_ascii=False, indent=1, default=str), encoding="utf-8"
+    )
 
 
 def _write_reference_frame(path: Path, frame: Any) -> None:  # noqa: ANN401  # untyped pandas
@@ -686,8 +757,11 @@ def _write_report(
             "|------|--------|",
         ]
         for name in pending:
-            meta = json.loads((FIXTURES_DIR / name / "meta.json").read_text(encoding="utf-8"))
-            lines.append(f"| {name} | {meta.get('reason', 'not recorded')} |")
+            meta_path = FIXTURES_DIR / name / "meta.json"
+            reason = "not recorded"
+            if meta_path.exists():
+                reason = json.loads(meta_path.read_text(encoding="utf-8")).get("reason", reason)
+            lines.append(f"| {name} | {reason} |")
     lines += ["", "## A1 leftover: D10 qfq synthesis vs official em series", ""]
     if d10_report.get("reason"):
         lines.append(f"SKIPPED: {d10_report['reason']}")
@@ -715,11 +789,20 @@ def main(argv: list[str] | None = None) -> int:
         default=DEFAULT_UPSTREAM,
         help="upstream checkout path (recording only)",
     )
+    parser.add_argument(
+        "--only",
+        action="append",
+        metavar="CASE",
+        help="record only these case names (repeatable); other fixtures are left untouched",
+    )
     args = parser.parse_args(argv)
     if args.record == args.compare:
         parser.error("exactly one of --record / --compare is required")
     if args.record:
-        return record(args.upstream)
+        unknown = set(args.only or ()) - {case.name for case in CASES}
+        if unknown:
+            parser.error(f"unknown case name(s): {', '.join(sorted(unknown))}")
+        return record(args.upstream, only=args.only)
     return compare()
 
 
