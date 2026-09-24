@@ -38,3 +38,10 @@
 2. **`adjust` 合成日期键类型不匹配**：查询行返回 ISO 字符串、因子行为 `date` 对象，键永不相等——`_factor_rows` 与 `apply_adjust_to_rows` 双侧归一化。
 3. **`/data/capabilities` 返回裸数组**：客户端 `_get` 按信封解析会崩——兼容非信封响应。
 4. **WS 认证解析器/水位引擎不可注入**：凭证在首帧而非握手，依赖注入不可达——以模块级 seam 使协议可测。
+
+## 5. B4.5 数据目录页（追加 2026-09-24）
+
+- 交付：`frontend/src/views/DataCatalogView.vue` + `frontend/src/api/catalog.ts`（`/data` 路由、导航、i18n）
+- 内容：按数据域组织的目录（显示名/域标识/资产类别/来源/验证/最新日期/滞后/新鲜度），下钻预览最近 20 行
+- 测试：`frontend/src/__tests__/catalog.test.ts` 6 项；前端门禁全绿（eslint 0 / vue-tsc 0 / vitest 79）
+- 工具发现：vitest 4.0.18 的 `mockRejectedValue` 回归（每条被标记未处理）→ 改用 `mockRejectedValueOnce`；`server.deps.inline: ['element-plus']` 使视图测试可挂载 el-* 组件
