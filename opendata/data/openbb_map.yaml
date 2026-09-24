@@ -40,6 +40,10 @@ entries:
     scenario: 宏观利率（AI 研究 / 资产配置 / 回测融资成本）
     ours:
       - {provider: ecb, domain: economy_rate, contract: MacroSeries, status: verified}
+  - openbb: {model: FuturesHistorical}
+    scenario: 期货日线（期货回测数据准备 / dwd 期货域）
+    ours:
+      - {provider: akshare, domain: futures_daily, contract: Bar, status: registered}
   - openbb: {model: TBD}
     scenario: 除权除息事件（dwd 事件域）
     ours:

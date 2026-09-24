@@ -12,12 +12,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from opendata.data.providers.akshare._source import SOURCE
 from opendata.data.providers.akshare.models.financial_indicator import (
     AkshareFinancialIndicatorFetcher,
 )
 from opendata.data.providers.akshare.models.financial_statement import (
     AkshareFinancialStatementFetcher,
+)
+from opendata.data.providers.akshare.models.futures_daily import (
+    AkshareFuturesDailyFetcher,
 )
 from opendata.data.providers.akshare.models.index_constituent import (
     AkshareIndexConstituentFetcher,
@@ -37,6 +39,7 @@ if TYPE_CHECKING:
 #: The P0 fetchers, one per registered domain (A2.1 closure scope).
 FETCHERS: tuple[Fetcher[Any, Any], ...] = (
     AkshareStockDailyFetcher(),
+    AkshareFuturesDailyFetcher(),
     AkshareStockActionFetcher(),
     AkshareFinancialStatementFetcher(),
     AkshareFinancialIndicatorFetcher(),

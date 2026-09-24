@@ -40,7 +40,7 @@ class TestShippedMap:
         confirmed = {entry.model for entry in load_openbb_map() if entry.model != "TBD"}
 
         # 这些名字来自对上游 fetcher_dict 声明的机械解析（provider-inventory.yaml）
-        assert confirmed <= {"EquityHistorical", "ConsumerPriceIndex"}
+        assert confirmed <= {"EquityHistorical", "ConsumerPriceIndex", "FuturesHistorical"}
 
     def test_enabled_capabilities_are_covered(self):
         """AC-10 准入：每个已启用 provider×domain 必须在对照表中。"""

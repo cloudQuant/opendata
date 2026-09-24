@@ -142,11 +142,12 @@ def _csindex_weight_frame() -> pd.DataFrame:
 
 
 class TestRegistration:
-    def test_registers_five_p0_capabilities(self):
+    def test_registers_the_p0_capabilities_plus_b1_domains(self):
         registry = ProviderRegistry()
         registered = register(registry)
 
-        assert {cap.domain for cap in registered} == P0_DOMAINS
+        # P0 closure + the B1.2 futures registration (verified=False)
+        assert {cap.domain for cap in registered} == P0_DOMAINS | {"futures_daily"}
         assert all(cap.source == "akshare" for cap in registered)
         assert all(cap.market == "cn" for cap in registered)
 
@@ -178,7 +179,7 @@ class TestRegistration:
             registry.resolve("equity", "stock_daily")
 
     def test_fetchers_match_fetcher_count(self):
-        assert len(FETCHERS) == 5
+        assert len(FETCHERS) == 6  # 5 P0 + futures_daily (B1.2)
 
 
 class TestStockDailyFetcher:
@@ -393,7 +394,7 @@ class TestRegistryScan:
 
         count = await loader.load_interfaces()
 
-        assert count == 5
+        assert count == 6  # 5 P0 + futures_daily (B1.2)
 
     async def test_rows_are_named_by_domain_with_contract_models(self, registry_loader, test_db):
         loader, _ = registry_loader
@@ -407,7 +408,7 @@ class TestRegistryScan:
                 select(DataInterface).where(DataInterface.name.in_(P0_DOMAINS))
             )
             rows = result.scalars().all()
-        assert len(rows) == 5
+        assert len(rows) == 5  # the query filters to the P0 domains
         by_name = {row.name: row for row in rows}
         assert by_name["stock_daily"].display_name == "A股日线行情"
         assert by_name["stock_daily"].return_type == "Bar"
