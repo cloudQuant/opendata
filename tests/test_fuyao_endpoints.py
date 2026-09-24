@@ -15,12 +15,23 @@ from zoneinfo import ZoneInfo
 import httpx
 import pytest
 
-from opendata.data.models import Bar, CorporateAction, IndexConstituent, Instrument, TradingCalendar
+from opendata.data.models import (
+    Bar,
+    CorporateAction,
+    FinancialStatement,
+    IndexConstituent,
+    Instrument,
+    TradingCalendar,
+)
 from opendata_fuyao import FuyaoCredentials, FuyaoError, FuyaoHttpClient
 from opendata_fuyao.endpoints import (
     ADJUSTMENT_FACTORS_ENDPOINT,
+    BALANCE_SHEETS_ENDPOINT,
     CALENDAR_ENDPOINT,
+    CASH_FLOW_STATEMENTS_ENDPOINT,
+    FINANCIAL_STATEMENT_ITEMS,
     FUTURES_PRICES_ENDPOINT,
+    INCOME_STATEMENTS_ENDPOINT,
     INDEX_CONSTITUENTS_ENDPOINT,
     INDEX_PRICES_ENDPOINT,
     MAX_LIST_LIMIT,
@@ -30,6 +41,7 @@ from opendata_fuyao.endpoints import (
     TICKERS_LIST_ENDPOINT,
     TICKERS_SEARCH_ENDPOINT,
     build_adjustment_factors_request,
+    build_financial_statements_request,
     build_index_constituents_request,
     build_index_prices_request,
     build_period_daily_request,
@@ -38,6 +50,7 @@ from opendata_fuyao.endpoints import (
     build_tickers_search_request,
     fetch_adjustment_factors,
     fetch_daily_bars,
+    fetch_financial_statements,
     fetch_index_constituents,
     fetch_index_daily_bars,
     fetch_period_daily_bars,
@@ -47,6 +60,7 @@ from opendata_fuyao.endpoints import (
     normalize_adjustment_factors,
     normalize_bars,
     normalize_calendar,
+    normalize_financial_statements,
     normalize_index_constituents,
     normalize_instruments,
     search_instruments,
@@ -114,6 +128,24 @@ def _bar_row(day: str, *, close: float = 10.0) -> dict[str, Any]:
         "low_price": 9.5,
         "close_price": close,
     }
+
+
+def _statement_row(statement: str = "income", **overrides: Any) -> dict[str, Any]:
+    """一张报表的一个报告期：**宽行**（一行一个报告期、一列一个科目）。"""
+    row: dict[str, Any] = {
+        "thscode": "600519.SH",
+        "ticker": "600519",
+        "period": "annual",
+        "fiscal_year": 2024,
+        "fiscal_period": "FY",
+        "period_end_ms": _ms("2024-12-31"),
+        "report_date_ms": _ms("2025-04-17"),
+        "currency": "CNY",
+        **dict.fromkeys(FINANCIAL_STATEMENT_ITEMS[statement], 1.0),
+    }
+    row["net_profit"] = 86_228_150_000.0
+    row.update(overrides)
+    return row
 
 
 class TestRequestBuilders:
@@ -241,6 +273,74 @@ class TestRequestBuilders:
             build_index_constituents_request(symbol="000300")
         with pytest.raises(FuyaoError, match="FUYAO_ENVELOPE_INVALID_symbol"):
             build_index_constituents_request(symbol="  ")
+
+    def test_financial_request_always_sends_period(self):
+        """``period`` 文档写有默认值，实测省略即 1001，故本地永远显式发出."""
+        assert build_financial_statements_request(symbol=" 600519.sh ") == {
+            "thscode": "600519.sh",
+            "period": "annual",
+        }
+        assert build_financial_statements_request(symbol="600519.SH", limit=3) == {
+            "thscode": "600519.SH",
+            "period": "annual",
+            "limit": 3,
+        }
+
+    def test_financial_window_is_closed_interval_shanghai_millis(self):
+        params = build_financial_statements_request(
+            symbol="600519.SH",
+            period="quarterly",
+            start=date(2024, 1, 1),
+            end=date(2025, 12, 31),
+        )
+
+        assert params == {
+            "thscode": "600519.SH",
+            "period": "quarterly",
+            "start": _ms("2024-01-01"),
+            "end": _ms("2025-12-31"),
+        }
+
+    def test_financial_request_modes_and_bounds_fail_closed(self):
+        """上游对这两种非法组合回「标的或字段不受支持」，与真实原因无关，本地先拦."""
+        cases = [
+            ("financial_symbol_qualified", {"symbol": "600519"}),
+            ("FUYAO_ENVELOPE_INVALID_symbol", {"symbol": "  "}),
+            ("financial_period", {"symbol": "600519.SH", "period": "monthly"}),
+            ("financial_window", {"symbol": "600519.SH", "start": date(2024, 1, 1)}),
+            ("financial_window", {"symbol": "600519.SH", "end": date(2024, 1, 1)}),
+            (
+                "financial_window",
+                {
+                    "symbol": "600519.SH",
+                    "start": date(2025, 1, 1),
+                    "end": date(2024, 1, 1),
+                },
+            ),
+            (
+                "financial_window_span",
+                {
+                    "symbol": "600519.SH",
+                    "start": date(2010, 1, 1),
+                    "end": date(2025, 1, 1),
+                },
+            ),
+            (
+                "financial_mode",
+                {
+                    "symbol": "600519.SH",
+                    "start": date(2024, 1, 1),
+                    "end": date(2024, 6, 30),
+                    "limit": 3,
+                },
+            ),
+            ("financial_limit", {"symbol": "600519.SH", "limit": 0}),
+            ("financial_limit", {"symbol": "600519.SH", "limit": 21}),
+            ("financial_limit_type", {"symbol": "600519.SH", "limit": True}),
+        ]
+        for detail, kwargs in cases:
+            with pytest.raises(FuyaoError, match=detail):
+                build_financial_statements_request(**kwargs)
 
 
 class TestNormalizers:
@@ -430,6 +530,131 @@ class TestNormalizers:
                     _envelope_at([{"thscode": "600519.SH", "ticker": "600519"}], _ms("2024-01-02"))
                 ),
                 index_symbol=" ",
+            )
+
+    def test_financial_statements_melt_a_wide_row_into_long_rows(self):
+        """一行一个报告期的宽表 ⇒ 一科目一行；`item` 用上游英文科目名."""
+        items = FINANCIAL_STATEMENT_ITEMS["income"]
+        rows = normalize_financial_statements(
+            _parse(_envelope([_statement_row("income")])), statement_type="income"
+        )
+
+        assert all(isinstance(row, FinancialStatement) for row in rows)
+        assert len(rows) == len(items)  # 每个登记科目一行
+        assert {row.item for row in rows} == set(items)
+        assert {row.symbol for row in rows} == {"600519"}  # 落长表用 ticker（裸码）
+        assert {row.statement_type for row in rows} == {"income"}
+        assert {row.report_period for row in rows} == {date(2024, 12, 31)}
+        assert {row.announce_date for row in rows} == {date(2025, 4, 17)}  # report_date_ms
+        assert {row.revision for row in rows} == {1}  # 上游无修订序列，不猜
+        assert [row.value for row in rows if row.item == "net_profit"] == [86_228_150_000.0]
+        assert [row.item for row in rows] == sorted(items)  # 同报告期按科目升序
+
+    def test_financial_statements_sort_by_period_then_item(self):
+        rows = normalize_financial_statements(
+            _parse(
+                _envelope(
+                    [
+                        _statement_row("income", fiscal_year=2025, period_end_ms=_ms("2025-12-31")),
+                        _statement_row("income"),
+                    ]
+                )
+            ),
+            statement_type="income",
+        )
+
+        assert [row.report_period for row in rows] == sorted(
+            [r.report_period for r in rows]
+        )  # 上游按新→旧回，本地转升序
+        assert rows[0].report_period == date(2024, 12, 31)
+        assert rows[-1].report_period == date(2025, 12, 31)
+
+    def test_each_statement_type_reads_its_own_item_set(self):
+        balance = normalize_financial_statements(
+            _parse(_envelope([_statement_row("balance")])), statement_type="balance"
+        )
+
+        assert {row.item for row in balance} == set(FINANCIAL_STATEMENT_ITEMS["balance"])
+        assert {row.statement_type for row in balance} == {"balance"}
+        with pytest.raises(FuyaoError, match="financial_statement_type"):
+            normalize_financial_statements(
+                _parse(_envelope([_statement_row("income")])), statement_type="notes"
+            )
+
+    def test_financial_null_value_is_skipped_but_a_missing_key_is_not(self):
+        """``null`` 是上游真实缺值；键整列不见是契约漂移，必须失败关闭."""
+        items = FINANCIAL_STATEMENT_ITEMS["income"]
+        with_null = _statement_row("income", research_and_development_expenses=None)
+
+        rows = normalize_financial_statements(
+            _parse(_envelope([with_null])), statement_type="income"
+        )
+
+        assert len(rows) == len(items) - 1
+        assert "research_and_development_expenses" not in {row.item for row in rows}
+        with pytest.raises(FuyaoError, match="financial_income_sales_fee"):
+            normalize_financial_statements(
+                _parse(_envelope([{k: v for k, v in with_null.items() if k != "sales_fee"}])),
+                statement_type="income",
+            )
+
+    def test_financial_non_numeric_value_fails_closed(self):
+        with pytest.raises(FuyaoError, match="financial_income_net_profit_type"):
+            normalize_financial_statements(
+                _parse(_envelope([_statement_row("income", net_profit="862亿")])),
+                statement_type="income",
+            )
+        with pytest.raises(FuyaoError, match="financial_income_basic_eps_type"):
+            normalize_financial_statements(
+                _parse(_envelope([_statement_row("income", basic_eps=True)])),
+                statement_type="income",
+            )
+
+    def test_financial_report_period_reconciles_the_two_fiscal_paths(self):
+        """财年+报告期与 ``period_end_ms`` 必须同指一天：按 UTC 读戳会整体早一天."""
+        rows = normalize_financial_statements(
+            _parse(_envelope([_statement_row("income", fiscal_period="Q4")])),
+            statement_type="income",
+        )
+
+        assert {row.report_period for row in rows} == {date(2024, 12, 31)}  # Q4 与 FY 同为年末
+
+        for detail, overrides in [
+            ("financial_income_period_mismatch", {"fiscal_period": "Q3"}),
+            ("financial_income_period_mismatch", {"fiscal_year": 2023}),
+            ("financial_income_fiscal_period", {"fiscal_period": "Q5"}),
+            ("financial_income_fiscal_type", {"fiscal_year": "2024"}),
+            ("financial_income_fiscal_type", {"fiscal_period": 4}),
+        ]:
+            with pytest.raises(FuyaoError, match=detail):
+                normalize_financial_statements(
+                    _parse(_envelope([_statement_row("income", **overrides)])),
+                    statement_type="income",
+                )
+
+    def test_financial_statements_reject_a_non_cny_currency(self):
+        """契约没有币种字段：把美元数当人民币入库不会报错，只会算错."""
+        with pytest.raises(FuyaoError, match="financial_income_currency"):
+            normalize_financial_statements(
+                _parse(_envelope([_statement_row("income", currency="USD")])),
+                statement_type="income",
+            )
+
+    def test_financial_statements_require_both_symbol_fields_to_agree(self):
+        with pytest.raises(FuyaoError, match="financial_income_symbol_mismatch"):
+            normalize_financial_statements(
+                _parse(_envelope([_statement_row("income", ticker="600520")])),
+                statement_type="income",
+            )
+        with pytest.raises(FuyaoError, match="financial_balance_symbol_mismatch"):
+            normalize_financial_statements(
+                _parse(_envelope([_statement_row("balance", thscode="600520.SH")])),
+                statement_type="balance",
+            )
+        with pytest.raises(FuyaoError, match="financial_income_symbol_type"):
+            normalize_financial_statements(
+                _parse(_envelope([_statement_row("income", ticker=None)])),
+                statement_type="income",
             )
 
 
@@ -696,6 +921,72 @@ class TestFetchers:
 
         assert exc.value.category == "request"
         assert exc.value.upstream_code == 1002
+
+    @pytest.mark.parametrize(
+        ("statement_type", "endpoint"),
+        [
+            ("income", INCOME_STATEMENTS_ENDPOINT),
+            ("balance", BALANCE_SHEETS_ENDPOINT),
+            ("cashflow", CASH_FLOW_STATEMENTS_ENDPOINT),
+        ],
+    )
+    def test_each_statement_hits_its_own_endpoint(self, statement_type: str, endpoint: str):
+        seen: dict[str, str] = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen["path"] = request.url.path
+            seen["params"] = str(request.url.params)
+            return httpx.Response(200, content=_envelope([_statement_row(statement_type)]))
+
+        with _client(handler) as client:
+            rows = fetch_financial_statements(
+                client, symbol="600519.SH", statement_type=statement_type
+            )
+
+        assert seen["path"] == endpoint
+        assert "thscode=600519.SH" in seen["params"]
+        assert "period=annual" in seen["params"]  # 文档写「默认 annual」，实测省略即 1001
+        assert len(rows) == len(FINANCIAL_STATEMENT_ITEMS[statement_type])
+
+    def test_statement_window_and_limit_reach_the_query(self):
+        seen: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(str(request.url.params))
+            return httpx.Response(200, content=_envelope([_statement_row("balance")]))
+
+        with _client(handler) as client:
+            fetch_financial_statements(
+                client,
+                symbol="600036.SH",
+                statement_type="balance",
+                period="quarterly",
+                start=date(2024, 1, 1),
+                end=date(2024, 12, 31),
+            )
+            fetch_financial_statements(
+                client, symbol="600036.SH", statement_type="balance", limit=3
+            )
+
+        assert "period=quarterly" in seen[0]
+        assert f"start={_ms('2024-01-01')}" in seen[0]
+        assert f"end={_ms('2024-12-31')}" in seen[0]
+        assert "limit=3" in seen[1]
+        assert "start=" not in seen[1] and "end=" not in seen[1]
+
+    def test_unknown_statement_type_fails_before_any_request(self):
+        """三张报表各有端点：给了未知类型不该静默打到其中某一张."""
+        requested: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            requested.append(request.url.path)
+            return httpx.Response(200, content=_envelope([]))
+
+        with _client(handler) as client, pytest.raises(FuyaoError) as exc:
+            fetch_financial_statements(client, symbol="600519.SH", statement_type="notes")
+
+        assert "financial_statement_type" in str(exc.value)
+        assert requested == []
 
     def test_upstream_business_error_propagates_with_category(self):
         def handler(request: httpx.Request) -> httpx.Response:

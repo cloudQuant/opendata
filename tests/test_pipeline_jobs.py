@@ -113,8 +113,14 @@ class TestRunIncrementalJob:
     async def test_result_counts_come_from_the_per_source_outcomes(
         self, stubbed_run: list[dict[str, Any]]
     ) -> None:
+        """``as_of`` must be pinned: omitting it defaults to *today*, so the
+        expected window below would only hold on 2026-09-24."""
         result = await jobs.run_incremental_job(
-            source="ths", second_source="akshare", symbols=["600519"], engine=object()
+            source="ths",
+            second_source="akshare",
+            symbols=["600519"],
+            as_of=WINDOW.start,
+            engine=object(),
         )
 
         payload = result.as_dict()

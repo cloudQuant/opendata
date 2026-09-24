@@ -1,0 +1,43 @@
+AC-10 financial_statement (ths) vs 新浪财务报表（akshare 搬运链）
+
+script: scripts/ops/ths_financial_statement_cross_check.py
+ours: get_registry().resolve_domain('financial_statement', source='ths').fetch(...)
+          (the routing path; endpoints /api/a-share/financials/income-statements, /api/a-share/financials/balance-sheets, /api/a-share/financials/cash-flow-statements)
+reference: get_registry().resolve_domain('financial_statement', source='akshare')
+          -- 新浪三张报表（搬运链）：不同的 vendor、不同的抓取链
+hard criteria: every mapped line item agrees to the cent --
+          round(value, 2) identical, not a relative tolerance, because both
+          sides publish 元/两位小数 (measured max relative residual 1.38e-16);
+          announce_date identical per period (point-in-time queries depend on it);
+          at least 12 judged cells per leg (a near-empty response proves nothing);
+          no (symbol, report_period, item) key carrying two different figures;
+          no report period on our side that the reference never disclosed;
+          判据只覆盖**两侧对该标的都发布了这一列**的格子：某标的不发布某科目
+          是报表形态差异（实测：银行利润表无营业成本/销售费用/研发费用/所得税费用，
+          资产负债表用「现金及存放中央银行款项」而非「货币资金」），逐条打印为
+          不可比科目、不判定；但一个科目若在**所有**腿的参照侧都不存在即映射写错，
+          必然失败（否则判据集合会静默缩小）；
+          中文 statement_type 写法与英文名落到同一批行。
+          A diff fails unless registered in KNOWN_DEVIATIONS with its
+          attribution, and a registered diff that falls back into line fails too.
+
+| leg | thscode | 报表/口径 | 我们期数 | 新浪期数 | 判据单元格 | 值不符 | 披露日不符 | 缺期缺列 | 不可比科目 | result |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 贵州茅台 利润表 年报 | 600519.SH | 利润表/annual | 4 | 103 | 52 | 0 | 0 | 0 | 0 | PASS |
+| 贵州茅台 资产负债表 年报 | 600519.SH | 资产负债表/annual | 4 | 103 | 28 | 0 | 0 | 0 | 0 | PASS |
+| 贵州茅台 现金流量表 年报 | 600519.SH | 现金流量表/annual | 4 | 99 | 24 | 0 | 0 | 0 | 0 | PASS |
+| 平安银行 利润表 年报 | 000001.SZ | 利润表/annual | 4 | 123 | 24 | 0 | 0 | 0 | 7 | PASS |
+| 宁德时代 现金流量表 年报 | 300750.SZ | 现金流量表/annual | 4 | 41 | 24 | 0 | 0 | 0 | 0 | PASS |
+| 中芯国际 利润表 年报 | 688981.SH | 利润表/annual | 4 | 43 | 48 | 0 | 0 | 0 | 1 | PASS |
+| 招商银行 资产负债表 季报窗口 | 600036.SH | 资产负债表/quarterly 2024-01-01~2025-12-31 | 8 | 102 | 16 | 0 | 0 | 0 | 4 | PASS |
+| 贵州茅台 利润表 季报窗口 | 600519.SH | 利润表/quarterly 2024-03-31~2025-03-31 | 5 | 103 | 65 | 0 | 0 | 0 | 0 | PASS |
+| 贵州茅台 利润表 中文写法 | 600519.SH | 利润表（≡income） | - | - | - | - | - | - | - | PASS |
+
+## 观测备注（含已登记的跨 vendor 修订）
+
+- 000001 income 不可比科目（参照方未发布该列，形态差异而非数据分歧）：income_tax_expense, manage_fee, operating_costs, operating_expenses, parent_holder_net_profit, research_and_development_expenses, sales_fee
+- 688981 income 不可比科目（参照方未发布该列，形态差异而非数据分歧）：interest_expenses
+- 600036 balance 不可比科目（参照方未发布该列，形态差异而非数据分歧）：cash, holder_equity_total, non_current_nets_total, total_current_assets
+- 贵州茅台 利润表 中文写法: 与标准腿逐单元格一致（52 格）
+
+result: PASS (0 failing legs)

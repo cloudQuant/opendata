@@ -448,13 +448,14 @@ class TestCapabilitiesEndpoint:
         by_domain = {entry["domain"]: entry for entry in payload}
         assert set(by_domain) >= P0_DOMAINS
         # A3.4: the fuyao (ths) provider is now registered and authoritative for
-        # the two domains it serves, so the listing reports it there; the other
+        # the domains it serves, so the listing reports it there; the remaining
         # P0 domains still come from akshare.
         assert by_domain["stock_daily"]["source"] == "ths"
         assert by_domain["stock_daily"]["asset_class"] == "equity"
         assert by_domain["stock_daily"]["verified"] is True
-        assert by_domain["financial_statement"]["source"] == "akshare"
-        assert by_domain["financial_statement"]["verified"] is False
+        # C10: 财务报表经跨 vendor 逐科目对照转正，权威源随权威序翻到 ths。
+        assert by_domain["financial_statement"]["source"] == "ths"
+        assert by_domain["financial_statement"]["verified"] is True
 
     async def test_capabilities_requires_authentication(self, test_client):
         response = await test_client.get("/api/v1/data/capabilities")

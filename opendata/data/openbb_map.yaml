@@ -76,11 +76,15 @@ entries:
     scenario: 财务报表（dwd 财务域）
     ours:
       - {provider: akshare, domain: financial_statement, contract: FinancialStatement, status: registered}
-      - {provider: ths, domain: financial_statement, contract: FinancialStatement, status: pending}
+      - {provider: ths, domain: financial_statement, contract: FinancialStatement, status: verified}
   - openbb: {model: TBD}
     scenario: 财务指标（dwd 财务域）
     ours:
       - {provider: akshare, domain: financial_indicator, contract: FinancialIndicator, status: registered}
+      # ths/fuyao 侧 /api/a-share/financials/financial-indicators 的响应是
+      # data.abilities（指标名→**字符串**值），行内没有披露日；契约
+      # FinancialIndicator.announce_date 必填且是 PIT 查询的键，故不本地造日期：
+      # 等口径定案（指标字典 + 披露日来源）再接。见 docs/evidence/C10。
       - {provider: ths, domain: financial_indicator, contract: FinancialIndicator, status: pending}
   - openbb: {model: TBD}
     scenario: 指数成分股（dwd 指数域）

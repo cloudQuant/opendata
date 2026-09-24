@@ -87,9 +87,9 @@ entries:
   - {section: ticker-search, family: 基础, method: GET, path: /api/meta/tickers/search, title: '标的检索', status: implemented, domain: instrument, scenario: '标的消歧：thscode/ticker/名称互查，入库前校验代码'}
   - {section: corporate-actions, family: A股, method: GET, path: /api/a-share/corporate-actions/adjustment-factors, title: '除复权', status: implemented, domain: stock_action, scenario: '除权除息事件流：复权因子与事件窗口的权威来源'}
   - {section: ticker-list, family: 基础, method: GET, path: /api/meta/tickers/list, title: '标的列表获取', status: implemented, domain: instrument, scenario: '标的目录增量：按资产类型分页刷新 Instrument'}
-  - {section: financials, family: A股, method: GET, path: /api/a-share/financials/income-statements, title: '利润表', status: available, domain: financial_statement, scenario: '利润表多期序列：dwd 财务域 ths 副源候选'}
-  - {section: financials, family: A股, method: GET, path: /api/a-share/financials/balance-sheets, title: '资产负债表', status: available, domain: financial_statement, scenario: '资产负债表多期序列：dwd 财务域 ths 副源候选'}
-  - {section: financials, family: A股, method: GET, path: /api/a-share/financials/cash-flow-statements, title: '现金流量表', status: available, domain: financial_statement, scenario: '现金流量表多期序列：dwd 财务域 ths 副源候选'}
+  - {section: financials, family: A股, method: GET, path: /api/a-share/financials/income-statements, title: '利润表', status: implemented, domain: financial_statement, scenario: '利润表多期序列：dwd 财务域 ths 源（C10 与新浪逐科目对照一致）'}
+  - {section: financials, family: A股, method: GET, path: /api/a-share/financials/balance-sheets, title: '资产负债表', status: implemented, domain: financial_statement, scenario: '资产负债表多期序列：dwd 财务域 ths 源（C10 与新浪逐科目对照一致）'}
+  - {section: financials, family: A股, method: GET, path: /api/a-share/financials/cash-flow-statements, title: '现金流量表', status: implemented, domain: financial_statement, scenario: '现金流量表多期序列：dwd 财务域 ths 源（C10 与新浪逐科目对照一致）'}
   - {section: calendar, family: 基础, method: GET, path: /api/a-share/calendar/trading-days, title: '交易日历', status: implemented, domain: trading_calendar, scenario: '交易日历：调度窗口、回填区间与收盘基准'}
   - {section: a-share-index, family: 指数, method: GET, path: /api/a-share-index/catalog/ths-index-list, title: '同花顺指数列表', status: available, domain: index_constituent, scenario: '同花顺行业/概念指数目录：板块指数清单前置查询'}
   - {section: a-share-index, family: 指数, method: GET, path: /api/a-share-index/constituents/ths-stock-list, title: '同花顺指数成分股', status: implemented, domain: index_constituent, scenario: '指数成分股（含沪深300 等标准指数）：成分因子与指数增强选股'}
@@ -102,7 +102,7 @@ entries:
   - {section: capital-flow, family: A股, method: GET, path: /api/a-share/capital-flow/snapshot, title: '资金流向实时快照', status: client_only, domain: null, scenario: '主力资金实时快照：端外未开放，暂不接入'}
   - {section: capital-flow, family: A股, method: GET, path: /api/a-share/capital-flow/historical, title: '资金流向历史', status: client_only, domain: null, scenario: '主力资金历史序列：端外未开放，暂不接入'}
   - {section: dragon-tiger-data, family: A股, method: GET, path: /api/a-share/special-data/dragon-tiger-list, title: '龙虎榜数据', status: available, domain: null, scenario: '龙虎榜事件：机构/游资行为因子（迭代 2 候选）'}
-  - {section: financial-indicators, family: A股, method: GET, path: /api/a-share/financials/indicators, title: '财务指标数据', status: available, domain: financial_indicator, scenario: '五类财务指标：dwd 财务指标域 ths 副源候选'}
+  - {section: financial-indicators, family: A股, method: GET, path: /api/a-share/financials/indicators, title: '财务指标数据', status: available, domain: financial_indicator, scenario: '五类财务指标：响应为 data.abilities 且行内无披露日，契约 FinancialIndicator.announce_date 必填，故待口径定案再接（C10 实测）'}
   - {section: fund-backtest, family: 基金, method: GET, path: /api/fund/backtest/result, title: '基金在线回测', status: available, domain: null, scenario: '基金在线回测：上游托管回测，非中台链路'}
   - {section: fund-backtest, family: 基金, method: GET, path: /api/fund/backtest/indicators, title: '基金回测可用指标', status: available, domain: null, scenario: '回测可用指标目录：回测参数选择'}
   - {section: fund-company, family: 基金, method: GET, path: /api/fund/companies/detail, title: '基金公司详情', status: available, domain: null, scenario: '基金公司资料：FOF 管理人尽调维度'}

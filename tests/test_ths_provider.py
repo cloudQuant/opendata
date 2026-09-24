@@ -16,7 +16,7 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
-from opendata.data.models import Bar, CorporateAction, IndexConstituent
+from opendata.data.models import Bar, CorporateAction, FinancialStatement, IndexConstituent
 from opendata.data.protocol import FetchContext
 from opendata.data.providers.ths.models._client import (
     ThsProviderError,
@@ -27,6 +27,7 @@ from opendata.data.providers.ths.models._client import (
     resolve_index_code,
     resolve_option_code,
 )
+from opendata.data.providers.ths.models.financial_statement import ThsFinancialStatementFetcher
 from opendata.data.providers.ths.models.futures_daily import ThsFuturesDailyFetcher
 from opendata.data.providers.ths.models.index_constituent import ThsIndexConstituentFetcher
 from opendata.data.providers.ths.models.index_daily import ThsIndexDailyFetcher
@@ -90,6 +91,30 @@ def _event_row() -> dict:
     }
 
 
+#: 财务报表的宽行：一行一个报告期，日期同样是上海零点毫秒戳。
+PERIOD_END_MS = 1703952000000  # 2023-12-31
+DISCLOSE_MS = 1713196800000  # 2024-04-16
+
+
+def _statement_row(statement: str = "income", **overrides) -> dict:
+    """一张报表的一个报告期（科目值全为 1.0，只验形状与身份）."""
+    from opendata_fuyao.endpoints import FINANCIAL_STATEMENT_ITEMS
+
+    row = {
+        "thscode": "600519.SH",
+        "ticker": "600519",
+        "period": "annual",
+        "fiscal_year": 2023,
+        "fiscal_period": "FY",
+        "period_end_ms": PERIOD_END_MS,
+        "report_date_ms": DISCLOSE_MS,
+        "currency": "CNY",
+        **dict.fromkeys(FINANCIAL_STATEMENT_ITEMS[statement], 1.0),
+    }
+    row.update(overrides)
+    return row
+
+
 def _factory(handler):  # httpx handler
     """Build the context-manager factory the fetchers call per fetch."""
     import contextlib
@@ -126,6 +151,7 @@ class TestRegistration:
             ("stock_action", "ths"),
             ("index_daily", "ths"),
             ("index_constituent", "ths"),
+            ("financial_statement", "ths"),
             ("futures_daily", "ths"),
             ("option_daily", "ths"),
         }
@@ -146,6 +172,7 @@ class TestRegistration:
             ("equity", "stock_action", "1D", "cn"),
             ("index", "index_daily", "1D", "cn"),
             ("index", "index_constituent", "snapshot", "cn"),
+            ("equity", "financial_statement", "Q", "cn"),
             ("futures", "futures_daily", "1D", "cn"),
             ("option", "option_daily", "1D", "cn"),
         }
@@ -174,6 +201,7 @@ class TestRegistration:
         assert authority_baseline()["stock_action"][0] == "ths"
         assert authority_baseline()["index_daily"][0] == "ths"
         assert authority_baseline()["index_constituent"][0] == "ths"
+        assert authority_baseline()["financial_statement"][0] == "ths"
         assert authority_baseline()["futures_daily"][0] == "ths"
         assert authority_baseline()["option_daily"][0] == "ths"
 
@@ -669,6 +697,144 @@ class TestFetchStages:
 
         assert query.symbol == "600519.SH"
         assert FetchContext(timeout=5.0).timeout == 5.0
+
+
+class TestFinancialStatementAdapter:
+    """C10: 财务报表腿的查询词表、宽行摊长与行身份校验."""
+
+    def test_chinese_disclosure_name_normalizes_to_the_contract_value(self):
+        """新浪那条腿用中文类型：这里接受中文入参，但入库只写契约取值."""
+        fetcher = ThsFinancialStatementFetcher()
+
+        assert fetcher.transform_query(symbol="600519.SH").statement_type == "income"
+        for alias, value in (
+            ("利润表", "income"),
+            ("资产负债表", "balance"),
+            ("现金流量表", "cashflow"),
+        ):
+            query = fetcher.transform_query(symbol="600519.SH", statement_type=alias)
+            assert query.statement_type == value
+
+    def test_unknown_vocabulary_fails_closed(self):
+        fetcher = ThsFinancialStatementFetcher()
+
+        with pytest.raises(ThsProviderError, match="THS_STATEMENT_TYPE_UNSUPPORTED"):
+            fetcher.transform_query(symbol="600519.SH", statement_type="所有者权益变动表")
+        with pytest.raises(ThsProviderError, match="THS_FINANCIAL_PERIOD_UNSUPPORTED"):
+            fetcher.transform_query(symbol="600519.SH", period="monthly")
+        with pytest.raises(ThsProviderError, match="THS_FINANCIAL_WINDOW_INCOMPLETE"):
+            fetcher.transform_query(symbol="600519.SH", start_date=date(2024, 1, 1))
+        with pytest.raises(ValidationError):  # 财务数没有复权口径
+            fetcher.transform_query(symbol="600519.SH", adjust="qfq")
+
+    def test_fetch_melts_the_wide_response_and_orders_it_ascending(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
+        """上游一行一个报告期（新→旧），契约要一科目一行、按报告期升序."""
+        from opendata_fuyao.endpoints import FINANCIAL_STATEMENT_ITEMS
+
+        seen: dict[str, str] = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen["path"] = request.url.path
+            seen["params"] = str(request.url.params)
+            return httpx.Response(
+                200,
+                content=_envelope(
+                    [
+                        _statement_row("income"),
+                        _statement_row("income", fiscal_year=2022, period_end_ms=1672416000000),
+                    ]
+                ),
+            )
+
+        monkeypatch.setattr(
+            "opendata.data.providers.ths.models.financial_statement.client", _factory(handler)
+        )
+        rows = ThsFinancialStatementFetcher().fetch(symbol="600519.SH", statement_type="income")
+
+        assert seen["path"] == "/api/a-share/financials/income-statements"
+        assert "thscode=600519.SH" in seen["params"]
+        assert "period=annual" in seen["params"]
+        assert all(isinstance(row, FinancialStatement) for row in rows)
+        assert len(rows) == 2 * len(FINANCIAL_STATEMENT_ITEMS["income"])
+        assert [row.report_period for row in rows] == sorted(r.report_period for r in rows)
+        assert rows[0].report_period == date(2022, 12, 31)
+        assert {row.symbol for row in rows} == {"600519"}  # 长表用裸码（合并键）
+        assert {row.revision for row in rows} == {1}
+
+    def test_fetch_resolves_a_bare_code_before_asking_for_a_statement(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
+        """裸码先经 search 解析成 thscode：财务报表端点对裸码回 1002."""
+        seen: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request.url.path)
+            if request.url.path.endswith("/search"):
+                return httpx.Response(
+                    200,
+                    content=_envelope([{"thscode": "600519.SH", "ticker": "600519", "name": "x"}]),
+                )
+            return httpx.Response(200, content=_envelope([_statement_row("balance")]))
+
+        monkeypatch.setattr(
+            "opendata.data.providers.ths.models.financial_statement.client", _factory(handler)
+        )
+        rows = ThsFinancialStatementFetcher().fetch(symbol="600519", statement_type="资产负债表")
+
+        assert seen == ["/api/meta/tickers/search", "/api/a-share/financials/balance-sheets"]
+        assert {row.statement_type for row in rows} == {"balance"}
+
+    def test_fetch_passes_the_report_period_window(self, monkeypatch: pytest.MonkeyPatch):
+        seen: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(str(request.url.params))
+            return httpx.Response(
+                200,
+                content=_envelope(
+                    [_statement_row("cashflow", thscode="300750.SZ", ticker="300750")]
+                ),
+            )
+
+        monkeypatch.setattr(
+            "opendata.data.providers.ths.models.financial_statement.client", _factory(handler)
+        )
+        ThsFinancialStatementFetcher().fetch(
+            symbol="300750.SZ",
+            statement_type="现金流量表",
+            period="quarterly",
+            start_date=date(2024, 1, 1),
+            end_date=date(2024, 12, 31),
+        )
+
+        assert "period=quarterly" in seen[0]
+        assert "start=1704038400000" in seen[0]  # 2024-01-01 上海零点
+        assert "end=1735574400000" in seen[0]  # 2024-12-31 上海零点
+
+    def test_financial_empty_response_fails_closed(self):
+        fetcher = ThsFinancialStatementFetcher()
+        query = fetcher.transform_query(symbol="600519.SH")
+
+        with pytest.raises(ThsProviderError, match="THS_EMPTY_RESPONSE"):
+            fetcher.transform_data((), query)
+
+    def test_financial_rows_from_another_issuer_fail_closed(self):
+        """上游按 thscode 取数，回显别的发行人只能是接错标的."""
+        fetcher = ThsFinancialStatementFetcher()
+        query = fetcher.transform_query(symbol="600519.SH")
+        row = FinancialStatement(
+            symbol="600520",
+            statement_type="income",
+            report_period=date(2023, 12, 31),
+            announce_date=date(2024, 4, 16),
+            item="net_profit",
+            value=1.0,
+        )
+
+        with pytest.raises(ThsProviderError, match="THS_FINANCIAL_SYMBOL_MISMATCH"):
+            fetcher.transform_data((row,), query)
 
 
 @pytest.mark.e2e
