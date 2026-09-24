@@ -1,0 +1,38 @@
+AC-10 stock_daily_overseas (yfinance) vs the official sina series
+
+script: scripts/ops/yfinance_overseas_cross_check.py
+ours: get_registry().resolve_domain('stock_daily_overseas', source='yfinance').fetch(...)
+          (the routing path, i.e. the adapter's restored output)
+official: sina stock_us_daily / stock_hk_daily with adjust='' (as-traded)
+          -- different vendor, different adjustment chain
+hard criteria: overlap >= 0.95 of our trading days; relative deviation <=
+          1e-06 on close, 0.0001 on open/high/low,
+          0.005 on volume.
+          A day above a bound fails unless it is registered in KNOWN_DEVIATIONS
+          (and a registered day that falls back inside the bound fails, too).
+
+| leg | yfinance | sina | window | days | overlap | max dev close | max dev O/H/L | volume ratio yf/sina | result |
+|---|---|---|---|---|---|---|---|---|---|
+| US 2026-08 | AAPL | AAPL | 2026-08-03 .. 2026-09-22 | 36 | 1.000 | 4.43e-08 | 1.66e-05 | 0.999999 .. 1.000004 | PASS |
+| US 2026-08 div | KO | KO | 2026-08-03 .. 2026-09-22 | 35 | 1.000 | 4.08e-08 | 5.81e-05 | 0.999427 .. 1.000019 | PASS |
+| US 2026-08 | MSFT | MSFT | 2026-08-03 .. 2026-09-22 | 36 | 1.000 | 5.70e-08 | 1.05e-05 | 0.999454 .. 1.000008 | PASS |
+| HK 2026-08 | 0700.HK | 00700 | 2026-08-03 .. 2026-09-22 | 37 | 1.000 | 9.16e-09 | 2.24e-03 | 1.000000 .. 1.000000 | PASS |
+| HK 2026-08 | 0005.HK | 00005 | 2026-08-03 .. 2026-09-22 | 37 | 1.000 | 2.44e-08 | 3.85e-08 | 1.000000 .. 1.000000 | PASS |
+
+Split windows (the ex-date is inside, or after, the range):
+
+
+| leg | yfinance | sina | window | days | overlap | max dev close | max dev O/H/L | volume ratio yf/sina | result |
+|---|---|---|---|---|---|---|---|---|---|
+| AAPL 4:1 straddle | AAPL | AAPL | 2020-08-20 .. 2020-09-04 | 12 | 1.000 | 5.46e-08 | 4.27e-08 | 0.996576 .. 1.000001 | PASS |
+| AAPL 4:1 before | AAPL | AAPL | 2020-06-01 .. 2020-07-14 | 31 | 1.000 | 7.32e-04 | 4.52e-08 | 0.997193 .. 1.000002 | PASS |
+| CVNA 5:1 straddle | CVNA | CVNA | 2026-04-27 .. 2026-05-15 | 15 | 1.000 | 4.63e-08 | 1.46e-06 | 0.999867 .. 1.000058 | PASS |
+| CVNA 5:1 before | CVNA | CVNA | 2026-04-06 .. 2026-04-24 | 15 | 1.000 | 5.18e-08 | 1.29e-06 | 0.999912 .. 1.000062 | PASS |
+
+
+## 已登记的单日差异（跨供应商修订，非口径差）
+
+- 0700.HK 2026-09-04 high（实测 2.24e-03 > 阈值 0.0001）：yfinance 447.60 / sina 446.60：+1.00 港元（2.24e-03），该腿其余 36 日 high ≤ 2.9e-08，非乘性口径差，属单日盘中最高价修订
+- AAPL 2020-07-09 close（实测 7.32e-04 > 阈值 1e-06）：yfinance 383.01 / sina 382.73：+0.28 美元（7.32e-04），同腿 31 日开盘/最高/最低全部 ≤ 4.6e-08（已按 ×4 还原），故非拆分因子问题，属单日收盘修订
+
+result: PASS (0 failing legs)

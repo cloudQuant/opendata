@@ -1,0 +1,18 @@
+What the pre-fix adapter and the SDK default would have stored
+
+script: scripts/ops/yfinance_overseas_cross_check.py --counterfactual
+auto_adjust = the SDK default (dividend adjustment folded into OHLC)
+window_local = C8 pre-fix: raw mode, split factor taken from the window only
+deviation = max |value / sina as-traded close - 1| over the window
+
+| leg | symbol | window | dividends in window | max dev auto_adjust | max dev window-local |
+|---|---|---|---|---|---|
+| US 2026-08 | AAPL | 2026-08-03 .. 2026-09-22 | 0.27 | 8.62e-04 | 4.43e-08 |
+| US 2026-08 div | KO | 2026-08-03 .. 2026-09-22 | 0.53 | 5.93e-03 | 4.08e-08 |
+| US 2026-08 | MSFT | 2026-08-03 .. 2026-09-22 | 0.91 | 1.88e-03 | 5.70e-08 |
+| HK 2026-08 | 0700.HK | 2026-08-03 .. 2026-09-22 | 0.00 | 9.16e-09 | 9.16e-09 |
+| HK 2026-08 | 0005.HK | 2026-08-03 .. 2026-09-22 | 0.78 | 4.86e-03 | 2.44e-08 |
+| AAPL 4:1 straddle | AAPL | 2020-08-20 .. 2020-09-04 | 0.00 | 7.58e-01 | 5.46e-08 |
+| AAPL 4:1 before | AAPL | 2020-06-01 .. 2020-07-14 | 0.00 | 7.58e-01 | 7.50e-01 |
+| CVNA 5:1 straddle | CVNA | 2026-04-27 .. 2026-05-15 | 0.00 | 8.00e-01 | 4.63e-08 |
+| CVNA 5:1 before | CVNA | 2026-04-06 .. 2026-04-24 | 0.00 | 8.00e-01 | 8.00e-01 |
