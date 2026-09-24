@@ -1,0 +1,27 @@
+/Users/yunjinqi/Documents/new_projects/opendata/opendata/api/settings.py:76: PytestCollectionWarning: cannot collect test class 'TestConnectionRequest' because it has a __init__ constructor (from: tests/test_settings_coverage.py)
+  class TestConnectionRequest(BaseModel):
+============================= test session starts ==============================
+collected 2259 items / 2188 deselected / 71 selected
+
+tests/test_api_keys.py ...                                               [  4%]
+tests/test_data_query_api.py .............                               [ 22%]
+tests/test_diff_report.py ..                                             [ 25%]
+tests/test_dump_import.py ..                                             [ 28%]
+tests/test_dwd_merge.py .                                                [ 29%]
+tests/test_ecb_provider.py ...                                           [ 33%]
+tests/test_factor_builder_e2e.py ....                                    [ 39%]
+tests/test_fuyao_dumps.py ..                                             [ 42%]
+tests/test_fuyao_endpoints.py ....                                       [ 47%]
+tests/test_imf_provider.py .                                             [ 49%]
+tests/test_ods_writer.py .....                                           [ 56%]
+tests/test_oecd_provider.py ..                                           [ 59%]
+tests/test_opendata_client.py .....                                      [ 66%]
+tests/test_partition_maintenance.py ...                                  [ 70%]
+tests/test_pipeline_runner.py .                                          [ 71%]
+tests/test_retention.py ...                                              [ 76%]
+tests/test_ths_dwd_integration.py .                                      [ 77%]
+tests/test_ths_provider.py ..                                            [ 80%]
+tests/test_warehouse_migrations.py .                                     [ 81%]
+tests/test_watermark.py .............                                    [100%]
+
+================ 71 passed, 2188 deselected in 60.62s (0:01:00) ================
