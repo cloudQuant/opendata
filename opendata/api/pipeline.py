@@ -18,12 +18,66 @@ from opendata.api.dependencies import (
 )
 from opendata.api.schemas import APIResponse
 from opendata.core.database import get_db
+from opendata.pipeline.patrol import key_status, patrol
 from opendata.pipeline.retry import list_failed_shards, mark_failed_for_retry
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
+
+
+@router.get("/health/sources")
+async def source_health(
+    current_user: CurrentUser,
+) -> APIResponse:
+    """Report the credential configuration of every source (B3.4/AC-19).
+
+    Args:
+        current_user: Authenticated user.
+
+    Returns:
+        Per-source required/configured status and endpoint.
+    """
+    return APIResponse(success=True, message="success", data={"sources": key_status()})
+
+
+@router.post("/health/patrol")
+async def run_source_patrol(
+    current_user: CurrentUser,
+) -> APIResponse:
+    """Probe every verified capability and refresh routing health (AC-4).
+
+    The patrol marks failing sources unhealthy so ``source=auto`` stops
+    routing to them; a broken source is reported, not hidden.
+
+    Args:
+        current_user: Authenticated user.
+
+    Returns:
+        Per-capability probe results plus the key status.
+    """
+    results = list(await patrol())
+    return APIResponse(
+        success=True,
+        message="success",
+        data={
+            "count": len(results),
+            "healthy": sum(1 for result in results if result.ok),
+            "results": [
+                {
+                    "domain": result.domain,
+                    "source": result.source,
+                    "ok": result.ok,
+                    "error": result.error,
+                    "latency_ms": round(result.latency_ms, 1),
+                    "verified": result.verified,
+                }
+                for result in results
+            ],
+            "keys": key_status(),
+        },
+    )
 
 
 @router.get("/pipeline/failures")
