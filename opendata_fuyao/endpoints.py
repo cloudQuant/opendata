@@ -819,14 +819,21 @@ def list_instruments(
 def fetch_trading_calendar(
     client: FuyaoHttpClient, *, exchange: str
 ) -> tuple[TradingCalendar, ...]:
-    """取 A 股交易日历（上游一次返回整段，无窗口参数）.
+    """取 A 股交易日历（上游只给**滚动的一年窗口**，实测无窗口参数）.
+
+    2026-09-25 凌晨实测：一次返回 242 行，区间是「请求日往前一年」到**上一
+    个已完成交易日**（2025-09-25..2026-09-24），当天的行情尚未收盘故不在内；
+    ``start_date`` / ``begin_date`` / ``start`` / ``year`` / ``days`` / ``limit``
+    六种候选参数逐个试过后响应一字不差，说明它们全部被忽略，因此这里不传参数。
+    语义后果：可算 ``prev_trade_date``，**算不了**未来窗口的
+    ``next_trade_date``，也不能用于历史回填的日序还原。
 
     Args:
         client: 传输层客户端。
         exchange: 交易所标识（显式给出，上游不区分交易所）。
 
     Returns:
-        交易日历行。
+        交易日历行，按日期升序；只含交易日（上游不发布 ``is_open=False`` 行）。
     """
     response = client.get(CALENDAR_ENDPOINT, params={})
     return normalize_calendar(response.envelope, exchange=exchange)
