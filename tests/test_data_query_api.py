@@ -426,3 +426,59 @@ class TestExportAgainstTheWarehouse:
         assert response.status_code == 200
         assert "'=cmd|'/c calc'!A0" in body
         assert "\n=cmd|" not in body and ",=cmd|" not in body
+
+
+class TestWarehouseTables:
+    """B5.2: the layer-aware warehouse table view."""
+
+    async def test_warehouse_endpoint_requires_auth(self, test_client):
+        response = await test_client.get("/api/v1/tables/warehouse")
+
+        assert response.status_code == 401
+
+    async def test_warehouse_route_is_registered_before_dynamic_ids(self):
+        from opendata.main import app
+
+        paths = app.openapi()["paths"]
+        assert "/api/v1/tables/warehouse" in paths
+
+
+@pytest.mark.e2e
+class TestWarehouseTablesLive:
+    @pytest.fixture(autouse=True)
+    def registered_capabilities(self):
+        from opendata.data.providers import register_providers
+
+        register_providers()
+
+    @pytest.fixture(autouse=True)
+    def real_data_db(self, test_client):
+        """The warehouse listing reads MySQL's information_schema, so the
+        SQLite override the gate fixture installs must be lifted here."""
+        from opendata.core.database import get_data_db
+
+        app.dependency_overrides.pop(get_data_db, None)
+        yield
+
+    async def test_lists_the_real_warehouse_tables(self, test_client, test_user_token):
+        response = await test_client.get(
+            "/api/v1/tables/warehouse",
+            headers={"Authorization": f"Bearer {test_user_token}"},
+        )
+
+        assert response.status_code == 200
+        tables = {entry["table"]: entry for entry in response.json()["data"]["tables"]}
+        assert "ods_stock_daily_ths" in tables
+        assert "dwd_stock_daily" in tables
+        assert tables["ods_stock_daily_ths"]["layer"] == "ods"
+        assert tables["dwd_stock_daily"]["layer"] == "dwd"
+
+    async def test_layer_filter_narrows_the_list(self, test_client, test_user_token):
+        response = await test_client.get(
+            "/api/v1/tables/warehouse",
+            params={"layer": "ods"},
+            headers={"Authorization": f"Bearer {test_user_token}"},
+        )
+
+        tables = response.json()["data"]["tables"]
+        assert tables and all(entry["layer"] == "ods" for entry in tables)

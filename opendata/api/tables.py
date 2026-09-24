@@ -3,10 +3,12 @@
 Provides endpoints for managing data tables created by data acquisition.
 """
 
+import asyncio
 import csv
 import io
 import re
 from collections.abc import AsyncIterator
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
@@ -112,6 +114,110 @@ def _get_safe_table_name(table_name: str) -> str:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid table name: {e!s}",
         ) from e
+
+
+@router.get("/warehouse")
+async def list_warehouse_tables(
+    current_user: CurrentUser,
+    layer: Literal["all", "ods", "dwd"] = Query("all", description="Layer filter"),
+) -> APIResponse:
+    """List the warehouse ods/dwd tables (B5.2: TablesView 分层适配).
+
+    The physical data tables live in the data warehouse; this is the
+    layer-aware view of them - name, layer, the domain/source the name
+    encodes, row count and an approximate size. Read-only: it exists so
+    the frontend can show what the data layer actually holds, separate
+    from the legacy ``data_tables`` registry.
+
+    Args:
+        current_user: Authenticated user.
+        layer: ``all`` / ``ods`` / ``dwd``.
+        data_db: Data-warehouse session.
+
+    Returns:
+        The warehouse tables, sorted by name.
+    """
+    try:
+        rows = await asyncio.to_thread(_query_warehouse_tables)
+    except SQLAlchemyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to list warehouse tables: {exc!s}",
+        ) from exc
+    tables = []
+    for row in rows:
+        name, row_count, size_mb = row
+        table_layer = "ods" if name.startswith("ods_") else "dwd"
+        if layer != "all" and table_layer != layer:
+            continue
+        tables.append(
+            {
+                "table": name,
+                "layer": table_layer,
+                "domain": _domain_of(name, table_layer),
+                "source": _source_of(name) if table_layer == "ods" else None,
+                "rows": row_count,
+                "size_mb": size_mb,
+            }
+        )
+    return APIResponse(
+        success=True, message="success", data={"count": len(tables), "tables": tables}
+    )
+
+
+def _query_warehouse_tables() -> list[tuple[str, int, float]]:
+    """Read the ods/dwd table inventory from the data warehouse.
+
+    Uses the process-wide sync engine (NullPool, no cross-loop pool
+    reuse) the same way the data-query endpoints do.
+
+    Returns:
+        ``(table_name, table_rows, size_mb)`` rows.
+    """
+    from opendata.api.data_query import get_warehouse_engine
+
+    with get_warehouse_engine().connect() as connection:
+        result = connection.execute(
+            text(
+                "SELECT TABLE_NAME, TABLE_ROWS, "
+                "ROUND(DATA_LENGTH / 1024 / 1024, 1) AS size_mb "
+                "FROM information_schema.TABLES "
+                "WHERE TABLE_SCHEMA = DATABASE() "
+                "AND (TABLE_NAME LIKE 'ods\\_%' OR TABLE_NAME LIKE 'dwd\\_%') "
+                "ORDER BY TABLE_NAME"
+            )
+        )
+        return [(str(row[0]), int(row[1] or 0), float(row[2] or 0.0)) for row in result.fetchall()]
+
+
+def _domain_of(table: str, layer: str) -> str:
+    """Derive the domain identifier from a warehouse table name.
+
+    Args:
+        table: Table name (``ods_<domain>_<source>`` / ``dwd_<domain>``).
+        layer: Layer of the table.
+
+    Returns:
+        The domain identifier.
+    """
+    parts = table.split("_", 2)
+    if layer == "dwd" and len(parts) >= 2:
+        return parts[1]
+    if layer == "ods" and len(parts) >= 3:
+        return parts[1]
+    return table
+
+
+def _source_of(table: str) -> str:
+    """Derive the source from an ods table name.
+
+    Args:
+        table: Table name (``ods_<domain>_<source>``).
+
+    Returns:
+        The source identifier (or the tail when the split is uneven).
+    """
+    return table.split("_", 2)[-1] if table.count("_") >= 2 else table
 
 
 @router.get(

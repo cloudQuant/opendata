@@ -45,3 +45,27 @@ export const tablesApi = {
     })
   },
 }
+
+// ---------------------------------------------------------------------------
+// Warehouse layer view (B5.2: TablesView 分层适配)
+// ---------------------------------------------------------------------------
+
+export interface WarehouseTable {
+  table: string
+  layer: 'ods' | 'dwd'
+  domain: string
+  source: string | null
+  rows: number
+  size_mb: number
+}
+
+export const warehouseApi = {
+  // List the physical ods/dwd tables of the data warehouse.
+  async list(layer: 'all' | 'ods' | 'dwd' = 'all'): Promise<WarehouseTable[]> {
+    const response = await request.get<{ success: boolean; data: { tables: WarehouseTable[] } }>(
+      '/tables/warehouse',
+      { params: { layer } },
+    )
+    return response.data?.data?.tables ?? []
+  },
+}

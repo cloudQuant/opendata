@@ -59,9 +59,17 @@ class TestLoadInterfaces:
         assert count == 1
         assert loader._load_capability_interface.await_count == 2
 
-    async def test_unknown_capability_domain_fails_closed(self, monkeypatch, loader):
+    async def test_unknown_capability_domain_fails_closed(self, monkeypatch, loader, test_engine):
+        """The catalog write runs on the test engine, so the assertion
+        does not depend on the real warehouse being reachable."""
+        from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
         from opendata.data import registry as registry_module
 
+        monkeypatch.setattr(
+            "opendata.services.interface_loader.async_session_maker",
+            async_sessionmaker(test_engine, class_=AsyncSession, expire_on_commit=False),
+        )
         registry = MagicMock()
         registry.capabilities.return_value = [_capability(domain="not_a_domain")]
         monkeypatch.setattr(registry_module, "get_registry", lambda: registry)

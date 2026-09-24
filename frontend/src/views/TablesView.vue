@@ -2,8 +2,9 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { tablesApi } from '@/api/tables'
+import { tablesApi, warehouseApi, type WarehouseTable } from '@/api/tables'
 import { getApiErrorMessage } from '@/utils/error'
+import { logger } from '@/utils/logger'
 import type { DataTable } from '@/types'
 import { PAGINATION } from '@/config/constants'
 
@@ -17,7 +18,23 @@ const currentPage = ref(1)
 const pageSize = ref(PAGINATION.DEFAULT_PAGE_SIZE)
 const total = ref(0)
 
+// Warehouse layer view (B5.2)
+const warehouseLayer = ref<'all' | 'ods' | 'dwd'>('all')
+const warehouseTables = ref<WarehouseTable[]>([])
+const warehouseLoading = ref(false)
+
 let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+
+async function loadWarehouseTables() {
+  warehouseLoading.value = true
+  try {
+    warehouseTables.value = await warehouseApi.list(warehouseLayer.value)
+  } catch (e) {
+    logger.error('Failed to load warehouse tables:', e)
+  } finally {
+    warehouseLoading.value = false
+  }
+}
 
 async function loadTables() {
   loading.value = true
@@ -59,12 +76,43 @@ function handleSearch() {
 }
 
 onMounted(() => {
+  void loadWarehouseTables()
   void loadTables()
 })
 </script>
 
 <template>
   <div class="tables-view">
+    <!-- Warehouse layer view (B5.2: ods/dwd 分层) -->
+    <el-card class="warehouse-card">
+      <template #header>
+        <div class="header">
+          <span>数仓表（ods/dwd 分层）</span>
+          <el-radio-group v-model="warehouseLayer" size="small" @change="loadWarehouseTables">
+            <el-radio-button value="all">全部</el-radio-button>
+            <el-radio-button value="ods">ods</el-radio-button>
+            <el-radio-button value="dwd">dwd</el-radio-button>
+          </el-radio-group>
+        </div>
+      </template>
+      <el-table v-loading="warehouseLoading" :data="warehouseTables" size="small" max-height="260">
+        <el-table-column prop="table" label="表名" min-width="220" show-overflow-tooltip />
+        <el-table-column label="层" width="80">
+          <template #default="{ row }">
+            <el-tag :type="row.layer === 'dwd' ? 'primary' : 'warning'" size="small">
+              {{ row.layer }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="domain" label="域" width="160" />
+        <el-table-column prop="source" label="源" width="110">
+          <template #default="{ row }">{{ row.source || '—' }}</template>
+        </el-table-column>
+        <el-table-column prop="rows" label="行数" width="110" />
+        <el-table-column prop="size_mb" label="大小(MB)" width="100" />
+      </el-table>
+    </el-card>
+
     <el-card>
       <template #header>
         <div class="header">
