@@ -15,12 +15,13 @@ from zoneinfo import ZoneInfo
 import httpx
 import pytest
 
-from opendata.data.models import Bar, CorporateAction, Instrument, TradingCalendar
+from opendata.data.models import Bar, CorporateAction, IndexConstituent, Instrument, TradingCalendar
 from opendata_fuyao import FuyaoCredentials, FuyaoError, FuyaoHttpClient
 from opendata_fuyao.endpoints import (
     ADJUSTMENT_FACTORS_ENDPOINT,
     CALENDAR_ENDPOINT,
     FUTURES_PRICES_ENDPOINT,
+    INDEX_CONSTITUENTS_ENDPOINT,
     INDEX_PRICES_ENDPOINT,
     MAX_LIST_LIMIT,
     MAX_SEARCH_LIMIT,
@@ -29,6 +30,7 @@ from opendata_fuyao.endpoints import (
     TICKERS_LIST_ENDPOINT,
     TICKERS_SEARCH_ENDPOINT,
     build_adjustment_factors_request,
+    build_index_constituents_request,
     build_index_prices_request,
     build_period_daily_request,
     build_prices_request,
@@ -36,6 +38,7 @@ from opendata_fuyao.endpoints import (
     build_tickers_search_request,
     fetch_adjustment_factors,
     fetch_daily_bars,
+    fetch_index_constituents,
     fetch_index_daily_bars,
     fetch_period_daily_bars,
     fetch_trading_calendar,
@@ -44,6 +47,7 @@ from opendata_fuyao.endpoints import (
     normalize_adjustment_factors,
     normalize_bars,
     normalize_calendar,
+    normalize_index_constituents,
     normalize_instruments,
     search_instruments,
     shanghai_midnight_millis,
@@ -69,6 +73,18 @@ def _envelope(items: Sequence[Mapping[str, Any]]) -> bytes:
             "message": "success",
             "request_id": "req-1",
             "data": {"timestamp": None, "item": list(items)},
+        }
+    ).encode()
+
+
+def _envelope_at(items: Sequence[Mapping[str, Any]], timestamp_ms: int | None) -> bytes:
+    """带 ``data.timestamp`` 的信封（成分股等快照端点用它给观测时刻）。"""
+    return json.dumps(
+        {
+            "code": 0,
+            "message": "success",
+            "request_id": "req-1",
+            "data": {"timestamp": timestamp_ms, "item": list(items)},
         }
     ).encode()
 
@@ -217,6 +233,15 @@ class TestRequestBuilders:
         with pytest.raises(FuyaoError, match="date_ms"):
             millis_to_trading_date("1704124800000")
 
+    def test_constituents_request_is_one_qualified_index(self):
+        # 上游把入参 trim().toUpperCase()，故本地只去空白、不改大小写。
+        assert build_index_constituents_request(symbol=" 000300.sh ") == {"thscode": "000300.sh"}
+        # 裸码在本地即拦：上游对裸码回 1002，而后缀对指数不唯一（000300.SH / 399300.SZ）。
+        with pytest.raises(FuyaoError, match="constituents_symbol_qualified"):
+            build_index_constituents_request(symbol="000300")
+        with pytest.raises(FuyaoError, match="FUYAO_ENVELOPE_INVALID_symbol"):
+            build_index_constituents_request(symbol="  ")
+
 
 class TestNormalizers:
     def test_bars_map_to_the_contract(self):
@@ -347,6 +372,65 @@ class TestNormalizers:
     def test_calendar_requires_an_exchange(self):
         with pytest.raises(FuyaoError, match="exchange"):
             normalize_calendar(_parse(_envelope([])), exchange="  ")
+
+    def test_constituents_map_to_plain_codes_sorted_by_symbol(self):
+        rows = normalize_index_constituents(
+            _parse(
+                _envelope_at(
+                    [
+                        {"thscode": "600519.SH", "ticker": "600519", "name": "贵州茅台"},
+                        {"thscode": "000001.SZ", "ticker": "000001", "name": "平安银行"},
+                    ],
+                    _ms("2024-01-02") + 4_000_000,  # 请求时刻：当日 01:06:40 +08:00
+                )
+            ),
+            index_symbol="000300.SH",
+        )
+
+        assert all(isinstance(row, IndexConstituent) for row in rows)
+        assert [row.symbol for row in rows] == ["000001", "600519"]  # 升序
+        assert all(row.index_symbol == "000300.SH" for row in rows)  # 请求写法原样透传
+        assert all(row.weight is None for row in rows)  # 该端点不发布权重
+        assert {row.as_of for row in rows} == {date(2024, 1, 2)}  # 观测日 = 时间戳的上海日期
+
+    def test_constituents_require_both_identifier_fields_to_agree(self):
+        # 落库用裸码做合并键：thscode 去后缀不等于 ticker 时不猜，直接失败关闭。
+        with pytest.raises(FuyaoError, match="constituent_symbol_mismatch"):
+            normalize_index_constituents(
+                _parse(
+                    _envelope_at(
+                        [{"thscode": "600519.SH", "ticker": "600520", "name": "对不上"}],
+                        _ms("2024-01-02"),
+                    )
+                ),
+                index_symbol="000300.SH",
+            )
+        with pytest.raises(FuyaoError, match="constituent_symbol_type"):
+            normalize_index_constituents(
+                _parse(_envelope_at([{"thscode": 600519, "ticker": "600519"}], _ms("2024-01-02"))),
+                index_symbol="000300.SH",
+            )
+        with pytest.raises(FuyaoError, match="constituent_ticker"):
+            normalize_index_constituents(
+                _parse(_envelope_at([{"thscode": "600519.SH"}], _ms("2024-01-02"))),
+                index_symbol="000300.SH",
+            )
+
+    def test_constituents_require_the_snapshot_timestamp(self):
+        with pytest.raises(FuyaoError, match="constituents_timestamp"):
+            normalize_index_constituents(
+                _parse(_envelope_at([{"thscode": "600519.SH", "ticker": "600519"}], None)),
+                index_symbol="000300.SH",
+            )
+
+    def test_constituents_require_an_index_symbol(self):
+        with pytest.raises(FuyaoError, match="FUYAO_ENVELOPE_INVALID_symbol"):
+            normalize_index_constituents(
+                _parse(
+                    _envelope_at([{"thscode": "600519.SH", "ticker": "600519"}], _ms("2024-01-02"))
+                ),
+                index_symbol=" ",
+            )
 
 
 class TestFetchers:
@@ -573,6 +657,45 @@ class TestFetchers:
         assert seen["path"] == CALENDAR_ENDPOINT
         assert seen["params"] == {}
         assert days[0].date == date(2024, 1, 2)
+
+    def test_constituents_endpoint_serves_the_whole_list(self):
+        seen: dict[str, Any] = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen["path"] = request.url.path
+            seen["params"] = dict(request.url.params)
+            return httpx.Response(
+                200,
+                content=_envelope_at(
+                    [
+                        {"thscode": "600519.SH", "ticker": "600519", "name": "贵州茅台"},
+                        {"thscode": "000001.SZ", "ticker": "000001", "name": "平安银行"},
+                    ],
+                    _ms("2024-01-02"),
+                ),
+            )
+
+        with _client(handler) as client:
+            rows = fetch_index_constituents(client, symbol="000300.SH")
+
+        assert seen["path"] == INDEX_CONSTITUENTS_ENDPOINT
+        assert seen["params"] == {"thscode": "000300.SH"}  # 无分页/窗口参数
+        assert [row.symbol for row in rows] == ["000001", "600519"]
+
+    def test_constituents_unregistered_index_fails_closed(self):
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                200,
+                content=json.dumps(
+                    {"code": 1002, "message": "bad thscode", "request_id": "r", "data": None}
+                ).encode(),
+            )
+
+        with _client(handler) as client, pytest.raises(FuyaoError) as exc:
+            fetch_index_constituents(client, symbol="999999.SH")
+
+        assert exc.value.category == "request"
+        assert exc.value.upstream_code == 1002
 
     def test_upstream_business_error_propagates_with_category(self):
         def handler(request: httpx.Request) -> httpx.Response:

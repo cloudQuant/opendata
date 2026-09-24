@@ -16,7 +16,7 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
-from opendata.data.models import Bar, CorporateAction
+from opendata.data.models import Bar, CorporateAction, IndexConstituent
 from opendata.data.protocol import FetchContext
 from opendata.data.providers.ths.models._client import (
     ThsProviderError,
@@ -28,6 +28,7 @@ from opendata.data.providers.ths.models._client import (
     resolve_option_code,
 )
 from opendata.data.providers.ths.models.futures_daily import ThsFuturesDailyFetcher
+from opendata.data.providers.ths.models.index_constituent import ThsIndexConstituentFetcher
 from opendata.data.providers.ths.models.index_daily import ThsIndexDailyFetcher
 from opendata.data.providers.ths.models.option_daily import ThsOptionDailyFetcher
 from opendata.data.providers.ths.models.stock_action import ThsStockActionFetcher
@@ -42,14 +43,21 @@ if TYPE_CHECKING:
 
 DAY_MS = 1704124800000  # 2024-01-02 00:00 +08:00
 
+#: 快照端点的 ``data.timestamp`` 是**请求时刻**（实测带毫秒），不是上海零点。
+SNAPSHOT_MS = DAY_MS + 4_000_000  # 2024-01-02 01:06:40 +08:00
+
 
 def _envelope(items: list[dict]) -> bytes:
+    return _envelope_at(items, timestamp=None)
+
+
+def _envelope_at(items: list[dict], timestamp: int | None) -> bytes:
     return json.dumps(
         {
             "code": 0,
             "message": "success",
             "request_id": "req-1",
-            "data": {"timestamp": None, "item": items},
+            "data": {"timestamp": timestamp, "item": items},
         }
     ).encode()
 
@@ -117,6 +125,7 @@ class TestRegistration:
             ("stock_daily", "ths"),
             ("stock_action", "ths"),
             ("index_daily", "ths"),
+            ("index_constituent", "ths"),
             ("futures_daily", "ths"),
             ("option_daily", "ths"),
         }
@@ -136,6 +145,7 @@ class TestRegistration:
             ("equity", "stock_daily", "1D", "cn"),
             ("equity", "stock_action", "1D", "cn"),
             ("index", "index_daily", "1D", "cn"),
+            ("index", "index_constituent", "snapshot", "cn"),
             ("futures", "futures_daily", "1D", "cn"),
             ("option", "option_daily", "1D", "cn"),
         }
@@ -163,6 +173,7 @@ class TestRegistration:
         assert authority_baseline()["stock_daily"][0] == "ths"
         assert authority_baseline()["stock_action"][0] == "ths"
         assert authority_baseline()["index_daily"][0] == "ths"
+        assert authority_baseline()["index_constituent"][0] == "ths"
         assert authority_baseline()["futures_daily"][0] == "ths"
         assert authority_baseline()["option_daily"][0] == "ths"
 
@@ -521,6 +532,81 @@ class TestFetchStages:
 
     def test_index_empty_response_fails_closed(self):
         fetcher = ThsIndexDailyFetcher()
+        query = fetcher.transform_query(symbol="000300.SH")
+
+        with pytest.raises(ThsProviderError, match="THS_EMPTY_RESPONSE"):
+            fetcher.transform_data((), query)
+
+    def test_constituent_fetch_stores_plain_codes_for_both_sides(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
+        """C9: 成分股是合并键，两侧都存裸码（bar 域存限定写法，这里是另一条口径）."""
+        seen: dict[str, str] = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen["path"] = request.url.path
+            seen["params"] = str(request.url.params)
+            return httpx.Response(
+                200,
+                content=_envelope_at(
+                    [
+                        {"thscode": "600519.SH", "ticker": "600519", "name": "贵州茅台"},
+                        {"thscode": "000001.SZ", "ticker": "000001", "name": "平安银行"},
+                    ],
+                    SNAPSHOT_MS,
+                ),
+            )
+
+        monkeypatch.setattr(
+            "opendata.data.providers.ths.models.index_constituent.client", _factory(handler)
+        )
+        rows = ThsIndexConstituentFetcher().fetch(symbol="000300.SH")
+
+        assert seen["path"] == "/api/a-share-index/constituents/ths-stock-list"
+        assert "thscode=000300.SH" in seen["params"]  # 上游只认带后缀的写法
+        assert all(isinstance(row, IndexConstituent) for row in rows)
+        assert [row.symbol for row in rows] == ["000001", "600519"]
+        assert {row.index_symbol for row in rows} == {"000300"}
+        assert {row.as_of for row in rows} == {date(2024, 1, 2)}
+        assert all(row.weight is None for row in rows)  # 上游不发布权重，不补算
+
+    def test_constituent_fetch_resolves_a_bare_index_code(self, monkeypatch: pytest.MonkeyPatch):
+        """裸指数码先按指数全集解析，再把解析出的 thscode 写进请求."""
+        seen: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            path = request.url.path
+            seen.append(path)
+            if path.endswith("/list"):
+                return httpx.Response(
+                    200, content=_envelope([{"thscode": "000300.SH", "name": "沪深300"}])
+                )
+            return httpx.Response(
+                200,
+                content=_envelope_at(
+                    [{"thscode": "600519.SH", "ticker": "600519", "name": "贵州茅台"}], SNAPSHOT_MS
+                ),
+            )
+
+        monkeypatch.setattr(
+            "opendata.data.providers.ths.models.index_constituent.client", _factory(handler)
+        )
+        rows = ThsIndexConstituentFetcher().fetch(symbol="000300")
+
+        assert rows[0].index_symbol == "000300"
+        assert "/api/meta/tickers/list" in seen
+
+    def test_constituent_query_rejects_a_date_range(self):
+        """端点只有当前清单：给了窗口就不能假装给的是历史快照."""
+        fetcher = ThsIndexConstituentFetcher()
+
+        with pytest.raises(ThsProviderError, match="THS_CONSTITUENTS_SNAPSHOT_ONLY"):
+            fetcher.transform_query(symbol="000300.SH", start_date=date(2024, 1, 2))
+        with pytest.raises(ThsProviderError, match="THS_CONSTITUENTS_SNAPSHOT_ONLY"):
+            fetcher.transform_query(symbol="000300.SH", end_date=date(2024, 1, 2))
+
+    def test_constituent_empty_response_fails_closed(self):
+        fetcher = ThsIndexConstituentFetcher()
         query = fetcher.transform_query(symbol="000300.SH")
 
         with pytest.raises(ThsProviderError, match="THS_EMPTY_RESPONSE"):

@@ -1,0 +1,26 @@
+AC-10 index_constituent (ths) vs the index publisher's own list
+
+script: scripts/ops/ths_index_constituent_cross_check.py
+ours: get_registry().resolve_domain('index_constituent', source='ths').fetch(...)
+          (the routing path; endpoint /api/a-share-index/constituents/ths-stock-list)
+official: 中证指数官网当日成分股清单（index_stock_cons_csindex）
+          -- different vendor, and the party that decides membership
+hard criteria: identical member sets (jaccard == 1.0000);
+          as-of within 1 day of the publisher's date;
+          no duplicate rows; every stored member code plain six-digit;
+          index_symbol stored as the plain code on both sides;
+          weight None on every row (the endpoint publishes no weights).
+          A diff fails unless registered in KNOWN_DEVIATIONS, and a
+          registered diff that falls back into line fails too.
+
+| leg | thscode | 参照行数 | as_of 我们/发布方 | 成员数 | jaccard | ths 多出 | 参照多出 | 重复行 | weight 全空 | result |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 沪深300 | 000300.SH | 300 | 2026-09-24 / 2026-09-24 | 300 | 1.0000 | - | - | 0 | 是 | PASS |
+| 上证50 | 000016.SH | 50 | 2026-09-24 / 2026-09-24 | 50 | 1.0000 | - | - | 0 | 是 | PASS |
+| 中证500 | 000905.SH | 500 | 2026-09-24 / 2026-09-24 | 500 | 1.0000 | - | - | 0 | 是 | PASS |
+| 科创50 | 000688.SH | 50 | 2026-09-24 / 2026-09-24 | 50 | 1.0000 | - | - | 0 | 是 | PASS |
+| 中证1000 | 000852.SH | 1000 | 2026-09-24 / 2026-09-24 | 1000 | 1.0000 | - | - | 0 | 是 | PASS |
+| 沪深300 另一种写法 | 399300.SZ | 300 | 2026-09-24 / 2026-09-24 | 300 | 1.0000 | - | - | 0 | 是 | PASS |
+| 同花顺板块 | 886042.TI | 无独立发布方 | 2026-09-24 | 204 | - | - | - | 0 | 是 | OBSERVE |
+
+result: PASS (0 failing legs)

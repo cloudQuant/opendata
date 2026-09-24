@@ -92,7 +92,7 @@ entries:
   - {section: financials, family: A股, method: GET, path: /api/a-share/financials/cash-flow-statements, title: '现金流量表', status: available, domain: financial_statement, scenario: '现金流量表多期序列：dwd 财务域 ths 副源候选'}
   - {section: calendar, family: 基础, method: GET, path: /api/a-share/calendar/trading-days, title: '交易日历', status: implemented, domain: trading_calendar, scenario: '交易日历：调度窗口、回填区间与收盘基准'}
   - {section: a-share-index, family: 指数, method: GET, path: /api/a-share-index/catalog/ths-index-list, title: '同花顺指数列表', status: available, domain: index_constituent, scenario: '同花顺行业/概念指数目录：板块指数清单前置查询'}
-  - {section: a-share-index, family: 指数, method: GET, path: /api/a-share-index/constituents/ths-stock-list, title: '同花顺指数成分股', status: available, domain: index_constituent, scenario: '指数成分股（含沪深300 等标准指数）：成分因子与指数增强选股'}
+  - {section: a-share-index, family: 指数, method: GET, path: /api/a-share-index/constituents/ths-stock-list, title: '同花顺指数成分股', status: implemented, domain: index_constituent, scenario: '指数成分股（含沪深300 等标准指数）：成分因子与指数增强选股'}
   - {section: a-share-index, family: 指数, method: GET, path: /api/a-share-index/prices/snapshot, title: '指数行情快照', status: available, domain: index_daily, scenario: '指数实时快照：业绩基准盘中监控'}
   - {section: a-share-index, family: 指数, method: GET, path: /api/a-share-index/prices/historical, title: '指数历史 K 线', status: implemented, domain: index_daily, scenario: '指数日线：业绩基准与超额收益计算（ths 主源，akshare 降级）'}
   - {section: anomaly-analysis, family: A股, method: GET, path: /api/a-share/special-data/anomaly-analysis-list, title: '个股异动原因列表', status: available, domain: null, scenario: '当日异动原因清单：事件研究与舆情归因（迭代 2 候选）'}

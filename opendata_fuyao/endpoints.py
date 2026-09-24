@@ -1,15 +1,18 @@
-"""fuyao P0 端点：日线、指数日线、期货/期权日 K、除复权事件、标的、交易日历（A3.2）.
+"""fuyao P0 端点：日线、指数日线、期货/期权日 K、除复权事件、标的、交易日历、指数成分股（A3.2）.
 
 每个端点都是"请求构造 + 响应归一化"两段，直接产出中台契约模型
-（``Bar`` / ``CorporateAction`` / ``Instrument`` / ``TradingCalendar``），
-供 A3.4 的 provider 层直接注册路由。
+（``Bar`` / ``CorporateAction`` / ``Instrument`` / ``TradingCalendar`` /
+``IndexConstituent``），供 A3.4 的 provider 层直接注册路由。
 
-时间语义（同生态 API 事实，A3.2/C6 实测确认）：
+时间语义（同生态 API 事实，A3.2/C6/C9 实测确认）：
 - 请求窗口 ``start`` / ``end`` 为**毫秒戳**，闭区间；股票/指数日线跨度 ≤ 10 年
   （超过 code=1003），期货/期权日 K 实测不受该上限约束；
   平台内部为半开窗口，故 ``end`` 取 ``end_date`` 上海零点 - 1ms。
 - 股票/指数日线响应行内日期字段是 ``date_ms``，期货/期权日 K 是 ``timestamp``，
   两者都是交易日的 ``Asia/Shanghai`` 零点，归一化为该交易日 date。
+- 成分股端点的 ``data.timestamp`` 是**请求时刻**（精确到毫秒、每次调用都变），
+  不是指数公司的清单生效日；快照类端点没有别的日期可取，故 ``as_of`` 取该时刻
+  的上海日期，语义为「本次观测日」（见 :func:`normalize_index_constituents`）。
 - 复权请求值 ``none|forward|backward``，中台语义 ``unadjusted|qfq|hfq``；
   指数、期货、期权三类标的均无复权语义，请求不接受 ``adjust``。
 
@@ -24,7 +27,13 @@ from datetime import date, datetime, time, timedelta, timezone
 from typing import TYPE_CHECKING, Any
 from zoneinfo import ZoneInfo
 
-from opendata.data.models import Bar, CorporateAction, Instrument, TradingCalendar
+from opendata.data.models import (
+    Bar,
+    CorporateAction,
+    IndexConstituent,
+    Instrument,
+    TradingCalendar,
+)
 from opendata_fuyao.envelope import FuyaoEnvelope
 from opendata_fuyao.errors import error_for_transport
 from opendata_fuyao.http_client import FuyaoHttpClient
@@ -42,6 +51,7 @@ INDEX_PRICES_ENDPOINT = "/api/a-share-index/prices/historical"
 FUTURES_PRICES_ENDPOINT = "/api/futures/prices/daily"
 OPTIONS_PRICES_ENDPOINT = "/api/options/prices/daily"
 ADJUSTMENT_FACTORS_ENDPOINT = "/api/a-share/corporate-actions/adjustment-factors"
+INDEX_CONSTITUENTS_ENDPOINT = "/api/a-share-index/constituents/ths-stock-list"
 TICKERS_LIST_ENDPOINT = "/api/meta/tickers/list"
 TICKERS_SEARCH_ENDPOINT = "/api/meta/tickers/search"
 CALENDAR_ENDPOINT = "/api/a-share/calendar/trading-days"
@@ -228,6 +238,33 @@ def build_period_daily_request(*, symbol: str, start: date, end: date) -> dict[s
         "start": shanghai_midnight_millis(start),
         "end": shanghai_midnight_millis(end) - 1,
     }
+
+
+def build_index_constituents_request(*, symbol: str) -> dict[str, Any]:
+    """构造指数成分股请求参数（单指数、**必须**带市场后缀）.
+
+    上游只接受一个 ``thscode``（实测：逗号分隔的批量写法返回 ``code=1002``
+    「请求参数超出取值域」，``limit`` / ``offset`` 被忽略、整份清单一次给全）。
+    裸码同样被 ``1002`` 拒收，而后缀对指数并不唯一（沪深 300 既有
+    ``000300.SH`` 也有 ``399300.SZ``），故本地先拦下裸码，让调用方去
+    :func:`opendata.data.providers.ths.models._client.resolve_index_code`
+    解析，而不是在这里猜一个。
+
+    Args:
+        symbol: 上游指数代码（``000300.SH`` / ``886042.TI``）。
+
+    Returns:
+        查询参数。
+
+    Raises:
+        FuyaoError: 标的为空、不是字符串或不含市场后缀。
+    """
+    if not isinstance(symbol, str) or not symbol.strip():
+        raise error_for_transport("envelope_invalid", detail="symbol")
+    candidate = symbol.strip()
+    if "." not in candidate:
+        raise error_for_transport("envelope_invalid", detail="constituents_symbol_qualified")
+    return {"thscode": candidate}
 
 
 def build_tickers_search_request(
@@ -494,6 +531,59 @@ def normalize_calendar(envelope: FuyaoEnvelope, *, exchange: str) -> tuple[Tradi
     return tuple(days)
 
 
+def normalize_index_constituents(
+    envelope: FuyaoEnvelope, *, index_symbol: str
+) -> tuple[IndexConstituent, ...]:
+    """把成分股清单归一化为 ``IndexConstituent``（按成员代码升序）.
+
+    三处口径都是实测后如实落地，不把猜测写进契约：
+
+    * ``as_of``：上游行内没有生效日，``data.timestamp`` 是**请求时刻**的毫秒戳
+      （实测精确到毫秒、每次调用都变），故快照日期取该时刻的上海日期，语义是
+      「本次观测日」，不是指数公司的调整生效日。
+    * ``weight``：该端点不发布权重（响应行只有 ``thscode`` / ``ticker`` /
+      ``name``），留 ``None`` 而不补算、不从别处借数。
+    * 成员身份用 ``thscode`` 与 ``ticker`` 两路**对账**（前者去后缀须等于后者），
+      不一致即失败关闭——落库用裸 6 位码做合并键，选错一路不会报错，只会把成分
+      股接到另一个标的上。
+
+    Args:
+        envelope: 成功信封。
+        index_symbol: 请求使用的上游指数代码。
+
+    Returns:
+        成分股快照行；``symbol`` 为裸 6 位代码，``index_symbol`` 原样透传请求值。
+
+    Raises:
+        FuyaoError: ``index_symbol`` 为空、缺 ``data.timestamp``、行结构非法
+            或两路成员标识不一致。
+    """
+    if not isinstance(index_symbol, str) or not index_symbol.strip():
+        raise error_for_transport("envelope_invalid", detail="symbol")
+    if envelope.data_timestamp_ms is None:
+        raise error_for_transport("envelope_invalid", detail="constituents_timestamp")
+    as_of = millis_to_trading_date(envelope.data_timestamp_ms)
+    resolved_index = index_symbol.strip()
+    rows: list[IndexConstituent] = []
+    for row in _items(envelope, context="constituent"):
+        qualified = _require_value(row, "thscode", context="constituent")
+        plain = _require_value(row, "ticker", context="constituent")
+        if not isinstance(qualified, str) or not isinstance(plain, str):
+            raise error_for_transport("envelope_invalid", detail="constituent_symbol_type")
+        if not plain.strip() or qualified.partition(".")[0] != plain:
+            raise error_for_transport("envelope_invalid", detail="constituent_symbol_mismatch")
+        rows.append(
+            IndexConstituent(
+                index_symbol=resolved_index,
+                symbol=plain.strip(),
+                as_of=as_of,
+                weight=None,
+            )
+        )
+    rows.sort(key=lambda row: row.symbol)
+    return tuple(rows)
+
+
 def fetch_daily_bars(
     client: FuyaoHttpClient,
     *,
@@ -577,6 +667,28 @@ def fetch_period_daily_bars(
         endpoint, params=build_period_daily_request(symbol=symbol, start=start, end=end)
     )
     return normalize_bars(response.envelope, symbol=symbol, date_key=PERIOD_BAR_DATE_KEY)
+
+
+def fetch_index_constituents(
+    client: FuyaoHttpClient, *, symbol: str
+) -> tuple[IndexConstituent, ...]:
+    """取单个指数的当前成分股清单（一次请求给全，无分页）.
+
+    Args:
+        client: 传输层客户端。
+        symbol: 上游指数代码（须带市场后缀，裸码由 provider 层先解析）。
+
+    Returns:
+        按成员代码升序的 ``IndexConstituent``；``weight`` 恒为 ``None``
+        （上游不发布权重）。
+
+    Raises:
+        FuyaoError: 参数非法、标的不在上游指数全集内，或行结构非法。
+    """
+    response = client.get(
+        INDEX_CONSTITUENTS_ENDPOINT, params=build_index_constituents_request(symbol=symbol)
+    )
+    return normalize_index_constituents(response.envelope, index_symbol=symbol)
 
 
 def search_instruments(
@@ -682,6 +794,7 @@ __all__ = [
     "FUTURES_ASSET_TYPE",
     "FUTURES_PRICES_ENDPOINT",
     "INDEX_ASSET_TYPE",
+    "INDEX_CONSTITUENTS_ENDPOINT",
     "INDEX_PRICES_ENDPOINT",
     "MAX_LIST_LIMIT",
     "MAX_SEARCH_LIMIT",
@@ -693,6 +806,7 @@ __all__ = [
     "TICKERS_LIST_ENDPOINT",
     "TICKERS_SEARCH_ENDPOINT",
     "build_adjustment_factors_request",
+    "build_index_constituents_request",
     "build_index_prices_request",
     "build_period_daily_request",
     "build_prices_request",
@@ -700,6 +814,7 @@ __all__ = [
     "build_tickers_search_request",
     "fetch_adjustment_factors",
     "fetch_daily_bars",
+    "fetch_index_constituents",
     "fetch_index_daily_bars",
     "fetch_period_daily_bars",
     "fetch_trading_calendar",
@@ -708,6 +823,7 @@ __all__ = [
     "normalize_adjustment_factors",
     "normalize_bars",
     "normalize_calendar",
+    "normalize_index_constituents",
     "normalize_instruments",
     "search_instruments",
     "shanghai_midnight_millis",
