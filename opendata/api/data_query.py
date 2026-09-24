@@ -52,6 +52,7 @@ from opendata.pipeline.query import (
     resolve_time_field,
     validate_fields,
 )
+from opendata.pipeline.trading_calendar import resolve_calendar
 from opendata.utils.serialization import serialize_for_json
 
 if TYPE_CHECKING:
@@ -88,11 +89,14 @@ async def data_catalog(
     An API key only sees the domains its scopes cover.
     """
     rows = []
+    expected = await _expected_data_date(engine)
     for capability in get_registry().capabilities():
         if not principal.allows_domain(capability.domain):
             continue
         table = dwd_table(capability.domain)
-        freshness = await _freshness(engine, capability.domain, table, source=capability.source)
+        freshness = await _freshness(
+            engine, capability.domain, table, source=capability.source, expected=expected
+        )
         rows.append(
             {
                 "domain": capability.domain,
@@ -125,7 +129,8 @@ async def domain_freshness(
     except LookupError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
     table = ods_table(domain, source) if source else dwd_table(domain)
-    freshness = await _freshness(engine, domain, table, source=source)
+    expected = await _expected_data_date(engine)
+    freshness = await _freshness(engine, domain, table, source=source, expected=expected)
     if freshness is None:
         return APIResponse(
             success=True,
@@ -558,18 +563,18 @@ async def _freshness(
     table: str,
     *,
     source: str | None = None,
+    expected: date,
 ) -> dict | None:
     """Freshness facts of a table, None when they cannot be measured.
 
-    Until the trading calendar is populated (A4.7 wires it) the
-    expectation is "today", which makes the lag a coarse staleness
-    signal rather than a trading-day-exact one.
+    ``expected`` comes from the trading calendar (A4.7), so the lag is
+    measured against the last date that should have data rather than
+    against the wall clock - a weekend is not a two-day outage.
     """
     try:
         resolve_time_field(domain)
     except ValueError:
         return None
-    expected = date.today()
     try:
         if source:
             report = await asyncio.to_thread(
@@ -595,6 +600,25 @@ async def _freshness(
         "lag_days": report.lag_days,
         "status": report.status,
     }
+
+
+async def _expected_data_date(engine: Engine, *, on: date | None = None) -> date:
+    """Latest date that should carry data, per the trading calendar (A4.7).
+
+    Resolved once per request instead of per table: the catalog endpoint
+    measures every domain, and each measurement would otherwise re-read
+    the calendar.
+
+    Args:
+        engine: Warehouse engine.
+        on: Reference date; defaults to today (tests pin it so a weekend
+            cannot change what the assertion means).
+
+    Returns:
+        The date the freshness lag is measured against.
+    """
+    calendar = await asyncio.to_thread(resolve_calendar, engine)
+    return calendar.expected_data_date(on or date.today())
 
 
 def _key(domain: str) -> tuple[str, ...]:

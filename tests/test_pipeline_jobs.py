@@ -19,6 +19,11 @@ from opendata.pipeline import jobs
 from opendata.pipeline.dump_import import shanghai_dates
 from opendata.pipeline.runner import PipelineOutcome, Window
 from opendata.pipeline.templates import ScheduleTemplate, TemplateKind
+from opendata.pipeline.trading_calendar import (
+    TIER_WAREHOUSE,
+    TIER_WEEKDAY,
+    calendar_from_days,
+)
 
 WINDOW = Window(start=date(2026, 9, 24), end=date(2026, 9, 24))
 
@@ -149,6 +154,41 @@ class TestRunIncrementalJob:
             pipeline: FakePipeline = call["pipeline"]
             assert pipeline.ran == [(expected, False)]
         assert result.outcomes["ths"].shards_done == 1
+
+    async def test_a_weekend_run_covers_friday_instead_of_an_empty_saturday(
+        self, stubbed_run: list[dict[str, Any]]
+    ) -> None:
+        """A4.7: the window end is the calendar's expectation, not the clock."""
+        result = await jobs.run_incremental_job(
+            source="ths", symbols=["600519"], as_of=date(2026, 9, 26), engine=object()
+        )
+
+        expected = Window(start=date(2026, 9, 25), end=date(2026, 9, 25))
+        assert result.window == expected
+        assert stubbed_run[0]["pipeline"].ran == [(expected, True)]
+        assert result.expectation == {
+            "run_date": "2026-09-26",
+            "expected_data_date": "2026-09-25",
+            "calendar_tier": TIER_WEEKDAY,
+            "decided_by": TIER_WEEKDAY,
+        }
+
+    async def test_a_holiday_calendar_pulls_the_window_back_to_the_last_open_day(
+        self, stubbed_run: list[dict[str, Any]]
+    ) -> None:
+        closed_for_national_day = calendar_from_days([date(2025, 9, 30), date(2025, 10, 9)])
+
+        result = await jobs.run_incremental_job(
+            source="ths",
+            symbols=["600519"],
+            as_of=date(2025, 10, 5),
+            engine=object(),
+            calendar=closed_for_national_day,
+        )
+
+        assert result.window == Window(start=date(2025, 9, 30), end=date(2025, 9, 30))
+        assert result.expectation["calendar_tier"] == TIER_WAREHOUSE
+        assert result.expectation["decided_by"] == TIER_WAREHOUSE
 
 
 class TestSymbolUniverse:

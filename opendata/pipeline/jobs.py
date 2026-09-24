@@ -41,6 +41,7 @@ from opendata.pipeline.templates import (
     default_source,
     incremental_window,
 )
+from opendata.pipeline.trading_calendar import TradingCalendar, resolve_calendar
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Mapping, Sequence
@@ -75,6 +76,8 @@ class JobResult:
         outcomes: Runner outcome per source, in run order.
         dwd_rows: Rows of ``dwd_<domain>`` inside the window after the run.
         freshness: Latest date per ods table and for dwd, as ISO strings.
+        expectation: How the window end was chosen (run date, expected
+            data date, calendar tier and which tier decided), as strings.
     """
 
     domain: str
@@ -84,6 +87,7 @@ class JobResult:
     outcomes: dict[str, PipelineOutcome] = field(default_factory=dict)
     dwd_rows: int = 0
     freshness: dict[str, str | None] = field(default_factory=dict)
+    expectation: dict[str, str] = field(default_factory=dict)
 
     @property
     def failures(self) -> int:
@@ -117,6 +121,7 @@ class JobResult:
             },
             "dwd_rows": self.dwd_rows,
             "freshness": self.freshness,
+            "expectation": self.expectation,
         }
 
 
@@ -249,6 +254,7 @@ async def run_incremental_job(
     engine: Engine | None = None,
     session_maker: async_sessionmaker[AsyncSession] | None = None,
     resume: bool = True,
+    calendar: TradingCalendar | None = None,
 ) -> JobResult:
     """Run one incremental batch of a domain through the six steps.
 
@@ -260,19 +266,23 @@ async def run_incremental_job(
             merge (AC-9) into the authoritative run.
         symbols: Explicit universe; defaults to the warehouse dwd list.
         limit: Cap for the derived universe.
-        as_of: End date of the window; defaults to today.
+        as_of: Run date; the window ends on the latest date on or before
+            it that should carry data (defaults to today).
         lookback_days: Days to prepend to the window (repair runs).
         shard_size: Symbols per shard.
         engine: Warehouse engine; defaults to the application's.
         session_maker: Main-database session factory; defaults to the
             application's.
         resume: Skip shards an earlier run already completed.
+        calendar: Trading calendar used to pick the window end; defaults
+            to the warehouse calendar, falling back to the weekday rule.
 
     Returns:
         The :class:`JobResult` of the batch.
 
     Raises:
-        ValueError: On an unsupported domain or an empty universe.
+        ValueError: On an unsupported domain, an empty universe, or a
+            calendar with no trading day in reach.
     """
     from opendata.core.database import async_session_maker
 
@@ -284,7 +294,10 @@ async def run_incremental_job(
     warehouse = engine or warehouse_engine()
     maker = session_maker or async_session_maker
     authoritative = source or default_source(domain)
-    window = incremental_window(as_of or date.today(), lookback_days=lookback_days)
+    run_date = as_of or date.today()
+    day_calendar = calendar if calendar is not None else resolve_calendar(warehouse)
+    expected = day_calendar.expected_data_date(run_date)
+    window = incremental_window(expected, lookback_days=lookback_days)
     universe = list(symbols) if symbols else symbol_universe(warehouse, domain, limit=limit)
     if not universe:
         raise ValueError(
@@ -316,6 +329,12 @@ async def run_incremental_job(
         outcomes=outcomes,
         dwd_rows=_count_in_window(warehouse, domain, window),
         freshness=_freshness(warehouse, domain, feeds, expected=window.end),
+        expectation={
+            "run_date": run_date.isoformat(),
+            "expected_data_date": expected.isoformat(),
+            "calendar_tier": day_calendar.tier,
+            "decided_by": day_calendar.answered_from(expected),
+        },
     )
 
 
@@ -510,9 +529,10 @@ async def _execute_template(template: ScheduleTemplate) -> dict[str, Any]:
     domain = str(payload.get("domain", "stock_daily"))
     if domain not in SUPPORTED_DOMAINS:
         raise ValueError(f"{template.name!r} targets unsupported domain {domain!r}")
-    # The cron already restricts the fire to trading weekdays, so the
-    # "last trading day" window is the run date itself; a real holiday
-    # calendar would replace this (A4.7 calibration item).
+    # The cron already restricts the fire to trading weekdays; the
+    # window end then comes from the trading calendar (A4.7), so a
+    # holiday run re-covers the last day that should have data instead
+    # of fetching a day that never happened.
     window_kind = str(payload.get("window", "last-trading-day"))
     if window_kind != "last-trading-day":
         raise ValueError(
