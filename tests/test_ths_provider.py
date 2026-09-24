@@ -16,7 +16,13 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
-from opendata.data.models import Bar, CorporateAction, FinancialStatement, IndexConstituent
+from opendata.data.models import (
+    Bar,
+    CorporateAction,
+    FinancialStatement,
+    IndexConstituent,
+    TradingCalendar,
+)
 from opendata.data.protocol import FetchContext
 from opendata.data.providers.ths.models._client import (
     ThsProviderError,
@@ -34,6 +40,7 @@ from opendata.data.providers.ths.models.index_daily import ThsIndexDailyFetcher
 from opendata.data.providers.ths.models.option_daily import ThsOptionDailyFetcher
 from opendata.data.providers.ths.models.stock_action import ThsStockActionFetcher
 from opendata.data.providers.ths.models.stock_daily import ThsStockDailyFetcher
+from opendata.data.providers.ths.models.trading_calendar import ThsTradingCalendarFetcher
 from opendata.data.providers.ths.registration import FETCHERS, register
 from opendata.data.registry import ProviderRegistry, authority_baseline, get_registry
 
@@ -154,6 +161,7 @@ class TestRegistration:
             ("financial_statement", "ths"),
             ("futures_daily", "ths"),
             ("option_daily", "ths"),
+            ("trading_calendar", "ths"),
         }
         assert all(capability.verified for capability in registered)
 
@@ -175,6 +183,7 @@ class TestRegistration:
             ("equity", "financial_statement", "Q", "cn"),
             ("futures", "futures_daily", "1D", "cn"),
             ("option", "option_daily", "1D", "cn"),
+            ("metadata", "trading_calendar", "snapshot", "cn"),
         }
 
     def test_every_verified_domain_auto_routes_to_ths(self):
@@ -837,16 +846,134 @@ class TestFinancialStatementAdapter:
             fetcher.transform_data((row,), query)
 
 
+class TestTradingCalendarAdapter:
+    """A4.7 producer 侧：日历行的邻接交易日由**相邻行**推出，coverage 之外不外推。"""
+
+    @staticmethod
+    def _day(offset_days: int) -> dict:
+        """一个交易日行；上游只给 ``date_ms``，且只给交易日。"""
+        return {"date_ms": DAY_MS + offset_days * 86_400_000}
+
+    def _fetcher(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        rows: list[dict],
+        seen: list[str] | None = None,
+    ) -> ThsTradingCalendarFetcher:
+        def handler(request: httpx.Request) -> httpx.Response:
+            if seen is not None:
+                seen.append(str(request.url))
+            return httpx.Response(200, content=_envelope(rows))
+
+        monkeypatch.setattr(
+            "opendata.data.providers.ths.models.trading_calendar.client", _factory(handler)
+        )
+        return ThsTradingCalendarFetcher()
+
+    def test_adjacent_trade_dates_come_from_the_neighbouring_rows(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
+        """01-02 / 01-03 / 01-05 三行 ⇒ 01-03 的下一交易日是 01-05，中间那个空档不解释。"""
+        days = self._fetcher(monkeypatch, [self._day(0), self._day(1), self._day(3)]).fetch()
+
+        assert [day.date for day in days] == [
+            date(2024, 1, 2),
+            date(2024, 1, 3),
+            date(2024, 1, 5),
+        ]
+        assert all(isinstance(day, TradingCalendar) and day.is_open for day in days)
+        assert days[0].prev_trade_date is None
+        assert days[0].next_trade_date == date(2024, 1, 3)
+        assert days[1].prev_trade_date == date(2024, 1, 2)
+        assert days[1].next_trade_date == date(2024, 1, 5)
+        # coverage 右端之外没有事实来源，宁可留 None 也不按工作日猜一个。
+        assert days[-1].next_trade_date is None
+
+    def test_no_window_parameter_is_sent(self, monkeypatch: pytest.MonkeyPatch):
+        """实测六个候选窗口参数全被忽略 ⇒ 不发参数，不假装能定窗。"""
+        seen: list[str] = []
+        self._fetcher(monkeypatch, [self._day(0)], seen).fetch(
+            start_date=date(2024, 1, 2), end_date=date(2024, 1, 3)
+        )
+
+        assert "?" not in seen[0]
+
+    def test_query_defaults_to_the_published_exchange(self, monkeypatch: pytest.MonkeyPatch):
+        fetcher = self._fetcher(monkeypatch, [self._day(0)])
+
+        assert fetcher.transform_query().exchange == "CN-SSE"
+
+    def test_another_exchange_label_is_refused(self, monkeypatch: pytest.MonkeyPatch):
+        """上游 A 股日历不按交易所拆分，答别的标签只能是接错了源。"""
+        fetcher = self._fetcher(monkeypatch, [self._day(0)])
+
+        with pytest.raises(ThsProviderError, match="THS_CALENDAR_EXCHANGE_UNSUPPORTED"):
+            fetcher.transform_query(exchange="CN-SZSE")
+
+    def test_requested_window_slices_the_published_coverage(self, monkeypatch: pytest.MonkeyPatch):
+        fetcher = self._fetcher(monkeypatch, [self._day(0), self._day(1), self._day(3)])
+
+        rows = fetcher.fetch(start_date=date(2024, 1, 3), end_date=date(2024, 1, 5))
+
+        assert [row.date for row in rows] == [date(2024, 1, 3), date(2024, 1, 5)]
+
+    def test_a_window_outside_coverage_fails_closed(self, monkeypatch: pytest.MonkeyPatch):
+        """未来窗口不是「没有数据」，是问了一个上游没发布的东西 —— 空元组会被读成休市。"""
+        fetcher = self._fetcher(monkeypatch, [self._day(0), self._day(1)])
+
+        with pytest.raises(ThsProviderError, match="THS_CALENDAR_OUT_OF_COVERAGE"):
+            fetcher.fetch(start_date=date(2030, 1, 1), end_date=date(2030, 1, 31))
+
+    def test_empty_calendar_fails_closed(self, monkeypatch: pytest.MonkeyPatch):
+        fetcher = self._fetcher(monkeypatch, [])
+
+        with pytest.raises(ThsProviderError, match="THS_EMPTY_RESPONSE"):
+            fetcher.fetch()
+
+    def test_a_window_ending_before_coverage_fails_closed(self, monkeypatch: pytest.MonkeyPatch):
+        """只给 `end_date` 也可能整段在 coverage 之外 —— 两侧都得拦，不能只拦一侧。"""
+        fetcher = self._fetcher(monkeypatch, [self._day(1), self._day(3)])
+
+        with pytest.raises(ThsProviderError, match="THS_CALENDAR_OUT_OF_COVERAGE"):
+            fetcher.fetch(end_date=date(2023, 12, 31))
+
+    def test_a_half_open_window_slices_from_either_edge(self, monkeypatch: pytest.MonkeyPatch):
+        """单端窗口照样要切对：上游不收窗口，切片发生在本层。"""
+        fetcher = self._fetcher(monkeypatch, [self._day(0), self._day(1), self._day(3)])
+
+        assert [row.date for row in fetcher.fetch(start_date=date(2024, 1, 3))] == [
+            date(2024, 1, 3),
+            date(2024, 1, 5),
+        ]
+        # 先推邻接再切片 ⇒ 被切掉的行仍参与 prev/next，右端那一行的下一交易日
+        # 是真实交易日，不是切口。
+        assert [
+            (row.date, row.next_trade_date) for row in fetcher.fetch(end_date=date(2024, 1, 3))
+        ] == [
+            (date(2024, 1, 2), date(2024, 1, 3)),
+            (date(2024, 1, 3), date(2024, 1, 5)),
+        ]
+
+
 @pytest.mark.e2e
 class TestAgainstTheLiveFuyaoApi:
-    """真机：经注册表路由取数（需要 FUYAO_API_KEY）。"""
+    """真机：经注册表路由取数（需要 fuyao 凭证，环境变量或 ``.env`` 均可）。"""
 
     @pytest.fixture(autouse=True)
     def require_key(self):
-        from opendata_fuyao import FuyaoCredentials
+        """Gate on the same resolution the adapters use.
 
-        if FuyaoCredentials.from_environment() is None:
-            pytest.skip("FUYAO_API_KEY is not configured")
+        ``credentials()`` also reads application settings; checking only the
+        process environment used to skip this class on every machine that
+        keeps the key in ``.env``, which meant the live legs were never
+        actually exercised.
+        """
+        from opendata.data.providers.ths.models._client import ThsProviderError, credentials
+
+        try:
+            credentials()
+        except ThsProviderError as exc:
+            pytest.skip(f"no fuyao credentials: {exc!s}")
 
     def test_registry_routes_daily_bars_to_the_fuyao_source(self):
         from opendata.data.providers import register_providers
@@ -871,3 +998,18 @@ class TestAgainstTheLiveFuyaoApi:
 
         assert events and isinstance(events[0], CorporateAction)
         assert events[0].ex_date >= events[-1].ex_date
+
+    def test_registry_routes_the_trading_calendar_to_the_fuyao_source(self):
+        """真机：日历腿经注册表路由，行数量级与 coverage 语义都要成立。"""
+        from opendata.data.providers import register_providers
+        from opendata.data.registry import get_registry
+
+        register_providers()
+        routed = get_registry().resolve_domain("trading_calendar", source="ths")
+        days = routed.fetch()
+
+        assert len(days) > 200  # 实测一次返回 242 个开市日
+        assert all(isinstance(day, TradingCalendar) and day.is_open for day in days)
+        assert days[0].date < days[-1].date
+        assert days[0].prev_trade_date is None
+        assert days[-1].next_trade_date is None  # 上游不含当日，右端之外无从得知

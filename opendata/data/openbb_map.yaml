@@ -91,3 +91,10 @@ entries:
     ours:
       - {provider: akshare, domain: index_constituent, contract: IndexConstituent, status: registered}
       - {provider: ths, domain: index_constituent, contract: IndexConstituent, status: verified}
+  - openbb: {model: TBD}
+    scenario: 交易日历（跑批窗口端点与新鲜度 lag 的期望判据，A4.7）
+    ours:
+      # 上游只发布**滚动近一年且不含当日**的交易日，六个候选窗口参数全被忽略
+      # （实测见 docs/evidence/C12/calendar-check.txt），故 coverage 之外不承诺
+      # next_trade_date，也不接 akshare 侧的日历（口径未对照）。
+      - {provider: ths, domain: trading_calendar, contract: TradingCalendar, status: verified}

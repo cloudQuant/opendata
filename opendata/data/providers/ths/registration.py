@@ -8,6 +8,10 @@ until the cross-vendor comparison lands. ``fund_etf_daily`` is a deliberate
 addition to that list: the upstream ETF K-line endpoint publishes a
 forward-adjusted series only (measured, see ``docs/evidence/C6``), which D10
 forbids storing, so it stays on the akshare chain until a factor route exists.
+The ``trading_calendar`` leg is the producer side of A4.7: the expectation
+predicate in :mod:`opendata.pipeline.trading_calendar` reads the warehouse
+table these rows land in, so registering the fetcher is what makes the
+``warehouse-calendar`` tier reachable at all.
 """
 
 from __future__ import annotations
@@ -23,6 +27,7 @@ from opendata.data.providers.ths.models.index_daily import ThsIndexDailyFetcher
 from opendata.data.providers.ths.models.option_daily import ThsOptionDailyFetcher
 from opendata.data.providers.ths.models.stock_action import ThsStockActionFetcher
 from opendata.data.providers.ths.models.stock_daily import ThsStockDailyFetcher
+from opendata.data.providers.ths.models.trading_calendar import ThsTradingCalendarFetcher
 
 if TYPE_CHECKING:
     from opendata.data.capability import Capability
@@ -38,6 +43,7 @@ FETCHERS: tuple[Fetcher[Any, Any], ...] = (
     ThsFinancialStatementFetcher(),
     ThsFuturesDailyFetcher(),
     ThsOptionDailyFetcher(),
+    ThsTradingCalendarFetcher(),
 )
 
 
