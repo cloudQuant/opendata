@@ -7,22 +7,30 @@ dependency, hands over an API key and asks for bars:
     page = client.stock_daily(["600519"], start="2024-01-01", adjust="qfq")
 
 Synchronous on purpose: the consumer prepares backtest data in the same
-process that runs the backtest. WebSocket subscription (the "notify then
-pull" helper of design §10.4) is not part of this minimal client yet.
+process that runs the backtest. The WebSocket helper (design §10.4
+"notify then pull") keeps that shape - :meth:`OpendataClient.subscribe`
+is a blocking generator, so a consumer loop is a plain ``for``.
+
+The socket half needs the ``ws`` extra (``websockets``); the REST half
+does not, so a consumer that only pulls history installs nothing extra.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import json
+from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any
 
 import httpx
+from loguru import logger
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Sequence
 
 DEFAULT_PAGE_SIZE = 500
 DEFAULT_TIMEOUT = 30.0
+#: Seconds to wait for the server's first answer after subscribing.
+DEFAULT_WS_TIMEOUT = 30.0
 
 
 class OpendataClientError(RuntimeError):
@@ -47,6 +55,65 @@ class InvalidQueryError(OpendataClientError):
 
 class UnsupportedQueryError(OpendataClientError):
     """The API cannot serve the request yet (HTTP 501)."""
+
+
+class SubscriptionError(OpendataClientError):
+    """The data subscription socket failed or reported an error frame."""
+
+
+@dataclass(frozen=True)
+class DataUpdate:
+    """One ``data.update`` event of a subscription (design §10.2).
+
+    Attributes:
+        domain: Domain the batch landed in.
+        source: Source that produced the batch.
+        layer: Layer the batch landed in (``ods`` / ``dwd``).
+        batch_id: Batch identifier - the watermark key a reconnect can
+            replay from.
+        window: ``{"start": ..., "end": ...}`` of the batch.
+        rows: Rows the batch wrote.
+        created_at: When the batch finished (ISO-8601, UTC).
+        replayed: True when this event is catch-up traffic rather than a
+            live push.
+        payload: ``meta`` (notification only) or ``full`` (rows inline).
+        data: Batch rows; empty for ``meta`` unless the caller asked the
+            client to pull them.
+    """
+
+    domain: str
+    source: str
+    layer: str
+    batch_id: str
+    window: dict[str, str | None]
+    rows: int
+    created_at: str
+    replayed: bool = False
+    payload: str = "meta"
+    data: tuple[dict[str, Any], ...] = ()
+
+    @classmethod
+    def from_message(cls, message: dict[str, Any]) -> DataUpdate:
+        """Build an update from a ``data.update`` frame.
+
+        Args:
+            message: The decoded frame.
+
+        Returns:
+            The parsed update.
+        """
+        return cls(
+            domain=str(message.get("domain", "")),
+            source=str(message.get("source", "")),
+            layer=str(message.get("layer", "")),
+            batch_id=str(message.get("batch_id", "")),
+            window=dict(message.get("window") or {}),
+            rows=int(message.get("rows") or 0),
+            created_at=str(message.get("created_at", "")),
+            replayed=bool(message.get("replayed", False)),
+            payload=str(message.get("payload", "meta")),
+            data=tuple(message.get("data") or ()),
+        )
 
 
 @dataclass(frozen=True)
@@ -74,6 +141,22 @@ class Page:
             The set of symbol values found in ``rows``.
         """
         return {str(row["symbol"]) for row in self.rows if "symbol" in row}
+
+
+def _symbol_list(values: str | Sequence[str] | None) -> list[str]:
+    """Normalize a symbol argument into the list the socket expects.
+
+    Args:
+        values: One symbol or a sequence.
+
+    Returns:
+        The symbols as a list (empty when none were given).
+    """
+    if values is None:
+        return []
+    if isinstance(values, str):
+        return [item.strip() for item in values.split(",") if item.strip()]
+    return [str(item) for item in values]
 
 
 def _csv(value: str | Sequence[str] | None) -> str | None:
@@ -125,6 +208,7 @@ class OpendataClient:
         self.base_url = base_url.rstrip("/")
         self._api_key = api_key
         self._token = token
+        self._asset_classes: dict[str, str] | None = None
         self._owns_client = http_client is None
         self._client = http_client or httpx.Client(
             base_url=self.base_url,
@@ -191,7 +275,9 @@ class OpendataClient:
             params: Query parameters; ``None`` values are dropped.
 
         Returns:
-            The ``data`` field of the API envelope.
+            The ``data`` field of the API envelope; a body that is not an
+            envelope at all (the bare list of ``/data/capabilities``) is
+            returned as it came.
 
         Raises:
             OpendataClientError: On transport failure or a failure body.
@@ -203,6 +289,8 @@ class OpendataClient:
             raise OpendataClientError(f"request to {path} failed: {exc}") from exc
         self._raise_for_status(response)
         payload = response.json()
+        if not isinstance(payload, dict):
+            return payload
         if not payload.get("success", True):
             raise OpendataClientError(str(payload.get("message") or "API reported a failure"))
         return payload.get("data")
@@ -388,6 +476,279 @@ class OpendataClient:
             or {}
         )
         return list(data.get("rows") or [])
+
+    def subscribe(
+        self,
+        domain: str,
+        *,
+        layer: str = "dwd",
+        payload: str = "meta",
+        symbols: str | Sequence[str] | None = None,
+        since_batch_id: str | None = None,
+        asset_class: str | None = None,
+        pull: bool = False,
+        page_size: int = DEFAULT_PAGE_SIZE,
+        timeout: float | None = DEFAULT_WS_TIMEOUT,
+    ) -> SubscriptionSession:
+        """Open a subscription to one domain (design §10.2/§10.4).
+
+        The returned session is a context manager and an iterator, so a
+        consumer loop is a plain ``for``::
+
+            with client.subscribe("stock_daily", pull=True) as batches:
+                for batch in batches:
+                    backtest.add(batch.data)
+
+        The socket is connected, authenticated with the first frame and
+        subscribed to when the session opens; iterating yields one
+        :class:`DataUpdate` per ``data.update``.
+
+        Args:
+            domain: Domain identifier to watch.
+            layer: Layer to watch (``dwd`` by default).
+            payload: ``meta`` (notifications) or ``full`` (rows inline).
+            symbols: Optional symbol filter for live events.
+            since_batch_id: Last batch already processed, for catch-up.
+            asset_class: Asset class used when ``pull`` reads the rows
+                back; defaults to the domain's registered one.
+            pull: Fetch each batch's rows over REST after the notice.
+            page_size: Page size of those REST reads.
+            timeout: Seconds to wait for the server's first answer.
+
+        Returns:
+            The open session (nothing has been sent until it is entered
+            or iterated).
+
+        Raises:
+            OpendataClientError: ``websockets`` is not installed.
+        """
+        return SubscriptionSession(
+            self,
+            domain,
+            layer=layer,
+            payload=payload,
+            symbols=_symbol_list(symbols),
+            since_batch_id=since_batch_id,
+            asset_class=asset_class,
+            pull=pull,
+            page_size=page_size,
+            timeout=timeout,
+        )
+
+    def _with_rows(
+        self,
+        update: DataUpdate,
+        domain: str,
+        asset_class: str | None,
+        page_size: int,
+    ) -> DataUpdate:
+        """Attach the batch rows read back over REST."""
+        if update.payload == "full":
+            return update
+        rows = list(
+            self.iter_rows(
+                asset_class or self._asset_class_for(domain),
+                domain,
+                layer=update.layer,
+                source=update.source,
+                start=update.window.get("start"),
+                end=update.window.get("end"),
+                page_size=page_size,
+            )
+        )
+        return replace(update, data=tuple(rows))
+
+    def _expect(self, socket: Any, kind: str) -> dict[str, Any]:  # noqa: ANN401  # websockets conn
+        """Read frames until the expected type arrives.
+
+        Args:
+            socket: The connected socket.
+            kind: Expected ``type`` value.
+
+        Returns:
+            The frame.
+
+        Raises:
+            SubscriptionError: The server answered with an error frame
+                or closed the socket first.
+        """
+        for raw in socket:
+            frame: dict[str, Any] = json.loads(raw)
+            if frame.get("type") == kind:
+                return frame
+            if frame.get("type") == "error":
+                raise SubscriptionError(
+                    f"{frame.get('code')}: {frame.get('message')} ({frame.get('suggestion')})"
+                )
+        raise SubscriptionError(f"connection closed before {kind}")
+
+    def _asset_class_for(self, domain: str) -> str:
+        """Look up the asset class a domain is registered under.
+
+        The client does not carry the server's domain registry, so it
+        asks the capabilities endpoint - the same source the server
+        routes by - and remembers the answer.
+
+        Args:
+            domain: Domain identifier.
+
+        Returns:
+            The asset class segment of the REST path.
+
+        Raises:
+            NotFoundError: The server does not register the domain.
+        """
+        if self._asset_classes is None:
+            payload = self._get("/data/capabilities", {}) or []
+            self._asset_classes = {
+                str(entry.get("domain")): str(entry.get("asset_class"))
+                for entry in payload
+                if isinstance(entry, dict)
+            }
+        try:
+            return self._asset_classes[domain]
+        except KeyError as exc:
+            raise NotFoundError(f"domain {domain!r} is not registered") from exc
+
+    def _credential(self) -> str:
+        """Return the credential to present in the auth frame."""
+        return self._api_key if self._api_key is not None else str(self._token)
+
+    def _ws_url(self) -> str:
+        """Return the WebSocket URL of the subscription endpoint."""
+        scheme = "wss" if self.base_url.startswith("https") else "ws"
+        host = self.base_url.split("://", 1)[-1]
+        return f"{scheme}://{host}/ws/data/subscribe"
+
+
+class SubscriptionSession:
+    """One open ``/ws/data/subscribe`` connection (design §10.2).
+
+    Usable as a context manager and as an iterator; entering it performs
+    the documented handshake (first-frame auth, then subscribe) and
+    leaves the socket ready to yield updates.
+
+    Attributes:
+        acknowledged: True once the server accepted the subscription.
+        replayed: Batches the server replayed for ``since_batch_id``.
+    """
+
+    def __init__(
+        self,
+        client: OpendataClient,
+        domain: str,
+        *,
+        layer: str = "dwd",
+        payload: str = "meta",
+        symbols: Sequence[str] = (),
+        since_batch_id: str | None = None,
+        asset_class: str | None = None,
+        pull: bool = False,
+        page_size: int = DEFAULT_PAGE_SIZE,
+        timeout: float | None = DEFAULT_WS_TIMEOUT,
+    ) -> None:
+        """Bind a session to its client and subscription parameters."""
+        self._client = client
+        self._domain = domain
+        self._layer = layer
+        self._payload = payload
+        self._symbols = list(symbols)
+        self._since_batch_id = since_batch_id
+        self._asset_class = asset_class
+        self._pull = pull
+        self._page_size = page_size
+        self._timeout = timeout
+        self._socket: Any = None  # websockets' ClientConnection
+        self.acknowledged = False
+        self.replayed = 0
+
+    def __enter__(self) -> SubscriptionSession:
+        """Connect, authenticate and subscribe.
+
+        Returns:
+            This session, ready to iterate.
+
+        Raises:
+            SubscriptionError: The socket could not be opened, the
+                credential was rejected, or the server refused the
+                subscription.
+            OpendataClientError: ``websockets`` is not installed.
+        """
+        try:
+            from websockets.sync.client import connect
+        except ImportError as exc:  # optional extra
+            raise OpendataClientError(
+                "WebSocket subscription needs the 'websockets' package: "
+                "pip install 'opendata-client[ws]'"
+            ) from exc
+
+        url = self._client._ws_url()
+        try:
+            self._socket = connect(url, open_timeout=self._timeout).__enter__()
+        except OSError as exc:  # unreachable host, handshake refused
+            raise SubscriptionError(f"subscription to {url} failed: {exc}") from exc
+        try:
+            self._socket.send(json.dumps({"action": "auth", "token": self._client._credential()}))
+            self._client._expect(self._socket, "auth.ok")
+            self._socket.send(
+                json.dumps(
+                    {
+                        "action": "subscribe",
+                        "domain": self._domain,
+                        "layer": self._layer,
+                        "payload": self._payload,
+                        "symbols": self._symbols,
+                        "since_batch_id": self._since_batch_id,
+                    }
+                )
+            )
+            ack = self._client._expect(self._socket, "subscribe.ok")
+        except SubscriptionError:
+            self.close()
+            raise
+        self.acknowledged = True
+        self.replayed = int(ack.get("replayed") or 0)
+        return self
+
+    def __exit__(self, *exc_info: object) -> None:
+        """Close the socket."""
+        self.close()
+
+    def close(self) -> None:
+        """Close the socket if it is open."""
+        if self._socket is not None:
+            try:
+                self._socket.close()
+            except OSError as exc:  # already gone
+                logger.debug(f"subscription close failed: {exc}")
+            self._socket = None
+
+    def __iter__(self) -> Iterator[DataUpdate]:
+        """Yield one update per batch that lands.
+
+        Yields:
+            The updates, with rows attached when ``pull`` is set.
+
+        Raises:
+            SubscriptionError: The server sent an error frame, or the
+                session was never entered.
+        """
+        if self._socket is None:
+            self.__enter__()
+        for raw in self._socket:
+            message = json.loads(raw)
+            kind = message.get("type")
+            if kind == "data.update":
+                update = DataUpdate.from_message(message)
+                if self._pull:
+                    update = self._client._with_rows(
+                        update, self._domain, self._asset_class, self._page_size
+                    )
+                yield update
+            elif kind == "error":
+                raise SubscriptionError(
+                    f"{message.get('code')}: {message.get('message')} ({message.get('suggestion')})"
+                )
 
 
 _ERRORS: dict[int, type[OpendataClientError]] = {

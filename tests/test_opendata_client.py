@@ -13,6 +13,7 @@ import time
 
 import httpx
 import pytest
+from opendata_client.client import SubscriptionSession
 
 from opendata_client import (
     AuthenticationError,
@@ -373,3 +374,238 @@ class TestAgainstTheRunningApi:
         assert response.status_code == 200
         assert body["success"] is True
         assert set(body["data"]) >= {"rows", "columns", "page", "page_size", "count"}
+
+    def test_consumer_subscribes_over_a_real_socket(self, live_server, api_key, warehouse_rows):
+        """The client's socket half, end to end (design §10.2/§10.4).
+
+        Proves the documented sequence against a real server: first-frame
+        auth with an API key, subscribe, acknowledge, unsubscribe. The
+        live-push path (a batch landing → ``data.update``) is covered by
+        ``tests/test_data_subscribe.py`` inside the app process.
+        """
+        from opendata_client import SubscriptionError
+
+        client = OpendataClient(live_server, api_key=api_key)
+        try:
+            with client.subscribe("stock_daily", layer="dwd", timeout=10) as stream:
+                assert stream.acknowledged is True
+                assert stream.replayed >= 0
+        except SubscriptionError as exc:  # pragma: no cover - only on a broken server
+            pytest.fail(f"subscription failed: {exc}")
+        finally:
+            client.close()
+
+
+class TestSubscriptionProtocol:
+    """The socket half of the client, driven through a fake socket."""
+
+    def _client(self) -> OpendataClient:
+        return OpendataClient("http://api.test", api_key="od-test-key")
+
+    def test_ws_url_follows_the_base_scheme(self):
+        assert self._client()._ws_url() == "ws://api.test/ws/data/subscribe"
+        secure = OpendataClient("https://api.test", api_key="od-test-key")
+        try:
+            assert secure._ws_url() == "wss://api.test/ws/data/subscribe"
+        finally:
+            secure.close()
+
+    def test_api_key_is_the_credential_when_present(self):
+        assert self._client()._credential() == "od-test-key"
+
+    def test_jwt_is_the_credential_when_no_key(self):
+        client = OpendataClient("http://api.test", token="jwt-value")
+        try:
+            assert client._credential() == "jwt-value"
+        finally:
+            client.close()
+
+    def test_update_parses_a_meta_frame(self):
+        from opendata_client import DataUpdate
+
+        update = DataUpdate.from_message(
+            {
+                "type": "data.update",
+                "payload": "meta",
+                "domain": "stock_daily",
+                "source": "ths",
+                "layer": "ods",
+                "batch_id": "b-1",
+                "window": {"start": "2026-09-23", "end": "2026-09-23"},
+                "rows": 12,
+                "created_at": "2026-09-24T08:00:00+00:00",
+                "replayed": True,
+            }
+        )
+
+        assert update.domain == "stock_daily"
+        assert update.batch_id == "b-1"
+        assert update.rows == 12
+        assert update.replayed is True
+        assert update.data == ()
+
+    def test_events_yield_updates_and_raise_on_error_frames(self):
+        from opendata_client import DataUpdate, SubscriptionError
+
+        class _Socket:
+            def __init__(self, frames):
+                self._frames = iter(frames)
+
+            def __iter__(self):
+                return self._frames
+
+        client = self._client()
+        try:
+            good = _Socket(
+                [
+                    json.dumps({"type": "ping"}),
+                    json.dumps({"type": "data.update", "domain": "stock_daily", "batch_id": "b-1"}),
+                ]
+            )
+            session = SubscriptionSession(client, "stock_daily")
+            session._socket = good
+            updates = list(session)
+            assert [item.batch_id for item in updates] == ["b-1"]
+            assert isinstance(updates[0], DataUpdate)
+
+            bad = _Socket(
+                [
+                    json.dumps(
+                        {
+                            "type": "error",
+                            "code": "DOMAIN_FORBIDDEN",
+                            "message": "无权读取",
+                            "suggestion": "换 Key",
+                        }
+                    )
+                ]
+            )
+            failing = SubscriptionSession(client, "stock_daily")
+            failing._socket = bad
+            with pytest.raises(SubscriptionError, match="DOMAIN_FORBIDDEN"):
+                list(failing)
+        finally:
+            client.close()
+
+    def test_expect_raises_when_the_server_reports_an_error(self):
+        from opendata_client import SubscriptionError
+
+        class _Socket:
+            def __iter__(self):
+                return iter([json.dumps({"type": "error", "code": "AUTH_FAILED", "message": "no"})])
+
+        client = self._client()
+        try:
+            with pytest.raises(SubscriptionError, match="AUTH_FAILED"):
+                client._expect(_Socket(), "auth.ok")
+        finally:
+            client.close()
+
+    def test_expect_raises_when_the_socket_closes_first(self):
+        from opendata_client import SubscriptionError
+
+        class _Socket:
+            def __iter__(self):
+                return iter([])
+
+        client = self._client()
+        try:
+            with pytest.raises(SubscriptionError, match="closed before auth.ok"):
+                client._expect(_Socket(), "auth.ok")
+        finally:
+            client.close()
+
+    def test_asset_class_is_looked_up_once_and_remembered(self):
+        from opendata_client import NotFoundError
+
+        calls: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            calls.append(request.url.path)
+            return httpx.Response(
+                200,
+                json=[
+                    {"domain": "stock_daily", "asset_class": "equity"},
+                    {"domain": "economy_cpi", "asset_class": "economy"},
+                ],
+            )
+
+        client = OpendataClient(
+            "http://api.test", api_key="od-test-key", transport=httpx.MockTransport(handler)
+        )
+        try:
+            assert client._asset_class_for("stock_daily") == "equity"
+            assert client._asset_class_for("economy_cpi") == "economy"
+            assert calls == ["/api/v1/data/capabilities"]  # cached after the first look
+            with pytest.raises(NotFoundError):
+                client._asset_class_for("not_a_domain")
+        finally:
+            client.close()
+
+    def test_pull_attaches_the_batch_rows(self):
+        from opendata_client import DataUpdate
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            if request.url.path.endswith("/capabilities"):
+                return httpx.Response(
+                    200, json=[{"domain": "stock_daily", "asset_class": "equity"}]
+                )
+            assert dict(request.url.params)["start"] == "2026-09-23"
+            return _envelope(
+                {
+                    "rows": [{"symbol": "600519", "close": 1.0}],
+                    "columns": ["symbol", "close"],
+                    "page": 1,
+                    "page_size": 500,
+                    "count": 1,
+                }
+            )
+
+        client = OpendataClient(
+            "http://api.test", api_key="od-test-key", transport=httpx.MockTransport(handler)
+        )
+        try:
+            update = client._with_rows(
+                DataUpdate(
+                    domain="stock_daily",
+                    source="ths",
+                    layer="ods",
+                    batch_id="b-1",
+                    window={"start": "2026-09-23", "end": "2026-09-23"},
+                    rows=1,
+                    created_at="2026-09-24T08:00:00+00:00",
+                ),
+                "stock_daily",
+                None,
+                500,
+            )
+        finally:
+            client.close()
+
+        assert update.data == ({"symbol": "600519", "close": 1.0},)
+
+    def test_pull_leaves_a_full_payload_alone(self):
+        from opendata_client import DataUpdate
+
+        client = self._client()
+        try:
+            update = client._with_rows(
+                DataUpdate(
+                    domain="stock_daily",
+                    source="ths",
+                    layer="ods",
+                    batch_id="b-1",
+                    window={},
+                    rows=1,
+                    created_at="x",
+                    payload="full",
+                    data=({"symbol": "600519"},),
+                ),
+                "stock_daily",
+                "equity",
+                500,
+            )
+        finally:
+            client.close()
+
+        assert update.data == ({"symbol": "600519"},)

@@ -38,6 +38,7 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
     from opendata.pipeline.dwd_merge import DwdMergeService
+    from opendata.pipeline.runner import Hook
 
 
 class TemplateKind(str, enum.Enum):
@@ -208,6 +209,7 @@ def build_stock_daily_pipeline(
     second_source: str | None = None,
     shard_size: int = 500,
     batch_id: str | None = None,
+    notify: Hook | None = None,
 ) -> DataPipeline:
     """Build the stock-daily pipeline of the P0 daily chain.
 
@@ -222,6 +224,9 @@ def build_stock_daily_pipeline(
             practice), otherwise the step is skipped.
         shard_size: Symbols per shard.
         batch_id: Fixed ods batch id (tests); None generates one.
+        notify: Step-5 hook override; None wires the default batch
+            notifier, which records the watermark and pushes the
+            ``data.update`` event (design §10.2).
 
     Returns:
         The wired pipeline, ready for ``run(window)``.
@@ -230,6 +235,7 @@ def build_stock_daily_pipeline(
 
     from opendata.pipeline.cross_check_service import CrossCheckService
     from opendata.pipeline.dwd_merge import DwdMergeService
+    from opendata.pipeline.notify import build_notify_hook
     from opendata.pipeline.ods_writer import OdsWriter
 
     resolved_source = source or default_source("stock_daily")
@@ -281,6 +287,12 @@ def build_stock_daily_pipeline(
             },
             write_report=DiffReportWriter(engine).write,
         )
+    step_five: Hook | None = notify
+    if step_five is None:
+        # The batch id is shared with the writer on purpose: the
+        # notifier reads a `full` payload back by `_batch_id`, so a
+        # different id would return an empty frame.
+        step_five = build_notify_hook(engine, batch_id=batch, layer="ods", table=spec.table)
     return DataPipeline(
         spec,
         session_maker=session_maker,
@@ -288,6 +300,7 @@ def build_stock_daily_pipeline(
         fetch_symbol=fetch_symbol,
         cross_check=cross_check.run_hook if cross_check else None,
         merge=merge.run_hook,
+        notify=step_five,
     )
 
 

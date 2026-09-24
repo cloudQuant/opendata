@@ -110,7 +110,14 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,
-      }
+      },
+      // WebSocket routes live at the root (nginx proxies /ws/ the same
+      // way); without this the dev server answers the handshake itself.
+      '/ws': {
+        target: 'ws://localhost:8000',
+        ws: true,
+        changeOrigin: true,
+      },
     }
   }
 })

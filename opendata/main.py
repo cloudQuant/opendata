@@ -19,7 +19,7 @@ from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from starlette.middleware.base import RequestResponseEndpoint
 
-from opendata.api import api_router
+from opendata.api import api_router, ws_routers
 from opendata.api.rate_limit import get_limiter
 from opendata.core.config import settings
 from opendata.core.database import close_db, init_db
@@ -280,6 +280,13 @@ async def generic_exception_handler(request: Request, exc: Exception) -> JSONRes
 # Include API routes (v1 is the canonical prefix)
 app.include_router(api_router, prefix="/api/v1")
 app.include_router(api_router, prefix="/api")
+
+# WebSocket routes live at the root: nginx proxies `location /ws/` to the
+# backend unchanged and the frontend dials `/ws/executions`, so the socket
+# path must not carry the versioned REST prefix (it never worked behind
+# the documented deployment until this fix).
+for ws_module in ws_routers:
+    app.include_router(ws_module)
 
 
 @app.middleware("http")
