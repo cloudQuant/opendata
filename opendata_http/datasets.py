@@ -6,7 +6,6 @@
 Date: 2024/12/30 15:30
 Desc: 导入文件工具，可以正确处理路径问题
 """
-import os
 
 import pathlib
 from importlib import resources

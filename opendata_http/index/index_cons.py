@@ -201,16 +201,25 @@ def index_stock_cons_weight_csindex(symbol: str = "000300") -> pd.DataFrame:
     )
     try:
         r = requests.get(url, timeout=15)
-    except requests.RequestException:
-        return _empty_index_stock_cons_weight_csindex()
+    except requests.RequestException as exc:
+        # 人工改动：上游把传输失败吞成空帧，增量调度无法与"真的没有权重行"区分，
+        # 因此这里改为抛错（下面 temp_df.empty 的合法空结果仍返回空帧）。
+        raise RuntimeError(
+            f"CSIndex closeweight download failed for {symbol!r}: {url} ({exc})"
+        ) from exc
 
     if r.status_code != 200:
-        return _empty_index_stock_cons_weight_csindex()
+        raise RuntimeError(
+            f"CSIndex closeweight endpoint returned HTTP {r.status_code} "
+            f"for {symbol!r}: {url}"
+        )
 
     try:
         temp_df = pd.read_excel(BytesIO(r.content))
-    except (ValueError, OSError):
-        return _empty_index_stock_cons_weight_csindex()
+    except (ValueError, OSError) as exc:
+        raise RuntimeError(
+            f"CSIndex closeweight body for {symbol!r} is not readable as XLS: {url}"
+        ) from exc
 
     if temp_df.empty:
         return _empty_index_stock_cons_weight_csindex()

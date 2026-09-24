@@ -13,6 +13,7 @@ import pytest
 
 from scripts.codemod import port_module
 from scripts.codemod.port_module import (
+    MANUAL_EDITS,
     UpstreamLock,
     apply_manual_edits,
     init_lock,
@@ -112,6 +113,19 @@ class TestManualEdits:
         source = "token = 'x'\n"
         result, todos = apply_manual_edits(source, "akshare/other/mod.py")
         assert (result, todos) == (source, [])
+
+    def test_fail_closed_edits_replay_without_unused_os(self):
+        source = "from opendata_http.utils.func import fetch_paginated_data\nprint(1)\n"
+        result, _ = apply_manual_edits(source, "akshare/index/index_zh_em.py")
+        assert "from opendata_http.utils.request import request_eastmoney" in result
+        assert "import os" not in result
+
+    def test_silent_empty_fixes_are_registered_for_replay(self):
+        registered = {edit.upstream_path for edit in MANUAL_EDITS}
+        assert {
+            "akshare/index/index_zh_em.py",
+            "akshare/index/index_cons.py",
+        } <= registered
 
     def test_codemod_source_is_secret_free(self):
         # The transforms must never embed credential literals.

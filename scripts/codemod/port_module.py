@@ -101,6 +101,91 @@ MANUAL_EDITS: tuple[ManualEdit, ...] = (
         transforms=((r'"token": "[^"]*",', '"token": os.environ.get("EM_API_TOKEN", ""),'),),
     ),
     ManualEdit(
+        upstream_path="akshare/index/index_zh_em.py",
+        description="东财指数 K 线：吞错返回空帧 → 走 request_eastmoney 并在全部候选被拒时抛错"
+        "（C11a 静默欠抓缺陷）",
+        transforms=(
+            (
+                r"from opendata_http\.utils\.func import fetch_paginated_data\n",
+                "from opendata_http.utils.func import fetch_paginated_data\n"
+                "from opendata_http.utils.request import request_eastmoney\n",
+            ),
+            (
+                r"    data_json = None\n    for secid in candidate_secids:\n",
+                "    data_json = None\n    answered = 0\n"
+                "    last_error: Exception | None = None\n"
+                "    for secid in candidate_secids:\n",
+            ),
+            (
+                r"        try:\n            r = requests\.get\(url, params=params, timeout=15\)\n"
+                r"            r\.raise_for_status\(\)\n            candidate_json = r\.json\(\)\n"
+                r"        except \(requests\.RequestException, ValueError\):\n"
+                r"            continue\n"
+                r"        if \(candidate_json",
+                "        try:\n"
+                "            # 人工改动：原为 requests.get + raise_for_status，失败被吞成空帧；\n"
+                "            # 改走 request_eastmoney（push2delay/curl 回退）"
+                '并区分"拒绝"与"空窗"。\n'
+                "            r = request_eastmoney(url, params=params, timeout=15)\n"
+                "            candidate_json = r.json()\n"
+                "        except (requests.RequestException, ValueError) as exc:\n"
+                "            last_error = exc\n"
+                "            continue\n"
+                "        answered += 1\n"
+                "        if (candidate_json",
+            ),
+            (
+                r"    if data_json is None:\n        return pd\.DataFrame\(columns=columns\)\n\n"
+                r"    temp_df = pd\.DataFrame\(\[item\.split",
+                "    if data_json is None:\n"
+                "        if answered == 0 and last_error is not None:\n"
+                "            raise RuntimeError(\n"
+                '                f"Eastmoney index kline endpoint is '
+                'unavailable for {symbol!r}: "\n'
+                '                f"all {len(candidate_secids)} secid candidates failed "\n'
+                '                f"(last error: {last_error})"\n'
+                "            ) from last_error\n"
+                "        return pd.DataFrame(columns=columns)\n"
+                "\n"
+                "    temp_df = pd.DataFrame([item.split",
+            ),
+        ),
+    ),
+    ManualEdit(
+        upstream_path="akshare/index/index_cons.py",
+        description="中证权重文件：传输失败/非 200/坏 body 吞成空帧 → 抛错（C11a 静默欠抓缺陷）",
+        transforms=(
+            (
+                r"    try:\n        r = requests\.get\(url, timeout=15\)\n"
+                r"    except requests\.RequestException:\n"
+                r"        return _empty_index_stock_cons_weight_csindex\(\)\n\n"
+                r"    if r\.status_code != 200:\n"
+                r"        return _empty_index_stock_cons_weight_csindex\(\)\n\n"
+                r"    try:\n        temp_df = pd\.read_excel\(BytesIO\(r\.content\)\)\n"
+                r"    except \(ValueError, OSError\):\n"
+                r"        return _empty_index_stock_cons_weight_csindex\(\)\n",
+                "    try:\n        r = requests.get(url, timeout=15)\n"
+                "    except requests.RequestException as exc:\n"
+                '        # 人工改动：上游把传输失败吞成空帧，增量调度无法与"真的没有权重行"区分，\n'
+                "        # 因此这里改为抛错（下面 temp_df.empty 的合法空结果仍返回空帧）。\n"
+                "        raise RuntimeError(\n"
+                '            f"CSIndex closeweight download failed for {symbol!r}: {url} ({exc})"\n'
+                "        ) from exc\n\n"
+                "    if r.status_code != 200:\n"
+                "        raise RuntimeError(\n"
+                '            f"CSIndex closeweight endpoint returned HTTP {r.status_code} "\n'
+                '            f"for {symbol!r}: {url}"\n'
+                "        )\n\n"
+                "    try:\n        temp_df = pd.read_excel(BytesIO(r.content))\n"
+                "    except (ValueError, OSError) as exc:\n"
+                "        raise RuntimeError(\n"
+                '            f"CSIndex closeweight body for {symbol!r} is not '
+                'readable as XLS: {url}"\n'
+                "        ) from exc\n",
+            ),
+        ),
+    ),
+    ManualEdit(
         upstream_path="akshare/datasets.py",
         description="akshare.data resource package never existed upstream; "
         "fail closed with a clear error (A2.3 标注不可用)",
@@ -330,6 +415,7 @@ def apply_manual_edits(source: str, upstream_path: str) -> tuple[str, list[str]]
     for edit in MANUAL_EDITS:
         if edit.upstream_path != upstream_path:
             continue
+        needs_os = False
         for pattern, replacement in edit.transforms:
             new_source, count = re.subn(pattern, replacement, source)
             if count == 0:
@@ -339,7 +425,11 @@ def apply_manual_edits(source: str, upstream_path: str) -> tuple[str, list[str]]
                 )
                 continue
             source = new_source
-        source = _ensure_import_os(source)
+            needs_os = needs_os or "os." in replacement
+        if needs_os:
+            # Only credential-redaction edits reference os.environ; injecting
+            # the import elsewhere fails the ported-tree F401 lint.
+            source = _ensure_import_os(source)
     return source, todos
 
 

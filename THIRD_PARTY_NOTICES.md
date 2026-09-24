@@ -27,7 +27,12 @@ opendata 采用 BSL 1.1（见 [`LICENSE`](LICENSE)），但仓库内**内嵌的�
 
 ### 人工改动登记（manual edits）
 
-搬运代码原则上与上游逐行可 diff（便于上游同步）。迄今的人工改动**仅为移除上游硬编码凭证**，共 5 处：
+搬运代码原则上与上游逐行可 diff（便于上游同步）。人工改动分两类，全部登记在
+`scripts/codemod/port_module.py::MANUAL_EDITS`（重跑 codemod 会重放，不会静默丢失），
+并在 `upstream.lock` 标记 `manual_edits = true`。
+
+**一、凭证脱敏（5 处）**：改动处均带 `# SECURITY:` 注释，缺失环境变量时降级为空值
+（调用可能被站点拒绝），不影响其余逻辑。
 
 | 文件 | 改动 | 原因 |
 |------|------|------|
@@ -37,8 +42,17 @@ opendata 采用 BSL 1.1（见 [`LICENSE`](LICENSE)），但仓库内**内嵌的�
 | `akshare/futures/futures_hf_em.py` | 站点 `token` → `EM_API_TOKEN` | 同上 |
 | `akshare/option/option_em.py` | 站点 `token` → `EM_API_TOKEN`（与上游同值） | 同上 |
 
-以上文件在后续 `upstream.lock` 中必须标记 `manual_edits = true`，codemod 重跑时不得覆盖。
-改动处均带 `# SECURITY:` 注释，缺失环境变量时降级为空值（调用可能被站点拒绝），不影响其余逻辑。
+**二、行为修正（3 处）**：上游把失败吞成"空结果"，与真实空窗不可区分，会直接导致增量调度静默欠抓。
+
+| 文件 | 改动 | 原因 |
+|------|------|------|
+| `akshare/datasets.py` | `get_*_path` 由返回不存在的路径 → `raise RuntimeError` | 上游 `akshare.data` 资源包从未存在（A2.3 标注不可用） |
+| `akshare/index/index_zh_em.py` | 指数 K 线改走 `request_eastmoney`（push2delay/curl 回退）；仅当全部 secid 候选都被拒时 `raise RuntimeError` | 上游 `except: continue` 后返回空帧；实测 502/RemoteDisconnected 会被当成"当日无行情"（C11a，AC-13 的 15:00 观测） |
+| `akshare/index/index_cons.py` | 中证权重文件：传输失败 / 非 200 / body 不可解析 → `raise RuntimeError` | 同上（`_empty_*()` 吞掉了三种失败） |
+
+两类改版的判据一致：**合法的"确实没有数据"**（200 + 可解析 + 零行）仍返回空帧，只有**上游拒绝**才抛错。
+回归护栏：`tests/test_port_fail_closed.py`（逐分支钉住"拒绝抛错 / 空窗返空"）与
+`docs/port-report.md` 的 `0 pending TODOs`（重放与树内容逐字节一致）。
 
 ---
 

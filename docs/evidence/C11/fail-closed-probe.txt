@@ -1,0 +1,10 @@
+# C11a 真机探测（2026-09-25）：fail-closed 改造后的行为对照
+
+## 1) em 指数 K 线（上游当前拒绝）— 改前：静默 0 行；改后：抛错并保留 cause
+raised RuntimeError elapsed=25.7s
+message=Eastmoney index kline endpoint is unavailable for '000300': all 4 secid candidates failed (last error: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?secid=47.000300&ut=7eea3edcaed734bea9cbfc24409ed989&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=0&beg=0&end=20500000)
+cause=HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?secid=47.000300&ut=7eea3edcaed734bea9cbfc24409ed989&fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61&klt=101&fqt=0&beg=0&end=20500000
+
+## 2) 中证权重（上游正常）— 必须仍是正常返回，证明未把成功路径改成误报
+rows=300 cols=['日期', '指数代码', '指数名称', '指数英文名称']... elapsed=1.8s
+head: [{'日期': datetime.date(2026, 8, 31), '指数代码': '000300', '指数名称': '沪深300', '指数英文名称': 'CSI 300', '成分券代码': '000001', '成分券名称': '平安银行', '成分券英文名称': 'Ping An Bank Co., Ltd.', '交易所': '深圳证券交易所', '交易所英文名称': 'Shenzhen Stock Exchange', '权重': 0.433}, {'日期': datetime.date(2026, 8, 31), '指数代码': '000300', '指数名称': '沪深300', '指数英文名称': 'CSI 300', '成分券代码': '000002', '成分券名称': '万科A', '成分券英文名称': 'China Vanke Co Ltd', '交易所': '深圳证券交易所', '交易所英文名称': 'Shenzhen Stock Exchange', '权重': 0.081}]

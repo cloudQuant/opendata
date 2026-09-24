@@ -113,7 +113,7 @@
 | `index/cons.py` | `akshare/index/cons.py` | 0 | 0 | False | ✓ |
 | `index/index_cflp.py` | `akshare/index/index_cflp.py` | 0 | 0 | False | ✓ |
 | `index/index_cni.py` | `akshare/index/index_cni.py` | 0 | 0 | False | ✓ |
-| `index/index_cons.py` | `akshare/index/index_cons.py` | 1 | 0 | False | ✓ |
+| `index/index_cons.py` | `akshare/index/index_cons.py` | 1 | 0 | True | ✓ |
 | `index/index_csindex.py` | `akshare/index/index_csindex.py` | 0 | 0 | False | ✓ |
 | `index/index_cx.py` | `akshare/index/index_cx.py` | 0 | 0 | False | ✓ |
 | `index/index_drewry.py` | `akshare/index/index_drewry.py` | 1 | 0 | False | ✓ |
@@ -135,7 +135,7 @@
 | `index/index_sw.py` | `akshare/index/index_sw.py` | 1 | 0 | False | ✓ |
 | `index/index_yw.py` | `akshare/index/index_yw.py` | 0 | 0 | False | ✓ |
 | `index/index_zh_a_scope.py` | `akshare/index/index_zh_a_scope.py` | 0 | 0 | False | ✓ |
-| `index/index_zh_em.py` | `akshare/index/index_zh_em.py` | 1 | 0 | False | ✓ |
+| `index/index_zh_em.py` | `akshare/index/index_zh_em.py` | 1 | 0 | True | ✓ |
 | `option/__init__.py` | `akshare/option/__init__.py` | 0 | 0 | False | ✓ |
 | `option/cons.py` | `akshare/option/cons.py` | 0 | 0 | False | ✓ |
 | `option/option_comm_qihuo.py` | `akshare/option/option_comm_qihuo.py` | 0 | 0 | False | ✓ |

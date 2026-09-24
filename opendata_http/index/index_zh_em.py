@@ -13,6 +13,7 @@ import pandas as pd
 import requests
 
 from opendata_http.utils.func import fetch_paginated_data
+from opendata_http.utils.request import request_eastmoney
 
 
 @lru_cache()
@@ -92,6 +93,8 @@ def index_zh_a_hist(
     candidate_secids = list(dict.fromkeys(candidate_secids))
 
     data_json = None
+    answered = 0
+    last_error: Exception | None = None
     for secid in candidate_secids:
         params = {
             "secid": secid,
@@ -104,16 +107,25 @@ def index_zh_a_hist(
             "end": "20500000",
         }
         try:
-            r = requests.get(url, params=params, timeout=15)
-            r.raise_for_status()
+            # 人工改动：原为 requests.get + raise_for_status，失败被吞成空帧；
+            # 改走 request_eastmoney（push2delay/curl 回退）并区分"拒绝"与"空窗"。
+            r = request_eastmoney(url, params=params, timeout=15)
             candidate_json = r.json()
-        except (requests.RequestException, ValueError):
+        except (requests.RequestException, ValueError) as exc:
+            last_error = exc
             continue
+        answered += 1
         if (candidate_json.get("data") or {}).get("klines"):
             data_json = candidate_json
             break
 
     if data_json is None:
+        if answered == 0 and last_error is not None:
+            raise RuntimeError(
+                f"Eastmoney index kline endpoint is unavailable for {symbol!r}: "
+                f"all {len(candidate_secids)} secid candidates failed "
+                f"(last error: {last_error})"
+            ) from last_error
         return pd.DataFrame(columns=columns)
 
     temp_df = pd.DataFrame([item.split(",") for item in data_json["data"]["klines"]])
