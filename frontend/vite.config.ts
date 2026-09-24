@@ -85,6 +85,14 @@ export default defineConfig({
     environment: 'jsdom',
     testTimeout: 10000,
     hookTimeout: 10000,
+    // Element Plus ships CSS that the Node loader cannot import when the
+    // package is externalized; inlining it lets vitest transform the
+    // styles (stubbed) so view tests can mount auto-imported el-* tags.
+    server: {
+      deps: {
+        inline: ['element-plus'],
+      },
+    },
     exclude: [
       'e2e/**',
       'node_modules/**',

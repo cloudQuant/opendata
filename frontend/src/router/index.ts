@@ -26,6 +26,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '首页' },
       },
       {
+        path: 'data',
+        name: 'DataCatalog',
+        component: () => import('@/views/DataCatalogView.vue'),
+        meta: { title: '数据目录' },
+      },
+      {
         path: 'scripts',
         name: 'Scripts',
         component: () => import('@/views/ScriptsView.vue'),

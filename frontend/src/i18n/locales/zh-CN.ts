@@ -19,6 +19,7 @@ export default {
   },
   nav: {
     home: '首页',
+    catalog: '数据目录',
     scripts: '数据接口',
     tasks: '定时任务',
     executions: '执行记录',

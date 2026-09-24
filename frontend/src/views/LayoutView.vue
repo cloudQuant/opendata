@@ -28,6 +28,7 @@ onMounted(() => {
 const menuItems = computed(() => {
   const items = [
     { index: '/', name: t('nav.home'), icon: 'HomeFilled' },
+    { index: '/data', name: t('nav.catalog'), icon: 'DataAnalysis' },
     { index: '/scripts', name: t('nav.scripts'), icon: 'Document' },
     { index: '/tasks', name: t('nav.tasks'), icon: 'Timer' },
     { index: '/executions', name: t('nav.executions'), icon: 'List' },

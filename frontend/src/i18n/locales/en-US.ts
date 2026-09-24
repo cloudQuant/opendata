@@ -19,6 +19,7 @@ export default {
   },
   nav: {
     home: 'Home',
+    catalog: 'Data Catalog',
     scripts: 'Scripts',
     tasks: 'Tasks',
     executions: 'Executions',
