@@ -30,14 +30,14 @@ import pandas as pd
 import yaml
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Mapping, Sequence
 
 _MAPPINGS_DIR = Path(__file__).parent / "mappings"
 
 #: Relative tolerance applied when a field declares none.
 DEFAULT_TOLERANCE = 1e-6
 
-_FIELD_KEYS = frozenset({"from", "scale", "normalize"})
+_FIELD_KEYS = frozenset({"from", "scale", "normalize", "ms_column"})
 _NORMALIZERS = frozenset({"plain"})
 
 
@@ -50,11 +50,15 @@ class FieldMapping:
         scale: Multiplier applied to numeric values (unit conversion).
         normalize: Value normalization recipe (``plain`` strips an
             exchange suffix); None keeps the value as delivered.
+        ms_column: Source column holding the epoch milliseconds of a
+            date field (the dumps store dates both ways); None when the
+            source delivers no millisecond column.
     """
 
     source_column: str
     scale: float = 1.0
     normalize: str | None = None
+    ms_column: str | None = None
 
 
 @dataclass(frozen=True)
@@ -83,6 +87,36 @@ class DomainMapping:
             The declared tolerance, or :data:`DEFAULT_TOLERANCE`.
         """
         return self.tolerances.get(contract_field, DEFAULT_TOLERANCE)
+
+    @property
+    def source_key(self) -> tuple[str, ...]:
+        """The business key spelled the way the source (ods) stores it.
+
+        The ods tables keep the source column names (design §8.1), so a
+        key-level upsert has to use these names rather than the
+        contract ones.
+        """
+        return tuple(self.fields[field_name].source_column for field_name in self.key)
+
+    def to_contract_key(self, key: Sequence[object]) -> tuple[object, ...]:
+        """Apply the key normalizers to one raw key tuple.
+
+        The pipeline's affected keys arrive in the ods spelling (the
+        source's column *and* value, ``600519.SH``), while the merge
+        compares them against normalized frames - so the value rule
+        travels with the column rule here.
+
+        Args:
+            key: Key values in :attr:`key` order.
+
+        Returns:
+            The contract-shaped key.
+        """
+        values: list[object] = []
+        for contract_field, value in zip(self.key, key, strict=False):
+            normalize = self.fields[contract_field].normalize
+            values.append(_plain_value(value) if normalize == "plain" else value)
+        return tuple(values)
 
 
 @dataclass(frozen=True)
@@ -190,6 +224,62 @@ def normalize_frame(frame: pd.DataFrame, mapping: DomainMapping) -> pd.DataFrame
     return pd.DataFrame(values, columns=list(mapping.fields))
 
 
+def denormalize_frame(frame: pd.DataFrame, mapping: DomainMapping) -> pd.DataFrame:
+    """Project a contract frame back onto the source columns.
+
+    The write-side inverse of :func:`normalize_frame`: a fetcher that
+    hands back contract rows still has to land them in the ods table,
+    and the ods tables keep the source's own column names (design
+    §8.1). Unit conversions are undone; the key normalization is not
+    re-applied (the suffix a source delivers is whatever the contract
+    row carries). A field that declares ``ms_column`` gets that column
+    back as the Shanghai midnight of its date, mirroring the derived
+    column the market dumps carry.
+
+    Args:
+        frame: Contract-shaped frame.
+        mapping: The domain mapping to apply in reverse.
+
+    Returns:
+        A frame with only the mapped source columns, in mapping order.
+
+    Raises:
+        ValueError: If a contract field is missing from the frame.
+    """
+    missing = [field_name for field_name in mapping.fields if field_name not in frame.columns]
+    if missing:
+        raise ValueError(
+            f"contract frame is missing mapped fields {sorted(missing)} for domain "
+            f"{mapping.domain!r}; the write path cannot name the ods columns (fail closed)"
+        )
+    values: dict[str, pd.Series] = {}
+    for contract_field, field_mapping in mapping.fields.items():
+        series = frame[contract_field]
+        if field_mapping.scale != 1.0:
+            series = pd.to_numeric(series, errors="coerce") / field_mapping.scale
+        values[field_mapping.source_column] = series
+    projected = pd.DataFrame(values, columns=[f.source_column for f in mapping.fields.values()])
+    for field_mapping in mapping.fields.values():
+        if field_mapping.ms_column is not None:
+            projected[field_mapping.ms_column] = _shanghai_millis(
+                projected[field_mapping.source_column]
+            )
+    return projected
+
+
+def _shanghai_millis(dates: pd.Series) -> pd.Series:
+    """Epoch milliseconds of each date at Shanghai midnight.
+
+    Args:
+        dates: Date (or date-like) series.
+
+    Returns:
+        An int64 millisecond series.
+    """
+    localized = pd.to_datetime(dates).dt.tz_localize("Asia/Shanghai")
+    return (localized.astype("int64") // 10**6).astype("int64")
+
+
 def _plain_value(value: object) -> object:
     """Strip an exchange suffix from a symbol-like value.
 
@@ -231,6 +321,9 @@ def _parse_domain(domain: str, entry: Any, path: Path) -> DomainMapping:  # noqa
             raise RuntimeError(
                 f"field {contract_field!r} of {domain!r} has unknown normalizer {normalize!r}"
             )
+        ms_column = spec.get("ms_column")
+        if ms_column is not None and not isinstance(ms_column, str):
+            raise RuntimeError(f"field {contract_field!r} of {domain!r} needs a string ms_column")
         try:
             scale = float(spec.get("scale", 1.0))
             source_column = str(spec["from"])
@@ -238,7 +331,7 @@ def _parse_domain(domain: str, entry: Any, path: Path) -> DomainMapping:  # noqa
             raise RuntimeError(
                 f"field {contract_field!r} of {domain!r} is malformed: {exc}"
             ) from exc
-        fields[contract_field] = FieldMapping(source_column, scale, normalize)
+        fields[contract_field] = FieldMapping(source_column, scale, normalize, ms_column)
     for key_field in key:
         if key_field not in fields:
             raise RuntimeError(f"domain {domain!r} in {path} keys {key_field!r} without a mapping")

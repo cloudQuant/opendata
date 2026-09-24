@@ -15,7 +15,7 @@ domains:
     key: [symbol, trade_date]
     fields:
       symbol: {from: thscode, normalize: plain}
-      trade_date: {from: trade_date}
+      trade_date: {from: trade_date, ms_column: date_ms}
       open: {from: open_price}
       high: {from: high_price}
       low: {from: low_price}

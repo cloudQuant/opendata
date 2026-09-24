@@ -163,6 +163,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     )
     if decision.enabled:
         await task_scheduler.start()
+        # The built-in pipeline jobs (design §9.3) ride the same
+        # scheduler as the script tasks: templates in, cron jobs out.
+        from opendata.pipeline.jobs import attach_builtin_jobs
+
+        pipeline_jobs = await attach_builtin_jobs()
+        logger.info(f"Built-in pipeline jobs registered: {pipeline_jobs}")
     else:
         logger.warning(f"Scheduler DISABLED: {decision.reason}")
 

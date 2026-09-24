@@ -108,3 +108,65 @@ class TestFieldMappingModel:
 
         assert field.scale == 1.0
         assert field.normalize is None
+
+
+class TestDenormalizeFrame:
+    """The write-side inverse that lands contract rows in an ods table."""
+
+    def test_source_key_is_the_ods_spelling_of_the_business_key(self):
+        ths = require_domain_mapping("ths", "stock_daily")
+        akshare = require_domain_mapping("akshare", "stock_daily")
+        assert ths.source_key == ("thscode", "trade_date")
+        assert akshare.source_key == ("股票代码", "日期")
+
+    def test_contract_rows_return_to_the_source_columns_with_units_undone(self):
+        from opendata.data.mapping import denormalize_frame
+
+        mapping = require_domain_mapping("akshare", "stock_daily")
+        source = pd.DataFrame(
+            {
+                "股票代码": ["600519.SH"],
+                "日期": [date(2024, 1, 2)],
+                "开盘": [1.0],
+                "最高": [2.0],
+                "最低": [0.5],
+                "收盘": [1.5],
+                "成交量": [10.0],
+                "成交额": [15.0],
+            }
+        )
+        back = denormalize_frame(normalize_frame(source, mapping), mapping)
+        assert list(back.columns) == list(source.columns)
+        # The 手 -> 股 scale is undone; a plain-normalized key cannot be
+        # re-suffixed, which is why this path serves feeds that deliver
+        # the source symbol (the fuyao bars), not the akshare writes.
+        assert list(back["成交量"]) == [10.0]
+        assert list(back["股票代码"]) == ["600519"]
+
+    def test_a_declared_millisecond_column_is_derived_back(self):
+        from opendata.data.mapping import denormalize_frame
+        from opendata.pipeline.dump_import import shanghai_dates
+
+        mapping = require_domain_mapping("ths", "stock_daily")
+        frame = pd.DataFrame(
+            {
+                "symbol": ["600519.SH"],
+                "trade_date": [date(2024, 1, 2)],
+                "open": [1.0],
+                "high": [2.0],
+                "low": [0.5],
+                "close": [1.5],
+                "volume": [10.0],
+                "amount": [15.0],
+            }
+        )
+        projected = denormalize_frame(frame, mapping)
+        assert list(shanghai_dates(projected["date_ms"])) == [date(2024, 1, 2)]
+        assert projected["date_ms"].dtype == "int64"
+
+    def test_a_missing_contract_field_fails_closed(self):
+        from opendata.data.mapping import denormalize_frame
+
+        mapping = require_domain_mapping("ths", "stock_daily")
+        with pytest.raises(ValueError, match="fail closed"):
+            denormalize_frame(pd.DataFrame([{"symbol": "600519.SH"}]), mapping)

@@ -239,10 +239,16 @@ def build_stock_daily_pipeline(
     from opendata.pipeline.ods_writer import OdsWriter
 
     resolved_source = source or default_source("stock_daily")
+    # The ods table keeps the source's own column names (design §8.1),
+    # so the shard keys the writer and the ods readers filter on are the
+    # mapping's *source* spelling; the contract key stays what the dwd
+    # merge upserts.
+    ods_key = require_domain_mapping(resolved_source, "stock_daily").source_key
+    contract_key = ("symbol", "trade_date")
     spec = PipelineSpec(
         domain="stock_daily",
         source=resolved_source,
-        key=("symbol", "trade_date"),
+        key=ods_key,
         symbols=tuple(symbols),
         shard_size=shard_size,
     )
@@ -253,7 +259,7 @@ def build_stock_daily_pipeline(
         return writer.write(
             frame,
             table=spec.table,
-            key=spec.key,
+            key=ods_key,
             source=spec.source,
             batch_id=batch,
         ).rows
@@ -269,9 +275,9 @@ def build_stock_daily_pipeline(
         "stock_daily",
         sources=sources,
         authority=authority,
-        readers={resolved_source: ods_frame_reader(engine, "stock_daily", resolved_source)},
+        readers={source: ods_frame_reader(engine, "stock_daily", source) for source in sources},
         write_dwd=lambda frame: _write_dwd(engine, frame),
-        key=spec.key,
+        key=contract_key,
     )
     cross_check = None
     if second_source is not None:
@@ -331,18 +337,34 @@ def ods_frame_reader(engine: Engine, domain: str, source: str) -> Callable:
     source_date_column = mapping.fields[contract_date_field].source_column
 
     def read(start: date, end: date, affected_keys: set[tuple]) -> pd.DataFrame:
+        # The affected keys arrive in the ods spelling of the source that
+        # was just written; every other source spells its symbol
+        # differently (``thscode`` vs ``股票代码``). So the read stays a
+        # window read, widened to cover the affected dates, and the keys
+        # are matched after normalization - which is source-agnostic.
+        keys = {mapping.to_contract_key(key) for key in affected_keys}
+        dates = [key[-1] for key in keys if isinstance(key[-1], date)]
+        lower = min([start, *dates]) if dates else start
+        upper = max([end, *dates]) if dates else end
         rows = _load_ods_rows(
             engine,
             ods_table(domain, source),
             domain,
-            start,
-            end,
-            affected_keys,
+            lower,
+            upper,
+            set(),
             time_column=source_date_column,
         )
         if not rows:
             return pd.DataFrame()
-        return normalize_ods_rows(rows, domain=domain, source=source)
+        frame = normalize_ods_rows(rows, domain=domain, source=source)
+        if not keys:
+            return frame
+        in_window = frame[contract_date_field].between(start, end)
+        matches = frame[list(mapping.key)].apply(
+            lambda row: tuple(row) in keys, axis=1
+        )  # affected keys outside the window
+        return frame[in_window | matches]
 
     return read
 
@@ -394,6 +416,7 @@ def _load_ods_rows(
     affected_keys: set[tuple],
     *,
     time_column: str | None = None,
+    symbol_column: str = "symbol",
 ) -> list[dict]:
     """Read ods rows for the window plus the affected keys.
 
@@ -406,6 +429,7 @@ def _load_ods_rows(
         affected_keys: Business keys to read (empty reads the window).
         time_column: Source's date column; defaults to the contract
             field name (only correct for sources that name it the same).
+        symbol_column: Source's symbol column, for the same reason.
 
     Returns:
         The raw ods rows.
@@ -423,7 +447,9 @@ def _load_ods_rows(
         for index, (symbol, trade_date) in enumerate(keys):
             params[f"symbol_{index}"] = symbol
             params[f"day_{index}"] = trade_date
-            placeholders.append(f"(`symbol` = :symbol_{index} AND `{field}` = :day_{index})")
+            placeholders.append(
+                f"(`{symbol_column}` = :symbol_{index} AND `{field}` = :day_{index})"
+            )
         sql = f"SELECT * FROM `{table}` WHERE ({' OR '.join(placeholders)})"  # noqa: S608
     with engine.connect() as connection:
         result = connection.execute(text(sql), params)
