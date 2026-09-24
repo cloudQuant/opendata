@@ -51,7 +51,9 @@ job id=pipeline_p0-stock-daily-incremental name=pipeline:p0-stock-daily-incremen
 
 ## 5. 外部阻塞（非代码缺陷）
 
-- `push2delay.eastmoney.com` 对本机持续 502（curl 复核同日 502）→ 场景1 的 akshare 腿与 `stock_daily_raw/qfq`、`index_daily_em`、`fund_etf_daily_em` 夹具录制无法完成。sina/csindex 通道不受影响：AC-6/B1.3 回放对照已 8/10 PASS（含期货/期权/可转债 P1 三域，见 `docs/evidence/A2/compare-report.md`）。
+- `push2delay.eastmoney.com` 对本机持续 502（curl 复核同日 502）→ 场景1 的 akshare 腿与 `stock_daily_raw/qfq`、`index_daily_em`、`fund_etf_daily_em` 夹具录制无法完成。
+- 上列 em 阻塞用例已在 **sina 通道补出孪生夹具**（`stock_daily_sina_raw/qfq`、`index_daily_sina`、`fund_etf_daily_sina`）：AC-6 离线回放 **12/16 PASS**，四个登记域（股票日线/指数日线/ETF 日线/日线复权）全部至少有一条字节级对照通过（见 `docs/evidence/A2/compare-report.md`）。
+- 2026-09-24 18:38~19:23 本机 DNS 一度解析不了 `finance.sina.com.cn`（首轮 8 标的对照全为 ConnectionError），18:54 网络恢复后重跑一次即 PASS；结论未受影响，事故留档以免误读首轮报告。
 
 ## 6. 事故与复原（留档）
 
@@ -74,4 +76,28 @@ PY
 ENABLE_SCHEDULER=true python -c "..."   # 见 scheduler_startup.log 的脚本
 # AC-6/B1.3 离线回放对照
 python scripts/codemod/compare_with_upstream.py --compare
+# 新增 sina 孪生夹具录制（需网络 + 锁 commit 的上游 checkout）
+python scripts/codemod/compare_with_upstream.py --record --only stock_daily_sina_raw \
+    --only stock_daily_sina_qfq --only index_daily_sina --only fund_etf_daily_sina
 ```
+
+## 8. AC-11 服务端复权 vs 官方序列（跨源真机对照）
+
+`GET /api/v1/data/equity/stock_daily?adjust=qfq|hfq` 是**服务端合成**（设计 D10：库里只有不复权价 + 因子表）。
+本轮把这条断言从"同源自证"升级为**跨源对照**：我们的合成序列走 REST 查询路径本身
+（`build_data_select` + `apply_adjust_to_rows`，日线取 `dwd_stock_daily`、因子取 `dwd_stock_adjust`＝同花顺因子链），
+对照面取 **sina 官方复权序列**（`stock_zh_a_daily(adjust=qfq|hfq)`，另一条源、另一条因子链）。
+
+| 指标 | 口径 | 结果 |
+|------|------|------|
+| 样本 | 8 标的（沪/深/科创/创业）× 131 交易日 × 2 方法 = **2,096 根** | 2026-01-05~2026-07-21 |
+| qfq 水平 | `ours/official` 锚定比 ≈ 1.000（8/8 在 0.99987~1.00018） | 最大逐日偏差 **1.10e-03**（sina 价格两位小数所致的舍入量级） |
+| hfq 形状 | 按中位数锚定复一后逐日偏差 ≤ **2.20e-04** | 序列形状一致；水平为每标的常数比例（sina 后复权基准与 ths 因子链锚定不同） |
+| 门槛 | 相对容差 2e-3 | **PASS（0/16 失败）** |
+
+- 工具：`scripts/ops/qfq_official_check.py`（只读数仓，网络失败逐格记 ERROR 不静默）；
+  报告：`docs/evidence/B4/qfq-official-check.txt`。
+- 复现：`conda activate py313 && python scripts/ops/qfq_official_check.py --symbols 600519,000001,000009,000035,000063,600036,000651,300750 --start 2026-01-05 --end 2026-07-21`
+- **观测到的真实边界（非缺陷，需在文档口径内）**：`dwd_stock_adjust` 最新日期比 `dwd_stock_daily` 落后 1 个交易日，
+  因此对最后一根 K 请求 `adjust=qfq` 会按 fail-closed 抛"no adjust factor"；脚本已把窗口自动收敛到因子表上限并在报告首行标注。
+  收盘批次里因子构建应先于对外提供复权，或 API 侧对"缺当日因子"降级为窗口截断——留作 1C 后续项。

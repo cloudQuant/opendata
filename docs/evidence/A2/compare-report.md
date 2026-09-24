@@ -15,6 +15,10 @@ columns/shape/dtypes and cell equality (float rtol=1e-09).
 | futures_daily_sina | `futures_zh_daily_sina` | 4251 | 1 | PASS |
 | option_daily_sina | `option_sse_daily_sina` | 23 | 1 | PASS |
 | bond_daily_sina | `bond_zh_hs_cov_daily` | 4806 | 1 | PASS |
+| stock_daily_sina_raw | `stock_zh_a_daily` | 22 | 2 | PASS |
+| stock_daily_sina_qfq | `stock_zh_a_daily` | 22 | 3 | PASS |
+| index_daily_sina | `stock_zh_index_daily` | 6000 | 1 | PASS |
+| fund_etf_daily_sina | `fund_etf_hist_sina` | 3484 | 1 | PASS |
 
 ## Pending (network): re-run `--record`
 
@@ -27,4 +31,4 @@ columns/shape/dtypes and cell equality (float rtol=1e-09).
 
 ## A1 leftover: D10 qfq synthesis vs official em series
 
-SKIPPED: kline fixtures not recorded (pending, see above)
+SKIPPED: em kline fixtures are not recorded from this network (em 502); the adjustment claim is checked cross-source instead by scripts/ops/qfq_official_check.py (ths factors vs official sina series)

@@ -1,0 +1,37 @@
+AC-11 server-side adjust vs the official sina series
+
+script: scripts/ops/qfq_official_check.py
+window: 2026-01-05 .. 2026-07-21
+symbols: 600519, 000001, 000009, 000035, 000063, 600036, 000651, 300750
+ours: dwd_stock_daily (unadjusted) x dwd_stock_adjust factors,
+  via build_data_select + apply_adjust_to_rows (the REST query path)
+official: sina stock_zh_a_daily(adjust=qfq|hfq) -- different source and factor chain
+tolerance: relative 0.002 on close (sina rounds prices to 2 decimals)
+
+## adjust=qfq
+
+| symbol | bars | anchor (ours/official) | max abs dev | max shape dev | result |
+|---|---|---|---|---|---|
+| 600519 | 131 | 1.000000 | 3.57e-06 | 3.57e-06 | PASS |
+| 000001 | 131 | 0.999991 | 4.70e-04 | 4.79e-04 | PASS |
+| 000009 | 131 | 1.000162 | 8.19e-04 | 9.80e-04 | PASS |
+| 000035 | 131 | 1.000180 | 1.10e-03 | 1.28e-03 | PASS |
+| 000063 | 131 | 0.999915 | 2.35e-04 | 1.50e-04 | PASS |
+| 600036 | 131 | 1.000000 | 1.35e-04 | 1.35e-04 | PASS |
+| 000651 | 131 | 0.999990 | 2.00e-04 | 1.90e-04 | PASS |
+| 300750 | 131 | 0.999873 | 1.52e-04 | 1.17e-04 | PASS |
+
+## adjust=hfq
+
+| symbol | bars | anchor (ours/official) | max abs dev | max shape dev | result |
+|---|---|---|---|---|---|
+| 600519 | 131 | 0.115245 | 8.85e-01 | 5.14e-07 | PASS |
+| 000001 | 131 | 0.006853 | 9.93e-01 | 3.14e-06 | PASS |
+| 000009 | 131 | 0.097800 | 9.02e-01 | 7.33e-05 | PASS |
+| 000035 | 131 | 0.210176 | 7.90e-01 | 2.20e-04 | PASS |
+| 000063 | 131 | 0.054295 | 9.46e-01 | 8.20e-06 | PASS |
+| 600036 | 131 | 0.156336 | 8.44e-01 | 2.01e-05 | PASS |
+| 000651 | 131 | 0.004095 | 9.96e-01 | 7.32e-05 | PASS |
+| 300750 | 131 | 0.520920 | 4.79e-01 | 1.15e-04 | PASS |
+
+result: PASS (0 failing symbol/method pairs)
