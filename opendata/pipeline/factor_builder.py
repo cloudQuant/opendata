@@ -15,6 +15,7 @@ computed from, and recomputing is the recovery path.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import timedelta
 from typing import TYPE_CHECKING
 
 import pandas as pd
@@ -30,6 +31,8 @@ if TYPE_CHECKING:
 
 #: Default target of the derived factor layer.
 DWD_FACTOR_TABLE = "dwd_stock_adjust"
+#: Days the close window starts before the event window.
+LOOKBACK_DAYS = 15
 
 
 @dataclass(frozen=True)
@@ -85,7 +88,11 @@ class FactorBuilder:
                 ratio (fail closed - the caller decides what that means
                 for the run).
         """
-        closes = self._read_closes(start, end)
+        # The close window starts before the event window: pricing the
+        # first event of a window needs the close BEFORE it, and a
+        # calendar-less lookback of two weeks always covers a holiday
+        # gap (the alternative is failing on every windowed build).
+        closes = self._read_closes(_lookback(start), end)
         events = self._read_events(start, end)
         factors = cumulate_factors(events, closes)
         if not factors:
@@ -109,9 +116,10 @@ class FactorBuilder:
             join on the same identifier.
         """
         where, params = _window_clause(start, end, "trade_date")
+        suffix = f" AND {where}" if where else ""
         sql = (
             "SELECT `thscode`, `trade_date`, `close_price` "  # noqa: S608  # registry-derived table
-            f"FROM `{self.daily_table}` WHERE `adjusted` = 'none' {where}"
+            f"FROM `{self.daily_table}` WHERE `adjusted` = 'none'{suffix}"
         )
         with self.engine.connect() as connection:
             result = connection.execute(text(sql), params)
@@ -130,10 +138,11 @@ class FactorBuilder:
             no-op at best and a nonsense ratio at worst).
         """
         where, params = _window_clause(start, end, "ex_date")
+        suffix = f" WHERE {where}" if where else ""
         sql = (
             "SELECT `thscode`, `ex_date`, `dividend_per_share`, `per_share_bonus`, "  # noqa: S608  # registry-derived table
             "`allotment_ratio`, `allotment_price` "
-            f"FROM `{self.action_table}` {where}"
+            f"FROM `{self.action_table}`{suffix}"
         )
         with self.engine.connect() as connection:
             result = connection.execute(text(sql), params)
@@ -155,6 +164,18 @@ class FactorBuilder:
                     continue
                 events.append(event)
             return events
+
+
+def _lookback(start: date | None) -> date | None:
+    """Widen a window start so the first event has a previous close.
+
+    Args:
+        start: Requested window start (None stays None).
+
+    Returns:
+        The widened start.
+    """
+    return None if start is None else start - timedelta(days=LOOKBACK_DAYS)
 
 
 def _normalize_symbol(thscode: str) -> str:
@@ -182,7 +203,8 @@ def _window_clause(start: date | None, end: date | None, column: str) -> tuple[s
         column: Date column to filter.
 
     Returns:
-        The SQL fragment and its parameters.
+        The bound conditions (no ``WHERE``/``AND`` prefix - the callers
+        own those) and the parameters.
     """
     clauses = []
     params: dict[str, object] = {}
@@ -192,7 +214,7 @@ def _window_clause(start: date | None, end: date | None, column: str) -> tuple[s
     if end is not None:
         clauses.append(f"`{column}` <= :end")
         params["end"] = end
-    return (" AND " + " AND ".join(clauses)) if clauses else "", params
+    return " AND ".join(clauses), params
 
 
 def _with_dwd_trace(frame: pd.DataFrame) -> pd.DataFrame:
