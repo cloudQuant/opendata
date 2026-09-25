@@ -1,22 +1,39 @@
 """Instrument catalog fetcher (domain ``instrument``, contract ``Instrument``).
 
 Wraps ``/api/meta/tickers/list`` through :mod:`opendata_fuyao`. This is the
-metadata backbone the other ths legs hang on: ``list_date`` / ``delist_date``
-say whether a window a bar query returned nothing for is a window the symbol
-did not exist in (the predicate C11 §6.3 says is needed to tell a
-crawl-blocked empty frame apart from a genuinely empty window).
+metadata backbone the other ths legs hang on: the qualified ``thscode`` and the
+name/exchange columns are what ``resolve_index_code`` and the constituent joins
+match on. The date columns are a weaker member of that set - ``list_date`` /
+``delist_date`` are what C11 §6.3 wants in order to tell a crawl-blocked empty
+frame apart from a window the symbol did not exist in, and the third constraint
+below records that this source cannot answer that predicate on demand for
+a-shares, nor for ETFs at all.
 
-Two measured constraints shape the adapter (2026-09-25, ``docs/evidence/C14``):
+Three measured constraints shape the adapter (2026-09-25, ``docs/evidence/C14``,
+``C18`` and ``C19``):
 
 * **one asset class per call.** The filter is required here, not upstream:
   the unfiltered catalog is every leaf type at once, and ``options`` alone
   exceeds the 10,000-row per-call cap, so an unfiltered refresh would page
   through hundreds of thousands of opaque contract codes nobody joins on.
-* **it is a snapshot, not a history.** ``status`` is derived against the
-  snapshot date the envelope carries (``data.timestamp`` = the daily catalog
-  load), so a date range cannot be served - a caller asking for 2024 would
-  get today's listing while believing it asked for the past. Fail closed
-  instead, exactly like the constituent snapshot leg.
+* **it is a snapshot, not a history.** ``status`` is derived against the load
+  instant the envelope carries (``data.timestamp``), so a date range cannot be
+  served - a caller asking for 2024 would get today's listing while believing
+  it asked for the past. Fail closed instead, exactly like the constituent
+  snapshot leg. The stamp is not "the daily catalog load", though: four asset
+  types read inside one round each come back with their own instant, and only
+  two intraday values were ever seen, so it labels whichever copy answered
+  *that table* for *that request* rather than one global snapshot (C19).
+* **``list_date`` is not dependable at read time.** 36 single-page reads of the
+  a-share catalog returned the column full (5,570 of 5,578 rows) 14 times and
+  entirely hollow 22 times, and which of the two a read was followed the
+  envelope instant in 36 of 36 - so a null says nothing about the instrument.
+  ``fund-etf`` is hollow under either instant (24 of 24 reads) while
+  ``a-share-index`` is full (24 of 24) and ``futures`` is stable at 877 of
+  1,142 (the rest being the synthetic ``7777``/``8888``/``9999`` series). Two
+  consequences: a page must never be read as "this symbol has no listing
+  date", and a loader must never overwrite a date it already holds with nulls
+  from such a page.
 
 The rows are returned with the qualified ``thscode`` (``000001.SZ``), not the
 plain ``ticker`` the bar domains store: plain codes collide across asset
@@ -72,14 +89,16 @@ class ThsInstrumentQuery(QueryParams):
 class ThsInstrumentFetcher(Fetcher[ThsInstrumentQuery, tuple[Instrument, ...]]):
     """One asset class' current instrument listing, paged to exhaustion.
 
-    ``verified`` is true because the catalog's load-bearing fields were
-    checked against vendors other than fuyao: every 中证 index constituent
-    resolves into the a-share listing, and sina's first daily bar equals the
-    catalog ``list_date`` day-for-day on the judged sample (see
-    ``docs/evidence/C14``). The status derivation it publishes is
-    snapshot-relative - see the module docstring - and the catalog carries no
-    delisted A-shares, so it is a name universe of what trades *today*, not a
-    survivorship-bias-free one.
+    ``verified`` is true because the catalog's *name universe* was checked
+    against vendors other than fuyao: every 中证 index constituent resolves into
+    the a-share listing, and the code columns are the ones the C14 cross-check
+    and C18's bare-code resolution were run against. The date columns are not
+    part of that claim - C14's "sina's first daily bar equals the catalog
+    ``list_date`` day-for-day" did hold, but only on the catalog copy that
+    answers with dates, so it is not a repeatable check (module docstring,
+    third constraint). The status derivation it publishes is snapshot-relative,
+    and the catalog carries no delisted A-shares, so it is a name universe of
+    what trades *today*, not a survivorship-bias-free one.
     """
 
     capability: ClassVar[Capability] = Capability(
@@ -89,7 +108,10 @@ class ThsInstrumentFetcher(Fetcher[ThsInstrumentQuery, tuple[Instrument, ...]]):
         market="cn",
         source=SOURCE,
         verified=True,
-        notes="current listing only; no delisted a-shares published",
+        notes=(
+            "current listing only; no delisted a-shares; "
+            "list_date depends on the answering catalog copy (C19)"
+        ),
     )
 
     def transform_query(self, **kwargs: object) -> ThsInstrumentQuery:

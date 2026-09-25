@@ -1454,7 +1454,16 @@ class TestAgainstTheLiveFuyaoApi:
         assert days[-1].next_trade_date is None  # 上游不含当日，右端之外无从得知
 
     def test_registry_routes_the_instrument_catalog_to_the_fuyao_source(self):
-        """真机：a-share 目录经注册表路由，一分钟内可翻完（实测 5,578 行/1 页）。"""
+        """真机：a-share 目录经注册表路由，一分钟内可翻完（实测 5,578 行/1 页）。
+
+        ``list_date`` 的判法在 C19 换过：单次读的覆盖率**不是可判据**。同一页在
+        2026-09-25 读满 36 次：14 次给 5,570/5,578 行日期、22 次整页为空，且 36/36
+        次与信封的毫秒级快照标签一致（``.621`` 必有值、``.852`` 必为空）⇒ 缺的是
+        「应答这次的 equity 目录构建」，不是数据变了。留在这个用例里的是与路由无关
+        的两件事：页面形态只能是「全值 / 全空」二选一（第三种散值形态是 C19 没测过
+        的上游变化，出现即失败），以及行数/代码/状态这些该腿真正 verified 的内容。
+        日期列的可用性改由下面那条稳态用例守住。
+        """
         from opendata.data.providers import register_providers
         from opendata.data.registry import get_registry
 
@@ -1466,8 +1475,28 @@ class TestAgainstTheLiveFuyaoApi:
         assert all(isinstance(row, Instrument) and row.symbol for row in rows)
         assert {row.status for row in rows} == {"active"}  # 上游不发布已退市 A 股
         assert rows[0].symbol < rows[-1].symbol  # 按 thscode 升序
-        # 上市区间的左端：实测整表仅 9 行为 null（新股未回填），留冗余不误判
-        assert sum(1 for row in rows if row.list_date is None) <= 20
+        nulls = sum(1 for row in rows if row.list_date is None)
+        # 全值：C14 实测整表仅 9 行未回填（新股），留冗余；全空：应答的是无日期构建。
+        assert nulls <= 20 or nulls == len(rows), f"list_date 出现未测过的中间形态：{nulls} 行空"
+
+    def test_instrument_catalog_publishes_index_listing_dates(self):
+        """真机：目录的日期列在「上游确定发布」的那一类上是满的（C19 稳态判据）.
+
+        a-share 的 ``list_date`` 随应答构建翻转，判不得；指数目录实测 24/24 次读
+        都是 1,431/1,431 行有值，且两种快照标签下都一样（.852 标签下 a 股全空、
+        指数全值同轮并存 ⇒ 标签是按表的加载时刻，不是一份全局快照）。所以这条
+        是可以判的那一类：a 股那一列哪天真的从上游消失，这里先响。
+        """
+        from opendata.data.providers import register_providers
+        from opendata.data.registry import get_registry
+
+        register_providers()
+        routed = get_registry().resolve_domain("instrument", source="ths")
+        rows = routed.fetch(asset_type="a-share-index")
+
+        assert len(rows) > 1000
+        assert all(row.list_date is not None for row in rows)
+        assert all("." in row.symbol for row in rows)  # 目录发布的是带后缀的 thscode
 
     def test_registry_routes_a_bare_index_code_to_the_fuyao_source(self):
         """C18 真机：裸指数码经指数目录解析取到沪深300.
