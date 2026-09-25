@@ -1,0 +1,34 @@
+# 真机巡检（最终工作树字节）— Fri Sep 25 09:05:20 +08 2026
+# git: HEAD 63fd13d + C16 未提交改动（patrol.py/api/health_patrol.py/tests）
+# command: python scripts/ops/health_patrol.py
+== 健康巡检结果 ==
+  [ok] ecb/economy_cpi: 12 rows, 1303ms
+  [ok] ecb/economy_gdp: 8 rows, 1037ms
+  [ok] ecb/economy_rate: 14 rows, 1047ms
+  [ok] imf/economy_cpi: 10 rows, 11551ms
+  [ok] imf/economy_gdp: 10 rows, 9089ms
+  [ok] imf/economy_unemployment: 10 rows, 10713ms
+  [ok] oecd/economy_cpi: 24 rows, 1003ms
+  [ok] oecd/economy_unemployment: 2 rows, 936ms
+  [ok] ths/stock_daily: 5 rows, 2731ms
+  [ok] ths/stock_action: 4 rows, 1693ms
+  [ok] ths/index_daily: 5 rows, 1149ms
+  [ok] ths/index_constituent: 300 rows, 1499ms
+  [ok] ths/financial_statement: 52 rows, 1623ms
+  [ok] ths/fund_action: 3 rows, 1877ms
+  [ok] ths/instrument: 5578 rows, 2311ms
+  [ok] ths/futures_daily: 15 rows, 1142ms
+  [ok] ths/option_daily: 15 rows, 4809ms
+  [ok] ths/trading_calendar: 242 rows, 1092ms
+  [ok] yfinance/stock_daily_overseas: 4 rows, 1112ms
+== 凭证配置 ==
+  ths: 配置（必须=True）
+  fred: 缺失（必须=True）
+  yfinance: 配置（必须=False）
+  ecb: 配置（必须=False）
+  imf: 配置（必须=False）
+  oecd: 配置（必须=False）
+  akshare: 配置（必须=False）
+
+失败 0 项；必配 Key 缺失 1 项
+PATROL_EXIT=0

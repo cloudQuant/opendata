@@ -1,0 +1,18 @@
+Fri Sep 25 06:03:38 +08 2026
+指数目录（asset_type=a-share-index）单次返回 1431 行，
+其中 ticker 与 thscode 不一致 206 行 → normalize_instruments 整表拒绝
+示例（前 6 行）：
+  thscode=991001.TI ticker=1C0003 asset_type=a-share-index name=上证指数(旧)
+  thscode=970006.SZ ticker=988006 asset_type=a-share-index name=创业板指(港币)(CNH)
+  thscode=970007.SZ ticker=988007 asset_type=a-share-index name=创业板指(美元)(CNH)
+  thscode=470006.SZ ticker=988106 asset_type=a-share-index name=创业板R(港币)(CNH)
+  thscode=470007.SZ ticker=988107 asset_type=a-share-index name=创业板R(美元)(CNH)
+  thscode=480001.SZ ticker=988201 asset_type=a-share-index name=湾创100R
+
+裸码解析实测：
+  000300 -> 抛 FuyaoError: FUYAO_ENVELOPE_INVALID_ticker_code_mismatch: 响应信封格式非法（无法解析）
+  000905 -> 抛 FuyaoError: FUYAO_ENVELOPE_INVALID_ticker_code_mismatch: 响应信封格式非法（无法解析）
+  932000 -> 抛 FuyaoError: FUYAO_ENVELOPE_INVALID_ticker_code_mismatch: 响应信封格式非法（无法解析）
+
+对照：带后缀的 000300.SH 在 index_daily / index_constituent 两条腿上均正常
+DEFECT_EXIT=0
