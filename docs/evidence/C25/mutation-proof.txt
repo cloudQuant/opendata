@@ -1,0 +1,57 @@
+===== C25 判据反向验证（五个已知缺陷逐个装回 patrol，具名用例必须变红）=====
+Fri Sep 25 20:24:11 +03 2026
+branch=dev HEAD=a460d5a（本轮改动未提交）
+命令：python docs/evidence/C25/mutation-proof.py
+===== 原始输出（未裁剪） =====
+[0] 被变异文件 sha256=35e7b8e2a49436cd0cd7a558349d1e1280870b7241e89d5ce08120191f2abe79
+## D1 tolerance 先判、hollow 后判（小页全空被读成满值）
+  具名用例：tests/test_patrol.py::TestFieldCanary::test_a_small_page_cannot_be_rescued_by_the_tolerance
+      | =========================== short test summary info ============================
+      | FAILED tests/test_patrol.py::TestFieldCanary::test_a_small_page_cannot_be_rescued_by_the_tolerance
+      | ============================== 1 failed in 0.07s ===============================
+  变异下退出码=1（要求非 0）；还原校验=True
+  判定：PASS
+## D2 字段塌陷顺手 mark_unavailable（C19 的两面之差会摘掉健康腿）
+  具名用例：tests/test_patrol.py::TestPatrolCanaryWiring::test_a_field_collapse_never_moves_the_routing_mark
+      | =========================== short test summary info ============================
+      | FAILED tests/test_patrol.py::TestPatrolCanaryWiring::test_a_field_collapse_never_moves_the_routing_mark
+      | ============================== 1 failed in 0.07s ===============================
+  变异下退出码=1（要求非 0）；还原校验=True
+  判定：PASS
+## D3 canary 读页算进探针耗时（跨轮 latency_ms 不再是探针耗时）
+  具名用例：tests/test_patrol.py::TestPatrolCanaryWiring::test_the_probe_latency_excludes_the_canary_reads
+      | =========================== short test summary info ============================
+      | FAILED tests/test_patrol.py::TestPatrolCanaryWiring::test_the_probe_latency_excludes_the_canary_reads
+      | ============================== 1 failed in 0.07s ===============================
+  变异下退出码=1（要求非 0）；还原校验=True
+  判定：PASS
+## D4 读不到那一页也当偏差（一次抖动 = 一条字段塌陷告警）
+  具名用例：tests/test_patrol.py::TestPatrolCanaryWiring::test_a_canary_that_cannot_be_read_is_not_an_alarm
+      | =========================== short test summary info ============================
+      | FAILED tests/test_patrol.py::TestPatrolCanaryWiring::test_a_canary_that_cannot_be_read_is_not_an_alarm
+      | ============================== 1 failed in 0.07s ===============================
+  变异下退出码=1（要求非 0）；还原校验=True
+  判定：PASS
+## D5 空页量成 hollow（对从没看过的列下了结论）
+  具名用例：tests/test_patrol.py::TestFieldCanary::test_an_empty_page_is_unmeasurable_rather_than_hollow
+      | =========================== short test summary info ============================
+      | FAILED tests/test_patrol.py::TestFieldCanary::test_an_empty_page_is_unmeasurable_rather_than_hollow
+      | ============================== 1 failed in 0.07s ===============================
+  变异下退出码=1（要求非 0）；还原校验=True
+  判定：PASS
+## 还原后整条 canary 套件（5 次变异之后）
+      | collected 49 items
+      | tests/test_patrol.py .................................................   [100%]
+      | ============================== 49 passed in 1.91s ==============================
+  套件退出码=0（要求 0）
+## 判定汇总
+  PASS D1 tolerance 先判、hollow 后判（小页全空被读成满值）
+  PASS D2 字段塌陷顺手 mark_unavailable（C19 的两面之差会摘掉健康腿）
+  PASS D3 canary 读页算进探针耗时（跨轮 latency_ms 不再是探针耗时）
+  PASS D4 读不到那一页也当偏差（一次抖动 = 一条字段塌陷告警）
+  PASS D5 空页量成 hollow（对从没看过的列下了结论）
+  PASS 全部还原后 canary 套件重新转绿
+EXIT=0
+===== 还原后 git diff --stat（只应看到本轮既有改动，无残留变异） =====
+ opendata/pipeline/patrol.py | 314 +++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 312 insertions(+), 2 deletions(-)

@@ -1,0 +1,42 @@
+===== C25 真机巡检（字段级 canary 上线后第一跑） 运行环境 =====
+Fri Sep 25 20:28:23 +03 2026
+branch=dev HEAD=a460d5a（本轮改动未提交）
+命令：python scripts/ops/health_patrol.py
+说明：本份是 ruff format（仅空白改动）落进 scripts/ops/health_patrol.py 之后的重跑，与同轮第一份读数对照见 README
+===== 原始输出（未裁剪） =====
+== 健康巡检结果 ==
+  [ok] ecb/economy_cpi: 12 rows, 547ms
+  [ok] ecb/economy_gdp: 8 rows, 313ms
+  [ok] ecb/economy_rate: 14 rows, 399ms
+  [ok] imf/economy_cpi: 10 rows, 12351ms
+  [ok] imf/economy_gdp: 10 rows, 9377ms
+  [ok] imf/economy_unemployment: 10 rows, 13433ms
+  [ok] oecd/economy_cpi: 24 rows, 2919ms
+  [ok] oecd/economy_unemployment: 2 rows, 664ms
+  [ok] ths/stock_daily: 5 rows, 1598ms
+  [ok] ths/stock_action: 4 rows, 1274ms
+  [ok] ths/index_daily: 5 rows, 1873ms
+  [ok] ths/index_constituent: 300 rows, 1465ms
+  [ok] ths/financial_statement: 52 rows, 1279ms
+  [ok] ths/fund_action: 3 rows, 1894ms
+  [ok] ths/fund_etf_daily: 15 rows, 2322ms
+  [ok] ths/instrument: 5578 rows, 2391ms
+          canary a-share/list_date: 缺 8/5578 形态 full（实测 full/hollow）
+          canary a-share/name: 缺 0/5578 形态 full（实测 full）
+          canary a-share-index/list_date: 缺 0/1431 形态 full（实测 full）
+          canary futures/list_date: 缺 265/1142 形态 partial（实测 partial）
+  [ok] ths/futures_daily: 15 rows, 947ms
+  [ok] ths/option_daily: 15 rows, 5200ms
+  [ok] ths/trading_calendar: 241 rows, 2092ms
+  [ok] yfinance/stock_daily_overseas: 4 rows, 1825ms
+== 凭证配置 ==
+  ths: 配置（必须=True）
+  fred: 缺失（必须=True）
+  yfinance: 配置（必须=False）
+  ecb: 配置（必须=False）
+  imf: 配置（必须=False）
+  oecd: 配置（必须=False）
+  akshare: 配置（必须=False）
+
+失败 0 项；抖动 0 项；字段级偏差 0 项（未判读 0 项）；必配 Key 缺失 1 项
+PATROL_EXIT=0

@@ -1,0 +1,55 @@
+===== C25 首跑挂点的留证：ruff format 是「仅空白」修复，判定面没有收窄 =====
+captured_at=2026-09-25T17:36:06+00:00 本地=Fri Sep 25 20:36:06 +03 2026 branch=dev HEAD=a460d5a（本轮改动未提交）
+
+## 首跑读数（取自本轮工作记录，非未裁剪归档：完整那份被重跑覆盖，见下方说明）
+  FAIL: A2 gate failed on: ruff format
+  Would reformat: docs/evidence/C25/field-canary-measure.py
+  Would reformat: scripts/ops/health_patrol.py
+  Would reformat: tests/test_patrol.py
+  之后 3 项工具未跑（a2-check 失败即止），pytest 未跑；GATE_EXIT=2
+
+## 说明：为什么这份是摘录而不是归档
+  修复后我直接重跑 gate 并写回同名文件 docs/evidence/C25/gate.txt，把首跑那份 329 行未裁剪输出覆盖了。
+  C21 的先例是另存 gate-before-tz-fix.txt，本轮没有做到，缺陷现场只剩上面的摘录。
+
+## 修复性质：三条命令的原始输出（未裁剪）
+$ ruff format --check docs/evidence/C25/field-canary-measure.py scripts/ops/health_patrol.py tests/test_patrol.py
+3 files already formatted
+FORMAT_CHECK_EXIT=0
+$ ruff format --diff docs/evidence/C25/field-canary-measure.py scripts/ops/health_patrol.py tests/test_patrol.py
+3 files already formatted
+FORMAT_DIFF_EXIT=0（0 = 已无待改空白；1 = 仍有 diff，须继续）
+$ ruff check docs/evidence/C25/field-canary-measure.py scripts/ops/health_patrol.py tests/test_patrol.py
+All checks passed!
+RUFF_CHECK_EXIT=0
+
+## 判定面没有收窄：三个文件仍在本轮 gate.txt 的 A2 清单里（A2 files = 266）
+$ python - … 从 gate.txt 的 a2-check 段里数三个文件名
+A2 清单文件数 = 266
+  field-canary-measure.py: ['docs/evidence/C25/field-canary-measure.py']
+  health_patrol.py: ['scripts/ops/health_patrol.py']
+  test_patrol.py: ['tests/test_patrol.py']
+
+## 判定没被改松：本轮没有动过任何配置/豁免（下面三份的 git 状态）
+$ git status --porcelain pyproject.toml .ruff.toml setup.cfg scripts/quality/ docs/quality/
+（空输出 = 质量门禁配置与阈值本轮一个字没改）
+
+## 修复后重跑的测试读数（单文件跑，故 --no-cov）
+注：上一份归档末尾写了 `PATROL_TESTS_EXIT=${PIPESTATUS[0]}`，在 zsh 下取到空值（zsh 的数组叫 `pipestatus` 且 1 起索引），所以这里改成不带管道的跑法重取退出码。
+下面是原始命令与未裁剪输出：
+
+$ python -m pytest tests/test_patrol.py --no-cov -q
+
+tests/test_patrol.py .................................................   [100%]
+
+============================== 49 passed in 1.89s ==============================
+PATROL_TESTS_EXIT=0
+$ python -m mypy scripts/ops/health_patrol.py opendata/pipeline/patrol.py
+pyproject.toml: note: unused section(s): module = ['opendata.data_fetch.*']
+Success: no issues found in 2 source files
+MYPY_EXIT=0
+$ python -m bandit -q -c bandit.yaml -n 3 docs/evidence/C25/field-canary-measure.py docs/evidence/C25/canary-injection-attribution.py docs/evidence/C25/mutation-proof.py scripts/ops/health_patrol.py
+[manager]	WARNING	Test in comment: argv is not a test name or id, ignoring
+BANDIT_EXIT=0（-n 3 = 只报 HIGH/MEDIUM；a2-check 里 bandit 的口径同源）
+
+PROOF_EXIT=0

@@ -1,0 +1,132 @@
+===== C25 字段级 canary 判据底稿（逐资产类型 × 逐字段重复读，最终分类器） 运行环境 =====
+Fri Sep 25 20:27:13 +03 2026
+branch=dev HEAD=a460d5a（本轮改动未提交）
+命令：python docs/evidence/C25/field-canary-measure.py
+说明：本份是 ruff format（仅空白改动）落进 docs/evidence/C25/field-canary-measure.py 之后的重跑，与同轮第一份读数对照见 README
+===== 原始输出（未裁剪） =====
+[0] 本地判定时刻 2026-09-25 17:27:14 UTC
+    C19 基线：a-share 满值 5570/5578 ↔ 全空（随标签翻）；fund-etf 24/24 全空；a-share-index 24/24 满值；futures 恒定 877/1142
+    每类重复读 10 次，字段 symbol, exchange, name, status, currency, list_date, delist_date, board
+
+== a-share ==
+  read  1 行数  5578 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read  2 行数  5578 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read  3 行数  5578 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read  4 行数  5578 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read  5 行数  5578 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read  6 行数  5578 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read  7 行数  5578 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read  8 行数  5578 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read  9 行数  5578 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read 10 行数  5578 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+
+== a-share-index ==
+  read  1 行数  1431 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read  2 行数  1431 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read  3 行数  1431 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read  4 行数  1431 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read  5 行数  1431 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read  6 行数  1431 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read  7 行数  1431 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read  8 行数  1431 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read  9 行数  1431 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+  read 10 行数  1431 symb=f exch=f name=f stat=f curr=f list=f deli=h boar=h
+
+== futures ==
+  read  1 行数  1142 symb=f exch=f name=f stat=f curr=f list=p deli=p boar=h
+  read  2 行数  1142 symb=f exch=f name=f stat=f curr=f list=p deli=p boar=h
+  read  3 行数  1142 symb=f exch=f name=f stat=f curr=f list=p deli=p boar=h
+  read  4 行数  1142 symb=f exch=f name=f stat=f curr=f list=p deli=p boar=h
+  read  5 行数  1142 symb=f exch=f name=f stat=f curr=f list=p deli=p boar=h
+  read  6 行数  1142 symb=f exch=f name=f stat=f curr=f list=p deli=p boar=h
+  read  7 行数  1142 symb=f exch=f name=f stat=f curr=f list=p deli=p boar=h
+  read  8 行数  1142 symb=f exch=f name=f stat=f curr=f list=p deli=p boar=h
+  read  9 行数  1142 symb=f exch=f name=f stat=f curr=f list=p deli=p boar=h
+  read 10 行数  1142 symb=f exch=f name=f stat=f curr=f list=p deli=p boar=h
+
+== fund-etf ==
+  read  1 行数  1696 symb=f exch=f name=f stat=f curr=f list=h deli=h boar=h
+  read  2 行数  1696 symb=f exch=f name=f stat=f curr=f list=h deli=h boar=h
+  read  3 行数  1696 symb=f exch=f name=f stat=f curr=f list=h deli=h boar=h
+  read  4 行数  1696 symb=f exch=f name=f stat=f curr=f list=h deli=h boar=h
+  read  5 行数  1696 symb=f exch=f name=f stat=f curr=f list=h deli=h boar=h
+  read  6 行数  1696 symb=f exch=f name=f stat=f curr=f list=h deli=h boar=h
+  read  7 行数  1696 symb=f exch=f name=f stat=f curr=f list=h deli=h boar=h
+  read  8 行数  1696 symb=f exch=f name=f stat=f curr=f list=h deli=h boar=h
+  read  9 行数  1696 symb=f exch=f name=f stat=f curr=f list=h deli=h boar=h
+  read 10 行数  1696 symb=f exch=f name=f stat=f curr=f list=h deli=h boar=h
+
+[1] 形态分布（判据底稿）
+  a-share         symbol       形态 full×10                              缺失 0..0 行数 5578..5578
+  a-share         exchange     形态 full×10                              缺失 0..0 行数 5578..5578
+  a-share         name         形态 full×10                              缺失 0..0 行数 5578..5578
+  a-share         status       形态 full×10                              缺失 0..0 行数 5578..5578
+  a-share         currency     形态 full×10                              缺失 0..0 行数 5578..5578
+  a-share         list_date    形态 full×10                              缺失 8..8 行数 5578..5578
+  a-share         delist_date  形态 hollow×10                            缺失 5578..5578 行数 5578..5578
+  a-share         board        形态 hollow×10                            缺失 5578..5578 行数 5578..5578
+  a-share-index   symbol       形态 full×10                              缺失 0..0 行数 1431..1431
+  a-share-index   exchange     形态 full×10                              缺失 0..0 行数 1431..1431
+  a-share-index   name         形态 full×10                              缺失 0..0 行数 1431..1431
+  a-share-index   status       形态 full×10                              缺失 0..0 行数 1431..1431
+  a-share-index   currency     形态 full×10                              缺失 0..0 行数 1431..1431
+  a-share-index   list_date    形态 full×10                              缺失 0..0 行数 1431..1431
+  a-share-index   delist_date  形态 hollow×10                            缺失 1431..1431 行数 1431..1431
+  a-share-index   board        形态 hollow×10                            缺失 1431..1431 行数 1431..1431
+  futures         symbol       形态 full×10                              缺失 0..0 行数 1142..1142
+  futures         exchange     形态 full×10                              缺失 0..0 行数 1142..1142
+  futures         name         形态 full×10                              缺失 0..0 行数 1142..1142
+  futures         status       形态 full×10                              缺失 0..0 行数 1142..1142
+  futures         currency     形态 full×10                              缺失 0..0 行数 1142..1142
+  futures         list_date    形态 partial×10                           缺失 265..265 行数 1142..1142
+  futures         delist_date  形态 partial×10                           缺失 265..265 行数 1142..1142
+  futures         board        形态 hollow×10                            缺失 1142..1142 行数 1142..1142
+  fund-etf        symbol       形态 full×10                              缺失 0..0 行数 1696..1696
+  fund-etf        exchange     形态 full×10                              缺失 0..0 行数 1696..1696
+  fund-etf        name         形态 full×10                              缺失 0..0 行数 1696..1696
+  fund-etf        status       形态 full×10                              缺失 0..0 行数 1696..1696
+  fund-etf        currency     形态 full×10                              缺失 0..0 行数 1696..1696
+  fund-etf        list_date    形态 hollow×10                            缺失 1696..1696 行数 1696..1696
+  fund-etf        delist_date  形态 hollow×10                            缺失 1696..1696 行数 1696..1696
+  fund-etf        board        形态 hollow×10                            缺失 1696..1696 行数 1696..1696
+
+[2] 只出现过一种形态的列（可钉候选；出现另一种形态即为新信息）
+  a-share/symbol: full
+  a-share/exchange: full
+  a-share/name: full
+  a-share/status: full
+  a-share/currency: full
+  a-share/list_date: full
+  a-share/delist_date: hollow
+  a-share/board: hollow
+  a-share-index/symbol: full
+  a-share-index/exchange: full
+  a-share-index/name: full
+  a-share-index/status: full
+  a-share-index/currency: full
+  a-share-index/list_date: full
+  a-share-index/delist_date: hollow
+  a-share-index/board: hollow
+  futures/symbol: full
+  futures/exchange: full
+  futures/name: full
+  futures/status: full
+  futures/currency: full
+  futures/list_date: partial
+  futures/delist_date: partial
+  futures/board: hollow
+  fund-etf/symbol: full
+  fund-etf/exchange: full
+  fund-etf/name: full
+  fund-etf/status: full
+  fund-etf/currency: full
+  fund-etf/list_date: hollow
+  fund-etf/delist_date: hollow
+  fund-etf/board: hollow
+
+[3] 多形态列（不可钉为单一形态，否则报假故障）
+
+[4] 汇总：可钉 32 列 / 多形态 0 列 / 未判读 0 次
+[5] 判据落法：可钉候选里只取「上游语义上塌了就是事故」的列进 patrol.FIELD_CANARIES；
+    多形态列留在文档里说明为什么不钉（见 README §3）。
+MEASURE_EXIT=0
