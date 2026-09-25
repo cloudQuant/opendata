@@ -35,7 +35,7 @@ def main() -> int:
     print("== 健康巡检结果 ==")
     for result in results:
         status = "ok" if result.ok else "FAIL"
-        detail = result.error or f"{result.latency_ms:.0f}ms"
+        detail = result.error or f"{result.rows} rows, {result.latency_ms:.0f}ms"
         print(f"  [{status}] {result.source}/{result.domain}: {detail}")
     print("== 凭证配置 ==")
     for source, info in keys.items():

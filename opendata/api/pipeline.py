@@ -195,6 +195,7 @@ async def run_source_patrol(
                     "error": result.error,
                     "latency_ms": round(result.latency_ms, 1),
                     "verified": result.verified,
+                    "rows": result.rows,
                 }
                 for result in results
             ],
