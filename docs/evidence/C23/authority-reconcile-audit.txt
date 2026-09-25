@@ -1,0 +1,144 @@
+===== C23 权威表 <-> 活注册表 对账体检（A 差集 / B 路由等价 / C 判据，只读、离线）=====
+captured_at=2026-09-25T17:56:20+03:00
+branch=dev HEAD=a2935d5（本轮改动未提交）
+python=Python 3.13.5  本机时区偏移=+0300
+工作树 authority.json sha256=cddd408300f4ba64d51c2735cf721c48fe99c64387b8e0fce204ee4eb071ce86
+HEAD authority.json sha256=8b8d109aa0334752854caa273ad45c9f6d66f40fe68d03ee344c378a6b9ca72c
+scripts/ops/authority_reconcile_check.py sha256=d9710ea45e64d8c2b34ca49bb7722b9ac7f90e3b987f55e45f10192729ca82e6
+
+===== 这轮要回答什么 =====
+A 面：表里每一对 (域, 源) 到活注册表里查有没有腿 —— 两版表各查一遍，差集就是本轮消掉的对外假声明。
+B 面：本轮只是元数据，路由答案不该变。于是把 42 个路由问句（每个 (asset_class, domain, period,
+market 组合 + 每个域只给域名的形态）在**生产 resolve(source="auto")** 上分别用 HEAD 表和新表各跑
+一遍，逐条比答案（含 fail-closed 的报错文案）。这一面证明"改表没有改变任何一次取数会走哪条腿"。
+C 面：对账判据本身在最终表上判 0 违规。
+脚本做法：临时把 registry._AUTHORITY_PATH 指向两版表各自的副本、清 lru_cache、用完还原（不改仓库文件）。
+
+===== 复现命令 =====
+python scripts/ops/authority_reconcile_check.py    # 全程离线，不发请求、不碰数仓、不读密钥
+
+===== 原始输出（未裁剪）=====
+活注册表：33 条能力 / 18 个域 / 源=['akshare', 'ecb', 'fred', 'imf', 'oecd', 'ths', 'yfinance']
+  HEAD: 17 行  sha256=8b8d109aa0334752854caa273ad45c9f6d66f40fe68d03ee344c378a6b9ca72c
+  worktree: 15 行  sha256=cddd408300f4ba64d51c2735cf721c48fe99c64387b8e0fce204ee4eb071ce86
+===== A 面：两版权威表逐对 (域, 源) 到活注册表里查有没有腿 =====
+  [HEAD] stock_daily/ths: 有腿
+  [HEAD] stock_daily/akshare: 有腿
+  [HEAD] stock_adjust/ths: 无腿（对外假声明）
+  [HEAD] stock_adjust/akshare: 无腿（对外假声明）
+  [HEAD] stock_action/ths: 有腿
+  [HEAD] stock_action/akshare: 有腿
+  [HEAD] financial_statement/ths: 有腿
+  [HEAD] financial_statement/akshare: 有腿
+  [HEAD] financial_indicator/ths: 无腿（对外假声明）
+  [HEAD] financial_indicator/akshare: 有腿
+  [HEAD] index_constituent/ths: 有腿
+  [HEAD] index_constituent/akshare: 有腿
+  [HEAD] index_daily/ths: 有腿
+  [HEAD] index_daily/akshare: 有腿
+  [HEAD] fund_etf_daily/akshare: 有腿
+  [HEAD] fund_etf_daily/ths: 有腿
+  [HEAD] futures_daily/ths: 有腿
+  [HEAD] futures_daily/akshare: 有腿
+  [HEAD] option_daily/ths: 有腿
+  [HEAD] option_daily/akshare: 有腿
+  [HEAD] futures_fundamentals/ths: 无腿（对外假声明）
+  [HEAD] futures_fundamentals/akshare: 无腿（对外假声明）
+  [HEAD] instrument/ths: 有腿
+  [HEAD] instrument/akshare: 无腿（对外假声明）
+  [HEAD] trading_calendar/ths: 有腿
+  [HEAD] trading_calendar/akshare: 无腿（对外假声明）
+  [HEAD] economy_cpi/ecb: 有腿
+  [HEAD] economy_cpi/oecd: 有腿
+  [HEAD] economy_cpi/imf: 有腿
+  [HEAD] economy_gdp/ecb: 有腿
+  [HEAD] economy_gdp/imf: 有腿
+  [HEAD] economy_rate/ecb: 有腿
+  [HEAD] economy_unemployment/oecd: 有腿
+  [HEAD] economy_unemployment/imf: 有腿
+  [worktree] stock_daily/ths: 有腿
+  [worktree] stock_daily/akshare: 有腿
+  [worktree] stock_action/ths: 有腿
+  [worktree] stock_action/akshare: 有腿
+  [worktree] financial_statement/ths: 有腿
+  [worktree] financial_statement/akshare: 有腿
+  [worktree] financial_indicator/akshare: 有腿
+  [worktree] index_constituent/ths: 有腿
+  [worktree] index_constituent/akshare: 有腿
+  [worktree] index_daily/ths: 有腿
+  [worktree] index_daily/akshare: 有腿
+  [worktree] fund_etf_daily/akshare: 有腿
+  [worktree] fund_etf_daily/ths: 有腿
+  [worktree] futures_daily/ths: 有腿
+  [worktree] futures_daily/akshare: 有腿
+  [worktree] option_daily/ths: 有腿
+  [worktree] option_daily/akshare: 有腿
+  [worktree] instrument/ths: 有腿
+  [worktree] trading_calendar/ths: 有腿
+  [worktree] economy_cpi/ecb: 有腿
+  [worktree] economy_cpi/oecd: 有腿
+  [worktree] economy_cpi/imf: 有腿
+  [worktree] economy_gdp/ecb: 有腿
+  [worktree] economy_gdp/imf: 有腿
+  [worktree] economy_rate/ecb: 有腿
+  [worktree] economy_unemployment/oecd: 有腿
+  [worktree] economy_unemployment/imf: 有腿
+  HEAD 假声明数 = 7：['stock_adjust/ths', 'stock_adjust/akshare', 'financial_indicator/ths', 'futures_fundamentals/ths', 'futures_fundamentals/akshare', 'instrument/akshare', 'trading_calendar/akshare']
+  worktree 假声明数 = 0
+  本轮消掉的假声明 7 对：['financial_indicator/ths', 'futures_fundamentals/akshare', 'futures_fundamentals/ths', 'instrument/akshare', 'stock_adjust/akshare', 'stock_adjust/ths', 'trading_calendar/akshare']
+  本轮新增的假声明 0 对：[]
+
+===== B 面：42 个路由问句，两版表逐条对答案（都走生产 resolve）=====
+  bond/bond_daily 1D/cn: 两版一致 -> FAIL-CLOSED: no verified capability registered for bond/bond_daily (peri
+  macro/economy_cpi 1A/global: 两版一致 -> imf
+  macro/economy_cpi 1M/eu: 两版一致 -> ecb
+  macro/economy_cpi 1M/us: 两版一致 -> FAIL-CLOSED: no verified capability registered for macro/economy_cpi (pe
+  macro/economy_gdp 1A/global: 两版一致 -> imf
+  macro/economy_gdp 1Q/eu: 两版一致 -> ecb
+  macro/economy_gdp 1Q/us: 两版一致 -> FAIL-CLOSED: no verified capability registered for macro/economy_gdp (pe
+  macro/economy_rate 1D/eu: 两版一致 -> ecb
+  macro/economy_unemployment 1A/global: 两版一致 -> oecd
+  macro/economy_unemployment 1M/us: 两版一致 -> FAIL-CLOSED: no verified capability registered for macro/economy_unemplo
+  equity/financial_indicator Q/cn: 两版一致 -> FAIL-CLOSED: no verified capability registered for equity/financial_indi
+  equity/financial_statement Q/cn: 两版一致 -> ths
+  fund/fund_action 1D/cn: 两版一致 -> ths
+  fund/fund_etf_daily 1D/cn: 两版一致 -> ths
+  futures/futures_daily 1D/cn: 两版一致 -> ths
+  index/index_constituent snapshot/cn: 两版一致 -> ths
+  index/index_daily 1D/cn: 两版一致 -> ths
+  metadata/instrument snapshot/cn: 两版一致 -> ths
+  option/option_daily 1D/cn: 两版一致 -> ths
+  equity/stock_action 1D/cn: 两版一致 -> ths
+  equity/stock_action event/cn: 两版一致 -> FAIL-CLOSED: no verified capability registered for equity/stock_action (
+  equity/stock_daily 1D/cn: 两版一致 -> ths
+  equity/stock_daily_overseas 1D/global: 两版一致 -> yfinance
+  metadata/trading_calendar snapshot/cn: 两版一致 -> ths
+  bond/bond_daily 只给域: 两版一致 -> FAIL-CLOSED: no verified capability registered for bond/bond_daily (peri
+  macro/economy_cpi 只给域: 两版一致 -> FAIL-CLOSED: macro/economy_cpi is served by 2 markets (eu, global) and t
+  macro/economy_gdp 只给域: 两版一致 -> FAIL-CLOSED: macro/economy_gdp is served by 2 markets (eu, global) and t
+  macro/economy_rate 只给域: 两版一致 -> ecb
+  macro/economy_unemployment 只给域: 两版一致 -> oecd
+  equity/financial_indicator 只给域: 两版一致 -> FAIL-CLOSED: no verified capability registered for equity/financial_indi
+  equity/financial_statement 只给域: 两版一致 -> ths
+  fund/fund_action 只给域: 两版一致 -> ths
+  fund/fund_etf_daily 只给域: 两版一致 -> ths
+  futures/futures_daily 只给域: 两版一致 -> ths
+  index/index_constituent 只给域: 两版一致 -> ths
+  index/index_daily 只给域: 两版一致 -> ths
+  metadata/instrument 只给域: 两版一致 -> ths
+  option/option_daily 只给域: 两版一致 -> ths
+  equity/stock_action 只给域: 两版一致 -> ths
+  equity/stock_daily 只给域: 两版一致 -> ths
+  equity/stock_daily_overseas 只给域: 两版一致 -> yfinance
+  metadata/trading_calendar 只给域: 两版一致 -> ths
+  答案改变的路由问句数 = 0 / 42
+
+===== C 面：reconcile_authority(活注册表) 判据 =====
+  违规数 = 0
+
+===== 判读 =====
+  对外声明面：假声明 7 -> 0
+  行为面：路由答案变化 0 组
+  判据面：对账违规 0 条
+  结论：表与现实一致，且本轮未改变任何路由答案
+AUDIT_EXIT=0

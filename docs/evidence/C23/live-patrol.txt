@@ -1,0 +1,47 @@
+===== C23 真机巡检（权威表去假腿之后的全腿回归）=====
+captured_at=2026-09-25T17:56:34+03:00
+branch=dev HEAD=a2935d5（本轮改动未提交）
+python=Python 3.13.5  本机时区偏移=+0300
+工作树 authority.json sha256=cddd408300f4ba64d51c2735cf721c48fe99c64387b8e0fce204ee4eb071ce86
+
+===== 为什么要再跑一遍真机 =====
+本轮改的是元数据（权威表 + 对账判据），巡检的 20 条腿是**按注册表能力**展开、用显式 source 请求的，
+不经权威序排序，所以预期结果与 C22 一致。跑它的目的不是发现新东西，而是给"改表没有把任何一条腿
+弄坏"留一份当日的真机记录：腿的条数、行数、失败/抖动计数都对得上，才说明对账只动了声明面。
+
+===== 复现命令 =====
+set -a; . ./.env; set +a; python scripts/ops/health_patrol.py
+
+===== 原始输出（未裁剪）=====
+== 健康巡检结果 ==
+  [ok] ecb/economy_cpi: 12 rows, 574ms
+  [ok] ecb/economy_gdp: 8 rows, 470ms
+  [ok] ecb/economy_rate: 14 rows, 510ms
+  [ok] imf/economy_cpi: 10 rows, 11637ms
+  [ok] imf/economy_gdp: 10 rows, 11890ms
+  [ok] imf/economy_unemployment: 10 rows, 9795ms
+  [ok] oecd/economy_cpi: 24 rows, 388ms
+  [ok] oecd/economy_unemployment: 2 rows, 217ms
+  [ok] ths/stock_daily: 5 rows, 1854ms
+  [ok] ths/stock_action: 4 rows, 2528ms
+  [ok] ths/index_daily: 5 rows, 2073ms
+  [ok] ths/index_constituent: 300 rows, 1571ms
+  [ok] ths/financial_statement: 52 rows, 1508ms
+  [ok] ths/fund_action: 3 rows, 1953ms
+  [ok] ths/fund_etf_daily: 15 rows, 4750ms
+  [ok] ths/instrument: 5578 rows, 2595ms
+  [ok] ths/futures_daily: 15 rows, 1187ms
+  [ok] ths/option_daily: 15 rows, 5092ms
+  [ok] ths/trading_calendar: 242 rows, 1065ms
+  [ok] yfinance/stock_daily_overseas: 4 rows, 1610ms
+== 凭证配置 ==
+  ths: 配置（必须=True）
+  fred: 缺失（必须=True）
+  yfinance: 配置（必须=False）
+  ecb: 配置（必须=False）
+  imf: 配置（必须=False）
+  oecd: 配置（必须=False）
+  akshare: 配置（必须=False）
+
+失败 0 项；抖动 0 项；必配 Key 缺失 1 项
+PATROL_EXIT=0
