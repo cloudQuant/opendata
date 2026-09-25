@@ -1,0 +1,35 @@
+===== C21 巡检告警面真机探针（注入一次/两次抖动 + 零注入的真失败）运行环境 =====
+captured_at=2026-09-25T14:00:40+03:00
+branch=dev HEAD=8f56d45（本轮改动未提交）
+python=Python 3.13.5
+背景：自然巡检两跑 20 条腿全绿（live-patrol.txt / live-patrol-rerun.txt），拿不到 FLAKY 行；
+      C20 那一跑 oecd 两条腿 FAIL 时报告里只有裸 OECD_HTTP_ERROR（无 status、无 URL）⇒ 无法归因。
+      本探针把「上游一次没答好」注入到最底层 _http_get，其余全走生产路径，注入在消息里明写。
+===== 复现命令 =====
+set -a; . ./.env; set +a; python docs/evidence/C21/flaky-retry-attribution.py
+===== 原始输出（未裁剪） =====
+2026-09-25 14:00:41.700 | WARNING  | opendata.pipeline.patrol:patrol:297 - patrol retrying oecd/economy_cpi after attempt 1: ConnectError: 【C21 证据注入，非上游真实行为】connection reset left=0
+2026-09-25 14:00:44.303 | WARNING  | opendata.pipeline.patrol:patrol:306 - patrol oecd/economy_cpi passed only on attempt 2: ConnectError: 【C21 证据注入，非上游真实行为】connection reset left=0
+2026-09-25 14:00:44.559 | WARNING  | opendata.pipeline.patrol:patrol:297 - patrol retrying oecd/economy_cpi after attempt 1: ConnectError: 【C21 证据注入，非上游真实行为】connection reset left=1
+2026-09-25 14:00:46.561 | WARNING  | opendata.pipeline.patrol:patrol:301 - patrol failed for oecd/economy_cpi on 2 attempts: ConnectError: 【C21 证据注入，非上游真实行为】connection reset left=0
+## A1 注入一次传输抖动（重试后通过，但不是干净的通过）
+  attempts=2 ok=True flaky=True rows=24
+  error='ConnectError: 【C21 证据注入，非上游真实行为】connection reset left=0'
+  auto 路由：oecd（该腿仍可达）
+## A2 注入连续两次抖动（反向对照：重试不是消音器）
+  attempts=2 ok=False flaky=False rows=None
+  error='ConnectError: 【C21 证据注入，非上游真实行为】connection reset left=0'
+  auto 路由：LookupError —— 该腿已被标成不可达
+  注入消耗完毕：True
+## B 三个 provider 各发一个上游确实不认的键（真实 status，零注入）
+  oecd: OecdProviderError: OECD_HTTP_ERROR status=403 url=https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_PRICES@DF_PRICES_HICP/NO.SUCH.KEY
+  ecb: EcbProviderError: ECB_HTTP_ERROR status=400 url=https://data-api.ecb.europa.eu/service/data/ICP/NO.SUCH
+  imf: ImfProviderError: IMF_BAD_RESPONSE status=200 url=https://www.imf.org/external/datamapper/api/v1/NO_SUCH/USA
+## C fred 未配 Key（没有请求，也就没有可归因的请求）
+  fred: FredProviderError: FRED_API_KEY_MISSING
+## 判定
+  PASS A 一次抖动重试并显式标 flaky / 两次抖动仍判死
+  PASS B 真失败自带 status + query-free URL
+  PASS C 未发生的请求只报裸码
+PROBE_EXIT=0
+===== 原始输出结束 =====

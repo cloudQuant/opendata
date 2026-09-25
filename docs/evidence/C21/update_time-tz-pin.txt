@@ -1,0 +1,42 @@
+===== C21 AC-6 时区固定证据（搬运层 更新日期 不再随本机时区漂移）运行环境 =====
+captured_at=2026-09-25T14:46:12+03:00
+branch=dev HEAD=8f56d45（本轮改动未提交）
+本机时区偏移=+0300 缩写=+03（C20/夹具录制时该机器为 +0800）
+python=Python 3.13.5
+node=v25.1.0
+===== 复现命令（原样贴出） =====
+PYTHONPATH=. python docs/evidence/C21/update_time-tz-pin.py
+===== 原始输出（未裁剪） =====
+## 运行环境
+  captured_at=2026-09-25T14:46:12.439749+03:00
+  本机时区 tzname=('+03', '+03') timezone=-10800 TZ=None
+  录制基线 lock commit=c4f6a631c259783dbc2507b6b27d179b3e88079d
+  pristine checkout HEAD=c4f6a631c259783dbc2507b6b27d179b3e88079d
+  AC-6 用例=financial_statement（夹具录制于 Asia/Shanghai，即 UTC+8）
+
+## 上游原式（akshare/stock_fundamental/stock_finance_sina.py，不传 tz ⇒ 取本机时区）
+                  "类型": data_json["result"]["data"]["report_list"][date_str]["rType"],
+                  "更新日期": datetime.fromtimestamp(
+                      data_json["result"]["data"]["report_list"][date_str]["update_time"]
+                  ).isoformat(),
+
+## 录制应答里的 update_time（epoch 秒，前 3 行）
+  epoch=1786711808 → UTC 2026-08-14T12:50:08+00:00 / 北京时间 2026-08-14T20:50:08+08:00
+  epoch=1777029604 → UTC 2026-04-24T11:20:04+00:00 / 北京时间 2026-04-24T19:20:04+08:00
+  epoch=1776351243 → UTC 2026-04-16T14:54:03+00:00 / 北京时间 2026-04-16T22:54:03+08:00
+
+## 同一份录制应答，三种主机时区下的 更新日期（首行）
+  录制值（夹具，+08:00 主机）  2026-08-14T20:50:08
+  TZ=Asia/Shanghai        上游原式 2026-08-14T20:50:08
+    搬运层（本轮固定后） 2026-08-14T20:50:08  |  与录制：相同
+  TZ=Etc/UTC              上游原式 2026-08-14T12:50:08
+    搬运层（本轮固定后） 2026-08-14T20:50:08  |  与录制：相同
+  TZ=America/Los_Angeles  上游原式 2026-08-14T05:50:08
+    搬运层（本轮固定后） 2026-08-14T20:50:08  |  与录制：相同
+
+## 判定
+  PASS 上游原式随主机时区漂移（不固定就无法跨机复现）
+  PASS 固定后三档主机时区输出逐列相同
+  PASS 固定后与 +08:00 录制值逐字相等（判据未放宽）
+PROBE_EXIT=0
+===== 原始输出结束 =====
