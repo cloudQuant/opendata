@@ -16,6 +16,7 @@ import pytest
 from pydantic import ValidationError
 
 from opendata.data.protocol import FetchContext
+from opendata.data.providers import register_providers
 from opendata.data.providers.ecb import register
 from opendata.data.providers.ecb._source import SOURCE
 from opendata.data.providers.ecb.models._client import EcbProviderError
@@ -45,8 +46,16 @@ def _csv_body(rows: list[dict[str, str]]) -> str:
 
 @pytest.fixture(autouse=True)
 def registry() -> ProviderRegistry:
-    """Registered fetchers for every test, isolated per test via the singleton."""
-    register()
+    """The process-wide singleton with **every** provider registered.
+
+    ``register_providers()`` is idempotent, and calling it here is what
+    makes the routing assertions below order-independent: with only this
+    provider's legs in the pool ``economy_cpi`` would have one market, the
+    cross-market guard could never fire, and "green" would still mean
+    "whichever module happened to import first" - the failure mode C22
+    set out to remove.
+    """
+    register_providers()
     return get_registry()
 
 
@@ -63,9 +72,15 @@ class TestRegistration:
     def test_register_is_idempotent(self) -> None:
         assert register() == []
 
-    def test_verified_capability_is_auto_routed(self) -> None:
-        fetcher = get_registry().resolve_domain("economy_cpi")
+    def test_the_euro_area_publisher_answers_for_the_eu_cpi_leg(self) -> None:
+        """``1M``/``eu`` has two verified legs; the authority table puts ecb first."""
+        fetcher = get_registry().resolve_domain("economy_cpi", period="1M", market="eu")
         assert isinstance(fetcher, EcbCpiFetcher)
+
+    def test_market_blind_auto_fails_closed(self) -> None:
+        """economy_cpi spans eu and global, so a request naming neither gets no guess."""
+        with pytest.raises(LookupError, match="does not pick across markets"):
+            get_registry().resolve_domain("economy_cpi")
 
 
 class TestQuery:
@@ -176,9 +191,14 @@ class TestGdpDomain:
         assert capability.period == "1Q"
         assert capability.verified is True
 
-    def test_auto_routing_prefers_a_verified_source(self) -> None:
-        resolved = get_registry().resolve_domain("economy_gdp")
-        assert resolved.capability.source in {"ecb", "imf"}
+    def test_quarterly_euro_area_gdp_routes_to_ecb(self) -> None:
+        """``1Q``/``eu`` is ecb's own claim; imf serves ``1A``/``global``, not this."""
+        resolved = get_registry().resolve_domain("economy_gdp", period="1Q", market="eu")
+        assert resolved.capability.source == "ecb"
+
+    def test_market_blind_auto_fails_closed(self) -> None:
+        with pytest.raises(LookupError, match="does not pick across markets"):
+            get_registry().resolve_domain("economy_gdp")
 
     def test_quarterly_period_widens_to_first_of_quarter(self) -> None:
         fetcher = EcbGdpFetcher()

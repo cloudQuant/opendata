@@ -16,6 +16,7 @@ import pytest
 from pydantic import ValidationError
 
 from opendata.data.protocol import FetchContext
+from opendata.data.providers import register_providers
 from opendata.data.providers.oecd import register
 from opendata.data.providers.oecd._source import SOURCE
 from opendata.data.providers.oecd.models._client import OecdProviderError
@@ -64,8 +65,16 @@ def _csv_body(rows: list[dict[str, str]]) -> str:
 
 @pytest.fixture(autouse=True)
 def registry() -> ProviderRegistry:
-    """Registered fetchers for every test, isolated per test via the singleton."""
-    register()
+    """The process-wide singleton with **every** provider registered.
+
+    ``register_providers()`` is idempotent, and calling it here is what
+    makes the routing assertions below order-independent: with only this
+    provider's legs in the pool ``economy_cpi`` would have one market, the
+    cross-market guard could never fire, and "green" would still mean
+    "whichever module happened to import first" - the failure mode C22
+    set out to remove.
+    """
+    register_providers()
     return get_registry()
 
 
@@ -82,9 +91,17 @@ class TestRegistration:
     def test_register_is_idempotent(self) -> None:
         assert register() == []
 
-    def test_auto_routing_prefers_a_verified_source(self) -> None:
-        resolved = get_registry().resolve_domain("economy_cpi")
-        assert resolved.capability.source in {"ecb", "imf", "oecd"}
+    def test_eu_cpi_auto_routes_to_ecb_and_degrades_to_oecd(self) -> None:
+        """The 1M/eu pair: the euro-area publisher first, oecd as the substitute."""
+        registry = get_registry()
+        top = registry.resolve_domain("economy_cpi", period="1M", market="eu")
+        assert top.capability.source == "ecb"
+        registry.mark_unavailable(top)
+        try:
+            fallen = registry.resolve_domain("economy_cpi", period="1M", market="eu")
+            assert fallen.capability.source == "oecd"
+        finally:
+            registry.mark_available(top)
 
 
 class TestQuery:
@@ -187,9 +204,15 @@ class TestUnemploymentDomain:
         assert capability.market == "global"
         assert capability.verified is True
 
-    def test_auto_routing_prefers_a_verified_source(self) -> None:
-        resolved = get_registry().resolve_domain("economy_unemployment")
-        assert resolved.capability.source in {"imf", "oecd"}
+    def test_global_annual_unemployment_routes_to_oecd(self) -> None:
+        """The measured order (docs/evidence/C22): oecd publishes no projections.
+
+        With the window end pushed to 2031, imf returned 6 rows past the
+        last completed year and oecd none, so the leg that cannot leak a
+        forecast into a history request goes first.
+        """
+        resolved = get_registry().resolve_domain("economy_unemployment", market="global")
+        assert resolved.capability.source == "oecd"
 
     def test_series_id_is_the_six_dimension_key(self) -> None:
         fetcher = OecdUnemploymentFetcher()

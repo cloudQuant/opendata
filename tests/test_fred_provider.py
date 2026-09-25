@@ -15,6 +15,7 @@ from pydantic import ValidationError
 
 from opendata.data.models import MacroSeries
 from opendata.data.protocol import FetchContext
+from opendata.data.providers import register_providers
 from opendata.data.providers.fred import register
 from opendata.data.providers.fred._source import SOURCE
 from opendata.data.providers.fred.models._client import FredProviderError
@@ -31,11 +32,16 @@ def _document(observations: list[dict[str, str]]) -> str:
 
 @pytest.fixture(autouse=True)
 def registry() -> ProviderRegistry:
-    """Registered fetchers for every test (plus the verified sibling source)."""
-    from opendata.data.providers.ecb import register as register_ecb
+    """The process-wide singleton with **every** provider registered.
 
-    register()
-    register_ecb()
+    ``register_providers()`` is idempotent, and calling it here is what
+    makes the routing assertions below order-independent: with only this
+    provider's legs in the pool ``economy_cpi`` would have one market, the
+    cross-market guard could never fire, and "green" would still mean
+    "whichever module happened to import first" - the failure mode C22
+    set out to remove.
+    """
+    register_providers()
     return get_registry()
 
 
@@ -59,11 +65,19 @@ class TestRegistration:
         assert register() == []
 
     def test_unverified_capability_is_not_auto_routed(self) -> None:
-        """Auto routing must prefer a verified source (ecb) over fred."""
-        from opendata.data.providers.ecb.models.cpi import EcbCpiFetcher
+        """fred is the only ``1M``/``us`` CPI leg and it is unverified: auto must refuse.
 
-        assert not isinstance(get_registry().resolve_domain("economy_cpi"), FredCpiFetcher)
-        assert isinstance(get_registry().resolve_domain("economy_cpi"), EcbCpiFetcher)
+        The old form of this check asked auto without naming a market, so
+        its outcome depended on which other macro providers had already
+        registered into the shared singleton in this process.
+        """
+        with pytest.raises(LookupError, match="no verified capability"):
+            get_registry().resolve_domain("economy_cpi", period="1M", market="us")
+
+    def test_explicit_source_reaches_the_unverified_leg(self) -> None:
+        """Naming fred bypasses verification: the caller owns that choice."""
+        resolved = get_registry().resolve_domain("economy_cpi", market="us", source="fred")
+        assert isinstance(resolved, FredCpiFetcher)
 
 
 class TestQuery:

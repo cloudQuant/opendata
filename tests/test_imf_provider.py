@@ -16,6 +16,7 @@ import pytest
 from pydantic import ValidationError
 
 from opendata.data.protocol import FetchContext
+from opendata.data.providers import register_providers
 from opendata.data.providers.imf import register
 from opendata.data.providers.imf._source import SOURCE
 from opendata.data.providers.imf.models._client import ImfProviderError
@@ -32,8 +33,16 @@ def _document(values: dict[str, float]) -> str:
 
 @pytest.fixture(autouse=True)
 def registry() -> ProviderRegistry:
-    """Registered fetchers for every test, isolated per test via the singleton."""
-    register()
+    """The process-wide singleton with **every** provider registered.
+
+    ``register_providers()`` is idempotent, and calling it here is what
+    makes the routing assertions below order-independent: with only this
+    provider's legs in the pool ``economy_cpi`` would have one market, the
+    cross-market guard could never fire, and "green" would still mean
+    "whichever module happened to import first" - the failure mode C22
+    set out to remove.
+    """
+    register_providers()
     return get_registry()
 
 
@@ -50,10 +59,20 @@ class TestRegistration:
     def test_register_is_idempotent(self) -> None:
         assert register() == []
 
-    def test_auto_routing_prefers_a_verified_source(self) -> None:
-        """ecb/imf are both verified; auto must route to one of them, not fred."""
-        resolved = get_registry().resolve_domain("economy_cpi")
-        assert resolved.capability.source in {"ecb", "imf"}
+    def test_auto_routing_reaches_the_global_leg_when_the_market_is_named(self) -> None:
+        """``1A``/``global`` CPI is imf's only claim on the domain, so it must answer."""
+        resolved = get_registry().resolve_domain("economy_cpi", period="1A", market="global")
+        assert resolved.capability.source == "imf"
+
+    def test_market_blind_auto_fails_closed(self) -> None:
+        """economy_cpi is served by two markets; a request that names neither gets no guess.
+
+        Before the guard this call answered whichever of ecb/imf happened
+        to register first - i.e. the answer depended on which test module
+        imported before it in this process.
+        """
+        with pytest.raises(LookupError, match="does not pick across markets"):
+            get_registry().resolve_domain("economy_cpi")
 
 
 class TestQuery:

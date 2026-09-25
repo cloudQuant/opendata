@@ -21,6 +21,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from opendata.data.capability import Capability
     from opendata.data.protocol import Fetcher
 
@@ -31,9 +33,11 @@ _AUTHORITY_PATH = Path(__file__).parent / "authority.json"
 def authority_baseline() -> dict[str, tuple[str, ...]]:
     """Load the design §4.4 authority baseline from ``authority.json``.
 
-    Domains not listed there (macro / overseas) declare authority per
-    provider at registration time; until then they route in
-    registration order.
+    Every routing-relevant domain is listed: a domain missing there would
+    rank its candidates by registration order, which makes the auto winner
+    an artifact of file collection order (the macro domains were exactly
+    that case until C22). ``authority.json``'s ``_comment`` records the
+    basis for the macro rows.
 
     Returns:
         Domain identifier to ordered source names (authority first).
@@ -151,7 +155,10 @@ class ProviderRegistry:
             asset_class: e.g. ``equity`` / ``futures``.
             domain: Domain identifier, e.g. ``stock_daily``.
             period: Optional period filter (e.g. ``1D``).
-            market: Optional market filter (e.g. ``cn``).
+            market: Optional market filter (e.g. ``cn``). Left as
+                ``None`` on a domain whose verified legs span more than
+                one market, routing refuses to guess (see
+                :meth:`_reject_cross_market_auto`).
             source: ``"auto"`` or an explicit source name.
 
         Returns:
@@ -159,7 +166,8 @@ class ProviderRegistry:
 
         Raises:
             LookupError: If no capability matches, the explicit source
-                is unknown, or no auto candidate is healthy.
+                is unknown, no auto candidate is healthy, or ``market``
+                is omitted on a multi-market domain.
         """
         candidates = [
             (key, fetcher)
@@ -185,6 +193,8 @@ class ProviderRegistry:
             ],
             key=lambda pair: self._authority_rank(pair[0], domain),
         )
+        if market is None:
+            self._reject_cross_market_auto(asset_class, domain, ranked)
         for key, fetcher in ranked:
             if self._healthy.get(key, True):
                 return fetcher
@@ -195,27 +205,79 @@ class ProviderRegistry:
             )
         raise LookupError(f"all auto candidates for {asset_class}/{domain} are unavailable")
 
-    def resolve_domain(self, domain: str, *, source: str = "auto") -> Fetcher[Any, Any]:
-        """Route by domain identifier alone (catalog-facing, FR-17).
+    def resolve_domain(
+        self,
+        domain: str,
+        *,
+        source: str = "auto",
+        period: str | None = None,
+        market: str | None = None,
+    ) -> Fetcher[Any, Any]:
+        """Route by domain identifier (catalog-facing, FR-17).
 
         Domains are unique across asset classes (domains.yaml), so
         matching by domain is unambiguous: the first capability found
         supplies the asset class for the full routing rules.
+        ``period`` / ``market`` are forwarded rather than dropped -
+        they are what tells the euro-area macro legs from the global
+        ones, and a catalog caller that knows which one it wants has
+        until now had no way to say so.
 
         Args:
             domain: Domain identifier, e.g. ``stock_daily``.
             source: ``"auto"`` or an explicit source name.
+            period: Optional period filter (e.g. ``1M``).
+            market: Optional market filter (e.g. ``eu``).
 
         Returns:
             The resolved fetcher.
 
         Raises:
-            LookupError: If no capability is registered for the domain.
+            LookupError: If no capability is registered for the domain,
+                or auto routing would have to pick across markets.
         """
         for fetcher in self._fetchers.values():
             if fetcher.capability.domain == domain:
-                return self.resolve(fetcher.capability.asset_class, domain, source=source)
+                return self.resolve(
+                    fetcher.capability.asset_class,
+                    domain,
+                    period=period,
+                    market=market,
+                    source=source,
+                )
         raise LookupError(f"no capability registered for domain {domain!r}")
+
+    @staticmethod
+    def _reject_cross_market_auto(
+        asset_class: str,
+        domain: str,
+        candidates: Sequence[tuple[str, Fetcher[Any, Any]]],
+    ) -> None:
+        """Refuse to answer a market-blind auto request with a lucky guess.
+
+        ``economy_cpi`` is served by an ECB euro-area leg and an IMF
+        global leg, and ``resolve_domain`` historically dropped the
+        market dimension, so ``source="auto"`` reached whichever one
+        happened to register first - a US question silently answered
+        with euro-area HICP. An authority order cannot fix that: it
+        only picks which market to answer with. The choice belongs to
+        the caller, so the request fails closed and names the markets
+        on offer.
+
+        Args:
+            asset_class: The requested asset class, for the message.
+            domain: The requested domain, for the message.
+            candidates: The auto-eligible candidates already filtered
+                by the request's period.
+        """
+        markets = sorted({fetcher.capability.market for _, fetcher in candidates})
+        if len(markets) < 2:
+            return
+        raise LookupError(
+            f"{asset_class}/{domain} is served by {len(markets)} markets ({', '.join(markets)}) "
+            f"and the request named none of them; source='auto' does not pick across "
+            f"markets - pass market= (or an explicit source)"
+        )
 
     def _matches(
         self,
