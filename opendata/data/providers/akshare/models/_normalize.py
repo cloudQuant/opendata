@@ -3,6 +3,9 @@
 The single owner of symbol key normalization (design §4.2):
 ``600519`` <-> ``600519.SH``. The contract layer stores plain
 six-digit codes; source-specific spellings are built here per call.
+:func:`within_window` covers the second shared job: the sina daily-line
+and dividend upstreams have no window parameter, so each of them
+filters the caller's range locally.
 """
 
 from datetime import date
@@ -59,6 +62,27 @@ def sina_symbol(symbol: str) -> str:
     code = plain_symbol(symbol)
     prefix = "sz" if code.startswith(("0", "3")) else "sh"
     return f"{prefix}{code}"
+
+
+def within_window(day: date, start: date | None, end: date | None) -> bool:
+    """Whether a row date falls inside the window the caller asked for.
+
+    The sina-backed upstreams publish a symbol's whole history and take
+    no window argument, so ``normalize()`` is where a ``start_date`` /
+    ``end_date`` request gets honored. Both ends are inclusive; either
+    one being None leaves that side open.
+
+    Args:
+        day: The row's trade date or ex-date.
+        start: Lower bound, None for open-ended.
+        end: Upper bound, None for open-ended.
+
+    Returns:
+        True when the row belongs in the result.
+    """
+    if start is not None and day < start:
+        return False
+    return not (end is not None and day > end)
 
 
 def as_date(value: object) -> date | None:

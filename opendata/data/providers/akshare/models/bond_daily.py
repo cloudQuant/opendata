@@ -19,9 +19,9 @@ import pandas as pd
 
 from opendata.data.capability import Capability
 from opendata.data.models import Bar
-from opendata.data.protocol import FetchContext, FetchResult, Fetcher, QueryParams
+from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.akshare._source import SOURCE
-from opendata.data.providers.akshare.models._normalize import as_date
+from opendata.data.providers.akshare.models._normalize import as_date, within_window
 
 #: Columns the sina convertible-bond frame must carry to be normalizable.
 REQUIRED_COLUMNS = ("date", "open", "high", "low", "close", "volume")
@@ -82,8 +82,9 @@ class AkshareBondDailyFetcher(Fetcher[BondDailyQuery, pd.DataFrame]):
             params: Validated query (symbol fallback).
 
         Returns:
-            One ``Bar`` per trading day, ascending; rows without a
-            parseable date are dropped.
+            One ``Bar`` per trading day inside the requested window,
+            ascending (sina has no window parameter, so the bound is
+            applied here); rows without a parseable date are dropped.
         """
         frame = raw.dropna(subset=[name for name in REQUIRED_COLUMNS if name in raw.columns])
         symbol = self.sina_code(params.symbol)
@@ -91,6 +92,8 @@ class AkshareBondDailyFetcher(Fetcher[BondDailyQuery, pd.DataFrame]):
         for record in frame.to_dict("records"):
             trade_date = as_date(record.get("date"))
             if trade_date is None:
+                continue
+            if not within_window(trade_date, params.start_date, params.end_date):
                 continue
             bars.append(
                 Bar(

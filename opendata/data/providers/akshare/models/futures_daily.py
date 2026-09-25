@@ -20,7 +20,11 @@ from opendata.data.capability import Capability
 from opendata.data.models import Bar
 from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.akshare._source import SOURCE
-from opendata.data.providers.akshare.models._normalize import as_date, plain_symbol
+from opendata.data.providers.akshare.models._normalize import (
+    as_date,
+    plain_symbol,
+    within_window,
+)
 
 
 class FuturesDailyQuery(QueryParams):
@@ -78,9 +82,11 @@ class AkshareFuturesDailyFetcher(Fetcher[FuturesDailyQuery, pd.DataFrame]):
             params: Validated query.
 
         Returns:
-            One ``Bar`` per trading day. ``amount`` is 0.0 (the source
-            publishes no turnover); ``hold``/``settle`` are dropped as
-            the contract does not carry them.
+            One ``Bar`` per trading day inside the requested window,
+            ascending. Sina has no window parameter, so the bound is
+            applied here; ``amount`` is 0.0 (the source publishes no
+            turnover); ``hold``/``settle`` are dropped as the contract
+            does not carry them.
         """
         if raw is None or raw.empty:
             return ()
@@ -88,6 +94,8 @@ class AkshareFuturesDailyFetcher(Fetcher[FuturesDailyQuery, pd.DataFrame]):
         for row in raw.to_dict("records"):
             trade_date = as_date(row.get("date"))
             if trade_date is None:
+                continue
+            if not within_window(trade_date, params.start_date, params.end_date):
                 continue
             records.append(
                 Bar(

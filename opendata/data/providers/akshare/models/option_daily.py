@@ -6,8 +6,11 @@ out of ``source=auto`` routing until the AC-6 P1 fidelity sampling lands.
 
 The source publishes no turnover column, so ``amount`` is 0.0 - an
 honest absence rather than a fabricated value (same shape as the
-futures daily chain). ``volume`` stays in contracts (张): it is not a
-lot-denominated share count, so the §8.2 手->股 rule does not apply.
+futures daily chain). ``volume`` is passed through as sina spells it;
+it is *not* comparable with the ths leg, which measured a 10^3-10^4x
+gap with no stable ratio on identical prices
+(docs/evidence/C24/akshare-fallback-cross-check.txt) - one more reason
+this capability stays ``verified=false``.
 """
 
 from typing import ClassVar
@@ -16,9 +19,13 @@ import pandas as pd
 
 from opendata.data.capability import Capability
 from opendata.data.models import Bar
-from opendata.data.protocol import FetchContext, FetchResult, Fetcher, QueryParams
+from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.akshare._source import SOURCE
-from opendata.data.providers.akshare.models._normalize import as_date, plain_symbol
+from opendata.data.providers.akshare.models._normalize import (
+    as_date,
+    plain_symbol,
+    within_window,
+)
 
 #: Columns the sina option frame must carry to be normalizable.
 REQUIRED_COLUMNS = ("日期", "开盘", "最高", "最低", "收盘", "成交量")
@@ -78,14 +85,17 @@ class AkshareOptionDailyFetcher(Fetcher[OptionDailyQuery, pd.DataFrame]):
             params: Validated query (symbol fallback).
 
         Returns:
-            One ``Bar`` per trading day, ascending; rows without a
-            parseable date are dropped.
+            One ``Bar`` per trading day inside the requested window,
+            ascending (sina has no window parameter, so the bound is
+            applied here); rows without a parseable date are dropped.
         """
         frame = raw.dropna(subset=[name for name in REQUIRED_COLUMNS if name in raw.columns])
         bars: list[Bar] = []
         for record in frame.to_dict("records"):
             trade_date = as_date(record.get("日期"))
             if trade_date is None:
+                continue
+            if not within_window(trade_date, params.start_date, params.end_date):
                 continue
             bars.append(
                 Bar(

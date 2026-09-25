@@ -14,9 +14,13 @@ import pandas as pd
 
 from opendata.data.capability import Capability
 from opendata.data.models import CorporateAction
-from opendata.data.protocol import FetchContext, FetchResult, Fetcher, QueryParams
+from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.akshare._source import SOURCE
-from opendata.data.providers.akshare.models._normalize import as_date, plain_symbol
+from opendata.data.providers.akshare.models._normalize import (
+    as_date,
+    plain_symbol,
+    within_window,
+)
 
 _RIGHTS_PLAN = re.compile(r"10\s*配\s*([0-9.]+)")
 
@@ -33,7 +37,12 @@ class AkshareStockActionFetcher(Fetcher[StockActionQuery, pd.DataFrame]):
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="stock_action",
-        period="event",
+        # ``1D`` and not a private ``event`` spelling: ``authority.json`` ranks
+        # this leg behind the ths one, and ``resolve()`` matches ``period`` -
+        # two legs of one domain that spell the period differently can never
+        # take over for each other, so the published fallback would be
+        # unreachable (measured, docs/evidence/C24/fallback-generality-sweep.txt).
+        period="1D",
         market="cn",
         source=SOURCE,
         verified=False,
@@ -71,9 +80,7 @@ class AkshareStockActionFetcher(Fetcher[StockActionQuery, pd.DataFrame]):
         rights = rights.assign(indicator="配股")
         return pd.concat([dividends, rights], ignore_index=True)
 
-    def transform_data(
-        self, raw: pd.DataFrame, params: StockActionQuery
-    ) -> FetchResult:
+    def transform_data(self, raw: pd.DataFrame, params: StockActionQuery) -> FetchResult:
         """Normalize the pages into ``CorporateAction`` rows.
 
         Args:
@@ -82,15 +89,19 @@ class AkshareStockActionFetcher(Fetcher[StockActionQuery, pd.DataFrame]):
             params: The validated query.
 
         Returns:
-            ``CorporateAction`` rows; rows without an ex-date or
-            with all-zero economics are dropped (contract rule).
+            ``CorporateAction`` rows inside the requested window; rows
+            without an ex-date or with all-zero economics are dropped
+            (contract rule). Sina's pages carry the whole dividend
+            history, so the window is applied here.
         """
         actions: list[CorporateAction] = []
         symbol = plain_symbol(params.symbol)
         for record in raw.to_dict("records"):
             if record.get("indicator") == "分红":
                 ex_date = as_date(record.get("除权除息日"))
-                if ex_date is None:
+                if ex_date is None or not within_window(
+                    ex_date, params.start_date, params.end_date
+                ):
                     continue
                 cash = _per_share(record.get("派息"))
                 stock = _per_share(record.get("送股")) + _per_share(record.get("转增"))
@@ -106,7 +117,9 @@ class AkshareStockActionFetcher(Fetcher[StockActionQuery, pd.DataFrame]):
                 )
             else:
                 ex_date = as_date(record.get("除权日"))
-                if ex_date is None:
+                if ex_date is None or not within_window(
+                    ex_date, params.start_date, params.end_date
+                ):
                     continue
                 rights_shares = _parse_rights_plan(record.get("配股方案"))
                 rights_price = _per_share(record.get("配股价格"))
