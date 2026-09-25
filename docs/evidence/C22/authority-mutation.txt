@@ -1,0 +1,123 @@
+===== C22 权威行吃得住性证明（变异测试：把 4 条 economy_* 行从 authority.json 摘掉再跑离线守卫）=====
+captured_at=2026-09-25T16:43:49+0300
+branch=dev HEAD=567ec21（本轮改动未提交）
+python=Python 3.13.5  本机时区偏移=+0300
+authority.json sha256（变异前 = 还原后）=8b8d109aa0334752854caa273ad45c9f6d66f40fe68d03ee344c378a6b9ca72c
+
+===== 判据 =====
+authority.json 里新增的 4 条宏观行必须是「决定赢家的那一层」，而不是与注册顺序并存的冗余。
+摘掉行 ⇒ 若离线守卫全绿，说明这些行没在吃劲（本轮就应判它们为死配置并删掉）；
+摘掉行 ⇒ 守卫失败，且失业率组的失败摘要显示答案由 oecd 翻到 imf ⇒ 赢家确实由权威表给出，缺表时退回注册顺序。
+
+===== 复现命令（三段依次执行，全程离线）=====
+1) cp opendata/data/authority.json /tmp/authority.mutation_backup.json && 用 python 从 domains 里 pop 掉 4 条 economy_* 行后回写
+2) pytest tests/test_macro_routing.py tests/test_ecb_provider.py tests/test_imf_provider.py tests/test_oecd_provider.py tests/test_fred_provider.py \
+       -p no:cacheprovider -q --no-cov -m 'not e2e'
+3) cp /tmp/authority.mutation_backup.json opendata/data/authority.json
+   echo "8b8d109aa0334752854caa273ad45c9f6d66f40fe68d03ee344c378a6b9ca72c  opendata/data/authority.json" | shasum -a 256 -c
+   再跑一次第 2 步那条命令
+
+===== [0] 摘行动作的原始输出（未裁剪）=====
+removed_rows: {"economy_cpi": ["ecb", "oecd", "imf"], "economy_gdp": ["ecb", "imf"], "economy_rate": ["ecb"], "economy_unemployment": ["oecd", "imf"]}
+MUTATE_EXIT=0
+
+===== [1] 摘行后跑离线守卫的原始输出（未裁剪）=====
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 78 items / 6 deselected / 72 selected
+
+tests/test_macro_routing.py ......FFFF.FF                                [ 18%]
+tests/test_ecb_provider.py ...................                           [ 44%]
+tests/test_imf_provider.py ...........                                   [ 59%]
+tests/test_oecd_provider.py ............F..                              [ 80%]
+tests/test_fred_provider.py ..............                               [100%]
+
+=================================== FAILURES ===================================
+_ TestAuthorityDecidesNotRegistrationOrder.test_winner_is_the_same_whatever_the_registration_order[economy_cpi/1M/eu] _
+tests/test_macro_routing.py:163: in test_winner_is_the_same_whatever_the_registration_order
+    assert len(winners) == 1, f"{domain}/{period}/{market} answered {winners} across orders"
+E   AssertionError: economy_cpi/1M/eu answered {'ecb', 'oecd'} across orders
+E   assert 2 == 1
+E    +  where 2 = len({'ecb', 'oecd'})
+_ TestAuthorityDecidesNotRegistrationOrder.test_winner_is_the_same_whatever_the_registration_order[economy_unemployment/1A/global] _
+tests/test_macro_routing.py:163: in test_winner_is_the_same_whatever_the_registration_order
+    assert len(winners) == 1, f"{domain}/{period}/{market} answered {winners} across orders"
+E   AssertionError: economy_unemployment/1A/global answered {'imf', 'oecd'} across orders
+E   assert 2 == 1
+E    +  where 2 = len({'imf', 'oecd'})
+_ TestAuthorityDecidesNotRegistrationOrder.test_winner_is_the_highest_listed_source[economy_cpi/1M/eu] _
+tests/test_macro_routing.py:171: in test_winner_is_the_highest_listed_source
+    assert listed, f"{domain} lists none of {sources}, so auto falls back to luck"
+E   AssertionError: economy_cpi lists none of ['ecb', 'oecd'], so auto falls back to luck
+E   assert []
+_ TestAuthorityDecidesNotRegistrationOrder.test_winner_is_the_highest_listed_source[economy_unemployment/1A/global] _
+tests/test_macro_routing.py:171: in test_winner_is_the_highest_listed_source
+    assert listed, f"{domain} lists none of {sources}, so auto falls back to luck"
+E   AssertionError: economy_unemployment lists none of ['imf', 'oecd'], so auto falls back to luck
+E   assert []
+__________ TestBaselineCoversMacro.test_every_macro_domain_is_listed ___________
+tests/test_macro_routing.py:193: in test_every_macro_domain_is_listed
+    assert not missing, f"macro domains routing on registration order: {missing}"
+E   AssertionError: macro domains routing on registration order: ['economy_cpi', 'economy_gdp', 'economy_rate', 'economy_unemployment']
+E   assert not ['economy_cpi', 'economy_gdp', 'economy_rate', 'economy_unemployment']
+_ TestBaselineCoversMacro.test_baseline_lists_only_sources_that_serve_the_domain _
+tests/test_macro_routing.py:200: in test_baseline_lists_only_sources_that_serve_the_domain
+    for source in baseline[domain]:
+                  ^^^^^^^^^^^^^^^^
+E   KeyError: 'economy_cpi'
+____ TestUnemploymentDomain.test_global_annual_unemployment_routes_to_oecd _____
+tests/test_oecd_provider.py:215: in test_global_annual_unemployment_routes_to_oecd
+    assert resolved.capability.source == "oecd"
+E   AssertionError: assert 'imf' == 'oecd'
+E     
+E     - oecd
+E     + imf
+=========================== short test summary info ============================
+FAILED tests/test_macro_routing.py::TestAuthorityDecidesNotRegistrationOrder::test_winner_is_the_same_whatever_the_registration_order[economy_cpi/1M/eu]
+FAILED tests/test_macro_routing.py::TestAuthorityDecidesNotRegistrationOrder::test_winner_is_the_same_whatever_the_registration_order[economy_unemployment/1A/global]
+FAILED tests/test_macro_routing.py::TestAuthorityDecidesNotRegistrationOrder::test_winner_is_the_highest_listed_source[economy_cpi/1M/eu]
+FAILED tests/test_macro_routing.py::TestAuthorityDecidesNotRegistrationOrder::test_winner_is_the_highest_listed_source[economy_unemployment/1A/global]
+FAILED tests/test_macro_routing.py::TestBaselineCoversMacro::test_every_macro_domain_is_listed
+FAILED tests/test_macro_routing.py::TestBaselineCoversMacro::test_baseline_lists_only_sources_that_serve_the_domain
+FAILED tests/test_oecd_provider.py::TestUnemploymentDomain::test_global_annual_unemployment_routes_to_oecd
+================== 7 failed, 65 passed, 6 deselected in 0.15s ==================
+MUTANT_EXIT=1
+
+===== [2] 逐字节还原确认（未裁剪）=====
+opendata/data/authority.json: OK
+RESTORE_EXIT=0
+
+===== [3] 还原后再跑同一条命令的原始输出（未裁剪）=====
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 78 items / 6 deselected / 72 selected
+
+tests/test_macro_routing.py .............                                [ 18%]
+tests/test_ecb_provider.py ...................                           [ 44%]
+tests/test_imf_provider.py ...........                                   [ 59%]
+tests/test_oecd_provider.py ...............                              [ 80%]
+tests/test_fred_provider.py ..............                               [100%]
+
+======================= 72 passed, 6 deselected in 0.10s =======================
+RESTORED_EXIT=0
+
+===== 判读 =====
+摘行 ⇒ 7 条离线用例失败，其中 economy_unemployment/1A/global 组的答案由 oecd 翻成 imf（注册顺序的巧合，
+正是 C21 登记、本轮要消掉的那类缺陷）；装回 ⇒ 72 passed / 6 deselected，且 authority.json 与变异前逐字节相同。
+两次跑都带 -m 'not e2e' ⇒ 这条证据不依赖公网；6 deselected 是各 provider 套件里标记为 e2e 的真机用例。
+
+===== 本文件的一次自我更正（不留就看不懂这份归档）=====
+第一次写这份归档时被裁剪过：[1]/[3] 两段是用 tail -12 截取的，属于「把证据裁短」，不符合本仓库的留档口径；
+第二次写时把 pytest 的文件列表放进了 shell 变量，zsh 不对无引号变量做分词 ⇒ 两次跑都收到 usage error（EXIT=4、
+collected 0 items），归档里那两段因此记录的是「一次没跑起来的命令」而不是判据读数。
+本文件是第三次、也是唯一有效的一次：两段输出均由同一条命令现场整段重定向落盘、未裁剪，退出码读自文件内部。

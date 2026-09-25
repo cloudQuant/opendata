@@ -1,0 +1,40 @@
+===== C22 真机巡检（宏观权威序 + 跨市场 auto 守卫之后的全腿回归）=====
+captured_at=2026-09-25T16:39:06+0300
+branch=dev HEAD=567ec21（本轮改动未提交）
+python=Python 3.13.5
+TZ=+0300
+===== 复现命令 =====
+set -a; . ./.env; set +a; python scripts/ops/health_patrol.py
+===== 原始输出（未裁剪）=====
+== 健康巡检结果 ==
+  [ok] ecb/economy_cpi: 12 rows, 1111ms
+  [ok] ecb/economy_gdp: 8 rows, 926ms
+  [ok] ecb/economy_rate: 14 rows, 964ms
+  [ok] imf/economy_cpi: 10 rows, 11633ms
+  [ok] imf/economy_gdp: 10 rows, 12396ms
+  [ok] imf/economy_unemployment: 10 rows, 11487ms
+  [ok] oecd/economy_cpi: 24 rows, 2699ms
+  [ok] oecd/economy_unemployment: 2 rows, 1200ms
+  [ok] ths/stock_daily: 5 rows, 3940ms
+  [ok] ths/stock_action: 4 rows, 2152ms
+  [ok] ths/index_daily: 5 rows, 2657ms
+  [ok] ths/index_constituent: 300 rows, 1958ms
+  [ok] ths/financial_statement: 52 rows, 4232ms
+  [ok] ths/fund_action: 3 rows, 3609ms
+  [ok] ths/fund_etf_daily: 15 rows, 3026ms
+  [ok] ths/instrument: 5578 rows, 2905ms
+  [ok] ths/futures_daily: 15 rows, 1506ms
+  [ok] ths/option_daily: 15 rows, 7686ms
+  [ok] ths/trading_calendar: 242 rows, 1515ms
+  [ok] yfinance/stock_daily_overseas: 4 rows, 3098ms
+== 凭证配置 ==
+  ths: 配置（必须=True）
+  fred: 缺失（必须=True）
+  yfinance: 配置（必须=False）
+  ecb: 配置（必须=False）
+  imf: 配置（必须=False）
+  oecd: 配置（必须=False）
+  akshare: 配置（必须=False）
+
+失败 0 项；抖动 0 项；必配 Key 缺失 1 项
+PATROL_EXIT=0
