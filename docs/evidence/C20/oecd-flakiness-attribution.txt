@@ -1,0 +1,149 @@
+===== C20 巡检第一跑（oecd 两条腿 FAIL）的失败归因探针运行环境 =====
+Fri Sep 25 16:36:26 +08 2026
+branch=dev HEAD=f4d0356（本轮改动未提交）
+python=Python 3.13.5
+背景：live-patrol.txt（16:26 那一跑）报 oecd/economy_cpi 与 oecd/economy_unemployment 双双
+      OECD_HTTP_ERROR ⇒ 巡检把两条腿 mark_unavailable；live-patrol-rerun.txt（16:33 同一命令、
+      同一工作区）两条腿全 [ok]（cpi 24 rows / 247ms，unemployment 2 rows / 22,955ms）。
+      本探针用来回答「是我们请求写错了，还是上游在那一刻没答好」。免 Key、只读、零写入。
+方法更正：手拼 URL 的那一版已弃用（猜来的 dataflow 6/6 拿 404，是我的输入错不是上游故障）；
+      下面这一版从注册表取巡检用的同一个 fetcher 与同一份探针参数，重放巡检的 _run_probe，
+      只在最底层 _http_get 上加一层日志打印 provider 真正发出的 URL 与 status。
+===== 复现命令（原样贴出，可用 python - <<'PY' 直接重放） =====
+python - <<'PY'
+"""C20 巡检第一跑（oecd 两条腿 FAIL）的失败归因：走 provider 自己的调用面重放。
+
+为什么手拼 URL 不算证据：前一版探针手拼了 ``DSD_LFS@DF_ICP_LFS_UNE`` 这个**猜来的**
+dataflow，结果 6/6 拿 404 —— 那是我的输入错，不是上游故障。本轮改成从注册表取到
+巡检用的同一个 fetcher、同一个探针参数，把巡检 ``_run_probe`` 原样重放若干轮，
+只在最底下的 ``_http_get`` 加一层日志看 URL 与 status。⇒ 结论只可能来自生产路径。
+"""
+
+from __future__ import annotations
+
+import asyncio
+import time
+from datetime import datetime
+from typing import TYPE_CHECKING, Any
+
+import httpx
+
+from opendata.data.providers import register_providers
+from opendata.data.providers.oecd.models import _client
+from opendata.data.registry import get_registry
+from opendata.pipeline import patrol as patrol_module
+
+if TYPE_CHECKING:
+    from opendata.data.capability import Capability
+    from opendata.data.registry import ProviderRegistry
+
+#: 重放轮数： Enough to separate「常驻」与「瞬态」，又不至于压上游
+ROUNDS = 6
+#: 放大的读超时（巡检侧是 patrol.PROBE_TIMEOUT），目的是量出真实耗时分布再与天花板比
+HTTP_TIMEOUT = 45.0
+
+#: 每轮记录 (url, status)，来自被包住的 _http_get
+CALLS: list[tuple[str, int, float]] = []
+
+
+def _logging_get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+    """Do the real GET and record what the provider actually sent and got back."""
+    started = time.monotonic()
+    response = httpx.get(
+        url,
+        params=params,
+        timeout=HTTP_TIMEOUT if timeout is None or timeout > HTTP_TIMEOUT else timeout,
+        follow_redirects=True,
+    )
+    CALLS.append((str(httpx.URL(url).copy_with(params=params)), response.status_code, time.monotonic() - started))
+    return response.status_code, response.text
+
+
+async def _replay(capability: "Capability", registry: "ProviderRegistry") -> str:
+    """Run one patrol probe off the production path and describe the outcome."""
+    fetcher = registry.resolve(capability.asset_class, capability.domain, source=capability.source)
+    try:
+        rows = await patrol_module._run_probe(fetcher, capability, registry)
+    except Exception as exc:  # noqa: BLE001 - 归因要看的正是这一形态
+        return f"FAIL {type(exc).__name__}: {exc}"
+    return f"ok   {rows} rows"
+
+
+async def main() -> int:
+    """Replay both oecd probes ROUNDS times and classify the failures."""
+    _client._http_get = _logging_get  # noqa: SLF001
+    register_providers()
+    registry = get_registry()
+    legs = [cap for cap in registry.capabilities() if cap.verified and cap.source == "oecd"]
+    print(f"探针腿：{[(c.domain, c.source) for c in legs]}")
+    print(f"巡检侧超时 patrol.PROBE_TIMEOUT = {patrol_module.PROBE_TIMEOUT}s")
+    outcomes: dict[str, list[str]] = {c.domain: [] for c in legs}
+    for round_no in range(1, ROUNDS + 1):
+        for capability in legs:
+            stamp = datetime.now().strftime("%H:%M:%S")
+            t0 = time.monotonic()
+            verdict = await _replay(capability, registry)
+            elapsed = time.monotonic() - t0
+            outcomes[capability.domain].append(verdict)
+            print(f"  [{stamp} r{round_no}] {capability.domain:22s} {verdict:34s} {elapsed:5.1f}s")
+    print("
+## provider 实际发出的 URL 与拿到的 status")
+    for url, status, seconds in CALLS:
+        print(f"  HTTP {status} {seconds:5.1f}s  {url}")
+    print("
+## 判定")
+    flip = False
+    for domain, verdicts in outcomes.items():
+        ok = sum(1 for v in verdicts if v.startswith("ok"))
+        bad = len(verdicts) - ok
+        print(f"  {domain}: ok {ok} / fail {bad}（共 {len(verdicts)} 轮）")
+        if ok and bad:
+            flip = True
+    statuses = sorted({s for _, s, _ in CALLS})
+    print(f"  同一份生产请求拿到的 status 集合：{statuses}")
+    print(
+        "  ⇒ 判据：同一 URL 同时出现过 200 与非 200（或同时成功/失败）= 上游瞬态；"
+        "全部一致失败 = 请求面或数据面真的坏了。"
+    )
+    return 0 if flip or all(all(v.startswith("ok") for v in v2) for v2 in outcomes.values()) else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(asyncio.run(main()))
+PY
+===== 原始输出（未裁剪） =====
+探针腿：[('economy_cpi', 'oecd'), ('economy_unemployment', 'oecd')]
+巡检侧超时 patrol.PROBE_TIMEOUT = 30.0s
+  [16:36:27 r1] economy_cpi            ok   24 rows                         0.4s
+  [16:36:28 r1] economy_unemployment   ok   2 rows                          0.6s
+  [16:36:28 r2] economy_cpi            ok   24 rows                         1.2s
+  [16:36:29 r2] economy_unemployment   ok   2 rows                          0.6s
+  [16:36:30 r3] economy_cpi            ok   24 rows                         0.6s
+  [16:36:31 r3] economy_unemployment   ok   2 rows                          1.5s
+  [16:36:32 r4] economy_cpi            ok   24 rows                         1.1s
+  [16:36:33 r4] economy_unemployment   ok   2 rows                          2.6s
+  [16:36:36 r5] economy_cpi            ok   24 rows                         2.4s
+  [16:36:38 r5] economy_unemployment   ok   2 rows                          1.4s
+  [16:36:40 r6] economy_cpi            ok   24 rows                         0.5s
+  [16:36:40 r6] economy_unemployment   ok   2 rows                          0.6s
+
+## provider 实际发出的 URL 与拿到的 status
+  HTTP 200   0.3s  https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_PRICES@DF_PRICES_HICP/GBR.M.HICP.CPI.PC.CP09.N.G1?format=csvfile&startPeriod=2023-01-01&endPeriod=2024-12-31
+  HTTP 200   0.6s  https://sdmx.oecd.org/public/rest/data/OECD.ELS.SAE,DSD_LFS@DF_LFS_INDIC/USA.UNE_RATE.PT_LF_SUB._T.Y15T64.UNE?format=csvfile&startPeriod=2023-01-01&endPeriod=2024-12-31
+  HTTP 200   1.2s  https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_PRICES@DF_PRICES_HICP/GBR.M.HICP.CPI.PC.CP09.N.G1?format=csvfile&startPeriod=2023-01-01&endPeriod=2024-12-31
+  HTTP 200   0.6s  https://sdmx.oecd.org/public/rest/data/OECD.ELS.SAE,DSD_LFS@DF_LFS_INDIC/USA.UNE_RATE.PT_LF_SUB._T.Y15T64.UNE?format=csvfile&startPeriod=2023-01-01&endPeriod=2024-12-31
+  HTTP 200   0.6s  https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_PRICES@DF_PRICES_HICP/GBR.M.HICP.CPI.PC.CP09.N.G1?format=csvfile&startPeriod=2023-01-01&endPeriod=2024-12-31
+  HTTP 200   1.5s  https://sdmx.oecd.org/public/rest/data/OECD.ELS.SAE,DSD_LFS@DF_LFS_INDIC/USA.UNE_RATE.PT_LF_SUB._T.Y15T64.UNE?format=csvfile&startPeriod=2023-01-01&endPeriod=2024-12-31
+  HTTP 200   1.1s  https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_PRICES@DF_PRICES_HICP/GBR.M.HICP.CPI.PC.CP09.N.G1?format=csvfile&startPeriod=2023-01-01&endPeriod=2024-12-31
+  HTTP 200   2.6s  https://sdmx.oecd.org/public/rest/data/OECD.ELS.SAE,DSD_LFS@DF_LFS_INDIC/USA.UNE_RATE.PT_LF_SUB._T.Y15T64.UNE?format=csvfile&startPeriod=2023-01-01&endPeriod=2024-12-31
+  HTTP 200   2.4s  https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_PRICES@DF_PRICES_HICP/GBR.M.HICP.CPI.PC.CP09.N.G1?format=csvfile&startPeriod=2023-01-01&endPeriod=2024-12-31
+  HTTP 200   1.4s  https://sdmx.oecd.org/public/rest/data/OECD.ELS.SAE,DSD_LFS@DF_LFS_INDIC/USA.UNE_RATE.PT_LF_SUB._T.Y15T64.UNE?format=csvfile&startPeriod=2023-01-01&endPeriod=2024-12-31
+  HTTP 200   0.5s  https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_PRICES@DF_PRICES_HICP/GBR.M.HICP.CPI.PC.CP09.N.G1?format=csvfile&startPeriod=2023-01-01&endPeriod=2024-12-31
+  HTTP 200   0.6s  https://sdmx.oecd.org/public/rest/data/OECD.ELS.SAE,DSD_LFS@DF_LFS_INDIC/USA.UNE_RATE.PT_LF_SUB._T.Y15T64.UNE?format=csvfile&startPeriod=2023-01-01&endPeriod=2024-12-31
+
+## 判定
+  economy_cpi: ok 6 / fail 0（共 6 轮）
+  economy_unemployment: ok 6 / fail 0（共 6 轮）
+  同一份生产请求拿到的 status 集合：[200]
+  ⇒ 判据：同一 URL 同时出现过 200 与非 200（或同时成功/失败）= 上游瞬态；全部一致失败 = 请求面或数据面真的坏了。
+PROBE_EXIT=0

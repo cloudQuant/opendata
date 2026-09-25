@@ -1,0 +1,40 @@
+===== C20 真机巡检·第二跑（紧接第一跑，OECD 侧暖缓存）运行环境 =====
+Fri Sep 25 16:31:40 +08 2026
+branch=dev HEAD=f4d0356（本轮改动未提交）
+python=Python 3.13.5
+命令: python scripts/ops/health_patrol.py
+判据：与第一跑同一条命令、同一工作区；第一跑 失败 2 项（都在 oecd），本轮用来区分「瞬态」与「常驻」
+全程只读：不建表、不写仓、不打印任何密钥
+===== 原始输出（未裁剪） =====
+== 健康巡检结果 ==
+  [ok] ecb/economy_cpi: 12 rows, 1514ms
+  [ok] ecb/economy_gdp: 8 rows, 831ms
+  [ok] ecb/economy_rate: 14 rows, 823ms
+  [ok] imf/economy_cpi: 10 rows, 12607ms
+  [ok] imf/economy_gdp: 10 rows, 11298ms
+  [ok] imf/economy_unemployment: 10 rows, 9483ms
+  [ok] oecd/economy_cpi: 24 rows, 247ms
+  [ok] oecd/economy_unemployment: 2 rows, 22955ms
+  [ok] ths/stock_daily: 5 rows, 4109ms
+  [ok] ths/stock_action: 4 rows, 2301ms
+  [ok] ths/index_daily: 5 rows, 3790ms
+  [ok] ths/index_constituent: 300 rows, 2635ms
+  [ok] ths/financial_statement: 52 rows, 2617ms
+  [ok] ths/fund_action: 3 rows, 3343ms
+  [ok] ths/fund_etf_daily: 15 rows, 3795ms
+  [ok] ths/instrument: 5578 rows, 3610ms
+  [ok] ths/futures_daily: 15 rows, 1543ms
+  [ok] ths/option_daily: 15 rows, 7747ms
+  [ok] ths/trading_calendar: 242 rows, 1705ms
+  [ok] yfinance/stock_daily_overseas: 4 rows, 3816ms
+== 凭证配置 ==
+  ths: 配置（必须=True）
+  fred: 缺失（必须=True）
+  yfinance: 配置（必须=False）
+  ecb: 配置（必须=False）
+  imf: 配置（必须=False）
+  oecd: 配置（必须=False）
+  akshare: 配置（必须=False）
+
+失败 0 项；必配 Key 缺失 1 项
+PATROL_EXIT=0

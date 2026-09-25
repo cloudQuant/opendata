@@ -1,0 +1,35 @@
+# C20 真机用例跑（只读取数，不含任何数仓写入用例）
+# 运行日期: 2026-09-25 16:05:21 +0800
+# branch=dev HEAD=f4d0356（本轮改动未提交）
+# python=Python 3.13.5 命令: python -m pytest tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi -v -m e2e --no-cov
+# 凭证经 settings/.env 解析（C13 收口的同一入口）；全程不打印任何密钥
+
+===== 原始输出（未裁剪） =====
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0 -- /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+cachedir: .pytest_cache
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 14 items
+
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_daily_bars_to_the_fuyao_source PASSED [  7%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_corporate_actions_to_the_fuyao_source PASSED [ 14%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_the_trading_calendar_to_the_fuyao_source PASSED [ 21%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_the_instrument_catalog_to_the_fuyao_source PASSED [ 28%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_instrument_catalog_publishes_index_listing_dates PASSED [ 35%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_a_bare_index_code_to_the_fuyao_source PASSED [ 42%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_fund_distributions_to_the_fuyao_source PASSED [ 50%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_daily_bars_come_back_as_contract_rows PASSED [ 57%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_trading_calendar_comes_back_as_rows PASSED [ 64%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_instrument_search_finds_an_a_share PASSED [ 71%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_adjustment_factors_are_events PASSED [ 78%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_fund_dividends_are_per_unit_cash_events PASSED [ 85%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_fund_without_any_dividend_comes_back_empty PASSED [ 92%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_fund_etf_bars_are_converted_around_a_real_ex_date PASSED [100%]
+
+============================= 14 passed in 32.36s ==============================
+===== 原始输出结束 =====
+EXIT=0
