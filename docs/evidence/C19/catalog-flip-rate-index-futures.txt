@@ -1,0 +1,55 @@
+===== C19 catalog-flip-rate（a-share-index 与 futures 稳定性对照）运行环境 =====
+Fri Sep 25 11:48:21 +08 2026
+branch=dev HEAD=676774a
+Python 3.13.5
+命令：python docs/evidence/C19/catalog-flip-rate.py --reads 12 --pause 3 --asset-types a-share-index,futures
+===== 原始输出（未裁剪） =====
+[1] 逐轮读目录单页（limit=10000，asset_type=a-share-index,futures）+ search 600519
+  轮  1  search 600519.list_date=2001-08-27
+        a-share-index 行数  1431 list_date 有值  1431 快照 11:00:20.621 req=d5909b6d872e4255a4ce99edac64f82d
+        futures    行数  1142 list_date 有值   877 快照 11:00:20.852 req=1c984ef69ea74f0ba0899121c7b3afe5
+  轮  2  search 600519.list_date=2001-08-27
+        a-share-index 行数  1431 list_date 有值  1431 快照 11:00:20.852 req=d349e8386a674c13a1d9462ed84e94a1
+        futures    行数  1142 list_date 有值   877 快照 11:00:20.852 req=5ea9698fb7b04d59828477374f4e30e8
+  轮  3  search 600519.list_date=2001-08-27
+        a-share-index 行数  1431 list_date 有值  1431 快照 11:00:20.852 req=db47e293d3a743018bee8eeeff110f81
+        futures    行数  1142 list_date 有值   877 快照 11:00:20.852 req=6ec7c991256146439843841ed65d85d6
+  轮  4  search 600519.list_date=2001-08-27
+        a-share-index 行数  1431 list_date 有值  1431 快照 11:00:20.852 req=f76c3b55a7f142b1aa19353d299670dd
+        futures    行数  1142 list_date 有值   877 快照 11:00:20.852 req=e01a1c7caa954ad3b1f1b370b1e83212
+  轮  5  search 600519.list_date=2001-08-27
+        a-share-index 行数  1431 list_date 有值  1431 快照 11:00:20.621 req=d6ce204511a94c2e815295f77e3f40fd
+        futures    行数  1142 list_date 有值   877 快照 11:00:20.852 req=984638eab2394082ac236ddefa3c7f4a
+  轮  6  search 600519.list_date=None
+        a-share-index 行数  1431 list_date 有值  1431 快照 11:00:20.621 req=2eac126376dd42f2836bc59dc3f9e6ce
+        futures    行数  1142 list_date 有值   877 快照 11:00:20.621 req=2432a4e8aae44e9ca4ba8a528566248c
+  轮  7  search 600519.list_date=2001-08-27
+        a-share-index 行数  1431 list_date 有值  1431 快照 11:00:20.621 req=ae5b8deefcb542f1a4c4224c7044433f
+        futures    行数  1142 list_date 有值   877 快照 11:00:20.621 req=79b8aae5a14d4591a198f2cc1b2bc122
+  轮  8  search 600519.list_date=2001-08-27
+        a-share-index 行数  1431 list_date 有值  1431 快照 11:00:20.852 req=422ac063811d4265860b6621ae63f9b1
+        futures    行数  1142 list_date 有值   877 快照 11:00:20.852 req=55c6416d2bae4c39a29362125d378fe0
+  轮  9  search 600519.list_date=2001-08-27
+        a-share-index 行数  1431 list_date 有值  1431 快照 11:00:20.852 req=1f83d3b802764fd9aebedbdf2bab175e
+        futures    行数  1142 list_date 有值   877 快照 11:00:20.852 req=2b9bc7d0a2ee4dd4a718049bb9208a92
+  轮 10  search 600519.list_date=None
+        a-share-index 行数  1431 list_date 有值  1431 快照 11:00:20.852 req=8c3430229e4945229a0a1125f720705b
+        futures    行数  1142 list_date 有值   877 快照 11:00:20.852 req=e3d262353e704a2d8e2038c13b6870ae
+  轮 11  search 600519.list_date=2001-08-27
+        a-share-index 行数  1431 list_date 有值  1431 快照 11:00:20.621 req=64e1d3f765204289bd31227997a7ba17
+        futures    行数  1142 list_date 有值   877 快照 11:00:20.621 req=a1f68da072794d9aab84ab0dbd26c0ac
+  轮 12  search 600519.list_date=2001-08-27
+        a-share-index 行数  1431 list_date 有值  1431 快照 11:00:20.621 req=51e98b94b837489b9de84bb37bc9adf7
+        futures    行数  1142 list_date 有值   877 快照 11:00:20.621 req=162baad0dbb14df68ff84dcaa8ae1593
+
+[2] 逐资产类型汇总（填充态 / 应答实例的快照标签）
+    a-share-index {'有值': 12}  {'11:00:20.621': 6, '11:00:20.852': 6}
+    futures    {'有值': 12}  {'11:00:20.852': 8, '11:00:20.621': 4}
+
+[3] 同一轮内的实例配对：{'同实例=False 填充一致=True': 2, '同实例=True 填充一致=True': 10}
+    search 路由填充态：{'有值': 10, '全空': 2}
+
+[4] 读法：填充态只随快照标签变 ⇒ 缺失在「应答的那台实例」，与资产类型无关；
+    填充态只随资产类型变 ⇒ 该类型的日期列是常驻缺口。
+    两种处置对下游不同：前者要求落库不许用空值覆盖已有日期，后者要求把字段从 verified 依据里摘掉。
+FLIP3_EXIT=0

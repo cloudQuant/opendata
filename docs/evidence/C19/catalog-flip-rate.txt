@@ -1,0 +1,40 @@
+===== C19 catalog-flip-rate 运行环境 =====
+Fri Sep 25 11:43:20 +08 2026
+branch=dev HEAD=676774a
+Python 3.13.5
+命令：python docs/evidence/C19/catalog-flip-rate.py --reads 12 --pause 5
+===== 原始输出（未裁剪） =====
+[1] 逐轮读目录单页（limit=10000，asset_type=a-share）+ search 600519
+  轮  1  search 600519.list_date=None
+        a-share    行数  5578 list_date 有值  5570 快照 11:00:20.621 req=0e7cf9a5220b4b66b4838b72c7e60c7f
+  轮  2  search 600519.list_date=2001-08-27
+        a-share    行数  5578 list_date 有值     0 快照 11:00:20.852 req=7583997928544ace8e1d23f81dc57f59
+  轮  3  search 600519.list_date=None
+        a-share    行数  5578 list_date 有值     0 快照 11:00:20.852 req=dfe518bca8a24f3aa14193b0b165104f
+  轮  4  search 600519.list_date=None
+        a-share    行数  5578 list_date 有值  5570 快照 11:00:20.621 req=201cd75b77804513a41b518bd5f70eac
+  轮  5  search 600519.list_date=2001-08-27
+        a-share    行数  5578 list_date 有值  5570 快照 11:00:20.621 req=ff544f669cad4c358c0881d2ade53935
+  轮  6  search 600519.list_date=None
+        a-share    行数  5578 list_date 有值  5570 快照 11:00:20.621 req=3badd53f9fe44418ab4391c24a6f482d
+  轮  7  search 600519.list_date=2001-08-27
+        a-share    行数  5578 list_date 有值  5570 快照 11:00:20.621 req=aa2693927a3a4ac7a6560920d7ae0435
+  轮  8  search 600519.list_date=2001-08-27
+        a-share    行数  5578 list_date 有值     0 快照 11:00:20.852 req=8c2c43fc42fa49fc88b4c1a71bc8198c
+  轮  9  search 600519.list_date=None
+        a-share    行数  5578 list_date 有值     0 快照 11:00:20.852 req=d63b77739f1f44248914b40e1dcf145b
+  轮 10  search 600519.list_date=2001-08-27
+        a-share    行数  5578 list_date 有值     0 快照 11:00:20.852 req=eba0c996908146e1a655c87d5140fac0
+  轮 11  search 600519.list_date=2001-08-27
+        a-share    行数  5578 list_date 有值     0 快照 11:00:20.852 req=823d284071a5440aa5be4b716ca5f010
+  轮 12  search 600519.list_date=None
+        a-share    行数  5578 list_date 有值     0 快照 11:00:20.852 req=58c6a76401b14a15a3bf49a65a474999
+
+[2] 逐资产类型汇总（填充态 / 应答实例的快照标签）
+    a-share    {'有值': 5, '全空': 7}  {'11:00:20.621': 5, '11:00:20.852': 7}
+    search 路由填充态：{'全空': 6, '有值': 6}
+
+[4] 读法：填充态只随快照标签变 ⇒ 缺失在「应答的那台实例」，与资产类型无关；
+    填充态只随资产类型变 ⇒ 该类型的日期列是常驻缺口。
+    两种处置对下游不同：前者要求落库不许用空值覆盖已有日期，后者要求把字段从 verified 依据里摘掉。
+FLIP_EXIT=0

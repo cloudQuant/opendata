@@ -1,0 +1,82 @@
+===== C19 catalog-flip-rate（四类同轮对照 + 三态判据）运行环境 =====
+Fri Sep 25 11:52:26 +08 2026
+branch=dev HEAD=676774a
+Python 3.13.5
+命令：python docs/evidence/C19/catalog-flip-rate.py --reads 12 --pause 3 --asset-types a-share,fund-etf,a-share-index,futures
+===== 原始输出（未裁剪） =====
+[1] 逐轮读目录单页（limit=10000，asset_type=a-share,fund-etf,a-share-index,futures）+ search 600519
+  轮  1  search 600519.list_date=2001-08-27
+        a-share    行数  5578 有值  5570 缺     8 形态 全值   快照 11:00:20.621 req=c96e65c89e7b4efe87ea82d9636c8a98
+        fund-etf   行数  1696 有值     0 缺  1696 形态 全空   快照 11:00:20.621 req=daba90bb5c684889b3f1d025a66710d6
+        a-share-index 行数  1431 有值  1431 缺     0 形态 全值   快照 11:00:20.852 req=a4edcb9a11324558b299eb134113ff96
+        futures    行数  1142 有值   877 缺   265 形态 散值   快照 11:00:20.852 req=7d05306b819c4491a067b1698411fefc
+  轮  2  search 600519.list_date=2001-08-27
+        a-share    行数  5578 有值     0 缺  5578 形态 全空   快照 11:00:20.852 req=6cddb684e5864b1cbb03ef3cf4b0d070
+        fund-etf   行数  1696 有值     0 缺  1696 形态 全空   快照 11:00:20.852 req=bb1327888c85456aad6a11de688f3d40
+        a-share-index 行数  1431 有值  1431 缺     0 形态 全值   快照 11:00:20.621 req=978455b3c2be45a2a4897b9d03679a97
+        futures    行数  1142 有值   877 缺   265 形态 散值   快照 11:00:20.852 req=8fc17a38a6404e17b62d5137dfd7dc6b
+  轮  3  search 600519.list_date=None
+        a-share    行数  5578 有值     0 缺  5578 形态 全空   快照 11:00:20.852 req=3f3464a5b3a548eda45f0edea8617e22
+        fund-etf   行数  1696 有值     0 缺  1696 形态 全空   快照 11:00:20.852 req=b83c7377db1c4b2a8fe1053538ce4f76
+        a-share-index 行数  1431 有值  1431 缺     0 形态 全值   快照 11:00:20.621 req=05f257b5ff964ea2b804e92a9df3dbef
+        futures    行数  1142 有值   877 缺   265 形态 散值   快照 11:00:20.852 req=d3ec2bede4a7461c984d0371b2501aa7
+  轮  4  search 600519.list_date=None
+        a-share    行数  5578 有值     0 缺  5578 形态 全空   快照 11:00:20.852 req=394866290d1a405fa68f78522b27e20f
+        fund-etf   行数  1696 有值     0 缺  1696 形态 全空   快照 11:00:20.621 req=67cd64709d7c45139c369d2d58137140
+        a-share-index 行数  1431 有值  1431 缺     0 形态 全值   快照 11:00:20.852 req=c85813e0c0824dda963971f137a60b5b
+        futures    行数  1142 有值   877 缺   265 形态 散值   快照 11:00:20.621 req=501fbfdde9384a66aba3feb63d604998
+  轮  5  search 600519.list_date=2001-08-27
+        a-share    行数  5578 有值     0 缺  5578 形态 全空   快照 11:00:20.852 req=3fa18b8776f546afbbd2b8019fefe223
+        fund-etf   行数  1696 有值     0 缺  1696 形态 全空   快照 11:00:20.852 req=0d46ee2e382f427598637e965bdd3471
+        a-share-index 行数  1431 有值  1431 缺     0 形态 全值   快照 11:00:20.621 req=719e25d730bd4ecca908b5d47a0f7672
+        futures    行数  1142 有值   877 缺   265 形态 散值   快照 11:00:20.621 req=4c9a0d712e084a2fb925a031e8cde238
+  轮  6  search 600519.list_date=2001-08-27
+        a-share    行数  5578 有值     0 缺  5578 形态 全空   快照 11:00:20.852 req=4b4b635cb2fb4aef98a3598daa3a75c4
+        fund-etf   行数  1696 有值     0 缺  1696 形态 全空   快照 11:00:20.852 req=cfcce9fd506849679dfd171d1b8e50df
+        a-share-index 行数  1431 有值  1431 缺     0 形态 全值   快照 11:00:20.852 req=defa748a1da3408c8f061ae34807b36d
+        futures    行数  1142 有值   877 缺   265 形态 散值   快照 11:00:20.621 req=4b9e519cd45644128d7daf28929e5799
+  轮  7  search 600519.list_date=2001-08-27
+        a-share    行数  5578 有值  5570 缺     8 形态 全值   快照 11:00:20.621 req=467a18ddf66346fbb58d6f816f934a18
+        fund-etf   行数  1696 有值     0 缺  1696 形态 全空   快照 11:00:20.621 req=b7f7289148d34cfc95b6b745019002ed
+        a-share-index 行数  1431 有值  1431 缺     0 形态 全值   快照 11:00:20.852 req=c1c3f463ace94c169650715fe5b2213d
+        futures    行数  1142 有值   877 缺   265 形态 散值   快照 11:00:20.852 req=7fa88d456d344633928332d2ebf755d8
+  轮  8  search 600519.list_date=2001-08-27
+        a-share    行数  5578 有值  5570 缺     8 形态 全值   快照 11:00:20.621 req=0af8452df7f74cf3beef320e98afa8e8
+        fund-etf   行数  1696 有值     0 缺  1696 形态 全空   快照 11:00:20.852 req=c6e63ea9d77b45adb42a208d1f814815
+        a-share-index 行数  1431 有值  1431 缺     0 形态 全值   快照 11:00:20.621 req=641b0aedd161480b800f1e4bac0e6b8b
+        futures    行数  1142 有值   877 缺   265 形态 散值   快照 11:00:20.852 req=a1f6fca0b8b94552af5ec29a517db97a
+  轮  9  search 600519.list_date=2001-08-27
+        a-share    行数  5578 有值     0 缺  5578 形态 全空   快照 11:00:20.852 req=c7e9c7231dd1437d88964cbcc0b52412
+        fund-etf   行数  1696 有值     0 缺  1696 形态 全空   快照 11:00:20.621 req=63165b92e66044fc8148e293835a1bee
+        a-share-index 行数  1431 有值  1431 缺     0 形态 全值   快照 11:00:20.621 req=872b322ec76e47b9a6af575b216892e5
+        futures    行数  1142 有值   877 缺   265 形态 散值   快照 11:00:20.852 req=9d1acb9b1e134287a0db415653c42d83
+  轮 10  search 600519.list_date=2001-08-27
+        a-share    行数  5578 有值  5570 缺     8 形态 全值   快照 11:00:20.621 req=8da6234072ec453a9fe8f46f9a7cc5c6
+        fund-etf   行数  1696 有值     0 缺  1696 形态 全空   快照 11:00:20.852 req=ab221e392c5a475685fd7d0ee9694410
+        a-share-index 行数  1431 有值  1431 缺     0 形态 全值   快照 11:00:20.852 req=7ba607ae17e64ba384600b4c62e475a2
+        futures    行数  1142 有值   877 缺   265 形态 散值   快照 11:00:20.852 req=61f3bdb1e6e743d3aac87f4ae9802373
+  轮 11  search 600519.list_date=2001-08-27
+        a-share    行数  5578 有值     0 缺  5578 形态 全空   快照 11:00:20.852 req=43dc0b6dad8b443c82a7a95cb62d7ad3
+        fund-etf   行数  1696 有值     0 缺  1696 形态 全空   快照 11:00:20.852 req=c5bff04d0cd84275a0fdbe5c2b7ce2e8
+        a-share-index 行数  1431 有值  1431 缺     0 形态 全值   快照 11:00:20.852 req=9fedad73f82745fbbaea5b47de5e6dcc
+        futures    行数  1142 有值   877 缺   265 形态 散值   快照 11:00:20.852 req=e7d95af9c7f6429d9bca47e60f246058
+  轮 12  search 600519.list_date=2001-08-27
+        a-share    行数  5578 有值     0 缺  5578 形态 全空   快照 11:00:20.852 req=02e70feb344941a3ad10869fc4311b70
+        fund-etf   行数  1696 有值     0 缺  1696 形态 全空   快照 11:00:20.621 req=ad4f7d1dec054cd4b08255706797dfa7
+        a-share-index 行数  1431 有值  1431 缺     0 形态 全值   快照 11:00:20.852 req=aa6b57fc05cd4371a2d45e0bda39dfe9
+        futures    行数  1142 有值   877 缺   265 形态 散值   快照 11:00:20.621 req=e65b75e8daee446ebf1874f482159ec0
+
+[2] 逐资产类型汇总（填充形态 / 应答标签的快照时刻）
+    a-share    {'全值': 4, '全空': 8}  {'11:00:20.621': 4, '11:00:20.852': 8}
+    fund-etf   {'全空': 12}  {'11:00:20.621': 5, '11:00:20.852': 7}
+    a-share-index {'全值': 12}  {'11:00:20.852': 7, '11:00:20.621': 5}
+    futures    {'散值': 12}  {'11:00:20.852': 8, '11:00:20.621': 4}
+
+[3] 同一轮内的标签配对：{'同标签=False 形态一致=False': 11, '同标签=True 形态一致=False': 1}
+    search 路由填充态：{'有日期': 10, '无日期': 2}
+
+[4] 读法：形态只随快照标签变 ⇒ 缺失在「应答的那份目录构建」，与资产类型无关；
+    形态在两种标签下都不变 ⇒ 该类型的日期列是常驻口径（全空=不发，散值=部分实体不发）。
+    对下游的要求不同：前者不许用空值覆盖已有日期，也不是「字段不可用」的证据；
+    后者才可以按资产类型写进判据。散值落在两者之间，出现即为新的上游形态，必须告警。
+FLIP4_EXIT=0

@@ -1,0 +1,55 @@
+===== C19 catalog-flip-rate（a-share 与 fund-etf 同轮对照）运行环境 =====
+Fri Sep 25 11:44:55 +08 2026
+branch=dev HEAD=676774a
+Python 3.13.5
+命令：python docs/evidence/C19/catalog-flip-rate.py --reads 12 --pause 5 --asset-types a-share,fund-etf
+===== 原始输出（未裁剪） =====
+[1] 逐轮读目录单页（limit=10000，asset_type=a-share,fund-etf）+ search 600519
+  轮  1  search 600519.list_date=None
+        a-share    行数  5578 list_date 有值  5570 快照 11:00:20.621 req=31bd71afd54c4042aa444b3b433ca493
+        fund-etf   行数  1696 list_date 有值     0 快照 11:00:20.621 req=de2372ee5d4d444ebb62efa61f8db963
+  轮  2  search 600519.list_date=None
+        a-share    行数  5578 list_date 有值     0 快照 11:00:20.852 req=e6deaa317bea4aab9110fcf0918fa443
+        fund-etf   行数  1696 list_date 有值     0 快照 11:00:20.852 req=75b12eebb03042adbe50776642d3654c
+  轮  3  search 600519.list_date=None
+        a-share    行数  5578 list_date 有值  5570 快照 11:00:20.621 req=d6b1d3cb86884a57aee42d2e1e1747d0
+        fund-etf   行数  1696 list_date 有值     0 快照 11:00:20.621 req=86398f9f0d6c48eb987db8d7a245f288
+  轮  4  search 600519.list_date=None
+        a-share    行数  5578 list_date 有值     0 快照 11:00:20.852 req=10d51b5596c24a1d9fae03fda7364c00
+        fund-etf   行数  1696 list_date 有值     0 快照 11:00:20.852 req=b93c76cf8e394bbb8d21709d0a5bdd56
+  轮  5  search 600519.list_date=None
+        a-share    行数  5578 list_date 有值  5570 快照 11:00:20.621 req=e3ad8a747dc946e7aee6a35481f2f3df
+        fund-etf   行数  1696 list_date 有值     0 快照 11:00:20.621 req=857d15f7292b466c95ebaf7aac76d6f3
+  轮  6  search 600519.list_date=2001-08-27
+        a-share    行数  5578 list_date 有值     0 快照 11:00:20.852 req=deefd57635cb4b1fb6e28b09f051dec1
+        fund-etf   行数  1696 list_date 有值     0 快照 11:00:20.621 req=1ed366cb329043b2bd4d10236b76f803
+  轮  7  search 600519.list_date=2001-08-27
+        a-share    行数  5578 list_date 有值  5570 快照 11:00:20.621 req=0d8ec474b64c4ef4b331164fbb8e3abe
+        fund-etf   行数  1696 list_date 有值     0 快照 11:00:20.852 req=4fba93149fb54379a592a412594d1c8d
+  轮  8  search 600519.list_date=2001-08-27
+        a-share    行数  5578 list_date 有值     0 快照 11:00:20.852 req=8515331122fb432a830864514da47e89
+        fund-etf   行数  1696 list_date 有值     0 快照 11:00:20.852 req=e099e269c6ff40ff8ab1534c6dffcf35
+  轮  9  search 600519.list_date=None
+        a-share    行数  5578 list_date 有值     0 快照 11:00:20.852 req=6b78cce75d1844c4923b8c8be6cc79a9
+        fund-etf   行数  1696 list_date 有值     0 快照 11:00:20.621 req=141a41d425f14e0ebd8cb08b2475a6cf
+  轮 10  search 600519.list_date=None
+        a-share    行数  5578 list_date 有值  5570 快照 11:00:20.621 req=75c6eb3f33b7438db4354dba1b13145f
+        fund-etf   行数  1696 list_date 有值     0 快照 11:00:20.852 req=ee231a164025456297287669a33859e8
+  轮 11  search 600519.list_date=2001-08-27
+        a-share    行数  5578 list_date 有值     0 快照 11:00:20.852 req=8e6819ada0964209a17804d38fd5b64f
+        fund-etf   行数  1696 list_date 有值     0 快照 11:00:20.621 req=c46498a0443b49ba9be522c3a2bb4236
+  轮 12  search 600519.list_date=2001-08-27
+        a-share    行数  5578 list_date 有值     0 快照 11:00:20.852 req=4349fdabc1a8441787da044fb06186b2
+        fund-etf   行数  1696 list_date 有值     0 快照 11:00:20.621 req=ed09165247744674baa528c1a83c8def
+
+[2] 逐资产类型汇总（填充态 / 应答实例的快照标签）
+    a-share    {'有值': 5, '全空': 7}  {'11:00:20.621': 5, '11:00:20.852': 7}
+    fund-etf   {'全空': 12}  {'11:00:20.621': 7, '11:00:20.852': 5}
+
+[3] 同一轮内的实例配对：{'同实例=True 填充一致=False': 3, '同实例=True 填充一致=True': 3, '同实例=False 填充一致=True': 4, '同实例=False 填充一致=False': 2}
+    search 路由填充态：{'全空': 7, '有值': 5}
+
+[4] 读法：填充态只随快照标签变 ⇒ 缺失在「应答的那台实例」，与资产类型无关；
+    填充态只随资产类型变 ⇒ 该类型的日期列是常驻缺口。
+    两种处置对下游不同：前者要求落库不许用空值覆盖已有日期，后者要求把字段从 verified 依据里摘掉。
+FLIP2_EXIT=0

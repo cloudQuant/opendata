@@ -1,0 +1,69 @@
+===== C19 catalog-date-field-shape 运行环境 =====
+Fri Sep 25 11:36:47 +08 2026
+branch=dev HEAD=676774a
+Python 3.13.5
+命令：python docs/evidence/C19/catalog-date-field-shape.py --samples 2 --interval 45
+===== 原始输出（未裁剪） =====
+
+############ 采样 1/2 @ 2026-09-25 11:36:48 CST ############
+[1] /api/meta/tickers/list 逐资产类型：行形 + 日期列形态
+  a-share        行数  5578 快照 2026-09-25 11:00:20 CST
+    键集合: ['asset_type', 'currency', 'end_date', 'exchange', 'last_delivery_date', 'last_trade_date', 'list_date', 'name', 'thscode', 'ticker']
+    list_date        缺键     0 | null     8 | 空串     0 | 有值  5570
+    last_trade_date  缺键     0 | null  5578 | 空串     0 | 有值     0
+    end_date         缺键     0 | null  5578 | 空串     0 | 有值     0
+  fund-etf       行数  1696 快照 2026-09-25 11:00:20 CST
+    键集合: ['asset_type', 'currency', 'end_date', 'exchange', 'last_delivery_date', 'last_trade_date', 'list_date', 'name', 'thscode', 'ticker']
+    list_date        缺键     0 | null  1696 | 空串     0 | 有值     0
+    last_trade_date  缺键     0 | null  1696 | 空串     0 | 有值     0
+    end_date         缺键     0 | null  1696 | 空串     0 | 有值     0
+  a-share-index  行数  1431 快照 2026-09-25 11:00:20 CST
+    键集合: ['asset_type', 'currency', 'end_date', 'exchange', 'last_delivery_date', 'last_trade_date', 'list_date', 'name', 'thscode', 'ticker']
+    list_date        缺键     0 | null     0 | 空串     0 | 有值  1431
+    last_trade_date  缺键     0 | null  1431 | 空串     0 | 有值     0
+    end_date         缺键     0 | null  1431 | 空串     0 | 有值     0
+  futures        行数  1142 快照 2026-09-25 11:00:20 CST
+    键集合: ['asset_type', 'currency', 'end_date', 'exchange', 'last_delivery_date', 'last_trade_date', 'list_date', 'name', 'thscode', 'ticker']
+    list_date        缺键     0 | null   265 | 空串     0 | 有值   877
+    last_trade_date  缺键     0 | null   265 | 空串     0 | 有值   877
+    end_date         缺键     0 | null   265 | 空串     0 | 有值   877
+
+[2] /api/meta/tickers/search 同一批标的的日期列（上游是另一条链路）
+  命中 1 行 快照 2026-09-25 11:00:20 CST
+    thscode='600519.SH' ticker='600519' list_date=None  last_trade_date=None  end_date=None
+
+[3] 信封 ``data`` 除 item 外的字段（有没有构建时间戳可依赖）
+  data 非行字段: {'timestamp': 1790305220621}
+  request_id: a869ac0b8107487ba857d355bda0c9f2
+
+############ 采样 2/2 @ 2026-09-25 11:37:39 CST ############
+[1] /api/meta/tickers/list 逐资产类型：行形 + 日期列形态
+  a-share        行数  5578 快照 2026-09-25 11:00:20 CST
+    键集合: ['asset_type', 'currency', 'end_date', 'exchange', 'last_delivery_date', 'last_trade_date', 'list_date', 'name', 'thscode', 'ticker']
+    list_date        缺键     0 | null  5578 | 空串     0 | 有值     0
+    last_trade_date  缺键     0 | null  5578 | 空串     0 | 有值     0
+    end_date         缺键     0 | null  5578 | 空串     0 | 有值     0
+  fund-etf       行数  1696 快照 2026-09-25 11:00:20 CST
+    键集合: ['asset_type', 'currency', 'end_date', 'exchange', 'last_delivery_date', 'last_trade_date', 'list_date', 'name', 'thscode', 'ticker']
+    list_date        缺键     0 | null  1696 | 空串     0 | 有值     0
+    last_trade_date  缺键     0 | null  1696 | 空串     0 | 有值     0
+    end_date         缺键     0 | null  1696 | 空串     0 | 有值     0
+  a-share-index  行数  1431 快照 2026-09-25 11:00:20 CST
+    键集合: ['asset_type', 'currency', 'end_date', 'exchange', 'last_delivery_date', 'last_trade_date', 'list_date', 'name', 'thscode', 'ticker']
+    list_date        缺键     0 | null     0 | 空串     0 | 有值  1431
+    last_trade_date  缺键     0 | null  1431 | 空串     0 | 有值     0
+    end_date         缺键     0 | null  1431 | 空串     0 | 有值     0
+  futures        行数  1142 快照 2026-09-25 11:00:20 CST
+    键集合: ['asset_type', 'currency', 'end_date', 'exchange', 'last_delivery_date', 'last_trade_date', 'list_date', 'name', 'thscode', 'ticker']
+    list_date        缺键     0 | null   265 | 空串     0 | 有值   877
+    last_trade_date  缺键     0 | null   265 | 空串     0 | 有值   877
+    end_date         缺键     0 | null   265 | 空串     0 | 有值   877
+
+[2] /api/meta/tickers/search 同一批标的的日期列（上游是另一条链路）
+  命中 1 行 快照 2026-09-25 11:00:20 CST
+    thscode='600519.SH' ticker='600519' list_date='2001-08-27'  last_trade_date=None  end_date=None
+
+[3] 信封 ``data`` 除 item 外的字段（有没有构建时间戳可依赖）
+  data 非行字段: {'timestamp': 1790305220852}
+  request_id: 16bac4a9ffb4438c83d7706358d1f2aa
+SHAPE_EXIT=0
