@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Iterable, Mapping, Sequence
 
     from opendata.data.capability import Capability
     from opendata.data.protocol import Fetcher
@@ -59,6 +59,74 @@ def authority_baseline() -> dict[str, tuple[str, ...]]:
             raise RuntimeError(f"malformed authority sources for {domain!r}")
         baseline[domain] = tuple(sources)
     return baseline
+
+
+def reconcile_authority(
+    capabilities: Iterable[Capability],
+    *,
+    baseline: Mapping[str, Sequence[str]] | None = None,
+) -> tuple[str, ...]:
+    """Cross-check the declared authority table against what is registered.
+
+    Every row of ``authority.json`` is a claim of the shape "source S is a
+    candidate for domain D, at this rank", and nothing on the routing path
+    verifies those claims. Two failure modes were measured (C23): a claim
+    outliving the leg it names - seven pairs were listed for capabilities
+    that were never registered, and ``GET /api/v1/data/sources`` returned
+    them as if they were routable - and a registered leg the table never
+    ranks, which falls back to registration order (the C22 macro defect).
+    Checking both directions at once is what keeps the table a description
+    of the registry rather than a parallel document.
+
+    This is a whole-deployment check, not a per-call invariant: a process
+    that registers one provider under test legitimately serves a slice of
+    the table, so ``resolve()`` must stay agnostic and the reconciliation
+    runs against the fully registered registry (the gate) instead.
+
+    A domain served by a single source needs no row: there is nothing to
+    order. Demanding one anyway would put the table in the position of
+    certifying a ranking it cannot express, which is the reason earlier
+    rounds deliberately left ``fund_action`` and the overseas daily leg
+    out (AC-10: "登记成权威序属口径造假").
+
+    Args:
+        capabilities: Registered capabilities to check against, normally
+            ``get_registry().capabilities()``.
+        baseline: The declared table; defaults to :func:`authority_baseline`.
+
+    Returns:
+        Violation messages prefixed with the rule each one breaks, sorted,
+        and empty when the table and the registry describe the same legs.
+    """
+    declared = authority_baseline() if baseline is None else baseline
+    served: dict[str, set[str]] = {}
+    auto_eligible: dict[str, set[str]] = {}
+    for capability in capabilities:
+        served.setdefault(capability.domain, set()).add(capability.source)
+        if capability.participates_in_auto():
+            auto_eligible.setdefault(capability.domain, set()).add(capability.source)
+
+    violations: list[str] = []
+    for domain, row in declared.items():
+        if not row:
+            violations.append(f"empty-row: {domain} is listed with no source")
+            continue
+        registered_for_row = served.get(domain, set())
+        violations.extend(
+            f"phantom-leg: {domain}/{source} is listed but registers no capability"
+            for source in row
+            if source not in registered_for_row
+        )
+        violations.extend(
+            f"unranked-leg: {domain}/{source} serves auto requests but is not listed"
+            for source in auto_eligible.get(domain, set()) - set(row)
+        )
+    violations.extend(
+        f"unlisted-domain: {domain} is served by {len(served[domain])} sources but has no row"
+        for domain in served
+        if domain not in declared and len(served[domain]) > 1
+    )
+    return tuple(sorted(violations))
 
 
 def _capability_key(capability: Capability) -> str:
