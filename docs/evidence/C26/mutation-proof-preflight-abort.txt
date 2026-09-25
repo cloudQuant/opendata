@@ -1,0 +1,25 @@
+===== provenance（运行前采集）=====
+captured_at=2026-09-26T01:03:27+0200
+branch=dev HEAD=083a678（本轮改动未提交，所以还原走「脚本内捕获的原文 + sha256 字节比对」，不用 git checkout —— 那会把本轮改动一起清掉）
+python=Python 3.13.5
+被变异文件 1=opendata/data/providers/akshare/models/stock_action.py sha256=506d3478d4c107cc1eaaf2680c0fde69abc6e898fe615d381afd31fe976fab5f
+被变异文件 2=opendata_fuyao/endpoints.py sha256=69f7fab44562c43f865b52f4f8663f21bc01594fbebce8f2fcd6dc2a4df87e8a
+复现命令=python docs/evidence/C26/mutation-proof.py
+判定要求=每个错法装回后，它的那一条具名用例必须报「1 failed」（收集失败/内部错误也是非 0 退出码，不算捕获成功）；跑完按 sha256 还原；两套具名套件最后重新转绿
+前置=运行期间无其他 pytest/覆盖率/度量任务在跑（本脚本会改写生产文件）
+预检=先用 --collect-only 确认 6 个 node id 都能取到；取不到直接退出，避免把「用例名写错、什么都没跑」读成「变异被抓到」
+
+[0] 被变异文件 opendata/data/providers/akshare/models/stock_action.py sha256=506d3478d4c107cc1eaaf2680c0fde69abc6e898fe615d381afd31fe976fab5f
+[0] 被变异文件 opendata_fuyao/endpoints.py sha256=69f7fab44562c43f865b52f4f8663f21bc01594fbebce8f2fcd6dc2a4df87e8a
+  预检失败：collect 退出码=0，取不到的 node id=['tests/test_p0_providers.py::TestStockActionFetcher::test_maps_rights_price_as_published', 'tests/test_p0_providers.py::TestStockActionFetcher::test_maps_rights_ratio_per_share', 'tests/test_p0_providers.py::TestStockActionFetcher::test_undated_plan_drop_warns_with_the_amount', 'tests/test_p0_providers.py::TestStockActionFetcher::test_contract_drops_are_counted_not_warned', 'tests/test_p0_providers.py::TestStockActionFetcher::test_undated_plan_drop_warns_with_the_amount', 'tests/test_fuyao_endpoints.py::TestNormalizers::test_adjustment_events_carry_no_rights_columns']
+MUTATION_EXIT=1
+
+===== 事后说明（本档记录的是一次**未跑起来**的预检，不是变异结果）=====
+现象=预检报「6 个 node id 全部取不到」并以退出码 1 中止，一次变异都没有安装
+根因=pytest.ini 的 addopts 里有 -v，脚本传的是单个 -q：两者相抵等于默认详细度，
+      --collect-only 于是打印对象树（<Function test_...>）而不是 node id 行，
+      脚本的整串包含判断因此全部落空
+修法=_collect 改用 -qq（实测打印逐行 node id），并把「包含」升级为「整行相等」比对
+为什么这一档要留=①预检确实拦下了一次「什么都没跑就可能被判成捕获成功」的运行，这是它存在的理由；
+  ②它同时记录了 addopts=-v 这个环境事实，改脚本前先按它验一次，比事后猜便宜
+本档不含任何变异判定；正式判定见同目录 mutation-proof.txt

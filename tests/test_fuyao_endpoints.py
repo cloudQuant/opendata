@@ -543,6 +543,38 @@ class TestNormalizers:
                 _parse(_envelope([{"ticker": "600519"}])), symbol="600519.SH"
             )
 
+    def test_adjustment_events_carry_no_rights_columns(self):
+        """主腿 live 回包没有配股列，normalizer 也就一个都不读（C26 实测）.
+
+        2026-09-25 对 600030/600999/601318 三只标的逐信封统计，字段全集为
+        ``ticker`` / ``ex_date_ms`` / ``dividend_per_share`` / ``per_share_bonus``
+        （``docs/evidence/C26/silent-drop-measure.txt`` F 节）。这条断言锁住的是
+        「别给主腿的 rights_* 找来源」：上游词表里确实有 ``allotment_ratio`` /
+        ``allotment_price``（ods 建表与 dump 读取都带这两列），但 live 回包从没给过，
+        而这两列的单位一次都没量过 —— 拿 sina 的「每 10 股」口径去猜一个未知单位的
+        列，比留契约默认值更危险。未知键按上游惯例忽略，不报错。
+        """
+        events = normalize_adjustment_factors(
+            _parse(
+                _envelope(
+                    [
+                        {
+                            "ticker": "600030",
+                            "ex_date_ms": _ms("2022-01-27"),
+                            "dividend_per_share": 0,
+                            "per_share_bonus": 0,
+                            "allotment_ratio": 1.5,  # 词表里有、回包没给、单位未量 -> 不猜
+                        }
+                    ]
+                )
+            ),
+            symbol="600030.SH",
+        )
+
+        assert len(events) == 1
+        assert events[0].rights_shares == 0.0
+        assert events[0].rights_price == 0.0
+
     def test_instruments_map_with_snapshot_derived_status(self):
         """``status`` 与快照日比较，不再由「``end_date`` 是否为空」派生。
 

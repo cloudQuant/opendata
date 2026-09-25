@@ -1,0 +1,44 @@
+===== provenance（运行前采集）=====
+captured_at=2026-09-26T01:06:15+0200
+branch=dev HEAD=083a678（本轮改动未提交）
+python=Python 3.13.5
+复现命令=python scripts/ops/health_patrol.py
+本轮目的=C26 改的是适配层（stock_action 归一与主腿 normalizer），不动路由；这一跑取「巡检面未受影响」的现场数：失败/抖动/字段级偏差/必配 Key 四项计数与全部 [ok] 腿
+判读口径=与 C25 同（latency_ms 为探针耗时，不含 canary 读页）
+
+== 健康巡检结果 ==
+  [ok] ecb/economy_cpi: 12 rows, 936ms
+  [ok] ecb/economy_gdp: 8 rows, 427ms
+  [ok] ecb/economy_rate: 14 rows, 645ms
+  [ok] imf/economy_cpi: 10 rows, 8724ms
+  [ok] imf/economy_gdp: 10 rows, 8832ms
+  [ok] imf/economy_unemployment: 10 rows, 8931ms
+  [ok] oecd/economy_cpi: 24 rows, 689ms
+  [ok] oecd/economy_unemployment: 2 rows, 610ms
+  [ok] ths/stock_daily: 5 rows, 805ms
+  [ok] ths/stock_action: 4 rows, 753ms
+  [ok] ths/index_daily: 5 rows, 1022ms
+  [ok] ths/index_constituent: 300 rows, 799ms
+  [ok] ths/financial_statement: 52 rows, 858ms
+  [ok] ths/fund_action: 3 rows, 1249ms
+  [ok] ths/fund_etf_daily: 14 rows, 1533ms
+  [ok] ths/instrument: 5578 rows, 1485ms
+          canary a-share/list_date: 缺 8/5578 形态 full（实测 full/hollow）
+          canary a-share/name: 缺 0/5578 形态 full（实测 full）
+          canary a-share-index/list_date: 缺 0/1431 形态 full（实测 full）
+          canary futures/list_date: 缺 265/1142 形态 partial（实测 partial）
+  [ok] ths/futures_daily: 14 rows, 757ms
+  [ok] ths/option_daily: 14 rows, 2720ms
+  [ok] ths/trading_calendar: 241 rows, 763ms
+  [ok] yfinance/stock_daily_overseas: 4 rows, 1262ms
+== 凭证配置 ==
+  ths: 配置（必须=True）
+  fred: 缺失（必须=True）
+  yfinance: 配置（必须=False）
+  ecb: 配置（必须=False）
+  imf: 配置（必须=False）
+  oecd: 配置（必须=False）
+  akshare: 配置（必须=False）
+
+失败 0 项；抖动 0 项；字段级偏差 0 项（未判读 0 项）；必配 Key 缺失 1 项
+PATROL_EXIT=0

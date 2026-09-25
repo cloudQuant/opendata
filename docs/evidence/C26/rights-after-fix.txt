@@ -1,0 +1,117 @@
+===== provenance（运行前采集）=====
+captured_at=2026-09-26T00:53:41+0200
+branch=dev HEAD=083a678（本轮改动未提交）
+python=Python 3.13.5
+脏文件数=6
+复现命令=python docs/evidence/C26/silent-drop-measure.py
+口径=本轮修复【后】的同脚本、同符号读数；与修复前基线 silent-drop-measure.txt 逐节对照
+脚本修订=C/E 两节改为读 transform_data 返回的 CorporateAction（此前是脚本内用生产 helper 复算），并把配股查询窗口放宽到全史（_rights_query）：抽样里 6 个有除权日的配股事件有 5 个早于 2015，探针窗口会把它们裁掉，单位问题就没得量了
+基线一致性=基线档 silent-drop-measure.txt 的 C/E 数值仍可信：修复前生产代码走的正是那两个 helper（_parse_rights_plan 对 float 落回 0.0、配股价格过 _per_share），复算与实发逐字相同；差异只在窗口，基线 C 节的 000002 三行在探针窗口外故标注「适配层返回 0 条」
+说明=loguru 走 stderr、度量结果走 stdout，两者在本档里按到达顺序交错；A/B 两节不含本轮改动，用于证明行集未变
+
+2026-09-26 00:53:44.859 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 600519: 18 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:53:46.243 | WARNING  | opendata.data.providers.akshare.models.stock_action:_report_drops:200 - stock_action 601318: dropped 1 undated dividend plan(s) ['2018-04-27:0.2+0.0'] and 0 undated rights plan(s) [] - a cash amount on an undated row may belong to a dated ex-date, so the events returned for that day can under-report
+2026-09-26 00:53:46.243 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 601318: 19 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:53:47.657 | WARNING  | opendata.data.providers.akshare.models.stock_action:_report_drops:200 - stock_action 000651: dropped 1 undated dividend plan(s) ['2018-08-31:0.6+0.0'] and 0 undated rights plan(s) [] - a cash amount on an undated row may belong to a dated ex-date, so the events returned for that day can under-report
+2026-09-26 00:53:47.658 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 000651: 22 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:53:49.241 | WARNING  | opendata.data.providers.akshare.models.stock_action:_report_drops:200 - stock_action 000333: dropped 1 undated dividend plan(s) ['2026-08-29:0.5+0.0'] and 0 undated rights plan(s) [] - a cash amount on an undated row may belong to a dated ex-date, so the events returned for that day can under-report
+2026-09-26 00:53:49.241 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 000333: 4 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:53:50.545 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 002415: 9 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:53:51.952 | WARNING  | opendata.data.providers.akshare.models.stock_action:_report_drops:200 - stock_action 600036: dropped 1 undated dividend plan(s) ['2025-12-30:1.0130000000000001+0.0'] and 0 undated rights plan(s) [] - a cash amount on an undated row may belong to a dated ex-date, so the events returned for that day can under-report
+2026-09-26 00:53:51.952 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 600036: 17 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:53:53.453 | WARNING  | opendata.data.providers.akshare.models.stock_action:_report_drops:200 - stock_action 300750: dropped 1 undated dividend plan(s) ['2024-12-11:1.23+0.0'] and 0 undated rights plan(s) [] - a cash amount on an undated row may belong to a dated ex-date, so the events returned for that day can under-report
+2026-09-26 00:53:53.453 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 300750: 5 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:53:55.554 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 000002: 24 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:53:56.816 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 000002: 0 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:53:59.699 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 600030: 0 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:54:02.467 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 601328: 0 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:54:05.230 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 600999: 0 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:54:07.870 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 601211: 0 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:54:09.430 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 600000: 0 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:54:11.947 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 600519: 18 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:54:14.188 | WARNING  | opendata.data.providers.akshare.models.stock_action:_report_drops:200 - stock_action 601318: dropped 1 undated dividend plan(s) ['2018-04-27:0.2+0.0'] and 0 undated rights plan(s) [] - a cash amount on an undated row may belong to a dated ex-date, so the events returned for that day can under-report
+2026-09-26 00:54:14.188 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 601318: 19 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:54:16.564 | WARNING  | opendata.data.providers.akshare.models.stock_action:_report_drops:200 - stock_action 000651: dropped 1 undated dividend plan(s) ['2018-08-31:0.6+0.0'] and 0 undated rights plan(s) [] - a cash amount on an undated row may belong to a dated ex-date, so the events returned for that day can under-report
+2026-09-26 00:54:16.564 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 000651: 22 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:54:19.040 | WARNING  | opendata.data.providers.akshare.models.stock_action:_report_drops:200 - stock_action 000333: dropped 1 undated dividend plan(s) ['2026-08-29:0.5+0.0'] and 0 undated rights plan(s) [] - a cash amount on an undated row may belong to a dated ex-date, so the events returned for that day can under-report
+2026-09-26 00:54:19.040 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 000333: 4 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:54:22.435 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 002415: 9 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:54:24.831 | WARNING  | opendata.data.providers.akshare.models.stock_action:_report_drops:200 - stock_action 600036: dropped 1 undated dividend plan(s) ['2025-12-30:1.0130000000000001+0.0'] and 0 undated rights plan(s) [] - a cash amount on an undated row may belong to a dated ex-date, so the events returned for that day can under-report
+2026-09-26 00:54:24.831 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 600036: 17 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:54:27.238 | WARNING  | opendata.data.providers.akshare.models.stock_action:_report_drops:200 - stock_action 300750: dropped 1 undated dividend plan(s) ['2024-12-11:1.23+0.0'] and 0 undated rights plan(s) [] - a cash amount on an undated row may belong to a dated ex-date, so the events returned for that day can under-report
+2026-09-26 00:54:27.238 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 300750: 5 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:54:29.960 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 000002: 24 row(s) outside the requested window, 0 all-zero row(s)
+===== C26 适配层丢弃与空字段真机度量（只读、不写数仓、不打印密钥）=====
+python=3.13.5 pandas=2.3.1 分红符号=8 配股符号=6 窗口=2015-01-01..2024-12-31 容差=0.0001
+
+===== A. 分红页逐行归因（窗口 2015-01-01..2024-12-31）=====
+  600519: 上游 31 行 保留=13 无除息日=0 窗口外=18 全零=0（单元格全空=0） 无除息日但有金额=0
+  601318: 上游 41 行 保留=20 无除息日=2 窗口外=19 全零=0（单元格全空=0） 无除息日但有金额=1
+       [孤儿] 公告 2018-04-27 进度=预案 派息=0.2 送转=0.0
+  000651: 上游 38 行 保留=13 无除息日=3 窗口外=22 全零=0（单元格全空=0） 无除息日但有金额=1
+       [孤儿] 公告 2018-08-31 进度=预案 派息=0.6 送转=0.0
+  000333: 上游 15 行 保留=10 无除息日=1 窗口外=4 全零=0（单元格全空=0） 无除息日但有金额=1
+       [孤儿] 公告 2026-08-29 进度=预案 派息=0.5 送转=0.0
+  002415: 上游 19 行 保留=10 无除息日=0 窗口外=9 全零=0（单元格全空=0） 无除息日但有金额=0
+  600036: 上游 28 行 保留=10 无除息日=1 窗口外=17 全零=0（单元格全空=0） 无除息日但有金额=1
+       [孤儿] 公告 2025-12-30 进度=预案 派息=1.0130000000000001 送转=0.0
+  300750: 上游 13 行 保留=6 无除息日=2 窗口外=5 全零=0（单元格全空=0） 无除息日但有金额=1
+       [孤儿] 公告 2024-12-11 进度=预案 派息=1.23 送转=0.0
+  000002: 上游 36 行 保留=9 无除息日=3 窗口外=24 全零=0（单元格全空=0） 无除息日但有金额=0
+  小结：无除息日但有金额 5 条，其中同公告日已有保留行 0 条、孤儿 5 条
+  B. 同除息日碰撞 0 处
+
+===== C. 配股页字段读数（逐事件对 ths 主腿）=====
+  000002: 配股页 3 行 除权日非空、全史窗口内 -> 适配层返回 3 条；ths 全史配股事件 0 条
+    2000-01-10 配股方案=2.727(float) 配股价格=7.5 -> rights_shares=0.2727 rights_price=7.5 | ths 该日无配股事件
+    1997-07-14 配股方案=2.37(float) 配股价格=4.5 -> rights_shares=0.23700000000000002 rights_price=4.5 | ths 该日无配股事件
+    1991-06-08 配股方案=5.0(float) 配股价格=4.4 -> rights_shares=0.5 rights_price=4.4 | ths 该日无配股事件
+  600030: 配股页 1 行 除权日非空、全史窗口内 -> 适配层返回 1 条；ths 全史配股事件 0 条
+    2022-01-27 配股方案=1.5(float) 配股价格=14.43 -> rights_shares=0.15 rights_price=14.43 | ths 该日无配股事件
+  601328: 配股页 1 行 除权日非空、全史窗口内 -> 适配层返回 1 条；ths 全史配股事件 0 条
+    2010-06-23 配股方案=1.5(float) 配股价格=4.5 -> rights_shares=0.15 rights_price=4.5 | ths 该日无配股事件
+  600999: 配股页 1 行 除权日非空、全史窗口内 -> 适配层返回 1 条；ths 全史配股事件 0 条
+    2020-07-20 配股方案=3.0(float) 配股价格=7.46 -> rights_shares=0.3 rights_price=7.46 | ths 该日无配股事件
+  601211: 配股页无数据
+  600000: 配股页无数据
+  小结：除权日非空 6 条，适配层未返回 0 条，rights_shares 解析为 0 的 0 条，rights_price 与原始值不同(÷10) 的 0 条，与 ths 不符 0 条
+
+===== D. 与 ths 同除息日差额是否等于被丢行（按金额归因）=====
+  601318 2018-06-07: ths=1.2 akshare=1.0 差额=0.200000 -> [MATCHED]
+       被丢行即差额：公告 2018-04-27 进度=预案 派息=0.2 送转=0.0
+  300750 2024-04-30: ths=5.028 akshare=2.011 差额=3.017000 -> [UNMATCHED]
+       被丢无除息日行 1 条，无一条金额等于 3.017000
+  小结：差额可由被丢行解释 1 处，解释不了 1 处
+
+===== E. 配股口径跨 vendor 对账（sina vs 东方财富）=====
+  [NO_READING] 000002: ChunkedEncodingError: Response ended prematurely
+  0%|          | 0/2 [00:00<?, ?it/s] 50%|█████     | 1/2 [00:32<00:32, 32.98s/it]100%|██████████| 2/2 [00:34<00:00, 14.65s/it]                                             2026-09-26 00:56:00.483 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 600030: 0 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:56:01.950 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 601328: 0 row(s) outside the requested window, 0 all-zero row(s)
+2026-09-26 00:56:04.124 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 600999: 0 row(s) outside the requested window, 0 all-zero row(s)
+  600030 2022-01-27 sina: 方案=1.5 价格=14.43 | em: 比例='10配1.5' 价=14.43 数量/前股本=0.120063
+       单元格一致=是 适配层现值 rights_shares=0.15 rights_price=14.43 应为=0.15,14.43 -> OK
+  601328 2010-06-23 sina: 方案=1.5 价格=4.5 | em: 比例='10配1.5' 价=4.5 数量/前股本=0.077674
+       单元格一致=是 适配层现值 rights_shares=0.15 rights_price=4.5 应为=0.15,4.5 -> OK
+  600999 2020-07-20 sina: 方案=3.0 价格=7.46 | em: 比例='10配3.0' 价=7.46 数量/前股本=0.254201
+       单元格一致=是 适配层现值 rights_shares=0.3 rights_price=7.46 应为=0.3,7.46 -> OK
+  601211: sina 配股 0 行 / em 0 行 -> 无可对事件
+  600000: sina 配股 0 行 / em 0 行 -> 无可对事件
+  小结：可对事件 3 条，sina 与 em 单元格逐字相等 3 条，适配层未返回 0 条，适配层读数与 em 口径不符 0 条
+
+===== F. 主腿（fuyao 除复权端点）字段面 =====
+  600030.SH 事件 1 条 字段=['dividend_per_share', 'ex_date_ms', 'per_share_bonus', 'ticker']
+       样例行(不含凭证)={'ticker': '600030', 'ex_date_ms': 1643212800000, 'dividend_per_share': 0, 'per_share_bonus': 0}
+  600999.SH 事件 1 条 字段=['dividend_per_share', 'ex_date_ms', 'per_share_bonus', 'ticker']
+       样例行(不含凭证)={'ticker': '600999', 'ex_date_ms': 1595174400000, 'dividend_per_share': 0, 'per_share_bonus': 0}
+  601318.SH 事件 1 条 字段=['dividend_per_share', 'ex_date_ms', 'per_share_bonus', 'ticker']
+       样例行(不含凭证)={'ticker': '601318', 'ex_date_ms': 1528300800000, 'dividend_per_share': 1.2, 'per_share_bonus': 0}
+  小结：主腿信封出现过的字段并集=['dividend_per_share', 'ex_date_ms', 'per_share_bonus', 'ticker']
+  推论：信封没有配股列 -> 契约的 rights_shares/rights_price 在主腿 结构性无生产者；ths 腿文档写着「the allotment columns map onto the rights fields」，与实测字段面不符
+
+===== 判定 =====
+  分类器与适配层不一致：0 处（非 0 即本脚本自身不可信）
+  rights_shares 恒 0：0 条 / rights_price 被 ÷10：0 条
+  同除息日差额能被被丢行解释：1 处 / 不能：1 处
+  配股跨 vendor：可对 3 条，sina 与 em 单元格相等 3 条，适配层与 em 口径不符 0 条
+  主腿信封字段并集：['dividend_per_share', 'ex_date_ms', 'per_share_bonus', 'ticker']
+MEASURE_EXIT=0

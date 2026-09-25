@@ -3,7 +3,11 @@
 The upstream flat functions are mocked with frames shaped exactly
 like the ported upstream output (Chinese column names, upstream
 units), so the mapping/unit-conversion assertions double as
-documentation of the upstream shapes.
+documentation of the upstream shapes. The sina corporate-action
+frames are copied cell by cell from a live reading
+(``docs/evidence/C26/fixture-live-cells.txt``): a hand-written frame
+that disagrees with the live dtype is what let the ÷10 配股 bug pass
+as correct.
 """
 
 from datetime import date
@@ -54,6 +58,31 @@ B1_DOMAINS = {
 }
 
 
+@pytest.fixture
+def log_lines():
+    """Collect ``(level, message)`` from loguru for the duration of a test.
+
+    ``FetchResult`` is a bare sequence/dataframe, so a provider has no
+    structured channel to report a dropped row: a log line is the only thing
+    a caller can see, and the drop tests have to read it back.
+
+    Yields:
+        Records appended by the sink.
+    """
+    from loguru import logger
+
+    records: list[tuple[str, str]] = []
+    handler_id = logger.add(
+        lambda message: records.append((message.record["level"].name, message.record["message"])),
+        level="DEBUG",
+        format="{message}",
+    )
+    try:
+        yield records
+    finally:
+        logger.remove(handler_id)
+
+
 def _em_klines_frame() -> pd.DataFrame:
     """Upstream-shaped eastmoney kline frame (volume in lots)."""
     return pd.DataFrame(
@@ -71,35 +100,69 @@ def _em_klines_frame() -> pd.DataFrame:
 
 
 def _sina_dividend_frame() -> pd.DataFrame:
-    """Upstream-shaped sina dividend page (per-10-share units)."""
+    """Live cells of sina's 600519 分红 page (per-10-share amounts).
+
+    Copied from the 2026-09-25 reading in
+    ``docs/evidence/C26/fixture-live-cells.txt``, types included: the page
+    hands back ``datetime.date`` cells and ``NaT`` for the dates it does not
+    have, not strings.
+    """
     return pd.DataFrame(
         {
-            "公告日期": ["2024-06-30", "2023-06-30"],
+            "公告日期": [date(2024, 6, 12), date(2023, 6, 26)],
             "送股": [0.0, 0.0],
             "转增": [0.0, 0.0],
             "派息": [308.76, 259.11],
             "进度": ["实施", "实施"],
-            "除权除息日": ["2024-07-01", "2023-07-01"],
-            "股权登记日": ["2024-06-28", "2023-06-28"],
-            "红股上市日": ["-", "-"],
+            "除权除息日": [date(2024, 6, 19), date(2023, 6, 30)],
+            "股权登记日": [date(2024, 6, 18), date(2023, 6, 29)],
+            "红股上市日": [pd.NaT, pd.NaT],
+        }
+    )
+
+
+def _sina_601318_2018_frame() -> pd.DataFrame:
+    """Live cells of sina's 601318 分红 page around the 2018-06-07 ex-date.
+
+    Three rows, from ``docs/evidence/C26/fixture-live-cells.txt``: sina lists
+    a plan and its implementation separately, and the 预案 row carries no
+    ex-date at all while fuyao publishes 1.2 for 2018-06-07 - the dated row
+    alone returns 1.0 (C26).
+    """
+    return pd.DataFrame(
+        {
+            "公告日期": [date(2018, 8, 30), date(2018, 5, 31), date(2018, 4, 27)],
+            "送股": [0.0, 0.0, 0.0],
+            "转增": [0.0, 0.0, 0.0],
+            "派息": [6.2, 10.0, 2.0],
+            "进度": ["实施", "实施", "预案"],
+            "除权除息日": [date(2018, 9, 6), date(2018, 6, 7), pd.NaT],
+            "股权登记日": [date(2018, 9, 5), date(2018, 6, 6), pd.NaT],
+            "红股上市日": [pd.NaT, pd.NaT, pd.NaT],
         }
     )
 
 
 def _sina_rights_frame() -> pd.DataFrame:
-    """Upstream-shaped sina rights page."""
+    """Live cells of sina's 600030 配股 page (2022 allotment).
+
+    The types matter: the ported page coerces ``配股方案`` with
+    ``pd.to_numeric``, so the live cell is the per-ten-shares quantity
+    ``1.5`` rather than the ``"10配3"`` spelling an earlier fixture hand-wrote
+    (that mismatch is why the ÷10 bug read as correct, C26).
+    """
     return pd.DataFrame(
         {
-            "公告日期": ["2020-03-10"],
-            "配股方案": ["10配3"],
-            "配股价格": [180.0],
-            "基准股本": [1256197800],
-            "除权日": ["2020-04-10"],
-            "股权登记日": ["2020-04-09"],
-            "缴款起始日": ["2020-04-13"],
-            "缴款终止日": ["2020-04-17"],
-            "配股上市日": ["2020-04-27"],
-            "募集资金合计": [678.4e8],
+            "公告日期": [date(2022, 1, 14)],
+            "配股方案": [1.5],
+            "配股价格": [14.43],
+            "基准股本": [10648400000],
+            "除权日": [date(2022, 1, 27)],
+            "股权登记日": [date(2022, 1, 18)],
+            "缴款起始日": [pd.NaT],
+            "缴款终止日": [date(2022, 1, 25)],
+            "配股上市日": [date(2022, 2, 15)],
+            "募集资金合计": [float("nan")],
         }
     )
 
@@ -256,23 +319,59 @@ class TestStockActionFetcher:
 
         assert len(actions) == 2
         assert all(isinstance(action, CorporateAction) for action in actions)
-        assert actions[0].ex_date == date(2024, 7, 1)
+        assert actions[0].ex_date == date(2024, 6, 19)
         assert actions[0].cash_dividend == pytest.approx(30.876)  # 308.76 per 10 -> per share
         assert actions[0].stock_dividend == 0.0
 
-    def test_maps_rights_plan_ratio(self, monkeypatch):
+    def test_maps_rights_ratio_per_share(self, monkeypatch):
+        """``配股方案`` 是每 10 股的量：live 单元格是数字 ``1.5``，读成每股 0.15。"""
+
         def fake_detail(symbol, indicator):
             return _sina_rights_frame() if indicator == "配股" else pd.DataFrame()
 
         monkeypatch.setattr(opendata_http, "stock_history_dividend_detail", fake_detail)
         fetcher = AkshareStockActionFetcher()
 
-        actions = list(fetcher.fetch(symbol="600519"))
+        actions = list(fetcher.fetch(symbol="600030"))
 
         assert len(actions) == 1
-        assert actions[0].ex_date == date(2020, 4, 10)
-        assert actions[0].rights_shares == pytest.approx(0.3)  # 10配3 -> 0.3 per share
-        assert actions[0].rights_price == pytest.approx(18.0)  # 180 per 10 -> per share
+        assert actions[0].ex_date == date(2022, 1, 27)
+        assert actions[0].rights_shares == pytest.approx(0.15)
+
+    def test_maps_rights_price_as_published(self, monkeypatch):
+        """``配股价格`` 已经是每股价，不能再 ÷10.
+
+        东方财富同一事件写「10配1.5 / 配股价 14.43」，与 sina 的 14.43 逐字相等。
+        C26 实测：6 个有除权日的配股事件里 ``rights_price`` 被 ÷10 的 0 条
+        （``docs/evidence/C26/rights-after-fix.txt`` C 节），其中东方财富同报的
+        6 条与适配层现值逐字一致（同档 E 节 3 条 + ``rights-after-fix-retry.txt``
+        E 节 5 条，两次跑各有一个符号因网络未判读，取并集 6 条，不符 0 条）。
+        """
+
+        def fake_detail(symbol, indicator):
+            return _sina_rights_frame() if indicator == "配股" else pd.DataFrame()
+
+        monkeypatch.setattr(opendata_http, "stock_history_dividend_detail", fake_detail)
+        fetcher = AkshareStockActionFetcher()
+
+        actions = list(fetcher.fetch(symbol="600030"))
+
+        assert actions[0].rights_price == pytest.approx(14.43)
+
+    def test_spelled_rights_plan_text_also_parses(self, monkeypatch):
+        """上游哪天不再做 ``pd.to_numeric``，``"10配3"`` 的原写法也要读出 0.3。"""
+        frame = _sina_rights_frame().assign(配股方案=["10配3"], 配股价格=[8.2])
+
+        def fake_detail(symbol, indicator):
+            return frame if indicator == "配股" else pd.DataFrame()
+
+        monkeypatch.setattr(opendata_http, "stock_history_dividend_detail", fake_detail)
+        fetcher = AkshareStockActionFetcher()
+
+        actions = list(fetcher.fetch(symbol="600030"))
+
+        assert actions[0].rights_shares == pytest.approx(0.3)
+        assert actions[0].rights_price == pytest.approx(8.2)
 
     def test_all_zero_rows_dropped(self, monkeypatch):
         frame = _sina_dividend_frame()
@@ -288,6 +387,147 @@ class TestStockActionFetcher:
 
         assert len(actions) == 1  # only the zero row dropped
         assert actions[0].cash_dividend == pytest.approx(25.911)
+
+    def test_undated_plan_drop_warns_with_the_amount(self, monkeypatch, log_lines):
+        """预案行没有除息日，必须留下可归因的痕迹（本轮的可见化判据）。
+
+        A silent drop here is what made 601318 2018-06-07 read 1.0 while the
+        primary leg publishes 1.2 for the same day, so the warning has to name
+        the count, the announcement date and the amount that went missing.
+        """
+
+        def fake_detail(symbol, indicator):
+            return _sina_601318_2018_frame() if indicator == "分红" else pd.DataFrame()
+
+        monkeypatch.setattr(opendata_http, "stock_history_dividend_detail", fake_detail)
+        fetcher = AkshareStockActionFetcher()
+
+        actions = list(fetcher.fetch(symbol="601318"))
+
+        assert [action.ex_date for action in actions] == [date(2018, 9, 6), date(2018, 6, 7)]
+        assert actions[1].cash_dividend == pytest.approx(1.0)
+        warnings = [message for level, message in log_lines if level == "WARNING"]
+        assert len(warnings) == 1
+        assert "1 undated dividend plan" in warnings[0]
+        assert "2018-04-27:0.2" in warnings[0]
+        assert "under-report" in warnings[0]
+
+    def test_contract_drops_are_counted_not_warned(self, monkeypatch, log_lines):
+        """窗口与全零是契约要求的丢弃：计数进 DEBUG，不许淹没 WARNING。"""
+        frame = pd.concat(
+            [
+                _sina_dividend_frame(),
+                _sina_dividend_frame().iloc[[0]].assign(除权除息日=[date(2024, 3, 20)], 派息=[0.0]),
+            ],
+            ignore_index=True,
+        )
+
+        def fake_detail(symbol, indicator):
+            return frame if indicator == "分红" else pd.DataFrame()
+
+        monkeypatch.setattr(opendata_http, "stock_history_dividend_detail", fake_detail)
+        fetcher = AkshareStockActionFetcher()
+
+        actions = list(
+            fetcher.fetch(
+                symbol="600519",
+                start_date=date(2024, 1, 1),
+                end_date=date(2024, 12, 31),
+            )
+        )
+
+        assert [action.ex_date for action in actions] == [date(2024, 6, 19)]
+        assert [level for level, _ in log_lines if level == "WARNING"] == []
+        debug = " | ".join(message for level, message in log_lines if level == "DEBUG")
+        assert "1 row(s) outside the requested window" in debug
+        assert "1 all-zero row(s)" in debug
+
+    def test_undated_rights_row_warns_with_ratio_and_price(self, monkeypatch, log_lines):
+        """配股页的无日期行走同一条判据：比例和价格都不能悄悄丢。
+
+        The dividend branch is the one that produced the measured 601318 gap, but
+        the rights branch is a separate ``if`` in ``transform_data``; an
+        untested branch is what let the 配股 unit error live behind a green
+        fixture, so this one is pinned on its own (C26).
+        """
+
+        def fake_detail(symbol, indicator):
+            return (
+                _sina_rights_frame().assign(除权日=[pd.NaT])
+                if indicator == "配股"
+                else pd.DataFrame()
+            )
+
+        monkeypatch.setattr(opendata_http, "stock_history_dividend_detail", fake_detail)
+        fetcher = AkshareStockActionFetcher()
+
+        actions = list(fetcher.fetch(symbol="600030"))
+
+        assert actions == []
+        warnings = [message for level, message in log_lines if level == "WARNING"]
+        assert len(warnings) == 1
+        assert "0 undated dividend plan(s) []" in warnings[0]
+        assert "1 undated rights plan(s)" in warnings[0]
+        assert "2022-01-14:0.15@14.43" in warnings[0]
+
+    def test_rights_page_contract_drops_are_counted_too(self, monkeypatch, log_lines):
+        """配股页的窗口裁剪与全零行同样只进 DEBUG 计数（与分红页分开的一条分支）。"""
+        frame = pd.concat(
+            [
+                _sina_rights_frame(),
+                _sina_rights_frame().assign(除权日=[date(2015, 1, 20)]),
+                _sina_rights_frame().assign(配股方案=[0.0], 配股价格=[0.0]),
+            ],
+            ignore_index=True,
+        )
+
+        def fake_detail(symbol, indicator):
+            return frame if indicator == "配股" else pd.DataFrame()
+
+        monkeypatch.setattr(opendata_http, "stock_history_dividend_detail", fake_detail)
+        fetcher = AkshareStockActionFetcher()
+
+        actions = list(
+            fetcher.fetch(
+                symbol="600030",
+                start_date=date(2022, 1, 1),
+                end_date=date(2022, 12, 31),
+            )
+        )
+
+        assert [action.ex_date for action in actions] == [date(2022, 1, 27)]
+        assert actions[0].rights_shares == pytest.approx(0.15)
+        assert [level for level, _ in log_lines if level == "WARNING"] == []
+        debug = " | ".join(message for level, message in log_lines if level == "DEBUG")
+        assert "1 row(s) outside the requested window" in debug
+        assert "1 all-zero row(s)" in debug
+
+    def test_undated_rows_without_economics_stay_silent(self, monkeypatch, log_lines):
+        """分级判据的另一半：没有金额的无日期行**不**报警，否则预案告警会被淹没。
+
+        A 节 counts 601318's page as 无除息日 2 条 of which 有金额 1 条, so the
+        ``进度=不分配`` row is the quiet kind and it really ships. The rights-page
+        half is the same guard in the other branch; no such live row was observed,
+        so that row is ablated from the dated fixture rather than quoted (C26).
+        """
+
+        def fake_detail(symbol, indicator):
+            if indicator == "分红":
+                return _sina_dividend_frame().assign(
+                    公告日期=[date(2024, 6, 12), date(2009, 4, 9)],
+                    派息=[308.76, 0.0],
+                    进度=["实施", "不分配"],
+                    除权除息日=[date(2024, 6, 19), pd.NaT],
+                )
+            return _sina_rights_frame().assign(除权日=[pd.NaT], 配股方案=[0.0], 配股价格=[0.0])
+
+        monkeypatch.setattr(opendata_http, "stock_history_dividend_detail", fake_detail)
+        fetcher = AkshareStockActionFetcher()
+
+        actions = list(fetcher.fetch(symbol="601318"))
+
+        assert [action.ex_date for action in actions] == [date(2024, 6, 19)]
+        assert [level for level, _ in log_lines if level == "WARNING"] == []
 
 
 class TestFinancialStatementFetcher:

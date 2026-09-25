@@ -151,7 +151,13 @@ CASES: tuple[Case, ...] = (
         VERDICT_OK,
         "探针窗口内 4/4 事件逐字段相同（窗口越界缺陷已由 normalize 修掉）；"
         "但转正要看加宽样本：6 只×10 年 76 个事件里 601318 的 2018-06-07 派息 "
-        "ths=1.2 / akshare=1.0，故 verified 位保持 false",
+        "ths=1.2 / akshare=1.0，故 verified 位保持 false。该缺口已归因到 sina "
+        "同页那条「进度=预案」的无除息日行（派息 2.0/10），1.0+0.2=1.2，现在 "
+        "_report_drops 会把它告警出来（C26）。另：这 4 个事件里没有配股事件，"
+        "rights_shares/rights_price 两侧都是 0=0，本轮的配股单位修复不受这条 "
+        "PASS 约束，其判据是东方财富 配股表 逐单元格对账：C26 量到 6 个有除权日的"
+        "配股事件，两次跑取并集后每条都 sina 单元格=em 单元格、且适配层现值=em 口径"
+        "（单次跑各有 1 个符号因网络未判读），rights_price 被 ÷10 计数 0",
     ),
     Case(
         "index_constituent",
@@ -485,12 +491,12 @@ def main() -> int:
     parser.add_argument(
         "--domain",
         action="append",
-        default=(),
+        default=None,
         help=f"only walk these domains (repeatable; default: all {len(CASES)})",
     )
     args = parser.parse_args()
 
-    requested = tuple(args.domain)
+    requested = tuple(args.domain or ())
     unknown = sorted(set(requested) - {case.domain for case in CASES})
     if unknown:
         print(f"未知 domain：{unknown}；可选：{[case.domain for case in CASES]}")

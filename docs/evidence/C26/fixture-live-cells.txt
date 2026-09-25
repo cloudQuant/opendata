@@ -1,0 +1,132 @@
+===== provenance（运行前采集）=====
+captured_at=2026-09-26T01:07:48+0200
+branch=dev HEAD=083a678（本轮改动未提交）
+python=Python 3.13.5
+复现命令=PYTHONUNBUFFERED=1 python docs/evidence/C26/fixture-live-cells.py
+口径=本轮新增单测夹具的单元格出处：新浪页真机逐格读数 + 列 dtype + 适配层判定（修复后口径）
+本版=重跑取代 21:30 的首版。差异只有两处**打印面**：标签「适配层在这些行上返回 N 条」改为「适配层在整页 N 行上返回 N 条」（原句错标：那 N 条来自整页而非夹具复制的那几行）；加 PYTHONUNBUFFERED 让 stderr 上的 loguru 按到达顺序落档（首版 stdout 块缓冲，有一行 DEBUG 插进了读数中间）。单元格读数逐行比对见档尾 diff 摘要
+===== C26 夹具来源：新浪页真机逐格读数（适配层判定的就是这些单元格）=====
+python=3.13.5 pandas=2.3.1 只读，不写数仓，不读密钥
+
+===== 601318 分红页 =====
+  列=['公告日期', '送股', '转增', '派息', '进度', '除权除息日', '股权登记日', '红股上市日', 'indicator']
+  dtype={'公告日期': 'object', '送股': 'float64', '转增': 'float64', '派息': 'float64', '进度': 'object', '除权除息日': 'object', '股权登记日': 'object', '红股上市日': 'datetime64[ns]', 'indicator': 'object'}
+  夹具复制的行（公告日期前缀=('2018-04', '2018-05', '2018-08')）共 3 行：
+    公告日期=(date, datetime.date(2018, 8, 30)), 送股=(float, 0.0), 转增=(float, 0.0), 派息=(float, 6.2), 进度=(str, '实施'), 除权除息日=(date, datetime.date(2018, 9, 6)), 股权登记日=(date, datetime.date(2018, 9, 5)), 红股上市日=(NaTType, NaT), indicator=(str, '分红')
+    公告日期=(date, datetime.date(2018, 5, 31)), 送股=(float, 0.0), 转增=(float, 0.0), 派息=(float, 10.0), 进度=(str, '实施'), 除权除息日=(date, datetime.date(2018, 6, 7)), 股权登记日=(date, datetime.date(2018, 6, 6)), 红股上市日=(NaTType, NaT), indicator=(str, '分红')
+    公告日期=(date, datetime.date(2018, 4, 27)), 送股=(float, 0.0), 转增=(float, 0.0), 派息=(float, 2.0), 进度=(str, '预案'), 除权除息日=(NaTType, NaT), 股权登记日=(NaTType, NaT), 红股上市日=(NaTType, NaT), indicator=(str, '分红')
+2026-09-26 01:07:51.456 | WARNING  | opendata.data.providers.akshare.models.stock_action:_report_drops:200 - stock_action 601318: dropped 1 undated dividend plan(s) ['2018-04-27:0.2+0.0'] and 0 undated rights plan(s) [] - a cash amount on an undated row may belong to a dated ex-date, so the events returned for that day can under-report
+2026-09-26 01:07:51.456 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 601318: 0 row(s) outside the requested window, 0 all-zero row(s)
+  适配层在整页 41 行上返回 39 条：
+    2007-06-22 cash=0.22000000000000003 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2007-09-03 cash=0.2 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2008-05-23 cash=0.5 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2008-10-06 cash=0.2 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2009-09-01 cash=0.15 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2010-07-13 cash=0.3 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2010-09-09 cash=0.15 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2011-07-21 cash=0.4 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2011-09-02 cash=0.15 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2012-07-16 cash=0.25 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2012-09-26 cash=0.15 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2013-05-20 cash=0.3 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2013-09-10 cash=0.2 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2014-06-27 cash=0.45 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2014-09-12 cash=0.25 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2015-07-27 cash=0.5 stock=1.0 rights_shares=0.0 rights_price=0.0
+    2015-09-09 cash=0.18 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2016-07-05 cash=0.35 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2016-09-05 cash=0.2 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2017-07-11 cash=0.55 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2017-09-04 cash=0.5 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2018-06-07 cash=1.0 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2018-09-06 cash=0.62 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2019-05-23 cash=1.1 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2019-09-04 cash=0.75 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2020-05-08 cash=1.3 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2020-09-16 cash=0.8 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2021-04-22 cash=1.4 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2021-10-25 cash=0.8800000000000001 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2022-06-20 cash=1.5 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2022-10-20 cash=0.9199999999999999 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2023-06-14 cash=1.5 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2023-10-25 cash=0.93 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2024-07-26 cash=1.5 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2024-10-18 cash=0.93 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2025-06-30 cash=1.6199999999999999 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2025-10-24 cash=0.95 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2026-06-10 cash=1.75 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2026-09-10 cash=0.9800000000000001 stock=0.0 rights_shares=0.0 rights_price=0.0
+    [丢弃] 公告 2018-04-27 进度=预案 除权除息日=NaT（NaTType）
+    [丢弃] 公告 2009-04-09 进度=不分配 除权除息日=NaT（NaTType）
+
+===== 600519 分红页 =====
+  列=['公告日期', '送股', '转增', '派息', '进度', '除权除息日', '股权登记日', '红股上市日', 'indicator']
+  dtype={'公告日期': 'object', '送股': 'float64', '转增': 'float64', '派息': 'float64', '进度': 'object', '除权除息日': 'object', '股权登记日': 'object', '红股上市日': 'object', 'indicator': 'object'}
+  夹具复制的行（公告日期前缀=('2024', '2023')）共 4 行：
+    公告日期=(date, datetime.date(2024, 12, 14)), 送股=(float, 0.0), 转增=(float, 0.0), 派息=(float, 238.82), 进度=(str, '实施'), 除权除息日=(date, datetime.date(2024, 12, 20)), 股权登记日=(date, datetime.date(2024, 12, 19)), 红股上市日=(NaTType, NaT), indicator=(str, '分红')
+    公告日期=(date, datetime.date(2024, 6, 12)), 送股=(float, 0.0), 转增=(float, 0.0), 派息=(float, 308.76), 进度=(str, '实施'), 除权除息日=(date, datetime.date(2024, 6, 19)), 股权登记日=(date, datetime.date(2024, 6, 18)), 红股上市日=(NaTType, NaT), indicator=(str, '分红')
+    公告日期=(date, datetime.date(2023, 12, 14)), 送股=(float, 0.0), 转增=(float, 0.0), 派息=(float, 191.06), 进度=(str, '实施'), 除权除息日=(date, datetime.date(2023, 12, 20)), 股权登记日=(date, datetime.date(2023, 12, 19)), 红股上市日=(NaTType, NaT), indicator=(str, '分红')
+    公告日期=(date, datetime.date(2023, 6, 26)), 送股=(float, 0.0), 转增=(float, 0.0), 派息=(float, 259.11), 进度=(str, '实施'), 除权除息日=(date, datetime.date(2023, 6, 30)), 股权登记日=(date, datetime.date(2023, 6, 29)), 红股上市日=(NaTType, NaT), indicator=(str, '分红')
+2026-09-26 01:07:52.852 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 600519: 0 row(s) outside the requested window, 0 all-zero row(s)
+  适配层在整页 31 行上返回 31 条：
+    2002-07-25 cash=0.6 stock=0.1 rights_shares=0.0 rights_price=0.0
+    2003-07-14 cash=0.2 stock=0.1 rights_shares=0.0 rights_price=0.0
+    2004-07-01 cash=0.3 stock=0.3 rights_shares=0.0 rights_price=0.0
+    2005-08-05 cash=0.5 stock=0.2 rights_shares=0.0 rights_price=0.0
+    2006-05-19 cash=0.3 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2006-05-24 cash=0.591 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2007-07-13 cash=0.7 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2008-06-16 cash=0.836 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2009-07-01 cash=1.1560000000000001 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2010-07-05 cash=1.185 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2011-07-01 cash=2.3 stock=0.1 rights_shares=0.0 rights_price=0.0
+    2012-07-05 cash=3.997 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2013-06-07 cash=6.419 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2014-06-25 cash=4.3740000000000006 stock=0.1 rights_shares=0.0 rights_price=0.0
+    2015-07-17 cash=4.3740000000000006 stock=0.1 rights_shares=0.0 rights_price=0.0
+    2016-07-01 cash=6.171 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2017-07-07 cash=6.787000000000001 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2018-06-15 cash=10.998999999999999 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2019-06-28 cash=14.538999999999998 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2020-06-24 cash=17.025 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2021-06-25 cash=19.293 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2022-06-30 cash=21.675 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2022-12-27 cash=21.91 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2023-06-30 cash=25.911 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2023-12-20 cash=19.106 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2024-06-19 cash=30.875999999999998 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2024-12-20 cash=23.881999999999998 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2025-06-26 cash=27.673000000000002 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2025-12-19 cash=23.957 stock=0.0 rights_shares=0.0 rights_price=0.0
+    2026-06-26 cash=28.0242 stock=0.0 rights_shares=0.0 rights_price=0.0
+
+===== 600030 配股页 =====
+  列=['公告日期', '送股', '转增', '派息', '进度', '除权除息日', '股权登记日', '红股上市日', 'indicator', '配股方案', '配股价格', '基准股本', '除权日', '缴款起始日', '缴款终止日', '配股上市日', '募集资金合计']
+  dtype={'公告日期': 'object', '送股': 'float64', '转增': 'float64', '派息': 'float64', '进度': 'object', '除权除息日': 'object', '股权登记日': 'object', '红股上市日': 'datetime64[ns]', 'indicator': 'object', '配股方案': 'float64', '配股价格': 'float64', '基准股本': 'float64', '除权日': 'object', '缴款起始日': 'datetime64[ns]', '缴款终止日': 'object', '配股上市日': 'object', '募集资金合计': 'float64'}
+  夹具复制的行（公告日期前缀=全部）共 1 行：
+    公告日期=(date, datetime.date(2022, 1, 14)), 送股=(float, nan), 转增=(float, nan), 派息=(float, nan), 进度=(float, nan), 除权除息日=(float, nan), 股权登记日=(date, datetime.date(2022, 1, 18)), 红股上市日=(NaTType, NaT), indicator=(str, '配股'), 配股方案=(float, 1.5), 配股价格=(float, 14.43), 基准股本=(float, 10648400000.0), 除权日=(date, datetime.date(2022, 1, 27)), 缴款起始日=(NaTType, NaT), 缴款终止日=(date, datetime.date(2022, 1, 25)), 配股上市日=(date, datetime.date(2022, 2, 15)), 募集资金合计=(float, nan)
+2026-09-26 01:07:54.139 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 600030: 0 row(s) outside the requested window, 0 all-zero row(s)
+  适配层在整页 1 行上返回 1 条：
+    2022-01-27 cash=0.0 stock=0.0 rights_shares=0.15 rights_price=14.43
+FIXTURE_EXIT=0
+
+===== 与首版的读数逐行比对（滤掉表头/日志/空行）=====
+9c9
+<   适配层在这些行上返回 39 条：
+---
+>   适配层在整页 41 行上返回 39 条：
+59c59
+<   适配层在这些行上返回 31 条：
+---
+>   适配层在整页 31 行上返回 31 条：
+86c86
+<     2024-12-20 cash=23.881999999999998 stock=0.0 rights_shares=0.0 rights_price=0.02026-09-25 21:30:33.657 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 600030: 0 row(s) outside the requested window, 0 all-zero row(s)
+---
+>     2024-12-20 cash=23.881999999999998 stock=0.0 rights_shares=0.0 rights_price=0.0
+95c95
+<   适配层在这些行上返回 1 条：
+---
+>   适配层在整页 1 行上返回 1 条：
+97a98
+> ===== 与首版的读数逐行比对（滤掉表头/日志/空行）=====

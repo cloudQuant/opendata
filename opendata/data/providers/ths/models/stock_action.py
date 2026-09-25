@@ -1,9 +1,13 @@
 """Corporate action fetcher (domain ``stock_action``, contract ``CorporateAction``).
 
 Wraps the fuyao adjustment-factor endpoint. The upstream does not label event
-types: ``dividend_per_share`` is the cash dividend, ``per_share_bonus`` the
-stock dividend and the allotment columns map onto the rights fields, which is
-what the contract carries.
+types: ``dividend_per_share`` is the cash dividend and ``per_share_bonus`` the
+stock dividend. Measured on three symbols, every envelope row carried only
+those two plus the ex-date and the ticker, so ``rights_shares`` /
+``rights_price`` stay at the contract default here: the allotment columns
+exist in the upstream vocabulary (the ODS dump schema carries them) but were
+never observed on the wire, and their unit has never been measured - guessing
+it against a per-10-share source would be inventing data, not mapping it (C26).
 """
 
 from typing import ClassVar
