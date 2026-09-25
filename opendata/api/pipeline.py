@@ -173,7 +173,9 @@ async def run_source_patrol(
 
     The patrol marks failing sources unhealthy so ``source=auto`` stops
     routing to them; a broken source is reported, not hidden. A leg that
-    passed only after its retry stays routable but is counted as flaky.
+    passed only after its retry stays routable but is counted as flaky, and
+    a watched column whose fill shape was never measured on the source is
+    counted in ``field_deviations`` - reported, never routed on.
 
     Args:
         current_user: Authenticated user.
@@ -189,6 +191,7 @@ async def run_source_patrol(
             "count": len(results),
             "healthy": sum(1 for result in results if result.ok),
             "flaky": sum(1 for result in results if result.flaky),
+            "field_deviations": sum(len(result.field_deviations) for result in results),
             "results": [
                 {
                     "domain": result.domain,
@@ -200,6 +203,18 @@ async def run_source_patrol(
                     "latency_ms": round(result.latency_ms, 1),
                     "verified": result.verified,
                     "rows": result.rows,
+                    "canaries": [
+                        {
+                            "asset_type": reading.asset_type,
+                            "field": reading.field,
+                            "shape": reading.shape,
+                            "rows": reading.rows,
+                            "missing": reading.missing,
+                            "deviates": reading.deviates,
+                            "error": reading.error,
+                        }
+                        for reading in result.canaries
+                    ],
                 }
                 for result in results
             ],

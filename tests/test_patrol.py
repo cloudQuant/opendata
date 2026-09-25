@@ -270,6 +270,275 @@ class TestProbeRetry:
         assert fetcher.calls == 0
 
 
+class TestFieldCanary:
+    """C25 guards: a column can hollow out inside a page of full size."""
+
+    def test_shape_classes_a_column_by_how_much_of_it_was_filled(self):
+        assert patrol_module.shape_of(5578, 0) == patrol_module.SHAPE_FULL
+        # C14 accepted 9 of 5,578 rows without a listing date: a few records
+        # missing a date is a normal catalog, not a collapse.
+        assert patrol_module.shape_of(5578, 9) == patrol_module.SHAPE_FULL
+        assert patrol_module.shape_of(5578, 265) == patrol_module.SHAPE_PARTIAL
+        assert patrol_module.shape_of(5578, 5578) == patrol_module.SHAPE_HOLLOW
+
+    def test_a_small_page_cannot_be_rescued_by_the_tolerance(self):
+        """Every row empty is hollow even when the page is smaller than the tolerance."""
+        assert patrol_module.shape_of(4, 4) == patrol_module.SHAPE_HOLLOW
+        assert patrol_module.shape_of(20, 20) == patrol_module.SHAPE_HOLLOW
+
+    def test_a_reading_that_counts_more_misses_than_rows_is_refused(self):
+        """The patrol's own arithmetic bug must not read as a source problem."""
+        with pytest.raises(ValueError):
+            patrol_module.shape_of(10, 20)
+        with pytest.raises(ValueError):
+            patrol_module.shape_of(0, 0)
+
+    def test_evaluate_canary_measures_the_watched_column(self):
+        canary = patrol_module.FieldCanary(
+            asset_type="a-share",
+            field="list_date",
+            allowed=frozenset({patrol_module.SHAPE_FULL}),
+            reason="test",
+        )
+        rows = [_catalog_row(None)] * 50 + [_catalog_row(date(2001, 8, 27))] * 50
+
+        reading = patrol_module.evaluate_canary(canary, rows)
+
+        assert (reading.rows, reading.missing, reading.shape) == (
+            100,
+            50,
+            patrol_module.SHAPE_PARTIAL,
+        )
+        assert reading.deviates is True
+
+    def test_an_empty_page_is_unmeasurable_rather_than_hollow(self):
+        """Zero rows is the row-count probe's business; a shape needs rows."""
+        canary = patrol_module.FieldCanary(
+            asset_type="a-share",
+            field="list_date",
+            allowed=frozenset({patrol_module.SHAPE_HOLLOW}),
+            reason="test",
+        )
+
+        reading = patrol_module.evaluate_canary(canary, ())
+
+        assert reading.shape == patrol_module.SHAPE_NO_READING
+        assert reading.deviates is False
+
+    def test_a_blank_string_counts_as_an_empty_cell(self):
+        canary = patrol_module.FieldCanary(
+            asset_type="a-share",
+            field="name",
+            allowed=frozenset({patrol_module.SHAPE_HOLLOW}),
+            reason="test",
+        )
+
+        reading = patrol_module.evaluate_canary(canary, [_catalog_row(None, name="   ")])
+
+        assert (reading.rows, reading.missing) == (1, 1)
+        assert reading.shape == patrol_module.SHAPE_HOLLOW
+        assert reading.deviates is False
+
+    def test_a_shape_that_was_never_measured_is_the_alarm(self):
+        reading = patrol_module.CanaryReading(
+            asset_type="a-share-index",
+            field="list_date",
+            shape=patrol_module.SHAPE_HOLLOW,
+            rows=1431,
+            missing=1431,
+            allowed=frozenset({patrol_module.SHAPE_FULL}),
+        )
+
+        assert reading.deviates is True
+
+    def test_the_canary_table_cannot_describe_an_unroutable_leg(self):
+        """A canary on a leg the patrol never probes is a dead judgement."""
+        probe_keys = set(patrol_module.PROBE_PARAMS) | set(patrol_module.PROBE_RESOLVERS)
+
+        assert set(patrol_module.FIELD_CANARIES) <= probe_keys
+
+    def test_every_watched_column_is_a_field_of_the_contract(self):
+        """A typo'd column would be swallowed forever as an unreadable page.
+
+        ``_read_canary`` reports any failure to read as no-reading, so a field
+        name that does not exist on the contract would look exactly like a
+        network blip and the canary would never say anything.
+        """
+        from opendata.data.models import Instrument
+
+        for canaries in patrol_module.FIELD_CANARIES.values():
+            for canary in canaries:
+                assert canary.field in Instrument.model_fields, canary
+                assert canary.allowed and set(canary.allowed) <= {
+                    patrol_module.SHAPE_FULL,
+                    patrol_module.SHAPE_PARTIAL,
+                    patrol_module.SHAPE_HOLLOW,
+                }
+                assert canary.reason
+
+    def test_the_watched_columns_cover_the_collapse_c18_found(self):
+        """AC-19's gap was specifically ``list_date`` on the catalog leg."""
+        catalog = patrol_module.FIELD_CANARIES.get(("instrument", "ths"), ())
+
+        assert any(c.field == "list_date" for c in catalog)
+
+
+class TestPatrolCanaryWiring:
+    """A deviation pages, and nothing else changes."""
+
+    @pytest.fixture
+    def hollow_list_date(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(
+            patrol_module,
+            "FIELD_CANARIES",
+            {
+                ("instrument", "ths"): (
+                    patrol_module.FieldCanary(
+                        asset_type="a-share",
+                        field="list_date",
+                        allowed=frozenset({patrol_module.SHAPE_FULL}),
+                        reason="test",
+                    ),
+                ),
+            },
+        )
+
+    async def test_a_hollow_column_is_reported_on_a_leg_that_probed_ok(
+        self, hollow_list_date: None
+    ):
+        rows = [_catalog_row(None) for _ in range(4)]
+        fetcher = StubFetcher(_capability("instrument"), returns=rows)
+
+        results = await patrol(_registry(fetcher))
+
+        assert results[0].ok is True
+        assert results[0].rows == 4
+        deviation = results[0].field_deviations[0]
+        assert (deviation.field, deviation.shape, deviation.missing) == (
+            "list_date",
+            patrol_module.SHAPE_HOLLOW,
+            4,
+        )
+        # One probe call, one canary call: the alarm costs the leg one read.
+        assert fetcher.calls == 2
+
+    async def test_two_watched_columns_of_one_page_are_read_once(
+        self, hollow_list_date: None, monkeypatch: pytest.MonkeyPatch
+    ):
+        """The shapes must come from the same answer, not from two builds."""
+        monkeypatch.setattr(
+            patrol_module,
+            "FIELD_CANARIES",
+            {
+                ("instrument", "ths"): (
+                    patrol_module.FieldCanary(
+                        asset_type="a-share",
+                        field="list_date",
+                        allowed=frozenset({patrol_module.SHAPE_FULL}),
+                        reason="test",
+                    ),
+                    patrol_module.FieldCanary(
+                        asset_type="a-share",
+                        field="name",
+                        allowed=frozenset({patrol_module.SHAPE_FULL}),
+                        reason="test",
+                    ),
+                    patrol_module.FieldCanary(
+                        asset_type="futures",
+                        field="list_date",
+                        allowed=frozenset({patrol_module.SHAPE_PARTIAL}),
+                        reason="test",
+                    ),
+                ),
+            },
+        )
+        fetcher = StubFetcher(_capability("instrument"), returns=[_catalog_row(None)])
+
+        results = await patrol(_registry(fetcher))
+
+        assert [r.field for r in results[0].canaries] == ["list_date", "name", "list_date"]
+        # probe + one page per distinct asset type, not one per column.
+        assert fetcher.calls == 3
+
+    async def test_a_field_collapse_never_moves_the_routing_mark(
+        self, hollow_list_date: None, monkeypatch: pytest.MonkeyPatch
+    ):
+        """One column disagreeing with itself is not "this source is down".
+
+        C19 measured the a-share catalog answering from two builds that differ
+        in exactly this column; pulling ths out of ``auto`` over it would take
+        down ten healthy legs to report one hollow date.
+        """
+        fetcher = StubFetcher(_capability("instrument"), returns=[_catalog_row(None)])
+        registry = _registry(fetcher)
+        marked: list[object] = []
+        monkeypatch.setattr(registry, "mark_unavailable", lambda broken: marked.append(broken))
+
+        results = await patrol(registry)
+
+        assert results[0].ok is True
+        assert results[0].field_deviations
+        assert marked == []
+        assert registry.resolve("equity", "instrument", source="auto") is fetcher
+
+    async def test_a_clean_column_produces_no_deviation(self, hollow_list_date: None):
+        fetcher = StubFetcher(_capability("instrument"), returns=[_catalog_row(date(2024, 1, 2))])
+
+        results = await patrol(_registry(fetcher))
+
+        assert results[0].field_deviations == ()
+
+    async def test_a_leg_that_did_not_probe_gets_no_canary_reading(self):
+        """No pass, nothing to measure: the row-count failure already spoke."""
+        fetcher = StubFetcher(_capability("instrument"), raise_on=RuntimeError("boom"))
+
+        results = await patrol(_registry(fetcher))
+
+        assert results[0].canaries == ()
+
+    async def test_the_probe_latency_excludes_the_canary_reads(
+        self, hollow_list_date: None, monkeypatch: pytest.MonkeyPatch
+    ):
+        """Cross-round patrol archives compare this number; keep its meaning."""
+        clock = {"t": 1000.0}
+        monkeypatch.setattr(patrol_module.time, "perf_counter", lambda: clock["t"])
+
+        async def slow_page(fetcher: object, asset_type: str) -> tuple[object, None]:
+            clock["t"] += 60_000.0
+            return [_catalog_row(None)], None
+
+        monkeypatch.setattr(patrol_module, "_read_page", slow_page)
+        fetcher = StubFetcher(_capability("instrument"), returns=[_catalog_row(None)])
+
+        results = await patrol(_registry(fetcher))
+
+        assert results[0].latency_ms == 0.0
+        assert results[0].field_deviations
+
+    async def test_a_canary_that_cannot_be_read_is_not_an_alarm(self, hollow_list_date: None):
+        """ "Could not look" is not "the data is wrong" (C24's three-way verdict)."""
+        fetcher = StubFetcher(_capability("instrument"), raise_on=RuntimeError("boom"))
+
+        readings = await patrol_module._run_canaries(fetcher, _capability("instrument"))
+
+        assert readings[0].shape == patrol_module.SHAPE_NO_READING
+        assert readings[0].deviates is False
+        assert "boom" in (readings[0].error or "")
+
+
+class _CatalogRow:
+    """Duck-typed catalog row carrying only the columns a canary watches."""
+
+    def __init__(self, list_date: date | None, *, name: str = "贵州茅台") -> None:
+        self.list_date = list_date
+        self.name = name
+        self.symbol = "600519.SH"
+
+
+def _catalog_row(list_date: date | None, *, name: str = "贵州茅台") -> _CatalogRow:
+    return _CatalogRow(list_date, name=name)
+
+
 class TestProbeParamCoverage:
     """C16 guards: probe params are keyed by (domain, source) and complete."""
 
@@ -475,6 +744,38 @@ class TestHealthApi:
         # Routed as healthy, reported as flaky: the two are not the same claim.
         assert (leg["ok"], leg["attempts"], leg["flaky"]) == (True, 2, True)
         assert response.json()["data"]["flaky"] == 1
+
+    async def test_patrol_endpoint_reports_a_hollow_column_on_a_healthy_leg(
+        self, test_client, test_user_token, monkeypatch
+    ):
+        """AC-19's gap was a column the payload had no field for at all."""
+        monkeypatch.setattr(
+            patrol_module,
+            "FIELD_CANARIES",
+            {
+                ("instrument", "ths"): (
+                    patrol_module.FieldCanary(
+                        asset_type="a-share",
+                        field="list_date",
+                        allowed=frozenset({patrol_module.SHAPE_FULL}),
+                        reason="test",
+                    ),
+                ),
+            },
+        )
+        registry = _registry(StubFetcher(_capability("instrument"), returns=[_catalog_row(None)]))
+        monkeypatch.setattr("opendata.api.pipeline.patrol", lambda: _patrol_done(registry))
+        response = await test_client.post(
+            "/api/v1/health/patrol",
+            headers={"Authorization": f"Bearer {test_user_token}"},
+        )
+
+        data = response.json()["data"]
+        leg = next(iter(data["results"]))
+        # The leg is still counted healthy; the column is its own report.
+        assert (data["healthy"], leg["ok"], data["field_deviations"]) == (1, True, 1)
+        assert leg["canaries"][0]["shape"] == patrol_module.SHAPE_HOLLOW
+        assert leg["canaries"][0]["deviates"] is True
 
 
 async def _patrol_done(registry: ProviderRegistry):

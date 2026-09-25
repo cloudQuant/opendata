@@ -17,6 +17,15 @@ One blip is retried before a source is marked unhealthy, because that
 mark holds until the next patrol. Retrying is not a way to hide
 flakiness: a leg that only passes on its second attempt is reported as
 flaky and keeps the failure the first attempt produced.
+
+Row counts alone cannot see a column hollowing out inside a full page,
+which is how C18 caught the a-share catalog answering 5,578 rows with no
+``list_date`` at all while the patrol printed ``[ok]``. Legs listed in
+:data:`FIELD_CANARIES` therefore get their watched columns measured after a
+pass, and only shapes that were measured on the live source count as known
+- a deviation pages, but never moves the routing mark, because one column
+disagreeing with itself between two catalog builds is not "this source is
+down".
 """
 
 from __future__ import annotations
@@ -179,6 +188,8 @@ class PatrolResult:
         rows: Rows the probe came back with (None when it did not run).
         attempts: Probe attempts used up (1 = passed first try, or failed
             them all).
+        canaries: Column-shape readings taken after a clean pass, empty for a
+            leg with no watched columns or no pass to look at.
     """
 
     domain: str
@@ -189,6 +200,7 @@ class PatrolResult:
     verified: bool
     rows: int | None = None
     attempts: int = 1
+    canaries: tuple[CanaryReading, ...] = ()
 
     @property
     def flaky(self) -> bool:
@@ -200,6 +212,213 @@ class PatrolResult:
             absorbing a blip must not turn flakiness green.
         """
         return self.ok and self.attempts > 1
+
+    @property
+    def field_deviations(self) -> tuple[CanaryReading, ...]:
+        """Canary readings whose column shape was never measured on this source.
+
+        Returns:
+            The deviating readings (empty when every watched column kept a
+            known shape). Independent of ``ok``: a leg can probe clean and
+            still be hollowing out a column.
+        """
+        return tuple(reading for reading in self.canaries if reading.deviates)
+
+
+#: A watched column is filled on every row (within :data:`CANARY_MISSING_TOLERANCE`).
+SHAPE_FULL = "full"
+#: A watched column is filled on no row at all.
+SHAPE_HOLLOW = "hollow"
+#: A watched column is filled on some but not all rows beyond tolerance.
+SHAPE_PARTIAL = "partial"
+#: The canary could not be measured this run - not a statement about the data.
+SHAPE_NO_READING = "no-reading"
+#: Rows a column may miss and still count as ``full``. Inherited from the
+#: criterion C14 accepted for the a-share catalog (9 of 5,578 rows missing
+#: ``list_date``): a handful of records with no listing date is a normal
+#: catalog, while a column that lost its content did not lose five rows.
+CANARY_MISSING_TOLERANCE = 20
+
+
+@dataclass(frozen=True)
+class FieldCanary:
+    """One column of one catalog page the patrol watches for hollowing out.
+
+    Attributes:
+        asset_type: Catalog page the canary reads.
+        field: Contract attribute watched on that page.
+        allowed: Shapes measured on the live source. A shape outside this set
+            is news, which is what makes the reading an alarm rather than a
+            re-report of a known upstream gap.
+        reason: Where the allowed set was measured, so a reviewer can check
+            the reading instead of trusting this table.
+    """
+
+    asset_type: str
+    field: str
+    allowed: frozenset[str]
+    reason: str
+
+
+@dataclass(frozen=True)
+class CanaryReading:
+    """Result of measuring one watched column once.
+
+    Attributes:
+        asset_type: Catalog page that was read.
+        field: Contract attribute that was measured.
+        shape: One of the ``SHAPE_*`` values.
+        rows: Rows the read came back with (None when it did not run).
+        missing: Rows whose watched column is empty.
+        allowed: Shapes the patrol considers known for this column.
+        error: Why nothing could be measured (None on a real reading).
+    """
+
+    asset_type: str
+    field: str
+    shape: str
+    rows: int | None
+    missing: int | None
+    allowed: frozenset[str]
+    error: str | None = None
+
+    @property
+    def deviates(self) -> bool:
+        """Whether this reading should page.
+
+        Returns:
+            True when a real reading produced a shape never measured on this
+            column. An unmeasurable reading is not a deviation: "could not
+            look" is not "the data is wrong", and reporting it as one would
+            turn every network blip into a false field-collapse alarm.
+        """
+        return self.shape != SHAPE_NO_READING and self.shape not in self.allowed
+
+
+#: Columns the row-count probe cannot see, keyed by ``(domain, source)``.
+#:
+#: C18's canary found the a-share catalog's ``list_date`` empty in a snapshot
+#: that the patrol had been printing as ``[ok] ths/instrument: 5578 rows`` all
+#: along - counting rows is blind to a column being hollow inside a full page.
+#:
+#: The allowed shapes below are only what has actually been measured on the
+#: live source: C19's 36-read flip-rate run
+#: (``docs/evidence/C19/catalog-flip-rate-all-types.txt``) and C25's
+#: 10-read × 4-page × 8-column run (``docs/evidence/C25/field-canary-measure.txt``),
+#: which agree on every column. Where the two catalog builds differ *in* a
+#: column (a-share ``list_date``: 满值 14 次 / 全空 22 次) both shapes are
+#: allowed, because an alarm there would fire on whichever build answered
+#: rather than on the data - a shape neither build produces is still news.
+#:
+#: ``board`` is watched by no one on purpose: it is hollow on all four pages
+#: today, so a future backfill would page as a deviation while being an
+#: improvement.
+FIELD_CANARIES: dict[tuple[str, str], tuple[FieldCanary, ...]] = {
+    ("instrument", "ths"): (
+        FieldCanary(
+            asset_type="a-share",
+            field="list_date",
+            allowed=frozenset({SHAPE_FULL, SHAPE_HOLLOW}),
+            reason="C19 36 reads: 满值 5570/5578 ×14 / 全空 ×22，两份目录构建之差",
+        ),
+        FieldCanary(
+            asset_type="a-share",
+            field="name",
+            allowed=frozenset({SHAPE_FULL}),
+            reason="C25 10 reads: 5578/5578 有名，这是目录可 join 的载荷本身",
+        ),
+        FieldCanary(
+            asset_type="a-share-index",
+            field="list_date",
+            allowed=frozenset({SHAPE_FULL}),
+            reason="C19 24 + C25 10 reads: 1431/1431 每次都有日期",
+        ),
+        FieldCanary(
+            asset_type="futures",
+            field="list_date",
+            allowed=frozenset({SHAPE_PARTIAL}),
+            reason="C19 24 + C25 10 reads: 恒 1142 行缺 265（7777/8888/9999 合成系列）",
+        ),
+    ),
+}
+
+
+def shape_of(rows: int, missing: int, *, tolerance: int = CANARY_MISSING_TOLERANCE) -> str:
+    """Classify how much of a watched column one read filled.
+
+    Hollow is tested before the tolerance, not after it: a small page whose
+    every row is empty is a hollow column, while a tolerance checked first
+    would read any page of twenty rows or fewer as full.
+
+    Args:
+        rows: Rows read.
+        missing: Rows whose watched column is empty.
+        tolerance: Misses that still count as a full column.
+
+    Returns:
+        ``SHAPE_FULL`` / ``SHAPE_PARTIAL`` / ``SHAPE_HOLLOW``.
+
+    Raises:
+        ValueError: Nothing to measure (zero rows), or ``missing`` exceeds
+            ``rows``, which would mean the reading was assembled wrong rather
+            than the source being wrong.
+    """
+    if rows <= 0:
+        raise ValueError("cannot classify a column over 0 rows")
+    if missing > rows:
+        raise ValueError(f"cannot miss {missing} of {rows} rows")
+    if missing >= rows:
+        return SHAPE_HOLLOW
+    return SHAPE_FULL if missing <= tolerance else SHAPE_PARTIAL
+
+
+def _is_missing(value: object) -> bool:
+    """Whether one watched cell counts as empty.
+
+    ``None`` and a blank string are the two ways this catalog publishes "no
+    value"; a date field only ever has the first.
+
+    Args:
+        value: The attribute read off a contract row.
+
+    Returns:
+        True when the cell carries no information.
+    """
+    return value is None or (isinstance(value, str) and not value.strip())
+
+
+def evaluate_canary(canary: FieldCanary, rows: Sequence[object]) -> CanaryReading:
+    """Measure one watched column over the rows a catalog read came back with.
+
+    Args:
+        canary: The column being watched and the shapes it may take.
+        rows: Contract rows from the read.
+
+    Returns:
+        The reading. An empty page is reported as unmeasurable rather than
+        ``hollow``: zero rows says the page is gone, which the row-count probe
+        already owns, and a shape computed over nothing would be a claim about
+        a column that was never looked at.
+    """
+    if not rows:
+        return CanaryReading(
+            asset_type=canary.asset_type,
+            field=canary.field,
+            shape=SHAPE_NO_READING,
+            rows=0,
+            missing=None,
+            allowed=canary.allowed,
+            error="canary read returned no rows",
+        )
+    missing = sum(1 for row in rows if _is_missing(getattr(row, canary.field)))
+    return CanaryReading(
+        asset_type=canary.asset_type,
+        field=canary.field,
+        shape=shape_of(len(rows), missing),
+        rows=len(rows),
+        missing=missing,
+        allowed=canary.allowed,
+    )
 
 
 def key_status(
@@ -253,7 +472,8 @@ async def patrol(registry: ProviderRegistry | None = None) -> Sequence[PatrolRes
 
     Returns:
         One result per registered verified capability, in registration
-        order, each naming the attempts it used up.
+        order, each naming the attempts it used up and the column-shape
+        readings taken after its pass.
     """
     from opendata.data.registry import get_registry
 
@@ -304,16 +524,26 @@ async def patrol(registry: ProviderRegistry | None = None) -> Sequence[PatrolRes
             # The pass is real, the leg is not clean: keep the first failure
             # in the report rather than turning flakiness green.
             logger.warning(f"patrol {leg} passed only on attempt {attempts}: {error}")
+        probe_ms = (time.perf_counter() - started) * 1000
+        canaries = await _run_canaries(fetcher, capability) if ok else ()
+        for reading in canaries:
+            if reading.deviates:
+                logger.warning(
+                    f"patrol canary {leg} {reading.asset_type}.{reading.field}: "
+                    f"{reading.missing} of {reading.rows} rows empty, shape "
+                    f"{reading.shape} (measured: {sorted(reading.allowed)})"
+                )
         results.append(
             PatrolResult(
                 domain=capability.domain,
                 source=capability.source,
                 ok=ok,
                 error=error,
-                latency_ms=(time.perf_counter() - started) * 1000,
+                latency_ms=probe_ms,
                 verified=True,
                 rows=rows,
                 attempts=attempts,
+                canaries=canaries,
             )
         )
     return results
@@ -535,6 +765,86 @@ async def _probe_fetcher(fetcher: Fetcher[Any, Any], params: ProbeParams) -> int
     if rows == 0:
         raise PatrolProbeError("probe returned no rows")
     return rows
+
+
+async def _run_canaries(
+    fetcher: Fetcher[Any, Any], capability: Capability
+) -> tuple[CanaryReading, ...]:
+    """Measure the watched columns of a leg that just probed clean.
+
+    One catalog page is read once however many of its columns are watched:
+    the shapes must come from the *same* answer, or a column could be judged
+    full on the build that has dates and hollow on the one that does not and
+    both readings would be true of nothing.
+
+    A canary read that fails is reported as unmeasurable and nothing else:
+    the routing mark was decided by the probe, and one page that could not be
+    read today must not be allowed to say anything about the source's health
+    or to page as a field collapse.
+
+    Args:
+        fetcher: The resolved fetcher the leg probes with.
+        capability: The capability that passed its probe.
+
+    Returns:
+        One reading per watched column, in table order.
+    """
+    watched = FIELD_CANARIES.get((capability.domain, capability.source), ())
+    readings: list[CanaryReading] = []
+    for asset_type in dict.fromkeys(canary.asset_type for canary in watched):
+        rows, error = await _read_page(fetcher, asset_type)
+        on_page = (canary for canary in watched if canary.asset_type == asset_type)
+        readings.extend(_page_reading(canary, rows, error) for canary in on_page)
+    return tuple(readings)
+
+
+def _page_reading(
+    canary: FieldCanary, rows: Sequence[object] | None, error: str | None
+) -> CanaryReading:
+    """Render one column's reading from a page that may not have arrived.
+
+    Args:
+        canary: The column being watched and the shapes it may take.
+        rows: The page's rows, or None when the page could not be read.
+        error: Why the page could not be read (None on a real read).
+
+    Returns:
+        The measurement, or an unmeasurable reading.
+    """
+    if rows is None:
+        return CanaryReading(
+            asset_type=canary.asset_type,
+            field=canary.field,
+            shape=SHAPE_NO_READING,
+            rows=None,
+            missing=None,
+            allowed=canary.allowed,
+            error=error,
+        )
+    return evaluate_canary(canary, rows)
+
+
+async def _read_page(
+    fetcher: Fetcher[Any, Any], asset_type: str
+) -> tuple[Sequence[object] | None, str | None]:
+    """Read one catalog page for the canaries, or explain why it could not.
+
+    Args:
+        fetcher: The fetcher serving the page.
+        asset_type: The catalog page to read.
+
+    Returns:
+        ``(rows, None)`` on a read, ``(None, detail)`` when nothing could be
+        measured - a timeout, a refusal, or a transport blip alike.
+    """
+    try:
+        rows = await asyncio.wait_for(
+            asyncio.to_thread(fetcher.fetch, asset_type=asset_type),
+            timeout=PROBE_TIMEOUT,
+        )
+    except Exception as exc:  # an unreadable page measures nothing
+        return None, f"{type(exc).__name__}: {exc}"
+    return cast("Sequence[object]", rows), None
 
 
 #: Legs whose probe params cannot be frozen. ``futures_daily`` /
