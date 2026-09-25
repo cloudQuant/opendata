@@ -1,0 +1,46 @@
+===== C24 真机巡检（sina normalize 窗口裁剪 + stock_action period 对齐之后的全腿回归）=====
+captured_at=2026-09-25T19:15:38+03:00
+branch=dev HEAD=cdfe100
+python=Python 3.13.5  本机时区偏移=+0300
+
+===== 为什么要跑 =====
+本轮改了两个真实面：①akshare sina 系 4 条腿（期货/期权/债券/公司行动）的 normalize 现在按调用方窗口裁剪，
+②stock_action 的 akshare 腿 period 从 event 改成 1D，与同域 ths 腿同形，权威行才可能被 auto 走到。
+巡检按注册表能力展开、用显式 source 请求，所以它检查的是「取数面没坏」；窗口面是否变窄由
+scripts/ops/akshare_fallback_cross_check.py 的同问题同答案判据负责，两份都要在。
+
+===== 复现命令 =====
+set -a; . ./.env; set +a; python scripts/ops/health_patrol.py
+
+== 健康巡检结果 ==
+  [ok] ecb/economy_cpi: 12 rows, 575ms
+  [ok] ecb/economy_gdp: 8 rows, 371ms
+  [ok] ecb/economy_rate: 14 rows, 340ms
+  [ok] imf/economy_cpi: 10 rows, 11430ms
+  [ok] imf/economy_gdp: 10 rows, 12348ms
+  [ok] imf/economy_unemployment: 10 rows, 11140ms
+  [ok] oecd/economy_cpi: 24 rows, 273ms
+  [ok] oecd/economy_unemployment: 2 rows, 206ms
+  [ok] ths/stock_daily: 5 rows, 2942ms
+  [ok] ths/stock_action: 4 rows, 2374ms
+  [ok] ths/index_daily: 5 rows, 1919ms
+  [ok] ths/index_constituent: 300 rows, 1309ms
+  [ok] ths/financial_statement: 52 rows, 1555ms
+  [ok] ths/fund_action: 3 rows, 3094ms
+  [ok] ths/fund_etf_daily: 15 rows, 2475ms
+  [ok] ths/instrument: 5578 rows, 2271ms
+  [ok] ths/futures_daily: 15 rows, 1144ms
+  [ok] ths/option_daily: 15 rows, 6071ms
+  [ok] ths/trading_calendar: 241 rows, 1160ms
+  [ok] yfinance/stock_daily_overseas: 4 rows, 1723ms
+== 凭证配置 ==
+  ths: 配置（必须=True）
+  fred: 缺失（必须=True）
+  yfinance: 配置（必须=False）
+  ecb: 配置（必须=False）
+  imf: 配置（必须=False）
+  oecd: 配置（必须=False）
+  akshare: 配置（必须=False）
+
+失败 0 项；抖动 0 项；必配 Key 缺失 1 项
+PATROL_EXIT=0

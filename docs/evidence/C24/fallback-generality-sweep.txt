@@ -1,0 +1,31 @@
+===== provenance（运行前采集）=====
+captured_at=2026-09-25T19:00:13+03:00
+branch=dev HEAD=cdfe100
+python=Python 3.13.5
+工作树脏文件数=8
+复现命令=python docs/evidence/C24/fallback_generality_sweep.py
+
+===== C24 转正候选的加宽复核（真机、只读、不写数仓、不打印密钥）=====
+python=3.13.5  事件字段相对容差=0.0001 权重绝对容差=0.005
+
+===== stock_action 跨符号（2015-01-01..2024-12-31，每股口径） =====
+  [PASS    ] 600519: ths=13 akshare=13 共同=13 仅 ths=0 仅 akshare=0 不符=0
+  [PASS    ] 000651: ths=13 akshare=13 共同=13 仅 ths=0 仅 akshare=0 不符=0
+  [PASS    ] 600036: ths=10 akshare=10 共同=10 仅 ths=0 仅 akshare=0 不符=0
+  [MISMATCH] 601318: ths=20 akshare=20 共同=20 仅 ths=0 仅 akshare=0 不符=1
+             2018-06-07 cash_dividend: ths=1.2 akshare=1.0 相对差=0.16666667
+  [PASS    ] 000333: ths=10 akshare=10 共同=10 仅 ths=0 仅 akshare=0 不符=0
+  [PASS    ] 002415: ths=10 akshare=10 共同=10 仅 ths=0 仅 akshare=0 不符=0
+  小结：发行主体 6 个，其中两侧不一致 1 个
+
+===== index_constituent 跨指数（成员集合 + 权重） =====
+  [PASS    ] 000300.SH: as_of ths=2026-09-26 akshare=2026-08-31 ths=300 akshare=300 共同=300 仅 ths=0 仅 akshare=0 不符=0
+  [PASS    ] 000016.SH: as_of ths=2026-09-26 akshare=2026-08-31 ths=50 akshare=50 共同=50 仅 ths=0 仅 akshare=0 不符=0
+  [PASS    ] 000905.SH: as_of ths=2026-09-26 akshare=2026-08-31 ths=500 akshare=500 共同=500 仅 ths=0 仅 akshare=0 不符=0
+  [PASS    ] 000852.SH: as_of ths=2026-09-26 akshare=2026-08-31 ths=1000 akshare=1000 共同=1000 仅 ths=0 仅 akshare=0 不符=0
+  小结：指数 4 个，其中两侧不一致 0 个
+
+===== 转正判定 =====
+  stock_action: 跨样本不符，保持 verified=false（不符 1/6 符号）
+  index_constituent: 跨样本一致，可考虑转正（不符 0/4 指数）
+EXIT=0

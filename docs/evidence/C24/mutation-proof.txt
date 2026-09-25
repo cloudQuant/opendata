@@ -1,0 +1,75 @@
+===== C24 守卫变异证明（真机、只读写回被改文件本身，不碰数仓、不打印密钥）=====
+captured_at=2026-09-25T19:21:59+03:00
+branch=dev HEAD=cdfe100
+本机时区偏移=+0300
+python=Python 3.13.5  工作树脏文件数=9
+
+===== 复现命令 =====
+python docs/evidence/C24/guard_mutation_proof.py
+
+===== C24 守卫变异证明（改回缺陷 -> 期望具名用例失败 -> 精确回写）=====
+cwd=/Users/yunjinqi/Documents/new_projects/opendata  python=3.13.5  复现命令=python docs/evidence/C24/guard_mutation_proof.py
+
+##### M1 stock_action 的 akshare 腿 period 退回 event（同行两腿不再同形）
+  文件=opendata/data/providers/akshare/models/stock_action.py
+  期望失败 TestRankedLegsCanCompete::test_only_the_documented_row_ranks_legs_that_never_meet -> exit=1
+      E     Use -v to get more diff / =========================== short test summary info ============================ / FAILED tests/test_fallback_degradation.py::TestRankedLegsCanCompete::test_only_the_documented_row_ranks_legs_that_never_meet / ============================== 1 failed in 0.09s ===============================
+  期望失败 TestRankedLegsCanCompete::test_stock_action_legs_share_the_verified_legs_shape -> exit=1
+      E     Use -v to get more diff / =========================== short test summary info ============================ / FAILED tests/test_fallback_degradation.py::TestRankedLegsCanCompete::test_stock_action_legs_share_the_verified_legs_shape / ============================== 1 failed in 0.08s ===============================
+  整文件复跑 tests/test_fallback_degradation.py -> exit=1（=========================== short test summary info ============================ / FAILED tests/test_fallback_degradation.py::TestRankedLegsCanCompete::test_only_the_documented_row_ranks_legs_that_never_meet / FAILED tests/test_fallback_degradation.py::TestRankedLegsCanCompete::test_stock_action_legs_share_the_verified_legs_shape / ========================= 2 failed, 11 passed in 0.09s =========================）
+  回写后复跑 -> exit=0（asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function / collected 13 items / tests/test_fallback_degradation.py .............                         [100%] / ============================== 13 passed in 0.04s ==============================）
+  判定=CAUGHT
+
+##### M2 index_constituent 的 akshare 腿无跨 vendor 读数即转正
+  文件=opendata/data/providers/akshare/models/index_constituent.py
+  期望失败 TestDegradationCoverageIsMeasured::test_degradable_shapes_are_exactly_the_measured_ones -> exit=1
+      E     Use -v to get more diff / =========================== short test summary info ============================ / FAILED tests/test_fallback_degradation.py::TestDegradationCoverageIsMeasured::test_degradable_shapes_are_exactly_the_measured_ones / ============================== 1 failed in 0.08s ===============================
+  期望失败 TestDegradationCoverageIsMeasured::test_no_domestic_row_can_degrade_today -> exit=1
+      E     Use -v to get more diff / =========================== short test summary info ============================ / FAILED tests/test_fallback_degradation.py::TestDegradationCoverageIsMeasured::test_no_domestic_row_can_degrade_today / ============================== 1 failed in 0.09s ===============================
+  整文件复跑 tests/test_fallback_degradation.py -> exit=1（=========================== short test summary info ============================ / FAILED tests/test_fallback_degradation.py::TestDegradationCoverageIsMeasured::test_degradable_shapes_are_exactly_the_measured_ones / FAILED tests/test_fallback_degradation.py::TestDegradationCoverageIsMeasured::test_no_domestic_row_can_degrade_today / ========================= 2 failed, 11 passed in 0.09s =========================）
+  回写后复跑 -> exit=0（asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function / collected 13 items / tests/test_fallback_degradation.py .............                         [100%] / ============================== 13 passed in 0.04s ==============================）
+  判定=CAUGHT
+
+##### M3 authority.json 把 fund_etf_daily 改成 ths 优先（掩盖未转正的行首）
+  文件=opendata/data/authority.json
+  期望失败 TestRowOrderIsTheOrderAutoUses::test_rows_with_an_eligible_leg_start_with_an_eligible_leg -> exit=1
+      E     Use -v to get more diff / =========================== short test summary info ============================ / FAILED tests/test_fallback_degradation.py::TestRowOrderIsTheOrderAutoUses::test_rows_with_an_eligible_leg_start_with_an_eligible_leg / ============================== 1 failed in 0.08s ===============================
+  整文件复跑 tests/test_fallback_degradation.py -> exit=1（E     Use -v to get more diff / =========================== short test summary info ============================ / FAILED tests/test_fallback_degradation.py::TestRowOrderIsTheOrderAutoUses::test_rows_with_an_eligible_leg_start_with_an_eligible_leg / ========================= 1 failed, 12 passed in 0.09s =========================）
+  回写后复跑 -> exit=0（asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function / collected 13 items / tests/test_fallback_degradation.py .............                         [100%] / ============================== 13 passed in 0.04s ==============================）
+  判定=CAUGHT
+
+##### M4 resolve() 绕过健康位（摘掉腿也不换下一条）
+  文件=opendata/data/registry.py
+  期望失败 TestDegradationIsTaken::test_each_ranked_leg_loses_to_the_next_one_in_its_row -> exit=1
+      E     + ecb / =========================== short test summary info ============================ / FAILED tests/test_fallback_degradation.py::TestDegradationIsTaken::test_each_ranked_leg_loses_to_the_next_one_in_its_row / ============================== 1 failed in 0.08s ===============================
+  期望失败 TestDegradationIsTaken::test_the_last_leg_failing_leaves_a_lookup_miss_rather_than_a_guess -> exit=1
+      E   AssertionError: 全部 ['ecb', 'oecd'] 都被摘掉，auto 仍给出 ecb / =========================== short test summary info ============================ / FAILED tests/test_fallback_degradation.py::TestDegradationIsTaken::test_the_last_leg_failing_leaves_a_lookup_miss_rather_than_a_guess / ============================== 1 failed in 0.08s ===============================
+  期望失败 TestDegradationIsTaken::test_health_flags_are_restored_after_each_chain -> exit=1
+      E    +        where resolve = <opendata.data.registry.ProviderRegistry object at 0x117592900>.resolve / =========================== short test summary info ============================ / FAILED tests/test_fallback_degradation.py::TestDegradationIsTaken::test_health_flags_are_restored_after_each_chain / ============================== 1 failed in 0.08s ===============================
+  整文件复跑 tests/test_fallback_degradation.py -> exit=1（FAILED tests/test_fallback_degradation.py::TestDegradationIsTaken::test_each_ranked_leg_loses_to_the_next_one_in_its_row / FAILED tests/test_fallback_degradation.py::TestDegradationIsTaken::test_the_last_leg_failing_leaves_a_lookup_miss_rather_than_a_guess / FAILED tests/test_fallback_degradation.py::TestDegradationIsTaken::test_health_flags_are_restored_after_each_chain / ========================= 3 failed, 10 passed in 0.09s =========================）
+  回写后复跑 -> exit=0（asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function / collected 13 items / tests/test_fallback_degradation.py .............                         [100%] / ============================== 13 passed in 0.04s ==============================）
+  判定=CAUGHT
+
+##### M5 sina 期货日线 normalize 不再按窗口裁剪（退路多答）
+  文件=opendata/data/providers/akshare/models/futures_daily.py
+  期望失败 test_a_named_window_crops_the_whole_history[futures_daily] -> exit=1
+      E     ...Full output truncated (14 lines hidden), use '-vv' to show / =========================== short test summary info ============================ / FAILED tests/test_sina_window_fidelity.py::test_a_named_window_crops_the_whole_history[futures_daily] / ============================== 1 failed in 0.09s ===============================
+  整文件复跑 tests/test_sina_window_fidelity.py -> exit=1（=========================== short test summary info ============================ / FAILED tests/test_sina_window_fidelity.py::test_a_named_window_crops_the_whole_history[futures_daily] / FAILED tests/test_sina_window_fidelity.py::test_one_sided_windows_bound_only_the_side_given / ========================= 2 failed, 9 passed in 0.13s ==========================）
+  回写后复跑 -> exit=0（asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function / collected 11 items / tests/test_sina_window_fidelity.py ...........                           [100%] / ============================== 11 passed in 0.08s ==============================）
+  判定=CAUGHT
+
+##### M6 within_window 的上界失效（只裁下界）
+  文件=opendata/data/providers/akshare/models/_normalize.py
+  期望失败 test_a_named_window_crops_the_whole_history[futures_daily] -> exit=1
+      E     ...Full output truncated (8 lines hidden), use '-vv' to show / =========================== short test summary info ============================ / FAILED tests/test_sina_window_fidelity.py::test_a_named_window_crops_the_whole_history[futures_daily] / ============================== 1 failed in 0.09s ===============================
+  期望失败 test_a_named_window_crops_the_whole_history[stock_action] -> exit=1
+      E     ...Full output truncated (8 lines hidden), use '-vv' to show / =========================== short test summary info ============================ / FAILED tests/test_sina_window_fidelity.py::test_a_named_window_crops_the_whole_history[stock_action] / ============================== 1 failed in 0.09s ===============================
+  期望失败 test_one_sided_windows_bound_only_the_side_given -> exit=1
+      E     Use -v to get more diff / =========================== short test summary info ============================ / FAILED tests/test_sina_window_fidelity.py::test_one_sided_windows_bound_only_the_side_given / ============================== 1 failed in 0.09s ===============================
+  整文件复跑 tests/test_sina_window_fidelity.py -> exit=1（FAILED tests/test_sina_window_fidelity.py::test_a_named_window_crops_the_whole_history[stock_action] / FAILED tests/test_sina_window_fidelity.py::test_one_sided_windows_bound_only_the_side_given / FAILED tests/test_sina_window_fidelity.py::test_within_window_bounds_are_inclusive / ========================= 6 failed, 5 passed in 0.13s ==========================）
+  回写后复跑 -> exit=0（asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function / collected 11 items / tests/test_sina_window_fidelity.py ...........                           [100%] / ============================== 11 passed in 0.08s ==============================）
+  判定=CAUGHT
+
+===== 汇总 =====
+  变异 6 条，守卫全部命中 = True
+EXIT=0
