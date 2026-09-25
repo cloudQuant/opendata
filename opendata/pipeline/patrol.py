@@ -43,8 +43,10 @@ PROBE_TIMEOUT = 30.0
 #: range on purpose - a range the sources have already published can never
 #: expire, while "the last N days" reintroduces the weekend/holiday false
 #: alarms and the rolling-coverage limits of the calendar endpoint.
-#: ``index_daily``/``index_constituent`` carry the exchange suffix because
-#: the bare code resolves to several index listings upstream.
+#: ``index_daily`` probes a *bare* index code on purpose: it is the only probe
+#: that walks ``resolve_index_code`` (index catalog lookup) before fetching,
+#: while ``index_constituent`` stays qualified so the pass-the-symbol-through
+#: path is covered too and a catalog outage does not fail both legs alike.
 ProbeParams = dict[str, str | date]
 PROBE_PARAMS: dict[tuple[str, str], ProbeParams] = {
     ("economy_cpi", "ecb"): {
@@ -101,7 +103,7 @@ PROBE_PARAMS: dict[tuple[str, str], ProbeParams] = {
         "end_date": date(2024, 12, 31),
     },
     ("index_daily", "ths"): {
-        "symbol": "000300.SH",
+        "symbol": "000300",
         "start_date": date(2024, 9, 2),
         "end_date": date(2024, 9, 6),
     },

@@ -374,7 +374,11 @@ class TestSymbolResolution:
             assert resolve_index_code(active, " 886042.ti ") == "886042.TI"
 
     def test_plain_index_code_resolves_from_the_index_universe(self):
-        """指数走列表解析：search 端点是按名称检索的，数字代码查不到."""
+        """指数走列表解析：search 端点是按名称检索的，数字代码查不到.
+
+        行按上游真实形状给（带 ``ticker``/``asset_type``）——旧夹具省掉了
+        ``ticker``，于是 C18 那条「整表因对账失败而拒」的缺陷在这条用例里是绿的。
+        """
 
         def handler(request: httpx.Request) -> httpx.Response:
             assert request.url.params["asset_type"] == "a-share-index"
@@ -382,8 +386,18 @@ class TestSymbolResolution:
                 200,
                 content=_envelope(
                     [
-                        {"thscode": "886042.TI", "name": "存储芯片"},
-                        {"thscode": "000300.SH", "name": "沪深300"},
+                        {
+                            "thscode": "886042.TI",
+                            "ticker": "886042",
+                            "asset_type": "a-share-index",
+                            "name": "存储芯片",
+                        },
+                        {
+                            "thscode": "000300.SH",
+                            "ticker": "000300",
+                            "asset_type": "a-share-index",
+                            "name": "沪深300",
+                        },
                     ]
                 ),
             )
@@ -391,14 +405,52 @@ class TestSymbolResolution:
         with _mock_client(handler) as active:
             assert resolve_index_code(active, "000300") == "000300.SH"
 
+    def test_index_display_codes_do_not_break_the_bare_code_lookup(self):
+        """C18: 同一页里的展示码行（``000001.SH`` ↔ ``1A0001``）不能吃掉解析.
+
+        真实指数目录 1,431 行里有 206 行是这种写法，旧实现对账一不等就整表抛，
+        于是主系列（上证综指自己也在其中）连同 ``000300`` 一起查不出来。
+        """
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                200,
+                content=_envelope(
+                    [
+                        {
+                            "thscode": "000001.SH",
+                            "ticker": "1A0001",
+                            "asset_type": "a-share-index",
+                            "name": "上证指数",
+                        },
+                        {
+                            "thscode": "970006.SZ",
+                            "ticker": "988006",
+                            "asset_type": "a-share-index",
+                            "name": "创业板指(港币)(CNH)",
+                        },
+                        {
+                            "thscode": "000300.SH",
+                            "ticker": "000300",
+                            "asset_type": "a-share-index",
+                            "name": "沪深300",
+                        },
+                    ]
+                ),
+            )
+
+        with _mock_client(handler) as active:
+            assert resolve_index_code(active, "000300") == "000300.SH"
+            assert resolve_index_code(active, "000001") == "000001.SH"
+
     @pytest.mark.parametrize(
         "payload",
         [
             [],
-            [{"thscode": "000301.SH", "name": "别的指数"}],
+            [{"thscode": "000301.SH", "ticker": "000301", "asset_type": "a-share-index"}],
             [
-                {"thscode": "000300.SH", "name": "沪深300"},
-                {"thscode": "000300.CSI", "name": "沪深300（中证）"},
+                {"thscode": "000300.SH", "ticker": "000300", "asset_type": "a-share-index"},
+                {"thscode": "000300.CSI", "ticker": "000300", "asset_type": "a-share-index"},
             ],
         ],
     )
@@ -1416,6 +1468,25 @@ class TestAgainstTheLiveFuyaoApi:
         assert rows[0].symbol < rows[-1].symbol  # 按 thscode 升序
         # 上市区间的左端：实测整表仅 9 行为 null（新股未回填），留冗余不误判
         assert sum(1 for row in rows if row.list_date is None) <= 20
+
+    def test_registry_routes_a_bare_index_code_to_the_fuyao_source(self):
+        """C18 真机：裸指数码经指数目录解析取到沪深300.
+
+        旧实现在这一步必抛 ``ticker_code_mismatch``（目录里 206/1,431 行的展示码
+        本就与 ``thscode`` 不同 ⇒ 整表被拒），所以这条用例吃的正是「解析器能不能
+        从真实目录里拿到候选」，而不是又一个带后缀的写法。
+        """
+        from opendata.data.providers import register_providers
+        from opendata.data.registry import get_registry
+
+        register_providers()
+        routed = get_registry().resolve_domain("index_daily", source="ths")
+        rows = routed.fetch(symbol="000300", start_date=date(2024, 9, 2), end_date=date(2024, 9, 6))
+
+        assert len(rows) == 5  # 该周无休市日，半开窗 [09-02, 09-06] 共 5 个交易日
+        assert {row.symbol for row in rows} == {"000300.SH"}  # 裸码解析出的限定写法
+        assert all(bar.close > 0 for bar in rows)
+        assert [rows[0].trade_date, rows[-1].trade_date] == [date(2024, 9, 2), date(2024, 9, 6)]
 
     def test_registry_routes_fund_distributions_to_the_fuyao_source(self):
         """真机：300ETF 分红经注册表路由，每份口径与量级成立（实测 14 笔、Σ 0.88）。"""

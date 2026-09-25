@@ -549,6 +549,19 @@ OPAQUE_CODE_ASSET_TYPES = frozenset({"options"})
 #: 是年月，不可能是这四个数，故只豁免这三类尾标。
 SYNTHETIC_SERIES_TICKER_TAILS = frozenset({"7777", "8888", "9999"})
 
+#: 指数目录的 ``ticker`` 是**另一套编号**，不是 ``thscode`` 的另一种写法，故两者
+#: 之间不存在可对的账（2026-09-25 实测 ``docs/evidence/C18/index-code-rule-audit.txt``：
+#: 指数目录 1,431 行里 206 行「去后缀 ≠ ticker」——201 行是通达信的字母数字指数码，
+#: 其中就有主系列自己（``000001.SH`` ↔ ``1A0001`` 上证指数、``000002.SH`` ↔ ``1A0002``
+#: Ａ股指数、``991001.TI`` ↔ ``1C0003`` 旧码），另 5 行是币种/R 份额变体
+#: （``970006.SZ`` ↔ ``988006`` 创业板指港币 CNH）。既没有取值规则能把这两类与「脏
+#: 数据」分开，「只丢掉不等的行」更会把上证综指从目录里丢掉；而对账本身换不来任何保护：
+#: ``ticker`` 既不落库（``Instrument`` 没有该字段）也不参与裸码解析
+#: （``_resolve_by_listing`` 只匹配 ``thscode`` 前缀，实测 1,431 个前缀两两互异 ⇒ 裸码
+#: 唯一）。股票（5,578 行）与场内 ETF（1,696 行）目录实测 **0 行**不等，对账在那些资产
+#: 类型上照旧生效。
+DISPLAY_CODE_ASSET_TYPES = frozenset({INDEX_ASSET_TYPE})
+
 
 def _codes_agree(symbol: str, plain: object, asset_type: str) -> bool:
     """这一行的两个代码写法是否可接受（代码对账是否成立）.
@@ -559,10 +572,12 @@ def _codes_agree(symbol: str, plain: object, asset_type: str) -> bool:
         asset_type: 上游规范化资产类型。
 
     Returns:
-        期权（不透明序号）、合成序列尾标与 ``ticker`` 缺失的行返回 ``True``
-        （不参与对账）；其余要求去后缀后逐字相等。
+        期权（不透明序号）、指数（展示码另成一套编号）、合成序列尾标与 ``ticker``
+        缺失的行返回 ``True``（不参与对账）；其余要求去后缀后逐字相等。
     """
-    if asset_type in OPAQUE_CODE_ASSET_TYPES or not isinstance(plain, str) or not plain:
+    if asset_type in OPAQUE_CODE_ASSET_TYPES or asset_type in DISPLAY_CODE_ASSET_TYPES:
+        return True
+    if not isinstance(plain, str) or not plain:
         return True
     if plain[-4:] in SYNTHETIC_SERIES_TICKER_TAILS:
         return True
@@ -589,9 +604,11 @@ def normalize_instruments(
       2026-09-24 16:00，不是请求时刻）；信封不带该字段时状态判不了，回落到
       ``"unknown"`` 而不是墙上时钟 —— 代码消歧路径（``search_instruments``）只消费
       ``symbol``，不该因为一个状态字段无从派生而整体失败。
-    * 代码对账：``thscode`` 去后缀必须等于 ``ticker``，否则整页失败关闭；期权与
-      合成序列按 :data:`SYNTHETIC_SERIES_TICKER_TAILS` 豁免（见该常量与
-      :func:`_codes_agree` 的实测依据）。
+    * 代码对账：``thscode`` 去后缀必须等于 ``ticker``，否则整页失败关闭；期权按
+      :data:`OPAQUE_CODE_ASSET_TYPES`、指数按 :data:`DISPLAY_CODE_ASSET_TYPES` 豁免
+      （两者的 ``ticker`` 都不是 ``thscode`` 的另一种写法），期货合成序列按
+      :data:`SYNTHETIC_SERIES_TICKER_TAILS` 豁免（见各常量与 :func:`_codes_agree`
+      的实测依据）。
 
     Args:
         envelope: 成功信封。
@@ -1290,6 +1307,7 @@ __all__ = [
     "CALENDAR_ENDPOINT",
     "CASH_FLOW_STATEMENTS_ENDPOINT",
     "DAILY_TIME_PERIOD",
+    "DISPLAY_CODE_ASSET_TYPES",
     "DIVIDEND_TOTAL_TOLERANCE",
     "FINANCIAL_PERIODS",
     "FINANCIAL_PERIOD_END",

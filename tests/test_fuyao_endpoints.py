@@ -609,6 +609,75 @@ class TestNormalizers:
         assert [row.symbol for row in rows] == ["AP00.CZC", "ICZL.CFE", "IC8888.CFE"]
         assert [row.status for row in rows] == ["active"] * 3  # 无日期，不判退市
 
+    def test_index_display_codes_are_exempt_from_the_reconciliation(self):
+        """C18: 指数的 ``ticker`` 是另一套编号，对账对它不成立（实测 206/1,431 行）.
+
+        两类都在真实目录里：主系列自己的字母码（上证综指 ``000001.SH`` ↔
+        ``1A0001``）与币种/R 份额变体（``970006.SZ`` ↔ ``988006``）。旧实现把这一
+        页整表判死，于是 ``resolve_index_code`` 拿不到任何候选；而「丢掉不等的行」
+        会连上证综指一起丢，所以豁免按资产类型收（``DISPLAY_CODE_ASSET_TYPES``）。
+        """
+        rows = normalize_instruments(
+            _parse(
+                _envelope_at(
+                    [
+                        {
+                            "thscode": "000001.SH",
+                            "ticker": "1A0001",
+                            "asset_type": "a-share-index",
+                            "name": "上证指数",
+                        },
+                        {
+                            "thscode": "991001.TI",
+                            "ticker": "1C0003",
+                            "asset_type": "a-share-index",
+                            "name": "上证指数(旧)",
+                        },
+                        {
+                            "thscode": "970006.SZ",
+                            "ticker": "988006",
+                            "asset_type": "a-share-index",
+                            "name": "创业板指(港币)(CNH)",
+                        },
+                        {
+                            "thscode": "000300.SH",
+                            "ticker": "000300",
+                            "asset_type": "a-share-index",
+                            "name": "沪深300",
+                        },
+                    ],
+                    _ms("2026-09-24"),
+                )
+            )
+        )
+
+        assert [row.symbol for row in rows] == [
+            "000001.SH",
+            "991001.TI",
+            "970006.SZ",
+            "000300.SH",
+        ]
+        assert [row.status for row in rows] == ["active"] * 4
+
+    def test_index_exempt_does_not_reach_the_other_asset_types(self):
+        """豁免只吃指数：同一页里 a-share 的对不上必须照旧失败关闭。"""
+        with pytest.raises(FuyaoError, match="ticker_code_mismatch"):
+            normalize_instruments(
+                _parse(
+                    _envelope_at(
+                        [
+                            {
+                                "thscode": "000300.SH",
+                                "ticker": "1A0300",
+                                "asset_type": "a-share-index",
+                            },
+                            {"thscode": "600519.SH", "ticker": "600520", "asset_type": "a-share"},
+                        ],
+                        _ms("2026-09-24"),
+                    )
+                )
+            )
+
     def test_a_real_contract_with_a_wrong_code_still_fails(self):
         """豁免只看合成码尾标：真实月份合约（``AP612``）对不上照样失败关闭。"""
         with pytest.raises(FuyaoError, match="ticker_code_mismatch"):
