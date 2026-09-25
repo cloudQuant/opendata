@@ -4,17 +4,20 @@ Declares the fetchers that a live call has verified and registers them into
 the process registry. Domains whose upstream endpoints are not verified yet
 (``financial_indicator``) are deliberately absent: routing them to a
 half-checked adapter would be worse than leaving them to the akshare provider
-until the cross-vendor comparison lands. ``fund_etf_daily`` is a deliberate
-addition to that list: the upstream ETF K-line endpoint publishes a
-forward-adjusted series only (measured, see ``docs/evidence/C6``), which D10
-forbids storing, so it stays on the akshare chain until a factor route exists.
-That route's missing piece is now registered: ``fund_action`` publishes the
-distributions that turn an adjusted ETF series back into unadjusted prices
-(measured digit for digit against sina in ``docs/evidence/C15``), but it
-carries events, not prices, so the ETF daily leg still waits on the
-conversion itself. The ``trading_calendar`` leg is the producer side of A4.7:
-the expectation predicate in :mod:`opendata.pipeline.trading_calendar` reads
-the warehouse table these rows land in, so registering the fetcher is what
+until the cross-vendor comparison lands. ``fund_etf_daily`` spent C6 through
+C19 on that list for a reason the mapping table records: the upstream ETF
+K-line endpoint publishes a forward-adjusted series and its ``adjust``
+parameter is inert, which D10 forbids storing. The route out of that was the
+``fund_action`` leg (C15), and the conversion itself is now measured rather
+than assumed - C20 reconciled the published series against sina and Tencent
+over 10,608 price cells (2,652 per fund across four funds) and pinned the
+boundary to "distributions strictly after the bar" on live ex-dates - so the
+leg is registered and the domain has two verified sources. It is still not
+the domain's authority: its coverage is a rolling ~5 years, so ``akshare``
+answers "since inception" and ths answers "recently", in that order. The
+``trading_calendar`` leg is the producer side of A4.7: the expectation
+predicate in :mod:`opendata.pipeline.trading_calendar`
+reads the warehouse table these rows land in, so registering the fetcher is what
 makes the ``warehouse-calendar`` tier reachable at all.
 """
 
@@ -26,6 +29,7 @@ from opendata.data.providers.ths.models.financial_statement import (
     ThsFinancialStatementFetcher,
 )
 from opendata.data.providers.ths.models.fund_action import ThsFundActionFetcher
+from opendata.data.providers.ths.models.fund_etf_daily import ThsFundEtfDailyFetcher
 from opendata.data.providers.ths.models.futures_daily import ThsFuturesDailyFetcher
 from opendata.data.providers.ths.models.index_constituent import ThsIndexConstituentFetcher
 from opendata.data.providers.ths.models.index_daily import ThsIndexDailyFetcher
@@ -48,6 +52,7 @@ FETCHERS: tuple[Fetcher[Any, Any], ...] = (
     ThsIndexConstituentFetcher(),
     ThsFinancialStatementFetcher(),
     ThsFundActionFetcher(),
+    ThsFundEtfDailyFetcher(),
     ThsInstrumentFetcher(),
     ThsFuturesDailyFetcher(),
     ThsOptionDailyFetcher(),

@@ -29,9 +29,11 @@ from opendata.pipeline.patrol import (
     key_status,
     patrol,
     probe_params,
+    rolling_fund_etf_params,
     rolling_futures_params,
     rolling_option_params,
 )
+from opendata_fuyao.endpoints import FUND_ETF_DEPTH_DAYS
 
 
 class StubQuery(QueryParams):
@@ -232,7 +234,7 @@ class TestProbeParamCoverage:
 
 
 class TestRollingProbes:
-    """Legs whose instrument expires must be named from the probe date."""
+    """Legs whose instrument expires - or whose window does - are named anew."""
 
     def test_futures_contract_is_the_lead_month_after_today(self):
         params = rolling_futures_params(date(2026, 9, 25))
@@ -249,6 +251,21 @@ class TestRollingProbes:
 
         assert params["symbol"] == "10011425.SH"
         assert params["end_date"] == date(2026, 9, 25)
+
+    def test_the_etf_probe_window_rolls_with_the_probe_date(self):
+        """标的固定、窗口不固定：这条通道的可答深度本身就是「今天 - 1827 天」。"""
+        params = rolling_fund_etf_params(date(2026, 9, 25))
+
+        assert params["symbol"] == "510300"
+        assert params["start_date"] == date(2026, 9, 4)
+        assert params["end_date"] == date(2026, 9, 25)
+
+    def test_the_etf_probe_never_asks_past_the_rolling_depth(self):
+        """判据是相对量：窗口一旦长过深度，腿会在发请求前自己拒答（C20）。"""
+        for probe_day in (date(2026, 9, 25), date(2031, 1, 3), date(2038, 7, 20)):
+            params = rolling_fund_etf_params(probe_day)
+
+            assert (probe_day - params["start_date"]).days < FUND_ETF_DEPTH_DAYS
 
     def test_pick_skips_contracts_expiring_inside_the_horizon(self):
         rows = [

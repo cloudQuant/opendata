@@ -19,17 +19,26 @@
   两者都是上海零点毫秒戳，按 UTC 解释会整体早一天。
 - 复权请求值 ``none|forward|backward``，中台语义 ``unadjusted|qfq|hfq``；
   指数、期货、期权三类标的均无复权语义，请求不接受 ``adjust``。
+- ETF 日线的窗口约束与股票/指数**不同量级**（C20 二分实测）：单次跨度上限
+  1826 天（不是 10 年），且可答起点滚动跟随「今天」（地板 = 今天 − 1827 天，
+  两种窗口长度下地板同位）。越界不报错而是回 ``code=0`` 的空 ``item``，
+  故只能在本地前置拦截，见 :func:`build_fund_etf_prices_request`。
+- ETF 日线信封的 ``data.timestamp`` 实测是**窗口内末根**（== 末根 ``date_ms``）
+  而不是请求时刻 ⇒ 它是窗口相对的，新鲜度判据只能取末根交易日，拿信封戳当
+  「上游更新到哪天」会静默漏判（C20 实测，与成分股端点那个「请求时刻」相反）。
 
 D10：``Bar`` 只存不复权价，复权序列由本地因子合成；入库路径不应持久化
 ``adjust != unadjusted`` 的结果。ETF 日线端点（``/api/fund/market/historical``）
-只发前复权序列且无 ``adjust`` 参数，故其 ETF 腿必须等 :func:`fetch_fund_dividends`
-这条分红腿（实测：前复权价 = 不复权价 − 该日之后每份分红之和，逐笔可对）先把
-序列换回不复权，才谈得上入库。
+只发前复权序列，而 ``adjust`` 在那里是**接受但完全无效**的参数（C20 实测：六种
+取值与缺省回同一指纹，``data.adjust`` 恒为 ``null``）——比「拒收」更危险，因为
+请求侧看不出没生效。故 ETF 腿必须由 :func:`unadjust_bars` 在本层用
+:func:`fetch_fund_dividends` 的分红流换回不复权（实测口径：前复权价 = 不复权价
+− 该日之后每份现金分红之和，四只基金共 10,608 格逐格可对）才谈得上入库。
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from datetime import date, datetime, time, timedelta, timezone
 from typing import TYPE_CHECKING, Any
 from zoneinfo import ZoneInfo
@@ -67,6 +76,7 @@ INCOME_STATEMENTS_ENDPOINT = "/api/a-share/financials/income-statements"
 BALANCE_SHEETS_ENDPOINT = "/api/a-share/financials/balance-sheets"
 CASH_FLOW_STATEMENTS_ENDPOINT = "/api/a-share/financials/cash-flow-statements"
 FUND_DIVIDENDS_ENDPOINT = "/api/fund/corporate-actions/dividends"
+FUND_ETF_PRICES_ENDPOINT = "/api/fund/market/historical"
 
 #: 财务报表三张表（``statement_type`` → 端点）。
 FINANCIAL_STATEMENT_ENDPOINTS: Mapping[str, str] = {
@@ -183,6 +193,25 @@ def shanghai_midnight_millis(value: date) -> int:
         毫秒戳。
     """
     return int(datetime.combine(value, time.min, tzinfo=_SHANGHAI).timestamp() * 1000)
+
+
+def shanghai_today(now: datetime | None = None) -> date:
+    """取「今天」的 ``Asia/Shanghai`` 语义日期（供滚动深度地板用）.
+
+    上游是中文市场通道，它的「今天」是上海日期；UTC 日期在 16:00 UTC 之后会比
+    上海晚一天，拿 UTC 当天算地板会整体早一天，正好把请求推进「静默空帧」那一档
+    （见 :data:`FUND_ETF_DEPTH_DAYS`）。
+
+    Args:
+        now: 判定用的时刻；``None`` 取当前时间（测试传固定值）。
+
+    Returns:
+        上海时区当天。
+    """
+    moment = now if now is not None else datetime.now(_UTC)
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=_UTC)
+    return moment.astimezone(_SHANGHAI).date()
 
 
 def millis_to_trading_date(value: object) -> date:
@@ -1189,6 +1218,29 @@ IMPLEMENTED_PROGRESS = frozenset({"2"})
 DIVIDEND_TOTAL_TOLERANCE = 1e-6
 
 
+def _qualified_fund_symbol(symbol: object) -> str:
+    """校验基金标的：非空且带市场后缀，返回去空格后的代码.
+
+    两条基金腿（分红、ETF 日线）共用同一条规则：裸码上游回 ``code=1002``，
+    必须在本地拦住而不是让上游回话；错误 detail 也保持一致，排障时才能按码找人。
+
+    Args:
+        symbol: 请求使用的上游基金代码。
+
+    Returns:
+        去空格后的代码。
+
+    Raises:
+        FuyaoError: 标的为空或无市场后缀。
+    """
+    if not isinstance(symbol, str) or not symbol.strip():
+        raise error_for_transport("envelope_invalid", detail="symbol")
+    candidate = symbol.strip()
+    if "." not in candidate:
+        raise error_for_transport("envelope_invalid", detail="fund_symbol_qualified")
+    return candidate
+
+
 def build_fund_dividends_request(*, symbol: str) -> dict[str, Any]:
     """构造基金分红请求参数（单标的、必须带市场后缀）.
 
@@ -1201,12 +1253,7 @@ def build_fund_dividends_request(*, symbol: str) -> dict[str, Any]:
     Raises:
         FuyaoError: 标的为空或无市场后缀（裸码上游回 ``code=1002``，本地先拦）。
     """
-    if not isinstance(symbol, str) or not symbol.strip():
-        raise error_for_transport("envelope_invalid", detail="symbol")
-    candidate = symbol.strip()
-    if "." not in candidate:
-        raise error_for_transport("envelope_invalid", detail="fund_symbol_qualified")
-    return {"thscode": candidate}
+    return {"thscode": _qualified_fund_symbol(symbol)}
 
 
 def _is_placeholder_dividend(row: Mapping[str, Any]) -> bool:
@@ -1300,6 +1347,186 @@ def fetch_fund_dividends(client: FuyaoHttpClient, *, symbol: str) -> tuple[Corpo
     return normalize_fund_dividends(response.envelope, symbol=symbol)
 
 
+#: ETF 日线通道的可答深度（日历天，C20 二分实测）：起点早于
+#: ``today - FUND_ETF_DEPTH_DAYS`` 时上游**不报错**，而是回 ``code=0`` 的空
+#: ``item``——与「这只基金从没交易过」在信封上不可区分（C11a 指数腿同一类缺陷）。
+#: 地板随「今天」滚动（两种窗口长度下地板同位），故只能在发请求前拦。
+FUND_ETF_DEPTH_DAYS = 1827
+
+#: ETF 日线通道的单次跨度上限（日历天，C20 二分实测：1826 可答、1827 起报
+#: ``code=1003``）。上游文案写「单次不超过 10 年」，那是股票/指数腿的上限
+#: （:data:`MAX_WINDOW`），照抄会把排障引去错的腿。
+FUND_ETF_MAX_SPAN_DAYS = 1826
+
+#: 换算后价格的保留位数：ETF 最小变动价位 0.001，逐日分红求和带来的浮点噪声在
+#: 1e-13 量级；取 6 位吞掉噪声而不动有效位。
+_UNADJUST_DECIMALS = 6
+
+
+def build_fund_etf_prices_request(
+    *, symbol: str, start: date, end: date, today: date
+) -> dict[str, Any]:
+    """构造 ETF 日线请求参数（毫秒戳闭区间，**无** ``adjust``）.
+
+    与股票/指数日线的两点差异都来自 C20 实测。一是 ``adjust`` 在这里被**接受
+    但完全无效**（``0/1/2/forward/backward`` 与缺省回同一序列指纹，
+    ``data.adjust`` 恒为 ``null``），发它只会让人以为复权语义生效了，比拒收更
+    危险，故本函数不接受该参数。二是两道守卫的数值互不嵌套：可答深度 1827 天
+    比单次跨度上限 1826 天还多一天，所以「取满深度又取到今天」在一次请求里
+    做不到，:func:`fetch_fund_etf_bars` 按 :data:`FUND_ETF_MAX_SPAN_DAYS` 切块。
+
+    Args:
+        symbol: 上游基金代码（``510300.SH``，裸码上游回 ``code=1002``）。
+        start: 起始交易日（含）。
+        end: 结束交易日（不含）。
+        today: 判深度用的「今天」，须是上海日期（:func:`shanghai_today`）。
+            显式传入而非内部读系统时钟：本模块的请求构造函数对时钟保持纯净，
+            同一组入参必须永远产出同一份参数。
+
+    Returns:
+        查询参数。
+
+    Raises:
+        FuyaoError: 标的为空/裸码、窗口空或反向、跨度超
+            :data:`FUND_ETF_MAX_SPAN_DAYS`、起点早于服务端深度地板。
+    """
+    resolved_symbol = _qualified_fund_symbol(symbol)
+    if start >= end:
+        raise error_for_transport("envelope_invalid", detail="window")
+    if (end - start).days > FUND_ETF_MAX_SPAN_DAYS:
+        raise error_for_transport("envelope_invalid", detail="fund_window_span")
+    if start < today - timedelta(days=FUND_ETF_DEPTH_DAYS):
+        raise error_for_transport("envelope_invalid", detail="fund_window_depth")
+    return {
+        "thscode": resolved_symbol,
+        "interval": "1d",
+        "start": shanghai_midnight_millis(start),
+        "end": shanghai_midnight_millis(end) - 1,
+    }
+
+
+def _split_fund_etf_window(start: date, end: date, *, today: date) -> tuple[tuple[date, date], ...]:
+    """把 ``[start, end)`` 按 ETF 通道的跨度上限切块，并先拦掉早于地板的起点.
+
+    深度只在首块上判一次即够：块是自起点向后连续排布的，后续块的起点只会更晚。
+    越深的数据切块也拿不到（地板之前上游根本不作答），故这里不是「分批取全量」，
+    只是让取满可答范围成为可能。
+
+    Args:
+        start: 起始交易日（含）。
+        end: 结束交易日（不含）。
+        today: 判深度用的「今天」（上海日期）。
+
+    Returns:
+        连续子窗口（同样半开，每块跨度 ≤ :data:`FUND_ETF_MAX_SPAN_DAYS`）。
+
+    Raises:
+        FuyaoError: 窗口空或反向、起点早于服务端深度地板。
+    """
+    if start >= end:
+        raise error_for_transport("envelope_invalid", detail="window")
+    if start < today - timedelta(days=FUND_ETF_DEPTH_DAYS):
+        raise error_for_transport("envelope_invalid", detail="fund_window_depth")
+    max_span = timedelta(days=FUND_ETF_MAX_SPAN_DAYS)
+    chunks: list[tuple[date, date]] = []
+    cursor = start
+    while cursor < end:
+        chunk_end = min(cursor + max_span, end)
+        chunks.append((cursor, chunk_end))
+        cursor = chunk_end
+    return tuple(chunks)
+
+
+def unadjust_bars(bars: Iterable[Bar], events: Iterable[CorporateAction]) -> tuple[Bar, ...]:
+    """把上游的前复权 ETF 日线换算成不复权（**只动价格，不动量额**）.
+
+    实测口径（C15 采样、C20 四只基金各 2,652 格、合计 10,608 格逐格判）：
+    ``前复权价 = 不复权价 − 严格晚于该日的每份现金分红之和``。除息日**当天**已经
+    是复权后的价格，所以边界是「之后」而非「不早于」——C20 在两只多年分红的基金
+    上于 5 个除息日观测到两种口径的唯一分歧，「其后」逐格相等，「不早于」恰好在
+    除息日上错。无分红的基金换算退化为恒等（判据 B′ 要求这条真被观测到）。
+
+    「量额不参与复权」不靠断言，靠自证（判据 C'/C''）：``额/量`` 是当天真实成交
+    均价，换算后必然落进当日不复权高低价区间（实测四只各 663 根、合计 2652/2652
+    命中），而拿发布价判只在最后除息日之后的新行上成立。上游量的单位已是「份」（对新浪
+    逐根相对差 ≤3.6e-08、对腾讯标「手」列 ×100 逐根命中），故这里不做单位换算。
+
+    Args:
+        bars: 前复权日线（:func:`normalize_bars` 的产物）。
+        events: 分红事件流（:func:`normalize_fund_dividends` 的产物）。
+
+    Returns:
+        不复权日线，顺序与入参一致。
+
+    Raises:
+        FuyaoError: 分红流里出现 ``bars`` 之外的标的（会静默污染价格），或换算后
+            价格不为正——分红只会把价格往上加，所以这只能是发布价本身就是
+            0/负数的脏行，而它一旦过了换算就再也看不出问题。
+    """
+    collected = list(bars)
+    dividend_map: dict[str, list[CorporateAction]] = {}
+    for event in events:
+        dividend_map.setdefault(event.symbol, []).append(event)
+    unknown = sorted(set(dividend_map) - {bar.symbol for bar in collected})
+    if unknown:
+        raise error_for_transport("envelope_invalid", detail="fund_unadjust_symbol")
+    unadjusted: list[Bar] = []
+    for bar in collected:
+        tail = sum(
+            event.cash_dividend
+            for event in dividend_map.get(bar.symbol, ())
+            if event.ex_date > bar.trade_date
+        )
+        updates = {
+            field: round(getattr(bar, field) + tail, _UNADJUST_DECIMALS)
+            for field in ("open", "high", "low", "close")
+        }
+        if min(updates.values()) <= 0.0:
+            raise error_for_transport("envelope_invalid", detail="fund_unadjust_price")
+        unadjusted.append(bar.model_copy(update=updates))
+    return tuple(unadjusted)
+
+
+def fetch_fund_etf_bars(
+    client: FuyaoHttpClient,
+    *,
+    symbol: str,
+    start: date,
+    end: date,
+    today: date,
+) -> tuple[Bar, ...]:
+    """取 ETF 日线并换回不复权口径（分红腿先走，取不到就不发价格请求）.
+
+    顺序是有意的：这条端点只发前复权序列，而 ``adjust`` 是接受但无效的，没有
+    分红流就无法换算，而「拿前复权序列冒充不复权入库」正是 D10 明令禁止的那类
+    错误——它看起来完全正常，只在除息日附近悄悄改变收益率。故分红取失败时直接
+    抛出，不退化成恒等。分红也只取一次：它是「自成立至今」的全量事件流，与价格
+    窗口无关，逐块重取既多发请求又可能跨块取到不一致的两份。
+
+    Args:
+        client: 传输层客户端。
+        symbol: 上游基金代码（``510300.SH``）。
+        start: 起始交易日（含）。
+        end: 结束交易日（不含）。
+        today: 判深度用的「今天」（上海日期，见 :func:`shanghai_today`）。
+
+    Returns:
+        按交易日升序的不复权 ``Bar``。
+    """
+    chunks = _split_fund_etf_window(start, end, today=today)
+    events = fetch_fund_dividends(client, symbol=symbol)
+    bars: list[Bar] = []
+    for chunk_start, chunk_end in chunks:
+        response = client.get(
+            FUND_ETF_PRICES_ENDPOINT,
+            params=build_fund_etf_prices_request(
+                symbol=symbol, start=chunk_start, end=chunk_end, today=today
+            ),
+        )
+        bars.extend(normalize_bars(response.envelope, symbol=symbol))
+    return unadjust_bars(bars, events)
+
+
 __all__ = [
     "ADJUSTMENTS",
     "ADJUSTMENT_FACTORS_ENDPOINT",
@@ -1316,6 +1543,9 @@ __all__ = [
     "FINANCIAL_STATEMENT_MAX_LIMIT",
     "FUND_ASSET_TYPE",
     "FUND_DIVIDENDS_ENDPOINT",
+    "FUND_ETF_DEPTH_DAYS",
+    "FUND_ETF_MAX_SPAN_DAYS",
+    "FUND_ETF_PRICES_ENDPOINT",
     "FUTURES_ASSET_TYPE",
     "FUTURES_PRICES_ENDPOINT",
     "INCOME_STATEMENTS_ENDPOINT",
@@ -1337,6 +1567,7 @@ __all__ = [
     "build_adjustment_factors_request",
     "build_financial_statements_request",
     "build_fund_dividends_request",
+    "build_fund_etf_prices_request",
     "build_index_constituents_request",
     "build_index_prices_request",
     "build_period_daily_request",
@@ -1348,6 +1579,7 @@ __all__ = [
     "fetch_daily_bars",
     "fetch_financial_statements",
     "fetch_fund_dividends",
+    "fetch_fund_etf_bars",
     "fetch_index_constituents",
     "fetch_index_daily_bars",
     "fetch_period_daily_bars",
@@ -1363,4 +1595,6 @@ __all__ = [
     "normalize_instruments",
     "search_instruments",
     "shanghai_midnight_millis",
+    "shanghai_today",
+    "unadjust_bars",
 ]

@@ -121,7 +121,7 @@ entries:
   - {section: fund-managers, family: 基金, method: GET, path: /api/fund/managers/experience, title: '从业经历', status: available, domain: null, scenario: '基金经理从业经历：任职稳定性核查'}
   - {section: fund-managers, family: 基金, method: GET, path: /api/fund/managers/detail, title: '基金经理详情', status: available, domain: null, scenario: '基金经理详情：在册经理主数据'}
   - {section: fund-market, family: 基金, method: GET, path: /api/fund/market/snapshot, title: '场内基金行情快照', status: available, domain: fund_etf_daily, scenario: '场内基金实时快照：ETF/LOF 盘中监控'}
-  - {section: fund-market, family: 基金, method: GET, path: /api/fund/market/historical, title: '场内基金历史日线行情', status: available, domain: fund_etf_daily, scenario: '场内基金前复权日线：仍不接入——C15 实测该序列是不复权价逐根减去后续分红（0.211=0.088+0.123），D10 要求入库不复权，故等 fund_action 因子路（已接入）落地后由本地换算'}
+  - {section: fund-market, family: 基金, method: GET, path: /api/fund/market/historical, title: '场内基金历史日线行情', status: implemented, domain: fund_etf_daily, scenario: '场内基金日线：C20 接入。上游只给前复权序列且 adjust 接受但无效，故由本地用 fund_action 分红流换算回不复权（「严格之后」口径，四只基金合计 10,608 格对 sina/腾讯逐格判过）；可答深度只有滚动 1827 天，早于地板回空帧，故域权威序仍列 akshare 在前'}
   - {section: fund-news, family: 基金, method: GET, path: /api/fund/news/article-list, title: '基金资讯列表', status: available, domain: null, scenario: '基金资讯：研究侧舆情，不进行情链路'}
   - {section: fund-offerings, family: 基金, method: GET, path: /api/fund/offerings/list, title: '基金募集列表', status: available, domain: null, scenario: '新发基金募集清单：产品池增量'}
   - {section: fund-performance, family: 基金, method: GET, path: /api/fund/performance/nav, title: '基金净值', status: available, domain: null, scenario: '基金净值序列：场外基金净值主源候选'}

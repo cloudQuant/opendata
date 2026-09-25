@@ -1,5 +1,5 @@
 {
-  "_comment": "Design §4.4 authority baseline (domestic domains): sources in authority order. Domain identifiers must exist in opendata/data/domains.yaml (cross-checked by tests). Domains not listed (macro / overseas) declare authority per provider at registration time; until then they route in registration order. Loaded by opendata/data/registry.py.",
+  "_comment": "Design §4.4 authority baseline (domestic domains): sources in authority order. Domain identifiers must exist in opendata/data/domains.yaml (cross-checked by tests). Domains not listed (macro / overseas) declare authority per provider at registration time; until then they route in registration order. fund_etf_daily is the one reversed pair: the ths leg answers only a rolling 1827 days (measured, docs/evidence/C20), so it cannot answer 'since inception' and akshare stays first. Loaded by opendata/data/registry.py.",
   "domains": {
     "stock_daily": ["ths", "akshare"],
     "stock_adjust": ["ths", "akshare"],
@@ -8,6 +8,7 @@
     "financial_indicator": ["ths", "akshare"],
     "index_constituent": ["ths", "akshare"],
     "index_daily": ["ths", "akshare"],
+    "fund_etf_daily": ["akshare", "ths"],
     "futures_daily": ["ths", "akshare"],
     "option_daily": ["ths", "akshare"],
     "futures_fundamentals": ["ths", "akshare"],

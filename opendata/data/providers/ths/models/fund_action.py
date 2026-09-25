@@ -5,14 +5,17 @@ One row is one distribution: ``per_ten_cash_before_tax`` over ten is the
 contract's per-unit ``cash_dividend``, and ``ex_dividend_date_ms`` is its
 ``ex_date``.
 
-Why this leg exists at all, measured 2026-09-25 (``docs/evidence/C15``): the
-on-exchange ETF daily endpoint publishes a **forward-adjusted series only** -
-``adjust`` is not even a request parameter there - and D10 forbids storing
-that, which is why ``fund_etf_daily`` has been waiting on a factor route since
-C6. The route is this endpoint: for 510300 the gap between an unadjusted bar
-and the adjusted one is, to the cent, the sum of the distributions whose
-ex-date follows the bar (0.088 + 0.123 = 0.211 on the 2025-01-02 bar). This leg
-therefore publishes the conversion key, not prices.
+Why this leg exists at all, measured 2026-09-25 (``docs/evidence/C15``,
+re-measured cell by cell in ``docs/evidence/C20``): the on-exchange ETF daily
+endpoint publishes a **forward-adjusted series only**, and its ``adjust``
+parameter is worse than absent - it is accepted and ignored, so the request
+side cannot see that nothing happened. D10 forbids storing that, which is why
+``fund_etf_daily`` waited on a factor route from C6 until C20. The route is
+this endpoint: for 510300 the gap between an unadjusted bar and the adjusted
+one is, to the cent, the sum of the distributions whose ex-date follows the
+bar (0.088 + 0.123 = 0.211 on the 2025-01-02 bar). This leg therefore
+publishes the conversion key, not prices;
+:func:`opendata_fuyao.endpoints.unadjust_bars` consumes it.
 
 Three measured shapes are encoded rather than trusted:
 

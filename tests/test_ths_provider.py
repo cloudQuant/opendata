@@ -9,7 +9,7 @@ API when ``FUYAO_API_KEY`` is configured.
 from __future__ import annotations
 
 import json
-from datetime import date
+from datetime import date, timedelta
 from typing import TYPE_CHECKING
 
 import httpx
@@ -37,6 +37,7 @@ from opendata.data.providers.ths.models._client import (
 )
 from opendata.data.providers.ths.models.financial_statement import ThsFinancialStatementFetcher
 from opendata.data.providers.ths.models.fund_action import ThsFundActionFetcher
+from opendata.data.providers.ths.models.fund_etf_daily import ThsFundEtfDailyFetcher
 from opendata.data.providers.ths.models.futures_daily import ThsFuturesDailyFetcher
 from opendata.data.providers.ths.models.index_constituent import ThsIndexConstituentFetcher
 from opendata.data.providers.ths.models.index_daily import ThsIndexDailyFetcher
@@ -47,6 +48,7 @@ from opendata.data.providers.ths.models.stock_daily import ThsStockDailyFetcher
 from opendata.data.providers.ths.models.trading_calendar import ThsTradingCalendarFetcher
 from opendata.data.providers.ths.registration import FETCHERS, register
 from opendata.data.registry import ProviderRegistry, authority_baseline, get_registry
+from opendata_fuyao.endpoints import FUND_ETF_DEPTH_DAYS, millis_to_trading_date
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -221,6 +223,7 @@ class TestRegistration:
             ("trading_calendar", "ths"),
             ("instrument", "ths"),
             ("fund_action", "ths"),
+            ("fund_etf_daily", "ths"),
         }
         assert all(capability.verified for capability in registered)
 
@@ -245,6 +248,7 @@ class TestRegistration:
             ("metadata", "trading_calendar", "snapshot", "cn"),
             ("metadata", "instrument", "snapshot", "cn"),
             ("fund", "fund_action", "1D", "cn"),
+            ("fund", "fund_etf_daily", "1D", "cn"),
         }
 
     def test_every_verified_domain_auto_routes_to_ths(self):
@@ -274,6 +278,17 @@ class TestRegistration:
         assert authority_baseline()["financial_statement"][0] == "ths"
         assert authority_baseline()["futures_daily"][0] == "ths"
         assert authority_baseline()["option_daily"][0] == "ths"
+
+    def test_the_rolling_depth_leg_is_the_one_declared_reversal(self):
+        """C20 唯一的反向：ths 的 ETF 日线只有滚动 1827 天，全历史仍归 akshare。
+
+        这条今天「自动路由判不出」——akshare 的该域还没转正，所以 ths 白捡了
+        auto。等它转正时默认就会换回去，故意图只能记在权威序上。
+        """
+        baseline = authority_baseline()["fund_etf_daily"]
+
+        assert tuple(baseline) == ("akshare", "ths")
+        assert baseline[0] != "ths"
 
     def test_bundled_registration_includes_the_fuyao_source(self):
         from opendata.data.providers import register_providers
@@ -1392,6 +1407,164 @@ class TestFundActionAdapter:
             fetcher.transform_query()
         with pytest.raises(ValidationError):
             fetcher.transform_query(symbol="510300.SH", adjust="qfq")
+
+
+class TestFundEtfDailyAdapter:
+    """C20：ETF 日线腿 —— 分红先行、本地换算、深度地板前 fail-closed。"""
+
+    DAY_MS = 86_400_000
+    DIVIDENDS_PATH = "/api/fund/corporate-actions/dividends"
+    PRICES_PATH = "/api/fund/market/historical"
+
+    def _patch(self, monkeypatch: pytest.MonkeyPatch, handler) -> ThsFundEtfDailyFetcher:
+        monkeypatch.setattr(
+            "opendata.data.providers.ths.models.fund_etf_daily.client", _factory(handler)
+        )
+        return ThsFundEtfDailyFetcher()
+
+    def test_bars_land_unadjusted_and_ascending(self, monkeypatch: pytest.MonkeyPatch):
+        """上游只发前复权：除息日之前那根必须已被加回每份分红，量额一根都不动。"""
+        seen: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request.url.path)
+            if request.url.path == self.DIVIDENDS_PATH:
+                return httpx.Response(
+                    200, content=_dividend_envelope([_fund_dividend_row(DAY_MS + 2 * self.DAY_MS)])
+                )
+            # 乱序回：升序是腿自己排的，不依赖上游
+            return httpx.Response(
+                200,
+                content=_envelope(
+                    [
+                        {**_bar_row(), "date_ms": DAY_MS + 3 * self.DAY_MS},
+                        {**_bar_row(), "date_ms": DAY_MS},
+                    ]
+                ),
+            )
+
+        bars = self._patch(monkeypatch, handler).fetch(
+            symbol="510300.SH", start_date=date(2024, 1, 2), end_date=date(2024, 1, 31)
+        )
+
+        # 分红腿先走：拿不到事件流就不该发价格请求（D10 禁止前复权入库）
+        assert seen == [self.DIVIDENDS_PATH, self.PRICES_PATH]
+        assert [bar.trade_date for bar in bars] == [date(2024, 1, 2), date(2024, 1, 5)]
+        assert [bar.close for bar in bars] == [10.323, 10.2]  # 0.123 只加在第一根上
+        assert [bar.low for bar in bars] == [9.623, 9.5]
+        assert [(bar.volume, bar.amount) for bar in bars] == [(1000.0, 10500.0)] * 2
+
+    def test_the_price_request_carries_no_adjust(self, monkeypatch: pytest.MonkeyPatch):
+        """``adjust`` 在这条端点上接受但无效（C20 判据 E）：请求里根本不该出现它。"""
+        seen: dict[str, str] = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            if request.url.path == self.DIVIDENDS_PATH:
+                return httpx.Response(200, content=_dividend_envelope([]))
+            seen.update(dict(request.url.params))
+            return httpx.Response(200, content=_envelope([_bar_row()]))
+
+        self._patch(monkeypatch, handler).fetch(
+            symbol="510300.SH", start_date=date(2024, 1, 2), end_date=date(2024, 2, 1)
+        )
+
+        assert seen == {
+            "thscode": "510300.SH",
+            "interval": "1d",
+            "start": str(DAY_MS),
+            "end": str(DAY_MS + 31 * self.DAY_MS - 1),  # 闭区间日 +1 天后退 1ms
+        }
+
+    def test_a_bare_code_is_resolved_before_the_dividend_call(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
+        """三次调用的顺序是这条腿的全部契约：解析 → 分红 → 价格。"""
+        calls: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            calls.append(request.url.path)
+            if calls[-1].endswith("/tickers/list"):
+                return httpx.Response(
+                    200, content=_envelope([{"thscode": "510300.SH", "name": "沪深300ETF"}])
+                )
+            if request.url.path == self.DIVIDENDS_PATH:
+                return httpx.Response(200, content=_dividend_envelope([]))
+            assert dict(request.url.params)["thscode"] == "510300.SH"
+            return httpx.Response(200, content=_envelope([_bar_row()]))
+
+        bars = self._patch(monkeypatch, handler).fetch(
+            symbol="510300", start_date=date(2024, 1, 2), end_date=date(2024, 1, 31)
+        )
+
+        assert len(calls) == 3
+        assert calls[0].endswith("/tickers/list")
+        assert calls[1:] == [self.DIVIDENDS_PATH, self.PRICES_PATH]
+        assert bars[0].symbol == "510300.SH"
+
+    def test_the_default_window_is_the_rolling_depth(self, monkeypatch: pytest.MonkeyPatch):
+        """不给窗口就取满可答范围：起点是「上海今天 - 1827」，不是成立日。"""
+        from opendata_fuyao import endpoints
+
+        monkeypatch.setattr(endpoints, "shanghai_today", lambda now=None: date(2026, 9, 25))
+        starts: list[int] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            if request.url.path == self.DIVIDENDS_PATH:
+                return httpx.Response(200, content=_dividend_envelope([]))
+            starts.append(int(dict(request.url.params)["start"]))
+            return httpx.Response(200, content=_envelope([_bar_row()]))
+
+        self._patch(monkeypatch, handler).fetch(symbol="510300.SH")
+
+        floor = date(2026, 9, 25) - timedelta(days=FUND_ETF_DEPTH_DAYS)
+        # 深度比单次跨度多一天 ⇒ 满窗口必然两块，首块正落在地板上
+        assert len(starts) == 2
+        assert millis_to_trading_date(min(starts)) == floor
+
+    def test_a_start_before_the_floor_is_refused_without_a_call(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
+        """地板之前上游回 code=0 空帧：静默不可辨，不能让它冒充「这就是全历史」。"""
+        from opendata_fuyao import FuyaoError
+
+        calls: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:  # pragma: no cover
+            calls.append(request.url.path)
+            return httpx.Response(200, content=_envelope([]))
+
+        with pytest.raises(FuyaoError, match="fund_window_depth"):
+            self._patch(monkeypatch, handler).fetch(symbol="510300.SH", start_date=date(2015, 1, 1))
+
+        assert calls == []
+
+    def test_an_adjust_query_is_refused_before_any_call(self, monkeypatch: pytest.MonkeyPatch):
+        """上游对 ``adjust`` 取任何值都回同一序列 ⇒ 想要复权的人必须被告知拿不到。"""
+        calls: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:  # pragma: no cover
+            calls.append(request.url.path)
+            return httpx.Response(200, content=_envelope([]))
+
+        fetcher = self._patch(monkeypatch, handler)
+        for adjust in ("qfq", "hfq", "none"):
+            with pytest.raises(ThsProviderError, match="THS_ADJUST_UNSUPPORTED"):
+                fetcher.transform_query(symbol="510300.SH", adjust=adjust)
+
+        assert calls == []
+        assert fetcher.transform_query(symbol="510300.SH").adjust == ""
+        assert fetcher.transform_query(symbol="510300.SH", adjust="unadjusted").adjust
+
+    def test_empty_response_fails_closed(self, monkeypatch: pytest.MonkeyPatch):
+        def handler(request: httpx.Request) -> httpx.Response:
+            if request.url.path == self.DIVIDENDS_PATH:
+                return httpx.Response(200, content=_dividend_envelope([]))
+            return httpx.Response(200, content=_envelope([]))
+
+        with pytest.raises(ThsProviderError, match="THS_EMPTY_RESPONSE"):
+            self._patch(monkeypatch, handler).fetch(
+                symbol="510300.SH", start_date=date(2024, 1, 2), end_date=date(2024, 1, 31)
+            )
 
 
 @pytest.mark.e2e

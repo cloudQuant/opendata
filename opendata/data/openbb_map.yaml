@@ -50,9 +50,11 @@ entries:
     ours:
       - {provider: akshare, domain: fund_etf_daily, contract: Bar, status: registered}
       # ths/fuyao 侧 /api/fund/market/historical 实测只给前复权序列（比值 ≤1 且
-      # 在每个除息日阶跃、右端收敛到 1），D10 禁止入库复权价，故不接：
-      # 等 ETF 因子通道（分红事件 → 因子）建立后再转正。见 docs/evidence/C6。
-      - {provider: ths, domain: fund_etf_daily, contract: Bar, status: pending}
+      # 在每个除息日阶跃、右端收敛到 1），而 adjust 是「接受但无效」的参数（C20）。
+      # D10 禁止入库复权价，故 C20 起由本腿用 fund_action 的分红流就地换算
+      # （四只基金合计 10,608 格对 sina/腾讯逐格判过），权威序仍在 akshare 之后：可答深度只有
+      # 滚动 1827 天，答不了「自成立至今」。见 docs/evidence/C20。
+      - {provider: ths, domain: fund_etf_daily, contract: Bar, status: verified}
   - openbb: {model: TBD}
     scenario: 指数日线（业绩基准与指数增强回测 / dwd 指数域）
     ours:

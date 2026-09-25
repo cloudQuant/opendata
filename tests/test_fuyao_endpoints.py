@@ -8,7 +8,7 @@ mock 层覆盖请求构造（毫秒戳/闭区间/参数边界/失败关闭）、
 from __future__ import annotations
 
 import json
-from datetime import date, datetime, time, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from typing import TYPE_CHECKING, Any
 from zoneinfo import ZoneInfo
 
@@ -31,6 +31,9 @@ from opendata_fuyao.endpoints import (
     CASH_FLOW_STATEMENTS_ENDPOINT,
     FINANCIAL_STATEMENT_ITEMS,
     FUND_DIVIDENDS_ENDPOINT,
+    FUND_ETF_DEPTH_DAYS,
+    FUND_ETF_MAX_SPAN_DAYS,
+    FUND_ETF_PRICES_ENDPOINT,
     FUTURES_PRICES_ENDPOINT,
     INCOME_STATEMENTS_ENDPOINT,
     INDEX_CONSTITUENTS_ENDPOINT,
@@ -44,6 +47,7 @@ from opendata_fuyao.endpoints import (
     build_adjustment_factors_request,
     build_financial_statements_request,
     build_fund_dividends_request,
+    build_fund_etf_prices_request,
     build_index_constituents_request,
     build_index_prices_request,
     build_period_daily_request,
@@ -54,6 +58,7 @@ from opendata_fuyao.endpoints import (
     fetch_daily_bars,
     fetch_financial_statements,
     fetch_fund_dividends,
+    fetch_fund_etf_bars,
     fetch_index_constituents,
     fetch_index_daily_bars,
     fetch_period_daily_bars,
@@ -69,6 +74,8 @@ from opendata_fuyao.endpoints import (
     normalize_instruments,
     search_instruments,
     shanghai_midnight_millis,
+    shanghai_today,
+    unadjust_bars,
 )
 
 if TYPE_CHECKING:
@@ -184,6 +191,26 @@ def _dividend_envelope(
     ).encode()
 
 
+def _fund_bar(day: str, *, price: float = 3.0, symbol: str = "510300.SH") -> Bar:
+    """一根 ETF 日线（前复权口径入参）：量额取固定值，用于判「换算不动量额」。"""
+    return Bar(
+        symbol=symbol,
+        trade_date=date.fromisoformat(day),
+        open=price,
+        # 6 位收口：真实报价只有 3 位小数，别让浮点噪声混进「恒等」判据
+        high=round(price + 0.1, 6),
+        low=round(price - 0.1, 6),
+        close=price,
+        volume=1_000_000.0,
+        amount=3_000_000.0,
+    )
+
+
+def _fund_event(day: str, *, cash: float = 0.1, symbol: str = "510300.SH") -> CorporateAction:
+    """一笔每份现金分红（``unadjust_bars`` 只读 ``symbol``/``ex_date``/``cash_dividend``）。"""
+    return CorporateAction(symbol=symbol, ex_date=date.fromisoformat(day), cash_dividend=cash)
+
+
 class TestRequestBuilders:
     def test_prices_request_is_closed_interval_millis(self):
         params = build_prices_request(
@@ -297,6 +324,14 @@ class TestRequestBuilders:
         assert millis_to_trading_date(_ms("2024-01-02")) == date(2024, 1, 2)
         assert shanghai_midnight_millis(date(2024, 1, 2)) == _ms("2024-01-02")
 
+    def test_shanghai_today_is_the_day_the_channel_means(self):
+        """ETF 日线的深度地板按「今天」滚动：UTC 当天在 16:00 后会早一天。"""
+        assert shanghai_today(datetime(2026, 9, 25, 15, 59, tzinfo=UTC)) == date(2026, 9, 25)
+        assert shanghai_today(datetime(2026, 9, 25, 16, 0, tzinfo=UTC)) == date(2026, 9, 26)
+        # naive 入参按 UTC 解释，不跟着跑测试这台机器的时区漂移
+        assert shanghai_today(datetime(2026, 9, 25, 16, 0)) == date(2026, 9, 26)
+        assert shanghai_today(datetime(2026, 9, 25, 9, 0, tzinfo=SHANGHAI)) == date(2026, 9, 25)
+
     def test_millis_rejects_non_integer(self):
         with pytest.raises(FuyaoError, match="date_ms"):
             millis_to_trading_date("1704124800000")
@@ -385,6 +420,62 @@ class TestRequestBuilders:
             build_fund_dividends_request(symbol="510300")
         with pytest.raises(FuyaoError, match="FUYAO_ENVELOPE_INVALID_symbol"):
             build_fund_dividends_request(symbol="  ")
+
+    def test_fund_etf_prices_request_has_no_adjust_knob(self):
+        """``adjust`` 在 ETF 端点上接受但完全无效（C20 判据 E），发它只会骗人。"""
+        params = build_fund_etf_prices_request(
+            symbol=" 510300.sh ",
+            start=date(2025, 4, 1),
+            end=date(2026, 4, 1),
+            today=date(2026, 9, 25),
+        )
+
+        assert params == {
+            "thscode": "510300.sh",  # trim 而不 upper：上游自己会 trim+upper
+            "interval": "1d",
+            "start": _ms("2025-04-01"),
+            "end": _ms("2026-04-01") - 1,  # 上游闭区间，半开的 end 退回一天
+        }
+        assert "adjust" not in params
+
+    def test_fund_etf_prices_guards_are_the_measured_channel_bounds(self):
+        """两道守卫的数值互不嵌套：可答深度比单次跨度上限还多一天。"""
+        today = date(2026, 9, 25)
+        floor = today - timedelta(days=FUND_ETF_DEPTH_DAYS)
+
+        # 边界可答：起点正落在地板上、跨度取满 1826
+        assert build_fund_etf_prices_request(
+            symbol="510300.SH",
+            start=floor,
+            end=floor + timedelta(days=FUND_ETF_MAX_SPAN_DAYS),
+            today=today,
+        )["start"] == _ms(floor.isoformat())
+        # 再多一天：上游回 code=1003「单次不超过 10 年」，那是股票腿的上限
+        with pytest.raises(FuyaoError, match="fund_window_span"):
+            build_fund_etf_prices_request(
+                symbol="510300.SH",
+                start=floor,
+                end=floor + timedelta(days=FUND_ETF_MAX_SPAN_DAYS + 1),
+                today=today,
+            )
+        # 地板之前：上游不报错而回 code=0 的空 item，与「这只基金没交易过」
+        # 在信封上不可区分（C11a 同一类静默），所以只能本地拦
+        with pytest.raises(FuyaoError, match="fund_window_depth"):
+            build_fund_etf_prices_request(
+                symbol="510300.SH",
+                start=floor - timedelta(days=1),
+                end=floor + timedelta(days=100),
+                today=today,
+            )
+        with pytest.raises(FuyaoError, match="FUYAO_ENVELOPE_INVALID_window"):
+            build_fund_etf_prices_request(symbol="510300.SH", start=today, end=today, today=today)
+        with pytest.raises(FuyaoError, match="fund_symbol_qualified"):
+            build_fund_etf_prices_request(
+                symbol="510300",
+                start=today - timedelta(days=30),
+                end=today,
+                today=today,
+            )
 
 
 class TestNormalizers:
@@ -1011,6 +1102,71 @@ class TestNormalizers:
             normalize_fund_dividends(_parse(_dividend_envelope([])), symbol=" ")
 
 
+class TestFundEtfUnadjust:
+    """C20：前复权 → 不复权的本地换算（D10 只允许存不复权）。"""
+
+    def test_only_later_dividends_are_added_back(self):
+        """边界是「严格晚于」：除息日当天上游发的已是复权价，再减一次就错。"""
+        bars = [_fund_bar("2026-01-09"), _fund_bar("2026-01-12"), _fund_bar("2026-01-13")]
+        events = [_fund_event("2026-01-12", cash=0.2)]
+
+        out = unadjust_bars(bars, events)
+
+        assert [bar.close for bar in out] == [3.2, 3.0, 3.0]
+
+    def test_prices_move_and_nothing_else_does(self):
+        """量额不参与复权（判据 C'/C''：额/量必然落进当日不复权高低价区间）。"""
+        bars = [_fund_bar("2026-01-09"), _fund_bar("2026-02-02")]
+        events = [_fund_event("2026-01-12", cash=0.2)]
+
+        out = unadjust_bars(bars, events)
+
+        assert [(bar.volume, bar.amount) for bar in out] == [
+            (bar.volume, bar.amount) for bar in bars
+        ]
+        assert [bar.trade_date for bar in out] == [bar.trade_date for bar in bars]
+        assert [bar.symbol for bar in out] == ["510300.SH", "510300.SH"]
+        # 四价同幅平移：日内高低差是不复权口径自己的信息，不能被压扁
+        assert out[0].high - out[0].low == pytest.approx(0.2)
+        assert (out[0].high, out[0].low) == (3.3, 3.1)
+
+    def test_a_fund_without_distributions_converts_to_identity(self):
+        """判据 B′：零分红基金（159915/512880 那两只）换算必须退化成恒等。"""
+        bars = [_fund_bar("2026-01-09", price=1.5), _fund_bar("2026-01-12", price=1.6)]
+
+        assert unadjust_bars(bars, []) == tuple(bars)
+
+    def test_several_later_distributions_sum_once(self):
+        """一笔漏算就是一个台阶：多笔分红按日累加，浮点噪声由 6 位收口。"""
+        bars = [_fund_bar("2026-01-09", price=3.1)]
+        events = [
+            _fund_event("2026-01-12", cash=0.1),
+            _fund_event("2026-02-10", cash=0.2),
+            _fund_event("2026-03-11", cash=0.03),
+        ]
+
+        out = unadjust_bars(bars, events)
+
+        assert out[0].close == 3.43  # 3.1 + 0.33 的裸加法是 3.4299999999999997
+        assert out[0].high == 3.53
+        assert out[0].low == 3.33
+
+    def test_a_distribution_for_another_fund_is_refused(self):
+        """分红流串了标的 ⇒ 一只基金的价格会被另一只的分红推高，静默且不可追。"""
+        bars = [_fund_bar("2026-01-09")]
+        events = [_fund_event("2026-01-12", symbol="512880.SH")]
+
+        with pytest.raises(FuyaoError, match="fund_unadjust_symbol"):
+            unadjust_bars(bars, events)
+
+    def test_a_zero_price_row_cannot_pass_as_an_unadjusted_bar(self):
+        """分红只会把价格加高 ⇒ 换算后仍不为正只能是发布价脏（停牌 0 价行）。"""
+        bars = [_fund_bar("2026-01-09", price=0.1)]  # low = 0.0
+
+        with pytest.raises(FuyaoError, match="fund_unadjust_price"):
+            unadjust_bars(bars, [])
+
+
 class TestFetchers:
     def test_daily_bars_hits_the_prices_endpoint(self):
         seen: dict[str, Any] = {}
@@ -1395,6 +1551,144 @@ class TestFetchers:
 
         assert requested == []
 
+    def test_fund_etf_bars_ask_for_the_depth_in_two_chunks(self):
+        """深度 1827 比单次跨度 1826 多一天：取满可答范围必然要两次价格请求。"""
+        today = date(2026, 9, 25)
+        windows: list[tuple[int, int]] = []
+        calls: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            calls.append(request.url.path)
+            if request.url.path == FUND_DIVIDENDS_ENDPOINT:
+                return httpx.Response(
+                    200,
+                    content=_dividend_envelope(
+                        [_dividend_row("2026-01-17", per_ten=1.0)], count=1, total=0.1
+                    ),
+                )
+            params = dict(request.url.params)
+            window = (int(params["start"]), int(params["end"]))
+            windows.append(window)
+            # 回一根「本块起点当天」的行：两块自然不相交，便于判不重不漏
+            return httpx.Response(
+                200, content=_envelope([{**_bar_row("2026-01-05"), "date_ms": window[0]}])
+            )
+
+        with _client(handler) as client:
+            bars = fetch_fund_etf_bars(
+                client,
+                symbol="510300.SH",
+                start=today - timedelta(days=FUND_ETF_DEPTH_DAYS),
+                end=today,
+                today=today,
+            )
+
+        assert len(bars) == 2
+        # 分红是「自成立至今」的全量事件流，与价格窗口无关 ⇒ 只取一次
+        assert calls.count(FUND_DIVIDENDS_ENDPOINT) == 1
+        assert calls.count(FUND_ETF_PRICES_ENDPOINT) == 2
+        assert windows[0][0] == _ms((today - timedelta(days=FUND_ETF_DEPTH_DAYS)).isoformat())
+        # 半开窗口首尾相接：不重不漏（第二块起点 = 第一块终点 + 1ms）
+        assert windows[1][0] == windows[0][1] + 1
+        assert windows[1][1] == _ms(today.isoformat()) - 1
+
+    def test_fund_etf_bars_convert_the_prices_they_return(self):
+        """换算发生在搬运层：腿拿到的 Bar 已经是 D10 要求的不复权口径。"""
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            if request.url.path == FUND_DIVIDENDS_ENDPOINT:
+                return httpx.Response(
+                    200,
+                    content=_dividend_envelope(
+                        [_dividend_row("2024-02-19", per_ten=1.0)], count=1, total=0.1
+                    ),
+                )
+            assert dict(request.url.params)["interval"] == "1d"
+            return httpx.Response(
+                200, content=_envelope([_bar_row("2024-02-08"), _bar_row("2024-02-20")])
+            )
+
+        with _client(handler) as client:
+            bars = fetch_fund_etf_bars(
+                client,
+                symbol="510300.SH",
+                start=date(2024, 2, 8),
+                end=date(2024, 2, 21),
+                today=date(2026, 9, 25),
+            )
+
+        # 除息日（02-19）之前那根加回 0.1，之后那根原样
+        assert [bar.close for bar in bars] == [10.1, 10.0]
+        assert [bar.volume for bar in bars] == [1000.0, 1000.0]
+        assert [bar.amount for bar in bars] == [10500.0, 10500.0]
+
+    def test_fund_etf_bars_abort_when_the_dividend_leg_fails(self):
+        """没有分红流就无法换算：宁可挂，也不能拿前复权序列冒充不复权入库。"""
+        requested: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            requested.append(request.url.path)
+            if request.url.path == FUND_DIVIDENDS_ENDPOINT:
+                return httpx.Response(
+                    200,
+                    content=json.dumps(
+                        {"code": 1002, "message": "bad symbol", "request_id": "r", "data": None}
+                    ).encode(),
+                )
+            return httpx.Response(200, content=_envelope([_bar_row("2024-02-08")]))
+
+        with _client(handler) as client, pytest.raises(FuyaoError) as exc:
+            fetch_fund_etf_bars(
+                client,
+                symbol="510300.SH",
+                start=date(2024, 2, 8),
+                end=date(2024, 2, 21),
+                today=date(2026, 9, 25),
+            )
+
+        assert exc.value.upstream_code == 1002
+        assert requested == [FUND_DIVIDENDS_ENDPOINT]  # 价格腿一次都没发
+
+    def test_fund_etf_bars_refuse_a_window_before_the_rolling_floor(self):
+        """地板之前上游回的是 code=0 空帧：静默不可辨，只能在发请求前拦掉。"""
+        requested: list[str] = []
+        today = date(2026, 9, 25)
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            requested.append(request.url.path)
+            return httpx.Response(200, content=_envelope([]))
+
+        with (
+            _client(handler) as client,
+            pytest.raises(FuyaoError, match="fund_window_depth"),
+        ):
+            fetch_fund_etf_bars(
+                client,
+                symbol="510300.SH",
+                start=today - timedelta(days=FUND_ETF_DEPTH_DAYS + 1),
+                end=today,
+                today=today,
+            )
+
+        assert requested == []
+
+    def test_fund_etf_bars_split_a_reversed_window_before_requesting(self):
+        """切块函数自己判窗口：反向窗口不该走到任何一次网络调用。"""
+        today = date(2026, 9, 25)
+        requested: list[str] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            requested.append(request.url.path)
+            return httpx.Response(200, content=_envelope([_bar_row("2026-09-24")]))
+
+        with (
+            _client(handler) as client,
+            pytest.raises(FuyaoError, match="FUYAO_ENVELOPE_INVALID_window"),
+        ):
+            fetch_fund_etf_bars(client, symbol="510300.SH", start=today, end=today, today=today)
+
+        assert requested == []
+
 
 @pytest.mark.e2e
 class TestAgainstTheLiveFuyaoApi:
@@ -1464,3 +1758,36 @@ class TestAgainstTheLiveFuyaoApi:
     def test_fund_without_any_dividend_comes_back_empty(self, client):
         """无分红基金回的是全 null 占位行而不是空数组 → 必须落成空事件流而非一条坏事件。"""
         assert fetch_fund_dividends(client, symbol="159915.SZ") == ()
+
+    def test_fund_etf_bars_are_converted_around_a_real_ex_date(self, client):
+        """真机判换算方向：除息日**之前**的价格必然比发布价高出一个分红。
+
+        窗口是绕着最近一个真实除息日切出来的（并夹在前一笔除息日之后），所以
+        这条判据每次都真被执行到，而不是「恰好落在窗口里才算」。
+        """
+        today = shanghai_today()
+        dividends = fetch_fund_dividends(client, symbol="510300.SH")
+        assert dividends, "510300 连年分红"
+        latest = dividends[0]  # 除息日降序
+        previous = dividends[1].ex_date if len(dividends) > 1 else date(2000, 1, 1)
+        start = max(latest.ex_date - timedelta(days=10), previous + timedelta(days=1))
+        end = min(latest.ex_date + timedelta(days=10), today)
+        params = build_fund_etf_prices_request(
+            symbol="510300.SH", start=start, end=end, today=today
+        )
+
+        unadjusted = fetch_fund_etf_bars(
+            client, symbol="510300.SH", start=start, end=end, today=today
+        )
+        published = normalize_bars(
+            client.get(FUND_ETF_PRICES_ENDPOINT, params=params).envelope, symbol="510300.SH"
+        )
+
+        assert [bar.trade_date for bar in unadjusted] == [bar.trade_date for bar in published]
+        assert any(bar.trade_date < latest.ex_date for bar in unadjusted)
+        for bar, raw in zip(unadjusted, published, strict=True):
+            gap = bar.close - raw.close
+            if bar.trade_date < latest.ex_date:
+                assert gap == pytest.approx(latest.cash_dividend, abs=1e-6)
+            else:
+                assert gap == pytest.approx(0.0, abs=1e-6)

@@ -137,6 +137,8 @@ OPTION_PROBE_HORIZON_DAYS = 60
 ROLLING_PROBE_WINDOW_DAYS = 21
 #: Domain whose catalog supplies the live option contract.
 OPTION_PROBE_CATALOG = ("instrument", "ths")
+#: Fund the ETF daily probe names: it needs no derivation, only a window.
+FUND_ETF_PROBE_SYMBOL = "510300"
 
 
 class PatrolProbeError(RuntimeError):
@@ -352,6 +354,33 @@ def rolling_option_params(today: date, registry: ProviderRegistry | None = None)
     }
 
 
+def rolling_fund_etf_params(today: date, registry: ProviderRegistry | None = None) -> ProbeParams:
+    """Probe the ETF daily leg over a window that rolls with the probe date.
+
+    The instrument is fixed (``FUND_ETF_PROBE_SYMBOL`` is a large SSE-listed
+    fund with a long trading history and distributions in most years), but the
+    window cannot be: the fuyao channel answers a rolling ~5 years and refuses
+    nothing else - asking past the floor yields an empty frame rather than an
+    error, which the transport layer turns into a refusal. A frozen 2024
+    window would therefore start failing years from now with the source in
+    good health.
+
+    Args:
+        today: Probe date.
+        registry: Unused; the rolling resolvers share one signature.
+
+    Returns:
+        Probe params over a ``ROLLING_PROBE_WINDOW_DAYS`` trailing window,
+        which stays inside the rolling depth for as long as the fund trades.
+    """
+    del registry
+    return {
+        "symbol": FUND_ETF_PROBE_SYMBOL,
+        "start_date": today - timedelta(days=ROLLING_PROBE_WINDOW_DAYS),
+        "end_date": today,
+    }
+
+
 def first_live_contract(rows: Sequence[Instrument], today: date) -> str:
     """Pick the option symbol a probe can rely on surviving.
 
@@ -461,12 +490,18 @@ async def _probe_fetcher(fetcher: Fetcher[Any, Any], params: ProbeParams) -> int
     return rows
 
 
-#: Legs naming an instrument that expires: contract months roll off, so a
-#: static probe there rots exactly like the mis-configured ones it
-#: replaces. These resolvers derive the instrument from the probe date.
+#: Legs whose probe params cannot be frozen. ``futures_daily`` /
+#: ``option_daily`` name an instrument that expires: contract months roll
+#: off, so a static probe there rots exactly like the mis-configured ones it
+#: replaces. ``fund_etf_daily`` on ths names a permanent fund but cannot
+#: freeze its *window*: that channel answers a rolling 1827 days (measured,
+#: ``docs/evidence/C20`` criterion D), so a fixed historical range silently
+#: walks out of coverage one day and the probe then fails on a source that
+#: is answering perfectly.
 PROBE_RESOLVERS: dict[tuple[str, str], Callable[[date, ProviderRegistry | None], ProbeParams]] = {
     ("futures_daily", "ths"): rolling_futures_params,
     ("option_daily", "ths"): rolling_option_params,
+    ("fund_etf_daily", "ths"): rolling_fund_etf_params,
 }
 
 

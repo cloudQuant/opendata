@@ -115,8 +115,9 @@ CASES: tuple[tuple[Any, ...], ...] = (
 )
 
 
-#: P1 域中已有 verified 数据源的（ths 指数腿 C5、期权腿 C6）：auto 路由应当命中它们。
-_AUTO_ROUTABLE_DOMAINS = frozenset({"index_daily", "option_daily"})
+#: P1 域中已有 verified 数据源的（ths 指数腿 C5、期权腿 C6、ETF 日线腿 C20）：
+#: auto 路由应当命中它们，akshare 腿只答显式 ``source=akshare``。
+_AUTO_ROUTABLE_DOMAINS = frozenset({"index_daily", "option_daily", "fund_etf_daily"})
 
 
 def _latest(fetcher: Any, case: tuple[Any, ...]) -> Bar:
@@ -133,7 +134,9 @@ class TestP1DailyRegistration:
 
     ``index_daily`` is the exception: the ths leg (C5) is verified, so auto
     routing now resolves it - the akshare leg stays unverified and only
-    answers an explicit ``source=akshare``.
+    answers an explicit ``source=akshare``. ``fund_etf_daily`` joined it in
+    C20; it is also the one domain where akshare is the declared authority,
+    which only becomes visible once its own leg turns verified.
     """
 
     @pytest.mark.parametrize("case", CASES, ids=_case_id)
