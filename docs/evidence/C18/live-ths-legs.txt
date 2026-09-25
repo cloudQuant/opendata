@@ -1,0 +1,39 @@
+===== C18 live e2e（ths 真机用例，仅网络，不碰数仓）运行环境 =====
+Fri Sep 25 09:34:37 +08 2026
+branch=dev HEAD=0bd4d34
+Python 3.13.5
+===== 原始输出（未裁剪） =====
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0 -- /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+cachedir: .pytest_cache
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 12 items
+
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_daily_bars_to_the_fuyao_source PASSED [  8%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_corporate_actions_to_the_fuyao_source PASSED [ 16%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_the_trading_calendar_to_the_fuyao_source PASSED [ 25%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_the_instrument_catalog_to_the_fuyao_source FAILED [ 33%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_a_bare_index_code_to_the_fuyao_source PASSED [ 41%]
+tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_fund_distributions_to_the_fuyao_source PASSED [ 50%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_daily_bars_come_back_as_contract_rows PASSED [ 58%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_trading_calendar_comes_back_as_rows PASSED [ 66%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_instrument_search_finds_an_a_share PASSED [ 75%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_adjustment_factors_are_events PASSED [ 83%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_fund_dividends_are_per_unit_cash_events PASSED [ 91%]
+tests/test_fuyao_endpoints.py::TestAgainstTheLiveFuyaoApi::test_fund_without_any_dividend_comes_back_empty PASSED [100%]
+
+=================================== FAILURES ===================================
+_ TestAgainstTheLiveFuyaoApi.test_registry_routes_the_instrument_catalog_to_the_fuyao_source _
+tests/test_ths_provider.py:1470: in test_registry_routes_the_instrument_catalog_to_the_fuyao_source
+    assert sum(1 for row in rows if row.list_date is None) <= 20
+E   assert 5578 <= 20
+E    +  where 5578 = sum(<generator object TestAgainstTheLiveFuyaoApi.test_registry_routes_the_instrument_catalog_to_the_fuyao_source.<locals>.<genexpr> at 0x11f64fdc0>)
+=========================== short test summary info ============================
+FAILED tests/test_ths_provider.py::TestAgainstTheLiveFuyaoApi::test_registry_routes_the_instrument_catalog_to_the_fuyao_source - assert 5578 <= 20
+ +  where 5578 = sum(<generator object TestAgainstTheLiveFuyaoApi.test_registry_routes_the_instrument_catalog_to_the_fuyao_source.<locals>.<genexpr> at 0x11f64fdc0>)
+======================== 1 failed, 11 passed in 16.71s =========================
+LIVE_PYTEST_EXIT=1

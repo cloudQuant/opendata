@@ -1,0 +1,39 @@
+===== C18 index-code-rule-audit 运行环境 =====
+Fri Sep 25 09:26:13 +08 2026
+branch=dev HEAD=0bd4d34
+Python 3.13.5
+===== 原始输出（未裁剪） =====
+[1] 各目录「thscode 去后缀 ≠ ticker」行数（不含豁免，原始事实）
+  a-share                行数   5578 不等     0 ticker 缺失     0 
+  a-share-index          行数   1431 不等   206 ticker 缺失     0 
+  fund-etf               行数   1696 不等     0 ticker 缺失     0 
+  futures                行数   1142 不等   174 ticker 缺失     0 
+  options                行数  10000 不等   404 ticker 缺失     0 （超单页上限，只量第一页）
+
+[2] 指数目录 206 行不等的形态分类
+  展示码含非数字（旧代码一类）                      201 行
+  纯数字变体，名字带币种/份额标记                      5 行
+  ── 展示码含非数字（旧代码一类） 样例：
+     thscode=991001.TI      ticker=1C0003     name=上证指数(旧)
+     thscode=000001.SH      ticker=1A0001     name=上证指数
+     thscode=000002.SH      ticker=1A0002     name=Ａ股指数
+     thscode=000003.SH      ticker=1A0003     name=Ｂ股指数
+     thscode=000004.SH      ticker=1B0001     name=工业指数
+  ── 纯数字变体，名字带币种/份额标记 样例：
+     thscode=970006.SZ      ticker=988006     name=创业板指(港币)(CNH)
+     thscode=970007.SZ      ticker=988007     name=创业板指(美元)(CNH)
+     thscode=470006.SZ      ticker=988106     name=创业板R(港币)(CNH)
+     thscode=470007.SZ      ticker=988107     name=创业板R(美元)(CNH)
+     thscode=480001.SZ      ticker=988201     name=湾创100R
+
+[3] 前缀重数：1431 个不同前缀，其中 0 个有多行
+
+[4] 裸码候选（解析只按 thscode 前缀匹配，与 ticker 无关）
+  000300   -> 000300.SH                    唯一 ⇒ 可解析
+  000905   -> 000905.SH                    唯一 ⇒ 可解析
+  000001   -> 000001.SH                    唯一 ⇒ 可解析
+  932000   -> -                            目录里没有 ⇒ 解析必失败
+  399001   -> 399001.SZ                    唯一 ⇒ 可解析
+  886042   -> 886042.TI                    唯一 ⇒ 可解析
+  991001   -> 991001.TI                    唯一 ⇒ 可解析
+AUDIT_EXIT=0

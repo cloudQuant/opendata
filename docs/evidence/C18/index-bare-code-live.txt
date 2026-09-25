@@ -1,0 +1,22 @@
+===== C18 index-bare-code-live 运行环境 =====
+Fri Sep 25 09:34:15 +08 2026
+branch=dev HEAD=0bd4d34
+Python 3.13.5
+===== 原始输出（未裁剪） =====
+[1] 裸码解析（resolve_index_code，走 a-share-index 目录）
+  000300 -> 000300.SH
+  000001 -> 000001.SH
+  886042 -> 886042.TI
+  000905 -> 000905.SH
+  399001 -> 399001.SZ
+
+[2] 指数两条腿按裸码取数（经注册表路由）
+  index_daily: 5 行 symbol=['000300.SH'] 首末=2024-09-02..2024-09-06
+  index_constituent: 300 行 首个成员=000001
+
+[3] a-share-index 目录：1431 行（此前该页整表抛 ticker_code_mismatch）
+  000001.SH 在目录内: True
+  991001.TI 在目录内: True
+  970006.SZ 在目录内: True
+  后缀分布: {'BJ': 1, 'CSI': 2, 'SH': 198, 'SZ': 375, 'TI': 855}
+LIVE_EXIT=0

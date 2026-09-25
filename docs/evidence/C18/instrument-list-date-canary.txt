@@ -1,0 +1,15 @@
+===== C18 instrument-list-date-canary 运行环境 =====
+Fri Sep 25 09:37:45 +08 2026
+branch=dev HEAD=0bd4d34
+Python 3.13.5
+===== 原始输出（未裁剪） =====
+[0] 本地判定时刻 2026-09-25 09:37:46 CST
+[1] C14 基线：a-share list_date 缺失 9/5578；futures 无日期行 265/1139
+  a-share         行数  5578 list_date 非空     0 缺  5578 到期日非空     0 快照 2026-09-25 09:00:21 CST
+  fund-etf        行数  1696 list_date 非空     0 缺  1696 到期日非空     0 快照 2026-09-25 09:00:21 CST
+  a-share-index   行数  1431 list_date 非空  1431 缺     0 到期日非空     0 快照 2026-09-25 09:00:21 CST
+  futures         行数  1142 list_date 非空   877 缺   265 到期日非空   877 快照 2026-09-25 09:00:20 CST
+
+[2] 判据后果：巡检的 instrument 探针只数行数（本轮实测 5,578 行 ⇒ [ok]），对字段级空值无感；
+    而 C14 把「目录 list_date == sina 首根」当作该腿 verified 的依据之一。
+CANARY_EXIT=0

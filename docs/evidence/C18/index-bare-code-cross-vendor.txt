@@ -1,0 +1,36 @@
+===== C18 跨 vendor 复算：裸码解析出的 000300 与 sina 官方指数序列逐字段对照（只读） =====
+Fri Sep 25 09:39:57 +08 2026
+branch=dev HEAD=0bd4d34
+Python 3.13.5
+命令：python scripts/ops/ths_index_cross_check.py --start 2026-01-05
+===== 原始输出（未裁剪） =====
+.. 000300: 178 days, max ohlc dev 1.13e-06
+.. 000001.SH: 178 days, max ohlc dev 1.33e-06
+.. 399001.SZ: 178 days, max ohlc dev 3.59e-07
+.. 000905.SH: 178 days, max ohlc dev 6.84e-07
+AC-10 ths index_daily leg vs the official sina index series
+
+script: scripts/ops/ths_index_cross_check.py
+window: 2026-01-05 .. 2026-09-25
+ours: get_registry().resolve_domain('index_daily', source='ths') (the routing path)
+official: sina stock_zh_index_daily -- different vendor, different aggregation chain
+fields: open, high, low, close, volume (sina publishes no index turnover on this route)
+tolerance: relative 5e-05 on OHLC, 0.005 on volume;
+           overlap >= 0.95 of our trading days
+
+| ths code | sina symbol | reference | days | overlap | max dev OHLC | max dev volume | volume ratio ths/sina | result |
+|---|---|---|---|---|---|---|---|---|
+| 000300 | sh000300 | fixture | 178 | 1.000 | 1.13e-06 | 3.50e-08 | 1.000000 .. 1.000000 | PASS |
+| 000001.SH | sh000001 | live | 178 | 1.000 | 1.33e-06 | 9.84e-09 | 1.000000 .. 1.000000 | PASS |
+| 399001.SZ | sz399001 | live | 178 | 1.000 | 3.59e-07 | 3.16e-03 | 1.000000 .. 1.003161 | PASS |
+| 000905.SH | sh000905 | live | 178 | 1.000 | 6.84e-07 | 3.40e-08 | 1.000000 .. 1.000000 | PASS |
+
+
+## 成交量口径说明
+
+- 399001.SZ: 成交量比值恒 ≥ 1（均值 1.000260，最大 1.003161），单向偏离指向源侧聚合范围差异（ths 侧并入的成交多于 sina），非程序换算错误：同一字段在 000300/000001/000905 上偏差量级为 1e-8。
+
+result: PASS (0 failing legs)
+
+report written to /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C5/ths-index-cross-check.txt
+CROSS_EXIT=0

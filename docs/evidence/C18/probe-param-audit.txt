@@ -1,0 +1,36 @@
+===== C18 复算 C16 离线参数审计（不连网、不连仓）运行环境 =====
+Fri Sep 25 09:39:34 +08 2026
+branch=dev HEAD=0bd4d34
+Python 3.13.5
+判据：19/19 逐条过 transform_query；与 docs/evidence/C16/probe-param-audit.txt 的唯一差异是 index_daily 的 symbol 由 000300.SH 改为裸码 000300（本轮改动面）
+===== 原始输出（未裁剪） =====
+探针日：2026-09-25（滚动腿据此命名标的）
+verified 能力 19 条，逐条离线复核（无网络）：
+[OK]   ecb/economy_cpi: end_date=2024-12-31, series_id=ICP/M.U2.N.000000.4.ANR, start_date=2024-01-01
+[OK]   ecb/economy_gdp: end_date=2024-12-31, series_id=MNA/Q.N.I9.W2.S1.S1.B.B1GQ._Z._Z._Z.EUR.LR.N, start_date=2023-01-01
+[OK]   ecb/economy_rate: end_date=2024-12-31, series_id=FM/B.U2.EUR.4F.KR.MRR_FR.LEV, start_date=2022-01-01
+[OK]   imf/economy_cpi: country=USA, end_date=2024-12-31, indicator=PCPIPCH, start_date=2015-01-01
+[OK]   imf/economy_gdp: country=USA, end_date=2024-12-31, indicator=NGDP_RPCH, start_date=2015-01-01
+[OK]   imf/economy_unemployment: country=USA, end_date=2024-12-31, indicator=LUR, start_date=2015-01-01
+[OK]   oecd/economy_cpi: end_date=2024-12-31, series_key=GBR.M.HICP.CPI.PC.CP09.N.G1, start_date=2023-01-01
+[OK]   oecd/economy_unemployment: end_date=2024-12-31, series_key=USA.UNE_RATE.PT_LF_SUB._T.Y15T64.UNE, start_date=2023-01-01
+[OK]   ths/stock_daily: end_date=2024-09-06, start_date=2024-09-02, symbol=600519
+[OK]   ths/stock_action: end_date=2024-12-31, start_date=2023-01-01, symbol=600519
+[OK]   ths/index_daily: end_date=2024-09-06, start_date=2024-09-02, symbol=000300
+[OK]   ths/index_constituent: symbol=000300.SH
+[OK]   ths/financial_statement: symbol=600519
+[OK]   ths/fund_action: end_date=2025-12-31, start_date=2023-01-01, symbol=510300
+[OK]   ths/instrument: asset_type=a-share
+[OK]   ths/futures_daily: end_date=2026-09-25, start_date=2026-09-04, symbol=CU2611.SHF
+[OK]   ths/option_daily: end_date=2026-09-25, start_date=2026-09-04, symbol=10011425.SH
+[OK]   ths/trading_calendar: (空参数)
+[OK]   yfinance/stock_daily_overseas: end_date=2024-09-06, start_date=2024-09-02, symbol=AAPL
+
+汇总：通过 19 / 19；C15 离线基线为 7 / 19
+AUDIT_EXIT=0
+===== 与 C16 归档的逐行 diff =====
+  13c13
+  < [OK]   ths/index_daily: end_date=2024-09-06, start_date=2024-09-02, symbol=000300.SH
+  ---
+  > [OK]   ths/index_daily: end_date=2024-09-06, start_date=2024-09-02, symbol=000300
+DIFF_LINES=2

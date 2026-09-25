@@ -1,0 +1,42 @@
+===== C18 变异测试：把 DISPLAY_CODE_ASSET_TYPES 清空（去掉指数豁免）=====
+Fri Sep 25 09:40:36 +08 2026
+命令：pytest tests/test_fuyao_endpoints.py tests/test_ths_provider.py -q --no-cov -m 'not e2e' -k 'reconcil or index or display'
+===== 原始输出（未裁剪） =====
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 178 items / 151 deselected / 27 selected
+
+tests/test_fuyao_endpoints.py ......F.......                             [ 51%]
+tests/test_ths_provider.py ...F.........                                 [100%]
+
+=================================== FAILURES ===================================
+_ TestNormalizers.test_index_display_codes_are_exempt_from_the_reconciliation __
+tests/test_fuyao_endpoints.py:620: in test_index_display_codes_are_exempt_from_the_reconciliation
+    rows = normalize_instruments(
+opendata_fuyao/endpoints.py:632: in normalize_instruments
+    raise error_for_transport("envelope_invalid", detail="ticker_code_mismatch")
+E   opendata_fuyao.errors.FuyaoError: FUYAO_ENVELOPE_INVALID_ticker_code_mismatch: 响应信封格式非法（无法解析）
+_ TestSymbolResolution.test_index_display_codes_do_not_break_the_bare_code_lookup _
+tests/test_ths_provider.py:443: in test_index_display_codes_do_not_break_the_bare_code_lookup
+    assert resolve_index_code(active, "000300") == "000300.SH"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+opendata/data/providers/ths/models/_client.py:168: in resolve_index_code
+    return _resolve_by_listing(
+opendata/data/providers/ths/models/_client.py:133: in _resolve_by_listing
+    for instrument in list_instruments(
+opendata_fuyao/endpoints.py:928: in list_instruments
+    return normalize_instruments(response.envelope)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+opendata_fuyao/endpoints.py:632: in normalize_instruments
+    raise error_for_transport("envelope_invalid", detail="ticker_code_mismatch")
+E   opendata_fuyao.errors.FuyaoError: FUYAO_ENVELOPE_INVALID_ticker_code_mismatch: 响应信封格式非法（无法解析）
+=========================== short test summary info ============================
+FAILED tests/test_fuyao_endpoints.py::TestNormalizers::test_index_display_codes_are_exempt_from_the_reconciliation
+FAILED tests/test_ths_provider.py::TestSymbolResolution::test_index_display_codes_do_not_break_the_bare_code_lookup
+================= 2 failed, 25 passed, 151 deselected in 0.15s =================
+MUTATION_EXIT=1

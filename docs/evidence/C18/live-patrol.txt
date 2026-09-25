@@ -1,0 +1,36 @@
+===== C18 live patrol（真机巡检，含裸指数码探针）运行环境 =====
+Fri Sep 25 09:38:01 +08 2026
+branch=dev HEAD=0bd4d34
+Python 3.13.5
+===== 原始输出（未裁剪） =====
+== 健康巡检结果 ==
+  [ok] ecb/economy_cpi: 12 rows, 1299ms
+  [ok] ecb/economy_gdp: 8 rows, 893ms
+  [ok] ecb/economy_rate: 14 rows, 953ms
+  [ok] imf/economy_cpi: 10 rows, 9796ms
+  [ok] imf/economy_gdp: 10 rows, 13818ms
+  [ok] imf/economy_unemployment: 10 rows, 10748ms
+  [ok] oecd/economy_cpi: 24 rows, 1576ms
+  [ok] oecd/economy_unemployment: 2 rows, 2148ms
+  [ok] ths/stock_daily: 5 rows, 1965ms
+  [ok] ths/stock_action: 4 rows, 1523ms
+  [ok] ths/index_daily: 5 rows, 2028ms
+  [ok] ths/index_constituent: 300 rows, 1569ms
+  [ok] ths/financial_statement: 52 rows, 2466ms
+  [ok] ths/fund_action: 3 rows, 1995ms
+  [ok] ths/instrument: 5578 rows, 2561ms
+  [ok] ths/futures_daily: 15 rows, 1230ms
+  [ok] ths/option_daily: 15 rows, 7131ms
+  [ok] ths/trading_calendar: 242 rows, 2092ms
+  [ok] yfinance/stock_daily_overseas: 4 rows, 1017ms
+== 凭证配置 ==
+  ths: 配置（必须=True）
+  fred: 缺失（必须=True）
+  yfinance: 配置（必须=False）
+  ecb: 配置（必须=False）
+  imf: 配置（必须=False）
+  oecd: 配置（必须=False）
+  akshare: 配置（必须=False）
+
+失败 0 项；必配 Key 缺失 1 项
+PATROL_EXIT=0
