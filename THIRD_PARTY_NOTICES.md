@@ -42,16 +42,21 @@ opendata 采用 BSL 1.1（见 [`LICENSE`](LICENSE)），但仓库内**内嵌的�
 | `akshare/futures/futures_hf_em.py` | 站点 `token` → `EM_API_TOKEN` | 同上 |
 | `akshare/option/option_em.py` | 站点 `token` → `EM_API_TOKEN`（与上游同值） | 同上 |
 
-**二、行为修正（3 处）**：上游把失败吞成"空结果"，与真实空窗不可区分，会直接导致增量调度静默欠抓。
+**二、行为修正（4 处）**：前三处是上游把失败吞成"空结果"，与真实空窗不可区分，会直接导致增量调度静默欠抓；
+第四处是把**带时区语义**的时间按**本机**时区渲染，同一份应答换一台机器就给出不同的值。
 
 | 文件 | 改动 | 原因 |
 |------|------|------|
 | `akshare/datasets.py` | `get_*_path` 由返回不存在的路径 → `raise RuntimeError` | 上游 `akshare.data` 资源包从未存在（A2.3 标注不可用） |
 | `akshare/index/index_zh_em.py` | 指数 K 线改走 `request_eastmoney`（push2delay/curl 回退）；仅当全部 secid 候选都被拒时 `raise RuntimeError` | 上游 `except: continue` 后返回空帧；实测 502/RemoteDisconnected 会被当成"当日无行情"（C11a，AC-13 的 15:00 观测） |
 | `akshare/index/index_cons.py` | 中证权重文件：传输失败 / 非 200 / body 不可解析 → `raise RuntimeError` | 同上（`_empty_*()` 吞掉了三种失败） |
+| `akshare/stock_fundamental/stock_finance_sina.py` | 三大报表 `更新日期`：`datetime.fromtimestamp(ts)` → `fromtimestamp(ts, tz=ZoneInfo("Asia/Shanghai")).replace(tzinfo=None)` | 上游不传 `tz` ⇒ 取本机时区。A 股数据的 `update_time` 语义是北京时间，夹具在 UTC+8 录制，在 UTC+3 机器上重放整列早 5 小时（AC-6 保真回放因此不可跨机复现，C21）。固定后输出与录制逐字一致，字符串形态不变 |
 
-两类改版的判据一致：**合法的"确实没有数据"**（200 + 可解析 + 零行）仍返回空帧，只有**上游拒绝**才抛错。
-回归护栏：`tests/test_port_fail_closed.py`（逐分支钉住"拒绝抛错 / 空窗返空"）与
+前三处的判据一致：**合法的"确实没有数据"**（200 + 可解析 + 零行）仍返回空帧，只有**上游拒绝**才抛错。
+第四处不改字符串形态、不改列名、不参与契约（`normalize()` 把 `更新日期` 当页元数据丢弃），只把渲染基准钉住。
+回归护栏：`tests/test_port_fail_closed.py`（逐分支钉住"拒绝抛错 / 空窗返空"）、
+`tests/test_port_fidelity.py::test_financial_statement_update_dates_ignore_the_machine_timezone`
+（同一份录制在 Asia/Shanghai / Etc/UTC / America/Los_Angeles 下必须给出同一列）与
 `docs/port-report.md` 的 `0 pending TODOs`（重放与树内容逐字节一致）。
 
 ---

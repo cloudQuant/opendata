@@ -294,7 +294,7 @@
 | `stock_fundamental/__init__.py` | `akshare/stock_fundamental/__init__.py` | 0 | 0 | False | ✓ |
 | `stock_fundamental/stock_basic_info_xq.py` | `akshare/stock_fundamental/stock_basic_info_xq.py` | 1 | 0 | False | ✓ |
 | `stock_fundamental/stock_finance_hk_em.py` | `akshare/stock_fundamental/stock_finance_hk_em.py` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_finance_sina.py` | `akshare/stock_fundamental/stock_finance_sina.py` | 1 | 0 | False | ✓ |
+| `stock_fundamental/stock_finance_sina.py` | `akshare/stock_fundamental/stock_finance_sina.py` | 1 | 0 | True | ✓ |
 | `stock_fundamental/stock_finance_ths.py` | `akshare/stock_fundamental/stock_finance_ths.py` | 1 | 0 | False | ✓ |
 | `stock_fundamental/stock_finance_us_em.py` | `akshare/stock_fundamental/stock_finance_us_em.py` | 1 | 0 | False | ✓ |
 | `stock_fundamental/stock_gbjg_em.py` | `akshare/stock_fundamental/stock_gbjg_em.py` | 0 | 0 | False | ✓ |

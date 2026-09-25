@@ -15,12 +15,17 @@ https://money.finance.sina.com.cn/corp/go.php/vISSUE_ShareBonus/stockid/600004.p
 
 from datetime import datetime
 from io import StringIO
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
 from opendata_http.utils.tqdm import get_tqdm
+
+# 人工改动：update_time 是 epoch 秒，语义上是北京时间。上游不传 tz，取本机时区，
+# 换一台机器就会把同一次应答渲染成不同的 更新日期。
+_UPDATE_TIME_ZONE = ZoneInfo("Asia/Shanghai")
 
 
 def stock_financial_report_sina(
@@ -74,8 +79,9 @@ def stock_financial_report_sina(
                 ],
                 "类型": data_json["result"]["data"]["report_list"][date_str]["rType"],
                 "更新日期": datetime.fromtimestamp(
-                    data_json["result"]["data"]["report_list"][date_str]["update_time"]
-                ).isoformat(),
+                    data_json["result"]["data"]["report_list"][date_str]["update_time"],
+                    tz=_UPDATE_TIME_ZONE,
+                ).replace(tzinfo=None).isoformat(),
             },
             orient="index",
         )

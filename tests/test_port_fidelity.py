@@ -13,6 +13,8 @@ transcript, and a call-count mismatch is a failure too.
 """
 
 import json
+import os
+import time
 
 import pandas as pd
 import pytest
@@ -36,7 +38,7 @@ def _fixture_status(case_name: str) -> tuple[bool, str]:
 
 
 @pytest.mark.parametrize("case", comparator.CASES, ids=lambda case: case.name)
-def test_ported_output_matches_upstream(case):
+def test_ported_output_matches_upstream(case: comparator.Case) -> None:
     recorded, reason = _fixture_status(case.name)
     if not recorded:
         pytest.skip(f"recording pending for {case.name}: {reason}")
@@ -58,7 +60,7 @@ def test_ported_output_matches_upstream(case):
     )
 
 
-def test_recorded_fixtures_are_pinned_to_upstream_lock():
+def test_recorded_fixtures_are_pinned_to_upstream_lock() -> None:
     """Every recorded fixture names the lock commit it came from."""
     lock = json.loads(comparator.LOCK_PATH.read_text(encoding="utf-8"))
     pinned = lock["upstream"]["commit"]
@@ -70,7 +72,7 @@ def test_recorded_fixtures_are_pinned_to_upstream_lock():
         assert meta["upstream_commit"] == pinned
 
 
-def test_d10_qfq_synthesis_matches_official_series():
+def test_d10_qfq_synthesis_matches_official_series() -> None:
     """A1 leftover: apply_adjust reproduces the official em qfq series."""
     recorded, reason = _fixture_status("stock_daily_raw")
     if not recorded:
@@ -83,7 +85,7 @@ def test_d10_qfq_synthesis_matches_official_series():
     qfq = comparator._read_reference_frame(FIXTURES_DIR / "stock_daily_qfq" / "reference.csv.gz")
     assert len(raw) == len(qfq) and not raw.empty
 
-    def _bars(frame):
+    def _bars(frame: pd.DataFrame) -> list[Bar]:
         return [
             Bar(
                 symbol=str(row["股票代码"]),
@@ -113,3 +115,45 @@ def test_d10_qfq_synthesis_matches_official_series():
     for index, bar in enumerate(synthesized):
         official = float(qfq.iloc[index]["收盘"])
         assert abs(bar.close - official) <= abs(official) * comparator.RTOL
+
+
+def test_financial_statement_update_dates_ignore_the_machine_timezone() -> None:
+    """AC-6 reproducibility: sina's ``更新日期`` is Beijing wall time, not host time.
+
+    The fixture was recorded on a UTC+8 host. Rendering the upstream epoch
+    in the host's own zone moved every cell by the zone difference -
+    measured on a UTC+3 host: 10 of 10 rows came back 5 h early - so the
+    replay is only reproducible while that conversion stays pinned.
+    """
+    case = next(item for item in comparator.CASES if item.name == "financial_statement")
+    recorded, reason = _fixture_status(case.name)
+    if not recorded:
+        pytest.skip(f"recording pending for {case.name}: {reason}")
+
+    reference = comparator._read_reference_frame(FIXTURES_DIR / case.name / "reference.csv.gz")
+    function = comparator._load_case_function("opendata_http", case.function)
+    comparator._pin_pure_requests_channel()
+    entries = comparator._read_transcript(FIXTURES_DIR / case.name / "responses.json.gz")
+    expected = list(reference["更新日期"])
+    assert expected, "the recorded frame must carry the column this test is about"
+
+    previous_zone = os.environ.get("TZ")
+    rendered: dict[str, list[str]] = {}
+    try:
+        for zone in ("Asia/Shanghai", "Etc/UTC", "America/Los_Angeles"):
+            os.environ["TZ"] = zone
+            time.tzset()
+            replayer = comparator.HttpReplayer(entries)
+            with replayer:
+                frame = function(**case.kwargs)
+            assert replayer.cursor == len(entries)
+            rendered[zone] = list(frame["更新日期"])
+    finally:
+        if previous_zone is None:
+            os.environ.pop("TZ", None)
+        else:
+            os.environ["TZ"] = previous_zone
+        time.tzset()
+
+    for zone, column in rendered.items():
+        assert column == expected, f"{zone} rendered 更新日期 differently from the recording"

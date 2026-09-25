@@ -186,6 +186,35 @@ MANUAL_EDITS: tuple[ManualEdit, ...] = (
         ),
     ),
     ManualEdit(
+        upstream_path="akshare/stock_fundamental/stock_finance_sina.py",
+        description="新浪财报 更新日期：datetime.fromtimestamp 按本机时区渲染 → 固定按北京时区渲染"
+        "（C21 时区漂移缺陷：同一份应答在 +08:00 与 +03:00 的机器上差 5 小时）",
+        transforms=(
+            (
+                r"from io import StringIO\n",
+                "from io import StringIO\nfrom zoneinfo import ZoneInfo\n",
+            ),
+            (
+                r"from opendata_http\.utils\.tqdm import get_tqdm\n",
+                "from opendata_http.utils.tqdm import get_tqdm\n"
+                "\n"
+                "# 人工改动：update_time 是 epoch 秒，语义上是北京时间。上游不传 tz，"
+                "取本机时区，\n"
+                "# 换一台机器就会把同一次应答渲染成不同的 更新日期。\n"
+                '_UPDATE_TIME_ZONE = ZoneInfo("Asia/Shanghai")\n',
+            ),
+            (
+                r'datetime\.fromtimestamp\(\s+data_json\["result"\]\["data"\]\["report_list"\]'
+                r'\[date_str\]\["update_time"\]\s+\)\.isoformat\(\)',
+                "datetime.fromtimestamp(\n"
+                '                    data_json["result"]["data"]["report_list"][date_str]'
+                '["update_time"],\n'
+                "                    tz=_UPDATE_TIME_ZONE,\n"
+                "                ).replace(tzinfo=None).isoformat()",
+            ),
+        ),
+    ),
+    ManualEdit(
         upstream_path="akshare/datasets.py",
         description="akshare.data resource package never existed upstream; "
         "fail closed with a clear error (A2.3 标注不可用)",
