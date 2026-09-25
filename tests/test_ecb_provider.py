@@ -86,6 +86,22 @@ class TestClient:
             )
         assert err.value.code == "ECB_HTTP_ERROR"
 
+    def test_http_error_names_the_failing_request(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        requested: list[str] = []
+
+        def _get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+            requested.append(url)
+            return 404, "no such series"
+
+        monkeypatch.setattr("opendata.data.providers.ecb.models._client._http_get", _get)
+        with pytest.raises(EcbProviderError) as err:
+            EcbCpiFetcher().extract_data(
+                EcbCpiFetcher().transform_query(series_id=EURO_AREA_ANR_KEY), FetchContext()
+            )
+        # Patrol logs one line per failure, so "ECB_HTTP_ERROR" alone cannot
+        # be attributed to a series without replaying the call.
+        assert str(err.value) == f"ECB_HTTP_ERROR status=404 url={requested[0]}"
+
     def test_non_csv_body_fails_closed(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(
             "opendata.data.providers.ecb.models._client._http_get",

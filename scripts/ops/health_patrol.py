@@ -9,7 +9,9 @@ probe failed - so a cron line can page on it:
                  python scripts/ops/health_patrol.py || notify-health
 
 Also prints the key configuration so a missing credential is visible in
-the same report.
+the same report. A leg that passed only on its retry prints as FLAKY and
+is counted separately: it does not flip the exit code, because the
+source is reachable, but it is never printed as a clean pass either.
 """
 
 from __future__ import annotations
@@ -34,16 +36,23 @@ def main() -> int:
     keys = key_status()
     print("== 健康巡检结果 ==")
     for result in results:
-        status = "ok" if result.ok else "FAIL"
-        detail = result.error or f"{result.rows} rows, {result.latency_ms:.0f}ms"
-        print(f"  [{status}] {result.source}/{result.domain}: {detail}")
+        leg = f"{result.source}/{result.domain}"
+        probe = f"{result.rows} rows, {result.latency_ms:.0f}ms"
+        if not result.ok:
+            print(f"  [FAIL] {leg}: {result.error}")
+        elif result.flaky:
+            # 靠重试才过：源是可达的，但这条腿不健康到可以不打字
+            print(f"  [FLAKY] {leg}: 重试后 {probe}；首次失败 {result.error}")
+        else:
+            print(f"  [ok] {leg}: {probe}")
     print("== 凭证配置 ==")
     for source, info in keys.items():
         mark = "配置" if info["configured"] else "缺失"
         print(f"  {source}: {mark}（必须={info['required']}）")
     failed = sum(1 for result in results if not result.ok)
+    flaky = sum(1 for result in results if result.flaky)
     missing_keys = sum(1 for info in keys.values() if info["required"] and not info["configured"])
-    print(f"\n失败 {failed} 项；必配 Key 缺失 {missing_keys} 项")
+    print(f"\n失败 {failed} 项；抖动 {flaky} 项；必配 Key 缺失 {missing_keys} 项")
     return 1 if failed else 0
 
 

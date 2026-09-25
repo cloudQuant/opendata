@@ -24,17 +24,37 @@ FRED_DEFAULT_BASE_URL = "https://api.stlouisfed.org"
 
 
 class FredProviderError(RuntimeError):
-    """Stable failures of the fred provider adapter."""
+    """Stable failures of the fred provider adapter.
 
-    def __init__(self, code: str) -> None:
-        """Store the stable failure code (and use it as the message).
+    The message carries the request that produced the failure, matching
+    the convention of the governed client in
+    :mod:`opendata.data.http_client`. Health patrol logs one line per
+    failure, so a code alone ("FRED_HTTP_ERROR") cannot be attributed to
+    an upstream without replaying the call by hand.
+    """
+
+    def __init__(
+        self,
+        code: str,
+        *,
+        status: int | None = None,
+        url: str | None = None,
+    ) -> None:
+        """Store the stable failure code and the request behind it.
 
         Args:
             code: One of the provider's stable codes, for example
                 ``FRED_API_KEY_MISSING``.
+            status: Upstream HTTP status, when a response was received.
+            url: Requested URL. Only ever the query-free form: the API
+                key travels as a parameter and must not reach a log line.
         """
         self.code = code
-        super().__init__(code)
+        self.status = status
+        self.url = url
+        detail = "" if status is None else f" status={status}"
+        detail += "" if url is None else f" url={url}"
+        super().__init__(code + detail)
 
 
 def require_api_key() -> str:
@@ -86,7 +106,8 @@ def fetch_observations(
     Raises:
         FredProviderError: Key missing (``FRED_API_KEY_MISSING``), non-200
             upstream status (``FRED_HTTP_ERROR``), or a body that is not
-            the expected JSON document (``FRED_BAD_RESPONSE``).
+            the expected JSON document (``FRED_BAD_RESPONSE``). The latter
+            two carry the upstream status and the query-free URL.
     """
     from opendata.core.config import get_settings
 
@@ -100,14 +121,15 @@ def fetch_observations(
         params["observation_start"] = start.isoformat()
     if end is not None:
         params["observation_end"] = end.isoformat()
-    status, text = _http_get(f"{base_url}/fred/series/observations", params, timeout)
+    url = f"{base_url}/fred/series/observations"
+    status, text = _http_get(url, params, timeout)
     if status != 200:
-        raise FredProviderError("FRED_HTTP_ERROR")
+        raise FredProviderError("FRED_HTTP_ERROR", status=status, url=url)
     try:
         document = json.loads(text)
     except json.JSONDecodeError as exc:
-        raise FredProviderError("FRED_BAD_RESPONSE") from exc
+        raise FredProviderError("FRED_BAD_RESPONSE", status=status, url=url) from exc
     observations = document.get("observations") if isinstance(document, dict) else None
     if not isinstance(observations, list):
-        raise FredProviderError("FRED_BAD_RESPONSE")
+        raise FredProviderError("FRED_BAD_RESPONSE", status=status, url=url)
     return observations

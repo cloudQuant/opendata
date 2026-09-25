@@ -12,6 +12,11 @@ nevertheless *real* parameters: a probe that fails validation is
 reported as an unhealthy source, which quietly removes that source from
 ``auto`` routing (C15 audit: 12 of 19 verified capabilities were
 mis-probed this way).
+
+One blip is retried before a source is marked unhealthy, because that
+mark holds until the next patrol. Retrying is not a way to hide
+flakiness: a leg that only passes on its second attempt is reported as
+flaky and keeps the failure the first attempt produced.
 """
 
 from __future__ import annotations
@@ -38,6 +43,12 @@ if TYPE_CHECKING:
 #: DataMapper answers the same annual query in 8.7-11.6s, so a 10s ceiling
 #: reported a healthy IMF leg as down on every run it answered late.
 PROBE_TIMEOUT = 30.0
+#: Attempts one leg gets before its source is judged unhealthy. A single
+#: blip - a dropped connection, one 429 - is not an outage, and marking the
+#: source unhealthy takes it out of ``auto`` routing until the next patrol.
+PROBE_ATTEMPTS = 2
+#: Seconds between a failed attempt and its retry.
+PROBE_RETRY_BACKOFF = 2.0
 #: Probe parameters keyed by ``(domain, source)``; a verified capability
 #: without an entry cannot be probed. Every window is a *fixed* historical
 #: range on purpose - a range the sources have already published can never
@@ -161,10 +172,13 @@ class PatrolResult:
         domain: Domain identifier.
         source: Source identifier.
         ok: Whether the probe call succeeded.
-        error: Failure detail (None on success).
+        error: Failure detail (None on a clean pass; the first attempt's
+            failure when a flaky leg only passed on its retry).
         latency_ms: Probe duration in milliseconds.
         verified: Whether the capability is marked verified.
         rows: Rows the probe came back with (None when it did not run).
+        attempts: Probe attempts used up (1 = passed first try, or failed
+            them all).
     """
 
     domain: str
@@ -174,6 +188,18 @@ class PatrolResult:
     latency_ms: float
     verified: bool
     rows: int | None = None
+    attempts: int = 1
+
+    @property
+    def flaky(self) -> bool:
+        """Whether this leg only passed because it was retried.
+
+        Returns:
+            True when a retry produced the pass. A flaky leg keeps the
+            routing mark of a healthy source but is reported separately:
+            absorbing a blip must not turn flakiness green.
+        """
+        return self.ok and self.attempts > 1
 
 
 def key_status(
@@ -226,7 +252,8 @@ async def patrol(registry: ProviderRegistry | None = None) -> Sequence[PatrolRes
         registry: Registry to probe; defaults to the process singleton.
 
     Returns:
-        One result per registered capability, in registration order.
+        One result per registered verified capability, in registration
+        order, each naming the attempts it used up.
     """
     from opendata.data.registry import get_registry
 
@@ -243,21 +270,40 @@ async def patrol(registry: ProviderRegistry | None = None) -> Sequence[PatrolRes
             logger.warning(f"patrol cannot resolve {capability.source}/{capability.domain}")
             continue
         started = time.perf_counter()
-        try:
-            rows = await asyncio.wait_for(
-                _run_probe(fetcher, capability, registry), timeout=PROBE_TIMEOUT
-            )
-            ok, error = True, None
-            registry.mark_available(fetcher)
-        except PatrolProbeConfigError as exc:
-            # A missing probe is a gap in the patrol, not an unhealthy
-            # source: report it loudly but leave the routing mark alone.
-            ok, error, rows = False, f"{type(exc).__name__}: {exc}", None
-            logger.error(f"patrol cannot probe {capability.source}/{capability.domain}: {error}")
-        except Exception as exc:  # any probe failure is a health signal
-            ok, error, rows = False, f"{type(exc).__name__}: {exc}", None
-            registry.mark_unavailable(fetcher)
-            logger.warning(f"patrol failed for {capability.source}/{capability.domain}: {error}")
+        leg = f"{capability.source}/{capability.domain}"
+        attempts = 0
+        ok = False
+        rows: int | None = None
+        error: str | None = None
+        while True:
+            attempts += 1
+            try:
+                rows = await asyncio.wait_for(
+                    _run_probe(fetcher, capability, registry), timeout=PROBE_TIMEOUT
+                )
+                ok = True
+                registry.mark_available(fetcher)
+                break
+            except PatrolProbeConfigError as exc:
+                # A missing probe is a gap in the patrol, not an unhealthy
+                # source: report it loudly, leave the routing mark alone, and
+                # never retry - a second attempt reads the same table.
+                error = f"{type(exc).__name__}: {exc}"
+                logger.error(f"patrol cannot probe {leg}: {error}")
+                break
+            except Exception as exc:  # any probe failure is a health signal
+                rows, error = None, f"{type(exc).__name__}: {exc}"
+                if attempts < PROBE_ATTEMPTS:
+                    logger.warning(f"patrol retrying {leg} after attempt {attempts}: {error}")
+                    await asyncio.sleep(PROBE_RETRY_BACKOFF)
+                    continue
+                registry.mark_unavailable(fetcher)
+                logger.warning(f"patrol failed for {leg} on {attempts} attempts: {error}")
+                break
+        if ok and attempts > 1:
+            # The pass is real, the leg is not clean: keep the first failure
+            # in the report rather than turning flakiness green.
+            logger.warning(f"patrol {leg} passed only on attempt {attempts}: {error}")
         results.append(
             PatrolResult(
                 domain=capability.domain,
@@ -267,6 +313,7 @@ async def patrol(registry: ProviderRegistry | None = None) -> Sequence[PatrolRes
                 latency_ms=(time.perf_counter() - started) * 1000,
                 verified=True,
                 rows=rows,
+                attempts=attempts,
             )
         )
     return results

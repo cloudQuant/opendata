@@ -25,17 +25,36 @@ ECB_DEFAULT_BASE_URL = "https://data-api.ecb.europa.eu"
 
 
 class EcbProviderError(RuntimeError):
-    """Stable failures of the ecb provider adapter."""
+    """Stable failures of the ecb provider adapter.
 
-    def __init__(self, code: str) -> None:
-        """Store the stable failure code (and use it as the message).
+    The message carries the request that produced the failure, matching
+    the convention of the governed client in
+    :mod:`opendata.data.http_client`. Health patrol logs one line per
+    failure, so a code alone ("ECB_HTTP_ERROR") cannot be attributed to
+    an upstream without replaying the call by hand.
+    """
+
+    def __init__(
+        self,
+        code: str,
+        *,
+        status: int | None = None,
+        url: str | None = None,
+    ) -> None:
+        """Store the stable failure code and the request behind it.
 
         Args:
             code: One of the provider's stable codes, for example
                 ``ECB_HTTP_ERROR``.
+            status: Upstream HTTP status, when a response was received.
+            url: Requested URL, passed without its query string.
         """
         self.code = code
-        super().__init__(code)
+        self.status = status
+        self.url = url
+        detail = "" if status is None else f" status={status}"
+        detail += "" if url is None else f" url={url}"
+        super().__init__(code + detail)
 
 
 def _http_get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
@@ -67,7 +86,8 @@ def fetch_observations(
     Raises:
         EcbProviderError: Non-200 upstream status (``ECB_HTTP_ERROR``), a
             body without the expected CSV columns
-            (``ECB_BAD_RESPONSE``).
+            (``ECB_BAD_RESPONSE``). Both carry the upstream status and
+            the query-free URL that produced them.
     """
     from opendata.core.config import get_settings
 
@@ -77,10 +97,11 @@ def fetch_observations(
         params["startPeriod"] = start.isoformat()
     if end is not None:
         params["endPeriod"] = end.isoformat()
-    status, text = _http_get(f"{base_url}/service/data/{series_key}", params, timeout)
+    url = f"{base_url}/service/data/{series_key}"
+    status, text = _http_get(url, params, timeout)
     if status != 200:
-        raise EcbProviderError("ECB_HTTP_ERROR")
+        raise EcbProviderError("ECB_HTTP_ERROR", status=status, url=url)
     rows = list(csv.DictReader(io.StringIO(text)))
     if rows and not {"KEY", "TIME_PERIOD", "OBS_VALUE"} <= set(rows[0]):
-        raise EcbProviderError("ECB_BAD_RESPONSE")
+        raise EcbProviderError("ECB_BAD_RESPONSE", status=status, url=url)
     return rows

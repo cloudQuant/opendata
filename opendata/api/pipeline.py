@@ -172,7 +172,8 @@ async def run_source_patrol(
     """Probe every verified capability and refresh routing health (AC-4).
 
     The patrol marks failing sources unhealthy so ``source=auto`` stops
-    routing to them; a broken source is reported, not hidden.
+    routing to them; a broken source is reported, not hidden. A leg that
+    passed only after its retry stays routable but is counted as flaky.
 
     Args:
         current_user: Authenticated user.
@@ -187,11 +188,14 @@ async def run_source_patrol(
         data={
             "count": len(results),
             "healthy": sum(1 for result in results if result.ok),
+            "flaky": sum(1 for result in results if result.flaky),
             "results": [
                 {
                     "domain": result.domain,
                     "source": result.source,
                     "ok": result.ok,
+                    "flaky": result.flaky,
+                    "attempts": result.attempts,
                     "error": result.error,
                     "latency_ms": round(result.latency_ms, 1),
                     "verified": result.verified,

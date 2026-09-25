@@ -84,6 +84,27 @@ class TestClient:
                 FredCpiFetcher().transform_query(series_id="CPIAUCSL"), FetchContext()
             )
         assert err.value.code == "FRED_API_KEY_MISSING"
+        # Nothing was requested, so there is nothing to attribute.
+        assert str(err.value) == "FRED_API_KEY_MISSING"
+
+    def test_http_error_names_the_request_but_never_the_key(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        requested: list[tuple[str, dict[str, str]]] = []
+
+        def _get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+            requested.append((url, params))
+            return 429, "Too Many Requests"
+
+        monkeypatch.setattr("opendata.data.providers.fred.models._client._http_get", _get)
+        with pytest.raises(FredProviderError) as err:
+            FredCpiFetcher().extract_data(
+                FredCpiFetcher().transform_query(series_id="CPIAUCSL"), FetchContext()
+            )
+        url, params = requested[0]
+        assert params["api_key"], "the key must travel as a query parameter"
+        assert str(err.value) == f"FRED_HTTP_ERROR status=429 url={url}"
+        assert params["api_key"] not in str(err.value)
 
     def test_http_error_fails_closed(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(

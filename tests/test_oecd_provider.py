@@ -105,6 +105,22 @@ class TestClient:
             )
         assert err.value.code == "OECD_HTTP_ERROR"
 
+    def test_http_error_names_the_failing_request(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        requested: list[str] = []
+
+        def _get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
+            requested.append(url)
+            return 404, "NoRecordsFound"
+
+        monkeypatch.setattr("opendata.data.providers.oecd.models._client._http_get", _get)
+        with pytest.raises(OecdProviderError) as err:
+            OecdCpiFetcher().extract_data(
+                OecdCpiFetcher().transform_query(series_key=GBR_CPI_KEY), FetchContext()
+            )
+        # Patrol logs one line per failure, so "OECD_HTTP_ERROR" alone cannot
+        # be attributed to a series or flow without replaying the call.
+        assert str(err.value) == f"OECD_HTTP_ERROR status=404 url={requested[0]}"
+
     def test_non_csv_body_fails_closed(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setattr(
             "opendata.data.providers.oecd.models._client._http_get",

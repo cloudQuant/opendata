@@ -20,17 +20,36 @@ IMF_DEFAULT_BASE_URL = "https://www.imf.org/external/datamapper/api/v1"
 
 
 class ImfProviderError(RuntimeError):
-    """Stable failures of the imf provider adapter."""
+    """Stable failures of the imf provider adapter.
 
-    def __init__(self, code: str) -> None:
-        """Store the stable failure code (and use it as the message).
+    The message carries the request that produced the failure, matching
+    the convention of the governed client in
+    :mod:`opendata.data.http_client`. Health patrol logs one line per
+    failure, so a code alone ("IMF_HTTP_ERROR") cannot be attributed to
+    an upstream without replaying the call by hand.
+    """
+
+    def __init__(
+        self,
+        code: str,
+        *,
+        status: int | None = None,
+        url: str | None = None,
+    ) -> None:
+        """Store the stable failure code and the request behind it.
 
         Args:
             code: One of the provider's stable codes, for example
                 ``IMF_HTTP_ERROR``.
+            status: Upstream HTTP status, when a response was received.
+            url: Requested URL, passed without its query string.
         """
         self.code = code
-        super().__init__(code)
+        self.status = status
+        self.url = url
+        detail = "" if status is None else f" status={status}"
+        detail += "" if url is None else f" url={url}"
+        super().__init__(code + detail)
 
 
 def _http_get(url: str, timeout: float | None) -> tuple[int, str]:
@@ -59,14 +78,15 @@ def fetch_indicator(indicator: str, country: str, *, timeout: float | None) -> d
     from opendata.core.config import get_settings
 
     base_url = get_settings().imf_api_base_url or IMF_DEFAULT_BASE_URL
-    status, text = _http_get(f"{base_url}/{indicator}/{country}", timeout)
+    url = f"{base_url}/{indicator}/{country}"
+    status, text = _http_get(url, timeout)
     if status != 200:
-        raise ImfProviderError("IMF_HTTP_ERROR")
+        raise ImfProviderError("IMF_HTTP_ERROR", status=status, url=url)
     try:
         document = json.loads(text)
         series = document["values"][indicator][country]
     except (json.JSONDecodeError, KeyError, TypeError) as exc:
-        raise ImfProviderError("IMF_BAD_RESPONSE") from exc
+        raise ImfProviderError("IMF_BAD_RESPONSE", status=status, url=url) from exc
     if not isinstance(series, dict):
-        raise ImfProviderError("IMF_BAD_RESPONSE")
+        raise ImfProviderError("IMF_BAD_RESPONSE", status=status, url=url)
     return series

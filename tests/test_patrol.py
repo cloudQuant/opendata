@@ -50,10 +50,12 @@ class StubFetcher(Fetcher[StubQuery, object]):
         *,
         raise_on: Exception | None = None,
         returns: object = "ok",
+        fails_first: int | None = None,
     ):
         self.capability = capability
         self.raise_on = raise_on
         self.returns = returns
+        self.fails_first = fails_first
         self.calls = 0
         self.seen: dict[str, object] = {}
 
@@ -63,7 +65,8 @@ class StubFetcher(Fetcher[StubQuery, object]):
     def extract_data(self, params: StubQuery, ctx: FetchContext) -> object:
         self.calls += 1
         self.seen = params.model_dump(exclude_defaults=True)
-        if self.raise_on is not None:
+        blipped = self.fails_first is not None and self.calls > self.fails_first
+        if self.raise_on is not None and not blipped:
             raise self.raise_on
         return "raw"
 
@@ -129,6 +132,12 @@ def _instrument(symbol: str, delist_date: date | None) -> object:
     row.symbol = symbol
     row.delist_date = delist_date
     return row
+
+
+@pytest.fixture(autouse=True)
+def _instant_backoff(monkeypatch: pytest.MonkeyPatch) -> None:
+    """No test waits out the real retry backoff."""
+    monkeypatch.setattr(patrol_module, "PROBE_RETRY_BACKOFF", 0.0)
 
 
 class TestPatrol:
@@ -197,6 +206,68 @@ class TestPatrol:
         assert fetcher.calls == 0
         # routing health untouched: the source is still reachable
         assert registry.resolve("equity", "not_a_real_domain", source="auto") is fetcher
+
+
+class TestProbeRetry:
+    """One blip is retried; a retry that saved the leg is named out loud."""
+
+    async def test_a_single_blip_is_retried_and_the_source_stays_routable(self):
+        fetcher = StubFetcher(
+            _capability("stock_daily"),
+            raise_on=RuntimeError("connection reset"),
+            fails_first=1,
+        )
+        registry = _registry(fetcher)
+
+        results = await patrol(registry)
+
+        assert results[0].ok is True
+        assert results[0].attempts == 2
+        assert fetcher.calls == 2
+        # The blip never took the source out of ``auto`` routing.
+        assert registry.resolve("equity", "stock_daily", source="auto") is fetcher
+
+    async def test_a_leg_that_only_passed_on_retry_is_reported_flaky(self):
+        fetcher = StubFetcher(
+            _capability("stock_daily"), raise_on=RuntimeError("429"), fails_first=1
+        )
+
+        results = await patrol(_registry(fetcher))
+
+        assert results[0].flaky is True
+        # A pass the retry rescued is not a clean pass: the first failure
+        # stays in the report instead of being greened away.
+        assert "429" in (results[0].error or "")
+
+    async def test_a_second_failure_still_marks_the_source_unhealthy(self):
+        fetcher = StubFetcher(_capability("stock_daily"), raise_on=RuntimeError("boom"))
+        registry = _registry(fetcher)
+
+        results = await patrol(registry)
+
+        assert results[0].ok is False
+        assert results[0].attempts == patrol_module.PROBE_ATTEMPTS
+        assert fetcher.calls == patrol_module.PROBE_ATTEMPTS
+        with pytest.raises(LookupError):
+            registry.resolve("equity", "stock_daily", source="auto")
+
+    async def test_a_clean_pass_never_retries(self):
+        fetcher = StubFetcher(_capability("stock_daily"))
+
+        results = await patrol(_registry(fetcher))
+
+        assert (results[0].ok, results[0].flaky, results[0].attempts) == (True, False, 1)
+        assert results[0].error is None
+        assert fetcher.calls == 1
+
+    async def test_a_probe_config_gap_is_never_retried(self):
+        """Retrying cannot fix the patrol's own gap: attempt two reads the same table."""
+        fetcher = StubFetcher(_capability("not_a_real_domain"))
+
+        results = await patrol(_registry(fetcher))
+
+        assert results[0].attempts == 1
+        assert fetcher.calls == 0
 
 
 class TestProbeParamCoverage:
@@ -385,6 +456,25 @@ class TestHealthApi:
         data = response.json()["data"]
         assert data["count"] == 1
         assert data["healthy"] == 1
+        assert data["flaky"] == 0
+
+    async def test_patrol_endpoint_reports_a_rescued_leg_as_flaky(
+        self, test_client, test_user_token, monkeypatch
+    ):
+        fetcher = StubFetcher(
+            _capability("stock_daily"), raise_on=RuntimeError("timeout"), fails_first=1
+        )
+        registry = _registry(fetcher)
+        monkeypatch.setattr("opendata.api.pipeline.patrol", lambda: _patrol_done(registry))
+        response = await test_client.post(
+            "/api/v1/health/patrol",
+            headers={"Authorization": f"Bearer {test_user_token}"},
+        )
+
+        leg = next(iter(response.json()["data"]["results"]))
+        # Routed as healthy, reported as flaky: the two are not the same claim.
+        assert (leg["ok"], leg["attempts"], leg["flaky"]) == (True, 2, True)
+        assert response.json()["data"]["flaky"] == 1
 
 
 async def _patrol_done(registry: ProviderRegistry):
