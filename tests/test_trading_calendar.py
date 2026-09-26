@@ -15,11 +15,13 @@ from typing import TYPE_CHECKING
 import pytest
 from sqlalchemy import Boolean, Column, Date, MetaData, String, Table, create_engine, insert
 
+from opendata.data.models import TradingCalendar as CalendarContract
 from opendata.pipeline.trading_calendar import (
     CALENDAR_TABLE,
     TIER_WAREHOUSE,
     TIER_WEEKDAY,
-    TradingCalendar,
+    CalendarView,
+    calendar_from_contracts,
     calendar_from_days,
     resolve_calendar,
     warehouse_calendar,
@@ -27,7 +29,7 @@ from opendata.pipeline.trading_calendar import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Mapping, Sequence
 
     from sqlalchemy import Engine
 
@@ -40,8 +42,19 @@ HOLIDAY_REOPEN = date(2025, 10, 9)
 HOLIDAY_MID = date(2025, 10, 4)
 
 
-def _calendar_engine(open_days: Sequence[date]) -> Engine:
-    """A calendar table holding ``open_days`` plus one explicit closed row.
+def _calendar_engine(
+    open_days: Sequence[date],
+    *,
+    closed: Mapping[date, date | None] | None = None,
+    columns_omitted: tuple[str, ...] = (),
+) -> Engine:
+    """A calendar table holding ``open_days`` plus the ``closed`` rows.
+
+    ``closed`` maps a date to the previous trade date that row publishes
+    (None for a row that says nothing about it). The columns are the
+    design §4.1 contract's, since the reader validates rows through that
+    contract; ``columns_omitted`` drops named ones so a table that is
+    *not* the contract has a witness too.
 
     The rows go in typed, but the reader selects through a plain
     statement, which is how the SQLite driver hands a DATE column back -
@@ -49,17 +62,39 @@ def _calendar_engine(open_days: Sequence[date]) -> Engine:
     """
     engine = create_engine("sqlite://")
     metadata = MetaData()
+    declared = {
+        "exchange": String(16),
+        "date": Date,
+        "is_open": Boolean,
+        "prev_trade_date": Date,
+        "next_trade_date": Date,
+    }
     calendar = Table(
         CALENDAR_TABLE,
         metadata,
-        Column("exchange", String(16)),
-        Column("date", Date),
-        Column("is_open", Boolean),
+        *[Column(name, type_) for name, type_ in declared.items() if name not in columns_omitted],
     )
     metadata.create_all(engine)
-    rows = [{"exchange": "CN-SSE", "date": day, "is_open": True} for day in open_days] + [
-        {"exchange": "CN-SSE", "date": SATURDAY, "is_open": False}
-    ]
+    present = [name for name in declared if name not in columns_omitted]
+    rows: list[dict[str, object]] = []
+    for day in open_days:
+        values: dict[str, object] = {
+            "exchange": "CN-SSE",
+            "date": day,
+            "is_open": True,
+            "prev_trade_date": None,
+            "next_trade_date": None,
+        }
+        rows.append({name: values[name] for name in present})
+    for day, previous in (closed or {}).items():
+        values = {
+            "exchange": "CN-SSE",
+            "date": day,
+            "is_open": False,
+            "prev_trade_date": previous,
+            "next_trade_date": None,
+        }
+        rows.append({name: values[name] for name in present})
     with engine.begin() as conn:
         conn.execute(insert(calendar), rows)
     return engine
@@ -108,7 +143,7 @@ class TestWarehouseTier:
 
     def test_a_calendar_that_never_opens_fails_closed(self) -> None:
         """Thirty dead days means broken rows, not a month-long holiday."""
-        calendar = TradingCalendar(
+        calendar = CalendarView(
             tier=TIER_WAREHOUSE,
             open_days=frozenset({FRIDAY - timedelta(days=45), FRIDAY + timedelta(days=1)}),
         )
@@ -121,7 +156,9 @@ class TestWarehouseRead:
     """Reading the table, and degrading when it is not there yet."""
 
     def test_landed_open_days_raise_the_tier(self) -> None:
-        calendar = warehouse_calendar(_calendar_engine([BEFORE_HOLIDAY, FRIDAY]))
+        calendar = warehouse_calendar(
+            _calendar_engine([BEFORE_HOLIDAY, FRIDAY], closed={SATURDAY: None})
+        )
 
         assert calendar.tier == TIER_WAREHOUSE
         assert calendar.open_days == frozenset({BEFORE_HOLIDAY, FRIDAY})
@@ -138,6 +175,72 @@ class TestWarehouseRead:
 
     def test_no_engine_means_no_table_to_read(self) -> None:
         assert resolve_calendar(None).tier == TIER_WEEKDAY
+
+    def test_empty_table_is_not_a_calendar(self) -> None:
+        """No rows is "not landed yet", which is not "landed and closed forever"."""
+        assert warehouse_calendar(_calendar_engine([], closed={})).tier == TIER_WEEKDAY
+
+
+class TestContractRead:
+    """The landed rows are read *as* the contract, and the contract gets a vote."""
+
+    def test_rows_outside_the_contract_shape_degrade(self) -> None:
+        """A table that is not the design §4.1 calendar is not half-believed."""
+        calendar = warehouse_calendar(_calendar_engine([FRIDAY], columns_omitted=("exchange",)))
+
+        assert calendar.tier == TIER_WEEKDAY
+        assert calendar.open_days == frozenset()
+
+    def test_published_previous_trade_date_confirms_the_walk_back(self) -> None:
+        calendar = warehouse_calendar(
+            _calendar_engine([FRIDAY, MONDAY], closed={SATURDAY: FRIDAY, SUNDAY: FRIDAY})
+        )
+
+        assert calendar.expected_data_date(SATURDAY) == FRIDAY
+        assert calendar.expected_data_date(SUNDAY) == FRIDAY
+
+    def test_disagreeing_previous_trade_date_fails_closed(self) -> None:
+        """``is_open`` says Friday, ``prev_trade_date`` says September."""
+        calendar = warehouse_calendar(
+            _calendar_engine([BEFORE_HOLIDAY, FRIDAY], closed={SATURDAY: BEFORE_HOLIDAY})
+        )
+
+        assert calendar.is_trading_day(FRIDAY)
+        with pytest.raises(ValueError, match="disagrees with itself"):
+            calendar.expected_data_date(SATURDAY)
+
+    def test_closed_rows_extend_coverage(self) -> None:
+        """A trailing run of closed rows is knowledge, not a gap to guess at."""
+        calendar = warehouse_calendar(
+            _calendar_engine([FRIDAY], closed={SATURDAY: FRIDAY, SUNDAY: FRIDAY})
+        )
+
+        assert calendar.coverage == (FRIDAY, SUNDAY)
+        assert calendar.is_trading_day(SUNDAY) is False
+        assert calendar.expected_data_date(SUNDAY) == FRIDAY
+
+    def test_no_rows_is_the_weekday_tier_for_the_builder_too(self) -> None:
+        assert calendar_from_contracts([]).tier == TIER_WEEKDAY
+
+    def test_builder_keeps_only_the_witnesses_the_rows_publish(self) -> None:
+        """An open row's ``prev_trade_date`` is yesterday's date, not an exception."""
+        calendar = calendar_from_contracts(
+            [
+                CalendarContract(exchange="CN-SSE", date=FRIDAY, is_open=True),
+                CalendarContract(
+                    exchange="CN-SSE",
+                    date=SATURDAY,
+                    is_open=False,
+                    prev_trade_date=FRIDAY,
+                ),
+                CalendarContract(exchange="CN-SSE", date=SUNDAY, is_open=False),
+            ]
+        )
+
+        assert calendar.open_days == frozenset({FRIDAY})
+        assert calendar.closed_days == frozenset({SATURDAY, SUNDAY})
+        assert calendar.prev_trade_dates == {SATURDAY: FRIDAY}
+        assert calendar.expected_data_date(SUNDAY) == FRIDAY
 
 
 class TestQueryExpectation:

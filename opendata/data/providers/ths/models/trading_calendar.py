@@ -1,16 +1,23 @@
 """Trading calendar fetcher (domain ``trading_calendar``, contract ``TradingCalendar``).
 
-Two classes in this repository share the name and are not the same thing:
-the contract model here is a **row** (one calendar date), while
-:class:`opendata.pipeline.trading_calendar.TradingCalendar` is the
+Two things in this repository answer to a calendar and are not the same
+thing: the contract model here is a **row** (one calendar date), while
+:class:`opendata.pipeline.trading_calendar.CalendarView` is the
 **expectation predicate** the batch window and the freshness lag are derived
-from. This adapter is that predicate's producer: the rows it returns are what
-has to land in ``dwd_trading_calendar`` for the warehouse tier to speak.
+from - and that view is built by projecting the landed rows of this very
+contract (``calendar_from_contracts``). This adapter is that predicate's
+producer: the rows it returns are what has to land in
+``dwd_trading_calendar`` for the warehouse tier to speak.
 
 Upstream semantics are as measured on 2026-09-25 (see ``docs/evidence/C11``
 §6 and ``docs/evidence/C12/calendar-check.txt``): the A-share endpoint
-publishes a **rolling trailing year ending at the last completed trading
-day**, ``today`` is never inside it, and all six candidate window parameters
+publishes a **rolling trailing year** whose tail is simply the last session
+upstream has finished publishing - not a rule tied to the read date. Re-reading
+it on 2026-09-27 05:2x Beijing (``docs/evidence/C41``) still answered
+``2025-09-29..2026-09-24``, i.e. one *completed* trading day (Friday
+2026-09-25) short of the tail. So "yesterday's trading day is inside coverage"
+must not be assumed: ``today`` is never inside it, and neither is the most
+recent session or two. All six candidate window parameters
 (``start_date`` / ``begin_date`` / ``start`` / ``year`` / ``days`` / ``limit``)
 are ignored. Consequences encoded here rather than papered over:
 

@@ -6,10 +6,14 @@ Wires the built-for-purpose pieces into one runnable template:
   P0 daily chain: the registry-routed fetcher per symbol, the A4.2 ods
   writer, the A4.5 cross-check (only when a second source exists - it
   needs the A3 THS feed), the A4.6 dwd merge and the schedule window;
-* :func:`incremental_window` - the daily incremental window; it is
-  calendar-less for now (one day, or a lookback), and the design's
-  trading-calendar校准 plus the 17:00/18:00 staggering stay pending
-  the real-network calibration;
+* :func:`incremental_window` - the daily incremental window; it ends on
+  the trading day the calendar view names when one is given (A4.7), and
+  on ``as_of`` itself when the caller is not calendar-aware yet; the
+  17:00/18:00 staggering stays pending the real-network calibration;
+* :func:`refresh_metadata_backbone` - the step zero design §4.1 gives a
+  full-market backfill: put ``Instrument`` and ``TradingCalendar`` rows
+  through their own contract and land them, which is what gives the
+  window and universe reads a producer behind them;
 * :data:`PIPELINE_TEMPLATES` - the built-in jobs of §9.3: the P0
   incremental, the weekly full cross-check, partition maintenance and
   the freshness check;
@@ -22,13 +26,16 @@ from __future__ import annotations
 
 import enum
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar, cast
 
 import pandas as pd
+from pydantic import BaseModel, ValidationError
 
 from opendata.data.mapping import normalize_frame, require_domain_mapping
+from opendata.data.models import Instrument, TradingCalendar
+from opendata.data.models.base import ContractModel
 from opendata.pipeline.runner import DataPipeline, PipelineSpec, Window
 
 if TYPE_CHECKING:
@@ -39,6 +46,7 @@ if TYPE_CHECKING:
 
     from opendata.pipeline.dwd_merge import DwdMergeService
     from opendata.pipeline.runner import Hook
+    from opendata.pipeline.trading_calendar import CalendarView
 
 
 class TemplateKind(str, enum.Enum):
@@ -136,24 +144,210 @@ def _parse_template(entry: object, source_path: Path) -> ScheduleTemplate:  # pa
 PIPELINE_TEMPLATES = load_schedule_templates()
 
 
-def incremental_window(as_of: date, *, lookback_days: int = 0) -> Window:
+def incremental_window(
+    as_of: date, *, lookback_days: int = 0, calendar: CalendarView | None = None
+) -> Window:
     """Build the daily incremental window.
 
     Args:
-        as_of: The run's reference date (the scheduler passes the
-            trading day; the calendar wiring is pending A4.7's
-            live calibration).
-        lookback_days: Extra days to re-fetch (0 = just ``as_of``).
+        as_of: The run's reference date (the scheduler passes the day it
+            fired on, not necessarily a day that carries data).
+        lookback_days: Extra days to re-fetch (0 = just the expected day).
+        calendar: Landed trading calendar deciding which date the window
+            ends on; None means nothing was consulted and ``as_of`` is
+            taken at face value - what a weekend run used to do.
 
     Returns:
         The inclusive window.
 
     Raises:
-        ValueError: If ``lookback_days`` is negative.
+        ValueError: If ``lookback_days`` is negative, or the calendar has
+            no trading day in reach (A4.7 fails closed there rather than
+            fetching a month-old window).
     """
     if lookback_days < 0:
         raise ValueError(f"lookback_days must be >= 0, got {lookback_days}")
-    return Window(start=as_of - timedelta(days=lookback_days), end=as_of)
+    end = as_of if calendar is None else calendar.expected_data_date(as_of)
+    return Window(start=end - timedelta(days=lookback_days), end=end)
+
+
+#: The two domains design §4.1 makes the backbone of the warehouse: every
+#: other domain joins on them, and both provider legs publish *snapshot*
+#: rows, so refreshing them is the step zero of a full-market backfill.
+#: Typed as the base contract so a domain looked up at runtime still has one
+#: ``to_frame``/``model_validate`` face to use - the two subclasses differ
+#: only in their fields.
+BACKBONE_CONTRACTS: dict[str, type[ContractModel]] = {
+    "instrument": Instrument,
+    "trading_calendar": TradingCalendar,
+}
+
+#: Business key of each backbone table (the dwd upsert target). There is no
+#: source mapping to read this from: these two domains are landed as contract
+#: rows, not through the per-source column mappings.
+BACKBONE_KEYS: dict[str, tuple[str, ...]] = {
+    "instrument": ("symbol",),
+    "trading_calendar": ("exchange", "date"),
+}
+
+BackboneModelT = TypeVar("BackboneModelT", bound=ContractModel)
+
+
+@dataclass(frozen=True)
+class BackboneReport:
+    """What one metadata-backbone refresh landed.
+
+    Attributes:
+        source: Source label the legs were read from.
+        window: Window the calendar leg was refreshed for.
+        landed: Domain to rows written to its ``dwd_`` table.
+        rejected: Domain to per-row contract refusals (empty when the leg
+            matched its contract).
+    """
+
+    source: str
+    window: Window
+    landed: Mapping[str, int]
+    rejected: Mapping[str, tuple[str, ...]]
+
+    def as_dict(self) -> dict[str, object]:
+        """JSON-shaped report for the job result and the run log."""
+        return {
+            "source": self.source,
+            "window": [self.window.start.isoformat(), self.window.end.isoformat()],
+            "landed": dict(self.landed),
+            "rejected": {domain: list(reasons) for domain, reasons in self.rejected.items()},
+        }
+
+
+def refresh_metadata_backbone(
+    engine: Engine | None,
+    *,
+    source: str,
+    fetch_instruments: Callable[[], Sequence[object]],
+    fetch_calendar: Callable[[], Sequence[object]],
+    window: Window,
+    land: Callable[[str, pd.DataFrame, tuple[str, ...]], int] | None = None,
+    merged_at: datetime | None = None,
+) -> BackboneReport:
+    """Land the metadata backbone the other domains join on (design §4.1).
+
+    This is the step zero the design promises a full-market backfill starts
+    with, and it is what gives :func:`opendata.pipeline.jobs.landed_instruments`
+    and :func:`opendata.pipeline.trading_calendar.warehouse_calendar` a
+    producer: until it runs against a warehouse, both read an absent table
+    and the batch keeps deriving from ``dwd_<domain>`` alone.
+
+    Every row is put through its own contract before a table sees it, and a
+    row the contract refuses is *reported* rather than landed half-parsed or
+    dropped quietly -- the legs are snapshot publishers whose date columns
+    were measured hollow (C14/C19), so a shape drift must be visible here.
+
+    Args:
+        engine: Warehouse engine for the default landing writer. May be None
+            only together with ``land`` (a dry run reads and contract-checks
+            the legs without touching a database).
+        source: Source label the two legs were read from; kept as the dwd
+            ``source`` trace column.
+        fetch_instruments: Reads the instrument catalog (contract rows or
+            anything validating as one).
+        fetch_calendar: Reads the trading calendar for ``window``.
+        window: Window the refresh covers; its end is the ``_as_of`` stamp.
+        land: ``(domain, frame, key) -> rows`` writer override; None uses
+            the key-level dwd upsert. Injected because creating and writing
+            ``dwd_instrument`` / ``dwd_trading_calendar`` is a deployment
+            decision, not something an import should do.
+        merged_at: Trace timestamp (tests pin it); None means now.
+
+    Returns:
+        :class:`BackboneReport` with per-domain landed counts and refusals.
+
+    Raises:
+        ValueError: If ``engine`` is None without a ``land`` override --
+            there would be nowhere to land the rows that passed.
+    """
+    from opendata.pipeline.dwd_merge import SOURCE_COLUMN
+
+    stamp = (merged_at or datetime.now(timezone.utc)).replace(tzinfo=None)
+    if land is None:
+        if engine is None:
+            raise ValueError("refresh_metadata_backbone needs an engine without a land override")
+        write = _land_backbone(engine)
+    else:
+        write = land
+    legs: Mapping[str, Sequence[object]] = {
+        "instrument": list(fetch_instruments()),
+        "trading_calendar": list(fetch_calendar()),
+    }
+    landed: dict[str, int] = {}
+    rejected: dict[str, tuple[str, ...]] = {}
+    for domain, raw in legs.items():
+        model = BACKBONE_CONTRACTS[domain]
+        rows, refusals = _backbone_rows(domain, raw, model)
+        if not rows:
+            landed[domain], rejected[domain] = 0, refusals
+            continue
+        frame = model.to_frame(rows)
+        frame[SOURCE_COLUMN] = source
+        frame["_merged_at"] = stamp
+        frame["_diff_flag"] = 0
+        frame["_as_of"] = window.end
+        landed[domain] = write(domain, frame, BACKBONE_KEYS[domain])
+        rejected[domain] = refusals
+    return BackboneReport(source=source, window=window, landed=landed, rejected=rejected)
+
+
+def _backbone_rows(
+    domain: str, raw: Sequence[object], model: type[BackboneModelT]
+) -> tuple[list[BackboneModelT], tuple[str, ...]]:
+    """Put one leg's rows through the domain's contract, row by row.
+
+    Args:
+        domain: Backbone domain identifier.
+        raw: Rows as the leg published them (contract instances, pydantic
+            models or mappings).
+        model: The contract class that decides whether a row is landable.
+
+    Returns:
+        ``(accepted, refusals)`` -- refusals name the row and the reason.
+    """
+    accepted: list[BackboneModelT] = []
+    refusals: list[str] = []
+    for index, row in enumerate(raw):
+        if isinstance(row, model):
+            accepted.append(row)
+            continue
+        try:
+            payload = (
+                row.model_dump(mode="python")
+                if isinstance(row, BaseModel)
+                else dict(cast("Mapping[str, object]", row))
+            )
+            accepted.append(model.model_validate(payload))
+        except (TypeError, ValueError, ValidationError) as exc:
+            refusals.append(f"row {index}: {_refusal(exc)}")
+    return accepted, tuple(refusals)
+
+
+def _refusal(exc: Exception) -> str:
+    """One-line reason for a contract refusal (pydantic reports per field)."""
+    if isinstance(exc, ValidationError):
+        first = exc.errors()[0]
+        return f"{'.'.join(str(part) for part in first['loc'])}: {first['msg']}"
+    return str(exc)
+
+
+def _land_backbone(engine: Engine) -> Callable[[str, pd.DataFrame, tuple[str, ...]], int]:
+    """The default writer: key-level upsert into ``dwd_<domain>``."""
+    from opendata.data.domains import dwd_table
+    from opendata.pipeline.dwd_merge import DwdWriter
+
+    writer = DwdWriter(engine)
+
+    def land(domain: str, frame: pd.DataFrame, key: tuple[str, ...]) -> int:
+        return writer.write(frame, table=dwd_table(domain), key=key)
+
+    return land
 
 
 def normalize_ods_rows(

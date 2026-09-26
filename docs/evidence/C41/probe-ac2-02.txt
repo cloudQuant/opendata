@@ -1,0 +1,63 @@
+================================================================================
+C41 AC-2|02 复算（判据不放宽，只重测）
+================================================================================
+采集时间（运行前）: 2026-09-26T23:25:11+0200
+（同一命令在 23:24:53 已先跑过一次做读数确认，结论一致；本文件留的是完整未裁剪那次。）
+branch: dev
+HEAD  : 063a6e4  docs(acceptance): v5.12 回填 C40 AC-1/AC-2 条目级台账（9 条 proven、6 条 gap，条目级 5/10 与 4/5）
+工作树: 同 metadata-backbone-dryrun.txt 的 git status --porcelain 清单，另加本文件
+        与 docs/evidence/C41/ 自身（未跟踪）。代码自 gate-run1 之后的差异见 README。
+
+command: python scripts/quality/acceptance_item_probe.py --item 'AC-2|02'
+探针文件未被修改（scripts/quality/acceptance_item_probe.py 属本 round 的判定面，
+不改动它来迁就结论；measure 在 1239 行，judge 在 1278 行）。
+
+本 round 自定的翻正门槛（C40 登记，未放宽）:
+    importers >= 2 且 AC-2|02 的 5 个单元节点全绿 且 models = yes
+================================================================================
+
+--------------------------------------------------------------------------------
+$ python scripts/quality/acceptance_item_probe.py --item 'AC-2|02' 2>&1
+
+### AC-2|02  (document line 108)
+判据原文：**`Instrument` 与 `TradingCalendar` 模型就位**，且被全市场回补与增量窗口逻辑引用（单测）
+本探针：元数据两模型存在且被测（绿），另一面是被回补/窗口逻辑 import
+台账现状：state=gap，文档勾选=False
+  - both classes subclass ContractModel in opendata/data/models/metadata.py = yes
+  - the five field-set/semantics/round-trip nodes = 5/5 passed
+  - backfill / incremental-window modules importing the contracts = 2 (opendata/pipeline/jobs.py, opendata/pipeline/templates.py)
+  - modules that only mention the names (docstrings, or a same-named local class) = 0 (-)
+VERDICT AC-2|02: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+EXIT=0  # 结束时刻 23:25:33
+
+================================================================================
+加性更正（2026-09-26T23:37:02 复算）—— 上面那份读数采集于 a2-check/mypy 修复之前
+================================================================================
+上方 23:25 那次读数是**改 `_legs` 之后、修 mypy 四错之前**的状态；此后
+`opendata/pipeline/templates.py` 又为通过 `make gate` 第 1 成员 a2-check 的 mypy
+做了类型收口（`engine: Engine | None` + fail-closed ValueError、
+`BACKBONE_CONTRACTS: dict[str, type[ContractModel]]`、`_backbone_rows` 的 TypeVar、
+`dict(cast("Mapping[str, object]", row))`）。类型写法变了 ⇒ 探针的 importer 正则
+（`from opendata\.data\.models import ([^\n(]+)`）能否仍数到两条腿，是一格必须重测
+的读数，不能假设。故在同一分支/同一 HEAD（063a6e4）上重跑同一命令。
+
+$ python scripts/quality/acceptance_item_probe.py --item 'AC-2|02' 2>&1
+
+### AC-2|02  (document line 108)
+判据原文：**`Instrument` 与 `TradingCalendar` 模型就位**，且被全市场回补与增量窗口逻辑引用（单测）
+本探针：元数据两模型存在且被测（绿），另一面是被回补/窗口逻辑 import
+台账现状：state=gap，文档勾选=False
+  - both classes subclass ContractModel in opendata/data/models/metadata.py = yes
+  - the five field-set/semantics/round-trip nodes = 5/5 passed
+  - backfill / incremental-window modules importing the contracts = 2 (opendata/pipeline/jobs.py, opendata/pipeline/templates.py)
+  - modules that only mention the names (docstrings, or a same-named local class) = 0 (-)
+VERDICT AC-2|02: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+
+复算结论：与 23:25 那次逐字一致（importers=2 / mention_only=0 / 5/5 passed / VERDICT proven），
+类型收口未改变判定面。台账与验收文档按**这次**读数回填。

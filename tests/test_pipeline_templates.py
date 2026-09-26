@@ -14,12 +14,27 @@ network):
   template.
 """
 
-from datetime import date
+from datetime import date, datetime
 
 import pandas as pd
 import pytest
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Engine,
+    Integer,
+    MetaData,
+    String,
+    Table,
+    create_engine,
+)
 
+from opendata.data.domains import dwd_table
+from opendata.data.models import Instrument, TradingCalendar
 from opendata.pipeline import templates
+from opendata.pipeline.runner import Window
 from opendata.pipeline.scheduling import (
     SchedulerConfigError,
     SchedulerDecision,
@@ -31,7 +46,48 @@ from opendata.pipeline.templates import (
     build_stock_daily_pipeline,
     incremental_window,
     normalize_ods_rows,
+    refresh_metadata_backbone,
 )
+
+#: Column types the backbone dwd tables are built with in the test warehouse.
+_BACKBONE_TYPES = {
+    "symbol": String(32),
+    "exchange": String(16),
+    "name": String(64),
+    "status": String(16),
+    "currency": String(8),
+    "board": String(32),
+    "source": String(32),
+    "date": Date(),
+    "list_date": Date(),
+    "delist_date": Date(),
+    "prev_trade_date": Date(),
+    "next_trade_date": Date(),
+    "is_open": Boolean(),
+    "_diff_flag": Integer(),
+    "_merged_at": DateTime(),
+    "_as_of": Date(),
+}
+
+
+def _warehouse_with(landed: dict[str, pd.DataFrame]) -> Engine:
+    """A stand-in warehouse holding exactly the frames the backbone landed."""
+    engine = create_engine("sqlite://")
+    metadata = MetaData()
+    tables = {
+        domain: Table(
+            dwd_table(domain),
+            metadata,
+            *[Column(name, _BACKBONE_TYPES[name]) for name in frame.columns],
+        )
+        for domain, frame in landed.items()
+    }
+    metadata.create_all(engine)
+    with engine.begin() as connection:
+        for domain, frame in landed.items():
+            records = frame.astype(object).where(frame.notna(), None).to_dict("records")
+            connection.execute(tables[domain].insert(), records)
+    return engine
 
 
 class TestSchedulerDecision:
@@ -152,6 +208,232 @@ class TestPipelineFactory:
 
         assert window.start == window.end == date(2024, 1, 8)
         assert incremental_window(date(2024, 1, 8), lookback_days=3).start == date(2024, 1, 5)
+
+    def test_a_calendar_decides_where_the_window_ends(self):
+        """A4.7: the window ends on the date data is expected for, not on the clock."""
+        from opendata.pipeline.trading_calendar import weekday_calendar
+
+        calendar = weekday_calendar()
+
+        assert incremental_window(date(2024, 1, 7), calendar=calendar).end == date(2024, 1, 5)
+        assert incremental_window(
+            date(2024, 1, 7), lookback_days=2, calendar=calendar
+        ).start == date(2024, 1, 3)
+
+    def test_a_calendar_with_no_trading_day_in_reach_fails_closed(self):
+        """A month of dead days is a broken table, not a window four weeks wide."""
+        from opendata.pipeline.trading_calendar import TIER_WAREHOUSE, CalendarView
+
+        broken = CalendarView(
+            tier=TIER_WAREHOUSE,
+            open_days=frozenset({date(2023, 11, 24), date(2024, 1, 9)}),
+        )
+
+        with pytest.raises(ValueError, match="looks broken"):
+            incremental_window(date(2024, 1, 8), calendar=broken)
+
+
+class TestMetadataBackbone:
+    """AC-2|02: the step zero a full-market backfill starts with (§4.1)."""
+
+    WINDOW = Window(start=date(2026, 9, 21), end=date(2026, 9, 25))
+
+    @staticmethod
+    def _instrument(**overrides) -> Instrument:
+        fields = {
+            "symbol": "600519.SH",
+            "exchange": "SSE",
+            "name": "贵州茅台",
+            "status": "active",
+            "currency": "CNY",
+            "list_date": date(2001, 8, 1),
+            "delist_date": None,
+            "board": None,
+        }
+        fields.update(overrides)
+        return Instrument.model_validate(fields)
+
+    @staticmethod
+    def _calendar(day: date, *, open_day: bool = True, prev: date | None = None) -> TradingCalendar:
+        return TradingCalendar.model_validate(
+            {
+                "exchange": "CN-SSE",
+                "date": day,
+                "is_open": open_day,
+                "prev_trade_date": prev,
+                "next_trade_date": None,
+            }
+        )
+
+    def _refresh(self, *, instruments=(), calendar=(), land=None):
+        return refresh_metadata_backbone(
+            object(),  # the engine only reaches the default writer
+            source="ths",
+            fetch_instruments=lambda: list(instruments),
+            fetch_calendar=lambda: list(calendar),
+            window=self.WINDOW,
+            land=land if land is not None else lambda domain, frame, key: len(frame),
+            merged_at=datetime(2026, 9, 26, 17, 0),
+        )
+
+    def test_the_landed_frame_is_the_contract_plus_the_trace_columns(self):
+        written: dict[str, tuple[str, ...]] = {}
+
+        def land(domain: str, frame: pd.DataFrame, key: tuple[str, ...]) -> int:
+            written[domain] = tuple(frame.columns)
+            assert frame["source"].unique().tolist() == ["ths"]
+            assert frame["_diff_flag"].unique().tolist() == [0]
+            assert frame["_as_of"].unique().tolist() == [self.WINDOW.end]
+            assert frame["_merged_at"].unique().tolist() == [datetime(2026, 9, 26, 17, 0)]
+            return len(frame)
+
+        report = self._refresh(
+            instruments=[self._instrument()],
+            calendar=[self._calendar(date(2026, 9, 25))],
+            land=land,
+        )
+
+        assert written["instrument"][:8] == (
+            "symbol",
+            "exchange",
+            "name",
+            "status",
+            "currency",
+            "list_date",
+            "delist_date",
+            "board",
+        )
+        assert written["trading_calendar"][:5] == (
+            "exchange",
+            "date",
+            "is_open",
+            "prev_trade_date",
+            "next_trade_date",
+        )
+        assert report.landed == {"instrument": 1, "trading_calendar": 1}
+        assert report.as_dict()["window"] == ["2026-09-21", "2026-09-25"]
+
+    def test_a_row_the_contract_refuses_is_reported_not_landed(self):
+        """A leg whose shape drifted is visible in the report, not half-landed."""
+        good = self._instrument()
+        hollow = {"symbol": "000001.SZ", "exchange": "SZSE"}  # no name/status/...
+
+        report = self._refresh(instruments=[good, hollow], calendar=[])
+
+        assert report.landed["instrument"] == 1
+        assert report.rejected["instrument"] == ("row 1: name: Field required",)
+
+    def test_a_row_carrying_a_field_the_contract_has_not_is_refused(self):
+        """``extra='forbid'`` is the drift detector; a source column is not a field."""
+        drift = {
+            "symbol": "600519.SH",
+            "exchange": "SSE",
+            "name": "贵州茅台",
+            "status": "active",
+            "currency": "CNY",
+            "list_date": None,
+            "delist_date": None,
+            "board": None,
+            "board2": "main",
+        }
+
+        report = self._refresh(instruments=[drift])
+
+        assert report.landed["instrument"] == 0
+        assert "board2" in report.rejected["instrument"][0]
+
+    def test_an_empty_leg_lands_nothing(self):
+        calls: list[str] = []
+
+        def land(domain: str, frame: pd.DataFrame, key: tuple[str, ...]) -> int:
+            calls.append(domain)
+            return len(frame)
+
+        report = self._refresh(land=land)
+
+        assert report.landed == {"instrument": 0, "trading_calendar": 0}
+        assert report.rejected == {"instrument": (), "trading_calendar": ()}
+        assert calls == []
+
+    def test_the_default_writer_upserts_each_backbone_table(self, monkeypatch):
+        seen: list[tuple[str, tuple[str, ...]]] = []
+
+        class _StubDwdWriter:
+            def __init__(self, engine: object) -> None:
+                assert engine is not None
+
+            def write(self, frame, *, table, key):
+                seen.append((table, key))
+                return len(frame)
+
+        monkeypatch.setattr("opendata.pipeline.dwd_merge.DwdWriter", _StubDwdWriter)
+
+        report = refresh_metadata_backbone(
+            object(),
+            source="ths",
+            fetch_instruments=lambda: [self._instrument()],
+            fetch_calendar=lambda: [self._calendar(date(2026, 9, 25))],
+            window=self.WINDOW,
+        )
+
+        assert seen == [
+            ("dwd_instrument", ("symbol",)),
+            ("dwd_trading_calendar", ("exchange", "date")),
+        ]
+        assert report.landed == {"instrument": 1, "trading_calendar": 1}
+
+    def test_a_dry_run_still_needs_somewhere_to_put_the_rows(self):
+        """``engine=None`` is only honest when a writer was handed in."""
+        with pytest.raises(ValueError, match="needs an engine without a land override"):
+            refresh_metadata_backbone(
+                None,
+                source="ths",
+                fetch_instruments=lambda: [self._instrument()],
+                fetch_calendar=lambda: [],
+                window=self.WINDOW,
+            )
+
+    def test_a_row_that_is_neither_a_model_nor_a_mapping_is_refused(self):
+        """The leg answering garbage is a shape drift, not a crash."""
+        report = self._refresh(instruments=["600519.SH"])
+
+        assert report.landed["instrument"] == 0
+        assert report.rejected["instrument"][0].startswith("row 0:")
+
+    def test_what_the_backbone_lands_is_what_its_consumers_read(self):
+        """Producer and consumer close the loop through the two dwd tables.
+
+        ``warehouse_calendar`` and ``landed_instruments`` are the two reads a
+        batch runs on; both are pointed at the rows this step zero writes, on
+        a warehouse that is only a stand-in for the tables' shape.
+        """
+        from opendata.pipeline.jobs import landed_instruments
+        from opendata.pipeline.trading_calendar import TIER_WAREHOUSE, warehouse_calendar
+
+        frames: dict[str, pd.DataFrame] = {}
+
+        def capture(domain: str, frame: pd.DataFrame, key: tuple[str, ...]) -> int:
+            frames[domain] = frame
+            return len(frame)
+
+        self._refresh(
+            instruments=[self._instrument(), self._instrument(symbol="000001.SZ", exchange="SZSE")],
+            calendar=[
+                self._calendar(date(2026, 9, 24)),
+                self._calendar(date(2026, 9, 25)),
+                self._calendar(date(2026, 9, 26), open_day=False, prev=date(2026, 9, 25)),
+            ],
+            land=capture,
+        )
+        engine = _warehouse_with(frames)
+
+        catalog = landed_instruments(engine)
+        calendar = warehouse_calendar(engine)
+
+        assert [row.symbol for row in catalog] == ["000001.SZ", "600519.SH"]
+        assert calendar.tier == TIER_WAREHOUSE
+        assert calendar.expected_data_date(date(2026, 9, 26)) == date(2026, 9, 25)
+        engine.dispose()  # the stand-in warehouse is this test's own resource
 
 
 def test_ods_rows_are_normalized_through_the_mapping():

@@ -33,6 +33,7 @@ from loguru import logger
 from sqlalchemy import text
 
 from opendata.data.domains import dwd_table, ods_table, require_domain
+from opendata.data.models import Instrument
 from opendata.pipeline.freshness import dwd_freshness, ods_freshness
 from opendata.pipeline.templates import (
     PIPELINE_TEMPLATES,
@@ -41,7 +42,7 @@ from opendata.pipeline.templates import (
     default_source,
     incremental_window,
 )
-from opendata.pipeline.trading_calendar import TradingCalendar, resolve_calendar
+from opendata.pipeline.trading_calendar import CalendarView, resolve_calendar
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Mapping, Sequence
@@ -63,6 +64,14 @@ EXECUTABLE_KINDS = frozenset({TemplateKind.INCREMENTAL})
 #: scheduled run must stay finite even as the warehouse grows.
 DEFAULT_SYMBOL_LIMIT = 5000
 
+#: Warehouse table holding the landed ``Instrument`` catalog.
+INSTRUMENT_TABLE = dwd_table("instrument")
+
+#: Cap on the catalog read. The instrument snapshot carries every asset
+#: class at once (C14 measured 5,578 a-share rows on their own), so it is
+#: not the size of one bar domain; the read still has to stay finite.
+DEFAULT_INSTRUMENT_LIMIT = 50_000
+
 
 @dataclass(frozen=True)
 class JobResult:
@@ -78,6 +87,8 @@ class JobResult:
         freshness: Latest date per ods table and for dwd, as ISO strings.
         expectation: How the window end was chosen (run date, expected
             data date, calendar tier and which tier decided), as strings.
+        universe: How the symbol list was chosen and what the instrument
+            catalog did to it, as strings.
     """
 
     domain: str
@@ -88,6 +99,7 @@ class JobResult:
     dwd_rows: int = 0
     freshness: dict[str, str | None] = field(default_factory=dict)
     expectation: dict[str, str] = field(default_factory=dict)
+    universe: dict[str, str] = field(default_factory=dict)
 
     @property
     def failures(self) -> int:
@@ -122,6 +134,7 @@ class JobResult:
             "dwd_rows": self.dwd_rows,
             "freshness": self.freshness,
             "expectation": self.expectation,
+            "universe": self.universe,
         }
 
 
@@ -204,6 +217,146 @@ def make_fetch_symbol(
     return fetch
 
 
+def landed_instruments(
+    engine: Engine, *, limit: int = DEFAULT_INSTRUMENT_LIMIT
+) -> list[Instrument]:
+    """Read the landed instrument catalog back through its contract.
+
+    ``dwd_instrument`` is the metadata backbone the other domains join
+    on (design §4.1 fixes the field set, C14 landed the producer side).
+    The rows go through :meth:`Instrument.from_frame`, so a table that
+    does not carry the contract's required columns is reported as "no
+    catalog" rather than half-believed from whichever columns exist.
+
+    Args:
+        engine: Warehouse engine.
+        limit: Cap on the rows read (the catalog is a snapshot of every
+            asset class, so it is larger than one bar domain).
+
+    Returns:
+        Contract rows in ascending ``symbol`` order; empty when the
+        catalog is not landed or not readable.
+    """
+    try:
+        with engine.connect() as conn:
+            rows = (
+                conn.execute(
+                    text(
+                        f"SELECT * FROM `{INSTRUMENT_TABLE}` ORDER BY `symbol` LIMIT :cap"  # noqa: S608  # derived table
+                    ),
+                    {"cap": max(limit, 1)},
+                )
+                .mappings()
+                .all()
+            )
+        return Instrument.from_frame(pd.DataFrame(list(rows)))
+    except Exception as exc:  # an unlanded catalog is the normal state before C41's DDL
+        logger.warning(f"instrument catalog unavailable from {INSTRUMENT_TABLE}: {exc!s}")
+        return []
+
+
+def drop_inactive_symbols(
+    symbols: Sequence[str], catalog: Sequence[Instrument], *, window: Window
+) -> tuple[list[str], list[str], int]:
+    """Keep the codes that could have traded inside ``window``.
+
+    The catalog is a snapshot and its date columns are a weaker member of
+    its own field set (C14/C19: ``list_date`` came back hollow on 22 of 36
+    a-share reads and always for ETFs), so an absent date is *unknown*, not
+    "not listed" - only a known date that excludes the window drops a
+    symbol. Plain codes collide across asset classes (``000001`` is a stock
+    and an index), so a code the catalog holds under more than one suffix is
+    left alone rather than dropped on the strength of the wrong row.
+
+    Args:
+        symbols: Candidate universe (warehouse symbols are plain codes).
+        catalog: Rows from :func:`landed_instruments`; empty means no
+            catalog to consult.
+        window: Inclusive window the batch is about to fetch.
+
+    Returns:
+        ``(kept, dropped, ambiguous_codes)`` in the input's order.
+    """
+    by_code: dict[str, list[Instrument]] = {}
+    for row in catalog:
+        by_code.setdefault(row.symbol.split(".", maxsplit=1)[0], []).append(row)
+    kept: list[str] = []
+    dropped: list[str] = []
+    ambiguous = 0
+    for symbol in symbols:
+        rows = by_code.get(symbol)
+        if rows is None:
+            kept.append(symbol)
+            continue
+        if len(rows) > 1:
+            ambiguous += 1
+            kept.append(symbol)
+            continue
+        row = rows[0]
+        inactive = (row.delist_date is not None and row.delist_date < window.start) or (
+            row.list_date is not None and row.list_date > window.end
+        )
+        if inactive:
+            dropped.append(symbol)
+        else:
+            kept.append(symbol)
+    return kept, dropped, ambiguous
+
+
+def derive_universe(
+    engine: Engine,
+    domain: str,
+    *,
+    symbols: Sequence[str] | None,
+    limit: int | None,
+    window: Window,
+) -> tuple[list[str], dict[str, str]]:
+    """Choose the symbol list of one batch and say how it was chosen.
+
+    A non-empty ``symbols=`` is the caller's own list and is used as
+    given: a repair run asks for a symbol precisely because the derived
+    universe did not include it. A derived universe comes from
+    ``dwd_<domain>`` and is then checked against the landed
+    :class:`~opendata.data.models.Instrument` catalog, which is what
+    tells a code that stopped existing from one that merely has no rows
+    yet. Either way the answer says which tier spoke, the same way the
+    calendar's does.
+
+    Args:
+        engine: Warehouse engine.
+        domain: Domain identifier.
+        symbols: Explicit universe; None or empty means derive it.
+        limit: Cap for the derived universe.
+        window: Inclusive window the batch is about to fetch.
+
+    Returns:
+        ``(symbols, provenance)`` - provenance carries ``from``,
+        ``catalog``, ``dropped_inactive``, ``ambiguous_codes`` and, when
+        a caller handed in a list, ``requested``.
+    """
+    if symbols:
+        return list(symbols), {"from": "caller", "requested": str(len(symbols))}
+    universe = symbol_universe(engine, domain, limit=limit)
+    provenance = {"from": dwd_table(domain), "catalog": "absent"}
+    if not universe:
+        return universe, provenance
+    catalog = landed_instruments(engine)
+    if not catalog:
+        return universe, provenance
+    provenance["catalog"] = INSTRUMENT_TABLE
+    kept, dropped, ambiguous = drop_inactive_symbols(universe, catalog, window=window)
+    provenance["dropped_inactive"] = str(len(dropped))
+    provenance["ambiguous_codes"] = str(ambiguous)
+    if dropped:
+        logger.info(
+            f"{domain} universe: {len(dropped)} of {len(universe)} codes did not exist in "
+            f"{window.label()} per {INSTRUMENT_TABLE} (first: {dropped[0]})"
+        )
+    if ambiguous:
+        logger.info(f"{domain} universe: {ambiguous} codes match several catalog rows and stay")
+    return kept, provenance
+
+
 def symbol_universe(
     engine: Engine,
     domain: str,
@@ -254,7 +407,7 @@ async def run_incremental_job(
     engine: Engine | None = None,
     session_maker: async_sessionmaker[AsyncSession] | None = None,
     resume: bool = True,
-    calendar: TradingCalendar | None = None,
+    calendar: CalendarView | None = None,
 ) -> JobResult:
     """Run one incremental batch of a domain through the six steps.
 
@@ -264,7 +417,8 @@ async def run_incremental_job(
         source: Authoritative source; defaults to the mapped source.
         second_source: Second source; wires cross-check and dual-source
             merge (AC-9) into the authoritative run.
-        symbols: Explicit universe; defaults to the warehouse dwd list.
+        symbols: Explicit universe, used as given; defaults to the
+            warehouse dwd list narrowed by the landed instrument catalog.
         limit: Cap for the derived universe.
         as_of: Run date; the window ends on the latest date on or before
             it that should carry data (defaults to today).
@@ -296,9 +450,11 @@ async def run_incremental_job(
     authoritative = source or default_source(domain)
     run_date = as_of or date.today()
     day_calendar = calendar if calendar is not None else resolve_calendar(warehouse)
-    expected = day_calendar.expected_data_date(run_date)
-    window = incremental_window(expected, lookback_days=lookback_days)
-    universe = list(symbols) if symbols else symbol_universe(warehouse, domain, limit=limit)
+    window = incremental_window(run_date, lookback_days=lookback_days, calendar=day_calendar)
+    expected = window.end
+    universe, universe_notes = derive_universe(
+        warehouse, domain, symbols=symbols, limit=limit, window=window
+    )
     if not universe:
         raise ValueError(
             f"empty symbol universe for {domain}: pass symbols= or load {dwd_table(domain)}"
@@ -335,6 +491,7 @@ async def run_incremental_job(
             "calendar_tier": day_calendar.tier,
             "decided_by": day_calendar.answered_from(expected),
         },
+        universe=universe_notes,
     )
 
 

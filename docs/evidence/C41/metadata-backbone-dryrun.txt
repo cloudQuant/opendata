@@ -1,0 +1,143 @@
+================================================================================
+C41 元数据骨架落地脚本：真机只读 dry-run 留档
+================================================================================
+采集时间（运行前）: 2026-09-26T23:21:49+0200
+branch: dev
+HEAD  : 063a6e4  docs(acceptance): v5.12 回填 C40 AC-1/AC-2 条目级台账（9 条 proven、6 条 gap，条目级 5/10 与 4/5）
+
+git status --porcelain（运行前工作树，本文件所在 round 的全部改动）:
+ M opendata/data/models/metadata.py
+ M opendata/data/providers/ths/models/trading_calendar.py
+ M opendata/pipeline/jobs.py
+ M opendata/pipeline/templates.py
+ M opendata/pipeline/trading_calendar.py
+ M tests/test_pipeline_jobs.py
+ M tests/test_pipeline_templates.py
+ M tests/test_trading_calendar.py
+?? docs/evidence/C41/
+?? scripts/ops/metadata_backbone_landing.py
+
+命令 1（落地脚本 dry-run，未落库）:
+    python scripts/ops/metadata_backbone_landing.py \
+        --asset-type a-share --asset-type a-share-index --days 40 2>&1
+退出码取自脚本自身（$?），无管道。
+
+命令 2（同一链路的逐行核验：切窗口 + 邻居交易日是否真的推导出来）:
+    python -c "…（内联，不落 scratch 文件）…"
+    走 scripts/ops/metadata_backbone_landing.py 里同样的 registry.fetch(...) 全链路，
+    打印行数、首末日期、prev/next_trade_date 缺失计数、落库帧的列名与两行样例。
+
+安全说明:
+* 两条命令都是只读：命令 1 不带 --write，engine=None，land() 只做 len(frame) 计数；
+  未连主库、未连 DuckDB 仓库、没有任何 DDL、没有任何 INSERT/UPSERT。
+* FUYAO_API_KEY 只由 opendata_fuyao 客户端自行读取，本文件不打印其值、
+  长度、前缀或任何可反推的派生信息；只记录「腿是否回答」+ 行数 + 计数。
+* 本文件是完整未裁剪输出，命令与退出码原样附在输出前后。
+================================================================================
+
+--------------------------------------------------------------------------------
+$ python scripts/ops/metadata_backbone_landing.py --asset-type a-share --asset-type a-share-index --days 40 2>&1
+# metadata backbone landing @ 2026-09-26 (mode=dry-run)
+#   source=ths asset_types=a-share,a-share-index exchange=CN-SSE
+#   window=2026-08-18..2026-09-26
+#   dwd_instrument: would_land 7009 row(s), refused 0
+#   dwd_trading_calendar: would_land 28 row(s), refused 0
+# dry-run: nothing was written; pass --write to land these rows
+METADATA_BACKBONE would_land=7037 refused=0 mode=dry-run
+EXIT=0
+
+--------------------------------------------------------------------------------
+$ python - <<PY   # 同一条 registry.fetch 全链路的逐行核验（内联，无 scratch 文件）
+calendar leg: type(row) = TradingCalendar | n = 28
+  asked window      = 2026-08-18 .. 2026-09-26
+  returned span      = 2026-08-18 .. 2026-09-24
+  inside window      = True
+  ascending          = True
+  is_open all True   = True | closed rows = 0
+  prev_trade_date None count = 0
+  next_trade_date None count = 1
+  first 3 rows: [('2026-08-18', True, '2026-08-17', '2026-08-19'), ('2026-08-19', True, '2026-08-18', '2026-08-20'), ('2026-08-20', True, '2026-08-19', '2026-08-21')]
+  last  2 rows: [('2026-09-23', True, '2026-09-22', '2026-09-24'), ('2026-09-24', True, '2026-09-23', 'None')]
+  row[0].prev_trade_date < window.start = True
+  neighbour chain self-consistent = True
+instrument leg a-share: n = 5578 | ascending by symbol = True | status values = ['active'] | list_date null = 8
+instrument leg a-share-index: n = 1431 | ascending by symbol = True | status values = ['active'] | list_date null = 0
+  cross-page duplicate symbol count = 0
+  row types are contracts = True
+  frame[instrument] table=dwd_instrument rows=7009 cols=['symbol', 'exchange', 'name', 'status', 'currency', 'list_date', 'delist_date', 'board', 'source', '_merged_at', '_diff_flag', '_as_of']
+    key=('symbol',) trace_nulls=0
+  frame[trading_calendar] table=dwd_trading_calendar rows=28 cols=['exchange', 'date', 'is_open', 'prev_trade_date', 'next_trade_date', 'source', '_merged_at', '_diff_flag', '_as_of']
+    key=('exchange', 'date') trace_nulls=0
+  landed = {'instrument': 7009, 'trading_calendar': 28} | refused = {'instrument': [], 'trading_calendar': []}
+  as_dict = {'source': 'ths', 'window': ['2026-08-18', '2026-09-26'], 'landed': {'instrument': 7009, 'trading_calendar': 28}, 'rejected': {'instrument': [], 'trading_calendar': []}}
+EXIT=0
+
+--------------------------------------------------------------------------------
+$ python - <<PY   # 未切窗口的发布覆盖面（解释 returned span 为什么止于 2026-09-24）
+local date (script clock) = 2026-09-26 weekday = Saturday
+published coverage: n = 240 | span = 2025-09-29 .. 2026-09-24
+last 5 published   = [('2026-09-18', 'Fri'), ('2026-09-21', 'Mon'), ('2026-09-22', 'Tue'), ('2026-09-23', 'Wed'), ('2026-09-24', 'Thu')]
+rows with is_open False = 0
+skipped weekdays inside coverage (=holidays) = ['2025-10-01', '2026-01-01', '2026-05-01', '2026-06-19']
+max published date +1d = 2026-09-25
+EXIT=0
+
+--------------------------------------------------------------------------------
+# 更正：上一段 weekday_gaps 的算法只检查了每行的“次日”，漏掉多日连休（国庆/春节），因此 4 条是下界不是全集。
+# 以下按“覆盖面内所有周一至周五且未发布”重算（同一次 fetch 内完成，无额外请求）。
+$ python - <<PY
+published coverage: n = 240 | span = 2025-09-29 .. 2026-09-24
+weekdays inside coverage not published (holidays) = 19
+  -> ['2025-10-01', '2025-10-02', '2025-10-03', '2025-10-06', '2025-10-07', '2025-10-08', '2026-01-01', '2026-01-02', '2026-02-16', '2026-02-17', '2026-02-18', '2026-02-19', '2026-02-20', '2026-02-23', '2026-04-06', '2026-05-01', '2026-05-04', '2026-05-05', '2026-06-19']
+weekdays inside coverage total = 259
+EXIT=0
+
+================================================================================
+读数（本 round 的结论，不外加任何未测到的东西）
+================================================================================
+1. --days 40 真的生效了：修正 _legs 之前同一命令返回 240 行（等于整张发布表），
+   修正后返回 28 行，且 returned span 完全落在 [2026-08-18, 2026-09-26] 内（inside window = True）。
+   原因：之前只调 extract_data，发布窗口原样返回；现在走 Fetcher.fetch 的
+   validate -> extract -> normalize 全链路，日历的裁剪在 normalize 阶段（先推导后裁剪）。
+2. prev_trade_date 是可用的 witness，不是空列：28/28 行都有值，邻居链自洽
+   （rows[i].prev == rows[i-1].date 且 rows[i].next == rows[i+1].date 全为 True），
+   且窗口首行 2026-08-18 的 prev = 2026-08-17 在窗口之外 —— 证明推导发生在裁剪之前，
+   这正是 CalendarView._with_witness 需要的那一列。
+3. next_trade_date 只有 1 行为 None，且在发布覆盖面的末行（2026-09-24）：
+   与该适配器 docstring 的声明逐字一致（末行的后继上游不发布，因此不猜）。
+4. 本腿只发布开市日（is_open all True，closed rows = 0，240 行全是开市日）。
+   落地后 CalendarView 靠 coverage 区间把覆盖面内的周末/节假判为闭市：
+   259 个工作日 - 19 个未发布工作日 = 240，读数自洽；19 条为国庆/元旦/春节/清明/劳动/端午，
+   与 A 股休市安排同向（本 round 不引入第二个 vendor 去逐条对账，那是 C13 已做的面）。
+5. 新发现（如实记录，不掩盖）：发布尾端落后。本地钟 2026-09-26（周六）读，对应北京
+   2026-09-27 05:2x，覆盖面末行是 2026-09-24（周四），而彼时“最后一个已完成的交易日”
+   应为 2026-09-25（周五）。也就是说适配器 docstring 里「ending at the last completed
+   trading day」这句只在 C13 那次读数（2026-09-25 读到 2026-09-24）成立，不是一条规则。
+   后果：warehouse_calendar 的 coverage 末行了 09-24，09-25/09-26 落在 coverage 之外，
+   由 weekday tier 回答（周六闭市、周五开市），witness 面没有对应行可比 —— 不报错也不误判，
+   但「最近 1~2 个交易日由落地行回答」这句话现在不成立，已回写到 docstring。
+6. instrument 腿两页都通过 transform_data 的形状检查（空表 / thscode 重复 / 快照日期缺失），
+   并按 symbol 升序返回；跨页 symbol 交集 = 0，所以 (symbol,) 单键 upsert 不会互相覆盖。
+   a-share 5578 行里 list_date 为 null 的只有 8 行（C19 曾见整表全空 22/36 次），
+   a-share-index 1431 行 0 null；status 两页都是全 active —— 与 C14/C19 的「目录只含当前在市标的」一致。
+7. 落地面（列名/键/追溯列）就是 dwd_merge 的那一份：contract 列 + source/_merged_at/_diff_flag/_as_of，
+   追溯列 null 计数 = 0，键 = (symbol,) 与 (exchange, date)，表名 dwd_instrument / dwd_trading_calendar。
+8. 全程只读：engine=None，land 回调只做 len(frame)；没有任何 DDL / INSERT / UPSERT，
+   连的是 fuyao 元数据端点的读请求。--write 与它需要的建表是运维决策，本 round 未执行（见 README）。
+================================================================================
+
+--------------------------------------------------------------------------------
+# 复核：mypy（a2-check 的一部分）在 templates.py/_legs 上抓到 4 个类型缺陷后，
+#   refresh_metadata_backbone 的签名与 _backbone_rows 做了只改类型不改行为的收口
+#   （engine: Engine | None、无 land 时 engine=None 直接 ValueError、非 Mapping 行走 refuse 分支）。
+#   同一命令在同一棵树上重跑一遍，确认读数不变。
+#   采集时间（本次运行前）: 23:30:10
+$ python scripts/ops/metadata_backbone_landing.py --asset-type a-share --asset-type a-share-index --days 40 2>&1
+# metadata backbone landing @ 2026-09-26 (mode=dry-run)
+#   source=ths asset_types=a-share,a-share-index exchange=CN-SSE
+#   window=2026-08-18..2026-09-26
+#   dwd_instrument: would_land 7009 row(s), refused 0
+#   dwd_trading_calendar: would_land 28 row(s), refused 0
+# dry-run: nothing was written; pass --write to land these rows
+METADATA_BACKBONE would_land=7037 refused=0 mode=dry-run
+EXIT=0

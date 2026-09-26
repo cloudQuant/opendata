@@ -1,9 +1,22 @@
 """Metadata contract models (design §4.1).
 
-``Instrument`` and ``TradingCalendar`` are first-class citizens: the
-full-market backfill refreshes ``Instrument`` (including delisted
-symbols) as its step zero, and incremental windows are computed from
-``TradingCalendar``'s previous trade date.
+``Instrument`` and ``TradingCalendar`` are contracts the batch is built
+on, not just tables a consumer may query:
+:func:`opendata.pipeline.jobs.landed_instruments` reads the landed
+catalog through ``Instrument`` to decide which codes a run may fetch
+(:func:`opendata.pipeline.jobs.drop_inactive_symbols`), and
+:func:`opendata.pipeline.trading_calendar.warehouse_calendar` reads the
+landed calendar through ``TradingCalendar`` to build the ``CalendarView``
+that fixes a window's end - there ``prev_trade_date`` is the witness the
+open/closed rows are checked against, not the primary answer.
+
+What is not automatic is said plainly, because the design's wording invites
+a stronger reading: nothing refreshes these tables as a side effect of a
+batch. :func:`opendata.pipeline.templates.refresh_metadata_backbone` is the
+step zero that does it (two provider legs, one contract check per row, one
+dwd upsert per domain), but it runs when an operator asks for it - landing
+``dwd_instrument`` / ``dwd_trading_calendar`` is a warehouse decision, and
+until it has run both reads above report an absent backbone.
 
 ``TradingCalendar`` has a field literally named ``date`` (fixed by the
 design), which would shadow ``datetime.date`` in unqualified

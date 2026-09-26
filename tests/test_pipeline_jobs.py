@@ -10,11 +10,13 @@ real end-to-end run of this module is the acceptance evidence in
 from __future__ import annotations
 
 from datetime import date
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pandas as pd
 import pytest
+from sqlalchemy import Column, Date, MetaData, String, Table, create_engine, insert
 
+from opendata.data.models import Instrument
 from opendata.pipeline import jobs
 from opendata.pipeline.dump_import import shanghai_dates
 from opendata.pipeline.runner import PipelineOutcome, Window
@@ -24,6 +26,11 @@ from opendata.pipeline.trading_calendar import (
     TIER_WEEKDAY,
     calendar_from_days,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+
+    from sqlalchemy import Engine
 
 WINDOW = Window(start=date(2026, 9, 24), end=date(2026, 9, 24))
 
@@ -225,6 +232,193 @@ class TestSymbolUniverse:
 
         assert jobs.symbol_universe(_Engine(), "stock_daily", limit=0) == ["600519"]
         assert captured["cap"] == 1
+
+
+def _instrument(symbol: str, **overrides: object) -> Instrument:
+    """One catalog row with the fields every consumer of it expects."""
+    fields: dict[str, object] = {
+        "symbol": symbol,
+        "exchange": "SSE" if symbol.endswith(".SH") else "SZSE",
+        "name": "测试标的",
+        "status": "active",
+        "currency": "CNY",
+        "list_date": date(2001, 7, 31),
+        "delist_date": None,
+        "board": None,
+    }
+    fields.update(overrides)
+    return Instrument.model_validate(fields)
+
+
+def _catalog_engine(rows: Sequence[Mapping[str, object]], *, omit: tuple[str, ...] = ()) -> Engine:
+    """A landed ``dwd_instrument``: contract columns, plus the dwd trace ones."""
+    declared = {
+        "symbol": String(32),
+        "exchange": String(16),
+        "name": String(64),
+        "status": String(16),
+        "currency": String(8),
+        "list_date": Date,
+        "delist_date": Date,
+        "board": String(32),
+        "source": String(16),
+    }
+    engine = create_engine("sqlite://")
+    metadata = MetaData()
+    catalog = Table(
+        jobs.INSTRUMENT_TABLE,
+        metadata,
+        *[Column(name, type_) for name, type_ in declared.items() if name not in omit],
+    )
+    metadata.create_all(engine)
+    present = [name for name in declared if name not in omit]
+    with engine.begin() as conn:
+        conn.execute(
+            insert(catalog),
+            [{name: row.get(name) for name in present} for row in rows],
+        )
+    return engine
+
+
+class TestInstrumentCatalog:
+    """The universe's second face: the landed ``Instrument`` catalog, as a contract.
+
+    In-memory SQLite only - the point is that the rows are read back
+    through ``Instrument``, and that what the catalog cannot answer (no
+    table, wrong shape, hollow date columns) is reported rather than
+    guessed at.
+    """
+
+    def test_landed_rows_come_back_as_contract_objects(self) -> None:
+        engine = _catalog_engine(
+            [
+                {
+                    "symbol": "600519.SH",
+                    "exchange": "SSE",
+                    "name": "贵州茅台",
+                    "status": "active",
+                    "currency": "CNY",
+                    "list_date": date(2001, 7, 31),
+                    "delist_date": None,
+                    "board": None,
+                }
+            ]
+        )
+
+        rows = jobs.landed_instruments(engine)
+
+        assert [row.symbol for row in rows] == ["600519.SH"]
+        assert rows[0].list_date == date(2001, 7, 31)
+
+    def test_missing_table_is_no_catalog(self) -> None:
+        assert jobs.landed_instruments(create_engine("sqlite://")) == []
+
+    def test_a_table_that_is_not_the_contract_is_no_catalog(self) -> None:
+        """``currency`` is required by design §4.1; a table without it is not the catalog."""
+        engine = _catalog_engine(
+            [{"symbol": "600519.SH", "exchange": "SSE", "name": "x", "status": "active"}],
+            omit=("currency",),
+        )
+
+        assert jobs.landed_instruments(engine) == []
+
+    def test_delisted_before_the_window_is_dropped(self) -> None:
+        catalog = [_instrument("000001.SZ", delist_date=date(2026, 8, 1))]
+
+        kept, dropped, ambiguous = jobs.drop_inactive_symbols(
+            ["000001", "600519"], catalog, window=WINDOW
+        )
+
+        assert kept == ["600519"]
+        assert dropped == ["000001"]
+        assert ambiguous == 0
+
+    def test_listing_after_the_window_is_dropped(self) -> None:
+        catalog = [_instrument("600519.SH", list_date=date(2026, 10, 9))]
+
+        kept, dropped, _ = jobs.drop_inactive_symbols(["600519"], catalog, window=WINDOW)
+
+        assert (kept, dropped) == ([], ["600519"])
+
+    def test_a_hollow_date_column_keeps_the_symbol(self) -> None:
+        """C19 measured ``list_date`` hollow on 22 of 36 reads: unknown is not unlisted."""
+        catalog = [_instrument("600519.SH", list_date=None, delist_date=None)]
+
+        kept, dropped, _ = jobs.drop_inactive_symbols(["600519"], catalog, window=WINDOW)
+
+        assert (kept, dropped) == (["600519"], [])
+
+    def test_a_code_the_catalog_holds_twice_is_left_alone(self) -> None:
+        """000001 is a stock and an index; the delisted one must not delete the live one."""
+        catalog = [_instrument("000001.SZ"), _instrument("000001.SH", delist_date=date(2020, 1, 1))]
+
+        kept, dropped, ambiguous = jobs.drop_inactive_symbols(["000001"], catalog, window=WINDOW)
+
+        assert (kept, dropped, ambiguous) == (["000001"], [], 1)
+
+    def test_a_code_outside_the_catalog_stays(self) -> None:
+        kept, dropped, _ = jobs.drop_inactive_symbols(
+            ["600519"], [_instrument("000001.SZ")], window=WINDOW
+        )
+
+        assert (kept, dropped) == (["600519"], [])
+
+    def test_derive_universe_uses_a_callers_list_as_given(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        def _never_reads(*args: object, **kwargs: object) -> list[Instrument]:
+            raise AssertionError("the catalog must not be consulted for an explicit universe")
+
+        monkeypatch.setattr(jobs, "landed_instruments", _never_reads)
+
+        universe, provenance = jobs.derive_universe(
+            object(), "stock_daily", symbols=["000001"], limit=None, window=WINDOW
+        )
+
+        assert universe == ["000001"]
+        assert provenance == {"from": "caller", "requested": "1"}
+
+    def test_derive_universe_says_when_no_catalog_is_landed(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(jobs, "symbol_universe", lambda e, d, *, limit=None: ["600519"])
+        monkeypatch.setattr(jobs, "landed_instruments", lambda engine, **kwargs: [])
+
+        universe, provenance = jobs.derive_universe(
+            object(), "stock_daily", symbols=None, limit=None, window=WINDOW
+        )
+
+        assert universe == ["600519"]
+        assert provenance == {"from": "dwd_stock_daily", "catalog": "absent"}
+
+    def test_derive_universe_applies_the_catalog(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setattr(
+            jobs, "symbol_universe", lambda e, d, *, limit=None: ["000001", "600519"]
+        )
+        monkeypatch.setattr(
+            jobs,
+            "landed_instruments",
+            lambda engine, **kwargs: [_instrument("000001.SZ", delist_date=date(2026, 1, 1))],
+        )
+
+        universe, provenance = jobs.derive_universe(
+            object(), "stock_daily", symbols=None, limit=None, window=WINDOW
+        )
+
+        assert universe == ["600519"]
+        assert provenance["catalog"] == jobs.INSTRUMENT_TABLE
+        assert provenance["dropped_inactive"] == "1"
+        assert provenance["ambiguous_codes"] == "0"
+
+    async def test_the_run_reports_the_universe_it_used(
+        self, stubbed_run: list[dict[str, Any]]
+    ) -> None:
+        result = await jobs.run_incremental_job(
+            source="ths", symbols=["600519"], as_of=WINDOW.start, engine=object()
+        )
+
+        assert result.universe == {"from": "caller", "requested": "1"}
+        assert result.as_dict()["universe"] == result.universe
 
 
 class TestMakeFetchSymbol:
