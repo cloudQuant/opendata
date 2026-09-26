@@ -1,0 +1,82 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T08:48:13+02:00（第一遍）；2026-09-26T08:51:39+02:00（第二遍，落盘的是这一遍的完整 stdout）
+branch=dev HEAD=69d756a
+node=v25.1.0
+命令：cd frontend && npx --no-install playwright test e2e/__c32_probe.spec.ts --reporter=list（临时探针，跑完即删）
+探针策略：seedSession 预置 localStorage['auth'] + page.route('**/api/v1/**') 记录 `METHOD path`，并对每个 api 请求 fulfill 一份宽松信封
+git status --porcelain（运行前）:
+?? docs/evidence/C32/
+?? frontend/e2e/__c32_probe.spec.ts
+
+--- 说明 ---
+量的是「每个页面在真实 axios 面上到底打了哪些端点」，不是文档里声称的端点。
+用途有两个：① 退 7 条 test.skip 时要按页喂对端点（少喂一个 ⇒ 断言撞的是 undefined 而不是产品行为）；
+② 复核 C31 那批「双解包」读路的归因，并确认没有哪个页面会额外打 /auth/me（若打，夹具集要多一份 stub）。
+探针不判定，只记录；跑完即删。
+
+为什么有两遍：第一遍只把端点集合写进了 /tmp，stdout 没有留档（当时用 ${PIPESTATUS[0]} 取 rc，
+在 zsh 里打印为空，rc 也没记下）。本仓库的口径是不信任 /tmp 往返、也不补一个凭造的 rc，
+所以原样重跑一遍并把完整 stdout 与端点集合一起落盘。两遍的端点集合逐页一致，只有 worker 打印顺序不同。
+
+===== 探针运行读数（第二遍，完整未裁剪） =====
+$ (cd frontend && npx --no-install playwright test e2e/__c32_probe.spec.ts --reporter=list)
+
+Running 8 tests using 4 workers
+
+  ✓  3 [chromium] › e2e/__c32_probe.spec.ts:58:3 › probe executions (2.2s)
+  ✓  2 [chromium] › e2e/__c32_probe.spec.ts:58:3 › probe scripts (2.3s)
+  ✓  1 [chromium] › e2e/__c32_probe.spec.ts:58:3 › probe tables (2.3s)
+  ✓  4 [chromium] › e2e/__c32_probe.spec.ts:58:3 › probe table-detail (2.4s)
+  ✓  5 [chromium] › e2e/__c32_probe.spec.ts:58:3 › probe tasks (2.0s)
+  ✓  6 [chromium] › e2e/__c32_probe.spec.ts:58:3 › probe catalog (2.1s)
+  ✓  7 [chromium] › e2e/__c32_probe.spec.ts:58:3 › probe home (2.1s)
+  ✓  8 [chromium] › e2e/__c32_probe.spec.ts:58:3 › probe settings (2.2s)
+
+  8 passed (7.3s)
+PROBE_RC=0
+
+（探针不写断言：它只把记到的端点集合落到 /tmp/c32_requests.txt，所以 8 例必然全过。
+「全过」在这里不是结论，结论是下面那份端点集合。）
+
+===== 每页真实打出的端点（第二遍 /tmp/c32_requests.txt 原文，未裁剪） =====
+===== executions (/executions) =====
+GET /executions/
+GET /executions/stats
+GET /pipeline/failures
+
+===== scripts (/scripts) =====
+GET /scripts/
+GET /scripts/categories
+
+===== tables (/tables) =====
+GET /tables/
+GET /tables/warehouse
+
+===== table-detail (/tables/3201) =====
+GET /tables/3201/schema
+
+===== tasks (/tasks) =====
+GET /scripts/
+GET /tasks/
+
+===== catalog (/data) =====
+GET /data/catalog
+
+===== home (/) =====
+GET /executions/stats
+GET /scripts/
+
+===== settings (/settings) =====
+GET /settings/database
+GET /settings/database/warehouse
+
+===== 探针小结（只记录，不判定） =====
+1. 8 个页面、15 次请求、12 条不同的端点路径；任意一页都没有打过 /api/v1/auth/me。
+   ⇒ 夹具集不需要 auth/me 的 stub；C31 时「可能还会额外打 auth/me」的猜测是错的，本轮以测量替掉。
+2. /tasks 页挂载时同时打 GET /scripts/ 与 GET /tasks/ 两个端点（不是只有 tasks）。
+3. /tables 页同时打 GET /tables/ 与 GET /tables/warehouse（数仓分层卡片）。
+4. /executions 页一次打三个端点：列表、stats、以及 /pipeline/failures（退路面板）。
+5. /tables/3201 只打 /tables/3201/schema 一个端点——而该端点在后端返回的是**裸对象**（无 APIResponse 信封，
+   opendata/api/tables.py:348-353），所以夹具集在这一条必须按裸形喂，套上信封就等于又一次双解包。
+6. 探针用的是宽松超集信封（items/total/page/page_size/total_pages/count/failures/tables/domains/columns/rows/categories 全给），
+   页面无一报错——这不代表读路正确，只代表「字段多给不会红」。真正的按页夹具要按上面 12 条端点的真实返回形各喂一份。

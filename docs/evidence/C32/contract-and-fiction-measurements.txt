@@ -1,0 +1,96 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T08:54:28+02:00
+branch=dev HEAD=69d756a
+工作树：?? docs/evidence/C32/（本轮尚未改任何源码）
+量法：只读源码两侧（前端消费处 + 后端产出处），逐条给 file:line；不跑服务、不动库。
+本份是 C32 的「先量」面：退 7 条 test.skip 之前，先量清这 7 条要断言的行为在前线上后端到底对不对得上。
+结论口径：这里只登记「断言会朝哪个方向红」，不登记成已修。
+
+--- 为什么要这份 ---
+C30 量出的是形状（skip / 恒真 / if 守卫），C31 量出的是读路（双解包）与类型面。
+把 7 条 skip 直接退掉、按现在的断言写法接上夹具，会得到「绿但仍是假的」或「红但红得没道理」两种读数。
+所以每一条要先回答：它断言的那个东西在产品里存在吗？如果不存在，红的方向说明的是缺陷还是测试自己的 fiction？
+
+===== A. 四条前后端契约缺陷（前端消费 ↔ 后端产出，两侧都有行号） =====
+
+D1｜/executions 「处理行数」列恒为 '-'
+  前端消费：frontend/src/views/ExecutionsView.vue:247 `prop="rows_processed"`、:252 `{{ row.rows_processed || '-' }}`
+  后端产出：GET /api/v1/executions/ 的 items 来自 opendata/api/executions.py:210-212 `_execution_to_dict`
+            → opendata/models/task.py:261-278 `to_dict`，键集是
+            id, execution_id, task_id, script_id, status, start_time, end_time, duration,
+            rows_before, rows_after, error_message, retry_count, triggered_by, created_at
+            —— 这一份负载里没有 rows_processed。
+  订正（本条量了两次才定）：C32 早先一次归因写的是「rows_processed 全库不存在」，那是错的：
+            grep 命中 14 处，其中权威的一处是 opendata/api/schemas.py:366 `DownloadProgressResponse.rows_processed`，
+            由 opendata/api/data.py:205 `rows_processed=execution.rows_after` 填。
+            也就是说这个字段确实存在，但挂在**另一个端点**（下载进度）上，不在执行记录列表的负载上。
+            症状从「字段不存在」订正为「字段拿错了端点」：列永远走 `|| '-'` 分支。
+  可断言的真行为：同一行有 rows_before/rows_after，差值才是这批处理掉的行数。
+
+D2｜成功率被乘两次 100
+  后端产出：opendata/services/execution_service.py:259 `"success_rate": ((success_count / total_count * 100) if total_count > 0 else 0)`
+            —— 已经是百分数（0–100 域）。
+  前端消费：frontend/src/views/ExecutionsView.vue:142 `{{ stats.success_rate ? (stats.success_rate * 100).toFixed(1) : 0 }}%`
+            —— 又乘一次 ⇒ 真机 85.7% 渲染成 8570.0%。
+  顺带量到（登记，不在本轮改）：execution_service.py:253 `failed_count = total_count - success_count`
+            把 running/timeout/cancelled 都算进失败次数，与 D3 是同一个根：状态词表两侧不一致。
+
+D3｜状态词表两侧不一致 ⇒「成功」永远不会出现
+  后端词表：opendata/models/task.py:28-36 `TaskStatus` = pending / running / completed / failed / timeout / cancelled
+  前端词表：frontend/src/views/ExecutionsView.vue:21-29 `statusMap` 只有 pending / running / **success** / failed
+            :93 `getStatusInfo` 未命中就回落 `{ text: status, type: 'info' }`
+  写侧证据：执行记录被置为 completed 的地方有 opendata/services/scheduler.py:234、:255、:503，
+            opendata/services/retry_service.py:166，opendata/services/data_acquisition.py:118 —— 没有任何一处写 `success`。
+  净效果：成功记录在页面上渲染成灰色英文 "completed"；「成功」这个中文标签在真机不可达。
+
+D4｜/tasks 「每小时」「自定义」两个排期选项后端不认 ⇒ 提交必 422
+  前端选项：frontend/src/views/TasksView.vue:32-38 `scheduleOptions` 含 value: 'hourly'(:36) 与 'custom'(:37)
+            :303 `<el-select v-model="taskForm.schedule_type">` 直接把 value 当作要提交的 schedule_type
+  后端校验：opendata/api/schemas.py:229 `schedule_type: str = Field(..., pattern="^(once|daily|weekly|monthly|cron|interval)$")`
+            （:243 是更新请求同一份 pattern；:261 是响应模型）
+  枚举证据：opendata/models/task.py:39-47 `ScheduleType` = once/daily/weekly/monthly/cron/interval，没有 hourly、custom
+  分支证据：opendata/services/scheduler.py:111-129 只对 DAILY/WEEKLY/MONTHLY/CRON/INTERVAL 建排期；
+            opendata/services/scheduler_service.py:170-193 `_build_trigger` 只认 cron/interval/date/once，
+            其余落到 :193 `raise ValueError(f"Unknown trigger type: {trigger_type}")`
+            —— 即使把 pattern 放宽，hourly/custom 到了 trigger 构造处仍然无路可走（这正是 D4 只改前端的理由）。
+  净效果：用户选「每小时」或「自定义」点创建 ⇒ 请求被 pattern 拒 ⇒ 必 422（表单层不会先拦，因为前端没做这层校验）。
+  安全修法取向：只改前端 —— 'hourly' 归 'cron' + "0 * * * *"（与本仓库自己的 seed 脚本
+            scripts/init_tasks_and_tables.py:57 的映射一致），'custom' 归 'cron' + 用户填的表达式。
+            不为迁就前端把后端 pattern 放宽（那等于放宽判据，且 pattern 是 C27 口径下的收口面）。
+
+===== B. 两条 e2e 规格 fiction（测试名字声称的行为在产品里不存在） =====
+
+F1｜'table detail shows schema and preview' 点的是不存在的行内点击
+  测试断言：frontend/e2e/scripts.spec.ts:33-42 —— `page.locator('tr, .el-table__row').first()`，
+            `if (await firstRow.isVisible())` 里 click 之后 `expect(page).toHaveURL(/tables\//)`
+  产品事实：frontend/src/views/TablesView.vue 全文没有 `@row-click`；能进详情的只有一列里的
+            「查看详情」按钮（:205-209 `@click="handleViewDetail(row)"`，:59 `router.push('/tables/${table.id}')`）
+  若不 skip 直接退：`firstRow.isVisible()` 为真（表里有行）⇒ click 落在 <tr> 上没有任何 handler ⇒ URL 仍是 /tables
+            ⇒ `toHaveURL(/tables\//)` 红。红得对，但红的是测试的 fiction，不是产品缺陷。
+  处置取向：改成点「查看详情」按钮（真接线），断言 URL 与详情页 schema 表格都到位。
+
+F2｜'can trigger task execution' 声称的「触发执行」在前端不存在
+  测试断言：frontend/e2e/tasks.spec.ts:35-44 —— `button:has-text("执行"), button:has-text("触发")`，
+            `if (await triggerBtn.isVisible())` 里 click 之后等 `.el-message, .el-notification` 5 秒
+  产品事实：frontend/src/views/TasksView.vue:220-243 操作列只有三个按钮：编辑(:222-229)、执行记录(:230-236)、删除(:237-243)；
+            「执行记录」的 handler 是 :140-142 `router.push('/executions?task_id=${task.id}')`，只是跳转。
+            前端 api 层（frontend/src/api/*.ts）里没有任何 trigger/run 调用（grep trigger|/run|execute 只命中
+            data.ts:57 的 GET /executions/running，是读列表不是触发）。
+  has-text 的坑：`:has-text()` 是子串匹配，`button:has-text("执行")` 会命中「执行记录」——
+            所以 isVisible() 为真、click 发生、页面跳到 /executions，然后等一个永远不会出现的 toast ⇒ 红。
+            这条如果只「移出 if」而不换断言，会把一个 fiction 变成一条随机红的用例。
+  处置取向：改名并改成断言真实接线 —— 点「执行记录」⇒ URL 到 /executions?task_id=…；
+            「触发执行」这个动作前端没有面，不在本轮凭空造（造它需要新端点接线，属后端面且 POST 有真实副作用）。
+
+===== C. 夹具可行性：/tasks 创建例是四条里唯一有真 toast 可断言的 =====
+  frontend/src/views/TasksView.vue:160 「创建任务」按钮 → :261-345 el-dialog 创建表单 →
+  :121 `ElMessage.success('创建成功')`（提交成功后才弹）。
+  ⇒ 'can create a new task' 可以按 marker 断言：开弹窗（.el-dialog 可见）→ 填表 → 提交 →
+     .el-message 含「创建成功」，且 POST /api/v1/tasks/ 被打到且只被打到 stub。
+  这条同时也要求桩掉 POST /api/v1/tasks/：它是真实写库面（见 D4 的提交路径），e2e 决不能打活后端。
+
+===== D. 本轮登记但不动的东西 =====
+  * failed_count 的口径（D2 顺带量到）：与 D3 同根，改前端词表即可让 timeout/cancelled 有中文名；
+    「total - success 记为失败」是否要显式排除 running，属统计口径变更，需单独一轮，不在 C32 顺手改。
+  * 后端 pattern 不放宽、不加 hourly/custom 枚举：见 D4 修法取向。
+  * AC-13 dwd_* 落库、AC-15 legacy DROP 仍需用户明确确认，本份只是只读量。

@@ -1,0 +1,258 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T09:14:44+02:00
+branch=dev HEAD=69d756a
+node=v25.1.0 playwright=1.58.2
+命令：python3 /tmp/c32_falsify.py（跑完即删的植入驱动器，输出落此档）
+驱动器做的事：对每处修复，把「修之前那一行的形状」植回去，跑对应的那一条用例，期望它红（rc=1），然后按字节还原并校验还原；最后一遍全量必须回到 18 例全绿。
+git status --porcelain（运行前）:
+ M frontend/e2e/auth.spec.ts
+ M frontend/e2e/scripts.spec.ts
+ M frontend/e2e/tasks.spec.ts
+ M frontend/src/views/ExecutionsView.vue
+ M frontend/src/views/TasksView.vue
+?? docs/evidence/C32/
+?? frontend/e2e/fixtures.ts
+===== 驱动器完整输出（python3 /tmp/c32_falsify.py，未裁剪）=====
+
+===== A｜把 D3 装回去：statusMap 的 completed 改回 success =====
+$ npx playwright test --grep "executions list shows history" --reporter=line
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] › e2e/scripts.spec.ts:88:5 › Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel
+[1A[2K  1) [chromium] › e2e/scripts.spec.ts:88:5 › Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('C32PIPE_LINE_1')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('C32PIPE_LINE_1')[22m
+
+
+      92 |
+      93 |       // Three endpoints, three panels: stats cards, the failure panel, the table.
+    > 94 |       await expect(page.getByText('C32PIPE_LINE_1')).toBeVisible()
+         |                                                      ^
+      95 |       await expect(page.getByText('C32FAIL_SHARD_TIMEOUT')).toBeVisible()
+      96 |       await expect(page.getByText('C32ERR_UPSTREAM_REFUSED')).toBeVisible()
+      97 |       await expect(page.getByText('c32_alpha')).toBeVisible()
+        at /Users/yunjinqi/Documents/new_projects/opendata/frontend/e2e/scripts.spec.ts:94:54
+
+    Error Context: test-results/scripts-Scripts-Data-Table-b395f--and-the-failed-shard-panel-chromium/error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] › e2e/scripts.spec.ts:88:5 › Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel
+PLANTED_RC=1  （期望 1：这一条断言必须能被这个植入打红）
+
+
+===== B｜把 D2 装回去：成功率再乘一次 100 =====
+$ npx playwright test --grep "executions list shows history" --reporter=line
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] › e2e/scripts.spec.ts:88:5 › Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel
+[1A[2K  1) [chromium] › e2e/scripts.spec.ts:88:5 › Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('85.7%', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('85.7%', { exact: true })[22m
+
+
+       99 |       // 85.7 is what the backend answers (execution_service.py:259 already
+      100 |       // multiplied by 100); the card used to multiply again and read 8570.0%.
+    > 101 |       await expect(page.getByText('85.7%', { exact: true })).toBeVisible()
+          |                                                              ^
+      102 |
+      103 |       // 'completed' has to render as 成功 — the frontend word list had 'success',
+      104 |       // a status the backend never writes, so the Chinese label was unreachable.
+        at /Users/yunjinqi/Documents/new_projects/opendata/frontend/e2e/scripts.spec.ts:101:62
+
+    Error Context: test-results/scripts-Scripts-Data-Table-b395f--and-the-failed-shard-panel-chromium/error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] › e2e/scripts.spec.ts:88:5 › Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel
+PLANTED_RC=1  （期望 1：这一条断言必须能被这个植入打红）
+
+
+===== C｜把 D1 装回去：读回那个不存在的 rows_processed =====
+$ npx playwright test --grep "executions list shows history" --reporter=line
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] › e2e/scripts.spec.ts:88:5 › Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel
+[1A[2K  1) [chromium] › e2e/scripts.spec.ts:88:5 › Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('11000 → 12345')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('11000 → 12345')[22m
+
+
+      108 |       // rows_after, not the rows_processed this column used to read (that key is
+      109 |       // on the download-progress payload only).
+    > 110 |       await expect(page.getByText('11000 → 12345')).toBeVisible()
+          |                                                     ^
+      111 |       expect(plane.unstubbed()).toEqual([])
+      112 |     })
+      113 |
+        at /Users/yunjinqi/Documents/new_projects/opendata/frontend/e2e/scripts.spec.ts:110:53
+
+    Error Context: test-results/scripts-Scripts-Data-Table-b395f--and-the-failed-shard-panel-chromium/error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] › e2e/scripts.spec.ts:88:5 › Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel
+PLANTED_RC=1  （期望 1：这一条断言必须能被这个植入打红）
+
+
+===== D｜把 D4 装回去：每小时的 schedule_type 退回 hourly =====
+$ npx playwright test --grep "can create a new task" --reporter=line
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] › e2e/tasks.spec.ts:43:5 › Tasks Management E2E › Authenticated › can create a new task
+[1A[2K  1) [chromium] › e2e/tasks.spec.ts:43:5 › Tasks Management E2E › Authenticated › can create a new task 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoMatchObject[2m([22m[32mexpected[39m[2m)[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 1[39m
+
+    [2m  Object {[22m
+    [2m    "name": "C32TASK_CREATED",[22m
+    [2m    "schedule_expression": "0 * * * *",[22m
+    [32m-   "schedule_type": "cron",[39m
+    [31m+   "schedule_type": "hourly",[39m
+    [2m    "script_id": "c32_alpha",[22m
+    [2m  }[22m
+
+      66 |
+      67 |       const [submitted] = plane.postBodies('POST /api/v1/tasks/')
+    > 68 |       expect(submitted).toMatchObject({
+         |                         ^
+      69 |         name: 'C32TASK_CREATED',
+      70 |         script_id: 'c32_alpha',
+      71 |         schedule_type: 'cron',
+        at /Users/yunjinqi/Documents/new_projects/opendata/frontend/e2e/tasks.spec.ts:68:25
+
+    Error Context: test-results/tasks-Tasks-Management-E2E-0931d-cated-can-create-a-new-task-chromium/error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] › e2e/tasks.spec.ts:43:5 › Tasks Management E2E › Authenticated › can create a new task
+PLANTED_RC=1  （期望 1：这一条断言必须能被这个植入打红）
+
+
+===== E｜把裸对象套上信封：/tables/3201/schema 是本机唯一的裸端点 =====
+$ npx playwright test --grep "table detail shows schema and preview" --reporter=line
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] › e2e/scripts.spec.ts:65:5 › Scripts & Data Tables E2E › Authenticated › table detail shows schema and preview
+[1A[2K  1 passed (3.4s)
+PLANTED_RC=0  （期望 1：这一条断言必须能被这个植入打红）
+
+
+===== F｜让夹具漏掉一个端点：unstubbed 守卫必须咬住 =====
+$ npx playwright test --grep "executions list shows history" --reporter=line
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] › e2e/scripts.spec.ts:88:5 › Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel
+[1A[2K  1) [chromium] › e2e/scripts.spec.ts:88:5 › Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('C32PIPE_LINE_1')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('C32PIPE_LINE_1')[22m
+
+
+      92 |
+      93 |       // Three endpoints, three panels: stats cards, the failure panel, the table.
+    > 94 |       await expect(page.getByText('C32PIPE_LINE_1')).toBeVisible()
+         |                                                      ^
+      95 |       await expect(page.getByText('C32FAIL_SHARD_TIMEOUT')).toBeVisible()
+      96 |       await expect(page.getByText('C32ERR_UPSTREAM_REFUSED')).toBeVisible()
+      97 |       await expect(page.getByText('c32_alpha')).toBeVisible()
+        at /Users/yunjinqi/Documents/new_projects/opendata/frontend/e2e/scripts.spec.ts:94:54
+
+    Error Context: test-results/scripts-Scripts-Data-Table-b395f--and-the-failed-shard-panel-chromium/error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] › e2e/scripts.spec.ts:88:5 › Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel
+PLANTED_RC=1  （期望 1：这一条断言必须能被这个植入打红）
+
+===== 还原后的全量读数 =====
+Running 18 tests using 4 workers
+
+[1A[2K[1/18] [chromium] › e2e/auth.spec.ts:12:3 › Authentication E2E › register page loads
+[1A[2K[2/18] [chromium] › e2e/auth.spec.ts:5:3 › Authentication E2E › login page loads
+[1A[2K[3/18] [chromium] › e2e/auth.spec.ts:17:3 › Authentication E2E › unauthenticated user redirected to login
+[1A[2K[4/18] [chromium] › e2e/auth.spec.ts:29:3 › Authentication E2E › login with invalid credentials submits and leaves no session
+[1A[2K[5/18] [chromium] › e2e/auth.spec.ts:66:3 › Authentication E2E › unknown routes send an anonymous user to login with the target kept
+[1A[2K[6/18] [chromium] › e2e/auth.spec.ts:77:3 › Authentication E2E › 404 page renders for a signed-in user
+[1A[2K[7/18] [chromium] › e2e/scripts.spec.ts:21:3 › Scripts & Data Tables E2E › scripts page requires authentication
+[1A[2K[8/18] [chromium] › e2e/scripts.spec.ts:26:3 › Scripts & Data Tables E2E › tables page requires authentication
+[1A[2K[9/18] [chromium] › e2e/scripts.spec.ts:31:3 › Scripts & Data Tables E2E › executions page requires authentication
+[1A[2K[10/18] [chromium] › e2e/scripts.spec.ts:37:5 › Scripts & Data Tables E2E › Authenticated › scripts list shows data
+[1A[2K[11/18] [chromium] › e2e/scripts.spec.ts:50:5 › Scripts & Data Tables E2E › Authenticated › tables list shows data and the warehouse layers
+[1A[2K[12/18] [chromium] › e2e/scripts.spec.ts:65:5 › Scripts & Data Tables E2E › Authenticated › table detail shows schema and preview
+[1A[2K[13/18] [chromium] › e2e/scripts.spec.ts:88:5 › Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel
+[1A[2K[14/18] [chromium] › e2e/scripts.spec.ts:114:5 › Scripts & Data Tables E2E › Authenticated › catalog page lists domains with verification state
+[1A[2K[15/18] [chromium] › e2e/tasks.spec.ts:23:3 › Tasks Management E2E › tasks page requires authentication
+[1A[2K[16/18] [chromium] › e2e/tasks.spec.ts:30:5 › Tasks Management E2E › Authenticated › tasks list page loads
+[1A[2K[17/18] [chromium] › e2e/tasks.spec.ts:43:5 › Tasks Management E2E › Authenticated › can create a new task
+[1A[2K[18/18] [chromium] › e2e/tasks.spec.ts:80:5 › Tasks Management E2E › Authenticated › the 执行记录 action opens that task’s executions
+[1A[2K  18 passed (6.6s)
+AFTER_RESTORE_RC=0  （期望 0：18 例全绿，同时说明六次植入都还原干净）
+DRIVER_EXIT=1
+
+===== 结论（六条植入，五红一不红，驱动因此 exit 1 而不是 0）=====
+A D3 状态词表   红：成功 徽标不再出现（getByText('成功') 等不到）        ⇒ 判据咬得住
+B D2 成功率     红：卡片读 8570.0%，断言的 85.7% 等不到                 ⇒ 判据咬得住
+C D1 rows列     红：'11000 → 12345' 等不到（植回的是 undefined || '-'）  ⇒ 判据咬得住
+D D4 排期类型   红：submit body 的 schedule_type 由 'cron' 变 'hourly'   ⇒ 判据咬得住
+F 漏一个端点    红：unstubbed 守卫把 GET /api/v1/pipeline/failures 记下   ⇒ 判据咬得住
+E 裸对象套信封  不红：1 passed —— 这条植入没有被打红，期望落空。
+
+E 为什么不红，以及它说明的是面的边界还是用例的缺陷：
+  src/utils/request.ts:63 的拦截器是 `return res.data ?? res`。给裸对象套上信封后，
+  res.data 正是那个裸对象 ⇒ 页面读到的东西一模一样 ⇒ 浏览器里没有任何可观测差异。
+  所以「/tables/3201/schema 后端返回裸对象」这个性质**不在 e2e 判定面上**：
+  它的保证只来自读源码的量档（frontend-request-census.txt 第 5 条 + tables.py:348-353），
+  不来自这条用例。把它写成用例里的断言只能是「断言我自己造的 mock」，那正是 C30 定的 VACUOUS 形状。
+  同一件事反过来也成立，且这解释了 C31 那 5 条双解包为什么能潜伏这么久：
+  拦截器对「对象负载」的两种形状都tolerate ⇒ 任何只读页面渲染结果的面都分不出信封套了几层，
+  能分出的只有类型面（读到 res.data?.data 时字段不存在）与源码量档。
+  处置：夹具仍按真实形状喂（裸就是裸），但本轮不再声称 e2e 面能证伪裸/信封之别；
+  这条限制登记在本档 + docs/evidence/C32/README.md，并在 fixtures.ts 的注释里改成量出来的说法。
+  驱动没有把 E 从 CASES 里删掉后再跑一遍来凑一个 rc=0：上面就是它失败那一次的原文。
+
+===== 运行后记（2026-09-26 10:04 追加，未改动上面任何读数） =====
+驱动器 `/tmp/c32_falsify.py` 是本轮的 scratch 文件，跑完即删（仓库约定），所以本档是它唯一的产物：
+六条植入的写法与顺序记在 A–F 各段的标题与内文里，植入前后的完整 playwright 读数都在上面未裁剪。
+要复算就把那六处一行改动重装一遍再跑 `npx playwright test`——不需要驱动器。
+本轮另外两份可复算脚本留在仓库里：`payload_shape_census.py`（形状对账，反例见
+`endpoint-payload-shapes.txt` 末尾的三条植入）与判定面 `scripts/quality/frontend_e2e_plane.py`
+（反例见 `tests/test_frontend_e2e_guard.py` 的合成 spec 用例）。

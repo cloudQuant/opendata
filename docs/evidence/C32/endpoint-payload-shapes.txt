@@ -1,0 +1,194 @@
+C32 endpoint payload shape census — fixtures.ts vs the handlers behind each stubbed URL
+generated: 2026-09-26 09:53:00 +0200
+branch=dev HEAD=69d756a
+python=Python 3.13.5 node=v25.1.0
+command: python docs/evidence/C32/payload_shape_census.py   (static AST reading of opendata/api + frontend/e2e/fixtures.ts; no backend, no MySQL, no browser)
+exit code convention: 0 = every stub pairs with a route under the same envelope and its own literal path; 1 = any finding
+
+--- git status --porcelain captured before the run ---
+ M frontend/e2e/auth.spec.ts
+ M frontend/e2e/scripts.spec.ts
+ M frontend/e2e/tasks.spec.ts
+ M frontend/src/views/ExecutionsView.vue
+ M frontend/src/views/TasksView.vue
+ M scripts/quality/frontend_e2e_plane.py
+ M tests/test_frontend_e2e_guard.py
+?? docs/evidence/C32/
+?? frontend/e2e/fixtures.ts
+--- end git status ---
+===== clean tree: python docs/evidence/C32/payload_shape_census.py (complete output, untrimmed) =====
+routes parsed            : 74
+fixture stubs parsed     : 13
+
+GET /api/v1/scripts/   ->  opendata/api/scripts.py:33-71 get_scripts
+  backend              : APIResponse
+  data keys            : items, total, page, page_size
+  item keys            : id, script_id, script_name, category, sub_category, frequency, description, source, target_table, module_path, function_name, estimated_duration, timeout, is_active, is_custom, parameters, created_at, updated_at
+  note                 : element keys from DataScript.to_dict()
+  note                 : items of data.items
+  fixture              : envelope (fixtures.ts:147)
+
+GET /api/v1/scripts/categories   ->  opendata/api/scripts.py:101-115 get_script_categories
+  backend              : APIResponse
+  note                 : data is a bare list
+  note                 : data= built by get_categories() at opendata/services/script_service.py:259
+  note                 : data= categories followed to its assignment
+  fixture              : envelope (fixtures.ts:157)
+
+GET /api/v1/tables/   ->  opendata/api/tables.py:226-275 list_tables
+  backend              : APIResponse
+  data keys            : items, total, page, page_size, total_pages
+  item keys            : id, table_name, table_comment, category, script_id, row_count, last_update_time, last_update_status, data_start_date, data_end_date, created_at, updated_at
+  built model          : TableResponse(id, table_name, table_comment, category, script_id, row_count, last_update_time, last_update_status, data_start_date, data_end_date, created_at, updated_at)
+  note                 : element is item.model_dump(), item read one hop further
+  note                 : element keys from TableResponse response model fields
+  note                 : items of data.items
+  fixture              : envelope (fixtures.ts:165)
+
+GET /api/v1/tables/warehouse   ->  opendata/api/tables.py:120-165 list_warehouse_tables
+  backend              : APIResponse
+  data keys            : count, tables
+  fixture              : envelope (fixtures.ts:188)
+
+GET /api/v1/tables/3201/schema   ->  opendata/api/tables.py:309-353 get_table_schema
+  backend              : bare(TableSchemaResponse)
+  data keys            : table_name, columns, row_count, last_update_time
+  built model          : TableSchemaResponse(table_name, columns, row_count, last_update_time)
+  note                 : bare object: the handler returns a TableSchemaResponse instance
+  fixture              : BARE object (fixtures.ts:216)
+
+GET /api/v1/tables/3201/data   ->  opendata/api/tables.py:357-415 get_table_data
+  backend              : APIResponse
+  data keys            : table_name, columns, rows, row_count, offset, limit
+  note                 : data.rows is a list whose element shape this census cannot read
+  fixture              : envelope (fixtures.ts:226)
+
+GET /api/v1/executions/   ->  opendata/api/executions.py:50-90 get_executions
+  backend              : APIResponse
+  data keys            : items, total, page, page_size
+  item keys            : id, execution_id, task_id, script_id, status, start_time, end_time, duration, rows_before, rows_after, error_message, retry_count, triggered_by, created_at
+  note                 : element keys from TaskExecution.to_dict()
+  note                 : items of data.items
+  fixture              : envelope (fixtures.ts:242)
+
+GET /api/v1/executions/stats   ->  opendata/api/executions.py:94-103 get_execution_stats
+  backend              : APIResponse
+  data keys            : total_count, success_count, failed_count, success_rate, avg_duration, today_executions
+  note                 : data= built by get_execution_stats() at opendata/services/execution_service.py:207
+  note                 : data= stats followed to its assignment
+  fixture              : envelope (fixtures.ts:282)
+
+GET /api/v1/pipeline/failures   ->  opendata/api/pipeline.py:266-313 pipeline_failures
+  backend              : APIResponse
+  data keys            : count, failures
+  item keys            : pipeline_id, domain, source, shard, window, error
+  note                 : element keys from an inline dict literal
+  note                 : items of data.failures
+  fixture              : envelope (fixtures.ts:291)
+
+GET /api/v1/tasks/   ->  opendata/api/tasks.py:136-198 list_tasks
+  backend              : APIResponse
+  data keys            : items, total, page, page_size
+  fixture              : envelope (fixtures.ts:330)
+
+GET /api/v1/scripts/   ->  opendata/api/scripts.py:33-71 get_scripts
+  backend              : APIResponse
+  data keys            : items, total, page, page_size
+  item keys            : id, script_id, script_name, category, sub_category, frequency, description, source, target_table, module_path, function_name, estimated_duration, timeout, is_active, is_custom, parameters, created_at, updated_at
+  note                 : element keys from DataScript.to_dict()
+  note                 : items of data.items
+  fixture              : envelope (fixtures.ts:331)
+  fixture note         : reuses GET /api/v1/scripts/ (fixtures.ts:147)
+
+POST /api/v1/tasks/   ->  opendata/api/tasks.py:202-262 create_task
+  backend              : APIResponse
+  data keys            : id, name, description, user_id, script_id, script_name, schedule_type, schedule_expression, parameters, is_active, retry_on_failure, max_retries, timeout, last_execution_at, next_execution_at, created_at, updated_at
+  note                 : data= via _task_to_dict() at opendata/api/tasks.py:89 -> ScheduledTask.to_dict()
+  fixture              : envelope (fixtures.ts:334)
+
+GET /api/v1/data/catalog   ->  opendata/api/data_query.py:83-113 data_catalog
+  backend              : APIResponse
+  data keys            : domains
+  fixture              : envelope (fixtures.ts:341)
+
+== handlers that do not return the APIResponse envelope ==
+  GET /api/v1/data/capabilities  bare(<list[Capability]>)  opendata/api/data.py:37  [-]
+  POST /api/v1/data/download  bare(DataDownloadResponse)  opendata/api/data.py:78  [-]
+  GET /api/v1/data/download/{execution_id}/status  bare(DownloadProgressResponse)  opendata/api/data.py:160  [-]
+  GET /api/v1/data/sources  bare(SourceCatalog)  opendata/api/data.py:48  [-]
+  POST /api/v1/keys/  bare(IssuedApiKeyResponse)  opendata/api/keys.py:148  [-]
+  POST /api/v1/keys/{key_id}/revoke  bare(ApiKeyResponse)  opendata/api/keys.py:194  [-]
+  POST /api/v1/keys/{key_id}/rotate  bare(IssuedApiKeyResponse)  opendata/api/keys.py:222  [-]
+  GET /api/v1/settings/database  bare(DatabaseConfigResponse)  opendata/api/settings.py:96  [-]
+  PUT /api/v1/settings/database  bare(DatabaseConfigResponse)  opendata/api/settings.py:229  [-]
+  GET /api/v1/settings/database/warehouse  bare(DatabaseConfigResponse)  opendata/api/settings.py:116  [-]
+  GET /api/v1/tables/{table_id}/schema  bare(TableSchemaResponse)  opendata/api/tables.py:309  [stubbed]
+  GET /api/v1/users/  bare(PaginatedResponse)  opendata/api/users.py:27  [-]
+  GET /api/v1/users/{user_id}  bare(UserResponse)  opendata/api/users.py:84  [-]
+  PUT /api/v1/users/{user_id}  bare(UserResponse)  opendata/api/users.py:107  [-]
+
+envelope disagreements   : 0
+stubs with no route      : 0
+stubs matched by typo    : 0
+CENSUS_RC=0
+
+===== falsification battery: each rule reddens the census when the fixture is made wrong on purpose =====
+----- mutation: drop envelope( from the GET /api/v1/scripts/ stub
+census exit code: 1   (finding lines and counters only; the rest is byte-identical to the clean run above)
+  *** ENVELOPE MISMATCH — the browser would not have been answered this way
+  *** ENVELOPE MISMATCH — the browser would not have been answered this way
+envelope disagreements   : 2
+stubs with no route      : 0
+stubs matched by typo    : 0
+----- mutation: misspell the categories stub key (categoires)
+census exit code: 1   (finding lines and counters only; the rest is byte-identical to the clean run above)
+  *** STUB-TYPO — 'categoires' matches no route, but GET /api/v1/scripts/categories is 2 character(s) away
+envelope disagreements   : 0
+stubs with no route      : 0
+stubs matched by typo    : 1
+----- mutation: point the catalog stub at a deeper URL no route serves
+census exit code: 1   (finding lines and counters only; the rest is byte-identical to the clean run above)
+  backend              : NO SUCH ROUTE — the stub has no handler to match
+envelope disagreements   : 0
+stubs with no route      : 1
+stubs matched by typo    : 0
+
+===== findings =====
+1. Clean tree: 74 routes parsed, 13 fixture stubs parsed, and all three counters at
+   zero — every URL the e2e plane answers is a URL the app serves, wrapped the way the
+   handler wraps it, matched by its own literal path rather than by a parameter.
+2. /api/v1/tables/{table_id}/schema is the only bare (non-enveloped) handler the plane
+   stubs, and its fixture declares itself BARE — the pairing agrees. 14 handlers return
+   bare objects in total; the other 13 (settings/database x3, keys x3, users x3,
+   data capabilities/sources/download/download-status) are on pages the e2e plane does
+   not visit, so no fixture asserts an envelope about them in either direction.
+3. Item keys are read through the serializer, not guessed: /scripts/ and /tasks/ via
+   _script_to_dict()/ScheduledTask.to_dict(), /executions/ via TaskExecution.to_dict(),
+   /tables/ via TableResponse.model_validate(...).model_dump(), /pipeline/failures from
+   an inline dict literal. Before this round the last two were reported as no item keys
+   at all, silently, because the list was a name ("items": items) rather than an inline
+   comprehension.
+4. /api/v1/executions/stats resolves to opendata/services/execution_service.py:207 —
+   the handler and the service method share the name get_execution_stats, which is why
+   the resolution stack is keyed by (file, name): keying it on the bare name refused the
+   hop and printed no keys for that route.
+5. TaskExecution.to_dict() carries 14 keys and rows_processed is not one of them
+   (id, execution_id, task_id, script_id, status, start_time, end_time, duration,
+   rows_before, rows_after, error_message, retry_count, triggered_by, created_at). The
+   e2e fixture therefore reads rows_before/rows_after, which is the C32 D1 note.
+6. GET /api/v1/tables/3201/data: data.rows is a list of database rows keyed by whatever
+   columns the table has, so the census prints "element shape this census cannot read"
+   instead of inventing a key list. That one entry is the only shape in the plane it
+   does not resolve.
+
+===== limitations, stated rather than left to the reader =====
+* This is a static reading of source. It measures the shape a running server emits for
+  the handler as written; it cannot say a value is right, and it never starts the app.
+* It cannot see envelope-insensitivity at the browser layer: the axios interceptor
+  accepts both {success,message,data} and a bare object, so no fixture or assertion at
+  that layer distinguishes one envelope from two. docs/evidence/C32/falsification.txt
+  case E is the measurement of that claim, and it stayed green under mutation.
+* A URL whose segments are all path parameters (e.g. /api/v1/data/{asset_class}/{domain})
+  is a route FastAPI genuinely answers, so such a stub pairs instead of orphaning; only
+  the STUB-TYPO rule (a real route one or two characters away at that segment) catches a
+  key that was meant to name a literal endpoint and misspelled it.
