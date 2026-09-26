@@ -595,7 +595,8 @@ def compare() -> int:
         replayer = HttpReplayer(entries)
         with replayer:
             frame = function(**case.kwargs)
-        diffs = _compare_frames(reference, frame, meta.get("dtypes"))
+        notes: list[str] = []
+        diffs = _compare_frames(reference, frame, meta.get("dtypes"), notes=notes)
         if replayer.cursor != len(entries):
             diffs.insert(
                 0,
@@ -608,13 +609,19 @@ def compare() -> int:
                 "rows": len(frame),
                 "calls": len(entries),
                 "diffs": diffs,
+                "tolerated": notes,
                 "ok": not diffs,
             }
         )
         status = "PASS" if not diffs else "FAIL"
-        print(f"{status} {case.name}: {len(frame)} rows, {len(diffs)} diff(s)")
+        print(
+            f"{status} {case.name}: {len(frame)} rows, {len(diffs)} diff(s), "
+            f"{len(notes)} 处文本不同而浮点在 rtol={RTOL} 内一致"
+        )
         for diff in diffs[:MAX_DIFFS]:
             print(f"     {diff}")
+        for note in notes[:MAX_DIFFS]:
+            print(f"     ~ {note}")
     d10_report = _check_d10_qfq(results)
     _write_report(results, d10_report, pending)
     failed = [entry for entry in results if not entry["ok"]]
@@ -627,6 +634,7 @@ def _compare_frames(
     reference: Any,  # noqa: ANN401  # untyped pandas frames
     ported: Any,  # noqa: ANN401  # untyped pandas frames
     expected_dtypes: dict[str, str] | None = None,
+    notes: list[str] | None = None,
 ) -> list[str]:
     """Compare two frames under the AC-6 tolerance.
 
@@ -640,6 +648,8 @@ def _compare_frames(
         reference: The recorded upstream frame.
         ported: The replayed ported-tree frame.
         expected_dtypes: Column name to live upstream dtype string.
+        notes: Optional collector for differences that AC-6 tolerates, so a
+            representation-only drift stays visible instead of silent.
 
     Returns:
         Human-readable diff lines (empty when identical).
@@ -682,12 +692,99 @@ def _compare_frames(
                     for row in bad
                 )
         else:
-            diffs.extend(
-                f"cell {column}[{index}]: {left[index]!r} != {right[index]!r}"
-                for index in range(len(left))
-                if left[index] != right[index]
-            )
+            diffs.extend(_text_cell_diffs(column, reference[column], ported[column], notes=notes))
     return diffs[:MAX_DIFFS]
+
+
+def _float_pair(left: object, right: object) -> tuple[float, float] | None:
+    """Return both cells as floats only when one side is a real float.
+
+    The recorded reference frame is read with ``dtype=str``, so a computed
+    float reaches the comparison as ``str(value)`` on one side and as the
+    fixture's text on the other. Requiring an actual float instance keeps
+    genuine text columns (codes like ``000001``) on the textual rule: a
+    numeric *looking* pair is not the same as a numeric pair.
+
+    Args:
+        left: Reference cell, raw from the frame.
+        right: Ported cell, raw from the frame.
+
+    Returns:
+        The two values as floats, or ``None`` when the pair is not float-bearing.
+    """
+    import numpy as np
+
+    floats = (float, np.float64, np.floating)
+    if not (isinstance(left, floats) or isinstance(right, floats)):
+        return None
+    try:
+        pair = (float(left), float(right))  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None
+    if any(np.isnan(value) for value in pair):
+        return None
+    return pair
+
+
+def _text_cell_diffs(
+    column: object,
+    reference: Any,  # noqa: ANN401  # untyped pandas series
+    ported: Any,  # noqa: ANN401  # untyped pandas series
+    notes: list[str] | None = None,
+) -> list[str]:
+    """Diff one text column, honouring AC-6's float tolerance.
+
+    AC-6 asks for "取值一致（浮点在容忍度内）", but an ``object`` column can
+    hold floats that the upstream code *computed* (a balance-sheet total, for
+    instance). Judging those by ``repr`` makes the verdict depend on how the
+    same double happens to print, so a summation change in a newer pandas
+    reddens a numerically faithful replay (this is the shape of the 2026-09-23
+    CI failures: ``'218472857114.40997' != '218472857114.41'``). Text that is
+    not float-bearing still has to match character for character.
+
+    Representation-only agreements are never silent: each one is appended to
+    ``notes`` so a fixture drifting away from what the code computes stays
+    visible in the report.
+
+    Args:
+        column: Column label, for the message.
+        reference: Recorded column (text).
+        ported: Replayed column (live objects).
+        notes: Optional collector for tolerated differences.
+
+    Returns:
+        Diff lines for this column.
+    """
+    import numpy as np
+
+    found: list[str] = []
+    for index, (raw_left, raw_right) in enumerate(
+        zip(reference.tolist(), ported.tolist(), strict=True)
+    ):
+        text_left = _cell(raw_left, numeric=False)
+        text_right = _cell(raw_right, numeric=False)
+        if text_left == text_right:
+            continue
+        pair = _float_pair(raw_left, raw_right)
+        if pair is None:
+            found.append(f"cell {column}[{index}]: {text_left!r} != {text_right!r}")
+            continue
+
+        left_value, right_value = pair
+        delta = abs(right_value - left_value)
+        relative = delta / abs(left_value) if left_value else delta
+        if bool(np.isclose(left_value, right_value, rtol=RTOL)):
+            if notes is not None:
+                notes.append(
+                    f"cell {column}[{index}]: 文本不同但浮点在 rtol={RTOL} 内一致"
+                    f"（{text_left} -> {text_right}，abs={delta:.3g}，rel={relative:.3g}）"
+                )
+            continue
+        found.append(
+            f"cell {column}[{index}]: {text_left!r} != {text_right!r}"
+            f"（超出 rtol={RTOL}：abs={delta:.6g}，rel={relative:.3g}）"
+        )
+    return found
 
 
 def _dtype_kind(dtype_name: str) -> str:
@@ -812,14 +909,14 @@ def _write_report(
         "replayed into the ported tree; outputs are compared with identical",
         f"columns/shape/dtypes and cell equality (float rtol={RTOL}).",
         "",
-        "| case | function | rows | http calls | result |",
-        "|------|----------|------|-----------|--------|",
+        "| case | function | rows | http calls | result | 文本不同而浮点一致 |",
+        "|------|----------|------|-----------|--------|--------------------|",
     ]
     for entry in results:
         case = entry["case"]
         lines.append(
             f"| {case.name} | `{case.function}` | {entry['rows']} | {entry['calls']} | "
-            f"{'PASS' if entry['ok'] else 'FAIL'} |"
+            f"{'PASS' if entry['ok'] else 'FAIL'} | {len(entry.get('tolerated', ()))} |"
         )
     if pending:
         lines += [

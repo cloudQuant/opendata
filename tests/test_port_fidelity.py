@@ -199,3 +199,79 @@ def test_financial_statement_update_dates_ignore_the_machine_timezone() -> None:
 
     for zone, column in rendered.items():
         assert column == expected, f"{zone} rendered 更新日期 differently from the recording"
+
+
+# --- AC-6 judge surface: how a float inside an object column gets decided ---
+#
+# The reference frame is read with ``dtype=str`` so no inference can distort it,
+# which means a value the upstream code *computed* reaches the comparison as the
+# fixture's text on one side and ``str(float)`` on the other. Deciding that pair
+# by text made the verdict depend on how a double happens to print: the 2026-09-23
+# CI runs went red over ``'218472857114.40997' != '218472857114.41'`` on a frame
+# that was numerically faithful. AC-6 says 取值一致（浮点在容忍度内), so the judge
+# now says the same thing - and only for pairs where one side really is a float.
+
+
+def _object_column_pair(reference_cell: str, ported_cell: object) -> tuple:
+    """Two one-row frames whose single column is recorded as ``object``."""
+    reference = pd.DataFrame({"col": [reference_cell]}, dtype=object)
+    ported = pd.DataFrame({"col": [ported_cell]}, dtype=object)
+    return reference, ported
+
+
+def test_repr_only_diff_in_object_column_is_tolerated() -> None:
+    """One ULP of summation drift must not redden a numerically equal frame."""
+    reference, ported = _object_column_pair("218472857114.41", 218472857114.40997)
+    notes: list[str] = []
+    diffs = comparator._compare_frames(reference, ported, {"col": "object"}, notes=notes)
+    assert not diffs, "\n".join(diffs)
+    assert len(notes) == 1
+    assert "rtol" in notes[0] and "col[0]" in notes[0]
+
+
+def test_toleranced_drift_is_reported_not_silent() -> None:
+    """The tolerance is not an excuse to lose the signal that text moved."""
+    reference, ported = _object_column_pair("1234.5", 1234.5)
+    notes: list[str] = []
+    assert not comparator._compare_frames(reference, ported, {"col": "object"}, notes=notes)
+    assert notes == []
+
+    drifting_reference, drifting_ported = _object_column_pair("1234.5", 1234.5000000001)
+    notes.clear()
+    assert not comparator._compare_frames(
+        drifting_reference, drifting_ported, {"col": "object"}, notes=notes
+    )
+    assert len(notes) == 1, "a tolerated difference has to be written down somewhere"
+
+
+def test_value_change_in_object_column_still_fails() -> None:
+    """The tolerance is AC-6's rtol and nothing wider."""
+    reference, ported = _object_column_pair("1234.5", 1234.6)
+    diffs = comparator._compare_frames(reference, ported, {"col": "object"})
+    assert len(diffs) == 1
+    assert "超出 rtol" in diffs[0], diffs[0]
+
+
+def test_non_numeric_text_cell_still_needs_exact_match() -> None:
+    """The timezone face C21 pinned must stay character-exact."""
+    reference, ported = _object_column_pair("2026-08-14T20:50:08", "2026-08-14T12:50:08")
+    diffs = comparator._compare_frames(reference, ported, {"col": "object"})
+    assert len(diffs) == 1
+    assert "2026-08-14T20:50:08" in diffs[0] and "2026-08-14T12:50:08" in diffs[0]
+
+
+def test_string_that_only_looks_numeric_is_not_numberified() -> None:
+    """A code column is text: '000001' vs '1' must not be read as the same value."""
+    reference, ported = _object_column_pair("000001", "1")
+    diffs = comparator._compare_frames(reference, ported, {"col": "object"})
+    assert len(diffs) == 1
+
+
+def test_numeric_column_tolerance_is_unchanged() -> None:
+    """The float64 branch keeps its own pre-existing rule."""
+    reference = pd.DataFrame({"col": [1234.5]})
+    ported = pd.DataFrame({"col": [1234.6]})
+    assert len(comparator._compare_frames(reference, ported, {"col": "float64"})) == 1
+    assert not comparator._compare_frames(
+        reference, pd.DataFrame({"col": [1234.5000000001]}), {"col": "float64"}
+    )

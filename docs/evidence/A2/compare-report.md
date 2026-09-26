@@ -5,22 +5,22 @@ recorded from the upstream checkout pinned in upstream.lock, and
 replayed into the ported tree; outputs are compared with identical
 columns/shape/dtypes and cell equality (float rtol=1e-09).
 
-| case | function | rows | http calls | result |
-|------|----------|------|-----------|--------|
-| stock_action_dividend | `stock_history_dividend_detail` | 31 | 1 | PASS |
-| stock_action_rights | `stock_history_dividend_detail` | 3 | 1 | PASS |
-| financial_statement | `stock_financial_report_sina` | 103 | 1 | PASS |
-| financial_indicator | `stock_financial_analysis_indicator_em` | 103 | 1 | PASS |
-| index_constituent | `index_stock_cons_weight_csindex` | 300 | 1 | PASS |
-| futures_daily_sina | `futures_zh_daily_sina` | 4251 | 1 | PASS |
-| option_daily_sina | `option_sse_daily_sina` | 23 | 1 | PASS |
-| bond_daily_sina | `bond_zh_hs_cov_daily` | 4806 | 1 | PASS |
-| stock_daily_sina_raw | `stock_zh_a_daily` | 22 | 2 | PASS |
-| stock_daily_sina_qfq | `stock_zh_a_daily` | 22 | 3 | PASS |
-| index_daily_sina | `stock_zh_index_daily` | 6000 | 1 | PASS |
-| fund_etf_daily_sina | `fund_etf_hist_sina` | 3484 | 1 | PASS |
-| stock_daily_sina_raw_wide | `stock_zh_a_daily` | 118 | 2 | PASS |
-| stock_daily_sina_qfq_wide | `stock_zh_a_daily` | 118 | 3 | PASS |
+| case | function | rows | http calls | result | 文本不同而浮点一致 |
+|------|----------|------|-----------|--------|--------------------|
+| stock_action_dividend | `stock_history_dividend_detail` | 31 | 1 | PASS | 0 |
+| stock_action_rights | `stock_history_dividend_detail` | 3 | 1 | PASS | 0 |
+| financial_statement | `stock_financial_report_sina` | 103 | 1 | PASS | 0 |
+| financial_indicator | `stock_financial_analysis_indicator_em` | 103 | 1 | PASS | 0 |
+| index_constituent | `index_stock_cons_weight_csindex` | 300 | 1 | PASS | 0 |
+| futures_daily_sina | `futures_zh_daily_sina` | 4251 | 1 | PASS | 0 |
+| option_daily_sina | `option_sse_daily_sina` | 23 | 1 | PASS | 0 |
+| bond_daily_sina | `bond_zh_hs_cov_daily` | 4806 | 1 | PASS | 0 |
+| stock_daily_sina_raw | `stock_zh_a_daily` | 22 | 2 | PASS | 0 |
+| stock_daily_sina_qfq | `stock_zh_a_daily` | 22 | 3 | PASS | 0 |
+| index_daily_sina | `stock_zh_index_daily` | 6000 | 1 | PASS | 0 |
+| fund_etf_daily_sina | `fund_etf_hist_sina` | 3484 | 1 | PASS | 0 |
+| stock_daily_sina_raw_wide | `stock_zh_a_daily` | 118 | 2 | PASS | 0 |
+| stock_daily_sina_qfq_wide | `stock_zh_a_daily` | 118 | 3 | PASS | 0 |
 
 ## Pending (network): re-run `--record`
 
