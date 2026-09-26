@@ -1,0 +1,52 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T03:24:27+0000
+branch=dev HEAD=92f8847
+工作树（本轮改动，未提交）：
+ M Makefile
+ M frontend/src/components/common/__tests__/FilterBar.test.ts
+ M frontend/src/components/common/__tests__/StatCard.test.ts
+ M frontend/vite.config.ts
+?? docs/evidence/C29/
+?? scripts/quality/frontend_test_collection.py
+?? tests/test_frontend_collection_guard.py
+Python 3.13.5
+v25.1.0
+命令：python -u docs/evidence/C29/guard-teeth-mutation.py
+
+--- 说明 ---
+本轮把守卫接进 gate 之后要回答的问题是：「守卫自己烂掉会不会被发现」。
+四个变异逐个写进 scripts/quality/frontend_test_collection.py（按字节还原 + sha256 复核），
+每个变异同时读两个面：gate 里那条 make frontend-collection 的退出码，和新增的
+tests/test_frontend_collection_guard.py（-q --no-cov，部分跑的既定口径）。
+关键读数在前三个：silence / allow-list / vacuity 三条规则被拆掉时，gate 项今天照样 rc=0
+（因为今天的树确实没有静默），只有 pytest 面红——这就是判定面必须进单测的原因。
+
+guard module: scripts/quality/frontend_test_collection.py (sha256-12 6bd6b15c3838)
+baseline      pytest rc=0 failed=[]
+baseline      guard rc=0 PASS: every test file on disk is collected by the frontend run.
+
+[silence_rule_dead] 'for relative in on_disk:' -> 'for relative in ():'
+    pytest       rc=1  failed=['test_a_file_on_disk_that_is_not_collected_is_named_with_its_rule', 'test_a_missing_file_without_a_matching_rule_is_still_a_finding']
+    guard        rc=0  PASS: every test file on disk is collected by the frontend run.
+    verdict      CAUGHT
+
+[allow_list_dead] 'if glob in ALLOWED_EXCLUDES:' -> 'if True:'
+    pytest       rc=1  failed=['test_a_file_on_disk_that_is_not_collected_is_named_with_its_rule', 'test_a_new_exclusion_is_rejected_before_it_hides_anything']
+    guard        rc=0  PASS: every test file on disk is collected by the frontend run.
+    verdict      CAUGHT
+
+[vacuity_dead] 'vacuous=not on_disk,' -> 'vacuous=False,'
+    pytest       rc=1  failed=['test_no_test_file_on_disk_is_read_as_nothing_measured_rather_than_a_pass']
+    guard        rc=0  PASS: every test file on disk is collected by the frontend run.
+    verdict      CAUGHT
+
+[reader_dead] 'block = object_block(config_text, "test")' -> 'block = None'
+    pytest       rc=1  failed=['test_the_coverage_exclusions_do_not_read_as_silenced_tests', 'test_the_shipped_config_declares_only_allowed_boundaries']
+    guard        rc=2  VACUOUS: /Users/yunjinqi/Documents/new_projects/opendata/frontend/vite.config.ts declares no test.exclude array; the rules changed shape.
+    verdict      CAUGHT
+
+
+restored      pytest rc=0 failed=[]
+restored      guard  rc=0 PASS: every test file on disk is collected by the frontend run.
+PROBLEMS: 0
+TEETH_RC=0

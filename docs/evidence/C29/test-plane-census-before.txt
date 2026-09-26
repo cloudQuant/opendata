@@ -1,0 +1,72 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T04:59:48+0200
+branch=dev HEAD=92f8847
+工作树（本轮改动，未提交）：
+?? docs/evidence/C29/
+Python 3.13.5
+命令：python -u docs/evidence/C29/test-plane-census.py
+
+说明：本档案量的是「排除规则仍在位」的前置状态。同一脚本先后修掉两处会自我误导的读法：
+      ①把 test.exclude 与 coverage.exclude 混在一起数（8 条），现按归属分别报告；
+      ②把生成物 components.d.ts 与 barrel index.ts 算成组件的「使用点」，现分开列。
+      两处都是本会话内、归档前修的自己脚上的错，不是改写他轮档案。
+
+on-disk test files      : 16
+collected by vitest     : 8
+on-disk call sites      : 118
+collected call sites    : 79
+
+== per-file (on-disk call sites, collected?) ==
+    6  NEVER COLLECTED frontend/e2e/auth.spec.ts
+    9  NEVER COLLECTED frontend/e2e/scripts.spec.ts
+    6  NEVER COLLECTED frontend/e2e/tasks.spec.ts
+    6  collected       frontend/src/__tests__/catalog.test.ts
+    9  collected       frontend/src/__tests__/composables/useApiCall.test.ts
+   17  collected       frontend/src/__tests__/composables/useStoreAction.test.ts
+   11  collected       frontend/src/__tests__/router/index.test.ts
+   11  collected       frontend/src/__tests__/stores/auth.test.ts
+   13  collected       frontend/src/__tests__/stores/tasks.test.ts
+   10  collected       frontend/src/__tests__/types/index.test.ts
+    2  collected       frontend/src/__tests__/utils/request.test.ts
+    5  NEVER COLLECTED frontend/src/components/common/__tests__/EmptyState.test.ts
+    5  NEVER COLLECTED frontend/src/components/common/__tests__/FilterBar.test.ts
+    4  NEVER COLLECTED frontend/src/components/common/__tests__/PageHeader.test.ts
+    1  NEVER COLLECTED frontend/src/components/common/__tests__/StatCard.test.ts
+    3  NEVER COLLECTED frontend/src/components/common/__tests__/StatusBadge.test.ts
+
+== never collected (this is what the passing line did not cover) ==
+  frontend/e2e/auth.spec.ts
+  frontend/e2e/scripts.spec.ts
+  frontend/e2e/tasks.spec.ts
+  frontend/src/components/common/__tests__/EmptyState.test.ts
+  frontend/src/components/common/__tests__/FilterBar.test.ts
+  frontend/src/components/common/__tests__/PageHeader.test.ts
+  frontend/src/components/common/__tests__/StatCard.test.ts
+  frontend/src/components/common/__tests__/StatusBadge.test.ts
+NEVER_COLLECTED: 8 files total
+  src plane (a gate blind spot): 5 files / 18 call sites
+  e2e plane (separate runner)  : 3 files / 21 call sites
+
+== declared excludes in frontend/vite.config.ts ==
+  test      e2e/**                              <- 4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, quality gates)
+  test      node_modules/**                     <- 4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, quality gates)
+  test      dist/**                             <- 4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, quality gates)
+  test      src/components/common/__tests__/**  <- 4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, quality gates)
+  coverage  src/**/*.d.ts                       <- 4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, quality gates)
+  coverage  src/main.ts                         <- 4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, quality gates)
+  coverage  src/auto-imports.d.ts               <- 4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, quality gates)
+  coverage  src/components.d.ts                 <- 4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, quality gates)
+declared exclude globs  : 8
+  owned by test (collector): 4 -> ['e2e/**', 'node_modules/**', 'dist/**', 'src/components/common/__tests__/**']
+  owned by coverage (denominator only): 4
+
+== e2e plane (playwright runner, never in `make gate`) ==
+  3 file(s) under frontend/e2e — separate runner
+
+== is the subject of a silenced test used anywhere? ==
+  EmptyState     0 use site(s) exported by the barrel: []
+  FilterBar      0 use site(s) exported by the barrel: []
+  PageHeader     0 use site(s) exported by the barrel: []
+  StatCard       1 use site(s) exported by the barrel: ['src/views/HomeView.vue']
+  StatusBadge    0 use site(s) exported by the barrel: []
+CENSUS_RC=0

@@ -13,6 +13,7 @@
 .PHONY: help lint format format-check typecheck security deps-audit a2-check \
         test test-cov quality-ratchet public-api-quality zero-dep-check brand-check \
         frontend-lint frontend-format frontend-test frontend-test-cov frontend-typecheck \
+        frontend-collection \
         gate quality quality-full pre-commit
 
 # Self-developed trees (A1 + A2)
@@ -25,7 +26,7 @@ help:
 	@echo "A2 (gating):      a2-check public-api-quality zero-dep-check brand-check quality-ratchet"
 	@echo "Tests:            test test-cov"
 	@echo "Dev views (A1):   lint format format-check typecheck security deps-audit"
-	@echo "Frontend:         frontend-lint frontend-format frontend-test frontend-test-cov frontend-typecheck"
+	@echo "Frontend:         frontend-lint frontend-format frontend-collection frontend-test frontend-test-cov frontend-typecheck"
 
 # --- A2 zero-tolerance gate ------------------------------------------------
 
@@ -106,6 +107,12 @@ frontend-format:
 frontend-test:
 	cd frontend && npx vitest run --testTimeout=15000
 
+# A collector rule that hides a test file is indistinguishable from a plane
+# that never ran, so the run's own green cannot report it. Compare the files on
+# disk against the files vitest admits, and fail on the difference.
+frontend-collection:
+	python scripts/quality/frontend_test_collection.py
+
 frontend-test-cov:
 	cd frontend && npm run test:coverage
 
@@ -135,13 +142,15 @@ gate:
 	@$(MAKE) --no-print-directory frontend-lint
 	@echo "===== gate: frontend-typecheck ====="
 	@$(MAKE) --no-print-directory frontend-typecheck
+	@echo "===== gate: frontend-collection ====="
+	@$(MAKE) --no-print-directory frontend-collection
 	@echo "===== gate: frontend-test ====="
 	@$(MAKE) --no-print-directory frontend-test
 	@echo "===== gate: PASSED ====="
 
 # Backwards-compatible aliases
 quality: a2-check js-points-check
-quality-full: a2-check frontend-lint frontend-typecheck frontend-test
+quality-full: a2-check frontend-lint frontend-typecheck frontend-collection frontend-test
 
 pre-commit:
 	@command -v pre-commit >/dev/null 2>&1 && pre-commit run --all-files || echo "pre-commit not installed (pip install pre-commit)"

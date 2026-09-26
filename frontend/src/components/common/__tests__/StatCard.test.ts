@@ -1,44 +1,53 @@
 import { describe, it, expect } from 'vitest'
-import { mount, VueWrapper } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
+import { markRaw } from 'vue'
+import { TrendCharts } from '@element-plus/icons-vue'
 import StatCard from '../StatCard.vue'
-import { defineComponent, h } from 'vue'
-
-const ElCardStub = defineComponent({
-  name: 'ElCardStub',
-  props: { class: [String, Array] },
-  setup(_props, { slots, attrs }) {
-    // Merge base class with incoming class from the parent binding
-    const incoming = attrs?.class ?? ''
-    const classes = ['stat-card']
-    if (incoming) {
-      // incoming could be string like 'hoverable' or 'stat-card hoverable'
-      if (Array.isArray(incoming)) classes.push(...incoming)
-      else classes.push(String(incoming))
-    }
-    return () => h('div', { class: classes, 'data-testid': 'stat-card' }, slots.default ? slots.default() : null)
-  }
-})
 
 describe('StatCard.vue', () => {
-  it('renders with value and label', () => {
+  // The card is Element Plus's own component, and unplugin-vue-components
+  // compiles `<el-card>` into a direct import of it — a global component stub
+  // under the name `el-card` is therefore never reached. An earlier version of
+  // this file asserted against such a stub: it read the marker the test itself
+  // injected, so it could not fail for anything the product did wrong. Every
+  // assertion below is on the mounted component's real output.
+  it('renders value, label and the hoverable class on the card', () => {
     const wrapper = mount(StatCard, {
       props: {
         value: 123,
         label: 'Views',
         hoverable: true,
       },
-      global: {
-        components: {
-          'el-card': ElCardStub,
-        },
+    })
+
+    const card = wrapper.find('.stat-card')
+    expect(card.exists()).toBe(true)
+    expect(card.classes()).toContain('hoverable')
+    expect(wrapper.find('.stat-value').text()).toBe('123')
+    expect(wrapper.find('.stat-label').text()).toBe('Views')
+  })
+
+  it('leaves the hover affordance off when hoverable is false', () => {
+    const wrapper = mount(StatCard, {
+      props: {
+        value: 123,
+        label: 'Views',
+        hoverable: false,
       },
     })
 
-    const card = wrapper.find('[data-testid="stat-card"]')
-    expect(card.exists()).toBe(true)
-    expect(wrapper.find('.stat-value').text()).toBe('123')
-    expect(wrapper.find('.stat-label').text()).toBe('Views')
-    // hoverable should add the class to the root el-card stub
-    expect(card.classes()).toContain('hoverable')
+    expect(wrapper.find('.stat-card').classes()).not.toContain('hoverable')
+  })
+
+  it('renders an icon block only when an icon is passed', () => {
+    const withoutIcon = mount(StatCard, {
+      props: { value: 1, label: 'Rows' },
+    })
+    expect(withoutIcon.find('.stat-icon').exists()).toBe(false)
+
+    const withIcon = mount(StatCard, {
+      props: { value: 1, label: 'Rows', icon: markRaw(TrendCharts) },
+    })
+    expect(withIcon.find('.stat-icon').exists()).toBe(true)
   })
 })

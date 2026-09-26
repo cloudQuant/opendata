@@ -93,11 +93,14 @@ export default defineConfig({
         inline: ['element-plus'],
       },
     },
+    // Nothing under src/ may be excluded: a collector rule that hides a test
+    // file produces the same green as a plane that never ran. `scripts/quality/
+    // frontend_test_collection.py` (make frontend-collection) fails the gate on
+    // it. e2e is a separate runner, and node_modules/dist are not source.
     exclude: [
       'e2e/**',
       'node_modules/**',
       'dist/**',
-      'src/components/common/__tests__/**',
     ],
     coverage: {
       provider: 'v8',

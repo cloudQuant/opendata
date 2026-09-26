@@ -1,0 +1,149 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T03:13:47+0000
+branch=dev HEAD=92f8847
+工作树（本轮改动，未提交）：
+ M Makefile
+ M frontend/src/components/common/__tests__/FilterBar.test.ts
+ M frontend/src/components/common/__tests__/StatCard.test.ts
+ M frontend/vite.config.ts
+?? docs/evidence/C29/
+?? scripts/quality/frontend_test_collection.py
+Python 3.13.5
+v25.1.0
+命令（依次，每条各自记录退出码；输出未裁剪）：
+  1) python -u scripts/quality/frontend_test_collection.py
+  2) cd frontend && npx vitest run --testTimeout=15000
+  3) cd frontend && npx eslint .
+  4) cd frontend && npx vue-tsc --noEmit
+
+--- 说明 ---
+本轮修复后的三面同框：守卫判 13/13 全采集（rc=0），被解除静默的 5 个文件真的跑完（99 例），
+eslint / vue-tsc 不因改动而变红。make gate 会把 1) 作为独立检查项再跑一次（见 gate-full.txt）。
+
+frontend dir : /Users/yunjinqi/Documents/new_projects/opendata/frontend
+test excludes: ['e2e/**', 'node_modules/**', 'dist/**']
+on disk (src): 13 files
+collected    : 13 files
+PASS: every test file on disk is collected by the frontend run.
+GUARD_RC=0
+
+===== 2) npx vitest run --testTimeout=15000 =====
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/Users/yunjinqi/Documents/new_projects/opendata/frontend[39m
+
+ [32m✓[39m src/__tests__/router/index.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 276[2mms[22m[39m
+ [32m✓[39m src/__tests__/utils/request.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 328[2mms[22m[39m
+     [33m[2m✓[22m[39m creates an axios instance [33m 326[2mms[22m[39m
+ [32m✓[39m src/components/common/__tests__/PageHeader.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32m✓[39m src/__tests__/stores/tasks.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/__tests__/stores/auth.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/components/common/__tests__/StatusBadge.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/components/common/__tests__/StatCard.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/components/common/__tests__/EmptyState.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32m✓[39m src/__tests__/catalog.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 230[2mms[22m[39m
+ [32m✓[39m src/components/common/__tests__/FilterBar.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 343[2mms[22m[39m
+ [32m✓[39m src/__tests__/types/index.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/__tests__/composables/useStoreAction.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/__tests__/composables/useApiCall.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m13 passed[39m[22m[90m (13)[39m
+[2m      Tests [22m [1m[32m99 passed[39m[22m[90m (99)[39m
+[2m   Start at [22m 05:13:59
+[2m   Duration [22m 3.57s[2m (transform 8.77s, setup 0ms, import 15.22s, tests 1.37s, environment 5.33s)[22m
+
+VITEST_RC=0
+
+===== 3) npx eslint . =====
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/__tests__/composables/useApiCall.test.ts
+   1:32  warning  'beforeEach' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  95:19  warning  'loading' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/__tests__/stores/auth.test.ts
+  116:5  warning  Unexpected `await` of a non-Promise (non-"Thenable") value  @typescript-eslint/await-thenable
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/components/common/ErrorBoundary.vue
+  17:7  warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/components/common/FilterBar.vue
+  30:7  warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/components/common/PageHeader.vue
+  13:7  warning  'props' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/components/common/StatCard.vue
+  6:3  warning  Prop 'icon' requires default value to be set  vue/require-default-prop
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/components/common/__tests__/EmptyState.test.ts
+  4:20  warning  'ElEmpty' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  7:44  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/components/common/__tests__/FilterBar.test.ts
+  7:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/components/common/__tests__/PageHeader.test.ts
+  6:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/components/common/__tests__/StatusBadge.test.ts
+  3:23  warning  'StatusType' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  7:12  warning  Prop 'type' requires default value to be set                                  vue/require-default-prop
+  7:26  warning  Prop 'size' requires default value to be set                                  vue/require-default-prop
+  7:40  warning  Prop 'effect' requires default value to be set                                vue/require-default-prop
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/composables/useAsync.ts
+  4:34  warning  'T' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/composables/useNotification.ts
+  1:42  warning  'MessageParams' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  1:62  warning  'NotificationParams' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/composables/usePerformance.ts
+  8:39  warning  'Ref' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/composables/useSearch.ts
+  7:15  warning  'watch' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/views/ExecutionsView.vue
+  82:10  warning  'handlePageChange' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/views/SettingsView.vue
+  228:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  231:3  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  232:3  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/views/TableDetailView.vue
+  43:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  52:3  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/views/TasksView.vue
+  100:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  111:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  127:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  141:3  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  145:3  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  146:3  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/views/UsersView.vue
+  56:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  71:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  81:3  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  87:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  90:3  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/views/admin/InterfaceManagement.vue
+  342:38  warning  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  380:11  warning  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  402:55  warning  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  411:3   warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  440:3   warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  452:7   warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  518:7   warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  563:3   warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  564:3   warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+
+✖ 46 problems (0 errors, 46 warnings)
+
+ESLINT_RC=0
+
+===== 4) npx vue-tsc --noEmit =====
+VUE_TSC_RC=0

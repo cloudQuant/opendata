@@ -1,0 +1,51 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T05:07:30+0200
+branch=dev HEAD=92f8847
+工作树（本轮改动，未提交）：
+ M Makefile
+ M frontend/src/components/common/__tests__/FilterBar.test.ts
+ M frontend/src/components/common/__tests__/StatCard.test.ts
+ M frontend/vite.config.ts
+?? docs/evidence/C29/
+?? scripts/quality/frontend_test_collection.py
+Python 3.13.5
+命令：python -u docs/evidence/C29/guard-falsification.py
+判据：三条规则各自抓一种别抓不到的形状；e2e/node_modules/dist 与 coverage 数组必须仍判通过；
+      没有任何形状能触发某条规则 ⇒ HARNESS_VACUOUS(2)。
+
+== injected states through judge() ==
+  [OK] everything collected, only allowed boundaries excluded
+      expects ['PASS']  got ['PASS']
+  [OK] a file the collector hides (what the A0 rule did)
+      expects ['SILENCED', 'UNAUTHORISED']  got ['SILENCED', 'UNAUTHORISED']
+      reason: SILENCED: src/components/common/__tests__/b.test.ts is on disk and never collected (matched by exclude 'src/components/**')
+      reason: UNAUTHORISED: exclude 'src/components/**' hides tests and is not an allowed boundary
+  [OK] a file missing with no rule to blame
+      expects ['SILENCED']  got ['SILENCED']
+      reason: SILENCED: src/components/common/__tests__/b.test.ts is on disk and never collected (matched by no exclude rule)
+  [OK] an unauthorised rule that hides nothing yet
+      expects ['UNAUTHORISED']  got ['UNAUTHORISED']
+      reason: UNAUTHORISED: exclude 'src/legacy/**' hides tests and is not an allowed boundary
+  [OK] no test file on disk to compare against
+      expects ['VACUOUS']  got ['VACUOUS']
+  [OK] GUARD playwright e2e stays a stated boundary
+      expects ['PASS']  got ['PASS']
+  [OK] GUARD installed and build output are not silence
+      expects ['PASS']  got ['PASS']
+== the config reader, judged through judge() ==
+  [OK] the config in the tree
+      globs=['e2e/**', 'node_modules/**', 'dist/**'] readable=True
+  [OK] -> verdict ['PASS']
+      coverage entries leaking in: none
+  [OK] with an extra src rule added
+      globs=['e2e/**', 'src/legacy/**', 'node_modules/**', 'dist/**'] readable=True
+  [OK] -> verdict ['UNAUTHORISED']
+      coverage entries leaking in: none
+  [OK] no test.exclude array at all
+      globs=[] readable=False
+  [OK] -> verdict ['PASS']
+      coverage entries leaking in: none
+
+SHAPES: 7 judge + 3 config
+MISMATCHES: 0
+HARNESS_RC=0

@@ -1,0 +1,24 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T03:11:22+0000
+branch=dev HEAD=92f8847
+工作树（本轮改动，未提交）：
+ M Makefile
+ M frontend/src/components/common/__tests__/FilterBar.test.ts
+ M frontend/src/components/common/__tests__/StatCard.test.ts
+ M frontend/vite.config.ts
+?? docs/evidence/C29/
+?? scripts/quality/frontend_test_collection.py
+Python 3.13.5
+命令：python -u docs/evidence/C29/real-tree-probe.py
+
+step 0  guard on the tree as it stands: rc=0 counts=(13, 13)
+step 1  probe test added: rc=0 counts=(14, 14)
+        the run's own line: PASS: every test file on disk is collected by the frontend run.
+step 2  probe excluded by name: rc=1
+        SILENCED: src/__tests__/zz-collection-probe.test.ts is on disk and never collected (matched by exclude 'src/__tests__/zz-collection-probe.test.ts')
+        UNAUTHORISED: exclude 'src/__tests__/zz-collection-probe.test.ts' hides tests and is not an allowed boundary
+
+config bytes restored : YES
+probe file gone       : YES
+worktree unchanged    : YES (hash before 770786b466f8, after 770786b466f8)
+PROBLEMS: 0

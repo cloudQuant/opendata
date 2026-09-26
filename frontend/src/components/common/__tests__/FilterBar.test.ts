@@ -71,7 +71,7 @@ describe('FilterBar.vue', () => {
     expect(wrapper.emitted('update:searchValue')![0][0]).toBe('test keyword')
   })
 
-  it('emits clear event when clear button clicked', async () => {
+  it('turns the input clear event into a cleared search and a clear emit', async () => {
     const wrapper = mount(FilterBar, {
       props: {
         showSearch: true,
@@ -80,9 +80,16 @@ describe('FilterBar.vue', () => {
       },
     })
 
-    const input = wrapper.findComponent(ElInput)
-    await input.vm.handleClear()
+    // What is under test is FilterBar's own wiring: ElInput's public `clear`
+    // event must reach the caller as both a cleared value and a clear event.
+    // The previous version called `input.vm.handleClear()`, a private of the
+    // installed Element Plus that does not exist, so the case could only ever
+    // fail — and it sat behind a collector exclusion that hid it.
+    wrapper.findComponent(ElInput).vm.$emit('clear')
+    await wrapper.vm.$nextTick()
+
     expect(wrapper.emitted('clear')).toBeTruthy()
+    expect(wrapper.emitted('update:searchValue')?.[0]?.[0]).toBe('')
   })
 
   it('emits filter-change event when filter value changes', async () => {

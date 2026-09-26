@@ -1,0 +1,37 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T03:12:09+0000
+branch=dev HEAD=92f8847
+工作树（本轮改动，未提交）：
+ M Makefile
+ M frontend/src/components/common/__tests__/FilterBar.test.ts
+ M frontend/src/components/common/__tests__/StatCard.test.ts
+ M frontend/vite.config.ts
+?? docs/evidence/C29/
+?? scripts/quality/frontend_test_collection.py
+Python 3.13.5
+命令：python -u scripts/quality/frontend_test_collection.py（对 HEAD 版 vite.config.ts 运行）
+
+--- 说明 ---
+这是对 before-state 的第二次采集，取代 docs/evidence/C29/ 下第一次采集的输出（原因见下）。
+守卫规则 2 已从「只认探针路径」改为「除 e2e/**, node_modules/**, dist/** 外的任何 collector
+exclude 一律 UNAUTHORISED」，所以对本轮改动前的配置树重跑一次，让 before 证据与出厂规则一致。
+做法：把 frontend/vite.config.ts 换成 git HEAD（本轮改动之前）的字节，跑守卫，再按字节还原
+（try/finally，还原结果与 git status 哈希都在输出里）。基线未动，无网络、无仓库写。
+
+config swapped to HEAD bytes (sha256-12 599583de1328)
+HEAD exclude array line: ["'src/components/common/__tests__/**',"]
+
+frontend dir : /Users/yunjinqi/Documents/new_projects/opendata/frontend
+test excludes: ['e2e/**', 'node_modules/**', 'dist/**', 'src/components/common/__tests__/**']
+on disk (src): 13 files
+collected    : 8 files
+SILENCED: src/components/common/__tests__/EmptyState.test.ts is on disk and never collected (matched by exclude 'src/components/common/__tests__/**')
+SILENCED: src/components/common/__tests__/FilterBar.test.ts is on disk and never collected (matched by exclude 'src/components/common/__tests__/**')
+SILENCED: src/components/common/__tests__/PageHeader.test.ts is on disk and never collected (matched by exclude 'src/components/common/__tests__/**')
+SILENCED: src/components/common/__tests__/StatCard.test.ts is on disk and never collected (matched by exclude 'src/components/common/__tests__/**')
+SILENCED: src/components/common/__tests__/StatusBadge.test.ts is on disk and never collected (matched by exclude 'src/components/common/__tests__/**')
+UNAUTHORISED: exclude 'src/components/common/__tests__/**' hides tests and is not an allowed boundary
+GUARD_RC=1
+
+config bytes restored : YES
+worktree unchanged    : YES (hash before 770786b466f8, after 770786b466f8)

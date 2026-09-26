@@ -1,0 +1,66 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T03:13:13+0000
+branch=dev HEAD=92f8847
+工作树（本轮改动，未提交）：
+ M Makefile
+ M frontend/src/components/common/__tests__/FilterBar.test.ts
+ M frontend/src/components/common/__tests__/StatCard.test.ts
+ M frontend/vite.config.ts
+?? docs/evidence/C29/
+?? scripts/quality/frontend_test_collection.py
+Python 3.13.5
+命令：python -u docs/evidence/C29/test-plane-census.py
+
+--- 说明 ---
+与 test-plane-census-before.txt 同一份测量脚本、同一次运行环境，唯一的差别是
+frontend/vite.config.ts 的 collector exclude 已删掉 src/components/common/__tests__/**。
+对照点：on-disk / collected 两个计数是否相等，以及 NEVER COLLECTED 是否只剩 e2e 面。
+
+on-disk test files      : 16
+collected by vitest     : 13
+on-disk call sites      : 120
+collected call sites    : 99
+
+== per-file (on-disk call sites, collected?) ==
+    6  NEVER COLLECTED frontend/e2e/auth.spec.ts
+    9  NEVER COLLECTED frontend/e2e/scripts.spec.ts
+    6  NEVER COLLECTED frontend/e2e/tasks.spec.ts
+    6  collected       frontend/src/__tests__/catalog.test.ts
+    9  collected       frontend/src/__tests__/composables/useApiCall.test.ts
+   17  collected       frontend/src/__tests__/composables/useStoreAction.test.ts
+   11  collected       frontend/src/__tests__/router/index.test.ts
+   11  collected       frontend/src/__tests__/stores/auth.test.ts
+   13  collected       frontend/src/__tests__/stores/tasks.test.ts
+   10  collected       frontend/src/__tests__/types/index.test.ts
+    2  collected       frontend/src/__tests__/utils/request.test.ts
+    5  collected       frontend/src/components/common/__tests__/EmptyState.test.ts
+    5  collected       frontend/src/components/common/__tests__/FilterBar.test.ts
+    4  collected       frontend/src/components/common/__tests__/PageHeader.test.ts
+    3  collected       frontend/src/components/common/__tests__/StatCard.test.ts
+    3  collected       frontend/src/components/common/__tests__/StatusBadge.test.ts
+
+== never collected (this is what the passing line did not cover) ==
+  frontend/e2e/auth.spec.ts
+  frontend/e2e/scripts.spec.ts
+  frontend/e2e/tasks.spec.ts
+NEVER_COLLECTED: 3 files total
+  src plane (a gate blind spot): 0 files / 0 call sites
+  e2e plane (separate runner)  : 3 files / 21 call sites
+
+== declared excludes in frontend/vite.config.ts ==
+  test      e2e/**                              <- 4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, quality gates)
+  test      node_modules/**                     <- 4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, quality gates)
+  test      dist/**                             <- 4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, quality gates)
+  coverage  src/**/*.d.ts                       <- 4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, quality gates)
+  coverage  src/main.ts                         <- 4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, quality gates)
+  coverage  src/auto-imports.d.ts               <- 4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, quality gates)
+  coverage  src/components.d.ts                 <- 4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, quality gates)
+declared exclude globs  : 7
+  owned by test (collector): 3 -> ['e2e/**', 'node_modules/**', 'dist/**']
+  owned by coverage (denominator only): 4
+
+== e2e plane (playwright runner, never in `make gate`) ==
+  3 file(s) under frontend/e2e — separate runner
+
+== is the subject of a silenced test used anywhere? ==
+  nothing was silenced, so there is nothing to ask about
