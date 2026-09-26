@@ -1,0 +1,94 @@
+===== C34 守卫可证伪性：六处变异必须各红一处（真机无关、离线、跑完逐文件还原）=====
+captured_at=2026-09-26T11:57:09+02:00
+branch=dev HEAD=9da1351
+python=Python 3.13.5
+--- git status --porcelain (before) ---
+ M opendata/data/models/index.py
+ M opendata/data/providers/akshare/models/index_constituent.py
+ M opendata/data/providers/ths/models/index_constituent.py
+ M scripts/ops/akshare_fallback_cross_check.py
+?? docs/evidence/C34/
+?? tests/test_index_constituent_asof.py
+--- end ---
+
+
+===== 无变异基线 =====
+  ============================== 21 passed in 0.06s ==============================  失败 0 条
+===== M1: 归档仍有 4 个 MISMATCH，却把 akshare 腿写成 verified=True =====
+  文件 opendata/data/providers/akshare/models/index_constituent.py（sha256[:16]=94869005250536df）
+  结果 ========================= 1 failed, 20 passed in 0.06s =========================
+    红：tests/test_index_constituent_asof.py::TestVerifiedFollowsTheArchivedReading::test_the_akshare_leg_is_verified_only_if_the_sweep_came_out_clean
+  还原 一致（sha256[:16]=94869005250536df）
+
+===== M2: 把归档换成一份没有 MISMATCH 的读数（000688 记成 PASS） =====
+  文件 docs/evidence/C34/index-constituent-generality-sweep.txt（sha256[:16]=f37292e80df28f7e）
+  结果 ========================= 1 failed, 20 passed in 0.06s =========================
+    红：tests/test_index_constituent_asof.py::TestVerifiedFollowsTheArchivedReading::test_the_archive_holds_the_measured_three_way_split
+  还原 一致（sha256[:16]=f37292e80df28f7e）
+
+===== M3: 退路的 notes 抄成主源那句口径（差异被同一句话盖掉） =====
+  文件 opendata/data/providers/akshare/models/index_constituent.py（sha256[:16]=94869005250536df）
+  结果 ========================= 2 failed, 19 passed in 0.06s =========================
+    红：tests/test_index_constituent_asof.py::TestAsOfSaysWhichDateEachLegPublishes::test_akshare_leg_declares_the_list_date_it_carries
+    红：tests/test_index_constituent_asof.py::TestAsOfSaysWhichDateEachLegPublishes::test_the_two_legs_do_not_claim_the_same_date
+  还原 一致（sha256[:16]=94869005250536df）
+
+===== M4: 退路的 as_of 改成调用当天（借一个不属于清单的日期） =====
+  文件 opendata/data/providers/akshare/models/index_constituent.py（sha256[:16]=94869005250536df）
+  结果 ========================= 3 failed, 18 passed in 0.06s =========================
+    红：tests/test_index_constituent_asof.py::TestAkshareAsOfIsTheFilesOwnColumn::test_each_row_carries_its_own_files_date
+    红：tests/test_index_constituent_asof.py::TestAkshareAsOfIsTheFilesOwnColumn::test_the_call_day_is_never_written_into_as_of
+    红：tests/test_index_constituent_asof.py::TestAkshareAsOfIsTheFilesOwnColumn::test_a_row_without_a_list_date_is_dropped_not_dated
+  还原 一致（sha256[:16]=94869005250536df）
+
+===== M5: 把 C24 那句被泛化的 note 还原（单代码读数重新声称跨指数成立） =====
+  文件 scripts/ops/akshare_fallback_cross_check.py（sha256[:16]=2277d59a80c4c084）
+  结果 ========================= 1 failed, 20 passed in 0.07s =========================
+    红：tests/test_index_constituent_asof.py::TestSingleIndexReadingStaysNarrowlyClaimed::test_the_note_says_which_call_it_measured_and_where_the_widening_lives
+  还原 一致（sha256[:16]=2277d59a80c4c084）
+
+===== M6: 删掉归档里的 captured_at  provenance 行 =====
+  文件 docs/evidence/C34/index-constituent-generality-sweep.txt（sha256[:16]=f37292e80df28f7e）
+  结果 ============================== 21 passed in 0.06s ==============================
+  还原 一致（sha256[:16]=f37292e80df28f7e）
+
+===== 收尾 =====
+  全部 6 处变异均已还原，无网络调用、未写数仓、未打印密钥
+
+===== 第二遍（第一遍量出两处自身缺陷，改掉后重跑）=====
+  缺陷 1：flip 守卫写成了「先断言归档非空，再断言 verified」，因此归档一旦干净，
+          它只会在非空断言上红，不会反过来要求翻正 —— 改成双向 iff 后 M2b 才检验到方向。
+  缺陷 2：M6 第一遍只替换了 captured_at 的值（仍满足 startswith("captured_at=")），
+          21 例全绿是**变异没生效**，不是守卫恒真；M6b 改为整行删除。
+  缺陷 3：M2 第一遍只把 000688 一个代码改 PASS，剩 3 个不符，红的是钉表那条而非 flip 那条；
+          M2b 把四处 MISMATCH 全部改掉才是「加宽样本变干净」的那个世界。
+
+===== M1b: 归档仍有 4 个 MISMATCH，却把 akshare 腿写成 verified=True（重跑：判据已改成双向 iff） =====
+  文件 opendata/data/providers/akshare/models/index_constituent.py（sha256[:16]=94869005250536df，替换 1 处）
+  结果 ========================= 1 failed, 20 passed in 0.09s =========================
+    红：test_the_akshare_leg_is_verified_only_if_the_sweep_came_out_clean
+  还原 一致（sha256[:16]=94869005250536df）
+
+===== M2b: 把归档换成一份完全没有 MISMATCH 的读数（四个科创板代码全记 PASS）→ 反向要求翻正 =====
+  文件 docs/evidence/C34/index-constituent-generality-sweep.txt（sha256[:16]=f37292e80df28f7e，替换 4 处）
+  结果 ========================= 3 failed, 18 passed in 0.06s =========================
+    红：test_the_archive_holds_the_measured_three_way_split
+    红：test_the_akshare_leg_is_verified_only_if_the_sweep_came_out_clean
+    红：test_every_verdict_class_is_populated[MISMATCH]
+  还原 一致（sha256[:16]=f37292e80df28f7e）
+
+===== M6b: 整行删掉归档的 captured_at provenance（第一遍只改了值，等于没变异） =====
+  文件 docs/evidence/C34/index-constituent-generality-sweep.txt（sha256[:16]=f37292e80df28f7e，替换 1 处）
+  结果 ========================= 1 failed, 20 passed in 0.06s =========================
+    红：test_archive_carries_the_run_it_came_from
+  还原 一致（sha256[:16]=f37292e80df28f7e）
+
+===== M7: 归档里出现两处 SWEEP_EXIT=0（读数被拼接/二次写入） =====
+  文件 docs/evidence/C34/index-constituent-generality-sweep.txt（sha256[:16]=f37292e80df28f7e，替换 1 处）
+  结果 ========================= 1 failed, 20 passed in 0.06s =========================
+    红：test_archive_carries_the_run_it_came_from
+  还原 一致（sha256[:16]=f37292e80df28f7e）
+
+===== 收尾复跑 =====
+  ============================== 21 passed in 0.06s ==============================
+  全部变异均已按 sha256 还原；离线跑，无网络调用、未写数仓、未打印密钥

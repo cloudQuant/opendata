@@ -1,0 +1,97 @@
+===== C34 index_constituent 跨指数加宽复核（真机、只读、不写数仓、不打印密钥）=====
+captured_at=2026-09-26T11:44:49+02:00
+branch=dev HEAD=9da1351
+python=Python 3.13.5
+--- git status --porcelain (before) ---
+?? docs/evidence/C34/
+--- end ---
+
+command: python docs/evidence/C34/index_constituent_generality_sweep.py
+（判定面：9 个可判读代码要求成员集合逐只相同；4 个科创板代码按 2026-09-26 实测钉为 MISMATCH；
+ 9 个代码因 ths 目录不认该指数而为 NO_READING。任何一条移动即 DRIFT，退出码 1。）
+
+===== C34 index_constituent 跨指数加宽复核（真机、只读、不写数仓、不打印密钥）=====
+python=3.13.5  指数代码 21 个  权重合计容差=0.5
+
+===== 逐指数读数 =====
+  [PASS      ] 000300: 成员 ths=300 akshare=300 共同=300 仅 ths=0 仅 akshare=0 | akshare 权重 300/300 行有值，合计 100.00（最小 0.0230） | as_of ths=2026-09-26 akshare=2026-08-31
+  [PASS      ] 000016: 成员 ths=50 akshare=50 共同=50 仅 ths=0 仅 akshare=0 | akshare 权重 50/50 行有值，合计 100.00（最小 0.1380） | as_of ths=2026-09-26 akshare=2026-08-31
+  [PASS      ] 000905: 成员 ths=500 akshare=500 共同=500 仅 ths=0 仅 akshare=0 | akshare 权重 500/500 行有值，合计 100.00（最小 0.0160） | as_of ths=2026-09-26 akshare=2026-08-31
+  [PASS      ] 000852: 成员 ths=1000 akshare=1000 共同=1000 仅 ths=0 仅 akshare=0 | akshare 权重 1000/1000 行有值，合计 100.00（最小 0.0100） | as_of ths=2026-09-26 akshare=2026-08-31
+  [PASS      ] 000010: 成员 ths=180 akshare=180 共同=180 仅 ths=0 仅 akshare=0 | akshare 权重 180/180 行有值，合计 100.00（最小 0.0590） | as_of ths=2026-09-26 akshare=2026-08-31
+  [PASS      ] 000913: 成员 ths=19 akshare=19 共同=19 仅 ths=0 仅 akshare=0 | akshare 权重 19/19 行有值，合计 100.00（最小 0.9700） | as_of ths=2026-09-26 akshare=2026-08-31
+  [PASS      ] 000928: 成员 ths=24 akshare=24 共同=24 仅 ths=0 仅 akshare=0 | akshare 权重 24/24 行有值，合计 100.00（最小 0.6190） | as_of ths=2026-09-26 akshare=2026-08-31
+  [PASS      ] 000934: 成员 ths=94 akshare=94 共同=94 仅 ths=0 仅 akshare=0 | akshare 权重 94/94 行有值，合计 100.00（最小 0.0630） | as_of ths=2026-09-26 akshare=2026-08-31
+  [PASS      ] 000032: 成员 ths=30 akshare=30 共同=30 仅 ths=0 仅 akshare=0 | akshare 权重 30/30 行有值，合计 100.00（最小 0.5560） | as_of ths=2026-09-26 akshare=2026-08-31
+  [MISMATCH  ] 000688: 成员 ths=50 akshare=50 共同=45 仅 ths=5 仅 akshare=5 | akshare 权重 50/50 行有值，合计 100.00（最小 0.3730） | as_of ths=2026-09-26 akshare=2026-08-31
+                 688002: 仅 ths 认它是成分
+                 688629: 仅 ths 认它是成分
+                 688729: 仅 ths 认它是成分
+                 688775: 仅 ths 认它是成分
+                 688820: 仅 ths 认它是成分
+                 688065: 仅 akshare 认它是成分
+                 688297: 仅 akshare 认它是成分
+                 688538: 仅 akshare 认它是成分
+                 688608: 仅 akshare 认它是成分
+                 688617: 仅 akshare 认它是成分
+  [MISMATCH  ] 000689: 成员 ths=50 akshare=50 共同=46 仅 ths=4 仅 akshare=4 | akshare 权重 50/50 行有值，合计 100.00（最小 0.3070） | as_of ths=2026-09-26 akshare=2026-08-31
+                 688020: 仅 ths 认它是成分
+                 688456: 仅 ths 认它是成分
+                 688727: 仅 ths 认它是成分
+                 688820: 仅 ths 认它是成分
+                 688157: 仅 akshare 认它是成分
+                 688186: 仅 akshare 认它是成分
+                 688219: 仅 akshare 认它是成分
+                 688598: 仅 akshare 认它是成分
+  [MISMATCH  ] 000698: 成员 ths=100 akshare=100 共同=90 仅 ths=10 仅 akshare=10 | akshare 权重 100/100 行有值，合计 100.00（最小 0.1730） | as_of ths=2026-09-26 akshare=2026-08-31
+                 688025: 仅 ths 认它是成分
+                 688048: 仅 ths 认它是成分
+                 688065: 仅 ths 认它是成分
+                 688127: 仅 ths 认它是成分
+                 688297: 仅 ths 认它是成分
+                 688300: 仅 ths 认它是成分
+                 688538: 仅 ths 认它是成分
+                 688608: 仅 ths 认它是成分
+                 688617: 仅 ths 认它是成分
+                 688668: 仅 ths 认它是成分
+                 688002: 仅 akshare 认它是成分
+                 688032: 仅 akshare 认它是成分
+                 …另有 8 条同类不符
+  [MISMATCH  ] 000680: 成员 ths=579 akshare=578 共同=578 仅 ths=1 仅 akshare=0 | akshare 权重 578/578 行有值，合计 100.00（最小 0.0100） | as_of ths=2026-09-26 akshare=2026-08-31
+                 688646: 仅 ths 认它是成分
+  [NO_READING] 000988: ths 未答：ThsProviderError: THS_INDEX_SYMBOL_UNRESOLVED（归档理由：ths 指数目录解析不出该代码（THS_INDEX_SYMBOL_UNRESOLVED），CSI 权重文件有）
+  [NO_READING] 930050: ths 未答：ThsProviderError: THS_INDEX_SYMBOL_UNRESOLVED（归档理由：同上：CSI 权重文件有该指数，ths 目录没有）
+  [NO_READING] 000963: ths 未答：ThsProviderError: THS_INDEX_SYMBOL_UNRESOLVED（归档理由：中证下游：ths 目录不认）
+  [NO_READING] 000825: ths 未答：ThsProviderError: THS_INDEX_SYMBOL_UNRESOLVED（归档理由：央企红利：ths 目录不认）
+  [NO_READING] 000922: ths 未答：ThsProviderError: THS_INDEX_SYMBOL_UNRESOLVED（归档理由：中证红利：ths 目录不认）
+  [NO_READING] 000919: ths 未答：ThsProviderError: THS_INDEX_SYMBOL_UNRESOLVED（归档理由：300 价值：ths 目录不认）
+  [NO_READING] 000949: ths 未答：ThsProviderError: THS_INDEX_SYMBOL_UNRESOLVED（归档理由：中证农业：ths 目录不认）
+  [NO_READING] 000801: ths 未答：ThsProviderError: THS_INDEX_SYMBOL_UNRESOLVED（归档理由：资源 80：ths 目录不认）
+
+===== as_of 口径（报告，不判定）=====
+  本轮拍定：as_of = 该源所发布清单的所属快照日（契约 docstring 已写明）
+  ths 端点不发布清单日期，其 as_of 是观测日（C9 起如此，本轮未改）
+  000300: ths=2026-09-26 akshare=2026-08-31
+  000016: ths=2026-09-26 akshare=2026-08-31
+  000905: ths=2026-09-26 akshare=2026-08-31
+  000852: ths=2026-09-26 akshare=2026-08-31
+  000010: ths=2026-09-26 akshare=2026-08-31
+  000913: ths=2026-09-26 akshare=2026-08-31
+  000928: ths=2026-09-26 akshare=2026-08-31
+  000934: ths=2026-09-26 akshare=2026-08-31
+  000032: ths=2026-09-26 akshare=2026-08-31
+  000688: ths=2026-09-26 akshare=2026-08-31
+  000689: ths=2026-09-26 akshare=2026-08-31
+  000698: ths=2026-09-26 akshare=2026-08-31
+  000680: ths=2026-09-26 akshare=2026-08-31
+
+===== 转正判据（由上面的读数算出，不是写死的）=====
+  可判读指数 13 个：成员集合逐只相同 9 个
+  等量换入换出 3 个（000688, 000689, 000698）：两腿各自清单所属日期不同的典型形状
+  其它不符 1 个（000680）：不是换仓形状，需单独归因
+  不可判读 8 个（一侧未答，不参与任何方向的结论）
+  ⇒ 存在不符，保持 verified=false
+
+===== 与归档判据的一致性 =====
+  21 个代码的判定与 CASES 归档逐条相同
+SWEEP_EXIT=0

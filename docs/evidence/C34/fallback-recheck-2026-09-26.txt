@@ -1,0 +1,52 @@
+===== C34 退路面复测（真机、只读、不写数仓、不打印密钥）=====
+captured_at=2026-09-26T11:23:05+02:00
+branch=dev HEAD=9da1351
+python=Python 3.13.5
+--- git status --porcelain (before) ---
+?? docs/evidence/C34/
+--- end ---
+
+command: python scripts/ops/akshare_fallback_cross_check.py
+
+2026-09-26 11:23:40.414 | DEBUG    | opendata.data.providers.akshare.models.stock_action:_report_drops:207 - stock_action 600519: 27 row(s) outside the requested window, 0 all-zero row(s)
+===== C24 akshare 退路逐域复核（真机、只读、不写数仓、不打印密钥）=====
+captured_at=2026-09-26T11:23:05+02:00
+branch=dev HEAD=9da1351
+本机时区偏移=+0200
+python=3.13.5  工作树脏文件数=1
+
+===== 复现命令 =====
+python scripts/ops/akshare_fallback_cross_check.py
+
+===== 判定标准 =====
+  价格类字段相对容差=5e-05，volume 相对容差=0.005
+  PASS=同问题同答案；MISMATCH=量出来了、退路答的不是同一个问题；
+  NO_READING=这一侧没有读数（网络/上游拒绝本机或返回 0 行），既不算通过也不算失败
+  0 视为未发布的字段=['amount']
+
+===== 逐域读数 =====
+  [NO_READING  ] stock_daily
+      退路 akshare 未答：HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf ; 与归档判定一致
+  [NO_READING  ] index_daily
+      退路 akshare 未答：RuntimeError: Eastmoney index kline endpoint is unavailable for '000300': all 4 secid candidates failed (last error: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?se ; 与归档判定一致
+  [NO_READING  ] fund_etf_daily
+      退路 akshare 未答：RuntimeError: Eastmoney ETF history endpoint request failed: https://push2his.eastmoney.com/api/qt/stock/kline/get ; 与归档判定一致
+  [MISMATCH    ] futures_daily
+      请求窗口=22 天 | 键数 ths=14 akshare=14 共同=14 | akshare 越界=0 | 最大相对偏差={'close': 0.0, 'high': 0.0, 'low': 0.0, 'open': 0.0, 'volume': 0.000293} | 退路缺失字段=[('amount', 14)] | 退路多给字段=无 ; 判定理由=退路字段缺失：[('amount', 14)] ; 与归档判定一致
+  [MISMATCH    ] option_daily
+      请求窗口=22 天 | 键数 ths=14 akshare=14 共同=14 | akshare 越界=0 | 最大相对偏差={'close': 0.0, 'high': 0.0, 'low': 0.0, 'open': 0.0, 'volume': 0.999888} | 退路缺失字段=[('amount', 14)] | 退路多给字段=无 ; 判定理由=退路字段缺失：[('amount', 14)]；超容差：{'volume': 0.999888} ; 与归档判定一致
+  [PASS        ] stock_action
+      请求窗口=731 天 | 键数 ths=4 akshare=4 共同=4 | akshare 越界=0 | 最大相对偏差={'cash_dividend': 0.0, 'rights_price': 0.0, 'rights_shares': 0.0, 'stock_dividend': 0.0} | 退路缺失字段=无 | 退路多给字段=无 ; 与归档判定一致
+  [PASS        ] index_constituent
+      请求窗口=- 天 | 键数 ths=300 akshare=300 共同=300 | akshare 越界=0 | 最大相对偏差=无 | 退路缺失字段=无 | 退路多给字段=[('weight', 300)] ; 与归档判定一致
+  [MISMATCH    ] financial_statement
+      请求窗口=- 天 | 键数 ths=13 akshare=83 共同=0 | akshare 越界=0 | 最大相对偏差=无 | 退路缺失字段=无 | 退路多给字段=无 ; 判定理由=退路缺行：13/13 个 item 主源有而退路无 ; 与归档判定一致
+
+===== 与归档判据的一致性 =====
+  8 个域的判定与 CASES 归档逐条相同
+
+===== 汇总 =====
+  PASS=['index_constituent', 'stock_action']
+  MISMATCH=['financial_statement', 'futures_daily', 'option_daily']
+  NO_READING=['fund_etf_daily', 'index_daily', 'stock_daily']
+XCHECK_EXIT=0
