@@ -1,0 +1,21 @@
+# C40 AC-1|10 复量（C40 代码与证据已入库、工作树干净之后）
+# 采集时间: 2026-09-26T22:14:07+0200  分支: dev  HEAD: 052a30b
+# git status --porcelain: 0 行（空 = 全树已入库）
+# command: python scripts/quality/acceptance_item_probe.py --item 'AC-1|10'
+# 注：本文件由仓库外捕获后复制入库，以免仪器自己的输出改变被测量的工作树状态
+#
+
+### AC-1|10  (document line 102)
+判据原文：拷贝残留已清除；git 已完成首次完整提交
+本探针：残留文件 + 从未进库的文件 + 首次提交的树完整性
+台账现状：state=unreviewed，文档勾选=False
+  - tracked paths matching a copy-residue shape = 0
+  - untracked-and-not-ignored files = 0
+  - tracked files with uncommitted edits = 0
+  - first commit touching opendata/__init__.py = 4ee1bbca "4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, qua"
+  - its tree = 712 files, holding every part of the project it should (missing: -), against 1325 tracked today (53.7%; the rest arrived with later rounds, which is growth)
+VERDICT AC-1|10: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+PROBE_EXIT=0
