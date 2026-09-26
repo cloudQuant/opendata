@@ -12,7 +12,7 @@ import pandas as pd
 
 from opendata.data.capability import Capability
 from opendata.data.models import IndexConstituent
-from opendata.data.protocol import FetchContext, FetchResult, Fetcher, QueryParams
+from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.akshare._source import SOURCE
 from opendata.data.providers.akshare.models._normalize import as_date, plain_symbol
 
@@ -23,9 +23,7 @@ class IndexConstituentQuery(QueryParams):
     symbol: str
 
 
-class AkshareIndexConstituentFetcher(
-    Fetcher[IndexConstituentQuery, pd.DataFrame]
-):
+class AkshareIndexConstituentFetcher(Fetcher[IndexConstituentQuery, pd.DataFrame]):
     """Constituents with weights for one CSI index code.
 
     ``as_of`` is the contract's snapshot date in the strict sense: the CSI
@@ -63,9 +61,7 @@ class AkshareIndexConstituentFetcher(
         """
         return IndexConstituentQuery.model_validate(kwargs)
 
-    def extract_data(
-        self, params: IndexConstituentQuery, ctx: FetchContext
-    ) -> pd.DataFrame:
+    def extract_data(self, params: IndexConstituentQuery, ctx: FetchContext) -> pd.DataFrame:
         """Fetch the CSI close-weight file (the fetch_raw stage).
 
         Args:
@@ -78,13 +74,9 @@ class AkshareIndexConstituentFetcher(
         """
         import opendata_http  # lazy: load the ported tree on routing only
 
-        return opendata_http.index_stock_cons_weight_csindex(
-            symbol=plain_symbol(params.symbol)
-        )
+        return opendata_http.index_stock_cons_weight_csindex(symbol=plain_symbol(params.symbol))
 
-    def transform_data(
-        self, raw: pd.DataFrame, params: IndexConstituentQuery
-    ) -> FetchResult:
+    def transform_data(self, raw: pd.DataFrame, params: IndexConstituentQuery) -> FetchResult:
         """Normalize the weight file into contract rows.
 
         Args:

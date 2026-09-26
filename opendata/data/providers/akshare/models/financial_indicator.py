@@ -14,7 +14,7 @@ import pandas as pd
 
 from opendata.data.capability import Capability
 from opendata.data.models import FinancialIndicator
-from opendata.data.protocol import FetchContext, FetchResult, Fetcher, QueryParams
+from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.akshare._source import SOURCE
 from opendata.data.providers.akshare.models._normalize import as_date, em_symbol, plain_symbol
 
@@ -28,9 +28,7 @@ class FinancialIndicatorQuery(QueryParams):
     symbol: str
 
 
-class AkshareFinancialIndicatorFetcher(
-    Fetcher[FinancialIndicatorQuery, pd.DataFrame]
-):
+class AkshareFinancialIndicatorFetcher(Fetcher[FinancialIndicatorQuery, pd.DataFrame]):
     """Main-finance indicators by report period for one symbol."""
 
     capability: ClassVar[Capability] = Capability(
@@ -53,9 +51,7 @@ class AkshareFinancialIndicatorFetcher(
         """
         return FinancialIndicatorQuery.model_validate(kwargs)
 
-    def extract_data(
-        self, params: FinancialIndicatorQuery, ctx: FetchContext
-    ) -> pd.DataFrame:
+    def extract_data(self, params: FinancialIndicatorQuery, ctx: FetchContext) -> pd.DataFrame:
         """Fetch the eastmoney F10 dataset (the fetch_raw stage).
 
         Args:
@@ -72,9 +68,7 @@ class AkshareFinancialIndicatorFetcher(
         """
         import opendata_http  # lazy: load the ported tree on routing only
 
-        frame = opendata_http.stock_financial_analysis_indicator_em(
-            symbol=em_symbol(params.symbol)
-        )
+        frame = opendata_http.stock_financial_analysis_indicator_em(symbol=em_symbol(params.symbol))
         if "NOTICE_DATE" not in frame.columns:
             raise ValueError(
                 "upstream indicator dataset lacks NOTICE_DATE; "
@@ -82,9 +76,7 @@ class AkshareFinancialIndicatorFetcher(
             )
         return frame
 
-    def transform_data(
-        self, raw: pd.DataFrame, params: FinancialIndicatorQuery
-    ) -> FetchResult:
+    def transform_data(self, raw: pd.DataFrame, params: FinancialIndicatorQuery) -> FetchResult:
         """Melt the dataset into long contract rows.
 
         Args:

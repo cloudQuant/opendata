@@ -18,8 +18,10 @@
 
 # Self-developed trees (A1 + A2)
 PY_SELFDEV := opendata scripts tests
-# Ported tree (B). Renamed to opendata_http/ in milestone A2.
-PY_PORTED := akshare
+# Ported tree (B). Milestone A2 renamed akshare/ to opendata_http/; this
+# variable was left behind, so `make lint` had been failing on its third
+# command (ruff check --select E,F akshare: directory not found) ever since.
+PY_PORTED := opendata_http
 
 help:
 	@echo "Gate:             gate"

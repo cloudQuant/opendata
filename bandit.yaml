@@ -2,14 +2,21 @@
 # https://bandit.readthedocs.io/
 
 # Directories to exclude from scanning
+#
+# C35: bandit matches these entries as substrings of the path, at any depth and
+# *even for files passed explicitly on the command line* - so the old bare
+# "akshare" kept opendata/data/providers/akshare/ (15 first-party modules) out
+# of both `make security` and a2-check's bandit leg, which is the leg that
+# gates new code. Rule: no entry here may be a substring of a first-party path
+# segment. (An anchored form like "/akshare" would match nothing at all.)
 exclude_dirs:
   - ".git"
   - "__pycache__"
   - "node_modules"
-  # Vendored upstream source (renamed akshare/ -> opendata_http/ in milestone A2).
-  # Ported code is not rescanned daily (quality spec §4); it gets a one-off full
-  # scan with manual triage in A2 instead.
-  - "akshare"
+  # Vendored upstream source (renamed akshare/ -> opendata_http/ in milestone
+  # A2; the old name is gone, so it needs no entry here). Ported code is not
+  # rescanned daily (quality spec §4); it gets a one-off full scan with manual
+  # triage in A2 instead.
   - "opendata_http"
 
 # Tests to skip with rationale

@@ -13,7 +13,7 @@ import pandas as pd
 
 from opendata.data.capability import Capability
 from opendata.data.models import FinancialStatement
-from opendata.data.protocol import FetchContext, FetchResult, Fetcher, QueryParams
+from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.akshare._source import SOURCE
 from opendata.data.providers.akshare.models._normalize import as_date, plain_symbol, sina_symbol
 
@@ -30,9 +30,7 @@ class FinancialStatementQuery(QueryParams):
     statement_type: str = "资产负债表"
 
 
-class AkshareFinancialStatementFetcher(
-    Fetcher[FinancialStatementQuery, pd.DataFrame]
-):
+class AkshareFinancialStatementFetcher(Fetcher[FinancialStatementQuery, pd.DataFrame]):
     """One of sina's three statements for one A-share symbol."""
 
     capability: ClassVar[Capability] = Capability(
@@ -56,9 +54,7 @@ class AkshareFinancialStatementFetcher(
         """
         return FinancialStatementQuery.model_validate(kwargs)
 
-    def extract_data(
-        self, params: FinancialStatementQuery, ctx: FetchContext
-    ) -> pd.DataFrame:
+    def extract_data(self, params: FinancialStatementQuery, ctx: FetchContext) -> pd.DataFrame:
         """Fetch the sina statement page (the fetch_raw stage).
 
         Args:
@@ -74,9 +70,7 @@ class AkshareFinancialStatementFetcher(
             stock=sina_symbol(params.symbol), symbol=params.statement_type
         )
 
-    def transform_data(
-        self, raw: pd.DataFrame, params: FinancialStatementQuery
-    ) -> FetchResult:
+    def transform_data(self, raw: pd.DataFrame, params: FinancialStatementQuery) -> FetchResult:
         """Melt the wide statement into long contract rows.
 
         Args:

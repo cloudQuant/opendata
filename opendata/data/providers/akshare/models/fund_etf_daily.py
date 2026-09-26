@@ -17,7 +17,7 @@ import pandas as pd
 
 from opendata.data.capability import Capability
 from opendata.data.models import Bar
-from opendata.data.protocol import FetchContext, FetchResult, Fetcher, QueryParams
+from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.akshare._source import SOURCE
 from opendata.data.providers.akshare.models._normalize import as_date, plain_symbol
 

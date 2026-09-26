@@ -84,9 +84,7 @@ def register(registry: ProviderRegistry | None = None) -> list[Capability]:
         from opendata.data.registry import get_registry
 
         registry = get_registry()
-    existing = {
-        (capability.domain, capability.source) for capability in registry.capabilities()
-    }
+    existing = {(capability.domain, capability.source) for capability in registry.capabilities()}
     registered: list[Capability] = []
     for fetcher in FETCHERS:
         capability = fetcher.capability

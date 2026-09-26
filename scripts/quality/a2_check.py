@@ -26,8 +26,12 @@ clone, stale ``A2_BASE_REF``), it errors instead of reporting "nothing changed".
 Before the baseline commit exists, A1 and A2 are indistinguishable, so the gate
 reports that state explicitly instead of failing on the whole tree.
 
-The ported tree, ``alembic`` and the frontend are out of scope: they have their
-own layers (B / D / E in the quality spec).
+The ported tree, the two ``alembic`` migration envs and the frontend are out of
+scope: they have their own layers (B / D / E in the quality spec) - and "out of
+scope" means their *top-level directory*, never a path segment. C35 found this
+list matched any segment, so ``opendata/data/providers/akshare/`` (15
+first-party modules, named after the vendored tree that used to sit at the root)
+was silently dropped from the A2 set and the whole package went unchecked.
 """
 
 from __future__ import annotations
@@ -46,7 +50,12 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 BASELINE_PATH = "docs/quality/baseline.json"
 
-EXCLUDED_PARTS = frozenset({"akshare", "opendata_http", "alembic", "frontend"})
+#: Top-level trees the A2 layer does not own. Matched against the first path
+#: segment only - see the module docstring for what segment matching cost.
+#: ``alembic_data`` is listed next to ``alembic`` because it is the same kind of
+#: tool-generated migration env (for the warehouse database), not first-party
+#: application code.
+EXCLUDED_ROOT_DIRS = frozenset({"akshare", "alembic", "alembic_data", "frontend", "opendata_http"})
 
 # Resolved once so the subprocess call never uses a partial executable path.
 GIT = shutil.which("git")
@@ -84,7 +93,8 @@ def baseline_commit() -> str | None:
 def _is_a2_candidate(name: str) -> bool:
     if not name.endswith(".py"):
         return False
-    if any(part in EXCLUDED_PARTS for part in Path(name).parts):
+    parts = Path(name).parts
+    if parts and parts[0] in EXCLUDED_ROOT_DIRS:
         return False
     return (REPO_ROOT / name).is_file()
 

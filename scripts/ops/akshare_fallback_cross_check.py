@@ -419,11 +419,17 @@ def _compare(case: Case, params: Params) -> Verdict:
 
 def _provenance() -> list[str]:
     """Header lines describing where and when this reading was taken."""
+    import shutil
     import subprocess  # nosec B404
 
+    git = shutil.which("git")  # resolved once: the argv never uses a PATH lookup
+
     def _git(*args: str) -> str:
-        completed = subprocess.run(  # noqa: S603
-            ["git", *args],  # noqa: S607
+        """Run one read-only git command, or "" when git is not installed."""
+        if git is None:
+            return ""
+        completed = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell off
+            [git, *args],
             cwd=ROOT,
             capture_output=True,
             text=True,

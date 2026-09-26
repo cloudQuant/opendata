@@ -11,7 +11,7 @@ import pandas as pd
 
 from opendata.data.capability import Capability
 from opendata.data.models import Bar
-from opendata.data.protocol import FetchContext, FetchResult, Fetcher, QueryParams
+from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.akshare._source import SOURCE
 from opendata.data.providers.akshare.models._normalize import as_date, plain_symbol
 
@@ -50,9 +50,7 @@ class AkshareStockDailyFetcher(Fetcher[StockDailyQuery, pd.DataFrame]):
         """
         return StockDailyQuery.model_validate(kwargs)
 
-    def extract_data(
-        self, params: StockDailyQuery, ctx: FetchContext
-    ) -> pd.DataFrame:
+    def extract_data(self, params: StockDailyQuery, ctx: FetchContext) -> pd.DataFrame:
         """Fetch eastmoney daily klines (the fetch_raw stage).
 
         Args:
@@ -73,9 +71,7 @@ class AkshareStockDailyFetcher(Fetcher[StockDailyQuery, pd.DataFrame]):
             timeout=ctx.timeout,
         )
 
-    def transform_data(
-        self, raw: pd.DataFrame, params: StockDailyQuery
-    ) -> FetchResult:
+    def transform_data(self, raw: pd.DataFrame, params: StockDailyQuery) -> FetchResult:
         """Normalize klines into ``Bar`` rows (the normalize stage).
 
         Args:

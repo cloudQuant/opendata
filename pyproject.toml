@@ -115,8 +115,9 @@ Repository = "https://github.com/cloudQuant/opendata"
 [tool.setuptools.packages.find]
 # Explicit list previously named only the two top-level packages, so
 # opendata.api/core/... were never packaged (editable installs hid it).
-# "akshare" is the vendored upstream source tree; it is renamed to
-# opendata_http/ in milestone A2, after which it must be removed here.
+# The vendored tree ships as opendata_http/ - milestone A2 renamed the old
+# top-level akshare/ away, and the akshare provider legs import it by that
+# name.
 include = ["opendata*", "opendata_http*", "opendata_fuyao*"]
 
 [tool.setuptools.package-data]
@@ -141,13 +142,19 @@ opendata_fuyao = ["*.yaml"]
 line-length = 100
 target-version = "py310"
 exclude = [
-    "akshare",
-    "opendata_http",
+    # C35: a pattern without a slash is matched against *any* directory
+    # basename at any depth, so the old bare "akshare" also swallowed the
+    # first-party package opendata/data/providers/akshare/ - 15 modules were
+    # dark to `ruff check opendata`. Every entry below is root-anchored (the
+    # trailing slash is what anchors it; "/akshare" matches nothing at all).
+    # The vendored tree is opendata_http/; the old top-level akshare/ was
+    # renamed away in milestone A2, so it needs no entry.
+    "opendata_http/",
     "alembic/versions",
     # Same rationale as alembic/versions: revision files are tool-generated
     # scaffolding (the warehouse env renders them from opendata/pipeline/ddl).
     "alembic_data/versions",
-    "frontend",
+    "frontend/",
     ".venv",
     "htmlcov",
 ]
@@ -196,8 +203,11 @@ runtime-evaluated-base-classes = [
 [tool.ruff.lint.per-file-ignores]
 # C layer: tests keep the full rule set minus security-smell and annotation rules.
 "tests/*" = ["B017", "N806", "S1", "S2", "ANN", "D"]
-# B layer: ported akshare code is checked for syntax/undefined names only.
-"akshare/**" = ["E501"]
+# C35 removed the B layer's `"akshare/**" = ["E501"]`. Unlike [tool.ruff].exclude,
+# these patterns are matched relative to the project root (measured: "akshare/**"
+# silences akshare/** but *not* opendata/data/providers/akshare/**), so the entry
+# had been matching nothing since milestone A2 renamed the top-level akshare/ to
+# opendata_http/ - the provider package never got the line-length relaxation.
 # Dynamic DDL for regex-validated identifiers (safe_table_name/safe_column_name,
 # ^[A-Za-z_][A-Za-z0-9_]*$) - same rationale as bandit.yaml's B608 skip.
 "opendata/services/data_acquisition.py" = ["S608"]
@@ -250,7 +260,19 @@ disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
 ignore_missing_imports = true
-exclude = ["akshare", "opendata_http", "tests", "alembic", "opendata/data_fetch"]
+# C35: mypy matches this list with re.search, so an unanchored name excludes
+# that string *anywhere in the path*: the old bare "akshare" kept
+# opendata/data/providers/akshare/ out of `mypy opendata/` even though the
+# vendored top-level akshare/ had been renamed away. Anchored with ^, each
+# entry is a root tree. (exclude never applies to files passed explicitly -
+# a2-check passes files, so the A2 mypy leg was already covering this tree.)
+exclude = [
+    "^opendata_http/",
+    "^tests/",
+    "^alembic/",
+    "^alembic_data/",
+    "^opendata/data_fetch/",
+]
 
 # A1 debt is managed by docs/quality/ratchet.json (quality spec §7), not by
 # relaxing the rules above.
