@@ -521,7 +521,7 @@ async def _refresh_row_count(table: DataTable, data_db: AsyncSession) -> bool:
     try:
         count_result = await data_db.execute(count_query)
     except SQLAlchemyError as error:
-        logger.debug("Table %s not in warehouse, skipping: %s", table.table_name, error)
+        logger.debug("Table {} not in warehouse, skipping: {}", table.table_name, error)
         return False
     table.row_count = count_result.scalar() or 0
     return True

@@ -171,6 +171,7 @@ warn_return_any = true
 | `make public-api-quality` | A2 公共 API docstring/注解覆盖率统计（要求 100% / 100%） |
 | `make zero-dep-check` | 零上游依赖断言（AST 口径 + 违规样本自测） |
 | `make brand-check` | 品牌残留与 `app/` 旧包名残留检查 |
+| `make loguru-check` | **日志参数可达性**：解析每个 logger 接收者的绑定（模块导入 / 类属性 / 注入式 `self.logger = logger or _default_logger`），判定占位符风格与渲染器是否匹配 —— loguru 用 `str.format`、`logging` 用 `%`，两家的失败方向相反且 loguru 那侧是静默的，参数进不了日志即失败（C39） |
 | `make test` | pytest `-n 8`，默认 `not e2e` |
 | `make test-cov` | pytest `-n 8 --cov-branch` + 阈值门禁 + 报告归档 |
 | `make lint` / `format` / `format-check` / `typecheck` / `security` | **全树开发者视图**：会显示 A1 存量债务，不参与门禁；A1 是否可接受由棘轮判定 |

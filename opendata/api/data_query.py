@@ -179,7 +179,7 @@ async def domain_diff_report(
     try:
         rows = await asyncio.to_thread(_fetch_rows, engine, sql, params)
     except Exception as exc:  # warehouse table not migrated yet
-        logger.warning("diff report unavailable for %s: %s", domain, exc)
+        logger.warning("diff report unavailable for {}: {}", domain, exc)
         rows = []
     return APIResponse(
         success=True, message="success", data={"domain": domain, "rows": rows, "count": len(rows)}
@@ -231,7 +231,7 @@ async def query_domain_data(
     try:
         rows = await asyncio.to_thread(_fetch_rows, engine, sql, params)
     except Exception as exc:
-        logger.error("data query failed for %s/%s: %s", asset_class, domain, exc)
+        logger.error("data query failed for {}/{}: {}", asset_class, domain, exc)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"query failed: {exc}",
@@ -590,7 +590,7 @@ async def _freshness(
                 expected=expected,
             )
     except Exception as exc:
-        logger.debug("freshness unavailable for %s: %s", table, exc)
+        logger.debug("freshness unavailable for {}: {}", table, exc)
         return None
     if report.status == STATUS_MISSING:
         return None

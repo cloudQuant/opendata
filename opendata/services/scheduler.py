@@ -1,14 +1,15 @@
-"""
-Task scheduler service.
+"""Task scheduler service.
 
 Manages scheduled task execution using APScheduler with async support.
 Integrates with SchedulerService and ExecutionService.
 """
 
 import asyncio
-from datetime import UTC, datetime
+from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
 from loguru import logger
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from opendata.core.database import async_session_maker
 from opendata.models.task import ScheduledTask, ScheduleType, TaskStatus, TriggeredBy
@@ -17,17 +18,20 @@ from opendata.services.scheduler_service import init_scheduler_service
 from opendata.services.script_service import ScriptService
 from opendata.utils.db_result import get_rowcount
 
+if TYPE_CHECKING:
+    from opendata.services.scheduler_service import SchedulerService
+
 
 class TaskScheduler:
-    """
-    Service for managing scheduled task execution.
+    """Service for managing scheduled task execution.
 
     Provides async task scheduling, execution, and retry logic.
     """
 
     def __init__(self) -> None:
+        """Start stopped, with no APScheduler service and no running tasks."""
         self._running = False
-        self.scheduler_service = None
+        self.scheduler_service: SchedulerService | None = None
         self._running_tasks: dict[int, asyncio.Task] = {}  # task_id -> asyncio.Task
 
     @property
@@ -87,10 +91,10 @@ class TaskScheduler:
                 try:
                     await self._schedule_task(task, db)
                     logger.info(f"Scheduled task: {task.name} (ID: {task.id})")
-                except Exception as e:
+                except Exception as e:  # noqa: PERF203  # 一条任务配不上不能拖累其余
                     logger.error(f"Failed to schedule task {task.id}: {e}")
 
-    async def _schedule_task(self, task: ScheduledTask, db) -> None:
+    async def _schedule_task(self, task: ScheduledTask, db: AsyncSession) -> None:
         """Add a task to the scheduler."""
         if self.scheduler_service is None:
             return
@@ -167,7 +171,7 @@ class TaskScheduler:
             # Execute with retry
             await self._execute_with_retry(task, db)
 
-    async def _execute_with_retry(self, task: ScheduledTask, db) -> None:
+    async def _execute_with_retry(self, task: ScheduledTask, db: AsyncSession) -> None:
         """Execute task with retry mechanism."""
         execution_service = ExecutionService(db)
         script_service = ScriptService(db)
@@ -189,7 +193,7 @@ class TaskScheduler:
                 await execution_service.update_execution(
                     execution_id=execution.execution_id,
                     status=TaskStatus.RUNNING,
-                    start_time=datetime.now(UTC),
+                    start_time=datetime.now(timezone.utc),
                 )
 
                 # Broadcast RUNNING status via WebSocket
@@ -228,7 +232,7 @@ class TaskScheduler:
 
                 # Update execution result
                 if result.get("success"):
-                    end_time = datetime.now(UTC)
+                    end_time = datetime.now(timezone.utc)
                     await execution_service.update_execution(
                         execution_id=execution.execution_id,
                         status=TaskStatus.COMPLETED,
@@ -266,7 +270,7 @@ class TaskScheduler:
                 await execution_service.update_execution(
                     execution_id=execution.execution_id,
                     status=TaskStatus.FAILED,
-                    end_time=datetime.now(UTC),
+                    end_time=datetime.now(timezone.utc),
                     error_message=str(e),
                 )
 
@@ -293,7 +297,7 @@ class TaskScheduler:
                         max_retries=max_attempts,
                     )
                 except Exception as e:
-                    logger.debug("Task failure notification skipped: %s", e)
+                    logger.debug("Task failure notification skipped: {}", e)
 
                 # If not last attempt, wait before retry
                 if attempt < max_attempts - 1:
@@ -302,7 +306,7 @@ class TaskScheduler:
                     logger.info(f"Retrying task {task.id} in {delay} seconds...")
                     await asyncio.sleep(delay)
 
-    async def add_task(self, task_id: int, db) -> None:
+    async def add_task(self, task_id: int, db: AsyncSession) -> None:
         """Add a task to the scheduler."""
         from sqlalchemy import select
 
@@ -316,7 +320,7 @@ class TaskScheduler:
         await self._schedule_task(task, db)
         logger.info(f"Added task to scheduler: {task.name} (ID: {task.id})")
 
-    async def update_task(self, task_id: int, db) -> None:
+    async def update_task(self, task_id: int, db: AsyncSession) -> None:
         """Update a task in the scheduler."""
         # Remove and re-add
         await self.remove_task(task_id)
@@ -349,9 +353,8 @@ class TaskScheduler:
             if task is None:
                 raise ValueError(f"Task {task_id} not found")
 
-            # Snapshot the values we need so we don't touch this session later
+            # Snapshot the value we need so we don't touch this session later
             task_id_val = task.id
-            task_name = task.name
 
         # Background coroutine with its own session
         async def _bg_execute() -> None:
@@ -366,7 +369,7 @@ class TaskScheduler:
                 await self._execute_with_retry(bg_task, bg_db)
 
         # Generate an execution_id to return immediately
-        execution_id = f"exec_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}_{task_id_val}"
+        execution_id = f"exec_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{task_id_val}"
 
         bg = asyncio.create_task(_bg_execute())
         self._running_tasks[task_id_val] = bg
@@ -411,7 +414,7 @@ class TaskScheduler:
                 execution = result.scalar_one_or_none()
                 if execution:
                     execution.status = TaskStatus.CANCELLED
-                    execution.end_time = datetime.now(UTC)
+                    execution.end_time = datetime.now(timezone.utc)
                     execution.error_message = "Cancelled by user"
                     await db.commit()
         except Exception as e:
@@ -448,7 +451,7 @@ class TaskScheduler:
                 duration=duration,
             )
         except Exception as e:
-            logger.debug("WebSocket broadcast skipped: %s", e)
+            logger.debug("WebSocket broadcast skipped: {}", e)
 
     async def _cleanup_old_executions(self, retention_days: int = 30) -> None:
         """Delete execution records older than retention_days.
@@ -462,8 +465,8 @@ class TaskScheduler:
 
         from opendata.models.task import TaskExecution
 
-        cutoff = datetime.now(UTC) - timedelta(days=retention_days)
-        stuck_cutoff = datetime.now(UTC) - timedelta(hours=4)
+        cutoff = datetime.now(timezone.utc) - timedelta(days=retention_days)
+        stuck_cutoff = datetime.now(timezone.utc) - timedelta(hours=4)
 
         try:
             async with async_session_maker() as db:
@@ -483,7 +486,7 @@ class TaskScheduler:
                     )
                     .values(
                         status=TaskStatus.TIMEOUT,
-                        end_time=datetime.now(UTC),
+                        end_time=datetime.now(timezone.utc),
                         error_message="Marked as timeout by housekeeping (stuck > 4 hours)",
                     )
                 )
@@ -513,7 +516,8 @@ class TaskScheduler:
                 deleted = get_rowcount(result)
                 if deleted:
                     logger.info(
-                        f"Housekeeping: deleted {deleted} execution records older than {retention_days} days"
+                        f"Housekeeping: deleted {deleted} execution records "
+                        f"older than {retention_days} days"
                     )
         except Exception as e:
             logger.error(f"Housekeeping cleanup failed: {e}")

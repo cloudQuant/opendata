@@ -1,5 +1,4 @@
-"""
-WebSocket endpoint for real-time task execution status updates.
+"""WebSocket endpoint for real-time task execution status updates.
 
 Clients connect to /ws/executions and receive JSON messages whenever
 a task execution changes status (PENDING → RUNNING → COMPLETED/FAILED).
@@ -7,7 +6,7 @@ a task execution changes status (PENDING → RUNNING → COMPLETED/FAILED).
 
 import asyncio
 import json
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
@@ -25,16 +24,19 @@ class ConnectionManager:
     """Manages active WebSocket connections and broadcasts events."""
 
     def __init__(self) -> None:
+        """Start with no connections and a lock around the connection list."""
         self._connections: list[WebSocket] = []
         self._lock = asyncio.Lock()
 
     async def connect(self, ws: WebSocket) -> None:
+        """Accept the socket and add it to the broadcast list."""
         await ws.accept()
         async with self._lock:
             self._connections.append(ws)
         logger.debug(f"WebSocket connected, total={len(self._connections)}")
 
     async def disconnect(self, ws: WebSocket) -> None:
+        """Remove the socket from the broadcast list."""
         async with self._lock:
             self._connections = [c for c in self._connections if c is not ws]
         logger.debug(f"WebSocket disconnected, total={len(self._connections)}")
@@ -51,7 +53,7 @@ class ConnectionManager:
             for ws in self._connections:
                 try:
                     await ws.send_text(payload)
-                except Exception as e:
+                except Exception as e:  # noqa: PERF203  # 一条断开的连接不能中断其余广播
                     logger.debug(f"WebSocket send failed (stale connection): {e}")
                     stale.append(ws)
 
@@ -61,6 +63,7 @@ class ConnectionManager:
 
     @property
     def active_count(self) -> int:
+        """Return how many clients are connected right now."""
         return len(self._connections)
 
 
@@ -98,7 +101,7 @@ async def broadcast_execution_update(
                 "rows_after": rows_after,
                 "error_message": error_message,
                 "duration": duration,
-                "timestamp": datetime.now(UTC).isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
             },
         }
     )
@@ -125,7 +128,7 @@ async def _authenticate_ws(ws: WebSocket) -> bool:
     if token_blacklist.is_revoked(token):
         return False
 
-    payload = verify_token(token, token_type="access")
+    payload = verify_token(token, token_type="access")  # noqa: S106  # nosec B106  # 类型标签，非密钥
     return payload is not None
 
 
@@ -135,8 +138,7 @@ _WS_PING_INTERVAL = 30  # seconds: server-side ping to keep connection alive
 
 @router.websocket("/ws/executions")
 async def execution_updates(ws: WebSocket) -> None:
-    """
-    WebSocket endpoint for real-time execution updates.
+    """WebSocket endpoint for real-time execution updates.
 
     Connect with a valid JWT token as query parameter:
     ``ws://host/ws/executions?token=<access_token>``
@@ -171,7 +173,7 @@ async def execution_updates(ws: WebSocket) -> None:
                 await asyncio.sleep(_WS_PING_INTERVAL)
                 await ws.send_text(json.dumps({"type": "ping"}))
         except Exception as e:
-            logger.debug("WebSocket ping loop ended: %s", e)
+            logger.debug("WebSocket ping loop ended: {}", e)
 
     ping_task = asyncio.create_task(_server_ping())
     try:

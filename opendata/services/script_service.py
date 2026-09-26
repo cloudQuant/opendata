@@ -1,9 +1,9 @@
-"""Script service for managing data acquisition scripts"""
+"""Script service for managing data acquisition scripts."""
 
 import asyncio
 import importlib
 import re
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +19,7 @@ class ScriptService:
     """Data acquisition script management service."""
 
     def __init__(self, db: AsyncSession) -> None:
+        """Bind the service to one script-metadata session."""
         self.db = db
         self.script_base_path = Path("app/data_fetch/scripts")
 
@@ -31,8 +32,7 @@ class ScriptService:
         skip: int = 0,
         limit: int = 100,
     ) -> tuple[list[DataScript], int]:
-        """
-        Get list of scripts with optional filters.
+        """Get list of scripts with optional filters.
 
         Args:
             category: Filter by category
@@ -113,7 +113,7 @@ class ScriptService:
             if hasattr(script, key):
                 setattr(script, key, value)
 
-        script.updated_at = datetime.now(UTC)
+        script.updated_at = datetime.now(timezone.utc)
         await self.db.commit()
         await self.db.refresh(script)
         return script
@@ -129,8 +129,7 @@ class ScriptService:
         return True
 
     async def toggle_script(self, script_id: str, active: bool | None = None) -> bool:
-        """
-        Toggle script active status.
+        """Toggle script active status.
 
         Args:
             script_id: Script ID
@@ -181,8 +180,7 @@ class ScriptService:
         params: dict[str, Any] | None = None,
         timeout: int | None = None,
     ) -> dict[str, Any]:
-        """
-        Execute a script.
+        """Execute a script.
 
         Args:
             script_id: Script ID
@@ -262,8 +260,7 @@ class ScriptService:
         return [row[0] for row in result.all()]
 
     async def scan_and_register_scripts(self) -> dict[str, Any]:
-        """
-        Scan filesystem and register all scripts.
+        """Scan filesystem and register all scripts.
 
         Returns:
             Dict with registered_count, updated_count, errors
@@ -307,8 +304,7 @@ class ScriptService:
         }
 
     async def _register_script_from_file(self, file_path: str, base_path: str) -> str:
-        """
-        Register a script from a file.
+        """Register a script from a file.
 
         Returns:
             'created', 'updated', or 'skipped'
@@ -381,7 +377,7 @@ class ScriptService:
             with Path(file_path).open(encoding="utf-8", errors="ignore") as f:
                 content = f.read()
         except Exception as e:
-            logger.debug("Could not read script file %s: %s", file_path, e)
+            logger.debug("Could not read script file {}: {}", file_path, e)
             return None
 
         m = re.search(r"""self\.table_name\s*=\s*["']([A-Za-z0-9_]+)["']""", content)

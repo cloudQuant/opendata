@@ -1,5 +1,4 @@
-"""
-Token blacklist for logout support.
+"""Token blacklist for logout support.
 
 Supports two backends:
 - **Redis** (recommended for production): works across multiple workers/processes
@@ -166,7 +165,7 @@ class _RedisBlacklist(_TokenBlacklistBackend):
         try:
             self._redis.close()
         except Exception as e:
-            logger.debug("Redis close failed (may already be closed): %s", e)
+            logger.debug("Redis close failed (may already be closed): {}", e)
 
 
 # ---------------------------------------------------------------------------

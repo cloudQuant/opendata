@@ -1,5 +1,4 @@
-"""
-Request logging middleware.
+"""Request logging middleware.
 
 Logs request ID, method, path, status code, and response time for every request.
 Uses loguru contextualize() so all downstream log messages automatically include
@@ -18,6 +17,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Middleware that logs request details and response time."""
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        """Log one request with its request id, status and duration."""
         request_id = str(uuid.uuid4())[:8]
         request.state.request_id = request_id
 
@@ -37,7 +37,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             except Exception as e:
                 duration_ms = (time.perf_counter() - start_time) * 1000
                 logger.error(
-                    "%s %s 500 (%.1fms) exception=%s",
+                    "{} {} 500 ({:.1f}ms) exception={}",
                     request.method,
                     path,
                     duration_ms,
@@ -59,7 +59,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                     request.method, path, response.status_code, duration_ms / 1000
                 )
             except Exception as e:
-                logger.debug("Metrics record skipped: %s", e)
+                logger.debug("Metrics record skipped: {}", e)
 
         response.headers["X-Request-ID"] = request_id
         return response

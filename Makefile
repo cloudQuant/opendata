@@ -12,7 +12,7 @@
 
 .PHONY: help lint format format-check typecheck security deps-audit a2-check \
         test test-cov quality-ratchet public-api-quality zero-dep-check brand-check \
-        secret-check ledger-check \
+        loguru-check secret-check ledger-check \
         frontend-lint frontend-format frontend-test frontend-test-cov frontend-typecheck \
         frontend-collection frontend-e2e \
         gate quality quality-full pre-commit
@@ -26,7 +26,7 @@ PY_PORTED := opendata_http
 
 help:
 	@echo "Gate:             gate"
-	@echo "A2 (gating):      a2-check public-api-quality zero-dep-check brand-check secret-check ledger-check quality-ratchet"
+	@echo "A2 (gating):      a2-check public-api-quality zero-dep-check brand-check loguru-check secret-check ledger-check quality-ratchet"
 	@echo "Tests:            test test-cov"
 	@echo "Dev views (A1):   lint format format-check typecheck security deps-audit"
 	@echo "Frontend:         frontend-lint frontend-format frontend-collection frontend-e2e frontend-test frontend-test-cov frontend-typecheck"
@@ -69,6 +69,15 @@ security-ported:
 
 js-points-check:
 	python scripts/quality/scan_js_points.py --check
+
+# loguru renders with str.format and logging with %-formatting, and each family
+# silently drops the arguments the other one substitutes. A grep cannot tell them
+# apart, so this resolves every receiver's binding (module, class attribute,
+# injected `self.logger = logger or _default_logger`) before it judges. C38
+# counted 12 such calls on the bare-name face; the attribute form it could not
+# see held 1 more.
+loguru-check:
+	python scripts/quality/loguru_render_check.py
 
 deps-audit:
 	@command -v pip-audit >/dev/null 2>&1 && pip-audit || echo "pip-audit not installed (pip install pip-audit)"
@@ -168,6 +177,8 @@ gate:
 	@$(MAKE) --no-print-directory ledger-check
 	@echo "===== gate: js-points-check ====="
 	@$(MAKE) --no-print-directory js-points-check
+	@echo "===== gate: loguru-check ====="
+	@$(MAKE) --no-print-directory loguru-check
 	@echo "===== gate: a2-check ====="
 	@$(MAKE) --no-print-directory a2-check
 	@echo "===== gate: quality-ratchet ====="

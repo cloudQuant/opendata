@@ -495,7 +495,7 @@ class AkshareProvider:
             result = await db_session.execute(text(f"SELECT COUNT(*) FROM `{safe_name}`"))
             return result.scalar() or 0
         except Exception as e:
-            self.logger.debug("Could not get row count for table %s: %s", table_name, e)
+            self.logger.debug(f"Could not get row count for table {table_name}: {e}")
             return None
 
     @staticmethod
