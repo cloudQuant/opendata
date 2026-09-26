@@ -1,0 +1,398 @@
+{
+  "env": {
+    "python": "3.13.5"
+  },
+  "items": [
+    {
+      "item": "AC-1|01",
+      "key": "AC-1|01|ed953f70",
+      "state": "proven",
+      "summary": "项目自我命名与主包（name / version / opendata/）",
+      "readings": [
+        "pyproject project.name = opendata",
+        "pyproject project.version = 0.1.0",
+        "opendata/__init__.py tracked = yes",
+        "tracked files under the old app/ layout = 0",
+        "first setuptools find include = opendata*"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "name": "opendata",
+        "version": "0.1.0",
+        "opendata_pkg": "yes",
+        "app_pkg_files": "0",
+        "first_include": "opendata*"
+      }
+    },
+    {
+      "item": "AC-1|02",
+      "key": "AC-1|02|48aff045",
+      "state": "proven",
+      "summary": "判据列出的 token 清单 == 扫描器执行的清单，且扫描与独立 grep 都为零",
+      "readings": [
+        "tokens enumerated by the item = 13; enforced by check_brand.py = 13; identical = yes",
+        "$ python scripts/quality/check_brand.py -> exit 0: OK: no brand residue and no rename leftovers.",
+        "independent grep for `from app.` / `import app.` over 412 own .py files -> 0 file(s)"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "doc_tokens": "13",
+        "script_tokens": "13",
+        "sets_equal": "yes",
+        "checker_exit": "0",
+        "checker_line": "OK: no brand residue and no rename leftovers.",
+        "app_ref_files": "0",
+        "app_ref_sample": "",
+        "app_ref_scope": "412"
+      }
+    },
+    {
+      "item": "AC-1|03",
+      "key": "AC-1|03|afb7fc32",
+      "state": "gap",
+      "summary": "裸词 akshare 的白名单是否真的覆盖全部命中面",
+      "readings": [
+        "whitelist read back out of the item (10 entries): opendata_http/, opendata_http/, THIRD_PARTY_NOTICES.md, LICENSE-AKSHARE, README.md, CODE_QUALITY.md, scripts/codemod/, tests/, docs/, docs/evidence/",
+        "tracked files carrying the bare word `akshare` = 611, of which the vendored tree = 315",
+        "hits outside that whitelist = 70 (+60 unshown): .env.example, .pre-commit-config.yaml, ARCHITECTURE.md, Dockerfile, Makefile, QUICKSTART.md, alembic_data/versions/20260923-0001_ods_dwd_p0.py, bandit.yaml, frontend/e2e/fixtures.ts, frontend/src/__tests__/types/index.test.ts",
+        "AC-16's frozen integration-layer findings = 2 (opendata/models/data_script.py, opendata/pipeline/patrol.py)"
+      ],
+      "reason": "the item's enumerated whitelist does not describe the tree: the word is in build and operational surfaces it never listed. Closing this needs a wording decision (what the whitelist is supposed to cover after A2/B5), not a re-read",
+      "closure": "outside: 70 -> 0; outside_sample: .env.example, .pre-commit-config.yaml, ARCHITECTURE.md, Dockerfile, Makefile, QUICKSTART.md, alembic_data/versions/20260923-0001_ods_dwd_p0.py, bandit.yaml, frontend/e2e/fixtures.ts, frontend/src/__tests__/types/index.test.ts -> ",
+      "facts": {
+        "buckets": "10",
+        "bucket_names": "opendata_http/, opendata_http/, THIRD_PARTY_NOTICES.md, LICENSE-AKSHARE, README.md, CODE_QUALITY.md, scripts/codemod/, tests/, docs/, docs/evidence/",
+        "hit_files": "611",
+        "vendored": "315",
+        "outside": "70",
+        "outside_sample": ".env.example, .pre-commit-config.yaml, ARCHITECTURE.md, Dockerfile, Makefile, QUICKSTART.md, alembic_data/versions/20260923-0001_ods_dwd_p0.py, bandit.yaml, frontend/e2e/fixtures.ts, frontend/src/__tests__/types/index.test.ts",
+        "outside_more": "60",
+        "integration_frozen": "2",
+        "integration_files": "opendata/models/data_script.py, opendata/pipeline/patrol.py"
+      }
+    },
+    {
+      "item": "AC-1|04",
+      "key": "AC-1|04|019bc6fc",
+      "state": "proven",
+      "summary": "容器名 / DB 用户 / 根文档 / Makefile·pre-commit 四个面各自成立",
+      "readings": [
+        "compose container_name set: opendata_mysql, opendata_warehouse, opendata_redis, opendata_backend, opendata_frontend, opendata_certbot -> not opendata_* = 0",
+        "compose named networks: opendata_network",
+        "`opendata_user` missing from: - (checked .env.example, compose, init.sql)",
+        "pre-rename tokens in the 7 machine surfaces = 0",
+        "root documents: lines that still *use* a token = 0; lines that name it as history = 3 (沿革引用, allowed by AC-1|03 over 4 files)",
+        "root-level file *names* still carrying a token = 0",
+        "Makefile path references = 17, absent = 0",
+        "pre-commit files:/exclude: regexes = 8, matching no tracked file = 0"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "containers": "opendata_mysql, opendata_warehouse, opendata_redis, opendata_backend, opendata_frontend, opendata_certbot",
+        "foreign": "0",
+        "networks": "opendata_network",
+        "user_missing": "-",
+        "machine_files": "0",
+        "machine_sample": "",
+        "doc_live": "0",
+        "doc_live_sample": "",
+        "doc_historical": "3",
+        "stale_docs": "0",
+        "makefile_paths": "17",
+        "missing_paths": "0",
+        "missing_sample": "",
+        "hook_patterns": "8",
+        "stale_patterns": "0",
+        "stale_sample": ""
+      }
+    },
+    {
+      "item": "AC-1|05",
+      "key": "AC-1|05|db9002ff",
+      "state": "gap",
+      "summary": "双库名四处一致（可静态量）+ 后端/前端/health 运行时（要真机）",
+      "readings": [
+        "config.py defaults, .env.example, docker-compose.yml, init.sql all read opendata / opendata_data = yes",
+        "  config.py = opendata / opendata_data",
+        "  .env.example = opendata / opendata_data",
+        "  docker-compose.yml = opendata / opendata_data",
+        "  init.sql = opendata / opendata_data",
+        "backend start / frontend login / GET /health = no-engine (docker info exit 1: Cannot connect to the Docker daemon at unix:///Users/yunjinqi/.docker/run/docker)"
+      ],
+      "reason": "the four configuration surfaces are half the item; the other half is that the stack actually serves -- backend up, a frontend login, /health answering. It needs the stack started, which is the user's call, so the runtime face is reported as no-engine or not-started rather than assumed to work",
+      "closure": "runtime: no-engine -> ok",
+      "facts": {
+        "config": "opendata / opendata_data",
+        "env_example": "opendata / opendata_data",
+        "compose": "opendata / opendata_data",
+        "init_sql": "opendata / opendata_data",
+        "consistent": "yes",
+        "docker_rc": "1",
+        "docker_note": "Cannot connect to the Docker daemon at unix:///Users/yunjinqi/.docker/run/docker",
+        "runtime": "no-engine"
+      }
+    },
+    {
+      "item": "AC-1|06",
+      "key": "AC-1|06|3ce38e4e",
+      "state": "proven",
+      "summary": "数据仓库容器不再挂在 --profile 上",
+      "readings": [
+        "services sitting behind a profile: certbot=- ssl",
+        "mysql_warehouse requires --profile = no",
+        "`docker compose config --services` resolved 0 service(s) and lists the warehouse = n/a (exit 1: error while interpolating services.mysql.environment.MYSQL_ROOT_PASSWORD: requir)"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "profiled": "certbot=- ssl",
+        "warehouse_profiled": "no",
+        "cli_rc": "1",
+        "cli_listed": "0",
+        "in_cli_set": "n/a",
+        "cli_note": "error while interpolating services.mysql.environment.MYSQL_ROOT_PASSWORD: requir"
+      }
+    },
+    {
+      "item": "AC-1|07",
+      "key": "AC-1|07|2be7c221",
+      "state": "gap",
+      "summary": "BSL 四要素 + 搬运许可 + README 三项（含商务联系方式为真实可达）",
+      "readings": [
+        "LICENSE opens with Business Source License 1.1 = yes",
+        "parameter block = Additional Use Grant, Change Date, Change License, Licensed Work, Licensor (missing of the four = 0); Change License = MIT License",
+        "LICENSE-AKSHARE present and MIT = yes",
+        "THIRD_PARTY_NOTICES.md has 4 sections; embedded-resource rights block = yes",
+        "README 授权/许可说明 = yes; 数据免责声明 = yes",
+        "README 商务联系方式 = 商务授权联系：`cloud@example.com`（占位，发布前替换为正式联系方式）。 (placeholder = yes)"
+      ],
+      "reason": "the item asks for a business contact; README publishes the placeholder it labels as such (`发布前替换`). That is the user's text to supply, so this stays a gap rather than a tick",
+      "closure": "contact: 商务授权联系：`cloud@example.com`（占位，发布前替换为正式联系方式）。 -> 商务授权联系：ops@opendata.dev; placeholder: yes -> no",
+      "facts": {
+        "bsl": "yes",
+        "params": "Additional Use Grant, Change Date, Change License, Licensed Work, Licensor",
+        "missing": "0",
+        "change_license": "MIT License",
+        "akshare_license": "yes",
+        "notices_sections": "4",
+        "resource_registry": "yes",
+        "license_notice": "yes",
+        "disclaimer": "yes",
+        "contact": "商务授权联系：`cloud@example.com`（占位，发布前替换为正式联系方式）。",
+        "placeholder": "yes"
+      }
+    },
+    {
+      "item": "AC-1|08",
+      "key": "AC-1|08|2e7a9f6f",
+      "state": "gap",
+      "summary": "登记表存在之外：逐行是否真复核过，且覆盖清单引用的每个源",
+      "readings": [
+        "rows = 16; columns = #, 数据源, 接入方式, 条款链接, 允许本项目落库, 允许再分发, 允许商业使用, 复核日期, 责任人, 状态",
+        "rows carrying a real 复核日期 = 0/16",
+        "rows still answering a permitted use with 待确认 = 11/16",
+        "rows whose 条款链接 is prose instead of a URL = 13/16",
+        "registry rows cited by docs/proposals/openbb-migration/provider-inventory.yaml = 10, citations with no row = 0"
+      ],
+      "reason": "the registry is a shell waiting on a legal/product review: no row carries a review date, every permitted-use cell says 待确认, and some clause links are prose. Filling it in is a decision this round cannot make for the user",
+      "closure": "dated: 0 -> 16; undecided: 11 -> 0; unlinked: 13 -> 0",
+      "facts": {
+        "rows": "16",
+        "columns": "#, 数据源, 接入方式, 条款链接, 允许本项目落库, 允许再分发, 允许商业使用, 复核日期, 责任人, 状态",
+        "dated": "0",
+        "undecided": "11",
+        "unlinked": "13",
+        "cited": "10",
+        "uncovered": "0",
+        "uncovered_sample": ""
+      }
+    },
+    {
+      "item": "AC-1|09",
+      "key": "AC-1|09|1c8469ac",
+      "state": "gap",
+      "summary": "git 面 / 扫描器豁免面 / 上游 5 文件处置 / 全历史扫描器实跑",
+      "readings": [
+        "`git ls-files | grep -E '\\.env|\\.idea|\\.pid'` -> 1 path(s) (.env.example)",
+        "the same grep as real files (`(^|/)\\.env$`, `.idea/`, `*.pid`) -> 0",
+        ".gitleaks.toml global allowlist = 2 (\\.env\\.example$, \\.egg-info/); entries that are neither a doc nor a template = 1 (\\.egg-info/)",
+        "per-rule allowlist blocks = 2 (C36 added a shape-scoped generic-api-key exemption, whose widening C36 measured by counterfact)",
+        "upstream credential files registered in docs/evidence/A0/secret-audit.txt = 5/5; cred-shaped literals left in them = 0",
+        "$ python scripts/quality/secret_scan_check.py -> exit 0: \u001b[90m10:06PM\u001b[0m \u001b[32mINF\u001b[0m \u001b[1mno leaks found\u001b[0m"
+      ],
+      "reason": "the literal grep the item names hits `.env.example`, the template AC-1|03 permits; the allowlist is not only docs/templates -- it carries a generated-artifact path plus a shape-scoped rule exemption. Both need a wording or config decision, and the counterfact evidence in docs/evidence/C36 shows the exemption is not free",
+      "closure": "literal: 1 -> 0; literal_sample: .env.example -> ; non_template: 1 -> 0; non_template_names: \\.egg-info/ -> ; rule_blocks: 2 -> 0",
+      "facts": {
+        "literal": "1",
+        "literal_sample": ".env.example",
+        "strict": "0",
+        "allow_paths": "2",
+        "allow_names": "\\.env\\.example$, \\.egg-info/",
+        "non_template": "1",
+        "non_template_names": "\\.egg-info/",
+        "rule_blocks": "2",
+        "registered": "5",
+        "upstream_files": "5",
+        "live_shapes": "0",
+        "gitleaks_rc": "0",
+        "secret_check_line": "\u001b[90m10:06PM\u001b[0m \u001b[32mINF\u001b[0m \u001b[1mno leaks found\u001b[0m"
+      }
+    },
+    {
+      "item": "AC-1|10",
+      "key": "AC-1|10|0c44a7ef",
+      "state": "gap",
+      "summary": "残留文件 + 从未进库的文件 + 首次提交的树完整性",
+      "readings": [
+        "tracked paths matching a copy-residue shape = 0",
+        "untracked-and-not-ignored files = 2 (docs/evidence/C40/probe-all.txt, scripts/quality/acceptance_item_probe.py)",
+        "tracked files with uncommitted edits = 0",
+        "first commit touching opendata/__init__.py = 4ee1bbca \"4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, qua\"",
+        "its tree = 712 files, holding every part of the project it should (missing: -), against 1321 tracked today (53.9%; the rest arrived with later rounds, which is growth)"
+      ],
+      "reason": "residue, files git has never seen, uncommitted edits, or a first commit that left part of the project out -- 'first complete commit' has to mean the whole move landed",
+      "closure": "first_tree: 712 -> 1321; untracked: 2 -> 0; untracked_sample: docs/evidence/C40/probe-all.txt, scripts/quality/acceptance_item_probe.py -> ",
+      "facts": {
+        "residue": "0",
+        "residue_sample": "",
+        "untracked": "2",
+        "untracked_sample": "docs/evidence/C40/probe-all.txt, scripts/quality/acceptance_item_probe.py",
+        "dirty": "0",
+        "dirty_sample": "",
+        "first_sha": "4ee1bbca",
+        "first_subject": "4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, qua",
+        "first_tree": "712",
+        "essentials_absent": "-",
+        "tracked_now": "1321",
+        "ratio": "53.9%",
+        "git_rc": "0"
+      }
+    },
+    {
+      "item": "AC-2|01",
+      "key": "AC-2|01|04bc9542",
+      "state": "proven",
+      "summary": "六个 P0 模型逐模型双形态 + fail-closed 节点实跑",
+      "readings": [
+        "ALL_MODELS parametrizes 9 model(s); the six P0 names are covered for 6 (missing: -)",
+        "round-trip + fail-closed nodes run = 12, passed = 12",
+        "the file exercises both forms (DataFrame to_frame/from_frame, model_dump) = yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "param": "9",
+        "covered": "6",
+        "missing": "-",
+        "runs": "12",
+        "passed": "12",
+        "bad": "-",
+        "dual": "yes"
+      }
+    },
+    {
+      "item": "AC-2|02",
+      "key": "AC-2|02|0526af4d",
+      "state": "gap",
+      "summary": "元数据两模型存在且被测（绿），另一面是被回补/窗口逻辑 import",
+      "readings": [
+        "both classes subclass ContractModel in opendata/data/models/metadata.py = yes",
+        "the five field-set/semantics/round-trip nodes = 5/5 passed",
+        "backfill / incremental-window modules importing the contracts = 0 (-)",
+        "modules that only mention the names (docstrings, or a same-named local class) = 1 (jobs.py)"
+      ],
+      "reason": "the metadata models exist and their unit face is green, but the full-market backfill and window code never import them: 'the backfill refreshes Instrument' is that module's docstring claim, not something the pipeline does -- patrol is the only consumer found",
+      "closure": "importer_names: - -> opendata/pipeline/templates.py, opendata/pipeline/runner.py; importers: 0 -> 2",
+      "facts": {
+        "models": "yes",
+        "runs": "5",
+        "passed": "5",
+        "bad": "-",
+        "importers": "0",
+        "importer_names": "-",
+        "mention_only": "1",
+        "mention_names": "jobs.py"
+      }
+    },
+    {
+      "item": "AC-2|03",
+      "key": "AC-2|03|c4547f55",
+      "state": "proven",
+      "summary": "Bar 字段面 + 合成用例 + 与录制的官方 qfq 序列真对照",
+      "readings": [
+        "Bar field-set node (no adjusted price may exist on the model) = passed",
+        "tests/test_adjust.py (synthesising from Bar + AdjustFactor) = 10 passed, 0 failed (exit 0)",
+        "official-series face: 2 case(s) collected [em, sina(\\u5bbd)], 2 passed / 2 skipped / 0 failed (exit 0)"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "bar": "passed",
+        "adjust_passed": "10",
+        "adjust_failed": "0",
+        "adjust_rc": "0",
+        "collected": "2",
+        "case_list": "em, sina(\\u5bbd)",
+        "official_passed": "2",
+        "official_skipped": "2",
+        "official_failed": "0",
+        "official_rc": "0"
+      }
+    },
+    {
+      "item": "AC-2|04",
+      "key": "AC-2|04|989b3a28",
+      "state": "proven",
+      "summary": "基类三段齐备，且 normalize() 自身承担映射/换算/键规范化",
+      "readings": [
+        "protocol bases in opendata/data/protocol.py = FetchContext, Fetcher, QueryParams; Capability model = yes",
+        "Fetcher stage methods = 3 (transform_query / extract_data / transform_data)",
+        "normalize_frame() bodies the three jobs itself: field mapping = yes, unit conversion = yes, key normalization = yes",
+        "named unit nodes = 5/5 passed; not green: -"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "bases": "FetchContext, Fetcher, QueryParams",
+        "capability": "yes",
+        "stages": "3",
+        "rename": "yes",
+        "units": "yes",
+        "keynorm": "yes",
+        "runs": "5",
+        "passed": "5",
+        "bad": "-"
+      }
+    },
+    {
+      "item": "AC-2|05",
+      "key": "AC-2|05|9adcd9e4",
+      "state": "proven",
+      "summary": "注册表存在、三处名字由它派生（且无第二处硬写）、派生用例全绿",
+      "readings": [
+        "domains.yaml declares 20 domain(s): 20 rest_path and 20 contract entries, rest paths unique = yes",
+        "table/WS names written into the registry instead of derived = 0",
+        "tests/test_domains.py = 23 passed, 0 failed (exit 0)",
+        "derivation nodes = 5/5 passed"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "domains": "20",
+        "rest": "20",
+        "contracts": "20",
+        "unique": "yes",
+        "declared": "0",
+        "declared_sample": "",
+        "suite_passed": "23",
+        "suite_failed": "0",
+        "suite_rc": "0",
+        "runs": "5",
+        "derived_passed": "5"
+      }
+    }
+  ]
+}
