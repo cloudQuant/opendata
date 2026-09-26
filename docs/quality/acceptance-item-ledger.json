@@ -465,7 +465,16 @@
       "state": "unreviewed"
     },
     "§4|03|b0da1909": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C37",
+      "date": "2026-09-26",
+      "command": "python -m pytest tests/test_port_fidelity.py --no-cov -q -p no:cacheprovider -k 'object_column or drift_is_reported or value_change or non_numeric_text or looks_numeric or tolerance_is_unchanged'（6 passed / 25 deselected）；bash docs/evidence/C37/mutation-proof.sh（三次变异，M2 专门盯「放宽容忍度」）",
+      "evidence": [
+        "docs/evidence/C37/tolerance-guards.txt",
+        "docs/evidence/C37/mutation-proof.log",
+        "docs/evidence/C37/README.md"
+      ],
+      "note": "容忍度仍是 RTOL=1e-9（compare_with_upstream.py:54，本轮未改），且只在「一侧真是 float 实例」时才参与判读；被放过的差异必须写进 notes（「文本不同但浮点在 rtol 内一致」），报告表头新增一列记条数。M2 变异（把 rtol 放宽到 1e-2）会让 test_value_change_in_object_column_still_fails 立刻红，所以这一勾不是靠放水量出来的。纯文本格（日期、代码列）仍逐字符相等才过。"
     },
     "§4|04|2cea237f": {
       "state": "unreviewed"
