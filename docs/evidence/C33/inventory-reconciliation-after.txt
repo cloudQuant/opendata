@@ -1,0 +1,57 @@
+C33 OpenBB provider inventory reconciliation — provider-inventory.yaml vs
+opendata/data/providers + the live registry + docs/data-rights-registry.md
+generated: 2026-09-26 11:00:12 +0200
+branch=dev
+HEAD=f31f483
+python=3.13.5
+command: python scripts/quality/openbb_inventory_plane.py
+           --inventory docs/proposals/openbb-migration/provider-inventory.yaml --rights docs/data-rights-registry.md
+           (static read + in-process registry; no network, no MySQL, no credential)
+exit code: 0 = agrees with the tree; 1 = any judged finding; 2 = registry unavailable
+rules judged (7): PARSE, FIELD SHAPE, MISSING ROW, DUPLICATE ROW, STALE STATUS, COUNT CLAIM, RIGHTS LINK
+           MODEL ELISION is reported but not judged
+
+--- git status --porcelain captured before the run ---
+M docs/proposals/openbb-migration/README.md
+ M docs/proposals/openbb-migration/provider-inventory.yaml
+?? docs/evidence/C33/
+?? scripts/quality/openbb_inventory_plane.py
+?? tests/test_openbb_inventory_guard.py
+--- end git status ---
+
+record rows                  : 34 = providers 32 + local 2
+record statuses              : ['已实现未对照', '已对照转正', '待实现']
+sources serving capabilities : 7 -> akshare, ecb, fred, imf, oecd, ths, yfinance
+capabilities registered      : 33 (20 auto-routable)
+rights registry §1 rows      : 11
+model names listed           : 138
+rows with elided model lists : 15  (reported, not judged)
+
+== counters ==
+  PARSE          0
+  FIELD SHAPE    0
+  MISSING ROW    0
+  DUPLICATE ROW  0
+  STALE STATUS   0
+  COUNT CLAIM    0
+  RIGHTS LINK    0
+
+== findings (judged) ==
+  (none)
+
+== reported, not judged ==
+  MODEL ELISION: fred: 6 listed of 36 stated
+  MODEL ELISION: imf: 6 listed of 8 stated
+  MODEL ELISION: oecd: 6 listed of 9 stated
+  MODEL ELISION: yfinance: 6 listed of 29 stated
+  MODEL ELISION: econdb: 6 listed of 8 stated
+  MODEL ELISION: federal_reserve: 6 listed of 13 stated
+  MODEL ELISION: fmp: 6 listed of 69 stated
+  MODEL ELISION: intrinio: 6 listed of 38 stated
+  MODEL ELISION: tiingo: 6 listed of 7 stated
+  MODEL ELISION: cboe: 6 listed of 11 stated
+  MODEL ELISION: congress_gov: 6 listed of 8 stated
+  MODEL ELISION: finviz: 6 listed of 7 stated
+  MODEL ELISION: nasdaq: 6 listed of 9 stated
+  MODEL ELISION: sec: 6 listed of 24 stated
+  MODEL ELISION: tmx: 6 listed of 24 stated

@@ -1,0 +1,165 @@
+C33 falsification driver — mutate provider-inventory.yaml, run the judge on it
+generated: 2026-09-26 11:01:47 +0200
+branch=dev
+HEAD=f31f483
+python=3.13.5
+judge  : tests/test_openbb_inventory_guard.py (28 cases) via pytest -q --no-cov
+target : docs/proposals/openbb-migration/provider-inventory.yaml
+note   : 驱动器是 scratch，跑完即删；本档是它的完整输出（植入→判决→撤销）
+       : 每条植入只改清单一个字段，判据是门禁里跑的同一份（tests 读 shipped 路径）
+
+[STALE STATUS] F1 记录说少：ecb 退回 待实现，注册表说它 3 条能力全部可路由
+  pytest rc=1 -> RED（植入被打红），符合期望
+  | E     
+  | E     Left contains one more item: 'STALE STATUS: `ecb` says 待实现 but the registry says 已对照转正: 3 capabilities (3 auto-routable)'
+  | E     Use -v to get more diff
+  | ____________ test_report_exit_code_differs_between_the_two_records _____________
+  | tests/test_openbb_inventory_guard.py:205: in test_report_exit_code_differs_between_the_two_records
+  |     assert (before_exit, after_exit) == (1, 0)
+  | E   assert (1, 1) == (1, 0)
+  | E     
+  | E     At index 1 diff: 1 != 0
+  | E     Use -v to get more diff
+  | =========================== short test summary info ============================
+  | FAILED tests/test_openbb_inventory_guard.py::test_shipped_record_agrees_with_the_tree
+  | FAILED tests/test_openbb_inventory_guard.py::test_report_exit_code_differs_between_the_two_records
+  | ========================= 2 failed, 26 passed in 0.20s =========================
+
+[STALE STATUS] F2 记录说多：凭空加一行 已对照转正，树里根本没有这个源
+  pytest rc=1 -> RED（植入被打红），符合期望
+  | E     
+  | E     Left contains 4 more items, first extra item: 'STALE STATUS: `phantom_source` says 已对照转正 but the registry says 待实现: no capability registered'
+  | E     Use -v to get more diff
+  | ____________ test_report_exit_code_differs_between_the_two_records _____________
+  | tests/test_openbb_inventory_guard.py:205: in test_report_exit_code_differs_between_the_two_records
+  |     assert (before_exit, after_exit) == (1, 0)
+  | E   assert (1, 1) == (1, 0)
+  | E     
+  | E     At index 1 diff: 1 != 0
+  | E     Use -v to get more diff
+  | =========================== short test summary info ============================
+  | FAILED tests/test_openbb_inventory_guard.py::test_shipped_record_agrees_with_the_tree
+  | FAILED tests/test_openbb_inventory_guard.py::test_report_exit_code_differs_between_the_two_records
+  | ========================= 2 failed, 26 passed in 0.18s =========================
+
+[PARSE] F3 清单装回不可解析形状：一处 credentials: [] 改回裸 dash
+  pytest rc=1 -> RED（植入被打红），符合期望
+  | E     Left contains one more item: 'PARSE: provider-inventory.yaml does not deserialize (sequence entries are not allowed here |   in "<unicode string>", line 35, column 18:)'
+  | E     Use -v to get more diff
+  | ____________ test_report_exit_code_differs_between_the_two_records _____________
+  | tests/test_openbb_inventory_guard.py:205: in test_report_exit_code_differs_between_the_two_records
+  |     assert (before_exit, after_exit) == (1, 0)
+  | E   assert (1, 1) == (1, 0)
+  | E     
+  | E     At index 1 diff: 1 != 0
+  | E     Use -v to get more diff
+  | =========================== short test summary info ============================
+  | FAILED tests/test_openbb_inventory_guard.py::test_shipped_record_deserializes
+  | FAILED tests/test_openbb_inventory_guard.py::test_shipped_record_agrees_with_the_tree
+  | FAILED tests/test_openbb_inventory_guard.py::test_report_exit_code_differs_between_the_two_records
+  | ========================= 3 failed, 25 passed in 0.12s =========================
+
+[FIELD SHAPE] F4 名单字段写成裸标量：sdk_dependencies: [xmltodict] 改回 xmltodict（能解析，解析成字符串）
+  pytest rc=1 -> RED（植入被打红），符合期望
+  | E     
+  | E     Left contains one more item: 'FIELD SHAPE: `ecb`（providers）把 `sdk_dependencies` 写成 `xmltodict`，反序列化得到 str 而不是 list：名单字段要写成 `[a, b]` 或块状列表'
+  | E     Use -v to get more diff
+  | ____________ test_report_exit_code_differs_between_the_two_records _____________
+  | tests/test_openbb_inventory_guard.py:205: in test_report_exit_code_differs_between_the_two_records
+  |     assert (before_exit, after_exit) == (1, 0)
+  | E   assert (1, 1) == (1, 0)
+  | E     
+  | E     At index 1 diff: 1 != 0
+  | E     Use -v to get more diff
+  | =========================== short test summary info ============================
+  | FAILED tests/test_openbb_inventory_guard.py::test_shipped_record_agrees_with_the_tree
+  | FAILED tests/test_openbb_inventory_guard.py::test_report_exit_code_differs_between_the_two_records
+  | ========================= 2 failed, 26 passed in 0.18s =========================
+
+[FIELD SHAPE] F5 名单字段写了键没写值：ths 的 rights_rows: 留空 ⇒ 反序列化成 null
+  pytest rc=1 -> RED（植入被打红），符合期望
+  | E     
+  | E     Left contains 2 more items, first extra item: 'FIELD SHAPE: `ths`（local_providers）把 `rights_rows` 写成 null（键写了却没值），反序列化得到 NoneType 而不是 list：名单字段要写成 `[a, b]` 或块状列表'
+  | E     Use -v to get more diff
+  | ____________ test_report_exit_code_differs_between_the_two_records _____________
+  | tests/test_openbb_inventory_guard.py:205: in test_report_exit_code_differs_between_the_two_records
+  |     assert (before_exit, after_exit) == (1, 0)
+  | E   assert (1, 1) == (1, 0)
+  | E     
+  | E     At index 1 diff: 1 != 0
+  | E     Use -v to get more diff
+  | =========================== short test summary info ============================
+  | FAILED tests/test_openbb_inventory_guard.py::test_shipped_record_agrees_with_the_tree
+  | FAILED tests/test_openbb_inventory_guard.py::test_report_exit_code_differs_between_the_two_records
+  | ========================= 2 failed, 26 passed in 0.18s =========================
+
+[COUNT CLAIM] F6 计数声明漂移：provider_count 32 改 31
+  pytest rc=1 -> RED（植入被打红），符合期望
+  | E     
+  | E     Left contains one more item: 'COUNT CLAIM: provider_count: 31, the body has 32'
+  | E     Use -v to get more diff
+  | ____________ test_report_exit_code_differs_between_the_two_records _____________
+  | tests/test_openbb_inventory_guard.py:205: in test_report_exit_code_differs_between_the_two_records
+  |     assert (before_exit, after_exit) == (1, 0)
+  | E   assert (1, 1) == (1, 0)
+  | E     
+  | E     At index 1 diff: 1 != 0
+  | E     Use -v to get more diff
+  | =========================== short test summary info ============================
+  | FAILED tests/test_openbb_inventory_guard.py::test_shipped_record_agrees_with_the_tree
+  | FAILED tests/test_openbb_inventory_guard.py::test_report_exit_code_differs_between_the_two_records
+  | ========================= 2 failed, 26 passed in 0.18s =========================
+
+[MISSING ROW] F7 删掉整条 ths 行（改名占位）：注册表 11 条能力没了准绳
+  pytest rc=1 -> RED（植入被打红），符合期望
+  | E     
+  | E     Left contains 2 more items, first extra item: 'MISSING ROW: `ths` registers 11 capabilities and has no row in either section, so the progress baseline cannot see it'
+  | E     Use -v to get more diff
+  | ____________ test_report_exit_code_differs_between_the_two_records _____________
+  | tests/test_openbb_inventory_guard.py:205: in test_report_exit_code_differs_between_the_two_records
+  |     assert (before_exit, after_exit) == (1, 0)
+  | E   assert (1, 1) == (1, 0)
+  | E     
+  | E     At index 1 diff: 1 != 0
+  | E     Use -v to get more diff
+  | =========================== short test summary info ============================
+  | FAILED tests/test_openbb_inventory_guard.py::test_shipped_record_agrees_with_the_tree
+  | FAILED tests/test_openbb_inventory_guard.py::test_report_exit_code_differs_between_the_two_records
+  | ========================= 2 failed, 26 passed in 0.18s =========================
+
+[RIGHTS LINK] F8 权利行名写错一个字：RIGHTS LINK 要分辨得出错字
+  pytest rc=1 -> RED（植入被打红），符合期望
+  | E     
+  | E     Left contains one more item: 'RIGHTS LINK: `ths` names rights row `同花顺扶摇 APY`, which is not a 数据源 of the registration table'
+  | E     Use -v to get more diff
+  | ____________ test_report_exit_code_differs_between_the_two_records _____________
+  | tests/test_openbb_inventory_guard.py:205: in test_report_exit_code_differs_between_the_two_records
+  |     assert (before_exit, after_exit) == (1, 0)
+  | E   assert (1, 1) == (1, 0)
+  | E     
+  | E     At index 1 diff: 1 != 0
+  | E     Use -v to get more diff
+  | =========================== short test summary info ============================
+  | FAILED tests/test_openbb_inventory_guard.py::test_shipped_record_agrees_with_the_tree
+  | FAILED tests/test_openbb_inventory_guard.py::test_report_exit_code_differs_between_the_two_records
+  | ========================= 2 failed, 26 passed in 0.18s =========================
+
+[CONTROL] F9 控制组：不做任何植入，判据必须全绿
+  pytest rc=0 -> GREEN（判据全绿），符合期望
+  | ============================= test session starts ==============================
+  | platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+  | benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+  | rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+  | configfile: pytest.ini
+  | plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+  | asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+  | collected 28 items
+  | tests/test_openbb_inventory_guard.py ............................        [100%]
+  | ============================== 28 passed in 0.13s ==============================
+
+植入撤销后 docs/proposals 的 git status：M docs/proposals/openbb-migration/README.md
+ M docs/proposals/openbb-migration/provider-inventory.yaml
+（应只剩本轮的真实修改：M provider-inventory.yaml，不含任何植入残留）
+survivors (与期望判决相反的植入): (none)
+control green: True
+DRIVER_EXIT=0
