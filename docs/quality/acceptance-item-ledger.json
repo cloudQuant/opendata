@@ -428,15 +428,31 @@
       "state": "unreviewed"
     },
     "AC-17|06|5fc2e9f4": {
-      "state": "gap",
-      "round": "C36",
+      "state": "proven",
+      "round": "C38b",
       "date": "2026-09-26",
-      "command": "python -m coverage report --include='opendata/{data,pipeline}/*' 'opendata_fuyao/*' --no-skip-covered（数据源 = 本轮 gate 的 .coverage）",
+      "command": "make gate 的覆盖率成员（python -m pytest tests -n 8 -m 'not e2e' --cov-branch --cov=opendata --cov=opendata_fuyao --cov-report=term --cov-report=xml:coverage.xml --cov-report=html:htmlcov --cov-fail-under=84），三张面按合成分母 (stmts-miss+branches-partial)/(stmts+branches) 从该遍自带的 term 表复算，并用同一遍的 coverage.xml 独立复核",
       "evidence": [
+        "docs/evidence/C38b/README.md",
+        "docs/evidence/C38b/gate-run1.txt",
+        "docs/evidence/C38b/coverage-report-receipt-run1.txt",
+        "docs/evidence/C38b/coverage-probe1.txt",
+        "docs/evidence/C38b/coverage-probe2.txt",
+        "docs/evidence/C38b/coverage-probe3.txt",
+        "docs/evidence/C38b/mutation-proof.txt",
+        "docs/evidence/C38b/mutation-proof-run1-e2e-polluted.txt",
+        "docs/evidence/C38b/warehouse-state-probe.txt",
         "docs/evidence/C36/coverage-per-module.txt",
-        "docs/evidence/C36/gate.txt"
+        "docs/evidence/C38b/gate-run2.txt",
+        "docs/evidence/C38b/coverage-faces-across-runs.txt",
+        "docs/evidence/C38b/a2-compliance.txt",
+        "docs/evidence/C38b/mutation-proof.py",
+        "docs/evidence/C38b/mutation-proof-runA-tmp-runner.txt",
+        "docs/evidence/C38b/mutation-proof-two-runs-diff.txt",
+        "docs/evidence/C38b/coverage-face-recompute.py",
+        "docs/evidence/C38b/post-backfill-members.txt"
       ],
-      "reason": "条目要求三个模块各自 ≥90%：实测 opendata/data 91.98%、opendata_fuyao 95.76% 达标，**opendata/pipeline 85.32% 未达**（最差 notify.py 51.81%、factor_builder.py 52.81%、templates.py 62.35%、ods_writer.py 63.58%、watermark.py 72.88%）。另一半“A2 新代码 statement+branch ≥85%”本轮无可核对分母（a2_check 不产覆盖率），故整条不勾；全局 86.78% 只是背景数，不能当判据。"
+      "note": "C36 记 gap 的那半句现在闭合了：opendata/pipeline 85.32% → **91.68%**（2985/3256 units，门禁 gate-run1 自带的 term 表；同遍 coverage.xml 独立复算同一张面、27 个文件逐个四元组 0 处不符），opendata/data 92.49%、opendata_fuyao 95.76%；「A2 新代码 ≥85」的『无可核对分母』也给了公开口径（A2 文件集 ∩ 覆盖率面 = 148/318，stmts=8544 miss=730 branches=2068 partial=230 ⇒ 90.95%）。补的是 82 条单元用例，产品代码 0 行，没动 exclude_lines／没加 pragma／没跑棘轮 --update；非恒真性由 10 个变异全红 + sha256 还原来证明。**三条边界按原样登记而不是被这勾盖掉**：①『报告非空归档』按『产出＋非空＋指纹可核』读，htmlcov/ 与 coverage.xml 被 .gitignore:40/:49 排除、本体不入仓 ⇒ 若验收要求仓内有本体，该勾应退回；②A2 分母是本轮定义的口径，换分母（只算本轮新增行）读数会变；③『误跑面』如实入库——第一次变异巡回的 pytest 命令漏了 -m 'not e2e'，导致数仓 e2e 类对生产 MySQL 真跑了一遍，该表 batch_watermark 现为 0 行且无跑前快照（AUTO_INCREMENT=107 只是弱指示，不可据此定量），已把 fixture 的清理从按 domain 全删改成按 seq 有界删除，污染那份日志原样留档；另由此量到 batch_watermark 不是持久审计面，登记为独立缺口（未在本轮修）。 复算面另一档：`coverage-faces-across-runs.txt` 显示两次门禁的整张覆盖率表逐行 diff=0（pipeline 面 27 文件四元组相同）；`gate.txt`（第三遍，跑在本轮把 `coverage-face-recompute.py`／`mutation-proof.py` 落进 a2-check 清扫面之后的最终树）**不在本条 evidence 里**——门禁自己的日志无法在它自己运行的那一刻已被 git 跟踪，这是规则的正确顺序而不是遗漏，它的读数记在同目录 README §7。A2 面读数 `A2_EXIT=0`／`A2 files: 320`（含本轮两份新脚本，`a2-compliance.txt` [G]）。"
     },
     "AC-17|07|d25cc7b2": {
       "state": "unreviewed"
