@@ -1,0 +1,33 @@
+===== C36 判据文本加性更正 → 条目 key 漂移（改文档前的实跑读数）=====
+captured_at=2026-09-26T12:27:32Z branch=dev HEAD=b4af81b
+命令：python scripts/quality/acceptance_ledger_check.py（未 --scaffold，台账仍是 b4af81b 之后 scaffold 的旧 key）
+说明：AC-16 条目 5 / AC-17 条目 1 只做了『加性更正』（原文一字未删，句末追加〔C36 更正…〕）。
+      条目 key = sha256(归一化文本)[:8]，因此改判据措辞必然让旧条目变孤儿、新文本缺登记——
+      这正是本轮要的机器效果：放宽或改写判据不可能悄悄发生。
+--- output ---
+FAIL: the two acceptance books disagree (23 finding(s)):
+  - item has no ledger entry: AC-16|05|6fd7f517
+  - item has no ledger entry: AC-17|01|7a95c68e
+  - ledger entry matches no item (criterion re-worded or removed): AC-16|05|d94a12a1
+  - ledger entry matches no item (criterion re-worded or removed): AC-17|01|a2c531a5
+  - AC-1 (line 354): must disclose 条目级 0/10
+  - AC-2 (line 355): must disclose 条目级 0/5
+  - AC-3 (line 356): must disclose 条目级 0/5
+  - AC-4 (line 357): must disclose 条目级 0/3
+  - AC-5 (line 358): must disclose 条目级 0/7
+  - AC-6 (line 359): must disclose 条目级 0/3
+  - AC-7 (line 360): must disclose 条目级 0/6
+  - AC-8 (line 361): must disclose 条目级 0/8
+  - AC-9 (line 362): must disclose 条目级 0/9
+  - AC-10 (line 363): must disclose 条目级 0/5
+  - AC-11 (line 364): must disclose 条目级 0/12
+  - AC-12 (line 365): must disclose 条目级 0/3
+  - AC-13 (line 366): must disclose 条目级 0/8
+  - AC-14 (line 367): must disclose 条目级 0/3
+  - AC-15 (line 368): must disclose 条目级 0/2
+  - AC-16 (line 369): must disclose 条目级 0/9
+  - AC-17 (line 370): must disclose 条目级 0/10
+  - AC-18 (line 371): must disclose 条目级 0/3
+  - AC-19 (line 372): must disclose 条目级 0/5
+census: items=130 proven=0 gap=0 unreviewed=128 ticked=0
+CHECK_EXIT=1

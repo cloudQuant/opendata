@@ -1,0 +1,11 @@
+# C36 证据：文档回填完成后的最终一次 ledger-check（完整未裁剪）
+# 采集时间: 2026-09-26 14:52:07 CEST   分支: dev   HEAD: b4af81b
+# 命令: python scripts/quality/acceptance_ledger_check.py ; python scripts/quality/acceptance_ledger_check.py --self-test
+# 与 gate.txt 的关系: gate.txt 里的 ledger-check 跑在本轮勾选之前（proven=2）；本档是 AC-17 条目 1/2/4/9 勾选 + 条目 6 记 gap 之后的复跑
+
+census: items=130 proven=6 gap=4 unreviewed=120 ticked=6
+OK: items=130 proven=6 gap=4 unreviewed=120 ticked=6 across 22 group(s) and 19 §10 row(s) reconcile.
+LEDGER_CHECK_EXIT=0
+
+OK: ledger self-test passed (7 drifts caught, plus missing-evidence and missing-command claims).
+SELF_TEST_EXIT=0

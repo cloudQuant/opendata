@@ -1,0 +1,158 @@
+# C36 证据：AC-17 条目 6 的覆盖率面（按模块逐个量，不合并、不裁剪）
+# 采集时间: 2026-09-26 14:46:01 CEST   分支: dev   HEAD: b4af81b
+# 数据源: 本轮 make gate 的 test-cov 产物 .coverage / coverage.xml（2026-09-26 14:38，2912 passed / 6 skipped / TOTAL 86.78%，见 gate.txt:6461-6466）
+# 命令: python -m coverage report --include=<模块>/* --no-skip-covered
+# 判据（条目 6 原文）: A2 新代码 statement+branch ≥85%，且 opendata/data、pipeline、opendata_fuyao ≥90%；报告（xml+html）非空归档
+# 结论写法: 三个模块里 pipeline 未达 90% -> 条目 6 记 gap，不勾选
+
+=== opendata/data（全文件，未裁剪）===
+Name                                                            Stmts   Miss Branch BrPart   Cover
+--------------------------------------------------------------------------------------------------
+opendata/data/__init__.py                                           0      0      0      0 100.00%
+opendata/data/adjust.py                                            28      3     14      1  90.48%
+opendata/data/capability.py                                        16      0      0      0 100.00%
+opendata/data/domains.py                                           90      4     30      1  95.83%
+opendata/data/http_client.py                                      178      4     40      4  96.33%
+opendata/data/mapping.py                                          141     24     56     14  79.70%
+opendata/data/models/__init__.py                                   10      0      0      0 100.00%
+opendata/data/models/adjustment.py                                 15      0      0      0 100.00%
+opendata/data/models/base.py                                       52      4     20      1  93.06%
+opendata/data/models/financial.py                                  19      0      0      0 100.00%
+opendata/data/models/futures.py                                    10      0      0      0 100.00%
+opendata/data/models/index.py                                       8      0      0      0 100.00%
+opendata/data/models/macro.py                                       7      0      0      0 100.00%
+opendata/data/models/market.py                                     21      0      0      0 100.00%
+opendata/data/models/metadata.py                                   18      0      0      0 100.00%
+opendata/data/openbb_map.py                                        79      5     22      5  90.10%
+opendata/data/protocol.py                                          37      4      2      1  87.18%
+opendata/data/providers/__init__.py                                10      0      0      0 100.00%
+opendata/data/providers/akshare/__init__.py                         3      0      0      0 100.00%
+opendata/data/providers/akshare/_source.py                          2      0      0      0 100.00%
+opendata/data/providers/akshare/models/__init__.py                  6      0      0      0 100.00%
+opendata/data/providers/akshare/models/_normalize.py               28      2     10      2  89.47%
+opendata/data/providers/akshare/models/bond_daily.py               39      2     12      0  96.08%
+opendata/data/providers/akshare/models/financial_indicator.py      45      3     16      3  90.16%
+opendata/data/providers/akshare/models/financial_statement.py      42      4     12      2  88.89%
+opendata/data/providers/akshare/models/fund_etf_daily.py           27      2      4      0  93.55%
+opendata/data/providers/akshare/models/futures_daily.py            29      2      8      0  94.59%
+opendata/data/providers/akshare/models/index_constituent.py        35      4      8      2  86.05%
+opendata/data/providers/akshare/models/index_daily.py              26      0      4      0 100.00%
+opendata/data/providers/akshare/models/option_daily.py             28      2      6      0  94.12%
+opendata/data/providers/akshare/models/stock_action.py             88      4     28      2  94.83%
+opendata/data/providers/akshare/models/stock_daily.py              28      1      4      1  93.75%
+opendata/data/providers/akshare/registration.py                    30      3      8      1  89.47%
+opendata/data/providers/ecb/__init__.py                             2      0      0      0 100.00%
+opendata/data/providers/ecb/_source.py                              2      0      0      0 100.00%
+opendata/data/providers/ecb/models/__init__.py                      0      0      0      0 100.00%
+opendata/data/providers/ecb/models/_client.py                      35      6     10      4  77.78%
+opendata/data/providers/ecb/models/_series.py                      40      3     10      1  88.00%
+opendata/data/providers/ecb/models/cpi.py                           6      0      0      0 100.00%
+opendata/data/providers/ecb/models/gdp.py                           6      0      0      0 100.00%
+opendata/data/providers/ecb/models/rate.py                          6      0      0      0 100.00%
+opendata/data/providers/ecb/registration.py                        24      3      8      2  84.38%
+opendata/data/providers/fred/__init__.py                            2      0      0      0 100.00%
+opendata/data/providers/fred/_source.py                             2      0      0      0 100.00%
+opendata/data/providers/fred/models/__init__.py                     0      0      0      0 100.00%
+opendata/data/providers/fred/models/_client.py                     48     10     14      4  74.19%
+opendata/data/providers/fred/models/_series.py                     33      1      4      1  94.59%
+opendata/data/providers/fred/models/cpi.py                          6      0      0      0 100.00%
+opendata/data/providers/fred/models/gdp.py                          6      0      0      0 100.00%
+opendata/data/providers/fred/models/unemployment.py                 6      0      0      0 100.00%
+opendata/data/providers/fred/registration.py                       24      3      8      2  84.38%
+opendata/data/providers/imf/__init__.py                             2      0      0      0 100.00%
+opendata/data/providers/imf/_source.py                              2      0      0      0 100.00%
+opendata/data/providers/imf/models/__init__.py                      0      0      0      0 100.00%
+opendata/data/providers/imf/models/_client.py                      31      5      4      0  80.00%
+opendata/data/providers/imf/models/_indicator.py                   34      1      6      1  95.00%
+opendata/data/providers/imf/models/cpi.py                           6      0      0      0 100.00%
+opendata/data/providers/imf/models/gdp.py                           6      0      0      0 100.00%
+opendata/data/providers/imf/models/unemployment.py                  6      0      0      0 100.00%
+opendata/data/providers/imf/registration.py                        24      3      8      2  84.38%
+opendata/data/providers/oecd/__init__.py                            2      0      0      0 100.00%
+opendata/data/providers/oecd/_source.py                             2      0      0      0 100.00%
+opendata/data/providers/oecd/models/__init__.py                     0      0      0      0 100.00%
+opendata/data/providers/oecd/models/_client.py                     49     12     20      7  69.57%
+opendata/data/providers/oecd/models/cpi.py                         31      0      0      0 100.00%
+opendata/data/providers/oecd/models/unemployment.py                32      3      0      0  90.62%
+opendata/data/providers/oecd/registration.py                       23      3      8      2  83.87%
+opendata/data/providers/ths/__init__.py                             2      0      0      0 100.00%
+opendata/data/providers/ths/_source.py                              2      0      0      0 100.00%
+opendata/data/providers/ths/models/__init__.py                      0      0      0      0 100.00%
+opendata/data/providers/ths/models/_client.py                      66      1     22      1  97.73%
+opendata/data/providers/ths/models/financial_statement.py          38      0     12      0 100.00%
+opendata/data/providers/ths/models/fund_action.py                  26      1      4      1  93.33%
+opendata/data/providers/ths/models/fund_etf_daily.py               32      0      4      0 100.00%
+opendata/data/providers/ths/models/futures_daily.py                25      0      2      0 100.00%
+opendata/data/providers/ths/models/index_constituent.py            25      0      4      0 100.00%
+opendata/data/providers/ths/models/index_daily.py                  25      0      2      0 100.00%
+opendata/data/providers/ths/models/instrument.py                   43      1     16      1  96.61%
+opendata/data/providers/ths/models/option_daily.py                 25      0      2      0 100.00%
+opendata/data/providers/ths/models/stock_action.py                 21      1      2      1  91.30%
+opendata/data/providers/ths/models/stock_daily.py                  29      0      4      0 100.00%
+opendata/data/providers/ths/models/trading_calendar.py             39      1     10      1  95.92%
+opendata/data/providers/ths/registration.py                        32      3      8      1  90.00%
+opendata/data/providers/yfinance/__init__.py                        2      0      0      0 100.00%
+opendata/data/providers/yfinance/_source.py                         2      0      0      0 100.00%
+opendata/data/providers/yfinance/models/__init__.py                 0      0      0      0 100.00%
+opendata/data/providers/yfinance/models/_sdk.py                    35      1     12      2  93.62%
+opendata/data/providers/yfinance/models/stock_daily.py             81      0     18      0 100.00%
+opendata/data/providers/yfinance/registration.py                   22      3      8      2  83.33%
+opendata/data/registry.py                                         104      5     40      3  94.44%
+--------------------------------------------------------------------------------------------------
+TOTAL                                                            2369    147    574     79  91.98%
+
+=== opendata/pipeline（全文件，未裁剪）===
+Name                                       Stmts   Miss Branch BrPart   Cover
+-----------------------------------------------------------------------------
+opendata/pipeline/__init__.py                  3      0      0      0 100.00%
+opendata/pipeline/alerts.py                   42      3     10      1  92.31%
+opendata/pipeline/cross_check.py             119      9     38      7  89.81%
+opendata/pipeline/cross_check_service.py      49      9      8      3  78.95%
+opendata/pipeline/ddl.py                      86      6     30      6  89.66%
+opendata/pipeline/diff_report.py              49      9      6      1  78.18%
+opendata/pipeline/dump_import.py              92     15     16      2  84.26%
+opendata/pipeline/dwd_merge.py               139     21     50      7  84.13%
+opendata/pipeline/factor_builder.py           77     35     12      1  52.81%
+opendata/pipeline/factors.py                  73      4     28      2  94.06%
+opendata/pipeline/freshness.py               150      8     42      7  92.19%
+opendata/pipeline/jobs.py                    162     30     24      1  82.26%
+opendata/pipeline/key_health.py              188      3     76      2  98.11%
+opendata/pipeline/notify.py                   71     35     12      1  51.81%
+opendata/pipeline/ods_writer.py              118     40     44      7  63.58%
+opendata/pipeline/partitions.py               68     11     20      3  79.55%
+opendata/pipeline/patrol.py                  218      6     38      1  97.27%
+opendata/pipeline/query.py                   100      4     32      4  93.94%
+opendata/pipeline/retention.py               108     17     34      1  87.32%
+opendata/pipeline/retry.py                    36      5     10      3  82.61%
+opendata/pipeline/runner.py                  160     11     28      3  92.55%
+opendata/pipeline/scheduling.py               17      0      8      0 100.00%
+opendata/pipeline/subscription.py            165      8     40      3  94.63%
+opendata/pipeline/table_page.py               30      2     12      1  92.86%
+opendata/pipeline/templates.py               138     46     24      7  62.35%
+opendata/pipeline/trading_calendar.py         73      7     24      4  88.66%
+opendata/pipeline/watermark.py                53     15      6      1  72.88%
+-----------------------------------------------------------------------------
+TOTAL                                       2584    359    672     79  85.32%
+
+=== opendata_fuyao（全文件，未裁剪）===
+Name                             Stmts   Miss Branch BrPart   Cover
+-------------------------------------------------------------------
+opendata_fuyao/__init__.py           6      0      0      0 100.00%
+opendata_fuyao/credentials.py       45      2     12      2  92.98%
+opendata_fuyao/dumps.py            139      4     28      2  96.41%
+opendata_fuyao/endpoint_map.py     140      0     48      0 100.00%
+opendata_fuyao/endpoints.py        435     15    194     12  95.71%
+opendata_fuyao/envelope.py          42      0     14      1  98.21%
+opendata_fuyao/errors.py            68      3      8      3  92.11%
+opendata_fuyao/http_client.py      101      5     22      3  93.50%
+opendata_fuyao/rate_limiter.py      53      3     14      3  91.04%
+-------------------------------------------------------------------
+TOTAL                             1029     32    340     26  95.76%
+
+=== 全局 / 产物非空性 ===
+--------------------------------------------------------------------------------------------------
+TOTAL                                                           10942   1282   2692    300  86.78%
+-rw-r--r--@ 1 yunjinqi  staff  501229 Sep 26 14:39 coverage.xml
+-rw-r--r--@ 1 yunjinqi  staff   80538 Sep 26 14:39 htmlcov/index.html
+coverage.xml line-rate: 0.8828 branch-rate: 0.8068 classes: 198
+htmlcov bytes: 80538

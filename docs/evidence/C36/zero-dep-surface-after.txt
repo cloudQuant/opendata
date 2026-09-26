@@ -1,0 +1,142 @@
+===== C36 零依赖扫描面：改动后（扫描面账本入档）=====
+captured_at=2026-09-26T14:11:13+02:00
+branch=dev HEAD=b4af81b
+reproducer=docs/evidence/C36/zero-dep-surface-after.sh（本日志由它一次性跑完，未裁剪）
+v1 baseline=docs/evidence/C36/zero-dep-baseline-v1.json（= b4af81b:docs/quality/zero-dep-baseline.json 逐字节副本，cmp 已核）
+本轮判据：扫描面静默变更即失败（包集合、文件数、工具版本入库）；文件数按精确相等判定，两个方向的偏离都必须红
+--- output ---
+=== [0] interpreter / tooling ===
+Python 3.13.5
+python_executable: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+ruff 0.15.20
+mypy 2.3.1 (compiled: yes)
+
+=== [1] restore the v1 baseline that HEAD carries ===
+restore_rc=0
+v1 top-level fields: ['count', 'findings', 'scope', 'version']
+v1 has a file census?   False
+v1 pins a scanner ver?  False
+v1 pins interpreters?   False
+v1 scope               : ['opendata', 'opendata_http', 'opendata_fuyao', 'opendata_providers', 'opendata_client']
+v1 count               : 3
+
+=== [2] HEAD's scanner walking the same tree (the device before this round) ===
+HEAD DEFAULT_TARGETS: ('opendata', 'opendata_http', 'opendata_fuyao', 'opendata_providers', 'opendata_client')
+  opendata: is_dir=True walked_files=191
+  opendata_http: is_dir=True walked_files=313
+  opendata_fuyao: is_dir=True walked_files=9
+  opendata_providers: is_dir=False walked_files=0
+  opendata_client: is_dir=True walked_files=2
+HEAD total files walked: 515
+HEAD raises on a missing/empty target?   False
+
+=== [3] self-test of the hardened scanner (guards must bite both ways) ===
+OK: scanner self-test passed (8 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+SELFTEST_EXIT=0
+
+=== [4] lint / type views of the changed files ===
+All checks passed!
+RUFF_EXIT=0
+1 file already formatted
+RUFF_FORMAT_EXIT=0
+pyproject.toml: note: unused section(s): module = ['opendata.data_fetch.*', 'opendata_http.*']
+Success: no issues found in 1 source file
+MYPY_RC=0
+
+=== [5] check against the v1 baseline: must fail, and must name the field ===
+FAIL: baseline version is 1, this scanner writes 2; re-freeze with --update only after reviewing the diff
+V1_CHECK_EXIT=1
+
+=== [6] freeze v2 ===
+Wrote docs/quality/zero-dep-baseline.json: 3 frozen reference(s) across 515 file(s).
+FREEZE_EXIT=0
+{
+  "version": 2,
+  "scanner_version": 2,
+  "python_minors": [
+    "3.11",
+    "3.13"
+  ],
+  "scope": [
+    "opendata",
+    "opendata_http",
+    "opendata_fuyao",
+    "opendata_client"
+  ],
+  "files": {
+    "opendata": 191,
+    "opendata_client": 2,
+    "opendata_fuyao": 9,
+    "opendata_http": 313
+  },
+  "count": 3,
+  "findings": [
+    {
+      "file": "opendata/data/openbb_map.py",
+      "line": 125,
+      "module": "openbb",
+      "kind": "string"
+    },
+    {
+      "file": "opendata/models/data_script.py",
+      "line": 74,
+      "module": "akshare",
+      "kind": "string"
+    },
+    {
+      "file": "opendata/pipeline/patrol.py",
+      "line": 468,
+      "module": "akshare",
+      "kind": "string"
+    }
+  ]
+}
+
+=== [7] check against v2 ===
+OK: 515 file(s) walked (opendata=191, opendata_client=2, opendata_fuyao=9, opendata_http=313), python 3.13, scanner 2; no new upstream references (frozen baseline: 3).
+V2_CHECK_EXIT=0
+
+=== [8] the frozen residuals are the same three; only the device grew ===
+v1 count: 3  v2 count: 3
+v1 identities: [["opendata/data/openbb_map.py", "openbb", "string"], ["opendata/models/data_script.py", "akshare", "string"], ["opendata/pipeline/patrol.py", "akshare", "string"]]
+v2 identities: [["opendata/data/openbb_map.py", "openbb", "string"], ["opendata/models/data_script.py", "akshare", "string"], ["opendata/pipeline/patrol.py", "akshare", "string"]]
+same residual set: True
+dropped from scope: ['opendata_providers']
+  opendata/data/openbb_map.py: 125 -> 125
+  opendata/models/data_script.py: 74 -> 74
+  opendata/pipeline/patrol.py: 93 -> 468  (line drift; identity is line-insensitive)
+
+=== [9] the census is not self-reported fiction: recount with find(1) ===
+  opendata: 191
+  opendata_client: 2
+  opendata_fuyao: 9
+  opendata_http: 313
+  total: 515
+  find opendata -> 191
+  find opendata_http -> 313
+  find opendata_fuyao -> 9
+  find opendata_client -> 2
+  find opendata_providers -> no such directory (correctly dropped from scope)
+
+=== [10] census divergence must go red in both directions ===
+--- [10a] archived count lower than the walk: the tree grew past the archive ---
+census tampered: opendata_http archived 313 -> 312 (reality is 313)
+FAIL: the scan surface moved:
+  - archived file census no longer describes the tree: opendata_http archived 312 but walks 313 file(s)
+  Re-freeze with --update only when the move is intended; a package that lost files is a package that stopped being looked at, and a census that no longer matches the tree is a number nobody can read as evidence.
+STALE_CHECK_EXIT=1
+--- [10b] archived count higher than the walk: the surface shrank ---
+census tampered: opendata_http archived 313 -> 314 (reality is 313)
+FAIL: the scan surface moved:
+  - scan surface shrank: opendata_http 314 -> 313 file(s)
+  Re-freeze with --update only when the move is intended; a package that lost files is a package that stopped being looked at, and a census that no longer matches the tree is a number nobody can read as evidence.
+SHRINK_CHECK_EXIT=1
+restored_pristine_rc=0
+baseline restored byte-for-byte
+
+=== [11] final reading with the pristine v2 baseline ===
+OK: 515 file(s) walked (opendata=191, opendata_client=2, opendata_fuyao=9, opendata_http=313), python 3.13, scanner 2; no new upstream references (frozen baseline: 3).
+FINAL_CHECK_EXIT=0
+ docs/quality/zero-dep-baseline.json | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+SCRIPT_EXIT=0

@@ -1,0 +1,41 @@
+===== C36 验收文档两本账对账：改动前（130 条 0 勾 ↔ 19 行 §10 状态）=====
+captured_at=2026-09-26T14:21:34+02:00
+branch=dev HEAD=b4af81b
+命令：python scripts/quality/acceptance_ledger_check.py --scaffold && python scripts/quality/acceptance_ledger_check.py
+判据：条目级勾选 ⇔ 台账 proven 记录（命令 + 仓库内证据文件存在）；每条 §10 行必须披露 条目级 k/m；宣称完成而 k<m 必须同时带 未逐条达标
+说明：--scaffold 只生成「全部 unreviewed」的镜像台账，不产生任何 proven/勾选
+--- self-test（守卫自身必须两个方向都咬得住）---
+OK: ledger self-test passed (7 drifts caught, plus missing-evidence and missing-command claims).
+--- scaffold + check 原始输出 ---
+FAIL: docs/quality/acceptance-item-ledger.json exists; --scaffold --force would reset 130 entries to unreviewed and destroy proven claims
+SCAFFOLD_EXIT=1
+FAIL: the two acceptance books disagree (19 finding(s)):
+  - AC-1 (line 354): must disclose 条目级 0/10
+  - AC-2 (line 355): must disclose 条目级 0/5
+  - AC-3 (line 356): must disclose 条目级 0/5
+  - AC-4 (line 357): must disclose 条目级 0/3
+  - AC-5 (line 358): must disclose 条目级 0/7
+  - AC-6 (line 359): must disclose 条目级 0/3
+  - AC-7 (line 360): must disclose 条目级 0/6
+  - AC-8 (line 361): must disclose 条目级 0/8
+  - AC-9 (line 362): must disclose 条目级 0/9
+  - AC-10 (line 363): must disclose 条目级 0/5
+  - AC-11 (line 364): must disclose 条目级 0/12
+  - AC-12 (line 365): must disclose 条目级 0/3
+  - AC-13 (line 366): must disclose 条目级 0/8
+  - AC-14 (line 367): must disclose 条目级 0/3
+  - AC-15 (line 368): must disclose 条目级 0/2
+  - AC-16 (line 369): must disclose 条目级 0/9
+  - AC-17 (line 370): must disclose 条目级 0/10
+  - AC-18 (line 371): must disclose 条目级 0/3
+  - AC-19 (line 372): must disclose 条目级 0/5
+census: items=130 proven=0 gap=0 unreviewed=130 ticked=0
+CHECK_EXIT=1
+
+--- 台账镜像（截取自 docs/quality/acceptance-item-ledger.json 的顶层字段与 group_counts）---
+version      = 1
+doc          = docs/迭代计划/迭代1-重构数据中台/验收文档.md
+items_total  = 130
+group_counts = {"AC-1": 10, "AC-10": 5, "AC-11": 12, "AC-12": 3, "AC-13": 8, "AC-14": 3, "AC-15": 2, "AC-16": 9, "AC-17": 10, "AC-18": 3, "AC-19": 5, "AC-2": 5, "AC-3": 5, "AC-4": 3, "AC-5": 7, "AC-6": 3, "AC-7": 6, "AC-8": 8, "AC-9": 9, "§4": 5, "§5": 5, "§6": 4}
+items 条目数 = 130
+状态分布     = Counter({'unreviewed': 130})

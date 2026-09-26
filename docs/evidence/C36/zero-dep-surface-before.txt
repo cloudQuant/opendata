@@ -1,0 +1,23 @@
+===== C36 零依赖扫描面：改动前（HEAD 版扫描器）=====
+captured_at=2026-09-26T13:54:42+02:00
+branch=dev HEAD=b4af81b
+scanner=docs/evidence/C36/zero_dep_scanner_HEAD.py（= b4af81b:scripts/codemod/verify_no_akshare.py 逐字节副本）
+cmp: 与 HEAD 版本字节一致
+说明: 副本按 __file__ 反推仓库根（parents[2]），放在 docs/evidence 下会指错，
+      因此下面只把 REPO_ROOT 显式设为仓库根，其余逻辑与 HEAD 完全一致。
+--- output ---
+DEFAULT_TARGETS = ('opendata', 'opendata_http', 'opendata_fuyao', 'opendata_providers', 'opendata_client')
+BASELINE_VERSION = 1
+--- check() 原样跑 ---
+OK: no new upstream references (frozen baseline: 3).
+exit = 0
+--- 逐 target 文件数普查（HEAD 版自己的 iter_target_files）---
+  opendata               目录存在=True  走查到文件数=191
+  opendata_http          目录存在=True  走查到文件数=313
+  opendata_fuyao         目录存在=True  走查到文件数=9
+  opendata_providers     目录存在=False 走查到文件数=0
+  opendata_client        目录存在=True  走查到文件数=2
+合计走查 = 515
+baseline 顶层字段 = ['count', 'findings', 'scope', 'version']
+baseline 里有没有文件数普查/工具版本字段 = 无
+baseline.scope = ['opendata', 'opendata_http', 'opendata_fuyao', 'opendata_providers', 'opendata_client']  count = 3

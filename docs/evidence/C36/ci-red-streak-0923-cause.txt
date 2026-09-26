@@ -1,0 +1,187 @@
+===== C36 CI 首三条红（2026-09-23）的真实挂点：失败日志尾部读数 =====
+captured_at=2026-09-26T12:39:05Z branch=dev HEAD=b4af81b
+命令：gh run view <id> --log-failed | tail -n 30（逐条跑，不把 curl_cffi 的说法 retroactively 安到这三次头上）
+
+===== run 35805289557 : 失败日志尾部 30 行 =====
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1253420Z  2026-09-23T01:12:23.174817Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1254920Z  2026-09-23T01:12:23.176013Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1255936Z  2026-09-23T01:12:23.185723Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Socket: /var/run/mysqld/mysqlx.sock
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1257106Z  2026-09-23T01:12:23.185806Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.46'  socket: '/var/run/mysqld/mysqld.sock'  port: 0  MySQL Community Server - GPL.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1257762Z  Warning: Unable to load '/usr/share/zoneinfo/iso3166.tab' as time zone. Skipping it.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1258208Z  Warning: Unable to load '/usr/share/zoneinfo/leap-seconds.list' as time zone. Skipping it.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1258982Z  Warning: Unable to load '/usr/share/zoneinfo/leapseconds' as time zone. Skipping it.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1259519Z  Warning: Unable to load '/usr/share/zoneinfo/tzdata.zi' as time zone. Skipping it.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1259923Z  Warning: Unable to load '/usr/share/zoneinfo/zone.tab' as time zone. Skipping it.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1260320Z  Warning: Unable to load '/usr/share/zoneinfo/zone1970.tab' as time zone. Skipping it.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1260867Z  2026-09-23T01:12:24.532660Z 13 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.0.46).
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1261516Z  2026-09-23T01:12:25.746723Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.46)  MySQL Community Server - GPL.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1262290Z  2026-09-23T01:12:26.706807Z 0 [Warning] [MY-011068] [Server] The syntax '--skip-host-cache' is deprecated and will be removed in a future release. Please use SET GLOBAL host_cache_size=0 instead.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1262988Z  2026-09-23T01:12:26.707396Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.46) starting as process 1
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1263464Z  2026-09-23T01:12:26.711557Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1263886Z  2026-09-23T01:12:26.901112Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1264321Z  2026-09-23T01:12:27.023461Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1264929Z  2026-09-23T01:12:27.023497Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1265791Z  2026-09-23T01:12:27.151753Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1266618Z  2026-09-23T01:12:27.163818Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /var/run/mysqld/mysqlx.sock
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1267453Z  2026-09-23T01:12:27.163888Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.46'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1268538Z  2026-09-23T01:15:08.980102Z 33 [Warning] [MY-013360] [Server] Plugin mysql_native_password reported: ''mysql_native_password' is deprecated and will be removed in a future release. Please use caching_sha2_password instead'
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1274113Z Stop and remove container: 68c417f9a2d14245b4c9dd3ab73ae6c5_mysql80_faf25e
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.1278596Z ##[command]/usr/bin/docker rm --force 58e4a3de01bc84849d33f54181cd77285dd4ef0cf7d3973d150edf865c651320
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.6104322Z 58e4a3de01bc84849d33f54181cd77285dd4ef0cf7d3973d150edf865c651320
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.6129931Z Remove container network: github_network_fb1483375cae4eef90cc3c65d1790578
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.6133236Z ##[command]/usr/bin/docker network rm github_network_fb1483375cae4eef90cc3c65d1790578
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.7069081Z github_network_fb1483375cae4eef90cc3c65d1790578
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.7129758Z Cleaning up orphan processes
+quality gate	UNKNOWN STEP	2026-09-23T01:15:23.7415543Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+===== run 35823639209 : 失败日志尾部 30 行 =====
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2165591Z  2026-09-23T05:44:34.351331Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2166762Z  2026-09-23T05:44:34.366199Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /var/run/mysqld/mysqlx.sock
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2167892Z  2026-09-23T05:44:34.366301Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.46'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2169574Z  2026-09-23T05:46:50.349282Z 25 [Warning] [MY-013360] [Server] Plugin sha256_password reported: ''sha256_password' is deprecated and will be removed in a future release. Please use caching_sha2_password instead'
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2170910Z  2026-09-23T05:47:36.611701Z 39 [Warning] [MY-013360] [Server] Plugin sha256_password reported: ''sha256_password' is deprecated and will be removed in a future release. Please use caching_sha2_password instead'
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2172235Z  2026-09-23T05:47:37.118852Z 40 [Warning] [MY-013360] [Server] Plugin sha256_password reported: ''sha256_password' is deprecated and will be removed in a future release. Please use caching_sha2_password instead'
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2173147Z  2026-09-23 05:44:27+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2173725Z  2026-09-23 05:44:27+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.0.46-1.el9 started.
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2174273Z  2026-09-23 05:44:27+00:00 [Note] [Entrypoint]: Initializing database files
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2174722Z  2026-09-23 05:44:30+00:00 [Note] [Entrypoint]: Database files initialized
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2175157Z  2026-09-23 05:44:30+00:00 [Note] [Entrypoint]: Starting temporary server
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2175592Z  2026-09-23 05:44:31+00:00 [Note] [Entrypoint]: Temporary server started.
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2176014Z  '/var/lib/mysql/mysql.sock' -> '/var/run/mysqld/mysqld.sock'
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2176431Z  2026-09-23 05:44:32+00:00 [Note] [Entrypoint]: Creating database opendata
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2176871Z  2026-09-23 05:44:32+00:00 [Note] [Entrypoint]: Creating user opendata_user
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2177385Z  2026-09-23 05:44:32+00:00 [Note] [Entrypoint]: Giving user opendata_user access to schema opendata
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2177943Z  
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2178218Z  2026-09-23 05:44:32+00:00 [Note] [Entrypoint]: Stopping temporary server
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2178962Z  2026-09-23 05:44:33+00:00 [Note] [Entrypoint]: Temporary server stopped
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2179347Z  
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2179683Z  2026-09-23 05:44:33+00:00 [Note] [Entrypoint]: MySQL init process done. Ready for start up.
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2180091Z  
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2186299Z Stop and remove container: 1cebd3a857004cbb9cd7bc35c07690df_mysql80_601e54
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.2191499Z ##[command]/usr/bin/docker rm --force 2c634d4ab7e89959b6fc816a51d5180dd3cf9e98e6582a22dc9d05953fd90678
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.3765792Z 2c634d4ab7e89959b6fc816a51d5180dd3cf9e98e6582a22dc9d05953fd90678
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.3795322Z Remove container network: github_network_636f41f021d6477b9c7c7a0a25f6aae3
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.3800204Z ##[command]/usr/bin/docker network rm github_network_636f41f021d6477b9c7c7a0a25f6aae3
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.4715677Z github_network_636f41f021d6477b9c7c7a0a25f6aae3
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.4790328Z Cleaning up orphan processes
+quality gate	UNKNOWN STEP	2026-09-23T05:48:02.5125729Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+===== run 35840060209 : 失败日志尾部 30 行 =====
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0088423Z  2026-09-23T08:57:37.065071Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0089838Z  2026-09-23T08:57:37.079423Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /var/run/mysqld/mysqlx.sock
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0090972Z  2026-09-23T08:57:37.079708Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.46'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0092265Z  2026-09-23T09:00:49.947447Z 51 [Warning] [MY-013360] [Server] Plugin sha256_password reported: ''sha256_password' is deprecated and will be removed in a future release. Please use caching_sha2_password instead'
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0093591Z  2026-09-23T09:00:54.056608Z 53 [Warning] [MY-013360] [Server] Plugin sha256_password reported: ''sha256_password' is deprecated and will be removed in a future release. Please use caching_sha2_password instead'
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0094910Z  2026-09-23T09:00:55.616812Z 54 [Warning] [MY-013360] [Server] Plugin sha256_password reported: ''sha256_password' is deprecated and will be removed in a future release. Please use caching_sha2_password instead'
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0095822Z  2026-09-23 08:57:30+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0096378Z  2026-09-23 08:57:30+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.0.46-1.el9 started.
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0096919Z  2026-09-23 08:57:30+00:00 [Note] [Entrypoint]: Initializing database files
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0097378Z  2026-09-23 08:57:33+00:00 [Note] [Entrypoint]: Database files initialized
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0097818Z  2026-09-23 08:57:33+00:00 [Note] [Entrypoint]: Starting temporary server
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0098244Z  2026-09-23 08:57:33+00:00 [Note] [Entrypoint]: Temporary server started.
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0098663Z  '/var/lib/mysql/mysql.sock' -> '/var/run/mysqld/mysqld.sock'
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0099074Z  2026-09-23 08:57:35+00:00 [Note] [Entrypoint]: Creating database opendata
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0099755Z  2026-09-23 08:57:35+00:00 [Note] [Entrypoint]: Creating user opendata_user
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0100280Z  2026-09-23 08:57:35+00:00 [Note] [Entrypoint]: Giving user opendata_user access to schema opendata
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0100709Z  
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0100976Z  2026-09-23 08:57:35+00:00 [Note] [Entrypoint]: Stopping temporary server
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0101402Z  2026-09-23 08:57:36+00:00 [Note] [Entrypoint]: Temporary server stopped
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0101735Z  
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0102052Z  2026-09-23 08:57:36+00:00 [Note] [Entrypoint]: MySQL init process done. Ready for start up.
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0102452Z  
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0108629Z Stop and remove container: 83a2c2d366f74b3297867c7264792da2_mysql80_47bd84
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.0114405Z ##[command]/usr/bin/docker rm --force c9f3d0ebdce57ae64ec9cf91b8007198d2d56f5cb8375ddb0e9c8637f69332c3
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.1618587Z c9f3d0ebdce57ae64ec9cf91b8007198d2d56f5cb8375ddb0e9c8637f69332c3
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.1650973Z Remove container network: github_network_b6bc319922214857b266edbec24b1383
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.1656085Z ##[command]/usr/bin/docker network rm github_network_b6bc319922214857b266edbec24b1383
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.2742403Z github_network_b6bc319922214857b266edbec24b1383
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.2818014Z Cleaning up orphan processes
+quality gate	UNKNOWN STEP	2026-09-23T09:01:15.3237925Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+
+===== 追加：上面 tail 读到的是 mysql service 容器日志，不是挂点。改用 make 失败行的前文 =====
+captured_at=2026-09-26T12:39:19Z
+命令：gh run view <id> --log-failed | grep -B 25 'make: \*\*\*'
+
+===== run 35805289557 : make 失败行前 25 行 =====
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.3229807Z opendata/utils/constants.py                                         8      0      0      0   100%
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.3230302Z opendata/utils/db_result.py                                        10      2      4      2    71%   35, 39
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.3230789Z opendata/utils/helpers.py                                          54      2     28      2    95%   83, 122
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.3231302Z opendata/utils/serialization.py                                    19      3     12      3    81%   28, 45, 47
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.3231807Z opendata/utils/validators.py                                       80      2     44      0    98%   61-62
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.3232313Z -----------------------------------------------------------------------------------------------------------
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.3232786Z TOTAL                                                            6591    935   1612    202    84%
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.3233116Z Coverage HTML written to dir htmlcov
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.3233396Z Coverage XML written to file coverage.xml
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.5311713Z 2026-09-23 01:14:11.602 | INFO     | opendata.core.token_blacklist:_create_blacklist:187 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.5329733Z FAIL Required test coverage of 84% not reached. Total coverage: 83.70%
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.5330368Z =========================== short test summary info ============================
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.5331951Z FAILED tests/test_port_fidelity.py::test_ported_output_matches_upstream[financial_statement] - AssertionError: cell 流动资产合计[11]: '218472857114.40997' != '218472857114.41'
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.5332957Z   cell 资产总计[10]: '272699660092.24997' != '272699660092.25'
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.5333440Z   cell 资产总计[19]: '224702253941.12997' != '224702253941.13'
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.5333921Z   cell 未分配利润[7]: '192903581645.12997' != '192903581645.13'
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.5334436Z   cell 归属于母公司股东权益合计[5]: '258357842676.40997' != '258357842676.41'
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.5334957Z   cell 归属于母公司股东权益合计[17]: '206782990983.24997' != '206782990983.25'
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.5335525Z   cell 所有者权益(或股东权益)合计[11]: '225018799759.40997' != '225018799759.41'
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.5336085Z   cell 负债和所有者权益(或股东权益)总计[10]: '272699660092.24997' != '272699660092.25'
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.5336626Z   cell 负债和所有者权益(或股东权益)总计[19]: '224702253941.12997' != '224702253941.13'
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.5337165Z   cell 更新日期[0]: '2026-08-14T20:50:08' != '2026-08-14T12:50:08'
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.5339635Z assert not ["cell 流动资产合计[11]: '218472857114.40997' != '218472857114.41'", "cell 资产总计[10]: '272699660092.24997' != '272699660092.25'", "cell 资产总计[19]: '224702253941.12997' != '224702253941.13'", "cell 未分配利润[7]: '192903581645.12997' != '192903581645.13'", "cell 归属于母公司股东权益合计[5]: '258357842676.40997' != '258357842676.41'", "cell 归属于母公司股东权益合计[17]: '206782990983.24997' != '206782990983.25'", ...]
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.5341275Z ============= 1 failed, 1717 passed, 7 skipped in 70.27s (0:01:10) =============
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.9262476Z make[1]: *** [Makefile:78: test-cov] Error 1
+quality gate	UNKNOWN STEP	2026-09-23T01:15:22.9263379Z make: *** [Makefile:133: gate] Error 2
+
+===== run 35823639209 : make 失败行前 25 行 =====
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.4802813Z opendata/utils/constants.py                                         8      0      0      0   100%
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.4803460Z opendata/utils/db_result.py                                        10      2      4      2    71%   35, 39
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.4804116Z opendata/utils/helpers.py                                          54      2     28      2    95%   83, 122
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.4804800Z opendata/utils/serialization.py                                    19      3     12      3    81%   28, 45, 47
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.4805480Z opendata/utils/validators.py                                       80      2     44      0    98%   61-62
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.4806143Z -----------------------------------------------------------------------------------------------------------
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.4806738Z TOTAL                                                            7059    970   1724    217    84%
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.4807163Z Coverage HTML written to dir htmlcov
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.4807509Z Coverage XML written to file coverage.xml
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.6531228Z 2026-09-23 05:46:26.485 | INFO     | opendata.core.token_blacklist:_create_blacklist:187 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.6533413Z Required test coverage of 84% reached. Total coverage: 84.23%
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.6534309Z =========================== short test summary info ============================
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.6536412Z FAILED tests/test_port_fidelity.py::test_ported_output_matches_upstream[financial_statement] - AssertionError: cell 流动资产合计[11]: '218472857114.40997' != '218472857114.41'
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.6537793Z   cell 资产总计[10]: '272699660092.24997' != '272699660092.25'
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.6538505Z   cell 资产总计[19]: '224702253941.12997' != '224702253941.13'
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.6539532Z   cell 未分配利润[7]: '192903581645.12997' != '192903581645.13'
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.6540275Z   cell 归属于母公司股东权益合计[5]: '258357842676.40997' != '258357842676.41'
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.6541015Z   cell 归属于母公司股东权益合计[17]: '206782990983.24997' != '206782990983.25'
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.6541765Z   cell 所有者权益(或股东权益)合计[11]: '225018799759.40997' != '225018799759.41'
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.6542578Z   cell 负债和所有者权益(或股东权益)总计[10]: '272699660092.24997' != '272699660092.25'
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.6543346Z   cell 负债和所有者权益(或股东权益)总计[19]: '224702253941.12997' != '224702253941.13'
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.6544076Z   cell 更新日期[0]: '2026-08-14T20:50:08' != '2026-08-14T12:50:08'
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.6547445Z assert not ["cell 流动资产合计[11]: '218472857114.40997' != '218472857114.41'", "cell 资产总计[10]: '272699660092.24997' != '272699660092.25'", "cell 资产总计[19]: '224702253941.12997' != '224702253941.13'", "cell 未分配利润[7]: '192903581645.12997' != '192903581645.13'", "cell 归属于母公司股东权益合计[5]: '258357842676.40997' != '258357842676.41'", "cell 归属于母公司股东权益合计[17]: '206782990983.24997' != '206782990983.25'", ...]
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.6549889Z ============= 1 failed, 1895 passed, 7 skipped in 94.50s (0:01:34) =============
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.9708796Z make[1]: *** [Makefile:78: test-cov] Error 1
+quality gate	UNKNOWN STEP	2026-09-23T05:48:01.9709919Z make: *** [Makefile:133: gate] Error 2
+
+===== run 35840060209 : make 失败行前 25 行 =====
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.0973625Z opendata/utils/constants.py                                         8      0      0      0   100%
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.0974272Z opendata/utils/db_result.py                                        10      2      4      2    71%   35, 39
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.0974924Z opendata/utils/helpers.py                                          54      2     28      2    95%   83, 122
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.0975603Z opendata/utils/serialization.py                                    19      3     12      3    81%   28, 45, 47
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.0976277Z opendata/utils/validators.py                                       80      2     44      0    98%   61-62
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.0976933Z -----------------------------------------------------------------------------------------------------------
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.0977654Z TOTAL                                                            7546   1024   1842    244    84%
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.0978071Z Coverage HTML written to dir htmlcov
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.0978422Z Coverage XML written to file coverage.xml
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.3078534Z 2026-09-23 08:59:34.339 | INFO     | opendata.core.token_blacklist:_create_blacklist:187 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.3080461Z Required test coverage of 84% reached. Total coverage: 84.28%
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.3081159Z =========================== short test summary info ============================
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.3082898Z FAILED tests/test_port_fidelity.py::test_ported_output_matches_upstream[financial_statement] - AssertionError: cell 流动资产合计[11]: '218472857114.40997' != '218472857114.41'
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.3084036Z   cell 资产总计[10]: '272699660092.24997' != '272699660092.25'
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.3084599Z   cell 资产总计[19]: '224702253941.12997' != '224702253941.13'
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.3085167Z   cell 未分配利润[7]: '192903581645.12997' != '192903581645.13'
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.3085767Z   cell 归属于母公司股东权益合计[5]: '258357842676.40997' != '258357842676.41'
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.3086370Z   cell 归属于母公司股东权益合计[17]: '206782990983.24997' != '206782990983.25'
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.3086985Z   cell 所有者权益(或股东权益)合计[11]: '225018799759.40997' != '225018799759.41'
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.3087620Z   cell 负债和所有者权益(或股东权益)总计[10]: '272699660092.24997' != '272699660092.25'
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.3088246Z   cell 负债和所有者权益(或股东权益)总计[19]: '224702253941.12997' != '224702253941.13'
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.3088852Z   cell 更新日期[0]: '2026-08-14T20:50:08' != '2026-08-14T12:50:08'
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.3091401Z assert not ["cell 流动资产合计[11]: '218472857114.40997' != '218472857114.41'", "cell 资产总计[10]: '272699660092.24997' != '272699660092.25'", "cell 资产总计[19]: '224702253941.12997' != '224702253941.13'", "cell 未分配利润[7]: '192903581645.12997' != '192903581645.13'", "cell 归属于母公司股东权益合计[5]: '258357842676.40997' != '258357842676.41'", "cell 归属于母公司股东权益合计[17]: '206782990983.24997' != '206782990983.25'", ...]
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.3092818Z ============= 1 failed, 2003 passed, 7 skipped in 99.20s (0:01:39) =============
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.7488572Z make[1]: *** [Makefile:78: test-cov] Error 1
+quality gate	UNKNOWN STEP	2026-09-23T09:01:14.7490677Z make: *** [Makefile:133: gate] Error 2

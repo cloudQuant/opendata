@@ -1,0 +1,42 @@
+# C36 证据：AC-17 条目 4「F821 不再被全局忽略」的反事实跑
+# 采集时间: 2026-09-26 14:45:44 CEST   主机: MacBook-Air.local   分支: dev   HEAD: b4af81b
+# 命令: python -c '打印 pyproject 的 ruff ignore 面' ; 写 opendata/_f821_counterfactual_probe.py（未定义名）; ruff check --no-cache <probe>; 删 probe
+# 判据: 若 F821 被全局忽略 -> 'All checks passed'（本轮判为不成立）；必须报出 F821 且退出码非 0
+# 工具: ruff ruff 0.15.20 / python Python 3.13.5
+
+=== [0] 配置面：ruff 的 ignore / per-file-ignores 实际内容 ===
+select: ['E', 'W', 'F', 'I', 'N', 'UP', 'B', 'C4', 'SIM', 'TC', 'RUF100', 'S', 'PERF', 'ANN', 'D']
+ignore: ['B008']
+per-file-ignores[tests/*]: ['B017', 'N806', 'S1', 'S2', 'ANN', 'D']
+per-file-ignores[opendata/services/data_acquisition.py]: ['S608']
+per-file-ignores[opendata/pipeline/ods_writer.py]: ['S608']
+per-file-ignores[opendata/pipeline/diff_report.py]: ['S608']
+per-file-ignores[opendata/pipeline/query.py]: ['S608']
+per-file-ignores[opendata/api/data_query.py]: ['S608']
+per-file-ignores[opendata/pipeline/table_page.py]: ['S608']
+per-file-ignores[opendata/pipeline/retention.py]: ['S608']
+per-file-ignores[opendata/api/tables.py]: ['S608']
+per-file-ignores[opendata/data_fetch/providers/akshare_provider.py]: ['ANN401', 'S608']
+per-file-ignores[opendata/data_fetch/scripts/*]: ['ANN401']
+per-file-ignores[opendata/services/scheduler_service.py]: ['ANN401']
+F821 出现在任何 ignore 列表里吗: False
+
+=== [1] 反事实：真实放一个未定义名，看 ruff 是否报 F821 ===
+F821 Undefined name `nope_not_defined`
+ --> opendata/_f821_counterfactual_probe.py:2:12
+  |
+1 | def uses_undefined_name() -> int:
+2 |     return nope_not_defined + 1
+  |            ^^^^^^^^^^^^^^^^
+  |
+
+Found 1 error.
+RUFF_EXIT=1
+probe 已删除: yes
+
+=== [2] 回归对照：同一配置扫全自研树（应只剩既有债务，不因本探针新增）===
+ M .github/workflows/ci.yml
+ M .gitleaks.toml
+ M Makefile
+ M docs/quality/zero-dep-baseline.json
+ M "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2431-\351\207\215\346\236\204\346\225\260\346\215\256\344\270\255\345\217\260/\351\252\214\346\224\266\346\226\207\346\241\243.md"

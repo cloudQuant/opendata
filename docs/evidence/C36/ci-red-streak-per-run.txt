@@ -1,0 +1,70 @@
+===== C36 CI 五连红：逐次跑归因（读自 GitHub，只读；不得把同一个原因安到五次头上）=====
+captured_at=2026-09-26T12:38:33Z branch=dev HEAD=b4af81b
+命令：gh run view <id> --json jobs,headSha,createdAt ；gh run view <id> --log-failed | grep 关键行
+
+===== run 35805289557 =====
+headSha a9ea1c92a378 created 2026-09-23T01:11:46Z conclusion failure
+  job='secret scan (full history)' conclusion=success
+  job='quality gate' conclusion=failure
+quality gate	UNKNOWN STEP	2026-09-23T01:14:30.6750574Z tests/test_data_direct.py::TestGetProgressDirect::test_failed 
+quality gate	UNKNOWN STEP	2026-09-23T01:14:31.2674438Z [gw3] [ 23%] PASSED tests/test_data_direct.py::TestGetProgressDirect::test_failed 
+quality gate	UNKNOWN STEP	2026-09-23T01:14:34.6908945Z tests/test_data_direct.py::TestGetResultDirect::test_failed 
+quality gate	UNKNOWN STEP	2026-09-23T01:14:35.3419096Z [gw3] [ 26%] PASSED tests/test_data_direct.py::TestGetResultDirect::test_failed 
+quality gate	UNKNOWN STEP	2026-09-23T01:14:38.1609844Z tests/test_api_executions_full.py::TestGetFailedExecutions::test_get_failed 
+quality gate	UNKNOWN STEP	2026-09-23T01:14:38.4769726Z tests/test_execution_service_direct.py::TestUpdateExecution::test_update_failed 
+quality gate	UNKNOWN STEP	2026-09-23T01:14:38.6865735Z [gw1] [ 30%] PASSED tests/test_execution_service_direct.py::TestUpdateExecution::test_update_failed 
+quality gate	UNKNOWN STEP	2026-09-23T01:14:39.3689282Z [gw2] [ 30%] PASSED tests/test_api_executions_full.py::TestGetFailedExecutions::test_get_failed 
+quality gate	UNKNOWN STEP	2026-09-23T01:14:42.6865618Z tests/test_execution_service_direct.py::TestRecentRunningFailed::test_failed 
+quality gate	UNKNOWN STEP	2026-09-23T01:14:42.7969937Z [gw1] [ 40%] PASSED tests/test_execution_service_direct.py::TestRecentRunningFailed::test_failed 
+quality gate	UNKNOWN STEP	2026-09-23T01:14:43.6859385Z tests/test_execution_service_direct.py::TestHandleExecutionComplete::test_non_failed 
+quality gate	UNKNOWN STEP	2026-09-23T01:14:43.7069425Z [gw1] [ 41%] PASSED tests/test_execution_service_direct.py::TestHandleExecutionComplete::test_non_failed 
+
+===== run 35823639209 =====
+headSha 5254c249f2aa created 2026-09-23T05:44:08Z conclusion failure
+  job='secret scan (full history)' conclusion=success
+  job='quality gate' conclusion=failure
+quality gate	UNKNOWN STEP	2026-09-23T05:46:56.0909862Z tests/test_data_direct.py::TestGetProgressDirect::test_failed 
+quality gate	UNKNOWN STEP	2026-09-23T05:46:56.9769585Z [gw1] [ 21%] PASSED tests/test_data_direct.py::TestGetProgressDirect::test_failed 
+quality gate	UNKNOWN STEP	2026-09-23T05:47:01.4009726Z tests/test_data_direct.py::TestGetResultDirect::test_failed 
+quality gate	UNKNOWN STEP	2026-09-23T05:47:02.0570766Z [gw1] [ 23%] PASSED tests/test_data_direct.py::TestGetResultDirect::test_failed 
+quality gate	UNKNOWN STEP	2026-09-23T05:47:02.6239918Z tests/test_api_executions_full.py::TestGetFailedExecutions::test_get_failed 
+quality gate	UNKNOWN STEP	2026-09-23T05:47:03.8760580Z [gw0] [ 25%] PASSED tests/test_api_executions_full.py::TestGetFailedExecutions::test_get_failed 
+quality gate	UNKNOWN STEP	2026-09-23T05:47:04.0165357Z tests/test_api_data_full.py::TestDownloadProgress::test_progress_failed 
+quality gate	UNKNOWN STEP	2026-09-23T05:47:05.2469746Z [gw6] [ 26%] PASSED tests/test_api_data_full.py::TestDownloadProgress::test_progress_failed 
+quality gate	UNKNOWN STEP	2026-09-23T05:47:06.7799944Z tests/test_execution_service_full.py::TestExecutionServiceUpdate::test_update_execution_failed 
+quality gate	UNKNOWN STEP	2026-09-23T05:47:06.8110318Z [gw1] [ 31%] PASSED tests/test_execution_service_full.py::TestExecutionServiceUpdate::test_update_execution_failed 
+quality gate	UNKNOWN STEP	2026-09-23T05:47:11.5586299Z tests/test_executions_direct.py::TestGetFailedDirect::test_failed 
+quality gate	UNKNOWN STEP	2026-09-23T05:47:12.0052643Z tests/test_api_data_full.py::TestDownloadResult::test_result_failed 
+
+===== run 35840060209 =====
+headSha e2f1c600a096 created 2026-09-23T08:57:09Z conclusion failure
+  job='secret scan (full history)' conclusion=success
+  job='quality gate' conclusion=failure
+quality gate	UNKNOWN STEP	2026-09-23T09:00:05.9915366Z tests/test_data_direct.py::TestGetProgressDirect::test_failed 
+quality gate	UNKNOWN STEP	2026-09-23T09:00:06.6600621Z [gw6] [ 18%] PASSED tests/test_data_direct.py::TestGetProgressDirect::test_failed 
+quality gate	UNKNOWN STEP	2026-09-23T09:00:10.4944843Z tests/test_api_data_full.py::TestDownloadProgress::test_progress_failed 
+quality gate	UNKNOWN STEP	2026-09-23T09:00:10.8637332Z tests/test_data_direct.py::TestGetResultDirect::test_failed 
+quality gate	UNKNOWN STEP	2026-09-23T09:00:11.2969170Z [gw6] [ 19%] PASSED tests/test_data_direct.py::TestGetResultDirect::test_failed 
+quality gate	UNKNOWN STEP	2026-09-23T09:00:11.9510641Z [gw0] [ 20%] PASSED tests/test_api_data_full.py::TestDownloadProgress::test_progress_failed 
+quality gate	UNKNOWN STEP	2026-09-23T09:00:12.1142835Z tests/test_api_executions_full.py::TestGetFailedExecutions::test_get_failed 
+quality gate	UNKNOWN STEP	2026-09-23T09:00:13.3329780Z [gw3] [ 21%] PASSED tests/test_api_executions_full.py::TestGetFailedExecutions::test_get_failed 
+quality gate	UNKNOWN STEP	2026-09-23T09:00:16.1771285Z tests/test_execution_service_full.py::TestExecutionServiceUpdate::test_update_execution_failed 
+quality gate	UNKNOWN STEP	2026-09-23T09:00:16.2135357Z [gw7] [ 28%] PASSED tests/test_execution_service_full.py::TestExecutionServiceUpdate::test_update_execution_failed 
+quality gate	UNKNOWN STEP	2026-09-23T09:00:18.3590388Z tests/test_api_data_full.py::TestDownloadResult::test_result_failed 
+quality gate	UNKNOWN STEP	2026-09-23T09:00:19.3360802Z [gw0] [ 31%] PASSED tests/test_api_data_full.py::TestDownloadResult::test_result_failed 
+
+===== run 35971702367 =====
+headSha ea6fe148a36c created 2026-09-24T07:49:14Z conclusion failure
+  job='secret scan (full history)' conclusion=failure
+  job='quality gate' conclusion=failure
+secret scan (full history)	UNKNOWN STEP	2026-09-24T07:49:23.5406768Z [90m7:49AM[0m [31mWRN[0m leaks found: 3
+quality gate	UNKNOWN STEP	2026-09-24T07:51:28.2384226Z E   ModuleNotFoundError: No module named 'curl_cffi'
+quality gate	UNKNOWN STEP	2026-09-24T07:51:28.4270385Z make: *** [Makefile:133: gate] Error 2
+
+===== run 35986128393 =====
+headSha ed32159aed96 created 2026-09-24T10:15:07Z conclusion failure
+  job='secret scan (full history)' conclusion=failure
+  job='quality gate' conclusion=failure
+secret scan (full history)	UNKNOWN STEP	2026-09-24T10:15:17.6561115Z [90m10:15AM[0m [31mWRN[0m leaks found: 3
+quality gate	UNKNOWN STEP	2026-09-24T10:17:23.6755487Z E   ModuleNotFoundError: No module named 'curl_cffi'
+quality gate	UNKNOWN STEP	2026-09-24T10:17:23.9205625Z make: *** [Makefile:133: gate] Error 2
