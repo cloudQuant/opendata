@@ -1,0 +1,46 @@
+# C38a mutation proof: the new tests must be able to fail
+# captured: 2026-09-26 16:58:56 CEST  host=MacBook-Air.local  branch=dev  HEAD=858ddfa
+# python: Python 3.13.5  pandas=2.3.1  numpy=2.3.1
+# cwd=/Users/yunjinqi/Documents/new_projects/opendata
+# 判据: 5 条 teeth 变异各自打红它对应的那条用例；M4 是 probe（只报读数）
+
+=== base (unmutated) ===
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_api_data_full.py --no-cov -q -p no:cacheprovider -k trigger_download or task
+    ======================= 8 passed, 10 deselected in 1.88s =======================
+
+=== M1 (teeth): opendata/api/data.py - the download log line names the execution and the cause ===
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_api_data_full.py --no-cov -q -p no:cacheprovider -k test_trigger_download_logs_background_failure
+    FAILED tests/test_api_data_full.py::TestTriggerDownload::test_trigger_download_logs_background_failure
+    ======================= 1 failed, 17 deselected in 0.54s =======================
+
+=== M2 (teeth): opendata/api/data.py - the fallback callback names the exception type and its message ===
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_api_data_full.py --no-cov -q -p no:cacheprovider -k test_failed_task_is_attributed_by_type_and_reason
+    FAILED tests/test_api_data_full.py::TestLogTaskException::test_failed_task_is_attributed_by_type_and_reason
+    ======================= 1 failed, 17 deselected in 0.07s =======================
+
+=== M3 (teeth): opendata/api/data.py - a cancelled task is filtered before its exception is read ===
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_api_data_full.py --no-cov -q -p no:cacheprovider -k test_cancelled_task_logs_nothing
+    FAILED tests/test_api_data_full.py::TestLogTaskException::test_cancelled_task_logs_nothing
+    ======================= 1 failed, 17 deselected in 0.07s =======================
+
+=== M4 (probe): tests/test_api_data_full.py - whether the wait is what makes the judgement deterministic ===
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_api_data_full.py --no-cov -q -p no:cacheprovider -k test_trigger_download_logs_background_failure
+    ======================= 1 passed, 17 deselected in 0.51s =======================
+    probe reading: green - the wait is not load-bearing in a single-file run
+
+=== M5 (teeth): opendata/api/data.py - a failed download is reported through the logger, not swallowed ===
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_api_data_full.py --no-cov -q -p no:cacheprovider -k test_trigger_download_logs_background_failure
+    FAILED tests/test_api_data_full.py::TestTriggerDownload::test_trigger_download_logs_background_failure
+    ======================= 1 failed, 17 deselected in 3.07s =======================
+
+=== M6 (teeth): opendata/api/data.py - the failure is handled once, so the callback adds no second line ===
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_api_data_full.py --no-cov -q -p no:cacheprovider -k test_trigger_download_logs_background_failure
+    FAILED tests/test_api_data_full.py::TestTriggerDownload::test_trigger_download_logs_background_failure
+    ======================= 1 failed, 17 deselected in 0.54s =======================
+
+=== restored ===
+    opendata/api/data.py identical=True sha256=5eeda74f57784157...
+    tests/test_api_data_full.py identical=True sha256=7ebdc0aa18919f9c...
+
+OK: base green, 5/5 teeth mutations failed their expected test, sources restored.
+MUTATION_PROOF_EXIT=0

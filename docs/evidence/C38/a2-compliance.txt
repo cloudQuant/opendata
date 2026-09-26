@@ -1,0 +1,181 @@
+# C38a A2 compliance: the zero-tolerance face over every file this round touches
+# captured: 2026-09-26 17:26:37 CEST  host=MacBook-Air.local  branch=dev  HEAD=858ddfa
+# 判据: a2_check 的四个进程（ruff check / ruff format --check / mypy / bandit）对本轮 4 个文件全部退出 0
+# 顺序: [G] 终态复算（可重跑）-> [G2] 逐工具同面复算 -> [T] gate 之后代码面未动的证明 -> [R] 本轮首跑的 RED 记录（叙述性，不可复算）
+
+=== [G] 终态：本轮 4 个文件过完整 A2 面 ===
+$ python scripts/quality/a2_check.py --files opendata/api/data.py tests/test_api_data_full.py docs/evidence/C38/loguru-format-census.py docs/evidence/C38/mutation-proof.py
+A2 files: 4
+  opendata/api/data.py
+  tests/test_api_data_full.py
+  docs/evidence/C38/loguru-format-census.py
+  docs/evidence/C38/mutation-proof.py
+
+ok   ruff check
+ok   ruff format --check
+ok   mypy
+ok   bandit
+
+OK: A2 files meet the full A2 standard (ruff + format + mypy + bandit).
+  A2_EXIT=0
+
+=== [G2] 逐工具单独复算（命令与参数照抄 scripts/quality/a2_check.py:258-291 里那四条）===
+$ python -m ruff check opendata/api/data.py tests/test_api_data_full.py docs/evidence/C38/loguru-format-census.py docs/evidence/C38/mutation-proof.py
+All checks passed!
+  rc=0
+
+$ python -m ruff format --check opendata/api/data.py tests/test_api_data_full.py docs/evidence/C38/loguru-format-census.py docs/evidence/C38/mutation-proof.py
+4 files already formatted
+  rc=0
+
+$ python -m mypy --no-color-output --no-error-summary --follow-imports=silent opendata/api/data.py docs/evidence/C38/loguru-format-census.py docs/evidence/C38/mutation-proof.py
+
+  rc=0
+
+$ python -m bandit -c bandit.yaml -f json -q opendata/api/data.py docs/evidence/C38/loguru-format-census.py docs/evidence/C38/mutation-proof.py
+{
+  "errors": [],
+  "generated_at": "2026-09-26T15:26:38Z",
+  "metrics": {
+    "./docs/evidence/C38/loguru-format-census.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 251,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./docs/evidence/C38/mutation-proof.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 201,
+      "nosec": 0,
+      "skipped_tests": 2
+    },
+    "./opendata/api/data.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 207,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "_totals": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 659,
+      "nosec": 0,
+      "skipped_tests": 2
+    }
+  },
+  "results": []
+}
+  rc=0
+  判据不止退出码：a2_check 在 bandit 退出 0 之后还要把 json 的 results 数组读成空（a2_check.py:214-222）。
+  这份读数是 results=0，metrics 里 mutation-proof.py 记 nosec=0 / skipped_tests=2。
+  两把尺子的对照（都是本轮实测，不是推断）：
+    · 加豁免之前，B404 真的在 results 里，一条 SEVERITY.LOW / CONFIDENCE.HIGH（原始 JSON 见 [R] 段）；
+    · 加 `# nosec B404` 之后它从 results 移到 skipped_tests（RED 那次 skipped_tests=1，现在 =2）。
+      也就是 bandit 给显式豁免留了账，不是让它凭空变成 0 条。
+    · 另一笔是 `# nosec B603`（subprocess.run 那行）。它从未出现在 results 里，所以那条豁免是预防性的，
+      不能说它压掉过一条真实发现 —— 这个差别按读数说，不按猜测说。
+
+=== [T] gate 之后代码面没有动过（这一格决定 gate-c38a.txt 是否仍是终态读数）===
+$ shasum -a 256 opendata/api/data.py tests/test_api_data_full.py
+  5eeda74f577841577d44e46b4feea1b516b960dfeb29d7d4b209d22d9d18621e  opendata/api/data.py
+  7ebdc0aa18919f9cd1339910d602a10da44793b169ed51c84c3ddc532dd2efa1  tests/test_api_data_full.py
+  前 16 位与 mutation-proof.txt:42-43 记录的 sha256 一致（5eeda74f57784157… / 7ebdc0aa18919f9c…）：
+  测试面与覆盖率面的输入从那次复算到现在逐字节未变，stability-run1/2 与 gate-c38a 的读数因此仍是终态读数。
+$ git status --porcelain
+ M opendata/api/data.py
+ M tests/test_api_data_full.py
+?? docs/evidence/C38/
+
+  树内改动只有这两个 .py 加整个 docs/evidence/C38/ 目录：gate 之后我改的是 census 脚本（给它加了 --probe），
+  它落在 14 个 gate 成员里的 a2-check 一个成员的面，上面 [G] 就是改后状态下的该成员复算（A2_EXIT=0）。
+  其余 13 个成员的输入面（opendata/、tests/、frontend/）未被触碰，由上面两条 sha 与 git status 一起担保。
+
+=== [R] 本轮首跑（RED）：四条判据各红一次，登记而不是抹掉 ===
+  这一节是叙述性记录，不是可复算读数：它的输入面里有一条后来被我删掉的
+    `from __future__ import annotations`（TC002 的成因），那个形态已经不在树上。
+  当时（2026-09-26 16:57:23 CEST）的 aggregate 读数：
+    FAIL: A2 gate failed on: ruff check, ruff format, mypy, bandit   A2_EXIT=1   A2 files: 4
+  退出码当时逐工具打印成 exit=? —— zsh 下 ${PIPESTATUS[0]} 不工作；[G2] 已改成 subprocess 直取真实值。
+
+$ python -m ruff check <同 [G2]>
+  TC002 Move third-party import `httpx.AsyncClient` into a type-checking block
+    --> tests/test_api_data_full.py:15:19
+  TC002 Move third-party import `sqlalchemy.ext.asyncio.AsyncSession` into a type-checking block
+    --> tests/test_api_data_full.py:17:36
+  Found 2 errors.
+  处置：删掉我自己为「风格」加的 `from __future__ import annotations`（TC002 的成因），
+    而不是给两行 import 挂 noqa —— 门禁的规则不改，改的是我引入的违反。
+
+$ python -m ruff format --check <同 [G2]>
+  Would reformat: tests/test_api_data_full.py
+  1 file would be reformatted, 3 files already formatted
+  处置：跑 format，不放宽 line-length。
+
+$ python -m mypy <同 [G2]>
+  docs/evidence/C38/loguru-format-census.py:158: error: "expr" has no attribute "value"  [attr-defined]
+  处置：先把 node.args[index] 绑成 template_node 再 isinstance 收窄，不是 cast 掉的。
+  同一脚本后来又带出三条同类错，都在 [0] 那个 probe 里（本轮加 --probe 之后自己撞上的，逐条按根因修）：
+    :62  error: "Logger" has no attribute "Logger"    -> 改 inspect.getmodule(logger)
+    :71  error: Module has no attribute "__version__" -> loguru 的 __init__.pyi 不声明它，
+         换 importlib.metadata.version("loguru")（运行期 logger.__version__ 确实有值 0.7.3，但类型面不认）
+    :28  error: Module "typing" has no attribute "override"  -> 本项目 mypy python_version = "3.10"，
+         typing.override 是 3.12 才有。这里不用装饰器压 N802，改成不子类化 Handler、
+         直接捕获 stderr 读数（见 loguru-census.txt [0] 最后三行），N802 随之消失。
+  前三条都不是「压错误」：mypy 先说对，运行时读数（AttributeError / TypeError）在后。
+  最后一条只有类型面：本机 Python 3.13 上 typing.override 运行期是存在的，
+  是 mypy 按 pyproject 的 python_version = "3.10" 判它不存在 —— 读数与本机运行期不是一回事，按实说。
+
+$ python -m bandit <同 [G2]>   # 当时那次运行的完整 JSON，未裁剪
+{
+  "errors": [],
+  "generated_at": "2026-09-26T14:57:30Z",
+  "metrics": {
+    "./docs/evidence/C38/loguru-format-census.py": { "loc": 164, "nosec": 0, "skipped_tests": 0 },
+    "./docs/evidence/C38/mutation-proof.py": { "loc": 201, "nosec": 0, "skipped_tests": 1 },
+    "./opendata/api/data.py": { "loc": 207, "nosec": 0, "skipped_tests": 0 },
+    "_totals": { "loc": 572, "nosec": 0, "skipped_tests": 1 }
+  },
+  "results": [
+    {
+      "filename": "./docs/evidence/C38/mutation-proof.py",
+      "issue_confidence": "HIGH",
+      "issue_severity": "LOW",
+      "issue_text": "Consider possible security implications associated with the subprocess module.",
+      "line_number": 22,
+      "test_id": "B404",
+      "test_name": "blacklist",
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess"
+    }
+  ]
+}
+  对照 [G2]：同一文件现在 loc=251（census 脚本本轮被改过两次），mutation-proof.py 的 skipped_tests 从 1 变 2，results 从 1 条变 0 条。
+  这一份 JSON 的 metrics 段落是把当时完整输出里的字段抄在一起（键与值逐字照抄，只为省掉重复的 0 值字段）；
+  results 那一条是完整对象去掉 code/col_offset/end_col_offset/issue_cwe/line_range 五个排版字段。
+  登记这个裁剪：它不影响任何计数读数，但「完整未裁剪」这句话在这一格上不打满。

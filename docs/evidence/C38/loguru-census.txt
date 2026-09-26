@@ -1,0 +1,151 @@
+# C38a loguru argument-rendering census (AST-based, binding-aware) + its own blind spot
+# captured: 2026-09-26 17:25:33 CEST  host=MacBook-Air.local  branch=dev  HEAD=858ddfa
+# python: 3.13.5  loguru=0.7.3
+# site-packages: /Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/loguru
+# order: [0] instrument probe -> [0b] the library source behind the premise -> [1] census after this round's fixes
+#        -> [1b] the 'before = 14' reading, recomputable from the git object instead of a /tmp copy
+#        -> [2] the blind spot the AST pass does not judge -> [3] totals
+# 每一段的 `$` 行就是产出它下面那些输出的命令，未改写；退出码由 subprocess 直取（不用 PIPESTATUS，zsh 下它是 ?）。
+# 带管道的命令不标 rc：那条 rc 属于管道最后一个命令，不是整条管道的。
+
+=== [0] instrument probe: what each family actually does with each template style ===
+$ python docs/evidence/C38/loguru-format-census.py --probe
+loguru 0.7.3  arguments are applied at /Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/loguru/_logger.py
+    2055: log_record["message"] = message.format(*args, **kwargs)
+  what a handler actually receives, per template:
+    %s args on a loguru logger       -> 'Background download failed for execution %s: %s'
+    {} args on a loguru logger       -> 'Background download failed for execution 7: boom'
+    args with no placeholder         -> 'no placeholder at all'
+    stdlib logging, %s idiom         -> 'stdlib logging keeps 7: boom'
+    stdlib logging, {} template      -> '<nothing reached the handler>'
+    (logging reported on stderr)     -> 'TypeError: not all arguments converted during string formatting'
+    (logging reported on stderr)     -> "Message: 'stdlib logging keeps {}: {}'"
+    (logging reported on stderr)     -> "Arguments: (7, RuntimeError('boom'))"
+  probe_rc=0
+
+  这一格是整轮结论的支点，所以四个方向全部实测，不引任何文档说法：
+    · loguru + %s → 参数丢掉，模板原样进日志（第一条读数）；
+    · loguru + {} → 参数进入日志（本轮改后的形态）；
+    · loguru + 无占位符 → 参数丢掉，且连模板线索都不留；
+    · logging + %s → 正确；logging + {} → 消息根本没到 handler，
+      异常被 logging 自己吞在 handleError 里、打到 stderr（上面最后三行读数）。
+  两家的失败方向相反，但代价不对称：logging 失败是吵的（stderr 一条 TypeError + Message + Arguments），
+  loguru 失败是静默的（消息照样发出去，只是参数没了）。这就是为什么 %s 写法能在库里活这么久没人发现。
+  所以「看到 %s 就改」不成立 —— 得先判这个 logger 名字绑到哪一家，这就是 [1] 那个脚本存在的理由。
+
+  同一命令连跑两次：逐字节相同（rc=0/0）
+  探针把 loguru 默认的 stderr sink 摘掉再量（否则每条读数会带 wall-clock 时间戳），所以可逐字节 diff。
+
+=== [0b] 同一格用库自己的源码再量一遍 ===
+$ grep -n '\.format(\*args' /Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/loguru/_logger.py
+2055:            log_record["message"] = message.format(*args, **kwargs)
+2069:        r"""Log ``message.format(*args, **kwargs)`` with severity ``'TRACE'``."""
+2073:        r"""Log ``message.format(*args, **kwargs)`` with severity ``'DEBUG'``."""
+2077:        r"""Log ``message.format(*args, **kwargs)`` with severity ``'INFO'``."""
+2081:        r"""Log ``message.format(*args, **kwargs)`` with severity ``'SUCCESS'``."""
+2085:        r"""Log ``message.format(*args, **kwargs)`` with severity ``'WARNING'``."""
+2089:        r"""Log ``message.format(*args, **kwargs)`` with severity ``'ERROR'``."""
+2093:        r"""Log ``message.format(*args, **kwargs)`` with severity ``'CRITICAL'``."""
+2102:        r"""Log ``message.format(*args, **kwargs)`` with severity ``level``."""
+  rc=0
+
+$ grep -c 'message.format(\*args, \*\*kwargs)' /Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/loguru/_logger.py
+9
+  rc=0
+
+  两条 grep 命中同一批 9 行：2055 是实现，2069–2102 是 TRACE/DEBUG/INFO/SUCCESS/WARNING/ERROR/CRITICAL
+  与 log() 的 docstring。实现与契约同述，不是「恰好某处用了 str.format」。
+
+  实测第三把尺子（不是合成探针）：本轮新用例第一次跑（改 data.py 之前）的失败读数——
+    AssertionError: assert 'execution 1' in 'Background download failed for execution %s: %s'
+    经 app 真实配置的那条 loguru 链（opendata.api.data，pytest stderr 里带 level/模块/行号那一行）
+  ⇒ 三把尺子同向：调用方传了参数、日志里没有参数。本轮那两处 {} 改动是把参数放回消息，不是风格偏好。
+
+=== [1] census AFTER this round's two fixes (工作树的 opendata/api/data.py 已不再是 %s) ===
+$ python docs/evidence/C38/loguru-format-census.py opendata scripts
+opendata/api/data_query.py:182 logger.warning: DROPPED (%s args on a loguru logger)
+    template='diff report unavailable for %s: %s'
+opendata/api/data_query.py:234 logger.error: DROPPED (%s args on a loguru logger)
+    template='data query failed for %s/%s: %s'
+opendata/api/data_query.py:593 logger.debug: DROPPED (%s args on a loguru logger)
+    template='freshness unavailable for %s: %s'
+opendata/api/tables.py:524 logger.debug: DROPPED (%s args on a loguru logger)
+    template='Table %s not in warehouse, skipping: %s'
+opendata/api/websocket.py:174 logger.debug: DROPPED (%s args on a loguru logger)
+    template='WebSocket ping loop ended: %s'
+opendata/core/token_blacklist.py:169 logger.debug: DROPPED (%s args on a loguru logger)
+    template='Redis close failed (may already be closed): %s'
+opendata/middleware/request_logging.py:39 logger.error: DROPPED (%s args on a loguru logger)
+    template='%s %s 500 (%.1fms) exception=%s'
+opendata/middleware/request_logging.py:62 logger.debug: DROPPED (%s args on a loguru logger)
+    template='Metrics record skipped: %s'
+opendata/middleware/security.py:30 logger.debug: DROPPED (%s args on a loguru logger)
+    template='Failed to set security headers: %s'
+opendata/services/scheduler.py:451 logger.debug: DROPPED (%s args on a loguru logger)
+    template='WebSocket broadcast skipped: %s'
+opendata/services/scheduler.py:296 logger.debug: DROPPED (%s args on a loguru logger)
+    template='Task failure notification skipped: %s'
+opendata/services/script_service.py:384 logger.debug: DROPPED (%s args on a loguru logger)
+    template='Could not read script file %s: %s'
+
+census: calls-with-args=15 arguments-never-render=12
+  CENSUS_EXIT=0
+
+  同一命令连跑两次：逐字节相同（rc=0/0）
+  读数是 AST 决定的：无时钟、无遍历序噪声（脚本按 sorted(rglob) 走）。
+
+=== [1b] 「改前 = 14」这一格现在也在树上可复算（不再依赖 /tmp 往返）===
+$ python - <<'PY'
+import importlib.util, subprocess
+spec = importlib.util.spec_from_file_location('census', 'docs/evidence/C38/loguru-format-census.py')
+mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+head = subprocess.run(['git','show','HEAD:opendata/api/data.py'], capture_output=True, text=True, check=True).stdout
+work = open('opendata/api/data.py', encoding='utf-8').read()
+for label, src in (('HEAD', head), ('worktree', work)):
+    rows = mod.call_sites(src)
+    dropped = [r for r in rows if not r[4].startswith('ok')]
+    print(f'{label}: calls-with-args={len(rows)} arguments-never-render={len(dropped)}')
+    for line, name, level, template, verdict in rows:
+        print(f'  :{line} {name}.{level}: {verdict}  template={template!r}')
+PY
+
+HEAD: calls-with-args=2 arguments-never-render=2
+  :70 logger.error: DROPPED (%s args on a loguru logger)  template='Unhandled exception in background task: %s: %s'
+  :141 logger.error: DROPPED (%s args on a loguru logger)  template='Background download failed for execution %s: %s'
+
+worktree: calls-with-args=2 arguments-never-render=0
+  :72 logger.error: ok (loguru braces)  template='Unhandled exception in background task: {}: {}'
+  :143 logger.error: ok (loguru braces)  template='Background download failed for execution {}: {}'
+
+  读法：HEAD 的那两条 DROPPED 就是全树 14 → 12 的差值来源，两条都在 data.py
+    （HEAD 的 :70/:141 在改后工作树里是 :72/:143，多出的两行是解释这条缺陷的注释）。
+    12 = 14 − 2 与 [1] 的全树读数对得上；这一步只读 git 对象与工作树，没有 /tmp 副本。
+    脚本自身的退出码不参与判定：它只报读数（docstring 里写明 pass/fail 归档案）。
+
+=== [2] 这个 census 自己的盲区：接收者不是裸名字的调用（self.logger.x(...)）===
+$ grep -rn --include='*.py' -E '\.(logger|log|_logger|_default_logger)\.(trace|debug|info|warning|warn|error|critical|exception|success)\(' opendata scripts | wc -l
+  28
+  attribute-form 调用共这么多条，AST pass 一条都不判（它只认 Name 接收者）。
+
+$ grep -rc --include='*.py' -E '\.(logger|log|_logger|_default_logger)\.(trace|debug|info|warning|warn|error|critical|exception|success)\(' opendata scripts | grep -v ':0$' | sort -t: -k2 -rn
+opendata/data_fetch/providers/akshare_provider.py:25
+opendata/data_fetch/scripts/stocks/daily/stock_zh_a_hist.py:3
+
+$ grep -rn --include='*.py' -E "\.(logger|log|_logger|_default_logger)\.(trace|debug|info|warning|warn|error|critical|exception|success)\([^)]*%[sdrf]" opendata scripts
+opendata/data_fetch/providers/akshare_provider.py:498:            self.logger.debug("Could not get row count for table %s: %s", table_name, e)
+  rc=0
+
+  这条的绑定是手工读出来的（脚本不判）：
+$ grep -n -E 'from loguru import logger as _default_logger|logger: logging.Logger \| None = None|self\.logger = logger or _default_logger' opendata/data_fetch/providers/akshare_provider.py
+16:from loguru import logger as _default_logger
+92:    def __init__(self, db_url: str | None = None, logger: logging.Logger | None = None) -> None:
+100:        self.logger = logger or _default_logger
+
+  ⇒ self.logger 缺省即 loguru ⇒ 第 498 行是第 13 条参数丢掉的调用，census 的 12 条不含它。
+    盲区本身与它吞掉的那一条一起进 C39 的活单。
+
+=== [3] totals ===
+  本轮修掉：2 条（HEAD:opendata/api/data.py 的两条 logger.error，:70/:141）——由测试判据逼出来，见 mutation-proof.txt M1/M2
+  本轮未修、留给 C39：12（census 判出）+ 1（attribute 形式，手读绑定）= 13 条
+  census 未判的面（登记而不是声称覆盖）：attribute-form 接收者 28 条、f-string 模板（已插值，不是缺陷）、
+    以及运行时才决定绑定家族的注入式 logger（self.logger = logger or _default_logger 这种表达式）。

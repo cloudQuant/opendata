@@ -1,0 +1,141 @@
+# C38a: the same coverage reading, before (C37's three archived gate runs) and after (this round's two runs)
+# captured: 2026-09-26 17:02:20 CEST  host=MacBook-Air.local  branch=dev  HEAD=858ddfa
+# 全部读数从仓库里的档案文件 grep 出来，不引任何一份 /tmp 往返
+
+=== before：同一份代码三遍门禁，两个读数（C37 §4b 登记的那一格）===
+  gate-run1-before-backfill.txt            opendata/api/data.py                                               94      2     32      2  96.83%   70, 141, 187->189
+  gate-run2-before-tracked-rule.txt        opendata/api/data.py                                               94      3     32      2  96.03%   70, 140-141, 187->189
+  gate.txt                                 opendata/api/data.py                                               94      3     32      2  96.03%   70, 140-141, 187->189
+  ----
+  gate-run1-before-backfill.txt            TOTAL                                                           10942   1282   2692    299  86.79%
+  gate-run2-before-tracked-rule.txt        TOTAL                                                           10942   1283   2692    299  86.78%
+  gate.txt                                 TOTAL                                                           10942   1283   2692    299  86.78%
+
+  三遍的「被测面」逐字相同可核对：[tool.coverage.run] source = ["opendata", "opendata_fuyao"]，
+  而 C37 三遍之间的改动只落在 docs/ 与 scripts/quality/（acceptance_ledger_check.py 的 tracked 规则）——
+  不在度量面内，所以 TOTAL 语句数三遍都是 10942。差异全在 opendata/api/data.py 那一行：
+  run1 只丢 141，run2/run3 丢 140-141；于是 miss=2/3、TOTAL 1282/1283、全局 86.79%/86.78%
+  —— 同一份被测代码，两个门禁读数。
+
+=== after：本轮两遍 test-cov ===
+  stability-run1.txt                       opendata/api/data.py                                               94      0     32      1  99.21%   189->191
+  stability-run2.txt                       opendata/api/data.py                                               94      0     32      1  99.21%   189->191
+  ----
+  stability-run1.txt                       TOTAL                                                           10942   1280   2692    298  86.81%
+  stability-run2.txt                       TOTAL                                                           10942   1280   2692    298  86.81%
+
+=== 整张覆盖率表（不是只有 data.py 那一行）在两遍之间的差异 ===
+  table_diff_lines=0（0 = 逐字相同；两份文件其余的差异全是 -n 8 的用例输出交错）
+
+=== 两遍的判定行 ===
+  run1:
+    Required test coverage of 84% reached. Total coverage: 86.81%
+    ======================= 2922 passed, 6 skipped in 54.59s =======================
+    PYTEST_EXIT=0
+  run2:
+    Required test coverage of 84% reached. Total coverage: 86.81%
+    ======================= 2922 passed, 6 skipped in 55.39s =======================
+    PYTEST_EXIT=0
+
+=== 第三遍：门禁自己（gate-c38a.txt，14 个成员全绿、GATE_EXIT=0 读自文件内部）===
+  opendata/api/data.py  94 0 32 1 99.21% 189->191        TOTAL 10942 1280 2692 298 86.81%
+  2922 passed, 6 skipped in 57.05s / Required test coverage of 84% reached. Total coverage: 86.81%
+  整张覆盖率表与 stability-run1 的差异：identical=YES（同一命令、同一被测面，第三次读数逐字相同）
+  A2 files: 318（C37 三遍都是 315；本轮新增的两份 docs/evidence/C38/*.py 脚本在清扫面内）
+  ⇒ 三遍两个读数（C37）→ 三遍一个读数（本轮）。两遍相同不证明确定性（低频抖动两遍抓到的概率有限），
+    第三遍独立命令也不证明；本轮只把「同一份被测代码给出两个门禁读数」这一形态消掉，
+    剩下的置信度问题登记在 README §8，不写成已证确定。
+
+=== 第四遍：最终树上的门禁（gate-c38a-final.txt，captured 2026-09-26 17:29:08 CEST）===
+  为什么要再跑一遍门禁：第三遍（gate-c38a.txt）之后，本轮又改了 docs/evidence/C38/ 下的四份档案，
+  其中 loguru-format-census.py 加了 --probe 分支 —— 而 a2-check 的清扫面含 docs/evidence/**/*.py，
+  于是「门禁绿」这件事描述的是跑它那一刻的树。第三遍不能替最终树说话，所以重跑。
+  代码面（opendata/ 与 tests/）两份 sha256 未动，见 a2-compliance.txt [T]。
+
+  读数（全部从该档案文件内部 grep，命令与结果一起留在下面）：
+    GATE_EXIT=0（文件最后一行；14 个成员标记 + PASSED 共 15 个 `===== gate:` 段落，逐个在位）
+    opendata/api/data.py  94 0 32 1 99.21% 189->191   TOTAL 10942 1280 2692 298 86.81%
+    2922 passed, 6 skipped in 56.66s / Required test coverage of 84% reached. Total coverage: 86.81%
+    A2 files: 318（与第三遍同）· quality-ratchet: OK（未升，ruff_selfdev 274 / ruff_ported 2144 / direct_http_ported 1044）
+    public-api-quality: 522 个公共 callable，docstring 与 annotation 双 100%
+
+  $ grep -n '^===== gate' docs/evidence/C38/gate-c38a-final.txt | wc -l
+    15
+  $ grep -n '^TOTAL' docs/evidence/C38/gate-c38a-final.txt
+    6484:TOTAL                                                           10942   1280   2692    298  86.81%
+  $ grep -n '^opendata/api/data.py' docs/evidence/C38/gate-c38a-final.txt
+    6287:opendata/api/data.py                                               94      0     32      1  99.21%   189->191
+
+  整张覆盖率表（201 行，不是只有 data.py 那一行）在「第三遍 vs 第四遍」之间的差异：
+  $ python - <<'PY'   # 直接读仓库内的两份档案，没有 /tmp 往返
+  import re
+  def table(path):
+      rows, keep = [], False
+      for line in open(path, encoding='utf-8', errors='replace'):
+          if line.startswith('Name ') and 'Stmts' in line:
+              keep = True
+          if keep:
+              if re.match(r'^[A-Za-z_][\w./-]*\.py\s+\d', line) or line.startswith('TOTAL') or line.startswith('-'):
+                  rows.append(line.rstrip('\n'))
+              elif line.strip() == '' or 'Required test coverage' in line:
+                  break
+      return rows
+  a = table('docs/evidence/C38/gate-c38a.txt')
+  b = table('docs/evidence/C38/gate-c38a-final.txt')
+  print(f'rows old={len(a)} new={len(b)}')
+  print('table_diff_lines=', len([x for x, y in zip(a, b) if x != y]))
+  PY
+    rows old=201 new=201
+    table_diff_lines= 0
+
+  读法：四遍读数（两遍 test-cov + 两遍门禁）落在同一格 86.81% / miss=1280，且两份门禁日志的整张
+    覆盖率表逐行相同 ⇒ 本轮把 data.py 那两个 miss 语句消掉之后，门禁的 TOTAL 读数在这一份被测面上
+    没有再出现过第二个值。这不构成「确定性已证明」——它只把 C37 §4b 登记的那个「同一份代码两个读数」
+    形态变成可核对的「四遍一个读数」；为什么两遍/四遍都不等于证明，见 README §8。
+
+=== 第五遍：v5.9 回填之后的门禁（gate-c38a-post-backfill.txt，captured 2026-09-26 17:37:50 CEST 起）===
+  为什么要第五遍：验收文档被回填（v5.8→v5.9）改了。门禁 14 个成员里 ledger-check 与 brand-check
+  的输入就是那份文档 ⇒ 第四遍描述的是回填前的文档树。（判据面本身没有被这句话放宽：见下面
+  「这一遍之后又改了什么」一格，它说明为什么第五遍之后不再第六遍。）
+
+  GATE_EXIT=0（读自文件最后一行）· 15 个 `===== gate:` 段落（14 成员 + PASSED）· 6,647 行完整未裁剪
+  opendata/api/data.py  94 0 32 1 99.21% 189->191     TOTAL 10942 1280 2692 298 86.81%
+  2922 passed, 6 skipped in 57.89s / Required test coverage of 84% reached. Total coverage: 86.81%
+  A2 files: 318 · OK: A2 files meet the full A2 standard (ruff + format + mypy + bandit)
+  OK: quality debt did not increase. · docstring coverage : 100.0% (522/522)
+  secret-check: 5:38PM INF no leaks found
+  ledger-check: census: items=130 proven=7 gap=4 unreviewed=119 ticked=7
+
+  三遍门禁的整张覆盖率表两两对照（201 行一份，命令与上面同）：
+    gate-c38a.txt rows=201 · gate-c38a-final.txt rows=201 · gate-c38a-post-backfill.txt rows=201
+    gate-c38a-final.txt        vs gate-c38a.txt  diff=0
+    gate-c38a-post-backfill.txt vs gate-c38a.txt  diff=0
+  ⇒ 五遍（两遍 test-cov + 三遍门禁）同一格 86.81%／miss 1280；本轮的度量面没有第二个读数。
+
+=== 这一遍之后又改了什么（为什么不再跑第六遍）===
+  第五遍之后仍要改的只有档案与本文件的叙述（把「四遍」改成「五遍」、README §6/§7/§10 的读数对齐），
+  以及为准确性而做的字句更正。这三类都不在 14 个成员的度量面内，除了一份文档：
+  因此对文档改动的处理是**逐成员复算而不是声称全绿**——回填定稿后重跑 `make ledger-check`
+  （读文档结构与 §10 那 19 行）与 `make brand-check`（读同一份文档的品牌面），
+  两者读数在下面 [终态] 一格；`make gate` 的其余 12 个成员的输入（代码、tests/、scripts/、前端）
+  自第五遍之后一字未动，故引用第五遍那份档案。
+  登记边界：「整份门禁在最终文档树上重跑」这一格本轮没有做到；做到的是「改动面所涉及的成员逐个复算 ＋
+  未改动面的成员引用与其输入一致的那一遍」。这与 C37 第 ⑨ 段并列三遍门禁的做法同一口径。
+
+=== [终态] 文档定稿后逐成员复算（captured 2026-09-26 17:44:41 CEST  HEAD=858ddfa）===
+  这一格兑现上面「为什么不再跑第六遍」那一节承诺的口径：改动面涉及的成员逐个复算，而不是引用第五遍。
+
+$ make brand-check >/dev/null 2>&1; echo rc=$?
+  rc=0
+$ make ledger-check
+  python scripts/quality/acceptance_ledger_check.py
+  census: items=130 proven=7 gap=4 unreviewed=119 ticked=7
+  OK: items=130 proven=7 gap=4 unreviewed=119 ticked=7 across 22 group(s) and 19 §10 row(s) reconcile.
+  rc=0
+
+  读法：v5.9 回填的字句更正（「四遍」→「五遍」、三份门禁档案路径、§0 ⑥ 那一节的三遍读数）之后，
+    读那份文档的两个成员仍然为 0。`ledger-check` 的输入是 §2–§6 的条目级清单与 §10 的状态列，
+    本轮 §10 只动了 AC-17 行的证据列与备注列、状态列的 `条目级 4/10` 一字未动 ⇒ 19 行仍与实测对得上。
+  未复算的那 12 个成员：其输入（opendata/、tests/、scripts/、前端、密钥面）自第五遍门禁之后
+    一字未动，故引用 `gate-c38a-post-backfill.txt` 那一遍的读数；这一条边界与「整份门禁在最终
+    文档树上重跑」不是同一句话，档案按这一句写。
