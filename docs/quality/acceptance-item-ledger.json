@@ -28,56 +28,199 @@
   },
   "items": {
     "AC-1|01|ed953f70": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C40",
+      "date": "2026-09-26",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-1|01'（判定面为实测读数，见 docs/evidence/C40/probe-all.txt）",
+      "evidence": [
+        "docs/evidence/C40/probe-all.txt",
+        "docs/evidence/C40/probe-readings.json",
+        "docs/evidence/C40/README.md",
+        "docs/evidence/A0/README.md"
+      ],
+      "note": "判据三面各自读一遍：pyproject 的 name/version 走 AST（注释里写什么不算），主包走 `opendata/__init__.py` 是否在库里，另外钉两个反方向面——旧 `app/` 布局跟踪数必须为 0、setuptools 的第一条 find include 必须是 `opendata*`。"
     },
     "AC-1|02|48aff045": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C40",
+      "date": "2026-09-26",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-1|02'（判定面为实测读数，见 docs/evidence/C40/probe-all.txt）",
+      "evidence": [
+        "docs/evidence/C40/probe-all.txt",
+        "docs/evidence/C40/probe-readings.json",
+        "docs/evidence/C40/README.md",
+        "scripts/quality/check_brand.py"
+      ],
+      "note": "这条勾的不是『扫描器绿』而是『扫描器查的就是判据列的那些东西』：条目原文枚举的 13 个 token 与 check_brand.py 里 BRAND_TOKENS 逐项对账（清单从扫描器 AST 派生，不复制第二份），再跑一次脚本取 exit 0，最后用独立 grep 复核 `from app.`/`import app.`（412 个自有 .py，0 命中）。边界：本轮不证扫描器对大小写/分隔符变体的鲁棒性，那属 check_brand 自己的面。"
     },
     "AC-1|03|afb7fc32": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C40",
+      "date": "2026-09-26",
+      "reason": "裸词 akshare 命中 611 个跟踪文件，其中搬运树 opendata_http/ 315；**条目白名单之外仍有 70 个**：适配层包 opendata/data/providers/akshare/ 15 个 + 55 个（opendata/data 注册表与映射 11、scripts/ops 跨供应商对照脚本 8、opendata/pipeline 5、scripts/quality 4、opendata/api 3、core/models/data_fetch/utils/services/main/cli 11、根文档 ARCHITECTURE.md+QUICKSTART.md 2、构建运维面 Makefile/Dockerfile/.pre-commit-config.yaml/bandit.yaml/pyproject.toml/requirements.txt/.env.example 7、frontend 2、alembic_data/versions 1、opendata_fuyao/endpoint_map.yaml 1）。条目列的 7 个面写于 A0，A2 改名与 B5 去依赖之后从没跟上：白名单该不该覆盖适配层与对照脚本是**措辞决策**，不由本轮替用户定。另一处如实登记：从条目原文回读白名单时，`akshare/` 与括注 `opendata_http/` 被解析成同一条（10 条里有 1 对重复）。集成层 import akshare 的存量另由 AC-16 基线冻结（2 个文件），不在此条判定内。",
+      "evidence": [
+        "docs/evidence/C40/probe-all.txt",
+        "docs/evidence/C40/probe-readings.json",
+        "docs/evidence/C40/README.md",
+        "docs/quality/zero-dep-baseline.json"
+      ]
     },
     "AC-1|04|019bc6fc": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C40",
+      "date": "2026-09-26",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-1|04'（判定面为实测读数，见 docs/evidence/C40/probe-all.txt）",
+      "evidence": [
+        "docs/evidence/C40/probe-all.txt",
+        "docs/evidence/C40/probe-readings.json",
+        "docs/evidence/C40/README.md",
+        "docker-compose.yml",
+        ".pre-commit-config.yaml"
+      ],
+      "note": "四个面分开量：compose 六个 container_name 全部落在 opendata_* 且网络名为 opendata_network；opendata_user 在 .env.example/compose/init.sql 三处齐备；7 个机器面（compose/.env.example/init.sql/config.py/Makefile/.pre-commit/Dockerfile）旧 token 命中 0；Makefile 17 条路径引用 0 缺失、pre-commit 8 条 files/exclude 正则 0 条指向不存在的文件（空转正则以前没人查）。披露：根文档按 AC-1|03 分成『仍在使用旧名』(0 容忍) 与『沿革点名旧名』(3 行/4 文件，允许) 两类，分型靠 PROVENANCE_MARKER 关键词共现，不是语义判定。"
     },
     "AC-1|05|db9002ff": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C40",
+      "date": "2026-09-26",
+      "reason": "判据前一半已过：config.py 默认值 / .env.example / docker-compose.yml / init.sql 四处都读到 opendata / opendata_data（consistent=yes，逐处值已打印）。后一半没过且本轮不能代替它过：『后端启动、前端登录、/health 正常』需要真把栈起来，今天是 `no-engine`（docker info exit 1: Cannot connect to the Docker daemon）。启动 Docker 引擎不在自主动作范围内，登记为需用户确认；no-engine（跑不了）与 fail（跑了但不对）在探针里是两个不同的读数，不互相顶替。",
+      "evidence": [
+        "docs/evidence/C40/probe-all.txt",
+        "docs/evidence/C40/probe-readings.json",
+        "docs/evidence/C40/README.md"
+      ]
     },
     "AC-1|06|3ce38e4e": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C40",
+      "date": "2026-09-26",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-1|06'（判定面为实测读数，见 docs/evidence/C40/probe-all.txt）",
+      "evidence": [
+        "docs/evidence/C40/probe-all.txt",
+        "docs/evidence/C40/probe-readings.json",
+        "docs/evidence/C40/README.md",
+        "docker-compose.yml"
+      ],
+      "note": "判据只管数据仓库容器：`mysql_warehouse` 不挂 profile=yes。仍带 profile 的只有 certbot(ssl)，照实报不判红。`docker compose config --services` 因 MYSQL_ROOT_PASSWORD 需要插值而 exit 1 ⇒ 该面记 n/a 并改用 compose 文件静态解析，不让环境缺项冒充结论。本轮不声称栈能起来（那是 AC-1|05 的运行时面，今天 no-engine）。"
     },
     "AC-1|07|2be7c221": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C40",
+      "date": "2026-09-26",
+      "reason": "许可面全绿：LICENSE 以 Business Source License 1.1 开头、参数块五键齐（缺 0/四要素，Change Date 2030-09-22、Change License MIT）、LICENSE-AKSHARE 为 MIT、THIRD_PARTY_NOTICES.md 四节含嵌入资源权利块、README 授权说明与数据免责声明均在。唯一卡点是判据明写的『商务联系方式』：README L160 现在是自标占位的 `cloud@example.com（占位，发布前替换为正式联系方式）`（placeholder=yes）。这是要用户提供的文本，编一个能过判据的邮箱就是造假，故不勾。",
+      "evidence": [
+        "docs/evidence/C40/probe-all.txt",
+        "docs/evidence/C40/probe-readings.json",
+        "docs/evidence/C40/README.md",
+        "LICENSE",
+        "THIRD_PARTY_NOTICES.md"
+      ]
     },
     "AC-1|08|2e7a9f6f": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C40",
+      "date": "2026-09-26",
+      "reason": "登记表存在且列齐（16 行 × 十列，含复核日期与责任人两列），覆盖对账也过：provider-inventory.yaml 引用的 10 行全部有对应行、无悬空引用。但『覆盖全部数据源（来源/条款链接/允许用途/复核日期/责任人）』按内容量 today：复核日期真填 **0/16**、允许用途仍答『待确认』 **11/16**、条款链接写成散文而非 URL **13/16**。列在不等内容在——填这些是法务/产品复核结论，本轮能做的只是把它变成三个可复算的数（dated/undecided/unlinked），已做。",
+      "evidence": [
+        "docs/evidence/C40/probe-all.txt",
+        "docs/evidence/C40/probe-readings.json",
+        "docs/evidence/C40/README.md",
+        "docs/data-rights-registry.md"
+      ]
     },
     "AC-1|09|1c8469ac": {
       "state": "gap",
-      "round": "C36",
+      "round": "C40",
       "date": "2026-09-26",
-      "reason": "本轮 `make secret-check` 用钉住的 gitleaks 8.30.1 全历史扫过 163 commits 并 `no leaks found`（docs/evidence/C36/secret-check-gate.log），但判据另有两条未满足：①『白名单仅含文档/模板』——`.gitleaks.toml` 现含一条按**形状**豁免的 generic-api-key 规则（免 Key 源返回的 SDMX dataflow key）；②反事实注入显示该豁免有代价：全大写带点的 4 段值新配置会放过（gitleaks-counterfactual.log §4）。③上游硬编码凭证 5 文件的处置登记本轮未逐条复核。",
+      "reason": "全历史扫描器今天实跑通过（make secret-check exit 0，`no leaks found`），上游 5 个硬编码凭证文件登记 5/5、残留凭证形状字面量 0。两条仍未满足：①条目字面的 `git ls-files | grep -E '\\.env|\\.idea|\\.pid'`读出 **1 条 `.env.example`**（按真实凭证形状重跑 `(^|/)\\.env$`、`.idea/`、`*.pid` 为 0）——这与 AC-1|03 明文允许 .env.example 作为模板面**互相矛盾**，要么改条目措辞要么删模板；②『白名单仅含文档/模板』按今天不成立：.gitleaks.toml 全局豁免 2 条中非文档/模板 1 条（`\\.egg-info/`，构建产物），另有 2 个 per-rule 豁免块（C36 那条形状豁免的代价已由反事实量出：全大写带点的 4 段值会被放过）。本轮把 C36 的 reason 更新为这一版（C36 只说了豁免面，没说两条判据互斥）。",
       "evidence": [
-        "docs/evidence/C36/secret-check-gate.log",
-        "docs/evidence/C36/gitleaks-counterfactual.log"
+        "docs/evidence/C40/probe-all.txt",
+        "docs/evidence/C40/probe-readings.json",
+        "docs/evidence/C40/README.md",
+        ".gitleaks.toml",
+        "docs/evidence/C36/gitleaks-counterfactual.log",
+        "docs/evidence/A0/secret-audit.txt"
       ]
     },
     "AC-1|10|0c44a7ef": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C40",
+      "date": "2026-09-26",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-1|10'（判定面为实测读数，见 docs/evidence/C40/probe-all.txt）",
+      "evidence": [
+        "docs/evidence/C40/ac1-10-post-commit.txt",
+        "docs/evidence/C40/probe-all.txt",
+        "docs/evidence/C40/README.md"
+      ],
+      "note": "判据两半都量：残留形状（*.bak/*-copy/*.orig/副本 等）跟踪数 0 + 『git 从未见过的文件』0 + 已跟踪文件未提交改动 0；『首次完整提交』读成首提交树含 pyproject.toml、README.md、opendata/__init__.py 且 opendata/、scripts/、tests/、docs/ 四类目非空（首提交 4ee1bbca，2026-09-22）。两处披露：①首提交树 712 只占今天 1,325 个跟踪文件的 53.7%，这个比例只报不判——按占比判会得到一条随每轮新增自然 decay 的恒红判据；②第一遍 --all 里本条是 gap（untracked=2，即本轮自己的探针与日志），代码与证据入库 052a30b 后复量才翻 proven，复量输出写在仓库外再复制进来以免仪器自指。"
     },
     "AC-2|01|04bc9542": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C40",
+      "date": "2026-09-26",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-2|01'（判定面为实测读数，见 docs/evidence/C40/probe-all.txt）",
+      "evidence": [
+        "docs/evidence/C40/probe-all.txt",
+        "docs/evidence/C40/probe-readings.json",
+        "docs/evidence/C40/README.md",
+        "tests/test_contract_models.py"
+      ],
+      "note": "六个 P0 模型名逐个查是否真被 ALL_MODELS 参数化（缺一个即 gap，今天 missing=-），再实跑该文件 12 个往返/fail-closed 节点全绿，双形态靠调用面确认（to_frame/from_frame/model_dump 三处都真被用到）。ALL_MODELS 是类名列表不是字符串列表，清单读取用 AST Name 节点——第一版按字符串取把它读成『六个全缺』。"
     },
     "AC-2|02|0526af4d": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C40",
+      "date": "2026-09-26",
+      "reason": "两半各量：`Instrument` 与 `TradingCalendar` 确实继承 ContractModel、五个字段集/语义/往返节点 5/5 passed；**但『被全市场回补与增量窗口逻辑引用』这一半实测为 0**——opendata/pipeline/{runner,jobs,templates,scheduling,partitions}.py、api/pipeline.py、services/data_acquisition.py 里没有任何一处 import 这两个契约，唯一真消费契约的是 pipeline/patrol.py；jobs.py 用的是 pipeline/trading_calendar.py 里同名不同种的 dataclass（tier + open_days），而 metadata.py 的模块文档却写着『回补以刷新 Instrument 为第 0 步、增量窗口取自 TradingCalendar 的 prev_trade_date』——**文档 claim 与代码事实相反**。两腿本身早已接入并跨供应商对照（C12/C13/C14），缺的是消费方接线，登记为 C41 开发项（判据 importers>=2 且单测绿，不放宽）。",
+      "evidence": [
+        "docs/evidence/C40/probe-all.txt",
+        "docs/evidence/C40/probe-readings.json",
+        "docs/evidence/C40/README.md",
+        "opendata/data/models/metadata.py",
+        "docs/evidence/C12/README.md",
+        "docs/evidence/C14/README.md"
+      ]
     },
     "AC-2|03|c4547f55": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C40",
+      "date": "2026-09-26",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-2|03'（判定面为实测读数，见 docs/evidence/C40/probe-all.txt）",
+      "evidence": [
+        "docs/evidence/C40/probe-all.txt",
+        "docs/evidence/C40/probe-readings.json",
+        "docs/evidence/C40/README.md",
+        "tests/test_adjust.py",
+        "docs/evidence/B4/README.md"
+      ],
+      "note": "三问：Bar 字段面节点 passed（模型上不允许出现复权价）、合成用例 10 passed/0 failed、官方 qfq 序列对照面今天采集到 2 例（em、sina(宽)）且 2 passed。2 个 skip 只作观测不入判据——被跳过的夹具证明不了任何事，所以判据要求至少一条真跑过。"
     },
     "AC-2|04|989b3a28": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C40",
+      "date": "2026-09-26",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-2|04'（判定面为实测读数，见 docs/evidence/C40/probe-all.txt）",
+      "evidence": [
+        "docs/evidence/C40/probe-all.txt",
+        "docs/evidence/C40/probe-readings.json",
+        "docs/evidence/C40/README.md",
+        "opendata/data/protocol.py"
+      ],
+      "note": "『基类就位』与『normalize() 真承担三件事』分开量：三段基类与 Capability 模型在 protocol.py 内确认、Fetcher 阶段方法 3 个，再逐个查 normalize_frame() 函数体内是否真的做了字段映射/单位换算/键规范化（三问三 yes），最后跑命名单元节点 5/5。"
     },
     "AC-2|05|9adcd9e4": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C40",
+      "date": "2026-09-26",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-2|05'（判定面为实测读数，见 docs/evidence/C40/probe-all.txt）",
+      "evidence": [
+        "docs/evidence/C40/probe-all.txt",
+        "docs/evidence/C40/probe-readings.json",
+        "docs/evidence/C40/README.md",
+        "opendata/data/domains.yaml",
+        "tests/test_domains.py"
+      ],
+      "note": "注册表 20 域 / 20 个 rest_path / 20 个 contract 条目、REST 路径唯一；『派生且一致』的反面判据是另有一处硬写但今天恰好一样，所以量的是把表名/WS 名写成字面量的条数（今天 0）；tests/test_domains.py 23 passed + 派生节点 5/5。"
     },
     "AC-3|01|d4d8d4f4": {
       "state": "unreviewed"
