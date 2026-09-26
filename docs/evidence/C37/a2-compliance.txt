@@ -1,0 +1,58 @@
+# C37 证据：本轮改动的两个 Python 文件的 A2 合规面（lint / format / 类型 / 安全）
+# 采集时间: 2026-09-26 15:22:12 CEST  主机: MacBook-Air.local  分支: dev  HEAD: 3a1297e
+# 对象: scripts/codemod/compare_with_upstream.py（判据改动）、tests/test_port_fidelity.py（六条守卫）
+# 命令: ruff check / ruff format --check / mypy / bandit（逐条完整输出，未裁剪）
+# 判据: 四项全绿才算过；tests/ 按 pyproject 的 per-file-ignores 免 ANN/D，mypy 面按门禁既有分工（C 层不并入 strict 名单）
+# 工具: ruff 0.15.20 / mypy 2.3.1 (compiled: yes) / __main__.py 1.9.4
+
+=== [1] ruff check ===
+All checks passed!
+ruff check exit=0
+
+=== [2] ruff format --check ===
+2 files already formatted
+ruff format exit=0
+
+=== [3] mypy ===
+pyproject.toml: note: unused section(s): module = ['opendata.data_fetch.*', 'opendata_http.*']
+Success: no issues found in 1 source file
+mypy exit=0
+
+=== [4] bandit ===
+bandit exit=0
+
+=== [5] 本轮改动规模 ===
+ scripts/codemod/compare_with_upstream.py | 117 ++++++++++++++++++++++++++++---
+ tests/test_port_fidelity.py              |  76 ++++++++++++++++++++
+ 2 files changed, 183 insertions(+), 10 deletions(-)
+
+# 追加段（同一轮）：本轮两份证据脚本自身的 A2 面 —— a2-check 会把 docs/evidence/**/*.py 扫进来，
+# 所以这两份必须与判据文件同级达标。captured_at=2026-09-26T15:45:39+02:00 HEAD=3a1297e
+# 这一段的四个退出码都是直接取命令本身的 $?（上一版误把 grep 管道的退出码记成了 bandit 的，已重跑）
+
+=== [6] ruff check（两份证据脚本）===
+All checks passed!
+ruff check exit=0
+
+=== [7] ruff format --check ===
+2 files already formatted
+ruff format exit=0
+
+=== [8] mypy（完整输出）===
+pyproject.toml: note: unused section(s): module = ['opendata.data_fetch.*', 'opendata_http.*']
+Success: no issues found in 2 source files
+mypy exit=0
+
+=== [9] bandit -q -c bandit.yaml（完整输出）===
+
+bandit exit=0
+
+=== [10] a2-check 在门禁里对这两份的读数（摘自 gate.txt，A2 files=315）===
+A2 files: 315
+  docs/evidence/C37/attribution.py
+  docs/evidence/C37/cross_env_port_replay.py
+ok   ruff check
+ok   ruff format --check
+ok   mypy
+ok   bandit
+OK: A2 files meet the full A2 standard (ruff + format + mypy + bandit).

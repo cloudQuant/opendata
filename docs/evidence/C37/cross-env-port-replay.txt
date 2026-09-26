@@ -1,0 +1,58 @@
+===== C37 跨栈复现：搬运层真函数在两套栈下把六格印成什么 =====
+captured_at=2026-09-26T15:38:52+02:00 branch=dev HEAD=3a1297e
+命令 A（本机栈）: python docs/evidence/C37/cross_env_port_replay.py
+命令 B（CI 同装栈）: /tmp/venv-pd306/bin/python docs/evidence/C37/cross_env_port_replay.py
+venv 制备: python -m venv /tmp/venv-pd306 && /tmp/venv-pd306/bin/pip install pandas==3.0.6 numpy==2.4.6 requests beautifulsoup4 tqdm
+（pandas/numpy 版本抄自 CI 的 Successfully installed 清单，见 ci-env-diff.txt；本轮只读到 CI 装到的版本，未钉）
+
+========================================================================
+[A] 本机栈
+========================================================================
+python : 3.13.5 | packaged by Anaconda, Inc. | (main, Jun 12 2025, 11:23:37) [Clang 14.0.6 ]
+pandas : 2.3.1
+numpy  : 2.3.1
+platform: darwin
+requests .json() 用的 json 模块: simplejson
+
+搬运层返回 103 行 x 147 列
+  流动资产合计[11] dtype=object 值类型=float
+      str() -> '218472857114.40997'   CI 当年印的 -> '218472857114.41'   未复现（仍是录制值）
+  资产总计[10] dtype=object 值类型=float
+      str() -> '272699660092.24997'   CI 当年印的 -> '272699660092.25'   未复现（仍是录制值）
+  资产总计[19] dtype=object 值类型=float
+      str() -> '224702253941.12997'   CI 当年印的 -> '224702253941.13'   未复现（仍是录制值）
+  未分配利润[7] dtype=object 值类型=float
+      str() -> '192903581645.12997'   CI 当年印的 -> '192903581645.13'   未复现（仍是录制值）
+  归属于母公司股东权益合计[5] dtype=object 值类型=float
+      str() -> '258357842676.40997'   CI 当年印的 -> '258357842676.41'   未复现（仍是录制值）
+  归属于母公司股东权益合计[17] dtype=object 值类型=float
+      str() -> '206782990983.24997'   CI 当年印的 -> '206782990983.25'   未复现（仍是录制值）
+
+=> 本栈复现 CI 右值 0 / 6 例
+exitA=0
+
+========================================================================
+[B] CI 同装栈（pandas 3.0.6 / numpy 2.4.6）
+========================================================================
+python : 3.13.5 | packaged by Anaconda, Inc. | (main, Jun 12 2025, 11:23:37) [Clang 14.0.6 ]
+pandas : 3.0.6
+numpy  : 2.4.6
+platform: darwin
+requests .json() 用的 json 模块: json
+
+搬运层返回 103 行 x 147 列
+  流动资产合计[11] dtype=object 值类型=float
+      str() -> '218472857114.40997'   CI 当年印的 -> '218472857114.41'   未复现（仍是录制值）
+  资产总计[10] dtype=object 值类型=float
+      str() -> '272699660092.24997'   CI 当年印的 -> '272699660092.25'   未复现（仍是录制值）
+  资产总计[19] dtype=object 值类型=float
+      str() -> '224702253941.12997'   CI 当年印的 -> '224702253941.13'   未复现（仍是录制值）
+  未分配利润[7] dtype=object 值类型=float
+      str() -> '192903581645.12997'   CI 当年印的 -> '192903581645.13'   未复现（仍是录制值）
+  归属于母公司股东权益合计[5] dtype=object 值类型=float
+      str() -> '258357842676.40997'   CI 当年印的 -> '258357842676.41'   未复现（仍是录制值）
+  归属于母公司股东权益合计[17] dtype=object 值类型=float
+      str() -> '206782990983.24997'   CI 当年印的 -> '206782990983.25'   未复现（仍是录制值）
+
+=> 本栈复现 CI 右值 0 / 6 例
+exitB=0
