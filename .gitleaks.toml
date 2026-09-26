@@ -27,3 +27,22 @@ description = "Docs show placeholder Authorization headers in curl examples."
 paths = [
   '''\.md$''',
 ]
+
+# C36: `generic-api-key` fires on SDMX *dataflow keys* - the public name of the
+# statistic a provider asks for (`USA.UNEMP...PT_USR...Y15T64.UNE`,
+# `Q.N.I9.W2...EUR.LR.N`), which travel in the request URL path, not a header. They
+# are structural identifiers, and five of them have been in history since C14/C16.
+#
+# Scope is deliberately the tightest gitleaks offers: the captured *secret* must
+# itself be an uppercase dotted key, so the exemption cannot be widened by
+# coincidence - not by path, not by file type, not by the surrounding line. A real
+# key written into one of these same files is still reported, which
+# docs/evidence/C36/gitleaks-counterfactual.log re-proves on every round.
+[[rules]]
+id = "generic-api-key"
+[rules.allowlist]
+description = "Public SDMX dataflow keys name a statistic; they are not credentials."
+regexTarget = "secret"
+regexes = [
+  '''^[A-Z0-9]{1,12}(\.[A-Z0-9_]{1,14}){3,}$''',
+]

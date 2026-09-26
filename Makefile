@@ -12,6 +12,7 @@
 
 .PHONY: help lint format format-check typecheck security deps-audit a2-check \
         test test-cov quality-ratchet public-api-quality zero-dep-check brand-check \
+        secret-check ledger-check \
         frontend-lint frontend-format frontend-test frontend-test-cov frontend-typecheck \
         frontend-collection frontend-e2e \
         gate quality quality-full pre-commit
@@ -25,7 +26,7 @@ PY_PORTED := opendata_http
 
 help:
 	@echo "Gate:             gate"
-	@echo "A2 (gating):      a2-check public-api-quality zero-dep-check brand-check quality-ratchet"
+	@echo "A2 (gating):      a2-check public-api-quality zero-dep-check brand-check secret-check ledger-check quality-ratchet"
 	@echo "Tests:            test test-cov"
 	@echo "Dev views (A1):   lint format format-check typecheck security deps-audit"
 	@echo "Frontend:         frontend-lint frontend-format frontend-collection frontend-e2e frontend-test frontend-test-cov frontend-typecheck"
@@ -97,6 +98,22 @@ zero-dep-check:
 brand-check:
 	python scripts/quality/check_brand.py
 
+# Full-history credential scan (AC-16). It used to live only in CI, pinned to its own
+# gitleaks release, so five red CI pushes coexisted with five green `make gate` runs
+# and the two scanners did not even report the same findings (C36). The pinned device is
+# docs/quality/secret-scan.json; a missing or differently-versioned scanner fails the
+# gate instead of being echoed away like `deps-audit` does.
+secret-check:
+	python scripts/quality/secret_scan_check.py
+
+# The acceptance document keeps two books that had never been read against each other:
+# 130 item-level criteria in §2-§6 (0 ticked) and 19 AC rows in §10 (eight of them
+# saying 完成). A criterion nothing checks cannot fail, so every `proven` item must name
+# a command, an ISO date and an evidence file that exists in the repo, and every §10 row
+# must disclose 条目级 k/m — claiming 完成 with k<m also requires 未逐条达标.
+ledger-check:
+	python scripts/quality/acceptance_ledger_check.py
+
 # --- Frontend --------------------------------------------------------------
 
 frontend-lint:
@@ -145,6 +162,10 @@ gate:
 	@$(MAKE) --no-print-directory brand-check
 	@echo "===== gate: zero-dep-check ====="
 	@$(MAKE) --no-print-directory zero-dep-check
+	@echo "===== gate: secret-check ====="
+	@$(MAKE) --no-print-directory secret-check
+	@echo "===== gate: ledger-check ====="
+	@$(MAKE) --no-print-directory ledger-check
 	@echo "===== gate: js-points-check ====="
 	@$(MAKE) --no-print-directory js-points-check
 	@echo "===== gate: a2-check ====="

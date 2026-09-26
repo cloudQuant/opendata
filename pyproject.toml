@@ -29,6 +29,17 @@ classifiers = [
 ]
 dependencies = [
     "requests>=2.31.0",
+    # C36: the ported tree is imported through opendata_http/__init__.py, which is
+    # upstream akshare's eager facade (306 ported modules land in sys.modules for a
+    # plain `import opendata.main`), so every third-party library that facade touches
+    # at import time is a *runtime* dependency of this project. curl_cffi and urllib3
+    # were missing; CI failed on `ModuleNotFoundError: curl_cffi` for five pushes.
+    # Guard: tests/test_ported_import_closure.py.
+    # The ported code only uses the `requests.Session()` compatibility layer (no
+    # `impersonate=`), and this round exercised curl_cffi 0.13.0.
+    "curl_cffi>=0.7.0",
+    # Imported directly by ported modules (opendata_http/**), not only via requests.
+    "urllib3>=2.0.7",
     "aiohttp>=3.9.0",
     "beautifulsoup4>=4.12.0",
     "lxml>=5.0.0",

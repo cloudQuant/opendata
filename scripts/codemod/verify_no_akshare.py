@@ -18,6 +18,18 @@ occurrence fails the check. ``--update`` may only tighten the baseline unless
 ``--force-update`` is passed explicitly (scope changes need review).
 
 Run the detector's own test suite with ``--self-test``.
+
+Scan surface
+------------
+A reading is only comparable with another reading if both came from the same walk.
+``opendata_providers`` sat in the target list for rounds without existing, and the
+walker skipped missing directories silently, so a "runtime package" contributed zero
+files to a check that reported no regressions. The baseline therefore now freezes the
+surface as well as the findings: the package set, the per-package Python file count,
+the scanner version and the interpreters it was verified under. Divergence in either
+direction fails -- a walk that sees fewer files than the archive records is blindness, a
+census left stale by added files makes the archived number fiction -- and so do renamed
+packages and unreviewed interpreters, until someone re-freezes deliberately.
 """
 
 from __future__ import annotations
@@ -26,6 +38,7 @@ import argparse
 import ast
 import json
 import sys
+import tempfile
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
@@ -35,16 +48,23 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 FORBIDDEN_ROOTS = ("akshare", "openbb")
 
 # Runtime packages only. Development tooling, tests and docs are out of scope.
+# `opendata_providers` used to be listed here and does not exist: it was a name in a
+# list, not a directory in the tree, and nothing noticed (see the module docstring).
 DEFAULT_TARGETS = (
     "opendata",
     "opendata_http",
     "opendata_fuyao",
-    "opendata_providers",
     "opendata_client",
 )
 
 BASELINE_PATH = "docs/quality/zero-dep-baseline.json"
-BASELINE_VERSION = 1
+BASELINE_VERSION = 2
+
+# Bump when the scan logic changes, so an old reading can never be compared with a new
+# one by accident. Interpreters the baseline has been verified under: CI runs 3.11,
+# development runs 3.13; anything else is an unreviewed parser surface.
+SCANNER_VERSION = 2
+PYTHON_MINORS = ("3.11", "3.13")
 
 DYNAMIC_IMPORT_NAMES = frozenset({"import_module", "__import__"})
 
@@ -53,6 +73,16 @@ BASELINE_MISSING = (
     "generate it with --update"
 )
 SCOPE_CHANGED = "scan scope changed silently"
+SURFACE_SHRANK = "scan surface shrank"
+SURFACE_STALE = "archived file census no longer describes the tree"
+
+
+class ScanSurfaceError(RuntimeError):
+    """A declared scan target is not a walkable package."""
+
+
+class BaselineError(RuntimeError):
+    """The frozen baseline is absent or describes a different device."""
 
 
 @dataclass(frozen=True, order=True)
@@ -83,10 +113,14 @@ class Baseline:
     Attributes:
         scope: Package names the baseline was generated for.
         entries: Frozen finding identities.
+        files: Per-package Python file count the freeze walked.
+        python_minors: Interpreters the freeze was verified under.
     """
 
     scope: tuple[str, ...]
     entries: tuple[tuple[str, str, str], ...]
+    files: dict[str, int]
+    python_minors: tuple[str, ...]
 
 
 def _is_docstring(node: ast.Constant, parents: dict[ast.AST, ast.AST]) -> bool:
@@ -172,16 +206,30 @@ def scan_source(source: str, filename: str) -> list[Finding]:
     return findings
 
 
-def iter_target_files(targets: tuple[str, ...]) -> list[Path]:
-    """Return every Python file under the existing target packages."""
-    files: list[Path] = []
-    for target in targets:
-        base = REPO_ROOT / target
-        if base.is_dir():
-            files.extend(
-                path for path in sorted(base.rglob("*.py")) if "__pycache__" not in path.parts
-            )
+def target_files(target: str) -> list[Path]:
+    """Every Python file of one runtime package.
+
+    A declared target that is absent or empty is an error rather than a skip: the
+    scanner once carried ``opendata_providers`` for rounds while the directory did not
+    exist, and "0 files walked" looked identical to "nothing to report".
+    """
+    base = REPO_ROOT / target
+    if not base.is_dir():
+        raise ScanSurfaceError(f"{target}: declared scan target is not a directory")
+    files = [path for path in sorted(base.rglob("*.py")) if "__pycache__" not in path.parts]
+    if not files:
+        raise ScanSurfaceError(f"{target}: scan target holds no Python file")
     return files
+
+
+def iter_target_files(targets: tuple[str, ...]) -> list[Path]:
+    """Return every Python file under the target packages."""
+    return [path for target in targets for path in target_files(target)]
+
+
+def file_census(targets: tuple[str, ...]) -> dict[str, int]:
+    """Per-package file counts, i.e. how much of the tree this reading actually saw."""
+    return {target: len(target_files(target)) for target in targets}
 
 
 def collect(targets: tuple[str, ...]) -> list[Finding]:
@@ -201,34 +249,63 @@ def _as_str_tuple(value: object) -> tuple[str, ...] | None:
     return tuple(value)
 
 
-def _parse_baseline(raw: object) -> Baseline | None:
+def _parse_baseline(raw: object) -> Baseline:
+    """Validate one decoded baseline document, or say precisely why it is unusable.
+
+    Every rejection names the field: "baseline is missing" and "baseline was frozen by
+    a different scanner" call for opposite actions, and one message for both invites
+    whoever is red to just re-run --update.
+    """
     if not isinstance(raw, dict):
-        return None
+        raise BaselineError("baseline is not a JSON object")
     version = raw.get("version")
     if version != BASELINE_VERSION:
-        return None
+        raise BaselineError(
+            f"baseline version is {version!r}, this scanner writes {BASELINE_VERSION!r}; "
+            "re-freeze with --update only after reviewing the diff"
+        )
+    scanner = raw.get("scanner_version")
+    if scanner != SCANNER_VERSION:
+        raise BaselineError(f"baseline was frozen by scanner {scanner!r}, not {SCANNER_VERSION!r}")
     scope = _as_str_tuple(raw.get("scope"))
     if scope is None:
-        return None
+        raise BaselineError("`scope` must be a list of package names")
+    census = raw.get("files")
+    if not isinstance(census, dict) or not all(
+        isinstance(key, str) and isinstance(value, int) for key, value in census.items()
+    ):
+        raise BaselineError("`files` must map each package to its walked file count")
+    python_minors = _as_str_tuple(raw.get("python_minors"))
+    if python_minors is None:
+        raise BaselineError("`python_minors` must list the verified interpreters")
     raw_findings = raw.get("findings")
     if not isinstance(raw_findings, list):
-        return None
+        raise BaselineError("`findings` must be a list")
     entries: list[tuple[str, str, str]] = []
     for item in raw_findings:
         if not isinstance(item, dict):
-            return None
+            raise BaselineError("every finding must be an object")
         file, module, kind = item.get("file"), item.get("module"), item.get("kind")
         if not (isinstance(file, str) and isinstance(module, str) and isinstance(kind, str)):
-            return None
+            raise BaselineError("finding needs string file, module and kind")
         entries.append((file, module, kind))
-    return Baseline(scope=scope, entries=tuple(entries))
+    return Baseline(
+        scope=scope,
+        entries=tuple(entries),
+        files=dict(census),
+        python_minors=python_minors,
+    )
 
 
-def load_baseline() -> Baseline | None:
-    """Load and validate the frozen baseline, or return ``None`` if unusable."""
+def load_baseline() -> Baseline:
+    """Read the frozen baseline.
+
+    Raises:
+        BaselineError: The file is absent or describes a different device.
+    """
     path = REPO_ROOT / BASELINE_PATH
     if not path.is_file():
-        return None
+        raise BaselineError(BASELINE_MISSING)
     return _parse_baseline(json.loads(path.read_text(encoding="utf-8")))
 
 
@@ -237,12 +314,45 @@ def count_by_identity(findings: list[Finding]) -> Counter[tuple[str, str, str]]:
     return Counter(finding.key() for finding in findings)
 
 
+def surface_problems(baseline: Baseline, census: dict[str, int]) -> list[str]:
+    """Ways in which today's walk is not the walk the baseline describes."""
+    problems: list[str] = []
+    running = f"{sys.version_info.major}.{sys.version_info.minor}"
+    if running not in PYTHON_MINORS:
+        problems.append(f"interpreter {running} is not among the reviewed {list(PYTHON_MINORS)}")
+    if sorted(baseline.python_minors) != sorted(PYTHON_MINORS):
+        problems.append(
+            f"baseline froze {list(baseline.python_minors)} but the code allows "
+            f"{list(PYTHON_MINORS)}"
+        )
+    for target, expected in sorted(baseline.files.items()):
+        actual = census.get(target)
+        if actual is None:
+            problems.append(f"{target}: baseline walked {expected} file(s), today none")
+        elif actual < expected:
+            problems.append(f"{SURFACE_SHRANK}: {target} {expected} -> {actual} file(s)")
+        elif actual > expected:
+            problems.append(
+                f"{SURFACE_STALE}: {target} archived {expected} but walks {actual} file(s)"
+            )
+    problems.extend(
+        f"{target}: on the scan surface but missing from the baseline"
+        for target in sorted(set(census) - set(baseline.files))
+    )
+    return problems
+
+
 def check(targets: tuple[str, ...]) -> int:
-    """Compare current findings against the frozen baseline."""
-    current = collect(targets)
-    baseline = load_baseline()
-    if baseline is None:
-        print(f"FAIL: {BASELINE_MISSING}", file=sys.stderr)
+    """Compare the current walk and findings against the frozen baseline."""
+    try:
+        baseline = load_baseline()
+    except (BaselineError, json.JSONDecodeError) as exc:
+        print(f"FAIL: {exc}", file=sys.stderr)
+        return 1
+    try:
+        census = file_census(targets)
+    except ScanSurfaceError as exc:
+        print(f"FAIL: scan surface is broken: {exc}", file=sys.stderr)
         return 1
     if baseline.scope != targets:
         print(
@@ -251,8 +361,21 @@ def check(targets: tuple[str, ...]) -> int:
         )
         return 1
 
+    problems = surface_problems(baseline, census)
+    if problems:
+        print("FAIL: the scan surface moved:", file=sys.stderr)
+        for line in problems:
+            print(f"  - {line}", file=sys.stderr)
+        print(
+            "  Re-freeze with --update only when the move is intended; a package that "
+            "lost files is a package that stopped being looked at, and a census that no "
+            "longer matches the tree is a number nobody can read as evidence.",
+            file=sys.stderr,
+        )
+        return 1
+
     expected = Counter(baseline.entries)
-    actual = count_by_identity(current)
+    actual = count_by_identity(collect(targets))
     regressions = actual - expected
     improvements = expected - actual
 
@@ -262,7 +385,13 @@ def check(targets: tuple[str, ...]) -> int:
             print(f"  {file}: [{kind}] {module} x{count}", file=sys.stderr)
         return 1
 
-    print(f"OK: no new upstream references (frozen baseline: {sum(expected.values())}).")
+    print(
+        f"OK: {sum(census.values())} file(s) walked "
+        f"({', '.join(f'{k}={v}' for k, v in sorted(census.items()))}), "
+        f"python {sys.version_info.major}.{sys.version_info.minor}, "
+        f"scanner {SCANNER_VERSION}; "
+        f"no new upstream references (frozen baseline: {sum(expected.values())})."
+    )
     if improvements:
         print(
             f"NOTE: {sum(improvements.values())} frozen reference(s) are gone — "
@@ -273,9 +402,28 @@ def check(targets: tuple[str, ...]) -> int:
 
 def update(targets: tuple[str, ...], *, force: bool) -> int:
     """Rewrite the baseline, refusing to grow it unless ``force`` is set."""
+    try:
+        census = file_census(targets)
+    except ScanSurfaceError as exc:
+        print(f"FAIL: refusing to freeze a broken scan surface: {exc}", file=sys.stderr)
+        return 1
+    try:
+        existing = load_baseline()
+    except BaselineError as exc:
+        path = REPO_ROOT / BASELINE_PATH
+        if not path.is_file() and str(exc) == BASELINE_MISSING:
+            existing = None
+        elif not force:
+            print(
+                f"FAIL: the existing baseline is unusable ({exc}) and --update would "
+                "replace it silently; pass --force-update once that is what you reviewed.",
+                file=sys.stderr,
+            )
+            return 1
+        else:
+            existing = None
     current = collect(targets)
     actual = count_by_identity(current)
-    existing = load_baseline()
     if existing is not None and not force:
         grown = actual - Counter(existing.entries)
         if grown:
@@ -290,7 +438,10 @@ def update(targets: tuple[str, ...], *, force: bool) -> int:
 
     payload = {
         "version": BASELINE_VERSION,
+        "scanner_version": SCANNER_VERSION,
+        "python_minors": list(PYTHON_MINORS),
         "scope": list(targets),
+        "files": dict(sorted(census.items())),
         "count": sum(actual.values()),
         "findings": [
             {
@@ -305,7 +456,10 @@ def update(targets: tuple[str, ...], *, force: bool) -> int:
     path = REPO_ROOT / BASELINE_PATH
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"Wrote {BASELINE_PATH}: {sum(actual.values())} frozen reference(s).")
+    print(
+        f"Wrote {BASELINE_PATH}: {sum(actual.values())} frozen reference(s) across "
+        f"{sum(census.values())} file(s)."
+    )
     return 0
 
 
@@ -332,6 +486,73 @@ _COMPLIANT_SAMPLES: tuple[str, ...] = (
 )
 
 
+def _surface_guards() -> list[str]:
+    """Attack the scan-surface guards, so they cannot pass by being unreachable."""
+    failures: list[str] = []
+    frozen = Baseline(
+        scope=DEFAULT_TARGETS,
+        entries=(("opendata/x.py", "akshare", "import"),),
+        files=dict.fromkeys(DEFAULT_TARGETS, 10),
+        python_minors=PYTHON_MINORS,
+    )
+
+    if surface_problems(frozen, dict.fromkeys(DEFAULT_TARGETS, 10)):
+        failures.append("a matching surface was reported as moved")
+    shrunk = surface_problems(frozen, {**frozen.files, "opendata_http": 9})
+    if not any(SURFACE_SHRANK in line for line in shrunk):
+        failures.append(f"a one-file shrink was not caught: {shrunk}")
+    stale = surface_problems(frozen, {**frozen.files, "opendata_http": 11})
+    if not any(SURFACE_STALE in line for line in stale):
+        failures.append(f"a stale census (10 recorded, 11 walked) was not caught: {stale}")
+    if not surface_problems(frozen, {k: v for k, v in frozen.files.items() if k != "opendata"}):
+        failures.append("a scan target that vanished from the census was not caught")
+
+    # A missing package must be an error, not a silent zero.
+    try:
+        target_files("opendata_providers")
+        failures.append("opendata_providers resolved as a package; update this guard")
+    except ScanSurfaceError as exc:
+        if "not a directory" not in str(exc):
+            failures.append(f"wrong reason for the missing package: {exc}")
+
+    empty = Path(tempfile.mkdtemp(prefix="zero-dep-empty-"))
+    (empty / "pkg").mkdir()
+    previous_root = globals()["REPO_ROOT"]
+    try:
+        globals()["REPO_ROOT"] = empty
+        try:
+            target_files("pkg")
+            failures.append("an empty target directory was accepted")
+        except ScanSurfaceError as exc:
+            if "no Python file" not in str(exc):
+                failures.append(f"wrong reason for the empty target: {exc}")
+    finally:
+        globals()["REPO_ROOT"] = previous_root
+        (empty / "pkg").rmdir()
+        empty.rmdir()
+
+    v1 = {"version": 1, "scope": list(DEFAULT_TARGETS), "findings": []}
+    try:
+        _parse_baseline(v1)
+        failures.append("a v1 baseline parsed as v2")
+    except BaselineError as exc:
+        if "version" not in str(exc):
+            failures.append(f"v1 rejection must name the version, got: {exc}")
+    no_census = {
+        **v1,
+        "version": BASELINE_VERSION,
+        "scanner_version": SCANNER_VERSION,
+        "python_minors": list(PYTHON_MINORS),
+    }
+    try:
+        _parse_baseline(no_census)
+        failures.append("a baseline without a file census parsed")
+    except BaselineError as exc:
+        if "files" not in str(exc):
+            failures.append(f"census rejection must name `files`, got: {exc}")
+    return failures
+
+
 def self_test() -> int:
     """Verify the detector catches violations and ignores docstrings and prose."""
     failures: list[str] = []
@@ -346,6 +567,8 @@ def self_test() -> int:
         if hits:
             failures.append(f"false positive: {sample.strip()!r} -> {hits}")
 
+    failures.extend(_surface_guards())
+
     if failures:
         print("FAIL: scanner self-test:", file=sys.stderr)
         for failure in failures:
@@ -355,7 +578,8 @@ def self_test() -> int:
     print(
         f"OK: scanner self-test passed "
         f"({len(_VIOLATION_SAMPLES)} violations detected, "
-        f"{len(_COMPLIANT_SAMPLES)} compliant samples clean)."
+        f"{len(_COMPLIANT_SAMPLES)} compliant samples clean, "
+        "scan-surface guards bite in both directions)."
     )
     return 0
 

@@ -1,0 +1,504 @@
+{
+  "version": 1,
+  "doc": "docs/迭代计划/迭代1-重构数据中台/验收文档.md",
+  "items_total": 130,
+  "group_counts": {
+    "AC-1": 10,
+    "AC-10": 5,
+    "AC-11": 12,
+    "AC-12": 3,
+    "AC-13": 8,
+    "AC-14": 3,
+    "AC-15": 2,
+    "AC-16": 9,
+    "AC-17": 10,
+    "AC-18": 3,
+    "AC-19": 5,
+    "AC-2": 5,
+    "AC-3": 5,
+    "AC-4": 3,
+    "AC-5": 7,
+    "AC-6": 3,
+    "AC-7": 6,
+    "AC-8": 8,
+    "AC-9": 9,
+    "§4": 5,
+    "§5": 5,
+    "§6": 4
+  },
+  "items": {
+    "AC-1|01|ed953f70": {
+      "state": "unreviewed"
+    },
+    "AC-1|02|48aff045": {
+      "state": "unreviewed"
+    },
+    "AC-1|03|afb7fc32": {
+      "state": "unreviewed"
+    },
+    "AC-1|04|019bc6fc": {
+      "state": "unreviewed"
+    },
+    "AC-1|05|db9002ff": {
+      "state": "unreviewed"
+    },
+    "AC-1|06|3ce38e4e": {
+      "state": "unreviewed"
+    },
+    "AC-1|07|2be7c221": {
+      "state": "unreviewed"
+    },
+    "AC-1|08|2e7a9f6f": {
+      "state": "unreviewed"
+    },
+    "AC-1|09|1c8469ac": {
+      "state": "gap",
+      "round": "C36",
+      "date": "2026-09-26",
+      "reason": "本轮 `make secret-check` 用钉住的 gitleaks 8.30.1 全历史扫过 163 commits 并 `no leaks found`（docs/evidence/C36/secret-check-gate.log），但判据另有两条未满足：①『白名单仅含文档/模板』——`.gitleaks.toml` 现含一条按**形状**豁免的 generic-api-key 规则（免 Key 源返回的 SDMX dataflow key）；②反事实注入显示该豁免有代价：全大写带点的 4 段值新配置会放过（gitleaks-counterfactual.log §4）。③上游硬编码凭证 5 文件的处置登记本轮未逐条复核。",
+      "evidence": [
+        "docs/evidence/C36/secret-check-gate.log",
+        "docs/evidence/C36/gitleaks-counterfactual.log"
+      ]
+    },
+    "AC-1|10|0c44a7ef": {
+      "state": "unreviewed"
+    },
+    "AC-2|01|04bc9542": {
+      "state": "unreviewed"
+    },
+    "AC-2|02|0526af4d": {
+      "state": "unreviewed"
+    },
+    "AC-2|03|c4547f55": {
+      "state": "unreviewed"
+    },
+    "AC-2|04|989b3a28": {
+      "state": "unreviewed"
+    },
+    "AC-2|05|9adcd9e4": {
+      "state": "unreviewed"
+    },
+    "AC-3|01|d4d8d4f4": {
+      "state": "unreviewed"
+    },
+    "AC-3|02|ad9b6149": {
+      "state": "unreviewed"
+    },
+    "AC-3|03|cb527b75": {
+      "state": "unreviewed"
+    },
+    "AC-3|04|d95b04a8": {
+      "state": "unreviewed"
+    },
+    "AC-3|05|8d653c0a": {
+      "state": "unreviewed"
+    },
+    "AC-4|01|e3c017e7": {
+      "state": "unreviewed"
+    },
+    "AC-4|02|2b146f20": {
+      "state": "unreviewed"
+    },
+    "AC-4|03|7d283c38": {
+      "state": "unreviewed"
+    },
+    "AC-5|01|d68d5995": {
+      "state": "unreviewed"
+    },
+    "AC-5|02|d833746f": {
+      "state": "unreviewed"
+    },
+    "AC-5|03|c14ac7c3": {
+      "state": "unreviewed"
+    },
+    "AC-5|04|edaaf674": {
+      "state": "unreviewed"
+    },
+    "AC-5|05|5450e168": {
+      "state": "unreviewed"
+    },
+    "AC-5|06|c5bdecf6": {
+      "state": "unreviewed"
+    },
+    "AC-5|07|68f3347f": {
+      "state": "unreviewed"
+    },
+    "AC-6|01|4f5b0f7b": {
+      "state": "unreviewed"
+    },
+    "AC-6|02|1f610b61": {
+      "state": "unreviewed"
+    },
+    "AC-6|03|e76f832b": {
+      "state": "unreviewed"
+    },
+    "AC-7|01|bffe5960": {
+      "state": "unreviewed"
+    },
+    "AC-7|02|7569b003": {
+      "state": "unreviewed"
+    },
+    "AC-7|03|10995291": {
+      "state": "unreviewed"
+    },
+    "AC-7|04|89c5e0b2": {
+      "state": "unreviewed"
+    },
+    "AC-7|05|cb279570": {
+      "state": "unreviewed"
+    },
+    "AC-7|06|db29e204": {
+      "state": "unreviewed"
+    },
+    "AC-8|01|98ae06d2": {
+      "state": "unreviewed"
+    },
+    "AC-8|02|a4929947": {
+      "state": "unreviewed"
+    },
+    "AC-8|03|dc4510f7": {
+      "state": "unreviewed"
+    },
+    "AC-8|04|9c3f54f1": {
+      "state": "unreviewed"
+    },
+    "AC-8|05|3dd663e5": {
+      "state": "unreviewed"
+    },
+    "AC-8|06|0bd99b7d": {
+      "state": "unreviewed"
+    },
+    "AC-8|07|1f09a9c3": {
+      "state": "unreviewed"
+    },
+    "AC-8|08|169daf79": {
+      "state": "unreviewed"
+    },
+    "AC-9|01|e67169e2": {
+      "state": "unreviewed"
+    },
+    "AC-9|02|ed680e97": {
+      "state": "unreviewed"
+    },
+    "AC-9|03|3bce2eae": {
+      "state": "unreviewed"
+    },
+    "AC-9|04|dcfe5ab7": {
+      "state": "unreviewed"
+    },
+    "AC-9|05|7ed53e9b": {
+      "state": "unreviewed"
+    },
+    "AC-9|06|53cf809b": {
+      "state": "unreviewed"
+    },
+    "AC-9|07|96ff13a5": {
+      "state": "unreviewed"
+    },
+    "AC-9|08|a87bfe6f": {
+      "state": "unreviewed"
+    },
+    "AC-9|09|ca69bd21": {
+      "state": "unreviewed"
+    },
+    "AC-10|01|a6c002e5": {
+      "state": "unreviewed"
+    },
+    "AC-10|02|a2296996": {
+      "state": "unreviewed"
+    },
+    "AC-10|03|72598062": {
+      "state": "unreviewed"
+    },
+    "AC-10|04|4e30a2d0": {
+      "state": "unreviewed"
+    },
+    "AC-10|05|dc7ec3a5": {
+      "state": "unreviewed"
+    },
+    "AC-11|01|55260732": {
+      "state": "unreviewed"
+    },
+    "AC-11|02|47ebc0df": {
+      "state": "unreviewed"
+    },
+    "AC-11|03|9e33b3df": {
+      "state": "unreviewed"
+    },
+    "AC-11|04|7d8f0545": {
+      "state": "unreviewed"
+    },
+    "AC-11|05|0e5e8e85": {
+      "state": "unreviewed"
+    },
+    "AC-11|06|eca44525": {
+      "state": "unreviewed"
+    },
+    "AC-11|07|8b7cc309": {
+      "state": "unreviewed"
+    },
+    "AC-11|08|d0506524": {
+      "state": "unreviewed"
+    },
+    "AC-11|09|70838100": {
+      "state": "unreviewed"
+    },
+    "AC-11|10|80d48620": {
+      "state": "unreviewed"
+    },
+    "AC-11|11|82ca6675": {
+      "state": "unreviewed"
+    },
+    "AC-11|12|f1c47ff1": {
+      "state": "unreviewed"
+    },
+    "AC-12|01|c1ad31fa": {
+      "state": "unreviewed"
+    },
+    "AC-12|02|9f581f51": {
+      "state": "unreviewed"
+    },
+    "AC-12|03|0d686b17": {
+      "state": "unreviewed"
+    },
+    "AC-13|01|94c78c31": {
+      "state": "unreviewed"
+    },
+    "AC-13|02|3c4bde92": {
+      "state": "unreviewed"
+    },
+    "AC-13|03|45950181": {
+      "state": "unreviewed"
+    },
+    "AC-13|04|9b4606b9": {
+      "state": "unreviewed"
+    },
+    "AC-13|05|f127fc1d": {
+      "state": "unreviewed"
+    },
+    "AC-13|06|f440f22d": {
+      "state": "unreviewed"
+    },
+    "AC-13|07|4a567140": {
+      "state": "unreviewed"
+    },
+    "AC-13|08|22db1473": {
+      "state": "unreviewed"
+    },
+    "AC-14|01|29b3754f": {
+      "state": "unreviewed"
+    },
+    "AC-14|02|d72a3496": {
+      "state": "unreviewed"
+    },
+    "AC-14|03|03ada075": {
+      "state": "unreviewed"
+    },
+    "AC-15|01|fb5944d3": {
+      "state": "unreviewed"
+    },
+    "AC-15|02|45433a89": {
+      "state": "unreviewed"
+    },
+    "AC-18|01|2524a54e": {
+      "state": "unreviewed"
+    },
+    "AC-18|02|15d13296": {
+      "state": "unreviewed"
+    },
+    "AC-18|03|ae559f45": {
+      "state": "unreviewed"
+    },
+    "AC-19|01|0cf9a4a8": {
+      "state": "unreviewed"
+    },
+    "AC-19|02|6c4d6a7d": {
+      "state": "unreviewed"
+    },
+    "AC-19|03|e546c520": {
+      "state": "unreviewed"
+    },
+    "AC-19|04|39db2fe7": {
+      "state": "unreviewed"
+    },
+    "AC-19|05|beb0e8fb": {
+      "state": "unreviewed"
+    },
+    "AC-16|01|ed84bb9d": {
+      "state": "unreviewed"
+    },
+    "AC-16|02|823bc14e": {
+      "state": "unreviewed"
+    },
+    "AC-16|03|608179c6": {
+      "state": "unreviewed"
+    },
+    "AC-16|04|6fea2574": {
+      "state": "unreviewed"
+    },
+    "AC-16|05|6fd7f517": {
+      "state": "proven",
+      "round": "C36",
+      "date": "2026-09-26",
+      "command": "make zero-dep-check（= python scripts/codemod/verify_no_akshare.py --self-test && python scripts/codemod/verify_no_akshare.py）",
+      "evidence": [
+        "docs/evidence/C36/zero-dep-surface-before.txt",
+        "docs/evidence/C36/zero-dep-surface-after.sh",
+        "docs/evidence/C36/zero-dep-surface-after.txt",
+        "docs/quality/zero-dep-baseline.json"
+      ],
+      "note": "扫描面自 C36 起可机器执行：包集合 + 逐包文件数普查（与 find(1) 核对，515）+ 扫描器版本 + 已验证解释器次版本入库，缩水即 SURFACE_SHRANK、失配即 SURFACE_STALE，两个方向都在 --self-test 里咬合。"
+    },
+    "AC-16|06|845157d6": {
+      "state": "gap",
+      "round": "C36",
+      "date": "2026-09-26",
+      "reason": "『基线清零』未达成：docs/quality/zero-dep-baseline.json 仍冻结 3 条上游引用（openbb_map.py / data_script.py / patrol.py），现状是**只降不升**而非清零；判据后半句要求的正向证据（未安装 akshare/openbb 的干净环境里 P0 域集成测试通过）本轮没有产出。",
+      "evidence": [
+        "docs/quality/zero-dep-baseline.json",
+        "docs/evidence/C36/zero-dep-surface-after.txt"
+      ]
+    },
+    "AC-16|07|e01e0481": {
+      "state": "gap",
+      "round": "C36",
+      "date": "2026-09-26",
+      "reason": "本轮的替代装置是 tests/test_ported_import_closure.py 的 meta-path 阻断探针：阻断 module-scope 依赖会让 `import opendata.main` 失败、阻断懒依赖不会。它证明的是**依赖声明完备**，不是『P0 域集成测试在未安装 akshare/openbb 的干净环境通过』，两者不可互相顶替，故不勾。",
+      "evidence": [
+        "tests/test_ported_import_closure.py",
+        "docs/evidence/C36/guard-mutation.log"
+      ]
+    },
+    "AC-16|08|9d1c3b42": {
+      "state": "unreviewed"
+    },
+    "AC-16|09|187c7829": {
+      "state": "proven",
+      "round": "C36",
+      "date": "2026-09-26",
+      "command": "make secret-check（= python scripts/quality/secret_scan_check.py，按 docs/quality/secret-scan.json 钉住 gitleaks 版本后跑全历史）",
+      "evidence": [
+        "docs/evidence/C36/secret-check-gate.log",
+        "docs/evidence/C36/gitleaks-after-history.log",
+        "docs/evidence/C36/gitleaks-counterfactual.log",
+        "docs/quality/secret-scan.json"
+      ],
+      "note": "已知边界（不得读成『任何凭证都逃不掉』）：允许面含一条形状豁免规则，全大写带点 4 段值会被放过；反事实注入的 3 条非豁免假凭证（bearer-in-url / generic-api-key / GitHub PAT）在新配置下一条不少地仍然报出。门禁侧的强制：工具缺失即失败、版本与 manifest 不一致即失败、不再允许 CI 独占这一步。"
+    },
+    "AC-17|01|eeaa81ec": {
+      "state": "proven",
+      "command": "make gate（14 个成员逐项 sub-make，前一个非零即中止；GATE_EXIT 读自 gate.txt 内部）",
+      "round": "C36",
+      "date": "2026-09-26",
+      "evidence": [
+        "docs/evidence/C36/gate.txt",
+        "docs/evidence/C36/gate-run1-a2-lint-fail.txt",
+        "docs/evidence/C36/README.md"
+      ],
+      "note": "本轮判据是“逐项显式阻断”而非“一次绿”：gate.txt 有 14 个 ===== gate: ===== 标记 + PASSED + GATE_EXIT=0；gate-run1 挂在成员 6（a2-check）后 GATE_EXIT=2，其后 8 个成员的标记根本没出现，中止是真的。门禁成员原文只列了七项＋前端五项，实为 14 项（另有 secret-check/ledger-check/js-points-check），已在条目文本里加性更正。"
+    },
+    "AC-17|02|c8781cc4": {
+      "state": "proven",
+      "command": "make a2-check（= python scripts/quality/a2_check.py：ruff check 全规则 + ruff format --check + mypy + bandit -c bandit.yaml，文件集 = 基线以来新增/修改 + 未跟踪）",
+      "round": "C36",
+      "date": "2026-09-26",
+      "evidence": [
+        "docs/evidence/C36/gate.txt",
+        "docs/evidence/C36/gate-run1-a2-lint-fail.txt",
+        "docs/evidence/C36/README.md"
+      ],
+      "note": "gate.txt：A2 files 313，四项全 ok；同一文件集在 run1 里 FAIL ruff check / FAIL ruff format / FAIL bandit（本轮自己的证据脚本 docs/evidence/C36/gitleaks-counterfactual.py 触发），修完复跑且反事实输出逐字节相同。披露：mypy 用项目严格旗标组合（disallow_untyped_defs/incomplete_defs、warn_return_any、strict_equality、check_untyped_defs…），并非 `strict = true` 整体开关；tests/ 按规格属 C 层，mypy/bandit 按层豁免。"
+    },
+    "AC-17|03|f71cd329": {
+      "state": "unreviewed"
+    },
+    "AC-17|04|303e2d97": {
+      "state": "proven",
+      "command": "ruff check --no-cache opendata/_f821_counterfactual_probe.py（真放一个未定义名的探针，跑完即删）+ pyproject 的 ignore/per-file-ignores 打印",
+      "round": "C36",
+      "date": "2026-09-26",
+      "evidence": [
+        "docs/evidence/C36/f821-counterfactual.txt",
+        "docs/evidence/C36/README.md"
+      ],
+      "note": "配置面：select 含 F，ignore 只有 B008，per-file-ignores 里没有任何 F821；行为面：探针报出 F821 Undefined name，RUFF_EXIT=1。只看配置不算量过，所以补了真触发。"
+    },
+    "AC-17|05|dcbf845d": {
+      "state": "unreviewed"
+    },
+    "AC-17|06|5fc2e9f4": {
+      "state": "gap",
+      "round": "C36",
+      "date": "2026-09-26",
+      "command": "python -m coverage report --include='opendata/{data,pipeline}/*' 'opendata_fuyao/*' --no-skip-covered（数据源 = 本轮 gate 的 .coverage）",
+      "evidence": [
+        "docs/evidence/C36/coverage-per-module.txt",
+        "docs/evidence/C36/gate.txt"
+      ],
+      "reason": "条目要求三个模块各自 ≥90%：实测 opendata/data 91.98%、opendata_fuyao 95.76% 达标，**opendata/pipeline 85.32% 未达**（最差 notify.py 51.81%、factor_builder.py 52.81%、templates.py 62.35%、ods_writer.py 63.58%、watermark.py 72.88%）。另一半“A2 新代码 statement+branch ≥85%”本轮无可核对分母（a2_check 不产覆盖率），故整条不勾；全局 86.78% 只是背景数，不能当判据。"
+    },
+    "AC-17|07|d25cc7b2": {
+      "state": "unreviewed"
+    },
+    "AC-17|08|e4388047": {
+      "state": "unreviewed"
+    },
+    "AC-17|09|2f5f2b74": {
+      "state": "proven",
+      "command": "make gate 的前端五项（frontend-lint / frontend-typecheck / frontend-collection / frontend-test / frontend-e2e）",
+      "round": "C36",
+      "date": "2026-09-26",
+      "evidence": [
+        "docs/evidence/C36/gate.txt",
+        "docs/evidence/C36/README.md"
+      ],
+      "note": "gate.txt：eslint 0 errors / 33 warnings；vue-tsc -b --force 跑过；采集守卫 14 磁盘 = 14 采集；vitest 106 passed；e2e verdict 判据 0 named gaps + playwright 18 passed。33 条 warning 是存量债务，本判据只要求“纳入门禁”，未声称前端零告警。"
+    },
+    "AC-17|10|6c4d5715": {
+      "state": "unreviewed"
+    },
+    "§4|01|65cded67": {
+      "state": "unreviewed"
+    },
+    "§4|02|f9317f21": {
+      "state": "unreviewed"
+    },
+    "§4|03|b0da1909": {
+      "state": "unreviewed"
+    },
+    "§4|04|2cea237f": {
+      "state": "unreviewed"
+    },
+    "§4|05|0bb21c83": {
+      "state": "unreviewed"
+    },
+    "§5|01|8cab47ff": {
+      "state": "unreviewed"
+    },
+    "§5|02|74658e59": {
+      "state": "unreviewed"
+    },
+    "§5|03|1c964297": {
+      "state": "unreviewed"
+    },
+    "§5|04|d73d5844": {
+      "state": "unreviewed"
+    },
+    "§5|05|7565a580": {
+      "state": "unreviewed"
+    },
+    "§6|01|7054ff90": {
+      "state": "unreviewed"
+    },
+    "§6|02|a6ebdfb3": {
+      "state": "unreviewed"
+    },
+    "§6|03|407cf9b8": {
+      "state": "unreviewed"
+    },
+    "§6|04|38929914": {
+      "state": "unreviewed"
+    }
+  }
+}

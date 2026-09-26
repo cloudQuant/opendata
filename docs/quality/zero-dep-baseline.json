@@ -1,12 +1,22 @@
 {
-  "version": 1,
+  "version": 2,
+  "scanner_version": 2,
+  "python_minors": [
+    "3.11",
+    "3.13"
+  ],
   "scope": [
     "opendata",
     "opendata_http",
     "opendata_fuyao",
-    "opendata_providers",
     "opendata_client"
   ],
+  "files": {
+    "opendata": 191,
+    "opendata_client": 2,
+    "opendata_fuyao": 9,
+    "opendata_http": 313
+  },
   "count": 3,
   "findings": [
     {
@@ -23,7 +33,7 @@
     },
     {
       "file": "opendata/pipeline/patrol.py",
-      "line": 93,
+      "line": 468,
       "module": "akshare",
       "kind": "string"
     }
