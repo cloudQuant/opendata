@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import date, datetime, timedelta, timezone
+from typing import Any
 
 import pytest
 from sqlalchemy import create_engine, pool, text
@@ -104,6 +105,218 @@ class TestPure:
 
     def test_replay_limit_ceiling_is_documented(self):
         assert MAX_REPLAY_LIMIT >= 1_000
+
+
+class _Result:
+    def __init__(self, columns: list[str], rows: list[tuple]) -> None:
+        self._columns = columns
+        self._rows = rows
+
+    def keys(self) -> list[str]:
+        return self._columns
+
+    def fetchall(self) -> list[tuple]:
+        return self._rows
+
+    def scalar(self) -> None:
+        return None
+
+
+class _Connection:
+    def __init__(self, engine: RecordingWarehouse) -> None:
+        self._engine = engine
+
+    def __enter__(self) -> _Connection:
+        return self
+
+    def __exit__(self, *exc_info: object) -> bool:
+        return False
+
+    def execute(self, statement: Any, params: dict[str, object] | None = None) -> _Result:
+        sql = str(statement)
+        self._engine.calls.append((self._engine.mode, sql, dict(params or {})))
+        return _Result(self._engine.columns, self._engine.rows)
+
+
+class RecordingWarehouse:
+    """Stand-in for the watermark table: records statements, answers with rows.
+
+    Attributes:
+        mode: Entry point (``connect`` / ``begin``) of the last statement.
+        calls: ``(mode, sql, params)`` per statement, in order.
+    """
+
+    def __init__(self, *, rows: list[tuple] | None = None) -> None:
+        self.rows = rows or []
+        self.calls: list[tuple[str, str, dict[str, object]]] = []
+        self.mode = "connect"
+
+    @property
+    def columns(self) -> list[str]:
+        return [
+            "batch_id",
+            "domain",
+            "source",
+            "layer",
+            "window_start",
+            "window_end",
+            "rows_written",
+            "created_at",
+            "seq",
+        ]
+
+    def connect(self) -> _Connection:
+        self.mode = "connect"
+        return _Connection(self)
+
+    def begin(self) -> _Connection:
+        self.mode = "begin"
+        return _Connection(self)
+
+    @property
+    def sql(self) -> str:
+        assert len(self.calls) == 1, f"expected one statement, saw {len(self.calls)}"
+        return self.calls[0][1]
+
+    @property
+    def params(self) -> dict[str, object]:
+        assert len(self.calls) == 1, f"expected one statement, saw {len(self.calls)}"
+        return self.calls[0][2]
+
+
+def _raw_row(seq: int, *, batch_id: str | None = None, domain: str = "stock_daily") -> tuple:
+    return (
+        batch_id or new_batch_id(),
+        domain,
+        "ths",
+        "ods",
+        date(2026, 9, 23),
+        date(2026, 9, 24),
+        7,
+        BASE_TIME,
+        seq,
+    )
+
+
+class TestStatementShapes:
+    """The replay contract as the store issues it - no MySQL involved.
+
+    What MySQL decides *for* these statements (that ``seq`` really is
+    monotonic, that the duplicate key really collapses) is the e2e
+    class below; the shape assertions here are the ones that keep
+    breaking silently if a query is edited - the ordering column, the
+    domain scope, and the bound limit.
+    """
+
+    def test_replay_orders_by_seq_and_never_by_a_timestamp(self):
+        """created_at collides inside a burst; only seq is a total order."""
+        engine = RecordingWarehouse()
+
+        replay_since(engine, domain="stock_daily", since_batch_id="a" * 36)
+
+        assert "ORDER BY `seq` ASC" in engine.sql
+        assert "created_at" not in engine.sql.split("ORDER BY")[1]
+
+    def test_replay_is_scoped_to_the_domain_and_starts_after_the_watermark(self):
+        engine = RecordingWarehouse()
+
+        replay_since(engine, domain="stock_action", since_batch_id="b" * 36)
+
+        assert engine.params["domain"] == "stock_action"
+        assert engine.params["since"] == "b" * 36
+        assert "`domain` = :domain" in engine.sql
+        # an unknown watermark must not be an error: COALESCE(..., 0) replays all
+        assert "COALESCE" in engine.sql
+
+    @pytest.mark.parametrize(
+        ("requested", "bounded"),
+        [
+            (0, 1),
+            (-5, 1),
+            (50, 50),
+            (MAX_REPLAY_LIMIT, MAX_REPLAY_LIMIT),
+            (10**9, MAX_REPLAY_LIMIT),
+        ],
+    )
+    def test_the_replay_page_size_is_clamped_into_the_documented_band(self, requested, bounded):
+        engine = RecordingWarehouse()
+
+        replay_since(engine, domain="stock_daily", since_batch_id="a" * 36, limit=requested)
+
+        assert engine.params["limit"] == bounded
+
+    def test_replay_rows_come_back_as_watermarks_in_write_order(self):
+        engine = RecordingWarehouse(rows=[_raw_row(3), _raw_row(4)])
+
+        batches = replay_since(engine, domain="stock_daily", since_batch_id="a" * 36)
+
+        assert [batch.seq for batch in batches] == [3, 4]
+        assert [batch.rows for batch in batches] == [7, 7]
+        assert batches[0].created_at == BASE_TIME
+
+    def test_the_tail_query_takes_the_newest_rows_then_restores_write_order(self):
+        """A client that says nothing still needs a resync: it gets the last
+        ``limit`` batches, oldest first, so it can carry the newest id on."""
+        engine = RecordingWarehouse()
+
+        latest_batches(engine, domain="stock_daily", limit=2)
+
+        assert "ORDER BY `seq` DESC LIMIT :limit" in engine.sql
+        assert engine.sql.rstrip().endswith("ORDER BY `seq` ASC")
+        assert engine.params == {"domain": "stock_daily", "limit": 2}
+
+    @pytest.mark.parametrize("requested", [0, MAX_REPLAY_LIMIT + 1])
+    def test_the_tail_page_is_clamped_the_same_way(self, requested):
+        engine = RecordingWarehouse()
+
+        latest_batches(engine, domain="stock_daily", limit=requested)
+
+        assert engine.params["limit"] == max(1, min(requested, MAX_REPLAY_LIMIT))
+
+    def test_a_recorded_batch_goes_through_a_transaction_and_carries_its_window(self):
+        engine = RecordingWarehouse()
+
+        record_batch(engine, _watermark("c" * 36, rows=12))
+
+        mode, sql, params = engine.calls[0]
+        assert mode == "begin"
+        assert "ON DUPLICATE KEY UPDATE" in sql  # a retried shard records one event
+        assert params["batch_id"] == "c" * 36
+        assert params["rows"] == 12
+        assert params["window_start"] == date(2026, 9, 23)
+        assert params["created_at"] == BASE_TIME
+
+    def test_a_streaming_batch_records_a_null_window(self):
+        engine = RecordingWarehouse()
+
+        record_batch(
+            engine,
+            BatchWatermark(
+                batch_id="d" * 36,
+                domain="stock_action",
+                source="sina",
+                layer="dwd",
+                window_start=None,
+                window_end=None,
+                rows=0,
+                created_at=BASE_TIME,
+            ),
+        )
+
+        assert engine.params["window_start"] is None
+        assert engine.params["window_end"] is None
+
+    def test_rows_without_a_window_round_trip_as_none(self):
+        row = _raw_row(1)
+        unwindowed = list(row)
+        unwindowed[4] = None
+        unwindowed[5] = None
+        engine = RecordingWarehouse(rows=[tuple(unwindowed)])
+
+        batch = replay_since(engine, domain="stock_daily", since_batch_id="a" * 36)[0]
+
+        assert (batch.window_start, batch.window_end) == (None, None)
+        assert batch.layer == "ods"
 
 
 @pytest.mark.e2e
@@ -206,14 +419,18 @@ class TestNotifierAgainstMysql:
         except Exception as exc:
             pytest.skip(f"warehouse database unreachable: {type(exc).__name__}")
         _upgrade_warehouse(Path(__file__).resolve().parents[1])
+        # Bound the cleanup by sequence, never by domain: the hook records
+        # under the real ``stock_daily`` domain, and a domain-wide DELETE
+        # would drop the batches other runs had written before this test.
+        with engine.connect() as connection:
+            start_seq = connection.execute(
+                text(f"SELECT COALESCE(MAX(`seq`), 0) FROM `{WATERMARK_TABLE}`")  # noqa: S608
+            ).scalar_one()
         yield engine
         with engine.begin() as connection:
             connection.execute(
-                text(
-                    f"DELETE FROM `{WATERMARK_TABLE}` "  # noqa: S608  # module constant table
-                    "WHERE `domain` = :domain"
-                ),
-                {"domain": "stock_daily"},
+                text(f"DELETE FROM `{WATERMARK_TABLE}` WHERE `seq` > :from_seq"),  # noqa: S608
+                {"from_seq": start_seq},
             )
         engine.dispose()
 
