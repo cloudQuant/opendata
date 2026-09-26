@@ -21,8 +21,9 @@ What this assertion owns
   position and a digest of its own wording -- to a state: ``proven``, ``gap`` or
   ``unreviewed``. A tick in the document is legal only as the mirror image of a ``proven``
   entry, and a ``proven`` entry names the command that proves it plus evidence paths that
-  must exist in the repository. Re-wording a criterion strands its ledger entry, which is
-  a finding rather than a cleanup.
+  must exist in the repository **and be tracked by git** -- a file that only the machine
+  which wrote the entry has is not evidence, it is a note to self. Re-wording a criterion
+  strands its ledger entry, which is a finding rather than a cleanup.
 * Each §10 row must disclose its item-level reading as ``条目级 k/m``, matching what the
   document actually says. A row claiming completion with ``k < m`` must also carry the
   marker ``未逐条达标``, so the gap sits on the ledger line instead of in a paragraph.
@@ -37,15 +38,20 @@ import argparse
 import hashlib
 import json
 import re
+import shutil
+import subprocess  # nosec B404
 import sys
 from collections import Counter
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
+from typing import Final
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DOC_PATH = "docs/迭代计划/迭代1-重构数据中台/验收文档.md"
 LEDGER_PATH = "docs/quality/acceptance-item-ledger.json"
 LEDGER_VERSION = 1
+GIT: Final = shutil.which("git")
 
 AC_HEADING = re.compile(r"^### (AC-\d+)")
 SECTION_HEADING = re.compile(r"^## (\d+)[.、]? ")
@@ -195,6 +201,34 @@ def load_ledger(path: Path) -> dict[str, object]:
     return raw
 
 
+@lru_cache(maxsize=8)
+def _tracked(paths: tuple[str, ...]) -> frozenset[str]:
+    """Which of ``paths`` a fresh clone would actually contain.
+
+    ``git ls-files`` answers from the index, so a file that exists here but is ignored
+    (``*.log`` is) reads as absent -- which is exactly what an evidence path that lives
+    only on one machine looks like. No git is a finding, not a skip: the claim cannot
+    be checked, and C36 already learned what a silently-unavailable scanner costs.
+    """
+    if not paths:
+        return frozenset()
+    if GIT is None:
+        raise LedgerError("git is not on PATH; evidence paths cannot be checked for tracking")
+    probe = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled
+        [GIT, "ls-files", "--", *paths],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        shell=False,
+        check=False,
+    )
+    if probe.returncode != 0:
+        raise LedgerError(
+            f"cannot ask git which evidence paths are tracked: {probe.stderr.strip()}"
+        )
+    return frozenset(line for line in probe.stdout.splitlines() if line)
+
+
 def _entry_problems(entry: dict[str, object], key: str) -> list[str]:
     """A ``proven`` claim is only as good as the command and the files it names."""
     problems: list[str] = []
@@ -208,11 +242,16 @@ def _entry_problems(entry: dict[str, object], key: str) -> list[str]:
     if not (isinstance(evidence, list) and evidence):
         problems.append(f"{key}: proven without evidence paths")
         return problems
+    present: list[str] = []
     for path in evidence:
         if not (isinstance(path, str) and path):
             problems.append(f"{key}: evidence entry is not a path")
         elif not (REPO_ROOT / path).is_file():
             problems.append(f"{key}: evidence path does not exist: {path}")
+        else:
+            present.append(path)
+    untracked = sorted(set(present) - _tracked(tuple(sorted(present))))
+    problems += [f"{key}: evidence path is not tracked by git: {path}" for path in untracked]
     return problems
 
 
@@ -535,6 +574,13 @@ def self_test() -> int:
     if not any("without a command" in problem for problem in problems):
         failures.append("a proven claim with no command was accepted")
 
+    # On disk is not the same as shipped: `.git/HEAD` exists in every checkout of a repo
+    # and is in no clone's file list, which is what an ignored archive looks like.
+    entries[proven.key] = {**_proven_entry(), "evidence": [".git/HEAD"]}
+    problems, _ = reconcile(*parse_doc(_CLEAN_DOC), broken)
+    if not any("not tracked by git" in problem for problem in problems):
+        failures.append("a proven claim pointing at an untracked evidence file was accepted")
+
     if failures:
         print("FAIL: ledger self-test:", file=sys.stderr)
         for failure in failures:
@@ -542,7 +588,7 @@ def self_test() -> int:
         return 1
     print(
         f"OK: ledger self-test passed ({len(_SELF_MUTATIONS)} drifts caught, plus "
-        "missing-evidence and missing-command claims)."
+        "missing-evidence, untracked-evidence and missing-command claims)."
     )
     return 0
 
