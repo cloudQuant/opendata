@@ -169,13 +169,13 @@
     },
     "AC-2|02|0526af4d": {
       "state": "proven",
-      "round": "C41",
-      "date": "2026-09-26",
-      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-2|02'（判据文件未修改；见 docs/evidence/C41/probe-ac2-02.txt，23:25 与 23:37 两次读数逐字一致）",
+      "round": "C42",
+      "date": "2026-09-27",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-2|02' && python scripts/quality/acceptance_item_probe.py --all（判据文件未修改；C42 树上重算见 docs/evidence/C42/probe-recheck.txt，条目级与 --all census 两次读数都是 proven，import 侧计数仍 = 2）",
       "evidence": [
         "docs/evidence/C41/README.md",
         "docs/evidence/C41/probe-ac2-02.txt",
-      "docs/evidence/C41/probe-ac2-02-post-commit.txt",
+        "docs/evidence/C41/probe-ac2-02-post-commit.txt",
         "docs/evidence/C41/metadata-backbone-dryrun.txt",
         "docs/evidence/C41/gate-run1.txt",
         "docs/evidence/C41/gate-run1-aborted-a2-mypy.txt",
@@ -185,9 +185,21 @@
         "opendata/pipeline/jobs.py",
         "opendata/pipeline/trading_calendar.py",
         "scripts/ops/metadata_backbone_landing.py",
-        "tests/test_pipeline_jobs.py"
+        "tests/test_pipeline_jobs.py",
+        "docs/evidence/C42/README.md",
+        "docs/evidence/C42/probe-recheck.txt",
+        "docs/evidence/C42/coverage-faces.txt",
+        "docs/evidence/C42/duplicate-symbol-scan.py",
+        "docs/evidence/C42/duplicate-symbol-scan-run3-final.txt",
+        "docs/evidence/C42/scan-failure-face.py",
+        "docs/evidence/C42/scan-failure-face.txt",
+        "docs/evidence/C42/guard-removal-reading.py",
+        "docs/evidence/C42/guard-removal-reading.txt",
+        "docs/evidence/C42/gate-run1.txt",
+        "tests/test_pipeline_templates.py",
+        "tests/test_trading_calendar.py"
       ],
-      "note": "两半各自量、这次两半都有读数：前半未变（两模型继承 ContractModel、5 个字段集/语义/往返节点 5/5 passed），后半由 C40 的 0 变 2——templates.py:223 `refresh_metadata_backbone`（producer：第 0 步，每行必过 contract 校验，BACKBONE_CONTRACTS 定成 dict[str, type[ContractModel]]）+ jobs.py:220 `landed_instruments`→`derive_universe`→run_incremental_job（consumer B：标的宇宙按目录的已知日期缩，空日期算未知不删、裸码多行不删）+ trading_calendar.py:200 `calendar_from_contracts`（consumer A：日历契约的 prev_trade_date 做成 expected_data_date 的独立见证，两答矛盾即 raise，不 quietly 择一）。判据不是 import 语句本身而是这三处不引入契约就写不出来的判定；C40 里 mention_only=2 的来源（jobs.py 那个与契约同名不同种的 dataclass）本轮改名 `CalendarView` 后归零。真机 dry-run 先量出一个不报错的缺陷：新脚本 `_legs` 原先只调 extract_data ⇒ `--days 40` 无效果（240 行＝整张发布表）、且落地行会没有 prev_trade_date；改走 Fetcher.fetch 的 validate→extract→normalize 全链路后 28 行全在窗内、邻居链自洽、首行 prev 落在窗外（证明推导先于裁剪）。23:25 那一遍（回填前复跑）**红在 a2-check 的 mypy**（4 错，含 scripts/），按改代码不改判据收口（失败原文留档 gate-run1-aborted-a2-mypy.txt），顺带更正我此前『mypy 只覆盖 opendata/』的错误认知。两处如实留下的边界：**落库未执行**（`--write` 与 dwd 建表属仓库写操作，并入任务 #52 等拍板；在此之前两条读路如实报catalog=absent / weekday tier，是设计里的正常态）、默认 DwdWriter 只由桩走过一遍；**日历发布尾端在落后**（周六 05:2x 北京时间读到末行 2026-09-24，而彼时最后已完成交易日是 09-25）⇒ 适配器 docstring 那句『ending at the last completed trading day』只在 C13 那次读数成立，已回写。AC-17 面 91.89%（基线 91.68%），但本轮改动的 jobs.py 86.10% / trading_calendar.py 82.76% 自身仍在 90% 以下——判据量的是面，未为逐文件好看写空断言，缺口登记为后续项。"
+      "note": "两半各自量、这次两半都有读数：前半未变（两模型继承 ContractModel、5 个字段集/语义/往返节点 5/5 passed），后半由 C40 的 0 变 2——templates.py:223 `refresh_metadata_backbone`（producer：第 0 步，每行必过 contract 校验，BACKBONE_CONTRACTS 定成 dict[str, type[ContractModel]]）+ jobs.py:220 `landed_instruments`→`derive_universe`→run_incremental_job（consumer B：标的宇宙按目录的已知日期缩，空日期算未知不删、裸码多行不删）+ trading_calendar.py:200 `calendar_from_contracts`（consumer A：日历契约的 prev_trade_date 做成 expected_data_date 的独立见证，两答矛盾即 raise，不 quietly 择一）。判据不是 import 语句本身而是这三处不引入契约就写不出来的判定；C40 里 mention_only=2 的来源（jobs.py 那个与契约同名不同种的 dataclass）本轮改名 `CalendarView` 后归零。真机 dry-run 先量出一个不报错的缺陷：新脚本 `_legs` 原先只调 extract_data ⇒ `--days 40` 无效果（240 行＝整张发布表）、且落地行会没有 prev_trade_date；改走 Fetcher.fetch 的 validate→extract→normalize 全链路后 28 行全在窗内、邻居链自洽、首行 prev 落在窗外（证明推导先于裁剪）。23:25 那一遍（回填前复跑）**红在 a2-check 的 mypy**（4 错，含 scripts/），按改代码不改判据收口（失败原文留档 gate-run1-aborted-a2-mypy.txt），顺带更正我此前『mypy 只覆盖 opendata/』的错误认知。两处如实留下的边界：**落库未执行**（`--write` 与 dwd 建表属仓库写操作，并入任务 #52 等拍板；在此之前两条读路如实报catalog=absent / weekday tier，是设计里的正常态）、默认 DwdWriter 只由桩走过一遍；**日历发布尾端在落后**（周六 05:2x 北京时间读到末行 2026-09-24，而彼时最后已完成交易日是 09-25）⇒ 适配器 docstring 那句『ending at the last completed trading day』只在 C13 那次读数成立，已回写。AC-17 面 91.89%（基线 91.68%），但本轮改动的 jobs.py 86.10% / trading_calendar.py 82.76% 自身仍在 90% 以下——判据量的是面，未为逐文件好看写空断言，缺口登记为后续项。【C42 追加，C41 那句『缺口登记为后续项』在这里被读掉】C41 留下的两个自身低于 90% 的文件，本轮按门禁口径重测再补齐：jobs.py 86.87%→97.30%、trading_calendar.py 87.93%→97.41%（基线取门禁归档日志的 per-file 行，而 C41 写进文档的 86.10%/82.76% 是三文件局部跑的读数，两者都留在 docs/evidence/C42/README.md §4，结论不依赖选哪一个）。补的是 16 条有牙用例（9+5+2），残差只剩 `if TYPE_CHECKING:` 的导入块，未动 exclude_lines、未跑 ratchet --update、无空断言。判据的另一半（真机目录里的重复 symbol 到底有没有）也被量了：9 页 65,895 行逐页 accepted==distinct、0 冲突、0 契约拒绝（run3 读数，三批逐字一致），日历腿 27 行/27 键（与 C41 的 28 行是窗口平移一日，非数据变化）。同时把 C41 那条『落地会静默后写覆盖先写』的缺口收成显式拒绝：templates.py `_refuse_colliding_keys` 按 BACKBONE_KEYS 分组，冲突组整组不落地、理由进 report.rejected[domain]，脚本原样打印并计入 METADATA_BACKBONE refused=；反向证伪留档 guard-removal-reading.txt（摘掉守卫 ⇒ landed=3 > distinct_keys=2、count_lies=True），度量工具自己的『0 冲突』面也补了失败读数（scan-failure-face.txt：腿没答完即 exit 1）。AC-2|02 的 state 不因这些改动而变（本就是 proven，本轮是加固），落库仍未执行：`--write` 属仓库写操作，并入任务 #52 等拍板。"
     },
     "AC-2|03|c4547f55": {
       "state": "proven",
