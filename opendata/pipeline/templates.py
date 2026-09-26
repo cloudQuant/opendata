@@ -242,6 +242,10 @@ def refresh_metadata_backbone(
     row the contract refuses is *reported* rather than landed half-parsed or
     dropped quietly -- the legs are snapshot publishers whose date columns
     were measured hollow (C14/C19), so a shape drift must be visible here.
+    Two rows of one leg that carry the same dwd key are refused the same way:
+    the upsert would let the later one overwrite the earlier inside a single
+    write while the reported count named both, so a collision is reported and
+    nothing of it is landed (see :func:`_refuse_colliding_keys`).
 
     Args:
         engine: Warehouse engine for the default landing writer. May be None
@@ -284,6 +288,10 @@ def refresh_metadata_backbone(
     for domain, raw in legs.items():
         model = BACKBONE_CONTRACTS[domain]
         rows, refusals = _backbone_rows(domain, raw, model)
+        rows, collisions = _refuse_colliding_keys(
+            domain, rows, model=model, key=BACKBONE_KEYS[domain]
+        )
+        refusals = refusals + tuple(collisions)
         if not rows:
             landed[domain], rejected[domain] = 0, refusals
             continue
@@ -327,6 +335,68 @@ def _backbone_rows(
         except (TypeError, ValueError, ValidationError) as exc:
             refusals.append(f"row {index}: {_refusal(exc)}")
     return accepted, tuple(refusals)
+
+
+def _refuse_colliding_keys(
+    domain: str, rows: Sequence[BackboneModelT], *, model: type[ContractModel], key: Sequence[str]
+) -> tuple[list[BackboneModelT], list[str]]:
+    """Take back every row whose dwd key another row of the same leg carries.
+
+    The backbone lands with a key-level upsert, so a key handed over twice in
+    one frame is written twice and the **last row wins** - while the count the
+    run publishes is ``len(frame)``, i.e. it names rows the table never kept.
+    Which of the two rows is right is not knowable here (the pages carry no
+    version), so neither is landed and the collision is reported instead.
+
+    That is the safer direction, not the stricter one: a symbol the catalog
+    does not answer for is *unknown* to
+    :func:`opendata.pipeline.jobs.drop_inactive_symbols`, which keeps it in the
+    universe, whereas a symbol landed from the wrong page silently drops or
+    resurrects it on the strength of that page's dates.
+
+    C42 measured the live face of this: nine catalog pages, 65,895 contract
+    rows, zero collisions - so nothing is being lost today. What is missing is
+    a guard, and the day a page starts publishing an index under a stock's
+    symbol the run would have reported a landing that quietly overwrote rows.
+
+    Args:
+        domain: Backbone domain identifier, for the refusal text.
+        rows: Contract-accepted rows, in the leg's own order.
+        model: The domain's contract, used to name the fields that disagree.
+        key: The domain's dwd business key (:data:`BACKBONE_KEYS`).
+
+    Returns:
+        ``(landable, refusals)`` - every member of a colliding group is refused.
+    """
+    groups: dict[tuple[str, ...], list[int]] = {}
+    for index, row in enumerate(rows):
+        groups.setdefault(_key_signature(row, key), []).append(index)
+
+    landable = [row for row in rows if len(groups[_key_signature(row, key)]) == 1]
+    refusals: list[str] = []
+    for signature, indexes in groups.items():
+        if len(indexes) < 2:
+            continue
+        rendered = ", ".join(
+            f"{column}={value}" for column, value in zip(key, signature, strict=True)
+        )
+        differing = [
+            field
+            for field in model.model_fields
+            if len({str(getattr(rows[index], field)) for index in indexes}) > 1
+        ]
+        agreement = (
+            f"and disagrees on {', '.join(differing)}" if differing else "with identical values"
+        )
+        refusals.append(
+            f"key {rendered}: {domain} published it on {len(indexes)} rows {agreement}; none landed"
+        )
+    return landable, refusals
+
+
+def _key_signature(row: ContractModel, key: Sequence[str]) -> tuple[str, ...]:
+    """The upsert key of one contract row, as comparable text."""
+    return tuple(str(getattr(row, column)) for column in key)
 
 
 def _refusal(exc: Exception) -> str:

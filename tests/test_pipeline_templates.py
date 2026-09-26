@@ -342,6 +342,64 @@ class TestMetadataBackbone:
         assert report.landed["instrument"] == 0
         assert "board2" in report.rejected["instrument"][0]
 
+    def test_two_rows_on_one_key_are_refused_instead_of_the_last_one_winning(self):
+        """A key the leg hands over twice is reported, and none of it is landed.
+
+        The upsert rewrites a key it receives twice inside one statement, and
+        ``DwdWriter.write`` reports ``len(frame)`` - so before this guard a
+        second page naming a symbol the first had already named would land
+        whichever row came last while the run claimed both rows. C42 measured
+        the live face of it: nine catalog pages, 65,895 contract rows, zero
+        collisions (``docs/evidence/C42/duplicate-symbol-scan.txt``), so this
+        is a guard for an invariant nothing was holding rather than a repair
+        of data lost today.
+        """
+        frames: dict[str, pd.DataFrame] = {}
+
+        def land(domain: str, frame: pd.DataFrame, key: tuple[str, ...]) -> int:
+            # the invariant the old code could not promise: one key, one row.
+            assert len(frame) == frame[list(key)].drop_duplicates().shape[0]
+            frames[domain] = frame
+            return len(frame)
+
+        stock = self._instrument(symbol="000001.SZ", name="平安银行")
+        index = self._instrument(
+            symbol="000001.SZ", name="平安银行指数", delist_date=date(2020, 1, 1)
+        )
+
+        report = self._refresh(
+            instruments=[stock, index, self._instrument()], calendar=[], land=land
+        )
+
+        assert frames["instrument"]["symbol"].tolist() == ["600519.SH"]
+        assert report.landed == {"instrument": 1, "trading_calendar": 0}
+        (refusal,) = report.rejected["instrument"]
+        assert "key symbol=000001.SZ" in refusal
+        assert "published it on 2 rows" in refusal
+        assert "disagrees on name, delist_date" in refusal
+
+    def test_a_calendar_leg_that_publishes_one_day_twice_is_refused_too(self):
+        """Identical duplicates are still a shape drift: nothing is guessed either way."""
+        frames: dict[str, pd.DataFrame] = {}
+
+        def land(domain: str, frame: pd.DataFrame, key: tuple[str, ...]) -> int:
+            assert len(frame) == frame[list(key)].drop_duplicates().shape[0]
+            frames[domain] = frame
+            return len(frame)
+
+        day = date(2026, 9, 25)
+        report = self._refresh(
+            instruments=[],
+            calendar=[self._calendar(day), self._calendar(day)],
+            land=land,
+        )
+
+        assert "trading_calendar" not in frames
+        assert report.landed == {"instrument": 0, "trading_calendar": 0}
+        (refusal,) = report.rejected["trading_calendar"]
+        assert "key exchange=CN-SSE, date=2026-09-25" in refusal
+        assert "with identical values" in refusal
+
     def test_an_empty_leg_lands_nothing(self):
         calls: list[str] = []
 

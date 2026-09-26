@@ -21,6 +21,7 @@ from opendata.pipeline.trading_calendar import (
     TIER_WAREHOUSE,
     TIER_WEEKDAY,
     CalendarView,
+    _as_date,
     calendar_from_contracts,
     calendar_from_days,
     resolve_calendar,
@@ -267,3 +268,40 @@ class TestQueryExpectation:
         monkeypatch.setattr(data_query, "resolve_calendar", lambda engine: weekday_calendar())
 
         assert await data_query._expected_data_date(object(), on=SATURDAY) == FRIDAY
+
+
+class TestDriverDateShapes:
+    """The coercion every warehouse reader leans on, shape by shape.
+
+    ``_as_date`` is not only this module's helper: ``scripts/ops/calendar_expectation_check.py``
+    and ``scripts/ops/ths_trading_calendar_cross_check.py`` import it to turn
+    landed rows into day sets, so its answer is a contract with two operators'
+    scripts. C12 recorded what happens when it is misread - passing a whole
+    ``Row`` instead of ``row[0]`` used to yield a silently empty calendar -
+    which is why "an unparsable shape is None" is asserted here rather than
+    left to the exception the caller hoped for.
+    """
+
+    def test_a_datetime_narrows_to_its_date(self) -> None:
+        from datetime import datetime
+
+        assert _as_date(datetime(2026, 9, 25, 15, 30)) == FRIDAY
+
+    def test_a_date_comes_back_unchanged(self) -> None:
+        """MySQL's shape for a DATE column."""
+        assert _as_date(FRIDAY) == FRIDAY
+
+    def test_iso_text_is_parsed(self) -> None:
+        """SQLite's shape for the same column, including a timestamped string."""
+        assert _as_date("2026-09-25") == FRIDAY
+        assert _as_date("2026-09-25T15:30:00") == FRIDAY
+
+    def test_text_that_is_not_a_date_is_none_not_a_raise(self) -> None:
+        assert _as_date("25/09/2026") is None
+        assert _as_date("") is None
+
+    def test_anything_else_is_none(self) -> None:
+        """A whole row, None, or a number: no date to read, and nothing guessed."""
+        assert _as_date(None) is None
+        assert _as_date(20260925) is None
+        assert _as_date((FRIDAY, True)) is None

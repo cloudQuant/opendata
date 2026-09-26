@@ -28,7 +28,7 @@ from opendata.pipeline.trading_calendar import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
+    from collections.abc import Iterator, Mapping, Sequence
 
     from sqlalchemy import Engine
 
@@ -83,6 +83,28 @@ def stubbed_run(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, Any]]:
         jobs, "_freshness", lambda engine, domain, sources, *, expected: {"dwd": None}
     )
     return built
+
+
+@pytest.fixture
+def logged() -> Iterator[list[tuple[str, str]]]:
+    """Capture loguru records (level, message) for the duration of a test.
+
+    The batch's provenance is half return value and half log line: what it
+    *says* about a code it left alone is part of the answer, so a test that
+    claims a run reports something has to read the line it printed.
+    """
+    from loguru import logger
+
+    records: list[tuple[str, str]] = []
+    handler_id = logger.add(
+        lambda message: records.append((message.record["level"].name, message.record["message"])),
+        level="DEBUG",
+        format="{message}",
+    )
+    try:
+        yield records
+    finally:
+        logger.remove(handler_id)
 
 
 class TestRunIncrementalJob:
@@ -232,6 +254,149 @@ class TestSymbolUniverse:
 
         assert jobs.symbol_universe(_Engine(), "stock_daily", limit=0) == ["600519"]
         assert captured["cap"] == 1
+
+
+class TestResolveFetcher:
+    """The batch's routing is the registry's own answer, not a private table.
+
+    ``resolve_fetcher`` is the only place ``jobs`` reaches the provider
+    registry, and every other test in this file stubs it - so until C42 the
+    function body had never run under the suite. These three readings are
+    what the scheduled batch actually depends on: the pair it asks for
+    answers, and a pair that does not exist fails closed.
+    """
+
+    def test_a_registered_pair_answers_with_its_fetcher(self) -> None:
+        fetcher = jobs.resolve_fetcher("stock_daily", "ths")
+
+        assert fetcher.capability.domain == "stock_daily"
+        assert fetcher.capability.source == "ths"
+
+    def test_an_unknown_source_fails_closed_rather_than_falling_back(self) -> None:
+        """A batch must not end up on another feed under its own feet."""
+        with pytest.raises(LookupError, match="no registered capability"):
+            jobs.resolve_fetcher("stock_daily", "not_a_source")
+
+    def test_an_unregistered_domain_is_a_lookup_error(self) -> None:
+        with pytest.raises(LookupError, match="no capability registered for domain"):
+            jobs.resolve_fetcher("not_a_domain", "ths")
+
+
+def _daily_engine(days: Sequence[date]) -> Engine:
+    """A landed ``dwd_stock_daily`` holding exactly the trade dates given."""
+    engine = create_engine("sqlite://")
+    metadata = MetaData()
+    daily = Table(
+        jobs.dwd_table("stock_daily"),
+        metadata,
+        Column("symbol", String(32)),
+        Column("trade_date", Date),
+    )
+    metadata.create_all(engine)
+    with engine.begin() as conn:
+        conn.execute(insert(daily), [{"symbol": "600519", "trade_date": day} for day in days])
+    return engine
+
+
+class TestWindowRowCount:
+    """How many landed rows a window covers - and 0 is an answer, not a crash."""
+
+    def test_only_the_rows_inside_the_window_are_counted(self) -> None:
+        engine = _daily_engine(
+            [date(2026, 9, 23), date(2026, 9, 24), date(2026, 9, 24), date(2026, 9, 25)]
+        )
+
+        assert jobs._count_in_window(engine, "stock_daily", WINDOW) == 2
+
+    def test_a_wider_window_counts_every_row(self) -> None:
+        engine = _daily_engine(
+            [date(2026, 9, 23), date(2026, 9, 24), date(2026, 9, 24), date(2026, 9, 25)]
+        )
+        month = Window(start=date(2026, 9, 1), end=date(2026, 9, 30))
+
+        assert jobs._count_in_window(engine, "stock_daily", month) == 4
+
+    def test_an_unreadable_table_counts_zero_and_names_itself(
+        self, logged: Sequence[tuple[str, str]]
+    ) -> None:
+        """No table is the normal state before the first backfill: report, never raise."""
+        count = jobs._count_in_window(create_engine("sqlite://"), "stock_daily", WINDOW)
+
+        assert count == 0
+        assert [line for level, line in logged if "dwd_stock_daily" in line]
+
+
+class TestFreshnessReadings:
+    """The freshness half of a run report: one ISO date per table, None if unknown.
+
+    C41 measured a shape asymmetry that decides how this face can be tested
+    here: ``SELECT MAX(trade_date)`` hands back a ``date`` under MySQL but the
+    ISO *text* under SQLite, and :func:`opendata.pipeline.freshness._as_date`
+    reads only the first two shapes - so against a SQLite warehouse even a
+    populated table reports ``missing``. No production path reaches that (the
+    warehouse is MySQL; C42 measured no sqlite URL), but it means a test that
+    wants a non-None reading has to hand the readers' *contract objects*
+    back rather than land a table into a dialect that cannot answer.
+    """
+
+    def test_the_reports_are_flattened_to_iso_dates(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        from opendata.pipeline.freshness import FreshnessReport
+
+        def fake_ods(
+            engine: Engine, domain: str, source: str, *, table: str, expected: date
+        ) -> FreshnessReport:
+            if source != "ths":
+                raise LookupError(f"unknown source {source!r}")
+            return FreshnessReport(
+                domain=domain,
+                source=source,
+                field="trade_date",
+                latest=date(2026, 9, 24),
+                expected=expected,
+                lag_days=0,
+                status="fresh",
+            )
+
+        def fake_dwd(engine: Engine, domain: str, *, expected: date) -> FreshnessReport:
+            return FreshnessReport(
+                domain=domain,
+                source=None,
+                field="trade_date",
+                latest=None,
+                expected=expected,
+                lag_days=None,
+                status="missing",
+            )
+
+        monkeypatch.setattr(jobs, "ods_freshness", fake_ods)
+        monkeypatch.setattr(jobs, "dwd_freshness", fake_dwd)
+
+        reports = jobs._freshness(
+            create_engine("sqlite://"),
+            "stock_daily",
+            ["ths", "no_such_source"],
+            expected=date(2026, 9, 26),
+        )
+
+        assert reports == {
+            "ods:ths": "2026-09-24",
+            "ods:no_such_source": None,
+            "dwd": None,
+        }
+
+    def test_an_unmapped_source_is_reported_instead_of_raising(
+        self, logged: Sequence[tuple[str, str]]
+    ) -> None:
+        """The real reader does raise for a source with no mapping; the batch turns it into None."""
+        reports = jobs._freshness(
+            create_engine("sqlite://"),
+            "stock_daily",
+            ["no_such_source"],
+            expected=date(2026, 9, 26),
+        )
+
+        assert reports == {"ods:no_such_source": None, "dwd": None}
+        assert [line for level, line in logged if "no_such_source" in line]
 
 
 def _instrument(symbol: str, **overrides: object) -> Instrument:
@@ -409,6 +574,35 @@ class TestInstrumentCatalog:
         assert provenance["catalog"] == jobs.INSTRUMENT_TABLE
         assert provenance["dropped_inactive"] == "1"
         assert provenance["ambiguous_codes"] == "0"
+
+    def test_derive_universe_says_which_codes_it_refused_to_judge(
+        self, monkeypatch: pytest.MonkeyPatch, logged: Sequence[tuple[str, str]]
+    ) -> None:
+        """Ambiguity is reported and the code stays; nothing was dropped here.
+
+        The companion to the reading above: with no dropped code the run has
+        one thing left to say, and it has to say it - the count of codes the
+        catalog could not adjudicate is the part of the universe that stays
+        unverified.
+        """
+        monkeypatch.setattr(jobs, "symbol_universe", lambda e, d, *, limit=None: ["000001"])
+        monkeypatch.setattr(
+            jobs,
+            "landed_instruments",
+            lambda engine, **kwargs: [
+                _instrument("000001.SZ"),
+                _instrument("000001.SH", delist_date=date(2020, 1, 1)),
+            ],
+        )
+
+        universe, provenance = jobs.derive_universe(
+            object(), "stock_daily", symbols=None, limit=None, window=WINDOW
+        )
+
+        assert universe == ["000001"]
+        assert provenance["dropped_inactive"] == "0"
+        assert provenance["ambiguous_codes"] == "1"
+        assert [line for level, line in logged if "several catalog rows" in line]
 
     async def test_the_run_reports_the_universe_it_used(
         self, stubbed_run: list[dict[str, Any]]
