@@ -69,6 +69,8 @@
 
 **决策（2026-09-23）：不拆新里程碑，P0/P1/P2 全量顺序挂在 C1 之下推进**——即 C1 的实际工期按 175~195 人日展开，1C 总工期相应拉长；实施计划的 C1 行保留"模板 + 对照表"的起始锚点，批次进度以本文件与 `provider-inventory.yaml` 的 `status` 字段为准。
 
+**C33（2026-09-26）补：这句"以……为准"从此是可判定的，不是一句约定。** `status` 的三态含义（`待实现` / `已实现未对照` / `已对照转正`）写进清单头部注释，判据住在 `scripts/quality/openbb_inventory_plane.py`，由 `tests/test_openbb_inventory_guard.py`（28 例）跑在 `make gate` 的 `test-cov` 里，七条规则（`PARSE`／`FIELD SHAPE`／`MISSING ROW`／`DUPLICATE ROW`／`STALE STATUS`／`COUNT CLAIM`／`RIGHTS LINK`）：清单说得多（登记为零却写转正）与说得少（树上有腿却写待实现、或整行缺失）都会红，权利登记行（§6 第 4 条）、行数与 `348` 这类自报计数同样入判据；`FIELD SHAPE` 管的是 PARSE 看不见的那一类——`sdk_dependencies: xmltodict` 与 `credentials: a, b` **能**解析，只是解析成一个字符串（`len()` 数出 1 个依赖、`in` 退化成子串测试），C33 之前 64 处依赖字段没有一处是列表（34 处裸 `-`、21 处裸标量、9 处逗号串）。清单里 `fetchers`/`models` 仍是**上游形态事实**，"我们注册了哪些域"的唯一事实仍是注册表（`GET /api/v1/sources`），本轮没有把能力清单复制进 YAML——复制的那一份就是下一个会漂移的地方。
+
 ## 6. 验收口径（每个 provider）
 
 1. **契约**：注册进 `ProviderRegistry`，`capabilities` 可见；`source` 与 `domain` 映射写入 `openbb_map.yaml`。

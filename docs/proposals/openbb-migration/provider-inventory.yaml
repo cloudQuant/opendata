@@ -2,8 +2,28 @@
 #
 # 上游基线：OpenBB/openbb_platform @ 3e071fcc2cd9f891cac6040ae60296dba76dab46
 # 生成方式：解析各 provider 包的 Provider(fetcher_dict=...) 与 pyproject 依赖（只读形态事实，未复制源码）
-# 规模：33 个 provider 目录 / 348 个 fetcher 模型
+# 规模：32 个 provider 目录 / 348 个 fetcher 模型（与 README §3「providers/*（32 个）」同一口径）
 # 字段：batch=P0/P1/P2；scenario=消费场景（准入条件）；estimate_person_days=粗估人日（含上游对照）
+#       credentials / sdk_dependencies = 上游 provider 的依赖名列表，无依赖者写 []
+#       C33 之前这两种字段一共 64 处，没有一处是列表：34 处写的是裸 `-`（YAML 的序列标记而不是值，
+#       ⇒ 整个文件不可解析，任何判据都读不回来）；21 处是裸标量（`sdk_dependencies: xmltodict`）、
+#       9 处是一整条逗号串（`a, b, c`）——后两种**能**解析，只是解析成一个字符串：`len()` 数出 1 个
+#       依赖、`"async-lru" in value` 退化成子串测试。models / credentials / sdk_dependencies /
+#       rights_rows 四个名单字段一律写成列表，FIELD SHAPE 判据同时抓字符串与 null（键写了没值）。
+#
+# status 三态——README §5 把本文件指为批次进度准绳，故 status 是可判定的，不是备注：
+#   待实现        注册表里没有该源的任何能力
+#   已实现未对照  能力已注册、可按显式 source 调用，但没有真机逐字段对照记录 ⇒ 不参与 auto（A2.4/R2/R5）
+#   已对照转正    该源**已注册的每条**能力都 verified 且参与 auto
+# 两条读法上的约束：① status 只描述「我们注册了的那部分」，不代表上游 fetchers 全数内化——yfinance 行
+# fetchers=29，本仓只注册 stock_daily_overseas 一条，故「已对照转正」≠「29/29 已完成」；②「某个源注册了
+# 哪些域」的唯一事实是注册表（GET /api/v1/sources），本文件不复制一份能力清单，复制就会漂移（C23）。
+# 判据实现：scripts/quality/openbb_inventory_plane.py（由 tests/test_openbb_inventory_guard.py 跑在门禁里）。
+#
+# rights_rows = 该源在 docs/data-rights-registry.md §1 登记表里的行名（AC-1 门禁 R3：未登记的源不得进
+# source="auto"，故跟踪路由进度的文件必须能指回登记行）。
+provider_count: 32
+local_provider_count: 2
 version: 1
 upstream_commit: 3e071fcc2cd9f891cac6040ae60296dba76dab46
 providers:
@@ -11,53 +31,58 @@ providers:
     batch: P0
     fetchers: 3
     models: [BalanceOfPayments, CurrencyReferenceRates, YieldCurve]
-    sdk_dependencies: xmltodict
-    credentials: -
+    sdk_dependencies: [xmltodict]
+    credentials: []
     scenario: 欧元区宏观（AI 研究）
     estimate_person_days: 2.0
-    status: 待实现
+    status: 已对照转正
+    rights_rows: [ECB / IMF / OECD]
   - provider: fred
     batch: P0
     fetchers: 36
     models: [Ameribor, BalanceOfPayments, BondIndices, CommercialPaper, CommoditySpotPrices, ConsumerPriceIndex, ...]
-    sdk_dependencies: -
-    credentials: fred_api_key
+    sdk_dependencies: []
+    credentials: [fred_api_key]
     scenario: 宏观利率与通胀（AI 研究/资产配置）
     estimate_person_days: 14.0
-    status: 待实现
+    status: 已实现未对照
+    rights_rows: [FRED]
   - provider: imf
     batch: P0
     fetchers: 8
     models: [AvailableIndicators, ConsumerPriceIndex, DirectionOfTrade, EconomicIndicators, MaritimeChokePointInfo, MaritimeChokePointVolume, ...]
-    sdk_dependencies: openbb-platform-api, openbb-economy, openbb-charting, async-lru, defusedxml
-    credentials: -
+    sdk_dependencies: [openbb-platform-api, openbb-economy, openbb-charting, async-lru, defusedxml]
+    credentials: []
     scenario: 国际宏观（AI 研究）
     estimate_person_days: 4.0
-    status: 待实现
+    status: 已对照转正
+    rights_rows: [ECB / IMF / OECD]
   - provider: oecd
     batch: P0
     fetchers: 9
     models: [CompositeLeadingIndicator, ConsumerPriceIndex, CountryInterestRates, GdpForecast, GdpNominal, GdpReal, ...]
-    sdk_dependencies: defusedxml
-    credentials: -
+    sdk_dependencies: [defusedxml]
+    credentials: []
     scenario: OECD 宏观（AI 研究）
     estimate_person_days: 4.0
-    status: 待实现
+    status: 已对照转正
+    rights_rows: [ECB / IMF / OECD]
   - provider: yfinance
     batch: P0
     fetchers: 29
     models: [AvailableIndices, BalanceSheet, CashFlowStatement, CompanyNews, CryptoHistorical, CurrencyHistorical, ...]
-    sdk_dependencies: yfinance
-    credentials: -
+    sdk_dependencies: [yfinance]
+    credentials: []
     scenario: 海外行情（回测数据准备）
     estimate_person_days: 8.0
-    status: 待实现
+    status: 已对照转正
+    rights_rows: [Yahoo Finance]
   - provider: alpha_vantage
     batch: P1
     fetchers: 3
     models: [EquityHistorical, EtfHistorical, HistoricalEps]
-    sdk_dependencies: -
-    credentials: alpha_vantage_api_key
+    sdk_dependencies: []
+    credentials: [alpha_vantage_api_key]
     scenario: 商业源（需 Key；待场景确认）
     estimate_person_days: 2.0
     status: 待实现
@@ -65,8 +90,8 @@ providers:
     batch: P1
     fetchers: 2
     models: [BlsSearch, BlsSeries]
-    sdk_dependencies: -
-    credentials: bls_api_key
+    sdk_dependencies: []
+    credentials: [bls_api_key]
     scenario: 其余宏观（待场景确认）
     estimate_person_days: 2.0
     status: 待实现
@@ -74,8 +99,8 @@ providers:
     batch: P1
     fetchers: 8
     models: [AvailableIndicators, CountryProfile, EconomicIndicators, ExportDestinations, GdpNominal, GdpReal, ...]
-    sdk_dependencies: aiohttp-client-cache, aiosqlite
-    credentials: econdb_api_key
+    sdk_dependencies: [aiohttp-client-cache, aiosqlite]
+    credentials: [econdb_api_key]
     scenario: 宏观聚合（待场景确认）
     estimate_person_days: 4.0
     status: 待实现
@@ -83,8 +108,8 @@ providers:
     batch: P1
     fetchers: 0
     models: []
-    sdk_dependencies: async-lru, openpyxl, xlrd
-    credentials: -
+    sdk_dependencies: [async-lru, openpyxl, xlrd]
+    credentials: []
     scenario: 能源宏观（待场景确认）
     estimate_person_days: 1.0
     status: 待实现
@@ -92,8 +117,8 @@ providers:
     batch: P1
     fetchers: 6
     models: [FamaFrenchBreakpoints, FamaFrenchCountryPortfolioReturns, FamaFrenchFactors, FamaFrenchInternationalIndexReturns, FamaFrenchRegionalPortfolioReturns, FamaFrenchUSPortfolioReturns]
-    sdk_dependencies: -
-    credentials: -
+    sdk_dependencies: []
+    credentials: []
     scenario: 学术因子（待场景确认）
     estimate_person_days: 4.0
     status: 待实现
@@ -101,8 +126,8 @@ providers:
     batch: P1
     fetchers: 13
     models: [CentralBankHoldings, FederalFundsRate, FomcDocuments, InflationExpectations, MoneyMeasures, OvernightBankFundingRate, ...]
-    sdk_dependencies: openpyxl, openbb-economy, openbb-fixedincome, openbb-platform-api, beautifulsoup4
-    credentials: -
+    sdk_dependencies: [openpyxl, openbb-economy, openbb-fixedincome, openbb-platform-api, beautifulsoup4]
+    credentials: []
     scenario: 其余宏观（待场景确认）
     estimate_person_days: 8.0
     status: 待实现
@@ -110,8 +135,8 @@ providers:
     batch: P1
     fetchers: 69
     models: [AnalystEstimates, AvailableIndices, BalanceSheet, BalanceSheetGrowth, CalendarDividend, CalendarEarnings, ...]
-    sdk_dependencies: -
-    credentials: fmp_api_key
+    sdk_dependencies: []
+    credentials: [fmp_api_key]
     scenario: 商业源（需 Key；待场景确认）
     estimate_person_days: 14.0
     status: 待实现
@@ -119,8 +144,8 @@ providers:
     batch: P1
     fetchers: 38
     models: [BalanceSheet, CalendarIpo, CashFlowStatement, CompanyFilings, CompanyNews, CurrencyPairs, ...]
-    sdk_dependencies: requests-cache
-    credentials: intrinio_api_key
+    sdk_dependencies: [requests-cache]
+    credentials: [intrinio_api_key]
     scenario: 商业源（需 Key；待场景确认）
     estimate_person_days: 14.0
     status: 待实现
@@ -128,8 +153,8 @@ providers:
     batch: P1
     fetchers: 1
     models: [SP500Multiples]
-    sdk_dependencies: -
-    credentials: -
+    sdk_dependencies: []
+    credentials: []
     scenario: 估值宏观（待场景确认）
     estimate_person_days: 2.0
     status: 待实现
@@ -137,8 +162,8 @@ providers:
     batch: P1
     fetchers: 3
     models: [CalendarEarnings, ForwardEpsEstimates, ForwardSalesEstimates]
-    sdk_dependencies: -
-    credentials: -
+    sdk_dependencies: []
+    credentials: []
     scenario: 商业源（待场景确认）
     estimate_person_days: 2.0
     status: 待实现
@@ -146,8 +171,8 @@ providers:
     batch: P1
     fetchers: 7
     models: [CompanyNews, CryptoHistorical, CurrencyHistorical, EquityHistorical, EtfHistorical, TrailingDividendYield, ...]
-    sdk_dependencies: -
-    credentials: tiingo_token
+    sdk_dependencies: []
+    credentials: [tiingo_token]
     scenario: 商业源（需 Key；待场景确认）
     estimate_person_days: 4.0
     status: 待实现
@@ -155,8 +180,8 @@ providers:
     batch: P1
     fetchers: 1
     models: [EconomicCalendar]
-    sdk_dependencies: -
-    credentials: tradingeconomics_api_key
+    sdk_dependencies: []
+    credentials: [tradingeconomics_api_key]
     scenario: 其余宏观（待场景确认）
     estimate_person_days: 2.0
     status: 待实现
@@ -164,8 +189,8 @@ providers:
     batch: P2
     fetchers: 4
     models: [AnalystSearch, CompanyNews, PriceTarget, WorldNews]
-    sdk_dependencies: -
-    credentials: benzinga_api_key
+    sdk_dependencies: []
+    credentials: [benzinga_api_key]
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 4.0
     status: 待实现
@@ -173,8 +198,8 @@ providers:
     batch: P2
     fetchers: 1
     models: [WorldNews]
-    sdk_dependencies: -
-    credentials: biztoc_api_key
+    sdk_dependencies: []
+    credentials: [biztoc_api_key]
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 2.0
     status: 待实现
@@ -182,8 +207,8 @@ providers:
     batch: P2
     fetchers: 11
     models: [AvailableIndices, EquityHistorical, EquityQuote, EquitySearch, EtfHistorical, FuturesCurve, ...]
-    sdk_dependencies: aiohttp-client-cache, aiosqlite
-    credentials: -
+    sdk_dependencies: [aiohttp-client-cache, aiosqlite]
+    credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 8.0
     status: 待实现
@@ -191,8 +216,8 @@ providers:
     batch: P2
     fetchers: 2
     models: [COT, COTSearch]
-    sdk_dependencies: openbb-platform-api
-    credentials: cftc_app_token
+    sdk_dependencies: [openbb-platform-api]
+    credentials: [cftc_app_token]
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 2.0
     status: 待实现
@@ -200,8 +225,8 @@ providers:
     batch: P2
     fetchers: 8
     models: [CongressAmendmentInfo, CongressAmendmentText, CongressAmendments, CongressBillInfo, CongressBillText, CongressBills, ...]
-    sdk_dependencies: -
-    credentials: congress_gov_api_key
+    sdk_dependencies: []
+    credentials: [congress_gov_api_key]
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 4.0
     status: 待实现
@@ -209,8 +234,8 @@ providers:
     batch: P2
     fetchers: 5
     models: [FuturesCurve, FuturesHistorical, FuturesInfo, FuturesInstruments, OptionsChains]
-    sdk_dependencies: async-lru
-    credentials: -
+    sdk_dependencies: [async-lru]
+    credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 4.0
     status: 待实现
@@ -218,8 +243,8 @@ providers:
     batch: P2
     fetchers: 2
     models: [EquityShortInterest, OTCAggregate]
-    sdk_dependencies: -
-    credentials: -
+    sdk_dependencies: []
+    credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 2.0
     status: 待实现
@@ -227,8 +252,8 @@ providers:
     batch: P2
     fetchers: 7
     models: [CompareGroups, EquityInfo, EquityScreener, EtfPricePerformance, KeyMetrics, PricePerformance, ...]
-    sdk_dependencies: finvizfinance
-    credentials: -
+    sdk_dependencies: [finvizfinance]
+    credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 4.0
     status: 待实现
@@ -236,8 +261,8 @@ providers:
     batch: P2
     fetchers: 6
     models: [CommodityPsdData, CommodityPsdReport, TreasuryAuctions, TreasuryPrices, WeatherBulletin, WeatherBulletinDownload]
-    sdk_dependencies: random-user-agent
-    credentials: -
+    sdk_dependencies: [random-user-agent]
+    credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 4.0
     status: 待实现
@@ -245,8 +270,8 @@ providers:
     batch: P2
     fetchers: 9
     models: [CalendarDividend, CalendarEarnings, CalendarIpo, CompanyFilings, EconomicCalendar, EquityScreener, ...]
-    sdk_dependencies: openbb-platform-api, async-lru, random-user-agent, nasdaq-data-link
-    credentials: nasdaq_api_key
+    sdk_dependencies: [openbb-platform-api, async-lru, random-user-agent, nasdaq-data-link]
+    credentials: [nasdaq_api_key]
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 4.0
     status: 待实现
@@ -254,8 +279,8 @@ providers:
     batch: P2
     fetchers: 24
     models: [BalanceSheet, BalanceSheetGrowth, CashFlowStatement, CashFlowStatementGrowth, CikMap, CompanyFilings, ...]
-    sdk_dependencies: aiohttp-client-cache, aiosqlite, defusedxml, xmltodict, beautifulsoup4, lxml
-    credentials: -
+    sdk_dependencies: [aiohttp-client-cache, aiosqlite, defusedxml, xmltodict, beautifulsoup4, lxml]
+    credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 8.0
     status: 待实现
@@ -263,8 +288,8 @@ providers:
     batch: P2
     fetchers: 1
     models: [ShortVolume]
-    sdk_dependencies: -
-    credentials: -
+    sdk_dependencies: []
+    credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 2.0
     status: 待实现
@@ -272,8 +297,8 @@ providers:
     batch: P2
     fetchers: 24
     models: [AvailableIndices, BondPrices, CalendarEarnings, CompanyFilings, CompanyNews, EquityGainers, ...]
-    sdk_dependencies: aiohttp-client-cache, aiosqlite, random-user-agent, exchange-calendars
-    credentials: -
+    sdk_dependencies: [aiohttp-client-cache, aiosqlite, random-user-agent, exchange-calendars]
+    credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 8.0
     status: 待实现
@@ -281,8 +306,8 @@ providers:
     batch: P2
     fetchers: 5
     models: [EquityHistorical, EquityQuote, EquitySearch, EtfHistorical, OptionsChains]
-    sdk_dependencies: -
-    credentials: tradier_api_key, tradier_account_type
+    sdk_dependencies: []
+    credentials: [tradier_api_key, tradier_account_type]
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 4.0
     status: 待实现
@@ -290,9 +315,37 @@ providers:
     batch: P2
     fetchers: 3
     models: [ETFActive, ETFGainers, ETFLosers]
-    sdk_dependencies: -
-    credentials: -
+    sdk_dependencies: []
+    credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 2.0
     status: 待实现
 # 合计粗估人日（32 provider）：153
+
+# ---------------------------------------------------------------------------
+# 本项目自有 / 搬运的源：它们不是 OpenBB 上游 provider，故不进上面的内化批次。
+# 单列一节只为一件事：README §5 说「批次进度以本文件为准」，而注册表 33 条能力里有 21 条
+# 来自这两个源（ths 11 + akshare 10）。它们在准绳里完全不存在时，这句话会被读成
+# 「整个数据面还一条都没实现」——C33 之前的实际读数正是如此（32 行全写 待实现）。
+# ---------------------------------------------------------------------------
+local_providers:
+  - provider: ths
+    origin: 自研直连（opendata_fuyao，商业服务，需 X-api-key）
+    scenario: A 股/ETF/期货/期权行情、标的目录、公司事件与交易日历（§7 真机场景的主源）
+    status: 已对照转正
+    rights_rows: [同花顺扶摇 API]
+    notes: >-
+      11 条能力逐域与官方输出对照转正（C6/C9/C13/C14/C15/C20 等）。
+      financial_indicator 有意**未**注册：契约 FinancialIndicator.announce_date 必填，
+      而五类指标响应的 data.abilities 里没有披露日，半口径接线比留给退路更糟（C10 实测）。
+  - provider: akshare
+    origin: 搬运层 opendata_http（A2 里程碑 B 层）+ 自研模型层
+    scenario: 国内公共 HTTP 退路（东方财富/新浪/腾讯/雪球/交易所/统计局）
+    status: 已实现未对照
+    rights_rows: [东方财富, 新浪财经, 腾讯财经, 雪球, 交易所官网, 国家统计局]
+    notes: >-
+      10 条能力全部 verified=false，Capability.participates_in_auto() 因此为假，
+      source="auto" 会跳过它们（registry.resolve 的 ranked 过滤）⇒ 国内域的 auto 腿今天只有
+      ths 一条；"退路存在" 与 "退路可路由" 是两件事，C24 量的是前者。
+      转正需要 AC-6 口径的真机逐字段对照，不是一行 status 改动。
+
