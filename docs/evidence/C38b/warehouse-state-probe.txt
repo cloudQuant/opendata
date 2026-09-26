@@ -1,0 +1,37 @@
+# C38b · 误跑 warehouse e2e 之后的只读复核（全 SELECT，无一条写语句）
+# 生成方式：python - <<'PY'（脚本内只 execute SELECT / SHOW），数据源 = settings.data_database_url
+# 读法：这些是**事后状态**读数。本轮之前没有同口径快照 ⇒ 不能写成「未变」，只能写成「现在是这样」。
+
+$ SELECT COUNT(*) FROM batch_watermark
+  batch_watermark 总行数: 0
+$ SELECT COALESCE(MAX(`seq`), -1) FROM batch_watermark
+  batch_watermark MAX(seq): -1
+$ SELECT `domain`, COUNT(*) FROM batch_watermark GROUP BY `domain`
+  batch_watermark 按 domain 分组: []
+$ SELECT AUTO_INCREMENT FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'batch_watermark'
+  batch_watermark AUTO_INCREMENT（InnoDB 不会因 DELETE 回退）: 107
+$ SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name LIKE '\_stg\_%'
+  临时/探针表残留（_ 前缀）: 0
+$ SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = '_probe_ods_writer'
+  _probe_ods_writer 是否存在: 0
+$ SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'test_notify_probe'
+  test_notify_probe 是否存在: 0
+$ SELECT version_num FROM alembic_version_data
+  alembic 记录版本（fixture 里那个 upgrade head 是否改过 schema 的唯一线索）: 0005_dwd_stock_adjust
+$ SELECT COUNT(*) FROM dwd_stock_daily
+  dwd_stock_daily 行数: 719316
+$ SELECT COUNT(*) FROM ods_stock_daily_ths
+  ods_stock_daily_ths 行数: 10310289
+
+[判读]
+  · 价格/落库数据面（dwd_stock_daily / ods_stock_daily_ths）本轮那三个 e2e 类不写：
+    它们只写 batch_watermark 与自己 create/drop 的同名探针表（tests/test_watermark.py:508、
+    tests/test_ods_writer.py:510-514）。这是**读码 + 现状读数**，不是前后对比。
+  · batch_watermark = 0 行：TestNotifierAgainstMysql 的 teardown 原先按 domain = 'stock_daily' 整域 DELETE（本轮已改成按 seq 上界清理）。
+  · AUTO_INCREMENT 说明这张表历史上累计写入过约（该值−1）个 seq，但由此无法判断
+    这次被删的行里有没有属于真实批次的 —— 没有跑前快照。
+  · 版本表停在 head（0005_dwd_stock_adjust），0004/0005 两个迁移文件日期 2026-09-23，
+    ⇒ upgrade head 应为不改 schema 的 no-op；这一句仍是推断。
+
+[修正后的运行没再动这张表] 第二次变异巡回（-m "not e2e"）前后各测一次，两次都是：
+  wm_rows=0  wm_max_seq=-1  staging_tables_left=0

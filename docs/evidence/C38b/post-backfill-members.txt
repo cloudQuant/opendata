@@ -1,0 +1,43 @@
+# C38b · 第三遍门禁之后对验收文档的字句更正 —— 受影响成员逐个复算（不跑第四遍，见 README §8）
+# 生成时间: 2026-09-26T19:03:25+02:00  分支: dev  HEAD: 911fbe4
+
+$ make ledger-check
+  python scripts/quality/acceptance_ledger_check.py
+  census: items=130 proven=8 gap=3 unreviewed=119 ticked=8
+  OK: items=130 proven=8 gap=3 unreviewed=119 ticked=8 across 22 group(s) and 19 §10 row(s) reconcile.
+  rc=0
+
+$ make brand-check
+    .env.example:115
+    .pre-commit-config.yaml:5
+  OK: no brand residue and no rename leftovers.
+  rc=0
+
+$ make a2-check
+  ok   bandit
+  
+  OK: A2 files meet the full A2 standard (ruff + format + mypy + bandit).
+  rc=0
+
+# 读数解释：三个 rc 全 0 ⇒ 这三个成员在最终文档树上复算仍绿。它们的输入分别是验收文档＋台账 JSON（前两个）与 A2 文件集（第三个）。
+# 不声称的部分：其余 11 个成员（含覆盖率那一遍）没有在这一刻重跑，它们的绿来自 gate.txt（第三遍，跑在字句更正之前）。
+
+# 「第三遍与本节之间被测面没有变化」这句话靠什么支撑（不是靠感觉）：
+#   ① 三遍门禁的整张覆盖率表（各 202 行，含 5 个补测文件的 stmts/miss/branches/partial 四元组）两两 unified-diff diff_lines=0
+#      —— 见 coverage-faces-across-runs.txt [2]；② 三遍的用例读数同为 3004 passed／6 skipped；
+#      ③ 本轮产品面 sha256 基线在变异巡回前后一致（mutation-proof.txt [终态]），三遍之间没有产品代码提交。
+#   下面这份 git diff --stat 是**本轮相对 HEAD 的累计改动**（也就是本轮那 5 个测试文件），不是「第三遍之后又改了什么」；
+#   把它列在这里是为了让「动了哪些文件」这一格可核对，而不是给人一个错误的对比基准。
+   tests/test_factor_builder_unit.py | 270 +++++++++++++++++++++++-
+   tests/test_notify_unit.py         | 311 ++++++++++++++++++++++++++-
+   tests/test_ods_writer.py          | 350 ++++++++++++++++++++++++++++++-
+   tests/test_pipeline_templates.py  | 428 ++++++++++++++++++++++++++++++++++++++
+   tests/test_watermark.py           | 227 +++++++++++++++++++-
+   5 files changed, 1570 insertions(+), 16 deletions(-)
+
+# 本节时刻 5 个测试文件的 sha256（供后续轮次对照）：
+  32463f05af585b2a6a34553e268739764b5ff0ee8c9381275134e980758e6ce4  tests/test_notify_unit.py
+  c7bcbf2ad9e770ecf639acb403dd8de1551a4dc43e5db884dc580b16971ed00f  tests/test_ods_writer.py
+  be9b0d15b8d2119a85b2408f6370429f5b2d254d6c95eb3fba82c900d8a5d3e5  tests/test_watermark.py
+  2e28970d5a131a23fd89794d15b89f95a6514f08e5d74e437cdc936d3dce9a85  tests/test_factor_builder_unit.py
+  5d5484575471d448ec9e395c955d55e3c6906d53b50ca6805ec548a5b36b8134  tests/test_pipeline_templates.py

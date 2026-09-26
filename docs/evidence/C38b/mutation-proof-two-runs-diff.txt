@@ -1,0 +1,38 @@
+# C38b · 变异巡回跑了两遍，两份日志的逐行对照
+# 生成时间: 2026-09-26T18:55:34+02:00  分支: dev  HEAD: 911fbe4
+# runA: mutation-proof-runA-tmp-runner.txt（146 行，由 /tmp 里的草版 runner 产出 —— 脚本当时没进档案，不可重跑）
+# runB: mutation-proof.txt（146 行，由档案里的 docs/evidence/C38b/mutation-proof.py 产出）
+# $ diff <(grep -v '生成时间' A) <(grep -v '生成时间' B)
+  差异行数:       20
+# 差异内容（全部是 pytest 的耗时小数，计数一律相同）
+31,32c31,32
+<   tests/test_notify_unit.py            rc=0 ============================== 17 passed in 0.04s ==============================
+<   tests/test_ods_writer.py             rc=0 ======================= 30 passed, 5 deselected in 0.04s =======================
+---
+>   tests/test_notify_unit.py            rc=0 ============================== 17 passed in 0.03s ==============================
+>   tests/test_ods_writer.py             rc=0 ======================= 30 passed, 5 deselected in 0.05s =======================
+34,35c34,35
+<   tests/test_factor_builder_unit.py    rc=0 ============================== 22 passed in 0.03s ==============================
+<   tests/test_pipeline_templates.py     rc=0 ============================== 39 passed in 0.05s ==============================
+---
+>   tests/test_factor_builder_unit.py    rc=0 ============================== 22 passed in 0.04s ==============================
+>   tests/test_pipeline_templates.py     rc=0 ============================== 39 passed in 0.06s ==============================
+54c54
+<     结果: rc=1 ========================= 2 failed, 15 passed in 0.08s ========================= ⇒ RED（判据咬住了）
+---
+>     结果: rc=1 ========================= 2 failed, 15 passed in 0.09s ========================= ⇒ RED（判据咬住了）
+62c62
+<     结果: rc=1 ================== 2 failed, 28 passed, 5 deselected in 0.10s ================== ⇒ RED（判据咬住了）
+---
+>     结果: rc=1 ================== 2 failed, 28 passed, 5 deselected in 0.09s ================== ⇒ RED（判据咬住了）
+# 计数核对
+  docs/evidence/C38b/mutation-proof-runA-tmp-runner.txt
+    MUTATION_SUMMARY: MUTATION_SUMMARY cases=10 unexpected=0
+    RED 次数: 10  GREEN 次数: 0  还原一致: 10
+    基线 deselected: 5 deselected 13 deselected 5 deselected 5 deselected 13 deselected 13 deselected 13 deselected 
+  docs/evidence/C38b/mutation-proof.txt
+    MUTATION_SUMMARY: MUTATION_SUMMARY cases=10 unexpected=0
+    RED 次数: 10  GREEN 次数: 0  还原一致: 10
+    基线 deselected: 5 deselected 13 deselected 5 deselected 5 deselected 13 deselected 13 deselected 13 deselected 
+# 档案化说明：runA 的脚本没进档案 ⇒ 那一遍不可重跑；本轮把 runner 收进 docs/evidence/C38b/mutation-proof.py（为过 a2-check 只改了三处：函数文档字符串、REPO 由 __file__ 推导、版本打印抽成 helper），
+# 然后原样重跑出 runB。两份读数同：cases=10 unexpected=0、10 次 RED、0 次意外 GREEN、5 个文件 sha256 还原一致、deselected 计数 5/13。

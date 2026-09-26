@@ -1,0 +1,38 @@
+# C38b · AC-17 条目 6 的三个分句各自的可复算读数（数据源 = gate-run1 那一遍门禁）
+# 判据原文：覆盖率：**A2 新代码** statement+branch ≥85%（`opendata/data`、`pipeline`、`opendata_fuyao` ≥90%），报告（xml+html）非空归档
+
+[1] 报告（xml+html）非空
+  $ stat coverage.xml         -> bytes=500564  sha256=313e86140fb74ecd79ea4abdb5d2ba2fef628202577734391b0a3e9ea411e0d1
+  $ stat htmlcov/index.html   -> bytes=80533  sha256=f5e9648043327ebe5565857063622520a06b6f961ee40e73c624caa1f63f66a1
+  门禁自己的两行产出证据（gate-run1.txt:6653-6654）：
+    Coverage HTML written to dir htmlcov
+    Coverage XML written to file coverage.xml
+  XML 自报：lines-valid=10942 lines-covered=9824 line-rate=0.8978 branches-valid=2692 branches-covered=2216 branch-rate=0.8232 timestamp=1790440140998
+  注意：根元素带 timestamp ⇒ 每次运行 sha 必然不同；可复现的是计数，不是字节。
+
+[2] 独立来源核对：同一个数从 coverage.xml 复算（不是从门禁那张 term 表读）
+  XML 的 pipeline/* 子树：files=27 stmts=2584 miss=202 branches=672 partial=69
+  ⇒ pipeline 面（XML 口径）= 91.68%
+  term 表（门禁打印）pipeline 合计：stmts=2584 miss=202 branches=672 partial=69
+  两个来源逐文件四元组不同的文件数=0 [] ⇒ 逐文件一致
+  全局核对：XML lines-valid=10942 vs term TOTAL 语句 10942；XML lines-covered=9824 vs 10942−1118=9824
+
+[3] 三个模块各自 ≥90%（term 表口径，单位 = 语句 + 分支；与 §2 的 XML 口径在 pipeline 上已对齐）
+  opendata/data      files=90   units=2943   covered=2722   face=92.49%  (达标)
+  opendata/pipeline  files=27   units=3256   covered=2985   face=91.68%  (达标)
+  opendata_fuyao     files=9    units=1369   covered=1311   face=95.76%  (达标)
+  对照 C36 那次读数（台账 gap reason）：data 91.98% / fuyao 95.76% / pipeline 85.32%
+
+[4] A2 新代码 statement+branch ≥85%（C36 说这一格'无可核对分母'，本轮把分母定义写出来）
+  分母定义：a2_check.resolve_files(None)（A2 = 自基线提交以来新增/修改 + 未跟踪）∩ 门禁覆盖率表里有的文件
+  A2 files 总数=318  在覆盖率面内=148
+  （tests/、docs/、scripts/ 天然不在面内：coverage source = opendata + opendata_fuyao）
+  stmts=8544 miss=730 branches=2068 partial=230 units=10612 covered=9652
+  A2 面 = 90.95%  (达标 ≥85)
+
+[5] 这一格的边界
+  .gitignore:40 `htmlcov/`、:49 `coverage.xml` ⇒ 报告本体不进版本库；本节存的是尺寸 + sha + XML 自报计数 + 与 term 表的逐文件对照。
+  若验收要求仓库里有报告本体，条目 6 的「非空归档」按那个口径仍未闭合 ⇒ 该勾应退回。
+  A2 的分母是「本轮之前所有 A2 触碰面」的并集（318 个文件里的 148 个），不是「本轮新增行」——后者需要一个 a2_check 不产的行级覆盖率分母，本轮没有造那个仪器。
+
+[CMD] 复现：make gate（test-cov 成员带 --cov-report=xml:coverage.xml --cov-report=html:htmlcov）

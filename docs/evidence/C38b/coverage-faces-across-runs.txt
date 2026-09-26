@@ -1,0 +1,48 @@
+# C38b · 三张面从两份门禁日志各自的 term 表复算（同一规则、同一脚本）
+# 生成时间: 2026-09-26T18:51:07+02:00  分支: dev  HEAD: 911fbe4
+# 口径: 单位 = 语句 + 分支；face = (stmts-miss + branches-partial) / (stmts+branches)
+# $ python docs/evidence/C38b/coverage-face-recompute.py docs/evidence/C38b/gate-run1.txt docs/evidence/C38b/gate-run2.txt
+== docs/evidence/C38b/gate-run1.txt  (rows=198)
+  opendata/data/       files=90   units=2943    covered=2722    face=92.49%
+  opendata/pipeline/   files=27   units=3256    covered=2985    face=91.68%
+  opendata_fuyao/      files=9    units=1369    covered=1311    face=95.76%
+== docs/evidence/C38b/gate-run2.txt  (rows=198)
+  opendata/data/       files=90   units=2943    covered=2722    face=92.49%
+  opendata/pipeline/   files=27   units=3256    covered=2985    face=91.68%
+  opendata_fuyao/      files=9    units=1369    covered=1311    face=95.76%
+
+# 两次运行的 pipeline 面逐文件四元组 diff
+  pipeline 面逐文件完全一致 (diff=0)
+
+# 整张覆盖率表 diff（201 行）
+  整表 diff=0
+
+# 判据读数
+  AC-17 条目 6 三个模块面：data 92.49% / pipeline 91.68% / fuyao 95.76% —— 三个都 ≥90%
+  两处独立来源（term 表 vs coverage.xml）在 pipeline 面逐文件 0 处不符，见 coverage-report-receipt-run1.txt [2]
+
+[2] 第三遍门禁之后追加（2026-09-26T19:01:41+02:00）：三遍而不是两遍
+# $ python docs/evidence/C38b/coverage-face-recompute.py docs/evidence/C38b/gate-run1.txt docs/evidence/C38b/gate-run2.txt docs/evidence/C38b/gate.txt
+  == docs/evidence/C38b/gate-run1.txt  (rows=198)
+    opendata/data/       files=90   units=2943    covered=2722    face=92.49%
+    opendata/pipeline/   files=27   units=3256    covered=2985    face=91.68%
+    opendata_fuyao/      files=9    units=1369    covered=1311    face=95.76%
+  == docs/evidence/C38b/gate-run2.txt  (rows=198)
+    opendata/data/       files=90   units=2943    covered=2722    face=92.49%
+    opendata/pipeline/   files=27   units=3256    covered=2985    face=91.68%
+    opendata_fuyao/      files=9    units=1369    covered=1311    face=95.76%
+  == docs/evidence/C38b/gate.txt  (rows=198)
+    opendata/data/       files=90   units=2943    covered=2722    face=92.49%
+    opendata/pipeline/   files=27   units=3256    covered=2985    face=91.68%
+    opendata_fuyao/      files=9    units=1369    covered=1311    face=95.76%
+# 三遍整张覆盖率表（各 202 行，从 `Name` 表头到 `TOTAL` 行）两两 unified-diff 的行数：
+  gate-run1 vs gate-run2: diff_lines=0
+  gate-run1 vs gate: diff_lines=0
+  gate-run2 vs gate: diff_lines=0
+# 三遍的门禁读数（同一份被测代码）：
+  run1 6,818 行／A2 files: 318／3004 passed, 6 skipped in 58.12s／TOTAL 10942 1118 2692 288 88.31%
+  run2 6,831 行／A2 files: 318／3004 passed, 6 skipped in 56.87s／TOTAL 同上
+  run3 6,841 行／A2 files: 320／3004 passed, 6 skipped in 60.25s／TOTAL 同上（A2 清扫面多了本轮两份脚本，被测面一字未动）
+# 修正说明：这一节第一次生成时用 shell 拼文件名，三个 diff 读数全是空文件对空文件的 0（sed 报了 No such file）；
+# 上面这版改由脚本按表头-TOTAL 区间取表，diff_lines 是真值。旧那三行已被替换掉而不是留着 —— 留在这里是因为
+# 「一次生成的读数本身错了」是本轮该记的一类错，而不是可擦掉的排版问题。

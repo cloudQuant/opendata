@@ -1,0 +1,45 @@
+# C38b · 本轮新增的两个档案脚本在 A2 零容忍面上的读数
+# 生成时间: 2026-09-26T18:56:33+02:00  分支: dev  HEAD: 911fbe4
+# 为什么它们进 A2 面：scripts/quality/a2_check.py 的清扫面含 docs/evidence/**/*.py（见 make a2-check）
+
+[G] make a2-check（全 A2 文件集，本轮末尾复跑）
+  tests/test_trading_calendar.py
+  tests/test_warehouse_ddl.py
+  tests/test_warehouse_migrations.py
+  tests/test_watermark.py
+  tests/test_yfinance_provider.py
+
+ok   ruff check
+ok   ruff format --check
+ok   mypy
+ok   bandit
+
+OK: A2 files meet the full A2 standard (ruff + format + mypy + bandit).
+A2_EXIT=0   （读自 make a2-check 的真实退出码，不是 tail 的）
+# A2 files: 320 —— 本轮两个新脚本已在这个集合里
+
+[G2] 两个脚本逐工具复算
+  $ ruff check --no-cache docs/evidence/C38b/mutation-proof.py
+    All checks passed!
+  $ ruff format --check docs/evidence/C38b/mutation-proof.py
+    1 file already formatted
+  $ python -m mypy docs/evidence/C38b/mutation-proof.py
+    pyproject.toml: note: unused section(s): module = ['opendata.data_fetch.*', 'opendata_http.*']
+    Success: no issues found in 1 source file
+  $ python -m bandit -c bandit.yaml -q -f json docs/evidence/C38b/mutation-proof.py
+    results=0 nosec=0 skipped_tests=3
+  $ ruff check --no-cache docs/evidence/C38b/coverage-face-recompute.py
+    All checks passed!
+  $ ruff format --check docs/evidence/C38b/coverage-face-recompute.py
+    1 file already formatted
+  $ python -m mypy docs/evidence/C38b/coverage-face-recompute.py
+    pyproject.toml: note: unused section(s): module = ['opendata.data_fetch.*', 'opendata_http.*']
+    Success: no issues found in 1 source file
+  $ python -m bandit -c bandit.yaml -q -f json docs/evidence/C38b/coverage-face-recompute.py
+    results=0 nosec=0 skipped_tests=0
+
+[R] 留账：本轮为什么带 nosec
+  mutation-proof.py 带 3 条 nosec（B404 一次 + B603 两次），bandit 在该文件上 results=0 / skipped_tests=3；
+  两个都是『脚本自己起 pytest 子进程』这一形态的固有报警，argv 是字面量、shell=False，没有外部输入进命令；
+  记在这里而不是『豁免了就看不见』。coverage-face-recompute.py 不带任何 nosec（results=0）。
+  没有一项靠改 pyproject／bandit.yaml 配置关掉。
