@@ -1,0 +1,19 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T01:56:13+02:00
+branch=dev HEAD=aec3088
+?? docs/evidence/C27/
+Python 3.13.5
+说明：本档抓的是 em 通道处于「拒绝」状态时的现场形状（上一条测量档 em-channel-measure.txt 全部未判读的那个窗口），用于把「被拒」与「确实没数据」分开，并当场比 pristine 上游与搬运层两种处理。
+
+采集时间 2026-09-26 01:56:13 +0200
+== A. 单次 HTTP 直连（无重试、无回退），看被拒时到底是什么形状 ==
+  push2his.eastmoney.com   拒绝 ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without
+  push2delay.eastmoney.com status=502 非 JSON preview='<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r'
+
+== B/C. 同一网络状态下两棵树各自的 index_zh_a_hist ==
+  upstream 模块文件：/Users/yunjinqi/Documents/new_projects/akshare/akshare/__init__.py version=1.18.64
+  B pristine upstream : 返回 0 行 列=['日期', '开盘', '收盘', '最高'] (8s)
+  C ported (生产)  : 抛错 RuntimeError: Eastmoney index kline endpoint is unavailable for '000300': all 4 secid candidates failed (last error: 502 Ser (15s)
+判据：两棵树面对同一网络状态时的差别，就是 AC-5/C11a 那次「吞错返回空帧 → 改为区分『被拒』与『确实没数据』」的现场形状。
+REFUSAL_SHAPE_EXIT=0
+SHAPE_RC=0

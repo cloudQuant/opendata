@@ -1,0 +1,53 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T03:10:22+02:00
+branch=dev HEAD=aec3088
+ M docs/evidence/A2/compare-report.md
+ M scripts/codemod/compare_with_upstream.py
+ M tests/fixtures/upstream/fund_etf_daily_em/meta.json
+ M tests/fixtures/upstream/index_daily_em/meta.json
+ M tests/fixtures/upstream/stock_daily_qfq/meta.json
+ M tests/fixtures/upstream/stock_daily_raw/meta.json
+ M tests/test_port_fidelity.py
+?? docs/evidence/C27/
+?? scripts/codemod/qfq_chain_checks.py
+?? tests/fixtures/upstream/stock_daily_sina_qfq_wide/
+?? tests/fixtures/upstream/stock_daily_sina_raw_wide/
+Python 3.13.5
+upstream-lock=c4f6a631c259783dbc2507b6b27d179b3e88079d
+说明：C27 的 AC-6 离线复算（--compare，零网络：所有 HTTP 应答来自 tests/fixtures/upstream/*/responses.json.gz）。
+      本轮看点是报告新增的『D10 qfq factor chain (checks shared with the gate)』一节——
+      em 那一对打印为『未判读（夹具还没录到）』而不是旧版那句『改由 scripts/ops/qfq_official_check.py 跨源核』，
+      sina(宽) 那一对是真读数。docs/evidence/A2/compare-report.md 是每次 --compare 都会重写的滚动活档，
+      本轮读数以本档为准。
+
+===== compare_with_upstream.py --compare 输出 =====
+PENDING stock_daily_raw: no recorded fixture (re-run --record)
+PENDING stock_daily_qfq: no recorded fixture (re-run --record)
+PASS stock_action_dividend: 31 rows, 0 diff(s)
+PASS stock_action_rights: 3 rows, 0 diff(s)
+PASS financial_statement: 103 rows, 0 diff(s)
+PASS financial_indicator: 103 rows, 0 diff(s)
+PASS index_constituent: 300 rows, 0 diff(s)
+PASS futures_daily_sina: 4251 rows, 0 diff(s)
+PASS option_daily_sina: 23 rows, 0 diff(s)
+PASS bond_daily_sina: 4806 rows, 0 diff(s)
+PENDING index_daily_em: no recorded fixture (re-run --record)
+PENDING fund_etf_daily_em: no recorded fixture (re-run --record)
+PASS stock_daily_sina_raw: 22 rows, 0 diff(s)
+PASS stock_daily_sina_qfq: 22 rows, 0 diff(s)
+PASS index_daily_sina: 6000 rows, 0 diff(s)
+PASS fund_etf_daily_sina: 3484 rows, 0 diff(s)
+PASS stock_daily_sina_raw_wide: 118 rows, 0 diff(s)
+PASS stock_daily_sina_qfq_wide: 118 rows, 0 diff(s)
+report written to /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/A2/compare-report.md
+COMPARE_RC=1
+
+===== 附：报告里新增的 D10 一节（逐字快照，2026-09-26 03:10 那次 --compare 写入） =====
+为什么要另存一份：docs/evidence/A2/compare-report.md 是滚动活档，下一轮 --compare 会重写它；
+上面 --compare 的 stdout 只有逐用例的 PASS/PENDING 行，D10 的读数只落在报告文件里。
+
+## D10 qfq factor chain (checks shared with the gate)
+
+- em: 未判读（夹具还没录到，本轮没有回放这一对）
+- sina(宽): PASS（118 天）
+- 重叠 22 天（2024-01-02..2024-01-31），不复权收盘不相等 0/22 天，锚定比 f_宽/f_窄 中位数=1.000000 最大相对偏离 0.000e+00

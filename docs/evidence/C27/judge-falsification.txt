@@ -1,0 +1,90 @@
+# C27 判据可证伪性现场巡回（未裁剪）
+# generated-at: 2026-09-26T02:49:36+0200
+# platform: Darwin 25.5.0 arm64  arch: arm64
+# python: Python 3.13.5
+# git-branch: dev  git-head: aec3088a3156d6995f7cb1be0eba70e694eba04b
+# upstream-lock: c4f6a631c259783dbc2507b6b27d179b3e88079d
+# command: python -u docs/evidence/C27/judge-falsification.py
+# 读法：坏数据只在内存里构造，夹具一个字节都没动；三条判据跑的是 scripts/codemod/qfq_chain_checks.py，
+#       与门禁（tests/test_port_fidelity.py）和 AC-6 报告（compare_with_upstream.py --compare）同一份代码。
+#       复算前提：stock_daily_sina_raw/qfq 与 *_wide 四个夹具都是 recorded。
+
+宽窗 2024-01-02..2024-07-01（118 天），靶心除权日 2024-06-19；窄窗 22 天，重叠行 2024-01-17
+
+== 1. 旧判据（A1 恒真）对着坏数据的表现 ==
+  qfq 改成 uniform      -> 旧判据 仍然 PASS（恒真）
+  qfq 改成 unrelated    -> 旧判据 仍然 PASS（恒真）
+  qfq 改成 step_delayed -> 旧判据 仍然 PASS（恒真）
+  qfq 改成 wrong_height -> 旧判据 仍然 PASS（恒真）
+  qfq 改成 one_field    -> 旧判据 仍然 PASS（恒真）
+
+== 2. 三条新判据对着同一批坏数据的表现 ==
+  uniform      台阶判据: PASS
+  uniform      合成判据: PASS
+  uniform      窗口自洽: PASS
+  unrelated    台阶判据: FAIL <- factor chain stepped on [datetime.date(2024, 1, 3), datetime.date(2024, 1, 4), datetime.date(2024, 1, 5), datetime.date(2024, 1, 8), datetime.date(202
+  unrelated    合成判据: FAIL <- 2024-01-02 open: synthesized 1466.0160473825083, official qfq 1558.48
+  unrelated    窗口自洽: FAIL <- anchor moves with the requested window: f_宽/f_窄 deviates by 9.820e-02 (worst 2024-01-02), so chains from different windows cannot be mixed
+  step_delayed 台阶判据: FAIL <- factor chain stepped on [datetime.date(2024, 6, 20)] but the dividend record has 实施 cash ex-dates [datetime.date(2024, 6, 19)] inside the window
+  step_delayed 合成判据: FAIL <- 2024-06-19 open: synthesized 1361.2756448241867, official qfq 1389.47
+  step_delayed 窗口自洽: PASS
+  wrong_height 台阶判据: FAIL <- 2024-06-19: observed 1.0150000000 vs dividend-implied 1.0207134730 (previous close 1521.5, cash 30.875999999999998/share), relative gap 5.598e-03
+  wrong_height 合成判据: FAIL <- 2024-06-19 open: synthesized 1381.6947794965495, official qfq 1389.47
+  wrong_height 窗口自洽: PASS
+  one_field    台阶判据: PASS
+  one_field    合成判据: FAIL <- 2024-01-02 high: synthesized 1561.3716783876655, official qfq 1576.9938000000002
+  one_field    窗口自洽: PASS
+
+== 3. 事件流侧的扰动（换掉判据的另一路输入，而不是价格数据） ==
+  cash_10x     台阶判据: FAIL <- 2024-06-19: observed 1.0207102910 vs dividend-implied 1.0020334397 (previous close 1521.5, cash 3.0875999999999997/share), relative gap 1.864e-02
+  cash_removed 台阶判据: FAIL <- factor chain stepped on [datetime.date(2024, 6, 19)] but the dividend record has 实施 cash ex-dates [] inside the window
+  date_shifted 台阶判据: FAIL <- factor chain stepped on [datetime.date(2024, 6, 19)] but the dividend record has 实施 cash ex-dates [datetime.date(2024, 6, 20)] inside the window
+
+== 4. 窗口侧的扰动（两次录制之间的一致性，只有这一条判据看得见） ==
+  overlap_close_off_by_a_cent 窗口自洽: FAIL <- 2024-01-17: raw close 1577.0 != 1577.01
+  overlap_factor_moved       窗口自洽: FAIL <- anchor moves with the requested window: f_宽/f_窄 deviates by 5.000e-03 (worst 2024-01-17), so chains from different windows cannot be mixed
+  uniform_anchor             窗口自洽: PASS
+
+== 5. 对照组：什么都不改 ==
+  untouched    台阶判据: PASS
+  untouched    合成判据: PASS
+  untouched    窗口自洽: PASS
+
+== 读法 ==
+  旧判据在 5 种坏收盘数据上 PASS 了 5 次。
+    它挂在 skip 上半年没人发现，就因为这个。
+  uniform      台阶判据: PASS
+  uniform      合成判据: PASS
+  uniform      窗口自洽: PASS
+  unrelated    台阶判据: FAIL
+  unrelated    合成判据: FAIL
+  unrelated    窗口自洽: FAIL
+  step_delayed 台阶判据: FAIL
+  step_delayed 合成判据: FAIL
+  step_delayed 窗口自洽: PASS
+  wrong_height 台阶判据: FAIL
+  wrong_height 合成判据: FAIL
+  wrong_height 窗口自洽: PASS
+  one_field    台阶判据: PASS
+  one_field    合成判据: FAIL
+  one_field    窗口自洽: PASS
+  cash_10x     台阶判据: FAIL
+  cash_removed 台阶判据: FAIL
+  date_shifted 台阶判据: FAIL
+  overlap_close_off_by_a_cent 窗口自洽: FAIL
+  overlap_factor_moved       窗口自洽: FAIL
+  uniform_anchor             窗口自洽: PASS
+  untouched    台阶判据: PASS
+  untouched    合成判据: PASS
+  untouched    窗口自洽: PASS
+  uniform 只换前复权的锚定常数，台阶/合成/窗口三条判据的相对形状都不该变，所以都不该抓到；
+    被抓到反而说明某条判据把这一家的锚定当成了事实。
+  one_field 只错 high：收盘台阶判据与窗口自洽天然看不见，由合成判据兜住——覆盖面不重叠。
+  step_delayed/wrong_height 的扰动在 6 月，重叠区只到 1 月，窗口自洽判据管不着——
+    那正是台阶判据的活：三条判据各管一段，没有一条是另一条的换名。
+  窗口侧两条只有窗口自洽判据看得见：两次录制各自对自己的转写都是 PASS，回放看不出来。
+  未被任何新判据抓到的坏数据 = 无
+  被误抓的合法扰动（等比换锚）= 无
+  脚手架异常 = 无
+JUDGE_FALSIFIED_EXIT=0
+TOUR_EXIT=0

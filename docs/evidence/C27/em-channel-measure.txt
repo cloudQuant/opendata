@@ -1,0 +1,31 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T01:51:27+02:00
+branch=dev HEAD=aec3088
+?? docs/evidence/C27/
+Python 3.13.5
+说明：本档是 C27 的修复前基线，记录 em 通道 4 个挂起用例的现场身份读数；调用之间 12s 节流，被拒的调用记为「未判读」不计为数据错。
+
+===== em-channel-measure.py 输出 =====
+== A. 候选 secid 的身份（生产代码按顺序试、第一个有 klines 的就采纳） ==
+  requested symbol=000300（沪深300 指数 / 沪深300ETF）
+    1.000300       未判读 ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connecti
+    0.000300       未判读 ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connecti
+    2.000300       未判读 ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connecti
+    47.000300      未判读 ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connecti
+  requested symbol=510300（沪深300 指数 / 沪深300ETF）
+    1.510300       未判读 ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connecti
+    0.510300       未判读 ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connecti
+    2.510300       未判读 ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connecti
+    47.510300      未判读 ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connecti
+
+== B. 真实生产调用（同一参数跑两次，spy 记录哪个 secid 被采纳） ==
+  sina 夹具 oracle：2024 年起 663 个交易日（离线，不依赖网络）
+  窄窗 20240229: 未判读 RuntimeError: Eastmoney index kline endpoint is unavailable for '000300': all 4 secid candidates failed (last error: 502 Ser
+  宽窗 20241231: 未判读 RuntimeError: Eastmoney index kline endpoint is unavailable for '000300': all 4 secid candidates failed (last error: 502 Ser
+
+== C. 候选顺序的来源 index_code_id_map_em（吞错返回 {} 的那个 map） ==
+  0s 后 map 大小=0，'000300' in map=False 值=None
+  map 未命中时候选退化为 1./0./2./47. 逐个试，第一个有 klines 的即被采纳（见 A 节身份）
+
+MEASURE_EXIT=0
+MEASURE_RC=0

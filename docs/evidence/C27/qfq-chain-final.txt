@@ -1,0 +1,53 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T03:06:45+02:00
+branch=dev HEAD=aec3088
+ M docs/evidence/A2/compare-report.md
+ M scripts/codemod/compare_with_upstream.py
+ M tests/fixtures/upstream/fund_etf_daily_em/meta.json
+ M tests/fixtures/upstream/index_daily_em/meta.json
+ M tests/fixtures/upstream/stock_daily_qfq/meta.json
+ M tests/fixtures/upstream/stock_daily_raw/meta.json
+ M tests/test_port_fidelity.py
+?? docs/evidence/C27/
+?? scripts/codemod/qfq_chain_checks.py
+?? tests/fixtures/upstream/stock_daily_sina_qfq_wide/
+?? tests/fixtures/upstream/stock_daily_sina_raw_wide/
+Python 3.13.5
+upstream-lock=c4f6a631c259783dbc2507b6b27d179b3e88079d
+说明：C27 最终读数（A–F 全段），只读 tests/fixtures/upstream/、零网络。
+      与 qfq-chain-noise-floor.txt（放宽窗口前的首跑）的差别：那份 sina 宽窗夹具还没录到，A/C/E 三段对宽窗是『未判读』；
+      本档四份宽/窄夹具齐备，B/D 两段仍因 em 缺而『未判读』（读不到 ≠ 数据错）。
+      退出码 1 的原因是 em 未录全（脚本对『什么都没量到』fail-closed），不是任何一条判据失败。
+
+===== qfq-chain-measure.py 输出 =====
+== A. 每家 vendor 内部：四价格字段算出的复权比例是否一致 ==
+  em  : 未判读，缺 ['stock_daily_raw', 'stock_daily_qfq']
+  sina(窄): 可比日期 22 天，四字段比值最大相对差 6.117e-06（2024-01-02）
+  sina(宽): 可比日期 118 天，四字段比值最大相对差 6.251e-06（2024-02-27）
+
+== B. 跨 vendor：f_em(t)/f_sina(t) 是否为常数（锚定日不同只抬常数，不该抬形状） ==
+  未判读：em 或 sina 因子链尚未录全，B 段不做任何结论
+
+== C. 因子链在本窗口内有没有台阶（没有除权日的窗口证不了因子链） ==
+  em: 未录全，跳过
+  sina(窄): 22 天，相邻日相对抖动 中位数(噪声地板)=1.426e-06 / 最大=5.453e-06，首末相对变化 6.386e-06，取值 22 种
+    台阶日（抖动 > 1e-04）：无
+    -> 整窗恒定：A/B 判据在此退化（台阶判据阈值 1e-04）
+  sina(宽): 118 天，相邻日相对抖动 中位数(噪声地板)=1.596e-06 / 最大=2.071e-02，首末相对变化 2.071e-02，取值 114 种
+    台阶日（抖动 > 1e-04）：{'2024-06-19': 0.020710291000429537}
+    -> 窗口内含除权日，因子链有台阶（台阶判据阈值 1e-04）
+
+== D. 标的同一性：em 与 sina 的**不复权**收盘在重叠交易日上是否逐位相等 ==
+  未判读：em 不复权夹具还没有录到
+
+== E. 台阶的日期与高度是否等于分红事件算出来的台阶（跨端点，可定量证伪） ==
+  sina(窄): 窗口内既没有台阶也没有应出现台阶的分红日——本节无判据可言
+  sina(宽) 2024-06-19: 前收 1521.5 每股现金 30.876 → predicted=1.0207134730 actual=1.0207102910 相对差 3.117e-06 OK
+
+== F. 同一通道两个窗口（sina 窄窗 vs 宽窗）：原始收盘与锚定是否自洽 ==
+  不复权收盘：重叠 22 天，逐位相等 22/22 天，最大绝对差 0（2024-01-31）
+  重叠 22 天（2024-01-02..2024-01-31），q(t)=f_宽(t)/f_窄(t) 中位数=1.000000，最大相对偏离 0.000e+00
+  q(t) 跳变日：无
+    -> 锚定与窗口无关（只差一个常数），放宽窗口只是把同一条链截得更长
+QFQ_CHAIN_EXIT=1
+MEASURE_RC=1

@@ -1,0 +1,61 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T03:21:41+02:00
+branch=dev HEAD=aec3088
+工作树（本轮改动，未提交）：
+  M docs/evidence/A2/compare-report.md
+   M scripts/codemod/compare_with_upstream.py
+   M tests/fixtures/upstream/fund_etf_daily_em/meta.json
+   M tests/fixtures/upstream/index_daily_em/meta.json
+   M tests/fixtures/upstream/stock_daily_qfq/meta.json
+   M tests/fixtures/upstream/stock_daily_raw/meta.json
+   M tests/test_port_fidelity.py
+  ?? docs/evidence/C27/
+  ?? scripts/codemod/qfq_chain_checks.py
+  ?? tests/fixtures/upstream/stock_daily_sina_qfq_wide/
+  ?? tests/fixtures/upstream/stock_daily_sina_raw_wide/
+Python 3.13.5
+说明：README §1 里「这条判据自诞生起每次门禁都 SKIPPED、一次也没跑过」这句话的原始依据。
+      做法：在 docs/evidence/**/*.txt（各轮未裁剪门禁/pytest 原始输出，本轮自己的档除外）
+      里正则匹配 ` (PASSED|SKIPPED|FAILED) tests/test_port_fidelity.py::test_d10_qfq_synthesis_matches_official_series`，
+      逐文件计数。只数转写里真实出现过的判决行，不从「fixture 一直 pending」推断。
+
+===== 逐文件判决行 =====
+  docs/evidence/A2/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/A2/pytest.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/A4/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/A5/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/B2/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/B4/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C10/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C11/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C12/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C13/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C14/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C15/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C16/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C18/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C19/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C20/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C21/gate-before-tz-fix.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C21/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C22/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C23/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C24/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C25/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C26/gate-run1.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C26/gate-run2-before-rights-tests.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C26/gate-run3-before-silent-case.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C26/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C4/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C5/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C6/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C7/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C8/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+  docs/evidence/C9/gate.txt  SKIPPED=1 PASSED=0 FAILED=0
+
+===== 合计 =====
+含该用例判决行的留档输出文件数 = 32
+SKIPPED 合计 = 32   PASSED 合计 = 0   FAILED 合计 = 0
+读法：PASSED=0 且 FAILED=0 ⇒ A1 写下这条断言之后，没有任何一次被归档的门禁执行过它；
+      它也就没有任何一次有机会红。本轮把它换成三条能红的判据（§3 的变异巡回给了红面）。
+边界：本轮之前的 C17 等轮次若无该用例判决行，不计入文件数（数的是判决行，不是轮次）。

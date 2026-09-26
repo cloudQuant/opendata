@@ -1,0 +1,295 @@
+# C27 em 通道补录现场日志（未裁剪）
+# generated-at: 2026-09-26T02:08:21+02:00
+# platform: Darwin 25.5.0 arm64
+# python: Python 3.13.5
+# git-branch: dev  git-head: aec3088a3156d6995f7cb1be0eba70e694eba04b
+# upstream-lock: unknown
+# command: MAX_ROUNDS=10 SLEEP_SECONDS=70 bash docs/evidence/C27/record-em-fixtures.sh
+# 读法：本网络对 push2his/push2delay 是阵发性拒绝（见 em-channel-measure.txt、refusal-shape.txt），
+#       所以按用例逐个、长间隔、多轮重试。判据不放宽：只有 --record 自己把 meta.json 写成 recorded 才算补上。
+
+start=2026-09-26T02:08:21+02:00
+[round 1] stock_daily_raw 尝试补录（补录前状态=pending）
+    recording stock_daily_raw (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_raw
+    -> stock_daily_raw 补录后状态=pending rc=1
+[round 1] stock_daily_qfq 尝试补录（补录前状态=pending）
+    recording stock_daily_qfq (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_qfq
+    -> stock_daily_qfq 补录后状态=pending rc=1
+[round 1] fund_etf_daily_em 尝试补录（补录前状态=pending）
+    recording fund_etf_daily_em (fund_etf_hist_em)...
+      PENDING: RuntimeError: Eastmoney ETF history endpoint request failed: https://push2his.eastmoney.co
+    
+    PENDING (re-run --record later): fund_etf_daily_em
+    -> fund_etf_daily_em 补录后状态=pending rc=1
+[round 1] index_daily_em 尝试补录（补录前状态=pending）
+    recording index_daily_em (index_zh_a_hist)...
+      PENDING: EmptyReferenceFrame: upstream returned 0 rows
+    
+    PENDING (re-run --record later): index_daily_em
+    -> index_daily_em 补录后状态=pending rc=1
+[round 1] stock_daily_sina_raw_wide 尝试补录（补录前状态=no-meta）
+    recording stock_daily_sina_raw_wide (stock_zh_a_daily)...
+      -> 118 rows, 2 HTTP calls
+    -> stock_daily_sina_raw_wide 补录后状态=recorded rc=0
+[round 1] stock_daily_sina_qfq_wide 尝试补录（补录前状态=no-meta）
+    recording stock_daily_sina_qfq_wide (stock_zh_a_daily)...
+      -> 118 rows, 3 HTTP calls
+    -> stock_daily_sina_qfq_wide 补录后状态=recorded rc=0
+[round 2] stock_daily_raw 尝试补录（补录前状态=pending）
+    recording stock_daily_raw (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_raw
+    -> stock_daily_raw 补录后状态=pending rc=1
+[round 2] stock_daily_qfq 尝试补录（补录前状态=pending）
+    recording stock_daily_qfq (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_qfq
+    -> stock_daily_qfq 补录后状态=pending rc=1
+[round 2] fund_etf_daily_em 尝试补录（补录前状态=pending）
+    recording fund_etf_daily_em (fund_etf_hist_em)...
+      PENDING: RuntimeError: Eastmoney ETF history endpoint request failed: https://push2his.eastmoney.co
+    
+    PENDING (re-run --record later): fund_etf_daily_em
+    -> fund_etf_daily_em 补录后状态=pending rc=1
+[round 2] index_daily_em 尝试补录（补录前状态=pending）
+    recording index_daily_em (index_zh_a_hist)...
+      PENDING: EmptyReferenceFrame: upstream returned 0 rows
+    
+    PENDING (re-run --record later): index_daily_em
+    -> index_daily_em 补录后状态=pending rc=1
+[round 2] stock_daily_sina_raw_wide 已 recorded，跳过
+[round 2] stock_daily_sina_qfq_wide 已 recorded，跳过
+[round 3] stock_daily_raw 尝试补录（补录前状态=pending）
+    recording stock_daily_raw (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_raw
+    -> stock_daily_raw 补录后状态=pending rc=1
+[round 3] stock_daily_qfq 尝试补录（补录前状态=pending）
+    recording stock_daily_qfq (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_qfq
+    -> stock_daily_qfq 补录后状态=pending rc=1
+[round 3] fund_etf_daily_em 尝试补录（补录前状态=pending）
+    recording fund_etf_daily_em (fund_etf_hist_em)...
+      PENDING: RuntimeError: Eastmoney ETF history endpoint request failed: https://push2his.eastmoney.co
+    
+    PENDING (re-run --record later): fund_etf_daily_em
+    -> fund_etf_daily_em 补录后状态=pending rc=1
+[round 3] index_daily_em 尝试补录（补录前状态=pending）
+    recording index_daily_em (index_zh_a_hist)...
+      PENDING: EmptyReferenceFrame: upstream returned 0 rows
+    
+    PENDING (re-run --record later): index_daily_em
+    -> index_daily_em 补录后状态=pending rc=1
+[round 3] stock_daily_sina_raw_wide 已 recorded，跳过
+[round 3] stock_daily_sina_qfq_wide 已 recorded，跳过
+[round 4] stock_daily_raw 尝试补录（补录前状态=pending）
+    recording stock_daily_raw (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_raw
+    -> stock_daily_raw 补录后状态=pending rc=1
+[round 4] stock_daily_qfq 尝试补录（补录前状态=pending）
+    recording stock_daily_qfq (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_qfq
+    -> stock_daily_qfq 补录后状态=pending rc=1
+[round 4] fund_etf_daily_em 尝试补录（补录前状态=pending）
+    recording fund_etf_daily_em (fund_etf_hist_em)...
+      PENDING: RuntimeError: Eastmoney ETF history endpoint request failed: https://push2his.eastmoney.co
+    
+    PENDING (re-run --record later): fund_etf_daily_em
+    -> fund_etf_daily_em 补录后状态=pending rc=1
+[round 4] index_daily_em 尝试补录（补录前状态=pending）
+    recording index_daily_em (index_zh_a_hist)...
+      PENDING: EmptyReferenceFrame: upstream returned 0 rows
+    
+    PENDING (re-run --record later): index_daily_em
+    -> index_daily_em 补录后状态=pending rc=1
+[round 4] stock_daily_sina_raw_wide 已 recorded，跳过
+[round 4] stock_daily_sina_qfq_wide 已 recorded，跳过
+[round 5] stock_daily_raw 尝试补录（补录前状态=pending）
+    recording stock_daily_raw (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_raw
+    -> stock_daily_raw 补录后状态=pending rc=1
+[round 5] stock_daily_qfq 尝试补录（补录前状态=pending）
+    recording stock_daily_qfq (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_qfq
+    -> stock_daily_qfq 补录后状态=pending rc=1
+[round 5] fund_etf_daily_em 尝试补录（补录前状态=pending）
+    recording fund_etf_daily_em (fund_etf_hist_em)...
+      PENDING: RuntimeError: Eastmoney ETF history endpoint request failed: https://push2his.eastmoney.co
+    
+    PENDING (re-run --record later): fund_etf_daily_em
+    -> fund_etf_daily_em 补录后状态=pending rc=1
+[round 5] index_daily_em 尝试补录（补录前状态=pending）
+    recording index_daily_em (index_zh_a_hist)...
+      PENDING: EmptyReferenceFrame: upstream returned 0 rows
+    
+    PENDING (re-run --record later): index_daily_em
+    -> index_daily_em 补录后状态=pending rc=1
+[round 5] stock_daily_sina_raw_wide 已 recorded，跳过
+[round 5] stock_daily_sina_qfq_wide 已 recorded，跳过
+[round 6] stock_daily_raw 尝试补录（补录前状态=pending）
+    recording stock_daily_raw (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_raw
+    -> stock_daily_raw 补录后状态=pending rc=1
+[round 6] stock_daily_qfq 尝试补录（补录前状态=pending）
+    recording stock_daily_qfq (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_qfq
+    -> stock_daily_qfq 补录后状态=pending rc=1
+[round 6] fund_etf_daily_em 尝试补录（补录前状态=pending）
+    recording fund_etf_daily_em (fund_etf_hist_em)...
+      PENDING: RuntimeError: Eastmoney ETF history endpoint request failed: https://push2his.eastmoney.co
+    
+    PENDING (re-run --record later): fund_etf_daily_em
+    -> fund_etf_daily_em 补录后状态=pending rc=1
+[round 6] index_daily_em 尝试补录（补录前状态=pending）
+    recording index_daily_em (index_zh_a_hist)...
+      PENDING: EmptyReferenceFrame: upstream returned 0 rows
+    
+    PENDING (re-run --record later): index_daily_em
+    -> index_daily_em 补录后状态=pending rc=1
+[round 6] stock_daily_sina_raw_wide 已 recorded，跳过
+[round 6] stock_daily_sina_qfq_wide 已 recorded，跳过
+[round 7] stock_daily_raw 尝试补录（补录前状态=pending）
+    recording stock_daily_raw (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_raw
+    -> stock_daily_raw 补录后状态=pending rc=1
+[round 7] stock_daily_qfq 尝试补录（补录前状态=pending）
+    recording stock_daily_qfq (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_qfq
+    -> stock_daily_qfq 补录后状态=pending rc=1
+[round 7] fund_etf_daily_em 尝试补录（补录前状态=pending）
+    recording fund_etf_daily_em (fund_etf_hist_em)...
+      PENDING: RuntimeError: Eastmoney ETF history endpoint request failed: https://push2his.eastmoney.co
+    
+    PENDING (re-run --record later): fund_etf_daily_em
+    -> fund_etf_daily_em 补录后状态=pending rc=1
+[round 7] index_daily_em 尝试补录（补录前状态=pending）
+    recording index_daily_em (index_zh_a_hist)...
+      PENDING: EmptyReferenceFrame: upstream returned 0 rows
+    
+    PENDING (re-run --record later): index_daily_em
+    -> index_daily_em 补录后状态=pending rc=1
+[round 7] stock_daily_sina_raw_wide 已 recorded，跳过
+[round 7] stock_daily_sina_qfq_wide 已 recorded，跳过
+[round 8] stock_daily_raw 尝试补录（补录前状态=pending）
+    recording stock_daily_raw (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_raw
+    -> stock_daily_raw 补录后状态=pending rc=1
+[round 8] stock_daily_qfq 尝试补录（补录前状态=pending）
+    recording stock_daily_qfq (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_qfq
+    -> stock_daily_qfq 补录后状态=pending rc=1
+[round 8] fund_etf_daily_em 尝试补录（补录前状态=pending）
+    recording fund_etf_daily_em (fund_etf_hist_em)...
+      PENDING: RuntimeError: Eastmoney ETF history endpoint request failed: https://push2his.eastmoney.co
+    
+    PENDING (re-run --record later): fund_etf_daily_em
+    -> fund_etf_daily_em 补录后状态=pending rc=1
+[round 8] index_daily_em 尝试补录（补录前状态=pending）
+    recording index_daily_em (index_zh_a_hist)...
+      PENDING: EmptyReferenceFrame: upstream returned 0 rows
+    
+    PENDING (re-run --record later): index_daily_em
+    -> index_daily_em 补录后状态=pending rc=1
+[round 8] stock_daily_sina_raw_wide 已 recorded，跳过
+[round 8] stock_daily_sina_qfq_wide 已 recorded，跳过
+[round 9] stock_daily_raw 尝试补录（补录前状态=pending）
+    recording stock_daily_raw (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_raw
+    -> stock_daily_raw 补录后状态=pending rc=1
+[round 9] stock_daily_qfq 尝试补录（补录前状态=pending）
+    recording stock_daily_qfq (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_qfq
+    -> stock_daily_qfq 补录后状态=pending rc=1
+[round 9] fund_etf_daily_em 尝试补录（补录前状态=pending）
+    recording fund_etf_daily_em (fund_etf_hist_em)...
+      PENDING: RuntimeError: Eastmoney ETF history endpoint request failed: https://push2his.eastmoney.co
+    
+    PENDING (re-run --record later): fund_etf_daily_em
+    -> fund_etf_daily_em 补录后状态=pending rc=1
+[round 9] index_daily_em 尝试补录（补录前状态=pending）
+    recording index_daily_em (index_zh_a_hist)...
+      PENDING: EmptyReferenceFrame: upstream returned 0 rows
+    
+    PENDING (re-run --record later): index_daily_em
+    -> index_daily_em 补录后状态=pending rc=1
+[round 9] stock_daily_sina_raw_wide 已 recorded，跳过
+[round 9] stock_daily_sina_qfq_wide 已 recorded，跳过
+[round 10] stock_daily_raw 尝试补录（补录前状态=pending）
+
+----- 追加（round 10 挂起现场，2026-09-26T03:04:27+02:00）-----
+# 这一段是跑完后追加的补记，不是对上面输出的修改。
+# upstream-lock（抬头那行读成 unknown 的根因：commit 嵌在 ["upstream"]["commit"]）：
+c4f6a631c259783dbc2507b6b27d179b3e88079d
+# round 10 的 stock_daily_raw 不是被拒，是阻塞：一次 socket read 挂住，CPU 时间 0.55s / 墙钟 7 分钟以上，
+#   现场 lsof 有一条 ESTABLISHED 连接到 120.76.218.228:443（push2delay）。
+#   ⇒ 这是 em 通道今天的第三种形状：502（HTML body）、RemoteDisconnected、以及挂住不回。
+#   处置：终止该子进程（python 34836），让驱动继续跑完 round 10 剩下 3 例。
+    recording stock_daily_raw (stock_zh_a_hist)...
+docs/evidence/C27/record-em-fixtures.sh: line 49: 34836 Terminated: 15          python -u scripts/codemod/compare_with_upstream.py --record --only "$case" 2>&1
+     34837 Done                    | sed "s/^/    /"
+    -> stock_daily_raw 补录后状态=pending rc=143
+[round 10] stock_daily_qfq 尝试补录（补录前状态=pending）
+    recording stock_daily_qfq (stock_zh_a_hist)...
+      PENDING: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/
+    
+    PENDING (re-run --record later): stock_daily_qfq
+    -> stock_daily_qfq 补录后状态=pending rc=1
+[round 10] fund_etf_daily_em 尝试补录（补录前状态=pending）
+    recording fund_etf_daily_em (fund_etf_hist_em)...
+      PENDING: RuntimeError: Eastmoney ETF history endpoint request failed: https://push2his.eastmoney.co
+    
+    PENDING (re-run --record later): fund_etf_daily_em
+    -> fund_etf_daily_em 补录后状态=pending rc=1
+[round 10] index_daily_em 尝试补录（补录前状态=pending）
+    recording index_daily_em (index_zh_a_hist)...
+      PENDING: EmptyReferenceFrame: upstream returned 0 rows
+    
+    PENDING (re-run --record later): index_daily_em
+    -> index_daily_em 补录后状态=pending rc=1
+[round 10] stock_daily_sina_raw_wide 已 recorded，跳过
+[round 10] stock_daily_sina_qfq_wide 已 recorded，跳过
+
+===== 最终状态表 =====
+stock_daily_raw status=pending
+stock_daily_qfq status=pending
+fund_etf_daily_em status=pending
+index_daily_em status=pending
+stock_daily_sina_raw_wide status=recorded
+stock_daily_sina_qfq_wide status=recorded
+RECORD_EXIT=1
+DRIVER_RC=0

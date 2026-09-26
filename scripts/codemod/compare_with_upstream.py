@@ -16,11 +16,12 @@ Two modes:
   columns (order included), identical shape, identical dtypes, and
   cell values equal (floats via ``rtol=1e-9``, NaN==NaN).
 
-The A1 leftover is covered as an extra section: the raw and qfq
-recordings of ``stock_zh_a_hist`` double as an official em qfq
-series, so the D10 ``apply_adjust`` synthesis is checked to
-reproduce it (design D10: adjusted series are synthesized from Bar
-+ AdjustFactor, never stored).
+The D10 adjustment claim is checked as an extra section over every
+recorded ``raw``/official-``qfq`` pair, by the same falsifiable judges the
+gate runs (``scripts/codemod/qfq_chain_checks.py``): the factor chain must
+step on the dates and by the amounts the dividend endpoint says, and one
+scalar per day must also fit open/high/low. An unrecorded pair is reported
+as unchecked rather than passed.
 
 Cases live in ``tests/fixtures/upstream/<case>/``; the report is
 archived to ``docs/evidence/A2/compare-report.md``.
@@ -41,6 +42,8 @@ from typing import Any, cast
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.codemod import qfq_chain_checks as checks  # noqa: E402 - needs REPO_ROOT on sys.path
 
 FIXTURES_DIR = REPO_ROOT / "tests" / "fixtures" / "upstream"
 REPORT_PATH = REPO_ROOT / "docs" / "evidence" / "A2" / "compare-report.md"
@@ -82,10 +85,14 @@ CASES = (
             "symbol": "600519",
             "period": "daily",
             "start_date": "20240101",
-            "end_date": "20240331",
+            "end_date": "20240701",
             "adjust": "",
         },
-        note="em daily klines, unadjusted (stock_daily fetcher)",
+        note=(
+            "em daily klines, unadjusted (stock_daily fetcher); C27 widened the window to "
+            "straddle 600519's 2024-06-19 ex-date so the qfq factor chain has a step "
+            "inside the recorded range instead of being one constant"
+        ),
     ),
     Case(
         name="stock_daily_qfq",
@@ -94,7 +101,7 @@ CASES = (
             "symbol": "600519",
             "period": "daily",
             "start_date": "20240101",
-            "end_date": "20240331",
+            "end_date": "20240701",
             "adjust": "qfq",
         },
         note="em daily klines, qfq (A1 leftover: official qfq series for D10)",
@@ -206,6 +213,32 @@ CASES = (
         function="fund_etf_hist_sina",
         kwargs={"symbol": "sh510300"},
         note="sina on-exchange ETF daily line (fund_etf_daily domain, sina channel)",
+    ),
+    # --- C27: the sina twins of the widened em window, added so the em/sina qfq
+    # factor chains can be compared over dates that contain an ex-date. The narrow
+    # January twins above stay exactly as recorded; a window with no ex-date inside
+    # it cannot say anything about a factor chain (both chains are one constant).
+    Case(
+        name="stock_daily_sina_raw_wide",
+        function="stock_zh_a_daily",
+        kwargs={
+            "symbol": "sh600519",
+            "start_date": "20240101",
+            "end_date": "20240701",
+            "adjust": "",
+        },
+        note="sina A-share daily line, unadjusted, window straddling 2024-06-19 (C27)",
+    ),
+    Case(
+        name="stock_daily_sina_qfq_wide",
+        function="stock_zh_a_daily",
+        kwargs={
+            "symbol": "sh600519",
+            "start_date": "20240101",
+            "end_date": "20240701",
+            "adjust": "qfq",
+        },
+        note="sina A-share daily line, official qfq, same widened window (C27)",
     ),
 )
 
@@ -708,66 +741,63 @@ def _cell(value: object, *, numeric: bool) -> float | str | None:
 
 
 def _check_d10_qfq(results: list[dict[str, Any]]) -> dict[str, Any]:
-    """Verify the D10 synthesis reproduces the official qfq series.
+    """Run the D10 factor-chain checks over every raw/qfq pair replayed this run.
 
-    Uses the recorded raw and qfq frames of ``stock_daily_raw`` /
-    ``stock_daily_qfq``: derives the cumulative qfq factor as
-    ``qfq_close / raw_close`` and checks that
-    :func:`opendata.data.adjust.apply_adjust` reproduces the official
-    qfq OHLC within tolerance.
+    The expectation is not taken from the qfq series itself: the step dates and
+    heights are read off the dividend endpoint, and the synthesis is judged on
+    open/high/low plus the volume/amount passthrough (see
+    ``scripts/codemod/qfq_chain_checks.py``). Pairs still pending a recording are
+    listed as unchecked, never as passed.
+
+    Args:
+        results: One entry per case that was replayed in this run.
+
+    Returns:
+        ``{"failed": bool, "lines": [...], "diffs": [...]}`` for the report.
     """
-    import pandas as pd
-
-    from opendata.data.adjust import apply_adjust
-    from opendata.data.models import AdjustFactor, Bar
-
     by_name = {entry["case"].name: entry for entry in results}
-    if "stock_daily_raw" not in by_name or "stock_daily_qfq" not in by_name:
-        return {
-            "failed": False,
-            "reason": (
-                "em kline fixtures are not recorded from this network (em 502); "
-                "the adjustment claim is checked cross-source instead by "
-                "scripts/ops/qfq_official_check.py (ths factors vs official sina series)"
-            ),
-        }
-    if not (by_name["stock_daily_raw"]["ok"] and by_name["stock_daily_qfq"]["ok"]):
-        return {"failed": True, "reason": "upstream frames failed comparison; D10 check skipped"}
+    dividends = checks.cash_dividends(
+        _read_reference_frame(FIXTURES_DIR / "stock_action_dividend" / "reference.csv.gz")
+    )
+    lines: list[str] = []
+    diffs: list[str] = []
+    for label, raw_case, qfq_case in checks.ADJUST_PAIRS:
+        if raw_case not in by_name or qfq_case not in by_name:
+            lines.append(f"{label}: 未判读（夹具还没录到，本轮没有回放这一对）")
+            continue
+        if not (by_name[raw_case]["ok"] and by_name[qfq_case]["ok"]):
+            diffs.append(f"{label}: 上游帧比对已失败，复权链不再判读")
+            continue
+        raw = _normalized_frame(raw_case)
+        qfq = _normalized_frame(qfq_case)
+        found = checks.check_factor_steps(raw, qfq, dividends) + checks.check_synthesis(raw, qfq)
+        lines.append(f"{label}: {'FAIL' if found else 'PASS'}（{len(raw)} 天）")
+        diffs.extend(f"{label} {diff}" for diff in found[:MAX_DIFFS])
 
-    raw = _read_reference_frame(FIXTURES_DIR / "stock_daily_raw" / "reference.csv.gz")
-    qfq = _read_reference_frame(FIXTURES_DIR / "stock_daily_qfq" / "reference.csv.gz")
-    if raw.empty or qfq.empty or len(raw) != len(qfq):
-        return {"failed": True, "reason": "raw/qfq frames empty or misaligned"}
+    summary, window_diffs = _check_sina_window_consistency()
+    if summary:
+        lines.append(summary)
+        diffs.extend(f"窗口自洽 {diff}" for diff in window_diffs[:MAX_DIFFS])
 
-    bars = [
-        Bar(
-            symbol=str(row["股票代码"]),
-            trade_date=pd.to_datetime(row["日期"]).date(),
-            open=float(row["开盘"]),
-            high=float(row["最高"]),
-            low=float(row["最低"]),
-            close=float(row["收盘"]),
-            volume=float(row["成交量"]),
-            amount=float(row["成交额"]),
-        )
-        for _, row in raw.iterrows()
-    ]
-    factors = [
-        AdjustFactor(
-            symbol=str(raw.iloc[index]["股票代码"]),
-            trade_date=pd.to_datetime(raw.iloc[index]["日期"]).date(),
-            qfq_factor=float(qfq.iloc[index]["收盘"]) / float(raw.iloc[index]["收盘"]),
-            hfq_factor=1.0,
-        )
-        for index in range(len(raw))
-    ]
-    synthesized = apply_adjust(bars, factors, "qfq")
-    diffs = []
-    for index, bar in enumerate(synthesized):
-        official_close = float(qfq.iloc[index]["收盘"])
-        if abs(bar.close - official_close) > abs(official_close) * RTOL:
-            diffs.append(f"close[{index}]: synthesized {bar.close} != official {official_close}")
-    return {"failed": bool(diffs), "diffs": diffs[:MAX_DIFFS], "rows": len(synthesized)}
+    return {"failed": bool(diffs), "lines": lines, "diffs": diffs[:MAX_DIFFS]}
+
+
+def _normalized_frame(case_name: str) -> Any:  # noqa: ANN401 - untyped pandas frame
+    """Read one recorded reference frame with the em/sina columns unified."""
+    return checks.normalize(_read_reference_frame(FIXTURES_DIR / case_name / "reference.csv.gz"))
+
+
+def _check_sina_window_consistency() -> tuple[str, list[str]]:
+    """Is the widened sina pair still the same series as the short one it came from?
+
+    Returns:
+        ``(summary line, diff lines)``; both empty while any of the four fixtures
+        is still pending, so an unrecorded window is never read as a passed check.
+    """
+    cases = [*checks.NARROW_PAIR, *checks.WIDE_PAIR]
+    if not all((FIXTURES_DIR / case / "reference.csv.gz").exists() for case in cases):
+        return "", []
+    return checks.check_window_consistency(*[_normalized_frame(case) for case in cases])
 
 
 def _write_report(
@@ -805,16 +835,14 @@ def _write_report(
             if meta_path.exists():
                 reason = json.loads(meta_path.read_text(encoding="utf-8")).get("reason", reason)
             lines.append(f"| {name} | {reason} |")
-    lines += ["", "## A1 leftover: D10 qfq synthesis vs official em series", ""]
-    if d10_report.get("reason"):
-        lines.append(f"SKIPPED: {d10_report['reason']}")
+    lines += ["", "## D10 qfq factor chain (checks shared with the gate)", ""]
+    report_lines = d10_report.get("lines", [])
+    if report_lines:
+        lines += [f"- {line}" for line in report_lines]
     else:
-        lines.append(
-            f"{'PASS' if not d10_report['failed'] else 'FAIL'}: "
-            f"{d10_report.get('rows', 0)} synthesized qfq bars vs the official series"
-        )
-        for diff in d10_report.get("diffs", []):
-            lines.append(f"- {diff}")
+        lines.append("- 未判读：本轮没有可跑的 raw/qfq 对")
+    if d10_report["failed"]:
+        lines += ["", "失败项：", ""] + [f"- {diff}" for diff in d10_report.get("diffs", [])]
     lines.append("")
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     REPORT_PATH.write_text("\n".join(lines), encoding="utf-8")
