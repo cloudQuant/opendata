@@ -37,11 +37,18 @@ class ThsIndexConstituentQuery(QueryParams):
 class ThsIndexConstituentFetcher(Fetcher[ThsIndexConstituentQuery, tuple[IndexConstituent, ...]]):
     """Current membership list for one index (SSE/SZSE/CSI/THS board).
 
-    ``verified`` is true because the row identity, the ``as_of`` semantics and
-    the membership set were checked against the live endpoint and
-    cross-compared with the index publisher's own list (see
-    ``docs/evidence/C9``). ``weight`` is always ``None``: this endpoint does
-    not publish weights.
+    ``verified`` is true because the row identity and the membership set were
+    checked against the live endpoint and cross-compared with the index
+    publisher's own list (see ``docs/evidence/C9``). ``weight`` is always
+    ``None``: this endpoint does not publish weights.
+
+    The contract's ``as_of`` names the snapshot a list belongs to. This endpoint
+    publishes no such date - its only timestamp is the request moment - so the
+    rows carry the observation day and say so in ``notes``. That is a declared
+    gap, not a borrowed date: C34 measured the consequence, and on indexes the
+    publisher reconstitutes every quarter the list behind this one and the list
+    behind the CSI weight file differ by an equal number of members in each
+    direction.
     """
 
     capability: ClassVar[Capability] = Capability(
@@ -51,6 +58,7 @@ class ThsIndexConstituentFetcher(Fetcher[ThsIndexConstituentQuery, tuple[IndexCo
         market="cn",
         source=SOURCE,
         verified=True,
+        notes="as_of is the observation day; this endpoint publishes no list date",
     )
 
     def transform_query(self, **kwargs: object) -> ThsIndexConstituentQuery:

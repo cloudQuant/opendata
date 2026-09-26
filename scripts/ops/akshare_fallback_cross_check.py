@@ -165,7 +165,9 @@ CASES: tuple[Case, ...] = (
         ("weight",),
         False,
         VERDICT_OK,
-        "成分集合逐只相同，权重只在 akshare 侧发布（退路多给字段）",
+        "该次调用（000300）成分集合逐只相同，权重只在 akshare 侧发布（退路多给字段）；"
+        "单代码 PASS 不等于跨指数成立 —— C34 加宽到 21 个代码后，9 个半年调样家族逐只"
+        "相同、4 个科创板代码按等量换入换出不符，见 docs/evidence/C34/，该腿仍 verified=false",
     ),
     Case(
         "financial_statement",

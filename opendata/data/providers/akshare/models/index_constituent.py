@@ -26,7 +26,20 @@ class IndexConstituentQuery(QueryParams):
 class AkshareIndexConstituentFetcher(
     Fetcher[IndexConstituentQuery, pd.DataFrame]
 ):
-    """Constituents with weights for one CSI index code."""
+    """Constituents with weights for one CSI index code.
+
+    ``as_of`` is the contract's snapshot date in the strict sense: the CSI
+    close-weight file carries the date its own list belongs to, so this leg
+    publishes a list date where the ths leg can only publish the observation
+    day. It is **not** ``verified``: C34 swept the 21 index codes both sides
+    could be asked about and the membership agreed symbol for symbol on the
+    nine semiannual families (沪深 300 / 上证 50 / 中证 500 / 中证 1000 / 上证 180
+    and four 行业 families) but differed on every 科创板 code, in an equal number
+    of members per direction (科创 50: 5 in / 5 out) - the two lists belong to
+    two dates, and for a quarterly-reconstituted index that gap is the answer
+    itself, not metadata. See ``docs/evidence/C34/``; a flip needs a re-run of
+    that sweep with no mismatch left.
+    """
 
     capability: ClassVar[Capability] = Capability(
         asset_class="index",
@@ -35,6 +48,7 @@ class AkshareIndexConstituentFetcher(
         market="cn",
         source=SOURCE,
         verified=False,
+        notes="CSI close-weight file; as_of is the list's own data date",
     )
 
     def transform_query(self, **kwargs: object) -> IndexConstituentQuery:
