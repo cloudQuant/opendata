@@ -1,0 +1,83 @@
+===== C35 静态门禁排除面：修复前实测（只读判定，临时变异已还原并校验 sha256）=====
+captured_at=2026-09-26T12:18:10+02:00
+branch=dev HEAD=38d85f5
+python=Python 3.13.5  ruff=ruff 0.15.20
+--- git status --porcelain (before) ---
+?? docs/evidence/C35/
+--- end ---
+
+### 1. 三处排除配置（修复前原文）
+--- pyproject [tool.ruff] exclude ---
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+exclude = [
+    "akshare",
+    "opendata_http",
+    "alembic/versions",
+    # Same rationale as alembic/versions: revision files are tool-generated
+    # scaffolding (the warehouse env renders them from opendata/pipeline/ddl).
+    "alembic_data/versions",
+    "frontend",
+    ".venv",
+    "htmlcov",
+]
+--- pyproject [tool.mypy] exclude ---
+253:exclude = ["akshare", "opendata_http", "tests", "alembic", "opendata/data_fetch"]
+--- a2_check EXCLUDED_PARTS ---
+49:EXCLUDED_PARTS = frozenset({"akshare", "opendata_http", "alembic", "frontend"})
+87:    if any(part in EXCLUDED_PARTS for part in Path(name).parts):
+--- Makefile PY_PORTED ---
+22:PY_PORTED := akshare
+41:	ruff check --select E,F $(PY_PORTED)
+
+### 2. ruff 目录走查的文件普查（决定性证据）
+find opendata -name '*.py'            = 191
+ruff check opendata --show-files      = 176
+两者差集（=ruff 走查查不到的文件）:
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/akshare/__init__.py
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/akshare/_source.py
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/akshare/models/__init__.py
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/akshare/models/_normalize.py
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/akshare/models/bond_daily.py
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/akshare/models/financial_indicator.py
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/akshare/models/financial_statement.py
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/akshare/models/fund_etf_daily.py
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/akshare/models/futures_daily.py
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/akshare/models/index_constituent.py
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/akshare/models/index_daily.py
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/akshare/models/option_daily.py
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/akshare/models/stock_action.py
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/akshare/models/stock_daily.py
+  /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/akshare/registration.py
+
+### 3. 同一批文件显式传给 ruff 时的判定（exclude 对显式文件不生效）
+--- ruff check <目录 opendata/data/providers/akshare> ---
+6	I001	[*] unsorted-imports
+Found 6 errors.
+[*] 6 fixable with the `--fix` option.
+--- ruff format --check <同一目录> ---
+Would reformat: opendata/data/providers/akshare/models/financial_indicator.py
+Would reformat: opendata/data/providers/akshare/models/financial_statement.py
+Would reformat: opendata/data/providers/akshare/models/index_constituent.py
+Would reformat: opendata/data/providers/akshare/models/stock_daily.py
+Would reformat: opendata/data/providers/akshare/registration.py
+5 files would be reformatted, 10 files already formatted
+
+### 4. a2_check 的候选判定：providers 树 15 个文件全部不合格
+  候选文件 15 个，_is_a2_candidate 判 True 的 0 个
+  合格清单: []
+  今日 A2 集 297 个文件，其中 opendata/data/providers/akshare 下的: []
+
+### 5. mypy 面：临时把类型错误写进 providers 树，看全树视图是否发现
+--- 变异行已写入 opendata/data/providers/akshare/models/stock_daily.py（原 sha256[:16]=6de083f217581f3c）---
+--- mypy opendata/ 全树视图里提到该文件的行数: 0 ---
+--- 同一文件显式传给 mypy: ---
+  opendata/data/providers/akshare/models/stock_daily.py:112: error: Incompatible types in assignment (expression has type "str", variable has type "int")  [assignment]
+  pyproject.toml: note: unused section(s): module = ['opendata.data_fetch.*']
+--- 目录形式传给 mypy（当前 exclude 生效）: ---
+  There are no .py[i] files in directory 'opendata/data/providers/akshare'
+  还原后 sha256[:16]=6de083f217581f3c  与修复前 一致
+--- git diff --stat（应为空，证明已还原）---
+(end)
+CAPTURE_EXIT=0

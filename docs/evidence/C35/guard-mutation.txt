@@ -1,0 +1,89 @@
+===== C35 排除面守卫的可证伪性（7 次变异，每次都还原并校验 sha256）=====
+captured_at=2026-09-26T12:33:39+02:00
+branch=dev HEAD=da327c0
+python=Python 3.13.5  ruff=ruff 0.15.20
+--- git status --porcelain (before) ---
+?? docs/evidence/C35/
+--- end ---
+
+command: bash docs/evidence/C35/mutations.sh
+
+### 0. 基线：未变异时守卫全绿
+
+### baseline
+  ============================== 36 passed in 0.44s ==============================
+
+### M1 a2_check 退回「任意路径段命中」（C35 缺陷本体）
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_a2_gate_accepts_each_file[opendata/data/providers/akshare/__init__.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_a2_gate_accepts_each_file[opendata/data/providers/akshare/_source.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_a2_gate_accepts_each_file[opendata/data/providers/akshare/models/__init__.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_a2_gate_accepts_each_file[opendata/data/providers/akshare/models/_normalize.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_a2_gate_accepts_each_file[opendata/data/providers/akshare/models/bond_daily.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_a2_gate_accepts_each_file[opendata/data/providers/akshare/models/financial_indicator.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_a2_gate_accepts_each_file[opendata/data/providers/akshare/models/financial_statement.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_a2_gate_accepts_each_file[opendata/data/providers/akshare/models/fund_etf_daily.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_a2_gate_accepts_each_file[opendata/data/providers/akshare/models/futures_daily.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_a2_gate_accepts_each_file[opendata/data/providers/akshare/models/index_constituent.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_a2_gate_accepts_each_file[opendata/data/providers/akshare/models/index_daily.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_a2_gate_accepts_each_file[opendata/data/providers/akshare/models/option_daily.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_a2_gate_accepts_each_file[opendata/data/providers/akshare/models/stock_action.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_a2_gate_accepts_each_file[opendata/data/providers/akshare/models/stock_daily.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_a2_gate_accepts_each_file[opendata/data/providers/akshare/registration.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_the_a2_set_computed_from_git_contains_the_package
+  FAILED tests/test_a2_exclusion_scope.py::TestTheCollidingPackageIsInvisibleToNoPlane::test_no_first_party_file_is_dropped_from_the_a2_set
+  ======================== 17 failed, 19 passed in 0.46s =========================
+  restored: scripts/quality/a2_check.py (sha256[:16] 6d25226886bb0890 unchanged)
+
+### M2 反向：排除条件永不生效（守卫必须发现根树不再被排除）
+  FAILED tests/test_a2_exclusion_scope.py::TestRootTreesStayExcluded::test_existing_root_tree_files_are_not_a2_candidates[opendata_http/__init__.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestRootTreesStayExcluded::test_existing_root_tree_files_are_not_a2_candidates[alembic/env.py]
+  FAILED tests/test_a2_exclusion_scope.py::TestRootTreesStayExcluded::test_existing_root_tree_files_are_not_a2_candidates[alembic_data/env.py]
+  ========================= 3 failed, 33 passed in 0.43s =========================
+  restored: scripts/quality/a2_check.py (sha256[:16] 6d25226886bb0890 unchanged)
+
+### M3 [tool.ruff].exclude 退回修复前的写法
+  FAILED tests/test_a2_exclusion_scope.py::TestRootTreesStayExcluded::test_a_walk_from_the_repo_root_still_skips_the_ported_tree
+  FAILED tests/test_a2_exclusion_scope.py::TestRuffWalkCoversEveryFirstPartyFile::test_walk_census_equals_tree_census[opendata]
+  FAILED tests/test_a2_exclusion_scope.py::TestRuffWalkCoversEveryFirstPartyFile::test_exclude_entries_that_could_match_a_nested_path_are_gone
+  ========================= 3 failed, 33 passed in 0.44s =========================
+  restored: pyproject.toml (sha256[:16] 27a4f2187aa3cca5 unchanged)
+
+### M4 [tool.mypy].exclude 退回修复前的单行写法
+  FAILED tests/test_a2_exclusion_scope.py::TestMypyExcludesOnlyWhatItSays::test_only_the_legacy_data_fetch_subtree_is_dark_under_opendata
+  FAILED tests/test_a2_exclusion_scope.py::TestMypyExcludesOnlyWhatItSays::test_the_package_that_collided_is_not_dark
+  ========================= 2 failed, 34 passed in 0.43s =========================
+  restored: pyproject.toml (sha256[:16] 27a4f2187aa3cca5 unchanged)
+
+### M5 bandit.yaml 重新加入裸名 akshare
+  FAILED tests/test_a2_exclusion_scope.py::TestBanditExcludesNoFirstPartyName::test_no_entry_is_a_substring_of_a_first_party_path
+  ========================= 1 failed, 35 passed in 0.42s =========================
+  restored: bandit.yaml (sha256[:16] 87152df3aa3cf9c1 unchanged)
+
+### M6 Makefile 的 PY_PORTED 退回已不存在的 akshare
+  FAILED tests/test_a2_exclusion_scope.py::TestDeveloperViewTargetsExist::test_every_named_tree_exists_and_holds_python[PY_PORTED]
+  ========================= 1 failed, 35 passed in 0.42s =========================
+  restored: Makefile (sha256[:16] 940d4273646b49f5 unchanged)
+
+### M7 判定面真的有牙：往新可见的树里写进缺陷，a2-check 必须 FAIL
+--- a2_check --files <被改文件> 的输出 ---
+  12 |
+  13 | from opendata.data.capability import Capability
+     |
+  help: Remove unused import: `os`
+  
+  Found 2 errors.
+  [*] 2 fixable with the `--fix` option.
+  FAIL ruff format --check
+  Would reformat: opendata/data/providers/akshare/models/stock_daily.py
+  1 file would be reformatted
+  FAIL mypy
+  opendata/data/providers/akshare/models/stock_daily.py:109: error: Incompatible types in assignment (expression has type "str", variable has type "int")  [assignment]
+  pyproject.toml: note: unused section(s): module = ['opendata.data_fetch.*']
+  ok   bandit
+A2_EXIT=1
+  restored: opendata/data/providers/akshare/models/stock_daily.py (sha256[:16] 4c69e2df8e13f75c unchanged)
+
+### 收尾：工作树必须与 HEAD 一致（除本轮证据目录）
+  ?? docs/evidence/C35/
+MUTATION_FAILURES=0
+SCRIPT_EXIT=0

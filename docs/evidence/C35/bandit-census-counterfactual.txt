@@ -1,0 +1,43 @@
+===== C35 补测：bandit 的名字排除一共吃掉多少自家文件（把裸名 akshare 加回临时配置做反事实对照）=====
+captured_at=2026-09-26T10:45:13Z
+branch=dev HEAD=da327c0
+python=Python 3.13.5  bandit=__main__.py 1.9.4
+--- git status --porcelain (before) ---
+?? docs/evidence/C35/
+--- end ---
+
+命令：python -m bandit -c <配置> -r opendata scripts -f json，两次只差 exclude_dirs 里有没有裸名 "akshare"
+（旧配置只写在 mktemp 目录里，仓库里的 bandit.yaml 全程未改动）
+
+### 1. 两次的扫描面
+  修复前语义（exclude_dirs 含裸名 akshare）: scanned=207  findings=4
+  修复后语义（当前 bandit.yaml）          : scanned=225  findings=4
+  新可见=18   反向差集（必须为 0，否则修复动了别的东西）=0
+
+### 2. 新可见的文件清单（注意：不止 providers/akshare 那 15 个）
+  + opendata/data/providers/akshare/__init__.py   <- 撞名包（本轮主嫌）
+  + opendata/data/providers/akshare/_source.py   <- 撞名包（本轮主嫌）
+  + opendata/data/providers/akshare/models/__init__.py   <- 撞名包（本轮主嫌）
+  + opendata/data/providers/akshare/models/_normalize.py   <- 撞名包（本轮主嫌）
+  + opendata/data/providers/akshare/models/bond_daily.py   <- 撞名包（本轮主嫌）
+  + opendata/data/providers/akshare/models/financial_indicator.py   <- 撞名包（本轮主嫌）
+  + opendata/data/providers/akshare/models/financial_statement.py   <- 撞名包（本轮主嫌）
+  + opendata/data/providers/akshare/models/fund_etf_daily.py   <- 撞名包（本轮主嫌）
+  + opendata/data/providers/akshare/models/futures_daily.py   <- 撞名包（本轮主嫌）
+  + opendata/data/providers/akshare/models/index_constituent.py   <- 撞名包（本轮主嫌）
+  + opendata/data/providers/akshare/models/index_daily.py   <- 撞名包（本轮主嫌）
+  + opendata/data/providers/akshare/models/option_daily.py   <- 撞名包（本轮主嫌）
+  + opendata/data/providers/akshare/models/stock_action.py   <- 撞名包（本轮主嫌）
+  + opendata/data/providers/akshare/models/stock_daily.py   <- 撞名包（本轮主嫌）
+  + opendata/data/providers/akshare/registration.py   <- 撞名包（本轮主嫌）
+  + opendata/data_fetch/providers/akshare_provider.py   <- 同因：路径里含 akshare 子串
+  + scripts/codemod/verify_no_akshare.py   <- 同因：路径里含 akshare 子串
+  + scripts/ops/akshare_fallback_cross_check.py   <- 同因：路径里含 akshare 子串
+
+### 3. 这条读数的边界（防止过度解读）
+  两次跑的是同一份（已修复的）源码：ops 文件的 B607/B603 已带 which()+nosec 处理，
+  所以 findings 4 -> 4 只度量『可见文件数』的差异，不能用来论证『没有 finding 被藏起来』。
+  finding 确实被藏过的直接证据是棘轮变红 bandit_selfdev: 4 -> 6（README §6）。
+
+### 4. 仓库配置未被改动的校验（下面应为空）
+COUNTERFACTUAL_EXIT=0

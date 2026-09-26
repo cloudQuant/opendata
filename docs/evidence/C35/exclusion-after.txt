@@ -1,0 +1,115 @@
+===== C35 静态门禁排除面：修复后复测（与 exclusion-before.txt 同构）=====
+captured_at=2026-09-26T12:35:52+02:00
+branch=dev HEAD=da327c0
+python=Python 3.13.5  ruff=ruff 0.15.20  mypy=mypy 2.3.1 (compiled: yes)  bandit=__main__.py 1.9.4
+--- git status --porcelain (before) ---
+?? docs/evidence/C35/
+--- end ---
+
+### 1. 四处配置（修复后原文）
+--- pyproject 两处 exclude（行号来自 grep -n）---
+  144:exclude = [
+  145-    # C35: a pattern without a slash is matched against *any* directory
+  146-    # basename at any depth, so the old bare "akshare" also swallowed the
+  147-    # first-party package opendata/data/providers/akshare/ - 15 modules were
+  148-    # dark to `ruff check opendata`. Every entry below is root-anchored (the
+  149-    # trailing slash is what anchors it; "/akshare" matches nothing at all).
+  150-    # The vendored tree is opendata_http/; the old top-level akshare/ was
+  151-    # renamed away in milestone A2, so it needs no entry.
+  152-    "opendata_http/",
+  153-    "alembic/versions",
+  154-    # Same rationale as alembic/versions: revision files are tool-generated
+  155-    # scaffolding (the warehouse env renders them from opendata/pipeline/ddl).
+  156-    "alembic_data/versions",
+  157-    "frontend/",
+  158-    ".venv",
+  --
+  269:exclude = [
+  270-    "^opendata_http/",
+  271-    "^tests/",
+  272-    "^alembic/",
+  273-    "^alembic_data/",
+  274-    "^opendata/data_fetch/",
+  275-]
+  276-
+  277-# A1 debt is managed by docs/quality/ratchet.json (quality spec §7), not by
+  278-# relaxing the rules above.
+  279-
+  280-# A2.2: the ported tree replaces akshare/; mypy's exclude does not stop
+  281-# import-following, so silence it explicitly like the old vendored tree.
+  282-[[tool.mypy.overrides]]
+  283-module = "opendata_http.*"
+--- a2_check：排除定义与判定函数 ---
+  #: Top-level trees the A2 layer does not own. Matched against the first path
+  #: segment only - see the module docstring for what segment matching cost.
+  #: ``alembic_data`` is listed next to ``alembic`` because it is the same kind of
+  #: tool-generated migration env (for the warehouse database), not first-party
+  #: application code.
+  EXCLUDED_ROOT_DIRS = frozenset({"akshare", "alembic", "alembic_data", "frontend", "opendata_http"})
+  def _is_a2_candidate(name: str) -> bool:
+      if not name.endswith(".py"):
+          return False
+      parts = Path(name).parts
+      if parts and parts[0] in EXCLUDED_ROOT_DIRS:
+          return False
+      return (REPO_ROOT / name).is_file()
+--- bandit.yaml exclude_dirs ---
+  exclude_dirs:
+    - ".git"
+    - "__pycache__"
+    - "node_modules"
+    # Vendored upstream source (renamed akshare/ -> opendata_http/ in milestone
+    # A2; the old name is gone, so it needs no entry here). Ported code is not
+    # rescanned daily (quality spec §4); it gets a one-off full scan with manual
+    # triage in A2 instead.
+    - "opendata_http"
+  
+  # Tests to skip with rationale
+  skips:
+--- Makefile PY_PORTED ---
+  21-# Ported tree (B). Milestone A2 renamed akshare/ to opendata_http/; this
+  22-# variable was left behind, so `make lint` had been failing on its third
+  23-# command (ruff check --select E,F akshare: directory not found) ever since.
+  24:PY_PORTED := opendata_http
+
+### 2. ruff 目录走查的文件普查（修复后）
+find opendata -name '*.py'            = 191
+ruff check opendata --show-files      = 191
+差集（应为空，下面无行即空）:
+根走查 . 里 opendata_http/ 贡献的文件数（搬运层仍应被排除）: 0
+
+### 3. 该树自身的 lint/format/type 状态
+--- ruff check <目录> ---
+  All checks passed!
+--- ruff format --check <目录> ---
+  15 files already formatted
+--- mypy <目录>（锚定后目录形式也能被发现）---
+  Success: no issues found in 15 source files
+--- 全树 mypy 错误行数（修复前后都应是 21：该树贡献 0 条）---
+21
+
+### 4. a2_check 的候选判定（修复后）
+  候选文件 15 个，_is_a2_candidate 判 True 的 15 个
+  今日 A2 集 307 个文件，其中该树命中 15 个
+  根树仍被排除：opendata_http/__init__.py=False alembic/env.py=False alembic_data/env.py=False
+
+### 5. bandit 面（修复后：该树与同名 ops 文件都进了扫描集）
+  被扫描文件数=225  findings=4
+  providers/akshare 树在扫描集里=15 个（磁盘上 15 个 .py）
+  scripts/ops/akshare_fallback_cross_check.py 在扫描集里=True
+  A1 的 opendata/data_fetch/providers/akshare_provider.py 在扫描集里=True
+    B105 opendata/api/auth.py:40
+    B106 opendata/api/auth.py:209
+    B106 opendata/api/websocket.py:128
+    B105 opendata/utils/constants.py:8
+
+### 6. 质量棘轮（bandit 面恢复诚实；本轮未改动 opendata_http 任何文件）
+python scripts/quality/ratchet.py
+OK: quality debt did not increase.
+  ruff_selfdev: 274 (snapshot 277) (improved)
+  mypy_selfdev: 21 (snapshot 21)
+  bandit_selfdev: 4 (snapshot 4)
+  ruff_ported: 2144 (snapshot 2145) (improved)
+  direct_http_ported: 1044 (snapshot 1045) (improved)
+NOTE: run --update to freeze the new low.
+AFTER_CAPTURE_EXIT=0

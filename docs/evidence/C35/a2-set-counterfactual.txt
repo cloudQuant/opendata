@@ -1,0 +1,32 @@
+===== C35 补测：同一份 diff 面上重放两版判定函数，量出『排除』本身值多少个文件 =====
+captured_at=2026-09-26T10:46:31Z
+branch=dev HEAD=da327c0
+python=Python 3.13.5
+--- git status --porcelain (before) ---
+?? docs/evidence/C35/
+--- end ---
+
+### 1. git 算出来的 A2 diff 面（新判定）= 307 个文件
+    其中 opendata/data/providers/akshare/ 命中 = 15
+### 2. 把这同一份清单交给修复前的段匹配判定 = 292 个文件
+    被旧判定丢掉 = 15
+### 3. 丢掉的清单（必须恰好是那 15 个，且不含任何根树文件）
+   - opendata/data/providers/akshare/__init__.py
+   - opendata/data/providers/akshare/_source.py
+   - opendata/data/providers/akshare/models/__init__.py
+   - opendata/data/providers/akshare/models/_normalize.py
+   - opendata/data/providers/akshare/models/bond_daily.py
+   - opendata/data/providers/akshare/models/financial_indicator.py
+   - opendata/data/providers/akshare/models/financial_statement.py
+   - opendata/data/providers/akshare/models/fund_etf_daily.py
+   - opendata/data/providers/akshare/models/futures_daily.py
+   - opendata/data/providers/akshare/models/index_constituent.py
+   - opendata/data/providers/akshare/models/index_daily.py
+   - opendata/data/providers/akshare/models/option_daily.py
+   - opendata/data/providers/akshare/models/stock_action.py
+   - opendata/data/providers/akshare/models/stock_daily.py
+   - opendata/data/providers/akshare/registration.py
+### 4. 边界：exclusion-before.txt 里的 297 是 12:18 那次采样（HEAD=38d85f5）的总数；
+    与本处 292 的差额 5 个文件未归因，见 README §7 第 7 条。
+
+A2_COUNTERFACTUAL_EXIT=0

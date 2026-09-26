@@ -1,0 +1,52 @@
+===== C35 bandit 面：exclude_dirs 是否也按任意路径命中（两次变异均已还原并校验 sha256）=====
+captured_at=2026-09-26T12:22:41+02:00
+branch=dev HEAD=38d85f5
+python=Python 3.13.5  bandit=__main__.py 1.9.4
+--- git status --porcelain (before) ---
+ M Makefile
+ M opendata/data/providers/akshare/models/financial_indicator.py
+ M opendata/data/providers/akshare/models/financial_statement.py
+ M opendata/data/providers/akshare/models/fund_etf_daily.py
+ M opendata/data/providers/akshare/models/index_constituent.py
+ M opendata/data/providers/akshare/models/index_daily.py
+ M opendata/data/providers/akshare/models/stock_daily.py
+ M opendata/data/providers/akshare/registration.py
+ M pyproject.toml
+ M scripts/quality/a2_check.py
+?? docs/evidence/C35/
+--- end ---
+
+### 判定装置：把一行 bandit 一定会报的代码临时写进 providers 树，看四个面能否发现它
+bandit.yaml exclude_dirs 原文：
+exclude_dirs:
+  - ".git"
+  - "__pycache__"
+  - "node_modules"
+  # Vendored upstream source (renamed akshare/ -> opendata_http/ in milestone A2).
+  # Ported code is not rescanned daily (quality spec §4); it gets a one-off full
+  # scan with manual triage in A2 instead.
+  - "akshare"
+  - "opendata_http"
+
+
+### 第一次标记（不成立，保留以自证）：_C35_PROBE = "hunter2"
+  期望触发 B105 hardcoded_password_string；实测连显式传该文件也是 0 findings —— 原因见
+  bandit 源码：B105 只对变量名含 password/pwd/secret/token/key 的赋值报警，
+  所以这条变异本身就不是 finding，第一次判定不可用（不能据此断言 bandit 看不见该树）。
+  → 教训：变异必须先证明『在别处会被发现』，否则它证明不了任何排除。
+
+### 第二次标记：import subprocess（期望 B404 hardcoded_import_subprocess，与变量名无关）
+  变异行已写入（原 sha256[:16]=a41aa82924f82a56）
+  --- 正面证明：把该文件放到 providers 之外，同一行必须被发现 ---
+    对照组(临时目录里同一文件) findings= [('B404', 15)]
+  --- 1) -r opendata（make security 的面）---
+    全部 findings=4  其中 providers/akshare 下=0
+  --- 2) 显式把该文件交给 bandit（a2-check 的面）---
+    findings= []
+  --- 3) -r 指向该子树本身 ---
+    findings= []
+  还原后 sha256[:16]=a41aa82924f82a56  与修复前 一致
+
+### 还原校验
+  (上面为空 = 该文件已回到 HEAD 内容)
+BANDIT_PROBE_EXIT=0
