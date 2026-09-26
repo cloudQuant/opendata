@@ -168,18 +168,25 @@
       "note": "六个 P0 模型名逐个查是否真被 ALL_MODELS 参数化（缺一个即 gap，今天 missing=-），再实跑该文件 12 个往返/fail-closed 节点全绿，双形态靠调用面确认（to_frame/from_frame/model_dump 三处都真被用到）。ALL_MODELS 是类名列表不是字符串列表，清单读取用 AST Name 节点——第一版按字符串取把它读成『六个全缺』。"
     },
     "AC-2|02|0526af4d": {
-      "state": "gap",
-      "round": "C40",
+      "state": "proven",
+      "round": "C41",
       "date": "2026-09-26",
-      "reason": "两半各量：`Instrument` 与 `TradingCalendar` 确实继承 ContractModel、五个字段集/语义/往返节点 5/5 passed；**但『被全市场回补与增量窗口逻辑引用』这一半实测为 0**——opendata/pipeline/{runner,jobs,templates,scheduling,partitions}.py、api/pipeline.py、services/data_acquisition.py 里没有任何一处 import 这两个契约，唯一真消费契约的是 pipeline/patrol.py；jobs.py 用的是 pipeline/trading_calendar.py 里同名不同种的 dataclass（tier + open_days），而 metadata.py 的模块文档却写着『回补以刷新 Instrument 为第 0 步、增量窗口取自 TradingCalendar 的 prev_trade_date』——**文档 claim 与代码事实相反**。两腿本身早已接入并跨供应商对照（C12/C13/C14），缺的是消费方接线，登记为 C41 开发项（判据 importers>=2 且单测绿，不放宽）。",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-2|02'（判据文件未修改；见 docs/evidence/C41/probe-ac2-02.txt，23:25 与 23:37 两次读数逐字一致）",
       "evidence": [
-        "docs/evidence/C40/probe-all.txt",
-        "docs/evidence/C40/probe-readings.json",
-        "docs/evidence/C40/README.md",
-        "opendata/data/models/metadata.py",
-        "docs/evidence/C12/README.md",
-        "docs/evidence/C14/README.md"
-      ]
+        "docs/evidence/C41/README.md",
+        "docs/evidence/C41/probe-ac2-02.txt",
+        "docs/evidence/C41/metadata-backbone-dryrun.txt",
+        "docs/evidence/C41/gate-run1.txt",
+        "docs/evidence/C41/gate-run1-aborted-a2-mypy.txt",
+        "docs/evidence/C41/gate-run2.txt",
+        "docs/evidence/C41/coverage-faces.txt",
+        "opendata/pipeline/templates.py",
+        "opendata/pipeline/jobs.py",
+        "opendata/pipeline/trading_calendar.py",
+        "scripts/ops/metadata_backbone_landing.py",
+        "tests/test_pipeline_jobs.py"
+      ],
+      "note": "两半各自量、这次两半都有读数：前半未变（两模型继承 ContractModel、5 个字段集/语义/往返节点 5/5 passed），后半由 C40 的 0 变 2——templates.py:223 `refresh_metadata_backbone`（producer：第 0 步，每行必过 contract 校验，BACKBONE_CONTRACTS 定成 dict[str, type[ContractModel]]）+ jobs.py:220 `landed_instruments`→`derive_universe`→run_incremental_job（consumer B：标的宇宙按目录的已知日期缩，空日期算未知不删、裸码多行不删）+ trading_calendar.py:200 `calendar_from_contracts`（consumer A：日历契约的 prev_trade_date 做成 expected_data_date 的独立见证，两答矛盾即 raise，不 quietly 择一）。判据不是 import 语句本身而是这三处不引入契约就写不出来的判定；C40 里 mention_only=2 的来源（jobs.py 那个与契约同名不同种的 dataclass）本轮改名 `CalendarView` 后归零。真机 dry-run 先量出一个不报错的缺陷：新脚本 `_legs` 原先只调 extract_data ⇒ `--days 40` 无效果（240 行＝整张发布表）、且落地行会没有 prev_trade_date；改走 Fetcher.fetch 的 validate→extract→normalize 全链路后 28 行全在窗内、邻居链自洽、首行 prev 落在窗外（证明推导先于裁剪）。门禁第 1 遍**红在 a2-check 的 mypy**（4 错，含 scripts/），按改代码不改判据收口（失败原文留档 gate-run1-aborted-a2-mypy.txt），顺带更正我此前『mypy 只覆盖 opendata/』的错误认知。两处如实留下的边界：**落库未执行**（`--write` 与 dwd 建表属仓库写操作，并入任务 #52 等拍板；在此之前两条读路如实报catalog=absent / weekday tier，是设计里的正常态）、默认 DwdWriter 只由桩走过一遍；**日历发布尾端在落后**（周六 05:2x 北京时间读到末行 2026-09-24，而彼时最后已完成交易日是 09-25）⇒ 适配器 docstring 那句『ending at the last completed trading day』只在 C13 那次读数成立，已回写。AC-17 面 91.89%（基线 91.68%），但本轮改动的 jobs.py 86.10% / trading_calendar.py 82.76% 自身仍在 90% 以下——判据量的是面，未为逐文件好看写空断言，缺口登记为后续项。"
     },
     "AC-2|03|c4547f55": {
       "state": "proven",
