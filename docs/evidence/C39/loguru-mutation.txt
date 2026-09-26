@@ -1,0 +1,356 @@
+# C39 变异巡回（mutation proof）：loguru/logging 参数渲染门禁
+# 生成时间: 2026-09-26T19:54:38+02:00
+# python=3.13.5 机器=arm64
+# coverage==7.9.2
+# loguru==0.7.3
+# pytest==8.4.1
+# pytest-asyncio==1.4.0
+# pytest-cov==6.2.1
+# pytest-xdist==3.8.0
+# 分支: dev
+# HEAD: 8cc6854
+# pytest 命令（每次调用固定）: python -m pytest <target> -m not e2e --no-cov -q --no-header
+# 说明：`make loguru-check` 就是门禁成员（Makefile gate 段），
+#       站点变异用 `python scripts/quality/loguru_render_check.py` 直接跑同一份判定。
+# 涉及文件 sha256（变异前基线，巡回结束后逐字节复核）
+#   2a835e883b69d3561fe884a4007fcd441ed749ed1db7daa41fff92a7cb85f5a0  opendata/api/data_query.py
+#   da3d922e4229295664a8d5245fc76ed0c724afec76d5354cee78e431b284cd51  opendata/api/tables.py
+#   d6bc176a08b2e265626dfb319400a9587bd98535c7531e771d3a1de2c15bbe5c  opendata/api/websocket.py
+#   1bbbbc46422844ccf6db13b5786054d6aaf32fb09a32785842e679bf3021b8e2  opendata/core/token_blacklist.py
+#   4eed7ca1d8e70a64cfa4f0f118e7a90cf219f28de6d47d8f0147acdc41a70069  opendata/data_fetch/providers/akshare_provider.py
+#   c2a2b7d379adbc3e32d5b94f30cca08fcb5c0ac0ae015053a313601db61a6b27  opendata/middleware/request_logging.py
+#   79d1c72fd380ec549526a9214d97c8969a6e9861977fb6c10be15097c0621498  opendata/middleware/security.py
+#   a0a27aad13c45b101d6aca56989505e09949e11626fd8ce4dc11b4144abd39e5  opendata/services/scheduler.py
+#   1e4b212d94e3b3727b76d5daeee55ce6b21e873295cf0dcf4211f4a371df6224  opendata/services/script_service.py
+#   449f8f98ff5c1128ff3cdb49a8d8890827c30fa83226093ff1375806b6387b2b  scripts/quality/loguru_render_check.py
+
+## [0] 基线：门禁成员绿、守卫测试全绿
+  make loguru-check
+    $ make --no-print-directory loguru-check
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=20 findings=0 unjudged=4
+    | OK: every logger call passes arguments its renderer can substitute.
+    rc=0
+  python scripts/quality/loguru_render_check.py
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/loguru_render_check.py
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=20 findings=0 unjudged=4
+    | OK: every logger call passes arguments its renderer can substitute.
+    rc=0
+  tests/test_loguru_render_check.py
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_loguru_render_check.py -m not e2e --no-cov -q --no-header
+    | ============================= test session starts ==============================
+    | collected 27 items
+    | tests/test_loguru_render_check.py ...........................            [100%]
+    | ============================= 27 passed in 10.65s ==============================
+    rc=0
+
+## [1] 站点变异：13 条已修调用逐个注回旧写法，期望门禁点名
+[S1] S1 域差异日志降级不可用时参数丢失
+    文件: opendata/api/data_query.py
+    现有: logger.warning("diff report unavailable for {}: {}", domain, exc)
+    注入: logger.warning("diff report unavailable for %s: %s", domain, exc)
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/loguru_render_check.py
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=20 findings=1 unjudged=4
+    | FAIL: the logger arguments above never reach the log.
+    rc=1
+    结果: RED 且只点名本文件 ⇒ 判据咬住了：FINDING opendata/api/data_query.py:182 logger.warning: %s args on a loguru logger
+[S2] S2 数据查询失败日志只剩模板（排障看不出是哪个域）
+    文件: opendata/api/data_query.py
+    现有: logger.error("data query failed for {}/{}: {}", asset_class, domain, exc)
+    注入: logger.error("data query failed for %s/%s: %s", asset_class, domain, exc)
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/loguru_render_check.py
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=20 findings=1 unjudged=4
+    | FAIL: the logger arguments above never reach the log.
+    rc=1
+    结果: RED 且只点名本文件 ⇒ 判据咬住了：FINDING opendata/api/data_query.py:234 logger.error: %s args on a loguru logger
+[S3] S3 新鲜度降级日志丢表名
+    文件: opendata/api/data_query.py
+    现有: logger.debug("freshness unavailable for {}: {}", table, exc)
+    注入: logger.debug("freshness unavailable for %s: %s", table, exc)
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/loguru_render_check.py
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=20 findings=1 unjudged=4
+    | FAIL: the logger arguments above never reach the log.
+    rc=1
+    结果: RED 且只点名本文件 ⇒ 判据咬住了：FINDING opendata/api/data_query.py:593 logger.debug: %s args on a loguru logger
+[S4] S4 行数刷新跳过日志丢表名与原因
+    文件: opendata/api/tables.py
+    现有: logger.debug("Table {} not in warehouse, skipping: {}", table.table_name, error)
+    注入: logger.debug("Table %s not in warehouse, skipping: %s", table.table_name, error)
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/loguru_render_check.py
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=20 findings=1 unjudged=4
+    | FAIL: the logger arguments above never reach the log.
+    rc=1
+    结果: RED 且只点名本文件 ⇒ 判据咬住了：FINDING opendata/api/tables.py:524 logger.debug: %s args on a loguru logger
+[S5] S5 WS 心跳退出原因丢失
+    文件: opendata/api/websocket.py
+    现有: logger.debug("WebSocket ping loop ended: {}", e)
+    注入: logger.debug("WebSocket ping loop ended: %s", e)
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/loguru_render_check.py
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=20 findings=1 unjudged=4
+    | FAIL: the logger arguments above never reach the log.
+    rc=1
+    结果: RED 且只点名本文件 ⇒ 判据咬住了：FINDING opendata/api/websocket.py:176 logger.debug: %s args on a loguru logger
+[S6] S6 Redis 关闭失败原因丢失
+    文件: opendata/core/token_blacklist.py
+    现有: logger.debug("Redis close failed (may already be closed): {}", e)
+    注入: logger.debug("Redis close failed (may already be closed): %s", e)
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/loguru_render_check.py
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=20 findings=1 unjudged=4
+    | FAIL: the logger arguments above never reach the log.
+    rc=1
+    结果: RED 且只点名本文件 ⇒ 判据咬住了：FINDING opendata/core/token_blacklist.py:168 logger.debug: %s args on a loguru logger
+[S7] S7 属性式接收者（self.logger）——census 看不见的那一条
+    文件: opendata/data_fetch/providers/akshare_provider.py
+    现有: self.logger.debug(f"Could not get row count for table {table_name}: {e}")
+    注入: self.logger.debug("Could not get row count for table %s: %s", table_name, e)
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/loguru_render_check.py
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=21 findings=1 unjudged=4
+    | FAIL: the logger arguments above never reach the log.
+    rc=1
+    结果: RED 且只点名本文件 ⇒ 判据咬住了：FINDING opendata/data_fetch/providers/akshare_provider.py:498 self.logger.debug: receiver family not settled: interpolate the message at the call site
+[S8] S8 500 请求日志丢方法/路径/耗时/异常
+    文件: opendata/middleware/request_logging.py
+    现有: "{} {} 500 ({:.1f}ms) exception={}",
+    注入: "%s %s 500 (%.1fms) exception=%s",
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/loguru_render_check.py
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=20 findings=1 unjudged=4
+    | FAIL: the logger arguments above never reach the log.
+    rc=1
+    结果: RED 且只点名本文件 ⇒ 判据咬住了：FINDING opendata/middleware/request_logging.py:39 logger.error: %s args on a loguru logger
+[S9] S9 指标上报跳过原因丢失
+    文件: opendata/middleware/request_logging.py
+    现有: logger.debug("Metrics record skipped: {}", e)
+    注入: logger.debug("Metrics record skipped: %s", e)
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/loguru_render_check.py
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=20 findings=1 unjudged=4
+    | FAIL: the logger arguments above never reach the log.
+    rc=1
+    结果: RED 且只点名本文件 ⇒ 判据咬住了：FINDING opendata/middleware/request_logging.py:62 logger.debug: %s args on a loguru logger
+[S10] S10 安全头写入失败原因丢失
+    文件: opendata/middleware/security.py
+    现有: logger.debug("Failed to set security headers: {}", e)
+    注入: logger.debug("Failed to set security headers: %s", e)
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/loguru_render_check.py
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=20 findings=1 unjudged=4
+    | FAIL: the logger arguments above never reach the log.
+    rc=1
+    结果: RED 且只点名本文件 ⇒ 判据咬住了：FINDING opendata/middleware/security.py:30 logger.debug: %s args on a loguru logger
+[S11] S11 任务失败通知异常丢失
+    文件: opendata/services/scheduler.py
+    现有: logger.debug("Task failure notification skipped: {}", e)
+    注入: logger.debug("Task failure notification skipped: %s", e)
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/loguru_render_check.py
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=20 findings=1 unjudged=4
+    | FAIL: the logger arguments above never reach the log.
+    rc=1
+    结果: RED 且只点名本文件 ⇒ 判据咬住了：FINDING opendata/services/scheduler.py:300 logger.debug: %s args on a loguru logger
+[S12] S12 广播跳过异常丢失
+    文件: opendata/services/scheduler.py
+    现有: logger.debug("WebSocket broadcast skipped: {}", e)
+    注入: logger.debug("WebSocket broadcast skipped: %s", e)
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/loguru_render_check.py
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=20 findings=1 unjudged=4
+    | FAIL: the logger arguments above never reach the log.
+    rc=1
+    结果: RED 且只点名本文件 ⇒ 判据咬住了：FINDING opendata/services/scheduler.py:454 logger.debug: %s args on a loguru logger
+[S13] S13 脚本读取失败丢路径
+    文件: opendata/services/script_service.py
+    现有: logger.debug("Could not read script file {}: {}", file_path, e)
+    注入: logger.debug("Could not read script file %s: %s", file_path, e)
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/loguru_render_check.py
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=20 findings=1 unjudged=4
+    | FAIL: the logger arguments above never reach the log.
+    rc=1
+    结果: RED 且只点名本文件 ⇒ 判据咬住了：FINDING opendata/services/script_service.py:380 logger.debug: %s args on a loguru logger
+
+## [2] 判定面变异：摘掉守卫的某一个判定面，期望对应用例失败
+C1 把 self.logger 退回 unresolved：census 的老盲区重新变成盲区
+    面: 属性式接收者解析（self.<attr> 的绑定）
+    期望失败: tests/test_loguru_render_check.py::TestAttributeFormFace
+    摘掉: family = UNRESOLVED
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_loguru_render_check.py::TestAttributeFormFace -m not e2e --no-cov -q --no-header
+    |            ^^^^^^^^^^^^^^^^^
+    | E   IndexError: list index out of range
+    | =========================== short test summary info ============================
+    | FAILED tests/test_loguru_render_check.py::TestAttributeFormFace::test_injected_logger_defaulting_to_loguru_is_neither_family
+    | FAILED tests/test_loguru_render_check.py::TestAttributeFormFace::test_class_attribute_bound_to_stdlib_is_judged_by_that_family
+    | ========================= 2 failed, 4 passed in 0.07s ==========================
+    rc=1
+    结果: RED ⇒ 这一面确实在承重：========================= 2 failed, 4 passed in 0.07s ==========================
+C2 裸名一律不当日志调用：12 条那一面被摘掉
+    面: 裸名接收者解析（模块级 logger 的绑定）
+    期望失败: tests/test_loguru_render_check.py::TestBindingAwareJudgement::test_arguments_with_no_placeholder_are_lost_on_both
+    摘掉: if isinstance(receiver_node, ast.Name): /         return None
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_loguru_render_check.py::TestBindingAwareJudgement::test_arguments_with_no_placeholder_are_lost_on_both -m not e2e --no-cov -q --no-header
+    | E     
+    | E     Right contains one more item: 'query finished'
+    | E     Use -v to get more diff
+    | =========================== short test summary info ============================
+    | FAILED tests/test_loguru_render_check.py::TestBindingAwareJudgement::test_arguments_with_no_placeholder_are_lost_on_both
+    | ============================== 1 failed in 0.06s ===============================
+    rc=1
+    结果: RED ⇒ 这一面确实在承重：============================== 1 failed in 0.06s ===============================
+C3 判定器恒返回“没问题”：只报不判
+    面: verdict_of 全部判定
+    期望失败: tests/test_loguru_render_check.py::TestBindingAwareJudgement::test_loguru_percent_template_loses_its_arguments
+    摘掉: return None /     if not site.literal: /         return None
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_loguru_render_check.py::TestBindingAwareJudgement::test_loguru_percent_template_loses_its_arguments -m not e2e --no-cov -q --no-header
+    | E     
+    | E     Right contains one more item: 'freshness unavailable for %s: %s'
+    | E     Use -v to get more diff
+    | =========================== short test summary info ============================
+    | FAILED tests/test_loguru_render_check.py::TestBindingAwareJudgement::test_loguru_percent_template_loses_its_arguments
+    | ============================== 1 failed in 0.07s ===============================
+    rc=1
+    结果: RED ⇒ 这一面确实在承重：============================== 1 failed in 0.07s ===============================
+C4 只判 loguru 一侧：另一条静默方向（loud 的那条）不再覆盖
+    面: verdict_of 的 stdlib 方向
+    期望失败: tests/test_loguru_render_check.py::TestBindingAwareJudgement::test_stdlib_brace_template_loses_its_arguments
+    摘掉: if site.family == STDLIB: /         return None
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_loguru_render_check.py::TestBindingAwareJudgement::test_stdlib_brace_template_loses_its_arguments -m not e2e --no-cov -q --no-header
+    | E     
+    | E     Right contains one more item: 'freshness unavailable for {}: {}'
+    | E     Use -v to get more diff
+    | =========================== short test summary info ============================
+    | FAILED tests/test_loguru_render_check.py::TestBindingAwareJudgement::test_stdlib_brace_template_loses_its_arguments
+    | ============================== 1 failed in 0.07s ===============================
+    rc=1
+    结果: RED ⇒ 这一面确实在承重：============================== 1 failed in 0.07s ===============================
+C5 f-string 重新被当成无条件安全：带参数的插值写法又会被静默放过
+    面: 插值消息只豁免“不带参数”的那一半
+    期望失败: tests/test_loguru_render_check.py::TestAttributeFormFace::test_finished_message_that_also_passes_arguments_is_disclosed
+    摘掉: template_node = call.args[index] /     if isinstance(template_node, ast.JoinedStr): /         return None /     if isinstance(template_node, ast.Constant):
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_loguru_render_check.py::TestAttributeFormFace::test_finished_message_that_also_passes_arguments_is_disclosed -m not e2e --no-cov -q --no-header
+    | E     
+    | E     Right contains one more item: 'template built at runtime'
+    | E     Use -v to get more diff
+    | =========================== short test summary info ============================
+    | FAILED tests/test_loguru_render_check.py::TestAttributeFormFace::test_finished_message_that_also_passes_arguments_is_disclosed
+    | ============================== 1 failed in 0.07s ===============================
+    rc=1
+    结果: RED ⇒ 这一面确实在承重：============================== 1 failed in 0.07s ===============================
+C6 只打印不置红：门禁里的成员退化成报告
+    面: run() 的阻断（exit code）
+    期望失败: tests/test_loguru_render_check.py::TestEnforcementWiring::test_gate_mode_fails_on_a_finding
+    摘掉: if False and sweep.findings and not args.report:
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_loguru_render_check.py::TestEnforcementWiring::test_gate_mode_fails_on_a_finding -m not e2e --no-cov -q --no-header
+    | swept   tests: 1 file(s)
+    | loguru-render-check: calls-with-args=1 findings=1 unjudged=0
+    | OK: every logger call passes arguments its renderer can substitute.
+    | =========================== short test summary info ============================
+    | FAILED tests/test_loguru_render_check.py::TestEnforcementWiring::test_gate_mode_fails_on_a_finding
+    | ============================== 1 failed in 0.07s ===============================
+    rc=1
+    结果: RED ⇒ 这一面确实在承重：============================== 1 failed in 0.07s ===============================
+C7 悄悄缩范围：搬运层 313 个文件退出扫描面
+    面: CHECK_ROOTS 覆盖面
+    期望失败: tests/test_loguru_render_check.py::TestShippedTree::test_every_declared_root_sweeps_files
+    摘掉: CHECK_ROOTS: Final = ( /     "opendata", /     # "opendata_http",
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_loguru_render_check.py::TestShippedTree::test_every_declared_root_sweeps_files -m not e2e --no-cov -q --no-header
+    | E    +  where 401 = sum(dict_values([191, 9, 2, 37, 162]))
+    | E    +    where dict_values([191, 9, 2, 37, 162]) = <built-in method values of dict object at 0x1133eed00>()
+    | E    +      where <built-in method values of dict object at 0x1133eed00> = {'opendata': 191, 'opendata_client': 2, 'opendata_fuyao': 9, 'scripts': 37, ...}.values
+    | =========================== short test summary info ============================
+    | FAILED tests/test_loguru_render_check.py::TestShippedTree::test_every_declared_root_sweeps_files
+    | ============================== 1 failed in 1.59s ===============================
+    rc=1
+    结果: RED ⇒ 这一面确实在承重：============================== 1 failed in 1.59s ===============================
+
+## [3] 还原复核：逐文件 sha256 对比基线 + 复跑绿读数
+  OK  opendata/api/data_query.py
+  OK  opendata/api/tables.py
+  OK  opendata/api/websocket.py
+  OK  opendata/core/token_blacklist.py
+  OK  opendata/data_fetch/providers/akshare_provider.py
+  OK  opendata/middleware/request_logging.py
+  OK  opendata/middleware/security.py
+  OK  opendata/services/scheduler.py
+  OK  opendata/services/script_service.py
+  OK  scripts/quality/loguru_render_check.py
+  make loguru-check
+    $ make --no-print-directory loguru-check
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=20 findings=0 unjudged=4
+    | OK: every logger call passes arguments its renderer can substitute.
+    rc=0
+  python scripts/quality/loguru_render_check.py
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/loguru_render_check.py
+    | swept   opendata_fuyao: 9 file(s)
+    | swept   opendata_client: 2 file(s)
+    | swept   scripts: 37 file(s)
+    | swept   tests: 162 file(s)
+    | loguru-render-check: calls-with-args=20 findings=0 unjudged=4
+    | OK: every logger call passes arguments its renderer can substitute.
+    rc=0
+  tests/test_loguru_render_check.py
+    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_loguru_render_check.py -m not e2e --no-cov -q --no-header
+    | ============================= test session starts ==============================
+    | collected 27 items
+    | tests/test_loguru_render_check.py ...........................            [100%]
+    | ============================= 27 passed in 10.63s ==============================
+    rc=0
+
+## 结论：全部变异都被咬住（BROKEN=0）
+TOUR_EXIT=0

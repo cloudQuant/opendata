@@ -1,0 +1,109 @@
+--- docs/evidence/C39/loguru-mutation-run1-unpinned-face.txt	2026-09-26 19:43:43
++++ docs/evidence/C39/loguru-mutation.txt	2026-09-26 19:43:43
+@@ -1,5 +1,5 @@
+ # C39 变异巡回（mutation proof）：loguru/logging 参数渲染门禁
+-# 生成时间: 2026-09-26T19:36:52+02:00
++# 生成时间: 2026-09-26T19:41:09+02:00
+ # python=3.13.5 机器=arm64
+ # coverage==7.9.2
+ # loguru==0.7.3
+@@ -22,7 +22,7 @@
+ #   e34adb127f1f68cb9264cc5c28140903aa2542f9357e5a775bb2d9a08416548d  opendata/middleware/security.py
+ #   28c86a3ba59d4e70a6eca50ca253a984e31eac1576a310118c3a6d3acacb997f  opendata/services/scheduler.py
+ #   fab6bf8f87de5354e8cf26f0186000dfd3f9ec407bfd5036cf7e18d329b15859  opendata/services/script_service.py
+-#   78ae487cda1c7e1d047c8c83948b0c7edbd8fd8b0bfd55fe38f02a386ca18c02  scripts/quality/loguru_render_check.py
++#   449f8f98ff5c1128ff3cdb49a8d8890827c30fa83226093ff1375806b6387b2b  scripts/quality/loguru_render_check.py
+ 
+ ## [0] 基线：门禁成员绿、守卫测试全绿
+   make loguru-check
+@@ -46,9 +46,9 @@
+   tests/test_loguru_render_check.py
+     $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_loguru_render_check.py -m not e2e --no-cov -q --no-header
+     | ============================= test session starts ==============================
+-    | collected 26 items
+-    | tests/test_loguru_render_check.py ..........................             [100%]
+-    | ============================= 26 passed in 10.53s ==============================
++    | collected 27 items
++    | tests/test_loguru_render_check.py ...........................            [100%]
++    | ============================= 27 passed in 10.52s ==============================
+     rc=0
+ 
+ ## [1] 站点变异：13 条已修调用逐个注回旧写法，期望门禁点名
+@@ -233,9 +233,9 @@
+     | =========================== short test summary info ============================
+     | FAILED tests/test_loguru_render_check.py::TestAttributeFormFace::test_injected_logger_defaulting_to_loguru_is_neither_family
+     | FAILED tests/test_loguru_render_check.py::TestAttributeFormFace::test_class_attribute_bound_to_stdlib_is_judged_by_that_family
+-    | ========================= 2 failed, 3 passed in 0.07s ==========================
++    | ========================= 2 failed, 4 passed in 0.07s ==========================
+     rc=1
+-    结果: RED ⇒ 这一面确实在承重：========================= 2 failed, 3 passed in 0.07s ==========================
++    结果: RED ⇒ 这一面确实在承重：========================= 2 failed, 4 passed in 0.07s ==========================
+ C2 裸名一律不当日志调用：12 条那一面被摘掉
+     面: 裸名接收者解析（模块级 logger 的绑定）
+     期望失败: tests/test_loguru_render_check.py::TestBindingAwareJudgement::test_arguments_with_no_placeholder_are_lost_on_both
+@@ -272,20 +272,22 @@
+     | E     Use -v to get more diff
+     | =========================== short test summary info ============================
+     | FAILED tests/test_loguru_render_check.py::TestBindingAwareJudgement::test_stdlib_brace_template_loses_its_arguments
++    | ============================== 1 failed in 0.08s ===============================
++    rc=1
++    结果: RED ⇒ 这一面确实在承重：============================== 1 failed in 0.08s ===============================
++C5 f-string 重新被当成无条件安全：带参数的插值写法又会被静默放过
++    面: 插值消息只豁免“不带参数”的那一半
++    期望失败: tests/test_loguru_render_check.py::TestAttributeFormFace::test_finished_message_that_also_passes_arguments_is_disclosed
++    摘掉: template_node = call.args[index] /     if isinstance(template_node, ast.JoinedStr): /         return None /     if isinstance(template_node, ast.Constant):
++    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_loguru_render_check.py::TestAttributeFormFace::test_finished_message_that_also_passes_arguments_is_disclosed -m not e2e --no-cov -q --no-header
++    | E     
++    | E     Right contains one more item: 'template built at runtime'
++    | E     Use -v to get more diff
++    | =========================== short test summary info ============================
++    | FAILED tests/test_loguru_render_check.py::TestAttributeFormFace::test_finished_message_that_also_passes_arguments_is_disclosed
+     | ============================== 1 failed in 0.07s ===============================
+     rc=1
+     结果: RED ⇒ 这一面确实在承重：============================== 1 failed in 0.07s ===============================
+-C5 f-string 不再当“调用方已插值”：S7 的正确写法会被误判
+-    面: f-string 的家族无关豁免
+-    期望失败: tests/test_loguru_render_check.py::TestAttributeFormFace::test_interpolated_message_passes_on_an_ambiguous_receiver
+-    摘掉: if isinstance(template_node, ast.JoinedStr): /         pass
+-    $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_loguru_render_check.py::TestAttributeFormFace::test_interpolated_message_passes_on_an_ambiguous_receiver -m not e2e --no-cov -q --no-header
+-    | ============================= test session starts ==============================
+-    | collected 1 item
+-    | tests/test_loguru_render_check.py .                                      [100%]
+-    | ============================== 1 passed in 0.02s ===============================
+-    rc=0
+-    结果: GREEN ⇒ 这一面没有测试守着：============================== 1 passed in 0.02s ===============================
+ C6 只打印不置红：门禁里的成员退化成报告
+     面: run() 的阻断（exit code）
+     期望失败: tests/test_loguru_render_check.py::TestEnforcementWiring::test_gate_mode_fails_on_a_finding
+@@ -305,13 +307,13 @@
+     摘掉: CHECK_ROOTS: Final = ( /     "opendata", /     # "opendata_http",
+     $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_loguru_render_check.py::TestShippedTree::test_every_declared_root_sweeps_files -m not e2e --no-cov -q --no-header
+     | E    +  where 401 = sum(dict_values([191, 9, 2, 37, 162]))
+-    | E    +    where dict_values([191, 9, 2, 37, 162]) = <built-in method values of dict object at 0x114548500>()
+-    | E    +      where <built-in method values of dict object at 0x114548500> = {'opendata': 191, 'opendata_client': 2, 'opendata_fuyao': 9, 'scripts': 37, ...}.values
++    | E    +    where dict_values([191, 9, 2, 37, 162]) = <built-in method values of dict object at 0x116ef8140>()
++    | E    +      where <built-in method values of dict object at 0x116ef8140> = {'opendata': 191, 'opendata_client': 2, 'opendata_fuyao': 9, 'scripts': 37, ...}.values
+     | =========================== short test summary info ============================
+     | FAILED tests/test_loguru_render_check.py::TestShippedTree::test_every_declared_root_sweeps_files
+-    | ============================== 1 failed in 1.59s ===============================
++    | ============================== 1 failed in 1.58s ===============================
+     rc=1
+-    结果: RED ⇒ 这一面确实在承重：============================== 1 failed in 1.59s ===============================
++    结果: RED ⇒ 这一面确实在承重：============================== 1 failed in 1.58s ===============================
+ 
+ ## [3] 还原复核：逐文件 sha256 对比基线 + 复跑绿读数
+   OK  opendata/api/data_query.py
+@@ -345,9 +347,9 @@
+   tests/test_loguru_render_check.py
+     $ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests/test_loguru_render_check.py -m not e2e --no-cov -q --no-header
+     | ============================= test session starts ==============================
+-    | collected 26 items
+-    | tests/test_loguru_render_check.py ..........................             [100%]
+-    | ============================= 26 passed in 10.52s ==============================
++    | collected 27 items
++    | tests/test_loguru_render_check.py ...........................            [100%]
++    | ============================= 27 passed in 10.55s ==============================
+     rc=0
+ 
+-## 结论：1 项未达预期
++## 结论：全部变异都被咬住（BROKEN=0）
