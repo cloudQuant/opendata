@@ -1,0 +1,162 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T02:23:10+0000
+branch=dev HEAD=c062580
+工作树（本轮改动，未提交）：
+   M opendata/api/pipeline.py
+   M opendata/data/providers/ths/models/_client.py
+   M opendata/pipeline/patrol.py
+   M scripts/ops/health_patrol.py
+   M tests/test_patrol.py
+  ?? docs/evidence/C28/
+  ?? opendata/pipeline/key_health.py
+  ?? tests/test_key_health.py
+Python 3.13.5
+命令：python -m pytest tests/test_key_health.py tests/test_patrol.py -m not e2e -p no:cacheprovider -q --no-cov -v
+说明：C28 判据用例（-m 'not e2e'，-p no:cacheprovider --no-cov）：分类表可证伪 + 瞬时≠封禁 + 401≠没数据 + 在场≠健康 + 告警载荷无密钥值。
+===== 输出（未裁剪） =====
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0 -- /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 130 items
+
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[fuyao-2001] PASSED [  0%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[fuyao-2003] PASSED [  1%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[fuyao-http-401] PASSED [  2%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[fuyao-4001] PASSED [  3%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[fuyao-transport-429] PASSED [  3%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[fuyao-5001] PASSED [  4%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[fuyao-timeout] PASSED [  5%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[fuyao-network] PASSED [  6%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[fuyao-3001] PASSED [  6%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[fuyao-3002] PASSED [  7%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[fuyao-1001] PASSED [  8%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[fuyao-envelope] PASSED [  9%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[fred-key-missing] PASSED [ 10%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[ths-not-configured] PASSED [ 10%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[ths-empty] PASSED [ 11%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[ths-symbol] PASSED [ 12%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[ecb-400] PASSED [ 13%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[bare-timeout] PASSED [ 13%]
+tests/test_key_health.py::TestArchivedShapes::test_a_recorded_shape_lands_in_one_class[em-502] PASSED [ 14%]
+tests/test_key_health.py::TestArchivedShapes::test_a_ths_failure_with_detail_text_still_names_its_code PASSED [ 15%]
+tests/test_key_health.py::TestArchivedShapes::test_a_refused_status_outranks_a_code_naming_another_cause PASSED [ 16%]
+tests/test_key_health.py::TestBlipIsNeverABan::test_a_blip_is_not_a_credential_class[timeout] PASSED [ 16%]
+tests/test_key_health.py::TestBlipIsNeverABan::test_a_blip_is_not_a_credential_class[httpx-connect] PASSED [ 17%]
+tests/test_key_health.py::TestBlipIsNeverABan::test_a_blip_is_not_a_credential_class[connection-error] PASSED [ 18%]
+tests/test_key_health.py::TestBlipIsNeverABan::test_a_blip_is_not_a_credential_class[em-502] PASSED [ 19%]
+tests/test_key_health.py::TestBlipIsNeverABan::test_a_blip_is_not_a_credential_class[httpx-503] PASSED [ 20%]
+tests/test_key_health.py::TestBlipIsNeverABan::test_a_blip_is_not_a_credential_class[fuyao-timeout] PASSED [ 20%]
+tests/test_key_health.py::TestBlipIsNeverABan::test_a_blip_is_not_a_credential_class[fuyao-network] PASSED [ 21%]
+tests/test_key_health.py::TestBlipIsNeverABan::test_a_blip_is_not_a_credential_class[fuyao-5001] PASSED [ 22%]
+tests/test_key_health.py::TestBlipIsNeverABan::test_a_blip_does_not_ask_anyone_to_touch_a_key PASSED [ 23%]
+tests/test_key_health.py::TestBanIsNeverABlip::test_a_refusal_is_a_credential_class[fred-401] PASSED [ 23%]
+tests/test_key_health.py::TestBanIsNeverABlip::test_a_refusal_is_a_credential_class[ecb-403] PASSED [ 24%]
+tests/test_key_health.py::TestBanIsNeverABlip::test_a_refusal_is_a_credential_class[fuyao-2001] PASSED [ 25%]
+tests/test_key_health.py::TestBanIsNeverABlip::test_a_refusal_is_a_credential_class[httpx-401] PASSED [ 26%]
+tests/test_key_health.py::TestBanIsNeverABlip::test_a_refusal_pages_and_names_the_credential_holder PASSED [ 26%]
+tests/test_key_health.py::TestRejectedKeyIsNotMissingData::test_a_refusal_is_never_recorded_as_no_data[fred-401] PASSED [ 27%]
+tests/test_key_health.py::TestRejectedKeyIsNotMissingData::test_a_refusal_is_never_recorded_as_no_data[fuyao-2003] PASSED [ 28%]
+tests/test_key_health.py::TestRejectedKeyIsNotMissingData::test_a_refusal_is_never_recorded_as_no_data[httpx-403] PASSED [ 29%]
+tests/test_key_health.py::TestRejectedKeyIsNotMissingData::test_an_empty_answer_is_never_a_credential_problem[fuyao-3001] PASSED [ 30%]
+tests/test_key_health.py::TestRejectedKeyIsNotMissingData::test_an_empty_answer_is_never_a_credential_problem[ths-empty] PASSED [ 30%]
+tests/test_key_health.py::TestRejectedKeyIsNotMissingData::test_an_empty_answer_is_never_a_credential_problem[httpx-404] PASSED [ 31%]
+tests/test_key_health.py::TestRejectedKeyIsNotMissingData::test_no_data_does_not_ask_for_a_new_key PASSED [ 32%]
+tests/test_key_health.py::TestUnreadableIsNeverAPass::test_an_unknown_failure_is_unclassified[digits-in-text] PASSED [ 33%]
+tests/test_key_health.py::TestUnreadableIsNeverAPass::test_an_unknown_failure_is_unclassified[no-status] PASSED [ 33%]
+tests/test_key_health.py::TestUnreadableIsNeverAPass::test_an_unknown_failure_is_unclassified[code-as-key] PASSED [ 34%]
+tests/test_key_health.py::TestUnreadableIsNeverAPass::test_an_unknown_failure_is_unclassified[brand-new-type] PASSED [ 35%]
+tests/test_key_health.py::TestUnreadableIsNeverAPass::test_unclassified_warns_and_blames_nobody PASSED [ 36%]
+tests/test_key_health.py::TestUnreadableIsNeverAPass::test_a_row_count_in_the_text_is_not_read_as_a_status PASSED [ 36%]
+tests/test_key_health.py::TestPlaneIsClosed::test_every_class_has_exactly_one_owner_and_one_level PASSED [ 37%]
+tests/test_key_health.py::TestPlaneIsClosed::test_the_credential_classes_are_the_ones_named_at_all PASSED [ 38%]
+tests/test_key_health.py::TestPresenceIsNotHealth::test_a_configured_key_never_probed_is_presence_only PASSED [ 39%]
+tests/test_key_health.py::TestPresenceIsNotHealth::test_presence_only_never_counts_as_something_to_act_on PASSED [ 40%]
+tests/test_key_health.py::TestPresenceIsNotHealth::test_a_keyless_source_says_nothing_about_credentials PASSED [ 40%]
+tests/test_key_health.py::TestPresenceIsNotHealth::test_a_missing_required_key_is_a_deployment_alert PASSED [ 41%]
+tests/test_key_health.py::TestGradingCombinesObservations::test_the_worst_class_sets_level_and_owner PASSED [ 42%]
+tests/test_key_health.py::TestGradingCombinesObservations::test_attributions_are_deduplicated_and_bounded PASSED [ 43%]
+tests/test_key_health.py::TestGradingCombinesObservations::test_another_source_s_failure_does_not_dirty_this_report PASSED [ 43%]
+tests/test_key_health.py::TestPayloadCarriesNoCredential::test_a_leaky_message_really_does_carry_the_query PASSED [ 44%]
+tests/test_key_health.py::TestPayloadCarriesNoCredential::test_redact_keeps_the_origin_it_strips_the_query PASSED [ 45%]
+tests/test_key_health.py::TestPayloadCarriesNoCredential::test_a_key_quoted_into_prose_needs_the_value_pass_not_the_url_pass PASSED [ 46%]
+tests/test_key_health.py::TestPayloadCarriesNoCredential::test_an_unconfigured_key_is_not_a_scrub_pattern PASSED [ 46%]
+tests/test_key_health.py::TestPayloadCarriesNoCredential::test_the_value_pass_runs_after_the_url_pass PASSED [ 47%]
+tests/test_key_health.py::TestPayloadCarriesNoCredential::test_attribution_of_a_leaky_exception_hides_the_query PASSED [ 48%]
+tests/test_key_health.py::TestPayloadCarriesNoCredential::test_fred_attribution_keeps_code_and_status_but_not_the_key PASSED [ 49%]
+tests/test_key_health.py::TestPayloadCarriesNoCredential::test_attribution_of_a_bare_failure_names_only_its_type PASSED [ 50%]
+tests/test_key_health.py::TestPayloadCarriesNoCredential::test_no_class_of_failure_renders_a_credential PASSED [ 50%]
+tests/test_key_health.py::TestPayloadCarriesNoCredential::test_the_redaction_guard_is_in_attribution_not_in_the_payload PASSED [ 51%]
+tests/test_key_health.py::TestPayloadCarriesNoCredential::test_the_grades_reach_the_payload_without_the_key PASSED [ 52%]
+tests/test_key_health.py::TestPayloadCarriesNoCredential::test_presence_only_keeps_the_expiry_and_quota_boundary_in_the_note PASSED [ 53%]
+tests/test_patrol.py::TestPatrol::test_healthy_fetcher_is_reported_ok PASSED [ 53%]
+tests/test_patrol.py::TestPatrol::test_failing_fetcher_marks_the_source_unhealthy PASSED [ 54%]
+tests/test_patrol.py::TestPatrol::test_unverified_capabilities_are_not_probed PASSED [ 55%]
+tests/test_patrol.py::TestPatrol::test_probe_uses_the_minimal_params PASSED [ 56%]
+tests/test_patrol.py::TestPatrol::test_empty_probe_counts_as_unhealthy PASSED [ 56%]
+tests/test_patrol.py::TestPatrol::test_missing_probe_is_reported_without_blaming_the_source PASSED [ 57%]
+tests/test_patrol.py::TestProbeRetry::test_a_single_blip_is_retried_and_the_source_stays_routable PASSED [ 58%]
+tests/test_patrol.py::TestProbeRetry::test_a_leg_that_only_passed_on_retry_is_reported_flaky PASSED [ 59%]
+tests/test_patrol.py::TestProbeRetry::test_a_second_failure_still_marks_the_source_unhealthy PASSED [ 60%]
+tests/test_patrol.py::TestProbeRetry::test_a_clean_pass_never_retries PASSED [ 60%]
+tests/test_patrol.py::TestProbeRetry::test_a_probe_config_gap_is_never_retried PASSED [ 61%]
+tests/test_patrol.py::TestFailureGrading::test_a_refused_key_is_graded_not_only_printed PASSED [ 62%]
+tests/test_patrol.py::TestFailureGrading::test_a_probe_gap_is_graded_as_the_patrol_s_own PASSED [ 63%]
+tests/test_patrol.py::TestFailureGrading::test_a_rescued_leg_keeps_the_class_that_failed_first PASSED [ 63%]
+tests/test_patrol.py::TestFailureGrading::test_a_clean_leg_carries_no_grade PASSED [ 64%]
+tests/test_patrol.py::TestFailureGrading::test_key_values_reads_the_credential_fields_and_nothing_else PASSED [ 65%]
+tests/test_patrol.py::TestFailureGrading::test_a_failure_that_quotes_the_key_in_prose_is_scrubbed PASSED [ 66%]
+tests/test_patrol.py::TestFailureGrading::test_grading_never_moves_the_routing_mark[banned] PASSED [ 66%]
+tests/test_patrol.py::TestFailureGrading::test_grading_never_moves_the_routing_mark[throttled] PASSED [ 67%]
+tests/test_patrol.py::TestFailureGrading::test_grading_never_moves_the_routing_mark[degraded] PASSED [ 68%]
+tests/test_patrol.py::TestFailureGrading::test_the_report_reads_the_legs_that_actually_ran PASSED [ 69%]
+tests/test_patrol.py::TestFieldCanary::test_shape_classes_a_column_by_how_much_of_it_was_filled PASSED [ 70%]
+tests/test_patrol.py::TestFieldCanary::test_a_small_page_cannot_be_rescued_by_the_tolerance PASSED [ 70%]
+tests/test_patrol.py::TestFieldCanary::test_a_reading_that_counts_more_misses_than_rows_is_refused PASSED [ 71%]
+tests/test_patrol.py::TestFieldCanary::test_evaluate_canary_measures_the_watched_column PASSED [ 72%]
+tests/test_patrol.py::TestFieldCanary::test_an_empty_page_is_unmeasurable_rather_than_hollow PASSED [ 73%]
+tests/test_patrol.py::TestFieldCanary::test_a_blank_string_counts_as_an_empty_cell PASSED [ 73%]
+tests/test_patrol.py::TestFieldCanary::test_a_shape_that_was_never_measured_is_the_alarm PASSED [ 74%]
+tests/test_patrol.py::TestFieldCanary::test_the_canary_table_cannot_describe_an_unroutable_leg PASSED [ 75%]
+tests/test_patrol.py::TestFieldCanary::test_every_watched_column_is_a_field_of_the_contract PASSED [ 76%]
+tests/test_patrol.py::TestFieldCanary::test_the_watched_columns_cover_the_collapse_c18_found PASSED [ 76%]
+tests/test_patrol.py::TestPatrolCanaryWiring::test_a_hollow_column_is_reported_on_a_leg_that_probed_ok PASSED [ 77%]
+tests/test_patrol.py::TestPatrolCanaryWiring::test_two_watched_columns_of_one_page_are_read_once PASSED [ 78%]
+tests/test_patrol.py::TestPatrolCanaryWiring::test_a_field_collapse_never_moves_the_routing_mark PASSED [ 79%]
+tests/test_patrol.py::TestPatrolCanaryWiring::test_a_clean_column_produces_no_deviation PASSED [ 80%]
+tests/test_patrol.py::TestPatrolCanaryWiring::test_a_leg_that_did_not_probe_gets_no_canary_reading PASSED [ 80%]
+tests/test_patrol.py::TestPatrolCanaryWiring::test_the_probe_latency_excludes_the_canary_reads PASSED [ 81%]
+tests/test_patrol.py::TestPatrolCanaryWiring::test_a_canary_that_cannot_be_read_is_not_an_alarm PASSED [ 82%]
+tests/test_patrol.py::TestProbeParamCoverage::test_probe_tables_match_the_verified_capabilities_exactly PASSED [ 83%]
+tests/test_patrol.py::TestProbeParamCoverage::test_every_probe_validates_offline PASSED [ 83%]
+tests/test_patrol.py::TestRollingProbes::test_futures_contract_is_the_lead_month_after_today PASSED [ 84%]
+tests/test_patrol.py::TestRollingProbes::test_futures_contract_rolls_over_the_year PASSED [ 85%]
+tests/test_patrol.py::TestRollingProbes::test_option_contract_comes_from_the_catalog PASSED [ 86%]
+tests/test_patrol.py::TestRollingProbes::test_the_etf_probe_window_rolls_with_the_probe_date PASSED [ 86%]
+tests/test_patrol.py::TestRollingProbes::test_the_etf_probe_never_asks_past_the_rolling_depth PASSED [ 87%]
+tests/test_patrol.py::TestRollingProbes::test_pick_skips_contracts_expiring_inside_the_horizon PASSED [ 88%]
+tests/test_patrol.py::TestRollingProbes::test_pick_raises_when_nothing_lives_on PASSED [ 89%]
+tests/test_patrol.py::TestProbePlumbing::test_the_option_probe_uses_the_registered_catalog_leg PASSED [ 90%]
+tests/test_patrol.py::TestProbePlumbing::test_a_missing_catalog_leg_is_the_patrols_own_gap PASSED [ 90%]
+tests/test_patrol.py::TestProbePlumbing::test_the_option_resolver_falls_back_to_the_process_registry PASSED [ 91%]
+tests/test_patrol.py::TestProbePlumbing::test_an_unroutable_capability_is_skipped_not_blamed PASSED [ 92%]
+tests/test_patrol.py::TestProbePlumbing::test_run_patrol_is_the_sync_entry_a_cron_calls PASSED [ 93%]
+tests/test_patrol.py::TestKeyStatus::test_ths_requires_a_key PASSED      [ 93%]
+tests/test_patrol.py::TestKeyStatus::test_configured_keys_are_reported PASSED [ 94%]
+tests/test_patrol.py::TestHealthApi::test_sources_endpoint_requires_auth PASSED [ 95%]
+tests/test_patrol.py::TestHealthApi::test_sources_endpoint_lists_credentials PASSED [ 96%]
+tests/test_patrol.py::TestHealthApi::test_sources_endpoint_grades_keys_without_rendering_one PASSED [ 96%]
+tests/test_patrol.py::TestHealthApi::test_patrol_endpoint_grades_the_leg_that_failed PASSED [ 97%]
+tests/test_patrol.py::TestHealthApi::test_patrol_endpoint_reports_probe_results PASSED [ 98%]
+tests/test_patrol.py::TestHealthApi::test_patrol_endpoint_reports_a_rescued_leg_as_flaky PASSED [ 99%]
+tests/test_patrol.py::TestHealthApi::test_patrol_endpoint_reports_a_hollow_column_on_a_healthy_leg PASSED [100%]
+
+============================= 130 passed in 2.84s ==============================
+exit=0
+
+===== 本档被替换的原因（补记于同一轮，未改动上面任何一行）=====
+本跑（130 passed）在补 6 条用例之前；那 6 条把 key_health.py 的未覆从 8 行降到 3 行（门禁里的读数），
+最终树复算另存 judge-tests.txt（136 passed）。

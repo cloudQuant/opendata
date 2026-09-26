@@ -28,13 +28,34 @@ from opendata.api.dependencies import (
 from opendata.api.schemas import APIResponse
 from opendata.core.database import get_db
 from opendata.pipeline.jobs import SUPPORTED_DOMAINS, run_incremental_job
-from opendata.pipeline.patrol import key_status, patrol
+from opendata.pipeline.patrol import credential_health, key_status, patrol
 from opendata.pipeline.retry import list_failed_shards, mark_failed_for_retry
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from sqlalchemy.ext.asyncio import AsyncSession
 
+    from opendata.pipeline.patrol import PatrolResult
+
 router = APIRouter()
+
+
+def _graded_health(results: Sequence[PatrolResult] = ()) -> dict[str, dict[str, Any]]:
+    """Render the credential plane the API returns (AC-19).
+
+    Args:
+        results: Probe results of one patrol; empty for a read that did not
+            probe anything, which grades every Key from presence alone.
+
+    Returns:
+        ``{source: report}`` as plain dicts. Both health endpoints go through
+        here, so the two cannot disagree about the same Key and neither can
+        hand a caller an object that might render more than metadata.
+    """
+    graded = credential_health(results=results)
+    return {source: report.as_dict() for source, report in graded.items()}
+
 
 #: Manual runs kept in memory (the database checkpoints carry the rest).
 _RUNS: dict[str, dict[str, Any]] = {}
@@ -154,15 +175,25 @@ async def pipeline_run_status(
 async def source_health(
     current_user: CurrentUser,
 ) -> APIResponse:
-    """Report the credential configuration of every source (B3.4/AC-19).
+    """Report the credential configuration and graded health of every source.
 
     Args:
         current_user: Authenticated user.
 
     Returns:
-        Per-source required/configured status and endpoint.
+        Per-source required/configured status and endpoint, plus the graded
+        credential plane (AC-19): each source's level, who has to act and what
+        no check in this repo can rule out. Presence of a Key alone is reported
+        as ``presence-only``, never as healthy.
     """
-    return APIResponse(success=True, message="success", data={"sources": key_status()})
+    return APIResponse(
+        success=True,
+        message="success",
+        data={
+            "sources": key_status(),
+            "credential_health": _graded_health(),
+        },
+    )
 
 
 @router.post("/health/patrol")
@@ -177,11 +208,16 @@ async def run_source_patrol(
     a watched column whose fill shape was never measured on the source is
     counted in ``field_deviations`` - reported, never routed on.
 
+    Each leg also carries its health class and a metadata-only attribution,
+    and ``credential_health`` grades the Key plane (AC-19): which failures are
+    somebody's credential problem, which are the source's, and what no check
+    here can rule out. Grading never moves a routing mark.
+
     Args:
         current_user: Authenticated user.
 
     Returns:
-        Per-capability probe results plus the key status.
+        Per-capability probe results plus the key status and graded health.
     """
     results = list(await patrol())
     return APIResponse(
@@ -203,6 +239,8 @@ async def run_source_patrol(
                     "latency_ms": round(result.latency_ms, 1),
                     "verified": result.verified,
                     "rows": result.rows,
+                    "failure_class": result.failure_class,
+                    "attribution": result.attribution,
                     "canaries": [
                         {
                             "asset_type": reading.asset_type,
@@ -219,6 +257,7 @@ async def run_source_patrol(
                 for result in results
             ],
             "keys": key_status(),
+            "credential_health": _graded_health(results),
         },
     )
 

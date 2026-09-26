@@ -40,7 +40,26 @@ _STOCK_EXCHANGE_SUFFIXES = frozenset({"SH", "SZ", "BJ"})
 
 
 class ThsProviderError(RuntimeError):
-    """Stable failures of the ths provider adapter."""
+    """Stable failures of the ths provider adapter.
+
+    Attributes:
+        code: The stable failure identifier the adapter was raised with, with
+            any trailing detail stripped. The sibling macro providers have
+            carried ``code`` as a field since C21; ths kept it as prose only,
+            which left every failure of the authoritative A-share source
+            unclassifiable by the credential health plane.
+    """
+
+    def __init__(self, message: str) -> None:
+        """Raise one stable failure.
+
+        Args:
+            message: The stable code, optionally followed by ``: detail``. The
+                detail stays in the message for humans; :attr:`code` keeps only
+                the code, so caller-controlled text cannot reach a report.
+        """
+        self.code = message.split(":", 1)[0].strip()
+        super().__init__(message)
 
 
 def credentials() -> FuyaoCredentials:

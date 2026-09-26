@@ -38,6 +38,16 @@ from typing import TYPE_CHECKING, cast
 
 from loguru import logger
 
+from opendata.pipeline.key_health import (
+    CLASS_PATROL_GAP,
+    FailureObservation,
+    KeyReport,
+    attribution_of,
+    build_report,
+    classify_failure,
+    redact,
+)
+
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
     from typing import Any
@@ -190,6 +200,11 @@ class PatrolResult:
             them all).
         canaries: Column-shape readings taken after a clean pass, empty for a
             leg with no watched columns or no pass to look at.
+        failure_class: Health class of the failure the report keeps, from
+            :func:`~opendata.pipeline.key_health.classify_failure` (None when
+            nothing failed).
+        attribution: Metadata-only description of that failure - code, status,
+            URL origin (None when there was no failure to describe).
     """
 
     domain: str
@@ -201,6 +216,8 @@ class PatrolResult:
     rows: int | None = None
     attempts: int = 1
     canaries: tuple[CanaryReading, ...] = ()
+    failure_class: str | None = None
+    attribution: str | None = None
 
     @property
     def flaky(self) -> bool:
@@ -464,6 +481,72 @@ def key_status(
     }
 
 
+def key_values(settings: Any | None = None) -> tuple[str, ...]:  # noqa: ANN401
+    """Return the Key values this process holds, for report scrubbing only.
+
+    Args:
+        settings: Settings object; the application settings when omitted.
+
+    Returns:
+        The configured credential values. Nothing here prints, stores or
+        returns them to a caller of :func:`patrol`: they are used as the
+        replace-pattern of :func:`~opendata.pipeline.key_health.redact`, which
+        is the only guard against a client that quotes its own header into a
+        failure message - a shape no URL rule can catch.
+    """
+    from opendata.core.config import settings as app_settings
+
+    settings = settings or app_settings
+    return tuple(
+        value
+        for value in (
+            getattr(settings, "fuyao_api_key", ""),
+            getattr(settings, "fred_api_key", ""),
+        )
+        if value
+    )
+
+
+def credential_health(
+    settings: Any | None = None,  # noqa: ANN401  # duck-typed settings for tests
+    results: Sequence[PatrolResult] = (),
+) -> dict[str, KeyReport]:
+    """Grade each source's credential plane (AC-19 / NFR-5).
+
+    Presence is what :func:`key_status` can see; the classes come from the
+    probes that actually ran. Joining them here, in one function, is what keeps
+    a report line and an API response from disagreeing about the same Key.
+
+    Args:
+        settings: Settings object; the application settings when omitted.
+        results: Probe results of one patrol. A leg that passed on its retry
+            still contributes its first failure, so a 429 the retry absorbed is
+            reported as quota consumption rather than hidden.
+
+    Returns:
+        ``{source: KeyReport}``, metadata only - no Key value, no header, no URL
+        query. Levels are ``alert`` / ``warn`` / ``info`` / ``presence-only`` /
+        ``not-applicable``; a configured Key that was never seen to fail is
+        ``presence-only``, never healthy. Call ``as_dict()`` to render one.
+    """
+    statuses = key_status(settings)
+    observations = tuple(
+        FailureObservation(result.source, str(result.failure_class), result.attribution)
+        for result in results
+        if result.failure_class is not None
+    )
+    return {
+        source: build_report(
+            source,
+            required=bool(info["required"]),
+            configured=bool(info["configured"]),
+            endpoint=str(info["endpoint"]),
+            observations=observations,
+        )
+        for source, info in statuses.items()
+    }
+
+
 async def patrol(registry: ProviderRegistry | None = None) -> Sequence[PatrolResult]:
     """Probe every verified capability and refresh the registry health.
 
@@ -478,6 +561,7 @@ async def patrol(registry: ProviderRegistry | None = None) -> Sequence[PatrolRes
     from opendata.data.registry import get_registry
 
     registry = registry or get_registry()
+    secrets = key_values()
     results: list[PatrolResult] = []
     for capability in registry.capabilities():
         if not capability.verified:
@@ -495,6 +579,8 @@ async def patrol(registry: ProviderRegistry | None = None) -> Sequence[PatrolRes
         ok = False
         rows: int | None = None
         error: str | None = None
+        failure_class: str | None = None
+        attribution: str | None = None
         while True:
             attempts += 1
             try:
@@ -508,11 +594,13 @@ async def patrol(registry: ProviderRegistry | None = None) -> Sequence[PatrolRes
                 # A missing probe is a gap in the patrol, not an unhealthy
                 # source: report it loudly, leave the routing mark alone, and
                 # never retry - a second attempt reads the same table.
-                error = f"{type(exc).__name__}: {exc}"
+                error = redact(f"{type(exc).__name__}: {exc}", secrets)
+                failure_class, attribution = CLASS_PATROL_GAP, None
                 logger.error(f"patrol cannot probe {leg}: {error}")
                 break
             except Exception as exc:  # any probe failure is a health signal
-                rows, error = None, f"{type(exc).__name__}: {exc}"
+                rows, error = None, redact(f"{type(exc).__name__}: {exc}", secrets)
+                failure_class, attribution = classify_failure(exc), attribution_of(exc)
                 if attempts < PROBE_ATTEMPTS:
                     logger.warning(f"patrol retrying {leg} after attempt {attempts}: {error}")
                     await asyncio.sleep(PROBE_RETRY_BACKOFF)
@@ -544,6 +632,8 @@ async def patrol(registry: ProviderRegistry | None = None) -> Sequence[PatrolRes
                 rows=rows,
                 attempts=attempts,
                 canaries=canaries,
+                failure_class=failure_class,
+                attribution=attribution,
             )
         )
     return results

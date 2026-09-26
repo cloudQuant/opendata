@@ -29,7 +29,19 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from opendata.data.providers import register_providers
-from opendata.pipeline.patrol import SHAPE_NO_READING, CanaryReading, key_status, run_patrol
+from opendata.pipeline.key_health import (
+    LEVEL_ALERT,
+    LEVEL_NOT_APPLICABLE,
+    LEVEL_PRESENCE_ONLY,
+    LEVEL_WARN,
+)
+from opendata.pipeline.patrol import (
+    SHAPE_NO_READING,
+    CanaryReading,
+    credential_health,
+    key_status,
+    run_patrol,
+)
 
 
 def print_canary(reading: CanaryReading) -> None:
@@ -73,9 +85,22 @@ def main() -> int:
         for reading in result.canaries:
             print_canary(reading)
     print("== 凭证配置 ==")
+    health = credential_health(results=results)
     for source, info in keys.items():
         mark = "配置" if info["configured"] else "缺失"
         print(f"  {source}: {mark}（必须={info['required']}）")
+    print("== 凭证分级（AC-19）==")
+    for source, report in health.items():
+        if report.level in {LEVEL_PRESENCE_ONLY, LEVEL_NOT_APPLICABLE}:
+            # 没有失败可归因的行只说一句：配了 Key 不等于 Key 有效。
+            quiet = f"｜{report.note}" if report.level == LEVEL_PRESENCE_ONLY else ""
+            print(f"  {source}: {report.level}{quiet}")
+            continue
+        classes = "/".join(f"{name}×{count}" for name, count in report.classes)
+        attribution = " ".join(report.attributions)
+        tail = f"｜{attribution}" if attribution else ""
+        print(f"  {source}: {report.level} {classes} 处置方={report.owner}{tail}")
+        print(f"        未主动探测：{'/'.join(report.unverified)}")
     failed = sum(1 for result in results if not result.ok)
     flaky = sum(1 for result in results if result.flaky)
     deviations = sum(len(result.field_deviations) for result in results)
@@ -83,10 +108,16 @@ def main() -> int:
         1 for result in results for reading in result.canaries if reading.shape == SHAPE_NO_READING
     )
     missing_keys = sum(1 for info in keys.values() if info["required"] and not info["configured"])
+    alerts = sum(1 for report in health.values() if report.level == LEVEL_ALERT)
+    warns = sum(1 for report in health.values() if report.level == LEVEL_WARN)
+    presence = sum(1 for report in health.values() if report.level == LEVEL_PRESENCE_ONLY)
     print(
         f"\n失败 {failed} 项；抖动 {flaky} 项；字段级偏差 {deviations} 项"
-        f"（未判读 {unreadable} 项）；必配 Key 缺失 {missing_keys} 项"
+        f"（未判读 {unreadable} 项）；必配 Key 缺失 {missing_keys} 项；"
+        f"凭证告警 {alerts} 项 / 观察 {warns} 项 / 仅在场 {presence} 项"
     )
+    # 分级不改退出码：会红的仍然是失败腿和字段级塌陷。凭证面只把「这是谁的麻烦」
+    # 写进同一份报告——抖动不算封禁，在场不算健康，到期与配额没有主动源就不判。
     return 1 if failed or deviations else 0
 
 

@@ -14,19 +14,32 @@ from __future__ import annotations
 from datetime import date
 from typing import Any
 
+import httpx
 import pytest
 
 from opendata.data.capability import Capability
 from opendata.data.protocol import FetchContext, Fetcher, QueryParams
 from opendata.data.registry import ProviderRegistry
 from opendata.pipeline import patrol as patrol_module
+from opendata.pipeline.key_health import (
+    CLASS_CREDENTIAL_REJECTED,
+    CLASS_PATROL_GAP,
+    CLASS_QUOTA_EXHAUSTED,
+    CLASS_SOURCE_DEGRADED,
+    CLASS_UNCLASSIFIED,
+    LEVEL_ALERT,
+    LEVEL_PRESENCE_ONLY,
+    REDACTED_MARKER,
+)
 from opendata.pipeline.patrol import (
     PROBE_PARAMS,
     PROBE_RESOLVERS,
     PatrolProbeConfigError,
     PatrolProbeError,
+    credential_health,
     first_live_contract,
     key_status,
+    key_values,
     patrol,
     probe_params,
     rolling_fund_etf_params,
@@ -34,6 +47,13 @@ from opendata.pipeline.patrol import (
     rolling_option_params,
 )
 from opendata_fuyao.endpoints import FUND_ETF_DEPTH_DAYS
+
+#: A Key-in-query source writes the query, and so the credential, into the
+#: message ``raise_for_status()`` raises. The patrol archives that message, so
+#: the canary below is what proves nothing secret reaches a report or a payload.
+CANARY = "CANARY-SECRET-do-not-render"
+LEAKY_URL = f"https://api.stlouisfed.org/fred/series/observations?series_id=CPIA&api_key={CANARY}"
+LEAKY_ORIGIN = "https://api.stlouisfed.org/fred/series/observations"
 
 
 class StubQuery(QueryParams):
@@ -268,6 +288,141 @@ class TestProbeRetry:
 
         assert results[0].attempts == 1
         assert fetcher.calls == 0
+
+
+def _leaky_error(status: int, reason: str) -> httpx.HTTPStatusError:
+    """Build the failure a Key-in-query source raises through httpx.
+
+    Args:
+        status: HTTP status of the stub response.
+        reason: Reason phrase the message carries.
+
+    Returns:
+        The exception with its response attached, which is how it arrives from
+        a transport: the message names the full URL, query and credential
+        included, because that is what ``raise_for_status()`` writes.
+    """
+    request = httpx.Request("GET", LEAKY_URL)
+    response = httpx.Response(status, request=request, headers={"content-type": "text/plain"})
+    with pytest.raises(httpx.HTTPStatusError) as caught:
+        response.raise_for_status()
+    return caught.value
+
+
+class TestFailureGrading:
+    """C28 guards for the seam between a probe failure and its grade.
+
+    ``key_health`` owns the classification tables and is tested there. These
+    cases cover what only the patrol can answer: that the catch site actually
+    fills the two graded fields, that the message it archives is redacted, and
+    that grading touches nothing else it did not touch before.
+    """
+
+    async def test_a_refused_key_is_graded_not_only_printed(self):
+        fetcher = StubFetcher(
+            _capability("stock_daily"), raise_on=_leaky_error(401, "Unauthorized")
+        )
+
+        results = await patrol(_registry(fetcher))
+
+        assert results[0].failure_class == CLASS_CREDENTIAL_REJECTED
+        # Metadata only, in both fields: the status and the host the Key was
+        # sent to, never the query that carried it.
+        assert results[0].attribution == f"status=401 {LEAKY_ORIGIN}"
+        assert CANARY not in (results[0].error or "")
+
+    async def test_a_probe_gap_is_graded_as_the_patrol_s_own(self):
+        results = await patrol(_registry(StubFetcher(_capability("not_a_real_domain"))))
+
+        assert results[0].failure_class == CLASS_PATROL_GAP
+        # Nothing reached a source, so there is no attribution to name: the
+        # patrol's own gap must not be dressed up as evidence about a Key.
+        assert results[0].attribution is None
+
+    async def test_a_rescued_leg_keeps_the_class_that_failed_first(self):
+        fetcher = StubFetcher(
+            _capability("stock_daily"),
+            raise_on=_leaky_error(429, "Too Many Requests"),
+            fails_first=1,
+        )
+
+        results = await patrol(_registry(fetcher))
+
+        assert (results[0].ok, results[0].flaky) == (True, True)
+        # A 429 the retry absorbed is quota consumed, not a clean pass.
+        assert results[0].failure_class == CLASS_QUOTA_EXHAUSTED
+
+    async def test_a_clean_leg_carries_no_grade(self):
+        results = await patrol(_registry(StubFetcher(_capability("stock_daily"))))
+
+        assert (results[0].failure_class, results[0].attribution) == (None, None)
+
+    def test_key_values_reads_the_credential_fields_and_nothing_else(self):
+        assert key_values(_settings(ths=CANARY, fred="")) == (CANARY,)
+
+    async def test_a_failure_that_quotes_the_key_in_prose_is_scrubbed(self, monkeypatch):
+        """The URL rule cannot catch a header, so the value pass has to.
+
+        A failure shape that carries neither a code, a status nor a URL is the
+        worst case for the report: the archived text is the whole story, and if
+        the patrol archived it raw a credential would sit in an HTTP payload.
+        """
+        monkeypatch.setattr(patrol_module, "key_values", lambda: (CANARY,))
+        fetcher = StubFetcher(
+            _capability("stock_daily"),
+            raise_on=RuntimeError(f"Authorization: Bearer {CANARY}"),
+        )
+
+        results = await patrol(_registry(fetcher))
+
+        assert CANARY not in (results[0].error or "")
+        assert REDACTED_MARKER in (results[0].error or "")
+        # Scrubbing hides the value, not the failure: it stays unclassified and
+        # therefore loud, rather than being smoothed into a known class.
+        assert results[0].failure_class == CLASS_UNCLASSIFIED
+        assert results[0].attribution == "RuntimeError"
+
+    @pytest.mark.parametrize(
+        ("status", "reason", "expected_class"),
+        [
+            (401, "Unauthorized", CLASS_CREDENTIAL_REJECTED),
+            (429, "Too Many Requests", CLASS_QUOTA_EXHAUSTED),
+            (503, "Service Unavailable", CLASS_SOURCE_DEGRADED),
+        ],
+        ids=["banned", "throttled", "degraded"],
+    )
+    async def test_grading_never_moves_the_routing_mark(
+        self, status: int, reason: str, expected_class: str
+    ):
+        """Who a failure is blamed on is a report, not a routing rule.
+
+        Before C28 every failure classed as one thing: unavailable. Each class
+        added here has to leave that decision exactly where it was, or the
+        graded plane would be quietly rerouting traffic.
+        """
+        fetcher = StubFetcher(_capability("stock_daily"), raise_on=_leaky_error(status, reason))
+        registry = _registry(fetcher)
+
+        results = await patrol(registry)
+
+        assert (results[0].ok, results[0].failure_class) == (False, expected_class)
+        with pytest.raises(LookupError):
+            registry.resolve("equity", "stock_daily", source="auto")
+
+    async def test_the_report_reads_the_legs_that_actually_ran(self):
+        """The join is real: presence and these probe results, one call."""
+        registry = _registry(
+            StubFetcher(_capability("stock_daily"), raise_on=_leaky_error(401, "Unauthorized"))
+        )
+        results = await patrol(registry)
+
+        health = credential_health(_settings(ths="t", fred="f"), results)
+
+        assert health["ths"].level == LEVEL_ALERT
+        assert health["ths"].classes[0][0] == CLASS_CREDENTIAL_REJECTED
+        assert health["ths"].attributions == (f"status=401 {LEAKY_ORIGIN}",)
+        # Configured, never seen to fail: presence-only, not healthy.
+        assert health["fred"].level == LEVEL_PRESENCE_ONLY
 
 
 class TestFieldCanary:
@@ -710,6 +865,54 @@ class TestHealthApi:
         assert response.status_code == 200
         sources = response.json()["data"]["sources"]
         assert sources["ths"]["configured"] is True
+
+    async def test_sources_endpoint_grades_keys_without_rendering_one(
+        self, test_client, test_user_token, monkeypatch
+    ):
+        """The read-only health page carries levels, never values."""
+        monkeypatch.setattr("opendata.api.pipeline.key_status", lambda: _status("t", "f"))
+        monkeypatch.setattr(patrol_module, "key_status", lambda settings=None: _status("t", "f"))
+        response = await test_client.get(
+            "/api/v1/health/sources",
+            headers={"Authorization": f"Bearer {test_user_token}"},
+        )
+
+        data = response.json()["data"]
+        ths = data["credential_health"]["ths"]
+        # A Key that was merely found in the settings is not a Key that works:
+        # the row says presence-only, names what no check ruled out, and says so
+        # in the note the operator reads.
+        assert (data["sources"]["ths"]["configured"], ths["level"]) == (True, LEVEL_PRESENCE_ONLY)
+        assert "Key 有效" in ths["note"]
+        assert "key-expiry" in ths["unverified"]
+        assert "api_key" not in response.text
+
+    async def test_patrol_endpoint_grades_the_leg_that_failed(
+        self, test_client, test_user_token, monkeypatch
+    ):
+        """The alert a caller reads carries the class, not the Key.
+
+        This is the whole path a credential can leak by: the source's own
+        message, archived into ``error``, summarised into ``attribution``, and
+        graded into a note. All three are rendered here and checked.
+        """
+        registry = _registry(
+            StubFetcher(_capability("stock_daily"), raise_on=_leaky_error(401, "Unauthorized"))
+        )
+        monkeypatch.setattr("opendata.api.pipeline.patrol", lambda: _patrol_done(registry))
+        response = await test_client.post(
+            "/api/v1/health/patrol",
+            headers={"Authorization": f"Bearer {test_user_token}"},
+        )
+
+        data = response.json()["data"]
+        leg = next(iter(data["results"]))
+        assert (leg["ok"], leg["failure_class"]) == (False, CLASS_CREDENTIAL_REJECTED)
+        assert leg["attribution"] == f"status=401 {LEAKY_ORIGIN}"
+        assert data["credential_health"]["ths"]["level"] == LEVEL_ALERT
+        assert data["credential_health"]["ths"]["owner"] == "凭据负责人"
+        assert CANARY not in response.text
+        assert "api_key" not in response.text
 
     async def test_patrol_endpoint_reports_probe_results(
         self, test_client, test_user_token, monkeypatch
