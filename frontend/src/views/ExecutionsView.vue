@@ -4,7 +4,7 @@ import { ElMessage } from 'element-plus'
 import { dataApi, pipelineApi, type FailedShard } from '@/api/data'
 import { getApiErrorMessage } from '@/utils/error'
 import { logger } from '@/utils/logger'
-import type { Execution, ExecutionStats } from '@/types'
+import type { Execution, ExecutionStats, TaskStatusType } from '@/types'
 import { PAGINATION } from '@/config/constants'
 
 const executions = ref<Execution[]>([])
@@ -18,14 +18,19 @@ const currentPage = ref(1)
 const pageSize = ref(PAGINATION.DEFAULT_PAGE_SIZE)
 const total = ref(0)
 
+// Keyed by the backend's own word list (opendata/models/task.py:28-36), and
+// typed `Record<TaskStatusType, …>` so the compiler holds the map to it: a
+// status added upstream reddens the type plane instead of rendering raw.
 const statusMap: Record<
-  string,
+  TaskStatusType,
   { text: string; type: 'info' | 'primary' | 'success' | 'danger' | 'warning' }
 > = {
   pending: { text: '等待中', type: 'info' },
   running: { text: '执行中', type: 'primary' },
-  success: { text: '成功', type: 'success' },
+  completed: { text: '成功', type: 'success' },
   failed: { text: '失败', type: 'danger' },
+  timeout: { text: '超时', type: 'warning' },
+  cancelled: { text: '已取消', type: 'info' },
 }
 
 async function loadExecutions() {
@@ -89,8 +94,11 @@ function handleSizeChange(size: number) {
   void loadExecutions()
 }
 
-function getStatusInfo(status: string) {
-  return statusMap[status] || { text: status, type: 'info' }
+function getStatusInfo(status: TaskStatusType) {
+  // The word arrives over HTTP: `TaskStatusType` is a claim about it, not a guarantee,
+  // and a status this map has not learned yet must render the word rather than take
+  // the whole table down on `.text` of undefined.
+  return statusMap[status] ?? { text: status, type: 'info' as const }
 }
 
 onMounted(async () => {
@@ -139,7 +147,7 @@ onMounted(async () => {
       <el-card class="stat-card warning">
         <div class="stat-content">
           <div class="stat-value">
-            {{ stats.success_rate ? (stats.success_rate * 100).toFixed(1) : 0 }}%
+            {{ stats.success_rate.toFixed(1) }}%
           </div>
           <div class="stat-label">
             成功率
@@ -244,12 +252,15 @@ onMounted(async () => {
           </template>
         </el-table-column>
         <el-table-column
-          prop="rows_processed"
-          label="处理行数"
-          width="100"
+          prop="rows_after"
+          label="行数(前/后)"
+          width="140"
         >
+          <!-- `rows_processed` lived on the download-progress payload only; the
+               execution record carries rows_before/rows_after (models/task.py:272-273).
+               `??`, not `||`: a run that landed 0 rows is an answer, not a blank. -->
           <template #default="{ row }">
-            {{ row.rows_processed || '-' }}
+            {{ row.rows_before ?? '-' }} → {{ row.rows_after ?? '-' }}
           </template>
         </el-table-column>
         <el-table-column

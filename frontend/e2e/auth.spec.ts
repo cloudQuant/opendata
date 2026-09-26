@@ -1,32 +1,5 @@
-import { test, expect, type Page } from '@playwright/test'
-
-/**
- * Seed the session a successful login would have left behind.
- *
- * pinia-plugin-persistedstate stores the `auth` store's user/accessToken/
- * refreshToken under the localStorage key `auth`, and the router guard only
- * reads `isAuthenticated` (user && accessToken) — so a seeded session needs
- * no backend and no mock. It is a session-shaped input, nothing more: no test
- * here claims a page rendered *data* from it.
- */
-async function seedSession(page: Page) {
-  await page.addInitScript(() => {
-    window.localStorage.setItem(
-      'auth',
-      JSON.stringify({
-        user: {
-          id: 1,
-          email: 'e2e@example.com',
-          username: 'e2e',
-          role: 'admin',
-          is_active: true,
-        },
-        accessToken: 'e2e-access-token',
-        refreshToken: 'e2e-refresh-token',
-      })
-    )
-  })
-}
+import { test, expect } from '@playwright/test'
+import { seedSession } from './fixtures'
 
 test.describe('Authentication E2E', () => {
   test('login page loads', async ({ page }) => {

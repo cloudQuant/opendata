@@ -29,12 +29,18 @@ const taskForm = ref({
   is_active: true,
 })
 
+// Every value here is a schedule_type the backend accepts: create/update validate
+// against ^(once|daily|weekly|monthly|cron|interval)$ (api/schemas.py:229) and
+// _build_trigger (scheduler_service.py:170-193) knows no other. The list used to
+// carry 'hourly' and 'custom', which no request can submit without a 422.
 const scheduleOptions = [
   { label: '每天', value: 'daily', cron: '0 0 * * *' },
   { label: '每周', value: 'weekly', cron: '0 0 * * 1' },
   { label: '每月', value: 'monthly', cron: '0 0 1 * *' },
-  { label: '每小时', value: 'hourly', cron: '0 * * * *' },
-  { label: '自定义', value: 'custom', cron: '' },
+  // The cron this repo's own seed uses for hourly (scripts/init_tasks_and_tables.py:57-59).
+  // Arbitrary crons stay reachable: the expression below is free text, and 'cron'
+  // is what it is interpreted as.
+  { label: '每小时', value: 'cron', cron: '0 * * * *' },
 ]
 
 async function loadTasks() {

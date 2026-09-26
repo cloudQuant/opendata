@@ -16,7 +16,9 @@ three shapes that exist in the tree today —
   * ``test.skip`` (never runs, and reads as an intentional gap or as rot
     depending on whether someone wrote down why),
   * an assertion that cannot be false,
-  * an assertion that only runs when a lookup already succeeded.
+  * an assertion that only runs when a lookup already succeeded,
+  * a page the plane no longer visits as a signed-in user, which a shrinking
+    test list produces without changing any surviving test's verdict.
 
 so the run's own summary cannot be the gate. This plane reads each leaf and
 refuses to call a green run a statement about verified behaviour.
@@ -49,28 +51,30 @@ RUNNER_TOTAL_RE: Final = re.compile(
     r"Total:\s*(?P<tests>\d+)\s+tests?\s+in\s+(?P<files>\d+)\s+files?"
 )
 
-#: Tests the tree declares skipped, each with the reason measured on 2026-09-26.
-#: Membership is a claim about the tree, not a comment: a new skip that is not
-#: listed here, and a listed gap that starts running again, both fail the gate
-#: (GAP-DRIFT, both directions).
+#: The named-gap list, retired to empty by C32. It used to hold the seven
+#: ``test.skip`` leaves with the reason each was skipped; all seven now run.
 #:
-#: All seven need a per-endpoint response fixture before they can assert
-#: anything real. Measured: ``/scripts`` reads ``/api/v1/scripts/?page=…``,
-#: ``/tables`` reads ``/api/v1/tables/``, ``/tables/<name>`` reads its own
-#: detail and preview endpoints, ``/tasks`` reads ``/api/v1/tasks/`` — a single
-#: generic ``{items, total}`` stub renders three of the four pages only, so
-#: half-implementing them would assert against the mock instead of the app.
-GAPS: Final[frozenset[str]] = frozenset(
-    {
-        "Scripts & Data Tables E2E › Authenticated › scripts list shows data",
-        "Scripts & Data Tables E2E › Authenticated › tables list shows data",
-        "Scripts & Data Tables E2E › Authenticated › table detail shows schema and preview",
-        "Scripts & Data Tables E2E › Authenticated › executions list shows history",
-        "Tasks Management E2E › Authenticated › tasks list page loads",
-        "Tasks Management E2E › Authenticated › can create a new task",
-        "Tasks Management E2E › Authenticated › can trigger task execution",
-    }
+#: It stays a rule rather than a comment: every skip in the tree must be listed
+#: here or the plane raises GAP-DRIFT, and an entry whose test starts running (or
+#: disappears) raises it too — both directions. An empty list therefore means the
+#: e2e plane holds no unexplained gap, and re-skipping one of the seven is what
+#: reddens the gate now.
+GAPS: Final[frozenset[str]] = frozenset()
+
+#: Pages a signed-in leaf has to navigate (C32 / AC-11 + AC-17).
+#:
+#: Coverage is counted from leaves inside an ``Authenticated`` describe only: the
+#: login-redirect leaves navigate ``/tables`` and friends too, but they assert the
+#: guard, not the page, so letting them satisfy the floor would make the rule
+#: pass on a plane that shows nothing. What this buys is the deletion direction —
+#: drop every ``/data`` leaf and the plane shrinks by one page and fails, where
+#: the classifier-vs-runner count check would have gone quiet with the test.
+REQUIRED_PAGES: Final[frozenset[str]] = frozenset(
+    {"/scripts", "/tables", "/executions", "/tasks", "/data"}
 )
+
+#: Only a leaf below a describe with this title may cover a required page.
+AUTH_TITLE: Final[str] = "Authenticated"
 
 
 @dataclass(frozen=True)
@@ -86,6 +90,10 @@ class Leaf:
         guarded_expects: How many of those sit in an ``if`` block with no else.
         vacuous_against: Substrings asserted present in a path the test itself
             navigated to, which makes the assertion true by construction.
+        goto_paths: Paths the leaf navigates, in source order.
+        authenticated: True when the leaf sits below a describe named
+            :data:`AUTH_TITLE`, so what it asserts is the page and not the
+            login guard.
     """
 
     file: str
@@ -95,6 +103,8 @@ class Leaf:
     expects: int
     guarded_expects: int
     vacuous_against: tuple[str, ...]
+    goto_paths: tuple[str, ...] = ()
+    authenticated: bool = False
 
     @property
     def verdict(self) -> str:
@@ -254,7 +264,8 @@ def classify(rel: str, text: str) -> list[Leaf]:
             continue
         end = block_end(lines, index)
         body = lines[index : end + 1]
-        goto_paths = [m.group("path") for line in body for m in GOTO_RE.finditer(line)]
+        goto_paths = tuple(m.group("path") for line in body for m in GOTO_RE.finditer(line))
+        titles = titles_above(lines, index)
         expects, guarded = count_expects(lines, index, end)
         vacuous = tuple(
             needle
@@ -266,11 +277,13 @@ def classify(rel: str, text: str) -> list[Leaf]:
             Leaf(
                 file=rel,
                 line=index + 1,
-                title=" › ".join([*titles_above(lines, index), match.group(4)]),
+                title=" › ".join([*titles, match.group(4)]),
                 modifier=match.group(2) or "",
                 expects=expects,
                 guarded_expects=guarded,
                 vacuous_against=vacuous,
+                goto_paths=goto_paths,
+                authenticated=AUTH_TITLE in titles,
             )
         )
     return out
@@ -288,8 +301,36 @@ def classify_tree(frontend: Path) -> list[Leaf]:
     return found
 
 
-def judge(leaves: list[Leaf], gaps: frozenset[str] = GAPS) -> list[str]:
-    """Turn leaf verdicts into failure reasons; empty means the plane is sound."""
+def covered_pages(leaves: list[Leaf]) -> frozenset[str]:
+    """Pages a signed-in leaf navigates *and* judges.
+
+    Only an ``ASSERTS`` leaf counts: a leaf that is itself a finding has already
+    stopped being a verdict, and letting it cover a page would report the plane
+    as whole while it is red. ``/data`` navigated only by a
+    ``requires authentication`` leaf does not count either — that leaf asserts
+    the router guard, not the page.
+    """
+    return frozenset(
+        path
+        for leaf in leaves
+        if leaf.authenticated and leaf.verdict == "ASSERTS"
+        for path in leaf.goto_paths
+    )
+
+
+def judge(
+    leaves: list[Leaf],
+    gaps: frozenset[str] = GAPS,
+    *,
+    required_pages: frozenset[str] = REQUIRED_PAGES,
+) -> list[str]:
+    """Turn leaf verdicts into failure reasons; empty means the plane is sound.
+
+    ``gaps`` and ``required_pages`` are parameters so a guard test about one
+    leaf's shape is answered by that rule alone. Passing empty sets is not a
+    softened criterion: the shipped plane is judged with the real ones, and
+    separate tests hold those two lists honest.
+    """
     reasons: list[str] = []
     titles = {leaf.title for leaf in leaves}
     skipped = {leaf.title for leaf in leaves if leaf.verdict == "SKIPPED"}
@@ -316,6 +357,11 @@ def judge(leaves: list[Leaf], gaps: frozenset[str] = GAPS) -> list[str]:
     for listed in sorted(gaps - skipped):
         shape = "it is no longer declared skipped" if listed in titles else "no such test exists"
         reasons.append(f"GAP-DRIFT: '{listed}' is a listed gap but {shape}")
+    reasons.extend(
+        f"PAGE-COVERAGE: {page} is navigated by no signed-in leaf that asserts, so the "
+        "plane holds no verdict about that page"
+        for page in sorted(required_pages - covered_pages(leaves))
+    )
     return reasons
 
 
@@ -397,7 +443,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"static vs runner  : {'MISMATCH' if mismatch else 'MATCH'}")
 
     reasons = judge(leaves)
+    covered = sorted(REQUIRED_PAGES & covered_pages(leaves))
+    uncovered = sorted(REQUIRED_PAGES - set(covered))
     print(f"named gaps        : {len(GAPS)}")
+    print(f"pages covered     : {' '.join(covered) or '(none)'}")
+    print(f"pages uncovered   : {' '.join(uncovered) or '(none)'}")
     print(f"findings          : {len(reasons)}")
     for reason in reasons:
         print(f"  {reason}")
