@@ -1,0 +1,59 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T04:37:30+0000
+branch=dev HEAD=59e60e3
+工作树（本轮改动，未提交）：
+ M Makefile
+ M frontend/.gitignore
+ M frontend/e2e/auth.spec.ts
+D  frontend/test-results/.last-run.json
+?? docs/evidence/C30/
+?? scripts/quality/frontend_e2e_plane.py
+?? tests/test_frontend_e2e_guard.py
+Python 3.13.5
+命令：python -u docs/evidence/C30/guard-teeth-mutation.py（完整未裁剪）
+
+--- 说明 ---
+7 种「让守卫不再报告」的改法逐个写进真模块，pytest 面与 gate 面各跑一次，再按字节还原并校验 sha256。
+预期结果不是「全部被 gate 抓住」：6/7 改法下 make frontend-e2e 仍然绿，这就是判定面必须同时住在 tests/ 的理由。
+
+guard module: scripts/quality/frontend_e2e_plane.py (sha256-12 38c7749e413f)
+baseline      pytest rc=0 failed=[]
+baseline      guard rc=0 PASS: every declared e2e leaf carries a verdict that can fail.
+
+[guarded_rule_dead] 'elif verdict in {"GUARDED", "PARTLY-GUARDED"}:' -> 'elif verdict in {"", ""}:'
+    pytest       rc=1  failed=['test_a_plane_with_a_finding_exits_one', 'test_an_assertion_beside_the_if_is_not_counted_as_guarded', 'test_an_assertion_that_only_lives_in_the_else_branch_is_a_finding', 'test_an_assertion_that_only_runs_when_a_lookup_succeeds_is_a_finding']
+    guard        rc=0  PASS: every declared e2e leaf carries a verdict that can fail.
+
+[vacuity_rule_dead] 'if self.vacuous_against:' -> 'if False:'
+    pytest       rc=1  failed=['test_asserting_a_substring_of_the_visited_path_is_vacuous']
+    guard        rc=0  PASS: every declared e2e leaf carries a verdict that can fail.
+
+[no_assertion_rule_dead] 'elif verdict == "NO-ASSERTION":' -> 'elif verdict == "":'
+    pytest       rc=1  failed=['test_a_test_that_never_asserts_is_a_finding']
+    guard        rc=0  PASS: every declared e2e leaf carries a verdict that can fail.
+
+[unnamed_skip_rule_dead] 'if verdict == "SKIPPED" and leaf.title not in gaps:' -> 'if False:'
+    pytest       rc=1  failed=['test_a_skip_without_a_named_reason_is_a_finding']
+    guard        rc=0  PASS: every declared e2e leaf carries a verdict that can fail.
+
+[listed_gap_rule_dead] 'for listed in sorted(gaps - skipped):' -> 'for listed in ():'
+    pytest       rc=1  failed=['test_a_listed_gap_that_started_running_is_a_finding_too', 'test_a_listed_gap_whose_test_disappeared_says_so']
+    guard        rc=0  PASS: every declared e2e leaf carries a verdict that can fail.
+
+[runner_crosscheck_dead] 'mismatch = listed != len(leaves)' -> 'mismatch = False'
+    pytest       rc=1  failed=['test_a_size_disagreement_with_the_runner_is_a_finding']
+    guard        rc=0  PASS: every declared e2e leaf carries a verdict that can fail.
+
+[classifier_dead] 'match = TEST_RE.match(raw)' -> 'match = None'
+    pytest       rc=1  failed=['test_a_clean_assertion_is_read_as_a_verdict', 'test_a_listed_gap_that_started_running_is_a_finding_too', 'test_a_plane_with_a_finding_exits_one', 'test_a_size_disagreement_with_the_runner_is_a_finding', 'test_a_skip_without_a_named_reason_is_a_finding', 'test_a_test_that_never_asserts_is_a_finding', 'test_an_assertion_beside_the_if_is_not_counted_as_guarded', 'test_an_assertion_that_only_lives_in_the_else_branch_is_a_finding', 'test_an_assertion_that_only_runs_when_a_lookup_succeeds_is_a_finding', 'test_an_else_if_chain_keeps_counting_its_branches_as_guarded', 'test_an_if_else_pair_that_asserts_in_both_branches_is_sound', 'test_an_includes_check_against_an_unvisited_path_is_a_real_assertion', 'test_asserting_a_substring_of_the_visited_path_is_vacuous', 'test_the_gap_list_is_exactly_the_shipped_skips', 'test_the_guard_reads_the_shipped_e2e_plane', 'test_the_shipped_plane_passes_the_guard_end_to_end']
+    guard        rc=2  NOTHING-TO-JUDGE: no *.spec.ts under /Users/yunjinqi/Documents/new_projects/opendata/frontend/e2e -> exit 2, not a pass
+
+
+restored      pytest rc=0 failed=[]
+restored      guard  rc=0 PASS: every declared e2e leaf carries a verdict that can fail.
+
+gate-blind mutations (guard still exits 0): 6/7
+  ['guarded_rule_dead', 'vacuity_rule_dead', 'no_assertion_rule_dead', 'unnamed_skip_rule_dead', 'listed_gap_rule_dead', 'runner_crosscheck_dead']
+That is the argument for tests/test_frontend_e2e_guard.py, not against it.
+PROBLEMS: 0
+TEETH_RC=0

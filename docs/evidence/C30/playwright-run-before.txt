@@ -1,0 +1,36 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T03:46:26Z
+branch=dev HEAD=59e60e3
+工作树（运行前，未提交）：
+?? docs/evidence/C30/
+npx playwright: unknown
+命令：cd frontend && npx playwright test --reporter=list
+判据：e2e 面真跑一次取读数——跑不动（缺浏览器／起不了 dev server）与跑了但红，是两种不同的读数，不合并
+
+
+Running 16 tests using 4 workers
+
+  ✓   3 [chromium] › e2e/auth.spec.ts:11:3 › Authentication E2E › register page loads (496ms)
+  ✓   2 [chromium] › e2e/auth.spec.ts:16:3 › Authentication E2E › unauthenticated user redirected to login (1.3s)
+  ✓   4 [chromium] › e2e/auth.spec.ts:4:3 › Authentication E2E › login page loads (1.4s)
+  ✓   6 [chromium] › e2e/scripts.spec.ts:4:3 › Scripts & Data Tables E2E › scripts page requires authentication (214ms)
+[2m[WebServer] [22m[2m5:46:37 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/auth/login[39m
+[2m[WebServer] [22mAggregateError [ECONNREFUSED]: 
+[2m[WebServer] [22m    at internalConnectMultiple (node:net:1134:18)
+[2m[WebServer] [22m    at afterConnectMultiple (node:net:1715:7)
+  ✓   7 [chromium] › e2e/scripts.spec.ts:9:3 › Scripts & Data Tables E2E › tables page requires authentication (216ms)
+  -   9 [chromium] › e2e/scripts.spec.ts:23:10 › Scripts & Data Tables E2E › Authenticated › scripts list shows data
+  -  10 [chromium] › e2e/scripts.spec.ts:28:10 › Scripts & Data Tables E2E › Authenticated › tables list shows data
+  -  11 [chromium] › e2e/scripts.spec.ts:33:10 › Scripts & Data Tables E2E › Authenticated › table detail shows schema and preview
+  -  12 [chromium] › e2e/scripts.spec.ts:44:10 › Scripts & Data Tables E2E › Authenticated › executions list shows history
+  ✓   5 [chromium] › e2e/auth.spec.ts:46:3 › Authentication E2E › 404 page for unknown routes (1.2s)
+  -  14 [chromium] › e2e/tasks.spec.ts:19:10 › Tasks Management E2E › Authenticated › tasks list page loads
+  -  15 [chromium] › e2e/tasks.spec.ts:26:10 › Tasks Management E2E › Authenticated › can create a new task
+  -  16 [chromium] › e2e/tasks.spec.ts:35:10 › Tasks Management E2E › Authenticated › can trigger task execution
+  ✓   8 [chromium] › e2e/scripts.spec.ts:14:3 › Scripts & Data Tables E2E › executions page requires authentication (203ms)
+  ✓  13 [chromium] › e2e/tasks.spec.ts:7:3 › Tasks Management E2E › tasks page requires authentication (203ms)
+  ✓   1 [chromium] › e2e/auth.spec.ts:22:3 › Authentication E2E › login with invalid credentials shows error (3.6s)
+
+  7 skipped
+  9 passed (7.8s)
+PLAYWRIGHT_RC=0

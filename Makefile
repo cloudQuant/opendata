@@ -13,7 +13,7 @@
 .PHONY: help lint format format-check typecheck security deps-audit a2-check \
         test test-cov quality-ratchet public-api-quality zero-dep-check brand-check \
         frontend-lint frontend-format frontend-test frontend-test-cov frontend-typecheck \
-        frontend-collection \
+        frontend-collection frontend-e2e \
         gate quality quality-full pre-commit
 
 # Self-developed trees (A1 + A2)
@@ -26,7 +26,7 @@ help:
 	@echo "A2 (gating):      a2-check public-api-quality zero-dep-check brand-check quality-ratchet"
 	@echo "Tests:            test test-cov"
 	@echo "Dev views (A1):   lint format format-check typecheck security deps-audit"
-	@echo "Frontend:         frontend-lint frontend-format frontend-collection frontend-test frontend-test-cov frontend-typecheck"
+	@echo "Frontend:         frontend-lint frontend-format frontend-collection frontend-e2e frontend-test frontend-test-cov frontend-typecheck"
 
 # --- A2 zero-tolerance gate ------------------------------------------------
 
@@ -119,6 +119,17 @@ frontend-test-cov:
 frontend-typecheck:
 	cd frontend && npx vue-tsc --noEmit
 
+# A playwright run reports a declared skip, a test whose only assertion sits
+# behind `if (await …isVisible())`, and a test that asserts a substring of the
+# path it just visited, all in the same green summary. So the run cannot gate
+# itself: the judgment plane reads every leaf first, and only after it is clean
+# does the browser run have to be green. Needs `npx playwright install chromium`
+# once per machine; it starts only the vite dev server, no backend and no
+# warehouse (see docs/evidence/C30/README.md §4 for what that buys and costs).
+frontend-e2e:
+	python scripts/quality/frontend_e2e_plane.py
+	cd frontend && npx playwright test --reporter=list
+
 # --- Aggregates ------------------------------------------------------------
 
 # Every item runs in its own sub-make so a failure aborts the gate immediately
@@ -146,11 +157,13 @@ gate:
 	@$(MAKE) --no-print-directory frontend-collection
 	@echo "===== gate: frontend-test ====="
 	@$(MAKE) --no-print-directory frontend-test
+	@echo "===== gate: frontend-e2e ====="
+	@$(MAKE) --no-print-directory frontend-e2e
 	@echo "===== gate: PASSED ====="
 
 # Backwards-compatible aliases
 quality: a2-check js-points-check
-quality-full: a2-check frontend-lint frontend-typecheck frontend-collection frontend-test
+quality-full: a2-check frontend-lint frontend-typecheck frontend-collection frontend-test frontend-e2e
 
 pre-commit:
 	@command -v pre-commit >/dev/null 2>&1 && pre-commit run --all-files || echo "pre-commit not installed (pip install pre-commit)"

@@ -1,0 +1,123 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T04:36:57+0000
+branch=dev HEAD=59e60e3
+工作树（本轮改动，未提交）：
+ M Makefile
+ M frontend/.gitignore
+ M frontend/e2e/auth.spec.ts
+D  frontend/test-results/.last-run.json
+?? docs/evidence/C30/
+?? scripts/quality/frontend_e2e_plane.py
+?? tests/test_frontend_e2e_guard.py
+Python 3.13.5
+命令：python -u docs/evidence/C30/guard-falsification.py（完整未裁剪）
+
+--- 说明 ---
+14 个注入形态走守卫自己的 classify()/judge()/main()：每条规则一个它必须红的形态、一批它必须不红的形态、两个记录在案的盲区（BLIND，写的是它现在读成什么，不是认可这个读法）。
+退出码契约：干净树 0、无可读面 2、植入守卫形态 1。四条规则全被跑到，否则 HARNESS_VACUOUS=2。
+
+== injected specs through classify() + judge() ==
+  [OK] an assertion that only runs when a lookup succeeded
+      verdicts want=['GUARDED'] got=['GUARDED']
+      kinds    want=['GUARDED'] got=['GUARDED']
+      reason: GUARDED: e2e/injected.spec.ts:2 Suite › test 1 — 1/1 assertion(s) sit inside an `if` with no else, so a missing element passes the test
+  [OK] an assertion beside the if is only partly guarded
+      verdicts want=['PARTLY-GUARDED'] got=['PARTLY-GUARDED']
+      kinds    want=['GUARDED'] got=['GUARDED']
+      reason: GUARDED: e2e/injected.spec.ts:2 Suite › test 1 — 1/2 assertion(s) sit inside an `if` with no else, so a missing element passes the test
+  [OK] an assertion that cannot be false
+      verdicts want=['VACUOUS'] got=['VACUOUS']
+      kinds    want=['VACUOUS'] got=['VACUOUS']
+      reason: VACUOUS: e2e/injected.spec.ts:2 Suite › test 1 — includes('login') is already true of the path the test navigated to, so no product behaviour can redden it
+  [OK] a declared test that never asserts
+      verdicts want=['NO-ASSERTION'] got=['NO-ASSERTION']
+      kinds    want=['NO-ASSERTION'] got=['NO-ASSERTION']
+      reason: NO-ASSERTION: e2e/injected.spec.ts:2 Suite › test 1 — the body never asserts
+  [OK] a new skip with no named reason
+      verdicts want=['SKIPPED'] got=['SKIPPED']
+      kinds    want=['GAP-DRIFT'] got=['GAP-DRIFT']
+      reason: GAP-DRIFT: e2e/injected.spec.ts:2 Suite › a gap that moved on — skipped with no named reason
+  [OK] a listed gap that started running again
+      verdicts want=['ASSERTS'] got=['ASSERTS']
+      kinds    want=['GAP-DRIFT'] got=['GAP-DRIFT']
+      reason: GAP-DRIFT: 'Suite › a gap that moved on' is a listed gap but it is no longer declared skipped
+  [OK] a listed gap whose test disappeared
+      verdicts want=['ASSERTS'] got=['ASSERTS']
+      kinds    want=['GAP-DRIFT'] got=['GAP-DRIFT']
+      reason: GAP-DRIFT: 'Suite › gone entirely' is a listed gap but no such test exists
+  [OK] one guarded and one clean leaf in the same spec
+      verdicts want=['GUARDED', 'ASSERTS'] got=['GUARDED', 'ASSERTS']
+      kinds    want=['GUARDED'] got=['GUARDED']
+      reason: GUARDED: e2e/injected.spec.ts:2 Suite › test 1 — 1/1 assertion(s) sit inside an `if` with no else, so a missing element passes the test
+  [OK] MUST-NOT-CATCH if/else asserting in both branches covers every path
+      verdicts want=['ASSERTS'] got=['ASSERTS']
+      kinds    want=['PASS'] got=['PASS']
+  [OK] MUST-NOT-CATCH the same pair with the else on its own line
+      verdicts want=['ASSERTS'] got=['ASSERTS']
+      kinds    want=['PASS'] got=['PASS']
+  [OK] MUST-NOT-CATCH includes against a string the test never navigated to
+      verdicts want=['ASSERTS'] got=['ASSERTS']
+      kinds    want=['PASS'] got=['PASS']
+  [OK] MUST-NOT-CATCH a skip on the list is a stated gap, not a finding
+      verdicts want=['SKIPPED'] got=['SKIPPED']
+      kinds    want=['PASS'] got=['PASS']
+  [OK] BLIND an assertion behind an early return
+      verdicts want=['ASSERTS'] got=['ASSERTS']
+      kinds    want=['PASS'] got=['PASS']
+  [OK] BLIND a one-line if nested in a branch the else releases
+      verdicts want=['ASSERTS'] got=['ASSERTS']
+      kinds    want=['PASS'] got=['PASS']
+
+== main() exit codes ==
+  ASSERTS         e2e/auth.spec.ts:32      Authentication E2E › login page loads
+  ASSERTS         e2e/auth.spec.ts:39      Authentication E2E › register page loads
+  ASSERTS         e2e/auth.spec.ts:44      Authentication E2E › unauthenticated user redirected to login
+  ASSERTS         e2e/auth.spec.ts:56      Authentication E2E › login with invalid credentials submits and leaves no session
+  ASSERTS         e2e/auth.spec.ts:93      Authentication E2E › unknown routes send an anonymous user to login with the target kept
+  ASSERTS         e2e/auth.spec.ts:104     Authentication E2E › 404 page renders for a signed-in user
+  ASSERTS         e2e/scripts.spec.ts:4    Scripts & Data Tables E2E › scripts page requires authentication
+  ASSERTS         e2e/scripts.spec.ts:9    Scripts & Data Tables E2E › tables page requires authentication
+  ASSERTS         e2e/scripts.spec.ts:14   Scripts & Data Tables E2E › executions page requires authentication
+  SKIPPED         e2e/scripts.spec.ts:23   Scripts & Data Tables E2E › Authenticated › scripts list shows data [.skip]
+  SKIPPED         e2e/scripts.spec.ts:28   Scripts & Data Tables E2E › Authenticated › tables list shows data [.skip]
+  SKIPPED         e2e/scripts.spec.ts:33   Scripts & Data Tables E2E › Authenticated › table detail shows schema and preview [.skip]
+  SKIPPED         e2e/scripts.spec.ts:44   Scripts & Data Tables E2E › Authenticated › executions list shows history [.skip]
+  ASSERTS         e2e/tasks.spec.ts:7      Tasks Management E2E › tasks page requires authentication
+  SKIPPED         e2e/tasks.spec.ts:19     Tasks Management E2E › Authenticated › tasks list page loads [.skip]
+  SKIPPED         e2e/tasks.spec.ts:26     Tasks Management E2E › Authenticated › can create a new task [.skip]
+  SKIPPED         e2e/tasks.spec.ts:35     Tasks Management E2E › Authenticated › can trigger task execution [.skip]
+
+== classified tally ==
+  ASSERTS         10
+  SKIPPED         7
+  LEAVES          17
+runner tally      : SKIPPED (--skip-runner)
+named gaps        : 7
+findings          : 0
+PASS: every declared e2e leaf carries a verdict that can fail.
+  [OK] the shipped tree, runner cross-check skipped -> exit 0
+NOTHING-TO-JUDGE: no *.spec.ts under /private/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/c30-empty-2bpaxpel/e2e -> exit 2, not a pass
+  [OK] a tree with no e2e directory at all -> exit 2
+  GUARDED         e2e/planted.spec.ts:2    Suite › test 1
+
+== classified tally ==
+  GUARDED         1
+  LEAVES          1
+runner tally      : SKIPPED (--skip-runner)
+named gaps        : 7
+findings          : 8
+  GUARDED: e2e/planted.spec.ts:2 Suite › test 1 — 1/1 assertion(s) sit inside an `if` with no else, so a missing element passes the test
+  GAP-DRIFT: 'Scripts & Data Tables E2E › Authenticated › executions list shows history' is a listed gap but no such test exists
+  GAP-DRIFT: 'Scripts & Data Tables E2E › Authenticated › scripts list shows data' is a listed gap but no such test exists
+  GAP-DRIFT: 'Scripts & Data Tables E2E › Authenticated › table detail shows schema and preview' is a listed gap but no such test exists
+  GAP-DRIFT: 'Scripts & Data Tables E2E › Authenticated › tables list shows data' is a listed gap but no such test exists
+  GAP-DRIFT: 'Tasks Management E2E › Authenticated › can create a new task' is a listed gap but no such test exists
+  GAP-DRIFT: 'Tasks Management E2E › Authenticated › can trigger task execution' is a listed gap but no such test exists
+  GAP-DRIFT: 'Tasks Management E2E › Authenticated › tasks list page loads' is a listed gap but no such test exists
+  [OK] a tree holding one planted guarded leaf -> exit 1
+
+rules exercised: ['GAP-DRIFT', 'GUARDED', 'NO-ASSERTION', 'VACUOUS']
+shipped plane: 17 leaves, 7 named gaps
+SHAPES: 14 injected
+MISMATCHES: 0
+FALSIFY_RC=0

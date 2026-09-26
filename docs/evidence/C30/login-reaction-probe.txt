@@ -1,0 +1,95 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T06:05:43+02:00
+branch=dev HEAD=59e60e3
+工作树（本轮改动，未提交）：
+ M frontend/test-results/.last-run.json
+?? docs/evidence/C30/
+?? frontend/e2e/__c30_probe.spec.ts
+?? frontend/playwright-report/
+?? frontend/test-results/__c30_probe-C30-probe-P1-401---toast-visible-within-5s--chromium/
+?? frontend/test-results/__c30_probe-C30-probe-P2-4-db7a3-o-navigation-on-this-branch-chromium/
+?? frontend/test-results/__c30_probe-C30-probe-P3-4-2e1b9-ead-url-storage-toast-count-chromium/
+?? scripts/quality/frontend_e2e_plane.py
+v25.1.0
+命令：cd frontend && npx playwright test e2e/__c30_probe.spec.ts --reporter=list（完整未裁剪）
+
+--- 说明 ---
+临时探针，只为量「被拒绝的登录在屏幕上到底留下什么」；跑完即删，不进判定面。
+数仓只读；后端未启动，登录请求由 page.route 在浏览器层拦截。
+
+Running 3 tests using 3 workers
+
+  ✘  2 [chromium] › e2e/__c30_probe.spec.ts:54:3 › C30 probe › P2 400 - control, no navigation on this branch (595ms)
+[P1] posted=[{"method":"POST","url":"http://localhost:5173/api/v1/auth/login","body":{"email":"invalid@example.com","password":"wrongpassword"}}] toastShown=false
+  ✘  3 [chromium] › e2e/__c30_probe.spec.ts:40:3 › C30 probe › P1 401 - toast visible within 5s? (30.0s)
+  ✘  1 [chromium] › e2e/__c30_probe.spec.ts:61:3 › C30 probe › P3 401 - settle then read url, storage, toast count (30.0s)
+
+
+  1) [chromium] › e2e/__c30_probe.spec.ts:40:3 › C30 probe › P1 401 - toast visible within 5s? ─────
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.evaluate: Target page, context or browser has been closed
+
+      31 |   const toasts = await page.locator('.el-message').count()
+      32 |   const text = await page.locator('.el-message').first().innerText().catch(() => '<none>')
+    > 33 |   const auth = await page.evaluate(() => localStorage.getItem('auth'))
+         |                           ^
+      34 |   console.log(
+      35 |     `[${label}] url=${page.url()} toasts=${toasts} first="${text}" auth=${JSON.stringify(auth)}`
+      36 |   )
+        at report (/Users/yunjinqi/Documents/new_projects/opendata/frontend/e2e/__c30_probe.spec.ts:33:27)
+        at /Users/yunjinqi/Documents/new_projects/opendata/frontend/e2e/__c30_probe.spec.ts:49:5
+
+    Error Context: test-results/__c30_probe-C30-probe-P1-401---toast-visible-within-5s--chromium/error-context.md
+
+  2) [chromium] › e2e/__c30_probe.spec.ts:54:3 › C30 probe › P2 400 - control, no navigation on this branch 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('.el-message--error')
+    Expected: visible
+    Error: strict mode violation: locator('.el-message--error') resolved to 3 elements:
+        1) <div role="alert" id="message_1" class="el-message el-message--error is-center el-message-fade-enter-from el-message-fade-enter-active">…</div> aka locator('#message_1')
+        2) <div role="alert" id="message_2" class="el-message el-message--error is-center el-message-fade-enter-from el-message-fade-enter-active">…</div> aka locator('#message_2')
+        3) <div role="alert" id="message_3" class="el-message el-message--error is-center el-message-fade-enter-from el-message-fade-enter-active">…</div> aka locator('#message_3')
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('.el-message--error')[22m
+
+
+      55 |     await stubLogin(page, 400, { detail: '账号或密码错误' })
+      56 |     await submit(page)
+    > 57 |     await expect(page.locator('.el-message--error')).toBeVisible({ timeout: 5000 })
+         |                                                      ^
+      58 |     await report(page, 'P2')
+      59 |   })
+      60 |
+        at /Users/yunjinqi/Documents/new_projects/opendata/frontend/e2e/__c30_probe.spec.ts:57:54
+
+    Error Context: test-results/__c30_probe-C30-probe-P2-4-db7a3-o-navigation-on-this-branch-chromium/error-context.md
+
+  3) [chromium] › e2e/__c30_probe.spec.ts:61:3 › C30 probe › P3 401 - settle then read url, storage, toast count 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.evaluate: Target page, context or browser has been closed
+
+      31 |   const toasts = await page.locator('.el-message').count()
+      32 |   const text = await page.locator('.el-message').first().innerText().catch(() => '<none>')
+    > 33 |   const auth = await page.evaluate(() => localStorage.getItem('auth'))
+         |                           ^
+      34 |   console.log(
+      35 |     `[${label}] url=${page.url()} toasts=${toasts} first="${text}" auth=${JSON.stringify(auth)}`
+      36 |   )
+        at report (/Users/yunjinqi/Documents/new_projects/opendata/frontend/e2e/__c30_probe.spec.ts:33:27)
+        at /Users/yunjinqi/Documents/new_projects/opendata/frontend/e2e/__c30_probe.spec.ts:65:5
+
+    Error Context: test-results/__c30_probe-C30-probe-P3-4-2e1b9-ead-url-storage-toast-count-chromium/error-context.md
+
+  3 failed
+    [chromium] › e2e/__c30_probe.spec.ts:40:3 › C30 probe › P1 401 - toast visible within 5s? ──────
+    [chromium] › e2e/__c30_probe.spec.ts:54:3 › C30 probe › P2 400 - control, no navigation on this branch 
+    [chromium] › e2e/__c30_probe.spec.ts:61:3 › C30 probe › P3 401 - settle then read url, storage, toast count 
+PROBE_RC=1

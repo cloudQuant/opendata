@@ -1,0 +1,40 @@
+探针源码副本（与 msw-dead-plane-probe.txt 同一次运行）；跑完即从 frontend/e2e/ 删除，此处留原文以便复现。
+
+import { test, expect } from '@playwright/test'
+
+// C30 probe (temporary, deleted after capture): main.ts dynamically imports
+// ./mocks/browser in DEV. Does that mock plane ever intercept anything?
+test.describe('C30 msw probe', () => {
+  test('Q1 errors surfaced while the app boots', async ({ page }) => {
+    const errors: string[] = []
+    page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`))
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(`console: ${msg.text()}`)
+    })
+    await page.goto('/login')
+    await page.waitForTimeout(2500)
+    const interesting = errors.filter((line) =>
+      /msw|mockServiceWorker|rest|MockingBox|worker/i.test(line)
+    )
+    console.log(`[Q1] totalErrors=${errors.length} mswRelated=${interesting.length}`)
+    for (const line of interesting) console.log(`[Q1] ${line}`)
+    console.log(`[Q1] other=${JSON.stringify(errors.filter((l) => !interesting.includes(l)))}`)
+  })
+
+  test('Q2 is there a service worker to register, and does /api/v1 reach the proxy', async ({
+    page,
+  }) => {
+    const sw = await page.request.get('/mockServiceWorker.js').catch(() => null)
+    console.log(`[Q2] mockServiceWorker.js status=${sw ? sw.status() : 'no-response'}`)
+    await page.goto('/login')
+    const probe = await page.evaluate(async () => {
+      const registrations = await navigator.serviceWorker?.getRegistrations?.() ?? []
+      return { count: registrations.length, controller: !!navigator.serviceWorker?.controller }
+    })
+    console.log(`[Q2] serviceWorker=${JSON.stringify(probe)}`)
+    const direct = await page.request
+      .get('/api/v1/auth/login', { headers: { accept: 'application/json' } })
+      .catch(() => null)
+    console.log(`[Q2] /api/v1/auth/login GET via browser=${direct ? direct.status() : 'no-response'}`)
+  })
+})

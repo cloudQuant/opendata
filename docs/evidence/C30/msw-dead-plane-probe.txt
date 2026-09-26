@@ -1,0 +1,37 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T06:08:58+02:00
+branch=dev HEAD=59e60e3
+工作树（本轮改动，未提交）：
+ M frontend/test-results/.last-run.json
+?? docs/evidence/C30/
+?? frontend/e2e/__c30_probe.spec.ts
+?? frontend/playwright-report/
+?? frontend/test-results/__c30_probe-C30-probe-P1-401---toast-visible-within-5s--chromium/
+?? frontend/test-results/__c30_probe-C30-probe-P2-4-db7a3-o-navigation-on-this-branch-chromium/
+?? frontend/test-results/__c30_probe-C30-probe-P3-4-2e1b9-ead-url-storage-toast-count-chromium/
+?? scripts/quality/frontend_e2e_plane.py
+命令：cd frontend && npx playwright test e2e/__c30_probe.spec.ts --reporter=list（完整未裁剪）
+
+--- 说明 ---
+临时探针（第 2 版，同名文件复用），量 src/mocks 这层「浏览器侧 mock」到底命中没有：
+  main.ts 在 DEV 下 dynamic import('./mocks/browser') 并 worker.start()；package.json 装的是 msw ^2.0.0，
+  而 handlers.ts 用的是 msw v0/v1 的 rest + res(ctx…) 写法，路径写的是 /api/auth/login、/api/scripts，
+  而 app 的 axios baseURL 是 /api/v1。本档案记录浏览器里到底发生了什么，不做推断。
+
+Running 2 tests using 2 workers
+
+[Q2] mockServiceWorker.js status=200
+[Q2] serviceWorker={"count":0,"controller":false}
+[2m[WebServer] [22m[2m6:09:01 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/v1/auth/login[39m
+[2m[WebServer] [22mAggregateError [ECONNREFUSED]: 
+[2m[WebServer] [22m    at internalConnectMultiple (node:net:1134:18)
+[2m[WebServer] [22m    at afterConnectMultiple (node:net:1715:7)
+[Q2] /api/v1/auth/login GET via browser=500
+  ✓  2 [chromium] › e2e/__c30_probe.spec.ts:22:3 › C30 msw probe › Q2 is there a service worker to register, and does /api/v1 reach the proxy (285ms)
+[Q1] totalErrors=1 mswRelated=1
+[Q1] pageerror: The requested module '/node_modules/.vite/deps/msw.js?v=83795166' does not provide an export named 'rest'
+[Q1] other=[]
+  ✓  1 [chromium] › e2e/__c30_probe.spec.ts:6:3 › C30 msw probe › Q1 errors surfaced while the app boots (2.7s)
+
+  2 passed (5.1s)
+PROBE2_RC=0

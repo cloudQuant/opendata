@@ -1,0 +1,75 @@
+探针源码副本（与 login-reaction-probe.txt 同一次运行）；该文件先建在 frontend/e2e/__c30_probe.spec.ts、
+跑完即删，后被第二版探针（msw-dead-plane-probe）同名复用，因此这里留第一版原文以便复现。
+
+import { test, expect, type Page } from '@playwright/test'
+
+// C30 probe (temporary, deleted after capture): what does a rejected login
+// actually leave on screen? The 401 branch in src/utils/request.ts calls
+// window.location.href = '/login', which reloads the page the toast lives on.
+async function stubLogin(page: Page, status: number, body: Record<string, string>) {
+  const seen: Array<{ method: string; url: string; body: unknown }> = []
+  await page.route('**/api/v1/auth/login', async (route) => {
+    seen.push({
+      method: route.request().method(),
+      url: route.request().url(),
+      body: route.request().postDataJSON(),
+    })
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(body),
+    })
+  })
+  return seen
+}
+
+async function submit(page: Page) {
+  await page.goto('/login')
+  await page.getByPlaceholder('请输入邮箱').fill('invalid@example.com')
+  await page.getByPlaceholder('请输入密码').fill('wrongpassword')
+  await page.getByRole('button', { name: '登录' }).click()
+}
+
+async function report(page: Page, label: string) {
+  const toasts = await page.locator('.el-message').count()
+  const text = await page.locator('.el-message').first().innerText().catch(() => '<none>')
+  const auth = await page.evaluate(() => localStorage.getItem('auth'))
+  console.log(
+    `[${label}] url=${page.url()} toasts=${toasts} first="${text}" auth=${JSON.stringify(auth)}`
+  )
+}
+
+test.describe('C30 probe', () => {
+  test('P1 401 - toast visible within 5s?', async ({ page }) => {
+    const seen = await stubLogin(page, 401, { detail: 'Incorrect email or password' })
+    await submit(page)
+    const toast = page.locator('.el-message--error')
+    const shown = await toast
+      .waitFor({ state: 'visible', timeout: 5000 })
+      .then(() => true)
+      .catch(() => false)
+    console.log(`[P1] posted=${JSON.stringify(seen)} toastShown=${shown}`)
+    await report(page, 'P1-after-5s')
+    await page.waitForTimeout(2000)
+    await report(page, 'P1-after-7s')
+  })
+
+  test('P2 400 - control, no navigation on this branch', async ({ page }) => {
+    await stubLogin(page, 400, { detail: '账号或密码错误' })
+    await submit(page)
+    await expect(page.locator('.el-message--error')).toBeVisible({ timeout: 5000 })
+    await report(page, 'P2')
+  })
+
+  test('P3 401 - settle then read url, storage, toast count', async ({ page }) => {
+    await stubLogin(page, 401, { detail: 'Incorrect email or password' })
+    await submit(page)
+    await page.waitForTimeout(3000)
+    await report(page, 'P3')
+    const session = await page.evaluate(() => {
+      const raw = localStorage.getItem('auth')
+      return raw ? JSON.parse(raw) : null
+    })
+    console.log(`[P3] authParsed=${JSON.stringify(session)}`)
+  })
+})

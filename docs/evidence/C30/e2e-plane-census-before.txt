@@ -1,0 +1,55 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T06:02:28+02:00
+branch=dev HEAD=59e60e3
+工作树（本轮改动，未提交）：
+?? docs/evidence/C30/
+?? frontend/playwright-report/
+?? scripts/quality/frontend_e2e_plane.py
+Python 3.13.5
+命令：python -u docs/evidence/C30/e2e-plane-census.py
+
+--- 说明 ---
+测量面与判定面各自独立实现（C27：测量可独立，判定必须唯一）。本档案读的是原始树。
+归档前修了自己脚上的两处：
+  ①旧版 main() 在 VACUOUS 上 exit 1 —— 那让测量脚本兼职做了判定，现改为只报告（读得到 exit 0 / 读不到 exit 2），判定收口到 scripts/quality/frontend_e2e_plane.py；
+  ②标签与守卫不同词（DECLARED-SKIPPED/GUARDED-BY-IF），现内置 == label map == 段做对账。
+本会话内、归档前修的自己脚上的错，不是改写他轮档案。
+e2e dir: /Users/yunjinqi/Documents/new_projects/opendata/frontend/e2e (exists)
+spec files: 3
+  [  ] e2e/auth.spec.ts:4 ASSERTS          expects=2 guarded=0 Authentication E2E › login page loads
+  [  ] e2e/auth.spec.ts:11 ASSERTS          expects=1 guarded=0 Authentication E2E › register page loads
+  [  ] e2e/auth.spec.ts:16 ASSERTS          expects=1 guarded=0 Authentication E2E › unauthenticated user redirected to login
+  [->] e2e/auth.spec.ts:22 GUARDED-BY-IF    expects=1 guarded=1 Authentication E2E › login with invalid credentials shows error
+  [->] e2e/auth.spec.ts:46 VACUOUS          expects=1 guarded=0 Authentication E2E › 404 page for unknown routes
+        vacuous: includes('nonexistent') is already true of the goto path
+  [  ] e2e/scripts.spec.ts:4 ASSERTS          expects=1 guarded=0 Scripts & Data Tables E2E › scripts page requires authentication
+  [  ] e2e/scripts.spec.ts:9 ASSERTS          expects=1 guarded=0 Scripts & Data Tables E2E › tables page requires authentication
+  [  ] e2e/scripts.spec.ts:14 ASSERTS          expects=1 guarded=0 Scripts & Data Tables E2E › executions page requires authentication
+  [->] e2e/scripts.spec.ts:23 DECLARED-SKIPPED expects=1 guarded=0 Scripts & Data Tables E2E › Authenticated › scripts list shows data
+  [->] e2e/scripts.spec.ts:28 DECLARED-SKIPPED expects=1 guarded=0 Scripts & Data Tables E2E › Authenticated › tables list shows data
+  [->] e2e/scripts.spec.ts:33 DECLARED-SKIPPED expects=1 guarded=1 Scripts & Data Tables E2E › Authenticated › table detail shows schema and preview
+  [->] e2e/scripts.spec.ts:44 DECLARED-SKIPPED expects=1 guarded=0 Scripts & Data Tables E2E › Authenticated › executions list shows history
+  [  ] e2e/tasks.spec.ts:7 ASSERTS          expects=1 guarded=0 Tasks Management E2E › tasks page requires authentication
+  [->] e2e/tasks.spec.ts:19 DECLARED-SKIPPED expects=2 guarded=0 Tasks Management E2E › Authenticated › tasks list page loads
+  [->] e2e/tasks.spec.ts:26 DECLARED-SKIPPED expects=1 guarded=0 Tasks Management E2E › Authenticated › can create a new task
+  [->] e2e/tasks.spec.ts:35 DECLARED-SKIPPED expects=1 guarded=1 Tasks Management E2E › Authenticated › can trigger task execution
+
+== verdict tally ==
+  ASSERTS          7
+  DECLARED-SKIPPED 7
+  GUARDED-BY-IF    1
+  VACUOUS          1
+  leaves total     : 16
+  can produce one  : 9
+  no unconditional : 2 (vacuous / none / only inside an unguarded if)
+
+== label map (this census -> scripts/quality/frontend_e2e_plane.py) ==
+  ASSERTS          -> ASSERTS          7
+  DECLARED-SKIPPED -> SKIPPED          7
+  GUARDED-BY-IF    -> GUARDED          1
+  PARTLY-GUARDED   -> PARTLY-GUARDED   0
+  VACUOUS          -> VACUOUS          1
+  NO-ASSERTION     -> NO-ASSERTION     0
+
+Measurement only. The guard, not this script, decides the gate.
+CENSUS_RC=0

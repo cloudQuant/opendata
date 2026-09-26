@@ -1,0 +1,43 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T06:02:16+02:00
+branch=dev HEAD=59e60e3
+工作树（本轮改动，未提交）：
+?? docs/evidence/C30/
+?? frontend/playwright-report/
+?? scripts/quality/frontend_e2e_plane.py
+Python 3.13.5
+命令：python -u scripts/quality/frontend_e2e_plane.py
+
+--- 说明 ---
+本档案量的是「spec 未修、守卫未接进 gate」的前置状态：判定面在原始树上就应该红。
+数仓全程只读；本脚本不连后端，只读 frontend/e2e/*.spec.ts 并向 playwright 问一次 --list。
+  ASSERTS         e2e/auth.spec.ts:4       Authentication E2E › login page loads
+  ASSERTS         e2e/auth.spec.ts:11      Authentication E2E › register page loads
+  ASSERTS         e2e/auth.spec.ts:16      Authentication E2E › unauthenticated user redirected to login
+  GUARDED         e2e/auth.spec.ts:22      Authentication E2E › login with invalid credentials shows error
+  VACUOUS         e2e/auth.spec.ts:46      Authentication E2E › 404 page for unknown routes
+  ASSERTS         e2e/scripts.spec.ts:4    Scripts & Data Tables E2E › scripts page requires authentication
+  ASSERTS         e2e/scripts.spec.ts:9    Scripts & Data Tables E2E › tables page requires authentication
+  ASSERTS         e2e/scripts.spec.ts:14   Scripts & Data Tables E2E › executions page requires authentication
+  SKIPPED         e2e/scripts.spec.ts:23   Scripts & Data Tables E2E › Authenticated › scripts list shows data [.skip]
+  SKIPPED         e2e/scripts.spec.ts:28   Scripts & Data Tables E2E › Authenticated › tables list shows data [.skip]
+  SKIPPED         e2e/scripts.spec.ts:33   Scripts & Data Tables E2E › Authenticated › table detail shows schema and preview [.skip]
+  SKIPPED         e2e/scripts.spec.ts:44   Scripts & Data Tables E2E › Authenticated › executions list shows history [.skip]
+  ASSERTS         e2e/tasks.spec.ts:7      Tasks Management E2E › tasks page requires authentication
+  SKIPPED         e2e/tasks.spec.ts:19     Tasks Management E2E › Authenticated › tasks list page loads [.skip]
+  SKIPPED         e2e/tasks.spec.ts:26     Tasks Management E2E › Authenticated › can create a new task [.skip]
+  SKIPPED         e2e/tasks.spec.ts:35     Tasks Management E2E › Authenticated › can trigger task execution [.skip]
+
+== classified tally ==
+  ASSERTS         7
+  GUARDED         1
+  SKIPPED         7
+  VACUOUS         1
+  LEAVES          16
+runner tally      : 16 tests in 3 files (playwright test --list)
+static vs runner  : MATCH
+named gaps        : 7
+findings          : 2
+  GUARDED: e2e/auth.spec.ts:22 Authentication E2E › login with invalid credentials shows error — 1/1 assertion(s) sit inside an `if` with no else, so a missing element passes the test
+  VACUOUS: e2e/auth.spec.ts:46 Authentication E2E › 404 page for unknown routes — includes('nonexistent') is already true of the path the test navigated to, so no product behaviour can redden it
+GUARD_RC=1

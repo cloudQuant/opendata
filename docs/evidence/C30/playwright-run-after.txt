@@ -1,0 +1,70 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T04:38:01+0000
+branch=dev HEAD=59e60e3
+工作树（本轮改动，未提交）：
+ M Makefile
+ M frontend/.gitignore
+ M frontend/e2e/auth.spec.ts
+D  frontend/test-results/.last-run.json
+?? docs/evidence/C30/
+?? scripts/quality/frontend_e2e_plane.py
+?? tests/test_frontend_e2e_guard.py
+Python 3.13.5
+命令：make frontend-e2e（完整未裁剪）
+
+--- 说明 ---
+守卫（含 playwright --list 规模交叉核对）+ 真跑 chromium。7 例 skip 是 GAPS 清单里的有名缺口，守卫不把它们当判定。
+
+python scripts/quality/frontend_e2e_plane.py
+  ASSERTS         e2e/auth.spec.ts:32      Authentication E2E › login page loads
+  ASSERTS         e2e/auth.spec.ts:39      Authentication E2E › register page loads
+  ASSERTS         e2e/auth.spec.ts:44      Authentication E2E › unauthenticated user redirected to login
+  ASSERTS         e2e/auth.spec.ts:56      Authentication E2E › login with invalid credentials submits and leaves no session
+  ASSERTS         e2e/auth.spec.ts:93      Authentication E2E › unknown routes send an anonymous user to login with the target kept
+  ASSERTS         e2e/auth.spec.ts:104     Authentication E2E › 404 page renders for a signed-in user
+  ASSERTS         e2e/scripts.spec.ts:4    Scripts & Data Tables E2E › scripts page requires authentication
+  ASSERTS         e2e/scripts.spec.ts:9    Scripts & Data Tables E2E › tables page requires authentication
+  ASSERTS         e2e/scripts.spec.ts:14   Scripts & Data Tables E2E › executions page requires authentication
+  SKIPPED         e2e/scripts.spec.ts:23   Scripts & Data Tables E2E › Authenticated › scripts list shows data [.skip]
+  SKIPPED         e2e/scripts.spec.ts:28   Scripts & Data Tables E2E › Authenticated › tables list shows data [.skip]
+  SKIPPED         e2e/scripts.spec.ts:33   Scripts & Data Tables E2E › Authenticated › table detail shows schema and preview [.skip]
+  SKIPPED         e2e/scripts.spec.ts:44   Scripts & Data Tables E2E › Authenticated › executions list shows history [.skip]
+  ASSERTS         e2e/tasks.spec.ts:7      Tasks Management E2E › tasks page requires authentication
+  SKIPPED         e2e/tasks.spec.ts:19     Tasks Management E2E › Authenticated › tasks list page loads [.skip]
+  SKIPPED         e2e/tasks.spec.ts:26     Tasks Management E2E › Authenticated › can create a new task [.skip]
+  SKIPPED         e2e/tasks.spec.ts:35     Tasks Management E2E › Authenticated › can trigger task execution [.skip]
+
+== classified tally ==
+  ASSERTS         10
+  SKIPPED         7
+  LEAVES          17
+runner tally      : 17 tests in 3 files (playwright test --list)
+static vs runner  : MATCH
+named gaps        : 7
+findings          : 0
+PASS: every declared e2e leaf carries a verdict that can fail.
+cd frontend && npx playwright test --reporter=list
+
+Running 17 tests using 4 workers
+
+  ✓   3 [chromium] › e2e/auth.spec.ts:39:3 › Authentication E2E › register page loads (589ms)
+  ✓   2 [chromium] › e2e/auth.spec.ts:44:3 › Authentication E2E › unauthenticated user redirected to login (680ms)
+  ✓   1 [chromium] › e2e/auth.spec.ts:32:3 › Authentication E2E › login page loads (690ms)
+  ✓   5 [chromium] › e2e/auth.spec.ts:93:3 › Authentication E2E › unknown routes send an anonymous user to login with the target kept (372ms)
+  ✓   4 [chromium] › e2e/auth.spec.ts:56:3 › Authentication E2E › login with invalid credentials submits and leaves no session (1.0s)
+  ✓   6 [chromium] › e2e/auth.spec.ts:104:3 › Authentication E2E › 404 page renders for a signed-in user (400ms)
+  -  10 [chromium] › e2e/scripts.spec.ts:23:10 › Scripts & Data Tables E2E › Authenticated › scripts list shows data
+  -  11 [chromium] › e2e/scripts.spec.ts:28:10 › Scripts & Data Tables E2E › Authenticated › tables list shows data
+  -  12 [chromium] › e2e/scripts.spec.ts:33:10 › Scripts & Data Tables E2E › Authenticated › table detail shows schema and preview
+  -  13 [chromium] › e2e/scripts.spec.ts:44:10 › Scripts & Data Tables E2E › Authenticated › executions list shows history
+  ✓   7 [chromium] › e2e/scripts.spec.ts:4:3 › Scripts & Data Tables E2E › scripts page requires authentication (497ms)
+  -  15 [chromium] › e2e/tasks.spec.ts:19:10 › Tasks Management E2E › Authenticated › tasks list page loads
+  -  16 [chromium] › e2e/tasks.spec.ts:26:10 › Tasks Management E2E › Authenticated › can create a new task
+  -  17 [chromium] › e2e/tasks.spec.ts:35:10 › Tasks Management E2E › Authenticated › can trigger task execution
+  ✓   9 [chromium] › e2e/scripts.spec.ts:14:3 › Scripts & Data Tables E2E › executions page requires authentication (282ms)
+  ✓   8 [chromium] › e2e/scripts.spec.ts:9:3 › Scripts & Data Tables E2E › tables page requires authentication (329ms)
+  ✓  14 [chromium] › e2e/tasks.spec.ts:7:3 › Tasks Management E2E › tasks page requires authentication (250ms)
+
+  7 skipped
+  10 passed (4.1s)
+MAKE_E2E_RC=0
