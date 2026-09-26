@@ -198,6 +198,11 @@ C29（前端 18 例从未跑）、C33（清单只写不读）同一形状。
   替换，把 `[4]`–`[7]` 连同 `[5b]/[6b]/[3b]` 写了两遍，且新旧两版 `[3b]` 并存。归档前核对副本
   （脚本输出 `copies=2 identical=True`）后每格只留一份，被弃的那版 `[3b]` 只有「探针已清」一句结论、
   没有任何 exit／命中读数，不构成证据面 —— 缺陷与修法都写进档头，不静默重排。
+* **规则的面与判据的 wording 不是一回事**：规则查的是 `git ls-files`（**index 面**），判据写的是
+  「一次全新 clone 也拿得到」（**HEAD 面**）——档案 staged 而未 commit 时两者会分开。
+  这不是缺陷而是门禁必须在提交前能跑的必要条件，但不能拿它冒充判据：规则与补档两个 commit
+  （`95e6bf5`／`94afb51`）落库后再按 HEAD 面复算一次，并真做一份临时 `git clone` 逐字节比对，
+  读数记在 `evidence-tracked-face.txt` `[8]`（18 条 proven evidence 全部命中、临时 clone 跑完即删）。
 * **本轮不重写历史轮的档案**：那 10 份 `.log` 属于 B4／C36／C37 三批，逐份内容一字未动（`git add -f`
   只改「是否进版本库」，不改字节），改的只有引用它们的台账判据文本与新规则；核对方式见
   `evidence-tracked-face.txt` `[3]`（`git status --porcelain` 全是 `A`，无一条 `M`）。
@@ -215,5 +220,5 @@ C29（前端 18 例从未跑）、C33（清单只写不读）同一形状。
 | `gate.txt` | RUN 3：`ledger-check` 规则改动与 v5.8 ⑩ 回填之后的 `make gate` 完整未裁剪输出，`GATE_EXIT=0` 在文件内读取 |
 | `gate-run2-before-tracked-rule.txt` | RUN 2：验收文档 §4／AC-6／AC-17 回填之后、但 ledger-check 改动之前的完整门禁输出（6,645 行） |
 | `gate-run1-before-backfill.txt` | RUN 1：同一批代码、验收文档与台账回填之前的完整门禁输出（6,639 行；三遍并列，不拿前一遍冒充后一遍） |
-| `evidence-tracked-face.txt` | §8 那一面的测量档：触发面（台账 `proven` ↔ `git ls-files` 对账）→ 规则加上后未补档的实跑 FAIL → 补档与 staged 扫描 → 该扫描的探针形态实测表 `[3b]` → 复算绿 → A2 面红→绿（含不裁剪 bandit 复现）→ 规则不覆盖的那层 |
+| `evidence-tracked-face.txt` | §8 那一面的测量档：触发面（台账 `proven` ↔ `git ls-files` 对账）→ 规则加上后未补档的实跑 FAIL → 补档与 staged 扫描 → 该扫描的探针形态实测表 `[3b]` → 复算绿 → A2 面红→绿（含不裁剪 bandit 复现）→ 规则不覆盖的那层 → `[8]` 提交后按 HEAD 面（真做一份临时 clone）复算 |
 | `bandit-red-repro.py.snippet` | `[5b]` 里给 bandit 的最小复现体（改动前的 subprocess 写法）。后缀特意写成 `.py.snippet`：`docs/evidence/**/*.py` 在 a2-check 清扫面内，留成 `.py` 会让门禁红在一段**只为复现红**的代码上 |

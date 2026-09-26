@@ -1,7 +1,7 @@
 # C37 证据：台账 evidence 路径「在盘上」与「在版本库里」是两个不同的面
 # 采集时间: 2026-09-26 16:03:02 CEST  主机: MacBook-Air.local  分支: dev  HEAD: b875430
 # 判据: acceptance_ledger_check 的 proven 条目必须给出「一次全新 clone 也拿得到」的证据路径
-# 顺序: [0] 触发面 → [1] 规则未收档前实跑 FAIL → [2] 规则与自测 → [3] 补档与 staged 扫描 → [3b] 该扫描的反事实 → [4] 收口后复算 → [5]/[6] 改动文件 A2 面（红→绿） → [5b]/[6b] 不裁剪 bandit 复现 → [7] 规则覆盖不到的那一层
+# 顺序: [0] 触发面 → [1] 规则未收档前实跑 FAIL → [2] 规则与自测 → [3] 补档与 staged 扫描 → [3b] 该扫描的反事实 → [4] 收口后复算 → [5]/[6] 改动文件 A2 面（红→绿） → [5b]/[6b] 不裁剪 bandit 复现 → [7] 规则覆盖不到的那一层 → [8] 提交后对 HEAD 面（真做一份 clone）复算
 
 # 自查一笔：本档第一次成稿时把 [4]–[7] 连同 [5b]/[6b]/[3b] 重复写入了两遍（拼接脚本按区间追加而非替换），且旧版 [3b] 与新 [3b] 并存。
 # 现每格只留一份：[4]/[5]/[6]/[7]/[5b]/[6b] 两份副本逐行相同（脚本已核对 copies=2 identical=True），删除第二份不丢读数；[3b] 取的是重测后的定稿格，被弃的那一份只有「假 token ghp_+36 位、探针已清」一句结论、没有 exit/findings 读数，不构成证据面。
@@ -221,3 +221,26 @@ $ bandit -q scripts/quality/acceptance_ledger_check.py
   规则只看台账的 evidence 数组；README 正文里的交叉引用（如 B4/README.md 指
   `scene1_real_run.log`）机器看不见，本轮是把这 10 份一并 `git add -f` 补进版本库，
   没有做成判据。要做成判据需要「README 引用面 ↔ HEAD 文件清单」对账，登记为后续项。
+
+=== [8] 提交之后：把判据的原始 wording（「一次全新 clone 也拿得到」）当判据面复算 ===
+  复测采集: 2026-09-26 16:26:13 CEST MacBook Air dev 94afb51
+  规则量的是 index 面（`git ls-files`），而本档 [2] 那句判据写的是「一次全新 clone 也拿得到」=
+  HEAD 面。两者不同（档案 staged 未 commit 时 index 有、HEAD 没有），所以在 95e6bf5（规则）与
+  94afb51（补档）落库之后再各量一遍，不把这一层留给感觉：
+
+  $ python 只读脚本：台账全部 proven evidence 路径（去重 18 条）分别对 `git ls-tree -r HEAD`
+    与 `git ls-files` 求差集
+    HEAD=94afb51   不在 HEAD 里的 = 0   不在 index 里的 = 0
+  $ git clone --no-hardlinks --shared . <tmp>   # 真做一份全新工作树，跑完即删
+    clone HEAD=94afb51（分支 dev）
+      在 clone 里: docs/evidence/C36/secret-check-gate.log        (857 bytes)
+      在 clone 里: docs/evidence/C36/gitleaks-after-history.log   (552 bytes)
+      在 clone 里: docs/evidence/C36/gitleaks-counterfactual.log (2315 bytes)
+      在 clone 里: docs/evidence/C37/mutation-proof.log         (10090 bytes)
+      在 clone 里: docs/evidence/B4/scene1_real_run.log          (1812 bytes)
+      在 clone 里: docs/evidence/C37/attribution.log            (46960 bytes)
+      在 clone 里: docs/evidence/C37/evidence-tracked-face.txt   (13916 bytes)  ← 本档，克隆时还没有 [8]
+    逐字节：mutation-proof.log 本机 sha256=fba285fe23b6ff76… / clone=fba285fe23b6ff76…
+            secret-check-gate.log 本机 sha256=d97704d559b6c090… / clone=d97704d559b6c090…
+  ⇒ [0] 那四条「台账说它在、HEAD 里没有」现在反过来了：**clone 里有、且与工作树逐字节相同**。
+    临时 clone 跑完立即删除（`rm -rf`），不留第二份工作树。
