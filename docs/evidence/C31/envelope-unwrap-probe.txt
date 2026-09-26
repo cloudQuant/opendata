@@ -1,0 +1,45 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T07:03:47+0200
+branch=dev HEAD=857d79f
+工作树（本轮改动，未提交）：
+?? docs/evidence/C31/
+?? frontend/e2e/__c31_probe.spec.ts
+?? frontend/e2e/__c31_probe2.spec.ts
+?? frontend/e2e/__c31_probe3.spec.ts
+命令：cd frontend && npx playwright test e2e/__c31_probe3.spec.ts --reporter=list（完整未裁剪）
+
+--- 说明 ---
+三个页面各喂一份「后端真实返回的包装」（APIResponse{success,message,data}，见 opendata/api/schemas.py:27-32 与
+各 handler 的 return），走真实 axios 实例与它的响应拦截器（不用 vi.mock），量「data 里那条唯一的 marker 有没有出现在页面上」。
+探针不判定，只记录 RENDERED: YES/NO；跑完即删。
+
+
+Running 3 tests using 3 workers
+
+
+===== warehouse (/tables) =====
+endpoint       : /api/v1/tables/warehouse
+requested      : /api/v1/tables/warehouse | /api/v1/tables/
+marker         : C31MARK-warehouse-row
+RENDERED       : NO
+dom            : {"markerInBody":false,"cards":["数仓表（ods/dwd 分层）全部odsdwd","数据表 共 0 个表"],"rows":0,"empty":0,"empties":[]}
+  ✓  1 [chromium] › e2e/__c31_probe3.spec.ts:32:3 › R warehouse — is the backend payload visible on /tables? (2.8s)
+
+===== catalog (/data) =====
+endpoint       : /api/v1/data/catalog
+requested      : /api/v1/data/catalog
+marker         : C31MARK-catalog-entry
+RENDERED       : NO
+dom            : {"markerInBody":false,"cards":[],"rows":0,"empty":0,"empties":[]}
+
+===== failures (/executions) =====
+endpoint       : /api/v1/pipeline/failures
+requested      : /api/v1/pipeline/failures | /api/v1/executions/ | /api/v1/executions/stats
+marker         : C31MARK-failure-shard
+RENDERED       : NO
+dom            : {"markerInBody":false,"cards":["执行记录"],"rows":0,"empty":0,"empties":[]}
+  ✓  3 [chromium] › e2e/__c31_probe3.spec.ts:32:3 › R catalog — is the backend payload visible on /data? (2.9s)
+  ✓  2 [chromium] › e2e/__c31_probe3.spec.ts:32:3 › R failures — is the backend payload visible on /executions? (2.9s)
+
+  3 passed (5.5s)
+PROBE3_RC=0

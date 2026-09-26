@@ -1,0 +1,441 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T07:38:08+0200
+branch=dev HEAD=857d79f
+本轮未提交改动（api/ 与 __tests__/）：
+ M frontend/src/__tests__/catalog.test.ts
+ M frontend/src/__tests__/composables/useApiCall.test.ts
+ M frontend/src/__tests__/utils/request.test.ts
+ M frontend/src/api/catalog.ts
+ M frontend/src/api/data.ts
+ M frontend/src/api/tables.ts
+?? frontend/src/__tests__/api/
+
+--- 说明 ---
+红/绿对照只替换 3 个 api 模块为 HEAD 版本（response.data?.data 双解包），
+其余文件保持本轮修复后的状态。被跑的是 src/__tests__/api/envelope.test.ts：
+该文件不 mock @/utils/request，只 stub axios adapter，按后端真实返回的
+APIResponse{success,message,data} 应答，因此断言的是「拦截器之后调用方拿到什么」。
+恢复方式：cp /tmp/c31api_fixed/*.ts 回原位（不用 git stash）。
+
+===== A. 红：3 个 api 模块回到 HEAD（response.data?.data 双解包），只跑 envelope.test.ts =====
+RED_RC=1
+$ npx vitest run src/__tests__/api/envelope.test.ts（完整未裁剪）
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/Users/yunjinqi/Documents/new_projects/opendata/frontend[39m
+
+ [31m❯[39m src/__tests__/api/envelope.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[32m 9[2mms[22m[39m
+[31m     [31m×[31m reads the catalog entries out of the envelope[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m reads a domain query as a whole DataPage, not an envelope[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m reads the table list and puts `layer` on the wire[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m reads the failure list with its shard fields[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m reads the reset count from the retry POST[39m[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 5 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/api/envelope.test.ts[2m > [22mcatalogApi over the real interceptor[2m > [22mreads the catalog entries out of the envelope
+[31m[1mAssertionError[22m: expected [] to have a length of 2 but got +0[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 2[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m src/__tests__/api/envelope.test.ts:[2m124:21[22m[39m
+    [90m122| [39m
+    [90m123| [39m    expect(seen[0]).toEqual({ url: '/api/v1/data/catalog', method: 'ge…
+    [90m124| [39m    [34mexpect[39m(entries)[33m.[39m[34mtoHaveLength[39m([34m2[39m)
+    [90m   | [39m                    [31m^[39m
+    [90m125| [39m    [34mexpect[39m(entries[[34m0[39m][33m.[39mdisplay_name)[33m.[39m[34mtoBe[39m([32m'A股日线行情'[39m)
+    [90m126| [39m    [34mexpect[39m(entries[[34m1[39m][33m.[39mstatus)[33m.[39m[34mtoBe[39m([32m'missing'[39m)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/api/envelope.test.ts[2m > [22mcatalogApi over the real interceptor[2m > [22mreads a domain query as a whole DataPage, not an envelope
+[31m[1mAssertionError[22m: expected undefined to be 3312 // Object.is equality[39m
+
+[32m- Expected:[39m 
+3312
+
+[31m+ Received:[39m 
+undefined
+
+[36m [2m❯[22m src/__tests__/api/envelope.test.ts:[2m136:24[22m[39m
+    [90m134| [39m    [34mexpect[39m(seen[[34m0[39m][33m.[39murl)[33m.[39m[34mtoBe[39m([32m'/api/v1/data/equity/stock_daily'[39m)
+    [90m135| [39m    [34mexpect[39m(seen[[34m0[39m][33m.[39mparams)[33m.[39m[34mtoEqual[39m({ page[33m:[39m [34m2[39m[33m,[39m page_size[33m:[39m [34m20[39m })
+    [90m136| [39m    [34mexpect[39m(page[33m.[39mcount)[33m.[39m[34mtoBe[39m([34m3312[39m)
+    [90m   | [39m                       [31m^[39m
+    [90m137| [39m    [34mexpect[39m(page[33m.[39mcolumns)[33m.[39m[34mtoContain[39m([32m'close'[39m)
+    [90m138| [39m    [34mexpect[39m(page[33m.[39mrows[[34m0[39m][33m.[39mclose)[33m.[39m[34mtoBe[39m([34m1253.8[39m)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/api/envelope.test.ts[2m > [22mwarehouseApi over the real interceptor[2m > [22mreads the table list and puts `layer` on the wire
+[31m[1mAssertionError[22m: expected [] to deeply equal [ Array(2) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   "dwd_stock_daily",[39m
+[32m-   "dwd_economy_cpi",[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m src/__tests__/api/envelope.test.ts:[2m155:40[22m[39m
+    [90m153| [39m      params[33m:[39m { layer[33m:[39m [32m'dwd'[39m }[33m,[39m
+    [90m154| [39m    })
+    [90m155| [39m    expect(tables.map((t) => t.table)).toEqual(['dwd_stock_daily', 'dw…
+    [90m   | [39m                                       [31m^[39m
+    [90m156| [39m    [34mexpect[39m(tables[[34m0[39m][33m.[39mrows)[33m.[39m[34mtoBe[39m([34m8123456[39m)
+    [90m157| [39m  })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/api/envelope.test.ts[2m > [22mpipelineApi over the real interceptor[2m > [22mreads the failure list with its shard fields
+[31m[1mAssertionError[22m: expected +0 to be 1 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m src/__tests__/api/envelope.test.ts:[2m168:23[22m[39m
+    [90m166| [39m    [34mexpect[39m(seen[[34m0[39m][33m.[39murl)[33m.[39m[34mtoBe[39m([32m'/api/v1/pipeline/failures'[39m)
+    [90m167| [39m    expect(seen[0].params).toEqual({ domain: 'stock_daily', limit: 50 …
+    [90m168| [39m    [34mexpect[39m(res[33m.[39mcount)[33m.[39m[34mtoBe[39m([34m1[39m)
+    [90m   | [39m                      [31m^[39m
+    [90m169| [39m    [34mexpect[39m(res[33m.[39mfailures[[34m0[39m][33m.[39mshard)[33m.[39m[34mtoBe[39m([34m7[39m)
+    [90m170| [39m    [34mexpect[39m(res[33m.[39mfailures[[34m0[39m][33m.[39mwindow[33m.[39mend)[33m.[39m[34mtoBe[39m([32m'2026-09-22'[39m)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/api/envelope.test.ts[2m > [22mpipelineApi over the real interceptor[2m > [22mreads the reset count from the retry POST
+[31m[1mAssertionError[22m: expected +0 to be 3 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 3[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m src/__tests__/api/envelope.test.ts:[2m180:23[22m[39m
+    [90m178| [39m    [34mexpect[39m(seen[[34m0[39m][33m.[39mmethod)[33m.[39m[34mtoBe[39m([32m'post'[39m)
+    [90m179| [39m    [34mexpect[39m(seen[[34m0[39m][33m.[39murl)[33m.[39m[34mtoBe[39m([32m'/api/v1/pipeline/retry-failed'[39m)
+    [90m180| [39m    [34mexpect[39m(res[33m.[39mreset)[33m.[39m[34mtoBe[39m([34m3[39m)
+    [90m   | [39m                      [31m^[39m
+    [90m181| [39m  })
+    [90m182| [39m})
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m5 failed[39m[22m[90m (5)[39m
+[2m   Start at [22m 07:38:19
+[2m   Duration [22m 1.90s[2m (transform 1.10s, setup 0ms, import 1.58s, tests 9ms, environment 238ms)[22m
+
+
+===== B. 红：同一 HEAD 状态下把本轮改动的三个测试文件一起跑 =====
+（A 与 B 都在替换状态下采集，恢复发生在 B 之后。）
+这一轮的用意：证明「改成喂拦截器之后的 payload」的 catalog.test.ts 也不再掩盖缺陷——
+旧 envelope() 夹具之所以恒绿，正是因为它把 pre-interceptor 的包装形状钉进了桩里。
+FIXEDTESTS_RC=1
+$ npx vitest run src/__tests__/api/envelope.test.ts src/__tests__/catalog.test.ts src/__tests__/utils/request.test.ts
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/Users/yunjinqi/Documents/new_projects/opendata/frontend[39m
+
+ [32m✓[39m src/__tests__/utils/request.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [31m❯[39m src/__tests__/api/envelope.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[32m 10[2mms[22m[39m
+[31m     [31m×[31m reads the catalog entries out of the envelope[39m[32m 6[2mms[22m[39m
+[31m     [31m×[31m reads a domain query as a whole DataPage, not an envelope[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m reads the table list and puts `layer` on the wire[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m reads the failure list with its shard fields[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m reads the reset count from the retry POST[39m[32m 0[2mms[22m[39m
+ [31m❯[39m src/__tests__/catalog.test.ts [2m([22m[2m6 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[32m 120[2mms[22m[39m
+[31m     [31m×[31m reads the catalog entries out of the payload[39m[32m 4[2mms[22m[39m
+[31m     [31m×[31m returns an empty list when the payload is missing[39m[32m 0[2mms[22m[39m
+     [32m✓[39m propagates a transport failure to the caller[32m 1[2mms[22m[39m
+[31m     [31m×[31m queries a domain with the given parameters[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m renders the domains with their freshness state[39m[32m 94[2mms[22m[39m
+[31m     [31m×[31m drills into a domain preview on demand[39m[32m 20[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 10 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/catalog.test.ts[2m > [22mcatalogApi[2m > [22mreads the catalog entries out of the payload
+[31m[1mAssertionError[22m: expected [] to have a length of 2 but got +0[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 2[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m src/__tests__/catalog.test.ts:[2m71:21[22m[39m
+    [90m 69| [39m
+    [90m 70| [39m    [34mexpect[39m([35mget[39m)[33m.[39m[34mtoHaveBeenCalledWith[39m([32m'/data/catalog'[39m)
+    [90m 71| [39m    [34mexpect[39m(entries)[33m.[39m[34mtoHaveLength[39m([34m2[39m)
+    [90m   | [39m                    [31m^[39m
+    [90m 72| [39m    [34mexpect[39m(entries[[34m0[39m][33m.[39mdomain)[33m.[39m[34mtoBe[39m([32m'stock_daily'[39m)
+    [90m 73| [39m    [34mexpect[39m(entries[[34m0[39m][33m.[39mstatus)[33m.[39m[34mtoBe[39m([32m'stale'[39m)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/catalog.test.ts[2m > [22mcatalogApi[2m > [22mreturns an empty list when the payload is missing
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'data')[39m
+[36m [2m❯[22m Object.catalog src/api/catalog.ts:[2m39:21[22m[39m
+    [90m 37| [39m      [32m'/data/catalog'[39m[33m,[39m
+    [90m 38| [39m    )
+    [90m 39| [39m    [35mreturn[39m response[33m.[39mdata[33m?.[39mdata[33m?.[39mdomains [33m??[39m []
+    [90m   | [39m                    [31m^[39m
+    [90m 40| [39m  }[33m,[39m
+    [90m 41| [39m
+[90m [2m❯[22m src/__tests__/catalog.test.ts:[2m79:12[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/catalog.test.ts[2m > [22mcatalogApi[2m > [22mqueries a domain with the given parameters
+[31m[1mAssertionError[22m: expected [] to have a length of 1 but got +0[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m src/__tests__/catalog.test.ts:[2m96:23[22m[39m
+    [90m 94| [39m
+    [90m 95| [39m    expect(get).toHaveBeenCalledWith('/data/equity/stock_daily', { par…
+    [90m 96| [39m    [34mexpect[39m(page[33m.[39mrows)[33m.[39m[34mtoHaveLength[39m([34m1[39m)
+    [90m   | [39m                      [31m^[39m
+    [90m 97| [39m    [34mexpect[39m(page[33m.[39mrows[[34m0[39m][33m.[39mclose)[33m.[39m[34mtoBe[39m([34m1253.8[39m)
+    [90m 98| [39m  })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/catalog.test.ts[2m > [22mDataCatalogView[2m > [22mrenders the domains with their freshness state
+[31m[1mAssertionError[22m: expected '数据目录数据域域标识资产类别来源验证新鲜度操作暂无数据域' to contain 'A股日线行情'[39m
+
+Expected: [32m"A股日线行情"[39m
+Received: [31m"数据目录数据域域标识资产类别来源验证新鲜度操作暂无数据域"[39m
+
+[36m [2m❯[22m src/__tests__/catalog.test.ts:[2m111:18[22m[39m
+    [90m109| [39m
+    [90m110| [39m    [35mconst[39m text [33m=[39m wrapper[33m.[39m[34mtext[39m()
+    [90m111| [39m    [34mexpect[39m(text)[33m.[39m[34mtoContain[39m([32m'A股日线行情'[39m)
+    [90m   | [39m                 [31m^[39m
+    [90m112| [39m    [34mexpect[39m(text)[33m.[39m[34mtoContain[39m([32m'stock_daily'[39m)
+    [90m113| [39m    [34mexpect[39m(text)[33m.[39m[34mtoContain[39m([32m'宏观CPI'[39m)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/catalog.test.ts[2m > [22mDataCatalogView[2m > [22mdrills into a domain preview on demand
+[31m[1mAssertionError[22m: expected last "vi.fn()" call to have been called with [ '/data/equity/stock_daily', …(1) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   "/data/equity/stock_daily",[39m
+[32m-   {[39m
+[32m-     "params": Any<Object>,[39m
+[32m-   },[39m
+[31m+   "/data/catalog",[39m
+[2m  ][22m
+
+[36m [2m❯[22m src/__tests__/catalog.test.ts:[2m127:17[22m[39m
+    [90m125| [39m    [35mawait[39m [34mflushPromises[39m()
+    [90m126| [39m
+    [90m127| [39m    expect(get).toHaveBeenLastCalledWith('/data/equity/stock_daily', {…
+    [90m   | [39m                [31m^[39m
+    [90m128| [39m    [34mexpect[39m(wrapper[33m.[39m[34mtext[39m())[33m.[39m[34mtoContain[39m([32m'1253.8'[39m)
+    [90m129| [39m  })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/api/envelope.test.ts[2m > [22mcatalogApi over the real interceptor[2m > [22mreads the catalog entries out of the envelope
+[31m[1mAssertionError[22m: expected [] to have a length of 2 but got +0[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 2[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m src/__tests__/api/envelope.test.ts:[2m124:21[22m[39m
+    [90m122| [39m
+    [90m123| [39m    expect(seen[0]).toEqual({ url: '/api/v1/data/catalog', method: 'ge…
+    [90m124| [39m    [34mexpect[39m(entries)[33m.[39m[34mtoHaveLength[39m([34m2[39m)
+    [90m   | [39m                    [31m^[39m
+    [90m125| [39m    [34mexpect[39m(entries[[34m0[39m][33m.[39mdisplay_name)[33m.[39m[34mtoBe[39m([32m'A股日线行情'[39m)
+    [90m126| [39m    [34mexpect[39m(entries[[34m1[39m][33m.[39mstatus)[33m.[39m[34mtoBe[39m([32m'missing'[39m)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/api/envelope.test.ts[2m > [22mcatalogApi over the real interceptor[2m > [22mreads a domain query as a whole DataPage, not an envelope
+[31m[1mAssertionError[22m: expected undefined to be 3312 // Object.is equality[39m
+
+[32m- Expected:[39m 
+3312
+
+[31m+ Received:[39m 
+undefined
+
+[36m [2m❯[22m src/__tests__/api/envelope.test.ts:[2m136:24[22m[39m
+    [90m134| [39m    [34mexpect[39m(seen[[34m0[39m][33m.[39murl)[33m.[39m[34mtoBe[39m([32m'/api/v1/data/equity/stock_daily'[39m)
+    [90m135| [39m    [34mexpect[39m(seen[[34m0[39m][33m.[39mparams)[33m.[39m[34mtoEqual[39m({ page[33m:[39m [34m2[39m[33m,[39m page_size[33m:[39m [34m20[39m })
+    [90m136| [39m    [34mexpect[39m(page[33m.[39mcount)[33m.[39m[34mtoBe[39m([34m3312[39m)
+    [90m   | [39m                       [31m^[39m
+    [90m137| [39m    [34mexpect[39m(page[33m.[39mcolumns)[33m.[39m[34mtoContain[39m([32m'close'[39m)
+    [90m138| [39m    [34mexpect[39m(page[33m.[39mrows[[34m0[39m][33m.[39mclose)[33m.[39m[34mtoBe[39m([34m1253.8[39m)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/api/envelope.test.ts[2m > [22mwarehouseApi over the real interceptor[2m > [22mreads the table list and puts `layer` on the wire
+[31m[1mAssertionError[22m: expected [] to deeply equal [ Array(2) ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   "dwd_stock_daily",[39m
+[32m-   "dwd_economy_cpi",[39m
+[32m- ][39m
+[31m+ [][39m
+
+[36m [2m❯[22m src/__tests__/api/envelope.test.ts:[2m155:40[22m[39m
+    [90m153| [39m      params[33m:[39m { layer[33m:[39m [32m'dwd'[39m }[33m,[39m
+    [90m154| [39m    })
+    [90m155| [39m    expect(tables.map((t) => t.table)).toEqual(['dwd_stock_daily', 'dw…
+    [90m   | [39m                                       [31m^[39m
+    [90m156| [39m    [34mexpect[39m(tables[[34m0[39m][33m.[39mrows)[33m.[39m[34mtoBe[39m([34m8123456[39m)
+    [90m157| [39m  })
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/api/envelope.test.ts[2m > [22mpipelineApi over the real interceptor[2m > [22mreads the failure list with its shard fields
+[31m[1mAssertionError[22m: expected +0 to be 1 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m src/__tests__/api/envelope.test.ts:[2m168:23[22m[39m
+    [90m166| [39m    [34mexpect[39m(seen[[34m0[39m][33m.[39murl)[33m.[39m[34mtoBe[39m([32m'/api/v1/pipeline/failures'[39m)
+    [90m167| [39m    expect(seen[0].params).toEqual({ domain: 'stock_daily', limit: 50 …
+    [90m168| [39m    [34mexpect[39m(res[33m.[39mcount)[33m.[39m[34mtoBe[39m([34m1[39m)
+    [90m   | [39m                      [31m^[39m
+    [90m169| [39m    [34mexpect[39m(res[33m.[39mfailures[[34m0[39m][33m.[39mshard)[33m.[39m[34mtoBe[39m([34m7[39m)
+    [90m170| [39m    [34mexpect[39m(res[33m.[39mfailures[[34m0[39m][33m.[39mwindow[33m.[39mend)[33m.[39m[34mtoBe[39m([32m'2026-09-22'[39m)
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/api/envelope.test.ts[2m > [22mpipelineApi over the real interceptor[2m > [22mreads the reset count from the retry POST
+[31m[1mAssertionError[22m: expected +0 to be 3 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 3[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m src/__tests__/api/envelope.test.ts:[2m180:23[22m[39m
+    [90m178| [39m    [34mexpect[39m(seen[[34m0[39m][33m.[39mmethod)[33m.[39m[34mtoBe[39m([32m'post'[39m)
+    [90m179| [39m    [34mexpect[39m(seen[[34m0[39m][33m.[39murl)[33m.[39m[34mtoBe[39m([32m'/api/v1/pipeline/retry-failed'[39m)
+    [90m180| [39m    [34mexpect[39m(res[33m.[39mreset)[33m.[39m[34mtoBe[39m([34m3[39m)
+    [90m   | [39m                      [31m^[39m
+    [90m181| [39m  })
+    [90m182| [39m})
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[31m10 failed[39m[22m[2m | [22m[1m[32m6 passed[39m[22m[90m (16)[39m
+[2m   Start at [22m 07:38:31
+[2m   Duration [22m 2.47s[2m (transform 3.07s, setup 0ms, import 4.23s, tests 136ms, environment 863ms)[22m
+
+
+===== C. 绿：cp /tmp/c31api_fixed/*.ts 回原位后同一组命令 =====
+GREEN_RC=0
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/Users/yunjinqi/Documents/new_projects/opendata/frontend[39m
+
+ [32m✓[39m src/__tests__/utils/request.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/__tests__/api/envelope.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/__tests__/catalog.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 163[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m16 passed[39m[22m[90m (16)[39m
+[2m   Start at [22m 07:38:40
+[2m   Duration [22m 2.37s[2m (transform 2.81s, setup 0ms, import 3.93s, tests 175ms, environment 868ms)[22m
+
+
+===== D. 判据取舍：哪些断言可达、哪些是恒真，逐条量过 =====
+
+-- D1 曾写「data 缺失时 query() 回退 emptyDataPage()」，跑出来是红的：拦截器 `res.data ?? res`
+   在 data 为 null 时把整个信封交给调用方，`payload ?? fallback` 永远不会触发。
+   该后端会不会真的发 success=True + data=null？量过：
+$ sed -n '248,264p' opendata/api/data_query.py
+    return APIResponse(
+        success=True,
+        message="success",
+        data={
+            "domain": domain,
+            "asset_class": asset_class,
+            "layer": layer,
+            "source": source,
+            "adjust": adjust,
+            "columns": await _selected_columns(engine, table, query, domain),
+            "rows": rows,
+            "page": page,
+            "page_size": page_size,
+            "count": len(rows),
+        },
+    )
+
+   → 域名查询要么返回完整分页 dict，要么抛 HTTPException（400/500/501），没有 success=True+data=null 这条路。
+   处置：删掉该断言（它测的是拦截器性质，不是 query() 的性质），把这条性质挪到 utils/request.test.ts；
+   同时登记 query() 里的 `?? emptyDataPage()` 为经真实传输不可达的兜底（emptyDataPage 本身仍被
+   DataCatalogView 用作加载态，不是死码）。不为不可达分支加防御代码。
+
+-- D2 success=false 是否可达（决定「200 但信封报失败」这条契约断言留不留）：
+$ grep -rn 'success=False' opendata/api/*.py
+opendata/api/settings.py:157:                success=False,
+opendata/api/settings.py:187:                success=False,
+opendata/api/settings.py:193:            success=False,
+opendata/api/tasks.py:461:            success=False,
+   → 可达（settings 三处、tasks 一处），契约断言保留。
+
+-- D3 登记过的枪伤「res.data ?? res 会把自带 data 键的 payload 也解掉」在当前后端是否可达：
+$ grep -rn '"data":' opendata/api/*.py
+opendata/api/websocket.py:93:            "data": {
+opendata/api/websocket.py:148:      "data": {
+   → 只有 websocket.py 的推送帧自带 data 键，而 WS 不走 axios；REST 侧无一处。
+     故它是结构性风险（新增端点时会被踩到），不是当前断链，本轮只登记不改拦截器。
+
+-- D4 无信封端点（SettingsView 症状的来源）实测：opendata/api/settings.py 的 /settings/database
+   直接返回模型对象，因此 `res.data ?? res` 走的是「整包透传」分支；
+   SettingsView 原先的 `mainRes.data || mainRes` 是对同一件事的第二次猜测，已删。
+
+===== E. 恢复校验（红/绿采集后工作树必须回到修复版） =====
+$ for f in catalog data tables; do cmp -s /tmp/c31api_fixed/$f.ts frontend/src/api/$f.ts; done
+RESTORED_OK catalog
+RESTORED_OK data
+RESTORED_OK tables
+$ grep -c 'response.data?.data' frontend/src/api/{catalog,data,tables}.ts
+frontend/src/api/catalog.ts:0
+frontend/src/api/data.ts:0
+frontend/src/api/tables.ts:0
+$ git status --short frontend/src/api
+ M frontend/src/api/catalog.ts
+ M frontend/src/api/data.ts
+ M frontend/src/api/tables.ts
+
+全程未使用 git stash；HEAD 版本仅按文件从 `git show` 取出，写回用 /tmp 副本 + cmp 校验。

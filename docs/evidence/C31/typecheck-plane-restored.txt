@@ -1,0 +1,101 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T07:29:51+0200
+branch=dev HEAD=857d79f
+node=v25.1.0 typescript=5.9.3 vue-tsc=2.2.12
+门禁命令已改为：cd frontend && npx vue-tsc -b --force（Makefile frontend-typecheck）
+工作树（本轮改动，未提交）：
+ M Makefile
+ M frontend/.gitignore
+ M frontend/src/App.vue
+ M frontend/src/__tests__/composables/useApiCall.test.ts
+ M frontend/src/api/catalog.ts
+ M frontend/src/api/data.ts
+ M frontend/src/api/tables.ts
+ M frontend/src/components/common/EmptyState.vue
+ M frontend/src/components/common/ErrorBoundary.vue
+ M frontend/src/components/common/FilterBar.vue
+ M frontend/src/components/common/PageHeader.vue
+ M frontend/src/components/common/StatCard.vue
+ M frontend/src/components/common/StatusBadge.vue
+ M frontend/src/components/common/__tests__/EmptyState.test.ts
+ M frontend/src/components/common/__tests__/StatusBadge.test.ts
+ M frontend/src/composables/useAsync.ts
+ M frontend/src/composables/useNotification.ts
+ M frontend/src/composables/usePerformance.ts
+ M frontend/src/composables/useSearch.ts
+ M frontend/src/config/constants.ts
+ M frontend/src/i18n/index.ts
+ M frontend/src/i18n/locales/en-US.ts
+ M frontend/src/i18n/locales/zh-CN.ts
+ M frontend/src/main.ts
+D  frontend/src/mocks/browser.ts
+D  frontend/src/mocks/handlers.ts
+D  frontend/src/mocks/node.ts
+ M frontend/src/views/DataCatalogView.vue
+ M frontend/src/views/ExecutionsView.vue
+ M frontend/src/views/HomeView.vue
+ M frontend/src/views/LayoutView.vue
+ M frontend/src/views/LoginView.vue
+ M frontend/src/views/RegisterView.vue
+ M frontend/src/views/SettingsView.vue
+ M frontend/src/views/TableDetailView.vue
+ M frontend/src/views/TablesView.vue
+ M frontend/src/views/admin/InterfaceManagement.vue
+ M frontend/tsconfig.json
+?? docs/evidence/C31/
+?? frontend/tsconfig.e2e.json
+
+--- 说明 ---
+typecheck-vacuity.txt 记录了改之前：门禁形式读 0 个文件、植入错误也 exit 0、同一份代码 -b 报 55 例。
+这一份记录改之后：三个工程（app / node / e2e）都在判定面上，且两个方向都能证伪 —— 
+分别往 src 和 e2e 植一个类型错误，-b 必须 exit 2 并点名那个文件；删掉植入后必须回到 exit 0。
+e2e 工程（tsconfig.e2e.json，含 playwright.config.ts 与 e2e/**）是本轮新接进来的：
+改之前 e2e 规格文件不属于任何 tsconfig 工程（tsconfig.app 只 include src/**），也就是说前端 e2e 面的类型从未被检查过。
+
+===== A. 修完 55 例之后的门禁读数 =====
+$ (cd frontend && npx vue-tsc -b --force)
+AFTER_FIX_RC=0
+
+===== B. 证伪面 1：往 src 植一个错误 =====
+src/__c31_planted_scratch.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.
+PLANTED_SRC_RC=2
+
+===== C. 证伪面 2：往 e2e 植一个错误（新工程必须真的在读） =====
+e2e/__c31_planted.spec.ts(3,7): error TS2322: Type 'string' is not assignable to type 'number'.
+PLANTED_E2E_RC=2
+
+===== D. 植入物删干净之后回到绿 =====
+FINAL_RC=0
+e2e 工程读到：
+frontend/playwright.config.ts
+frontend/e2e/auth.spec.ts
+frontend/e2e/scripts.spec.ts
+frontend/e2e/tasks.spec.ts
+
+===== E. 存量 55 例的处置口径（逐类） =====
+11 例 src/mocks/*        ：整面删除（msw 2.12.10 里没有 rest/setupWorker 导出，public/ 下也没有 mockServiceWorker.js，
+                          DEV 每次启动在 main.ts 的 async IIFE 里抛未捕获 rejection；e2e 已用 page.route 做唯一 mock 面）
+4 例  src/i18n/*         ：messages 用 Record<Locale, MessageSchema>，createI18n 的第二泛形位原本是 DateTimeFormats
+                          （被当成 locale 传了）→ 去掉误用的泛形；两份 locale 双向补齐 8 个漂移 key
+3 例 logger.error(…, e)  ：e 是 unknown，context 要 Record<string, unknown> → 5 处改走 logger.apiError(endpoint, e)
+2 例 SettingsView        ：mainRes.data 在解包后的负载上不存在（双解包症状）→ 直接用负载字段
+2 例 RegisterView        ：rules 加 FormRules 注解；register() 少传 password_confirm → 后端 RegisterRequest 必填，
+                          注册按钮点了必然 422（真机产品缺陷）
+2 例 el-tag type 含 ''   ：StatusBadge / InterfaceManagement 的联合类型去掉 ''，未分类别落 'info'
+2 例 TablesView/ExecutionsView pageSize：PAGINATION 去掉外层 as const（literal 20 让 handleSizeChange 无法回写）
+2 例 分页不刷新          ：handlePageChange 从未被模板接线，补 @current-change（翻页只改了 currentPage，列表不重载）
+1 例 TableDetailView     ：schema.data_size 端点从未返回（AC-15 legacy 面只读，不加字段）→ 删掉那一格统计
+1 例 EmptyState.test     ：props.icon 是 Component，测试传 'Plus' 字符串 → 改传组件本身
+1 例 useAsync            ：返回时把 ref 又包了一层 shallowRef，.value 取到的是内层 ref 而不是值 → 直接返回
+其余 7 例 未使用导入/变量/槽位空值 → 删除或补初值
+
+===== F. D 段那行「e2e 工程读到」为空的原因与补测（同一次会话内，紧随其后） =====
+D 段跑在 -b --force 之后，tsconfig.*.tsbuildinfo 还在，-p … --listFilesOnly 在已有 build info 时不输出文件清单。
+清掉 build info 再跑同一条命令，e2e 工程实际读到 4 个自有文件（其余 173 个是 vue/playwright/element-plus 与 lib 的类型）：
+(eval):8: no matches found: frontend/tsconfig.*.tsbuildinfo
+frontend/playwright.config.ts
+frontend/e2e/auth.spec.ts
+frontend/e2e/scripts.spec.ts
+frontend/e2e/tasks.spec.ts
+TOTAL_FILES_LISTED=177
+(eval):11: no matches found: frontend/tsconfig.*.tsbuildinfo

@@ -1,0 +1,148 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T06:58:02+0200
+branch=dev HEAD=857d79f
+工作树（本轮改动，未提交）：
+?? docs/evidence/C31/
+?? frontend/e2e/__c31_probe.spec.ts
+命令：cd frontend && npx playwright test e2e/__c31_probe.spec.ts --reporter=list（完整未裁剪）
+
+--- 说明 ---
+临时探针（跑完即删，不进判定面）：种一个会话形状的 localStorage，只把 /api/v1/ 的 xhr 全部 fulfill 成 500，
+量每个页面自己发出哪些请求、以及「一个都没答上」时页面渲染成什么。只记录事实，不做判定。
+
+
+Running 5 tests using 4 workers
+
+
+===== /executions =====
+final url      : http://localhost:5173/executions
+requests       : 3
+  GET /api/v1/pipeline/failures?limit=100
+  GET /api/v1/executions/?page=1&page_size=20
+  GET /api/v1/executions/stats
+pageerrors     : 1
+  pageerror: SyntaxError: The requested module '/node_modules/.vite/deps/msw.js?v=83795166' does not provide an export named 'rest'
+
+===== /tables =====
+final url      : http://localhost:5173/tables
+requests       : 2
+  GET /api/v1/tables/warehouse?layer=all
+  GET /api/v1/tables/?page=1&page_size=20
+pageerrors     : 1
+  pageerror: SyntaxError: The requested module '/node_modules/.vite/deps/msw.js?v=83795166' does not provide an export named 'rest'
+dom            : {
+ "elTable": 1,
+ "rows": 0,
+ "empty": 0,
+ "emptyText": [],
+ "messages": [
+  "服务器错误，请稍后再试",
+  "服务器错误，请稍后再试",
+  "服务器错误，请稍后再试"
+ ],
+ "headings": [],
+ "buttons": [
+  "中文",
+  "重试"
+ ],
+ "dialogs": 0
+}
+dom            : {
+ "elTable": 2,
+ "rows": 0,
+ "empty": 0,
+ "emptyText": [],
+ "messages": [
+  "服务器错误，请稍后再试",
+  "服务器错误，请稍后再试",
+  "Request failed with status code 500"
+ ],
+ "headings": [],
+ "buttons": [
+  "中文",
+  "重试"
+ ],
+ "dialogs": 0
+}
+  ✓  3 [chromium] › e2e/__c31_probe.spec.ts:19:3 › P /executions — which requests does this page make, and what renders when none is answered (2.9s)
+  ✓  1 [chromium] › e2e/__c31_probe.spec.ts:19:3 › P /tables — which requests does this page make, and what renders when none is answered (2.9s)
+
+===== /tasks =====
+final url      : http://localhost:5173/tasks
+requests       : 2
+  GET /api/v1/tasks/?page=1&page_size=20
+  GET /api/v1/scripts/?page=1&page_size=2000
+pageerrors     : 1
+  pageerror: SyntaxError: The requested module '/node_modules/.vite/deps/msw.js?v=83795166' does not provide an export named 'rest'
+dom            : {
+ "elTable": 1,
+ "rows": 0,
+ "empty": 0,
+ "emptyText": [],
+ "messages": [
+  "服务器错误，请稍后再试",
+  "c31-probe-no-backend",
+  "服务器错误，请稍后再试",
+  "c31-probe-no-backend"
+ ],
+ "headings": [],
+ "buttons": [
+  "中文",
+  "创建任务"
+ ],
+ "dialogs": 0
+}
+  ✓  4 [chromium] › e2e/__c31_probe.spec.ts:19:3 › P /tasks — which requests does this page make, and what renders when none is answered (3.0s)
+
+===== /scripts =====
+final url      : http://localhost:5173/scripts
+requests       : 2
+  GET /api/v1/scripts/categories
+  GET /api/v1/scripts/?page=1&page_size=20
+pageerrors     : 1
+  pageerror: SyntaxError: The requested module '/node_modules/.vite/deps/msw.js?v=83795166' does not provide an export named 'rest'
+dom            : {
+ "elTable": 1,
+ "rows": 0,
+ "empty": 0,
+ "emptyText": [],
+ "messages": [
+  "服务器错误，请稍后再试",
+  "服务器错误，请稍后再试",
+  "c31-probe-no-backend"
+ ],
+ "headings": [],
+ "buttons": [
+  "中文"
+ ],
+ "dialogs": 0
+}
+  ✓  2 [chromium] › e2e/__c31_probe.spec.ts:19:3 › P /scripts — which requests does this page make, and what renders when none is answered (3.0s)
+
+===== /tables/dwd_stock_daily =====
+final url      : http://localhost:5173/tables/dwd_stock_daily
+requests       : 2
+  GET /api/v1/tables/dwd_stock_daily/schema
+  GET /api/v1/tables/dwd_stock_daily/schema
+pageerrors     : 2
+  pageerror: SyntaxError: The requested module '/node_modules/.vite/deps/msw.js?v=83795166' does not provide an export named 'rest'
+  pageerror: SyntaxError: The requested module '/node_modules/.vite/deps/msw.js?v=312b0cec' does not provide an export named 'rest'
+dom            : {
+ "elTable": 0,
+ "rows": 0,
+ "empty": 0,
+ "emptyText": [],
+ "messages": [
+  "服务器错误，请稍后再试",
+  "c31-probe-no-backend"
+ ],
+ "headings": [],
+ "buttons": [
+  "中文"
+ ],
+ "dialogs": 0
+}
+  ✓  5 [chromium] › e2e/__c31_probe.spec.ts:19:3 › P /tables/dwd_stock_daily — which requests does this page make, and what renders when none is answered (2.7s)
+
+  5 passed (8.4s)
+PROBE_RC=0

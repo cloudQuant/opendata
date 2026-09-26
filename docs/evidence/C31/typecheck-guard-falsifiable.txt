@@ -1,0 +1,150 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T07:42:38+0200
+branch=dev HEAD=857d79f
+
+--- 说明 ---
+tests/test_frontend_typecheck_guard.py 的 TestGuardIsFalsifiable 用桩数据证伪判据；
+这份档案补的是「对着真实 Makefile/tsconfig.json 做变异」这一层：把本轮修掉的恒真形态
+原样种回去（`npx vue-tsc --noEmit`、`-b` 去掉 `--force`、solution 文件不再引用 e2e 工程），
+看守卫是否真的变红。变异用 /tmp 副本 + cp 恢复，不用 git stash。
+每节命令：python -m pytest tests/test_frontend_typecheck_guard.py -q -p no:cacheprovider --no-cov
+（完整未裁剪；--no-cov 只是避开「单文件跑必然不达全库阈值」这条无关噪声。）
+
+===== A. 基线：修复后的真实配置应通过 =====
+
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 11 items
+
+tests/test_frontend_typecheck_guard.py ...........                       [100%]
+
+============================== 11 passed in 0.02s ==============================
+RC=0
+
+===== B. 变异 1：recipe 换回恒真形态 =====
+$ perl -pi -e 's{npx vue-tsc -b --force}{npx vue-tsc --noEmit}' Makefile
+124:	cd frontend && npx vue-tsc --noEmit
+
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 11 items
+
+tests/test_frontend_typecheck_guard.py F..........                       [100%]
+
+=================================== FAILURES ===================================
+___ TestShippedConfig.test_the_recipe_selects_a_project_and_forces_a_rebuild ___
+tests/test_frontend_typecheck_guard.py:152: in test_the_recipe_selects_a_project_and_forces_a_rebuild
+    assert judge_recipe(recipe) == ()
+E   assert ('NO_PROJECT_... zero files',) == ()
+E     
+E     Left contains one more item: "NO_PROJECT_SELECTED: 'cd frontend && npx vue-tsc --noEmit' reads the solution file, which has files: [] and checks zero files"
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_frontend_typecheck_guard.py::TestShippedConfig::test_the_recipe_selects_a_project_and_forces_a_rebuild
+========================= 1 failed, 10 passed in 0.06s =========================
+RC=1
+
+===== C. 变异 2：-b 去掉 --force（增量态恒绿） =====
+$ cp /tmp/c31_Makefile Makefile && perl -pi -e 's{npx vue-tsc -b --force}{npx vue-tsc -b}' Makefile
+124:	cd frontend && npx vue-tsc -b
+
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 11 items
+
+tests/test_frontend_typecheck_guard.py F..........                       [100%]
+
+=================================== FAILURES ===================================
+___ TestShippedConfig.test_the_recipe_selects_a_project_and_forces_a_rebuild ___
+tests/test_frontend_typecheck_guard.py:152: in test_the_recipe_selects_a_project_and_forces_a_rebuild
+    assert judge_recipe(recipe) == ()
+E   assert ('STALE_BUILD... it a no-op',) == ()
+E     
+E     Left contains one more item: "STALE_BUILD_INFO: 'cd frontend && npx vue-tsc -b' builds without --force, so the *.tsbuildinfo a previous gate run leaves behind can make it a no-op"
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_frontend_typecheck_guard.py::TestShippedConfig::test_the_recipe_selects_a_project_and_forces_a_rebuild
+========================= 1 failed, 10 passed in 0.07s =========================
+RC=1
+
+===== D. 变异 3：solution 文件不再引用 e2e 工程（本轮之前的状态） =====
+变异后的 frontend/tsconfig.json：
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    },
+    {
+      "path": "./tsconfig.app.json"
+    }
+  ]
+}
+
+
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 11 items
+
+tests/test_frontend_typecheck_guard.py .F.........                       [100%]
+
+=================================== FAILURES ===================================
+_ TestShippedConfig.test_the_project_graph_covers_src_and_the_playwright_specs _
+tests/test_frontend_typecheck_guard.py:161: in test_the_project_graph_covers_src_and_the_playwright_specs
+    assert judge_graph(solution, projects) == ()
+E   AssertionError: assert ('UNREFERENCE...ig.e2e.json',) == ()
+E     
+E     Left contains one more item: 'UNREFERENCED_PROJECT: tsconfig.json does not reference tsconfig.e2e.json'
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_frontend_typecheck_guard.py::TestShippedConfig::test_the_project_graph_covers_src_and_the_playwright_specs
+========================= 1 failed, 10 passed in 0.06s =========================
+RC=1
+
+===== E. 恢复校验 =====
+$ cp /tmp/c31_Makefile Makefile && cp /tmp/c31_tsconfig.json frontend/tsconfig.json
+RESTORED_OK Makefile
+RESTORED_OK tsconfig.json
+$ git status --short Makefile frontend/tsconfig.json
+ M Makefile
+ M frontend/tsconfig.json
+$ grep -n 'npx vue-tsc' Makefile
+124:	cd frontend && npx vue-tsc -b --force
+
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 11 items
+
+tests/test_frontend_typecheck_guard.py ...........                       [100%]
+
+============================== 11 passed in 0.02s ==============================
+RC=0
+
+===== F. 结论 =====
+三次变异各自 RC=1 且点名判据（NO_PROJECT_SELECTED / STALE_BUILD_INFO / UNREFERENCED_PROJECT），
+基线与恢复态 RC=0：守卫本身可证伪，且判据指向的就是本轮量过的两种恒真形态。

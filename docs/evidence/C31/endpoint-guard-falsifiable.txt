@@ -1,0 +1,548 @@
+================ C31 端点契约守卫的反向可证伪：4 种改坏对真实工作区 ================
+
+---- 运行前采集的出处头 ----
+captured_at: 2026-09-26 08:12:05 CEST
+branch     : dev
+HEAD       : 857d79f4fa54601aea380ff7c1bfda81a9cd0ddc
+python     : Python 3.13.5
+命令       : python docs/evidence/C31/endpoint-guard-mutation.py
+改坏面      : frontend/src/api/tasks.ts / frontend/src/api/scripts.ts / frontend/src/utils/request.ts / 新建再删 frontend/src/api/quiet.ts
+备份        : 运行前已 cp 三个被改文件到 /tmp/c31_backup/（脚本自身每轮 finally 还原 + sha256 比对）
+被改文件运行前 sha256:
+46bb8677e95af46037d3469c1d9499e3bc3e2c28c0d6c597316c64a87e082c24  frontend/src/api/tasks.ts
+746901ed621f097dd93a988632d6bb303041845f0568acfeeeb70dbc411b1bc4  frontend/src/api/scripts.ts
+757a78ce4bde0e5e797f8ea87b1c4817610dc1fe8c4d5b439b7bb71a7e0fd9f5  frontend/src/utils/request.ts
+守卫文件（未被本脚本改动）sha256:
+af9cd50ff547dddeba0455e58d738d4267b5e5b3cf6519dfc4574dbca0578a69  tests/test_frontend_endpoint_contract.py
+baseline sha256: tasks.ts=46bb8677e95af460, scripts.ts=746901ed621f097d, request.ts=757a78ce4bde0e5e
+
+--- 跑守卫：基线（未改坏） ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 12 items
+
+tests/test_frontend_endpoint_contract.py ............                    [100%]
+
+============================== 12 passed in 0.02s ==============================
+基线（未改坏）: GUARD_RC=0
+
+===== M1 =====
+已把 PATCH /tasks/${taskId}/toggle 追加到 api/tasks.ts（本轮删掉的那条假端点原样回填）
+
+--- 跑守卫：M1 ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 12 items
+
+tests/test_frontend_endpoint_contract.py F...........                    [100%]
+
+=================================== FAILURES ===================================
+________ TestShippedContract.test_every_declared_endpoint_is_registered ________
+tests/test_frontend_endpoint_contract.py:148: in test_every_declared_endpoint_is_registered
+    assert judge(read_frontend_calls(), backend_table()) == ()
+E   AssertionError: assert ('NOT_REGISTE...pi/tasks.ts',) == ()
+E     
+E     Left contains one more item: 'NOT_REGISTERED: PATCH /tasks/${taskId}/toggle  <- api/tasks.ts'
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_frontend_endpoint_contract.py::TestShippedContract::test_every_declared_endpoint_is_registered
+========================= 1 failed, 11 passed in 0.07s =========================
+M1: GUARD_RC=1
+还原校验 tasks.ts: 46bb8677e95af460 vs 46bb8677e95af460 → RESTORED_OK
+还原校验 scripts.ts: 746901ed621f097d vs 746901ed621f097d → RESTORED_OK
+还原校验 request.ts: 757a78ce4bde0e5e vs 757a78ce4bde0e5e → RESTORED_OK
+quiet.ts 是否残留: False
+
+===== M2 =====
+已写入 frontend/src/api/quiet.ts：一条 `http.get('/tasks/')`，client 名不在 extractor 的词汇表里
+
+--- 跑守卫：M2 ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 12 items
+
+tests/test_frontend_endpoint_contract.py F...........                    [100%]
+
+=================================== FAILURES ===================================
+________ TestShippedContract.test_every_declared_endpoint_is_registered ________
+tests/test_frontend_endpoint_contract.py:148: in test_every_declared_endpoint_is_registered
+    assert judge(read_frontend_calls(), backend_table()) == ()
+E   AssertionError: assert ('NO_CALLS_RE...no endpoint',) == ()
+E     
+E     Left contains one more item: 'NO_CALLS_READ: quiet.ts declares no endpoint'
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_frontend_endpoint_contract.py::TestShippedContract::test_every_declared_endpoint_is_registered
+========================= 1 failed, 11 passed in 0.07s =========================
+M2: GUARD_RC=1
+还原校验 tasks.ts: 46bb8677e95af460 vs 46bb8677e95af460 → RESTORED_OK
+还原校验 scripts.ts: 746901ed621f097d vs 746901ed621f097d → RESTORED_OK
+还原校验 request.ts: 757a78ce4bde0e5e vs 757a78ce4bde0e5e → RESTORED_OK
+quiet.ts 是否残留: False
+
+===== M3 =====
+已在 request.ts 里把 "baseURL: '/api/v1'" 换成 "baseURL: '/api/v0'"（1 处）
+
+--- 跑守卫：M3 ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 12 items
+
+tests/test_frontend_endpoint_contract.py ..F.........                    [100%]
+
+=================================== FAILURES ===================================
+_________ TestShippedContract.test_the_browser_prefix_is_a_real_mount __________
+tests/test_frontend_endpoint_contract.py:171: in test_the_browser_prefix_is_a_real_mount
+    assert sorted(mounted) == sorted(declared_backend_routes())
+E   AssertionError: assert [] == [('DELETE', '...er_id}'), ...]
+E     
+E     Right contains 75 more items, first extra item: ('DELETE', '/data/interfaces/{interface_id}')
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_frontend_endpoint_contract.py::TestShippedContract::test_the_browser_prefix_is_a_real_mount
+========================= 1 failed, 11 passed in 0.07s =========================
+M3: GUARD_RC=1
+还原校验 tasks.ts: 46bb8677e95af460 vs 46bb8677e95af460 → RESTORED_OK
+还原校验 scripts.ts: 746901ed621f097d vs 746901ed621f097d → RESTORED_OK
+还原校验 request.ts: 757a78ce4bde0e5e vs 757a78ce4bde0e5e → RESTORED_OK
+quiet.ts 是否残留: False
+
+===== M4 =====
+已在 scripts.ts 里把 "url: '" 换成 "path: '"（5 处）
+
+--- 跑守卫：M4 ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 12 items
+
+tests/test_frontend_endpoint_contract.py ............                    [100%]
+
+============================== 12 passed in 0.02s ==============================
+M4: GUARD_RC=0
+还原校验 tasks.ts: 46bb8677e95af460 vs 46bb8677e95af460 → RESTORED_OK
+还原校验 scripts.ts: 746901ed621f097d vs 746901ed621f097d → RESTORED_OK
+还原校验 request.ts: 757a78ce4bde0e5e vs 757a78ce4bde0e5e → RESTORED_OK
+quiet.ts 是否残留: False
+
+--- 跑守卫：还原后复跑 ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 12 items
+
+tests/test_frontend_endpoint_contract.py ............                    [100%]
+
+============================== 12 passed in 0.02s ==============================
+还原后复跑: GUARD_RC=0
+
+读数：4 种改坏里 3 种被抓到 → ['M1', 'M2', 'M3']
+读数：还原后复跑 GUARD_RC=0（0 才算牙没把树咬坏）
+MUTATION_RC=2（有改坏没被抓到，或还原没回绿）
+MUTATION_EXIT=2
+
+################################################################
+#### 第二遍：守卫补上「逐模块下限 PLANE_SHRANK」之后重跑 4 种改坏 ####
+################################################################
+
+---- 运行前采集的出处头（第二遍） ----
+captured_at: 2026-09-26 08:14:19 CEST
+branch/HEAD: dev 857d79f
+守卫 sha256 : 1d6db9059245112a54b6196a4bd489b64c8245f32f1b9cc4d3600c491f61ddfc…
+第一遍的结论：M1/M2/M3 被抓到，M4（scripts.ts 的 9 条里 5 条改成 path: 写法）没被抓到 —— 43-5=38 仍过全局下限 36。
+补的 rule   ：judge_coverage() 增加 MIN_CALLS_PER_FILE 逐模块下限 → PLANE_SHRANK；测试 12 例 → 14 例。
+被改文件运行前 sha256:
+46bb8677e95af46037d3469c1d9499e3bc3e2c28c0d6c597316c64a87e082c24  frontend/src/api/tasks.ts
+746901ed621f097dd93a988632d6bb303041845f0568acfeeeb70dbc411b1bc4  frontend/src/api/scripts.ts
+757a78ce4bde0e5e797f8ea87b1c4817610dc1fe8c4d5b439b7bb71a7e0fd9f5  frontend/src/utils/request.ts
+
+baseline sha256: tasks.ts=46bb8677e95af460, scripts.ts=746901ed621f097d, request.ts=757a78ce4bde0e5e
+
+--- 跑守卫：基线（未改坏） ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 14 items
+
+tests/test_frontend_endpoint_contract.py ..............                  [100%]
+
+============================== 14 passed in 0.03s ==============================
+基线（未改坏）: GUARD_RC=0
+
+===== M1 =====
+已把 PATCH /tasks/${taskId}/toggle 追加到 api/tasks.ts（本轮删掉的那条假端点原样回填）
+
+--- 跑守卫：M1 ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 14 items
+
+tests/test_frontend_endpoint_contract.py F.............                  [100%]
+
+=================================== FAILURES ===================================
+________ TestShippedContract.test_every_declared_endpoint_is_registered ________
+tests/test_frontend_endpoint_contract.py:169: in test_every_declared_endpoint_is_registered
+    assert judge(read_frontend_calls(), backend_table()) == ()
+E   AssertionError: assert ('NOT_REGISTE...pi/tasks.ts',) == ()
+E     
+E     Left contains one more item: 'NOT_REGISTERED: PATCH /tasks/${taskId}/toggle  <- api/tasks.ts'
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_frontend_endpoint_contract.py::TestShippedContract::test_every_declared_endpoint_is_registered
+========================= 1 failed, 13 passed in 0.07s =========================
+M1: GUARD_RC=1
+还原校验 tasks.ts: 46bb8677e95af460 vs 46bb8677e95af460 → RESTORED_OK
+还原校验 scripts.ts: 746901ed621f097d vs 746901ed621f097d → RESTORED_OK
+还原校验 request.ts: 757a78ce4bde0e5e vs 757a78ce4bde0e5e → RESTORED_OK
+quiet.ts 是否残留: False
+
+===== M2 =====
+已写入 frontend/src/api/quiet.ts：一条 `http.get('/tasks/')`，client 名不在 extractor 的词汇表里
+
+--- 跑守卫：M2 ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 14 items
+
+tests/test_frontend_endpoint_contract.py F.............                  [100%]
+
+=================================== FAILURES ===================================
+________ TestShippedContract.test_every_declared_endpoint_is_registered ________
+tests/test_frontend_endpoint_contract.py:169: in test_every_declared_endpoint_is_registered
+    assert judge(read_frontend_calls(), backend_table()) == ()
+E   AssertionError: assert ('NO_CALLS_RE...no endpoint',) == ()
+E     
+E     Left contains one more item: 'NO_CALLS_READ: quiet.ts declares no endpoint'
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_frontend_endpoint_contract.py::TestShippedContract::test_every_declared_endpoint_is_registered
+========================= 1 failed, 13 passed in 0.07s =========================
+M2: GUARD_RC=1
+还原校验 tasks.ts: 46bb8677e95af460 vs 46bb8677e95af460 → RESTORED_OK
+还原校验 scripts.ts: 746901ed621f097d vs 746901ed621f097d → RESTORED_OK
+还原校验 request.ts: 757a78ce4bde0e5e vs 757a78ce4bde0e5e → RESTORED_OK
+quiet.ts 是否残留: False
+
+===== M3 =====
+已在 request.ts 里把 "baseURL: '/api/v1'" 换成 "baseURL: '/api/v0'"（1 处）
+
+--- 跑守卫：M3 ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 14 items
+
+tests/test_frontend_endpoint_contract.py ..F...........                  [100%]
+
+=================================== FAILURES ===================================
+_________ TestShippedContract.test_the_browser_prefix_is_a_real_mount __________
+tests/test_frontend_endpoint_contract.py:192: in test_the_browser_prefix_is_a_real_mount
+    assert sorted(mounted) == sorted(declared_backend_routes())
+E   AssertionError: assert [] == [('DELETE', '...er_id}'), ...]
+E     
+E     Right contains 75 more items, first extra item: ('DELETE', '/data/interfaces/{interface_id}')
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_frontend_endpoint_contract.py::TestShippedContract::test_the_browser_prefix_is_a_real_mount
+========================= 1 failed, 13 passed in 0.07s =========================
+M3: GUARD_RC=1
+还原校验 tasks.ts: 46bb8677e95af460 vs 46bb8677e95af460 → RESTORED_OK
+还原校验 scripts.ts: 746901ed621f097d vs 746901ed621f097d → RESTORED_OK
+还原校验 request.ts: 757a78ce4bde0e5e vs 757a78ce4bde0e5e → RESTORED_OK
+quiet.ts 是否残留: False
+
+===== M4 =====
+已在 scripts.ts 里把 "url: '" 换成 "path: '"（5 处）
+
+--- 跑守卫：M4 ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 14 items
+
+tests/test_frontend_endpoint_contract.py F.............                  [100%]
+
+=================================== FAILURES ===================================
+________ TestShippedContract.test_every_declared_endpoint_is_registered ________
+tests/test_frontend_endpoint_contract.py:169: in test_every_declared_endpoint_is_registered
+    assert judge(read_frontend_calls(), backend_table()) == ()
+E   AssertionError: assert ('PLANE_SHRAN... 4 条声明，下限 9',) == ()
+E     
+E     Left contains one more item: 'PLANE_SHRANK: api/scripts.ts 只读到 4 条声明，下限 9'
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_frontend_endpoint_contract.py::TestShippedContract::test_every_declared_endpoint_is_registered
+========================= 1 failed, 13 passed in 0.07s =========================
+M4: GUARD_RC=1
+还原校验 tasks.ts: 46bb8677e95af460 vs 46bb8677e95af460 → RESTORED_OK
+还原校验 scripts.ts: 746901ed621f097d vs 746901ed621f097d → RESTORED_OK
+还原校验 request.ts: 757a78ce4bde0e5e vs 757a78ce4bde0e5e → RESTORED_OK
+quiet.ts 是否残留: False
+
+--- 跑守卫：还原后复跑 ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 14 items
+
+tests/test_frontend_endpoint_contract.py ..............                  [100%]
+
+============================== 14 passed in 0.02s ==============================
+还原后复跑: GUARD_RC=0
+
+读数：4 种改坏里 4 种被抓到 → ['M1', 'M2', 'M3', 'M4']
+读数：还原后复跑 GUARD_RC=0（0 才算牙没把树咬坏）
+MUTATION_RC=0（4 种改坏全被抓到，且还原后回绿）
+MUTATION_EXIT=0
+
+---- 第一遍之后 census 侧同步补了同一条逐模块下限，重跑清点确认没被新规则误伤 ----
+
+===== 工作区（修复后）：8 个模块 / 43 条声明 =====
+  工作区（修复后）: MISSING=0 VERB_MISMATCH=0
+
+读数：HEAD 8 文件 / 46 条 → MISSING=4 VERB=0
+
+读数：工作区 8 文件 / 43 条 → MISSING=0 VERB=0
+CENSUS_RC=0（只表两栏都量到了，判定看 MISSING/VERB 两个计数）
+CENSUS_RERUN_EXIT=0
+
+===== 结论 =====
+M4 现在由 PLANE_SHRANK 抓到；判定面 14 例、类型门禁守卫 11 例 = 25 passed。
+两套面（census 与 guard）都读同一棵树，但 census 只做量（RC 只表量到了），判定住在 tests/。
+
+---- 补记（第三段，运行前采集）----
+captured_at: 2026-09-26 08:14:59 CEST  branch/HEAD: dev 857d79f
+上一段里 `CENSUS_RERUN_EXIT=0` 这行读的是管道尾端 `tail` 的状态（没开 pipefail），不是 python 的退出码，属记录缺陷。
+正确读数：命令 `python docs/evidence/C31/endpoint-contract-census.py`（不带管道）→ CENSUS_RC=0，末三行：
+
+读数：工作区 8 文件 / 43 条 → MISSING=0 VERB=0
+CENSUS_RC=0（只表两栏都量到了，判定看 MISSING/VERB 两个计数）
+
+################################################################
+#### 第三遍：两份脚本按 A2 标准改写（ruff 全规则 + bandit）后复跑，行为等价 ####
+################################################################
+captured_at: 2026-09-26 08:18:20 CEST  branch/HEAD: dev 857d79f
+改写内容    : 模块/函数 docstring 补齐（D415/D103）、subprocess 走 sys.executable 与 shutil.which('git')（S603/S607/B603/B404）、
+             assert 换成显式 raise（S101/B101）、行宽收到 100 以内、git show 空读改为直接 raise（head_api_files）。
+被改文件运行前 sha256:
+46bb8677e95af46037d3469c1d9499e3bc3e2c28c0d6c597316c64a87e082c24  frontend/src/api/tasks.ts
+746901ed621f097dd93a988632d6bb303041845f0568acfeeeb70dbc411b1bc4  frontend/src/api/scripts.ts
+757a78ce4bde0e5e797f8ea87b1c4817610dc1fe8c4d5b439b7bb71a7e0fd9f5  frontend/src/utils/request.ts
+baseline sha256: tasks.ts=46bb8677e95af460, scripts.ts=746901ed621f097d, request.ts=757a78ce4bde0e5e
+
+--- 跑守卫：基线（未改坏） ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 14 items
+
+tests/test_frontend_endpoint_contract.py ..............                  [100%]
+
+============================== 14 passed in 0.03s ==============================
+基线（未改坏）: GUARD_RC=0
+
+===== M1 =====
+已把 PATCH /tasks/${taskId}/toggle 追加到 api/tasks.ts（本轮删掉的那条假端点原样回填）
+
+--- 跑守卫：M1 ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 14 items
+
+tests/test_frontend_endpoint_contract.py F.............                  [100%]
+
+=================================== FAILURES ===================================
+________ TestShippedContract.test_every_declared_endpoint_is_registered ________
+tests/test_frontend_endpoint_contract.py:169: in test_every_declared_endpoint_is_registered
+    assert judge(read_frontend_calls(), backend_table()) == ()
+E   AssertionError: assert ('NOT_REGISTE...pi/tasks.ts',) == ()
+E     
+E     Left contains one more item: 'NOT_REGISTERED: PATCH /tasks/${taskId}/toggle  <- api/tasks.ts'
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_frontend_endpoint_contract.py::TestShippedContract::test_every_declared_endpoint_is_registered
+========================= 1 failed, 13 passed in 0.07s =========================
+M1: GUARD_RC=1
+还原校验 tasks.ts: 46bb8677e95af460 vs 46bb8677e95af460 → RESTORED_OK
+还原校验 scripts.ts: 746901ed621f097d vs 746901ed621f097d → RESTORED_OK
+还原校验 request.ts: 757a78ce4bde0e5e vs 757a78ce4bde0e5e → RESTORED_OK
+quiet.ts 是否残留: False
+
+===== M2 =====
+已写入 frontend/src/api/quiet.ts：一条 http.get('/tasks/')，client 名不在词汇表里
+
+--- 跑守卫：M2 ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 14 items
+
+tests/test_frontend_endpoint_contract.py F.............                  [100%]
+
+=================================== FAILURES ===================================
+________ TestShippedContract.test_every_declared_endpoint_is_registered ________
+tests/test_frontend_endpoint_contract.py:169: in test_every_declared_endpoint_is_registered
+    assert judge(read_frontend_calls(), backend_table()) == ()
+E   AssertionError: assert ('NO_CALLS_RE...no endpoint',) == ()
+E     
+E     Left contains one more item: 'NO_CALLS_READ: quiet.ts declares no endpoint'
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_frontend_endpoint_contract.py::TestShippedContract::test_every_declared_endpoint_is_registered
+========================= 1 failed, 13 passed in 0.07s =========================
+M2: GUARD_RC=1
+还原校验 tasks.ts: 46bb8677e95af460 vs 46bb8677e95af460 → RESTORED_OK
+还原校验 scripts.ts: 746901ed621f097d vs 746901ed621f097d → RESTORED_OK
+还原校验 request.ts: 757a78ce4bde0e5e vs 757a78ce4bde0e5e → RESTORED_OK
+quiet.ts 是否残留: False
+
+===== M3 =====
+已在 request.ts 里把 "baseURL: '/api/v1'" 换成 "baseURL: '/api/v0'"（1 处）
+
+--- 跑守卫：M3 ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 14 items
+
+tests/test_frontend_endpoint_contract.py ..F...........                  [100%]
+
+=================================== FAILURES ===================================
+_________ TestShippedContract.test_the_browser_prefix_is_a_real_mount __________
+tests/test_frontend_endpoint_contract.py:192: in test_the_browser_prefix_is_a_real_mount
+    assert sorted(mounted) == sorted(declared_backend_routes())
+E   AssertionError: assert [] == [('DELETE', '...er_id}'), ...]
+E     
+E     Right contains 75 more items, first extra item: ('DELETE', '/data/interfaces/{interface_id}')
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_frontend_endpoint_contract.py::TestShippedContract::test_the_browser_prefix_is_a_real_mount
+========================= 1 failed, 13 passed in 0.07s =========================
+M3: GUARD_RC=1
+还原校验 tasks.ts: 46bb8677e95af460 vs 46bb8677e95af460 → RESTORED_OK
+还原校验 scripts.ts: 746901ed621f097d vs 746901ed621f097d → RESTORED_OK
+还原校验 request.ts: 757a78ce4bde0e5e vs 757a78ce4bde0e5e → RESTORED_OK
+quiet.ts 是否残留: False
+
+===== M4 =====
+已在 scripts.ts 里把 "url: '" 换成 "path: '"（5 处）
+
+--- 跑守卫：M4 ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 14 items
+
+tests/test_frontend_endpoint_contract.py F.............                  [100%]
+
+=================================== FAILURES ===================================
+________ TestShippedContract.test_every_declared_endpoint_is_registered ________
+tests/test_frontend_endpoint_contract.py:169: in test_every_declared_endpoint_is_registered
+    assert judge(read_frontend_calls(), backend_table()) == ()
+E   AssertionError: assert ('PLANE_SHRAN... 4 条声明，下限 9',) == ()
+E     
+E     Left contains one more item: 'PLANE_SHRANK: api/scripts.ts 只读到 4 条声明，下限 9'
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_frontend_endpoint_contract.py::TestShippedContract::test_every_declared_endpoint_is_registered
+========================= 1 failed, 13 passed in 0.07s =========================
+M4: GUARD_RC=1
+还原校验 tasks.ts: 46bb8677e95af460 vs 46bb8677e95af460 → RESTORED_OK
+还原校验 scripts.ts: 746901ed621f097d vs 746901ed621f097d → RESTORED_OK
+还原校验 request.ts: 757a78ce4bde0e5e vs 757a78ce4bde0e5e → RESTORED_OK
+quiet.ts 是否残留: False
+
+--- 跑守卫：还原后复跑 ---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 14 items
+
+tests/test_frontend_endpoint_contract.py ..............                  [100%]
+
+============================== 14 passed in 0.02s ==============================
+还原后复跑: GUARD_RC=0
+
+读数：4 种改坏里 4 种被抓到 → ['M1', 'M2', 'M3', 'M4']
+读数：还原后复跑 GUARD_RC=0（0 才算牙没把树咬坏）
+MUTATION_RC=0（4 种改坏全被抓到，且还原后回绿）
+MUTATION_EXIT=0

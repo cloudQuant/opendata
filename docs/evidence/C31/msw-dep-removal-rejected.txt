@@ -1,0 +1,69 @@
+===== 采集时间 / 环境 / 工作树状态（运行前记录） =====
+2026-09-26T07:44:37+0200
+branch=dev HEAD=857d79f
+npm=11.6.2 node=v25.1.0
+
+--- 说明 ---
+本轮删掉了 frontend/src/mocks（见 README「死面处置」），package.json 里的 msw 声明失去了唯一消费者。
+是否连带删依赖，量一次再决定：命令 = cd frontend && npm uninstall msw，之后 git checkout 还原。
+
+===== A. npm uninstall msw（完整未裁剪） =====
+
+up to date in 499ms
+
+163 packages are looking for funding
+  run `npm fund` for details
+
+===== B. 还原前的 lock / package 差异面 =====
+$ git diff --stat frontend/package.json frontend/package-lock.json
+ frontend/package-lock.json | 55 +++++++++++++++++++++++++++++++++++-----------
+ frontend/package.json      |  1 -
+ 2 files changed, 42 insertions(+), 14 deletions(-)
+
+$ git diff frontend/package-lock.json | grep -c '^+' / '^-'
+added=43 removed=14
+
+被改写的无关条目长这样（msw 的传递依赖整片被标成 optional）：
+17:+      "optional": true,
+25:+      "optional": true,
+33:+      "optional": true,
+41:+      "optional": true,
+51:+      "optional": true
+
+----- msw 是否真从树里消失 -----
+$ grep -n '"node_modules/msw"' frontend/package-lock.json
+6177:    "node_modules/msw": {
+
+$ python 探测：lock 里谁还声明 msw
+node_modules/@vitest/mocker  ->  peerDependencies: msw ^2.4.9
+packages['node_modules/msw'] 存在 = True
+
+----- 恢复 -----
+$ git checkout -- frontend/package.json frontend/package-lock.json
+$ git status --short frontend/package.json frontend/package-lock.json（无输出=已还原）
+opendata-frontend@0.1.0 /Users/yunjinqi/Documents/new_projects/opendata/frontend
+`-- msw@2.12.10
+
+
+===== C. 结论：否决（本轮不动依赖） =====
+1) msw 同时是 @vitest/mocker 的 optional peer（^2.4.9），删掉本项目的直接声明并不减少安装面
+   （lock 里 node_modules/msw 仍在，且 npm 把它及其 8 条传递依赖重标为 optional）。
+2) 代价是一次 43 加 / 14 减的 lock 重写，其中 41 条与 msw 无关——依赖锁文件的这类噪声
+   正好会毁掉「一次提交只讲一件事」的可审性。
+3) 判据核对：AC-17 要求的是「前端面遗留清单收口」，被消费的/mock 平面收口已由「删 src/mocks +
+   e2e 单一 mock 面（page.route）」达成；package.json 里这一行是「无本地消费者的 optional peer
+   声明」，属遗留项而非死面。已登记为 AC-17 遗留（要清需一次专门的 lock review + npm ci 复验）。
+
+===== D. 补记（捕获脚本自身的缺陷，不遮） =====
+A 节的 UNINSTALL_RC 行没进档案：写档案时用了 `cd frontend && npm uninstall msw >> ../$ARC`，
+紧跟的 `echo UNINSTALL_RC=$? >> "$ARC"` 仍在 frontend/ 下，相对路径指向不存在的
+frontend/docs/…，报错后该行丢失（zsh: no such file or directory）。uninstall 本身是成功的：
+B 节 diff 里 frontend/package.json 恰为 1 行删除，即 devDependencies 的 "msw" 那一行。
+这条 zsh 相对路径坑与本轮 C22 之后反复出现的那类（cd 后复用仓库根相对路径）同源，记在这里。
+
+当前依赖树状态（还原后）：
+$ cd frontend && npm ls msw --depth=1
+opendata-frontend@0.1.0 /Users/yunjinqi/Documents/new_projects/opendata/frontend
+`-- msw@2.12.10
+
+$ git status --short frontend/package.json frontend/package-lock.json（无输出=两文件均已回到 HEAD）

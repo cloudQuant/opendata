@@ -1,0 +1,216 @@
+================ C31 端点契约清点：前端声明的 46 条 vs 后端挂载的 153 个 (METHOD,路径) ================
+
+---- 运行前采集的出处头（先落抬头，再跑命令） ----
+captured_at: 2026-09-26 08:09:26 CEST
+branch     : dev
+HEAD       : 857d79f4fa54601aea380ff7c1bfda81a9cd0ddc
+python     : Python 3.13.5
+node       : v25.1.0  npm: 11.6.2
+命令 1     : python docs/evidence/C31/endpoint-contract-census.py
+命令 2     : python -m pytest tests/test_frontend_endpoint_contract.py tests/test_frontend_typecheck_guard.py -q -p no:cacheprovider --no-cov
+工作区相关脏文件（本档案只动 frontend/src/api、frontend/src/utils/request.ts、tests/ 与 docs/evidence/C31）:
+ M Makefile
+ M frontend/src/api/catalog.ts
+ M frontend/src/api/data.ts
+ M frontend/src/api/tables.ts
+ M frontend/src/api/tasks.ts
+ M frontend/src/api/users.ts
+ M frontend/src/utils/request.ts
+ M frontend/tsconfig.json
+?? frontend/tsconfig.e2e.json
+?? tests/test_frontend_endpoint_contract.py
+?? tests/test_frontend_typecheck_guard.py
+
+===== A. 清点完整输出（HEAD 修复前 / 工作区 修复后，两栏同树同表） =====
+2026-09-26 08:09:26.978 | INFO     | opendata.core.token_blacklist:_create_blacklist:187 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+axios baseURL = /api/v1（声明路径要先拼上它，再与挂载后的绝对路径比）
+app.routes 里的 (METHOD, 路径) 组合 = 153
+
+----- HEAD（修复前） 逐模块读取 -----
+  auth.ts            5  POST /auth/login POST /auth/register POST /auth/refresh POST /auth/logout GET /auth/me
+  catalog.ts         2  GET /data/catalog GET /data/${assetClass}/${domain}
+  data.ts            9  POST /data/download GET /executions/${executionId} GET /executions/ GET /executions/stats GET /executions/recent GET /executions/running POST /executions/${executionId}/retry GET /pipeline/failures POST /pipeline/retry-failed
+  scripts.ts         9  GET /scripts/ GET /scripts/${scriptId} GET /scripts/categories GET /scripts/stats PUT /scripts/${scriptId}/toggle POST /scripts/admin/scripts PUT /scripts/admin/scripts/${scriptId} DELETE /scripts/admin/scripts/${scriptId} POST /scripts/scan
+  settings.ts        5  GET /settings/database GET /settings/database/warehouse POST /settings/database/test POST /settings/database/warehouse/test PUT /settings/database
+  tables.ts          5  GET /tables/ GET /tables/${tableId}/schema GET /tables/${tableId}/data DELETE /tables/${tableId} GET /tables/warehouse
+  tasks.ts           7  GET /tasks/ GET /tasks/${taskId} POST /tasks/ PUT /tasks/${taskId} DELETE /tasks/${taskId} PATCH /tasks/${taskId}/toggle GET /tasks/${taskId}/executions
+  users.ts           4  GET /users/ GET /users/${userId} PUT /users/${userId}/role DELETE /users/${userId}
+
+----- 工作区（修复后） 逐模块读取 -----
+  auth.ts            5  POST /auth/login POST /auth/register POST /auth/refresh POST /auth/logout GET /auth/me
+  catalog.ts         2  GET /data/catalog GET /data/${assetClass}/${domain}
+  data.ts            8  POST /data/download GET /executions/${executionId} GET /executions/ GET /executions/stats GET /executions/recent GET /executions/running GET /pipeline/failures POST /pipeline/retry-failed
+  scripts.ts         9  GET /scripts/ GET /scripts/${scriptId} GET /scripts/categories GET /scripts/stats PUT /scripts/${scriptId}/toggle POST /scripts/admin/scripts PUT /scripts/admin/scripts/${scriptId} DELETE /scripts/admin/scripts/${scriptId} POST /scripts/scan
+  settings.ts        5  GET /settings/database GET /settings/database/warehouse POST /settings/database/test POST /settings/database/warehouse/test PUT /settings/database
+  tables.ts          5  GET /tables/ GET /tables/${tableId}/schema GET /tables/${tableId}/data DELETE /tables/${tableId} GET /tables/warehouse
+  tasks.ts           5  GET /tasks/ GET /tasks/${taskId} POST /tasks/ PUT /tasks/${taskId} DELETE /tasks/${taskId}
+  users.ts           4  GET /users/ GET /users/${userId} PUT /users/${userId} DELETE /users/${userId}
+
+===== HEAD（修复前）：8 个模块 / 46 条声明 =====
+  MISSING  POST   /executions/${executionId}/retry       <- api/data.ts
+  MISSING  PATCH  /tasks/${taskId}/toggle                <- api/tasks.ts
+  MISSING  GET    /tasks/${taskId}/executions            <- api/tasks.ts
+  MISSING  PUT    /users/${userId}/role                  <- api/users.ts
+  HEAD（修复前）: MISSING=4 VERB_MISMATCH=0
+
+===== 工作区（修复后）：8 个模块 / 43 条声明 =====
+  工作区（修复后）: MISSING=0 VERB_MISMATCH=0
+
+读数：HEAD 8 文件 / 46 条 → MISSING=4 VERB=0
+
+读数：工作区 8 文件 / 43 条 → MISSING=0 VERB=0
+CENSUS_RC=0（只表两栏都量到了，判定看 MISSING/VERB 两个计数）
+CENSUS_RC=0
+
+===== B. 本量面自己先红的两次（如实记，口径修正的根据） =====
+
+-- B1 少了 HEAD: 的 git show 会安静地输出 0 字节，于是「修复前 0 条声明 / 0 缺失」看起来像通过 --
+命令: git show frontend/src/api/auth.ts | wc -c    （对比 git show HEAD:frontend/src/api/auth.ts | wc -c）
+bare-path bytes :        0
+rev-path bytes  :      973
+第一次跑 census 时 8 个模块全读成 0 条（HEAD: 前缀漏了），print 出来的却是 MISSING=0；
+现在的 head_api_files() 对 rc!=0 或空输出直接 raise，且 adjudicate() 对两栏各有 8 文件/36 条下限，低于下限返回 -1 → CENSUS_RC=2。
+
+-- B2 声明路径不拼 axios baseURL，就整表 miss（43 条全 MISSING），说明前缀这一跳必须在判定面里 --
+2026-09-26 08:09:50.373 | INFO     | opendata.core.token_blacklist:_create_blacklist:187 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+不拼 baseURL：43 条声明，MISSING=43（挂载表 153 项）
+B2_RC=0
+
+===== C. 判定面（住在 tests/，与本量面实现不同） =====
+命令: python -m pytest tests/test_frontend_endpoint_contract.py tests/test_frontend_typecheck_guard.py -q -p no:cacheprovider --no-cov
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 23 items
+
+tests/test_frontend_endpoint_contract.py ............                    [ 52%]
+tests/test_frontend_typecheck_guard.py ...........                       [100%]
+
+============================== 23 passed in 0.04s ==============================
+PYTEST_RC=0
+
+===== D. 读数结论 =====
+1) HEAD 的前端声明 46 条里 4 条后端从未挂载：POST /executions/{id}/retry、PATCH /tasks/{id}/toggle、
+   GET /tasks/{id}/executions、PUT /users/{id}/role。前 3 条各自后面都站着绿的单测（C29 说的「死测」），
+   第 4 条站在 UsersView 的「设置角色」按钮上（点了必 404）。
+2) 工作区 43 条 / MISSING=0 / VERB=0：3 条假端点连同其调用方（ExecutionsView 的重试列、store.retryExecution、
+   store.toggleTask）一起删掉，role 改指已注册的 PUT /users/{id}。后端 surface 本轮零改动。
+3) 判定面 12 例（TestShippedContract 3 + TestGuardIsFalsifiable 8 + 挂载表非空 1）+ 类型门禁守卫 11 例 = 23 passed；
+   tests/ 不在 mypy 的 gate 范围内（`mypy opendata/`），本轮仍手工过了 mypy（Success: no issues found in 2 source
+   files）与 ruff（All checks passed）+ ruff format --check。
+4) census 的 MISSING/VERB 与守卫的 NOT_REGISTERED/VERB_NOT_REGISTERED 是两套实现（段列表 vs 正则、
+   app.routes 挂载后绝对路径 vs api_router 相对模板），两栏读数一致才算量到。
+
+================ 第二遍：守卫与本量面各补一条「逐模块下限」后重跑（运行前采集） ================
+captured_at: 2026-09-26 08:14:59 CEST  branch/HEAD: dev 857d79f
+改动      : tests/test_frontend_endpoint_contract.py 的 judge_coverage() 增加 MIN_CALLS_PER_FILE→PLANE_SHRANK（12 例→14 例）；
+           本量面 adjudicate() 同步增加 MIN_PER_FILE，跌破即 CENSUS_RC=2。
+起因      : docs/evidence/C31/endpoint-guard-falsifiable.txt 第一遍的 M4——scripts.ts 9 条里 5 条改成 path: 写法，
+           43-5=38 仍过全局下限 36，守卫当时读绿。
+
+----- 清点重跑（同 A 段命令，逐模块下限生效后） -----
+2026-09-26 08:14:59.992 | INFO     | opendata.core.token_blacklist:_create_blacklist:187 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+axios baseURL = /api/v1（声明路径要先拼上它，再与挂载后的绝对路径比）
+app.routes 里的 (METHOD, 路径) 组合 = 153
+
+----- HEAD（修复前） 逐模块读取 -----
+  auth.ts            5  POST /auth/login POST /auth/register POST /auth/refresh POST /auth/logout GET /auth/me
+  catalog.ts         2  GET /data/catalog GET /data/${assetClass}/${domain}
+  data.ts            9  POST /data/download GET /executions/${executionId} GET /executions/ GET /executions/stats GET /executions/recent GET /executions/running POST /executions/${executionId}/retry GET /pipeline/failures POST /pipeline/retry-failed
+  scripts.ts         9  GET /scripts/ GET /scripts/${scriptId} GET /scripts/categories GET /scripts/stats PUT /scripts/${scriptId}/toggle POST /scripts/admin/scripts PUT /scripts/admin/scripts/${scriptId} DELETE /scripts/admin/scripts/${scriptId} POST /scripts/scan
+  settings.ts        5  GET /settings/database GET /settings/database/warehouse POST /settings/database/test POST /settings/database/warehouse/test PUT /settings/database
+  tables.ts          5  GET /tables/ GET /tables/${tableId}/schema GET /tables/${tableId}/data DELETE /tables/${tableId} GET /tables/warehouse
+  tasks.ts           7  GET /tasks/ GET /tasks/${taskId} POST /tasks/ PUT /tasks/${taskId} DELETE /tasks/${taskId} PATCH /tasks/${taskId}/toggle GET /tasks/${taskId}/executions
+  users.ts           4  GET /users/ GET /users/${userId} PUT /users/${userId}/role DELETE /users/${userId}
+
+----- 工作区（修复后） 逐模块读取 -----
+  auth.ts            5  POST /auth/login POST /auth/register POST /auth/refresh POST /auth/logout GET /auth/me
+  catalog.ts         2  GET /data/catalog GET /data/${assetClass}/${domain}
+  data.ts            8  POST /data/download GET /executions/${executionId} GET /executions/ GET /executions/stats GET /executions/recent GET /executions/running GET /pipeline/failures POST /pipeline/retry-failed
+  scripts.ts         9  GET /scripts/ GET /scripts/${scriptId} GET /scripts/categories GET /scripts/stats PUT /scripts/${scriptId}/toggle POST /scripts/admin/scripts PUT /scripts/admin/scripts/${scriptId} DELETE /scripts/admin/scripts/${scriptId} POST /scripts/scan
+  settings.ts        5  GET /settings/database GET /settings/database/warehouse POST /settings/database/test POST /settings/database/warehouse/test PUT /settings/database
+  tables.ts          5  GET /tables/ GET /tables/${tableId}/schema GET /tables/${tableId}/data DELETE /tables/${tableId} GET /tables/warehouse
+  tasks.ts           5  GET /tasks/ GET /tasks/${taskId} POST /tasks/ PUT /tasks/${taskId} DELETE /tasks/${taskId}
+  users.ts           4  GET /users/ GET /users/${userId} PUT /users/${userId} DELETE /users/${userId}
+
+===== HEAD（修复前）：8 个模块 / 46 条声明 =====
+  MISSING  POST   /executions/${executionId}/retry       <- api/data.ts
+  MISSING  PATCH  /tasks/${taskId}/toggle                <- api/tasks.ts
+  MISSING  GET    /tasks/${taskId}/executions            <- api/tasks.ts
+  MISSING  PUT    /users/${userId}/role                  <- api/users.ts
+  HEAD（修复前）: MISSING=4 VERB_MISMATCH=0
+
+===== 工作区（修复后）：8 个模块 / 43 条声明 =====
+  工作区（修复后）: MISSING=0 VERB_MISMATCH=0
+
+读数：HEAD 8 文件 / 46 条 → MISSING=4 VERB=0
+
+读数：工作区 8 文件 / 43 条 → MISSING=0 VERB=0
+CENSUS_RC=0（只表两栏都量到了，判定看 MISSING/VERB 两个计数）
+CENSUS_RC=0
+
+----- 判定面重跑（25 例） -----
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 25 items
+
+tests/test_frontend_endpoint_contract.py ..............                  [ 56%]
+tests/test_frontend_typecheck_guard.py ...........                       [100%]
+
+============================== 25 passed in 0.04s ==============================
+PYTEST_RC=0
+
+----- 反向可证伪（4 种改坏，第二遍读数） -----
+见 docs/evidence/C31/endpoint-guard-falsifiable.txt 第二遍：读数 4 种改坏里 4 种被抓到 → ['M1','M2','M3','M4']，MUTATION_EXIT=0
+
+================ 第三遍：清点脚本改写到 A2 标准（ruff 全规则 + bandit 0 findings）后完整复跑 ================
+captured_at: 2026-09-26 08:18:41 CEST  branch/HEAD: dev 857d79f
+命令: python docs/evidence/C31/endpoint-contract-census.py
+2026-09-26 08:18:42.309 | INFO     | opendata.core.token_blacklist:_create_blacklist:187 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+axios baseURL = /api/v1 (declared paths get it prepended before comparing)
+mounted (METHOD, path) pairs in app.routes = 153
+
+----- HEAD (before this round) per-module readout -----
+  auth.ts            5  POST /auth/login POST /auth/register POST /auth/refresh POST /auth/logout GET /auth/me
+  catalog.ts         2  GET /data/catalog GET /data/${assetClass}/${domain}
+  data.ts            9  POST /data/download GET /executions/${executionId} GET /executions/ GET /executions/stats GET /executions/recent GET /executions/running POST /executions/${executionId}/retry GET /pipeline/failures POST /pipeline/retry-failed
+  scripts.ts         9  GET /scripts/ GET /scripts/${scriptId} GET /scripts/categories GET /scripts/stats PUT /scripts/${scriptId}/toggle POST /scripts/admin/scripts PUT /scripts/admin/scripts/${scriptId} DELETE /scripts/admin/scripts/${scriptId} POST /scripts/scan
+  settings.ts        5  GET /settings/database GET /settings/database/warehouse POST /settings/database/test POST /settings/database/warehouse/test PUT /settings/database
+  tables.ts          5  GET /tables/ GET /tables/${tableId}/schema GET /tables/${tableId}/data DELETE /tables/${tableId} GET /tables/warehouse
+  tasks.ts           7  GET /tasks/ GET /tasks/${taskId} POST /tasks/ PUT /tasks/${taskId} DELETE /tasks/${taskId} PATCH /tasks/${taskId}/toggle GET /tasks/${taskId}/executions
+  users.ts           4  GET /users/ GET /users/${userId} PUT /users/${userId}/role DELETE /users/${userId}
+
+----- working tree (after this round) per-module readout -----
+  auth.ts            5  POST /auth/login POST /auth/register POST /auth/refresh POST /auth/logout GET /auth/me
+  catalog.ts         2  GET /data/catalog GET /data/${assetClass}/${domain}
+  data.ts            8  POST /data/download GET /executions/${executionId} GET /executions/ GET /executions/stats GET /executions/recent GET /executions/running GET /pipeline/failures POST /pipeline/retry-failed
+  scripts.ts         9  GET /scripts/ GET /scripts/${scriptId} GET /scripts/categories GET /scripts/stats PUT /scripts/${scriptId}/toggle POST /scripts/admin/scripts PUT /scripts/admin/scripts/${scriptId} DELETE /scripts/admin/scripts/${scriptId} POST /scripts/scan
+  settings.ts        5  GET /settings/database GET /settings/database/warehouse POST /settings/database/test POST /settings/database/warehouse/test PUT /settings/database
+  tables.ts          5  GET /tables/ GET /tables/${tableId}/schema GET /tables/${tableId}/data DELETE /tables/${tableId} GET /tables/warehouse
+  tasks.ts           5  GET /tasks/ GET /tasks/${taskId} POST /tasks/ PUT /tasks/${taskId} DELETE /tasks/${taskId}
+  users.ts           4  GET /users/ GET /users/${userId} PUT /users/${userId} DELETE /users/${userId}
+
+===== HEAD (before): 8 modules / 46 declared calls =====
+  MISSING  POST   /executions/${executionId}/retry       <- api/data.ts
+  MISSING  PATCH  /tasks/${taskId}/toggle                <- api/tasks.ts
+  MISSING  GET    /tasks/${taskId}/executions            <- api/tasks.ts
+  MISSING  PUT    /users/${userId}/role                  <- api/users.ts
+  HEAD (before): MISSING=4 VERB_MISMATCH=0
+
+===== working tree (after): 8 modules / 43 declared calls =====
+  working tree (after): MISSING=0 VERB_MISMATCH=0
+
+读数 HEAD: 8 文件 / 46 条 → MISSING=4 VERB=0
+
+读数 工作区: 8 文件 / 43 条 → MISSING=0 VERB=0
+CENSUS_RC=0（只表两栏都量到了，判定看 MISSING / VERB_MISMATCH）
+CENSUS_RC=0
