@@ -68,9 +68,9 @@ $ python scripts/ops/metadata_backbone_landing.py --asset-type a-share --asset-t
 `--days 40` 从「无效果」变成「28 行且全在窗内」，同时窗口首行的 `prev` 落在窗口外——
 这两条一起构成修复的证据，逐字读数见 `metadata-backbone-dryrun.txt`。
 
-## 3. `make gate` 第 1 成员抓到 4 个 mypy 缺陷（改代码，不改判据）
+## 3. 门禁在 `a2-check`（第 7 个成员）抓到 4 个 mypy 缺陷（改代码，不改判据）
 
-回填前第一遍门禁**红了**：`a2-check`（对本轮改动文件跑 ruff + format + mypy + bandit，
+回填前 23:25 那一遍门禁**红了**：`a2-check`（对本轮改动文件跑 ruff + format + mypy + bandit，
 含 `scripts/`）报 4 个类型错。这里更正我自己一个此前的错误认知：曾以为
 「mypy 只覆盖 `opendata/`」，实际 a2-check 会把我新写的 `scripts/ops/*.py` 与
 被改的 `templates.py` 一起送进 mypy。
@@ -133,19 +133,27 @@ VERDICT AC-2|02: proven
 8. **全程只读**：`engine=None`、`land` 回调只做 `len(frame)`；无 DDL、无 INSERT/UPSERT、未连主库。
    `FUYAO_API_KEY` 只由 `opendata_fuyao` 客户端自行读取，本轮日志不打印其值/长度/前缀。
 
-## 6. 门禁两遍 + AC-17 覆盖面
+## 6. 门禁七份日志（五遍计入判定）+ AC-17 覆盖面
 
-| 遍 | 时点 | 结果 |
-|----|------|------|
-| 第 1 遍（首跑） | 回填前 | **FAIL**：`a2-check` mypy 4 错，`GATE_EXIT=2` → `gate-run1-aborted-a2-mypy.txt` |
-| 第 1 遍（修后重跑） | 回填前 | **PASS**：`GATE_EXIT=0`，16 个 `===== gate:` 标记（15 成员 + PASSED）→ `gate-run1.txt` |
-| 第 2 遍 | 台账/文档回填、证据 `git add` 之后 | **PASS**：`GATE_EXIT=0`（读自文件内部）、16 标记 → `gate-run2.txt`；`ledger-check` 读数 `proven=17 → 18 / gap=8 → 7 / ticked=18`，两本书同时认下这条翻转 |
-| 第 3 遍 | 第 2 遍之后又改了 3 处 markdown 文案（README §6/§9、验收文档 v5.13 行的第 2 遍读数） | **PASS**：`GATE_EXIT=0`、16 标记、`census … proven=18 gap=7 ticked=18 → OK`、`3060 passed / 6 skipped`、`TOTAL 88.35%` → `gate-run3-final.txt`。跑完整门禁而不是只跑 `ledger-check`，是因为 `ledger-check` 只证明文档可解析，其余 14 成员同样要对最终树成立 |
+| 采集时点（运行前） | 对应哪棵树 | 结果 |
+|------|------|------|
+| 22:55:35 | `_legs` 修复**之前**的代码树（pipeline 侧接线已完成，ops 脚本还走 `extract_data`） | **PASS**：`GATE_EXIT=0`、16 段标记、`3052 passed / 6 skipped`、`TOTAL 88.28%` → `gate-run1-code-before-legs-fix.txt`。**这份绿色已被本轮自己取代**：它证明的是当时那棵树，而 §2 的缺陷在那之后才修、21→29 的用例也是之后才补全的；按原样保留不删，但不计入判定 |
+| 23:25:57 | 回填前（mypy 收口之前） | **FAIL**：`a2-check` mypy 4 错，`GATE_EXIT=2` → `gate-run1-aborted-a2-mypy.txt`。停在第 7 个成员（它自己已打印段头），前 6 个成员全绿 ⇒ 日志里正好 7 段标记 |
+| 23:30:35 | 回填前 | **PASS**：`GATE_EXIT=0`，16 个门禁段标记（15 成员 + PASSED）→ `gate-run1.txt` |
+| 23:44:28 | 第 2 遍：台账/文档回填、证据 `git add` 之后 | **PASS**：`GATE_EXIT=0`（读自文件内部）、16 标记 → `gate-run2.txt`；`ledger-check` 读数 `proven=17 → 18 / gap=8 → 7 / ticked=18`，两本书同时认下这条翻转 |
+| 23:48:58 | 第 3 遍：第 2 遍之后又改了 3 处 markdown 文案（README §6/§9、验收文档 v5.13 行的第 2 遍读数） | **PASS**：`GATE_EXIT=0`、16 标记、`census … proven=18 gap=7 ticked=18 → OK`、`3060 passed / 6 skipped`、`TOTAL 88.35%` → `gate-run3-final.txt`。跑完整门禁而不是只跑 `ledger-check`，是因为 `ledger-check` 只证明文档可解析，其余 14 成员同样要对最终树成立 |
+| 23:55:40 | 第 4 遍：**两笔 commit 之后**（`037bb0b` 代码面 + `6c9a8d1` 回填面） | **PASS**：`GATE_EXIT=0`、读数与第 2/3 遍逐字一致 → `gate-post-commit.txt`；同一棵已提交树上另复算了一次 AC-2\|02 判定面，`proven` 不变。这一遍是为了让"绿色"对应**提交里那棵树**，而不是对应我本地某一刻的工作树 |
+| 09-27 00:11:07 | 第 5 遍：§6/§8 改成按采集时点列全七份日志、验收文档 v5.13 行与 §10 行的「第 1 遍」改成具体时点之后（改动全部已 `git add`） | **PASS**：`GATE_EXIT=0`、16 标记、`3060 passed, 6 skipped in 61.07s`、`TOTAL 11079 1127 2732 288 88.35%`、`ledger-check` `items=130 proven=18 gap=7 unreviewed=105 ticked=18 → OK … 22 group(s) and 19 §10 row(s) reconcile` → `gate-run5-markdown-final.txt`。**跨零点**：本遍整体落在本地 09-27，而台账/文档里的 `date=2026-09-26` 指的是**测量采集日**（dry-run、probe、前四遍都在 09-26）——两个事实分开写 |
 
-两遍的 `3060 passed / 6 skipped`、`TOTAL 88.35%` 与三个覆盖面**逐字相同**
-（`coverage-faces.txt` 末段补测块），说明本轮接线没有引入并行归属抖动。
+计入判定的五遍成功日志（23:30 / 23:44 / 23:48 / 23:55 / 00:11）原始 summary 逐字可比：
+`3060 passed, 6 skipped`（用时分别 62.01 / 60.85 / 60.74 / 60.57 / 61.07s）与
+`TOTAL 11079 1127 2732 288 88.35%`（同一行五遍完全相同）。三个覆盖面由同一份 C38b 复算脚本
+分别从 `gate-run1.txt`、`gate-run2.txt`、`gate-run5-markdown-final.txt` 重算，读数逐字相同
+（`coverage-faces.txt` 的 run2 与 run5 两个补测块），说明本轮接线没有引入并行归属抖动。
+被取代的那一遍（22:55）读数不同且应当不同：`3052 passed`、`TOTAL 11015 … 88.28%`
+——它跑在 `_legs` 修复与后 8 个用例之前，正是"绿色对应哪一棵树"这句话的意义所在。
 
-第 1 遍（修后）读数：`3060 passed / 6 skipped`、全量覆盖率 `TOTAL 88.35%`（阈值 84% 未动）、
+计入判定第一遍（23:30）的读数：`3060 passed / 6 skipped`、全量覆盖率 `TOTAL 88.35%`（阈值 84% 未动）、
 a2-check **331 文件**四检全 ok、quality-ratchet 五项等于快照
 （`ruff_selfdev 243 / mypy_selfdev 11 / bandit_selfdev 3 / ruff_ported 2144 / direct_http_ported 1044`）、
 public API **596/596** 双 100%、`ledger-check` `items=130 proven=17 gap=8 unreviewed=105 ticked=17`、
@@ -186,12 +194,14 @@ AC-17 三面（`coverage-faces.txt`，沿用 C38b 那份复算脚本、口径逐
 |------|------|
 | `metadata-backbone-dryrun.txt` | 真机只读 dry-run + 逐行核验 + 发布覆盖面测量 + 一处标注的算法更正 + mypy 收口后复核（完整未裁剪，带运行前环境头） |
 | `probe-ac2-02.txt` | AC-2\|02 判定面复算（门槛写在头部 + 23:25 与 23:37 两次读数） |
-| `gate-run1-aborted-a2-mypy.txt` | 第 1 遍**失败**原文（`GATE_EXIT=2`）+ 四处 mypy 归因与处置 |
-| `gate-run1-code-before-legs-fix.txt` | `_legs` 修复之前的那一遍（已被取代，按原样保留不删） |
-| `gate-run1.txt` | 回填前那一遍完整日志（`GATE_EXIT=0`，16 标记） |
-| `gate-run2.txt` | 回填后那一遍完整日志（`git add` 之后跑，供 `ledger-check` 检查已跟踪路径；`GATE_EXIT=0`） |
-| `gate-run3-final.txt` | 文案定稿后的第三遍完整日志（`GATE_EXIT=0`，读数与第 2 遍逐字一致） |
-| `coverage-faces.txt` | AC-17 三面复算 + 本轮改动模块逐文件读数 + 基线对照 |
+| `gate-run1-code-before-legs-fix.txt` | 22:55:35｜**不计入判定**：`_legs` 修复之前的代码树，`GATE_EXIT=0` 却读作 `3052 passed / TOTAL 88.28%`；已被取代，按原样保留不删 |
+| `gate-run1-aborted-a2-mypy.txt` | 23:25:57｜第 1 遍首跑**失败**原文（`GATE_EXIT=2`，7 段标记停在 `a2-check`）+ 四处 mypy 归因与处置 |
+| `gate-run1.txt` | 23:30:35｜第 1 遍（mypy 收口后重跑、回填前）完整日志（`GATE_EXIT=0`，16 标记，`3060 passed`） |
+| `gate-run2.txt` | 23:44:28｜第 2 遍：回填后完整日志（`git add` 之后跑，供 `ledger-check` 检查已跟踪路径；`GATE_EXIT=0`） |
+| `gate-run3-final.txt` | 23:48:58｜第 3 遍：文案定稿后的完整日志（`GATE_EXIT=0`，读数与第 2 遍逐字一致） |
+| `gate-post-commit.txt` | 23:55:40｜第 4 遍：**两笔 commit 之后**对已提交那棵树的完整日志（`GATE_EXIT=0`；末尾附同一树上的 AC-2\|02 判定面复算：`importers=2 / mention_only=0 / VERDICT proven`，并披露本遍跨零点）。文件名不叫 `gate-run4` 是因为它的用途写在名字里——对应提交里那棵树 |
+| `gate-run5-markdown-final.txt` | 09-27 00:11:07｜第 5 遍：遍次表述定稿后的完整日志（`GATE_EXIT=0`，16 标记，读数与前四遍计入判定者逐字一致；末尾附 §6 那处文案改动之后重跑的三个读文档成员） |
+| `coverage-faces.txt` | AC-17 三面复算（run1 / run2 / run5 三份日志各算一次）+ 本轮改动模块逐文件读数 + C38b 基线对照 |
 | `README.md` | 本文件 |
 
 后续登记（不在本轮做）：①`dwd_instrument`/`dwd_trading_calendar` 建表与 `--write`（用户拍板）；
@@ -199,7 +209,7 @@ AC-17 三面（`coverage-faces.txt`，沿用 C38b 那份复算脚本、口径逐
 （须由不依赖该判据的一轮来做）；③`jobs.py`/`trading_calendar.py` 自身补到 ≥90%；
 ④落地脚本对重复 `symbol` 由静默覆盖改为显式拒绝或分键。
 
-## 9. 本轮自己的两处记录错误（已更正并披露）
+## 9. 本轮自己的五处记录错误（已更正并披露）
 
 **（一）provenance 头的 HEAD 一栏写成转述** 而不是逐字输出：
 
@@ -217,8 +227,33 @@ HEAD : 063a6e4  docs(acceptance): v5.12 C40 条目级对账与台账回填（AC-
 
 **（二）归档日志的 footer 自己污染了自己。** 我在 `gate-run2.txt` / `gate-run3-final.txt`
 末尾写的读数列里，为了描述"16 个门禁段标记"把这串标记**按原样打了进去**，
-于是 `grep -c '===== gate:'` 对这两个文件读出 **17**——一条为了证明绿色的计数
+于是「数段标记的那条 grep」（pattern = 5 个等号紧接 `gate:`）对这两个文件读出 **17**——一条为了证明绿色的计数
 被写日志的人改成不绿色的数。已把两处散文里的字面串改成 `=====` + `gate:` 的分写形式，
-现在逐行首匹配 `^===== gate:` 的计数在四份日志里分别是 16 / 16 / 16 / 7（失败那遍停在 a2-check，7 段即其真实进度）。
+现在逐行首匹配（同一串 pattern 加 `^` 锚）的计数在七份门禁日志里分别是
+16 / 16 / 16 / 16 / 16 / 16 / 7（失败那遍停在 `a2-check`，7 段即其真实进度）；
+本轮其余三份 `.txt`（dry-run、probe、coverage 复算）不跑门禁，计数为 0。
 教训与前一条同型：**provenance 与读数只能由命令注入，不能由人复述**——
 无论是复述一个 commit 标题，还是复述一段本应被机器数的标记。
+
+**（三）用 shell 生成头/尾注时，双引号里的反引号被当成命令替换执行了。** 两次：
+`gate-run3-final.txt` 的头里"而 \`ledger-check\` 会解析验收文档"那一格被吞成空，
+`gate-post-commit.txt` 的尾注里"最后的 \`gate: PASSED\` 段"被吞掉、且 shell 还报了一次
+`command not found: gate:`。两处已按原意补回（前者在文件里留了一句"这一行第一次生成时被吞过"
+以免读者以为是伪造的头），教训是：**带反引号的 markdown 一律走 heredoc（`<<'EOF'`）或文件写入，
+不要放进双引号的内联命令**。
+
+**（四）把"第几遍"当索引用，结果三处计数都写错了。** 本轮最初只按"回填前/回填后/文案定稿/提交后"
+四遍叙述，于是：①§3 标题写"`make gate` 第 1 成员抓到 mypy 缺陷"——`a2-check` 实际是第 **7** 个成员，
+失败那遍日志里正好 7 段标记；②验收文档 v5.13 行的证据清单写"一遍失败原文 + 三遍成功原文 + 提交后一遍"
+= 5 份，漏了 22:55 那份**被自己取代**的日志（它也是绿的，`GATE_EXIT=0`，但读作 `3052 passed / 88.28%`，
+跑在 `_legs` 修复与后 8 个用例之前）；③§9(二) 先写"四份日志 16/16/16/7"、改后写"五份"，
+而实测是七份。三处都在补第 5 遍时靠**逐份 grep 计数 + 逐份读采集时间戳**发现，而不是靠记忆。
+教训仍是同一条：**遍次、份数、标记数这类要用来判别的量，只能由命令当场数出来**；
+本轮因此把 §6 的索引从"第 N 遍"改成"运行前的采集时点"（22:55:35 / 23:25:57 / 23:30:35 / 23:44:28 /
+23:48:58 / 23:55:40 / 00:11:07），这样"绿色对应哪一棵树"与"哪一遍在先"都不再依赖叙述。
+
+**（五）`coverage-faces.txt` 的 C38b 基线块是一次截断粘贴。** 该节把 `C38b/coverage-faces-across-runs.txt`
+尾部按行抄过来，抄到第三块时停在第 8 行——读者看到的就是同一组三面重复三遍且最后一遍缺行，
+像是复制贴错。读数本身没有错（C38b 三遍的面两两 diff=0，都是 92.49 / 91.68 / 95.76），
+但呈现方式让人无法判断它是一次测量还是三次。已改为「三遍 diff=0」的事实汇总一次并写明出处，
+同文件里另附 run1 / run2 / run5 三份日志各自复算的完整读数。

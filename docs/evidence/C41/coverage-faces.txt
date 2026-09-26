@@ -21,15 +21,13 @@ opendata/pipeline/templates.py                                    204      7    
 opendata/pipeline/trading_calendar.py                              88     13     28      1  82.76%   42-44, 283-294
 opendata/data/models/metadata.py                                   18      0      0      0 100.00%
 
--- 基线对照（C38b 归档里记录的 run2 面）--
-    opendata/pipeline/   files=27   units=3256    covered=2985    face=91.68%
-    opendata_fuyao/      files=9    units=1369    covered=1311    face=95.76%
+-- 基线对照（C38b 归档 docs/evidence/C38b/coverage-faces-across-runs.txt，三遍门禁各自的面）--
+  gate-run1 / gate-run2 / gate.txt 三份日志复算结果两两 diff=0，均为：
     opendata/data/       files=90   units=2943    covered=2722    face=92.49%
     opendata/pipeline/   files=27   units=3256    covered=2985    face=91.68%
     opendata_fuyao/      files=9    units=1369    covered=1311    face=95.76%
-    opendata/data/       files=90   units=2943    covered=2722    face=92.49%
-    opendata/pipeline/   files=27   units=3256    covered=2985    face=91.68%
-    opendata_fuyao/      files=9    units=1369    covered=1311    face=95.76%
+  （本文件这一节的第一版直接把那份文件的尾部逐行抄过来，抄到第三块时被行数截断成 8 行、
+    看着像重复粘贴；现改为按「三遍 diff=0」的事实汇总一次并标出处，读数未变。）
 
 -- 加性补测（23:47:31）：回填后那一遍（gate-run2.txt）同一工具同一口径复算 --
 == docs/evidence/C41/gate-run2.txt  (rows=198)
@@ -37,5 +35,12 @@ opendata/data/models/metadata.py                                   18      0    
   opendata/pipeline/   files=27   units=3428    covered=3150    face=91.89%
   opendata_fuyao/      files=9    units=1369    covered=1311    face=95.76%
 
-三面与 run1 **逐字相同**（units/covered 都一致），说明本轮接线没有引入并行归属抖动，
-C38a 做的「覆盖率读数语句级可复现」在本轮仍然成立。全局 TOTAL 亦一致：88.35%（阈值 84% 未动）。
+-- 加性补测（09-27 00:15 前后）：第 5 遍（gate-run5-markdown-final.txt）同一工具同一口径复算 --
+$ python docs/evidence/C38b/coverage-face-recompute.py docs/evidence/C41/gate-run5-markdown-final.txt
+== docs/evidence/C41/gate-run5-markdown-final.txt  (rows=198)
+  opendata/data/       files=90   units=2943    covered=2722    face=92.49%
+  opendata/pipeline/   files=27   units=3428    covered=3150    face=91.89%
+  opendata_fuyao/      files=9    units=1369    covered=1311    face=95.76%
+
+三面在 run1 / run2 / run5 三份日志上**逐字相同**（units/covered 都一致），说明本轮接线没有引入并行
+归属抖动，C38a 做的「覆盖率读数语句级可复现」在本轮仍然成立。全局 TOTAL 亦一致：88.35%（阈值 84% 未动）。
