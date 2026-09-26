@@ -112,6 +112,19 @@ VERDICT AC-2|02: proven
 本轮 dataclass 改名为 **`CalendarView`** 并明确它是契约的 *projection*——
 名字不再冒充契约，"看起来引用了"这一类就不存在了。完整日志：`probe-ac2-02.txt`（含加性更正块）。
 
+判定面在档案落定后又被读了两次，各自收口不同的树：第 4 遍门禁（`gate-post-commit.txt` 末尾）
+读的是头两笔 commit 那棵树；本轮 closure（`probe-ac2-02-post-commit.txt`）读的是第三笔 commit
+（`7d5c75d`）的树——运行前 `git status --porcelain` 为空，所以这一次对应的确实是**提交里那棵树**
+而不是任何一刻的工作树。留档的四次读数（23:25:11、23:37:02、提交后、closure）四个判定节点逐字一致
+（`yes / 5/5 passed / importers=2 / mention_only=0 ⇒ proven`）；`probe-ac2-02.txt` 头部还记着
+23:24:53 的一次先跑，只作读数确认、未单独留档，所以这里说"四次"而不是"五次"。
+另一格会让读者对不上、因此写明：closure 这次探针打印的 `document line` 是 109 而不是前三次的 108——
+不是判据变了，是回填 commit 在 §0 多插了一行修订记录、条目本身往下挪一行（文档总行数 378 → 379）。
+
+再往下的那一笔 commit 只把这份 closure 档案与 §4/§8 的文案落库（`opendata/`、`tests/`、`scripts/` 一字未动，
+`git show --stat` 可核），所以「proven」所对应的**被测代码树**仍是第 4 遍门禁验过的那一棵——
+本轮到此为止，不再用"为最后一笔 commit 再跑一次"制造无限递归。
+
 ## 5. 真机只读 dry-run 的 8 条读数
 
 全部来自 `metadata-backbone-dryrun.txt`（完整未裁剪，两条命令 + 两段解释性测量 + 一段更正 + 一段复核）：
@@ -194,6 +207,7 @@ AC-17 三面（`coverage-faces.txt`，沿用 C38b 那份复算脚本、口径逐
 |------|------|
 | `metadata-backbone-dryrun.txt` | 真机只读 dry-run + 逐行核验 + 发布覆盖面测量 + 一处标注的算法更正 + mypy 收口后复核（完整未裁剪，带运行前环境头） |
 | `probe-ac2-02.txt` | AC-2\|02 判定面复算（门槛写在头部 + 23:25 与 23:37 两次读数） |
+| `probe-ac2-02-post-commit.txt` | closure 那次：判定面在第三笔 commit（工作树 clean）上的复读，`document line` 108→109 的归因写在头部 |
 | `gate-run1-code-before-legs-fix.txt` | 22:55:35｜**不计入判定**：`_legs` 修复之前的代码树，`GATE_EXIT=0` 却读作 `3052 passed / TOTAL 88.28%`；已被取代，按原样保留不删 |
 | `gate-run1-aborted-a2-mypy.txt` | 23:25:57｜第 1 遍首跑**失败**原文（`GATE_EXIT=2`，7 段标记停在 `a2-check`）+ 四处 mypy 归因与处置 |
 | `gate-run1.txt` | 23:30:35｜第 1 遍（mypy 收口后重跑、回填前）完整日志（`GATE_EXIT=0`，16 标记，`3060 passed`） |

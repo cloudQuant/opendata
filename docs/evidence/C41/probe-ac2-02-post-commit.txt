@@ -1,0 +1,31 @@
+================================================================================
+C41 AC-2|02 判定面在最终提交树上的复读（本轮closure 的那一次）
+================================================================================
+运行前采集: 2026-09-27T00:24:03+02:00   运行后: 2026-09-27T00:24:11+02:00
+branch: dev
+HEAD  : 7d5c75d docs(evidence): C41 档案收口 —— 提交后两遍门禁留档 + 遍次/份数三处计数更正（AC-2|02）
+工作树（运行前 git status --porcelain，应为空）: (clean)
+command: python scripts/quality/acceptance_item_probe.py --item AC-2|02
+
+为什么还要再读一次：本轮判定面的两次读数（23:25 / 23:37）与 gate-post-commit 里那一次，
+  都在提交前的工作树或第 4 遍那棵树上；现在档案文案又落了第三笔 commit ⇒ 对最终 commit 的树再读一次，
+  让「proven」对应**当前 HEAD**而不是对应某一刻的工作树。
+一处读者会对不上的地方（如实写明）：探针打印的 document line 由 108 变 109，
+  不是判据变了 —— 回填 commit 6c9a8d1 在 §0 多插了一行修订记录，条目本身往下挪一行；
+  文档总行数 378（063a6e4）→ 379（6c9a8d1/7d5c75d）。
+================================================================================
+
+### AC-2|02  (document line 109)
+判据原文：**`Instrument` 与 `TradingCalendar` 模型就位**，且被全市场回补与增量窗口逻辑引用（单测）
+本探针：元数据两模型存在且被测（绿），另一面是被回补/窗口逻辑 import
+台账现状：state=proven，文档勾选=True
+  - both classes subclass ContractModel in opendata/data/models/metadata.py = yes
+  - the five field-set/semantics/round-trip nodes = 5/5 passed
+  - backfill / incremental-window modules importing the contracts = 2 (opendata/pipeline/jobs.py, opendata/pipeline/templates.py)
+  - modules that only mention the names (docstrings, or a same-named local class) = 0 (-)
+VERDICT AC-2|02: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+
+EXIT=0
