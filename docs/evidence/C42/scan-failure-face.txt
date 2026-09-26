@@ -1,0 +1,110 @@
+================================================================================
+C42 ④ 量测脚本自身的判定面：一个「没测到」的 0 不能当成「测到没有」
+================================================================================
+采集时间（运行前）: 2026-09-27T01:09:14+0200
+branch: dev
+HEAD  : 53bc24c docs(evidence): C41 closure —— 判定面在已提交树上的复读与遍次档案收口（AC-2|02）
+git status --porcelain（运行前工作树）:
+ M opendata/pipeline/templates.py
+ M tests/test_pipeline_jobs.py
+ M tests/test_pipeline_templates.py
+ M tests/test_trading_calendar.py
+?? docs/evidence/C42/
+命令: python docs/evidence/C42/scan-failure-face.py
+说明: 三次读数都跑同一个 scan 的 main()，只把它的两个取数辅助函数换掉
+  （不发任何网络请求、不读任何凭证、key 的任何信息都不进输出）。
+  A=每一页都不回答（无凭证时会看到的样子）；B=页回答、日历腿回答 0 行；C=两条腿都回答（对照）。
+  期望：A→1、B→1、C→0；任一不符本脚本自己 return 1。
+--------------------------------------------------------------------------------
+
+-------- A: every catalog page UNANSWERED (what a keyless run looks like)
+# duplicate-symbol scan @ 2026-09-27 source=ths (read-only)
+  page a-share: LEG_FAILED SimulatedAuthError: no credential in this process
+  page a-share-index: LEG_FAILED SimulatedAuthError: no credential in this process
+  page fund-etf: LEG_FAILED SimulatedAuthError: no credential in this process
+  page fund-lof: LEG_FAILED SimulatedAuthError: no credential in this process
+  page fund-otc: LEG_FAILED SimulatedAuthError: no credential in this process
+  page fund-reits: LEG_FAILED SimulatedAuthError: no credential in this process
+  page futures: LEG_FAILED SimulatedAuthError: no credential in this process
+  page options: LEG_FAILED SimulatedAuthError: no credential in this process
+  page forex: LEG_FAILED SimulatedAuthError: no credential in this process
+
+  instrument leg, dwd key (symbol,):
+    pages asked        = 9
+    pages answered     = 0
+    accepted rows      = 0
+    distinct symbols   = 0
+    collided symbols   = 0 (the last row of the leg would win)
+    rows an upsert swallows = 0
+    collided and disagreeing = 0
+    rows the contract refused = 0
+
+  SCAN INCOMPLETE: 9 page(s) did not answer (a-share, a-share-index, fund-etf, fund-lof, fund-otc, fund-reits, futures, options, forex).
+  A zero collision count from an unanswered leg is not a verdict, so this exits 1.
+   -------- scan exit = 1, expected 1 [ok]
+
+-------- B: pages answered, calendar leg answered with no row
+# duplicate-symbol scan @ 2026-09-27 source=ths (read-only)
+  page a-share: rows=1 not_a_contract=0
+  page a-share-index: rows=1 not_a_contract=0
+  page fund-etf: rows=1 not_a_contract=0
+  page fund-lof: rows=1 not_a_contract=0
+  page fund-otc: rows=1 not_a_contract=0
+  page fund-reits: rows=1 not_a_contract=0
+  page futures: rows=1 not_a_contract=0
+  page options: rows=1 not_a_contract=0
+  page forex: rows=1 not_a_contract=0
+
+  instrument leg, dwd key (symbol,):
+    pages asked        = 9
+    pages answered     = 9
+    accepted rows      = 9
+    distinct symbols   = 9
+    collided symbols   = 0 (the last row of the leg would win)
+    rows an upsert swallows = 0
+    collided and disagreeing = 0
+    rows the contract refused = 0
+
+  calendar leg, dwd key (exchange, date):
+    asked window       = 2026-08-19 .. 2026-09-27
+    returned span      = empty
+    accepted rows      = 0
+    distinct keys      = 0
+    collided keys      = 0
+
+  SCAN INCOMPLETE: the calendar leg answered with no row.
+  A zero collision count from an empty calendar is not a verdict, so this exits 1.
+   -------- scan exit = 1, expected 1 [ok]
+
+-------- C: control - both legs answered, and the zero is a measurement
+# duplicate-symbol scan @ 2026-09-27 source=ths (read-only)
+  page a-share: rows=1 not_a_contract=0
+  page a-share-index: rows=1 not_a_contract=0
+  page fund-etf: rows=1 not_a_contract=0
+  page fund-lof: rows=1 not_a_contract=0
+  page fund-otc: rows=1 not_a_contract=0
+  page fund-reits: rows=1 not_a_contract=0
+  page futures: rows=1 not_a_contract=0
+  page options: rows=1 not_a_contract=0
+  page forex: rows=1 not_a_contract=0
+
+  instrument leg, dwd key (symbol,):
+    pages asked        = 9
+    pages answered     = 9
+    accepted rows      = 9
+    distinct symbols   = 9
+    collided symbols   = 0 (the last row of the leg would win)
+    rows an upsert swallows = 0
+    collided and disagreeing = 0
+    rows the contract refused = 0
+
+  calendar leg, dwd key (exchange, date):
+    asked window       = 2026-08-19 .. 2026-09-27
+    returned span      = 2026-08-19 .. 2026-09-24
+    accepted rows      = 27
+    distinct keys      = 27
+    collided keys      = 0
+   -------- scan exit = 0, expected 0 [ok]
+
+Readings A and C print the same `collided symbols   = 0`; only the exit code tells an answer from an absence of one. That is the face this round closed.
+EXIT=0

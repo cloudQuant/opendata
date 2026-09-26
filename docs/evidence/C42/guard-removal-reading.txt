@@ -1,0 +1,34 @@
+================================================================================
+C42 ④ 反证读数：守卫在 / 守卫摘掉（=C42 之前），同一条链路给出什么
+================================================================================
+采集时间（运行前）: 2026-09-27T00:53:13+0200
+branch: dev
+HEAD  : 53bc24c docs(evidence): C41 closure —— 判定面在已提交树上的复读与遍次档案收口（AC-2|02）
+git status --porcelain（运行前工作树）:
+ M opendata/pipeline/templates.py
+ M tests/test_pipeline_jobs.py
+ M tests/test_pipeline_templates.py
+ M tests/test_trading_calendar.py
+?? docs/evidence/C42/
+命令: python docs/evidence/C42/guard-removal-reading.py
+说明: 不连任何库（engine=None + 注入 land），只观察 refresh_metadata_backbone
+  交给写手的那一帧与它自己发布的报告。两次读数在同一次进程里跑完，
+  守卫摘掉只在 read(guard_removed=True) 内生效并在 finally 里换回原函数。
+--------------------------------------------------------------------------------
+-- guard SHIPPED (C42 behaviour)
+   symbols = ['600519.SH']
+   frame_rows = 1
+   distinct_keys = 1
+   landed = 1
+   refused = ('key symbol=000001.SZ: instrument published it on 2 rows and disagrees on name, delist_date; none landed',)
+   count_lies = False
+-- guard REMOVED (= behaviour before C42)
+   symbols = ['000001.SZ', '000001.SZ', '600519.SH']
+   frame_rows = 3
+   distinct_keys = 2
+   landed = 3
+   refused = ()
+   count_lies = True
+
+Both readings are what they claim: the guard is the difference.
+EXIT=0

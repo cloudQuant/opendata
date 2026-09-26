@@ -1,0 +1,52 @@
+================================================================================
+C42 ③ 单元面读数：两个目标模块与三条 face 的前后对比（从门禁档案复算，非新跑）
+================================================================================
+复算时间: 2026-09-27T00:58:26+02:00
+branch: dev
+HEAD  : 53bc24c docs(evidence): C41 closure —— 判定面在已提交树上的复读与遍次档案收口（AC-2|02）
+命令: python docs/evidence/C38b/coverage-face-recompute.py docs/evidence/C41/gate-post-commit.txt docs/evidence/C42/gate-run1.txt
+口径说明: 每文件百分比是 coverage.py 的合成分 (stmts-miss + branches-partial) / (stmts+branches)，
+  不是 1-miss/stmts；复算脚本只读已归档的门禁日志，不重跑 pytest，故不产生 .coverage 合并污染。
+--------------------------------------------------------------------------------
+
+[每模块读数]
+
+module                                    before(C41 gate)   after(C42 run1)
+opendata/pipeline/jobs.py                           86.87%            97.30%
+  raw stmts/miss/br/part                  (215, 31, 44, 3)   (215, 6, 44, 1)
+opendata/pipeline/trading_calendar.py               87.93%            97.41%
+  raw stmts/miss/br/part                   (88, 13, 28, 1)    (88, 2, 28, 1)
+opendata/pipeline/templates.py                      95.87%            96.24%
+  raw stmts/miss/br/part                   (204, 7, 38, 3)   (222, 7, 44, 3)
+
+[三条 face（门禁成员 test-cov 的原始行汇总）]
+
+C41        opendata/data/       files=90   units=2943   covered=2722   face=92.49%
+C41        opendata/pipeline/   files=27   units=3428   covered=3150   face=91.89%
+C41        opendata_fuyao/      files=9    units=1369   covered=1311   face=95.76%
+
+C42        opendata/data/       files=90   units=2943   covered=2722   face=92.49%
+C42        opendata/pipeline/   files=27   units=3452   covered=3213   face=93.08%
+C42        opendata_fuyao/      files=9    units=1369   covered=1311   face=95.76%
+
+[全局读数]
+  before docs/evidence/C41/gate-post-commit.txt: TOTAL stmts/miss/br/part/pct = (11079, 1127, 2732, 288) 88.35%
+  after  docs/evidence/C42/gate-run1.txt: TOTAL stmts/miss/br/part/pct = (11097, 1090, 2738, 286) 88.71%
+
+[未覆盖残差（after 档的 Missed 列，逐字）]
+  opendata/pipeline/jobs.py: 215      6     44      1  97.30%   48-55
+  opendata/pipeline/trading_calendar.py: 88      2     28      1  97.41%   42-44
+
+[入口读数的两个来源，都 <90%，故目标不因取哪个而变]
+  门禁档案（本轮采用的 before 档）: jobs.py 86.87% / trading_calendar.py 87.93%
+  开工时的 partial-run 读数（任务描述里的那两个数）: jobs.py 86.10% / trading_calendar.py 82.76%
+  差异归因: partial-run 只跑了部分测试文件，被排除的用例仍然记 miss；
+    门禁是 `pytest -n 8 -m 'not e2e'` 全量，同一份代码给出的 miss 更小。
+    两个读数都不是造假（同一棵树、同一份 coverage 配置），故本轮把两个都留档，
+    判定用较差的那个口径也不改变结论：两模块此前都在 90% 线以下。
+
+[residual 说明]
+  两个模块的 miss 全部落在 `if TYPE_CHECKING:` 的导入块（jobs.py 48-55、trading_calendar.py 42-44）：
+  这些语句在运行时永不执行，任何测试都到不了。本轮没有改 `[tool.coverage] exclude_lines`、没有动门禁的
+  `--cov-fail-under=84`、没有加空断言用例；97.30%/97.41% 是把可执行面补满后的读数，不是把不可执行面判成覆盖。
+  AC-17|06 的判据是三条 face ≥90%，face 由同一份档案复算（见上），故残差的解释不影响判定。

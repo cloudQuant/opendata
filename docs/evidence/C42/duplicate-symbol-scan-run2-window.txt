@@ -1,0 +1,46 @@
+================================================================================
+C42 ④ 前置量测 run2：run1 之后给脚本补了「问的是哪个窗口」这一行，重跑一遍
+================================================================================
+采集时间（运行前）: 2026-09-27T01:00:24+0200
+branch: dev
+HEAD  : 53bc24c docs(evidence): C41 closure —— 判定面在已提交树上的复读与遍次档案收口（AC-2|02）
+git status --porcelain（运行前工作树）:
+ M opendata/pipeline/templates.py
+ M tests/test_pipeline_jobs.py
+ M tests/test_pipeline_templates.py
+ M tests/test_trading_calendar.py
+?? docs/evidence/C42/
+命令: python docs/evidence/C42/duplicate-symbol-scan.py
+与 run1 的差别: 只加了 calendar 腿的 asked window / returned span 两行打印（量测面不变，
+  还是「腿是否回答」+ 行数 + 计数）。加这两行是为了让档案自己回答
+  「C41 dry-run 报 28 行、C42 run1 报 27 行」的差从哪来（窗口端点 = date.today()）。
+只读说明: 不带 engine、不连主库、无 DDL / INSERT；FUYAO_API_KEY 不被打印，
+  只记录「腿是否回答」+ 行数 + 计数。完整未裁剪输出。
+--------------------------------------------------------------------------------
+# duplicate-symbol scan @ 2026-09-27 source=ths (read-only)
+  page a-share: rows=5578 not_a_contract=0
+  page a-share-index: rows=1431 not_a_contract=0
+  page fund-etf: rows=1696 not_a_contract=0
+  page fund-lof: rows=404 not_a_contract=0
+  page fund-otc: rows=30701 not_a_contract=0
+  page fund-reits: rows=89 not_a_contract=0
+  page futures: rows=1142 not_a_contract=0
+  page options: rows=24470 not_a_contract=0
+  page forex: rows=384 not_a_contract=0
+
+  instrument leg, dwd key (symbol,):
+    pages asked        = 9
+    accepted rows      = 65895
+    distinct symbols   = 65895
+    collided symbols   = 0 (the last row of the leg would win)
+    rows an upsert swallows = 0
+    collided and disagreeing = 0
+    rows the contract refused = 0
+
+  calendar leg, dwd key (exchange, date):
+    asked window = 2026-08-19 .. 2026-09-27
+    returned span  = 2026-08-19 .. 2026-09-24
+    accepted rows  = 27
+    distinct keys  = 27
+    collided keys  = 0
+EXIT=0
