@@ -1,0 +1,8 @@
+# 最小复现件（不是被检查的文件本身）：复现首跑那版 acceptance_ledger_check.py 里
+# 新加 subprocess 调用的三个形态 —— 裸 import、字面量 "git"（partial path）、未显式 shell=False。
+# 文件名后缀刻意用 .py.snippet：它按设计就是要违例，不能进 a2-check 的 docs/evidence/**/*.py 清扫面。
+# bandit 复现命令见 evidence-tracked-face.txt [5b]。
+import subprocess
+
+def tracked(paths):
+    return subprocess.run(["git", "ls-files", "--", *paths], capture_output=True, text=True)

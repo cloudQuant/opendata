@@ -1,0 +1,223 @@
+# C37 证据：台账 evidence 路径「在盘上」与「在版本库里」是两个不同的面
+# 采集时间: 2026-09-26 16:03:02 CEST  主机: MacBook-Air.local  分支: dev  HEAD: b875430
+# 判据: acceptance_ledger_check 的 proven 条目必须给出「一次全新 clone 也拿得到」的证据路径
+# 顺序: [0] 触发面 → [1] 规则未收档前实跑 FAIL → [2] 规则与自测 → [3] 补档与 staged 扫描 → [3b] 该扫描的反事实 → [4] 收口后复算 → [5]/[6] 改动文件 A2 面（红→绿） → [5b]/[6b] 不裁剪 bandit 复现 → [7] 规则覆盖不到的那一层
+
+# 自查一笔：本档第一次成稿时把 [4]–[7] 连同 [5b]/[6b]/[3b] 重复写入了两遍（拼接脚本按区间追加而非替换），且旧版 [3b] 与新 [3b] 并存。
+# 现每格只留一份：[4]/[5]/[6]/[7]/[5b]/[6b] 两份副本逐行相同（脚本已核对 copies=2 identical=True），删除第二份不丢读数；[3b] 取的是重测后的定稿格，被弃的那一份只有「假 token ghp_+36 位、探针已清」一句结论、没有 exit/findings 读数，不构成证据面。
+=== [0] 触发面：本轮 docs(evidence) commit 收了 10 份，目录里当时有 12 份 ===
+  $ git show --numstat b875430 | wc -l  => 10（本轮 docs(evidence) commit 实收 10 份档案）
+  $ ls docs/evidence/C37 | wc -l  => 13（采集时 12 份，本档是第 13 份）⇒ 少的两份 = attribution.log / mutation-proof.log
+  被 .gitignore 吞掉的那一行规则：
+  61:*.log
+  同一层缺陷不是本轮才有：把台账每条 proven 的 evidence 与 HEAD 的文件清单对账（只读脚本）——
+  判据 = 「一次全新 clone 也拿得到」，而不是「我这台机器上有」：
+  AC-16|09|187c7829 round=C36 -> 台账说它在，HEAD 里没有：docs/evidence/C36/secret-check-gate.log
+  AC-16|09|187c7829 round=C36 -> 台账说它在，HEAD 里没有：docs/evidence/C36/gitleaks-after-history.log
+  AC-16|09|187c7829 round=C36 -> 台账说它在，HEAD 里没有：docs/evidence/C36/gitleaks-counterfactual.log
+  §4|03|b0da1909 round=C37 -> 台账说它在，HEAD 里没有：docs/evidence/C37/mutation-proof.log
+  台账看不见 README 正文，所以这一层还有 README 交叉引用里的未入库档案（本轮一并补档，规则不覆盖）：
+  gitleaks-after-history.log
+  gitleaks-before-history.log
+  scene1_real_run.log
+  scheduler_startup.log
+
+=== [1] 规则加上之后、档案入库之前：ledger-check 实跑（未裁剪）===
+  exit=1
+  FAIL: the two acceptance books disagree (4 finding(s)):
+    - AC-16|09|187c7829: evidence path is not tracked by git: docs/evidence/C36/gitleaks-after-history.log
+    - AC-16|09|187c7829: evidence path is not tracked by git: docs/evidence/C36/gitleaks-counterfactual.log
+    - AC-16|09|187c7829: evidence path is not tracked by git: docs/evidence/C36/secret-check-gate.log
+    - §4|03|b0da1909: evidence path is not tracked by git: docs/evidence/C37/mutation-proof.log
+  census: items=130 proven=7 gap=4 unreviewed=119 ticked=7
+
+=== [2] 加上的规则（scripts/quality/acceptance_ledger_check.py 全文 diff 见本轮 commit）===
+  proven 条目的每条 evidence 路径除「在盘上」外还必须在 git index 里：
+    git ls-files -- <paths> 取交集，缺哪条报哪条：
+    `{key}: evidence path is not tracked by git: {path}`
+  拿不到 git（returncode 非 0）按 LedgerError 失败，不 skip——查不动就是缺陷。
+  $ python scripts/quality/acceptance_ledger_check.py --self-test
+  exit=0
+  OK: ledger self-test passed (7 drifts caught, plus missing-evidence, untracked-evidence and missing-command claims).
+  自测里新的一条反事实：把 proven 条目的 evidence 指向 .git/HEAD（每次 clone 都在盘上、
+  永远不在版本文件清单里），必须被抓住，否则 `a proven claim pointing at an untracked
+  evidence file was accepted` 会让自测自己红。
+
+=== [3] 入库 10 份从未进过版本库的档案（git add -f 绕开 .gitignore:61 的 *.log）===
+  $ git status --porcelain（A = 新增入库）
+  A  docs/evidence/B4/real_run_ths_incremental.log
+  A  docs/evidence/B4/scene1_real_run.log
+  A  docs/evidence/B4/scheduler_startup.log
+  A  docs/evidence/C36/gitleaks-after-history.log
+  A  docs/evidence/C36/gitleaks-before-history.log
+  A  docs/evidence/C36/gitleaks-counterfactual.log
+  A  docs/evidence/C36/guard-mutation.log
+  A  docs/evidence/C36/secret-check-gate.log
+  A  docs/evidence/C37/attribution.log
+  A  docs/evidence/C37/mutation-proof.log
+  $ gitleaks protect --staged --redact（提交前先扫，凭证面判据不因补档而让步）
+  exit=0（0 = 无命中；1 = 有命中）
+  Finding 行数: 0
+  ← 这一行当时被当成命中数；它不是判据面，见 [3b] 的说明与重测（原始读数不改写）
+
+=== [3b] 上面那条 staged 扫描的反事实，以及 [3] 那次读数为什么不算证据 ===
+  复测采集: 2026-09-26 16:15:26 CEST MacBook Air dev b875430
+  [3] 那格打印的「Finding 行数: 0」是用 `grep -c "Finding"` 数的，而 gitleaks 8.30.1 的输出里
+  根本没有 "Finding" 这个词（它打 `WRN leaks found: N` 与 JSON 报表）—— 也就是说那个数在任何
+  情况下都是 0，那一格不构成判据。真正的判定面是 exit code + JSON 报表里的命中项，重测如下
+  （同一暂存集 = [3] 补进版本库的 10 份档案，命令 `gitleaks protect --staged --redact -f json -r -`）：
+
+  $ gitleaks protect --staged --redact -f json -r -          # 暂存集 = 10 份补档，无探针
+    staged files=10   exit=0   findings=[]
+  ⇒ 补档不夹带凭证。再证明这条闸门「在这个面上会红」（假值探针，形似而非真凭证）：
+
+  探针形态                  总长   exit   findings（逐字读数）
+    github_token = "ghp_+35"   39    1     ['generic-api-key']
+    github_token = "ghp_+36"   40    1     ['github-pat']
+    github_token = "ghp_+38"   42    1     ['github-pat', 'generic-api-key']
+  ⇒ 会红，且命中集合随探针形态变化（github-pat 的形如 ghp_[0-9a-zA-Z]{36} 要够长才落进正则）——
+    「exit=1 但报表里少了一条规则」这种读数是真的，不是仪器坏了。本轮取第三行（两条都命中）作准。
+  探针每次跑完立即 `git rm --cached` + 删除，三次与最后一次错用 flag 的跑法都未进过任何 commit；
+  本档不含可复用凭证（探针值由固定字符池前缀截断拼成，不是随机生成的真 key）。
+
+  采集过程另记两笔自己的错，因为它们正是「读数不算证据」的两种形态：
+  ①第一次只测了一枚手工拼的探针就写下结论，长度口径（36/38 位）在档内前后不一致 —— 上面这张
+    表是把 35/36/38 三个长度各测一遍得到的，取代那两句互相矛盾的叙述；
+  ②中途用错过一次 flag（`-o` 不是 gitleaks protect 的选项）：
+    exit=1   stdout=''   stderr="Error: unknown shorthand flag: 'o' in -o / Usage: gitleaks protect [flags] ..."
+    —— 之前那句「exit=1 但报表为空」的读数就是这一次用法错误造成的，不是命中，已作废不引用。
+  教训与本轮主线同形：**数的必须是判定面，不是顺手 grep 到的字符串**（台账里那条 evidence 也一样，
+  在盘上 ≠ 在版本库里）。
+
+=== [4] 收口后复算 ===
+  exit=0
+  census: items=130 proven=7 gap=4 unreviewed=119 ticked=7
+  OK: items=130 proven=7 gap=4 unreviewed=119 ticked=7 across 22 group(s) and 19 §10 row(s) reconcile.
+  $ git ls-files --others --ignored --exclude-standard docs/evidence（应只剩 __pycache__ 噪声）
+  docs/evidence/C28/__pycache__/graded-shapes-render.cpython-313.pyc
+  docs/evidence/C31/__pycache__/endpoint-contract-census.cpython-313.pyc
+
+=== [5] 改动文件的 A2 面（逐条命令，退出码单独取；bandit 的输出格当时被 tail 裁过，见 [5b]）===
+$ ruff check scripts/quality/acceptance_ledger_check.py
+  exit=1
+  S607 Starting a process with a partial executable path
+     --> scripts/quality/acceptance_ledger_check.py:212:9
+      |
+  210 |         return frozenset()
+  211 |     probe = subprocess.run(  # noqa: S603  # fixed argv, no shell
+  212 |         ["git", "ls-files", "--", *paths],
+      |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  213 |         cwd=REPO_ROOT,
+  214 |         capture_output=True,
+      |
+  E501 Line too long (101 > 100)
+     --> scripts/quality/acceptance_ledger_check.py:219:101
+      |
+  217 |     )
+  218 |     if probe.returncode != 0:
+  219 |         raise LedgerError(f"cannot ask git which evidence paths are tracked: {probe.stderr.strip()}")
+      |                                                                                                     ^
+  220 |     return frozenset(line for line in probe.stdout.splitlines() if line)
+      |
+  PERF401 Use `list.extend` to create a transformed list
+     --> scripts/quality/acceptance_ledger_check.py:245:9
+      |
+  243 |             present.append(path)
+  244 |     for path in sorted(set(present) - _tracked(tuple(sorted(present)))):
+  245 |         problems.append(f"{key}: evidence path is not tracked by git: {path}")
+      |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  246 |     return problems
+      |
+  help: Replace for loop with list.extend
+  Found 3 errors.
+$ ruff format --check scripts/quality/acceptance_ledger_check.py
+  exit=1
+  Would reformat: scripts/quality/acceptance_ledger_check.py
+  1 file would be reformatted
+$ mypy scripts/quality/acceptance_ledger_check.py
+  exit=0
+  pyproject.toml: note: unused section(s): module = ['opendata.data_fetch.*', 'opendata_http.*']
+  Success: no issues found in 1 source file
+$ bandit -q scripts/quality/acceptance_ledger_check.py
+  exit=1
+  		Undefined: 0
+  		Low: 0
+  		Medium: 0
+  		High: 3
+  Files skipped (0):
+  ↑ 上面这一格是首跑实测：新加的 subprocess 调用没过 A2（S607 partial path / E501 / PERF401，
+    bandit 三条命中 B404+B603+B607，exit=1；档尾那份汇总表是 bandit 的另一个分区，别拿它当命中数）。本轮按既有约定改掉而不是加例外：
+    `GIT: Final = shutil.which("git")`（对齐 openbb_inventory_plane.py:70）、
+    `import subprocess  # nosec B404`、`subprocess.run(  # noqa: S603  # nosec B603`、
+    列表推导替掉 append 循环、长行折行。拿不到 git 走 LedgerError 失败，不 skip。
+
+=== [5b] 上面 bandit 那格的输出被 `tail -5` 裁过（exit=1 本身是真的，退出码是单独取的）
+      —— 裁剪就是本档要修的毛病，先在自己身上认。不裁剪的复现：
+$ bandit -q docs/evidence/C37/bandit-red-repro.py.snippet
+  exit=1
+  Run started:2026-09-26 14:07:40.197959+00:00
+  Test results:
+  >> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+     Severity: Low   Confidence: High
+     CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+     More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess
+  4	# bandit 复现命令见 evidence-tracked-face.txt [5b]。
+  5	import subprocess
+  6	
+  --------------------------------------------------
+  >> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path
+     Severity: Low   Confidence: High
+     CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+     More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html
+  7	def tracked(paths):
+  8	    return subprocess.run(["git", "ls-files", "--", *paths], capture_output=True, text=True)
+  --------------------------------------------------
+  >> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+     Severity: Low   Confidence: High
+     CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+     More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html
+  7	def tracked(paths):
+  8	    return subprocess.run(["git", "ls-files", "--", *paths], capture_output=True, text=True)
+  --------------------------------------------------
+  Code scanned:
+  	Total lines of code: 3
+  	Total lines skipped (#nosec): 0
+  	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+  Run metrics:
+  	Total issues (by severity):
+  		Undefined: 0
+  		Low: 3
+  		Medium: 0
+  		High: 0
+  	Total issues (by confidence):
+  		Undefined: 0
+  		Low: 0
+  		Medium: 0
+  		High: 3
+  Files skipped (0):
+
+=== [6] 改后复跑四项（退出码逐条单独取）===
+  ruff check exit=0
+  All checks passed!
+  ruff format --check exit=0
+  1 file already formatted
+  mypy exit=0
+  pyproject.toml: note: unused section(s): module = ['opendata.data_fetch.*', 'opendata_http.*']
+  Success: no issues found in 1 source file
+  bandit exit=0
+  $ python scripts/quality/acceptance_ledger_check.py --self-test
+  exit=0
+  OK: ledger self-test passed (7 drifts caught, plus missing-evidence, untracked-evidence and missing-command claims).
+  $ python scripts/quality/acceptance_ledger_check.py
+  exit=0
+  census: items=130 proven=7 gap=4 unreviewed=119 ticked=7
+  OK: items=130 proven=7 gap=4 unreviewed=119 ticked=7 across 22 group(s) and 19 §10 row(s) reconcile.
+
+=== [6b] 修后文件本身的不裁剪 bandit 复跑（0 命中）===
+$ bandit -q scripts/quality/acceptance_ledger_check.py
+  exit=0（0 = 无命中）
+
+=== [7] 规则覆盖不到的那一层（明写不吹）===
+  规则只看台账的 evidence 数组；README 正文里的交叉引用（如 B4/README.md 指
+  `scene1_real_run.log`）机器看不见，本轮是把这 10 份一并 `git add -f` 补进版本库，
+  没有做成判据。要做成判据需要「README 引用面 ↔ HEAD 文件清单」对账，登记为后续项。

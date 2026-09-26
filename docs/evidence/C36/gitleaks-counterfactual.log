@@ -1,0 +1,35 @@
+===== C36 gitleaks 允许面反事实（完整未裁剪）=====
+captured_at=2026-09-26T13:45:29+02:00
+branch=dev HEAD=b4af81b
+gitleaks=8.30.1  python=Python 3.13.5
+对照组 = git show HEAD:.gitleaks.toml（本轮改动之前）
+--- command ---
+python docs/evidence/C36/gitleaks-counterfactual.py
+--- end ---
+=== [0] 本脚本自身（含分段拼接的假凭证）过新配置 -> 期望 0 命中 ===
+exit=0 findings=[]
+
+=== [1] 真实文件（历史命中的那 4 个）：旧配置 vs 新配置 ===
+旧配置命中 4 条: ['opendata__pipeline__patrol.py:121[generic-api-key]', 'scripts__ops__macro_authority_cross_check.py:308[generic-api-key]', 'tests__test_ecb_provider.py:207[generic-api-key]', 'tests__test_oecd_provider.py:31[generic-api-key]']
+新配置 exit=0 命中 0 条: []
+
+=== [2] 假凭证：旧配置命中集合必须与新配置逐条相同（不得连带吞掉）===
+旧配置命中 3 条: ['bearer_in_url.py:1[generic-api-key]', 'generic_api_key.py:1[generic-api-key]', 'github_pat.py:1[generic-api-key]']
+新配置 exit=1 命中 3 条: ['bearer_in_url.py:1[generic-api-key]', 'generic_api_key.py:1[generic-api-key]', 'github_pat.py:1[generic-api-key]']
+
+=== [3] 同一棵树混放 -> 只剩假凭证，真实文件不得出现 ===
+exit=1 命中 ['bearer_in_url.py:1[generic-api-key]', 'generic_api_key.py:1[generic-api-key]', 'github_pat.py:1[generic-api-key]']
+
+=== [4] 已知边界：全大写带点的 4 段值 ===
+旧配置命中 ['boundary.py:1[generic-api-key]'] / 新配置 exit=0 命中 []
+     -> 新配置会放过这种形状；登记为允许面的代价，见 README「已知边界」
+
+OK: 允许面只吞掉真实文件里的 SDMX 形状，假凭证一条不少地仍然报出。
+COUNTERFACTUAL_EXIT=0
+
+--- 补记（append-only，本轮之后加的，不改动上文任何一行）---
+补记于=2026-09-26T12:37:11Z HEAD=b4af81b
+本档的复算器 docs/evidence/C36/gitleaks-counterfactual.py 在首轮 make gate 的 a2-check 上挂掉
+（A2 门禁自 C35 起会扫 docs/evidence/ 下的 .py），随后按 A2 标准改写：换行 / 补 docstring /
+assert 改带消息的 SystemExit / 子进程可执行文件走 shutil.which 绝对路径。语义未动。
+复算与判据读数见 gitleaks-counterfactual-after-lint.txt（其 output 段与本档 output 段逐字节相同）。

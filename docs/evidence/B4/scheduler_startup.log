@@ -1,0 +1,30 @@
+2026-09-24 18:02:02.887 | INFO     | opendata.core.token_blacklist:_create_blacklist:187 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+2026-09-24 18:02:03.054 | INFO     | opendata.main:lifespan:97 - Starting opendata v0.1.0
+2026-09-24 18:02:03.054 | INFO     | opendata.main:lifespan:98 - Environment: development
+2026-09-24 18:02:03.071 | INFO     | opendata.core.database:create_tables:220 - Database tables created successfully
+2026-09-24 18:02:03.079 | INFO     | opendata.core.database:init_db:206 - Database already initialized
+2026-09-24 18:02:03.128 | INFO     | opendata.main:lifespan:150 - Registered 24 provider capabilities
+2026-09-24 18:02:03.129 | INFO     | opendata.services.scheduler:start:44 - Starting task scheduler...
+2026-09-24 18:02:03.129 | INFO     | opendata.services.scheduler_service:start:56 - Scheduler started (in-memory job store – jobs re-loaded from DB on each startup)
+2026-09-24 18:02:03.129 | WARNING  | opendata.services.scheduler_service:start:59 - APScheduler is using an in-memory job store. If the process restarts, all jobs are re-registered from the database. For persistent job queues across workers, consider migrating to APScheduler 4.x with a SQLAlchemy/Redis data store, or arq/celery.
+2026-09-24 18:02:03.132 | INFO     | opendata.services.scheduler:_load_active_tasks:89 - Scheduled task: drill-task-0 (ID: 2)
+2026-09-24 18:02:03.132 | INFO     | opendata.services.scheduler:_load_active_tasks:89 - Scheduled task: drill-task-1 (ID: 3)
+2026-09-24 18:02:03.132 | INFO     | opendata.services.scheduler:_load_active_tasks:89 - Scheduled task: drill-task-2 (ID: 4)
+2026-09-24 18:02:03.133 | INFO     | opendata.services.scheduler:start:61 - Task scheduler started successfully
+2026-09-24 18:02:03.134 | INFO     | opendata.pipeline.jobs:register_builtin_jobs:416 - pipeline job p0-weekly-full-cross-check: kind full_check has no executor
+2026-09-24 18:02:03.134 | INFO     | opendata.pipeline.jobs:register_builtin_jobs:416 - pipeline job partition-maintenance: kind partition_maintenance has no executor
+2026-09-24 18:02:03.134 | INFO     | opendata.pipeline.jobs:register_builtin_jobs:416 - pipeline job freshness-check: kind freshness has no executor
+2026-09-24 18:02:03.134 | INFO     | opendata.main:lifespan:171 - Built-in pipeline jobs registered: ['pipeline_p0-stock-daily-incremental']
+2026-09-24 18:02:03.134 | INFO     | opendata.main:lifespan:175 - Application startup complete
+2026-09-24 18:02:03.134 | INFO     | opendata.main:lifespan:180 - Shutting down application...
+2026-09-24 18:02:03.134 | INFO     | opendata.services.scheduler:shutdown:68 - Shutting down task scheduler...
+2026-09-24 18:02:03.134 | INFO     | opendata.services.scheduler_service:shutdown:71 - Scheduler shutdown
+2026-09-24 18:02:03.134 | INFO     | opendata.services.scheduler:shutdown:74 - Task scheduler shut down
+2026-09-24 18:02:03.134 | INFO     | opendata.core.database:close_db:227 - Database connections closed
+2026-09-24 18:02:03.134 | INFO     | opendata.main:lifespan:189 - Application shutdown complete
+job id=__housekeeping_cleanup_executions name=Cleanup old execution records trigger=cron[month='*', day='*', day_of_week='*', hour='3', minute='0'] next_run=2026-09-25 03:00:00+08:00
+job id=pipeline_p0-stock-daily-incremental name=pipeline:p0-stock-daily-incremental trigger=cron[month='*', day='*', day_of_week='1-5', hour='17', minute='30'] next_run=2026-09-25 17:30:00+08:00
+job id=task_2 name=drill-task-0 trigger=cron[month='*', day='*', day_of_week='*', hour='17', minute='30'] next_run=2026-09-25 17:30:00+08:00
+job id=task_3 name=drill-task-1 trigger=cron[month='*', day='*', day_of_week='*', hour='17', minute='30'] next_run=2026-09-25 17:30:00+08:00
+job id=task_4 name=drill-task-2 trigger=cron[month='*', day='*', day_of_week='*', hour='17', minute='30'] next_run=2026-09-25 17:30:00+08:00
+total jobs: 5

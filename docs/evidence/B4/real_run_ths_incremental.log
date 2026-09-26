@@ -1,0 +1,41 @@
+Traceback (most recent call last):
+  File "<stdin>", line 5, in <module>
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/asyncio/base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "/Users/yunjinqi/Documents/new_projects/opendata/opendata/pipeline/jobs.py", line 309, in run_incremental_job
+    outcomes[feed] = await pipeline.run(window, resume=resume)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yunjinqi/Documents/new_projects/opendata/opendata/pipeline/runner.py", line 267, in run
+    return await self._run_locked(window, resume=resume)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yunjinqi/Documents/new_projects/opendata/opendata/pipeline/runner.py", line 300, in _run_locked
+    affected.extend(self._affected_keys(frame))
+                    ~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/yunjinqi/Documents/new_projects/opendata/opendata/pipeline/runner.py", line 339, in _affected_keys
+    records = frame[columns].drop_duplicates().itertuples(index=False, name=None)
+              ~~~~~^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pandas/core/frame.py", line 4113, in __getitem__
+    indexer = self.columns._get_indexer_strict(key, "columns")[1]
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pandas/core/indexes/base.py", line 6212, in _get_indexer_strict
+    self._raise_if_missing(keyarr, indexer, axis_name)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pandas/core/indexes/base.py", line 6264, in _raise_if_missing
+    raise KeyError(f"{not_found} not in index")
+KeyError: "['symbol'] not in index"
+Exception ignored in: <function Connection.__del__ at 0x10466dc60>
+Traceback (most recent call last):
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/aiomysql/connection.py", line 1131, in __del__
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/aiomysql/connection.py", line 339, in close
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/asyncio/selector_events.py", line 1205, in close
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/asyncio/selector_events.py", line 865, in close
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/asyncio/base_events.py", line 833, in call_soon
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/asyncio/base_events.py", line 556, in _check_closed
+RuntimeError: Event loop is closed

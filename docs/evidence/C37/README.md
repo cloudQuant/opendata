@@ -98,26 +98,32 @@ CI 自己的 assert 列表被 pytest 截断过（`[..., ...]` 后面还有），
 
 ## 4. 门禁与测试面
 
-* `make gate` **跑了两遍**，两遍都在文件内读到 `GATE_EXIT=0`：
+* `make gate` **跑了三遍**，三遍都在文件内读到 `GATE_EXIT=0`：
   RUN 1 `gate-run1-before-backfill.txt`（6,639 行）跑在验收文档 §4 勾选与台账写入之前，
-  RUN 2 `gate.txt`（6,645 行）跑在回填之后，所以归档头的 `git status` 与最终 commit 内容同源；
-  两遍都完整未裁剪。共同读数：`2918 passed / 6 skipped`、a2-check `A2 files: 315` 四项全 `ok`、
+  RUN 2 `gate-run2-before-tracked-rule.txt`（6,645 行）跑在回填之后，
+  RUN 3 `gate.txt`（6,660 行）跑在 `acceptance_ledger_check.py` 的「evidence 必须被 git 跟踪」这条规则
+  与 v5.8 ⑩／AC-16／AC-17 两段回填之后 —— 第 4 门禁成员自己被改过，前一遍的绿就不算这一遍的证据，
+  所以这一遍是必须的而不是重复劳动。三遍都完整未裁剪。
+  共同读数：`2918 passed / 6 skipped`、a2-check `A2 files: 315` 四项全 `ok`、14 个成员标记齐全、
+  `ledger-check` 在新规则下仍报 `items=130 proven=7 gap=4 unreviewed=119 ticked=7`，
   前端五项含 `frontend-e2e`（`PASS: every declared e2e leaf carries a verdict that can fail.`）。
 
-### 4b. 两遍之间差的那一格：覆盖率读数不是语句级可复现量
+### 4b. 三遍之间差的那一格：覆盖率读数不是语句级可复现量
 
-两遍的 `TOTAL` 不同 —— RUN 1 `miss=1282 → 86.79%`，RUN 2 `miss=1283 → 86.78%`。
-逐文件对账（198 份，只有一份不同）把差异定位到 `opendata/api/data.py`：
-Missed 列由 `70, 141` 变成 `70, 140-141`，也就是 `:140` 的 `except Exception as e:` 这一格
-在 RUN 1 被走到、在 RUN 2 没被走到。那一行属于 `trigger_download` 里
+RUN 1 `miss=1282 → 86.79%`，RUN 2 与 RUN 3 都是 `miss=1283 → 86.78%`：**三遍两个读数**，
+差异本身不是本轮改动造成的。逐文件对账（198 份，只有一份不同）把差异定位到 `opendata/api/data.py`：
+Missed 列 RUN 1 是 `70, 141`，RUN 2／RUN 3 都是 `70, 140-141`，也就是 `:140` 的
+`except Exception as e:` 这一格在 RUN 1 被走到、后两遍没被走到。那一行属于 `trigger_download` 里
 `asyncio.create_task(_bg_download())` 的后台任务：只有 `execute_download` 抛异常时才会进 `except`，
 而抛不抛取决于测试收尾时连接池／事件循环的竞速 ⇒ **这条路径是否被覆盖由并行调度决定**。
+（RUN 3 复跑的是同一批测试 + 改动后的第 4 成员，`2918 passed / 6 skipped` 与 `A2 files: 315` 三遍逐字相同，
+只有这一格在动。）
 
 本轮不修它（与 C37 的判据面无关），但登记两件事：
 ①门禁 floor 84%、读数 86.78%，今天这 0.01pp 不改变任何判定；
 ②**任务 #46（`opendata/pipeline` 抬到 ≥90%）之前，覆盖率面必须先做到可复现** ——
 在一个每次跑都会 ±1 条语句的面上抬地板，等于把 C36 那条 83.70% 未达地板的红用另一种方式重演。
-两遍日志并列归档就是为了这一点可核对。
+三遍日志并列归档就是为了这一点可核对。
 * `tests/test_port_fidelity.py`：**31 collected → 25 passed / 6 skipped**，六条 skip 仍全部归属那 4 例
   未补录的 em 夹具（本轮没有为它们做任何放宽）。
 * 本轮两份证据脚本自己也在 a2-check 的清扫面里（`docs/evidence/**/*.py`），四项退出码记在
@@ -157,7 +163,46 @@ em 用例仍在补录阻塞中（12/16 → 18 例分母下 14 PASS / 4 PENDING�
   pandas/numpy 都不锁版本（`ci-env-diff.txt`）：本机绿与 CI 绿之间没有传递关系。
   加锁文件 + 让 CI 装锁是更大的决定，**等确认**，本轮只把事实入库。
 
-## 7. 档案清单
+## 8. 附带收口（是「提交」这一步暴露的面，不是设计时想到的）
+
+`git add docs/evidence/C37` 之后 `git commit` 只收了 10 份档案，目录里有 12 份 ——
+`attribution.log` 与 `mutation-proof.log` 被 `.gitignore:61` 的 `*.log` 静默吞掉。
+顺着这条查下去发现它是**系统性的**：台账里 4 条 `proven` 判据指向的 evidence 路径
+（`AC-16|09` 的三份 C36 档案 + 本轮 `§4|03` 的 `mutation-proof.log`）**从未进过版本库**，
+另有 B4/C36 README 交叉引用的 4 份 `.log` 同样只在作者机器上。
+而 `acceptance_ledger_check` 只判 `Path.exists()` —— 本机永远为真 ⇒
+**门禁绿灯 + 判据指向不存在的档案** 可以无限期共存，与 C23（权威表声明不存在的腿）、
+C29（前端 18 例从未跑）、C33（清单只写不读）同一形状。
+
+* **规则**（`scripts/quality/acceptance_ledger_check.py`）：`proven` 的每条 evidence 除「在盘上」
+  外还必须出现在 `git ls-files` 里（判据 = 一次全新 clone 也拿得到）；`git` 不在 PATH 时按
+  `LedgerError` 失败，不 skip。测量档：`evidence-tracked-face.txt`
+  —— `[1]` 是规则加上、档案入库之前的实跑 FAIL（4 条点名），`[4]` 是入库后复算绿。
+* **有牙**：`--self-test` 新增一条反事实，把 `proven` 的 evidence 指向 `.git/HEAD`
+  （每次 clone 都在盘上、永远不在版本文件清单里），抓不到就是自测自己红。
+* **补档**：10 份 `.log` 用 `git add -f` 收进版本库；提交前先 `gitleaks protect --staged --redact`
+  （0 命中，且用一枚假 token 探针证明这条扫描在这个面上会红 —— 不裁别人的档，也不裁自己的）。
+  这条「会红」第一次只测了一枚手工探针就下结论，档内长度口径前后不一致（36 位 vs 38 位），
+  也已改成 35／36／38 三个长度各测一遍的实测表：`exit` 都是 1，但**命中集合随探针形态变化**
+  （`github-pat` 的正则要 `ghp_` 后满 36 位才落进去）。顺带定位到先前那句「exit=1 但报表为空」
+  的真实来源：错把 `-o` 当成 gitleaks 的选项用（`unknown shorthand flag: 'o'` 同样返回 1）——
+  用法错误不是命中，那一次读数已作废不引用。见 `evidence-tracked-face.txt` `[3b]`。
+* **规则不覆盖的那层，明写**：台账只看 `evidence` 数组，README 正文里的交叉引用机器看不见；
+  本轮是把那 4 份一并补进版本库，没有做成判据（要做需要「README 引用面 ↔ HEAD 文件清单」对账）。
+* **本档自己也被同一条照了两次**：`[5]` 那格的 bandit 输出当时用 `tail -5` 裁过，
+  已在不改写原始读数的情况下用 `[5b]` 补一份不裁剪复现（并顺手纠了一处读数误标：
+  bandit 那三条是 Low severity／High confidence，档尾我一度引的 `High: 3` 是置信度分区表）。
+  首跑的 A2 面是红的（S607／E501／PERF401），修法是回到仓库既有约定
+  （`shutil.which("git")` + `# nosec B404` + `# noqa: S603  # nosec B603`），不是加例外。
+* **同一把尺子量到测量档自己**：`evidence-tracked-face.txt` 第一次成稿时拼接脚本按区间**追加**而非
+  替换，把 `[4]`–`[7]` 连同 `[5b]/[6b]/[3b]` 写了两遍，且新旧两版 `[3b]` 并存。归档前核对副本
+  （脚本输出 `copies=2 identical=True`）后每格只留一份，被弃的那版 `[3b]` 只有「探针已清」一句结论、
+  没有任何 exit／命中读数，不构成证据面 —— 缺陷与修法都写进档头，不静默重排。
+* **本轮不重写历史轮的档案**：那 10 份 `.log` 属于 B4／C36／C37 三批，逐份内容一字未动（`git add -f`
+  只改「是否进版本库」，不改字节），改的只有引用它们的台账判据文本与新规则；核对方式见
+  `evidence-tracked-face.txt` `[3]`（`git status --porcelain` 全是 `A`，无一条 `M`）。
+
+## 9. 档案清单
 
 | 文件 | 内容 |
 |------|------|
@@ -167,5 +212,8 @@ em 用例仍在补录阻塞中（12/16 → 18 例分母下 14 PASS / 4 PENDING�
 | `tolerance-guards.txt` | §4 条目 3 的判据面：6 条用例实名 + 实跑 + `RTOL` 现值 |
 | `a2-compliance.txt` | 判据文件、测试文件、两份证据脚本的 ruff/format/mypy/bandit 退出码 |
 | `ci-env-diff.txt` | CI 三次 run 的 `Successfully installed` 原文、本机对照、未钉版本的事实入库 |
-| `gate.txt` | RUN 2：回填之后的 `make gate` 完整未裁剪输出，`GATE_EXIT=0` 在文件内读取 |
-| `gate-run1-before-backfill.txt` | RUN 1：同一批代码、验收文档与台账回填之前的完整门禁输出（两遍并列，不拿前一遍冒充后一遍） |
+| `gate.txt` | RUN 3：`ledger-check` 规则改动与 v5.8 ⑩ 回填之后的 `make gate` 完整未裁剪输出，`GATE_EXIT=0` 在文件内读取 |
+| `gate-run2-before-tracked-rule.txt` | RUN 2：验收文档 §4／AC-6／AC-17 回填之后、但 ledger-check 改动之前的完整门禁输出（6,645 行） |
+| `gate-run1-before-backfill.txt` | RUN 1：同一批代码、验收文档与台账回填之前的完整门禁输出（6,639 行；三遍并列，不拿前一遍冒充后一遍） |
+| `evidence-tracked-face.txt` | §8 那一面的测量档：触发面（台账 `proven` ↔ `git ls-files` 对账）→ 规则加上后未补档的实跑 FAIL → 补档与 staged 扫描 → 该扫描的探针形态实测表 `[3b]` → 复算绿 → A2 面红→绿（含不裁剪 bandit 复现）→ 规则不覆盖的那层 |
+| `bandit-red-repro.py.snippet` | `[5b]` 里给 bandit 的最小复现体（改动前的 subprocess 写法）。后缀特意写成 `.py.snippet`：`docs/evidence/**/*.py` 在 a2-check 清扫面内，留成 `.py` 会让门禁红在一段**只为复现红**的代码上 |

@@ -1,0 +1,149 @@
+# C37 证据：AC-6 判据对齐的变异证明（三处变异各自咬合、逐字节还原）
+# 采集时间: 2026-09-26 15:10:23 CEST  主机: MacBook-Air.local  分支: dev  HEAD: 3a1297e
+# 命令: bash docs/evidence/C37/mutation-proof.sh（脚本先记 sha256/备份，每次变异后立即 restore，EXIT trap 还原并删除备份，末尾比对校验和）
+# 判据: M1/M2/M3 必须各自把对应的守卫用例染红，且红的原因必须是断言本身；任一变异不咬合即整轮 FAIL；base/base-guards/restored 必须全绿；还原校验和必须与变异前逐字节相同
+# 工具: python Python 3.13.5 / pytest 8.4.1 / numpy 2.3.1
+# 前置: 两个被改文件已过 ruff check / ruff format --check / bandit / mypy（见 a2-compliance.txt），日志对应格式化后的字节态
+# 工作树状态（HEAD 之上有未提交改动，本轮判据改动即为被测对象）:
+     M scripts/codemod/compare_with_upstream.py
+     M tests/test_port_fidelity.py
+    ?? docs/evidence/C37/
+# 被变异文件的 sha256（运行前）:
+    8ff0c8490cd13b6654951ad9e898fb10ccfedda0bef73447a118d9eb5e3a38ec  scripts/codemod/compare_with_upstream.py
+# 说明: 每一步都落 pytest 的完整原始输出（-q），未裁剪。
+
+=== [base] 未变异：整个保真对照套件应全绿 ===
+--- base: 整个 tests/test_port_fidelity.py（期望 绿）---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 31 items
+
+tests/test_port_fidelity.py ss........ss.......s.s.........              [100%]
+
+======================== 25 passed, 6 skipped in 1.28s =========================
+--- base: pytest 退出码 = 0 ---
+base: as expected (exit=0, expect=0)
+
+=== [base-guards] 未变异：本轮新增的六条判据守卫应全绿 ===
+--- base-guards: pytest -k 'object_column or looks_numeric or value_change or tolerance_is_unchanged or drift_is_reported or non_numeric_text'（期望 绿）---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 31 items / 25 deselected / 6 selected
+
+tests/test_port_fidelity.py ......                                       [100%]
+
+======================= 6 passed, 25 deselected in 0.02s =======================
+--- base-guards: pytest 退出码 = 0 ---
+base-guards: as expected (exit=0, expect=0)
+
+=== [M1] object 列退回按 repr 文本判 ===
+--- M1: pytest -k 'repr_only_diff_in_object_column_is_tolerated or drift_is_reported_not_silent'（期望 红）---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 31 items / 29 deselected / 2 selected
+
+tests/test_port_fidelity.py FF                                           [100%]
+
+=================================== FAILURES ===================================
+______________ test_repr_only_diff_in_object_column_is_tolerated _______________
+tests/test_port_fidelity.py:227: in test_repr_only_diff_in_object_column_is_tolerated
+    assert not diffs, "\n".join(diffs)
+E   AssertionError: cell col[0]: '218472857114.41' != '218472857114.40997'
+E   assert not ["cell col[0]: '218472857114.41' != '218472857114.40997'"]
+_________________ test_toleranced_drift_is_reported_not_silent _________________
+tests/test_port_fidelity.py:241: in test_toleranced_drift_is_reported_not_silent
+    assert not comparator._compare_frames(
+E   assert not ["cell col[0]: '1234.5' != '1234.5000000001'"]
+E    +  where ["cell col[0]: '1234.5' != '1234.5000000001'"] = <function _compare_frames at 0x1133e62a0>(      col\n0  1234.5,       col\n0  1234.5, {'col': 'object'}, notes=[])
+E    +    where <function _compare_frames at 0x1133e62a0> = comparator._compare_frames
+=========================== short test summary info ============================
+FAILED tests/test_port_fidelity.py::test_repr_only_diff_in_object_column_is_tolerated
+FAILED tests/test_port_fidelity.py::test_toleranced_drift_is_reported_not_silent
+======================= 2 failed, 29 deselected in 0.08s =======================
+--- M1: pytest 退出码 = 1 ---
+M1: as expected (exit=1, expect=1)
+
+=== [M2] 容忍度放宽到 rtol=1e-2 ===
+--- M2: pytest -k 'value_change_in_object_column_still_fails'（期望 红）---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 31 items / 30 deselected / 1 selected
+
+tests/test_port_fidelity.py F                                            [100%]
+
+=================================== FAILURES ===================================
+________________ test_value_change_in_object_column_still_fails ________________
+tests/test_port_fidelity.py:251: in test_value_change_in_object_column_still_fails
+    assert len(diffs) == 1
+E   assert 0 == 1
+E    +  where 0 = len([])
+=========================== short test summary info ============================
+FAILED tests/test_port_fidelity.py::test_value_change_in_object_column_still_fails
+======================= 1 failed, 30 deselected in 0.07s =======================
+--- M2: pytest 退出码 = 1 ---
+M2: as expected (exit=1, expect=1)
+
+=== [M3] 取消「至少一侧是 float 实例」的门槛 ===
+--- M3: pytest -k 'looks_numeric_is_not_numberified'（期望 红）---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 31 items / 30 deselected / 1 selected
+
+tests/test_port_fidelity.py F                                            [100%]
+
+=================================== FAILURES ===================================
+____________ test_string_that_only_looks_numeric_is_not_numberified ____________
+tests/test_port_fidelity.py:267: in test_string_that_only_looks_numeric_is_not_numberified
+    assert len(diffs) == 1
+E   assert 0 == 1
+E    +  where 0 = len([])
+=========================== short test summary info ============================
+FAILED tests/test_port_fidelity.py::test_string_that_only_looks_numeric_is_not_numberified
+======================= 1 failed, 30 deselected in 0.07s =======================
+--- M3: pytest 退出码 = 1 ---
+M3: as expected (exit=1, expect=1)
+
+=== [restored] 还原后整套件应重新全绿 ===
+--- restored: 整个 tests/test_port_fidelity.py（期望 绿）---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 31 items
+
+tests/test_port_fidelity.py ss........ss.......s.s.........              [100%]
+
+======================== 25 passed, 6 skipped in 1.28s =========================
+--- restored: pytest 退出码 = 0 ---
+restored: as expected (exit=0, expect=0)
+还原校验: before=8ff0c8490cd13b6654951ad9e898fb10ccfedda0bef73447a118d9eb5e3a38ec
+          after =8ff0c8490cd13b6654951ad9e898fb10ccfedda0bef73447a118d9eb5e3a38ec
+OK: 三次变异全部按预期咬合，源文件逐字节还原。

@@ -1,0 +1,82 @@
+===== C36 导入闭包守卫：变异证明（删掉真实依赖必须红；只走传递可达的删除不红）=====
+captured_at=2026-09-26T14:09:06+02:00
+branch=dev HEAD=b4af81b
+reproducer=docs/evidence/C36/guard-mutation.sh（本日志由它一次性跑完，pytest 输出未裁剪）
+被测守卫=tests/test_ported_import_closure.py（6 例）
+被变异对象=pyproject.toml [project].dependencies；脚本按字节保存/还原，不碰 git
+说明：单文件跑 pytest 时 addopts 的全库覆盖率地板（84%）会把退出码钉成 1，与守卫无关，因此统一 --no-cov 只看守卫自身的判定
+--- output ---
+saved_pristine_rc=0
+pristine copy verified byte-for-byte
+
+=== [0] who declares what, before any mutation ===
+35:    # at import time is a *runtime* dependency of this project. curl_cffi and urllib3
+36:    # were missing; CI failed on `ModuleNotFoundError: curl_cffi` for five pushes.
+39:    # `impersonate=`), and this round exercised curl_cffi 0.13.0.
+40:    "curl_cffi>=0.7.0",
+42:    "urllib3>=2.0.7",
+  curl-cffi: installed, required-by other distributions -> ['opendata', 'opendata', 'yfinance']
+  urllib3: installed, required-by other distributions -> ['fsspec', 'google-auth', 'huggingface-hub', 'kubernetes', 'opendata', 'opendata', 'opentelemetry-instrumentation-urllib3', 'praw', 'prawcore', 'requests', 'transformers']
+
+=== [1] baseline: guard green on the committed declaration set ===
+--- unmutated pyproject.toml ---
+============================= test session starts ==============================
+collected 6 items
+
+tests/test_ported_import_closure.py ......                               [100%]
+
+============================== 6 passed in 14.94s ==============================
+GUARD_EXIT=0
+
+=== [2] mutation A: delete the curl_cffi declaration (the CI defect re-opened) ===
+removed line: ['"curl_cffi>=0.7.0",']
+--- curl_cffi declaration removed ---
+============================= test session starts ==============================
+collected 6 items
+
+tests/test_ported_import_closure.py .F.F..                               [100%]
+
+=================================== FAILURES ===================================
+______ test_every_module_scope_import_is_reachable_from_the_declared_set _______
+tests/test_ported_import_closure.py:317: in test_every_module_scope_import_is_reachable_from_the_declared_set
+    assert not missing, (
+E   AssertionError: `import opendata.main` needs ['curl_cffi'], which `pip install -e ".[web,dev]"` does not provide. Declare them in [project.dependencies] or move the import behind a lazy boundary.
+E   assert not ['curl_cffi']
+___________________ test_curl_cffi_regression_stays_declared ___________________
+tests/test_ported_import_closure.py:349: in test_curl_cffi_regression_stays_declared
+    assert "curl-cffi" in reachable_distributions(), (
+E   AssertionError: curl-cffi must be declared or transitively reachable
+E   assert 'curl-cffi' in frozenset({'aiocontextvars', 'aiohappyeyeballs', 'aiohttp', 'aiomysql', 'aiosignal', 'aiosqlite', ...})
+E    +  where frozenset({'aiocontextvars', 'aiohappyeyeballs', 'aiohttp', 'aiomysql', 'aiosignal', 'aiosqlite', ...}) = reachable_distributions()
+=========================== short test summary info ============================
+FAILED tests/test_ported_import_closure.py::test_every_module_scope_import_is_reachable_from_the_declared_set
+FAILED tests/test_ported_import_closure.py::test_curl_cffi_regression_stays_declared
+========================= 2 failed, 4 passed in 14.57s =========================
+GUARD_EXIT=1
+curl-cffi still declared in [project].dependencies? False
+
+=== [3] restore, then mutation B: delete urllib3 (reachable through requests) ===
+restored byte-for-byte
+removed line: ['"urllib3>=2.0.7",']
+--- urllib3 declaration removed (control: requests requires it transitively) ---
+============================= test session starts ==============================
+collected 6 items
+
+tests/test_ported_import_closure.py ......                               [100%]
+
+============================== 6 passed in 14.97s ==============================
+GUARD_EXIT=0
+
+=== [4] final restore ===
+pyproject.toml restored byte-for-byte
+--- unmutated pyproject.toml again ---
+============================= test session starts ==============================
+collected 6 items
+
+tests/test_ported_import_closure.py ......                               [100%]
+
+============================== 6 passed in 15.32s ==============================
+GUARD_EXIT=0
+ pyproject.toml | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+MUTATION_SCRIPT_EXIT=0

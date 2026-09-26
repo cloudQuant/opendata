@@ -1,0 +1,18 @@
+===== C36 gitleaks 全历史扫描（配置加 SDMX 允许面之后，完整未裁剪）=====
+captured_at=2026-09-26T13:42:40+02:00
+branch=dev HEAD=b4af81b
+gitleaks=8.30.1  python=Python 3.13.5
+--- command ---
+gitleaks detect --source . --config .gitleaks.toml --redact
+--- end ---
+
+    ○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
+
+[90m1:42PM[0m [32mINF[0m [1m163 commits scanned.[0m
+[90m1:42PM[0m [32mINF[0m [1mscanned ~41581406 bytes (41.58 MB) in 9.7s[0m
+[90m1:42PM[0m [32mINF[0m [1mno leaks found[0m
+HISTORY_EXIT=0
