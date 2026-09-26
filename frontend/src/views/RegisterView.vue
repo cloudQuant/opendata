@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
 import type { RegisterRequest } from '@/types'
 import { getErrorMessage } from '@/utils/error'
-import type { FormItemRule } from 'element-plus'
+import type { FormRules } from 'element-plus'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -13,16 +13,16 @@ const authStore = useAuthStore()
 const formRef = ref()
 const loading = ref(false)
 
-const form = reactive<RegisterRequest & { password_confirm: string }>({
+const form = reactive<RegisterRequest>({
   email: '',
   password: '',
   password_confirm: '',
 })
 
 const validatePasswordConfirm = (
-  _rule: FormItemRule,
+  _rule: unknown,
   value: string,
-  callback: (err?: Error) => void
+  callback: (error?: string | Error) => void,
 ) => {
   if (value !== form.password) {
     callback(new Error('两次输入的密码不一致'))
@@ -31,7 +31,7 @@ const validatePasswordConfirm = (
   }
 }
 
-const rules = {
+const rules: FormRules = {
   email: [
     { required: true, message: '请输入邮箱', trigger: 'blur' },
     { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' },
@@ -54,6 +54,7 @@ async function handleRegister() {
     await authStore.register({
       email: form.email,
       password: form.password,
+      password_confirm: form.password_confirm,
     })
 
     ElMessage.success('注册成功')

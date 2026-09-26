@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import EmptyState from '../EmptyState.vue'
-import { ElButton, ElEmpty, ElIcon } from 'element-plus'
+import { ElButton, ElIcon } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 
 vi.mock('vue-router', async (importOriginal) => {
   const actual = await importOriginal() as any
@@ -56,7 +57,7 @@ describe('EmptyState.vue', () => {
   it('renders with icon', () => {
     const wrapper = mount(EmptyState, {
       props: {
-        icon: 'Plus',
+        icon: Plus,
       },
     })
 

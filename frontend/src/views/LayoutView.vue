@@ -4,7 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
-import { setLocale } from '@/i18n'
+import { setLocale, type Locale } from '@/i18n'
 import { Sunny, Moon } from '@element-plus/icons-vue'
 
 const { t, locale } = useI18n()
@@ -16,7 +16,7 @@ const themeStore = useThemeStore()
 const isCollapse = ref(false)
 const activeMenu = computed(() => route.path)
 
-const languageOptions = [
+const languageOptions: { label: string; value: Locale }[] = [
   { label: '简体中文', value: 'zh-CN' },
   { label: 'English', value: 'en-US' },
 ]
@@ -57,7 +57,7 @@ function handleThemeToggle() {
   themeStore.toggleTheme()
 }
 
-function handleLanguageChange(lang: string) {
+function handleLanguageChange(lang: Locale) {
   setLocale(lang)
 }
 </script>

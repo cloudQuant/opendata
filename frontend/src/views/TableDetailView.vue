@@ -79,10 +79,6 @@ onMounted(() => {
             <span class="stat-value">{{ schema.row_count?.toLocaleString() || 0 }}</span>
           </div>
           <div class="stat-item">
-            <span class="stat-label">大小</span>
-            <span class="stat-value">{{ schema.data_size || '-' }}</span>
-          </div>
-          <div class="stat-item">
             <span class="stat-label">最后更新</span>
             <span class="stat-value">
               {{ schema.last_update_time ? new Date(schema.last_update_time).toLocaleString() : '-' }}

@@ -22,7 +22,7 @@ const props = withDefaults(defineProps<StatusBadgeProps>(), {
 
 interface StatusConfig {
   text: string
-  type: '' | 'success' | 'warning' | 'info' | 'danger' | 'primary'
+  type: 'success' | 'warning' | 'info' | 'danger' | 'primary'
 }
 
 const statusConfigMap: Record<string, StatusConfig> = {

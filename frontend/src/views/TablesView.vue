@@ -30,7 +30,7 @@ async function loadWarehouseTables() {
   try {
     warehouseTables.value = await warehouseApi.list(warehouseLayer.value)
   } catch (e) {
-    logger.error('Failed to load warehouse tables:', e)
+    logger.apiError('/tables/warehouse', e)
   } finally {
     warehouseLoading.value = false
   }
@@ -57,6 +57,11 @@ async function loadTables() {
 
 function handleViewDetail(table: DataTable) {
   void router.push(`/tables/${table.id}`)
+}
+
+function handlePageChange(page: number) {
+  currentPage.value = page
+  void loadTables()
 }
 
 function handleSizeChange(size: number) {
@@ -214,6 +219,7 @@ onMounted(() => {
             :page-sizes="PAGINATION.PAGE_SIZE_OPTIONS"
             :total="total"
             layout="total, sizes, prev, pager, next"
+            @current-change="handlePageChange"
             @size-change="handleSizeChange"
           />
         </div>

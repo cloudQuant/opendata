@@ -1,14 +1,14 @@
 import request from '@/utils/request'
 import type {
-  Execution,
   Task,
   PaginationParams,
   PaginatedResponse,
 } from '@/types'
 
 export const tasksApi = {
-  // Get task list
-  list(params?: PaginationParams & { enabled?: boolean; script_id?: number }): Promise<PaginatedResponse<Task>> {
+  // `is_active` is the backend's query name (opendata/api/tasks.py `list_tasks`); FastAPI
+  // drops unknown query params, so a filter spelled any other way never filters.
+  list(params?: PaginationParams & { is_active?: boolean }): Promise<PaginatedResponse<Task>> {
     return request({
       url: '/tasks/',
       method: 'GET',
@@ -47,25 +47,6 @@ export const tasksApi = {
     return request({
       url: `/tasks/${taskId}`,
       method: 'DELETE',
-    })
-  },
-
-  // Toggle task enabled status
-  toggle(taskId: number): Promise<Task> {
-    return request({
-      url: `/tasks/${taskId}/toggle`,
-      method: 'PATCH',
-    })
-  },
-
-  getExecutions(
-    taskId: number,
-    params?: PaginationParams
-  ): Promise<PaginatedResponse<Execution>> {
-    return request({
-      url: `/tasks/${taskId}/executions`,
-      method: 'GET',
-      params,
     })
   },
 }

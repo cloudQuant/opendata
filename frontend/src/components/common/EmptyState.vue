@@ -13,7 +13,7 @@ export interface EmptyStateProps {
 }
 
  
-const _props = withDefaults(defineProps<EmptyStateProps>(), {
+withDefaults(defineProps<EmptyStateProps>(), {
   text: '暂无数据',
   icon: undefined,
   actionText: '',

@@ -4,7 +4,7 @@ import { ElMessage } from 'element-plus'
 import { dataApi, pipelineApi, type FailedShard } from '@/api/data'
 import { getApiErrorMessage } from '@/utils/error'
 import { logger } from '@/utils/logger'
-import type { Execution, ExecutionStats, PaginatedResponse } from '@/types'
+import type { Execution, ExecutionStats } from '@/types'
 import { PAGINATION } from '@/config/constants'
 
 const executions = ref<Execution[]>([])
@@ -32,11 +32,10 @@ async function loadExecutions() {
   loading.value = true
   error.value = null
   try {
-    const data = await dataApi.listExecutions({
+    const res = await dataApi.listExecutions({
       page: currentPage.value,
       page_size: pageSize.value,
     })
-    const res = data as PaginatedResponse<Execution>
     executions.value = res.items ?? []
     total.value = res.total ?? 0
   } catch (e) {
@@ -52,7 +51,7 @@ async function loadFailures() {
     const data = await pipelineApi.failures({ limit: 100 })
     failures.value = data.failures
   } catch (e) {
-    logger.error('Failed to load pipeline failures:', e)
+    logger.apiError('/pipeline/failures', e)
   } finally {
     failuresLoading.value = false
   }
@@ -92,15 +91,6 @@ function handleSizeChange(size: number) {
 
 function getStatusInfo(status: string) {
   return statusMap[status] || { text: status, type: 'info' }
-}
-
-async function handleRetry(execution: Execution) {
-  try {
-    await dataApi.retry(execution.id)
-    await loadExecutions()
-  } catch (e) {
-    ElMessage.error(getApiErrorMessage(e))
-  }
 }
 
 onMounted(async () => {
@@ -267,23 +257,6 @@ onMounted(async () => {
           label="错误信息"
           show-overflow-tooltip
         />
-        <el-table-column
-          label="操作"
-          width="100"
-          fixed="right"
-        >
-          <template #default="{ row }">
-            <el-button
-              v-if="row.status === 'failed'"
-              type="primary"
-              link
-              size="small"
-              @click="handleRetry(row)"
-            >
-              重试
-            </el-button>
-          </template>
-        </el-table-column>
       </el-table>
 
       <div class="pagination">
@@ -293,6 +266,7 @@ onMounted(async () => {
           :page-sizes="[10, 20, 50, 100]"
           :total="total"
           layout="total, sizes, prev, pager, next"
+          @current-change="handlePageChange"
           @size-change="handleSizeChange"
         />
       </div>

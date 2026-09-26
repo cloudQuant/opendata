@@ -33,7 +33,7 @@ async function loadStats() {
     if (scriptsData?.items) recentScripts.value = scriptsData.items
   } catch (e) {
     error.value = e instanceof Error ? e.message : '加载数据失败'
-    logger.error('Failed to load stats:', e)
+    logger.apiError('/executions/stats', e)
   } finally {
     loading.value = false
   }

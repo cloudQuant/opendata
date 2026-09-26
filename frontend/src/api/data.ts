@@ -58,14 +58,6 @@ export const dataApi = {
       method: 'GET',
     })
   },
-
-  // Retry execution
-  retry(executionId: number): Promise<{ execution_id: number }> {
-    return request({
-      url: `/executions/${executionId}/retry`,
-      method: 'POST',
-    })
-  },
 }
 
 // ---------------------------------------------------------------------------
@@ -87,20 +79,20 @@ export interface FailuresResponse {
 }
 
 export const pipelineApi = {
-  // List the shards an earlier pipeline run left failed.
+  // The interceptor has already unwrapped the envelope, so this is `{count, failures}`.
   async failures(params: { domain?: string; source?: string; limit?: number } = {}): Promise<FailuresResponse> {
-    const response = await request.get<{ success: boolean; data: FailuresResponse }>(
+    const payload = await request.get<unknown, FailuresResponse | undefined>(
       '/pipeline/failures',
       { params },
     )
-    return response.data?.data ?? { count: 0, failures: [] }
+    return payload ?? { count: 0, failures: [] }
   },
 
   // Reset failed shards so the next run of their window retries them.
   async retryFailed(): Promise<{ reset: number }> {
-    const response = await request.post<{ success: boolean; data: { reset: number } }>(
+    const payload = await request.post<unknown, { reset?: number } | undefined>(
       '/pipeline/retry-failed',
     )
-    return response.data?.data ?? { reset: 0 }
+    return { reset: payload?.reset ?? 0 }
   },
 }

@@ -107,21 +107,16 @@ export interface Execution {
   execution_id: string
   task_id: number | null
   script_id: string
-  params: Record<string, unknown> | null
   status: TaskStatusType
   start_time: string | null
   end_time: string | null
   duration: number | null
-  result: Record<string, unknown> | null
   error_message: string | null
-  error_trace: string | null
   rows_before: number | null
   rows_after: number | null
   retry_count: number
   triggered_by: TriggeredByType
-  operator_id: number | null
   created_at: string
-  updated_at: string
 }
 
 // Data Table

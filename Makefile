@@ -116,8 +116,12 @@ frontend-collection:
 frontend-test-cov:
 	cd frontend && npm run test:coverage
 
+# `vue-tsc --noEmit` without `-p`/`-b` reads frontend/tsconfig.json, which is a
+# solution file (`files: []` + references): it type checks zero files and always
+# exits 0, so the item could never fail. `-b` walks the referenced projects and
+# `--force` ignores the incremental tsbuildinfo the previous gate run left behind.
 frontend-typecheck:
-	cd frontend && npx vue-tsc --noEmit
+	cd frontend && npx vue-tsc -b --force
 
 # A playwright run reports a declared skip, a test whose only assertion sits
 # behind `if (await …isVisible())`, and a test that asserts a substring of the

@@ -58,7 +58,8 @@ request.interceptors.response.use(
       ElMessage.error(res.message || '请求失败')
       return Promise.reject(new Error(res.message || '请求失败'))
     }
-    // Unwrap data field for convenience
+    // Unwrap data field for convenience. Callers therefore type the resolved
+    // value, not the response: `request.get<unknown, Payload>(...)`.
     return res.data ?? res
   },
   async (error: AxiosError) => {

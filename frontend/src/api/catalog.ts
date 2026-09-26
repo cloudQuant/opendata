@@ -30,13 +30,32 @@ export interface DataPage {
   count: number
 }
 
+/**
+ * What a domain query looks like when the answer carries no page at all.
+ * A factory, not a constant: callers keep the object around in component state.
+ */
+export function emptyDataPage(): DataPage {
+  return {
+    domain: '',
+    asset_class: '',
+    layer: '',
+    source: '',
+    adjust: '',
+    columns: [],
+    rows: [],
+    page: 1,
+    page_size: 0,
+    count: 0,
+  }
+}
+
 export const catalogApi = {
   /** List the visible domains with freshness (design §10.1 / FR-20). */
   async catalog(): Promise<CatalogEntry[]> {
-    const response = await request.get<{ success: boolean; data: { domains: CatalogEntry[] } }>(
+    const payload = await request.get<unknown, { domains?: CatalogEntry[] } | undefined>(
       '/data/catalog',
     )
-    return response.data?.data?.domains ?? []
+    return payload?.domains ?? []
   },
 
   /** Query one domain (dwd by default). */
@@ -45,10 +64,10 @@ export const catalogApi = {
     domain: string,
     params: Record<string, string | number | undefined>,
   ): Promise<DataPage> {
-    const response = await request.get<{ success: boolean; data: DataPage }>(
+    const payload = await request.get<unknown, DataPage | undefined>(
       `/data/${assetClass}/${domain}`,
       { params },
     )
-    return response.data?.data ?? { rows: [], columns: [] }
+    return payload ?? emptyDataPage()
   },
 }

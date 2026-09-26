@@ -546,16 +546,16 @@ const resetForm = () => {
   formRef.value?.clearValidate()
 }
 
-const getCategoryType = (category: string): "success" | "danger" | "primary" | "info" | "warning" | "" => {
-  const types: Record<string, "success" | "danger" | "primary" | "info" | "warning" | ""> = {
+const getCategoryType = (category: string): 'success' | 'danger' | 'primary' | 'info' | 'warning' => {
+  const types: Record<string, 'success' | 'danger' | 'primary' | 'info' | 'warning'> = {
     stocks: 'primary',
     funds: 'success',
     futures: 'warning',
     macro: 'danger',
     indicators: 'info',
-    custom: ''
+    custom: 'info'
   }
-  return types[category] || ''
+  return types[category] || 'info'
 }
 
 // Lifecycle

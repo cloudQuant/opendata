@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import StatusBadge, { StatusType } from '../StatusBadge.vue'
+import StatusBadge from '../StatusBadge.vue'
 import { defineComponent, h } from 'vue'
 const ElTagStub = defineComponent({
   name: 'ElTagStub',
   props: { type: String, size: String, effect: String },
   setup(_props, { slots }) {
-    return () => h('span', { class: 'el-tag' }, slots.default ? slots.default() : null)
+    return () => h('span', { class: 'el-tag' }, slots.default?.() ?? [])
   }
 })
 

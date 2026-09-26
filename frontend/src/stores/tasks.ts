@@ -18,7 +18,7 @@ export const useTaskStore = defineStore(
     const loading = computed(() => listHelper.loading.value || actionHelper.loading.value)
     const error = computed(() => listHelper.error.value || actionHelper.error.value)
 
-    async function fetchTasks(params?: PaginationParams & { enabled?: boolean; script_id?: number }) {
+    async function fetchTasks(params?: PaginationParams & { is_active?: boolean }) {
       if (params?.page !== undefined) {
         listHelper.setPage(params.page)
       }
@@ -91,24 +91,6 @@ export const useTaskStore = defineStore(
       )
     }
 
-    async function toggleTask(taskId: number) {
-      const result = await actionHelper.execute(
-        async () => {
-          const updated = await tasksApi.toggle(taskId)
-          const index = listHelper.items.value.findIndex((t) => t.id === taskId)
-          if (index !== -1) {
-            listHelper.items.value[index] = updated
-          }
-          if (currentTask.value?.id === taskId) {
-            currentTask.value = updated
-          }
-          return updated
-        },
-        { errorMessage: '切换任务状态失败' }
-      )
-      return result
-    }
-
     function reset() {
       listHelper.reset()
       actionHelper.reset()
@@ -130,7 +112,6 @@ export const useTaskStore = defineStore(
       createTask,
       updateTask,
       deleteTask,
-      toggleTask,
       setPage: listHelper.setPage,
       setPageSize: listHelper.setPageSize,
       reset,

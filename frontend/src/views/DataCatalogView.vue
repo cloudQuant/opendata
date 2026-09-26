@@ -7,7 +7,7 @@
  */
 import { ref, computed, onMounted } from 'vue'
 import { Refresh, Search } from '@element-plus/icons-vue'
-import { catalogApi, type CatalogEntry, type DataPage } from '@/api/catalog'
+import { catalogApi, emptyDataPage, type CatalogEntry, type DataPage } from '@/api/catalog'
 import { logger } from '@/utils/logger'
 
 const entries = ref<CatalogEntry[]>([])
@@ -42,7 +42,7 @@ async function load() {
     entries.value = await catalogApi.catalog()
   } catch (e) {
     error.value = e instanceof Error ? e.message : '加载目录失败'
-    logger.error('Failed to load catalog:', e)
+    logger.apiError('/data/catalog', e)
   } finally {
     loading.value = false
   }
@@ -50,7 +50,7 @@ async function load() {
 
 async function openDetail(entry: CatalogEntry) {
   detailError.value = null
-  detail.value = { entry, page: { rows: [], columns: [] } as DataPage, loading: true }
+  detail.value = { entry, page: emptyDataPage(), loading: true }
   try {
     detail.value.page = await catalogApi.query(entry.asset_class, entry.domain, {
       page: 1,
@@ -58,7 +58,7 @@ async function openDetail(entry: CatalogEntry) {
     })
   } catch (e) {
     detailError.value = e instanceof Error ? e.message : '查询失败'
-    logger.error(`Failed to query ${entry.domain}:`, e)
+    logger.apiError(`/data/${entry.asset_class}/${entry.domain}`, e)
   } finally {
     if (detail.value) detail.value.loading = false
   }

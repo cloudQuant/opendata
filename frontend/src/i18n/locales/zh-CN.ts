@@ -37,6 +37,9 @@ export default {
     registerSuccess: '注册成功',
     registerFailed: '注册失败',
     logoutSuccess: '退出成功',
+    invalidCredentials: '邮箱或密码不正确',
+    emailRequired: '请输入邮箱',
+    passwordRequired: '请输入密码',
   },
   theme: {
     light: '亮色模式',
@@ -86,6 +89,7 @@ export default {
     rowCount: '行数',
     lastUpdate: '最后更新',
     category: '分类',
+    preview: '预览',
     schema: '表结构',
     data: '数据预览',
   },

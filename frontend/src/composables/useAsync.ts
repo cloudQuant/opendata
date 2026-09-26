@@ -1,7 +1,7 @@
-import { ref, shallowRef, type ShallowRef } from 'vue'
+import { ref, shallowRef, type Ref, type ShallowRef } from 'vue'
 import { getApiErrorMessage } from '@/utils/error'
 
-export interface UseAsyncOptions<T> {
+export interface UseAsyncOptions {
   immediate?: boolean
   showLoading?: boolean
   showError?: boolean
@@ -11,7 +11,7 @@ export interface UseAsyncOptions<T> {
 
 export interface UseAsyncReturn<T> {
   data: ShallowRef<T | null>
-  loading: ShallowRef<boolean>
+  loading: Ref<boolean>
   error: ShallowRef<string | null>
   isError: ShallowRef<boolean>
   execute: () => Promise<T | null>
@@ -20,7 +20,7 @@ export interface UseAsyncReturn<T> {
 
 export function useAsync<T>(
   asyncFn: () => Promise<T>,
-  options: UseAsyncOptions<T> = {}
+  options: UseAsyncOptions = {}
 ): UseAsyncReturn<T> {
   const data = shallowRef<T | null>(null)
   const loading = ref(false)
@@ -57,10 +57,10 @@ export function useAsync<T>(
   }
 
   return {
-    data: shallowRef(data),
-    loading: shallowRef(loading),
-    error: shallowRef(error),
-    isError: shallowRef(isError),
+    data,
+    loading,
+    error,
+    isError,
     execute,
     reset,
   }

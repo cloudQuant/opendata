@@ -95,16 +95,6 @@ export const useExecutionStore = defineStore(
       )
     }
 
-    async function retryExecution(executionId: number) {
-      await actionHelper.execute(
-        async () => {
-          await dataApi.retry(executionId)
-          await fetchExecutions()
-        },
-        { errorMessage: '重试执行失败' }
-      )
-    }
-
     function setFilters(newFilters: { script_id?: number; status?: string }) {
       filters.value = { ...filters.value, ...newFilters }
       listHelper.page.value = 1
@@ -144,7 +134,6 @@ export const useExecutionStore = defineStore(
       fetchStats,
       fetchRecentExecutions,
       fetchRunningExecutions,
-      retryExecution,
       setFilters,
       clearFilters,
       setPage: listHelper.setPage,

@@ -15,7 +15,7 @@ export interface StatCardProps {
 }
 
  
-const _props = withDefaults(defineProps<StatCardProps>(), {
+withDefaults(defineProps<StatCardProps>(), {
   type: 'primary',
   hoverable: true,
 })

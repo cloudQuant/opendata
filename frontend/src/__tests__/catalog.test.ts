@@ -1,9 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { catalogApi } from '@/api/catalog'
+import { catalogApi, type DataPage } from '@/api/catalog'
 import DataCatalogView from '@/views/DataCatalogView.vue'
 
 // The API modules go through the shared axios instance; point it at a stub.
+// The stub resolves what that instance hands back *after* its response
+// interceptor, i.e. the payload inside the envelope — not the wire body. The
+// interceptor itself is covered by src/__tests__/api/envelope.test.ts, which
+// runs the real axios instance.
 vi.mock('@/utils/request', () => {
   const get = vi.fn()
   return {
@@ -14,10 +18,6 @@ vi.mock('@/utils/request', () => {
 
 import request from '@/utils/request'
 const get = (request as unknown as { get: ReturnType<typeof vi.fn> }).get
-
-function envelope(data: unknown) {
-  return { data: { success: true, message: 'success', data } }
-}
 
 const ENTRIES = [
   {
@@ -44,11 +44,26 @@ const ENTRIES = [
   },
 ]
 
+const CATALOG = { domains: ENTRIES }
+
+const PAGE: DataPage = {
+  domain: 'stock_daily',
+  asset_class: 'equity',
+  layer: 'dwd',
+  source: 'ths',
+  adjust: 'none',
+  columns: ['symbol', 'close'],
+  rows: [{ symbol: '600519', close: 1253.8 }],
+  page: 1,
+  page_size: 20,
+  count: 1,
+}
+
 describe('catalogApi', () => {
   beforeEach(() => get.mockReset())
 
-  it('unwraps the catalog envelope into domain entries', async () => {
-    get.mockResolvedValue(envelope({ domains: ENTRIES }))
+  it('reads the catalog entries out of the payload', async () => {
+    get.mockResolvedValue(CATALOG)
 
     const entries = await catalogApi.catalog()
 
@@ -59,7 +74,7 @@ describe('catalogApi', () => {
   })
 
   it('returns an empty list when the payload is missing', async () => {
-    get.mockResolvedValue({ data: { success: true, data: {} } })
+    get.mockResolvedValue(undefined)
 
     expect(await catalogApi.catalog()).toEqual([])
   })
@@ -73,15 +88,7 @@ describe('catalogApi', () => {
   })
 
   it('queries a domain with the given parameters', async () => {
-    get.mockResolvedValue(
-      envelope({
-        rows: [{ symbol: '600519', close: 1253.8 }],
-        columns: ['symbol', 'close'],
-        page: 1,
-        page_size: 20,
-        count: 1,
-      }),
-    )
+    get.mockResolvedValue(PAGE)
 
     const page = await catalogApi.query('equity', 'stock_daily', { page_size: 20 })
 
@@ -95,7 +102,7 @@ describe('DataCatalogView', () => {
   beforeEach(() => get.mockReset())
 
   it('renders the domains with their freshness state', async () => {
-    get.mockResolvedValue(envelope({ domains: ENTRIES }))
+    get.mockResolvedValue(CATALOG)
     const wrapper = mount(DataCatalogView)
 
     await flushPromises()
@@ -109,16 +116,8 @@ describe('DataCatalogView', () => {
   })
 
   it('drills into a domain preview on demand', async () => {
-    get.mockResolvedValueOnce(envelope({ domains: ENTRIES }))
-    get.mockResolvedValueOnce(
-      envelope({
-        rows: [{ symbol: '600519', close: 1253.8 }],
-        columns: ['symbol', 'close'],
-        page: 1,
-        page_size: 20,
-        count: 1,
-      }),
-    )
+    get.mockResolvedValueOnce(CATALOG)
+    get.mockResolvedValueOnce(PAGE)
     const wrapper = mount(DataCatalogView)
 
     await flushPromises()

@@ -11,7 +11,6 @@ vi.mock('@/api/tasks', () => ({
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
-    toggle: vi.fn(),
   },
 }))
 
@@ -71,12 +70,11 @@ describe('useTaskStore', () => {
     vi.mocked(tasksApi.list).mockResolvedValue(mockResponse)
 
     const store = useTaskStore()
-    await store.fetchTasks({ enabled: true, script_id: 123 })
+    await store.fetchTasks({ is_active: true })
 
     expect(tasksApi.list).toHaveBeenCalledWith(
       expect.objectContaining({
-        enabled: true,
-        script_id: 123,
+        is_active: true,
       })
     )
   })
@@ -174,22 +172,6 @@ describe('useTaskStore', () => {
     await store.deleteTask(1)
 
     expect(store.currentTask).toBeNull()
-  })
-})
-
-  describe('toggleTask', () => {
-    it('should toggle task active status', async () => {
-    const toggledTask = { ...mockTask, is_active: false }
-    vi.mocked(tasksApi.toggle).mockResolvedValue(toggledTask)
-
-    const store = useTaskStore()
-    store.tasks = [mockTask]
-
-    const result = await store.toggleTask(1)
-
-    expect(result).toEqual(toggledTask)
-    expect(store.tasks[0].is_active).toBe(false)
-    expect(tasksApi.toggle).toHaveBeenCalledWith(1)
   })
 })
 

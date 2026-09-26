@@ -1,4 +1,4 @@
-import { ElMessage, ElNotification, type MessageParams, type NotificationParams } from 'element-plus'
+import { ElMessage, ElNotification } from 'element-plus'
 
 export type NotificationType = 'success' | 'warning' | 'info' | 'error'
 

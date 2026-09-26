@@ -5,7 +5,7 @@
  * and other performance metrics.
  */
 
-import { onMounted, onUnmounted, type Ref } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { logger } from '@/utils/logger'
 
 export interface PerformanceMetric {

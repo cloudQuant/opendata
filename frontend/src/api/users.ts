@@ -23,9 +23,11 @@ export const usersApi = {
     })
   },
 
-  updateRole(userId: number, role: 'admin' | 'user'): Promise<void> {
+  // `PUT /users/{id}` is the registered route (opendata/api/users.py, admin only);
+  // `UserUpdateRequest` takes `role`, so a partial body changes just the role.
+  updateRole(userId: number, role: 'admin' | 'user'): Promise<User> {
     return request({
-      url: `/users/${userId}/role`,
+      url: `/users/${userId}`,
       method: 'PUT',
       data: { role },
     })

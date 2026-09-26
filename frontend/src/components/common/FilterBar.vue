@@ -27,7 +27,7 @@ export interface FilterBarProps {
   filters?: FilterConfig[]
 }
 
-const props = withDefaults(defineProps<FilterBarProps>(), {
+withDefaults(defineProps<FilterBarProps>(), {
   searchPlaceholder: '搜索...',
   searchValue: '',
   showSearch: true,

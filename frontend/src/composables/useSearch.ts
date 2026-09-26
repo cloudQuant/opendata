@@ -4,7 +4,7 @@
  * Extracts common search state and debounced search functionality.
  */
 
-import { ref, watch, type Ref } from 'vue'
+import { ref, type Ref } from 'vue'
 
 export interface UseSearchOptions {
   /** Debounce delay in milliseconds, defaults to 300ms */

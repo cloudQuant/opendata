@@ -14,7 +14,7 @@ export interface ErrorBoundaryProps {
   showDetails?: boolean
 }
 
-const props = withDefaults(defineProps<ErrorBoundaryProps>(), {
+withDefaults(defineProps<ErrorBoundaryProps>(), {
   errorTitle: '页面出错了',
   errorText: '抱歉，页面渲染时发生了错误，请尝试重新加载',
   retryText: '重试',

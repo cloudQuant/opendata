@@ -92,22 +92,19 @@ const loadConfigs = async () => {
       settingsApi.getWarehouseConfig()
     ])
 
-    const mainConfig = mainRes.data || mainRes
-    const warehouseConfig = warehouseRes.data || warehouseRes
-
     Object.assign(mainDbConfig, {
-      host: mainConfig.host || 'localhost',
-      port: mainConfig.port || 3306,
-      database: mainConfig.database || '',
-      user: mainConfig.user || '',
+      host: mainRes.host || 'localhost',
+      port: mainRes.port || 3306,
+      database: mainRes.database || '',
+      user: mainRes.user || '',
       password: ''
     })
 
     Object.assign(warehouseDbConfig, {
-      host: warehouseConfig.host || 'localhost',
-      port: warehouseConfig.port || 3306,
-      database: warehouseConfig.database || '',
-      user: warehouseConfig.user || '',
+      host: warehouseRes.host || 'localhost',
+      port: warehouseRes.port || 3306,
+      database: warehouseRes.database || '',
+      user: warehouseRes.user || '',
       password: ''
     })
 

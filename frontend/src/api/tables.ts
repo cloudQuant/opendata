@@ -60,12 +60,12 @@ export interface WarehouseTable {
 }
 
 export const warehouseApi = {
-  // List the physical ods/dwd tables of the data warehouse.
+  // The interceptor has already unwrapped the envelope, so this is `{count, tables}`.
   async list(layer: 'all' | 'ods' | 'dwd' = 'all'): Promise<WarehouseTable[]> {
-    const response = await request.get<{ success: boolean; data: { tables: WarehouseTable[] } }>(
-      '/tables/warehouse',
-      { params: { layer } },
-    )
-    return response.data?.data?.tables ?? []
+    const payload = await request.get<
+      unknown,
+      { count?: number; tables?: WarehouseTable[] } | undefined
+    >('/tables/warehouse', { params: { layer } })
+    return payload?.tables ?? []
   },
 }

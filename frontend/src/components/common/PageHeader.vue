@@ -10,7 +10,7 @@ export interface PageHeaderProps {
   actions?: boolean
 }
 
-const props = withDefaults(defineProps<PageHeaderProps>(), {
+withDefaults(defineProps<PageHeaderProps>(), {
   subtitle: '',
   bordered: true,
   actions: false,

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { useApiCall } from '@/composables/useApiCall'
 
 // Mock element-plus
@@ -92,7 +92,7 @@ describe('useApiCall', () => {
   })
 
   it('should reset state', async () => {
-    const { data, loading, error, execute, reset } = useApiCall<string>()
+    const { data, error, execute, reset } = useApiCall<string>()
 
     await execute(() => Promise.resolve('test'))
     reset()
@@ -103,7 +103,7 @@ describe('useApiCall', () => {
 
   it('should manage loading state correctly', async () => {
     const { loading, execute } = useApiCall<string>()
-    let resolveFn: (value: string) => void
+    let resolveFn: (value: string) => void = () => {}
 
     const promise = new Promise<string>((resolve) => {
       resolveFn = resolve

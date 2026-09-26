@@ -3,7 +3,7 @@ import { RouterView } from 'vue-router'
 import { logger } from '@/utils/logger'
 import ErrorBoundary from '@/components/common/ErrorBoundary.vue'
 
-function handleGlobalError(error: Error, instance: unknown, info: string) {
+function handleGlobalError(error: Error, _instance: unknown, info: string) {
   logger.error('Global error caught', { error: error.message, info, stack: error.stack })
 }
 </script>
