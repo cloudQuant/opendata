@@ -67,8 +67,10 @@ def _log_task_exception(task: asyncio.Task) -> None:
         return
     exc = task.exception()
     if exc is not None:
+        # loguru renders with str.format: the logging idiom ("%s", arg) drops
+        # the arguments and leaves the template in the log.
         logger.error(
-            "Unhandled exception in background task: %s: %s",
+            "Unhandled exception in background task: {}: {}",
             type(exc).__name__,
             exc,
         )
@@ -139,7 +141,7 @@ async def trigger_download(
                 )
             except Exception as e:
                 logger.error(
-                    "Background download failed for execution %s: %s",
+                    "Background download failed for execution {}: {}",
                     exec_id,
                     e,
                 )
