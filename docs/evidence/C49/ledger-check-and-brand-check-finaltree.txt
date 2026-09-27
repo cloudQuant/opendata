@@ -1,0 +1,40 @@
+# C49 最终树前的廉价复验（回填的文档改动落完之后的第 3 遍，也是最后一遍）
+# run_at=2026-09-27T16:01:12+02:00 branch=dev HEAD=349f560
+# command=make ledger-check; make brand-check（两条退出状态各自单独读，不是管道尾）
+# LEDGER_EXIT=0 BRAND_EXIT=0
+# 这一遍之前文档一共落了三次改动，前两档各自描述自己那一刻的树、都不删：
+#   1) ledger-check-and-brand-check-postbackfill.txt —— §2 两格翻转 + §0 v5.21 行 + §10 行 k/m + 台账三格刚落地；
+#   2) （本档取代的同名旧读）§0 行补 ⑦门禁遍次与 ⑧"本轮不算数的部分"；
+#   3) §10 AC-9 单元格两处措辞：代码跨度后补一个空格，C50 登记句从一件事改成两件事。
+# 判据面没有一处因此变动：§2 行仍是内容哈希出来的 key（只翻方框），单元格未转义竖线数 §0=4、§10=7 未变。
+# 要点：census items=130 proven=31 gap=9 unreviewed=90 ticked=31（ticked==proven；\|08 记 gap 不进 ticked）。
+=== make ledger-check ===
+python scripts/quality/acceptance_ledger_check.py
+census: items=130 proven=31 gap=9 unreviewed=90 ticked=31
+OK: items=130 proven=31 gap=9 unreviewed=90 ticked=31 across 22 group(s) and 19 §10 row(s) reconcile.
+
+=== make brand-check ===
+python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:112
+  .env.example:113
+  .env.example:114
+  .env.example:115
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.

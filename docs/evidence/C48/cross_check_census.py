@@ -465,13 +465,18 @@ def deviation_face(engine: Engine) -> None:
                 f"      {column}: 零值 {int((values == 0).sum())} 空值 {int(values.isna().sum())}"
                 f" / {len(values)} 行  非零中位数 {values[values > 0].median()}"
             )
-    indexed = {source: _index(frame, key, source) for source, frame in frames.items()}
+    indexed: dict[str, dict[tuple, dict]] = {}
+    collided: dict[str, set[tuple]] = {}
+    for source, frame in frames.items():
+        rows, refused = _index(frame, key, source)
+        indexed[source] = rows
+        collided[source] = refused
     value_columns = _value_columns(frames, set(key), "stock_daily")
     disagreeing = _disagreeing_keys(indexed, authority, value_columns, key)
     shared = set(indexed["ths"]) & set(indexed["akshare"])
     print(
         f"  _disagreeing_keys 判为不一致 {len(disagreeing)} / 两腿同键 {len(shared)}"
-        f" / ths 侧 {len(indexed['ths'])} 键"
+        f" / ths 侧 {len(indexed['ths'])} 键 / 重键被拒 {len(collided['ths'])}"
     )
     for field in value_columns:
         pairs = [

@@ -1,0 +1,118 @@
+# C49 修前 census 第 1 遍（被取代，保留以披露遍次）：只有面 1-6，没有面 7（生产查询执行面）与面 8（真腿直通面）
+# 本轮两个洞的量化落点都在缺的那两面上 ⇒ 这一遍不足以支撑判据；23 条语句全 SELECT，非只读闸门 0 条，脚本自身 exit=0
+# branch=dev HEAD=349f560
+# worktree_status=本轮改动尚未落地（读的是修前形状）
+# python=Python 3.13.5
+# command=set -a; . ./.env; set +a; python docs/evidence/C49/ac9_residual_census.py
+python=3.13.5 cwd=/Users/yunjinqi/Documents/new_projects/opendata
+
+--- 1. 三条判据原文 + 台账状态 + 探针注册面 ---
+  [ ] L175 AC-9|03|3bce2eae unreviewed 
+        判据原文：**反例用例**：① 字段名不匹配时必须报错而非静默通过；② 单位未归一时必须产生 mismatch
+        条目级探针：无
+  [ ] L180 AC-9|08|a87bfe6f unreviewed 
+        判据原文：**单源域 dwd 直通模式可用**（`layer=dwd` 查询不报错）
+        条目级探针：无
+  [ ] L181 AC-9|09|ca69bd21 unreviewed 
+        判据原文：dwd 重算幂等
+        条目级探针：无
+
+--- 2. 反例面：compare_source_frames 对每种输入的实测反应 ---
+  A 两侧 volume 同为 None: verdict=consistent 键并集=2 判差=0 单边缺=0 per_field={}
+  B 两侧 volume 同为空串: verdict=consistent 键并集=2 判差=0 单边缺=0 per_field={}
+  C volume 一侧 None 一侧有值: verdict=deviation 键并集=2 判差=2 单边缺=0 per_field={'volume': 2}
+  D volume 列在 A 帧里不存在: raised ValueError: source frame is missing mapped columns ['volume'] for domain 'stock_daily'; the field mapping and the source disagree (fail closed)
+  E close 文本 vs 浮点（同值）: verdict=consistent 键并集=2 判差=0 单边缺=0 per_field={}
+  F close 文本垃圾 vs 浮点: verdict=deviation 键并集=2 判差=2 单边缺=0 per_field={'close': 2}
+  G 单位只在 a 腿声明（b 腿原始值是股）: verdict=consistent 键并集=2 判差=0 单边缺=0 per_field={}
+  tolerances 两侧不同时谁生效（源码是 mapping_b.tolerances or mapping_a.tolerances）
+  close 相差 0.4 @ a 紧(1e-4) / b 松(1.0): verdict=consistent 键并集=2 判差=0 单边缺=0 per_field={}
+  close 相差 0.4 @ a 松(1.0) / b 紧(1e-4): verdict=deviation 键并集=2 判差=1 单边缺=0 per_field={'close': 1}
+  close 相差 0.4 @ a 不声明 / b 紧(1e-4): verdict=deviation 键并集=2 判差=1 单边缺=0 per_field={'close': 1}
+  close 相差 0.4 @ a 紧(1e-4) / b 不声明: verdict=deviation 键并集=2 判差=1 单边缺=0 per_field={'close': 1}
+  _deviation 的分支读数（None/nan 都不记差异）
+    _deviation(None, None) = None
+    _deviation('', '') = None
+    _deviation('abc', 1.0) = None
+    _deviation(nan, nan) = None
+    _deviation(1.0, 1.0) = 0.0
+
+--- 3. 见证用例面：用例存在 ≠ 门禁跑得到 ---
+  tests/test_cross_check.py::test_unconverted_unit_produces_a_mismatch
+    类=TestComparison 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> assert summary.verdict is Verdict.DEVIATION
+    assert> assert summary.samples[0].field == "volume"
+  tests/test_cross_check.py::test_structural_field_mismatch_fails_closed
+    类=TestNormalizationInTheComparison 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> （无 assert：这条用例不证明任何东西）
+  tests/test_cross_check.py::test_duplicate_keys_fail_closed
+    类=TestComparison 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> （无 assert：这条用例不证明任何东西）
+  tests/test_data_mapping.py::test_normalize_frame_requires_mapped_columns —— 文件或用例不存在（这一条要显式说出来，不能当作没看见）
+  tests/test_dwd_merge.py::test_single_source_domain_is_passthrough
+    类=TestMergeSourceFrames 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> assert stats.passthrough is True
+    assert> assert stats.diff_flagged == 0
+    assert> assert set(merged["source"]) == {"akshare"}
+  tests/test_dwd_merge.py::test_merge_writes_rows_with_trace_columns_and_is_idempotent
+    类=TestDwdWriteAgainstMysql 用例 marker=()
+    类 marker=('pytest.mark.e2e',)) 门禁不跑（被 -m 'not e2e' 摘掉）
+    assert> assert len(rows) == 1
+    assert> assert rows[0][0] == "600519"
+    assert> assert rows[0][1] == pytest.approx(1689.0)
+    assert> assert rows[0][2] == "ths"
+    assert> assert rows[0][3] == 0
+    assert> assert rows[0][4] == AS_OF
+  tests/test_ths_dwd_integration.py::test_recompute_is_idempotent —— 文件或用例不存在（这一条要显式说出来，不能当作没看见）
+
+--- 4. 幂等面：merge_source_frames 跑两遍到底差不差 ---
+  双源：stats 第一次=MergeStats(rows=2, diff_flagged=1, degraded_rows=0, passthrough=False)
+  双源：stats 第二次=MergeStats(rows=2, diff_flagged=1, degraded_rows=0, passthrough=False)
+  双源：两次输出逐格相等=True
+  换 merged_at 再跑：相同的列=['symbol', 'trade_date', 'close', 'volume', 'source', '_diff_flag', '_as_of']
+  换 merged_at 再跑：不同的列=['_merged_at']
+  换 merged_at 再跑：stats=MergeStats(rows=2, diff_flagged=1, degraded_rows=0, passthrough=False)
+  单源直通：stats=MergeStats(rows=2, diff_flagged=0, degraded_rows=0, passthrough=True) 直通帧两次相等=True
+  单源直通：输出列=['symbol', 'trade_date', 'close', 'volume', 'source', '_merged_at', '_diff_flag', '_as_of']
+  帧字典顺序换一下（同一批输入）：与第一次相等=True
+  帧字典顺序换一下：stats=MergeStats(rows=2, diff_flagged=1, degraded_rows=0, passthrough=False)
+
+--- 5. 直通查询面：域 → 腿数 → dwd 表 → 行数 ---
+    query.py 里出现过的映射/权威符号：无
+  查询层是否会因腿数而改变行为：False
+  参与对账的域：15
+  economy_cpi [零腿]: 腿=[] 权威序=['ecb', 'oecd', 'imf'] dwd 表=False 行数=None
+  economy_gdp [零腿]: 腿=[] 权威序=['ecb', 'imf'] dwd 表=False 行数=None
+  economy_rate [零腿]: 腿=[] 权威序=['ecb'] dwd 表=False 行数=None
+  economy_unemployment [零腿]: 腿=[] 权威序=['oecd', 'imf'] dwd 表=False 行数=None
+  financial_indicator [零腿]: 腿=[] 权威序=['akshare'] dwd 表=True 行数=0
+  financial_statement [零腿]: 腿=[] 权威序=['ths', 'akshare'] dwd 表=True 行数=0
+  fund_etf_daily [零腿]: 腿=[] 权威序=['akshare', 'ths'] dwd 表=False 行数=None
+  futures_daily [单源]: 腿=['ths'] 权威序=['ths', 'akshare'] dwd 表=False 行数=None
+  index_constituent [单源]: 腿=['akshare'] 权威序=['ths', 'akshare'] dwd 表=True 行数=0
+  index_daily [单源]: 腿=['ths'] 权威序=['ths', 'akshare'] dwd 表=False 行数=None
+  instrument [零腿]: 腿=[] 权威序=['ths'] dwd 表=False 行数=None
+  option_daily [单源]: 腿=['ths'] 权威序=['ths', 'akshare'] dwd 表=False 行数=None
+  stock_action [单源]: 腿=['ths'] 权威序=['ths', 'akshare'] dwd 表=True 行数=0
+  stock_daily [2 腿]: 腿=['akshare', 'ths'] 权威序=['ths', 'akshare'] dwd 表=True 行数=719316
+  trading_calendar [零腿]: 腿=[] 权威序=['ths'] dwd 表=False 行数=None
+
+--- 6. 同缺面：两条腿逐字段的空值形状 ---
+  ths 腿：5512 行，列=['symbol', 'trade_date', 'open', 'high', 'low', 'close', 'volume', 'amount']
+  akshare 腿：5839 行，列=['symbol', 'trade_date', 'open', 'high', 'low', 'close', 'volume', 'amount']
+  同键可比 5512 对（2026-07-03）
+    open: 两侧都空=0 只一侧空=0 两侧有值=5512 归一不出=0 声明(在字段表里, scale)={'ths': (True, 1.0), 'akshare': (True, 1.0)} tolerance={'ths': 0.0001, 'akshare': 0.0001}
+    high: 两侧都空=0 只一侧空=0 两侧有值=5512 归一不出=0 声明(在字段表里, scale)={'ths': (True, 1.0), 'akshare': (True, 1.0)} tolerance={'ths': 0.0001, 'akshare': 0.0001}
+    low: 两侧都空=0 只一侧空=0 两侧有值=5512 归一不出=0 声明(在字段表里, scale)={'ths': (True, 1.0), 'akshare': (True, 1.0)} tolerance={'ths': 0.0001, 'akshare': 0.0001}
+    close: 两侧都空=0 只一侧空=0 两侧有值=5512 归一不出=0 声明(在字段表里, scale)={'ths': (True, 1.0), 'akshare': (True, 1.0)} tolerance={'ths': 0.0001, 'akshare': 0.0001}
+    volume: 两侧都空=0 只一侧空=0 两侧有值=5512 归一不出=0 声明(在字段表里, scale)={'ths': (True, 1.0), 'akshare': (True, 100.0)} tolerance={'ths': 1e-06, 'akshare': 1e-06}
+    amount: 两侧都空=0 只一侧空=0 两侧有值=5512 归一不出=0 声明(在字段表里, scale)={'ths': (True, 1.0), 'akshare': (True, 1.0)} tolerance={'ths': 1e-06, 'akshare': 1e-06}
+
+warehouse engine alive (url never printed): probe=1
+settings.data_database_url scheme=mysql+pymysql
+warehouse engine: 23 statements -> {'SELECT': 23}
+OK: every face measured; no DDL, no writes

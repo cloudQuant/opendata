@@ -1,0 +1,39 @@
+# C49 回填**之后**的廉价复验（ledger-check + brand-check 两个成员单跑，完整未裁剪）
+# run_at=2026-09-27T15:53:36+02:00 branch=dev HEAD=349f560
+# worktree_status=验收文档 v5.21（§0 一行 + §2 两格翻转 + §10 AC-9 行）与 acceptance-item-ledger.json 三格已落地，gate 回填后遍次尚未跑
+# command=make ledger-check; make brand-check（两条退出状态各自单独读，不是管道尾）
+# LEDGER_EXIT=0 BRAND_EXIT=0
+# 为什么先跑这两个成员：§2 的行是内容哈希出来的 ledger key，翻转与 §10 的 k/m 一旦不一致，最便宜的红就是这里；
+#   gate 里也含这两段，但 gate 一跑就是九十秒以上，先用两个成员把「勾 ⇔ proven」「证据路径已被 git 跟踪」判死。
+# 读数要点：census items=130 proven=31 gap=9 unreviewed=90 ticked=31 —— ticked 与 proven 相等（\|08 记 gap 而不是勾，
+#   所以它不进 ticked），AC-9 组 9 格里 5 格 proven。
+=== make ledger-check ===
+python scripts/quality/acceptance_ledger_check.py
+census: items=130 proven=31 gap=9 unreviewed=90 ticked=31
+OK: items=130 proven=31 gap=9 unreviewed=90 ticked=31 across 22 group(s) and 19 §10 row(s) reconcile.
+
+=== make brand-check ===
+python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:112
+  .env.example:113
+  .env.example:114
+  .env.example:115
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.

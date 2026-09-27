@@ -1,0 +1,246 @@
+# C49 修前 census 第 2 遍（崩在半路，保留以披露遍次）：面 7 的第一版直接用 SQLAlchemy 反射读表元数据，撞在 `NoSuchTableError: dwd_bond_daily` 上整遍崩掉
+# 后果：末行没有只读闸门的语句计数 ⇒ 这一遍不是成功遍；崩溃本身是一条判据读数——**404 与 500 的差别来自一个吞异常的读取**（生产 `_inspect_columns` 把异常吞成 `[]`，endpoint 因此 404 而不是报错）
+# branch=dev HEAD=349f560
+# worktree_status=本轮改动尚未落地（读的是修前形状）
+# python=Python 3.13.5
+# command=set -a; . ./.env; set +a; python docs/evidence/C49/ac9_residual_census.py
+2026-09-27 14:44:53.830 | INFO     | opendata.core.token_blacklist:_create_blacklist:186 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+python=3.13.5 cwd=/Users/yunjinqi/Documents/new_projects/opendata
+
+--- 1. 三条判据原文 + 台账状态 + 探针注册面 ---
+  [ ] L175 AC-9|03|3bce2eae unreviewed 
+        判据原文：**反例用例**：① 字段名不匹配时必须报错而非静默通过；② 单位未归一时必须产生 mismatch
+        条目级探针：无
+  [ ] L180 AC-9|08|a87bfe6f unreviewed 
+        判据原文：**单源域 dwd 直通模式可用**（`layer=dwd` 查询不报错）
+        条目级探针：无
+  [ ] L181 AC-9|09|ca69bd21 unreviewed 
+        判据原文：dwd 重算幂等
+        条目级探针：无
+
+--- 2. 反例面：compare_source_frames 对每种输入的实测反应 ---
+  A 两侧 volume 同为 None: verdict=consistent 键并集=2 判差=0 单边缺=0 per_field={}
+  B 两侧 volume 同为空串: verdict=consistent 键并集=2 判差=0 单边缺=0 per_field={}
+  C volume 一侧 None 一侧有值: verdict=deviation 键并集=2 判差=2 单边缺=0 per_field={'volume': 2}
+  D volume 列在 A 帧里不存在: raised ValueError: source frame is missing mapped columns ['volume'] for domain 'stock_daily'; the field mapping and the source disagree (fail closed)
+  E close 文本 vs 浮点（同值）: verdict=consistent 键并集=2 判差=0 单边缺=0 per_field={}
+  F close 文本垃圾 vs 浮点: verdict=deviation 键并集=2 判差=2 单边缺=0 per_field={'close': 2}
+  G 单位只在 a 腿声明（b 腿原始值是股）: verdict=consistent 键并集=2 判差=0 单边缺=0 per_field={}
+  tolerances 两侧不同时谁生效（源码是 mapping_b.tolerances or mapping_a.tolerances）
+  close 相差 0.4 @ a 紧(1e-4) / b 松(1.0): verdict=consistent 键并集=2 判差=0 单边缺=0 per_field={}
+  close 相差 0.4 @ a 松(1.0) / b 紧(1e-4): verdict=deviation 键并集=2 判差=1 单边缺=0 per_field={'close': 1}
+  close 相差 0.4 @ a 不声明 / b 紧(1e-4): verdict=deviation 键并集=2 判差=1 单边缺=0 per_field={'close': 1}
+  close 相差 0.4 @ a 紧(1e-4) / b 不声明: verdict=deviation 键并集=2 判差=1 单边缺=0 per_field={'close': 1}
+  _deviation 的分支读数（None/nan 都不记差异）
+    _deviation(None, None) = None
+    _deviation('', '') = None
+    _deviation('abc', 1.0) = None
+    _deviation(nan, nan) = None
+    _deviation(1.0, 1.0) = 0.0
+
+--- 3. 见证用例面：用例存在 ≠ 门禁跑得到 ---
+  tests/test_cross_check.py::test_unconverted_unit_produces_a_mismatch
+    类=TestComparison 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> assert summary.verdict is Verdict.DEVIATION
+    assert> assert summary.samples[0].field == "volume"
+  tests/test_cross_check.py::test_structural_field_mismatch_fails_closed
+    类=TestNormalizationInTheComparison 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> with pytest.raises(ValueError, match="different contract fields")
+  tests/test_cross_check.py::test_duplicate_keys_fail_closed
+    类=TestComparison 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> with pytest.raises(ValueError, match="duplicate")
+  tests/test_data_mapping.py::test_normalize_frame_requires_mapped_columns —— 文件或用例不存在（这一条要显式说出来，不能当作没看见）
+  tests/test_dwd_merge.py::test_single_source_domain_is_passthrough
+    类=TestMergeSourceFrames 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> assert stats.passthrough is True
+    assert> assert stats.diff_flagged == 0
+    assert> assert set(merged["source"]) == {"akshare"}
+  tests/test_dwd_merge.py::test_merge_writes_rows_with_trace_columns_and_is_idempotent
+    类=TestDwdWriteAgainstMysql 用例 marker=()
+    类 marker=('pytest.mark.e2e',)) 门禁不跑（被 -m 'not e2e' 摘掉）
+    assert> assert len(rows) == 1
+    assert> assert rows[0][0] == "600519"
+    assert> assert rows[0][1] == pytest.approx(1689.0)
+    assert> assert rows[0][2] == "ths"
+    assert> assert rows[0][3] == 0
+    assert> assert rows[0][4] == AS_OF
+  tests/test_ths_dwd_integration.py::test_recompute_is_idempotent —— 文件或用例不存在（这一条要显式说出来，不能当作没看见）
+
+--- 4. 幂等面：merge_source_frames 跑两遍到底差不差 ---
+  双源：stats 第一次=MergeStats(rows=2, diff_flagged=1, degraded_rows=0, passthrough=False)
+  双源：stats 第二次=MergeStats(rows=2, diff_flagged=1, degraded_rows=0, passthrough=False)
+  双源：两次输出逐格相等=True
+  换 merged_at 再跑：相同的列=['symbol', 'trade_date', 'close', 'volume', 'source', '_diff_flag', '_as_of']
+  换 merged_at 再跑：不同的列=['_merged_at']
+  换 merged_at 再跑：stats=MergeStats(rows=2, diff_flagged=1, degraded_rows=0, passthrough=False)
+  单源直通：stats=MergeStats(rows=2, diff_flagged=0, degraded_rows=0, passthrough=True) 直通帧两次相等=True
+  单源直通：输出列=['symbol', 'trade_date', 'close', 'volume', 'source', '_merged_at', '_diff_flag', '_as_of']
+  帧字典顺序换一下（同一批输入）：与第一次相等=True
+  帧字典顺序换一下：stats=MergeStats(rows=2, diff_flagged=1, degraded_rows=0, passthrough=False)
+
+--- 5. 直通查询面：域 → 腿数 → dwd 表 → 行数 ---
+    query.py 里出现过的映射/权威符号：无
+  查询层是否会因腿数而改变行为：False
+  参与对账的域：15
+  economy_cpi [零腿]: 腿=[] 权威序=['ecb', 'oecd', 'imf'] dwd 表=False 行数=None
+  economy_gdp [零腿]: 腿=[] 权威序=['ecb', 'imf'] dwd 表=False 行数=None
+  economy_rate [零腿]: 腿=[] 权威序=['ecb'] dwd 表=False 行数=None
+  economy_unemployment [零腿]: 腿=[] 权威序=['oecd', 'imf'] dwd 表=False 行数=None
+  financial_indicator [零腿]: 腿=[] 权威序=['akshare'] dwd 表=True 行数=0
+  financial_statement [零腿]: 腿=[] 权威序=['ths', 'akshare'] dwd 表=True 行数=0
+  fund_etf_daily [零腿]: 腿=[] 权威序=['akshare', 'ths'] dwd 表=False 行数=None
+  futures_daily [单源]: 腿=['ths'] 权威序=['ths', 'akshare'] dwd 表=False 行数=None
+  index_constituent [单源]: 腿=['akshare'] 权威序=['ths', 'akshare'] dwd 表=True 行数=0
+  index_daily [单源]: 腿=['ths'] 权威序=['ths', 'akshare'] dwd 表=False 行数=None
+  instrument [零腿]: 腿=[] 权威序=['ths'] dwd 表=False 行数=None
+  option_daily [单源]: 腿=['ths'] 权威序=['ths', 'akshare'] dwd 表=False 行数=None
+  stock_action [单源]: 腿=['ths'] 权威序=['ths', 'akshare'] dwd 表=True 行数=0
+  stock_daily [2 腿]: 腿=['akshare', 'ths'] 权威序=['ths', 'akshare'] dwd 表=True 行数=719316
+  trading_calendar [零腿]: 腿=[] 权威序=['ths'] dwd 表=False 行数=None
+  batch_watermark 记录数：0
+
+--- 7. 直通查询执行面：生产 _key/build_data_select + 真机 SELECT ---
+Traceback (most recent call last):
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/cursors.py", line 170, in execute
+    result = self._query(query)
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/cursors.py", line 335, in _query
+    conn.query(q)
+    ~~~~~~~~~~^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/connections.py", line 581, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/connections.py", line 857, in _read_query_result
+    result.read()
+    ~~~~~~~~~~~^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/connections.py", line 1290, in read
+    first_packet = self.connection._read_packet()
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/connections.py", line 810, in _read_packet
+    packet.raise_for_error()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/err.py", line 154, in raise_mysql_exception
+    raise errorclass(errno, errval, sqlstate=sqlstate)
+pymysql.err.ProgrammingError: (1146, "Table 'opendata_data.dwd_bond_daily' doesn't exist")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/dialects/mysql/base.py", line 3802, in _show_create_table
+    ).exec_driver_sql(st)
+      ~~~~~~~~~~~~~~~^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1779, in exec_driver_sql
+    ret = self._execute_context(
+        dialect,
+    ...<5 lines>...
+        distilled_parameters,
+    )
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/cursors.py", line 170, in execute
+    result = self._query(query)
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/cursors.py", line 335, in _query
+    conn.query(q)
+    ~~~~~~~~~~^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/connections.py", line 581, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/connections.py", line 857, in _read_query_result
+    result.read()
+    ~~~~~~~~~~~^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/connections.py", line 1290, in read
+    first_packet = self.connection._read_packet()
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/connections.py", line 810, in _read_packet
+    packet.raise_for_error()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/err.py", line 154, in raise_mysql_exception
+    raise errorclass(errno, errval, sqlstate=sqlstate)
+sqlalchemy.exc.ProgrammingError: (pymysql.err.ProgrammingError) (1146, "Table 'opendata_data.dwd_bond_daily' doesn't exist")
+[SQL: SHOW CREATE TABLE `dwd_bond_daily`]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C49/ac9_residual_census.py", line 779, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C49/ac9_residual_census.py", line 765, in main
+    passthrough_query_face(engine, by_domain)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C49/ac9_residual_census.py", line 674, in passthrough_query_face
+    columns = [str(item["name"]) for item in inspect(connection).get_columns(table)]
+                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/reflection.py", line 869, in get_columns
+    col_defs = self.dialect.get_columns(
+        conn, table_name, schema, info_cache=self.info_cache, **kw
+    )
+  File "<string>", line 2, in get_columns
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/reflection.py", line 106, in cache
+    ret = fn(self, con, *args, **kw)
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/dialects/mysql/base.py", line 3307, in get_columns
+    parsed_state = self._parsed_state_or_create(
+        connection, table_name, schema, **kw
+    )
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/dialects/mysql/base.py", line 3635, in _parsed_state_or_create
+    return self._setup_parser(
+           ~~~~~~~~~~~~~~~~~~^
+        connection,
+        ^^^^^^^^^^^
+    ...<2 lines>...
+        info_cache=kw.get("info_cache", None),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "<string>", line 2, in _setup_parser
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/reflection.py", line 106, in cache
+    ret = fn(self, con, *args, **kw)
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/dialects/mysql/base.py", line 3668, in _setup_parser
+    sql = self._show_create_table(
+        connection, None, charset, full_name=full_name
+    )
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/dialects/mysql/base.py", line 3805, in _show_create_table
+    raise exc.NoSuchTableError(full_name) from e
+sqlalchemy.exc.NoSuchTableError: `dwd_bond_daily`

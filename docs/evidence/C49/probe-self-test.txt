@@ -1,0 +1,15 @@
+# C49 判定面自测（修后遍）：30 探针 / 229 条反事实全部把干净读数打回 gap
+# 遍次披露：这一遍之前还跑过一遍（把 AC-9|09 的第 5 条重算节点计入 RECOMPUTE_NODES 之前），
+#   读数同为「30 probe(s) / 229 counterfact(s) exit=0」；加节点只改判据读的是哪几条用例，
+#   不改反事实条数。本档留的是**计入之后**的这一遍，前一遍未单独归档（正文完全相同）。
+
+# run_at=2026-09-27T15:35:23+0200
+# branch=dev HEAD=349f560
+# worktree_status=6 changed entries（opendata/pipeline/cross_check.py、dwd_merge.py、tests/test_cross_check.py、tests/test_dwd_merge.py、scripts/quality/acceptance_item_probe.py、加本 docs/evidence/C49/ 未跟踪件）
+# python=Python 3.13.5
+# command=python scripts/quality/acceptance_item_probe.py --self-test
+# SELFTEST_EXIT=0（读自命令自身退出状态，非管道尾）
+# 只读：探针不写库；pytest 子跑固定带 -m 'not e2e' --no-cov（真数仓 e2e 类不会被这些命令碰到）
+OK: 30 probe(s) measured; every judge is reachable from its declared repair, and all 229 counterfact(s) flip a clean reading back to a gap.
+SELFTEST_EXIT=0
+2026-09-27T15:35:23+02:00

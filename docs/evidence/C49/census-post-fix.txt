@@ -1,0 +1,222 @@
+# C49 修后现场读数（8 面，权威读数；修前读数见 census-pre-fix.txt）
+# run_at=2026-09-27T15:10:46+0200
+# branch=dev HEAD=349f560
+# worktree_status=6 changed entries（含本轮改动的 opendata/ 两模块与新增见证用例）
+# python=Python 3.13.5 node=v25.1.0
+# command=set -a; . ./.env; set +a; python docs/evidence/C49/ac9_residual_census.py > /tmp/c49/census-postfix2.txt 2>&1
+# exit=0（脚本自带非只读语句闸门：66 statements -> {'SELECT': 46, 'SHOW': 20}，无 DDL 无写入）
+# 与修前的差别只在：tolerance 逐字段取紧（两侧同结论）、stock_action 直通不再整窗 raise
+python=3.13.5 cwd=/Users/yunjinqi/Documents/new_projects/opendata
+
+--- 1. 三条判据原文 + 台账状态 + 探针注册面 ---
+  [ ] L175 AC-9|03|3bce2eae unreviewed 
+        判据原文：**反例用例**：① 字段名不匹配时必须报错而非静默通过；② 单位未归一时必须产生 mismatch
+        条目级探针：无
+  [ ] L180 AC-9|08|a87bfe6f unreviewed 
+        判据原文：**单源域 dwd 直通模式可用**（`layer=dwd` 查询不报错）
+        条目级探针：无
+  [ ] L181 AC-9|09|ca69bd21 unreviewed 
+        判据原文：dwd 重算幂等
+        条目级探针：无
+
+--- 2. 反例面：compare_source_frames 对每种输入的实测反应 ---
+  A 两侧 volume 同为 None: verdict=consistent 键并集=2 判差=0 单边缺=0 per_field={}
+  B 两侧 volume 同为空串: verdict=consistent 键并集=2 判差=0 单边缺=0 per_field={}
+  C volume 一侧 None 一侧有值: verdict=deviation 键并集=2 判差=2 单边缺=0 per_field={'volume': 2}
+  D volume 列在 A 帧里不存在: raised ValueError: source frame is missing mapped columns ['volume'] for domain 'stock_daily'; the field mapping and the source disagree (fail closed)
+  E close 文本 vs 浮点（同值）: verdict=consistent 键并集=2 判差=0 单边缺=0 per_field={}
+  F close 文本垃圾 vs 浮点: verdict=deviation 键并集=2 判差=2 单边缺=0 per_field={'close': 2}
+  G 单位只在 a 腿声明（b 腿原始值是股）: verdict=consistent 键并集=2 判差=0 单边缺=0 per_field={}
+  tolerances 两侧不同时谁生效（源码这一行：tolerances=_stricter_tolerances(mapping_a, mapping_b),）
+  close 相差 0.4 @ a 紧(1e-4) / b 松(1.0): verdict=deviation 键并集=2 判差=1 单边缺=0 per_field={'close': 1}
+  close 相差 0.4 @ a 松(1.0) / b 紧(1e-4): verdict=deviation 键并集=2 判差=1 单边缺=0 per_field={'close': 1}
+  close 相差 0.4 @ a 不声明 / b 紧(1e-4): verdict=deviation 键并集=2 判差=1 单边缺=0 per_field={'close': 1}
+  close 相差 0.4 @ a 紧(1e-4) / b 不声明: verdict=deviation 键并集=2 判差=1 单边缺=0 per_field={'close': 1}
+  _deviation 的分支读数（None/nan 都不记差异）
+    _deviation(None, None) = None
+    _deviation('', '') = None
+    _deviation('abc', 1.0) = None
+    _deviation(nan, nan) = None
+    _deviation(1.0, 1.0) = 0.0
+
+--- 3. 见证用例面：用例存在 ≠ 门禁跑得到 ---
+  tests/test_cross_check.py::test_unconverted_unit_produces_a_mismatch
+    类=TestComparison 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> assert summary.verdict is Verdict.DEVIATION
+    assert> assert summary.samples[0].field == "volume"
+  tests/test_cross_check.py::test_structural_field_mismatch_fails_closed
+    类=TestNormalizationInTheComparison 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> with pytest.raises(ValueError, match="different contract fields")
+  tests/test_cross_check.py::test_duplicate_keys_fail_closed
+    类=TestComparison 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> with pytest.raises(ValueError, match="duplicate")
+  tests/test_cross_check.py::test_a_mapped_column_the_frame_lacks_errors_rather_than_passing
+    类=TestCounterexamples 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> with pytest.raises(ValueError, match="missing mapped columns.*volume")
+  tests/test_cross_check.py::test_the_tighter_tolerance_decides_whichever_leg_declares_it
+    类=TestCounterexamples 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> assert summary.verdict is Verdict.DEVIATION
+    assert> assert summary.deviation_count == 1
+    assert> assert summary.samples[0].field == "close"
+  tests/test_data_mapping.py::test_normalize_frame_requires_mapped_columns —— 文件或用例不存在（这一条要显式说出来，不能当作没看见）
+  tests/test_dwd_merge.py::test_single_source_domain_is_passthrough
+    类=TestMergeSourceFrames 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> assert stats.passthrough is True
+    assert> assert stats.diff_flagged == 0
+    assert> assert set(merged["source"]) == {"akshare"}
+  tests/test_dwd_merge.py::test_the_ambiguous_key_is_refused_and_the_rest_of_the_window_lands
+    类=TestAmbiguousKey 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> assert landed == [("000001", date(2024, 1, 2))]
+    assert> assert stats.rows == 1
+    assert> assert stats.passthrough is True
+    assert> assert len(stats.colliding) == 1
+    assert> assert "600519" in stats.colliding[0]
+    assert> assert "2024" in stats.colliding[0]
+  tests/test_dwd_merge.py::test_a_key_carried_three_times_is_still_refused_whole
+    类=TestAmbiguousKey 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> assert stats.colliding == ("ths: ('600519', datetime.date(2024, 1, 2))",)
+    assert> assert stats.rows == 1
+    assert> assert "600519" not in set(merged["symbol"])
+  tests/test_dwd_merge.py::test_the_service_reports_the_refusal_it_landed_around
+    类=TestAmbiguousKey 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> assert stats.rows == 1
+    assert> assert len(stats.colliding) == 1
+    assert> assert written and len(written[0]) == 1
+  tests/test_dwd_merge.py::test_passthrough_columns_are_exactly_the_dwd_table_columns
+    类=TestPassthroughQueryFace 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> assert stats.passthrough is True
+    assert> assert stats.rows == 2
+    assert> assert set(merged.columns) == set(table_columns)
+    assert> assert set(merged["_diff_flag"]) == {0}
+  tests/test_dwd_merge.py::test_layer_dwd_query_builds_over_the_landed_columns
+    类=TestPassthroughQueryFace 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> assert f"`{dwd_table(self.DOMAIN)}`" in sql
+    assert> assert f"`{key[1]}`" in sql
+    assert> assert params["limit"] == 20
+    assert> assert set(key).issubset(set(merged.columns))
+  tests/test_dwd_merge.py::test_a_second_recompute_of_the_same_input_is_the_same_frame
+    类=TestRecomputeIdempotence 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> assert first_stats == second_stats
+  tests/test_dwd_merge.py::test_the_input_dictionary_order_does_not_change_the_output
+    类=TestRecomputeIdempotence 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> assert shuffled_stats == ordered_stats
+  tests/test_dwd_merge.py::test_a_recompute_at_a_later_clock_moves_only_the_audit_stamp
+    类=TestRecomputeIdempotence 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> assert set(later["_merged_at"]) == {datetime(2026, 9, 24, 9, 0)}
+  tests/test_dwd_merge.py::test_landing_the_same_key_twice_is_one_row_written_in_place
+    类=TestRecomputeIdempotence 用例 marker=()
+    类 marker=()) 门禁跑
+    assert> assert (written, again) == (2, 2)
+    assert> assert len(engine.calls) == 2
+    assert> assert engine.calls[1][0] == statement
+    assert> assert "ON DUPLICATE KEY UPDATE" in statement
+    assert> assert len(records) == 2
+    assert> assert f"`{column}`" in insert_list
+    assert> assert f"`{column}` = new" not in update_part
+    assert> assert f"`{column}` = new" in update_part
+  tests/test_dwd_merge.py::test_merge_writes_rows_with_trace_columns_and_is_idempotent
+    类=TestDwdWriteAgainstMysql 用例 marker=()
+    类 marker=('pytest.mark.e2e',)) 门禁不跑（被 -m 'not e2e' 摘掉）
+    assert> assert len(rows) == 1
+    assert> assert rows[0][0] == "600519"
+    assert> assert rows[0][1] == pytest.approx(1689.0)
+    assert> assert rows[0][2] == "ths"
+    assert> assert rows[0][3] == 0
+    assert> assert rows[0][4] == AS_OF
+  tests/test_ths_dwd_integration.py::test_recompute_is_idempotent —— 文件或用例不存在（这一条要显式说出来，不能当作没看见）
+
+--- 4. 幂等面：merge_source_frames 跑两遍到底差不差 ---
+  双源：stats 第一次=MergeStats(rows=2, diff_flagged=1, degraded_rows=0, passthrough=False, colliding=())
+  双源：stats 第二次=MergeStats(rows=2, diff_flagged=1, degraded_rows=0, passthrough=False, colliding=())
+  双源：两次输出逐格相等=True
+  换 merged_at 再跑：相同的列=['symbol', 'trade_date', 'close', 'volume', 'source', '_diff_flag', '_as_of']
+  换 merged_at 再跑：不同的列=['_merged_at']2026-09-27 15:05:55.386 | INFO     | opendata.core.token_blacklist:_create_blacklist:186 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+
+  换 merged_at 再跑：stats=MergeStats(rows=2, diff_flagged=1, degraded_rows=0, passthrough=False, colliding=())
+  单源直通：stats=MergeStats(rows=2, diff_flagged=0, degraded_rows=0, passthrough=True, colliding=()) 直通帧两次相等=True
+  单源直通：输出列=['symbol', 'trade_date', 'close', 'volume', 'source', '_merged_at', '_diff_flag', '_as_of']
+  帧字典顺序换一下（同一批输入）：与第一次相等=True
+  帧字典顺序换一下：stats=MergeStats(rows=2, diff_flagged=1, degraded_rows=0, passthrough=False, colliding=())
+
+--- 5. 直通查询面：域 → 腿数 → dwd 表 → 行数 ---
+    query.py 里出现过的映射/权威符号：无
+  查询层是否会因腿数而改变行为：False
+  参与对账的域：15
+  economy_cpi [零腿]: 腿=[] 权威序=['ecb', 'oecd', 'imf'] dwd 表=False 行数=None
+  economy_gdp [零腿]: 腿=[] 权威序=['ecb', 'imf'] dwd 表=False 行数=None
+  economy_rate [零腿]: 腿=[] 权威序=['ecb'] dwd 表=False 行数=None
+  economy_unemployment [零腿]: 腿=[] 权威序=['oecd', 'imf'] dwd 表=False 行数=None
+  financial_indicator [零腿]: 腿=[] 权威序=['akshare'] dwd 表=True 行数=0
+  financial_statement [零腿]: 腿=[] 权威序=['ths', 'akshare'] dwd 表=True 行数=0
+  fund_etf_daily [零腿]: 腿=[] 权威序=['akshare', 'ths'] dwd 表=False 行数=None
+  futures_daily [单源]: 腿=['ths'] 权威序=['ths', 'akshare'] dwd 表=False 行数=None
+  index_constituent [单源]: 腿=['akshare'] 权威序=['ths', 'akshare'] dwd 表=True 行数=0
+  index_daily [单源]: 腿=['ths'] 权威序=['ths', 'akshare'] dwd 表=False 行数=None
+  instrument [零腿]: 腿=[] 权威序=['ths'] dwd 表=False 行数=None
+  option_daily [单源]: 腿=['ths'] 权威序=['ths', 'akshare'] dwd 表=False 行数=None
+  stock_action [单源]: 腿=['ths'] 权威序=['ths', 'akshare'] dwd 表=True 行数=0
+  stock_daily [2 腿]: 腿=['akshare', 'ths'] 权威序=['ths', 'akshare'] dwd 表=True 行数=719316
+  trading_calendar [零腿]: 腿=[] 权威序=['ths'] dwd 表=False 行数=None
+  batch_watermark 记录数：0
+
+--- 7. 直通查询执行面：生产 _inspect_columns/_key/build_data_select + 真机 SELECT ---
+  注册表里的域：20；有 mapping 腿的域：6
+  只在注册表、没有任何腿的域：['bond_daily', 'economy_cpi', 'economy_gdp', 'economy_rate', 'economy_unemployment', 'financial_indicator', 'financial_statement', 'fund_action', 'fund_etf_daily', 'futures_fundamentals', 'instrument', 'stock_adjust', 'stock_daily_overseas', 'trading_calendar']
+  bond_daily [零腿] dwd_bond_daily: 生产 _inspect_columns 得到 0 列（表真的存在=False）→ endpoint 在这一步 404，建 SQL 走不到
+  economy_cpi [零腿] dwd_economy_cpi: 生产 _inspect_columns 得到 0 列（表真的存在=False）→ endpoint 在这一步 404，建 SQL 走不到
+  economy_gdp [零腿] dwd_economy_gdp: 生产 _inspect_columns 得到 0 列（表真的存在=False）→ endpoint 在这一步 404，建 SQL 走不到
+  economy_rate [零腿] dwd_economy_rate: 生产 _inspect_columns 得到 0 列（表真的存在=False）→ endpoint 在这一步 404，建 SQL 走不到
+  economy_unemployment [零腿] dwd_economy_unemployment: 生产 _inspect_columns 得到 0 列（表真的存在=False）→ endpoint 在这一步 404，建 SQL 走不到
+  financial_indicator [零腿] dwd_financial_indicator: 列=11 key=('symbol', 'report_period') 时间字段=report_period 执行=0
+  financial_statement [零腿] dwd_financial_statement: 列=11 key=('symbol', 'report_period') 时间字段=report_period 执行=0
+  fund_action [零腿] dwd_fund_action: 生产 _inspect_columns 得到 0 列（表真的存在=False）→ endpoint 在这一步 404，建 SQL 走不到
+  fund_etf_daily [零腿] dwd_fund_etf_daily: 生产 _inspect_columns 得到 0 列（表真的存在=False）→ endpoint 在这一步 404，建 SQL 走不到
+  futures_daily [单源] dwd_futures_daily: 生产 _inspect_columns 得到 0 列（表真的存在=False）→ endpoint 在这一步 404，建 SQL 走不到
+  futures_fundamentals [零腿] dwd_futures_fundamentals: 生产 _inspect_columns 得到 0 列（表真的存在=False）→ endpoint 在这一步 404，建 SQL 走不到
+  index_constituent [单源] dwd_index_constituent: 列=8 key=('index_symbol', 'symbol', 'as_of') 时间字段=as_of 执行=0
+  index_daily [单源] dwd_index_daily: 生产 _inspect_columns 得到 0 列（表真的存在=False）→ endpoint 在这一步 404，建 SQL 走不到
+  instrument [零腿] dwd_instrument: 生产 _inspect_columns 得到 0 列（表真的存在=False）→ endpoint 在这一步 404，建 SQL 走不到
+  option_daily [单源] dwd_option_daily: 生产 _inspect_columns 得到 0 列（表真的存在=False）→ endpoint 在这一步 404，建 SQL 走不到
+  stock_action [单源] dwd_stock_action: 列=10 key=('symbol', 'ex_date') 时间字段=ex_date 执行=0
+  stock_adjust [零腿] dwd_stock_adjust: 列=8 key=('symbol', 'trade_date') 时间字段=trade_date 执行=1
+  stock_daily [2 腿] dwd_stock_daily: 列=12 key=('symbol', 'trade_date') 时间字段=trade_date 执行=1
+  stock_daily_overseas [零腿] dwd_stock_daily_overseas: 生产 _inspect_columns 得到 0 列（表真的存在=False）→ endpoint 在这一步 404，建 SQL 走不到
+  trading_calendar [零腿] dwd_trading_calendar: 生产 _inspect_columns 得到 0 列（表真的存在=False）→ endpoint 在这一步 404，建 SQL 走不到
+
+--- 6. 同缺面：两条腿逐字段的空值形状 ---
+  ths 腿：5512 行，列=['symbol', 'trade_date', 'open', 'high', 'low', 'close', 'volume', 'amount']
+  akshare 腿：5839 行，列=['symbol', 'trade_date', 'open', 'high', 'low', 'close', 'volume', 'amount']
+  同键可比 5512 对（2026-07-03）
+    open: 两侧都空=0 只一侧空=0 两侧有值=5512 归一不出=0 声明(在字段表里, scale)={'ths': (True, 1.0), 'akshare': (True, 1.0)} tolerance={'ths': 0.0001, 'akshare': 0.0001}
+    high: 两侧都空=0 只一侧空=0 两侧有值=5512 归一不出=0 声明(在字段表里, scale)={'ths': (True, 1.0), 'akshare': (True, 1.0)} tolerance={'ths': 0.0001, 'akshare': 0.0001}
+    low: 两侧都空=0 只一侧空=0 两侧有值=5512 归一不出=0 声明(在字段表里, scale)={'ths': (True, 1.0), 'akshare': (True, 1.0)} tolerance={'ths': 0.0001, 'akshare': 0.0001}
+    close: 两侧都空=0 只一侧空=0 两侧有值=5512 归一不出=0 声明(在字段表里, scale)={'ths': (True, 1.0), 'akshare': (True, 1.0)} tolerance={'ths': 0.0001, 'akshare': 0.0001}
+    volume: 两侧都空=0 只一侧空=0 两侧有值=5512 归一不出=0 声明(在字段表里, scale)={'ths': (True, 1.0), 'akshare': (True, 100.0)} tolerance={'ths': 1e-06, 'akshare': 1e-06}
+    amount: 两侧都空=0 只一侧空=0 两侧有值=5512 归一不出=0 声明(在字段表里, scale)={'ths': (True, 1.0), 'akshare': (True, 1.0)} tolerance={'ths': 1e-06, 'akshare': 1e-06}
+
+--- 8. 真腿直通面：ods 腿 → merge_source_frames → dwd 落地行数 ---
+  stock_action/ths 生产 reader 产出：55073 行，key=('symbol', 'ex_date')
+  reader 列：['symbol', 'ex_date', 'cash_dividend', 'stock_dividend', 'rights_shares', 'rights_price']
+  直通 merge：rows=55071 passthrough=True degraded=0 diff_flagged=0
+  直通 merge 跑两遍逐格相等=True stats 相等=True
+  输出列=['symbol', 'ex_date', 'cash_dividend', 'stock_dividend', 'rights_shares', 'rights_price', 'source', '_merged_at', '_diff_flag', '_as_of']
+  dwd 表 dwd_stock_action 实际行数=0
+
+warehouse engine alive (url never printed): probe=1
+settings.data_database_url scheme=mysql+pymysql
+warehouse engine: 66 statements -> {'SELECT': 46, 'SHOW': 20}
+OK: every face measured; no DDL, no writes

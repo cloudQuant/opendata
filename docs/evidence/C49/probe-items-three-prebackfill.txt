@@ -1,0 +1,43 @@
+# C49 三格条目级判据重算（回填前）：|03 proven、|09 proven（重算节点 5/5）、|08 gap（表里 0 行，见判词）
+# run_at=2026-09-27T15:35:49+0200
+# branch=dev HEAD=349f560
+# worktree_status=6 changed entries（opendata/pipeline/cross_check.py、dwd_merge.py、tests/test_cross_check.py、tests/test_dwd_merge.py、scripts/quality/acceptance_item_probe.py、加本 docs/evidence/C49/ 未跟踪件）
+# python=Python 3.13.5
+# command=python scripts/quality/acceptance_item_probe.py --item 'AC-9|03' --item 'AC-9|08' --item 'AC-9|09'
+# PROBE_EXIT=0（读自命令自身退出状态；exit 0 只表示没有 drift，gap 不是失败）
+# 只读：探针不写库；pytest 子跑固定带 -m 'not e2e' --no-cov（真数仓 e2e 类不会被这些命令碰到）
+
+### AC-9|03  (document line 175)
+判据原文：**反例用例**：① 字段名不匹配时必须报错而非静默通过；② 单位未归一时必须产生 mismatch
+本探针：两种错输入各有一个会响的判定，且都跑在 compare_source_frames 这个生产入口上
+台账现状：state=unreviewed，文档勾选=False
+  - 反例节点: 4/4 passed
+  - ①字段名不匹配: 报错面在位 = yes，且两条反例都走生产入口 compare_source_frames = yes（只测 normalize_frame 不算，校对作业读的是这个函数）
+  - ②单位未归一: mismatch 断言点名字段 = yes
+  - tolerance 配对面: 一侧整字典交出已移除且逐字段合并 = yes，取紧的那条 = yes，正反两个方向都量 = yes
+VERDICT AC-9|03: proven
+
+### AC-9|08  (document line 180)
+判据原文：**单源域 dwd 直通模式可用**（`layer=dwd` 查询不报错）
+本探针：歧义键逐键拒绝（不再整窗不交）+ layer=dwd 走生产查询面 + 表里真的有行
+台账现状：state=unreviewed，文档勾选=False
+  - 直通节点: 6/6 passed
+  - 歧义键处理: 逐键拒绝（不再整窗 raise）= yes，旧的一 raise 就什么都不交的形状已移除 = yes，拒绝的键要报得出来 = yes，列缺失仍然 fail closed = yes
+  - 查询面: layer=dwd 走生产 _key/build_data_select 建得出 SQL = yes，且直通输出列 == dwd 表声明列（落得了这张表）
+  - docs/evidence/C49/census-post-fix.txt 的真库读数：stock_action/ths 直通交出 55071 行，而 dwd_stock_action 实际 0 行 —— 差的那一段是一次未确认的落库写入
+  - 补齐到可判：landed_rows: 0 -> 55071
+VERDICT AC-9|08: gap — 「直通模式可用」判的是这张单源域的表里真的有行、并能按 layer=dwd 读回去：本轮把整窗 raise 换成逐键拒绝（C49 量到 55,073 行里 1 个键两义，dwd_stock_action 因此一直是空的），代码面已经通了；剩下的 0 行需要一次经确认的 warehouse 写入（重算落库），不是再改判定口径
+
+### AC-9|09  (document line 181)
+判据原文：dwd 重算幂等
+本探针：同输入重算逐格不动 + 键集排序 + 写侧 key 级 upsert + dwd 主键就是业务键
+台账现状：state=unreviewed，文档勾选=False
+  - 重算节点: 5/5 passed
+  - 确定性面: 键集排序 = yes（不排序则同输入两遍输出顺序可变），写侧走 key 级 upsert = yes，dwd 表的 PRIMARY KEY 就是业务键 = yes —— 三者同时成立，重跑才是改同一行而不是多插一行
+  - 真库那一格（e2e，test_merge_writes_rows_with_trace_columns_and_is_idempotent）本轮读数 = exit=5，门禁选择式不跑它，所以判定落在上面三条代码面 + 纯函数节点上
+VERDICT AC-9|09: proven
+
+census: gap=1, proven=2
+（3 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+PROBE_EXIT=0
+2026-09-27T15:35:49+02:00

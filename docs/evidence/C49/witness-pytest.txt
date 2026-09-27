@@ -1,0 +1,15 @@
+# C49 见证用例子跑（两文件 43 passed / 1 deselected）——**不是门禁读数**：
+#   带 --no-cov（子跑不成立 84% 阈值），带 -m 'not e2e'（数仓 e2e 那一格从未被这条命令跑到，它的读数另见探针披露的 exit=5）
+# run_at=2026-09-27T15:26:48+0200
+# branch=dev HEAD=349f560
+# worktree_status=6 changed entries（opendata/pipeline/cross_check.py、dwd_merge.py、tests/test_cross_check.py、tests/test_dwd_merge.py、scripts/quality/acceptance_item_probe.py、加本 docs/evidence/C49/ 未跟踪件）
+# python=Python 3.13.5
+# command=python -m pytest tests/test_dwd_merge.py tests/test_cross_check.py -q --no-header -p no:cacheprovider --no-cov -m 'not e2e'
+# WITNESS_EXIT=0（读自命令自身退出状态）
+============================= test session starts ==============================
+collected 44 items / 1 deselected / 43 selected
+
+tests/test_dwd_merge.py ..........................                       [ 60%]
+tests/test_cross_check.py .................                              [100%]
+
+======================= 43 passed, 1 deselected in 0.09s =======================
