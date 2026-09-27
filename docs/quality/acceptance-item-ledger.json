@@ -700,25 +700,35 @@
       ],
       "note": "扫描面自 C36 起可机器执行：包集合 + 逐包文件数普查（与 find(1) 核对，515）+ 扫描器版本 + 已验证解释器次版本入库，缩水即 SURFACE_SHRANK、失配即 SURFACE_STALE，两个方向都在 --self-test 里咬合。"
     },
-    "AC-16|06|845157d6": {
+    "AC-16|06|2eb4fb66": {
       "state": "gap",
-      "round": "C36",
-      "date": "2026-09-26",
-      "reason": "『基线清零』未达成：docs/quality/zero-dep-baseline.json 仍冻结 3 条上游引用（openbb_map.py / data_script.py / patrol.py），现状是**只降不升**而非清零；判据后半句要求的正向证据（未安装 akshare/openbb 的干净环境里 P0 域集成测试通过）本轮没有产出。",
+      "round": "C51",
+      "date": "2026-09-27",
+      "reason": "「基线清零」是这条唯一没到的面，而它不是再读一遍能解决的：现场 AST 走查 import 形态=0、动态 import 形态=0（docs/evidence/C51/census-after.txt 面 2），基线剩下的 3 条全是产品事实的名字面量 —— opendata/data/openbb_map.py:125（FR-7 对照表自己的字段名）、opendata/models/data_script.py:74（DataScript.source 的溯源默认值）、opendata/pipeline/patrol.py:468（key_status() 的数据源标签）。抹平它只有两条路，两条都要改判据本身：①把扫描器字符串规则改窄＝回头放宽已勾的 AC-16|05「AST 口径」，本轮拒绝；②改掉这三处拼写＝给扫描器做伪装，正是 C35 刚收口的那种门禁空转。**属用户/产品决策（与 task #52 同列）**。本轮做到的：「只降不升、新增即失败」两条门禁命令原样复跑 exit=0（--self-test + 默认核对，517 文件走查，逐字正文见 docs/evidence/C51/zero-dep-rerun-c51.txt，末行 ZERO_DEP_CHECK_EXIT=0）；判据后半句要求的正向证据成立，但它落在 AC-16|07 那一格，不顶替本格的清零。",
       "evidence": [
         "docs/quality/zero-dep-baseline.json",
+        "docs/evidence/C51/census-before.txt",
+        "docs/evidence/C51/census-after.txt",
+        "docs/evidence/C51/zero-dep-rerun-c51.txt",
+        "docs/evidence/C51/README.md",
         "docs/evidence/C36/zero-dep-surface-after.txt"
       ]
     },
-    "AC-16|07|e01e0481": {
-      "state": "gap",
-      "round": "C36",
-      "date": "2026-09-26",
-      "reason": "本轮的替代装置是 tests/test_ported_import_closure.py 的 meta-path 阻断探针：阻断 module-scope 依赖会让 `import opendata.main` 失败、阻断懒依赖不会。它证明的是**依赖声明完备**，不是『P0 域集成测试在未安装 akshare/openbb 的干净环境通过』，两者不可互相顶替，故不勾。",
+    "AC-16|07|b17eac77": {
+      "state": "proven",
+      "round": "C51",
+      "date": "2026-09-27",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-16|07'（判定面 = tests/test_p0_integration_surface.py 4 条断言 + 本机与干净 venv 各一遍 `pytest tests -m 'integration and not e2e' --no-cov`，B 段读数读自 docs/evidence/C51/clean-env-integration-run.txt）",
       "evidence": [
-        "tests/test_ported_import_closure.py",
-        "docs/evidence/C36/guard-mutation.log"
-      ]
+        "docs/evidence/C51/clean-env-integration-run.txt",
+        "docs/evidence/C51/clean-env-build.txt",
+        "docs/evidence/C51/census-before.txt",
+        "docs/evidence/C51/census-after.txt",
+        "docs/evidence/C51/guard-counterfacts.txt",
+        "docs/evidence/C51/README.md",
+        "tests/test_p0_integration_surface.py"
+      ],
+      "note": "C36 的替代装置（tests/test_ported_import_closure.py 的 meta-path 阻断）证明的是依赖声明完备，不是这条，本轮不用它顶替；改把这条变得可指认：marker 注册而 0 应用 ⇒ 选择式选中 0/3358（HEAD 可独立复核：git grep -l \"pytest\\.mark\\.integration\" HEAD -- tests/ = 0 命中）。现 8 个标记单元覆盖 A4.1 迁移的 5 个 P0 域（净 9 行接线），两个解释器各 151 passed / 0 failed / 0 skipped；干净 venv 的依赖面恰为 pyproject 的 .[web,dev]，akshare/openbb/openbb_platform 均 absent。刻意留的棘轮：skipped 必须为 0（静默跳过不算通过），archive_blind 要求扩展标记集后重跑干净环境留档。"
     },
     "AC-16|08|9d1c3b42": {
       "state": "unreviewed"
