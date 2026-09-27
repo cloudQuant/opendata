@@ -1,0 +1,8 @@
+采集时间（运行前）: 2026-09-27T11:27:05+02:00
+branch: dev
+HEAD  : 29f2b3a（本轮改动尚未提交）
+python: Python 3.13.5
+command: python scripts/quality/acceptance_item_probe.py --self-test   # 全表：每条探针的 repair 可达、每条反事实打回 gap
+--- 完整 stdout ---
+OK: 24 probe(s) measured; every judge is reachable from its declared repair, and all 172 counterfact(s) flip a clean reading back to a gap.
+SELF_TEST_EXIT=0

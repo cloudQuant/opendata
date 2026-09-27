@@ -1,0 +1,93 @@
+================================================================================
+C47 make gate（回填前第 1 遍尝试）：完整未裁剪门禁日志 —— 停在 evidence-traceability 的 narrative 面
+================================================================================
+采集时间（运行前）: 2026-09-27T11:21:18+02:00
+branch: dev
+HEAD  : 29f2b3a（本轮改动尚未提交；工作树状态见下）
+python: Python 3.13.5
+node  : v25.1.0
+command: make gate
+exit  : GATE_EXIT=2（读自本文件末行，不是后台任务的退出码）
+读法: 这一遍在 evidence-traceability 成员变红 —— 本轮档案目录 docs/evidence/C47/ 当时还没有
+      .md 说明，该面要的是「一个目录不能只留一堆读数」。这是档案写入顺序的产物，不是本轮
+      代码的缺陷：前面四个成员（brand / zero-dep / secret / ledger）在这一遍里都是绿的，
+      原样保留。README.md 补上后重跑的那一遍见 gate-run2-prebackfill.txt。
+--- git status --porcelain（运行前） ---
+A  docs/evidence/C47/matrix-census-live.txt
+A  docs/evidence/C47/matrix_census.py
+ M opendata/pipeline/alert_matrix.py
+ M opendata/pipeline/jobs.py
+ M scripts/quality/acceptance_item_probe.py
+ M tests/test_alert_matrix.py
+ M tests/test_pipeline_jobs.py
+
+================================================================================
+以下 make gate 完整 stdout+stderr（未裁剪、未汇总）
+================================================================================
+===== gate: brand-check =====
+python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:112
+  .env.example:113
+  .env.example:114
+  .env.example:115
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+===== gate: zero-dep-check =====
+python scripts/codemod/verify_no_akshare.py --self-test
+OK: scanner self-test passed (8 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+python scripts/codemod/verify_no_akshare.py
+OK: 516 file(s) walked (opendata=192, opendata_client=2, opendata_fuyao=9, opendata_http=313), python 3.13, scanner 2; no new upstream references (frozen baseline: 3).
+===== gate: secret-check =====
+python scripts/quality/secret_scan_check.py
+
+    ○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
+
+[90m11:22AM[0m [32mINF[0m [1m205 commits scanned.[0m
+[90m11:22AM[0m [32mINF[0m [1mscanned ~66445588 bytes (66.45 MB) in 18.6s[0m
+[90m11:22AM[0m [32mINF[0m [1mno leaks found[0m
+device: gitleaks 8.30.1, command: gitleaks detect --source . --config .gitleaks.toml --redact
+===== gate: ledger-check =====
+python scripts/quality/acceptance_ledger_check.py
+census: items=130 proven=25 gap=8 unreviewed=97 ticked=25
+OK: items=130 proven=25 gap=8 unreviewed=97 ticked=25 across 22 group(s) and 19 §10 row(s) reconcile.
+===== gate: evidence-traceability =====
+python scripts/quality/evidence_traceability.py
+# evidence traceability over docs/evidence/
+  rounds        = 57
+  files census  = 479 (gate logs: 80)
+  dates in gate logs = header 74/80, printed by the run 6/80
+  branch named in header = 68/80 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 1
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 0
+    narrative: docs/evidence/C47/
+NEW VIOLATION: docs/evidence/C47/#narrative
+
+FAIL: 1 new traceability violation(s) against a 0-entry baseline.
+make[1]: *** [evidence-traceability] Error 1
+make: *** [gate] Error 2
+GATE_EXIT=2

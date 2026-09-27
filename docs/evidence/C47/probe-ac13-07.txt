@@ -1,0 +1,22 @@
+采集时间（运行前）: 2026-09-27T11:24:09+02:00
+branch: dev
+HEAD  : 29f2b3a（本轮改动尚未提交；台账当时仍是 unreviewed、文档 line 218 未勾）
+python: Python 3.13.5
+command: python scripts/quality/acceptance_item_probe.py --item AC-13|07
+说明: 只读探针，不写台账不勾 box（回填由本轮人工据其读数执行）。
+--- 完整 stdout ---
+
+### AC-13|07  (document line 218)
+判据原文：**告警矩阵生效**：pipeline 失败 / 连续失败 / 分区缺失 / 磁盘水位
+本探针：四类各有生产者、各有判定行、各被调度执行器真喂输入，测不到仍记进范围
+台账现状：state=unreviewed，文档勾选=False
+  - 四类节点: 8/8 passed
+  - 接线节点: 4/4 passed
+  - 判据原文点名的类数 = 4/4；判定引擎产出的 rule = consecutive_failures, disk_water, freshness, partition_missing, pipeline_failure，四类齐 = 4/4
+  - 生产者齐备 = 4/4（缺: -）；执行器喂入的三类输入 = 3/3（未喂: -）
+  - 范围诚实字段 = 3/3 —— 测不到要读成 None/0 而不是健康
+VERDICT AC-13|07: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+PROBE_EXIT=0

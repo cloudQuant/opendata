@@ -1,0 +1,143 @@
+采集时间（运行前）: 2026-09-27T17:02:42+0800
+分支: dev  HEAD: 29f2b3a（本轮改动尚未提交）
+python: Python 3.13.5
+command: set -a; . ./.env; set +a && python docs/evidence/C47/matrix_census.py   # 只读：两库 SELECT/聚合 + information_schema + shutil.disk_usage，无 DDL 无写入，脚本自带非只读语句闸门；不打印连接串与任何密钥值
+--- 完整输出（未裁剪，含 loguru 的 stderr） ---
+warehouse database (name only): opendata_data
+control database (name only): opendata
+control tables: ['alembic_version', 'api_keys', 'data_interfaces', 'data_scripts', 'data_tables', 'interface_categories', 'interface_parameters', 'pipeline_progress', 'scheduled_tasks', 'task_executions', 'users']
+
+pipeline_progress: rows=1 runs=1 legs=1 windows=1
+shards per run: min=1 median=1 max=1
+shard status census: {'DONE': 1} | FAILED=0
+window_end: newest=2026-09-24 oldest=2026-09-24
+task_executions: rows=5 status census={'COMPLETED': 5}
+choice: pipeline_progress is keyed by (domain, source, window) while task_executions is keyed by task_id/script_id ⇒ the per-leg streak comes from the former
+
+collect_failures(engine, run_limit=1000) on the live control schema:
+  -> failures=0 legs_with_history=1
+  reading: failures=0 with legs>0 means 'nothing failed', not 'nothing was read'
+
+partition surface: 53 warehouse tables in scope (('dwd_bond_daily', 'dwd_economy_cpi', 'dwd_economy_gdp')[0:3] shown)
+collect_partitions() -> partitioned_tables=9 tables_with_gaps=8
+  gap dwd_financial_indicator: p2027<2028-01-01
+  gap dwd_financial_statement: p2027<2028-01-01
+  gap dwd_index_constituent: p2027<2028-01-01
+  gap dwd_stock_action: p2027<2028-01-01
+  gap dwd_stock_daily: p2027<2028-01-01
+  gap ods_stock_action_ths: p2027<2028-01-01
+  gap ods_stock_daily_akshare: p2027<2028-01-01
+  gap ods_stock_daily_ths: p2027<2028-01-01
+
+disk face: configured data_dir=PosixPath('data')
+  measured volume='.' used=766204305408 total=994662584320 ratio=0.7703
+  thresholds: warning>=0.80 critical>=0.90 -> this reading is under warning
+
+calendar: run_date=2026-09-27 expected=2026-09-25 tier=weekday-rule decided_by=weekday-rule
+run_alert_matrix(expected=2026-09-25, broadcast=None):
+  scope: {'domains': 20, 'source_legs': 7, 'unmapped_legs': 26, 'failure_legs': 1, 'partitioned_tables': 9, 'disk_path': '.'}
+  reports=27 alerts=34 delivered=0
+  alerts by rule: {'freshness': 26, 'partition_missing': 8}
+    [critical] freshness bond_daily:dwd: no data found for trade_date (missing or empty table)
+    [critical] freshness economy_cpi:dwd: no data found for date (missing or empty table)
+    [critical] freshness economy_gdp:dwd: no data found for date (missing or empty table)
+    [critical] freshness economy_rate:dwd: no data found for date (missing or empty table)
+    [critical] freshness economy_unemployment:dwd: no data found for date (missing or empty table)
+    [critical] freshness financial_indicator:dwd: no data found for report_period (missing or empty table)
+    [critical] freshness financial_statement:dwd: no data found for report_period (missing or empty table)
+    [critical] freshness fund_action:dwd: no data found for ex_date (missing or empty table)
+    [critical] freshness fund_etf_daily:dwd: no data found for trade_date (missing or empty table)
+    [critical] freshness futures_daily:dwd: no data found for trade_date (missing or empty table)
+    [critical] freshness futures_daily:ths: no data found for trade_date (missing or empty table)
+    [critical] freshness futures_fundamentals:dwd: no data found for trade_date (missing or empty table)
+    [critical] freshness index_constituent:dwd: no data found for as_of (missing or empty table)
+    [critical] freshness index_constituent:akshare: no data found for 日期 (missing or empty table)
+    [critical] freshness index_daily:dwd: no data found for trade_date (missing or empty table)
+    [critical] freshness index_daily:ths: no data found for trade_date (missing or empty table)
+    [critical] freshness instrument:dwd: no data found for list_date (missing or empty table)
+    [critical] freshness option_daily:dwd: no data found for trade_date (missing or empty table)
+    [critical] freshness option_daily:ths: no data found for trade_date (missing or empty table)
+    [critical] freshness stock_action:dwd: no data found for ex_date (missing or empty table)
+    [warning] freshness stock_adjust:dwd: latest 2026-09-23 is 2 day(s) behind 2026-09-25
+    [warning] freshness stock_daily:dwd: latest 2026-09-24 is 1 day(s) behind 2026-09-25
+    [critical] freshness stock_daily:akshare: latest 2026-07-21 is 66 day(s) behind 2026-09-25
+    [warning] freshness stock_daily:ths: latest 2026-09-24 is 1 day(s) behind 2026-09-25
+    [critical] freshness stock_daily_overseas:dwd: no data found for trade_date (missing or empty table)
+    [critical] freshness trading_calendar:dwd: no data found for date (missing or empty table)
+    [critical] partition_missing dwd_financial_indicator: missing yearly partitions: p2027
+    [critical] partition_missing dwd_financial_statement: missing yearly partitions: p2027
+    [critical] partition_missing dwd_index_constituent: missing yearly partitions: p2027
+    [critical] partition_missing dwd_stock_action: missing yearly partitions: p2027
+    [critical] partition_missing dwd_stock_daily: missing yearly partitions: p2027
+    [critical] partition_missing ods_stock_action_ths: missing yearly partitions: p2027
+    [critical] partition_missing ods_stock_daily_akshare: missing yearly partitions: p2027
+    [critical] partition_missing ods_stock_daily_ths: missing yearly partitions: p2027
+  freshness report statuses: {'fresh': 1, 'missing': 22, 'stale': 4}
+warehouse engine: 170 statements -> {'SELECT': 170}
+control engine: 9 statements -> {'SELECT': 8, 'SHOW': 1}
+
+guard: non-readonly statements issued = 0
+OK: all four faces measured; no DDL, no writes
+2026-09-27 11:02:45.329 | WARNING  | opendata.pipeline.trading_calendar:warehouse_calendar:257 - trading calendar contract unavailable from dwd_trading_calendar: (pymysql.err.ProgrammingError) (1146, "Table 'opendata_data.dwd_trading_calendar' doesn't exist")
+[SQL: SELECT * FROM `dwd_trading_calendar` ORDER BY `date`]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-09-27 11:02:45.354 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of bond_daily/akshare is not measurable: unknown domain 'bond_daily' for source 'akshare'; mapped: ['index_constituent', 'stock_daily']
+2026-09-27 11:02:45.376 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of economy_cpi/ecb is not measurable: unknown source 'ecb'; mappings available: ['akshare', 'ths']
+2026-09-27 11:02:45.376 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of economy_cpi/fred is not measurable: unknown source 'fred'; mappings available: ['akshare', 'ths']
+2026-09-27 11:02:45.377 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of economy_cpi/imf is not measurable: unknown source 'imf'; mappings available: ['akshare', 'ths']
+2026-09-27 11:02:45.377 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of economy_cpi/oecd is not measurable: unknown source 'oecd'; mappings available: ['akshare', 'ths']
+2026-09-27 11:02:45.399 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of economy_gdp/ecb is not measurable: unknown source 'ecb'; mappings available: ['akshare', 'ths']
+2026-09-27 11:02:45.399 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of economy_gdp/fred is not measurable: unknown source 'fred'; mappings available: ['akshare', 'ths']
+2026-09-27 11:02:45.399 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of economy_gdp/imf is not measurable: unknown source 'imf'; mappings available: ['akshare', 'ths']
+2026-09-27 11:02:45.421 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of economy_rate/ecb is not measurable: unknown source 'ecb'; mappings available: ['akshare', 'ths']
+2026-09-27 11:02:45.444 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of economy_unemployment/fred is not measurable: unknown source 'fred'; mappings available: ['akshare', 'ths']
+2026-09-27 11:02:45.444 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of economy_unemployment/imf is not measurable: unknown source 'imf'; mappings available: ['akshare', 'ths']
+2026-09-27 11:02:45.444 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of economy_unemployment/oecd is not measurable: unknown source 'oecd'; mappings available: ['akshare', 'ths']
+2026-09-27 11:02:45.469 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of financial_indicator/akshare is not measurable: unknown domain 'financial_indicator' for source 'akshare'; mapped: ['index_constituent', 'stock_daily']
+2026-09-27 11:02:45.493 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of financial_statement/akshare is not measurable: unknown domain 'financial_statement' for source 'akshare'; mapped: ['index_constituent', 'stock_daily']
+2026-09-27 11:02:45.501 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of financial_statement/ths is not measurable: unknown domain 'financial_statement' for source 'ths'; mapped: ['futures_daily', 'index_daily', 'option_daily', 'stock_action', 'stock_daily']
+2026-09-27 11:02:45.523 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of fund_action/ths is not measurable: unknown domain 'fund_action' for source 'ths'; mapped: ['futures_daily', 'index_daily', 'option_daily', 'stock_action', 'stock_daily']
+2026-09-27 11:02:45.545 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of fund_etf_daily/akshare is not measurable: unknown domain 'fund_etf_daily' for source 'akshare'; mapped: ['index_constituent', 'stock_daily']
+2026-09-27 11:02:45.546 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of fund_etf_daily/ths is not measurable: unknown domain 'fund_etf_daily' for source 'ths'; mapped: ['futures_daily', 'index_daily', 'option_daily', 'stock_action', 'stock_daily']
+2026-09-27 11:02:45.568 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of futures_daily/akshare is not measurable: unknown domain 'futures_daily' for source 'akshare'; mapped: ['index_constituent', 'stock_daily']
+2026-09-27 11:02:45.658 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of index_constituent/ths is not measurable: unknown domain 'index_constituent' for source 'ths'; mapped: ['futures_daily', 'index_daily', 'option_daily', 'stock_action', 'stock_daily']
+2026-09-27 11:02:45.680 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of index_daily/akshare is not measurable: unknown domain 'index_daily' for source 'akshare'; mapped: ['index_constituent', 'stock_daily']
+2026-09-27 11:02:45.725 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of instrument/ths is not measurable: unknown domain 'instrument' for source 'ths'; mapped: ['futures_daily', 'index_daily', 'option_daily', 'stock_action', 'stock_daily']
+2026-09-27 11:02:45.747 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of option_daily/akshare is not measurable: unknown domain 'option_daily' for source 'akshare'; mapped: ['index_constituent', 'stock_daily']
+2026-09-27 11:02:45.794 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of stock_action/akshare is not measurable: unknown domain 'stock_action' for source 'akshare'; mapped: ['index_constituent', 'stock_daily']
+2026-09-27 11:02:49.851 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of stock_daily_overseas/yfinance is not measurable: unknown source 'yfinance'; mappings available: ['akshare', 'ths']
+2026-09-27 11:02:49.877 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:233 - ods freshness of trading_calendar/ths is not measurable: unknown domain 'trading_calendar' for source 'ths'; mapped: ['futures_daily', 'index_daily', 'option_daily', 'stock_action', 'stock_daily']
+2026-09-27 11:02:51.586 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness bond_daily:dwd: no data found for trade_date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness economy_cpi:dwd: no data found for date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness economy_gdp:dwd: no data found for date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness economy_rate:dwd: no data found for date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness economy_unemployment:dwd: no data found for date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness financial_indicator:dwd: no data found for report_period (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness financial_statement:dwd: no data found for report_period (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness fund_action:dwd: no data found for ex_date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness fund_etf_daily:dwd: no data found for trade_date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness futures_daily:dwd: no data found for trade_date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness futures_daily:ths: no data found for trade_date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness futures_fundamentals:dwd: no data found for trade_date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness index_constituent:dwd: no data found for as_of (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness index_constituent:akshare: no data found for 日期 (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness index_daily:dwd: no data found for trade_date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness index_daily:ths: no data found for trade_date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness instrument:dwd: no data found for list_date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness option_daily:dwd: no data found for trade_date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness option_daily:ths: no data found for trade_date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness stock_action:dwd: no data found for ex_date (missing or empty table)
+2026-09-27 11:02:51.587 | WARNING  | opendata.pipeline.alert_matrix:run_alert_matrix:520 - [warning] freshness stock_adjust:dwd: latest 2026-09-23 is 2 day(s) behind 2026-09-25
+2026-09-27 11:02:51.587 | WARNING  | opendata.pipeline.alert_matrix:run_alert_matrix:520 - [warning] freshness stock_daily:dwd: latest 2026-09-24 is 1 day(s) behind 2026-09-25
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness stock_daily:akshare: latest 2026-07-21 is 66 day(s) behind 2026-09-25
+2026-09-27 11:02:51.587 | WARNING  | opendata.pipeline.alert_matrix:run_alert_matrix:520 - [warning] freshness stock_daily:ths: latest 2026-09-24 is 1 day(s) behind 2026-09-25
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness stock_daily_overseas:dwd: no data found for trade_date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] freshness trading_calendar:dwd: no data found for date (missing or empty table)
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] partition_missing dwd_financial_indicator: missing yearly partitions: p2027
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] partition_missing dwd_financial_statement: missing yearly partitions: p2027
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] partition_missing dwd_index_constituent: missing yearly partitions: p2027
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] partition_missing dwd_stock_action: missing yearly partitions: p2027
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] partition_missing dwd_stock_daily: missing yearly partitions: p2027
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] partition_missing ods_stock_action_ths: missing yearly partitions: p2027
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] partition_missing ods_stock_daily_akshare: missing yearly partitions: p2027
+2026-09-27 11:02:51.587 | CRITICAL | opendata.pipeline.alert_matrix:run_alert_matrix:518 - [critical] partition_missing ods_stock_daily_ths: missing yearly partitions: p2027

@@ -1,0 +1,31 @@
+================================================================================
+C47 条目级探针复算（回填之后）：只读，不写台账不勾 box
+================================================================================
+采集时间: 2026-09-27T11:56:32+02:00（回填与四遍门禁之后）
+branch: dev
+HEAD  : 29f2b3a（本轮改动与回填均未提交）
+python: Python 3.13.5
+command: python scripts/quality/acceptance_item_probe.py --item 'AC-13|07'
+PROBE_EXIT=0（捕获自 $?）
+为什么要有这一遍：probe-ac13-07.txt 那一遍读到的台账还是 state=unreviewed、文档勾选=False——它是挣这一格时的那棵树。
+这一遍在翻转之后复算，两件事要同时对上：①读数一字不变（四类节点 8/8、接线节点 4/4、判据点名 4/4、
+判定引擎 rule 4/4、生产者 4/4、执行器喂入 3/3、范围诚实字段 3/3）；②探针自己打印的「台账现状」跟着变成 
+state=proven、文档勾选=True，且 VERDICT 仍是 proven ⇒ 勾选与判定面对上，而不是靠文档措辞翻的格。
+另一处会变的是 document line 218 → 219：§0 插入 v5.19 那一行把整张表往下推了一行，改的不是条目本身
+（条目原文一字未动，否则 item_key 摘要就变了、这一格会被孤立成发现）。
+--- 完整 stdout ---
+
+### AC-13|07  (document line 219)
+判据原文：**告警矩阵生效**：pipeline 失败 / 连续失败 / 分区缺失 / 磁盘水位
+本探针：四类各有生产者、各有判定行、各被调度执行器真喂输入，测不到仍记进范围
+台账现状：state=proven，文档勾选=True
+  - 四类节点: 8/8 passed
+  - 接线节点: 4/4 passed
+  - 判据原文点名的类数 = 4/4；判定引擎产出的 rule = consecutive_failures, disk_water, freshness, partition_missing, pipeline_failure，四类齐 = 4/4
+  - 生产者齐备 = 4/4（缺: -）；执行器喂入的三类输入 = 3/3（未喂: -）
+  - 范围诚实字段 = 3/3 —— 测不到要读成 None/0 而不是健康
+VERDICT AC-13|07: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+PROBE_EXIT=0
