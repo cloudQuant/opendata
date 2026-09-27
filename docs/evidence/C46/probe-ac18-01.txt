@@ -1,0 +1,19 @@
+采集时间（运行前）: 2026-09-27T10:02:12+02:00
+分支: dev  HEAD: 7b1b126（本轮改动尚未提交）
+python: Python 3.13.5  node: v25.1.0
+command: python scripts/quality/acceptance_item_probe.py --item 'AC-18|01'
+--- 完整输出（未裁剪） ---
+
+### AC-18|01  (document line 233)
+判据原文：**新鲜度接口与告警**：各域最新数据日期与滞后天数可查；缺失触发告警（迭代 1A）
+本探针：新鲜度门交出日期/滞后/基准日 + 缺失告警真到达通道 + 调度执行器接线
+台账现状：state=unreviewed，文档勾选=False
+  - 新鲜度门 faces: 6/6 nodes passed
+  - opendata/api/data_query.py::domain_freshness route = yes, carries latest + lag_days = yes, and returns expected_data_date 2 time(s) — a lag cannot be checked without the date it was measured against, so both branches have to name it
+  - 告警面: 9/9 nodes passed
+  - 调度接线: the template dispatcher mentions FRESHNESS = yes, the executor is an executable kind = yes, it is handed the WS broadcast = yes
+VERDICT AC-18|01: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+exit=0

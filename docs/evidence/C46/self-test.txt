@@ -1,0 +1,33 @@
+================================================================================
+C46 探针自检：每个 judge 都要被至少一条反事实扳红（23 探针）
+================================================================================
+采集时间（运行前）: 2026-09-27T09:48:09+02:00
+branch: dev
+HEAD  : 7b1b126（本轮改动尚未提交，工作树状态见下）
+python: Python 3.13.5
+node  : v25.1.0
+command: python scripts/quality/acceptance_item_probe.py --self-test
+
+--- git status --porcelain（运行前）---
+ M frontend/e2e/fixtures.ts
+ M frontend/e2e/scripts.spec.ts
+ M frontend/src/__tests__/api/envelope.test.ts
+ M frontend/src/__tests__/catalog.test.ts
+ M frontend/src/api/catalog.ts
+ M frontend/src/views/DataCatalogView.vue
+ M opendata/api/data_query.py
+ M opendata/pipeline/freshness.py
+ M opendata/pipeline/jobs.py
+ M opendata/pipeline/schedules.yaml
+ M opendata_client/opendata_client/client.py
+ M scripts/quality/acceptance_item_probe.py
+ M tests/test_data_query_api.py
+ M tests/test_opendata_client.py
+ M tests/test_pipeline_jobs.py
+?? opendata/pipeline/alert_matrix.py
+?? tests/test_alert_matrix.py
+?? tests/test_data_catalog.py
+
+--- 完整输出（未裁剪）---
+OK: 23 probe(s) measured; every judge is reachable from its declared repair, and all 162 counterfact(s) flip a clean reading back to a gap.
+exit=0

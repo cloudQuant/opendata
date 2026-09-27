@@ -1,0 +1,20 @@
+采集时间（运行前）: 2026-09-27T10:02:36+02:00
+分支: dev  HEAD: 7b1b126（本轮改动尚未提交）
+python: Python 3.13.5  node: v25.1.0
+command: python scripts/quality/acceptance_item_probe.py --item 'AC-18|02'
+--- 完整输出（未裁剪） ---
+
+### AC-18|02  (document line 234)
+判据原文：**数据目录页/接口**：按数据域组织，展示覆盖标的数、时间范围、各源最近更新、新鲜度、质量标记（迭代 1B）
+本探针：按域一行五个读数：接口给得出、页面显示得出、单元面与真机页各自断言过
+台账现状：state=unreviewed，文档勾选=False
+  - 目录接口 faces: 7/7 nodes passed
+  - 五个读数在页面上有列名且被断言：缺 -
+  - 真机页（Playwright）逐读数断言：缺 -
+  - 载荷类型 frontend/src/api/catalog.ts 承载 5/5 个字段 (coverage/sources/lag_days/quality/expected_data_date)，页面显示的是接口量出来的那一次
+  - 基准日在页面出现并被断言 = yes，下钻 = yes，单元面采集器无未授权排除 = yes
+VERDICT AC-18|02: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+exit=0

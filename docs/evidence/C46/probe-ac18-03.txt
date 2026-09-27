@@ -1,0 +1,20 @@
+采集时间（运行前）: 2026-09-27T10:02:48+02:00
+分支: dev  HEAD: 7b1b126（本轮改动尚未提交）
+python: Python 3.13.5  node: v25.1.0
+command: python scripts/quality/acceptance_item_probe.py --item 'AC-18|03'
+--- 完整输出（未裁剪） ---
+
+### AC-18|03  (document line 235)
+判据原文：前端"数据接口"页与数据目录合并（目录为默认视图，函数级明细下钻）
+本探针：数据接口页是否已并入目录（目录为默认视图，函数级明细在下钻里）
+台账现状：state=unreviewed，文档勾选=False
+  - 路由标题含「数据接口」的页面 = 1 (数据接口)
+  - `/scripts` 是否渲染目录视图 = no
+  - frontend/src/views/DataCatalogView.vue 是否读到函数级明细（data/interfaces / 接口） = no
+  - 下钻终点（接口详情路由）仍在 = yes
+  - 补齐到可判：detail_in_catalog: no -> yes; page_titles: 数据接口 -> 数据接口（合并页）; route_is_catalog: no -> yes
+VERDICT AC-18|03: gap — 合并要求的是一个页面：目录为默认视图、函数级明细在它下面。今天 /data 与 /scripts 仍是两条路由两个视图，目录的下钻只预览数据行，从不落到接口/函数那一层；接口清单按 §11.1 已经以域名命名（data_interfaces.name == domain），join 的料是齐的，缺的是页面合并本身——而合并必然要让一个导航项消失，属产品决定
+
+census: gap=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+exit=0

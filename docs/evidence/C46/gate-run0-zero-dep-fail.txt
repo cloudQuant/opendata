@@ -1,0 +1,66 @@
+================================================================================
+C46 make gate（第 run1 遍，回填前）：完整未裁剪门禁日志
+================================================================================
+采集时间（运行前）: 2026-09-27T09:50:49+02:00
+branch: dev
+HEAD  : 7b1b126（本轮改动尚未提交，工作树状态见下）
+python: Python 3.13.5
+node  : v25.1.0
+command: make gate
+
+--- git status --porcelain（运行前）---
+ M frontend/e2e/fixtures.ts
+ M frontend/e2e/scripts.spec.ts
+ M frontend/src/__tests__/api/envelope.test.ts
+ M frontend/src/__tests__/catalog.test.ts
+ M frontend/src/api/catalog.ts
+ M frontend/src/views/DataCatalogView.vue
+ M opendata/api/data_query.py
+ M opendata/pipeline/freshness.py
+ M opendata/pipeline/jobs.py
+ M opendata/pipeline/schedules.yaml
+ M opendata_client/opendata_client/client.py
+ M scripts/quality/acceptance_item_probe.py
+ M tests/test_data_query_api.py
+ M tests/test_opendata_client.py
+ M tests/test_pipeline_jobs.py
+?? opendata/pipeline/alert_matrix.py
+?? tests/test_alert_matrix.py
+?? tests/test_data_catalog.py
+
+--- 完整输出（未裁剪）---
+===== gate: brand-check =====
+python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:112
+  .env.example:113
+  .env.example:114
+  .env.example:115
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+===== gate: zero-dep-check =====
+python scripts/codemod/verify_no_akshare.py --self-test
+OK: scanner self-test passed (8 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+python scripts/codemod/verify_no_akshare.py
+FAIL: the scan surface moved:
+  - archived file census no longer describes the tree: opendata archived 191 but walks 192 file(s)
+  Re-freeze with --update only when the move is intended; a package that lost files is a package that stopped being looked at, and a census that no longer matches the tree is a number nobody can read as evidence.
+make[1]: *** [zero-dep-check] Error 1
+make: *** [gate] Error 2
+GATE_EXIT=2

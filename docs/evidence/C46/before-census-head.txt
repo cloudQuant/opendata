@@ -1,0 +1,62 @@
+采集时间（运行前）: 2026-09-27T10:12:44+02:00
+分支: dev  HEAD: 7b1b126（本轮改动尚未提交）
+python: Python 3.13.5
+command: git archive HEAD | tar -x -C /tmp/c46runs/head-tree && python docs/evidence/C46/before_census.py --root /tmp/c46runs/head-tree
+--- 完整输出（未裁剪） ---
+==============================================================================
+C46 读数  root=/private/tmp/c46runs/head-tree
+==============================================================================
+
+--- 1. AC-18|02 目录每域行的键面（AST 读 data_catalog 实际构造的 dict） ---
+  data_catalog 及其调用闭包（['data_catalog', 'get_warehouse_engine', '_expected_data_date', '_freshness', '_display_name', '_iso']）构造出的键共 11 个：['asset_class', 'display_name', 'domain', 'domains', 'field', 'lag_days', 'latest', 'layer', 'source', 'status', 'verified']
+  覆盖标的数   ：无
+  时间范围    ：无
+  各源最近更新  ：无
+  新鲜度     ：有（latest/lag_days/status）
+  质量标记    ：无
+  判据五项：缺 4 项（['覆盖标的数', '时间范围', '各源最近更新', '质量标记']）
+  CatalogEntry 字段 9 个：['domain', 'asset_class', 'source', 'verified', 'display_name', 'layer', 'latest', 'lag_days', 'status']
+  前端声明而后端不发的字段：无
+  后端发而前端不读的字段：['domains', 'field']
+
+--- 2. 源腿 mapping 面：新鲜度列取不取到 + 目录问的是哪张表 ---
+  域 18 个（其中有腿的 18 个）、源腿 33 条
+    读数分支：registry 能力腿 —— 只数有腿的域（动手前没有 registered_legs 可问）
+    无字段映射 ⇒ ods_freshness 必 LookupError、量不出新鲜度：26 条
+    映射取得到源列：7 条
+      未映射：futures_daily/akshare: 无该域 mapping
+      未映射：index_daily/akshare: 无该域 mapping
+      未映射：fund_etf_daily/akshare: 无该域 mapping
+      未映射：fund_etf_daily/ths: 无该域 mapping
+      未映射：option_daily/akshare: 无该域 mapping
+      未映射：bond_daily/akshare: 无该域 mapping
+      未映射：stock_action/akshare: 无该域 mapping
+      未映射：financial_statement/akshare: 无该域 mapping
+      已映射：stock_daily/akshare: trade_date ← 源列 日期
+      已映射：stock_daily/ths: trade_date ← 源列 trade_date
+      已映射：futures_daily/ths: trade_date ← 源列 trade_date
+      已映射：index_daily/ths: trade_date ← 源列 trade_date
+  目录为「各源最近更新」查的表（data_catalog）：只有 dwd_table —— 源列不在其上
+    ⇒ 动手前：新鲜度按 dwd 表问、列名却按 mapping 的源列取，      两者不同源 ⇒ 每条腿只能读成 missing
+
+--- 3. AC-18|01 缺失触发告警：生产者 / 投递 / 通道 ---
+  生产新鲜度告警（调用判定/采集/矩阵）的非测试文件：['opendata/pipeline/freshness.py']
+  同时把 broadcast 与 freshness 写在一起的投递文件：['opendata/pipeline/jobs.py']
+    jobs.py::_execute_template 存在，引用 broadcast=no，引用 FRESHNESS=no
+    jobs.py::_execute_freshness 不存在
+
+--- 4. 调度面：schedules.yaml 声明的 kind ↔ jobs.py EXECUTABLE_KINDS ---
+  schedules.yaml 声明模板 kind 4 次：['freshness', 'full_check', 'incremental', 'partition_maintenance']
+  EXECUTABLE_KINDS = ['INCREMENTAL']
+  schedules.yaml 声明的 kind（大写归一后）：['FRESHNESS', 'FULL_CHECK', 'INCREMENTAL', 'PARTITION_MAINTENANCE']
+  声明了却没有执行器的 kind：['FRESHNESS', 'FULL_CHECK', 'PARTITION_MAINTENANCE']
+    （这些 kind 在 register_builtin_jobs 里被 continue 掉，任务从未挂上 cron）
+
+--- 5. AC-18|03 合并面：路由标题 / 目录页是否读到函数级明细 ---
+  标题含「数据接口」的路由 1 条：['数据接口']
+  DataCatalogView 是否请求函数级明细：no
+  路由挂载的视图（前 8 个）：['LoginView.vue', 'RegisterView.vue', 'LayoutView.vue', 'HomeView.vue', 'DataCatalogView.vue', 'ScriptsView.vue', 'ScriptDetailView.vue', 'TasksView.vue']
+  /scripts 路由附近文本：path: 'scripts'
+
+读数完毕（本脚本只读不写）。
+exit=0

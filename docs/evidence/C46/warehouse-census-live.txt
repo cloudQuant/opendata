@@ -1,0 +1,84 @@
+采集时间（运行前）: 2026-09-27T10:15:58+02:00
+分支: dev  HEAD: 7b1b126（本轮改动尚未提交）
+python: Python 3.13.5
+command: set -a; . ./.env; set +a && python docs/evidence/C46/warehouse_census.py   # 只读：information_schema + COUNT(*) + 新鲜度 SELECT，无 DDL 无写入，不打印连接串
+--- 完整输出（未裁剪，含 loguru 的 stderr） ---
+2026-09-27 10:15:59.665 | INFO     | opendata.core.token_blacklist:_create_blacklist:186 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+2026-09-27 10:16:00.080 | WARNING  | opendata.pipeline.trading_calendar:warehouse_calendar:257 - trading calendar contract unavailable from dwd_trading_calendar: (pymysql.err.ProgrammingError) (1146, "Table 'opendata_data.dwd_trading_calendar' doesn't exist")
+[SQL: SELECT * FROM `dwd_trading_calendar` ORDER BY `date`]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-09-27 10:16:00.100 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of bond_daily/akshare is not measurable: unknown domain 'bond_daily' for source 'akshare'; mapped: ['index_constituent', 'stock_daily']
+2026-09-27 10:16:00.118 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of economy_cpi/ecb is not measurable: unknown source 'ecb'; mappings available: ['akshare', 'ths']
+2026-09-27 10:16:00.118 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of economy_cpi/fred is not measurable: unknown source 'fred'; mappings available: ['akshare', 'ths']
+2026-09-27 10:16:00.118 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of economy_cpi/imf is not measurable: unknown source 'imf'; mappings available: ['akshare', 'ths']
+2026-09-27 10:16:00.118 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of economy_cpi/oecd is not measurable: unknown source 'oecd'; mappings available: ['akshare', 'ths']
+2026-09-27 10:16:00.136 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of economy_gdp/ecb is not measurable: unknown source 'ecb'; mappings available: ['akshare', 'ths']
+2026-09-27 10:16:00.136 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of economy_gdp/fred is not measurable: unknown source 'fred'; mappings available: ['akshare', 'ths']
+2026-09-27 10:16:00.136 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of economy_gdp/imf is not measurable: unknown source 'imf'; mappings available: ['akshare', 'ths']
+2026-09-27 10:16:00.155 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of economy_rate/ecb is not measurable: unknown source 'ecb'; mappings available: ['akshare', 'ths']
+2026-09-27 10:16:00.175 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of economy_unemployment/fred is not measurable: unknown source 'fred'; mappings available: ['akshare', 'ths']
+2026-09-27 10:16:00.175 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of economy_unemployment/imf is not measurable: unknown source 'imf'; mappings available: ['akshare', 'ths']
+2026-09-27 10:16:00.175 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of economy_unemployment/oecd is not measurable: unknown source 'oecd'; mappings available: ['akshare', 'ths']
+2026-09-27 10:16:00.198 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of financial_indicator/akshare is not measurable: unknown domain 'financial_indicator' for source 'akshare'; mapped: ['index_constituent', 'stock_daily']
+2026-09-27 10:16:00.221 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of financial_statement/akshare is not measurable: unknown domain 'financial_statement' for source 'akshare'; mapped: ['index_constituent', 'stock_daily']
+2026-09-27 10:16:00.229 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of financial_statement/ths is not measurable: unknown domain 'financial_statement' for source 'ths'; mapped: ['futures_daily', 'index_daily', 'option_daily', 'stock_action', 'stock_daily']
+2026-09-27 10:16:00.251 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of fund_action/ths is not measurable: unknown domain 'fund_action' for source 'ths'; mapped: ['futures_daily', 'index_daily', 'option_daily', 'stock_action', 'stock_daily']
+2026-09-27 10:16:00.273 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of fund_etf_daily/akshare is not measurable: unknown domain 'fund_etf_daily' for source 'akshare'; mapped: ['index_constituent', 'stock_daily']
+2026-09-27 10:16:00.273 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of fund_etf_daily/ths is not measurable: unknown domain 'fund_etf_daily' for source 'ths'; mapped: ['futures_daily', 'index_daily', 'option_daily', 'stock_action', 'stock_daily']
+2026-09-27 10:16:00.296 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of futures_daily/akshare is not measurable: unknown domain 'futures_daily' for source 'akshare'; mapped: ['index_constituent', 'stock_daily']
+2026-09-27 10:16:00.387 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of index_constituent/ths is not measurable: unknown domain 'index_constituent' for source 'ths'; mapped: ['futures_daily', 'index_daily', 'option_daily', 'stock_action', 'stock_daily']
+2026-09-27 10:16:00.410 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of index_daily/akshare is not measurable: unknown domain 'index_daily' for source 'akshare'; mapped: ['index_constituent', 'stock_daily']
+2026-09-27 10:16:00.455 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of instrument/ths is not measurable: unknown domain 'instrument' for source 'ths'; mapped: ['futures_daily', 'index_daily', 'option_daily', 'stock_action', 'stock_daily']
+2026-09-27 10:16:00.477 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of option_daily/akshare is not measurable: unknown domain 'option_daily' for source 'akshare'; mapped: ['index_constituent', 'stock_daily']
+2026-09-27 10:16:00.522 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of stock_action/akshare is not measurable: unknown domain 'stock_action' for source 'akshare'; mapped: ['index_constituent', 'stock_daily']
+2026-09-27 10:16:04.310 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of stock_daily_overseas/yfinance is not measurable: unknown source 'yfinance'; mappings available: ['akshare', 'ths']
+2026-09-27 10:16:04.335 | INFO     | opendata.pipeline.alert_matrix:_ods_leg:204 - ods freshness of trading_calendar/ths is not measurable: unknown domain 'trading_calendar' for source 'ths'; mapped: ['futures_daily', 'index_daily', 'option_daily', 'stock_action', 'stock_daily']
+==============================================================================
+C46 数仓读数  dialect=mysql  database=opendata_data
+==============================================================================
+
+--- 表面（information_schema.tables）
+    dwd 6 张 / ods 3 张 / 其他 3 张
+    dwd_financial_indicator: 0 行
+    dwd_financial_statement: 0 行
+    dwd_index_constituent: 0 行
+    dwd_stock_action: 0 行
+    dwd_stock_adjust: 1032323 行
+    dwd_stock_daily: 719316 行
+    ods 表清单：['ods_stock_action_ths', 'ods_stock_daily_akshare', 'ods_stock_daily_ths']
+
+--- 日历面：覆盖 -..-，today=2026-09-27 ⇒ expected_data_date=2026-09-25
+    注册源腿 33 条（本进程 register_providers 后），参与读数 27 条
+
+--- 新鲜度读数：域 20 个 / 有报告的源腿 7 条 / 无映射量不出 26 条
+    状态合计：fresh=1 stale=4 missing=22
+    bond_daily             -         trade_date  latest=- lag=- missing
+    economy_cpi            -         date        latest=- lag=- missing
+    economy_gdp            -         date        latest=- lag=- missing
+    economy_rate           -         date        latest=- lag=- missing
+    economy_unemployment   -         date        latest=- lag=- missing
+    financial_indicator    -         report_period latest=- lag=- missing
+    financial_statement    -         report_period latest=- lag=- missing
+    fund_action            -         ex_date     latest=- lag=- missing
+    fund_etf_daily         -         trade_date  latest=- lag=- missing
+    futures_daily          -         trade_date  latest=- lag=- missing
+    futures_daily          ths       trade_date  latest=- lag=- missing
+    futures_fundamentals   -         trade_date  latest=- lag=- missing
+    index_constituent      -         as_of       latest=- lag=- missing
+    index_constituent      akshare   日期          latest=- lag=- missing
+    index_daily            -         trade_date  latest=- lag=- missing
+    index_daily            ths       trade_date  latest=- lag=- missing
+    instrument             -         list_date   latest=- lag=- missing
+    option_daily           -         trade_date  latest=- lag=- missing
+    option_daily           ths       trade_date  latest=- lag=- missing
+    stock_action           -         ex_date     latest=- lag=- missing
+    stock_action           ths       ex_date     latest=2026-10-09 lag=-14 fresh
+    stock_adjust           -         trade_date  latest=2026-09-23 lag=2 stale
+    stock_daily            -         trade_date  latest=2026-09-24 lag=1 stale
+    stock_daily            akshare   日期          latest=2026-07-21 lag=66 stale
+    stock_daily            ths       trade_date  latest=2026-09-24 lag=1 stale
+    stock_daily_overseas   -         trade_date  latest=- lag=- missing
+    trading_calendar       -         date        latest=- lag=- missing
+
+读数完毕（本脚本只读不写）。
+exit=0

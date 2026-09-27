@@ -1,0 +1,10 @@
+采集时间（运行前）: 2026-09-27T10:03:16+02:00
+分支: dev  HEAD: 7b1b126（本轮改动尚未提交）
+python: Python 3.13.5
+command: python scripts/codemod/verify_no_akshare.py --self-test && python scripts/codemod/verify_no_akshare.py
+说明: 本档是**复冻之后**的读数。复冻之前的失败读数完整保存在同档目录 gate-run0-zero-dep-fail.txt（attempt-1 的门禁第一遍，make 停在 zero-dep-check 未再往下跑）。
+--- 完整输出（未裁剪） ---
+OK: scanner self-test passed (8 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+self_test_exit=0
+OK: 516 file(s) walked (opendata=192, opendata_client=2, opendata_fuyao=9, opendata_http=313), python 3.13, scanner 2; no new upstream references (frozen baseline: 3).
+exit=0
