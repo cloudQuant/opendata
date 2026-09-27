@@ -3525,6 +3525,250 @@ def judge_ac9_05(facts: Facts) -> Verdict:
 
 
 # --------------------------------------------------------------------------- #
+# AC-9|03/|08/|09 -- counterexamples, single-source passthrough, recompute
+# --------------------------------------------------------------------------- #
+
+#: 判据 |03/|08/|09 各自的实现模块，与本轮 census 的留档读数。
+CROSS_CHECK_REL: Final = "opendata/pipeline/cross_check.py"
+DWD_MERGE_REL: Final = "opendata/pipeline/dwd_merge.py"
+WAREHOUSE_DDL_REL: Final = "opendata/pipeline/ddl.py"
+CROSS_CHECK_TESTS_REL: Final = "tests/test_cross_check.py"
+DWD_MERGE_TESTS_REL: Final = "tests/test_dwd_merge.py"
+C49_CENSUS_REL: Final = "docs/evidence/C49/census-post-fix.txt"
+
+#: 「反例用例」的两问各自要有会响的节点：① 字段名不匹配报错，② 单位未归一 mismatch。
+#: 再加 tolerance 配对 —— 一轮判据里两条腿各声明自己的容忍度，谁松谁紧都要同一个答案。
+COUNTEREXAMPLE_NODES: Final = (
+    "tests/test_cross_check.py::TestComparison::test_unconverted_unit_produces_a_mismatch",
+    "tests/test_cross_check.py::TestNormalizationInTheComparison::"
+    "test_structural_field_mismatch_fails_closed",
+    "tests/test_cross_check.py::TestCounterexamples::"
+    "test_a_mapped_column_the_frame_lacks_errors_rather_than_passing",
+    "tests/test_cross_check.py::TestCounterexamples::"
+    "test_the_tighter_tolerance_decides_whichever_leg_declares_it",
+)
+
+#: |08 的判据点：直通把没有歧义的键交出来、输出列就是 dwd 表声明的列、layer=dwd 建得出 SQL。
+PASSTHROUGH_NODES: Final = (
+    "tests/test_dwd_merge.py::TestMergeSourceFrames::test_single_source_domain_is_passthrough",
+    "tests/test_dwd_merge.py::TestAmbiguousKey::"
+    "test_the_ambiguous_key_is_refused_and_the_rest_of_the_window_lands",
+    "tests/test_dwd_merge.py::TestAmbiguousKey::"
+    "test_the_service_reports_the_refusal_it_landed_around",
+    "tests/test_dwd_merge.py::TestAmbiguousKey::test_a_missing_key_column_still_fails_closed",
+    "tests/test_dwd_merge.py::TestPassthroughQueryFace::"
+    "test_passthrough_columns_are_exactly_the_dwd_table_columns",
+    "tests/test_dwd_merge.py::TestPassthroughQueryFace::"
+    "test_layer_dwd_query_builds_over_the_landed_columns",
+)
+
+#: |09 的判据点：同输入重算逐格不动、输入顺序不改变输出、落地是 key 级 upsert、空重算什么都不写。
+RECOMPUTE_NODES: Final = (
+    "tests/test_dwd_merge.py::TestRecomputeIdempotence::"
+    "test_a_second_recompute_of_the_same_input_is_the_same_frame",
+    "tests/test_dwd_merge.py::TestRecomputeIdempotence::"
+    "test_the_input_dictionary_order_does_not_change_the_output",
+    "tests/test_dwd_merge.py::TestRecomputeIdempotence::"
+    "test_a_recompute_at_a_later_clock_moves_only_the_audit_stamp",
+    "tests/test_dwd_merge.py::TestRecomputeIdempotence::"
+    "test_landing_the_same_key_twice_is_one_row_written_in_place",
+    "tests/test_dwd_merge.py::TestRecomputeIdempotence::test_an_empty_recompute_writes_nothing",
+)
+
+#: 真库那一格幂等断言是 e2e，门禁与探针的选择式（``-m "not e2e"``）都不跑它；读数是披露不是判据。
+MYSQL_IDEMPOTENCE_NODE: Final = (
+    "tests/test_dwd_merge.py::TestDwdWriteAgainstMysql::"
+    "test_merge_writes_rows_with_trace_columns_and_is_idempotent"
+)
+
+
+def measure_ac9_03(ctx: Context) -> Facts:
+    """Run the counterexample nodes, then read where the tolerance pairing is decided."""
+    decided = outcomes(COUNTEREXAMPLE_NODES)
+    engine = ctx.read(CROSS_CHECK_REL)
+    compare = function_body(engine, "compare_source_frames")
+    stricter = function_body(engine, "_stricter_tolerances")
+    witnesses = ctx.read(CROSS_CHECK_TESTS_REL)
+    pairing = method_body(
+        witnesses,
+        "TestCounterexamples",
+        "test_the_tighter_tolerance_decides_whichever_leg_declares_it",
+    )
+    raising = method_body(
+        witnesses,
+        "TestCounterexamples",
+        "test_a_mapped_column_the_frame_lacks_errors_rather_than_passing",
+    )
+    return {
+        "x_runs": count(len(decided)),
+        "x_passed": count(sum(1 for seen in decided.values() if seen == "passed")),
+        "x_bad": bad_of(decided),
+        "entry_is_production": flag(
+            "compare_source_frames(" in raising and "compare_source_frames(" in pairing
+        ),
+        "field_name_raises": flag('match="missing mapped columns' in raising),
+        "unit_mismatch": flag('summary.samples[0].field == "volume"' in witnesses),
+        "whole_dictionary_gone": flag(
+            "mapping_b.tolerances or mapping_a.tolerances" not in compare
+            and "_stricter_tolerances(mapping_a, mapping_b)" in compare
+        ),
+        "tighter_wins": flag("value < current" in stricter),
+        "both_orders": flag(
+            "compare(tight, loose)" in pairing and "compare(loose, tight)" in pairing
+        ),
+    }
+
+
+def judge_ac9_03(facts: Facts) -> Verdict:
+    """``AC-9|03``: both counterexamples bite at the job's own entry point."""
+    ok = (
+        number(facts["x_runs"]) == len(COUNTEREXAMPLE_NODES)
+        and facts["x_passed"] == facts["x_runs"]
+        and facts["x_bad"] == "-"
+        and facts["entry_is_production"] == "yes"
+        and facts["field_name_raises"] == "yes"
+        and facts["unit_mismatch"] == "yes"
+        and facts["whole_dictionary_gone"] == "yes"
+        and facts["tighter_wins"] == "yes"
+        and facts["both_orders"] == "yes"
+    )
+    readings = (
+        f"反例节点: {facts['x_passed']}/{facts['x_runs']} passed"
+        + (f"; not green: {facts['x_bad']}" if facts["x_bad"] != "-" else ""),
+        f"①字段名不匹配: 报错面在位 = {facts['field_name_raises']}，且两条反例都走生产入口 "
+        f"compare_source_frames = {facts['entry_is_production']}（只测 normalize_frame 不算，"
+        "校对作业读的是这个函数）",
+        f"②单位未归一: mismatch 断言点名字段 = {facts['unit_mismatch']}",
+        f"tolerance 配对面: 一侧整字典交出已移除且逐字段合并 = {facts['whole_dictionary_gone']}，"
+        f"取紧的那条 = {facts['tighter_wins']}，正反两个方向都量 = {facts['both_orders']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "「反例用例」要的是两种错输入各有一个会响的判定：字段名不匹配必须在生产入口报错"
+        "（不是在下游 helper），单位没归一必须报 mismatch；tolerance 是逐字段的判断，一侧整"
+        "字典交出去就意味着另一侧的紧声明可能从没生效过"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac9_08(ctx: Context) -> Facts:
+    """Run the passthrough faces, then read whether the landed table actually has rows."""
+    delivered = outcomes(PASSTHROUGH_NODES)
+    merge = ctx.read(DWD_MERGE_REL)
+    index = function_body(merge, "_index")
+    witnesses = ctx.read(DWD_MERGE_TESTS_REL)
+    query_witness = method_body(
+        witnesses, "TestPassthroughQueryFace", "test_layer_dwd_query_builds_over_the_landed_columns"
+    )
+    census = ctx.read(C49_CENSUS_REL)
+    return {
+        "p_runs": count(len(delivered)),
+        "p_passed": count(sum(1 for seen in delivered.values() if seen == "passed")),
+        "p_bad": bad_of(delivered),
+        "refuses_per_key": flag("colliding.add(biz_key)" in index),
+        "reported": flag("colliding" in class_fields(merge, "MergeStats")),
+        "whole_window_raise_gone": flag("duplicate business key" not in merge),
+        "raises_on_missing_column": flag("lacks key columns" in index),
+        "query_face": flag("_key(" in query_witness and "build_data_select" in query_witness),
+        "landed_rows": _reading_after(census, "dwd 表 dwd_stock_action 实际行数"),
+        "passthrough_rows": _reading_after(census, "直通 merge：rows"),
+    }
+
+
+def _reading_after(text: str, marker: str) -> str:
+    """The digits following ``marker`` in an archived reading, or ``-``."""
+    for line in text.splitlines():
+        if marker in line:
+            tail = line.split(marker, 1)[1].lstrip("＝=")
+            digits = "".join(character for character in tail.split()[0] if character.isdigit())
+            return digits if digits else "-"
+    return "-"
+
+
+def judge_ac9_08(facts: Facts) -> Verdict:
+    """``AC-9|08``: a single-source domain really delivers a queryable dwd table."""
+    ok = (
+        number(facts["p_runs"]) == len(PASSTHROUGH_NODES)
+        and facts["p_passed"] == facts["p_runs"]
+        and facts["p_bad"] == "-"
+        and facts["refuses_per_key"] == "yes"
+        and facts["reported"] == "yes"
+        and facts["whole_window_raise_gone"] == "yes"
+        and facts["raises_on_missing_column"] == "yes"
+        and facts["query_face"] == "yes"
+        and number(facts["landed_rows"]) > 0
+    )
+    readings = (
+        f"直通节点: {facts['p_passed']}/{facts['p_runs']} passed"
+        + (f"; not green: {facts['p_bad']}" if facts["p_bad"] != "-" else ""),
+        f"歧义键处理: 逐键拒绝（不再整窗 raise）= {facts['refuses_per_key']}，旧的一 raise 就"
+        f"什么都不交的形状已移除 = {facts['whole_window_raise_gone']}，拒绝的键要报得出来 = "
+        f"{facts['reported']}，列缺失仍然 fail closed = {facts['raises_on_missing_column']}",
+        f"查询面: layer=dwd 走生产 _key/build_data_select 建得出 SQL = {facts['query_face']}，"
+        "且直通输出列 == dwd 表声明列（落得了这张表）",
+        f"{C49_CENSUS_REL} 的真库读数：stock_action/ths 直通交出 {facts['passthrough_rows']} 行，"
+        f"而 dwd_stock_action 实际 {facts['landed_rows']} 行 —— 差的那一段是一次未确认的落库写入",
+    )
+    reason = (
+        ""
+        if ok
+        else "「直通模式可用」判的是这张单源域的表里真的有行、并能按 layer=dwd 读回去：本轮把"
+        "整窗 raise 换成逐键拒绝（C49 量到 55,073 行里 1 个键两义，dwd_stock_action 因此一直是"
+        "空的），代码面已经通了；剩下的 0 行需要一次经确认的 warehouse 写入（重算落库），"
+        "不是再改判定口径"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac9_09(ctx: Context) -> Facts:
+    """Run the recompute faces, then read the two invariants that make a re-run not add rows."""
+    recomputed = outcomes(RECOMPUTE_NODES)
+    merge = ctx.read(DWD_MERGE_REL)
+    writer = method_body(merge, "DwdWriter", "write")
+    ddl = ctx.read(WAREHOUSE_DDL_REL)
+    table_ddl = function_body(ddl, "_table_ddl")
+    mysql = node_outcome(MYSQL_IDEMPOTENCE_NODE)
+    return {
+        "r_runs": count(len(recomputed)),
+        "r_passed": count(sum(1 for seen in recomputed.values() if seen == "passed")),
+        "r_bad": bad_of(recomputed),
+        "keys_sorted": flag("all_keys = sorted(" in function_body(merge, "merge_source_frames")),
+        "upsert_builder": flag("build_upsert_sql(table, columns, key)" in writer),
+        "pk_is_business_key": flag("PRIMARY KEY" in table_ddl),
+        "mysql_reading": mysql,
+    }
+
+
+def judge_ac9_09(facts: Facts) -> Verdict:
+    """``AC-9|09``: recomputing the same inputs lands the same rows, not more of them."""
+    ok = (
+        number(facts["r_runs"]) == len(RECOMPUTE_NODES)
+        and facts["r_passed"] == facts["r_runs"]
+        and facts["r_bad"] == "-"
+        and facts["keys_sorted"] == "yes"
+        and facts["upsert_builder"] == "yes"
+        and facts["pk_is_business_key"] == "yes"
+    )
+    readings = (
+        f"重算节点: {facts['r_passed']}/{facts['r_runs']} passed"
+        + (f"; not green: {facts['r_bad']}" if facts["r_bad"] != "-" else ""),
+        f"确定性面: 键集排序 = {facts['keys_sorted']}（不排序则同输入两遍输出顺序可变），"
+        f"写侧走 key 级 upsert = {facts['upsert_builder']}，dwd 表的 PRIMARY KEY 就是业务键 = "
+        f"{facts['pk_is_business_key']} —— 三者同时成立，重跑才是改同一行而不是多插一行",
+        f"真库那一格（e2e，{MYSQL_IDEMPOTENCE_NODE.split('::')[-1]}）本轮读数 = "
+        f"{facts['mysql_reading']}，门禁选择式不跑它，所以判定落在上面三条代码面 + 纯函数节点上",
+    )
+    reason = (
+        ""
+        if ok
+        else "「重算幂等」要的是同一批输入再跑一遍，表里还是那些行：输出必须确定（键排序）、写入"
+        "必须是键级 upsert、且这张表的主键确实是业务键 —— 少一条，重算就会变成追加或漂移"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+# --------------------------------------------------------------------------- #
 # The probe table
 # --------------------------------------------------------------------------- #
 
@@ -4564,6 +4808,97 @@ PROBES: Final[tuple[Probe, ...]] = (
             "production_channels": "4",
             "reported": "yes",
             "recorded": "yes",
+        },
+    ),
+    Probe(
+        item="AC-9|03",
+        expects="反例用例",
+        summary="两种错输入各有一个会响的判定，且都跑在 compare_source_frames 这个生产入口上",
+        measure=measure_ac9_03,
+        judge=judge_ac9_03,
+        breaks=(
+            Break("一条反例变红", (("x_passed", "3"), ("x_bad", "test_x=exit=1")), GAP),
+            Break("反例节点被改名，判据条数跑不满", (("x_runs", "3"),), GAP),
+            Break(
+                "字段名不匹配只测下游 helper，不测校对作业真正调的函数",
+                (("entry_is_production", "no"),),
+                GAP,
+            ),
+            Break("字段名不匹配不再要求报错", (("field_name_raises", "no"),), GAP),
+            Break("单位 mismatch 断言不点名字段", (("unit_mismatch", "no"),), GAP),
+            Break(
+                "tolerance 配退回一侧整本字典交出（另一侧的紧声明可能从未生效）",
+                (("whole_dictionary_gone", "no"),),
+                GAP,
+            ),
+            Break("逐字段合并不再取紧的那条", (("tighter_wins", "no"),), GAP),
+            Break("只量 a 紧 b 松，另一个方向没量", (("both_orders", "no"),), GAP),
+        ),
+        repair={
+            "x_passed": "*x_runs",
+            "x_bad": "-",
+            "entry_is_production": "yes",
+            "field_name_raises": "yes",
+            "unit_mismatch": "yes",
+            "whole_dictionary_gone": "yes",
+            "tighter_wins": "yes",
+            "both_orders": "yes",
+        },
+    ),
+    Probe(
+        item="AC-9|08",
+        expects="单源域 dwd 直通模式可用",
+        summary="歧义键逐键拒绝（不再整窗不交）+ layer=dwd 走生产查询面 + 表里真的有行",
+        measure=measure_ac9_08,
+        judge=judge_ac9_08,
+        breaks=(
+            Break("一条直通节点变红", (("p_passed", "5"), ("p_bad", "test_x=exit=1")), GAP),
+            Break("直通节点被改名，判据条数跑不满", (("p_runs", "5"),), GAP),
+            Break("歧义键退回整窗拒绝", (("refuses_per_key", "no"),), GAP),
+            Break("旧的整窗 raise 文案又出现", (("whole_window_raise_gone", "no"),), GAP),
+            Break("拒绝掉的键不再报得出来", (("reported", "no"),), GAP),
+            Break("键列缺失不再 fail closed", (("raises_on_missing_column", "no"),), GAP),
+            Break("查询面不走生产 _key/build_data_select", (("query_face", "no"),), GAP),
+            Break(
+                "代码面全通，但 dwd_stock_action 还是 0 行（缺一次经确认的落库写入）",
+                (("landed_rows", "0"),),
+                GAP,
+            ),
+        ),
+        repair={
+            "p_passed": "*p_runs",
+            "p_bad": "-",
+            "refuses_per_key": "yes",
+            "reported": "yes",
+            "whole_window_raise_gone": "yes",
+            "raises_on_missing_column": "yes",
+            "query_face": "yes",
+            "landed_rows": "55071",
+        },
+    ),
+    Probe(
+        item="AC-9|09",
+        expects="dwd 重算幂等",
+        summary="同输入重算逐格不动 + 键集排序 + 写侧 key 级 upsert + dwd 主键就是业务键",
+        measure=measure_ac9_09,
+        judge=judge_ac9_09,
+        breaks=(
+            Break("一条重算节点变红", (("r_passed", "3"), ("r_bad", "test_x=exit=1")), GAP),
+            Break("重算节点被改名，判据条数跑不满", (("r_runs", "3"),), GAP),
+            Break("键集不再排序（同输入两遍输出顺序可变）", (("keys_sorted", "no"),), GAP),
+            Break("写侧退回追加而不是 key 级 upsert", (("upsert_builder", "no"),), GAP),
+            Break(
+                "dwd 表主键不再就是业务键（重跑就是多一行）",
+                (("pk_is_business_key", "no"),),
+                GAP,
+            ),
+        ),
+        repair={
+            "r_passed": "*r_runs",
+            "r_bad": "-",
+            "keys_sorted": "yes",
+            "upsert_builder": "yes",
+            "pk_is_business_key": "yes",
         },
     ),
 )
