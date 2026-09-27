@@ -1,0 +1,57 @@
+# gate-check-run1-first-green —— 五面第一次同时成立的那一遍（后被 gate-check-green-authoritative.txt 取代）
+# run_at=2026-09-27T17:36:20+0200（本档案最后一次写入的时刻；正文自报本遍墙钟 262.7 s ⇒ 起跑约 17:31:57）
+# command=python scripts/quality/acceptance_item_probe.py --gate-check
+# GATECHECK_EXIT=0（读自 /usr/bin/time -p 的遍次；这一遍是当时唯一跑完的绿遍）
+# 与本遍读数相同但已被取代：那一遍的日志正文里【没有】反事实的两个分母，只有「五面全过」这一句；
+#   此后 self_test_findings 改成返回 (findings, reading)，判定语义一字未动。留这一遍是为了让读者看得见
+#   「带分母」这件事是哪一遍才开始成立的。agrees=26 / deferred=5 / stale-proof=0 与后面的绿遍差一格，
+#   差的是 AC-17|05（时刻面，本轮 README §三 记了这个差）
+# branch=dev HEAD=7125165（本轮没有新提交，五遍跑在同一棵树上）
+# python=Python 3.13.5（anaconda py313）PYTHONPATH=.
+# env 面：未读取 .env、未打印任何密钥值；真库零访问（探针内部 run_pytest 一律带 -m "not e2e" --no-cov）
+
+
+### gate-check  (31 个探针，一遍 measure)
+  - 本遍墙钟 = 262.7 s，读到事实的探针 31/31，测不出来的：无
+  - 工作树：9 entry(ies), first:  M Makefile —— worktree/index/history 面只在干净时判，否则记为 deferred 并点名
+VERDICT AC-13|07: proven
+VERDICT AC-17|01: proven
+VERDICT AC-17|03: gap — 「只降不升」要求被量的范围本身也只降不升：抬高过一次上限、让一个被测根从快照里消失、或把一个触碰过的自研文件按名字排除在 A2 零容忍之外，都会让「债务不高于快照」成立而代码一行没改；平面可见性同理——exclude 吞掉的根不产生任何读数，也就不会产生红灯
+VERDICT AC-17|05: gap — 搬运层要同时满足三件事：只按 E/F 计量、与上游还能逐行 diff、以及这两件事都写在纸上。重放一致说明没有被偷偷重排或手改；pre-commit 的 exclude 说明下一次 hook 运行不会把它重排掉；三处登记一致说明读者看到的和工具认的是同一批改动
+VERDICT AC-17|07: proven
+VERDICT AC-17|08: gap — 反空壳抽审判的是形态：定义抄写、恒真断言、自指、源码形式检查四类都必须为零，且 T1 档要拿真实录制信封与预计算黄金向量来答，三问的地板（≥3/含成功/≥3）缺一不可
+VERDICT AC-17|10: gap — 可追溯 means each archive answers 命令 / 输出摘要 / 日期 with no reader present: one gap on any face, an archive deleted after it was added, or a census too small to be the whole history turns the claim back into a summary
+VERDICT AC-18|01: proven
+VERDICT AC-18|02: proven
+VERDICT AC-18|03: gap — 合并要求的是一个页面：目录为默认视图、函数级明细在它下面。今天 /data 与 /scripts 仍是两条路由两个视图，目录的下钻只预览数据行，从不落到接口/函数那一层；接口清单按 §11.1 已经以域名命名（data_interfaces.name == domain），join 的料是齐的，缺的是页面合并本身——而合并必然要让一个导航项消失，属产品决定
+VERDICT AC-1|01: proven
+VERDICT AC-1|02: proven
+VERDICT AC-1|03: gap — the item's enumerated whitelist does not describe the tree: the word is in build and operational surfaces it never listed. Closing this needs a wording decision (what the whitelist is supposed to cover after A2/B5), not a re-read
+VERDICT AC-1|04: proven
+VERDICT AC-1|05: gap — the four configuration surfaces are half the item; the other half is that the stack actually serves -- backend up, a frontend login, /health answering. It needs the stack started, which is the user's call, so the runtime face is reported as no-engine or not-started rather than assumed to work
+VERDICT AC-1|06: proven
+VERDICT AC-1|07: gap — the item asks for a business contact; README publishes the placeholder it labels as such (`发布前替换`). That is the user's text to supply, so this stays a gap rather than a tick
+VERDICT AC-1|08: gap — the registry is a shell waiting on a legal/product review: no row carries a review date, every permitted-use cell says 待确认, and some clause links are prose. Filling it in is a decision this round cannot make for the user
+VERDICT AC-1|09: gap — the literal grep the item names hits `.env.example`, the template AC-1|03 permits; the allowlist is not only docs/templates -- it carries a generated-artifact path plus a shape-scoped rule exemption. Both need a wording or config decision, and the counterfact evidence in docs/evidence/C36 shows the exemption is not free
+VERDICT AC-1|10: gap — residue, files git has never seen, uncommitted edits, or a first commit that left part of the project out -- 'first complete commit' has to mean the whole move landed
+VERDICT AC-2|01: proven
+VERDICT AC-2|02: proven
+VERDICT AC-2|03: proven
+VERDICT AC-2|04: proven
+VERDICT AC-2|05: proven
+VERDICT AC-9|02: proven
+VERDICT AC-9|03: proven
+VERDICT AC-9|04: proven
+VERDICT AC-9|05: proven
+VERDICT AC-9|08: gap — 「直通模式可用」判的是这张单源域的表里真的有行、并能按 layer=dwd 读回去：本轮把整窗 raise 换成逐键拒绝（C49 量到 55,073 行里 1 个键两义，dwd_stock_action 因此一直是空的），代码面已经通了；剩下的 0 行需要一次经确认的 warehouse 写入（重算落库），不是再改判定口径
+VERDICT AC-9|09: proven
+  - 台账↔读数：agrees=26, unflipped=0, open=0, deferred=5, stale-proof=0（共 31 格有读数） —— 只有 stale-proof 是红灯：台账记 proven 而探针现在读出 gap，且读的那一面与这一刻无关
+  - deferred（时刻面，等工作树干净再判）：AC-17|03、AC-17|05、AC-17|08、AC-17|10、AC-1|10
+  - 面基线：31 个探针里 12 个在读 moment 面；proven 而无探针 7 个，基线 7 个（只降不升）
+  - 成员自证：`acceptance-probe-check` 在 `gate:` 配方里 = yes
+FAIL: acceptance-probe gate:
+  AC-17|03: no reading this probe declares can make the judge pass, so a gap here could never be closed by real work
+  AC-17|05: no reading this probe declares can make the judge pass, so a gap here could never be closed by real work
+real 264.06
+user 361.50
+sys 31.67

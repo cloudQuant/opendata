@@ -1,0 +1,149 @@
+# evidence header (project convention: 命令 / 日期 / 身份 / exit)
+round: C50
+run_at: 2026-09-27T17:01:30+0200 (read from the census body's own census_started line)
+wall: 254.10 s real (read from /usr/bin/time -p of this same command; body line census_wall=254.1s)
+command: python docs/evidence/C50/probe_gate_census.py > /tmp/c50/census4-body.txt 2>/tmp/c50/census4-time.txt
+command_exit: 0
+branch: dev
+head_commit: 7125165 2026-09-27T16:10:15+02:00 docs(evidence): C49 README 定点更正 —— 判定面搬家的固定点
+worktree_status: 3 untracked entries, identical before and after this pass (git status --porcelain --untracked-files=all 在 17:01:30 与 17:05 各取一次：?? docs/evidence/C50/{census-run1-instrument-defects.txt,manual-probe-timings.txt,probe_gate_census.py})
+env: python 3.13.5 / PATH=$HOME/opt/anaconda3/envs/py313/bin / PYTHONPATH=. ; 未读取 .env 与任何密钥值；本仪器只读，探针内部 run_pytest 一律带 -m "not e2e" --no-cov
+purpose: C50 的「先量」定稿遍 —— 条目级判定工具进门禁之前量清七面读数；本档案就是成员设计的全部依据
+
+# 本遍读出的、决定设计的那几个数
+reading_1: 成员面 —— `make gate` 成员 16 个，命令里出现 `scripts/quality/acceptance_item_probe.py` 的 target 数 = 0，`gate`/`quality`/`quality-full`/`pre-commit` 四个聚合 target 提到探针的行数都是 0
+reading_2: 手工遍次面 —— 46 份 gate 日志正文里真跑过判定面的 = 0（出现探针文件名的 31 份来自 a2-check 的文件清单，只证明文件存在）；正文含 `probe(s) measured` 的 round 有 8 个，全部是手工遍次
+reading_3: 成本面 —— 探针 30 个，per-measure 合计 251.7 s，本遍 measure 循环墙钟 252.7 s；手工两遍（--self-test 247.85 s + --all 247.52 s）= 495.4 s ⇒ 成员化后一遍 measure 同时喂自检与对账，省 ~244 s；子进程 spawn 150；measure < 1 s 的探针 11 个
+reading_4: 对账面 —— agrees 27 / stale-proof 3（AC-1|10, AC-17|03, AC-17|10 台账 proven 而实测 gap）；今天的 `--all` 对这三格一律 exit 0
+reading_5: 状态依赖面 —— 闭包读到 worktree/index/history 的探针 12 / 30，只读树内容与 spawn 子进程的 16 个；上面那三格 stale-proof 全落在 12 个里面，所以「台账 proven 必须仍读 proven」不能无条件成立
+reading_6: 仪器依赖面 —— 被扫仪器 80 个文件，import 产品私有符号的 6 个，私有符号 15 个；C49 已实测过一次形状变化咬人（`dwd_merge._index` 返回换成二元组，门禁第一遍红在 C48 的普查脚本）
+reading_7: 覆盖面 —— 台账 130 键里 proven=31 / gap=9 / 未审=90；proven 而无判定面的格子 8 个（AC-16|05, AC-16|09, AC-17|01, AC-17|02, AC-17|04, AC-17|06, AC-17|09, §4|03），gap 而无判定面 2 个
+
+# 遍次与取代关系
+provenance_note: 本档案是这台仪器的第 4 个 measure 遍次，也是本轮归档的第二遍。前两遍未归档：run1（per-measure 253.2 s）有三处计数缺陷，见 census-run1-instrument-defects.txt；修后那一遍 run2（253.6 s）还没有覆盖面（面 7）；run3（251.5 s）把面 6/7 的打印顺序与编号印反了。取代关系写在这里而不写进正文，因为任何档案都描述不了写下它之后的那棵树（C49 实测过的不动点）。
+reproducible_note: 归档正文与本脚本当前版本逐字节可复现 —— 脚本在 run3 之后只改过一处 main() 内的调用顺序，没有任何测量语义变化；四遍 per-measure 合计 253.2 / 253.6 / 251.5 / 251.7 s 的散布是同一棵树的计时噪声，成本结论（495.4 s → 一遍 251.7 s）与遍次无关。
+safety_note: 全程未写入、未建表、未碰真库；`.env` 与密钥值未被读取或打印；本轮唯一的进程副作用是被量对象自己为量它而 spawn 的子进程，面 3 已逐个计数并标注「计数来自本仪器的包装层」。
+
+# census_started=2026-09-27T17:01:30+0200
+
+========================================================================
+1. 成员面：判定工具今天离门禁有多远
+========================================================================
+gate 成员数 = 16（绿时打印 17 段 `===== gate:`）
+成员名单 = brand-check, zero-dep-check, secret-check, ledger-check, evidence-traceability, js-points-check, loguru-check, a2-check, quality-ratchet, public-api-quality, test-cov, frontend-lint, frontend-typecheck, frontend-collection, frontend-test, frontend-e2e
+命令里出现 `scripts/quality/acceptance_item_probe.py` 的 target 数 = 0 -> 无
+  聚合 target `gate`：33 行命令，其中提到探针 0 行
+  聚合 target `quality`：0 行命令，其中提到探针 0 行
+  聚合 target `quality-full`：0 行命令，其中提到探针 0 行
+  聚合 target `pre-commit`：1 行命令，其中提到探针 0 行
+成员里名字含 `probe` 的 = 无
+交叉核对：最近一份 gate 日志 C49/gate-run4-finaltree.txt 正文里 `===== gate:` 段数 = 17（成员 16 + 收尾 PASSED 横幅 1）
+
+========================================================================
+2. 手工遍次面：反事实条数今天靠哪些遍次成立
+========================================================================
+round 档案目录数 = 58
+txt 档案总数 = 372；其中 gate 日志 = 46
+正文含 `probe(s) measured` 判词的 round = 8 个：C43, C44, C45, C46, C47, C48, C49, C50
+正文含 `VERDICT AC-` 逐格判词的 round = 11 个：C40, C41, C42, C43, C44, C45, C46, C47, C48, C49, C50
+gate 日志正文里出现探针文件名的 = 31 / 46（含 a2-check 的文件清单，只证明这个文件存在过，不证明判定面被跑过）
+gate 日志正文里真跑过判定面的 = 0 / 46：无
+门禁成员 16 个，没有一个是它 ⇒ 每一遍绿色 gate 都不重新量一次判定面
+
+========================================================================
+3. 成本面：探针各自的 measure 要多少秒、各 spawn 几个子进程
+========================================================================
+探针数 = 30；per-measure 合计 = 251.7 s
+本遍 measure 循环（含 load_context 解析文档与台账）墙钟 = 252.7 s；循环内未计入各 measure 的部分 = 1.0 s
+工具自己的 `--self-test` 手工遍次 = 247.85 s
+工具自己的 `--all` 手工遍次 = 247.52 s
+两个数字都读自本轮更早的 /usr/bin/time 遍次，见 manual-probe-timings.txt
+两种手工遍次合计 = 495.4 s —— 成员化后一遍 measure 同时喂自检与对账，就只要 251.7 s
+子进程 spawn 合计 = 150；归因 = {"git:ls-files": 2, "/Users/yunjinqi/opt/anaconda3/envs/py313/bin/python": 10, "docker": 2, "git:status": 1, "git:log": 5, "git:ls-tree": 1, "pytest 子进程": 108, "history(git show 7e5dd3aab5990c418789afaeb079f6e9810b23c6)": 2, "history(git show 6b780a7f7556033cb92c7ef704e99907e424ea69)": 2, "history(git show d66dd99185b2f8dc545545b5b0580b53168f915a)": 2, "history(git show 3757285aafce02d42a9aaad9b89de91925d0c467)": 2, "history(git show 5a2e085114c9283b44901fe32edf58e708dde15d)": 2, "history(git show 5374fe1d705830cd82316117f7e1e765c62f3ebc)": 2, "history(git show 5be9974d1f4ba7b28302ed6bb109dbd1b10e93a4)": 2, "history(git show f4d2693ff118b17a2c76884c7dbc7de1996ed38a)": 2, "history(git show 2b682251f1e49055da9d71236bfeee1104a9a100)": 2, "history(git show 4ee1bbca67fd86e6d8e22b6fbcdf7a65126adce4)": 2, "history(git show HEAD)": 1}
+（spawn 计数来自本仪器的包装层，不是探针自己的输出）
+最贵的 8 个：
+  AC-18|01       24.9 s  spawns= 15  新鲜度门交出日期/滞后/基准日 + 缺失告警真到达通道 + 调度执行器接线
+  AC-1|09        21.6 s  spawns=  1  git 面 / 扫描器豁免面 / 上游 5 文件处置 / 全历史扫描器实跑
+  AC-2|01        20.7 s  spawns= 12  六个 P0 模型逐模型双形态 + fail-closed 节点实跑
+  AC-1|02        20.0 s  spawns=  1  判据列出的 token 清单 == 扫描器执行的清单，且扫描与独立 grep 都
+  AC-13|07       19.7 s  spawns= 12  四类各有生产者、各有判定行、各被调度执行器真喂输入，测不到仍记进范围
+  AC-17|03       16.5 s  spawns= 14  棘轮三项存量债务 + 上限自身历史只降不升 + 三个静态平面各读到多少 + 触碰
+  AC-9|05        15.9 s  spawns= 10  一次判定同时到 WS 广播、按域过滤的 hub 与 SMTP 邮件，且每条通道的
+  AC-9|04        14.3 s  spawns=  9  治理三则各有来源与寿命：白名单读得到、去重与差异率基线跨比对、被抑制也留痕
+measure < 1 s 的探针数 = 11（纯文件/AST 面，成员化后几乎不改变门禁时长）
+
+========================================================================
+4. 对账面：台账说 proven 的格子，判定面此刻还成不成立
+========================================================================
+  AC-1|10      台账=proven     实测=gap      勾选=x 时刻依赖=是 面=history(git log),history(git ls-tree),index(ctx.tracked),worktree(git status)
+  AC-17|03     台账=proven     实测=gap      勾选=x 时刻依赖=是 面=history(git log),history(git show REV:),index(ctx.tracked)
+  AC-17|10     台账=proven     实测=gap      勾选=x 时刻依赖=是 面=history(git log),index(git ls-files)
+合计 = {"agrees": 27, "stale-proof": 3}
+今天的 `--all` 对上面这些一律 exit 0（只有判据原文漂字才红）；若门禁里有一道「台账 proven 必须仍读 proven」的闸，它会红 3 格：['AC-1|10', 'AC-17|03', 'AC-17|10']
+
+========================================================================
+5. 状态依赖面：哪些读数随「这一遍跑在什么时刻」而变化
+========================================================================
+闭包读到工作树/索引/历史面的探针数 = 12 / 30
+  AC-1|01      台账=proven     实测=proven   index(ctx.tracked)
+  AC-1|02      台账=proven     实测=proven   index(ctx.tracked)
+  AC-1|03      台账=gap        实测=gap      index(ctx.tracked)
+  AC-1|04      台账=proven     实测=proven   index(ctx.tracked)
+  AC-1|07      台账=gap        实测=gap      index(ctx.tracked)
+  AC-1|09      台账=gap        实测=gap      index(ctx.tracked)
+  AC-1|10      台账=proven     实测=gap      history(git log), history(git ls-tree), index(ctx.tracked), worktree(git status)
+  AC-17|03     台账=proven     实测=gap      history(git log), history(git show REV:), index(ctx.tracked)
+  AC-17|05     台账=proven     实测=proven   history(git log), history(git show REV:)
+  AC-17|07     台账=proven     实测=proven   index(ctx.tracked)
+  AC-17|08     台账=proven     实测=proven   index(ctx.tracked)
+  AC-17|10     台账=proven     实测=gap      history(git log), index(git ls-files)
+全量面归因 = {"pytest 子进程": 14, "pytest 节点单跑": 14, "index(ctx.tracked)": 10, "(闭包里只读到文件内容)": 4, "history(git log)": 4, "history(git show REV:)": 2, "history(git ls-tree)": 1, "worktree(git status)": 1, "index(git ls-files)": 1}
+只 spawn 子进程、不读 git 状态的探针数 = 16（pytest / 工具面读的是树内容：它随代码变化而变，不随「这一遍跑在提交前还是提交后」而变，所以这一类可以进门禁；上面三类不能，它们会在每一个在飞的轮次里假红）
+
+========================================================================
+6. 仪器依赖面：产品私有符号被哪些档案仪器在读
+========================================================================
+被扫仪器文件数 = 80；import 了产品私有符号的 = 6
+被读的私有符号数 = 15
+  opendata.pipeline.cross_check._deviation       被 2 台仪器读：docs/evidence/C48/cross_check_census.py, docs/evidence/C49/ac9_residual_census.py
+      最近一次定义变化：fbf64ee 2026-09-23 feat(cross-check): source field mappings, diff engine and dq_diff_report (A4.5)
+  opendata.pipeline.trading_calendar._as_date    被 2 台仪器读：scripts/ops/calendar_expectation_check.py, scripts/ops/ths_trading_calendar_cross_check.py
+      最近一次定义变化：ef9b5fa 2026-09-25 feat(pipeline): 交易日期望判据接线（A4.7）
+  opendata.api.data_query._inspect_columns       被 1 台仪器读：docs/evidence/C49/ac9_residual_census.py
+      最近一次定义变化：40d6542 2026-09-23 feat(api): data query REST minimal set with adjust and freshness (A4.9)
+  opendata.api.data_query._key                   被 1 台仪器读：docs/evidence/C49/ac9_residual_census.py
+      最近一次定义变化：fdde29c 2026-09-27 feat(pipeline): C42 骨架落地的重复 dwd 键改成整组拒绝，jobs/日历单元面补过线（AC-2|02）
+  opendata.data.providers.akshare.models.stock_action._RIGHTS_PLAN 被 1 台仪器读：docs/evidence/C26/silent-drop-measure.py
+      最近一次定义变化：(无命中 def _RIGHTS_PLAN；git exit=0)
+  opendata.data.providers.akshare.models.stock_action._numeric 被 1 台仪器读：docs/evidence/C26/silent-drop-measure.py
+      最近一次定义变化：f4d2693 2026-09-23 feat(providers): register P0 domain fetchers into the provider registry (A2.4)
+  opendata.data.providers.akshare.models.stock_action._per_share 被 1 台仪器读：docs/evidence/C26/silent-drop-measure.py
+      最近一次定义变化：f4d2693 2026-09-23 feat(providers): register P0 domain fetchers into the provider registry (A2.4)
+  opendata.data.providers.ecb.models._client     被 1 台仪器读：docs/evidence/C21/flaky-retry-attribution.py
+      最近一次定义变化：(无命中 def _client；git exit=0)
+  opendata.data.providers.fred.models._client    被 1 台仪器读：docs/evidence/C21/flaky-retry-attribution.py
+      最近一次定义变化：(无命中 def _client；git exit=0)
+  opendata.data.providers.imf.models._client     被 1 台仪器读：docs/evidence/C21/flaky-retry-attribution.py
+      最近一次定义变化：(无命中 def _client；git exit=0)
+  opendata.data.providers.oecd.models._client    被 1 台仪器读：docs/evidence/C21/flaky-retry-attribution.py
+      最近一次定义变化：(无命中 def _client；git exit=0)
+  opendata.pipeline.dwd_merge._disagreeing_keys  被 1 台仪器读：docs/evidence/C48/cross_check_census.py
+      最近一次定义变化：1b56477 2026-09-23 feat(dwd): authority-first merge with revision propagation (A4.6)
+  opendata.pipeline.dwd_merge._index             被 1 台仪器读：docs/evidence/C48/cross_check_census.py
+      最近一次定义变化：1b56477 2026-09-23 feat(dwd): authority-first merge with revision propagation (A4.6)
+  opendata.pipeline.dwd_merge._value_columns     被 1 台仪器读：docs/evidence/C48/cross_check_census.py
+      最近一次定义变化：1b56477 2026-09-23 feat(dwd): authority-first merge with revision propagation (A4.6)
+  opendata.pipeline.jobs._execute_template       被 1 台仪器读：docs/evidence/C48/cross_check_census.py
+      最近一次定义变化：8217629 2026-09-24 feat(pipeline): B4 生产触发面 + 真机日线增量链路修通（§7 场景1）
+见证（形状变化会咬到谁，上一轮刚实测过一次）：C49 把 `_index` 的返回从 dict 换成 (indexed, colliding)，门禁第 1 遍即红在 docs/evidence/C48/cross_check_census.py。上面这张表就是下一次那种红的名单。
+
+========================================================================
+7. 覆盖面：台账里的格子有几格根本没有判定面（不 measure，纯集合对账）
+========================================================================
+docs/quality/acceptance-item-ledger.json：条目键 130 个；proven=31 gap=9 未审=90
+探针数 = 30；台账 proven 有面 23 格、gap 有面 7 格、未审有面 0 格
+台账说 proven 却没有任何判定面的格子 = 8：AC-16|05, AC-16|09, AC-17|01, AC-17|02, AC-17|04, AC-17|06, AC-17|09, §4|03
+这些格子的 proven 只能靠台账里那条 command 的留档自证；判定面重跑一次也不会碰它们，所以『门禁每次重量判定面』这句话对它们不成立 —— 上面这个数就是这条闸门的起点
+gap 且无判定面 = 2：AC-16|06, AC-16|07
+
+# census_wall=254.1s probes=30

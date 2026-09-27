@@ -1,0 +1,98 @@
+# evidence header (project convention: 命令 / 日期 / 身份 / exit)
+round: C50
+run_at: 遍 1（脏树）2026-09-27T17:08:53+0200；遍 2（干净树）2026-09-27T17:10:15+0200 —— 两个 mtime 读自重定向目标本身，即命令写完的那一刻
+command_1: python scripts/quality/acceptance_item_probe.py --item 'AC-1|10' --item 'AC-17|03' --item 'AC-17|10' > /tmp/c50/moment-dirty.txt 2>/tmp/c50/moment-dirty-time.txt
+command_1_exit: 0   real 16.84 s
+command_2: git worktree add --detach /tmp/c50/clean HEAD && cd /tmp/c50/clean && PYTHONPATH=/tmp/c50/clean python scripts/quality/acceptance_item_probe.py --item 'AC-1|10' --item 'AC-17|03' --item 'AC-17|10' > /tmp/c50/moment-clean.txt 2>/tmp/c50/moment-clean-time.txt
+command_2_exit: 0   real 24.80 s
+branch: dev（遍 2 是 detached HEAD 的那个树，内容与 HEAD 逐文件相同）
+head_commit: 7125165 2026-09-27T16:10:15+02:00 —— 两遍同一个 commit，这是本档案唯一要控制的变量
+worktree_status: 遍 1 = 4 条未跟踪（docs/evidence/C50/ 下的 3 份档案 + 本仪器脚本）；遍 2 = 0 条（git status --porcelain --untracked-files=all 为空，命令前后各取一次）
+env: python 3.13.5 / PATH=$HOME/opt/anaconda3/envs/py313/bin / PYTHONPATH=.（遍 2 指向该干净树）; 未读取 .env 与任何密钥值；探针内部 run_pytest 一律带 -m "not e2e" --no-cov
+purpose: 把 census 面 4 那句「台账 proven 而实测 gap 的三格全是时刻格」量成可复现的一对 —— 同一 commit、只换遍次时刻，读数从 gap 翻到 proven。这一对决定 `--gate-check` 里对账闸的形态：worktree/index/history 面不能无条件判，必须在工作树不干净时显式 deferred 并点名，否则每一个在飞的轮次都会假红
+command: 两遍跑的是同一条命令（`--item 'AC-1|10' --item 'AC-17|03' --item 'AC-17|10'`），差别只在跑它的那棵树；逐字命令见下面两行
+
+# 结论（逐格，两遍同一 commit）
+pair_AC-1|10: proven(台账) —— 脏树 gap：untracked = 4（本轮自己的三份档案 + 仪器脚本）；干净树 proven：untracked = 0。判据原文本身就写着「git 从未见过的文件 = 0」，所以这一格量的确实是这次会话，不是这个仓库
+pair_AC-17|03: proven(台账) —— 脏树 gap 只在 a2_exit=1（自基线起改动 372 个 .py ↔ A2 集 372 个，未跟踪的本轮脚本进入 A2 遍次）；干净树 proven：a2-check exit 0
+pair_AC-17|10: proven(台账) —— 脏树 gap：tool_exit=1、narrative=1（docs/evidence/C50/ 还没有 README）、untracked=4；干净树 proven：tool_exit=0、六面全 0、round=59 / file=519 / tracked=519
+gate_rule: 若门禁里放一道「台账 proven 必须仍读 proven」而无条件判定，本轮每一个遍次都会红这三格，而这三格的红描述的正是「这个轮次还在写」—— 于是它会把「不许放水」换成「必须放水才能绿」，即假红。`--gate-check` 的形态由此确定：稳定面恒判，时刻面只在 `git status --porcelain --untracked-files=all` 为空时判，否则显式 deferred 并把格子名打出来
+cleanup_note: 遍 2 用完的 /tmp/c50/clean 已用 `git worktree remove` 撤掉；两遍的完整正文原样附在下面，未裁剪
+
+
+########## 遍 1 —— 脏树（HEAD 7125165 + 4 条未跟踪）正文全文，未裁剪 ##########
+
+### AC-1|10  (document line 112)
+判据原文：拷贝残留已清除；git 已完成首次完整提交
+本探针：残留文件 + 从未进库的文件 + 首次提交的树完整性
+台账现状：state=proven，文档勾选=True
+  - tracked paths matching a copy-residue shape = 0
+  - untracked-and-not-ignored files = 4 (docs/evidence/C50/census-run1-instrument-defects.txt, docs/evidence/C50/census-run2-final-readings.txt, docs/evidence/C50/manual-probe-timings.txt, docs/evidence/C50/probe_gate_census.py)
+  - tracked files with uncommitted edits = 0
+  - first commit touching opendata/__init__.py = 4ee1bbca "4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, qua"
+  - its tree = 712 files, holding every part of the project it should (missing: -), against 1473 tracked today (48.3%; the rest arrived with later rounds, which is growth)
+  - 补齐到可判：first_tree: 712 -> 1473; untracked: 4 -> 0; untracked_sample: docs/evidence/C50/census-run1-instrument-defects.txt, docs/evidence/C50/census-run2-final-readings.txt, docs/evidence/C50/manual-probe-timings.txt, docs/evidence/C50/probe_gate_census.py -> 
+VERDICT AC-1|10: gap — residue, files git has never seen, uncommitted edits, or a first commit that left part of the project out -- 'first complete commit' has to mean the whole move landed
+
+### AC-17|03  (document line 269)
+判据原文：**A1 层（存量）**：mypy/ruff 债务不高于基线快照，只降不升；**修改过的文件按 A2 标准达标**（"触碰即达标"）
+本探针：棘轮三项存量债务 + 上限自身历史只降不升 + 三个静态平面各读到多少 + 触碰集↔A2 集一一对应
+台账现状：state=proven，文档勾选=True
+  - scripts/quality/ratchet.py exit 0（face=none，printed=3/3）：存量债务 ruff_selfdev 242(≤242), mypy_selfdev 11(≤11), bandit_selfdev 3(≤3)
+  - 上限自己的历史（10 次转换）：抬高存量上限的次数 0；近 2 次转换里消失的被测根 0，更早历史 1；存量上限轨迹 ruff_selfdev 404→242 / mypy_selfdev 35→11 / bandit_selfdev 6→3。棘轮只比较工作区与快照，抬高上限这一步此前无人计量（4ee1bbc->2b68225 akshare）
+  - 平面可见性：6 个自研根磁盘 420 个 .py，ruff 自己走到 420（看不见 0）；mypy 目标 194/212，被它排除的 18 个里 18 个在棘轮点名的遗留区（opendata/data_fetch/）之内、0 个是没人声明的 exclude（这 18 个仍全部被 ruff 读到）；bandit 253/253，被它漏掉的 0 个（ruff 也看不见的 0）必须为 0：三个平面各自把一份存量计数，exclude 吞掉的根既不产生读数也不产生红灯，所以谁被排除必须点名，不能只在配置文件里悄悄加一行
+  - 全体 tracked .py = 797，既不在任何被测根下、也不在 A2 集里的 0
+  - 触碰即达标：自基线起改动 372 个 .py ↔ A2 集 372 个（a2-check exit 1），其中按名字被排除出 A2 的 0 个、排除项里的自研代码 0 个
+  - 补齐到可判：a2_exit: 1 -> 0
+VERDICT AC-17|03: gap — 「只降不升」要求被量的范围本身也只降不升：抬高过一次上限、让一个被测根从快照里消失、或把一个触碰过的自研文件按名字排除在 A2 零容忍之外，都会让「债务不高于快照」成立而代码一行没改；平面可见性同理——exclude 吞掉的根不产生任何读数，也就不会产生红灯
+
+### AC-17|10  (document line 276)
+判据原文：历次里程碑的验证证据（命令 + 输出摘要 + 日期）可追溯
+本探针：evidence-traceability 六个面全零 + 日期两读覆盖全部 gate 日志 + 无档案被删
+台账现状：state=proven，文档勾选=True
+  - scripts/quality/evidence_traceability.py exit 1, says OK = no, reports a new violation = yes; frozen ceiling = 0 legacy entr(ies)
+  - archive = 60 round(s), 523 file(s) in the census, 519 tracked now, 0 added once and then removed
+  - gaps by face: narrative=1, date=0, identity=0, command=0, exit=0, untracked=4
+  - date answers among gate logs = header 85 + printed by the run 6 out of 91: 日期 is satisfied by either face, and the two together have to cover every gate log
+  - 补齐到可判：gap_narrative: 1 -> 0; gap_untracked: 4 -> 0; tool_exit: 1 -> 0; tool_new: yes -> no; tool_ok: no -> yes
+VERDICT AC-17|10: gap — 可追溯 means each archive answers 命令 / 输出摘要 / 日期 with no reader present: one gap on any face, an archive deleted after it was added, or a census too small to be the whole history turns the claim back into a summary
+
+census: gap=3
+（3 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+
+########## 遍 2 —— 干净树（同一 HEAD 的 detached worktree，git status 为空）正文全文，未裁剪 ##########
+
+### AC-1|10  (document line 112)
+判据原文：拷贝残留已清除；git 已完成首次完整提交
+本探针：残留文件 + 从未进库的文件 + 首次提交的树完整性
+台账现状：state=proven，文档勾选=True
+  - tracked paths matching a copy-residue shape = 0
+  - untracked-and-not-ignored files = 0
+  - tracked files with uncommitted edits = 0
+  - first commit touching opendata/__init__.py = 4ee1bbca "4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, qua"
+  - its tree = 712 files, holding every part of the project it should (missing: -), against 1473 tracked today (48.3%; the rest arrived with later rounds, which is growth)
+VERDICT AC-1|10: proven
+
+### AC-17|03  (document line 269)
+判据原文：**A1 层（存量）**：mypy/ruff 债务不高于基线快照，只降不升；**修改过的文件按 A2 标准达标**（"触碰即达标"）
+本探针：棘轮三项存量债务 + 上限自身历史只降不升 + 三个静态平面各读到多少 + 触碰集↔A2 集一一对应
+台账现状：state=proven，文档勾选=True
+  - scripts/quality/ratchet.py exit 0（face=none，printed=3/3）：存量债务 ruff_selfdev 242(≤242), mypy_selfdev 11(≤11), bandit_selfdev 3(≤3)
+  - 上限自己的历史（10 次转换）：抬高存量上限的次数 0；近 2 次转换里消失的被测根 0，更早历史 1；存量上限轨迹 ruff_selfdev 404→242 / mypy_selfdev 35→11 / bandit_selfdev 6→3。棘轮只比较工作区与快照，抬高上限这一步此前无人计量（4ee1bbc->2b68225 akshare）
+  - 平面可见性：6 个自研根磁盘 420 个 .py，ruff 自己走到 420（看不见 0）；mypy 目标 194/212，被它排除的 18 个里 18 个在棘轮点名的遗留区（opendata/data_fetch/）之内、0 个是没人声明的 exclude（这 18 个仍全部被 ruff 读到）；bandit 253/253，被它漏掉的 0 个（ruff 也看不见的 0）必须为 0：三个平面各自把一份存量计数，exclude 吞掉的根既不产生读数也不产生红灯，所以谁被排除必须点名，不能只在配置文件里悄悄加一行
+  - 全体 tracked .py = 797，既不在任何被测根下、也不在 A2 集里的 0
+  - 触碰即达标：自基线起改动 371 个 .py ↔ A2 集 371 个（a2-check exit 0），其中按名字被排除出 A2 的 0 个、排除项里的自研代码 0 个
+VERDICT AC-17|03: proven
+
+### AC-17|10  (document line 276)
+判据原文：历次里程碑的验证证据（命令 + 输出摘要 + 日期）可追溯
+本探针：evidence-traceability 六个面全零 + 日期两读覆盖全部 gate 日志 + 无档案被删
+台账现状：state=proven，文档勾选=True
+  - scripts/quality/evidence_traceability.py exit 0, says OK = yes, reports a new violation = no; frozen ceiling = 0 legacy entr(ies)
+  - archive = 59 round(s), 519 file(s) in the census, 519 tracked now, 0 added once and then removed
+  - gaps by face: narrative=0, date=0, identity=0, command=0, exit=0, untracked=0
+  - date answers among gate logs = header 85 + printed by the run 6 out of 91: 日期 is satisfied by either face, and the two together have to cover every gate log
+VERDICT AC-17|10: proven
+
+census: proven=3
+（3 item(s) recomputed against docs/quality/acceptance-item-ledger.json）

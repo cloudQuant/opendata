@@ -1,0 +1,25 @@
+# witness-pytest-gate-tests —— 单元见证：tests/test_acceptance_probe_gate.py 33 条（定点跑，带 --no-cov，不是门禁覆盖率读数）
+# run_at=2026-09-27T17:58:00+0200
+# command=python -m pytest tests/test_acceptance_probe_gate.py -q --no-cov -p no:randomly -m "not e2e"
+# PYTEST_EXIT=0（读自档案正文内部）；正文末行 33 passed in 3.62s
+# 这一遍刻意不带覆盖率：门禁的覆盖率读数由 test-cov 成员在 make gate 遍次里给（见 gate-run*.txt）
+# branch=dev HEAD=7125165（本轮没有新提交，五遍跑在同一棵树上）
+# python=Python 3.13.5（anaconda py313）PYTHONPATH=.
+# env 面：未读取 .env、未打印任何密钥值；真库零访问（探针内部 run_pytest 一律带 -m "not e2e" --no-cov）
+
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 33 items
+
+tests/test_acceptance_probe_gate.py .................................    [100%]
+
+============================== 33 passed in 3.62s ==============================
+real 5.15
+user 4.84
+sys 0.29
+PYTEST_EXIT=0
