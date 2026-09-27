@@ -1,0 +1,14 @@
+run_at: 2026-09-27T21:21:27+0200
+branch: dev
+head_commit: 7af03e9
+worktree_modified_lines: 3
+command: python -m pytest 'tests/test_dwd_merge.py::TestDwdMergeService::test_service_writes_all_four_point_in_time_faces' 'tests/test_dwd_merge.py::TestDwdMergeService::test_service_degrades_per_key_and_keeps_the_source_evidence' 'tests/test_dwd_merge.py::TestMergeSourceFrames::test_point_in_time_columns_are_stamped' 'tests/test_dwd_merge.py::TestDwdMergeService::test_revision_of_an_existing_key_changes_the_dwd_row' 'tests/test_dwd_merge.py::TestDwdMergeService::test_affected_keys_extend_the_merge_unit' -q --no-header -p no:cacheprovider --no-cov -m 'not e2e'
+note: --no-cov 且 -m 'not e2e' ⇒ 这是取证跑，不是门禁读数
+----- below: verbatim stdout+stderr -----
+============================= test session starts ==============================
+collected 5 items
+
+tests/test_dwd_merge.py .....                                            [100%]
+
+============================== 5 passed in 0.03s ===============================
+PYTEST_EXIT=0

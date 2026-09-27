@@ -1,0 +1,14 @@
+run_at: 2026-09-27T21:59:51+0200
+branch: dev
+head_commit: 6638776
+worktree_in_flight: 7 entry(ies)（本轮 docs/evidence/C52/ 档案，git add 未提交）
+command: python -m pytest tests/test_dwd_merge.py -q --no-header -p no:cacheprovider --no-cov -m "not e2e"
+note: 本轮新增三条服务层用例所在的整文件复算；--no-cov 且 -m "not e2e" ⇒ 取证跑，不是门禁读数（门禁遍的成员 12 是全量带覆盖率的 pytest）
+----- below: verbatim stdout+stderr -----
+============================= test session starts ==============================
+collected 30 items / 1 deselected / 29 selected
+
+tests/test_dwd_merge.py .............................                    [100%]
+
+======================= 29 passed, 1 deselected in 0.08s =======================
+PYTEST_EXIT=0

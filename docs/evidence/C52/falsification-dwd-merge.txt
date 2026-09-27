@@ -1,0 +1,180 @@
+run_at: 2026-09-27T21:43:58+0200
+branch: dev
+head_commit: 41ba175
+worktree_modified_lines: 0（未跟踪的 docs/evidence/C52/ 仪器与档案不计入；本轮 tests/+probe 已在 76519cd/41ba175）
+command: python docs/evidence/C52/falsify_dwd_merge.py
+instrument: docs/evidence/C52/falsify_dwd_merge.py（本文件正文就是它的完整 stdout，未裁剪）
+note: 四处单点改写每处 finally 逐字节还原；pytest 一律子进程全新解释器 + --no-cov -m "not e2e"，不触碰数仓
+----- below: verbatim stdout+stderr -----
+
+===== M1 _as_of 写的不是窗口末（as_of=end -> as_of=start） =====
+--- pytest exit=1（期望非 0）---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0 -- /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 1 item
+
+tests/test_dwd_merge.py::TestDwdMergeService::test_service_writes_all_four_point_in_time_faces FAILED [100%]
+
+=================================== FAILURES ===================================
+_____ TestDwdMergeService.test_service_writes_all_four_point_in_time_faces _____
+tests/test_dwd_merge.py:245: in test_service_writes_all_four_point_in_time_faces
+    assert set(written[0]["_as_of"]) == {AS_OF}
+E   AssertionError: assert {datetime.date(2024, 1, 1)} == {datetime.date(2024, 1, 31)}
+E     
+E     Extra items in the left set:
+E     datetime.date(2024, 1, 1)
+E     Extra items in the right set:
+E     datetime.date(2024, 1, 31)
+E     
+E     Full diff:...
+E     
+E     ...Full output truncated (5 lines hidden), use '-vv' to show
+=========================== short test summary info ============================
+FAILED tests/test_dwd_merge.py::TestDwdMergeService::test_service_writes_all_four_point_in_time_faces
+============================== 1 failed in 0.08s ===============================
+--- probe AC-9|06 verdict=gap（期望 gap）---
+
+### AC-9|06  (document line 181)
+判据原文：dwd 合并：权威源存在则取权威、缺失降级填补；`source` 留痕正确；`_diff_flag` 打标正确；**`_as_of` 版本列写入**
+本探针：服务层三条节点全绿 + 权威降级/source/_diff_flag/_as_of 四面代码面在位
+台账现状：state=unreviewed，文档勾选=False
+  - 服务层与合并层节点: 2/3 passed; not green: test_service_writes_all_four_point_in_time_faces=exit=1
+  - 四问各自的代码面: 权威缺失才降级 = yes、source 留痕 = yes、_diff_flag 打标 = yes、_as_of 写入 = yes
+  - _as_of 取的是窗口末而不是别的日期: service.run 传 as_of=end = no；四列同时是 dwd 的留痕列定义 = yes
+  - 补齐到可判：as_of_is_window_end: no -> yes; bad: test_service_writes_all_four_point_in_time_faces=exit=1 -> -; passed: 2 -> 3
+VERDICT AC-9|06: gap — 这一格要的是四件事都发生在服务层的那一次 run 里：有权威取权威、没权威降级填补、source 留下是谁供的、_diff_flag 只在不一致时为 1、_as_of 是这一窗的窗口末 —— 少一面就少一条判据
+
+census: gap=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+--- 还原后与改写前逐字节相同 = True
+
+===== M2 权威缺失不再计数（if rank > 0 -> if rank < 0） =====
+--- pytest exit=1（期望非 0）---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0 -- /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 1 item
+
+tests/test_dwd_merge.py::TestDwdMergeService::test_service_degrades_per_key_and_keeps_the_source_evidence FAILED [100%]
+
+=================================== FAILURES ===================================
+_ TestDwdMergeService.test_service_degrades_per_key_and_keeps_the_source_evidence _
+tests/test_dwd_merge.py:263: in test_service_degrades_per_key_and_keeps_the_source_evidence
+    assert stats.degraded_rows == 1
+E   assert 0 == 1
+E    +  where 0 = MergeStats(rows=2, diff_flagged=0, degraded_rows=0, passthrough=False, colliding=()).degraded_rows
+=========================== short test summary info ============================
+FAILED tests/test_dwd_merge.py::TestDwdMergeService::test_service_degrades_per_key_and_keeps_the_source_evidence
+============================== 1 failed in 0.08s ===============================
+--- probe AC-9|06 verdict=gap（期望 gap）---
+
+### AC-9|06  (document line 181)
+判据原文：dwd 合并：权威源存在则取权威、缺失降级填补；`source` 留痕正确；`_diff_flag` 打标正确；**`_as_of` 版本列写入**
+本探针：服务层三条节点全绿 + 权威降级/source/_diff_flag/_as_of 四面代码面在位
+台账现状：state=unreviewed，文档勾选=False
+  - 服务层与合并层节点: 2/3 passed; not green: test_service_degrades_per_key_and_keeps_the_source_evidence=exit=1
+  - 四问各自的代码面: 权威缺失才降级 = no、source 留痕 = yes、_diff_flag 打标 = yes、_as_of 写入 = yes
+  - _as_of 取的是窗口末而不是别的日期: service.run 传 as_of=end = yes；四列同时是 dwd 的留痕列定义 = yes
+  - 补齐到可判：authority_fallback: no -> yes; bad: test_service_degrades_per_key_and_keeps_the_source_evidence=exit=1 -> -; passed: 2 -> 3
+VERDICT AC-9|06: gap — 这一格要的是四件事都发生在服务层的那一次 run 里：有权威取权威、没权威降级填补、source 留下是谁供的、_diff_flag 只在不一致时为 1、_as_of 是这一窗的窗口末 —— 少一面就少一条判据
+
+census: gap=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+--- 还原后与改写前逐字节相同 = True
+
+===== M3 不再写 _as_of（删掉那一行盖章） =====
+--- pytest exit=1（期望非 0）---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0 -- /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 1 item
+
+tests/test_dwd_merge.py::TestDwdMergeService::test_service_writes_all_four_point_in_time_faces FAILED [100%]
+
+=================================== FAILURES ===================================
+_____ TestDwdMergeService.test_service_writes_all_four_point_in_time_faces _____
+tests/test_dwd_merge.py:245: in test_service_writes_all_four_point_in_time_faces
+    assert set(written[0]["_as_of"]) == {AS_OF}
+E   AssertionError: assert {nan, nan} == {datetime.date(2024, 1, 31)}
+E     
+E     Extra items in the left set:
+E     nan
+E     nan
+E     Extra items in the right set:
+E     datetime.date(2024, 1, 31)
+E     ...
+E     
+E     ...Full output truncated (6 lines hidden), use '-vv' to show
+=========================== short test summary info ============================
+FAILED tests/test_dwd_merge.py::TestDwdMergeService::test_service_writes_all_four_point_in_time_faces
+============================== 1 failed in 0.08s ===============================
+--- probe AC-9|06 verdict=gap（期望 gap）---
+
+### AC-9|06  (document line 181)
+判据原文：dwd 合并：权威源存在则取权威、缺失降级填补；`source` 留痕正确；`_diff_flag` 打标正确；**`_as_of` 版本列写入**
+本探针：服务层三条节点全绿 + 权威降级/source/_diff_flag/_as_of 四面代码面在位
+台账现状：state=unreviewed，文档勾选=False
+  - 服务层与合并层节点: 1/3 passed; not green: test_service_writes_all_four_point_in_time_faces=exit=1, test_point_in_time_columns_are_stamped=exit=1
+  - 四问各自的代码面: 权威缺失才降级 = yes、source 留痕 = yes、_diff_flag 打标 = yes、_as_of 写入 = no
+  - _as_of 取的是窗口末而不是别的日期: service.run 传 as_of=end = yes；四列同时是 dwd 的留痕列定义 = yes
+  - 补齐到可判：as_of_stamped: no -> yes; bad: test_service_writes_all_four_point_in_time_faces=exit=1, test_point_in_time_columns_are_stamped=exit=1 -> -; passed: 1 -> 3
+VERDICT AC-9|06: gap — 这一格要的是四件事都发生在服务层的那一次 run 里：有权威取权威、没权威降级填补、source 留下是谁供的、_diff_flag 只在不一致时为 1、_as_of 是这一窗的窗口末 —— 少一面就少一条判据
+
+census: gap=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+--- 还原后与改写前逐字节相同 = True
+
+===== M4 affected_keys 不再下传 reader（窗口外的修订取不到数） =====
+--- pytest exit=1（期望非 0）---
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0 -- /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 1 item
+
+tests/test_dwd_merge.py::TestDwdMergeService::test_revision_of_an_existing_key_changes_the_dwd_row FAILED [100%]
+
+=================================== FAILURES ===================================
+___ TestDwdMergeService.test_revision_of_an_existing_key_changes_the_dwd_row ___
+tests/test_dwd_merge.py:313: in test_revision_of_an_existing_key_changes_the_dwd_row
+    assert stats.rows == 2  # the new window plus the restated key
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   assert 1 == 2
+E    +  where 1 = MergeStats(rows=1, diff_flagged=0, degraded_rows=0, passthrough=False, colliding=()).rows
+=========================== short test summary info ============================
+FAILED tests/test_dwd_merge.py::TestDwdMergeService::test_revision_of_an_existing_key_changes_the_dwd_row
+============================== 1 failed in 0.08s ===============================
+--- probe AC-9|07 verdict=gap（期望 gap）---
+
+### AC-9|07  (document line 182)
+判据原文：**修订传播**：ods 中已存在 key 被修正后，dwd 对应行同步更新（单测）
+本探针：两条修订节点全绿 + 传播链五段（交键/重拼契约键/下传 reader/键级 upsert）
+台账现状：state=unreviewed，文档勾选=False
+  - 两条单测: 0/2 passed; not green: test_revision_of_an_existing_key_changes_the_dwd_row=exit=1, test_affected_keys_extend_the_merge_unit=exit=1 —— 一条测「修正后的 key 被重算进合并单元」，一条测「那一行的值真的换了」
+  - 传播链五段: runner 交出被改的键 = yes、run_hook 把 ods 拼法重拼成契约键 = yes、reader 收到这批键 = no、键进入差异重算 = yes、写侧按业务键 upsert = yes
+  - 补齐到可判：bad: test_revision_of_an_existing_key_changes_the_dwd_row=exit=1, test_affected_keys_extend_the_merge_unit=exit=1 -> -; passed: 0 -> 2; reader_gets_keys: no -> yes
+VERDICT AC-9|07: gap — 「修订传播」是一条链：ods 改了的键要交出来、要换成契约键、要进 reader 的取数窗口、要参与差异重算、最后按业务键 upsert 回同一行 —— 链上任一段断掉，dwd 留的就不是修订后的值
+
+census: gap=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+--- 还原后与改写前逐字节相同 = True
+
+===== 收尾 =====
+opendata/pipeline/dwd_merge.py 逐字节回到起点: True
+OK: 4 处单点改写逐处把对应节点与条目级探针扳红，文件逐字节还原。
