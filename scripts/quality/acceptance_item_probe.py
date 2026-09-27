@@ -2971,6 +2971,205 @@ def judge_ac18_03(facts: Facts) -> Verdict:
 
 
 # --------------------------------------------------------------------------- #
+# AC-13 -- the alert matrix, judged on the four rows its own wording names
+# --------------------------------------------------------------------------- #
+
+#: The module that owns the matrix, and the rule engine it delegates to.
+ALERT_MATRIX_REL: Final = "opendata/pipeline/alert_matrix.py"
+FRESHNESS_REL: Final = "opendata/pipeline/freshness.py"
+
+#: The four kinds 「告警矩阵生效」names. ``freshness`` is not one of them: AC-18|01
+#: owns that row, and a probe that re-claimed it would hide a missing kind behind a
+#: reading that was already paid for elsewhere.
+MATRIX_KIND_TOKENS: Final = ("pipeline 失败", "连续失败", "分区缺失", "磁盘水位")
+MATRIX_RULE_KINDS: Final = (
+    "pipeline_failure",
+    "consecutive_failures",
+    "partition_missing",
+    "disk_water",
+)
+
+#: One producer per kind. ``pipeline_failure`` and ``consecutive_failures`` are the
+#: same reading with two thresholds, so they share ``collect_failures``.
+MATRIX_PRODUCERS: Final = {
+    "pipeline_failure": "collect_failures",
+    "consecutive_failures": "collect_failures",
+    "partition_missing": "collect_partitions",
+    "disk_water": "collect_disk",
+}
+
+#: The inputs the freshness layer cannot reach on its own, so the scheduled
+#: executor has to supply each one -- declared *and* passed.
+MATRIX_INPUTS: Final = ("control_engine", "current_year", "disk_path")
+
+#: What one run could not measure. Without these the scope would read "no alerts"
+#: for a matrix that was never given the data to decide on.
+MATRIX_SCOPE_FIELDS: Final = ("failure_legs", "partitioned_tables", "disk_path")
+
+#: 四类各一条 producer→判定→出帧的节点，加一条四类同跑的节点。
+MATRIX_KIND_NODES: Final = (
+    "tests/test_alert_matrix.py::TestFailureSignal::"
+    "test_one_lost_shard_makes_the_whole_run_a_failure",
+    "tests/test_alert_matrix.py::TestFailureSignal::test_the_streak_counts_runs_not_shards",
+    "tests/test_alert_matrix.py::TestFailureSignal::test_a_run_that_worked_again_breaks_the_streak",
+    "tests/test_alert_matrix.py::TestDiskAndPartitionSignals::"
+    "test_a_missing_year_alerts_without_the_matrix_touching_ddl",
+    "tests/test_alert_matrix.py::TestDiskAndPartitionSignals::"
+    "test_the_partition_face_never_asks_for_a_repair",
+    "tests/test_alert_matrix.py::TestDiskAndPartitionSignals::test_a_full_volume_alerts_critical",
+    "tests/test_alert_matrix.py::TestAlertFrames::"
+    "test_every_rule_gets_a_type_a_subscriber_can_route_on",
+    "tests/test_alert_matrix.py::TestAllFourKindsAtOnce::"
+    "test_one_run_delivers_every_kind_the_matrix_decides",
+)
+
+#: 接线面：执行器真的把三类输入喂进去、没喂的输入要读成「测不到」而不是「健康」。
+MATRIX_WIRING_NODES: Final = (
+    "tests/test_alert_matrix.py::TestMatrixScopeHonesty::"
+    "test_inputs_left_out_read_as_none_rather_than_zero",
+    "tests/test_alert_matrix.py::TestMatrixScopeHonesty::"
+    "test_the_control_engine_turns_the_failure_rows_on",
+    "tests/test_pipeline_jobs.py::TestFreshnessExecutor::"
+    "test_it_feeds_the_three_faces_freshness_cannot_reach",
+    "tests/test_pipeline_jobs.py::TestFreshnessExecutor::"
+    "test_the_horizon_years_default_to_the_design_rule",
+)
+
+
+def module_level_defs(source: str) -> tuple[str, ...]:
+    """Names of the module-level functions, so a producer is counted where it lives."""
+    tree = ast.parse(source)
+    return tuple(
+        node.name for node in tree.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    )
+
+
+def parameter_names(source: str, name: str) -> tuple[str, ...]:
+    """Every parameter of one module-level function, positional or keyword-only."""
+    tree = ast.parse(source)
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == name:
+            args = node.args
+            return tuple(a.arg for a in (*args.posonlyargs, *args.args, *args.kwonlyargs))
+    return ()
+
+
+def call_keywords_in(source: str, function: str, name: str) -> tuple[str, ...]:
+    """Keyword arguments one call passes, looked up inside one function's body.
+
+    Reading the call site instead of the signature is the point: a parameter that
+    exists but is never passed is a face of the matrix that stays dark while the
+    run reports zero alerts.
+    """
+    body = function_body(source, function)
+    if not body:
+        return ()
+    for node in ast.walk(ast.parse(body)):
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == name:
+            return tuple(kw.arg for kw in node.keywords if kw.arg)
+    return ()
+
+
+def class_fields(source: str, name: str) -> tuple[str, ...]:
+    """Annotated attribute names of a module-level class."""
+    tree = ast.parse(source)
+    for node in tree.body:
+        if isinstance(node, ast.ClassDef) and node.name == name:
+            return tuple(
+                stmt.target.id
+                for stmt in node.body
+                if isinstance(stmt, ast.AnnAssign) and isinstance(stmt.target, ast.Name)
+            )
+    return ()
+
+
+def alert_rules_emitted(source: str) -> tuple[str, ...]:
+    """The ``rule`` values the judge engine can produce (first positional of ``Alert``)."""
+    rules: set[str] = set()
+    for node in ast.walk(ast.parse(source)):
+        if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
+            continue
+        if node.func.id != "Alert" or not node.args:
+            continue
+        first = node.args[0]
+        if isinstance(first, ast.Constant) and isinstance(first.value, str):
+            rules.add(first.value)
+    return tuple(sorted(rules))
+
+
+def measure_ac13_07(ctx: Context) -> Facts:
+    """Run the four kinds' nodes, then check each kind has a producer the job feeds."""
+    kinds = outcomes(MATRIX_KIND_NODES)
+    wiring = outcomes(MATRIX_WIRING_NODES)
+    matrix = ctx.read(ALERT_MATRIX_REL)
+    text = ctx.item("AC-13|07").text
+    defined = module_level_defs(matrix)
+    emitted = alert_rules_emitted(ctx.read(FRESHNESS_REL))
+    fed = call_keywords_in(ctx.read(PIPELINE_JOBS_REL), "_execute_freshness", "run_alert_matrix")
+    declared = parameter_names(matrix, "run_alert_matrix")
+    missing_producer = [fn for fn in MATRIX_PRODUCERS.values() if fn not in defined]
+    return {
+        "kind_runs": count(len(kinds)),
+        "kind_passed": count(sum(1 for seen in kinds.values() if seen == "passed")),
+        "kind_bad": bad_of(kinds),
+        "wiring_runs": count(len(wiring)),
+        "wiring_passed": count(sum(1 for seen in wiring.values() if seen == "passed")),
+        "wiring_bad": bad_of(wiring),
+        "kinds_named": count(sum(1 for token in MATRIX_KIND_TOKENS if token in text)),
+        "rules_emitted": ", ".join(emitted) or "-",
+        "rules_judged": count(sum(1 for rule in MATRIX_RULE_KINDS if rule in emitted)),
+        "producers": count(len(MATRIX_PRODUCERS) - len(missing_producer)),
+        "missing_producer": ", ".join(missing_producer) or "-",
+        "inputs_declared": count(sum(1 for key in MATRIX_INPUTS if key in declared)),
+        "inputs_fed": count(sum(1 for key in MATRIX_INPUTS if key in fed)),
+        "input_unfed": ", ".join(key for key in MATRIX_INPUTS if key not in fed) or "-",
+        "scope_fields": count(
+            sum(1 for field in MATRIX_SCOPE_FIELDS if field in class_fields(matrix, "MatrixScope"))
+        ),
+    }
+
+
+def judge_ac13_07(facts: Facts) -> Verdict:
+    """``AC-13|07``: each named kind has a producer, is decided, and reaches the run."""
+    ok = (
+        positive(facts["kind_runs"])
+        and facts["kind_passed"] == facts["kind_runs"]
+        and facts["kind_bad"] == "-"
+        and positive(facts["wiring_runs"])
+        and facts["wiring_passed"] == facts["wiring_runs"]
+        and facts["wiring_bad"] == "-"
+        and facts["kinds_named"] == "4"
+        and facts["rules_judged"] == "4"
+        and facts["producers"] == "4"
+        and facts["missing_producer"] == "-"
+        and facts["inputs_declared"] == "3"
+        and facts["inputs_fed"] == "3"
+        and facts["input_unfed"] == "-"
+        and facts["scope_fields"] == "3"
+    )
+    readings = (
+        f"四类节点: {facts['kind_passed']}/{facts['kind_runs']} passed"
+        + (f"; not green: {facts['kind_bad']}" if facts["kind_bad"] != "-" else ""),
+        f"接线节点: {facts['wiring_passed']}/{facts['wiring_runs']} passed"
+        + (f"; not green: {facts['wiring_bad']}" if facts["wiring_bad"] != "-" else ""),
+        f"判据原文点名的类数 = {facts['kinds_named']}/4；判定引擎产出的 rule = "
+        f"{facts['rules_emitted']}，四类齐 = {facts['rules_judged']}/4",
+        f"生产者齐备 = {facts['producers']}/4（缺: {facts['missing_producer']}）；"
+        f"执行器喂入的三类输入 = {facts['inputs_fed']}/{facts['inputs_declared']}"
+        f"（未喂: {facts['input_unfed']}）",
+        f"范围诚实字段 = {facts['scope_fields']}/3 —— 测不到要读成 None/0 而不是健康",
+    )
+    reason = (
+        ""
+        if ok
+        else "「生效」要求判据点名的四类各有生产者、各有判定行、各被调度执行器真的喂到输入；"
+        "任何一类没有生产者、执行器只声明不传参（那一类永远读成零告警）、或测不到的输入不再"
+        "记进范围（空读数伪装成健康），都只算规则存在"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+# --------------------------------------------------------------------------- #
 # The probe table
 # --------------------------------------------------------------------------- #
 
@@ -3390,6 +3589,67 @@ PROBES: Final[tuple[Probe, ...]] = (
             "suite_failed": "0",
             "suite_rc": "0",
             "derived_passed": "*runs",
+        },
+    ),
+    Probe(
+        item="AC-13|07",
+        expects="告警矩阵生效",
+        summary="四类各有生产者、各有判定行、各被调度执行器真喂输入，测不到仍记进范围",
+        measure=measure_ac13_07,
+        judge=judge_ac13_07,
+        breaks=(
+            Break("pipeline 失败面的一个节点变红", (("kind_passed", "7"),), GAP),
+            Break(
+                "判据点名的一个节点被改名（那一类再也没人测）",
+                (
+                    (
+                        "kind_bad",
+                        "test_a_missing_year_alerts_without_the_matrix_touching_ddl=missing",
+                    ),
+                ),
+                GAP,
+            ),
+            Break("接线面变红", (("wiring_passed", "3"),), GAP),
+            Break("执行器喂入面不再断言", (("wiring_bad", "x=exit=1"),), GAP),
+            Break("判据原文不再列全四类", (("kinds_named", "3"),), GAP),
+            Break("判定引擎不再产出磁盘水位那一类", (("rules_judged", "3"),), GAP),
+            Break(
+                "分区缺失没有生产者（分区面只能由调用方手工喂）",
+                (("producers", "3"), ("missing_producer", "collect_partitions")),
+                GAP,
+            ),
+            Break(
+                "执行器不再喂控制库（pipeline 失败恒读成零告警）",
+                (("inputs_fed", "2"), ("input_unfed", "control_engine")),
+                GAP,
+            ),
+            Break(
+                "矩阵不再接受年份输入",
+                (("inputs_declared", "2"),),
+                GAP,
+            ),
+            Break(
+                "范围不再记三类读数（空读数看起来像健康）",
+                (("scope_fields", "2"),),
+                GAP,
+            ),
+        ),
+        repair={
+            "kind_runs": "*kind_runs",
+            "kind_passed": "*kind_runs",
+            "kind_bad": "-",
+            "wiring_runs": "*wiring_runs",
+            "wiring_passed": "*wiring_runs",
+            "wiring_bad": "-",
+            "kinds_named": "4",
+            "rules_emitted": "*rules_emitted",
+            "rules_judged": "4",
+            "producers": "4",
+            "missing_producer": "-",
+            "inputs_declared": "3",
+            "inputs_fed": "3",
+            "input_unfed": "-",
+            "scope_fields": "3",
         },
     ),
     Probe(

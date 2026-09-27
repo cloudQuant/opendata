@@ -156,6 +156,24 @@ def warehouse_engine() -> Engine:
     return create_engine(settings.data_database_url, poolclass=NullPool)
 
 
+@lru_cache(maxsize=1)
+def control_engine() -> Engine:
+    """Process-wide sync engine of the control database.
+
+    The alert matrix's pipeline-failure rows come from
+    ``pipeline_progress``, which lives beside ``scheduled_tasks`` rather
+    than in the warehouse - so the matrix needs two engines and saying so
+    is the point: reading the warehouse for it would quietly find nothing
+    and report every leg as healthy.
+    """
+    from sqlalchemy import create_engine
+    from sqlalchemy.pool import NullPool
+
+    from opendata.core.config import settings
+
+    return create_engine(settings.database_url_sync, poolclass=NullPool)
+
+
 def resolve_fetcher(domain: str, source: str) -> Fetcher[Any, Any]:
     """Route one (domain, source) pair through the provider registry.
 
@@ -731,6 +749,7 @@ async def _execute_freshness(template: ScheduleTemplate) -> dict[str, Any]:
             nor a list of registered domains.
     """
     from opendata.api.websocket import ws_manager
+    from opendata.core.config import settings
 
     domains = _payload_domains(template.payload)
     engine = warehouse_engine()
@@ -740,9 +759,18 @@ async def _execute_freshness(template: ScheduleTemplate) -> dict[str, Any]:
         engine,
         expected=expected,
         domains=domains,
+        # The other three rows of the matrix read places freshness cannot:
+        # the shard checkpoint lives in the control database, the partition
+        # horizon needs a year (the calendar answers "which day is data due
+        # for", not "which partitions must exist"), and the water level is a
+        # filesystem reading on the volume this process writes to.
+        control_engine=control_engine(),
+        current_year=date.today().year,
+        years_ahead=int(template.payload.get("years_ahead", 2)),
+        disk_path=settings.data_dir,
         broadcast=ws_manager.broadcast,
     )
-    logger.info(f"freshness matrix {template.name}: {run.as_dict()}")
+    logger.info(f"alert matrix {template.name}: {run.as_dict()}")
     return run.as_dict()
 
 

@@ -850,7 +850,60 @@ class TestFreshnessExecutor:
         assert captured["domains"] is None
         assert captured["engine"] is engine
         assert result["expected"] == self.EXPECTED.isoformat()
-        assert result["scope"] == {"domains": 20, "source_legs": 28, "unmapped_legs": 5}
+        assert result["scope"] == {
+            "domains": 20,
+            "source_legs": 28,
+            "unmapped_legs": 5,
+            "failure_legs": None,
+            "partitioned_tables": 0,
+            "disk_path": None,
+        }
+
+    async def test_it_feeds_the_three_faces_freshness_cannot_reach(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """AC-13|07: one scheduled run must measure all four kinds.
+
+        The other three read places the warehouse engine cannot: the shard
+        checkpoint lives in the control database, the partition horizon needs
+        a year, and the water level is a filesystem path. Passing ``None`` for
+        any of them would leave that row of the matrix permanently green, so
+        the wiring itself is the thing under test.
+        """
+        from datetime import date
+        from pathlib import Path
+
+        from opendata.core.config import settings
+
+        captured: dict[str, Any] = {}
+        control = object()
+        self._stub_matrix(monkeypatch, captured)
+        monkeypatch.setattr(jobs, "warehouse_engine", lambda: object())
+        monkeypatch.setattr(jobs, "control_engine", lambda: control)
+        monkeypatch.setattr(jobs, "resolve_calendar", lambda engine: _FixedCalendar(self.EXPECTED))
+
+        await jobs._execute_template(self._template({"domains": "all", "years_ahead": 3}))
+
+        assert captured["control_engine"] is control
+        assert captured["current_year"] == date.today().year
+        assert captured["years_ahead"] == 3
+        # settings.data_dir is the warehouse's configured data directory, so
+        # the reading names a path the deployment declares rather than one
+        # this code invented.
+        assert captured["disk_path"] == Path(settings.data_dir)
+
+    async def test_the_horizon_years_default_to_the_design_rule(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        captured: dict[str, Any] = {}
+        self._stub_matrix(monkeypatch, captured)
+        monkeypatch.setattr(jobs, "warehouse_engine", lambda: object())
+        monkeypatch.setattr(jobs, "control_engine", lambda: object())
+        monkeypatch.setattr(jobs, "resolve_calendar", lambda engine: _FixedCalendar(self.EXPECTED))
+
+        await jobs._execute_template(self._template())
+
+        assert captured["years_ahead"] == 2
 
     async def test_it_delivers_on_the_websocket_channel(
         self, monkeypatch: pytest.MonkeyPatch
