@@ -366,7 +366,25 @@
       "note": "判据原文要的是「注入差异样本被**校对作业**捕获」并逐列进 `dq_diff_report`。修前的真实形状：`FULL_CHECK` 虽在 `TemplateKind` 与 `schedules.yaml`（`cron='0 2 * * 0'`）里都声明了，却**不在 `EXECUTABLE_KINDS`**，而 `register_builtin_jobs` 对不可执行 kind 是 `logger.info(...) + continue`（`jobs.py:618-620`）⇒ 那行周末全量校对**从来没有装进任何调度器**；真库侧独立互证：`dq_diff_report` 100 行全在手工批次 `dual-source-2026h1` 下，形如 `hook_batch_id()` 产出的 `xcheck:` 前缀批次 **0 组**。本轮补 `_execute_full_check`：payload 只允许 `domain` + `window: full`，窗口由 `cross_check_window` 从**两条腿共有的日子**现算（实测 ths 到 2026-09-24、akshare 到 2026-07-21，按日历开窗会把整段覆盖缺口报成差异），批次键走 `batch_id_for` ⇒ 与流水线 step-3 同一键空间；落库经 `build_cross_check` 交出的 `write_report=DiffReportWriter(engine).write`。**列面是可证伪的**：判据点名的 domain/源对/key/字段/两源值/偏差/verdict 九个列名要逐个出现在 `REPORT_COLUMNS` **且**有同名 `ReportRow` 字段——写入走 `as_params()` 的 `getattr`，只声明了列名而没有同名字段会在每次写入时炸；`build_report_insert_sql()` 的占位符由 `REPORT_COLUMNS` 生成，故「INSERT 语句绑定每列」是恒真面，已弃用。**不计入本勾**：真机 `dq_diff_report` 一次写入都没发生（往生产数仓写是须用户确认的动作），周日 02:00 真跑并把 `xcheck:` 批次读回来仍是待办；`second_source` 不在每日 payload 里 ⇒ 真机上 step-3 只由周报触发；`partition_maintenance` 仍无执行器（apply 半边是生产 DDL）。"
     },
     "AC-9|03|3bce2eae": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C49",
+      "date": "2026-09-27",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-9|03' --item 'AC-9|08' --item 'AC-9|09'（VERDICT proven：反例节点 4/4 passed、两条反例都走生产入口 compare_source_frames、①的 `match=\"missing mapped columns\"` 在位、②的 mismatch 断言点名字段 volume、tolerance 配对的整本字典形式已移除且逐字段合并、合并取紧、正反两个方向都量） ＋ python -m pytest tests/test_dwd_merge.py tests/test_cross_check.py -q --no-header -p no:cacheprovider --no-cov -m 'not e2e'（43 passed / 1 deselected，--no-cov 且 -m 'not e2e' ⇒ 不是门禁读数） ＋ set -a; . ./.env; set +a; python docs/evidence/C49/ac9_residual_census.py（面 2 七种输入 + 四组 tolerance 配对；66 statements 全 SELECT/SHOW，非只读闸门 0 条；修前/修后各一遍） ＋ python scripts/quality/acceptance_item_probe.py --self-test（30 探针 / 229 条反事实全部把干净读数打回 gap，SELFTEST_EXIT=0；本格新增 8 条） ＋ python scripts/quality/acceptance_item_probe.py --all（census gap=10, proven=20，PROBE_ALL_EXIT=0，无 drift） ＋ make gate 回填前一遍：gate-run2-prebackfill.txt 7,369 行完整未裁剪、17 段 `===== gate:`、GATE_EXIT=0 读自文件内部；3236 passed, 6 skipped in 83.24s (0:01:23) ==================；TOTAL 11636 1086 2874 288 89.28%",
+      "evidence": [
+        "docs/evidence/C49/README.md",
+        "docs/evidence/C49/ac9_residual_census.py",
+        "docs/evidence/C49/census-pre-fix.txt",
+        "docs/evidence/C49/census-post-fix.txt",
+        "docs/evidence/C49/probe-self-test.txt",
+        "docs/evidence/C49/probe-items-three-prebackfill.txt",
+        "docs/evidence/C49/probe-all-prebackfill.txt",
+        "docs/evidence/C49/witness-pytest.txt",
+        "docs/evidence/C49/gate-run2-prebackfill.txt",
+        "scripts/quality/acceptance_item_probe.py",
+        "opendata/pipeline/cross_check.py",
+        "tests/test_cross_check.py"
+      ],
+      "note": "判据原文两问，本轮各补一面：①「字段名不匹配时必须报错而非静默通过」有两种形状，修前只测了「两侧契约模型不同名」（`different contract fields`，早已在位），而「mapping 声明了一列、帧里没有」没有任何用例钉过——面 2 的 D 格实测它确实抛 `missing mapped columns ['volume']`，本轮把这条形状钉在**生产入口** `compare_source_frames` 上（只测 `normalize_frame`/`_disagreeing_keys` 不算，校对作业读的是这个函数）。②「单位未归一时必须产生 mismatch」原有的断言是好的（点名 verdict 与字段 volume），缺的是它的**判定分母**：当时 `tolerances = mapping_b.tolerances or mapping_a.tolerances`，一条腿的宽松容差把另一条腿的紧容差整本换掉——面 2 修前读数 `close 相差 0.4 @ a 紧(1e-4) / b 松(1.0) → verdict=consistent`。修后同一格是 `deviation 判差=1 per_field={'close': 1}`。**真机行为不变**：两份 shipped yaml 的 OHLC 容差逐字段相同（面 6 读数 tolerance 两侧同为 1e-4），所以这不是「修掉一次正在发生的错判」，是「修掉一个只需要 yaml 漂一点就会发生的错判」——面 2 的 G 格（一侧声明 `scale: 100`、另一腿原始值已是股）读数 consistent 是**正确读数**，本轮把它写进 census 就是为了区分「真一致」与「没测」。不计入本勾：无（判据两问都已达标）。"
     },
     "AC-9|04|dcfe5ab7": {
       "state": "proven",
@@ -417,10 +435,43 @@
       "state": "unreviewed"
     },
     "AC-9|08|a87bfe6f": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C49",
+      "date": "2026-09-27",
+      "reason": "代码面本轮已通，判据的后一半没通，所以不勾。修前实测（census 面 8）：`ods_stock_action_ths` 经生产 reader 交出 55,073 行，`merge_source_frames` **整窗 `raise`**（`source 'ths' has duplicate business key ('603883', datetime.date(2024, 6, 27))`）⇒ 直通一行都不交，`dwd_stock_action` 自始至终 0 行。本轮把整窗拒绝改成逐键拒绝（该键两组都丢弃、其余照常落、被拒的键逐条进新增的 `MergeStats.colliding`报告；键列缺失仍 fail closed）⇒ 同一批输入现在交出 55,071 行，且直通输出列与 `dwd_stock_action` 的声明列**恰好同集**，`layer=dwd` 用生产 `_key`/`build_data_select` 建得出 SQL（这两面各有用例）。仍然差两件事，都不是「再改一次判定口径」能补的：①**表里 0 行**——落库是一次生产数仓写入（`DwdWriter.write` 的 key 级 upsert），按本仓既有规则须经用户确认；②**另外 3 个单源域连表都没有**——面 7 用生产 `_inspect_columns` 逐域实测，`dwd_futures_daily`/`dwd_index_daily`/`dwd_option_daily` 返回 0 列（表真的存在=False），endpoint 在建 SQL 之前就 404；`ddl.dwd_table_ddl` 对任何已注册域都渲染得出 DDL，但**生产里没有任何调用点应用它**（只有测试调用）。另登记一条：那个两义键本身（603883 / 2024-06-27，0.16 现金 vs 0.5 现金 + 0.3 送）是契约装不下的形状——主键 `(symbol, ex_date)` 容不下同除息日两套方案，要么加宽键（DDL + 迁移 + 定「方案」字段），要么维持「拒绝并报告」这条当前行为。二者都须用户决定。",
+      "evidence": [
+        "docs/evidence/C49/README.md",
+        "docs/evidence/C49/census-pre-fix.txt",
+        "docs/evidence/C49/census-post-fix.txt",
+        "docs/evidence/C49/probe-items-three-prebackfill.txt",
+        "docs/evidence/C49/gate-run1-prebackfill-attempt.txt",
+        "docs/evidence/C49/a2-check-after-c48-instrument-fix.txt",
+        "opendata/pipeline/dwd_merge.py",
+        "tests/test_dwd_merge.py"
+      ]
     },
     "AC-9|09|ca69bd21": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C49",
+      "date": "2026-09-27",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-9|03' --item 'AC-9|08' --item 'AC-9|09'（VERDICT proven：重算节点 5/5 passed、键集排序在位、写侧走 `build_upsert_sql(table, columns, key)`、dwd 表 `PRIMARY KEY` 即业务键；真库 e2e 那一格只披露读数） ＋ python -m pytest tests/test_dwd_merge.py tests/test_cross_check.py -q --no-header -p no:cacheprovider --no-cov -m 'not e2e'（43 passed / 1 deselected） ＋ set -a; . ./.env; set +a; python docs/evidence/C49/ac9_residual_census.py（面 4：双源两遍逐格相等、换 merged_at 只有 `_merged_at` 一列变、帧字典顺序不改变输出；面 8：真腿直通跑两遍逐格相等） ＋ python scripts/quality/acceptance_item_probe.py --self-test（SELFTEST_EXIT=0；本格新增 5 条反事实） ＋ python scripts/quality/acceptance_item_probe.py --all（PROBE_ALL_EXIT=0，无 drift） ＋ make gate 回填前一遍：gate-run2-prebackfill.txt 7,369 行完整未裁剪、17 段 `===== gate:`、GATE_EXIT=0 读自文件内部；3236 passed, 6 skipped in 83.24s (0:01:23) ==================；TOTAL 11636 1086 2874 288 89.28%",
+      "evidence": [
+        "docs/evidence/C49/README.md",
+        "docs/evidence/C49/ac9_residual_census.py",
+        "docs/evidence/C49/census-pre-fix.txt",
+        "docs/evidence/C49/census-post-fix.txt",
+        "docs/evidence/C49/probe-self-test.txt",
+        "docs/evidence/C49/probe-items-three-prebackfill.txt",
+        "docs/evidence/C49/probe-all-prebackfill.txt",
+        "docs/evidence/C49/witness-pytest.txt",
+        "docs/evidence/C49/gate-run2-prebackfill.txt",
+        "scripts/quality/acceptance_item_probe.py",
+        "opendata/pipeline/dwd_merge.py",
+        "opendata/pipeline/ddl.py",
+        "opendata/pipeline/ods_writer.py",
+        "tests/test_dwd_merge.py"
+      ],
+      "note": "这一格此前**唯一的幂等见证是 `@pytest.mark.e2e` 里的一条**（`TestDwdWriteAgainstMysql::test_merge_writes_rows_with_trace_columns_and_is_idempotent`），而门禁与探针的选择式都是 `-m \"not e2e\"` ⇒ 它在门禁里一次都没跑过（探针读它的当前值 `exit=5`，即整条被 deselect）。本轮把判定面建在门禁**跑得到**的地方：输出确定性（`all_keys = sorted(...)`，不排序则同输入两遍的顺序可变）＋ 写侧 key 级 upsert（`DwdWriter.write` 走 `build_upsert_sql(table, columns, key)`，UPDATE 集不含键列）＋ dwd 表主键就是业务键（`_table_ddl` 的 `PRIMARY KEY`）三条代码面，加 5 条纯函数节点（同输入两遍逐格相等且 stats 相等、字典顺序不改变输出、晚一点的时钟只动 `_merged_at`、同键落两次是同一行就地更新、空重算什么都不写）。**没有放宽判据**：真库那一格仍然只是披露（不参与合式），把它当判据就等于把这一格挂在一条门禁永不执行的用例上。顺带量到并如实登记：`batch_watermark` 0 行而 `dwd_stock_daily` 719,316 行（C38b 已把该表定性为「会被按 domain 清掉的弱审计面」）——不属于本格判据，另案登记。"
     },
     "AC-10|01|a6c002e5": {
       "state": "unreviewed"
