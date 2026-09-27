@@ -17,8 +17,14 @@
         frontend-collection frontend-e2e \
         gate quality quality-full pre-commit
 
-# Self-developed trees (A1 + A2)
-PY_SELFDEV := opendata scripts tests
+# Self-developed trees (A1 + A2). These mirror the plane lists in
+# scripts/quality/ratchet.py — SELFDEV_PATHS / MYPY_PATHS / BANDIT_PATHS — so a
+# developer view cannot quietly be narrower than what the ratchet counts.
+# (alembic/ and alembic_data/ joined the planes in C45; before that a ruff or
+# bandit finding there moved the gate number but appeared in no make target.)
+PY_SELFDEV := opendata opendata_fuyao scripts tests alembic alembic_data
+PY_MYPY := opendata opendata_fuyao alembic alembic_data
+PY_BANDIT := opendata opendata_fuyao scripts alembic alembic_data
 # Ported tree (B). Milestone A2 renamed akshare/ to opendata_http/; this
 # variable was left behind, so `make lint` had been failing on its third
 # command (ruff check --select E,F akshare: directory not found) ever since.
@@ -51,10 +57,10 @@ format-check:
 	ruff format --check $(PY_SELFDEV)
 
 typecheck:
-	mypy opendata/
+	mypy $(PY_MYPY)
 
 security:
-	bandit -c bandit.yaml -r opendata scripts
+	bandit -c bandit.yaml -r $(PY_BANDIT)
 
 # B-layer (ported) one-off full scan with manual triage (A2.6). The daily
 # `security` target excludes opendata_http by design (quality spec §4: the

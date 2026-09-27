@@ -27,6 +27,15 @@ Each class is written to fail in both directions - the package must be visible
 *and* the ported/legacy roots it is contrasted with must stay excluded - because
 a guard that only checks half of that passes when someone deletes the exclusion
 list entirely.
+
+C45 extends the same census to ``alembic/`` and ``alembic_data/``. Both roots
+were excluded from every plane on a rationale that does not survive reading the
+code ("tool-generated migration env"): the modules under ``versions/`` are
+hand-written and only *import* their DDL text from ``opendata/pipeline/ddl``.
+Ten touched first-party files were invisible to a2-check, the ratchet, ruff's
+walk and mypy's walk at the same time, and ``a2_check --files alembic/env.py``
+answered "OK: no A2 files changed" - so an explicit request to look at one of
+them read exactly like a pass.
 """
 
 import re
@@ -43,7 +52,9 @@ from scripts.quality import a2_check as guard
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 #: Trees this project owns and therefore expects to be fully visible.
-FIRST_PARTY_TREES = ("opendata", "scripts", "tests")
+#: C45: the two alembic envs join - they are first-party Python, not
+#: regenerable artifacts (only the SQL strings inside them are generated).
+FIRST_PARTY_TREES = ("opendata", "scripts", "tests", "alembic", "alembic_data")
 
 #: The package C35 found dark: a first-party provider package that shares its
 #: name with the vendored tree that used to sit at the repo root.
@@ -116,13 +127,33 @@ class TestTheCollidingPackageIsInvisibleToNoPlane:
 class TestRootTreesStayExcluded:
     """The other half: the ported/legacy layers must not be pulled in by name."""
 
-    @pytest.mark.parametrize(
-        "rel_path",
-        ["opendata_http/__init__.py", "alembic/env.py", "alembic_data/env.py"],
-    )
+    @pytest.mark.parametrize("rel_path", ["opendata_http/__init__.py"])
     def test_existing_root_tree_files_are_not_a2_candidates(self, rel_path: str) -> None:
         assert (REPO_ROOT / rel_path).is_file(), f"{rel_path} moved - this case proves nothing"
         assert guard._is_a2_candidate(rel_path) is False
+
+    @pytest.mark.parametrize(
+        "rel_path",
+        ["alembic/env.py", "alembic_data/env.py"],
+    )
+    def test_the_migration_envs_are_candidates_now(self, rel_path: str) -> None:
+        """C45: the roots left the exclusion set, so the predicate must accept them.
+
+        Pinned on files that exist today, so the case cannot go vacuous the way
+        ``alembic/x.py`` would have.
+        """
+        assert (REPO_ROOT / rel_path).is_file(), f"{rel_path} moved - this case proves nothing"
+        assert guard._is_a2_candidate(rel_path) is True
+
+    def test_migration_modules_touched_since_the_baseline_are_in_the_a2_set(self) -> None:
+        """The A2 set must really carry them, not just accept the predicate."""
+        resolved = guard.resolve_files(None)
+        assert resolved is not None, "A2 baseline missing - the gate is inactive"
+        on_disk = {name for tree in ("alembic", "alembic_data") for name in tree_files(tree)}
+        dark = sorted(name for name in on_disk if name not in set(resolved))
+        # alembic/env.py predates the A0 baseline and is unmodified since, so it
+        # is legitimately outside the "touched since A0" set; nothing else is.
+        assert dark == ["alembic/env.py"], f"migration files missing from the A2 set: {dark}"
 
     def test_a_walk_from_the_repo_root_still_skips_the_ported_tree(self) -> None:
         """``[tool.ruff].exclude`` patterns match the path *relative to the walk
@@ -180,10 +211,33 @@ class TestMypyExcludesOnlyWhatItSays:
 
     @pytest.mark.parametrize(
         "rel_path",
-        ["opendata_http/x.py", "tests/x.py", "alembic/x.py", "alembic_data/x.py"],
+        ["opendata_http/x.py", "tests/x.py"],
     )
     def test_documented_root_trees_stay_out(self, rel_path: str) -> None:
         assert mypy_excludes(rel_path) is True
+
+    @pytest.mark.parametrize("rel_path", ["alembic/x.py", "alembic_data/x.py"])
+    def test_the_migration_roots_are_not_mypy_dark(self, rel_path: str) -> None:
+        """C45: ``^alembic/`` and ``^alembic_data/`` were dropped with the ruff entries."""
+        assert mypy_excludes(rel_path) is False
+
+    def test_mypy_walks_both_migration_envs(self) -> None:
+        """A directory mypy refuses to walk is a dark plane, not a clean one.
+
+        Before C45 ``mypy alembic`` exited 2 with "There are no .py[i] files in
+        directory", which reads as an invocation error from the outside and as
+        "nothing to complain about" to anything that only greps for ``error:``.
+        """
+        result = subprocess.run(
+            [sys.executable, "-m", "mypy", "--no-color-output", "alembic", "alembic_data"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert result.returncode == 0, (result.stdout + result.stderr)[-800:]
+        for tree in ("alembic", "alembic_data"):
+            assert tree_files(tree), f"{tree}/ moved - this case proves nothing"
 
 
 class TestBanditExcludesNoFirstPartyName:

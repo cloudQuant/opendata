@@ -52,10 +52,15 @@ BASELINE_PATH = "docs/quality/baseline.json"
 
 #: Top-level trees the A2 layer does not own. Matched against the first path
 #: segment only - see the module docstring for what segment matching cost.
-#: ``alembic_data`` is listed next to ``alembic`` because it is the same kind of
-#: tool-generated migration env (for the warehouse database), not first-party
-#: application code.
-EXCLUDED_ROOT_DIRS = frozenset({"akshare", "alembic", "alembic_data", "frontend", "opendata_http"})
+#: C45: ``alembic`` and ``alembic_data`` were dropped from this set. They were
+#: justified as "tool-generated migration env, not first-party application
+#: code", but the modules under ``versions/`` are hand-written Python that
+#: merely *import* their DDL text from ``opendata/pipeline/ddl`` - nothing
+#: regenerates them, so excluding the roots hid 10 touched first-party files
+#: from every static plane at once (``a2-check``, the ratchet, ruff's walk and
+#: mypy's walk). Only the ``script.py.mako`` templates are generated artifacts,
+#: and they are not ``.py``.
+EXCLUDED_ROOT_DIRS = frozenset({"akshare", "frontend", "opendata_http"})
 
 # Resolved once so the subprocess call never uses a partial executable path.
 GIT = shutil.which("git")
@@ -227,6 +232,18 @@ def _bandit(files: list[str]) -> tuple[bool, str]:
     return True, ""
 
 
+def _drop_reason(name: str) -> str:
+    """Say why an explicitly requested path is not an A2 candidate."""
+    if not name.endswith(".py"):
+        return "not a .py file"
+    first = name.split("/", 1)[0]
+    if first in EXCLUDED_ROOT_DIRS:
+        return f"root tree {first}/ is outside the A2 layer"
+    if not (REPO_ROOT / name).is_file():
+        return "not present in the working tree"
+    return "not an A2 candidate"
+
+
 def run(explicit: list[str] | None = None) -> int:
     """Run the A2 zero-tolerance gate and report the result."""
     try:
@@ -244,8 +261,26 @@ def run(explicit: list[str] | None = None) -> int:
         )
         return 0
 
+    if explicit:
+        # C45: `--files` used to answer "OK: no A2 files changed" when every
+        # requested path had been filtered out, which reads exactly like a pass
+        # for the files the operator just asked about.
+        checked = set(files)
+        dropped = [name for name in explicit if name not in checked]
+        if dropped:
+            print(f"NOT CHECKED (explicitly requested, {len(dropped)} path(s)):")
+            for name in dropped:
+                print(f"  {name}  -  {_drop_reason(name)}")
+            print()
+
     if not files:
-        print("OK: no A2 files changed (nothing to check).")
+        if explicit:
+            print(
+                f"NOTHING CHECKED: 0 of {len(explicit)} requested paths are A2 "
+                "candidates (see NOT CHECKED above)."
+            )
+        else:
+            print("OK: no A2 files changed (nothing to check).")
         return 0
 
     print(f"A2 files: {len(files)}")

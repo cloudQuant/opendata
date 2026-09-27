@@ -42,9 +42,20 @@ SNAPSHOT_VERSION = 1
 
 # A3.1: the fuyao transport package is self-developed, so it joins the
 # self-dev scope (controlled scope switch; counts must not rise because of it).
-SELFDEV_PATHS = ("opendata", "opendata_fuyao", "scripts", "tests")
-MYPY_PATHS = ("opendata", "opendata_fuyao")
-BANDIT_PATHS = ("opendata", "opendata_fuyao", "scripts")
+# C45: the two alembic envs join the same way. They are first-party Python and
+# were read by *no* plane at all (a2-check filtered the roots, ruff and mypy
+# excluded them, and the ratchet never listed them). Their 28 ruff violations
+# were fixed rather than grandfathered, so all five metrics are unchanged.
+SELFDEV_PATHS = ("opendata", "opendata_fuyao", "scripts", "tests", "alembic", "alembic_data")
+MYPY_PATHS = ("opendata", "opendata_fuyao", "alembic", "alembic_data")
+BANDIT_PATHS = ("opendata", "opendata_fuyao", "scripts", "alembic", "alembic_data")
+# A1 legacy zone: ``opendata/data_fetch/`` is the pre-iteration tree and stays
+# mypy-dark (quality spec §4, mirrored by ``[tool.mypy].exclude``). It is named
+# here because a plane-visibility census cannot otherwise tell a grandfathered
+# zone from a quietly added exclude entry -- and only the second one can launder
+# ``mypy_selfdev`` without a line of code changing. 18 files, all of them under
+# this prefix.
+MYPY_LEGACY_ZONE = ("opendata/data_fetch/",)
 # A2.2: the ported tree moved from akshare/ to opendata_http/;
 # the scope switch was re-frozen with --force-update (controlled event).
 PORTED_PATHS = ("opendata_http",)

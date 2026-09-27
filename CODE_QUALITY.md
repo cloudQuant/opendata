@@ -22,11 +22,11 @@
 
 | 层 | 范围 | ruff | mypy | bandit | docstring | coverage |
 |----|------|------|------|--------|-----------|----------|
-| **A1 自研-存量** | `opendata/` 中未被本迭代修改的文件 | 债务 ≤ 基线快照 | 债务 ≤ 基线快照 | 债务 ≤ 基线快照 | 不强制 | 不设新阈值（记录现状） |
-| **A2 自研-新增/触碰** | 新增文件 + 被修改过的存量文件；`opendata/data/`、`opendata/pipeline/`、`opendata_fuyao/`、`opendata_providers/`、`scripts/` | 全规则集（§2.1）零违例 | 严格（§3）0 errors | 全量 | Google 风格 100% | ≥85%（statement+branch） |
+| **A1 自研-存量** | 六个被测根（`opendata/`、`opendata_fuyao/`、`scripts/`、`tests/`、`alembic/`、`alembic_data/`，与 `scripts/quality/ratchet.py:SELFDEV_PATHS` 一一对应）中未被本迭代修改的文件 | 债务 ≤ 基线快照 | 债务 ≤ 基线快照 | 债务 ≤ 基线快照 | 不强制 | 不设新阈值（记录现状） |
+| **A2 自研-新增/触碰** | 新增文件 + 被修改过的存量文件 + 未跟踪文件（`scripts/quality/a2_check.py` 按 `git diff` 取集，与目录无关）；`scripts/quality/public_api.py:A2_SCOPE` 另固定七棵目录（`opendata/data`、`opendata/pipeline`、`opendata_fuyao`、`opendata_providers`、`opendata_client`、`scripts/quality`、`scripts/codemod`）作 docstring/注解面 —— 其中 `opendata_providers` 在本仓不存在，缺失目录被静默跳过（C43 已量到固定目录之外还有 46 个 A2 自研文件，由探针的加宽面按同一把尺子复量） | 全规则集（§2.1）零违例 | 严格（§3）0 errors | 全量 | Google 风格 100% | ≥85%（statement+branch） |
 | **B 搬运代码** | `akshare/`（迭代 A2 起更名 `opendata_http/`） | 仅 E/F（语法与未定义名），不格式化不重排 | 排除 | 排除（安全审计另行专项，见 §4） | 不要求 | 排除（以一致性对照替代） |
 | **C 测试代码** | `tests/` | 全规则集但豁免 S1xx/S2xx、ANN 系列 | 渐进（不强制） | 豁免 S | 见 §5 | — |
-| **D 生成产物** | codemod 报告、alembic 迁移模板 | 排除 | 排除 | 排除 | — | — |
+| **D 生成产物** | `htmlcov/`、`coverage.xml`、codemod 渲染的 `.md` 报告（均无待检 `.py`）。**alembic 迁移不属于本层**：`alembic/versions/*.py`、`alembic_data/versions/*.py` 是手写模块（只有 SQL 文本是生成的），C45 起并入 A1 与 mypy/bandit 面 | 不适用 | 不适用 | 不适用 | — | — |
 | **E 前端** | `frontend/` | ESLint | `vue-tsc --noEmit` | — | — | 基础用例（纳入 gate） |
 
 > **为什么 A 层要拆 A1/A2**：`opendata/`（原 `app/`）是 akshare_web 遗产，共 67 个源文件；实测 mypy 非严格、ruff 忽略含 `F821`、覆盖率阈值 70%（实测约 84%）。若按"新项目零债务"要求一步达标，估算需 30~40 人日，会让地基里程碑直接卡死或被迫放水——两者都会破坏 fail-closed 的信用。故按"**存量棘轮 + 增量零容忍 + 触碰即达标**"执行。
@@ -45,7 +45,7 @@
 [tool.ruff]
 line-length = 100
 target-version = "py310"
-exclude = ["akshare", "opendata_http", "alembic/versions", "frontend", ".venv", "htmlcov"]
+exclude = ["opendata_http/", "frontend/", ".venv", "htmlcov"]  # 每条根锚定，见下
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "N", "UP", "B", "C4", "SIM", "TC",
@@ -60,6 +60,12 @@ convention = "google"
 ```
 
 > **关键约束**：`F821`（未定义名）**不得忽略**——静态检查放过未定义名是最高风险的一类漏检。
+>
+> **exclude 必须根锚定**（C35/C45 实测）：不带斜杠的裸名会按**任意深度的目录名**匹配，
+> 曾把一方包 `opendata/data/providers/akshare/` 一起吞掉（15 个模块对 `ruff check opendata` 隐形）。
+> 本节旧版在这里写着 `["akshare", "opendata_http", "alembic/versions", …]`：`akshare` 是上面那种形态，
+> `alembic/versions` 则把 10 个手写模块排除在三个静态面之外——被排除的根**既不产生读数也不产生红灯**，
+> 是棘轮面最贵的一类静默隐形。两条都已删除，`alembic/`、`alembic_data/` 现属 A1。
 
 ### 2.2 搬运代码
 
@@ -142,10 +148,17 @@ warn_return_any = true
 
 ## 7. 棘轮机制（债务只降不升）
 
-- **快照文件**：`docs/quality/ratchet.json`，记录三类债务计数与**扫描范围**：
-  - B 层（搬运代码）lint 债务；
-  - A1 层 mypy errors 与 ruff 违例；
-  - 直连 HTTP 调用数（搬运代码内 `requests.*` 调用点，渐进收口指标）。
+- **快照文件**：`docs/quality/ratchet.json`，记录五类债务计数与**扫描范围**：
+  - A1 层 ruff 违例（`ruff_selfdev`）、mypy errors（`mypy_selfdev`）、bandit findings（`bandit_selfdev`）；
+  - B 层（搬运代码）lint 债务（`ruff_ported`，只按 `E,F` 计量）；
+  - 直连 HTTP 调用数（搬运代码内 `requests.*` 调用点，渐进收口指标 `direct_http_ported`）。
+- **三个平面的根各自声明**（`scripts/quality/ratchet.py`）：ruff 走 `SELFDEV_PATHS`
+  （`opendata`、`opendata_fuyao`、`scripts`、`tests`、`alembic`、`alembic_data`），
+  mypy 走 `MYPY_PATHS`（不含 `scripts`、`tests`），bandit 走 `BANDIT_PATHS`（不含 `tests`）。
+  `make lint`/`typecheck`/`security` 按同一批根跑，不得比门禁更窄。
+- **被 exclude 吞掉的根既不产生读数，也不产生红灯**——这是棘轮面最贵的一类隐形。因此豁免必须**点名**：
+  mypy 面的存量区写在 `MYPY_LEGACY_ZONE`（当前只有 `opendata/data_fetch/`，18 个文件），
+  探针 AC-17|03 逐文件核对「mypy 没走到 ∩ ruff 走不到 ∩ 不在点名的 legacy 区」必须为 0。
 - **检查规则**（`make quality-ratchet`）：
   - 当前计数 > 快照 → 失败；
   - 扫描范围与快照不一致（缺失或新增未登记）→ 失败（禁止静默缩小或扩大范围）；
@@ -174,7 +187,7 @@ warn_return_any = true
 | `make loguru-check` | **日志参数可达性**：解析每个 logger 接收者的绑定（模块导入 / 类属性 / 注入式 `self.logger = logger or _default_logger`），判定占位符风格与渲染器是否匹配 —— loguru 用 `str.format`、`logging` 用 `%`，两家的失败方向相反且 loguru 那侧是静默的，参数进不了日志即失败（C39） |
 | `make test` | pytest `-n 8`，默认 `not e2e` |
 | `make test-cov` | pytest `-n 8 --cov-branch` + 阈值门禁 + 报告归档 |
-| `make lint` / `format` / `format-check` / `typecheck` / `security` | **全树开发者视图**：会显示 A1 存量债务，不参与门禁；A1 是否可接受由棘轮判定 |
+| `make lint` / `format` / `format-check` / `typecheck` / `security` | **全树开发者视图**：会显示 A1 存量债务，不参与门禁；A1 是否可接受由棘轮判定。三项的根与 `scripts/quality/ratchet.py` 的三个平面一一对应（C45 起 `opendata_fuyao/`、`alembic/`、`alembic_data/` 也进视图，此前它们只出现在门禁读数里） |
 | `make deps-audit` | pip-audit |
 | `make frontend-lint` / `frontend-typecheck` / `frontend-test` | 前端三项 |
 | `make gate` | **门禁聚合**：上列门禁项逐项阻断，任一子项失败即整体失败 |

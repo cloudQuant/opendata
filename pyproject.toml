@@ -161,10 +161,15 @@ exclude = [
     # The vendored tree is opendata_http/; the old top-level akshare/ was
     # renamed away in milestone A2, so it needs no entry.
     "opendata_http/",
-    "alembic/versions",
-    # Same rationale as alembic/versions: revision files are tool-generated
-    # scaffolding (the warehouse env renders them from opendata/pipeline/ddl).
-    "alembic_data/versions",
+    # C45: alembic/ and alembic_data/ used to be excluded on the stated
+    # rationale "revision files are tool-generated scaffolding". That is not
+    # what they are: alembic_data/versions/*.py are hand-written modules that
+    # *import* the DDL builders from opendata/pipeline/ddl (only the SQL text
+    # is generated), and alembic/versions/0002-0003 were authored by hand. No
+    # generator rewrites these files, so excluding them hid 10 first-party
+    # modules from every static plane while the A2 "touch it, meet it" rule
+    # claimed otherwise. They are in scope now; their 28 violations and one
+    # unformatted file were fixed instead (DDL proven byte-identical).
     "frontend/",
     ".venv",
     "htmlcov",
@@ -277,11 +282,11 @@ ignore_missing_imports = true
 # vendored top-level akshare/ had been renamed away. Anchored with ^, each
 # entry is a root tree. (exclude never applies to files passed explicitly -
 # a2-check passes files, so the A2 mypy leg was already covering this tree.)
+# C45: ^alembic/ and ^alembic_data/ were dropped together with the ruff
+# entries above; the walk over both roots measures 0 errors.
 exclude = [
     "^opendata_http/",
     "^tests/",
-    "^alembic/",
-    "^alembic_data/",
     "^opendata/data_fetch/",
 ]
 

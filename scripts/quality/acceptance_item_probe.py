@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Recompute the AC-1 and AC-2 acceptance criteria one item at a time.
+"""Recompute acceptance criteria one item at a time, with a counterfact per face.
 
 Why this file exists
 --------------------
@@ -38,14 +38,17 @@ import hashlib
 import importlib.util
 import json
 import re
+import shutil
 import subprocess  # nosec B404
 import sys
+import tempfile
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Final
 
 import tomllib
+import yaml
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Sequence
@@ -1613,6 +1616,839 @@ def evidence_deletions() -> tuple[str, str]:
     return count(len(added - tracked)), count(len(tracked))
 
 
+# --------------------------------------------------------------------------- #
+# AC-17|03 / AC-17|05 -- the two debt layers, judged on the planes that count them
+# --------------------------------------------------------------------------- #
+
+#: The members these two items are *about*, run as the gate runs them. ``ratchet.py`` prints all
+#: five metrics in one pass, so each item reads its own faces out of that same run instead of
+#: keeping a private copy of its arithmetic -- which is how a probe keeps telling 干净 after the
+#: tool it stands for has been changed under it.
+RATCHET_TOOL: Final = "scripts/quality/ratchet.py"
+PORT_REPORT_TOOL: Final = "scripts/codemod/report_port.py"
+PORT_MODULE_TOOL: Final = "scripts/codemod/port_module.py"
+
+#: The frozen ceiling, the replay archive, the ported tree's own manifest, and the licence
+#: document that is supposed to name every deviation inside it.
+RATCHET_SNAPSHOT: Final = "docs/quality/ratchet.json"
+PORT_REPORT_ARCHIVE: Final = "docs/port-report.md"
+UPSTREAM_LOCK: Final = "opendata_http/upstream.lock"
+NOTICES_DOC: Final = "THIRD_PARTY_NOTICES.md"
+PRECOMMIT_CONFIG: Final = ".pre-commit-config.yaml"
+
+#: The A1 metrics AC-17|03 owns (存量自研 debt) and the B-layer ones AC-17|05 owns. Split by item
+#: so neither probe gets to borrow the other's green light.
+SELFDEBT_METRICS: Final = ("ruff_selfdev", "mypy_selfdev", "bandit_selfdev")
+PORTED_METRICS: Final = ("ruff_ported", "direct_http_ported")
+
+#: The verbs ``requests`` exposes, i.e. what a "direct ``requests.<verb>()`` call site" can be.
+#: ``ratchet.HTTP_VERBS`` must equal this set for ``direct_http_ported`` to mean anything.
+PORTED_HTTP_VERBS: Final = frozenset({"get", "post", "put", "delete", "head", "patch", "request"})
+
+#: A path under the ported tree, put to every hook in the pre-commit config: *would this hook have
+#: been handed a ported file?* That is the question the item's ``exclude`` clause answers.
+PORTED_PROBE_PATH: Final = "opendata_http/stock/cons.py"
+
+
+def run_split(argv: Sequence[str]) -> tuple[int, str]:
+    """Run a literal command and return ``(exit, stdout)``, keeping stderr out of the payload.
+
+    :func:`run_argv` merges the two streams because a person reading a red tool wants both. The
+    census helpers below parse ``--output-format=json``, where one progress line on stderr would
+    read as a broken payload rather than a broken build.
+    """
+    try:
+        proc = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled
+            list(argv),
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            shell=False,
+            check=False,
+        )
+    except FileNotFoundError:
+        raise ProbeError(f"(not installed): {argv[0]}") from None
+    return proc.returncode, proc.stdout
+
+
+def py_files_under(root: str) -> list[str]:
+    """Repository-relative ``.py`` paths sitting on disk under one root, minus tool caches."""
+    base = REPO_ROOT / root
+    if not base.is_dir():
+        return []
+    return sorted(
+        path.relative_to(REPO_ROOT).as_posix()
+        for path in base.rglob("*.py")
+        if "__pycache__" not in path.parts
+    )
+
+
+def ruff_walked(paths: Sequence[str]) -> set[str]:
+    """The files ``ruff check`` itself decides to read, asked with its own ``--show-files``.
+
+    Measuring the walk instead of the config is the whole point: ``[tool.ruff].exclude`` applies
+    to directory walks, so re-adding an entry shrinks what ruff reads while every count on disk
+    stays exactly where it was. C45 found ``alembic/`` and ``alembic_data/`` in that state -- ten
+    touched first-party files that no plane read, under a ratchet whose file census still
+    counted them.
+    """
+    code, out = run_split(
+        [sys.executable, "-m", "ruff", "check", "--show-files", "--quiet", *paths]
+    )
+    if code not in (0, 1):
+        raise ProbeError(f"ruff --show-files failed (exit {code}): {out.strip()[:120]}")
+    walked: set[str] = set()
+    for line in out.splitlines():
+        name = line.strip()
+        if not name.endswith(".py"):
+            continue
+        walked.add(str(Path(name).resolve().relative_to(REPO_ROOT)))
+    return walked
+
+
+def mypy_targets(paths: Sequence[str]) -> set[str]:
+    """The files mypy itself takes as build targets, read out of its own verbose log.
+
+    ``followed=False`` keeps the list to what the walk decided, rather than also counting every
+    transitively imported module mypy then parsed.
+
+    ``mypy -v`` writes its ``LOG:`` lines to stderr, so this one helper reads the merged stream
+    that :func:`run_argv` returns instead of the stdout-only :func:`run_split`. An empty result
+    therefore means the log shape moved rather than that mypy read nothing, and saying so out
+    loud beats reporting a quiet gap over a 210-file denominator.
+    """
+    code, out = run_argv([sys.executable, "-m", "mypy", "-v", "--no-error-summary", *paths])
+    if code not in (0, 1):
+        raise ProbeError(f"mypy -v failed (exit {code}): {out.strip()[:120]}")
+    targets = {
+        match.group(1)
+        for match in re.finditer(
+            r"Found source:\s+BuildSource\(path='([^']+)'[^)]*followed=False\)", out
+        )
+    }
+    if not targets:
+        raise ProbeError("mypy -v produced no 'Found source' lines; the log shape moved")
+    return targets
+
+
+def bandit_scanned(paths: Sequence[str]) -> set[str]:
+    """The files bandit itself reports metrics for -- its own record of what it opened."""
+    code, out = run_split(
+        [sys.executable, "-m", "bandit", "-c", "bandit.yaml", "-f", "json", "-q", "-r", *paths]
+    )
+    if code not in (0, 1):
+        raise ProbeError(f"bandit failed (exit {code})")
+    try:
+        payload = json.loads(out or "{}")
+    except json.JSONDecodeError as exc:
+        raise ProbeError(f"bandit produced unparsable output: {exc}") from exc
+    metrics = payload.get("metrics") if isinstance(payload, dict) else None
+    if not isinstance(metrics, dict):
+        raise ProbeError("bandit output has no metrics section")
+    return {str(key) for key in metrics if key != "_totals"}
+
+
+def ruff_violations(args: Sequence[str]) -> int:
+    """Count what one ``ruff check`` invocation finds, from its own JSON payload."""
+    code, out = run_split([sys.executable, "-m", "ruff", "check", "--output-format=json", *args])
+    if code not in (0, 1):
+        raise ProbeError(f"ruff check failed (exit {code}): {out.strip()[:120]}")
+    try:
+        payload = json.loads(out or "[]")
+    except json.JSONDecodeError as exc:
+        raise ProbeError(f"ruff produced unparsable output: {exc}") from exc
+    return len(payload) if isinstance(payload, list) else -1
+
+
+def ruff_reformat_hits(paths: Sequence[str]) -> int:
+    """How many files ``ruff format`` says it would rewrite, counted from its own diff headers."""
+    code, out = run_split([sys.executable, "-m", "ruff", "format", "--diff", *paths])
+    if code not in (0, 1):
+        raise ProbeError(f"ruff format --diff failed (exit {code})")
+    return len({match.group(1) for match in re.finditer(r"^--- (\S+)", out, re.MULTILINE)})
+
+
+def ratchet_face(out: str) -> str:
+    """Which of the ratchet's own failure faces a run hit -- ``none`` when it was green."""
+    if "OK: quality debt did not increase." in out:
+        return "none"
+    if "FAIL: scan scope changed silently" in out:
+        return "scope"
+    if "FAIL: quality debt increased" in out:
+        return "debt"
+    if "is missing or invalid" in out:
+        return "snapshot"
+    return "other"
+
+
+def ratchet_pair(out: str, name: str) -> tuple[str, str]:
+    """``(current, ceiling)`` for one metric, read off the line the ratchet prints for it."""
+    found = re.search(rf"^\s+{name}: (\d+) \(snapshot (\d+)\)", out, re.MULTILINE)
+    if not found:
+        return "(absent)", "(absent)"
+    return found.group(1), found.group(2)
+
+
+def snapshot_at(rev: str) -> dict[str, object]:
+    """The ratchet snapshot as one revision held it (``HEAD`` or a historical commit)."""
+    code, out = run_argv(["git", "show", f"{rev}:{RATCHET_SNAPSHOT}"])
+    if code != 0:
+        raise ProbeError(f"{RATCHET_SNAPSHOT} is not readable at {rev}: {out.strip()[:120]}")
+    try:
+        payload = json.loads(out)
+    except json.JSONDecodeError as exc:
+        raise ProbeError(f"{RATCHET_SNAPSHOT} at {rev} is not JSON: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise ProbeError(f"{RATCHET_SNAPSHOT} at {rev} is not an object")
+    return payload
+
+
+def snapshot_revisions() -> list[str]:
+    """Every commit that rewrote the ratchet snapshot, newest first.
+
+    The ratchet compares the working tree against the snapshot, so the snapshot is one of the
+    judges of 只降不升 rather than one of the things judged -- and a judge nobody reads the history
+    of can be lifted in the very commit that pays debt down, which leaves every later round green
+    over a tree that got worse. The revision list comes from ``git log`` rather than a fixed
+    length, so the sequence check covers whatever the rounds appended.
+    """
+    code, out = run_argv(["git", "log", "--format=%H", "--", RATCHET_SNAPSHOT])
+    if code != 0:
+        raise ProbeError(f"git log over {RATCHET_SNAPSHOT} failed: {out.strip()[:120]}")
+    revisions = [line.strip() for line in out.splitlines() if line.strip()]
+    if not revisions:
+        raise ProbeError(f"{RATCHET_SNAPSHOT} has no committed history to compare against")
+    return revisions
+
+
+def section_ints(payload: dict[str, object], key: str) -> dict[str, int]:
+    """One integer section (``metrics`` or ``file_counts``) out of a snapshot payload."""
+    section = payload.get(key)
+    if not isinstance(section, dict):
+        return {}
+    return {str(name): int(value) for name, value in section.items() if isinstance(value, int)}
+
+
+def metric_subset(payload: dict[str, object], names: Sequence[str]) -> dict[str, int]:
+    """The ceilings one item owns, and nothing else.
+
+    ``ruff_ported``/``direct_http_ported`` cover a tree that grew from 131 files to 313 during
+    milestones A1--A2, so their ceilings moved with it; folding them into AC-17|03's 只降不升 check
+    would judge the ported layer's growth as if first-party debt had gone up -- and the item's
+    subject is 「A1 层（存量）」. Splitting by metric name also keeps the two items from borrowing
+    each other's green light.
+    """
+    ints = section_ints(payload, "metrics")
+    return {name: ints[name] for name in names if name in ints}
+
+
+def snapshot_transitions(
+    ctx: Context,
+) -> list[tuple[str, str, dict[str, object], dict[str, object]]]:
+    """The snapshot sequence as adjacent pairs, newest first, working tree included.
+
+    The first pair compares the working tree with ``HEAD``; the rest walk the committed history.
+    Keeping them as *pairs* rather than a flat list is the point: a ceiling that was lifted has to
+    be attributable to the transition that lifted it, and a root that vanished has to be
+    distinguishable from a root that was renamed in a documented controlled event.
+
+    Returns:
+        ``(newer_label, older_label, newer_payload, older_payload)`` per step down the history.
+    """
+    sequence: list[tuple[str, dict[str, object]]] = [
+        ("工作区", json.loads(ctx.read(RATCHET_SNAPSHOT)))
+    ]
+    sequence += [(revision[:7], snapshot_at(revision)) for revision in snapshot_revisions()]
+    return [
+        (sequence[index][0], sequence[index + 1][0], sequence[index][1], sequence[index + 1][1])
+        for index in range(len(sequence) - 1)
+    ]
+
+
+def census_of(payload: dict[str, object], roots: Sequence[str]) -> int:
+    """How many files a snapshot says were scanned under ``roots`` -- the growth a raise needs."""
+    counts = section_ints(payload, "file_counts")
+    return sum(counts.get(root, 0) for root in roots)
+
+
+def ceilings_raised(newer: dict[str, int], older: dict[str, int]) -> dict[str, str]:
+    """Which ceilings went *up* between two snapshots -- the laundering this item forbids.
+
+    Nothing compared the snapshot against its own history: ``ratchet.py`` only asks whether the
+    working tree beats the frozen number, so a commit that pays 20 violations down while lifting
+    the ceiling by 30 reads as improvement forever afterwards. Each returned entry is rendered
+    ``name: old->new`` so a reading can name the transition instead of just counting it.
+    """
+    return {
+        name: f"{older.get(name, 0)}->{value}"
+        for name, value in newer.items()
+        if value > older.get(name, 0)
+    }
+
+
+def scope_vanished(newer: dict[str, int], older: dict[str, int]) -> tuple[str, ...]:
+    """Measured packages that disappeared from the snapshot's own census list."""
+    return tuple(sorted(set(older) - set(newer)))
+
+
+#: How many snapshot transitions count as "this round's": the working tree against HEAD, and
+#: HEAD against the snapshot before it. The scope face is judged over those only -- the ported
+#: root was renamed akshare -> opendata_http in milestone A2, which is a recorded controlled
+#: event and not something a later round can un-vanish.
+RECENT_TRANSITIONS: Final = 2
+
+
+def detail_of(label: str, detail: str) -> str:
+    """``label（detail）`` when there is something to list, and the bare label when there is not.
+
+    A face that measures zero should not print an empty parenthesis; a face that measures
+    non-zero has to name the offenders, because "抬高上限的次数 = 1" on its own tells a reader
+    nothing they can act on.
+    """
+    return f"{label}（{detail}）" if detail else label
+
+
+def ceiling_history(ctx: Context, names: Sequence[str], roots: Sequence[str]) -> Facts:
+    """Read the snapshot's own history: which ceilings moved, and whether growth explains it.
+
+    A ceiling raise is only *explainable* by more files under the roots that produce it, so the
+    two are compared per transition and a raise that leaves the census flat is listed separately
+    as a review face. A flat-census raise is not automatically laundering -- ``opendata_http/
+    __init__.py`` growing 15 flat-export lines raised ``ruff_ported`` under ``--select E,F``
+    because F401 counts them, without changing the file census -- so this function only reports,
+    and each item judges the claim its own text makes.
+
+    Returns:
+        Facts for the sequence length, the raises (all, and the flat-census ones), the vanished
+        roots split by whether they are recent, and the oldest-to-newest ceiling trend.
+    """
+    steps = snapshot_transitions(ctx)
+    if not steps:
+        raise ProbeError(f"{RATCHET_SNAPSHOT} has no transitions to walk")
+
+    raised: list[str] = []
+    flat_raises: list[str] = []
+    vanished: list[list[str]] = [[], []]
+    for index, (new_label, old_label, newer, older) in enumerate(steps):
+        flat_census = census_of(newer, roots) == census_of(older, roots)
+        moves = ceilings_raised(
+            metric_subset(newer, names),
+            metric_subset(older, names),
+        )
+        for name, detail in sorted(moves.items()):
+            entry = f"{old_label}->{new_label} {name} {detail}"
+            raised.append(entry)
+            if flat_census:
+                flat_raises.append(entry)
+        gone = scope_vanished(
+            section_ints(newer, "file_counts"),
+            section_ints(older, "file_counts"),
+        )
+        bucket = vanished[0] if index < RECENT_TRANSITIONS else vanished[1]
+        bucket += [f"{old_label}->{new_label} {root}" for root in gone]
+
+    oldest, newest = steps[-1][3], steps[0][2]
+
+    def _at(payload: dict[str, object], name: str) -> int:
+        return metric_subset(payload, names).get(name, 0)
+
+    return {
+        "hist_steps": count(len(steps)),
+        "raises": count(len(raised)),
+        "raise_detail": "; ".join(raised),
+        "flat_raises": count(len(flat_raises)),
+        "flat_raise_detail": "; ".join(flat_raises),
+        "vanish_recent": count(len(vanished[0])),
+        "vanish_recent_detail": "; ".join(vanished[0]),
+        "vanish_older": count(len(vanished[1])),
+        "vanish_older_detail": "; ".join(vanished[1]),
+        "trend": " / ".join(f"{name} {_at(oldest, name)}→{_at(newest, name)}" for name in names),
+    }
+
+
+def precommit_exclusions(source: str) -> tuple[int, int, set[str]]:
+    """Every hook the pre-commit config declares, and which of them exclude the ported tree.
+
+    ``exclude`` is applied the way pre-commit documents it -- a regular expression *searched*
+    against the repository-relative filename -- because the binary is not installed in the
+    environment this item is judged in, and a probe that needs a tool the gate does not run would
+    fail on machines that are otherwise fine. No hook's own behaviour is re-implemented here: only
+    the exclusion filter is read, and whether that filter is load-bearing is measured against
+    ``ruff format`` itself (see :func:`measure_ac17_05`).
+
+    Returns:
+        ``(hook count, excluded hook count, excluded hook ids)``.
+    """
+    config = yaml.safe_load(source)
+    repos = config.get("repos", []) if isinstance(config, dict) else []
+    total = 0
+    excluded: set[str] = set()
+    for repo in repos if isinstance(repos, list) else []:
+        hooks = repo.get("hooks", []) if isinstance(repo, dict) else []
+        for hook in hooks if isinstance(hooks, list) else []:
+            if not isinstance(hook, dict) or not hook.get("id"):
+                continue
+            total += 1
+            pattern = str(hook.get("exclude", ""))
+            if pattern and re.search(pattern, PORTED_PROBE_PATH):
+                excluded.add(str(hook["id"]))
+    return total, len(excluded), excluded
+
+
+def port_replay() -> tuple[Facts, str]:
+    """Run the codemod replay and read the report it renders, without touching the archive.
+
+    ``report_port.py`` compares each ported file against ``port_source(pristine upstream bytes)``
+    -- the deterministic replay of the same codemod, with the registered manual edits applied --
+    and prints 重放一致 per file. A ``ruff format`` pass, an isort run and an unregistered hand
+    edit therefore all land in one reading, which is what 「未做 format/isort 重排（与上游可
+    diff）」 needs to be falsifiable. The report is rendered into a temporary directory so the
+    measurement cannot rewrite the tracked ``docs/port-report.md`` it compares against later.
+    """
+    workdir = Path(tempfile.mkdtemp(prefix="acceptance-port-report-"))
+    rendered = workdir / "port-report.md"
+    try:
+        code, out = run_argv([sys.executable, PORT_REPORT_TOOL, "--report-path", str(rendered)])
+        text = rendered.read_text(encoding="utf-8") if rendered.is_file() else ""
+    finally:
+        shutil.rmtree(workdir, ignore_errors=True)
+    header = re.search(r"wrote .* \((\d+) files, (\d+) pending TODO\(s\)\)", out)
+    rows = [line for line in text.splitlines() if line.startswith("| `")]
+    return (
+        {
+            "report_exit": count(code),
+            "report_files": header.group(1) if header else "(absent)",
+            "report_todos": header.group(2) if header else "(absent)",
+            "rows_total": count(len(rows)),
+            "rows_replay_ok": count(sum(1 for line in rows if line.rstrip().endswith("✓ |"))),
+            "rows_manual": count(sum(1 for line in rows if "| True |" in line)),
+        },
+        text,
+    )
+
+
+def lock_records(ctx: Context) -> list[dict[str, object]]:
+    """The per-file rows of ``opendata_http/upstream.lock`` (paths relative to the ported root)."""
+    payload = json.loads(ctx.read(UPSTREAM_LOCK))
+    entries = payload.get("files") if isinstance(payload, dict) else None
+    if not isinstance(entries, list):
+        raise ProbeError(f"{UPSTREAM_LOCK} has no files list")
+    return [entry for entry in entries if isinstance(entry, dict)]
+
+
+def registered_hand_edits(ctx: Context, pm: ModuleType) -> tuple[int, int, int, int]:
+    """The three registers of ported-tree hand edits, and how far apart they are.
+
+    ``THIRD_PARTY_NOTICES.md`` claims every manual edit is in ``port_module.MANUAL_EDITS`` *and*
+    flagged in ``upstream.lock``; a replay reproduces the file only from the first, and a reader
+    only sees the second. Two of the three going stale is invisible unless the three are compared.
+
+    Returns:
+        ``(lock count, notices count, codemod count, paths not agreed on by all three)``.
+    """
+    lock = {str(entry.get("path")) for entry in lock_records(ctx) if entry.get("manual_edits")}
+    codemod = {
+        str(edit.upstream_path).removeprefix("akshare/") for edit in getattr(pm, "MANUAL_EDITS", ())
+    }
+    lines = ctx.read(NOTICES_DOC).splitlines()
+    start = next(
+        (index for index, line in enumerate(lines) if line.startswith("### 人工改动登记")), None
+    )
+    if start is None:
+        raise ProbeError(f"{NOTICES_DOC} has no 人工改动登记 section to read")
+    notices: set[str] = set()
+    for line in lines[start + 1 :]:
+        if line.startswith("## "):
+            break
+        row = re.match(r"^\| `(akshare/[^`]+\.py)` \|", line)
+        if row:
+            notices.add(row.group(1).removeprefix("akshare/"))
+    agreed = lock & codemod & notices
+    return len(lock), len(notices), len(codemod), len((lock | codemod | notices) - agreed)
+
+
+def measure_ac17_03(ctx: Context) -> Facts:
+    """Run the ratchet and the A2 gate, then ask every static plane what *it* decided to read."""
+    ratchet = script_module(RATCHET_TOOL)
+    a2 = script_module(A2_CHECK_TOOL)
+    code, out = run_argv([sys.executable, RATCHET_TOOL])
+    facts: Facts = {"ratchet_exit": count(code), "ratchet_face": ratchet_face(out)}
+    for name in SELFDEBT_METRICS:
+        current, ceiling = ratchet_pair(out, name)
+        facts[f"cur_{name}"] = current
+        facts[f"snap_{name}"] = ceiling
+    facts["printed"] = count(
+        sum(1 for name in SELFDEBT_METRICS if facts[f"cur_{name}"] != "(absent)")
+    )
+
+    selfdev = tuple(ratchet.SELFDEV_PATHS)
+    ported = tuple(ratchet.PORTED_PATHS)
+    mypy_paths = tuple(ratchet.MYPY_PATHS)
+    bandit_paths = tuple(ratchet.BANDIT_PATHS)
+    #: Prefixes for path membership, so a root cannot be matched by a sibling that merely starts
+    #: with the same characters (``scripts`` vs a hypothetical ``scripts_legacy``).
+    measured = tuple(f"{root}/" for root in (*selfdev, *ported))
+
+    disk_selfdev = {path for root in selfdev for path in py_files_under(root)}
+    walked = ruff_walked(selfdev)
+    disk_mypy = {path for root in mypy_paths for path in py_files_under(root)}
+    targets = mypy_targets(mypy_paths)
+    disk_bandit = {path for root in bandit_paths for path in py_files_under(root)}
+    scanned = bandit_scanned(bandit_paths)
+
+    baseline_error = a2.BaselineError
+    try:
+        base = a2._checked_baseline()
+        touched = a2.changed_files(base) if base else []
+        a2_files = a2.resolve_files(None) or []
+    except baseline_error as exc:
+        raise ProbeError(str(exc)) from exc
+    a2_code, _a2_out = run_argv([sys.executable, A2_CHECK_TOOL])
+    a2_set = set(a2_files)
+    py_touched = [name for name in touched if name.endswith(".py")]
+    dropped = [name for name in py_touched if name not in a2_set]
+    #: The gate's own list of "not first-party" roots. A touched file that falls out of A2 for
+    #: any *other* reason is the 触碰即达标 rule failing open, which is what this face counts.
+    excluded_roots = tuple(f"{name}/" for name in sorted(a2.EXCLUDED_ROOT_DIRS))
+    dropped_selfdev = [name for name in dropped if not under_any(name, excluded_roots)]
+
+    tracked_py = [name for name in ctx.tracked() if name.endswith(".py")]
+    orphan = [name for name in tracked_py if not under_any(name, measured) and name not in a2_set]
+
+    facts.update(ceiling_history(ctx, SELFDEBT_METRICS, selfdev))
+    facts.update(
+        {
+            "plane_roots": count(len(selfdev)),
+            "selfdev_disk": count(len(disk_selfdev)),
+            "ruff_walked": count(len(walked & disk_selfdev)),
+            "ruff_dark": count(len(disk_selfdev - walked)),
+            "mypy_disk": count(len(disk_mypy)),
+            "mypy_targets": count(len(targets & disk_mypy)),
+            "mypy_dark": count(len(disk_mypy - targets)),
+            "mypy_dark_seen_by_ruff": count(len((disk_mypy - targets) & walked)),
+            "mypy_legacy_zone": ", ".join(str(name) for name in ratchet.MYPY_LEGACY_ZONE),
+            #: The type plane may only drop what the ratchet *names* as its legacy zone. Any other
+            #: dark file is an exclude entry nobody declared, and an undeclared exclude can move
+            #: ``mypy_selfdev`` on its own -- which is the laundering this census exists to catch.
+            "mypy_dark_legacy": count(
+                sum(
+                    1
+                    for name in disk_mypy - targets
+                    if under_any(name, tuple(ratchet.MYPY_LEGACY_ZONE))
+                )
+            ),
+            "mypy_dark_outside_legacy": count(
+                sum(
+                    1
+                    for name in disk_mypy - targets
+                    if not under_any(name, tuple(ratchet.MYPY_LEGACY_ZONE))
+                )
+            ),
+            "mypy_dark_outside_sample": ", ".join(
+                sorted(
+                    name
+                    for name in disk_mypy - targets
+                    if not under_any(name, tuple(ratchet.MYPY_LEGACY_ZONE))
+                )[:4]
+            ),
+            "bandit_disk": count(len(disk_bandit)),
+            "bandit_scanned": count(len(scanned & disk_bandit)),
+            "bandit_dark": count(len(disk_bandit - scanned)),
+            "bandit_dark_seen_by_ruff": count(len((disk_bandit - scanned) & walked)),
+            "tracked_py": count(len(tracked_py)),
+            "orphan_py": count(len(orphan)),
+            "orphan_sample": ", ".join(orphan[:6]),
+            "a2_exit": count(a2_code),
+            "a2_files": count(len(a2_files)),
+            "touched_py": count(len(py_touched)),
+            "touched_dropped": count(len(dropped)),
+            "touched_dropped_selfdev": count(len(dropped_selfdev)),
+            "touched_dropped_sample": ", ".join(dropped_selfdev[:6]),
+        }
+    )
+    return facts
+
+
+def judge_ac17_03(facts: Facts) -> Verdict:
+    """``AC-17|03``: the ceiling only moves down, and every touched first-party file meets A2."""
+    metrics_ok = all(
+        0 <= number(facts[f"cur_{name}"]) <= number(facts[f"snap_{name}"])
+        for name in SELFDEBT_METRICS
+    )
+    ceiling_ok = (
+        number(facts["hist_steps"]) >= RECENT_TRANSITIONS
+        and facts["raises"] == "0"
+        and facts["vanish_recent"] == "0"
+    )
+    census_ok = (
+        facts["ruff_dark"] == "0"
+        and positive(facts["ruff_walked"])
+        and facts["mypy_dark"] == facts["mypy_dark_seen_by_ruff"]
+        and positive(facts["mypy_targets"])
+        and facts["mypy_dark_outside_legacy"] == "0"
+        and facts["bandit_dark"] == "0"
+        and positive(facts["bandit_scanned"])
+        and facts["orphan_py"] == "0"
+        and positive(facts["tracked_py"])
+    )
+    touched_ok = (
+        facts["a2_exit"] == "0"
+        and positive(facts["a2_files"])
+        and positive(facts["touched_py"])
+        and facts["touched_dropped_selfdev"] == "0"
+    )
+    ok = (
+        facts["ratchet_exit"] == "0"
+        and facts["ratchet_face"] == "none"
+        and facts["printed"] == count(len(SELFDEBT_METRICS))
+        and metrics_ok
+        and ceiling_ok
+        and census_ok
+        and touched_ok
+    )
+    debt = ", ".join(
+        f"{name} {facts[f'cur_{name}']}(≤{facts[f'snap_{name}']})" for name in SELFDEBT_METRICS
+    )
+    bandit_both_dark = number(facts["bandit_dark"]) - number(facts["bandit_dark_seen_by_ruff"])
+    readings = (
+        f"{RATCHET_TOOL} exit {facts['ratchet_exit']}（face={facts['ratchet_face']}，"
+        f"printed={facts['printed']}/{len(SELFDEBT_METRICS)}）：存量债务 {debt}",
+        detail_of(
+            f"上限自己的历史（{facts['hist_steps']} 次转换）：抬高存量上限的次数 "
+            f"{facts['raises']}；近 {RECENT_TRANSITIONS} 次转换里消失的被测根 "
+            f"{facts['vanish_recent']}，更早历史 {facts['vanish_older']}；"
+            f"存量上限轨迹 {facts['trend']}。棘轮只比较工作区与快照，"
+            "抬高上限这一步此前无人计量",
+            "; ".join(
+                listing
+                for listing in (
+                    facts["raise_detail"],
+                    facts["vanish_recent_detail"],
+                    facts["vanish_older_detail"],
+                )
+                if listing
+            ),
+        ),
+        f"平面可见性：{facts['plane_roots']} 个自研根磁盘 {facts['selfdev_disk']} 个 .py，"
+        f"ruff 自己走到 {facts['ruff_walked']}（看不见 {facts['ruff_dark']}）；mypy 目标 "
+        f"{facts['mypy_targets']}/{facts['mypy_disk']}，被它排除的 {facts['mypy_dark']} 个里 "
+        f"{facts['mypy_dark_legacy']} 个在棘轮点名的遗留区（{facts['mypy_legacy_zone']}）之内、"
+        f"{facts['mypy_dark_outside_legacy']} 个是没人声明的 exclude（这 {facts['mypy_dark']} 个"
+        f"仍全部被 ruff 读到）；bandit {facts['bandit_scanned']}/{facts['bandit_disk']}，"
+        f"被它漏掉的 {facts['bandit_dark']} 个（ruff 也看不见的 {bandit_both_dark}）必须为 0："
+        "三个平面各自把一份存量计数，exclude 吞掉的根既不产生读数也不产生红灯，"
+        "所以谁被排除必须点名，不能只在配置文件里悄悄加一行",
+        detail_of(
+            f"全体 tracked .py = {facts['tracked_py']}，既不在任何被测根下、也不在 A2 集里的 "
+            f"{facts['orphan_py']}",
+            facts["orphan_sample"],
+        ),
+        detail_of(
+            f"触碰即达标：自基线起改动 {facts['touched_py']} 个 .py ↔ A2 集 {facts['a2_files']} 个"
+            f"（a2-check exit {facts['a2_exit']}），其中按名字被排除出 A2 的 "
+            f"{facts['touched_dropped']} 个、排除项里的自研代码 "
+            f"{facts['touched_dropped_selfdev']} 个",
+            facts["touched_dropped_sample"],
+        ),
+    )
+    reason = (
+        ""
+        if ok
+        else "「只降不升」要求被量的范围本身也只降不升：抬高过一次上限、让一个被测根从快照里消失、"
+        "或把一个触碰过的自研文件按名字排除在 A2 零容忍之外，都会让「债务不高于快照」成立而代码"
+        "一行没改；平面可见性同理——exclude 吞掉的根不产生任何读数，也就不会产生红灯"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac17_05(ctx: Context) -> Facts:
+    """Replay the port, then ask ruff what the ported tree would cost without its exemption."""
+    ratchet = script_module(RATCHET_TOOL)
+    pm = script_module(PORT_MODULE_TOOL)
+    ported = tuple(ratchet.PORTED_PATHS)
+    root = ported[0]
+
+    code, out = run_argv([sys.executable, RATCHET_TOOL])
+    facts: Facts = {"ratchet_exit": count(code), "ratchet_face": ratchet_face(out)}
+    for name in PORTED_METRICS:
+        current, ceiling = ratchet_pair(out, name)
+        facts[f"cur_{name}"] = current
+        facts[f"snap_{name}"] = ceiling
+    facts["printed"] = count(
+        sum(1 for name in PORTED_METRICS if facts[f"cur_{name}"] != "(absent)")
+    )
+    facts.update(ceiling_history(ctx, PORTED_METRICS, ported))
+
+    def _debt(select: str | None) -> int:
+        """One ruff pass over the ported tree, counted by the ratchet's own function."""
+        try:
+            return int(ratchet.count_ruff(ported, select=select))
+        except ratchet.ToolError as exc:
+            raise ProbeError(str(exc)) from exc
+
+    ef = _debt("E,F")
+    project = _debt(None)
+    facts.update(
+        {
+            "ef_violations": count(ef),
+            "project_violations": count(project),
+            "isort_violations": count(_debt("I")),
+            "format_would_rewrite": count(ruff_reformat_hits([root])),
+            "disk_py": count(len(py_files_under(root))),
+            "lock_records": count(len(lock_records(ctx))),
+            "select_matches": "yes" if facts["cur_ruff_ported"] == count(ef) else "no",
+            "exemption_shown": "yes" if project > ef else "no",
+        }
+    )
+    facts["http_matches"] = (
+        "yes" if facts["cur_direct_http_ported"] == count(ratchet.count_direct_http(root)) else "no"
+    )
+    #: ``count_direct_http`` only counts the verbs it is told about, so dropping one from
+    #: ``HTTP_VERBS`` lowers ``direct_http_ported`` with no code change -- the same laundering
+    #: device the ruff ``select`` faces, and the behaviour test above cannot see it because both
+    #: readings call the same function. The verb list itself is therefore checked against the
+    #: seven verbs ``requests`` exposes.
+    verbs = sorted(str(verb) for verb in ratchet.HTTP_VERBS)
+    facts["verbs_declared"] = ", ".join(verbs)
+    facts["verbs_ok"] = "yes" if frozenset(verbs) == PORTED_HTTP_VERBS else "no"
+
+    replay, rendered = port_replay()
+    facts.update(replay)
+    facts["render_matches_archive"] = (
+        "yes" if rendered and rendered == ctx.read(PORT_REPORT_ARCHIVE) else "no"
+    )
+    recorded = {f"{root}/{entry.get('path')}" for entry in lock_records(ctx)}
+    unrecorded = sorted(set(py_files_under(root)) - recorded)
+    facts["unrecorded_py"] = count(len(unrecorded))
+    facts["unrecorded_sample"] = ", ".join(unrecorded[:4])
+
+    code, head_config = run_argv(["git", "show", f"HEAD:{PRECOMMIT_CONFIG}"])
+    if code != 0:
+        raise ProbeError(f"{PRECOMMIT_CONFIG} is not readable at HEAD: {head_config[:120]}")
+    total, excluded, ids = precommit_exclusions(ctx.read(PRECOMMIT_CONFIG))
+    head_total, _head_count, head_ids = precommit_exclusions(head_config)
+    lost = sorted(head_ids - ids)
+    facts.update(
+        {
+            "hooks_total": count(total),
+            "hooks_total_head": count(head_total),
+            "hooks_excluding": count(excluded),
+            "hook_ids": ", ".join(sorted(ids)),
+            "hooks_lost": count(len(lost)),
+            "hooks_lost_detail": ", ".join(lost),
+        }
+    )
+    lock_n, notices_n, codemod_n, disagree = registered_hand_edits(ctx, pm)
+    facts.update(
+        {
+            "edits_in_lock": count(lock_n),
+            "edits_in_notices": count(notices_n),
+            "edits_in_codemod": count(codemod_n),
+            "edits_disagree": count(disagree),
+        }
+    )
+    return facts
+
+
+def judge_ac17_05(facts: Facts) -> Verdict:
+    """``AC-17|05``: the ported tree is E/F-only, unformatted and replayable, and says so."""
+    debt_ok = (
+        facts["ratchet_exit"] == "0"
+        and facts["ratchet_face"] == "none"
+        and facts["printed"] == count(len(PORTED_METRICS))
+        and facts["select_matches"] == "yes"
+        and facts["http_matches"] == "yes"
+        and facts["verbs_ok"] == "yes"
+        and all(
+            0 <= number(facts[f"cur_{name}"]) <= number(facts[f"snap_{name}"])
+            for name in PORTED_METRICS
+        )
+    )
+    diffable_ok = (
+        facts["report_exit"] == "0"
+        and facts["report_todos"] == "0"
+        and positive(facts["rows_total"])
+        and facts["rows_replay_ok"] == facts["rows_total"]
+        and facts["rows_total"] == facts["lock_records"]
+        and facts["report_files"] == facts["rows_total"]
+        and facts["unrecorded_py"] == "0"
+        and facts["render_matches_archive"] == "yes"
+        and facts["rows_manual"] == facts["edits_in_lock"]
+        and facts["edits_disagree"] == "0"
+    )
+    exemption_ok = (
+        facts["exemption_shown"] == "yes"
+        and positive(facts["isort_violations"])
+        and positive(facts["format_would_rewrite"])
+    )
+    hooks_ok = (
+        positive(facts["hooks_excluding"])
+        and facts["hooks_lost"] == "0"
+        and number(facts["hooks_excluding"]) <= number(facts["hooks_total"])
+    )
+    scope_ok = facts["vanish_recent"] == "0" and number(facts["hist_steps"]) >= 2
+    ok = debt_ok and diffable_ok and exemption_ok and hooks_ok and scope_ok
+    readings = (
+        f"{RATCHET_TOOL} exit {facts['ratchet_exit']}（face={facts['ratchet_face']}）："
+        f"搬运债务 "
+        + ", ".join(
+            f"{name} {facts[f'cur_{name}']}(≤{facts[f'snap_{name}']})" for name in PORTED_METRICS
+        )
+        + f"；门禁打印的 ruff_ported 与独立跑的 --select E,F 计数一致 = "
+        f"{facts['select_matches']}（E/F {facts['ef_violations']}）；直连计数的动词集合 "
+        f"{facts['verbs_declared']} 完整 = {facts['verbs_ok']}",
+        f"「仅 E/F」豁免挡住的量：同一棵树按自研规则集跑是 {facts['project_violations']} 条、"
+        f"按 I 规则 {facts['isort_violations']} 条，E/F 只有 {facts['ef_violations']} 条 —— "
+        "豁免若不存在，门禁当场全红，所以它必须被登记而不是被假装没有",
+        f"「未做 format/isort 重排」：{facts['format_would_rewrite']} 个文件是 "
+        f"``ruff format`` 会重写的、{facts['isort_violations']} 条 import 顺序违例 —— "
+        "重排过一次的树不可能与上游逐行 diff",
+        detail_of(
+            f"重放对账（{PORT_REPORT_TOOL}，需本机有锁定 commit 的上游干净克隆）："
+            f"exit {facts['report_exit']}，锁内 {facts['lock_records']} 条记录 / 报告 "
+            f"{facts['rows_total']} 行 / 逐字一致 {facts['rows_replay_ok']} 行 / "
+            f"待办 {facts['report_todos']} 条；磁盘 {facts['disk_py']} 个 .py，"
+            f"其中未登记的 {facts['unrecorded_py']} 个；"
+            f"现场渲染与已归档的 {PORT_REPORT_ARCHIVE} 逐字节一致 = "
+            f"{facts['render_matches_archive']}",
+            facts["unrecorded_sample"],
+        ),
+        f"人工改动三处登记：{UPSTREAM_LOCK} {facts['edits_in_lock']} 条、"
+        f"{NOTICES_DOC} {facts['edits_in_notices']} 条、"
+        f"{PORT_MODULE_TOOL}:MANUAL_EDITS {facts['edits_in_codemod']} 条，"
+        f"不一致 {facts['edits_disagree']} 条（重放只认 MANUAL_EDITS，读者只看到登记文档）",
+        detail_of(
+            f"{PRECOMMIT_CONFIG}：共 {facts['hooks_total']} 个 hook（HEAD "
+            f"{facts['hooks_total_head']} 个），其中排除搬运树的 {facts['hooks_excluding']} 个，"
+            f"比 HEAD 少的 {facts['hooks_lost']} 个；排除的 hook id：{facts['hook_ids']}",
+            facts["hooks_lost_detail"],
+        ),
+        detail_of(
+            f"搬运上限历史（{facts['hist_steps']} 次转换）：抬高 {facts['raises']} 次、"
+            f"其中搬运文件数未变的 {facts['flat_raises']} 次；近 "
+            f"{RECENT_TRANSITIONS} 次转换消失的被测根 {facts['vanish_recent']}。"
+            f"判据原文只要求「债务不高于棘轮快照」，故抬高只作待复核登记；轨迹 "
+            f"{facts['trend']}",
+            "; ".join(
+                listing
+                for listing in (
+                    facts["flat_raise_detail"],
+                    facts["vanish_older_detail"],
+                )
+                if listing
+            ),
+        ),
+    )
+    reason = (
+        ""
+        if ok
+        else "搬运层要同时满足三件事：只按 E/F 计量、与上游还能逐行 diff、以及这两件事都写在纸上。"
+        "重放一致说明没有被偷偷重排或手改；pre-commit 的 exclude 说明下一次 hook 运行不会把它"
+        "重排掉；三处登记一致说明读者看到的和工具认的是同一批改动"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
 def measure_ac17_07(ctx: Context) -> Facts:
     """Run the gate's public-API check, then apply its own rules to new files that it misses."""
     pub = script_module(PUBLIC_API_TOOL)
@@ -2277,6 +3113,198 @@ PROBES: Final[tuple[Probe, ...]] = (
         },
     ),
     Probe(
+        item="AC-17|03",
+        expects="债务不高于基线快照，只降不升",
+        summary="棘轮三项存量债务 + 上限自身历史只降不升 + 三个静态平面各读到多少"
+        " + 触碰集↔A2 集一一对应",
+        measure=measure_ac17_03,
+        judge=judge_ac17_03,
+        breaks=(
+            Break(
+                "棘轮自己变红（debt face）", (("ratchet_exit", "1"), ("ratchet_face", "debt")), GAP
+            ),
+            Break(
+                "棘轮以扫描范围变化变红", (("ratchet_exit", "1"), ("ratchet_face", "scope")), GAP
+            ),
+            Break("三项存量债务有一项没被打印（空读数）", (("printed", "2"),), GAP),
+            Break("ruff 存量债务高于快照", (("cur_ruff_selfdev", "243"),), GAP),
+            Break("mypy 存量债务高于快照", (("cur_mypy_selfdev", "12"),), GAP),
+            Break("bandit 存量债务高于快照", (("cur_bandit_selfdev", "4"),), GAP),
+            Break(
+                "快照历史上限被抬高过（债务在下一次被洗平）",
+                (("raises", "1"), ("raise_detail", "6b780a7->d66dd99 ruff_selfdev 240->260")),
+                GAP,
+            ),
+            Break(
+                "近两次转换里有一个被测根从快照里消失",
+                (("vanish_recent", "1"), ("vanish_recent_detail", "工作区->6b780a7 alembic")),
+                GAP,
+            ),
+            Break("快照历史短到无从判断只降不升", (("hist_steps", "1"),), GAP),
+            Break("一个自研根被 ruff 的 exclude 吞掉", (("ruff_dark", "1"),), GAP),
+            Break("ruff 一个自研文件都没走到", (("ruff_walked", "0"),), GAP),
+            Break("mypy 排除的文件 ruff 也看不见", (("mypy_dark", "19"),), GAP),
+            Break(
+                "mypy 的 exclude 排除了一个棘轮没点名的目录",
+                (
+                    ("mypy_dark", "24"),
+                    ("mypy_dark_seen_by_ruff", "24"),
+                    ("mypy_dark_legacy", "18"),
+                    ("mypy_dark_outside_legacy", "6"),
+                    ("mypy_dark_outside_sample", "alembic_data/env.py"),
+                ),
+                GAP,
+            ),
+            Break("bandit 的 exclude 漏掉自研文件", (("bandit_dark", "1"),), GAP),
+            Break("有一个 tracked .py 不在任何被测面里", (("orphan_py", "1"),), GAP),
+            Break("a2-check 自己变红", (("a2_exit", "1"),), GAP),
+            Break("A2 零容忍集为空", (("a2_files", "0"),), GAP),
+            Break("基线以来没有任何 .py 被触碰（对应面无从成立）", (("touched_py", "0"),), GAP),
+            Break(
+                "一个触碰过的自研文件被排除出 A2",
+                (
+                    ("touched_dropped", "1"),
+                    ("touched_dropped_selfdev", "1"),
+                    ("touched_dropped_sample", "opendata/services/x.py"),
+                ),
+                GAP,
+            ),
+        ),
+        repair={
+            "ratchet_exit": "0",
+            "ratchet_face": "none",
+            "printed": "3",
+            "cur_ruff_selfdev": "*snap_ruff_selfdev",
+            "cur_mypy_selfdev": "*snap_mypy_selfdev",
+            "cur_bandit_selfdev": "*snap_bandit_selfdev",
+            "hist_steps": "*hist_steps",
+            "raises": "0",
+            "raise_detail": "",
+            "vanish_recent": "0",
+            "vanish_recent_detail": "",
+            "ruff_walked": "*selfdev_disk",
+            "ruff_dark": "0",
+            "mypy_targets": "*mypy_targets",
+            "mypy_dark": "*mypy_dark_seen_by_ruff",
+            "mypy_dark_seen_by_ruff": "*mypy_dark_seen_by_ruff",
+            "mypy_dark_outside_legacy": "0",
+            "bandit_scanned": "*bandit_scanned",
+            "bandit_dark": "0",
+            "bandit_dark_seen_by_ruff": "0",
+            "tracked_py": "*tracked_py",
+            "orphan_py": "0",
+            "orphan_sample": "",
+            "a2_exit": "0",
+            "a2_files": "*a2_files",
+            "touched_py": "*touched_py",
+            "touched_dropped": "0",
+            "touched_dropped_selfdev": "0",
+            "touched_dropped_sample": "",
+        },
+    ),
+    Probe(
+        item="AC-17|05",
+        expects="仅 E/F 检查",
+        summary="搬运树只按 E/F 计量（豁免量得出来）+ 未重排且逐文件重放一致"
+        " + 三处登记与 pre-commit exclude 一致",
+        measure=measure_ac17_05,
+        judge=judge_ac17_05,
+        breaks=(
+            Break(
+                "棘轮自己变红（debt face）", (("ratchet_exit", "1"), ("ratchet_face", "debt")), GAP
+            ),
+            Break(
+                "棘轮以扫描范围变化变红", (("ratchet_exit", "1"), ("ratchet_face", "scope")), GAP
+            ),
+            Break("两项搬运债务有一项没被打印", (("printed", "1"),), GAP),
+            Break("ruff_ported 高于快照", (("cur_ruff_ported", "2145"),), GAP),
+            Break("direct_http_ported 高于快照", (("cur_direct_http_ported", "1045"),), GAP),
+            Break(
+                "门禁打印的搬运计数不再是 E/F 数（select 被加宽或改窄）",
+                (("select_matches", "no"),),
+                GAP,
+            ),
+            Break("门禁的 requests 直连数与独立重数不符", (("http_matches", "no"),), GAP),
+            Break(
+                "直连计数的动词集合被改窄（少一条就少一批读数）",
+                (
+                    ("verbs_ok", "no"),
+                    ("verbs_declared", "delete, get, head, post, put"),
+                ),
+                GAP,
+            ),
+            Break(
+                "E/F 豁免不再挡任何事（自研规则集读数不高于 E/F）",
+                (("exemption_shown", "no"),),
+                GAP,
+            ),
+            Break(
+                "搬运树已被 ruff format 过（与上游不再可 diff）",
+                (("format_would_rewrite", "0"),),
+                GAP,
+            ),
+            Break("搬运树 import 顺序已被重排", (("isort_violations", "0"),), GAP),
+            Break("重放工具自己退出非 0", (("report_exit", "1"),), GAP),
+            Break("重放报告留有待办", (("report_todos", "2"),), GAP),
+            Break("报告里有文件重放不一致", (("rows_replay_ok", "0"),), GAP),
+            Break("报告表行数与工具自报的文件数不符", (("report_files", "0"),), GAP),
+            Break("表行数为 0（没有文件被对照）", (("rows_total", "0"),), GAP),
+            Break("磁盘上有一个搬运文件不在上游锁里", (("unrecorded_py", "1"),), GAP),
+            Break(
+                "现场渲染与已归档报告不一致（归档不可复现）",
+                (("render_matches_archive", "no"),),
+                GAP,
+            ),
+            Break("人工改动登记三处各有出入", (("edits_disagree", "1"),), GAP),
+            Break("报告里标了人工改动的行数与锁不符", (("rows_manual", "0"),), GAP),
+            Break(
+                "pre-commit 不再排除搬运树（下一次 hook 会重排它）",
+                (("hooks_excluding", "0"),),
+                GAP,
+            ),
+            Break(
+                "pre-commit 少了一条 HEAD 里有的排除",
+                (("hooks_lost", "1"), ("hooks_lost_detail", "ruff-format")),
+                GAP,
+            ),
+            Break(
+                "近两次转换里搬运根从快照里消失",
+                (("vanish_recent", "1"), ("vanish_recent_detail", "工作区->6b780a7 opendata_http")),
+                GAP,
+            ),
+        ),
+        repair={
+            "ratchet_exit": "0",
+            "ratchet_face": "none",
+            "printed": "2",
+            "cur_ruff_ported": "*snap_ruff_ported",
+            "cur_direct_http_ported": "*snap_direct_http_ported",
+            "select_matches": "yes",
+            "http_matches": "yes",
+            "verbs_ok": "yes",
+            "exemption_shown": "yes",
+            "isort_violations": "*isort_violations",
+            "format_would_rewrite": "*format_would_rewrite",
+            "hist_steps": "*hist_steps",
+            "vanish_recent": "0",
+            "vanish_recent_detail": "",
+            "report_exit": "0",
+            "report_todos": "0",
+            "report_files": "*lock_records",
+            "rows_total": "*lock_records",
+            "rows_replay_ok": "*lock_records",
+            "rows_manual": "*edits_in_lock",
+            "render_matches_archive": "yes",
+            "unrecorded_py": "0",
+            "unrecorded_sample": "",
+            "edits_in_lock": "*edits_in_lock",
+            "edits_disagree": "0",
+            "hooks_excluding": "*hooks_excluding",
+            "hooks_lost": "0",
+            "hooks_lost_detail": "",
+        },
+    ),
+    Probe(
         item="AC-17|07",
         expects="docstring 与参数注解覆盖率 100%",
         summary="门禁面（固定目录内 100%/100%）+ 目录外的新增自研文件按同一把尺子再量一遍",
@@ -2513,7 +3541,7 @@ def probe_for(item: str) -> Probe:
         if probe.item == item:
             return probe
     raise ProbeError(
-        f"no probe for {item} (this round covers AC-1 and AC-2 in full, plus AC-17|07 and AC-17|10)"
+        f"no probe for {item} ({len(PROBES)} registered: {', '.join(p.item for p in PROBES)})"
     )
 
 

@@ -1,4 +1,4 @@
-"""consumer api keys
+"""Consumer API keys (design §10.3).
 
 Revision ID: 0003
 Revises: 0002
