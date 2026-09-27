@@ -168,13 +168,34 @@ def compare_source_frames(
         normalize_frame(frame_a, mapping_a),
         normalize_frame(frame_b, mapping_b),
         key=mapping_a.key,
-        tolerances=mapping_b.tolerances or mapping_a.tolerances,
+        tolerances=_stricter_tolerances(mapping_a, mapping_b),
         source_a=source_a,
         source_b=source_b,
         batch_id=batch_id,
         checked_at=checked_at,
         sample_limit=sample_limit,
     )
+
+
+def _stricter_tolerances(
+    mapping_a: DomainMapping,
+    mapping_b: DomainMapping,
+) -> dict[str, float]:
+    """Per-field relative tolerance, the tighter declaration winning.
+
+    ``mapping_b.tolerances or mapping_a.tolerances`` handed one side the whole
+    dictionary, so a leg whose yaml declares a loose number silently loosened
+    the comparison for fields the other leg declared tight (C49 measured: close
+    apart by 0.4 read CONSISTENT when B declared ``1.0`` and A ``1e-4``). A
+    tolerance is a judgement about one field, so the two sides merge field by
+    field and only the tighter judgement gets to decide that field.
+    """
+    merged = dict(mapping_a.tolerances)
+    for field_name, value in mapping_b.tolerances.items():
+        current = merged.get(field_name)
+        if current is None or value < current:
+            merged[field_name] = value
+    return merged
 
 
 def compare_normalized(

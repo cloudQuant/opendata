@@ -60,12 +60,16 @@ class MergeStats:
         diff_flagged: Rows marked ``_diff_flag = 1``.
         degraded_rows: Rows served by a non-authority source.
         passthrough: True for single-source domains.
+        colliding: One reason per business key a source carried twice and the
+            merge therefore refused (see :func:`_index`); empty when nothing
+            was ambiguous.
     """
 
     rows: int
     diff_flagged: int
     degraded_rows: int
     passthrough: bool
+    colliding: tuple[str, ...] = ()
 
 
 def merge_source_frames(
@@ -96,8 +100,10 @@ def merge_source_frames(
     Raises:
         ValueError: If an authority source has no frame, the frames
             disagree on their value columns, or a frame lacks the key
-            (fail closed: merging ambiguous input is worse than
-            failing).
+            columns (fail closed: the two could be reconciled by no
+            row-level decision). A key a frame carries twice is *not*
+            raised: that key alone is refused and reported in
+            ``stats.colliding`` (see :func:`_index`).
     """
     unknown = [source for source in authority if source not in frames]
     if unknown:
@@ -107,7 +113,12 @@ def merge_source_frames(
         )
     key_set = set(key)
     value_columns = _value_columns(frames, key_set, domain)
-    indexed = {source: _index(frame, key, source) for source, frame in frames.items()}
+    indexed: dict[str, dict[tuple, dict]] = {}
+    refused: list[str] = []
+    for source, frame in frames.items():
+        rows, collisions = _index(frame, key, source)
+        indexed[source] = rows
+        refused.extend(f"{source}: {biz_key!r}" for biz_key in sorted(collisions, key=repr))
     all_keys = sorted(
         {biz_key for rows in indexed.values() for biz_key in rows},
         key=lambda item: tuple(str(part) for part in item),
@@ -138,6 +149,7 @@ def merge_source_frames(
         diff_flagged=int(merged["_diff_flag"].sum()) if len(merged) else 0,
         degraded_rows=degraded,
         passthrough=len(frames) == 1,
+        colliding=tuple(sorted(refused)),
     )
     return merged, stats
 
@@ -321,18 +333,41 @@ def _value_columns(frames: Mapping[str, pd.DataFrame], key: set[str], domain: st
     return reference or []
 
 
-def _index(frame: pd.DataFrame, key: Sequence[str], source: str) -> dict[tuple, dict]:
-    """Index a frame by business key, refusing duplicates."""
+def _index(
+    frame: pd.DataFrame, key: Sequence[str], source: str
+) -> tuple[dict[tuple, dict], set[tuple]]:
+    """Index a frame by business key, refusing every row of a colliding key.
+
+    A key the leg carries twice is ambiguous: the dwd table is keyed on it, so
+    only one of the two rows could ever be kept, and which one is not knowable
+    here. Refusing that key (and reporting it) is the honest direction; the
+    alternative this function took until C49 was to raise, which undelivered the
+    whole window. The live shape: ``stock_action``/ths carries 55,072 keys, one
+    of them twice (603883 published 0.16 cash and 0.5 cash + 0.3 bonus for the
+    same 2024-06-27 ex-date) - and ``dwd_stock_action`` has been empty ever since.
+
+    Returns:
+        ``(rows by key, colliding keys)`` - a colliding key is in neither.
+
+    Raises:
+        ValueError: If a key column is absent (the mapping and the frame
+            disagree, which no row-level decision can fix).
+    """
     missing = [column for column in key if column not in frame.columns]
     if missing:
         raise ValueError(f"source {source!r} frame lacks key columns {missing}")
     indexed: dict[tuple, dict] = {}
+    colliding: set[tuple] = set()
     for record in frame.to_dict("records"):
         biz_key = tuple(record[column] for column in key)
+        if biz_key in colliding:
+            continue
         if biz_key in indexed:
-            raise ValueError(f"source {source!r} has duplicate business key {biz_key!r}")
+            colliding.add(biz_key)
+            del indexed[biz_key]
+            continue
         indexed[biz_key] = record
-    return indexed
+    return indexed, colliding
 
 
 def _disagreeing_keys(
