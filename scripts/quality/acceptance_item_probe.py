@@ -4080,6 +4080,235 @@ def judge_ac9_09(facts: Facts) -> Verdict:
 
 
 # --------------------------------------------------------------------------- #
+# AC-9 条目 1/6/7：口径映射表的覆盖面，与 dwd 合并、修订传播的服务层面（C52）
+# --------------------------------------------------------------------------- #
+
+CALIBER_TABLE_REL: Final = "opendata/data/mapping.py"
+CALIBER_DIR_REL: Final = "opendata/data/mappings"
+CROSS_CHECK_REL2: Final = "opendata/pipeline/cross_check.py"
+ADJUST_MODULE_REL: Final = "opendata/data/adjust.py"
+RUNNER_REL: Final = "opendata/pipeline/runner.py"
+
+#: 判据括号里点名的六类口径，以及每张表里承载它的那个键名。
+CALIBER_KEYS: Final = (
+    ("字段映射", "from"),
+    ("单位换算", "scale"),
+    ("复权口径", "adjust"),
+    ("key 规范化", "normalize"),
+    ("停牌语义", "suspension"),
+    ("差异率分母", "denominator"),
+)
+
+#: dwd 合并四问在服务层的落点：只有跑这几条节点才知道那一格真被执行过。
+DWD_SERVICE_NODES: Final = (
+    "tests/test_dwd_merge.py::TestDwdMergeService::test_service_writes_all_four_point_in_time_faces",
+    "tests/test_dwd_merge.py::TestDwdMergeService::test_service_degrades_per_key_and_keeps_the_source_evidence",
+    "tests/test_dwd_merge.py::TestMergeSourceFrames::test_point_in_time_columns_are_stamped",
+)
+
+#: 修订传播的两条单测：一条证明 key 被重算进合并单元，一条证明那一行的值真的换了。
+DWD_REVISION_NODES: Final = (
+    "tests/test_dwd_merge.py::TestDwdMergeService::test_revision_of_an_existing_key_changes_the_dwd_row",
+    "tests/test_dwd_merge.py::TestDwdMergeService::test_affected_keys_extend_the_merge_unit",
+)
+
+
+def caliber_yaml_texts(ctx: Context) -> dict[str, str]:
+    """Every source's mapping file, keyed by stem, fail closed on an empty table."""
+    directory = ctx.root / CALIBER_DIR_REL
+    texts = {
+        path.stem: path.read_text(encoding="utf-8") for path in sorted(directory.glob("*.yaml"))
+    }
+    if not texts:
+        raise ProbeError(f"no mapping files under {CALIBER_DIR_REL}")
+    return texts
+
+
+def domains_in_yaml(text: str) -> tuple[str, ...]:
+    """The domain names declared under ``domains:`` (two-space indent)."""
+    return tuple(re.findall(r"^  ([a-z_]+):$", text, re.MULTILINE))
+
+
+def measure_ac9_01(ctx: Context) -> Facts:
+    """Read which P0 domains the 口径 table declares and which calibers it can carry."""
+    p0 = p0_domains_in_migration()
+    texts = caliber_yaml_texts(ctx)
+    declared = {name for text in texts.values() for name in domains_in_yaml(text)}
+    missing = sorted(set(p0) - declared)
+    table = ctx.read(CALIBER_TABLE_REL)
+    admitted = set(re.findall(r'"([a-z_]+)"', function_body(table, "_parse_domain"))) | set(
+        re.findall(r"_FIELD_KEYS = frozenset\(\{([^}]*)\}\)", table)[0].split('"')[1::2]
+    )
+    payload_keys = {
+        key
+        for text in texts.values()
+        for key in re.findall(r"(\w+):", re.sub(r"#.*", "", text))
+    }
+    carried = {
+        token: "yes" if (token in admitted or token in payload_keys) else "no"
+        for _, token in CALIBER_KEYS
+    }
+    cross = ctx.read(CROSS_CHECK_REL2)
+    return {
+        "p0_total": count(len(p0)),
+        "p0_mapped": count(len(set(p0) & declared)),
+        "p0_missing": ", ".join(missing) or "-",
+        "sources": ", ".join(sorted(texts)),
+        "table_loads": flag("def load_mapping" in table and "def normalize_frame" in table),
+        "exportable": flag("def mapping_as_json" in table),
+        **{f"cat_{token}": value for token, value in carried.items()},
+        "adjust_in_code": flag("def apply_adjust" in ctx.read(ADJUST_MODULE_REL)),
+        "denominator_in_code": flag("key union (rate denominator)" in cross),
+    }
+
+
+def judge_ac9_01(facts: Facts) -> Verdict:
+    """``AC-9|01``: the caliber table exists, covers every P0 domain, carries all six calibers."""
+    categories = tuple(f"cat_{token}" for _, token in CALIBER_KEYS)
+    covered = number(facts["p0_mapped"]) == number(facts["p0_total"])
+    ok = (
+        covered and facts["table_loads"] == "yes" and all(facts[key] == "yes" for key in categories)
+    )
+    uncarried = ", ".join(name for (name, token) in CALIBER_KEYS if facts[f"cat_{token}"] == "no")
+    readings = (
+        f"表在不在: {CALIBER_TABLE_REL} 有 load_mapping/normalize_frame = {facts['table_loads']}，"
+        f"可导出 mapping_as_json = {facts['exportable']}，源文件 = {facts['sources']}",
+        f"P0 覆盖: {facts['p0_mapped']}/{facts['p0_total']} 个 P0 域在这张表里"
+        + (f"；没覆盖的是 {facts['p0_missing']}" if facts["p0_missing"] != "-" else ""),
+        "六类口径落表: "
+        + "、".join(f"{name}={facts[f'cat_{token}']}" for name, token in CALIBER_KEYS),
+        f"另两面（只在代码里、不在这张表里时不计入覆盖）: 复权在 {ADJUST_MODULE_REL} = "
+        f"{facts['adjust_in_code']}，差异率分母在 {CROSS_CHECK_REL2} = "
+        f"{facts['denominator_in_code']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "判据两半都要成立：这张表得覆盖全部 P0 域，且括号里点名的六类口径都能由它承载。"
+        + (
+            f"未覆盖的 P0 域：{facts['p0_missing']}（分母取 A4.1 迁移的 _DWD_TABLES，"
+            f"共 {facts['p0_total']} 个）"
+            if not covered
+            else ""
+        )
+        + (f"；不能承载的口径：{uncarried}" if uncarried else "")
+        + " —— 复权/分母即使代码里有实现，不写进这张表就仍然是『口径散在代码里』"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac9_06(ctx: Context) -> Facts:
+    """Run the service-level merge nodes, then read the four stamping faces in the merge layer."""
+    nodes = outcomes(DWD_SERVICE_NODES)
+    merge = ctx.read(DWD_MERGE_REL)
+    body = function_body(merge, "merge_source_frames")
+    run = method_body(merge, "DwdMergeService", "run")
+    return {
+        "runs": count(len(nodes)),
+        "passed": count(sum(1 for seen in nodes.values() if seen == "passed")),
+        "bad": bad_of(nodes),
+        "authority_fallback": flag("if rank > 0:" in body and "degraded += 1" in body),
+        "source_traced": flag("record[SOURCE_COLUMN] = source" in body),
+        "diff_flagged": flag('record["_diff_flag"] = 1 if biz_key in flagged else 0' in body),
+        "as_of_stamped": flag('record["_as_of"] = as_of' in body),
+        "as_of_is_window_end": flag("as_of=end," in run),
+        "trace_columns": flag(
+            'TRACE_COLUMNS = ("source", "_merged_at", "_diff_flag", "_as_of")' in merge
+        ),
+    }
+
+
+def judge_ac9_06(facts: Facts) -> Verdict:
+    """``AC-9|06``: authority wins, gaps degrade and fill, and all four trace columns land."""
+    faces = (
+        "authority_fallback",
+        "source_traced",
+        "diff_flagged",
+        "as_of_stamped",
+        "as_of_is_window_end",
+        "trace_columns",
+    )
+    ok = (
+        number(facts["runs"]) == len(DWD_SERVICE_NODES)
+        and facts["passed"] == facts["runs"]
+        and facts["bad"] == "-"
+        and all(facts[face] == "yes" for face in faces)
+    )
+    readings = (
+        f"服务层与合并层节点: {facts['passed']}/{facts['runs']} passed"
+        + (f"; not green: {facts['bad']}" if facts["bad"] != "-" else ""),
+        "四问各自的代码面: 权威缺失才降级 = "
+        f"{facts['authority_fallback']}、source 留痕 = {facts['source_traced']}、"
+        f"_diff_flag 打标 = {facts['diff_flagged']}、_as_of 写入 = {facts['as_of_stamped']}",
+        "_as_of 取的是窗口末而不是别的日期: service.run 传 as_of=end = "
+        f"{facts['as_of_is_window_end']}；"
+        f"四列同时是 dwd 的留痕列定义 = {facts['trace_columns']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "这一格要的是四件事都发生在服务层的那一次 run 里：有权威取权威、没权威降级填补、"
+        "source 留下是谁供的、_diff_flag 只在不一致时为 1、_as_of 是这一窗的窗口末 —— "
+        "少一面就少一条判据"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac9_07(ctx: Context) -> Facts:
+    """Run the two revision nodes, then read how a corrected key travels down the chain."""
+    nodes = outcomes(DWD_REVISION_NODES)
+    merge = ctx.read(DWD_MERGE_REL)
+    run = method_body(merge, "DwdMergeService", "run")
+    hook = method_body(merge, "DwdMergeService", "run_hook")
+    runner = ctx.read(RUNNER_REL)
+    writer = method_body(merge, "DwdWriter", "write")
+    return {
+        "runs": count(len(nodes)),
+        "passed": count(sum(1 for seen in nodes.values() if seen == "passed")),
+        "bad": bad_of(nodes),
+        "reader_gets_keys": flag("self._reader(source)(start, end, set(affected_keys))" in run),
+        "keys_extend_diffs": flag("extra_diff_keys=frozenset(affected_keys)" in run),
+        "hook_resells_keys": flag("affected_keys=self._contract_keys(context)" in hook),
+        "runner_publishes_keys": flag("affected_keys" in runner and "_affected_keys" in runner),
+        "writer_upserts": flag("build_upsert_sql" in writer),
+    }
+
+
+def judge_ac9_07(facts: Facts) -> Verdict:
+    """``AC-9|07``: a key corrected in ods re-writes its dwd row, and the unit test says so."""
+    faces = (
+        "reader_gets_keys",
+        "keys_extend_diffs",
+        "hook_resells_keys",
+        "runner_publishes_keys",
+        "writer_upserts",
+    )
+    ok = (
+        number(facts["runs"]) == len(DWD_REVISION_NODES)
+        and facts["passed"] == facts["runs"]
+        and facts["bad"] == "-"
+        and all(facts[face] == "yes" for face in faces)
+    )
+    readings = (
+        f"两条单测: {facts['passed']}/{facts['runs']} passed"
+        + (f"; not green: {facts['bad']}" if facts["bad"] != "-" else "")
+        + " —— 一条测「修正后的 key 被重算进合并单元」，一条测「那一行的值真的换了」",
+        "传播链五段: runner 交出被改的键 = "
+        f"{facts['runner_publishes_keys']}、run_hook 把 ods 拼法重拼成契约键 = "
+        f"{facts['hook_resells_keys']}、reader 收到这批键 = {facts['reader_gets_keys']}、"
+        f"键进入差异重算 = {facts['keys_extend_diffs']}、"
+        f"写侧按业务键 upsert = {facts['writer_upserts']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "「修订传播」是一条链：ods 改了的键要交出来、要换成契约键、要进 reader 的取数窗口、"
+        "要参与差异重算、最后按业务键 upsert 回同一行 —— 链上任一段断掉，dwd 留的就不是修订后的值"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+# --------------------------------------------------------------------------- #
 # AC-16 条目 6/7：零依赖基线的清零面与干净环境的 P0 集成面（C51）
 # --------------------------------------------------------------------------- #
 
@@ -5458,6 +5687,112 @@ PROBES: Final[tuple[Probe, ...]] = (
             "keys_sorted": "yes",
             "upsert_builder": "yes",
             "pk_is_business_key": "yes",
+        },
+    ),
+    Probe(
+        item="AC-9|01",
+        expects="覆盖 P0 域（字段映射/单位换算/复权口径/key 规范化/停牌语义/差异率分母）",
+        summary="表在（load_mapping/normalize_frame）+ P0 五域逐个可指名 + 六类口径由表承载",
+        measure=measure_ac9_01,
+        judge=judge_ac9_01,
+        breaks=(
+            Break("映射目录空了（口径表不再存在）", (("table_loads", "no"),), GAP),
+            Break(
+                "P0 少了一个域的映射",
+                (("p0_mapped", "4"), ("p0_missing", "financial_indicator")),
+                GAP,
+            ),
+            Break("单位换算不再写在表里（scale 键消失）", (("cat_scale", "no"),), GAP),
+            Break("key 规范化退回各源自己拼（normalize 键消失）", (("cat_normalize", "no"),), GAP),
+            Break("字段映射这一列名都不在表里了", (("cat_from", "no"),), GAP),
+            Break("复权口径只在代码里、不在这张表里", (("cat_adjust", "no"),), GAP),
+            Break("停牌语义无处声明", (("cat_suspension", "no"),), GAP),
+            Break("差异率分母不进表（分母由实现决定）", (("cat_denominator", "no"),), GAP),
+        ),
+        repair={
+            "table_loads": "yes",
+            "p0_mapped": "*p0_total",
+            "p0_missing": "-",
+            "cat_from": "yes",
+            "cat_scale": "yes",
+            "cat_adjust": "yes",
+            "cat_normalize": "yes",
+            "cat_suspension": "yes",
+            "cat_denominator": "yes",
+        },
+    ),
+    Probe(
+        item="AC-9|06",
+        expects="dwd 合并：权威源存在则取权威、缺失降级填补",
+        summary="服务层三条节点全绿 + 权威降级/source/_diff_flag/_as_of 四面代码面在位",
+        measure=measure_ac9_06,
+        judge=judge_ac9_06,
+        breaks=(
+            Break(
+                "服务层节点变红（四问里有一问的服务面没了）",
+                (("passed", "2"), ("bad", "x=exit=1")),
+                GAP,
+            ),
+            Break("节点被改名（跑不满三条就不算测过）", (("runs", "2"),), GAP),
+            Break("降级不再计数（权威缺失就丢行而不是填补）", (("authority_fallback", "no"),), GAP),
+            Break("source 留痕列不再写（那一行是谁供的查不出来）", (("source_traced", "no"),), GAP),
+            Break("_diff_flag 变成恒 0（打标不再由不一致决定）", (("diff_flagged", "no"),), GAP),
+            Break("_as_of 不再写进合并结果", (("as_of_stamped", "no"),), GAP),
+            Break(
+                "_as_of 写的不是窗口末（版本列失去『这一版到哪一天』的含义）",
+                (("as_of_is_window_end", "no"),),
+                GAP,
+            ),
+            Break("四列不再一起是留痕列定义", (("trace_columns", "no"),), GAP),
+        ),
+        repair={
+            "passed": "*runs",
+            "bad": "-",
+            "authority_fallback": "yes",
+            "source_traced": "yes",
+            "diff_flagged": "yes",
+            "as_of_stamped": "yes",
+            "as_of_is_window_end": "yes",
+            "trace_columns": "yes",
+        },
+    ),
+    Probe(
+        item="AC-9|07",
+        expects="ods 中已存在 key 被修正后，dwd 对应行同步更新（单测）",
+        summary="两条修订节点全绿 + 传播链五段（交键/重拼契约键/下传 reader/键级 upsert）",
+        measure=measure_ac9_07,
+        judge=judge_ac9_07,
+        breaks=(
+            Break("修订传播节点变红（值不再同步）", (("passed", "1"), ("bad", "x=exit=1")), GAP),
+            Break("节点被改名（两条里少一条就不算链上有人看过）", (("runs", "1"),), GAP),
+            Break(
+                "affected_keys 不再下传 reader（窗口外的修订取不到数）",
+                (("reader_gets_keys", "no"),),
+                GAP,
+            ),
+            Break("修订键不再参与差异重算", (("keys_extend_diffs", "no"),), GAP),
+            Break(
+                "run_hook 不再把 ods 拼法重拼成契约键（600519.SH 对不上 600519）",
+                (("hook_resells_keys", "no"),),
+                GAP,
+            ),
+            Break(
+                "runner 不再交出被改的键（ods 写侧与合并侧断开）",
+                (("runner_publishes_keys", "no"),),
+                GAP,
+            ),
+            Break(
+                "写侧退回追加（同一键重跑就多一行，同步无从谈起）", (("writer_upserts", "no"),), GAP
+            ),
+        ),
+        repair={
+            "passed": "*runs",
+            "bad": "-",
+            "reader_gets_keys": "yes",
+            "keys_extend_diffs": "yes",
+            "hook_resells_keys": "yes",
+            "runner_publishes_keys": "yes",
+            "writer_upserts": "yes",
         },
     ),
     Probe(
