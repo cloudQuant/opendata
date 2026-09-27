@@ -12,7 +12,7 @@
 
 .PHONY: help lint format format-check typecheck security deps-audit a2-check \
         test test-cov quality-ratchet public-api-quality zero-dep-check brand-check \
-        loguru-check secret-check ledger-check \
+        loguru-check secret-check ledger-check evidence-traceability \
         frontend-lint frontend-format frontend-test frontend-test-cov frontend-typecheck \
         frontend-collection frontend-e2e \
         gate quality quality-full pre-commit
@@ -26,7 +26,7 @@ PY_PORTED := opendata_http
 
 help:
 	@echo "Gate:             gate"
-	@echo "A2 (gating):      a2-check public-api-quality zero-dep-check brand-check loguru-check secret-check ledger-check quality-ratchet"
+	@echo "A2 (gating):      a2-check public-api-quality zero-dep-check brand-check loguru-check secret-check ledger-check evidence-traceability quality-ratchet"
 	@echo "Tests:            test test-cov"
 	@echo "Dev views (A1):   lint format format-check typecheck security deps-audit"
 	@echo "Frontend:         frontend-lint frontend-format frontend-collection frontend-e2e frontend-test frontend-test-cov frontend-typecheck"
@@ -123,6 +123,15 @@ secret-check:
 ledger-check:
 	python scripts/quality/acceptance_ledger_check.py
 
+# AC-17|10 asks for 历次里程碑的证据（命令 + 输出摘要 + 日期）可追溯, and until C43 nothing
+# had ever read the archive to check that. ledger-check only looks at the paths the ledger
+# cites; the other ~400 files under docs/evidence/ were never asked whether they say when
+# they ran, from which commit, by which command and with which exit code. Rounds before C14
+# predate the header convention, so the census is a ceiling that may only come down
+# (docs/quality/evidence-traceability.json), same semantics as quality-ratchet.
+evidence-traceability:
+	python scripts/quality/evidence_traceability.py
+
 # --- Frontend --------------------------------------------------------------
 
 frontend-lint:
@@ -175,6 +184,8 @@ gate:
 	@$(MAKE) --no-print-directory secret-check
 	@echo "===== gate: ledger-check ====="
 	@$(MAKE) --no-print-directory ledger-check
+	@echo "===== gate: evidence-traceability ====="
+	@$(MAKE) --no-print-directory evidence-traceability
 	@echo "===== gate: js-points-check ====="
 	@$(MAKE) --no-print-directory js-points-check
 	@echo "===== gate: loguru-check ====="

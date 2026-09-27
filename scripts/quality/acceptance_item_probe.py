@@ -35,6 +35,7 @@ from __future__ import annotations
 import argparse
 import ast
 import hashlib
+import importlib.util
 import json
 import re
 import subprocess  # nosec B404
@@ -48,6 +49,7 @@ import tomllib
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Sequence
+    from types import ModuleType
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DOC_REL: Final = "docs/迭代计划/迭代1-重构数据中台/验收文档.md"
@@ -1486,6 +1488,285 @@ def judge_ac2_05(facts: Facts) -> Verdict:
 
 
 # --------------------------------------------------------------------------- #
+# AC-17 -- the quality gate judged on its own faces
+# --------------------------------------------------------------------------- #
+
+#: The two tools these items are *about*. Both are run the way the gate runs them rather than
+#: reimplemented here: an AC-17 probe with its own copy of the rules would keep reporting green
+#: after the tool it stands for drifted, which is the failure mode the item exists to prevent.
+PUBLIC_API_TOOL: Final = "scripts/quality/public_api.py"
+A2_CHECK_TOOL: Final = "scripts/quality/a2_check.py"
+TRACEABILITY_TOOL: Final = "scripts/quality/evidence_traceability.py"
+
+#: Where the traceability archive lives, and where its frozen ceiling is recorded.
+EVIDENCE_DIR: Final = "docs/evidence"
+TRACE_BASELINE_REL: Final = "docs/quality/evidence-traceability.json"
+
+#: The faces ``evidence_traceability.py`` prints, in the order it prints them. Naming them here
+#: means a face added to that tool has to be read here too, or ``--self-test`` stops being able
+#: to satisfy this judge.
+TRACE_FACES: Final = ("narrative", "date", "identity", "command", "exit", "untracked")
+
+#: Trees that sit in the A2 file set but are nobody's *public API*: the test tree, whose
+#: docstring and annotation rules ruff switches off by configuration (and which ``a2_check``
+#: exempts from mypy and bandit), and the evidence archive, whose scripts are reproducibility
+#: readings rather than shipped callables. Excluding them is a scope decision, so their size is
+#: measured and printed alongside the judgement -- a face that drops a population silently is
+#: hiding a number, not making a call.
+NON_API_TREES: Final = ("tests/", "docs/")
+
+
+@lru_cache(maxsize=8)
+def script_module(rel: str) -> ModuleType:
+    """Import one of the repository's own quality scripts by repository-relative path.
+
+    Args:
+        rel: Path to the script, relative to the repository root.
+
+    Returns:
+        The executed module.
+
+    Raises:
+        ProbeError: When the script is not there to be read.
+    """
+    path = REPO_ROOT / rel
+    if not path.is_file():
+        raise ProbeError(f"{rel} is missing")
+    # ``sys.modules`` first, and only then exec: a ``@dataclass`` in the target resolves its own
+    # class through the module registry during processing, so an unregistered module dies with
+    # ``AttributeError: 'NoneType' object has no attribute '__dict__'`` -- a confusing way for a
+    # probe to fail while the tool it loads is perfectly healthy.
+    spec = importlib.util.spec_from_file_location(f"opendata_script_{rel}", path)
+    if spec is None or spec.loader is None:
+        raise ProbeError(f"{rel} cannot be loaded as a module")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def under_any(rel: str, prefixes: Iterable[str]) -> bool:
+    """Whether a repo-relative path equals one of the prefixes or sits below it."""
+    return any(rel == entry or rel.startswith(f"{entry.rstrip('/')}/") for entry in prefixes)
+
+
+def number(value: str) -> int:
+    """A counted fact as an integer; anything that does not read as one counts as -1.
+
+    Facts stay strings so a counterfact is one ``update()`` away, which means an unparseable
+    reading -- a tool that renamed its own output line, say -- has to be judged rather than
+    raised. -1 fails both :func:`positive` and any equality, so the verdict becomes a gap that
+    names the face instead of a traceback that hides it.
+    """
+    try:
+        return int(value)
+    except ValueError:
+        return -1
+
+
+def positive(value: str) -> bool:
+    """Whether a counted fact reads as at least one, so 100% of nothing cannot pass."""
+    return number(value) > 0
+
+
+def symbol_census(pub: ModuleType, paths: Sequence[str]) -> tuple[int, int, str]:
+    """Walk public callables over the named files with the gate tool's own walker.
+
+    Returns:
+        ``(callables, failing, sample)`` -- the sample names up to six offending ``file:line``.
+    """
+    total = 0
+    failing: list[str] = []
+    for rel in paths:
+        path = REPO_ROOT / rel
+        if not path.is_file():
+            continue
+        try:
+            source = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        for symbol in pub.collect_symbols(source, rel):
+            total += 1
+            if symbol.problems():
+                failing.append(f"{rel}:{symbol.line}")
+    return total, len(failing), ", ".join(failing[:6])
+
+
+def evidence_deletions() -> tuple[str, str]:
+    """Evidence archives git added at some point but no longer tracks, and what is tracked now.
+
+    The face-by-face scan can only read files that are present, so an archive that disappears
+    takes its command, date and exit readings with it in silence. ``--diff-filter=A`` over the
+    whole history against ``git ls-files`` is the difference between "52 rounds archived" and
+    "52 rounds archived, one of them since removed".
+    """
+    code, added_out = run_argv(
+        ["git", "log", "--diff-filter=A", "--name-only", "--pretty=format:", "--", EVIDENCE_DIR]
+    )
+    if code != 0:
+        raise ProbeError(f"git log over {EVIDENCE_DIR} failed: {added_out.strip()[:120]}")
+    code, tracked_out = run_argv(["git", "ls-files", EVIDENCE_DIR])
+    if code != 0:
+        raise ProbeError(f"git ls-files over {EVIDENCE_DIR} failed: {tracked_out.strip()[:120]}")
+    added = {line.strip() for line in added_out.splitlines() if line.strip()}
+    tracked = {line.strip() for line in tracked_out.splitlines() if line.strip()}
+    return count(len(added - tracked)), count(len(tracked))
+
+
+def measure_ac17_07(ctx: Context) -> Facts:
+    """Run the gate's public-API check, then apply its own rules to new files that it misses."""
+    pub = script_module(PUBLIC_API_TOOL)
+    a2 = script_module(A2_CHECK_TOOL)
+    code, out = run_argv([sys.executable, PUBLIC_API_TOOL])
+    scope = tuple(str(entry) for entry in pub.A2_SCOPE)
+    a2_files = sorted(a2.resolve_files(None) or [])
+    a2_set = set(a2_files)
+    ported = tuple(f"{name}/" for name in sorted(a2.EXCLUDED_ROOT_DIRS))
+    outside = [name for name in a2_files if not under_any(name, scope)]
+    widened = [name for name in outside if not under_any(name, NON_API_TREES)]
+    non_api = [name for name in outside if under_any(name, NON_API_TREES)]
+    legacy = [
+        name
+        for name in ctx.tracked()
+        if name.endswith(".py")
+        and name not in a2_set
+        and not under_any(name, scope)
+        and not under_any(name, NON_API_TREES)
+        and not under_any(name, ported)
+    ]
+    wide_total, wide_fail, wide_sample = symbol_census(pub, widened)
+    legacy_total, legacy_fail, legacy_sample = symbol_census(pub, legacy)
+    non_total, non_fail, _ = symbol_census(pub, non_api)
+    return {
+        "tool_exit": count(code),
+        "in_scope": first_capture(out, r"A2 public callables\s*:\s*(\d+)"),
+        "doc_pct": first_capture(out, r"docstring coverage\s*:\s*([\d.]+)%"),
+        "ann_pct": first_capture(out, r"annotation coverage\s*:\s*([\d.]+)%"),
+        "vacuous": flag("no A2 public callables in scope" in out),
+        "scope_dirs": count(sum(1 for entry in scope if (REPO_ROOT / entry).is_dir())),
+        "widened_files": count(len(widened)),
+        "widened_callables": count(wide_total),
+        "widened_failing": count(wide_fail),
+        "widened_sample": wide_sample,
+        "legacy_files": count(len(legacy)),
+        "legacy_callables": count(legacy_total),
+        "legacy_failing": count(legacy_fail),
+        "legacy_sample": legacy_sample,
+        "non_api_callables": count(non_total),
+        "non_api_failing": count(non_fail),
+    }
+
+
+def judge_ac17_07(facts: Facts) -> Verdict:
+    """``AC-17|07``: new public callables are documented and fully annotated, on both faces."""
+    ok = (
+        facts["tool_exit"] == "0"
+        and facts["vacuous"] == "no"
+        and facts["doc_pct"] == "100.0"
+        and facts["ann_pct"] == "100.0"
+        and positive(facts["in_scope"])
+        and positive(facts["widened_callables"])
+        and facts["widened_failing"] == "0"
+    )
+    readings = (
+        f"{PUBLIC_API_TOOL} exit {facts['tool_exit']}: {facts['in_scope']} callable(s) over "
+        f"{facts['scope_dirs']} of its fixed scope director(ies) exist; docstring "
+        f"{facts['doc_pct']}%, annotation {facts['ann_pct']}%; empty-scope branch taken = "
+        f"{facts['vacuous']}",
+        f"新增面 outside that fixed list (A2 files that are not tests or evidence) = "
+        f"{facts['widened_files']} file(s) / {facts['widened_callables']} callable(s), below "
+        f"standard = {facts['widened_failing']}"
+        + (f" ({facts['widened_sample']})" if facts["widened_sample"] else ""),
+        f"A1 存量 outside the fixed list, gated by 触碰即达标 rather than by this item = "
+        f"{facts['legacy_files']} file(s) / {facts['legacy_callables']} callable(s), below "
+        f"standard = {facts['legacy_failing']}"
+        + (f" ({facts['legacy_sample']})" if facts["legacy_sample"] else ""),
+        f"excluded test/evidence trees, disclosed rather than dropped = "
+        f"{facts['non_api_callables']} callable(s), below standard = {facts['non_api_failing']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "the item says 新增: a callable the gate cannot see because its scope list is fixed "
+        "still has to meet 100%/100%, and a 100% over an empty or unreachable population is not "
+        "a measurement at all"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac17_10(ctx: Context) -> Facts:
+    """Run the traceability gate member and read its census, its faces, its dates and its gaps."""
+    code, out = run_argv([sys.executable, TRACEABILITY_TOOL])
+    facts: Facts = {
+        "tool_exit": count(code),
+        "tool_ok": flag("\nOK:" in out),
+        "tool_new": flag("NEW VIOLATION:" in out or "\nFAIL:" in out),
+        "rounds": first_capture(out, r"rounds\s+= (\d+)"),
+        "census": first_capture(out, r"files census\s+= (\d+)"),
+        "dated_header": "(absent)",
+        "dated_run": "(absent)",
+        "logs_total": "(absent)",
+    }
+    for face in TRACE_FACES:
+        facts[f"gap_{face}"] = first_capture(out, rf"{face}\s+gaps = (\d+)")
+    dated = re.search(
+        r"dates in gate logs = header (\d+)/(\d+), printed by the run (\d+)/(\d+)", out
+    )
+    if dated:
+        facts["dated_header"] = dated.group(1)
+        facts["logs_total"] = dated.group(2)
+        facts["dated_run"] = dated.group(3)
+    gone, tracked = evidence_deletions()
+    facts["gone_archives"] = gone
+    facts["tracked_archives"] = tracked
+    try:
+        payload = json.loads(ctx.read(TRACE_BASELINE_REL))
+    except (ProbeError, json.JSONDecodeError) as exc:
+        facts["baseline_entries"] = f"(unreadable: {exc})"
+        return facts
+    frozen = payload.get("violations") if isinstance(payload, dict) else None
+    facts["baseline_entries"] = count(len(frozen)) if isinstance(frozen, list) else "(not a list)"
+    return facts
+
+
+def judge_ac17_10(facts: Facts) -> Verdict:
+    """``AC-17|10``: every milestone archive answers when, from where, by what command and exit."""
+    faces_ok = all(facts[f"gap_{face}"] == "0" for face in TRACE_FACES)
+    ok = (
+        facts["tool_exit"] == "0"
+        and facts["tool_ok"] == "yes"
+        and facts["tool_new"] == "no"
+        and faces_ok
+        and positive(facts["rounds"])
+        and positive(facts["census"])
+        and positive(facts["logs_total"])
+        and facts["gone_archives"] == "0"
+        and number(facts["dated_header"]) + number(facts["dated_run"])
+        == number(facts["logs_total"])
+    )
+    readings = (
+        f"{TRACEABILITY_TOOL} exit {facts['tool_exit']}, says OK = {facts['tool_ok']}, "
+        f"reports a new violation = {facts['tool_new']}; frozen ceiling = "
+        f"{facts['baseline_entries']} legacy entr(ies)",
+        f"archive = {facts['rounds']} round(s), {facts['census']} file(s) in the census, "
+        f"{facts['tracked_archives']} tracked now, {facts['gone_archives']} added once and then "
+        "removed",
+        "gaps by face: " + ", ".join(f"{face}={facts[f'gap_{face}']}" for face in TRACE_FACES),
+        f"date answers among gate logs = header {facts['dated_header']} + printed by the run "
+        f"{facts['dated_run']} out of {facts['logs_total']}: 日期 is satisfied by either face, "
+        "and the two together have to cover every gate log",
+    )
+    reason = (
+        ""
+        if ok
+        else "可追溯 means each archive answers 命令 / 输出摘要 / 日期 with no reader present: "
+        "one gap on any face, an archive deleted after it was added, or a census too small to be "
+        "the whole history turns the claim back into a summary"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+# --------------------------------------------------------------------------- #
 # The probe table
 # --------------------------------------------------------------------------- #
 
@@ -1907,6 +2188,96 @@ PROBES: Final[tuple[Probe, ...]] = (
             "derived_passed": "*runs",
         },
     ),
+    Probe(
+        item="AC-17|07",
+        expects="docstring 与参数注解覆盖率 100%",
+        summary="门禁面（固定目录内 100%/100%）+ 目录外的新增自研文件按同一把尺子再量一遍",
+        measure=measure_ac17_07,
+        judge=judge_ac17_07,
+        breaks=(
+            Break("门禁项本身变红", (("tool_exit", "1"),), GAP),
+            Break(
+                "覆盖面被清空却仍打印 100%（空集合分支）",
+                (("in_scope", "0"), ("vacuous", "yes"), ("scope_dirs", "0")),
+                GAP,
+            ),
+            Break("docstring 覆盖率不是 100%", (("doc_pct", "99.8"),), GAP),
+            Break("参数注解覆盖率不是 100%", (("ann_pct", "97.0"),), GAP),
+            Break(
+                "目录外的新增文件里有一个公开 callable 不达标",
+                (
+                    ("widened_failing", "1"),
+                    ("widened_sample", "opendata/services/scheduler.py:88"),
+                ),
+                GAP,
+            ),
+            Break(
+                "目录外没有任何新增文件被量到（加宽面自己失效）",
+                (("widened_files", "0"), ("widened_callables", "0")),
+                GAP,
+            ),
+        ),
+        repair={
+            "tool_exit": "0",
+            "vacuous": "no",
+            "doc_pct": "100.0",
+            "ann_pct": "100.0",
+            "in_scope": "*in_scope",
+            "widened_files": "*widened_files",
+            "widened_callables": "*widened_callables",
+            "widened_failing": "0",
+            "widened_sample": "",
+        },
+    ),
+    Probe(
+        item="AC-17|10",
+        expects="历次里程碑的验证证据",
+        summary="evidence-traceability 六个面全零 + 日期两读覆盖全部 gate 日志 + 无档案被删",
+        measure=measure_ac17_10,
+        judge=judge_ac17_10,
+        breaks=(
+            Break("追溯工具变红", (("tool_exit", "1"), ("tool_ok", "no")), GAP),
+            Break("基线之外出现新违规", (("tool_new", "yes"),), GAP),
+            Break("某个里程碑档案缺叙述 README", (("gap_narrative", "1"),), GAP),
+            Break("有 gate 日志答不出日期", (("gap_date", "1"),), GAP),
+            Break("有 gate 日志答不出身份", (("gap_identity", "1"),), GAP),
+            Break("有 gate 日志答不出命令", (("gap_command", "1"),), GAP),
+            Break("有 gate 日志没有明确 exit 读数", (("gap_exit", "1"),), GAP),
+            Break("有证据文件从未被 git 跟踪", (("gap_untracked", "1"),), GAP),
+            Break(
+                "日期只数抬头、不再认运行自己打下的时间戳",
+                (("dated_run", "0"),),
+                GAP,
+            ),
+            Break(
+                "档案被删除后追溯断链（逐面扫描看不见消失）",
+                (("gone_archives", "4"),),
+                GAP,
+            ),
+            Break(
+                "普查里一个 gate 日志都没有：全零只是空转",
+                (("logs_total", "0"), ("dated_header", "0"), ("dated_run", "0")),
+                GAP,
+            ),
+        ),
+        repair={
+            "tool_exit": "0",
+            "tool_ok": "yes",
+            "tool_new": "no",
+            "gap_narrative": "0",
+            "gap_date": "0",
+            "gap_identity": "0",
+            "gap_command": "0",
+            "gap_exit": "0",
+            "gap_untracked": "0",
+            "gone_archives": "0",
+            "rounds": "*rounds",
+            "census": "*census",
+            "logs_total": "*logs_total",
+            "dated_header": "*dated_header",
+            "dated_run": "*dated_run",
+        },
+    ),
 )
 
 
@@ -1979,7 +2350,9 @@ def probe_for(item: str) -> Probe:
     for probe in PROBES:
         if probe.item == item:
             return probe
-    raise ProbeError(f"no probe for {item} (this round covers AC-1 and AC-2 only)")
+    raise ProbeError(
+        f"no probe for {item} (this round covers AC-1 and AC-2 in full, plus AC-17|07 and AC-17|10)"
+    )
 
 
 def wording_drift(ctx: Context, probe: Probe) -> str:
