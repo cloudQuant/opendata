@@ -4080,6 +4080,254 @@ def judge_ac9_09(facts: Facts) -> Verdict:
 
 
 # --------------------------------------------------------------------------- #
+# AC-16 条目 6/7：零依赖基线的清零面与干净环境的 P0 集成面（C51）
+# --------------------------------------------------------------------------- #
+
+ZERO_DEP_SCANNER: Final = "scripts/codemod/verify_no_akshare.py"
+P0_INTEGRATION_SELECTOR: Final = "integration and not e2e"
+P0_MIGRATION_REL: Final = "alembic_data/versions/20260923-0001_ods_dwd_p0.py"
+
+#: C51's clean-environment run: one venv built from ``pyproject.toml`` alone, untrimmed body.
+CLEAN_RUN_EVIDENCE: Final = "docs/evidence/C51/clean-env-integration-run.txt"
+CLEAN_SECTION: Final = "===== B. clean venv ====="
+
+#: The two packages the criterion requires to be absent.
+UPSTREAM_PACKAGES: Final = ("akshare", "openbb")
+
+
+def marker_names_in(node: ast.AST) -> set[str]:
+    """Every ``pytest.mark.<name>`` spelled inside a node, however it is nested."""
+    found: set[str] = set()
+    for child in ast.walk(node):
+        if (
+            isinstance(child, ast.Attribute)
+            and isinstance(child.value, ast.Attribute)
+            and isinstance(child.value.value, ast.Name)
+            and child.value.value.id == "pytest"
+            and child.value.attr == "mark"
+        ):
+            found.add(child.attr)
+    return found
+
+
+def registered_markers_in_ini(ini_text: str) -> set[str]:
+    """The names under ``pytest.ini``'s ``markers =`` block, which ``--strict-markers`` enforces."""
+    if "markers =" not in ini_text:
+        return set()
+    names: set[str] = set()
+    for line in ini_text.split("markers =", 1)[1].splitlines():
+        if not line.strip():
+            continue
+        if not line[0].isspace():
+            break
+        names.add(line.strip().split(":")[0].strip())
+    return names
+
+
+def integration_units_now() -> tuple[str, ...]:
+    """Every test unit the selector reaches right now, as ``tests/x.py`` or ``tests/x.py::Class``.
+
+    Read off the filesystem rather than ``git ls-files``: this is the set ``pytest`` collects, and
+    an uncommitted marked module is collected too.
+    """
+    units: list[str] = []
+    for path in sorted((REPO_ROOT / "tests").glob("test_*.py")):
+        if "integration" not in path.read_text(encoding="utf-8"):
+            continue
+        rel = str(path.relative_to(REPO_ROOT))
+        for node in parse(rel).body:
+            marks = marker_names_in(node)
+            if (
+                isinstance(node, ast.Assign)
+                and "integration" in marks
+                and any(getattr(t, "id", "") == "pytestmark" for t in node.targets)
+            ):
+                units.append(rel)
+            if isinstance(node, ast.ClassDef) and "integration" in marks:
+                units.append(f"{rel}::{node.name}")
+    return tuple(units)
+
+
+def p0_domains_in_migration() -> tuple[str, ...]:
+    """The P0 domains as the A4.1 migration names them."""
+    for node in parse(P0_MIGRATION_REL).body:
+        if (
+            isinstance(node, ast.Assign)
+            and isinstance(node.value, ast.Dict)
+            and any(getattr(t, "id", "") == "_DWD_TABLES" for t in node.targets)
+        ):
+            return tuple(
+                ast.unparse(key).strip("'\"") for key in node.value.keys if key is not None
+            )
+    raise ProbeError(f"_DWD_TABLES is not a mapping in {P0_MIGRATION_REL}")
+
+
+def measure_ac16_06(ctx: Context) -> Facts:
+    """Run the frozen zero-dependency assertion, then split what it still finds by shape."""
+    code, out = run_argv([sys.executable, ZERO_DEP_SCANNER])
+    self_code, _ = run_argv([sys.executable, ZERO_DEP_SCANNER, "--self-test"])
+    scanner = script_module(ZERO_DEP_SCANNER)
+    findings = scanner.collect(scanner.DEFAULT_TARGETS)
+    frozen = scanner.load_baseline()
+    kinds = {
+        kind: sum(1 for finding in findings if finding.kind == kind)
+        for kind in ("import", "dynamic", "string")
+    }
+    frozen_keys = {entry[0:3] for entry in frozen.entries}
+    update_body = function_body(ctx.read(ZERO_DEP_SCANNER), "update")
+    refuses_growth = "refusing to grow the baseline" in update_body
+    return {
+        "detector_exit": str(code),
+        "detector_ok_line": first_capture(out, r"^(OK: .*)$"),
+        "self_test_exit": str(self_code),
+        "frozen": count(len(frozen.entries)),
+        "live": count(len(findings)),
+        "import_live": count(kinds["import"]),
+        "dynamic_live": count(kinds["dynamic"]),
+        "string_live": count(kinds["string"]),
+        "string_files": ", ".join(sorted({f.file for f in findings if f.kind == "string"})),
+        "no_new_reference": flag(all((f.file, f.module, f.kind) in frozen_keys for f in findings)),
+        "only_down": flag(refuses_growth and "force" in update_body),
+        "scope": ", ".join(scanner.DEFAULT_TARGETS),
+    }
+
+
+def judge_ac16_06(facts: Facts) -> Verdict:
+    """``AC-16|06``: the frozen baseline may only shrink, and it has to reach zero."""
+    ok = (
+        facts["detector_exit"] == "0"
+        and facts["self_test_exit"] == "0"
+        and facts["only_down"] == "yes"
+        and facts["no_new_reference"] == "yes"
+        and facts["import_live"] == "0"
+        and facts["dynamic_live"] == "0"
+        and facts["frozen"] == "0"
+    )
+    readings = (
+        f"零依赖断言（门禁那两条命令原样）：check exit={facts['detector_exit']}，"
+        f"--self-test exit={facts['self_test_exit']}；扫描面 = {facts['scope']}",
+        f"判据原文要清的是「集成层的 `import akshare` 残留」：AST 走查 import 形态 = "
+        f"{facts['import_live']}，动态 import 形态 = {facts['dynamic_live']} —— 这一项已经是零",
+        f"基线还冻着 {facts['frozen']} 条（现场走查 {facts['live']} 条，"
+        f"新增即失败 = {facts['no_new_reference']}，只降不升的门禁在位 = {facts['only_down']}）："
+        f"{facts['string_live']} 条是名字面量，落在 {facts['string_files']}",
+        f"扫描器自己怎么说：{facts['detector_ok_line'] or '-'}",
+    )
+    reason = (
+        ""
+        if ok
+        else "「基线清零」是这条唯一没到的面，而要把它抹平只有两条路，两条都要改判据本身：①把扫描器"
+        "的字符串规则改窄（等于回头放宽已勾的 AC-16|05「AST 口径」，本轮拒绝）；②改掉这三处产品事实"
+        "的拼写 —— `openbb_map.py` 的 `openbb` 是 FR-7 对照表自己的字段名，`data_script.py` 的 "
+        "`akshare` 是 `DataScript.source` 的溯源默认值（搬运脚本与 P0 迁移同一写法在写它），"
+        "`patrol.py` 的是 `key_status()` 的数据源标签；把它们改成 `AKShare` 之类只是给扫描器做"
+        "伪装，正是 C35 刚收口的那种门禁空转。属于用户/产品决策，不是再读一遍能解决的"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac16_07(ctx: Context) -> Facts:
+    """Run the P0 domain selection here, then read what C51's clean venv recorded."""
+    ini = ctx.read("pytest.ini")
+    units = integration_units_now()
+    modules = sorted({unit.split("::")[0] for unit in units})
+    text = "".join(ctx.read(rel) for rel in modules)
+    domains = p0_domains_in_migration()
+    missing = [domain for domain in domains if domain not in text]
+    code, out = run_argv(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "tests",
+            "-m",
+            P0_INTEGRATION_SELECTOR,
+            "--no-header",
+            "-q",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+        ]
+    )
+    counts = tally(out)
+    evidence = ctx.read(CLEAN_RUN_EVIDENCE)
+    section = evidence.split(CLEAN_SECTION, 1)[1] if CLEAN_SECTION in evidence else evidence
+    archived_modules = {
+        line.split("::")[0].strip()
+        for line in section.splitlines()
+        if line.startswith("tests/") and "::" in line
+    }
+    return {
+        "registered": flag("integration" in registered_markers_in_ini(ini)),
+        "strict": flag("--strict-markers" in ini),
+        "units": count(len(units)),
+        "unit_names": ", ".join(units),
+        "domains": count(len(domains)),
+        "domains_missing": count(len(missing)),
+        "domain_names": ", ".join(missing) or "-",
+        "selector": P0_INTEGRATION_SELECTOR,
+        "run_exit": str(code),
+        "passed": count(counts.get("passed", 0)),
+        "failed": count(counts.get("failed", 0)),
+        "skipped": count(counts.get("skipped", 0)),
+        "deselected": count(counts.get("deselected", 0)),
+        "clean_here": flag(
+            all(importlib.util.find_spec(name) is None for name in UPSTREAM_PACKAGES)
+        ),
+        "archive_exit": first_capture(evidence, r"^CLEAN_RUN_EXIT=(\S+)$"),
+        "archive_summary": first_capture(section, r"=+ (\d+ passed.*) =+"),
+        "archive_modules": count(len(archived_modules)),
+        "archive_blind": count(len([rel for rel in modules if rel not in archived_modules])),
+        "archive_absent": flag(
+            all(f"{name}: absent" in evidence for name in UPSTREAM_PACKAGES)
+            and not any(f"{name}: present" in evidence for name in UPSTREAM_PACKAGES)
+        ),
+    }
+
+
+def judge_ac16_07(facts: Facts) -> Verdict:
+    """``AC-16|07``: a *named* P0 integration surface, passing with neither package installed."""
+    ok = (
+        facts["registered"] == "yes"
+        and facts["strict"] == "yes"
+        and number(facts["units"]) > 0
+        and facts["domains_missing"] == "0"
+        and facts["run_exit"] == "0"
+        and number(facts["passed"]) > 0
+        and facts["failed"] == "0"
+        and facts["skipped"] == "0"
+        and facts["clean_here"] == "yes"
+        and facts["archive_exit"] == "0"
+        and facts["archive_blind"] == "0"
+        and facts["archive_absent"] == "yes"
+    )
+    readings = (
+        f"选择式 `-m '{facts['selector']}'` 有名字了：marker 注册 = {facts['registered']}，"
+        f"--strict-markers = {facts['strict']}，标记单元 {facts['units']} 个 = "
+        f"{facts['unit_names']}",
+        f"P0 域覆盖：A4.1 迁移的 {facts['domains']} 个域全部被这组用例点到，缺 = "
+        f"{facts['domains_missing']}（{facts['domain_names']}）",
+        f"本机这一遍（解释器内 akshare/openbb 均不可导入 = {facts['clean_here']}）："
+        f"exit={facts['run_exit']}，{facts['passed']} passed / {facts['failed']} failed / "
+        f"{facts['skipped']} skipped；另有 {facts['deselected']} 条被选择式挡在外面"
+        "（含全部仓库 e2e）",
+        f"干净 venv 留档（{CLEAN_RUN_EVIDENCE}）：CLEAN_RUN_EXIT={facts['archive_exit']}，"
+        f"{facts['archive_summary'] or '(absent)'}；留档里两个上游包都记为 absent = "
+        f"{facts['archive_absent']}；留档点到过 {facts['archive_modules']} 个模块，"
+        f"当前标记集里没被留档覆盖的 = {facts['archive_blind']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "「P0 域集成测试」要么没有可指的名字（marker 没注册/没人用/某条 P0 域没被这组用例"
+        "点到），要么这一遍没全绿、或者跳过了（skip 不等于通过），要么当前解释器里上游包又变得可"
+        "导入，要么干净环境的留档不再覆盖现在这组标记模块 —— 最后一条是刻意的棘轮：给 P0 集成面"
+        "加一个模块，就得重跑一次那个只装声明依赖的 venv 并重留档"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+# --------------------------------------------------------------------------- #
 # The probe table
 # --------------------------------------------------------------------------- #
 
@@ -5278,6 +5526,90 @@ PROBES: Final[tuple[Probe, ...]] = (
             "import_rc": "0",
             "import_under_root": "yes",
             "self_member": "yes",
+        },
+    ),
+    Probe(
+        item="AC-16|06",
+        expects="A2 搬运完成后基线清零",
+        summary="零依赖断言两条门禁命令都绿、只降不升的门禁在位、import/动态形态为零、"
+        "冻结基线条数为零",
+        measure=measure_ac16_06,
+        judge=judge_ac16_06,
+        breaks=(
+            Break("扫描器 CLI 变红（扫描面或基线被移动）", (("detector_exit", "1"),), GAP),
+            Break(
+                "检测器自测不咬了（漏检的仪器，读数为零不代表没有）",
+                (("self_test_exit", "1"),),
+                GAP,
+            ),
+            Break(
+                "集成层又出现 import akshare（判据原文点名的形态）",
+                (("import_live", "1"), ("frozen", "4")),
+                GAP,
+            ),
+            Break("动态 import 绕过面回来了", (("dynamic_live", "1"), ("frozen", "4")), GAP),
+            Break("新增引用不再被拒（现场比冻结多一条也算过）", (("no_new_reference", "no"),), GAP),
+            Break("--update 不再拒绝长大（只降不升被拆）", (("only_down", "no"),), GAP),
+            Break("基线还在（本轮实际卡住的那一格：3 条没清零）", (("frozen", "3"),), GAP),
+        ),
+        repair={
+            "detector_exit": "0",
+            "self_test_exit": "0",
+            "import_live": "0",
+            "dynamic_live": "0",
+            "no_new_reference": "yes",
+            "only_down": "yes",
+            "frozen": "0",
+        },
+    ),
+    Probe(
+        item="AC-16|07",
+        expects="在未安装 akshare/openbb 的干净环境中 P0 域集成测试通过",
+        summary="选择式有可指的名字（marker 注册 + 8 个标记单元 + 5 个 P0 域全覆盖），"
+        "本机和留档的干净 venv 都全绿，且留档覆盖当前标记集",
+        measure=measure_ac16_07,
+        judge=judge_ac16_07,
+        breaks=(
+            Break(
+                "integration marker 不再注册（--strict-markers 下选择式直接报错）",
+                (("registered", "no"),),
+                GAP,
+            ),
+            Break(
+                "strict markers 被摘掉（未注册的 marker 退成一条警告）",
+                (("strict", "no"),),
+                GAP,
+            ),
+            Break(
+                "标记集被清空（选中 0 条也算「通过」）",
+                (("units", "0"), ("passed", "0")),
+                GAP,
+            ),
+            Break("某条 P0 域不再被这组用例点到", (("domains_missing", "1"),), GAP),
+            Break("这一遍有用例变红", (("run_exit", "1"), ("failed", "1")), GAP),
+            Break("有用例改成 skip（skip 不是通过）", (("skipped", "3"),), GAP),
+            Break("本机解释器又能 import 上游包（干净面没了）", (("clean_here", "no"),), GAP),
+            Break("干净 venv 那一遍本身是红的", (("archive_exit", "1"),), GAP),
+            Break(
+                "标记集加了新模块，留档却没重跑（证据不再覆盖判据）",
+                (("archive_blind", "1"),),
+                GAP,
+            ),
+            Break("留档里上游包又被装上了", (("archive_absent", "no"),), GAP),
+        ),
+        repair={
+            "registered": "yes",
+            "strict": "yes",
+            "units": "*units",
+            "domains_missing": "0",
+            "run_exit": "0",
+            "passed": "*passed",
+            "failed": "0",
+            "skipped": "0",
+            "clean_here": "yes",
+            "archive_exit": "0",
+            "archive_blind": "0",
+            "archive_absent": "yes",
         },
     ),
 )

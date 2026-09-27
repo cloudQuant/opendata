@@ -13,6 +13,7 @@ from sqlalchemy import create_engine, pool, text
 
 from opendata.main import app
 
+pytestmark = pytest.mark.integration
 AUTH = {"Authorization": "Bearer {token}"}
 
 

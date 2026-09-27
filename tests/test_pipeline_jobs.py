@@ -1009,6 +1009,7 @@ class TestFreshnessExecutor:
             registered_legs(("p0",))
 
 
+@pytest.mark.integration
 class TestFullCheckExecutor:
     """The ``full_check`` row's executor: the cross-check's scheduled trigger.
 

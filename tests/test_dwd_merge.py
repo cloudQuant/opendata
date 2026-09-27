@@ -24,6 +24,7 @@ from opendata.pipeline.dwd_merge import (
     merge_source_frames,
 )
 
+pytestmark = pytest.mark.integration
 KEY = ("symbol", "trade_date")
 AS_OF = date(2024, 1, 31)
 MERGED_AT = datetime(2026, 9, 23, 12, 0, tzinfo=timezone.utc)

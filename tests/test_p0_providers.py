@@ -40,6 +40,7 @@ from opendata.data.registry import ProviderRegistry
 from opendata.models.interface import DataInterface
 from opendata.services.interface_loader import InterfaceLoader
 
+pytestmark = pytest.mark.integration
 P0_DOMAINS = {
     "stock_daily",
     "stock_action",

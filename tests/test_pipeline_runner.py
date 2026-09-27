@@ -30,6 +30,7 @@ from opendata.pipeline.runner import (
     release_pipeline_lock,
 )
 
+pytestmark = pytest.mark.integration
 WINDOW = Window(start=date(2024, 1, 1), end=date(2024, 1, 31))
 
 

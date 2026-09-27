@@ -28,6 +28,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from scripts.quality import acceptance_item_probe as tool
+from tests import test_p0_integration_surface as guard
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -366,3 +367,77 @@ class TestCounterfactReading:
         assert findings == list(unmeasured.values()), "the reason is forwarded, not paraphrased"
         assert "0/1" in reading, reading
         assert "0 条" in reading, reading
+
+
+class TestC51ZeroDepCells:
+    """C51 hands ``AC-16|06`` and ``AC-16|07`` a judge; the judge's own inputs are checked here.
+
+    The item these probes judge is a *test set*, so the failure mode worth asserting against is
+    the one C51 measured: a marker registered in ``pytest.ini`` that no test applied, which made
+    ``-m "integration and not e2e"`` select 0 of 3358 items in every interpreter while the sentence
+    about "the P0 domain integration tests" kept reading as if it named something. Two instruments
+    read that surface now -- the guard module and this judge -- so their agreement is asserted,
+    because a surface only one of them counts is a surface nobody can trust.
+    """
+
+    def test_both_cells_have_a_probe_that_still_matches_the_document(self) -> None:
+        ctx = tool.load_context()
+        for item in ("AC-16|06", "AC-16|07"):
+            probe = tool.probe_for(item)
+            assert tool.wording_drift(ctx, probe) == "", probe.item
+            assert probe.breaks and probe.repair, probe.item
+
+    def test_the_judge_and_the_guard_module_count_the_same_surface(self) -> None:
+        """Two instruments reading one surface must select the same way and find the same units."""
+        assert tool.P0_INTEGRATION_SELECTOR == guard.SELECTOR
+        declared = {*guard.P0_INTEGRATION_MODULES, *guard.P0_INTEGRATION_CLASSES}
+        assert set(tool.integration_units_now()) == declared
+        assert tool.registered_markers_in_ini((REPO_ROOT / "pytest.ini").read_text()) >= {
+            "integration",
+            "e2e",
+        }
+
+    def test_the_counted_surface_reaches_every_p0_domain(self) -> None:
+        sources = "".join(
+            (REPO_ROOT / unit.split("::")[0]).read_text(encoding="utf-8")
+            for unit in tool.integration_units_now()
+        )
+        assert [domain for domain in tool.p0_domains_in_migration() if domain not in sources] == []
+
+    def test_each_new_probe_breaks_a_face_this_round_actually_paid_for(self) -> None:
+        broken = {
+            item: {key for brk in tool.probe_for(item).breaks for key, _ in brk.facts}
+            for item in ("AC-16|06", "AC-16|07")
+        }
+        assert {
+            "detector_exit",
+            "self_test_exit",
+            "import_live",
+            "dynamic_live",
+            "no_new_reference",
+            "only_down",
+            "frozen",
+        } <= broken["AC-16|06"]
+        assert {
+            "registered",
+            "strict",
+            "units",
+            "domains_missing",
+            "run_exit",
+            "skipped",
+            "clean_here",
+            "archive_exit",
+            "archive_blind",
+            "archive_absent",
+        } <= broken["AC-16|07"]
+
+    def test_the_clean_environment_archive_the_judge_reads_is_shipped(self) -> None:
+        """``archive_blind == 0`` is only a fact while the body it reads is in the tree."""
+        archive = (REPO_ROOT / tool.CLEAN_RUN_EVIDENCE).read_text(encoding="utf-8")
+        assert "round: C51" in archive
+        assert tool.CLEAN_SECTION in archive
+        assert "CLEAN_RUN_EXIT=0" in archive
+        assert "akshare: absent" in archive and "openbb: absent" in archive
+        assert archive.count(tool.P0_INTEGRATION_SELECTOR) >= 3, (
+            "both interpreters must show the selector they ran"
+        )

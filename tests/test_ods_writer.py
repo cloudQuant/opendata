@@ -32,6 +32,7 @@ from opendata.pipeline.ods_writer import (
     plan_frame,
 )
 
+pytestmark = pytest.mark.integration
 BATCH_ID = "8f14e45f-ceea-467e-b1b3-1d0d5b9f2c11"
 
 #: Columns the scripted fake table reports, in table order.

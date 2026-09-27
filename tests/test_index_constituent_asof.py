@@ -44,6 +44,8 @@ from opendata.data.registry import authority_baseline, get_registry
 if TYPE_CHECKING:
     from opendata.data.capability import Capability
 
+
+pytestmark = pytest.mark.integration
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SWEEP_ARCHIVE = REPO_ROOT / "docs/evidence/C34/index-constituent-generality-sweep.txt"
 CROSS_CHECK = REPO_ROOT / "scripts/ops/akshare_fallback_cross_check.py"

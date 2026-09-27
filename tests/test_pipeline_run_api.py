@@ -16,6 +16,7 @@ from opendata.api import pipeline as run_api
 from opendata.pipeline.jobs import JobResult
 from opendata.pipeline.runner import PipelineOutcome, Window
 
+pytestmark = pytest.mark.integration
 WINDOW = Window(start=date(2026, 9, 24), end=date(2026, 9, 24))
 
 
