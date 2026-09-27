@@ -11,8 +11,10 @@ Three rules from the design:
   escalates to ``critical``, otherwise a difference is a ``warning``.
 
 Delivery (SMTP / WS ``data.diff_alert``) is injected as a notifier
-callable; this module only decides *whether* to alert and at which
-level.
+callable; this module only decides *whether* to alert and at which level.
+The production notifier - and the process-scoped policy instance that
+makes the dedupe and rate-spike rules survive from one scheduled run to
+the next - live in :mod:`opendata.pipeline.diff_alerts`.
 """
 
 from __future__ import annotations
@@ -25,8 +27,10 @@ if TYPE_CHECKING:
 
     from opendata.pipeline.cross_check import DiffSummary
 
-    #: Notifier signature (WS push or SMTP); None disables delivery.
-    Notifier = Callable[["AlertDecision"], Awaitable[None]]
+    #: Delivery sink (WS push and/or SMTP). It receives the comparison
+    #: *and* the decision: the decision says whether to deliver, the
+    #: comparison carries the payload a channel needs to be actionable.
+    Notifier = Callable[[DiffSummary, "AlertDecision"], Awaitable[object]]
 
 #: Alert levels, in increasing severity.
 LEVEL_WARNING = "warning"

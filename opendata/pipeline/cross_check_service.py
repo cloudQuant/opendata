@@ -35,12 +35,27 @@ if TYPE_CHECKING:
     WriteReport = Callable[[DiffSummary], int]
 
 
+def batch_id_for(domain: str, window: Window) -> str:
+    """The cross-check batch id of one (domain, window) pair.
+
+    Deterministic per pair so a re-run of the same window updates the same
+    ``dq_diff_report`` rows instead of duplicating them. Both triggers
+    name their batch through here: the pipeline hook and the scheduled full
+    check are otherwise two key spaces, and a report reader could not tell
+    which run produced a row.
+
+    Args:
+        domain: Domain the comparison ran on.
+        window: Date window the comparison covered.
+
+    Returns:
+        The batch identifier.
+    """
+    return f"xcheck:{domain}:{window.label()}"
+
+
 def hook_batch_id(context: PipelineContext) -> str:
     """Derive the cross-check batch id from a pipeline context.
-
-    Deterministic per (domain, window) so a re-run of the same window
-    updates the same ``dq_diff_report`` rows instead of duplicating
-    them.
 
     Args:
         context: The pipeline context of the current run.
@@ -48,7 +63,7 @@ def hook_batch_id(context: PipelineContext) -> str:
     Returns:
         The batch identifier.
     """
-    return f"xcheck:{context.domain}:{context.window.label()}"
+    return batch_id_for(context.domain, context.window)
 
 
 @dataclass
@@ -61,8 +76,11 @@ class CrossCheckService:
         mappings: Source identifier to its domain mapping.
         readers: Source identifier to its window reader.
         write_report: Report writer (``DiffReportWriter.write``).
-        notifier: Optional alert delivery.
-        policy: Alert policy; a fresh one is created when omitted.
+        notifier: Alert delivery, ``(summary, decision)``; None disables it.
+        policy: Alert policy; a fresh one is created when omitted, which
+            is right for a test and wrong for a scheduler - production
+            passes :func:`~opendata.pipeline.diff_alerts.shared_policy` so
+            dedupe and the rate baseline outlive one comparison.
         checked_at: Fixed comparison timestamp (tests); None means now.
     """
 
@@ -139,7 +157,12 @@ class CrossCheckService:
         return self.readers[source]
 
     async def _notify(self, summary: DiffSummary) -> None:
-        """Apply the alert policy and deliver the decision."""
+        """Apply the alert policy and hand the pair to the notifier.
+
+        The decision does not suppress the call: the notifier sees
+        suppressed differences too, so "governance kept this quiet" is a
+        recorded outcome rather than an absence of evidence.
+        """
         decision = self._policy.decide(summary)
         if self.notifier is not None:
-            await self.notifier(decision)
+            await self.notifier(summary, decision)

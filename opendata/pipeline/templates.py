@@ -44,6 +44,8 @@ if TYPE_CHECKING:
     from sqlalchemy import Engine
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+    from opendata.pipeline.alerts import AlertPolicy, Notifier
+    from opendata.pipeline.cross_check_service import CrossCheckService
     from opendata.pipeline.dwd_merge import DwdMergeService
     from opendata.pipeline.runner import Hook
     from opendata.pipeline.trading_calendar import CalendarView
@@ -463,6 +465,67 @@ def default_source(domain: str) -> str:
     raise LookupError(f"no source mapping covers domain {domain!r}")
 
 
+def build_cross_check(
+    engine: Engine,
+    *,
+    domain: str = "stock_daily",
+    sources: tuple[str, str] | None = None,
+    notifier: Notifier | None = None,
+    policy: AlertPolicy | None = None,
+) -> CrossCheckService:
+    """Wire one domain's step-3 cross-check, delivery channels included.
+
+    Both defaults are what AC-9 asks for. The pair comes from the
+    domain's authority baseline (the two feeds the merge already ranks),
+    and the notifier/policy default to the production ones, so a caller
+    cannot build a cross-check that computes a decision and drops it.
+    Before this factory the only production ``CrossCheckService`` was
+    built with neither argument and a fresh per-instance policy.
+
+    Args:
+        engine: Warehouse engine (raw ods readers, ``dq_diff_report``).
+        domain: Registered domain identifier.
+        sources: The (A, B) pair; None takes the first two feeds of the
+            domain's authority baseline.
+        notifier: Delivery hook; None uses the production dispatcher (WS
+            broadcast + subscription hub + SMTP). Tests pass a recorder.
+        policy: Alert policy; None uses the process-scoped one, so the
+            "this difference was already alerted" state is shared by the
+            incremental pipeline and the weekly full check instead of
+            dying with the service instance.
+
+    Returns:
+        The wired service.
+
+    Raises:
+        LookupError: The baseline names fewer than two feeds, or a feed of
+            the pair has no mapping for the domain. Fail closed: comparing
+            a source with itself is not a cross-check.
+    """
+    from opendata.data.registry import authority_baseline
+    from opendata.pipeline.cross_check_service import CrossCheckService
+    from opendata.pipeline.diff_alerts import default_notifier, shared_policy
+    from opendata.pipeline.diff_report import DiffReportWriter
+
+    if sources is None:
+        baseline = tuple(authority_baseline().get(domain, ()))
+        if len(baseline) < 2:
+            raise LookupError(
+                f"domain {domain!r} has no second feed in authority.json "
+                f"({list(baseline) or 'none'}); a cross-check needs two"
+            )
+        sources = (baseline[0], baseline[1])
+    return CrossCheckService(
+        domain,
+        sources=sources,
+        mappings={source: require_domain_mapping(source, domain) for source in sources},
+        readers={source: ods_raw_reader(engine, domain, source) for source in sources},
+        write_report=DiffReportWriter(engine).write,
+        notifier=default_notifier() if notifier is None else notifier,
+        policy=shared_policy() if policy is None else policy,
+    )
+
+
 def build_stock_daily_pipeline(
     *,
     engine: Engine,
@@ -484,8 +547,9 @@ def build_stock_daily_pipeline(
         symbols: Symbol universe to shard.
         source: Source identifier; defaults to the mapping's source.
         second_source: The second source identifier; when given, the
-            A4.5 cross-check is wired (needs A3's THS feed in
-            practice), otherwise the step is skipped.
+            A4.5 cross-check is wired through :func:`build_cross_check`
+            (so its alert reaches the channels), otherwise the step is
+            skipped.
         shard_size: Symbols per shard.
         batch_id: Fixed ods batch id (tests); None generates one.
         notify: Step-5 hook override; None wires the default batch
@@ -497,7 +561,6 @@ def build_stock_daily_pipeline(
     """
     from uuid import uuid4
 
-    from opendata.pipeline.cross_check_service import CrossCheckService
     from opendata.pipeline.dwd_merge import DwdMergeService
     from opendata.pipeline.notify import build_notify_hook
     from opendata.pipeline.ods_writer import OdsWriter
@@ -540,26 +603,19 @@ def build_stock_daily_pipeline(
         sources=sources,
         authority=authority,
         readers={source: ods_frame_reader(engine, "stock_daily", source) for source in sources},
+        # The mappings travel with the merge because step 4's affected keys
+        # arrive in the writing source's spelling and have to be re-spelled
+        # before they can mark anything.
+        mappings={source: require_domain_mapping(source, "stock_daily") for source in sources},
         write_dwd=lambda frame: _write_dwd(engine, frame),
         key=contract_key,
     )
     cross_check = None
     if second_source is not None:
-        from opendata.pipeline.diff_report import DiffReportWriter
-
-        mapping = require_domain_mapping(resolved_source, "stock_daily")
-        cross_check = CrossCheckService(
-            "stock_daily",
+        cross_check = build_cross_check(
+            engine,
+            domain="stock_daily",
             sources=(resolved_source, second_source),
-            mappings={
-                resolved_source: mapping,
-                second_source: require_domain_mapping(second_source, "stock_daily"),
-            },
-            readers={
-                source: ods_raw_reader(engine, "stock_daily", source)
-                for source in (resolved_source, second_source)
-            },
-            write_report=DiffReportWriter(engine).write,
         )
     step_five: Hook | None = notify
     if step_five is None:
@@ -650,10 +706,8 @@ def ods_raw_reader(engine: Engine, domain: str, source: str) -> Callable[[Window
         A reader ``(window) -> raw ods frame``.
     """
     from opendata.data.domains import ods_table
-    from opendata.pipeline.query import resolve_time_field
 
-    mapping = require_domain_mapping(source, domain)
-    source_date_column = mapping.fields[resolve_time_field(domain)].source_column
+    source_date_column = _source_date_column(domain, source)
     table = ods_table(domain, source)
 
     def read(window: Window) -> pd.DataFrame:
@@ -669,6 +723,107 @@ def ods_raw_reader(engine: Engine, domain: str, source: str) -> Callable[[Window
         return pd.DataFrame(rows)
 
     return read
+
+
+#: Longest window the scheduled full cross-check compares in one run.
+#: ``window: full`` in schedules.yaml names the kind of check, not an
+#: unbounded scan: C48 measured the ths leg at 10.3M rows over ten years,
+#: and a reader that loaded both legs whole would exhaust the process
+#: before it compared a single key.
+FULL_CHECK_MAX_DAYS = 31
+
+#: How far back the span probe looks for one leg's oldest day.
+FULL_CHECK_PROBE_DAYS = 400
+
+
+def ods_leg_span(
+    engine: Engine, domain: str, source: str, *, probe_days: int = FULL_CHECK_PROBE_DAYS
+) -> tuple[date, date]:
+    """Oldest and newest ods date of one leg within the last ``probe_days``.
+
+    Args:
+        engine: Warehouse engine.
+        domain: Registered domain identifier.
+        source: Source identifier.
+        probe_days: Lookback of the probe; the read stays a bounded range
+            because a full-table ``MIN`` over a ten-year partitioned leg is
+            not something to put on a schedule.
+
+    Returns:
+        ``(oldest, newest)`` of the leg's own date column.
+
+    Raises:
+        ValueError: The leg holds no rows inside the probe window. Naming a
+            span for an empty leg would let the check compare a source with
+            nothing and report the result as a difference.
+    """
+    from sqlalchemy import text
+
+    from opendata.data.domains import ods_table
+
+    column = _source_date_column(domain, source)
+    table = ods_table(domain, source)
+    floor = date.today() - timedelta(days=probe_days)
+    sql = f"SELECT MIN(`{column}`), MAX(`{column}`) FROM `{table}` WHERE `{column}` >= :floor"  # noqa: S608  # names derived from the mapping
+    with engine.connect() as connection:
+        oldest, newest = connection.execute(text(sql), {"floor": floor}).one()
+    if oldest is None or newest is None:
+        raise ValueError(f"ods leg {table!r} has no rows since {floor}; nothing to compare")
+    return _as_iso_date(oldest), _as_iso_date(newest)
+
+
+def cross_check_window(
+    engine: Engine,
+    domain: str,
+    sources: Sequence[str],
+    *,
+    max_days: int = FULL_CHECK_MAX_DAYS,
+) -> Window:
+    """The date window that both cross-checked legs actually cover.
+
+    The scheduled check cannot take its window from the payload: the two
+    feeds reach different far sides (the ported akshare leg stops wherever
+    the last run ended while the authoritative feed runs years deep), so a
+    window picked from the calendar would compare rows only one side holds
+    and report the whole gap as a difference. The overlap is what the two
+    sources can actually be agreed on.
+
+    Args:
+        engine: Warehouse engine.
+        domain: Registered domain identifier.
+        sources: The pair being compared.
+        max_days: Cap on the window width, walking back from the newest
+            shared day.
+
+    Returns:
+        The inclusive window.
+
+    Raises:
+        ValueError: A leg is empty (from :func:`ods_leg_span`) or the spans
+            do not overlap.
+    """
+    spans = [ods_leg_span(engine, domain, source) for source in sources]
+    lower = max(span[0] for span in spans)
+    upper = min(span[1] for span in spans)
+    if lower > upper:
+        raise ValueError(
+            f"{domain}: legs {list(sources)} cover {spans} and do not overlap; "
+            "a cross-check needs days both feeds hold"
+        )
+    return Window(start=max(lower, upper - timedelta(days=max_days - 1)), end=upper)
+
+
+def _source_date_column(domain: str, source: str) -> str:
+    """The ods column one source keeps this domain's trade date in."""
+    from opendata.pipeline.query import resolve_time_field
+
+    mapping = require_domain_mapping(source, domain)
+    return mapping.fields[resolve_time_field(domain)].source_column
+
+
+def _as_iso_date(value: object) -> date:
+    """Read a driver's date/datetime/text back as a ``date``."""
+    return date.fromisoformat(str(value)[:10])
 
 
 def _load_ods_rows(

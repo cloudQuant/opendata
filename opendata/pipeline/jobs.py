@@ -53,14 +53,21 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
     from opendata.data.protocol import Fetcher
+    from opendata.pipeline.alerts import AlertDecision
+    from opendata.pipeline.cross_check import DiffSummary
     from opendata.pipeline.runner import PipelineOutcome, Window
     from opendata.pipeline.templates import ScheduleTemplate
 
 #: Domains with a six-step builder today (one builder per chain).
 SUPPORTED_DOMAINS = frozenset({"stock_daily"})
 
-#: Template kinds this module can execute.
-EXECUTABLE_KINDS = frozenset({TemplateKind.INCREMENTAL, TemplateKind.FRESHNESS})
+#: Template kinds this module can execute. ``partition_maintenance`` is
+#: the one declared job left without an executor: its apply half is a
+#: ``REORGANIZE`` of the warehouse partitions, which stays gated on an
+#: operator (C48 measured the plan half in the alert matrix instead).
+EXECUTABLE_KINDS = frozenset(
+    {TemplateKind.INCREMENTAL, TemplateKind.FRESHNESS, TemplateKind.FULL_CHECK}
+)
 
 #: Universe cap for one batch when the caller asks for "all" symbols: a
 #: scheduled run must stay finite even as the warehouse grows.
@@ -704,6 +711,8 @@ async def _execute_template(template: ScheduleTemplate) -> dict[str, Any]:
     """
     if template.kind is TemplateKind.FRESHNESS:
         return await _execute_freshness(template)
+    if template.kind is TemplateKind.FULL_CHECK:
+        return await _execute_full_check(template)
     payload = template.payload
     domain = str(payload.get("domain", "stock_daily"))
     if domain not in SUPPORTED_DOMAINS:
@@ -772,6 +781,78 @@ async def _execute_freshness(template: ScheduleTemplate) -> dict[str, Any]:
     )
     logger.info(f"alert matrix {template.name}: {run.as_dict()}")
     return run.as_dict()
+
+
+async def _execute_full_check(template: ScheduleTemplate) -> dict[str, Any]:
+    """Run the weekly full cross-check over the days both legs hold (AC-9).
+
+    This is the comparison's only scheduled trigger. C48 measured why that
+    mattered: ``CrossCheckService`` and the alert policy existed, the
+    six-step template wired the hook, and nothing ever called it on
+    schedule with a notifier attached - so ``dq_diff_report`` held only the
+    rows a hand-driven test batch had written, none of them under the
+    ``xcheck:`` batch id the hook produces, and every decision was computed
+    then dropped.
+
+    The window comes from the data, not the payload
+    (:func:`~opendata.pipeline.templates.cross_check_window`): the two legs
+    end months apart, and a calendar-shaped window would report the coverage
+    gap as a difference.
+
+    Args:
+        template: The ``full_check`` schedule row being fired.
+
+    Returns:
+        Counters of the comparison plus one delivery record per alert
+        decision - including the suppressed ones, which is how "governance
+        kept this quiet" stays distinguishable from "nothing was decided".
+
+    Raises:
+        ValueError: On an unsupported domain, a payload window token other
+            than ``full``, or legs with no overlapping days.
+    """
+    from opendata.pipeline.cross_check_service import batch_id_for
+    from opendata.pipeline.diff_alerts import default_notifier
+    from opendata.pipeline.templates import build_cross_check, cross_check_window
+
+    payload = template.payload
+    domain = str(payload.get("domain", "stock_daily"))
+    if domain not in SUPPORTED_DOMAINS:
+        raise ValueError(f"{template.name!r} targets unsupported domain {domain!r}")
+    window_kind = str(payload.get("window", "full"))
+    if window_kind != "full":
+        raise ValueError(
+            f"{template.name!r} declares window {window_kind!r}; the full check derives its "
+            "window from the days both legs hold and reads no other token"
+        )
+
+    warehouse = warehouse_engine()
+    production = default_notifier()
+    deliveries: list[dict[str, Any]] = []
+
+    async def notify(summary: DiffSummary, decision: AlertDecision) -> None:
+        """Deliver on the production channels and keep the record for the job."""
+        deliveries.append((await production(summary, decision)).as_dict())
+
+    service = build_cross_check(warehouse, domain=domain, notifier=notify)
+    window = await asyncio.to_thread(cross_check_window, warehouse, domain, service.sources)
+    batch_id = batch_id_for(domain, window)
+    summary = await service.run(batch_id, window)
+    result: dict[str, Any] = {
+        "domain": domain,
+        "sources": list(service.sources),
+        "batch_id": batch_id,
+        "window": {"start": window.start.isoformat(), "end": window.end.isoformat()},
+        "compared_keys": summary.compared_keys,
+        "deviations": summary.deviation_count,
+        "missing": summary.missing_count,
+        "diff_rate": round(summary.diff_rate, 6),
+        "verdict": summary.verdict.value,
+        "per_field": dict(summary.per_field),
+        "deliveries": deliveries,
+    }
+    logger.info(f"full cross-check {template.name}: {result}")
+    return result
 
 
 def _payload_domains(payload: Mapping[str, object]) -> tuple[str, ...] | None:

@@ -246,8 +246,33 @@ class DwdMergeService:
         return await self.run(
             context.window.start,
             context.window.end,
-            affected_keys={tuple(key) for key in context.affected_keys if isinstance(key, tuple)},
+            affected_keys=self._contract_keys(context),
         )
+
+    def _contract_keys(self, context: PipelineContext) -> set[tuple]:
+        """Re-spell the run's affected keys as the keys the merge compares.
+
+        ``context.affected_keys`` is what step 2 just wrote, so it arrives in
+        the source's own spelling (``600519.SH``, or ``股票代码`` ordering),
+        while the merged frames are indexed by the contract key. Handing the
+        source spelling straight to ``extra_diff_keys`` made that set
+        unmatchable - the flagging it is supposed to add silently never
+        landed, and only the keys the merge itself found disagreeing got
+        marked.
+
+        Args:
+            context: The pipeline context of the current run.
+
+        Returns:
+            The affected keys in contract spelling. A source with no mapping
+            here keeps its keys as given: with nothing to translate through,
+            guessing would be the same silent error with more confidence.
+        """
+        raw = {tuple(key) for key in context.affected_keys if isinstance(key, tuple)}
+        mapping = self.mappings.get(context.source)
+        if mapping is None:
+            return raw
+        return {mapping.to_contract_key(key) for key in raw}
 
     def _key(self) -> tuple[str, ...]:
         """Business key: explicit, else derived from a source mapping.

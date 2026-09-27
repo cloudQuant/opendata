@@ -188,6 +188,8 @@ def diff_alert_message(
     mismatch_ratio: float,
     mismatches: int,
     compared: int,
+    level: str = "warning",
+    reason: str | None = None,
 ) -> dict[str, Any]:
     """Render a ``data.diff_alert`` broadcast (design §10.2, AC-9).
 
@@ -199,6 +201,10 @@ def diff_alert_message(
         mismatch_ratio: Mismatching share of the compared keys.
         mismatches: Number of mismatching keys.
         compared: Number of compared keys.
+        level: Alert level the governance policy assigned; a rate spike
+            reads differently from a steady difference.
+        reason: The policy's stated reason, so a consumer can show why the
+            alert exists without re-deriving the policy.
 
     Returns:
         The broadcast message.
@@ -212,6 +218,8 @@ def diff_alert_message(
         "mismatch_ratio": mismatch_ratio,
         "mismatches": mismatches,
         "compared": compared,
+        "level": level,
+        "reason": reason,
         "created_at": utcnow().isoformat(),
     }
 
