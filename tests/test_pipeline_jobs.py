@@ -699,8 +699,17 @@ class TestRegisterBuiltinJobs:
 
     async def test_incremental_templates_are_registered_and_others_skipped(self) -> None:
         scheduler = FakeScheduler()
+        templates = (
+            self.TEMPLATES[0],
+            ScheduleTemplate(
+                name="parts",
+                cron="0 3 * * *",
+                kind=TemplateKind.PARTITION_MAINTENANCE,
+                payload={"years_ahead": "2"},
+            ),
+        )
 
-        job_ids = await jobs.register_builtin_jobs(scheduler, templates=self.TEMPLATES)
+        job_ids = await jobs.register_builtin_jobs(scheduler, templates=templates)
 
         assert job_ids == ["pipeline_inc"]
         assert set(scheduler.jobs) == {"pipeline_inc"}
@@ -727,10 +736,38 @@ class TestRegisterBuiltinJobs:
 
         job_ids = await jobs.register_builtin_jobs(scheduler)
 
-        assert job_ids == ["pipeline_p0-stock-daily-incremental", "pipeline_freshness-check"]
-        # full_check / partition_maintenance 仍无可执行体：注册了只会让 cron 抛
-        # "not executable"，比不注册更难发现。
+        assert job_ids == [
+            "pipeline_p0-stock-daily-incremental",
+            "pipeline_p0-weekly-full-cross-check",
+            "pipeline_freshness-check",
+        ]
+        # partition_maintenance is the one shipped row still without an
+        # executor: registering it would only make the cron raise "not
+        # executable", which is harder to find than not registering it.
         assert set(scheduler.jobs) == set(job_ids)
+
+    async def test_the_weekly_row_carries_the_full_check_body(self) -> None:
+        """The cron row must reach the executor, not just be registered.
+
+        C48 measured the failure this guards: ``p0-weekly-full-cross-check``
+        was declared for months while its kind had no executor, so the
+        cross-check had no scheduled trigger at all.
+        """
+        scheduler = FakeScheduler()
+        seen: list[str] = []
+
+        async def executor(template: ScheduleTemplate) -> dict[str, Any]:
+            seen.append(template.name)
+            return {"ok": True}
+
+        await jobs.register_builtin_jobs(scheduler, run_job=executor)
+        result = await scheduler.jobs["pipeline_p0-weekly-full-cross-check"]["func"]()
+
+        assert seen == ["p0-weekly-full-cross-check"]
+        assert result == {"ok": True}
+        assert scheduler.jobs["pipeline_p0-weekly-full-cross-check"]["trigger_args"] == {
+            "cron_expression": "0 2 * * 0"
+        }
 
 
 class TestExecuteTemplate:
@@ -972,6 +1009,224 @@ class TestFreshnessExecutor:
             registered_legs(("p0",))
 
 
+class TestFullCheckExecutor:
+    """The ``full_check`` row's executor: the cross-check's scheduled trigger.
+
+    The warehouse stays out of it (the ods readers and the report writer are
+    stubbed), but everything between the cron payload and the channels is the
+    production code: :func:`~opendata.pipeline.templates.build_cross_check`,
+    ``CrossCheckService.run``, the real field mappings of both legs, the
+    process-scoped :class:`~opendata.pipeline.alerts.AlertPolicy` and
+    :class:`~opendata.pipeline.diff_alerts.DiffAlertDispatcher`.
+    """
+
+    TEMPLATE = ScheduleTemplate(
+        name="p0-weekly-full-cross-check",
+        cron="0 2 * * 0",
+        kind=TemplateKind.FULL_CHECK,
+        payload={"domain": "stock_daily", "window": "full"},
+    )
+
+    @pytest.fixture(autouse=True)
+    def _fresh_policy(self) -> Iterator[None]:
+        """Start each run with an unset dedupe set and rate baseline."""
+        from opendata.pipeline.diff_alerts import reset_policy
+
+        reset_policy()
+        yield
+        reset_policy()
+
+    @staticmethod
+    def _frames(*, close_ths: float = 17.0, close_ak: float = 16.0) -> dict[str, pd.DataFrame]:
+        """Both legs as their own ods tables keep them (source spelling).
+
+        Every mapped column has to be there: ``normalize_frame`` fails closed
+        on a missing one rather than comparing the subset that survives. The
+        volume pair is spelled in each feed's own unit (ths shares, akshare
+        lots) and agrees only after the mapping's ``scale: 100``.
+        """
+        return {
+            "ths": pd.DataFrame(
+                {
+                    "thscode": ["600519.SH"],
+                    "trade_date": [WINDOW.start],
+                    "open_price": [16.5],
+                    "high_price": [17.5],
+                    "low_price": [16.0],
+                    "close_price": [close_ths],
+                    "volume": [1200.0],
+                    "turnover": [1.0e8],
+                }
+            ),
+            "akshare": pd.DataFrame(
+                {
+                    "股票代码": ["600519"],
+                    "日期": [WINDOW.start],
+                    "开盘": [16.5],
+                    "最高": [17.5],
+                    "最低": [16.0],
+                    "收盘": [close_ak],
+                    "成交量": [12.0],
+                    "成交额": [1.0e8],
+                }
+            ),
+        }
+
+    def _stub_readers(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        written: list[Any],
+        channels: dict[str, Any],
+        frames: dict[str, pd.DataFrame] | None = None,
+    ) -> None:
+        """Swap the two ods reads, the report write and the WS/hub sinks."""
+        import opendata.pipeline.diff_alerts as diff_alerts_module
+        import opendata.pipeline.diff_report as diff_report_module
+        import opendata.pipeline.templates as templates_module
+
+        legs = self._frames() if frames is None else frames
+
+        class _Writer:
+            def __init__(self, engine: object) -> None:
+                pass
+
+            def write(self, summary: Any) -> int:
+                written.append(summary)
+                return len(summary.samples)
+
+        class _Hub:
+            async def publish_diff_alert(self, message: dict[str, Any]) -> int:
+                channels["hub"].append(message)
+                return 2
+
+        async def broadcast(message: dict[str, Any]) -> None:
+            channels["ws"].append(message)
+
+        dispatcher = diff_alerts_module.DiffAlertDispatcher(
+            broadcast=broadcast, hub=_Hub(), mail_send=None, recipients=()
+        )
+        monkeypatch.setattr(diff_report_module, "DiffReportWriter", _Writer)
+        monkeypatch.setattr(
+            templates_module,
+            "ods_raw_reader",
+            lambda engine, domain, source: lambda window: legs[source].copy(),
+        )
+        monkeypatch.setattr(templates_module, "cross_check_window", lambda *a, **k: WINDOW)
+        monkeypatch.setattr(diff_alerts_module, "production_dispatcher", lambda **k: dispatcher)
+        monkeypatch.setattr(jobs, "warehouse_engine", lambda: object())
+
+    async def test_the_scheduled_run_compares_reports_and_alerts(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from opendata.pipeline.cross_check import Verdict
+
+        written: list[Any] = []
+        channels: dict[str, Any] = {"ws": [], "hub": []}
+        self._stub_readers(monkeypatch, written, channels)
+
+        result = await jobs._execute_template(self.TEMPLATE)
+
+        assert result["verdict"] == Verdict.DEVIATION.value
+        assert result["compared_keys"] == 1, "the two spellings of the key must still join"
+        assert result["deviations"] == 1
+        assert result["missing"] == 0
+        assert result["per_field"] == {"close": 1}
+        # The batch id is the hook's shape: a report row must name which run
+        # produced it, and a scheduled check that invented its own prefix
+        # would leave the pipeline's key space empty again.
+        assert result["batch_id"] == f"xcheck:stock_daily:{WINDOW.label()}"
+        assert written and written[0].batch_id == result["batch_id"]
+        assert len(channels["ws"]) == 1 and channels["ws"][0]["level"] == "warning"
+        assert len(channels["hub"]) == 1
+        assert result["deliveries"] == [
+            {
+                "batch_id": result["batch_id"],
+                "alerted": True,
+                "level": "warning",
+                "reason": channels["ws"][0]["reason"],
+                "ws_sent": True,
+                "ws_error": None,
+                "hub_delivered": 2,
+                "hub_error": None,
+                "mail_sent": 0,
+                "mail_errors": [],
+                "mail_skipped": "SMTP not configured (no sender)",
+            }
+        ]
+
+    async def test_a_second_run_of_the_same_difference_is_not_re_alerted(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """AC-9|04 across triggers: the dedupe state outlives one comparison."""
+        written: list[Any] = []
+        channels: dict[str, Any] = {"ws": [], "hub": []}
+        self._stub_readers(monkeypatch, written, channels)
+
+        first = await jobs._execute_template(self.TEMPLATE)
+        second = await jobs._execute_template(self.TEMPLATE)
+
+        assert first["deliveries"][0]["alerted"] is True
+        assert second["deliveries"][0]["alerted"] is False
+        assert "already alerted" in second["deliveries"][0]["reason"]
+        # Suppressed means the channel sees nothing, not that the comparison
+        # stopped happening: the report still carries the difference.
+        assert len(channels["ws"]) == 1
+        assert len(written) == 2
+
+    async def test_consistent_legs_produce_no_delivery(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        written: list[Any] = []
+        channels: dict[str, Any] = {"ws": [], "hub": []}
+        self._stub_readers(
+            monkeypatch, written, channels, frames=self._frames(close_ths=17.0, close_ak=17.0)
+        )
+
+        result = await jobs._execute_template(self.TEMPLATE)
+
+        assert result["verdict"] == "consistent"
+        assert result["deliveries"][0]["alerted"] is False
+        assert channels["ws"] == []
+
+    async def test_a_payload_window_other_than_full_is_refused(self) -> None:
+        template = ScheduleTemplate(
+            name="weekly",
+            cron="0 2 * * 0",
+            kind=TemplateKind.FULL_CHECK,
+            payload={"domain": "stock_daily", "window": "last-trading-day"},
+        )
+
+        with pytest.raises(ValueError, match="derives its"):
+            await jobs._execute_template(template)
+
+    async def test_a_domain_without_a_comparable_pair_is_refused(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Fail closed rather than compare a source with itself."""
+        monkeypatch.setattr(jobs, "warehouse_engine", lambda: object())
+        monkeypatch.setattr(
+            jobs, "SUPPORTED_DOMAINS", frozenset({"trading_calendar", "index_daily"})
+        )
+
+        def template(domain: str) -> ScheduleTemplate:
+            return ScheduleTemplate(
+                name="weekly",
+                cron="0 2 * * 0",
+                kind=TemplateKind.FULL_CHECK,
+                payload={"domain": domain, "window": "full"},
+            )
+
+        # authority.json ranks one feed for the calendar: nothing to check it
+        # against, and a check that silently compared it with itself would be
+        # green forever.
+        with pytest.raises(LookupError, match="no second feed"):
+            await jobs._execute_template(template("trading_calendar"))
+        # index_daily ranks two, but only one of them has a field mapping,
+        # which is the same hole measured from the other side (C48 §4).
+        with pytest.raises(LookupError, match="unknown domain 'index_daily'"):
+            await jobs._execute_template(template("index_daily"))
+
+
 class TestAttachBuiltinJobs:
     """Startup registers on the live scheduler, not the A1 wrapper."""
 
@@ -991,11 +1246,18 @@ class TestAttachBuiltinJobs:
         monkeypatch.setattr(scheduler_service_module, "get_scheduler_service", lambda: _Service())
         ids = await jobs.attach_builtin_jobs()
 
-        assert ids == ["pipeline_p0-stock-daily-incremental", "pipeline_freshness-check"]
+        assert ids == [
+            "pipeline_p0-stock-daily-incremental",
+            "pipeline_p0-weekly-full-cross-check",
+            "pipeline_freshness-check",
+        ]
         trigger = recorded[0]["trigger"]
         assert type(trigger).__name__ == "CronTrigger"
         assert "hour='17'" in str(trigger) and "day_of_week='1-5'" in str(trigger)
-        freshness_trigger = recorded[1]["trigger"]
+        weekly = recorded[1]["trigger"]
+        assert type(weekly).__name__ == "CronTrigger"
+        assert "hour='2'" in str(weekly) and "day_of_week='0'" in str(weekly)
+        freshness_trigger = recorded[2]["trigger"]
         assert type(freshness_trigger).__name__ == "CronTrigger"
         assert "hour='8'" in str(freshness_trigger) and "minute='30'" in str(freshness_trigger)
         assert recorded[0]["id"] == "pipeline_p0-stock-daily-incremental"

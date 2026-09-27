@@ -14,7 +14,7 @@ network):
   template.
 """
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 import pandas as pd
 import pytest
@@ -613,6 +613,10 @@ class _Result:
     def fetchall(self) -> list[tuple]:
         return self._rows
 
+    def one(self) -> tuple:
+        assert len(self._rows) == 1, f"expected a single aggregate row, saw {self._rows}"
+        return self._rows[0]
+
 
 class _Connection:
     def __init__(self, engine: "_RecordingWarehouse") -> None:
@@ -1026,3 +1030,206 @@ class _Written:
     def __init__(self, *, rows: int) -> None:
         self.rows = rows
         self.batches = 1
+
+
+def _akshare_style_mapping():
+    """A mapping whose ods columns are the source's own (日期, not trade_date)."""
+    from opendata.data.mapping import DomainMapping, FieldMapping
+
+    return DomainMapping(
+        domain="stock_daily",
+        key=("symbol", "trade_date"),
+        fields={
+            "symbol": FieldMapping("股票代码", normalize="plain"),
+            "trade_date": FieldMapping("日期"),
+            "close": FieldMapping("收盘"),
+        },
+    )
+
+
+class TestOdsLegSpan:
+    """The probe that bounds a scheduled full check.
+
+    A ten-year partitioned leg is not scanned for its minimum: the read is a
+    bounded ``MIN``/``MAX``, and a leg with nothing inside that bound is an
+    error rather than an empty half of a comparison.
+    """
+
+    def _engine(self, rows):
+        return _RecordingWarehouse(columns=["oldest", "newest"], rows=rows)
+
+    def _patch(self, monkeypatch):
+        monkeypatch.setattr(
+            templates, "require_domain_mapping", lambda source, domain: _akshare_style_mapping()
+        )
+        monkeypatch.setattr(
+            "opendata.data.domains.ods_table", lambda domain, source: f"ods_{domain}_{source}"
+        )
+
+    def test_the_probe_asks_the_source_date_column_for_min_and_max(self, monkeypatch):
+        self._patch(monkeypatch)
+        engine = self._engine([(date(2026, 5, 6), "2026-09-24")])
+
+        span = templates.ods_leg_span(engine, "stock_daily", "akshare", probe_days=400)
+
+        assert engine.sql == (
+            "SELECT MIN(`日期`), MAX(`日期`) FROM `ods_stock_daily_akshare` WHERE `日期` >= :floor"
+        )
+        assert engine.params == {"floor": date.today() - timedelta(days=400)}
+        # A driver that answers with text is read back as dates.
+        assert span == (date(2026, 5, 6), date(2026, 9, 24))
+
+    def test_an_empty_leg_is_refused_rather_than_compared_with_nothing(self, monkeypatch):
+        self._patch(monkeypatch)
+        engine = self._engine([(None, None)])
+
+        with pytest.raises(ValueError, match="has no rows since"):
+            templates.ods_leg_span(engine, "stock_daily", "akshare")
+
+
+class TestCrossCheckWindow:
+    """The weekly check's window is what both legs hold, not the calendar."""
+
+    def _patch(self, monkeypatch, spans: dict[str, tuple[date, date]]):
+        asked: list[str] = []
+
+        def fake_span(engine, domain, source, *, probe_days=templates.FULL_CHECK_PROBE_DAYS):
+            asked.append(source)
+            return spans[source]
+
+        monkeypatch.setattr(templates, "ods_leg_span", fake_span)
+        return asked
+
+    def test_the_window_is_the_intersection_of_the_two_legs(self, monkeypatch):
+        # ths runs years deep; the ported akshare leg starts 2026-08-20.
+        asked = self._patch(
+            monkeypatch,
+            {
+                "ths": (date(2019, 1, 2), date(2026, 9, 24)),
+                "akshare": (date(2026, 8, 20), date(2026, 9, 10)),
+            },
+        )
+
+        window = templates.cross_check_window(object(), "stock_daily", ["ths", "akshare"])
+
+        assert asked == ["ths", "akshare"]
+        assert (window.start, window.end) == (date(2026, 8, 20), date(2026, 9, 10))
+
+    def test_a_shared_span_wider_than_the_cap_is_walked_back_from_the_newest_day(self, monkeypatch):
+        self._patch(
+            monkeypatch,
+            {
+                "ths": (date(2019, 1, 2), date(2026, 9, 24)),
+                "akshare": (date(2020, 3, 5), date(2026, 9, 24)),
+            },
+        )
+
+        window = templates.cross_check_window(
+            object(), "stock_daily", ["ths", "akshare"], max_days=31
+        )
+
+        assert window.end == date(2026, 9, 24)
+        assert (window.end - window.start).days + 1 == 31
+
+    def test_legs_that_do_not_overlap_are_refused(self, monkeypatch):
+        self._patch(
+            monkeypatch,
+            {
+                "ths": (date(2026, 9, 1), date(2026, 9, 24)),
+                "akshare": (date(2026, 5, 1), date(2026, 5, 31)),
+            },
+        )
+
+        with pytest.raises(ValueError, match="do not overlap"):
+            templates.cross_check_window(object(), "stock_daily", ["ths", "akshare"])
+
+    def test_an_empty_leg_stops_the_window_from_being_named(self, monkeypatch):
+        def empty(engine, domain, source, **kwargs):
+            raise ValueError(
+                f"ods leg ods_stock_daily_{source} has no rows since 2025; nothing to compare"
+            )
+
+        monkeypatch.setattr(templates, "ods_leg_span", empty)
+
+        with pytest.raises(ValueError, match="nothing to compare"):
+            templates.cross_check_window(object(), "stock_daily", ["ths", "akshare"])
+
+
+class TestBuildCrossCheck:
+    """The factory that replaced "compute the decision and drop it"."""
+
+    def test_the_pair_comes_from_the_authority_baseline(self) -> None:
+        service = templates.build_cross_check(object())  # ty: ignore[invalid-argument-type]
+
+        assert service.domain == "stock_daily"
+        assert service.sources == ("ths", "akshare")
+        assert set(service.mappings) == {"ths", "akshare"}
+        assert set(service.readers) == {"ths", "akshare"}
+
+    def test_a_domain_without_a_second_feed_is_refused(self) -> None:
+        with pytest.raises(LookupError, match="has no second feed"):
+            templates.build_cross_check(object(), domain="trading_calendar")  # ty: ignore[invalid-argument-type]
+
+    def test_the_production_defaults_reach_the_channels(self) -> None:
+        from opendata.pipeline.diff_alerts import shared_policy
+
+        service = templates.build_cross_check(object(), sources=("ths", "akshare"))  # ty: ignore[invalid-argument-type]
+
+        assert service.notifier is not None
+        # The dedupe set and the rate baseline only mean something if they
+        # are the process's, not this comparison's.
+        assert service.policy is shared_policy()
+
+    def test_an_injected_notifier_and_policy_win(self) -> None:
+        from opendata.pipeline.alerts import AlertPolicy
+
+        async def notify(summary, decision):
+            return None
+
+        policy = AlertPolicy()
+        service = templates.build_cross_check(
+            object(),  # ty: ignore[invalid-argument-type]
+            sources=("ths", "akshare"),
+            notifier=notify,
+            policy=policy,
+        )
+
+        assert service.notifier is notify
+        assert service.policy is policy
+
+    def test_the_pipeline_hook_shares_that_wiring(self, monkeypatch) -> None:
+        """Step 3 of the P0 template is the same factory, not a second build."""
+        self._spy_writer(monkeypatch)
+        pipeline = build_stock_daily_pipeline(
+            engine=object(),  # ty: ignore[invalid-argument-type]
+            session_maker=object(),  # ty: ignore[invalid-argument-type]
+            fetch_symbol=lambda symbol, window: None,
+            symbols=("600519",),
+            source="ths",
+            second_source="akshare",
+        )
+
+        assert pipeline.cross_check is not None
+        service = pipeline.cross_check.__self__
+        assert service.sources == ("ths", "akshare")
+        assert service.notifier is not None
+        # A single-source build keeps the step off rather than comparing
+        # a source with itself.
+        solo = build_stock_daily_pipeline(
+            engine=object(),  # ty: ignore[invalid-argument-type]
+            session_maker=object(),  # ty: ignore[invalid-argument-type]
+            fetch_symbol=lambda symbol, window: None,
+            symbols=("600519",),
+            source="ths",
+        )
+        assert solo.cross_check is None
+
+    def _spy_writer(self, monkeypatch):
+        class _StubWriter:
+            def __init__(self, engine: object) -> None:
+                pass
+
+            def write(self, frame, **kwargs):
+                return _Written(rows=len(frame))
+
+        monkeypatch.setattr("opendata.pipeline.ods_writer.OdsWriter", _StubWriter)

@@ -93,8 +93,12 @@ class TestCrossCheckService:
     def _service(self, frames, **overrides):
         written: list[DiffSummary] = []
         alerts: list[AlertDecision] = []
+        # The notifier gets the summary too: a suppressed difference is a
+        # recorded outcome, so the payload must reach the delivery layer.
+        notified: list[DiffSummary] = []
 
-        async def notifier(decision):
+        async def notifier(summary, decision):
+            notified.append(summary)
             alerts.append(decision)
 
         mapping = DomainMapping(
@@ -119,7 +123,7 @@ class TestCrossCheckService:
             checked_at=CHECKED_AT,
             **overrides,
         )
-        return service, written, alerts
+        return service, written, alerts, notified
 
     def _frames(self, close_b=1700.0):
         base = pd.DataFrame(
@@ -132,16 +136,17 @@ class TestCrossCheckService:
         return {"akshare": base, "ths": base.assign(close=[close_b])}
 
     async def test_injected_difference_is_reported_and_alerted(self):
-        service, written, alerts = self._service(self._frames())
+        service, written, alerts, notified = self._service(self._frames())
 
         summary = await service.run(BATCH_ID, WINDOW)
 
         assert summary.verdict is Verdict.DEVIATION
         assert written and written[0].deviation_count == 1
         assert len(alerts) == 1 and alerts[0].alert is True
+        assert notified == [summary]
 
     async def test_consistent_sources_write_a_summary_without_alerts(self):
-        service, written, alerts = self._service(self._frames(close_b=1688.0))
+        service, written, alerts, _ = self._service(self._frames(close_b=1688.0))
 
         summary = await service.run(BATCH_ID, WINDOW)
 
@@ -149,8 +154,19 @@ class TestCrossCheckService:
         assert written and written[0].compared_keys == 1
         assert alerts and alerts[0].alert is False
 
+    async def test_whitelisted_difference_still_reaches_the_notifier(self):
+        service, _, alerts, notified = self._service(
+            self._frames(), policy=AlertPolicy(whitelist={("stock_daily", "close")})
+        )
+
+        await service.run(BATCH_ID, WINDOW)
+
+        assert alerts and alerts[0].alert is False
+        assert "whitelist" in alerts[0].reason
+        assert len(notified) == 1
+
     async def test_hook_uses_the_pipeline_context_batch(self):
-        service, _, _ = self._service(self._frames())
+        service, _, _, _ = self._service(self._frames())
         context = PipelineContext(
             domain="stock_daily", source="akshare", window=WINDOW, affected_keys=[]
         )
@@ -158,6 +174,7 @@ class TestCrossCheckService:
         summary = await service.run_hook(context)
 
         assert summary.domain == "stock_daily"
+        assert summary.batch_id == f"xcheck:stock_daily:{WINDOW.label()}"
 
     async def test_unknown_source_mapping_fails_closed(self):
         mapping = DomainMapping(

@@ -283,6 +283,64 @@ class TestDwdMergeService:
         assert stats.rows == 2
         assert written
 
+    async def test_the_hook_re_spells_the_affected_keys_so_the_flag_lands(self):
+        """Step 2 reports the keys it wrote in the *source* spelling; the merge
+        indexes by contract key. Handing the raw spelling straight to
+        ``extra_diff_keys`` left a row whose symbol was ``600888.SH`` and
+        never marked the ``600888`` key it was meant to mark."""
+        from opendata.data.mapping import require_domain_mapping
+        from opendata.pipeline.runner import PipelineContext, Window
+
+        service, written = self._service(
+            {"ths": _frame(AUTHORITY_ROWS), "akshare": _frame(AUTHORITY_ROWS)},
+            mappings={
+                source: require_domain_mapping(source, "stock_daily")
+                for source in ("ths", "akshare")
+            },
+        )
+        context = PipelineContext(
+            domain="stock_daily",
+            source="ths",
+            window=Window(start=date(2024, 1, 1), end=date(2024, 1, 31)),
+            affected_keys=[("600888.SH", date(2023, 12, 29))],
+        )
+
+        stats = await service.run_hook(context)
+
+        merged = written[0]
+        flags = dict(
+            zip(
+                zip(merged["symbol"], merged["trade_date"], strict=True),
+                merged["_diff_flag"],
+                strict=True,
+            )
+        )
+        assert stats.rows == 3  # the window plus the affected key
+        # Both sources carry the same values for that key, so nothing but the
+        # affected-key set can explain the flag.
+        assert flags[("600888", date(2023, 12, 29))] == 1
+        assert "600888.SH" not in flags
+
+    async def test_a_source_without_a_mapping_keeps_its_keys_as_given(self):
+        """Nothing to translate through means pass through, not a guess."""
+        from opendata.pipeline.runner import PipelineContext, Window
+
+        service, written = self._service(
+            {"ths": _frame(AUTHORITY_ROWS), "akshare": _frame(AUTHORITY_ROWS)}
+        )
+        context = PipelineContext(
+            domain="stock_daily",
+            source="ths",
+            window=Window(start=date(2024, 1, 1), end=date(2024, 1, 31)),
+            affected_keys=[("600888", date(2023, 12, 29))],
+        )
+
+        await service.run_hook(context)
+
+        assert ("600888", date(2023, 12, 29)) in {
+            (row.symbol, row.trade_date) for row in written[0].itertuples()
+        }
+
 
 @pytest.mark.e2e
 class TestDwdWriteAgainstMysql:

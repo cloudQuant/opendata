@@ -139,8 +139,44 @@ class TestFraming:
         )
 
         assert message["type"] == "data.diff_alert"
+        assert message["domain"] == "stock_daily"
+        assert (message["source_a"], message["source_b"]) == ("akshare", "ths")
+        assert message["batch_id"] == BATCH
         assert message["mismatch_ratio"] == 0.012
+        assert message["mismatches"] == 3
         assert message["compared"] == 250
+
+    def test_the_governance_verdict_travels_with_the_alert(self):
+        """A subscriber cannot tell a steady difference from a rate spike
+        without the level, and cannot explain the alert without the reason."""
+        message = diff_alert_message(
+            domain="stock_daily",
+            source_a="ths",
+            source_b="akshare",
+            batch_id=BATCH,
+            mismatch_ratio=0.4,
+            mismatches=100,
+            compared=250,
+            level="critical",
+            reason="diff rate 0.4000 is 4x the previous 0.1000",
+        )
+
+        assert message["level"] == "critical"
+        assert message["reason"] == "diff rate 0.4000 is 4x the previous 0.1000"
+
+    def test_a_caller_that_omits_the_verdict_says_so_rather_than_guessing(self):
+        message = diff_alert_message(
+            domain="stock_daily",
+            source_a="ths",
+            source_b="akshare",
+            batch_id=BATCH,
+            mismatch_ratio=0.0,
+            mismatches=0,
+            compared=1,
+        )
+
+        assert message["level"] == "warning"
+        assert message["reason"] is None
 
 
 # ---------------------------------------------------------------------------
