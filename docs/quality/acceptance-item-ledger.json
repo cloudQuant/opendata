@@ -150,9 +150,10 @@
       "evidence": [
         "docs/evidence/C40/ac1-10-post-commit.txt",
         "docs/evidence/C40/probe-all.txt",
-        "docs/evidence/C40/README.md"
+        "docs/evidence/C40/README.md",
+        "docs/evidence/C51/gate-run3-clean-tree.txt"
       ],
-      "note": "判据两半都量：残留形状（*.bak/*-copy/*.orig/副本 等）跟踪数 0 + 『git 从未见过的文件』0 + 已跟踪文件未提交改动 0；『首次完整提交』读成首提交树含 pyproject.toml、README.md、opendata/__init__.py 且 opendata/、scripts/、tests/、docs/ 四类目非空（首提交 4ee1bbca，2026-09-22）。两处披露：①首提交树 712 只占今天 1,325 个跟踪文件的 53.7%，这个比例只报不判——按占比判会得到一条随每轮新增自然 decay 的恒红判据；②第一遍 --all 里本条是 gap（untracked=2，即本轮自己的探针与日志），代码与证据入库 052a30b 后复量才翻 proven，复量输出写在仓库外再复制进来以免仪器自指。"
+      "note": "判据两半都量：残留形状（*.bak/*-copy/*.orig/副本 等）跟踪数 0 + 『git 从未见过的文件』0 + 已跟踪文件未提交改动 0；『首次完整提交』读成首提交树含 pyproject.toml、README.md、opendata/__init__.py 且 opendata/、scripts/、tests/、docs/ 四类目非空（首提交 4ee1bbca，2026-09-22）。两处披露：①首提交树 712 只占今天 1,325 个跟踪文件的 53.7%，这个比例只报不判——按占比判会得到一条随每轮新增自然 decay 的恒红判据；②第一遍 --all 里本条是 gap（untracked=2，即本轮自己的探针与日志），代码与证据入库 052a30b 后复量才翻 proven，复量输出写在仓库外再复制进来以免仪器自指。C51 又补一条机器可核的干净树确认：该格的判定面只在 `git status --porcelain`=0 时才判（dirty 树读作 gap 属 deferred 而非数据变坏），C51 的三个提交落地后 `make gate` 成员 11 打 `工作树：干净`、`台账↔读数：agrees=33 … deferred=0`、`VERDICT AC-1|10: proven`，正文见 docs/evidence/C51/gate-run3-clean-tree.txt"
     },
     "AC-2|01|04bc9542": {
       "state": "proven",
