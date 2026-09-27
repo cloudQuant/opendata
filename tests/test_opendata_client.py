@@ -10,6 +10,7 @@ import json
 import socket
 import threading
 import time
+from datetime import date
 
 import httpx
 import pytest
@@ -343,6 +344,44 @@ class TestAgainstTheRunningApi:
         assert float(row["close"]) == pytest.approx(1.5)
         assert "trade_date" in page.columns
         assert {entry["domain"] for entry in catalog} == {"stock_daily"}  # scope filter
+
+    def test_every_catalog_reading_reaches_a_consumer(self, live_server, api_key, warehouse_rows):
+        """AC-18|02 on the client plane: the five readings survive to a caller.
+
+        A dashboard can render what an endpoint returns and still lose it on
+        the way to a programmatic consumer, so this reads the catalog through
+        ``opendata_client`` against the real warehouse and recomputes the lag
+        from the baseline the freshness door ships.
+        """
+        client = OpendataClient(live_server, api_key=api_key)
+        try:
+            entry = next(e for e in client.catalog() if e["domain"] == "stock_daily")
+            freshness = client.freshness("stock_daily")
+        finally:
+            client.close()
+
+        assert entry["table"] == "dwd_stock_daily"
+        assert entry["freshness_field"] == "trade_date"
+        # 覆盖：行数与标的数来自这张表自己，窗口含本次探针插入的那一行
+        coverage = entry["coverage"]
+        assert coverage["rows"] >= 1
+        assert coverage["symbols"] >= 1
+        assert coverage["start"] <= "2024-01-02" <= coverage["end"]
+        # 质量标记三态之一，未测量不等于一致
+        assert entry["quality"]["flag"] in {"clean", "flagged", "unmeasured"}
+        # 各源最近更新：一条腿一个读数，未映射要说明原因
+        legs = {leg["source"]: leg for leg in entry["sources"]}
+        assert {"akshare", "ths"} <= set(legs)
+        for leg in legs.values():
+            assert leg["status"] in {"fresh", "stale", "missing", "unmapped"}
+            if leg["status"] == "unmapped":
+                assert leg["reason"]
+
+        # 新鲜度：滞后天数必须能用门面上给出的基准日复算，否则它是不可审计的
+        expected = date.fromisoformat(freshness["expected_data_date"])
+        latest = date.fromisoformat(freshness["latest"])
+        assert (expected - latest).days == freshness["lag_days"]
+        assert freshness["lag_days"] == entry["lag_days"]
 
     def test_scoped_consumer_is_denied_elsewhere(self, live_server, api_key, warehouse_rows):
         client = OpendataClient(live_server, api_key=api_key)

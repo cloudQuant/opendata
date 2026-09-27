@@ -4,7 +4,7 @@ The read-only interface over the warehouse:
 
 ```
 GET /api/v1/data/{asset_class}/{domain}     # dwd by default, ods on request
-GET /api/v1/data/catalog                    # capabilities + freshness
+GET /api/v1/data/catalog                    # per domain: coverage, range, sources, quality
 GET /api/v1/data/domains/{domain}/freshness
 GET /api/v1/data/domains/{domain}/diff-report
 ```
@@ -24,7 +24,7 @@ import asyncio
 from dataclasses import replace
 from datetime import date
 from functools import lru_cache
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
@@ -40,7 +40,13 @@ from opendata.api.dependencies import (  # FastAPI resolves them at runtime
 from opendata.api.schemas import APIResponse
 from opendata.data.domains import contract_model, dwd_table, ods_table, require_domain
 from opendata.data.registry import get_registry
-from opendata.pipeline.freshness import STATUS_MISSING, check_freshness, ods_freshness
+from opendata.pipeline.alert_matrix import registered_legs
+from opendata.pipeline.freshness import (
+    STATUS_MISSING,
+    check_freshness,
+    freshness_field,
+    ods_freshness,
+)
 from opendata.pipeline.query import (
     DEFAULT_PAGE_SIZE,
     EXPORT_BATCH_ROWS,
@@ -65,6 +71,9 @@ router = APIRouter()
 #: Adjust factor table of the stock-adjust domain (A4.1 scope: pending).
 FACTOR_TABLE = "dwd_stock_adjust"
 
+#: Cross-check detail table the catalog's quality flag counts.
+DIFF_TABLE = "dq_diff_report"
+
 
 @lru_cache(maxsize=1)
 def get_warehouse_engine() -> Engine:
@@ -84,33 +93,69 @@ async def data_catalog(
     principal: CurrentPrincipal,
     engine: Engine = Depends(get_warehouse_engine),
 ) -> APIResponse:
-    """List domains with their capabilities and freshness (FR-20).
+    """List domains with coverage, range, per-source freshness and quality (FR-20).
+
+    One row is a *domain*, not a capability leg: ``symbol_count`` /
+    ``time_range`` / ``quality`` describe the merged dwd table, while
+    ``sources`` carries what each source itself last delivered. A leg
+    whose source has no field mapping for the domain is reported as
+    ``unmapped`` with the reason - it is not measured with another
+    leg's column and it is not silently dropped.
 
     An API key only sees the domains its scopes cover.
     """
-    rows = []
     expected = await _expected_data_date(engine)
-    for capability in get_registry().capabilities():
-        if not principal.allows_domain(capability.domain):
+    capabilities = get_registry().capabilities()
+    verified: dict[tuple[str, str], bool] = {
+        (cap.domain, cap.source): cap.verified for cap in capabilities
+    }
+    asset_class: dict[str, str] = {cap.domain: cap.asset_class for cap in capabilities}
+    diff_reports = await _diff_report_counts(engine)
+    rows: list[dict[str, Any]] = []
+    for domain, sources in registered_legs().items():
+        if not principal.allows_domain(domain):
             continue
-        table = dwd_table(capability.domain)
-        freshness = await _freshness(
-            engine, capability.domain, table, source=capability.source, expected=expected
-        )
+        table = dwd_table(domain)
+        freshness = await _freshness(engine, domain, table, expected=expected)
+        coverage = await _coverage_facts(engine, domain, table)
+        status = "missing" if freshness is None else freshness["status"]
         rows.append(
             {
-                "domain": capability.domain,
-                "asset_class": capability.asset_class,
-                "source": capability.source,
-                "verified": capability.verified,
-                "display_name": _display_name(capability.domain),
+                "domain": domain,
+                "asset_class": asset_class.get(domain, "unrouted"),
+                "display_name": _display_name(domain),
                 "layer": "dwd",
+                "table": table,
+                "freshness_field": None if coverage is None else coverage["field"],
                 "latest": None if freshness is None else _iso(freshness["latest"]),
                 "lag_days": None if freshness is None else freshness["lag_days"],
-                "status": "missing" if freshness is None else freshness["status"],
+                "status": status,
+                "coverage": None if coverage is None else coverage["facts"],
+                "quality": None
+                if coverage is None
+                else _quality(coverage["facts"], diff_reports, domain),
+                "sources": [
+                    await _source_leg(
+                        engine,
+                        domain,
+                        source,
+                        verified=verified.get((domain, source), False),
+                        expected=expected,
+                    )
+                    for source in sources
+                ],
             }
         )
-    return APIResponse(success=True, message="success", data={"domains": rows})
+    return APIResponse(
+        success=True,
+        message="success",
+        data={
+            "domains": rows,
+            "expected_data_date": expected.isoformat(),
+            "domains_total": len(rows),
+            "source_legs_total": sum(len(row["sources"]) for row in rows),
+        },
+    )
 
 
 @router.get("/domains/{domain}/freshness")
@@ -120,7 +165,12 @@ async def domain_freshness(
     source: str | None = Query(None, description="Source for the ods layer"),
     engine: Engine = Depends(get_warehouse_engine),
 ) -> APIResponse:
-    """Report how current one domain's data is (design §9.4)."""
+    """Report how current one domain's data is (design §9.4).
+
+    The payload carries ``expected_data_date`` next to ``lag_days``: a lag
+    without the date it was measured against cannot be checked, and this is
+    the door a caller uses to check one domain without reading the catalog.
+    """
     # Scope comes first: a key that may not read the domain gets the
     # same 403 whether or not the domain exists.
     require_domain_access(principal, domain)
@@ -135,7 +185,13 @@ async def domain_freshness(
         return APIResponse(
             success=True,
             message="no data",
-            data={"domain": domain, "source": source, "status": STATUS_MISSING, "latest": None},
+            data={
+                "domain": domain,
+                "source": source,
+                "status": STATUS_MISSING,
+                "latest": None,
+                "expected_data_date": expected.isoformat(),
+            },
         )
     return APIResponse(
         success=True,
@@ -147,6 +203,7 @@ async def domain_freshness(
             "latest": _iso(freshness["latest"]),
             "lag_days": freshness["lag_days"],
             "status": freshness["status"],
+            "expected_data_date": expected.isoformat(),
         },
     )
 
@@ -602,6 +659,154 @@ async def _freshness(
     }
 
 
+async def _source_leg(
+    engine: Engine,
+    domain: str,
+    source: str,
+    *,
+    verified: bool,
+    expected: date,
+) -> dict:
+    """One source's own freshness reading for the catalog.
+
+    Args:
+        engine: Warehouse engine.
+        domain: Domain identifier.
+        source: Source identifier.
+        verified: Whether the registry marks this leg verified.
+        expected: Date the data should have reached.
+
+    Returns:
+        The leg row. ``unmapped`` is a measured state (the source has no
+        field mapping, so no column of its own can be read), never a
+        borrowed reading from another leg and never a silent drop.
+    """
+    table = ods_table(domain, source)
+    base = {"source": source, "verified": verified, "table": table}
+    try:
+        report = await asyncio.to_thread(
+            ods_freshness, engine, domain, source, table=table, expected=expected
+        )
+    except LookupError as exc:
+        return {**base, "status": "unmapped", "reason": str(exc), "latest": None, "lag_days": None}
+    return {
+        **base,
+        "status": report.status,
+        "reason": None,
+        "latest": _iso(report.latest),
+        "lag_days": report.lag_days,
+    }
+
+
+async def _coverage_facts(engine: Engine, domain: str, table: str) -> dict | None:
+    """Coverage/range/quality facts of one table, None when unmeasurable."""
+    try:
+        field = freshness_field(domain)
+    except (LookupError, ValueError):
+        return None
+    return await asyncio.to_thread(_read_coverage, engine, table, field)
+
+
+def _read_coverage(engine: Engine, table: str, field: str) -> dict | None:
+    """Run the coverage aggregate (sync).
+
+    The subject columns come from the table's own primary key rather than
+    a name heuristic: the dwd DDL declares the business key (AC-8), so
+    "覆盖标的数" counts what actually identifies a row minus the date the
+    range is measured over. A table whose key is only its date column has
+    no subject to count, and says so with ``symbol_columns: null``.
+    """
+    from sqlalchemy.exc import SQLAlchemyError
+
+    columns = _inspect_columns(engine, table)
+    if field not in columns:
+        return None
+    subjects = [column for column in _inspect_primary_key(engine, table) if column != field]
+    flagged = "SUM(`_diff_flag`)" if "_diff_flag" in columns else "NULL"
+    if subjects:
+        joined = ", ".join(f"`{column}`" for column in subjects)
+        symbols = f"(SELECT COUNT(*) FROM (SELECT DISTINCT {joined} FROM `{table}`) AS `subj`)"
+    else:
+        symbols = "NULL"
+    sql = (
+        f"SELECT COUNT(*) AS `rows`, MIN(`{field}`) AS `start`, MAX(`{field}`) AS `end`, "
+        f"{flagged} AS `diff_flagged`, {symbols} AS `symbols` FROM `{table}`"
+    )
+    try:
+        with engine.connect() as connection:
+            row = connection.execute(text(sql)).one()
+    except SQLAlchemyError as exc:
+        logger.debug("coverage of {} unavailable: {}", table, exc)
+        return None
+    return {
+        "field": field,
+        "symbol_columns": subjects or None,
+        "facts": {
+            "rows": int(row[0]),
+            "start": _iso(row[1]),
+            "end": _iso(row[2]),
+            "diff_flagged": None if row[3] is None else int(row[3]),
+            "symbols": None if row[4] is None else int(row[4]),
+        },
+    }
+
+
+def _inspect_primary_key(engine: Engine, table: str) -> list[str]:
+    """Business-key columns of a warehouse table, empty when unknown."""
+    from sqlalchemy import inspect
+
+    try:
+        with engine.connect() as connection:
+            constraint = inspect(connection).get_pk_constraint(table)
+    except Exception:
+        return []
+    return [str(column) for column in constraint.get("constrained_columns") or []]
+
+
+async def _diff_report_counts(engine: Engine) -> dict[str, int] | None:
+    """Per-domain ``dq_diff_report`` row counts, None when the table is absent.
+
+    None and an empty mapping are different readings: the first says the
+    cross-check detail was never migrated, the second says it is there and
+    no domain has any.
+    """
+    from sqlalchemy.exc import SQLAlchemyError
+
+    def read() -> dict[str, int]:
+        with engine.connect() as connection:
+            rows = connection.execute(
+                text(f"SELECT `domain`, COUNT(*) AS `rows` FROM `{DIFF_TABLE}` GROUP BY `domain`")
+            ).all()
+        return {str(row[0]): int(row[1]) for row in rows}
+
+    try:
+        return await asyncio.to_thread(read)
+    except SQLAlchemyError as exc:
+        logger.debug("diff report counts unavailable: {}", exc)
+        return None
+
+
+def _quality(facts: dict, diff_reports: dict[str, int] | None, domain: str) -> dict:
+    """The catalog's 质量标记 for one domain.
+
+    ``_diff_flag`` is the marker the dwd merge leaves on a row the two
+    sources disagreed about (design §8.3), so the flag reads the merged
+    table first and the cross-check detail second; ``unmeasured`` is only
+    used when the marker column itself is absent - an empty table is
+    ``clean`` about flags and ``missing`` about freshness, two separate
+    readings on purpose.
+    """
+    flagged = facts.get("diff_flagged")
+    reports = None if diff_reports is None else diff_reports.get(domain, 0)
+    if flagged is None:
+        flag = "unmeasured"
+    elif flagged > 0 or (reports or 0) > 0:
+        flag = "flagged"
+    else:
+        flag = "clean"
+    return {"diff_flagged": flagged, "diff_report_rows": reports, "flag": flag}
+
+
 async def _expected_data_date(engine: Engine, *, on: date | None = None) -> date:
     """Latest date that should carry data, per the trading calendar (A4.7).
 
@@ -651,8 +856,21 @@ def _serialize_row(columns: list[str], row: Sequence[object]) -> dict:
 
 
 def _iso(value: object) -> str | None:
-    """ISO rendering of a date-ish value."""
-    return None if value is None else value.isoformat()  # type: ignore[attr-defined]
+    """ISO rendering of a date-ish value.
+
+    Drivers disagree about aggregates: MySQL types ``MIN(col)`` as a DATE
+    and hands back a ``date``, while SQLite returns the stored text. The
+    catalog's range must read the same either way, and a text date is
+    already ISO.
+    """
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return value.strip()[:10]
+    isoformat = getattr(value, "isoformat", None)
+    if not callable(isoformat):
+        raise TypeError(f"{type(value).__name__} has no ISO rendering")
+    return str(isoformat())
 
 
 async def _selected_columns(engine: Engine, table: str, query: DataQuery, domain: str) -> list[str]:

@@ -25,7 +25,7 @@ const seen: Seen[] = []
 let nextBody: WireEnvelope = { success: true, data: null }
 
 const adapter: AxiosAdapter = async (
-  config: InternalAxiosRequestConfig,
+  config: InternalAxiosRequestConfig
 ): Promise<AxiosResponse> => {
   seen.push({
     url: `${config.baseURL ?? ''}${config.url ?? ''}`,
@@ -46,30 +46,76 @@ function answer(data: unknown): void {
   nextBody = { success: true, message: 'success', data }
 }
 
-const CATALOG = [
-  {
-    domain: 'stock_daily',
-    asset_class: 'equity',
-    source: 'ths',
-    verified: true,
-    display_name: 'A股日线行情',
-    layer: 'dwd',
-    latest: '2026-09-22',
-    lag_days: 1,
-    status: 'stale',
-  },
-  {
-    domain: 'economy_cpi',
-    asset_class: 'economy',
-    source: 'fred',
-    verified: true,
-    display_name: '宏观CPI',
-    layer: 'dwd',
-    latest: null,
-    lag_days: null,
-    status: 'missing',
-  },
-]
+const CATALOG = {
+  domains: [
+    {
+      domain: 'stock_daily',
+      asset_class: 'equity',
+      display_name: 'A股日线行情',
+      layer: 'dwd',
+      table: 'dwd_stock_daily',
+      freshness_field: 'trade_date',
+      latest: '2026-09-22',
+      lag_days: 1,
+      status: 'stale',
+      coverage: {
+        rows: 8123456,
+        symbols: 5432,
+        start: '2019-01-02',
+        end: '2026-09-22',
+        diff_flagged: 3,
+      },
+      quality: { diff_flagged: 3, diff_report_rows: 12, flag: 'flagged' },
+      sources: [
+        {
+          source: 'akshare',
+          verified: true,
+          table: 'ods_stock_daily_akshare',
+          status: 'stale',
+          reason: null,
+          latest: '2026-09-21',
+          lag_days: 2,
+        },
+        {
+          source: 'ths',
+          verified: true,
+          table: 'ods_stock_daily_ths',
+          status: 'fresh',
+          reason: null,
+          latest: '2026-09-22',
+          lag_days: 0,
+        },
+      ],
+    },
+    {
+      domain: 'economy_cpi',
+      asset_class: 'economy',
+      display_name: '宏观CPI',
+      layer: 'dwd',
+      table: 'dwd_economy_cpi',
+      freshness_field: 'date',
+      latest: null,
+      lag_days: null,
+      status: 'missing',
+      coverage: null,
+      quality: null,
+      sources: [
+        {
+          source: 'fred',
+          verified: true,
+          table: 'ods_economy_cpi_fred',
+          status: 'unmapped',
+          reason: "unknown source 'fred'; mappings available: ['akshare', 'ths']",
+          latest: null,
+          lag_days: null,
+        },
+      ],
+    },
+  ],
+  expected_data_date: '2026-09-22',
+  domains_total: 2,
+  source_legs_total: 3,
+}
 
 const PAGE = {
   domain: 'stock_daily',
@@ -85,8 +131,22 @@ const PAGE = {
 }
 
 const WAREHOUSE_TABLES = [
-  { table: 'dwd_stock_daily', layer: 'dwd', domain: 'stock_daily', source: 'ths', rows: 8123456, size_mb: 612.4 },
-  { table: 'dwd_economy_cpi', layer: 'dwd', domain: 'economy_cpi', source: 'fred', rows: 486, size_mb: 0.3 },
+  {
+    table: 'dwd_stock_daily',
+    layer: 'dwd',
+    domain: 'stock_daily',
+    source: 'ths',
+    rows: 8123456,
+    size_mb: 612.4,
+  },
+  {
+    table: 'dwd_economy_cpi',
+    layer: 'dwd',
+    domain: 'economy_cpi',
+    source: 'fred',
+    rows: 486,
+    size_mb: 0.3,
+  },
 ]
 
 const FAILED_SHARD = {
@@ -115,15 +175,36 @@ beforeEach(() => {
 })
 
 describe('catalogApi over the real interceptor', () => {
-  it('reads the catalog entries out of the envelope', async () => {
-    answer({ domains: CATALOG })
+  it('reads the catalog payload out of the envelope', async () => {
+    answer(CATALOG)
 
-    const entries = await catalogApi.catalog()
+    const catalog = await catalogApi.catalog()
 
     expect(seen[0]).toEqual({ url: '/api/v1/data/catalog', method: 'get', params: undefined })
-    expect(entries).toHaveLength(2)
-    expect(entries[0].display_name).toBe('A股日线行情')
-    expect(entries[1].status).toBe('missing')
+    // The payload arrives whole: the calendar baseline is as much a reading
+    // as the domain rows are, and unwrapping only `domains` would drop it.
+    expect(catalog.expected_data_date).toBe('2026-09-22')
+    expect(catalog.domains).toHaveLength(2)
+    expect(catalog.domains[0].display_name).toBe('A股日线行情')
+    expect(catalog.domains[1].status).toBe('missing')
+    expect(catalog.domains[0].sources[1].latest).toBe('2026-09-22')
+  })
+
+  it('reads a catalog with no domain as empty, keeping its baseline', async () => {
+    // Reachable: an API key whose scopes cover no domain gets `domains: []`
+    // with the baseline still set (test_data_catalog pins the same reading).
+    answer({
+      domains: [],
+      expected_data_date: '2026-09-22',
+      domains_total: 0,
+      source_legs_total: 0,
+    })
+
+    const catalog = await catalogApi.catalog()
+
+    expect(catalog.domains).toEqual([])
+    expect(catalog.expected_data_date).toBe('2026-09-22')
+    expect(catalog.domains_total).toBe(0)
   })
 
   it('reads a domain query as a whole DataPage, not an envelope', async () => {
@@ -138,7 +219,6 @@ describe('catalogApi over the real interceptor', () => {
     expect(page.rows[0].close).toBe(1253.8)
     expect(page.adjust).toBe('qfq')
   })
-
 })
 
 describe('warehouseApi over the real interceptor', () => {

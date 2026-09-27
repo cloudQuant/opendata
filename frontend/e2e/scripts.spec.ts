@@ -111,15 +111,29 @@ test.describe('Scripts & Data Tables E2E', () => {
       expect(plane.unstubbed()).toEqual([])
     })
 
-    test('catalog page lists domains with verification state', async ({ page }) => {
+    test('catalog page shows a domain with its five readings', async ({ page }) => {
       const plane = await stubApi(page, catalogPlane())
       await seedSession(page)
       await page.goto('/data')
 
+      // The C32 markers prove these readings came from the stub, not a live backend.
       await expect(page.getByText('C32DOM_ALPHA A股日线')).toBeVisible()
-      await expect(page.getByText('已验证', { exact: true })).toBeVisible()
-      await expect(page.getByText('未验证', { exact: true })).toBeVisible()
-      await expect(page.getByText('滞后 1 天')).toBeVisible()
+      // 新鲜度的基准：滞后天数是相对交易日历的期望日算的，基准日必须可见，
+      // 否则「滞后 1 天」无法复核（AC-18|02）。
+      await expect(page.getByText('基准日 2026-09-26 · 2 域 · 3 源腿')).toBeVisible()
+      // 覆盖标的数 / 时间范围 / 新鲜度
+      await expect(page.getByText('12345 行 · 543 标的')).toBeVisible()
+      await expect(page.getByText('2019-01-02 ~ 2026-09-25')).toBeVisible()
+      await expect(page.getByText('2026-09-25（滞后 1 天）')).toBeVisible()
+      // 各源最近更新：验证状态属于一条腿，不属于一个域
+      await expect(page.getByText('ths 2026-09-26（滞后 0 天） · 已验证')).toBeVisible()
+      await expect(page.getByText('sina 2026-09-20（滞后 6 天） · 未验证')).toBeVisible()
+      // 质量标记
+      await expect(page.getByText('有差异', { exact: true })).toBeVisible()
+      // 测不出来就照说：空表是 0 行，没有差异列是未测量，没有字段映射是未映射
+      await expect(page.getByText('0 行 · —')).toBeVisible()
+      await expect(page.getByText('未测量', { exact: true })).toBeVisible()
+      await expect(page.getByText('sina 未映射 · 未验证')).toBeVisible()
       expect(plane.unstubbed()).toEqual([])
     })
   })

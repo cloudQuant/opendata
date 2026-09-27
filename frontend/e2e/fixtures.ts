@@ -337,7 +337,12 @@ export function tasksPlane(): Record<string, unknown> {
   }
 }
 
-/** What `/data` reads: the capability + freshness catalog (data_query.py:100-112). */
+/**
+ * What `/data` reads: the domain catalog with its five readings
+ * (data_query.py::data_catalog, AC-18|02). One row is a domain: coverage and
+ * range come from the merged table, freshness from the calendar baseline,
+ * and each source leg carries its own last delivery.
+ */
 export function catalogPlane(): Record<string, unknown> {
   return {
     'GET /api/v1/data/catalog': envelope({
@@ -345,26 +350,70 @@ export function catalogPlane(): Record<string, unknown> {
         {
           domain: 'c32_stock_daily',
           asset_class: 'stock',
-          source: 'ths',
-          verified: true,
           display_name: 'C32DOM_ALPHA A股日线',
           layer: 'dwd',
+          table: 'dwd_c32_stock_daily',
+          freshness_field: 'trade_date',
           latest: '2026-09-25',
           lag_days: 1,
-          status: 'fresh',
+          status: 'stale',
+          coverage: {
+            rows: 12345,
+            symbols: 543,
+            start: '2019-01-02',
+            end: '2026-09-25',
+            diff_flagged: 2,
+          },
+          quality: { diff_flagged: 2, diff_report_rows: 7, flag: 'flagged' },
+          sources: [
+            {
+              source: 'ths',
+              verified: true,
+              table: 'ods_c32_stock_daily_ths',
+              status: 'fresh',
+              reason: null,
+              latest: '2026-09-26',
+              lag_days: 0,
+            },
+            {
+              source: 'sina',
+              verified: false,
+              table: 'ods_c32_stock_daily_sina',
+              status: 'stale',
+              reason: null,
+              latest: '2026-09-20',
+              lag_days: 6,
+            },
+          ],
         },
         {
           domain: 'c32_index_daily',
           asset_class: 'index',
-          source: 'sina',
-          verified: false,
           display_name: 'C32DOM_BETA 指数日线',
           layer: 'dwd',
+          table: 'dwd_c32_index_daily',
+          freshness_field: 'trade_date',
           latest: null,
           lag_days: null,
           status: 'missing',
+          coverage: { rows: 0, symbols: null, start: null, end: null, diff_flagged: null },
+          quality: { diff_flagged: null, diff_report_rows: null, flag: 'unmeasured' },
+          sources: [
+            {
+              source: 'sina',
+              verified: false,
+              table: 'ods_c32_index_daily_sina',
+              status: 'unmapped',
+              reason: "mapping 'sina'/'c32_index_daily' has no field 'trade_date'",
+              latest: null,
+              lag_days: null,
+            },
+          ],
         },
       ],
+      expected_data_date: '2026-09-26',
+      domains_total: 2,
+      source_legs_total: 3,
     }),
   }
 }

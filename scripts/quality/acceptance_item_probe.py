@@ -451,10 +451,15 @@ def brand_token_pattern() -> re.Pattern[str]:
 
 
 def function_body(source: str, name: str) -> str:
-    """The source of one module-level function, so a judge can read what it actually does."""
+    """The source of one module-level function, so a judge can read what it actually does.
+
+    ``AsyncFunctionDef`` counts: an API route or a job executor that is ``async def`` is the
+    same function to a judge, and reading it as absent would report a real body as an empty
+    string -- a gap that no work could close.
+    """
     tree = ast.parse(source)
     for node in tree.body:
-        if isinstance(node, ast.FunctionDef) and node.name == name:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == name:
             return ast.get_source_segment(source, node) or ""
     return ""
 
@@ -2691,6 +2696,281 @@ def judge_ac17_10(facts: Facts) -> Verdict:
 
 
 # --------------------------------------------------------------------------- #
+# AC-18 -- the freshness door and the catalog, judged on the faces a caller reads
+# --------------------------------------------------------------------------- #
+
+#: The module AC-18|01/|02 are about, and every frontend face that shows their readings.
+DATA_QUERY_REL: Final = "opendata/api/data_query.py"
+PIPELINE_JOBS_REL: Final = "opendata/pipeline/jobs.py"
+CATALOG_VIEW_REL: Final = "frontend/src/views/DataCatalogView.vue"
+CATALOG_API_REL: Final = "frontend/src/api/catalog.ts"
+CATALOG_TEST_REL: Final = "frontend/src/__tests__/catalog.test.ts"
+CATALOG_E2E_REL: Final = "frontend/e2e/scripts.spec.ts"
+ROUTER_REL: Final = "frontend/src/router/index.ts"
+VITE_CONFIG_REL: Final = "frontend/vite.config.ts"
+FRONTEND_COLLECTOR: Final = "scripts/quality/frontend_test_collection.py"
+
+#: 「各域最新数据日期与滞后天数可查」：一条门的读法一个节点，缺一条就是少一问。
+FRESHNESS_QUERY_NODES: Final = (
+    "tests/test_data_catalog.py::TestTheFreshnessDoor::test_the_dwd_door_names_its_baseline",
+    "tests/test_data_catalog.py::TestTheFreshnessDoor::test_the_two_doors_agree_on_the_same_domain",
+    "tests/test_data_catalog.py::TestTheFreshnessDoor::"
+    "test_the_ods_door_measures_that_sources_own_table",
+    "tests/test_data_catalog.py::TestTheFreshnessDoor::"
+    "test_a_leg_with_no_table_still_reports_the_baseline",
+    "tests/test_data_query_api.py::TestValidationPaths::test_unknown_freshness_domain_is_a_404",
+    "tests/test_data_query_api.py::TestTheExpectationIsTheCalendars::"
+    "test_the_baseline_is_taken_through_the_calendar_on_the_pinned_day",
+)
+
+#: 「缺失触发告警」：判据要的是告警真的出门，所以投递、静默与通道三条都在。
+FRESHNESS_ALERT_NODES: Final = (
+    "tests/test_alert_matrix.py::TestCollection::test_both_layers_are_read_for_a_registered_domain",
+    "tests/test_alert_matrix.py::TestCollection::"
+    "test_a_leg_with_no_field_mapping_is_the_measured_majority",
+    "tests/test_alert_matrix.py::TestDelivery::"
+    "test_a_missing_table_alerts_critical_and_reaches_the_channel",
+    "tests/test_alert_matrix.py::TestDelivery::test_a_stale_reading_warns_on_the_merged_layer",
+    "tests/test_alert_matrix.py::TestDelivery::test_a_healthy_warehouse_sends_nothing",
+    "tests/test_alert_matrix.py::TestDelivery::"
+    "test_the_verdict_follows_the_supplied_expectation_not_the_wall_clock",
+    "tests/test_alert_matrix.py::TestDelivery::"
+    "test_a_channel_that_refuses_the_frame_does_not_lose_the_alerts",
+    "tests/test_pipeline_jobs.py::TestFreshnessExecutor::"
+    "test_it_measures_against_the_calendar_not_the_wall_clock",
+    "tests/test_pipeline_jobs.py::TestFreshnessExecutor::test_it_delivers_on_the_websocket_channel",
+)
+
+#: The catalog faces |02 names, one node each: five readings, the two ways a leg is
+#: unmeasurable, and the third way a quality reading is absent.
+CATALOG_READING_NODES: Final = (
+    "tests/test_data_catalog.py::TestFiveReadings::test_a_populated_domain_carries_every_reading",
+    "tests/test_data_catalog.py::TestFiveReadings::"
+    "test_the_merged_layer_is_not_measured_with_a_source_column",
+    "tests/test_data_catalog.py::TestFiveReadings::"
+    "test_a_clean_domain_says_clean_and_an_unmeasurable_one_says_so",
+    "tests/test_data_catalog.py::TestFiveReadings::"
+    "test_the_totals_describe_the_rows_the_caller_got",
+    "tests/test_data_catalog.py::TestUnmeasurableLegs::"
+    "test_a_leg_with_no_field_mapping_is_unmapped_not_borrowed",
+    "tests/test_data_catalog.py::TestUnmeasurableLegs::"
+    "test_an_absent_table_reads_missing_without_losing_the_row",
+    "tests/test_data_catalog.py::TestUnmeasurableLegs::"
+    "test_a_missing_diff_report_table_is_not_reported_as_zero",
+)
+
+#: 判据点名的五个读数，逐个配上：页面列名、页面上只有真测量才会出现的形状、
+#: 单元面与真机页各自断言它时用到的字样。少任何一面，该读数就只是列名。
+CATALOG_READINGS: Final = (
+    ("覆盖标的数", 'label="覆盖"', "标的", "标的", "标的"),
+    ("时间范围", 'label="时间范围"', "~", "~", "~"),
+    ("各源最近更新", 'label="各源最近更新"', "已验证", "已验证", "已验证"),
+    ("新鲜度", 'label="新鲜度"', "滞后", "滞后", "滞后"),
+    ("质量标记", 'label="质量"', "未测量", "未测量", "未测量"),
+)
+
+#: 载荷里承载这五个读数的字段；接口与页面必须同名，否则页面显示的是另一次测量。
+CATALOG_FIELDS: Final = ("coverage", "sources", "lag_days", "quality", "expected_data_date")
+
+
+def asserted_lines(text: str, token: str) -> int:
+    """Count assertion lines naming ``token`` — a reading no assertion reads is not a reading.
+
+    Args:
+        text: Source of a spec file.
+        token: The exact string the assertion has to contain.
+
+    Returns:
+        How many ``expect(`` lines carry the token.
+    """
+    return sum(1 for line in text.splitlines() if "expect(" in line and token in line)
+
+
+def outcomes(nodes: Sequence[str]) -> dict[str, str]:
+    """Run each node id once and key the result by the test name."""
+    return {node.split("::")[-1]: node_outcome(node) for node in nodes}
+
+
+def bad_of(results: dict[str, str]) -> str:
+    """The nodes that did not pass, or ``-`` when every one of them did."""
+    return ", ".join(f"{name}={seen}" for name, seen in results.items() if seen != "passed") or "-"
+
+
+def measure_ac18_01(ctx: Context) -> Facts:
+    """Run the freshness door and the alert faces, then read how the scheduled job wires them."""
+    query = outcomes(FRESHNESS_QUERY_NODES)
+    alert = outcomes(FRESHNESS_ALERT_NODES)
+    api = ctx.read(DATA_QUERY_REL)
+    door = function_body(api, "domain_freshness")
+    jobs = ctx.read(PIPELINE_JOBS_REL)
+    return {
+        "query_runs": count(len(query)),
+        "query_passed": count(sum(1 for seen in query.values() if seen == "passed")),
+        "query_bad": bad_of(query),
+        "alert_runs": count(len(alert)),
+        "alert_passed": count(sum(1 for seen in alert.values() if seen == "passed")),
+        "alert_bad": bad_of(alert),
+        "door_route": flag("/domains/{domain}/freshness" in api),
+        "door_readings": flag("lag_days" in door and "latest" in door),
+        "door_baseline": count(door.count('"expected_data_date"')),
+        "job_wired": flag("TemplateKind.FRESHNESS" in function_body(jobs, "_execute_template")),
+        "job_broadcasts": flag("broadcast=" in function_body(jobs, "_execute_freshness")),
+        "job_executable": flag(
+            re.search(r"EXECUTABLE_KINDS\s*=\s*frozenset\(\{[^}]*FRESHNESS", jobs) is not None
+        ),
+    }
+
+
+def judge_ac18_01(facts: Facts) -> Verdict:
+    """``AC-18|01``: the door answers date + lag per domain, and 缺失 reaches a channel."""
+    ok = (
+        positive(facts["query_runs"])
+        and facts["query_passed"] == facts["query_runs"]
+        and facts["query_bad"] == "-"
+        and positive(facts["alert_runs"])
+        and facts["alert_passed"] == facts["alert_runs"]
+        and facts["alert_bad"] == "-"
+        and facts["door_route"] == "yes"
+        and facts["door_readings"] == "yes"
+        and number(facts["door_baseline"]) >= 2
+        and facts["job_wired"] == "yes"
+        and facts["job_broadcasts"] == "yes"
+        and facts["job_executable"] == "yes"
+    )
+    readings = (
+        f"新鲜度门 faces: {facts['query_passed']}/{facts['query_runs']} nodes passed"
+        + (f"; not green: {facts['query_bad']}" if facts["query_bad"] != "-" else ""),
+        f"{DATA_QUERY_REL}::domain_freshness route = {facts['door_route']}, carries "
+        f"latest + lag_days = {facts['door_readings']}, and returns expected_data_date "
+        f"{facts['door_baseline']} time(s) — a lag cannot be checked without the date it "
+        "was measured against, so both branches have to name it",
+        f"告警面: {facts['alert_passed']}/{facts['alert_runs']} nodes passed"
+        + (f"; not green: {facts['alert_bad']}" if facts["alert_bad"] != "-" else ""),
+        f"调度接线: the template dispatcher mentions FRESHNESS = {facts['job_wired']}, the "
+        f"executor is an executable kind = {facts['job_executable']}, it is handed the WS "
+        f"broadcast = {facts['job_broadcasts']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "判据两问都要有人答：可查意味着门交得出日期、滞后与基准日，触发告警意味着缺失真的"
+        "出门到通道；任何一条节点变红、门不再报基准日、或执行器没接上 broadcast，都只算接口存在"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac18_02(ctx: Context) -> Facts:
+    """Run the catalog faces, then check each reading on the page, the type and the run specs."""
+    readings = outcomes(CATALOG_READING_NODES)
+    view = ctx.read(CATALOG_VIEW_REL)
+    spec = ctx.read(CATALOG_TEST_REL)
+    e2e = ctx.read(CATALOG_E2E_REL)
+    api = ctx.read(CATALOG_API_REL)
+    missing: list[str] = []
+    e2e_missing: list[str] = []
+    for name, label, shape, unit_token, page_token in CATALOG_READINGS:
+        if label not in view or shape not in view or asserted_lines(spec, unit_token) == 0:
+            missing.append(name)
+        if asserted_lines(e2e, page_token) == 0:
+            e2e_missing.append(name)
+    collector = script_module(FRONTEND_COLLECTOR)
+    excludes, found = collector.parse_test_excludes(ctx.read(VITE_CONFIG_REL))
+    return {
+        "runs": count(len(readings)),
+        "passed": count(sum(1 for seen in readings.values() if seen == "passed")),
+        "bad": bad_of(readings),
+        "readings_missing": ", ".join(missing) or "-",
+        "e2e_missing": ", ".join(e2e_missing) or "-",
+        "fields": count(sum(1 for field in CATALOG_FIELDS if field in api)),
+        "header": flag("基准日" in view and asserted_lines(spec, "基准日") > 0),
+        "collector_ok": flag(found and set(excludes) <= set(collector.ALLOWED_EXCLUDES)),
+        "drilldown": flag(
+            "预览" in view and "openDetail" in view and asserted_lines(spec, "page_size") > 0
+        ),
+    }
+
+
+def judge_ac18_02(facts: Facts) -> Verdict:
+    """``AC-18|02``: five readings per domain row, on the door and on the page, each asserted."""
+    ok = (
+        positive(facts["runs"])
+        and facts["passed"] == facts["runs"]
+        and facts["bad"] == "-"
+        and facts["readings_missing"] == "-"
+        and facts["e2e_missing"] == "-"
+        and facts["fields"] == count(len(CATALOG_FIELDS))
+        and facts["header"] == "yes"
+        and facts["collector_ok"] == "yes"
+        and facts["drilldown"] == "yes"
+    )
+    readings = (
+        f"目录接口 faces: {facts['passed']}/{facts['runs']} nodes passed"
+        + (f"; not green: {facts['bad']}" if facts["bad"] != "-" else ""),
+        f"五个读数在页面上有列名且被断言：缺 {facts['readings_missing']}",
+        f"真机页（Playwright）逐读数断言：缺 {facts['e2e_missing']}",
+        f"载荷类型 {CATALOG_API_REL} 承载 {facts['fields']}/{count(len(CATALOG_FIELDS))} 个字段 "
+        f"({'/'.join(CATALOG_FIELDS)})，页面显示的是接口量出来的那一次",
+        f"基准日在页面出现并被断言 = {facts['header']}，下钻 = {facts['drilldown']}，"
+        f"单元面采集器无未授权排除 = {facts['collector_ok']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "判据列了五个读数（覆盖标的数/时间范围/各源最近更新/新鲜度/质量标记）：每个都要接口"
+        "给得出、页面显示得出、并且有断言真在读它——只有列名的表格是版式，不是目录"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac18_03(ctx: Context) -> Facts:
+    """Does one page own both views, with the catalog as its default and detail under it?"""
+    router = ctx.read(ROUTER_REL)
+    view = ctx.read(CATALOG_VIEW_REL)
+    titles = re.findall(r"title: '([^']+)'", router)
+    interface_titles = [title for title in titles if "数据接口" in title]
+    merged = re.search(
+        r"path: 'scripts',\s*\n\s*name: '[^']+',\s*\n\s*component: \(\) => "
+        r"import\('([^']+)'\)",
+        router,
+    )
+    return {
+        "page_titles": ", ".join(interface_titles) or "-",
+        "nav_entries": count(len(interface_titles)),
+        "route_is_catalog": flag(
+            merged is not None and merged.group(1).endswith("DataCatalogView.vue")
+        ),
+        "detail_in_catalog": flag("data/interfaces" in view or "接口" in view),
+        "detail_route": flag("接口详情" in router),
+    }
+
+
+def judge_ac18_03(facts: Facts) -> Verdict:
+    """``AC-18|03``: 数据接口 must be the catalog page itself, with 函数级明细 as its drill-down."""
+    ok = (
+        facts["nav_entries"] == "1"
+        and facts["route_is_catalog"] == "yes"
+        and facts["detail_in_catalog"] == "yes"
+        and facts["detail_route"] == "yes"
+    )
+    readings = (
+        f"路由标题含「数据接口」的页面 = {facts['nav_entries']} ({facts['page_titles']})",
+        f"`/scripts` 是否渲染目录视图 = {facts['route_is_catalog']}",
+        f"{CATALOG_VIEW_REL} 是否读到函数级明细（data/interfaces / 接口） = "
+        f"{facts['detail_in_catalog']}",
+        f"下钻终点（接口详情路由）仍在 = {facts['detail_route']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "合并要求的是一个页面：目录为默认视图、函数级明细在它下面。今天 /data 与 /scripts 仍是"
+        "两条路由两个视图，目录的下钻只预览数据行，从不落到接口/函数那一层；接口清单按 §11.1 已经"
+        "以域名命名（data_interfaces.name == domain），join 的料是齐的，缺的是页面合并本身——"
+        "而合并必然要让一个导航项消失，属产品决定"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+# --------------------------------------------------------------------------- #
 # The probe table
 # --------------------------------------------------------------------------- #
 
@@ -3466,6 +3746,92 @@ PROBES: Final[tuple[Probe, ...]] = (
             "logs_total": "*logs_total",
             "dated_header": "*dated_header",
             "dated_run": "*dated_run",
+        },
+    ),
+    Probe(
+        item="AC-18|01",
+        expects="新鲜度接口与告警",
+        summary="新鲜度门交出日期/滞后/基准日 + 缺失告警真到达通道 + 调度执行器接线",
+        measure=measure_ac18_01,
+        judge=judge_ac18_01,
+        breaks=(
+            Break("门的一个节点变红", (("query_passed", "5"),), GAP),
+            Break(
+                "门的节点被改名（探针再也找不到判据问的那一问）",
+                (("query_bad", "x=missing"),),
+                GAP,
+            ),
+            Break("告警投递面变红", (("alert_passed", "8"),), GAP),
+            Break("缺失不再触发告警", (("alert_bad", "告警=exit=1"),), GAP),
+            Break("新鲜度路由整条消失", (("door_route", "no"),), GAP),
+            Break("门不再交出滞后天数", (("door_readings", "no"),), GAP),
+            Break("门只在成功分支报基准日，no data 分支不报", (("door_baseline", "1"),), GAP),
+            Break("调度模板不再派发新鲜度执行器", (("job_wired", "no"),), GAP),
+            Break("执行器不再把告警推到 WS 通道", (("job_broadcasts", "no"),), GAP),
+            Break("新鲜度被从可执行模板 kinds 里摘掉", (("job_executable", "no"),), GAP),
+        ),
+        repair={
+            "query_runs": "*query_runs",
+            "query_passed": "*query_runs",
+            "query_bad": "-",
+            "alert_runs": "*alert_runs",
+            "alert_passed": "*alert_runs",
+            "alert_bad": "-",
+            "door_route": "yes",
+            "door_readings": "yes",
+            "door_baseline": "2",
+            "job_wired": "yes",
+            "job_broadcasts": "yes",
+            "job_executable": "yes",
+        },
+    ),
+    Probe(
+        item="AC-18|02",
+        expects="数据目录页/接口",
+        summary="按域一行五个读数：接口给得出、页面显示得出、单元面与真机页各自断言过",
+        measure=measure_ac18_02,
+        judge=judge_ac18_02,
+        breaks=(
+            Break("目录接口面变红", (("passed", "6"),), GAP),
+            Break("目录节点被改名（那一读再也没有人测）", (("bad", "x=missing"),), GAP),
+            Break("覆盖标的数只剩列名（断言被删）", (("readings_missing", "覆盖标的数"),), GAP),
+            Break("质量标记列被摘掉", (("readings_missing", "质量标记"),), GAP),
+            Break("真机页不再逐读数断言", (("e2e_missing", "新鲜度"),), GAP),
+            Break("载荷类型不再带 coverage/quality 字段", (("fields", "3"),), GAP),
+            Break("页面不再显示滞后基准日", (("header", "no"),), GAP),
+            Break("单元面被采集器的排除规则吞掉", (("collector_ok", "no"),), GAP),
+            Break("下钻查询被摘掉", (("drilldown", "no"),), GAP),
+        ),
+        repair={
+            "runs": "*runs",
+            "passed": "*runs",
+            "bad": "-",
+            "readings_missing": "-",
+            "e2e_missing": "-",
+            "fields": "5",
+            "header": "yes",
+            "collector_ok": "yes",
+            "drilldown": "yes",
+        },
+    ),
+    Probe(
+        item="AC-18|03",
+        expects="函数级明细下钻",
+        summary="数据接口页是否已并入目录（目录为默认视图，函数级明细在下钻里）",
+        measure=measure_ac18_03,
+        judge=judge_ac18_03,
+        breaks=(
+            Break("又出现第二个数据接口页面", (("nav_entries", "2"),), GAP),
+            Break("数据接口路由不再渲染目录视图", (("route_is_catalog", "no"),), GAP),
+            Break("目录页读不到函数级明细", (("detail_in_catalog", "no"),), GAP),
+            Break("下钻终点（接口详情路由）被删", (("detail_route", "no"),), GAP),
+        ),
+        repair={
+            "nav_entries": "1",
+            "page_titles": "数据接口（合并页）",
+            "route_is_catalog": "yes",
+            "detail_in_catalog": "yes",
+            "detail_route": "yes",
         },
     ),
 )

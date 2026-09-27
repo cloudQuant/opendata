@@ -23,6 +23,7 @@ merged, flagged result (the dwd write is a key-level upsert).
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass, field
 from datetime import date
 from functools import lru_cache
@@ -34,6 +35,7 @@ from sqlalchemy import text
 
 from opendata.data.domains import dwd_table, ods_table, require_domain
 from opendata.data.models import Instrument
+from opendata.pipeline.alert_matrix import run_alert_matrix
 from opendata.pipeline.freshness import dwd_freshness, ods_freshness
 from opendata.pipeline.templates import (
     PIPELINE_TEMPLATES,
@@ -58,7 +60,7 @@ if TYPE_CHECKING:
 SUPPORTED_DOMAINS = frozenset({"stock_daily"})
 
 #: Template kinds this module can execute.
-EXECUTABLE_KINDS = frozenset({TemplateKind.INCREMENTAL})
+EXECUTABLE_KINDS = frozenset({TemplateKind.INCREMENTAL, TemplateKind.FRESHNESS})
 
 #: Universe cap for one batch when the caller asks for "all" symbols: a
 #: scheduled run must stay finite even as the warehouse grows.
@@ -682,6 +684,8 @@ async def _execute_template(template: ScheduleTemplate) -> dict[str, Any]:
         ValueError: If the payload targets a domain without a builder or
             declares a window the code cannot resolve yet.
     """
+    if template.kind is TemplateKind.FRESHNESS:
+        return await _execute_freshness(template)
     payload = template.payload
     domain = str(payload.get("domain", "stock_daily"))
     if domain not in SUPPORTED_DOMAINS:
@@ -702,6 +706,73 @@ async def _execute_template(template: ScheduleTemplate) -> dict[str, Any]:
         second_source=payload.get("second_source"),
     )
     return result.as_dict()
+
+
+async def _execute_freshness(template: ScheduleTemplate) -> dict[str, Any]:
+    """Run the A4.8 alert matrix and put what it decides on a channel (AC-18).
+
+    This is the matrix's only production caller. Before it existed the
+    freshness job was declared in ``schedules.yaml`` while its kind had no
+    executor, so :func:`register_builtin_jobs` skipped the row: a domain
+    whose table had vanished produced an ``Alert`` object that no channel
+    ever carried, and the readings themselves were never taken on schedule.
+
+    The lag is measured against the trading calendar's expected data date
+    (A4.7), never the wall clock, so a weekend cannot page anyone.
+
+    Args:
+        template: The ``freshness`` schedule row being fired.
+
+    Returns:
+        The serialized :class:`~opendata.pipeline.alert_matrix.MatrixRun`.
+
+    Raises:
+        ValueError: If the payload's ``domains`` token is neither ``all``
+            nor a list of registered domains.
+    """
+    from opendata.api.websocket import ws_manager
+
+    domains = _payload_domains(template.payload)
+    engine = warehouse_engine()
+    calendar = await asyncio.to_thread(resolve_calendar, engine)
+    expected = calendar.expected_data_date(date.today())
+    run = await run_alert_matrix(
+        engine,
+        expected=expected,
+        domains=domains,
+        broadcast=ws_manager.broadcast,
+    )
+    logger.info(f"freshness matrix {template.name}: {run.as_dict()}")
+    return run.as_dict()
+
+
+def _payload_domains(payload: Mapping[str, object]) -> tuple[str, ...] | None:
+    """Resolve the ``domains`` token of a freshness template.
+
+    ``all`` (or no key at all) measures every registered domain. A comma
+    list restricts the run. There is deliberately no ``p0`` token: nothing
+    in the code registers a P0 domain tier, so a job that claimed to watch
+    "the P0 domains" could only be measuring an invented set.
+
+    Args:
+        payload: The template payload.
+
+    Returns:
+        The domains to measure, or None for all of them.
+
+    Raises:
+        ValueError: If the token is empty or of an unexpected type.
+    """
+    raw = payload.get("domains", "all")
+    if isinstance(raw, str):
+        if raw.strip().lower() == "all":
+            return None
+        wanted = tuple(part.strip() for part in raw.split(",") if part.strip())
+        if wanted:
+            return wanted
+    raise ValueError(
+        f"freshness payload domains={raw!r}: use 'all' or a comma-separated domain list"
+    )
 
 
 __all__ = [

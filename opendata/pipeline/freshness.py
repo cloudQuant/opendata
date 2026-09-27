@@ -478,11 +478,22 @@ def _is_date_type(annotation: object) -> bool:
 
 
 def _as_date(value: object) -> date | None:
-    """Coerce a driver value to a date, None when unparsable."""
+    """Coerce a driver value to a date, None when unparsable.
+
+    A string is accepted because ``MAX(<date column>)`` comes back as text
+    on drivers that do not type expression results (SQLite does not; MySQL
+    does). A table that holds rows must not read as ``missing`` only
+    because of the driver's cast - that would page someone over a type.
+    """
     from datetime import datetime as datetime_type
 
     if isinstance(value, datetime_type):
         return value.date()
     if isinstance(value, date):
         return value
+    if isinstance(value, str):
+        try:
+            return date.fromisoformat(value.strip()[:10])
+        except ValueError:
+            return None
     return None

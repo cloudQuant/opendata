@@ -216,20 +216,71 @@ class TestAgainstTheWarehouse:
         assert response.status_code == 400
         assert "no adjust factor" in response.json()["detail"]
 
-    async def test_catalog_lists_capabilities_with_freshness(
+    async def test_catalog_carries_every_reading_the_acceptance_asks_for(
         self, warehouse, test_client, test_user_token
     ):
+        """AC-18|02 on the real MySQL warehouse.
+
+        The five readings are asserted as facts about a table the test
+        itself wrote rows into: the probe symbol must show up inside the
+        range the catalog reports, and the totals must describe the rows the
+        caller received. Absolute counts stay out of it - the warehouse
+        holds real data, and a count assertion here would only measure how
+        much of it landed today.
+        """
         response = await test_client.get("/api/v1/data/catalog", headers=_auth(test_user_token))
 
         assert response.status_code == 200
-        domains = {row["domain"]: row for row in response.json()["data"]["domains"]}
-        assert "stock_daily" in domains
-        assert domains["stock_daily"]["asset_class"] == "equity"
-        assert set(domains["stock_daily"]) >= {"latest", "lag_days", "status"}
+        data = response.json()["data"]
+        domains = {row["domain"]: row for row in data["domains"]}
+        row = domains["stock_daily"]
 
-    async def test_freshness_endpoint_reports_the_dwd_date(
+        assert row["asset_class"] == "equity"
+        assert row["layer"] == "dwd" and row["table"] == "dwd_stock_daily"
+        assert row["freshness_field"] == "trade_date"
+        assert row["status"] in {"fresh", "stale", "missing"}
+        # The probe rows are inside the reported range: the aggregate ran
+        # over this table, not over a column that does not exist in it.
+        assert row["coverage"] is not None
+        assert row["coverage"]["rows"] >= 2
+        assert row["coverage"]["symbols"] >= 1
+        assert row["coverage"]["start"] <= "2024-01-04"
+        assert row["coverage"]["end"] >= "2024-01-05"
+        assert row["quality"]["flag"] in {"clean", "flagged", "unmeasured"}
+        legs = {leg["source"]: leg for leg in row["sources"]}
+        assert {"akshare", "ths"} <= set(legs)
+        for leg in row["sources"]:
+            assert leg["status"] in {"fresh", "stale", "missing", "unmapped"}
+            assert leg["verified"] in (True, False)
+        assert data["domains_total"] == len(data["domains"])
+        assert data["source_legs_total"] == sum(len(r["sources"]) for r in data["domains"])
+        assert data["expected_data_date"]
+
+    async def test_the_catalog_expectation_is_a_trading_day(
         self, warehouse, test_client, test_user_token
     ):
+        """The lag baseline is the calendar's, so it is never a future date."""
+        response = await test_client.get("/api/v1/data/catalog", headers=_auth(test_user_token))
+
+        expected = date.fromisoformat(response.json()["data"]["expected_data_date"])
+
+        assert expected <= date.today()
+        # A weekend cannot be the baseline: resolve_calendar walks back.
+        assert expected.weekday() < 5
+
+    async def test_the_freshness_endpoint_and_the_catalog_agree(
+        self, warehouse, test_client, test_user_token
+    ):
+        """One reading, two doors: the single-domain endpoint and the catalog.
+
+        They share ``_freshness`` and the calendar baseline, so a divergence
+        means one of them stopped measuring what the other measures - the
+        kind of disagreement a catalog cannot report about itself.
+        """
+        catalog = await test_client.get("/api/v1/data/catalog", headers=_auth(test_user_token))
+        row = next(
+            item for item in catalog.json()["data"]["domains"] if item["domain"] == "stock_daily"
+        )
         response = await test_client.get(
             "/api/v1/data/domains/stock_daily/freshness",
             headers=_auth(test_user_token),
@@ -238,7 +289,35 @@ class TestAgainstTheWarehouse:
         assert response.status_code == 200
         data = response.json()["data"]
         assert data["domain"] == "stock_daily"
-        assert data["lag_days"] is None or data["lag_days"] >= 0
+        assert data["source"] is None
+        assert data["field"] == "trade_date" == row["freshness_field"]
+        assert (data["latest"], data["lag_days"], data["status"]) == (
+            row["latest"],
+            row["lag_days"],
+            row["status"],
+        )
+        # Both doors must also name the baseline, and the lag must be that
+        # baseline minus the latest date - otherwise "滞后 N 天" is a number
+        # nobody can recompute.
+        assert data["expected_data_date"] == catalog.json()["data"]["expected_data_date"]
+        assert (
+            date.fromisoformat(data["expected_data_date"]) - date.fromisoformat(data["latest"])
+        ).days == data["lag_days"]
+
+    async def test_the_ods_freshness_door_uses_the_source_column(
+        self, warehouse, test_client, test_user_token
+    ):
+        """``?source=`` measures that source's own table, not the merged one."""
+        response = await test_client.get(
+            "/api/v1/data/domains/stock_daily/freshness",
+            params={"source": "akshare"},
+            headers=_auth(test_user_token),
+        )
+
+        assert response.status_code == 200
+        data = response.json()["data"]
+        assert data["source"] == "akshare"
+        assert data["field"] == "日期"
 
     async def test_diff_report_endpoint_answers_even_without_rows(
         self, warehouse, test_client, test_user_token
@@ -252,12 +331,54 @@ class TestAgainstTheWarehouse:
         assert response.json()["data"]["domain"] == "stock_daily"
 
 
-def test_freshness_default_lag_is_computed_against_today():
-    """The catalog's coarse staleness signal uses today (calendar is A4.7)."""
-    from opendata.pipeline.freshness import check_freshness
+class TestTheExpectationIsTheCalendars:
+    """The catalog's lag baseline (AC-18) is a trading day, not the wall clock.
 
-    assert check_freshness.__doc__ is not None
-    assert date.today() >= date(2024, 1, 1)
+    The row this replaces asserted ``check_freshness.__doc__ is not None``
+    and ``date.today() >= date(2024, 1, 1)`` - two readings that no code
+    change could turn false. These can: a caller that measured against
+    ``date.today()`` fails the Saturday case, and a calendar that is asked
+    for the wrong date fails the argument capture.
+    """
+
+    async def test_the_baseline_is_taken_through_the_calendar_on_the_pinned_day(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
+        from opendata.api import data_query
+        from opendata.pipeline.trading_calendar import calendar_from_days
+
+        open_days = [
+            date(2026, 9, 22),
+            date(2026, 9, 23),
+            date(2026, 9, 24),
+            date(2026, 9, 25),  # Tue..Fri, no weekend day
+        ]
+        monkeypatch.setattr(
+            data_query, "resolve_calendar", lambda engine: calendar_from_days(open_days)
+        )
+
+        saturday = await data_query._expected_data_date(
+            object(), on=date(2026, 9, 26)
+        )  # a weekend run must not measure the weekend
+        friday = await data_query._expected_data_date(object(), on=date(2026, 9, 25))
+
+        assert saturday == date(2026, 9, 25)
+        assert friday == date(2026, 9, 25)
+        assert saturday != date(2026, 9, 26)
+
+    async def test_a_broken_calendar_fails_instead_of_widening_the_window(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
+        from opendata.api import data_query
+
+        class _Empty:
+            def expected_data_date(self, day: date) -> date:
+                raise ValueError(f"no trading day near {day}")
+
+        monkeypatch.setattr(data_query, "resolve_calendar", lambda engine: _Empty())
+
+        with pytest.raises(ValueError, match="no trading day"):
+            await data_query._expected_data_date(object(), on=date(2026, 9, 26))
 
 
 class TestExportContract:

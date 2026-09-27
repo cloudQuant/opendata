@@ -26,5 +26,5 @@ templates:
   - name: freshness-check
     cron: "30 8 * * *"
     kind: freshness
-    payload: {domains: p0}
-    note: "新鲜度与告警矩阵（A4.8）"
+    payload: {domains: all}
+    note: "新鲜度与告警矩阵（A4.8）：测全部注册域的 dwd + 各源 ods，缺表即 critical 告警上 WS"

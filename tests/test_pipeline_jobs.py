@@ -722,12 +722,15 @@ class TestRegisterBuiltinJobs:
         assert seen == ["inc"]
         assert result == {"ok": True}
 
-    async def test_shipped_templates_register_the_p0_incremental(self) -> None:
+    async def test_shipped_templates_register_the_executable_kinds(self) -> None:
         scheduler = FakeScheduler()
 
         job_ids = await jobs.register_builtin_jobs(scheduler)
 
-        assert job_ids == ["pipeline_p0-stock-daily-incremental"]
+        assert job_ids == ["pipeline_p0-stock-daily-incremental", "pipeline_freshness-check"]
+        # full_check / partition_maintenance 仍无可执行体：注册了只会让 cron 抛
+        # "not executable"，比不注册更难发现。
+        assert set(scheduler.jobs) == set(job_ids)
 
 
 class TestExecuteTemplate:
@@ -784,6 +787,138 @@ class TestExecuteTemplate:
             await jobs._execute_template(template)
 
 
+class _FixedCalendar:
+    """Calendar stub: the expected data date is a constant, no DB read."""
+
+    def __init__(self, expected: date) -> None:
+        self.expected = expected
+
+    def expected_data_date(self, day: date) -> date:
+        return self.expected
+
+
+class TestFreshnessExecutor:
+    """The ``freshness`` row's executor - the matrix's only production caller (AC-18|01)."""
+
+    EXPECTED = date(2026, 9, 25)
+
+    @staticmethod
+    def _template(payload: Mapping[str, Any] | None = None) -> ScheduleTemplate:
+        return ScheduleTemplate(
+            name="freshness-check",
+            cron="30 8 * * *",
+            kind=TemplateKind.FRESHNESS,
+            payload=payload if payload is not None else {"domains": "all"},
+        )
+
+    def _stub_matrix(self, monkeypatch: pytest.MonkeyPatch, captured: dict[str, Any]) -> None:
+        """Replace the matrix with a recorder that delivers through its channel."""
+        from opendata.pipeline.alert_matrix import MatrixRun, MatrixScope
+
+        async def fake_matrix(engine: Any, **kwargs: Any) -> MatrixRun:
+            captured["engine"] = engine
+            captured.update(kwargs)
+            broadcast = kwargs["broadcast"]
+            await broadcast({"type": "data.freshness_alert", "domain": "stock_daily"})
+            return MatrixRun(
+                expected=self.EXPECTED,
+                reports=(),
+                alerts=(),
+                delivered=1,
+                scope=MatrixScope(domains=20, source_legs=28, unmapped_legs=5),
+            )
+
+        monkeypatch.setattr(jobs, "run_alert_matrix", fake_matrix)
+
+    async def test_it_measures_against_the_calendar_not_the_wall_clock(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        captured: dict[str, Any] = {}
+        engine = object()
+        seen: list[Any] = []
+        self._stub_matrix(monkeypatch, captured)
+        monkeypatch.setattr(jobs, "warehouse_engine", lambda: engine)
+        monkeypatch.setattr(
+            jobs, "resolve_calendar", lambda e: seen.append(e) or _FixedCalendar(self.EXPECTED)
+        )
+
+        result = await jobs._execute_template(self._template())
+
+        # A Saturday run must measure Friday: the lag is a trading-day lag.
+        assert seen == [engine]
+        assert captured["expected"] == self.EXPECTED
+        assert captured["domains"] is None
+        assert captured["engine"] is engine
+        assert result["expected"] == self.EXPECTED.isoformat()
+        assert result["scope"] == {"domains": 20, "source_legs": 28, "unmapped_legs": 5}
+
+    async def test_it_delivers_on_the_websocket_channel(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        import opendata.api.websocket as websocket_module
+
+        captured: dict[str, Any] = {}
+        self._stub_matrix(monkeypatch, captured)
+        monkeypatch.setattr(jobs, "warehouse_engine", lambda: object())
+        monkeypatch.setattr(jobs, "resolve_calendar", lambda engine: _FixedCalendar(self.EXPECTED))
+        sent: list[dict[str, Any]] = []
+
+        async def record(message: dict[str, Any]) -> None:
+            sent.append(message)
+
+        monkeypatch.setattr(websocket_module.ws_manager, "broadcast", record)
+
+        result = await jobs._execute_template(self._template())
+
+        assert sent == [{"type": "data.freshness_alert", "domain": "stock_daily"}]
+        assert result["delivered"] == 1
+
+    async def test_a_domain_list_restricted_the_run(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        captured: dict[str, Any] = {}
+        self._stub_matrix(monkeypatch, captured)
+        monkeypatch.setattr(jobs, "warehouse_engine", lambda: object())
+        monkeypatch.setattr(jobs, "resolve_calendar", lambda engine: _FixedCalendar(self.EXPECTED))
+
+        await jobs._execute_template(self._template({"domains": "stock_daily, index_daily"}))
+
+        assert captured["domains"] == ("stock_daily", "index_daily")
+
+    async def test_an_unmeasurable_domains_token_is_refused_before_any_db_read(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        captured: dict[str, Any] = {}
+        self._stub_matrix(monkeypatch, captured)
+
+        def no_engine() -> Any:
+            raise AssertionError("the payload must be validated before the warehouse opens")
+
+        monkeypatch.setattr(jobs, "warehouse_engine", no_engine)
+
+        with pytest.raises(ValueError, match="domains"):
+            await jobs._execute_template(self._template({"domains": ""}))
+
+    async def test_the_p0_token_is_not_a_domain_set(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """The shipped template watched "p0" while no P0 tier exists in code.
+
+        ``'all'`` replaced it in ``schedules.yaml``; the guard here is that
+        a token cannot silently stand for an invented set - an unknown
+        domain reaches :func:`~opendata.pipeline.alert_matrix.registered_legs`
+        and raises there.
+        """
+        from opendata.pipeline.alert_matrix import registered_legs
+
+        captured: dict[str, Any] = {}
+        self._stub_matrix(monkeypatch, captured)
+        monkeypatch.setattr(jobs, "warehouse_engine", lambda: object())
+        monkeypatch.setattr(jobs, "resolve_calendar", lambda engine: _FixedCalendar(self.EXPECTED))
+
+        await jobs._execute_template(self._template({"domains": "p0"}))
+
+        assert captured["domains"] == ("p0",)
+        with pytest.raises(ValueError, match="not registered"):
+            registered_legs(("p0",))
+
+
 class TestAttachBuiltinJobs:
     """Startup registers on the live scheduler, not the A1 wrapper."""
 
@@ -803,10 +938,13 @@ class TestAttachBuiltinJobs:
         monkeypatch.setattr(scheduler_service_module, "get_scheduler_service", lambda: _Service())
         ids = await jobs.attach_builtin_jobs()
 
-        assert ids == ["pipeline_p0-stock-daily-incremental"]
+        assert ids == ["pipeline_p0-stock-daily-incremental", "pipeline_freshness-check"]
         trigger = recorded[0]["trigger"]
         assert type(trigger).__name__ == "CronTrigger"
         assert "hour='17'" in str(trigger) and "day_of_week='1-5'" in str(trigger)
+        freshness_trigger = recorded[1]["trigger"]
+        assert type(freshness_trigger).__name__ == "CronTrigger"
+        assert "hour='8'" in str(freshness_trigger) and "minute='30'" in str(freshness_trigger)
         assert recorded[0]["id"] == "pipeline_p0-stock-daily-incremental"
         assert "cron_expression" not in recorded[0]
 

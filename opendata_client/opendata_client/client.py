@@ -438,10 +438,16 @@ class OpendataClient:
         return list(self.iter_rows("equity", "stock_daily", symbols=symbols, **kwargs))
 
     def catalog(self) -> list[dict[str, Any]]:
-        """List the domains this credential may read (FR-20).
+        """List the domains this credential may read (FR-20 / AC-18|02).
 
         Returns:
-            One entry per visible domain.
+            One entry per visible domain: the merged ``table`` and the
+            ``freshness_field`` it is measured on, ``coverage`` (rows, 标的数,
+            时间范围), the domain's own ``latest``/``lag_days``/``status``, a
+            ``quality`` flag and one ``sources`` leg per registered source
+            (``unmapped`` when that leg has no field mapping to measure with).
+            A lag is relative to ``expected_data_date``, which
+            :meth:`freshness` returns per domain.
         """
         data = self._get("/data/catalog", {}) or {}
         return list(data.get("domains") or [])
@@ -454,7 +460,8 @@ class OpendataClient:
             source: Source for the ods layer; defaults to dwd.
 
         Returns:
-            The freshness payload.
+            The freshness payload, including the ``expected_data_date``
+            ``lag_days`` was measured against.
         """
         return dict(self._get(f"/data/domains/{domain}/freshness", {"source": source}) or {})
 
