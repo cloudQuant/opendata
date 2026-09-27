@@ -633,7 +633,39 @@
       "note": "判据原文限定「新增」，而成员只数 A2_SCOPE 那七棵固定目录 ⇒ 本轮补的是包含关系而不是再造一个量面：A2 文件集 ∩ 自研 ∩ 不在固定目录 ∩ 非 tests/docs = 46 文件 / 222 公开 callable / 0 个不达标，与固定目录内的 611 个（docstring 100.0%、annotation 100.0%、exit 0、空目录分支未走）同一把尺子。非恒真性由两处植入证明：TEETH-2 在目录内种一个无 docstring 的公开 def ⇒ 成员报 99.8% (611/612) 并 exit 1；TEETH-3 把同一缺陷种到目录外 ⇒ 成员仍 100.0% (611/611) exit 0，而加宽面读数 47 文件 / 223 callable / below standard = 1 并判 VERDICT gap —— 即这行 100% 若哪天不再承重，探针会替它红。不达标面如实打印而不并入判定：A1 存量 6 个（opendata/api/metrics.py:166,171 与 scripts/init_tasks_and_tables.py:33,106,177,221，均由 A0 基础提交 4ee1bbc 引入，按「触碰即达标」由棘轮管）、tests/+docs/ 排除面 1930 个（ruff 按配置在这两棵树关掉 D/ANN，排除理由与规模写进读数第四行）。探针不是门禁成员，它产出台账输入；本格翻勾的输入是上面两条读数。"
     },
     "AC-17|08|e4388047": {
-      "state": "unreviewed"
+      "state": "proven",
+      "command": "python docs/evidence/C44/shell_audit.py --root <git archive HEAD 解出的修前树>（判 19 处命中／T1 四项全零，exit 1） → python docs/evidence/C44/shell_audit.py（修后树四类各 0、files_scanned=161、t1_error_cases=6、t1_success_cases=9、t1_normalize_cases=4、t1_golden_days=24、fixture_sha_ok=yes、VERDICT shells=clean t1=met，exit 0） ＋ python docs/evidence/C44/census_counterfactuals.py（7/7） ＋ python docs/evidence/C44/behaviour_counterfactuals.py（12/12） ＋ python docs/evidence/C44/golden_millis.py ＋ python docs/evidence/C44/golden_millis_counterfactuals.py（5/5） ＋ python scripts/quality/acceptance_item_probe.py --self-test（18 探针 × 97 反事实） ＋ python scripts/quality/acceptance_item_probe.py --item 'AC-17|08'（proven） ＋ python -m pytest tests/test_fuyao_recorded_envelopes.py -q -m 'not e2e' ＋ make gate（回填前后各一遍）",
+      "round": "C44",
+      "date": "2026-09-27",
+      "evidence": [
+        "docs/evidence/C44/README.md",
+        "docs/evidence/C44/shell_audit.py",
+        "docs/evidence/C44/census-head.txt",
+        "docs/evidence/C44/census-worktree.txt",
+        "docs/evidence/C44/census_counterfactuals.py",
+        "docs/evidence/C44/census-counterfactuals.txt",
+        "docs/evidence/C44/behaviour_counterfactuals.py",
+        "docs/evidence/C44/behaviour-counterfactuals.txt",
+        "docs/evidence/C44/golden_millis.py",
+        "docs/evidence/C44/golden-millis.txt",
+        "docs/evidence/C44/golden_millis_counterfactuals.py",
+        "docs/evidence/C44/golden-counterfactuals.txt",
+        "docs/evidence/C44/probe-self-test.txt",
+        "docs/evidence/C44/probe-ac17-08.txt",
+        "docs/evidence/C44/probe-ac17-08-prestage.txt",
+        "docs/evidence/C44/recording-run1.txt",
+        "docs/evidence/C44/recording-run2.txt",
+        "docs/evidence/C44/gate-run1-a2-fail-excerpt.txt",
+        "docs/evidence/C44/gate-run1-prebackfill.txt",
+        "scripts/ops/fuyao_envelope_recorder.py",
+        "scripts/quality/acceptance_item_probe.py",
+        "tests/fuyao_golden.py",
+        "tests/test_fuyao_recorded_envelopes.py",
+        "tests/fixtures/upstream/fuyao_t1_envelopes/meta.json",
+        "tests/fixtures/upstream/fuyao_t1_envelopes/responses.json.gz",
+        "opendata_fuyao/error_messages.yaml"
+      ],
+      "note": "判据原文是三问（无自指测试／无单断言空壳／无 inspect.getsource 形式检查）＋ 一项输入要求（T1 模块错误翻译真实信封样例 ≥3 ＋ 黄金向量 ＋ normalize 真实报文 ≥3）。本轮把三问做成一张全树 AST 普查面（四类形态规则，人群 tests/**/test_*.py 由 rglob 取，读数含 files_scanned == 人群实际文件数这一反盲项）：修前树 19 处命中／12 文件（self-reference 4、vacuous-assert 1、constant-shell 13、source-form-check 1），修后工作树 0/0/0/0，19 处逐条换了断法而一处未删（README §2 一表：文件:行 ↔ 规则 ↔ 原断 ↔ 现断）。T1 四读此前从未有过非零读数：真实上游信封 9 份由 scripts/ops/fuyao_envelope_recorder.py 在联调窗口录制（逐条 body sha 由普查面复算、header 白名单、FUYAO_API_KEY 的值既未写入档案也未打印），错误翻译按录制件断 category/retryable/advice/request_id，normalize 真实报文 4 条、黄金向量 24 日（22 交易日 ＋ 5 个线上锚点日，去重后 24 个钉住日）由三条不共享中间量的推导（整数历法算术／固定偏移 timezone(timedelta(hours=8))／zoneinfo）× 录制件 12 条 start 与 end+1ms 锚点复算。四条判据的可反证性分别由 7/7（普查规则逐类植入 ＋ 派生标签正控制 ＋ 夹具缺档案／改 sha 两面）、12/12（12 条修后用例逐个改坏生产值必须红，sha256 校验还原）、5/5（篡改表一格／篡改录制锚点一格／声明的锚点档案里查不到／固定偏移写成 +7／tzdata 上海换成 UTC）、97 条探针反事实证明 ⇒ 「读数为 0」不是空壳判定。两道形态规则抓不到的自指是行为反事实抓出来的，按假阴性登记而非计入覆盖：DEFAULT_BATCH_SIZE+1 的派生期望（已钉成字面量 50_001）与 trigger_type in [测试自己的字面量] 且漏掉 once（已改为真建三种 Trigger）。本格不主张的范围：非 test_* 前缀的 helper 与前端单元面（C29–C32 另收口）、符号存在性型空壳（C43 登记为 A2 面 46／legacy 面 63 条遗留项）、opendata/data/http_client.py 与契约层核心 Fetcher 的 T1 面；录制是单日窗口（2024-01-02..01-12 的 8 根 ＋ 日历 240 行），上游改字段名要等下一次联调录制才暴露。门禁第一遍停在 a2-check 三项红（ruff format 两份用例、mypy 15 条全在 C44 新增证据脚本、bandit 两条缺 # nosec），修的是脚本自身的类型与标注面，阈值／bandit.yaml skips／exclude_lines／普查规则／判据原文一字未动；那一遍的整档因复用同一暂存路径被覆盖，故 gate-run1-a2-fail-excerpt.txt 抬头自证为摘录，完整未裁剪的一档是修后重跑的 gate-run1-prebackfill.txt（7,103 行、17 段标记、GATE_EXIT=0 读自文件内部第 7097 行）。probe-ac17-08-prestage.txt 读到的 untracked_tests=1 是靠提交测试关掉的，不是靠放宽判据。证据清单只列回填时已存在且已进 git 索引的档案（回填后那一遍 gate-run2-postbackfill.txt 由 §10 行与 README §9 指向）。"
     },
     "AC-17|09|2f5f2b74": {
       "state": "proven",
