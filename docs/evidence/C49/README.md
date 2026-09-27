@@ -89,7 +89,8 @@ OK: 30 probe(s) measured; every judge is reachable from its declared repair, and
 | a2-check 定点复验 | `a2-check-after-c48-instrument-fix.txt`（390 行，`A2_EXIT=0`，`A2 files: 371` 四面全 ok） | 只跑这一个成员，先在最小面上把「改读数那一边就够了」证死，再花一遍完整 gate（a2-check 会扫 `docs/evidence/**/*.py`，所以这台仪器必须在 A2 面达标） |
 | gate 回填前第 2 遍（绿） | `gate-run2-prebackfill.txt`（7,369 行 = 14 行抬头 + 7,355 行正文，17 段、`GATE_EXIT=0` 读自文件内部） | 描述**回填前**的最终树：3236 passed / 6 skipped、`TOTAL 11636 1086 2874 288 89.28%`（阈值 84%）、vitest 109 passed（14 files）、Playwright 18 passed |
 | gate 回填后 | `gate-run3-postbackfill.txt` | 翻两格 + §0/§10 + 台账 JSON 落地之后那一遍；读数以它自己的正文为准（抬头不预填数字） |
-| gate 最终树 | `gate-run4-finaltree.txt` | README 与 run3 档案落地后、描述最终树的那一遍；抬头写明与上一遍的差别与被取代原因（`evidence-traceability` 会扫 `docs/evidence/**/*.py`，任何跑完再写的档案都会使上一遍不再描述最终树） |
+| gate 最终树 | `gate-run4-finaltree.txt`（7,373 行 = 18 行抬头 + 7,355 行正文，17 段、`GATE_EXIT=0` 读自文件内部；3236 passed / 6 skipped、`TOTAL … 89.28%`、Playwright 18 passed） | README 与 run3 档案落地后、最接近最终树的那一遍 |
+| ↑ 但没有任何一遍能描述含它自己的树（披露，不是补一遍能修的） | 第 4 遍正文里 `evidence-traceability` 读 `files census = 518 (gate logs: 90)`；把 `gate-run4-finaltree.txt` 自己 add 之后再跑那三个成员，读数是 `519 / 91` 且三个 exit 全 0（`LEDGER_EXIT=0`、`BRAND_EXIT=0`、`TRACE_EXIT=0`，`census: items=130 proven=31 gap=9 unreviewed=90 ticked=31`） | 这一对读数**只活在这一行和落地它的那条 commit message 里**——把它写成档案就会再多出一个「跑完再写的档案」，同一件事再发生一次。计数的是 `docs/evidence/` 下**全部**档案（`.txt` 也算 gate log），不只是 `.py`，所以「跑完再写档案 ⇒ 上一遍不再描述最终树」对任意后缀都成立；这是不动点的性质，不是本轮漏跑的一遍 |
 
 四遍而不是两遍，是这一轮实测出来的代价（红一遍 + 回填前后各一遍 + 最终树一遍）；每一遍都完整未裁剪留档，取代关系写在上面这一列而不是靠删掉旧的。
 
