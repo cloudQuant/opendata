@@ -180,6 +180,13 @@ def _mapping(
         domain="stock_daily",
         key=KEY,
         fields=fields,
+        # C53 made the three domain 口径 required: this census hand-builds both
+        # legs of one stock_daily compare, so it states the shipped yaml's own
+        # conventions. Equal on both sides, therefore the gate lets every case
+        # through and the census readings below are unchanged by this edit.
+        adjust="unadjusted",
+        suspension="absent_row",
+        denominator="key_union",
         tolerances=dict(tolerances),
     )
 
