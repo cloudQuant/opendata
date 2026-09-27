@@ -1,0 +1,118 @@
+================================================================================
+C44 gate run 1（失败一遍）——**摘录档案，不是完整未裁剪日志**
+================================================================================
+采集时间（运行时刻）: 2026-09-27T04:31..04:39+0200（bandit 段自带 `generated_at: 2026-09-27T02:39:22Z`）
+branch: dev
+HEAD  : 2a6a393 docs(acceptance): v5.15 回填 C43（AC-17|07/|10 转 proven，条目级 5/10 → 7/10）
+python: Python 3.13.5
+命令: make gate（原始输出重定向到 /tmp/c44-gate-run1.txt）
+
+为什么这一份是摘录：该轮失败后我按同一暂存路径 `/tmp/c44-gate-run1.txt` 重跑了修后的第二遍，
+暂存件被覆盖 ⇒ 整档不复存在。下面两段是覆盖前逐字读到的原文（各自标注在原文件里的行号），
+中间部分没有留下。流程改正记在这里而不是只在 README 里说一句：**同一遍的暂存路径不得复用**，
+本行之后的每一跑都用带序号的独立暂存路径（`gate-run2-postbackfill.txt` 即来自 `/tmp/c44-gate-run2.txt`）。
+失败本身是真实的、可复核的：三项都在 a2-check 的常规输出里，任何人重新把那三个缺陷种回去都能再红一次。
+
+--------------------------------------------------------------------------------
+摘录一：原文件第 425–470 行（a2-check 的三项 FAIL 与 mypy 全量错误清单）
+--------------------------------------------------------------------------------
+      tests/test_table_page.py
+      tests/test_ths_dwd_integration.py
+      tests/test_ths_provider.py
+      tests/test_trading_calendar.py
+      tests/test_warehouse_ddl.py
+      tests/test_warehouse_migrations.py
+      tests/test_watermark.py
+      tests/test_yfinance_provider.py
+
+ok   ruff check
+FAIL ruff format --check
+Would reformat: tests/test_fuyao_endpoints.py
+Would reformat: tests/test_sina_window_fidelity.py
+2 files would be reformatted, 347 files already formatted
+FAIL mypy
+docs/evidence/C44/shell_audit.py:226: error: "AST" has no attribute "value"  [attr-defined]
+docs/evidence/C44/shell_audit.py:227: error: "AST" has no attribute "value"  [attr-defined]
+docs/evidence/C44/shell_audit.py:283: error: Argument 1 to "_immediate_member" has incompatible type "expr"; expected "Compare"  [arg-type]
+docs/evidence/C44/golden_millis_counterfactuals.py:48: error: Module has no attribute "MILLIS_BY_DAY"  [attr-defined]
+docs/evidence/C44/golden_millis_counterfactuals.py:49: error: Module has no attribute "WIRE_ANCHOR_MILLIS"  [attr-defined]
+docs/evidence/C44/golden_millis_counterfactuals.py:73: error: Module has no attribute "recorded_wire_anchors"  [attr-defined]
+docs/evidence/C44/golden_millis_counterfactuals.py:79: error: Module has no attribute "recorded_wire_anchors"  [attr-defined]
+docs/evidence/C44/golden_millis_counterfactuals.py:84: error: Module has no attribute "FIXED_OFFSET"  [attr-defined]
+docs/evidence/C44/golden_millis_counterfactuals.py:89: error: Module has no attribute "SHANGHAI"  [attr-defined]
+docs/evidence/C44/golden_millis_counterfactuals.py:93: error: List item 0 has incompatible type "tuple[str, Callable[[Module], None]]"; expected "tuple[str, Callable[[object], None]]"  [list-item]
+docs/evidence/C44/golden_millis_counterfactuals.py:94: error: List item 1 has incompatible type "tuple[str, Callable[[Module], None]]"; expected "tuple[str, Callable[[object], None]]"  [list-item]
+docs/evidence/C44/golden_millis_counterfactuals.py:95: error: List item 2 has incompatible type "tuple[str, Callable[[Module], None]]"; expected "tuple[str, Callable[[object], None]]"  [list-item]
+docs/evidence/C44/golden_millis_counterfactuals.py:96: error: List item 3 has incompatible type "tuple[str, Callable[[Module], None]]"; expected "tuple[str, Callable[[object], None]]"  [list-item]
+docs/evidence/C44/golden_millis_counterfactuals.py:97: error: List item 4 has incompatible type "tuple[str, Callable[[Module], None]]"; expected "tuple[str, Callable[[object], None]]"  [list-item]
+docs/evidence/C44/golden_millis.py:27: error: Module "datetime" has no attribute "UTC"  [attr-defined]
+FAIL bandit
+{
+  "errors": [],
+  "generated_at": "2026-09-27T02:39:22Z",
+  "metrics": {
+    "./docs/evidence/C15/futures-calendar-probe.py": {
+
+--------------------------------------------------------------------------------
+摘录二：原文件末 40 行（bandit 报出的两条 issue、汇总行与 GATE_EXIT）
+--------------------------------------------------------------------------------
+      "test_id": "B404",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "152     \"\"\"Run the given node ids and return ``(exit_code, untrimmed output)``.\"\"\"\n153     completed = subprocess.run(  # noqa: S603 - literal argv, no shell\n154         [sys.executable, \"-m\", \"pytest\", \"-p\", \"no:randomly\", \"--no-cov\", \"-q\", *nodes],\n155         cwd=REPO_ROOT,\n156         capture_output=True,\n157         text=True,\n158         check=False,\n159     )\n160     return completed.returncode, completed.stdout + completed.stderr\n",
+      "col_offset": 16,
+      "end_col_offset": 5,
+      "filename": "./docs/evidence/C44/behaviour_counterfactuals.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 78,
+        "link": "https://cwe.mitre.org/data/definitions/78.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "subprocess call - check for execution of untrusted input.",
+      "line_number": 153,
+      "line_range": [
+        153,
+        154,
+        155,
+        156,
+        157,
+        158,
+        159
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html",
+      "test_id": "B603",
+      "test_name": "subprocess_without_shell_equals_true"
+    }
+  ]
+}[manager]	WARNING	Test in comment: argv is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: argv is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: argv is not a test name or id, ignoring
+[tester]	WARNING	nosec encountered (B603), but no failed test on file ./docs/evidence/C31/endpoint-contract-census.py:114
+[tester]	WARNING	nosec encountered (B603), but no failed test on file ./docs/evidence/C43/public-api-face-census.py:72
+FAIL: A2 gate failed on: ruff format, mypy, bandit
+
+make[1]: *** [a2-check] Error 1
+make: *** [gate] Error 2
+GATE_EXIT=2
+
+--------------------------------------------------------------------------------
+档尾：三项的处置（判定内容与阈值一字未动）
+--------------------------------------------------------------------------------
+1. `ruff format`：两个本轮改过的用例文件未按格式跑过 ⇒ `ruff format` 这两份（纯排版，
+   `test_fuyao_endpoints.py` 19 行、`test_sina_window_fidelity.py` 6 行的折行位置变化）。
+2. `mypy`：15 条错误全在 C44 新增的证据脚本里，三条处置——
+   ①`shell_audit.py:226/227` 是 `ast.walk` 循环里把 `node.value` 在读过 isinstance 分支之后才取，
+     类型已被并回 `ast.AST`；改成在各自的 `isinstance` 分支内取出 `target/value`（判定不变，
+     `AnnAssign` 无值时照旧跳过）；`:283` 是 `_immediate_member` 的参数注解写成 `ast.Compare`
+     而实参是 `compare.left: ast.expr`，注解就是笔误，改成 `ast.expr`。
+   ②`golden_millis_counterfactuals.py` 用 `importlib` 动态载入复算脚本，mypy 看不见模块属性；
+     没有用 `# type: ignore` 压掉，而是写下 `Verifier` Protocol 描述被篡改的那六个面，
+     并由 `FACES` 运行时逐个 `hasattr` 兜住 ⇒ 脚本改名而这里没跟上会当场崩，而不是对着
+     不存在的属性悄悄跳过（这一条同时是「反空壳」要求的一部分：篡改面必须存在）。
+   ③`golden_millis.py:27` 用了 `datetime.UTC`（3.11 才有）而 `requires-python>=3.10` ⇒ 改
+     `timezone.utc`，同一常量的旧名字，读数不变（这一条是 C43 起登记的遗留项，本轮被 mypy 抓到）。
+3. `bandit`：`behaviour_counterfactuals.py` 的 `import subprocess` / `subprocess.run` 缺 `# nosec`
+   标注（B404/B603），按 `scripts/quality/a2_check.py:45,68` 与 C31/C43 档案的同一写法补齐；
+   `bandit.yaml` 的 skips 与阈值一字未动，也没有新增任何排除目录。

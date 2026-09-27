@@ -1,0 +1,44 @@
+================================================================================
+C44 AC-17 08 条目级读数（回填前树：四类全零 + untracked_tests 已随暂存归零）
+================================================================================
+采集时间（运行前）: 2026-09-27T04:52:05+0200（同批次连续采集；命令见 docs/evidence/C44/README.md 第八节）
+branch: dev
+HEAD  : 2a6a393 docs(acceptance): v5.15 回填 C43（AC-17|07/|10 转 proven，条目级 5/10 → 7/10）
+python: Python 3.13.5
+命令: python scripts/quality/acceptance_item_probe.py --item 'AC-17|08'
+
+--- git status --porcelain（运行前，本目录内容除外）---
+M  opendata_fuyao/error_messages.yaml
+A  scripts/ops/fuyao_envelope_recorder.py
+M  scripts/quality/acceptance_item_probe.py
+A  tests/fixtures/upstream/fuyao_t1_envelopes/meta.json
+A  tests/fixtures/upstream/fuyao_t1_envelopes/responses.json.gz
+A  tests/fuyao_golden.py
+M  tests/test_config.py
+M  tests/test_contract_models.py
+M  tests/test_core.py
+M  tests/test_diff_report.py
+M  tests/test_dump_import.py
+M  tests/test_fuyao_dumps.py
+M  tests/test_fuyao_endpoints.py
+A  tests/test_fuyao_recorded_envelopes.py
+M  tests/test_models_extended.py
+M  tests/test_ods_writer.py
+M  tests/test_retry_service.py
+M  tests/test_scheduler_details.py
+M  tests/test_sina_window_fidelity.py
+M  tests/test_yfinance_provider.py
+--- 以下为完整未裁剪输出（本行以上为 provenance 抬头）---
+
+### AC-17|08  (document line 268)
+判据原文：反空壳抽审：无自指测试、无单断言空壳、无 `inspect.getsource` 形式检查；T1 模块具备错误翻译真实信封样例 ≥3 + 黄金向量 + normalize 真实报文 ≥3
+本探针：§5.1 四类空壳全树为零 + §5.2 T1 三问由真实录制信封与预计算黄金向量回答
+台账现状：state=unreviewed，文档勾选=False
+  - docs/evidence/C44/shell_audit.py exit 0（shells=clean t1=met）：自指=0, 恒真断言=0, 定义抄写=0, 源码形式检查=0
+  - population = 161 个 test_*.py，census 扫到 161 个：全树零必须是「全树」，漏扫的那部分只是把空壳藏在读数之外；未被 git 跟踪的 0 个不算证据（CI 看不见的面无法复算）
+  - §5.2 T1 三问：t1_error_cases=6(≥3), t1_success_cases=9(≥1), t1_normalize_cases=4(≥3), t1_golden_days=24(≥1)
+  - 录制夹具 = 9 例，逐条 sha 复算 = yes，来源可追溯 = yes：手造「理想报文」在这一问上过不去
+VERDICT AC-17|08: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）

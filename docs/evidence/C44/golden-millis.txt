@@ -1,0 +1,35 @@
+================================================================================
+C44 黄金向量溯源：三种独立推导 x 12 条线上锚点
+================================================================================
+采集时间（运行前）: 2026-09-27T04:52:05+0200（同批次连续采集；命令见 docs/evidence/C44/README.md 第八节）
+branch: dev
+HEAD  : 2a6a393 docs(acceptance): v5.15 回填 C43（AC-17|07/|10 转 proven，条目级 5/10 → 7/10）
+python: Python 3.13.5
+命令: python docs/evidence/C44/golden_millis.py
+
+--- git status --porcelain（运行前，本目录内容除外）---
+M  opendata_fuyao/error_messages.yaml
+A  scripts/ops/fuyao_envelope_recorder.py
+M  scripts/quality/acceptance_item_probe.py
+A  tests/fixtures/upstream/fuyao_t1_envelopes/meta.json
+A  tests/fixtures/upstream/fuyao_t1_envelopes/responses.json.gz
+A  tests/fuyao_golden.py
+M  tests/test_config.py
+M  tests/test_contract_models.py
+M  tests/test_core.py
+M  tests/test_diff_report.py
+M  tests/test_dump_import.py
+M  tests/test_fuyao_dumps.py
+M  tests/test_fuyao_endpoints.py
+A  tests/test_fuyao_recorded_envelopes.py
+M  tests/test_models_extended.py
+M  tests/test_ods_writer.py
+M  tests/test_retry_service.py
+M  tests/test_scheduler_details.py
+M  tests/test_sina_window_fidelity.py
+M  tests/test_yfinance_provider.py
+--- 以下为完整未裁剪输出（本行以上为 provenance 抬头）---
+days_pinned = 22 + wire_anchors = 2
+recorded_records_with_window = 6
+recorded_wire_days = ['1990-01-01', '1990-01-06', '2000-01-01', '2024-01-02', '2024-01-12']
+VERDICT derivations=3 pinned=22 wire_anchors=12 wire_pinned_days=1 problems=0 exit=0

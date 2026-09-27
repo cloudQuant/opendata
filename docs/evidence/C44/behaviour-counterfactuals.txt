@@ -1,0 +1,494 @@
+================================================================================
+C44 行为反事实：12 条修复后的用例改坏生产值必须红 + sha 校验还原
+================================================================================
+采集时间（运行前）: 2026-09-27T04:52:05+0200（同批次连续采集；命令见 docs/evidence/C44/README.md 第八节）
+branch: dev
+HEAD  : 2a6a393 docs(acceptance): v5.15 回填 C43（AC-17|07/|10 转 proven，条目级 5/10 → 7/10）
+python: Python 3.13.5
+命令: python docs/evidence/C44/behaviour_counterfactuals.py
+
+--- git status --porcelain（运行前，本目录内容除外）---
+M  opendata_fuyao/error_messages.yaml
+A  scripts/ops/fuyao_envelope_recorder.py
+M  scripts/quality/acceptance_item_probe.py
+A  tests/fixtures/upstream/fuyao_t1_envelopes/meta.json
+A  tests/fixtures/upstream/fuyao_t1_envelopes/responses.json.gz
+A  tests/fuyao_golden.py
+M  tests/test_config.py
+M  tests/test_contract_models.py
+M  tests/test_core.py
+M  tests/test_diff_report.py
+M  tests/test_dump_import.py
+M  tests/test_fuyao_dumps.py
+M  tests/test_fuyao_endpoints.py
+A  tests/test_fuyao_recorded_envelopes.py
+M  tests/test_models_extended.py
+M  tests/test_ods_writer.py
+M  tests/test_retry_service.py
+M  tests/test_scheduler_details.py
+M  tests/test_sina_window_fidelity.py
+M  tests/test_yfinance_provider.py
+--- 以下为完整未裁剪输出（本行以上为 provenance 抬头）---
+--- baseline (契约族 extra=forbid) exit=0
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_contract_models.py .                                          [100%]
+
+============================== 1 passed in 0.02s ===============================
+--- mutated (契约族 extra=forbid) exit=1
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_contract_models.py F                                          [100%]
+
+=================================== FAILURES ===================================
+_____ TestSemantics.test_every_contract_model_refuses_an_undeclared_field ______
+tests/test_contract_models.py:249: in test_every_contract_model_refuses_an_undeclared_field
+    with pytest.raises(ValidationError, match="not_a_design_field"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE <class 'pydantic_core._pydantic_core.ValidationError'>
+=========================== short test summary info ============================
+FAILED tests/test_contract_models.py::TestSemantics::test_every_contract_model_refuses_an_undeclared_field
+============================== 1 failed in 0.06s ===============================
+ok   break[契约族 extra=forbid] 改坏后 红（exit 1）
+ok   restore[契约族 extra=forbid] opendata/data/models/base.py 校验和一致
+--- baseline (ods 默认批次粒度) exit=0
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_ods_writer.py .                                               [100%]
+
+============================== 1 passed in 0.16s ===============================
+--- mutated (ods 默认批次粒度) exit=1
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_ods_writer.py F                                               [100%]
+
+=================================== FAILURES ===================================
+______ TestDirectWrite.test_batch_size_defaults_to_the_design_granularity ______
+tests/test_ods_writer.py:502: in test_batch_size_defaults_to_the_design_granularity
+    assert (result.rows, result.batches) == (rows, 2)
+E   assert (50001, 1) == (50001, 2)
+E     
+E     At index 1 diff: 1 != 2
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_ods_writer.py::TestDirectWrite::test_batch_size_defaults_to_the_design_granularity
+============================== 1 failed in 0.20s ===============================
+ok   break[ods 默认批次粒度] 改坏后 红（exit 1）
+ok   restore[ods 默认批次粒度] opendata/pipeline/ods_writer.py 校验和一致
+--- baseline (退避天花板) exit=0
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_retry_service.py .                                            [100%]
+
+============================== 1 passed in 0.03s ===============================
+--- mutated (退避天花板) exit=1
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_retry_service.py F                                            [100%]
+
+=================================== FAILURES ===================================
+_________ TestRetryService.test_backoff_ladder_plateaus_at_the_ceiling _________
+tests/test_retry_service.py:42: in test_backoff_ladder_plateaus_at_the_ceiling
+    assert delays == [60, 120, 240, 480, 960, 1920, 3600, 3600, 3600]
+E   assert [60, 120, 240...60, 1920, ...] == [60, 120, 240...60, 1920, ...]
+E     
+E     At index 6 diff: 3840 != 3600
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_retry_service.py::TestRetryService::test_backoff_ladder_plateaus_at_the_ceiling
+============================== 1 failed in 0.07s ===============================
+ok   break[退避天花板] 改坏后 红（exit 1）
+ok   restore[退避天花板] opendata/services/retry_service.py 校验和一致
+--- baseline (角色字面量判权) exit=0
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_models_extended.py .                                          [100%]
+
+============================== 1 passed in 0.02s ===============================
+--- mutated (角色字面量判权) exit=1
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_models_extended.py F                                          [100%]
+
+=================================== FAILURES ===================================
+_______ TestUserModel.test_stored_role_strings_are_what_the_checker_uses _______
+tests/test_models_extended.py:34: in test_stored_role_strings_are_what_the_checker_uses
+    assert PermissionChecker.is_admin("admin") is True
+E   AssertionError: assert False is True
+E    +  where False = <function PermissionChecker.is_admin at 0x1066a9da0>('admin')
+E    +    where <function PermissionChecker.is_admin at 0x1066a9da0> = <class 'opendata.core.security.PermissionChecker'>.is_admin
+=========================== short test summary info ============================
+FAILED tests/test_models_extended.py::TestUserModel::test_stored_role_strings_are_what_the_checker_uses
+============================== 1 failed in 0.06s ===============================
+ok   break[角色字面量判权] 改坏后 红（exit 1）
+ok   restore[角色字面量判权] opendata/models/user.py 校验和一致
+--- baseline (差异报告表名) exit=0
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_diff_report.py .                                              [100%]
+
+============================== 1 passed in 0.02s ===============================
+--- mutated (差异报告表名) exit=1
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_diff_report.py F                                              [100%]
+
+=================================== FAILURES ===================================
+____ TestReportRows.test_report_writer_and_retention_share_the_named_table _____
+tests/test_diff_report.py:73: in test_report_writer_and_retention_share_the_named_table
+    rule = rule_for("dq_diff_report")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+opendata/pipeline/retention.py:163: in rule_for
+    raise RetentionError(f"no retention rule covers {target!r}; declare one before touching it")
+E   opendata.pipeline.retention.RetentionError: no retention rule covers 'dq_diff_report'; declare one before touching it
+=========================== short test summary info ============================
+FAILED tests/test_diff_report.py::TestReportRows::test_report_writer_and_retention_share_the_named_table
+============================== 1 failed in 0.07s ===============================
+ok   break[差异报告表名] 改坏后 红（exit 1）
+ok   restore[差异报告表名] opendata/pipeline/diff_report.py 校验和一致
+--- baseline (dump 源标签决定落库表) exit=0
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_dump_import.py .                                              [100%]
+
+============================== 1 passed in 0.13s ===============================
+--- mutated (dump 源标签决定落库表) exit=1
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_dump_import.py F                                              [100%]
+
+=================================== FAILURES ===================================
+_________ TestImportValidation.test_source_label_decides_the_ods_table _________
+tests/test_dump_import.py:236: in test_source_label_decides_the_ods_table
+    assert calls["table"] == "ods_stock_daily_ths"
+E   AssertionError: assert 'ods_stock_daily_iwc' == 'ods_stock_daily_ths'
+E     
+E     - ods_stock_daily_ths
+E     ?                 ^^^
+E     + ods_stock_daily_iwc
+E     ?                 ^^^
+=========================== short test summary info ============================
+FAILED tests/test_dump_import.py::TestImportValidation::test_source_label_decides_the_ods_table
+============================== 1 failed in 0.14s ===============================
+ok   break[dump 源标签决定落库表] 改坏后 红（exit 1）
+ok   restore[dump 源标签决定落库表] opendata/pipeline/dump_import.py 校验和一致
+--- baseline (app_name 进 OpenAPI 标题) exit=0
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_config.py .                                                   [100%]
+
+============================== 1 passed in 0.06s ===============================
+--- mutated (app_name 进 OpenAPI 标题) exit=1
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_config.py F                                                   [100%]
+
+=================================== FAILURES ===================================
+____ TestSettings.test_app_name_is_the_name_the_service_shows_the_operator _____
+tests/test_config.py:38: in test_app_name_is_the_name_the_service_shows_the_operator
+    assert app.openapi()["info"]["title"] == "opendata API v1"
+E   AssertionError: assert 'opendata-x API v1' == 'opendata API v1'
+E     
+E     - opendata API v1
+E     + opendata-x API v1
+E     ?         ++
+=========================== short test summary info ============================
+FAILED tests/test_config.py::TestSettings::test_app_name_is_the_name_the_service_shows_the_operator
+============================== 1 failed in 0.09s ===============================
+ok   break[app_name 进 OpenAPI 标题] 改坏后 红（exit 1）
+ok   restore[app_name 进 OpenAPI 标题] opendata/core/config.py 校验和一致
+--- baseline (app_name 进 CLI 报告) exit=0
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_core.py .                                                     [100%]
+
+============================== 1 passed in 0.02s ===============================
+--- mutated (app_name 进 CLI 报告) exit=1
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_core.py F                                                     [100%]
+
+=================================== FAILURES ===================================
+_________ TestCoreConfig.test_settings_app_name_reaches_the_cli_report _________
+tests/test_core.py:312: in test_settings_app_name_reaches_the_cli_report
+    assert json.loads(result.output)["app_name"] == "opendata"
+E   AssertionError: assert 'opendata-x' == 'opendata'
+E     
+E     - opendata
+E     + opendata-x
+E     ?         ++
+=========================== short test summary info ============================
+FAILED tests/test_core.py::TestCoreConfig::test_settings_app_name_reaches_the_cli_report
+============================== 1 failed in 0.06s ===============================
+ok   break[app_name 进 CLI 报告] 改坏后 红（exit 1）
+ok   restore[app_name 进 CLI 报告] opendata/core/config.py 校验和一致
+--- baseline (yfinance 路由标签) exit=0
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_yfinance_provider.py .                                        [100%]
+
+============================== 1 passed in 0.04s ===============================
+--- mutated (yfinance 路由标签) exit=1
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_yfinance_provider.py F                                        [100%]
+
+=================================== FAILURES ===================================
+______________ TestRegistration.test_source_label_routes_the_leg _______________
+tests/test_yfinance_provider.py:104: in test_source_label_routes_the_leg
+    fetcher = registry.resolve("equity", "stock_daily_overseas", source="yfinance")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+opendata/data/registry.py:250: in resolve
+    raise LookupError(
+E   LookupError: source 'yfinance' has no registered capability for equity/stock_daily_overseas (period=None, market=None)
+=========================== short test summary info ============================
+FAILED tests/test_yfinance_provider.py::TestRegistration::test_source_label_routes_the_leg
+============================== 1 failed in 0.09s ===============================
+ok   break[yfinance 路由标签] 改坏后 红（exit 1）
+ok   restore[yfinance 路由标签] opendata/data/providers/yfinance/models/stock_daily.py 校验和一致
+--- baseline (fuyao 毫秒戳黄金向量) exit=0
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_fuyao_recorded_envelopes.py .                                 [100%]
+
+============================== 1 passed in 0.02s ===============================
+--- mutated (fuyao 毫秒戳黄金向量) exit=1
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_fuyao_recorded_envelopes.py F                                 [100%]
+
+=================================== FAILURES ===================================
+_______ TestGoldenVectors.test_prices_request_equals_precomputed_millis ________
+tests/test_fuyao_recorded_envelopes.py:241: in test_prices_request_equals_precomputed_millis
+    assert params == {
+E   AssertionError: assert {'adjust': 'n...24800001, ...} == {'adjust': 'n...24800000, ...}
+E     
+E     Omitting 3 identical items, use -vv to show
+E     Differing items:
+E     {'end': 1704988800000} != {'end': 1704988799999}
+E     {'start': 1704124800001} != {'start': 1704124800000}
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_fuyao_recorded_envelopes.py::TestGoldenVectors::test_prices_request_equals_precomputed_millis
+============================== 1 failed in 0.07s ===============================
+ok   break[fuyao 毫秒戳黄金向量] 改坏后 红（exit 1）
+ok   restore[fuyao 毫秒戳黄金向量] opendata_fuyao/endpoints.py 校验和一致
+--- baseline (默认下载上限容得下真机 dump) exit=0
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_fuyao_dumps.py .                                              [100%]
+
+============================== 1 passed in 0.05s ===============================
+--- mutated (默认下载上限容得下真机 dump) exit=1
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_fuyao_dumps.py F                                              [100%]
+
+=================================== FAILURES ===================================
+___________ TestDownload.test_default_cap_admits_the_real_dump_size ____________
+tests/test_fuyao_dumps.py:177: in test_default_cap_admits_the_real_dump_size
+    result = download_dump(
+opendata_fuyao/dumps.py:262: in download_dump
+    raise error_for_transport("response_too_large", detail="dump")
+E   opendata_fuyao.errors.FuyaoError: FUYAO_RESPONSE_TOO_LARGE_dump: 响应体超出大小上限
+=========================== short test summary info ============================
+FAILED tests/test_fuyao_dumps.py::TestDownload::test_default_cap_admits_the_real_dump_size
+============================== 1 failed in 0.09s ===============================
+ok   break[默认下载上限容得下真机 dump] 改坏后 红（exit 1）
+ok   restore[默认下载上限容得下真机 dump] opendata_fuyao/dumps.py 校验和一致
+--- baseline (调度器 shutdown 状态翻转) exit=0
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_scheduler_details.py .                                        [100%]
+
+============================== 1 passed in 0.03s ===============================
+--- mutated (调度器 shutdown 状态翻转) exit=1
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/test_scheduler_details.py F                                        [100%]
+
+=================================== FAILURES ===================================
+____________ TestSchedulerServiceLifecycle.test_scheduler_shutdown _____________
+tests/test_scheduler_details.py:50: in test_scheduler_shutdown
+    assert service.scheduler.running is False
+E   assert True is False
+E    +  where True = <apscheduler.schedulers.asyncio.AsyncIOScheduler object at 0x1158a8590>.running
+E    +    where <apscheduler.schedulers.asyncio.AsyncIOScheduler object at 0x1158a8590> = <opendata.services.scheduler_service.SchedulerService object at 0x1158a82f0>.scheduler
+----------------------------- Captured stderr call -----------------------------
+2026-09-27 04:50:07.183 | INFO     | opendata.services.scheduler_service:start:56 - Scheduler started (in-memory job store – jobs re-loaded from DB on each startup)
+2026-09-27 04:50:07.184 | WARNING  | opendata.services.scheduler_service:start:59 - APScheduler is using an in-memory job store. If the process restarts, all jobs are re-registered from the database. For persistent job queues across workers, consider migrating to APScheduler 4.x with a SQLAlchemy/Redis data store, or arq/celery.
+2026-09-27 04:50:07.184 | INFO     | opendata.services.scheduler_service:shutdown:71 - Scheduler shutdown
+=========================== short test summary info ============================
+FAILED tests/test_scheduler_details.py::TestSchedulerServiceLifecycle::test_scheduler_shutdown
+============================== 1 failed in 0.07s ===============================
+ok   break[调度器 shutdown 状态翻转] 改坏后 红（exit 1）
+ok   restore[调度器 shutdown 状态翻转] tests/test_scheduler_details.py 校验和一致
+VERDICT counterfactual_cases=12 broke=12 problems=0 exit=0

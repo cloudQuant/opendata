@@ -1,0 +1,63 @@
+================================================================================
+C44 空壳普查读数：HEAD 树（修前基线，19 处命中 + T1 全零）
+================================================================================
+采集时间（运行前）: 2026-09-27T04:52:05+0200（同批次连续采集；命令见 docs/evidence/C44/README.md 第八节）
+branch: dev
+HEAD  : 2a6a393 docs(acceptance): v5.15 回填 C43（AC-17|07/|10 转 proven，条目级 5/10 → 7/10）
+python: Python 3.13.5
+命令: python docs/evidence/C44/shell_audit.py --root /tmp/c44_head
+
+--- git status --porcelain（运行前，本目录内容除外）---
+M  opendata_fuyao/error_messages.yaml
+A  scripts/ops/fuyao_envelope_recorder.py
+M  scripts/quality/acceptance_item_probe.py
+A  tests/fixtures/upstream/fuyao_t1_envelopes/meta.json
+A  tests/fixtures/upstream/fuyao_t1_envelopes/responses.json.gz
+A  tests/fuyao_golden.py
+M  tests/test_config.py
+M  tests/test_contract_models.py
+M  tests/test_core.py
+M  tests/test_diff_report.py
+M  tests/test_dump_import.py
+M  tests/test_fuyao_dumps.py
+M  tests/test_fuyao_endpoints.py
+A  tests/test_fuyao_recorded_envelopes.py
+M  tests/test_models_extended.py
+M  tests/test_ods_writer.py
+M  tests/test_retry_service.py
+M  tests/test_scheduler_details.py
+M  tests/test_sina_window_fidelity.py
+M  tests/test_yfinance_provider.py
+--- 以下为完整未裁剪输出（本行以上为 provenance 抬头）---
+shell_count[self-reference] = 4
+shell_count[vacuous-assert] = 1
+shell_count[constant-shell] = 13
+shell_count[source-form-check] = 1
+files_scanned = 160
+fixture_cases = 0
+fixture_sha_ok = absent
+provenance = absent
+t1_error_cases = 0
+t1_success_cases = 0
+t1_normalize_cases = 0
+t1_golden_days = 0
+HIT /private/tmp/c44_head/tests/test_config.py:25 [constant-shell] 「settings.app_name == 'opendata'」只是把定义抄了一遍
+HIT /private/tmp/c44_head/tests/test_config.py:66 [constant-shell] 「settings.algorithm == 'HS256'」只是把定义抄了一遍
+HIT /private/tmp/c44_head/tests/test_contract_models.py:240 [constant-shell] 「Bar.model_config['extra'] == 'forbid'」只是把定义抄了一遍
+HIT /private/tmp/c44_head/tests/test_core.py:301 [constant-shell] 「settings.app_name == 'opendata'」只是把定义抄了一遍
+HIT /private/tmp/c44_head/tests/test_core.py:330 [constant-shell] 「settings.algorithm == 'HS256'」只是把定义抄了一遍
+HIT /private/tmp/c44_head/tests/test_diff_report.py:65 [constant-shell] 「DQ_DIFF_REPORT_TABLE == 'dq_diff_report'」只是把定义抄了一遍
+HIT /private/tmp/c44_head/tests/test_dump_import.py:214 [constant-shell] 「FUYAO_SOURCE == 'ths'」只是把定义抄了一遍
+HIT /private/tmp/c44_head/tests/test_fuyao_dumps.py:205 [constant-shell] 「DEFAULT_MAX_DUMP_BYTES == 512 * 1024 * 1024」只是把定义抄了一遍
+HIT /private/tmp/c44_head/tests/test_fuyao_endpoints.py:324 [self-reference] 期望值来自本地重算 ['_ms']，同一断言又引用生产符号 ['millis_to_trading_date']
+HIT /private/tmp/c44_head/tests/test_fuyao_endpoints.py:325 [self-reference] 期望值来自本地重算 ['_ms']，同一断言又引用生产符号 ['shanghai_midnight_millis']
+HIT /private/tmp/c44_head/tests/test_fuyao_endpoints.py:447 [self-reference] 期望值来自本地重算 ['_ms']，同一断言又引用生产符号 ['FUND_ETF_MAX_SPAN_DAYS', 'build_fund_etf_prices_request']
+HIT /private/tmp/c44_head/tests/test_fuyao_endpoints.py:1622 [self-reference] 期望值来自本地重算 ['_ms']，同一断言又引用生产符号 ['FUND_ETF_DEPTH_DAYS']
+HIT /private/tmp/c44_head/tests/test_models_extended.py:28 [constant-shell] 「UserRole.ADMIN.value == 'admin'」只是把定义抄了一遍
+HIT /private/tmp/c44_head/tests/test_models_extended.py:29 [constant-shell] 「UserRole.USER.value == 'user'」只是把定义抄了一遍
+HIT /private/tmp/c44_head/tests/test_ods_writer.py:488 [constant-shell] 「DEFAULT_BATCH_SIZE == 50000」只是把定义抄了一遍
+HIT /private/tmp/c44_head/tests/test_retry_service.py:33 [constant-shell] 「RetryService.BASE_RETRY_DELAY == 60」只是把定义抄了一遍
+HIT /private/tmp/c44_head/tests/test_retry_service.py:39 [constant-shell] 「RetryService.MAX_RETRY_DELAY == 3600」只是把定义抄了一遍
+HIT /private/tmp/c44_head/tests/test_scheduler_details.py:38 [vacuous-assert] 断言字面量 True
+HIT /private/tmp/c44_head/tests/test_sina_window_fidelity.py:197 [source-form-check] 读源码文本而不是读行为
+VERDICT shells=found t1=gap exit=1

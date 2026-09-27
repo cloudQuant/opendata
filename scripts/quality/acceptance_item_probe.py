@@ -1694,6 +1694,94 @@ def judge_ac17_07(facts: Facts) -> Verdict:
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
 
+#: The shell census this item is about. Run as the gate would run it, for the same reason the
+#: two tools above are: a probe that re-implemented the four rules would keep saying 干净 after
+#: the census grew a fifth rule.
+SHELL_AUDIT_TOOL: Final = "docs/evidence/C44/shell_audit.py"
+
+#: The four 空壳 forms §5.1 names, and the reading each one is printed under.
+SHELL_FACES: Final = (
+    ("self-reference", "自指"),
+    ("vacuous-assert", "恒真断言"),
+    ("constant-shell", "定义抄写"),
+    ("source-form-check", "源码形式检查"),
+)
+
+#: §5.2's T1 floors: ①错误翻译 ≥3 且含成功不抛、②黄金向量有钉值、③normalize ≥3。
+T1_FLOORS: Final = (("t1_error_cases", 3), ("t1_success_cases", 1), ("t1_normalize_cases", 3))
+
+
+def measure_ac17_08(ctx: Context) -> Facts:
+    """Run the shell census and re-read §5.1/§5.2 off its own printed faces."""
+    code, out = run_argv([sys.executable, SHELL_AUDIT_TOOL])
+    on_disk = sorted(
+        path.relative_to(REPO_ROOT).as_posix() for path in (REPO_ROOT / "tests").rglob("test_*.py")
+    )
+    tracked = set(ctx.tracked())
+    facts: Facts = {
+        "tool_exit": count(code),
+        "tool_shells": first_capture(out, r"shells=(\w+)"),
+        "tool_t1": first_capture(out, r"t1=(\w+)"),
+        "population": count(len(on_disk)),
+        "untracked_tests": count(sum(1 for name in on_disk if name not in tracked)),
+        "fixture_cases": first_capture(out, r"^fixture_cases = (\S+)$"),
+        "fixture_sha_ok": first_capture(out, r"^fixture_sha_ok = (\S+)$"),
+        "provenance": first_capture(out, r"^provenance = (\S+)$"),
+        "t1_error_cases": first_capture(out, r"^t1_error_cases = (\S+)$"),
+        "t1_success_cases": first_capture(out, r"^t1_success_cases = (\S+)$"),
+        "t1_normalize_cases": first_capture(out, r"^t1_normalize_cases = (\S+)$"),
+        "t1_golden_days": first_capture(out, r"^t1_golden_days = (\S+)$"),
+    }
+    for face, _ in SHELL_FACES:
+        facts[face.replace("-", "_")] = first_capture(out, rf"^shell_count\[{face}\] = (\S+)$")
+    facts["files_scanned"] = first_capture(out, r"^files_scanned = (\S+)$")
+    return facts
+
+
+def judge_ac17_08(facts: Facts) -> Verdict:
+    """``AC-17|08``: the census is clean over the whole tree and T1 has real faces."""
+
+    def key(face: str) -> str:
+        return face.replace("-", "_")
+
+    counts = ", ".join(f"{label}={facts[key(face)]}" for face, label in SHELL_FACES)
+    shells_zero = all(facts[key(face)] == "0" for face, _ in SHELL_FACES)
+    floors = ", ".join(
+        f"{key}={facts[key]}(≥{floor})" for key, floor in (T1_FLOORS + (("t1_golden_days", 1),))
+    )
+    ok = (
+        facts["tool_exit"] == "0"
+        and facts["tool_shells"] == "clean"
+        and facts["tool_t1"] == "met"
+        and positive(facts["population"])
+        and facts["files_scanned"] == facts["population"]
+        and facts["untracked_tests"] == "0"
+        and shells_zero
+        and facts["fixture_sha_ok"] == "yes"
+        and facts["provenance"] == "yes"
+        and positive(facts["fixture_cases"])
+        and all(number(facts[key]) >= floor for key, floor in T1_FLOORS)
+        and positive(facts["t1_golden_days"])
+    )
+    readings = (
+        f"{SHELL_AUDIT_TOOL} exit {facts['tool_exit']}（shells={facts['tool_shells']} "
+        f"t1={facts['tool_t1']}）：{counts}",
+        f"population = {facts['population']} 个 test_*.py，census 扫到 {facts['files_scanned']} 个"
+        "：全树零必须是「全树」，漏扫的那部分只是把空壳藏在读数之外；未被 git 跟踪的 "
+        f"{facts['untracked_tests']} 个不算证据（CI 看不见的面无法复算）",
+        f"§5.2 T1 三问：{floors}",
+        f"录制夹具 = {facts['fixture_cases']} 例，逐条 sha 复算 = {facts['fixture_sha_ok']}，"
+        f"来源可追溯 = {facts['provenance']}：手造「理想报文」在这一问上过不去",
+    )
+    reason = (
+        ""
+        if ok
+        else "反空壳抽审判的是形态：定义抄写、恒真断言、自指、源码形式检查四类都必须为零，"
+        "且 T1 档要拿真实录制信封与预计算黄金向量来答，三问的地板（≥3/含成功/≥3）缺一不可"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
 def measure_ac17_10(ctx: Context) -> Facts:
     """Run the traceability gate member and read its census, its faces, its dates and its gaps."""
     code, out = run_argv([sys.executable, TRACEABILITY_TOOL])
@@ -2227,6 +2315,80 @@ PROBES: Final[tuple[Probe, ...]] = (
             "widened_callables": "*widened_callables",
             "widened_failing": "0",
             "widened_sample": "",
+        },
+    ),
+    Probe(
+        item="AC-17|08",
+        expects="反空壳抽审",
+        summary="§5.1 四类空壳全树为零 + §5.2 T1 三问由真实录制信封与预计算黄金向量回答",
+        measure=measure_ac17_08,
+        judge=judge_ac17_08,
+        breaks=(
+            Break("自指面又出现一条", (("self_reference", "1"), ("tool_shells", "found")), GAP),
+            Break("恒真断言面又出现一条", (("vacuous_assert", "1"), ("tool_shells", "found")), GAP),
+            Break("定义抄写面又出现一条", (("constant_shell", "1"), ("tool_shells", "found")), GAP),
+            Break(
+                "源码形式检查面又出现一条",
+                (("source_form_check", "1"), ("tool_shells", "found")),
+                GAP,
+            ),
+            Break(
+                "普查只扫了一部分用例文件（其余无人看）",
+                (("files_scanned", "140"),),
+                GAP,
+            ),
+            Break(
+                "用例文件从未被 git 跟踪（CI 复现不了这一树）",
+                (("untracked_tests", "1"),),
+                GAP,
+            ),
+            Break("错误翻译的真实用例不足 3", (("t1_error_cases", "2"), ("tool_t1", "gap")), GAP),
+            Break("没有「成功不抛」那一例", (("t1_success_cases", "0"), ("tool_t1", "gap")), GAP),
+            Break(
+                "normalize 的真实报文不足 3",
+                (("t1_normalize_cases", "2"), ("tool_t1", "gap")),
+                GAP,
+            ),
+            Break(
+                "黄金向量表被清空",
+                (("t1_golden_days", "0"), ("tool_t1", "gap")),
+                GAP,
+            ),
+            Break(
+                "夹具被手改过一格",
+                (("fixture_sha_ok", "no"), ("tool_t1", "gap")),
+                GAP,
+            ),
+            Break(
+                "录制件说不清来源（没有录制器与联调字样）",
+                (("provenance", "no"), ("tool_t1", "gap")),
+                GAP,
+            ),
+            Break(
+                "一份真实样本都没有",
+                (("fixture_cases", "0"), ("tool_t1", "gap")),
+                GAP,
+            ),
+            Break("普查工具自己变红", (("tool_exit", "1"),), GAP),
+        ),
+        repair={
+            "tool_exit": "0",
+            "tool_shells": "clean",
+            "tool_t1": "met",
+            "population": "*population",
+            "untracked_tests": "0",
+            "files_scanned": "*population",
+            "self_reference": "0",
+            "vacuous_assert": "0",
+            "constant_shell": "0",
+            "source_form_check": "0",
+            "fixture_cases": "*fixture_cases",
+            "fixture_sha_ok": "yes",
+            "provenance": "yes",
+            "t1_error_cases": "*t1_error_cases",
+            "t1_success_cases": "*t1_success_cases",
+            "t1_normalize_cases": "*t1_normalize_cases",
+            "t1_golden_days": "*t1_golden_days",
         },
     ),
     Probe(
