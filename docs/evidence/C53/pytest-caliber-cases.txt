@@ -1,0 +1,20 @@
+# run_at=2026-09-28T00:09:26+02:00
+# branch=dev HEAD=2a49d99
+# command=python -m pytest tests/test_data_mapping.py tests/test_cross_check.py tests/test_data_query.py -k "Caliber or caliber or Adjust or adjust" -m "not e2e" -q --no-cov
+# 说明：只跑本轮新增/改动的口径用例（-k 表达式即上面那串），不跑 e2e、不跑覆盖率（禁与门禁并发）
+
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 69 items / 46 deselected / 23 selected
+
+tests/test_data_mapping.py ..............                                [ 60%]
+tests/test_cross_check.py ...                                            [ 73%]
+tests/test_data_query.py ......                                          [100%]
+
+====================== 23 passed, 46 deselected in 0.20s =======================
+# exit=0

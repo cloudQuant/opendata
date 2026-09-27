@@ -1,0 +1,55 @@
+# run_at=2026-09-28T00:10:47+02:00
+# command=diff -u docs/evidence/C49/census-post-fix.txt docs/evidence/C53/c49-instrument-rerun.txt
+# 解读见 README「C49 仪器复现」段：第 2–8 面的测量读数逐字未变；变了的只有第 1 面
+# 的 3 行台账状态（C50/C52 的 backfill 结果，非本轮改动）、其行号漂移、provenance 头
+# 与一行 loguru stderr 的次序
+--- docs/evidence/C49/census-post-fix.txt	2026-09-27 15:10:46
++++ docs/evidence/C53/c49-instrument-rerun.txt	2026-09-28 00:10:46
+@@ -1,23 +1,15 @@
+-# C49 修后现场读数（8 面，权威读数；修前读数见 census-pre-fix.txt）
+-# run_at=2026-09-27T15:10:46+0200
+-# branch=dev HEAD=349f560
+-# worktree_status=6 changed entries（含本轮改动的 opendata/ 两模块与新增见证用例）
+-# python=Python 3.13.5 node=v25.1.0
+-# command=set -a; . ./.env; set +a; python docs/evidence/C49/ac9_residual_census.py > /tmp/c49/census-postfix2.txt 2>&1
+-# exit=0（脚本自带非只读语句闸门：66 statements -> {'SELECT': 46, 'SHOW': 20}，无 DDL 无写入）
+-# 与修前的差别只在：tolerance 逐字段取紧（两侧同结论）、stock_action 直通不再整窗 raise
+ python=3.13.5 cwd=/Users/yunjinqi/Documents/new_projects/opendata
+ 
+ --- 1. 三条判据原文 + 台账状态 + 探针注册面 ---
+-  [ ] L175 AC-9|03|3bce2eae unreviewed 
++  [x] L179 AC-9|03|3bce2eae proven     
+         判据原文：**反例用例**：① 字段名不匹配时必须报错而非静默通过；② 单位未归一时必须产生 mismatch
+-        条目级探针：无
+-  [ ] L180 AC-9|08|a87bfe6f unreviewed 
++        条目级探针：有
++  [ ] L184 AC-9|08|a87bfe6f gap        
+         判据原文：**单源域 dwd 直通模式可用**（`layer=dwd` 查询不报错）
+-        条目级探针：无
+-  [ ] L181 AC-9|09|ca69bd21 unreviewed 
++        条目级探针：有
++  [x] L185 AC-9|09|ca69bd21 proven     
+         判据原文：dwd 重算幂等
+-        条目级探针：无
++        条目级探针：有
+ 
+ --- 2. 反例面：compare_source_frames 对每种输入的实测反应 ---
+   A 两侧 volume 同为 None: verdict=consistent 键并集=2 判差=0 单边缺=0 per_field={}
+@@ -144,8 +136,7 @@
+   双源：stats 第二次=MergeStats(rows=2, diff_flagged=1, degraded_rows=0, passthrough=False, colliding=())
+   双源：两次输出逐格相等=True
+   换 merged_at 再跑：相同的列=['symbol', 'trade_date', 'close', 'volume', 'source', '_diff_flag', '_as_of']
+-  换 merged_at 再跑：不同的列=['_merged_at']2026-09-27 15:05:55.386 | INFO     | opendata.core.token_blacklist:_create_blacklist:186 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+-
++  换 merged_at 再跑：不同的列=['_merged_at']
+   换 merged_at 再跑：stats=MergeStats(rows=2, diff_flagged=1, degraded_rows=0, passthrough=False, colliding=())
+   单源直通：stats=MergeStats(rows=2, diff_flagged=0, degraded_rows=0, passthrough=True, colliding=()) 直通帧两次相等=True
+   单源直通：输出列=['symbol', 'trade_date', 'close', 'volume', 'source', '_merged_at', '_diff_flag', '_as_of']
+@@ -174,6 +165,7 @@
+   batch_watermark 记录数：0
+ 
+ --- 7. 直通查询执行面：生产 _inspect_columns/_key/build_data_select + 真机 SELECT ---
++2026-09-27 23:42:07.403 | INFO     | opendata.core.token_blacklist:_create_blacklist:186 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+   注册表里的域：20；有 mapping 腿的域：6
+   只在注册表、没有任何腿的域：['bond_daily', 'economy_cpi', 'economy_gdp', 'economy_rate', 'economy_unemployment', 'financial_indicator', 'financial_statement', 'fund_action', 'fund_etf_daily', 'futures_fundamentals', 'instrument', 'stock_adjust', 'stock_daily_overseas', 'trading_calendar']
+   bond_daily [零腿] dwd_bond_daily: 生产 _inspect_columns 得到 0 列（表真的存在=False）→ endpoint 在这一步 404，建 SQL 走不到

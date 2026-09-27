@@ -340,6 +340,9 @@ class TestDwdMergeService:
                         "trade_date": FieldMapping("trade_date"),
                         "close": FieldMapping("close"),
                     },
+                    adjust="unadjusted",
+                    suspension="absent_row",
+                    denominator="key_union",
                 )
             },
             merged_at=MERGED_AT,

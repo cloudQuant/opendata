@@ -1,0 +1,20 @@
+# run_at=2026-09-28T00:10:19+02:00
+# branch=dev HEAD=2a49d99（工作树含本轮 C53 未提交改动）
+# python=3.13.5
+# command=python -u scripts/ops/suspension_shape_check.py --symbols 200
+# database=<data_database_url from .env，值未打印>
+# statements=SELECT only（无 DDL 无写入）；本轮第二次跑同一命令，与 23:44 那次逐字同读数见 README「复现」段
+
+ths [ods_stock_daily_ths] domain=stock_daily symbols=200 market_days=2429 rows=475402 zero_close=0 no_trade=0 omitted_days=8240 symbols_with_omission=139 symbols_tiny_range=0 basis=['none'] => suspension=absent_row
+    omission: 000002 2016-09-23..2026-09-23 missing=5 first=2017-01-12
+    omission: 000006 2016-09-23..2026-09-23 missing=117 first=2017-09-11
+    omission: 000007 2016-09-23..2026-09-23 missing=237 first=2017-01-16
+    omission: 000008 2016-09-23..2026-09-23 missing=71 first=2016-10-10
+    omission: 000010 2016-09-23..2026-09-23 missing=3 first=2019-04-25
+akshare [ods_stock_daily_akshare] domain=stock_daily symbols=200 market_days=119 rows=19265 zero_close=0 no_trade=38 omitted_days=55 symbols_with_omission=10 symbols_tiny_range=38 basis=['<no column>'] => suspension=absent_row
+    omission: 000004 2026-01-05..2026-07-03 missing=36 first=2026-04-28
+    omission: 000010 2026-01-05..2026-07-03 missing=1 first=2026-04-29
+    omission: 000016 2026-01-05..2026-07-03 missing=1 first=2026-04-29
+    omission: 000056 2026-01-05..2026-07-03 missing=1 first=2026-04-24
+    omission: 000078 2026-01-05..2026-07-03 missing=1 first=2026-04-30
+# exit=0

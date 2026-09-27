@@ -29,7 +29,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
-from opendata.data.mapping import normalize_frame
+from opendata.data.mapping import normalize_frame, require_comparable_calibers
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -157,12 +157,18 @@ def compare_source_frames(
     Raises:
         ValueError: If a mapping belongs to another domain, a frame has
             duplicate business keys, or the key columns disagree.
+        RuntimeError: If the two mappings' 口径 declarations cannot be
+            compared - different suspension shapes (or one still
+            ``unmeasured``) would turn halted days into deviations, and a
+            denominator other than the key union would report a rate this
+            module does not compute.
     """
     if mapping_a.domain != domain or mapping_b.domain != domain:
         raise ValueError(
             f"mappings must both belong to domain {domain!r} "
             f"(got {mapping_a.domain!r}/{mapping_b.domain!r})"
         )
+    require_comparable_calibers(mapping_a, mapping_b)
     return compare_normalized(
         domain,
         normalize_frame(frame_a, mapping_a),

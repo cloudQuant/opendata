@@ -12,6 +12,18 @@ source: akshare
 domains:
   stock_daily:
     key: [symbol, trade_date]
+    # 复权基准：这一腿的取数默认不复权 —— 查询模型 `adjust: str = ""`
+    # （opendata/data/providers/akshare/models/stock_daily.py:23，docstring 写明
+    # "unadjusted by default"），且 ods 表根本没有 `adjusted` 列可以声明别的基准，
+    # 所以交付的就是不复权价（与 D10 一致，查询层可对这一域合成复权）。
+    # 停牌语义实测：200 个抽样标的、19,265 行里 zero_close=0，而落在自身
+    # [first,last] 与本腿市场日交集内的缺行有 55 天（10/200 个标的）——停牌日
+    # 整行不发，与 ths 腿同形，所以两腿的 missing 行可以互相比对。
+    # 同一次实测另有 38 行「价>0 而量、额同为 0」：那是 sina 退路缺额度的已知
+    # 缺陷（C24），不是停牌语义，登记为待修，没有写进这里的声明。
+    adjust: unadjusted
+    suspension: absent_row
+    denominator: key_union
     fields:
       symbol: {from: 股票代码, normalize: plain}
       trade_date: {from: 日期}
@@ -29,6 +41,12 @@ domains:
       close: 0.0001
   index_constituent:
     key: [index_symbol, symbol, as_of]
+    # 成分权重快照：一行一个「指数 × 成分券 × 日期」，没有价格序列，
+    # 因此复权基准与停牌语义都不适用（停牌成分券在权重表里照样有一行，
+    # 缺行只发生在指数本身没有发布权重的日子）。
+    adjust: not_applicable
+    suspension: not_applicable
+    denominator: key_union
     fields:
       index_symbol: {from: 指数代码, normalize: plain}
       symbol: {from: 成分券代码, normalize: plain}

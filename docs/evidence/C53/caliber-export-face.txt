@@ -1,0 +1,25 @@
+# run_at=2026-09-28T00:09:22+02:00
+# branch=dev HEAD=2a49d99（工作树含本轮 C53 未提交改动）
+# python=3.13.5
+# command=python -u docs/evidence/C53/caliber_face.py
+# 连接面=不连库（只读 opendata/data/mappings/*.yaml，探针文件写 TemporaryDirectory 后即删）
+
+--- 1. mapping_as_json 导出的每域口径（表字段，非代码常量）---
+  index_constituent    akshare  adjust='not_applicable' suspension='not_applicable' denominator='key_union' fields=4
+  stock_daily          akshare  adjust='unadjusted' suspension='absent_row' denominator='key_union' fields=8
+  futures_daily        ths      adjust='not_applicable' suspension='unmeasured' denominator='key_union' fields=8
+  index_daily          ths      adjust='not_applicable' suspension='not_applicable' denominator='key_union' fields=8
+  option_daily         ths      adjust='not_applicable' suspension='unmeasured' denominator='key_union' fields=8
+  stock_action         ths      adjust='not_applicable' suspension='not_applicable' denominator='key_union' fields=6
+  stock_daily          ths      adjust='unadjusted' suspension='absent_row' denominator='key_union' fields=8
+
+--- 2. 逐字段口径导出样子（stock_daily.volume：ths 无换算 / akshare 手->股）---
+  ths: {"from": "volume", "normalize": null, "scale": 1.0}
+  akshare: {"from": "成交量", "normalize": null, "scale": 100.0}
+
+--- 3. 加载器对缺一类口径声明的拒绝面（fail closed，现场调用）---
+  去掉 adjust：RuntimeError -> domain 'stock_daily' in /var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/tmp740x8ijj/probe.yaml does not declare 'adjust'; expected one of ['not_applicable', 'unadjusted']
+  去掉 suspension：RuntimeError -> domain 'stock_daily' in /var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/tmp740x8ijj/probe.yaml does not declare 'suspension'; expected one of ['absent_row', 'not_applicable', 'unmeasured', 'zero_price_row']
+  去掉 denominator：RuntimeError -> domain 'stock_daily' in /var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/tmp740x8ijj/probe.yaml does not declare 'denominator'; expected one of ['key_union']
+  多一个表不认的键：RuntimeError -> domain 'stock_daily' in /var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/tmp740x8ijj/probe.yaml has unknown keys ['adjust_kind']
+# exit=0

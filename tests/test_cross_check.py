@@ -42,6 +42,10 @@ def _domain_mapping(suffix: str = "") -> DomainMapping:
             "close": FieldMapping(f"close{suffix}"),
             "volume": FieldMapping(f"volume{suffix}", scale=100),
         },
+        # 与 shipped yaml 同一组域级口径：两腿必须同形才允许比对（C53）。
+        adjust="unadjusted",
+        suspension="absent_row",
+        denominator="key_union",
         tolerances={"close": 1e-4},
     )
 
@@ -203,6 +207,9 @@ class TestCounterexamples:
                 "close": FieldMapping("close"),
                 "volume": FieldMapping("volume", scale=100),
             },
+            adjust="unadjusted",
+            suspension="absent_row",
+            denominator="key_union",
             tolerances=tolerances or {},
         )
 
@@ -296,6 +303,9 @@ class TestNormalizationInTheComparison:
                 "volume": FieldMapping("volume"),
                 "amount": FieldMapping("amount"),
             },
+            adjust="unadjusted",
+            suspension="absent_row",
+            denominator="key_union",
             tolerances={"close": 1e-4},
         )
         raw_a = raw_a.assign(开盘=[1685.0], 最高=[1690.0], 最低=[1680.0], 成交额=[5.06e9])
@@ -324,6 +334,9 @@ class TestNormalizationInTheComparison:
                 "trade_date": FieldMapping("trade_date"),
                 "close": FieldMapping("close"),
             },
+            adjust="unadjusted",
+            suspension="absent_row",
+            denominator="key_union",
         )
 
         with pytest.raises(ValueError, match="different contract fields"):
@@ -366,3 +379,101 @@ def test_normalize_keeps_contract_columns_only():
     normalized = normalize_frame(raw, mapping)
 
     assert "换手率" not in normalized.columns
+
+
+class TestCaliberGate:
+    """The compare reads the domain 口径 off the table before comparing (C53).
+
+    ``missing_count`` is only a difference when both legs deliver a halted day
+    the same way: a leg that omits the row and a leg that ships a 0-price row
+    would otherwise turn every suspension of every symbol into a deviation.
+    """
+
+    @staticmethod
+    def _with_suspension(mapping: DomainMapping, suspension: str) -> DomainMapping:
+        return DomainMapping(
+            domain=mapping.domain,
+            key=mapping.key,
+            fields=mapping.fields,
+            adjust=mapping.adjust,
+            suspension=suspension,
+            denominator=mapping.denominator,
+            tolerances=dict(mapping.tolerances),
+        )
+
+    def test_diverging_suspension_shapes_refuse_the_compare(self):
+        frame = _frame()
+        akshare = require_akshare_mapping()
+        ths_like_zero_rows = self._with_suspension(akshare, "zero_price_row")
+
+        with pytest.raises(RuntimeError, match="halted days differently"):
+            compare_source_frames(
+                "stock_daily",
+                frame,
+                akshare,
+                frame,
+                ths_like_zero_rows,
+                source_a="akshare",
+                source_b="ths",
+                batch_id=BATCH_ID,
+            )
+
+    def test_an_unmeasured_shape_refuses_rather_than_assuming(self):
+        frame = _frame()
+        measured = _domain_mapping()
+        unmeasured = self._with_suspension(measured, "unmeasured")
+
+        with pytest.raises(RuntimeError, match="halted days differently"):
+            compare_source_frames(
+                "stock_daily",
+                frame,
+                measured,
+                frame,
+                unmeasured,
+                source_a="akshare",
+                source_b="ths",
+                batch_id=BATCH_ID,
+            )
+
+        with pytest.raises(RuntimeError, match="no measured suspension shape"):
+            compare_source_frames(
+                "stock_daily",
+                frame,
+                unmeasured,
+                frame,
+                unmeasured,
+                source_a="ths",
+                source_b="ths_backup",
+                batch_id=BATCH_ID,
+            )
+
+    def test_the_shipped_legs_are_comparable_so_the_compare_runs(self):
+        """The gate must not become a permanent no: the shipped akshare leg
+        declares the same conventions as itself, so a real frame compares."""
+        mapping = require_akshare_mapping()
+        frame = pd.DataFrame(
+            {
+                "日期": [date(2024, 1, 2), date(2024, 1, 2)],
+                "股票代码": ["600519", "000001"],
+                "开盘": [1685.0, 9.4],
+                "最高": [1690.0, 9.6],
+                "最低": [1680.0, 9.3],
+                "收盘": [1688.0, 9.5],
+                "成交量": [30000.0, 20000.0],
+                "成交额": [5.06e9, 1.9e8],
+            }
+        )
+
+        summary = compare_source_frames(
+            "stock_daily",
+            frame,
+            mapping,
+            frame,
+            mapping,
+            source_a="akshare",
+            source_b="akshare_backup",
+            batch_id=BATCH_ID,
+        )
+
+        assert summary.verdict is Verdict.CONSISTENT
+        assert summary.compared_keys == 2

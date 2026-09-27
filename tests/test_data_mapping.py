@@ -9,18 +9,28 @@ the design must fail loudly rather than pass silently:
   ignored);
 * a unit that was not converted (the comparison then reports a
   deviation, covered in ``test_cross_check``).
+
+The three domain-level 口径 (``adjust`` / ``suspension`` /
+``denominator``) are tested here too, including the loader's refusal to
+build a mapping that omits one (AC-9|01: the conventions have to live in
+the table, not in whichever Python file happens to use them).
 """
 
 from datetime import date
+from json import loads
 
 import pandas as pd
 import pytest
+import yaml
 
 from opendata.data.mapping import (
     DEFAULT_TOLERANCE,
     FieldMapping,
     load_mapping,
+    mapping_sources,
     normalize_frame,
+    require_adjust_basis,
+    require_comparable_calibers,
     require_domain_mapping,
 )
 
@@ -249,3 +259,183 @@ class TestDenormalizeFrame:
         mapping = require_domain_mapping("ths", "stock_daily")
         with pytest.raises(ValueError, match="fail closed"):
             denormalize_frame(pd.DataFrame([{"symbol": "600519.SH"}]), mapping)
+
+
+#: A domain entry that satisfies the loader, used as the base each case
+#: below breaks in exactly one place.
+_VALID_DOMAIN = {
+    "key": ["symbol", "trade_date"],
+    "adjust": "unadjusted",
+    "suspension": "absent_row",
+    "denominator": "key_union",
+    "fields": {
+        "symbol": {"from": "symbol"},
+        "trade_date": {"from": "trade_date"},
+        "close": {"from": "close"},
+    },
+}
+
+
+def _write_source(tmp_path, source: str, domains: dict) -> None:
+    """Write one mapping file into a tmp directory (the loader reads it there)."""
+    payload = {"version": 1, "source": source, "domains": domains}
+    (tmp_path / f"{source}.yaml").write_text(
+        yaml.safe_dump(payload, sort_keys=False, allow_unicode=True), encoding="utf-8"
+    )
+
+
+@pytest.fixture
+def tmp_mappings(tmp_path, monkeypatch):
+    """Point the loader at an empty directory and keep the real cache intact."""
+    from opendata.data import mapping as mapping_module
+
+    monkeypatch.setattr(mapping_module, "_MAPPINGS_DIR", tmp_path)
+    mapping_module.load_mapping.cache_clear()
+    yield tmp_path
+    mapping_module.load_mapping.cache_clear()
+
+
+class TestDomainCaliberDeclarations:
+    """The three domain-level 口径 are table fields, not code preferences."""
+
+    def test_every_shipped_domain_declares_all_three(self):
+        for source in mapping_sources():
+            for domain in load_mapping(source).domains.values():
+                assert domain.adjust in {"unadjusted", "not_applicable"}, domain
+                assert domain.suspension in {
+                    "absent_row",
+                    "zero_price_row",
+                    "not_applicable",
+                    "unmeasured",
+                }, domain
+                assert domain.denominator == "key_union", domain
+
+    def test_the_stock_daily_legs_declare_the_measured_conventions(self):
+        """C53 measured these from ods, so a drift here is a real drift.
+
+        ``scripts/ops/suspension_shape_check.py``: ths' ``adjusted`` column is
+        ``none`` on every row and neither leg emits a 0-price halted bar
+        (zero_close=0) while both omit whole trading days (8,240 / 55 days).
+        """
+        for source in ("ths", "akshare"):
+            domain = require_domain_mapping(source, "stock_daily")
+            assert (domain.adjust, domain.suspension, domain.denominator) == (
+                "unadjusted",
+                "absent_row",
+                "key_union",
+            )
+
+    def test_the_derivative_legs_declare_unmeasured_instead_of_a_guess(self):
+        """No ``ods_futures_daily_ths``/``ods_option_daily_ths`` exists, so the
+        suspension shape of those legs has no evidence: the table says so."""
+        for domain_name in ("futures_daily", "option_daily"):
+            assert require_domain_mapping("ths", domain_name).suspension == "unmeasured"
+
+    def test_an_undeclared_caliber_fails_closed(self, tmp_mappings):
+        domain = dict(_VALID_DOMAIN)
+        del domain["suspension"]
+        _write_source(tmp_mappings, "ths", {"stock_daily": domain})
+
+        with pytest.raises(RuntimeError, match="does not declare 'suspension'"):
+            load_mapping("ths")
+
+    def test_a_caliber_outside_the_enum_fails_closed(self, tmp_mappings):
+        domain = {**_VALID_DOMAIN, "adjust": "qfq"}
+        _write_source(tmp_mappings, "ths", {"stock_daily": domain})
+
+        with pytest.raises(RuntimeError, match="declares adjust='qfq'"):
+            load_mapping("ths")
+
+    def test_an_unknown_domain_key_fails_closed(self, tmp_mappings):
+        domain = {**_VALID_DOMAIN, "halted_as_zero": True}
+        _write_source(tmp_mappings, "ths", {"stock_daily": domain})
+
+        with pytest.raises(RuntimeError, match="unknown keys"):
+            load_mapping("ths")
+
+    def test_the_calibers_are_exported_with_the_mapping(self):
+        from opendata.data.mapping import mapping_as_json
+
+        rendered = loads(mapping_as_json(require_domain_mapping("ths", "stock_daily")))
+
+        assert rendered["adjust"] == "unadjusted"
+        assert rendered["suspension"] == "absent_row"
+        assert rendered["denominator"] == "key_union"
+
+
+class TestCaliberReaders:
+    """What the two seams do with the declarations."""
+
+    def test_agreeing_legs_give_one_price_basis(self):
+        assert require_adjust_basis("stock_daily") == "unadjusted"
+
+    def test_an_unmapped_domain_has_no_basis_to_claim(self):
+        with pytest.raises(LookupError, match="price basis is unknown"):
+            require_adjust_basis("not_a_domain")
+
+    def test_disagreeing_bases_refuse_the_domain(self, tmp_mappings):
+        _write_source(tmp_mappings, "ths", {"stock_daily": _VALID_DOMAIN})
+        _write_source(
+            tmp_mappings,
+            "akshare",
+            {"stock_daily": {**_VALID_DOMAIN, "adjust": "not_applicable"}},
+        )
+
+        with pytest.raises(RuntimeError, match="cannot merge two price bases"):
+            require_adjust_basis("stock_daily")
+
+    def test_comparable_calibers_come_back_from_the_table(self):
+        ths = require_domain_mapping("ths", "stock_daily")
+        akshare = require_domain_mapping("akshare", "stock_daily")
+
+        assert require_comparable_calibers(ths, akshare) == ("key_union", "absent_row")
+
+    def test_different_suspension_shapes_refuse_the_compare(self):
+        from opendata.data.mapping import DomainMapping
+
+        ths = require_domain_mapping("ths", "stock_daily")
+        zero_rows = DomainMapping(
+            domain="stock_daily",
+            key=ths.key,
+            fields=ths.fields,
+            adjust="unadjusted",
+            suspension="zero_price_row",
+            denominator="key_union",
+        )
+
+        with pytest.raises(RuntimeError, match="halted days differently"):
+            require_comparable_calibers(ths, zero_rows)
+
+    def test_an_unmeasured_shape_refuses_the_compare(self):
+        from opendata.data.mapping import DomainMapping
+
+        ths = require_domain_mapping("ths", "stock_daily")
+        unmeasured = DomainMapping(
+            domain="stock_daily",
+            key=ths.key,
+            fields=ths.fields,
+            adjust="unadjusted",
+            suspension="unmeasured",
+            denominator="key_union",
+        )
+
+        with pytest.raises(RuntimeError, match="halted days differently"):
+            require_comparable_calibers(ths, unmeasured)
+        with pytest.raises(RuntimeError, match="no measured suspension shape"):
+            require_comparable_calibers(unmeasured, unmeasured)
+
+    def test_a_denominator_the_compare_does_not_implement_refuses(self):
+        from opendata.data.mapping import DomainMapping
+
+        ths = require_domain_mapping("ths", "stock_daily")
+        other_side = DomainMapping(
+            domain="stock_daily",
+            key=ths.key,
+            fields=ths.fields,
+            adjust="unadjusted",
+            suspension="absent_row",
+            denominator="left_only",
+        )
+
+        with pytest.raises(RuntimeError, match="denominator 'key_union'"):
+            require_comparable_calibers(ths, other_side)

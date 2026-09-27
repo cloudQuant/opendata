@@ -552,6 +552,9 @@ class TestOdsReadersUseTheSourceDateColumn:
                 "trade_date": FieldMapping("日期"),
                 "close": FieldMapping("收盘"),
             },
+            adjust="unadjusted",
+            suspension="absent_row",
+            denominator="key_union",
         )
 
     def test_raw_reader_filters_on_the_mapped_column(self, monkeypatch):
@@ -1044,6 +1047,9 @@ def _akshare_style_mapping():
             "trade_date": FieldMapping("日期"),
             "close": FieldMapping("收盘"),
         },
+        adjust="unadjusted",
+        suspension="absent_row",
+        denominator="key_union",
     )
 
 

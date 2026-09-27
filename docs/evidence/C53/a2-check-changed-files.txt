@@ -1,0 +1,22 @@
+# run_at=2026-09-28T00:09:24+02:00
+# branch=dev HEAD=2a49d99
+# command=python scripts/quality/a2_check.py --files docs/evidence/C53/caliber_face.py scripts/ops/suspension_shape_check.py opendata/data/mapping.py opendata/pipeline/cross_check.py opendata/pipeline/query.py tests/test_data_mapping.py tests/test_cross_check.py tests/test_data_query.py
+# 说明：docs/evidence/C53/caliber_face.py 首次入库（a2_check 会把 docs/evidence/**/*.py 纳入 A2 面），与本轮改动的产品/测试文件同批过全量 A2
+
+A2 files: 8
+  docs/evidence/C53/caliber_face.py
+  scripts/ops/suspension_shape_check.py
+  opendata/data/mapping.py
+  opendata/pipeline/cross_check.py
+  opendata/pipeline/query.py
+  tests/test_data_mapping.py
+  tests/test_cross_check.py
+  tests/test_data_query.py
+
+ok   ruff check
+ok   ruff format --check
+ok   mypy
+ok   bandit
+
+OK: A2 files meet the full A2 standard (ruff + format + mypy + bandit).
+# exit=0

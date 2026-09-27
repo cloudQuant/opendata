@@ -239,13 +239,26 @@ def apply_adjust_to_rows(
         ValueError: If the method is unknown or a bar has no factor
             row (fail closed: a partially adjusted series is worse
             than an error).
+        RuntimeError: If the domain's 口径 mapping does not deliver a
+            price basis that can be adjusted (``opendata.data.mapping.
+            require_adjust_basis``) - an index or a single derivative
+            contract has no corporate action to synthesize from, so a
+            qfq/hfq request on it is a parameter mistake, not a query.
     """
     if method not in ADJUST_METHODS:
         raise ValueError(f"unknown adjust method {method!r}; expected one of {ADJUST_METHODS}")
     if method == "none" or not rows:
         return [dict(row) for row in rows]
     from opendata.data.adjust import apply_adjust
+    from opendata.data.mapping import require_adjust_basis
     from opendata.data.models import AdjustFactor, Bar
+
+    basis = require_adjust_basis(domain)
+    if basis != "unadjusted":
+        raise RuntimeError(
+            f"domain {domain!r} delivers its prices with adjust={basis!r}; the 口径 "
+            f"mapping declares no {method} series to synthesize (fail closed)"
+        )
 
     factor_index: dict[tuple, dict[str, object]] = {}
     for entry in factors:

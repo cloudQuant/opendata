@@ -1,0 +1,48 @@
+# run_at=2026-09-28T00:09:33+02:00
+# command=grep -rn "require_adjust_basis|require_comparable_calibers" --include='*.py' opendata/ scripts/ tests/（只读）
+# 判据意义：三类口径不是死字段——查询层读 adjust，双源校对层读 suspension/denominator，两处都会据此拒绝
+
+opendata/pipeline/query.py:244:            require_adjust_basis``) - an index or a single derivative
+opendata/pipeline/query.py:253:    from opendata.data.mapping import require_adjust_basis
+opendata/pipeline/query.py:256:    basis = require_adjust_basis(domain)
+opendata/pipeline/cross_check.py:32:from opendata.data.mapping import normalize_frame, require_comparable_calibers
+opendata/pipeline/cross_check.py:171:    require_comparable_calibers(mapping_a, mapping_b)
+tests/test_data_mapping.py:32:    require_adjust_basis,
+tests/test_data_mapping.py:33:    require_comparable_calibers,
+tests/test_data_mapping.py:370:        assert require_adjust_basis("stock_daily") == "unadjusted"
+tests/test_data_mapping.py:374:            require_adjust_basis("not_a_domain")
+tests/test_data_mapping.py:385:            require_adjust_basis("stock_daily")
+tests/test_data_mapping.py:391:        assert require_comparable_calibers(ths, akshare) == ("key_union", "absent_row")
+tests/test_data_mapping.py:407:            require_comparable_calibers(ths, zero_rows)
+tests/test_data_mapping.py:423:            require_comparable_calibers(ths, unmeasured)
+tests/test_data_mapping.py:425:            require_comparable_calibers(unmeasured, unmeasured)
+tests/test_data_mapping.py:441:            require_comparable_calibers(ths, other_side)
+tests/test_data_query.py:273:        from opendata.data.mapping import require_adjust_basis
+tests/test_data_query.py:276:        assert require_adjust_basis("stock_daily") == "unadjusted"
+tests/test_data_query.py:277:        assert require_adjust_basis("index_daily") == "not_applicable"
+
+--- 调用点上下文（产品两处）---
+168-            f"mappings must both belong to domain {domain!r} "
+169-            f"(got {mapping_a.domain!r}/{mapping_b.domain!r})"
+170-        )
+171:    require_comparable_calibers(mapping_a, mapping_b)
+172-    return compare_normalized(
+173-        domain,
+174-        normalize_frame(frame_a, mapping_a),
+175-        normalize_frame(frame_b, mapping_b),
+176-        key=mapping_a.key,
+177-        tolerances=_stricter_tolerances(mapping_a, mapping_b),
+
+253-    from opendata.data.mapping import require_adjust_basis
+254-    from opendata.data.models import AdjustFactor, Bar
+255-
+256:    basis = require_adjust_basis(domain)
+257-    if basis != "unadjusted":
+258-        raise RuntimeError(
+259-            f"domain {domain!r} delivers its prices with adjust={basis!r}; the 口径 "
+260-            f"mapping declares no {method} series to synthesize (fail closed)"
+261-        )
+262-
+263-    factor_index: dict[tuple, dict[str, object]] = {}
+264-    for entry in factors:
+265-        factor_index[(entry.get("symbol"), entry.get("trade_date"))] = entry

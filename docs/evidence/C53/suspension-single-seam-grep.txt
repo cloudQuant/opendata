@@ -1,0 +1,61 @@
+# run_at=2026-09-28T00:51:50+0200
+# branch=dev HEAD=2a49d99
+# python=3.13.5
+# command=grep -rn "suspension|halted|停牌" opendata/ --include="*.py" --include="*.yaml"（管道内再滤掉 mapping.py），并单列 mapping.py 的 suspension 行与两个读者的调用点
+# 目的=核 README §8 第 3 条：除了 cross_check 这条缝，产品代码里还有没有第二处硬编码的停牌假设
+
+==== A. opendata/ 全树 suspension/halted/停牌（排除声明与读取所在的 mapping.py） ====
+opendata/pipeline/cross_check.py:161:            compared - different suspension shapes (or one still
+opendata/pipeline/cross_check.py:162:            ``unmeasured``) would turn halted days into deviations, and a
+opendata/data/mappings/ths.yaml:17:    # 'none' 一个取值（scripts/ops/suspension_shape_check.py，C53），与 D10 的
+opendata/data/mappings/ths.yaml:19:    # 停牌语义实测：200 个抽样标的、475,402 行里 zero_close=0，而落在自身
+opendata/data/mappings/ths.yaml:21:    # —— 停牌日整行不发，不是发一行 0 价。
+opendata/data/mappings/ths.yaml:23:    suspension: absent_row
+opendata/data/mappings/ths.yaml:44:    # 「停牌日长什么样」都不适用；它是复权因子的来源，不是被复权的对象。
+opendata/data/mappings/ths.yaml:46:    suspension: not_applicable
+opendata/data/mappings/ths.yaml:66:    # 停牌语义：指数是由成分券计算出来的数值，本身没有停复牌状态，
+opendata/data/mappings/ths.yaml:67:    # 非交易日整行不发行是交易日历的结果，不是标的停牌。
+opendata/data/mappings/ths.yaml:69:    suspension: not_applicable
+opendata/data/mappings/ths.yaml:93:    # 停牌语义 = unmeasured：这一腿的 K 线行从未落 ods（库里没有
+opendata/data/mappings/ths.yaml:96:    # 当成「已确认没有停牌」来参与双源比对。
+opendata/data/mappings/ths.yaml:98:    suspension: unmeasured
+opendata/data/mappings/ths.yaml:116:    # 与期货同因：单一合约码（90007464.SZ）没有公司行为可合成复权。停牌语义
+opendata/data/mappings/ths.yaml:120:    suspension: unmeasured
+opendata/data/mappings/akshare.yaml:19:    # 停牌语义实测：200 个抽样标的、19,265 行里 zero_close=0，而落在自身
+opendata/data/mappings/akshare.yaml:20:    # [first,last] 与本腿市场日交集内的缺行有 55 天（10/200 个标的）——停牌日
+opendata/data/mappings/akshare.yaml:23:    # 缺陷（C24），不是停牌语义，登记为待修，没有写进这里的声明。
+opendata/data/mappings/akshare.yaml:25:    suspension: absent_row
+opendata/data/mappings/akshare.yaml:45:    # 因此复权基准与停牌语义都不适用（停牌成分券在权重表里照样有一行，
+opendata/data/mappings/akshare.yaml:48:    suspension: not_applicable
+
+==== B. mapping.py 里的 suspension 行（枚举、必填字段、拒绝逻辑、导出） ====
+11:delivers), ``suspension`` (what a halted trading day looks like in its
+53:#: column: one price basis, one suspension shape, one rate denominator for a
+59:#: would act on the suspension shape refuses it instead of assuming one.
+62:_DOMAIN_KEYS = frozenset({"key", "fields", "tolerances", "adjust", "suspension", "denominator"})
+65:    ("suspension", _SUSPENSION_SHAPES),
+100:        suspension: What a halted trading day looks like in this source
+112:    suspension: str
+250:    0-price row and one that omits the row would turn suspensions into
+258:        ``(denominator, suspension)`` as declared.
+262:            implement, if either side's suspension shape is still
+263:            ``unmeasured``, or if the two suspensions differ.
+272:    suspensions = {mapping_a.suspension, mapping_b.suspension}
+273:    if len(suspensions) > 1:
+276:            f"({suspensions}); their missing rows are not comparable (fail closed)"
+278:    if suspensions == {"unmeasured"}:
+280:            f"domain {mapping_a.domain!r} has no measured suspension shape yet "
+284:    return "key_union", str(next(iter(suspensions)))
+482:        name: The declared key (``adjust`` / ``suspension`` / ``denominator``).
+530:            "suspension": mapping.suspension,
+
+==== C. 两个读者的调用点（排除 def 行本身） ====
+opendata/pipeline/query.py:244:            require_adjust_basis``) - an index or a single derivative
+opendata/pipeline/query.py:253:    from opendata.data.mapping import require_adjust_basis
+opendata/pipeline/query.py:256:    basis = require_adjust_basis(domain)
+opendata/pipeline/cross_check.py:32:from opendata.data.mapping import normalize_frame, require_comparable_calibers
+opendata/pipeline/cross_check.py:171:    require_comparable_calibers(mapping_a, mapping_b)
+opendata/data/mapping.py:206:def require_adjust_basis(domain: str) -> str:
+opendata/data/mapping.py:241:def require_comparable_calibers(
+
+# exit=0（三条 grep 均有命中；grep 无命中时返回 1）

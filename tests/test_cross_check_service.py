@@ -109,6 +109,9 @@ class TestCrossCheckService:
                 "trade_date": FieldMapping("trade_date"),
                 "close": FieldMapping("close"),
             },
+            adjust="unadjusted",
+            suspension="absent_row",
+            denominator="key_union",
             tolerances={"close": 1e-4},
         )
         service = CrossCheckService(
@@ -181,6 +184,9 @@ class TestCrossCheckService:
             domain="stock_daily",
             key=("symbol", "trade_date"),
             fields={"symbol": FieldMapping("symbol"), "trade_date": FieldMapping("trade_date")},
+            adjust="unadjusted",
+            suspension="absent_row",
+            denominator="key_union",
         )
         service = CrossCheckService(
             "stock_daily",

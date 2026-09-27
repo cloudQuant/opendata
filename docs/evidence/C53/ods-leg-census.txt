@@ -1,0 +1,37 @@
+# run_at=2026-09-28T00:02:07+02:00
+# branch=dev HEAD=2a49d99
+# database=<data_database_url from .env, 未打印>
+# statements=SELECT / information_schema 读取 only（无 DDL 无写入）
+# command=见 README「仪器与命令」段的 heredoc（逐字相同）
+
+库内表 12 张（全库，精确 COUNT(*)）：
+  alembic_version_data             rows=1
+  batch_watermark                  rows=0
+  dq_diff_report                   rows=100
+  dwd_financial_indicator          rows=0
+  dwd_financial_statement          rows=0
+  dwd_index_constituent            rows=0
+  dwd_stock_action                 rows=0
+  dwd_stock_adjust                 rows=1032323
+  dwd_stock_daily                  rows=719316
+  ods_stock_action_ths             rows=57463
+  ods_stock_daily_akshare          rows=617371
+  ods_stock_daily_ths              rows=10310289
+
+口径映射表声明的每一条腿（domain, source）在库里的落点与声明的三类口径：
+  index_constituent    akshare  ods=ods_index_constituent_akshare exists=no  rows=0         adjust=not_applicable suspension=not_applicable  denominator=key_union
+  stock_daily          akshare  ods=ods_stock_daily_akshare      exists=yes rows=617371    adjust=unadjusted     suspension=absent_row      denominator=key_union
+
+  futures_daily        ths      ods=ods_futures_daily_ths        exists=no  rows=0         adjust=not_applicable suspension=unmeasured      denominator=key_union
+  index_daily          ths      ods=ods_index_daily_ths          exists=no  rows=0         adjust=not_applicable suspension=not_applicable  denominator=key_union
+  option_daily         ths      ods=ods_option_daily_ths         exists=no  rows=0         adjust=not_applicable suspension=unmeasured      denominator=key_union
+  stock_action         ths      ods=ods_stock_action_ths         exists=yes rows=57463     adjust=not_applicable suspension=not_applicable  denominator=key_union
+  stock_daily          ths      ods=ods_stock_daily_ths          exists=yes rows=10310289  adjust=unadjusted     suspension=absent_row      denominator=key_union
+
+dwd 目标表：
+  futures_daily        dwd_futures_daily        rows=<无表>
+  index_constituent    dwd_index_constituent    rows=0
+  index_daily          dwd_index_daily          rows=<无表>
+  option_daily         dwd_option_daily         rows=<无表>
+  stock_action         dwd_stock_action         rows=0
+  stock_daily          dwd_stock_daily          rows=719316

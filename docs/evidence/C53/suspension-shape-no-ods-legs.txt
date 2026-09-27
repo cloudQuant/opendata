@@ -1,0 +1,25 @@
+# run_at=2026-09-28T00:01:23+02:00
+# branch=dev HEAD=2a49d99
+# python=3.13.5
+# command=python -u scripts/ops/suspension_shape_check.py --domain <index_daily|futures_daily|option_daily> --sources ths  (三条腿各跑一次，完整 stderr)
+# database=<data_database_url from .env, 未打印>
+# statements=SELECT only (无 DDL 无写入)
+
+--- domain=index_daily sources=ths ---
+pymysql.err.ProgrammingError: (1146, "Table 'opendata_data.ods_index_daily_ths' doesn't exist")
+sqlalchemy.exc.ProgrammingError: (pymysql.err.ProgrammingError) (1146, "Table 'opendata_data.ods_index_daily_ths' doesn't exist")
+[SQL: SELECT DISTINCT `thscode` AS s FROM `ods_index_daily_ths` ORDER BY `thscode` LIMIT %(limit)s]
+exit=1
+
+--- domain=futures_daily sources=ths ---
+pymysql.err.ProgrammingError: (1146, "Table 'opendata_data.ods_futures_daily_ths' doesn't exist")
+sqlalchemy.exc.ProgrammingError: (pymysql.err.ProgrammingError) (1146, "Table 'opendata_data.ods_futures_daily_ths' doesn't exist")
+[SQL: SELECT DISTINCT `thscode` AS s FROM `ods_futures_daily_ths` ORDER BY `thscode` LIMIT %(limit)s]
+exit=1
+
+--- domain=option_daily sources=ths ---
+pymysql.err.ProgrammingError: (1146, "Table 'opendata_data.ods_option_daily_ths' doesn't exist")
+sqlalchemy.exc.ProgrammingError: (pymysql.err.ProgrammingError) (1146, "Table 'opendata_data.ods_option_daily_ths' doesn't exist")
+[SQL: SELECT DISTINCT `thscode` AS s FROM `ods_option_daily_ths` ORDER BY `thscode` LIMIT %(limit)s]
+exit=1
+

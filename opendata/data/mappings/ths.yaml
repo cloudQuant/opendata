@@ -13,6 +13,17 @@ source: ths
 domains:
   stock_daily:
     key: [symbol, trade_date]
+    # 复权基准实测：ods_stock_daily_ths 全表 `SELECT DISTINCT adjusted` 只有
+    # 'none' 一个取值（scripts/ops/suspension_shape_check.py，C53），与 D10 的
+    # 「只存不复权、查询时合成」一致，所以查询层可以对这一域动复权合成。
+    # 停牌语义实测：200 个抽样标的、475,402 行里 zero_close=0，而落在自身
+    # [first,last] 与本腿市场日交集内的缺行有 8,240 天（139/200 个标的至少一天）
+    # —— 停牌日整行不发，不是发一行 0 价。
+    adjust: unadjusted
+    suspension: absent_row
+    # 差异率分母：比对按两侧业务 key 的并集计数（cross_check.compare_normalized），
+    # 写成表字段后它不再由实现决定。
+    denominator: key_union
     fields:
       symbol: {from: thscode, normalize: plain}
       trade_date: {from: trade_date, ms_column: date_ms}
@@ -29,6 +40,11 @@ domains:
       close: 0.0001
   stock_action:
     key: [symbol, ex_date]
+    # 除权除息事件表：一行一个事件，没有价格序列，所以「以什么复权基准交付」与
+    # 「停牌日长什么样」都不适用；它是复权因子的来源，不是被复权的对象。
+    adjust: not_applicable
+    suspension: not_applicable
+    denominator: key_union
     fields:
       symbol: {from: thscode, normalize: plain}
       ex_date: {from: ex_date}
@@ -44,6 +60,14 @@ domains:
   # 不需要 scale（区别于 akshare 侧的“手”）。
   index_daily:
     key: [symbol, trade_date]
+    # 复权基准：上游对指数 K 线恒发 data.adjust=null（A3.3/C9 留档），指数没有
+    # 除权除息事件可合成，所以这一域不是「未复权价」而是「无复权语义」——
+    # 查询层据此拒绝 qfq/hfq（require_adjust_basis）。
+    # 停牌语义：指数是由成分券计算出来的数值，本身没有停复牌状态，
+    # 非交易日整行不发行是交易日历的结果，不是标的停牌。
+    adjust: not_applicable
+    suspension: not_applicable
+    denominator: key_union
     fields:
       symbol: {from: thscode, normalize: plain}
       trade_date: {from: trade_date, ms_column: date_ms}
@@ -64,6 +88,15 @@ domains:
   # 可读性与跨所唯一性，故这两域不做 plain 归一（区别于 A 股/指数）。
   futures_daily:
     key: [symbol, trade_date]
+    # 单一合约（IF2610.CFE）没有公司行为，除权除息只属于股票/ETF 那一域：
+    # 「主力换月连续合约」是另一件事，本平台没有这个域，故不复权语义不适用。
+    # 停牌语义 = unmeasured：这一腿的 K 线行从未落 ods（库里没有
+    # ods_futures_daily_ths），行形状无从实测；unmeasured 是「表记下了这一格还没
+    # 有证据」，任何读取方都会拒绝它（require_comparable_calibers），所以它不会被
+    # 当成「已确认没有停牌」来参与双源比对。
+    adjust: not_applicable
+    suspension: unmeasured
+    denominator: key_union
     fields:
       symbol: {from: thscode}
       trade_date: {from: trade_date, ms_column: timestamp}
@@ -80,6 +113,12 @@ domains:
       close: 0.0001
   option_daily:
     key: [symbol, trade_date]
+    # 与期货同因：单一合约码（90007464.SZ）没有公司行为可合成复权。停牌语义
+    # unmeasured：期权腿同样没有 ods 行可量，且非活跃合约在换月/到期前后必然缺行，
+    # 这一格要的是真机实测而不是推测。
+    adjust: not_applicable
+    suspension: unmeasured
+    denominator: key_union
     fields:
       symbol: {from: thscode}
       trade_date: {from: trade_date, ms_column: timestamp}

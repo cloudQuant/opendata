@@ -6,6 +6,14 @@ rename, the unit conversion the source needs (``手 -> 股``), the
 business-key normalization (``600519.SH -> 600519``) and the
 per-field tolerances the cross-check applies.
 
+Three conventions are per *domain* rather than per column, and the
+table is their only authority: ``adjust`` (which price basis the source
+delivers), ``suspension`` (what a halted trading day looks like in its
+rows) and ``denominator`` (how the cross-check difference rate is
+divided). A domain that omits one fails to load, and a code path that
+needs one an undeclared mapping would have to invent gets a fail-closed
+error instead of a preference hardcoded in Python.
+
 The loader is fail-closed in both directions:
 
 * a malformed file or an unknown source/domain raises;
@@ -40,6 +48,24 @@ DEFAULT_TOLERANCE = 1e-6
 _FIELD_KEYS = frozenset({"from", "scale", "normalize", "ms_column"})
 _NORMALIZERS = frozenset({"plain"})
 
+#: The three conventions the design's 口径映射表 has to carry per domain.
+#: They are domain-level because their unit of meaning is the domain, not a
+#: column: one price basis, one suspension shape, one rate denominator for a
+#: whole domain. A domain that does not declare all three fails to load, and
+#: a code path that needs one an undeclared mapping fails closed.
+_ADJUST_BASES = frozenset({"unadjusted", "not_applicable"})
+#: ``unmeasured`` is a placeholder with no reader: it says the cell has no
+#: evidence yet (a leg whose rows were never landed), and every seam that
+#: would act on the suspension shape refuses it instead of assuming one.
+_SUSPENSION_SHAPES = frozenset({"absent_row", "zero_price_row", "not_applicable", "unmeasured"})
+_DENOMINATORS = frozenset({"key_union"})
+_DOMAIN_KEYS = frozenset({"key", "fields", "tolerances", "adjust", "suspension", "denominator"})
+_CALIBERS: tuple[tuple[str, frozenset[str]], ...] = (
+    ("adjust", _ADJUST_BASES),
+    ("suspension", _SUSPENSION_SHAPES),
+    ("denominator", _DENOMINATORS),
+)
+
 
 @dataclass(frozen=True)
 class FieldMapping:
@@ -69,12 +95,22 @@ class DomainMapping:
         domain: Registered domain identifier.
         key: Contract key fields, in key order.
         fields: Contract field to :class:`FieldMapping`.
+        adjust: Price basis the source delivers this domain in
+            (``unadjusted`` / ``not_applicable``).
+        suspension: What a halted trading day looks like in this source
+            (``absent_row`` / ``zero_price_row`` / ``not_applicable``), or
+            ``unmeasured`` when the leg has no rows to measure yet.
+        denominator: How the cross-check difference rate is divided
+            (``key_union``).
         tolerances: Relative tolerance per field (numeric compare).
     """
 
     domain: str
     key: tuple[str, ...]
     fields: Mapping[str, FieldMapping]
+    adjust: str
+    suspension: str
+    denominator: str
     tolerances: Mapping[str, float] = field(default_factory=dict)
 
     def tolerance(self, contract_field: str) -> float:
@@ -165,6 +201,87 @@ def load_mapping(source: str) -> SourceMapping:
         raise RuntimeError(f"mapping file {path} declares no domains")
     domains = {name: _parse_domain(name, entry, path) for name, entry in raw_domains.items()}
     return SourceMapping(source=source, domains=domains)
+
+
+def require_adjust_basis(domain: str) -> str:
+    """The price basis every source that maps one domain declares.
+
+    The two legs of a domain are merged into one dwd table, so they may
+    not disagree about what their prices mean; a disagreement is a 口径
+    defect and has to stop the query, not silently pick one side.
+
+    Args:
+        domain: Registered domain identifier.
+
+    Returns:
+        ``unadjusted`` or ``not_applicable``.
+
+    Raises:
+        LookupError: If no source mapping declares the domain at all.
+        RuntimeError: If two sources declare different bases.
+    """
+    declared: dict[str, str] = {}
+    for source in mapping_sources():
+        mapping = load_mapping(source)
+        if domain in mapping.domains:
+            declared[source] = mapping.domains[domain].adjust
+    if not declared:
+        raise LookupError(
+            f"no source mapping declares domain {domain!r}; its price basis is unknown"
+        )
+    distinct = set(declared.values())
+    if len(distinct) > 1:
+        raise RuntimeError(
+            f"sources disagree about the adjust basis of {domain!r}: {declared}; "
+            "one domain cannot merge two price bases (fail closed)"
+        )
+    return distinct.pop()
+
+
+def require_comparable_calibers(
+    mapping_a: DomainMapping,
+    mapping_b: DomainMapping,
+) -> tuple[str, str]:
+    """Read the two rate calibers a cross-check needs, or refuse the compare.
+
+    The difference rate divides by the declared ``denominator`` and its
+    ``missing_count`` only means the same thing on both sides when both
+    sources deliver a halted day the same way; a source that ships a
+    0-price row and one that omits the row would turn suspensions into
+    deviations. Both conventions therefore come out of the table here.
+
+    Args:
+        mapping_a: The first source's domain mapping.
+        mapping_b: The second source's domain mapping.
+
+    Returns:
+        ``(denominator, suspension)`` as declared.
+
+    Raises:
+        RuntimeError: If either declares a value the comparison does not
+            implement, if either side's suspension shape is still
+            ``unmeasured``, or if the two suspensions differ.
+    """
+    denominators = {mapping_a.denominator, mapping_b.denominator}
+    if denominators != {"key_union"}:
+        raise RuntimeError(
+            f"domain {mapping_a.domain!r} comparison needs both sources to declare "
+            f"denominator 'key_union', got {mapping_a.denominator!r} and "
+            f"{mapping_b.denominator!r}"
+        )
+    suspensions = {mapping_a.suspension, mapping_b.suspension}
+    if len(suspensions) > 1:
+        raise RuntimeError(
+            f"domain {mapping_a.domain!r} sources deliver halted days differently "
+            f"({suspensions}); their missing rows are not comparable (fail closed)"
+        )
+    if suspensions == {"unmeasured"}:
+        raise RuntimeError(
+            f"domain {mapping_a.domain!r} has no measured suspension shape yet "
+            "(both legs declare 'unmeasured'); a missing row cannot be told apart "
+            "from a halted day, so the comparison is refused (fail closed)"
+        )
+    return "key_union", str(next(iter(suspensions)))
 
 
 def require_domain_mapping(source: str, domain: str) -> DomainMapping:
@@ -335,11 +452,60 @@ def _parse_domain(domain: str, entry: Any, path: Path) -> DomainMapping:  # noqa
     for key_field in key:
         if key_field not in fields:
             raise RuntimeError(f"domain {domain!r} in {path} keys {key_field!r} without a mapping")
+    unknown_domain_keys = set(entry) - _DOMAIN_KEYS
+    if unknown_domain_keys:
+        raise RuntimeError(
+            f"domain {domain!r} in {path} has unknown keys {sorted(unknown_domain_keys)}"
+        )
+    calibers = {
+        name: _require_caliber(name, entry, allowed, domain, path) for name, allowed in _CALIBERS
+    }
     raw_tolerances = entry.get("tolerances") or {}
     if not isinstance(raw_tolerances, dict):
         raise RuntimeError(f"domain {domain!r} in {path} tolerances must be a mapping")
     tolerances = {str(name): float(value) for name, value in raw_tolerances.items()}
-    return DomainMapping(domain=domain, key=tuple(key), fields=fields, tolerances=tolerances)
+    return DomainMapping(
+        domain=domain,
+        key=tuple(key),
+        fields=fields,
+        tolerances=tolerances,
+        **calibers,
+    )
+
+
+def _require_caliber(
+    name: str, entry: dict[str, Any], allowed: frozenset[str], domain: str, path: Path
+) -> str:
+    """Read one domain-level 口径 declaration, fail closed.
+
+    Args:
+        name: The declared key (``adjust`` / ``suspension`` / ``denominator``).
+        entry: The raw domain entry.
+        allowed: The values that key may take.
+        domain: Domain identifier (for the message).
+        path: The mapping file (for the message).
+
+    Returns:
+        The declared value.
+
+    Raises:
+        RuntimeError: If the domain omits the declaration or declares a
+            value outside ``allowed`` - the table is the authority for
+            these conventions, so "not stated" must never degrade into a
+            default the code happens to prefer.
+    """
+    value = entry.get(name)
+    if value is None:
+        raise RuntimeError(
+            f"domain {domain!r} in {path} does not declare {name!r}; "
+            f"expected one of {sorted(allowed)}"
+        )
+    if not isinstance(value, str) or value not in allowed:
+        raise RuntimeError(
+            f"domain {domain!r} in {path} declares {name}={value!r}; "
+            f"expected one of {sorted(allowed)}"
+        )
+    return value
 
 
 def mapping_sources() -> list[str]:
@@ -360,6 +526,9 @@ def mapping_as_json(mapping: DomainMapping) -> str:
         {
             "domain": mapping.domain,
             "key": list(mapping.key),
+            "adjust": mapping.adjust,
+            "suspension": mapping.suspension,
+            "denominator": mapping.denominator,
             "fields": {
                 name: {"from": spec.source_column, "scale": spec.scale, "normalize": spec.normalize}
                 for name, spec in mapping.fields.items()

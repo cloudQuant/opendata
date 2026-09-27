@@ -241,3 +241,56 @@ class TestAdjust:
 
         with pytest.raises(ValueError, match="factor"):
             apply_adjust_to_rows("stock_daily", rows, method="qfq", factors=[])
+
+    def test_a_domain_the_mapping_declares_unadjustable_refuses_qfq(self):
+        """The price basis comes from the 口径 table, not a hardcoded domain list.
+
+        ``index_daily`` declares ``adjust: not_applicable`` (an index has no
+        corporate action to synthesize), so asking for a qfq series of it is a
+        parameter mistake the query layer has to refuse rather than multiply
+        factors onto a level series.
+        """
+        from opendata.pipeline.query import apply_adjust_to_rows
+
+        rows = [
+            {
+                "symbol": "000300",
+                "trade_date": date(2026, 9, 24),
+                "open": 4618.73,
+                "high": 4640.08,
+                "low": 4604.77,
+                "close": 4611.44,
+                "volume": 1.0,
+                "amount": 1.0,
+            }
+        ]
+        factors = [{"symbol": "000300", "trade_date": date(2026, 9, 24), "qfq_factor": 0.5}]
+
+        with pytest.raises(RuntimeError, match="adjust='not_applicable'"):
+            apply_adjust_to_rows("index_daily", rows, method="qfq", factors=factors)
+
+    def test_the_unadjusted_stock_daily_basis_is_what_allows_synthesis(self):
+        from opendata.data.mapping import require_adjust_basis
+        from opendata.pipeline.query import apply_adjust_to_rows
+
+        assert require_adjust_basis("stock_daily") == "unadjusted"
+        assert require_adjust_basis("index_daily") == "not_applicable"
+        # stock_daily is adjustable; the same call on it must not raise.
+        rows = [
+            {
+                "symbol": "600519",
+                "trade_date": date(2024, 1, 2),
+                "open": 2.0,
+                "high": 2.0,
+                "low": 2.0,
+                "close": 2.0,
+                "volume": 1.0,
+                "amount": 1.0,
+            }
+        ]
+        factors = [{"symbol": "600519", "trade_date": date(2024, 1, 2), "qfq_factor": 0.5}]
+
+        assert (
+            apply_adjust_to_rows("stock_daily", rows, method="qfq", factors=factors)[0]["close"]
+            == 1.0
+        )
