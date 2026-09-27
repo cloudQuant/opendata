@@ -464,6 +464,35 @@ def function_body(source: str, name: str) -> str:
     return ""
 
 
+def set_literal_members(source: str, name: str) -> tuple[str, ...]:
+    """The element source of a module-level ``NAME = frozenset({...})`` constant.
+
+    Read from the AST and not a regex: adding one member makes the formatter rewrap the
+    literal across lines, and a pattern that assumes ``frozenset({`` sits on one line then
+    reports a present kind as missing. That is exactly how a live executor door went unread.
+    """
+    tree = ast.parse(source)
+    for node in tree.body:
+        targets: Sequence[ast.expr] = ()
+        literal: ast.expr | None = None
+        if isinstance(node, ast.Assign):
+            targets, literal = node.targets, node.value
+        elif isinstance(node, ast.AnnAssign):
+            targets, literal = (node.target,), node.value
+        else:
+            continue
+        if not any(isinstance(t, ast.Name) and t.id == name for t in targets):
+            continue
+        if literal is None:
+            continue
+        value: ast.expr = literal
+        if isinstance(value, ast.Call) and value.args:
+            value = value.args[0]
+        if isinstance(value, (ast.Set, ast.List, ast.Tuple)):
+            return tuple(ast.get_source_segment(source, elt) or "" for elt in value.elts)
+    return ()
+
+
 def count(value: int) -> str:
     """A counter as a fact."""
     return str(value)
@@ -2816,7 +2845,7 @@ def measure_ac18_01(ctx: Context) -> Facts:
         "job_wired": flag("TemplateKind.FRESHNESS" in function_body(jobs, "_execute_template")),
         "job_broadcasts": flag("broadcast=" in function_body(jobs, "_execute_freshness")),
         "job_executable": flag(
-            re.search(r"EXECUTABLE_KINDS\s*=\s*frozenset\(\{[^}]*FRESHNESS", jobs) is not None
+            "TemplateKind.FRESHNESS" in set_literal_members(jobs, "EXECUTABLE_KINDS")
         ),
     }
 
@@ -3165,6 +3194,332 @@ def judge_ac13_07(facts: Facts) -> Verdict:
         else "「生效」要求判据点名的四类各有生产者、各有判定行、各被调度执行器真的喂到输入；"
         "任何一类没有生产者、执行器只声明不传参（那一类永远读成零告警）、或测不到的输入不再"
         "记进范围（空读数伪装成健康），都只算规则存在"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+# --------------------------------------------------------------------------- #
+# AC-9 -- the cross-check, judged on the three faces its wording names
+# --------------------------------------------------------------------------- #
+
+ALERTS_REL: Final = "opendata/pipeline/alerts.py"
+DIFF_ALERTS_REL: Final = "opendata/pipeline/diff_alerts.py"
+DIFF_GOVERNANCE_REL: Final = "opendata/pipeline/diff_governance.json"
+DIFF_REPORT_REL: Final = "opendata/pipeline/diff_report.py"
+CROSS_CHECK_SERVICE_REL: Final = "opendata/pipeline/cross_check_service.py"
+PIPELINE_TEMPLATES_REL: Final = "opendata/pipeline/templates.py"
+SUBSCRIPTION_REL: Final = "opendata/pipeline/subscription.py"
+SCHEDULES_REL: Final = "opendata/pipeline/schedules.yaml"
+
+#: 判据 |02 逐字点名的记录内容：domain/源对/key/字段/两源值/偏差/verdict。
+#: 「列名在 ``REPORT_COLUMNS`` 里」和「``ReportRow`` 真带着这一列」是两回事：写入走
+#: ``as_params()`` 的 ``getattr``，只加列名不加字段，每一次写库都会当场炸。
+DIFF_RECORD_COLUMNS: Final = (
+    ("domain", "domain"),
+    ("源对 a", "source_a"),
+    ("源对 b", "source_b"),
+    ("key", "biz_key"),
+    ("字段", "field"),
+    ("两源值 a", "value_a"),
+    ("两源值 b", "value_b"),
+    ("偏差", "deviation"),
+    ("verdict", "verdict"),
+)
+
+#: 「注入差异样本被**校对作业**捕获」：调度触发、注入即报即写、逐列落表各有节点。
+CAPTURE_NODES: Final = (
+    "tests/test_pipeline_jobs.py::TestFullCheckExecutor::"
+    "test_the_scheduled_run_compares_reports_and_alerts",
+    "tests/test_pipeline_jobs.py::TestFullCheckExecutor::"
+    "test_a_second_run_of_the_same_difference_is_not_re_alerted",
+    "tests/test_pipeline_jobs.py::TestFullCheckExecutor::test_consistent_legs_produce_no_delivery",
+    "tests/test_cross_check_service.py::TestCrossCheckService::"
+    "test_injected_difference_is_reported_and_alerted",
+    "tests/test_diff_report.py::TestReportRows::test_detail_rows_carry_the_design_columns",
+    "tests/test_diff_report.py::TestReportRows::test_insert_sql_binds_every_column",
+    "tests/test_diff_report.py::TestReportRows::test_report_writer_and_retention_share_the_named_table",
+)
+
+#: 判据 |04 的三则，各两条：白名单、不重复告警、突增才升级。少一条就只剩一则在生效。
+GOVERNANCE_NODES: Final = (
+    "tests/test_diff_alerts.py::TestSharedPolicy::test_every_caller_gets_the_same_instance",
+    "tests/test_diff_alerts.py::TestSharedPolicy::"
+    "test_its_whitelist_comes_from_the_governance_file",
+    "tests/test_diff_alerts.py::TestSharedPolicy::test_dedupe_survives_a_second_scheduled_run",
+    "tests/test_diff_alerts.py::TestSharedPolicy::"
+    "test_the_rate_baseline_carries_across_comparisons",
+    "tests/test_diff_alerts.py::TestSuppression::test_a_whitelisted_difference_reaches_no_channel",
+    "tests/test_diff_alerts.py::TestSuppression::test_every_notify_is_recorded_even_the_quiet_ones",
+    "tests/test_cross_check_service.py::TestAlertPolicy::"
+    "test_whitelisted_domain_field_is_suppressed",
+    "tests/test_cross_check_service.py::TestAlertPolicy::test_repeated_fingerprint_is_deduplicated",
+    "tests/test_cross_check_service.py::TestAlertPolicy::test_rate_spike_escalates_to_critical",
+)
+
+#: 判据 |05 的两通道：WS 广播、按域过滤的订阅 hub、SMTP 投递，各有断言与失败归因节点。
+CHANNEL_NODES: Final = (
+    "tests/test_diff_alerts.py::TestChannels::test_an_alerting_decision_reaches_all_three_sinks",
+    "tests/test_diff_alerts.py::TestChannels::"
+    "test_the_ws_payload_carries_the_decision_not_just_the_numbers",
+    "tests/test_diff_alerts.py::TestChannels::"
+    "test_an_unwired_channel_is_a_reported_reason_not_a_silent_pass",
+    "tests/test_diff_alerts.py::TestChannels::"
+    "test_a_channel_that_raises_is_recorded_and_does_not_stop_the_others",
+    "tests/test_diff_alerts.py::TestChannels::test_a_hub_without_the_diff_method_is_reported",
+    "tests/test_diff_alerts.py::TestMailSenderWiring::test_both_settings_wire_a_sender",
+    "tests/test_diff_alerts.py::TestMailSenderWiring::"
+    "test_the_sender_hands_the_message_to_the_shared_smtp_transport",
+    "tests/test_diff_alerts.py::TestProductionWiring::"
+    "test_the_real_dispatcher_reaches_this_deployments_channels",
+    "tests/test_data_subscribe.py::TestFraming::test_the_governance_verdict_travels_with_the_alert",
+    "tests/test_data_subscribe.py::TestHub::test_diff_alert_reaches_the_domain_subscribers",
+)
+
+
+def method_body(source: str, cls: str, name: str) -> str:
+    """The source of one method, so a judge reads what the channel actually calls.
+
+    ``function_body`` only walks module-level definitions, and the whole delivery face lives on
+    ``DiffAlertDispatcher``. Reading a method as absent would report real code as an empty body.
+    """
+    tree = ast.parse(source)
+    for node in tree.body:
+        if isinstance(node, ast.ClassDef) and node.name == cls:
+            for member in node.body:
+                if (
+                    isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef))
+                    and member.name == name
+                ):
+                    return ast.get_source_segment(source, member) or ""
+    return ""
+
+
+def measure_ac9_02(ctx: Context) -> Facts:
+    """Run the scheduled comparison's capture faces, then read what the report really records."""
+    captured = outcomes(CAPTURE_NODES)
+    report = ctx.read(DIFF_REPORT_REL)
+    declared = literal_str_tuple(parse(DIFF_REPORT_REL), "REPORT_COLUMNS")
+    row_fields = class_fields(report, "ReportRow")
+    jobs = ctx.read(PIPELINE_JOBS_REL)
+    build = function_body(ctx.read(PIPELINE_TEMPLATES_REL), "build_cross_check")
+    full = function_body(jobs, "_execute_full_check")
+    return {
+        "capture_runs": count(len(captured)),
+        "capture_passed": count(sum(1 for seen in captured.values() if seen == "passed")),
+        "capture_bad": bad_of(captured),
+        "columns_missing": ", ".join(
+            f"{label}→{column}" for label, column in DIFF_RECORD_COLUMNS if column not in declared
+        )
+        or "-",
+        "row_fields_missing": ", ".join(
+            column for _, column in DIFF_RECORD_COLUMNS if column not in row_fields
+        )
+        or "-",
+        "table_named": flag('"dq_diff_report"' in report),
+        "writer_wired": flag("write_report=DiffReportWriter(" in build),
+        "job_executable": flag(
+            "TemplateKind.FULL_CHECK" in set_literal_members(jobs, "EXECUTABLE_KINDS")
+        ),
+        "job_dispatched": flag("_execute_full_check" in function_body(jobs, "_execute_template")),
+        "job_runs_service": flag("build_cross_check(" in full and ".run(" in full),
+        "window_from_data": flag("cross_check_window" in full),
+        "schedule_row": flag("kind: full_check" in ctx.read(SCHEDULES_REL)),
+    }
+
+
+def judge_ac9_02(facts: Facts) -> Verdict:
+    """``AC-9|02``: a scheduled run captures the difference and writes every named column."""
+    ok = (
+        number(facts["capture_runs"]) == len(CAPTURE_NODES)
+        and facts["capture_passed"] == facts["capture_runs"]
+        and facts["capture_bad"] == "-"
+        and facts["columns_missing"] == "-"
+        and facts["row_fields_missing"] == "-"
+        and facts["table_named"] == "yes"
+        and facts["writer_wired"] == "yes"
+        and facts["job_executable"] == "yes"
+        and facts["job_dispatched"] == "yes"
+        and facts["job_runs_service"] == "yes"
+        and facts["window_from_data"] == "yes"
+        and facts["schedule_row"] == "yes"
+    )
+    readings = (
+        f"捕获面: {facts['capture_passed']}/{facts['capture_runs']} nodes passed"
+        + (f"; not green: {facts['capture_bad']}" if facts["capture_bad"] != "-" else ""),
+        f"{DIFF_REPORT_REL}: 判据点名的列缺 {facts['columns_missing']}，"
+        f"``ReportRow`` 少字段 {facts['row_fields_missing']}，表名在位 {facts['table_named']} "
+        "—— 列名与字段必须同时在场：写入走 as_params() 的 getattr",
+        f"生产触发: full_check 是可执行 kind = {facts['job_executable']}，"
+        f"_execute_template 派发它 = {facts['job_dispatched']}，执行器真的建服务并跑 = "
+        f"{facts['job_runs_service']}，窗口取自两条腿共有的日子 = "
+        f"{facts['window_from_data']}，schedules.yaml 里有这一行 = {facts['schedule_row']}",
+        f"落库通路: build_cross_check 交出 write_report=DiffReportWriter = {facts['writer_wired']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "「被校对作业捕获」要求这一比较有一个真的会响的触发器（kind 可执行、模板派发、"
+        "schedules.yaml 里有行），且捕获的结果逐列进得了 dq_diff_report；只有判定函数与写入类、"
+        "没有任何调度触发器，或列名/字段少一个，都只算接口存在"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac9_04(ctx: Context) -> Facts:
+    """Run the governance faces, then read where the whitelist comes from and who holds state."""
+    decided = outcomes(GOVERNANCE_NODES)
+    alerts = ctx.read(ALERTS_REL)
+    decide = method_body(alerts, "AlertPolicy", "decide")
+    diff_alerts = ctx.read(DIFF_ALERTS_REL)
+    service = ctx.read(CROSS_CHECK_SERVICE_REL)
+    notify = method_body(service, "CrossCheckService", "_notify")
+    build = function_body(ctx.read(PIPELINE_TEMPLATES_REL), "build_cross_check")
+    state = json.loads(ctx.read(DIFF_GOVERNANCE_REL))
+    entries = state.get("known_differences") if isinstance(state, dict) else None
+    tolerances = entries if isinstance(entries, list) else []
+    reasonless = [
+        str(entry)
+        for entry in tolerances
+        if not isinstance(entry, dict) or not str(entry.get("reason", "")).strip()
+    ]
+    return {
+        "gov_runs": count(len(decided)),
+        "gov_passed": count(sum(1 for seen in decided.values() if seen == "passed")),
+        "gov_bad": bad_of(decided),
+        "file_shape": flag(
+            isinstance(state, dict)
+            and isinstance(state.get("known_differences"), list)
+            and isinstance(state.get("email_recipients"), list)
+        ),
+        "tolerances": count(len(tolerances)),
+        "reason_missing": count(len(reasonless)),
+        "whitelist_read": flag("self.whitelist" in decide),
+        "dedupe_read": flag("self.alerted" in decide),
+        "rate_read": flag("self.last_rate" in decide),
+        "escalates": flag("LEVEL_CRITICAL" in decide and "RATE_SPIKE_FACTOR" in alerts),
+        "shared_singleton": flag("global _POLICY" in function_body(diff_alerts, "shared_policy")),
+        "whitelist_has_source": flag(
+            "GOVERNANCE_PATH" in diff_alerts and "load_governance" in diff_alerts
+        ),
+        "policy_in_check": flag("shared_policy()" in build),
+        "quiet_recorded": flag(
+            "self._policy.decide" in notify and "self.notifier is not None" in notify
+        ),
+    }
+
+
+def judge_ac9_04(facts: Facts) -> Verdict:
+    """``AC-9|04``: whitelist tolerated, same difference not re-alerted, only a spike escalates."""
+    ok = (
+        number(facts["gov_runs"]) == len(GOVERNANCE_NODES)
+        and facts["gov_passed"] == facts["gov_runs"]
+        and facts["gov_bad"] == "-"
+        and facts["file_shape"] == "yes"
+        and facts["reason_missing"] == "0"
+        and facts["whitelist_read"] == "yes"
+        and facts["dedupe_read"] == "yes"
+        and facts["rate_read"] == "yes"
+        and facts["escalates"] == "yes"
+        and facts["shared_singleton"] == "yes"
+        and facts["whitelist_has_source"] == "yes"
+        and facts["policy_in_check"] == "yes"
+        and facts["quiet_recorded"] == "yes"
+    )
+    readings = (
+        f"治理三则节点: {facts['gov_passed']}/{facts['gov_runs']} passed"
+        + (f"; not green: {facts['gov_bad']}" if facts["gov_bad"] != "-" else ""),
+        f"{DIFF_GOVERNANCE_REL}: 形状合法 = {facts['file_shape']}，容忍项 "
+        f"{facts['tolerances']} 条、其中无 reason 的 {facts['reason_missing']} 条"
+        "（容忍为空是量出来的结论，不是没配过；无凭据的容忍项即判红）",
+        f"判定面: 白名单 {facts['whitelist_read']} / 去重集 {facts['dedupe_read']} / "
+        f"差异率基线 {facts['rate_read']} / 突升级到 critical {facts['escalates']}",
+        f"状态寿命: 策略是进程级单例 = {facts['shared_singleton']}，白名单有来源 = "
+        f"{facts['whitelist_has_source']}，校对服务用的是它而不是每次新建 = "
+        f"{facts['policy_in_check']}，被抑制的决定照样交给 notifier 记录 = "
+        f"{facts['quiet_recorded']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "「告警治理生效」的三则各有寿命要求：白名单要有来源并真的被判定读到，去重与差异率"
+        "基线要跨过一次以上的比对还成立（每次新建策略就等于没有这两则），被抑制的差异要留痕"
+        "（否则「安静」与「没测」同形）"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac9_05(ctx: Context) -> Facts:
+    """Run the channel faces, then read which sinks the dispatcher actually calls."""
+    delivered = outcomes(CHANNEL_NODES)
+    diff_alerts = ctx.read(DIFF_ALERTS_REL)
+    subscription = ctx.read(SUBSCRIPTION_REL)
+    notify = method_body(diff_alerts, "DiffAlertDispatcher", "notify")
+    publish_ws = method_body(diff_alerts, "DiffAlertDispatcher", "_publish_ws")
+    publish_hub = method_body(diff_alerts, "DiffAlertDispatcher", "_publish_hub")
+    send_mail = method_body(diff_alerts, "DiffAlertDispatcher", "_send_mail")
+    hub_filter = method_body(subscription, "SubscriptionHub", "publish_diff_alert")
+    as_dict = method_body(diff_alerts, "Delivery", "as_dict")
+    mailer = function_body(diff_alerts, "smtp_mail_sender")
+    production = function_body(diff_alerts, "production_dispatcher")
+    sinks = ("_publish_ws", "_publish_hub", "_send_mail")
+    channels = ("broadcast=", "hub=", "mail_send=", "recipients=")
+    return {
+        "ch_runs": count(len(delivered)),
+        "ch_passed": count(sum(1 for seen in delivered.values() if seen == "passed")),
+        "ch_bad": bad_of(delivered),
+        "event_named": flag('"type": "data.diff_alert"' in subscription),
+        "ws_called": flag("await self.broadcast(message)" in publish_ws),
+        "hub_called": flag("publish_diff_alert" in publish_hub),
+        "hub_filters": flag("sub.domain == domain" in hub_filter),
+        "both_channels_in_notify": flag(all(sink in notify for sink in sinks)),
+        "mail_rendered": flag("render_diff_email(" in send_mail),
+        "mail_transport": flag("_smtp_send" in mailer),
+        "settings_gated": count(sum(1 for token in ("smtp_host", "smtp_user") if token in mailer)),
+        "production_channels": count(sum(1 for token in channels if token in production)),
+        "reported": flag(
+            all(token in as_dict for token in ("ws_sent", "hub_delivered", "mail_sent"))
+        ),
+        "recorded": flag("self.deliveries.append(delivery)" in notify),
+    }
+
+
+def judge_ac9_05(facts: Facts) -> Verdict:
+    """``AC-9|05``: SMTP mail and the WS ``data.diff_alert`` broadcast both really carry it."""
+    ok = (
+        number(facts["ch_runs"]) == len(CHANNEL_NODES)
+        and facts["ch_passed"] == facts["ch_runs"]
+        and facts["ch_bad"] == "-"
+        and facts["event_named"] == "yes"
+        and facts["ws_called"] == "yes"
+        and facts["hub_called"] == "yes"
+        and facts["hub_filters"] == "yes"
+        and facts["both_channels_in_notify"] == "yes"
+        and facts["mail_rendered"] == "yes"
+        and facts["mail_transport"] == "yes"
+        and number(facts["settings_gated"]) >= 2
+        and number(facts["production_channels"]) == 4
+        and facts["reported"] == "yes"
+        and facts["recorded"] == "yes"
+    )
+    readings = (
+        f"通道节点: {facts['ch_passed']}/{facts['ch_runs']} passed"
+        + (f"; not green: {facts['ch_bad']}" if facts["ch_bad"] != "-" else ""),
+        f"WS 面: 事件名 data.diff_alert 在位 = {facts['event_named']}，广播被调用 = "
+        f"{facts['ws_called']}，订阅 hub 被调用 = {facts['hub_called']}，hub 按域过滤 = "
+        f"{facts['hub_filters']}",
+        f"邮件面: 渲染函数被调用 = {facts['mail_rendered']}，走的是共享 SMTP 传输 = "
+        f"{facts['mail_transport']}，配置门 settings.smtp_host/user 读到 "
+        f"{facts['settings_gated']}/2",
+        f"装配与报告: production_dispatcher 交出四条通道 = {facts['production_channels']}/4，"
+        f"一次 notify 同时喂三处 = {facts['both_channels_in_notify']}，投递结果逐通道可报告 = "
+        f"{facts['reported']}，每次调用留一条记录 = {facts['recorded']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "「双通道」判的是两条都出得去且各自报告：渲染函数存在不等于广播被调用，邮件模板"
+        "存在不等于有人把消息交给 SMTP 传输；任一通道只剩定义、或投递结果不可报告（静默失败"
+        "与从未投递同形），这一格都只算接口存在"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
@@ -4092,6 +4447,123 @@ PROBES: Final[tuple[Probe, ...]] = (
             "route_is_catalog": "yes",
             "detail_in_catalog": "yes",
             "detail_route": "yes",
+        },
+    ),
+    Probe(
+        item="AC-9|02",
+        expects="注入差异样本被校对作业捕获",
+        summary="每周校对有真的触发器，注入的差异被比出来并逐列写进 dq_diff_report",
+        measure=measure_ac9_02,
+        judge=judge_ac9_02,
+        breaks=(
+            Break(
+                "注入差异没被捕获（节点变红）",
+                (("capture_passed", "6"), ("capture_bad", "test_x=exit=1")),
+                GAP,
+            ),
+            Break("捕获面节点被改名（探针再也找不到那一问）", (("capture_runs", "6"),), GAP),
+            Break("判据点名的列没进记录面", (("columns_missing", "偏差→deviation"),), GAP),
+            Break("列名进了表定义但行对象不带这一列", (("row_fields_missing", "verdict"),), GAP),
+            Break("表名从写入代码里消失", (("table_named", "no"),), GAP),
+            Break("报告写入不在生产装配路径上", (("writer_wired", "no"),), GAP),
+            Break(
+                "full_check 不再是可执行 kind（那行 cron 装不上调度器）",
+                (("job_executable", "no"),),
+                GAP,
+            ),
+            Break("模板派发不再认识 full_check", (("job_dispatched", "no"),), GAP),
+            Break("执行器只建服务不跑比较", (("job_runs_service", "no"),), GAP),
+            Break("窗口又按日历形状取（覆盖缺口会被当成差异）", (("window_from_data", "no"),), GAP),
+            Break("schedules.yaml 里那一行被删", (("schedule_row", "no"),), GAP),
+        ),
+        repair={
+            "capture_passed": "*capture_runs",
+            "capture_bad": "-",
+            "columns_missing": "-",
+            "row_fields_missing": "-",
+            "table_named": "yes",
+            "writer_wired": "yes",
+            "job_executable": "yes",
+            "job_dispatched": "yes",
+            "job_runs_service": "yes",
+            "window_from_data": "yes",
+            "schedule_row": "yes",
+        },
+    ),
+    Probe(
+        item="AC-9|04",
+        expects="白名单容忍项生效",
+        summary="治理三则各有来源与寿命：白名单读得到、去重与差异率基线跨比对、被抑制也留痕",
+        measure=measure_ac9_04,
+        judge=judge_ac9_04,
+        breaks=(
+            Break("治理判定节点变红", (("gov_passed", "8"), ("gov_bad", "test_x=exit=1")), GAP),
+            Break("治理节点被改名（某一则再也没人答）", (("gov_runs", "8"),), GAP),
+            Break("治理文件形状坏了（读出来不是那两个键）", (("file_shape", "no"),), GAP),
+            Break("容忍项没有记录凭据", (("reason_missing", "1"),), GAP),
+            Break("白名单不再被判定读到", (("whitelist_read", "no"),), GAP),
+            Break("去重集不再参与判定", (("dedupe_read", "no"),), GAP),
+            Break("差异率基线不再参与判定", (("rate_read", "no"),), GAP),
+            Break("突增不再升级到 critical", (("escalates", "no"),), GAP),
+            Break(
+                "策略退回每次新建（去重与基线只剩一次调用内成立）",
+                (("shared_singleton", "no"),),
+                GAP,
+            ),
+            Break("白名单没有来源文件", (("whitelist_has_source", "no"),), GAP),
+            Break("校对服务不再用共享策略", (("policy_in_check", "no"),), GAP),
+            Break("被抑制的决定不再交给 notifier 记录", (("quiet_recorded", "no"),), GAP),
+        ),
+        repair={
+            "gov_passed": "*gov_runs",
+            "gov_bad": "-",
+            "file_shape": "yes",
+            "reason_missing": "0",
+            "whitelist_read": "yes",
+            "dedupe_read": "yes",
+            "rate_read": "yes",
+            "escalates": "yes",
+            "shared_singleton": "yes",
+            "whitelist_has_source": "yes",
+            "policy_in_check": "yes",
+            "quiet_recorded": "yes",
+        },
+    ),
+    Probe(
+        item="AC-9|05",
+        expects="告警双通道",
+        summary="一次判定同时到 WS 广播、按域过滤的 hub 与 SMTP 邮件，且每条通道的结果可报告",
+        measure=measure_ac9_05,
+        judge=judge_ac9_05,
+        breaks=(
+            Break("投递节点变红", (("ch_passed", "9"), ("ch_bad", "test_x=exit=1")), GAP),
+            Break("投递节点被改名", (("ch_runs", "9"),), GAP),
+            Break("WS 事件名不再是 data.diff_alert", (("event_named", "no"),), GAP),
+            Break("广播函数存在但没人调用", (("ws_called", "no"),), GAP),
+            Break("订阅 hub 不再被调用", (("hub_called", "no"),), GAP),
+            Break("hub 不再按订阅域过滤", (("hub_filters", "no"),), GAP),
+            Break("notify 只喂其中一条通道", (("both_channels_in_notify", "no"),), GAP),
+            Break("邮件不再渲染正文", (("mail_rendered", "no"),), GAP),
+            Break("邮件不走共享 SMTP 传输", (("mail_transport", "no"),), GAP),
+            Break("SMTP 配置门只看一个键", (("settings_gated", "1"),), GAP),
+            Break("装配时少交一条通道", (("production_channels", "3"),), GAP),
+            Break("投递结果不再逐通道报告", (("reported", "no"),), GAP),
+            Break("调用不留投递记录", (("recorded", "no"),), GAP),
+        ),
+        repair={
+            "ch_passed": "*ch_runs",
+            "ch_bad": "-",
+            "event_named": "yes",
+            "ws_called": "yes",
+            "hub_called": "yes",
+            "hub_filters": "yes",
+            "both_channels_in_notify": "yes",
+            "mail_rendered": "yes",
+            "mail_transport": "yes",
+            "settings_gated": "2",
+            "production_channels": "4",
+            "reported": "yes",
+            "recorded": "yes",
         },
     ),
 )
