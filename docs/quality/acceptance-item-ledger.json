@@ -342,16 +342,73 @@
       "state": "unreviewed"
     },
     "AC-9|02|ed680e97": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C48",
+      "date": "2026-09-27",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-9|02'（VERDICT proven：捕获节点 7/7 passed、判据点名的 9 列与 ReportRow 字段双缺 0/0、表名在位、生产触发五面齐（kind 可执行 / _execute_template 派发 / 执行器真建服务并跑 / 窗口取自两条腿共有日 / schedules.yaml 有行）、build_cross_check 交出 write_report=DiffReportWriter）＋ python -m pytest 'tests/test_pipeline_jobs.py::TestFullCheckExecutor' tests/test_diff_report.py tests/test_cross_check_service.py::TestCrossCheckService -q --no-cov -p no:cacheprovider -m 'not e2e' ＋ python docs/evidence/C48/cross_check_census.py（真库只读六面 census，19 条语句全 SELECT，非只读闸门 0 条） ＋ ＋ python scripts/quality/acceptance_item_probe.py --self-test（全表 27 探针 / 208 条反事实全部把干净读数打回 gap，本轮新增 36 条，SELF_TEST_EXIT=0） ＋ ＋ python scripts/quality/acceptance_item_probe.py --all（27 条目重算：census gap=8, proven=19，PROBE_EXIT=0；三格 AC-9|02/|04/|05 全部 VERDICT proven，且已转正的 AC-13|07 仍 proven ⇒ 无 drift） ＋ ＋ make gate 两遍：回填前 gate-run1-prebackfill.txt 7,357 行完整未裁剪、17 段 `===== gate:`、GATE_EXIT=0 读自文件内部（3222 passed / 6 skipped in 80.04s、TOTAL 11618 1098 2866 291 89.14%、前端 14 files/109 tests、Playwright 18 passed）；回填后一遍 gate-run2-postbackfill.txt 另存",
+      "evidence": [
+        "docs/evidence/C48/README.md",
+        "docs/evidence/C48/cross_check_census.py",
+        "docs/evidence/C48/cross_check-census-live10.txt",
+        "docs/evidence/C48/probe-all-prebackfill.txt",
+        "docs/evidence/C48/probe-self-test.txt",
+        "docs/evidence/C48/face_regression_probe.py",
+        "docs/evidence/C48/face-regression-readings.txt",
+        "docs/evidence/C48/gate-run1-prebackfill.txt",
+        "opendata/pipeline/jobs.py",
+        "opendata/pipeline/templates.py",
+        "opendata/pipeline/diff_report.py",
+        "opendata/pipeline/schedules.yaml",
+        "scripts/quality/acceptance_item_probe.py",
+        "tests/test_pipeline_jobs.py",
+        "tests/test_diff_report.py"
+      ],
+      "note": "判据原文要的是「注入差异样本被**校对作业**捕获」并逐列进 `dq_diff_report`。修前的真实形状：`FULL_CHECK` 虽在 `TemplateKind` 与 `schedules.yaml`（`cron='0 2 * * 0'`）里都声明了，却**不在 `EXECUTABLE_KINDS`**，而 `register_builtin_jobs` 对不可执行 kind 是 `logger.info(...) + continue`（`jobs.py:618-620`）⇒ 那行周末全量校对**从来没有装进任何调度器**；真库侧独立互证：`dq_diff_report` 100 行全在手工批次 `dual-source-2026h1` 下，形如 `hook_batch_id()` 产出的 `xcheck:` 前缀批次 **0 组**。本轮补 `_execute_full_check`：payload 只允许 `domain` + `window: full`，窗口由 `cross_check_window` 从**两条腿共有的日子**现算（实测 ths 到 2026-09-24、akshare 到 2026-07-21，按日历开窗会把整段覆盖缺口报成差异），批次键走 `batch_id_for` ⇒ 与流水线 step-3 同一键空间；落库经 `build_cross_check` 交出的 `write_report=DiffReportWriter(engine).write`。**列面是可证伪的**：判据点名的 domain/源对/key/字段/两源值/偏差/verdict 九个列名要逐个出现在 `REPORT_COLUMNS` **且**有同名 `ReportRow` 字段——写入走 `as_params()` 的 `getattr`，只声明了列名而没有同名字段会在每次写入时炸；`build_report_insert_sql()` 的占位符由 `REPORT_COLUMNS` 生成，故「INSERT 语句绑定每列」是恒真面，已弃用。**不计入本勾**：真机 `dq_diff_report` 一次写入都没发生（往生产数仓写是须用户确认的动作），周日 02:00 真跑并把 `xcheck:` 批次读回来仍是待办；`second_source` 不在每日 payload 里 ⇒ 真机上 step-3 只由周报触发；`partition_maintenance` 仍无执行器（apply 半边是生产 DDL）。"
     },
     "AC-9|03|3bce2eae": {
       "state": "unreviewed"
     },
     "AC-9|04|dcfe5ab7": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C48",
+      "date": "2026-09-27",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-9|04'（VERDICT proven：治理三则节点 9/9 passed、`diff_governance.json` 形状合法、判定面四面齐（白名单/去重集/差异率基线/突升级到 critical）、状态寿命四面齐（进程级单例/白名单有来源/校对服务复用同一策略/被抑制照样交给 notifier 记录））＋ python -m pytest tests/test_diff_alerts.py tests/test_cross_check_service.py::TestAlertPolicy -q --no-cov -p no:cacheprovider -m 'not e2e' ＋ python docs/evidence/C48/cross_check_census.py（面 2/面 3：生产构造点与策略状态寿命实测） ＋ ＋ python scripts/quality/acceptance_item_probe.py --self-test（全表 27 探针 / 208 条反事实全部把干净读数打回 gap，本轮新增 36 条，SELF_TEST_EXIT=0） ＋ ＋ python scripts/quality/acceptance_item_probe.py --all（27 条目重算：census gap=8, proven=19，PROBE_EXIT=0；三格 AC-9|02/|04/|05 全部 VERDICT proven，且已转正的 AC-13|07 仍 proven ⇒ 无 drift） ＋ ＋ make gate 两遍：回填前 gate-run1-prebackfill.txt 7,357 行完整未裁剪、17 段 `===== gate:`、GATE_EXIT=0 读自文件内部（3222 passed / 6 skipped in 80.04s、TOTAL 11618 1098 2866 291 89.14%、前端 14 files/109 tests、Playwright 18 passed）；回填后一遍 gate-run2-postbackfill.txt 另存",
+      "evidence": [
+        "docs/evidence/C48/README.md",
+        "docs/evidence/C48/cross_check_census.py",
+        "docs/evidence/C48/cross_check-census-live10.txt",
+        "docs/evidence/C48/probe-all-prebackfill.txt",
+        "docs/evidence/C48/probe-self-test.txt",
+        "docs/evidence/C48/gate-run1-prebackfill.txt",
+        "opendata/pipeline/alerts.py",
+        "opendata/pipeline/diff_alerts.py",
+        "opendata/pipeline/diff_governance.json",
+        "opendata/pipeline/cross_check_service.py",
+        "opendata/pipeline/templates.py",
+        "scripts/quality/acceptance_item_probe.py",
+        "tests/test_diff_alerts.py",
+        "tests/test_cross_check_service.py"
+      ],
+      "note": "三则判据各有**寿命**要求，不是三个 if 分支存在就算：①白名单要有来源——修前 `opendata/` 全树没有任何治理状态文件，`CrossCheckService` 唯一生产构造点 `templates.py:551` 不传 `policy=`（面 2 的 AST 扫描：生产侧 3 处引用其中一处就是 `AlertPolicy()` 兜底定义本身），于是「白名单容忍项生效」当时没有可生效的来源；本轮 `load_governance` + `diff_governance.json` 把来源补上，每条容忍必须带 `reason`（无凭据即判红），文件坏了 `RuntimeError` fail closed，文件不存在＝空状态合法。②「相同差异不重复告警」与③「差异率突增才升级」都要**跨过一次以上的比对**还成立：每次新建策略 ⇒ `alerted` 从空开始、`last_rate` 恒为 None，两条判据当时为真的意思只是「同一批内没重复」，实测面 3「同一差异、两个新建策略：alert#1=True alert#2=True」；本轮把策略收成进程级单例 `shared_policy()`（`global _POLICY`）并由 `build_cross_check` 交出，去重与基线才真的跨过周次生效。**被抑制的决定也交给 notifier 留痕**（`_notify` 无条件 `self.notifier(summary, decision)`），否则「治理让这件事安静了」与「这件事根本没测」同形。白名单 0 条、`email_recipients` 0 条是**量出来的结论**不是没配：§一-6 的归因（akshare 腿 volume 单位混在一条腿内部 608 键 / 24 键手-股取整、amount 零值 5,515/5,839 是缺数据）归 C49 修数据，**故意不进白名单**——白名单是容忍口径差异的，拿来掩盖「退路成交额是 0」就把唯一信号掐了。不计入本勾：治理状态只在进程内，重启后 `alerted`/`last_rate` 归零，「不重复告警」跨重启不成立（要做成控制库一张表，登记未做）。"
     },
     "AC-9|05|7ed53e9b": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C48",
+      "date": "2026-09-27",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-9|05'（VERDICT proven：通道节点 10/10 passed、WS 面四面齐（事件名 data.diff_alert 在位 / 广播被调用 / hub 被调用 / hub 按域过滤）、邮件面三面齐（渲染被调用 / 走共享 _smtp_send / settings.smtp_host+smtp_user 两道闸 2/2）、装配与报告四面齐（production_dispatcher 交出 4/4 条通道 / 一次 notify 同时喂三处 / 投递结果逐通道可报告 / 每次调用留一条记录））＋ python -m pytest tests/test_diff_alerts.py tests/test_data_subscribe.py -q --no-cov -p no:cacheprovider -m 'not e2e' ＋ ＋ python scripts/quality/acceptance_item_probe.py --self-test（全表 27 探针 / 208 条反事实全部把干净读数打回 gap，本轮新增 36 条，SELF_TEST_EXIT=0） ＋ ＋ python scripts/quality/acceptance_item_probe.py --all（27 条目重算：census gap=8, proven=19，PROBE_EXIT=0；三格 AC-9|02/|04/|05 全部 VERDICT proven，且已转正的 AC-13|07 仍 proven ⇒ 无 drift） ＋ ＋ make gate 两遍：回填前 gate-run1-prebackfill.txt 7,357 行完整未裁剪、17 段 `===== gate:`、GATE_EXIT=0 读自文件内部（3222 passed / 6 skipped in 80.04s、TOTAL 11618 1098 2866 291 89.14%、前端 14 files/109 tests、Playwright 18 passed）；回填后一遍 gate-run2-postbackfill.txt 另存",
+      "evidence": [
+        "docs/evidence/C48/README.md",
+        "docs/evidence/C48/probe-all-prebackfill.txt",
+        "docs/evidence/C48/probe-self-test.txt",
+        "docs/evidence/C48/gate-run1-prebackfill.txt",
+        "opendata/pipeline/diff_alerts.py",
+        "opendata/pipeline/subscription.py",
+        "opendata/pipeline/templates.py",
+        "scripts/quality/acceptance_item_probe.py",
+        "tests/test_diff_alerts.py",
+        "tests/test_data_subscribe.py"
+      ],
+      "note": "判据点名两个通道：SMTP 邮件 + WS `data.diff_alert` 广播。修前的形状是「渲染函数与投递函数在 `tests/` 有 39 处引用、生产侧 0 处」——`diff_alert_message()`、`SubscriptionHub.publish_diff_alert()`、`ws_manager.broadcast`、`NotificationService._smtp_send` 全都在位，但 `Notifier` 契约签名只收 `summary`（拿不到 level/reason，也就无法解释这条告警为什么存在），且 `CrossCheckService` 不传 `notifier=` ⇒ **决策算完即丢**，没有任何调用方把 `(summary, decision)` 喂给它们。本轮 `DiffAlertDispatcher.notify(summary, decision)` 收口三处 sink：判定不放行则一个通道都不碰；放行则广播 + 按域过滤的 hub + SMTP（复用 A1 的 `_smtp_send`，不另开邮箱路径），每通道结果逐条记进 `Delivery`（`ws_sent/ws_error`、`hub_delivered/hub_error`、`mail_sent/mail_errors/mail_skipped`）并由 `_execute_full_check` 放进作业结果。**「没有订阅者在听」与「通道抛了异常」是两种读数**，不再都读成「已告警」；未装配的通道各报自己的原因（`no WS broadcast channel wired` / `SMTP not configured (no sender)` / `no diff-alert recipients configured`）。本轮同时把 WS 帧带上治理判定（`subscription.diff_alert_message(..., level=, reason=)`），调用方不传时 `reason is None` 而不猜默认。不计入本勾：`email_recipients` 实测为空 ⇒ 真机上邮件通道是「已装配但没处可发」，投递记录诚实写 `mail_sent=0` + 原因，这不等于 SMTP 已对某个真实收件人发出去过；SMTP 配置与收件人清单是运营决定，本轮没替用户填。"
     },
     "AC-9|06|53cf809b": {
       "state": "unreviewed"
