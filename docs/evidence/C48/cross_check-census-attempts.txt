@@ -1,0 +1,42 @@
+# C48 修前现场读数：脚本自身两遍失败留档（attempt1 = main 仍是 async def，coroutine never awaited；attempt2 = Item 字段名写错 tick→ticked）
+# 两遍都在真库读数之前退出，没有任何 SQL 发生
+# run_at=2026-09-27T12:11:50+02:00 HEAD=1f5455d
+
+===== attempt 1 =====
+# C48 修前现场读数 cross_check-census-live.txt
+# run_at=2026-09-27T12:10:58+02:00
+# branch=dev HEAD=1f5455d
+# worktree_status=1 changed entries (see README §六)
+# python=Python 3.13.5 node=v25.1.0
+# command=set -a; . ./.env; set +a; python docs/evidence/C48/cross_check_census.py > /tmp/c48/census-live.txt 2>&1
+# 只读：仅 SELECT/information_schema；脚本自带非只读语句闸门
+
+<coroutine object main at 0x10524e020>
+<sys>:0: RuntimeWarning: coroutine 'main' was never awaited
+RuntimeWarning: Enable tracemalloc to get the object allocation traceback
+CENSUS_EXIT=1
+
+===== attempt 2 =====
+# C48 修前现场读数 cross_check-census-live.txt（第二遍；第一遍因本脚本 main 仍是 async def 而未 await、零读数，留档为 census-live-attempt1-not-awaited.txt）
+# run_at=2026-09-27T12:11:16+02:00
+# branch=dev HEAD=1f5455d
+# worktree_status=1 changed entries
+# python=Python 3.13.5 node=v25.1.0
+# command=set -a; . ./.env; set +a; python docs/evidence/C48/cross_check_census.py > /tmp/c48/census-live2.txt 2>&1
+# 只读：仅 SELECT/information_schema；脚本自带非只读语句闸门
+
+python=3.13.5 cwd=/Users/yunjinqi/Documents/new_projects/opendata
+
+--- 0. AC-9 条目级九条（判据原文 + 台账状态） ---
+Traceback (most recent call last):
+  File "/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C48/cross_check_census.py", line 382, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C48/cross_check_census.py", line 361, in main
+    criterion_items()
+    ~~~~~~~~~~~~~~~^^
+  File "/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C48/cross_check_census.py", line 113, in criterion_items
+    print(f"  [{item.tick}] {key} {state:<11} {item.text[:78]}")
+                ^^^^^^^^^
+AttributeError: 'Item' object has no attribute 'tick'. Did you mean: 'ticked'?
+CENSUS_EXIT=1

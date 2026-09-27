@@ -1,0 +1,241 @@
+# C48 修前现场读数 cross_check-census-live.txt（读数遍：修正了上一遍的表名枚举缺陷，那一遍留档为 census-false-reading.txt）
+# run_at=2026-09-27T12:13:29+02:00
+# branch=dev HEAD=1f5455d
+# worktree_status=1 changed entries
+# python=Python 3.13.5 node=v25.1.0
+# command=set -a; . ./.env; set +a; python docs/evidence/C48/cross_check_census.py > /tmp/c48/census-live4.txt 2>&1
+# 只读：仅 SELECT/information_schema；脚本自带非只读语句闸门 + 表名枚举守卫
+
+python=3.13.5 cwd=/Users/yunjinqi/Documents/new_projects/opendata
+
+--- 0. AC-9 条目级九条（判据原文 + 台账状态） ---
+  [ ] L172 AC-9|01|e67169e2 <no entry>  **口径映射表**存在且覆盖 P0 域（字段映射/单位换算/复权口径/key 规范化/停牌语义/差异率分母）
+  [ ] L173 AC-9|02|ed680e97 <no entry>  注入差异样本被校对作业捕获，`dq_diff_report` 记录 domain/源对/key/字段/两源值/偏差/verdict
+  [ ] L174 AC-9|03|3bce2eae <no entry>  **反例用例**：① 字段名不匹配时必须报错而非静默通过；② 单位未归一时必须产生 mismatch
+  [ ] L175 AC-9|04|dcfe5ab7 <no entry>  **告警治理**：白名单容忍项生效、相同差异不重复告警、差异率突增才升级
+  [ ] L176 AC-9|05|7ed53e9b <no entry>  告警双通道：SMTP 邮件 + WS `data.diff_alert` 事件广播
+  [ ] L177 AC-9|06|53cf809b <no entry>  dwd 合并：权威源存在则取权威、缺失降级填补；`source` 留痕正确；`_diff_flag` 打标正确；**`_as_of` 版本列
+  [ ] L178 AC-9|07|96ff13a5 <no entry>  **修订传播**：ods 中已存在 key 被修正后，dwd 对应行同步更新（单测）
+  [ ] L179 AC-9|08|a87bfe6f <no entry>  **单源域 dwd 直通模式可用**（`layer=dwd` 查询不报错）
+  [ ] L180 AC-9|09|ca69bd21 <no entry>  dwd 重算幂等
+
+--- 1. 调度面：TemplateKind ↔ EXECUTABLE_KINDS ↔ schedules.yaml payload ---
+  TemplateKind members      : ['freshness', 'full_check', 'incremental', 'partition_maintenance']
+  EXECUTABLE_KINDS          : ['freshness', 'incremental']
+  declared in schedules.yaml: ['freshness', 'full_check', 'incremental', 'partition_maintenance']
+  声明了却没有执行器的 kind : ['full_check', 'partition_maintenance']
+  _execute_template 读的 payload 键: ['domain', 'second_source', 'source', 'window']
+  p0-stock-daily-incremental [incremental] cron='30 17 * * 1-5' 执行器=有
+      payload=['domain', 'source', 'window']  note=17:00/18:00 错峰窗口待真机校准（当日日线更新时间实测后调窗）
+  p0-weekly-full-cross-check [full_check] cron='0 2 * * 0' 执行器=无
+      payload=['domain', 'window']  note=周末全量校对，兼作一致性收敛
+  partition-maintenance [partition_maintenance] cron='0 3 * * *' 执行器=无
+      payload=['years_ahead']  note=每日检查分区上界，落后即 REORGANIZE（A4.3）
+  freshness-check [freshness] cron='30 8 * * *' 执行器=有
+      payload=['domains']  note=新鲜度与告警矩阵（A4.8）：测全部注册域的 dwd + 各源 ods，缺表即 critic
+
+--- 2. 生产调用面：AST 扫描 opendata/ 与 scripts/（tests 单列） ---
+  [production] opendata/ -> 3 引用
+      /Users/yunjinqi/Documents/new_projects/opendata/opendata/pipeline/cross_check_service.py:81 call AlertPolicy()
+      /Users/yunjinqi/Documents/new_projects/opendata/opendata/pipeline/jobs.py:758 call run_alert_matrix(broadcast,control_engine,current_year,disk_path,domains,expected,years_ahead)
+      /Users/yunjinqi/Documents/new_projects/opendata/opendata/pipeline/templates.py:551 call CrossCheckService(mappings,readers,sources,write_report)
+  [production] scripts/ -> 0 引用
+  [tests] tests/ -> 39 引用
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:214 call run_alert_matrix(broadcast,domains,expected)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:230 call run_alert_matrix(broadcast,domains,expected)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:243 call run_alert_matrix(broadcast,domains,expected)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:262 call run_alert_matrix(broadcast,domains,expected)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:268 call run_alert_matrix(broadcast,domains,expected)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:289 call run_alert_matrix(broadcast,domains,expected)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:299 call run_alert_matrix(domains,expected)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:302 call run_alert_matrix(broadcast,domains,expected)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:321 call run_alert_matrix(broadcast,domains,expected)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:526 call run_alert_matrix(broadcast,disk_path,domains,expected)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:612 call run_alert_matrix(domains,expected)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:634 call run_alert_matrix(domains,expected)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:637 call run_alert_matrix(control_engine,domains,expected)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:731 call run_alert_matrix(broadcast,control_engine,current_year,disk_path,domains,expected)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:214 attr run_alert_matrix
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:230 attr run_alert_matrix
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:243 attr run_alert_matrix
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:262 attr run_alert_matrix
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:268 attr run_alert_matrix
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:289 attr run_alert_matrix
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:299 attr run_alert_matrix
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:302 attr run_alert_matrix
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:321 attr run_alert_matrix
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:526 attr run_alert_matrix
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:612 attr run_alert_matrix
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:634 attr run_alert_matrix
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:637 attr run_alert_matrix
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_alert_matrix.py:731 attr run_alert_matrix
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_cross_check_service.py:61 call AlertPolicy()
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_cross_check_service.py:69 call AlertPolicy(whitelist)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_cross_check_service.py:77 call AlertPolicy()
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_cross_check_service.py:110 call CrossCheckService(,checked_at,mappings,notifier,readers,sources,write_report)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_cross_check_service.py:168 call CrossCheckService(mappings,notifier,readers,sources,write_report)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_cross_check_service.py:49 call AlertPolicy()
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_cross_check_service.py:55 call AlertPolicy()
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_data_subscribe.py:131 call diff_alert_message(batch_id,compared,domain,mismatch_ratio,mismatches,source_a,source_b)
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_data_subscribe.py:261 call publish_diff_alert()
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_data_subscribe.py:261 attr publish_diff_alert
+      /Users/yunjinqi/Documents/new_projects/opendata/tests/test_data_subscribe.py:262 call diff_alert_message(batch_id,compared,domain,mismatch_ratio,mismatches,source_a,source_b)
+
+--- 3. 策略状态面：三问各自依赖的状态与其生命周期 ---
+  AlertPolicy() 默认 whitelist=set() last_rate=None
+  AlertPolicy() 默认 alerted=set()（进程内集合，不跨运行）
+  同一差异、两个新建策略：alert#1=True alert#2=True（去重集不跨实例）
+  同一差异、同一实例：alert#1=True alert#2=False reason='this difference pattern was already aler'
+  差异率突增（last_rate=0.01 -> 0.30）：level=critical
+  白名单命中（全字段白）：alert=False reason="differences are whitelisted for ['close'"
+  白名单未覆盖字段：alert=True
+
+--- 4. 映射与权威面对账：校对作业在几个域上真的算得出差异 ---
+  有 domain mapping 的源: ['akshare', 'ths']
+  被 mapping 覆盖的域: 6；两侧都有 mapping 的域: 1
+    可对照域清单: {'stock_daily': ['akshare', 'ths']}
+  authority.json 声明权威序的域: 15
+    economy_cpi: 权威序 ['ecb', 'oecd', 'imf'] 可对照侧只有 [] ⇒ 校对 fail closed
+    economy_gdp: 权威序 ['ecb', 'imf'] 可对照侧只有 [] ⇒ 校对 fail closed
+    economy_rate: 权威序 ['ecb'] 可对照侧只有 [] ⇒ 校对 fail closed
+    economy_unemployment: 权威序 ['oecd', 'imf'] 可对照侧只有 [] ⇒ 校对 fail closed
+    financial_indicator: 权威序 ['akshare'] 可对照侧只有 [] ⇒ 校对 fail closed
+    financial_statement: 权威序 ['ths', 'akshare'] 可对照侧只有 [] ⇒ 校对 fail closed
+    fund_etf_daily: 权威序 ['akshare', 'ths'] 可对照侧只有 [] ⇒ 校对 fail closed
+    futures_daily: 权威序 ['ths', 'akshare'] 可对照侧只有 ['ths'] ⇒ 校对 fail closed
+    index_constituent: 权威序 ['ths', 'akshare'] 可对照侧只有 ['akshare'] ⇒ 校对 fail closed
+    index_daily: 权威序 ['ths', 'akshare'] 可对照侧只有 ['ths'] ⇒ 校对 fail closed
+    instrument: 权威序 ['ths'] 可对照侧只有 [] ⇒ 校对 fail closed
+    option_daily: 权威序 ['ths', 'akshare'] 可对照侧只有 ['ths'] ⇒ 校对 fail closed
+    stock_action: 权威序 ['ths', 'akshare'] 可对照侧只有 ['ths'] ⇒ 校对 fail closed
+    trading_calendar: 权威序 ['ths'] 可对照侧只有 [] ⇒ 校对 fail closed
+
+--- 5. 真库读数（只读）：dq_diff_report / dwd_stock_daily / ods 两条腿 ---
+  warehouse schema=opendata_data tables=12
+  dq_diff_report: 存在，列 11 条；判据点名的 9 列在位 9/9 缺 []
+  dq_diff_report: rows=100
+  dq_diff_report: batch 普查 1 组
+      ('dual-source-2026h1', 'stock_daily', 'ths', 'akshare', 100)
+  dwd_stock_daily: rows=719316 留痕列在位 ['source', '_merged_at', '_diff_flag', '_as_of']
+Traceback (most recent call last):
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/cursors.py", line 170, in execute
+    result = self._query(query)
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/cursors.py", line 335, in _query
+    conn.query(q)
+    ~~~~~~~~~~^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/connections.py", line 581, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/connections.py", line 857, in _read_query_result
+    result.read()
+    ~~~~~~~~~~~^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/connections.py", line 1290, in read
+    first_packet = self.connection._read_packet()
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/connections.py", line 810, in _read_packet
+    packet.raise_for_error()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/err.py", line 154, in raise_mysql_exception
+    raise errorclass(errno, errval, sqlstate=sqlstate)
+pymysql.err.ProgrammingError: (1064, "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'BY 2 DESC LIMIT 6' at line 1")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C48/cross_check_census.py", line 389, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C48/cross_check_census.py", line 376, in main
+    warehouse_face(engine)
+    ~~~~~~~~~~~~~~^^^^^^^^
+  File "/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C48/cross_check_census.py", line 336, in warehouse_face
+    flagged = _rows(
+        engine,
+        f"SELECT _diff_flag, COUNT(*) FROM `{dwd}` GROUP BY _diff_flag"  # noqa: S608
+        "ORDER BY 2 DESC LIMIT 6",
+    )
+  File "/Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C48/cross_check_census.py", line 271, in _rows
+    return [tuple(row) for row in conn.execute(text(sql), params).all()]
+                                  ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1419, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/sql/elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1641, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<8 lines>...
+        cache_hit=cache_hit,
+    )
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1846, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1986, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 2355, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/base.py", line 1967, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/sqlalchemy/engine/default.py", line 951, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/cursors.py", line 170, in execute
+    result = self._query(query)
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/cursors.py", line 335, in _query
+    conn.query(q)
+    ~~~~~~~~~~^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/connections.py", line 581, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/connections.py", line 857, in _read_query_result
+    result.read()
+    ~~~~~~~~~~~^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/connections.py", line 1290, in read
+    first_packet = self.connection._read_packet()
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/connections.py", line 810, in _read_packet
+    packet.raise_for_error()
+    ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/Users/yunjinqi/opt/anaconda3/envs/py313/lib/python3.13/site-packages/pymysql/err.py", line 154, in raise_mysql_exception
+    raise errorclass(errno, errval, sqlstate=sqlstate)
+sqlalchemy.exc.ProgrammingError: (pymysql.err.ProgrammingError) (1064, "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'BY 2 DESC LIMIT 6' at line 1")
+[SQL: SELECT _diff_flag, COUNT(*) FROM `dwd_stock_daily` GROUP BY _diff_flagORDER BY 2 DESC LIMIT 6]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+CENSUS_EXIT=1

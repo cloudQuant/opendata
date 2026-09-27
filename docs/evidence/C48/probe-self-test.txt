@@ -1,0 +1,9 @@
+run-at: 2026-09-27T13:49:21+02:00
+branch: dev  HEAD: 1f5455d
+python: Python 3.13.5
+command: python scripts/quality/acceptance_item_probe.py --self-test
+说明：反事实自检——每个探针的每条 Break 都必须把「补齐到可判」的读数打回 gap，且 judge 至少可满足一次；
+      任何一条 break 打不红，或 judge 恒红/恒绿，本命令即失败（不是判据放松）。
+
+OK: 27 probe(s) measured; every judge is reachable from its declared repair, and all 208 counterfact(s) flip a clean reading back to a gap.
+SELF_TEST_EXIT=0

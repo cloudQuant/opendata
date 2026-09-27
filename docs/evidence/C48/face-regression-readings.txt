@@ -1,0 +1,25 @@
+run-at: 2026-09-27T13:46:20+02:00
+branch: dev  HEAD: 1f5455d（工作树含 C48 未提交改动：EXECUTABLE_KINDS 已加 FULL_CHECK）
+python: Python 3.13.5
+command: PYTHONPATH=. python docs/evidence/C48/face_regression_probe.py
+说明：本档案记录 C48 三处判定面的改前/改后读数。改前读数取自脚本内逐字保留的原正则与 function_body；
+      脚本本体见 docs/evidence/C48/face_regression_probe.py，同一命令可原样复跑。
+
+--- opendata/pipeline/jobs.py 实况（第 68 行起）---
+  68| EXECUTABLE_KINDS = frozenset(
+  69|     {TemplateKind.INCREMENTAL, TemplateKind.FRESHNESS, TemplateKind.FULL_CHECK}
+  70| )
+
+--- 改前正则面：同一条源码，\(\{ 的同行假设 ----
+  FRESHNESS(AC-13|07)    匹配=False
+  FULL_CHECK(AC-9|02)    匹配=False
+
+--- 模块级读取 vs 方法读取：长度 0 = 判据里每个 flag 都读 no ---
+  function_body(alerts, 'decide')                       长度=0
+  method_body(alerts, 'AlertPolicy', 'decide')          长度=1658
+  function_body(service, '_notify')                     长度=0
+  method_body(service, 'CrossCheckService', '_notify')  长度=474
+
+--- 收口后的 kind 面：AST 直读成员，行形无关 ---
+  set_literal_members(jobs, 'EXECUTABLE_KINDS') = ('TemplateKind.INCREMENTAL', 'TemplateKind.FRESHNESS', 'TemplateKind.FULL_CHECK')
+REPRO_EXIT=0
