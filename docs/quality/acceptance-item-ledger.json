@@ -574,7 +574,31 @@
       "note": "gate.txt：A2 files 313，四项全 ok；同一文件集在 run1 里 FAIL ruff check / FAIL ruff format / FAIL bandit（本轮自己的证据脚本 docs/evidence/C36/gitleaks-counterfactual.py 触发），修完复跑且反事实输出逐字节相同。披露：mypy 用项目严格旗标组合（disallow_untyped_defs/incomplete_defs、warn_return_any、strict_equality、check_untyped_defs…），并非 `strict = true` 整体开关；tests/ 按规格属 C 层，mypy/bandit 按层豁免。"
     },
     "AC-17|03|f71cd329": {
-      "state": "unreviewed"
+      "state": "proven",
+      "command": "python scripts/quality/ratchet.py（exit 0：ruff_selfdev 242(≤242) / mypy_selfdev 11(≤11) / bandit_selfdev 3(≤3)） ＋ python scripts/quality/acceptance_item_probe.py --item 'AC-17|03'（VERDICT proven） ＋ python scripts/quality/acceptance_item_probe.py --self-test（20 探针 / 139 反事实，每个 judge 都被扳红） ＋ python docs/evidence/C45/ratchet_counterfactuals.py（8/8，exit 0，真实工作树临时改配置、逐条 sha256 核对还原） ＋ 修前四读跑在自 da465b0 解出的 detached 树上（ruff/format/mypy/bandit，命令与 exit 逐段打印，见 alembic-before-census.txt） ＋ make a2-check（A2 files: 360，OK） ＋ make gate（回填前 7,115 行 GATE_EXIT=0；回填后另跑一遍）",
+      "round": "C45",
+      "date": "2026-09-27",
+      "evidence": [
+        "docs/evidence/C45/README.md",
+        "docs/evidence/C45/alembic-before-census.txt",
+        "docs/evidence/C45/ratchet_counterfactuals.py",
+        "docs/evidence/C45/ratchet-counterfactuals.txt",
+        "docs/evidence/C45/probe-ac17-03.txt",
+        "docs/evidence/C45/self-test.txt",
+        "docs/evidence/C45/gate-run1-prebackfill.txt",
+        "scripts/quality/acceptance_item_probe.py",
+        "scripts/quality/ratchet.py",
+        "scripts/quality/a2_check.py",
+        "docs/quality/ratchet.json",
+        "pyproject.toml",
+        "Makefile",
+        "CODE_QUALITY.md",
+        "tests/test_a2_exclusion_scope.py",
+        "alembic/versions/2026_09_22-0001_initial_schema.py",
+        "alembic/versions/2026_09_23-0002_pipeline_progress.py",
+        "alembic/versions/2026_09_23-0003_api_keys.py"
+      ],
+      "note": "判据原文两问各有读数。①**存量债务不高于快照**：三项 242/11/3 各 ≤ 快照，门禁打印 `ruff_selfdev: 242 (snapshot 242)`；上限自身的历史（沿 `git log -p` 回放 ratchet.json，9 次转换）抬高存量上限 **0 次**，轨迹 404→242 / 35→11 / 6→3 —— 棘轮本体只比工作区与快照，「抬高上限」这一步此前无人计量，本轮把它读成历史而不是口号。②**触碰即达标**：自基线起改动 360 个 .py ↔ a2-check 的 A2 集 360 个一一对应（门禁 `A2 files: 360` ＋ `OK: A2 files meet the full A2 standard`），按名字被排除出 A2 的 0 个、排除项里的自研代码 0 个。③**三个平面可见性**：ruff 6 根走到 415/415（看不见 0）、mypy 目标 192/210（被排除的 18 个全部在棘轮点名的遗留区 `opendata/data_fetch/` 之内，未声明的 exclude 0 个，这 18 个仍全部被 ruff 读到）、bandit 251/251（漏 0）；全体 tracked .py 784 个里既不在被测根下也不在 A2 集的 0 个。**本轮真实修掉的缺口**：`alembic/` 与 `alembic_data/` 曾被三个面同时看不见，且在 HEAD 的 `[tool.ruff].exclude` 里以 `alembic/versions` 命中——只传目录时 `ruff check alembic alembic_data` 回 All checks passed!（exit 0），逐文件显式传参才量到 28 条违例 ＋ 1 个未格式化文件；处置是改文件（补模块 docstring／UP007/UP035/I001）而不是改快照，DDL 未动由「三个 revision 的 357 条非 docstring 字符串字面量与 HEAD 按 AST 多重集全等」证明；上限因此从 243 复冻到 242，并把 `ruff_selfdev: 242 (snapshot 243) (improved)` 如实入档——它意味着上限里含着 1 条已经不存在的债务。④**8 条反事实**：正控制 proven；上限改低一格→`ruff_selfdev: 241 -> 242` exit 1；植入未使用 import→`242 -> 244` exit 1；ruff/bandit/mypy 各吃掉一个自研子目录→平面普查分别读到 看不见 27／bandit 221/251 漏 30／27 个未声明 exclude（棘轮 exit 0，因为被排除的债务不再产生读数——这正是必须做可见性普查的理由）；mypy 吃掉整个被测根→棘轮 exit 1 且探针判 error。**显式登记不咬的形状**：根级 ruff exclude 对自己显式收到的根是惰性的（门禁按根传目录），该条以正控制形状跑并写明理由，不假装这一面被覆盖。⑤**边界**：不证明存量已收敛（242/11/3 只是没有变多）；不证明 mypy 覆盖 `opendata/data_fetch/` 的 18 个文件（点名的 A1 遗留区，仍 dark，只是从此可数）；探针不是门禁成员，红绿灯仍由 a2-check ＋ quality-ratchet 承担。"
     },
     "AC-17|04|303e2d97": {
       "state": "proven",
@@ -588,7 +612,28 @@
       "note": "配置面：select 含 F，ignore 只有 B008，per-file-ignores 里没有任何 F821；行为面：探针报出 F821 Undefined name，RUFF_EXIT=1。只看配置不算量过，所以补了真触发。"
     },
     "AC-17|05|dcbf845d": {
-      "state": "unreviewed"
+      "state": "proven",
+      "command": "python scripts/quality/ratchet.py（exit 0：ruff_ported 2144(≤2144) / direct_http_ported 1044(≤1044)） ＋ python scripts/quality/acceptance_item_probe.py --item 'AC-17|05'（VERDICT proven） ＋ python docs/evidence/C45/port_counterfactuals.py（7/7，exit 0，真实工作树临时改配置与搬运文件、逐条 sha256 核对还原） ＋ python scripts/codemod/report_port.py（上游重放对账：锁内 315 条 / 报告 315 行 / 逐字一致 315 行 / 待办 0 条） ＋ python scripts/quality/acceptance_item_probe.py --self-test ＋ make gate（回填前后各一遍）",
+      "round": "C45",
+      "date": "2026-09-27",
+      "evidence": [
+        "docs/evidence/C45/README.md",
+        "docs/evidence/C45/port_counterfactuals.py",
+        "docs/evidence/C45/port-counterfactuals.txt",
+        "docs/evidence/C45/probe-ac17-05.txt",
+        "docs/evidence/C45/self-test.txt",
+        "docs/evidence/C45/gate-run1-prebackfill.txt",
+        "scripts/quality/acceptance_item_probe.py",
+        "scripts/quality/ratchet.py",
+        "scripts/codemod/report_port.py",
+        "scripts/codemod/port_module.py",
+        "docs/port-report.md",
+        "opendata_http/upstream.lock",
+        "THIRD_PARTY_NOTICES.md",
+        ".pre-commit-config.yaml",
+        "pyproject.toml"
+      ],
+      "note": "判据原文四问各有读数。①**仅 E/F**：同一棵搬运树按自研规则集 9709 条、按 `I` 230 条、按 `--select E,F` 2144 条，门禁打印的 ruff_ported 与独立跑的 E/F 计数一致（printed=2144/2144），豁免挡住的量得出来而不是被假装不存在；直连计数的动词集合 delete/get/head/patch/post/put/request 完整（verbs_ok=yes）。②**未做 format/isort 重排**：209 个文件是 `ruff format` 会重写的、230 条 import 顺序违例——重排过一次的树不可能与上游逐行 diff。③**与上游可 diff**：report_port.py 按 upstream.lock 逐文件重放，exit 0，锁内 315 条记录／报告 315 行／逐字一致 315 行／待办 0 条，磁盘 313 个 .py 未登记 0 个，现场渲染与已归档 `docs/port-report.md` 逐字节一致；人工改动三处登记一致（upstream.lock 9／THIRD_PARTY_NOTICES.md 9／port_module.py:MANUAL_EDITS 9，不一致 0 条）。④**pre-commit exclude**：15 个 hook（HEAD 15 个）中排除搬运树 4 个（end-of-file-fixer／ruff／ruff-format／trailing-whitespace），比 HEAD 少 0 个。⑤**棘轮面**：ruff_ported 2144(≤2144)、direct_http_ported 1044(≤1044)。⑥**7 条反事实**：--select 加宽→`ruff_ported: 2144 -> 9709` 棘轮 exit 1；动词集合少一个 request→声明面读 no；搬运文件加一行未登记手改与**真跑一次 ruff format**→重放 exit 1／逐字一致 314 行／待办 1 条；只在 upstream.lock 改口→三处登记 不一致 1 条；pre-commit 少一条 exclude→比 HEAD 少 1 个。**显式登记不咬的形状**：「未做 format 重排」这一面在重排一个文件后仍 >0（209→208），红的只有逐行 diff，所以该条的 needs 同时钉三处读数而不是只钉豁免面。⑦**边界**：搬运上限历史 9 次转换抬高 3 次、其中 1 次搬运文件数未变（`3757285->d66dd99` ruff_ported 1305→2145），判据原文只要求「债务不高于棘轮快照」，故抬高只作**待复核登记**、本轮未逐条归因；direct_http_ported 1044 处直连是渐进收口指标，本轮不主张其下降。"
     },
     "AC-17|06|5fc2e9f4": {
       "state": "proven",
