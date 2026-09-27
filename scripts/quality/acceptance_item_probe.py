@@ -4140,9 +4140,7 @@ def measure_ac9_01(ctx: Context) -> Facts:
         re.findall(r"_FIELD_KEYS = frozenset\(\{([^}]*)\}\)", table)[0].split('"')[1::2]
     )
     payload_keys = {
-        key
-        for text in texts.values()
-        for key in re.findall(r"(\w+):", re.sub(r"#.*", "", text))
+        key for text in texts.values() for key in re.findall(r"(\w+):", re.sub(r"#.*", "", text))
     }
     carried = {
         token: "yes" if (token in admitted or token in payload_keys) else "no"
