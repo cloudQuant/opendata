@@ -11,7 +11,7 @@
 # that debt is acceptable.
 
 .PHONY: help lint format format-check typecheck security deps-audit a2-check \
-        test test-cov quality-ratchet public-api-quality zero-dep-check brand-check \
+        test test-cov quality-ratchet public-api-quality acceptance-probe-check zero-dep-check brand-check \
         loguru-check secret-check ledger-check evidence-traceability \
         frontend-lint frontend-format frontend-test frontend-test-cov frontend-typecheck \
         frontend-collection frontend-e2e \
@@ -32,7 +32,7 @@ PY_PORTED := opendata_http
 
 help:
 	@echo "Gate:             gate"
-	@echo "A2 (gating):      a2-check public-api-quality zero-dep-check brand-check loguru-check secret-check ledger-check evidence-traceability quality-ratchet"
+	@echo "A2 (gating):      a2-check public-api-quality acceptance-probe-check zero-dep-check brand-check loguru-check secret-check ledger-check evidence-traceability quality-ratchet"
 	@echo "Tests:            test test-cov"
 	@echo "Dev views (A1):   lint format format-check typecheck security deps-audit"
 	@echo "Frontend:         frontend-lint frontend-format frontend-collection frontend-e2e frontend-test frontend-test-cov frontend-typecheck"
@@ -105,6 +105,15 @@ quality-ratchet:
 
 public-api-quality:
 	python scripts/quality/public_api.py
+
+# Entry-level acceptance judgements, measured once and read five ways: the
+# counterfact self-test, the criterion wording, the ledger<->reading reconcile,
+# the moment-face baseline and the plane ratchet. ~252 s of that ~8 min gate is
+# this item's own cost, measured in C50 (docs/evidence/C50/census-run2-final-readings.txt,
+# face 3); before C50 nothing in the gate re-measured it at all (face 2: 0 of 46
+# gate logs ran the judging plane).
+acceptance-probe-check:
+	python scripts/quality/acceptance_item_probe.py --gate-check
 
 zero-dep-check:
 	python scripts/codemod/verify_no_akshare.py --self-test
@@ -202,6 +211,8 @@ gate:
 	@$(MAKE) --no-print-directory quality-ratchet
 	@echo "===== gate: public-api-quality ====="
 	@$(MAKE) --no-print-directory public-api-quality
+	@echo "===== gate: acceptance-probe-check ====="
+	@$(MAKE) --no-print-directory acceptance-probe-check
 	@echo "===== gate: test-cov ====="
 	@$(MAKE) --no-print-directory test-cov
 	@echo "===== gate: frontend-lint ====="

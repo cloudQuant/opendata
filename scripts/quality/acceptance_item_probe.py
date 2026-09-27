@@ -28,6 +28,17 @@ an *input* to a ledger entry, which also has to name tracked evidence files. And
 criterion's wording as a premise: ``expects`` is a substring that must still appear in the
 document, so a re-worded item strands its probe loudly (the ledger keys are digests of that same
 text, which the ledger check already enforces) instead of quietly measuring something else.
+
+``--gate-check`` is the mode that makes the rest of this file load-bearing: it measures every
+probe once and reads that single pass five ways -- the counterfact self-test, criterion wording
+drift, a ledger<->reading reconciliation, the frozen moment/plane baseline in
+``docs/quality/acceptance-probe-faces.json``, and its own membership in the ``gate:`` recipe.
+Before round C50 the tool existed but nothing ran it between a ledger flip and the commit, and
+``--all`` compared nothing, so three cells the ledger called ``proven`` read ``gap`` while exiting
+0. The reconciliation is the delicate one: cells whose reading depends on this *moment* (uncommitted
+work, the index, which commit HEAD is) turn red on any round that leaves evidence behind, so those
+are judged only on a quiet tree and named as ``deferred`` otherwise. ``--sync-faces`` is the only
+writer of the baseline, so a probe declaring itself stable becomes a diff a reviewer signs off.
 """
 
 from __future__ import annotations
@@ -42,6 +53,7 @@ import shutil
 import subprocess  # nosec B404
 import sys
 import tempfile
+import time
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
@@ -51,7 +63,7 @@ import tomllib
 import yaml
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable, Sequence
+    from collections.abc import Callable, Iterable, Mapping, Sequence
     from types import ModuleType
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -60,6 +72,40 @@ LEDGER_REL: Final = "docs/quality/acceptance-item-ledger.json"
 
 PROVEN: Final = "proven"
 GAP: Final = "gap"
+
+#: Where the frozen moment/coverage baseline lives. Written only by ``--sync-faces``, read by
+#: ``--gate-check``: a moment-dependent probe becoming "stable" has to be a diff a reviewer saw.
+FACES_REL: Final = "docs/quality/acceptance-probe-faces.json"
+
+#: The gate member this tool becomes. Its absence from the ``gate:`` recipe is a finding the
+#: recipe itself cannot hide, because ``tests/test_acceptance_probe_gate.py`` reads the recipe.
+GATE_MEMBER: Final = "acceptance-probe-check"
+
+#: What AC-17|01 names as the developer view: a whole-tree static check is a permanent red light
+#: on a debt-carrying tree, so these belong to the ratchet instead of to the gate.
+DEV_VIEW_TARGETS: Final = ("lint", "typecheck", "security", "format")
+
+#: Source markers whose presence in a measure's call closure means the reading is about *this
+#: moment* (uncommitted work, the index, or which commit HEAD happens to be) rather than about the
+#: repository. Measured in ``docs/evidence/C50/census-run2-final-readings.txt`` faces 4 and 5, and
+#: demonstrated by the same-commit pair in ``docs/evidence/C50/moment-pair-same-head.txt``: those
+#: three cells read ``gap`` with this round's archives uncommitted and ``proven`` at the same
+#: commit with a clean tree, which is why they are judged only when the tree is quiet.
+MOMENT_MARKERS: Final = (
+    ('"git", "status"', "worktree(git status)"),
+    ('"git", "ls-files"', "index(git ls-files)"),
+    ("ctx.tracked()", "index(ctx.tracked)"),
+    ("self._tracked", "index(ctx.tracked)"),
+    ('"git", "show"', "history(git show REV:)"),
+    ('"git", "log"', "history(git log)"),
+    ('"git", "ls-tree"', "history(git ls-tree)"),
+)
+MOMENT_SURFACES: Final = frozenset(label for _, label in MOMENT_MARKERS)
+
+#: One line of the gate recipe that launches a member in its own sub-make. The ``$(MAKE)`` is
+#: already expanded in a ``make -n`` listing, so both faces count the same shape.
+MAKE_SUBCALL = re.compile(r"--no-print-directory\s+([A-Za-z0-9._-]+)")
+GATE_BANNER = re.compile(r"===== gate: ([A-Za-z0-9._-]+) =====")
 
 MAIN_DB = "opendata"
 WAREHOUSE_DB = "opendata_data"
@@ -527,6 +573,166 @@ def first_capture(text: str, pattern: str) -> str:
     if not found:
         return "(absent)"
     return re.sub(r"[:}\s]+$", "", found.group(1))
+
+
+# --------------------------------------------------------------------------- #
+# Makefile and call-closure primitives (AC-17|01, --gate-check, --sync-faces)
+# --------------------------------------------------------------------------- #
+
+TARGET_LINE = re.compile(r"^([A-Za-z0-9._-]+):(?:[^=]|$)")
+
+
+def make_recipes(text: str) -> dict[str, list[str]]:
+    """Map each Makefile target to its recipe lines, tabs included.
+
+    Only the shape a reader needs to say whether an item can fail: the commands under a target,
+    and whether that list is empty. A target declared without commands is a no-op, which is the
+    one thing a gate member must never be.
+    """
+    recipes: dict[str, list[str]] = {}
+    current = ""
+    for line in text.splitlines():
+        if not line.startswith(("\t", " ")):
+            named = TARGET_LINE.match(line)
+            current = named.group(1) if named else ""
+            if named:
+                recipes.setdefault(current, [])
+            continue
+        if current and line.strip():
+            recipes.setdefault(current, []).append(line.strip())
+    return recipes
+
+
+def gate_recipe(text: str) -> list[str]:
+    """The ``gate:`` target's own recipe lines."""
+    return make_recipes(text).get("gate", [])
+
+
+def launched_by_line(line: str) -> list[str]:
+    """Every member a single gate recipe line launches (more than one is a masking shape)."""
+    return MAKE_SUBCALL.findall(line)
+
+
+def gate_members(text: str) -> list[str]:
+    """The gate's members, in the order the recipe runs them."""
+    return [name for line in gate_recipe(text) for name in launched_by_line(line)]
+
+
+def gate_banners(text: str) -> list[str]:
+    """The section banners the recipe prints, in order.
+
+    Each member is announced by the line right before its sub-make, and the recipe ends with a
+    ``PASSED`` banner that make can only reach if nothing aborted. So the expected shape is
+    ``banners == members + 1`` with the last one named ``PASSED`` -- a member that stopped being
+    announced is how a red item reaches the summary unnamed.
+    """
+    return [name for line in gate_recipe(text) for name in GATE_BANNER.findall(line)]
+
+
+def banner_pairing(members: Sequence[str], banners: Sequence[str]) -> tuple[bool, int]:
+    """Whether every member is announced in order and the run closes with ``PASSED``.
+
+    Returns:
+        ``(paired, unpaired)``: the shape holds overall, plus how many member positions disagree.
+    """
+    shape = len(banners) == len(members) + 1 and bool(banners) and banners[-1] == "PASSED"
+    unpaired = sum(
+        1
+        for position, name in enumerate(members)
+        if position >= len(banners) or banners[position] != name
+    )
+    return shape and not unpaired, unpaired
+
+
+def masking_lines(text: str) -> tuple[list[str], list[str], list[str]]:
+    """Split the gate recipe into the three shapes that let a sub-failure reach the summary.
+
+    Returns:
+        ``(ignore_prefix, echo_mask, chained)``: lines whose failure make is told to ignore, lines
+        that swallow a non-zero exit behind ``||``, and lines launching more than one member.
+    """
+    ignore: list[str] = []
+    masked: list[str] = []
+    chained: list[str] = []
+    for line in gate_recipe(text):
+        bare = line.lstrip("-@+ ")
+        if line.startswith("-"):
+            ignore.append(bare[:70])
+        if "||" in bare and re.search(r"\|\|\s*(echo|true|:)\b", bare):
+            masked.append(bare[:70])
+        if len(launched_by_line(bare)) > 1:
+            chained.append(bare[:70])
+    return ignore, masked, chained
+
+
+def top_level_defs(source: str) -> dict[str, ast.FunctionDef]:
+    """Index a module's top-level function definitions by name."""
+    found: dict[str, ast.FunctionDef] = {}
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.FunctionDef):
+            found.setdefault(node.name, node)
+    return found
+
+
+def surfaces_in_closure(measure_name: str, source: str) -> tuple[str, ...]:
+    """Which moment-bearing surfaces a measure reaches, walked over source rather than luck.
+
+    The walk covers the module-level helpers the measure calls, so a probe that reaches a git
+    reading through a shared helper is classified the same as one that shells out inline. Reading
+    source and not this run's behaviour is the point: a face that touches ``git status`` is
+    moment-dependent even on the pass that happened to see a clean tree.
+
+    Args:
+        measure_name: Name of the probe's measure function.
+        source: This module's own source text.
+
+    Returns:
+        Sorted surface labels; empty when the closure only reads file contents.
+    """
+    defs = top_level_defs(source)
+    seen: set[str] = set()
+    queue = [measure_name]
+    parts: list[str] = []
+    while queue:
+        current = queue.pop()
+        node = defs.get(current)
+        if node is None or current in seen:
+            continue
+        seen.add(current)
+        parts.append(ast.unparse(node))
+        for ref in ast.walk(node):
+            reached = ref.id if isinstance(ref, ast.Name) else getattr(ref, "attr", "")
+            if reached in defs and reached not in seen:
+                queue.append(reached)
+    body = "\n".join(parts).replace("'", '"')
+    return tuple(sorted({label for marker, label in MOMENT_MARKERS if marker in body}))
+
+
+def probe_surfaces(probe: Probe, source: str) -> tuple[str, ...]:
+    """The moment-bearing surfaces of one probe."""
+    name = getattr(probe.measure, "__name__", "")
+    return surfaces_in_closure(name, source)
+
+
+def own_source() -> str:
+    """This file's source, which is what the surface walk reads."""
+    return Path(__file__).read_text(encoding="utf-8", errors="replace")
+
+
+def worktree_quiet() -> tuple[bool, str]:
+    """Whether git sees nothing but committed work, plus what it says when it does not.
+
+    ``--gate-check`` uses this to decide whether the moment-dependent cells may be judged at all.
+    A round is by construction a tree with something in flight, so judging those cells there would
+    red-light the round for the act of leaving evidence behind.
+    """
+    code, out = run_argv(["git", "status", "--porcelain", "--untracked-files=all"])
+    if code != 0:
+        return False, f"git status exit {code}"
+    lines = [line for line in out.splitlines() if line.strip()]
+    if not lines:
+        return True, ""
+    return False, f"{len(lines)} entry(ies), first: {lines[0]}"
 
 
 # --------------------------------------------------------------------------- #
@@ -2725,6 +2931,111 @@ def judge_ac17_10(facts: Facts) -> Verdict:
 
 
 # --------------------------------------------------------------------------- #
+# AC-17|01 -- the gate judged as a gate: members that can each actually fail
+# --------------------------------------------------------------------------- #
+
+#: The recipe AC-17|01 is about, and the two commands its "green in a reproducible environment"
+#: clause is decided by. ``make -n`` resolves the recipe without running it, so this face asks
+#: make itself -- not this file's own text -- how many members the gate actually launches.
+MAKEFILE_REL: Final = "Makefile"
+GATE_DRY_RUN: Final = ("make", "-n", "gate")
+IMPORT_PROBE: Final = "import opendata, sys; print(opendata.__file__)"
+
+
+def measure_ac17_01(ctx: Context) -> Facts:
+    """Read the gate recipe for the shapes that decide whether a member can bite."""
+    text = ctx.read(MAKEFILE_REL)
+    recipes = make_recipes(text)
+    members = gate_members(text)
+    banners = gate_banners(text)
+    paired, unpaired = banner_pairing(members, banners)
+    without = [name for name in members if not recipes.get(name)]
+    ignore, masked, chained = masking_lines(text)
+    dev_view = [name for name in members if name in DEV_VIEW_TARGETS]
+    named = [name for name in BACKTICK.findall(ctx.item("AC-17|01").text) if name in members]
+    dry_code, dry_out = run_argv(list(GATE_DRY_RUN))
+    dry_members = [name for line in dry_out.splitlines() for name in MAKE_SUBCALL.findall(line)]
+    import_code, import_out = run_argv([sys.executable, "-c", IMPORT_PROBE])
+    where = import_out.strip().splitlines()[-1] if import_out.strip() else ""
+    return {
+        "members": count(len(members)),
+        "member_list": ", ".join(members),
+        "banners": count(len(banners)),
+        "banner_match": flag(paired),
+        "banner_unpaired": count(unpaired),
+        "banner_closing": banners[-1] if banners else "-",
+        "no_recipe": count(len(without)),
+        "no_recipe_sample": ", ".join(without[:5]),
+        "ignore_prefix": count(len(ignore)),
+        "echo_mask": count(len(masked)),
+        "chained": count(len(chained)),
+        "mask_sample": " | ".join((ignore + masked + chained)[:2]),
+        "dev_view": count(len(dev_view)),
+        "dev_view_sample": ", ".join(dev_view),
+        "dry_rc": count(dry_code),
+        "dry_members": count(len(dry_members)),
+        "import_rc": count(import_code),
+        "import_where": where[:90],
+        "import_under_root": flag(bool(where) and Path(where).resolve().is_relative_to(REPO_ROOT)),
+        "self_member": flag(GATE_MEMBER in members),
+        "doc_named": count(len(named)),
+        "doc_unnamed": ", ".join(name for name in members if name not in named),
+        "doc_unnamed_count": count(len([name for name in members if name not in named])),
+    }
+
+
+def judge_ac17_01(facts: Facts) -> Verdict:
+    """``AC-17|01``: the gate lists members, and every listed member can actually fail."""
+    ok = (
+        positive(facts["members"])
+        and facts["banner_match"] == "yes"
+        and facts["banner_unpaired"] == "0"
+        and facts["banner_closing"] == "PASSED"
+        and facts["no_recipe"] == "0"
+        and facts["ignore_prefix"] == "0"
+        and facts["echo_mask"] == "0"
+        and facts["chained"] == "0"
+        and facts["dev_view"] == "0"
+        and facts["dry_rc"] == "0"
+        and facts["dry_members"] == facts["members"]
+        and facts["import_rc"] == "0"
+        and facts["import_under_root"] == "yes"
+        and facts["self_member"] == "yes"
+    )
+    readings = (
+        f"gate members = {facts['members']}（{facts['member_list']}）；每项一个 sub-make，"
+        f"前一项非零即中止；横幅 {facts['banners']} 段 = 成员数 + 收尾那一段，逐项配对 = "
+        f"{facts['banner_match']}（错位的成员位 {facts['banner_unpaired']} 个，最后一段写的是 "
+        f"{facts['banner_closing']}）",
+        f"能被汇总掩盖的三种形状：`-` 前缀 {facts['ignore_prefix']} 行、`|| echo` "
+        f"{facts['echo_mask']} 行、一行串两个成员 {facts['chained']} 行；没有配方的成员 "
+        f"{facts['no_recipe']}"
+        + (f"（{facts['no_recipe_sample']}）" if facts["no_recipe_sample"] else "")
+        + (f"；样本 {facts['mask_sample']}" if facts["mask_sample"] else ""),
+        f"make 自己的答案：`{' '.join(GATE_DRY_RUN)}` exit {facts['dry_rc']}，数出 "
+        f"{facts['dry_members']} 个 sub-make —— 配方文本与 make 实际启动的成员必须相等，否则被量的"
+        "是这份文件而不是那道门禁",
+        f"开发者视图不得进门禁：成员里出现 `{'/'.join(DEV_VIEW_TARGETS)}` 的个数 = "
+        f"{facts['dev_view']}"
+        + (f"（{facts['dev_view_sample']}）" if facts["dev_view_sample"] else ""),
+        f"可复现环境（C36 加性更正）：`{IMPORT_PROBE}` exit {facts['import_rc']}，来自 "
+        f"{facts['import_where']}，在本树内 = {facts['import_under_root']}",
+        f"判定成员自证：`{GATE_MEMBER}` 在成员名单里 = {facts['self_member']}；判据原文点名了 "
+        f"{facts['doc_named']} 项，未被点名的 {facts['doc_unnamed_count']} 项 = "
+        f"{facts['doc_unnamed']} —— 点名的少一个不是缺陷：条目文本是台账的内容哈希键，把成员数写进"
+        "判据会让每一次加成员都改写判据",
+    )
+    reason = (
+        ""
+        if ok
+        else "「逐项显式阻断」说的是每一项都能让门禁中止：成员为空、target 没有配方、"
+        "`-` 前缀、`|| echo`、一行串两项、开发者视图被放进来、make 自己数出的成员数与配方不符、"
+        "环境 import 不在这棵树里、或判定成员被移出 gate —— 任何一种都让「全绿」重新变成一句汇总"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+# --------------------------------------------------------------------------- #
 # AC-18 -- the freshness door and the catalog, judged on the faces a caller reads
 # --------------------------------------------------------------------------- #
 
@@ -4901,6 +5212,74 @@ PROBES: Final[tuple[Probe, ...]] = (
             "pk_is_business_key": "yes",
         },
     ),
+    Probe(
+        item="AC-17|01",
+        expects="逐项显式阻断",
+        summary="成员名单、横幅与成员一一配对、三种掩盖形状为零、make 自己数出的成员数与配方相符、"
+        "可复现环境、判定成员在名单里",
+        measure=measure_ac17_01,
+        judge=judge_ac17_01,
+        breaks=(
+            Break("门禁成员被清空（逐项阻断无从谈起）", (("members", "0"),), GAP),
+            Break(
+                "一个成员没有配方（target 存在却 0 行命令，永远绿）",
+                (("no_recipe", "1"), ("no_recipe_sample", "a2-check")),
+                GAP,
+            ),
+            Break(
+                "成员调用被 `-` 前缀吞掉退出码",
+                (
+                    ("ignore_prefix", "1"),
+                    ("mask_sample", "-@$(MAKE) --no-print-directory a2-check"),
+                ),
+                GAP,
+            ),
+            Break("成员后面接 `|| echo` 把失败说成通过", (("echo_mask", "1"),), GAP),
+            Break("两个成员串在同一行", (("chained", "1"),), GAP),
+            Break(
+                "开发者视图的全树静态检查被放进门禁",
+                (("dev_view", "1"), ("dev_view_sample", "lint")),
+                GAP,
+            ),
+            Break("横幅数与成员数不配对（有一项不被显式宣告）", (("banner_match", "no"),), GAP),
+            Break("某个成员的名字与它自己的宣告段错位", (("banner_unpaired", "1"),), GAP),
+            Break(
+                "收尾的 PASSED 段被移走（绿色横幅再也不能证明逐项跑完了）",
+                (("banner_closing", "frontend-e2e"),),
+                GAP,
+            ),
+            Break(
+                "make 自己数出的 sub-make 为 0（配方列了成员却没有一个被启动）",
+                (("dry_members", "0"),),
+                GAP,
+            ),
+            Break("`make -n gate` 自己失败", (("dry_rc", "2"),), GAP),
+            Break("解释器 import opendata 失败（可复现环境不成立）", (("import_rc", "1"),), GAP),
+            Break(
+                "import 到的 opendata 不在这棵树里（量的不是这个仓库）",
+                (("import_under_root", "no"),),
+                GAP,
+            ),
+            Break("判定成员自己被移出 gate 配方", (("self_member", "no"),), GAP),
+        ),
+        repair={
+            "members": "*members",
+            "banners": "*banners",
+            "banner_match": "yes",
+            "banner_unpaired": "0",
+            "banner_closing": "PASSED",
+            "no_recipe": "0",
+            "ignore_prefix": "0",
+            "echo_mask": "0",
+            "chained": "0",
+            "dev_view": "0",
+            "dry_rc": "0",
+            "dry_members": "*members",
+            "import_rc": "0",
+            "import_under_root": "yes",
+            "self_member": "yes",
+        },
+    ),
 )
 
 
@@ -5035,8 +5414,38 @@ def closure_hint(probe: Probe, facts: Facts) -> str:
     return "; ".join(moved)
 
 
-def self_test(ctx: Context) -> int:
-    """Apply every counterfact to a *clean* reading and fail when it does not bite.
+def measured_readings(ctx: Context) -> tuple[dict[str, Facts], dict[str, str]]:
+    """Measure every probe once, keeping a raised probe as a finding instead of a crash.
+
+    One pass feeds the counterfacts, the ledger comparison and the face bookkeeping. That sharing
+    is the whole cost argument for ``--gate-check``: two hand runs of this tool cost 495 s, while a
+    pass that measures once and reads five ways costs 252 s
+    (``docs/evidence/C50/census-run2-final-readings.txt``, face 3).
+
+    Args:
+        ctx: Loaded document and ledger.
+
+    Returns:
+        ``(readings, unmeasured)``: facts by item id for the probes that could be measured, and the
+        failure message for each that could not. A drifting probe is left out of both, because its
+        drift is already the finding and measuring it would describe a different claim.
+    """
+    readings: dict[str, Facts] = {}
+    unmeasured: dict[str, str] = {}
+    for probe in PROBES:
+        if wording_drift(ctx, probe):
+            continue
+        try:
+            readings[probe.item] = probe.measure(ctx)
+        except (ProbeError, KeyError, ValueError) as exc:
+            unmeasured[probe.item] = f"{probe.item}: cannot measure: {exc}"
+    return readings, unmeasured
+
+
+def self_test_findings(
+    ctx: Context, readings: Mapping[str, Facts], unmeasured: Mapping[str, str]
+) -> tuple[list[str], str]:
+    """Apply every counterfact to a *clean* reading and collect the ones that do not bite.
 
     This checks the judges, not the measurements. Two properties have to hold per item:
 
@@ -5044,18 +5453,29 @@ def self_test(ctx: Context) -> int:
       that cannot be satisfied is how a red light becomes a permanent one.
     * every counterfact flips that clean reading back to a gap. A break applied to an item that
       is already red proves nothing, which is why the measured facts are not the start point.
+
+    Args:
+        ctx: Loaded document and ledger.
+        readings: Measured facts by item id, from one shared pass.
+        unmeasured: Items whose measure raised, with the message that says so.
+
+    Returns:
+        ``(findings, reading)``: one string per broken judge (empty when every judge bites), and
+        the count of what was actually applied -- a gate log that says "self test passed" without
+        a denominator cannot be told apart from one that checked nothing.
     """
     failures: list[str] = []
+    reached = 0
+    applied = 0
     for probe in PROBES:
         drift = wording_drift(ctx, probe)
         if drift:
             failures.append(drift)
             continue
-        try:
-            facts = probe.measure(ctx)
-        except (ProbeError, KeyError, ValueError) as exc:
-            failures.append(f"{probe.item}: cannot measure: {exc}")
+        if probe.item in unmeasured:
+            failures.append(unmeasured[probe.item])
             continue
+        facts = readings[probe.item]
         stray_repair = sorted(set(probe.repair) - set(facts))
         if stray_repair:
             failures.append(
@@ -5069,6 +5489,7 @@ def self_test(ctx: Context) -> int:
                 "here could never be closed by real work"
             )
             continue
+        reached += 1
         for brk in probe.breaks:
             if brk.expect != GAP:
                 failures.append(
@@ -5082,6 +5503,7 @@ def self_test(ctx: Context) -> int:
                     f"{probe.item} / {brk.label}: states facts no measure produces: {stray}"
                 )
                 continue
+            applied += 1
             mutated = dict(clean)
             mutated.update(brk.facts)
             if probe.judge(mutated).state != GAP:
@@ -5089,6 +5511,18 @@ def self_test(ctx: Context) -> int:
                     f"{probe.item} / {brk.label}: the judge still says proven, so the item is not "
                     "really gated on this face"
                 )
+    reading = (
+        f"反事实面：{reached}/{len(PROBES)} 个探针走到了判定，"
+        f"{applied} 条 break 各被施加一次、每条都要求把干净读数打回 gap"
+    )
+    return failures, reading
+
+
+def self_test(ctx: Context) -> int:
+    """Run the judges against their own counterfacts and report the ones that failed to bite."""
+    readings, unmeasured = measured_readings(ctx)
+    failures, reading = self_test_findings(ctx, readings, unmeasured)
+    print(f"  - {reading}")
     if failures:
         print("FAIL: item-probe self test:", file=sys.stderr)
         for failure in failures:
@@ -5102,6 +5536,355 @@ def self_test(ctx: Context) -> int:
     return 0
 
 
+# --------------------------------------------------------------------------- #
+# The gate pass -- one measure read five ways
+# --------------------------------------------------------------------------- #
+
+
+def item_of(key: str) -> str:
+    """The ``AC-N|NN`` a ledger key's first two segments spell.
+
+    Ledger keys carry the hash of the criterion's wording while probes are registered by item id,
+    so the plane ratchet compares item ids: re-wording a criterion moves its key, but not the
+    question of whether anything re-measures it.
+    """
+    parts = key.split("|")
+    return "|".join(parts[:2]) if len(parts) >= 2 else key
+
+
+@dataclass(frozen=True)
+class FaceBook:
+    """What one source pass claims about faces: who reads a moment, and which cells read nothing.
+
+    Attributes:
+        moment: Item id -> the git-moment surfaces that probe's measure reaches (empty = stable).
+        unplumbed: Item ids the ledger calls proven with no probe registered to re-measure them.
+    """
+
+    moment: dict[str, list[str]]
+    unplumbed: list[str]
+
+
+def faces_of(entry: object) -> list[str] | None:
+    """The moment faces one baseline record states, or ``None`` when that record cannot be read."""
+    if not isinstance(entry, dict):
+        return None
+    raw = entry.get("moment_faces")
+    if not isinstance(raw, list):
+        return None
+    return sorted(str(face) for face in raw)
+
+
+def face_book(ctx: Context, source: str) -> FaceBook:
+    """What ``--sync-faces`` freezes: each probe's moment faces and the cells with no plane.
+
+    Nothing here comes from the working tree, so the same source always yields the same book.
+    """
+    covered = {probe.item for probe in PROBES}
+    return FaceBook(
+        moment={
+            probe.item: sorted(probe_surfaces(probe, source))
+            for probe in sorted(PROBES, key=lambda p: p.item)
+        },
+        unplumbed=sorted(
+            item_of(key)
+            for key, entry in ctx.ledger.items()
+            if entry.get("state") == PROVEN and item_of(key) not in covered
+        ),
+    )
+
+
+def read_face_baseline() -> FaceBook | None:
+    """The committed face baseline as a book, or ``None`` when it is absent or malformed."""
+    path = REPO_ROOT / FACES_REL
+    if not path.is_file():
+        return None
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(raw, dict):
+        return None
+    probes = raw.get("probes")
+    cells = raw.get("proven_without_plane")
+    if not isinstance(probes, dict) or not isinstance(cells, list):
+        return None
+    moment: dict[str, list[str]] = {}
+    for item, entry in probes.items():
+        faces = faces_of(entry)
+        if faces is None:
+            return None
+        moment[str(item)] = faces
+    return FaceBook(moment, sorted(str(cell) for cell in cells))
+
+
+def face_diff(saved: FaceBook | None, book: FaceBook) -> tuple[list[str], str]:
+    """Compare a frozen face baseline with today's recomputation, and report both.
+
+    Two rules, one per direction of cheating:
+
+    * The moment set is recomputed from source every run. A probe that reads ``git status`` today
+      and claims to read nothing tomorrow has weakened the ledger's stale-proof protection without
+      anyone saying so, so any difference is red until ``--sync-faces`` writes it down as a diff.
+    * ``proven_without_plane`` may only shrink. It lists the cells nothing re-measures, and
+      recording it is honest about a gap rather than pretending completeness
+      (``docs/evidence/C50/census-run2-final-readings.txt``, face 7: 8 proven cells had no plane).
+
+    Args:
+        saved: The committed baseline, or ``None`` when there is nothing to compare against.
+        book: Today's recomputation.
+
+    Returns:
+        ``(findings, reading)``: what is wrong, and one sentence of what was compared.
+    """
+    moment_count = sum(1 for faces in book.moment.values() if faces)
+    reading = (
+        f"面基线：{len(book.moment)} 个探针里 {moment_count} 个在读 moment 面；"
+        f"proven 而无探针 {len(book.unplumbed)} 个"
+        + (f"，基线 {len(saved.unplumbed)} 个" if saved else "，基线读不出来")
+        + "（只降不升）"
+    )
+    if saved is None:
+        return (
+            [
+                f"{FACES_REL} 缺失或形状不对：moment 面与无探针格子都没有可比的东西，"
+                "跑 `--sync-faces` 生成后连同 diff 一起进账"
+            ],
+            reading,
+        )
+
+    moved: list[str] = []
+    for item in sorted(set(saved.moment) | set(book.moment)):
+        was, now = saved.moment.get(item), book.moment.get(item)
+        if was is None:
+            moved.append(f"{item}: 基线里没有这个探针，现在读出 {now or '稳定面'}")
+        elif now is None:
+            moved.append(f"{item}: 探针已经不在了，基线还留着它的面 {was or '稳定面'}")
+        elif was != now:
+            moved.append(f"{item}: {was or '稳定面'} -> {now or '稳定面'}")
+    if moved:
+        return (
+            [
+                f"{FACES_REL} 与源码重算的 moment 面不符：{'；'.join(moved)} —— "
+                "一个读 `git status` 的探针自称只读文件，就是在没有工作树的时候替台账放行；"
+                "要改就 `--sync-faces`，让这件事成为有人看过的 diff"
+            ],
+            reading,
+        )
+
+    grew = sorted(set(book.unplumbed) - set(saved.unplumbed))
+    if grew:
+        return (
+            [
+                f"被判 proven 却没有探针的格子变多了：{'、'.join(grew)} —— "
+                "这个集合只能靠加探针来减去格子；变多只能说明 proven 是翻上去的，而不是量出来的"
+            ],
+            reading,
+        )
+    return [], reading
+
+
+def reconcile_state(ledger_state: str, reading: str, faces: Sequence[str], quiet: bool) -> str:
+    """Which of the five reconciliation labels one cell carries.
+
+    ``stale-proof`` is the only red one, and deliberately the narrowest: the ledger calls the cell
+    proven while its probe now reads a gap, on a face that is about the repository rather than about
+    this moment. Moment faces are judged on a quiet tree and deferred on any other, because a round
+    is by construction a tree with evidence in flight -- the same commit read twice said gap with
+    three archives uncommitted and proven once they were committed
+    (``docs/evidence/C50/moment-pair-same-head.txt``).
+
+    Args:
+        ledger_state: What the ledger records today.
+        reading: What the probe's judge says now.
+        faces: The moment faces this probe's measure reaches; empty means the reading is stable.
+        quiet: Whether the work tree has nothing in flight.
+
+    Returns:
+        ``agrees``, ``unflipped``, ``open``, ``deferred`` or ``stale-proof``.
+    """
+    if ledger_state == reading:
+        return "agrees"
+    if reading == PROVEN:
+        return "unflipped"
+    if ledger_state != PROVEN:
+        return "open"
+    return "deferred" if faces and not quiet else "stale-proof"
+
+
+def reconcile(
+    ctx: Context, readings: Mapping[str, Facts], book: FaceBook, quiet: bool
+) -> tuple[dict[str, list[str]], str]:
+    """Compare every probe reading with the ledger and group the cells by label.
+
+    Args:
+        ctx: Loaded document and ledger.
+        readings: Measured facts by item id.
+        book: Today's recomputed faces, so the classification comes from source and not from the
+            baseline this pass is checking.
+        quiet: Whether the work tree has nothing in flight.
+
+    Returns:
+        ``(cells, reading)``: item ids grouped under each label, plus one printed sentence.
+    """
+    cells: dict[str, list[str]] = {
+        "agrees": [],
+        "unflipped": [],
+        "open": [],
+        "deferred": [],
+        "stale-proof": [],
+    }
+    for probe in sorted(PROBES, key=lambda p: p.item):
+        facts = readings.get(probe.item)
+        if facts is None:
+            continue
+        label = reconcile_state(
+            ctx.ledger_entry(probe.item).get("state", "?"),
+            probe.judge(facts).state,
+            book.moment.get(probe.item, []),
+            quiet,
+        )
+        cells[label].append(probe.item)
+    counts = ", ".join(f"{label}={len(names)}" for label, names in cells.items())
+    stale = cells["stale-proof"]
+    reading = (
+        f"台账↔读数：{counts}（共 {sum(len(names) for names in cells.values())} 格有读数）"
+        " —— 只有 stale-proof 是红灯：台账记 proven 而探针现在读出 gap，且读的那一面与这一刻无关"
+        + (f"；红格子 {'、'.join(stale)}" if stale else "")
+    )
+    return cells, reading
+
+
+def stale_cell_finding(item: str, faces: Sequence[str]) -> str:
+    """The sentence naming why one cell flipped from proven back to a gap."""
+    named = ", ".join(faces) if faces else "文件内容，与这一刻无关"
+    return (
+        f"台账把 {item} 记成 proven，探针现在读出 gap（被读的面：{named}）—— 台账翻上去之后没有"
+        "任何东西再量它，这一遍就是那个东西"
+    )
+
+
+def verdict_lines(readings: Mapping[str, Facts]) -> list[str]:
+    """One ``VERDICT`` line per reading, so a gate log says which items it really re-measured.
+
+    Before this pass, 0 of 46 archived gate logs contained a judging plane at all
+    (``docs/evidence/C50/census-run2-final-readings.txt``, face 2); the census counts these lines,
+    so printing them from inside the gate is what makes that reading non-zero from now on.
+    """
+    lines: list[str] = []
+    for probe in sorted(PROBES, key=lambda p: p.item):
+        facts = readings.get(probe.item)
+        if facts is None:
+            continue
+        verdict = probe.judge(facts)
+        suffix = f" — {verdict.reason}" if verdict.reason else ""
+        lines.append(f"VERDICT {probe.item}: {verdict.state}{suffix}")
+    return lines
+
+
+def membership_findings(ctx: Context) -> list[str]:
+    """Red when this tool is not a member of ``gate:`` -- a judge nobody runs judges nothing."""
+    members = gate_members(ctx.read(MAKEFILE_REL))
+    if GATE_MEMBER in members:
+        return []
+    return [
+        f"{GATE_MEMBER} 不在 {MAKEFILE_REL} 的 `gate:` 配方里（配方启动的成员 {len(members)} 个："
+        f"{'、'.join(members) or '无'}）—— 「逐项显式阻断」要的是每一项都能让门禁中止，而判定成员"
+        "自己先不在场"
+    ]
+
+
+def gate_check(ctx: Context) -> int:
+    """Run this tool as a gate member: one measure pass, five finding families, one exit code.
+
+    The five faces are the ones C50 measured as missing: nothing re-measured an item between the
+    ledger flip and the commit, ``--all`` compared nothing so three stale cells exited 0, and eight
+    proven cells had no plane at all. The measured cost is ~252 s of the ~8 min gate
+    (``docs/evidence/C50/census-run2-final-readings.txt``, face 3).
+
+    Args:
+        ctx: Loaded document and ledger.
+
+    Returns:
+        0 when every face holds, 1 with a printed list of the ones that do not.
+    """
+    started = time.perf_counter()
+    readings, unmeasured = measured_readings(ctx)
+    wall = time.perf_counter() - started
+    quiet, git_says = worktree_quiet()
+    book = face_book(ctx, own_source())
+
+    print(f"\n### gate-check  ({len(PROBES)} 个探针，一遍 measure)")
+    print(
+        f"  - 本遍墙钟 = {wall:.1f} s，读到事实的探针 {len(readings)}/{len(PROBES)}，"
+        f"测不出来的：{', '.join(sorted(unmeasured)) or '无'}"
+    )
+    print(
+        f"  - 工作树：{'干净' if quiet else git_says} —— worktree/index/history 面只在干净时判，"
+        "否则记为 deferred 并点名"
+    )
+    for line in verdict_lines(readings):
+        print(line)
+
+    cells, reconcile_reading = reconcile(ctx, readings, book, quiet)
+    face_findings, face_reading = face_diff(read_face_baseline(), book)
+    not_a_member = membership_findings(ctx)
+    judge_findings, counterfact_reading = self_test_findings(ctx, readings, unmeasured)
+    findings: list[str] = []
+    findings += judge_findings
+    findings += [
+        stale_cell_finding(item, book.moment.get(item, [])) for item in cells["stale-proof"]
+    ]
+    findings += face_findings
+    findings += not_a_member
+
+    print(f"  - {counterfact_reading}")
+    print(f"  - {reconcile_reading}")
+    if cells["deferred"]:
+        print(f"  - deferred（时刻面，等工作树干净再判）：{'、'.join(cells['deferred'])}")
+    print(f"  - {face_reading}")
+    print(f"  - 成员自证：`{GATE_MEMBER}` 在 `gate:` 配方里 = {flag(not not_a_member)}")
+
+    if findings:
+        print("FAIL: acceptance-probe gate:", file=sys.stderr)
+        for finding in findings:
+            print(f"  {finding}", file=sys.stderr)
+        return 1
+    print(
+        f"OK: {len(readings)} 个条目级判定在门禁里跑了一遍（{wall:.1f} s）；判据漂字、反事实、"
+        "台账↔读数、面基线、成员自证五面全过。"
+    )
+    return 0
+
+
+def sync_faces(ctx: Context) -> int:
+    """Freeze today's face book into the baseline file, for a human to review as a diff.
+
+    Deliberately a separate flag: the baseline is what turns "this probe stopped reading the work
+    tree" from a silent drift into a change someone has to look at.
+    """
+    book = face_book(ctx, own_source())
+    payload = {
+        "written_by": "python scripts/quality/acceptance_item_probe.py --sync-faces",
+        "meaning": (
+            "probes.AC-N|NN.moment_faces = 该探针的 measure 调用闭包里读到的 git 时刻面"
+            "（worktree/index/history），空数组表示只读文件内容；proven_without_plane = "
+            "台账记 proven 而没有任何探针重测它的格子（AC-N|NN），只降不升"
+        ),
+        "probes": {item: {"moment_faces": faces} for item, faces in book.moment.items()},
+        "proven_without_plane": book.unplumbed,
+    }
+    text = json.dumps(payload, indent=2, ensure_ascii=False) + "\n"
+    path = REPO_ROOT / FACES_REL
+    path.write_text(text, encoding="utf-8")
+    moment = sum(1 for faces in book.moment.values() if faces)
+    print(
+        f"wrote {FACES_REL}：{len(book.moment)} 个探针，{moment} 个在读 moment 面，"
+        f"proven 而无探针 {len(book.unplumbed)} 个"
+    )
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Run the probes as a command-line tool."""
     parser = argparse.ArgumentParser(description="Recompute individual acceptance items")
@@ -5109,6 +5892,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--all", action="store_true", help="run every probe")
     parser.add_argument("--item", action="append", default=[], help="run one AC-N|NN (repeatable)")
     parser.add_argument("--self-test", action="store_true", help="prove every judge bites")
+    parser.add_argument(
+        "--gate-check",
+        action="store_true",
+        help=f"run as the {GATE_MEMBER} gate member: one pass, five faces, one exit code",
+    )
+    parser.add_argument(
+        "--sync-faces",
+        action="store_true",
+        help=f"rewrite {FACES_REL} from the source, for a reviewer to diff",
+    )
     parser.add_argument("--json", metavar="PATH", help="also write the readings as JSON")
     args = parser.parse_args(list(argv) if argv is not None else None)
 
@@ -5116,14 +5909,19 @@ def main(argv: Sequence[str] | None = None) -> int:
         for probe in PROBES:
             print(f"{probe.item}  {probe.summary}")
         return 0
-    if not (args.all or args.item or args.self_test):
-        parser.error("choose --all, --item AC-N|NN, or --self-test")
+    if not (args.all or args.item or args.self_test or args.gate_check or args.sync_faces):
+        parser.error("choose --all, --item AC-N|NN, --self-test, --gate-check, or --sync-faces")
 
     try:
         ctx = load_context()
     except (ProbeError, json.JSONDecodeError) as exc:
         print(f"FAIL: {exc}", file=sys.stderr)
         return 1
+
+    if args.sync_faces:
+        return sync_faces(ctx)
+    if args.gate_check:
+        return gate_check(ctx)
 
     if args.self_test:
         rc = self_test(ctx)

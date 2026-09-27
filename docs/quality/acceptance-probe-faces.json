@@ -1,0 +1,139 @@
+{
+  "written_by": "python scripts/quality/acceptance_item_probe.py --sync-faces",
+  "meaning": "probes.AC-N|NN.moment_faces = 该探针的 measure 调用闭包里读到的 git 时刻面（worktree/index/history），空数组表示只读文件内容；proven_without_plane = 台账记 proven 而没有任何探针重测它的格子（AC-N|NN），只降不升",
+  "probes": {
+    "AC-13|07": {
+      "moment_faces": []
+    },
+    "AC-17|01": {
+      "moment_faces": []
+    },
+    "AC-17|03": {
+      "moment_faces": [
+        "history(git log)",
+        "history(git show REV:)",
+        "index(ctx.tracked)"
+      ]
+    },
+    "AC-17|05": {
+      "moment_faces": [
+        "history(git log)",
+        "history(git show REV:)"
+      ]
+    },
+    "AC-17|07": {
+      "moment_faces": [
+        "index(ctx.tracked)"
+      ]
+    },
+    "AC-17|08": {
+      "moment_faces": [
+        "index(ctx.tracked)"
+      ]
+    },
+    "AC-17|10": {
+      "moment_faces": [
+        "history(git log)",
+        "index(git ls-files)"
+      ]
+    },
+    "AC-18|01": {
+      "moment_faces": []
+    },
+    "AC-18|02": {
+      "moment_faces": []
+    },
+    "AC-18|03": {
+      "moment_faces": []
+    },
+    "AC-1|01": {
+      "moment_faces": [
+        "index(ctx.tracked)"
+      ]
+    },
+    "AC-1|02": {
+      "moment_faces": [
+        "index(ctx.tracked)"
+      ]
+    },
+    "AC-1|03": {
+      "moment_faces": [
+        "index(ctx.tracked)"
+      ]
+    },
+    "AC-1|04": {
+      "moment_faces": [
+        "index(ctx.tracked)"
+      ]
+    },
+    "AC-1|05": {
+      "moment_faces": []
+    },
+    "AC-1|06": {
+      "moment_faces": []
+    },
+    "AC-1|07": {
+      "moment_faces": [
+        "index(ctx.tracked)"
+      ]
+    },
+    "AC-1|08": {
+      "moment_faces": []
+    },
+    "AC-1|09": {
+      "moment_faces": [
+        "index(ctx.tracked)"
+      ]
+    },
+    "AC-1|10": {
+      "moment_faces": [
+        "history(git log)",
+        "history(git ls-tree)",
+        "index(ctx.tracked)",
+        "worktree(git status)"
+      ]
+    },
+    "AC-2|01": {
+      "moment_faces": []
+    },
+    "AC-2|02": {
+      "moment_faces": []
+    },
+    "AC-2|03": {
+      "moment_faces": []
+    },
+    "AC-2|04": {
+      "moment_faces": []
+    },
+    "AC-2|05": {
+      "moment_faces": []
+    },
+    "AC-9|02": {
+      "moment_faces": []
+    },
+    "AC-9|03": {
+      "moment_faces": []
+    },
+    "AC-9|04": {
+      "moment_faces": []
+    },
+    "AC-9|05": {
+      "moment_faces": []
+    },
+    "AC-9|08": {
+      "moment_faces": []
+    },
+    "AC-9|09": {
+      "moment_faces": []
+    }
+  },
+  "proven_without_plane": [
+    "AC-16|05",
+    "AC-16|09",
+    "AC-17|02",
+    "AC-17|04",
+    "AC-17|06",
+    "AC-17|09",
+    "§4|03"
+  ]
+}
