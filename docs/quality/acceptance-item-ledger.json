@@ -465,13 +465,70 @@
       "state": "unreviewed"
     },
     "AC-18|01|2524a54e": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C46",
+      "date": "2026-09-27",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-18|01'（VERDICT proven：新鲜度门 6/6 节点、告警面 9/9 节点、调度接线三条事实） ＋ python -m pytest tests/test_data_catalog.py tests/test_alert_matrix.py -q --no-cov -p no:cacheprovider -m 'not e2e'（29 passed = 14 目录 + 15 告警矩阵） ＋ python -m pytest tests/test_freshness.py tests/test_trading_calendar.py tests/test_data_query_api.py -q --no-cov -m 'not e2e'（58 passed / 15 deselected） ＋ python docs/evidence/C46/warehouse_census.py --live（真机只读：33 条注册腿 → 7 条有读数 fresh=1/stale=4/missing=22、unmapped=26） ＋ python scripts/quality/acceptance_item_probe.py --self-test（23 探针 / 162 反事实全扳红，exit 0） ＋ make gate（回填前 17 节 GATE_EXIT=0；回填后另跑一遍）",
+      "evidence": [
+        "docs/evidence/C46/README.md",
+        "docs/evidence/C46/before_census.py",
+        "docs/evidence/C46/before-census-head.txt",
+        "docs/evidence/C46/after-census-worktree.txt",
+        "docs/evidence/C46/warehouse_census.py",
+        "docs/evidence/C46/warehouse-census-live.txt",
+        "docs/evidence/C46/probe-ac18-01.txt",
+        "docs/evidence/C46/self-test.txt",
+        "docs/evidence/C46/gate-run0-zero-dep-fail.txt",
+        "docs/evidence/C46/zero-dep-census-after-refreeze.txt",
+        "docs/evidence/C46/gate-run1-prebackfill.txt",
+        "opendata/pipeline/alert_matrix.py",
+        "opendata/pipeline/freshness.py",
+        "opendata/pipeline/jobs.py",
+        "opendata/pipeline/schedules.yaml",
+        "opendata/api/data_query.py",
+        "tests/test_alert_matrix.py",
+        "tests/test_data_catalog.py"
+      ],
+      "note": "判据原文两问各有读数。①**各域最新数据日期与滞后天数可查**：`GET /api/v1/data/{domain}/freshness` 同时交出 latest、lag_days 与 expected_data_date——滞后天数离开基准日就无法复核，所以两条分支都必须点名它（探针记为 `returns expected_data_date 2 time(s)`）；基准日由日历判据解析（C12 的 `_expected_data_date`，每请求一次），不再读墙上时钟。②**缺失触发告警**：此前这一格是**声明了但没人执行**——两棵树 census 读到 HEAD 上`EXECUTABLE_KINDS = ['INCREMENTAL']`，而 `['FRESHNESS','FULL_CHECK','PARTITION_MAINTENANCE']` 三种 kind 无任何 executor 认领，`jobs.py::_execute_freshness` 不存在、`_execute_template` 既不认 FRESHNESS 也不接 broadcast。本轮新增 `alert_matrix.py`：`registered_legs()` 从注册表拿腿（不是从 `authority.json` 猜），dwd 与每条 ods 腿都测（前者答「合并数据新不新」，后者答「这个源交付没交付」，两问合起来才分得清上游断供与合并没跑），`_ods_leg` 把「mapping 里没有可测列」折成 `unmapped_legs` 计数而不是伪造一条没人能处理的 missing 告警，投递只在判据翻红时发生且投递失败只记日志。反事实 10 条：把 executor 摘掉、把 broadcast 摘掉、把 ods 腿摘掉、把基准日改回墙上时钟、把 unmapped 折成 missing 各自扳红一条，故 proven 不是靠接线名字读的。**未记账的相邻两格**：`FULL_CHECK`/`PARTITION_MAINTENANCE` 仍无 executor（登记为 C47 候选）；真机 census 暴露 `dwd_trading_calendar` 从未落地 ⇒ 基准日静默退回工作日，以及一条未来日期读数 `lag_days=-14` 仍判 fresh，两条都如实登记而未改判据。"
     },
     "AC-18|02|15d13296": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C46",
+      "date": "2026-09-27",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-18|02'（VERDICT proven：目录接口 7/7 节点、五个读数四面齐、载荷 5/5 字段、基准日/下钻/采集器无未授权排除 = yes） ＋ python docs/evidence/C46/before_census.py --root <tree>（可复算前后对比：catalog 闭合函数体 HEAD 11 keys「判据五项缺 4」→ 本轮 29 keys「缺 0」） ＋ python -m pytest tests/test_data_catalog.py -q --no-cov -m 'not e2e'（14 passed） ＋ cd frontend && npx vitest run src/__tests__/catalog.test.ts src/__tests__/api/envelope.test.ts（14 passed = 8 + 6） ＋ make frontend-e2e（e2e/scripts.spec.ts:114 catalog 页读数断言，18 passed） ＋ make gate（回填前 17 节 GATE_EXIT=0；回填后另跑一遍）",
+      "evidence": [
+        "docs/evidence/C46/README.md",
+        "docs/evidence/C46/before_census.py",
+        "docs/evidence/C46/before-census-head.txt",
+        "docs/evidence/C46/after-census-worktree.txt",
+        "docs/evidence/C46/warehouse-census-live.txt",
+        "docs/evidence/C46/probe-ac18-02.txt",
+        "docs/evidence/C46/a2-check-first-sweep.txt",
+        "docs/evidence/C46/self-test.txt",
+        "docs/evidence/C46/gate-run1-prebackfill.txt",
+        "opendata/api/data_query.py",
+        "frontend/src/api/catalog.ts",
+        "frontend/src/views/DataCatalogView.vue",
+        "frontend/e2e/scripts.spec.ts",
+        "frontend/e2e/fixtures.ts",
+        "frontend/src/__tests__/catalog.test.ts",
+        "frontend/src/__tests__/api/envelope.test.ts",
+        "tests/test_data_catalog.py",
+        "tests/test_frontend_endpoint_contract.py"
+      ],
+      "note": "判据原文列了五个读数（覆盖标的数 / 时间范围 / 各源最近更新 / 新鲜度 / 质量标记），本轮把「展示了」改判成「每个读数在四面同时出现」：**列标签**（页面有这一列名）× **页面形状**（真机载荷渲染出行）× **单元断言**（vitest 逐个断言值）× **真机断言**（Playwright 断的是渲染后的文本而不是接口 JSON），缺一面就不算转正。接口侧 `catalog` 行由 11 keys 补到 29 keys（`coverage{rows,symbols,start,end,symbol_columns,field,facts}`、`quality{diff_flagged,diff_report_rows,flag}`、`sources[{source,verified,table,status∈fresh|stale|missing|unmapped,reason,latest,lag_days}]`、表头 `expected_data_date/domains_total/source_legs_total`）。两处口径是判据本体：`quality` 只在 `coverage is None` 时才为 None，`_diff_report_counts` 区分 None（没测）与 {}（测了、没有差异）——否则前端把「没测」显示成「没有质量问题」。9 条反事实分别把列名、单元断言、真机断言、载荷字段、基准日抬头、下钻、采集器排除各扳红一条。「各源最近更新」的腿表从 `dwd_table` 换成 `ods_table(domain, source)`：在 HEAD 上那条读数以 dwd 表为对象，**每一条源腿都只能读成 missing**（同一个日期被算成所有源的日期）。**不计入本勾的部分**：真机页的「真跑过」由门禁 `frontend-e2e` 节承载（18 passed），探针侧只按 `asserted_lines` 认它断言了哪几个读数；一条 warehouse e2e 见证（`test_every_catalog_reading_reaches_a_consumer`）按 §7 真机纪律未擅自跑。"
     },
     "AC-18|03|ae559f45": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C46",
+      "date": "2026-09-27",
+      "reason": "合并要求的是一个页面：目录为默认视图、函数级明细在它下面。今天 `/data` 与 `/scripts` 仍是两条路由两个视图（census 读到标题含「数据接口」的页面 = 1、`/scripts` 不渲染目录视图、`DataCatalogView.vue` 读不到函数级明细），目录的下钻只预览数据行，从不落到接口/函数那一层。join 的料是齐的（§11.1 已把 `data_interfaces.name` 以域名命名），缺的是页面合并本身——而合并必然要让一个导航项消失，属产品决定，不在本轮自行裁定。探针 4 条反事实登记了补齐路径（detail_in_catalog no→yes、page_titles、route_is_catalog no→yes），C47 候选。",
+      "evidence": [
+        "docs/evidence/C46/README.md",
+        "docs/evidence/C46/probe-ac18-03.txt",
+        "docs/evidence/C46/before-census-head.txt",
+        "docs/evidence/C46/after-census-worktree.txt"
+      ]
     },
     "AC-19|01|0cf9a4a8": {
       "state": "unreviewed"
