@@ -1,0 +1,20 @@
+# evidence header (project convention: 命令 / 日期 / 身份 / exit)
+round: C51
+run_at: 2026-09-27T20:00:58+02:00
+command: make zero-dep-check（= python scripts/codemod/verify_no_akshare.py --self-test 然后默认核对，逐字取Makefile第119-120行）
+command_exit: 读自正文末行 ZERO_DEP_CHECK_EXIT（不靠 $? 过管道）
+branch: dev
+head_commit: d1f0c81 2026-09-27T18:40:34+02:00 docs(acceptance): v5.22 回填 C50 门禁成员与历史仪器依赖面（AC-17/AC-2）
+worktree_status: git status --porcelain = 24 行，其中未跟踪 = 1 行（本档案写完即 git add 进树，故这一行的 UNTR 是本档案写入前的读数）
+identity: Python 3.13.5
+env: PATH=~/opt/anaconda3/envs/py313/bin, PYTHONPATH=.；只读 AST 走查，不跑 pytest、不写 .coverage、不读 .env
+purpose: AC-16|06 台账 reason 里「两条门禁命令原样复跑 exit=0（--self-test + 默认核对，517 文件走查）」这句话的独立可 grep 证据 —— 不引用任何一遍门禁日志（门禁最终遍晚于本条目写入，不能被本条目引用）
+
+python scripts/codemod/verify_no_akshare.py --self-test
+OK: scanner self-test passed (8 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+python scripts/codemod/verify_no_akshare.py
+OK: 517 file(s) walked (opendata=193, opendata_client=2, opendata_fuyao=9, opendata_http=313), python 3.13, scanner 2; no new upstream references (frozen baseline: 3).
+real 1.07
+user 0.95
+sys 0.04
+ZERO_DEP_CHECK_EXIT=0

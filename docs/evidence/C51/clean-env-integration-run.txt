@@ -1,0 +1,380 @@
+# evidence header (project convention: 命令 / 日期 / 身份 / exit)
+round: C51
+run_at: 2026-09-27T19:34:17+0200 (body file mtime)
+wall: 两个解释器各一遍：real 8.86 s（开发解释器）+ real 9.00 s（干净 venv），均读自正文
+command: bash docs/evidence/C51/run_p0_integration_surface.sh > OUT（脚本随档案留档，正文即其产物）
+command_exit: 两个 exit 都在正文里自证：REPO_RUN_EXIT=0、CLEAN_RUN_EXIT=0、PIP_CHECK_EXIT=0
+branch: dev
+head_commit: d1f0c81 2026-09-27T18:40:34+02:00 docs(acceptance): v5.22 回填 C50 门禁成员与历史仪器依赖面（AC-17/AC-2）
+worktree_status: 8 个测试文件已加 marker + ?? tests/test_p0_integration_surface.py + tests/test_acceptance_probe_gate.py 新增 TestC51ZeroDepCells 5 例（均未提交）；`git status --porcelain -uall` = 20 行；HEAD 仍是 d1f0c81
+env: python 3.13.5 / PATH=$HOME/opt/anaconda3/envs/py313/bin / PYTHONPATH=. ; 未读取 .env 与任何密钥值；所有 pytest 遍都带 -m "integration and not e2e" --no-cov，不碰仓库侧 e2e/真库（ASGITransport 不跑 lifespan，fixture 引擎是 sqlite 内存库）
+purpose: AC-16|07 的判据原文证据 ——「在未安装 akshare/openbb 的干净环境中 P0 域集成测试通过」；两个解释器跑同一选择式、逐条用例名全量不裁剪。本遍是同一仪器的第二遍：第一遍（19:13）正文的 summary 段为空（脚本把 grep 结果发到 stdout 而非 >>$OUT），修脚本后重跑；两遍的用例数与 exit 完全一致（151 passed / exit 0 × 2），差别只有分母：本轮判定类新增 5 例进了收集面（3362/3211 → 3367/3216），它们不带 integration 标记所以仍被 deselect
+===== 0. what this file measures =====
+AC-16 条目 7: 「在未安装 akshare/openbb 的干净环境中 P0 域集成测试通过」.
+Two interpreters run the same selection, untrimmed:
+  A. the development interpreter (anaconda py313, the whole machine's package set)
+  B. a venv created for this round by docs/evidence/C51/build_clean_env.sh,
+     whose dependency surface is exactly pyproject.toml's declared extras (.[web,dev]).
+Selector: -m 'integration and not e2e' -- the P0 domain integration surface, never the warehouse.
+
+===== 0b. upstream packages in each interpreter (before any test runs) =====
+--- repo: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+  akshare: absent
+  openbb: absent
+  openbb_platform: absent
+--- clean: /tmp/c51-clean/venv/bin/python
+  akshare: absent
+  openbb: absent
+  openbb_platform: absent
+
+===== A. development interpreter =====
+$ time python -m pytest tests -m 'integration and not e2e' --no-cov
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0 -- /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python
+cachedir: .pytest_cache
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 3367 items / 3216 deselected / 151 selected
+
+tests/test_data_query_api.py::TestOpenApi::test_routes_are_published PASSED [  0%]
+tests/test_data_query_api.py::TestOpenApi::test_query_parameters_are_enumerated PASSED [  1%]
+tests/test_data_query_api.py::TestAuthentication::test_query_requires_authentication PASSED [  1%]
+tests/test_data_query_api.py::TestAuthentication::test_catalog_requires_authentication PASSED [  2%]
+tests/test_data_query_api.py::TestValidationPaths::test_unknown_domain_is_a_404 PASSED [  3%]
+tests/test_data_query_api.py::TestValidationPaths::test_wrong_asset_class_is_a_404 PASSED [  3%]
+tests/test_data_query_api.py::TestValidationPaths::test_bad_layer_is_a_422 PASSED [  4%]
+tests/test_data_query_api.py::TestValidationPaths::test_bad_adjust_is_a_422 PASSED [  5%]
+tests/test_data_query_api.py::TestValidationPaths::test_ods_layer_requires_an_explicit_source PASSED [  5%]
+tests/test_data_query_api.py::TestValidationPaths::test_page_bounds_are_validated PASSED [  6%]
+tests/test_data_query_api.py::TestValidationPaths::test_unknown_freshness_domain_is_a_404 PASSED [  7%]
+tests/test_data_query_api.py::TestTheExpectationIsTheCalendars::test_the_baseline_is_taken_through_the_calendar_on_the_pinned_day PASSED [  7%]
+tests/test_data_query_api.py::TestTheExpectationIsTheCalendars::test_a_broken_calendar_fails_instead_of_widening_the_window PASSED [  8%]
+tests/test_data_query_api.py::TestExportContract::test_export_requires_authentication PASSED [  9%]
+tests/test_data_query_api.py::TestExportContract::test_export_is_published_in_the_openapi_document PASSED [  9%]
+tests/test_data_query_api.py::TestExportContract::test_export_rejects_an_unknown_domain PASSED [ 10%]
+tests/test_data_query_api.py::TestExportContract::test_export_limit_is_bounded PASSED [ 11%]
+tests/test_data_query_api.py::TestWarehouseTables::test_warehouse_endpoint_requires_auth PASSED [ 11%]
+tests/test_data_query_api.py::TestWarehouseTables::test_warehouse_route_is_registered_before_dynamic_ids PASSED [ 12%]
+tests/test_dwd_merge.py::TestMergeSourceFrames::test_authority_row_wins_and_is_recorded PASSED [ 13%]
+tests/test_dwd_merge.py::TestMergeSourceFrames::test_numeric_disagreement_keeps_the_authority_value_and_flags PASSED [ 13%]
+tests/test_dwd_merge.py::TestMergeSourceFrames::test_missing_authority_row_degrades_to_the_next_source PASSED [ 14%]
+tests/test_dwd_merge.py::TestMergeSourceFrames::test_extra_diff_keys_mark_rows_outside_the_disagreement PASSED [ 15%]
+tests/test_dwd_merge.py::TestMergeSourceFrames::test_point_in_time_columns_are_stamped PASSED [ 15%]
+tests/test_dwd_merge.py::TestMergeSourceFrames::test_single_source_domain_is_passthrough PASSED [ 16%]
+tests/test_dwd_merge.py::TestMergeSourceFrames::test_unknown_authority_source_fails_closed PASSED [ 17%]
+tests/test_dwd_merge.py::TestDwdMergeService::test_window_merge_writes_the_merged_frame PASSED [ 17%]
+tests/test_dwd_merge.py::TestDwdMergeService::test_affected_keys_extend_the_merge_unit PASSED [ 18%]
+tests/test_dwd_merge.py::TestDwdMergeService::test_key_can_come_from_the_source_mapping PASSED [ 19%]
+tests/test_dwd_merge.py::TestDwdMergeService::test_missing_key_definition_fails_closed PASSED [ 19%]
+tests/test_dwd_merge.py::TestDwdMergeService::test_hook_consumes_the_pipeline_context PASSED [ 20%]
+tests/test_dwd_merge.py::TestDwdMergeService::test_the_hook_re_spells_the_affected_keys_so_the_flag_lands PASSED [ 21%]
+tests/test_dwd_merge.py::TestDwdMergeService::test_a_source_without_a_mapping_keeps_its_keys_as_given PASSED [ 21%]
+tests/test_dwd_merge.py::TestAmbiguousKey::test_the_ambiguous_key_is_refused_and_the_rest_of_the_window_lands PASSED [ 22%]
+tests/test_dwd_merge.py::TestAmbiguousKey::test_a_key_carried_three_times_is_still_refused_whole PASSED [ 23%]
+tests/test_dwd_merge.py::TestAmbiguousKey::test_a_missing_key_column_still_fails_closed PASSED [ 23%]
+tests/test_dwd_merge.py::TestAmbiguousKey::test_the_service_reports_the_refusal_it_landed_around PASSED [ 24%]
+tests/test_dwd_merge.py::TestAmbiguousKey::test_the_multi_source_winner_is_not_a_collision PASSED [ 25%]
+tests/test_dwd_merge.py::TestPassthroughQueryFace::test_passthrough_columns_are_exactly_the_dwd_table_columns PASSED [ 25%]
+tests/test_dwd_merge.py::TestPassthroughQueryFace::test_layer_dwd_query_builds_over_the_landed_columns PASSED [ 26%]
+tests/test_dwd_merge.py::TestRecomputeIdempotence::test_a_second_recompute_of_the_same_input_is_the_same_frame PASSED [ 27%]
+tests/test_dwd_merge.py::TestRecomputeIdempotence::test_the_input_dictionary_order_does_not_change_the_output PASSED [ 27%]
+tests/test_dwd_merge.py::TestRecomputeIdempotence::test_a_recompute_at_a_later_clock_moves_only_the_audit_stamp PASSED [ 28%]
+tests/test_dwd_merge.py::TestRecomputeIdempotence::test_landing_the_same_key_twice_is_one_row_written_in_place PASSED [ 29%]
+tests/test_dwd_merge.py::TestRecomputeIdempotence::test_an_empty_recompute_writes_nothing PASSED [ 29%]
+tests/test_index_constituent_asof.py::TestAsOfSaysWhichDateEachLegPublishes::test_ths_leg_declares_that_its_endpoint_has_no_list_date PASSED [ 30%]
+tests/test_index_constituent_asof.py::TestAsOfSaysWhichDateEachLegPublishes::test_akshare_leg_declares_the_list_date_it_carries PASSED [ 31%]
+tests/test_index_constituent_asof.py::TestAsOfSaysWhichDateEachLegPublishes::test_the_two_legs_do_not_claim_the_same_date PASSED [ 31%]
+tests/test_index_constituent_asof.py::TestAsOfSaysWhichDateEachLegPublishes::test_the_contract_still_requires_a_date PASSED [ 32%]
+tests/test_index_constituent_asof.py::TestAkshareAsOfIsTheFilesOwnColumn::test_each_row_carries_its_own_files_date PASSED [ 33%]
+tests/test_index_constituent_asof.py::TestAkshareAsOfIsTheFilesOwnColumn::test_the_call_day_is_never_written_into_as_of PASSED [ 33%]
+tests/test_index_constituent_asof.py::TestAkshareAsOfIsTheFilesOwnColumn::test_a_row_without_a_list_date_is_dropped_not_dated PASSED [ 34%]
+tests/test_index_constituent_asof.py::TestVerifiedFollowsTheArchivedReading::test_the_archive_holds_the_measured_three_way_split PASSED [ 35%]
+tests/test_index_constituent_asof.py::TestVerifiedFollowsTheArchivedReading::test_the_akshare_leg_is_verified_only_if_the_sweep_came_out_clean PASSED [ 35%]
+tests/test_index_constituent_asof.py::TestVerifiedFollowsTheArchivedReading::test_the_ths_leg_is_not_bent_by_the_fallbacks_gap PASSED [ 36%]
+tests/test_index_constituent_asof.py::TestVerifiedFollowsTheArchivedReading::test_the_row_still_ranks_the_second_source_in_the_table PASSED [ 37%]
+tests/test_index_constituent_asof.py::TestMismatchIsTheReconstitutionShape::test_three_of_the_four_differ_by_an_equal_number_each_way PASSED [ 37%]
+tests/test_index_constituent_asof.py::TestMismatchIsTheReconstitutionShape::test_the_unequal_gap_is_a_one_sided_extra_rather_than_a_rename PASSED [ 38%]
+tests/test_index_constituent_asof.py::TestMismatchIsTheReconstitutionShape::test_the_agreed_codes_agree_symbol_for_symbol PASSED [ 39%]
+tests/test_index_constituent_asof.py::TestMismatchIsTheReconstitutionShape::test_refused_codes_are_not_counted_as_agreement PASSED [ 39%]
+tests/test_index_constituent_asof.py::TestSingleIndexReadingStaysNarrowlyClaimed::test_the_note_says_which_call_it_measured_and_where_the_widening_lives PASSED [ 40%]
+tests/test_index_constituent_asof.py::TestSingleIndexReadingStaysNarrowlyClaimed::test_the_note_does_not_generalize_one_symbol_to_every_index PASSED [ 41%]
+tests/test_index_constituent_asof.py::test_archive_carries_the_run_it_came_from PASSED [ 41%]
+tests/test_index_constituent_asof.py::test_every_verdict_class_is_populated[PASS] PASSED [ 42%]
+tests/test_index_constituent_asof.py::test_every_verdict_class_is_populated[MISMATCH] PASSED [ 43%]
+tests/test_index_constituent_asof.py::test_every_verdict_class_is_populated[NO_READING] PASSED [ 43%]
+tests/test_ods_writer.py::TestSqlBuilders::test_upsert_uses_business_key_and_alias_form PASSED [ 44%]
+tests/test_ods_writer.py::TestSqlBuilders::test_upsert_with_only_key_columns_keeps_a_valid_no_op_update PASSED [ 45%]
+tests/test_ods_writer.py::TestSqlBuilders::test_staging_upsert_qualifies_source_columns PASSED [ 45%]
+tests/test_ods_writer.py::TestSqlBuilders::test_unsafe_identifier_fails_closed PASSED [ 46%]
+tests/test_ods_writer.py::TestPlanFrame::test_unknown_source_columns_are_ignored_and_reported PASSED [ 47%]
+tests/test_ods_writer.py::TestPlanFrame::test_metadata_columns_are_stamped PASSED [ 47%]
+tests/test_ods_writer.py::TestPlanFrame::test_table_owned_columns_absent_from_the_frame_are_filled_nullable PASSED [ 48%]
+tests/test_ods_writer.py::TestPlanFrame::test_missing_business_key_fails_closed PASSED [ 49%]
+tests/test_ods_writer.py::TestPlanFrame::test_invalid_batch_id_fails_closed PASSED [ 49%]
+tests/test_ods_writer.py::TestStatementShapes::test_staging_create_copies_the_structure_and_nothing_else PASSED [ 50%]
+tests/test_ods_writer.py::TestStatementShapes::test_staging_insert_is_the_named_placeholder_form PASSED [ 50%]
+tests/test_ods_writer.py::TestStatementShapes::test_staging_drop_is_idempotent PASSED [ 51%]
+tests/test_ods_writer.py::TestStatementShapes::test_an_upsert_without_columns_fails_closed PASSED [ 52%]
+tests/test_ods_writer.py::TestStatementShapes::test_a_staging_upsert_without_columns_fails_closed PASSED [ 52%]
+tests/test_ods_writer.py::test_iter_batches_slices_in_order_and_never_exceeds_the_size PASSED [ 53%]
+tests/test_ods_writer.py::test_iter_batches_rejects_a_non_positive_size PASSED [ 54%]
+tests/test_ods_writer.py::test_plan_frame_keeps_a_naive_timestamp_as_given PASSED [ 54%]
+tests/test_ods_writer.py::test_plan_frame_rejects_a_business_key_the_table_does_not_own PASSED [ 55%]
+tests/test_ods_writer.py::test_plan_frame_rejects_a_non_string_batch_id PASSED [ 56%]
+tests/test_ods_writer.py::TestStagingWrite::test_an_empty_frame_is_not_a_database_trip PASSED [ 56%]
+tests/test_ods_writer.py::TestStagingWrite::test_the_statement_sequence_is_create_then_chunk_loop_then_drop PASSED [ 57%]
+tests/test_ods_writer.py::TestStagingWrite::test_the_whole_write_lives_in_one_connection PASSED [ 58%]
+tests/test_ods_writer.py::TestStagingWrite::test_each_chunk_fills_the_staging_table_in_isolation PASSED [ 58%]
+tests/test_ods_writer.py::TestStagingWrite::test_missing_values_reach_the_statement_as_nulls_not_nan PASSED [ 59%]
+tests/test_ods_writer.py::TestStagingWrite::test_the_staging_table_is_dropped_even_when_a_chunk_is_rejected PASSED [ 60%]
+tests/test_ods_writer.py::TestStagingWrite::test_metadata_columns_are_written_and_the_key_is_never_updated PASSED [ 60%]
+tests/test_ods_writer.py::TestDirectWrite::test_direct_issues_one_upsert_per_chunk_and_no_staging PASSED [ 61%]
+tests/test_ods_writer.py::TestDirectWrite::test_batch_size_defaults_to_the_design_granularity PASSED [ 62%]
+tests/test_ods_writer.py::TestWriterConfiguration::test_an_unknown_mode_fails_closed_instead_of_writing_nothing PASSED [ 62%]
+tests/test_ods_writer.py::TestWriterConfiguration::test_a_non_positive_batch_size_fails_closed PASSED [ 63%]
+tests/test_p0_providers.py::TestRegistration::test_registers_the_p0_capabilities_plus_b1_domains PASSED [ 64%]
+tests/test_p0_providers.py::TestRegistration::test_capabilities_declared_unverified PASSED [ 64%]
+tests/test_p0_providers.py::TestRegistration::test_registration_is_idempotent PASSED [ 65%]
+tests/test_p0_providers.py::TestRegistration::test_explicit_source_routes_unverified_fetcher PASSED [ 66%]
+tests/test_p0_providers.py::TestRegistration::test_auto_routing_excludes_unverified PASSED [ 66%]
+tests/test_p0_providers.py::TestRegistration::test_fetchers_match_fetcher_count PASSED [ 67%]
+tests/test_p0_providers.py::TestStockDailyFetcher::test_maps_klines_to_bars_with_share_volume PASSED [ 68%]
+tests/test_p0_providers.py::TestStockDailyFetcher::test_query_rejects_unknown_fields PASSED [ 68%]
+tests/test_p0_providers.py::TestStockDailyFetcher::test_extract_passes_plain_symbol_and_dates PASSED [ 69%]
+tests/test_p0_providers.py::TestStockDailyFetcher::test_timeout_context_is_forwarded PASSED [ 70%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_maps_dividends_per_share PASSED [ 70%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_maps_rights_ratio_per_share PASSED [ 71%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_maps_rights_price_as_published PASSED [ 72%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_spelled_rights_plan_text_also_parses PASSED [ 72%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_all_zero_rows_dropped PASSED [ 73%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_undated_plan_drop_warns_with_the_amount PASSED [ 74%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_contract_drops_are_counted_not_warned PASSED [ 74%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_undated_rights_row_warns_with_ratio_and_price PASSED [ 75%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_rights_page_contract_drops_are_counted_too PASSED [ 76%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_undated_rows_without_economics_stay_silent PASSED [ 76%]
+tests/test_p0_providers.py::TestFinancialStatementFetcher::test_melts_wide_statement_to_long_rows PASSED [ 77%]
+tests/test_p0_providers.py::TestFinancialStatementFetcher::test_extract_uses_sina_prefixed_symbol PASSED [ 78%]
+tests/test_p0_providers.py::TestFinancialIndicatorFetcher::test_melts_em_dataset_with_passthrough_codes PASSED [ 78%]
+tests/test_p0_providers.py::TestFinancialIndicatorFetcher::test_extract_uses_em_suffixed_symbol PASSED [ 79%]
+tests/test_p0_providers.py::TestFinancialIndicatorFetcher::test_missing_notice_date_fails_closed PASSED [ 80%]
+tests/test_p0_providers.py::TestIndexConstituentFetcher::test_maps_weights_in_percent PASSED [ 80%]
+tests/test_p0_providers.py::TestRegistryScan::test_load_interfaces_creates_domain_named_rows PASSED [ 81%]
+tests/test_p0_providers.py::TestRegistryScan::test_rows_are_named_by_domain_with_contract_models PASSED [ 82%]
+tests/test_p0_providers.py::TestRegistryScan::test_load_interfaces_is_idempotent PASSED [ 82%]
+tests/test_p0_providers.py::TestCapabilitiesEndpoint::test_capabilities_api_lists_p0_capabilities PASSED [ 83%]
+tests/test_p0_providers.py::TestCapabilitiesEndpoint::test_capabilities_requires_authentication PASSED [ 84%]
+tests/test_p0_providers.py::TestCapabilitiesEndpoint::test_sources_api_exposes_authority_and_registered PASSED [ 84%]
+tests/test_p0_providers.py::TestCapabilitiesEndpoint::test_sources_requires_authentication PASSED [ 85%]
+tests/test_pipeline_jobs.py::TestFullCheckExecutor::test_the_scheduled_run_compares_reports_and_alerts PASSED [ 86%]
+tests/test_pipeline_jobs.py::TestFullCheckExecutor::test_a_second_run_of_the_same_difference_is_not_re_alerted PASSED [ 86%]
+tests/test_pipeline_jobs.py::TestFullCheckExecutor::test_consistent_legs_produce_no_delivery PASSED [ 87%]
+tests/test_pipeline_jobs.py::TestFullCheckExecutor::test_a_payload_window_other_than_full_is_refused PASSED [ 88%]
+tests/test_pipeline_jobs.py::TestFullCheckExecutor::test_a_domain_without_a_comparable_pair_is_refused PASSED [ 88%]
+tests/test_pipeline_run_api.py::TestPipelineRunTrigger::test_run_requires_authentication PASSED [ 89%]
+tests/test_pipeline_run_api.py::TestPipelineRunTrigger::test_unsupported_domain_is_refused_before_the_batch_starts PASSED [ 90%]
+tests/test_pipeline_run_api.py::TestPipelineRunTrigger::test_accepted_run_reports_a_run_id_and_echoes_the_request PASSED [ 90%]
+tests/test_pipeline_run_api.py::TestPipelineRunTrigger::test_the_finished_run_is_readable_by_run_id PASSED [ 91%]
+tests/test_pipeline_run_api.py::TestPipelineRunTrigger::test_a_failing_batch_is_reported_not_raised PASSED [ 92%]
+tests/test_pipeline_run_api.py::TestPipelineRunTrigger::test_partial_run_is_marked_when_shards_failed PASSED [ 92%]
+tests/test_pipeline_run_api.py::TestPipelineRunTrigger::test_an_unknown_run_id_is_not_found PASSED [ 93%]
+tests/test_pipeline_runner.py::TestPlanShards::test_splits_symbols_into_fixed_size_shards PASSED [ 94%]
+tests/test_pipeline_runner.py::TestPlanShards::test_empty_symbol_list_has_no_shards PASSED [ 94%]
+tests/test_pipeline_runner.py::TestPlanShards::test_rejects_non_positive_shard_size PASSED [ 95%]
+tests/test_pipeline_runner.py::TestPipelineRun::test_runs_every_shard_in_order PASSED [ 96%]
+tests/test_pipeline_runner.py::TestPipelineRun::test_completed_shards_are_skipped_on_resume PASSED [ 96%]
+tests/test_pipeline_runner.py::TestPipelineRun::test_single_symbol_failure_does_not_block_its_shard PASSED [ 97%]
+tests/test_pipeline_runner.py::TestPipelineRun::test_hooks_receive_the_affected_keys_in_order PASSED [ 98%]
+tests/test_pipeline_runner.py::TestPipelineRun::test_progress_rows_record_every_shard PASSED [ 98%]
+tests/test_pipeline_runner.py::TestPipelineRun::test_resume_false_reruns_every_shard PASSED [ 99%]
+tests/test_pipeline_runner.py::TestPipelineRun::test_concurrent_run_of_the_same_domain_is_locked_out PASSED [100%]
+
+===================== 151 passed, 3216 deselected in 8.86s =====================
+real 10.90
+user 10.18
+sys 0.38
+REPO_RUN_EXIT=0
+
+===== B. clean venv =====
+$ time /tmp/c51-clean/venv/bin/python -m pytest tests -m 'integration and not e2e' --no-cov
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-9.1.1, pluggy-1.6.0 -- /tmp/c51-clean/venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: cov-7.1.0, xdist-3.8.0, asyncio-1.4.0, platformdirs-4.12.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 3367 items / 3216 deselected / 151 selected
+
+tests/test_data_query_api.py::TestOpenApi::test_routes_are_published PASSED [  0%]
+tests/test_data_query_api.py::TestOpenApi::test_query_parameters_are_enumerated PASSED [  1%]
+tests/test_data_query_api.py::TestAuthentication::test_query_requires_authentication PASSED [  1%]
+tests/test_data_query_api.py::TestAuthentication::test_catalog_requires_authentication PASSED [  2%]
+tests/test_data_query_api.py::TestValidationPaths::test_unknown_domain_is_a_404 PASSED [  3%]
+tests/test_data_query_api.py::TestValidationPaths::test_wrong_asset_class_is_a_404 PASSED [  3%]
+tests/test_data_query_api.py::TestValidationPaths::test_bad_layer_is_a_422 PASSED [  4%]
+tests/test_data_query_api.py::TestValidationPaths::test_bad_adjust_is_a_422 PASSED [  5%]
+tests/test_data_query_api.py::TestValidationPaths::test_ods_layer_requires_an_explicit_source PASSED [  5%]
+tests/test_data_query_api.py::TestValidationPaths::test_page_bounds_are_validated PASSED [  6%]
+tests/test_data_query_api.py::TestValidationPaths::test_unknown_freshness_domain_is_a_404 PASSED [  7%]
+tests/test_data_query_api.py::TestTheExpectationIsTheCalendars::test_the_baseline_is_taken_through_the_calendar_on_the_pinned_day PASSED [  7%]
+tests/test_data_query_api.py::TestTheExpectationIsTheCalendars::test_a_broken_calendar_fails_instead_of_widening_the_window PASSED [  8%]
+tests/test_data_query_api.py::TestExportContract::test_export_requires_authentication PASSED [  9%]
+tests/test_data_query_api.py::TestExportContract::test_export_is_published_in_the_openapi_document PASSED [  9%]
+tests/test_data_query_api.py::TestExportContract::test_export_rejects_an_unknown_domain PASSED [ 10%]
+tests/test_data_query_api.py::TestExportContract::test_export_limit_is_bounded PASSED [ 11%]
+tests/test_data_query_api.py::TestWarehouseTables::test_warehouse_endpoint_requires_auth PASSED [ 11%]
+tests/test_data_query_api.py::TestWarehouseTables::test_warehouse_route_is_registered_before_dynamic_ids PASSED [ 12%]
+tests/test_dwd_merge.py::TestMergeSourceFrames::test_authority_row_wins_and_is_recorded PASSED [ 13%]
+tests/test_dwd_merge.py::TestMergeSourceFrames::test_numeric_disagreement_keeps_the_authority_value_and_flags PASSED [ 13%]
+tests/test_dwd_merge.py::TestMergeSourceFrames::test_missing_authority_row_degrades_to_the_next_source PASSED [ 14%]
+tests/test_dwd_merge.py::TestMergeSourceFrames::test_extra_diff_keys_mark_rows_outside_the_disagreement PASSED [ 15%]
+tests/test_dwd_merge.py::TestMergeSourceFrames::test_point_in_time_columns_are_stamped PASSED [ 15%]
+tests/test_dwd_merge.py::TestMergeSourceFrames::test_single_source_domain_is_passthrough PASSED [ 16%]
+tests/test_dwd_merge.py::TestMergeSourceFrames::test_unknown_authority_source_fails_closed PASSED [ 17%]
+tests/test_dwd_merge.py::TestDwdMergeService::test_window_merge_writes_the_merged_frame PASSED [ 17%]
+tests/test_dwd_merge.py::TestDwdMergeService::test_affected_keys_extend_the_merge_unit PASSED [ 18%]
+tests/test_dwd_merge.py::TestDwdMergeService::test_key_can_come_from_the_source_mapping PASSED [ 19%]
+tests/test_dwd_merge.py::TestDwdMergeService::test_missing_key_definition_fails_closed PASSED [ 19%]
+tests/test_dwd_merge.py::TestDwdMergeService::test_hook_consumes_the_pipeline_context PASSED [ 20%]
+tests/test_dwd_merge.py::TestDwdMergeService::test_the_hook_re_spells_the_affected_keys_so_the_flag_lands PASSED [ 21%]
+tests/test_dwd_merge.py::TestDwdMergeService::test_a_source_without_a_mapping_keeps_its_keys_as_given PASSED [ 21%]
+tests/test_dwd_merge.py::TestAmbiguousKey::test_the_ambiguous_key_is_refused_and_the_rest_of_the_window_lands PASSED [ 22%]
+tests/test_dwd_merge.py::TestAmbiguousKey::test_a_key_carried_three_times_is_still_refused_whole PASSED [ 23%]
+tests/test_dwd_merge.py::TestAmbiguousKey::test_a_missing_key_column_still_fails_closed PASSED [ 23%]
+tests/test_dwd_merge.py::TestAmbiguousKey::test_the_service_reports_the_refusal_it_landed_around PASSED [ 24%]
+tests/test_dwd_merge.py::TestAmbiguousKey::test_the_multi_source_winner_is_not_a_collision PASSED [ 25%]
+tests/test_dwd_merge.py::TestPassthroughQueryFace::test_passthrough_columns_are_exactly_the_dwd_table_columns PASSED [ 25%]
+tests/test_dwd_merge.py::TestPassthroughQueryFace::test_layer_dwd_query_builds_over_the_landed_columns PASSED [ 26%]
+tests/test_dwd_merge.py::TestRecomputeIdempotence::test_a_second_recompute_of_the_same_input_is_the_same_frame PASSED [ 27%]
+tests/test_dwd_merge.py::TestRecomputeIdempotence::test_the_input_dictionary_order_does_not_change_the_output PASSED [ 27%]
+tests/test_dwd_merge.py::TestRecomputeIdempotence::test_a_recompute_at_a_later_clock_moves_only_the_audit_stamp PASSED [ 28%]
+tests/test_dwd_merge.py::TestRecomputeIdempotence::test_landing_the_same_key_twice_is_one_row_written_in_place PASSED [ 29%]
+tests/test_dwd_merge.py::TestRecomputeIdempotence::test_an_empty_recompute_writes_nothing PASSED [ 29%]
+tests/test_index_constituent_asof.py::TestAsOfSaysWhichDateEachLegPublishes::test_ths_leg_declares_that_its_endpoint_has_no_list_date PASSED [ 30%]
+tests/test_index_constituent_asof.py::TestAsOfSaysWhichDateEachLegPublishes::test_akshare_leg_declares_the_list_date_it_carries PASSED [ 31%]
+tests/test_index_constituent_asof.py::TestAsOfSaysWhichDateEachLegPublishes::test_the_two_legs_do_not_claim_the_same_date PASSED [ 31%]
+tests/test_index_constituent_asof.py::TestAsOfSaysWhichDateEachLegPublishes::test_the_contract_still_requires_a_date PASSED [ 32%]
+tests/test_index_constituent_asof.py::TestAkshareAsOfIsTheFilesOwnColumn::test_each_row_carries_its_own_files_date PASSED [ 33%]
+tests/test_index_constituent_asof.py::TestAkshareAsOfIsTheFilesOwnColumn::test_the_call_day_is_never_written_into_as_of PASSED [ 33%]
+tests/test_index_constituent_asof.py::TestAkshareAsOfIsTheFilesOwnColumn::test_a_row_without_a_list_date_is_dropped_not_dated PASSED [ 34%]
+tests/test_index_constituent_asof.py::TestVerifiedFollowsTheArchivedReading::test_the_archive_holds_the_measured_three_way_split PASSED [ 35%]
+tests/test_index_constituent_asof.py::TestVerifiedFollowsTheArchivedReading::test_the_akshare_leg_is_verified_only_if_the_sweep_came_out_clean PASSED [ 35%]
+tests/test_index_constituent_asof.py::TestVerifiedFollowsTheArchivedReading::test_the_ths_leg_is_not_bent_by_the_fallbacks_gap PASSED [ 36%]
+tests/test_index_constituent_asof.py::TestVerifiedFollowsTheArchivedReading::test_the_row_still_ranks_the_second_source_in_the_table PASSED [ 37%]
+tests/test_index_constituent_asof.py::TestMismatchIsTheReconstitutionShape::test_three_of_the_four_differ_by_an_equal_number_each_way PASSED [ 37%]
+tests/test_index_constituent_asof.py::TestMismatchIsTheReconstitutionShape::test_the_unequal_gap_is_a_one_sided_extra_rather_than_a_rename PASSED [ 38%]
+tests/test_index_constituent_asof.py::TestMismatchIsTheReconstitutionShape::test_the_agreed_codes_agree_symbol_for_symbol PASSED [ 39%]
+tests/test_index_constituent_asof.py::TestMismatchIsTheReconstitutionShape::test_refused_codes_are_not_counted_as_agreement PASSED [ 39%]
+tests/test_index_constituent_asof.py::TestSingleIndexReadingStaysNarrowlyClaimed::test_the_note_says_which_call_it_measured_and_where_the_widening_lives PASSED [ 40%]
+tests/test_index_constituent_asof.py::TestSingleIndexReadingStaysNarrowlyClaimed::test_the_note_does_not_generalize_one_symbol_to_every_index PASSED [ 41%]
+tests/test_index_constituent_asof.py::test_archive_carries_the_run_it_came_from PASSED [ 41%]
+tests/test_index_constituent_asof.py::test_every_verdict_class_is_populated[PASS] PASSED [ 42%]
+tests/test_index_constituent_asof.py::test_every_verdict_class_is_populated[MISMATCH] PASSED [ 43%]
+tests/test_index_constituent_asof.py::test_every_verdict_class_is_populated[NO_READING] PASSED [ 43%]
+tests/test_ods_writer.py::TestSqlBuilders::test_upsert_uses_business_key_and_alias_form PASSED [ 44%]
+tests/test_ods_writer.py::TestSqlBuilders::test_upsert_with_only_key_columns_keeps_a_valid_no_op_update PASSED [ 45%]
+tests/test_ods_writer.py::TestSqlBuilders::test_staging_upsert_qualifies_source_columns PASSED [ 45%]
+tests/test_ods_writer.py::TestSqlBuilders::test_unsafe_identifier_fails_closed PASSED [ 46%]
+tests/test_ods_writer.py::TestPlanFrame::test_unknown_source_columns_are_ignored_and_reported PASSED [ 47%]
+tests/test_ods_writer.py::TestPlanFrame::test_metadata_columns_are_stamped PASSED [ 47%]
+tests/test_ods_writer.py::TestPlanFrame::test_table_owned_columns_absent_from_the_frame_are_filled_nullable PASSED [ 48%]
+tests/test_ods_writer.py::TestPlanFrame::test_missing_business_key_fails_closed PASSED [ 49%]
+tests/test_ods_writer.py::TestPlanFrame::test_invalid_batch_id_fails_closed PASSED [ 49%]
+tests/test_ods_writer.py::TestStatementShapes::test_staging_create_copies_the_structure_and_nothing_else PASSED [ 50%]
+tests/test_ods_writer.py::TestStatementShapes::test_staging_insert_is_the_named_placeholder_form PASSED [ 50%]
+tests/test_ods_writer.py::TestStatementShapes::test_staging_drop_is_idempotent PASSED [ 51%]
+tests/test_ods_writer.py::TestStatementShapes::test_an_upsert_without_columns_fails_closed PASSED [ 52%]
+tests/test_ods_writer.py::TestStatementShapes::test_a_staging_upsert_without_columns_fails_closed PASSED [ 52%]
+tests/test_ods_writer.py::test_iter_batches_slices_in_order_and_never_exceeds_the_size PASSED [ 53%]
+tests/test_ods_writer.py::test_iter_batches_rejects_a_non_positive_size PASSED [ 54%]
+tests/test_ods_writer.py::test_plan_frame_keeps_a_naive_timestamp_as_given PASSED [ 54%]
+tests/test_ods_writer.py::test_plan_frame_rejects_a_business_key_the_table_does_not_own PASSED [ 55%]
+tests/test_ods_writer.py::test_plan_frame_rejects_a_non_string_batch_id PASSED [ 56%]
+tests/test_ods_writer.py::TestStagingWrite::test_an_empty_frame_is_not_a_database_trip PASSED [ 56%]
+tests/test_ods_writer.py::TestStagingWrite::test_the_statement_sequence_is_create_then_chunk_loop_then_drop PASSED [ 57%]
+tests/test_ods_writer.py::TestStagingWrite::test_the_whole_write_lives_in_one_connection PASSED [ 58%]
+tests/test_ods_writer.py::TestStagingWrite::test_each_chunk_fills_the_staging_table_in_isolation PASSED [ 58%]
+tests/test_ods_writer.py::TestStagingWrite::test_missing_values_reach_the_statement_as_nulls_not_nan PASSED [ 59%]
+tests/test_ods_writer.py::TestStagingWrite::test_the_staging_table_is_dropped_even_when_a_chunk_is_rejected PASSED [ 60%]
+tests/test_ods_writer.py::TestStagingWrite::test_metadata_columns_are_written_and_the_key_is_never_updated PASSED [ 60%]
+tests/test_ods_writer.py::TestDirectWrite::test_direct_issues_one_upsert_per_chunk_and_no_staging PASSED [ 61%]
+tests/test_ods_writer.py::TestDirectWrite::test_batch_size_defaults_to_the_design_granularity PASSED [ 62%]
+tests/test_ods_writer.py::TestWriterConfiguration::test_an_unknown_mode_fails_closed_instead_of_writing_nothing PASSED [ 62%]
+tests/test_ods_writer.py::TestWriterConfiguration::test_a_non_positive_batch_size_fails_closed PASSED [ 63%]
+tests/test_p0_providers.py::TestRegistration::test_registers_the_p0_capabilities_plus_b1_domains PASSED [ 64%]
+tests/test_p0_providers.py::TestRegistration::test_capabilities_declared_unverified PASSED [ 64%]
+tests/test_p0_providers.py::TestRegistration::test_registration_is_idempotent PASSED [ 65%]
+tests/test_p0_providers.py::TestRegistration::test_explicit_source_routes_unverified_fetcher PASSED [ 66%]
+tests/test_p0_providers.py::TestRegistration::test_auto_routing_excludes_unverified PASSED [ 66%]
+tests/test_p0_providers.py::TestRegistration::test_fetchers_match_fetcher_count PASSED [ 67%]
+tests/test_p0_providers.py::TestStockDailyFetcher::test_maps_klines_to_bars_with_share_volume PASSED [ 68%]
+tests/test_p0_providers.py::TestStockDailyFetcher::test_query_rejects_unknown_fields PASSED [ 68%]
+tests/test_p0_providers.py::TestStockDailyFetcher::test_extract_passes_plain_symbol_and_dates PASSED [ 69%]
+tests/test_p0_providers.py::TestStockDailyFetcher::test_timeout_context_is_forwarded PASSED [ 70%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_maps_dividends_per_share PASSED [ 70%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_maps_rights_ratio_per_share PASSED [ 71%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_maps_rights_price_as_published PASSED [ 72%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_spelled_rights_plan_text_also_parses PASSED [ 72%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_all_zero_rows_dropped PASSED [ 73%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_undated_plan_drop_warns_with_the_amount PASSED [ 74%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_contract_drops_are_counted_not_warned PASSED [ 74%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_undated_rights_row_warns_with_ratio_and_price PASSED [ 75%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_rights_page_contract_drops_are_counted_too PASSED [ 76%]
+tests/test_p0_providers.py::TestStockActionFetcher::test_undated_rows_without_economics_stay_silent PASSED [ 76%]
+tests/test_p0_providers.py::TestFinancialStatementFetcher::test_melts_wide_statement_to_long_rows PASSED [ 77%]
+tests/test_p0_providers.py::TestFinancialStatementFetcher::test_extract_uses_sina_prefixed_symbol PASSED [ 78%]
+tests/test_p0_providers.py::TestFinancialIndicatorFetcher::test_melts_em_dataset_with_passthrough_codes PASSED [ 78%]
+tests/test_p0_providers.py::TestFinancialIndicatorFetcher::test_extract_uses_em_suffixed_symbol PASSED [ 79%]
+tests/test_p0_providers.py::TestFinancialIndicatorFetcher::test_missing_notice_date_fails_closed PASSED [ 80%]
+tests/test_p0_providers.py::TestIndexConstituentFetcher::test_maps_weights_in_percent PASSED [ 80%]
+tests/test_p0_providers.py::TestRegistryScan::test_load_interfaces_creates_domain_named_rows PASSED [ 81%]
+tests/test_p0_providers.py::TestRegistryScan::test_rows_are_named_by_domain_with_contract_models PASSED [ 82%]
+tests/test_p0_providers.py::TestRegistryScan::test_load_interfaces_is_idempotent PASSED [ 82%]
+tests/test_p0_providers.py::TestCapabilitiesEndpoint::test_capabilities_api_lists_p0_capabilities PASSED [ 83%]
+tests/test_p0_providers.py::TestCapabilitiesEndpoint::test_capabilities_requires_authentication PASSED [ 84%]
+tests/test_p0_providers.py::TestCapabilitiesEndpoint::test_sources_api_exposes_authority_and_registered PASSED [ 84%]
+tests/test_p0_providers.py::TestCapabilitiesEndpoint::test_sources_requires_authentication PASSED [ 85%]
+tests/test_pipeline_jobs.py::TestFullCheckExecutor::test_the_scheduled_run_compares_reports_and_alerts PASSED [ 86%]
+tests/test_pipeline_jobs.py::TestFullCheckExecutor::test_a_second_run_of_the_same_difference_is_not_re_alerted PASSED [ 86%]
+tests/test_pipeline_jobs.py::TestFullCheckExecutor::test_consistent_legs_produce_no_delivery PASSED [ 87%]
+tests/test_pipeline_jobs.py::TestFullCheckExecutor::test_a_payload_window_other_than_full_is_refused PASSED [ 88%]
+tests/test_pipeline_jobs.py::TestFullCheckExecutor::test_a_domain_without_a_comparable_pair_is_refused PASSED [ 88%]
+tests/test_pipeline_run_api.py::TestPipelineRunTrigger::test_run_requires_authentication PASSED [ 89%]
+tests/test_pipeline_run_api.py::TestPipelineRunTrigger::test_unsupported_domain_is_refused_before_the_batch_starts PASSED [ 90%]
+tests/test_pipeline_run_api.py::TestPipelineRunTrigger::test_accepted_run_reports_a_run_id_and_echoes_the_request PASSED [ 90%]
+tests/test_pipeline_run_api.py::TestPipelineRunTrigger::test_the_finished_run_is_readable_by_run_id PASSED [ 91%]
+tests/test_pipeline_run_api.py::TestPipelineRunTrigger::test_a_failing_batch_is_reported_not_raised PASSED [ 92%]
+tests/test_pipeline_run_api.py::TestPipelineRunTrigger::test_partial_run_is_marked_when_shards_failed PASSED [ 92%]
+tests/test_pipeline_run_api.py::TestPipelineRunTrigger::test_an_unknown_run_id_is_not_found PASSED [ 93%]
+tests/test_pipeline_runner.py::TestPlanShards::test_splits_symbols_into_fixed_size_shards PASSED [ 94%]
+tests/test_pipeline_runner.py::TestPlanShards::test_empty_symbol_list_has_no_shards PASSED [ 94%]
+tests/test_pipeline_runner.py::TestPlanShards::test_rejects_non_positive_shard_size PASSED [ 95%]
+tests/test_pipeline_runner.py::TestPipelineRun::test_runs_every_shard_in_order PASSED [ 96%]
+tests/test_pipeline_runner.py::TestPipelineRun::test_completed_shards_are_skipped_on_resume PASSED [ 96%]
+tests/test_pipeline_runner.py::TestPipelineRun::test_single_symbol_failure_does_not_block_its_shard PASSED [ 97%]
+tests/test_pipeline_runner.py::TestPipelineRun::test_hooks_receive_the_affected_keys_in_order PASSED [ 98%]
+tests/test_pipeline_runner.py::TestPipelineRun::test_progress_rows_record_every_shard PASSED [ 98%]
+tests/test_pipeline_runner.py::TestPipelineRun::test_resume_false_reruns_every_shard PASSED [ 99%]
+tests/test_pipeline_runner.py::TestPipelineRun::test_concurrent_run_of_the_same_domain_is_locked_out PASSED [100%]
+
+===================== 151 passed, 3216 deselected in 9.00s =====================
+real 10.94
+user 9.94
+sys 0.37
+CLEAN_RUN_EXIT=0
+
+===== C. the venv's own consistency check =====
+$ /tmp/c51-clean/venv/bin/pip check
+No broken requirements found.
+PIP_CHECK_EXIT=0
+
+===== summary line (also greppable) =====
+REPO_RUN_EXIT=0
+CLEAN_RUN_EXIT=0
+PIP_CHECK_EXIT=0
+===================== 151 passed, 3216 deselected in 8.86s =====================
+===================== 151 passed, 3216 deselected in 9.00s =====================
+TOTAL_LINES=368

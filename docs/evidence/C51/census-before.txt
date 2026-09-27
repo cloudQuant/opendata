@@ -1,0 +1,79 @@
+# evidence header (project convention: 命令 / 日期 / 身份 / exit)
+round: C51
+run_at: 2026-09-27T18:58:40+0200 (body file mtime)
+wall: real 27.91 s (/usr/bin/time -p of this same command)
+command: python docs/evidence/C51/zero_dep_clean_env_census.py > /tmp/c51-clean/census-before.txt 2>/tmp/c51-clean/census-before.time
+command_exit: 0
+branch: dev
+head_commit: d1f0c81 2026-09-27T18:40:34+02:00 docs(acceptance): v5.22 回填 C50 门禁成员与历史仪器依赖面（AC-17/AC-2）
+worktree_status: HEAD d1f0c81 + ?? docs/evidence/C51/zero_dep_clean_env_census.py（marker 接线还没落地 —— 正因如此本遍 5a/5b 读到 applied integration = 0 / selected = 0）
+env: python 3.13.5 / PATH=$HOME/opt/anaconda3/envs/py313/bin / PYTHONPATH=. ; 未读取 .env 与任何密钥值；所有 pytest 遍都带 -m "integration and not e2e" --no-cov，不碰仓库侧 e2e/真库（ASGITransport 不跑 lifespan，fixture 引擎是 sqlite 内存库）
+purpose: C51「先量」的改前遍 —— AC-16|06/|07 两格在动手之前的七面读数；本档案是「选择式选不出任何用例」这个发现的原始证据
+
+===== 1. baseline entries, attributed =====
+baseline entries: 3  live findings: 3
+  opendata/data/openbb_map.py:125 'openbb' kind=string shape=field name read from an external data file (.get) scope=_parse_entry reaches_import=no
+  opendata/models/data_script.py:74 'akshare' kind=string shape=keyword argument default= of DataScript scope=DataScript reaches_import=no
+  opendata/pipeline/patrol.py:468 'akshare' kind=string shape=dict key (source label) scope=key_status reaches_import=no
+
+===== 2. live walk, by kind =====
+scan targets: opendata, opendata_http, opendata_fuyao, opendata_client
+  import: 0
+  dynamic: 0
+  string: 3
+
+===== 3. detector controls (dead detector voids the readings above) =====
+  bites   import akshare: [('import', 'akshare')]
+  bites   from akshare.x import: [('import', 'akshare.stock_feature')]
+  bites   import akshare.data as: [('import', 'akshare.data')]
+  bites   import_module("openbb.equity"): [('dynamic', 'openbb.equity')]
+  bites   __import__("akshare"): [('dynamic', 'akshare')]
+  bites   bare "akshare.core" constant: [('string', 'akshare.core')]
+  silent  docstring prose: as intended
+  silent  prose inside a string: as intended
+  silent  suffixed: as intended
+  silent  root not first: as intended
+  detector --self-test exit=0: OK: scanner self-test passed (8 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+
+===== 4. consumers of each residue =====
+tracked files walked: 1490
+  'openbb' as a quoted literal: docs=6, opendata=1, scripts=1
+    sites: docs/evidence/C36/zero-dep-baseline-v1.json x1; docs/evidence/C36/zero-dep-surface-after.txt x3; docs/evidence/C36/zero_dep_scanner_HEAD.py x1; docs/quality/zero-dep-baseline.json x1; opendata/data/openbb_map.py x1; scripts/codemod/verify_no_akshare.py x1
+  'akshare' as a quoted literal: alembic_data=1, docs=308, frontend=6, opendata=12, other=4, scripts=16, tests=226
+    sites: CODE_QUALITY.md x1; alembic_data/versions/20260923-0001_ods_dwd_p0.py x1; bandit.yaml x1; docs/evidence/A0/README.md x1; docs/evidence/A0/gate.txt x1; docs/evidence/A0/quality-gates.txt x1
+  'akshare' as a quoted literal: alembic_data=1, docs=308, frontend=6, opendata=12, other=4, scripts=16, tests=226
+    sites: CODE_QUALITY.md x1; alembic_data/versions/20260923-0001_ods_dwd_p0.py x1; bandit.yaml x1; docs/evidence/A0/README.md x1; docs/evidence/A0/gate.txt x1; docs/evidence/A0/quality-gates.txt x1
+
+===== 5a. marker census =====
+registered in pytest.ini: 
+  applied asyncio     : 696 (NOT registered)
+  applied e2e         : 26 (NOT registered)
+  applied parametrize : 72 (NOT registered)
+  applied skipif      : 2 (NOT registered)
+  module-level pytestmark: 0 file(s)
+
+===== 5b. collection in this interpreter =====
+  repo env: `pytest -m 'integration and not e2e'` exit=5
+    collected 3358 items / 3358 deselected / 0 selected
+    ================ no tests collected (3358 deselected) in 0.65s =================
+
+===== 6. P0 domain enumerations in the repo =====
+alembic_data/versions/20260923-0001_ods_dwd_p0.py _DWD_TABLES (5): stock_daily, stock_action, financial_statement, financial_indicator, index_constituent
+schedules.yaml jobs: 4, p0-named: p0-stock-daily-incremental, p0-weekly-full-cross-check
+opendata/data/domains.yaml domains: 20; per-domain tier fields present: none (so no P0 set here)
+opendata/data/openbb_map.yaml batch labels: none
+
+===== 7. the clean interpreter =====
+  interpreter: /tmp/c51-clean/venv/bin/python (exit=0)
+    akshare=absent openbb=absent
+    pip check exit=0: No broken requirements found.
+    packages installed: 129; upstream-named: none
+    Python 3.13.5 | packaged by Anaconda, Inc. | (main, Jun 12 2025, 11:23:37) [Clang 14.0.6 ]
+
+===== 7b. collection in the clean interpreter =====
+  clean venv: `pytest -m 'integration and not e2e'` exit=5
+    collected 3358 items / 3358 deselected / 0 selected
+    ================ no tests collected (3358 deselected) in 2.90s =================
+
+===== summary =====
+baseline=3 import-or-dynamic=0 string=3 controls_bit=yes

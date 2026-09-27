@@ -1,0 +1,25 @@
+# evidence header (project convention: 命令 / 日期 / 身份 / exit)
+round: C51
+run_at: 2026-09-27T19:10:59+0200 (body file mtime)
+wall: 四条反事实各跑一遍判定模块 + 恢复后再跑一遍（单遍 <1 s，未单独计时）
+command: python /tmp/c51-clean/guard_counterfacts.py
+command_exit: 每条 exit=1（判定红了才叫咬住），最后一行 restored tree exit=0 证明树已复原
+branch: dev
+head_commit: d1f0c81 2026-09-27T18:40:34+02:00 docs(acceptance): v5.22 回填 C50 门禁成员与历史仪器依赖面（AC-17/AC-2）
+worktree_status: 8 个测试文件已加 marker（未提交）、?? tests/test_p0_integration_surface.py、?? docs/evidence/C51/zero_dep_clean_env_census.py；`git status --porcelain -uall` = 10 行；四条突变都在内存里留了原文再逐字节回写，未用 git checkout
+env: python 3.13.5 / PATH=$HOME/opt/anaconda3/envs/py313/bin / PYTHONPATH=. ; 未读取 .env 与任何密钥值；所有 pytest 遍都带 -m "integration and not e2e" --no-cov，不碰仓库侧 e2e/真库（ASGITransport 不跑 lifespan，fixture 引擎是 sqlite 内存库）
+purpose: tests/test_p0_integration_surface.py 四条断言的反事实面 —— 每条断言必须各自能被单独打红，否则它只是在描述常量
+CF1 integration marker unregistered (--strict-markers sees an unknown marker)
+  exit=1 -> red: test_integration_marker_is_registered_under_strict_markers
+
+CF2 marked class loses its decorator
+  exit=1 -> red: test_the_marked_set_is_the_reviewed_set
+
+CF3 a P0 domain module loses its pytestmark
+  exit=1 -> red: test_every_p0_domain_is_reached_by_the_selection,test_the_marked_set_is_the_reviewed_set
+
+CF4 every test in a marked module is also e2e
+  exit=1 -> red: test_no_marked_unit_is_all_e2e
+
+restored tree: exit=0 ============================== 4 passed in 0.81s ===============================
+scanner: guard_counterfacts.py
