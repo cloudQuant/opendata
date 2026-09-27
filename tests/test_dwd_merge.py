@@ -224,6 +224,102 @@ class TestDwdMergeService:
             zip(written[0]["symbol"], written[0]["trade_date"], strict=True)
         )
 
+    async def test_service_writes_all_four_point_in_time_faces(self):
+        """AC-9 item 6: authority/degrade/source/_diff_flag/_as_of land via the service.
+
+        ``test_point_in_time_columns_are_stamped`` drives ``merge_source_frames``
+        directly, so it cannot see the ``as_of=end`` the service passes down -
+        the column a reader of ``layer=dwd`` actually queries is stamped here.
+        """
+        service, written = self._service(
+            {
+                "ths": _frame(AUTHORITY_ROWS),
+                "akshare": _frame(AUTHORITY_ROWS, source_close_offset=1.0),
+            }
+        )
+
+        stats = await service.run(date(2024, 1, 1), AS_OF)
+
+        frame = written[0].set_index(list(KEY))
+        assert stats.rows == len(written[0]) == 2
+        assert set(written[0]["_as_of"]) == {AS_OF}
+        assert set(written[0]["source"]) == {"ths"}
+        assert written[0]["_merged_at"].nunique() == 1
+        disagreeing = {(row[0], row[1]) for row in AUTHORITY_ROWS}
+        assert set(frame.loc[list(disagreeing), "_diff_flag"]) == {1}
+
+    async def test_service_degrades_per_key_and_keeps_the_source_evidence(self):
+        """AC-9 item 6 (second half): a missing authority row is filled, not lost."""
+        service, written = self._service(
+            {
+                "ths": _frame(AUTHORITY_ROWS[:1]),
+                "akshare": _frame(AUTHORITY_ROWS),
+            }
+        )
+
+        stats = await service.run(date(2024, 1, 1), AS_OF)
+
+        frame = written[0].set_index(list(KEY))
+        assert stats.degraded_rows == 1
+        assert frame.loc[("000001", date(2024, 1, 2)), "source"] == "akshare"
+        assert frame.loc[("600519", date(2024, 1, 2)), "source"] == "ths"
+
+    async def test_revision_of_an_existing_key_changes_the_dwd_row(self):
+        """AC-9 item 7: a corrected ods key rewrites the dwd row it already had.
+
+        Presence in the merge unit is proved by
+        :meth:`test_affected_keys_extend_the_merge_unit`; this drives the rest
+        of the claim - the row's *value* travels. The reader here honours the
+        window (unlike :func:`_reader_for`), so the revised key only reaches
+        dwd through ``affected_keys``: dropping that argument empties the
+        second write, which is what makes the value change measurable instead
+        of trivially re-read.
+        """
+        revised_key = ("600519", date(2023, 12, 29))
+        frames = {
+            "ths": _frame([revised_key + (5.0,), ("000001", date(2024, 1, 2), 9.5)]),
+            "akshare": _frame([revised_key + (5.0,), ("000001", date(2024, 1, 2), 9.5)]),
+        }
+        written: list[pd.DataFrame] = []
+
+        def reader(name: str):
+            def read(start: date, end: date, affected_keys: set[tuple]) -> pd.DataFrame:
+                frame = frames[name]
+                keys = list(zip(frame["symbol"], frame["trade_date"], strict=True))
+                in_window = (frame["trade_date"] >= start) & (frame["trade_date"] <= end)
+                restated = pd.Series([key in affected_keys for key in keys], index=frame.index)
+                return frame[in_window | restated].reset_index(drop=True)
+
+            return read
+
+        service = DwdMergeService(
+            "stock_daily",
+            sources=("ths", "akshare"),
+            authority=("ths", "akshare"),
+            readers={name: reader(name) for name in ("ths", "akshare")},
+            write_dwd=lambda frame: written.append(frame) or len(frame),
+            key=KEY,
+            merged_at=MERGED_AT,
+        )
+
+        await service.run(date(2023, 12, 1), date(2023, 12, 31))
+        before = written[0].set_index(list(KEY))
+        assert float(before.loc[revised_key, "close"]) == 5.0
+
+        frames["ths"] = _frame([revised_key + (6.5,), ("000001", date(2024, 1, 2), 9.5)])
+        stats = await service.run(date(2024, 1, 1), AS_OF, affected_keys={revised_key})
+
+        after = written[-1].set_index(list(KEY))
+        assert stats.rows == 2  # the new window plus the restated key
+        assert float(after.loc[revised_key, "close"]) == 6.5
+        assert after.loc[revised_key, "source"] == "ths"
+        assert after.loc[revised_key, "_as_of"] == AS_OF
+
+        await service.run(date(2024, 1, 1), AS_OF)
+        assert revised_key not in set(
+            zip(written[-1]["symbol"], written[-1]["trade_date"], strict=True)
+        )
+
     async def test_key_can_come_from_the_source_mapping(self):
         from opendata.data.mapping import DomainMapping, FieldMapping
 
