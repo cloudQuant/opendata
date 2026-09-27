@@ -181,6 +181,81 @@ class TestComparison:
         assert summary.checked_at == CHECKED_AT
 
 
+class TestCounterexamples:
+    """The design's two counterexamples, judged at the job's own entry point.
+
+    ``test_data_mapping`` shows ``normalize_frame`` raises on a mapping that
+    disagrees with the frame; this class shows the *comparison* never reads such
+    an input as consistent, and that a tolerance one leg declares loosely cannot
+    cancel the other leg's tight declaration.
+    """
+
+    @staticmethod
+    def _mapping(tolerances: dict[str, float] | None) -> DomainMapping:
+        """The contract mapping, with one tolerance declaration."""
+        return DomainMapping(
+            domain="stock_daily",
+            key=("symbol", "trade_date"),
+            fields={
+                "symbol": FieldMapping("symbol", normalize="plain"),
+                "trade_date": FieldMapping("trade_date"),
+                "name": FieldMapping("name"),
+                "close": FieldMapping("close"),
+                "volume": FieldMapping("volume", scale=100),
+            },
+            tolerances=tolerances or {},
+        )
+
+    def test_a_mapped_column_the_frame_lacks_errors_rather_than_passing(self):
+        """反例 ①: the mapping says ``volume``, the frame never carried it."""
+        frame_a = _frame()
+        frame_b = _frame().drop(columns=["volume"])
+
+        with pytest.raises(ValueError, match="missing mapped columns.*volume"):
+            compare_source_frames(
+                "stock_daily",
+                frame_a,
+                self._mapping({"close": 1e-4}),
+                frame_b,
+                self._mapping({"close": 1e-4}),
+                source_a="akshare",
+                source_b="ths",
+                batch_id=BATCH_ID,
+                checked_at=CHECKED_AT,
+            )
+
+    def test_the_tighter_tolerance_decides_whichever_leg_declares_it(self):
+        """A loose declaration may not mask a tight one.
+
+        ``mapping_b.tolerances or mapping_a.tolerances`` handed one side the whole
+        dictionary, so ``close`` apart by 0.4 read CONSISTENT whenever the leg whose
+        yaml declared ``1.0`` happened to be side B (C49 measured both orientations).
+        A tolerance is a judgement about one field, so the tighter one wins field by
+        field and the comparison reads the same in both orders.
+        """
+        tight = self._mapping({"close": 1e-4})
+        loose = self._mapping({"close": 1.0})
+        apart = _frame(close=[1688.4, 9.5])
+
+        def compare(left: DomainMapping, right: DomainMapping) -> DiffSummary:
+            return compare_source_frames(
+                "stock_daily",
+                _frame(),
+                left,
+                apart,
+                right,
+                source_a="akshare",
+                source_b="ths",
+                batch_id=BATCH_ID,
+                checked_at=CHECKED_AT,
+            )
+
+        for summary in (compare(tight, loose), compare(loose, tight)):
+            assert summary.verdict is Verdict.DEVIATION
+            assert summary.deviation_count == 1
+            assert summary.samples[0].field == "close"
+
+
 class TestNormalizationInTheComparison:
     def test_frames_are_normalized_before_comparison(self):
         """Source spellings differ (600519.SH vs 600519) but must match."""

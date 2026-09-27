@@ -19,6 +19,7 @@ import pytest
 
 from opendata.pipeline.dwd_merge import (
     DwdMergeService,
+    DwdWriter,
     MergeStats,
     merge_source_frames,
 )
@@ -340,6 +341,316 @@ class TestDwdMergeService:
         assert ("600888", date(2023, 12, 29)) in {
             (row.symbol, row.trade_date) for row in written[0].itertuples()
         }
+
+
+class TestAmbiguousKey:
+    """A key the leg carries twice is refused and reported, never raised away.
+
+    The live shape C49 measured: ``stock_action``/ths publishes 603883's
+    2024-06-27 ex-date twice with two different dividend plans (0.16 cash, and
+    0.5 cash plus 0.3 bonus). The table is keyed on ``(symbol, ex_date)``, so at
+    most one of the two could ever be kept and nothing in the contract says
+    which. The merge used to raise on it - which undelivered the whole window
+    and left ``dwd_stock_action`` empty - so the refusal is per key and reported.
+    """
+
+    @staticmethod
+    def _leg(rows: list[tuple[str, date, float]], *, duplicate_first: int = 0) -> pd.DataFrame:
+        """The leg, with its first key carried ``duplicate_first + 1`` times."""
+        frame = _frame(rows)
+        extra: list[pd.DataFrame] = []
+        for round_index in range(duplicate_first):
+            copy = frame.iloc[:1].copy()
+            copy["close"] = copy["close"] + 0.3 * (round_index + 1)
+            copy["amount"] = copy["amount"] * (2 + round_index)
+            extra.append(copy)
+        return pd.concat([frame, *extra], ignore_index=True)
+
+    def test_the_ambiguous_key_is_refused_and_the_rest_of_the_window_lands(self):
+        merged, stats = merge_source_frames(
+            "stock_daily",
+            {"ths": self._leg(AUTHORITY_ROWS, duplicate_first=1)},
+            authority=("ths",),
+            key=KEY,
+            as_of=AS_OF,
+            merged_at=MERGED_AT,
+        )
+
+        landed = list(zip(merged["symbol"], merged["trade_date"], strict=True))
+        assert landed == [("000001", date(2024, 1, 2))]  # the unambiguous key still lands
+        assert stats.rows == 1
+        assert stats.passthrough is True
+        assert len(stats.colliding) == 1
+        assert "600519" in stats.colliding[0]
+        assert "2024" in stats.colliding[0]
+
+    def test_a_key_carried_three_times_is_still_refused_whole(self):
+        """Refusing is not "keep the first": no member of the group is trusted."""
+        merged, stats = merge_source_frames(
+            "stock_daily",
+            {"ths": self._leg(AUTHORITY_ROWS, duplicate_first=2)},
+            authority=("ths",),
+            key=KEY,
+            as_of=AS_OF,
+            merged_at=MERGED_AT,
+        )
+
+        assert stats.colliding == ("ths: ('600519', datetime.date(2024, 1, 2))",)
+        assert stats.rows == 1
+        assert "600519" not in set(merged["symbol"])
+
+    def test_a_missing_key_column_still_fails_closed(self):
+        """The column-level disagreement is not a row-level judgement to make."""
+        leg = _frame(AUTHORITY_ROWS).drop(columns=["trade_date"])
+
+        with pytest.raises(ValueError, match="lacks key columns"):
+            merge_source_frames(
+                "stock_daily",
+                {"ths": leg},
+                authority=("ths",),
+                key=KEY,
+                as_of=AS_OF,
+                merged_at=MERGED_AT,
+            )
+
+    async def test_the_service_reports_the_refusal_it_landed_around(self):
+        """The run publishes the rows it wrote, so the refused key has to be visible.
+
+        The single-source shape is what ``stock_action`` really runs: no second leg
+        covers for the refused key, and a run that reported 55,073 rows for a table
+        that kept 55,071 would be reporting a landing that did not happen.
+        """
+        written: list[pd.DataFrame] = []
+        frames = {"ths": self._leg(AUTHORITY_ROWS, duplicate_first=1)}
+        service = DwdMergeService(
+            "stock_daily",
+            sources=("ths",),
+            authority=("ths",),
+            readers={"ths": _reader_for(frames, "ths")},
+            write_dwd=lambda frame: written.append(frame) or len(frame),
+            key=KEY,
+            merged_at=MERGED_AT,
+        )
+
+        stats = await service.run(date(2024, 1, 1), date(2024, 1, 31))
+
+        assert stats.rows == 1
+        assert len(stats.colliding) == 1
+        assert written and len(written[0]) == 1
+
+    def test_the_multi_source_winner_is_not_a_collision(self):
+        """Two sources carrying one key is the normal case, not an ambiguity."""
+        merged, stats = merge_source_frames(
+            "stock_daily",
+            {
+                "ths": _frame(AUTHORITY_ROWS),
+                "akshare": _frame(AUTHORITY_ROWS, source_close_offset=5.0),
+            },
+            authority=("ths", "akshare"),
+            key=KEY,
+            as_of=AS_OF,
+            merged_at=MERGED_AT,
+        )
+
+        assert stats.colliding == ()
+        assert stats.rows == 2
+
+
+class TestPassthroughQueryFace:
+    """判据 |08 的查询面：直通输出要能被 ``layer=dwd`` 的读法原样读回去.
+
+    The dwd table is built from the same contract model the query layer reads
+    (:func:`opendata.pipeline.ddl.contract_columns` plus the trace columns), and
+    the endpoint picks its key out of that model too (:func:`opendata.api.data_query._key`).
+    If the passthrough frame's columns drifted from that shape the landing would
+    fail on an unknown column, or ``layer=dwd`` would order and filter on a column
+    the table never had - so both halves are asserted against the real single-source
+    domain, without a database.
+    """
+
+    DOMAIN = "stock_action"
+
+    def _passthrough_frame(self) -> pd.DataFrame:
+        from opendata.pipeline.ddl import contract_columns
+
+        rows: dict[str, list] = {}
+        for column in contract_columns(self.DOMAIN):
+            if column.name == "symbol":
+                rows[column.name] = ["600519", "000001"]
+            elif column.name in {"ex_date", "report_period", "as_of", "date"}:
+                rows[column.name] = [date(2024, 6, 27), date(2024, 6, 28)]
+            else:
+                rows[column.name] = [0.16, 0.5]
+        return pd.DataFrame(rows)
+
+    def test_passthrough_columns_are_exactly_the_dwd_table_columns(self):
+        from opendata.api.data_query import _key
+        from opendata.pipeline.ddl import DWD_TRACE_COLUMNS, contract_columns
+
+        key = _key(self.DOMAIN)
+        merged, stats = merge_source_frames(
+            self.DOMAIN,
+            {"ths": self._passthrough_frame()},
+            authority=("ths",),
+            key=key,
+            as_of=AS_OF,
+            merged_at=MERGED_AT,
+        )
+        table_columns = [
+            column.name for column in [*contract_columns(self.DOMAIN), *DWD_TRACE_COLUMNS]
+        ]
+
+        assert stats.passthrough is True
+        assert stats.rows == 2
+        assert set(merged.columns) == set(table_columns)
+        # 直通不留空差异位：单源没有第二条腿可比
+        assert set(merged["_diff_flag"]) == {0}
+
+    def test_layer_dwd_query_builds_over_the_landed_columns(self):
+        from opendata.api.data_query import _key
+        from opendata.data.domains import dwd_table
+        from opendata.pipeline.ddl import DWD_TRACE_COLUMNS, contract_columns
+        from opendata.pipeline.query import DataQuery, build_data_select
+
+        key = _key(self.DOMAIN)
+        columns = [column.name for column in [*contract_columns(self.DOMAIN), *DWD_TRACE_COLUMNS]]
+        merged, _ = merge_source_frames(
+            self.DOMAIN,
+            {"ths": self._passthrough_frame()},
+            authority=("ths",),
+            key=key,
+            as_of=AS_OF,
+            merged_at=MERGED_AT,
+        )
+
+        sql, params = build_data_select(
+            DataQuery(domain=self.DOMAIN, layer="dwd", page_size=20),
+            table=dwd_table(self.DOMAIN),
+            columns=columns,
+            key=key,
+            today=date(2026, 9, 26),
+        )
+
+        assert f"`{dwd_table(self.DOMAIN)}`" in sql
+        assert f"`{key[1]}`" in sql  # 时间字段就是 key 里的日期列
+        assert params["limit"] == 20
+        # 查询选的每一列都在落地帧里，直通不会读到一个没写过的列
+        assert set(key).issubset(set(merged.columns))
+
+
+class TestRecomputeIdempotence:
+    """判据 |09：重算同一批输入，落库面必须逐格不动."""
+
+    FRAMES = {
+        "ths": _frame(AUTHORITY_ROWS),
+        "akshare": _frame(AUTHORITY_ROWS, source_close_offset=5.0),
+    }
+
+    def _merge(self, frames=None, *, merged_at=MERGED_AT):
+        return merge_source_frames(
+            "stock_daily",
+            self.FRAMES if frames is None else frames,
+            authority=("ths", "akshare"),
+            key=KEY,
+            as_of=AS_OF,
+            merged_at=merged_at,
+        )
+
+    def test_a_second_recompute_of_the_same_input_is_the_same_frame(self):
+        first, first_stats = self._merge()
+        second, second_stats = self._merge()
+
+        pd.testing.assert_frame_equal(first, second)
+        assert first_stats == second_stats
+
+    def test_the_input_dictionary_order_does_not_change_the_output(self):
+        shuffled, shuffled_stats = self._merge(
+            {name: self.FRAMES[name] for name in reversed(list(self.FRAMES))}
+        )
+        ordered, ordered_stats = self._merge()
+
+        pd.testing.assert_frame_equal(shuffled, ordered)
+        assert shuffled_stats == ordered_stats
+
+    def test_a_recompute_at_a_later_clock_moves_only_the_audit_stamp(self):
+        """Recompute reproducibility: business columns stay put.
+
+        ``_merged_at`` is the stamp of the run that wrote the row, so it is the
+        one column a second recompute is allowed to change; a row whose close
+        moved between recomputes would mean the merge read something it had not
+        been given.
+        """
+        base, _ = self._merge()
+        later, _ = self._merge(merged_at=datetime(2026, 9, 24, 9, 0, tzinfo=timezone.utc))
+
+        unchanged = [column for column in base.columns if column != "_merged_at"]
+        pd.testing.assert_frame_equal(base[unchanged], later[unchanged])
+        assert set(later["_merged_at"]) == {datetime(2026, 9, 24, 9, 0)}
+
+    def test_landing_the_same_key_twice_is_one_row_written_in_place(self):
+        """The write is a key-level upsert, so a recompute cannot add a row.
+
+        The warehouse truth is the e2e node below; this is the face the gate
+        runs: the statement DwdWriter really emits must carry the business key in
+        its insert list and must not rewrite it in the update part, while every
+        value column - and the point-in-time columns - are rewritten.
+        """
+        merged, _ = self._merge()
+        engine = _RecordingEngine()
+
+        written = DwdWriter(engine).write(merged, table="dwd_stock_daily", key=KEY)
+        again = DwdWriter(engine).write(merged, table="dwd_stock_daily", key=KEY)
+
+        assert (written, again) == (2, 2)
+        assert len(engine.calls) == 2
+        statement, records = engine.calls[0]
+        assert engine.calls[1][0] == statement  # the same statement, not a second insert path
+        assert "ON DUPLICATE KEY UPDATE" in statement
+        assert len(records) == 2
+        insert_list = statement.split("VALUES")[0]
+        update_part = statement.split("ON DUPLICATE KEY UPDATE")[1]
+        for column in KEY:
+            assert f"`{column}`" in insert_list
+            assert f"`{column}` = new" not in update_part
+        for column in ("close", "volume", "source", "_as_of", "_diff_flag"):
+            assert f"`{column}` = new" in update_part
+
+    def test_an_empty_recompute_writes_nothing(self):
+        engine = _RecordingEngine()
+        merged = pd.DataFrame(
+            {name: pd.Series(dtype="object") for name in (*KEY, "close", "source")}
+        )
+
+        assert DwdWriter(engine).write(merged, table="dwd_stock_daily", key=KEY) == 0
+        assert engine.calls == []
+
+
+class _RecordingConnection:
+    """The connection face ``DwdWriter.write`` uses, recording what it sent."""
+
+    def __init__(self, sink: list[tuple[str, list[dict]]]) -> None:
+        self._sink = sink
+
+    def __enter__(self) -> "_RecordingConnection":
+        return self
+
+    def __exit__(self, *exc: object) -> bool:
+        return False
+
+    def execute(self, statement: object, records: list[dict]) -> None:
+        """Record the batch the writer sent (duck-typed SQLAlchemy face)."""
+        self._sink.append((str(statement), list(records)))
+
+
+class _RecordingEngine:
+    """An engine stub: ``begin()`` yields a connection that records."""
+
+    def __init__(self) -> None:
+        self.calls: list[tuple[str, list[dict]]] = []
+
+    def begin(self) -> _RecordingConnection:
+        """The transaction context ``DwdWriter.write`` opens."""
+        return _RecordingConnection(self.calls)
 
 
 @pytest.mark.e2e
