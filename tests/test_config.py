@@ -22,11 +22,20 @@ class TestSettings:
         """Test settings have expected values."""
         from opendata.core.config import settings
 
-        assert settings.app_name == "opendata"
         assert isinstance(settings.app_version, str)
         assert settings.app_env in ["development", "testing", "production"]
         assert isinstance(settings.secret_key, str)
         assert len(settings.secret_key) >= 10
+
+    def test_app_name_is_the_name_the_service_shows_the_operator(self):
+        """``app_name`` 的行为面：它写进 FastAPI 的对外标题，标题按字面量钉住。
+
+        断言 ``settings.app_name == "opendata"`` 只是把 config 的定义抄一遍（§5.1 第 2
+        类）；这里断言设置真的接到了服务自描述上 —— 改设置这里红，接线断掉也红。
+        """
+        from opendata.main import app
+
+        assert app.openapi()["info"]["title"] == "opendata API v1"
 
     def test_cors_origins(self):
         """Test CORS origins configuration."""
@@ -58,12 +67,21 @@ class TestSettings:
         # In tests, environment should be testing or development
         assert settings.app_env in ["development", "testing"]
 
-    def test_algorithm(self):
-        """Test JWT algorithm setting."""
-        from opendata.core.config import settings
+    def test_algorithm_is_the_one_the_signer_uses(self):
+        """``algorithm`` 的行为面：签出去的 token 头部就写着这个算法。
 
-        assert hasattr(settings, "algorithm")
-        assert settings.algorithm == "HS256"
+        抄一遍 config 里的 "HS256" 不算测试；读 token 自己的 header 才证明设置真的
+        进了签名调用 —— 签名代码写死别的算法、或设置改了没生效，这里都会红。
+        """
+        import jwt
+
+        from opendata.core.config import settings
+        from opendata.core.security import create_access_token, verify_token
+
+        token = create_access_token({"sub": "config-algorithm"})
+
+        assert jwt.get_unverified_header(token)["alg"] == settings.algorithm
+        assert verify_token(token)["sub"] == "config-algorithm"
 
     def test_host_and_port(self):
         """Test server host and port settings."""

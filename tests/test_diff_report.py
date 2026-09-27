@@ -19,6 +19,7 @@ from opendata.pipeline.diff_report import (
     build_report_insert_sql,
     summarize_for_report,
 )
+from opendata.pipeline.retention import RetentionMode, rule_for
 
 CHECKED_AT = datetime(2026, 9, 23, 12, 0, tzinfo=timezone.utc)
 BATCH_ID = "5d2c8a41-9e3b-4c7f-8a1b-6f0d2e9c4b73"
@@ -61,8 +62,18 @@ class TestReportRows:
         assert first.checked_at == CHECKED_AT
         assert set(first.as_params()) == set(REPORT_COLUMNS)
 
-    def test_table_name_derivation(self):
-        assert DQ_DIFF_REPORT_TABLE == "dq_diff_report"
+    def test_report_writer_and_retention_share_the_named_table(self):
+        """表名要能在两条通路上按字面量对上：写入 SQL 与保留期规则。
+
+        ``DQ_DIFF_REPORT_TABLE == "dq_diff_report"`` 只是把定义抄一遍；这里一侧看
+        生成的 INSERT，一侧看 ``rule_for`` 查到的生命周期 —— 生产改名或表名漂移，
+        两处都会红，而抄定义的用例照绿。
+        """
+        sql = build_report_insert_sql()
+        rule = rule_for("dq_diff_report")
+
+        assert "INSERT INTO `dq_diff_report` (`batch_id`, `domain`" in sql
+        assert rule.mode is RetentionMode.DAYS
 
     def test_insert_sql_binds_every_column(self):
         sql = build_report_insert_sql()

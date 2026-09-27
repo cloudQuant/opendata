@@ -4,7 +4,14 @@ Scheduler service detailed tests.
 Tests for SchedulerService functionality.
 """
 
+import asyncio
+
 import pytest
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.date import DateTrigger
+from apscheduler.triggers.interval import IntervalTrigger
+
+from opendata.services.scheduler_service import SchedulerService
 
 
 class TestSchedulerServiceLifecycle:
@@ -20,8 +27,10 @@ class TestSchedulerServiceLifecycle:
         # Should not raise
         await service.start()
 
-        # Scheduler should be initialized
+        # 启动的可观察后果：实例存在且真的在跑（只断 `is not None` 时 start() 空转也绿）
         assert service.scheduler is not None
+        assert service.scheduler.running is True
+        await service.shutdown()
 
     @pytest.mark.asyncio
     async def test_scheduler_shutdown(self):
@@ -34,8 +43,12 @@ class TestSchedulerServiceLifecycle:
         await service.start()
         await service.shutdown()
 
-        # Shutdown completes without error
-        assert True
+        # APScheduler 的 stop 是 call_soon_threadsafe 投递的：先让循环走一拍再看状态。
+        # 「shutdown 没抛异常」不是判据（那正是曾经的 assert True）；状态必须翻转。
+        await asyncio.sleep(0)
+
+        assert service.scheduler is not None
+        assert service.scheduler.running is False
 
 
 class TestSchedulerServiceJobManagement:
@@ -250,18 +263,43 @@ class TestSchedulerServiceStatus:
 class TestTriggerValidation:
     """Test trigger type validation."""
 
-    def test_valid_trigger_types(self):
-        """Test valid trigger types."""
-        from opendata.services.scheduler_service import SchedulerService
+    @pytest.mark.parametrize(
+        ("trigger_type", "trigger_args", "expected"),
+        [
+            ("cron", {"cron_expression": "0 8 * * 1-5"}, CronTrigger),
+            ("interval", {"minutes": 30}, IntervalTrigger),
+            ("date", {"run_date": "2024-01-02T09:30:00"}, DateTrigger),
+            ("once", {}, DateTrigger),
+        ],
+    )
+    def test_accepted_trigger_types_build_their_apscheduler_trigger(
+        self, trigger_type: str, trigger_args: dict, expected: type
+    ):
+        """「类型字符串被接受」的真含义是能建出对应的触发器，不是字符串在某个表里。
 
+        原先的断言写成 ``assert trigger_type in ["interval", "cron", "date"]``：
+        两边都是测试自己的字面量，换掉生产实现也不会红，而且漏掉了服务实际支持的
+        ``once``（§5.1 第 1 类自指）。这里让每种类型真的走一遍构造。
+        """
         service = SchedulerService()
 
-        # Valid trigger types
-        valid_types = ["interval", "cron", "date"]
+        built = service._build_trigger(trigger_type, trigger_args)
 
-        for trigger_type in valid_types:
-            # Just verify the type string is accepted
-            assert trigger_type in ["interval", "cron", "date"]
+        assert isinstance(built, expected)
+
+    def test_a_trigger_type_the_service_does_not_know_is_rejected(self):
+        """未知类型必须报错而不是悄悄回退——否则注册表里写错一个词就静默不跑。"""
+        service = SchedulerService()
+
+        with pytest.raises(ValueError, match="Unknown trigger type: weekly"):
+            service._build_trigger("weekly", {})
+
+    def test_cron_without_an_expression_is_rejected(self):
+        """``cron`` 缺表达式时上游会退化成「每分钟」，这里要求它报错。"""
+        service = SchedulerService()
+
+        with pytest.raises(ValueError, match="Missing cron expression"):
+            service._build_trigger("cron", {})
 
     def test_schedule_type_values(self):
         """Test ScheduleType enum values."""

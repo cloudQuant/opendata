@@ -8,7 +8,7 @@ mock 层覆盖请求构造（毫秒戳/闭区间/参数边界/失败关闭）、
 from __future__ import annotations
 
 import json
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any
 from zoneinfo import ZoneInfo
 
@@ -77,18 +77,13 @@ from opendata_fuyao.endpoints import (
     shanghai_today,
     unadjust_bars,
 )
+from tests.fuyao_golden import MILLIS_BY_DAY
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
 
 SHANGHAI = ZoneInfo("Asia/Shanghai")
 UTC = timezone.utc
-
-
-def _ms(day: str) -> int:
-    """交易日 → 上海零点毫秒戳（测试直算，不复用被测实现）。"""
-    parsed = date.fromisoformat(day)
-    return int(datetime.combine(parsed, time.min, tzinfo=SHANGHAI).timestamp() * 1000)
 
 
 def _envelope(items: Sequence[Mapping[str, Any]]) -> bytes:
@@ -131,7 +126,7 @@ def _client(handler, **kwargs) -> FuyaoHttpClient:
 
 def _bar_row(day: str, *, close: float = 10.0) -> dict[str, Any]:
     return {
-        "date_ms": _ms(day),
+        "date_ms": MILLIS_BY_DAY[day],
         "volume": 1000.0,
         "turnover": 10500.0,
         "open_price": 10.0,
@@ -149,8 +144,8 @@ def _statement_row(statement: str = "income", **overrides: Any) -> dict[str, Any
         "period": "annual",
         "fiscal_year": 2024,
         "fiscal_period": "FY",
-        "period_end_ms": _ms("2024-12-31"),
-        "report_date_ms": _ms("2025-04-17"),
+        "period_end_ms": MILLIS_BY_DAY["2024-12-31"],
+        "report_date_ms": MILLIS_BY_DAY["2025-04-17"],
         "currency": "CNY",
         **dict.fromkeys(FINANCIAL_STATEMENT_ITEMS[statement], 1.0),
     }
@@ -165,13 +160,13 @@ def _dividend_row(day: str, *, per_ten: float = 1.0, **overrides: Any) -> dict[s
         "per_ten_cash_before_tax": per_ten,
         "per_ten_cash_after_tax": per_ten,
         "progress": "2",
-        "publish_date_ms": _ms(day) - 604_800_000,
-        "registration_date_ms": _ms(day) - 267_840_000,
-        "ex_dividend_date_ms": _ms(day),
-        "payment_date_ms": _ms(day) + 691_200_000,
+        "publish_date_ms": MILLIS_BY_DAY[day] - 604_800_000,
+        "registration_date_ms": MILLIS_BY_DAY[day] - 267_840_000,
+        "ex_dividend_date_ms": MILLIS_BY_DAY[day],
+        "payment_date_ms": MILLIS_BY_DAY[day] + 691_200_000,
         "reinvestment_date_ms": None,
-        "profit_base_date_ms": _ms(day) - 1_642_560_000,
-        "in_dividend_date_ms": _ms(day),
+        "profit_base_date_ms": MILLIS_BY_DAY[day] - 1_642_560_000,
+        "in_dividend_date_ms": MILLIS_BY_DAY[day],
     }
     row.update(overrides)
     return row
@@ -219,8 +214,8 @@ class TestRequestBuilders:
 
         assert params["thscode"] == "600519.SH"
         assert params["interval"] == "1d"
-        assert params["start"] == _ms("2024-01-02")
-        assert params["end"] == _ms("2024-01-05") - 1  # 闭区间：半开 end 减 1ms
+        assert params["start"] == MILLIS_BY_DAY["2024-01-02"]
+        assert params["end"] == MILLIS_BY_DAY["2024-01-05"] - 1  # 闭区间：半开 end 减 1ms
         assert params["adjust"] == "none"
 
     @pytest.mark.parametrize(
@@ -252,8 +247,8 @@ class TestRequestBuilders:
         assert params == {
             "thscode": "000300.SH",
             "interval": "1d",
-            "start": _ms("2024-01-02"),
-            "end": _ms("2024-01-05") - 1,
+            "start": MILLIS_BY_DAY["2024-01-02"],
+            "end": MILLIS_BY_DAY["2024-01-05"] - 1,
         }
         assert "adjust" not in params  # 指数无复权语义（上游 data.adjust 恒为 null）
 
@@ -273,8 +268,8 @@ class TestRequestBuilders:
         assert params == {
             "thscode": "IF2610.CFE",
             "time_period": "day_1",
-            "start": _ms("2024-01-02"),
-            "end": _ms("2024-01-05") - 1,
+            "start": MILLIS_BY_DAY["2024-01-02"],
+            "end": MILLIS_BY_DAY["2024-01-05"] - 1,
         }
         # 期货/期权价是观测值：既无复权，也不能带 interval（上游按字段拒绝）。
         assert "adjust" not in params
@@ -321,8 +316,8 @@ class TestRequestBuilders:
             )
 
     def test_millis_round_trip_uses_shanghai_dates(self):
-        assert millis_to_trading_date(_ms("2024-01-02")) == date(2024, 1, 2)
-        assert shanghai_midnight_millis(date(2024, 1, 2)) == _ms("2024-01-02")
+        assert millis_to_trading_date(MILLIS_BY_DAY["2024-01-02"]) == date(2024, 1, 2)
+        assert shanghai_midnight_millis(date(2024, 1, 2)) == MILLIS_BY_DAY["2024-01-02"]
 
     def test_shanghai_today_is_the_day_the_channel_means(self):
         """ETF 日线的深度地板按「今天」滚动：UTC 当天在 16:00 后会早一天。"""
@@ -368,8 +363,8 @@ class TestRequestBuilders:
         assert params == {
             "thscode": "600519.SH",
             "period": "quarterly",
-            "start": _ms("2024-01-01"),
-            "end": _ms("2025-12-31"),
+            "start": MILLIS_BY_DAY["2024-01-01"],
+            "end": MILLIS_BY_DAY["2025-12-31"],
         }
 
     def test_financial_request_modes_and_bounds_fail_closed(self):
@@ -433,8 +428,8 @@ class TestRequestBuilders:
         assert params == {
             "thscode": "510300.sh",  # trim 而不 upper：上游自己会 trim+upper
             "interval": "1d",
-            "start": _ms("2025-04-01"),
-            "end": _ms("2026-04-01") - 1,  # 上游闭区间，半开的 end 退回一天
+            "start": MILLIS_BY_DAY["2025-04-01"],
+            "end": MILLIS_BY_DAY["2026-04-01"] - 1,  # 上游闭区间，半开的 end 退回一天
         }
         assert "adjust" not in params
 
@@ -444,12 +439,15 @@ class TestRequestBuilders:
         floor = today - timedelta(days=FUND_ETF_DEPTH_DAYS)
 
         # 边界可答：起点正落在地板上、跨度取满 1826
-        assert build_fund_etf_prices_request(
-            symbol="510300.SH",
-            start=floor,
-            end=floor + timedelta(days=FUND_ETF_MAX_SPAN_DAYS),
-            today=today,
-        )["start"] == _ms(floor.isoformat())
+        assert (
+            build_fund_etf_prices_request(
+                symbol="510300.SH",
+                start=floor,
+                end=floor + timedelta(days=FUND_ETF_MAX_SPAN_DAYS),
+                today=today,
+            )["start"]
+            == MILLIS_BY_DAY[floor.isoformat()]
+        )
         # 再多一天：上游回 code=1003「单次不超过 10 年」，那是股票腿的上限
         with pytest.raises(FuyaoError, match="fund_window_span"):
             build_fund_etf_prices_request(
@@ -516,13 +514,13 @@ class TestNormalizers:
                     [
                         {
                             "ticker": "600519",
-                            "ex_date_ms": _ms("2024-06-19"),
+                            "ex_date_ms": MILLIS_BY_DAY["2024-06-19"],
                             "dividend_per_share": 30.876,
                             "per_share_bonus": 0,
                         },
                         {
                             "ticker": "600519",
-                            "ex_date_ms": _ms("2023-06-19"),
+                            "ex_date_ms": MILLIS_BY_DAY["2023-06-19"],
                             "dividend_per_share": 25.911,
                             "per_share_bonus": 0,
                         },
@@ -560,7 +558,7 @@ class TestNormalizers:
                     [
                         {
                             "ticker": "600030",
-                            "ex_date_ms": _ms("2022-01-27"),
+                            "ex_date_ms": MILLIS_BY_DAY["2022-01-27"],
                             "dividend_per_share": 0,
                             "per_share_bonus": 0,
                             "allotment_ratio": 1.5,  # 词表里有、回包没给、单位未量 -> 不猜
@@ -629,7 +627,7 @@ class TestNormalizers:
                             "end_date": None,
                         },
                     ],
-                    _ms("2026-09-24"),
+                    MILLIS_BY_DAY["2026-09-24"],
                 )
             )
         )
@@ -688,7 +686,7 @@ class TestNormalizers:
                 _parse(
                     _envelope_at(
                         [{"thscode": "600519.SH", "ticker": "600520", "asset_type": "a-share"}],
-                        _ms("2026-09-24"),
+                        MILLIS_BY_DAY["2026-09-24"],
                     )
                 )
             )
@@ -706,7 +704,7 @@ class TestNormalizers:
                             "exchange": "SZSE",
                         }
                     ],
-                    _ms("2026-09-24"),
+                    MILLIS_BY_DAY["2026-09-24"],
                 )
             )
         )
@@ -724,7 +722,7 @@ class TestNormalizers:
                         {"thscode": "ICZL.CFE", "ticker": "IC9999", "asset_type": "futures"},
                         {"thscode": "IC8888.CFE", "ticker": "IC8888", "asset_type": "futures"},
                     ],
-                    _ms("2026-09-24"),
+                    MILLIS_BY_DAY["2026-09-24"],
                 )
             )
         )
@@ -769,7 +767,7 @@ class TestNormalizers:
                             "name": "沪深300",
                         },
                     ],
-                    _ms("2026-09-24"),
+                    MILLIS_BY_DAY["2026-09-24"],
                 )
             )
         )
@@ -796,7 +794,7 @@ class TestNormalizers:
                             },
                             {"thscode": "600519.SH", "ticker": "600520", "asset_type": "a-share"},
                         ],
-                        _ms("2026-09-24"),
+                        MILLIS_BY_DAY["2026-09-24"],
                     )
                 )
             )
@@ -815,7 +813,7 @@ class TestNormalizers:
                                 "end_date": "2026-06-12",
                             }
                         ],
-                        _ms("2026-09-24"),
+                        MILLIS_BY_DAY["2026-09-24"],
                     )
                 )
             )
@@ -823,7 +821,7 @@ class TestNormalizers:
     def test_instruments_require_thscode(self):
         with pytest.raises(FuyaoError, match="ticker_thscode"):
             normalize_instruments(
-                _parse(_envelope_at([{"name": "无名"}], _ms("2026-09-24"))),
+                _parse(_envelope_at([{"name": "无名"}], MILLIS_BY_DAY["2026-09-24"])),
             )
 
     def test_calendar_maps_trading_days(self):
@@ -831,8 +829,8 @@ class TestNormalizers:
             _parse(
                 _envelope(
                     [
-                        {"date_ms": _ms("2024-01-03"), "date": "20240103"},
-                        {"date_ms": _ms("2024-01-02"), "date": "20240102"},
+                        {"date_ms": MILLIS_BY_DAY["2024-01-03"], "date": "20240103"},
+                        {"date_ms": MILLIS_BY_DAY["2024-01-02"], "date": "20240102"},
                     ]
                 )
             ),
@@ -856,7 +854,7 @@ class TestNormalizers:
                         {"thscode": "600519.SH", "ticker": "600519", "name": "贵州茅台"},
                         {"thscode": "000001.SZ", "ticker": "000001", "name": "平安银行"},
                     ],
-                    _ms("2024-01-02") + 4_000_000,  # 请求时刻：当日 01:06:40 +08:00
+                    MILLIS_BY_DAY["2024-01-02"] + 4_000_000,  # 请求时刻：当日 01:06:40 +08:00
                 )
             ),
             index_symbol="000300.SH",
@@ -875,19 +873,23 @@ class TestNormalizers:
                 _parse(
                     _envelope_at(
                         [{"thscode": "600519.SH", "ticker": "600520", "name": "对不上"}],
-                        _ms("2024-01-02"),
+                        MILLIS_BY_DAY["2024-01-02"],
                     )
                 ),
                 index_symbol="000300.SH",
             )
         with pytest.raises(FuyaoError, match="constituent_symbol_type"):
             normalize_index_constituents(
-                _parse(_envelope_at([{"thscode": 600519, "ticker": "600519"}], _ms("2024-01-02"))),
+                _parse(
+                    _envelope_at(
+                        [{"thscode": 600519, "ticker": "600519"}], MILLIS_BY_DAY["2024-01-02"]
+                    )
+                ),
                 index_symbol="000300.SH",
             )
         with pytest.raises(FuyaoError, match="constituent_ticker"):
             normalize_index_constituents(
-                _parse(_envelope_at([{"thscode": "600519.SH"}], _ms("2024-01-02"))),
+                _parse(_envelope_at([{"thscode": "600519.SH"}], MILLIS_BY_DAY["2024-01-02"])),
                 index_symbol="000300.SH",
             )
 
@@ -902,7 +904,10 @@ class TestNormalizers:
         with pytest.raises(FuyaoError, match="FUYAO_ENVELOPE_INVALID_symbol"):
             normalize_index_constituents(
                 _parse(
-                    _envelope_at([{"thscode": "600519.SH", "ticker": "600519"}], _ms("2024-01-02"))
+                    _envelope_at(
+                        [{"thscode": "600519.SH", "ticker": "600519"}],
+                        MILLIS_BY_DAY["2024-01-02"],
+                    )
                 ),
                 index_symbol=" ",
             )
@@ -930,7 +935,9 @@ class TestNormalizers:
             _parse(
                 _envelope(
                     [
-                        _statement_row("income", fiscal_year=2025, period_end_ms=_ms("2025-12-31")),
+                        _statement_row(
+                            "income", fiscal_year=2025, period_end_ms=MILLIS_BY_DAY["2025-12-31"]
+                        ),
                         _statement_row("income"),
                     ]
                 )
@@ -1115,7 +1122,7 @@ class TestNormalizers:
             normalize_fund_dividends(
                 _parse(
                     _dividend_envelope(
-                        [{"ex_dividend_date_ms": _ms("2025-01-17"), "progress": "2"}]
+                        [{"ex_dividend_date_ms": MILLIS_BY_DAY["2025-01-17"], "progress": "2"}]
                     )
                 ),
                 symbol="510300.SH",
@@ -1270,7 +1277,7 @@ class TestFetchers:
             seen["path"] = request.url.path
             seen["params"] = dict(request.url.params)
             row = {
-                "timestamp": _ms("2024-01-02"),
+                "timestamp": MILLIS_BY_DAY["2024-01-02"],
                 "open_price": 3500.0,
                 "high_price": 3560.0,
                 "low_price": 3490.0,
@@ -1328,7 +1335,7 @@ class TestFetchers:
 
         def handler(request: httpx.Request) -> httpx.Response:
             row = {
-                "timestamp": _ms("2024-01-02"),
+                "timestamp": MILLIS_BY_DAY["2024-01-02"],
                 "open_price": 120.0,
                 "high_price": 121.0,
                 "low_price": 119.0,
@@ -1371,7 +1378,7 @@ class TestFetchers:
                 200,
                 content=_envelope_at(
                     [{"thscode": "600519.SH", "ticker": "600519", "name": "贵州茅台"}],
-                    _ms("2026-09-24"),
+                    MILLIS_BY_DAY["2026-09-24"],
                 ),
             )
 
@@ -1395,7 +1402,7 @@ class TestFetchers:
                     [
                         {
                             "ticker": "600519",
-                            "ex_date_ms": _ms("2024-06-19"),
+                            "ex_date_ms": MILLIS_BY_DAY["2024-06-19"],
                             "dividend_per_share": 1.0,
                         }
                     ]
@@ -1418,7 +1425,8 @@ class TestFetchers:
             seen["path"] = request.url.path
             seen["params"] = dict(request.url.params)
             return httpx.Response(
-                200, content=_envelope([{"date_ms": _ms("2024-01-02"), "date": "20240102"}])
+                200,
+                content=_envelope([{"date_ms": MILLIS_BY_DAY["2024-01-02"], "date": "20240102"}]),
             )
 
         with _client(handler) as client:
@@ -1441,7 +1449,7 @@ class TestFetchers:
                         {"thscode": "600519.SH", "ticker": "600519", "name": "贵州茅台"},
                         {"thscode": "000001.SZ", "ticker": "000001", "name": "平安银行"},
                     ],
-                    _ms("2024-01-02"),
+                    MILLIS_BY_DAY["2024-01-02"],
                 ),
             )
 
@@ -1514,8 +1522,8 @@ class TestFetchers:
             )
 
         assert "period=quarterly" in seen[0]
-        assert f"start={_ms('2024-01-01')}" in seen[0]
-        assert f"end={_ms('2024-12-31')}" in seen[0]
+        assert f"start={MILLIS_BY_DAY['2024-01-01']}" in seen[0]
+        assert f"end={MILLIS_BY_DAY['2024-12-31']}" in seen[0]
         assert "limit=3" in seen[1]
         assert "start=" not in seen[1] and "end=" not in seen[1]
 
@@ -1586,6 +1594,7 @@ class TestFetchers:
     def test_fund_etf_bars_ask_for_the_depth_in_two_chunks(self):
         """深度 1827 比单次跨度 1826 多一天：取满可答范围必然要两次价格请求。"""
         today = date(2026, 9, 25)
+        floor = today - timedelta(days=FUND_ETF_DEPTH_DAYS)
         windows: list[tuple[int, int]] = []
         calls: list[str] = []
 
@@ -1610,7 +1619,7 @@ class TestFetchers:
             bars = fetch_fund_etf_bars(
                 client,
                 symbol="510300.SH",
-                start=today - timedelta(days=FUND_ETF_DEPTH_DAYS),
+                start=floor,
                 end=today,
                 today=today,
             )
@@ -1619,10 +1628,10 @@ class TestFetchers:
         # 分红是「自成立至今」的全量事件流，与价格窗口无关 ⇒ 只取一次
         assert calls.count(FUND_DIVIDENDS_ENDPOINT) == 1
         assert calls.count(FUND_ETF_PRICES_ENDPOINT) == 2
-        assert windows[0][0] == _ms((today - timedelta(days=FUND_ETF_DEPTH_DAYS)).isoformat())
+        assert windows[0][0] == MILLIS_BY_DAY[floor.isoformat()]
         # 半开窗口首尾相接：不重不漏（第二块起点 = 第一块终点 + 1ms）
         assert windows[1][0] == windows[0][1] + 1
-        assert windows[1][1] == _ms(today.isoformat()) - 1
+        assert windows[1][1] == MILLIS_BY_DAY[today.isoformat()] - 1
 
     def test_fund_etf_bars_convert_the_prices_they_return(self):
         """换算发生在搬运层：腿拿到的 Bar 已经是 D10 要求的不复权口径。"""

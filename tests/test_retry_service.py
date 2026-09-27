@@ -26,17 +26,20 @@ class TestRetryService:
         assert service.db == mock_db
         assert service._retry_queue == {}
 
-    def test_base_retry_delay_constant(self):
-        """Test BASE_RETRY_DELAY constant."""
+    def test_backoff_ladder_plateaus_at_the_ceiling(self):
+        """两个常量的行为面：首 Retry 等 60 秒，第 6 次起被 3600 秒封顶。
+
+        60·2^5 = 1920 尚未触顶、60·2^6 = 3840 触顶，所以平台段从 retry_count=6 开始。
+        期望值是手算的阶梯表：把 BASE 改大或把 MAX 改小，这张表立刻对不上。
+        """
         from opendata.services.retry_service import RetryService
 
-        assert RetryService.BASE_RETRY_DELAY == 60
+        mock_db = AsyncMock()
+        service = RetryService(mock_db)
 
-    def test_max_retry_delay_constant(self):
-        """Test MAX_RETRY_DELAY constant."""
-        from opendata.services.retry_service import RetryService
+        delays = [service.calculate_retry_delay(count) for count in range(9)]
 
-        assert RetryService.MAX_RETRY_DELAY == 3600
+        assert delays == [60, 120, 240, 480, 960, 1920, 3600, 3600, 3600]
 
 
 class TestCalculateRetryDelay:

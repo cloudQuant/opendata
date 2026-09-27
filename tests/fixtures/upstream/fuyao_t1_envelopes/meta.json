@@ -1,0 +1,18 @@
+{
+ "source": "fuyao REST, 联调录制（read-only GET）",
+ "recorder": "scripts/ops/fuyao_envelope_recorder.py",
+ "recorded_at": "2026-09-27",
+ "cases": [
+  "success_prices",
+  "success_tickers_search",
+  "success_calendar",
+  "probe_prices_before_listing",
+  "error_window_too_long",
+  "error_blank_ticker",
+  "error_unknown_ticker",
+  "error_bad_credential",
+  "error_unknown_endpoint"
+ ],
+ "credential": "不落盘；请求头里的值在写盘前逐条比对过，出现即中止",
+ "note": "truncated 为 true 表示只落了前 240000 字节，sha 仍是全体的"
+}

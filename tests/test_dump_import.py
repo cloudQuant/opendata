@@ -15,7 +15,6 @@ import pytest
 
 from opendata.pipeline.dump_import import (
     EVENT_KEY_LENGTH,
-    FUYAO_SOURCE,
     DumpImportError,
     event_digest,
     import_adjustment_factor_dump,
@@ -25,6 +24,7 @@ from opendata.pipeline.dump_import import (
     prepare_daily_k_frame,
     shanghai_dates,
 )
+from opendata.pipeline.ods_writer import WriteResult
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -210,8 +210,33 @@ class TestImportValidation:
         with pytest.raises(DumpImportError, match="unreadable"):
             import_daily_k_dump(None, broken, dump_id=DAILY_DUMP, batch_id=_UUID_1)  # type: ignore[arg-type]
 
-    def test_source_label_is_ths(self):
-        assert FUYAO_SOURCE == "ths"
+    def test_source_label_decides_the_ods_table(self, tmp_path: Path):
+        """源标签的行为面：它决定 writer 收到哪张表、统计里报哪张表。
+
+        ``FUYAO_SOURCE == "ths"`` 只是把定义抄一遍；这里断言标签参与拼出的落库目标
+        （``ods_stock_daily_ths``，即 A3 真机导入的那张表），标签一漂移就红。
+        """
+        calls: dict[str, object] = {}
+
+        class _RecordingWriter:
+            def write(self, frame: pd.DataFrame, **kwargs: object) -> WriteResult:
+                calls.update(kwargs)
+                return WriteResult(rows=len(frame), batches=1)
+
+        path = self._write(tmp_path, _daily_frame(), "daily.parquet")
+
+        stats = import_daily_k_dump(
+            None,  # type: ignore[arg-type]
+            path,
+            dump_id=DAILY_DUMP,
+            batch_id=_UUID_1,
+            writer=_RecordingWriter(),  # type: ignore[arg-type]
+        )
+
+        assert calls["table"] == "ods_stock_daily_ths"
+        assert calls["source"] == "ths"
+        assert stats.table == "ods_stock_daily_ths"
+        assert stats.rows_written == 2
 
 
 @pytest.mark.e2e

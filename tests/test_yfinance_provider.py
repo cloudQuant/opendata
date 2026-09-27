@@ -88,7 +88,23 @@ class TestRegistration:
         assert capability.verified is True
 
     def test_provider_package_source_is_directory_name(self) -> None:
+        """``SOURCE`` 是从包目录名**派生**的标签：预计算字面量是它的黄金向量。
+
+        （生产侧 ``SOURCE = Path(__file__).resolve().parent.name``，不是字符串常量，
+        所以这句不是抄定义；抄定义的那种形态由 C44 的空壳普查点名。）
+        """
         assert SOURCE == "yfinance"
+
+    def test_source_label_routes_the_leg(self, registry: ProviderRegistry) -> None:
+        """source 不是档案：按字面量点名必须取到这条腿，取不到就是标签写错了。
+
+        断言 ``SOURCE == "yfinance"`` 只把定义抄一遍；这里断言的是注册表拿这个
+        字符串做路由键的可观测行为。
+        """
+        fetcher = registry.resolve("equity", "stock_daily_overseas", source="yfinance")
+
+        assert isinstance(fetcher, YfinanceStockDailyFetcher)
+        assert fetcher.capability.source == "yfinance"
 
     def test_register_is_idempotent(self) -> None:
         first = register()

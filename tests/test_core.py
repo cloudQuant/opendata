@@ -294,11 +294,22 @@ class TestCoreConfig:
 
         assert settings is not None
 
-    def test_settings_app_name(self):
-        """Test app name setting."""
-        from opendata.core.config import settings
+    def test_settings_app_name_reaches_the_cli_report(self):
+        """``app_name`` 的行为面：运维读的那份 config 报告里就是这个字面量。
 
-        assert settings.app_name == "opendata"
+        抄一遍 config 的定义不算测试；这里跑一次 ``export-config``，看设置是否真的
+        出现在对外输出里（另一头 test_config.py 看的是 HTTP title）。
+        """
+        import json
+
+        from click.testing import CliRunner
+
+        from opendata.cli import cli
+
+        result = CliRunner().invoke(cli, ["export-config"])
+
+        assert result.exit_code == 0
+        assert json.loads(result.output)["app_name"] == "opendata"
 
     def test_settings_secret_key(self):
         """Test secret key setting."""
@@ -323,11 +334,27 @@ class TestCoreConfig:
         assert settings.access_token_expire_minutes > 0
         assert settings.refresh_token_expire_days > 0
 
-    def test_settings_algorithm(self):
-        """Test JWT algorithm setting."""
-        from opendata.core.config import settings
+    def test_settings_algorithm_refuses_other_algorithms(self):
+        """``algorithm`` 的行为面：只认这一个算法签的 token，换个算法签的必须验不过。
 
-        assert settings.algorithm == "HS256"
+        抄一遍 config 里的 "HS256" 不算测试；这里同密钥、同载荷，只把签名算法换掉
+        （alg 混淆），验签必须返回 None。
+        """
+        import jwt
+
+        from opendata.core.config import settings
+        from opendata.core.security import create_access_token, verify_token
+
+        accepted = create_access_token({"sub": "core-algorithm"})
+        other_algorithm = next(name for name in ("HS512", "HS384") if name != settings.algorithm)
+        forged = jwt.encode(
+            {"sub": "core-algorithm", "type": "access"},
+            settings.secret_key,
+            algorithm=other_algorithm,
+        )
+
+        assert verify_token(accepted)["sub"] == "core-algorithm"
+        assert verify_token(forged) is None
 
     def test_settings_cors_origins(self):
         """Test CORS origins setting."""

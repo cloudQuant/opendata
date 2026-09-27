@@ -18,6 +18,8 @@ hands back: no row outside the window, and - the other half of the contract
 
 from __future__ import annotations
 
+import contextlib
+import sys
 from datetime import date
 from typing import TYPE_CHECKING, Any
 
@@ -85,7 +87,7 @@ def _action_frame() -> pd.DataFrame:
 
 #: Legs that read a request window but whose upstream cannot: they must crop
 #: in normalize. ``(domain, contract date field, frame factory)``; the set is
-#: pinned by :func:`test_every_akshare_leg_is_classified_by_window_handling`.
+#: pinned by :func:`test_every_akshare_leg_is_triaged_by_what_it_asks_upstream`.
 WINDOW_BLIND_LEGS: tuple[tuple[str, str, Callable[[], pd.DataFrame]], ...] = (
     ("futures_daily", "trade_date", lambda: _daily_frame(_EN_COLUMNS)),
     ("option_daily", "trade_date", lambda: _daily_frame(_CN_COLUMNS)),
@@ -121,6 +123,56 @@ def _stubbed(monkeypatch: MonkeyPatch, domain: str, frame: pd.DataFrame) -> Fetc
     fetcher = _fetcher(domain)
     monkeypatch.setattr(fetcher, "extract_data", lambda params, ctx: frame)
     return fetcher
+
+
+class _OutboundRecorder:
+    """Stand in for the ported ``opendata_http`` layer: keep every outbound call."""
+
+    def __init__(self) -> None:
+        self.calls: list[dict[str, Any]] = []
+
+    def __getattr__(self, name: str) -> Callable[..., pd.DataFrame]:
+        """Answer any upstream function with an empty frame, after recording it."""
+        if name.startswith("__"):
+            raise AttributeError(name)
+
+        def call(*_args: Any, **kwargs: Any) -> pd.DataFrame:
+            self.calls.append(kwargs)
+            return pd.DataFrame()
+
+        return call
+
+
+def _window_reaches_upstream(domain: str, monkeypatch: MonkeyPatch) -> bool:
+    """Ask one leg for the window and watch whether the dates left through upstream.
+
+    Args:
+        domain: The akshare domain to probe.
+        monkeypatch: pytest fixture, used to swap the ported http layer out.
+
+    Returns:
+        True when an outbound call carried exactly this start/end pair.
+    """
+    recorder = _OutboundRecorder()
+    monkeypatch.setitem(sys.modules, "opendata_http", recorder)
+    fetcher = _fetcher(domain)
+    # 空帧会让某些腿在 normalize 处 fail-closed（financial_indicator 就是这样）：
+    # 要读的是出站调用，它在 normalize 之前就已经发生了。
+    with contextlib.suppress(Exception):
+        list(fetcher.fetch(symbol="10011425", start_date=WINDOW_START, end_date=WINDOW_END))
+
+    return any(_carries_window(kwargs) for kwargs in recorder.calls)
+
+
+def _carries_window(kwargs: dict[str, Any]) -> bool:
+    """True when one outbound call carried exactly this window, in either spelling."""
+    spellings = {
+        (WINDOW_START.isoformat(), WINDOW_END.isoformat()),
+        (WINDOW_START.strftime("%Y%m%d"), WINDOW_END.strftime("%Y%m%d")),
+        (WINDOW_START, WINDOW_END),
+    }
+
+    return (kwargs.get("start_date"), kwargs.get("end_date")) in spellings
 
 
 @LEG_CASES
@@ -177,25 +229,23 @@ def test_within_window_bounds_are_inclusive() -> None:
     assert within_window(date(2026, 9, 19), None, None)
 
 
-def test_every_akshare_leg_is_classified_by_window_handling() -> None:
+def test_every_akshare_leg_is_triaged_by_what_it_asks_upstream(
+    monkeypatch: MonkeyPatch,
+) -> None:
     """A new akshare leg must be triaged here, not born silently window-blind.
 
-    The sets are computed from the live registry, which is what keeps the
-    cases above from going stale: registering another akshare capability
-    whose extraction never names the window fails until it is either filtered
-    (add it to :data:`WINDOW_BLIND_LEGS`), pushed upstream, or shown to be a
-    period-keyed table that has no request window to honor.
+    The classification is what the leg *does*, not what its source text says:
+    the outbound call is recorded, so a leg counts as upstream-windowed only
+    if the window it was handed actually left through the ported akshare
+    layer. Registering another akshare capability that neither pushes the
+    window nor crops it in normalize fails here until it is added to
+    :data:`WINDOW_BLIND_LEGS` (proven by the frame cases above), shown to be
+    upstream-windowed, or shown to be a period-keyed table.
     """
-    import inspect
-
     register_providers()
     registry = get_registry()
     akshare_domains = {cap.domain for cap in registry.capabilities() if cap.source == "akshare"}
-    window_blind = {
-        domain
-        for domain in akshare_domains
-        if "start_date" not in inspect.getsource(_fetcher(domain).extract_data)
-    }
+    pushed = {domain for domain in akshare_domains if _window_reaches_upstream(domain, monkeypatch)}
 
-    assert window_blind == {leg[0] for leg in WINDOW_BLIND_LEGS} | PERIOD_KEYED_LEGS
-    assert akshare_domains == window_blind | UPSTREAM_WINDOWED_LEGS
+    assert pushed == UPSTREAM_WINDOWED_LEGS
+    assert akshare_domains == pushed | {leg[0] for leg in WINDOW_BLIND_LEGS} | PERIOD_KEYED_LEGS

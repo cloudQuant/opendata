@@ -21,12 +21,22 @@ class TestUserModel:
         assert UserRole.ADMIN is not None
         assert UserRole.USER is not None
 
-    def test_user_role_values(self):
-        """Test UserRole enum values."""
+    def test_stored_role_strings_are_what_the_checker_uses(self):
+        """角色值的行为面：落库是字符串，判权必须认得这两条字面量。
+
+        ``UserRole.ADMIN.value == "admin"`` 只是把定义抄一遍；这里断言的是
+        PermissionChecker 拿字面量判权 —— 枚举值一改、或比较写法只认 Enum 不认
+        字符串，用例立刻红。
+        """
+        from opendata.core.security import PermissionChecker
         from opendata.models.user import UserRole
 
-        assert UserRole.ADMIN.value == "admin"
-        assert UserRole.USER.value == "user"
+        assert PermissionChecker.is_admin("admin") is True
+        assert PermissionChecker.is_admin("user") is False
+        assert PermissionChecker.is_admin(UserRole.ADMIN) is True
+        assert PermissionChecker.can_access_resource("user", 1, 2) is False
+        assert PermissionChecker.can_access_resource("user", 1, 1) is True
+        assert PermissionChecker.can_access_resource("admin", 1, 2) is True
 
     def test_user_has_timestamps(self):
         """Test User has timestamp fields."""

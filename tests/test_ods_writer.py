@@ -22,7 +22,6 @@ from sqlalchemy import create_engine, inspect, pool, text
 
 from opendata.pipeline.ddl import Column, ods_table_ddl
 from opendata.pipeline.ods_writer import (
-    DEFAULT_BATCH_SIZE,
     OdsWriter,
     build_staging_create_sql,
     build_staging_drop_sql,
@@ -475,18 +474,33 @@ class TestDirectWrite:
         assert (result.rows, result.batches) == (5, 3)
 
     def test_batch_size_defaults_to_the_design_granularity(self, scripted):
-        engine = scripted()
+        """默认粒度的行为面：50001 行（预计算行数）走默认配置必须正好 2 个批次。
 
-        result = OdsWriter(engine).write(
-            _frame(),
+        只断言 ``DEFAULT_BATCH_SIZE == 50_000`` 是把定义抄一遍（§5.1 的第 2 类空壳），
+        而用 ``DEFAULT_BATCH_SIZE + 1`` 去算行数又退回自指——默认值改成 10 万它照绿
+        （C44 的反事实正是这么抓出来的）。行数写成字面量后：默认值改大 ⇒ 只剩 1 批，
+        改小 ⇒ 批数变多，两种漂移都会红。
+        """
+        engine = scripted()
+        rows = 50_001  # 「刚好超过默认粒度 50_000 一笔」
+        frame = pd.DataFrame(
+            {
+                "symbol": [f"{index:06d}" for index in range(rows)],
+                "trade_date": ["2024-01-02"] * rows,
+                "close": [1.0] * rows,
+            }
+        )
+
+        result = OdsWriter(engine, mode="direct").write(
+            frame,
             table="ods_x_akshare",
             key=("symbol", "trade_date"),
             source="akshare",
             batch_id=BATCH_ID,
         )
 
-        assert DEFAULT_BATCH_SIZE == 50_000
-        assert result.batches == 1  # one chunk of two rows, well under the ceiling
+        assert (result.rows, result.batches) == (rows, 2)
+        assert engine.kinds == ["upsert", "upsert"]
 
 
 class TestWriterConfiguration:

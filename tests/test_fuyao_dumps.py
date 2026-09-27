@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
@@ -21,7 +21,6 @@ from opendata_fuyao import FuyaoCredentials, FuyaoError, FuyaoHttpClient
 from opendata_fuyao.dumps import (
     ADJUSTMENT_FACTOR_COLUMNS,
     DAILY_K_COLUMNS,
-    DEFAULT_MAX_DUMP_BYTES,
     DUMP_SPECS,
     PresignedDownload,
     download_dump,
@@ -31,6 +30,7 @@ from opendata_fuyao.dumps import (
     read_daily_k_dump,
     request_download_url,
 )
+from tests.fuyao_golden import MILLIS_BY_DAY
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -47,11 +47,6 @@ except ImportError:  # pragma: no cover - 取决于环境
     PYARROW_AVAILABLE = False
 
 requires_pyarrow = pytest.mark.skipif(not PYARROW_AVAILABLE, reason="pyarrow is not installed")
-
-
-def _ms(day: str) -> int:
-    parsed = date.fromisoformat(day)
-    return int(datetime.combine(parsed, time.min, tzinfo=SHANGHAI).timestamp() * 1000)
 
 
 def _url_envelope(url: str, *, expires_in: int = 300, expires_at: str | None = None) -> bytes:
@@ -167,6 +162,28 @@ class TestDownload:
 
         assert list(tmp_path.iterdir()) == []  # 半成品已清理
 
+    def test_default_cap_admits_the_real_dump_size(self, tmp_path: Path):
+        """不传 ``max_bytes`` 时下载循环用的是默认上限：真机 10 日全市场日 K 是 1.0 MB / 55510 行
+        （``docs/evidence/A3/fuyao-dump-import.txt``），它的两倍必须免检落盘。
+
+        上限改小到 MB 级在这里红；「超限会拦」由上面的
+        :meth:`test_size_cap_aborts_and_cleans_up` 负责 —— 两条合起来才夹住这个政策数。
+        """
+        payload = b"x" * (2 * 1024 * 1024)
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, content=payload)
+
+        result = download_dump(
+            presigned=PresignedDownload(url="https://o.thsi.cn/x.parquet"),
+            dump_id="a_share_daily_k_1d_none_10d",
+            dest_dir=tmp_path,
+            transport=httpx.MockTransport(handler),
+        )
+
+        assert result.size_bytes == len(payload)
+        assert result.path.stat().st_size == len(payload)
+
     def test_expired_link_is_refused_before_download(self, tmp_path: Path):
         calls: list[int] = []
 
@@ -200,9 +217,6 @@ class TestDownload:
             )
 
         assert exc.value.category == "http"
-
-    def test_default_size_cap_is_512mb(self):
-        assert DEFAULT_MAX_DUMP_BYTES == 512 * 1024 * 1024
 
     def test_transport_error_is_translated_and_leaves_no_partial_file(self, tmp_path: Path):
         """流式下载中途炸掉：翻译为 network 且半成品必须删掉，否则断点续传会读到坏文件."""
@@ -249,7 +263,7 @@ class TestParquetReaders:
                 "currency": ["CNY", "CNY"],
                 "interval": ["1d", "1d"],
                 "adjusted": [adjusted, adjusted],
-                "date_ms": [_ms("2024-01-02"), _ms("2024-01-03")],
+                "date_ms": [MILLIS_BY_DAY["2024-01-02"], MILLIS_BY_DAY["2024-01-03"]],
                 "open_price": [1.0, 2.0],
                 "high_price": [1.5, 2.5],
                 "low_price": [0.5, 1.5],
@@ -277,7 +291,7 @@ class TestParquetReaders:
             read_daily_k_dump(self._daily_k(tmp_path, adjusted="forward"))
 
     def test_daily_k_column_drift_fails_closed(self, tmp_path: Path):
-        table = pa.table({"thscode": ["600519.SH"], "date_ms": [_ms("2024-01-02")]})
+        table = pa.table({"thscode": ["600519.SH"], "date_ms": [MILLIS_BY_DAY["2024-01-02"]]})
         path = tmp_path / "drifted.parquet"
         pq.write_table(table, path)
 
@@ -289,7 +303,7 @@ class TestParquetReaders:
             {
                 "thscode": ["600519.SH"],
                 "ticker": ["600519"],
-                "ex_date_ms": [_ms("2024-06-19")],
+                "ex_date_ms": [MILLIS_BY_DAY["2024-06-19"]],
                 "dividend_per_share": [30.876],
                 "per_share_bonus": [1.0],
                 "allotment_ratio": [0.2],
@@ -310,7 +324,7 @@ class TestParquetReaders:
         assert events[0].ex_date == date(2024, 6, 19)
 
     def test_adjustment_column_drift_fails_closed(self, tmp_path: Path):
-        table = pa.table({"thscode": ["600519.SH"], "ex_date_ms": [_ms("2024-06-19")]})
+        table = pa.table({"thscode": ["600519.SH"], "ex_date_ms": [MILLIS_BY_DAY["2024-06-19"]]})
         path = tmp_path / "drifted-adj.parquet"
         pq.write_table(table, path)
 
@@ -329,7 +343,7 @@ class TestParquetReaders:
         """列名齐但值坏（上游改了类型）：失败关闭，不把 NaN/0 塞进 ods 主键."""
         columns = {column: ["600519.SH"] for column in DAILY_K_COLUMNS}
         columns |= {
-            "date_ms": [_ms("2024-01-02")],
+            "date_ms": [MILLIS_BY_DAY["2024-01-02"]],
             "adjusted": ["none"],
             "open_price": ["n/a"],
         }
@@ -342,7 +356,7 @@ class TestParquetReaders:
 
     def test_adjustment_rejects_a_row_with_unparseable_number(self, tmp_path: Path):
         columns = {column: ["600519.SH"] for column in ADJUSTMENT_FACTOR_COLUMNS}
-        columns |= {"ex_date_ms": [_ms("2024-06-19")], "dividend_per_share": ["n/a"]}
+        columns |= {"ex_date_ms": [MILLIS_BY_DAY["2024-06-19"]], "dividend_per_share": ["n/a"]}
 
         path = tmp_path / "bad-adjustment.parquet"
         pq.write_table(pa.table(columns), path)

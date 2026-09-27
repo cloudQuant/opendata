@@ -235,6 +235,16 @@ class TestSemantics:
         row = sample(TradingCalendar, is_open=False)
         assert row.prev_trade_date < row.date < row.next_trade_date
 
-    def test_contract_model_is_strict_base(self):
-        assert issubclass(Bar, ContractModel)
-        assert Bar.model_config["extra"] == "forbid"
+    def test_every_contract_model_refuses_an_undeclared_field(self):
+        """extra='forbid' 是整族契约：逐个模型喂一个设计里没有的字段都必须报错。
+
+        断言 ``Bar.model_config["extra"] == "forbid"`` 只是把定义抄一遍（§5.1 第 2
+        类），而且只覆盖 Bar；这里让每个模型都过一遍，哪个漏了 strict 就会静默
+        接受陌生列并红。顺带钉住 strict 来自共同基类而非各家自带的副本——某个模型
+        悄悄改挂到 ``pydantic.BaseModel`` 上、本地复写一份 config 时，第二道断言会红。
+        """
+        for model in ALL_MODELS:
+            assert issubclass(model, ContractModel), model.__name__
+            payload = sample(model).model_dump()
+            with pytest.raises(ValidationError, match="not_a_design_field"):
+                model(**payload, not_a_design_field=1)

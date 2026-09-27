@@ -27,14 +27,19 @@ messages:
     message: 请求的标的或字段不受支持
     advice: 核对标的信息与端点支持的数据域，必要时降级到其它端点
   # 鉴权/权限：不可重试，立即失败
+  # 2001 是按官方文档登记的鉴权码。C44 联调录制（tests/fixtures/upstream/
+  # fuyao_t1_envelopes/）里从未观测到 2001：一份无效/吊销的 Key 上游实际回的是
+  # 2003（message 为 "Invalid or revoked API key"）。分类不能凭观测改（2003 同时
+  # 覆盖真的权限不足），但文案必须给出可执行的第一步，否则照着原句子会让人去谈
+  # 采购权限，而不是去换 Key。
   2001:
     category: auth
     message: 接口鉴权失败（API Key 无效或已失效）
     advice: 检查 FUYAO_API_KEY 是否有效、是否过期；不要在日志中输出 Key 明文
   2003:
     category: permission
-    message: 无该数据端点的访问权限
-    advice: 联系数据提供方确认账号权限或接口采购范围
+    message: 权限不足，或凭据无效/已吊销（录制实测该形态回的是本码而非 2001）
+    advice: 先按鉴权处置——更换或重发 FUYAO_API_KEY 后复测一次；仍报本码再联系数据提供方确认账号权限与接口采购范围
   # 领域结果（标的问题）：不重试，按业务语义处理
   3001:
     category: empty
