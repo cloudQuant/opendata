@@ -1,0 +1,24 @@
+================================================================================
+C43 探针自检：17 个探针的判定函数可达、83 条反事实全部翻红
+================================================================================
+采集时间（运行前）: 2026-09-27T02:15:18+0200
+branch: dev
+HEAD  : 3f0c2c3 docs(acceptance): v5.14 回填 C42（AC-2 加固同一格、AC-17 条目级 5/10 未变）
+python: Python 3.13.5
+node  : v25.1.0
+
+命令: python scripts/quality/acceptance_item_probe.py --self-test
+
+--- git status --porcelain（运行前）---
+ M Makefile
+A  docs/evidence/A3/README.md
+A  docs/evidence/B3/README.md
+A  docs/evidence/C1/README.md
+ M scripts/quality/acceptance_item_probe.py
+?? docs/evidence/C43/
+?? docs/quality/evidence-traceability.json
+?? scripts/quality/evidence_traceability.py
+--- 以下分隔线之后是完整未裁剪输出 ---
+
+OK: 17 probe(s) measured; every judge is reachable from its declared repair, and all 83 counterfact(s) flip a clean reading back to a gap.
+EXIT=0

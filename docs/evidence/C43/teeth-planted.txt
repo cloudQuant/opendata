@@ -1,0 +1,191 @@
+================================================================================
+C43 反空壳读数：把违规种进档案树/门禁目录，看两个工具是否真的变红（本轮的判据不是装饰）
+================================================================================
+采集时间（运行前）: 2026-09-27T02:17:50+0200
+branch: dev
+HEAD  : 3f0c2c3 docs(acceptance): v5.14 回填 C42（AC-2 加固同一格、AC-17 条目级 5/10 未变）
+python: Python 3.13.5
+node  : v25.1.0
+
+说明：每一段都是「种下 → 运行 → 立刻删除 → 复跑确认回到 0」。种下的文件都是本轮临时产物，不进入提交。
+
+
+
+########## TEETH-1 种下一份四问皆无的 gate 日志（docs/evidence/C43teeth/plant-gate-log.txt）##########
+
+命令: python scripts/quality/evidence_traceability.py
+--- 完整未裁剪输出 ---
+# evidence traceability over docs/evidence/
+  rounds        = 54
+  files census  = 423 (gate logs: 70)
+  dates in gate logs = header 63/70, printed by the run 6/70
+  branch named in header = 57/70 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 2
+  date       gaps = 1
+  identity   gaps = 1
+  command    gaps = 1
+  exit       gaps = 1
+  untracked  gaps = 7
+    narrative: docs/evidence/C43/
+    narrative: docs/evidence/C43teeth/
+    date: docs/evidence/C43teeth/plant-gate-log.txt   (no date, in-file or in git)
+    identity: docs/evidence/C43teeth/plant-gate-log.txt
+    command: docs/evidence/C43teeth/plant-gate-log.txt
+    exit: docs/evidence/C43teeth/plant-gate-log.txt
+    untracked: docs/evidence/C43/date-face-census.txt
+    untracked: docs/evidence/C43/probe-ac17.txt
+    untracked: docs/evidence/C43/public-api-face-census.py
+    untracked: docs/evidence/C43/public-api-face-census.txt
+    untracked: docs/evidence/C43/self-test.txt
+    untracked: docs/evidence/C43/teeth-planted.txt
+    untracked: docs/evidence/C43teeth/plant-gate-log.txt
+NEW VIOLATION: docs/evidence/C43/#narrative
+NEW VIOLATION: docs/evidence/C43/date-face-census.txt#untracked
+NEW VIOLATION: docs/evidence/C43/probe-ac17.txt#untracked
+NEW VIOLATION: docs/evidence/C43/public-api-face-census.py#untracked
+NEW VIOLATION: docs/evidence/C43/public-api-face-census.txt#untracked
+NEW VIOLATION: docs/evidence/C43/self-test.txt#untracked
+NEW VIOLATION: docs/evidence/C43/teeth-planted.txt#untracked
+NEW VIOLATION: docs/evidence/C43teeth/#narrative
+NEW VIOLATION: docs/evidence/C43teeth/plant-gate-log.txt#command
+NEW VIOLATION: docs/evidence/C43teeth/plant-gate-log.txt#date
+NEW VIOLATION: docs/evidence/C43teeth/plant-gate-log.txt#exit
+NEW VIOLATION: docs/evidence/C43teeth/plant-gate-log.txt#identity
+NEW VIOLATION: docs/evidence/C43teeth/plant-gate-log.txt#untracked
+
+FAIL: 13 new traceability violation(s) against a 0-entry baseline.
+EXIT=1
+
+
+########## TEETH-2 在门禁固定目录内种一个没有 docstring 的公开函数 ##########
+
+命令: python scripts/quality/public_api.py
+--- 完整未裁剪输出 ---
+FAIL: public API standard is 100% / 100%:
+  scripts/quality/teeth_c43.py:1 needs_a_docstring — missing docstring
+A2 public callables : 612
+docstring coverage  : 99.8% (611/612)
+annotation coverage : 100.0% (612/612)
+EXIT=1
+
+
+########## TEETH-3 同一个缺陷种在固定目录之外：门禁项看不见，加宽面看得见 ##########
+
+命令: python scripts/quality/public_api.py
+--- 完整未裁剪输出 ---
+A2 public callables : 611
+docstring coverage  : 100.0% (611/611)
+annotation coverage : 100.0% (611/611)
+OK: docstring and annotation coverage are both 100%.
+EXIT=0
+命令: python scripts/quality/acceptance_item_probe.py --item 'AC-17|07'
+--- 完整未裁剪输出 ---
+
+### AC-17|07  (document line 266)
+判据原文：公共 API：**新增**公开 callable docstring 与参数注解覆盖率 100%
+本探针：门禁面（固定目录内 100%/100%）+ 目录外的新增自研文件按同一把尺子再量一遍
+台账现状：state=unreviewed，文档勾选=False
+  - scripts/quality/public_api.py exit 0: 611 callable(s) over 6 of its fixed scope director(ies) exist; docstring 100.0%, annotation 100.0%; empty-scope branch taken = no
+  - 新增面 outside that fixed list (A2 files that are not tests or evidence) = 47 file(s) / 223 callable(s), below standard = 1 (scripts/teeth_c43.py:1)
+  - A1 存量 outside the fixed list, gated by 触碰即达标 rather than by this item = 47 file(s) / 118 callable(s), below standard = 6 (opendata/api/metrics.py:166, opendata/api/metrics.py:171, scripts/init_tasks_and_tables.py:33, scripts/init_tasks_and_tables.py:106, scripts/init_tasks_and_tables.py:177, scripts/init_tasks_and_tables.py:221)
+  - excluded test/evidence trees, disclosed rather than dropped = 2312 callable(s), below standard = 1930
+  - 补齐到可判：widened_failing: 1 -> 0; widened_sample: scripts/teeth_c43.py:1 -> 
+VERDICT AC-17|07: gap — the item says 新增: a callable the gate cannot see because its scope list is fixed still has to meet 100%/100%, and a 100% over an empty or unreachable population is not a measurement at all
+
+census: gap=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+EXIT=0
+
+
+########## TEETH-4 把冻结上限文件移走：必须区分『从未冻结』与『冻结成 0』 ##########
+
+命令: mv docs/quality/evidence-traceability.json /tmp/c43-baseline.json && python scripts/quality/evidence_traceability.py; mv 回来
+--- 完整未裁剪输出 ---
+# evidence traceability over docs/evidence/
+  rounds        = 53
+  files census  = 422 (gate logs: 69)
+  dates in gate logs = header 63/69, printed by the run 6/69
+  branch named in header = 57/69 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 1
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 6
+    narrative: docs/evidence/C43/
+    untracked: docs/evidence/C43/date-face-census.txt
+    untracked: docs/evidence/C43/probe-ac17.txt
+    untracked: docs/evidence/C43/public-api-face-census.py
+    untracked: docs/evidence/C43/public-api-face-census.txt
+    untracked: docs/evidence/C43/self-test.txt
+    untracked: docs/evidence/C43/teeth-planted.txt
+
+FAIL: no baseline yet; run with --update once the list above is reviewed.
+EXIT=1
+
+
+########## CLEAN 全部拔除后的复跑（两个工具都应回到 0 缺口 / exit 0）##########
+
+命令: python scripts/quality/evidence_traceability.py && python scripts/quality/public_api.py
+--- 完整未裁剪输出 ---
+# evidence traceability over docs/evidence/
+  rounds        = 53
+  files census  = 422 (gate logs: 69)
+  dates in gate logs = header 63/69, printed by the run 6/69
+  branch named in header = 57/69 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 1
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 6
+    narrative: docs/evidence/C43/
+    untracked: docs/evidence/C43/date-face-census.txt
+    untracked: docs/evidence/C43/probe-ac17.txt
+    untracked: docs/evidence/C43/public-api-face-census.py
+    untracked: docs/evidence/C43/public-api-face-census.txt
+    untracked: docs/evidence/C43/self-test.txt
+    untracked: docs/evidence/C43/teeth-planted.txt
+NEW VIOLATION: docs/evidence/C43/#narrative
+NEW VIOLATION: docs/evidence/C43/date-face-census.txt#untracked
+NEW VIOLATION: docs/evidence/C43/probe-ac17.txt#untracked
+NEW VIOLATION: docs/evidence/C43/public-api-face-census.py#untracked
+NEW VIOLATION: docs/evidence/C43/public-api-face-census.txt#untracked
+NEW VIOLATION: docs/evidence/C43/self-test.txt#untracked
+NEW VIOLATION: docs/evidence/C43/teeth-planted.txt#untracked
+
+FAIL: 7 new traceability violation(s) against a 0-entry baseline.
+EXIT(traceability)=1
+A2 public callables : 611
+docstring coverage  : 100.0% (611/611)
+annotation coverage : 100.0% (611/611)
+OK: docstring and annotation coverage are both 100%.
+EXIT(public_api)=0
+
+
+================================================================================
+CLEAN-2：C43 自己的档案进索引、README 写完之后（上段 CLEAN 的在途状态到此为止）
+================================================================================
+采集时间（运行前）: 2026-09-27T02:20:17+0200
+branch: dev
+HEAD  : 3f0c2c3 docs(acceptance): v5.14 回填 C42（AC-2 加固同一格、AC-17 条目级 5/10 未变）
+python: Python 3.13.5
+
+命令: python scripts/quality/evidence_traceability.py
+说明: 上段 CLEAN 那次 exit 1 报的是 C43 当时的 1 个 narrative + 5 个 untracked；这一段是同一棵树补齐之后的读数。
+--- 完整未裁剪输出 ---
+
+# evidence traceability over docs/evidence/
+  rounds        = 53
+  files census  = 423 (gate logs: 69)
+  dates in gate logs = header 63/69, printed by the run 6/69
+  branch named in header = 57/69 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 0
+
+OK: evidence archive matches the frozen baseline (0 legacy entr(ies)).
+EXIT=0

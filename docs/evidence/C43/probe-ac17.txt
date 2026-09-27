@@ -1,0 +1,86 @@
+================================================================================
+C43 条目级探针：AC-17|07 与 AC-17|10（两个判定面首次读数）
+================================================================================
+采集时间（运行前）: 2026-09-27T02:15:18+0200
+branch: dev
+HEAD  : 3f0c2c3 docs(acceptance): v5.14 回填 C42（AC-2 加固同一格、AC-17 条目级 5/10 未变）
+python: Python 3.13.5
+node  : v25.1.0
+
+命令: python scripts/quality/acceptance_item_probe.py --item 'AC-17|07' --item 'AC-17|10'
+
+--- git status --porcelain（运行前）---
+ M Makefile
+A  docs/evidence/A3/README.md
+A  docs/evidence/B3/README.md
+A  docs/evidence/C1/README.md
+ M scripts/quality/acceptance_item_probe.py
+?? docs/evidence/C43/
+?? docs/quality/evidence-traceability.json
+?? scripts/quality/evidence_traceability.py
+--- 以下分隔线之后是完整未裁剪输出 ---
+
+
+### AC-17|07  (document line 266)
+判据原文：公共 API：**新增**公开 callable docstring 与参数注解覆盖率 100%
+本探针：门禁面（固定目录内 100%/100%）+ 目录外的新增自研文件按同一把尺子再量一遍
+台账现状：state=unreviewed，文档勾选=False
+  - scripts/quality/public_api.py exit 0: 611 callable(s) over 6 of its fixed scope director(ies) exist; docstring 100.0%, annotation 100.0%; empty-scope branch taken = no
+  - 新增面 outside that fixed list (A2 files that are not tests or evidence) = 46 file(s) / 222 callable(s), below standard = 0
+  - A1 存量 outside the fixed list, gated by 触碰即达标 rather than by this item = 47 file(s) / 118 callable(s), below standard = 6 (opendata/api/metrics.py:166, opendata/api/metrics.py:171, scripts/init_tasks_and_tables.py:33, scripts/init_tasks_and_tables.py:106, scripts/init_tasks_and_tables.py:177, scripts/init_tasks_and_tables.py:221)
+  - excluded test/evidence trees, disclosed rather than dropped = 2312 callable(s), below standard = 1930
+VERDICT AC-17|07: proven
+
+### AC-17|10  (document line 269)
+判据原文：历次里程碑的验证证据（命令 + 输出摘要 + 日期）可追溯
+本探针：evidence-traceability 六个面全零 + 日期两读覆盖全部 gate 日志 + 无档案被删
+台账现状：state=unreviewed，文档勾选=False
+  - scripts/quality/evidence_traceability.py exit 1, says OK = no, reports a new violation = yes; frozen ceiling = 0 legacy entr(ies)
+  - archive = 53 round(s), 418 file(s) in the census, 416 tracked now, 0 added once and then removed
+  - gaps by face: narrative=1, date=0, identity=0, command=0, exit=0, untracked=2
+  - date answers among gate logs = header 63 + printed by the run 6 out of 69: 日期 is satisfied by either face, and the two together have to cover every gate log
+  - 补齐到可判：gap_narrative: 1 -> 0; gap_untracked: 2 -> 0; tool_exit: 1 -> 0; tool_new: yes -> no; tool_ok: no -> yes
+VERDICT AC-17|10: gap — 可追溯 means each archive answers 命令 / 输出摘要 / 日期 with no reader present: one gap on any face, an archive deleted after it was added, or a census too small to be the whole history turns the claim back into a summary
+
+census: gap=1, proven=1
+（2 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+EXIT=0
+
+
+================================================================================
+第二段：README 写入、C43 档案全部进索引之后（同一份判据的复跑，用来对上段 gap 的闭合负责）
+================================================================================
+采集时间（运行前）: 2026-09-27T02:20:00+0200
+branch: dev
+HEAD  : 3f0c2c3 docs(acceptance): v5.14 回填 C42（AC-2 加固同一格、AC-17 条目级 5/10 未变）
+python: Python 3.13.5
+
+命令: python scripts/quality/acceptance_item_probe.py --item 'AC-17|07' --item 'AC-17|10'
+
+上段 VERDICT 提示的补齐动作是 gap_narrative: 1 -> 0; gap_untracked: 2 -> 0 —— 本轮不是去放宽判据，而是补写 docs/evidence/C43/README.md 并把五份档案 git add 进索引。
+--- 完整未裁剪输出 ---
+
+
+### AC-17|07  (document line 266)
+判据原文：公共 API：**新增**公开 callable docstring 与参数注解覆盖率 100%
+本探针：门禁面（固定目录内 100%/100%）+ 目录外的新增自研文件按同一把尺子再量一遍
+台账现状：state=unreviewed，文档勾选=False
+  - scripts/quality/public_api.py exit 0: 611 callable(s) over 6 of its fixed scope director(ies) exist; docstring 100.0%, annotation 100.0%; empty-scope branch taken = no
+  - 新增面 outside that fixed list (A2 files that are not tests or evidence) = 46 file(s) / 222 callable(s), below standard = 0
+  - A1 存量 outside the fixed list, gated by 触碰即达标 rather than by this item = 47 file(s) / 118 callable(s), below standard = 6 (opendata/api/metrics.py:166, opendata/api/metrics.py:171, scripts/init_tasks_and_tables.py:33, scripts/init_tasks_and_tables.py:106, scripts/init_tasks_and_tables.py:177, scripts/init_tasks_and_tables.py:221)
+  - excluded test/evidence trees, disclosed rather than dropped = 2312 callable(s), below standard = 1930
+VERDICT AC-17|07: proven
+
+### AC-17|10  (document line 269)
+判据原文：历次里程碑的验证证据（命令 + 输出摘要 + 日期）可追溯
+本探针：evidence-traceability 六个面全零 + 日期两读覆盖全部 gate 日志 + 无档案被删
+台账现状：state=unreviewed，文档勾选=False
+  - scripts/quality/evidence_traceability.py exit 0, says OK = yes, reports a new violation = no; frozen ceiling = 0 legacy entr(ies)
+  - archive = 53 round(s), 423 file(s) in the census, 423 tracked now, 0 added once and then removed
+  - gaps by face: narrative=0, date=0, identity=0, command=0, exit=0, untracked=0
+  - date answers among gate logs = header 63 + printed by the run 6 out of 69: 日期 is satisfied by either face, and the two together have to cover every gate log
+VERDICT AC-17|10: proven
+
+census: proven=2
+（2 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+EXIT=0

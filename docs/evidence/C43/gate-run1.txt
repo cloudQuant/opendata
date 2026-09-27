@@ -1,0 +1,99 @@
+================================================================================
+C43 gate run 1（回填前一遍，完整未裁剪）
+================================================================================
+采集时间（运行前）: 2026-09-27T02:20:31+0200
+branch: dev
+HEAD  : 3f0c2c3 docs(acceptance): v5.14 回填 C42（AC-2 加固同一格、AC-17 条目级 5/10 未变）
+
+python: Python 3.13.5
+node  : v25.1.0
+
+git status --porcelain（运行前工作树；均为本轮新增/修改，且已进索引）:
+M  Makefile
+A  docs/evidence/A3/README.md
+A  docs/evidence/B3/README.md
+A  docs/evidence/C1/README.md
+A  docs/evidence/C43/README.md
+A  docs/evidence/C43/date-face-census.txt
+A  docs/evidence/C43/probe-ac17.txt
+A  docs/evidence/C43/public-api-face-census.py
+A  docs/evidence/C43/public-api-face-census.txt
+A  docs/evidence/C43/self-test.txt
+A  docs/evidence/C43/teeth-planted.txt
+A  docs/quality/evidence-traceability.json
+M  scripts/quality/acceptance_item_probe.py
+A  scripts/quality/evidence_traceability.py
+
+命令: make gate
+成员数说明: 16 成员 + 末行 PASSED ⇒ 完整日志应有 17 个行首 "===== gate:" 段。
+新增成员 evidence-traceability 排在 ledger-check 之后（本轮从 15 成员变 16 成员）。
+--------------------------------------------------------------------------------
+===== gate: brand-check =====
+python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:112
+  .env.example:113
+  .env.example:114
+  .env.example:115
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+===== gate: zero-dep-check =====
+python scripts/codemod/verify_no_akshare.py --self-test
+OK: scanner self-test passed (8 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+python scripts/codemod/verify_no_akshare.py
+OK: 515 file(s) walked (opendata=191, opendata_client=2, opendata_fuyao=9, opendata_http=313), python 3.13, scanner 2; no new upstream references (frozen baseline: 3).
+===== gate: secret-check =====
+python scripts/quality/secret_scan_check.py
+
+    ○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
+
+[90m2:21AM[0m [32mINF[0m [1m191 commits scanned.[0m
+[90m2:21AM[0m [32mINF[0m [1mscanned ~59399375 bytes (59.40 MB) in 16.1s[0m
+[90m2:21AM[0m [32mINF[0m [1mno leaks found[0m
+device: gitleaks 8.30.1, command: gitleaks detect --source . --config .gitleaks.toml --redact
+===== gate: ledger-check =====
+python scripts/quality/acceptance_ledger_check.py
+census: items=130 proven=18 gap=7 unreviewed=105 ticked=18
+OK: items=130 proven=18 gap=7 unreviewed=105 ticked=18 across 22 group(s) and 19 §10 row(s) reconcile.
+===== gate: evidence-traceability =====
+python scripts/quality/evidence_traceability.py
+# evidence traceability over docs/evidence/
+  rounds        = 53
+  files census  = 424 (gate logs: 70)
+  dates in gate logs = header 64/70, printed by the run 6/70
+  branch named in header = 58/70 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 1
+  untracked  gaps = 1
+    exit: docs/evidence/C43/gate-run1.txt
+    untracked: docs/evidence/C43/gate-run1.txt
+NEW VIOLATION: docs/evidence/C43/gate-run1.txt#exit
+NEW VIOLATION: docs/evidence/C43/gate-run1.txt#untracked
+
+FAIL: 2 new traceability violation(s) against a 0-entry baseline.
+make[1]: *** [evidence-traceability] Error 1
+make: *** [gate] Error 2
+GATE_EXIT=2

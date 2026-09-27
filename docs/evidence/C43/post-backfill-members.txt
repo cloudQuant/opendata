@@ -1,0 +1,255 @@
+================================================================
+C43 —— 第三遍之后只剩 markdown 字句：逐个成员复算（不是重跑整条门禁）
+================================================================
+采集时间: 2026-09-27T02:44:12+0200
+branch: dev / HEAD: 3f0c2c3 docs(acceptance): v5.14 回填 C42（AC-2 加固同一格、AC-17 条目级 5/10 未变）
+python: Python 3.13.5
+
+为什么只复算四个成员：gate-run3-final.txt 之后落地的只有三份 markdown ——
+  docs/evidence/C43/README.md、本档案、以及验收文档的 §0 v5.15 行与 §10 AC-17 行（引用 run 2/run 3 的档案路径与行数）。
+  以它们为输入的成员是 ledger-check（读文档 §2 方框与 §10 条目级 k/m、读台账）、brand-check（全树文本品牌残留）、
+  evidence-traceability（普查 docs/evidence/ 的档案集合）、secret-check（扫索引与全历史）。其余 12 个成员的输入是 .py／前端／数仓，未动。
+
+run 3 之后有没有 .py 或非 markdown 的代码面改动（应当为空）：
+M  Makefile
+A  docs/evidence/C43/public-api-face-census.py
+M  docs/quality/acceptance-item-ledger.json
+A  docs/quality/evidence-traceability.json
+MM "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2431-\351\207\215\346\236\204\346\225\260\346\215\256\344\270\255\345\217\260/\351\252\214\346\224\266\346\226\207\346\241\243.md"
+M  scripts/quality/acceptance_item_probe.py
+A  scripts/quality/evidence_traceability.py
+(上面若无列出项，即 run 3 之后只有 markdown 与本 json 之外的档案在动)
+
+$ python scripts/quality/acceptance_ledger_check.py
+census: items=130 proven=20 gap=7 unreviewed=103 ticked=20
+OK: items=130 proven=20 gap=7 unreviewed=103 ticked=20 across 22 group(s) and 19 §10 row(s) reconcile.
+--- scripts/quality/acceptance_ledger_check.py EXIT=0 ---
+
+$ python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:112
+  .env.example:113
+  .env.example:114
+  .env.example:115
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+--- scripts/quality/check_brand.py EXIT=0 ---
+
+$ python scripts/quality/evidence_traceability.py
+# evidence traceability over docs/evidence/
+  rounds        = 53
+  files census  = 428 (gate logs: 73)
+  dates in gate logs = header 67/73, printed by the run 6/73
+  branch named in header = 61/73 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 2
+    untracked: docs/evidence/C43/gate-run3-final.txt
+    untracked: docs/evidence/C43/post-backfill-members.txt
+NEW VIOLATION: docs/evidence/C43/gate-run3-final.txt#untracked
+NEW VIOLATION: docs/evidence/C43/post-backfill-members.txt#untracked
+
+FAIL: 2 new traceability violation(s) against a 0-entry baseline.
+--- scripts/quality/evidence_traceability.py EXIT=1 ---
+
+$ make secret-check
+python scripts/quality/secret_scan_check.py
+
+    ○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
+
+[90m2:44AM[0m [32mINF[0m [1m191 commits scanned.[0m
+[90m2:44AM[0m [32mINF[0m [1mscanned ~59399375 bytes (59.40 MB) in 15.8s[0m
+[90m2:44AM[0m [32mINF[0m [1mno leaks found[0m
+device: gitleaks 8.30.1, command: gitleaks detect --source . --config .gitleaks.toml --redact
+--- secret-check EXIT=0 ---
+
+
+================================================================
+第二段：第一段的读数里 untracked=2（gate-run3-final.txt 与正在写入的本档案自己）—— 第八节那一类自指在这一遍重现了，
+处置也一样：先把该进索引的进索引，再复跑，让干净读数描述「将被提交的这棵树」。上面第一段原样保留，不裁不改。
+================================================================
+$ git add docs/evidence/C43/ docs/迭代计划/.../验收文档.md docs/quality/acceptance-item-ledger.json（本档案除外，它此刻仍在写）
+
+$ python scripts/quality/acceptance_ledger_check.py
+census: items=130 proven=20 gap=7 unreviewed=103 ticked=20
+OK: items=130 proven=20 gap=7 unreviewed=103 ticked=20 across 22 group(s) and 19 §10 row(s) reconcile.
+--- EXIT=0 ---
+
+$ python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:112
+  .env.example:113
+  .env.example:114
+  .env.example:115
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+--- EXIT=0 ---
+
+$ python scripts/quality/evidence_traceability.py
+# evidence traceability over docs/evidence/
+  rounds        = 53
+  files census  = 428 (gate logs: 73)
+  dates in gate logs = header 67/73, printed by the run 6/73
+  branch named in header = 61/73 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 1
+    untracked: docs/evidence/C43/post-backfill-members.txt
+NEW VIOLATION: docs/evidence/C43/post-backfill-members.txt#untracked
+
+FAIL: 1 new traceability violation(s) against a 0-entry baseline.
+--- EXIT=1 ---
+
+$ python scripts/quality/public_api.py
+A2 public callables : 611
+docstring coverage  : 100.0% (611/611)
+annotation coverage : 100.0% (611/611)
+OK: docstring and annotation coverage are both 100%.
+--- EXIT=0 ---
+
+
+================================================================
+第三段（干净读数）：本档案已 git add，读数在其后取得，再追加到这份已跟踪档案的末尾
+采集时间: 2026-09-27T02:46:02+0200
+前两段原样保留（`untracked=2`、`untracked=1` 都是那一刻的真实读数，不裁不改）。
+
+$ python scripts/quality/acceptance_ledger_check.py
+census: items=130 proven=20 gap=7 unreviewed=103 ticked=20
+OK: items=130 proven=20 gap=7 unreviewed=103 ticked=20 across 22 group(s) and 19 §10 row(s) reconcile.
+--- EXIT=0 ---
+
+$ python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:112
+  .env.example:113
+  .env.example:114
+  .env.example:115
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+--- EXIT=0 ---
+
+$ python scripts/quality/evidence_traceability.py
+# evidence traceability over docs/evidence/
+  rounds        = 53
+  files census  = 428 (gate logs: 73)
+  dates in gate logs = header 67/73, printed by the run 6/73
+  branch named in header = 61/73 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 0
+
+OK: evidence archive matches the frozen baseline (0 legacy entr(ies)).
+--- EXIT=0 ---
+
+$ python scripts/quality/public_api.py
+A2 public callables : 611
+docstring coverage  : 100.0% (611/611)
+annotation coverage : 100.0% (611/611)
+OK: docstring and annotation coverage are both 100%.
+--- EXIT=0 ---
+
+$ python scripts/quality/acceptance_item_probe.py --item AC-17|07 --item AC-17|10
+/bin/sh: 07: command not found
+/bin/sh: 10: command not found
+FAIL: no probe for AC-17 (this round covers AC-1 and AC-2 in full, plus AC-17|07 and AC-17|10)
+--- EXIT=127 ---
+
+
+================================================================
+第四段：第三段最后一块 `--- EXIT=127 ---` 不是探针判决，是我那条命令的 shell 引号错了 ——
+`--item AC-17|07` 里的 `|` 被 /bin/sh 当成管道，于是 `07`/`10` 被当成命令执行，探针本身只收到 `AC-17` 并报
+`FAIL: no probe for AC-17`。这一块原样留在上面（不裁不改），下面是用 argv 数组重跑的正确读数。
+采集时间: 2026-09-27T02:46:43+0200
+
+$ python scripts/quality/acceptance_item_probe.py --item 'AC-17|07' --item 'AC-17|10'
+
+### AC-17|07  (document line 267)
+判据原文：公共 API：**新增**公开 callable docstring 与参数注解覆盖率 100%
+本探针：门禁面（固定目录内 100%/100%）+ 目录外的新增自研文件按同一把尺子再量一遍
+台账现状：state=proven，文档勾选=True
+  - scripts/quality/public_api.py exit 0: 611 callable(s) over 6 of its fixed scope director(ies) exist; docstring 100.0%, annotation 100.0%; empty-scope branch taken = no
+  - 新增面 outside that fixed list (A2 files that are not tests or evidence) = 46 file(s) / 222 callable(s), below standard = 0
+  - A1 存量 outside the fixed list, gated by 触碰即达标 rather than by this item = 47 file(s) / 118 callable(s), below standard = 6 (opendata/api/metrics.py:166, opendata/api/metrics.py:171, scripts/init_tasks_and_tables.py:33, scripts/init_tasks_and_tables.py:106, scripts/init_tasks_and_tables.py:177, scripts/init_tasks_and_tables.py:221)
+  - excluded test/evidence trees, disclosed rather than dropped = 2312 callable(s), below standard = 1930
+VERDICT AC-17|07: proven
+
+### AC-17|10  (document line 270)
+判据原文：历次里程碑的验证证据（命令 + 输出摘要 + 日期）可追溯
+本探针：evidence-traceability 六个面全零 + 日期两读覆盖全部 gate 日志 + 无档案被删
+台账现状：state=proven，文档勾选=True
+  - scripts/quality/evidence_traceability.py exit 0, says OK = yes, reports a new violation = no; frozen ceiling = 0 legacy entr(ies)
+  - archive = 53 round(s), 428 file(s) in the census, 428 tracked now, 0 added once and then removed
+  - gaps by face: narrative=0, date=0, identity=0, command=0, exit=0, untracked=0
+  - date answers among gate logs = header 67 + printed by the run 6 out of 73: 日期 is satisfied by either face, and the two together have to cover every gate log
+VERDICT AC-17|10: proven
+
+census: proven=2
+（2 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+--- EXIT=0 ---
+
+$ python scripts/quality/acceptance_item_probe.py --self-test
+OK: 17 probe(s) measured; every judge is reachable from its declared repair, and all 83 counterfact(s) flip a clean reading back to a gap.
+--- EXIT=0 ---
+
+读后小结：四个以 markdown／档案为输入的成员（ledger-check／brand-check／evidence-traceability／secret-check）与两个条目级判定面在最终树上全部为绿；条目级判据 `proven` 的同时，探针进程的退出码仍为 0 —— 这是这台机器的既有口径（`main()` 只在措辞漂移时返回 1，`gap` 判决不置红），故 `VERDICT` 行必须逐条读，不能只看 EXIT。

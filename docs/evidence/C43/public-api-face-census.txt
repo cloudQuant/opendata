@@ -1,0 +1,115 @@
+================================================================================
+C43 公共 API 面普查：门禁固定目录之外还有哪些公开 callable
+================================================================================
+采集时间（运行前）: 2026-09-27T02:15:18+0200
+branch: dev
+HEAD  : 3f0c2c3 docs(acceptance): v5.14 回填 C42（AC-2 加固同一格、AC-17 条目级 5/10 未变）
+python: Python 3.13.5
+node  : v25.1.0
+
+命令: python docs/evidence/C43/public-api-face-census.py
+
+--- git status --porcelain（运行前）---
+ M Makefile
+A  docs/evidence/A3/README.md
+A  docs/evidence/B3/README.md
+A  docs/evidence/C1/README.md
+ M scripts/quality/acceptance_item_probe.py
+?? docs/evidence/C43/
+?? docs/quality/evidence-traceability.json
+?? scripts/quality/evidence_traceability.py
+--- 以下分隔线之后是完整未裁剪输出 ---
+
+# public-API populations over 1359 tracked-or-A2 paths
+population                                                                files  callables   below
+1 in public_api.py's fixed scope list (what the gate measures)              150        611       0
+2 tests/ -- ruff switches D/ANN off there, a2_check darkens mypy and bandit    162       3370    3181
+3 docs/ -- reproduction scripts archived as readings, not shipped callables     48        206       0
+4 root trees a2_check itself excludes (ported / frontend / migrations)      323       1288     303
+5 first-party, new or touched, OUTSIDE the scope list -- the widened face     46        222       0
+6 first-party A1 legacy, untouched since the A0 baseline                     47        118       6
+
+# the widened population, file by file (public callables / below standard):
+  examples/consumer_handoff.py                                        4      0
+  opendata/api/__init__.py                                            0      0
+  opendata/api/data.py                                                5      0
+  opendata/api/data_query.py                                          6      0
+  opendata/api/data_subscribe.py                                      1      0
+  opendata/api/dependencies.py                                       11      0
+  opendata/api/keys.py                                                5      0
+  opendata/api/pipeline.py                                            6      0
+  opendata/api/schemas.py                                             4      0
+  opendata/api/tables.py                                              8      0
+  opendata/api/websocket.py                                           6      0
+  opendata/cli.py                                                    14      0
+  opendata/core/config.py                                            10      0
+  opendata/core/database.py                                           7      0
+  opendata/core/security.py                                          10      0
+  opendata/core/token_blacklist.py                                    0      0
+  opendata/data_fetch/providers/akshare_provider.py                  12      0
+  opendata/main.py                                                    5      0
+  opendata/middleware/request_logging.py                              1      0
+  opendata/middleware/security.py                                     1      0
+  opendata/models/__init__.py                                         0      0
+  opendata/models/api_key.py                                          0      0
+  opendata/models/pipeline.py                                         0      0
+  opendata/services/api_key_service.py                               12      0
+  opendata/services/data_acquisition.py                               3      0
+  opendata/services/interface_loader.py                               1      0
+  opendata/services/scheduler.py                                      9      0
+  opendata/services/script_service.py                                10      0
+  opendata/utils/serialization.py                                     3      0
+  scripts/ops/akshare_fallback_cross_check.py                         2      0
+  scripts/ops/authority_reconcile_check.py                           12      0
+  scripts/ops/calendar_expectation_check.py                           5      0
+  scripts/ops/fuyao_endpoint_inventory.py                             3      0
+  scripts/ops/health_patrol.py                                        2      0
+  scripts/ops/macro_authority_cross_check.py                          5      0
+  scripts/ops/metadata_backbone_landing.py                            1      0
+  scripts/ops/qfq_official_check.py                                   2      0
+  scripts/ops/ths_financial_statement_cross_check.py                  4      0
+  scripts/ops/ths_fund_action_cross_check.py                          6      0
+  scripts/ops/ths_fund_etf_cross_check.py                             9      0
+  scripts/ops/ths_futures_option_cross_check.py                       1      0
+  scripts/ops/ths_index_constituent_cross_check.py                    1      0
+  scripts/ops/ths_index_cross_check.py                                1      0
+  scripts/ops/ths_instrument_cross_check.py                           7      0
+  scripts/ops/ths_trading_calendar_cross_check.py                     6      0
+  scripts/ops/yfinance_overseas_cross_check.py                        1      0
+
+# below standard in 2 tests/ -- ruff switches D/ANN off there, a2_check darkens mypy and bandit (first 12):
+  tests/conftest.py:120 test_user_data
+  tests/conftest.py:130 test_admin_data
+  tests/conftest.py:140 test_user
+  tests/conftest.py:189 test_admin
+  tests/conftest.py:38 test_engine
+  tests/conftest.py:57 test_db
+  tests/conftest.py:70 test_client
+  tests/test_a2_exclusion_scope.py:106 TestTheCollidingPackageIsInvisibleToNoPlane.test_no_first_party_file_is_dropped_from_the_a2_set
+  tests/test_a2_exclusion_scope.py:123 TestRootTreesStayExcluded.test_existing_root_tree_files_are_not_a2_candidates
+  tests/test_a2_exclusion_scope.py:145 TestRuffWalkCoversEveryFirstPartyFile.test_walk_census_equals_tree_census
+  tests/test_a2_exclusion_scope.py:172 TestMypyExcludesOnlyWhatItSays.test_only_the_legacy_data_fetch_subtree_is_dark_under_opendata
+  tests/test_a2_exclusion_scope.py:176 TestMypyExcludesOnlyWhatItSays.test_the_package_that_collided_is_not_dark
+
+# below standard in 4 root trees a2_check itself excludes (ported / frontend / migrations) (first 12):
+  opendata_http/bond/bond_buy_back_em.py:167 bond_buy_back_hist_em
+  opendata_http/bond/bond_cbond.py:16 bond_available_index_cbond
+  opendata_http/bond/bond_cbond.py:30 bond_index_general_cbond
+  opendata_http/economic/macro_china.py:28 TLSAdapter
+  opendata_http/economic/macro_china.py:29 TLSAdapter.init_poolmanager
+  opendata_http/economic/macro_swiss.py:108 macro_swiss_gdp_quarterly
+  opendata_http/economic/macro_swiss.py:120 macro_swiss_gbd_yearly
+  opendata_http/economic/macro_swiss.py:132 macro_swiss_gbd_bank_rate
+  opendata_http/economic/macro_swiss.py:72 macro_swiss_svme
+  opendata_http/economic/macro_swiss.py:84 macro_swiss_trade
+  opendata_http/economic/macro_swiss.py:96 macro_swiss_cpi_yearly
+  opendata_http/economic/macro_usa.py:1115 macro_usa_cme_merchant_goods_holding
+
+# below standard in 6 first-party A1 legacy, untouched since the A0 baseline (first 12):
+  opendata/api/metrics.py:166 init_redis_aggregator
+  opendata/api/metrics.py:171 record_request_with_aggregation
+  scripts/init_tasks_and_tables.py:106 sync_data_warehouse_tables
+  scripts/init_tasks_and_tables.py:177 refresh_row_counts
+  scripts/init_tasks_and_tables.py:221 main
+  scripts/init_tasks_and_tables.py:33 create_tasks_from_scripts
+EXIT=0
