@@ -340,7 +340,19 @@
       "state": "unreviewed"
     },
     "AC-9|01|e67169e2": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C52",
+      "date": "2026-09-27",
+      "reason": "判据两半都不成立，且不是「判定面缺失」而是「表本身缺东西」。①覆盖：P0 域 3/5——`financial_statement`/`financial_indicator` 两侧 mapping 里没有这两个域（分母取 A4.1 迁移的 `_DWD_TABLES`，探针用 AST 直读得 5 个：`stock_daily`/`stock_action`/`financial_statement`/`financial_indicator`/`index_constituent`；不沿用 C48 那句「15 个权威域里 14 个」的读法，因为判据括号里点名的是 P0 域，权威域表是另一件事）。②承载：六类口径只有三类进得了这张表——`_FIELD_KEYS = frozenset({\"from\", \"scale\", \"normalize\", \"ms_column\"})` 结构上装不下复权口径/停牌语义/差异率分母；`opendata/data/adjust.py` 有 `apply_adjust`、`opendata/pipeline/cross_check.py` 把分母写在 `compared_keys` 的注释里这两件事实单列成附加读数、不计入覆盖：口径仍散在代码里就是 gap。停牌语义这一类更彻底：全仓除了本轮探针自己的字面量与 `tests/test_fuyao_endpoints.py:1202` 的一句注释（「停牌 0 价行」）之外，没有任何声明面（既没有取值规则，也没有读它的代码）。另登记一条阻塞事实：`financial_statement` 域两条腿当前**不共享 merge key**——ths 侧入库用契约英文码（`net_profit`/`income`），参照侧（移植的 sina 腿）存中文条目名与中文报表类型，而 `opendata/data/providers/ths/models/financial_statement.py` 段首把那份归一化明确写成「需要人工复核的口径映射（AC-4），不是在这里猜」⇒ 补这一域不是往 yaml 里填两行，而是要先拿到那份条目名对照的人工复核，或把它显式登记成用户决策面。两半都登记为开发任务 #66（补两个 financial 域 mapping + 让三类口径成为表级字段并被 `cross_check`/`apply_adjust` 读）。本轮未改判据原文、未换分母口径、未放宽探针的 `expects`。",
+      "evidence": [
+        "docs/evidence/C52/README.md",
+        "docs/evidence/C52/probe-items-ac9-three.txt",
+        "docs/evidence/C52/probe-selftest-and-all-prebackfill.txt",
+        "docs/evidence/C52/gate-run1-prebackfill.txt",
+        "opendata/data/mapping.py",
+        "opendata/data/adjust.py",
+        "opendata/pipeline/cross_check.py"
+      ]
     },
     "AC-9|02|ed680e97": {
       "state": "proven",
@@ -430,10 +442,40 @@
       "note": "判据点名两个通道：SMTP 邮件 + WS `data.diff_alert` 广播。修前的形状是「渲染函数与投递函数在 `tests/` 有 39 处引用、生产侧 0 处」——`diff_alert_message()`、`SubscriptionHub.publish_diff_alert()`、`ws_manager.broadcast`、`NotificationService._smtp_send` 全都在位，但 `Notifier` 契约签名只收 `summary`（拿不到 level/reason，也就无法解释这条告警为什么存在），且 `CrossCheckService` 不传 `notifier=` ⇒ **决策算完即丢**，没有任何调用方把 `(summary, decision)` 喂给它们。本轮 `DiffAlertDispatcher.notify(summary, decision)` 收口三处 sink：判定不放行则一个通道都不碰；放行则广播 + 按域过滤的 hub + SMTP（复用 A1 的 `_smtp_send`，不另开邮箱路径），每通道结果逐条记进 `Delivery`（`ws_sent/ws_error`、`hub_delivered/hub_error`、`mail_sent/mail_errors/mail_skipped`）并由 `_execute_full_check` 放进作业结果。**「没有订阅者在听」与「通道抛了异常」是两种读数**，不再都读成「已告警」；未装配的通道各报自己的原因（`no WS broadcast channel wired` / `SMTP not configured (no sender)` / `no diff-alert recipients configured`）。本轮同时把 WS 帧带上治理判定（`subscription.diff_alert_message(..., level=, reason=)`），调用方不传时 `reason is None` 而不猜默认。不计入本勾：`email_recipients` 实测为空 ⇒ 真机上邮件通道是「已装配但没处可发」，投递记录诚实写 `mail_sent=0` + 原因，这不等于 SMTP 已对某个真实收件人发出去过；SMTP 配置与收件人清单是运营决定，本轮没替用户填。"
     },
     "AC-9|06|53cf809b": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C52",
+      "date": "2026-09-27",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-9|01' --item 'AC-9|06' --item 'AC-9|07'（VERDICT AC-9|06: proven；`服务层与合并层节点: 3/3 passed`、四面逐个 yes、`service.run 传 as_of=end = yes`） ＋ python -m pytest tests/test_dwd_merge.py -q --no-header -p no:cacheprovider --no-cov -m 'not e2e'（29 passed / 1 deselected，PYTEST_EXIT=0，见 docs/evidence/C52/pytest-dwd-merge-file.txt） ＋ python -m pytest 'tests/test_dwd_merge.py::TestDwdMergeService::test_service_writes_all_four_point_in_time_faces' 'tests/test_dwd_merge.py::TestDwdMergeService::test_service_degrades_per_key_and_keeps_the_source_evidence' 'tests/test_dwd_merge.py::TestMergeSourceFrames::test_point_in_time_columns_are_stamped' -q --no-header -p no:cacheprovider --no-cov -m 'not e2e'（5 passed，见 docs/evidence/C52/witness-pytest-ac9.txt；--no-cov 且 -m 'not e2e' ⇒ 取证跑不是门禁读数） ＋ python docs/evidence/C52/falsify_dwd_merge.py（对 opendata/pipeline/dwd_merge.py 四处单点改写，逐处把对应节点与该格探针扳红、finally 逐字节还原，FALSIFY_EXIT=0） ＋ make gate 回填前一遍：gate-run1-prebackfill.txt 7,503 行完整未裁剪（7 行溯源头 + 7,496 行正文）、18 段 `===== gate:` 横幅、`GATE_EXIT=0` 读自档案自身末行、`real 9:01.16`；成员 11 = `36/36 个探针走到了判定，283 条 break`、`本遍墙钟 = 324.3 s`、`台账↔读数：agrees=32, unflipped=2, open=1, deferred=1, stale-proof=0`（两个 unflipped 正是 AC-9|06 与 AC-9|07：探针已读到 proven 而台账还写着 unreviewed；open=1 是 AC-9|01 读出 gap 而台账还没记 gap；deferred=1 是时刻面格 AC-1|10 因为工作树有 6 处在飞行中被让判），`VERDICT AC-9|06: proven` / `VERDICT AC-9|07: proven` / `VERDICT AC-9|01: gap`；成员 12 = `3281 passed, 6 skipped in 103.30s`、`TOTAL 11636 1086 2874 288 89.28%`",
+      "evidence": [
+        "docs/evidence/C52/README.md",
+        "docs/evidence/C52/probe-items-ac9-three.txt",
+        "docs/evidence/C52/witness-pytest-ac9.txt",
+        "docs/evidence/C52/falsify_dwd_merge.py",
+        "docs/evidence/C52/falsification-dwd-merge.txt",
+        "docs/evidence/C52/pytest-dwd-merge-file.txt",
+        "docs/evidence/C52/gate-run1-prebackfill.txt",
+        "opendata/pipeline/dwd_merge.py",
+        "tests/test_dwd_merge.py"
+      ],
+      "note": "判据四问逐问有面：权威缺失才降级（`degraded_rows==1` 且降级行的 `source` 留在写出的帧里，留痕可指而不是「列存在」）、`_diff_flag` 只在两条分歧键上为 1、`_merged_at` 单值、`_as_of==窗口末`。前两条断言都走 `DwdMergeService.run` 而不是纯函数 `merge_source_frames`，因为「`as_of=end` 由服务层传下去」这件事在纯函数层看不见。真机那一面本轮不动用，但要写明它不是「没有面」：C4 那份 719,314 行的合并读数覆盖权威/降级/打标三问、未逐行覆盖 `_as_of`；而对 `_as_of` 的真机断言其实已经存在——tests/test_dwd_merge.py::TestDwdWriteAgainstMysql::test_merge_writes_rows_with_trace_columns_and_is_idempotent（tests/test_dwd_merge.py:757）写库后 SELECT 出 `source/_diff_flag/_as_of` 并断言 `_as_of == 窗口末` 且重跑幂等，它带 @pytest.mark.e2e，被门禁与本遍的 -m 'not e2e' 挡在外面，跑它就是一次生产数仓写入、须经用户确认。⇒ 这一格的判据面是「单元 + 服务 + 代码」三面，真机那一面登记为「仪器已在、待放行」。"
     },
     "AC-9|07|96ff13a5": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C52",
+      "date": "2026-09-27",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-9|07'（VERDICT proven：`两条单测: 2/2 passed` ＋ 传播链五段全 yes） ＋ python -m pytest tests/test_dwd_merge.py -q --no-header -p no:cacheprovider --no-cov -m 'not e2e'（29 passed / 1 deselected，PYTEST_EXIT=0，见 docs/evidence/C52/pytest-dwd-merge-file.txt） ＋ python docs/evidence/C52/falsify_dwd_merge.py（M4 `self._reader(source)(start, end, set(affected_keys))` → `set()` 一处改写，把 `test_revision_of_an_existing_key_changes_the_dwd_row` 与本体探针同时扳红后逐字节还原） ＋ make gate 回填前一遍：gate-run1-prebackfill.txt 7,503 行完整未裁剪（7 行溯源头 + 7,496 行正文）、18 段 `===== gate:` 横幅、`GATE_EXIT=0` 读自档案自身末行、`real 9:01.16`；成员 11 = `36/36 个探针走到了判定，283 条 break`、`本遍墙钟 = 324.3 s`、`台账↔读数：agrees=32, unflipped=2, open=1, deferred=1, stale-proof=0`（两个 unflipped 正是 AC-9|06 与 AC-9|07：探针已读到 proven 而台账还写着 unreviewed；open=1 是 AC-9|01 读出 gap 而台账还没记 gap；deferred=1 是时刻面格 AC-1|10 因为工作树有 6 处在飞行中被让判），`VERDICT AC-9|06: proven` / `VERDICT AC-9|07: proven` / `VERDICT AC-9|01: gap`；成员 12 = `3281 passed, 6 skipped in 103.30s`、`TOTAL 11636 1086 2874 288 89.28%`",
+      "evidence": [
+        "docs/evidence/C52/README.md",
+        "docs/evidence/C52/probe-items-ac9-three.txt",
+        "docs/evidence/C52/falsify_dwd_merge.py",
+        "docs/evidence/C52/falsification-dwd-merge.txt",
+        "docs/evidence/C52/pytest-dwd-merge-file.txt",
+        "docs/evidence/C52/gate-run1-prebackfill.txt",
+        "opendata/pipeline/dwd_merge.py",
+        "opendata/pipeline/runner.py",
+        "tests/test_dwd_merge.py"
+      ],
+      "note": "「同步更新」钉在值上而不是行存在上：reader 按窗口取数，修订键 (`600519`, 2023-12-29) 在第二遍的窗口（2024-01-01..01-31）之外，只有 `affected_keys` 真的下传才取得到那一行；同一条用例随后再跑一遍不带 `affected_keys` 并断言该键根本不在输出里，所以传播面不是白拿的。五段链（runner 交键 / `_contract_keys` 重拼契约键 / reader 收键 / `extra_diff_keys` 参与差异重算 / 写侧 `build_upsert_sql` 按业务键 upsert）各一条代码面读数。"
     },
     "AC-9|08|a87bfe6f": {
       "state": "gap",
