@@ -114,7 +114,9 @@ python scripts/quality/acceptance_item_probe.py --self-test              # 23 �
 
 ## 十、本目录档案清单
 
-`README.md`｜`before_census.py`（`--root` 可复跑）｜`before-census-head.txt`（动手前，62 行）｜`after-census-worktree.txt`（动手后，61 行）｜`warehouse_census.py`（只读数仓）｜`warehouse-census-live.txt`（84 行，含 loguru 的 stderr）｜`probe-ac18-01.txt`／`-02.txt`／`-03.txt`（`exit=0`）｜`self-test.txt`（`exit=0`）｜`gate-run0-zero-dep-fail.txt`（attempt-1，`GATE_EXIT=2`）｜`zero-dep-census-after-refreeze.txt`（复冻后读数）｜`a2-check-first-sweep.txt`（回填前三处红）｜`gate-run1-prebackfill.txt`／`gate-run2-postbackfill.txt`（完整未裁剪，各带跑前 provenance 抬头）
+`README.md`｜`before_census.py`（`--root` 可复跑）｜`before-census-head.txt`（动手前，62 行）｜`after-census-worktree.txt`（动手后，61 行）｜`warehouse_census.py`（只读数仓）｜`warehouse-census-live.txt`（84 行，含 loguru 的 stderr）｜`probe-ac18-01.txt`／`-02.txt`／`-03.txt`（`exit=0`）｜`self-test.txt`（`exit=0`）｜`gate-run0-zero-dep-fail.txt`（attempt-1，`GATE_EXIT=2`）｜`zero-dep-census-after-refreeze.txt`（复冻后读数）｜`a2-check-first-sweep.txt`（回填前三处红）｜`gate-run1-prebackfill.txt`／`gate-run2-postbackfill.txt`（完整未裁剪，各带跑前 provenance 抬头）｜`gate-run3-doc-members.txt`（run 2 之后只有 markdown 在动，故逐个复算四个以文档／档案为输入的成员，末尾附本档案入库后的追溯复算）｜`doc-members-after-readme.txt`（§十 这行清单落地之后的最后一次四成员复算，见下）
+
+**为什么有两份「四成员」档案**：`gate-run3-doc-members.txt` 跑完之后，本节（§十）又补了它自己的条目与 §五 的两处顺序说明，而「绿只描述它跑过的那一刻的树」是本仓的规矩——所以不回头改 run3，而是把这最后一次复算单独留一档。两档的差别只有一行 markdown，四个成员的 `exit` 都是 0。
 
 ## 十一、后续登记（本轮不做）
 
