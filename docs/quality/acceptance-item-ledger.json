@@ -444,7 +444,29 @@
       "state": "unreviewed"
     },
     "AC-13|07|4a567140": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C47",
+      "date": "2026-09-27",
+      "command": "python docs/evidence/C47/matrix_census.py（真机只读 census：非只读语句闸门 0 条 / 数仓 170 条全 SELECT / 控制库 SELECT 8+SHOW 1；`collect_failures -> failures=0 legs_with_history=1`、`partitioned_tables=9 tables_with_gaps=8`（全 p2027）、`disk volume='.' ratio=0.7703`、一条调度运行 `alerts by rule: {freshness: 26, partition_missing: 8}`） ＋ python scripts/quality/acceptance_item_probe.py --item 'AC-13|07'（VERDICT proven：四类节点 8/8、接线节点 4/4、判据原文点名四类、判定引擎 rule 4/4、生产者 4/4、`inputs_fed=3/inputs_declared=3`、范围诚实字段 3/3） ＋ python scripts/quality/acceptance_item_probe.py --self-test（24 探针 / 172 反事实全扳红，exit 0） ＋ python -m pytest tests/test_alert_matrix.py tests/test_pipeline_jobs.py -q --no-cov -p no:cacheprovider -m 'not e2e'（85 passed） ＋ python -m pytest tests/test_alert_matrix.py tests/test_pipeline_jobs.py -q --cov=opendata.pipeline --cov-report=term-missing -n0 -m 'not e2e'（alert_matrix.py 96.76% / jobs.py 97.30%） ＋ make gate＋ make gate 四遍：回填前第一遍 GATE_EXIT=2 停在 evidence-traceability 的 narrative 面（处置＝补 README，不放宽规则）、第二遍 GATE_EXIT=0（gate-run2-prebackfill.txt，回填前那一刻的树 proven=25）；回填后第三遍 GATE_EXIT=0（gate-run3-postbackfill.txt，proven=26 ticked=26，其余判定面读数与第二遍逐字相同）、第四遍 gate-run4-final.txt 才是描述最终树的那一份（第三遍之后量出 §0 新行有 5 个未转义竖线，修的是文档措辞层，而文档是 ledger-check／brand-check 的输入 ⇒ 必须复跑）",
+      "evidence": [
+        "docs/evidence/C47/README.md",
+        "docs/evidence/C47/matrix_census.py",
+        "docs/evidence/C47/matrix-census-live.txt",
+        "docs/evidence/C47/probe-ac13-07.txt",
+        "docs/evidence/C47/self-test.txt",
+        "docs/evidence/C47/coverage-two-files.txt",
+        "docs/evidence/C47/gate-run1-prebackfill-attempt.txt",
+        "docs/evidence/C47/gate-run2-prebackfill.txt",
+        "docs/evidence/C47/gate-run3-postbackfill.txt",
+        "opendata/pipeline/alert_matrix.py",
+        "opendata/pipeline/freshness.py",
+        "opendata/pipeline/partitions.py",
+        "opendata/pipeline/jobs.py",
+        "scripts/quality/acceptance_item_probe.py",
+        "tests/test_alert_matrix.py",
+        "tests/test_pipeline_jobs.py"
+      ],
+      "note": "判据原文点名的四类各有生产者、各有判定行、各被调度执行器真喂输入——这是「生效」与「规则存在」的差别：C46 刚落地的 `run_alert_matrix` 给 `evaluate_alerts` 交的是 `failures=() / partition_plans={} / disk=None` 三个写死的空参，签名里连 `control_engine/current_year/disk_path` 三个入口都没有，`opendata/` 全树 grep 不到三个生产者（`disk_usage` 四个字符在 `opendata/` 里一次都没有，`retention.py:312` 只有 `shutil.rmtree`）⇒ 真机只可能产出 `freshness` 一类，而「零告警」与「这三类根本没测」逐字同形。四条设计约束：①失败面 **SQL 侧按 run 聚合**（`GROUP BY pipeline_id, domain, source, window_end`，任一分片失败即整 run 失败，streak 数 run 不数分片，上限 `FAILURE_RUN_WINDOW=10`）——第一版按 `row_limit` 读分片行 + 边界窗口 `partial` 标记被本轮**否掉**：唯一被读到的 run 被切断会漏报，而把边界 run 一律标不可判会凭空造出告警；②分区面**只报不改**（`before_cursor_execute` 语句间谍钉零条 ALTER/REORGANIZE，`PartitionMaintainer.ensure` 打桩即炸；活库 170 条全 SELECT 独立互证）；③磁盘面报出**实际量到的卷名**并走到最近的已存在祖先，无路径 ⇒ `(None, None)` 即不声称任何事；④`MatrixScope` 的 `failure_legs/partitioned_tables/disk_path` 让「没测」不等于「健康」——没有控制库时 `failure_legs` 是 `None` 而不是 `0`，`legs_with_history` 把「checkpoint 表是空的」与「跑批是健康的」分开。**探针读的是调用点关键字而不是签名**：只声明不传参的那一类永远读成零告警，这正是修前的形状。**不计入本勾的部分（登记为须用户决定）**：磁盘口径量的是 `settings.data_dir`（相对 `data`）所在卷 `'.'`（`ratio=0.7703`），与远端 MySQL 容量无关，改配置语义属运维决策；8 张表的 `p2027` 分区缺口不修（补分区是生产 DDL）；一条调度运行现在产 34 条告警（26 freshness 多为从未落地的表），分级/收敛待评审；连续失败面今天只有薄历史（全库 1 行、FAILED=0），多窗口 streak 只由单元面三个失败窗口钉住；`dwd_trading_calendar` 仍未落库（census `tier=weekday-rule`、`expected=2026-09-25`）；`full_check`/`partition_maintenance` 两 kind 的执行器仍缺（C46 登记）。真机 census 刻意 `broadcast=None`，故档案里 `delivered=0` 不是投递失败——投递面由 `test_one_run_delivers_every_kind_the_matrix_decides`（`delivered == len(alerts) == len(frames)`）与 AC-18|01 负责。全程只读、无 DDL、未读取或打印任何密钥值或 `.env` 内容。"
     },
     "AC-13|08|22db1473": {
       "state": "unreviewed"
