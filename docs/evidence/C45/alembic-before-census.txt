@@ -1,0 +1,61 @@
+# C45 修前 census：把 alembic/ 与 alembic_data/ 纳入三个静态面之前，这 10 个文件在 HEAD 树上的读数
+# run_at=2026-09-27T05:32:18Z  commit=da465b0bcd29a0651ab1ab3ae5f8bc09666fa911（detached worktree /tmp/c45head，由 git worktree add 自 da465b0 解出）
+# 被测文件集 = $(git ls-files alembic alembic_data | grep '.py$')，10 个文件：
+#   alembic/env.py
+#   alembic/versions/2026_09_22-0001_initial_schema.py
+#   alembic/versions/2026_09_23-0002_pipeline_progress.py
+#   alembic/versions/2026_09_23-0003_api_keys.py
+#   alembic_data/env.py
+#   alembic_data/versions/20260923-0001_ods_dwd_p0.py
+#   alembic_data/versions/20260923-0002_dq_diff_report.py
+#   alembic_data/versions/20260923-0003_ods_ths.py
+#   alembic_data/versions/20260923-0004_batch_watermark.py
+#   alembic_data/versions/20260923-0005_dwd_stock_adjust.py
+
+## 1) ruff check --statistics（逐文件显式传参）
+# command: xargs -a files ruff check --statistics
+# 为什么必须逐文件传：HEAD 的 [tool.ruff].exclude 含 "alembic/versions"，带斜杠的模式在目录 walk 中
+# 生效 —— 在 HEAD 树上 `ruff check alembic alembic_data` 回 All checks passed\!（退出 0），
+# 那正是 C45 量到的 exclude 语义；只传目录会量到一个假零。
+14	E501 	[ ] line-too-long
+ 6	UP007	[*] non-pep604-annotation-union
+ 3	D415 	[ ] missing-terminal-punctuation
+ 2	I001 	[*] unsorted-imports
+ 2	UP035	[*] deprecated-import
+ 1	W291 	[ ] trailing-whitespace
+Found 28 errors.
+[*] 10 fixable with the `--fix` option (4 hidden fixes can be enabled with the `--unsafe-fixes` option).
+RUFF_EXIT=1
+
+## 2) 同样逐文件跑 ruff format --check
+# command: xargs -a files ruff format --check
+Would reformat: alembic/versions/2026_09_22-0001_initial_schema.py
+1 file would be reformatted, 9 files already formatted
+FORMAT_EXIT=1
+
+## 3) mypy（传目录根，与棘轮 count_mypy 同形）
+# command: python -m mypy alembic alembic_data
+There are no .py[i] files in directory 'alembic'
+MYPY_EXIT=2
+# 读数即结论：HEAD 的 [tool.mypy].exclude 含 ^alembic/ 与 ^alembic_data/，整根被排除时 mypy 的
+# 目录展开成空集并以 exit 2 失败 —— 棘轮若在此状态下跑会抛 ToolError 而 exit 1。C45 反事实
+# mypy-exclude-whole-root 量的就是这个形状（探针判 error，而不是放行）。
+
+## 4) bandit（传目录根，与棘轮 count_bandit 同形）
+# command: bandit -c bandit.yaml -r alembic alembic_data -q -f custom
+BANDIT_EXIT=0
+# 修前这两个根 0 条 B 命中；纳入面后仍为 0 ⇒ bandit 面的范围扩张没有换来新债务。
+
+## 5) HEAD 树上跑棘轮自己（快照 243 vs 实测）
+# command: PYTHONPATH=. python scripts/quality/ratchet.py（HEAD 树：SELFDEV_PATHS 只有 4 个根，alembic 不在面内）
+OK: quality debt did not increase.
+  ruff_selfdev: 242 (snapshot 243) (improved)
+  mypy_selfdev: 11 (snapshot 11)
+  bandit_selfdev: 3 (snapshot 3)
+  ruff_ported: 2144 (snapshot 2144)
+  direct_http_ported: 1044 (snapshot 1044)
+NOTE: run --update to freeze the new low.
+RATCHET_EXIT=0
+# 读数是本轮「只降不升」要计量此前无人看的那一格的一个实例：上限 243 里含着 1 条已经不存在
+# 的债务（某轮修掉后没有 --update 复冻），棘轮只会说 improved，不会说上限比现实宽。
+# 工作区读数 242 与本轮冻结后的快照 242 一致 ⇒ 243→242 这一格是复冻，不是放水。

@@ -1,0 +1,26 @@
+================================================================================
+C45 探针自检：每个 judge 都要被至少一条反事实扳红
+================================================================================
+采集时间（运行前）: 2026-09-27T07:44:56+02:00
+branch: dev
+HEAD  : da465b0
+python: Python 3.13.5
+command: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/acceptance_item_probe.py --self-test
+
+--- git status --porcelain（运行前，本目录内容除外）---
+ M CODE_QUALITY.md
+ M Makefile
+ M alembic/versions/2026_09_22-0001_initial_schema.py
+ M alembic/versions/2026_09_23-0002_pipeline_progress.py
+ M alembic/versions/2026_09_23-0003_api_keys.py
+ M docs/quality/ratchet.json
+ M pyproject.toml
+ M scripts/quality/a2_check.py
+ M scripts/quality/acceptance_item_probe.py
+ M scripts/quality/ratchet.py
+ M tests/test_a2_exclusion_scope.py
+
+--- 完整输出（未裁剪）---
+OK: 20 probe(s) measured; every judge is reachable from its declared repair, and all 139 counterfact(s) flip a clean reading back to a gap.
+
+exit=0

@@ -1,0 +1,41 @@
+================================================================================
+C45 条目级探针 AC-17|05：搬运代码仅 E/F + 与上游逐文件可 diff + pre-commit exclude + 棘轮
+================================================================================
+采集时间（运行前）: 2026-09-27T07:44:43+02:00
+branch: dev
+HEAD  : da465b0
+python: Python 3.13.5
+command: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/acceptance_item_probe.py --item AC-17|05
+
+--- git status --porcelain（运行前，本目录内容除外）---
+ M CODE_QUALITY.md
+ M Makefile
+ M alembic/versions/2026_09_22-0001_initial_schema.py
+ M alembic/versions/2026_09_23-0002_pipeline_progress.py
+ M alembic/versions/2026_09_23-0003_api_keys.py
+ M docs/quality/ratchet.json
+ M pyproject.toml
+ M scripts/quality/a2_check.py
+ M scripts/quality/acceptance_item_probe.py
+ M scripts/quality/ratchet.py
+ M tests/test_a2_exclusion_scope.py
+
+--- 完整输出（未裁剪）---
+
+### AC-17|05  (document line 266)
+判据原文：搬运代码（`opendata_http/`）：仅 E/F 检查、未做 format/isort 重排（与上游可 diff）；pre-commit 含 `exclude: opendata_http/`；lint 债务不高于棘轮快照
+本探针：搬运树只按 E/F 计量（豁免量得出来）+ 未重排且逐文件重放一致 + 三处登记与 pre-commit exclude 一致
+台账现状：state=unreviewed，文档勾选=False
+  - scripts/quality/ratchet.py exit 0（face=none）：搬运债务 ruff_ported 2144(≤2144), direct_http_ported 1044(≤1044)；门禁打印的 ruff_ported 与独立跑的 --select E,F 计数一致 = yes（E/F 2144）；直连计数的动词集合 delete, get, head, patch, post, put, request 完整 = yes
+  - 「仅 E/F」豁免挡住的量：同一棵树按自研规则集跑是 9709 条、按 I 规则 230 条，E/F 只有 2144 条 —— 豁免若不存在，门禁当场全红，所以它必须被登记而不是被假装没有
+  - 「未做 format/isort 重排」：209 个文件是 ``ruff format`` 会重写的、230 条 import 顺序违例 —— 重排过一次的树不可能与上游逐行 diff
+  - 重放对账（scripts/codemod/report_port.py，需本机有锁定 commit 的上游干净克隆）：exit 0，锁内 315 条记录 / 报告 315 行 / 逐字一致 315 行 / 待办 0 条；磁盘 313 个 .py，其中未登记的 0 个；现场渲染与已归档的 docs/port-report.md 逐字节一致 = yes
+  - 人工改动三处登记：opendata_http/upstream.lock 9 条、THIRD_PARTY_NOTICES.md 9 条、scripts/codemod/port_module.py:MANUAL_EDITS 9 条，不一致 0 条（重放只认 MANUAL_EDITS，读者只看到登记文档）
+  - .pre-commit-config.yaml：共 15 个 hook（HEAD 15 个），其中排除搬运树的 4 个，比 HEAD 少的 0 个；排除的 hook id：end-of-file-fixer, ruff, ruff-format, trailing-whitespace
+  - 搬运上限历史（9 次转换）：抬高 3 次、其中搬运文件数未变的 1 次；近 2 次转换消失的被测根 0。判据原文只要求「债务不高于棘轮快照」，故抬高只作待复核登记；轨迹 ruff_ported 1418→2144 / direct_http_ported 1270→1044（3757285->d66dd99 ruff_ported 1305->2145; 4ee1bbc->2b68225 akshare）
+VERDICT AC-17|05: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+
+exit=0

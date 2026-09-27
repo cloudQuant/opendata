@@ -1,0 +1,39 @@
+================================================================================
+C45 条目级探针 AC-17|03：A1 棘轮只降不升 + 触碰即达标
+================================================================================
+采集时间（运行前）: 2026-09-27T07:44:28+02:00
+branch: dev
+HEAD  : da465b0
+python: Python 3.13.5
+command: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/acceptance_item_probe.py --item AC-17|03
+
+--- git status --porcelain（运行前，本目录内容除外）---
+ M CODE_QUALITY.md
+ M Makefile
+ M alembic/versions/2026_09_22-0001_initial_schema.py
+ M alembic/versions/2026_09_23-0002_pipeline_progress.py
+ M alembic/versions/2026_09_23-0003_api_keys.py
+ M docs/quality/ratchet.json
+ M pyproject.toml
+ M scripts/quality/a2_check.py
+ M scripts/quality/acceptance_item_probe.py
+ M scripts/quality/ratchet.py
+ M tests/test_a2_exclusion_scope.py
+
+--- 完整输出（未裁剪）---
+
+### AC-17|03  (document line 264)
+判据原文：**A1 层（存量）**：mypy/ruff 债务不高于基线快照，只降不升；**修改过的文件按 A2 标准达标**（"触碰即达标"）
+本探针：棘轮三项存量债务 + 上限自身历史只降不升 + 三个静态平面各读到多少 + 触碰集↔A2 集一一对应
+台账现状：state=unreviewed，文档勾选=False
+  - scripts/quality/ratchet.py exit 0（face=none，printed=3/3）：存量债务 ruff_selfdev 242(≤242), mypy_selfdev 11(≤11), bandit_selfdev 3(≤3)
+  - 上限自己的历史（9 次转换）：抬高存量上限的次数 0；近 2 次转换里消失的被测根 0，更早历史 1；存量上限轨迹 ruff_selfdev 404→242 / mypy_selfdev 35→11 / bandit_selfdev 6→3。棘轮只比较工作区与快照，抬高上限这一步此前无人计量（4ee1bbc->2b68225 akshare）
+  - 平面可见性：6 个自研根磁盘 415 个 .py，ruff 自己走到 415（看不见 0）；mypy 目标 192/210，被它排除的 18 个里 18 个在棘轮点名的遗留区（opendata/data_fetch/）之内、0 个是没人声明的 exclude（这 18 个仍全部被 ruff 读到）；bandit 251/251，被它漏掉的 0 个（ruff 也看不见的 0）必须为 0：三个平面各自把一份存量计数，exclude 吞掉的根既不产生读数也不产生红灯，所以谁被排除必须点名，不能只在配置文件里悄悄加一行
+  - 全体 tracked .py = 784，既不在任何被测根下、也不在 A2 集里的 0
+  - 触碰即达标：自基线起改动 360 个 .py ↔ A2 集 360 个（a2-check exit 0），其中按名字被排除出 A2 的 0 个、排除项里的自研代码 0 个
+VERDICT AC-17|03: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+
+exit=0

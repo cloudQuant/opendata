@@ -1,0 +1,45 @@
+================================================================================
+C45 棘轮反事实：8 条把 A1 判据改坏的形状必须各自读回一个缺口
+================================================================================
+采集时间（运行前）: 2026-09-27T07:40:34+02:00
+branch: dev
+HEAD  : da465b0
+python: Python 3.13.5
+command: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python docs/evidence/C45/ratchet_counterfactuals.py
+
+--- git status --porcelain（运行前，本目录内容除外）---
+ M CODE_QUALITY.md
+ M Makefile
+ M alembic/versions/2026_09_22-0001_initial_schema.py
+ M alembic/versions/2026_09_23-0002_pipeline_progress.py
+ M alembic/versions/2026_09_23-0003_api_keys.py
+ M docs/quality/ratchet.json
+ M pyproject.toml
+ M scripts/quality/a2_check.py
+ M scripts/quality/acceptance_item_probe.py
+ M scripts/quality/ratchet.py
+ M tests/test_a2_exclusion_scope.py
+
+--- 完整输出（未裁剪）---
+ok   break[baseline] 面=正控制：什么都不改 棘轮 exit=0(期望 0) 探针=proven(期望 proven) 还原=未改动
+ok   break[ceiling-lowered] 面=快照上限被改低一格（反证 ①） 棘轮 exit=1(期望 1) 探针=gap(期望 gap) 还原=sha256✓
+      读数「quality debt increased」: FAIL: quality debt increased:
+      读数「ruff_selfdev: 241 -> 242」: ruff_selfdev: 241 -> 242
+ok   break[debt-planted] 面=自研文件里植入一条未使用 import（反证 ②） 棘轮 exit=1(期望 1) 探针=gap(期望 gap) 还原=sha256✓
+      读数「quality debt increased」: FAIL: quality debt increased:
+      读数「ruff_selfdev」: ruff_selfdev: 242 -> 244
+ok   break[ruff-exclude-nested] 面=ruff 的 exclude 加回一个自研子目录（债务读数会自己变好） 棘轮 exit=0(期望 0) 探针=gap(期望 gap) 还原=sha256✓
+      说明 只有平面普查红：ruff_selfdev 掉到 242 以下，棘轮不会拦
+      读数「看不见 27」: - 平面可见性：6 个自研根磁盘 415 个 .py，ruff 自己走到 388（看不见 27）；mypy 目标 192/210，被它排除的 18 个里 18 个在棘轮点名的遗留区（opendata/data_fetch/）之内、0 个是没人声明的 exclude（这 18 个仍全部被 ruff 读到）；bandit 251/251，被它漏掉的 0 个（ruff 也看不见的 0）必须为 0：三个平面各自把一份存量计数，exclude 吞掉的根既不产生读数也
+ok   break[bandit-exclude] 面=bandit.yaml 的 exclude_dirs 加一条自研子串 棘轮 exit=0(期望 0) 探针=gap(期望 gap) 还原=sha256✓
+      读数「bandit 221/251，被它漏掉的 30 个」: - 平面可见性：6 个自研根磁盘 415 个 .py，ruff 自己走到 415（看不见 0）；mypy 目标 192/210，被它排除的 18 个里 18 个在棘轮点名的遗留区（opendata/data_fetch/）之内、0 个是没人声明的 exclude（这 18 个仍全部被 ruff 读到）；bandit 221/251，被它漏掉的 30 个（ruff 也看不见的 0）必须为 0：三个平面各自把一份存量计数，exclude 吞掉的根既不产生读数也
+ok   break[mypy-exclude-nested] 面=mypy 的 exclude 加一个没被点名的自研子目录 棘轮 exit=0(期望 0) 探针=gap(期望 gap) 还原=sha256✓
+      读数「27 个是没人声明的 exclude」: - 平面可见性：6 个自研根磁盘 415 个 .py，ruff 自己走到 415（看不见 0）；mypy 目标 165/210，被它排除的 45 个里 18 个在棘轮点名的遗留区（opendata/data_fetch/）之内、27 个是没人声明的 exclude（这 45 个仍全部被 ruff 读到）；bandit 251/251，被它漏掉的 0 个（ruff 也看不见的 0）必须为 0：三个平面各自把一份存量计数，exclude 吞掉的根既不产生读数也
+ok   break[mypy-exclude-whole-root] 面=mypy 的 exclude 吃掉整个被测根 棘轮 exit=1(期望 1) 探针=error(期望 error) 还原=sha256✓
+      说明 mypy 对显式传进来的空目录硬失败（exit 2），棘轮与探针同时拒绝读数
+      读数「no .py[i] files」: FAIL: mypy failed: There are no .py[i] files in directory 'alembic_data'
+ok   break[ruff-exclude-top-level-inert] 面=ruff 的 exclude 加一个根级条目（显式登记为不咬） 棘轮 exit=0(期望 0) 探针=proven(期望 proven) 还原=sha256✓
+      说明 门禁按根传目录，ruff 不对自己显式收到的根套 exclude，所以这一条是惰性的；平面普查量的是走到的文件数，不是配置表里写了什么
+VERDICT counterfactuals=8 failed=0 exit=0（每条都核对棘轮 exit、AC-17|03 探针判定与字节还原）
+
+exit=0

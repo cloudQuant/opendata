@@ -1,0 +1,121 @@
+================================================================================
+C45 第三遍：run 2 之后只有 markdown 在动，故逐个复算以文档／档案为输入的四个成员
+================================================================================
+采集时间（运行前）: 2026-09-27T08:09:09+0200
+branch: dev
+HEAD  : da465b0（本轮改动尚未提交）
+python: Python 3.13.5
+command: make brand-check secret-check ledger-check evidence-traceability
+
+--- 为什么只复算四个成员 ---
+gate run 2（回填后）之后再落地的只有 markdown：docs/evidence/C45/README.md 的两处字句，
+以及验收文档 §10 AC-17 行的同一句随动。以它们为输入的成员是 ledger-check（读 §2 方框与 §10 的
+条目级 k/m、读台账 json）、brand-check（全树文本品牌残留）、evidence-traceability（普查 docs/evidence/
+的档案集合与六面）、secret-check（扫索引与全历史）。其余 13 个成员的输入是 .py／前端／数仓，未动。
+
+--- 第一版复算如实记 ---
+第一次跑这份复算时 gate-run2-postbackfill.txt 还没入库，evidence-traceability 因此判
+1 条 NEW VIOLATION（#untracked）并 exit 2 —— 那一遍的原始输出留在 /tmp 未入档，
+处置与 run 1 同：把档案 add 进索引后复跑，而不是改判据。
+
+--- run 2 之后有没有代码面改动（tracked 的 .py/.toml/.yaml/.json/Makefile，按 mtime 与 run 2 的原始日志比，应当为空）---
+(空：无代码面改动)
+
+--- run 2 之后动过的受检文件（mtime 升序，末 6 行；应只有 markdown 与 run 2 自身的档案）---
+2026-09-27T07:47:14 docs/evidence/C45/self-test.txt
+2026-09-27T07:47:23 docs/evidence/C45/alembic-before-census.txt
+2026-09-27T07:51:22 docs/evidence/C45/gate-run1-prebackfill.txt
+2026-09-27T08:05:19 docs/evidence/C45/gate-run2-postbackfill.txt
+2026-09-27T08:05:59 docs/evidence/C45/README.md
+2026-09-27T08:06:27 docs/迭代计划/迭代1-重构数据中台/验收文档.md
+对比基准 run 2 原始日志落档时间: 2026-09-27T08:04:18
+
+--- 完整输出（未裁剪）---
+
+$ make brand-check
+python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:112
+  .env.example:113
+  .env.example:114
+  .env.example:115
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+exit=0
+
+$ make secret-check
+python scripts/quality/secret_scan_check.py
+
+    ○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
+
+[90m8:09AM[0m [32mINF[0m [1m197 commits scanned.[0m
+[90m8:09AM[0m [32mINF[0m [1mscanned ~63258640 bytes (63.26 MB) in 19.6s[0m
+[90m8:09AM[0m [32mINF[0m [1mno leaks found[0m
+device: gitleaks 8.30.1, command: gitleaks detect --source . --config .gitleaks.toml --redact
+exit=0
+
+$ make ledger-check
+python scripts/quality/acceptance_ledger_check.py
+census: items=130 proven=23 gap=7 unreviewed=100 ticked=23
+OK: items=130 proven=23 gap=7 unreviewed=100 ticked=23 across 22 group(s) and 19 §10 row(s) reconcile.
+exit=0
+
+$ make evidence-traceability
+python scripts/quality/evidence_traceability.py
+# evidence traceability over docs/evidence/
+  rounds        = 55
+  files census  = 459 (gate logs: 77)
+  dates in gate logs = header 71/77, printed by the run 6/77
+  branch named in header = 65/77 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 0
+
+OK: evidence archive matches the frozen baseline (0 legacy entr(ies)).
+exit=0
+
+--- 运行后 ---
+MEMBERS_EXIT=0   # 0 = 四个成员全绿
+采集时间（运行后）: 2026-09-27T08:09:50+0200
+
+$ make evidence-traceability   # 本档案自己入库之后再跑一次，证明它没有把 untracked 面弄脏
+python scripts/quality/evidence_traceability.py
+# evidence traceability over docs/evidence/
+  rounds        = 55
+  files census  = 460 (gate logs: 77)
+  dates in gate logs = header 71/77, printed by the run 6/77
+  branch named in header = 65/77 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 0
+
+OK: evidence archive matches the frozen baseline (0 legacy entr(ies)).
+exit=0
+
+MEMBERS_EXIT_AGAIN=0   # 四成员＋本档案入库后的追溯复算全绿
