@@ -618,7 +618,19 @@
       "note": "C36 记 gap 的那半句现在闭合了：opendata/pipeline 85.32% → **91.68%**（2985/3256 units，门禁 gate-run1 自带的 term 表；同遍 coverage.xml 独立复算同一张面、27 个文件逐个四元组 0 处不符），opendata/data 92.49%、opendata_fuyao 95.76%；「A2 新代码 ≥85」的『无可核对分母』也给了公开口径（A2 文件集 ∩ 覆盖率面 = 148/318，stmts=8544 miss=730 branches=2068 partial=230 ⇒ 90.95%）。补的是 82 条单元用例，产品代码 0 行，没动 exclude_lines／没加 pragma／没跑棘轮 --update；非恒真性由 10 个变异全红 + sha256 还原来证明。**三条边界按原样登记而不是被这勾盖掉**：①『报告非空归档』按『产出＋非空＋指纹可核』读，htmlcov/ 与 coverage.xml 被 .gitignore:40/:49 排除、本体不入仓 ⇒ 若验收要求仓内有本体，该勾应退回；②A2 分母是本轮定义的口径，换分母（只算本轮新增行）读数会变；③『误跑面』如实入库——第一次变异巡回的 pytest 命令漏了 -m 'not e2e'，导致数仓 e2e 类对生产 MySQL 真跑了一遍，该表 batch_watermark 现为 0 行且无跑前快照（AUTO_INCREMENT=107 只是弱指示，不可据此定量），已把 fixture 的清理从按 domain 全删改成按 seq 有界删除，污染那份日志原样留档；另由此量到 batch_watermark 不是持久审计面，登记为独立缺口（未在本轮修）。 复算面另一档：`coverage-faces-across-runs.txt` 显示两次门禁的整张覆盖率表逐行 diff=0（pipeline 面 27 文件四元组相同）；`gate.txt`（第三遍，跑在本轮把 `coverage-face-recompute.py`／`mutation-proof.py` 落进 a2-check 清扫面之后的最终树）**不在本条 evidence 里**——门禁自己的日志无法在它自己运行的那一刻已被 git 跟踪，这是规则的正确顺序而不是遗漏，它的读数记在同目录 README §7。A2 面读数 `A2_EXIT=0`／`A2 files: 320`（含本轮两份新脚本，`a2-compliance.txt` [G]）。"
     },
     "AC-17|07|d25cc7b2": {
-      "state": "unreviewed"
+      "state": "proven",
+      "command": "python scripts/quality/public_api.py（门禁固定目录面）+ python scripts/quality/acceptance_item_probe.py --item 'AC-17|07'（固定目录之外的新增自研文件按同一个 collect_symbols 再量一遍）+ python docs/evidence/C43/public-api-face-census.py（人群拆分）",
+      "round": "C43",
+      "date": "2026-09-27",
+      "evidence": [
+        "docs/evidence/C43/README.md",
+        "docs/evidence/C43/probe-ac17.txt",
+        "docs/evidence/C43/public-api-face-census.txt",
+        "docs/evidence/C43/public-api-face-census.py",
+        "docs/evidence/C43/teeth-planted.txt",
+        "docs/evidence/C43/gate-run1b-prebackfill.txt"
+      ],
+      "note": "判据原文限定「新增」，而成员只数 A2_SCOPE 那七棵固定目录 ⇒ 本轮补的是包含关系而不是再造一个量面：A2 文件集 ∩ 自研 ∩ 不在固定目录 ∩ 非 tests/docs = 46 文件 / 222 公开 callable / 0 个不达标，与固定目录内的 611 个（docstring 100.0%、annotation 100.0%、exit 0、空目录分支未走）同一把尺子。非恒真性由两处植入证明：TEETH-2 在目录内种一个无 docstring 的公开 def ⇒ 成员报 99.8% (611/612) 并 exit 1；TEETH-3 把同一缺陷种到目录外 ⇒ 成员仍 100.0% (611/611) exit 0，而加宽面读数 47 文件 / 223 callable / below standard = 1 并判 VERDICT gap —— 即这行 100% 若哪天不再承重，探针会替它红。不达标面如实打印而不并入判定：A1 存量 6 个（opendata/api/metrics.py:166,171 与 scripts/init_tasks_and_tables.py:33,106,177,221，均由 A0 基础提交 4ee1bbc 引入，按「触碰即达标」由棘轮管）、tests/+docs/ 排除面 1930 个（ruff 按配置在这两棵树关掉 D/ANN，排除理由与规模写进读数第四行）。探针不是门禁成员，它产出台账输入；本格翻勾的输入是上面两条读数。"
     },
     "AC-17|08|e4388047": {
       "state": "unreviewed"
@@ -635,7 +647,20 @@
       "note": "gate.txt：eslint 0 errors / 33 warnings；vue-tsc -b --force 跑过；采集守卫 14 磁盘 = 14 采集；vitest 106 passed；e2e verdict 判据 0 named gaps + playwright 18 passed。33 条 warning 是存量债务，本判据只要求“纳入门禁”，未声称前端零告警。"
     },
     "AC-17|10|6c4d5715": {
-      "state": "unreviewed"
+      "state": "proven",
+      "command": "python scripts/quality/evidence_traceability.py（本轮起的第 16 个门禁成员，排在 ledger-check 之后）+ python scripts/quality/acceptance_item_probe.py --item 'AC-17|10'",
+      "round": "C43",
+      "date": "2026-09-27",
+      "evidence": [
+        "docs/evidence/C43/README.md",
+        "docs/evidence/C43/probe-ac17.txt",
+        "docs/evidence/C43/date-face-census.txt",
+        "docs/evidence/C43/teeth-planted.txt",
+        "docs/evidence/C43/gate-run1.txt",
+        "docs/evidence/C43/gate-run1b-prebackfill.txt",
+        "scripts/quality/evidence_traceability.py"
+      ],
+      "note": "此前没有任何机器面在数「历次里程碑的证据可追溯」。现按判据原文的四问（叙述/日期/身份/命令+exit）加一面「档案是否还在版本库里」逐面读数：53 个轮次目录 / 425 份档案 / 71 份 gate 日志，六个面 narrative=date=identity=command=exit=untracked=0，冻结上限 0 条 ⇒ 今后任何一条新违规都会让 make gate 变红；git log --diff-filter=A 与 git ls-files 的差集为 0（档案从未被删过，删掉一份就带走它的命令与 exit 读数）。日期面被本轮改窄过一次并留了可见的两个计数（header 65/71 + printed by the run 6/71，判据要求两者之和覆盖全部 gate 日志）：A2/A4/A5/C4/C9/C13 六份档案的日期是运行自己打进日志的（loguru 行 / pytest·npm 时钟）而不在抬头 40 行内，原规则量的其实是「日期写在第几行」。收窄理由与六份档案的原始时间戳逐条见 README 第二节；这六份档案一字未改。不证明什么：工具查的是档案里写没写，一份伪造但格式齐全的日志能过 command/exit 面（TEETH-1 反过来用正是这个意思），可交叉的只有 identity 与 git 首见日期，二者都是必要条件。另登记一条流程缺陷：新成员第一跑把自己的运行日志判红了（gate-run1.txt，GATE_EXIT=2，两个 NEW VIOLATION 都点名它），处置是改归档流程（日志先写到 docs/evidence/ 之外、运行返回后落档）而不是改判据，第二跑按新流程绿。"
     },
     "§4|01|65cded67": {
       "state": "unreviewed"
