@@ -1,12 +1,11 @@
-"""
-Data script model for managing data acquisition scripts.
+"""Data script model for managing data acquisition scripts.
 
 Extends the interface concept to include executable scripts with
 scheduling and execution tracking capabilities.
 """
 
 import enum
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy import JSON, Boolean, DateTime, Enum, Integer, String, Text
@@ -27,8 +26,7 @@ class ScriptFrequency(str, enum.Enum):
 
 
 class DataScript(Base):
-    """
-    Data acquisition script metadata model.
+    """Data acquisition script metadata model.
 
     Represents a script that fetches data from akshare or other sources
     and stores it in the database.
@@ -82,13 +80,13 @@ class DataScript(Base):
     is_custom: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(UTC),
+        default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(UTC),
-        onupdate=lambda: datetime.now(UTC),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
 
@@ -116,4 +114,5 @@ class DataScript(Base):
         }
 
     def __repr__(self) -> str:
+        """Debug form carrying script id and script name."""
         return f"<DataScript(script_id={self.script_id}, name={self.script_name})>"

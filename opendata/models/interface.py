@@ -1,11 +1,10 @@
-"""
-Data interface models for managing akshare interfaces.
+"""Data interface models for managing akshare interfaces.
 
 Defines models for data interfaces, categories, and parameters.
 """
 
 import enum
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import JSON, Boolean, DateTime, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -26,8 +25,7 @@ class ParameterType(str, enum.Enum):
 
 
 class InterfaceCategory(Base):
-    """
-    Interface category for grouping data interfaces.
+    """Interface category for grouping data interfaces.
 
     Attributes:
         id: Primary key
@@ -58,12 +56,12 @@ class InterfaceCategory(Base):
     )
 
     def __repr__(self) -> str:
+        """Debug form carrying id and category name."""
         return f"<InterfaceCategory(id={self.id}, name={self.name})>"
 
 
 class DataInterface(Base):
-    """
-    Data interface model representing an akshare data function.
+    """Data interface model representing an akshare data function.
 
     Attributes:
         id: Primary key
@@ -100,7 +98,7 @@ class DataInterface(Base):
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(UTC),
+        default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
 
@@ -113,12 +111,12 @@ class DataInterface(Base):
     )
 
     def __repr__(self) -> str:
+        """Debug form carrying id, name and display name."""
         return f"<DataInterface(id={self.id}, name={self.name}, display_name={self.display_name})>"
 
 
 class InterfaceParameter(Base):
-    """
-    Interface parameter definition.
+    """Interface parameter definition.
 
     Attributes:
         id: Primary key
@@ -158,4 +156,5 @@ class InterfaceParameter(Base):
     interface: Mapped["DataInterface"] = relationship(back_populates="params")
 
     def __repr__(self) -> str:
+        """Debug form carrying id, name and parameter type."""
         return f"<InterfaceParameter(id={self.id}, name={self.name}, type={self.param_type.value})>"

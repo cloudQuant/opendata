@@ -1,11 +1,10 @@
-"""
-Task models for scheduled data acquisition.
+"""Task models for scheduled data acquisition.
 
 Defines models for scheduled tasks and their execution records.
 """
 
 import enum
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy import (
@@ -56,8 +55,7 @@ class TriggeredBy(str, enum.Enum):
 
 
 class ScheduledTask(Base):
-    """
-    Scheduled task model for automated data acquisition.
+    """Scheduled task model for automated data acquisition.
 
     Attributes:
         id: Primary key
@@ -124,13 +122,13 @@ class ScheduledTask(Base):
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(UTC),
+        default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(UTC),
-        onupdate=lambda: datetime.now(UTC),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
 
@@ -161,12 +159,12 @@ class ScheduledTask(Base):
         }
 
     def __repr__(self) -> str:
+        """Debug form carrying id, name and the active flag."""
         return f"<ScheduledTask(id={self.id}, name={self.name}, active={self.is_active})>"
 
 
 class TaskExecution(Base):
-    """
-    Task execution record model.
+    """Task execution record model.
 
     Tracks individual task executions with detailed status and results.
 
@@ -246,13 +244,13 @@ class TaskExecution(Base):
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(UTC),
+        default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(UTC),
-        onupdate=lambda: datetime.now(UTC),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
 
@@ -278,4 +276,8 @@ class TaskExecution(Base):
         }
 
     def __repr__(self) -> str:
-        return f"<TaskExecution(id={self.id}, execution_id={self.execution_id}, status={self.status.value})>"
+        """Debug form carrying id, execution id and status."""
+        return (
+            f"<TaskExecution(id={self.id}, execution_id={self.execution_id}, "
+            f"status={self.status.value})>"
+        )

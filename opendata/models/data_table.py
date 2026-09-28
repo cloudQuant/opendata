@@ -1,10 +1,9 @@
-"""
-Data table model for managing stored data.
+"""Data table model for managing stored data.
 
 Defines model for tracking data tables created by data acquisition.
 """
 
-from datetime import UTC, date, datetime
+from datetime import date, datetime, timezone
 
 from sqlalchemy import BigInteger, Date, DateTime, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -13,8 +12,7 @@ from opendata.core.database import Base
 
 
 class DataTable(Base):
-    """
-    Data table model for tracking stored data.
+    """Data table model for tracking stored data.
 
     Tracks metadata about tables created by data acquisition tasks.
     """
@@ -35,15 +33,16 @@ class DataTable(Base):
     data_end_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
-        default=lambda: datetime.now(UTC),
+        default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
-        default=lambda: datetime.now(UTC),
-        onupdate=lambda: datetime.now(UTC),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
 
     def __repr__(self) -> str:
+        """Debug form carrying id, table name and row count."""
         return f"<DataTable(id={self.id}, table_name={self.table_name}, rows={self.row_count})>"

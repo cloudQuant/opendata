@@ -1,11 +1,10 @@
-"""
-User model and authentication related schemas.
+"""User model and authentication related schemas.
 
 Defines the User database model and related enumerations.
 """
 
 import enum
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, DateTime, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -21,8 +20,7 @@ class UserRole(str, enum.Enum):
 
 
 class User(Base):
-    """
-    User model for authentication and authorization.
+    """User model for authentication and authorization.
 
     Attributes:
         id: Primary key
@@ -51,13 +49,13 @@ class User(Base):
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(UTC),
+        default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(UTC),
-        onupdate=lambda: datetime.now(UTC),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
     last_login: Mapped[datetime | None] = mapped_column(
@@ -70,4 +68,8 @@ class User(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<User(id={self.id}, username={self.username}, email={self.email}, role={self.role.value})>"
+        """Debug form carrying id, username, email and role."""
+        return (
+            f"<User(id={self.id}, username={self.username}, "
+            f"email={self.email}, role={self.role.value})>"
+        )
