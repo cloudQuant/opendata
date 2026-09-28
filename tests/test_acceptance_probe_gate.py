@@ -432,9 +432,16 @@ class TestC51ZeroDepCells:
         } <= broken["AC-16|07"]
 
     def test_the_clean_environment_archive_the_judge_reads_is_shipped(self) -> None:
-        """``archive_blind == 0`` is only a fact while the body it reads is in the tree."""
-        archive = (REPO_ROOT / tool.CLEAN_RUN_EVIDENCE).read_text(encoding="utf-8")
-        assert "round: C51" in archive
+        """``archive_blind == 0`` is only a fact while the body it reads is in the tree.
+
+        The judge reads the newest round's archive rather than one fixed file, so the round pin
+        follows that pick: whatever it reads must declare the round its own directory names.
+        """
+        archive_rel, archive_dir = tool.newest_round_archive(tool.CLEAN_RUN_BASENAME)
+        assert archive_rel != "-", "no round has archived a clean-environment run"
+        archive = (REPO_ROOT / archive_rel).read_text(encoding="utf-8")
+        declared = [line for line in archive.splitlines() if line.startswith("ARCHIVE_ROUND=")]
+        assert declared == [f"ARCHIVE_ROUND={archive_dir}"], f"{archive_rel}: {declared}"
         assert tool.CLEAN_SECTION in archive
         assert "CLEAN_RUN_EXIT=0" in archive
         assert "akshare: absent" in archive and "openbb: absent" in archive

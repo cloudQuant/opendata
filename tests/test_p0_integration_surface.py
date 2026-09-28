@@ -31,6 +31,7 @@ P0_MIGRATION = "alembic_data/versions/20260923-0001_ods_dwd_p0.py"
 P0_INTEGRATION_MODULES = frozenset(
     {
         "tests/test_data_query_api.py",
+        "tests/test_data_query_http_warehouse.py",
         "tests/test_dwd_merge.py",
         "tests/test_index_constituent_asof.py",
         "tests/test_ods_writer.py",

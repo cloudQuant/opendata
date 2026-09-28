@@ -1,0 +1,88 @@
+=== provenance (captured before the run) ===
+date: 2026-09-28T06:15:39+02:00
+branch: dev
+head: 4c0633e
+python: Python 3.13.5
+node: v25.1.0
+git status --porcelain:
+A  docs/evidence/C55/bandit-selfdev-regression.txt
+A  docs/evidence/C55/probe-ac11-items.txt
+A  docs/evidence/C55/probe-all.txt
+A  docs/evidence/C55/self-test.txt
+A  docs/evidence/C55/source-leg-enum-fix.txt
+ M docs/quality/acceptance-probe-faces.json
+ M opendata/api/data_query.py
+ M scripts/quality/acceptance_item_probe.py
+A  tests/test_data_query_http_warehouse.py
+
+===== gate run 1 (pre-backfill): RED on member 5 of 17 =====
+===== gate: brand-check =====
+python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:112
+  .env.example:113
+  .env.example:114
+  .env.example:115
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+===== gate: zero-dep-check =====
+python scripts/codemod/verify_no_akshare.py --self-test
+OK: scanner self-test passed (8 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+python scripts/codemod/verify_no_akshare.py
+OK: 517 file(s) walked (opendata=193, opendata_client=2, opendata_fuyao=9, opendata_http=313), python 3.13, scanner 2; no new upstream references (frozen baseline: 3).
+===== gate: secret-check =====
+python scripts/quality/secret_scan_check.py
+
+    ○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
+
+[90m6:16AM[0m [32mINF[0m [1m243 commits scanned.[0m
+[90m6:16AM[0m [32mINF[0m [1mscanned ~83847839 bytes (83.85 MB) in 33.6s[0m
+[90m6:16AM[0m [32mINF[0m [1mno leaks found[0m
+device: gitleaks 8.30.1, command: gitleaks detect --source . --config .gitleaks.toml --redact
+===== gate: ledger-check =====
+python scripts/quality/acceptance_ledger_check.py
+census: items=130 proven=35 gap=8 unreviewed=87 ticked=35
+OK: items=130 proven=35 gap=8 unreviewed=87 ticked=35 across 22 group(s) and 19 §10 row(s) reconcile.
+===== gate: evidence-traceability =====
+python scripts/quality/evidence_traceability.py
+# evidence traceability over docs/evidence/
+  rounds        = 65
+  files census  = 591 (gate logs: 105)
+  dates in gate logs = header 99/105, printed by the run 6/105
+  branch named in header = 93/105 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 1
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 0
+    narrative: docs/evidence/C55/
+NEW VIOLATION: docs/evidence/C55/#narrative
+
+FAIL: 1 new traceability violation(s) against a 0-entry baseline.
+make[1]: *** [evidence-traceability] Error 1
+make: *** [gate] Error 2
+real 59.71
+user 212.66
+sys 11.33
+GATE_EXIT=2

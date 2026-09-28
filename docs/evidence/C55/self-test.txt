@@ -1,0 +1,37 @@
+self-test.txt —— C55 判定工具反事实自检（全表，三遍）
+===============================================
+round: C55   head: 4c0633e + 本轮未提交的改动
+command: python -u scripts/quality/acceptance_item_probe.py --self-test
+exit: SELF_TEST_EXIT=0（第三遍，下方逐字正文）
+
+第三遍时间（两个钟各印一次，避免再出现「标注与钟面不一致」这类无法复核的表头）：
+  end   date     = Mon Sep 28 08:01:58 CEST 2026
+  end   date -u  = Mon Sep 28 06:01:58 UTC 2026
+  start          = end - real(397.17 s) = 07:55:21 本地 / 05:55:21 UTC
+readings(第三遍): 反事实面：41/41 个探针走到了判定，325 条 break 各被施加一次、每条都要求把干净读数打回 gap
+
+  三遍的 break 总数与来源（283 条按 HEAD 的 PROBES 表数出，逐项 diff 见下）：
+    283  HEAD（36 个探针，commit 4c0633e 的 scripts/quality/acceptance_item_probe.py）
+    +37  本轮新登记 5 个 AC-11 探针（|01 7／|02 7／|03 9／|04 6／|05 8）  → 第二遍 320
+    + 1  AC-16|07 加「正文 ARCHIVE_ROUND 必须等于所在目录」的反事实（10 → 11）→ 321
+    + 4  AC-11|04 加 EXPLAIN 面的四条反事实（6 → 10）                    → 第三遍 325
+  核对方式：python -c 分别装载 HEAD 版与工作树版模块，len(p.breaks) 按 item 求和 ——
+  HEAD=36 探针/283 条；工作树=41 探针/325 条；两版逐 item 只有 6 行不同
+  （AC-11|01…|05 从 0 起，AC-16|07 10 → 11），其余 30 个探针的反事实数一字未动。
+
+note: 本轮同一命令跑过三遍。第一遍（05:47 前后）报 39/41、278 条 break，红在 AC-17|03／AC-17|05
+      两格「没有任何读数能过判定」——走不到判定的探针，它的 break 一条也不会被施加，所以
+      320 − 278 = 42 正好是这两格的反事实数（|03 19 条 + |05 23 条，按 PROBES 表数出来的）。
+      根因是本轮自己的探针代码把 bandit_selfdev 从 3 抬到 4；完整归因与处置见
+      bandit-selfdev-regression.txt，第一遍的逐字输出也抄在那里。
+      第二遍（320 条）之后，AC-16|07 与 AC-11|04 两格各加了新的反事实，所以第三遍的总数比
+      第二遍多 5 条 —— 新增的都是「要求更多」的反事实，没有一条是把旧判据改窄。
+      第二遍表头写的时刻是 06:03 → 06:10，本次无法再从档案复核它用的是哪个钟，
+      因此第三遍把两个钟的输出都逐字印在上面，之后 C 轮表头一律双钟。
+
+---- 第三遍逐字正文（5 行，成功路径只打印这几行） ----
+  - 反事实面：41/41 个探针走到了判定，325 条 break 各被施加一次、每条都要求把干净读数打回 gap
+OK: 41 probe(s) measured; every judge is reachable from its declared repair, and all 325 counterfact(s) flip a clean reading back to a gap.
+real 397.17
+user 513.83
+sys 47.33

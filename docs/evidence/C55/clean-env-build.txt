@@ -1,0 +1,27 @@
+clean-env-build.txt —— C55 那一遍干净 venv 的构造过程（AC-16|07 的 B 段解释器就是它）
+====================================================================
+round: C55   head: 4c0633e + 本轮未提交的改动
+time: 2026-09-28 07:38 +0200   body: 未裁剪，15 行
+command: VENV=/tmp/c55-clean/venv bash docs/evidence/C51/build_clean_env.sh
+note: 构造仪器沿用 C51 的那一份（它装的是 pyproject 声明的 .[web,dev]，不是测量），本轮只换输出目录重跑；
+      运行留档见 clean-env-integration-run.txt，本轮新增的运行仪器是 run_p0_integration_surface.sh
+
+===== 头部读数（全部从下面的正文 grep 出来）=====
+pip list 行数（含表头两行）: 131
+正文里 akshare 记为 absent 的行数: 1
+
+=== step 1: create venv (no system site-packages) ===
+=== step 2: interpreter of the venv ===
+Python 3.13.5 | packaged by Anaconda, Inc. | (main, Jun 12 2025, 11:23:37) [Clang 14.0.6 ]
+=== step 3: install the declared dependency set only ===
+PIP_INSTALL_EXIT=0
+=== step 4: is akshare/openbb present in this env? ===
+akshare: absent (clean)
+openbb: absent (clean)
+=== step 5: pip list, upstream names filtered out of the whole tree ===
+grep: 0 lines mentioning akshare/openbb in pip list
+     131
+=== step 6: dependency tree consistency ===
+No broken requirements found.
+BUILD_DONE rc=0
+BUILD_EXIT=0

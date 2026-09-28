@@ -1,0 +1,146 @@
+probe-ac11-items.txt —— C55 本轮五条 AC-11 条目级判定面的最终读数（第二遍，含 AC-11|04 的 EXPLAIN 面）
+================================================================
+round: C55   head: 4c0633e + 本轮未提交的改动（opendata/api/data_query.py、tests/test_data_query_http_warehouse.py、scripts/quality/acceptance_item_probe.py、scripts/ops/window_partition_explain.py）
+time: 08:02:56 本地 → 08:03:18 本地（06:02:56 → 06:03:18 UTC，双钟各印一次；real 22.38 s 见正文末三行）
+command: python -u scripts/quality/acceptance_item_probe.py --item 'AC-11|01' --item 'AC-11|02' --item 'AC-11|03' --item 'AC-11|04' --item 'AC-11|05'
+exit: ITEMS_EXIT=0
+readings: 5 条 VERDICT —— census: gap=1, proven=4（|01 proven、|02 gap、|03 proven、|04 proven、|05 proven）
+note: 第一遍（06:10 前后）读数是 gap=2, proven=3，|04 红在 explain_faces=0：判据点名的 EXPLAIN 在
+      412 个代码文件里命中 0 处，因为仪器只能写 ``"EXPLAIN " + sql``（SQL 必须来自 build_data_select
+      才谈得上「这个端点的查询」），而当时的代理正则只认 ``EXPLAIN SELECT`` 这种整句字面量。
+      处置是补上真机 EXPLAIN 面并把代理扩到能认出拼接形式（两种形状都在下面的读数行里点名），
+      判据本身没有改窄：|04 现在额外要求 4 条留档事实（已落地分区表数 > 0、全分区扫描数 = 0、
+      留档轮次与所在目录一致、留档摘要对当下 query.py），逐字读数见下面的 |04 段与
+      window-pruning-explain.txt。
+      |02 仍是 gap，归因与翻正路径不变（官方对照腿要取 akshare 序列并留档一次真机 run）。
+      每条探针各自的 pytest 平面在下面的读数行里给分母（nodes passed / runs）。
+
+---- 逐字正文 ----
+
+### AC-11|01  (document line 199)
+判据原文：`GET /api/v1/data/{asset_class}/{domain}` 支持 symbols/start/end/source/layer/**adjust**/fields/分页，默认 `layer=dwd`、`adjust=none`；响应 schema 与契约一致；OpenAPI 文档生成
+本探针：路由与 OpenAPI 在、判据点名的 9 个入参真在签名里、默认层与复权就是 dwd/none、响应按契约列交出
+台账现状：state=unreviewed，文档勾选=False
+  - 路由/契约面（OpenAPI 两条 + 替身仓库 HTTP 四条）: 6/6 nodes passed
+  - 路由形状 ``/{asset_class}/{domain}`` = yes，载荷同时交回 columns 与 rows（响应 schema 可对契约） = yes
+  - 判据点名的 9 个入参都在处理器的签名里：缺 = -（AST 读数，注释里写什么不算）
+  - 声明的默认值：layer = dwd，adjust = none；这两条是契约的一部分，改一个就等于改了默认口径
+VERDICT AC-11|01: proven
+
+### AC-11|02  (document line 200)
+判据原文：**`adjust=qfq|hfq` 服务端计算**：同一标的 qfq 序列与 akshare 官方 qfq 对照一致（容忍度内）
+本探针：qfq/hfq 由服务端按因子表合成（缺因子 400、缺表 501），且官方对照腿按判据取 akshare 序列并留档一次真机 run
+台账现状：state=unreviewed，文档勾选=False
+  - 复权面（HTTP 五条 + 因子算术两条 + 对照仪器判定四条）: 11/11 nodes passed
+  - 服务端合成 = yes（``_adjusted_rows`` 真的调 ``apply_adjust_to_rows``，不是把参数读一遍就丢掉）
+  - 判据点名的官方面：``scripts/ops/qfq_official_check.py`` 的 ``_official_series`` 取的腿是 sina，留档 docs/evidence/B4/qfq-official-check.txt 头部记的腿是 sina；判据要的是 akshare 官方 qfq
+  - 留档那次真机 run：PASS 16 行 / FAIL 0 行；补齐用的 akshare 官方序列模块 opendata_http/stock_feature/stock_hist_em.py 在位 = yes
+  - 补齐到可判：official_leg: sina -> akshare; run_official_leg: sina -> akshare
+VERDICT AC-11|02: gap — 这一条的前半（服务端按因子表合成 qfq/hfq，缺因子 400、缺表 501）已经是实测面；后半写的是「与 akshare 官方 qfq 对照一致」，而现在唯一的官方对照腿取的是 sina stock_zh_a_daily —— sina 是另一条源和另一条因子链，作为独立对照比 akshare 自己更强，但它不是判据点名的那个名字；换成 akshare 官方序列并留档一次真机 run 才翻正
+
+### AC-11|03  (document line 201)
+判据原文：**参数安全**：`fields` 白名单校验（`fields=open;DROP TABLE` 返回 400）；`layer`/`source`/`adjust` 枚举校验；`symbols` 绑定参数；导出 CSV 公式注入转义
+本探针：判据点名的四个安全面各自有实测：白名单 400 且不执行、三个枚举、符号绑定、导出公式转义发生在 handler 里
+台账现状：state=unreviewed，文档勾选=False
+  - 参数安全面（HTTP 13 条，全部走真路由）: 13/13 nodes passed
+  - 判据那条字面载荷 ``fields=open;DROP TABLE`` 出现在用例里 = yes；这条断言除了 400 还回读表里的行数，所以「没执行」是被量的而不是被说的
+  - 枚举校验：layer/adjust 的注解里还有不是 Literal 的吗 = -；source 按注册腿校验 = yes（判据列了三个枚举面，少一个就只做到两个）
+  - symbols 的取值进的是绑定字典 = yes，SQL 文本里出现的只有 ``:{name}`` 占位 = yes；导出公式转义发生在 handler 里 = yes（``_csv_stream`` 调 ``serialize_for_csv``）
+VERDICT AC-11|03: proven
+
+### AC-11|04  (document line 202)
+判据原文：**默认时间窗**：不带日期区间的查询不会触发全分区扫描（EXPLAIN 验证）
+本探针：无区间请求仍被默认窗与行数上限夹住（实测绿），且判据点名的 EXPLAIN 真的发到了跑着的 MySQL 上：每张已落地的分区表都只读到部分分区，留档按查询层摘要钉住
+台账现状：state=unreviewed，文档勾选=False
+  - 时间窗面（HTTP 两条 + 边界单元三条）: 5/5 nodes passed
+  - 默认窗 = 365 天，由 ``window_bounds`` 在无区间时补上 = yes；``build_data_select`` 的 ``LIMIT :limit`` 行数上限 = yes
+  - 判据点名的验证方式：在 412 个代码文件里找 ``EXPLAIN [ANALYZE] SELECT|FORMAT`` 形状的语句，命中 1 处（scripts/ops/window_partition_explain.py）
+  - 执行计划留档（读的是最新那一份：docs/evidence/C55/window-pruning-explain.txt，正文声明轮次 C55，与所在目录一致 = yes）：已落地且带分区的 dwd 表 6 张，其中计划只读到部分分区的 6 张、读到全部分区的 0 张
+  - 留档属于哪一版拼 SQL 的代码：正文 ``query_module_sha=41eee85c2bae`` 对当下 ``opendata/pipeline/query.py`` = 41eee85c2bae → yes
+VERDICT AC-11|04: proven
+
+### AC-11|05  (document line 203)
+判据原文：`GET /api/v1/data/domains/{domain}/diff-report` 可查差异报告
+本探针：diff-report 门按域取 dq_diff_report 的样本差异行，受同一套 scope/batch/limit 约束
+台账现状：state=unreviewed，文档勾选=False
+  - 差异报告面（HTTP 四条 + OpenAPI 一条）: 5/5 nodes passed
+  - 路由 ``/domains/{domain}/diff-report`` 已注册并进 OpenAPI = yes，读的是 dq_diff_report（与校对器写的明细表同一个常量） = yes
+  - 门禁 = yes（按域的 scope 先判），``batch_id`` 只取一次校对 = yes，``limit`` 与查询页同带上限 = yes
+  - 四条 HTTP 用例分别钉住：差异行真的交出来、按 batch_id 选一次跑、limit 有上限、表还没迁移时读出空而不是 500
+VERDICT AC-11|05: proven
+
+census: gap=1, proven=4
+（5 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+real 22.38
+user 20.07
+sys 1.40
+
+
+===== 第三遍（仪器 mypy 返工、留档重跑之后；读数与第二遍逐字相同） =====
+time: 08:14:19 本地 → 08:14:41 本地（06:14:19 → 06:14:41 UTC）；real 21.76 s
+command: python -u scripts/quality/acceptance_item_probe.py --item 'AC-11|01' --item 'AC-11|02' --item 'AC-11|03' --item 'AC-11|04' --item 'AC-11|05'
+exit: ITEMS_EXIT=0
+readings: 5 条 VERDICT —— census: gap=1, proven=4（与第二遍同）
+  为什么要再跑一遍：仪器改过类型（`dict[str, object]` → `TypedDict`），留档是重跑出来的那一份，
+  `query_module_sha` 仍是 41eee85c2bae（`opendata/pipeline/query.py` 没动），
+  摘要钉住的口径要求留档与读数同源，所以这一遍是必须的而不是冗余。
+
+---- 第三遍逐字正文 ----
+
+### AC-11|01  (document line 199)
+判据原文：`GET /api/v1/data/{asset_class}/{domain}` 支持 symbols/start/end/source/layer/**adjust**/fields/分页，默认 `layer=dwd`、`adjust=none`；响应 schema 与契约一致；OpenAPI 文档生成
+本探针：路由与 OpenAPI 在、判据点名的 9 个入参真在签名里、默认层与复权就是 dwd/none、响应按契约列交出
+台账现状：state=unreviewed，文档勾选=False
+  - 路由/契约面（OpenAPI 两条 + 替身仓库 HTTP 四条）: 6/6 nodes passed
+  - 路由形状 ``/{asset_class}/{domain}`` = yes，载荷同时交回 columns 与 rows（响应 schema 可对契约） = yes
+  - 判据点名的 9 个入参都在处理器的签名里：缺 = -（AST 读数，注释里写什么不算）
+  - 声明的默认值：layer = dwd，adjust = none；这两条是契约的一部分，改一个就等于改了默认口径
+VERDICT AC-11|01: proven
+
+### AC-11|02  (document line 200)
+判据原文：**`adjust=qfq|hfq` 服务端计算**：同一标的 qfq 序列与 akshare 官方 qfq 对照一致（容忍度内）
+本探针：qfq/hfq 由服务端按因子表合成（缺因子 400、缺表 501），且官方对照腿按判据取 akshare 序列并留档一次真机 run
+台账现状：state=unreviewed，文档勾选=False
+  - 复权面（HTTP 五条 + 因子算术两条 + 对照仪器判定四条）: 11/11 nodes passed
+  - 服务端合成 = yes（``_adjusted_rows`` 真的调 ``apply_adjust_to_rows``，不是把参数读一遍就丢掉）
+  - 判据点名的官方面：``scripts/ops/qfq_official_check.py`` 的 ``_official_series`` 取的腿是 sina，留档 docs/evidence/B4/qfq-official-check.txt 头部记的腿是 sina；判据要的是 akshare 官方 qfq
+  - 留档那次真机 run：PASS 16 行 / FAIL 0 行；补齐用的 akshare 官方序列模块 opendata_http/stock_feature/stock_hist_em.py 在位 = yes
+  - 补齐到可判：official_leg: sina -> akshare; run_official_leg: sina -> akshare
+VERDICT AC-11|02: gap — 这一条的前半（服务端按因子表合成 qfq/hfq，缺因子 400、缺表 501）已经是实测面；后半写的是「与 akshare 官方 qfq 对照一致」，而现在唯一的官方对照腿取的是 sina stock_zh_a_daily —— sina 是另一条源和另一条因子链，作为独立对照比 akshare 自己更强，但它不是判据点名的那个名字；换成 akshare 官方序列并留档一次真机 run 才翻正
+
+### AC-11|03  (document line 201)
+判据原文：**参数安全**：`fields` 白名单校验（`fields=open;DROP TABLE` 返回 400）；`layer`/`source`/`adjust` 枚举校验；`symbols` 绑定参数；导出 CSV 公式注入转义
+本探针：判据点名的四个安全面各自有实测：白名单 400 且不执行、三个枚举、符号绑定、导出公式转义发生在 handler 里
+台账现状：state=unreviewed，文档勾选=False
+  - 参数安全面（HTTP 13 条，全部走真路由）: 13/13 nodes passed
+  - 判据那条字面载荷 ``fields=open;DROP TABLE`` 出现在用例里 = yes；这条断言除了 400 还回读表里的行数，所以「没执行」是被量的而不是被说的
+  - 枚举校验：layer/adjust 的注解里还有不是 Literal 的吗 = -；source 按注册腿校验 = yes（判据列了三个枚举面，少一个就只做到两个）
+  - symbols 的取值进的是绑定字典 = yes，SQL 文本里出现的只有 ``:{name}`` 占位 = yes；导出公式转义发生在 handler 里 = yes（``_csv_stream`` 调 ``serialize_for_csv``）
+VERDICT AC-11|03: proven
+
+### AC-11|04  (document line 202)
+判据原文：**默认时间窗**：不带日期区间的查询不会触发全分区扫描（EXPLAIN 验证）
+本探针：无区间请求仍被默认窗与行数上限夹住（实测绿），且判据点名的 EXPLAIN 真的发到了跑着的 MySQL 上：每张已落地的分区表都只读到部分分区，留档按查询层摘要钉住
+台账现状：state=unreviewed，文档勾选=False
+  - 时间窗面（HTTP 两条 + 边界单元三条）: 5/5 nodes passed
+  - 默认窗 = 365 天，由 ``window_bounds`` 在无区间时补上 = yes；``build_data_select`` 的 ``LIMIT :limit`` 行数上限 = yes
+  - 判据点名的验证方式：在 412 个代码文件里找真发出去的 EXPLAIN（整句字面量 ``EXPLAIN [ANALYZE] SELECT|FORMAT`` 与拼接前缀 ``"EXPLAIN " +`` 两种形状，仪器必须拼 SQL 才谈得上「这个端点的查询」），命中 1 处（scripts/ops/window_partition_explain.py）
+  - 执行计划留档（读的是最新那一份：docs/evidence/C55/window-pruning-explain.txt，正文声明轮次 C55，与所在目录一致 = yes）：已落地且带分区的 dwd 表 6 张，其中计划只读到部分分区的 6 张、读到全部分区的 0 张
+  - 留档属于哪一版拼 SQL 的代码：正文 ``query_module_sha=41eee85c2bae`` 对当下 ``opendata/pipeline/query.py`` = 41eee85c2bae → yes
+VERDICT AC-11|04: proven
+
+### AC-11|05  (document line 203)
+判据原文：`GET /api/v1/data/domains/{domain}/diff-report` 可查差异报告
+本探针：diff-report 门按域取 dq_diff_report 的样本差异行，受同一套 scope/batch/limit 约束
+台账现状：state=unreviewed，文档勾选=False
+  - 差异报告面（HTTP 四条 + OpenAPI 一条）: 5/5 nodes passed
+  - 路由 ``/domains/{domain}/diff-report`` 已注册并进 OpenAPI = yes，读的是 dq_diff_report（与校对器写的明细表同一个常量） = yes
+  - 门禁 = yes（按域的 scope 先判），``batch_id`` 只取一次校对 = yes，``limit`` 与查询页同带上限 = yes
+  - 四条 HTTP 用例分别钉住：差异行真的交出来、按 batch_id 选一次跑、limit 有上限、表还没迁移时读出空而不是 500
+VERDICT AC-11|05: proven
+
+census: gap=1, proven=4
+（5 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+real 21.76
+user 19.79
+sys 1.35

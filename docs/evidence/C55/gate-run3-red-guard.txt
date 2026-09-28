@@ -1,0 +1,173 @@
+# C55 门禁第 3 遍：红在 test-cov，三个失败全部由本轮自己的改动引起
+
+## 0. 这一遍的出处
+
+- 命令：`date; /usr/bin/time -p make gate 2>&1 | tee /tmp/c55_gate_run3.txt; echo GATE_EXIT=$?; date -u`
+- 分支/HEAD：`dev` @ 4c0633e，工作树里是本轮已 `git add` 的 C55 路径 + 两个测试文件的未 staged 修复
+- 起钟（本地，打印）：Mon Sep 28 08:35:01 CEST 2026
+- 止钟（UTC，打印）：Mon Sep 28 06:44:58 UTC 2026
+- 止钟（本地，由上面这条 UTC 换算）：Mon Sep 28 08:44:58 CEST 2026
+- 起钟（UTC，由止钟 − 596.45s 推得）：Mon Sep 28 06:35:01 UTC 2026；与打印的本地起钟相差 0.55s（`date` 自身的开销）
+- 耗时：real 596.45（`/usr/bin/time -p`）
+- 退出码：GATE_EXIT=2，链路 `make[1]: *** [test-cov] Error 1` → `make: *** [gate] Error 2`
+- 成员：12 个跑到，前 11 个没有 Error，红在第 12 个
+  （gate: test-cov）—— 一遍完整成员清单：
+    gate: brand-check
+    gate: zero-dep-check
+    gate: secret-check
+    gate: ledger-check
+    gate: evidence-traceability
+    gate: js-points-check
+    gate: loguru-check
+    gate: a2-check
+    gate: quality-ratchet
+    gate: public-api-quality
+    gate: acceptance-probe-check
+    gate: test-cov
+- 测试汇总（逐字）：============ 3 failed, 3362 passed, 6 skipped in 139.56s (0:02:19) =============
+- 覆盖率（逐字）：Required test coverage of 84% reached. Total coverage: 90.07%
+- 点名失败的节点（3 条，逐字）：
+    FAILED tests/test_acceptance_probe_gate.py::TestC51ZeroDepCells::test_the_judge_and_the_guard_module_count_the_same_surface
+    FAILED tests/test_acceptance_probe_gate.py::TestC51ZeroDepCells::test_the_clean_environment_archive_the_judge_reads_is_shipped
+    FAILED tests/test_p0_integration_surface.py::test_the_marked_set_is_the_reviewed_set
+
+前 11 个成员全绿这一事实本身是本遍最有信息量的部分：第 11 个成员 `acceptance-probe-check` 在 staged
+树上跑通（墙钟、五格读数、反事实条数与 `stale-proof=0` 逐字记在同目录 `gate-check-final.txt`，
+本遍不复制一遍）。红的是**跑全量测试**
+的那一个成员，而它红在三条本轮亲手写坏的地方 —— 这两个读数合起来才是这一轮的形状。
+
+## 1. 归因一：新的入口级模块进了选择器，reviewed 清单没跟上（两条红）
+
+本轮新建的 `tests/test_data_query_http_warehouse.py`（23 例，`pytestmark = integration`）被
+`-m "integration and not e2e"` 收进来了，而把这个集合称为「P0 域集成测试」的**评审清单**
+`P0_INTEGRATION_MODULES` 里没有它 —— 于是同一个面被两台仪器量出了两种结果：
+
+- `tests/test_p0_integration_surface.py::test_the_marked_set_is_the_reviewed_set`
+- `tests/test_acceptance_probe_gate.py::TestC51ZeroDepCells::test_the_judge_and_the_guard_module_count_the_same_surface`
+  （判据 `tool.integration_units_now()` ↔ 守卫模块的 `declared`，两边必须逐字相等）
+
+处置：**评审后把这一条加进清单**。这份清单自己的注释写着「Adding one is a review step: it changes
+what "the P0 domain integration tests" means」，所以这里就是一次真实的评审：新模块是 P0 域
+（`stock_daily`/`stock_adjust`）走真 SQL 引擎的入口级面，属于这个分母；而 C55 重跑的干净环境留档
+`docs/evidence/C55/clean-env-integration-run.txt` 里已经点名它 48 次 —— 加进清单不是
+空话，判据 AC-16|07 的 `archive_blind` 面量的就是「留档有没有覆盖每一个在集合里的模块」。
+
+没走的路，两条都不走：① 摘掉新模块的 `integration` 标记（等于把 23 条用例从 AC-16|07 的分母里拿掉，
+为了红变绿而把判据要量的面改小）；② 把清单改成 `<=`（`test_the_marked_set_is_the_reviewed_set`
+的判据是「分母不许意外漂移，两个方向都不许」，改窄比较就是放弃那个方向）。
+
+## 2. 归因二：留档定位改名，守卫用例还按旧常量读（一条红）
+
+本轮为了 AC-11|04 把「按轮次扫描留档」做成通用工具：`newest_round_archive(basename)`
+（AC-11|04 用同一把尺子定位 `window-pruning-explain.txt`），AC-16|07 的留档常量随之从
+`CLEAN_RUN_EVIDENCE`（一个固定路径）变成
+`CLEAN_RUN_BASENAME`（一个文件名 + 目录名里的轮次标号），判据现在读的是**最新一轮**那一份，并要求
+它正文声明的 `ARCHIVE_ROUND=` 与所在目录名相等（拷一份旧档到新目录会撞这条）。
+守卫用例 `test_the_clean_environment_archive_the_judge_reads_is_shipped` 仍按旧名字读 ⇒
+`AttributeError: module ... has no attribute 'CLEAN_RUN_EVIDENCE'`。
+
+处置是让用例钉的对象跟着判据走：**读判据实际会读到的那一份**，钉它自己声明的轮次、
+`CLEAN_SECTION`、`CLEAN_RUN_EXIT=0`、两个上游包 absent、选择器至少出现 3 次 —— 一条钉子都没少，
+只是不再钉「历史上那次是 C51」。`docs/evidence/C51/clean-env-integration-run.txt` 一字未动。
+
+没走的路：把 `newest_round_archive` 退回固定路径（那是为了让一条用例绿而把判据读窄），
+以及在用例里 `getattr(tool, "CLEAN_RUN_EVIDENCE", ...)` 兜底（把 AttributeError 变成静默跳过）。
+
+## 3. 门禁里的 FAILURES 段（未裁剪，逐字）
+
+```
+=================================== FAILURES ===================================
+_ TestC51ZeroDepCells.test_the_judge_and_the_guard_module_count_the_same_surface _
+[gw0] darwin -- Python 3.13.5 /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python3.13
+tests/test_acceptance_probe_gate.py:394: in test_the_judge_and_the_guard_module_count_the_same_surface
+    assert set(tool.integration_units_now()) == declared
+E   AssertionError: assert {'tests/test_...ders.py', ...} == {'tests/test_...xecutor', ...}
+E     
+E     Extra items in the left set:
+E     'tests/test_data_query_http_warehouse.py'
+E     
+E     Full diff:
+E       {
+E           'tests/test_data_query_api.py',...
+E     
+E     ...Full output truncated (9 lines hidden), use '-vv' to show
+_ TestC51ZeroDepCells.test_the_clean_environment_archive_the_judge_reads_is_shipped _
+[gw0] darwin -- Python 3.13.5 /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python3.13
+tests/test_acceptance_probe_gate.py:436: in test_the_clean_environment_archive_the_judge_reads_is_shipped
+    archive = (REPO_ROOT / tool.CLEAN_RUN_EVIDENCE).read_text(encoding="utf-8")
+                           ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'scripts.quality.acceptance_item_probe' has no attribute 'CLEAN_RUN_EVIDENCE'. Did you mean: 'CLEAN_RUN_BASENAME'?
+___________________ test_the_marked_set_is_the_reviewed_set ____________________
+[gw7] darwin -- Python 3.13.5 /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python3.13
+tests/test_p0_integration_surface.py:143: in test_the_marked_set_is_the_reviewed_set
+    assert {rel for rel, _ in _marked_units()} == {*P0_INTEGRATION_MODULES, *P0_INTEGRATION_CLASSES}
+E   AssertionError: assert {'tests/test_...ders.py', ...} == {'tests/test_...xecutor', ...}
+E     
+E     Extra items in the left set:
+E     'tests/test_data_query_http_warehouse.py'
+E     
+E     Full diff:
+E       {
+E           'tests/test_data_query_api.py',...
+E     
+E     ...Full output truncated (9 lines hidden), use '-vv' to show
+```
+
+## 4. 修复 diff（`git diff`，两处，未裁剪）
+
+```
+diff --git a/tests/test_acceptance_probe_gate.py b/tests/test_acceptance_probe_gate.py
+index 067cb24..995de9f 100644
+--- a/tests/test_acceptance_probe_gate.py
++++ b/tests/test_acceptance_probe_gate.py
+@@ -432,9 +432,16 @@ class TestC51ZeroDepCells:
+         } <= broken["AC-16|07"]
+ 
+     def test_the_clean_environment_archive_the_judge_reads_is_shipped(self) -> None:
+-        """``archive_blind == 0`` is only a fact while the body it reads is in the tree."""
+-        archive = (REPO_ROOT / tool.CLEAN_RUN_EVIDENCE).read_text(encoding="utf-8")
+-        assert "round: C51" in archive
++        """``archive_blind == 0`` is only a fact while the body it reads is in the tree.
++
++        The judge reads the newest round's archive rather than one fixed file, so the round pin
++        follows that pick: whatever it reads must declare the round its own directory names.
++        """
++        archive_rel, archive_dir = tool.newest_round_archive(tool.CLEAN_RUN_BASENAME)
++        assert archive_rel != "-", "no round has archived a clean-environment run"
++        archive = (REPO_ROOT / archive_rel).read_text(encoding="utf-8")
++        declared = [line for line in archive.splitlines() if line.startswith("ARCHIVE_ROUND=")]
++        assert declared == [f"ARCHIVE_ROUND={archive_dir}"], f"{archive_rel}: {declared}"
+         assert tool.CLEAN_SECTION in archive
+         assert "CLEAN_RUN_EXIT=0" in archive
+         assert "akshare: absent" in archive and "openbb: absent" in archive
+diff --git a/tests/test_p0_integration_surface.py b/tests/test_p0_integration_surface.py
+index 3cbeebf..7000804 100644
+--- a/tests/test_p0_integration_surface.py
++++ b/tests/test_p0_integration_surface.py
+@@ -31,6 +31,7 @@ P0_MIGRATION = "alembic_data/versions/20260923-0001_ods_dwd_p0.py"
+ P0_INTEGRATION_MODULES = frozenset(
+     {
+         "tests/test_data_query_api.py",
++        "tests/test_data_query_http_warehouse.py",
+         "tests/test_dwd_merge.py",
+         "tests/test_index_constituent_asof.py",
+         "tests/test_ods_writer.py",
+```
+
+## 5. 复跑读数（两个守卫模块整文件，未裁剪尾部）
+
+```
+
+tests/test_p0_integration_surface.py ....                                [  9%]
+tests/test_acceptance_probe_gate.py .................................... [ 95%]
+..                                                                       [100%]
+
+============================= 42 passed in 10.54s ==============================
+```
+
+退出码：`0`
+
+## 6. 本遍之后
+
+修复过了这两处之后 `make gate` 整遍重跑，完整未裁剪日志与它的双钟表头记在同目录的
+`gate-run4-green.txt`；那一遍才是 C55 的收口读数，本遍留的是「红在哪里、为什么红、改了什么」。

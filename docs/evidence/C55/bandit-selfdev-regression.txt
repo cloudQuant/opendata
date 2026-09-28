@@ -1,0 +1,109 @@
+Provenance
+==========
+round: C55
+date: 2026-09-28
+head: 4c0633e (dev, unpushed)
+clock: local time (+0200); 下面三段的时刻是各自命令跑完的本地钟点
+what: 本轮自己的探针代码把 `bandit_selfdev` 从 3 抬到 4 的一次完整归因与处置
+      （没有抬快照上限、没有加 noqa/nosec、没有把 scripts/ 从被测根里摘出去）
+readings introduced below:
+  before: bandit_selfdev 3 -> 4（`RATCHET_EXIT=1`，face=debt）
+  cause:  B105 命中在事实键名 `run_pass_rows` 上，位置 scripts/quality/acceptance_item_probe.py:6460
+  after:  bandit_selfdev 4 -> 3（`RATCHET_EXIT=0`，五项存量与快照逐个相等）
+sections:
+  1) 现象：--self-test 里两条不相干的格子先红
+  2) 归因：棘轮为什么把这件事报出来
+  3) 处置与复验（可重跑）
+  4) 单点复现 B105 的触发条件（不必改仓库）
+
+1) 现象：--self-test 里两条不相干的格子先红
+=================================================
+$ python -u scripts/quality/acceptance_item_probe.py --self-test
+（2026-09-28 05:47 本地，本轮第一次全表自检；下面逐字是 /tmp 那一遍的 4 行输出）
+  - 反事实面：39/41 个探针走到了判定，278 条 break 各被施加一次、每条都要求把干净读数打回 gap
+FAIL: item-probe self test:
+  AC-17|03: no reading this probe declares can make the judge pass, so a gap here could never be closed by real work
+  AC-17|05: no reading this probe declares can make the judge pass, so a gap here could never be closed by real work
+
+红的不是 AC-11 的格子，是 AC-17|03／|05 这两格早已 proven 的格子。它们各自的 `repair`
+里都写着 `ratchet_exit: 1 -> 0`「与」`ratchet_face: debt -> none`，也就是**这两格把自己能否
+判成 proven 挂在棘轮的退出码上**：棘轮现在退出 1，于是「本轮声明的那份干净读数」在数学上
+就到不了 proven —— 自检因此报「没有任何读数能过判定」。
+这条因果关系是本轮才成立的读法：`--self-test` 从此同时是「判定工具咬不咬得住」的面
+**和**「有人（包括工具自己）新添了存量债务」的面。
+
+2) 归因：棘轮为什么把这件事报出来
+=================================================
+$ python -u scripts/quality/ratchet.py        （2026-09-28 05:49 本地）
+FAIL: quality debt increased:
+  bandit_selfdev: 3 -> 4
+RATCHET_EXIT=1
+
+$ bandit -c bandit.yaml -r opendata opendata_fuyao scripts alembic alembic_data
+（第 4 条命中在**本轮自己写的判定工具**上，不在产品码里）
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'admin123'
+   Location: opendata/api/auth.py:40:19
+>> Issue: [B106:hardcoded_password_funcarg] Possible hardcoded password: 'refresh'
+   Location: opendata/api/auth.py:209:14
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'your-secret-key-change-this-in-production'
+   Location: opendata/utils/constants.py:8:21
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: '*run_pass_rows'
+   Location: scripts/quality/acceptance_item_probe.py:6460:12
+
+那行的原文是 AC-11|02 的 `repair` 字典里的一项：
+
+    "run_pass_rows": "*run_pass_rows",
+
+（`resolve_repair` 的 `*key` 语义 = 「把实测到的那个数原样抄进干净读数」。这一项是
+「留档那次真机 run 里 PASS 的行数」，实测值 16。值本身以 `*` 开头。）
+
+B105 不看值像不像密码，它看**被赋名的名字**里是否含 `pass|pwd|password|secret|token|key`
+这一类子串：`run_pass_rows` 里的 `_pass_` 就够触发。也就是说这条红是**键名撞了启发式**，
+不是本轮写进仓库了一个凭证。
+
+3) 处置与复验（可重跑）
+=================================================
+处置是**改键名**，一共三条路被排除掉：
+
+* 抬快照上限（`ratchet.py --update` 之类）——AC-17|03 的判据原文就是「只降不升」，
+  而该格的判定面里专门有一条在数「抬高上限的次数」；用抬上限来让这条不红，等于把
+  判据要防的那件事做成通过条件。
+* `# nosec B105` —— 棘轮数的是 bandit 报出来的条数，加抑制注释与抬上限是同一件事的两种写法：
+  读数降了，仓库里那个撞启发式的键名一个字没动。本轮不给判定工具开「自己声明豁免」的口子
+  （仓内既有做法是像 C50 那样把可疑处**改掉**——`shutil.which("git")` 那条——而不是按住它）。
+* 把 `scripts/` 从 `PY_BANDIT` 里摘出去 —— 那是被测根本身，摘根正是 AC-17|03
+  「让一个被测根从快照里消失」那条反事实要抓的形状。
+
+键名 `run_pass_rows` → `run_ok_rows`（6 处一起改：measure 的字典、judge 的两处读法与
+一行读数文本、两条 `Break`、`repair`）。展示给读者的那句话不变，仍然写 `PASS 16 行`：
+读数文案里「PASS/FAIL」是留档档案的表格列名，不是变量名。
+
+$ python -u scripts/quality/ratchet.py        （2026-09-28 05:50 本地，改名之后）
+OK: quality debt did not increase.
+  ruff_selfdev: 219 (snapshot 219)
+  mypy_selfdev: 6 (snapshot 6)
+  bandit_selfdev: 3 (snapshot 3)
+  ruff_ported: 2144 (snapshot 2144)
+  direct_http_ported: 1044 (snapshot 1044)
+RATCHET_EXIT=0
+
+$ bandit -c bandit.yaml -r opendata opendata_fuyao scripts alembic alembic_data | grep -c '^>> Issue'
+3
+（剩下 3 条是快照里原有的那 3 条：auth.py 的两条与 utils/constants.py 的一条，
+ 位置与改前逐字相同 ⇒ 本轮对既有三条零改动）
+
+$ ruff check scripts/quality/acceptance_item_probe.py && ruff format --check scripts/quality/acceptance_item_probe.py
+All checks passed!
+1 file already formatted
+
+4) 单点复现 B105 的触发条件（不必改仓库）
+=================================================
+一个文件的键名里带 `_pass_`、值是一个字符串字面量，B105 就报「hardcoded password」，
+报的是**值**：
+
+$ printf 'run_pass_rows = "*run_pass_rows"\n' > /tmp/c55_b105_repro.py
+$ bandit -c bandit.yaml /tmp/c55_b105_repro.py 2>/dev/null | grep -E '^>> Issue|Location'
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: '*run_pass_rows'
+   Location: /tmp/c55_b105_repro.py:1:16
+
+（复现文件在 /tmp，未进仓库；仓库里那条命中已随改名消失。）

@@ -4314,9 +4314,15 @@ ZERO_DEP_SCANNER: Final = "scripts/codemod/verify_no_akshare.py"
 P0_INTEGRATION_SELECTOR: Final = "integration and not e2e"
 P0_MIGRATION_REL: Final = "alembic_data/versions/20260923-0001_ods_dwd_p0.py"
 
-#: C51's clean-environment run: one venv built from ``pyproject.toml`` alone, untrimmed body.
-CLEAN_RUN_EVIDENCE: Final = "docs/evidence/C51/clean-env-integration-run.txt"
+#: Where a clean-environment run is archived, one per round that rebuilt it.
+CLEAN_RUN_BASENAME: Final = "clean-env-integration-run.txt"
 CLEAN_SECTION: Final = "===== B. clean venv ====="
+
+#: ``AC-11|04``: an archived live EXPLAIN, one per round that re-ran the plan check.
+WINDOW_EXPLAIN_BASENAME: Final = "window-pruning-explain.txt"
+
+#: The line the EXPLAIN instrument writes so an archive says which SQL it planned.
+QUERY_DIGEST_KEY: Final = "query_module_sha"
 
 #: The two packages the criterion requires to be absent.
 UPSTREAM_PACKAGES: Final = ("akshare", "openbb")
@@ -4453,8 +4459,35 @@ def judge_ac16_06(facts: Facts) -> Verdict:
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
 
+def round_archives(basename: str) -> tuple[str, ...]:
+    """Every ``docs/evidence/C<n>/<basename>``, oldest round first.
+
+    Resolved off the filesystem because these archives are ratchets on *this moment*: naming one
+    fixed round would let anything added after it stay unmeasured forever.
+    """
+    found: list[tuple[int, str]] = []
+    for path in (REPO_ROOT / "docs" / "evidence").glob(f"C*/{basename}"):
+        round_stem = path.parent.name
+        if round_stem[1:].isdigit():
+            found.append((int(round_stem[1:]), str(path.relative_to(REPO_ROOT))))
+    return tuple(rel for _, rel in sorted(found))
+
+
+def newest_round_archive(basename: str) -> tuple[str, str]:
+    """``(archive path, its round stem)``, or ``("-", "-")`` when nothing is archived.
+
+    The stem comes back separately because a round can only claim its own archive: writing the
+    round number into the body and copying the file sideways is caught by comparing the two.
+    """
+    archives = round_archives(basename)
+    if not archives:
+        return "-", "-"
+    latest = archives[-1]
+    return latest, latest.split("/")[2]
+
+
 def measure_ac16_07(ctx: Context) -> Facts:
-    """Run the P0 domain selection here, then read what C51's clean venv recorded."""
+    """Run the P0 domain selection here, then read the newest archived clean-venv run."""
     ini = ctx.read("pytest.ini")
     units = integration_units_now()
     modules = sorted({unit.split("::")[0] for unit in units})
@@ -4477,13 +4510,15 @@ def measure_ac16_07(ctx: Context) -> Facts:
         ]
     )
     counts = tally(out)
-    evidence = ctx.read(CLEAN_RUN_EVIDENCE)
+    archive_rel, archive_dir = newest_round_archive(CLEAN_RUN_BASENAME)
+    evidence = ctx.read(archive_rel) if archive_rel != "-" else ""
     section = evidence.split(CLEAN_SECTION, 1)[1] if CLEAN_SECTION in evidence else evidence
     archived_modules = {
         line.split("::")[0].strip()
         for line in section.splitlines()
         if line.startswith("tests/") and "::" in line
     }
+    declared_round = first_capture(evidence, r"^ARCHIVE_ROUND=(\S+)$") or "-"
     return {
         "registered": flag("integration" in registered_markers_in_ini(ini)),
         "strict": flag("--strict-markers" in ini),
@@ -4501,6 +4536,11 @@ def measure_ac16_07(ctx: Context) -> Facts:
         "clean_here": flag(
             all(importlib.util.find_spec(name) is None for name in UPSTREAM_PACKAGES)
         ),
+        "clean_archive": archive_rel,
+        "archive_round": declared_round,
+        # 留档必须是自己写的那一份：把旧留档拷到新轮次目录下能骗过模块名对账，
+        # 骗不过这一条 —— 正文声明的轮次标号会和对不上的目录名撞车。
+        "archive_self_written": flag(declared_round == archive_dir and archive_dir != "-"),
         "archive_exit": first_capture(evidence, r"^CLEAN_RUN_EXIT=(\S+)$"),
         "archive_summary": first_capture(section, r"=+ (\d+ passed.*) =+"),
         "archive_modules": count(len(archived_modules)),
@@ -4526,6 +4566,7 @@ def judge_ac16_07(facts: Facts) -> Verdict:
         and facts["clean_here"] == "yes"
         and facts["archive_exit"] == "0"
         and facts["archive_blind"] == "0"
+        and facts["archive_self_written"] == "yes"
         and facts["archive_absent"] == "yes"
     )
     readings = (
@@ -4538,7 +4579,9 @@ def judge_ac16_07(facts: Facts) -> Verdict:
         f"exit={facts['run_exit']}，{facts['passed']} passed / {facts['failed']} failed / "
         f"{facts['skipped']} skipped；另有 {facts['deselected']} 条被选择式挡在外面"
         "（含全部仓库 e2e）",
-        f"干净 venv 留档（{CLEAN_RUN_EVIDENCE}）：CLEAN_RUN_EXIT={facts['archive_exit']}，"
+        f"干净 venv 留档（读的是最新那一份：{facts['clean_archive']}，正文声明轮次 "
+        f"{facts['archive_round']}，与所在目录一致 = {facts['archive_self_written']}）："
+        f"CLEAN_RUN_EXIT={facts['archive_exit']}，"
         f"{facts['archive_summary'] or '(absent)'}；留档里两个上游包都记为 absent = "
         f"{facts['archive_absent']}；留档点到过 {facts['archive_modules']} 个模块，"
         f"当前标记集里没被留档覆盖的 = {facts['archive_blind']}",
@@ -4548,8 +4591,505 @@ def judge_ac16_07(facts: Facts) -> Verdict:
         if ok
         else "「P0 域集成测试」要么没有可指的名字（marker 没注册/没人用/某条 P0 域没被这组用例"
         "点到），要么这一遍没全绿、或者跳过了（skip 不等于通过），要么当前解释器里上游包又变得可"
-        "导入，要么干净环境的留档不再覆盖现在这组标记模块 —— 最后一条是刻意的棘轮：给 P0 集成面"
-        "加一个模块，就得重跑一次那个只装声明依赖的 venv 并重留档"
+        "导入，要么干净环境的留档不再覆盖现在这组标记模块（刻意的棘轮：给 P0 集成面加一个"
+        "模块，就得重跑一次那个只装声明依赖的 venv 并重留档），要么那份留档只是从上一轮"
+        "拷来的（正文声明的轮次标号对不上所在目录）"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+# --------------------------------------------------------------------------- #
+# AC-11 -- the REST data plane, judged on the faces each item names
+# --------------------------------------------------------------------------- #
+
+#: Where the query/export/diff-report endpoints and the SQL they generate live.
+PIPELINE_QUERY_REL: Final = "opendata/pipeline/query.py"
+HTTP_WAREHOUSE_REL: Final = "tests/test_data_query_http_warehouse.py"
+API_CONTRACT_REL: Final = "tests/test_data_query_api.py"
+ADJUST_UNIT_REL: Final = "tests/test_data_query.py"
+QFQ_OFFICIAL_REL: Final = "scripts/ops/qfq_official_check.py"
+QFQ_OFFICIAL_RUN: Final = "docs/evidence/B4/qfq-official-check.txt"
+
+#: The knobs AC-11|01 enumerates, plus the pagination pair the same clause asks for.
+QUERY_KNOBS: Final = ("symbols", "start", "end", "source", "layer", "adjust", "fields")
+PAGINATION_KNOBS: Final = ("page", "page_size")
+
+#: A node id that no longer exists aborts the whole run and names itself in this line.
+ABSENT_NODE = re.compile(r"ERROR: (?:not found|file or directory not found): (\S+)")
+
+#: An executed plan check, not prose about one: the keyword either introduces a statement written
+#: out in full, or it is the prefix of a concatenation the code then executes. The second shape is
+#: what an honest instrument has to write - the SQL has to come from ``build_data_select`` for the
+#: plan to be about the endpoint's query, so it can never be a literal ``EXPLAIN SELECT``.
+EXPLAIN_STATEMENT = re.compile(
+    r"\bEXPLAIN\s+(?:ANALYZE\s+)?(?:SELECT|FORMAT)\b|\"EXPLAIN \"\s*\+",
+    re.IGNORECASE,
+)
+
+#: Where a plan check would have to live to be a face rather than a sentence.
+EXPLAIN_ROOTS: Final = ("tests", "scripts", "opendata", "alembic_data")
+
+#: ``AC-11|01``: the documented route, its enumerated knobs, and the merged default view.
+AC11_ROUTE_NODES: Final = (
+    f"{API_CONTRACT_REL}::TestOpenApi::test_routes_are_published",
+    f"{API_CONTRACT_REL}::TestOpenApi::test_query_parameters_are_enumerated",
+    f"{HTTP_WAREHOUSE_REL}::TestQuerySchema::test_the_defaults_are_the_merged_unadjusted_view",
+    f"{HTTP_WAREHOUSE_REL}::TestQuerySchema::"
+    "test_a_row_carries_exactly_the_selected_contract_columns",
+    f"{HTTP_WAREHOUSE_REL}::TestQuerySchema::"
+    "test_pagination_walks_the_business_key_without_repeating_a_row",
+    f"{HTTP_WAREHOUSE_REL}::TestQuerySchema::"
+    "test_an_explicit_window_is_the_date_column_between_its_bounds",
+)
+
+#: ``AC-11|02``: synthesis through the HTTP handler, the factor arithmetic, and the judge.
+AC11_ADJUST_NODES: Final = (
+    f"{HTTP_WAREHOUSE_REL}::TestServerSideAdjust::"
+    "test_qfq_scales_the_prices_and_leaves_the_volume_alone",
+    f"{HTTP_WAREHOUSE_REL}::TestServerSideAdjust::"
+    "test_hfq_scales_by_the_other_leg_of_the_same_factor_row",
+    f"{HTTP_WAREHOUSE_REL}::TestServerSideAdjust::"
+    "test_a_bar_without_its_factor_row_is_a_400_not_a_half_adjusted_series",
+    f"{HTTP_WAREHOUSE_REL}::TestServerSideAdjust::"
+    "test_the_absent_factor_table_is_a_501_that_names_the_missing_table",
+    f"{HTTP_WAREHOUSE_REL}::TestServerSideAdjust::"
+    "test_an_empty_selection_does_not_claim_an_adjusted_series",
+    f"{ADJUST_UNIT_REL}::TestAdjust::test_qfq_scales_by_the_factor",
+    f"{ADJUST_UNIT_REL}::TestAdjust::test_missing_factor_fails_closed",
+    "tests/test_qfq_official_check.py::TestCompare::test_matching_series_passes",
+    "tests/test_qfq_official_check.py::TestCompare::"
+    "test_constant_anchor_offset_is_a_level_difference_not_a_failure",
+    "tests/test_qfq_official_check.py::TestCompare::test_shape_divergence_fails",
+    "tests/test_qfq_official_check.py::TestCompare::test_no_common_dates_is_a_failure",
+)
+
+#: ``AC-11|03``: the four safety faces the criterion lists, on the HTTP entry point.
+AC11_SAFETY_NODES: Final = (
+    f"{HTTP_WAREHOUSE_REL}::TestParameterSafety::"
+    "test_a_fields_value_that_is_not_a_column_is_a_400_and_nothing_ran",
+    f"{HTTP_WAREHOUSE_REL}::TestParameterSafety::"
+    "test_a_source_that_is_not_a_registered_leg_is_a_400",
+    f"{HTTP_WAREHOUSE_REL}::TestParameterSafety::"
+    "test_a_symbol_that_looks_like_sql_stays_a_bound_literal",
+    f"{HTTP_WAREHOUSE_REL}::TestParameterSafety::test_export_and_diff_report_are_authenticated_too",
+    f"{HTTP_WAREHOUSE_REL}::TestCsvExport::"
+    "test_formula_prefixed_cells_are_neutralized_in_the_export",
+    f"{HTTP_WAREHOUSE_REL}::TestCsvExport::test_a_negative_price_stays_a_number_in_the_export",
+    f"{HTTP_WAREHOUSE_REL}::TestCsvExport::"
+    "test_the_export_is_a_named_attachment_of_the_selected_columns",
+    f"{HTTP_WAREHOUSE_REL}::TestCsvExport::test_a_bad_field_is_answered_400_before_the_body_starts",
+    f"{API_CONTRACT_REL}::TestValidationPaths::test_bad_layer_is_a_422",
+    f"{API_CONTRACT_REL}::TestValidationPaths::test_bad_adjust_is_a_422",
+    f"{API_CONTRACT_REL}::TestValidationPaths::test_ods_layer_requires_an_explicit_source",
+    f"{ADJUST_UNIT_REL}::TestBuildDataSelect::test_injection_attempt_stays_a_literal_parameter",
+    f"{ADJUST_UNIT_REL}::TestFieldWhitelist::test_unknown_field_is_rejected",
+)
+
+#: ``AC-11|04``: an unbounded request still gets a window, at the handler and at the SQL.
+AC11_WINDOW_NODES: Final = (
+    f"{HTTP_WAREHOUSE_REL}::TestDefaultWindow::"
+    "test_an_unbounded_request_still_does_not_reach_outside_the_window",
+    f"{HTTP_WAREHOUSE_REL}::TestDefaultWindow::"
+    "test_the_generated_select_predicates_on_the_partition_key_and_caps_rows",
+    f"{ADJUST_UNIT_REL}::TestWindowBounds::test_default_window_is_applied_when_no_range_is_given",
+    f"{ADJUST_UNIT_REL}::TestWindowBounds::test_explicit_range_is_honoured",
+    f"{ADJUST_UNIT_REL}::TestWindowBounds::test_reversed_range_fails_closed",
+)
+
+#: ``AC-11|05``: the diff report door, and its route in the published document.
+AC11_DIFF_NODES: Final = (
+    f"{HTTP_WAREHOUSE_REL}::TestDiffReport::"
+    "test_the_report_answers_the_sampled_differences_of_the_domain",
+    f"{HTTP_WAREHOUSE_REL}::TestDiffReport::test_batch_id_selects_one_cross_check_run",
+    f"{HTTP_WAREHOUSE_REL}::TestDiffReport::test_the_limit_is_bounded_like_the_query_page_size",
+    f"{HTTP_WAREHOUSE_REL}::TestDiffReport::"
+    "test_an_unmigrated_report_table_reads_empty_not_as_an_error",
+    f"{API_CONTRACT_REL}::TestOpenApi::test_routes_are_published",
+)
+
+
+def parameter_faces(source: str, name: str) -> dict[str, tuple[str, str]]:
+    """One handler's parameters mapped to their declared annotation and default.
+
+    Read from the AST because AC-11|01's claim is about what the route *declares*: a docstring can
+    promise ``layer=dwd`` while the signature serves ``ods``, and the default FastAPI actually
+    hands the handler is the first positional argument of ``Query(...)``.
+
+    Args:
+        source: Module source text.
+        name: Handler function name.
+
+    Returns:
+        ``(annotation, default)`` per parameter; empty when this module has no such function.
+    """
+    tree = ast.parse(source)
+    for node in tree.body:
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) or node.name != name:
+            continue
+        faces: dict[str, tuple[str, str]] = {}
+        positional = [*node.args.posonlyargs, *node.args.args]
+        defaults: list[ast.expr | None] = [None] * (len(positional) - len(node.args.defaults))
+        defaults += list(node.args.defaults)
+        for param, value in zip(positional, defaults, strict=True):
+            faces[param.arg] = _annotation_default(param, value)
+        for param, value in zip(node.args.kwonlyargs, node.args.kw_defaults, strict=True):
+            faces[param.arg] = _annotation_default(param, value)
+        return faces
+    return {}
+
+
+def _annotation_default(param: ast.arg, default: ast.expr | None) -> tuple[str, str]:
+    """The annotation text and the unwrapped default of one parameter."""
+    annotation = ast.unparse(param.annotation) if param.annotation is not None else ""
+    if default is None:
+        return annotation, ""
+    value = default.args[0] if isinstance(default, ast.Call) and default.args else default
+    return annotation, ast.unparse(value).strip("'\"")
+
+
+def node_plane_facts(prefix: str, nodes: Sequence[str]) -> Facts:
+    """Run one item's named nodes in a single pytest process and read the counts off that run.
+
+    One process per item rather than one per node id: every node here lives behind the same
+    fixtures, so the cheaper reading still answers the falsifiable question -- an id that was
+    renamed aborts the invocation and names itself, which lands in ``{prefix}_absent`` instead of
+    quietly shrinking the plane to whatever still resolves.
+
+    Args:
+        prefix: Fact-name prefix, so an item can hold two planes.
+        nodes: Exact node ids.
+
+    Returns:
+        Facts ``{prefix}_runs/_exit/_passed/_failed/_skipped/_absent``.
+    """
+    code, out = run_pytest(list(nodes))
+    counts = tally(out)
+    absent = [found.rsplit("::", 1)[-1].rstrip(",.") for found in ABSENT_NODE.findall(out)]
+    return {
+        f"{prefix}_runs": count(len(nodes)),
+        f"{prefix}_exit": str(code),
+        f"{prefix}_passed": count(counts.get("passed", 0)),
+        f"{prefix}_failed": count(counts.get("failed", 0)),
+        f"{prefix}_skipped": count(counts.get("skipped", 0)),
+        f"{prefix}_absent": ", ".join(absent) or "-",
+    }
+
+
+def plane_is_green(facts: Facts, prefix: str) -> bool:
+    """Whether a node plane ran, collected every id it names, and passed every one of them."""
+    return (
+        positive(facts[f"{prefix}_runs"])
+        and facts[f"{prefix}_exit"] == "0"
+        and facts[f"{prefix}_passed"] == facts[f"{prefix}_runs"]
+        and facts[f"{prefix}_failed"] == "0"
+        and facts[f"{prefix}_skipped"] == "0"
+        and facts[f"{prefix}_absent"] == "-"
+    )
+
+
+def plane_reading(facts: Facts, prefix: str, label: str) -> str:
+    """One line describing a node plane, naming whatever did not pass."""
+    if facts[f"{prefix}_absent"] != "-":
+        tail = f"; ids the run could not find: {facts[f'{prefix}_absent']}"
+    elif facts[f"{prefix}_passed"] != facts[f"{prefix}_runs"]:
+        tail = f"; exit={facts[f'{prefix}_exit']} summary={facts[f'{prefix}_passed']} passed / "
+        tail += f"{facts[f'{prefix}_failed']} failed / {facts[f'{prefix}_skipped']} skipped"
+    else:
+        tail = ""
+    return f"{label}: {facts[f'{prefix}_passed']}/{facts[f'{prefix}_runs']} nodes passed{tail}"
+
+
+def measure_ac11_01(ctx: Context) -> Facts:
+    """Run the route plane, then read the knobs and defaults the handler itself declares."""
+    api = ctx.read(DATA_QUERY_REL)
+    params = parameter_faces(api, "query_domain_data")
+    body = function_body(api, "query_domain_data")
+    missing = [knob for knob in (*QUERY_KNOBS, *PAGINATION_KNOBS) if knob not in params]
+    facts: Facts = {
+        **node_plane_facts("route", AC11_ROUTE_NODES),
+        "route_shape": flag('"/{asset_class}/{domain}"' in api),
+        "knobs_missing": ", ".join(missing) or "-",
+        "layer_default": params.get("layer", ("", ""))[1] or "(absent)",
+        "adjust_default": params.get("adjust", ("", ""))[1] or "(absent)",
+        "payload_shape": flag('"columns"' in body and '"rows"' in body),
+    }
+    return facts
+
+
+def judge_ac11_01(facts: Facts) -> Verdict:
+    """``AC-11|01``: the documented route carries every named knob and the declared defaults."""
+    ok = (
+        plane_is_green(facts, "route")
+        and facts["route_shape"] == "yes"
+        and facts["knobs_missing"] == "-"
+        and facts["layer_default"] == "dwd"
+        and facts["adjust_default"] == "none"
+        and facts["payload_shape"] == "yes"
+    )
+    readings = (
+        plane_reading(facts, "route", "路由/契约面（OpenAPI 两条 + 替身仓库 HTTP 四条）"),
+        f"路由形状 ``/{{asset_class}}/{{domain}}`` = {facts['route_shape']}，"
+        f"载荷同时交回 columns 与 rows（响应 schema 可对契约） = {facts['payload_shape']}",
+        f"判据点名的 9 个入参都在处理器的签名里：缺 = {facts['knobs_missing']}"
+        "（AST 读数，注释里写什么不算）",
+        f"声明的默认值：layer = {facts['layer_default']}，adjust = {facts['adjust_default']}；"
+        "这两条是契约的一部分，改一个就等于改了默认口径",
+    )
+    reason = (
+        ""
+        if ok
+        else "「支持 symbols/start/end/source/layer/adjust/fields/分页，默认 layer=dwd、"
+        "adjust=none，响应 schema 与契约一致，OpenAPI 文档生成」是四问：路由与文档在、入参齐、"
+        "默认值就是那两个、返回的行真的按契约列交出来——任何一条从签名或这一遍里掉出去都只剩接口存在"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac11_02(ctx: Context) -> Facts:
+    """Run the adjust plane, then read which official series the cross-source check uses."""
+    api = ctx.read(DATA_QUERY_REL)
+    checker = ctx.read(QFQ_OFFICIAL_REL)
+    leg = first_capture(function_body(checker, "_official_series"), r"stock_zh_a_(\w+)")
+    run = ctx.read(QFQ_OFFICIAL_RUN)
+    facts: Facts = {
+        **node_plane_facts("adj", AC11_ADJUST_NODES),
+        "synthesis": flag("apply_adjust_to_rows" in function_body(api, "_adjusted_rows")),
+        "official_leg": leg,
+        "run_official_leg": first_capture(run, r"^official: (\w+)"),
+        "run_ok_rows": count(len(re.findall(r"\|\s*PASS\s*\|", run))),
+        "run_fail_rows": count(len(re.findall(r"\|\s*FAIL\s*\|", run))),
+        "akshare_official_available": flag(
+            (REPO_ROOT / "opendata_http/stock_feature/stock_hist_em.py").is_file()
+        ),
+    }
+    return facts
+
+
+def judge_ac11_02(facts: Facts) -> Verdict:
+    """``AC-11|02``: qfq/hfq are computed server-side *and* checked against official qfq."""
+    ok = (
+        plane_is_green(facts, "adj")
+        and facts["synthesis"] == "yes"
+        and facts["official_leg"] == "akshare"
+        and facts["run_official_leg"] == "akshare"
+        and facts["run_fail_rows"] == "0"
+        and positive(facts["run_ok_rows"])
+    )
+    readings = (
+        plane_reading(facts, "adj", "复权面（HTTP 五条 + 因子算术两条 + 对照仪器判定四条）"),
+        f"服务端合成 = {facts['synthesis']}（``_adjusted_rows`` 真的调 ``apply_adjust_to_rows``，"
+        "不是把参数读一遍就丢掉）",
+        f"判据点名的官方面：``{QFQ_OFFICIAL_REL}`` 的 ``_official_series`` 取的腿是 "
+        f"{facts['official_leg']}，留档 {QFQ_OFFICIAL_RUN} 头部记的腿是 "
+        f"{facts['run_official_leg']}；判据要的是 akshare 官方 qfq",
+        f"留档那次真机 run：PASS {facts['run_ok_rows']} 行 / FAIL {facts['run_fail_rows']} 行；"
+        f"补齐用的 akshare 官方序列模块 opendata_http/stock_feature/stock_hist_em.py 在位 = "
+        f"{facts['akshare_official_available']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "这一条的前半（服务端按因子表合成 qfq/hfq，缺因子 400、缺表 501）已经是实测面；后半"
+        "写的是「与 akshare 官方 qfq 对照一致」，而现在唯一的官方对照腿取的是 sina "
+        "stock_zh_a_daily —— sina 是另一条源和另一条因子链，作为独立对照比 akshare 自己更强，"
+        "但它不是判据点名的那个名字；换成 akshare 官方序列并留档一次真机 run 才翻正"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac11_03(ctx: Context) -> Facts:
+    """Run the safety plane, then read which of its four faces the code really enforces."""
+    api = ctx.read(DATA_QUERY_REL)
+    sql = ctx.read(PIPELINE_QUERY_REL)
+    select_body = function_body(sql, "build_data_select")
+    params = parameter_faces(api, "query_domain_data")
+    validated = function_body(api, "_validated_query")
+    unenumerated = [
+        name for name in ("layer", "adjust") if "Literal" not in params.get(name, ("", ""))[0]
+    ]
+    facts: Facts = {
+        **node_plane_facts("safety", AC11_SAFETY_NODES),
+        "deny_literal": flag("open;DROP TABLE" in ctx.read(HTTP_WAREHOUSE_REL)),
+        "enum_params": ", ".join(unenumerated) or "-",
+        "source_leg_check": flag("not a registered leg" in validated),
+        "bind_symbols": flag(re.search(r"params\[[^\]]+\]\s*=\s*symbol", select_body) is not None),
+        "symbol_placeholder": flag(re.search(r'":\{\w+\}', select_body) is not None),
+        "csv_escape": flag("serialize_for_csv" in function_body(api, "_csv_stream")),
+    }
+    return facts
+
+
+def judge_ac11_03(facts: Facts) -> Verdict:
+    """``AC-11|03``: whitelist 400, three enums, bound symbols, CSV escaping — four named faces."""
+    ok = (
+        plane_is_green(facts, "safety")
+        and facts["deny_literal"] == "yes"
+        and facts["enum_params"] == "-"
+        and facts["source_leg_check"] == "yes"
+        and facts["bind_symbols"] == "yes"
+        and facts["symbol_placeholder"] == "yes"
+        and facts["csv_escape"] == "yes"
+    )
+    readings = (
+        plane_reading(facts, "safety", "参数安全面（HTTP 13 条，全部走真路由）"),
+        f"判据那条字面载荷 ``fields=open;DROP TABLE`` 出现在用例里 = {facts['deny_literal']}；"
+        "这条断言除了 400 还回读表里的行数，所以「没执行」是被量的而不是被说的",
+        f"枚举校验：layer/adjust 的注解里还有不是 Literal 的吗 = {facts['enum_params']}；"
+        f"source 按注册腿校验 = {facts['source_leg_check']}"
+        "（判据列了三个枚举面，少一个就只做到两个）",
+        f"symbols 的取值进的是绑定字典 = {facts['bind_symbols']}，SQL 文本里出现的只有 "
+        f"``:{{name}}`` 占位 = {facts['symbol_placeholder']}；导出公式转义发生在 handler 里 = "
+        f"{facts['csv_escape']}（``_csv_stream`` 调 ``serialize_for_csv``）",
+    )
+    reason = (
+        ""
+        if ok
+        else "判据把四个面点名列出：fields 白名单（并给出 ``fields=open;DROP TABLE`` 这条载荷）、"
+        "layer/source/adjust 三个枚举、symbols 绑定、导出 CSV 公式转义。任何一面从代码里退回去"
+        "（比如 source 又变成自由字符串），这一条就只是用例绿而不是参数安全"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac11_04(ctx: Context) -> Facts:
+    """Run the window plane, then read the live execution plan the criterion names as its proof."""
+    sql = ctx.read(PIPELINE_QUERY_REL)
+    scan = [
+        rel
+        for root in EXPLAIN_ROOTS
+        for rel in py_files_under(root)
+        if not rel.endswith("acceptance_item_probe.py")
+    ]
+    hits = grep_files(scan, EXPLAIN_STATEMENT)
+    archive_rel, archive_dir = newest_round_archive(WINDOW_EXPLAIN_BASENAME)
+    body = ctx.read(archive_rel) if archive_rel != "-" else ""
+    declared_round = first_capture(body, r"^ARCHIVE_ROUND=(\S+)$") or "-"
+    archived_digest = first_capture(body, rf"^{QUERY_DIGEST_KEY}=([0-9a-f]+)") or "-"
+    digest_now = hashlib.sha256((REPO_ROOT / PIPELINE_QUERY_REL).read_bytes()).hexdigest()[:12]
+    landed = first_capture(body, r"landed_partitioned_tables=(\d+)") or "0"
+    facts: Facts = {
+        **node_plane_facts("window", AC11_WINDOW_NODES),
+        "window_days": first_capture(sql, r"^DEFAULT_WINDOW_DAYS = (\d+)"),
+        "bounded_default": flag("DEFAULT_WINDOW_DAYS" in function_body(sql, "window_bounds")),
+        "row_cap": flag("LIMIT :limit" in function_body(sql, "build_data_select")),
+        "explain_faces": count(sum(hits.values())),
+        "explain_paths": ", ".join(sorted(hits)) or "-",
+        "scanned_code_files": count(len(scan)),
+        "explain_archive": archive_rel,
+        "explain_archive_round": declared_round,
+        "explain_archive_in_place": flag(archive_dir != "-" and declared_round == archive_dir),
+        "explain_archive_digest": archived_digest,
+        "explain_query_digest": digest_now,
+        "explain_archive_is_current": flag(
+            archived_digest != "-" and archived_digest == digest_now
+        ),
+        "explain_tables_landed": count(int(landed)),
+        "explain_pruned_yes": first_capture(body, r"pruned_yes=(\d+)") or "-",
+        "explain_pruned_no": first_capture(body, r"pruned_no=(\d+)") or "-",
+    }
+    return facts
+
+
+def judge_ac11_04(facts: Facts) -> Verdict:
+    """``AC-11|04``: an unbounded query lands in a window, and a live plan says it prunes."""
+    ok = (
+        plane_is_green(facts, "window")
+        and positive(facts["window_days"])
+        and facts["bounded_default"] == "yes"
+        and facts["row_cap"] == "yes"
+        and number(facts["explain_faces"]) > 0
+        and number(facts["explain_tables_landed"]) > 0
+        and facts["explain_pruned_no"] == "0"
+        and facts["explain_archive_is_current"] == "yes"
+        and facts["explain_archive_in_place"] == "yes"
+    )
+    readings = (
+        plane_reading(facts, "window", "时间窗面（HTTP 两条 + 边界单元三条）"),
+        f"默认窗 = {facts['window_days']} 天，由 ``window_bounds`` 在无区间时补上 = "
+        f"{facts['bounded_default']}；``build_data_select`` 的 ``LIMIT :limit`` 行数上限 = "
+        f"{facts['row_cap']}",
+        f"判据点名的验证方式：在 {facts['scanned_code_files']} 个代码文件里找真发出去的 EXPLAIN"
+        '（整句字面量 ``EXPLAIN [ANALYZE] SELECT|FORMAT`` 与拼接前缀 ``"EXPLAIN " +`` 两种形状，'
+        f"仪器必须拼 SQL 才谈得上「这个端点的查询」），命中 {facts['explain_faces']} 处"
+        f"（{facts['explain_paths']}）",
+        f"执行计划留档（读的是最新那一份：{facts['explain_archive']}，正文声明轮次 "
+        f"{facts['explain_archive_round']}，与所在目录一致 = "
+        f"{facts['explain_archive_in_place']}）："
+        f"已落地且带分区的 dwd 表 {facts['explain_tables_landed']} 张，其中计划只读到部分分区的 "
+        f"{facts['explain_pruned_yes']} 张、读到全部分区的 {facts['explain_pruned_no']} 张",
+        f"留档属于哪一版拼 SQL 的代码：正文 ``{QUERY_DIGEST_KEY}="
+        f"{facts['explain_archive_digest']}`` 对当下 ``{PIPELINE_QUERY_REL}`` = "
+        f"{facts['explain_query_digest']} → {facts['explain_archive_is_current']}",
+    )
+    reason = ""
+    if not ok:
+        missing: list[str] = []
+        if number(facts["explain_faces"]) == 0:
+            missing.append("全库没有一处执行过的 EXPLAIN，只有散文里那句话")
+        if number(facts["explain_tables_landed"]) == 0:
+            missing.append("留档没量到任何一张已落地的分区表")
+        if facts["explain_pruned_no"] != "0":
+            missing.append(f"留档里有 {facts['explain_pruned_no']} 张表的计划读到了全部分区")
+        if facts["explain_archive_is_current"] != "yes":
+            missing.append(
+                "留档正文的 query_module_sha 和当下的查询层代码对不上"
+                "（拼 SQL 的代码改过，那份计划已经不是现在这一条）"
+            )
+        if facts["explain_archive_in_place"] != "yes":
+            missing.append("留档正文声明的轮次与它所在目录不一致（像是从上一轮拷来的）")
+        reason = (
+            "窗口本身是实测绿的（不带区间也给边界、行数有上限、生成的 SELECT 以分区键为谓词），"
+            "判据点名的验证方式是 EXPLAIN —— 缺的是：" + "；".join(missing)
+            if missing
+            else "时间窗面不再全绿，或默认窗／行数上限被摘掉：那一条 SQL 已经不是被量过的那一条"
+        )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac11_05(ctx: Context) -> Facts:
+    """Run the diff-report plane, then read the door's route, gate, filter and cap."""
+    api = ctx.read(DATA_QUERY_REL)
+    body = function_body(api, "domain_diff_report")
+    facts: Facts = {
+        **node_plane_facts("diff", AC11_DIFF_NODES),
+        "route": flag('"/domains/{domain}/diff-report"' in api),
+        "table_constant": first_capture(api, r'^DIFF_TABLE = "([^"]+)"'),
+        "reads_constant_table": flag(
+            "FROM `dq_diff_report`" in body or "FROM `{DIFF_TABLE}`" in body
+        ),
+        "auth_gate": flag("require_domain_access" in body),
+        "batch_filter": flag("batch_id" in body),
+        "limit_bounded": flag("le=MAX_PAGE_SIZE" in body),
+    }
+    return facts
+
+
+def judge_ac11_05(facts: Facts) -> Verdict:
+    """``AC-11|05``: the diff-report door answers with the domain's sampled differences."""
+    ok = (
+        plane_is_green(facts, "diff")
+        and facts["route"] == "yes"
+        and facts["table_constant"] == "dq_diff_report"
+        and facts["reads_constant_table"] == "yes"
+        and facts["auth_gate"] == "yes"
+        and facts["batch_filter"] == "yes"
+        and facts["limit_bounded"] == "yes"
+    )
+    readings = (
+        plane_reading(facts, "diff", "差异报告面（HTTP 四条 + OpenAPI 一条）"),
+        f"路由 ``/domains/{{domain}}/diff-report`` 已注册并进 OpenAPI = {facts['route']}，"
+        f"读的是 {facts['table_constant']}（与校对器写的明细表同一个常量） = "
+        f"{facts['reads_constant_table']}",
+        f"门禁 = {facts['auth_gate']}（按域的 scope 先判），``batch_id`` 只取一次校对 = "
+        f"{facts['batch_filter']}，``limit`` 与查询页同带上限 = {facts['limit_bounded']}",
+        "四条 HTTP 用例分别钉住：差异行真的交出来、按 batch_id 选一次跑、limit 有上限、"
+        "表还没迁移时读出空而不是 500",
+    )
+    reason = (
+        ""
+        if ok
+        else "「可查差异报告」要的是这个门真的从 dq_diff_report 取数并受同一套 scope/上限约束："
+        "路由没了、表名和校对器写的明细表分家了、或者未迁移的表开始抛 500，这条就退回未验收"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
@@ -5898,8 +6438,8 @@ PROBES: Final[tuple[Probe, ...]] = (
     Probe(
         item="AC-16|07",
         expects="在未安装 akshare/openbb 的干净环境中 P0 域集成测试通过",
-        summary="选择式有可指的名字（marker 注册 + 8 个标记单元 + 5 个 P0 域全覆盖），"
-        "本机和留档的干净 venv 都全绿，且留档覆盖当前标记集",
+        summary="选择式有可指的名字（marker 注册 + 9 个标记单元 + 5 个 P0 域全覆盖），"
+        "本机和留档的干净 venv 都全绿，且留档是最新一轮自己写的、覆盖当前标记集",
         measure=measure_ac16_07,
         judge=judge_ac16_07,
         breaks=(
@@ -5928,6 +6468,11 @@ PROBES: Final[tuple[Probe, ...]] = (
                 (("archive_blind", "1"),),
                 GAP,
             ),
+            Break(
+                "把旧留档拷进新轮次目录（正文声明的轮次和目录对不上）",
+                (("archive_self_written", "no"),),
+                GAP,
+            ),
             Break("留档里上游包又被装上了", (("archive_absent", "no"),), GAP),
         ),
         repair={
@@ -5943,6 +6488,197 @@ PROBES: Final[tuple[Probe, ...]] = (
             "archive_exit": "0",
             "archive_blind": "0",
             "archive_absent": "yes",
+        },
+    ),
+    Probe(
+        item="AC-11|01",
+        expects="symbols/start/end/source/layer/**adjust**/fields/分页",
+        summary="路由与 OpenAPI 在、判据点名的 9 个入参真在签名里、默认层与复权就是 dwd/none、"
+        "响应按契约列交出",
+        measure=measure_ac11_01,
+        judge=judge_ac11_01,
+        breaks=(
+            Break("默认层不再是合并视图", (("layer_default", "ods"),), GAP),
+            Break("默认复权口径被改成前复权", (("adjust_default", "qfq"),), GAP),
+            Break("判据点名的入参少了一个", (("knobs_missing", "fields"),), GAP),
+            Break("路由形状变了（域名不再挂在资产类下面）", (("route_shape", "no"),), GAP),
+            Break("载荷不再同时回 columns/rows（无法对契约）", (("payload_shape", "no"),), GAP),
+            Break("OpenAPI 那两条里有一条变红", (("route_passed", "5"),), GAP),
+            Break(
+                "某个节点 id 被改名（面缩了而不是少跑一条）",
+                (("route_absent", "test_query_parameters_are_enumerated"),),
+                GAP,
+            ),
+        ),
+        repair={
+            "route_exit": "0",
+            "route_passed": "*route_runs",
+            "route_failed": "0",
+            "route_skipped": "0",
+            "route_absent": "-",
+            "route_shape": "yes",
+            "knobs_missing": "-",
+            "layer_default": "dwd",
+            "adjust_default": "none",
+            "payload_shape": "yes",
+        },
+    ),
+    Probe(
+        item="AC-11|02",
+        expects="同一标的 qfq 序列与 akshare 官方 qfq 对照一致",
+        summary="qfq/hfq 由服务端按因子表合成（缺因子 400、缺表 501），且官方对照腿按判据取 "
+        "akshare 序列并留档一次真机 run",
+        measure=measure_ac11_02,
+        judge=judge_ac11_02,
+        breaks=(
+            Break("合成接线被摘掉（参数读一遍就丢）", (("synthesis", "no"),), GAP),
+            Break("官方对照腿换成第三个 vendor", (("official_leg", "ths"),), GAP),
+            Break(
+                "仪器改了、留档还是旧的那次 run",
+                (("official_leg", "akshare"), ("run_official_leg", "sina")),
+                GAP,
+            ),
+            Break("留档那次 run 里有 FAIL 行", (("run_fail_rows", "3"),), GAP),
+            Break("留档那次 run 一行都没对照（空跑）", (("run_ok_rows", "0"),), GAP),
+            Break("复权 HTTP 面少一条", (("adj_passed", "9"),), GAP),
+            Break(
+                "对照仪器的判定节点不见了",
+                (("adj_absent", "test_matching_series_passes"),),
+                GAP,
+            ),
+        ),
+        repair={
+            "adj_exit": "0",
+            "adj_passed": "*adj_runs",
+            "adj_failed": "0",
+            "adj_skipped": "0",
+            "adj_absent": "-",
+            "synthesis": "yes",
+            "official_leg": "akshare",
+            "run_official_leg": "akshare",
+            "run_ok_rows": "*run_ok_rows",
+            "run_fail_rows": "0",
+        },
+    ),
+    Probe(
+        item="AC-11|03",
+        expects="`fields` 白名单校验（`fields=open;DROP TABLE` 返回 400）",
+        summary="判据点名的四个安全面各自有实测：白名单 400 且不执行、三个枚举、符号绑定、"
+        "导出公式转义发生在 handler 里",
+        measure=measure_ac11_03,
+        judge=judge_ac11_03,
+        breaks=(
+            Break("source 又变成自由字符串", (("source_leg_check", "no"),), GAP),
+            Break("layer 的枚举校验被摘掉", (("enum_params", "layer"),), GAP),
+            Break("adjust 的枚举校验被摘掉", (("enum_params", "adjust"),), GAP),
+            Break("那条字面载荷被换成别的写法（判据面没了）", (("deny_literal", "no"),), GAP),
+            Break("符号不再进绑定字典，而是拼进 SQL", (("bind_symbols", "no"),), GAP),
+            Break(
+                "SQL 文本里开始出现符号值的形状（不再是占位符）",
+                (("symbol_placeholder", "no"),),
+                GAP,
+            ),
+            Break("导出转义退回「调用方自己记得转义」", (("csv_escape", "no"),), GAP),
+            Break("安全面有一条变红", (("safety_failed", "1"), ("safety_exit", "1")), GAP),
+            Break(
+                "安全面少一条用例",
+                (("safety_absent", "test_a_source_that_is_not_a_registered_leg_is_a_400"),),
+                GAP,
+            ),
+        ),
+        repair={
+            "safety_exit": "0",
+            "safety_passed": "*safety_runs",
+            "safety_failed": "0",
+            "safety_skipped": "0",
+            "safety_absent": "-",
+            "deny_literal": "yes",
+            "enum_params": "-",
+            "source_leg_check": "yes",
+            "bind_symbols": "yes",
+            "symbol_placeholder": "yes",
+            "csv_escape": "yes",
+        },
+    ),
+    Probe(
+        item="AC-11|04",
+        expects="不带日期区间的查询不会触发全分区扫描（EXPLAIN 验证）",
+        summary="无区间请求仍被默认窗与行数上限夹住（实测绿），且判据点名的 EXPLAIN 真的发到了"
+        "跑着的 MySQL 上：每张已落地的分区表都只读到部分分区，留档按查询层摘要钉住",
+        measure=measure_ac11_04,
+        judge=judge_ac11_04,
+        breaks=(
+            Break("执行计划面又归零（判据的验证方式）", (("explain_faces", "0"),), GAP),
+            Break("默认窗被改成不限（0 天）", (("window_days", "0"),), GAP),
+            Break("无区间不再补默认窗", (("bounded_default", "no"),), GAP),
+            Break("SELECT 的行数上限被摘掉", (("row_cap", "no"),), GAP),
+            Break("时间窗面少一条", (("window_passed", "4"),), GAP),
+            Break(
+                "窗口边界单元面被改名",
+                (("window_absent", "test_reversed_range_fails_closed"),),
+                GAP,
+            ),
+            Break("仓库里没有一张已落地的分区表可量", (("explain_tables_landed", "0"),), GAP),
+            Break("留档里有表的计划读到了全部分区", (("explain_pruned_no", "1"),), GAP),
+            Break(
+                "改了拼 SQL 的代码却没重跑计划（留档属于另一版查询层）",
+                (("explain_archive_is_current", "no"),),
+                GAP,
+            ),
+            Break(
+                "把旧留档拷进新轮次目录（正文声明的轮次和目录对不上）",
+                (("explain_archive_in_place", "no"),),
+                GAP,
+            ),
+        ),
+        repair={
+            "window_exit": "0",
+            "window_passed": "*window_runs",
+            "window_failed": "0",
+            "window_skipped": "0",
+            "window_absent": "-",
+            "window_days": "*window_days",
+            "bounded_default": "yes",
+            "row_cap": "yes",
+            "explain_faces": "1",
+            "explain_tables_landed": "*explain_tables_landed",
+            "explain_pruned_no": "0",
+            "explain_archive_is_current": "yes",
+            "explain_archive_in_place": "yes",
+        },
+    ),
+    Probe(
+        item="AC-11|05",
+        expects="可查差异报告",
+        summary="diff-report 门按域取 dq_diff_report 的样本差异行，受同一套 scope/batch/limit 约束",
+        measure=measure_ac11_05,
+        judge=judge_ac11_05,
+        breaks=(
+            Break("路由不再注册", (("route", "no"),), GAP),
+            Break("门读的表与校对器写的明细表分家", (("table_constant", "dq_diffs"),), GAP),
+            Break("处理器不再 FROM 那张表", (("reads_constant_table", "no"),), GAP),
+            Break("门不再按域 scope 判", (("auth_gate", "no"),), GAP),
+            Break("batch_id 过滤被摘掉（一次跑与全部跑没区别）", (("batch_filter", "no"),), GAP),
+            Break("limit 上限被摘掉", (("limit_bounded", "no"),), GAP),
+            Break("报告面有一条变红", (("diff_exit", "1"), ("diff_failed", "1")), GAP),
+            Break(
+                "报告面少一条用例",
+                (("diff_absent", "test_batch_id_selects_one_cross_check_run"),),
+                GAP,
+            ),
+        ),
+        repair={
+            "diff_exit": "0",
+            "diff_passed": "*diff_runs",
+            "diff_failed": "0",
+            "diff_skipped": "0",
+            "diff_absent": "-",
+            "route": "yes",
+            "table_constant": "dq_diff_report",
+            "reads_constant_table": "yes",
+            "auth_gate": "yes",
+            "batch_filter": "yes",
+            "limit_bounded": "yes",
         },
     ),
 )
