@@ -19,9 +19,44 @@ from opendata.main import app
 # Set testing environment variable to disable rate limiting
 os.environ["TESTING"] = "true"
 
-
 # Test database URL
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
+#: Live e2e legs are the only tests that touch the production warehouse and the
+#: paid upstream APIs. Forgetting ``-m "not e2e"`` used to be enough to run them:
+#: C58 measured one such run issuing ``CREATE/DROP TABLE`` on ``opendata_data``.
+#: The gate therefore defaults to deny, and the release token has to be exact --
+#: a truthy ``export`` in a shell profile must not be enough.
+LIVE_E2E_OPT_IN_ENV = "OPENDATA_ALLOW_LIVE_E2E"
+LIVE_E2E_OPT_IN_TOKEN = "allow-prod-and-upstream-writes"
+LIVE_E2E_MARKER = "e2e"
+
+
+def live_e2e_allowed() -> bool:
+    """Whether the operator explicitly released the live e2e legs."""
+    return os.environ.get(LIVE_E2E_OPT_IN_ENV, "").strip() == LIVE_E2E_OPT_IN_TOKEN
+
+
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    """Skip every ``e2e`` item unless :data:`LIVE_E2E_OPT_IN_ENV` releases it.
+
+    Keyed on the same marker that ``make gate``'s ``-m "not e2e"`` deselects, so
+    the two planes cannot disagree about the list: under the gate these items are
+    removed before this hook's skip marker is ever reached, and outside the gate
+    they skip with the reason instead of running.
+    """
+    if live_e2e_allowed():
+        return
+    skip_live = pytest.mark.skip(
+        reason=(
+            f"live e2e leg reaches the production warehouse / upstream APIs; run with "
+            f'-m "not e2e" (as make gate does) or set {LIVE_E2E_OPT_IN_ENV}='
+            f"{LIVE_E2E_OPT_IN_TOKEN} to execute it"
+        )
+    )
+    for item in items:
+        if item.get_closest_marker(LIVE_E2E_MARKER) is not None:
+            item.add_marker(skip_live)
 
 
 @pytest.fixture(scope="session", autouse=True)

@@ -30,6 +30,19 @@ from opendata.pipeline.partitions import PartitionState
 
 EXPECTED = date(2024, 1, 31)
 
+#: Shape of the freshness probe table. Spelled out rather than derived with
+#: ``CREATE TABLE ... LIKE`` because the LIKE form only exists on MySQL, and
+#: needing it dragged a production DDL into the unit plane (C59). SQLite reads
+#: ``MAX(<date column>)`` back as text, which is the driver behaviour
+#: ``freshness._as_date`` already documents and handles.
+PROBE_DDL = (
+    "CREATE TABLE `ods_stock_daily_akshare_freshness_probe` ("
+    "`日期` text NOT NULL, `股票代码` text NOT NULL, "
+    "`开盘` real, `收盘` real, `最高` real, `最低` real, `成交量` real, `成交额` real, "
+    "`_source` text, `_fetched_at` text, `_batch_id` text, "
+    "PRIMARY KEY (`日期`, `股票代码`))"
+)
+
 
 class TestFreshnessField:
     def test_bar_domains_use_trade_date(self):
@@ -52,33 +65,16 @@ class TestCheckFreshness:
     #: ods table: real data (for example the AC-15 legacy migration)
     #: legitimately carries rows newer than a probe date, and a check
     #: must not depend on the warehouse being empty to be assertable.
+    #: The scratch table lives on SQLite so the probe never issues DDL
+    #: against the production warehouse from the unit plane (C59).
     TABLE = "ods_stock_daily_akshare_freshness_probe"
 
     @pytest.fixture
     def warehouse(self):
-        from opendata.core.config import settings
-
-        engine = create_engine(settings.data_database_url, poolclass=pool.NullPool)
-        try:
-            with engine.connect() as connection:
-                connection.execute(text("SELECT 1"))
-        except Exception as exc:  # any connection failure means skip
-            pytest.skip(f"warehouse database unreachable: {type(exc).__name__}")
+        engine = create_engine("sqlite://")
         with engine.begin() as connection:
-            connection.execute(
-                text("DROP TABLE IF EXISTS `ods_stock_daily_akshare_freshness_probe`")
-            )
-            connection.execute(
-                text(
-                    "CREATE TABLE `ods_stock_daily_akshare_freshness_probe` "
-                    "LIKE `ods_stock_daily_akshare`"
-                )
-            )
+            connection.execute(text(PROBE_DDL))
         yield engine
-        with engine.begin() as connection:
-            connection.execute(
-                text("DROP TABLE IF EXISTS `ods_stock_daily_akshare_freshness_probe`")
-            )
         engine.dispose()
 
     def test_reports_the_lag_against_the_expected_date(self, warehouse):
@@ -89,7 +85,8 @@ class TestCheckFreshness:
                     "(`日期`, `股票代码`, `开盘`, `收盘`, `最高`, `最低`, `成交量`, `成交额`, "
                     "`_source`, `_fetched_at`, `_batch_id`) VALUES "
                     "('2024-01-05', 'FRESHNESS_PROBE', 1, 1, 1, 1, 1, 1, "
-                    "'akshare', NOW(), '11111111-2222-4333-8444-555555555555')"
+                    "'akshare', '2024-01-05 09:30:00', "
+                    "'11111111-2222-4333-8444-555555555555')"
                 )
             )
 
@@ -114,9 +111,10 @@ class TestCheckFreshness:
                     "(`日期`, `股票代码`, `开盘`, `收盘`, `最高`, `最低`, `成交量`, `成交额`, "
                     "`_source`, `_fetched_at`, `_batch_id`) VALUES "
                     "(:day, 'FRESHNESS_PROBE', 1, 1, 1, 1, 1, 1, "
-                    "'akshare', NOW(), '11111111-2222-4333-8444-555555555555')"
+                    "'akshare', '2024-01-31 09:30:00', "
+                    "'11111111-2222-4333-8444-555555555555')"
                 ),
-                {"day": EXPECTED},
+                {"day": EXPECTED.isoformat()},
             )
 
         report = ods_freshness(
@@ -293,7 +291,16 @@ def _report(*, lag: int | None = 2, status: str = "stale") -> FreshnessReport:
     )
 
 
+@pytest.mark.e2e
 class TestPartitionPlanCollector:
+    """Live-warehouse leg: ``partition_plans_for`` reads ``information_schema.PARTITIONS``.
+
+    It was unmarked, so every ``make gate`` run dropped and created
+    ``_probe_unpartitioned_fresh`` on production MySQL from the unit plane
+    (C59). Partition metadata has no SQLite equivalent, so the leg belongs to
+    the opt-in e2e plane instead.
+    """
+
     def test_collects_gaps_for_partitioned_tables_only(self):
         from sqlalchemy import create_engine, text
 
