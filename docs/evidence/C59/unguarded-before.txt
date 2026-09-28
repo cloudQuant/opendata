@@ -1,0 +1,35 @@
+unguarded-before.txt —— 修前普查面：单元面里未标 e2e 的真库用例，与它们在门禁日志里的读数
+====================================================================
+round: C59
+ARCHIVE_ROUND=C59
+date: 2026-09-28 16:07 +0200
+branch: dev   head: fcd216a（HEAD 侧读数，工作树改动不参与）
+python: Python 3.13.5
+
+面 1 —— 按 AST 普查 tests/*.py：未处于 e2e 作用域、却用 settings.*database_url* 建引擎的定义
+      census = tests/test_e2e_opt_in_guard.py::unmarked_engine_defs（与门禁里同一条判据同一个函数）
+
+  HEAD 侧未设防的定义：2 个，分布在 1 个文件
+    tests/test_freshness.py: ['TestCheckFreshness', 'TestPartitionPlanCollector']
+  工作树侧同一普查（tests/test_freshness.py）：[]（空 = 本轮两个定义已点齐）
+
+面 2 —— 这四条在 C58 门禁日志里的读数（tests -n 8 -m "not e2e" 段落，行号取自档内原文）
+
+2165:tests/test_freshness.py::TestCheckFreshness::test_reports_the_lag_against_the_expected_date 
+2230:[gw7] [ 23%] PASSED tests/test_freshness.py::TestCheckFreshness::test_reports_the_lag_against_the_expected_date 
+2233:tests/test_freshness.py::TestCheckFreshness::test_fresh_when_the_latest_row_reaches_the_expected_date 
+2249:[gw7] [ 24%] PASSED tests/test_freshness.py::TestCheckFreshness::test_fresh_when_the_latest_row_reaches_the_expected_date 
+2252:tests/test_freshness.py::TestCheckFreshness::test_missing_table_is_reported_not_raised 
+2275:[gw7] [ 24%] PASSED tests/test_freshness.py::TestCheckFreshness::test_missing_table_is_reported_not_raised 
+2291:tests/test_freshness.py::TestPartitionPlanCollector::test_collects_gaps_for_partitioned_tables_only 
+2312:[gw7] [ 25%] PASSED tests/test_freshness.py::TestPartitionPlanCollector::test_collects_gaps_for_partitioned_tables_only 
+
+面 3 —— e2e 面的规模：修前 83 条被 -m "not e2e" 摘掉；本轮把真库那格挪进 e2e 后的读数
+
+  HEAD:tests/test_freshness.py 里 TestPartitionPlanCollector 的标记行：
+296:class TestPartitionPlanCollector:
+  工作树（修后）：
+294:@pytest.mark.e2e
+295:class TestPartitionPlanCollector:
+
+  注：e2e 总数复算见本档 README §3（collect-only 面），这里不复述数字以免两处打架。

@@ -1,0 +1,223 @@
+# C59 反事实遍：把本轮新加的守卫逐一破坏，每一处都必须咬红
+
+## 0. 这一遍的出处
+
+下面每个数字都按行号指向 §1 正文；正文是 runner 的完整 stdout+stderr（含它自己打印的段标题、命令、环境），未裁剪。
+
+- round: C59 ／ ARCHIVE_ROUND=C59
+- 命令：`export PYTHONPATH=.; { date; date -u; python docs/evidence/C59/run_counterfacts.py; echo RUNNER_EXIT=$?; date; date -u; } > /tmp/c59_cf_run2.txt 2>&1`
+  （先完整落 `/tmp/c59_cf_run2.txt`，跑完后整份未裁剪并进本文件；§1 就是那 195 行的全部）
+- 起点时钟：第 29–30 行 `Mon Sep 28 16:11:03 CEST 2026` ／ `Mon Sep 28 14:11:03 UTC 2026`
+- 终点时钟：第 222–223 行 `Mon Sep 28 16:12:30 CEST 2026`；整遍 87 秒 = 两个时钟相减（派生值，正文没有第三个时钟）
+- 退出码：第 220 行 `COUNTERFACT_RUNNER_EXIT=0`（runner 自己的判定）与第 221 行 `RUNNER_EXIT=0`（shell 独立转述一次）—— 两处都是 0
+- 补丁面：第 32–35 行打印四个被改文件的 sha256[:12] before，第 200–203 行打印 restore … identical after，四对 digests 一一对上 ⇒ 跑完没有留下任何改动
+- 仓库安全面：每段头两行打印该段子进程实际的命令与环境（第 38–39、53–54、82–83、111–112、140–141、165–166、206–207 行），读数是 `MYSQL_HOST=DATA_MYSQL_HOST=127.0.0.1` `MYSQL_PORT=DATA_MYSQL_PORT=1` ⇒ 连 B2 放开活腿那一段也只打到 refused 端口；这一遍全程没有触达生产仓库
+- 判定（第 193–199 行的 verdict 段）：clean tree 绿 + B1–B5 全红
+  - 第 49 行 `26 passed` —— 干净树上 26 条守卫全绿
+  - 第 78 行 `6 failed, 20 passed` —— B1 把「精确 token 才放行」换成真值判断后，第 72–77 行六条宽松取值（`1`／`true`／`yes`／空／` allow`／token 加后缀）都被放行 ⇒ 咬红
+  - 第 107 行 `10 failed, 16 passed` —— B2 把 hook 改成直接 return 后，第 93 行暴露 `tests/test_partition_maintenance.py:118: warehouse database unreachable: OperationalError`：少了这道闸门、又不带 `-m "not e2e"` 的命令会真的去连仓库（本轮只连到 refused 端口）
+  - 第 136 行 `2 failed, 24 passed` —— B3 把 `TestPartitionPlanCollector` 的 e2e 标记摘掉后，第 134–135 行两条普查判据咬红
+  - 第 161 行 `1 failed, 25 passed` —— B4 让 `make test` 平面丢掉 `-m "not e2e"` 后，第 160 行的 Makefile 对账判据咬红
+  - 第 190 行 `3 failed, 23 passed` —— B5 从 pytest.ini 删掉 `e2e:` 声明后，第 187–189 行三条标记对账判据咬红
+  - 第 217 行 `26 passed` —— 还原后再跑一遍仍全绿 ⇒ 补丁是临时的、还原是逐字节的
+- 分支／HEAD：`dev` @ `fcd216a` ＋ 本轮未提交的工作树（改 `tests/conftest.py`、`tests/test_freshness.py`，新增 `tests/test_e2e_opt_in_guard.py`、`docs/evidence/C59/`）。这一项是组装本档案时跑的 `git status`／`git log`，正文里没有这三项，列出来是为了让人复核「跑这一遍的树 = 现在这个树」
+- 复算：`PYTHONPATH=. python docs/evidence/C59/run_counterfacts.py; echo RUNNER_EXIT=$?`（临时改写四个文件并在每段后按原文还原；不要在门禁在飞时跑，也不要在有未提交内容时把它当只读工具乱用 —— 它靠原文写回来还原）
+- note: 前一遍（16:04–16:07，未经时钟包装）的五段 tally 与四对 restore digest 与本遍逐字相同（6/10/2/1/3 failed 见第 78/107/136/161/190 行），差别只在正文里多了起止时钟 ⇒ runner 可重复
+
+## 1. 正文（未裁剪，195 行）
+
+Mon Sep 28 16:11:03 CEST 2026
+Mon Sep 28 14:11:03 UTC 2026
+=== patched files, sha256[:12] before ===
+  fbc99db835e9  Makefile
+  5a3535636b5e  pytest.ini
+  14f47ee40f47  tests/conftest.py
+  ed620a0ae5b7  tests/test_freshness.py
+
+### clean tree: every guard reads green
+command: -m pytest tests/test_e2e_opt_in_guard.py -q --no-cov -m not e2e -p no:cacheprovider
+env: MYSQL_HOST=DATA_MYSQL_HOST=127.0.0.1  MYSQL_PORT=DATA_MYSQL_PORT=1
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 26 items
+tests/test_e2e_opt_in_guard.py ..........................                [100%]
+============================== 26 passed in 8.00s ==============================
+PYTEST_EXIT=0
+
+### B1 a truthy opt-in releases the plane
+command: -m pytest tests/test_e2e_opt_in_guard.py -q --no-cov -m not e2e -p no:cacheprovider
+env: MYSQL_HOST=DATA_MYSQL_HOST=127.0.0.1  MYSQL_PORT=DATA_MYSQL_PORT=1
+E    +  where True = live_e2e_allowed()
+______________ test_a_loose_opt_in_does_not_release_anything[   ] ______________
+tests/test_e2e_opt_in_guard.py:117: in test_a_loose_opt_in_does_not_release_anything
+    assert live_e2e_allowed() is False
+E   assert True is False
+E    +  where True = live_e2e_allowed()
+____________ test_a_loose_opt_in_does_not_release_anything[ allow] _____________
+tests/test_e2e_opt_in_guard.py:117: in test_a_loose_opt_in_does_not_release_anything
+    assert live_e2e_allowed() is False
+E   assert True is False
+E    +  where True = live_e2e_allowed()
+_ test_a_loose_opt_in_does_not_release_anything[allow-prod-and-upstream-writesx] _
+tests/test_e2e_opt_in_guard.py:117: in test_a_loose_opt_in_does_not_release_anything
+    assert live_e2e_allowed() is False
+E   assert True is False
+E    +  where True = live_e2e_allowed()
+=========================== short test summary info ============================
+FAILED tests/test_e2e_opt_in_guard.py::test_a_loose_opt_in_does_not_release_anything[1]
+FAILED tests/test_e2e_opt_in_guard.py::test_a_loose_opt_in_does_not_release_anything[true]
+FAILED tests/test_e2e_opt_in_guard.py::test_a_loose_opt_in_does_not_release_anything[yes]
+FAILED tests/test_e2e_opt_in_guard.py::test_a_loose_opt_in_does_not_release_anything[   ]
+FAILED tests/test_e2e_opt_in_guard.py::test_a_loose_opt_in_does_not_release_anything[ allow]
+FAILED tests/test_e2e_opt_in_guard.py::test_a_loose_opt_in_does_not_release_anything[allow-prod-and-upstream-writesx]
+========================= 6 failed, 20 passed in 7.57s =========================
+PYTEST_EXIT=1
+
+### B2 the hook skips nothing (the C58 command runs live legs)
+command: -m pytest tests/test_e2e_opt_in_guard.py -q --no-cov -m not e2e -p no:cacheprovider
+env: MYSQL_HOST=DATA_MYSQL_HOST=127.0.0.1  MYSQL_PORT=DATA_MYSQL_PORT=1
+    reason = _reason(_collect()[0])
+             ^^^^^^^^^^^^^^^^^^^^^^
+tests/test_e2e_opt_in_guard.py:81: in _reason
+    return str(item.added[0].mark.kwargs["reason"])  # type: ignore[attr-defined]
+               ^^^^^^^^^^^^^
+E   IndexError: list index out of range
+_________ test_forggetting_the_marker_filter_skips_instead_of_writing __________
+tests/test_e2e_opt_in_guard.py:179: in test_forggetting_the_marker_filter_skips_instead_of_writing
+    assert all(LIVE_E2E_OPT_IN_ENV in line for line in reasons), reasons
+E   AssertionError: ['tests/test_partition_maintenance.py:118: warehouse database unreachable: OperationalError', 'tests/test_partition_ma...chable: OperationalError', 'tests/test_partition_maintenance.py:155: warehouse database unreachable: OperationalError']
+E   assert False
+E    +  where False = all(<generator object test_forggetting_the_marker_filter_skips_instead_of_writing.<locals>.<genexpr> at 0x11ae201e0>)
+=========================== short test summary info ============================
+FAILED tests/test_e2e_opt_in_guard.py::test_the_live_plane_is_denied_by_default
+FAILED tests/test_e2e_opt_in_guard.py::test_a_loose_opt_in_does_not_release_anything[1]
+FAILED tests/test_e2e_opt_in_guard.py::test_a_loose_opt_in_does_not_release_anything[true]
+FAILED tests/test_e2e_opt_in_guard.py::test_a_loose_opt_in_does_not_release_anything[yes]
+FAILED tests/test_e2e_opt_in_guard.py::test_a_loose_opt_in_does_not_release_anything[]
+FAILED tests/test_e2e_opt_in_guard.py::test_a_loose_opt_in_does_not_release_anything[   ]
+FAILED tests/test_e2e_opt_in_guard.py::test_a_loose_opt_in_does_not_release_anything[ allow]
+FAILED tests/test_e2e_opt_in_guard.py::test_a_loose_opt_in_does_not_release_anything[allow-prod-and-upstream-writesx]
+FAILED tests/test_e2e_opt_in_guard.py::test_the_skip_reason_names_the_variable_and_the_hazard
+FAILED tests/test_e2e_opt_in_guard.py::test_forggetting_the_marker_filter_skips_instead_of_writing
+======================== 10 failed, 16 passed in 9.93s =========================
+PYTEST_EXIT=1
+
+### B3 the live-warehouse leg is unmarked again
+command: -m pytest tests/test_e2e_opt_in_guard.py -q --no-cov -m not e2e -p no:cacheprovider
+env: MYSQL_HOST=DATA_MYSQL_HOST=127.0.0.1  MYSQL_PORT=DATA_MYSQL_PORT=1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 26 items
+tests/test_e2e_opt_in_guard.py ............FF............                [100%]
+=================================== FAILURES ===================================
+_________ test_no_test_outside_the_live_plane_builds_a_database_engine _________
+tests/test_e2e_opt_in_guard.py:257: in test_no_test_outside_the_live_plane_builds_a_database_engine
+    assert offenders == {}, offenders
+E   AssertionError: {'test_freshness.py': ['TestPartitionPlanCollector']}
+E   assert {'test_freshn...anCollector']} == {}
+E     
+E     Left contains 1 more item:
+E     {'test_freshness.py': ['TestPartitionPlanCollector']}
+E     Use -v to get more diff
+________________ test_the_census_names_the_legs_that_caused_it _________________
+tests/test_e2e_opt_in_guard.py:263: in test_the_census_names_the_legs_that_caused_it
+    assert unmarked_engine_defs(source) == []
+E   AssertionError: assert ['TestPartitionPlanCollector'] == []
+E     
+E     Left contains one more item: 'TestPartitionPlanCollector'
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_e2e_opt_in_guard.py::test_no_test_outside_the_live_plane_builds_a_database_engine
+FAILED tests/test_e2e_opt_in_guard.py::test_the_census_names_the_legs_that_caused_it
+========================= 2 failed, 24 passed in 9.48s =========================
+PYTEST_EXIT=1
+
+### B4 a make plane forgets the marker filter
+command: -m pytest tests/test_e2e_opt_in_guard.py -q --no-cov -m not e2e -p no:cacheprovider
+env: MYSQL_HOST=DATA_MYSQL_HOST=127.0.0.1  MYSQL_PORT=DATA_MYSQL_PORT=1
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 26 items
+tests/test_e2e_opt_in_guard.py ....................F.....                [100%]
+=================================== FAILURES ===================================
+___________ test_every_makefile_pytest_plane_deselects_the_live_legs ___________
+tests/test_e2e_opt_in_guard.py:343: in test_every_makefile_pytest_plane_deselects_the_live_legs
+    assert planes_that_do_not_deselect_e2e(planes) == []
+E   AssertionError: assert ['pytest tests -n 8'] == []
+E     
+E     Left contains one more item: 'pytest tests -n 8'
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_e2e_opt_in_guard.py::test_every_makefile_pytest_plane_deselects_the_live_legs
+========================= 1 failed, 25 passed in 9.84s =========================
+PYTEST_EXIT=1
+
+### B5 the e2e marker is no longer declared
+command: -m pytest tests/test_e2e_opt_in_guard.py -q --no-cov -m not e2e -p no:cacheprovider
+env: MYSQL_HOST=DATA_MYSQL_HOST=127.0.0.1  MYSQL_PORT=DATA_MYSQL_PORT=1
+E     Use -v to get more diff
+_______________ test_releasing_the_token_actually_opens_the_legs _______________
+tests/test_e2e_opt_in_guard.py:185: in test_releasing_the_token_actually_opens_the_legs
+    assert _tally(result.stdout) == {"skipped": HAZARD_LIVE_LEGS, "deselected": HAZARD_UNIT_LEGS}
+E   AssertionError: assert {'error': 1} == {'deselected'... 'skipped': 3}
+E     
+E     Left contains 1 more item:
+E     {'error': 1}
+E     Right contains 2 more items:
+E     {'deselected': 6, 'skipped': 3}
+E     Use -v to get more diff
+____________ test_the_guard_and_the_filter_key_off_the_same_marker _____________
+tests/test_e2e_opt_in_guard.py:366: in test_the_guard_and_the_filter_key_off_the_same_marker
+    assert re.search(r"^\s+e2e:", declared, re.MULTILINE), "e2e must stay a declared marker"
+E   AssertionError: e2e must stay a declared marker
+E   assert None
+E    +  where None = <function search at 0x1051f4b80>('^\\s+e2e:', '[pytest]\ntestpaths = tests\n# The in-repo client package (design §10.4) is a sibling of the app.\npythonpath = .\n  ...: mark test as slow running\nfilterwarnings =\n    ignore::DeprecationWarning\n    ignore::PendingDeprecationWarning\n', re.MULTILINE)
+E    +    where <function search at 0x1051f4b80> = re.search
+E    +    and   re.MULTILINE = re.MULTILINE
+=========================== short test summary info ============================
+FAILED tests/test_e2e_opt_in_guard.py::test_forggetting_the_marker_filter_skips_instead_of_writing
+FAILED tests/test_e2e_opt_in_guard.py::test_releasing_the_token_actually_opens_the_legs
+FAILED tests/test_e2e_opt_in_guard.py::test_the_guard_and_the_filter_key_off_the_same_marker
+========================= 3 failed, 23 passed in 9.43s =========================
+PYTEST_EXIT=1
+
+=== verdicts (expected: green, then red for every break) ===
+  OK   clean tree
+  OK   B1 a truthy opt-in releases the plane
+  OK   B2 the hook skips nothing (the C58 command runs live legs)
+  OK   B3 the live-warehouse leg is unmarked again
+  OK   B4 a make plane forgets the marker filter
+  OK   B5 the e2e marker is no longer declared
+  restore Makefile: fbc99db835e9 -> fbc99db835e9 identical
+  restore pytest.ini: 5a3535636b5e -> 5a3535636b5e identical
+  restore tests/conftest.py: 14f47ee40f47 -> 14f47ee40f47 identical
+  restore tests/test_freshness.py: ed620a0ae5b7 -> ed620a0ae5b7 identical
+
+### restored tree: green again
+command: -m pytest tests/test_e2e_opt_in_guard.py -q --no-cov -m not e2e -p no:cacheprovider
+env: MYSQL_HOST=DATA_MYSQL_HOST=127.0.0.1  MYSQL_PORT=DATA_MYSQL_PORT=1
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 26 items
+tests/test_e2e_opt_in_guard.py ..........................                [100%]
+============================== 26 passed in 7.89s ==============================
+PYTEST_EXIT=0
+
+COUNTERFACT_RUNNER_EXIT=0
+RUNNER_EXIT=0
+Mon Sep 28 16:12:30 CEST 2026
+Mon Sep 28 14:12:30 UTC 2026
