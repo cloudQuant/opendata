@@ -5674,6 +5674,796 @@ def judge_ac11_05(facts: Facts) -> Verdict:
 
 
 # --------------------------------------------------------------------------- #
+# AC-5: the ported tree (manifest, package breadth, headers, resources, security)
+# --------------------------------------------------------------------------- #
+
+PORTED_ROOT: Final = "opendata_http"
+PORTED_MANIFEST: Final = f"{PORTED_ROOT}/manifest.json"
+GEN_MANIFEST_TOOL: Final = "scripts/codemod/gen_manifest.py"
+DATASETS_REL: Final = f"{PORTED_ROOT}/datasets.py"
+REQ_DOC_REL: Final = "docs/迭代计划/迭代1-重构数据中台/需求文档.md"
+A2_TRIAGE_REL: Final = "docs/evidence/A2/bandit-ported-triage.md"
+PORTED_BANDIT_BASENAME: Final = "ported-bandit-scan.json"
+FIRST_PARTY_TREES: Final = ("opendata", "opendata_client", "opendata_fuyao", "scripts", "tests")
+SECURITY_PORTED_TARGET: Final = "security-ported"
+BANDIT_CONFIG: Final = "bandit.yaml"
+
+#: Imported in a child process so the callable face of the flat API is read from the same
+#: interpreter AC-16|07 proves carries no ``akshare``: an attribute the aggregator does not
+#: re-export is a function a first-party leg would fail to reach at routing time.
+PORTED_CALL_SNIPPET: Final = (
+    "import sys, opendata_http as ak\n"
+    "missing = [n for n in sys.argv[1:] if not callable(getattr(ak, n, None))]\n"
+    "print('\\n'.join(f'MISSING:{n}' for n in missing))\n"
+)
+
+
+def manifest_entries(payload: dict[str, object], key: str) -> list[dict[str, object]]:
+    """One of the manifest's entry lists, or a failure naming the shape that moved."""
+    raw = payload.get(key)
+    if not isinstance(raw, list):
+        raise ProbeError(f"{PORTED_MANIFEST} has no {key} list")
+    return [entry for entry in raw if isinstance(entry, dict)]
+
+
+def manifest_mapping(payload: dict[str, object], key: str) -> dict[str, object]:
+    """One of the manifest's sub-mappings (``counts`` / ``upstream``), empty when it moved."""
+    raw = payload.get(key)
+    return dict(raw) if isinstance(raw, dict) else {}
+
+
+@lru_cache(maxsize=1)
+def ported_manifest() -> dict[str, object]:
+    """The ported tree's own manifest, read once per run."""
+    path = REPO_ROOT / PORTED_MANIFEST
+    if not path.is_file():
+        raise ProbeError(f"{PORTED_MANIFEST} is missing")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ProbeError(f"{PORTED_MANIFEST} is not a mapping")
+    return payload
+
+
+def entry_path(entry: dict[str, object]) -> str:
+    """A manifest entry's path, relative to the ported root."""
+    return str(entry.get("path", ""))
+
+
+@lru_cache(maxsize=1)
+def ported_call_targets() -> tuple[str, ...]:
+    """Every name first-party code calls on the ported flat API, import aliases included.
+
+    ``import opendata_http as ak`` is as much a claim on the aggregator's surface as
+    ``opendata_http.stock_zh_a_hist()``, so the alias is resolved per file before the attributes
+    under it are counted; a leg that reaches for a name the facade does not re-export is a routing
+    failure waiting for the next ``fetch``.
+    """
+    found: set[str] = set()
+    for tree in FIRST_PARTY_TREES:
+        base = REPO_ROOT / tree
+        if not base.is_dir():
+            continue
+        for path in sorted(base.rglob("*.py")):
+            if "__pycache__" in path.parts:
+                continue
+            try:
+                parsed = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
+            except SyntaxError:
+                continue
+            bound = {PORTED_ROOT}
+            for node in ast.walk(parsed):
+                if isinstance(node, ast.Import):
+                    bound.update(
+                        alias.asname or alias.name
+                        for alias in node.names
+                        if alias.name == PORTED_ROOT
+                    )
+            for node in ast.walk(parsed):
+                if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
+                    continue
+                receiver = node.func.value
+                if isinstance(receiver, ast.Name) and receiver.id in bound:
+                    found.add(node.func.attr)
+    return tuple(sorted(found))
+
+
+@lru_cache(maxsize=1)
+def ported_reexports() -> frozenset[str]:
+    """The flat API names the ported aggregator re-exports from its submodules."""
+    text = (REPO_ROOT / PORTED_ROOT / "__init__.py").read_text(encoding="utf-8", errors="replace")
+    names: set[str] = set()
+    for node in ast.walk(ast.parse(text)):
+        if isinstance(node, ast.ImportFrom) and str(node.module or "").startswith(PORTED_ROOT):
+            names.update(alias.asname or alias.name for alias in node.names)
+    return frozenset(names)
+
+
+@lru_cache(maxsize=1)
+def ported_batch_field() -> str:
+    """Which machine-readable field states a domain's 1A/1B batch, or ``-`` when none does."""
+    payload = yaml.safe_load((REPO_ROOT / "opendata/data/domains.yaml").read_text(encoding="utf-8"))
+    domains = payload.get("domains") if isinstance(payload, dict) else None
+    rows = list(domains.values()) if isinstance(domains, dict) else list(domains or [])
+    keys = {str(key) for row in rows if isinstance(row, dict) for key in row}
+    for wanted in ("batch", "priority", "tier"):
+        if wanted in keys:
+            return f"opendata/data/domains.yaml#{wanted}"
+    capability = (REPO_ROOT / "opendata/data/capability.py").read_text(encoding="utf-8")
+    for wanted in ("batch", "priority", "tier"):
+        if re.search(rf"^    {wanted}: ", capability, re.MULTILINE):
+            return f"opendata/data/capability.py#{wanted}"
+    return "-"
+
+
+def measure_ac5_01(ctx: Context) -> Facts:
+    """Recompute every manifest entry against the disk instead of trusting its numbers."""
+    code, out = run_argv([sys.executable, GEN_MANIFEST_TOOL, "--check"])
+    payload = ported_manifest()
+    files = manifest_entries(payload, "files")
+    resources = manifest_entries(payload, "resources")
+    base = REPO_ROOT / PORTED_ROOT
+    mismatch, absent = [], []
+    for entry in files + resources:
+        path = base / entry_path(entry)
+        if not path.is_file():
+            absent.append(entry_path(entry))
+            continue
+        if hashlib.sha256(path.read_bytes()).hexdigest() != str(entry.get("sha256")):
+            mismatch.append(entry_path(entry))
+    disk_py = sorted(
+        path.relative_to(base).as_posix()
+        for path in base.rglob("*.py")
+        if "__pycache__" not in path.parts
+    )
+    disk_other = sorted(
+        path.relative_to(base).as_posix()
+        for path in base.rglob("*")
+        if path.is_file()
+        and path.suffix != ".py"
+        and "__pycache__" not in path.parts
+        and path.name not in ("manifest.json", "upstream.lock")
+    )
+    listed_py = sorted(entry_path(entry) for entry in files)
+    listed_res = sorted(entry_path(entry) for entry in resources)
+    unlisted = sorted(set(disk_py) - set(listed_py))
+    stale = sorted(set(listed_py) - set(disk_py))
+    res_unregistered = sorted(set(disk_other) - set(listed_res))
+    res_stale = sorted(set(listed_res) - set(disk_other))
+    lines_now = sum(
+        len((base / name).read_text(encoding="utf-8", errors="replace").splitlines())
+        for name in listed_py
+        if (base / name).is_file()
+    )
+    counts = manifest_mapping(payload, "counts")
+    lock_paths = {str(entry.get("path", "")) for entry in lock_records(ctx)}
+    return {
+        "check_exit": str(code),
+        "check_note": (out.strip().splitlines() or ["(no output)"])[-1][:120],
+        "listed_py": count(len(listed_py)),
+        "listed_res": count(len(listed_res)),
+        "listed_total": count(len(files) + len(resources)),
+        "disk_py": count(len(disk_py)),
+        "disk_other": count(len(disk_other)),
+        "sha_checked": count(len(files) + len(resources) - len(absent)),
+        "sha_mismatch": count(len(mismatch)),
+        "sha_absent": count(len(absent)),
+        "unlisted_on_disk": count(len(unlisted)),
+        "unlisted_names": ", ".join(unlisted[:4]) or "-",
+        "stale_entries": count(len(stale)),
+        "stale_names": ", ".join(stale[:4]) or "-",
+        "res_unregistered": count(len(res_unregistered)),
+        "res_unregistered_names": ", ".join(res_unregistered[:4]) or "-",
+        "res_stale": count(len(res_stale)),
+        "count_py_ok": flag(str(counts.get("py_files")) == str(len(listed_py))),
+        "count_res_ok": flag(str(counts.get("resource_files")) == str(len(listed_res))),
+        "count_total_ok": flag(str(counts.get("total_files")) == str(len(files) + len(resources))),
+        "count_lines_ok": flag(str(counts.get("total_lines")) == str(lines_now)),
+        "lines_recomputed": count(lines_now),
+        "lock_paths_ok": flag(lock_paths == set(listed_py) | set(listed_res)),
+        "lock_records": count(len(lock_paths)),
+    }
+
+
+def judge_ac5_01(facts: Facts) -> Verdict:
+    """``AC-5|01``: the manifest is recomputed file by file, and its counts are derived."""
+    ok = (
+        facts["check_exit"] == "0"
+        and facts["sha_mismatch"] == "0"
+        and facts["sha_absent"] == "0"
+        and facts["unlisted_on_disk"] == "0"
+        and facts["stale_entries"] == "0"
+        and facts["res_unregistered"] == "0"
+        and facts["res_stale"] == "0"
+        and facts["lock_paths_ok"] == "yes"
+        and facts["count_py_ok"] == "yes"
+        and facts["count_res_ok"] == "yes"
+        and facts["count_total_ok"] == "yes"
+        and facts["count_lines_ok"] == "yes"
+    )
+    readings = (
+        f"清单 {facts['listed_py']} 个 py + {facts['listed_res']} 个资源 = "
+        f"{facts['listed_total']} 条，逐条现算 sha256（{facts['sha_checked']} 条能读到磁盘内容）："
+        f"对不上 {facts['sha_mismatch']} 条、磁盘上没有 {facts['sha_absent']} 条",
+        f"磁盘反查：py {facts['disk_py']} 个（清单没登记的 {facts['unlisted_on_disk']}："
+        f"{facts['unlisted_names']}）、非 py 文件 {facts['disk_other']} 个（未登记为资源 "
+        f"{facts['res_unregistered']}：{facts['res_unregistered_names']}），清单里过时条目 "
+        f"{facts['stale_entries']}：{facts['stale_names']}",
+        f"四个计数逐个与现算相等：py_files={facts['count_py_ok']}、resource_files="
+        f"{facts['count_res_ok']}、total_files={facts['count_total_ok']}、total_lines="
+        f"{facts['count_lines_ok']}（现算行数 {facts['lines_recomputed']}）；"
+        f"upstream.lock 与 manifest 的文件集相等 = {facts['lock_paths_ok']}"
+        f"（{facts['lock_records']} 条）",
+        f"仪器原话（{GEN_MANIFEST_TOOL} --check，exit {facts['check_exit']}）："
+        f"{facts['check_note']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "「逐项校验通过」要的是每一条 sha 都对得上磁盘、磁盘上没有清单未登记的搬运文件、"
+        "四个计数都拿现算值复核过 —— 少任何一项，验收依据就退回「写死的数字」"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac5_02(ctx: Context) -> Facts:
+    """Ask what the ported tree actually carries and whether the 1A/1B split is readable."""
+    files = manifest_entries(ported_manifest(), "files")
+    packages = sorted(
+        {
+            Path(str(entry.get("upstream_path", ""))).parts[1]
+            for entry in files
+            if len(Path(str(entry.get("upstream_path", ""))).parts) > 2
+        }
+    )
+    exported = ported_reexports()
+    called = ported_call_targets()
+    missing = sorted(name for name in called if name not in exported)
+    scope = ctx.read(REQ_DOC_REL)
+    named = first_capture(
+        scope, r"搬运范围（D9）\*\*：本迭代搬运 P0/P1 数据域涉及的子模块（([^）]*)）"
+    )
+    excluded = first_capture(scope, r"无关的子模块（([^）]*)）移出本迭代")
+    named_packages = [
+        name
+        for name in (re.sub(r"\s*等\s*$", "", part).strip() for part in named.split("、"))
+        if name and name != "等"
+    ]
+    excluded_packages = [part.strip() for part in excluded.split("/") if part.strip()]
+    named_absent = sorted(set(named_packages) - set(packages))
+    excluded_present = sorted(set(excluded_packages) & set(packages))
+    leg_modules = sorted(
+        path.relative_to(REPO_ROOT).as_posix()
+        for path in (REPO_ROOT / "opendata/data/providers/akshare/models").glob("*.py")
+        if path.name != "__init__.py"
+    )
+    return {
+        "package_count": count(len(packages)),
+        "package_names": ", ".join(packages),
+        "manifest_files": count(len(files)),
+        "leg_modules": count(len(leg_modules)),
+        "first_party_calls": count(len(called)),
+        "has_calls": flag(len(called) > 0),
+        "called_missing": count(len(missing)),
+        "called_missing_names": ", ".join(missing[:4]) or "-",
+        "scope_named": count(len(named_packages)),
+        "scope_named_raw": named[:80],
+        "scope_missing": count(len(named_absent)),
+        "scope_missing_names": ", ".join(named_absent) or "-",
+        "excluded_named": count(len(excluded_packages)),
+        "excluded_present": count(len(excluded_present)),
+        "excluded_present_names": ", ".join(excluded_present) or "-",
+        "tier_field": ported_batch_field(),
+    }
+
+
+def judge_ac5_02(facts: Facts) -> Verdict:
+    """``AC-5|02``: the ported breadth is used by our legs, and the batch split is readable."""
+    ok = (
+        facts["has_calls"] == "yes"
+        and facts["called_missing"] == "0"
+        and facts["excluded_present"] == "0"
+        and facts["scope_missing"] == "0"
+        and facts["tier_field"] != "-"
+    )
+    readings = (
+        f"搬运清单 {facts['manifest_files']} 个 py 文件，来自上游 {facts['package_count']} 个子包："
+        f"{facts['package_names']}",
+        f"首方代码以 ``opendata_http.<name>`` 取用 {facts['first_party_calls']} 个端点函数，"
+        f"聚合层没导出的 {facts['called_missing']} 个：{facts['called_missing_names']}"
+        f"（akshare 腿模块 {facts['leg_modules']} 个）",
+        f"需求 D9 点名的范围内 {facts['scope_named']} 个子包（原文：{facts['scope_named_raw']}），"
+        f"清单里没有的 {facts['scope_missing']} 个：{facts['scope_missing_names']}；"
+        f"点名移出的 {facts['excluded_named']} 个非金融子包混进来的 "
+        f"{facts['excluded_present']} 个：{facts['excluded_present_names']}",
+        f"能读出 1A/1B 批次的机器字段 = {facts['tier_field']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "「P0 域子模块搬运完成 / P1 域子模块搬运完成」缺一个机器可读的分母：`domains.yaml` 与 "
+        "`Capability` 都不带 batch/priority/tier 字段，需求 D9 与实施计划 B1.1 的子模块清单都写在"
+        "「…等」这类散文里，所以「完成」today 无法从树上判。已量的两半是实的：首方代码取用的端点"
+        "全部导出、被移出本迭代的非金融子包一个都没混进来；散文点名的 "
+        f"{facts['scope_missing_names']} 是否属于 P0/P1 也要同一份字段来定。钉出这个字段是产品/接口"
+        "决策（谁声明哪个域属哪一批），本轮不替它编"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac5_03(ctx: Context) -> Facts:
+    """Read the report's pending-TODO face, then run the frozen AST scan over it."""
+    report = ctx.read(PORT_REPORT_ARCHIVE)
+    code, out = run_argv([sys.executable, ZERO_DEP_SCANNER])
+    self_code, _ = run_argv([sys.executable, ZERO_DEP_SCANNER, "--self-test"])
+    scanner = script_module(ZERO_DEP_SCANNER)
+    findings = scanner.collect(scanner.DEFAULT_TARGETS)
+    kinds = {
+        kind: sum(1 for finding in findings if finding.kind == kind)
+        for kind in ("import", "dynamic", "string")
+    }
+    section = report.split("## 人工待办清单", 1)[1] if "## 人工待办清单" in report else ""
+    body = [line.strip() for line in section.splitlines() if line.strip()]
+    return {
+        "todo_reported": first_capture(report, r"人工待办：\*\*(\d+)\*\*"),
+        "todo_section_ok": flag(
+            bool(body)
+            and body[0].startswith("（无")
+            and not any(line.startswith("- [ ]") for line in body)
+        ),
+        "todo_section_head": body[0][:60] if body else "(空)",
+        "detector_exit": str(code),
+        "detector_note": (out.strip().splitlines() or ["(no output)"])[-1][:120],
+        "self_test_exit": str(self_code),
+        "import_live": count(kinds["import"]),
+        "dynamic_live": count(kinds["dynamic"]),
+        "string_live": count(kinds["string"]),
+        "string_files": ", ".join(sorted({f.file for f in findings if f.kind == "string"})) or "-",
+        "frozen": count(len(scanner.load_baseline().entries)),
+    }
+
+
+def judge_ac5_03(facts: Facts) -> Verdict:
+    """``AC-5|03``: the diff report is out of TODOs and the AST scan sees no upstream reference."""
+    ok = (
+        facts["todo_reported"] == "0"
+        and facts["todo_section_ok"] == "yes"
+        and facts["detector_exit"] == "0"
+        and facts["self_test_exit"] == "0"
+        and facts["import_live"] == "0"
+        and facts["dynamic_live"] == "0"
+        and facts["string_live"] == "0"
+        and facts["frozen"] == "0"
+    )
+    readings = (
+        f"差异报告（{PORT_REPORT_ARCHIVE}）自报人工待办 {facts['todo_reported']} 条，"
+        f"清单段落首行「{facts['todo_section_head']}」且没有挂着的复选项 = "
+        f"{facts['todo_section_ok']}",
+        f"AST 级静态扫描（{ZERO_DEP_SCANNER}，exit {facts['detector_exit']} / "
+        f"--self-test exit {facts['self_test_exit']}）：import 形态 {facts['import_live']}、"
+        f"动态导入 {facts['dynamic_live']}、字符串常量 {facts['string_live']}",
+        f"扫描器冻着的基线 {facts['frozen']} 条，字符串形态落在 {facts['string_files'] or '-'}",
+        f"扫描器原话：{facts['detector_note']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "判据原文把「含字符串常量与动态导入」写进了零引用口径，基线里剩下的就是那 "
+        f"{facts['string_live']} 条产品事实的名字面量（{facts['string_files']}）。"
+        "抹平它只有两条路，"
+        "两条都要改判据本身：①把扫描器字符串规则改窄（等于放宽已勾的 AC-16|05「AST 口径」）；"
+        "②改掉这三处真实数据源名的拼写（正是 C35 收口过的门禁空转）。同一道题 AC-16|06 已经"
+        "登记为用户/产品决策（task #64），这里不重复改判、也不换个说法再判一次"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac5_04(ctx: Context) -> Facts:
+    """Check the old root is gone, then reach the flat API from an interpreter without akshare."""
+    root_dir = (REPO_ROOT / "akshare").is_dir()
+    code, out = run_argv(["git", "ls-files", "akshare/"])
+    tracked = sorted(line for line in out.splitlines() if line)
+    spec = importlib.util.find_spec("akshare")
+    import_code, import_out = run_argv([sys.executable, "-c", f"import {PORTED_ROOT}"])
+    names = ported_call_targets()
+    call_code, call_out = run_argv([sys.executable, "-c", PORTED_CALL_SNIPPET, *names])
+    absent = sorted(
+        line.removeprefix("MISSING:")
+        for line in call_out.splitlines()
+        if line.startswith("MISSING:")
+    )
+    archive_rel, archive_dir = newest_round_archive(CLEAN_RUN_BASENAME)
+    evidence = ctx.read(archive_rel) if archive_rel != "-" else ""
+    declared = first_capture(evidence, r"^ARCHIVE_ROUND=(\S+)$")
+    return {
+        "root_dir": flag(root_dir),
+        "tracked_under_root": count(len(tracked)),
+        "tracked_names": ", ".join(tracked[:4]) or "-",
+        "spec": "absent" if spec is None else "present",
+        "import_exit": str(import_code),
+        "import_note": (import_out.strip().splitlines() or ["(no output)"])[-1][:100],
+        "call_targets": count(len(names)),
+        "call_probe_exit": str(call_code),
+        "callable_missing": count(len(absent)),
+        "callable_missing_names": ", ".join(absent[:4]) or "-",
+        "clean_archive": archive_rel,
+        "archive_round": declared or "-",
+        "archive_self_written": flag(bool(declared) and declared == archive_dir),
+        "archive_absent": flag(
+            "akshare: absent" in evidence and "akshare: present" not in evidence
+        ),
+    }
+
+
+def judge_ac5_04(facts: Facts) -> Verdict:
+    """``AC-5|04``: no ``akshare`` at the root or in the interpreter, and the legs still resolve."""
+    ok = (
+        facts["root_dir"] == "no"
+        and facts["tracked_under_root"] == "0"
+        and facts["spec"] == "absent"
+        and facts["import_exit"] == "0"
+        and number(facts["call_targets"]) > 0
+        and facts["callable_missing"] == "0"
+        and facts["archive_absent"] == "yes"
+    )
+    readings = (
+        f"根目录 `akshare/` 在磁盘上 = {facts['root_dir']}，git 索引里该前缀下 "
+        f"{facts['tracked_under_root']} 个文件：{facts['tracked_names']}",
+        f"本解释器 `importlib.util.find_spec('akshare')` = {facts['spec']}；"
+        f"`import {PORTED_ROOT}` exit={facts['import_exit']}（{facts['import_note']}）",
+        f"首方代码取用的 {facts['call_targets']} 个端点函数逐个 `callable(getattr(...))`，"
+        f"取不到的 {facts['callable_missing']} 个：{facts['callable_missing_names']}"
+        f"（探针 exit {facts['call_probe_exit']}）",
+        f"干净 venv 侧证（{facts['clean_archive']}，ARCHIVE_ROUND={facts['archive_round']}，"
+        f"本轮自写 = {facts['archive_self_written']}）里 akshare 报 absent = "
+        f"{facts['archive_absent']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "「根目录 akshare/ 已删除；未安装 akshare 的环境中 P0 域函数可用」"
+        "要的是这两句同时成立："
+        "根目录既不在磁盘也不在索引里、解释器也没有这个包，而搬运层的平面对外接口还能被腿解析到"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac5_05(ctx: Context) -> Facts:
+    """Read the two banner lines of every manifest-listed ported file and pin them to the lock."""
+    payload = ported_manifest()
+    files = manifest_entries(payload, "files")
+    resources = manifest_entries(payload, "resources")
+    upstream = manifest_mapping(payload, "upstream")
+    base = REPO_ROOT / PORTED_ROOT
+    mit_missing: list[str] = []
+    source_missing: list[str] = []
+    url_missing: list[str] = []
+    commits: set[str] = set()
+    walked = 0
+    for entry in files:
+        path = base / entry_path(entry)
+        if not path.is_file():
+            mit_missing.append(f"{entry_path(entry)}(absent)")
+            source_missing.append(f"{entry_path(entry)}(absent)")
+            continue
+        head = "\n".join(path.read_text(encoding="utf-8", errors="replace").splitlines()[:6])
+        walked += 1
+        if "MIT License" not in head:
+            mit_missing.append(entry_path(entry))
+        found = re.search(r"# Ported from (\S+) \((\S+)\) @ ([0-9a-f]{40})", head)
+        if not found:
+            source_missing.append(entry_path(entry))
+            continue
+        commits.add(found.group(3))
+        if found.group(2) != str(upstream.get("url")):
+            url_missing.append(entry_path(entry))
+    notices = ctx.read("THIRD_PARTY_NOTICES.md")
+    return {
+        "listed_py": count(len(files)),
+        "walked": count(walked),
+        "walk_ok": flag(walked == len(files) and len(files) > 0),
+        "mit_missing": count(len(mit_missing)),
+        "mit_missing_names": ", ".join(mit_missing[:4]) or "-",
+        "source_missing": count(len(source_missing)),
+        "source_missing_names": ", ".join(source_missing[:4]) or "-",
+        "banner_commits": count(len(commits)),
+        "lock_commit": str(upstream.get("commit", "(absent)")),
+        "commit_ok": flag(
+            len(commits) == 1 and next(iter(commits), "") == str(upstream.get("commit"))
+        ),
+        "url_missing": count(len(url_missing)),
+        "url_missing_names": ", ".join(url_missing[:4]) or "-",
+        "lock_url": str(upstream.get("url", "(absent)")),
+        "notices_ok": flag("akshare" in notices and "MIT" in notices.upper()),
+        "resource_count": count(len(resources)),
+    }
+
+
+def judge_ac5_05(facts: Facts) -> Verdict:
+    """``AC-5|05``: every ported file keeps the MIT notice and a source line pinned to the lock."""
+    ok = (
+        facts["walk_ok"] == "yes"
+        and facts["mit_missing"] == "0"
+        and facts["source_missing"] == "0"
+        and facts["url_missing"] == "0"
+        and facts["banner_commits"] == "1"
+        and facts["commit_ok"] == "yes"
+        and facts["notices_ok"] == "yes"
+    )
+    readings = (
+        f"清单里 {facts['listed_py']} 个 py 文件逐个读前 6 行（走查 {facts['walked']} 个，"
+        f"与清单相等 = {facts['walk_ok']}）：缺 MIT 声明 {facts['mit_missing']} 个"
+        f"（{facts['mit_missing_names']}）、缺来源标注 {facts['source_missing']} 个"
+        f"（{facts['source_missing_names']}）",
+        f"来源标注里的 commit 只有 {facts['banner_commits']} 个取值，与 manifest/upstream.lock 的 "
+        f"{facts['lock_commit'][:12]} 相等 = {facts['commit_ok']}；URL 与 lock_url "
+        f"（{facts['lock_url']}）逐字不等的 {facts['url_missing']} 个："
+        f"{facts['url_missing_names']}",
+        f"许可证台账（THIRD_PARTY_NOTICES.md）同时说得到 akshare 与 MIT = {facts['notices_ok']}",
+        f"清单里 {facts['resource_count']} 个资源文件（json/js）不带这类头部 —— 判据指的是搬运的"
+        "源文件，资源由 manifest.json 与许可证台账各自登记，本轮只披露不判定",
+    )
+    reason = (
+        ""
+        if ok
+        else "「每文件头保留 MIT 版权声明 + 来源标注」要的是搬运树里每一个 py 文件都带上这两行，"
+        "并且来源钉的是 upstream.lock 里那一个 commit —— 多个 commit 就说明有文件是另一次同步的残留"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def _datasets_accessor_outcome(module: ModuleType, name: str) -> str:
+    """Which branch one resource accessor actually takes when it is called.
+
+    ``datasets.py`` says an unavailable built-in in the message it raises, so the exception is
+    the reading rather than a failure to handle; anything else comes back as its class name.
+    """
+    try:
+        getattr(module, name)()
+    except Exception as exc:
+        return "marked" if "unavailable" in str(exc) else type(exc).__name__
+    return "runnable"
+
+
+def measure_ac5_06(ctx: Context) -> Facts:
+    """Run the resource accessors here, then ask whether the register actually lists them."""
+    path = REPO_ROOT / DATASETS_REL
+    if not path.is_file():
+        raise ProbeError(f"{DATASETS_REL} is missing")
+    source = path.read_text(encoding="utf-8", errors="replace")
+    parsed = ast.parse(source)
+    modules = [
+        node
+        for node in parsed.body
+        if isinstance(node, ast.FunctionDef) and not node.name.startswith("_")
+    ]
+    names = [node.name for node in modules]
+    spec = importlib.util.spec_from_file_location("ported_datasets_probe", path)
+    if spec is None or spec.loader is None:
+        raise ProbeError(f"{DATASETS_REL} cannot be loaded for a call test")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    outcomes = [(node.name, _datasets_accessor_outcome(module, node.name)) for node in modules]
+    runnable = [name for name, kind in outcomes if kind == "runnable"]
+    marked = [name for name, kind in outcomes if kind == "marked"]
+    other = [f"{name}:{kind}" for name, kind in outcomes if kind not in ("runnable", "marked")]
+    points = [
+        name
+        for name in marked
+        if PORT_REPORT_ARCHIVE in ast.unparse(next(node for node in modules if node.name == name))
+    ]
+    report = ctx.read(PORT_REPORT_ARCHIVE)
+    section = report.split("内置资源不可用登记", 1)[1] if "内置资源不可用登记" in report else ""
+    rows = [line for line in section.splitlines() if line.startswith("| `")]
+    base = REPO_ROOT / PORTED_ROOT
+    resources = manifest_entries(ported_manifest(), "resources")
+    present = sum(1 for entry in resources if (base / entry_path(entry)).is_file())
+    return {
+        "functions": count(len(names)),
+        "function_names": ", ".join(names) or "-",
+        "runnable": count(len(runnable)),
+        "runnable_names": ", ".join(runnable) or "-",
+        "marked": count(len(marked)),
+        "marked_names": ", ".join(marked) or "-",
+        "raised_other": count(len(other)),
+        "raised_other_names": ", ".join(other) or "-",
+        "points_at_register": flag(len(points) == len(marked)),
+        "points_names": ", ".join(points) or "-",
+        "register_heading": flag(bool(section)),
+        "register_rows": count(len(rows)),
+        "register_lists_marked": flag(
+            all(f"`{name}`" in section for name in marked) and len(rows) == len(marked)
+        ),
+        "resource_listed": count(len(resources)),
+        "resource_present": count(present),
+        "resources_present_ok": flag(present == len(resources) and len(resources) > 0),
+    }
+
+
+def judge_ac5_06(facts: Facts) -> Verdict:
+    """``AC-5|06``: the accessors either resolve or are marked unavailable *and* registered."""
+    resolves = facts["runnable"] == facts["functions"] and number(facts["functions"]) > 0
+    registered = (
+        number(facts["functions"]) > 0
+        and facts["raised_other"] == "0"
+        and facts["marked"] == facts["functions"]
+        and facts["points_at_register"] == "yes"
+        and facts["register_heading"] == "yes"
+        and facts["register_lists_marked"] == "yes"
+    )
+    ok = facts["resources_present_ok"] == "yes" and (resolves or registered)
+    readings = (
+        f"{DATASETS_REL} 里 {facts['functions']} 个资源访问函数（{facts['function_names']}）"
+        f"当场调用：返回路径的 {facts['runnable']} 个（{facts['runnable_names']}）、"
+        f"raise 里明说不可用的 {facts['marked']} 个（{facts['marked_names']}）、"
+        f"报别的异常的 {facts['raised_other']} 个：{facts['raised_other_names']}",
+        f"标注不可用的 {facts['marked']} 个函数的 raise 文本都回指登记文件 {PORT_REPORT_ARCHIVE} = "
+        f"{facts['points_at_register']}（{facts['points_names']}）；登记段落在位 = "
+        f"{facts['register_heading']}，表体 {facts['register_rows']} 行、"
+        "逐个点名这些函数且不多不少 = "
+        f"{facts['register_lists_marked']}",
+        f"登记处由报告仪器（{PORT_REPORT_TOOL}）从 `datasets.py` 的 raise 语句与 upstream.lock "
+        "派生，不是手写段落",
+        f"清单登记的 {facts['resource_listed']} 个内置资源在磁盘齐备 = "
+        f"{facts['resources_present_ok']}（{facts['resource_present']}/{facts['resource_listed']}）",
+    )
+    reason = (
+        ""
+        if ok
+        else "判据给了两条支路：函数可运行，或「明确标注不可用并登记」。调用实测是 raise，"
+        "那就只看第二条 —— 标注在函数体里，登记必须有地方接住它（`datasets.py` 的 raise 文本"
+        f"回指 {PORT_REPORT_ARCHIVE}），没有登记段落就是只标注、没登记"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def bandit_triaged_rules(ctx: Context) -> frozenset[str]:
+    """The rule ids the A2 manual triage disposes of, read from its summary table."""
+    return frozenset(re.findall(r"^\|\s*(B\d{3})", ctx.read(A2_TRIAGE_REL), re.MULTILINE))
+
+
+def measure_ac5_07(ctx: Context) -> Facts:
+    """Compare the ported security scan on record against the tree as it stands now."""
+    recipes = make_recipes(ctx.read("Makefile"))
+    # make 的 recipe 里 `@#` 与 `#` 都是注释；把它们算进命令会让 target_ok 被注释养活，
+    # 也会让读数只打印注释、看不见真正执行的命令
+    ported_recipe = " ".join(
+        line
+        for line in recipes.get(SECURITY_PORTED_TARGET, [])
+        if not line.lstrip("@").startswith("#")
+    )
+    listed_py = {entry_path(entry) for entry in manifest_entries(ported_manifest(), "files")}
+    ported_now = len(py_files_under(PORTED_ROOT))
+    exclude_dirs = [
+        str(item)
+        for item in ((yaml.safe_load(ctx.read(BANDIT_CONFIG)) or {}).get("exclude_dirs") or [])
+    ]
+    archive_rel, archive_dir = newest_round_archive(PORTED_BANDIT_BASENAME)
+    findings: list[dict[str, object]] = []
+    declared, produced_by, generated_at = "", "", ""
+    if archive_rel != "-":
+        payload = json.loads(ctx.read(archive_rel))
+        if isinstance(payload, dict):
+            declared = str(payload.get("archive_round", ""))
+            produced_by = str(payload.get("produced_by", ""))
+            generated_at = str(payload.get("generated_at", ""))
+            scan = payload.get("scan") if isinstance(payload.get("scan"), dict) else payload
+            raw = scan.get("results") if isinstance(scan, dict) else None
+            findings = [item for item in (raw or []) if isinstance(item, dict)]
+    rules = sorted({str(item.get("test_id")) for item in findings})
+    triaged = bandit_triaged_rules(ctx)
+    untriaged = [item for item in findings if str(item.get("test_id")) not in triaged]
+    scanned = sorted(
+        {str(item.get("filename", "")).split(f"{PORTED_ROOT}/")[-1] for item in findings}
+    )
+    stray = sorted(name for name in scanned if name not in listed_py)
+    triage = ctx.read(A2_TRIAGE_REL)
+    absolution = first_capture(triage, r"^(无 B\d{3}[^。\n]*)。")
+    cleared = sorted(set(re.findall(r"B\d{3}", absolution)))
+    contradicted = sorted(rule for rule in cleared if rule in set(rules))
+    deser = sorted(
+        {
+            f"{item.get('test_id')}({item.get('test_name')})"
+            for item in findings
+            if any(word in str(item.get("test_name", "")).lower() for word in ("pickle", "yaml"))
+        }
+    )
+    claimed_files = first_capture(triage, r"扫描对象：`" + PORTED_ROOT + r"/`（(\d+) 个 py 文件")
+    return {
+        "target_ok": flag(bool(ported_recipe) and PORTED_ROOT in ported_recipe),
+        "target_recipe": ported_recipe[:140] or "-",
+        "daily_excludes_ported": flag(PORTED_ROOT in exclude_dirs),
+        "bandit_exclude_dirs": ", ".join(exclude_dirs) or "-",
+        "ported_files": count(ported_now),
+        "archive": archive_rel,
+        "archive_round": declared or "-",
+        "archive_produced_by": produced_by[:120] or "-",
+        "archive_generated_at": generated_at or "-",
+        "archive_self_written": flag(bool(declared) and declared == archive_dir),
+        "scan_findings": count(len(findings)),
+        "scan_files": count(len(scanned)),
+        "scan_rules": count(len(rules)),
+        "scan_rule_names": ", ".join(rules) or "-",
+        "scan_b_only": flag(bool(rules) and all(rule.startswith("B") for rule in rules)),
+        "scan_manifest_ok": flag(not stray and bool(findings)),
+        "scan_stray_names": ", ".join(stray[:4]) or "-",
+        "triage_rules": count(len(triaged)),
+        "findings_untriaged": count(len(untriaged)),
+        "untriaged_detail": ", ".join(
+            f"{item.get('test_id')}@{str(item.get('filename', '')).split(f'{PORTED_ROOT}/')[-1]}"
+            f":{item.get('line_number')}"
+            for item in untriaged[:6]
+        )
+        or "-",
+        "triage_files_claimed": claimed_files,
+        "triage_findings_claimed": first_capture(triage, r"bandit-ported\.json`（(\d+) 项）"),
+        "triage_absolution": absolution[:80],
+        "cleared_rules": ", ".join(cleared) or "-",
+        "cleared_present": count(len(contradicted)),
+        "cleared_present_names": ", ".join(contradicted) or "-",
+        "deser_present": count(len(deser)),
+        "deser_names": ", ".join(deser) or "-",
+        "surface_covered": flag(claimed_files == count(ported_now)),
+    }
+
+
+def judge_ac5_07(facts: Facts) -> Verdict:
+    """``AC-5|07``: the ported tree's bandit run is on record and the triage covers all of it."""
+    ok = (
+        facts["target_ok"] == "yes"
+        and facts["archive"] != "-"
+        and facts["archive_self_written"] == "yes"
+        and facts["scan_manifest_ok"] == "yes"
+        and facts["scan_b_only"] == "yes"
+        and number(facts["scan_findings"]) > 0
+        and facts["findings_untriaged"] == "0"
+        and facts["cleared_present"] == "0"
+        and facts["deser_present"] == "0"
+        and facts["surface_covered"] == "yes"
+    )
+    readings = (
+        f"搬运层专用扫描目标 `Makefile:{SECURITY_PORTED_TARGET}` 在位且打的是 {PORTED_ROOT}/ = "
+        f"{facts['target_ok']}（recipe：{facts['target_recipe']}）；日常 `make security` 按 "
+        f"{BANDIT_CONFIG} 的 exclude_dirs（{facts['bandit_exclude_dirs']}）把搬运层排出去，"
+        f"所以「含 B 层」的全量复核只能由这个专用目标承担 = {facts['daily_excludes_ported']}"
+        "（质量规范 §4 的「每次同步一次」口径，不是逐提交记账）",
+        f"本轮全量扫描留档 {facts['archive']}（自报 archive_round={facts['archive_round']}，"
+        f"本轮自写 = {facts['archive_self_written']}，"
+        f"generated_at={facts['archive_generated_at']}，"
+        f"命令={facts['archive_produced_by']}）：{facts['scan_findings']} 项 / "
+        f"{facts['scan_files']} 个有 finding 的文件 / {facts['scan_rules']} 条规则"
+        f"（{facts['scan_rule_names']}），全是 B 层 = {facts['scan_b_only']}；"
+        f"文件全在搬运清单内 = {facts['scan_manifest_ok']}（清单外：{facts['scan_stray_names']}）",
+        f"人工 triage（{A2_TRIAGE_REL}）处置 {facts['triage_rules']} 条规则，自己声明扫的是 "
+        f"{facts['triage_files_claimed']} 个 py 文件 / {facts['triage_findings_claimed']} 项，"
+        f"而搬运树今天是 {facts['ported_files']} 个 py 文件 —— "
+        f"覆盖面相等 = {facts['surface_covered']}",
+        f"同一份 triage 的免罪句「{facts['triage_absolution']}」点名的规则有 "
+        f"{facts['cleared_present']} 条在本轮实测里出现了：{facts['cleared_present_names']}；"
+        f"它说「无 pickle/yaml.load 类反序列化项」，本轮按 bandit 自己的测试名匹配到 "
+        f"{facts['deser_present']} 条：{facts['deser_names']}",
+        f"今天这次扫描里落在未处置规则上的还有 {facts['findings_untriaged']} 项："
+        f"{facts['untriaged_detail']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "「安全扫描完成并人工 triage 留档」缺的是留档与今天的树对得上："
+        "A2 那份 triage 声明它扫了 "
+        f"{facts['triage_files_claimed']} 个 py 文件（{facts['triage_findings_claimed']} 项），"
+        f"搬运树已长到 {facts['ported_files']} 个（本轮全量 {facts['scan_findings']} 项、"
+        f"{facts['scan_rules']} 条规则），其中 {facts['findings_untriaged']} 项属于 triage "
+        f"从未处置过的规则（{facts['untriaged_detail']}）；那句「"
+        f"{facts['triage_absolution']}」描述的是当初那棵树，"
+        "本轮实测里 triage 点名「无」的规则出现了 "
+        f"{facts['cleared_present']} 条（{facts['cleared_present_names']}）、"
+        "pickle/yaml 类反序列化 "
+        f"{facts['deser_present']} 条（{facts['deser_names']}）。逐条人工处置是这件事的正当收口，"
+        "本轮不给它补假处置"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+# --------------------------------------------------------------------------- #
 # The probe table
 # --------------------------------------------------------------------------- #
 
@@ -7518,6 +8308,187 @@ PROBES: Final[tuple[Probe, ...]] = (
             "auth_gate": "yes",
             "batch_filter": "yes",
             "limit_bounded": "yes",
+        },
+    ),
+    Probe(
+        item="AC-5|01",
+        expects="逐项校验通过",
+        summary="manifest 的每条 sha/计数全部对着磁盘现算，且与 upstream.lock 的文件集相等",
+        measure=measure_ac5_01,
+        judge=judge_ac5_01,
+        breaks=(
+            Break("仪器 --check 不通过", (("check_exit", "1"),), GAP),
+            Break("清单有一条 sha 对不上磁盘内容", (("sha_mismatch", "1"),), GAP),
+            Break("清单登记的文件磁盘上已经没有", (("sha_absent", "1"),), GAP),
+            Break("搬运树里有一个清单未登记的 py 文件", (("unlisted_on_disk", "1"),), GAP),
+            Break("清单里有一条磁盘上不存在的路径", (("stale_entries", "1"),), GAP),
+            Break("非 py 资源没有进资源清单", (("res_unregistered", "1"),), GAP),
+            Break("资源清单里有一条已经不在了", (("res_stale", "1"),), GAP),
+            Break("counts.total_lines 与现算行数分家", (("count_lines_ok", "no"),), GAP),
+            Break("counts.total_files 与实际条目数分家", (("count_total_ok", "no"),), GAP),
+            Break("upstream.lock 与 manifest 的文件集分家", (("lock_paths_ok", "no"),), GAP),
+        ),
+        repair={
+            "check_exit": "0",
+            "sha_mismatch": "0",
+            "sha_absent": "0",
+            "unlisted_on_disk": "0",
+            "stale_entries": "0",
+            "res_unregistered": "0",
+            "res_stale": "0",
+            "lock_paths_ok": "yes",
+            "count_py_ok": "yes",
+            "count_res_ok": "yes",
+            "count_total_ok": "yes",
+            "count_lines_ok": "yes",
+        },
+    ),
+    Probe(
+        item="AC-5|02",
+        expects="P0 域子模块搬运完成",
+        summary="搬运面的实际使用与 D9 范围对得上，且 1A/1B 批次有机器可读的声明字段",
+        measure=measure_ac5_02,
+        judge=judge_ac5_02,
+        breaks=(
+            Break("首方代码一处都不取用搬运层", (("has_calls", "no"),), GAP),
+            Break("有一个被取用的端点聚合层没导出", (("called_missing", "1"),), GAP),
+            Break("点名移出本迭代的子包混进了清单", (("excluded_present", "1"),), GAP),
+            Break("D9 点名的子包有没搬到的", (("scope_missing", "1"),), GAP),
+            Break("没有任何机器字段能说 1A/1B 批次", (("tier_field", "-"),), GAP),
+        ),
+        repair={
+            "has_calls": "yes",
+            "called_missing": "0",
+            "excluded_present": "0",
+            "scope_missing": "0",
+            "tier_field": "opendata/data/domains.yaml#batch",
+        },
+    ),
+    Probe(
+        item="AC-5|03",
+        expects="人工待办清零",
+        summary="差异报告待办为零，且 AST 扫描在 import/动态/字符串三个形态与冻结基线上都清零",
+        measure=measure_ac5_03,
+        judge=judge_ac5_03,
+        breaks=(
+            Break("报告自报人工待办不为零", (("todo_reported", "1"),), GAP),
+            Break("待办清单段落里还挂着复选项", (("todo_section_ok", "no"),), GAP),
+            Break("扫描器实跑失败", (("detector_exit", "1"),), GAP),
+            Break("扫描器反事实自检失败", (("self_test_exit", "1"),), GAP),
+            Break("有一个 import 形态的上游引用", (("import_live", "1"),), GAP),
+            Break("有一处动态导入取上游模块", (("dynamic_live", "1"),), GAP),
+            Break("有一处字符串常量指向上游", (("string_live", "1"),), GAP),
+            Break("冻结基线没有清零", (("frozen", "1"),), GAP),
+        ),
+        repair={
+            "todo_reported": "0",
+            "todo_section_ok": "yes",
+            "detector_exit": "0",
+            "self_test_exit": "0",
+            "import_live": "0",
+            "dynamic_live": "0",
+            "string_live": "0",
+            "frozen": "0",
+        },
+    ),
+    Probe(
+        item="AC-5|04",
+        expects="环境中 P0 域函数可用",
+        summary="根目录与索引与解释器三面都没有 akshare，而首方代码取用的端点全部可达",
+        measure=measure_ac5_04,
+        judge=judge_ac5_04,
+        breaks=(
+            Break("根目录 akshare/ 又回到磁盘上", (("root_dir", "yes"),), GAP),
+            Break("git 索引里该前缀下还有文件", (("tracked_under_root", "1"),), GAP),
+            Break("解释器里装了 akshare", (("spec", "present"),), GAP),
+            Break("搬运层 import 失败", (("import_exit", "1"),), GAP),
+            Break("首方代码一处都不取用搬运层", (("call_targets", "0"),), GAP),
+            Break("有一个端点函数取不到", (("callable_missing", "1"),), GAP),
+            Break("干净 venv 侧证不再报 absent", (("archive_absent", "no"),), GAP),
+        ),
+        repair={
+            "root_dir": "no",
+            "tracked_under_root": "0",
+            "spec": "absent",
+            "import_exit": "0",
+            "callable_missing": "0",
+            "archive_absent": "yes",
+        },
+    ),
+    Probe(
+        item="AC-5|05",
+        expects="MIT 版权声明",
+        summary="搬运树每个 py 文件都带 MIT 声明与来源行，来源 commit/URL 与 lock 逐字相等",
+        measure=measure_ac5_05,
+        judge=judge_ac5_05,
+        breaks=(
+            Break("有一个清单文件读不到头部", (("mit_missing", "1"), ("walk_ok", "no")), GAP),
+            Break("有一个文件缺 MIT 声明", (("mit_missing", "1"),), GAP),
+            Break("有一个文件缺来源标注", (("source_missing", "1"),), GAP),
+            Break("来源 URL 与 lock 不等", (("url_missing", "1"),), GAP),
+            Break("banner 里出现第二个 commit", (("banner_commits", "2"),), GAP),
+            Break("commit 与 lock 里那个不相等", (("commit_ok", "no"),), GAP),
+            Break("许可证台账不再同时提到 akshare 与 MIT", (("notices_ok", "no"),), GAP),
+        ),
+        repair={
+            "walk_ok": "yes",
+            "mit_missing": "0",
+            "source_missing": "0",
+            "url_missing": "0",
+            "banner_commits": "1",
+            "commit_ok": "yes",
+            "notices_ok": "yes",
+        },
+    ),
+    Probe(
+        item="AC-5|06",
+        expects="资源访问函数可运行",
+        summary="datasets.py 的资源访问函数当场调用：或返回路径，或 raise 且回指仪器派生的登记段",
+        measure=measure_ac5_06,
+        judge=judge_ac5_06,
+        breaks=(
+            Break("有一个函数报的不是「不可用」", (("raised_other", "1"), ("marked", "1")), GAP),
+            Break("raise 文本不回指登记文件", (("points_at_register", "no"),), GAP),
+            Break("报告里没有不可用登记段落", (("register_heading", "no"),), GAP),
+            Break("登记段落没有逐个点名这些函数", (("register_lists_marked", "no"),), GAP),
+            Break("清单登记的内置资源磁盘上缺", (("resources_present_ok", "no"),), GAP),
+        ),
+        repair={
+            "raised_other": "0",
+            "marked": "*functions",
+            "points_at_register": "yes",
+            "register_heading": "yes",
+            "register_lists_marked": "yes",
+            "resources_present_ok": "yes",
+        },
+    ),
+    Probe(
+        item="AC-5|07",
+        expects="人工 triage 留档",
+        summary="搬运层专用 bandit 目标 + 本轮全量留档，triage 覆盖面等于今天的树且免罪句仍成立",
+        measure=measure_ac5_07,
+        judge=judge_ac5_07,
+        breaks=(
+            Break("没有搬运层专用扫描目标", (("target_ok", "no"),), GAP),
+            Break("本轮没有全量扫描留档", (("archive", "-"), ("archive_self_written", "no")), GAP),
+            Break("留档不是本轮自写的", (("archive_self_written", "no"),), GAP),
+            Break("留档扫到的文件在搬运清单外", (("scan_manifest_ok", "no"),), GAP),
+            Break("留档里没有 B 层规则", (("scan_b_only", "no"),), GAP),
+            Break("有一项落在 triage 未处置的规则上", (("findings_untriaged", "1"),), GAP),
+            Break("triage 说「无」的规则又出现", (("cleared_present", "1"),), GAP),
+            Break("出现 pickle/yaml 类反序列化项", (("deser_present", "1"),), GAP),
+            Break("triage 声明的覆盖面小于今天的树", (("surface_covered", "no"),), GAP),
+        ),
+        repair={
+            "target_ok": "yes",
+            "archive_self_written": "yes",
+            "scan_manifest_ok": "yes",
+            "scan_b_only": "yes",
+            "findings_untriaged": "0",
+            "cleared_present": "0",
+            "deser_present": "0",
+            "surface_covered": "yes",
+            "triage_files_claimed": "*ported_files",
         },
     ),
 )

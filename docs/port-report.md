@@ -327,3 +327,16 @@
 ## 人工待办清单
 
 （无 —— 待办清零）
+
+
+## 内置资源不可用登记（A2.3，AC-5|06）
+
+登记来源：本节由 `scripts/codemod/report_port.py` 读 `datasets.py` 的 `raise` 语句与 `upstream.lock` 派生，不手写；`AC-5|06` 取判据的第二条支路「明确标注不可用并登记」，这里就是登记处。
+
+| 资源访问函数 | 声明的资源 | 同名文件在搬运清单内 | raise 文本（插值槽位原样） |
+|--------------|-----------|--------------------|---------------------------|
+| `get_ths_js` | `ths.js` | 是 | resource {file} is unavailable: the upstream akshare.data package never existed (A2.3); see docs/port-report.md |
+| `get_crypto_info_csv` | `crypto_info.zip` | 否 | resource {file} is unavailable: the upstream akshare.data package never existed (A2.3); see docs/port-report.md |
+
+- 「同名文件在搬运清单内 = 是」只说明该文件作为资源被搬进来了、路径与上游 `akshare.data` 约定不同，不代表函数可运行：两条 `raise` 都在函数体第一句。
+- 把这两个函数改成读搬运树内的路径需要改 `opendata_http/datasets.py` 正文，那会让该文件与 `upstream.lock` 的确定性重放不再一致（`AC-17|05` 的重放面），属搬运基线决策，不在本报告口径内。

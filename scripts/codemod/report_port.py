@@ -12,6 +12,11 @@ acceptance surface (待办清零):
 * **lock mismatches** - upstream files whose pristine sha256 no longer
   matches the lock (upstream moved under us).
 
+The report also carries the built-in resource register (``AC-5|06``): the
+``datasets.py`` accessors that raise instead of resolving a path are listed
+from their own ``raise`` statements, so the "标注不可用并登记" branch has a
+generated place to live rather than a hand-typed one.
+
 Exit code 1 when any TODO is pending, so CI/Makefile can gate on it.
 """
 
@@ -38,6 +43,8 @@ from scripts.codemod.port_module import (  # noqa: E402
 )
 
 REPORT_PATH = Path("docs/port-report.md")
+RESOURCE_REGISTER_HEADING = "## 内置资源不可用登记（A2.3，AC-5|06）"
+_DATASETS_MODULE = "datasets.py"
 
 
 def _module_exists(ported_root: Path, module: str) -> bool:
@@ -88,6 +95,65 @@ def collect_import_gaps(ported_root: Path) -> list[str]:
                     f"{rel}: imports {name} which is not ported (closure gap)" for name in broken
                 )
     return gaps
+
+
+def _message_parts(raise_stmt: ast.Raise) -> list[ast.expr]:
+    """The interpolated pieces of a raised message, so the register can quote it verbatim."""
+    exc = raise_stmt.exc
+    if not isinstance(exc, ast.Call) or not exc.args:
+        return []
+    first = exc.args[0]
+    return list(first.values) if isinstance(first, ast.JoinedStr) else [first]
+
+
+def _message_text(raise_stmt: ast.Raise) -> str:
+    """Quote the raised message with its interpolation slots kept visible, one line, no pipe."""
+    pieces: list[str] = []
+    for part in _message_parts(raise_stmt):
+        if isinstance(part, ast.Constant):
+            pieces.append(str(part.value))
+        elif isinstance(part, ast.FormattedValue):
+            pieces.append("{" + ast.unparse(part.value) + "}")
+    text = " ".join(" ".join(pieces).split())
+    return text.replace("|", "\\|") or "(无可读文本)"
+
+
+def collect_resource_register(ported_root: Path, lock: UpstreamLock) -> list[dict[str, object]]:
+    """Read the ported resource accessors and record which ones declare themselves unavailable.
+
+    Args:
+        ported_root: The ``opendata_http`` directory.
+        lock: The baseline lock, used to say whether the resource exists somewhere in the tree.
+
+    Returns:
+        One row per resource accessor that raises instead of resolving a path.
+    """
+    path = ported_root / _DATASETS_MODULE
+    if not path.is_file():
+        return []
+    ported_names = {Path(rel).name for rel in lock.files}
+    rows: list[dict[str, object]] = []
+    for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+        if not isinstance(node, ast.FunctionDef):
+            continue
+        raised = [
+            stmt
+            for stmt in node.body
+            if isinstance(stmt, ast.Raise) and "unavailable" in ast.unparse(stmt)
+        ]
+        if not raised:
+            continue
+        default = next((d for d in node.args.defaults if isinstance(d, ast.Constant)), None)
+        resource = str(getattr(default, "value", ""))
+        rows.append(
+            {
+                "function": node.name,
+                "resource": resource or "(无默认值)",
+                "in_tree": "是" if resource in ported_names else "否",
+                "reason": _message_text(raised[0]),
+            }
+        )
+    return rows
 
 
 def collect_drift(
@@ -203,6 +269,33 @@ def build_report(
         lines.extend(f"- [ ] {todo}" for todo in todos)
     else:
         lines.append("（无 —— 待办清零）")
+    lines.append("")
+
+    register = collect_resource_register(PORTED_ROOT, lock)
+    lines += ["", RESOURCE_REGISTER_HEADING, ""]
+    if register:
+        lines += [
+            "登记来源：本节由 `scripts/codemod/report_port.py` 读 `datasets.py` 的 `raise` 语句"
+            "与 `upstream.lock` 派生，不手写；`AC-5|06` 取判据的第二条支路"
+            "「明确标注不可用并登记」，这里就是登记处。",
+            "",
+            "| 资源访问函数 | 声明的资源 | 同名文件在搬运清单内 | raise 文本（插值槽位原样） |",
+            "|--------------|-----------|--------------------|---------------------------|",
+        ]
+        lines.extend(
+            f"| `{row['function']}` | `{row['resource']}` | {row['in_tree']} | {row['reason']} |"
+            for row in register
+        )
+        lines += [
+            "",
+            "- 「同名文件在搬运清单内 = 是」只说明该文件作为资源被搬进来了、"
+            "路径与上游 `akshare.data` 约定不同，不代表函数可运行：两条 `raise` 都在函数体第一句。",
+            "- 把这两个函数改成读搬运树内的路径需要改 `opendata_http/datasets.py` 正文，"
+            "那会让该文件与 `upstream.lock` 的确定性重放不再一致（`AC-17|05` 的重放面），"
+            "属搬运基线决策，不在本报告口径内。",
+        ]
+    else:
+        lines.append("（`datasets.py` 里没有标注不可用的资源访问函数）")
     lines.append("")
     return "\n".join(lines), todos
 
