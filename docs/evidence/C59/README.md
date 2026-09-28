@@ -46,6 +46,34 @@
 
 由此可预登记一条**可证伪的门禁读数预测**：上一遍单元面是 `3389 passed, 6 skipped`（C58 档案第 7607 行），这一遍应是 **3414 passed, 6 skipped**（3389 − 1 挪出 + 26 新增）。门禁日志跑完对这一行；不对就是本轮的账。
 
+### 4.1 门禁遍实际读数：预测命中〔档案 `gate-run1.txt`〕
+
+`GATE_EXIT=0`（正文第 7792 行），单元面读数 `================= 3414 passed, 6 skipped in 301.95s (0:05:01) ==================`（正文第 7626 行）—— 与预登记的 `3414 passed, 6 skipped` **逐字相同**，没有事后调数。
+
+比"命中汇总行"更硬的是三层加法能对上：
+
+- 正文第 570 行 `8 workers [3420 items]` = §4 表里 `not e2e` 平面应选中的 3420 条 ⇒ 采集面与执行面同数
+- 3414 passed + 6 skipped = 3420 ⇒ 选中之后没有一条蒸发（既没有被 xdist 吞掉，也没有被闸门改成 skip）
+- 26 条新守卫在门禁里出现 26 次 `PASSED`（首条正文第 1566 行），`TestPartitionPlanCollector` 出现 **0** 次，`TestCheckFreshness` 出现 6 次（3 条腿 × 每腿 2 行）
+
+那 6 条 skip 不是本轮的闸门造成的：正文里 `SKIPPED` 一共 6 行（第 4716, 4718, 5831, 5837, 6093, 6095 行），全是 `tests/test_port_fidelity.py` 的 em 夹具挂起，
+逐条原因（档案外单独复跑 `-rs` 量到）：`stock_daily_raw`/`stock_daily_qfq` = `HTTPError: 502 …push2delay.eastmoney.com`、`index_daily_em` = `EmptyReferenceFrame: upstream returned 0 rows`、
+`fund_etf_daily_em` = `RuntimeError: Eastmoney ETF history endpoint request failed`，另外 2 条走 `tests/test_port_fidelity.py:103` 的 `_require_recorded`。
+`6 skipped` 从 C50 的 3269 条那一遍起就没变过 —— 本轮的 84 条 e2e 腿一条都没 skip（它们被 `-m` 摘掉，不是被放行后跳过）。
+
+### 4.2 本轮的代价（如实登记，不藏）
+
+覆盖率：本轮 `TOTAL 11850 1027 2970 289 89.96%`（正文第 7621 行）对 C58 的 `11850 1011 2970 288 90.10%`（`docs/evidence/C58/gate-run1.txt` 第 7602 行）——
+**missed +16、partial +1、总数 −0.14 个百分点**。原因是 §3 第 2 条：那条读 `information_schema.PARTITIONS` 的腿只有连真库才测得出事实，
+把它留在单元面就是每遍门禁对生产仓库做一次 DDL（这就是本轮修的缺陷），把它 skip 掉就是拿假绿换绿 —— 两条都不选，改成进门禁不跑的放行面，代价由覆盖率承担并写在这里。
+
+- `opendata/pipeline/freshness.py` 自己仍是 `91.46%`（正文第 7576 行），没有跌破任何门槛。
+- 地板是 `--cov-fail-under=84`（正文第 558 行，源码 `Makefile` 第 99 行 / `pyproject.toml` 第 320 行），**既有配方**，不是本轮为过关新加的；本轮没有动 `exclude_lines`。
+- 全档没有一个仪器读 "90.10%" 这个数字（`docs/quality/ratchet.json` 的三个自研债计数器读的是 ruff/mypy/bandit 条数，门禁第 486–490 行逐字可见 `219/6/3` 未变）。
+- 耗时涨了 448.93 s（`real` 827.11 → 1276.04）。门禁不给逐成员耗时，能回查的只有两个自报值：`acceptance-probe-check` 456.2 → 763.8 s、test-cov 172.02 → 301.95 s，
+  而本轮新增 26 条用例单独跑只花 5.74 s。**所以本轮不声称涨幅归因于谁**：`gate-run1.txt` §2 把两个系列的历史读数（含 C53 同一成员自报过的 745.1／1219.4 s 与 486.99／566.29 s）
+  逐条列出，301.95 与 763.8 都落在历史带内；测量缺口登记在 §9 第 5 条。
+
 ## 5. 反事实：五条 break，每条都必须咬红〔档案 `guard-counterfacts.txt`〕
 
 `docs/evidence/C59/run_counterfacts.py` 临时改写四个文件（Makefile／pytest.ini／`tests/conftest.py`／`tests/test_freshness.py`），每段跑一次守卫模块，跑完按原文写回并用 sha256 校验还原。全程把 `MYSQL_HOST`/`DATA_MYSQL_HOST` 指到 `127.0.0.1:1`（refused），所以连「放开活腿」那段也没碰到真仓库 —— 这一点由档案正文每段第 2 行打印的 env 自证。
@@ -106,6 +134,11 @@ bash docs/evidence/C59/run_unguarded_face.sh
 2. 闸门管的是**已标记**的腿。漏标的危险腿由 §6 第一条静态判据兜住「连库」这一种；对**上游 API 写**的漏标没有等价普查（HTTP 出口太散，本轮没有做成判据）。
 3. `PROBE_DDL` 与真实 ods 表形状靠人工同步。若 `ods_stock_daily_akshare` 改列，这里不会自动红（判据只读那几列，改列名才会红）。
 4. e2e 面从 83 → 84 之后，`AC-8|04`（写入基准）与 `|08`（真机双源落 ods）仍在等用户点头；本轮把它们的放行通道做成了显式 token，但没有使用。
+5. 门禁**不给逐成员耗时**，所以 §4.2 那句「耗时涨了 448.93 s」只能停在两个自报成员上（`acceptance-probe-check`、test-cov），其余 11.40 s 无法归因。
+   要补这件事得给 `make gate` 每条成员加计时行 —— 那是改门禁配方，会动到所有后续轮的读数口径，本轮不顺手做。
+6. 单元面里那 26 条守卫有 2 条起嵌套 pytest 子进程。它们在这一遍门禁里的位置是读得出的：26 行 `PASSED tests/test_e2e_opt_in_guard.py` **全部落在同一个 worker `[gw5]`**，
+   进度点为 14%／18%／23%／24%（即嵌套子进程没有跨 worker 扩散，但也在 gw5 上串行排队）。单进程复跑 5.74 s、`-n 4` 复跑 6.58 s（§6）。
+   缺的是 gw5 这个 worker 的墙钟，以及每条成员的墙钟 —— 那正是上面第 5 条。
 
 ## 10. 档案表
 
@@ -113,7 +146,7 @@ bash docs/evidence/C59/run_unguarded_face.sh
 | --- | --- | --- |
 | `unguarded-before.txt` | 修前普查面（HEAD 2 处未设防定义）+ 四条用例在 C58 门禁日志里的 PASSED 读数 + 标记行 diff | 只读脚本 `run_unguarded_face.sh` 输出，`FACE_EXIT=0` |
 | `guard-counterfacts.txt` | 五条反事实的完整未裁剪正文（含每段的命令、env、tally、restore digests、起止时钟） | runner 自判 `COUNTERFACT_RUNNER_EXIT=0` + shell 独立 `RUNNER_EXIT=0` |
-| `gate-run1.txt` | 本轮全量门禁（含 26 条新守卫进门禁、单元面读数与 §4 预测对账）；**本目录里唯一晚于门禁遍的文件**，跑完才并入 | 日志内 `GATE_EXIT=0` |
+| `gate-run1.txt` | 本轮全量门禁：78 行出处头（读数逐条带正文行号，另有 34 条跨档案引用按文件行号）+ 7794 行**未裁剪**正文。含 26 条新守卫进门禁、单元面读数与 §4 预测对账、§4.2/§2 的覆盖率与耗时代价 | 日志内 `GATE_EXIT=0`；**本目录里唯一晚于门禁遍的文件**，跑完才并入 |
 | `run_counterfacts.py` | 反事实 runner（可重复，按原文还原） | 源码 |
 | `run_unguarded_face.sh` | 修前普查复算脚本（只读 HEAD 版本） | 源码 |
 | README.md | 本文件：叙述面 | 叙事 |
