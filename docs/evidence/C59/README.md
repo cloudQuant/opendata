@@ -146,7 +146,7 @@ bash docs/evidence/C59/run_unguarded_face.sh
 | --- | --- | --- |
 | `unguarded-before.txt` | 修前普查面（HEAD 2 处未设防定义）+ 四条用例在 C58 门禁日志里的 PASSED 读数 + 标记行 diff | 只读脚本 `run_unguarded_face.sh` 输出，`FACE_EXIT=0` |
 | `guard-counterfacts.txt` | 五条反事实的完整未裁剪正文（含每段的命令、env、tally、restore digests、起止时钟） | runner 自判 `COUNTERFACT_RUNNER_EXIT=0` + shell 独立 `RUNNER_EXIT=0` |
-| `gate-run1.txt` | 本轮全量门禁：78 行出处头（读数逐条带正文行号，另有 34 条跨档案引用按文件行号）+ 7794 行**未裁剪**正文。含 26 条新守卫进门禁、单元面读数与 §4 预测对账、§4.2/§2 的覆盖率与耗时代价 | 日志内 `GATE_EXIT=0`；**本目录里唯一晚于门禁遍的文件**，跑完才并入 |
+| `gate-run1.txt` | 本轮全量门禁：78 行出处头（读数逐条带正文行号，另有 34 条跨档案引用按文件行号）+ 7794 行**未裁剪**正文。含 26 条新守卫进门禁、单元面读数与 §4 预测对账、§4.2/§2 的覆盖率与耗时代价 | 日志内 `GATE_EXIT=0`；门禁遍之后并入的**唯一新文件**（本 README 在同遍之后只补写了读数段，修前判据未动） |
 | `run_counterfacts.py` | 反事实 runner（可重复，按原文还原） | 源码 |
 | `run_unguarded_face.sh` | 修前普查复算脚本（只读 HEAD 版本） | 源码 |
 | README.md | 本文件：叙述面 | 叙事 |
