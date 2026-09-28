@@ -548,6 +548,8 @@ def map_entry_field(source: str, name: str, key: str, field: str) -> str:
     """
     tree = ast.parse(source)
     for node in tree.body:
+        targets: Sequence[ast.expr] = ()
+        literal: ast.expr | None = None
         if isinstance(node, ast.Assign):
             targets, literal = node.targets, node.value
         elif isinstance(node, ast.AnnAssign):
@@ -4168,9 +4170,7 @@ PARTITION_APPLY_REL: Final = "docs/evidence/C57/partition-apply.txt"
 def _facts_line(source: str) -> dict[str, str]:
     """Parse the ``FACTS k=v`` line a live face printed, if there is one."""
     line = next((row for row in source.splitlines() if row.startswith("FACTS ")), "")
-    return dict(
-        token.split("=", 1) for token in line.split()[1:] if "=" in token
-    )
+    return dict(token.split("=", 1) for token in line.split()[1:] if "=" in token)
 
 
 def measure_ac8_05(ctx: Context) -> Facts:
@@ -4182,31 +4182,24 @@ def measure_ac8_05(ctx: Context) -> Facts:
     ddl_src = ctx.read(WAREHOUSE_DDL_REL)
     face = ctx.read(PARTITION_FACE_REL)
     live = _facts_line(face)
-    executable_block = re.search(
-        r"EXECUTABLE_KINDS = frozenset\((.*?)\n\)", jobs_src, re.S
-    )
-    dispatch = re.search(
-        r"async def _execute_template\(.*?\n\n\n", jobs_src, re.S
-    )
-    apply_body = re.search(
-        r"def maintain_partition_horizon\(.*?\n\n\n", jobs_src, re.S
-    )
+    executable_block = re.search(r"EXECUTABLE_KINDS = frozenset\((.*?)\n\)", jobs_src, re.S)
+    dispatch = re.search(r"async def _execute_template\(.*?\n\n\n", jobs_src, re.S)
+    apply_body = re.search(r"def maintain_partition_horizon\(.*?\n\n\n", jobs_src, re.S)
     applied = Path(ctx.root) / PARTITION_APPLY_REL
+    # ``m.group(...) if m else ""`` instead of ``bool(m) and m.group(...)``: mypy reads the
+    # second form as dereferencing ``Match | None``. An absent match still reads False, because
+    # a token is never ``in ""``.
+    executable_text = executable_block.group(1) if executable_block else ""
+    dispatch_text = dispatch.group(0) if dispatch else ""
+    apply_text = apply_body.group(0) if apply_body else ""
     return {
         "row_declared": flag("kind: partition_maintenance" in yaml_src),
-        "kind_executable": flag(
-            bool(executable_block) and "PARTITION_MAINTENANCE" in executable_block.group(1)
-        ),
+        "kind_executable": flag("PARTITION_MAINTENANCE" in executable_text),
         "body_dispatched": flag(
-            bool(dispatch)
-            and "PARTITION_MAINTENANCE" in dispatch.group(0)
-            and "_execute_partition_maintenance" in dispatch.group(0)
+            "PARTITION_MAINTENANCE" in dispatch_text
+            and "_execute_partition_maintenance" in dispatch_text
         ),
-        "apply_half": flag(
-            bool(apply_body)
-            and ".ensure(" in apply_body.group(0)
-            and "plan_yearly_partitions" in apply_body.group(0)
-        ),
+        "apply_half": flag(".ensure(" in apply_text and "plan_yearly_partitions" in apply_text),
         "ddl_layout": flag(
             "PARTITION BY RANGE COLUMNS" in ddl_src and "VALUES LESS THAN (MAXVALUE)" in ddl_src
         ),
@@ -4300,6 +4293,353 @@ def judge_ac8_06(facts: Facts) -> Verdict:
         if ok
         else "跨年写入这条判据要有「跑过」的证据而不是「有用例」：用例是 e2e 面（门禁不跑），"
         "而真仓库的年度上界还落后一年 —— 补这一年是生产仓库的 DDL，等一次经确认的执行"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+# --------------------------------------------------------------------------- #
+# AC-8 条目 1/2/3/7：ods 形状、DDL 归属、key 级幂等与无 id 分页（C58）
+# --------------------------------------------------------------------------- #
+
+#: |01 的命名与形状：唯一的派生函数、渲染 DDL 的生成器、以及真仓库的当场读数。
+DOMAINS_REL: Final = "opendata/data/domains.py"
+ODS_DDL_TESTS_REL: Final = "tests/test_warehouse_ddl.py"
+ODS_DOMAIN_TESTS_REL: Final = "tests/test_domains.py"
+ODS_FACE_REL: Final = "docs/evidence/C58/ods-face.txt"
+
+#: |02 的两套 alembic 环境，与「启动不建表」的三个单元面。
+DATABASE_REL: Final = "opendata/core/database.py"
+MAIN_REL: Final = "opendata/main.py"
+ALEMBIC_INI_REL: Final = "alembic.ini"
+ALEMBIC_DATA_INI_REL: Final = "alembic_data.ini"
+ALEMBIC_DATA_ENV_REL: Final = "alembic_data/env.py"
+DB_OWNERSHIP_TESTS_REL: Final = "tests/test_database_functions.py"
+MIGRATION_TESTS_REL: Final = "tests/test_warehouse_migrations.py"
+
+#: |03 的写入层与 |07 的分页面。
+ODS_WRITER_REL: Final = "opendata/pipeline/ods_writer.py"
+ODS_WRITER_TESTS_REL: Final = "tests/test_ods_writer.py"
+TABLE_PAGE_REL: Final = "opendata/pipeline/table_page.py"
+TABLES_API_REL: Final = "opendata/api/tables.py"
+TABLE_PAGE_TESTS_REL: Final = "tests/test_table_page.py"
+TABLES_API_TESTS_REL: Final = "tests/test_api_tables_lifecycle.py"
+
+#: |01：命名派生、DDL 形状、注册表 census 真到得了 ods 层——三条都要跑绿才算形状面成立。
+AC8_01_NODES: Final = (
+    f"{ODS_DOMAIN_TESTS_REL}::TestDerivations::test_ods_table",
+    f"{ODS_DDL_TESTS_REL}::TestOdsDdl::test_contains_source_columns_and_metadata_trio",
+    "tests/test_pipeline_jobs.py::TestPartitionMaintenanceJob::"
+    "test_the_registered_census_reaches_the_ods_layer",
+)
+
+#: |02：四个归属单元面 + 仓库迁移链的两个只读面（图可解、离线渲染与生成器一致）。
+AC8_02_NODES: Final = (
+    f"{DB_OWNERSHIP_TESTS_REL}::TestWarehouseDdlOwnership::"
+    "test_control_metadata_names_no_warehouse_table",
+    f"{DB_OWNERSHIP_TESTS_REL}::TestWarehouseDdlOwnership::"
+    "test_create_tables_never_touches_the_warehouse_engine",
+    f"{DB_OWNERSHIP_TESTS_REL}::TestWarehouseDdlOwnership::"
+    "test_startup_creates_tables_only_off_the_production_branch",
+    f"{DB_OWNERSHIP_TESTS_REL}::TestWarehouseDdlOwnership::"
+    "test_the_warehouse_has_its_own_alembic_environment",
+    f"{MIGRATION_TESTS_REL}::TestMigrationGraph::test_single_head_with_resolvable_chain",
+    f"{MIGRATION_TESTS_REL}::TestOfflineReplay::test_offline_render_matches_the_generator",
+)
+
+#: |03：判据原文要的就是「单测」这一面——语句形状 + 落库序列，全部在门禁选择式内。
+AC8_03_NODES: Final = (
+    f"{ODS_WRITER_TESTS_REL}::TestSqlBuilders::test_upsert_uses_business_key_and_alias_form",
+    f"{ODS_WRITER_TESTS_REL}::TestSqlBuilders::"
+    "test_upsert_with_only_key_columns_keeps_a_valid_no_op_update",
+    f"{ODS_WRITER_TESTS_REL}::TestStagingWrite::"
+    "test_metadata_columns_are_written_and_the_key_is_never_updated",
+    f"{ODS_WRITER_TESTS_REL}::TestDirectWrite::"
+    "test_direct_issues_one_upsert_per_chunk_and_no_staging",
+    "tests/test_dwd_merge.py::TestRecomputeIdempotence::"
+    "test_landing_the_same_key_twice_is_one_row_written_in_place",
+)
+
+#: 「价格修正不产生重复行」在真库那一格是 e2e：门禁与探针的选择式都不跑，读数只做披露。
+AC8_03_LIVE_NODE: Final = (
+    f"{ODS_WRITER_TESTS_REL}::TestLiveUpsert::"
+    "test_corrected_value_updates_in_place_without_duplicating"
+)
+
+#: |07：无 id 表的排序回落、SQL 形状、SQLite 真查询，以及端点自己那一格。
+AC8_07_NODES: Final = (
+    f"{TABLE_PAGE_TESTS_REL}::TestOrderColumns::test_falls_back_to_the_business_key",
+    f"{TABLE_PAGE_TESTS_REL}::TestPageSql::test_orders_by_business_key_and_binds_pagination",
+    f"{TABLE_PAGE_TESTS_REL}::TestTableShapeIntegration::test_shape_of_a_table_without_id",
+    f"{TABLE_PAGE_TESTS_REL}::TestTableShapeIntegration::"
+    "test_paging_a_table_without_id_returns_every_row_once",
+    f"{TABLES_API_TESTS_REL}::TestGetTableData::test_get_data_from_a_table_without_id_column",
+)
+
+
+def _ac8_node_facts(prefix: str, nodes: Sequence[str]) -> Facts:
+    """Run one cell's node set and tally it the way every other node-judged cell does."""
+    decided = outcomes(nodes)
+    return {
+        f"{prefix}_runs": count(len(decided)),
+        f"{prefix}_passed": count(sum(1 for seen in decided.values() if seen == "passed")),
+        f"{prefix}_bad": bad_of(decided),
+    }
+
+
+def measure_ac8_01(ctx: Context) -> Facts:
+    """Naming, trio, business key: read where each is decided, then in the warehouse."""
+    nodes = _ac8_node_facts("n", AC8_01_NODES)
+    domains = ctx.read(DOMAINS_REL)
+    ddl = ctx.read(WAREHOUSE_DDL_REL)
+    builder = function_body(ddl, "_table_ddl")
+    ods_builder = function_body(ddl, "ods_table_ddl")
+    live = _facts_line(ctx.read(ODS_FACE_REL))
+    return {
+        **nodes,
+        "naming_derived": flag(
+            'return f"ods_{domain}_{source}"' in function_body(domains, "ods_table")
+        ),
+        "trio_appended": flag("[*columns, *ODS_METADATA_COLUMNS]" in ods_builder),
+        "trio_declared": count(
+            sum(1 for name in ("_source", "_fetched_at", "_batch_id") if f'Column("{name}"' in ddl)
+        ),
+        "key_fails_closed": flag("needs a business primary key" in builder),
+        "pk_from_key": flag("PRIMARY KEY ({key_list})" in builder),
+        "no_auto_increment": flag("AUTO_INCREMENT" not in ddl),
+        "live_ods": live.get("live_ods", "(absent)"),
+        "ods_named": live.get("ods_named", "(absent)"),
+        "ods_trio": live.get("ods_trio", "(absent)"),
+        "ods_key_pk": live.get("ods_key_pk", "(absent)"),
+        "ods_autokey": live.get("ods_autokey", "(absent)"),
+        "census_ods": live.get("ods_registered", "(absent)"),
+    }
+
+
+def judge_ac8_01(facts: Facts) -> Verdict:
+    """``AC-8|01``: named by derivation, carrying raw columns + the trio, keyed by business key."""
+    built = positive(facts["live_ods"])
+    ok = (
+        facts["n_passed"] == facts["n_runs"]
+        and number(facts["n_runs"]) == len(AC8_01_NODES)
+        and facts["n_bad"] == "-"
+        and facts["naming_derived"] == "yes"
+        and facts["trio_appended"] == "yes"
+        and facts["trio_declared"] == "3"
+        and facts["key_fails_closed"] == "yes"
+        and facts["pk_from_key"] == "yes"
+        and facts["no_auto_increment"] == "yes"
+        and built
+        and facts["ods_named"] == facts["live_ods"]
+        and facts["ods_trio"] == facts["live_ods"]
+        and facts["ods_key_pk"] == facts["live_ods"]
+        and facts["ods_autokey"] == "0"
+    )
+    readings = (
+        f"单元面 {facts['n_passed']}/{facts['n_runs']} passed"
+        + (f"; not green: {facts['n_bad']}" if facts["n_bad"] != "-" else ""),
+        f"命名只有一处派生（``domains.ods_table`` 返回 ``ods_<domain>_<source>``）= "
+        f"{facts['naming_derived']}；三元组无条件追加 = {facts['trio_appended']}，"
+        f"声明齐 {facts['trio_declared']}/3",
+        f"主键由业务 key 渲染 = {facts['pk_from_key']}，key 缺失 fail closed = "
+        f"{facts['key_fails_closed']}，生成器不再出自增 id = {facts['no_auto_increment']}",
+        f"真仓库（{ODS_FACE_REL}）：ods 表 {facts['live_ods']} 张 —— 命名合规 "
+        f"{facts['ods_named']}、三元组齐全 {facts['ods_trio']}、业务 key 主键 "
+        f"{facts['ods_key_pk']}、带自增 id {facts['ods_autokey']}；注册表里应有 "
+        f"{facts['census_ods']} 条 ods 腿（差额是 |08 的落库覆盖面，不是本格的形状判据）",
+    )
+    reason = (
+        ""
+        if ok
+        else "ods 形状三条（命名 / 源原始列+三元组 / 业务 key 主键）要在派生点、渲染点和真仓库三处"
+        "同时成立：任何一处松开，落库就会长出自己的列名与主键"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac8_02(ctx: Context) -> Facts:
+    """Who owns the warehouse DDL, and what startup is allowed to do."""
+    nodes = _ac8_node_facts("n", AC8_02_NODES)
+    ini = ctx.read(ALEMBIC_INI_REL)
+    data_ini = ctx.read(ALEMBIC_DATA_INI_REL)
+    env = ctx.read(ALEMBIC_DATA_ENV_REL)
+    control_env = ctx.read("alembic/env.py")
+    app_src = ctx.read(MAIN_REL)
+    lifespan = function_body(app_src, "lifespan")
+    create = function_body(ctx.read(DATABASE_REL), "create_tables")
+    face = ctx.read(ODS_FACE_REL)
+    live = _facts_line(face)
+    return {
+        **nodes,
+        "locations_split": flag(
+            "script_location = alembic_data" in data_ini and "script_location = alembic\n" in ini
+        ),
+        "no_autogen": flag("target_metadata = None" in env),
+        "warehouse_url": flag("settings.data_database_url" in env),
+        "version_table_split": flag(
+            'VERSION_TABLE = "alembic_version_data"' in env and "VERSION_TABLE" not in control_env
+        ),
+        "control_cannot_reach_data_url": flag("data_database_url" not in control_env),
+        "startup_guarded": flag(
+            lifespan.count("await create_tables()") == 1
+            and "settings.is_production" in lifespan
+            and "Production mode: skipping create_tables" in lifespan
+        ),
+        "create_tables_control_only": flag("create_all" in create and "data_engine" not in create),
+        "ctrl_warehouse_tables": live.get("ctrl_warehouse_tables", "(absent)"),
+        "version_tables_in_face": flag(
+            "alembic_version_data（schema=opendata_data）" in face
+            and "alembic_version（schema=opendata）" in face
+        ),
+    }
+
+
+def judge_ac8_02(facts: Facts) -> Verdict:
+    """``AC-8|02``: the warehouse schema is the data env's, and startup builds nothing."""
+    ok = (
+        facts["n_passed"] == facts["n_runs"]
+        and number(facts["n_runs"]) == len(AC8_02_NODES)
+        and facts["n_bad"] == "-"
+        and facts["locations_split"] == "yes"
+        and facts["no_autogen"] == "yes"
+        and facts["warehouse_url"] == "yes"
+        and facts["version_table_split"] == "yes"
+        and facts["control_cannot_reach_data_url"] == "yes"
+        and facts["startup_guarded"] == "yes"
+        and facts["create_tables_control_only"] == "yes"
+        and facts["ctrl_warehouse_tables"] == "0"
+        and facts["version_tables_in_face"] == "yes"
+    )
+    readings = (
+        f"单元面 {facts['n_passed']}/{facts['n_runs']} passed"
+        + (f"; not green: {facts['n_bad']}" if facts["n_bad"] != "-" else "")
+        + " —— 含「启动建表碰不到仓库 engine」（engine 换成会炸的桩）与「Base.metadata 里"
+        "一张仓库表都没有」两格，迁移链另有图/离线渲染两格",
+        f"两套环境分开：script_location 分叉 = {facts['locations_split']}，仓库 env 不挂 "
+        f"target_metadata（无从 generate 出 ORM 表）= {facts['no_autogen']}，URL 取 "
+        f"``data_database_url`` = {facts['warehouse_url']}，版本表各自一张 = "
+        f"{facts['version_table_split']}，控制 env 里出现仓库 URL = "
+        f"{'no' if facts['control_cannot_reach_data_url'] == 'yes' else 'yes'}",
+        f"启动面：``lifespan`` 里 ``create_tables()`` 只有一处且在 ``is_production`` 分支之外 = "
+        f"{facts['startup_guarded']}；``create_tables`` 只做 ``Base.metadata.create_all``、"
+        f"不引 ``data_engine`` = {facts['create_tables_control_only']}",
+        f"真仓库侧（{ODS_FACE_REL}）：控制库里的仓库表 {facts['ctrl_warehouse_tables']} 张，"
+        f"两套版本表各自在当前版本 = {facts['version_tables_in_face']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "「独立 alembic 环境 + 启动不建表」要的是通路而不是意图：配置分叉、版本表分叉、"
+        "仓库 URL 只出现在仓库 env、启动建表在生产分支之外且摸不到仓库 engine —— "
+        "任何一条断开，仓库表就会在无人审批的进程里被建出来"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac8_03(ctx: Context) -> Facts:
+    """Key-level idempotence: the unit plane the item asks for, plus the live node it does not."""
+    nodes = _ac8_node_facts("n", AC8_03_NODES)
+    writer = ctx.read(ODS_WRITER_REL)
+    direct = function_body(writer, "build_upsert_sql")
+    staging = function_body(writer, "build_staging_upsert_sql")
+    return {
+        **nodes,
+        "alias_form": flag("AS new " in direct and "ON DUPLICATE KEY UPDATE" in direct),
+        "key_left_alone": flag(
+            "if column not in set(key)]" in direct and "if column not in set(key)]" in staging
+        ),
+        "fails_closed": count(
+            direct.count('raise ValueError("cannot build a')
+            + staging.count('raise ValueError("cannot build a')
+        ),
+        "staging_key_clause": flag("ON DUPLICATE KEY UPDATE" in staging),
+        "live_reading": node_outcome(AC8_03_LIVE_NODE),
+    }
+
+
+def judge_ac8_03(facts: Facts) -> Verdict:
+    """``AC-8|03``: re-running a write updates the keyed row instead of appending a twin."""
+    ok = (
+        facts["n_passed"] == facts["n_runs"]
+        and number(facts["n_runs"]) == len(AC8_03_NODES)
+        and facts["n_bad"] == "-"
+        and facts["alias_form"] == "yes"
+        and facts["key_left_alone"] == "yes"
+        and number(facts["fails_closed"]) >= 2
+        and facts["staging_key_clause"] == "yes"
+    )
+    readings = (
+        f"单测面（判据原文点名的这一面）{facts['n_passed']}/{facts['n_runs']} passed"
+        + (f"; not green: {facts['n_bad']}" if facts["n_bad"] != "-" else "")
+        + " —— 两条 builder 形状、staging/direct 两条落库路径的语句序列，以及"
+        "「同一 key 落两次还是一行、值就地改」那一格",
+        f"upsert 走 ``AS new`` 别名式 = {facts['alias_form']}；两条路径都把业务 key 挡在 "
+        f"UPDATE 赋值之外（改 key 就不是修同一行）= {facts['key_left_alone']}；空列表 fail "
+        f"closed 计数 = {facts['fails_closed']}（>=2 才覆盖两条 builder）",
+        f"真库那一格（e2e，{AC8_03_LIVE_NODE.split('::')[-1]}）本轮读数 = "
+        f"{facts['live_reading']}：``-m 'not e2e'`` 的选择式不跑它，本格判定落在上面那一面，"
+        "「修正后不产生重复行」要在真库上跑一次才算跑过 —— 那是需要确认的仓库写",
+    )
+    reason = (
+        ""
+        if ok
+        else "key 级幂等只有一个意思：同一批 key 再写一遍，表里还是那些行、值被就地更新。"
+        "这要求语句是 upsert 而不是 insert、且 UPDATE 段绝不碰 key 列 —— 少一条，重跑就变成追加"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac8_07(ctx: Context) -> Facts:
+    """Paging without ``id``: where the ORDER BY comes from, and who calls it."""
+    nodes = _ac8_node_facts("n", AC8_07_NODES)
+    page = ctx.read(TABLE_PAGE_REL)
+    order = function_body(page, "order_columns")
+    sql = function_body(page, "page_sql")
+    api = ctx.read(TABLES_API_REL)
+    endpoint = function_body(api, "get_table_data")
+    return {
+        **nodes,
+        "falls_back_to_key": flag(
+            '"id" in columns' in order and "return list(key_columns)" in order
+        ),
+        "first_column_still_deterministic": flag("return list(columns[:1])" in order),
+        "offset_bound": flag("LIMIT :limit OFFSET :offset" in sql),
+        "keyless_fails_closed": flag("has no columns to order by" in sql),
+        "endpoint_reads_the_table_shape": flag(
+            "table_shape(" in endpoint and "page_sql(" in endpoint
+        ),
+        "no_hardcoded_order": flag("ORDER BY id" not in api),
+    }
+
+
+def judge_ac8_07(facts: Facts) -> Verdict:
+    """``AC-8|07``: ``/tables`` pages an ods table that has no surrogate id."""
+    ok = (
+        facts["n_passed"] == facts["n_runs"]
+        and number(facts["n_runs"]) == len(AC8_07_NODES)
+        and facts["n_bad"] == "-"
+        and facts["falls_back_to_key"] == "yes"
+        and facts["first_column_still_deterministic"] == "yes"
+        and facts["offset_bound"] == "yes"
+        and facts["keyless_fails_closed"] == "yes"
+        and facts["endpoint_reads_the_table_shape"] == "yes"
+        and facts["no_hardcoded_order"] == "yes"
+    )
+    readings = (
+        f"单元/集成面 {facts['n_passed']}/{facts['n_runs']} passed"
+        + (f"; not green: {facts['n_bad']}" if facts["n_bad"] != "-" else "")
+        + " —— 含 SQLite 真表翻页（三行两页，每行只出现一次）与端点那一格 HTTP 请求",
+        f"排序列回落链 ``id`` → 业务主键 → 首列 = {facts['falls_back_to_key']} / "
+        f"{facts['first_column_still_deterministic']}；limit/offset 走绑定参数 = "
+        f"{facts['offset_bound']}；无列可排 fail closed = {facts['keyless_fails_closed']}",
+        f"端点 ``/tables/{'{id}'}/data`` 先读表形状再拼分页 SQL = "
+        f"{facts['endpoint_reads_the_table_shape']}；模块里残留硬编码 ``ORDER BY id`` = "
+        f"{'no' if facts['no_hardcoded_order'] == 'yes' else 'yes'}",
+    )
+    reason = (
+        ""
+        if ok
+        else "ods 表按业务 key 建，没有自增 id：分页 SQL 的 ORDER BY 必须由表形状推出来，"
+        "否则整个 /tables 数据页对 ods 层都是 500 或乱序翻页"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
@@ -6518,7 +6858,7 @@ PROBES: Final[tuple[Probe, ...]] = (
     ),
     Probe(
         item="AC-8|06",
-        expects="**跨年写入用例**：模拟新年度数据写入成功（无\"no partition for value\"错误）",
+        expects='**跨年写入用例**：模拟新年度数据写入成功（无"no partition for value"错误）',
         summary="用例三读（自建 probe 表 / 新年度插入被断言 / 落点分区名被断言）+ 它是 e2e 面所以"
         "门禁不跑 + 真仓库那年还缺一张分区；「写成功」要有跑过的留档",
         measure=measure_ac8_06,
@@ -6541,6 +6881,163 @@ PROBES: Final[tuple[Probe, ...]] = (
             "marked": "e2e",
             "fallback_gap": "0",
             "ran_live": "yes",
+        },
+    ),
+    Probe(
+        item="AC-8|01",
+        expects=(
+            "ods 表命名规范 `ods_<domain>_<source>`；**含源原始列 + `_source/_fetched_at/"
+            "_batch_id` 元数据列**；业务 key 主键"
+        ),
+        summary="形状三面：派生点（ods_table 一处返回模板）+ 渲染点（三元组无条件追加、主键由 key "
+        "渲染、不出自增 id）+ 真仓库当场逐表读数；注册 33 条 ods 腿与真 3 张表的差额披露给 |08",
+        measure=measure_ac8_01,
+        judge=judge_ac8_01,
+        breaks=(
+            Break("命名模板被改址（不再由 ods_table 唯一派生）", (("naming_derived", "no"),), GAP),
+            Break("三元组不再无条件追加", (("trio_appended", "no"),), GAP),
+            Break("元数据列少一列（_batch_id 退出声明）", (("trio_declared", "2"),), GAP),
+            Break(
+                "空 key 不再 fail closed（能建出没主键的表）",
+                (("key_fails_closed", "no"),),
+                GAP,
+            ),
+            Break("PRIMARY KEY 不再由业务 key 渲染", (("pk_from_key", "no"),), GAP),
+            Break("生成器重新出自增 id（业务 key 退位）", (("no_auto_increment", "no"),), GAP),
+            Break("仓库里一张 ods 表都没有（形状面只在源码里）", (("live_ods", "0"),), GAP),
+            Break("真表里有一张命名不合规", (("ods_named", "2"),), GAP),
+            Break("真表里有一张缺元数据列", (("ods_trio", "2"),), GAP),
+            Break("真表里有一张用自增 id 当主键", (("ods_autokey", "1"),), GAP),
+            Break(
+                "形状单元面有一格不绿",
+                (("n_passed", "2"), ("n_bad", "test_ods_table=exit=1")),
+                GAP,
+            ),
+        ),
+        repair={
+            "n_passed": "*n_runs",
+            "n_bad": "-",
+            "naming_derived": "yes",
+            "trio_appended": "yes",
+            "trio_declared": "3",
+            "key_fails_closed": "yes",
+            "pk_from_key": "yes",
+            "no_auto_increment": "yes",
+            "live_ods": "*live_ods",
+            "ods_named": "*live_ods",
+            "ods_trio": "*live_ods",
+            "ods_key_pk": "*live_ods",
+            "ods_autokey": "0",
+        },
+    ),
+    Probe(
+        item="AC-8|02",
+        expects="**数据仓库 DDL 由独立 alembic 环境管理**；应用启动不建表（单测/集成验证）",
+        summary="通路而不是意图：配置/URL/版本表三处分叉 + 启动建表点唯一且在生产分支之外 + "
+        "仓库 engine 在单测里换成会炸的桩 + 真仓库两套版本表各自在当前版本",
+        measure=measure_ac8_02,
+        judge=judge_ac8_02,
+        breaks=(
+            Break("两套 alembic 共用一个 script_location", (("locations_split", "no"),), GAP),
+            Break("仓库 env 挂上 ORM metadata", (("no_autogen", "no"),), GAP),
+            Break("仓库 env 不再取 data_database_url", (("warehouse_url", "no"),), GAP),
+            Break("版本表合并回 alembic_version", (("version_table_split", "no"),), GAP),
+            Break("控制 env 也能连到仓库 URL", (("control_cannot_reach_data_url", "no"),), GAP),
+            Break("启动建表点不再唯一／失去生产分支守卫", (("startup_guarded", "no"),), GAP),
+            Break("create_tables 引到了 data_engine", (("create_tables_control_only", "no"),), GAP),
+            Break("控制库里长出了 ods/dwd 表", (("ctrl_warehouse_tables", "3"),), GAP),
+            Break("档案没记两套版本表", (("version_tables_in_face", "no"),), GAP),
+            Break(
+                "归属单元面有一格不绿",
+                (
+                    ("n_passed", "5"),
+                    ("n_bad", "test_create_tables_never_touches_the_warehouse_engine=exit=1"),
+                ),
+                GAP,
+            ),
+        ),
+        repair={
+            "n_passed": "*n_runs",
+            "n_bad": "-",
+            "locations_split": "yes",
+            "no_autogen": "yes",
+            "warehouse_url": "yes",
+            "version_table_split": "yes",
+            "control_cannot_reach_data_url": "yes",
+            "startup_guarded": "yes",
+            "create_tables_control_only": "yes",
+            "ctrl_warehouse_tables": "0",
+            "version_tables_in_face": "yes",
+        },
+    ),
+    Probe(
+        item="AC-8|03",
+        expects="upsert **key 级**幂等（重复执行无副作用；价格修正场景下不产生重复行，单测）",
+        summary="判据原文点名的单测面：五格节点（builder 形状 + 两条落库路径 + 同键两次还是一行）"
+        "加语句三面（AS new 别名式 / UPDATE 段不碰 key / 空列表 fail closed）；真库那格是 e2e，"
+        "读数只披露",
+        measure=measure_ac8_03,
+        judge=judge_ac8_03,
+        breaks=(
+            Break(
+                "幂等单元面有一格不绿",
+                (
+                    ("n_passed", "4"),
+                    ("n_bad", "test_landing_the_same_key_twice=exit=1"),
+                ),
+                GAP,
+            ),
+            Break("upsert 退回普通 INSERT（重跑就是追加）", (("alias_form", "no"),), GAP),
+            Break("UPDATE 段开始改写业务 key（改到别的行上去）", (("key_left_alone", "no"),), GAP),
+            Break("空列表不再 fail closed（静默生成无列语句）", (("fails_closed", "0"),), GAP),
+            Break("staging 路径不走 key 级 upsert", (("staging_key_clause", "no"),), GAP),
+        ),
+        repair={
+            "n_passed": "*n_runs",
+            "n_bad": "-",
+            "alias_form": "yes",
+            "key_left_alone": "yes",
+            "fails_closed": "2",
+            "staging_key_clause": "yes",
+        },
+    ),
+    Probe(
+        item="AC-8|07",
+        expects="无 `id` 列的 ods 表在 `/tables` 分页可用",
+        summary="ORDER BY 由表形状推出：回落链 id→业务主键→首列、limit/offset 走绑定参数、无列可排 "
+        "fail closed、端点真的读 table_shape 再拼 SQL、模块里不回潮硬编码 ORDER BY id；"
+        "五格节点含 SQLite 真翻页与端点那一格 HTTP",
+        measure=measure_ac8_07,
+        judge=judge_ac8_07,
+        breaks=(
+            Break(
+                "分页单元面有一格不绿",
+                (
+                    ("n_passed", "4"),
+                    ("n_bad", "test_get_data_from_a_table_without_id_column=exit=1"),
+                ),
+                GAP,
+            ),
+            Break("无 id 表没有确定序（翻页会重复/漏行）", (("falls_back_to_key", "no"),), GAP),
+            Break("无主键表不再回落首列", (("first_column_still_deterministic", "no"),), GAP),
+            Break("limit/offset 改成拼接（同时丢掉注入防线）", (("offset_bound", "no"),), GAP),
+            Break("无列可排不再 fail closed", (("keyless_fails_closed", "no"),), GAP),
+            Break(
+                "端点绕过 table_shape 自己拼 SQL",
+                (("endpoint_reads_the_table_shape", "no"),),
+                GAP,
+            ),
+            Break("硬编码 ORDER BY id 回潮", (("no_hardcoded_order", "no"),), GAP),
+        ),
+        repair={
+            "n_passed": "*n_runs",
+            "n_bad": "-",
+            "falls_back_to_key": "yes",
+            "first_column_still_deterministic": "yes",
+            "offset_bound": "yes",
+            "keyless_fails_closed": "yes",
+            "endpoint_reads_the_table_shape": "yes",
+            "no_hardcoded_order": "yes",
         },
     ),
     Probe(

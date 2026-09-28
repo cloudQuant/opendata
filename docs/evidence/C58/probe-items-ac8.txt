@@ -1,0 +1,57 @@
+probe-items-ac8.txt —— AC-8|01 / |02 / |03 / |07 四格复算读数（本轮新增判据作用的四格）
+====================================================================
+round: C58
+ARCHIVE_ROUND=C58
+date: 2026-09-28 14:47 +0200
+branch: dev   head: cf474da（+ 本轮未提交的改动）
+python: Python 3.13.5
+command: python -u scripts/quality/acceptance_item_probe.py --item 'AC-8|01' --item 'AC-8|02' --item 'AC-8|03' --item 'AC-8|07'
+note: 四格的 expects 都是 §2 那一行的逐字子串；判据原文一字未动。
+      |03 的真库那格（e2e）只披露不判定，读数 exit=5 = 选择式没选中它。
+      真仓库读数一律来自 docs/evidence/C58/ods-face.txt（只读面）。
+
+===== 正文（未裁剪）=====
+
+
+### AC-8|01  (document line 172)
+判据原文：ods 表命名规范 `ods_<domain>_<source>`；**含源原始列 + `_source/_fetched_at/_batch_id` 元数据列**；业务 key 主键
+本探针：形状三面：派生点（ods_table 一处返回模板）+ 渲染点（三元组无条件追加、主键由 key 渲染、不出自增 id）+ 真仓库当场逐表读数；注册 33 条 ods 腿与真 3 张表的差额披露给 |08
+台账现状：state=proven，文档勾选=True
+  - 单元面 3/3 passed
+  - 命名只有一处派生（``domains.ods_table`` 返回 ``ods_<domain>_<source>``）= yes；三元组无条件追加 = yes，声明齐 3/3
+  - 主键由业务 key 渲染 = yes，key 缺失 fail closed = yes，生成器不再出自增 id = yes
+  - 真仓库（docs/evidence/C58/ods-face.txt）：ods 表 3 张 —— 命名合规 3、三元组齐全 3、业务 key 主键 3、带自增 id 0；注册表里应有 33 条 ods 腿（差额是 |08 的落库覆盖面，不是本格的形状判据）
+VERDICT AC-8|01: proven
+
+### AC-8|02  (document line 173)
+判据原文：**数据仓库 DDL 由独立 alembic 环境管理**；应用启动不建表（单测/集成验证）
+本探针：通路而不是意图：配置/URL/版本表三处分叉 + 启动建表点唯一且在生产分支之外 + 仓库 engine 在单测里换成会炸的桩 + 真仓库两套版本表各自在当前版本
+台账现状：state=proven，文档勾选=True
+  - 单元面 6/6 passed —— 含「启动建表碰不到仓库 engine」（engine 换成会炸的桩）与「Base.metadata 里一张仓库表都没有」两格，迁移链另有图/离线渲染两格
+  - 两套环境分开：script_location 分叉 = yes，仓库 env 不挂 target_metadata（无从 generate 出 ORM 表）= yes，URL 取 ``data_database_url`` = yes，版本表各自一张 = yes，控制 env 里出现仓库 URL = no
+  - 启动面：``lifespan`` 里 ``create_tables()`` 只有一处且在 ``is_production`` 分支之外 = yes；``create_tables`` 只做 ``Base.metadata.create_all``、不引 ``data_engine`` = yes
+  - 真仓库侧（docs/evidence/C58/ods-face.txt）：控制库里的仓库表 0 张，两套版本表各自在当前版本 = yes
+VERDICT AC-8|02: proven
+
+### AC-8|03  (document line 174)
+判据原文：upsert **key 级**幂等（重复执行无副作用；价格修正场景下不产生重复行，单测）
+本探针：判据原文点名的单测面：五格节点（builder 形状 + 两条落库路径 + 同键两次还是一行）加语句三面（AS new 别名式 / UPDATE 段不碰 key / 空列表 fail closed）；真库那格是 e2e，读数只披露
+台账现状：state=proven，文档勾选=True
+  - 单测面（判据原文点名的这一面）5/5 passed —— 两条 builder 形状、staging/direct 两条落库路径的语句序列，以及「同一 key 落两次还是一行、值就地改」那一格
+  - upsert 走 ``AS new`` 别名式 = yes；两条路径都把业务 key 挡在 UPDATE 赋值之外（改 key 就不是修同一行）= yes；空列表 fail closed 计数 = 2（>=2 才覆盖两条 builder）
+  - 真库那一格（e2e，test_corrected_value_updates_in_place_without_duplicating）本轮读数 = exit=5：``-m 'not e2e'`` 的选择式不跑它，本格判定落在上面那一面，「修正后不产生重复行」要在真库上跑一次才算跑过 —— 那是需要确认的仓库写
+VERDICT AC-8|03: proven
+
+### AC-8|07  (document line 178)
+判据原文：无 `id` 列的 ods 表在 `/tables` 分页可用
+本探针：ORDER BY 由表形状推出：回落链 id→业务主键→首列、limit/offset 走绑定参数、无列可排 fail closed、端点真的读 table_shape 再拼 SQL、模块里不回潮硬编码 ORDER BY id；五格节点含 SQLite 真翻页与端点那一格 HTTP
+台账现状：state=proven，文档勾选=True
+  - 单元/集成面 5/5 passed —— 含 SQLite 真表翻页（三行两页，每行只出现一次）与端点那一格 HTTP 请求
+  - 排序列回落链 ``id`` → 业务主键 → 首列 = yes / yes；limit/offset 走绑定参数 = yes；无列可排 fail closed = yes
+  - 端点 ``/tables/{id}/data`` 先读表形状再拼分页 SQL = yes；模块里残留硬编码 ``ORDER BY id`` = no
+VERDICT AC-8|07: proven
+
+census: proven=4
+（4 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+
+PROBE_ITEM_EXIT=0

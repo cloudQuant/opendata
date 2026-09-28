@@ -316,13 +316,46 @@
       "state": "unreviewed"
     },
     "AC-8|01|98ae06d2": {
-      "state": "unreviewed"
+      "state": "proven",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-8|01' … --item 'AC-8|07'（四格一次跑，节点面经 -m \"not e2e\" --no-cov 真跑）+ bash docs/evidence/C58/run_ods_face.sh（真仓库只读面）",
+      "round": "C58",
+      "date": "2026-09-28",
+      "evidence": [
+        "docs/evidence/C58/README.md",
+        "docs/evidence/C58/probe-items-ac8.txt",
+        "docs/evidence/C58/probe-self-test.txt",
+        "docs/evidence/C58/ods-face.txt",
+        "docs/evidence/C58/run_ods_face.sh"
+      ],
+      "note": "三面合判，缺一面这格就只是说法：①派生点唯一 —— ``domains.ods_table()`` 是 ``ods_<domain>_<source>`` 模板在全库唯一的返回处（函数体逐字 ``return f\"ods_{domain}_{source}\"``）；②渲染点 —— ``ods_table_ddl`` 把 ``[*columns, *ODS_METADATA_COLUMNS]`` 写成无条件追加（三元组不是靠调用方记得传），声明面 3/3 齐、``ddl.py`` 生成器里 ``Column(\"_x\"…`` 三处逐条点名，且 ``AUTO_INCREMENT`` 不在渲染器里、主键由 ``PRIMARY KEY ({key_list})`` 从业务 key 渲染、key 缺失即 ``\"needs a business primary key\"`` fail closed；③真仓库当场逐表读数〔档案 ``ods-face.txt`` FACTS 行〕：live ods 3 张 —— 命名合规 3 / 三元组齐全 3 / 业务 key 主键 3 / 带自增 id 0，另有单元节点把「注册表 census 必须覆盖到 ods 层」钉住（本轮 C57 缺陷的直接后防）。**注册 33 条 ods 腿 vs 仓库里 3 张表**的差额是 ``AC-8|08`` 的落库覆盖面，不是本格的形状判据，读数里显式披露不吞掉。判据原文一字未动。"
     },
     "AC-8|02|a4929947": {
-      "state": "unreviewed"
+      "state": "proven",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-8|01' … --item 'AC-8|07'（四格一次跑，节点面经 -m \"not e2e\" --no-cov 真跑）+ bash docs/evidence/C58/run_ods_face.sh（真仓库只读面）",
+      "round": "C58",
+      "date": "2026-09-28",
+      "evidence": [
+        "docs/evidence/C58/README.md",
+        "docs/evidence/C58/probe-items-ac8.txt",
+        "docs/evidence/C58/probe-self-test.txt",
+        "docs/evidence/C58/ods-face.txt",
+        "docs/evidence/C58/run_ods_face.sh"
+      ],
+      "note": "判据的两半各有一条会红的判定面。**独立 alembic 环境**读的是通路而不是意图：``script_location`` 分叉（``alembic.ini`` = alembic / ``alembic_data.ini`` = alembic_data，按 ``^script_location = `` 逐字取回而非断言「不同」）、仓库 ``env.py`` 不挂 ``target_metadata``（``= None`` ⇒ 结构上无从 generate 出 ORM 表）、URL 只取 ``settings.data_database_url``、版本表名 ``VERSION_TABLE = \"alembic_version_data\"`` 且控制侧 ``env.py`` 里连 ``data_database_url`` 都不出现（反向读，防止「两套环境其实连同一个库」）；迁移链另有图单头 + 离线渲染与生成器逐字一致两格。**应用启动不建表**由「点名单测/集成验证」这一面挣：``tests/test_database_functions.py::TestWarehouseDdlOwnership`` 四格 —— 把 ``data_engine`` 换成 ``begin()/connect()`` 即抛 ``AssertionError`` 的炸弹桩后跑真实 ``create_tables()``（碰一下仓库 engine 就红）、``Base.metadata`` 与 ``warehouse_tables()`` 交集为空且无任何 ``ods_/dwd_`` 前缀表、``ast`` 走查 ``lifespan`` 里 ``create_tables()`` 调用点恰好一处且落在 ``is_production`` 守卫的 else 分支、两套 alembic 环境互不独立即红；真仓库侧另读〔档案〕控制库里的仓库表 **0 张** + ``alembic_version`` = 0003 与 ``alembic_version_data`` = 0005_dwd_stock_adjust 各自在当前版本。"
     },
     "AC-8|03|dc4510f7": {
-      "state": "unreviewed"
+      "state": "proven",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-8|01' … --item 'AC-8|07'（四格一次跑，节点面经 -m \"not e2e\" --no-cov 真跑）+ bash docs/evidence/C58/run_ods_face.sh（真仓库只读面）",
+      "round": "C58",
+      "date": "2026-09-28",
+      "evidence": [
+        "docs/evidence/C58/README.md",
+        "docs/evidence/C58/probe-items-ac8.txt",
+        "docs/evidence/C58/probe-self-test.txt",
+        "docs/evidence/C58/ods-face.txt",
+        "docs/evidence/C58/run_ods_face.sh"
+      ],
+      "note": "判据原文点名「单测」，判定就落在那一面：**5 格节点全绿**（两条 builder 的形状断言 + staging/direct 两条落库路径的语句序列 + ``test_landing_the_same_key_twice_is_one_row_written_in_place``「同一 key 落两次还是一行、值就地改」）。语句三面各自承重：``AS new`` 别名式（不是 VALUES() 旧写法）、``if column not in set(key)`` 把业务 key 挡在 ``ON DUPLICATE KEY UPDATE`` 赋值之外（改 key 就不是修同一行，两条路径都要有）、空列表 ``raise ValueError(\"cannot build a …\")`` 在两条 builder 里各计一次（``fails_closed=2``，只有一条 builder 有关闭面就红）。**披露而非隐瞒的一面**：真库那格 ``TestLiveUpsert::test_corrected_value_updates_in_place_without_duplicating`` 是 ``@pytest.mark.e2e``，本轮 ``-m \"not e2e\"`` 的选择式不跑它（读数 ``exit=5``，即「一条都没选中」而不是「跑了但失败」），所以「修正后不产生重复行」在**真 MySQL**上仍欠一次真跑 —— 那是需要用户确认的仓库写，本轮未做、也没把它算成本格的证据。"
     },
     "AC-8|04|9c3f54f1": {
       "state": "unreviewed"
@@ -354,7 +387,18 @@
       ]
     },
     "AC-8|07|1f09a9c3": {
-      "state": "unreviewed"
+      "state": "proven",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-8|01' … --item 'AC-8|07'（四格一次跑，节点面经 -m \"not e2e\" --no-cov 真跑）+ bash docs/evidence/C58/run_ods_face.sh（真仓库只读面）",
+      "round": "C58",
+      "date": "2026-09-28",
+      "evidence": [
+        "docs/evidence/C58/README.md",
+        "docs/evidence/C58/probe-items-ac8.txt",
+        "docs/evidence/C58/probe-self-test.txt",
+        "docs/evidence/C58/ods-face.txt",
+        "docs/evidence/C58/run_ods_face.sh"
+      ],
+      "note": "无 ``id`` 列的表能不能分页，判的是「排序列从哪来」：回落链 ``id`` → 业务主键 → 首列三档都在 ``table_shape`` 的产出上（``\"id\" in columns`` 后 ``return list(key_columns)``、再 ``return list(columns[:1])``），``LIMIT :limit OFFSET :offset`` 走绑定参数而非拼接，无列可排时 ``\"has no columns to order by\"`` fail closed；端点面要求 ``get_table_data`` 函数体里真的先 ``table_shape(`` 再 ``page_sql(``（只改 SQL 不改装配顺序，读到的仍是硬编码），且模块里 ``ORDER BY id`` 回潮数 = 0。**5 格节点含两条真翻页**：``TestTableShapeIntegration`` 用 SQLite 真表跑三行两页、断言每行只出现一次（形状推断在真 SQL 上成立与否由此判定，不是读常量），加 ``/tables/{id}/data`` 那条无 id 列端点的 HTTP 用例。判据原文一字未动。"
     },
     "AC-8|08|169daf79": {
       "state": "unreviewed"

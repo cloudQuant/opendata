@@ -1,0 +1,17 @@
+probe-self-test.txt —— 全量反事实自测（47 格：repair 必判 proven，每条 break 必翻红）
+====================================================================
+round: C58
+ARCHIVE_ROUND=C58
+date: 2026-09-28 14:48 +0200
+branch: dev   head: cf474da（+ 本轮未提交的改动）
+python: Python 3.13.5
+command: python -u scripts/quality/acceptance_item_probe.py --self-test
+note: 本轮新增 AC-8|01（11 条）/ |02（10 条）/ |03（5 条）/ |07（7 条）= 33 条反事实。
+      判据没有为过关放宽过；格式化前后各跑一遍四格，读数逐字一致。
+
+===== 正文（未裁剪）=====
+
+  - 反事实面：47/47 个探针走到了判定，378 条 break 各被施加一次、每条都要求把干净读数打回 gap
+OK: 47 probe(s) measured; every judge is reachable from its declared repair, and all 378 counterfact(s) flip a clean reading back to a gap.
+
+PROBE_SELF_TEST_EXIT=0

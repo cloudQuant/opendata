@@ -1,0 +1,60 @@
+ods-face.txt —— ods 落库面 + 分区面（真仓库只读，注册表按 register_providers 后取值）
+====================================================================
+round: C58
+ARCHIVE_ROUND=C58
+date: 2026-09-28 13:40 +0200
+branch: dev   head: cf474da（+ 本轮未提交的改动）
+python: Python 3.13.5
+command: bash docs/evidence/C58/run_ods_face.sh
+note: 三类语句全是只读（information_schema SELECT / SHOW CREATE TABLE / COUNT(*) PARTITION），
+      不执行 ALTER/REORGANIZE/INSERT/DROP；表名集合取法与 executor 一致：
+      register_providers() -> alert_matrix.warehouse_tables()。
+
+===== 正文（未裁剪）=====
+
+A 注册面（先 register_providers，再读 warehouse_tables）
+   本次新注册能力 33 条（已注册则 0；幂等）
+   注册域 20 个，其中有至少一条 (domain, source) 腿的 18 个
+   注册仓库表 53 张 = dwd 20 + ods 33
+   对照 C57 那一次读数（未调 register_providers 的裸进程）：表集合退化成 20 张 dwd，33 条 ods 腿整个不在 —— 本文件与 C57 档案的差值就是这条
+
+B 真仓库对账（opendata_data 当场有什么）
+   仓库里 ods_/dwd_ 前缀的真实表 9 张；注册表里尚未建出的 44 张
+   未注册却存在的 ods_/dwd_ 表 0 张 
+
+C ods 表命名与形状（判据：ods_<domain>_<source> + 源原始列 + 三元组 + 业务 key 主键）
+   ods_stock_action_ths: 域 stock_action / 三元组 全 / 主键 ['thscode', 'ex_date', 'event_key'] / 自增 id 无
+   ods_stock_daily_akshare: 域 stock_daily / 三元组 全 / 主键 ['股票代码', '日期'] / 自增 id 无
+   ods_stock_daily_ths: 域 stock_daily / 三元组 全 / 主键 ['thscode', 'trade_date'] / 自增 id 无
+   汇总：命名合规 3/3，三元组齐全 3/3，业务 key 主键 3/3，带 AUTO_INCREMENT 0/3
+
+D 分区面（注册集合内、当场已分区的表）
+   dwd_financial_indicator: 4 分区 pmax=True RANGE COLUMNS(report_period) 最高上界=2027-01-01 缺=1 pmax 行数=0
+      plan -> [('p2027', '2028-01-01')]
+   dwd_financial_statement: 4 分区 pmax=True RANGE COLUMNS(report_period) 最高上界=2027-01-01 缺=1 pmax 行数=0
+      plan -> [('p2027', '2028-01-01')]
+   dwd_index_constituent: 4 分区 pmax=True RANGE COLUMNS(as_of) 最高上界=2027-01-01 缺=1 pmax 行数=0
+      plan -> [('p2027', '2028-01-01')]
+   dwd_stock_action: 4 分区 pmax=True RANGE COLUMNS(ex_date) 最高上界=2027-01-01 缺=1 pmax 行数=0
+      plan -> [('p2027', '2028-01-01')]
+   dwd_stock_adjust: 4 分区 pmax=True RANGE COLUMNS(trade_date) 最高上界=2029-01-01 缺=0 pmax 行数=0
+   dwd_stock_daily: 4 分区 pmax=True RANGE COLUMNS(trade_date) 最高上界=2027-01-01 缺=1 pmax 行数=0
+      plan -> [('p2027', '2028-01-01')]
+   ods_stock_action_ths: 37 分区 pmax=True RANGE COLUMNS(ex_date) 最高上界=2027-01-01 缺=1 pmax 行数=0
+      plan -> [('p2027', '2028-01-01')]
+   ods_stock_daily_akshare: 4 分区 pmax=True RANGE COLUMNS(日期) 最高上界=2027-01-01 缺=1 pmax 行数=0
+      plan -> [('p2027', '2028-01-01')]
+   ods_stock_daily_ths: 13 分区 pmax=True RANGE COLUMNS(trade_date) 最高上界=2027-01-01 缺=1 pmax 行数=0
+      plan -> [('p2027', '2028-01-01')]
+   仓库里存在但未分区的 ods 表 0 张：（无）
+
+E 汇总：待补表 8 张 / 年度分区 8 个 / pmax 现有行数合计 0（0 ⇒ 补上界只动元数据；>0 ⇒ REORGANIZE 会重写这些行）
+
+F 两套 alembic 环境各自的版本表（AC-8|02：仓库 DDL 独立、启动不建表）
+   应用（控制库）: alembic_version（schema=opendata） 当前版本 ['0003']
+   仓库（数据库）: alembic_version_data（schema=opendata_data） 当前版本 ['0005_dwd_stock_adjust']
+   控制库里的 ods_/dwd_ 表 0 张（>0 则启动建表摸到了仓库层）
+
+FACTS registered=53 ods_registered=33 legs=18 live_ods=3 ods_named=3 ods_trio=3 ods_key_pk=3 ods_autokey=0 partitioned=9 gap_tables=8 gap_partitions=8 pmax_rows=0 current_year=2026 years_ahead=2 ctrl_warehouse_tables=0
+
+ODS_FACE_EXIT=0

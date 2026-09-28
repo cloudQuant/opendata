@@ -36,7 +36,7 @@ from collections import Counter
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 warnings.filterwarnings("ignore")
 
@@ -143,7 +143,7 @@ def leg_fetcher(leg: str) -> Callable[..., Any]:
         The vendored fetcher the leg's ``module:function`` resolves to.
     """
     module_name, _, function_name = leg_spec(leg).target.partition(":")
-    return getattr(importlib.import_module(module_name), function_name)
+    return cast("Callable[..., Any]", getattr(importlib.import_module(module_name), function_name))
 
 
 def sina_symbol(code: str) -> str:
