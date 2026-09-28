@@ -104,6 +104,9 @@ ctrl_warehouse_tables=0`
 bash docs/evidence/C58/run_ods_face.sh            # 真仓库只读面（可反复跑）
 bash docs/evidence/C58/run_probe_c58.sh items     # 四格单格复算
 bash docs/evidence/C58/run_probe_c58.sh self-test # 47 格全量反事实自测
+
+date; date -u; /usr/bin/time -p make gate; echo GATE_EXIT=$?; date; date -u  # 完整门禁遍
+# （日志先落 /tmp，跑完再整份并进 gate-run1.txt；勿在跑的过程中往 docs/evidence 写）
 PYTHONPATH=. python -m pytest tests/test_pipeline_jobs.py tests/test_database_functions.py \
   tests/test_warehouse_ddl.py tests/test_ods_writer.py tests/test_warehouse_migrations.py \
   -q --no-cov -m "not e2e"                        # 125 passed / 6 deselected
@@ -155,6 +158,13 @@ PYTHONPATH=. python -m pytest tests/test_pipeline_jobs.py tests/test_database_fu
   没有任何旧行被改动），四格正文重跑逐字不变。教训与 C40、以及本节上一条同向：
   闭包扫描是**名字敏感**的，读数说「这格在读工作树」时先看它到底调到了什么。
 
+- **门禁遍**：`gate-run1.txt` 跑在 `9ff19ac` + `df50a07` 落地后的干净树（`git status --porcelain` = 0 行），
+  `GATE_EXIT=0`、`real 827.11`、18 段 `===== gate:` 横幅；第 499 行 `工作树：干净`、第 548 行
+  `agrees=47 unflipped=0 open=0 deferred=0 stale-proof=0`（脏树那一遍里 deferred 的 `AC-1|10` 由这一遍判到），
+  第 7576 行 `3389 passed, 6 skipped in 172.02s`、第 7571 行 `TOTAL 11850 1011 2970 288 90.10%`。
+  这一遍是在 §11 那次越界执行**之后**跑的，所以「没把越界读数兑换成证据」这条不是自述，是可复核的：
+  台账里 `AC-8|06` 仍是 `gap`。〔档案 `gate-run1.txt`〕
+
 ## 10. 档案表
 
 | 文件 | 内容 | 证据档 |
@@ -164,6 +174,7 @@ PYTHONPATH=. python -m pytest tests/test_pipeline_jobs.py tests/test_database_fu
 | `probe-items-ac8.txt` | AC-8\|01/\|02/\|03/\|07 四格复算，含四行 VERDICT 与 \|03 的 `exit=5` 披露 | 〔档案〕 |
 | `probe-self-test.txt` | 47 格全量反事实自测 | 〔档案〕 |
 | `run_probe_c58.sh` | 探针复算 / 自测的 wrapper（`items` / `self-test` 两面） | 〔档案〕 |
+| `gate-run1.txt` | 干净树上的完整门禁遍（31 行溯源头 + 7745 行未裁剪正文，`GATE_EXIT=0`） | 〔档案〕 |
 | `README.md` | 本文件：源码面为〔源码〕、代价与口径推理为〔推断〕 | — |
 
 ## 11. 一次越界的执行（如实登记，不转成证据）〔档案 + 事后只读复核〕
