@@ -1,0 +1,469 @@
+# C60 第一段档案 —— datetime.UTC 同类债六文件收口：A1 mypy 平面从 6 错到 0
+#
+# ## 0. 出处（本遍自己打印，勿凭记忆复核）
+#
+# - 轮次：C60 第一段（A1 类型面）。档案内标记见正文第 18 行 `ARCHIVE_ROUND=C60`。
+# - 分支与提交：正文第 9–11 行 `head: git rev-parse --short HEAD` → `2be7355`；第 12–14 行 branch → `dev`。
+#   本遍跑在工作树未提交状态上（六个源文件 + `docs/quality/ratchet.json` 已改未提交），
+#   所以正文第 21–29 行是 `git diff` 而不是 `git show`；改动随后以显式 pathspec 提交。
+# - Python：正文第 15–16 行 `Python 3.13.5`。
+# - 起止时钟（正文自打）：第 3–5 行 `Mon Sep 28 18:09:16 CEST 2026` / `16:09:16 UTC 2026`。
+# - 起止时钟（外层 shell 包裹转述，与正文独立）：起 `18:09:16 CEST / 16:09:16 UTC`，
+#   止 `18:11:09 CEST / 16:11:09 UTC` ⇒ 本遍墙钟 113 s。正文每段自己打印 `[exit=…]`，无裁剪。
+# - 正文起始行：本档案第 68 行（= 头部行数 + 1）。头部共 67 行，全部引用按正文相对行号给出。
+#
+# ## 1. 本轮主张（第一段）
+#
+# - 六个文件的 `from datetime import UTC, datetime` → `from datetime import datetime, timezone`，
+#   12 处 `datetime.now(UTC)` → `datetime.now(timezone.utc)`（diff 面见正文第 31–236 行）。
+#   `timezone.utc is UTC` 在 3.11+ 是同一对象 ⇒ 零行为变化；这一条由 C54 档案证明过，本遍不复述。
+# - `services/scheduler_service.py:195` 的 `_job_to_dict(self, job)` 补成 `job: Any`（第 231–235 行）。
+#   返回值仍写裸 `dict`：本轮只清 mypy 报的那一条，不顺手把返回类型也改掉。
+# - A1 mypy 平面读数：`Success: no issues found in 184 source files`（第 240 行，exit=0 见第 241 行）。
+#   修前是 6 错（`docs/evidence/C54/datetime-utc-debt-fix.txt` 第 37–42 行逐条列出，
+#   第 43 行 `Found 6 errors in 6 files (checked 184 source files)`，棘轮 `mypy_selfdev: 6` 见其第 79 行）。
+# - 棘轮冻结：第 40–43 行 diff 把 `ruff_selfdev 219→218`、`mypy_selfdev 6→0` 写进快照，
+#   冻结后读数见第 264–265 行（`snapshot` 与实际相等，段内无 `NOTE: run --update` ⇒ 已冻结）。
+#
+# ## 2. 判据不变（本轮被禁止的三条捷径）
+#
+# 不改 `pyproject.toml` 的 `python_version = "3.10"`（那是 `datetime.UTC` 报错的根因，也是判据本身）、
+# 不加 `# type: ignore`、不动 C45 的「A1 棘轮＋触碰即达标」守卫断言。
+# 第一条不是空话：第 376–380 行是 B3，它在 `run_c60.py` 里把锚点 `PYVER_OLD`（`python_version =` 那行
+# 的 `"3.10"`）换成 `PYVER_NEW` 的 `"3.13"` 后重跑 mypy，立刻 `Success`（第 378 行，exit=0 第 379 行）——
+# **改配置能洗出同样的绿**，
+# 所以本轮规则禁止的是这条而不是那条难路。
+#
+# ## 3. 三条反事实（正文第 350–380 行，逐条自己打印命令与 needle 判定）
+#
+# | break | 破坏什么 | 期望 | 实测（正文行） |
+# | --- | --- | --- | --- |
+# | B1 | 把一处 `UTC` 放回 `api/tasks.py` | mypy 红 | 第 355 行 `attr-defined`，棘轮 `mypy_selfdev: 0 -> 1`（第 360 行），`-> OK` 第 362 行 |
+# | B2 | 摘掉 `job: Any` 的标注 | mypy 红 | 第 366 行 `no-untyped-def`，棘轮 `0 -> 1` 与 ruff `218 -> 219`（第 371–372 行），`-> OK` 第 374 行 |
+# | B3 | 放宽 `python_version` 代替修代码 | mypy **绿**（这就是被禁止的理由） | 第 378 行 `Success`、第 379 行 `exit=0`、`expect=green -> OK` 第 380 行 |
+#
+# B1/B2 额外要求 `rc != 0` 且棘轮输出里出现 `mypy_selfdev`，不是只看关键字子串。
+# 还原证据：第 383–385 行三对 sha256 前 12 位逐位相等（`identical`），还原后 mypy 仍 `Success`
+# （第 386–388 行）、棘轮仍 `OK`（第 389–396 行）。runner 自判 `C60_RUNNER_EXIT=0`（第 401 行），
+# shell 独立转述外层 `RUNNER_EXIT=0` 也写进正文第 402 行。
+#
+# ## 4. 第一段的读数被第二段取代的部分（如实披露，不回头改正文）
+#
+# - 正文第 243–256 行的「修后 lint 面」量到六个文件仍有 **68 条 ruff**（statistics 逐规则计数，
+#   `Found 68 errors.` 在第 254 行）。这不是遗留噪音：改这六个文件会把它们送进 A2 零容忍平面，
+#   `make a2-check` 当时实测红在 `ruff check` + `bandit`（B105/B106 两条见其 JSON 输出）。
+#   C54 README 第 228–235 行早已写明这个代价（「清干净要一并吃下 69 条 ruff」，69 = 68 + ANN001）。
+# - 因此第一段的棘轮 `ruff_selfdev 219→218`（第 42、264 行）随后被第二段重冻为 **218→150**，
+#   `bandit_selfdev 3→1`。第二段的全部读数在 `a2-touch-comply.txt`，仪器 `run_a2_comply.py`。
+# - 正文第 271–348 行的 611 条受影响用例（`-m "not e2e"`，第 347 行 tally）证明第一段是行为保持的；
+#   第二段在此之上另跑一遍（含 docstring 收线与 `if` 折叠）。
+#
+# ## 5. 复算命令（只读段可直接跑；反事实段会临时改写三个文件再原样还原，勿与门禁并行）
+#
+# ```bash
+# export PATH="$HOME/opt/anaconda3/envs/py313/bin:$PATH"; export PYTHONPATH=.
+# python docs/evidence/C60/run_c60.py          # 本档案正文，逐段自带 exit 码与命令
+# # 其中不含仓库腿：pytest 一律 -m "not e2e" --no-cov，且 MYSQL_HOST/DATA_MYSQL_HOST 指向 127.0.0.1:1
+# ```
+
+==== 0. 运行出处（时钟与 HEAD 由本遍自己打印） ====
+$ clock: /bin/date
+Mon Sep 28 18:09:16 CEST 2026
+[exit=0]
+$ clock-utc: /bin/date -u
+Mon Sep 28 16:09:16 UTC 2026
+[exit=0]
+$ head: git rev-parse --short HEAD
+2be7355
+[exit=0]
+$ branch: git branch --show-current
+dev
+[exit=0]
+$ python: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -V
+Python 3.13.5
+[exit=0]
+ARCHIVE_ROUND=C60
+
+==== 1. 改动面（本轮 diff 原样，含 ruff format 对两处被拉长的行的收线） ====
+$ diff-stat: git diff --stat -- opendata/api/tasks.py opendata/api/auth.py opendata/services/execution_service.py opendata/services/notification_service.py opendata/services/retry_service.py opendata/services/scheduler_service.py docs/quality/ratchet.json
+ docs/quality/ratchet.json                 |  8 ++++----
+ opendata/api/auth.py                      |  6 +++---
+ opendata/api/tasks.py                     |  4 ++--
+ opendata/services/execution_service.py    | 14 +++++++++-----
+ opendata/services/notification_service.py |  6 +++---
+ opendata/services/retry_service.py        |  8 ++++----
+ opendata/services/scheduler_service.py    |  2 +-
+ 7 files changed, 26 insertions(+), 22 deletions(-)
+[exit=0]
+$ diff-body: git --no-pager diff -- opendata/api/tasks.py opendata/api/auth.py opendata/services/execution_service.py opendata/services/notification_service.py opendata/services/retry_service.py opendata/services/scheduler_service.py docs/quality/ratchet.json
+diff --git a/docs/quality/ratchet.json b/docs/quality/ratchet.json
+index abcc3e3..083c79e 100644
+--- a/docs/quality/ratchet.json
++++ b/docs/quality/ratchet.json
+@@ -1,8 +1,8 @@
+ {
+   "version": 1,
+   "metrics": {
+-    "ruff_selfdev": 219,
+-    "mypy_selfdev": 6,
++    "ruff_selfdev": 218,
++    "mypy_selfdev": 0,
+     "bandit_selfdev": 3,
+     "ruff_ported": 2144,
+     "direct_http_ported": 1044
+@@ -10,8 +10,8 @@
+   "file_counts": {
+     "opendata": 193,
+     "opendata_fuyao": 9,
+-    "scripts": 42,
+-    "tests": 170,
++    "scripts": 43,
++    "tests": 172,
+     "alembic": 4,
+     "alembic_data": 6,
+     "opendata_http": 313
+diff --git a/opendata/api/auth.py b/opendata/api/auth.py
+index 00aac99..9e7ae7f 100644
+--- a/opendata/api/auth.py
++++ b/opendata/api/auth.py
+@@ -5,7 +5,7 @@ Provides endpoints for user registration, login, token refresh, and logout.
+ """
+ 
+ import os
+-from datetime import UTC, datetime
++from datetime import datetime, timezone
+ 
+ from fastapi import APIRouter, Depends, HTTPException, status
+ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+@@ -161,7 +161,7 @@ async def login(
+             detail="User account is disabled",
+         )
+ 
+-    user.last_login = datetime.now(UTC)
++    user.last_login = datetime.now(timezone.utc)
+     await db.commit()
+ 
+     access_token = create_access_token(data={"sub": str(user.id), "email": user.email})
+@@ -342,7 +342,7 @@ async def change_password(
+         )
+ 
+     user.hashed_password = hash_password(request.new_password)
+-    user.password_changed_at = datetime.now(UTC)
++    user.password_changed_at = datetime.now(timezone.utc)
+     await db.commit()
+ 
+     return APIResponse(
+diff --git a/opendata/api/tasks.py b/opendata/api/tasks.py
+index 74b4f49..1fc3a4e 100644
+--- a/opendata/api/tasks.py
++++ b/opendata/api/tasks.py
+@@ -4,7 +4,7 @@ Scheduled task API routes.
+ Provides endpoints for managing scheduled data acquisition tasks.
+ """
+ 
+-from datetime import UTC, datetime
++from datetime import datetime, timezone
+ from typing import Any
+ 
+ from fastapi import APIRouter, Depends, HTTPException, Query, status
+@@ -334,7 +334,7 @@ async def update_task(
+             detail="Invalid schedule type",
+         ) from None
+ 
+-    task.updated_at = datetime.now(UTC)
++    task.updated_at = datetime.now(timezone.utc)
+ 
+     await db.commit()
+     await db.refresh(task)
+diff --git a/opendata/services/execution_service.py b/opendata/services/execution_service.py
+index 484be64..04d4121 100644
+--- a/opendata/services/execution_service.py
++++ b/opendata/services/execution_service.py
+@@ -1,7 +1,7 @@
+ """Execution service for monitoring task executions"""
+ 
+ import uuid
+-from datetime import UTC, datetime
++from datetime import datetime, timezone
+ 
+ from loguru import logger
+ from sqlalchemy import and_, case, delete, func, select
+@@ -50,7 +50,9 @@ class ExecutionService:
+         Returns:
+             执行记录对象
+         """
+-        execution_id = f"exec_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
++        execution_id = (
++            f"exec_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
++        )
+ 
+         execution = TaskExecution(
+             execution_id=execution_id,
+@@ -218,11 +220,13 @@ class ExecutionService:
+             统计信息字典
+         """
+         if not start_date:
+-            start_date = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
++            start_date = datetime.now(timezone.utc).replace(
++                hour=0, minute=0, second=0, microsecond=0
++            )
+         if not end_date:
+-            end_date = datetime.now(UTC)
++            end_date = datetime.now(timezone.utc)
+ 
+-        today_start = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
++        today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+ 
+         # Single query for all stats to reduce database round-trips
+         stats_query = select(
+diff --git a/opendata/services/notification_service.py b/opendata/services/notification_service.py
+index f3b0fbb..5bb6869 100644
+--- a/opendata/services/notification_service.py
++++ b/opendata/services/notification_service.py
+@@ -5,7 +5,7 @@ Sends notifications via WebSocket (always) and email (when configured)
+ when tasks fail or complete after retries.
+ """
+ 
+-from datetime import UTC, datetime
++from datetime import datetime, timezone
+ from email.mime.multipart import MIMEMultipart
+ 
+ from loguru import logger
+@@ -52,7 +52,7 @@ class NotificationService:
+                         "retry_count": retry_count,
+                         "max_retries": max_retries,
+                         "is_final_failure": is_final_failure,
+-                        "timestamp": datetime.now(UTC).isoformat(),
++                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                     },
+                 }
+             )
+@@ -90,7 +90,7 @@ class NotificationService:
+                         "task_name": task_name,
+                         "execution_id": execution_id,
+                         "retry_count": retry_count,
+-                        "timestamp": datetime.now(UTC).isoformat(),
++                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                     },
+                 }
+             )
+diff --git a/opendata/services/retry_service.py b/opendata/services/retry_service.py
+index eeb6c9e..4dabe04 100644
+--- a/opendata/services/retry_service.py
++++ b/opendata/services/retry_service.py
+@@ -5,7 +5,7 @@ Implements automatic retry mechanism for failed task executions.
+ """
+ 
+ import asyncio
+-from datetime import UTC, datetime
++from datetime import datetime, timezone
+ 
+ from loguru import logger
+ from sqlalchemy.ext.asyncio import AsyncSession
+@@ -144,7 +144,7 @@ class RetryService:
+ 
+             data_service = DataService(self.db)
+ 
+-            start_time = datetime.now(UTC)
++            start_time = datetime.now(timezone.utc)
+             await execution_service.update_execution(
+                 new_execution.execution_id,
+                 status=TaskStatus.RUNNING,
+@@ -158,7 +158,7 @@ class RetryService:
+                     task.timeout,
+                 )
+ 
+-                end_time = datetime.now(UTC)
++                end_time = datetime.now(timezone.utc)
+ 
+                 # Update execution with success
+                 await execution_service.update_execution(
+@@ -180,7 +180,7 @@ class RetryService:
+                 return True
+ 
+             except Exception as e:
+-                end_time = datetime.now(UTC)
++                end_time = datetime.now(timezone.utc)
+                 error_message = str(e)
+ 
+                 # Update execution with failure
+diff --git a/opendata/services/scheduler_service.py b/opendata/services/scheduler_service.py
+index e8b7440..5afe322 100644
+--- a/opendata/services/scheduler_service.py
++++ b/opendata/services/scheduler_service.py
+@@ -192,7 +192,7 @@ class SchedulerService:
+             return DateTrigger(run_date=datetime.now())
+         raise ValueError(f"Unknown trigger type: {trigger_type}")
+ 
+-    def _job_to_dict(self, job) -> dict:
++    def _job_to_dict(self, job: Any) -> dict:
+         """任务对象转字典"""
+         return {
+             "id": job.id,
+[exit=0]
+
+==== 2. 修后类型面：A1 mypy 从 6 到 0 ====
+$ -m mypy --no-color-output opendata/ opendata_fuyao/
+Success: no issues found in 184 source files
+[exit=0]
+
+==== 3. 修后 lint 面：六个文件逐规则计数（69 到 68，少的就是 ANN001 那条） ====
+$ ruff-statistics: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m ruff check opendata/api/tasks.py opendata/api/auth.py opendata/services/execution_service.py opendata/services/notification_service.py opendata/services/retry_service.py opendata/services/scheduler_service.py --statistics
+31	D415  	[ ] missing-terminal-punctuation
+27	D212  	[*] multi-line-summary-first-line
+ 3	RUF100	[*] unused-noqa
+ 2	D107  	[ ] undocumented-public-init
+ 1	E501  	[ ] line-too-long
+ 1	F401  	[*] unused-import
+ 1	S105  	[ ] hardcoded-password-string
+ 1	S106  	[ ] hardcoded-password-func-arg
+ 1	SIM114	[*] if-with-same-arms
+Found 68 errors.
+[*] 32 fixable with the `--fix` option (31 hidden fixes can be enabled with the `--unsafe-fixes` option).
+[exit=1]
+$ ruff-format-check: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m ruff format --check opendata/api/tasks.py opendata/api/auth.py opendata/services/execution_service.py opendata/services/notification_service.py opendata/services/retry_service.py opendata/services/scheduler_service.py
+6 files already formatted
+[exit=0]
+
+==== 4. 棘轮（本轮把 mypy 6 与 ruff 219 冻成 0 与 218） ====
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/ratchet.py
+OK: quality debt did not increase.
+  ruff_selfdev: 218 (snapshot 218)
+  mypy_selfdev: 0 (snapshot 0)
+  bandit_selfdev: 3 (snapshot 3)
+  ruff_ported: 2144 (snapshot 2144)
+  direct_http_ported: 1044 (snapshot 1044)
+[exit=0]
+
+==== 5. 受影响用例（service/api 平面，带 not e2e 过滤，不跑仓库腿） ====
+$ tests: /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python -m pytest tests -q --no-cov -m not e2e -p no:cacheprovider -k execution or scheduler or retry or notification or auth or task
+============================= test session starts ==============================
+platform darwin -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: anyio-4.11.0, sugar-1.0.0, xdist-3.8.0, timeout-2.4.0, asyncio-1.4.0, cov-6.2.1, benchmark-5.1.0, picked-0.5.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 3504 items / 2893 deselected / 611 selected
+
+tests/test_api.py ..................                                     [  2%]
+tests/test_api_auth_full.py ..............                               [  5%]
+tests/test_api_data_full.py ....                                         [  5%]
+tests/test_api_endpoints.py ..........................                   [ 10%]
+tests/test_api_executions_full.py ............                           [ 12%]
+tests/test_api_keys.py ...........                                       [ 13%]
+tests/test_api_schemas.py ........                                       [ 15%]
+tests/test_api_tables_full.py .                                          [ 15%]
+tests/test_api_tasks_full.py ..............                              [ 17%]
+tests/test_api_tasks_lifecycle.py .........                              [ 19%]
+tests/test_async_retry_coverage.py .......                               [ 20%]
+tests/test_auth.py ..............                                        [ 22%]
+tests/test_auth_direct.py ...........                                    [ 24%]
+tests/test_authority_reconciliation.py ......................            [ 27%]
+tests/test_data_acquisition.py .........                                 [ 29%]
+tests/test_data_acquisition_coverage.py .                                [ 29%]
+tests/test_data_acquisition_details.py ..                                [ 29%]
+tests/test_data_acquisition_direct.py ...                                [ 30%]
+tests/test_data_acquisition_full.py ..                                   [ 30%]
+tests/test_data_query_api.py ....                                        [ 31%]
+tests/test_data_query_http_warehouse.py .                                [ 31%]
+tests/test_data_subscribe.py ......                                      [ 32%]
+tests/test_database_extended.py ......                                   [ 33%]
+tests/test_domains.py .                                                  [ 33%]
+tests/test_dwd_merge.py ....                                             [ 34%]
+tests/test_execution_service_details.py ........                         [ 35%]
+tests/test_execution_service_direct.py .....................             [ 39%]
+tests/test_execution_service_full.py .........                           [ 40%]
+tests/test_executions_direct.py ...........                              [ 42%]
+tests/test_fuyao_transport.py ......                                     [ 43%]
+tests/test_http_client.py .                                              [ 43%]
+tests/test_js_execution_points.py ......                                 [ 44%]
+tests/test_macro_routing.py .....                                        [ 45%]
+tests/test_main_coverage.py .                                            [ 45%]
+tests/test_models_extended.py .........                                  [ 46%]
+tests/test_notification_service.py ...........                           [ 48%]
+tests/test_opendata_client.py .                                          [ 48%]
+tests/test_p0_providers.py ...                                           [ 49%]
+tests/test_patrol.py ......                                              [ 50%]
+tests/test_pipeline_jobs.py ..                                           [ 50%]
+tests/test_pipeline_retry.py .......                                     [ 51%]
+tests/test_pipeline_run_api.py .                                         [ 52%]
+tests/test_pipeline_templates.py ........                                [ 53%]
+tests/test_provider_registry.py ...                                      [ 53%]
+tests/test_retry_service.py ........................                     [ 57%]
+tests/test_retry_service_coverage.py .....                               [ 58%]
+tests/test_retry_service_direct.py .................                     [ 61%]
+tests/test_retry_service_full.py ................                        [ 63%]
+tests/test_retry_util_direct.py .......                                  [ 65%]
+tests/test_retry_utils.py .............                                  [ 67%]
+tests/test_scheduler.py ..................                               [ 70%]
+tests/test_scheduler_coverage.py ..............................          [ 75%]
+tests/test_scheduler_details.py ..................                       [ 78%]
+tests/test_scheduler_direct.py ............................              [ 82%]
+tests/test_scheduler_full.py ...................                         [ 85%]
+tests/test_scheduler_integration.py ........                             [ 87%]
+tests/test_scheduler_service_direct.py .........................         [ 91%]
+tests/test_schemas.py .....                                              [ 91%]
+tests/test_security.py .                                                 [ 92%]
+tests/test_services.py ....                                              [ 92%]
+tests/test_services_extended.py ..........                               [ 94%]
+tests/test_services_full.py .............                                [ 96%]
+tests/test_tasks_direct.py ....................                          [ 99%]
+tests/test_ths_provider.py .                                             [100%]
+
+=============== 611 passed, 2893 deselected in 89.46s (0:01:29) ================
+[exit=0]
+
+==== 6. 三条反事实：B1/B2 必须咬红，B3 演示「改配置就绿」为什么被禁止 ====
+  digests before breaks: {'opendata/api/tasks.py': '6d528868a560', 'opendata/services/scheduler_service.py': 'b3b8bc931924', 'pyproject.toml': '6a0368b01d08'}
+
+---- B1 one UTC site put back (the debt returns)  (expect red) ----
+$ -m mypy --no-color-output opendata/ opendata_fuyao/
+opendata/api/tasks.py:7: error: Module "datetime" has no attribute "UTC"  [attr-defined]
+Found 1 error in 1 file (checked 184 source files)
+[exit=1]
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/ratchet.py
+FAIL: quality debt increased:
+  mypy_selfdev: 0 -> 1
+[exit=1]
+expect=red needle='attr-defined' found=True -> OK
+
+---- B2 the unannotated parameter left unannotated again  (expect red) ----
+$ -m mypy --no-color-output opendata/ opendata_fuyao/
+opendata/services/scheduler_service.py:195: error: Function is missing a type annotation for one or more parameters  [no-untyped-def]
+Found 1 error in 1 file (checked 184 source files)
+[exit=1]
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/ratchet.py
+FAIL: quality debt increased:
+  mypy_selfdev: 0 -> 1
+  ruff_selfdev: 218 -> 219
+[exit=1]
+expect=red needle='no-untyped-def' found=True -> OK
+
+---- B3 the forbidden shortcut: widen python_version instead of fixing code  (expect green) ----
+$ -m mypy --no-color-output opendata/ opendata_fuyao/
+Success: no issues found in 184 source files
+[exit=0]
+expect=green needle='Success' found=True -> OK
+
+==== 7. 还原校验与终局 ====
+  restore opendata/api/tasks.py: 6d528868a560 -> 6d528868a560 identical
+  restore opendata/services/scheduler_service.py: b3b8bc931924 -> b3b8bc931924 identical
+  restore pyproject.toml: 6a0368b01d08 -> 6a0368b01d08 identical
+$ -m mypy --no-color-output opendata/ opendata_fuyao/
+Success: no issues found in 184 source files
+[exit=0]
+$ /Users/yunjinqi/opt/anaconda3/envs/py313/bin/python scripts/quality/ratchet.py
+OK: quality debt did not increase.
+  ruff_selfdev: 218 (snapshot 218)
+  mypy_selfdev: 0 (snapshot 0)
+  bandit_selfdev: 3 (snapshot 3)
+  ruff_ported: 2144 (snapshot 2144)
+  direct_http_ported: 1044 (snapshot 1044)
+[exit=0]
+
+SUMMARY clean tree mypy green:OK / B1 one UTC site put back (the debt returns):OK / B2 the unannotated parameter left unannotated again:OK / B3 the forbidden shortcut: widen python_version instead of fixing code:OK
+final mypy exit=0 ratchet exit=0 pytest exit=0
+final mypy tail: Success: no issues found in 184 source files
+C60_RUNNER_EXIT=0
+RUNNER_EXIT=0
