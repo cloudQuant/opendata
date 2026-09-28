@@ -118,7 +118,27 @@ gap `11 → 14`、`unreviewed 76 → 69`（7 格里 4 进 proven、3 进 gap，�
   的字节喂给 `measure_ac5_06`，见档案 S4 段首那行）；②这层形状耦合由**探针面**守着，不由单测守着 ——
   `grep report_port tests/` 命中 0 个文件，`collect_resource_register` 的输出形状从来没有任何用例钉过。
 
-## 8. 档案表
+## 8. 终局门禁遍：清洁树把时刻面复核了一遍，代价是两条预登记预测的**口径**写错了
+
+遍次在形状冲突收口之后的清洁树（HEAD `34968f6`，跑前跑后 `git status --porcelain` 都为空）上完整跑了一遍 `make gate`，
+17 个成员 + 收尾横幅共 18 条，全日志一行未裁地存进 `gate-run1.txt`（正文 7809 行、头部 42 行，26 处 `L` 行号写定后由生成脚本
+回读本档案逐条机验，末两行是 `PREDICT=OK` 与 `CITATIONS=OK`）。关键读数：
+
+- `acceptance-probe-check` 成员墙钟 1147.2 s，**54/54 探针读到事实**、测不出来的为「无」；工作树判为干净，所以那 13 个
+  moment 面（含 `AC-5|04` 的 `index(git ls-files)`）这一遍是真在判，不是 deferred。
+- 反事实面 **430 条 break**（本轮新增的第 6 条 `AC-5|06` 反事实已计入）全部把干净读数打回 gap；台账↔读数
+  `agrees=54, unflipped=0, open=0, deferred=0, stale-proof=0`。
+- `AC-5|01/|04/|05/|06` 与 `AC-17|05` 在清洁树上读 proven，`|02/|03/|07` 读 gap 且理由与 §3 逐字一致 —— §7 那个修复因此不是
+  只在脏树上成立。
+- 棘轮 `ruff_selfdev 150 / mypy_selfdev 0 / bandit_selfdev 1` 三项都等于快照，全日志 `NOTE: run --update` **0 次**；
+  单元面 `3414 passed, 6 skipped`，覆盖率 `90.08%` 高于 84% 地板；前端 109 条单测（14 个文件）+ 18 条 e2e 全过。
+
+**两条预测写错了口径，如实登记**：遍次前登记的是「recipe 内部会打 `GATE_EXIT=`」和「结论行是 `OK: N probe(s) measured`」，
+实际打印是 `===== gate: PASSED =====`（外加本轮 shell 侧独立记录的 `SHELL_GATE_EXIT=0`）与中文的「OK: 54 个条目级判定在门禁里
+跑了一遍（1147.2 s）」。这不是遍次没跑到，而是我把退出面和结论行的**字面形状**记错了；档案头部按实际打印把这两条改在案，
+所以「预测对账」这一栏才是命中。写进档案而不是修掉，是因为下一轮照抄这份头部时，需要知道预测要登记到字面形状这一层。
+
+## 9. 档案表
 
 | 文件 | 内容 | 证据档位 |
 | --- | --- | --- |
@@ -128,4 +148,5 @@ gap `11 → 14`、`unreviewed 76 → 69`（7 格里 4 进 proven、3 进 gap，�
 | `register-and-diff.txt` | 三处改动 diff --stat（+1077 全为新增）、`gen_manifest.py --check` 的 exit 0、报告里新生成的「内置资源不可用登记」整节 | 命令输出原样 |
 | `ported-bandit-scan.json` | 本轮搬运层全量 bandit 产物（1021 项 / 313 文件树 / 13 条规则）+ `archive_round=C61` 自写标识与「为什么不覆写 A2」的说明 | bandit 原始 JSON 全量，未裁 |
 | `ac5-06-shape-fix.txt` | §7 那一格：头部现算的 317↔315 冲突计数（输入是 `git show 759be9c:docs/port-report.md` 的字节）、两台仪器的静态面与 44 条守卫、修复后 `AC-5\|06`（含 `shape_clash=0`）与 `AC-17\|05` 的条目读数、形状面正控 + 6 条反事实施加、`--sync-faces` 无 diff | 仪器原样输出，5 个段索引行号写定后逐条回读命中（末行 `CITATIONS=OK`） |
-| `README.md` | 本文件：叙述面（§1–§6 是翻账那一段，§7 是停掉门禁遍之后补的那一段） | 叙事 |
+| `gate-run1.txt` | 终局门禁遍全日志（正文 7809 行一行未裁）+ 42 行出处头：18 条成员横幅、54/54 探针读到事实、430 条 break、`agrees=54 / stale-proof=0`、棘轮 150-0-1 且 `--update` 0 次、`3414 passed, 6 skipped` + 覆盖率 90.08%、前端 109 单测 + 18 e2e、`AC-5` 七格与 `AC-17\|05` 判据行 | 命令原样输出（`make gate` 的 stdout+stderr，连前端彩色行的 ANSI 码一起留），头部 26 处 `L` 行号写定后回读本档案机验，末两行 `PREDICT=OK` / `CITATIONS=OK` |
+| `README.md` | 本文件：叙述面（§1–§6 是翻账那一段，§7 是停掉门禁遍之后补的那一段，§8 是终局遍次与两条预测的口径纠正） | 叙事 |
