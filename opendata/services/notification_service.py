@@ -1,19 +1,17 @@
-"""
-Notification service for task execution events.
+"""Notification service for task execution events.
 
 Sends notifications via WebSocket (always) and email (when configured)
 when tasks fail or complete after retries.
 """
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from email.mime.multipart import MIMEMultipart
 
 from loguru import logger
 
 
 class NotificationService:
-    """
-    Service for sending task execution notifications.
+    """Service for sending task execution notifications.
 
     Supports WebSocket broadcast (always available) and
     optional email notifications (when SMTP is configured).
@@ -29,8 +27,7 @@ class NotificationService:
         max_retries: int,
         owner_email: str | None = None,
     ) -> None:
-        """
-        Notify about task failure.
+        """Notify about task failure.
 
         Sends WebSocket broadcast and optional email to task owner.
         """
@@ -52,7 +49,7 @@ class NotificationService:
                         "retry_count": retry_count,
                         "max_retries": max_retries,
                         "is_final_failure": is_final_failure,
-                        "timestamp": datetime.now(UTC).isoformat(),
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
                     },
                 }
             )
@@ -90,7 +87,7 @@ class NotificationService:
                         "task_name": task_name,
                         "execution_id": execution_id,
                         "retry_count": retry_count,
-                        "timestamp": datetime.now(UTC).isoformat(),
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
                     },
                 }
             )

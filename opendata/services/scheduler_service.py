@@ -19,20 +19,20 @@ from loguru import logger
 
 
 class SchedulerService:
-    """定时任务调度服务"""
+    """定时任务调度服务."""
 
     def __init__(self) -> None:
-        """初始化调度器"""
+        """初始化调度器."""
         self.scheduler: AsyncIOScheduler | None = None
 
     def get_scheduler(self) -> AsyncIOScheduler:
-        """获取调度器实例（单例模式）"""
+        """获取调度器实例（单例模式）."""
         if self.scheduler is None:
             self._initialize_scheduler()
         return self.scheduler
 
     def _initialize_scheduler(self) -> None:
-        """初始化APScheduler"""
+        """初始化APScheduler."""
         executors = {"default": AsyncIOExecutor()}
         job_defaults = {
             "coalesce": True,  # 合并错过的执行
@@ -45,7 +45,7 @@ class SchedulerService:
         )
 
     async def start(self) -> None:
-        """启动调度器"""
+        """启动调度器."""
         scheduler = self.get_scheduler()
         if not scheduler.running:
             # 添加事件监听器
@@ -64,7 +64,7 @@ class SchedulerService:
             )
 
     async def shutdown(self, wait: bool = True) -> None:
-        """关闭调度器"""
+        """关闭调度器."""
         scheduler = self.get_scheduler()
         if scheduler and scheduler.running:
             scheduler.shutdown(wait=wait)
@@ -77,10 +77,9 @@ class SchedulerService:
         trigger_type: str,
         trigger_args: dict,
         job_name: str | None = None,
-        **kwargs: Any,  # noqa: ANN401
+        **kwargs: Any,
     ) -> dict | None:
-        """
-        添加定时任务
+        """添加定时任务.
 
         Args:
             job_id: 任务唯一标识
@@ -118,7 +117,7 @@ class SchedulerService:
         }
 
     async def remove_job(self, job_id: str) -> bool:
-        """移除任务"""
+        """移除任务."""
         scheduler = self.get_scheduler()
         if scheduler and scheduler.get_job(job_id):
             scheduler.remove_job(job_id)
@@ -126,7 +125,7 @@ class SchedulerService:
         return False
 
     async def pause_job(self, job_id: str) -> bool:
-        """暂停任务"""
+        """暂停任务."""
         scheduler = self.get_scheduler()
         if scheduler and scheduler.get_job(job_id):
             scheduler.pause_job(job_id)
@@ -134,7 +133,7 @@ class SchedulerService:
         return False
 
     async def resume_job(self, job_id: str) -> bool:
-        """恢复任务"""
+        """恢复任务."""
         scheduler = self.get_scheduler()
         if scheduler and scheduler.get_job(job_id):
             scheduler.resume_job(job_id)
@@ -142,7 +141,7 @@ class SchedulerService:
         return False
 
     async def run_job_now(self, job_id: str) -> bool:
-        """立即执行任务"""
+        """立即执行任务."""
         scheduler = self.get_scheduler()
         job = scheduler.get_job(job_id) if scheduler else None
         if job:
@@ -151,7 +150,7 @@ class SchedulerService:
         return False
 
     def get_jobs(self, jobstore: str | None = None) -> list[dict]:
-        """获取任务列表（来自 APScheduler 内存调度表）"""
+        """获取任务列表（来自 APScheduler 内存调度表）."""
         scheduler = self.get_scheduler()
         if scheduler is None:
             return []
@@ -161,14 +160,14 @@ class SchedulerService:
         return [self._job_to_dict(job) for job in jobs]
 
     def get_job(self, job_id: str) -> Any:
-        """获取单个任务"""
+        """获取单个任务."""
         scheduler = self.get_scheduler()
         if scheduler:
             return scheduler.get_job(job_id)
         return None
 
-    def _build_trigger(self, trigger_type: str, trigger_args: dict[str, Any]) -> Any:  # noqa: ANN401
-        """构建触发器"""
+    def _build_trigger(self, trigger_type: str, trigger_args: dict[str, Any]) -> Any:
+        """构建触发器."""
         if trigger_type == "cron":
             cron_expression = trigger_args.get("cron_expression") or trigger_args.get("cron")
             if not cron_expression:
@@ -192,8 +191,8 @@ class SchedulerService:
             return DateTrigger(run_date=datetime.now())
         raise ValueError(f"Unknown trigger type: {trigger_type}")
 
-    def _job_to_dict(self, job) -> dict:
-        """任务对象转字典"""
+    def _job_to_dict(self, job: Any) -> dict:
+        """任务对象转字典."""
         return {
             "id": job.id,
             "name": job.name,
@@ -202,8 +201,8 @@ class SchedulerService:
             "executor": job.executor,
         }
 
-    def _job_executed_listener(self, event: Any) -> None:  # noqa: ANN401
-        """任务执行监听器"""
+    def _job_executed_listener(self, event: Any) -> None:
+        """任务执行监听器."""
         if event.exception:
             logger.error(f"Job {event.job_id} failed: {event.exception}")
             # 这里可以添加告警逻辑
@@ -216,12 +215,12 @@ _scheduler_service: SchedulerService | None = None
 
 
 def get_scheduler_service() -> SchedulerService | None:
-    """获取调度器服务实例"""
+    """获取调度器服务实例."""
     return _scheduler_service
 
 
 def init_scheduler_service() -> SchedulerService:
-    """初始化调度器服务"""
+    """初始化调度器服务."""
     global _scheduler_service
     _scheduler_service = SchedulerService()
     return _scheduler_service

@@ -1,10 +1,9 @@
-"""
-Scheduled task API routes.
+"""Scheduled task API routes.
 
 Provides endpoints for managing scheduled data acquisition tasks.
 """
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -334,7 +333,7 @@ async def update_task(
             detail="Invalid schedule type",
         ) from None
 
-    task.updated_at = datetime.now(UTC)
+    task.updated_at = datetime.now(timezone.utc)
 
     await db.commit()
     await db.refresh(task)

@@ -1,11 +1,9 @@
-"""
-Authentication API routes.
+"""Authentication API routes.
 
 Provides endpoints for user registration, login, token refresh, and logout.
 """
 
-import os
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -37,7 +35,8 @@ from opendata.utils.constants import MAX_USERNAME_GENERATION_ATTEMPTS
 
 router = APIRouter()
 
-DEFAULT_PASSWORD = "admin123"
+# Detection of accounts still on the shipped default; this literal is not a credential.
+DEFAULT_PASSWORD = "admin123"  # noqa: S105  # nosec B105
 
 
 class ChangePasswordRequest(BaseModel):
@@ -61,8 +60,7 @@ async def register(
     request: RegisterRequest,
     db: AsyncSession = Depends(get_db),
 ) -> APIResponse:
-    """
-    Register a new user account.
+    """Register a new user account.
 
     Creates a new user with regular user role.
     """
@@ -138,8 +136,7 @@ async def login(
     request: LoginRequest,
     db: AsyncSession = Depends(get_db),
 ) -> APIResponse:
-    """
-    Authenticate user and return access token.
+    """Authenticate user and return access token.
 
     Validates credentials and returns JWT access token for authentication.
     """
@@ -161,18 +158,17 @@ async def login(
             detail="User account is disabled",
         )
 
-    user.last_login = datetime.now(UTC)
+    user.last_login = datetime.now(timezone.utc)
     await db.commit()
 
     access_token = create_access_token(data={"sub": str(user.id), "email": user.email})
     refresh_token = create_refresh_token(data={"sub": str(user.id)})
 
     require_password_change = False
-    if settings.is_production:
-        if user.password_changed_at is None:
-            require_password_change = True
-        elif verify_password(DEFAULT_PASSWORD, user.hashed_password):
-            require_password_change = True
+    if settings.is_production and (
+        user.password_changed_at is None or verify_password(DEFAULT_PASSWORD, user.hashed_password)
+    ):
+        require_password_change = True
 
     return APIResponse(
         success=True,
@@ -201,12 +197,12 @@ async def refresh_token(
     request: RefreshTokenRequest,
     db: AsyncSession = Depends(get_db),
 ) -> APIResponse:
-    """
-    Refresh access token using refresh token.
+    """Refresh access token using refresh token.
 
     Validates refresh token and returns new access token.
     """
-    payload = verify_token(request.refresh_token, token_type="refresh")
+    # token_type is a JWT kind discriminator ("access"/"refresh"), not a secret.
+    payload = verify_token(request.refresh_token, token_type="refresh")  # noqa: S106  # nosec B106
 
     if payload is None:
         raise HTTPException(
@@ -252,8 +248,7 @@ async def logout(
     current_user: CurrentUser,
     credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
 ) -> APIResponse:
-    """
-    Logout current user.
+    """Logout current user.
 
     Revokes the current access token so it cannot be reused.
     """
@@ -277,8 +272,7 @@ async def logout(
 async def get_current_user_info(
     current_user: CurrentUser,
 ) -> APIResponse:
-    """
-    Get current user information.
+    """Get current user information.
 
     Returns the authenticated user's profile information.
     """
@@ -308,8 +302,7 @@ async def change_password(
     current_user: CurrentUser,
     db: AsyncSession = Depends(get_db),
 ) -> APIResponse:
-    """
-    Change user password.
+    """Change user password.
 
     Validates old password and updates to new password.
     In production, forces password change if using default password.
@@ -342,7 +335,7 @@ async def change_password(
         )
 
     user.hashed_password = hash_password(request.new_password)
-    user.password_changed_at = datetime.now(UTC)
+    user.password_changed_at = datetime.now(timezone.utc)
     await db.commit()
 
     return APIResponse(

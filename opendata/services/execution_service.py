@@ -1,7 +1,7 @@
-"""Execution service for monitoring task executions"""
+"""Execution service for monitoring task executions."""
 
 import uuid
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 from loguru import logger
 from sqlalchemy import and_, case, delete, func, select
@@ -12,13 +12,14 @@ from opendata.utils.db_result import get_rowcount
 
 
 class ExecutionService:
-    """执行监控服务"""
+    """执行监控服务."""
 
     def __init__(self, db: AsyncSession) -> None:
+        """绑定异步数据库会话."""
         self.db = db
 
     async def get_by_execution_id(self, execution_id: str) -> TaskExecution | None:
-        """根据执行ID获取执行记录"""
+        """根据执行ID获取执行记录."""
         result = await self.db.execute(
             select(TaskExecution).where(TaskExecution.execution_id == execution_id)
         )
@@ -26,7 +27,7 @@ class ExecutionService:
 
     # Alias for backward compatibility
     async def get_execution(self, execution_id: str) -> TaskExecution | None:
-        """根据执行ID获取执行记录（别名方法）"""
+        """根据执行ID获取执行记录（别名方法）."""
         return await self.get_by_execution_id(execution_id)
 
     async def create_execution(
@@ -37,8 +38,7 @@ class ExecutionService:
         triggered_by: TriggeredBy = TriggeredBy.SCHEDULER,
         operator_id: int | None = None,
     ) -> TaskExecution:
-        """
-        创建执行记录
+        """创建执行记录.
 
         Args:
             task_id: 任务ID
@@ -50,7 +50,9 @@ class ExecutionService:
         Returns:
             执行记录对象
         """
-        execution_id = f"exec_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+        execution_id = (
+            f"exec_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+        )
 
         execution = TaskExecution(
             execution_id=execution_id,
@@ -111,8 +113,7 @@ class ExecutionService:
         rows_before: int | None = None,
         rows_after: int | None = None,
     ) -> bool:
-        """
-        更新执行记录
+        """更新执行记录.
 
         Args:
             execution_id: 执行ID
@@ -163,8 +164,7 @@ class ExecutionService:
         skip: int = 0,
         limit: int = 100,
     ) -> tuple[list[TaskExecution], int]:
-        """
-        获取执行记录列表
+        """获取执行记录列表.
 
         Args:
             task_id: 任务ID筛选
@@ -207,8 +207,7 @@ class ExecutionService:
     async def get_execution_stats(
         self, start_date: datetime | None = None, end_date: datetime | None = None
     ) -> dict:
-        """
-        获取执行统计
+        """获取执行统计.
 
         Args:
             start_date: 统计开始日期
@@ -218,11 +217,13 @@ class ExecutionService:
             统计信息字典
         """
         if not start_date:
-            start_date = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
+            start_date = datetime.now(timezone.utc).replace(
+                hour=0, minute=0, second=0, microsecond=0
+            )
         if not end_date:
-            end_date = datetime.now(UTC)
+            end_date = datetime.now(timezone.utc)
 
-        today_start = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
+        today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
         # Single query for all stats to reduce database round-trips
         stats_query = select(
@@ -262,13 +263,13 @@ class ExecutionService:
         }
 
     async def get_recent_executions(self, limit: int = 50) -> list[TaskExecution]:
-        """获取最近的执行记录"""
+        """获取最近的执行记录."""
         query = select(TaskExecution).order_by(TaskExecution.start_time.desc()).limit(limit)
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
     async def get_running_executions(self) -> list[TaskExecution]:
-        """获取正在执行的任务"""
+        """获取正在执行的任务."""
         query = (
             select(TaskExecution)
             .where(TaskExecution.status == TaskStatus.RUNNING)
@@ -278,7 +279,7 @@ class ExecutionService:
         return list(result.scalars().all())
 
     async def delete_executions_by_ids(self, execution_ids: list[str]) -> int:
-        """按ID批量删除执行记录"""
+        """按ID批量删除执行记录."""
         if not execution_ids:
             return 0
         result = await self.db.execute(
@@ -288,13 +289,13 @@ class ExecutionService:
         return get_rowcount(result)
 
     async def delete_executions_by_status(self, status: TaskStatus) -> int:
-        """按状态删除执行记录"""
+        """按状态删除执行记录."""
         result = await self.db.execute(delete(TaskExecution).where(TaskExecution.status == status))
         await self.db.commit()
         return get_rowcount(result)
 
     async def get_failed_executions(self, limit: int = 20) -> list[TaskExecution]:
-        """获取失败的执行记录"""
+        """获取失败的执行记录."""
         query = (
             select(TaskExecution)
             .where(TaskExecution.status == TaskStatus.FAILED)
@@ -309,8 +310,7 @@ class ExecutionService:
         execution_id: str,
         status: TaskStatus,
     ) -> bool:
-        """
-        Handle execution completion callback.
+        """Handle execution completion callback.
 
         Note: Retry logic is handled exclusively by TaskScheduler._execute_with_retry().
         This method is kept for status logging / future hooks (e.g. notifications),
