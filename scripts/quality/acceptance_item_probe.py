@@ -1905,6 +1905,13 @@ PORT_MODULE_TOOL: Final = "scripts/codemod/port_module.py"
 RATCHET_SNAPSHOT: Final = "docs/quality/ratchet.json"
 PORT_REPORT_ARCHIVE: Final = "docs/port-report.md"
 UPSTREAM_LOCK: Final = "opendata_http/upstream.lock"
+#: The shape ``report_port.py`` uses for one row per ported file, and the only shape ``AC-17|05``
+#: counts. Any other table in the same report that starts its rows with this prefix is silently
+#: added to that file count, so ``AC-5|06`` measures the collision instead of assuming it away.
+REPLAY_ROW_PREFIX: Final = "| `"
+#: The section ``report_port.py`` derives from ``datasets.py``'s raise statements -- the register
+#: half of ``AC-5|06``'s second branch.
+RESOURCE_REGISTER_MARKER: Final = "内置资源不可用登记"
 NOTICES_DOC: Final = "THIRD_PARTY_NOTICES.md"
 PRECOMMIT_CONFIG: Final = ".pre-commit-config.yaml"
 
@@ -2285,7 +2292,7 @@ def port_replay() -> tuple[Facts, str]:
     finally:
         shutil.rmtree(workdir, ignore_errors=True)
     header = re.search(r"wrote .* \((\d+) files, (\d+) pending TODO\(s\)\)", out)
-    rows = [line for line in text.splitlines() if line.startswith("| `")]
+    rows = [line for line in text.splitlines() if line.startswith(REPLAY_ROW_PREFIX)]
     return (
         {
             "report_exit": count(code),
@@ -6252,8 +6259,21 @@ def measure_ac5_06(ctx: Context) -> Facts:
         if PORT_REPORT_ARCHIVE in ast.unparse(next(node for node in modules if node.name == name))
     ]
     report = ctx.read(PORT_REPORT_ARCHIVE)
-    section = report.split("内置资源不可用登记", 1)[1] if "内置资源不可用登记" in report else ""
-    rows = [line for line in section.splitlines() if line.startswith("| `")]
+    section = (
+        report.split(RESOURCE_REGISTER_MARKER, 1)[1] if RESOURCE_REGISTER_MARKER in report else ""
+    )
+    # 首列是函数名的行才是数据行：表头首列是中文、分隔行是连字符。按首列形状认行，本判据就
+    # 不依赖某个具体的 Markdown 写法 —— 也才看得见「同形」这件事（见 shape_clash 读数）。
+    row_names = [
+        cell
+        for cell in (
+            line.split("|")[1].strip()
+            for line in section.splitlines()
+            if line.startswith("| ") and len(line.split("|")) > 1
+        )
+        if re.fullmatch(r"[A-Za-z_]\w*", cell)
+    ]
+    clash = sum(1 for line in section.splitlines() if line.startswith(REPLAY_ROW_PREFIX))
     base = REPO_ROOT / PORTED_ROOT
     resources = manifest_entries(ported_manifest(), "resources")
     present = sum(1 for entry in resources if (base / entry_path(entry)).is_file())
@@ -6269,10 +6289,10 @@ def measure_ac5_06(ctx: Context) -> Facts:
         "points_at_register": flag(len(points) == len(marked)),
         "points_names": ", ".join(points) or "-",
         "register_heading": flag(bool(section)),
-        "register_rows": count(len(rows)),
-        "register_lists_marked": flag(
-            all(f"`{name}`" in section for name in marked) and len(rows) == len(marked)
-        ),
+        "register_rows": count(len(row_names)),
+        "register_row_names": ", ".join(row_names) or "-",
+        "register_lists_marked": flag(sorted(row_names) == sorted(marked) and bool(marked)),
+        "shape_clash": count(clash),
         "resource_listed": count(len(resources)),
         "resource_present": count(present),
         "resources_present_ok": flag(present == len(resources) and len(resources) > 0),
@@ -6290,7 +6310,11 @@ def judge_ac5_06(facts: Facts) -> Verdict:
         and facts["register_heading"] == "yes"
         and facts["register_lists_marked"] == "yes"
     )
-    ok = facts["resources_present_ok"] == "yes" and (resolves or registered)
+    ok = (
+        facts["resources_present_ok"] == "yes"
+        and facts["shape_clash"] == "0"
+        and (resolves or registered)
+    )
     readings = (
         f"{DATASETS_REL} 里 {facts['functions']} 个资源访问函数（{facts['function_names']}）"
         f"当场调用：返回路径的 {facts['runnable']} 个（{facts['runnable_names']}）、"
@@ -6298,9 +6322,12 @@ def judge_ac5_06(facts: Facts) -> Verdict:
         f"报别的异常的 {facts['raised_other']} 个：{facts['raised_other_names']}",
         f"标注不可用的 {facts['marked']} 个函数的 raise 文本都回指登记文件 {PORT_REPORT_ARCHIVE} = "
         f"{facts['points_at_register']}（{facts['points_names']}）；登记段落在位 = "
-        f"{facts['register_heading']}，表体 {facts['register_rows']} 行、"
-        "逐个点名这些函数且不多不少 = "
+        f"{facts['register_heading']}，表体 {facts['register_rows']} 行"
+        f"（{facts['register_row_names']}）、逐个点名这些函数且不多不少 = "
         f"{facts['register_lists_marked']}",
+        f"登记表的行与重放表行同形（行首为 {REPLAY_ROW_PREFIX!r}）的 {facts['shape_clash']} 行 —— "
+        f"不为 0 时 {PORT_REPORT_ARCHIVE} 的「每文件一行」计数会把登记行算进搬运清单，"
+        f"于是 {PORT_REPORT_TOOL} 自己生成的这一节判倒 AC-17|05",
         f"登记处由报告仪器（{PORT_REPORT_TOOL}）从 `datasets.py` 的 raise 语句与 upstream.lock "
         "派生，不是手写段落",
         f"清单登记的 {facts['resource_listed']} 个内置资源在磁盘齐备 = "
@@ -6311,7 +6338,9 @@ def judge_ac5_06(facts: Facts) -> Verdict:
         if ok
         else "判据给了两条支路：函数可运行，或「明确标注不可用并登记」。调用实测是 raise，"
         "那就只看第二条 —— 标注在函数体里，登记必须有地方接住它（`datasets.py` 的 raise 文本"
-        f"回指 {PORT_REPORT_ARCHIVE}），没有登记段落就是只标注、没登记"
+        f"回指 {PORT_REPORT_ARCHIVE}），没有登记段落就是只标注、没登记；"
+        f"登记段的形状也不能与同一份报告里的重放表同形，否则这一节的行数会顶掉 AC-17|05 "
+        "对搬运清单行数的等式"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
@@ -8451,6 +8480,11 @@ PROBES: Final[tuple[Probe, ...]] = (
             Break("raise 文本不回指登记文件", (("points_at_register", "no"),), GAP),
             Break("报告里没有不可用登记段落", (("register_heading", "no"),), GAP),
             Break("登记段落没有逐个点名这些函数", (("register_lists_marked", "no"),), GAP),
+            Break(
+                "登记行与重放表同形，会顶掉 AC-17|05 的行数等式",
+                (("shape_clash", "2"),),
+                GAP,
+            ),
             Break("清单登记的内置资源磁盘上缺", (("resources_present_ok", "no"),), GAP),
         ),
         repair={
@@ -8459,6 +8493,7 @@ PROBES: Final[tuple[Probe, ...]] = (
             "points_at_register": "yes",
             "register_heading": "yes",
             "register_lists_marked": "yes",
+            "shape_clash": "0",
             "resources_present_ok": "yes",
         },
     ),

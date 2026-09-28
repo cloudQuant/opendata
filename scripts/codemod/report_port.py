@@ -283,7 +283,9 @@ def build_report(
             "|--------------|-----------|--------------------|---------------------------|",
         ]
         lines.extend(
-            f"| `{row['function']}` | `{row['resource']}` | {row['in_tree']} | {row['reason']} |"
+            # 不带反引号是承重的：`AC-17|05` 把以 "| `" 开头的行当作重放表行数，
+            # 本节若是同形就会被计进去，把两条登记行算进 315 的文件行数里。
+            f"| {row['function']} | {row['resource']} | {row['in_tree']} | {row['reason']} |"
             for row in register
         )
         lines += [
