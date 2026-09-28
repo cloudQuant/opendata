@@ -4,6 +4,8 @@ Database functions tests.
 Tests for database module functions to improve coverage.
 """
 
+import ast
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -160,3 +162,110 @@ class TestEngineConfiguration:
 
         # Verify engine exists and is configured
         assert engine is not None
+
+
+def _is_create_tables_call(node: ast.AST) -> bool:
+    """Whether this node is a bare ``create_tables(...)`` call."""
+    return (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "create_tables"
+    )
+
+
+def _calls_create_tables(nodes: list[ast.stmt] | ast.AST) -> bool:
+    """Whether a create_tables call sits anywhere inside these statements."""
+    roots = nodes if isinstance(nodes, list) else [nodes]
+    return any(_is_create_tables_call(node) for root in roots for node in ast.walk(root))
+
+
+class TestWarehouseDdlOwnership:
+    """AC-8|02: the warehouse DDL belongs to ``alembic_data``, and startup cannot reach it."""
+
+    def test_control_metadata_names_no_warehouse_table(self):
+        """``create_all`` can only build what is in ``Base.metadata`` - and the warehouse isn't."""
+        from opendata.core.database import Base
+        from opendata.data.providers import register_providers
+        from opendata.pipeline.alert_matrix import warehouse_tables
+
+        register_providers()
+        warehouse = set(warehouse_tables())
+        assert warehouse, "仓库表注册表读空了 —— 分离面无从谈起"
+        assert any(name.startswith("ods_") for name in warehouse), "census 里没有 ods 表"
+        assert sorted(set(Base.metadata.tables) & warehouse) == []
+        assert [n for n in Base.metadata.tables if n.startswith(("ods_", "dwd_"))] == []
+
+    def test_the_warehouse_has_its_own_alembic_environment(self):
+        """Two configs, two script locations, two version tables, one warehouse URL."""
+        import re
+
+        root = Path(__file__).resolve().parent.parent
+        location = {
+            name: re.search(
+                r"^script_location = (.+)$", (root / name).read_text(encoding="utf-8"), re.M
+            )
+            .group(1)
+            .strip()
+            for name in ("alembic.ini", "alembic_data.ini")
+        }
+        assert location["alembic.ini"] != location["alembic_data.ini"]
+
+        warehouse_env = (root / location["alembic_data.ini"] / "env.py").read_text("utf-8")
+        control_env = (root / location["alembic.ini"] / "env.py").read_text("utf-8")
+
+        # The warehouse chain renders its DDL from opendata/pipeline/ddl.py, so there is
+        # nothing to autogenerate against -- and no ORM metadata to leak control tables in.
+        assert "target_metadata = None" in warehouse_env
+        assert "settings.data_database_url" in warehouse_env
+        assert 'VERSION_TABLE = "alembic_version_data"' in warehouse_env
+        assert "data_database_url" not in control_env
+
+    @pytest.mark.asyncio
+    async def test_create_tables_never_touches_the_warehouse_engine(self):
+        """The warehouse engine is a bomb here: any DDL against it fails the test."""
+
+        class _WarehouseBomb:
+            def begin(self):
+                raise AssertionError("启动建表打到了仓库 engine")
+
+            def connect(self):
+                raise AssertionError("启动建表打到了仓库 engine")
+
+        from opendata.core.database import Base, create_tables
+
+        connection = AsyncMock()
+        control = MagicMock()
+        control.begin.return_value.__aenter__ = AsyncMock(return_value=connection)
+        control.begin.return_value.__aexit__ = AsyncMock(return_value=False)
+
+        with (
+            patch("opendata.core.database.engine", control),
+            patch("opendata.core.database.data_engine", _WarehouseBomb()),
+        ):
+            assert await create_tables() is None
+
+        control.begin.assert_called_once()
+        connection.run_sync.assert_awaited_once_with(Base.metadata.create_all)
+
+    def test_startup_creates_tables_only_off_the_production_branch(self):
+        """One startup call site for ``create_tables``, guarded off the production branch."""
+        import opendata.main as main_module
+
+        tree = ast.parse(Path(main_module.__file__).read_text(encoding="utf-8"))
+        lifespan = next(
+            node
+            for node in tree.body
+            if isinstance(node, ast.AsyncFunctionDef) and node.name == "lifespan"
+        )
+        calls = [node for node in ast.walk(lifespan) if _is_create_tables_call(node)]
+        assert len(calls) == 1, "启动建表的调用点数必须唯一，否则「生产不建表」无保障"
+
+        guards = [
+            node
+            for node in ast.walk(lifespan)
+            if isinstance(node, ast.If) and "is_production" in ast.unparse(node.test)
+        ]
+        assert len(guards) == 1
+        guard = guards[0]
+        assert _calls_create_tables(guard.orelse), "生产分支之外才该建表"
+        assert not _calls_create_tables(guard.body)

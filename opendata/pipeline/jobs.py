@@ -937,7 +937,20 @@ def maintain_partition_horizon(
     """
     from opendata.pipeline.partitions import PartitionMaintainer, plan_yearly_partitions
 
-    wanted = tuple(tables) if tables is not None else warehouse_tables(domains)
+    if tables is not None:
+        wanted = tuple(tables)
+    else:
+        # ``warehouse_tables`` is a pure read of the provider registry, and that
+        # registry fills lazily: a process that has not resolved a fetcher yet
+        # knows zero capabilities, so the census silently degrades to the 20
+        # ``dwd_*`` names and drops all 33 ``ods_*`` legs -- the very tables the
+        # patrol writes into daily. ``_resolve_fetcher`` registers before it
+        # reads for the same reason; nothing guarantees an incremental job ran
+        # before the 03:00 maintenance row in this process.
+        from opendata.data.providers import register_providers
+
+        register_providers()
+        wanted = warehouse_tables(domains)
     maintainer = PartitionMaintainer(engine)
     applied: dict[str, list[str]] = {}
     remaining: dict[str, list[str]] = {}

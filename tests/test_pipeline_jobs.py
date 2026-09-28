@@ -697,9 +697,7 @@ class TestRegisterBuiltinJobs:
         ),
     )
 
-    async def test_a_kind_without_an_executor_is_skipped_not_half_wired(
-        self, monkeypatch
-    ) -> None:
+    async def test_a_kind_without_an_executor_is_skipped_not_half_wired(self, monkeypatch) -> None:
         """The skip branch still exists, and it is no longer about a shipped row.
 
         Since C57 every kind ``schedules.yaml`` declares has an executor, so
@@ -1325,9 +1323,7 @@ class TestPartitionMaintenanceJob:
         def state(self: object, table: str) -> list:
             return list(states[table])
 
-        def ensure(
-            self: object, table: str, *, current_year: int, years_ahead: int
-        ) -> list[str]:
+        def ensure(self: object, table: str, *, current_year: int, years_ahead: int) -> list[str]:
             plan = plan_yearly_partitions(
                 list(states[table]), current_year=current_year, years_ahead=years_ahead
             )
@@ -1432,6 +1428,48 @@ class TestPartitionMaintenanceJob:
         assert run.measured == ("dwd_stock_daily", "ods_stock_daily_ths")
         assert asked == {"dwd_stock_daily": []}
         assert run.partitioned == 1
+
+    def test_the_default_census_is_read_after_the_providers_are_registered(self, monkeypatch):
+        """A fake ``warehouse_tables`` hid the real trap (C58).
+
+        The registry fills lazily, so in a process that has not resolved a
+        fetcher yet it knows zero capabilities and the census is the 20
+        ``dwd_*`` names alone -- every ``ods_*`` leg, which is the layer the
+        patrol writes into, would fall outside the pass in silence.
+        """
+        from opendata.data import providers as providers_module
+
+        order: list[str] = []
+        monkeypatch.setattr(
+            providers_module, "register_providers", lambda: order.append("register") or []
+        )
+        monkeypatch.setattr(
+            jobs, "warehouse_tables", lambda domains=None: order.append("read") or ()
+        )
+        self._patch_warehouse(monkeypatch, {})
+
+        jobs.maintain_partition_horizon(
+            create_engine("sqlite://"), current_year=2026, years_ahead=2
+        )
+
+        assert order == ["register", "read"]
+
+    def test_the_registered_census_reaches_the_ods_layer(self):
+        """The real registry, read the way the cron row reads it: ods legs in, names well-formed."""
+        from opendata.data.domains import load_domains
+        from opendata.data.providers import register_providers
+        from opendata.pipeline.alert_matrix import warehouse_tables
+
+        register_providers()
+        tables = warehouse_tables()
+        known = set(load_domains())
+        ods = [table for table in tables if table.startswith("ods_")]
+
+        assert ods, "census 里没有 ods 表：注册表读空了，维护面覆盖不到落库层"
+        for table in ods:
+            tail = table[len("ods_") :].rsplit("_", 1)
+            assert len(tail) == 2 and tail[0] in known, f"{table} 不是 ods_<domain>_<source>"
+        assert set(tables) - set(ods) == {f"dwd_{domain}" for domain in known}
 
     async def test_the_shipped_row_dispatches_to_the_partition_body(self, monkeypatch):
         """Registering a cron row is not the same as it reaching a body (C48)."""
