@@ -697,19 +697,21 @@ class TestRegisterBuiltinJobs:
         ),
     )
 
-    async def test_incremental_templates_are_registered_and_others_skipped(self) -> None:
-        scheduler = FakeScheduler()
-        templates = (
-            self.TEMPLATES[0],
-            ScheduleTemplate(
-                name="parts",
-                cron="0 3 * * *",
-                kind=TemplateKind.PARTITION_MAINTENANCE,
-                payload={"years_ahead": "2"},
-            ),
-        )
+    async def test_a_kind_without_an_executor_is_skipped_not_half_wired(
+        self, monkeypatch
+    ) -> None:
+        """The skip branch still exists, and it is no longer about a shipped row.
 
-        job_ids = await jobs.register_builtin_jobs(scheduler, templates=templates)
+        Since C57 every kind ``schedules.yaml`` declares has an executor, so
+        the branch is exercised by narrowing the executable set. The reason it
+        stays a skip-and-log rather than a registration: a row fired for a kind
+        no body can run raises inside the scheduler, which is harder to find
+        than the log line naming the row it skipped.
+        """
+        scheduler = FakeScheduler()
+        monkeypatch.setattr(jobs, "EXECUTABLE_KINDS", frozenset({TemplateKind.INCREMENTAL}))
+
+        job_ids = await jobs.register_builtin_jobs(scheduler, templates=self.TEMPLATES)
 
         assert job_ids == ["pipeline_inc"]
         assert set(scheduler.jobs) == {"pipeline_inc"}
@@ -739,11 +741,13 @@ class TestRegisterBuiltinJobs:
         assert job_ids == [
             "pipeline_p0-stock-daily-incremental",
             "pipeline_p0-weekly-full-cross-check",
+            "pipeline_partition-maintenance",
             "pipeline_freshness-check",
         ]
-        # partition_maintenance is the one shipped row still without an
-        # executor: registering it would only make the cron raise "not
-        # executable", which is harder to find than not registering it.
+        # Nothing is skipped any more, and that is the property: each of the
+        # four shipped kinds has a body, so a row the UI lists as scheduled is
+        # a row that really runs at its cron time. C48 paid for freshness,
+        # C57 for partition maintenance.
         assert set(scheduler.jobs) == set(job_ids)
 
     async def test_the_weekly_row_carries_the_full_check_body(self) -> None:
@@ -1250,6 +1254,7 @@ class TestAttachBuiltinJobs:
         assert ids == [
             "pipeline_p0-stock-daily-incremental",
             "pipeline_p0-weekly-full-cross-check",
+            "pipeline_partition-maintenance",
             "pipeline_freshness-check",
         ]
         trigger = recorded[0]["trigger"]
@@ -1258,7 +1263,10 @@ class TestAttachBuiltinJobs:
         weekly = recorded[1]["trigger"]
         assert type(weekly).__name__ == "CronTrigger"
         assert "hour='2'" in str(weekly) and "day_of_week='0'" in str(weekly)
-        freshness_trigger = recorded[2]["trigger"]
+        parts_trigger = recorded[2]["trigger"]
+        assert type(parts_trigger).__name__ == "CronTrigger"
+        assert "hour='3'" in str(parts_trigger) and "day_of_week='*'" in str(parts_trigger)
+        freshness_trigger = recorded[3]["trigger"]
         assert type(freshness_trigger).__name__ == "CronTrigger"
         assert "hour='8'" in str(freshness_trigger) and "minute='30'" in str(freshness_trigger)
         assert recorded[0]["id"] == "pipeline_p0-stock-daily-incremental"
@@ -1269,3 +1277,194 @@ class TestAttachBuiltinJobs:
 
         monkeypatch.setattr(scheduler_service_module, "get_scheduler_service", lambda: None)
         assert await jobs.attach_builtin_jobs() == []
+
+
+class TestPartitionMaintenanceJob:
+    """AC-8 items 5/6: the daily row must split ``pmax``, not only report it.
+
+    The ``information_schema`` reads and the ``REORGANIZE`` are MySQL-only, so
+    the maintainer's three warehouse touches are stood in for here. What these
+    tests own is what jobs.py adds on top of them: which tables get asked, that
+    the plan is applied rather than returned, and that the pass re-reads the
+    horizon instead of trusting its own statement. The real ``ALTER`` - and a
+    new-year row landing in its own partition - are the e2e class of
+    ``tests/test_partition_maintenance.py``.
+    """
+
+    @staticmethod
+    def _patch_warehouse(
+        monkeypatch: pytest.MonkeyPatch,
+        states: dict[str, list],
+        *,
+        advance: bool = True,
+    ) -> dict[str, list[str]]:
+        """Stand in for ``information_schema.PARTITIONS`` and the ``ALTER``.
+
+        Args:
+            states: Table to the partitions that exist before the pass; a table
+                left out of the dict is an unpartitioned one.
+            advance: When True, ``ensure`` appends the partitions it planned,
+                the way a successful ``REORGANIZE`` changes what the next read
+                sees. When False the state stays behind, which is how a pass
+                that sent its statement without closing the horizon reads.
+
+        Returns:
+            The partition names each table was asked to apply, in call order.
+        """
+        from opendata.pipeline.partitions import (
+            PartitionMaintainer,
+            PartitionState,
+            plan_yearly_partitions,
+        )
+
+        asked: dict[str, list[str]] = {}
+
+        def is_partitioned(self: object, table: str) -> bool:
+            return table in states
+
+        def state(self: object, table: str) -> list:
+            return list(states[table])
+
+        def ensure(
+            self: object, table: str, *, current_year: int, years_ahead: int
+        ) -> list[str]:
+            plan = plan_yearly_partitions(
+                list(states[table]), current_year=current_year, years_ahead=years_ahead
+            )
+            asked[table] = [name for name, _ in plan]
+            if advance:
+                states[table].extend(PartitionState(name, bound) for name, bound in plan)
+            return asked[table]
+
+        monkeypatch.setattr(PartitionMaintainer, "is_partitioned", is_partitioned)
+        monkeypatch.setattr(PartitionMaintainer, "state", state)
+        monkeypatch.setattr(PartitionMaintainer, "ensure", ensure)
+        return asked
+
+    @staticmethod
+    def _through(bound: date) -> list:
+        """Yearly partitions up to ``bound``, plus the ``pmax`` fallback."""
+        from opendata.pipeline.partitions import PartitionState
+
+        years = range(2024, bound.year)
+        return [PartitionState(f"p{year}", date(year + 1, 1, 1)) for year in years] + [
+            PartitionState("pmax", None)
+        ]
+
+    def test_the_pass_applies_the_plan_rather_than_returning_it(self, monkeypatch):
+        """The matrix half reports a gap; this half has to close it."""
+        states = {"dwd_stock_daily": self._through(date(2025, 1, 1))}
+        asked = self._patch_warehouse(monkeypatch, states)
+
+        run = jobs.maintain_partition_horizon(
+            create_engine("sqlite://"),
+            current_year=2026,
+            years_ahead=2,
+            tables=("dwd_stock_daily",),
+        )
+
+        assert asked == {"dwd_stock_daily": ["p2025", "p2026", "p2027"]}
+        assert run.applied == {"dwd_stock_daily": ["p2025", "p2026", "p2027"]}
+        assert run.applied_total == 3
+        assert run.remaining == {}
+        assert (run.measured, run.partitioned) == (("dwd_stock_daily",), 1)
+
+    def test_a_pass_that_applied_but_left_the_horizon_short_says_so(self, monkeypatch):
+        states = {"dwd_stock_daily": self._through(date(2027, 1, 1))}
+        self._patch_warehouse(monkeypatch, states, advance=False)
+
+        run = jobs.maintain_partition_horizon(
+            create_engine("sqlite://"),
+            current_year=2026,
+            years_ahead=2,
+            tables=("dwd_stock_daily",),
+        )
+
+        assert run.applied == {"dwd_stock_daily": ["p2027"]}
+        # The statement went out and the gap is still there: counting the
+        # applied names alone would read this pass as a closed horizon.
+        assert run.remaining == {"dwd_stock_daily": ["p2027"]}
+
+    def test_an_unpartitioned_table_is_neither_asked_nor_counted(self, monkeypatch):
+        asked = self._patch_warehouse(monkeypatch, {})
+
+        run = jobs.maintain_partition_horizon(
+            create_engine("sqlite://"), current_year=2026, years_ahead=2, tables=("ods_x",)
+        )
+
+        assert run.measured == ("ods_x",)
+        # 0 is the reading that says "this pass saw no partitions"; an empty
+        # applied dict with a positive count would say "all years exist".
+        assert run.partitioned == 0
+        assert asked == {}
+
+    def test_a_second_pass_is_asked_and_answers_nothing(self, monkeypatch):
+        states = {"dwd_stock_daily": self._through(date(2029, 1, 1))}
+        asked = self._patch_warehouse(monkeypatch, states)
+
+        run = jobs.maintain_partition_horizon(
+            create_engine("sqlite://"),
+            current_year=2026,
+            years_ahead=2,
+            tables=("dwd_stock_daily",),
+        )
+
+        assert asked == {"dwd_stock_daily": []}
+        assert run.applied == {} and run.remaining == {}
+        assert run.partitioned == 1
+
+    def test_the_default_table_set_is_the_registered_warehouse(self, monkeypatch):
+        """No ``tables=`` means every registered dwd/ods table, not a name kept
+        in the job body: a new domain table has to be maintained by the same
+        cron run without editing this module."""
+        monkeypatch.setattr(
+            jobs,
+            "warehouse_tables",
+            lambda domains=None: ("dwd_stock_daily", "ods_stock_daily_ths"),
+        )
+        states = {"dwd_stock_daily": self._through(date(2029, 1, 1))}
+        asked = self._patch_warehouse(monkeypatch, states)
+
+        run = jobs.maintain_partition_horizon(
+            create_engine("sqlite://"), current_year=2026, years_ahead=2, domains=("stock_daily",)
+        )
+
+        assert run.measured == ("dwd_stock_daily", "ods_stock_daily_ths")
+        assert asked == {"dwd_stock_daily": []}
+        assert run.partitioned == 1
+
+    async def test_the_shipped_row_dispatches_to_the_partition_body(self, monkeypatch):
+        """Registering a cron row is not the same as it reaching a body (C48)."""
+        called: dict[str, object] = {}
+        monkeypatch.setattr(jobs, "warehouse_engine", lambda: create_engine("sqlite://"))
+
+        def fake_maintain(
+            engine: Engine,
+            *,
+            current_year: int,
+            years_ahead: int,
+            tables: Sequence[str] | None = None,
+            domains: Sequence[str] | None = None,
+        ) -> jobs.PartitionRun:
+            called["current_year"] = current_year
+            called["years_ahead"] = years_ahead
+            called["tables"] = tables
+            return jobs.PartitionRun(
+                current_year=current_year,
+                years_ahead=years_ahead,
+                measured=("dwd_stock_daily",),
+                partitioned=1,
+            )
+
+        monkeypatch.setattr(jobs, "maintain_partition_horizon", fake_maintain)
+        template = next(
+            row for row in jobs.PIPELINE_TEMPLATES if row.kind is TemplateKind.PARTITION_MAINTENANCE
+        )
+
+        result = await jobs._execute_template(template)
+
+        assert called["years_ahead"] == 2  # schedules.yaml spells it "2"
+        assert called["current_year"] == date.today().year
+        assert called["tables"] is None  # the whole registered warehouse
+        assert result["applied_total"] == 0
+        assert result["remaining"] == {}

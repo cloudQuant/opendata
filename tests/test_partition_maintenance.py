@@ -120,7 +120,7 @@ class TestCrossYearWrite:
 
         maintainer = PartitionMaintainer(warehouse)
         applied = maintainer.ensure(
-            self.TABLE, partition_key="trade_date", current_year=2026, years_ahead=2
+            self.TABLE, current_year=2026, years_ahead=2
         )
 
         assert applied == ["p2025", "p2026", "p2027"]
@@ -150,11 +150,11 @@ class TestCrossYearWrite:
         from opendata.pipeline.partitions import PartitionMaintainer
 
         maintainer = PartitionMaintainer(warehouse)
-        maintainer.ensure(self.TABLE, partition_key="trade_date", current_year=2026, years_ahead=2)
+        maintainer.ensure(self.TABLE, current_year=2026, years_ahead=2)
 
         assert (
             maintainer.ensure(
-                self.TABLE, partition_key="trade_date", current_year=2026, years_ahead=2
+                self.TABLE, current_year=2026, years_ahead=2
             )
             == []
         )
@@ -169,7 +169,7 @@ class TestCrossYearWrite:
             )
         try:
             applied = PartitionMaintainer(warehouse).ensure(
-                "_probe_unpartitioned", partition_key="id", current_year=2026
+                "_probe_unpartitioned", current_year=2026
             )
             assert applied == []
         finally:

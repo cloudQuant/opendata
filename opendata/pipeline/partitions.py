@@ -204,7 +204,6 @@ class PartitionMaintainer:
         self,
         table: str,
         *,
-        partition_key: str,
         current_year: int,
         years_ahead: int = DEFAULT_YEARS_AHEAD,
     ) -> list[str]:
@@ -212,8 +211,6 @@ class PartitionMaintainer:
 
         Args:
             table: Partitioned table name.
-            partition_key: The partition column (for reporting) - the
-                statement itself reorganizes by partition name.
             current_year: Current calendar year.
             years_ahead: Years beyond the current one that must exist.
 

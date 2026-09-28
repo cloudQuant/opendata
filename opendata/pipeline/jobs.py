@@ -35,7 +35,7 @@ from sqlalchemy import text
 
 from opendata.data.domains import dwd_table, ods_table, require_domain
 from opendata.data.models import Instrument
-from opendata.pipeline.alert_matrix import run_alert_matrix
+from opendata.pipeline.alert_matrix import run_alert_matrix, warehouse_tables
 from opendata.pipeline.freshness import dwd_freshness, ods_freshness
 from opendata.pipeline.templates import (
     PIPELINE_TEMPLATES,
@@ -61,12 +61,18 @@ if TYPE_CHECKING:
 #: Domains with a six-step builder today (one builder per chain).
 SUPPORTED_DOMAINS = frozenset({"stock_daily"})
 
-#: Template kinds this module can execute. ``partition_maintenance`` is
-#: the one declared job left without an executor: its apply half is a
-#: ``REORGANIZE`` of the warehouse partitions, which stays gated on an
-#: operator (C48 measured the plan half in the alert matrix instead).
+#: Template kinds this module can execute. Every kind the shipped
+#: ``schedules.yaml`` declares is here: a row whose kind has no executor
+#: is skipped at registration, which is how ``partition_maintenance`` and
+#: ``freshness`` sat declared-but-dead until C48 (matrix delivery) and C57
+#: (the ``REORGANIZE`` half) picked them up.
 EXECUTABLE_KINDS = frozenset(
-    {TemplateKind.INCREMENTAL, TemplateKind.FRESHNESS, TemplateKind.FULL_CHECK}
+    {
+        TemplateKind.INCREMENTAL,
+        TemplateKind.FRESHNESS,
+        TemplateKind.FULL_CHECK,
+        TemplateKind.PARTITION_MAINTENANCE,
+    }
 )
 
 #: Universe cap for one batch when the caller asks for "all" symbols: a
@@ -713,6 +719,8 @@ async def _execute_template(template: ScheduleTemplate) -> dict[str, Any]:
         return await _execute_freshness(template)
     if template.kind is TemplateKind.FULL_CHECK:
         return await _execute_full_check(template)
+    if template.kind is TemplateKind.PARTITION_MAINTENANCE:
+        return await _execute_partition_maintenance(template)
     payload = template.payload
     domain = str(payload.get("domain", "stock_daily"))
     if domain not in SUPPORTED_DOMAINS:
@@ -853,6 +861,133 @@ async def _execute_full_check(template: ScheduleTemplate) -> dict[str, Any]:
     }
     logger.info(f"full cross-check {template.name}: {result}")
     return result
+
+
+@dataclass(frozen=True)
+class PartitionRun:
+    """What one partition-horizon pass did.
+
+    Attributes:
+        current_year: Year the horizon was measured from.
+        years_ahead: Years beyond ``current_year`` that must exist.
+        measured: Tables the pass looked at, in registration order.
+        partitioned: How many of them are partitioned at all.
+        applied: Table to the partitions this pass created.
+        remaining: Table to the yearly bounds still missing afterwards.
+    """
+
+    current_year: int
+    years_ahead: int
+    measured: tuple[str, ...]
+    partitioned: int
+    applied: dict[str, list[str]] = field(default_factory=dict)
+    remaining: dict[str, list[str]] = field(default_factory=dict)
+
+    @property
+    def applied_total(self) -> int:
+        """How many partitions the pass created across all tables."""
+        return sum(len(names) for names in self.applied.values())
+
+    def as_dict(self) -> dict[str, Any]:
+        """Serialize the pass for an API response or a log line.
+
+        Returns:
+            A JSON-friendly mapping; a non-empty ``remaining`` is the reading
+            that says the pass ran and the horizon is still short.
+        """
+        return {
+            "current_year": self.current_year,
+            "years_ahead": self.years_ahead,
+            "measured": list(self.measured),
+            "partitioned": self.partitioned,
+            "applied": {table: list(names) for table, names in self.applied.items()},
+            "applied_total": self.applied_total,
+            "remaining": {table: list(names) for table, names in self.remaining.items()},
+        }
+
+
+def maintain_partition_horizon(
+    engine: Engine,
+    *,
+    current_year: int,
+    years_ahead: int,
+    tables: Sequence[str] | None = None,
+    domains: Sequence[str] | None = None,
+) -> PartitionRun:
+    """Apply the A4.3 horizon rule, then re-read it.
+
+    This is the half :func:`opendata.pipeline.alert_matrix.collect_partitions`
+    leaves alone - a report can be read without touching DDL, and the
+    warehouse it points at is the production one. The scheduled job is the
+    opposite case: ``schedules.yaml`` ships a ``partition-maintenance`` row
+    whose note reads "落后即 REORGANIZE", so the plan gets applied here and
+    re-planned per table afterwards. The re-read is what keeps an ``ALTER``
+    that did not close the gap from reading as success: the leftover lands in
+    :attr:`PartitionRun.remaining`.
+
+    Args:
+        engine: Warehouse engine.
+        current_year: Year the horizon is measured from (caller's clock).
+        years_ahead: Years beyond ``current_year`` that must exist.
+        tables: Tables to maintain (None = every registered warehouse table).
+        domains: Registered domains to expand when ``tables`` is None.
+
+    Returns:
+        The pass report.
+    """
+    from opendata.pipeline.partitions import PartitionMaintainer, plan_yearly_partitions
+
+    wanted = tuple(tables) if tables is not None else warehouse_tables(domains)
+    maintainer = PartitionMaintainer(engine)
+    applied: dict[str, list[str]] = {}
+    remaining: dict[str, list[str]] = {}
+    partitioned = 0
+    for table in wanted:
+        if not maintainer.is_partitioned(table):
+            continue
+        partitioned += 1
+        created = maintainer.ensure(table, current_year=current_year, years_ahead=years_ahead)
+        if created:
+            applied[table] = created
+        gaps = plan_yearly_partitions(
+            maintainer.state(table), current_year=current_year, years_ahead=years_ahead
+        )
+        if gaps:
+            remaining[table] = [name for name, _ in gaps]
+    return PartitionRun(
+        current_year=current_year,
+        years_ahead=years_ahead,
+        measured=wanted,
+        partitioned=partitioned,
+        applied=applied,
+        remaining=remaining,
+    )
+
+
+async def _execute_partition_maintenance(template: ScheduleTemplate) -> dict[str, Any]:
+    """Extend the warehouse partition horizon on schedule (AC-8 items 5/6).
+
+    C48 could only measure the plan half, and the shipped row was skipped at
+    registration because its kind had no executor: nothing ever split
+    ``pmax``, so the horizon just lagged until a human did it by hand. The
+    failure mode is silent - rows for a new year land in the fallback
+    partition and the write succeeds, so every counter stays green while the
+    yearly-partition design stops meaning anything.
+
+    Args:
+        template: The ``partition_maintenance`` schedule row being fired.
+
+    Returns:
+        The serialized :class:`PartitionRun`.
+    """
+    run = await asyncio.to_thread(
+        maintain_partition_horizon,
+        warehouse_engine(),
+        current_year=date.today().year,
+        years_ahead=int(template.payload.get("years_ahead", 2)),
+    )
+    logger.info(f"partition maintenance {template.name}: {run.as_dict()}")
+    return run.as_dict()
 
 
 def _payload_domains(payload: Mapping[str, object]) -> tuple[str, ...] | None:
