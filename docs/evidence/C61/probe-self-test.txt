@@ -1,0 +1,9 @@
+# ── 出处头（C61 写定） ───────────────────────────────────────────────
+# 轮次 C61 ／ 2026-09-28 ／ 分支与提交 dev @ fb9aa5b（AC-5 七格判据与仪器缺陷修好后跑的全表反事实自检）
+# 命令 python scripts/quality/acceptance_item_probe.py --self-test
+# 退出面 仪器在 failures 为空时才打印 9 这行并 return 0，FAIL 走 stderr 且 rc=1；本次 2>&1 合并后只见 OK 行（9）不见 FAIL 行，即为 rc=0。管道尾是 tail，上游 $? 同样不可得
+# 未裁剪说明 --self-test 的完整 stdout+stderr 就是下面 2 行（8 与 9），`tail -40` 没有裁掉任何内容；40 分钟墙钟花在 54 格逐个测量上，不产生逐格输出
+# 与上一轮的差值 C59/C60 那两遍是「47/47 个探针、378 条 break」，本轮 +7 探针（AC-5|01…|07）+51 条 break —— 每条 break 都要能把干净读数打回 gap
+# ── 正文（原样） ─────────────────────────────────────────────────────
+反事实面：54/54 个探针走到了判定，429 条 break 各被施加一次、每条都要求把干净读数打回 gap
+OK: 54 probe(s) measured; every judge is reachable from its declared repair, and all 429 counterfact(s) flip a clean reading back to a gap.

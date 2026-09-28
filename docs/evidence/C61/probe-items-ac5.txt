@@ -1,0 +1,84 @@
+# ── 出处头（C61 写定，正文一字未裁） ─────────────────────────────────
+# 轮次 C61 ／ 2026-09-28 ／ 分支与提交 dev @ fb9aa5b（跑时工作树含本轮未提交的仪器与报告两处改动）
+# 命令 python scripts/quality/acceptance_item_probe.py --item 'AC-5|01' --item 'AC-5|02' --item 'AC-5|03' --item 'AC-5|04' --item 'AC-5|05' --item 'AC-5|06' --item 'AC-5|07'（2>&1 合并 stdout/stderr）
+# 判定契约 proven 4 格在 17 49 59 69，gap 3 格在 28 39 81，仪器自报 census 在 83；正文里没有 FAIL/Traceback 行。管道尾是 tee，上游 $? 不可得，退出面以打印契约为准
+# 这一版是修掉两处仪器缺陷后的复跑：①AC-5|02 把需求 D9 散文里的「economic、utils 等」切成 `utils 等`（假缺失），修后真缺失只剩 futures_derivative（25）；②AC-5|07 把 make 的 `@#` 注释算进 recipe，截断后读数只剩注释、看不见真正执行的命令（修后见 75），顺带 target_ok 不再能被一行注释养活
+# 正文 77 行为 7 格读数全文；AC-5|06 的资源调用面在 68，AC-5|07 的本轮全量扫描档案自报头在 76
+# ── 正文（原样） ─────────────────────────────────────────────────────
+
+### AC-5|01  (document line 149)
+判据原文：**`manifest.json` 逐项校验通过**（文件清单 + sha256 + 资源清单 + 计数）——不再以写死的模块数字作为验收依据
+本探针：manifest 的每条 sha/计数全部对着磁盘现算，且与 upstream.lock 的文件集相等
+台账现状：state=unreviewed，文档勾选=False
+  - 清单 313 个 py + 2 个资源 = 315 条，逐条现算 sha256（315 条能读到磁盘内容）：对不上 0 条、磁盘上没有 0 条
+  - 磁盘反查：py 313 个（清单没登记的 0：-）、非 py 文件 2 个（未登记为资源 0：-），清单里过时条目 0：-
+  - 四个计数逐个与现算相等：py_files=yes、resource_files=yes、total_files=yes、total_lines=yes（现算行数 93205）；upstream.lock 与 manifest 的文件集相等 = yes（315 条）
+  - 仪器原话（scripts/codemod/gen_manifest.py --check，exit 0）：OK: manifest.json is up to date
+VERDICT AC-5|01: proven
+
+### AC-5|02  (document line 150)
+判据原文：迭代 1A：P0 域子模块搬运完成；迭代 1B：P1 域子模块搬运完成
+本探针：搬运面的实际使用与 D9 范围对得上，且 1A/1B 批次有机器可读的声明字段
+台账现状：state=unreviewed，文档勾选=False
+  - 搬运清单 313 个 py 文件，来自上游 12 个子包：bond, economic, file_fold, fund, futures, index, option, pro, stock, stock_feature, stock_fundamental, utils
+  - 首方代码以 ``opendata_http.<name>`` 取用 11 个端点函数，聚合层没导出的 0 个：-（akshare 腿模块 11 个）
+  - 需求 D9 点名的范围内 11 个子包（原文：stock、stock_feature、stock_fundamental、futures、futures_derivative、index、fund、opti），清单里没有的 1 个：futures_derivative；点名移出的 8 个非金融子包混进来的 0 个：-
+  - 能读出 1A/1B 批次的机器字段 = -
+  - 补齐到可判：scope_missing: 1 -> 0; tier_field: - -> opendata/data/domains.yaml#batch
+VERDICT AC-5|02: gap — 「P0 域子模块搬运完成 / P1 域子模块搬运完成」缺一个机器可读的分母：`domains.yaml` 与 `Capability` 都不带 batch/priority/tier 字段，需求 D9 与实施计划 B1.1 的子模块清单都写在「…等」这类散文里，所以「完成」today 无法从树上判。已量的两半是实的：首方代码取用的端点全部导出、被移出本迭代的非金融子包一个都没混进来；散文点名的 futures_derivative 是否属于 P0/P1 也要同一份字段来定。钉出这个字段是产品/接口决策（谁声明哪个域属哪一批），本轮不替它编
+
+### AC-5|03  (document line 151)
+判据原文：codemod 差异报告人工待办清零；**AST 级静态扫描**零 `akshare` 运行时引用（含字符串常量与动态导入）
+本探针：差异报告待办为零，且 AST 扫描在 import/动态/字符串三个形态与冻结基线上都清零
+台账现状：state=unreviewed，文档勾选=False
+  - 差异报告（docs/port-report.md）自报人工待办 0 条，清单段落首行「（无 —— 待办清零）」且没有挂着的复选项 = yes
+  - AST 级静态扫描（scripts/codemod/verify_no_akshare.py，exit 0 / --self-test exit 0）：import 形态 0、动态导入 0、字符串常量 3
+  - 扫描器冻着的基线 3 条，字符串形态落在 opendata/data/openbb_map.py, opendata/models/data_script.py, opendata/pipeline/patrol.py
+  - 扫描器原话：OK: 517 file(s) walked (opendata=193, opendata_client=2, opendata_fuyao=9, opendata_http=313), python 3.13, scanner 2; n
+  - 补齐到可判：frozen: 3 -> 0; string_live: 3 -> 0
+VERDICT AC-5|03: gap — 判据原文把「含字符串常量与动态导入」写进了零引用口径，基线里剩下的就是那 3 条产品事实的名字面量（opendata/data/openbb_map.py, opendata/models/data_script.py, opendata/pipeline/patrol.py）。抹平它只有两条路，两条都要改判据本身：①把扫描器字符串规则改窄（等于放宽已勾的 AC-16|05「AST 口径」）；②改掉这三处真实数据源名的拼写（正是 C35 收口过的门禁空转）。同一道题 AC-16|06 已经登记为用户/产品决策（task #64），这里不重复改判、也不换个说法再判一次
+
+### AC-5|04  (document line 152)
+判据原文：根目录 `akshare/` 已删除；未安装 akshare 的环境中 P0 域函数可用
+本探针：根目录与索引与解释器三面都没有 akshare，而首方代码取用的端点全部可达
+台账现状：state=unreviewed，文档勾选=False
+  - 根目录 `akshare/` 在磁盘上 = no，git 索引里该前缀下 0 个文件：-
+  - 本解释器 `importlib.util.find_spec('akshare')` = absent；`import opendata_http` exit=0（(no output)）
+  - 首方代码取用的 11 个端点函数逐个 `callable(getattr(...))`，取不到的 0 个：-（探针 exit 0）
+  - 干净 venv 侧证（docs/evidence/C55/clean-env-integration-run.txt，ARCHIVE_ROUND=C55，本轮自写 = yes）里 akshare 报 absent = yes
+VERDICT AC-5|04: proven
+
+### AC-5|05  (document line 153)
+判据原文：每文件头保留 MIT 版权声明 + 来源标注
+本探针：搬运树每个 py 文件都带 MIT 声明与来源行，来源 commit/URL 与 lock 逐字相等
+台账现状：state=unreviewed，文档勾选=False
+  - 清单里 313 个 py 文件逐个读前 6 行（走查 313 个，与清单相等 = yes）：缺 MIT 声明 0 个（-）、缺来源标注 0 个（-）
+  - 来源标注里的 commit 只有 1 个取值，与 manifest/upstream.lock 的 c4f6a631c259 相等 = yes；URL 与 lock_url （https://github.com/cloudQuant/akshare.git）逐字不等的 0 个：-
+  - 许可证台账（THIRD_PARTY_NOTICES.md）同时说得到 akshare 与 MIT = yes
+  - 清单里 2 个资源文件（json/js）不带这类头部 —— 判据指的是搬运的源文件，资源由 manifest.json 与许可证台账各自登记，本轮只披露不判定
+VERDICT AC-5|05: proven
+
+### AC-5|06  (document line 154)
+判据原文：**内置资源引用可用**：`datasets.py` 的资源访问函数可运行（或明确标注不可用并登记）
+本探针：datasets.py 的资源访问函数当场调用：或返回路径，或 raise 且回指仪器派生的登记段
+台账现状：state=unreviewed，文档勾选=False
+  - opendata_http/datasets.py 里 2 个资源访问函数（get_ths_js, get_crypto_info_csv）当场调用：返回路径的 0 个（-）、raise 里明说不可用的 2 个（get_ths_js, get_crypto_info_csv）、报别的异常的 0 个：-
+  - 标注不可用的 2 个函数的 raise 文本都回指登记文件 docs/port-report.md = yes（get_ths_js, get_crypto_info_csv）；登记段落在位 = yes，表体 2 行、逐个点名这些函数且不多不少 = yes
+  - 登记处由报告仪器（scripts/codemod/report_port.py）从 `datasets.py` 的 raise 语句与 upstream.lock 派生，不是手写段落
+  - 清单登记的 2 个内置资源在磁盘齐备 = yes（2/2）
+VERDICT AC-5|06: proven
+
+### AC-5|07  (document line 155)
+判据原文：**搬运层安全扫描**（bandit 含 B 层）完成并人工 triage 留档
+本探针：搬运层专用 bandit 目标 + 本轮全量留档，triage 覆盖面等于今天的树且免罪句仍成立
+台账现状：state=unreviewed，文档勾选=False
+  - 搬运层专用扫描目标 `Makefile:security-ported` 在位且打的是 opendata_http/ = yes（recipe：-bandit -r opendata_http -f json -o docs/evidence/A2/bandit-ported.json @python -c "import json;d=json.load(open('docs/evidence/A2/bandit-po）；日常 `make security` 按 bandit.yaml 的 exclude_dirs（.git, __pycache__, node_modules, opendata_http）把搬运层排出去，所以「含 B 层」的全量复核只能由这个专用目标承担 = yes（质量规范 §4 的「每次同步一次」口径，不是逐提交记账）
+  - 本轮全量扫描留档 docs/evidence/C61/ported-bandit-scan.json（自报 archive_round=C61，本轮自写 = yes，generated_at=2026-09-28T20:33:11Z，命令=bandit -q -r opendata_http -f json）：1021 项 / 234 个有 finding 的文件 / 13 条规则（B105, B107, B110, B112, B113, B301, B307, B311, B324, B403, B404, B501, B603），全是 B 层 = yes；文件全在搬运清单内 = yes（清单外：-）
+  - 人工 triage（docs/evidence/A2/bandit-ported-triage.md）处置 10 条规则，自己声明扫的是 131 个 py 文件 / 328 项，而搬运树今天是 313 个 py 文件 —— 覆盖面相等 = no
+  - 同一份 triage 的免罪句「无 B608（SQL 拼接）、无 B324（弱哈希）、无 pickle/yaml.load 类反序列化项；`builtin exec` 站点 0」点名的规则有 1 条在本轮实测里出现了：B324；它说「无 pickle/yaml.load 类反序列化项」，本轮按 bandit 自己的测试名匹配到 0 条：-
+  - 今天这次扫描里落在未处置规则上的还有 5 项：B403@futures/cons.py:13, B301@futures/cons.py:576, B324@stock_feature/stock_a_indicator.py:50, B324@stock_feature/stock_info.py:36, B324@stock_feature/stock_info.py:37
+  - 补齐到可判：cleared_present: 1 -> 0; findings_untriaged: 5 -> 0; surface_covered: no -> yes; triage_files_claimed: 131 -> 313
+VERDICT AC-5|07: gap — 「安全扫描完成并人工 triage 留档」缺的是留档与今天的树对得上：A2 那份 triage 声明它扫了 131 个 py 文件（328 项），搬运树已长到 313 个（本轮全量 1021 项、13 条规则），其中 5 项属于 triage 从未处置过的规则（B403@futures/cons.py:13, B301@futures/cons.py:576, B324@stock_feature/stock_a_indicator.py:50, B324@stock_feature/stock_info.py:36, B324@stock_feature/stock_info.py:37）；那句「无 B608（SQL 拼接）、无 B324（弱哈希）、无 pickle/yaml.load 类反序列化项；`builtin exec` 站点 0」描述的是当初那棵树，本轮实测里 triage 点名「无」的规则出现了 1 条（B324）、pickle/yaml 类反序列化 0 条（-）。逐条人工处置是这件事的正当收口，本轮不给它补假处置
+
+census: gap=3, proven=4
+（7 item(s) recomputed against docs/quality/acceptance-item-ledger.json）

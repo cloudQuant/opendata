@@ -1,0 +1,28 @@
+# ── 出处头（C61 写定，正文一字未裁） ─────────────────────────────────
+# 轮次 C61 ／ 2026-09-28 ／ 分支与提交 dev @ fb9aa5b（正文三段命令都跑在工作树上，含本轮未提交改动）
+# 命令 git diff --stat -- scripts/codemod/report_port.py scripts/quality/acceptance_item_probe.py docs/port-report.md；python scripts/codemod/gen_manifest.py --check；awk '/^## 内置资源不可用登记/{f=1} f' docs/port-report.md
+# 读数 三段改动 11（探针仪器 +971 全部是新增行、报告仪器 +93、报告正文 +13）；清单核对 14（GEN_MANIFEST_CHECK_EXIT=0，AC-5|01 的第一道读数）；报告里新生成的登记段落标题 18、两行登记 24 与 25 —— 这一节是 AC-5|06「明确标注不可用并登记」那条支路的登记处，由 report_port.py 从 datasets.py 的 raise 语句与 upstream.lock 派生，不是手写
+# 为什么登记必须落在生成器里 docs/port-report.md 由仪器生成、并与已提交档案逐字节比对（AC-17|05）；手写一节会让下一次重放把差异判成回归，所以本轮把登记做成生成的一部分
+# ── 正文（原样） ─────────────────────────────────────────────────────
+$ git diff --stat -- scripts/codemod/report_port.py scripts/quality/acceptance_item_probe.py docs/port-report.md
+ docs/port-report.md                      |  13 +
+ scripts/codemod/report_port.py           |  93 +++
+ scripts/quality/acceptance_item_probe.py | 971 +++++++++++++++++++++++++++++++
+ 3 files changed, 1077 insertions(+)
+
+$ python scripts/codemod/gen_manifest.py --check
+OK: manifest.json is up to date
+GEN_MANIFEST_CHECK_EXIT=0
+
+$ sed -n '/内置资源不可用登记/,$p' docs/port-report.md
+## 内置资源不可用登记（A2.3，AC-5|06）
+
+登记来源：本节由 `scripts/codemod/report_port.py` 读 `datasets.py` 的 `raise` 语句与 `upstream.lock` 派生，不手写；`AC-5|06` 取判据的第二条支路「明确标注不可用并登记」，这里就是登记处。
+
+| 资源访问函数 | 声明的资源 | 同名文件在搬运清单内 | raise 文本（插值槽位原样） |
+|--------------|-----------|--------------------|---------------------------|
+| `get_ths_js` | `ths.js` | 是 | resource {file} is unavailable: the upstream akshare.data package never existed (A2.3); see docs/port-report.md |
+| `get_crypto_info_csv` | `crypto_info.zip` | 否 | resource {file} is unavailable: the upstream akshare.data package never existed (A2.3); see docs/port-report.md |
+
+- 「同名文件在搬运清单内 = 是」只说明该文件作为资源被搬进来了、路径与上游 `akshare.data` 约定不同，不代表函数可运行：两条 `raise` 都在函数体第一句。
+- 把这两个函数改成读搬运树内的路径需要改 `opendata_http/datasets.py` 正文，那会让该文件与 `upstream.lock` 的确定性重放不再一致（`AC-17|05` 的重放面），属搬运基线决策，不在本报告口径内。

@@ -1,0 +1,14 @@
+# ── 出处头（C61 写定，正文一字未裁） ─────────────────────────────────
+# 轮次 C61 ／ 2026-09-28 ／ 分支与提交 dev @ fb9aa5b（本轮改动的两份仪器都在这两个守卫的作用面上）
+# 命令 MYSQL_HOST=127.0.0.1 DATA_MYSQL_HOST=127.0.0.1 python -m pytest tests/test_acceptance_probe_gate.py tests/test_p0_integration_surface.py -q --no-header -p no:cacheprovider --no-cov -m "not e2e"
+# 仓库面 两个 MySQL 变量钉到 127.0.0.1（无监听端口），e2e 选择式按门禁口径带着；这一遍没对生产仓库做任何连接或写入
+# 读数 收集 8，终局 14；test_acceptance_probe_gate.py 38 条 + test_p0_integration_surface.py 4 条
+# ── 正文（原样） ─────────────────────────────────────────────────────
+============================= test session starts ==============================
+collected 42 items
+
+tests/test_acceptance_probe_gate.py .................................... [ 85%]
+..                                                                       [ 90%]
+tests/test_p0_integration_surface.py ....                                [100%]
+
+======================== 42 passed in 114.23s (0:01:54) ========================
