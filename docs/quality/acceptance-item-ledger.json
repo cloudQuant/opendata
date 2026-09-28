@@ -549,19 +549,79 @@
       "state": "unreviewed"
     },
     "AC-11|01|55260732": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C55",
+      "date": "2026-09-28",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-11|01' --item 'AC-11|02' --item 'AC-11|03' --item 'AC-11|04' --item 'AC-11|05'（判定面 = 路由/OpenAPI 的具名节点各起一个 pytest 进程 + 按 AST 读处理器签名；HTTP 面 = tests/test_data_query_http_warehouse.py 23 例，替身是真 SQLAlchemy 引擎打在 SQLite 上、表结构由 opendata.pipeline.ddl 生成）",
+      "evidence": [
+        "docs/evidence/C55/probe-ac11-items.txt",
+        "docs/evidence/C55/probe-all.txt",
+        "docs/evidence/C55/self-test.txt",
+        "docs/evidence/C55/README.md",
+        "tests/test_data_query_http_warehouse.py",
+        "tests/test_data_query_api.py"
+      ],
+      "note": "C36 起这条一直 unreviewed：§10 记的是 AC 级『部分完成』，从来没有一条读数能说清 9 个入参到底在不在。本轮量出来的四读：路由形状 /data/{asset_class}/{domain} 与载荷同时交回 columns 和 rows = yes；判据点名的 symbols/start/end/source/layer/adjust/fields/分页 9 个入参在处理器签名里全在（缺 = -，AST 读数，注释里写什么不算）；声明的默认值 layer=dwd、adjust=none；节点面 6/6 passed（OpenAPI 两条 + 替身仓库 HTTP 四条）。刻意不借的判据：默认值这条按签名FastAPI 参数的默认值读，不按文档措辞读 —— 改一个默认值就等于改了默认口径，得让签名红。"
     },
     "AC-11|02|47ebc0df": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C55",
+      "date": "2026-09-28",
+      "reason": "前半已是实测面（qfq/hfq 由服务端按因子表合成：_adjusted_rows 真的调 apply_adjust_to_rows，缺因子 400、缺表 501，节点面 11/11 passed = 复权 HTTP 五条 + 因子算术两条 + 对照仪器判定四条）。后半判据点名『与 akshare 官方 qfq 对照一致』，而唯一的官方对照腿取的是 sina：scripts/ops/qfq_official_check.py 的 _official_series 走 sina stock_zh_a_daily，留档 docs/evidence/B4/qfq-official-check.txt 头部记的腿也是 sina。sina 是另一条源、另一条因子链，作独立对照比拿 akshare 自证更强（那次真机 run 是 PASS 16 行 / FAIL 0 行），但它不是判据写的那个名字 —— 本轮不把『有一条独立对照』当成『有判据点名的对照』来翻正。补齐路径已在探针里钉成读数：official_leg / run_official_leg 两个 sina 都要变 akshare，即在 qfq_official_check.py 加 akshare 官方 qfq 序列腿（opendata_http/stock_feature/stock_hist_em.py 在位 = yes，本轮已量）并留档一次真机 run。",
+      "evidence": [
+        "docs/evidence/C55/probe-ac11-items.txt",
+        "docs/evidence/C55/probe-all.txt",
+        "docs/evidence/C55/self-test.txt",
+        "docs/evidence/C55/README.md",
+        "docs/evidence/B4/qfq-official-check.txt"
+      ]
     },
     "AC-11|03|9e33b3df": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C55",
+      "date": "2026-09-28",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-11|01' --item 'AC-11|02' --item 'AC-11|03' --item 'AC-11|04' --item 'AC-11|05'（判定面 = tests/test_data_query_http_warehouse.py 里 13 条参数安全用例各走真路由 + 三个枚举面的 AST 读数 + serialize_for_csv 调用点读数）",
+      "evidence": [
+        "docs/evidence/C55/probe-ac11-items.txt",
+        "docs/evidence/C55/probe-all.txt",
+        "docs/evidence/C55/self-test.txt",
+        "docs/evidence/C55/README.md",
+        "docs/evidence/C55/source-leg-enum-fix.txt",
+        "tests/test_data_query_http_warehouse.py"
+      ],
+      "note": "判据列的四个面各自有实测，不是一个总闸：fields=open;DROP TABLE 那条字面载荷在 400 之外还回读表里的行数，所以『没执行』是被量的而不是被说的；枚举面按三个数齐不齐判，本轮因此揪出一处真缺陷（source 此前只被 OpenAPI 声明，_validated_query 里没有门，layer=dwd&source=<编的名字> 会照常返回合并行并回显那个假腿），补成 400 且 detail 交出该域注册过的腿名，新用例同时钉住『注册过的腿过枚举门、下一道门才是它自己的 ods 表』（leg 200 / ods 404）；symbols 走绑定字典、SQL 文本里只有 :{name} 占位；CSV 公式转义发生在 handler（_csv_stream 调 serialize_for_csv）。节点面 13/13 passed。"
     },
     "AC-11|04|7d8f0545": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C55",
+      "date": "2026-09-28",
+      "command": "python -u scripts/ops/window_partition_explain.py（真仓库只读 EXPLAIN，留档：bash docs/evidence/C55/run_window_explain.sh）+ python scripts/quality/acceptance_item_probe.py --item 'AC-11|01' --item 'AC-11|02' --item 'AC-11|03' --item 'AC-11|04' --item 'AC-11|05'（判定面 = 时间窗节点面 5 条 + 留档对账）",
+      "evidence": [
+        "docs/evidence/C55/probe-ac11-items.txt",
+        "docs/evidence/C55/probe-all.txt",
+        "docs/evidence/C55/self-test.txt",
+        "docs/evidence/C55/README.md",
+        "docs/evidence/C55/window-pruning-explain.txt",
+        "docs/evidence/C55/run_window_explain.sh",
+        "scripts/ops/window_partition_explain.py",
+        "tests/test_data_query_http_warehouse.py"
+      ],
+      "note": "窗口这一半本来就是绿的实测：不带区间时 window_bounds 补 365 天默认窗、build_data_select 带 LIMIT :limit 行数上限、生成的 SELECT 以分区键为谓词，节点面 5/5 passed（HTTP 两条 + 边界单元三条）。判据写的验证方式是 EXPLAIN，本轮补的就是那一面而不是拿 SQL 文本顶它：新仪器 scripts/ops/window_partition_explain.py 把 20 个注册域逐个交给 build_data_select 现拼（与 REST 端点同一条语句、同样只有绑定参数），对跑着的 MySQL 发 EXPLAIN 读 partitions 列。实测：仓库里 6 张已落地且带分区的 dwd 表（stock_daily / stock_adjust / stock_action / index_constituent / financial_statement / financial_indicator，时间列分别是 trade_date / trade_date / ex_date / as_of / report_period / report_period），每张 partitions_total=4，计划读到的分区数 1～2（stock_daily 是 p2025,p2026，走 PRIMARY，rows 估计 200），landed_partitioned_tables=6 pruned_yes=6 pruned_no=0，进程按「全 yes 才 0」退出。其余 14 个域 dwd 表还没落地，仪器显式写 landed=no 并跳过 —— 不计进分母，也不拿它们凑数。探针侧本轮加 4 条反事实（|04 的反事实数 6 → 10，全表 320 → 325）：explain_faces 由 0 变 1（代理正则同时认整句字面量 EXPLAIN [ANALYZE] SELECT|FORMAT 与拼接前缀 \"EXPLAIN \" +，因为仪器必须拼 SQL 才谈得上端点那条查询，两种形状都在读数行里点名）、explain_tables_landed=0、explain_pruned_no=1、explain_archive_is_current=no、explain_archive_in_place=no 各打回一次 gap。留档对账口径：正文的 query_module_sha 必须等于当下 opendata/pipeline/query.py 的摘要（留档属于拼出那条 SQL 的那一版代码，改了查询层就得重跑），ARCHIVE_ROUND 必须等于留档所在目录。"
     },
     "AC-11|05|0e5e8e85": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C55",
+      "date": "2026-09-28",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-11|01' --item 'AC-11|02' --item 'AC-11|03' --item 'AC-11|04' --item 'AC-11|05'（判定面 = tests/test_data_query_http_warehouse.py 的 diff-report 四条 HTTP + OpenAPI 一条 + opendata/api/data_query.py 的门禁读数）",
+      "evidence": [
+        "docs/evidence/C55/probe-ac11-items.txt",
+        "docs/evidence/C55/probe-all.txt",
+        "docs/evidence/C55/self-test.txt",
+        "docs/evidence/C55/README.md",
+        "tests/test_data_query_http_warehouse.py",
+        "tests/test_diff_report.py"
+      ],
+      "note": "路由 /api/v1/data/domains/{domain}/diff-report 已注册并进 OpenAPI，读的是 dq_diff_report —— 与校对器写明细用的同一个常量，不是抄来的表名。门禁三条同样有读数：按域的 scope 先判（无权限拿不到别人的差异行）、batch_id 只取一次校对、limit 与查询页同带上限。四条 HTTP 用例分别钉住差异行真的交出来、按 batch_id 选一次跑、limit 有上限、表还没迁移时读出空而不是 500。节点面 5/5 passed。"
     },
     "AC-11|06|eca44525": {
       "state": "unreviewed"
@@ -778,7 +838,7 @@
       "state": "proven",
       "round": "C51",
       "date": "2026-09-27",
-      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-16|07'（判定面 = tests/test_p0_integration_surface.py 4 条断言 + 本机与干净 venv 各一遍 `pytest tests -m 'integration and not e2e' --no-cov`，B 段读数读自 docs/evidence/C51/clean-env-integration-run.txt）",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-16|07'（判定面 = tests/test_p0_integration_surface.py 4 条断言 + 本机与干净 venv 各一遍 `pytest tests -m 'integration and not e2e' --no-cov`，B 段读数读自 docs/evidence/C*/ 里轮次号最大的那份留档（C55 起重建为 docs/evidence/C55/clean-env-integration-run.txt））",
       "evidence": [
         "docs/evidence/C51/clean-env-integration-run.txt",
         "docs/evidence/C51/clean-env-build.txt",
@@ -786,9 +846,11 @@
         "docs/evidence/C51/census-after.txt",
         "docs/evidence/C51/guard-counterfacts.txt",
         "docs/evidence/C51/README.md",
-        "tests/test_p0_integration_surface.py"
+        "tests/test_p0_integration_surface.py",
+        "docs/evidence/C55/clean-env-integration-run.txt",
+        "docs/evidence/C55/run_p0_integration_surface.sh"
       ],
-      "note": "C36 的替代装置（tests/test_ported_import_closure.py 的 meta-path 阻断）证明的是依赖声明完备，不是这条，本轮不用它顶替；改把这条变得可指认：marker 注册而 0 应用 ⇒ 选择式选中 0/3358（HEAD 可独立复核：git grep -l \"pytest\\.mark\\.integration\" HEAD -- tests/ = 0 命中）。现 8 个标记单元覆盖 A4.1 迁移的 5 个 P0 域（净 9 行接线），两个解释器各 151 passed / 0 failed / 0 skipped；干净 venv 的依赖面恰为 pyproject 的 .[web,dev]，akshare/openbb/openbb_platform 均 absent。刻意留的棘轮：skipped 必须为 0（静默跳过不算通过），archive_blind 要求扩展标记集后重跑干净环境留档。"
+      "note": "C36 的替代装置（tests/test_ported_import_closure.py 的 meta-path 阻断）证明的是依赖声明完备，不是这条，本轮不用它顶替；改把这条变得可指认：marker 注册而 0 应用 ⇒ 选择式选中 0/3358（HEAD 可独立复核：git grep -l \"pytest\\.mark\\.integration\" HEAD -- tests/ = 0 命中）。现 8 个标记单元覆盖 A4.1 迁移的 5 个 P0 域（净 9 行接线），两个解释器各 151 passed / 0 failed / 0 skipped；干净 venv 的依赖面恰为 pyproject 的 .[web,dev]，akshare/openbb/openbb_platform 均 absent。刻意留的棘轮：skipped 必须为 0（静默跳过不算通过），archive_blind 要求扩展标记集后重跑干净环境留档。 C55 复核：给 AC-11 的入口级 HTTP 面新增 tests/test_data_query_http_warehouse.py（integration）之后，archive_blind 立刻把这格打回 gap —— 这条棘轮按设计咬住了「加了模块不重跑干净环境」，本轮选择重建留档而不是放宽判据：只装 pyproject .[web,dev] 的 venv（/tmp/c55-clean/venv，akshare/openbb/openbb_platform 三者 absent）与开发解释器各跑一遍 -m 'integration and not e2e' --no-cov，两个解释器各 177 passed / 0 failed / 0 skipped（3277 deselected），标记集现为 9 个单元。判定面同时加两格读数：clean_archive（探针读的是 docs/evidence/C*/ 里轮次号最大的那一份，不再钉死 C51）与 archive_self_written（留档正文声明的 ARCHIVE_ROUND 必须等于它所在目录），后者反事实一条，堵的是「把旧留档拷进新目录」这条捷径。"
     },
     "AC-16|08|9d1c3b42": {
       "state": "unreviewed"
