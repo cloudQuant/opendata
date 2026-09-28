@@ -11,7 +11,8 @@ AC-5 是搬运层（`opendata_http/`）的七条判据，此前状态是 `unrevi
 `scripts/codemod/report_port.py` +93 行（资源不可用登记段落），`docs/port-report.md` +13 行（生成结果）。
 全表反事实自检从 47 探针/378 条 break 涨到 **54/429**，每条 break 都能把干净读数打回 gap
 （档案 `probe-self-test.txt`）。守卫 42 条 passed（`guard-tests.txt`，两个 MySQL 变量钉到无监听的
-127.0.0.1）。
+127.0.0.1）。**这两处随后又被 §7 那一格推了一次**：break 加到 430、守卫按另一对文件跑到 44，
+终值以门禁遍（`gate-run1.txt` 的 `acceptance-probe-check` 成员）为准。
 
 ## 2. 四格 proven 各自凭的是什么
 
@@ -85,7 +86,39 @@ gap `11 → 14`、`unreviewed 76 → 69`（7 格里 4 进 proven、3 进 gap，�
 脏树下它走 deferred、不判 proven，所以这格的 proven 最终要由清洁树上的门禁遍（`--gate-check`）复核；
 其余六格 `moment_faces: []`。
 
-## 7. 档案表
+## 7. 翻完台账之后才看见的第三处：本轮给 `AC-5|06` 造的登记段，把已 proven 的 `AC-17|05` 判倒了
+
+门禁遍跑到一半被我主动停掉（不是失败，是它必然失败：与其花 33 分钟拿一份红的门禁当本轮的证，
+不如先量清冲突）。事情本身是这样：
+
+- `report_port.py` 生成的「内置资源不可用登记」表，行首写成 ``| `get_ths_js` | ``；而 `AC-17|05` 数
+  「每个搬运文件一行」用的判据就是 `line.startswith("| `")`（`port_replay()`）。两条登记行于是被算进
+  重放行数：**`rows_total` 317 ≠ `upstream.lock` 的 315**，`judge_ac17_05` 的等式两边对不上 ⇒
+  那格从 proven 变 gap。**本轮没碰 `AC-17|05` 的任何判据，却把它判倒了** —— 这是生成物形状与
+  另一个判据的口径撞车，不是新判据太严。
+- 数字不是回忆：档案 `ac5-06-shape-fix.txt` 头部那段是用 `git show 759be9c:docs/port-report.md`
+  的原始字节现算的两个计数（317 / 315），锁记录数走 `lock_records()`，与探针同一个前缀常量。
+- **修法改的是生产物，不是判据**：登记行不再加反引号（`report_port.py` 的行模板），`AC-5|06` 的行解析
+  改成按首列形状认数据行（首列是标识符才算，表头是中文、分隔行是连字符，自然被排除）。
+  没有去改 `port_replay()` 的前缀或 `judge_ac17_05` 的等式 —— 那等于把一条已勾判据的口径改窄，
+  和 C60 §6 禁止的「改 `python_version` 洗绿」是同一类捷径。
+- 这件事现在是**被量住的**，不是靠约定：`AC-5|06` 新增面 `shape_clash` = 登记段里与重放表同形的行数，
+  今天读数 0；它进 judge 的顶层合取，并配一条反事实（施加 `shape_clash=2` ⇒ 该格回 gap）。
+  谁再把反引号加回去，两格同时变红，而不是只有一格在骗人。
+- 正控不是空跑：把 759be9c 的**真实**登记段喂进今天的 `measure_ac5_06`，读到 `shape_clash = 2`、
+  `register_rows = 0`（解析器按形状认行，旧形状一行都不算数据行）⇒ 判定回 gap。
+  这条同时证明新解析器不是「换成另一种硬编码形状」，而是真的对形状不敏感。
+- 修复后读数（`ac5-06-shape-fix.txt` S2/S3）：`AC-5|06` proven（`shape_clash` 0）、
+  `AC-17|05` **回到 proven**（锁 315 / 报告 315 行 / 逐字一致 315 / 现场渲染与档案逐字节一致 = yes）。
+  `--sync-faces` 写回后面基线与已提交版本**逐字节相同**（新面不读 git 时刻），所以本轮没有需要人签的漂移。
+- 静态面与守卫：两台仪器 ruff / format / mypy / bandit 全清，`test_acceptance_probe_gate.py`(38) +
+  `test_ported_import_closure.py`(6) = **44 passed**。§1 那句「守卫 42 条」是同一轮前一遍的另一对文件
+  （38 + `test_p0_integration_surface.py` 的 4），数字不同是因为**跑的文件对不同**，不是回归。
+- 两条如实边界：①正控脚本是一次性仪器，没随档留档（复现口径 = 把 `git show 759be9c:docs/port-report.md`
+  的字节喂给 `measure_ac5_06`，见档案 S4 段首那行）；②这层形状耦合由**探针面**守着，不由单测守着 ——
+  `grep report_port tests/` 命中 0 个文件，`collect_resource_register` 的输出形状从来没有任何用例钉过。
+
+## 8. 档案表
 
 | 文件 | 内容 | 证据档位 |
 | --- | --- | --- |
@@ -94,4 +127,5 @@ gap `11 → 14`、`unreviewed 76 → 69`（7 格里 4 进 proven、3 进 gap，�
 | `guard-tests.txt` | `tests/test_acceptance_probe_gate.py`（38）+ `tests/test_p0_integration_surface.py`（4）= 42 passed，`-m "not e2e" --no-cov`，MySQL 变量钉死 | 节点面实测 |
 | `register-and-diff.txt` | 三处改动 diff --stat（+1077 全为新增）、`gen_manifest.py --check` 的 exit 0、报告里新生成的「内置资源不可用登记」整节 | 命令输出原样 |
 | `ported-bandit-scan.json` | 本轮搬运层全量 bandit 产物（1021 项 / 313 文件树 / 13 条规则）+ `archive_round=C61` 自写标识与「为什么不覆写 A2」的说明 | bandit 原始 JSON 全量，未裁 |
-| `README.md` | 本文件：叙述面 | 叙事 |
+| `ac5-06-shape-fix.txt` | §7 那一格：头部现算的 317↔315 冲突计数（输入是 `git show 759be9c:docs/port-report.md` 的字节）、两台仪器的静态面与 44 条守卫、修复后 `AC-5\|06`（含 `shape_clash=0`）与 `AC-17\|05` 的条目读数、形状面正控 + 6 条反事实施加、`--sync-faces` 无 diff | 仪器原样输出，5 个段索引行号写定后逐条回读命中（末行 `CITATIONS=OK`） |
+| `README.md` | 本文件：叙述面（§1–§6 是翻账那一段，§7 是停掉门禁遍之后补的那一段） | 叙事 |

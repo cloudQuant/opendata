@@ -1,0 +1,119 @@
+C61 追加档案 —— 本轮自己造的第二个自我欺骗：AC-5|06 的登记段与 AC-17|05 的重放表同形，
+把已经判 proven 的 AC-17|05 判倒了。本档案量冲突、记修法、给正控与反事实。
+
+轮次：C61（同一轮的收口追加，不开新轮：台账格子一格不翻，只把 |06 的判定面补硬）
+写档时间：2026-09-28T22:13:51Z
+HEAD：759be9c；本轮改动写档时仍在工作树，改动面见下面 $ git diff --name-only 的清单
+证据档位：每一段都是仪器原样输出（未裁剪、未改写），段首一行是当时的命令行。
+段索引行号写定后由本脚本回读机验，结论行 CITATIONS 在本档案最后一行。
+
+$ git diff --name-only -- scripts docs   # 本轮动过、写档时未提交的文件
+    docs/port-report.md
+    scripts/codemod/report_port.py
+    scripts/quality/acceptance_item_probe.py
+
+$ python -c "sum(l.startswith('| `') for l in <报告>.splitlines())" 与 len(lock_records)，其中 '| `' 就是 AC-17|05 数 rows_total 用的前缀（acceptance_item_probe.REPLAY_ROW_PREFIX，被 port_replay 使用），lock 记录数用 opendata_http/upstream.lock 现算
+    upstream.lock 记录数（现算）= 315
+    759be9c 的报告（登记行带反引号，与重放表同形）: rows_total = 317 → 与 315 不等，差 2 行；judge_ac17_05 的 rows_total == lock_records 因此为假（这就是本轮发现的判倒）
+    本轮修复后的报告（登记行不带反引号）: rows_total = 315 → 与 315 相等
+
+段落索引（行号 → 内容）：
+  L22 S1 静态面与守卫用例（提交前，两台仪器）
+  L50 S2 AC-5|06 条目读数（修复后，新增面 shape_clash=0）
+  L68 S3 AC-17|05 条目读数（修复后，回到 proven）
+  L88 S4 形状面正控（759be9c 的真实登记段）+ 6 条反事实施加
+  L109 S5 面基线同步（写回后与已提交版本逐字节相同，故无 diff）
+
+$ ==== S1 静态面与守卫用例（提交前，两台仪器） ====
+$ ruff check / ruff format --check / mypy / bandit -c bandit.yaml 两台仪器 + pytest -m 'not e2e' --no-cov tests/test_acceptance_probe_gate.py tests/test_ported_import_closure.py（段内逐条重述命令）
+
+$ git diff --stat (本轮修复的三个文件，写档于提交前)
+ docs/port-report.md                      |  4 +--
+ scripts/codemod/report_port.py           |  4 ++-
+ scripts/quality/acceptance_item_probe.py | 57 ++++++++++++++++++++++++++------
+ 3 files changed, 51 insertions(+), 14 deletions(-)
+
+$ docs/port-report.md 的行形状 diff（登记段两行）
+@@ -338,2 +338,2 @@
+-| `get_ths_js` | `ths.js` | 是 | resource {file} is unavailable: the upstream akshare.data package never existed (A2.3); see docs/port-report.md |
+-| `get_crypto_info_csv` | `crypto_info.zip` | 否 | resource {file} is unavailable: the upstream akshare.data package never existed (A2.3); see docs/port-report.md |
++| get_ths_js | ths.js | 是 | resource {file} is unavailable: the upstream akshare.data package never existed (A2.3); see docs/port-report.md |
++| get_crypto_info_csv | crypto_info.zip | 否 | resource {file} is unavailable: the upstream akshare.data package never existed (A2.3); see docs/port-report.md |
+
+$ ruff check + format --check + mypy + bandit（两台仪器）
+All checks passed!
+2 files already formatted
+pyproject.toml: note: unused section(s): module = ['opendata.data_fetch.*', 'opendata_http.*']
+Success: no issues found in 2 source files
+BANDIT_EXIT=0
+
+$ pytest -m "not e2e" --no-cov tests/test_acceptance_probe_gate.py tests/test_ported_import_closure.py
+tests/test_ported_import_closure.py ......                               [100%]
+
+======================== 44 passed in 62.33s (0:01:02) =========================
+
+$ ==== S2 AC-5|06 条目读数（修复后，新增面 shape_clash=0） ====
+$ python scripts/quality/acceptance_item_probe.py --item 'AC-5|06'
+
+
+### AC-5|06  (document line 155)
+判据原文：**内置资源引用可用**：`datasets.py` 的资源访问函数可运行（或明确标注不可用并登记）
+本探针：datasets.py 的资源访问函数当场调用：或返回路径，或 raise 且回指仪器派生的登记段
+台账现状：state=proven，文档勾选=True
+  - opendata_http/datasets.py 里 2 个资源访问函数（get_ths_js, get_crypto_info_csv）当场调用：返回路径的 0 个（-）、raise 里明说不可用的 2 个（get_ths_js, get_crypto_info_csv）、报别的异常的 0 个：-
+  - 标注不可用的 2 个函数的 raise 文本都回指登记文件 docs/port-report.md = yes（get_ths_js, get_crypto_info_csv）；登记段落在位 = yes，表体 2 行（get_ths_js, get_crypto_info_csv）、逐个点名这些函数且不多不少 = yes
+  - 登记表的行与重放表行同形（行首为 '| `'）的 0 行 —— 不为 0 时 docs/port-report.md 的「每文件一行」计数会把登记行算进搬运清单，于是 scripts/codemod/report_port.py 自己生成的这一节判倒 AC-17|05
+  - 登记处由报告仪器（scripts/codemod/report_port.py）从 `datasets.py` 的 raise 语句与 upstream.lock 派生，不是手写段落
+  - 清单登记的 2 个内置资源在磁盘齐备 = yes（2/2）
+VERDICT AC-5|06: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+
+$ ==== S3 AC-17|05 条目读数（修复后，回到 proven） ====
+$ python scripts/quality/acceptance_item_probe.py --item 'AC-17|05'
+
+
+### AC-17|05  (document line 283)
+判据原文：搬运代码（`opendata_http/`）：仅 E/F 检查、未做 format/isort 重排（与上游可 diff）；pre-commit 含 `exclude: opendata_http/`；lint 债务不高于棘轮快照
+本探针：搬运树只按 E/F 计量（豁免量得出来）+ 未重排且逐文件重放一致 + 三处登记与 pre-commit exclude 一致
+台账现状：state=proven，文档勾选=True
+  - scripts/quality/ratchet.py exit 0（face=none）：搬运债务 ruff_ported 2144(≤2144), direct_http_ported 1044(≤1044)；门禁打印的 ruff_ported 与独立跑的 --select E,F 计数一致 = yes（E/F 2144）；直连计数的动词集合 delete, get, head, patch, post, put, request 完整 = yes
+  - 「仅 E/F」豁免挡住的量：同一棵树按自研规则集跑是 9709 条、按 I 规则 230 条，E/F 只有 2144 条 —— 豁免若不存在，门禁当场全红，所以它必须被登记而不是被假装没有
+  - 「未做 format/isort 重排」：209 个文件是 ``ruff format`` 会重写的、230 条 import 顺序违例 —— 重排过一次的树不可能与上游逐行 diff
+  - 重放对账（scripts/codemod/report_port.py，需本机有锁定 commit 的上游干净克隆）：exit 0，锁内 315 条记录 / 报告 315 行 / 逐字一致 315 行 / 待办 0 条；磁盘 313 个 .py，其中未登记的 0 个；现场渲染与已归档的 docs/port-report.md 逐字节一致 = yes
+  - 人工改动三处登记：opendata_http/upstream.lock 9 条、THIRD_PARTY_NOTICES.md 9 条、scripts/codemod/port_module.py:MANUAL_EDITS 9 条，不一致 0 条（重放只认 MANUAL_EDITS，读者只看到登记文档）
+  - .pre-commit-config.yaml：共 15 个 hook（HEAD 15 个），其中排除搬运树的 4 个，比 HEAD 少的 0 个；排除的 hook id：end-of-file-fixer, ruff, ruff-format, trailing-whitespace
+  - 搬运上限历史（12 次转换）：抬高 3 次、其中搬运文件数未变的 1 次；近 2 次转换消失的被测根 0。判据原文只要求「债务不高于棘轮快照」，故抬高只作待复核登记；轨迹 ruff_ported 1418→2144 / direct_http_ported 1270→1044（3757285->d66dd99 ruff_ported 1305->2145; 4ee1bbc->2b68225 akshare）
+VERDICT AC-17|05: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+
+$ ==== S4 形状面正控（759be9c 的真实登记段）+ 6 条反事实施加 ====
+$ python /tmp/c61/new_break_check.py（一次性仪器脚本，未随档留档；正控输入 = git show 759be9c:docs/port-report.md，见 README §8 的复现口径）
+
+[1] 正控（759be9c 的登记段形状喂进今天的 measure）：
+      shape_clash = 2
+      register_rows = 0
+      register_row_names = -
+      register_lists_marked = no
+
+[2] 反事实面（与 self_test_findings 同一套施加方式）：
+      今天的读数 shape_clash = 0；repair 后的判定 = proven
+      有一个函数报的不是「不可用」 -> gap
+      raise 文本不回指登记文件 -> gap
+      报告里没有不可用登记段落 -> gap
+      登记段落没有逐个点名这些函数 -> gap
+      登记行与重放表同形，会顶掉 AC-17|05 的行数等式 -> gap
+      清单登记的内置资源磁盘上缺 -> gap
+      施加 6 条 break（本轮新增 1 条：6 条在册）
+
+OK: 形状面量到的是真实的同形冲突，且每条反事实都把干净读数打回 gap
+
+$ ==== S5 面基线同步（写回后与已提交版本逐字节相同，故无 diff） ====
+$ python scripts/quality/acceptance_item_probe.py --sync-faces
+
+wrote docs/quality/acceptance-probe-faces.json：54 个探针，13 个在读 moment 面，proven 而无探针 7 个
+SYNC_EXIT=0
+CITATIONS=OK：5 个段索引行号逐条回读命中（行号最大值 114 ≤ 档案 118 行）

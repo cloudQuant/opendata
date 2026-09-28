@@ -347,11 +347,12 @@
         "docs/evidence/C61/probe-items-ac5.txt",
         "docs/evidence/C61/probe-self-test.txt",
         "docs/evidence/C61/register-and-diff.txt",
+        "docs/evidence/C61/ac5-06-shape-fix.txt",
         "docs/port-report.md",
         "opendata_http/datasets.py",
         "scripts/codemod/report_port.py"
       ],
-      "note": "判据给两条支路，实测走的是第二条「明确标注不可用并登记」，所以三件事都要成立：①调用是真的 —— `opendata_http/datasets.py` 里 2 个资源访问函数（get_ths_js / get_crypto_info_csv）当场执行，返回路径 0 个、raise 且文案明说 unavailable 2 个、报别的异常 0 个；②标注要有地方接住 —— 两条 raise 文本都回指 `docs/port-report.md`，该文件里「内置资源不可用登记」段落在位、表体 2 行、逐个点名这两个函数且不多不少（多一行=登记了没被 raise 的，少一行=漏登记）；③登记处必须是可重放的 —— 这一节由 `scripts/codemod/report_port.py` 从 datasets.py 的 raise 语句与 upstream.lock 派生（本轮 +93 行仪器改动），不是手写进报告正文：port-report.md 整体是生成物且与已提交档案逐字节比对（AC-17|05）。另读：清单登记的 2 个内置资源在磁盘齐备（2/2）。把函数改成真能读搬运树内的路径要动 datasets.py 正文，会破坏与 upstream.lock 的确定性重放，属搬运基线决策，本轮不做。"
+      "note": "判据给两条支路，实测走的是第二条「明确标注不可用并登记」，所以三件事都要成立：①调用是真的 —— `opendata_http/datasets.py` 里 2 个资源访问函数（get_ths_js / get_crypto_info_csv）当场执行，返回路径 0 个、raise 且文案明说 unavailable 2 个、报别的异常 0 个；②标注要有地方接住 —— 两条 raise 文本都回指 `docs/port-report.md`，该文件里「内置资源不可用登记」段落在位、表体 2 行、逐个点名这两个函数且不多不少（多一行=登记了没被 raise 的，少一行=漏登记）；③登记处必须是可重放的 —— 这一节由 `scripts/codemod/report_port.py` 从 datasets.py 的 raise 语句与 upstream.lock 派生（本轮 +93 行仪器改动），不是手写进报告正文：port-report.md 整体是生成物且与已提交档案逐字节比对（AC-17|05）。另读：清单登记的 2 个内置资源在磁盘齐备（2/2）。把函数改成真能读搬运树内的路径要动 datasets.py 正文，会破坏与 upstream.lock 的确定性重放，属搬运基线决策，本轮不做。【C61 追加，同轮不翻格】这一节的行形状原本写成 `| \\`get_ths_js\\` |`，与同一份报告里「每个搬运文件一行」的重放表同形，而 `AC-17|05` 数 rows_total 用的就是这个行首前缀 —— 于是登记行被算进搬运清单，rows_total 317 ≠ upstream.lock 315，把本轮没碰过的 `AC-17|05` 从 proven 判成 gap（冲突计数由 `git show 759be9c:docs/port-report.md` 的原始字节现算，见 ac5-06-shape-fix.txt 头部）。修法改生产物不改判据：登记行去掉反引号，`AC-5|06` 改按首列形状认数据行（首列是标识符才算），并新增面 `shape_clash`（登记段里与重放表同形的行数，今天读 0）进 judge 的顶层合取 + 一条反事实（施加 shape_clash=2 ⇒ 本格回 gap）；正控用 759be9c 的真实登记段喂进今天的 measure，读到 shape_clash=2、register_rows=0 ⇒ gap，证明解析器不是换了一种硬编码形状。修复后 `AC-17|05` 回到 proven（锁 315 / 报告 315 行 / 逐字一致 315 / 现场渲染与档案逐字节一致）。`--sync-faces` 写回后面基线与已提交版本逐字节相同（新面不读 git 时刻）。"
     },
     "AC-5|07|68f3347f": {
       "state": "gap",
