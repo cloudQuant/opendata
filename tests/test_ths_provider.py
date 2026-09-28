@@ -164,7 +164,7 @@ DISCLOSE_MS = 1713196800000  # 2024-04-16
 
 def _statement_row(statement: str = "income", **overrides) -> dict:
     """一张报表的一个报告期（科目值全为 1.0，只验形状与身份）."""
-    from opendata_fuyao.endpoints import FINANCIAL_STATEMENT_ITEMS
+    from opendata_fuyao.endpoints import financial_statement_items
 
     row = {
         "thscode": "600519.SH",
@@ -175,7 +175,7 @@ def _statement_row(statement: str = "income", **overrides) -> dict:
         "period_end_ms": PERIOD_END_MS,
         "report_date_ms": DISCLOSE_MS,
         "currency": "CNY",
-        **dict.fromkeys(FINANCIAL_STATEMENT_ITEMS[statement], 1.0),
+        **dict.fromkeys(financial_statement_items(statement), 1.0),
     }
     row.update(overrides)
     return row
@@ -920,7 +920,7 @@ class TestFinancialStatementAdapter:
         self, monkeypatch: pytest.MonkeyPatch
     ):
         """上游一行一个报告期（新→旧），契约要一科目一行、按报告期升序."""
-        from opendata_fuyao.endpoints import FINANCIAL_STATEMENT_ITEMS
+        from opendata_fuyao.endpoints import financial_statement_items
 
         seen: dict[str, str] = {}
 
@@ -946,7 +946,7 @@ class TestFinancialStatementAdapter:
         assert "thscode=600519.SH" in seen["params"]
         assert "period=annual" in seen["params"]
         assert all(isinstance(row, FinancialStatement) for row in rows)
-        assert len(rows) == 2 * len(FINANCIAL_STATEMENT_ITEMS["income"])
+        assert len(rows) == 2 * len(financial_statement_items("income"))
         assert [row.report_period for row in rows] == sorted(r.report_period for r in rows)
         assert rows[0].report_period == date(2022, 12, 31)
         assert {row.symbol for row in rows} == {"600519"}  # 长表用裸码（合并键）

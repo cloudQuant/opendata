@@ -29,7 +29,6 @@ from opendata_fuyao.endpoints import (
     BALANCE_SHEETS_ENDPOINT,
     CALENDAR_ENDPOINT,
     CASH_FLOW_STATEMENTS_ENDPOINT,
-    FINANCIAL_STATEMENT_ITEMS,
     FUND_DIVIDENDS_ENDPOINT,
     FUND_ETF_DEPTH_DAYS,
     FUND_ETF_MAX_SPAN_DAYS,
@@ -63,6 +62,7 @@ from opendata_fuyao.endpoints import (
     fetch_index_daily_bars,
     fetch_period_daily_bars,
     fetch_trading_calendar,
+    financial_statement_items,
     list_instruments,
     millis_to_trading_date,
     normalize_adjustment_factors,
@@ -147,7 +147,7 @@ def _statement_row(statement: str = "income", **overrides: Any) -> dict[str, Any
         "period_end_ms": MILLIS_BY_DAY["2024-12-31"],
         "report_date_ms": MILLIS_BY_DAY["2025-04-17"],
         "currency": "CNY",
-        **dict.fromkeys(FINANCIAL_STATEMENT_ITEMS[statement], 1.0),
+        **dict.fromkeys(financial_statement_items(statement), 1.0),
     }
     row["net_profit"] = 86_228_150_000.0
     row.update(overrides)
@@ -914,7 +914,7 @@ class TestNormalizers:
 
     def test_financial_statements_melt_a_wide_row_into_long_rows(self):
         """一行一个报告期的宽表 ⇒ 一科目一行；`item` 用上游英文科目名."""
-        items = FINANCIAL_STATEMENT_ITEMS["income"]
+        items = financial_statement_items("income")
         rows = normalize_financial_statements(
             _parse(_envelope([_statement_row("income")])), statement_type="income"
         )
@@ -956,7 +956,7 @@ class TestNormalizers:
             _parse(_envelope([_statement_row("balance")])), statement_type="balance"
         )
 
-        assert {row.item for row in balance} == set(FINANCIAL_STATEMENT_ITEMS["balance"])
+        assert {row.item for row in balance} == set(financial_statement_items("balance"))
         assert {row.statement_type for row in balance} == {"balance"}
         with pytest.raises(FuyaoError, match="financial_statement_type"):
             normalize_financial_statements(
@@ -965,7 +965,7 @@ class TestNormalizers:
 
     def test_financial_null_value_is_skipped_but_a_missing_key_is_not(self):
         """``null`` 是上游真实缺值；键整列不见是契约漂移，必须失败关闭."""
-        items = FINANCIAL_STATEMENT_ITEMS["income"]
+        items = financial_statement_items("income")
         with_null = _statement_row("income", research_and_development_expenses=None)
 
         rows = normalize_financial_statements(
@@ -1499,7 +1499,7 @@ class TestFetchers:
         assert seen["path"] == endpoint
         assert "thscode=600519.SH" in seen["params"]
         assert "period=annual" in seen["params"]  # 文档写「默认 annual」，实测省略即 1001
-        assert len(rows) == len(FINANCIAL_STATEMENT_ITEMS[statement_type])
+        assert len(rows) == len(financial_statement_items(statement_type))
 
     def test_statement_window_and_limit_reach_the_query(self):
         seen: list[str] = []

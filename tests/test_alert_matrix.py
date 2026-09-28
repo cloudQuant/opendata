@@ -178,7 +178,12 @@ class TestCollection:
         assert [report.status for report in reports if report.source is None] == ["missing"]
 
     def test_a_leg_with_no_field_mapping_is_the_measured_majority(self) -> None:
-        """Which legs cannot be read, stated as a number rather than a surprise."""
+        """Which legs cannot be read, stated as a number rather than a surprise.
+
+        C54 brought the three financial legs into the 口径映射表 with a
+        ``report_period`` column, so the unreadable set went 26 -> 23; the
+        direction is asserted too, or the number could drift either way.
+        """
         legs = alert_matrix.registered_legs()
         unmapped = [
             f"{domain}/{source}"
@@ -188,9 +193,15 @@ class TestCollection:
         ]
 
         assert sum(len(v) for v in legs.values()) == 33
-        assert len(unmapped) == 26
+        assert len(unmapped) == 23
         assert "stock_daily/akshare" not in unmapped
         assert "economy_cpi/fred" in unmapped
+        for leg in (
+            "financial_statement/ths",
+            "financial_statement/akshare",
+            "financial_indicator/akshare",
+        ):
+            assert leg not in unmapped
 
 
 def _leg_is_measurable(domain: str, source: str) -> bool:
