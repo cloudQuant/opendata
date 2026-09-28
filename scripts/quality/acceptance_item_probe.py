@@ -539,6 +539,36 @@ def set_literal_members(source: str, name: str) -> tuple[str, ...]:
     return ()
 
 
+def map_entry_field(source: str, name: str, key: str, field: str) -> str:
+    """One keyword value of an entry in a module-level ``NAME = {...}`` table.
+
+    AST again rather than a regex, for the reason :func:`set_literal_members` records: one more
+    entry rewraps the literal, and a pattern written against one line then reports a leg that is
+    in the table as missing -- which an item judge would read as the dispatch being absent.
+    """
+    tree = ast.parse(source)
+    for node in tree.body:
+        if isinstance(node, ast.Assign):
+            targets, literal = node.targets, node.value
+        elif isinstance(node, ast.AnnAssign):
+            targets, literal = (node.target,), node.value
+        else:
+            continue
+        if not any(isinstance(item, ast.Name) and item.id == name for item in targets):
+            continue
+        if not isinstance(literal, ast.Dict):
+            continue
+        for entry_key, entry_value in zip(literal.keys, literal.values, strict=True):
+            if not (isinstance(entry_key, ast.Constant) and entry_key.value == key):
+                continue
+            if not isinstance(entry_value, ast.Call):
+                continue
+            for keyword in entry_value.keywords:
+                if keyword.arg == field and isinstance(keyword.value, ast.Constant):
+                    return str(keyword.value.value)
+    return "(absent)"
+
+
 def count(value: int) -> str:
     """A counter as a fact."""
     return str(value)
@@ -4608,7 +4638,11 @@ HTTP_WAREHOUSE_REL: Final = "tests/test_data_query_http_warehouse.py"
 API_CONTRACT_REL: Final = "tests/test_data_query_api.py"
 ADJUST_UNIT_REL: Final = "tests/test_data_query.py"
 QFQ_OFFICIAL_REL: Final = "scripts/ops/qfq_official_check.py"
-QFQ_OFFICIAL_RUN: Final = "docs/evidence/B4/qfq-official-check.txt"
+QFQ_OFFICIAL_RUN: Final = "docs/evidence/C56/qfq-official-akshare.txt"
+
+#: The module AC-11|02 names when it says "akshare 官方 qfq": the ported akshare fetcher. A
+#: leg that resolves anywhere else is some other vendor's chain wearing the criterion's word.
+QFQ_AKSHARE_MODULE: Final = "opendata_http.stock_feature.stock_hist_em"
 
 #: The knobs AC-11|01 enumerates, plus the pagination pair the same clause asks for.
 QUERY_KNOBS: Final = ("symbols", "start", "end", "source", "layer", "adjust", "fields")
@@ -4660,7 +4694,30 @@ AC11_ADJUST_NODES: Final = (
     "tests/test_qfq_official_check.py::TestCompare::"
     "test_constant_anchor_offset_is_a_level_difference_not_a_failure",
     "tests/test_qfq_official_check.py::TestCompare::test_shape_divergence_fails",
+    "tests/test_qfq_official_check.py::TestCompare::"
+    "test_the_over_count_is_the_population_and_not_the_listing_cap",
     "tests/test_qfq_official_check.py::TestCompare::test_no_common_dates_is_a_failure",
+    "tests/test_qfq_official_check.py::TestOfficialLegMap::"
+    "test_the_map_offers_akshare_and_keeps_sina",
+    "tests/test_qfq_official_check.py::TestOfficialLegMap::"
+    "test_default_leg_is_akshare_as_the_criterion_names",
+    "tests/test_qfq_official_check.py::TestOfficialLegMap::"
+    "test_akshare_leg_resolves_to_the_ported_module",
+    "tests/test_qfq_official_check.py::TestOfficialLegMap::"
+    "test_the_resolved_akshare_module_declares_its_provenance",
+    "tests/test_qfq_official_check.py::TestOfficialLegMap::"
+    "test_each_leg_fetcher_is_the_function_its_target_names",
+    "tests/test_qfq_official_check.py::TestOfficialLegMap::"
+    "test_unknown_leg_fails_closed_instead_of_defaulting",
+    "tests/test_qfq_official_check.py::TestOfficialLegMap::"
+    "test_cli_refuses_a_leg_that_is_not_in_the_map",
+    "tests/test_qfq_official_check.py::TestOfficialLegMap::"
+    "test_akshare_leg_gets_the_bare_code_and_chinese_columns",
+    "tests/test_qfq_official_check.py::TestOfficialLegMap::"
+    "test_prefixed_leg_gets_the_exchange_symbol",
+    "tests/test_qfq_official_check.py::TestOfficialLegMap::test_a_flaky_leg_retries_and_says_so",
+    "tests/test_qfq_official_check.py::TestOfficialLegMap::"
+    "test_exhausted_leg_raises_instead_of_comparing_nothing",
 )
 
 #: ``AC-11|03``: the four safety faces the criterion lists, on the HTTP entry point.
@@ -4846,55 +4903,92 @@ def judge_ac11_01(facts: Facts) -> Verdict:
 
 
 def measure_ac11_02(ctx: Context) -> Facts:
-    """Run the adjust plane, then read which official series the cross-source check uses."""
+    """Run the adjust plane, then read which official series the cross-source check resolves to.
+
+    Four independent readings replace the old "first ``stock_zh_a_*`` inside the fetcher": with a
+    dispatch table in place that capture is a proxy for whichever module the table names, and a
+    string could then be made to read as akshare without anything resolving to it.
+    """
     api = ctx.read(DATA_QUERY_REL)
     checker = ctx.read(QFQ_OFFICIAL_REL)
-    leg = first_capture(function_body(checker, "_official_series"), r"stock_zh_a_(\w+)")
+    target = map_entry_field(checker, "OFFICIAL_LEGS", "akshare", "target")
+    module = target.partition(":")[0]
+    leg_path = REPO_ROOT / f"{module.replace('.', '/')}.py"
+    header = (
+        "".join(leg_path.read_text(encoding="utf-8").splitlines(keepends=True)[:6])
+        if leg_path.is_file()
+        else ""
+    )
     run = ctx.read(QFQ_OFFICIAL_RUN)
     facts: Facts = {
         **node_plane_facts("adj", AC11_ADJUST_NODES),
         "synthesis": flag("apply_adjust_to_rows" in function_body(api, "_adjusted_rows")),
-        "official_leg": leg,
+        "default_leg": first_capture(checker, r'DEFAULT_OFFICIAL_LEG[^A-Za-z]*"(\w+)"'),
+        "leg_target": target,
+        "leg_module": module,
+        "leg_is_ported_akshare": flag("# Ported from akshare" in header),
         "run_official_leg": first_capture(run, r"^official: (\w+)"),
+        "run_official_target": first_capture(run, r"^official: \w+ (\S+)"),
         "run_ok_rows": count(len(re.findall(r"\|\s*PASS\s*\|", run))),
         "run_fail_rows": count(len(re.findall(r"\|\s*FAIL\s*\|", run))),
-        "akshare_official_available": flag(
-            (REPO_ROOT / "opendata_http/stock_feature/stock_hist_em.py").is_file()
-        ),
+        "run_error_rows": count(len(re.findall(r"\|\s*ERROR\b", run))),
     }
     return facts
 
 
 def judge_ac11_02(facts: Facts) -> Verdict:
     """``AC-11|02``: qfq/hfq are computed server-side *and* checked against official qfq."""
-    ok = (
-        plane_is_green(facts, "adj")
-        and facts["synthesis"] == "yes"
-        and facts["official_leg"] == "akshare"
-        and facts["run_official_leg"] == "akshare"
-        and facts["run_fail_rows"] == "0"
-        and positive(facts["run_ok_rows"])
-    )
+    unmet: list[str] = []
+    if not plane_is_green(facts, "adj"):
+        unmet.append("复权/对照节点面没跑齐")
+    if facts["synthesis"] != "yes":
+        unmet.append("服务端合成接线不成立（参数读一遍就丢）")
+    if (
+        facts["default_leg"] != "akshare"
+        or facts["leg_module"] != QFQ_AKSHARE_MODULE
+        or facts["leg_is_ported_akshare"] != "yes"
+    ):
+        unmet.append(
+            f"官方对照腿没解析到 akshare 搬运模块（默认腿 {facts['default_leg']} → "
+            f"{facts['leg_module']}，akshare 出身={facts['leg_is_ported_akshare']}）"
+        )
+    if facts["run_official_leg"] != facts["default_leg"]:
+        unmet.append(
+            f"留档那次 run 走的腿是 {facts['run_official_leg']}，与当场默认腿 "
+            f"{facts['default_leg']} 不一致"
+        )
+    if facts["run_official_target"] != facts["leg_target"]:
+        unmet.append(
+            f"留档那次 run 记的 module:function 是 {facts['run_official_target']}，与分派表现值 "
+            f"{facts['leg_target']} 不一致（仪器改过，run 没重跑）"
+        )
+    if facts["run_error_rows"] != "0":
+        unmet.append(
+            f"留档那次 run 有 {facts['run_error_rows']} 行 ERROR —— 官方端点没答上来等于没对照"
+        )
+    if facts["run_fail_rows"] != "0" or not positive(facts["run_ok_rows"]):
+        unmet.append(
+            f"真机对照未过：FAIL {facts['run_fail_rows']} 行 / PASS {facts['run_ok_rows']} 行"
+            "（容差 2e-3 不放宽，见档案里的 over_tolerance 与 ratio 平台分布）"
+        )
     readings = (
-        plane_reading(facts, "adj", "复权面（HTTP 五条 + 因子算术两条 + 对照仪器判定四条）"),
+        plane_reading(facts, "adj", "复权面（HTTP 五条 + 因子算术两条 + 判定与对照腿十五条）"),
         f"服务端合成 = {facts['synthesis']}（``_adjusted_rows`` 真的调 ``apply_adjust_to_rows``，"
         "不是把参数读一遍就丢掉）",
-        f"判据点名的官方面：``{QFQ_OFFICIAL_REL}`` 的 ``_official_series`` 取的腿是 "
-        f"{facts['official_leg']}，留档 {QFQ_OFFICIAL_RUN} 头部记的腿是 "
-        f"{facts['run_official_leg']}；判据要的是 akshare 官方 qfq",
-        f"留档那次真机 run：PASS {facts['run_ok_rows']} 行 / FAIL {facts['run_fail_rows']} 行；"
-        f"补齐用的 akshare 官方序列模块 opendata_http/stock_feature/stock_hist_em.py 在位 = "
-        f"{facts['akshare_official_available']}",
+        f"官方对照腿：``{QFQ_OFFICIAL_REL}`` 的 ``DEFAULT_OFFICIAL_LEG`` = {facts['default_leg']}，"
+        f"分派表 akshare 条目 target = {facts['leg_target']}，该模块头部声明 akshare 出身 = "
+        f"{facts['leg_is_ported_akshare']}（判据点名的就是 ``{QFQ_AKSHARE_MODULE}``）",
+        f"留档真机 run（{QFQ_OFFICIAL_RUN}）：头部记的腿 = {facts['run_official_leg']}，"
+        f"module:function = {facts['run_official_target']}；PASS {facts['run_ok_rows']} 行 / "
+        f"FAIL {facts['run_fail_rows']} 行 / ERROR {facts['run_error_rows']} 行",
     )
     reason = (
         ""
-        if ok
-        else "这一条的前半（服务端按因子表合成 qfq/hfq，缺因子 400、缺表 501）已经是实测面；后半"
-        "写的是「与 akshare 官方 qfq 对照一致」，而现在唯一的官方对照腿取的是 sina "
-        "stock_zh_a_daily —— sina 是另一条源和另一条因子链，作为独立对照比 akshare 自己更强，"
-        "但它不是判据点名的那个名字；换成 akshare 官方序列并留档一次真机 run 才翻正"
+        if not unmet
+        else "；".join(unmet)
+        + " —— 合成与对照的判定口径不变（逐日 shape dev 对 2e-3），要改的是证据不是判据"
     )
-    return Verdict(PROVEN if ok else GAP, readings, reason)
+    return Verdict(PROVEN if not unmet else GAP, readings, reason)
 
 
 def measure_ac11_03(ctx: Context) -> Facts:
@@ -6526,18 +6620,36 @@ PROBES: Final[tuple[Probe, ...]] = (
     Probe(
         item="AC-11|02",
         expects="同一标的 qfq 序列与 akshare 官方 qfq 对照一致",
-        summary="qfq/hfq 由服务端按因子表合成（缺因子 400、缺表 501），且官方对照腿按判据取 "
-        "akshare 序列并留档一次真机 run",
+        summary="qfq/hfq 由服务端按因子表合成（缺因子 400、缺表 501）；官方对照腿是分派表条目，"
+        "默认 akshare 并解析到搬运模块，留档一次真机 run 的腿与 module:function 都要与现值一致",
         measure=measure_ac11_02,
         judge=judge_ac11_02,
         breaks=(
             Break("合成接线被摘掉（参数读一遍就丢）", (("synthesis", "no"),), GAP),
-            Break("官方对照腿换成第三个 vendor", (("official_leg", "ths"),), GAP),
+            Break("默认腿又回到 sina", (("default_leg", "sina"),), GAP),
             Break(
-                "仪器改了、留档还是旧的那次 run",
-                (("official_leg", "akshare"), ("run_official_leg", "sina")),
+                "分派表里 akshare 那条被删了",
+                (("leg_target", "(absent)"), ("leg_module", "(absent)")),
                 GAP,
             ),
+            Break(
+                "akshare 条目指的是 sina 模块（换个键名自称 akshare）",
+                (("leg_module", "opendata_http.stock.stock_zh_a_sina"),),
+                GAP,
+            ),
+            Break("解析到的模块不再声明 akshare 出身", (("leg_is_ported_akshare", "no"),), GAP),
+            Break("留档那次 run 走的不是当场默认腿", (("run_official_leg", "sina"),), GAP),
+            Break(
+                "仪器改了、留档还是旧的那次 run",
+                (
+                    (
+                        "run_official_target",
+                        "opendata_http.stock.stock_zh_a_sina:stock_zh_a_daily",
+                    ),
+                ),
+                GAP,
+            ),
+            Break("留档那次 run 里一半标的没答上来（ERROR 行）", (("run_error_rows", "9"),), GAP),
             Break("留档那次 run 里有 FAIL 行", (("run_fail_rows", "3"),), GAP),
             Break("留档那次 run 一行都没对照（空跑）", (("run_ok_rows", "0"),), GAP),
             Break("复权 HTTP 面少一条", (("adj_passed", "9"),), GAP),
@@ -6554,10 +6666,18 @@ PROBES: Final[tuple[Probe, ...]] = (
             "adj_skipped": "0",
             "adj_absent": "-",
             "synthesis": "yes",
-            "official_leg": "akshare",
-            "run_official_leg": "akshare",
-            "run_ok_rows": "*run_ok_rows",
+            "default_leg": "akshare",
+            "leg_target": "*leg_target",
+            "leg_module": "*leg_module",
+            "leg_is_ported_akshare": "yes",
+            "run_official_leg": "*default_leg",
+            "run_official_target": "*leg_target",
+            # Not ``*run_ok_rows``: this run compared 0 rows, and a repair that copies that
+            # back declares a gap nobody can close. The closed reading is the same 5 symbols
+            # x 2 methods with every pair compared and none of them over tolerance.
+            "run_ok_rows": "10",
             "run_fail_rows": "0",
+            "run_error_rows": "0",
         },
     ),
     Probe(

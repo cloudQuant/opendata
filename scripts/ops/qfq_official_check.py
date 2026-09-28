@@ -1,28 +1,39 @@
-"""Server-side adjust vs the official sina adjusted series (AC-11).
+"""Server-side adjust vs an official adjusted series (AC-11).
 
 The REST layer synthesizes ``adjust=qfq|hfq`` from unadjusted bars and
 ``dwd_stock_adjust`` factors (design D10). This script walks the exact
 query path the endpoint uses (:func:`build_data_select` +
-:func:`apply_adjust_to_rows`), fetches the same symbol/window from the
-upstream sina fetcher (a different source and a different factor chain
-than ths), and reports the per-bar deviation.
+:func:`apply_adjust_to_rows`), fetches the same symbol/window from an
+official fetcher chosen from ``OFFICIAL_LEGS`` (a different source and a
+different factor chain than ths), and reports the per-bar deviation.
+
+The official leg is a dispatch table entry rather than an inline import:
+``--official`` names the leg, the report header records the leg *and* the
+module it resolved to, and the acceptance probe reads both back against
+that module's provenance header. Which chain the comparison ran against is
+therefore evidence, not prose in this file.
 
 Two numbers are reported per symbol: the absolute deviation against the
 official level, and the shape deviation after re-anchoring our series by
 the median ratio -- so a constant anchoring convention shows up as a
-level offset rather than a per-date failure. Sina publishes prices
-rounded to 2 decimals, so the tolerance is relative and generous.
+level offset rather than a per-date failure. The official feeds round
+prices to 2 decimals, so the tolerance is relative and generous.
 
 Usage (py313 env, network):
     python scripts/ops/qfq_official_check.py --symbols 600519,000001 --start 2026-01-05
+    python scripts/ops/qfq_official_check.py --official sina
 """
 
 from __future__ import annotations
 
 import argparse
+import importlib
 import statistics
 import sys
+import time
 import warnings
+from collections import Counter
+from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -36,12 +47,103 @@ if str(ROOT) not in sys.path:
 REPO_RELATIVE = Path(__file__).resolve().relative_to(ROOT)
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from sqlalchemy import Engine
 
 DEFAULT_SYMBOLS = ("600519", "000001", "000002", "000009", "600036")
 FACTOR_TABLE = "dwd_stock_adjust"
-TOLERANCE = 2e-3  # sina rounds prices to 2 decimals; ~5e-4 at 10 CNY
+TOLERANCE = 2e-3  # the official feeds round prices to 2 decimals; ~5e-4 at 10 CNY
 MAX_DIFFS = 5
+
+#: The official kline endpoint answers 502/empty under request bursts. An empty frame is
+#: never a comparison, so the leg retries with backoff and says how often it had to.
+LEG_ATTEMPTS = 3
+LEG_BACKOFF_SECONDS = 6.0
+
+
+@dataclass(frozen=True)
+class OfficialLeg:
+    """One official adjusted series this synthesis can be compared against.
+
+    Attributes:
+        target: ``module:function`` of the vendored fetcher, resolved at
+            call time so the module itself (and its provenance header) is
+            part of the recorded evidence.
+        date_column: Name of the bar date column in the returned frame.
+        close_column: Name of the close column in the returned frame.
+        prefixed_symbol: Whether the fetcher wants an exchange-prefixed
+            symbol (``sh600519``) instead of the bare code.
+    """
+
+    target: str
+    date_column: str
+    close_column: str
+    prefixed_symbol: bool
+
+
+OFFICIAL_LEGS: dict[str, OfficialLeg] = {
+    "akshare": OfficialLeg(
+        target="opendata_http.stock_feature.stock_hist_em:stock_zh_a_hist",
+        date_column="日期",
+        close_column="收盘",
+        prefixed_symbol=False,
+    ),
+    "sina": OfficialLeg(
+        target="opendata_http.stock.stock_zh_a_sina:stock_zh_a_daily",
+        date_column="date",
+        close_column="close",
+        prefixed_symbol=True,
+    ),
+}
+
+# The acceptance criterion names akshare as the official comparator, so the
+# default leg is the akshare-ported fetcher, not the sina one.
+DEFAULT_OFFICIAL_LEG = "akshare"
+
+
+def leg_spec(leg: str) -> OfficialLeg:
+    """Look one official leg up in the dispatch table.
+
+    Args:
+        leg: Candidate leg name.
+
+    Returns:
+        The ``OfficialLeg`` registered under that name.
+
+    Raises:
+        ValueError: If the leg is not in the table - a wrong leg name must
+            not read downstream as a network or data failure.
+    """
+    try:
+        return OFFICIAL_LEGS[leg]
+    except KeyError as exc:
+        raise ValueError(f"unknown official leg {leg!r}") from exc
+
+
+def leg_module(leg: str) -> str:
+    """Module path the official leg resolves to.
+
+    Args:
+        leg: One of the ``OFFICIAL_LEGS`` keys.
+
+    Returns:
+        The importable module name holding the leg's fetcher.
+    """
+    return leg_spec(leg).target.partition(":")[0]
+
+
+def leg_fetcher(leg: str) -> Callable[..., Any]:
+    """Return the callable behind one official leg.
+
+    Args:
+        leg: One of the ``OFFICIAL_LEGS`` keys.
+
+    Returns:
+        The vendored fetcher the leg's ``module:function`` resolves to.
+    """
+    module_name, _, function_name = leg_spec(leg).target.partition(":")
+    return getattr(importlib.import_module(module_name), function_name)
 
 
 def sina_symbol(code: str) -> str:
@@ -131,19 +233,73 @@ def _server_side_series(
     return apply_adjust_to_rows("stock_daily", rows, method=method, factors=factors)
 
 
-def _official_series(symbol: str, start: date, end: date, method: str) -> dict[str, float]:
-    """Fetch the official sina adjusted closes for the same window."""
-    from opendata_http.stock.stock_zh_a_sina import stock_zh_a_daily
+@dataclass(frozen=True)
+class OfficialSeries:
+    """One official adjusted close series and how hard it was to get.
 
-    frame = stock_zh_a_daily(
-        symbol=sina_symbol(symbol),
-        start_date=start.strftime("%Y%m%d"),
-        end_date=end.strftime("%Y%m%d"),
-        adjust=method,
+    Attributes:
+        values: ``{ISO date: close}``.
+        retries: Extra attempts the leg needed beyond the first one; the
+            report prints it so a series that only arrived after backoff is
+            not read as a clean single-shot comparison.
+    """
+
+    values: dict[str, float]
+    retries: int
+
+
+def _fetch_official_frame(
+    leg: str, code: str, start_text: str, end_text: str, method: str
+) -> tuple[Any, int]:
+    """Call the leg's fetcher, retrying an empty or failed answer.
+
+    Args:
+        leg: One of the ``OFFICIAL_LEGS`` keys.
+        code: Symbol already in the form that leg expects.
+        start_text: Window start in the ``%Y%m%d`` form both fetchers take.
+        end_text: Window end in the same form.
+        method: ``qfq`` or ``hfq``.
+
+    Returns:
+        ``(frame, retries)`` with ``retries`` the number of attempts beyond
+        the first one.
+
+    Raises:
+        RuntimeError: Every attempt came back empty or raised; the last
+            error is reported. An empty official series is never a
+            comparison, so it must not fall through as one.
+    """
+    fetcher = leg_fetcher(leg)
+    frame: Any = None
+    last: BaseException | None = None
+    for attempt in range(LEG_ATTEMPTS):
+        try:
+            frame = fetcher(symbol=code, start_date=start_text, end_date=end_text, adjust=method)
+            if not frame.empty:
+                return frame, attempt
+            last = RuntimeError(f"official leg {leg!r} returned no rows")
+        except Exception as exc:
+            last = exc
+        if attempt + 1 < LEG_ATTEMPTS:
+            time.sleep(LEG_BACKOFF_SECONDS * (attempt + 1))
+    raise RuntimeError(
+        f"official leg {leg!r} gave no series for {code} {method} "
+        f"in {LEG_ATTEMPTS} attempts (last: {type(last).__name__}: {last})"
+    ) from last
+
+
+def _official_series(
+    symbol: str, start: date, end: date, method: str, leg: str = DEFAULT_OFFICIAL_LEG
+) -> OfficialSeries:
+    """Fetch the official adjusted closes for the same window via one leg."""
+    spec = leg_spec(leg)
+    code = sina_symbol(symbol) if spec.prefixed_symbol else symbol
+    frame, retries = _fetch_official_frame(
+        leg, code, start.strftime("%Y%m%d"), end.strftime("%Y%m%d"), method
     )
-    dates = frame["date"].astype(str).str[:10]
-    closes = frame["close"].astype(float)
-    return dict(zip(dates.tolist(), closes.tolist(), strict=True))
+    dates = frame[spec.date_column].astype(str).str[:10]
+    closes = frame[spec.close_column].astype(float)
+    return OfficialSeries(dict(zip(dates.tolist(), closes.tolist(), strict=True)), retries)
 
 
 def _compare(
@@ -158,11 +314,19 @@ def _compare(
         if theirs:
             pairs.append((trade_date, ours, theirs))
     if not pairs:
-        return {"compared": 0, "failed": True, "diffs": ["no common dates"]}
+        return {
+            "compared": 0,
+            "failed": True,
+            "diffs": ["no common dates"],
+            "over_tolerance": 0,
+            "deviating_span": "",
+            "profile": [],
+        }
 
     ratios = [ours / theirs for _, ours, theirs in pairs]
     anchor = statistics.median(ratios)
     diffs: list[str] = []
+    deviating: list[str] = []
     worst = 0.0
     worst_shape = 0.0
     for trade_date, ours, theirs in pairs:
@@ -170,10 +334,13 @@ def _compare(
         shape = abs(ours / (theirs * anchor) - 1.0)
         worst = max(worst, deviation)
         worst_shape = max(worst_shape, shape)
-        if shape > tolerance and len(diffs) < MAX_DIFFS:
-            diffs.append(
-                f"{trade_date}: ours {ours:.4f} vs official {theirs:.4f} (shape dev={shape:.2e})"
-            )
+        if shape > tolerance:
+            deviating.append(trade_date)
+            if len(diffs) < MAX_DIFFS:
+                diffs.append(
+                    f"{trade_date}: ours {ours:.4f} vs official {theirs:.4f} "
+                    f"(shape dev={shape:.2e})"
+                )
     return {
         "compared": len(pairs),
         "anchor": anchor,
@@ -181,6 +348,14 @@ def _compare(
         "max_shape_dev": worst_shape,
         "failed": bool(diffs) or worst_shape > tolerance,
         "diffs": diffs,
+        # MAX_DIFFS caps the listing, not the population: without these two a
+        # five-bar list reads as five bad bars when the whole window is offset.
+        "over_tolerance": len(deviating),
+        "deviating_span": ("" if not deviating else f"{deviating[0]}..{deviating[-1]}"),
+        # The level of ours/official after anchoring, bucketed: one plateau means a
+        # shared convention with rounding noise, two plateaus mean an event the two
+        # factor chains place on different dates.
+        "profile": Counter(round(ratio / anchor, 5) for ratio in ratios).most_common(6),
     }
 
 
@@ -203,7 +378,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--end", default=date.today().isoformat(), type=date.fromisoformat)
     parser.add_argument("--tolerance", default=TOLERANCE, type=float)
     parser.add_argument("--methods", default="qfq,hfq")
-    parser.add_argument("--out", default="docs/evidence/B4/qfq-official-check.txt")
+    parser.add_argument(
+        "--official",
+        default=DEFAULT_OFFICIAL_LEG,
+        choices=sorted(OFFICIAL_LEGS),
+        help="official comparison leg (its module provenance is recorded)",
+    )
+    parser.add_argument("--out", default="docs/evidence/C56/qfq-official-akshare.txt")
     args = parser.parse_args(argv)
 
     from sqlalchemy import create_engine
@@ -221,15 +402,16 @@ def main(argv: list[str] | None = None) -> int:
         args.end = ceiling
 
     lines = [
-        "AC-11 server-side adjust vs the official sina series",
+        f"AC-11 server-side adjust vs the official {args.official} series",
         "",
         f"script: {REPO_RELATIVE}",
         f"window: {args.start} .. {args.end}{clamped}",
         f"symbols: {', '.join(symbols)}",
         "ours: dwd_stock_daily (unadjusted) x dwd_stock_adjust factors,",
         "  via build_data_select + apply_adjust_to_rows (the REST query path)",
-        "official: sina stock_zh_a_daily(adjust=qfq|hfq) -- different source and factor chain",
-        f"tolerance: relative {args.tolerance:g} on close (sina rounds prices to 2 decimals)",
+        f"official: {args.official} {leg_spec(args.official).target} "
+        "(adjust=qfq|hfq) -- different source and factor chain",
+        f"tolerance: relative {args.tolerance:g} on close (official feeds round to 2 decimals)",
         "",
     ]
     failures = 0
@@ -237,17 +419,20 @@ def main(argv: list[str] | None = None) -> int:
         lines += [
             f"## adjust={method}",
             "",
-            "| symbol | bars | anchor (ours/official) | max abs dev | max shape dev | result |",
-            "|---|---|---|---|---|---|",
+            "| symbol | bars | bars over tol | anchor (ours/official) | max abs dev "
+            "| max shape dev | leg retries | result |",
+            "|---|---|---|---|---|---|---|---|",
         ]
         for symbol in symbols:
             try:
                 adjusted = _server_side_series(engine, symbol, args.start, args.end, method)
-                official = _official_series(symbol, args.start, args.end, method)
-                report = _compare(adjusted, official, args.tolerance)
+                series = _official_series(symbol, args.start, args.end, method, args.official)
+                report = _compare(adjusted, series.values, args.tolerance)
             except Exception as exc:  # evidence script reports, it does not raise
                 failures += 1
-                lines.append(f"| {symbol} | - | - | - | - | ERROR {type(exc).__name__}: {exc} |")
+                lines.append(
+                    f"| {symbol} | - | - | - | - | - | - | ERROR {type(exc).__name__}: {exc} |"
+                )
                 print(f"!! {symbol} {method}: {type(exc).__name__}: {exc}", file=sys.stderr)
                 continue
             if report["failed"]:
@@ -260,6 +445,13 @@ def main(argv: list[str] | None = None) -> int:
             )
             for diff in report["diffs"]:
                 lines.append(f"- {symbol} {method} {diff}")
+            lines.append(
+                f"- {symbol} {method} over tolerance: {report['over_tolerance']} of "
+                f"{report['compared']} bars"
+                + (f" in {report['deviating_span']}" if report["deviating_span"] else "")
+                + "; levels(ours/official / anchor): "
+                + " ".join(f"{value:g}x{hits}" for value, hits in report["profile"])
+            )
             anchor = report.get("anchor", float("nan"))
             dev = report.get("max_dev", float("nan"))
             shape = report.get("max_shape_dev", float("nan"))
@@ -267,9 +459,11 @@ def main(argv: list[str] | None = None) -> int:
             cells = [
                 symbol,
                 str(report["compared"]),
+                str(report["over_tolerance"]),
                 f"{anchor:.6f}",
                 f"{dev:.2e}",
                 f"{shape:.2e}",
+                str(series.retries),
                 verdict,
             ]
             lines.append("| " + " | ".join(cells) + " |")
