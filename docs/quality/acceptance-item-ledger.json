@@ -268,25 +268,107 @@
       "state": "unreviewed"
     },
     "AC-5|01|d68d5995": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C61",
+      "date": "2026-09-28",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-5|01' --item 'AC-5|02' --item 'AC-5|03' --item 'AC-5|04' --item 'AC-5|05' --item 'AC-5|06' --item 'AC-5|07'（七格一次跑，全读只读/离线：sha256 逐条现算 + `gen_manifest.py --check` + 搬运树 313 文件头走查 + datasets.py 当场调用 + bandit 档案复核）",
+      "evidence": [
+        "docs/evidence/C61/README.md",
+        "docs/evidence/C61/probe-items-ac5.txt",
+        "docs/evidence/C61/probe-self-test.txt",
+        "docs/evidence/C61/register-and-diff.txt",
+        "opendata_http/manifest.json",
+        "opendata_http/upstream.lock"
+      ],
+      "note": "判据要的是「逐项」而不是「写死的数字」，所以这一格把 315 条全部现算一遍：清单 313 py + 2 资源 = 315 条，每条 sha256 对磁盘现算，对不上 0 条、磁盘上没有 0 条；反方向也查 —— 磁盘上清单没登记的 py 0 个、未登记为资源的非 py 文件 0 个、清单里已过时的条目 0 个。四个计数逐个与现算相等（py_files / resource_files / total_files / total_lines，现算行数 93205）；`upstream.lock` 的文件集与 manifest 相等（315 条）。仪器原话 `scripts/codemod/gen_manifest.py --check` → `OK: manifest.json is up to date`（exit 0，见 docs/evidence/C61/register-and-diff.txt）。**没有以任何写死的模块/文件数字作为判定输入**，判据原文一字未动。"
     },
     "AC-5|02|d833746f": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C61",
+      "date": "2026-09-28",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-5|01' --item 'AC-5|02' --item 'AC-5|03' --item 'AC-5|04' --item 'AC-5|05' --item 'AC-5|06' --item 'AC-5|07'（七格一次跑，全读只读/离线：sha256 逐条现算 + `gen_manifest.py --check` + 搬运树 313 文件头走查 + datasets.py 当场调用 + bandit 档案复核）",
+      "reason": "「P0 域子模块搬运完成 / P1 域子模块搬运完成」缺一个机器可读的分母：`opendata/data/domains.yaml` 与 `Capability` 都不带 batch/priority/tier 字段，需求 D9 与实施计划 B1.1 的子模块清单写在「stock、stock_feature、…、utils **等**」这类散文里，所以「完成」无法从树上判。已量的两半是实的：首方代码以 ``opendata_http.<name>`` 取用的 11 个端点函数聚合层全部导出（缺 0）、被点名移出本迭代的 8 个非金融子包一个都没混进来（0）；D9 点名范围内真正没搬的只有 `futures_derivative` 1 个，而它是否属于 P0/P1 也要同一份字段来定。补齐路径写进探针 repair：`tier_field: - -> opendata/data/domains.yaml#batch` + `scope_missing: 1 -> 0`。**谁声明哪个域属哪一批是产品/接口决策，本轮不替它编字段。**另登记仪器缺陷：第一版把散文里的「utils 等」切成一个子包名，量出「缺失 2 个」其中一条是解析残渣，修法是剥掉行尾「等」再比（不是把 utils 特判掉），修后 readings 见 docs/evidence/C61/probe-items-ac5.txt；本格结论没变，但 gap 的理由必须是真的。",
+      "evidence": [
+        "docs/evidence/C61/README.md",
+        "docs/evidence/C61/probe-items-ac5.txt",
+        "docs/evidence/C61/probe-self-test.txt",
+        "docs/迭代计划/迭代1-重构数据中台/需求文档.md",
+        "opendata/data/domains.yaml"
+      ]
     },
     "AC-5|03|c14ac7c3": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C61",
+      "date": "2026-09-28",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-5|01' --item 'AC-5|02' --item 'AC-5|03' --item 'AC-5|04' --item 'AC-5|05' --item 'AC-5|06' --item 'AC-5|07'（七格一次跑，全读只读/离线：sha256 逐条现算 + `gen_manifest.py --check` + 搬运树 313 文件头走查 + datasets.py 当场调用 + bandit 档案复核）",
+      "reason": "「codemod 差异报告人工待办清零」这一半到了（docs/port-report.md 自报待办 0 条、清单段落首行「（无 —— 待办清零）」且无挂着的复选项）；没到的是「AST 级静态扫描零 `akshare` 运行时引用（含字符串常量与动态导入）」：`scripts/codemod/verify_no_akshare.py` exit 0 且 --self-test exit 0，import 形态 0、动态导入 0，**字符串常量形态 3 条**并正是冻结基线里那 3 条产品事实的名字面量（opendata/data/openbb_map.py、opendata/models/data_script.py、opendata/pipeline/patrol.py；扫描器原话 517 file(s) walked，opendata_http=313）。抹平它只有两条路，两条都要改判据本身：①把扫描器字符串规则改窄＝回头放宽已勾的 AC-16|05「AST 口径」；②改掉这三处真实数据源名的拼写＝给扫描器做伪装，正是 C35 收口过的门禁空转。**同一道题 AC-16|06 已登记为用户/产品决策（task #64）**，这里不重复改判、也不换个说法再判一次。",
+      "evidence": [
+        "docs/evidence/C61/README.md",
+        "docs/evidence/C61/probe-items-ac5.txt",
+        "docs/evidence/C61/probe-self-test.txt",
+        "docs/quality/zero-dep-baseline.json",
+        "scripts/codemod/verify_no_akshare.py"
+      ]
     },
     "AC-5|04|edaaf674": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C61",
+      "date": "2026-09-28",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-5|01' --item 'AC-5|02' --item 'AC-5|03' --item 'AC-5|04' --item 'AC-5|05' --item 'AC-5|06' --item 'AC-5|07'（七格一次跑，全读只读/离线：sha256 逐条现算 + `gen_manifest.py --check` + 搬运树 313 文件头走查 + datasets.py 当场调用 + bandit 档案复核）",
+      "evidence": [
+        "docs/evidence/C61/README.md",
+        "docs/evidence/C61/probe-items-ac5.txt",
+        "docs/evidence/C61/probe-self-test.txt",
+        "docs/evidence/C55/clean-env-integration-run.txt"
+      ],
+      "note": "三面同判：①根目录 `akshare/` 磁盘上不存在、git 索引该前缀下 0 个文件；②当前解释器 `importlib.util.find_spec('akshare')` = absent，而 `import opendata_http` exit 0；③「P0 域函数可用」不看叙述看调用面 —— AST 找出首方代码里以 ``opendata_http.<name>`` 取用的 11 个端点函数（别名绑定后只认 `ast.Call`，避免把包名 `ak.stock` 当成函数），逐个 `callable(getattr(...))`，取不到 0 个。「未安装 akshare 的环境」那一半引干净 venv 侧证 `docs/evidence/C55/clean-env-integration-run.txt`（自报 ARCHIVE_ROUND=C55，本轮自写判据 yes），正文里 akshare 报 absent。**本格带一张时刻面 `index(git ls-files)`**：脏树门禁遍里走 deferred 不判 proven，翻正的最终复核是清洁树上的 `--gate-check`（见 docs/quality/acceptance-probe-faces.json 本轮新增行）。"
     },
     "AC-5|05|5450e168": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C61",
+      "date": "2026-09-28",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-5|01' --item 'AC-5|02' --item 'AC-5|03' --item 'AC-5|04' --item 'AC-5|05' --item 'AC-5|06' --item 'AC-5|07'（七格一次跑，全读只读/离线：sha256 逐条现算 + `gen_manifest.py --check` + 搬运树 313 文件头走查 + datasets.py 当场调用 + bandit 档案复核）",
+      "evidence": [
+        "docs/evidence/C61/README.md",
+        "docs/evidence/C61/probe-items-ac5.txt",
+        "docs/evidence/C61/probe-self-test.txt",
+        "THIRD_PARTY_NOTICES.md",
+        "opendata_http/manifest.json"
+      ],
+      "note": "「每文件头」按字面量执行：清单里 313 个 py 文件逐个读前 6 行，走查数与清单数相等（磁盘↔清单双向，由 |01 那遍的相等性保证），缺 MIT 版权声明 0 个、缺来源标注 0 个、来源 URL 与 `upstream.lock` 里那条（https://github.com/cloudQuant/akshare.git）逐字不等 0 个；来源标注点名的 commit **只有 1 个取值**且等于 manifest/lock 的 `c4f6a631c259`（多个 commit 就说明有文件是另一次同步的残留）。`THIRD_PARTY_NOTICES.md` 同时说得到 akshare 与 MIT。如实披露不并入判定：清单里 2 个资源文件（json/js）不带这类头部 —— 判据指的是搬运的源文件，资源由 manifest.json 与许可证台账各自登记。"
     },
     "AC-5|06|c5bdecf6": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C61",
+      "date": "2026-09-28",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-5|01' --item 'AC-5|02' --item 'AC-5|03' --item 'AC-5|04' --item 'AC-5|05' --item 'AC-5|06' --item 'AC-5|07'（七格一次跑，全读只读/离线：sha256 逐条现算 + `gen_manifest.py --check` + 搬运树 313 文件头走查 + datasets.py 当场调用 + bandit 档案复核）",
+      "evidence": [
+        "docs/evidence/C61/README.md",
+        "docs/evidence/C61/probe-items-ac5.txt",
+        "docs/evidence/C61/probe-self-test.txt",
+        "docs/evidence/C61/register-and-diff.txt",
+        "docs/port-report.md",
+        "opendata_http/datasets.py",
+        "scripts/codemod/report_port.py"
+      ],
+      "note": "判据给两条支路，实测走的是第二条「明确标注不可用并登记」，所以三件事都要成立：①调用是真的 —— `opendata_http/datasets.py` 里 2 个资源访问函数（get_ths_js / get_crypto_info_csv）当场执行，返回路径 0 个、raise 且文案明说 unavailable 2 个、报别的异常 0 个；②标注要有地方接住 —— 两条 raise 文本都回指 `docs/port-report.md`，该文件里「内置资源不可用登记」段落在位、表体 2 行、逐个点名这两个函数且不多不少（多一行=登记了没被 raise 的，少一行=漏登记）；③登记处必须是可重放的 —— 这一节由 `scripts/codemod/report_port.py` 从 datasets.py 的 raise 语句与 upstream.lock 派生（本轮 +93 行仪器改动），不是手写进报告正文：port-report.md 整体是生成物且与已提交档案逐字节比对（AC-17|05）。另读：清单登记的 2 个内置资源在磁盘齐备（2/2）。把函数改成真能读搬运树内的路径要动 datasets.py 正文，会破坏与 upstream.lock 的确定性重放，属搬运基线决策，本轮不做。"
     },
     "AC-5|07|68f3347f": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C61",
+      "date": "2026-09-28",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-5|01' --item 'AC-5|02' --item 'AC-5|03' --item 'AC-5|04' --item 'AC-5|05' --item 'AC-5|06' --item 'AC-5|07'（七格一次跑，全读只读/离线：sha256 逐条现算 + `gen_manifest.py --check` + 搬运树 313 文件头走查 + datasets.py 当场调用 + bandit 档案复核）",
+      "reason": "判据两半：扫描在面（在）与人工 triage 留档（这份留档已经跟不上树）。本轮自写全量档案 docs/evidence/C61/ported-bandit-scan.json（archive_round=C61、generated_at=2026-09-28T20:33:11Z、命令 bandit -q -r opendata_http -f json）：1021 项 / 234 个文件带 finding / 13 条规则（B105,B107,B110,B112,B113,B301,B307,B311,B324,B403,B404,B501,B603），全是 B 层且文件全在搬运清单内。而 docs/evidence/A2/bandit-ported-triage.md 自己声明扫的是 131 个 py 文件 / 328 项、处置 10 条规则，搬运树今天是 313 个 py 文件 ⇒ 覆盖面不等，**5 项落在 triage 从未处置过的规则上**：B403@futures/cons.py:13、B301@futures/cons.py:576、B324@stock_feature/stock_a_indicator.py:50、B324@stock_feature/stock_info.py:36、:37。那句免罪句「无 B608（SQL 拼接）、无 B324（弱哈希）、无 pickle/yaml.load 类反序列化项；builtin exec 站点 0」描述的是当初那棵树 —— 本轮实测它点名的 B324 出现 3 项；反序列化那一半按 bandit 测试名匹配到 0 条，所以读数里两条分开写、不合并成「triage 依旧成立」。逐条人工处置是这件事的正当收口（要人判断，本轮不给它补假处置）。另两处如实交代：①**没有跑 `make security-ported`** —— 它的 `-o` 硬写 docs/evidence/A2/bandit-ported.json，覆写它等于改写前一轮的证据，所以本轮用同一条命令自己扫、产物落进 C61；②仪器缺陷：旧版把 Makefile 的 `@#` 注释算进 recipe，读数截断后只剩注释，且 `PORTED_ROOT in recipe` 会被注释里的路径名满足（改扫别处也照判 yes），现在注释行不进 recipe。",
+      "evidence": [
+        "docs/evidence/C61/README.md",
+        "docs/evidence/C61/probe-items-ac5.txt",
+        "docs/evidence/C61/probe-self-test.txt",
+        "docs/evidence/C61/ported-bandit-scan.json",
+        "docs/evidence/A2/bandit-ported-triage.md",
+        "docs/evidence/A2/bandit-ported.json",
+        "Makefile",
+        "bandit.yaml"
+      ]
     },
     "AC-6|01|4f5b0f7b": {
       "state": "unreviewed"
