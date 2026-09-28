@@ -121,5 +121,5 @@ ruff 在还原后的文件上 **仍红**（D415 复现，正文 5899–5900）�
 | `datetime-utc-cleanup.txt` | 第一段：六个文件的 UTC/`job: Any` diff 原样、mypy 6→0、68 条余债的逐规则计数、棘轮 219→218 与 6→0 冻结、三条反事实（B1/B2 红、B3 演示改配置洗绿）、三对还原 sha256 | runner 自判 `C60_RUNNER_EXIT=0` + shell 独立 `RUNNER_EXIT=0`（正文 401–402 行） |
 | `a2-touch-comply.txt` | 第二段：触碰即达标后的完整 diff（含 docstring 收线）、六文件 ruff/format/bandit 四项、全 A2 平面、611 条受影响用例、三条反事实（B1 D415 红 / B2 摘 nosec 红 / B3 平面离场与棘轮兜底） | runner 自判 + shell 独立转述 |
 | `run_c60.py` / `run_a2_comply.py` | 两段仪器（可重复；会临时改写真实文件再按原文还原，跑前备份工作树、勿与门禁并行） | 源码，本身按 A2 标准扫过 |
-| `gate-run1.txt` | 终局门禁遍（17 个成员）跑在 `fix(lint)` 与 `docs(evidence)` 两个提交之后的清洁树上；本行写于该遍之前，跑完后把 `GATE_EXIT`、四个静态成员读数与 A2 文件数回填到这里，并在正文头部自报出处 | 门禁遍次（写本 README 时尚未跑；回填时改成该遍的实测退出码） |
+| `gate-run1.txt` | 终局门禁遍（17 个成员，正文 7775 行一行未裁）跑在 `3cf0cf7 fix(lint)` 与 `5c94762 docs(evidence)` 之后的清洁树上：`GATE_EXIT=0`，墙钟 1969 s，八条预登记预测逐字命中（棘轮 150/0/1 三项等于快照且段内 0 次 `NOTE: run --update`、`A2 files: 398` 四项全 `ok`、`VERDICT AC-17\|03: proven`、单元面 `3414 passed, 6 skipped`、覆盖率 90.08% 过 84% 门槛、前端 e2e 18 passed） | 门禁遍次实测（两条独立退出码记录：档案正文 7774–7775 行；45 条头部引用机验 `VERDICT_CITATIONS=OK`）。**本行与本档案的头部是跑完之后写定的 post-run 编辑**，不改变被扫的树：写定后 `git status --porcelain` 复核只多出本目录（未跟踪），没有任何被门禁扫的文件动过 |
 | README.md | 本文件：叙述面 | 叙事 |
