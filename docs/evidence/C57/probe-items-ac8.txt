@@ -1,0 +1,45 @@
+probe-items-ac8.txt —— AC-8|05 / AC-8|06 两格复算读数（本轮新增判据直接作用的两格）
+====================================================================
+round: C57
+ARCHIVE_ROUND=C57
+date: 2026-09-28 13:00 +0200
+branch: dev   head: 764e352（+ 本轮未提交的改动）
+python: Python 3.13.5
+command: python -u scripts/quality/acceptance_item_probe.py --item 'AC-8|05' && ... --item 'AC-8|06'
+note: 两格都期望 gap，且 gap 的理由必须点名「等一次经确认的执行」那两面
+      （生产仓库的 REORGANIZE / e2e 跨年真跑），不是把判据写宽。
+
+===== 正文（未裁剪）=====
+
+
+### AC-8|05  (document line 174)
+判据原文：**分区**：大表按 `RANGE COLUMNS(trade_date)` 年分区 + MAXVALUE 兜底；**分区维护任务**可运行
+本探针：接线四读（yaml 行 / kind 可执行 / 派发到本体 / 本体真的调 ensure）+ DDL 渲染面 + 真仓库年度上界只读档案；apply 半是生产 DDL，等一次经确认的执行才翻正
+台账现状：state=unreviewed，文档勾选=False
+  - ``schedules.yaml`` 的 ``partition-maintenance`` 行 = yes；kind 在 ``EXECUTABLE_KINDS`` 里 = yes（不在则注册时被跳过，cron 行只剩外观），``_execute_template`` 派发到本体 = yes
+  - 本体做 apply 半 = yes（调 ``ensure`` 而不是只出 plan —— C48 的量法在告警矩阵里，那一面按设计不动 DDL）
+  - ``ddl.py`` 渲染 ``RANGE COLUMNS`` 年分区 + ``MAXVALUE`` 兜底 = yes
+  - 真仓库读数（docs/evidence/C57/partition-horizon.txt）：注册表 20 张 / 已分区 6 张 / 年度上界仍缺 5 张；档案里有分区列读数 = yes
+  - 经确认的 apply 留档（docs/evidence/C57/partition-apply.txt）存在 = no
+  - 补齐到可判：applied_face: no -> yes; live_gap_tables: 5 -> 0
+VERDICT AC-8|05: gap — 分区面两头都要有：接线（yaml 行 + kind 可执行 + 派发到真的 ``ensure``）与仓库现状（分区列点名、上界不再落后、apply 后复跑留档）——本轮只有接线与落后读数，``REORGANIZE`` 是生产仓库的 DDL，等一次经确认的执行
+
+census: gap=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+
+
+### AC-8|06  (document line 175)
+判据原文：**跨年写入用例**：模拟新年度数据写入成功（无"no partition for value"错误）
+本探针：用例三读（自建 probe 表 / 新年度插入被断言 / 落点分区名被断言）+ 它是 e2e 面所以门禁不跑 + 真仓库那年还缺一张分区；「写成功」要有跑过的留档
+台账现状：state=unreviewed，文档勾选=False
+  - 用例在 tests/test_partition_maintenance.py：自建 ``_probe_*`` 表 = yes，插入新年度那一行（2027-03-01 进 probe 表）= yes，落点分区名被断言 = 1 行
+  - 标记 = e2e（``make gate`` 不跑 e2e，所以这一面必须另留档才算跑过）
+  - 真仓库当下还缺年度分区的表 = 5 张 —— 缺的那一年会落进 ``pmax``：写入不报错，但年分区形同不存在，所以「写成功」必须有落点断言
+  - 本轮留档里有一次真跑 = no
+  - 补齐到可判：fallback_gap: 5 -> 0; ran_live: no -> yes
+VERDICT AC-8|06: gap — 跨年写入这条判据要有「跑过」的证据而不是「有用例」：用例是 e2e 面（门禁不跑），而真仓库的年度上界还落后一年 —— 补这一年是生产仓库的 DDL，等一次经确认的执行
+
+census: gap=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+
+PROBE_ITEM_EXIT ac8_05=0 ac8_06=0

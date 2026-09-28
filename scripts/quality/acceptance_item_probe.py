@@ -4159,6 +4159,151 @@ def domains_in_yaml(text: str) -> tuple[str, ...]:
     return tuple(re.findall(r"^  ([a-z_]+):$", text, re.MULTILINE))
 
 
+PARTITIONS_REL: Final = "opendata/pipeline/partitions.py"
+PARTITION_TESTS_REL: Final = "tests/test_partition_maintenance.py"
+PARTITION_FACE_REL: Final = "docs/evidence/C57/partition-horizon.txt"
+PARTITION_APPLY_REL: Final = "docs/evidence/C57/partition-apply.txt"
+
+
+def _facts_line(source: str) -> dict[str, str]:
+    """Parse the ``FACTS k=v`` line a live face printed, if there is one."""
+    line = next((row for row in source.splitlines() if row.startswith("FACTS ")), "")
+    return dict(
+        token.split("=", 1) for token in line.split()[1:] if "=" in token
+    )
+
+
+def measure_ac8_05(ctx: Context) -> Facts:
+    """Wiring read in source, horizon read from the live archive."""
+    from pathlib import Path
+
+    jobs_src = ctx.read(PIPELINE_JOBS_REL)
+    yaml_src = ctx.read(SCHEDULES_REL)
+    ddl_src = ctx.read(WAREHOUSE_DDL_REL)
+    face = ctx.read(PARTITION_FACE_REL)
+    live = _facts_line(face)
+    executable_block = re.search(
+        r"EXECUTABLE_KINDS = frozenset\((.*?)\n\)", jobs_src, re.S
+    )
+    dispatch = re.search(
+        r"async def _execute_template\(.*?\n\n\n", jobs_src, re.S
+    )
+    apply_body = re.search(
+        r"def maintain_partition_horizon\(.*?\n\n\n", jobs_src, re.S
+    )
+    applied = Path(ctx.root) / PARTITION_APPLY_REL
+    return {
+        "row_declared": flag("kind: partition_maintenance" in yaml_src),
+        "kind_executable": flag(
+            bool(executable_block) and "PARTITION_MAINTENANCE" in executable_block.group(1)
+        ),
+        "body_dispatched": flag(
+            bool(dispatch)
+            and "PARTITION_MAINTENANCE" in dispatch.group(0)
+            and "_execute_partition_maintenance" in dispatch.group(0)
+        ),
+        "apply_half": flag(
+            bool(apply_body)
+            and ".ensure(" in apply_body.group(0)
+            and "plan_yearly_partitions" in apply_body.group(0)
+        ),
+        "ddl_layout": flag(
+            "PARTITION BY RANGE COLUMNS" in ddl_src and "VALUES LESS THAN (MAXVALUE)" in ddl_src
+        ),
+        "live_partitioned": live.get("partitioned", "(absent)"),
+        "live_tables": live.get("tables", "(absent)"),
+        "live_gap_tables": live.get("gap_tables", "(absent)"),
+        "live_keys": flag("分区列" in face and live.get("keys") is not None),
+        "applied_face": flag(applied.is_file()),
+    }
+
+
+def judge_ac8_05(facts: Facts) -> Verdict:
+    """``AC-8|05``: yearly partitions with a MAXVALUE fallback, and a maintenance task that runs."""
+    ok = (
+        facts["row_declared"] == "yes"
+        and facts["kind_executable"] == "yes"
+        and facts["body_dispatched"] == "yes"
+        and facts["apply_half"] == "yes"
+        and facts["ddl_layout"] == "yes"
+        and positive(facts["live_partitioned"])
+        and facts["live_gap_tables"] == "0"
+        and facts["live_keys"] == "yes"
+        and facts["applied_face"] == "yes"
+    )
+    readings = (
+        f"``schedules.yaml`` 的 ``partition-maintenance`` 行 = {facts['row_declared']}；"
+        f"kind 在 ``EXECUTABLE_KINDS`` 里 = {facts['kind_executable']}（不在则注册时被跳过，"
+        f"cron 行只剩外观），``_execute_template`` 派发到本体 = {facts['body_dispatched']}",
+        f"本体做 apply 半 = {facts['apply_half']}（调 ``ensure`` 而不是只出 plan —— "
+        "C48 的量法在告警矩阵里，那一面按设计不动 DDL）",
+        f"``ddl.py`` 渲染 ``RANGE COLUMNS`` 年分区 + ``MAXVALUE`` 兜底 = {facts['ddl_layout']}",
+        f"真仓库读数（{PARTITION_FACE_REL}）：注册表 {facts['live_tables']} 张 / 已分区 "
+        f"{facts['live_partitioned']} 张 / 年度上界仍缺 {facts['live_gap_tables']} 张；"
+        f"档案里有分区列读数 = {facts['live_keys']}",
+        f"经确认的 apply 留档（{PARTITION_APPLY_REL}）存在 = {facts['applied_face']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "分区面两头都要有：接线（yaml 行 + kind 可执行 + 派发到真的 ``ensure``）与仓库现状"
+        "（分区列点名、上界不再落后、apply 后复跑留档）——本轮只有接线与落后读数，"
+        "``REORGANIZE`` 是生产仓库的 DDL，等一次经确认的执行"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac8_06(ctx: Context) -> Facts:
+    """The cross-year write case: does it exist, does it assert placement, has it run."""
+    spec = ctx.read(PARTITION_TESTS_REL)
+    face = ctx.read(PARTITION_FACE_REL)
+    live = _facts_line(face)
+    return {
+        "case_file": flag("_probe_partition_maintenance" in spec),
+        "inserts_new_year": flag(
+            "'2027-03-01'" in spec and "INSERT INTO `_probe_partition_maintenance`" in spec
+        ),
+        "asserts_placement": count(
+            sum(
+                1
+                for line in spec.splitlines()
+                if line.lstrip().startswith("assert ") and "placements ==" in line
+            )
+        ),
+        "marked": "e2e" if "@pytest.mark.e2e" in spec else "no",
+        "fallback_gap": live.get("gap_tables", "(absent)"),
+        "ran_live": flag("PARTITION_E2E_EXIT=0" in face),
+    }
+
+
+def judge_ac8_06(facts: Facts) -> Verdict:
+    """``AC-8|06``: a new-year row lands in its own partition instead of erroring."""
+    ok = (
+        facts["case_file"] == "yes"
+        and facts["inserts_new_year"] == "yes"
+        and positive(facts["asserts_placement"])
+        and facts["marked"] == "e2e"
+        and facts["fallback_gap"] == "0"
+        and facts["ran_live"] == "yes"
+    )
+    readings = (
+        f"用例在 {PARTITION_TESTS_REL}：自建 ``_probe_*`` 表 = {facts['case_file']}，"
+        f"插入新年度那一行（2027-03-01 进 probe 表）= {facts['inserts_new_year']}，"
+        f"落点分区名被断言 = {facts['asserts_placement']} 行",
+        f"标记 = {facts['marked']}（``make gate`` 不跑 e2e，所以这一面必须另留档才算跑过）",
+        f"真仓库当下还缺年度分区的表 = {facts['fallback_gap']} 张 —— 缺的那一年会落进 "
+        "``pmax``：写入不报错，但年分区形同不存在，所以「写成功」必须有落点断言",
+        f"本轮留档里有一次真跑 = {facts['ran_live']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "跨年写入这条判据要有「跑过」的证据而不是「有用例」：用例是 e2e 面（门禁不跑），"
+        "而真仓库的年度上界还落后一年 —— 补这一年是生产仓库的 DDL，等一次经确认的执行"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
 def measure_ac9_01(ctx: Context) -> Facts:
     """Read which P0 domains the 口径 table declares and which calibers it can carry."""
     p0 = p0_domains_in_migration()
@@ -6319,6 +6464,83 @@ PROBES: Final[tuple[Probe, ...]] = (
             "keys_sorted": "yes",
             "upsert_builder": "yes",
             "pk_is_business_key": "yes",
+        },
+    ),
+    Probe(
+        item="AC-8|05",
+        expects=(
+            "**分区**：大表按 `RANGE COLUMNS(trade_date)` 年分区 + MAXVALUE 兜底；"
+            "**分区维护任务**可运行"
+        ),
+        summary="接线四读（yaml 行 / kind 可执行 / 派发到本体 / 本体真的调 ensure）+ DDL 渲染面 + "
+        "真仓库年度上界只读档案；apply 半是生产 DDL，等一次经确认的执行才翻正",
+        measure=measure_ac8_05,
+        judge=judge_ac8_05,
+        breaks=(
+            Break("yaml 里那一行被删了", (("row_declared", "no"),), GAP),
+            Break(
+                "kind 掉出 EXECUTABLE_KINDS（行还在，注册时被跳过）",
+                (("kind_executable", "no"),),
+                GAP,
+            ),
+            Break(
+                "派发分支摘掉（kind 可执行但没有本体）",
+                (("body_dispatched", "no"),),
+                GAP,
+            ),
+            Break(
+                "本体退成只出 plan 不 apply（C48 的告警矩阵量法搬进 job）",
+                (("apply_half", "no"),),
+                GAP,
+            ),
+            Break(
+                "DDL 不再渲染 MAXVALUE 兜底",
+                (("ddl_layout", "no"),),
+                GAP,
+            ),
+            Break("仓库里一张分区表都没有", (("live_partitioned", "0"),), GAP),
+            Break("年度上界仍落后", (("live_gap_tables", "1"),), GAP),
+            Break("档案没记分区列（口径只剩源码推断）", (("live_keys", "no"),), GAP),
+            Break("没有经确认的 apply 留档", (("applied_face", "no"),), GAP),
+        ),
+        repair={
+            "row_declared": "yes",
+            "kind_executable": "yes",
+            "body_dispatched": "yes",
+            "apply_half": "yes",
+            "ddl_layout": "yes",
+            "live_partitioned": "*live_partitioned",
+            "live_tables": "*live_tables",
+            "live_gap_tables": "0",
+            "live_keys": "yes",
+            "applied_face": "yes",
+        },
+    ),
+    Probe(
+        item="AC-8|06",
+        expects="**跨年写入用例**：模拟新年度数据写入成功（无\"no partition for value\"错误）",
+        summary="用例三读（自建 probe 表 / 新年度插入被断言 / 落点分区名被断言）+ 它是 e2e 面所以"
+        "门禁不跑 + 真仓库那年还缺一张分区；「写成功」要有跑过的留档",
+        measure=measure_ac8_06,
+        judge=judge_ac8_06,
+        breaks=(
+            Break("用例不再自建 probe 表", (("case_file", "no"),), GAP),
+            Break("新年度那行没被插入", (("inserts_new_year", "no"),), GAP),
+            Break("落点分区名没被断言（只赌写入不报错）", (("asserts_placement", "0"),), GAP),
+            Break("e2e 标记被摘（于是门禁里悄悄不跑）", (("marked", "no"),), GAP),
+            Break("真仓库那一年仍缺", (("fallback_gap", "1"),), GAP),
+            Break("没有一次真跑的留档", (("ran_live", "no"),), GAP),
+        ),
+        repair={
+            "case_file": "yes",
+            "inserts_new_year": "yes",
+            # A literal target, not ``*asserts_placement``: today's tree asserts the landing
+            # partition, so copying the reading would make "someone deleted the assertion" fail
+            # the self-test instead of reading as a gap on this cell.
+            "asserts_placement": "1",
+            "marked": "e2e",
+            "fallback_gap": "0",
+            "ran_live": "yes",
         },
     ),
     Probe(

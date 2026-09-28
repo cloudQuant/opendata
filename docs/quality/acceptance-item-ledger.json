@@ -328,10 +328,30 @@
       "state": "unreviewed"
     },
     "AC-8|05|3dd663e5": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C57",
+      "date": "2026-09-28",
+      "reason": "本轮把「分区维护任务可运行」从一条外观 cron 做成真执行器：`schedules.yaml` 的 `partition-maintenance` 行（cron `0 3 * * *`，payload `years_ahead=2`）此前不在 `jobs.EXECUTABLE_KINDS` 里，注册阶段就被跳过——声明与真仓库从未相连。补齐后接线四读全 yes（yaml 行 / kind 可执行 / 派发到本体 / 本体调 `ensure` 而不是只出 plan），`ddl.py` 的 `RANGE COLUMNS` + `MAXVALUE` 渲染 yes。仓库面（docs/evidence/C57/partition-horizon.txt，`PARTITION_FACE_EXIT=0`）：注册仓库表 20 张 / 已分区 6 张 / 年度上界仍缺 5 张（各缺 `p2027` 一个，合计 5 个年度分区）；分区列按域分别是 `trade_date`(2) / `report_period`(2) / `as_of`(1) / `ex_date`(1)，与判据原文只点名 `trade_date` 有措辞级差异——按各自业务日期列分区更对，但改判据措辞属产品决定，本轮只量不改。还缺的两面都等用户点头：`live_gap_tables: 5 -> 0` 与 `applied_face: no -> yes`——补这一年是对生产仓库执行 `REORGANIZE PARTITION pmax`；代价面本轮先量了（6 张表 `pmax` 行数合计 0，⇒ 只动元数据、不重写数据行），但 DDL 不在本轮自行执行。**副作用需知会**：job 接上后 `dev` 启动会注册这条 03:00（本机时区）cron，下一次触发就会自动补这 5 张表。",
+      "evidence": [
+        "docs/evidence/C57/README.md",
+        "docs/evidence/C57/partition-horizon.txt",
+        "docs/evidence/C57/run_partition_horizon.sh",
+        "docs/evidence/C57/probe-items-ac8.txt",
+        "docs/evidence/C57/run_probe_c57.sh",
+        "opendata/pipeline/jobs.py"
+      ]
     },
     "AC-8|06|0bd99b7d": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C57",
+      "date": "2026-09-28",
+      "reason": "跨年写入要的是「跑过」的证据而不是「有用例」。用例面 yes：`tests/test_partition_maintenance.py` 自建 `_probe_partition_maintenance`、插入 `2027-03-01` 那一行、并断言落点 `assert placements == [\"p2027\"]`（:147，读数 1 行）。这一格还顺手抓到仪器自己的缺陷：`asserted_lines` 数的是 `expect(` 行，用在 `assert` 风格的测试文件上恒为 0，会把已经存在的断言读成假 gap；已按本文件风格就地改成 `assert` 行计数，**没有**改共享 helper 的语义（那会牵动别的格子）。仍缺两面：①用例带 `@pytest.mark.e2e`，`make gate` 不跑 e2e，故 `ran_live=no`，跑它要在仓库建删 `_probe_*` 表，同属仓库写操作，等确认；②真仓库 2027 年界仍缺 5 张表（`fallback_gap=5`），缺的那一年现在会落进 `pmax` 且**不报错**——判据字面「无 no partition for value 错误」因此永远为真，而年分区形同不存在，这正是判据要落点断言的理由。补齐路径与 |05 是同一件事：一次经确认的 `REORGANIZE` 把上界补齐 + 一次 e2e 真跑留档。",
+      "evidence": [
+        "docs/evidence/C57/README.md",
+        "docs/evidence/C57/probe-items-ac8.txt",
+        "docs/evidence/C57/partition-horizon.txt",
+        "tests/test_partition_maintenance.py"
+      ]
     },
     "AC-8|07|1f09a9c3": {
       "state": "unreviewed"

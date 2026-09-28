@@ -1,0 +1,52 @@
+partition-horizon.txt —— 真仓库分区上界只读面（计划半，未 apply）
+====================================================================
+round: C57
+ARCHIVE_ROUND=C57
+date: 2026-09-28 13:01 +0200
+branch: dev   head: 764e352（+ 本轮未提交的改动）
+python: Python 3.13.5
+command: bash docs/evidence/C57/run_partition_horizon.sh
+note: 只读面 = SELECT information_schema.PARTITIONS + SHOW CREATE TABLE +
+      SELECT COUNT(*) ... PARTITION (pmax)；三者都不改仓库，不执行 ALTER/REORGANIZE；
+      current_year / years_ahead 取的就是 executor 当场要用的那两个入参。
+
+===== 正文（未裁剪）=====
+
+A 接线（源码读数）
+   分派行 'partition-maintenance': cron=0 3 * * * payload={'years_ahead': '2'}
+   kind 在 EXECUTABLE_KINDS 里 = True（不在则 register_builtin_jobs 会跳过这一行）
+   executor 当场入参: current_year=2026 years_ahead=2
+
+B 表普查（真仓库读数）
+   注册仓库表 20 张，其中已分区 6 张，未分区 14 张（无 horizon 可维护）
+
+C 逐表年度上界
+   分区方式 ['RANGE COLUMNS'] / 分区列 ['as_of', 'ex_date', 'report_period', 'trade_date']（判据要求 RANGE COLUMNS(trade_date) 年分区，这里读的是仓库自己的 SHOW CREATE TABLE）
+   dwd_financial_indicator: 4 分区  RANGE COLUMNS(report_period)  pmax=True  最高年度上界=2027-01-01  缺=1
+      plan -> [('p2027', '2028-01-01')]
+   dwd_financial_statement: 4 分区  RANGE COLUMNS(report_period)  pmax=True  最高年度上界=2027-01-01  缺=1
+      plan -> [('p2027', '2028-01-01')]
+   dwd_index_constituent: 4 分区  RANGE COLUMNS(as_of)  pmax=True  最高年度上界=2027-01-01  缺=1
+      plan -> [('p2027', '2028-01-01')]
+   dwd_stock_action: 4 分区  RANGE COLUMNS(ex_date)  pmax=True  最高年度上界=2027-01-01  缺=1
+      plan -> [('p2027', '2028-01-01')]
+   dwd_stock_adjust: 4 分区  RANGE COLUMNS(trade_date)  pmax=True  最高年度上界=2029-01-01  缺=0
+   dwd_stock_daily: 4 分区  RANGE COLUMNS(trade_date)  pmax=True  最高年度上界=2027-01-01  缺=1
+      plan -> [('p2027', '2028-01-01')]
+
+D 汇总：待补的表 5 张 / 年度分区 5 个
+   样例语句（只打印，本轮不执行）for dwd_financial_indicator:
+   ALTER TABLE `dwd_financial_indicator` REORGANIZE PARTITION pmax INTO (PARTITION p2027 VALUES LESS THAN ('2028-01-01'), PARTITION pmax VALUES LESS THAN (MAXVALUE))
+
+E apply 代价面：``pmax`` 里现在有多少行（REORGANIZE 会重写这些行，决定这次 DDL 贵不贵）
+   dwd_financial_indicator: pmax 行数 = 0
+   dwd_financial_statement: pmax 行数 = 0
+   dwd_index_constituent: pmax 行数 = 0
+   dwd_stock_action: pmax 行数 = 0
+   dwd_stock_adjust: pmax 行数 = 0
+   dwd_stock_daily: pmax 行数 = 0
+   合计 pmax 行数 = 0（0 ⇒ 补上界只动元数据，不重写数据行）
+
+FACTS tables=20 partitioned=6 gap_tables=5 gap_partitions=5 current_year=2026 years_ahead=2 keys=RANGE_COLUMNS(as_of)+RANGE_COLUMNS(ex_date)+RANGE_COLUMNS(report_period)+RANGE_COLUMNS(trade_date) pmax_rows=0 dispatch_wired=yes
+
+PARTITION_FACE_EXIT=0
