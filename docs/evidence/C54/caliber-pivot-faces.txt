@@ -1,0 +1,71 @@
+# run_at=2026-09-28T03:19:37+02:00
+# branch=dev HEAD=29db8c3（工作树含本轮 C54 代码+用例，未提交）
+# python=3.13.5
+# command=python -u docs/evidence/C54/caliber_pivot_face.py
+# 连接面=不连库（只读 opendata/data/mappings/*.yaml + 注册 provider 表；反事实写的探针表在 TemporaryDirectory 里，脚本返回即删）
+# 复现性=同一命令本机第三次跑，与第二次逐字节相同（前两遍的差别只在两行 print 折行）
+# 注：面 E/F/G 是本轮的三组反事实与两格「声明了但今天不改变输出」的自我披露
+# 第四次跑（SOURCE 修法之后）：body 与第三次逐字节相同 ⇒ 调用点由 "akshare" 字面量
+#   改成同包 SOURCE 常量不改变任何熔解读数；差别只在该常量早已是这些包的路由标签来源
+
+=== 面 A registered legs vs 映射表声明（含新鲜度可读性） ===
+  financial_statement/akshare  表内=yes pivot=passthrough  freshness(report_period)可读=True
+  financial_statement/ths      表内=yes pivot=groups       freshness(report_period)可读=True
+  financial_indicator/akshare  表内=yes pivot=passthrough  freshness(report_period)可读=True
+  （ths 没有注册 financial_indicator 腿，表里也没有——不是漏声明）
+
+=== 面 B mapping_as_json 导出的 pivot 块 ===
+  ths/financial_statement
+    mode=groups item_field=item value_field=value group_field=statement_type
+    row_columns={'announce_date': 'report_date_ms'} excluded=[]
+    groups={'balance': 7, 'cashflow': 6, 'income': 13}
+    key=['symbol', 'statement_type', 'report_period', 'item']
+    adjust=not_applicable suspension=unmeasured denominator=key_union
+  akshare/financial_statement
+    mode=passthrough item_field=item value_field=value group_field=statement_type
+    row_columns={'announce_date': '公告日期', 'report_period': '报告日'} excluded=['币种', '数据源', '是否审计', '更新日期', '类型']
+    key=['symbol', 'statement_type', 'report_period', 'item']
+    adjust=not_applicable suspension=unmeasured denominator=key_union
+  akshare/financial_indicator
+    mode=passthrough item_field=indicator value_field=value group_field=None
+    row_columns={'announce_date': 'NOTICE_DATE', 'report_period': 'REPORT_DATE'} excluded=['SECUCODE']
+    key=['symbol', 'report_period', 'indicator']
+    adjust=not_applicable suspension=unmeasured denominator=key_union
+  1:1 域 ths/stock_daily 导出的 pivot = None（不是空声明）
+
+=== 面 C 三个熔解器的现场读数 ===
+  ths(fuyao) income 科目数 = 13；首两个 = ('operating_income', 'operating_costs')；末个 = basic_eps
+  akshare sina 熔解出的 item = ['货币资金', '应收账款']
+  akshare em 熔解出的 indicator = ['EPSJB', 'ROEJQ']
+    行数=2 首行 report_period=2024-06-30
+                 首行 announce_date=2024-08-30
+
+=== 面 D 拒绝面（现场调用） ===
+  1:1 域问 pivot                : RuntimeError: domain 'stock_daily' of source 'ths' declares no pivot block; its columns are 1:1 with the contract, so there is no wide frame to melt (fail closed)
+  未登记的报表组              : RuntimeError: pivot declares no group 'shadow'; known groups: ['balance', 'cashflow', 'income'] (fail closed: an undeclared group has no item vocabulary)
+  groups 模式问 line_items    : RuntimeError: pivot mode 'groups' needs item_columns(group); the frame's own keys do not decide what a科目 is (fail closed)
+  未登记的行级列              : RuntimeError: pivot declares no row column for 'currency'; declared: ['announce_date', 'report_period'] (fail closed)
+  宽帧走 1:1 投影             : ValueError: source frame is missing mapped columns ['announce_date', 'item', 'report_period', 'revision', 'statement_type', 'symbol', 'value'] for domain 'financial_statement'; the field mapping and t
+
+=== 面 E 反事实：表改一行，熔解结果跟着动 ===
+  数值型「更新日期」仍在 excluded -> item = ['应收账款', '货币资金']
+  从 excluded 里去掉它            -> item = ['应收账款', '更新日期', '货币资金']
+  差集 = ['更新日期']（表少一行声明，熔解就多一个科目）
+  把 report_period 的列名改错        -> 行数 = 0
+     （行级列名也是表说了算：读不到报告期末就没有行）
+  改 ths 表的 income 组              -> ('only_this_item',)
+
+=== 面 F 表内容 vs 库事实（本库无 ods_financial_* 表） ===
+  ths/financial_statement: fields=['announce_date', 'item', 'report_period', 'revision', 'statement_type', 'symbol', 'value']（长表视图；本库没有 ods_financial_statement_ths 表可对照）
+  ths/financial_indicator: 表内无此腿
+  akshare/financial_statement: fields=['announce_date', 'item', 'report_period', 'revision', 'statement_type', 'symbol', 'value']（长表视图；本库没有 ods_financial_statement_akshare 表可对照）
+  akshare/financial_indicator: fields=['announce_date', 'indicator', 'report_period', 'revision', 'symbol', 'unit', 'value']（长表视图；本库没有 ods_financial_indicator_akshare 表可对照）
+
+=== 面 G 声明里今天不改变熔解输出的两格 ===
+  sina 腿 excluded = ['币种', '数据源', '是否审计', '更新日期', '类型']
+  把 excluded 清空 -> item = ['货币资金', '应收账款']（与出厂 ['货币资金', '应收账款'] 相同）
+  ⇒ 挡住字符串型元数据列的是数值强转，不是 excluded；excluded 的行为差别
+     只在元数据列本身可转成数时出现（面 E 第一组）。这一格按『口径要先声明』
+     登记，不按『今天它改变输出』主张。
+  group_field 的读者是加载器（组必须是业务键字段）与导出面；三个熔解器都不读
+     它——组值来自请求参数，不来自响应列。

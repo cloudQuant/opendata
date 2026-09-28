@@ -1,0 +1,20 @@
+# run_at=2026-09-28T02:35:34+02:00
+# branch=dev HEAD=29db8c3（工作树含本轮 C54 代码+台账，未提交）
+# python=3.13.5
+# command=python -u scripts/quality/acceptance_item_probe.py --item 'AC-9|01'
+# 遍次=台账回填前一遍（判据已读 proven；回填后一遍的差别只有「台账现状：state=gap，文档勾选=False」这一行会变成 proven/True）
+# 注：探针 main() 只在措辞漂移时返回非 0，判定要读 VERDICT 行；本遍 PROBE_EXIT=0
+
+
+### AC-9|01  (document line 178)
+判据原文：**口径映射表**存在且覆盖 P0 域（字段映射/单位换算/复权口径/key 规范化/停牌语义/差异率分母）
+本探针：表在（load_mapping/normalize_frame）+ P0 五域逐个可指名 + 六类口径由表承载
+台账现状：state=gap，文档勾选=False
+  - 表在不在: opendata/data/mapping.py 有 load_mapping/normalize_frame = yes，可导出 mapping_as_json = yes，源文件 = akshare, ths
+  - P0 覆盖: 5/5 个 P0 域在这张表里
+  - 六类口径落表: 字段映射=yes、单位换算=yes、复权口径=yes、key 规范化=yes、停牌语义=yes、差异率分母=yes
+  - 另两面（只在代码里、不在这张表里时不计入覆盖）: 复权在 opendata/data/adjust.py = yes，差异率分母在 opendata/pipeline/cross_check.py = yes
+VERDICT AC-9|01: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）

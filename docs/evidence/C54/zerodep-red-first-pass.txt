@@ -1,0 +1,23 @@
+# 成员 2（zero-dep-check）在本轮第一版代码上判红的那一遍——读数面
+# 采集时间: 2026-09-28T03:18:45+02:00
+# branch=dev HEAD=29db8c3
+# 这份读数是可复现的：它扫的是 git 索引里的「第一版」blob（彼时工作树尚未提交），命令为
+#   python -u - <<'PY'   # sys.path.insert(0,'scripts/codemod'); import verify_no_akshare as v
+#   for rel in (<两个模型文件>):  src = `git show :<rel>`;  v.scan_source(src, rel)
+#   PY
+# 即：不改门禁判据、不改扫描面，只把「表外硬编码」换回同包已有的 SOURCE 常量。
+# 当时 `make gate` 的 member 2 原文两行（未改写，逐字）：
+#   FAIL: 3 new upstream reference(s):
+#     opendata/data/providers/akshare/models/financial_indicator.py: [string] akshare x2
+#     opendata/data/providers/akshare/models/financial_statement.py: [string] akshare x1
+#   make[1]: *** [zero-dep-check] Error 1 / make: *** [gate] Error 2
+# 一条自曝：这条红最初被我写进 /tmp/c54_gate1_body.txt，而该文件随后被另一遍
+#   `make gate` 覆盖成 97 行（含 secret-check/ledger-check/evidence-traceability 等成员），
+#   所以那份 /tmp 档不配当证据——本页只认「从索引 blob 重扫」这条可复现读数。
+# 改后同一命令的读数：hits=0；`python -u scripts/codemod/verify_no_akshare.py` →
+#   OK: 517 file(s) walked (opendata=193, opendata_client=2, opendata_fuyao=9, opendata_http=313),
+#   python 3.13, scanner 2; no new upstream references (frozen baseline: 3)  ⇒ ZERODEP_EXIT=0
+# ==== 第一版索引 blob 的 scan_source 逐条命中（与上面 gate 原文的 x2/x1 计数一致）====
+opendata/data/providers/akshare/models/financial_indicator.py:100: [string] akshare
+opendata/data/providers/akshare/models/financial_indicator.py:77: [string] akshare
+opendata/data/providers/akshare/models/financial_statement.py:91: [string] akshare

@@ -1,0 +1,67 @@
+# C54 归档后置检查：gate run 2 之后唯一的树变更 = 把 gate-run2-finaltree.txt 写入并 git add
+# 采集时间: 2026-09-28T04:26:36+02:00
+# branch: dev   HEAD: 29db8c3（与 run 2 同一提交，工作树只多了本档案与其引用的档案）
+# 为什么单独跑这三个成员而不是重跑整道 gate：make gate 的 17 个成员里只有 brand-check /
+#   ledger-check / evidence-traceability 会读 docs/evidence 下的 .txt 档案；其余成员判的是
+#   opendata*、tests、frontend、Makefile，那一遍的树没有被这次 add 改动，run 2 的读数不作废。
+# 三条命令都由 subprocess 直跑并取 returncode（不接管道），退出码就是命令自己的。
+
+$ python -u scripts/quality/acceptance_ledger_check.py
+census: items=130 proven=35 gap=8 unreviewed=87 ticked=35
+OK: items=130 proven=35 gap=8 unreviewed=87 ticked=35 across 22 group(s) and 19 §10 row(s) reconcile.
+EXIT=0
+
+$ python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:112
+  .env.example:113
+  .env.example:114
+  .env.example:115
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+EXIT=0
+
+$ make evidence-traceability
+python scripts/quality/evidence_traceability.py
+# evidence traceability over docs/evidence/
+  rounds        = 64
+  files census  = 585 (gate logs: 105)
+  dates in gate logs = header 99/105, printed by the run 6/105
+  branch named in header = 93/105 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 0
+
+OK: evidence archive matches the frozen baseline (0 legacy entr(ies)).
+EXIT=0
+
+# ---- 取证纪律（本轮在这份档案上自己踩到的两个坑）----
+# 1) 上一版这份档案把 brand 的退出码写成 `BRAND_EXIT=${PIPESTATUS[0]:-$?}`，而 shell 是 zsh：
+#    zsh 的管道状态数组是 $pipestatus（1-indexed），${PIPESTATUS[0]} 取到空，`:-` 落到 $?，
+#    于是那一行的 0 记的是 tail 的退出码，不是 check_brand 的。这一版改成 subprocess 直跑取 returncode，
+#    并在下面登记：任何带管道的成员重跑都必须单独证明退出码来源。
+# 2) brand-check 的完整 stdout（13 行 token 面 + 包引用面 + upstream 上下文）在此未裁剪保留，
+#    上一版的 `| tail -3` 会把 'ok akshare_web …' 那 12 行丢掉，读者就无从核对 token 清单有没有变。
+
+# ---- 结论 ----
+# 三个成员后置复跑全部绿：台账 reconcile、brand 无残留、evidence-traceability 对 585 个档案（gate 日志 105）零 gap。
+# 其中 evidence-traceability 的 untracked gaps=0 是在本档案 git add 之后读到的 —— 它自己也在这条计数里。

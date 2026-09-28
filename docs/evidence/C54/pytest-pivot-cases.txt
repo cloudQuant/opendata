@@ -1,0 +1,19 @@
+# run_at=2026-09-28T02:35:34+02:00
+# branch=dev HEAD=29db8c3
+# command=python -m pytest tests/test_mapping_pivot.py tests/test_data_mapping.py tests/test_p0_providers.py tests/test_fuyao_endpoints.py tests/test_ths_provider.py tests/test_alert_matrix.py -q --no-header -p no:cacheprovider --no-cov -m 'not e2e'
+# 读数=330 passed / 14 deselected，PYTEST_EXIT=0；单跑 tests/test_mapping_pivot.py = 42 passed
+# 性质=取证跑（--no-cov 且 -m "not e2e"），不是门禁覆盖率读数
+
+============================= test session starts ==============================
+collected 344 items / 14 deselected / 330 selected
+
+tests/test_mapping_pivot.py ..........................................   [ 12%]
+tests/test_data_mapping.py .............................                 [ 21%]
+tests/test_p0_providers.py .................................             [ 31%]
+tests/test_fuyao_endpoints.py .......................................... [ 44%]
+................................................                         [ 58%]
+tests/test_ths_provider.py ............................................. [ 72%]
+......................................................                   [ 88%]
+tests/test_alert_matrix.py .....................................         [100%]
+
+====================== 330 passed, 14 deselected in 2.16s ======================

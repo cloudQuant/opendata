@@ -1,0 +1,56 @@
+# run_at=2026-09-28T02:39:19+02:00
+# branch=dev HEAD=29db8c3
+# python=3.13.5
+# command=python scripts/quality/a2_check.py --files docs/evidence/C54/caliber_pivot_face.py opendata/data/mapping.py opendata/data/providers/akshare/models/financial_statement.py opendata/data/providers/akshare/models/financial_indicator.py opendata_fuyao/endpoints.py tests/test_mapping_pivot.py tests/test_alert_matrix.py tests/test_fuyao_endpoints.py tests/test_ths_provider.py
+# A2_EXIT=0（首遍红在 tests/test_fuyao_endpoints.py 的 I001：删掉 FINANCIAL_STATEMENT_ITEMS 这个 import 项后 from opendata_fuyao.endpoints import (...) 整块排序失配；ruff check --fix 后同一命令复验通过——这是本轮真实经过的一次红，不是修好之后再截的图）
+# 说明=docs/evidence/C54/caliber_pivot_face.py 首次入库（a2_check 会把 docs/evidence/**/*.py 纳入 A2 面），与本轮改动的产品/测试文件同批过全量 A2
+
+A2 files: 9
+  docs/evidence/C54/caliber_pivot_face.py
+  opendata/data/mapping.py
+  opendata/data/providers/akshare/models/financial_statement.py
+  opendata/data/providers/akshare/models/financial_indicator.py
+  opendata_fuyao/endpoints.py
+  tests/test_mapping_pivot.py
+  tests/test_alert_matrix.py
+  tests/test_fuyao_endpoints.py
+  tests/test_ths_provider.py
+
+ok   ruff check
+ok   ruff format --check
+ok   mypy
+ok   bandit
+
+OK: A2 files meet the full A2 standard (ruff + format + mypy + bandit).
+
+==== 复跑（SOURCE 修法之后；同一命令、同一 9 个文件）====
+# run_at=2026-09-28T03:23:58+02:00
+# 为什么复跑：门禁成员 2（zero-dep-check）把第一版的 require_pivot("akshare", …) 字面量判红，
+#   改成同包已有的 SOURCE 之后，两个模型文件重过一遍 A2（ruff format 有一处收线：row_column
+#   那行合并回一行）。首遍的 I001 红、成员 2 的红与这遍的复跑都在同一档里——读者看到的是
+#   两次真实经过，不是一次修好之后的截图。
+# 另一条自我披露（环境造成的假红，body 未留存）：这中间有一遍我把 PATH 写成
+#   $HOME/opt/anaconda/bin 打头、py313 在后（漏了系统路径，且把 base 环境排在 py313 之前），
+#   a2_check 回 `FAIL: A2 gate failed on: mypy` / A2_EXIT=1。那不是本轮的代码红：同一批文件
+#   在标准前缀（export PATH="$HOME/opt/anaconda3/envs/py313/bin:$PATH"）下立刻回到
+#   ok mypy + A2_EXIT=0。分辨真假红的依据是「换 env 复跑即消失」——所以这一条登记为取证纪律
+#   事故（那一遍的 body 已被随后的 rm 删掉，没留档），不记为门禁发现。
+# 复跑输出（逐字）：
+A2 files: 9
+  docs/evidence/C54/caliber_pivot_face.py
+  opendata/data/mapping.py
+  opendata/data/providers/akshare/models/financial_statement.py
+  opendata/data/providers/akshare/models/financial_indicator.py
+  opendata_fuyao/endpoints.py
+  tests/test_mapping_pivot.py
+  tests/test_alert_matrix.py
+  tests/test_fuyao_endpoints.py
+  tests/test_ths_provider.py
+
+ok   ruff check
+ok   ruff format --check
+ok   mypy
+ok   bandit
+
+OK: A2 files meet the full A2 standard (ruff + format + mypy + bandit).
+A2_EXIT=0（同一遍命令的 shell 退出码，读自 echo "A2_EXIT=$?"）

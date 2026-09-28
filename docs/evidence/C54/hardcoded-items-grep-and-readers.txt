@@ -1,0 +1,68 @@
+# run_at=2026-09-28T02:39:19+02:00
+# branch=dev HEAD=29db8c3
+# 关键词面的边界（照 C53 §8 第 3 条同一条规矩写）：这些 grep 排除的是「另有一处写着科目名单/元数据名单」，
+#   不排除某段代码用别的词隐含了同一份口径；后者由 tests/test_mapping_pivot.py 的 19 条解析守卫与
+#   仪器面 E 的「改表就改熔解结果」承担，不是这一页。
+# 一处诚实披露：第一版命令用了裸子串 "_METADATA_COLUMNS"，被 opendata/pipeline/ddl.py 的
+#   ODS_METADATA_COLUMNS（ods 审计列，与本轮无关）以子串命中 4 次。改成前置非标识符字符的窄正则后
+#   才读到 hits=0；裸子串那遍的 hits=4 原文留在下面面 B，读者可以自己核对差别只在模式。
+# 第二处诚实披露（零依赖门禁把本轮的第一版写法判红）：三个新调用点第一版写成
+#   require_pivot("akshare", …) 字符串字面量，`make gate` 成员 2（zero-dep-check）随即
+#   FAIL: 3 new upstream reference(s)（financial_indicator.py [string] akshare x2、
+#   financial_statement.py x1；那遍红的完整 body 未裁剪地另档留存 gate-run0-zerodep-red.txt，README §7 记命令）。改成读同包已有的
+#   `SOURCE`（opendata/data/providers/akshare/_source.py：路由标签按目录名派生，写明理由正是
+#   「不让运行期 *.py 出现上游根名字符串常量」），门禁判据一字未动。改后
+#   python -u scripts/codemod/verify_no_akshare.py → `OK: 517 file(s) walked … no new
+#   upstream references (frozen baseline: 3)`，ZERODEP_EXIT=0。
+#   ⇒ 面 C 的行号是改后重跑所得：statement 三行仍 91/92/93/94，indicator 由 77/100 变为
+#   77/98（ruff format 把 row_column 收回一行）。2026-09-28T03:13:54+02:00 重跑。
+
+=== 面 A：本轮删掉的硬编码名单在产品树/脚本/用例里已无残留（窄模式：标识符前缀不得是字母/下划线）===
+--- grep -rnE "(^|[^A-Za-z_])FINANCIAL_STATEMENT_ITEMS" --include='*.py' opendata/ opendata_fuyao/ scripts/ tests/ ---
+hits=0
+
+--- grep -rnE "(^|[^A-Za-z_])_METADATA_COLUMNS" --include='*.py' opendata/ opendata_fuyao/ scripts/ tests/ ---
+hits=0
+
+--- grep -rnE "(^|[^A-Za-z_])_DIMENSION_COLUMNS" --include='*.py' opendata/ opendata_fuyao/ scripts/ tests/ ---
+hits=0
+
+=== 面 B：裸子串模式会多命中什么（记录为什么不采用它）===
+--- grep -rn --include='*.py' "_METADATA_COLUMNS" opendata/ ---
+opendata/pipeline/ddl.py:66:ODS_METADATA_COLUMNS = (
+opendata/pipeline/ddl.py:155:        [*columns, *ODS_METADATA_COLUMNS],
+opendata/pipeline/__init__.py:10:    ODS_METADATA_COLUMNS,
+opendata/pipeline/__init__.py:25:    "ODS_METADATA_COLUMNS",
+
+=== 面 C：pivot 声明的读取点（require_pivot / line_items / item_columns / row_column）===
+--- C-1 读取侧（产品树，定义方 mapping.py 除外）：grep -rnE "require_pivot|line_items|item_columns|row_column" --include='*.py' opendata/ opendata_fuyao/ | grep -v '^opendata/data/mapping.py' ---
+opendata/data/providers/akshare/models/financial_statement.py:23:from opendata.data.mapping import require_pivot
+opendata/data/providers/akshare/models/financial_statement.py:91:        pivot = require_pivot(SOURCE, "financial_statement")
+opendata/data/providers/akshare/models/financial_statement.py:92:        items = pivot.line_items(raw.columns)
+opendata/data/providers/akshare/models/financial_statement.py:93:        period_column = pivot.row_column("report_period")
+opendata/data/providers/akshare/models/financial_statement.py:94:        announce_column = pivot.row_column("announce_date")
+opendata/data/providers/akshare/models/financial_indicator.py:23:from opendata.data.mapping import require_pivot
+opendata/data/providers/akshare/models/financial_indicator.py:77:        announce_column = require_pivot(SOURCE, "financial_indicator").row_column("announce_date")
+opendata/data/providers/akshare/models/financial_indicator.py:98:        pivot = require_pivot(SOURCE, "financial_indicator")
+opendata/data/providers/akshare/models/financial_indicator.py:99:        indicators_by_column = set(pivot.line_items(raw.columns))
+opendata/data/providers/akshare/models/financial_indicator.py:100:        period_column = pivot.row_column("report_period")
+opendata/data/providers/akshare/models/financial_indicator.py:101:        announce_column = pivot.row_column("announce_date")
+opendata_fuyao/endpoints.py:46:from opendata.data.mapping import require_pivot
+opendata_fuyao/endpoints.py:1053:    pivot = require_pivot("ths", "financial_statement")
+opendata_fuyao/endpoints.py:1056:    return pivot.item_columns(statement_type)
+opendata_fuyao/endpoints.py:1072:    * ``announce_date`` 取表里登记的披露列（``row_columns.announce_date``，实测为
+opendata_fuyao/endpoints.py:1091:    announce_column = require_pivot("ths", "financial_statement").row_column("announce_date")
+--- C-2 定义/守卫侧：grep -nE "^\s*(def require_pivot|def _require_pivot_group_field|resolved = _require_pivot_group_field)" opendata/data/mapping.py ---
+opendata/data/mapping.py:451:def require_pivot(source: str, domain: str) -> PivotMapping:
+opendata/data/mapping.py:785:def _require_pivot_group_field(
+opendata/data/mapping.py:848:    resolved = _require_pivot_group_field(
+opendata/data/mapping.py:932:        resolved = _require_pivot_group_field(
+
+=== 面 D：域级三类口径的读取点（C53 面，留作对照）===
+opendata/pipeline/query.py:244:            require_adjust_basis``) - an index or a single derivative
+opendata/pipeline/query.py:253:    from opendata.data.mapping import require_adjust_basis
+opendata/pipeline/query.py:256:    basis = require_adjust_basis(domain)
+opendata/pipeline/cross_check.py:32:from opendata.data.mapping import normalize_frame, require_comparable_calibers
+opendata/pipeline/cross_check.py:171:    require_comparable_calibers(mapping_a, mapping_b)
+opendata/data/mapping.py:349:def require_adjust_basis(domain: str) -> str:
+opendata/data/mapping.py:384:def require_comparable_calibers(
