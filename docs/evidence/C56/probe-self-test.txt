@@ -1,0 +1,15 @@
+probe-self-test.txt —— 反事实面：每条 break 都要把干净读数打回 gap，且声明的补齐读数能到 proven
+====================================================================
+round: C56
+ARCHIVE_ROUND=C56
+date: 2026-09-28 11:20 +0200
+branch: dev   head: 6b3cd8a（+ 本轮未提交的改动）
+python: Python 3.13.5
+command: python -u scripts/quality/acceptance_item_probe.py --self-test
+note: AC-11|02 本轮新增 12 条 break，并修了一条 unreachable judge（声明的补齐读数把
+      run_ok_rows 抄成当场量到的 0，判据永远到不了 proven —— 由 --self-test 抓到）。
+
+===== 正文（未裁剪）=====
+  - 反事实面：41/41 个探针走到了判定，330 条 break 各被施加一次、每条都要求把干净读数打回 gap
+OK: 41 probe(s) measured; every judge is reachable from its declared repair, and all 330 counterfact(s) flip a clean reading back to a gap.
+SELF_TEST_EXIT=0

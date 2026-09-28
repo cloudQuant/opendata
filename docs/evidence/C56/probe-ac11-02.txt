@@ -1,0 +1,29 @@
+probe-ac11-02.txt —— AC-11|02 单格复算读数（本轮判据改动直接作用的那一格）
+====================================================================
+round: C56
+ARCHIVE_ROUND=C56
+date: 2026-09-28 11:49 +0200
+branch: dev   head: 6b3cd8a（+ 本轮未提交的改动）
+python: Python 3.13.5
+command: python -u scripts/quality/acceptance_item_probe.py --item 'AC-11|02'
+note: 期望读数是 gap，且补齐面要点名三行（run_error_rows / run_fail_rows / run_ok_rows）——
+      判据（逐日 shape dev 对 2e-3）一字未改，改的是证据。
+
+===== 正文（未裁剪，含 23/23 节点面与 VERDICT 行）=====
+
+
+### AC-11|02  (document line 202)
+判据原文：**`adjust=qfq|hfq` 服务端计算**：同一标的 qfq 序列与 akshare 官方 qfq 对照一致（容忍度内）
+本探针：qfq/hfq 由服务端按因子表合成（缺因子 400、缺表 501）；官方对照腿是分派表条目，默认 akshare 并解析到搬运模块，留档一次真机 run 的腿与 module:function 都要与现值一致
+台账现状：state=gap，文档勾选=False
+  - 复权面（HTTP 五条 + 因子算术两条 + 判定与对照腿十五条）: 23/23 nodes passed
+  - 服务端合成 = yes（``_adjusted_rows`` 真的调 ``apply_adjust_to_rows``，不是把参数读一遍就丢掉）
+  - 官方对照腿：``scripts/ops/qfq_official_check.py`` 的 ``DEFAULT_OFFICIAL_LEG`` = akshare，分派表 akshare 条目 target = opendata_http.stock_feature.stock_hist_em:stock_zh_a_hist，该模块头部声明 akshare 出身 = yes（判据点名的就是 ``opendata_http.stock_feature.stock_hist_em``）
+  - 留档真机 run（docs/evidence/C56/qfq-official-akshare.txt）：头部记的腿 = akshare，module:function = opendata_http.stock_feature.stock_hist_em:stock_zh_a_hist；PASS 0 行 / FAIL 1 行 / ERROR 9 行
+  - 补齐到可判：run_error_rows: 9 -> 0; run_fail_rows: 1 -> 0; run_ok_rows: 0 -> 10
+VERDICT AC-11|02: gap — 留档那次 run 有 9 行 ERROR —— 官方端点没答上来等于没对照；真机对照未过：FAIL 1 行 / PASS 0 行（容差 2e-3 不放宽，见档案里的 over_tolerance 与 ratio 平台分布） —— 合成与对照的判定口径不变（逐日 shape dev 对 2e-3），要改的是证据不是判据
+
+census: gap=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+
+PROBE_ITEM_EXIT=0

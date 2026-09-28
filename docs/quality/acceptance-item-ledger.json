@@ -565,15 +565,16 @@
     },
     "AC-11|02|47ebc0df": {
       "state": "gap",
-      "round": "C55",
+      "round": "C56",
       "date": "2026-09-28",
-      "reason": "前半已是实测面（qfq/hfq 由服务端按因子表合成：_adjusted_rows 真的调 apply_adjust_to_rows，缺因子 400、缺表 501，节点面 11/11 passed = 复权 HTTP 五条 + 因子算术两条 + 对照仪器判定四条）。后半判据点名『与 akshare 官方 qfq 对照一致』，而唯一的官方对照腿取的是 sina：scripts/ops/qfq_official_check.py 的 _official_series 走 sina stock_zh_a_daily，留档 docs/evidence/B4/qfq-official-check.txt 头部记的腿也是 sina。sina 是另一条源、另一条因子链，作独立对照比拿 akshare 自证更强（那次真机 run 是 PASS 16 行 / FAIL 0 行），但它不是判据写的那个名字 —— 本轮不把『有一条独立对照』当成『有判据点名的对照』来翻正。补齐路径已在探针里钉成读数：official_leg / run_official_leg 两个 sina 都要变 akshare，即在 qfq_official_check.py 加 akshare 官方 qfq 序列腿（opendata_http/stock_feature/stock_hist_em.py 在位 = yes，本轮已量）并留档一次真机 run。",
+      "reason": "对照腿本轮从「自报」变成「可验」：scripts/ops/qfq_official_check.py 的官方序列改成分派表 OFFICIAL_LEGS + --official，默认腿 DEFAULT_OFFICIAL_LEG=akshare，探针不再信脚本自报，而是四读交叉——默认腿的常量、AST 解析分派表 akshare 条目的 target、该 target 指向模块的头部声明（# Ported from akshare）、以及留档 run 头部的 official: 行与其中 module:function 必须等于分派表现值（仪器改了 run 没重跑就会被判 stale）。四条读数都过：默认腿 akshare → opendata_http.stock_feature.stock_hist_em:stock_zh_a_hist，run 记的腿与 target 逐字一致。判据要的是「一致（容忍度内）」，这一半还是 FAIL：docs/evidence/C56/qfq-official-akshare.txt 量到 PASS 0 / FAIL 1 / ERROR 9，600519 qfq 131 根里 29 根超容差（shape dev 3.15e-03，over-tolerance 跨 2026-02-05..2026-07-21，level 分布 1.00306x19 0.99987x4 …），9 行 ERROR 是 em 端点 502/空帧（腿已按 3 次退避重试，空帧一律算 ERROR 不算对照）。超容差的那 29 根已归因，且结论不是「上游抖」：docs/evidence/C56/qfq-attribution.txt A 段量我们自己的因子链在窗口里只有 2 个取值、只在 2026-06-26 换过一次值（177 行），所以偏离的 bar 根本不是除息日；C 段量 sina 不复权与我们的 dwd 不复权 131 根共同 bar 差异 0 根（最大相对差 0.00e+00），数据层没问题；D 段把官方 qfq 对不复权价做机制检验，得到 official/raw = 1.000000000 − 28.02 x (1/raw)（截距偏离 1 为 -1.11e-16，事件前其余 111 根残差 max 0.0000 元），且事件之后 18 根 official 与不复权价最大绝对差 0.0000 元 —— 官方那条是「价格减现金分红 28.02 元」的减法链，我们的服务端合成是「不复权价 x 0.976879605643」的乘法链，两者只在最后一个事件之后逐根相等，事件之前的相对差按 D/P(t) 随价格水平漂移，正好就是 B 段那条从 0.99785 爬到 1.00315 再锁在 1.00306 的形状。这是复权口径差，不是数据错，也不是能靠中位数锚定吸收的常数偏移，所以不靠放宽容差蒙过去（2e-3 与逐日 shape dev 判据一字未改）。补齐路径因此是开发项而非证据项：要么服务端合成按事件做减法（因子表要能承载每股现金分红/送转比例，而不是只有一个乘性 qfq_factor），要么把 qfq_factor 换成与官方同口径的算法；两条都要重跑一次真机对照并把 ERROR 行清到 0。",
       "evidence": [
-        "docs/evidence/C55/probe-ac11-items.txt",
-        "docs/evidence/C55/probe-all.txt",
-        "docs/evidence/C55/self-test.txt",
-        "docs/evidence/C55/README.md",
-        "docs/evidence/B4/qfq-official-check.txt"
+        "docs/evidence/C56/qfq-official-akshare.txt",
+        "docs/evidence/C56/qfq-attribution.txt",
+        "docs/evidence/C56/probe-all.txt",
+        "docs/evidence/C56/probe-self-test.txt",
+        "docs/evidence/C56/README.md",
+        "docs/evidence/C55/probe-ac11-items.txt"
       ]
     },
     "AC-11|03|9e33b3df": {

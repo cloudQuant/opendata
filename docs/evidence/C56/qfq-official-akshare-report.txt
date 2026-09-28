@@ -1,0 +1,37 @@
+AC-11 server-side adjust vs the official akshare series
+
+script: scripts/ops/qfq_official_check.py
+window: 2026-01-05 .. 2026-09-23 (clamped to the dwd_stock_adjust ceiling)
+symbols: 600519, 000001, 000002, 000009, 600036
+ours: dwd_stock_daily (unadjusted) x dwd_stock_adjust factors,
+  via build_data_select + apply_adjust_to_rows (the REST query path)
+official: akshare opendata_http.stock_feature.stock_hist_em:stock_zh_a_hist (adjust=qfq|hfq) -- different source and factor chain
+tolerance: relative 0.002 on close (official feeds round to 2 decimals)
+
+## adjust=qfq
+
+| symbol | bars | bars over tol | anchor (ours/official) | max abs dev | max shape dev | leg retries | result |
+|---|---|---|---|---|---|---|---|
+- 600519 qfq 2026-02-05: ours 1519.0478 vs official 1526.9800 (shape dev=2.15e-03)
+- 600519 qfq 2026-06-04: ours 1238.6833 vs official 1239.9800 (shape dev=2.01e-03)
+- 600519 qfq 2026-06-08: ours 1233.7794 vs official 1234.9600 (shape dev=2.10e-03)
+- 600519 qfq 2026-06-09: ours 1226.9608 vs official 1227.9800 (shape dev=2.23e-03)
+- 600519 qfq 2026-06-16: ours 1226.6384 vs official 1227.6500 (shape dev=2.24e-03)
+- 600519 qfq over tolerance: 29 of 131 bars in 2026-02-05..2026-07-21; levels(ours/official / anchor): 1.00306x19 0.99987x4 0.99904x3 0.99951x2 0.99955x2 0.99961x2
+| 600519 | 131 | 29 | 0.996947 | 5.19e-03 | 3.15e-03 | 0 | FAIL |
+| 000001 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 000001 qfq in 3 attempts (last: RuntimeError: official leg 'akshare' returned no rows) |
+| 000002 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 000002 qfq in 3 attempts (last: RuntimeError: official leg 'akshare' returned no rows) |
+| 000009 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 000009 qfq in 3 attempts (last: RuntimeError: official leg 'akshare' returned no rows) |
+| 600036 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 600036 qfq in 3 attempts (last: RuntimeError: official leg 'akshare' returned no rows) |
+
+## adjust=hfq
+
+| symbol | bars | bars over tol | anchor (ours/official) | max abs dev | max shape dev | leg retries | result |
+|---|---|---|---|---|---|---|---|
+| 600519 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 600519 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=1.600519&beg=20260105&end=20260923) |
+| 000001 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 000001 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=0.000001&beg=20260105&end=20260923) |
+| 000002 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 000002 hfq in 3 attempts (last: RuntimeError: official leg 'akshare' returned no rows) |
+| 000009 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 000009 hfq in 3 attempts (last: RuntimeError: official leg 'akshare' returned no rows) |
+| 600036 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 600036 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=1.600036&beg=20260105&end=20260923) |
+
+result: FAIL (10 failing symbol/method pairs)
