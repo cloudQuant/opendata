@@ -1,0 +1,134 @@
+source-leg-enum-fix.txt —— AC-11|03 的 source 枚举面：本轮补的生产缺陷与入口级 HTTP 面
+=========================================================================================
+round: C55   head: 4c0633e + 本轮未提交的改动
+time: 2026-09-28 06:12 本地（+0200）
+why: 判据原文写的是「`layer`/`source`/`adjust` 枚举校验」三个面。修前 `layer`/`adjust`
+     是 `Literal[...]`（FastAPI 层 422），而 `source` 是裸 `str = Query("auto")`，
+     没有任何一处回答「这条域到底有没有这条腿」：
+       `layer=dwd&source=eastmoney` —— 走合并表 dwd_stock_daily，SQL 里根本不含 source 谓词，
+       于是返回 200 并**在载荷里把调用方要的那条不存在的腿名回显出去**（言行不一致）。
+     这一面不能靠改判据去掉（判据原文一字未动），也不能只写探针读数然后判 gap ——
+     它是本轮唯一一处「产品真的少了一个判据点名的门」，所以修的是产品。
+what: 下面三段逐字来自工作区（git diff / 源码 / pytest 输出）：
+     1) 生产改动（opendata/api/data_query.py::_validated_query）
+     2) 入口级用例（tests/test_data_query_http_warehouse.py，本轮新建的模块）
+     3) 该模块的 pytest 读数与前端影响面复核
+===== 1) git diff opendata/api/data_query.py =====
+diff --git a/opendata/api/data_query.py b/opendata/api/data_query.py
+index 678048a..1e5aee3 100644
+--- a/opendata/api/data_query.py
++++ b/opendata/api/data_query.py
+@@ -480,13 +480,13 @@ async def _validated_query(
+         principal: The authenticated caller.
+         asset_class: Asset class segment of the path.
+         domain: Domain identifier.
+         symbols: Comma separated symbols.
+         start: Inclusive start date.
+         end: Inclusive end date.
+-        source: Source for the ods layer, or ``auto``.
++        source: A registered leg of the domain, or ``auto``.
+         layer: ``dwd`` or ``ods``.
+         adjust: ``none`` / ``qfq`` / ``hfq``.
+         fields: Comma separated field filter.
+         period: Period filter for financial domains.
+         report_date: Report-date filter for financial domains.
+         page: One-based page number.
+@@ -507,27 +507,35 @@ async def _validated_query(
+         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+     if layer == "ods" and source == "auto":
+         raise HTTPException(
+             status_code=status.HTTP_400_BAD_REQUEST,
+             detail="layer=ods needs an explicit source (auto is the merged dwd view)",
+         )
+-    registered = {
+-        capability.asset_class
+-        for capability in get_registry().capabilities()
+-        if capability.domain == domain
+-    }
++    caps = [
++        capability for capability in get_registry().capabilities() if capability.domain == domain
++    ]
++    registered = {capability.asset_class for capability in caps}
+     if not registered:
+         raise HTTPException(
+             status_code=status.HTTP_404_NOT_FOUND,
+             detail=f"domain {domain!r} has no registered capability",
+         )
+     if asset_class not in registered:
+         raise HTTPException(
+             status_code=status.HTTP_404_NOT_FOUND,
+             detail=f"domain {domain!r} is not registered under asset class {asset_class!r}",
+         )
++    # An unregistered source would otherwise be answered with the merged
++    # table while the payload echoes the name the caller asked for.
++    legs = {"auto", *(capability.source for capability in caps)}
++    if source not in legs:
++        raise HTTPException(
++            status_code=status.HTTP_400_BAD_REQUEST,
++            detail=f"source {source!r} is not a registered leg of {domain!r}: "
++            f"{', '.join(sorted(legs))}",
++        )
+     table = ods_table(domain, source) if layer == "ods" else dwd_table(domain)
+     if not await _table_columns(engine, table):
+         raise HTTPException(
+             status_code=status.HTTP_404_NOT_FOUND, detail=f"table {table!r} is not available"
+         )
+     return DataQuery(
+
+===== 2) 新用例源码 =====
+    async def test_a_source_that_is_not_a_registered_leg_is_a_400(
+        self, warehouse, test_client, test_user_token
+    ):
+        warehouse(bars=[_bar("600519", RECENT)])
+
+        bogus = await test_client.get(
+            QUERY_URL, params={"source": "eastmoney"}, headers=_auth(test_user_token)
+        )
+        leg = await test_client.get(
+            QUERY_URL, params={"source": "ths"}, headers=_auth(test_user_token)
+        )
+        ods = await test_client.get(
+            QUERY_URL,
+            params={"layer": "ods", "source": "ths"},
+            headers=_auth(test_user_token),
+        )
+        detail = bogus.json()["detail"]
+
+        assert bogus.status_code == 400
+        assert "not a registered leg" in detail
+        # 可修的 400：把这条域有的腿名一起交回调用方，而不是只说"非法值"。
+        assert set(detail.rsplit(": ", 1)[1].split(", ")) == {"auto", "akshare", "ths"}
+        # 注册过的腿过了枚举这道门，下一道门才是它自己的 ods 表。
+        assert leg.status_code == 200
+        assert ods.status_code == 404
+
+===== 3) pytest 读数 =====
+$ python -u -m pytest tests/test_data_query_http_warehouse.py -q --no-header -p no:cacheprovider --no-cov -m "not e2e"
+PYTEST_EXIT=0
+============================= 23 passed in 12.34s ==============================
+（23 passed / 0 failed / 0 skipped / 0 deselected；-m "not e2e" 与 --no-cov ⇒ 这是取证跑，不是门禁覆盖率读数）
+
+===== 4) 新门的爆炸半径复核（谁真的往这条端点发 source 参数） =====
+问题是「这条 400 会不会打断已经在跑的调用方」。三个方向各量一次：
+
+$ grep -rn "catalogApi.query" frontend/src
+frontend/src/__tests__/catalog.test.ts:176:    const page = await catalogApi.query('equity', 'stock_daily', { page_size: 20 })
+frontend/src/__tests__/api/envelope.test.ts:213:    const page = await catalogApi.query('equity', 'stock_daily', { page: 2, page_size: 20 })
+frontend/src/views/DataCatalogView.vue:103:    detail.value.page = await catalogApi.query(entry.asset_class, entry.domain, {
+
+$ sed -n '103,106p' frontend/src/views/DataCatalogView.vue   （唯一调用点发出去的参数对象）
+    detail.value.page = await catalogApi.query(entry.asset_class, entry.domain, {
+      page: 1,
+      page_size: 20,
+    })
+
+$ grep -rn "api/v1/data/" scripts/ops/qfq_official_check.py scripts/ops/akshare_fallback_cross_check.py scripts/ops/authority_reconcile_check.py
+scripts/ops/qfq_official_check.py:81:    ``GET /api/v1/data/equity/stock_daily?adjust={method}``; paging is
+scripts/ops/akshare_fallback_cross_check.py:4:and ``GET /api/v1/data/sources`` publishes it. C23 proved each listed source
+scripts/ops/authority_reconcile_check.py:4:``GET /api/v1/data/sources`` 把表原样回给人看（``opendata/api/data.py:59``），所以
+
+读数：数仓查询页只发 `page` / `page_size`；`catalog.ts` 的 `query()` 是透传 `params`，
+仓库里没有任何一处往 `/data/{asset_class}/{domain}` 发 `source`；两条 ops 仪器引用的
+是 `?adjust=` 与 `/data/sources`（不同端点）。`scripts/ops/*.py` 里那些 `source="ths"`
+是 `get_registry().resolve_domain(...)` 的关键字参数，不是 HTTP query 参数。
+⇒ 这条 400 的门 today 没有既有调用方会被它挡住；它挡的是「调用方写了这条域没有的腿」。

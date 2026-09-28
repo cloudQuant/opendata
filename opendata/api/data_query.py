@@ -483,7 +483,7 @@ async def _validated_query(
         symbols: Comma separated symbols.
         start: Inclusive start date.
         end: Inclusive end date.
-        source: Source for the ods layer, or ``auto``.
+        source: A registered leg of the domain, or ``auto``.
         layer: ``dwd`` or ``ods``.
         adjust: ``none`` / ``qfq`` / ``hfq``.
         fields: Comma separated field filter.
@@ -510,11 +510,10 @@ async def _validated_query(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="layer=ods needs an explicit source (auto is the merged dwd view)",
         )
-    registered = {
-        capability.asset_class
-        for capability in get_registry().capabilities()
-        if capability.domain == domain
-    }
+    caps = [
+        capability for capability in get_registry().capabilities() if capability.domain == domain
+    ]
+    registered = {capability.asset_class for capability in caps}
     if not registered:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -524,6 +523,15 @@ async def _validated_query(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"domain {domain!r} is not registered under asset class {asset_class!r}",
+        )
+    # An unregistered source would otherwise be answered with the merged
+    # table while the payload echoes the name the caller asked for.
+    legs = {"auto", *(capability.source for capability in caps)}
+    if source not in legs:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"source {source!r} is not a registered leg of {domain!r}: "
+            f"{', '.join(sorted(legs))}",
         )
     table = ods_table(domain, source) if layer == "ods" else dwd_table(domain)
     if not await _table_columns(engine, table):
