@@ -5,6 +5,14 @@ statements). The upstream frame is wide (rows = report periods,
 columns = line items plus page metadata); ``normalize()`` melts it
 into long ``item`` / ``value`` rows and takes the announce date from
 the per-row ``公告日期`` column.
+
+Which of sina's columns are line items, and which two carry the row's
+report period and announce date, is declared in the 口径映射表
+(``mappings/akshare.yaml`` under ``financial_statement.pivot``) rather
+than hardcoded here: the melt reads its column vocabulary out of the
+table, so a page that renames a column has to be re-declared before it
+can land as a科目. The declared ``item`` values stay Chinese because no
+normalized-code mapping exists for this leg (AC-4).
 """
 
 from typing import ClassVar
@@ -12,15 +20,11 @@ from typing import ClassVar
 import pandas as pd
 
 from opendata.data.capability import Capability
+from opendata.data.mapping import require_pivot
 from opendata.data.models import FinancialStatement
 from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.akshare._source import SOURCE
 from opendata.data.providers.akshare.models._normalize import as_date, plain_symbol, sina_symbol
-
-#: Columns of the wide frame that are page metadata, not line items.
-_METADATA_COLUMNS = frozenset(
-    {"数据源", "是否审计", "公告日期", "币种", "类型", "更新日期", "报告日"}
-)
 
 
 class FinancialStatementQuery(QueryParams):
@@ -80,13 +84,19 @@ class AkshareFinancialStatementFetcher(Fetcher[FinancialStatementQuery, pd.DataF
         Returns:
             ``FinancialStatement`` rows; rows without a report
             period, announce date or numeric value are dropped.
+
+        Raises:
+            RuntimeError: If the 口径映射表 declares no melt for this domain.
         """
-        items = [name for name in raw.columns if name not in _METADATA_COLUMNS]
+        pivot = require_pivot(SOURCE, "financial_statement")
+        items = pivot.line_items(raw.columns)
+        period_column = pivot.row_column("report_period")
+        announce_column = pivot.row_column("announce_date")
         statements: list[FinancialStatement] = []
         symbol = plain_symbol(params.symbol)
         for record in raw.to_dict("records"):
-            report_period = as_date(record.get("报告日"))
-            announce_date = as_date(record.get("公告日期"))
+            report_period = as_date(record.get(period_column))
+            announce_date = as_date(record.get(announce_column))
             if report_period is None or announce_date is None:
                 continue
             for item in items:

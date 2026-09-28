@@ -6,6 +6,13 @@ become passthrough ``indicator`` codes - the contract explicitly
 carries source codes through until normalized codes land (design
 §4.1) - and ``NOTICE_DATE`` supplies the required announce date
 that sina's indicator page lacks.
+
+The melt's column vocabulary comes from the 口径映射表
+(``mappings/akshare.yaml`` under ``financial_indicator.pivot``): which
+columns are the row's report period and announce date, and which is
+page metadata rather than an indicator. ``unit`` stays None because the
+em dataset mixes 元, 元/股 and % per column and that has never been
+measured - the table declares no unit it cannot back.
 """
 
 from typing import ClassVar
@@ -13,13 +20,11 @@ from typing import ClassVar
 import pandas as pd
 
 from opendata.data.capability import Capability
+from opendata.data.mapping import require_pivot
 from opendata.data.models import FinancialIndicator
 from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.providers.akshare._source import SOURCE
 from opendata.data.providers.akshare.models._normalize import as_date, em_symbol, plain_symbol
-
-#: Dimension columns consumed as row keys, never melted into items.
-_DIMENSION_COLUMNS = frozenset({"REPORT_DATE", "NOTICE_DATE", "SECUCODE"})
 
 
 class FinancialIndicatorQuery(QueryParams):
@@ -63,15 +68,17 @@ class AkshareFinancialIndicatorFetcher(Fetcher[FinancialIndicatorQuery, pd.DataF
             The raw dataset frame (uppercase em field columns).
 
         Raises:
-            ValueError: If the dataset lacks the NOTICE_DATE
-                column required by the contract.
+            ValueError: If the dataset lacks the announce-date column
+                the 口径映射表 names (the contract requires one).
+            RuntimeError: If the 口径映射表 declares no melt for this domain.
         """
         import opendata_http  # lazy: load the ported tree on routing only
 
+        announce_column = require_pivot(SOURCE, "financial_indicator").row_column("announce_date")
         frame = opendata_http.stock_financial_analysis_indicator_em(symbol=em_symbol(params.symbol))
-        if "NOTICE_DATE" not in frame.columns:
+        if announce_column not in frame.columns:
             raise ValueError(
-                "upstream indicator dataset lacks NOTICE_DATE; "
+                f"upstream indicator dataset lacks {announce_column}; "
                 "the contract requires an announce date (fail closed)"
             )
         return frame
@@ -88,15 +95,19 @@ class AkshareFinancialIndicatorFetcher(Fetcher[FinancialIndicatorQuery, pd.DataF
             drop out naturally via numeric coercion, and rows
             without report period or announce date are dropped.
         """
+        pivot = require_pivot(SOURCE, "financial_indicator")
+        indicators_by_column = set(pivot.line_items(raw.columns))
+        period_column = pivot.row_column("report_period")
+        announce_column = pivot.row_column("announce_date")
         indicators: list[FinancialIndicator] = []
         symbol = plain_symbol(params.symbol)
         for record in raw.to_dict("records"):
-            report_period = as_date(record.get("REPORT_DATE"))
-            announce_date = as_date(record.get("NOTICE_DATE"))
+            report_period = as_date(record.get(period_column))
+            announce_date = as_date(record.get(announce_column))
             if report_period is None or announce_date is None:
                 continue
             for field_name, value in record.items():
-                if field_name in _DIMENSION_COLUMNS or not isinstance(field_name, str):
+                if field_name not in indicators_by_column:
                     continue
                 numeric = _numeric(value)
                 if numeric is None:

@@ -54,3 +54,72 @@ domains:
       weight: {from: 权重}
     tolerances:
       weight: 0.0001
+  # 财务报表（新浪三张表）与财务指标（东财 F10 主财务）都是宽帧：一行一个报告期、
+  # 一列一个科目。这两域的「哪些列是科目」由上游页面自己决定，本平台没有做中文/大写
+  # 字段名 → normalized code 的映射，所以 pivot.mode=passthrough——除页头元数据外，
+  # 每一列都按上游原名落 item / indicator。这与 ths 腿的英文名不同形是**声明过的事实**
+  # （AC-4 登记的合并 key 缺口），不是这里的疏漏。
+  financial_statement:
+    key: [symbol, statement_type, report_period, item]
+    # 复权基准：报表数没有价格序列，停牌语义见下——两腿的行形状还没统一，无从实测。
+    # 停牌语义 = unmeasured：这一域的缺行是某一期没有披露，不是标的停牌；且 sina 腿的
+    # item 是中文科目名、statement_type 是中文披露名，与 ths 腿不共享合并 key（AC-4），
+    # 两腿的行数因此不可比。读方 require_comparable_calibers 拒绝 unmeasured。
+    adjust: not_applicable
+    suspension: unmeasured
+    denominator: key_union
+    pivot:
+      mode: passthrough
+      item_field: item
+      value_field: value
+      # 一页只给一张表，表名来自请求参数（资产负债表 / 利润表 / 现金流量表）；帧里的
+      # 「类型」列是页头信息，落在 excluded 里，不作为科目。
+      group_field: statement_type
+      # 行级字段从宽帧的哪一列读：摊平器读这两列时用的就是这里的名字，不是硬编码。
+      row_columns:
+        report_period: 报告日
+        announce_date: 公告日期
+      # 实测的页头元数据列（其余未列出的列即科目）。报告日/公告日期不在这里重复：
+      # 它们被上面当行字段读走了，line_items 自然不会再当成科目。
+      excluded: [数据源, 是否审计, 币种, 类型, 更新日期]
+    # 长视图与契约同名（这一域还没有 ods_financial_statement_* 表：A4.1 迁移只建了
+    # 日线四件套与目录）。symbol 的 plain 归一记的是「这一腿的请求参数带交易所后缀」
+    # （600519.SH -> 600519），摊平后落裸码。
+    fields:
+      symbol: {from: symbol, normalize: plain}
+      statement_type: {from: statement_type}
+      report_period: {from: report_period}
+      announce_date: {from: announce_date}
+      item: {from: item}
+      value: {from: value}
+      revision: {from: revision}
+  financial_indicator:
+    key: [symbol, report_period, indicator]
+    # 东财 F10 主财务：一行一个报告期，列是 EPSJB / BPS / ROEJQ 这类上游字段码。
+    # 复权基准不适用（不是价格序列）；停牌语义 unmeasured——这一腿只有 em 一条，
+    # 没有第二条腿可比，且指标行缺不缺与停复牌无关。
+    adjust: not_applicable
+    suspension: unmeasured
+    denominator: key_union
+    pivot:
+      mode: passthrough
+      item_field: indicator
+      value_field: value
+      # 一个数据集就是一整个指标序列，没有分组字段：报告期与披露日期都从帧里读。
+      # NOTICE_DATE 是契约要求的披露日，摊平前先按它检查列在不在（缺失即失败关闭）。
+      row_columns:
+        report_period: REPORT_DATE
+        announce_date: NOTICE_DATE
+      # SECUCODE 是页内的标的列（身份由请求参数给，不用它）；字符串型指标列（如
+      # 评级、备注）在数值化时被自然丢弃，不靠这里的名单排除。
+      excluded: [SECUCODE]
+    # 指标值单位（元、元/股、%）在这一腿是混着的，且没有实测过逐列口径，所以契约的
+    # unit 字段留 None——单位换算 scale 这一格在这里是空的，不是被省略的默认值。
+    fields:
+      symbol: {from: symbol, normalize: plain}
+      report_period: {from: report_period}
+      announce_date: {from: announce_date}
+      indicator: {from: indicator}
+      value: {from: value}
+      unit: {from: unit}
+      revision: {from: revision}

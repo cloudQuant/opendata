@@ -43,6 +43,7 @@ from datetime import date, datetime, time, timedelta, timezone
 from typing import TYPE_CHECKING, Any
 from zoneinfo import ZoneInfo
 
+from opendata.data.mapping import require_pivot
 from opendata.data.models import (
     Bar,
     CorporateAction,
@@ -85,46 +86,9 @@ FINANCIAL_STATEMENT_ENDPOINTS: Mapping[str, str] = {
     "cashflow": CASH_FLOW_STATEMENTS_ENDPOINT,
 }
 
-#: 每张表 ``data.item[]`` 里承载数值的科目（2026-09-25 实测三张表的完整键集，
-#: 减去共有元数据键 ``thscode`` / ``ticker`` / ``period`` / ``fiscal_year`` /
-#: ``fiscal_period`` / ``report_date_ms`` / ``period_end_ms`` / ``currency``）。
-#: 落库时 ``item`` 即取这里的英文名——契约 ``FinancialStatement.item`` 本就要求
-#: 「normalized statement item code」，上游给的正是这一层，故不再翻成中文科目。
-FINANCIAL_STATEMENT_ITEMS: Mapping[str, tuple[str, ...]] = {
-    "income": (
-        "operating_income",
-        "operating_costs",
-        "operating_expenses",
-        "sales_fee",
-        "manage_fee",
-        "research_and_development_expenses",
-        "operating_profit",
-        "interest_expenses",
-        "profit_total",
-        "income_tax_expense",
-        "net_profit",
-        "parent_holder_net_profit",
-        "basic_eps",
-    ),
-    "balance": (
-        "assets_total",
-        "total_current_assets",
-        "non_current_nets_total",
-        "cash",
-        "accounts_receivable",
-        "total_debt",
-        "holder_equity_total",
-    ),
-    "cashflow": (
-        "act_cash_flow_net",
-        "invest_cash_flow_net",
-        "financing_cash_flow_net",
-        "pay_fixed_assets_etc_cash",
-        "pay_dividends_profits_interest_cash",
-        "cash_equivalents_net_addition",
-    ),
-}
-
+#: 每张表 ``data.item[]`` 里承载数值的科目名不再硬编码在这里：它登记在口径映射表
+#: (``opendata/data/mappings/ths.yaml`` 的 ``financial_statement.pivot.groups``)，
+#: 由 :func:`financial_statement_items` 读出来。实测来源与键集裁剪见那一段注释。
 #: ``fiscal_period`` → 报告期末（月, 日）。实测 ``quarterly`` 模式会给 ``Q4`` 行，
 #: 且其值与 ``annual`` 的同财年 ``FY`` 行逐位相同（都是 12-31 累计数）。
 FINANCIAL_PERIOD_END: Mapping[str, tuple[int, int]] = {
@@ -1074,6 +1038,24 @@ def _financial_report_period(row: Mapping[str, Any], *, context: str) -> date:
     return derived
 
 
+def financial_statement_items(statement_type: str) -> tuple[str, ...]:
+    """一张报表在口径映射表里登记的科目名.
+
+    Args:
+        statement_type: ``income`` / ``balance`` / ``cashflow``。
+
+    Returns:
+        该表的科目列名，顺序即表里的登记顺序。
+
+    Raises:
+        FuyaoError: 表里没有这一组科目——没有登记就没有科目口径，不猜。
+    """
+    pivot = require_pivot("ths", "financial_statement")
+    if statement_type not in pivot.groups:
+        raise error_for_transport("envelope_invalid", detail="financial_statement_type")
+    return pivot.item_columns(statement_type)
+
+
 def normalize_financial_statements(
     envelope: FuyaoEnvelope, *, statement_type: str
 ) -> tuple[FinancialStatement, ...]:
@@ -1082,15 +1064,17 @@ def normalize_financial_statements(
     四条口径都来自实测：
 
     * ``item`` 用上游的英文科目名（契约要求「normalized code」，上游给的正是
-      这一层）；只取 :data:`FINANCIAL_STATEMENT_ITEMS` 里登记的键，其余键是元数据。
+      这一层）；科目全集取自口径映射表的 ``pivot.groups``（:func:`financial_statement_items`），
+      其余键是元数据。响应自己列了什么不改变这一集合。
     * ``value`` 单位是**原币元**（``basic_eps`` 为元/股），A 股 ``currency`` 实测
       恒为 ``CNY``；出现其它币种即失败关闭——契约没有币种字段，静默入库会把
       非人民币数当成人民币。
-    * ``announce_date`` 取 ``report_date_ms``（披露日）。实测它与新浪的「公告日期」
-      逐期一致，包括追溯调整造成的错位（茅台 FY2024 与 FY2025 同为 2026-04-17、
-      FY2021 为 2023-03-31），故不本地推导。
+    * ``announce_date`` 取表里登记的披露列（``row_columns.announce_date``，实测为
+      ``report_date_ms``）。实测它与新浪的「公告日期」逐期一致，包括追溯调整造成的
+      错位（茅台 FY2024 与 FY2025 同为 2026-04-17、FY2021 为 2023-03-31），故不本地推导。
     * ``revision`` 恒为 ``1``：上游一次响应只给**当前生效**的那一版数值，没有
       历史修订序列，故不猜修订号（跨请求的时点差异由 ``announce_date`` 承载）。
+      这一条是逐行常量，不是列名映射，口径映射表里没有它能落的地方。
 
     Args:
         envelope: 成功信封。
@@ -1103,9 +1087,8 @@ def normalize_financial_statements(
         FuyaoError: ``statement_type`` 未知、行结构非法、科目键缺失或值非数值、
             币种非 CNY、报告期末两路对账不一致。
     """
-    if statement_type not in FINANCIAL_STATEMENT_ITEMS:
-        raise error_for_transport("envelope_invalid", detail="financial_statement_type")
-    items = FINANCIAL_STATEMENT_ITEMS[statement_type]
+    items = financial_statement_items(statement_type)
+    announce_column = require_pivot("ths", "financial_statement").row_column("announce_date")
     rows: list[FinancialStatement] = []
     for row in _items(envelope, context="financial"):
         context = f"financial_{statement_type}"
@@ -1120,7 +1103,7 @@ def normalize_financial_statements(
             raise error_for_transport("envelope_invalid", detail=f"{context}_currency")
         report_period = _financial_report_period(row, context=context)
         announce_date = millis_to_trading_date(
-            _require_value(row, "report_date_ms", context=context)
+            _require_value(row, announce_column, context=context)
         )
         for key in items:
             if key not in row:
@@ -1539,7 +1522,6 @@ __all__ = [
     "FINANCIAL_PERIODS",
     "FINANCIAL_PERIOD_END",
     "FINANCIAL_STATEMENT_ENDPOINTS",
-    "FINANCIAL_STATEMENT_ITEMS",
     "FINANCIAL_STATEMENT_MAX_LIMIT",
     "FUND_ASSET_TYPE",
     "FUND_DIVIDENDS_ENDPOINT",
@@ -1584,6 +1566,7 @@ __all__ = [
     "fetch_index_daily_bars",
     "fetch_period_daily_bars",
     "fetch_trading_calendar",
+    "financial_statement_items",
     "list_instruments",
     "millis_to_trading_date",
     "normalize_adjustment_factors",

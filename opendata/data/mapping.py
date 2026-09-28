@@ -11,8 +11,8 @@ table is their only authority: ``adjust`` (which price basis the source
 delivers), ``suspension`` (what a halted trading day looks like in its
 rows) and ``denominator`` (how the cross-check difference rate is
 divided). A domain that omits one fails to load, and a code path that
-needs one an undeclared mapping would have to invent gets a fail-closed
-error instead of a preference hardcoded in Python.
+needs a convention the table does not declare gets a fail-closed error
+instead of a preference hardcoded in Python.
 
 The loader is fail-closed in both directions:
 
@@ -24,6 +24,12 @@ The loader is fail-closed in both directions:
 Columns the mapping does not list are dropped from the contract view
 (the ods table keeps them; the contract view is only the comparison
 and merge surface).
+
+A **wide** source cannot be projected 1:1 at all: one row per report
+period with one column per line item carries no ``item`` column, so
+"which columns are line items" is a 口径 of its own. Such a domain
+declares a ``pivot`` block, and the melt reads its item vocabulary out
+of the table instead of carrying a hardcoded list in Python.
 """
 
 from __future__ import annotations
@@ -38,7 +44,7 @@ import pandas as pd
 import yaml
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
+    from collections.abc import Iterable, Mapping, Sequence
 
 _MAPPINGS_DIR = Path(__file__).parent / "mappings"
 
@@ -59,7 +65,27 @@ _ADJUST_BASES = frozenset({"unadjusted", "not_applicable"})
 #: would act on the suspension shape refuses it instead of assuming one.
 _SUSPENSION_SHAPES = frozenset({"absent_row", "zero_price_row", "not_applicable", "unmeasured"})
 _DENOMINATORS = frozenset({"key_union"})
-_DOMAIN_KEYS = frozenset({"key", "fields", "tolerances", "adjust", "suspension", "denominator"})
+_DOMAIN_KEYS = frozenset(
+    {"key", "fields", "tolerances", "adjust", "suspension", "denominator", "pivot"}
+)
+
+#: How a wide frame's columns become ``item`` rows. ``groups`` says the table
+#: enumerates the line items (one tuple per group, so the response's own keys
+#: carry no authority over what counts as a科目); ``passthrough`` says every
+#: column that is not page metadata is an item under its upstream name - which
+#: is what the sources that publish Chinese/uppercase科目名 still deliver.
+_PIVOT_MODES = frozenset({"groups", "passthrough"})
+_PIVOT_KEYS = frozenset(
+    {
+        "mode",
+        "item_field",
+        "value_field",
+        "group_field",
+        "groups",
+        "excluded",
+        "row_columns",
+    }
+)
 _CALIBERS: tuple[tuple[str, frozenset[str]], ...] = (
     ("adjust", _ADJUST_BASES),
     ("suspension", _SUSPENSION_SHAPES),
@@ -88,6 +114,118 @@ class FieldMapping:
 
 
 @dataclass(frozen=True)
+class PivotMapping:
+    """How one wide source frame melts into long contract rows.
+
+    ``normalize_frame`` projects column by column, so a wide frame - one row
+    per report period, one column per line item - has nothing to project
+    ``item`` from. The item vocabulary therefore has to live in the table
+    next to the column renames, otherwise each melt keeps its own hardcoded
+    list and the 口径映射表 stops being the authority for what a科目 is.
+
+    Attributes:
+        mode: ``groups`` (the table enumerates the items per group) or
+            ``passthrough`` (every column outside :attr:`excluded` is an
+            item, under its upstream name).
+        item_field: Contract field the item name lands in (``item`` /
+            ``indicator``).
+        value_field: Contract field the cell value lands in.
+        group_field: Contract key field carrying the group (``statement_type``)
+            when the melt is grouped, None when one frame is one series.
+        groups: Group value to declared item columns; ``groups`` mode only.
+        excluded: Upstream columns that are page metadata, never items;
+            ``passthrough`` mode only.
+        row_columns: Row-level contract field to the wide column the melt
+            reads it from (``announce_date: 公告日期``). A column named here
+            is a row key, not an item, so it never enters :attr:`excluded`.
+    """
+
+    mode: str
+    item_field: str
+    value_field: str
+    group_field: str | None
+    groups: Mapping[str, tuple[str, ...]]
+    excluded: frozenset[str]
+    row_columns: Mapping[str, str] = field(default_factory=dict)
+
+    def item_columns(self, group: str) -> tuple[str, ...]:
+        """The declared item columns of one group.
+
+        Args:
+            group: The value of :attr:`group_field` the frame was fetched for.
+
+        Returns:
+            The item column names, in table order.
+
+        Raises:
+            RuntimeError: If the domain is not grouped (a passthrough melt
+                takes its items from the frame, not from the table), or the
+                group is not one the table declares - an undeclared statement
+                has no item vocabulary, so it must not melt into rows that
+                look like any other statement's.
+        """
+        if self.mode != "groups":
+            raise RuntimeError(
+                f"pivot mode {self.mode!r} declares no item groups; "
+                "a passthrough melt reads the frame instead (fail closed)"
+            )
+        if group not in self.groups:
+            raise RuntimeError(
+                f"pivot declares no group {group!r}; known groups: {sorted(self.groups)} "
+                "(fail closed: an undeclared group has no item vocabulary)"
+            )
+        return self.groups[group]
+
+    def line_items(self, columns: Iterable[str]) -> tuple[str, ...]:
+        """Which columns of one wide frame are line items, in frame order.
+
+        Only a passthrough melt may ask this: for a grouped melt the frame's
+        own keys must not decide what a科目 is, or a renamed or added metadata
+        column would silently join the item series.
+
+        Args:
+            columns: Column names as the frame delivers them.
+
+        Returns:
+            The columns that are neither :attr:`excluded` page metadata nor a
+            declared :attr:`row_columns` source, in frame order.
+
+        Raises:
+            RuntimeError: If the melt is grouped - the caller has to resolve
+                its group and read :meth:`item_columns` instead.
+        """
+        if self.mode == "groups":
+            raise RuntimeError(
+                "pivot mode 'groups' needs item_columns(group); the frame's own "
+                "keys do not decide what a科目 is (fail closed)"
+            )
+        row_keys = set(self.row_columns.values())
+        return tuple(name for name in columns if name not in self.excluded and name not in row_keys)
+
+    def row_column(self, contract_field: str) -> str:
+        """The wide column one row-level contract field is read from.
+
+        Args:
+            contract_field: The field the melt writes (``announce_date``).
+
+        Returns:
+            The declared upstream column name.
+
+        Raises:
+            RuntimeError: If the table names no column for that field. A melt
+            may read a column only because the table declares it, so an
+            undeclared field is a gap in the table, not something the melt
+            should guess from whichever column looks right.
+        """
+        if contract_field not in self.row_columns:
+            raise RuntimeError(
+                f"pivot declares no row column for {contract_field!r}; "
+                f"declared: {sorted(self.row_columns)} (fail closed)"
+            )
+        return self.row_columns[contract_field]
+
+
+@dataclass(frozen=True)
 class DomainMapping:
     """The mapping of one domain for one source.
 
@@ -103,6 +241,10 @@ class DomainMapping:
         denominator: How the cross-check difference rate is divided
             (``key_union``).
         tolerances: Relative tolerance per field (numeric compare).
+        pivot: How a wide source frame melts into long contract rows
+            (:class:`PivotMapping`), or None when the source delivers this
+            domain one column per contract field and
+            :func:`normalize_frame` can project it directly.
     """
 
     domain: str
@@ -112,6 +254,7 @@ class DomainMapping:
     suspension: str
     denominator: str
     tolerances: Mapping[str, float] = field(default_factory=dict)
+    pivot: PivotMapping | None = None
 
     def tolerance(self, contract_field: str) -> float:
         """Relative tolerance of one field.
@@ -305,6 +448,37 @@ def require_domain_mapping(source: str, domain: str) -> DomainMapping:
     return mapping.domains[domain]
 
 
+def require_pivot(source: str, domain: str) -> PivotMapping:
+    """The melt a wide source delivers for one domain, or fail closed.
+
+    The melters ask this instead of carrying their own item list: a source
+    that renames a科目 or adds a metadata column then has to be re-declared
+    in the table, and the read that refuses an *undeclared* domain is what
+    keeps a 1:1 domain from being melted by accident.
+
+    Args:
+        source: Source identifier.
+        domain: Registered domain identifier.
+
+    Returns:
+        The domain's :class:`PivotMapping`.
+
+    Raises:
+        LookupError: If the source or the domain is not mapped.
+        RuntimeError: If the mapped domain declares no ``pivot`` block, i.e.
+            its source columns are one per contract field and there is no
+            melt to read a vocabulary from.
+    """
+    mapping = require_domain_mapping(source, domain)
+    if mapping.pivot is None:
+        raise RuntimeError(
+            f"domain {domain!r} of source {source!r} declares no pivot block; "
+            "its columns are 1:1 with the contract, so there is no wide frame "
+            "to melt (fail closed)"
+        )
+    return mapping.pivot
+
+
 def normalize_frame(frame: pd.DataFrame, mapping: DomainMapping) -> pd.DataFrame:
     """Project a source frame onto the contract fields.
 
@@ -469,7 +643,303 @@ def _parse_domain(domain: str, entry: Any, path: Path) -> DomainMapping:  # noqa
         key=tuple(key),
         fields=fields,
         tolerances=tolerances,
+        pivot=_parse_pivot(entry, domain=domain, path=path, fields=fields, key=key),
         **calibers,
+    )
+
+
+def _parse_pivot(
+    entry: dict[str, Any],
+    *,
+    domain: str,
+    path: Path,
+    fields: Mapping[str, FieldMapping],
+    key: list[str],
+) -> PivotMapping | None:
+    """Parse and validate one domain's wide→long melt declaration.
+
+    Args:
+        entry: The raw domain entry.
+        domain: Domain identifier (for the message).
+        path: The mapping file (for the message).
+        fields: The domain's parsed field mappings, so the melt can be
+            checked to land in declared contract fields.
+        key: The domain's key list, so a group can be checked to be one.
+
+    Returns:
+        The pivot mapping, or None when the source delivers the domain
+        one column per contract field.
+
+    Raises:
+        RuntimeError: On a malformed block, an unknown mode, a melt into an
+            undeclared field, or the two modes mixed - what counts as a科目
+            is a 口径, so a half-declared one has to stop the load instead of
+            melting something else.
+    """
+    raw = entry.get("pivot")
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise RuntimeError(f"domain {domain!r} in {path} has a malformed pivot block")
+    unknown = set(raw) - _PIVOT_KEYS
+    if unknown:
+        raise RuntimeError(
+            f"pivot block of {domain!r} in {path} has unknown keys {sorted(unknown)}"
+        )
+    mode = raw.get("mode")
+    if mode not in _PIVOT_MODES:
+        raise RuntimeError(
+            f"pivot block of {domain!r} in {path} declares mode {mode!r}; "
+            f"expected one of {sorted(_PIVOT_MODES)}"
+        )
+    targets: dict[str, str] = {}
+    for name in ("item_field", "value_field"):
+        target = raw.get(name)
+        if not isinstance(target, str) or target not in fields:
+            raise RuntimeError(
+                f"pivot block of {domain!r} in {path} needs {name} to name a declared "
+                f"field, got {target!r}; a melt into an unmapped column is invisible "
+                "to the comparison (fail closed)"
+            )
+        targets[name] = target
+    if targets["item_field"] == targets["value_field"]:
+        raise RuntimeError(
+            f"pivot block of {domain!r} in {path} melts item and value into the same "
+            f"field {targets['item_field']!r}"
+        )
+    group_field = raw.get("group_field")
+    row_columns = _parse_pivot_rows(raw, domain=domain, path=path, fields=fields, targets=targets)
+    if mode == "groups":
+        return _parse_pivot_groups(
+            raw,
+            domain=domain,
+            path=path,
+            targets=targets,
+            group_field=group_field,
+            key=key,
+            row_columns=row_columns,
+        )
+    return _parse_pivot_passthrough(
+        raw,
+        domain=domain,
+        path=path,
+        targets=targets,
+        group_field=group_field,
+        key=key,
+        row_columns=row_columns,
+    )
+
+
+def _parse_pivot_rows(
+    raw: dict[str, Any],
+    *,
+    domain: str,
+    path: Path,
+    fields: Mapping[str, FieldMapping],
+    targets: dict[str, str],
+) -> dict[str, str]:
+    """Parse the row-level columns a melt reads out of the wide frame.
+
+    Args:
+        raw: The raw pivot block.
+        domain: Domain identifier (for the message).
+        path: The mapping file (for the message).
+        fields: The domain's parsed field mappings.
+        targets: The melt's own output fields, which are produced rather than
+            read and so may not appear here.
+
+    Returns:
+        Contract field to declared wide column name.
+
+    Raises:
+        RuntimeError: If the block is not a mapping, names a column for a
+            field the table does not declare, or claims one of the melt's own
+            output fields - a produced column cannot also be read.
+    """
+    declared = raw.get("row_columns") or {}
+    if not isinstance(declared, dict):
+        raise RuntimeError(
+            f"pivot of {domain!r} in {path} needs row_columns to be a field-to-column mapping"
+        )
+    produced = {targets["item_field"], targets["value_field"]}
+    rows: dict[str, str] = {}
+    for field_name, column in declared.items():
+        if field_name in produced:
+            raise RuntimeError(
+                f"pivot of {domain!r} in {path} reads {field_name!r} from a column, but the "
+                "melt produces that field itself"
+            )
+        if field_name not in fields:
+            raise RuntimeError(
+                f"pivot of {domain!r} in {path} reads row field {field_name!r}, which the "
+                "domain declares no mapping for (fail closed)"
+            )
+        if not isinstance(column, str) or not column:
+            raise RuntimeError(
+                f"pivot of {domain!r} in {path} needs a column name for row field {field_name!r}"
+            )
+        rows[str(field_name)] = column
+    return rows
+
+
+def _require_pivot_group_field(
+    group_field: object, *, domain: str, path: Path, key: list[str], mode: str
+) -> str:
+    """The group field of one melt, checked to be a key field.
+
+    Args:
+        group_field: The declared ``group_field`` value.
+        domain: Domain identifier (for the message).
+        path: The mapping file (for the message).
+        key: The domain's key list.
+        mode: The melt mode (for the message).
+
+    Returns:
+        The declared group field name.
+
+    Raises:
+        RuntimeError: If none was declared or it is not a key field - rows
+            of two statements sharing one business key would overwrite each
+            other instead of sitting beside each other.
+    """
+    if not isinstance(group_field, str) or group_field not in key:
+        raise RuntimeError(
+            f"pivot of {domain!r} in {path} (mode {mode!r}) groups by {group_field!r}, "
+            "which is not a key field; two groups would melt into one business key "
+            "(fail closed)"
+        )
+    return group_field
+
+
+def _parse_pivot_groups(
+    raw: dict[str, Any],
+    *,
+    domain: str,
+    path: Path,
+    targets: dict[str, str],
+    group_field: object,
+    key: list[str],
+    row_columns: dict[str, str],
+) -> PivotMapping:
+    """Parse a ``groups`` melt: the table enumerates each group's科目.
+
+    Args:
+        raw: The raw pivot block.
+        domain: Domain identifier (for the message).
+        path: The mapping file (for the message).
+        targets: The validated ``item_field`` / ``value_field`` names.
+        group_field: The declared group key field.
+        key: The domain's key list.
+        row_columns: The melt's row-level columns.
+
+    Returns:
+        The pivot mapping.
+
+    Raises:
+        RuntimeError: If an ``excluded`` list is mixed in, the group field is
+        not a key field, or the ``groups`` map is absent, empty or malformed -
+        an allow-list and a deny-list together would decide the item set twice.
+    """
+    if "excluded" in raw:
+        raise RuntimeError(
+            f"pivot of {domain!r} in {path} declares both groups and excluded; an "
+            "allow-list and a deny-list cannot both own the item set (fail closed)"
+        )
+    resolved = _require_pivot_group_field(
+        group_field, domain=domain, path=path, key=key, mode="groups"
+    )
+    raw_groups = raw.get("groups")
+    if not isinstance(raw_groups, dict) or not raw_groups:
+        raise RuntimeError(
+            f"pivot of {domain!r} in {path} has mode 'groups' without a groups mapping"
+        )
+    row_sources = set(row_columns.values())
+    groups: dict[str, tuple[str, ...]] = {}
+    for group, columns in raw_groups.items():
+        if not isinstance(columns, list) or not columns:
+            raise RuntimeError(
+                f"pivot group {group!r} of {domain!r} in {path} needs a non-empty column list"
+            )
+        if not all(isinstance(column, str) for column in columns):
+            raise RuntimeError(f"pivot group {group!r} of {domain!r} needs string columns")
+        if len(set(columns)) != len(columns):
+            raise RuntimeError(
+                f"pivot group {group!r} of {domain!r} repeats a科目; one item code "
+                "cannot carry two values"
+            )
+        read_as_rows = row_sources & set(columns)
+        if read_as_rows:
+            raise RuntimeError(
+                f"pivot group {group!r} of {domain!r} in {path} lists {sorted(read_as_rows)} "
+                "both as a科目 and as a row-level column (fail closed)"
+            )
+        groups[str(group)] = tuple(columns)
+    return PivotMapping(
+        mode="groups",
+        item_field=targets["item_field"],
+        value_field=targets["value_field"],
+        group_field=resolved,
+        groups=groups,
+        excluded=frozenset(),
+        row_columns=row_columns,
+    )
+
+
+def _parse_pivot_passthrough(
+    raw: dict[str, Any],
+    *,
+    domain: str,
+    path: Path,
+    targets: dict[str, str],
+    group_field: object,
+    key: list[str],
+    row_columns: dict[str, str],
+) -> PivotMapping:
+    """Parse a ``passthrough`` melt: every column but the metadata is a科目.
+
+    Args:
+        raw: The raw pivot block.
+        domain: Domain identifier (for the message).
+        path: The mapping file (for the message).
+        targets: The validated ``item_field`` / ``value_field`` names.
+        group_field: The declared group key field, or None when the frame is
+            one undivided series (the indicator page).
+        key: The domain's key list.
+        row_columns: The melt's row-level columns; they are read, so they are
+            items of the row rather than items of the series.
+
+    Returns:
+        The pivot mapping.
+
+    Raises:
+        RuntimeError: If a ``groups`` map is mixed in or the ``excluded`` list
+            is absent - "everything else is an item" has to name the page
+            columns it means to drop, or one statement's 公告日期 would land
+            as a科目 of it.
+    """
+    if "groups" in raw:
+        raise RuntimeError(
+            f"pivot of {domain!r} in {path} declares a groups map under mode 'passthrough'"
+        )
+    excluded = raw.get("excluded")
+    if not isinstance(excluded, list) or not all(isinstance(column, str) for column in excluded):
+        raise RuntimeError(
+            f"pivot of {domain!r} in {path} needs an 'excluded' list of column names; a "
+            "passthrough melt that names none would melt page metadata into科目"
+        )
+    resolved = None
+    if group_field is not None:
+        resolved = _require_pivot_group_field(
+            group_field, domain=domain, path=path, key=key, mode="passthrough"
+        )
+    return PivotMapping(
+        mode="passthrough",
+        item_field=targets["item_field"],
+        value_field=targets["value_field"],
+        group_field=resolved,
+        groups={},
+        excluded=frozenset(excluded),
+        row_columns=row_columns,
     )
 
 
@@ -533,8 +1003,32 @@ def mapping_as_json(mapping: DomainMapping) -> str:
                 name: {"from": spec.source_column, "scale": spec.scale, "normalize": spec.normalize}
                 for name, spec in mapping.fields.items()
             },
+            "pivot": _pivot_as_json(mapping.pivot),
             "tolerances": dict(mapping.tolerances),
         },
         ensure_ascii=False,
         sort_keys=True,
     )
+
+
+def _pivot_as_json(pivot: PivotMapping | None) -> dict[str, object] | None:
+    """Render one melt declaration for logs and evidence.
+
+    Args:
+        pivot: The domain's pivot block, or None for a 1:1 domain.
+
+    Returns:
+        A JSON-ready mapping, or None - a domain without a melt exports no
+        item vocabulary rather than an empty one that reads like a declaration.
+    """
+    if pivot is None:
+        return None
+    return {
+        "mode": pivot.mode,
+        "item_field": pivot.item_field,
+        "value_field": pivot.value_field,
+        "group_field": pivot.group_field,
+        "groups": {group: list(columns) for group, columns in pivot.groups.items()},
+        "excluded": sorted(pivot.excluded),
+        "row_columns": dict(pivot.row_columns),
+    }

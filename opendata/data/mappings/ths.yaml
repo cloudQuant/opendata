@@ -133,3 +133,77 @@ domains:
       high: 0.0001
       low: 0.0001
       close: 0.0001
+  # 财务报表：上游一行一个报告期、一列一个科目，而契约与 dwd 都是长表（主键
+  # symbol / statement_type / report_period / item，见 A4.1 迁移的 _DWD_TABLES）。
+  # 「哪些列是科目」是这一域自己的口径，所以宽→长必须在表里声明：mode=groups 由
+  # 表逐组列出科目名，响应自己的键说了不算。
+  financial_statement:
+    key: [symbol, statement_type, report_period, item]
+    # 复权基准：报表数没有价格序列，也没有除权除息事件可合成，所以不是「未复权」
+    # 而是「无复权语义」；查询层据此拒绝 qfq/hfq（require_adjust_basis）。
+    # 停牌语义 = unmeasured：这一域的缺行是某一期没有披露，不是标的停牌；两腿的
+    # item / statement_type 取值还没统一（AC-4 登记的缺口），行形状无从对齐实测。
+    # 读方 require_comparable_calibers 拒绝 unmeasured，所以两腿不会被拿去比对。
+    adjust: not_applicable
+    suspension: unmeasured
+    # 差异率分母与日线各域同一条（两侧业务 key 的并集）。这一格今天还不被执行
+    # ——停牌语义先拒绝了比对——写进来是为了让分母不再由实现决定。
+    denominator: key_union
+    pivot:
+      mode: groups
+      item_field: item
+      value_field: value
+      # 一次响应只给一张表，表名是请求参数而不是帧里的一列，故由 group_field 指
+      # 定它落在哪个 key 字段上：两张表的科目不能共享同一个业务 key。
+      group_field: statement_type
+      # 披露日只有毫秒列（响应里没有日期列），摊平时按 ms 换算。报告期末是
+      # fiscal_year + fiscal_period 推出来再与 period_end_ms 对账的：两列合成一个
+      # 字段不是 1:1 的表能声明的，所以它留在代码里（_financial_report_period）。
+      row_columns:
+        announce_date: report_date_ms
+      # 2026-09-25 实测三张表的完整键集，减去共有元数据键 thscode / ticker /
+      # period / fiscal_year / fiscal_period / report_date_ms / period_end_ms /
+      # currency。落库取上游英文名：契约 FinancialStatement.item 要的是
+      # normalized item code，上游给的正是这一层（docs/evidence/C10）。
+      groups:
+        income:
+          - operating_income
+          - operating_costs
+          - operating_expenses
+          - sales_fee
+          - manage_fee
+          - research_and_development_expenses
+          - operating_profit
+          - interest_expenses
+          - profit_total
+          - income_tax_expense
+          - net_profit
+          - parent_holder_net_profit
+          - basic_eps
+        balance:
+          - assets_total
+          - total_current_assets
+          - non_current_nets_total
+          - cash
+          - accounts_receivable
+          - total_debt
+          - holder_equity_total
+        cashflow:
+          - act_cash_flow_net
+          - invest_cash_flow_net
+          - financing_cash_flow_net
+          - pay_fixed_assets_etc_cash
+          - pay_dividends_profits_interest_cash
+          - cash_equivalents_net_addition
+    # fields 是**摊平之后**的长表视图：这一域还没有 ods_financial_statement_ths
+    # 表（A4.1 迁移只建了日线四件套与目录），所以这里写的不是某张 ods 表的列名
+    # 拼写，而是长视图与契约同名的那一层。宽帧里没有任何一列叫 item，
+    # normalize_frame 拿它做 1:1 投影必然失败关闭——这是设计要的，不是意外。
+    fields:
+      symbol: {from: symbol, normalize: plain}
+      statement_type: {from: statement_type}
+      report_period: {from: report_period}
+      announce_date: {from: announce_date}
+      item: {from: item}
+      value: {from: value}
+      revision: {from: revision}
