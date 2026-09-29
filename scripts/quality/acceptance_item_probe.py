@@ -7067,12 +7067,12 @@ AC19_SCAN_SUFFIXES: Final = (".py", ".sh", ".yml", ".yaml", ".json", ".toml", ".
 AC19_SCAN_SKIP_PREFIXES: Final = ("tests/", "docs/", "web/", "frontend/")
 #: 仪器自己也算被扫面：C62 的机读回声——探针里的路径字符串不是仓库里的调度定义。
 PROBE_SELF_REL: Final = "scripts/quality/acceptance_item_probe.py"
-#: 每一轮的档案目录。新一轮不能拿自己这一轮写下的话给自己的读数背书。
-EVIDENCE_ROUND_PATH: Final = re.compile(r"^docs/evidence/C(\d+)/")
 #: 只认实测取值（`log_bin = ON` / `log_bin: OFF`）。`ON|OFF` 是格式串里的备选，不是读数。
 BINLOG_VALUE: Final = re.compile(r"log_bin\s*[:=]\s*(?:ON|OFF)(?!\|)", re.I)
-#: 验收台账与验收文档本身是「结论面」，不能给自己的判据当语料（同 C62 机读回声一类）。
-ATTESTATION_SKIP_PREFIXES: Final = ("docs/quality/", "docs/迭代计划/")
+#: 「实测取值」的语料面：档案目录与结论面都不能当语料。档案是每轮的过程留痕（本轮 README 里举的
+#: 反例形状就是一例 —— 任何一轮写过一次取值形状，后面每一轮都会被它污染），台账与验收文档写的
+#: 正是本轮的结论。取值该落在运维手册这类长期事实面里，这也是 |01 的 `repair` 落点指向手册的原因。
+ATTESTATION_SKIP_PREFIXES: Final = ("docs/evidence/", "docs/quality/", "docs/迭代计划/")
 
 
 def code_lines(text: str) -> list[str]:
@@ -7128,16 +7128,6 @@ def schedule_sites_for(ctx: Context, paths: list[str], needle: str) -> list[str]
     return hits
 
 
-def latest_evidence_round_rel(paths: list[str]) -> str:
-    """Return ``docs/evidence/C<N>/`` for the newest round number among ``paths``.
-
-    That directory is this round's own archive surface: a value first written there cannot vouch
-    for a reading the same round is asking for (the machine-echo lesson from C62).
-    """
-    rounds = {int(m.group(1)) for p in paths if (m := EVIDENCE_ROUND_PATH.search(p))}
-    return f"docs/evidence/C{max(rounds)}/" if rounds else ""
-
-
 def measure_ac19_01(ctx: Context) -> Facts:
     """Read script, both-library dumps, the daily trigger, the RPO claim, binlog readings.
 
@@ -7149,22 +7139,19 @@ def measure_ac19_01(ctx: Context) -> Facts:
     labels = re.findall(r'^dump_one\s+[^\n]*"([a-z_]+)"', script, re.M)
     sites = schedule_sites_for(ctx, paths, "backup_mysql")
     # 「binlog 生效」要一次实测取值：文档第 49 行 `log_bin = /var/lib/...` 是配置片段，格式串
-    # `ON|OFF` 也不是取值；语料还要剔掉本轮自己的档案目录与结论面（一轮不能给自己的读数背书，
-    # 而台账/验收文档写的正是这一轮的结论 —— 复算时它自己的说明句会把那一格读成 1 份）。
-    own_round = latest_evidence_round_rel(paths)
-    skipped = ", ".join([own_round or "-", *ATTESTATION_SKIP_PREFIXES])
-    attested: list[str] = []
-    for rel in paths:
-        if not rel.startswith("docs/") or rel.startswith(ATTESTATION_SKIP_PREFIXES):
-            continue
-        if own_round and rel.startswith(own_round):
-            continue
-        if BINLOG_VALUE.search(ctx.read(rel)):
-            attested.append(rel)
+    # `ON|OFF` 也不是取值；语料再剔掉档案面与结论面（见 ATTESTATION_SKIP_PREFIXES）—— 复算时
+    # 本轮自己写的「0 份档案」那句话会被读成 4 份。
+    attested = [
+        rel
+        for rel in paths
+        if rel.startswith("docs/")
+        and not rel.startswith(ATTESTATION_SKIP_PREFIXES)
+        and BINLOG_VALUE.search(ctx.read(rel))
+    ]
     doc_lines = doc.splitlines()
     return {
         "scan_population": count(len(paths)),
-        "attestation_excluded": skipped,
+        "attestation_excluded": ", ".join(ATTESTATION_SKIP_PREFIXES),
         "script_tracked": flag(bool(script)),
         "dump_calls": count(len(re.findall(r"^dump_one\s", script, re.M))),
         "dump_labels": ", ".join(labels) or "-",
@@ -7202,8 +7189,8 @@ def judge_ac19_01(facts: Facts) -> Verdict:
         f"手册把它列为可选附录 = {facts['binlog_optional']}",
         f"实测过的 `log_bin` 取值（只认 ON/OFF，格式串里的 `ON|OFF` 备选不算）"
         f"{facts['binlog_attested']} 份档案（{facts['binlog_attested_list']}）；语料剔除面 "
-        f"{facts['attestation_excluded']} —— 本轮自己的档案与结论面不能给自己的读数背书，"
-        "探针离线不连库，配置片段不算读数",
+        f"{facts['attestation_excluded']} —— 档案面与结论面都不算实测，探针离线不连库，"
+        "配置片段不算读数",
     )
     if ok:
         reason = ""
@@ -9855,8 +9842,8 @@ PROBES: Final[tuple[Probe, ...]] = (
             "doc_binlog": "yes",
             "binlog_optional": "no",
             "binlog_attested": "1",
-            # 取值要落在**不是本轮档案目录**的地方：写进 docs/evidence/C<本轮>/ 的那一份，
-            # 正是判据自己排除掉的那一份（一轮不能给自己的读数背书），补了也还是 0。
+            # 取值要落在**长期事实面**上：整个档案面（`docs/evidence/`）与结论面都在被剔之列 —— 写进
+            # 任何一轮档案或台账的那一份，正是判据自己排除掉的那一份（一轮不能给自己的读数背书），补了也还是 0。
             "binlog_attested_list": "docs/operations-backup-restore.md",
         },
     ),

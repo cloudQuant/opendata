@@ -928,11 +928,11 @@
         "docs/evidence/C46/after-census-worktree.txt"
       ]
     },
-    "AC-19|01|b5975095": {
+    "AC-19|01|de4c675d": {
       "state": "gap",
       "round": "C63",
       "date": "2026-09-29",
-      "reason": "判据要「每日备份 + binlog，RPO ≤24h」。在位：`scripts/ops/backup_mysql.sh` 于跟踪清单、`dump_one` 2 次调用（元数据 + 仓库两库）、手册里 RPO ≤24h 与 binlog 的声明。缺的两件：①**每日触发点 0 处** —— 仓库里没有任何调度定义或 make 目标去跑它，只有脚本头部注释与手册里各一行 `0 2 * * *` 示例，而被调方不能当自己的证据（探针自身亦已从扫描人口剔除，避免 C62 那类机读回声）；②binlog 只剩手册里标注为「可选」的附录，仓库内 **0 份**档案带一次实测的 `log_bin` 取值（语料只认 ON/OFF 的实取形状，格式串里的 `ON|OFF` 备选不算；剔除面是本轮档案目录与结论面 —— `docs/evidence/C63/`、`docs/quality/`、`docs/迭代计划/`，修前那 4 份命中全是本轮自己的陈述，修后复算回到 0 份）⇒ RPO ≤24h 是靠每日全量兜底、不是靠 binlog。收口需要人的授权动作：把备份接进调度属部署变更，连库读 `log_bin` 属现场确认，本轮不代拟。",
+      "reason": "判据要「每日备份 + binlog，RPO ≤24h」。在位：`scripts/ops/backup_mysql.sh` 于跟踪清单、`dump_one` 2 次调用（元数据 + 仓库两库）、手册里 RPO ≤24h 与 binlog 的声明。缺的两件：①**每日触发点 0 处** —— 仓库里没有任何调度定义或 make 目标去跑它，只有脚本头部注释与手册里各一行 `0 2 * * *` 示例，而被调方不能当自己的证据（探针自身亦已从扫描人口剔除，避免 C62 那类机读回声）；②binlog 只剩手册里标注为「可选」的附录，仓库内 **0 份**档案带一次实测的 `log_bin` 取值（语料只认 ON/OFF 的实取形状，格式串里的 `ON|OFF` 备选不算；剔除面是整张档案面与结论面 —— `docs/evidence/`、`docs/quality/`、`docs/迭代计划/`：只剔「本轮那一个目录」会留下后面每轮被前面每轮污染的口子，而修前那 4 份命中全是本轮自己的陈述，修后复算回到 0 份）⇒ RPO ≤24h 是靠每日全量兜底、不是靠 binlog。收口需要人的授权动作：把备份接进调度属部署变更，连库读 `log_bin` 属现场确认，本轮不代拟。",
       "evidence": [
         "docs/evidence/C63/README.md",
         "docs/evidence/C63/probe-items-ac19.txt"
