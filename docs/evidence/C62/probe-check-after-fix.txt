@@ -1,0 +1,70 @@
+python scripts/quality/acceptance_item_probe.py --gate-check
+
+### gate-check  (59 个探针，一遍 measure)
+  - 本遍墙钟 = 895.2 s，读到事实的探针 59/59，测不出来的：无
+  - 工作树：干净 —— worktree/index/history 面只在干净时判，否则记为 deferred 并点名
+VERDICT AC-11|01: proven
+VERDICT AC-11|02: gap — 留档那次 run 有 9 行 ERROR —— 官方端点没答上来等于没对照；真机对照未过：FAIL 1 行 / PASS 0 行（容差 2e-3 不放宽，见档案里的 over_tolerance 与 ratio 平台分布） —— 合成与对照的判定口径不变（逐日 shape dev 对 2e-3），要改的是证据不是判据
+VERDICT AC-11|03: proven
+VERDICT AC-11|04: proven
+VERDICT AC-11|05: proven
+VERDICT AC-13|07: proven
+VERDICT AC-16|01: gap — 「审查留档」这一面从没成文：规则写在合规文档里（提交说明声明 + 对照表记上游事实来源），但 7 个自研 provider 里提交说明带「无 OpenBB 源码参照」的只有 0 个（缺：akshare, ecb, fred, imf, oecd, ths, yfinance），docs/evidence/ 下逐包点名且有「审查」字样的留档覆盖 0 个（同一行绑定 0 行；带探针读数同形的档案已先剔除）。模块 docstring 里的自声明（5 个包）与 THIRD_PARTY_NOTICES.md 里那句「本仓库不含任何 OpenBB 源码或其近似复制」都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录。历史提交说明补不回来（不改写历史），要收口得由一次真实的人工审查按包留档，本轮不代拟
+VERDICT AC-16|02: gap — 「全库无 OpenBB 源码或其近似复制」的否定面成立（AST 走查 0 个 openbb import 根，扫描器禁止清单含 openbb 且自带会响的违规样本），但判据括号里点名的两项核查都没做过：提交声明核查 0/7，人工抽查留档 0/7。「近似复制」只能靠逐包人工比对判定，本轮不以「import 为零」冒充它已被抽查过
+VERDICT AC-16|03: proven
+VERDICT AC-16|04: proven
+VERDICT AC-16|06: gap — 「基线清零」是这条唯一没到的面，而要把它抹平只有两条路，两条都要改判据本身：①把扫描器的字符串规则改窄（等于回头放宽已勾的 AC-16|05「AST 口径」，本轮拒绝）；②改掉这三处产品事实的拼写 —— `openbb_map.py` 的 `openbb` 是 FR-7 对照表自己的字段名，`data_script.py` 的 `akshare` 是 `DataScript.source` 的溯源默认值（搬运脚本与 P0 迁移同一写法在写它），`patrol.py` 的是 `key_status()` 的数据源标签；把它们改成 `AKShare` 之类只是给扫描器做伪装，正是 C35 刚收口的那种门禁空转。属于用户/产品决策，不是再读一遍能解决的
+VERDICT AC-16|07: proven
+VERDICT AC-16|08: proven
+VERDICT AC-17|01: proven
+VERDICT AC-17|03: proven
+VERDICT AC-17|05: proven
+VERDICT AC-17|07: proven
+VERDICT AC-17|08: proven
+VERDICT AC-17|10: proven
+VERDICT AC-18|01: proven
+VERDICT AC-18|02: proven
+VERDICT AC-18|03: gap — 合并要求的是一个页面：目录为默认视图、函数级明细在它下面。今天 /data 与 /scripts 仍是两条路由两个视图，目录的下钻只预览数据行，从不落到接口/函数那一层；接口清单按 §11.1 已经以域名命名（data_interfaces.name == domain），join 的料是齐的，缺的是页面合并本身——而合并必然要让一个导航项消失，属产品决定
+VERDICT AC-1|01: proven
+VERDICT AC-1|02: proven
+VERDICT AC-1|03: gap — the item's enumerated whitelist does not describe the tree: the word is in build and operational surfaces it never listed. Closing this needs a wording decision (what the whitelist is supposed to cover after A2/B5), not a re-read
+VERDICT AC-1|04: proven
+VERDICT AC-1|05: gap — the four configuration surfaces are half the item; the other half is that the stack actually serves -- backend up, a frontend login, /health answering. It needs the stack started, which is the user's call, so the runtime face is reported as no-engine or not-started rather than assumed to work
+VERDICT AC-1|06: proven
+VERDICT AC-1|07: gap — the item asks for a business contact; README publishes the placeholder it labels as such (`发布前替换`). That is the user's text to supply, so this stays a gap rather than a tick
+VERDICT AC-1|08: gap — the registry is a shell waiting on a legal/product review: no row carries a review date, every permitted-use cell says 待确认, and some clause links are prose. Filling it in is a decision this round cannot make for the user
+VERDICT AC-1|09: gap — the literal grep the item names hits `.env.example`, the template AC-1|03 permits; the allowlist is not only docs/templates -- it carries a generated-artifact path plus a shape-scoped rule exemption. Both need a wording or config decision, and the counterfact evidence in docs/evidence/C36 shows the exemption is not free
+VERDICT AC-1|10: proven
+VERDICT AC-2|01: proven
+VERDICT AC-2|02: proven
+VERDICT AC-2|03: proven
+VERDICT AC-2|04: proven
+VERDICT AC-2|05: proven
+VERDICT AC-5|01: proven
+VERDICT AC-5|02: gap — 「P0 域子模块搬运完成 / P1 域子模块搬运完成」缺一个机器可读的分母：`domains.yaml` 与 `Capability` 都不带 batch/priority/tier 字段，需求 D9 与实施计划 B1.1 的子模块清单都写在「…等」这类散文里，所以「完成」today 无法从树上判。已量的两半是实的：首方代码取用的端点全部导出、被移出本迭代的非金融子包一个都没混进来；散文点名的 futures_derivative 是否属于 P0/P1 也要同一份字段来定。钉出这个字段是产品/接口决策（谁声明哪个域属哪一批），本轮不替它编
+VERDICT AC-5|03: gap — 判据原文把「含字符串常量与动态导入」写进了零引用口径，基线里剩下的就是那 3 条产品事实的名字面量（opendata/data/openbb_map.py, opendata/models/data_script.py, opendata/pipeline/patrol.py）。抹平它只有两条路，两条都要改判据本身：①把扫描器字符串规则改窄（等于放宽已勾的 AC-16|05「AST 口径」）；②改掉这三处真实数据源名的拼写（正是 C35 收口过的门禁空转）。同一道题 AC-16|06 已经登记为用户/产品决策（task #64），这里不重复改判、也不换个说法再判一次
+VERDICT AC-5|04: proven
+VERDICT AC-5|05: proven
+VERDICT AC-5|06: proven
+VERDICT AC-5|07: gap — 「安全扫描完成并人工 triage 留档」缺的是留档与今天的树对得上：A2 那份 triage 声明它扫了 131 个 py 文件（328 项），搬运树已长到 313 个（本轮全量 1021 项、13 条规则），其中 5 项属于 triage 从未处置过的规则（B403@futures/cons.py:13, B301@futures/cons.py:576, B324@stock_feature/stock_a_indicator.py:50, B324@stock_feature/stock_info.py:36, B324@stock_feature/stock_info.py:37）；那句「无 B608（SQL 拼接）、无 B324（弱哈希）、无 pickle/yaml.load 类反序列化项；`builtin exec` 站点 0」描述的是当初那棵树，本轮实测里 triage 点名「无」的规则出现了 1 条（B324）、pickle/yaml 类反序列化 0 条（-）。逐条人工处置是这件事的正当收口，本轮不给它补假处置
+VERDICT AC-8|01: proven
+VERDICT AC-8|02: proven
+VERDICT AC-8|03: proven
+VERDICT AC-8|05: gap — 分区面两头都要有：接线（yaml 行 + kind 可执行 + 派发到真的 ``ensure``）与仓库现状（分区列点名、上界不再落后、apply 后复跑留档）——本轮只有接线与落后读数，``REORGANIZE`` 是生产仓库的 DDL，等一次经确认的执行
+VERDICT AC-8|06: gap — 跨年写入这条判据要有「跑过」的证据而不是「有用例」：用例是 e2e 面（门禁不跑），而真仓库的年度上界还落后一年 —— 补这一年是生产仓库的 DDL，等一次经确认的执行
+VERDICT AC-8|07: proven
+VERDICT AC-9|01: proven
+VERDICT AC-9|02: proven
+VERDICT AC-9|03: proven
+VERDICT AC-9|04: proven
+VERDICT AC-9|05: proven
+VERDICT AC-9|06: proven
+VERDICT AC-9|07: proven
+VERDICT AC-9|08: gap — 「直通模式可用」判的是这张单源域的表里真的有行、并能按 layer=dwd 读回去：本轮把整窗 raise 换成逐键拒绝（C49 量到 55,073 行里 1 个键两义，dwd_stock_action 因此一直是空的），代码面已经通了；剩下的 0 行需要一次经确认的 warehouse 写入（重算落库），不是再改判定口径
+VERDICT AC-9|09: proven
+  - 反事实面：59/59 个探针走到了判定，460 条 break 各被施加一次、每条都要求把干净读数打回 gap
+  - 台账↔读数：agrees=59, unflipped=0, open=0, deferred=0, stale-proof=0（共 59 格有读数） —— 只有 stale-proof 是红灯：台账记 proven 而探针现在读出 gap，且读的那一面与这一刻无关
+  - 面基线：59 个探针里 17 个在读 moment 面；proven 而无探针 7 个，基线 7 个（只降不升）
+  - 成员自证：`acceptance-probe-check` 在 `gate:` 配方里 = yes
+OK: 59 个条目级判定在门禁里跑了一遍（895.2 s）；判据漂字、反事实、台账↔读数、面基线、成员自证五面全过。
+PROBE_CHECK_EXIT=0

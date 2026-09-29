@@ -1246,28 +1246,34 @@
       "state": "gap",
       "reason": "判据要「全部自研 provider 均有审查留档」，现场是逐包 0/7：git 跟踪清单里带 `registration.py` 的自研 provider 包 7 个（akshare、ecb、fred、imf、oecd、ths、yfinance），提交说明带「无 OpenBB 源码参照」的 0 个，`docs/evidence/` 里同时写得到该句与「审查」字样并按包名点名该包的留档 0 个。规则文本在位（`docs/proposals/openbb-migration/README.md` 的留痕要求 + 该文档把 AST 断言扩展到「零 openbb」）、模块 docstring 里的 `no OpenBB code was consulted` 自声明覆盖 5 个包，但两者都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录，按判据字面不认。历史提交说明补不回来（不改写历史），收口要一次真实的人工逐包审查留档，本轮不代拟。",
       "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-16|01'（七包逐个 git log 声明核查 + docs/evidence/ 逐包点名留档核查）",
-      "note": "AC-16|01 判定面为 moment 面（依赖 git 历史与跟踪清单），最终复核以干净树的 `make gate` 遍为准。 门禁遍复测又露出第二处仪器缺陷（本轮自查）：`record_bodies` 原按整文件匹配，本轮自己写进 docs/evidence/C62/ 的档案同时满足「含该句声明」与「含审查字样」并按包名点名 ⇒ 留档面被本轮的机读回声喂成 7/7。现剔除带探针读数同形标记的档案、包名与声明须同一行绑定、新面 recorded_binds 进判定式顶层（各配一条反事实）。修后留档读数回到 0 包/0 绑定行，本格结论仍是 gap。",
+      "note": "AC-16|01 判定面为 moment 面（依赖 git 历史与跟踪清单），最终复核以干净树的 `make gate` 遍为准。 门禁遍复测又露出第二处仪器缺陷（本轮自查）：`record_bodies` 原按整文件匹配，本轮自己写进 docs/evidence/C62/ 的档案同时满足「含该句声明」与「含审查字样」并按包名点名 ⇒ 留档面被本轮的机读回声喂成 7/7。现剔除带探针读数同形标记的档案、包名与声明须同一行绑定、新面 recorded_binds 进判定式顶层（各配一条反事实）。修后留档读数回到 0 包/0 绑定行，本格结论仍是 gap。 修后复验（干净树两遍）：`gate-run2-final.txt` 第 515/516 行读到留档 0 个包（同一行绑定 0 行）/0/7，与本轮逐项跑同形；`probe-check-after-fix.txt` 第 65 行是 59/59 探针、460 条反事实逐条打回 gap，第 66 行 agrees=59 / stale-proof=0。五格终值未翻。",
       "round": "C62",
       "date": "2026-09-29",
       "evidence": [
         "docs/evidence/C62/README.md",
         "docs/evidence/C62/probe-items-ac16.txt",
         "docs/evidence/C62/self-test.txt",
-        "docs/evidence/C62/guards.txt"
+        "docs/evidence/C62/guards.txt",
+        "docs/evidence/C62/probe-check-after-fix.txt",
+        "docs/evidence/C62/gate-run1.txt",
+        "docs/evidence/C62/gate-run2-final.txt"
       ]
     },
     "AC-16|02|ee0d6156": {
       "state": "gap",
       "reason": "否定面本轮第一次量全并带正向对照：运行时四包 517 个跟踪 py 文件逐个 AST 解析成功 517 个，读到 88 个不同顶层 import 根，其中 openbb / openbb-* 0 个；`verify_no_akshare.py` 的 `FORBIDDEN_ROOTS` 含 openbb 且正文有 5 处 openbb（含 `--self-test` 故意违规样本，即这条断言会响）。字面出现 openbb 的运行时文件 6 个，全是 FR-7 对照表加载器与 provider docstring 的 clean-room 自声明，无源码。但判据括号点名的两项核查都没做过：提交声明核查 0/7、逐包人工抽查留档 0/7；「近似复制」只能靠逐包人工比对判定，不以「import 为零」冒充已被抽查过。",
       "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-16|02'（运行时四包 AST 走查 + 扫描器禁止清单 + 两项人工核查面）",
-      "note": "本轮由 `--self-test` 抓到并补强一处判据漏洞：旧 judge 只要求解析数 > 0，施加「走查面比跟踪面小（516/517）」的反事实仍读 proven；现把「解析数 == 跟踪文件数」钉进判定式顶层，零读数必须建立在全量覆盖上。判据原文一字未动。 门禁遍复测又露出第二处仪器缺陷（本轮自查）：`record_bodies` 原按整文件匹配，本轮自己写进 docs/evidence/C62/ 的档案同时满足「含该句声明」与「含审查字样」并按包名点名 ⇒ 留档面被本轮的机读回声喂成 7/7。现剔除带探针读数同形标记的档案、包名与声明须同一行绑定、新面 recorded_binds 进判定式顶层（各配一条反事实）。修后留档读数回到 0 包/0 绑定行，本格结论仍是 gap。",
+      "note": "本轮由 `--self-test` 抓到并补强一处判据漏洞：旧 judge 只要求解析数 > 0，施加「走查面比跟踪面小（516/517）」的反事实仍读 proven；现把「解析数 == 跟踪文件数」钉进判定式顶层，零读数必须建立在全量覆盖上。判据原文一字未动。 门禁遍复测又露出第二处仪器缺陷（本轮自查）：`record_bodies` 原按整文件匹配，本轮自己写进 docs/evidence/C62/ 的档案同时满足「含该句声明」与「含审查字样」并按包名点名 ⇒ 留档面被本轮的机读回声喂成 7/7。现剔除带探针读数同形标记的档案、包名与声明须同一行绑定、新面 recorded_binds 进判定式顶层（各配一条反事实）。修后留档读数回到 0 包/0 绑定行，本格结论仍是 gap。 修后复验（干净树两遍）：`gate-run2-final.txt` 第 515/516 行读到留档 0 个包（同一行绑定 0 行）/0/7，与本轮逐项跑同形；`probe-check-after-fix.txt` 第 65 行是 59/59 探针、460 条反事实逐条打回 gap，第 66 行 agrees=59 / stale-proof=0。五格终值未翻。",
       "round": "C62",
       "date": "2026-09-29",
       "evidence": [
         "docs/evidence/C62/README.md",
         "docs/evidence/C62/probe-items-ac16.txt",
         "docs/evidence/C62/self-test.txt",
-        "docs/evidence/C62/guards.txt"
+        "docs/evidence/C62/guards.txt",
+        "docs/evidence/C62/probe-check-after-fix.txt",
+        "docs/evidence/C62/gate-run1.txt",
+        "docs/evidence/C62/gate-run2-final.txt"
       ]
     },
     "AC-16|03|aa9e45ea": {
@@ -1280,7 +1286,10 @@
         "docs/evidence/C62/README.md",
         "docs/evidence/C62/probe-items-ac16.txt",
         "docs/evidence/C62/self-test.txt",
-        "docs/evidence/C62/guards.txt"
+        "docs/evidence/C62/guards.txt",
+        "docs/evidence/C62/probe-check-after-fix.txt",
+        "docs/evidence/C62/gate-run1.txt",
+        "docs/evidence/C62/gate-run2-final.txt"
       ]
     },
     "AC-16|04|d12a3819": {
@@ -1293,7 +1302,10 @@
         "docs/evidence/C62/README.md",
         "docs/evidence/C62/probe-items-ac16.txt",
         "docs/evidence/C62/self-test.txt",
-        "docs/evidence/C62/guards.txt"
+        "docs/evidence/C62/guards.txt",
+        "docs/evidence/C62/probe-check-after-fix.txt",
+        "docs/evidence/C62/gate-run1.txt",
+        "docs/evidence/C62/gate-run2-final.txt"
       ]
     },
     "AC-16|08|d249c013": {
@@ -1306,7 +1318,10 @@
         "docs/evidence/C62/README.md",
         "docs/evidence/C62/probe-items-ac16.txt",
         "docs/evidence/C62/self-test.txt",
-        "docs/evidence/C62/guards.txt"
+        "docs/evidence/C62/guards.txt",
+        "docs/evidence/C62/probe-check-after-fix.txt",
+        "docs/evidence/C62/gate-run1.txt",
+        "docs/evidence/C62/gate-run2-final.txt"
       ]
     }
   }

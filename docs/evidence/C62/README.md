@@ -79,3 +79,31 @@ tests/test_acceptance_probe_gate.py tests/test_p0_integration_surface.py -m "not
 3. 新面 `recorded_binds`（绑定行数）进两格判定式顶层，各配一条反事实（`recorded_pkgs=7` 而 `recorded_binds=0` ⇒ gap），所以「计数没有行支撑」这种形状从此会咬。
 
 修后复测：留档面回到 **0 包 / 0 绑定行**，五格 census 仍是 `gap=2, proven=3`（判定结论一字未变，变的只是那条被污染的读数）。守卫 `tests/test_acceptance_probe_gate.py` 38 passed；反事实总数 458 → 460（两格各多一条）。本轮的门禁遍档案不重写：`gate-run1.txt` 里 7/7 那两行按原样留档，就是这一节的证据。
+
+## 修后复验：两次干净树门禁遍的对照读数（预测先登记，读数后落地）
+
+修完后重跑两遍（`/tmp/c62/verify-chain.sh`：先 `make acceptance-probe-check` 单跑，绿了再 `make gate`），
+两份日志**整份入档不裁剪**：`probe-check-after-fix.txt`（70 行，`PROBE_CHECK_EXIT=0` 在第 70 行）、
+`gate-run2-final.txt`（7814 行，`===== gate: PASSED =====` 在 7813、`GATE_EXIT=0` 在 7814）。
+下面每条都按 `grep -n` 的行号引，不复述记忆。
+
+| 读数 | 修前那一遍（`gate-run1.txt`） | 修后这一遍 |
+|------|------------------------------|------------|
+| AC-16\|01 留档面 | 「留档覆盖 **7** 个」（第 515 行） | 「留档覆盖 **0** 个（同一行绑定 **0** 行；带探针读数同形的档案已先剔除）」（`gate-run2-final.txt` 第 515 行） |
+| AC-16\|02 留档面 | 「人工抽查留档 **7/7**」（第 516 行） | 「**0/7**」（`gate-run2-final.txt` 第 516 行） |
+| 反事实遍 | 458 条（修前 `self-test.txt`） | 「59/59 个探针走到了判定，**460** 条 break 各被施加一次、每条都要求把干净读数打回 gap」（`probe-check-after-fix.txt` 第 65 行） |
+| 台账↔读数 | —— | `agrees=59, unflipped=0, open=0, deferred=0, stale-proof=0`（同档第 66 行） |
+| 面基线 | 13 个 moment 面 | 「59 个探针里 **17** 个在读 moment 面；proven 而无探针 7 个，基线 7 个（只降不升）」（同档第 67 行） |
+| 成员自证 | —— | `acceptance-probe-check` 在 `gate:` 配方里 = yes（同档第 68 行） |
+| 五格终值 | gap=2 / proven=3 | **同形不翻**：`gate-run2-final.txt` 第 515/516 行 gap，第 517/518/521 行 proven |
+| 门禁台账普查 | —— | `items=130 proven=50 gap=16 unreviewed=64 ticked=50`（`gate-run2-final.txt` 第 46/47 行） |
+
+本轮把预测写在跑之前（`/tmp/c62/pre-registered-predictions.md`，2026-09-29T02:01Z）：六条预测里
+①460 条、②留档 0 包/0 绑定行、③`GATE_EXIT=0` + 7800 行上下、④五格不翻、⑤普查行不变
+——**五条逐字命中**；第⑥条（若修后仍读到非零留档面则说明还有第二处回声源）未被触发。
+单跑 `--gate-check` 的墙钟 895.2 s（`probe-check-after-fix.txt` 第 4 行），比门禁遍里那一位（修前
+1299.6 s，`gate-run1.txt` 第 507 行）快，是因为这一遍没有并行的其余 16 个成员抢 CPU；工作树在开跑前是干净的（同档第 5 行）。
+
+**如实登记一个档案顺序缺陷**：`gate-run1.txt` 是本轮第一次干净树门禁遍，它当时只落在 `/tmp`，
+而上一节的披露段已经按行号引了它 —— 引证先于档案入仓，构成一段悬空引证。本节把它补进本目录
+（7812 行整份，未裁），并把 515/516 两行的原文对齐到表格里；7/7 那两行**按原样保留不重写**。
