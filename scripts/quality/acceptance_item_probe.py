@@ -6503,6 +6503,9 @@ SELFDEV_PROVIDER_ROOT: Final = "opendata/data/providers"
 CLEAN_ROOM_DOC_REL: Final = "docs/proposals/openbb-migration/README.md"
 CLEAN_ROOM_PHRASE: Final = "无 OpenBB 源码参照"
 CODE_CLEAN_ROOM_PHRASE: Final = "no OpenBB code was consulted"
+# An evidence file carrying one of the probe's own reading markers is a machine echo, not a human
+# record -- and an echo names every provider, so a round would credit itself for measuring itself.
+PROBE_ECHO_MARKERS: Final = ("VERDICT ", "判据原文：", "本探针：", "台账现状：")
 
 #: First-party roots under the BSL licence -- what the MIT subtree may not import.
 BSL_IMPORT_ROOTS: Final = ("opendata", "opendata_fuyao", "opendata_client")
@@ -6638,6 +6641,11 @@ def record_bodies(tracked: tuple[str, ...]) -> tuple[str, ...]:
 
     The requirement documents restate the rule for every provider at once, so a restatement
     there cannot count as a per-provider record; evidence files are where a record lives.
+
+    Two exclusions are load-bearing. A file that carries the probe's own reading markers is a
+    machine echo, not a human record -- and the echo names every provider, so without it a round
+    would credit itself for the text it wrote while measuring itself (C62 measured exactly that:
+    a run whose 留档 face read 7/7 because this round's own archive quoted the phrase).
     """
     bodies: list[str] = []
     for rel in tracked:
@@ -6647,8 +6655,11 @@ def record_bodies(tracked: tuple[str, ...]) -> tuple[str, ...]:
             body = (REPO_ROOT / rel).read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
-        if CLEAN_ROOM_PHRASE in body and "审查" in body:
-            bodies.append(body)
+        if CLEAN_ROOM_PHRASE not in body or "审查" not in body:
+            continue
+        if any(marker in body for marker in PROBE_ECHO_MARKERS):
+            continue
+        bodies.append(body)
     return tuple(bodies)
 
 
@@ -6666,13 +6677,25 @@ def openbb_named_in(runtime: tuple[str, ...]) -> tuple[str, ...]:
     )
 
 
-def clean_room_records(ctx: Context, names: Sequence[str]) -> list[str]:
-    """Which providers a留档 file actually names."""
+def clean_room_records(ctx: Context, names: Sequence[str]) -> tuple[list[str], int]:
+    """Providers a 留档 file binds to the declaration on one line, and the number of such lines.
+
+    Whole-file matching is not enough: a text can name all seven providers in one place and quote
+    the phrase in another. A record has to bind the package to the declaration in the same line,
+    and the binding count is reported so a credited package is never a bare count.
+    """
     bodies = record_bodies(tuple(ctx.tracked()))
     named: set[str] = set()
+    binds = 0
     for body in bodies:
-        named.update(name for name in names if re.search(rf"\b{re.escape(name)}\b", body))
-    return sorted(named)
+        for line in body.splitlines():
+            if CLEAN_ROOM_PHRASE not in line:
+                continue
+            hits = [name for name in names if re.search(rf"\b{re.escape(name)}\b", line)]
+            if hits:
+                binds += 1
+                named.update(hits)
+    return sorted(named), binds
 
 
 def stale_ledger_paths(ctx: Context) -> list[str]:
@@ -6697,7 +6720,7 @@ def measure_ac16_01(ctx: Context) -> Facts:
     """Read the rule, then ask how many providers have the record the rule demands."""
     names = provider_packages(ctx)
     declared = clean_room_commits(names)
-    records = clean_room_records(ctx, names)
+    records, binds = clean_room_records(ctx, names)
     doc = ctx.read(CLEAN_ROOM_DOC_REL)
     return {
         "provider_pkgs": count(len(names)),
@@ -6707,6 +6730,7 @@ def measure_ac16_01(ctx: Context) -> Facts:
         "declared_pkgs": count(len(declared)),
         "declared_list": ", ".join(declared) or "-",
         "recorded_pkgs": count(len(records)),
+        "recorded_binds": count(binds),
         "recorded_list": ", ".join(records) or "-",
         "code_declared_pkgs": count(len(clean_room_in_code(names))),
         "undeclared_list": ", ".join(n for n in names if n not in declared) or "-",
@@ -6722,6 +6746,7 @@ def judge_ac16_01(facts: Facts) -> Verdict:
         and facts["rule_extends_ast"] == "yes"
         and number(facts["declared_pkgs"]) == want
         and number(facts["recorded_pkgs"]) == want
+        and number(facts["recorded_binds"]) >= want
     )
     readings = (
         f"自研 provider 包 {facts['provider_pkgs']} 个（git 跟踪清单里带 registration.py 的"
@@ -6731,8 +6756,9 @@ def judge_ac16_01(facts: Facts) -> Verdict:
         f"{facts['rule_extends_ast']}",
         f"提交说明带这句声明的包 {facts['declared_pkgs']} 个（{facts['declared_list']}），"
         f"没带的 {facts['undeclared_list']}",
-        f"留档（docs/evidence/ 里同时写得到「{CLEAN_ROOM_PHRASE}」与「审查」并按名字"
-        f"点名该包的文件）覆盖 {facts['recorded_pkgs']} 个包：{facts['recorded_list']}",
+        f"留档（docs/evidence/ 里与探针读数同形的文件先剔除，再要求同一行里既点到包名又写得到"
+        f"「{CLEAN_ROOM_PHRASE}」）覆盖 {facts['recorded_pkgs']} 个包、绑定行 "
+        f"{facts['recorded_binds']} 行：{facts['recorded_list']}",
         f"另有 {facts['code_declared_pkgs']} 个包把「{CODE_CLEAN_ROOM_PHRASE}」写进了自己模块的"
         " docstring —— 那是代码里的自声明，不是逐包审查记录，本条按字面不认",
     )
@@ -6744,7 +6770,8 @@ def judge_ac16_01(facts: Facts) -> Verdict:
         f"但 {facts['provider_pkgs']} 个自研 provider 里提交说明带「{CLEAN_ROOM_PHRASE}」的只有 "
         f"{facts['declared_pkgs']} 个（缺：{facts['undeclared_list']}），docs/evidence/ 下"
         f"逐包点名且有"
-        f"「审查」字样的留档覆盖 {facts['recorded_pkgs']} 个。模块 docstring 里的自声明（"
+        f"「审查」字样的留档覆盖 {facts['recorded_pkgs']} 个（同一行绑定 "
+        f"{facts['recorded_binds']} 行；带探针读数同形的档案已先剔除）。模块 docstring 里的自声明（"
         f"{facts['code_declared_pkgs']} 个包）与 THIRD_PARTY_NOTICES.md 里那句「本仓库不含"
         f"任何 OpenBB "
         "源码或其近似复制」都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录。"
@@ -6759,6 +6786,7 @@ def measure_ac16_02(ctx: Context) -> Facts:
     hits, parsed, roots = openbb_import_map(runtime)
     names = provider_packages(ctx)
     declared = clean_room_commits(names)
+    records, binds = clean_room_records(ctx, names)
     named_in_runtime = openbb_named_in(runtime)
     scanner_src = (REPO_ROOT / ZERO_DEP_SCANNER).read_text(encoding="utf-8", errors="replace")
     forbidden = literal_str_tuple(parse(ZERO_DEP_SCANNER), "FORBIDDEN_ROOTS")
@@ -6775,7 +6803,8 @@ def measure_ac16_02(ctx: Context) -> Facts:
         "code_openbb_list": ", ".join(named_in_runtime[:4]) or "-",
         "declared_pkgs": count(len(declared)),
         "provider_pkgs": count(len(names)),
-        "recorded_pkgs": count(len(clean_room_records(ctx, names))),
+        "recorded_pkgs": count(len(records)),
+        "recorded_binds": count(binds),
     }
 
 
@@ -6791,6 +6820,7 @@ def judge_ac16_02(facts: Facts) -> Verdict:
         and facts["forbidden_covers_openbb"] == "yes"
         and number(facts["declared_pkgs"]) == number(facts["provider_pkgs"])
         and number(facts["recorded_pkgs"]) == number(facts["provider_pkgs"])
+        and number(facts["recorded_binds"]) >= number(facts["recorded_pkgs"])
     )
     readings = (
         f"运行时四包（{', '.join(RUNTIME_PY_ROOTS)}）跟踪的 py 文件 "
@@ -6807,7 +6837,8 @@ def judge_ac16_02(facts: Facts) -> Verdict:
         "后者是 provider 模块 docstring 里的 clean-room 自声明，都不是源码",
         f"判据括号里的两项核查：提交说明带「{CLEAN_ROOM_PHRASE}」的 provider 包 "
         f"{facts['declared_pkgs']}/{facts['provider_pkgs']} 个；逐包人工抽查留档覆盖 "
-        f"{facts['recorded_pkgs']}/{facts['provider_pkgs']} 个",
+        f"{facts['recorded_pkgs']}/{facts['provider_pkgs']} 个（同一行绑定 "
+        f"{facts['recorded_binds']} 行，带探针读数同形的档案已剔除）",
     )
     if ok:
         reason = ""
@@ -6816,6 +6847,12 @@ def judge_ac16_02(facts: Facts) -> Verdict:
             f"AST 走查只成功解析 {walked}/{tracked} 个运行时文件，剩下的文件被静默跳过，"
             "「0 个 openbb import 根」就不是全库读数，不能当否定证据；先让尺子覆盖完整"
             "再谈这条"
+        )
+    elif number(facts["recorded_binds"]) < number(facts["recorded_pkgs"]):
+        reason = (
+            f"留档计数 {facts['recorded_pkgs']} 个包却没有同行的绑定行（读到 "
+            f"{facts['recorded_binds']} 行）—— 那说明计数来自整份文档的一次性引用，"
+            "或来自探针自己写下的档案，不是逐包人工比对记录"
         )
     else:
         reason = (
@@ -9052,6 +9089,16 @@ PROBES: Final[tuple[Probe, ...]] = (
                 (("declared_pkgs", "*provider_pkgs"), ("recorded_pkgs", "5")),
                 GAP,
             ),
+            Break(
+                "留档计数没有同行绑定行（文档一次性引用或探针自己的档案冒充记录）",
+                (
+                    ("declared_pkgs", "*provider_pkgs"),
+                    ("recorded_pkgs", "*provider_pkgs"),
+                    ("recorded_binds", "0"),
+                    ("undeclared_list", "-"),
+                ),
+                GAP,
+            ),
             Break("适配层目录整块不在跟踪清单里（判据面为空）", (("provider_pkgs", "0"),), GAP),
         ),
         repair={
@@ -9059,6 +9106,7 @@ PROBES: Final[tuple[Probe, ...]] = (
             "rule_extends_ast": "yes",
             "declared_pkgs": "*provider_pkgs",
             "recorded_pkgs": "*provider_pkgs",
+            "recorded_binds": "*provider_pkgs",
             "undeclared_list": "-",
         },
     ),
@@ -9095,12 +9143,23 @@ PROBES: Final[tuple[Probe, ...]] = (
                 ),
                 GAP,
             ),
+            Break(
+                "留档计数没有同行绑定行（文档一次性引用或探针自己的档案冒充记录）",
+                (
+                    ("openbb_imports", "0"),
+                    ("declared_pkgs", "*provider_pkgs"),
+                    ("recorded_pkgs", "*provider_pkgs"),
+                    ("recorded_binds", "0"),
+                ),
+                GAP,
+            ),
         ),
         repair={
             "openbb_imports": "0",
             "forbidden_covers_openbb": "yes",
             "declared_pkgs": "*provider_pkgs",
             "recorded_pkgs": "*provider_pkgs",
+            "recorded_binds": "*provider_pkgs",
         },
     ),
     Probe(
