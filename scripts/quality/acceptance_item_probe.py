@@ -9842,8 +9842,9 @@ PROBES: Final[tuple[Probe, ...]] = (
             "doc_binlog": "yes",
             "binlog_optional": "no",
             "binlog_attested": "1",
-            # 取值要落在**长期事实面**上：整个档案面（`docs/evidence/`）与结论面都在被剔之列 —— 写进
-            # 任何一轮档案或台账的那一份，正是判据自己排除掉的那一份（一轮不能给自己的读数背书），补了也还是 0。
+            # 取值要落在**长期事实面**上：整个档案面（`docs/evidence/`）与结论面都在被剔之列 ——
+            # 一轮不能给自己的读数背书，写进任何一轮档案或台账的那一份正是判据自己排除掉的那一份，
+            # 补了也还是 0。
             "binlog_attested_list": "docs/operations-backup-restore.md",
         },
     ),
