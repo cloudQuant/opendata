@@ -1,0 +1,52 @@
+
+### AC-16|01  (document line 268)
+判据原文：代码审查记录：全部自研 provider 均有"独立编写 + 无源码参照"审查留档
+本探针：七个自研 provider 包逐个查「提交说明声明 + 逐包审查留档」，规则文本在位不算数
+台账现状：state=unreviewed，文档勾选=False
+  - 自研 provider 包 7 个（git 跟踪清单里带 registration.py 的目录数）：akshare, ecb, fred, imf, oecd, ths, yfinance
+  - 合规规则写在 docs/proposals/openbb-migration/README.md：留痕要求里点着「无 OpenBB 源码参照」= yes；同文档 §6 把 AST 断言从「零 akshare」扩展到「零 openbb」= yes
+  - 提交说明带这句声明的包 0 个（-），没带的 akshare, ecb, fred, imf, oecd, ths, yfinance
+  - 留档（docs/evidence/ 里同时写得到「无 OpenBB 源码参照」与「审查」并按名字点名该包的文件）覆盖 0 个包：-
+  - 另有 5 个包把「no OpenBB code was consulted」写进了自己模块的 docstring —— 那是代码里的自声明，不是逐包审查记录，本条按字面不认
+  - 补齐到可判：declared_pkgs: 0 -> 7; recorded_pkgs: 0 -> 7; undeclared_list: akshare, ecb, fred, imf, oecd, ths, yfinance -> -
+VERDICT AC-16|01: gap — 「审查留档」这一面从没成文：规则写在合规文档里（提交说明声明 + 对照表记上游事实来源），但 7 个自研 provider 里提交说明带「无 OpenBB 源码参照」的只有 0 个（缺：akshare, ecb, fred, imf, oecd, ths, yfinance），docs/evidence/ 下逐包点名且有「审查」字样的留档覆盖 0 个。模块 docstring 里的自声明（5 个包）与 THIRD_PARTY_NOTICES.md 里那句「本仓库不含任何 OpenBB 源码或其近似复制」都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录。历史提交说明补不回来（不改写历史），要收口得由一次真实的人工审查按包留档，本轮不代拟
+
+### AC-16|02  (document line 269)
+判据原文：全库无 OpenBB 源码或其近似复制（人工抽查 + 提交声明核查）
+本探针：运行时四包逐个 AST 解析找 openbb import 根（带正向对照），再核两项人工核查
+台账现状：state=unreviewed，文档勾选=False
+  - 运行时四包（opendata, opendata_http, opendata_fuyao, opendata_client）跟踪的 py 文件 517 个，逐个 AST 解析成功 517 个，共读到 88 个不同的顶层 import 根 —— 走查不是空转（正向对照）；其中 import 根为 openbb / openbb-* 的 0 个：-
+  - 零依赖扫描器 scripts/codemod/verify_no_akshare.py 的 FORBIDDEN_ROOTS = （akshare, openbb），含 openbb = yes；该文件正文里 openbb 出现 5 处（含 --self-test 的故意违规样本，即这条断言自己是会响的）
+  - 运行时代码里字面出现 openbb（大小写不敏感）的文件 6 个：opendata/data/openbb_map.py, opendata/data/providers/ecb/models/_client.py, opendata/data/providers/fred/models/_client.py, opendata/data/providers/imf/models/_client.py —— 前者是 FR-7 对照表加载器（接口命名属事实性信息），后者是 provider 模块 docstring 里的 clean-room 自声明，都不是源码
+  - 判据括号里的两项核查：提交说明带「无 OpenBB 源码参照」的 provider 包 0/7 个；逐包人工抽查留档覆盖 0/7 个
+  - 补齐到可判：declared_pkgs: 0 -> 7; recorded_pkgs: 0 -> 7
+VERDICT AC-16|02: gap — 「全库无 OpenBB 源码或其近似复制」的否定面成立（AST 走查 0 个 openbb import 根，扫描器禁止清单含 openbb 且自带会响的违规样本），但判据括号里点名的两项核查都没做过：提交声明核查 0/7，人工抽查留档 0/7。「近似复制」只能靠逐包人工比对判定，本轮不以「import 为零」冒充它已被抽查过
+
+### AC-16|03  (document line 270)
+判据原文：`opendata_http` 每文件 MIT 版权声明 + `THIRD_PARTY_NOTICES.md`（来源仓库 + commit）完整
+本探针：搬运树逐文件 MIT 头 + 来源 commit 与 lock 相等，外加台账点名的路径真存在于磁盘
+台账现状：state=unreviewed，文档勾选=False
+  - 搬运树 313 个清单内 py 文件逐个读前 6 行（走查 313 个 = yes）：缺 MIT 版权声明 0 个（-），缺来源标注 0 个（-）
+  - 来源标注里的 commit 只有 1 个取值、与 lock 的 c4f6a631c259 相等 = yes；URL 与 lock 逐字不等的 0 个（-）
+  - THIRD_PARTY_NOTICES.md 写得到来源仓库（github.com 链接）= yes、写得到 lock 那个完整 40 位 commit = yes、写得到 MIT = yes
+  - 同一份台账里以反引号点名的仓库内路径，磁盘/跟踪清单上不存在的 0 个：-
+VERDICT AC-16|03: proven
+
+### AC-16|04  (document line 271)
+判据原文：**混合许可边界可验证**：`registration.py` 等自研代码不在 `opendata_http/` 内；MIT 子树在无 BSL 模块时可独立运行
+本探针：MIT 子树里没有自研 registration.py 也不 import BSL 侧，再禁掉 BSL 侧跑一遍导入
+台账现状：state=unreviewed，文档勾选=False
+  - 搬运树里带 registration.py 的文件 0 个（-）、落在 */providers/* 下的 0 个（-）—— 判据点名的「registration.py 等自研代码不在 opendata_http/ 内」；opendata_http/ 的 py 文件里 import 根命中 BSL 侧（opendata, opendata_fuyao, opendata_client）的 0 个：-
+  - 另一面是真的跑一遍：起一个把 opendata, opendata_fuyao, opendata_client 全部拒于 meta_path 的解释器，先自证闸门会响（import opendata.core.database 被拦 = yes），再 import 3 个 opendata_http 入口（datasets / stock.cons / utils）：IMPORTED=3，退出码 0，失败读数为 (absent)
+VERDICT AC-16|04: proven
+
+### AC-16|08  (document line 275)
+判据原文：LICENSE 为 BSL 1.1；**数据免责声明**存在
+本探针：LICENSE 首行逐字 BSL 1.1 + 四个必填条款齐备，README 与数据权利登记各有免责正文
+台账现状：state=unreviewed，文档勾选=False
+  - LICENSE 第一行逐字为「Business Source License 1.1」；BSL 的四个必填条款（Licensor / Additional Use Grant / Change Date / Change License）读到 4/4：Licensor, Additional Use Grant, Change Date, Change License，缺 -
+  - 数据免责声明：README.md 有该小节标题 = yes，正文含「不构成任何投资建议」= yes；docs/data-rights-registry.md 有同名小节 = yes，正文同句 = yes
+VERDICT AC-16|08: proven
+
+census: gap=2, proven=3
+（5 item(s) recomputed against docs/quality/acceptance-item-ledger.json）

@@ -6493,6 +6493,509 @@ def judge_ac5_07(facts: Facts) -> Verdict:
 
 
 # --------------------------------------------------------------------------- #
+# AC-16 licensing and permission-boundary probes (C62)
+# --------------------------------------------------------------------------- #
+
+#: Where the self-developed provider packages live; every one of them ships a registration module.
+SELFDEV_PROVIDER_ROOT: Final = "opendata/data/providers"
+
+#: The document that spells out what a clean-room record has to look like.
+CLEAN_ROOM_DOC_REL: Final = "docs/proposals/openbb-migration/README.md"
+CLEAN_ROOM_PHRASE: Final = "无 OpenBB 源码参照"
+CODE_CLEAN_ROOM_PHRASE: Final = "no OpenBB code was consulted"
+
+#: First-party roots under the BSL licence -- what the MIT subtree may not import.
+BSL_IMPORT_ROOTS: Final = ("opendata", "opendata_fuyao", "opendata_client")
+
+#: The four shipped packages -- the only surface 「全库无 OpenBB 源码」 can be measured on.
+RUNTIME_PY_ROOTS: Final = ("opendata", "opendata_http", "opendata_fuyao", "opendata_client")
+
+#: Entry points the MIT subtree has to reach on its own.
+STANDALONE_MODULES: Final = (
+    "opendata_http.datasets",
+    "opendata_http.stock.cons",
+    "opendata_http.utils",
+)
+
+#: If importing this raises nothing the standalone run proved nothing.
+STANDALONE_CONTROL_MODULE: Final = "opendata.core.database"
+
+#: Run in its own interpreter: the BSL roots are made unimportable, then the MIT subtree is
+#: imported for real. Written as one string so the probe adds no second ``subprocess`` site.
+STANDALONE_PROBE_CODE: Final = """
+import importlib, sys
+BLOCKED = ("opendata", "opendata_fuyao", "opendata_client")
+class _BslBlocker:
+    def find_spec(self, name, path=None, target=None):
+        if name.split(".")[0] in BLOCKED:
+            raise ImportError("blocked BSL root: " + name)
+        return None
+sys.meta_path.insert(0, _BslBlocker())
+control = "not-blocked"
+try:
+    importlib.import_module("opendata.core.database")
+except ImportError:
+    control = "blocked"
+MODS = ("opendata_http.datasets", "opendata_http.stock.cons", "opendata_http.utils")
+try:
+    for name in MODS:
+        importlib.import_module(name)
+except BaseException as exc:
+    print("CONTROL=" + control)
+    print("FAILED=" + type(exc).__name__ + ": " + str(exc)[:120])
+    raise SystemExit(1)
+print("CONTROL=" + control)
+print("IMPORTED=" + str(len(MODS)))
+""".strip()
+
+
+@lru_cache(maxsize=4096)  # one entry per shipped file, which is fewer
+def import_roots(rel: str) -> frozenset[str] | None:
+    """Top-level import roots one tracked source file pulls in, or ``None`` when unparsable.
+
+    Cached because the counterfact run measures the same tree several times in one process, and
+    a re-parse of the shipped packages is not a new measurement.
+    """
+    try:
+        tree = ast.parse((REPO_ROOT / rel).read_text(encoding="utf-8"), filename=rel)
+    except (OSError, SyntaxError, UnicodeDecodeError):
+        return None
+    found: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            found.update(alias.name.split(".")[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+            found.add(node.module.split(".")[0])
+    return frozenset(found)
+
+
+def provider_packages(ctx: Context) -> list[str]:
+    """The self-developed provider packages: tracked dirs shipping a registration module."""
+    prefix = SELFDEV_PROVIDER_ROOT + "/"
+    names: set[str] = set()
+    for rel in ctx.tracked():
+        if rel.startswith(prefix) and rel.endswith("/registration.py"):
+            names.add(rel[len(prefix) :].split("/")[0])
+    return sorted(names)
+
+
+def runtime_py_files(ctx: Context) -> list[str]:
+    """Tracked ``.py`` paths under the four shipped roots."""
+    return sorted(
+        rel
+        for rel in ctx.tracked()
+        if rel.endswith(".py") and rel.split("/")[0] in RUNTIME_PY_ROOTS
+    )
+
+
+@lru_cache(maxsize=1)
+def openbb_import_map(runtime: tuple[str, ...]) -> tuple[tuple[str, ...], int, int]:
+    """``(files importing openbb or openbb-*, files parsed, distinct import roots)``.
+
+    The third reading is the positive control: a walker that finds no import at all would also
+    find no ``openbb``, and that zero would mean nothing. Cached on the file set, so the
+    counterfact run measures the shipped tree once per process.
+    """
+    hits: list[str] = []
+    parsed = 0
+    roots: set[str] = set()
+    for rel in runtime:
+        found = import_roots(rel)
+        if found is None:
+            continue
+        parsed += 1
+        roots.update(found)
+        if any(top == "openbb" or top.startswith("openbb-") for top in found):
+            hits.append(rel)
+    return tuple(hits), parsed, len(roots)
+
+
+@lru_cache(maxsize=16)  # one entry per provider package
+def commit_declares(name: str) -> bool:
+    """Whether one provider's history carries the declared phrase (one git walk per package)."""
+    code, out = run_argv(["git", "log", "--format=%s%n%b", "--", f"{SELFDEV_PROVIDER_ROOT}/{name}"])
+    return code == 0 and CLEAN_ROOM_PHRASE in out
+
+
+def clean_room_commits(names: Sequence[str]) -> list[str]:
+    """Which provider packages have a commit message carrying the declared phrase."""
+    return [name for name in names if commit_declares(name)]
+
+
+def clean_room_in_code(names: Sequence[str]) -> list[str]:
+    """Which provider packages state the same thing inside their own module docstrings."""
+    hits = grep_files(
+        py_files_under(SELFDEV_PROVIDER_ROOT),
+        re.compile(re.escape(CODE_CLEAN_ROOM_PHRASE), re.IGNORECASE),
+    )
+    covered = set(names)
+    return sorted({rel.split("/")[3] for rel in hits if rel.split("/")[3] in covered})
+
+
+@lru_cache(maxsize=1)
+def record_bodies(tracked: tuple[str, ...]) -> tuple[str, ...]:
+    """Texts under ``docs/evidence/`` that state both halves of the clean-room criterion.
+
+    The requirement documents restate the rule for every provider at once, so a restatement
+    there cannot count as a per-provider record; evidence files are where a record lives.
+    """
+    bodies: list[str] = []
+    for rel in tracked:
+        if not rel.startswith("docs/evidence/"):
+            continue
+        try:
+            body = (REPO_ROOT / rel).read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        if CLEAN_ROOM_PHRASE in body and "审查" in body:
+            bodies.append(body)
+    return tuple(bodies)
+
+
+@lru_cache(maxsize=1)
+def openbb_named_in(runtime: tuple[str, ...]) -> tuple[str, ...]:
+    """Runtime files whose text says ``openbb`` at all, in any casing."""
+    return tuple(
+        rel
+        for rel in runtime
+        if re.search(
+            "openbb",
+            (REPO_ROOT / rel).read_text(encoding="utf-8", errors="replace"),
+            re.IGNORECASE,
+        )
+    )
+
+
+def clean_room_records(ctx: Context, names: Sequence[str]) -> list[str]:
+    """Which providers a留档 file actually names."""
+    bodies = record_bodies(tuple(ctx.tracked()))
+    named: set[str] = set()
+    for body in bodies:
+        named.update(name for name in names if re.search(rf"\b{re.escape(name)}\b", body))
+    return sorted(named)
+
+
+def stale_ledger_paths(ctx: Context) -> list[str]:
+    """Paths the licensing ledger points at that do not exist on disk.
+
+    ``THIRD_PARTY_NOTICES.md`` is the document a lawyer reads first; a pointer to a package that
+    was never created makes the rest of it unverifiable, so it is measured rather than assumed.
+    A citation stops at ``::``, so ``file.py::SYMBOL`` is checked as the file it names.
+    """
+    text = ctx.read(NOTICES_DOC)
+    cited = set(
+        re.findall(
+            r"`((?:opendata|scripts|docs|tests|frontend|alembic)[A-Za-z0-9_]*/[A-Za-z0-9_./-]+)",
+            text,
+        )
+    )
+    tracked = set(ctx.tracked())
+    return sorted(rel for rel in cited if not (REPO_ROOT / rel).exists() and rel not in tracked)
+
+
+def measure_ac16_01(ctx: Context) -> Facts:
+    """Read the rule, then ask how many providers have the record the rule demands."""
+    names = provider_packages(ctx)
+    declared = clean_room_commits(names)
+    records = clean_room_records(ctx, names)
+    doc = ctx.read(CLEAN_ROOM_DOC_REL)
+    return {
+        "provider_pkgs": count(len(names)),
+        "provider_list": ", ".join(names) or "-",
+        "rule_written": flag(CLEAN_ROOM_PHRASE in doc and "留痕要求" in doc),
+        "rule_extends_ast": flag("零 openbb" in doc and "AST 断言" in doc),
+        "declared_pkgs": count(len(declared)),
+        "declared_list": ", ".join(declared) or "-",
+        "recorded_pkgs": count(len(records)),
+        "recorded_list": ", ".join(records) or "-",
+        "code_declared_pkgs": count(len(clean_room_in_code(names))),
+        "undeclared_list": ", ".join(n for n in names if n not in declared) or "-",
+    }
+
+
+def judge_ac16_01(facts: Facts) -> Verdict:
+    """``AC-16|01``: every self-developed provider has a clean-room record, not just a rule."""
+    want = number(facts["provider_pkgs"])
+    ok = (
+        want > 0
+        and facts["rule_written"] == "yes"
+        and facts["rule_extends_ast"] == "yes"
+        and number(facts["declared_pkgs"]) == want
+        and number(facts["recorded_pkgs"]) == want
+    )
+    readings = (
+        f"自研 provider 包 {facts['provider_pkgs']} 个（git 跟踪清单里带 registration.py 的"
+        f"目录数）：{facts['provider_list']}",
+        f"合规规则写在 {CLEAN_ROOM_DOC_REL}：留痕要求里点着「{CLEAN_ROOM_PHRASE}」= "
+        f"{facts['rule_written']}；同文档 §6 把 AST 断言从「零 akshare」扩展到「零 openbb」= "
+        f"{facts['rule_extends_ast']}",
+        f"提交说明带这句声明的包 {facts['declared_pkgs']} 个（{facts['declared_list']}），"
+        f"没带的 {facts['undeclared_list']}",
+        f"留档（docs/evidence/ 里同时写得到「{CLEAN_ROOM_PHRASE}」与「审查」并按名字"
+        f"点名该包的文件）覆盖 {facts['recorded_pkgs']} 个包：{facts['recorded_list']}",
+        f"另有 {facts['code_declared_pkgs']} 个包把「{CODE_CLEAN_ROOM_PHRASE}」写进了自己模块的"
+        " docstring —— 那是代码里的自声明，不是逐包审查记录，本条按字面不认",
+    )
+    reason = (
+        ""
+        if ok
+        else "「审查留档」这一面从没成文：规则写在合规文档里（提交说明声明 + 对照表记"
+        "上游事实来源），"
+        f"但 {facts['provider_pkgs']} 个自研 provider 里提交说明带「{CLEAN_ROOM_PHRASE}」的只有 "
+        f"{facts['declared_pkgs']} 个（缺：{facts['undeclared_list']}），docs/evidence/ 下"
+        f"逐包点名且有"
+        f"「审查」字样的留档覆盖 {facts['recorded_pkgs']} 个。模块 docstring 里的自声明（"
+        f"{facts['code_declared_pkgs']} 个包）与 THIRD_PARTY_NOTICES.md 里那句「本仓库不含"
+        f"任何 OpenBB "
+        "源码或其近似复制」都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录。"
+        "历史提交说明补不回来（不改写历史），要收口得由一次真实的人工审查按包留档，本轮不代拟"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac16_02(ctx: Context) -> Facts:
+    """Walk the shipped packages' import graph, then check the two halves the item names."""
+    runtime = tuple(runtime_py_files(ctx))
+    hits, parsed, roots = openbb_import_map(runtime)
+    names = provider_packages(ctx)
+    declared = clean_room_commits(names)
+    named_in_runtime = openbb_named_in(runtime)
+    scanner_src = (REPO_ROOT / ZERO_DEP_SCANNER).read_text(encoding="utf-8", errors="replace")
+    forbidden = literal_str_tuple(parse(ZERO_DEP_SCANNER), "FORBIDDEN_ROOTS")
+    return {
+        "runtime_py": count(parsed),
+        "runtime_py_files": count(len(runtime)),
+        "import_roots_seen": count(roots),
+        "openbb_imports": count(len(hits)),
+        "openbb_import_names": ", ".join(hits[:4]) or "-",
+        "forbidden_covers_openbb": flag("openbb" in forbidden),
+        "forbidden_roots": ", ".join(forbidden) or "-",
+        "scanner_self_test_lines": count(len(re.findall(r"openbb", scanner_src))),
+        "code_openbb_names": count(len(named_in_runtime)),
+        "code_openbb_list": ", ".join(named_in_runtime[:4]) or "-",
+        "declared_pkgs": count(len(declared)),
+        "provider_pkgs": count(len(names)),
+        "recorded_pkgs": count(len(clean_room_records(ctx, names))),
+    }
+
+
+def judge_ac16_02(facts: Facts) -> Verdict:
+    """``AC-16|02``: no OpenBB source in the shipped code, with both named checks on record."""
+    walked = number(facts["runtime_py"])
+    tracked = number(facts["runtime_py_files"])
+    ok = (
+        walked > 0
+        and walked == tracked
+        and number(facts["import_roots_seen"]) > 0
+        and facts["openbb_imports"] == "0"
+        and facts["forbidden_covers_openbb"] == "yes"
+        and number(facts["declared_pkgs"]) == number(facts["provider_pkgs"])
+        and number(facts["recorded_pkgs"]) == number(facts["provider_pkgs"])
+    )
+    readings = (
+        f"运行时四包（{', '.join(RUNTIME_PY_ROOTS)}）跟踪的 py 文件 "
+        f"{facts['runtime_py_files']} 个，"
+        f"逐个 AST 解析成功 {facts['runtime_py']} 个，共读到 {facts['import_roots_seen']} 个不同的"
+        f"顶层 import 根 —— 走查不是空转（正向对照）；其中 import 根为 openbb / openbb-* 的 "
+        f"{facts['openbb_imports']} 个：{facts['openbb_import_names']}",
+        f"零依赖扫描器 {ZERO_DEP_SCANNER} 的 FORBIDDEN_ROOTS = （{facts['forbidden_roots']}），"
+        f"含 openbb = {facts['forbidden_covers_openbb']}；该文件正文里 openbb 出现 "
+        f"{facts['scanner_self_test_lines']} 处（含 --self-test 的故意违规样本，即这条断言"
+        "自己是会响的）",
+        f"运行时代码里字面出现 openbb（大小写不敏感）的文件 {facts['code_openbb_names']} 个："
+        f"{facts['code_openbb_list']} —— 前者是 FR-7 对照表加载器（接口命名属事实性信息），"
+        "后者是 provider 模块 docstring 里的 clean-room 自声明，都不是源码",
+        f"判据括号里的两项核查：提交说明带「{CLEAN_ROOM_PHRASE}」的 provider 包 "
+        f"{facts['declared_pkgs']}/{facts['provider_pkgs']} 个；逐包人工抽查留档覆盖 "
+        f"{facts['recorded_pkgs']}/{facts['provider_pkgs']} 个",
+    )
+    if ok:
+        reason = ""
+    elif walked != tracked:
+        reason = (
+            f"AST 走查只成功解析 {walked}/{tracked} 个运行时文件，剩下的文件被静默跳过，"
+            "「0 个 openbb import 根」就不是全库读数，不能当否定证据；先让尺子覆盖完整"
+            "再谈这条"
+        )
+    else:
+        reason = (
+            "「全库无 OpenBB 源码或其近似复制」的否定面成立（AST 走查 0 个 openbb import 根，"
+            "扫描器禁止清单含 openbb 且自带会响的违规样本），但判据括号里点名的两项核查都没做过："
+            f"提交声明核查 {facts['declared_pkgs']}/{facts['provider_pkgs']}，人工抽查留档 "
+            f"{facts['recorded_pkgs']}/{facts['provider_pkgs']}。「近似复制」只能靠逐包人工比对判定，"
+            "本轮不以「import 为零」冒充它已被抽查过"
+        )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac16_03(ctx: Context) -> Facts:
+    """Reuse the per-file banner walk, then read the licensing ledger's own citations."""
+    facts = dict(measure_ac5_05(ctx))
+    notices = ctx.read(NOTICES_DOC)
+    stale = stale_ledger_paths(ctx)
+    commit = str(facts["lock_commit"])
+    return {
+        **facts,
+        "notices_repo": flag("github.com" in notices),
+        "notices_commit": flag(len(commit) == 40 and commit in notices),
+        "notices_mit": flag("MIT" in notices.upper()),
+        "stale_paths": count(len(stale)),
+        "stale_path_names": ", ".join(stale[:4]) or "-",
+    }
+
+
+def judge_ac16_03(facts: Facts) -> Verdict:
+    """``AC-16|03``: banners on every ported file, and a ledger that points at real things."""
+    ok = (
+        facts["walk_ok"] == "yes"
+        and facts["mit_missing"] == "0"
+        and facts["source_missing"] == "0"
+        and facts["url_missing"] == "0"
+        and facts["banner_commits"] == "1"
+        and facts["commit_ok"] == "yes"
+        and facts["notices_repo"] == "yes"
+        and facts["notices_commit"] == "yes"
+        and facts["notices_mit"] == "yes"
+        and facts["stale_paths"] == "0"
+    )
+    readings = (
+        f"搬运树 {facts['listed_py']} 个清单内 py 文件逐个读前 6 行（走查 {facts['walked']} 个 = "
+        f"{facts['walk_ok']}）：缺 MIT 版权声明 {facts['mit_missing']} 个"
+        f"（{facts['mit_missing_names']}），缺来源标注 {facts['source_missing']} 个"
+        f"（{facts['source_missing_names']}）",
+        f"来源标注里的 commit 只有 {facts['banner_commits']} 个取值、与 lock 的 "
+        f"{facts['lock_commit'][:12]} 相等 = {facts['commit_ok']}；URL 与 lock 逐字不等的 "
+        f"{facts['url_missing']} 个（{facts['url_missing_names']}）",
+        f"{NOTICES_DOC} 写得到来源仓库（github.com 链接）= {facts['notices_repo']}、"
+        f"写得到 lock 那个完整 40 位 commit = {facts['notices_commit']}、"
+        f"写得到 MIT = {facts['notices_mit']}",
+        f"同一份台账里以反引号点名的仓库内路径，磁盘/跟踪清单上不存在的 {facts['stale_paths']} 个："
+        f"{facts['stale_path_names']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "「MIT 声明完整 + 台账（来源仓库 + commit）完整」要求台账点名的路径也真在：既要有"
+        "逐文件的声明行与 lock 相等的 commit，也要台账指向的对照表/包路径实际存在"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac16_04(ctx: Context) -> Facts:
+    """Boundary read twice: statically from the import graph, then by actually running it."""
+    ported_py = [p for p in ctx.tracked() if p.startswith(PORTED_ROOT + "/") and p.endswith(".py")]
+    crossings: list[str] = []
+    blocked = set(BSL_IMPORT_ROOTS)
+    for rel in ported_py:
+        found = import_roots(rel)
+        if found and found & blocked:
+            crossings.append(rel)
+    inside_reg = [
+        rel
+        for rel in ctx.tracked()
+        if rel.startswith(PORTED_ROOT + "/") and rel.endswith("/registration.py")
+    ]
+    inside_prov = [
+        rel
+        for rel in ctx.tracked()
+        if rel.startswith(PORTED_ROOT + "/") and "/providers/" in "/" + rel
+    ]
+    code, out = run_argv([sys.executable, "-c", STANDALONE_PROBE_CODE])
+    return {
+        "ported_py": count(len([p for p in ctx.tracked() if p.endswith(".py")])),
+        "reg_inside": count(len(inside_reg)),
+        "reg_inside_names": ", ".join(inside_reg[:3]) or "-",
+        "prov_inside": count(len(inside_prov)),
+        "prov_inside_names": ", ".join(inside_prov[:3]) or "-",
+        "crossings": count(len(crossings)),
+        "crossing_names": ", ".join(crossings[:3]) or "-",
+        "standalone_exit": count(code),
+        "control_blocked": flag("CONTROL=blocked" in out),
+        "standalone_failed": first_capture(out, r"^FAILED=(.*)$"),
+        "imported_modules": first_capture(out, r"^IMPORTED=(\d+)$"),
+        "standalone_ok": flag(code == 0 and "CONTROL=blocked" in out and "IMPORTED=" in out),
+    }
+
+
+def judge_ac16_04(facts: Facts) -> Verdict:
+    """``AC-16|04``: the MIT subtree is separable, and that is demonstrated by running it."""
+    ok = (
+        facts["reg_inside"] == "0"
+        and facts["prov_inside"] == "0"
+        and facts["crossings"] == "0"
+        and facts["standalone_ok"] == "yes"
+        and facts["control_blocked"] == "yes"
+        and number(facts["imported_modules"]) > 0
+    )
+    readings = (
+        f"搬运树里带 registration.py 的文件 {facts['reg_inside']} 个"
+        f"（{facts['reg_inside_names']}）、落在 */providers/* 下的 {facts['prov_inside']} 个"
+        f"（{facts['prov_inside_names']}）—— 判据点名的「registration.py 等自研代码不在 "
+        f"{PORTED_ROOT}/ 内」；{PORTED_ROOT}/ 的 py 文件里 import 根命中 BSL 侧"
+        f"（{', '.join(BSL_IMPORT_ROOTS)}）的 {facts['crossings']} 个：{facts['crossing_names']}",
+        f"另一面是真的跑一遍：起一个把 {', '.join(BSL_IMPORT_ROOTS)} 全部拒于 meta_path 的"
+        f"解释器，先自证闸门会响（import {STANDALONE_CONTROL_MODULE} 被拦 = "
+        f"{facts['control_blocked']}），再 import {len(STANDALONE_MODULES)} 个 {PORTED_ROOT} "
+        f"入口（datasets / stock.cons / utils）：IMPORTED={facts['imported_modules']}，"
+        f"退出码 {facts['standalone_exit']}，失败读数为 {facts['standalone_failed']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "「混合许可边界可验证」两半都要：MIT 子树里没有自研注册代码、没有指向 BSL 侧"
+        "的 import，"
+        "且把 BSL 侧真的禁掉之后搬运树仍 import 得起来（闸门不自证就什么都证明不了）"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac16_08(ctx: Context) -> Facts:
+    """Read the licence text and the two places a data disclaimer is supposed to live."""
+    license_text = ctx.read("LICENSE")
+    readme = ctx.read("README.md")
+    registry = ctx.read("docs/data-rights-registry.md")
+    fields = ("Licensor:", "Additional Use Grant:", "Change Date:", "Change License:")
+    return {
+        "license_line1": license_text.splitlines()[0].strip() if license_text else "-",
+        "bsl_fields": count(sum(1 for field in fields if field in license_text)),
+        "bsl_field_names": ", ".join(f.rstrip(":") for f in fields if f in license_text) or "-",
+        "missing_fields": ", ".join(f.rstrip(":") for f in fields if f not in license_text) or "-",
+        "disclaimer_heading": flag("数据免责声明" in readme),
+        "disclaimer_body_ok": flag("不构成任何投资建议" in readme),
+        "registry_disclaimer": flag("数据免责声明" in registry),
+        "registry_body_ok": flag("不构成任何投资建议" in registry),
+    }
+
+
+def judge_ac16_08(facts: Facts) -> Verdict:
+    """``AC-16|08``: the code licence is BSL 1.1 with all four clauses, and a disclaimer exists."""
+    ok = (
+        facts["license_line1"] == "Business Source License 1.1"
+        and facts["bsl_fields"] == "4"
+        and facts["disclaimer_heading"] == "yes"
+        and facts["disclaimer_body_ok"] == "yes"
+        and facts["registry_disclaimer"] == "yes"
+        and facts["registry_body_ok"] == "yes"
+    )
+    readings = (
+        f"LICENSE 第一行逐字为「{facts['license_line1']}」；BSL 的四个必填条款"
+        f"（Licensor / Additional Use Grant / Change Date / Change License）读到 "
+        f"{facts['bsl_fields']}/4：{facts['bsl_field_names']}，缺 {facts['missing_fields']}",
+        f"数据免责声明：README.md 有该小节标题 = {facts['disclaimer_heading']}，正文含"
+        f"「不构成任何投资建议」= {facts['disclaimer_body_ok']}；"
+        "docs/data-rights-registry.md 有同名小节 = "
+        f"{facts['registry_disclaimer']}，正文同句 = {facts['registry_body_ok']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "「LICENSE 为 BSL 1.1 + 数据免责声明存在」四要素与两处声明都要读到：标题写 BSL 1.1、"
+        "四个条款齐备、README 与数据权利登记各有一段真免责正文（只留标题不算声明）"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+# --------------------------------------------------------------------------- #
 # The probe table
 # --------------------------------------------------------------------------- #
 
@@ -8524,6 +9027,179 @@ PROBES: Final[tuple[Probe, ...]] = (
             "deser_present": "0",
             "surface_covered": "yes",
             "triage_files_claimed": "*ported_files",
+        },
+    ),
+    Probe(
+        item="AC-16|01",
+        expects="代码审查记录",
+        summary="七个自研 provider 包逐个查「提交说明声明 + 逐包审查留档」，规则文本在位不算数",
+        measure=measure_ac16_01,
+        judge=judge_ac16_01,
+        breaks=(
+            Break("合规文档里的留痕要求不见了", (("rule_written", "no"),), GAP),
+            Break(
+                "规则没把 AST 断言扩展到零 openbb",
+                (("rule_written", "yes"), ("rule_extends_ast", "no")),
+                GAP,
+            ),
+            Break(
+                "有一个 provider 的提交说明不带声明",
+                (("declared_pkgs", "6"), ("undeclared_list", "ths")),
+                GAP,
+            ),
+            Break(
+                "有包没有逐包审查留档",
+                (("declared_pkgs", "*provider_pkgs"), ("recorded_pkgs", "5")),
+                GAP,
+            ),
+            Break("适配层目录整块不在跟踪清单里（判据面为空）", (("provider_pkgs", "0"),), GAP),
+        ),
+        repair={
+            "rule_written": "yes",
+            "rule_extends_ast": "yes",
+            "declared_pkgs": "*provider_pkgs",
+            "recorded_pkgs": "*provider_pkgs",
+            "undeclared_list": "-",
+        },
+    ),
+    Probe(
+        item="AC-16|02",
+        expects="全库无 OpenBB 源码或其近似复制",
+        summary="运行时四包逐个 AST 解析找 openbb import 根（带正向对照），再核两项人工核查",
+        measure=measure_ac16_02,
+        judge=judge_ac16_02,
+        breaks=(
+            Break("运行时包里出现一个 openbb import 根", (("openbb_imports", "1"),), GAP),
+            Break(
+                "AST 走查读到 0 个 import 根（尺子失效，零不构成证据）",
+                (("import_roots_seen", "0"), ("runtime_py", "0")),
+                GAP,
+            ),
+            Break(
+                "一个运行时文件解析不了，走查面比跟踪面小",
+                (("runtime_py", "516"), ("runtime_py_files", "517")),
+                GAP,
+            ),
+            Break(
+                "零依赖扫描器的禁止清单不含 openbb",
+                (("openbb_imports", "0"), ("forbidden_covers_openbb", "no")),
+                GAP,
+            ),
+            Break("提交声明核查缺一个包", (("openbb_imports", "0"), ("declared_pkgs", "6")), GAP),
+            Break(
+                "逐包人工抽查留档没做过",
+                (
+                    ("openbb_imports", "0"),
+                    ("declared_pkgs", "*provider_pkgs"),
+                    ("recorded_pkgs", "0"),
+                ),
+                GAP,
+            ),
+        ),
+        repair={
+            "openbb_imports": "0",
+            "forbidden_covers_openbb": "yes",
+            "declared_pkgs": "*provider_pkgs",
+            "recorded_pkgs": "*provider_pkgs",
+        },
+    ),
+    Probe(
+        item="AC-16|03",
+        expects="每文件 MIT 版权声明",
+        summary="搬运树逐文件 MIT 头 + 来源 commit 与 lock 相等，外加台账点名的路径真存在于磁盘",
+        measure=measure_ac16_03,
+        judge=judge_ac16_03,
+        breaks=(
+            Break("有一个搬运文件缺 MIT 声明行", (("mit_missing", "1"),), GAP),
+            Break("有一个搬运文件缺来源标注行", (("source_missing", "1"),), GAP),
+            Break("来源标注的 commit 与 lock 不等", (("commit_ok", "no"),), GAP),
+            Break(
+                "搬运树里出现两个 commit 取值（另一次同步的残留）",
+                (("banner_commits", "2"), ("commit_ok", "no")),
+                GAP,
+            ),
+            Break("台账写不出来源仓库", (("notices_repo", "no"),), GAP),
+            Break("台账不写 lock 那个 40 位 commit", (("notices_commit", "no"),), GAP),
+            Break("台账点名的路径在磁盘上不存在", (("stale_paths", "1"),), GAP),
+        ),
+        repair={
+            "walk_ok": "yes",
+            "mit_missing": "0",
+            "source_missing": "0",
+            "url_missing": "0",
+            "banner_commits": "1",
+            "commit_ok": "yes",
+            "notices_repo": "yes",
+            "notices_commit": "yes",
+            "notices_mit": "yes",
+            "stale_paths": "0",
+        },
+    ),
+    Probe(
+        item="AC-16|04",
+        expects="混合许可边界可验证",
+        summary="MIT 子树里没有自研 registration.py 也不 import BSL 侧，再禁掉 BSL 侧跑一遍导入",
+        measure=measure_ac16_04,
+        judge=judge_ac16_04,
+        breaks=(
+            Break("搬运树里出现一个 registration.py", (("reg_inside", "1"),), GAP),
+            Break(
+                "自研 provider 目录被搬进 MIT 子树",
+                (("reg_inside", "0"), ("prov_inside", "1")),
+                GAP,
+            ),
+            Break(
+                "搬运树里有一个文件 import 了 BSL 侧",
+                (("crossings", "1"), ("standalone_ok", "no"), ("control_blocked", "yes")),
+                GAP,
+            ),
+            Break(
+                "禁掉 BSL 侧之后搬运树起不来",
+                (("standalone_ok", "no"), ("control_blocked", "yes")),
+                GAP,
+            ),
+            Break(
+                "闸门拦不住 BSL 侧，这一遍什么都没验证",
+                (("control_blocked", "no"), ("standalone_exit", "1")),
+                GAP,
+            ),
+        ),
+        repair={
+            "reg_inside": "0",
+            "prov_inside": "0",
+            "crossings": "0",
+            "control_blocked": "yes",
+            "standalone_ok": "yes",
+            "standalone_exit": "0",
+            "imported_modules": "3",
+            "standalone_failed": "(absent)",
+        },
+    ),
+    Probe(
+        item="AC-16|08",
+        expects="LICENSE 为 BSL 1.1",
+        summary="LICENSE 首行逐字 BSL 1.1 + 四个必填条款齐备，README 与数据权利登记各有免责正文",
+        measure=measure_ac16_08,
+        judge=judge_ac16_08,
+        breaks=(
+            Break("LICENSE 首行不是 BSL 1.1", (("license_line1", "Apache License 2.0"),), GAP),
+            Break("BSL 四条款少一个（Change License 没写）", (("bsl_fields", "3"),), GAP),
+            Break("README 没有免责声明小节", (("disclaimer_heading", "no"),), GAP),
+            Break(
+                "README 有标题但正文没写免责那句",
+                (("disclaimer_heading", "yes"), ("disclaimer_body_ok", "no")),
+                GAP,
+            ),
+            Break("数据权利登记里没有免责声明小节", (("registry_disclaimer", "no"),), GAP),
+        ),
+        repair={
+            "license_line1": "Business Source License 1.1",
+            "bsl_fields": "4",
+            "missing_fields": "-",
+            "disclaimer_heading": "yes",
+            "disclaimer_body_ok": "yes",
+            "registry_disclaimer": "yes",
+            "registry_body_ok": "yes",
         },
     ),
 )

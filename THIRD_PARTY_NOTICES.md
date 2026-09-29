@@ -88,7 +88,8 @@ opendata 采用 BSL 1.1（见 [`LICENSE`](LICENSE)），但仓库内**内嵌的�
 | 本项目的动作 | 仅阅读公开文档与接口命名（事实性信息），三段式范式由本项目独立实现 |
 
 - 本仓库**不含**任何 OpenBB 源码或其近似复制（含"改写变量名"式复制）。
-- 自研 provider 的判据：独立编写 + 接口对照表（`opendata_providers/compat/openbb_map.yaml`）
+- 自研 provider 的判据：独立编写 + 接口对照表（`opendata/data/openbb_map.yaml`；1C 曾计划落在
+  opendata_providers/compat/，该包从未创建，此处按 C62 更正为实际路径）
   但无源码参照 + 代码审查留档。
 - CI 断言运行时包无 `import openbb`（见质量规范 §10）。
 
