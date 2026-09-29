@@ -98,7 +98,7 @@ tests/test_acceptance_probe_gate.py tests/test_p0_integration_surface.py -m "not
 | 五格终值 | gap=2 / proven=3 | **同形不翻**：`gate-run2-final.txt` 第 515/516 行 gap，第 517/518/521 行 proven |
 | 门禁台账普查 | —— | `items=130 proven=50 gap=16 unreviewed=64 ticked=50`（`gate-run2-final.txt` 第 46/47 行） |
 
-本轮把预测写在跑之前（`/tmp/c62/pre-registered-predictions.md`，2026-09-29T02:01Z）：六条预测里
+本轮把预测写在跑之前（`docs/evidence/C62/predictions-pre-registered.txt`，写下时间 2026-09-29T02:01Z，早于两份日志生成）：六条预测里
 ①460 条、②留档 0 包/0 绑定行、③`GATE_EXIT=0` + 7800 行上下、④五格不翻、⑤普查行不变
 ——**五条逐字命中**；第⑥条（若修后仍读到非零留档面则说明还有第二处回声源）未被触发。
 单跑 `--gate-check` 的墙钟 895.2 s（`probe-check-after-fix.txt` 第 4 行），比门禁遍里那一位（修前
