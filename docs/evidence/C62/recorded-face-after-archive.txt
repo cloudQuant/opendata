@@ -1,0 +1,28 @@
+# 归档 15696 行门禁日志与预测档案之后，再在干净树上跑一遍 |01/|02（命令见末行），证明修后的留档面不会被本轮自己越写越大的证据语料喂回去。
+# 实测：|01 留档面「覆盖 0 个包、绑定行 0 行」、|02「人工抽查留档覆盖 0/7 个（同一行绑定 0 行…）」，两格仍 gap。
+### AC-16|01  (document line 268)
+判据原文：代码审查记录：全部自研 provider 均有"独立编写 + 无源码参照"审查留档〔C62 做成条目级判定面（measure_ac16_01 / judge_ac16_01 + 5 条反事实），**不勾**：这条缺的不是读数，是那份留档本身。现场读数——git 跟踪清单里带 `registration.py` 的自研 provider 包 **7 个**（akshare、ecb、fred、imf、oecd、ths、yfinance），提交说明带「无 OpenBB 源码参照」的 **0/7**；`docs/evidence/` 里同时写得到该句与「审查」字样、并按包名点名该包的留档 **0/7**。另有 5 个包把 `no OpenBB code was consulted` 写进自己模块的 docstring——那是代码里的自声明，按字面不认作审查记录。规则文本确实在位（`docs/proposals/openbb-migration/README.md` 的留痕要求点着该句，同文档把 AST 断言从「零 akshare」扩展到「零 openbb」），但判据要的是「全部 provider 均有」的逐包记录，不是一次性的全库断言。历史提交说明补不回来（不改写历史），要收口得由一次真实的人工逐包审查留档；探针的 `repair` 面（declared 0→7、recorded 0→7）写的是缺什么，本轮不代拟〕
+本探针：七个自研 provider 包逐个查「提交说明声明 + 逐包审查留档」，规则文本在位不算数
+台账现状：state=gap，文档勾选=False
+  - 自研 provider 包 7 个（git 跟踪清单里带 registration.py 的目录数）：akshare, ecb, fred, imf, oecd, ths, yfinance
+  - 合规规则写在 docs/proposals/openbb-migration/README.md：留痕要求里点着「无 OpenBB 源码参照」= yes；同文档 §6 把 AST 断言从「零 akshare」扩展到「零 openbb」= yes
+  - 提交说明带这句声明的包 0 个（-），没带的 akshare, ecb, fred, imf, oecd, ths, yfinance
+  - 留档（docs/evidence/ 里与探针读数同形的文件先剔除，再要求同一行里既点到包名又写得到「无 OpenBB 源码参照」）覆盖 0 个包、绑定行 0 行：-
+  - 另有 5 个包把「no OpenBB code was consulted」写进了自己模块的 docstring —— 那是代码里的自声明，不是逐包审查记录，本条按字面不认
+  - 补齐到可判：declared_pkgs: 0 -> 7; recorded_binds: 0 -> 7; recorded_pkgs: 0 -> 7; undeclared_list: akshare, ecb, fred, imf, oecd, ths, yfinance -> -
+VERDICT AC-16|01: gap — 「审查留档」这一面从没成文：规则写在合规文档里（提交说明声明 + 对照表记上游事实来源），但 7 个自研 provider 里提交说明带「无 OpenBB 源码参照」的只有 0 个（缺：akshare, ecb, fred, imf, oecd, ths, yfinance），docs/evidence/ 下逐包点名且有「审查」字样的留档覆盖 0 个（同一行绑定 0 行；带探针读数同形的档案已先剔除）。模块 docstring 里的自声明（5 个包）与 THIRD_PARTY_NOTICES.md 里那句「本仓库不含任何 OpenBB 源码或其近似复制」都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录。历史提交说明补不回来（不改写历史），要收口得由一次真实的人工审查按包留档，本轮不代拟
+
+### AC-16|02  (document line 269)
+判据原文：全库无 OpenBB 源码或其近似复制（人工抽查 + 提交声明核查）〔C62 做成条目级判定面（measure_ac16_02 / judge_ac16_02 + 6 条反事实），**不勾**：判据括号的否定面这轮第一次量全，且**正向对照先行**——运行时四包（`opendata`、`opendata_http`、`opendata_fuyao`、`opendata_client`）git 跟踪的 py 文件 517 个、AST 逐个解析成功 **517 个**，共读到 **88 个**不同的顶层 import 根（走查不是空转），其中 openbb / openbb-* 的 **0 个**；`scripts/codemod/verify_no_akshare.py` 的 `FORBIDDEN_ROOTS` =（akshare, openbb）含 openbb = yes，该文件正文 openbb 出现 5 处（含 `--self-test` 的故意违规样本，即这条断言自己是会响的）。字面出现 openbb 的运行时文件 6 个：FR-7 对照表加载器（接口命名属事实性信息）+ 5 个 provider docstring 的 clean-room 自声明，都不是源码。但判据括号点名的**两项核查**现场是提交声明 0/7、人工抽查留档 0/7，而「近似复制」只能靠逐包人工比对判定 ⇒ 不以「import 为零」冒充它已被抽查过。**本轮 judge 被自己的反事实修强过一处**：`--self-test` 施加「一个运行时文件解析不了，走查面比跟踪面小」（516/517）时判定仍读 proven，因为旧口径只要求解析数 > 0，被静默跳过的文件不会让这条变红；现把「走查面 == 跟踪面」钉进判定式顶层，零读数必须建立在全量覆盖上（档案 `docs/evidence/C62/self-test.txt` 与 `README.md` 的披露段）〕
+本探针：运行时四包逐个 AST 解析找 openbb import 根（带正向对照），再核两项人工核查
+台账现状：state=gap，文档勾选=False
+  - 运行时四包（opendata, opendata_http, opendata_fuyao, opendata_client）跟踪的 py 文件 517 个，逐个 AST 解析成功 517 个，共读到 88 个不同的顶层 import 根 —— 走查不是空转（正向对照）；其中 import 根为 openbb / openbb-* 的 0 个：-
+  - 零依赖扫描器 scripts/codemod/verify_no_akshare.py 的 FORBIDDEN_ROOTS = （akshare, openbb），含 openbb = yes；该文件正文里 openbb 出现 5 处（含 --self-test 的故意违规样本，即这条断言自己是会响的）
+  - 运行时代码里字面出现 openbb（大小写不敏感）的文件 6 个：opendata/data/openbb_map.py, opendata/data/providers/ecb/models/_client.py, opendata/data/providers/fred/models/_client.py, opendata/data/providers/imf/models/_client.py —— 前者是 FR-7 对照表加载器（接口命名属事实性信息），后者是 provider 模块 docstring 里的 clean-room 自声明，都不是源码
+  - 判据括号里的两项核查：提交说明带「无 OpenBB 源码参照」的 provider 包 0/7 个；逐包人工抽查留档覆盖 0/7 个（同一行绑定 0 行，带探针读数同形的档案已剔除）
+  - 补齐到可判：declared_pkgs: 0 -> 7; recorded_binds: 0 -> 7; recorded_pkgs: 0 -> 7
+VERDICT AC-16|02: gap — 「全库无 OpenBB 源码或其近似复制」的否定面成立（AST 走查 0 个 openbb import 根，扫描器禁止清单含 openbb 且自带会响的违规样本），但判据括号里点名的两项核查都没做过：提交声明核查 0/7，人工抽查留档 0/7。「近似复制」只能靠逐包人工比对判定，本轮不以「import 为零」冒充它已被抽查过
+
+census: gap=2
+（2 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+COMMAND: python scripts/quality/acceptance_item_probe.py --item 'AC-16|01' --item 'AC-16|02'  (worktree clean, FINAL_EXIT=0)
