@@ -943,18 +943,6 @@
     "AC-19|05|beb0e8fb": {
       "state": "unreviewed"
     },
-    "AC-16|01|ed84bb9d": {
-      "state": "unreviewed"
-    },
-    "AC-16|02|823bc14e": {
-      "state": "unreviewed"
-    },
-    "AC-16|03|608179c6": {
-      "state": "unreviewed"
-    },
-    "AC-16|04|6fea2574": {
-      "state": "unreviewed"
-    },
     "AC-16|05|6fd7f517": {
       "state": "proven",
       "round": "C36",
@@ -999,9 +987,6 @@
         "docs/evidence/C55/run_p0_integration_surface.sh"
       ],
       "note": "C36 的替代装置（tests/test_ported_import_closure.py 的 meta-path 阻断）证明的是依赖声明完备，不是这条，本轮不用它顶替；改把这条变得可指认：marker 注册而 0 应用 ⇒ 选择式选中 0/3358（HEAD 可独立复核：git grep -l \"pytest\\.mark\\.integration\" HEAD -- tests/ = 0 命中）。现 8 个标记单元覆盖 A4.1 迁移的 5 个 P0 域（净 9 行接线），两个解释器各 151 passed / 0 failed / 0 skipped；干净 venv 的依赖面恰为 pyproject 的 .[web,dev]，akshare/openbb/openbb_platform 均 absent。刻意留的棘轮：skipped 必须为 0（静默跳过不算通过），archive_blind 要求扩展标记集后重跑干净环境留档。 C55 复核：给 AC-11 的入口级 HTTP 面新增 tests/test_data_query_http_warehouse.py（integration）之后，archive_blind 立刻把这格打回 gap —— 这条棘轮按设计咬住了「加了模块不重跑干净环境」，本轮选择重建留档而不是放宽判据：只装 pyproject .[web,dev] 的 venv（/tmp/c55-clean/venv，akshare/openbb/openbb_platform 三者 absent）与开发解释器各跑一遍 -m 'integration and not e2e' --no-cov，两个解释器各 177 passed / 0 failed / 0 skipped（3277 deselected），标记集现为 9 个单元。判定面同时加两格读数：clean_archive（探针读的是 docs/evidence/C*/ 里轮次号最大的那一份，不再钉死 C51）与 archive_self_written（留档正文声明的 ARCHIVE_ROUND 必须等于它所在目录），后者反事实一条，堵的是「把旧留档拷进新目录」这条捷径。"
-    },
-    "AC-16|08|9d1c3b42": {
-      "state": "unreviewed"
     },
     "AC-16|09|187c7829": {
       "state": "proven",
@@ -1256,6 +1241,73 @@
     },
     "§6|04|38929914": {
       "state": "unreviewed"
+    },
+    "AC-16|01|8d062d86": {
+      "state": "gap",
+      "reason": "判据要「全部自研 provider 均有审查留档」，现场是逐包 0/7：git 跟踪清单里带 `registration.py` 的自研 provider 包 7 个（akshare、ecb、fred、imf、oecd、ths、yfinance），提交说明带「无 OpenBB 源码参照」的 0 个，`docs/evidence/` 里同时写得到该句与「审查」字样并按包名点名该包的留档 0 个。规则文本在位（`docs/proposals/openbb-migration/README.md` 的留痕要求 + 该文档把 AST 断言扩展到「零 openbb」）、模块 docstring 里的 `no OpenBB code was consulted` 自声明覆盖 5 个包，但两者都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录，按判据字面不认。历史提交说明补不回来（不改写历史），收口要一次真实的人工逐包审查留档，本轮不代拟。",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-16|01'（七包逐个 git log 声明核查 + docs/evidence/ 逐包点名留档核查）",
+      "note": "AC-16|01 判定面为 moment 面（依赖 git 历史与跟踪清单），最终复核以干净树的 `make gate` 遍为准。",
+      "round": "C62",
+      "date": "2026-09-29",
+      "evidence": [
+        "docs/evidence/C62/README.md",
+        "docs/evidence/C62/probe-items-ac16.txt",
+        "docs/evidence/C62/self-test.txt",
+        "docs/evidence/C62/guards.txt"
+      ]
+    },
+    "AC-16|02|ee0d6156": {
+      "state": "gap",
+      "reason": "否定面本轮第一次量全并带正向对照：运行时四包 517 个跟踪 py 文件逐个 AST 解析成功 517 个，读到 88 个不同顶层 import 根，其中 openbb / openbb-* 0 个；`verify_no_akshare.py` 的 `FORBIDDEN_ROOTS` 含 openbb 且正文有 5 处 openbb（含 `--self-test` 故意违规样本，即这条断言会响）。字面出现 openbb 的运行时文件 6 个，全是 FR-7 对照表加载器与 provider docstring 的 clean-room 自声明，无源码。但判据括号点名的两项核查都没做过：提交声明核查 0/7、逐包人工抽查留档 0/7；「近似复制」只能靠逐包人工比对判定，不以「import 为零」冒充已被抽查过。",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-16|02'（运行时四包 AST 走查 + 扫描器禁止清单 + 两项人工核查面）",
+      "note": "本轮由 `--self-test` 抓到并补强一处判据漏洞：旧 judge 只要求解析数 > 0，施加「走查面比跟踪面小（516/517）」的反事实仍读 proven；现把「解析数 == 跟踪文件数」钉进判定式顶层，零读数必须建立在全量覆盖上。判据原文一字未动。",
+      "round": "C62",
+      "date": "2026-09-29",
+      "evidence": [
+        "docs/evidence/C62/README.md",
+        "docs/evidence/C62/probe-items-ac16.txt",
+        "docs/evidence/C62/self-test.txt",
+        "docs/evidence/C62/guards.txt"
+      ]
+    },
+    "AC-16|03|aa9e45ea": {
+      "state": "proven",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-16|03'（搬运树逐文件前 6 行 + THIRD_PARTY_NOTICES.md 三读 + 台账路径存在性）",
+      "note": "本轮改了一处产品事实：THIRD_PARTY_NOTICES.md 里那条假指针 `opendata_providers/compat/openbb_map.yaml`（1C 计划落点，该包从未创建）更正为 `opendata/data/openbb_map.yaml` 并注明历史；更正前后的读数差由面 `stale_paths` 与它的反事实（施加 1 ⇒ 回 gap）守住，旧路径同时留在正文的非代码引用处以保留可追溯性。",
+      "round": "C62",
+      "date": "2026-09-29",
+      "evidence": [
+        "docs/evidence/C62/README.md",
+        "docs/evidence/C62/probe-items-ac16.txt",
+        "docs/evidence/C62/self-test.txt",
+        "docs/evidence/C62/guards.txt"
+      ]
+    },
+    "AC-16|04|d12a3819": {
+      "state": "proven",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-16|04'（registration.py/providers/BSL import 根三面静态核查 + meta_path 禁 BSL 侧真跑导入）",
+      "note": "独立运行面不看叙述：先要求 `import opendata.core.database` 被 meta_path 闸门拦下（`CONTROL=blocked`），读不到该读数即判 gap；随后 3 个 MIT 入口 `IMPORTED=3`、exit 0、失败读数 (absent)。moment 面依赖 git 跟踪清单，最终复核落在门禁遍。",
+      "round": "C62",
+      "date": "2026-09-29",
+      "evidence": [
+        "docs/evidence/C62/README.md",
+        "docs/evidence/C62/probe-items-ac16.txt",
+        "docs/evidence/C62/self-test.txt",
+        "docs/evidence/C62/guards.txt"
+      ]
+    },
+    "AC-16|08|d249c013": {
+      "state": "proven",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-16|08'（LICENSE 首行逐字 + BSL 四必填条款 4/4 + README 与数据权利登记各有免责正文）",
+      "note": "免责声明的判定要求正文句子而非仅小节标题，README 与 docs/data-rights-registry.md 各自可单独打红。",
+      "round": "C62",
+      "date": "2026-09-29",
+      "evidence": [
+        "docs/evidence/C62/README.md",
+        "docs/evidence/C62/probe-items-ac16.txt",
+        "docs/evidence/C62/self-test.txt",
+        "docs/evidence/C62/guards.txt"
+      ]
     }
   }
 }
