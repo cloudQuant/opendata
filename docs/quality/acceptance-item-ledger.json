@@ -928,20 +928,60 @@
         "docs/evidence/C46/after-census-worktree.txt"
       ]
     },
-    "AC-19|01|0cf9a4a8": {
-      "state": "unreviewed"
+    "AC-19|01|4b59f2b3": {
+      "state": "gap",
+      "round": "C63",
+      "date": "2026-09-29",
+      "reason": "判据要「每日备份 + binlog，RPO ≤24h」。在位：`scripts/ops/backup_mysql.sh` 于跟踪清单、`dump_one` 2 次调用（元数据 + 仓库两库）、手册里 RPO ≤24h 与 binlog 的声明。缺的两件：①**每日触发点 0 处** —— 仓库里没有任何调度定义或 make 目标去跑它，只有脚本头部注释与手册里各一行 `0 2 * * *` 示例，而被调方不能当自己的证据（探针自身亦已从扫描人口剔除，避免 C62 那类机读回声）；②binlog 只剩手册里标注为「可选」的附录，仓库内 **0 份**档案带一次实测的 `log_bin = ON|OFF` 取值 ⇒ RPO ≤24h 是靠每日全量兜底、不是靠 binlog。收口需要人的授权动作：把备份接进调度属部署变更，连库读 `log_bin` 属现场确认，本轮不代拟。",
+      "evidence": [
+        "docs/evidence/C63/README.md",
+        "docs/evidence/C63/probe-items-ac19.txt"
+      ],
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-19|01'（脚本面/调度面/声明面/实测面四面分读；扫描人口 `git ls-files -z` 1621 个跟踪文件）"
     },
-    "AC-19|02|6c4d6a7d": {
-      "state": "unreviewed"
+    "AC-19|02|0b2d2b55": {
+      "state": "proven",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-19|02'（git 首次入库日期闸 + 表头之下的检查单逐行 + 两个隔离恢复库 + A0 DoD 归属）",
+      "note": "档案 `docs/evidence/A0/restore-drill.txt` 首次入库 2026-09-22（提交 0a9fba28df98），早于本轮；表头 `| # | 步骤 | 通过判据 | 结果 |` 之下 6 步全部带 ✅（同档另有两张也从 `| 1 |` 起头的表 —— §4 缺陷 8 行、§5 移交 3 行，判定只读那张表头之下的行）；`opendata_restore_check` 与 `opendata_data_restore_check` 两个隔离恢复库均可指认，关键表行数比对与起栈后 `/health` 的 `status=healthy` 读自档案正文；A0 DoD 点着该档案。本轮新增的历史闸（早于本轮）来自 C62 的机读回声教训。",
+      "round": "C63",
+      "date": "2026-09-29",
+      "evidence": [
+        "docs/evidence/C63/README.md",
+        "docs/evidence/C63/probe-items-ac19.txt"
+      ]
     },
-    "AC-19|03|e546c520": {
-      "state": "unreviewed"
+    "AC-19|03|347500f4": {
+      "state": "gap",
+      "round": "C63",
+      "date": "2026-09-29",
+      "reason": "「声明并实现」只到声明面：策略四类 4/4、执行器 4/4（`purge_expired_rows` / `purge_diff_report` / `purge_minute_archives` / `purge_raw_response_cache`）、配置键 4/4 全在位，而运行时四包（`opendata`、`opendata_http`、`opendata_fuyao`、`opendata_client`）里**生产调用点 0 处** ⇒ 这套保留策略今天只有测试会跑，不接调度或接口就不会真清过期数据。本轮故意不「顺手接上」：接线会让分钟线按 N 年、差异明细按天开始真删生产数据，属需用户确认的破坏性动作（与 task #52/#64 同列登记）。",
+      "evidence": [
+        "docs/evidence/C63/README.md",
+        "docs/evidence/C63/probe-items-ac19.txt"
+      ],
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-19|03'（策略/执行器/配置键/生产调用点四面分读，tests 与 retention.py 自调不计）"
     },
-    "AC-19|04|39db2fe7": {
-      "state": "unreviewed"
+    "AC-19|04|7e6332ef": {
+      "state": "gap",
+      "round": "C63",
+      "date": "2026-09-29",
+      "reason": "判据动词是「生效」。在位：四类健康类别 4/4、401/403→credential-rejected 与 429→quota-exhausted 两条线上归类、`opendata/api/pipeline.py` 一处分级落点（定义处 `patrol.py` 已排除）、模块自己的边界披露句仍在位且未观测只报 `presence-only`。缺的两件：①**到期**这一类没有任何可触发信号 —— 本平台自签 Key 的 `is_expired`、`core/token_blacklist.py` 都不算，判据点名的是权威源 Key，而`key_health.py` 自己写着源侧不发布到期/剩余额度/吊销状态；②**带外告警通道 0 处** ⇒ 配额只到 warn、封禁只到 alert，只有 `/health` 可拉取不等于有人被通知。收口需要一条真实的通知通道与运维台账侧的颁发日记录，属仓库外授权，本轮不代拟。",
+      "evidence": [
+        "docs/evidence/C63/README.md",
+        "docs/evidence/C63/probe-items-ac19.txt"
+      ],
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-19|04'（类别与线上归类按语句对读 + 到期信号形状 + 分级落点与带外通道，patrol.py 不作自己的落点）"
     },
-    "AC-19|05|beb0e8fb": {
-      "state": "unreviewed"
+    "AC-19|05|ad7746fb": {
+      "state": "proven",
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-19|05'（清单逐行四列覆盖数 + 生效方式承载形态 + 与 `@lru_cache` 事实的自洽闸）",
+      "note": "`docs/配置项清单.md` 在用键名行 54 条、四列齐且无空单元格 54 条（另有 1 条属第十节「已被移除的配置」两列表，不计入在配置项）。披露：判据四字段里「生效方式」不是逐行列（表头 0 处、逐行「热加载」0 条），而是文档第 5 行的全局条款「修改后需重启后端进程」；本格按判据字面（文档存在 + 四字段有承载）转正，且判定式钉了自洽闸 —— 代码侧 4 个运行时模块在调用点读 `get_settings()`，`get_settings` 仍被 `@lru_cache` 冻结 = yes，若去掉缓存而逐行仍无标注即判 gap（配反事实）。本轮另修仪器自身缺陷一处：`git ls-files` 默认把非 ASCII 路径八进制转义，按字面比对中文名永不为真 ⇒ 在册文档被读成不存在；改读 `-z` 并以正向对照验证（1621 条里该文件名可指认）。",
+      "round": "C63",
+      "date": "2026-09-29",
+      "evidence": [
+        "docs/evidence/C63/README.md",
+        "docs/evidence/C63/probe-items-ac19.txt"
+      ]
     },
     "AC-16|05|6fd7f517": {
       "state": "proven",

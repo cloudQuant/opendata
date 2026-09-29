@@ -7033,6 +7033,534 @@ def judge_ac16_08(facts: Facts) -> Verdict:
 
 
 # --------------------------------------------------------------------------- #
+# AC-19 运维保障（备份 / 恢复演练 / 保留策略 / Key 健康 / 配置项清单）
+# --------------------------------------------------------------------------- #
+
+AC19_BACKUP_REL: Final = "scripts/ops/backup_mysql.sh"
+AC19_BR_DOC_REL: Final = "docs/operations-backup-restore.md"
+AC19_DRILL_REL: Final = "docs/evidence/A0/restore-drill.txt"
+AC19_A0_README_REL: Final = "docs/evidence/A0/README.md"
+AC19_RETENTION_REL: Final = "opendata/pipeline/retention.py"
+AC19_KEYHEALTH_REL: Final = "opendata/pipeline/key_health.py"
+AC19_PATROL_REL: Final = "opendata/pipeline/patrol.py"
+AC19_CONFIG_REL: Final = "opendata/core/config.py"
+AC19_CONFIG_DOC_REL: Final = "docs/配置项清单.md"
+#: 同档另有两张从 `| 1 |` 起头的表（§4 缺陷 8 行、§5 移交 3 行）；只有这张头是检查单。
+AC19_DRILL_HEADER: Final = "| # | 步骤 | 通过判据 | 结果 |"
+#: 清单文档的在用表头；第十节「已被移除的配置」只有两列，不计入在配置项。
+AC19_LIVE_HEADER: Final = "| 键名 | 含义 | 默认值 | 改动影响 |"
+AC19_RETENTION_FUNCS: Final = (
+    "purge_expired_rows",
+    "purge_diff_report",
+    "purge_minute_archives",
+    "purge_raw_response_cache",
+)
+AC19_RETENTION_KEYS: Final = (
+    "CACHE_DIR",
+    "CACHE_TTL_SECONDS",
+    "RETENTION_DIFF_REPORT_DAYS",
+    "RETENTION_MINUTE_YEARS",
+)
+#: key_health.py:119 自己列出的四类：没有主动探测就只是未验证。
+AC19_KEY_CLASSES: Final = ("key-validity", "key-expiry", "revocation-or-ban", "quota-left")
+AC19_SCAN_SUFFIXES: Final = (".py", ".sh", ".yml", ".yaml", ".json", ".toml", ".ini", ".cfg")
+AC19_SCAN_SKIP_PREFIXES: Final = ("tests/", "docs/", "web/", "frontend/")
+#: 仪器自己也算被扫面：C62 的机读回声——探针里的路径字符串不是仓库里的调度定义。
+PROBE_SELF_REL: Final = "scripts/quality/acceptance_item_probe.py"
+
+
+def code_lines(text: str) -> list[str]:
+    """Non-comment lines of a file, so prose never counts as a rule."""
+    keep: list[str] = []
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        keep.append(line)
+    return keep
+
+
+def mysqldump_invocations(script: str) -> int:
+    r"""Real ``mysqldump`` invocations, not the lines that merely name the tool.
+
+    The script's preflight loop and its two error echoes all contain the word; only
+    ``if ! mysqldump \\`` runs it. Counting the word would read 4 and call a broken script fine.
+    """
+    return sum(1 for line in code_lines(script) if re.match(r"^(?:if ! )?mysqldump\b", line))
+
+
+def ac19_tracked(ctx: Context) -> list[str]:
+    r"""Tracked paths with git's octal quoting undone, read from ``git ls-files -z``.
+
+    Plain ``git ls-files`` prints ``"docs/\351\205\205..."`` for a Chinese file name, so a test
+    against the real path can never be true and a ``docs/`` prefix filter never matches either:
+    AC-19|05 read 0 key rows out of a tracked 115-line document until this was measured.
+    """
+    code, out = run_argv(["git", "ls-files", "-z"])
+    if code != 0:
+        raise ProbeError(f"git ls-files -z failed: {out.strip()[:120]}")
+    return sorted(part for part in out.split("\x00") if part)
+
+
+def schedule_sites_for(ctx: Context, paths: list[str], needle: str) -> list[str]:
+    """Tracked files that actually invoke ``needle`` on a non-comment line.
+
+    AC-19|01 asks for 每日备份, so only a live trigger counts: a crontab example inside the
+    script's own header is documentation, and prose under docs/ is a runbook, not a scheduler.
+    The instrument's own file is excluded too -- its ``AC19_BACKUP_REL`` literal is a non-comment
+    line holding the needle, which is C62's machine echo in a new costume.
+    """
+    hits: list[str] = []
+    for rel in paths:
+        if rel in {AC19_BACKUP_REL, PROBE_SELF_REL} or rel.startswith(AC19_SCAN_SKIP_PREFIXES):
+            continue
+        leaf = rel.rsplit("/", 1)[-1]
+        if leaf != "Makefile" and not rel.endswith(AC19_SCAN_SUFFIXES):
+            continue
+        if any(needle in line for line in code_lines(ctx.read(rel))):
+            hits.append(rel)
+    return hits
+
+
+def measure_ac19_01(ctx: Context) -> Facts:
+    """Read script, both-library dumps, the daily trigger, the RPO claim, binlog readings.
+
+    Five faces are read separately so a gap names which one is missing.
+    """
+    paths = ac19_tracked(ctx)
+    script = ctx.read(AC19_BACKUP_REL) if AC19_BACKUP_REL in set(paths) else ""
+    doc = ctx.read(AC19_BR_DOC_REL)
+    labels = re.findall(r'^dump_one\s+[^\n]*"([a-z_]+)"', script, re.M)
+    sites = schedule_sites_for(ctx, paths, "backup_mysql")
+    # 「binlog 生效」要一次实测取值；文档第 49 行 `log_bin = /var/lib/...` 是配置片段，不是读数。
+    attested: list[str] = []
+    for rel in paths:
+        if not rel.startswith("docs/"):
+            continue
+        if re.search(r"log_bin\s*[:=]\s*(ON|OFF)", ctx.read(rel), re.I):
+            attested.append(rel)
+    doc_lines = doc.splitlines()
+    return {
+        "scan_population": count(len(paths)),
+        "script_tracked": flag(bool(script)),
+        "dump_calls": count(len(re.findall(r"^dump_one\s", script, re.M))),
+        "dump_labels": ", ".join(labels) or "-",
+        "dump_sites": count(mysqldump_invocations(script)),
+        "schedule_sites": count(len(sites)),
+        "schedule_list": ", ".join(sorted(set(sites))[:4]) or "-",
+        "doc_rpo": flag(any("RPO" in ln and "24" in ln for ln in doc_lines)),
+        "doc_binlog": flag(any("log_bin" in ln for ln in doc_lines)),
+        "binlog_optional": flag(any("binlog" in ln.lower() and "可选" in ln for ln in doc_lines)),
+        "binlog_attested": count(len(attested)),
+        "binlog_attested_list": ", ".join(sorted(set(attested))[:3]) or "-",
+    }
+
+
+def judge_ac19_01(facts: Facts) -> Verdict:
+    """``AC-19|01``: daily backups are triggered from the repo and binlog is measured."""
+    ok = (
+        facts["script_tracked"] == "yes"
+        and facts["dump_calls"] == "2"
+        and number(facts["dump_sites"]) >= 1
+        and number(facts["schedule_sites"]) >= 1
+        and facts["doc_rpo"] == "yes"
+        and facts["doc_binlog"] == "yes"
+        and number(facts["binlog_attested"]) >= 1
+    )
+    readings = (
+        f"备份脚本在跟踪清单 = {facts['script_tracked']}；dump_one 调用 "
+        f"{facts['dump_calls']} 次（{facts['dump_labels']}），mysqldump 真实调用 "
+        f"{facts['dump_sites']} 处（前置检查那行不计）",
+        f"扫描人口 {facts['scan_population']} 个跟踪文件（tests/docs/web、脚本自身与探针自身已"
+        "排除，且读 `git ls-files -z`：默认输出会把中文文件名八进制转义）；每日触发点 "
+        f"{facts['schedule_sites']} 处（{facts['schedule_list']}）；"
+        "脚本头部注释里那行 `0 2 * * *` 不算触发点（被调方不能当自己的证据）",
+        f"RPO ≤24h 的声明面 = {facts['doc_rpo']}；binlog 写进手册 = {facts['doc_binlog']}，"
+        f"手册把它列为可选附录 = {facts['binlog_optional']}",
+        f"实测过的 `log_bin = ON|OFF` 取值 {facts['binlog_attested']} 份档案"
+        f"（{facts['binlog_attested_list']}）；探针离线不连库，配置片段不算读数",
+    )
+    if ok:
+        reason = ""
+    elif number(facts["schedule_sites"]) < 1:
+        reason = (
+            "判据要「每日备份」，现场是脚本、手册、一次真演练都在位，而**每日触发点 0 处**："
+            f"仓库里没有任何调度定义或 make 目标去跑 {AC19_BACKUP_REL}，只有它自己头部注释里"
+            "一行 crontab 示例和手册里同一行。dump "
+            f"{facts['dump_calls']} 次（{facts['dump_labels']}）、RPO 声明 {facts['doc_rpo']}、"
+            f"binlog 手册 {facts['doc_binlog']}（列为可选 = {facts['binlog_optional']}）"
+        )
+    elif number(facts["binlog_attested"]) < 1:
+        reason = (
+            "每日触发点在位，但 binlog 面只剩手册里标为「可选」的附录："
+            f"没有任何一份档案带一次实测的 log_bin 取值（当前 {facts['binlog_attested']} 份），"
+            "RPO ≤24h 因此是靠每日全量兜底、不是靠 binlog"
+        )
+    else:
+        reason = (
+            f"脚本 {facts['script_tracked']}、dump {facts['dump_calls']} 次"
+            f"（{facts['dump_labels']}）、真实调用 {facts['dump_sites']} 处、触发点 "
+            f"{facts['schedule_sites']} 处、RPO {facts['doc_rpo']}、binlog 手册 "
+            f"{facts['doc_binlog']}、实测 {facts['binlog_attested']} —— 其中一项不成立"
+        )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def drill_checklist(body: str) -> list[str]:
+    """Rows of the drill checklist table only.
+
+    The same archive later numbers two more tables from ``| 1 |`` (8 defects, 3 hand-offs); counting
+    alone read 15 rows and made a six-step checklist look unproven.
+    """
+    lines = body.splitlines()
+    head = -1
+    for index, line in enumerate(lines):
+        if line.startswith(AC19_DRILL_HEADER):
+            head = index
+            break
+    if head < 0:
+        return []
+    rows: list[str] = []
+    for line in lines[head + 2 :]:
+        if not line.startswith("|"):
+            break
+        rows.append(line)
+    return rows
+
+
+def measure_ac19_02(ctx: Context) -> Facts:
+    """Read the drill archive: checklist rows, restore targets, and its own age.
+
+    The record must predate this round -- C62's machine-readable echo lesson.
+    """
+    body = ctx.read(AC19_DRILL_REL) if AC19_DRILL_REL in set(ac19_tracked(ctx)) else ""
+    rows = drill_checklist(body)
+    code, out = run_argv(
+        ["git", "log", "--diff-filter=A", "--format=%H %ad", "--date=short", "--", AC19_DRILL_REL]
+    )
+    first = out.strip().splitlines()[0] if code == 0 and out.strip() else "-"
+    stamp = first.rsplit(" ", 1)[-1] if first != "-" else "-"
+    a0 = ctx.read(AC19_A0_README_REL)
+    return {
+        "drill_tracked": flag(bool(body)),
+        "checklist_found": flag(bool(rows)),
+        "drill_commit": first.split(" ", 1)[0][:12] if first != "-" else "-",
+        "drill_added": stamp,
+        "drill_preexisting": flag(stamp not in {"-", ""} and stamp < time.strftime("%Y-%m-%d")),
+        "steps": count(len(rows)),
+        "steps_passed": count(sum(1 for row in rows if "✅" in row)),
+        "isolated_dbs": count(
+            sum(
+                1
+                for name in ("opendata_restore_check", "opendata_data_restore_check")
+                if name in body
+            )
+        ),
+        "rowcmp": flag("对象一致" in body),
+        "health": flag("status=healthy" in body),
+        "in_a0_dod": flag("restore-drill" in a0 or "恢复演练" in a0),
+    }
+
+
+def judge_ac19_02(facts: Facts) -> Verdict:
+    """``AC-19|02``: one restore drill is recorded, and the record is not this round's."""
+    ok = (
+        facts["drill_tracked"] == "yes"
+        and facts["checklist_found"] == "yes"
+        and facts["drill_preexisting"] == "yes"
+        and facts["steps"] == "6"
+        and facts["steps_passed"] == "6"
+        and facts["isolated_dbs"] == "2"
+        and facts["rowcmp"] == "yes"
+        and facts["health"] == "yes"
+        and facts["in_a0_dod"] == "yes"
+    )
+    readings = (
+        f"演练档案 {AC19_DRILL_REL} 在跟踪清单 = {facts['drill_tracked']}，检查单表头读得到 = "
+        f"{facts['checklist_found']}（同档另有两张从 `| 1 |` 起头的表 —— §4 缺陷 8 行、"
+        "§5 移交 3 行；判定只看这张表头之下的行）",
+        f"首次入库 {facts['drill_added']}（提交 {facts['drill_commit']}），早于本轮 = "
+        f"{facts['drill_preexisting']} —— 一轮不能给自己的演练记录背书（C62 的机读回声教训）",
+        f"检查单 {facts['steps']} 步，带 ✅ 标记 {facts['steps_passed']} 步",
+        f"两个隔离恢复库均可指认 {facts['isolated_dbs']}/2；关键表行数比对 = {facts['rowcmp']}，"
+        f"起栈后 /health 读到 status=healthy = {facts['health']}",
+        f"A0 DoD 里点着这份档案 = {facts['in_a0_dod']}",
+    )
+    reason = (
+        ""
+        if ok
+        else (
+            f"「完成一次并记录」现在读到 {facts['steps_passed']}/{facts['steps']} 步带通过标记、"
+            f"检查单表头 {facts['checklist_found']}、恢复库 {facts['isolated_dbs']}/2、行数比对 "
+            f"{facts['rowcmp']}、健康检查 {facts['health']}、DoD 归属 {facts['in_a0_dod']}、"
+            f"档案首次入库 {facts['drill_added']}（早于本轮 = {facts['drill_preexisting']}）"
+        )
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def retention_callers(ctx: Context) -> list[str]:
+    """Runtime modules (never tests/) that actually call one of the purge executors."""
+    hits: list[str] = []
+    for rel in runtime_py_files(ctx):
+        if rel == AC19_RETENTION_REL:
+            continue
+        body = ctx.read(rel)
+        if any(re.search(rf"\b{name}\(", body) for name in AC19_RETENTION_FUNCS):
+            hits.append(rel)
+    return hits
+
+
+def measure_ac19_03(ctx: Context) -> Facts:
+    """Read policy, executors, config keys and call sites as four separate faces.
+
+    Only the call-site face says the policy is *implemented* rather than declared.
+    """
+    src = ctx.read(AC19_RETENTION_REL)
+    cfg = ctx.read(AC19_CONFIG_REL)
+    defs = [name for name in AC19_RETENTION_FUNCS if re.search(rf"^def {name}\(", src, re.M)]
+    callers = retention_callers(ctx)
+    return {
+        "policy_kinds": count(
+            sum(1 for marker in ("永久", "keep_years", "ttl_", "diff_report") if marker in src)
+        ),
+        "executors": count(len(defs)),
+        "executor_list": ", ".join(defs) or "-",
+        "config_keys": count(sum(1 for key in AC19_RETENTION_KEYS if key in cfg)),
+        "prod_callers": count(len(callers)),
+        "caller_list": ", ".join(sorted(callers)[:4]) or "-",
+    }
+
+
+def judge_ac19_03(facts: Facts) -> Verdict:
+    """``AC-19|03``: the retention policy is declared *and* reachable from runtime code."""
+    ok = (
+        facts["policy_kinds"] == "4"
+        and facts["executors"] == "4"
+        and facts["config_keys"] == "4"
+        and number(facts["prod_callers"]) >= 1
+    )
+    readings = (
+        f"策略四类读到 {facts['policy_kinds']}/4（日线永久 / 分钟线 N 年 / 缓存 TTL / "
+        f"差异明细导出），执行器 {facts['executors']}/4（{facts['executor_list']}），"
+        f"四个配置键 {facts['config_keys']}/4",
+        f"生产侧调用点 {facts['prod_callers']} 处（{facts['caller_list']}）—— "
+        "tests/ 里的引用不算调用点，retention.py 自己的内部转调也不算",
+    )
+    reason = (
+        ""
+        if ok
+        else (
+            f"「声明并实现」缺的是实现面：策略 {facts['policy_kinds']}/4、执行器 "
+            f"{facts['executors']}/4（{facts['executor_list']}）、配置键 {facts['config_keys']}/4 "
+            f"都在位，但运行时四包里没有任何模块调用它们（生产调用点 {facts['prod_callers']} 处）。"
+            "保留策略今天是一套**只有测试会跑**的执行器：不接调度或接口，过期数据就不会真被清"
+        )
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def key_expiry_signal(src: str) -> bool:
+    """Does anything classify or look up an *upstream* Key's expiry?
+
+    ``opendata/services/api_key_service.py:is_expired`` and ``core/token_blacklist.py`` are about
+    Keys this platform issues to its own clients, so they are excluded rather than counted: the
+    criterion names 权威源 Key.
+    """
+    if re.search(r'CLASS_[A-Z_]+\s*=\s*"[^"]*expir', src):
+        return True
+    return bool(re.search(r"^def \w*(expir|expiry)\w*\(", src, re.M))
+
+
+def status_class_rules(src: str) -> tuple[bool, bool]:
+    """Are 401/403→credential-rejected and 429→quota-exhausted present as *statements*?
+
+    ``_class_for_status``'s docstring spells the same numbers out in prose, so matching the whole
+    function body would read the comment as the rule. Only ``if``/``return`` lines are paired.
+    """
+    body: list[str] = []
+    inside = False
+    for line in src.splitlines():
+        if line.startswith("def _class_for_status"):
+            inside = True
+            continue
+        if inside:
+            if line.startswith(("def ", "@", "class ")):
+                break
+            body.append(line.strip())
+    stmts = [line for line in body if line.startswith(("if ", "elif ", "return "))]
+    rejected = quota = False
+    for index, stmt in enumerate(stmts[:-1]):
+        nxt = stmts[index + 1]
+        if stmt.startswith("if status in (401, 403)") and nxt == "return CLASS_CREDENTIAL_REJECTED":
+            rejected = True
+        if stmt == "if status == 429:" and nxt == "return CLASS_QUOTA_EXHAUSTED":
+            quota = True
+    return rejected, quota
+
+
+def measure_ac19_04(ctx: Context) -> Facts:
+    """Read the four Key classes, the wire rules that can fire, and where the grade lands."""
+    src = ctx.read(AC19_KEYHEALTH_REL)
+    rejected, quota = status_class_rules(src)
+    # patrol.py 是 credential_health 的定义处，不能当自己的告警落点。
+    own = {AC19_KEYHEALTH_REL, AC19_PATROL_REL}
+    graded = [
+        rel
+        for rel in runtime_py_files(ctx)
+        if rel not in own and "credential_health(" in ctx.read(rel)
+    ]
+    notified = [
+        rel
+        for rel in runtime_py_files(ctx)
+        if rel != AC19_KEYHEALTH_REL
+        and re.search(r"credential_health|KeyReport", ctx.read(rel))
+        and re.search(r"build_notify_hook|notify\(", ctx.read(rel))
+    ]
+    return {
+        "classes_declared": count(sum(1 for name in AC19_KEY_CLASSES if f'"{name}"' in src)),
+        "rejected_rule": flag(rejected),
+        "quota_rule": flag(quota),
+        "expiry_signal": flag(key_expiry_signal(src)),
+        "presence_only": flag("presence-only" in src),
+        "disclosure": flag("publishes a Key's expiry" in src),
+        "alert_sites": count(len(graded)),
+        "alert_list": ", ".join(sorted(graded)[:4]) or "-",
+        "notify_sites": count(len(notified)),
+        "notify_list": ", ".join(sorted(notified)[:4]) or "-",
+    }
+
+
+def judge_ac19_04(facts: Facts) -> Verdict:
+    """``AC-19|04``: each Key plane has a signal that can fire and a channel that can tell."""
+    ok = (
+        facts["classes_declared"] == "4"
+        and facts["rejected_rule"] == "yes"
+        and facts["quota_rule"] == "yes"
+        and facts["expiry_signal"] == "yes"
+        and number(facts["alert_sites"]) >= 1
+        and number(facts["notify_sites"]) >= 1
+        and facts["disclosure"] == "yes"
+    )
+    readings = (
+        f"四类健康类别在位 {facts['classes_declared']}/4（key-validity / key-expiry / "
+        "revocation-or-ban / quota-left）",
+        f"线上可触发的分类：401/403→credential-rejected = {facts['rejected_rule']}，"
+        f"429→quota-exhausted = {facts['quota_rule']}；到期分类或主动探测 = "
+        f"{facts['expiry_signal']}（本平台自签 Key 的 is_expired 不算，判据点名的是权威源）",
+        f"分级落点 {facts['alert_sites']} 处运行时模块调用 credential_health"
+        f"（{facts['alert_list']}，定义处 patrol.py 已排除）；"
+        f"带外告警通道 {facts['notify_sites']} 处（{facts['notify_list']}）—— "
+        "只有 /health 可拉取 ≠ 告警生效",
+        f"模块自己的边界声明在位 = {facts['disclosure']}，未观测只报 "
+        f"{facts['presence_only']}（这句被删而探测仍未做 ⇒ 判 gap）",
+    )
+    reason = (
+        ""
+        if ok
+        else (
+            f"判据要「配额/到期/封禁监控告警**生效**」：类别与被动归类都在位"
+            f"（{facts['classes_declared']}/4 类，401/403={facts['rejected_rule']}、"
+            f"429={facts['quota_rule']}），但到期这一类没有任何可触发的信号"
+            f"（{facts['expiry_signal']}；模块自己写着没有源发布到期/余量/吊销状态，披露句 = "
+            f"{facts['disclosure']}），且 Key 分级只进 /health 的拉取面"
+            f"（分级落点 {facts['alert_sites']} 处 = {facts['alert_list']}，"
+            f"带外通道 {facts['notify_sites']} 处）—— 配额只到 warn、封禁只到 alert，"
+            "都无人被通知"
+        )
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def filled_cells(line: str) -> int:
+    """How many non-empty Markdown cells a table row has (0 when any cell is blank)."""
+    parts = [part.strip() for part in line.strip().strip("|").split("|")]
+    return len(parts) if all(parts) else 0
+
+
+def config_doc_rows(doc: str) -> tuple[list[str], list[str]]:
+    """Live key rows versus rows under a differently shaped table (第十节 已移除项)."""
+    live: list[str] = []
+    other: list[str] = []
+    header = ""
+    for line in doc.splitlines():
+        if line.startswith("| 键名"):
+            header = line.strip()
+            continue
+        if not re.match(r"^\|\s*`[A-Z][A-Z0-9_]*`", line):
+            continue
+        (live if header == AC19_LIVE_HEADER else other).append(line)
+    return live, other
+
+
+def measure_ac19_05(ctx: Context) -> Facts:
+    """Read row coverage, how 生效方式 is carried, and whether code agrees with the doc."""
+    paths = ac19_tracked(ctx)
+    doc = ctx.read(AC19_CONFIG_DOC_REL) if AC19_CONFIG_DOC_REL in set(paths) else ""
+    cfg = ctx.read(AC19_CONFIG_REL)
+    live, other = config_doc_rows(doc)
+    complete = [line for line in live if filled_cells(line) == 4]
+    effect_headers = sum(
+        1 for line in doc.splitlines() if line.startswith("| 键名") and "生效方式" in line
+    )
+    clause = any("生效方式" in line and "重启" in line for line in doc.splitlines())
+    marked = sum(1 for line in live if "热加载" in line)
+    percall = [
+        rel
+        for rel in runtime_py_files(ctx)
+        if rel != AC19_CONFIG_REL and "get_settings()" in ctx.read(rel)
+    ]
+    return {
+        "doc_tracked": flag(bool(doc)),
+        "live_rows": count(len(live)),
+        "rows_complete": count(len(complete)),
+        "removed_rows": count(len(other)),
+        "effect_col_headers": count(effect_headers),
+        "global_clause": flag(clause),
+        "hotload_marked": count(marked),
+        "settings_cached": flag(bool(re.search(r"@lru_cache\ndef get_settings", cfg))),
+        "percall_reads": count(len(percall)),
+        "percall_list": ", ".join(sorted(percall)[:3]) or "-",
+    }
+
+
+def judge_ac19_05(facts: Facts) -> Verdict:
+    """``AC-19|05``: the config inventory lists every live key and how a change takes effect."""
+    # 生效方式允许只以全局条款承载，但条款必须与代码事实自洽：
+    # 若 get_settings 不再被缓存（逐请求重读 ⇒ 不重启即生效），逐行标注就必须存在。
+    ok = (
+        facts["doc_tracked"] == "yes"
+        and number(facts["live_rows"]) >= 30
+        and facts["rows_complete"] == facts["live_rows"]
+        and (number(facts["effect_col_headers"]) >= 1 or facts["global_clause"] == "yes")
+        and (number(facts["hotload_marked"]) >= 1 or facts["settings_cached"] == "yes")
+    )
+    readings = (
+        f"在用键名行 {facts['live_rows']} 条，四列齐且无空单元格 {facts['rows_complete']} 条"
+        f"（另有 {facts['removed_rows']} 条属第十节「已被移除的配置」两列表，不计入在配置项）",
+        f"表头里带「生效方式」列的 {facts['effect_col_headers']} 处；全局条款"
+        "（改后需重启后端进程）在位 = "
+        f"{facts['global_clause']}；逐行标注「热加载」{facts['hotload_marked']} 条",
+        f"代码侧 {facts['percall_reads']} 个运行时模块在调用点读 get_settings()"
+        f"（{facts['percall_list']}）；get_settings 仍被 @lru_cache 冻结 = "
+        f"{facts['settings_cached']} —— 去掉缓存而逐行无标注 ⇒ 文档在骗人，判 gap",
+    )
+    reason = (
+        ""
+        if ok
+        else (
+            f"四项里「生效方式」只以第 5 行一句全局条款存在（逐行列 "
+            f"{facts['effect_col_headers']}、逐行「热加载」标注 {facts['hotload_marked']} 条，"
+            f"而那句写着「除标注热加载者外」），在用行 "
+            f"{facts['rows_complete']}/{facts['live_rows']} 列齐、"
+            f"全局条款 {facts['global_clause']}、"
+            f"get_settings 缓存 {facts['settings_cached']} —— 其中一项不成立"
+        )
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+# --------------------------------------------------------------------------- #
 # The probe table
 # --------------------------------------------------------------------------- #
 
@@ -9259,6 +9787,203 @@ PROBES: Final[tuple[Probe, ...]] = (
             "disclaimer_body_ok": "yes",
             "registry_disclaimer": "yes",
             "registry_body_ok": "yes",
+        },
+    ),
+    Probe(
+        item="AC-19|01",
+        expects="每日备份 + binlog",
+        summary="备份脚本 + 两库 dump + 仓库内的每日触发点 + RPO/binlog 声明与一次实测取值",
+        measure=measure_ac19_01,
+        judge=judge_ac19_01,
+        breaks=(
+            Break(
+                "备份脚本不在跟踪清单里",
+                (("script_tracked", "no"), ("dump_calls", "0"), ("dump_sites", "0")),
+                GAP,
+            ),
+            Break("脚本存在但只 dump 一个库（元数据或仓库漏一半）", (("dump_calls", "1"),), GAP),
+            Break(
+                "dump_one 调用还在、mysqldump 的真实调用被摘掉（只剩前置检查那行）",
+                (("dump_sites", "0"),),
+                GAP,
+            ),
+            Break(
+                "每日触发点为零：只剩脚本头部注释里那行 crontab 示例",
+                (("schedule_sites", "0"), ("schedule_list", "-")),
+                GAP,
+            ),
+            Break("RPO ≤24h 的声明面被删", (("doc_rpo", "no"),), GAP),
+            Break(
+                "binlog 只有「可选」附录、没有一次实测取值",
+                (("binlog_attested", "0"), ("binlog_attested_list", "-")),
+                GAP,
+            ),
+        ),
+        repair={
+            "script_tracked": "yes",
+            "dump_calls": "2",
+            "dump_labels": "metadata, warehouse",
+            "dump_sites": "1",
+            "schedule_sites": "1",
+            "schedule_list": "opendata/pipeline/jobs.py",
+            "doc_rpo": "yes",
+            "doc_binlog": "yes",
+            "binlog_optional": "no",
+            "binlog_attested": "1",
+            "binlog_attested_list": "docs/evidence/C63/log-bin-attested.txt",
+        },
+    ),
+    Probe(
+        item="AC-19|02",
+        expects="恢复演练完成一次",
+        summary="A0 演练档案：早于本轮存在 + 六步检查单逐条通过 + 两个隔离恢复库 + 归进 DoD",
+        measure=measure_ac19_02,
+        judge=judge_ac19_02,
+        breaks=(
+            Break(
+                "演练档案不在跟踪清单里（写了但没入库）",
+                (("drill_tracked", "no"), ("steps", "0"), ("steps_passed", "0")),
+                GAP,
+            ),
+            Break(
+                "检查单表头被改写，六步行读不到",
+                (("checklist_found", "no"), ("steps", "0"), ("steps_passed", "0")),
+                GAP,
+            ),
+            Break(
+                "档案是本轮新写的：一轮不能给自己的演练记录背书（C62 的机读回声）",
+                (("drill_preexisting", "no"),),
+                GAP,
+            ),
+            Break(
+                "检查单第 3 步（比对关键表行数）没有通过标记",
+                (("steps_passed", "5"), ("rowcmp", "no")),
+                GAP,
+            ),
+            Break("只指认得出一个恢复库", (("isolated_dbs", "1"),), GAP),
+            Break("恢复后 /health 不再读得到 status=healthy", (("health", "no"),), GAP),
+            Break("A0 DoD 不再点这份档案（纳入 DoD 那半掉了）", (("in_a0_dod", "no"),), GAP),
+        ),
+        repair={
+            "drill_tracked": "yes",
+            "checklist_found": "yes",
+            "drill_commit": "3f0d1c2b9a44",
+            "drill_added": "2026-09-22",
+            "drill_preexisting": "yes",
+            "steps": "6",
+            "steps_passed": "6",
+            "isolated_dbs": "2",
+            "rowcmp": "yes",
+            "health": "yes",
+            "in_a0_dod": "yes",
+        },
+    ),
+    Probe(
+        item="AC-19|03",
+        expects="保留策略声明并实现",
+        summary="四类策略 + 四个执行器 + 四个配置键，再加运行时包里的真调用点",
+        measure=measure_ac19_03,
+        judge=judge_ac19_03,
+        breaks=(
+            Break("四类策略少一类（差异明细导出被摘掉）", (("policy_kinds", "3"),), GAP),
+            Break("四个执行器少一个（缓存 TTL 腿没实现）", (("executors", "3"),), GAP),
+            Break("四个配置键少一个", (("config_keys", "3"),), GAP),
+            Break(
+                "声明/执行器/配置全在位，但运行时四包无人调用（现场形状）",
+                (("prod_callers", "0"), ("caller_list", "-")),
+                GAP,
+            ),
+        ),
+        repair={
+            "policy_kinds": "4",
+            "executors": "4",
+            "executor_list": ", ".join(AC19_RETENTION_FUNCS),
+            "config_keys": "4",
+            "prod_callers": "1",
+            "caller_list": "opendata/pipeline/jobs.py",
+        },
+    ),
+    Probe(
+        item="AC-19|04",
+        expects="配额/到期/封禁监控告警生效",
+        summary="四类 Key 健康的分类规则 + 到期信号 + 分级落点与带外告警通道",
+        measure=measure_ac19_04,
+        judge=judge_ac19_04,
+        breaks=(
+            Break("四类健康类别少一类", (("classes_declared", "3"),), GAP),
+            Break(
+                "401/403 不再归到 credential-rejected（封禁面失去唯一信号）",
+                (("rejected_rule", "no"),),
+                GAP,
+            ),
+            Break(
+                "429 不再归到 quota-exhausted（配额面失去唯一信号）", (("quota_rule", "no"),), GAP
+            ),
+            Break("到期既无分类也无主动探测（现场形状）", (("expiry_signal", "no"),), GAP),
+            Break(
+                "没有任何运行时模块调用 credential_health，分级无处可读",
+                (("alert_sites", "0"), ("alert_list", "-")),
+                GAP,
+            ),
+            Break(
+                "分级只进 /health 拉取面，没有带外告警通道（现场形状）",
+                (("notify_sites", "0"), ("notify_list", "-")),
+                GAP,
+            ),
+            Break(
+                "模块删掉「没有源发布到期/余量/吊销状态」那句自述，探测却仍未做",
+                (("disclosure", "no"),),
+                GAP,
+            ),
+        ),
+        repair={
+            "classes_declared": "4",
+            "rejected_rule": "yes",
+            "quota_rule": "yes",
+            "expiry_signal": "yes",
+            "presence_only": "yes",
+            "disclosure": "yes",
+            "alert_sites": "1",
+            "alert_list": "opendata/api/pipeline.py",
+            "notify_sites": "1",
+            "notify_list": "opendata/pipeline/patrol.py",
+        },
+    ),
+    Probe(
+        item="AC-19|05",
+        expects="《配置项清单》文档存在",
+        summary="清单逐行四列覆盖数 + 生效方式承载形态 + 全局条款与代码事实是否自洽",
+        measure=measure_ac19_05,
+        judge=judge_ac19_05,
+        breaks=(
+            Break(
+                "清单文档不在跟踪清单里",
+                (("doc_tracked", "no"), ("live_rows", "0"), ("rows_complete", "0")),
+                GAP,
+            ),
+            Break("有行没列：四列齐的少于在用键名行总数", (("rows_complete", "53"),), GAP),
+            Break(
+                "逐行生效方式列没有，全局条款也被摘掉",
+                (("effect_col_headers", "0"), ("global_clause", "no")),
+                GAP,
+            ),
+            Break(
+                "get_settings 不再缓存（逐请求重读）却仍无一行标注热加载",
+                (("settings_cached", "no"), ("hotload_marked", "0")),
+                GAP,
+            ),
+        ),
+        repair={
+            "doc_tracked": "yes",
+            "live_rows": "54",
+            "rows_complete": "54",
+            "removed_rows": "1",
+            "effect_col_headers": "0",
+            "global_clause": "yes",
+            "hotload_marked": "0",
+            "settings_cached": "yes",
+            "percall_reads": "4",
+            "percall_list": "opendata/data/providers/fred/models/_client.py",
         },
     ),
 )

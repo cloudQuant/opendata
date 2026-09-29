@@ -1,0 +1,55 @@
+
+### AC-19|01  (document line 256)
+判据原文：**备份策略落地**：每日备份 + binlog，RPO ≤24h
+本探针：备份脚本 + 两库 dump + 仓库内的每日触发点 + RPO/binlog 声明与一次实测取值
+台账现状：state=unreviewed，文档勾选=False
+  - 备份脚本在跟踪清单 = yes；dump_one 调用 2 次（metadata, warehouse），mysqldump 真实调用 1 处（前置检查那行不计）
+  - 扫描人口 1621 个跟踪文件（tests/docs/web、脚本自身与探针自身已排除，且读 `git ls-files -z`：默认输出会把中文文件名八进制转义）；每日触发点 0 处（-）；脚本头部注释里那行 `0 2 * * *` 不算触发点（被调方不能当自己的证据）
+  - RPO ≤24h 的声明面 = yes；binlog 写进手册 = yes，手册把它列为可选附录 = yes
+  - 实测过的 `log_bin = ON|OFF` 取值 0 份档案（-）；探针离线不连库，配置片段不算读数
+  - 补齐到可判：binlog_attested: 0 -> 1; binlog_attested_list: - -> docs/evidence/C63/log-bin-attested.txt; binlog_optional: yes -> no; schedule_list: - -> opendata/pipeline/jobs.py; schedule_sites: 0 -> 1
+VERDICT AC-19|01: gap — 判据要「每日备份」，现场是脚本、手册、一次真演练都在位，而**每日触发点 0 处**：仓库里没有任何调度定义或 make 目标去跑 scripts/ops/backup_mysql.sh，只有它自己头部注释里一行 crontab 示例和手册里同一行。dump 2 次（metadata, warehouse）、RPO 声明 yes、binlog 手册 yes（列为可选 = yes）
+
+### AC-19|02  (document line 257)
+判据原文：**恢复演练完成一次**并记录（纳入 A0 DoD）
+本探针：A0 演练档案：早于本轮存在 + 六步检查单逐条通过 + 两个隔离恢复库 + 归进 DoD
+台账现状：state=unreviewed，文档勾选=False
+  - 演练档案 docs/evidence/A0/restore-drill.txt 在跟踪清单 = yes，检查单表头读得到 = yes（同档另有两张从 `| 1 |` 起头的表 —— §4 缺陷 8 行、§5 移交 3 行；判定只看这张表头之下的行）
+  - 首次入库 2026-09-22（提交 0a9fba28df98），早于本轮 = yes —— 一轮不能给自己的演练记录背书（C62 的机读回声教训）
+  - 检查单 6 步，带 ✅ 标记 6 步
+  - 两个隔离恢复库均可指认 2/2；关键表行数比对 = yes，起栈后 /health 读到 status=healthy = yes
+  - A0 DoD 里点着这份档案 = yes
+VERDICT AC-19|02: proven
+
+### AC-19|03  (document line 258)
+判据原文：保留策略声明并实现（日线永久 / 分钟线 N 年 / 缓存 TTL / 差异明细导出）
+本探针：四类策略 + 四个执行器 + 四个配置键，再加运行时包里的真调用点
+台账现状：state=unreviewed，文档勾选=False
+  - 策略四类读到 4/4（日线永久 / 分钟线 N 年 / 缓存 TTL / 差异明细导出），执行器 4/4（purge_expired_rows, purge_diff_report, purge_minute_archives, purge_raw_response_cache），四个配置键 4/4
+  - 生产侧调用点 0 处（-）—— tests/ 里的引用不算调用点，retention.py 自己的内部转调也不算
+  - 补齐到可判：caller_list: - -> opendata/pipeline/jobs.py; prod_callers: 0 -> 1
+VERDICT AC-19|03: gap — 「声明并实现」缺的是实现面：策略 4/4、执行器 4/4（purge_expired_rows, purge_diff_report, purge_minute_archives, purge_raw_response_cache）、配置键 4/4 都在位，但运行时四包里没有任何模块调用它们（生产调用点 0 处）。保留策略今天是一套**只有测试会跑**的执行器：不接调度或接口，过期数据就不会真被清
+
+### AC-19|04  (document line 259)
+判据原文：权威源 Key 配额/到期/封禁监控告警生效
+本探针：四类 Key 健康的分类规则 + 到期信号 + 分级落点与带外告警通道
+台账现状：state=unreviewed，文档勾选=False
+  - 四类健康类别在位 4/4（key-validity / key-expiry / revocation-or-ban / quota-left）
+  - 线上可触发的分类：401/403→credential-rejected = yes，429→quota-exhausted = yes；到期分类或主动探测 = no（本平台自签 Key 的 is_expired 不算，判据点名的是权威源）
+  - 分级落点 1 处运行时模块调用 credential_health（opendata/api/pipeline.py，定义处 patrol.py 已排除）；带外告警通道 0 处（-）—— 只有 /health 可拉取 ≠ 告警生效
+  - 模块自己的边界声明在位 = yes，未观测只报 yes（这句被删而探测仍未做 ⇒ 判 gap）
+  - 补齐到可判：expiry_signal: no -> yes; notify_list: - -> opendata/pipeline/patrol.py; notify_sites: 0 -> 1
+VERDICT AC-19|04: gap — 判据要「配额/到期/封禁监控告警**生效**」：类别与被动归类都在位（4/4 类，401/403=yes、429=yes），但到期这一类没有任何可触发的信号（no；模块自己写着没有源发布到期/余量/吊销状态，披露句 = yes），且 Key 分级只进 /health 的拉取面（分级落点 1 处 = opendata/api/pipeline.py，带外通道 0 处）—— 配额只到 warn、封禁只到 alert，都无人被通知
+
+### AC-19|05  (document line 260)
+判据原文：《配置项清单》文档存在（键名/含义/改动影响/生效方式）
+本探针：清单逐行四列覆盖数 + 生效方式承载形态 + 全局条款与代码事实是否自洽
+台账现状：state=unreviewed，文档勾选=False
+  - 在用键名行 54 条，四列齐且无空单元格 54 条（另有 1 条属第十节「已被移除的配置」两列表，不计入在配置项）
+  - 表头里带「生效方式」列的 0 处；全局条款（改后需重启后端进程）在位 = yes；逐行标注「热加载」0 条
+  - 代码侧 4 个运行时模块在调用点读 get_settings()（opendata/data/providers/ecb/models/_client.py, opendata/data/providers/fred/models/_client.py, opendata/data/providers/imf/models/_client.py）；get_settings 仍被 @lru_cache 冻结 = yes —— 去掉缓存而逐行无标注 ⇒ 文档在骗人，判 gap
+VERDICT AC-19|05: proven
+
+census: gap=3, proven=2
+（5 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+ITEMS_EXIT=0
