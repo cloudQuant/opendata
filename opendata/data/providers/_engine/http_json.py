@@ -18,7 +18,7 @@ import json
 import math
 import os
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date
 from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Literal, cast
@@ -335,7 +335,7 @@ def _page_request(
         return params
     if paging.kind == "cursor":
         return params
-    if paging.limit_key is not None:
+    if paging.limit_key is not None and paging.limit_key not in params:
         params[paging.limit_key] = str(paging_page_size(spec))
     if paging.kind == "offset" and paging.offset_key is not None:
         params[paging.offset_key] = str(collected)
@@ -352,6 +352,31 @@ def paging_page_size(spec: ModelSpec) -> int:
             if parameter.encoded_key == limit_key and isinstance(parameter.default, int):
                 return parameter.default
     return 100
+
+
+def effective_page_size(spec: ModelSpec, params: Mapping[str, str]) -> int:
+    """Return the page size the request actually carries, which is what a short page means.
+
+    Two separate mistakes live here if the declared default is used blindly. The request would
+    have to be rewritten to the default to match it, and that silently discards a caller who asked
+    for a smaller page (the query stage's parameters are supposed to survive unchanged). And the
+    comparison ``len(rows) < page_size`` is the engine's only evidence that the endpoint has no
+    more pages: measured against the default rather than the size actually sent, a caller-set page
+    size makes the first page look short, so paging stops after one page and a partial result is
+    reported as whole.
+    """
+    limit_key = spec.pagination.limit_key
+    if limit_key is None:
+        return 0
+    sent = params.get(limit_key)
+    if sent is not None:
+        try:
+            parsed = int(sent)
+        except ValueError:
+            return paging_page_size(spec)
+        if parsed > 0:
+            return parsed
+    return paging_page_size(spec)
 
 
 def _next_cursor(document: object, spec: ModelSpec) -> str | None:
@@ -397,6 +422,7 @@ def fetch_pages(
         params = _page_request(spec, base_params, page_number, collected)
         if paging.kind == "cursor" and cursor is not None and paging.cursor_key:
             params[paging.cursor_key] = cursor
+        page_size = effective_page_size(spec, params)
         response = get(url, params, timeout=timeout, source=source or spec.error_prefix.lower())
         _classify_status(response.status, spec, url)
         document = response.document
@@ -415,7 +441,7 @@ def fetch_pages(
             if page_number > paging.max_pages:
                 raise ProviderEngineError(f"{spec.error_prefix}_INCOMPLETE", url=url)
             continue
-        if len(rows) < paging_page_size(spec):
+        if len(rows) < page_size:
             break
         page_number += 1
         if page_number > paging.max_pages:
@@ -435,6 +461,18 @@ def _declared_total(document: object, spec: ModelSpec) -> int | None:
         return int(value)
     except ValueError:
         return None
+
+
+def _declared_totals(pages: Sequence[object], spec: ModelSpec) -> list[int]:
+    """Collect the totals every page that publishes one declares.
+
+    Summing them, which is what this face used to do, is wrong for the common shape: an endpoint
+    that reports the size of the whole result repeats that number on every page, so three pages
+    of a 40-row answer add up to 120 and the engine calls a complete answer incomplete. The
+    reading the declaration can actually support is that the pages agree on one total and the
+    rows collected equal it. A ``0`` is a published total (an empty result), not an absent one.
+    """
+    return [total for total in (_declared_total(page, spec) for page in pages) if total is not None]
 
 
 def make_http_json_fetcher(source: str, spec: ModelSpec) -> type[Fetcher[Any, Any]]:
@@ -499,9 +537,16 @@ def make_http_json_fetcher(source: str, spec: ModelSpec) -> type[Fetcher[Any, An
                     normalize_record(record, page, spec, declared_row_model)
                     for record in resolve_rows(page, spec.rows_pointer, spec)
                 )
-            declared = sum((_declared_total(page, spec) or 0) for page in raw)
-            if spec.pagination.total_key and declared and len(rows) != declared:
-                raise ProviderEngineError(f"{spec.error_prefix}_INCOMPLETE")
+            published = _declared_totals(raw, spec)
+            distinct = set(published)
+            if len(distinct) > 1:
+                raise ProviderEngineError(f"{spec.error_prefix}_TOTAL_CONFLICT")
+            if distinct:
+                expected = published[0]
+                if len(rows) < expected:
+                    raise ProviderEngineError(f"{spec.error_prefix}_INCOMPLETE")
+                if len(rows) > expected:
+                    raise ProviderEngineError(f"{spec.error_prefix}_TOTAL_CONFLICT")
             return tuple(rows)
 
     published_name = f"{source.replace('_', ' ').title().replace(' ', '')}{spec.model}Fetcher"

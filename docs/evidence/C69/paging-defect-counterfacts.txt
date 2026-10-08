@@ -1,0 +1,120 @@
+# C69 分页判据修复的反事实面（D1/D2/D3 三处引擎缺陷）
+# collected_at_utc=2026-10-08T18:40:30Z
+# branch=dev HEAD=b0d96d5（本轮改动未提交：http_json.py + tests/test_provider_engine_contract.py + 本目录）
+# python=Python 3.11.8（pytest 8.4.2；解释器与 C68 留档同版，读档复核时请核对首行）
+# 连接面=完全离线：引擎的发送面被 monkeypatch 成 SyntheticTransport，不碰 socket、不碰数据库、不读凭据
+# 判据=同一个测试文件在「修好的引擎」与「HEAD 的引擎」两个臂上各跑一遍；反向必须真的翻红
+
+================================================================================
+0) 三处缺陷的读法（都在 opendata/data/providers/_engine/http_json.py）
+================================================================================
+D1 `_page_request`：无条件把 paging.limit_key 覆写成声明的默认页大小。
+   调用方显式传的 limit 被丢掉——发出去的请求不是查询阶段批准的那个请求。
+   原码：`if paging.limit_key is not None: params[paging.limit_key] = str(paging_page_size(spec))`
+   现码：`if paging.limit_key is not None and paging.limit_key not in params: …`
+
+D2 `fetch_pages` 的收尾判据 `len(rows) < paging_page_size(spec)`：拿「声明默认页大小」当尺子量
+   实际发出去的页。今天这条之所以没造成事故，是因为 D1 先把请求改回默认值，两把尺子恰好相等；
+   单修 D1 会让 D2 立刻变成活的（发 limit=1、按 limit=2 判短页 → 第一页就停 → 把 1/3 的结果当整体返回）。
+   现码：新增 `effective_page_size(spec, params)`，量的是请求里真正带的 limit；`fetch_pages` 每页重算。
+
+D3 `transform_data` 把各页的 total_key 相加：`declared = sum((_declared_total(page) or 0) …)`。
+   多数分页端点在每一页重复「整个结果的行数」，三页 total=40 会被加成 120，完整答案被判 INCOMPLETE；
+   而 `or 0` 又把端点真公布的 0（空结果）当成「没公布」，跳过核对，放过一个 total=0 却带行的响应。
+   现码：`_declared_totals()` 收集所有公布值；页间不一致→`{PREFIX}_TOTAL_CONFLICT`；
+   行数少于公布总数→`{PREFIX}_INCOMPLETE`；行数多于公布总数→`{PREFIX}_TOTAL_CONFLICT`（0 算公布值）。
+
+================================================================================
+1) 臂 A：修好的引擎（当前工作树）
+================================================================================
+命令：python3 -m pytest tests/test_provider_engine_contract.py -q --no-cov -p no:cacheprovider
+退出码：0
+末行读数：65 passed in 0.38s
+
+命令：python3 -m pytest tests/test_provider_engine_contract.py tests/test_cboe_engine_provider.py -q --no-cov -p no:cacheprovider
+退出码：0
+末行读数：79 passed in 0.38s
+
+================================================================================
+2) 臂 B：把同一个测试文件跑在 HEAD 的引擎上
+================================================================================
+步骤（可复跑）：
+  cp opendata/data/providers/_engine/http_json.py /tmp/fixed_http_json.py
+  git show HEAD:opendata/data/providers/_engine/http_json.py > opendata/data/providers/_engine/http_json.py
+  PYTHONDONTWRITEBYTECODE=1 python3 -m pytest tests/test_provider_engine_contract.py -q --no-cov -p no:cacheprovider
+  cp /tmp/fixed_http_json.py opendata/data/providers/_engine/http_json.py
+
+退出码：1
+末行读数：10 failed, 55 passed in 0.49s
+（pytest.ini 配了 rerunfailures，失败用例会重跑一次，所以 FAILED 行里
+ `test_unpaged_model_has_no_page_shape` 出现两次——同一条用例，两个唯一失败计数各算一次）
+
+FAILED 逐条（10 条唯一）：
+  ::test_caller_set_page_size_survives_into_every_request            ← D1+D2 的行为反例
+  ::test_pages_repeating_one_declared_total_read_complete            ← D3 的行为反例（相加读法）
+  ::test_pages_that_disagree_on_the_total_are_a_conflict             ← D3 新码（旧读法回 INCOMPLETE）
+  ::test_published_zero_total_is_read_as_a_total                     ← D3 的 0-当-缺席（旧读法静默放行）
+  ::test_page_size_is_read_from_the_request[params0-1]               ← 新helper不存在（AttributeError）
+  ::test_page_size_is_read_from_the_request[params1-5]               ← 同上
+  ::test_page_size_is_read_from_the_request[params2-2]               ← 同上
+  ::test_page_size_is_read_from_the_request[params3-2]               ← 同上
+  ::test_page_size_is_read_from_the_request[params4-2]               ← 同上
+  ::test_unpaged_model_has_no_page_shape                             ← 同上
+
+三类读数分开登记，不混成一个「翻红 10」：
+  * 行为翻红（证明旧读法错）：4 条——上面前 4 条。它们才是 D1/D2/D3 的反事实。
+  * 新面自带失败（证明新代码是新的，不证明旧读法错）：6 条——`effective_page_size` 在 HEAD 里
+    不存在，AttributeError。这条差别只说明 helper 是本轮新增，登记时不能算作旧缺陷的证据。
+  * 两边都绿的守卫（不是反例）：2 条
+    - test_declared_default_is_injected_when_the_caller_sets_no_page_size：旧码也会注入 limit=100
+    - test_published_zero_total_on_an_empty_answer_is_complete：旧码把 0 当缺席→正好跳过核对→也返回 ()
+    这两条留着防「修 D3 时把 0 读成 null 后又反过来把空结果当总数缺失」。
+
+正向对照（同一判据必须能不为零）：
+  test_page_size_is_read_from_the_request 的参数化里 `{}` 那一格只能等于默认 2，
+  而 {"limit":"1"}→1、{"limit":"5"}→5 两格只能不等于 2——两臂互为对照，一条 helper 判据不会
+  退化成「怎么读都对」。
+  D3 的对照是 test_declared_total_must_match_the_rows_returned（total=5、2 行→INCOMPLETE）
+  与新加的 total 重复页（三页各 4→4 行通过）：同一份核对逻辑，一边必须红一边必须绿。
+
+================================================================================
+3) 还原证明（不是「没报错」，是按效果验）
+================================================================================
+  cmp -s /tmp/fixed_http_json.py opendata/data/providers/_engine/http_json.py → RESTORE_IDENTICAL=yes
+  cmp -s /tmp/head_http_json.py  opendata/data/providers/_engine/http_json.py → 不相同（NOT_THE_BUGGY_BYTES=yes）
+  还原后重跑两文件全套：退出码 0，79 passed in 0.38s
+
+================================================================================
+4) 同期收口的留档面（docs/evidence/C69/retired-import-census.py / .txt）
+================================================================================
+命令：python3 docs/evidence/C69/retired-import-census.py（退出码 0）
+读数：scanned_python_files=69  files_with_real_imports=11  import_sites=20
+      refused_by_authority=5  target_missing_on_disk=0  files_with_string_only_hits=17
+可用性面（find_spec，不执行任何导入；仓库根在 sys.path 上，正向对照 opendata resolvable=True）：
+      opendata_fuyao resolvable=False   opendata_http resolvable=False
+      canonical opendata/data/providers/ths is_dir=True python_files=26
+      canonical opendata/data/providers/akshare/_vendor is_dir=True python_files=325
+
+三条对本档案链的更正（我自己的先前口径被这份仪器推翻）：
+  * C67 README 写「其余 13 份档案脚本仍导入退役的顶层名」——AST 数出来是 11 份 20 个站点。
+    差额两份：C54 本轮已修好（重算 body 4988 字节 sha256=5fca1ef06972979d，与档案逐字节相同），
+    C44 那一处命中在 `_SHELL_CASES` 的 fixture 源串里，只被 ast.parse 当自样本读，从来不是导入。
+  * 上一轮那个「13」是用 grep 数的：grep 分不清导入与字符串常量。这份 census 用 AST 分箱，
+    两个箱都打印，才敢报 11/17 这两个互斥计数。
+  * 5 个 `from opendata_fuyao import FuyaoHttpClient` 站点被布局权威拒绝（裸目录没有单一文件身份），
+    但符号本身活在 `opendata.data.providers.ths` 的再导出里
+    （scripts/ops/ths_fund_etf_cross_check.py:87 就是这个写法）。所以「权威拒绝」不等于「无处可修」，
+    它说的是文件级映射在这里不够用——这条要按字面读，不能读成死路。
+
+处置（按 C68 的规则：证不了逐字节相同的修复一律不动）：
+  11 份里 C15/C16/C18/C19/C26/C27 多篇是**现场**脚本（名字里带 live、或调用 THS 端点取当日数据），
+  离线重算本来就拿不到当日读数，逐字节相同这一条无法证明；它们的导入保持原样，档案保持原样。
+  已证明可复算并保留了修复的只有 C54（本轮）与 C44 那份本来就跑得通的（无需修）。
+
+================================================================================
+5) 限制
+================================================================================
+* 本轮没有跑 `make gate`：树在本轮仍在动，门禁读数要留在冻结树上取（任务 #2 的后半）。
+* 未推送任何提交；真实来源/部署腿一律 NOT_RUN，与本轮离线判据分开。
+* `_declared_total` 仍只认 document 顶层的 total_key（`spec.pagination.total_key` 声明在哪个信封层，
+  就读哪层）；嵌套指针不在本轮面内，cboe/已注册模型无一声明嵌套 total，声明面没有这条需求前不加。

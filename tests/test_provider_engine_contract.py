@@ -53,6 +53,8 @@ DEMO_PARAMS = (
     ParamSpec(name="limit", kind="int", default=2),
 )
 UNPAGED = PaginationSpec(kind="none")
+#: Page-driven paging that also publishes the size of the whole result on every page.
+WITH_TOTAL = PaginationSpec(kind="page", limit_key="limit", offset_key="page", total_key="total")
 
 
 def demo_spec(**overrides: object) -> ModelSpec:
@@ -242,6 +244,129 @@ class TestPaginationAndCompleteness:
             ctx=fixture_context(SOURCE, spec), start_date=date(2026, 1, 1)
         )
         assert len(rows) == 2
+
+    def test_caller_set_page_size_survives_into_every_request(self, send_through) -> None:
+        """The engine pages at the size the caller asked for, not at the declared default.
+
+        Rewriting ``limit`` to the default here would send a request the caller did not make,
+        and comparing a page against the default would then read the first one-row page as short,
+        so paging would stop after one send and a third of the answer would be reported as whole.
+        """
+        keyed: dict[tuple[str, frozenset], HttpResponse] = {}
+        for page_number in ("1", "2", "3"):
+            params = {"from": "2026-01-01", "limit": "1", "page": page_number}
+            keyed[(URL, frozenset(params.items()))] = paged([record(int(page_number) - 1)], total=3)
+        probe = {"from": "2026-01-01", "limit": "1", "page": "4"}
+        keyed[(URL, frozenset(probe.items()))] = paged([], total=3)
+        transport = send_through(SyntheticTransport(keyed))
+        spec = demo_spec(pagination=WITH_TOTAL)
+        rows = demo_fetcher(spec).fetch(
+            ctx=fixture_context(SOURCE, spec, sends=4),
+            start_date=date(2026, 1, 1),
+            limit=1,
+        )
+        assert [call["params"]["limit"] for call in transport.calls] == ["1"] * 4
+        assert [row.value for row in rows] == [0.5, 1.5, 2.5]
+
+    def test_declared_default_is_injected_when_the_caller_sets_no_page_size(
+        self, send_through
+    ) -> None:
+        """The counterpart: with nothing to preserve, the pager still states its page size."""
+        transport = send_through(FixedResponseTransport(paged([])))
+        spec = demo_spec(
+            params=tuple(p for p in DEMO_PARAMS if p.name != "limit"),
+            pagination=PaginationSpec(kind="page", limit_key="limit", offset_key="page"),
+        )
+        assert (
+            demo_fetcher(spec).fetch(ctx=fixture_context(SOURCE, spec), start_date=date(2026, 1, 1))
+            == ()
+        )
+        assert transport.calls[0]["params"]["limit"] == "100"
+
+    def test_pages_repeating_one_declared_total_read_complete(self, send_through) -> None:
+        """An endpoint repeats the size of the whole answer on every page.
+
+        Summing the repeats reads 12 for a 4-row answer and rejects a complete result; the
+        declaration supports only the reading that the pages agree and the rows equal that total.
+        """
+        keyed: dict[tuple[str, frozenset], HttpResponse] = {}
+        for page_number, records in (("1", [record(0), record(1)]), ("2", [record(2), record(3)])):
+            params = {"from": "2026-01-01", "limit": "2", "page": page_number}
+            keyed[(URL, frozenset(params.items()))] = paged(records, total=4)
+        probe = {"from": "2026-01-01", "limit": "2", "page": "3"}
+        keyed[(URL, frozenset(probe.items()))] = paged([], total=4)
+        send_through(SyntheticTransport(keyed))
+        spec = demo_spec(pagination=WITH_TOTAL)
+        rows = demo_fetcher(spec).fetch(
+            ctx=fixture_context(SOURCE, spec, sends=3), start_date=date(2026, 1, 1)
+        )
+        assert len(rows) == 4
+
+    def test_pages_that_disagree_on_the_total_are_a_conflict(self, send_through) -> None:
+        """Two pages announcing different totals leave the answer's size unproven."""
+        keyed: dict[tuple[str, frozenset], HttpResponse] = {
+            (
+                URL,
+                frozenset({"from": "2026-01-01", "limit": "2", "page": "1"}.items()),
+            ): paged([record(0), record(1)], total=4),
+            (
+                URL,
+                frozenset({"from": "2026-01-01", "limit": "2", "page": "2"}.items()),
+            ): paged([record(2)], total=3),
+        }
+        send_through(SyntheticTransport(keyed))
+        spec = demo_spec(pagination=WITH_TOTAL)
+        code = raised_code(
+            demo_fetcher(spec).fetch,
+            ctx=fixture_context(SOURCE, spec, sends=3),
+            start_date=date(2026, 1, 1),
+        )
+        assert code == "ENGINE_TOTAL_CONFLICT"
+
+    def test_published_zero_total_is_read_as_a_total(self, send_through) -> None:
+        """``total: 0`` is the endpoint publishing an empty answer, not publishing nothing.
+
+        Treating 0 as absent let a page of rows through unchecked against the total it denies.
+        """
+        send_through(FixedResponseTransport(paged([record(0)], total=0)))
+        spec = demo_spec(pagination=PaginationSpec(kind="none", total_key="total"))
+        code = raised_code(
+            demo_fetcher(spec).fetch,
+            ctx=fixture_context(SOURCE, spec),
+            start_date=date(2026, 1, 1),
+        )
+        assert code == "ENGINE_TOTAL_CONFLICT"
+
+    def test_published_zero_total_on_an_empty_answer_is_complete(self, send_through) -> None:
+        send_through(FixedResponseTransport(paged([], total=0)))
+        spec = demo_spec(pagination=PaginationSpec(kind="none", total_key="total"))
+        assert (
+            demo_fetcher(spec).fetch(ctx=fixture_context(SOURCE, spec), start_date=date(2026, 1, 1))
+            == ()
+        )
+
+    @pytest.mark.parametrize(
+        ("params", "expected"),
+        [
+            ({"limit": "1"}, 1),
+            ({"limit": "5"}, 5),
+            ({}, 2),
+            ({"limit": "0"}, 2),
+            ({"limit": "many"}, 2),
+        ],
+    )
+    def test_page_size_is_read_from_the_request(self, params: dict, expected: int) -> None:
+        """A short page means short against what was asked for, never against the default.
+
+        ``{}`` is the one arm that can only agree with the default, so the caller-set arms cannot
+        pass by restating it: a page of size 1 is short at zero rows, a page of size 5 is not.
+        """
+        spec = demo_spec(pagination=WITH_TOTAL)
+        assert http_json.effective_page_size(spec, params) == expected
+
+    def test_unpaged_model_has_no_page_shape(self) -> None:
+        spec = demo_spec(pagination=PaginationSpec(kind="none", total_key="total"))
+        assert http_json.effective_page_size(spec, {"limit": "1"}) == 0
 
 
 class TestEmptyVersusMissing:
