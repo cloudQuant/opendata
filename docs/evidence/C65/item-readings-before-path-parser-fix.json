@@ -1,0 +1,3331 @@
+{
+  "env": {
+    "python": "3.11.8"
+  },
+  "items": [
+    {
+      "item": "AC-10|04",
+      "key": "AC-10|04|4e30a2d0",
+      "state": "proven",
+      "summary": "optional SDK provider isolation",
+      "readings": [
+        "C64 fresh named behavior checks: 1/1 nodes passed",
+        "runtime binding=yes; scope=SDK blocked in subprocess; ECB registry/routing/mock fetch still works"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "1",
+        "c64_exit": "0",
+        "c64_passed": "1",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "SDK blocked in subprocess; ECB registry/routing/mock fetch still works"
+      }
+    },
+    {
+      "item": "AC-11|07",
+      "key": "AC-11|07|8b7cc309",
+      "state": "proven",
+      "summary": "ODS commit to actual local websocket notification",
+      "readings": [
+        "C64 fresh named behavior checks: 4/4 nodes passed",
+        "runtime binding=yes; scope=real local WS chain; three SQLite adapters; separate MySQL writer evidence"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "4",
+        "c64_exit": "0",
+        "c64_passed": "4",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "real local WS chain; three SQLite adapters; separate MySQL writer evidence"
+      }
+    },
+    {
+      "item": "AC-13|02",
+      "key": "AC-13|02|3c4bde92",
+      "state": "proven",
+      "summary": "actual production lifespan scheduler ownership",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=actual lifespan with safe DB/bootstrap seams; no deployment activation"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "actual lifespan with safe DB/bootstrap seams; no deployment activation"
+      }
+    },
+    {
+      "item": "AC-14|02",
+      "key": "AC-14|02|d72a3496",
+      "state": "proven",
+      "summary": "degraded local consumer handoff and real backtest",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=section0 fallback: local HTTP/Key/40 bars/backtrader; no platform claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "section0 fallback: local HTTP/Key/40 bars/backtrader; no platform claim"
+      }
+    },
+    {
+      "item": "AC-14|03",
+      "key": "AC-14|03|03ada075",
+      "state": "proven",
+      "summary": "fresh documented consumer script reproduction",
+      "readings": [
+        "C64 fresh named behavior checks: 1/1 nodes passed",
+        "runtime binding=yes; scope=current script/local HTTP: 40 bars/calls/time/range; section0 fallback"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "1",
+        "c64_exit": "0",
+        "c64_passed": "1",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "current script/local HTTP: 40 bars/calls/time/range; section0 fallback"
+      }
+    },
+    {
+      "item": "AC-14|01",
+      "key": "AC-14|01|29b3754f",
+      "state": "proven",
+      "summary": "consumer Key lifecycle and rate limit",
+      "readings": [
+        "C64 fresh named behavior checks: 9/9 nodes passed",
+        "runtime binding=yes; scope=local key checks; Redis fake, deployment unverified"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "9",
+        "c64_exit": "0",
+        "c64_passed": "9",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "local key checks; Redis fake, deployment unverified"
+      }
+    },
+    {
+      "item": "AC-13|04",
+      "key": "AC-13|04|9b4606b9",
+      "state": "proven",
+      "summary": "ODS truth after raw-cache deletion",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=actual job + SQLite ODS + raw-cache deletion; no provider requests"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "actual job + SQLite ODS + raw-cache deletion; no provider requests"
+      }
+    },
+    {
+      "item": "AC-13|06",
+      "key": "AC-13|06|f440f22d",
+      "state": "proven",
+      "summary": "single-symbol isolation and browser retry",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=local browser API fixtures {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; actual backend retry with SQLite controls"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "local browser API fixtures {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; actual backend retry with SQLite controls"
+      }
+    },
+    {
+      "item": "§6|03",
+      "key": "§6|03|407cf9b8",
+      "state": "proven",
+      "summary": "browser failed-list download and retry",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=local browser downloads/errors {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; backend SQLite retry/list checks"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "local browser downloads/errors {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; backend SQLite retry/list checks"
+      }
+    },
+    {
+      "item": "AC-11|12",
+      "key": "AC-11|12|f1c47ff1",
+      "state": "proven",
+      "summary": "legacy loader and frontend gate membership",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=current loader/route regression; frontend targets are actual gate members"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "current loader/route regression; frontend targets are actual gate members"
+      }
+    },
+    {
+      "item": "AC-6|01",
+      "key": "AC-6|01|4f5b0f7b",
+      "state": "proven",
+      "summary": "archived P0 replay observations",
+      "readings": [
+        "recorded observations=yes; provenance=yes",
+        "A2 replay: 14 PASS cases; Sina alternatives; four Eastmoney cases pending; no P1 coverage claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "observations": "yes",
+        "provenance": "yes",
+        "scope": "A2 replay: 14 PASS cases; Sina alternatives; four Eastmoney cases pending; no P1 coverage claim"
+      }
+    },
+    {
+      "item": "AC-7|03",
+      "key": "AC-7|03|10995291",
+      "state": "proven",
+      "summary": "actual historical fuyao smoke and dump",
+      "readings": [
+        "recorded observations=yes; provenance=yes",
+        "A3 live smoke and ten-day dump; no current Key or ten-year claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "observations": "yes",
+        "provenance": "yes",
+        "scope": "A3 live smoke and ten-day dump; no current Key or ten-year claim"
+      }
+    },
+    {
+      "item": "AC-12|03",
+      "key": "AC-12|03|0d686b17",
+      "state": "proven",
+      "summary": "maintenance budget and abandonment process",
+      "readings": [
+        "recorded observations=yes; provenance=yes",
+        "documented budget/process; no actual staffing allocation claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "observations": "yes",
+        "provenance": "yes",
+        "scope": "documented budget/process; no actual staffing allocation claim"
+      }
+    },
+    {
+      "item": "§4|01",
+      "key": "§4|01|65cded67",
+      "state": "proven",
+      "summary": "historical dual-source measured differences",
+      "readings": [
+        "recorded observations=yes; provenance=yes",
+        "B1 2026-01-05..07-21: 719314 compared keys; akshare leg from legacy migration, no fresh dual capture"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "observations": "yes",
+        "provenance": "yes",
+        "scope": "B1 2026-01-05..07-21: 719314 compared keys; akshare leg from legacy migration, no fresh dual capture"
+      }
+    },
+    {
+      "item": "§4|05",
+      "key": "§4|05|0bb21c83",
+      "state": "proven",
+      "summary": "historical independent index sample",
+      "readings": [
+        "recorded observations=yes; provenance=yes",
+        "C5 index_daily: 3 live legs plus one fixture; no all-domain or current-provider claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "observations": "yes",
+        "provenance": "yes",
+        "scope": "C5 index_daily: 3 live legs plus one fixture; no all-domain or current-provider claim"
+      }
+    },
+    {
+      "item": "§6|04",
+      "key": "§6|04|38929914",
+      "state": "proven",
+      "summary": "current isolated dual-database restore",
+      "readings": [
+        "recorded observations=yes; provenance=yes",
+        "C64 isolated MySQL restore; no production activation or file RPO claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "observations": "yes",
+        "provenance": "yes",
+        "scope": "C64 isolated MySQL restore; no production activation or file RPO claim"
+      }
+    },
+    {
+      "item": "AC-3|01",
+      "key": "AC-3|01|d4d8d4f4",
+      "state": "proven",
+      "summary": "bundled provider registration",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=offline registrations; historical opendata_providers uses current providers"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline registrations; historical opendata_providers uses current providers"
+      }
+    },
+    {
+      "item": "AC-3|02",
+      "key": "AC-3|02|ad9b6149",
+      "state": "proven",
+      "summary": "authority and health fallback",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=offline actual registry resolution"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline actual registry resolution"
+      }
+    },
+    {
+      "item": "AC-3|03",
+      "key": "AC-3|03|cb527b75",
+      "state": "proven",
+      "summary": "precise explicit routing",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=offline explicit routing and rejection; no live supplier request"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline explicit routing and rejection; no live supplier request"
+      }
+    },
+    {
+      "item": "AC-3|04",
+      "key": "AC-3|04|d95b04a8",
+      "state": "proven",
+      "summary": "unverified and reserved notes exclusion",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=offline verified/notes eligibility, both reserved note values"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline verified/notes eligibility, both reserved note values"
+      }
+    },
+    {
+      "item": "AC-3|05",
+      "key": "AC-3|05|8d653c0a",
+      "state": "proven",
+      "summary": "capability and source registry APIs",
+      "readings": [
+        "C64 fresh named behavior checks: 4/4 nodes passed",
+        "runtime binding=yes; scope=offline authenticated read-only API and current registry contents"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "4",
+        "c64_exit": "0",
+        "c64_passed": "4",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline authenticated read-only API and current registry contents"
+      }
+    },
+    {
+      "item": "AC-6|03",
+      "key": "AC-6|03|e76f832b",
+      "state": "proven",
+      "summary": "incomplete comparison cannot enter auto",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=offline unverified exclusion; no supplier comparison claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline unverified exclusion; no supplier comparison claim"
+      }
+    },
+    {
+      "item": "AC-7|01",
+      "key": "AC-7|01|bffe5960",
+      "state": "proven",
+      "summary": "fuyao envelope auth and backoff",
+      "readings": [
+        "C64 fresh named behavior checks: 4/4 nodes passed",
+        "runtime binding=yes; scope=fresh offline HTTP mocks; historical live smoke A3 separately retained"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "4",
+        "c64_exit": "0",
+        "c64_passed": "4",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "fresh offline HTTP mocks; historical live smoke A3 separately retained"
+      }
+    },
+    {
+      "item": "AC-7|02",
+      "key": "AC-7|02|7569b003",
+      "state": "proven",
+      "summary": "business error messages and remedies",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=current complete error-table validation"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "current complete error-table validation"
+      }
+    },
+    {
+      "item": "AC-7|04",
+      "key": "AC-7|04|89c5e0b2",
+      "state": "proven",
+      "summary": "official endpoint map coverage",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=official archived document inventory and bidirectional map checks"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "official archived document inventory and bidirectional map checks"
+      }
+    },
+    {
+      "item": "AC-7|05",
+      "key": "AC-7|05|cb279570",
+      "state": "proven",
+      "summary": "THS contract registration",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=offline registered domains and contract-backed fetcher declarations"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline registered domains and contract-backed fetcher declarations"
+      }
+    },
+    {
+      "item": "AC-10|05",
+      "key": "AC-10|05|dc7ec3a5",
+      "state": "proven",
+      "summary": "enabled provider compatibility map",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=naming interoperability only; no cleanroom rights assertion"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "naming interoperability only; no cleanroom rights assertion"
+      }
+    },
+    {
+      "item": "AC-11|06",
+      "key": "AC-11|06|eca44525",
+      "state": "proven",
+      "summary": "catalog and freshness routes",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=temporary SQLite handler checks; HTTP route separately covered"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "temporary SQLite handler checks; HTTP route separately covered"
+      }
+    },
+    {
+      "item": "AC-11|08",
+      "key": "AC-11|08|d0506524",
+      "state": "proven",
+      "summary": "missed batch meta replay",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=local websocket protocol and persisted batch fixtures"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "local websocket protocol and persisted batch fixtures"
+      }
+    },
+    {
+      "item": "AC-11|09",
+      "key": "AC-11|09|70838100",
+      "state": "proven",
+      "summary": "full message ceilings and fallback",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=offline bounded framing and remedy assertions"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline bounded framing and remedy assertions"
+      }
+    },
+    {
+      "item": "AC-11|10",
+      "key": "AC-11|10|80d48620",
+      "state": "proven",
+      "summary": "existing routes regression",
+      "readings": [
+        "C64 fresh named behavior checks: 6/6 nodes passed",
+        "runtime binding=yes; scope=offline main-database fixture REST routes and root websocket mounts"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "6",
+        "c64_exit": "0",
+        "c64_passed": "6",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline main-database fixture REST routes and root websocket mounts"
+      }
+    },
+    {
+      "item": "AC-11|11",
+      "key": "AC-11|11|82ca6675",
+      "state": "proven",
+      "summary": "minimal REST and websocket client",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=mock REST/protocol; separate local socket evidence"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "mock REST/protocol; separate local socket evidence"
+      }
+    },
+    {
+      "item": "AC-12|01",
+      "key": "AC-12|01|c1ad31fa",
+      "state": "proven",
+      "summary": "upstream lock provenance and hashes",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=real two-commit temporary git fixture; shipped lock contains full hash inventory"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "real two-commit temporary git fixture; shipped lock contains full hash inventory"
+      }
+    },
+    {
+      "item": "AC-12|02",
+      "key": "AC-12|02|9f581f51",
+      "state": "proven",
+      "summary": "upstream inventory and signature diff",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=fresh local git fixture and historical 147-file commit-interval rehearsal"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "fresh local git fixture and historical 147-file commit-interval rehearsal"
+      }
+    },
+    {
+      "item": "AC-13|01",
+      "key": "AC-13|01|94c78c31",
+      "state": "proven",
+      "summary": "scheduled six-step pipeline task",
+      "readings": [
+        "C64 fresh named behavior checks: 4/4 nodes passed",
+        "runtime binding=yes; scope=temporary DB dispatch, factory and ODS/DWD metadata; separate migration evidence"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "4",
+        "c64_exit": "0",
+        "c64_passed": "4",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "temporary DB dispatch, factory and ODS/DWD metadata; separate migration evidence"
+      }
+    },
+    {
+      "item": "AC-13|03",
+      "key": "AC-13|03|45950181",
+      "state": "proven",
+      "summary": "resume completed shards and retry partial failures",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=SQLite control restart and writer fixtures; separate MySQL resume evidence"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "SQLite control restart and writer fixtures; separate MySQL resume evidence"
+      }
+    },
+    {
+      "item": "§5|03",
+      "key": "§5|03|1c964297",
+      "state": "proven",
+      "summary": "bounded rate-limit retry mechanism",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=offline 429 substitute; no live ban or quota claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline 429 substitute; no live ban or quota claim"
+      }
+    },
+    {
+      "item": "§6|01",
+      "key": "§6|01|7054ff90",
+      "state": "proven",
+      "summary": "step checkpoints resume hooks including metadata",
+      "readings": [
+        "C64 fresh named behavior checks: 4/4 nodes passed",
+        "runtime binding=yes; scope=SQLite step re-entry; notification is at-least-once"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "4",
+        "c64_exit": "0",
+        "c64_passed": "4",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "SQLite step re-entry; notification is at-least-once"
+      }
+    },
+    {
+      "item": "§6|02",
+      "key": "§6|02|a6ebdfb3",
+      "state": "proven",
+      "summary": "persistent scheduler reload",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=file-backed SQLite restart; actual task reload and legacy script path"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "file-backed SQLite restart; actual task reload and legacy script path"
+      }
+    },
+    {
+      "item": "AC-4|03",
+      "key": "AC-4|03|7d283c38",
+      "state": "proven",
+      "summary": "daily P0 patrol, persisted streaks and retryable notification delivery",
+      "readings": [
+        "C64 fresh named behavior checks: 6/6 nodes passed",
+        "runtime binding=yes; scope=fresh offline P0/persistent-outbox checks and actual UTC CronTrigger; disabled by default; business time and live suppliers remain unverified"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "6",
+        "c64_exit": "0",
+        "c64_passed": "6",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "fresh offline P0/persistent-outbox checks and actual UTC CronTrigger; disabled by default; business time and live suppliers remain unverified"
+      }
+    },
+    {
+      "item": "AC-13|05",
+      "key": "AC-13|05|f127fc1d",
+      "state": "proven",
+      "summary": "raw-response TTL cache and actual adjusted-query isolation",
+      "readings": [
+        "C64 fresh named behavior checks: 4/4 nodes passed",
+        "runtime binding=yes; scope=fresh raw-byte cache and SQLite factor-backed REST qfq/hfq checks; deleting cache preserves ODS watermark and computed queries; no formula change"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "4",
+        "c64_exit": "0",
+        "c64_passed": "4",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "fresh raw-byte cache and SQLite factor-backed REST qfq/hfq checks; deleting cache preserves ODS watermark and computed queries; no formula change"
+      }
+    },
+    {
+      "item": "AC-4|01",
+      "key": "AC-4|01|e3c017e7",
+      "state": "proven",
+      "summary": "timeout / 429 retry / per-host rate / concurrency actual mocks",
+      "readings": [
+        "C64 fresh named behavior checks: 5/5 nodes passed",
+        "runtime binding=yes; scope=offline actual transport mocks; no real supplier ban or uptime claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "5",
+        "c64_exit": "0",
+        "c64_passed": "5",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline actual transport mocks; no real supplier ban or uptime claim"
+      }
+    },
+    {
+      "item": "AC-4|02",
+      "key": "AC-4|02|2b146f20",
+      "state": "proven",
+      "summary": "structured safe transport failure events",
+      "readings": [
+        "C64 fresh named behavior checks: 4/4 nodes passed",
+        "runtime binding=yes; scope=offline structured-event behavior and credential redaction"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "4",
+        "c64_exit": "0",
+        "c64_passed": "4",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline structured-event behavior and credential redaction"
+      }
+    },
+    {
+      "item": "AC-7|06",
+      "key": "AC-7|06|db29e204",
+      "state": "proven",
+      "summary": "missing credentials exclusion and visible warning",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=current registry resolution; no supplier availability claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "current registry resolution; no supplier availability claim"
+      }
+    },
+    {
+      "item": "§5|05",
+      "key": "§5|05|7565a580",
+      "state": "proven",
+      "summary": "file-backed minute query with isolated mainDB index",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=fresh temporary file/SQLite checks plus C64 isolated MySQL/Parquet REST; no deployment or file RPO claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "fresh temporary file/SQLite checks plus C64 isolated MySQL/Parquet REST; no deployment or file RPO claim"
+      }
+    },
+    {
+      "item": "§5|04",
+      "key": "§5|04|d73d5844",
+      "state": "proven",
+      "summary": "one real GB ODS table bounded REST/CSV and EXPLAIN evidence",
+      "readings": [
+        "dated_evidence=yes",
+        "gb_table=yes",
+        "http_rows=yes",
+        "indexed=yes",
+        "bounded_time=yes",
+        "read_only=yes",
+        "one indexed stock_daily THS ODS table; 15-day/one-symbol/12-row query; no all-table or P95 claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "dated_evidence": "yes",
+        "gb_table": "yes",
+        "http_rows": "yes",
+        "indexed": "yes",
+        "bounded_time": "yes",
+        "read_only": "yes",
+        "scope": "one indexed stock_daily THS ODS table; 15-day/one-symbol/12-row query; no all-table or P95 claim"
+      }
+    },
+    {
+      "item": "AC-1|01",
+      "key": "AC-1|01|ed953f70",
+      "state": "proven",
+      "summary": "项目自我命名与主包（name / version / opendata/）",
+      "readings": [
+        "pyproject project.name = opendata",
+        "pyproject project.version = 0.1.0",
+        "opendata/__init__.py tracked = yes",
+        "tracked files under the old app/ layout = 0",
+        "first setuptools find include = opendata*"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "name": "opendata",
+        "version": "0.1.0",
+        "opendata_pkg": "yes",
+        "app_pkg_files": "0",
+        "first_include": "opendata*"
+      }
+    },
+    {
+      "item": "AC-1|02",
+      "key": "AC-1|02|48aff045",
+      "state": "gap",
+      "summary": "判据列出的 token 清单 == 扫描器执行的清单，且扫描与独立 grep 都为零",
+      "readings": [
+        "tokens enumerated by the item = 13; enforced by check_brand.py = 13; identical = yes",
+        "$ python scripts/quality/check_brand.py -> exit 1: FAIL: 1 brand/rename problem(s) found.",
+        "independent grep for `from app.` / `import app.` over 505 own .py files -> 0 file(s)"
+      ],
+      "reason": "the enforced list must equal the item's, the scanner must exit 0, the grep must come back empty on its own",
+      "closure": "checker_exit: 1 -> 0",
+      "facts": {
+        "doc_tokens": "13",
+        "script_tokens": "13",
+        "sets_equal": "yes",
+        "checker_exit": "1",
+        "checker_line": "FAIL: 1 brand/rename problem(s) found.",
+        "app_ref_files": "0",
+        "app_ref_sample": "",
+        "app_ref_scope": "505"
+      }
+    },
+    {
+      "item": "AC-1|03",
+      "key": "AC-1|03|37d05f56",
+      "state": "gap",
+      "summary": "裸词 akshare 的白名单是否真的覆盖全部命中面",
+      "readings": [
+        "whitelist read back out of the item (9 entries): opendata_http/, THIRD_PARTY_NOTICES.md, LICENSE-AKSHARE, README.md, CODE_QUALITY.md, scripts/codemod/, tests/, docs/, docs/quality/akshare-reference-allowlist.json",
+        "tracked files carrying the bare word `akshare` = 905, of which the vendored tree = 327",
+        "unregistered hits outside that whitelist = 0 (+0 unshown): -",
+        "path register valid = yes (81 entries; stale paths=0, stale SHA=0, invalid metadata/schema=0, unreadable tracked files=7)",
+        "exact AST metadata exceptions = 3/3",
+        "AC-16's frozen integration-layer findings = 0 ()"
+      ],
+      "reason": "the item's enumerated whitelist does not describe the tree: the word is in build and operational surfaces it never listed. Closing this needs a wording decision (what the whitelist is supposed to cover after A2/B5), not a re-read",
+      "closure": "unreadable: 7 -> 0",
+      "facts": {
+        "buckets": "9",
+        "bucket_names": "opendata_http/, THIRD_PARTY_NOTICES.md, LICENSE-AKSHARE, README.md, CODE_QUALITY.md, scripts/codemod/, tests/, docs/, docs/quality/akshare-reference-allowlist.json",
+        "hit_files": "905",
+        "vendored": "327",
+        "outside": "0",
+        "outside_sample": "",
+        "outside_more": "0",
+        "unreadable": "7",
+        "policy_valid": "yes",
+        "policy_error": "-",
+        "policy_entries": "81",
+        "metadata_exceptions": "3",
+        "unregistered": "0",
+        "unregistered_sample": "",
+        "stale_paths": "0",
+        "sha_mismatch": "0",
+        "metadata_invalid": "0",
+        "integration_frozen": "0",
+        "integration_files": ""
+      }
+    },
+    {
+      "item": "AC-1|04",
+      "key": "AC-1|04|019bc6fc",
+      "state": "proven",
+      "summary": "容器名 / DB 用户 / 根文档 / Makefile·pre-commit 四个面各自成立",
+      "readings": [
+        "compose container_name set: opendata_mysql, opendata_warehouse, opendata_redis, opendata_backend, opendata_frontend, opendata_certbot, opendata_backup -> not opendata_* = 0",
+        "compose named networks: opendata_network",
+        "`opendata_user` missing from: - (checked .env.example, compose, init.sql)",
+        "pre-rename tokens in the 7 machine surfaces = 0",
+        "root documents: lines that still *use* a token = 0; lines that name it as history = 3 (沿革引用, allowed by AC-1|03 over 4 files)",
+        "root-level file *names* still carrying a token = 0",
+        "Makefile path references = 21, absent = 0",
+        "pre-commit files:/exclude: regexes = 8, matching no tracked file = 0"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "containers": "opendata_mysql, opendata_warehouse, opendata_redis, opendata_backend, opendata_frontend, opendata_certbot, opendata_backup",
+        "foreign": "0",
+        "networks": "opendata_network",
+        "user_missing": "-",
+        "machine_files": "0",
+        "machine_sample": "",
+        "doc_live": "0",
+        "doc_live_sample": "",
+        "doc_historical": "3",
+        "stale_docs": "0",
+        "makefile_paths": "21",
+        "missing_paths": "0",
+        "missing_sample": "",
+        "hook_patterns": "8",
+        "stale_patterns": "0",
+        "stale_sample": ""
+      }
+    },
+    {
+      "item": "AC-1|05",
+      "key": "AC-1|05|db9002ff",
+      "state": "proven",
+      "summary": "双库名四处一致（可静态量）+ 后端/前端/health 运行时（要真机）",
+      "readings": [
+        "config.py defaults, .env.example, docker-compose.yml, init.sql all read opendata / opendata_data = yes",
+        "  config.py = opendata / opendata_data",
+        "  .env.example = opendata / opendata_data",
+        "  docker-compose.yml = opendata / opendata_data",
+        "  init.sql = opendata / opendata_data",
+        "backend start / frontend login / GET /health = validated (evidence issues 0: none)",
+        "  isolated endpoint = http://127.0.0.1:33566; image/source = sha256:3c8f9415734277069d65ba22f4594d189760cfe07dbd753fa9744f30afd60afc / c6bd1179740a703c79fdad95dba52a81206bc5a22159ba4a1f60798b26f1c50b",
+        "  database = connected; static assets = 2; frontend identity = verified"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "config": "opendata / opendata_data",
+        "env_example": "opendata / opendata_data",
+        "compose": "opendata / opendata_data",
+        "init_sql": "opendata / opendata_data",
+        "consistent": "yes",
+        "runtime": "validated",
+        "runtime_valid": "yes",
+        "runtime_issue_count": "0",
+        "runtime_issue_summary": "none",
+        "runtime_endpoint": "http://127.0.0.1:33566",
+        "runtime_image": "sha256:3c8f9415734277069d65ba22f4594d189760cfe07dbd753fa9744f30afd60afc",
+        "runtime_source": "c6bd1179740a703c79fdad95dba52a81206bc5a22159ba4a1f60798b26f1c50b",
+        "runtime_health_database": "connected",
+        "runtime_static_asset_count": "2",
+        "runtime_frontend_identity": "verified"
+      }
+    },
+    {
+      "item": "AC-1|06",
+      "key": "AC-1|06|3ce38e4e",
+      "state": "proven",
+      "summary": "数据仓库容器不再挂在 --profile 上",
+      "readings": [
+        "services sitting behind a profile: backup=- backup, certbot=- ssl",
+        "mysql_warehouse requires --profile = no",
+        "`docker compose config --services` resolved 0 service(s) and lists the warehouse = n/a (exit 1: error while interpolating services.backend.environment.MYSQL_PASSWORD: required )"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "profiled": "backup=- backup, certbot=- ssl",
+        "warehouse_profiled": "no",
+        "cli_rc": "1",
+        "cli_listed": "0",
+        "in_cli_set": "n/a",
+        "cli_note": "error while interpolating services.backend.environment.MYSQL_PASSWORD: required "
+      }
+    },
+    {
+      "item": "AC-1|07",
+      "key": "AC-1|07|2be7c221",
+      "state": "proven",
+      "summary": "BSL 四要素 + 搬运许可 + README 三项（含商务联系方式为真实可达）",
+      "readings": [
+        "LICENSE opens with Business Source License 1.1 = yes",
+        "parameter block = Additional Use Grant, Change Date, Change License, Licensed Work, Licensor (missing of the four = 0); Change License = MIT License",
+        "LICENSE-AKSHARE present and MIT = yes",
+        "THIRD_PARTY_NOTICES.md has 4 sections; embedded-resource rights block = yes",
+        "README 授权/许可说明 = yes; 数据免责声明 = yes",
+        "README 商务联系方式 = 商务授权联系：cloudQuant — [个人主页](https://yunjinqi.top) / [GitHub](https://gi (placeholder = no)"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "bsl": "yes",
+        "params": "Additional Use Grant, Change Date, Change License, Licensed Work, Licensor",
+        "missing": "0",
+        "change_license": "MIT License",
+        "akshare_license": "yes",
+        "notices_sections": "4",
+        "resource_registry": "yes",
+        "license_notice": "yes",
+        "disclaimer": "yes",
+        "contact": "商务授权联系：cloudQuant — [个人主页](https://yunjinqi.top) / [GitHub](https://gi",
+        "placeholder": "no"
+      }
+    },
+    {
+      "item": "AC-1|08",
+      "key": "AC-1|08|2e7a9f6f",
+      "state": "proven",
+      "summary": "只读§1登记表：每个已引来源须有条款、用途、日期与责任人",
+      "readings": [
+        "§1 table valid = yes; rows = 11; columns = #, 数据源, 接入方式, 条款链接, 允许本项目落库, 允许再分发, 允许商业使用, 复核日期, 责任人, 状态",
+        "rows carrying a real 复核日期 = 11/11",
+        "rows still answering a permitted use with 待确认 = 0/11",
+        "rows whose 条款链接 is prose instead of a URL = 0/11",
+        "rows with an empty or unspecified 责任人 = 0/11",
+        "registry rows cited by docs/proposals/openbb-migration/provider-inventory.yaml = 10, citations with no row = 0"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "table_valid": "yes",
+        "rows": "11",
+        "columns": "#, 数据源, 接入方式, 条款链接, 允许本项目落库, 允许再分发, 允许商业使用, 复核日期, 责任人, 状态",
+        "dated": "11",
+        "undecided": "0",
+        "unlinked": "0",
+        "responsible_missing": "0",
+        "cited": "10",
+        "uncovered": "0",
+        "uncovered_sample": ""
+      }
+    },
+    {
+      "item": "AC-1|09",
+      "key": "AC-1|09|9a1b761f",
+      "state": "gap",
+      "summary": "git 面 / 扫描器豁免面 / 上游 5 文件处置 / 全历史扫描器实跑",
+      "readings": [
+        "legacy path grep finds 1 paths because the allowed template is named; real `.env`/`.env.*`, `.idea` components, or `.pid` files = 0",
+        "tracked env templates = 1 (.env.example); global path exemptions = 0 (none required = yes)",
+        "global path exemption names = 0 -",
+        "per-rule allowlist blocks = 2; exact public-rule exceptions preserved = no",
+        "upstream credential files registered in docs/evidence/A0/secret-audit.txt = 5/5; cred-shaped literals left in them = 0",
+        "$ python scripts/quality/secret_scan_check.py -> exit 0: exit=0; findings=0; locations=-",
+        "isolated `.env.example` scan (unchanged config, no path exclusions) -> exit 0: findings=0; locations=-"
+      ],
+      "reason": "a real environment/IDE/pid path, stale or broadened allowlist, changed public rule exception, unregistered upstream file, or unscanned/credential-bearing template remains",
+      "closure": "rule_shapes: no -> yes",
+      "facts": {
+        "literal": "1",
+        "literal_sample": ".env.example",
+        "strict": "0",
+        "env_paths": "0",
+        "env_sample": "",
+        "template_paths": "1",
+        "template_names": ".env.example",
+        "generated_paths": "0",
+        "generated_sample": "",
+        "allow_paths": "0",
+        "allow_names": "",
+        "exact_paths": "yes",
+        "non_template": "0",
+        "non_template_names": "",
+        "rule_blocks": "2",
+        "rule_shapes": "no",
+        "registered": "5",
+        "upstream_files": "5",
+        "live_shapes": "0",
+        "gitleaks_rc": "0",
+        "secret_check_line": "exit=0; findings=0; locations=-",
+        "template_config_ok": "yes",
+        "template_scan_rc": "0",
+        "template_scan_summary": "findings=0; locations=-"
+      }
+    },
+    {
+      "item": "AC-1|10",
+      "key": "AC-1|10|0c44a7ef",
+      "state": "gap",
+      "summary": "残留文件 + 从未进库的文件 + 首次提交的树完整性",
+      "readings": [
+        "tracked paths matching a copy-residue shape = 0",
+        "untracked-and-not-ignored files = 1 (docs/evidence/C65/faces-sync-before-readings.txt)",
+        "tracked files with uncommitted edits = 587 (.dockerignore, .env.example, .gitleaks.toml, Dockerfile, QUICKSTART.md, README.md, THIRD_PARTY_NOTICES.md, alembic/versions/2026_09_30-0004_minute_archive.py)",
+        "first commit touching opendata/__init__.py = 4ee1bbca \"4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, qua\"",
+        "its tree = 712 files, holding every part of the project it should (missing: -), against 2043 tracked today (34.9%; the rest arrived with later rounds, which is growth)"
+      ],
+      "reason": "residue, files git has never seen, uncommitted edits, or a first commit that left part of the project out -- 'first complete commit' has to mean the whole move landed",
+      "closure": "dirty: 587 -> 0; dirty_sample: .dockerignore, .env.example, .gitleaks.toml, Dockerfile, QUICKSTART.md, README.md, THIRD_PARTY_NOTICES.md, alembic/versions/2026_09_30-0004_minute_archive.py -> ; first_tree: 712 -> 2043; untracked: 1 -> 0; untracked_sample: docs/evidence/C65/faces-sync-before-readings.txt -> ",
+      "facts": {
+        "residue": "0",
+        "residue_sample": "",
+        "untracked": "1",
+        "untracked_sample": "docs/evidence/C65/faces-sync-before-readings.txt",
+        "dirty": "587",
+        "dirty_sample": ".dockerignore, .env.example, .gitleaks.toml, Dockerfile, QUICKSTART.md, README.md, THIRD_PARTY_NOTICES.md, alembic/versions/2026_09_30-0004_minute_archive.py",
+        "first_sha": "4ee1bbca",
+        "first_subject": "4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, qua",
+        "first_tree": "712",
+        "essentials_absent": "-",
+        "tracked_now": "2043",
+        "ratio": "34.9%",
+        "git_rc": "0"
+      }
+    },
+    {
+      "item": "AC-2|01",
+      "key": "AC-2|01|04bc9542",
+      "state": "proven",
+      "summary": "六个 P0 模型逐模型双形态 + fail-closed 节点实跑",
+      "readings": [
+        "ALL_MODELS parametrizes 9 model(s); the six P0 names are covered for 6 (missing: -)",
+        "round-trip + fail-closed nodes run = 12, passed = 12",
+        "the file exercises both forms (DataFrame to_frame/from_frame, model_dump) = yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "param": "9",
+        "covered": "6",
+        "missing": "-",
+        "runs": "12",
+        "passed": "12",
+        "bad": "-",
+        "dual": "yes"
+      }
+    },
+    {
+      "item": "AC-2|02",
+      "key": "AC-2|02|0526af4d",
+      "state": "proven",
+      "summary": "元数据两模型存在且被测（绿），另一面是被回补/窗口逻辑 import",
+      "readings": [
+        "both classes subclass ContractModel in opendata/data/models/metadata.py = yes",
+        "the five field-set/semantics/round-trip nodes = 5/5 passed",
+        "backfill / incremental-window modules importing the contracts = 2 (opendata/pipeline/jobs.py, opendata/pipeline/templates.py)",
+        "modules that only mention the names (docstrings, or a same-named local class) = 0 (-)"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "models": "yes",
+        "runs": "5",
+        "passed": "5",
+        "bad": "-",
+        "importers": "2",
+        "importer_names": "opendata/pipeline/jobs.py, opendata/pipeline/templates.py",
+        "mention_only": "0",
+        "mention_names": "-"
+      }
+    },
+    {
+      "item": "AC-2|03",
+      "key": "AC-2|03|c4547f55",
+      "state": "proven",
+      "summary": "Bar 字段面 + 合成用例 + 与录制的官方 qfq 序列真对照",
+      "readings": [
+        "Bar field-set node (no adjusted price may exist on the model) = passed",
+        "tests/test_adjust.py (synthesising from Bar + AdjustFactor) = 21 passed, 0 failed (exit 0)",
+        "official-series face: 2 case(s) collected [em, sina(\\u5bbd)], 2 passed / 2 skipped / 0 failed (exit 0)"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "bar": "passed",
+        "adjust_passed": "21",
+        "adjust_failed": "0",
+        "adjust_rc": "0",
+        "collected": "2",
+        "case_list": "em, sina(\\u5bbd)",
+        "official_passed": "2",
+        "official_skipped": "2",
+        "official_failed": "0",
+        "official_rc": "0"
+      }
+    },
+    {
+      "item": "AC-2|04",
+      "key": "AC-2|04|989b3a28",
+      "state": "proven",
+      "summary": "基类三段齐备，且 normalize() 自身承担映射/换算/键规范化",
+      "readings": [
+        "protocol bases in opendata/data/protocol.py = FetchContext, Fetcher, QueryParams; Capability model = yes",
+        "Fetcher stage methods = 3 (transform_query / extract_data / transform_data)",
+        "normalize_frame() bodies the three jobs itself: field mapping = yes, unit conversion = yes, key normalization = yes",
+        "named unit nodes = 5/5 passed; not green: -"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "bases": "FetchContext, Fetcher, QueryParams",
+        "capability": "yes",
+        "stages": "3",
+        "rename": "yes",
+        "units": "yes",
+        "keynorm": "yes",
+        "runs": "5",
+        "passed": "5",
+        "bad": "-"
+      }
+    },
+    {
+      "item": "AC-2|05",
+      "key": "AC-2|05|9adcd9e4",
+      "state": "proven",
+      "summary": "注册表存在、三处名字由它派生（且无第二处硬写）、派生用例全绿",
+      "readings": [
+        "domains.yaml declares 20 domain(s): 20 rest_path and 20 contract entries, rest paths unique = yes",
+        "table/WS names written into the registry instead of derived = 0",
+        "tests/test_domains.py = 26 passed, 0 failed (exit 0)",
+        "derivation nodes = 5/5 passed"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "domains": "20",
+        "rest": "20",
+        "contracts": "20",
+        "unique": "yes",
+        "declared": "0",
+        "declared_sample": "",
+        "suite_passed": "26",
+        "suite_failed": "0",
+        "suite_rc": "0",
+        "runs": "5",
+        "derived_passed": "5"
+      }
+    },
+    {
+      "item": "AC-13|07",
+      "key": "AC-13|07|4a567140",
+      "state": "proven",
+      "summary": "四类各有生产者、各有判定行、各被调度执行器真喂输入，测不到仍记进范围",
+      "readings": [
+        "四类节点: 8/8 passed",
+        "接线节点: 4/4 passed",
+        "判据原文点名的类数 = 4/4；判定引擎产出的 rule = consecutive_failures, disk_water, freshness, partition_missing, pipeline_failure，四类齐 = 4/4",
+        "生产者齐备 = 4/4（缺: -）；执行器喂入的三类输入 = 3/3（未喂: -）",
+        "范围诚实字段 = 3/3 —— 测不到要读成 None/0 而不是健康"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "kind_runs": "8",
+        "kind_passed": "8",
+        "kind_bad": "-",
+        "wiring_runs": "4",
+        "wiring_passed": "4",
+        "wiring_bad": "-",
+        "kinds_named": "4",
+        "rules_emitted": "consecutive_failures, disk_water, freshness, partition_missing, pipeline_failure",
+        "rules_judged": "4",
+        "producers": "4",
+        "missing_producer": "-",
+        "inputs_declared": "3",
+        "inputs_fed": "3",
+        "input_unfed": "-",
+        "scope_fields": "3"
+      }
+    },
+    {
+      "item": "AC-17|03",
+      "key": "AC-17|03|f71cd329",
+      "state": "proven",
+      "summary": "棘轮三项存量债务 + 上限自身历史只降不升 + 三个静态平面各读到多少 + 触碰集↔A2 集一一对应",
+      "readings": [
+        "scripts/quality/ratchet.py exit 0（face=none，printed=3/3）：存量债务 ruff_selfdev 148(≤148), mypy_selfdev 0(≤0), bandit_selfdev 1(≤1)",
+        "上限自己的历史（12 次转换）：抬高存量上限的次数 0；近 2 次转换里消失的被测根 0，更早历史 1；存量上限轨迹 ruff_selfdev 404→148 / mypy_selfdev 35→0 / bandit_selfdev 6→1。棘轮只比较工作区与快照，抬高上限这一步此前无人计量（4ee1bbc->2b68225 akshare）",
+        "平面可见性：6 个自研根磁盘 502 个 .py，ruff 自己走到 502（看不见 0）；mypy 目标 212/230，被它排除的 18 个里 18 个在棘轮点名的遗留区（opendata/data_fetch/）之内、0 个是没人声明的 exclude（这 18 个仍全部被 ruff 读到）；bandit 287/287，被它漏掉的 0 个（ruff 也看不见的 0）必须为 0：三个平面各自把一份存量计数，exclude 吞掉的根既不产生读数也不产生红灯，所以谁被排除必须点名，不能只在配置文件里悄悄加一行",
+        "全体 tracked .py = 899，既不在任何被测根下、也不在 A2 集里的 0",
+        "触碰即达标：自基线起改动 475 个 .py ↔ A2 集 475 个（a2-check exit 0），其中按名字被排除出 A2 的 0 个、排除项里的自研代码 0 个"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "ratchet_exit": "0",
+        "ratchet_face": "none",
+        "cur_ruff_selfdev": "148",
+        "snap_ruff_selfdev": "148",
+        "cur_mypy_selfdev": "0",
+        "snap_mypy_selfdev": "0",
+        "cur_bandit_selfdev": "1",
+        "snap_bandit_selfdev": "1",
+        "printed": "3",
+        "hist_steps": "12",
+        "raises": "0",
+        "raise_detail": "",
+        "flat_raises": "0",
+        "flat_raise_detail": "",
+        "vanish_recent": "0",
+        "vanish_recent_detail": "",
+        "vanish_older": "1",
+        "vanish_older_detail": "4ee1bbc->2b68225 akshare",
+        "trend": "ruff_selfdev 404→148 / mypy_selfdev 35→0 / bandit_selfdev 6→1",
+        "plane_roots": "6",
+        "selfdev_disk": "502",
+        "ruff_walked": "502",
+        "ruff_dark": "0",
+        "mypy_disk": "230",
+        "mypy_targets": "212",
+        "mypy_dark": "18",
+        "mypy_dark_seen_by_ruff": "18",
+        "mypy_legacy_zone": "opendata/data_fetch/",
+        "mypy_dark_legacy": "18",
+        "mypy_dark_outside_legacy": "0",
+        "mypy_dark_outside_sample": "",
+        "bandit_disk": "287",
+        "bandit_scanned": "287",
+        "bandit_dark": "0",
+        "bandit_dark_seen_by_ruff": "0",
+        "tracked_py": "899",
+        "orphan_py": "0",
+        "orphan_sample": "",
+        "a2_exit": "0",
+        "a2_files": "475",
+        "touched_py": "475",
+        "touched_dropped": "0",
+        "touched_dropped_selfdev": "0",
+        "touched_dropped_sample": ""
+      }
+    },
+    {
+      "item": "AC-17|05",
+      "key": "AC-17|05|dcbf845d",
+      "state": "proven",
+      "summary": "搬运树只按 E/F 计量（豁免量得出来）+ 未重排且逐文件重放一致 + 三处登记与 pre-commit exclude 一致",
+      "readings": [
+        "scripts/quality/ratchet.py exit 0（face=none）：搬运债务 ruff_ported 2188(≤2188), direct_http_ported 1071(≤1071)；门禁打印的 ruff_ported 与独立跑的 --select E,F 计数一致 = yes（E/F 2188）；直连计数的动词集合 delete, get, head, patch, post, put, request 完整 = yes",
+        "「仅 E/F」豁免挡住的量：同一棵树按自研规则集跑是 9878 条、按 I 规则 233 条，E/F 只有 2188 条 —— 豁免若不存在，门禁当场全红，所以它必须被登记而不是被假装没有",
+        "「未做 format/isort 重排」：216 个文件是 ``ruff format`` 会重写的、233 条 import 顺序违例 —— 重排过一次的树不可能与上游逐行 diff",
+        "重放对账（scripts/codemod/report_port.py，需本机有锁定 commit 的上游干净克隆）：exit 0，锁内 327 条记录 / 报告 327 行 / 逐字一致 327 行 / 待办 0 条；磁盘 325 个 .py，其中未登记的 0 个；现场渲染与已归档的 docs/port-report.md 逐字节一致 = yes",
+        "人工改动三处登记：opendata_http/upstream.lock 9 条、THIRD_PARTY_NOTICES.md 9 条、scripts/codemod/port_module.py:MANUAL_EDITS 9 条，不一致 0 条（重放只认 MANUAL_EDITS，读者只看到登记文档）",
+        ".pre-commit-config.yaml：共 15 个 hook（HEAD 15 个），其中排除搬运树的 4 个，比 HEAD 少的 0 个；排除的 hook id：end-of-file-fixer, ruff, ruff-format, trailing-whitespace",
+        "搬运上限历史（12 次转换）：抬高 5 次、其中搬运文件数未变的 1 次；近 2 次转换消失的被测根 0。判据原文只要求「债务不高于棘轮快照」，故抬高只作待复核登记；轨迹 ruff_ported 1418→2188 / direct_http_ported 1270→1071（3757285->d66dd99 ruff_ported 1305->2145; 4ee1bbc->2b68225 akshare）"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "ratchet_exit": "0",
+        "ratchet_face": "none",
+        "cur_ruff_ported": "2188",
+        "snap_ruff_ported": "2188",
+        "cur_direct_http_ported": "1071",
+        "snap_direct_http_ported": "1071",
+        "printed": "2",
+        "hist_steps": "12",
+        "raises": "5",
+        "raise_detail": "3cf0cf7->工作区 direct_http_ported 1044->1071; 3cf0cf7->工作区 ruff_ported 2144->2188; 3757285->d66dd99 ruff_ported 1305->2145; 5a2e085->3757285 direct_http_ported 313->1045; 5a2e085->3757285 ruff_ported 717->1305",
+        "flat_raises": "1",
+        "flat_raise_detail": "3757285->d66dd99 ruff_ported 1305->2145",
+        "vanish_recent": "0",
+        "vanish_recent_detail": "",
+        "vanish_older": "1",
+        "vanish_older_detail": "4ee1bbc->2b68225 akshare",
+        "trend": "ruff_ported 1418→2188 / direct_http_ported 1270→1071",
+        "ef_violations": "2188",
+        "project_violations": "9878",
+        "isort_violations": "233",
+        "format_would_rewrite": "216",
+        "disk_py": "325",
+        "lock_records": "327",
+        "select_matches": "yes",
+        "exemption_shown": "yes",
+        "http_matches": "yes",
+        "verbs_declared": "delete, get, head, patch, post, put, request",
+        "verbs_ok": "yes",
+        "report_exit": "0",
+        "report_files": "327",
+        "report_todos": "0",
+        "rows_total": "327",
+        "rows_replay_ok": "327",
+        "rows_manual": "9",
+        "render_matches_archive": "yes",
+        "unrecorded_py": "0",
+        "unrecorded_sample": "",
+        "hooks_total": "15",
+        "hooks_total_head": "15",
+        "hooks_excluding": "4",
+        "hook_ids": "end-of-file-fixer, ruff, ruff-format, trailing-whitespace",
+        "hooks_lost": "0",
+        "hooks_lost_detail": "",
+        "edits_in_lock": "9",
+        "edits_in_notices": "9",
+        "edits_in_codemod": "9",
+        "edits_disagree": "0"
+      }
+    },
+    {
+      "item": "AC-17|07",
+      "key": "AC-17|07|d25cc7b2",
+      "state": "proven",
+      "summary": "门禁面（固定目录内 100%/100%）+ 目录外的新增自研文件按同一把尺子再量一遍",
+      "readings": [
+        "scripts/quality/public_api.py exit 0: 985 callable(s) over 6 of its fixed scope director(ies) exist; docstring 100.0%, annotation 100.0%; empty-scope branch taken = no",
+        "新增面 outside that fixed list (A2 files that are not tests or evidence) = 88 file(s) / 365 callable(s), below standard = 0",
+        "A1 存量 outside the fixed list, gated by 触碰即达标 rather than by this item = 36 file(s) / 67 callable(s), below standard = 6 (opendata/api/metrics.py:166, opendata/api/metrics.py:171, scripts/init_tasks_and_tables.py:33, scripts/init_tasks_and_tables.py:106, scripts/init_tasks_and_tables.py:177, scripts/init_tasks_and_tables.py:221)",
+        "excluded test/evidence trees, disclosed rather than dropped = 3511 callable(s), below standard = 2759"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "tool_exit": "0",
+        "in_scope": "985",
+        "doc_pct": "100.0",
+        "ann_pct": "100.0",
+        "vacuous": "no",
+        "scope_dirs": "6",
+        "widened_files": "88",
+        "widened_callables": "365",
+        "widened_failing": "0",
+        "widened_sample": "",
+        "legacy_files": "36",
+        "legacy_callables": "67",
+        "legacy_failing": "6",
+        "legacy_sample": "opendata/api/metrics.py:166, opendata/api/metrics.py:171, scripts/init_tasks_and_tables.py:33, scripts/init_tasks_and_tables.py:106, scripts/init_tasks_and_tables.py:177, scripts/init_tasks_and_tables.py:221",
+        "non_api_callables": "3511",
+        "non_api_failing": "2759"
+      }
+    },
+    {
+      "item": "AC-17|08",
+      "key": "AC-17|08|e4388047",
+      "state": "gap",
+      "summary": "§5.1 四类空壳全树为零 + §5.2 T1 三问由真实录制信封与预计算黄金向量回答",
+      "readings": [
+        "docs/evidence/C44/shell_audit.py exit 1（shells=found t1=met）：自指=0, 恒真断言=0, 定义抄写=2, 源码形式检查=0",
+        "population = 212 个 test_*.py，census 扫到 212 个：全树零必须是「全树」，漏扫的那部分只是把空壳藏在读数之外；未被 git 跟踪的 0 个不算证据（CI 看不见的面无法复算）",
+        "§5.2 T1 三问：t1_error_cases=6(≥3), t1_success_cases=9(≥1), t1_normalize_cases=4(≥3), t1_golden_days=24(≥1)",
+        "录制夹具 = 9 例，逐条 sha 复算 = yes，来源可追溯 = yes：手造「理想报文」在这一问上过不去"
+      ],
+      "reason": "反空壳抽审判的是形态：定义抄写、恒真断言、自指、源码形式检查四类都必须为零，且 T1 档要拿真实录制信封与预计算黄金向量来答，三问的地板（≥3/含成功/≥3）缺一不可",
+      "closure": "constant_shell: 2 -> 0; tool_exit: 1 -> 0; tool_shells: found -> clean",
+      "facts": {
+        "tool_exit": "1",
+        "tool_shells": "found",
+        "tool_t1": "met",
+        "population": "212",
+        "untracked_tests": "0",
+        "fixture_cases": "9",
+        "fixture_sha_ok": "yes",
+        "provenance": "yes",
+        "t1_error_cases": "6",
+        "t1_success_cases": "9",
+        "t1_normalize_cases": "4",
+        "t1_golden_days": "24",
+        "self_reference": "0",
+        "vacuous_assert": "0",
+        "constant_shell": "2",
+        "source_form_check": "0",
+        "files_scanned": "212"
+      }
+    },
+    {
+      "item": "AC-17|10",
+      "key": "AC-17|10|6c4d5715",
+      "state": "gap",
+      "summary": "evidence-traceability 六个面全零 + 日期两读覆盖全部 gate 日志 + 无档案被删",
+      "readings": [
+        "scripts/quality/evidence_traceability.py exit 1, says OK = no, reports a new violation = yes; frozen ceiling = 0 legacy entr(ies)",
+        "archive = 75 round(s), 970 file(s) in the census, 978 tracked now, 0 added once and then removed",
+        "gaps by face: narrative=0, date=0, identity=0, command=0, exit=0, untracked=2",
+        "date answers among gate logs = header 117 + printed by the run 9 out of 126: 日期 is satisfied by either face, and the two together have to cover every gate log"
+      ],
+      "reason": "可追溯 means each archive answers 命令 / 输出摘要 / 日期 with no reader present: one gap on any face, an archive deleted after it was added, or a census too small to be the whole history turns the claim back into a summary",
+      "closure": "gap_untracked: 2 -> 0; tool_exit: 1 -> 0; tool_new: yes -> no; tool_ok: no -> yes",
+      "facts": {
+        "tool_exit": "1",
+        "tool_ok": "no",
+        "tool_new": "yes",
+        "rounds": "75",
+        "census": "970",
+        "dated_header": "117",
+        "dated_run": "9",
+        "logs_total": "126",
+        "gap_narrative": "0",
+        "gap_date": "0",
+        "gap_identity": "0",
+        "gap_command": "0",
+        "gap_exit": "0",
+        "gap_untracked": "2",
+        "gone_archives": "0",
+        "tracked_archives": "978",
+        "baseline_entries": "0"
+      }
+    },
+    {
+      "item": "AC-18|01",
+      "key": "AC-18|01|2524a54e",
+      "state": "proven",
+      "summary": "新鲜度门交出日期/滞后/基准日 + 缺失告警真到达通道 + 调度执行器接线",
+      "readings": [
+        "新鲜度门 faces: 7/7 nodes passed",
+        "opendata/api/data_query.py::domain_freshness route = yes, delegates to _domain_freshness = yes, carries latest + lag_days = yes, and returns expected_data_date 2 time(s) — a lag cannot be checked without the date it was measured against, so both branches have to name it",
+        "告警面: 9/9 nodes passed",
+        "调度接线: the template dispatcher mentions FRESHNESS = yes, the executor is an executable kind = yes, it is handed the WS broadcast = yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "query_runs": "7",
+        "query_passed": "7",
+        "query_bad": "-",
+        "alert_runs": "9",
+        "alert_passed": "9",
+        "alert_bad": "-",
+        "door_route": "yes",
+        "door_delegates": "yes",
+        "door_readings": "yes",
+        "door_baseline": "2",
+        "job_wired": "yes",
+        "job_broadcasts": "yes",
+        "job_executable": "yes"
+      }
+    },
+    {
+      "item": "AC-18|02",
+      "key": "AC-18|02|15d13296",
+      "state": "proven",
+      "summary": "按域一行五个读数：接口给得出、页面显示得出、单元面与真机页各自断言过",
+      "readings": [
+        "目录接口 faces: 7/7 nodes passed",
+        "五个读数在页面上有列名且被断言：缺 -",
+        "真机页（Playwright）逐读数断言：缺 -",
+        "载荷类型 frontend/src/api/catalog.ts 承载 5/5 个字段 (coverage/sources/lag_days/quality/expected_data_date)，页面显示的是接口量出来的那一次",
+        "基准日在页面出现并被断言 = yes，下钻 = yes，单元面采集器无未授权排除 = yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "runs": "7",
+        "passed": "7",
+        "bad": "-",
+        "readings_missing": "-",
+        "e2e_missing": "-",
+        "fields": "5",
+        "header": "yes",
+        "collector_ok": "yes",
+        "drilldown": "yes"
+      }
+    },
+    {
+      "item": "AC-18|03",
+      "key": "AC-18|03|ae559f45",
+      "state": "proven",
+      "summary": "数据接口页是否已并入目录（目录为默认视图，函数级明细在下钻里）",
+      "readings": [
+        "目录导航项 = 1 (nav.catalog -> /data)",
+        "`/scripts` 是否渲染目录视图 = yes",
+        "Playwright `merged catalog is the default at both catalog URLs and filters by market and dataset` = passed （/scripts 与 /data 默认目录、市场/数据集筛选、注册函数明细面）",
+        "目录内函数明细控件及其可见用例 = yes",
+        "Playwright `catalog function drilldown reaches legacy list and an actual script detail route` = passed；真实脚本详情路由 = yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "page_titles": "nav.catalog -> /data",
+        "nav_entries": "1",
+        "route_is_catalog": "yes",
+        "detail_in_catalog": "yes",
+        "detail_route": "yes",
+        "merged_e2e": "passed",
+        "function_detail_e2e": "passed"
+      }
+    },
+    {
+      "item": "AC-9|02",
+      "key": "AC-9|02|ed680e97",
+      "state": "proven",
+      "summary": "每周校对有真的触发器，注入的差异被比出来并逐列写进 dq_diff_report",
+      "readings": [
+        "捕获面: 7/7 nodes passed",
+        "opendata/pipeline/diff_report.py: 判据点名的列缺 -，``ReportRow`` 少字段 -，表名在位 yes —— 列名与字段必须同时在场：写入走 as_params() 的 getattr",
+        "生产触发: full_check 是可执行 kind = yes，_execute_template 派发它 = yes，执行器真的建服务并跑 = yes，窗口取自两条腿共有的日子 = yes，schedules.yaml 里有这一行 = yes",
+        "落库通路: build_cross_check 交出 write_report=DiffReportWriter = yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "capture_runs": "7",
+        "capture_passed": "7",
+        "capture_bad": "-",
+        "columns_missing": "-",
+        "row_fields_missing": "-",
+        "table_named": "yes",
+        "writer_wired": "yes",
+        "job_executable": "yes",
+        "job_dispatched": "yes",
+        "job_runs_service": "yes",
+        "window_from_data": "yes",
+        "schedule_row": "yes"
+      }
+    },
+    {
+      "item": "AC-9|04",
+      "key": "AC-9|04|dcfe5ab7",
+      "state": "proven",
+      "summary": "治理三则各有来源与寿命：白名单读得到、去重与差异率基线跨比对、被抑制也留痕",
+      "readings": [
+        "治理三则节点: 9/9 passed",
+        "opendata/pipeline/diff_governance.json: 形状合法 = yes，容忍项 0 条、其中无 reason 的 0 条（容忍为空是量出来的结论，不是没配过；无凭据的容忍项即判红）",
+        "判定面: 白名单 yes / 去重集 yes / 差异率基线 yes / 突升级到 critical yes",
+        "状态寿命: 策略是进程级单例 = yes，白名单有来源 = yes，校对服务用的是它而不是每次新建 = yes，被抑制的决定照样交给 notifier 记录 = yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "gov_runs": "9",
+        "gov_passed": "9",
+        "gov_bad": "-",
+        "file_shape": "yes",
+        "tolerances": "0",
+        "reason_missing": "0",
+        "whitelist_read": "yes",
+        "dedupe_read": "yes",
+        "rate_read": "yes",
+        "escalates": "yes",
+        "shared_singleton": "yes",
+        "whitelist_has_source": "yes",
+        "policy_in_check": "yes",
+        "quiet_recorded": "yes"
+      }
+    },
+    {
+      "item": "AC-9|05",
+      "key": "AC-9|05|7ed53e9b",
+      "state": "proven",
+      "summary": "一次判定同时到 WS 广播、按域过滤的 hub 与 SMTP 邮件，且每条通道的结果可报告",
+      "readings": [
+        "通道节点: 10/10 passed",
+        "WS 面: 事件名 data.diff_alert 在位 = yes，广播被调用 = yes，订阅 hub 被调用 = yes，hub 按域过滤 = yes",
+        "邮件面: 渲染函数被调用 = yes，走的是共享 SMTP 传输 = yes，配置门 settings.smtp_host/user 读到 2/2",
+        "装配与报告: production_dispatcher 交出四条通道 = 4/4，一次 notify 同时喂三处 = yes，投递结果逐通道可报告 = yes，每次调用留一条记录 = yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "ch_runs": "10",
+        "ch_passed": "10",
+        "ch_bad": "-",
+        "event_named": "yes",
+        "ws_called": "yes",
+        "hub_called": "yes",
+        "hub_filters": "yes",
+        "both_channels_in_notify": "yes",
+        "mail_rendered": "yes",
+        "mail_transport": "yes",
+        "settings_gated": "2",
+        "production_channels": "4",
+        "reported": "yes",
+        "recorded": "yes"
+      }
+    },
+    {
+      "item": "AC-9|03",
+      "key": "AC-9|03|3bce2eae",
+      "state": "proven",
+      "summary": "两种错输入各有一个会响的判定，且都跑在 compare_source_frames 这个生产入口上",
+      "readings": [
+        "反例节点: 4/4 passed",
+        "①字段名不匹配: 报错面在位 = yes，且两条反例都走生产入口 compare_source_frames = yes（只测 normalize_frame 不算，校对作业读的是这个函数）",
+        "②单位未归一: mismatch 断言点名字段 = yes",
+        "tolerance 配对面: 一侧整字典交出已移除且逐字段合并 = yes，取紧的那条 = yes，正反两个方向都量 = yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "x_runs": "4",
+        "x_passed": "4",
+        "x_bad": "-",
+        "entry_is_production": "yes",
+        "field_name_raises": "yes",
+        "unit_mismatch": "yes",
+        "whole_dictionary_gone": "yes",
+        "tighter_wins": "yes",
+        "both_orders": "yes"
+      }
+    },
+    {
+      "item": "AC-9|08",
+      "key": "AC-9|08|a87bfe6f",
+      "state": "gap",
+      "summary": "歧义键逐键拒绝（不再整窗不交）+ layer=dwd 走生产查询面 + 表里真的有行",
+      "readings": [
+        "直通节点: 6/6 passed",
+        "歧义键处理: 逐键拒绝（不再整窗 raise）= yes，旧的一 raise 就什么都不交的形状已移除 = yes，拒绝的键要报得出来 = yes，列缺失仍然 fail closed = yes",
+        "查询面: layer=dwd 走生产 _key/build_data_select 建得出 SQL = yes，且直通输出列 == dwd 表声明列（落得了这张表）",
+        "docs/evidence/C49/census-post-fix.txt 的真库读数：stock_action/ths 直通交出 55071 行，而 dwd_stock_action 实际 0 行 —— 差的那一段是一次未确认的落库写入"
+      ],
+      "reason": "「直通模式可用」判的是这张单源域的表里真的有行、并能按 layer=dwd 读回去：本轮把整窗 raise 换成逐键拒绝（C49 量到 55,073 行里 1 个键两义，dwd_stock_action 因此一直是空的），代码面已经通了；剩下的 0 行需要一次经确认的 warehouse 写入（重算落库），不是再改判定口径",
+      "closure": "landed_rows: 0 -> 55071",
+      "facts": {
+        "p_runs": "6",
+        "p_passed": "6",
+        "p_bad": "-",
+        "refuses_per_key": "yes",
+        "reported": "yes",
+        "whole_window_raise_gone": "yes",
+        "raises_on_missing_column": "yes",
+        "query_face": "yes",
+        "landed_rows": "0",
+        "passthrough_rows": "55071"
+      }
+    },
+    {
+      "item": "AC-9|09",
+      "key": "AC-9|09|ca69bd21",
+      "state": "proven",
+      "summary": "同输入重算逐格不动 + 键集排序 + 写侧 key 级 upsert + dwd 主键就是业务键",
+      "readings": [
+        "重算节点: 5/5 passed",
+        "确定性面: 键集排序 = yes（不排序则同输入两遍输出顺序可变），写侧走 key 级 upsert = yes，dwd 表的 PRIMARY KEY 就是业务键 = yes —— 三者同时成立，重跑才是改同一行而不是多插一行",
+        "真库那一格（e2e，test_merge_writes_rows_with_trace_columns_and_is_idempotent）本轮读数 = exit=5，门禁选择式不跑它，所以判定落在上面三条代码面 + 纯函数节点上"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "r_runs": "5",
+        "r_passed": "5",
+        "r_bad": "-",
+        "keys_sorted": "yes",
+        "upsert_builder": "yes",
+        "pk_is_business_key": "yes",
+        "mysql_reading": "exit=5"
+      }
+    },
+    {
+      "item": "AC-8|05",
+      "key": "AC-8|05|3dd663e5",
+      "state": "gap",
+      "summary": "接线四读（yaml 行 / kind 可执行 / 派发到本体 / 本体真的调 ensure）+ DDL 渲染面 + 真仓库年度上界只读档案；apply 半是生产 DDL，等一次经确认的执行才翻正",
+      "readings": [
+        "``schedules.yaml`` 的 ``partition-maintenance`` 行 = yes；kind 在 ``EXECUTABLE_KINDS`` 里 = yes（不在则注册时被跳过，cron 行只剩外观），``_execute_template`` 派发到本体 = yes",
+        "本体做 apply 半 = yes（调 ``ensure`` 而不是只出 plan —— C48 的量法在告警矩阵里，那一面按设计不动 DDL）",
+        "``ddl.py`` 渲染 ``RANGE COLUMNS`` 年分区 + ``MAXVALUE`` 兜底 = yes",
+        "历史分区面（docs/evidence/C57/partition-horizon.txt）：注册表 20 张 / 已分区 6 张 / 当时年度上界缺 5 张；档案里有分区列读数 = yes",
+        "C57 historical subset (2026-09-28 13:01 +0200): tables=20 / partitioned=6 / gap_tables=5; later full census C58 (2026-09-28 13:40 +0200): registered=53 / partitioned=9 / gap_tables=8; both are archived reads, not a fresh production census",
+        "经确认的 apply 留档（docs/evidence/C57/partition-apply.txt）存在 = no"
+      ],
+      "reason": "分区面两头都要有：接线（yaml 行 + kind 可执行 + 派发到真的 ``ensure``）与仓库现状（分区列点名、上界不再落后、apply 后复跑留档）。C57/C58 是历史档案，不是本轮新做的生产读数；``REORGANIZE`` 是生产仓库的 DDL，仍缺经确认的 apply 与新读数",
+      "closure": "applied_face: no -> yes; live_gap_tables: 5 -> 0",
+      "facts": {
+        "row_declared": "yes",
+        "kind_executable": "yes",
+        "body_dispatched": "yes",
+        "apply_half": "yes",
+        "ddl_layout": "yes",
+        "live_partitioned": "6",
+        "live_tables": "20",
+        "live_gap_tables": "5",
+        "live_keys": "yes",
+        "applied_face": "no",
+        "census_archives": "C57 historical subset (2026-09-28 13:01 +0200): tables=20 / partitioned=6 / gap_tables=5; later full census C58 (2026-09-28 13:40 +0200): registered=53 / partitioned=9 / gap_tables=8; both are archived reads, not a fresh production census"
+      }
+    },
+    {
+      "item": "AC-8|06",
+      "key": "AC-8|06|0bd99b7d",
+      "state": "gap",
+      "summary": "用例三读（自建 probe 表 / 新年度插入被断言 / 落点分区名被断言）+ 它是 e2e 面所以门禁不跑 + 真仓库那年还缺一张分区；「写成功」要有跑过的留档",
+      "readings": [
+        "用例在 tests/test_partition_maintenance.py：自建 ``_probe_*`` 表 = yes，插入新年度那一行（2027-03-01 进 probe 表）= yes，精确 placement 断言 = p2027,pmax (2 条；p2027=1、pmax=0)",
+        "标记 = e2e（``make gate`` 不跑 e2e，所以这一面必须另留档才算跑过）",
+        "C57 历史面当时还缺年度分区的表 = 5 张 —— 缺的那一年会落进 ``pmax``：写入不报错，但年分区形同不存在，所以「写成功」必须有落点断言",
+        "C57 historical subset (2026-09-28 13:01 +0200): tables=20 / partitioned=6 / gap_tables=5; later full census C58 (2026-09-28 13:40 +0200): registered=53 / partitioned=9 / gap_tables=8; both are archived reads, not a fresh production census",
+        "本轮留档里有一次真跑 = no"
+      ],
+      "reason": "跨年写入这条判据要有「跑过」的证据而不是「有用例」：用例是 e2e 面（门禁不跑），且需要 fresh scoped production evidence。C57 是较早子集、C58 是较晚完整档案；两份都不是本轮 fresh production read，也没有本轮获准的用例运行留档",
+      "closure": "fallback_gap: 5 -> 0; ran_live: no -> yes",
+      "facts": {
+        "case_file": "yes",
+        "inserts_new_year": "yes",
+        "asserts_placement": "2",
+        "placement_partitions": "p2027,pmax",
+        "marked": "e2e",
+        "fallback_gap": "5",
+        "ran_live": "no",
+        "census_archives": "C57 historical subset (2026-09-28 13:01 +0200): tables=20 / partitioned=6 / gap_tables=5; later full census C58 (2026-09-28 13:40 +0200): registered=53 / partitioned=9 / gap_tables=8; both are archived reads, not a fresh production census"
+      }
+    },
+    {
+      "item": "AC-8|01",
+      "key": "AC-8|01|98ae06d2",
+      "state": "proven",
+      "summary": "形状三面：派生点（ods_table 一处返回模板）+ 渲染点（三元组无条件追加、主键由 key 渲染、不出自增 id）+ 真仓库当场逐表读数；注册 33 条 ods 腿与真 3 张表的差额披露给 |08",
+      "readings": [
+        "单元面 3/3 passed",
+        "命名只有一处派生（``domains.ods_table`` 返回 ``ods_<domain>_<source>``）= yes；三元组无条件追加 = yes，声明齐 3/3",
+        "主键由业务 key 渲染 = yes，key 缺失 fail closed = yes，生成器不再出自增 id = yes",
+        "真仓库（docs/evidence/C58/ods-face.txt）：ods 表 3 张 —— 命名合规 3、三元组齐全 3、业务 key 主键 3、带自增 id 0；注册表里应有 33 条 ods 腿（差额是 |08 的落库覆盖面，不是本格的形状判据）"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "n_runs": "3",
+        "n_passed": "3",
+        "n_bad": "-",
+        "naming_derived": "yes",
+        "trio_appended": "yes",
+        "trio_declared": "3",
+        "key_fails_closed": "yes",
+        "pk_from_key": "yes",
+        "no_auto_increment": "yes",
+        "live_ods": "3",
+        "ods_named": "3",
+        "ods_trio": "3",
+        "ods_key_pk": "3",
+        "ods_autokey": "0",
+        "census_ods": "33"
+      }
+    },
+    {
+      "item": "AC-8|02",
+      "key": "AC-8|02|a4929947",
+      "state": "proven",
+      "summary": "通路而不是意图：配置/URL/版本表三处分叉 + 启动建表点唯一且在生产分支之外 + 仓库 engine 在单测里换成会炸的桩 + 真仓库两套版本表各自在当前版本",
+      "readings": [
+        "单元面 6/6 passed —— 含「启动建表碰不到仓库 engine」（engine 换成会炸的桩）与「Base.metadata 里一张仓库表都没有」两格，迁移链另有图/离线渲染两格",
+        "两套环境分开：script_location 分叉 = yes，仓库 env 不挂 target_metadata（无从 generate 出 ORM 表）= yes，URL 取 ``data_database_url`` = yes，版本表各自一张 = yes，控制 env 里出现仓库 URL = no",
+        "启动面：``lifespan`` 里 ``create_tables()`` 只有一处且在 ``is_production`` 分支之外 = yes；``create_tables`` 只做 ``Base.metadata.create_all``、不引 ``data_engine`` = yes",
+        "真仓库侧（docs/evidence/C58/ods-face.txt）：控制库里的仓库表 0 张，两套版本表各自在当前版本 = yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "n_runs": "6",
+        "n_passed": "6",
+        "n_bad": "-",
+        "locations_split": "yes",
+        "no_autogen": "yes",
+        "warehouse_url": "yes",
+        "version_table_split": "yes",
+        "control_cannot_reach_data_url": "yes",
+        "startup_guarded": "yes",
+        "create_tables_control_only": "yes",
+        "ctrl_warehouse_tables": "0",
+        "version_tables_in_face": "yes"
+      }
+    },
+    {
+      "item": "AC-8|03",
+      "key": "AC-8|03|dc4510f7",
+      "state": "proven",
+      "summary": "判据原文点名的单测面：五格节点（builder 形状 + 两条落库路径 + 同键两次还是一行）加语句三面（AS new 别名式 / UPDATE 段不碰 key / 空列表 fail closed）；真库那格是 e2e，读数只披露",
+      "readings": [
+        "单测面（判据原文点名的这一面）5/5 passed —— 两条 builder 形状、staging/direct 两条落库路径的语句序列，以及「同一 key 落两次还是一行、值就地改」那一格",
+        "upsert 走 ``AS new`` 别名式 = yes；两条路径都把业务 key 挡在 UPDATE 赋值之外（改 key 就不是修同一行）= yes；空列表 fail closed 计数 = 2（>=2 才覆盖两条 builder）",
+        "真库那一格（e2e，test_corrected_value_updates_in_place_without_duplicating）本轮读数 = exit=5：``-m 'not e2e'`` 的选择式不跑它，本格判定落在上面那一面，「修正后不产生重复行」要在真库上跑一次才算跑过 —— 那是需要确认的仓库写"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "n_runs": "5",
+        "n_passed": "5",
+        "n_bad": "-",
+        "alias_form": "yes",
+        "key_left_alone": "yes",
+        "fails_closed": "2",
+        "staging_key_clause": "yes",
+        "live_reading": "exit=5"
+      }
+    },
+    {
+      "item": "AC-8|07",
+      "key": "AC-8|07|1f09a9c3",
+      "state": "proven",
+      "summary": "ORDER BY 由表形状推出：回落链 id→业务主键→首列、limit/offset 走绑定参数、无列可排 fail closed、端点真的读 table_shape 再拼 SQL、模块里不回潮硬编码 ORDER BY id；五格节点含 SQLite 真翻页与端点那一格 HTTP",
+      "readings": [
+        "单元/集成面 5/5 passed —— 含 SQLite 真表翻页（三行两页，每行只出现一次）与端点那一格 HTTP 请求",
+        "排序列回落链 ``id`` → 业务主键 → 首列 = yes / yes；limit/offset 走绑定参数 = yes；无列可排 fail closed = yes",
+        "端点 ``/tables/{id}/data`` 先读表形状再拼分页 SQL = yes；模块里残留硬编码 ``ORDER BY id`` = no"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "n_runs": "5",
+        "n_passed": "5",
+        "n_bad": "-",
+        "falls_back_to_key": "yes",
+        "first_column_still_deterministic": "yes",
+        "offset_bound": "yes",
+        "keyless_fails_closed": "yes",
+        "endpoint_reads_the_table_shape": "yes",
+        "no_hardcoded_order": "yes"
+      }
+    },
+    {
+      "item": "AC-9|01",
+      "key": "AC-9|01|e67169e2",
+      "state": "proven",
+      "summary": "表在（load_mapping/normalize_frame）+ P0 五域逐个可指名 + 六类口径由表承载",
+      "readings": [
+        "表在不在: opendata/data/mapping.py 有 load_mapping/normalize_frame = yes，可导出 mapping_as_json = yes，源文件 = akshare, ths",
+        "P0 覆盖: 5/5 个 P0 域在这张表里",
+        "六类口径落表: 字段映射=yes、单位换算=yes、复权口径=yes、key 规范化=yes、停牌语义=yes、差异率分母=yes",
+        "另两面（只在代码里、不在这张表里时不计入覆盖）: 复权在 opendata/data/adjust.py = yes，差异率分母在 opendata/pipeline/cross_check.py = yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "p0_total": "5",
+        "p0_mapped": "5",
+        "p0_missing": "-",
+        "sources": "akshare, ths",
+        "table_loads": "yes",
+        "exportable": "yes",
+        "cat_from": "yes",
+        "cat_scale": "yes",
+        "cat_adjust": "yes",
+        "cat_normalize": "yes",
+        "cat_suspension": "yes",
+        "cat_denominator": "yes",
+        "adjust_in_code": "yes",
+        "denominator_in_code": "yes"
+      }
+    },
+    {
+      "item": "AC-9|06",
+      "key": "AC-9|06|53cf809b",
+      "state": "proven",
+      "summary": "服务层三条节点全绿 + 权威降级/source/_diff_flag/_as_of 四面代码面在位",
+      "readings": [
+        "服务层与合并层节点: 3/3 passed",
+        "四问各自的代码面: 权威缺失才降级 = yes、source 留痕 = yes、_diff_flag 打标 = yes、_as_of 写入 = yes",
+        "_as_of 取的是窗口末而不是别的日期: service.run 传 as_of=end = yes；四列同时是 dwd 的留痕列定义 = yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "runs": "3",
+        "passed": "3",
+        "bad": "-",
+        "authority_fallback": "yes",
+        "source_traced": "yes",
+        "diff_flagged": "yes",
+        "as_of_stamped": "yes",
+        "as_of_is_window_end": "yes",
+        "trace_columns": "yes"
+      }
+    },
+    {
+      "item": "AC-9|07",
+      "key": "AC-9|07|96ff13a5",
+      "state": "gap",
+      "summary": "修订节点全绿（含生产 scoped ODS reader）+ 传播链五段（交键/重拼/下传/upsert）",
+      "readings": [
+        "修订行为节点: 7/7 passed —— 覆盖窗口外改值、生产 scoped reader、None 水位、多源和无关行排除",
+        "传播链五段: runner 交出被改的键 = yes、run_hook 把 ods 拼法重拼成契约键 = yes、reader 收到这批键 = no、键进入差异重算 = no、写侧按业务键 upsert = yes"
+      ],
+      "reason": "「修订传播」是一条链：ods 改了的键要交出来、要换成契约键、要进 reader 的取数窗口、要参与差异重算、最后按业务键 upsert 回同一行 —— 链上任一段断掉，dwd 留的就不是修订后的值",
+      "closure": "keys_extend_diffs: no -> yes; reader_gets_keys: no -> yes",
+      "facts": {
+        "runs": "7",
+        "passed": "7",
+        "bad": "-",
+        "reader_gets_keys": "no",
+        "keys_extend_diffs": "no",
+        "hook_resells_keys": "yes",
+        "runner_publishes_keys": "yes",
+        "writer_upserts": "yes"
+      }
+    },
+    {
+      "item": "AC-17|01",
+      "key": "AC-17|01|eeaa81ec",
+      "state": "proven",
+      "summary": "成员名单、横幅与成员一一配对、三种掩盖形状为零、make 自己数出的成员数与配方相符、可复现环境、判定成员在名单里",
+      "readings": [
+        "gate members = 17（brand-check, zero-dep-check, secret-check, ledger-check, evidence-traceability, js-points-check, loguru-check, a2-check, quality-ratchet, public-api-quality, acceptance-probe-check, test-cov, frontend-lint, frontend-typecheck, frontend-collection, frontend-test, frontend-e2e）；每项一个 sub-make，前一项非零即中止；横幅 18 段 = 成员数 + 收尾那一段，逐项配对 = yes（错位的成员位 0 个，最后一段写的是 PASSED）",
+        "能被汇总掩盖的三种形状：`-` 前缀 0 行、`|| echo` 0 行、一行串两个成员 0 行；没有配方的成员 0",
+        "make 自己的答案：`make -n gate` exit 0，数出 17 个 sub-make —— 配方文本与 make 实际启动的成员必须相等，否则被量的是这份文件而不是那道门禁",
+        "开发者视图不得进门禁：成员里出现 `lint/typecheck/security/format` 的个数 = 0",
+        "可复现环境（C36 加性更正）：`import opendata, sys; print(opendata.__file__)` exit 0，来自 /Users/yunjinqi/Documents/new_projects/opendata/opendata/__init__.py，在本树内 = yes",
+        "判定成员自证：`acceptance-probe-check` 在成员名单里 = yes；判据原文点名了 14 项，未被点名的 4 项 = evidence-traceability, js-points-check, loguru-check, acceptance-probe-check —— 点名的少一个不是缺陷：条目文本是台账的内容哈希键，把成员数写进判据会让每一次加成员都改写判据"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "members": "17",
+        "member_list": "brand-check, zero-dep-check, secret-check, ledger-check, evidence-traceability, js-points-check, loguru-check, a2-check, quality-ratchet, public-api-quality, acceptance-probe-check, test-cov, frontend-lint, frontend-typecheck, frontend-collection, frontend-test, frontend-e2e",
+        "banners": "18",
+        "banner_match": "yes",
+        "banner_unpaired": "0",
+        "banner_closing": "PASSED",
+        "no_recipe": "0",
+        "no_recipe_sample": "",
+        "ignore_prefix": "0",
+        "echo_mask": "0",
+        "chained": "0",
+        "mask_sample": "",
+        "dev_view": "0",
+        "dev_view_sample": "",
+        "dry_rc": "0",
+        "dry_members": "17",
+        "import_rc": "0",
+        "import_where": "/Users/yunjinqi/Documents/new_projects/opendata/opendata/__init__.py",
+        "import_under_root": "yes",
+        "self_member": "yes",
+        "doc_named": "14",
+        "doc_unnamed": "evidence-traceability, js-points-check, loguru-check, acceptance-probe-check",
+        "doc_unnamed_count": "4"
+      }
+    },
+    {
+      "item": "AC-16|06",
+      "key": "AC-16|06|2eb4fb66",
+      "state": "proven",
+      "summary": "零依赖断言两条门禁命令都绿、只降不升的门禁在位、import/动态形态为零、引用策略和 scanner 版本有效、冻结基线条数为零",
+      "readings": [
+        "零依赖断言（门禁那两条命令原样）：check exit=0，--self-test exit=0；扫描面 = opendata, opendata_http, opendata_fuyao, opendata_client",
+        "判据原文要清的是「集成层的 `import akshare` 残留」：AST 走查 import 形态 = 0，动态 import 形态 = 0 —— 这一项已经是零",
+        "基线还冻着 0 条（现场走查 0 条，新增即失败 = yes，只降不升的门禁在位 = yes，引用策略有效 = yes、基线 scanner 版本有效 = yes）：0 条是名字面量，落在 ",
+        "扫描器自己怎么说：OK: 542 file(s) walked (opendata=206, opendata_client=2, opendata_fuyao=9, opendata_http=325), python 3.11, scanner 3; no new upstream references (frozen baseline: 0)."
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "detector_exit": "0",
+        "detector_ok_line": "OK: 542 file(s) walked (opendata=206, opendata_client=2, opendata_fuyao=9, opendata_http=325), python 3.11, scanner 3; no new upstream references (frozen baseline: 0).",
+        "self_test_exit": "0",
+        "policy_valid": "yes",
+        "policy_error": "-",
+        "metadata_exceptions": "3",
+        "baseline_current": "yes",
+        "frozen": "0",
+        "live": "0",
+        "import_live": "0",
+        "dynamic_live": "0",
+        "string_live": "0",
+        "string_files": "",
+        "no_new_reference": "yes",
+        "only_down": "yes",
+        "scope": "opendata, opendata_http, opendata_fuyao, opendata_client"
+      }
+    },
+    {
+      "item": "AC-16|07",
+      "key": "AC-16|07|b17eac77",
+      "state": "proven",
+      "summary": "选择式有可指的名字（marker 注册 + 9 个标记单元 + 5 个 P0 域全覆盖），本机和留档的干净 venv 都全绿，且留档是最新一轮自己写的、覆盖当前标记集",
+      "readings": [
+        "选择式 `-m 'integration and not e2e'` 有名字了：marker 注册 = yes，--strict-markers = yes，标记单元 9 个 = tests/test_data_query_api.py, tests/test_data_query_http_warehouse.py, tests/test_dwd_merge.py, tests/test_index_constituent_asof.py, tests/test_ods_writer.py, tests/test_p0_providers.py, tests/test_pipeline_jobs.py::TestFullCheckExecutor, tests/test_pipeline_run_api.py, tests/test_pipeline_runner.py",
+        "P0 域覆盖：A4.1 迁移的 5 个域全部被这组用例点到，缺 = 0（-）",
+        "本机这一遍（解释器内 akshare/openbb 均不可导入 = yes）：exit=0，218 passed / 0 failed / 0 skipped；另有 3927 条被选择式挡在外面（含全部仓库 e2e）",
+        "干净 venv 留档（读的是最新那一份：docs/evidence/C65/clean-env-integration-run.txt，正文声明轮次 C65，与所在目录一致 = yes）：CLEAN_RUN_EXIT=0，211 passed, 83 deselected in 69.10s (0:01:09)；留档里两个上游包都记为 absent = yes；留档点到过 9 个模块，当前标记集里没被留档覆盖的 = 0"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "registered": "yes",
+        "strict": "yes",
+        "units": "9",
+        "unit_names": "tests/test_data_query_api.py, tests/test_data_query_http_warehouse.py, tests/test_dwd_merge.py, tests/test_index_constituent_asof.py, tests/test_ods_writer.py, tests/test_p0_providers.py, tests/test_pipeline_jobs.py::TestFullCheckExecutor, tests/test_pipeline_run_api.py, tests/test_pipeline_runner.py",
+        "domains": "5",
+        "domains_missing": "0",
+        "domain_names": "-",
+        "selector": "integration and not e2e",
+        "run_exit": "0",
+        "passed": "218",
+        "failed": "0",
+        "skipped": "0",
+        "deselected": "3927",
+        "clean_here": "yes",
+        "clean_archive": "docs/evidence/C65/clean-env-integration-run.txt",
+        "archive_round": "C65",
+        "archive_self_written": "yes",
+        "archive_exit": "0",
+        "archive_summary": "211 passed, 83 deselected in 69.10s (0:01:09)",
+        "archive_modules": "9",
+        "archive_blind": "0",
+        "archive_absent": "yes"
+      }
+    },
+    {
+      "item": "AC-11|01",
+      "key": "AC-11|01|55260732",
+      "state": "proven",
+      "summary": "路由与 OpenAPI 在、判据点名的 9 个入参真在签名里、默认层与复权就是 dwd/none、响应按契约列交出",
+      "readings": [
+        "路由/契约面（OpenAPI 两条 + 替身仓库 HTTP 四条）: 6/6 nodes passed",
+        "路由形状 ``/{asset_class}/{domain}`` = yes，载荷同时交回 columns 与 rows（响应 schema 可对契约） = yes",
+        "判据点名的 9 个入参都在处理器的签名里：缺 = -（AST 读数，注释里写什么不算）",
+        "声明的默认值：layer = dwd，adjust = none；这两条是契约的一部分，改一个就等于改了默认口径"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "route_runs": "6",
+        "route_exit": "0",
+        "route_passed": "6",
+        "route_failed": "0",
+        "route_skipped": "0",
+        "route_absent": "-",
+        "route_shape": "yes",
+        "knobs_missing": "-",
+        "layer_default": "dwd",
+        "adjust_default": "none",
+        "payload_shape": "yes"
+      }
+    },
+    {
+      "item": "AC-11|02",
+      "key": "AC-11|02|47ebc0df",
+      "state": "gap",
+      "summary": "qfq/hfq 由服务端按因子表合成（缺因子 400、缺表 501）；官方对照腿是分派表条目，默认 akshare 并解析到搬运模块，留档一次真机 run 的腿与 module:function 都要与现值一致",
+      "readings": [
+        "复权面（HTTP 五条 + 因子算术两条 + 判定与对照腿十五条）: 23/23 nodes passed",
+        "服务端合成 = yes（``_adjusted_rows`` 真的调 ``apply_adjust_to_rows``，不是把参数读一遍就丢掉）",
+        "官方对照腿：``scripts/ops/qfq_official_check.py`` 的 ``DEFAULT_OFFICIAL_LEG`` = akshare，分派表 akshare 条目 target = opendata_http.stock_feature.stock_hist_em:stock_zh_a_hist，该模块头部声明 akshare 出身 = yes（判据点名的就是 ``opendata_http.stock_feature.stock_hist_em``）",
+        "留档真机 run（docs/evidence/C65/qfq-official-akshare-current.txt）：头部记的腿 = akshare，module:function = opendata_http.stock_feature.stock_hist_em:stock_zh_a_hist；PASS 0 行 / FAIL 0 行 / ERROR 10 行"
+      ],
+      "reason": "留档那次 run 有 10 行 ERROR —— 官方端点没答上来等于没对照；真机对照未过：FAIL 0 行 / PASS 0 行（容差 2e-3 不放宽，见档案里的 over_tolerance 与 ratio 平台分布） —— 合成与对照的判定口径不变（逐日 shape dev 对 2e-3），要改的是证据不是判据",
+      "closure": "run_error_rows: 10 -> 0; run_ok_rows: 0 -> 10",
+      "facts": {
+        "adj_runs": "23",
+        "adj_exit": "0",
+        "adj_passed": "23",
+        "adj_failed": "0",
+        "adj_skipped": "0",
+        "adj_absent": "-",
+        "synthesis": "yes",
+        "default_leg": "akshare",
+        "leg_target": "opendata_http.stock_feature.stock_hist_em:stock_zh_a_hist",
+        "leg_module": "opendata_http.stock_feature.stock_hist_em",
+        "leg_is_ported_akshare": "yes",
+        "run_official_leg": "akshare",
+        "run_official_target": "opendata_http.stock_feature.stock_hist_em:stock_zh_a_hist",
+        "run_ok_rows": "0",
+        "run_fail_rows": "0",
+        "run_error_rows": "10"
+      }
+    },
+    {
+      "item": "AC-11|03",
+      "key": "AC-11|03|9e33b3df",
+      "state": "proven",
+      "summary": "判据点名的四个安全面各自有实测：白名单 400 且不执行、三个枚举、符号绑定、导出公式转义发生在 handler 里",
+      "readings": [
+        "参数安全面（HTTP 13 条，全部走真路由）: 13/13 nodes passed",
+        "判据那条字面载荷 ``fields=open;DROP TABLE`` 出现在用例里 = yes；这条断言除了 400 还回读表里的行数，所以「没执行」是被量的而不是被说的",
+        "枚举校验：layer/adjust 的注解里还有不是 Literal 的吗 = -；source 按注册腿校验 = yes（判据列了三个枚举面，少一个就只做到两个）",
+        "symbols 的取值进的是绑定字典 = yes，SQL 文本里出现的只有 ``:{name}`` 占位 = yes；导出公式转义发生在 handler 里 = yes（``_csv_stream`` 调 ``serialize_for_csv``）"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "safety_runs": "13",
+        "safety_exit": "0",
+        "safety_passed": "13",
+        "safety_failed": "0",
+        "safety_skipped": "0",
+        "safety_absent": "-",
+        "deny_literal": "yes",
+        "enum_params": "-",
+        "source_leg_check": "yes",
+        "bind_symbols": "yes",
+        "symbol_placeholder": "yes",
+        "csv_escape": "yes"
+      }
+    },
+    {
+      "item": "AC-11|04",
+      "key": "AC-11|04|7d8f0545",
+      "state": "proven",
+      "summary": "无区间请求仍被默认窗与行数上限夹住（实测绿），且判据点名的 EXPLAIN 真的发到了跑着的 MySQL 上：每张已落地的分区表都只读到部分分区，留档按查询层摘要钉住",
+      "readings": [
+        "时间窗面（HTTP 两条 + 边界单元三条）: 5/5 nodes passed",
+        "默认窗 = 365 天，由 ``window_bounds`` 在无区间时补上 = yes；``build_data_select`` 的 ``LIMIT :limit`` 行数上限 = yes",
+        "判据点名的验证方式：在 484 个代码文件里找真发出去的 EXPLAIN（整句字面量 ``EXPLAIN [ANALYZE] SELECT|FORMAT`` 与拼接前缀 ``\"EXPLAIN \" +`` 两种形状，仪器必须拼 SQL 才谈得上「这个端点的查询」），命中 2 处（scripts/ops/window_partition_explain.py, tests/test_ods_write_benchmark.py）",
+        "执行计划留档（读的是最新那一份：docs/evidence/C64/window-pruning-explain.txt，正文声明轮次 C64，与所在目录一致 = yes）：已落地且带分区的 dwd 表 6 张，其中计划只读到部分分区的 6 张、读到全部分区的 0 张",
+        "留档属于哪一版拼 SQL 的代码：正文 ``query_module_sha=2f73f2bf9d44`` 对当下 ``opendata/pipeline/query.py`` = 2f73f2bf9d44 → yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "window_runs": "5",
+        "window_exit": "0",
+        "window_passed": "5",
+        "window_failed": "0",
+        "window_skipped": "0",
+        "window_absent": "-",
+        "window_days": "365",
+        "bounded_default": "yes",
+        "row_cap": "yes",
+        "explain_faces": "2",
+        "explain_paths": "scripts/ops/window_partition_explain.py, tests/test_ods_write_benchmark.py",
+        "scanned_code_files": "484",
+        "explain_archive": "docs/evidence/C64/window-pruning-explain.txt",
+        "explain_archive_round": "C64",
+        "explain_archive_in_place": "yes",
+        "explain_archive_digest": "2f73f2bf9d44",
+        "explain_query_digest": "2f73f2bf9d44",
+        "explain_archive_is_current": "yes",
+        "explain_tables_landed": "6",
+        "explain_pruned_yes": "6",
+        "explain_pruned_no": "0"
+      }
+    },
+    {
+      "item": "AC-11|05",
+      "key": "AC-11|05|0e5e8e85",
+      "state": "proven",
+      "summary": "diff-report 门按域取 dq_diff_report 的样本差异行，受同一套 scope/batch/limit 约束",
+      "readings": [
+        "差异报告面（HTTP 四条 + OpenAPI 一条）: 5/5 nodes passed",
+        "路由 ``/domains/{domain}/diff-report`` 已注册并进 OpenAPI = yes，读的是 dq_diff_report（与校对器写的明细表同一个常量） = yes",
+        "门禁 = yes（按域的 scope 先判），``batch_id`` 只取一次校对 = yes，``limit`` 与查询页同带上限 = yes",
+        "四条 HTTP 用例分别钉住：差异行真的交出来、按 batch_id 选一次跑、limit 有上限、表还没迁移时读出空而不是 500"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "diff_runs": "5",
+        "diff_exit": "0",
+        "diff_passed": "5",
+        "diff_failed": "0",
+        "diff_skipped": "0",
+        "diff_absent": "-",
+        "route": "yes",
+        "table_constant": "dq_diff_report",
+        "reads_constant_table": "yes",
+        "auth_gate": "yes",
+        "batch_filter": "yes",
+        "limit_bounded": "yes"
+      }
+    },
+    {
+      "item": "AC-5|01",
+      "key": "AC-5|01|d68d5995",
+      "state": "proven",
+      "summary": "manifest 的每条 sha/计数全部对着磁盘现算，且与 upstream.lock 的文件集相等",
+      "readings": [
+        "清单 325 个 py + 2 个资源 = 327 条，逐条现算 sha256（327 条能读到磁盘内容）：对不上 0 条、磁盘上没有 0 条",
+        "磁盘反查：py 325 个（清单没登记的 0：-）、非 py 文件 2 个（未登记为资源 0：-），清单里过时条目 0：-",
+        "四个计数逐个与现算相等：py_files=yes、resource_files=yes、total_files=yes、total_lines=yes（现算行数 94530）；upstream.lock 与 manifest 的文件集相等 = yes（327 条）",
+        "仪器原话（scripts/codemod/gen_manifest.py --check，exit 0）：OK: manifest.json is up to date"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "check_exit": "0",
+        "check_note": "OK: manifest.json is up to date",
+        "listed_py": "325",
+        "listed_res": "2",
+        "listed_total": "327",
+        "disk_py": "325",
+        "disk_other": "2",
+        "sha_checked": "327",
+        "sha_mismatch": "0",
+        "sha_absent": "0",
+        "unlisted_on_disk": "0",
+        "unlisted_names": "-",
+        "stale_entries": "0",
+        "stale_names": "-",
+        "res_unregistered": "0",
+        "res_unregistered_names": "-",
+        "res_stale": "0",
+        "count_py_ok": "yes",
+        "count_res_ok": "yes",
+        "count_total_ok": "yes",
+        "count_lines_ok": "yes",
+        "lines_recomputed": "94530",
+        "lock_paths_ok": "yes",
+        "lock_records": "327"
+      }
+    },
+    {
+      "item": "AC-5|02",
+      "key": "AC-5|02|d833746f",
+      "state": "proven",
+      "summary": "搬运面的实际使用与 D9 范围对得上，且 1A/1B 批次有机器可读的声明字段",
+      "readings": [
+        "搬运清单 325 个 py 文件，来自上游 13 个子包：bond, economic, file_fold, fund, futures, futures_derivative, index, option, pro, stock, stock_feature, stock_fundamental, utils",
+        "首方代码以 ``opendata_http.<name>`` 取用 11 个端点函数，聚合层没导出的 0 个：-（akshare 腿模块 11 个）",
+        "需求 D9 点名的范围内 11 个子包（原文：stock、stock_feature、stock_fundamental、futures、futures_derivative、index、fund、opti），清单里没有的 0 个：-；点名移出的 8 个非金融子包混进来的 0 个：-",
+        "逐路径锁/manifest/磁盘核验 = yes（核对 327 条：325 py + 2 资源；问题 0：-）",
+        "能读出 1A/1B 批次的机器字段 = docs/evidence/C65/port-scope-manifest.json#files.batch"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "package_count": "13",
+        "package_names": "bond, economic, file_fold, fund, futures, futures_derivative, index, option, pro, stock, stock_feature, stock_fundamental, utils",
+        "manifest_files": "325",
+        "leg_modules": "11",
+        "first_party_calls": "11",
+        "has_calls": "yes",
+        "called_missing": "0",
+        "called_missing_names": "-",
+        "scope_named": "11",
+        "scope_named_raw": "stock、stock_feature、stock_fundamental、futures、futures_derivative、index、fund、opti",
+        "scope_missing": "0",
+        "scope_missing_names": "-",
+        "excluded_named": "8",
+        "excluded_present": "0",
+        "excluded_present_names": "-",
+        "port_scope_valid": "yes",
+        "port_scope_checked": "327",
+        "port_scope_python": "325",
+        "port_scope_resources": "2",
+        "port_scope_problems": "0",
+        "port_scope_problem_summary": "-",
+        "tier_field": "docs/evidence/C65/port-scope-manifest.json#files.batch"
+      }
+    },
+    {
+      "item": "AC-5|03",
+      "key": "AC-5|03|46ab5fb5",
+      "state": "proven",
+      "summary": "差异报告待办为零，且 AST 扫描在 import/动态/字符串三个形态与冻结基线上都清零",
+      "readings": [
+        "差异报告（docs/port-report.md）自报人工待办 0 条，清单段落首行「（无 —— 待办清零）」且没有挂着的复选项 = yes",
+        "AST 级静态扫描（scripts/codemod/verify_no_akshare.py，exit 0 / --self-test exit 0）：import 形态 0、动态导入 0、字符串常量 0；reference policy valid=yes with 3 exact exceptions",
+        "扫描器冻着的基线 0 条 （scanner version current=yes），字符串形态落在 -",
+        "扫描器原话：exit=0; findings=0 (scanner output omitted)"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "todo_reported": "0",
+        "todo_section_ok": "yes",
+        "todo_section_head": "（无 —— 待办清零）",
+        "detector_exit": "0",
+        "detector_note": "exit=0; findings=0 (scanner output omitted)",
+        "self_test_exit": "0",
+        "policy_valid": "yes",
+        "policy_error": "-",
+        "metadata_exceptions": "3",
+        "baseline_current": "yes",
+        "frozen": "0",
+        "import_live": "0",
+        "dynamic_live": "0",
+        "string_live": "0",
+        "string_files": "-"
+      }
+    },
+    {
+      "item": "AC-5|04",
+      "key": "AC-5|04|edaaf674",
+      "state": "proven",
+      "summary": "根目录与索引与解释器三面都没有 akshare，而首方代码取用的端点全部可达",
+      "readings": [
+        "根目录 `akshare/` 在磁盘上 = no，git 索引里该前缀下 0 个文件：-",
+        "本解释器 `importlib.util.find_spec('akshare')` = absent；`import opendata_http` exit=0（(no output)）",
+        "首方代码取用的 11 个端点函数逐个 `callable(getattr(...))`，取不到的 0 个：-（探针 exit 0）",
+        "干净 venv 侧证（docs/evidence/C65/clean-env-integration-run.txt，ARCHIVE_ROUND=C65，本轮自写 = yes）里 akshare 报 absent = yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "root_dir": "no",
+        "tracked_under_root": "0",
+        "tracked_names": "-",
+        "spec": "absent",
+        "import_exit": "0",
+        "import_note": "(no output)",
+        "call_targets": "11",
+        "call_probe_exit": "0",
+        "callable_missing": "0",
+        "callable_missing_names": "-",
+        "clean_archive": "docs/evidence/C65/clean-env-integration-run.txt",
+        "archive_round": "C65",
+        "archive_self_written": "yes",
+        "archive_absent": "yes"
+      }
+    },
+    {
+      "item": "AC-5|05",
+      "key": "AC-5|05|5450e168",
+      "state": "proven",
+      "summary": "搬运树每个 py 文件都带 MIT 声明与来源行，来源 commit/URL 与 lock 逐字相等",
+      "readings": [
+        "清单里 325 个 py 文件逐个读前 6 行（走查 325 个，与清单相等 = yes）：缺 MIT 声明 0 个（-）、缺来源标注 0 个（-）",
+        "来源标注里的 commit 只有 1 个取值，与 manifest/upstream.lock 的 c4f6a631c259 相等 = yes；URL 与 lock_url （https://github.com/cloudQuant/akshare.git）逐字不等的 0 个：-",
+        "许可证台账（THIRD_PARTY_NOTICES.md）同时说得到 akshare 与 MIT = yes",
+        "清单里 2 个资源文件（json/js）不带这类头部 —— 判据指的是搬运的源文件，资源由 manifest.json 与许可证台账各自登记，本轮只披露不判定"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "listed_py": "325",
+        "walked": "325",
+        "walk_ok": "yes",
+        "mit_missing": "0",
+        "mit_missing_names": "-",
+        "source_missing": "0",
+        "source_missing_names": "-",
+        "banner_commits": "1",
+        "lock_commit": "c4f6a631c259783dbc2507b6b27d179b3e88079d",
+        "commit_ok": "yes",
+        "url_missing": "0",
+        "url_missing_names": "-",
+        "lock_url": "https://github.com/cloudQuant/akshare.git",
+        "notices_ok": "yes",
+        "resource_count": "2"
+      }
+    },
+    {
+      "item": "AC-5|06",
+      "key": "AC-5|06|c5bdecf6",
+      "state": "proven",
+      "summary": "datasets.py 的资源访问函数当场调用：或返回路径，或 raise 且回指仪器派生的登记段",
+      "readings": [
+        "opendata_http/datasets.py 里 2 个资源访问函数（get_ths_js, get_crypto_info_csv）当场调用：返回路径的 0 个（-）、raise 里明说不可用的 2 个（get_ths_js, get_crypto_info_csv）、报别的异常的 0 个：-",
+        "标注不可用的 2 个函数的 raise 文本都回指登记文件 docs/port-report.md = yes（get_ths_js, get_crypto_info_csv）；登记段落在位 = yes，表体 2 行（get_ths_js, get_crypto_info_csv）、逐个点名这些函数且不多不少 = yes",
+        "登记表的行与重放表行同形（行首为 '| `'）的 0 行 —— 不为 0 时 docs/port-report.md 的「每文件一行」计数会把登记行算进搬运清单，于是 scripts/codemod/report_port.py 自己生成的这一节判倒 AC-17|05",
+        "登记处由报告仪器（scripts/codemod/report_port.py）从 `datasets.py` 的 raise 语句与 upstream.lock 派生，不是手写段落",
+        "清单登记的 2 个内置资源在磁盘齐备 = yes（2/2）"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "functions": "2",
+        "function_names": "get_ths_js, get_crypto_info_csv",
+        "runnable": "0",
+        "runnable_names": "-",
+        "marked": "2",
+        "marked_names": "get_ths_js, get_crypto_info_csv",
+        "raised_other": "0",
+        "raised_other_names": "-",
+        "points_at_register": "yes",
+        "points_names": "get_ths_js, get_crypto_info_csv",
+        "register_heading": "yes",
+        "register_rows": "2",
+        "register_row_names": "get_ths_js, get_crypto_info_csv",
+        "register_lists_marked": "yes",
+        "shape_clash": "0",
+        "resource_listed": "2",
+        "resource_present": "2",
+        "resources_present_ok": "yes"
+      }
+    },
+    {
+      "item": "AC-5|07",
+      "key": "AC-5|07|68f3347f",
+      "state": "proven",
+      "summary": "搬运层专用 Bandit 全量扫描绑定当前源码，逐 finding 审阅并保留已知风险",
+      "readings": [
+        "搬运层专用扫描目标 `Makefile:security-ported` 在位且打的是 opendata_http/ = yes（recipe：-bandit -r opendata_http -f json -o docs/evidence/A2/bandit-ported.json @python -c \"import json;d=json.load(open('docs/evidence/A2/bandit-po）；日常 `make security` 按 bandit.yaml 的 exclude_dirs（.git, __pycache__, node_modules, opendata_http）把搬运层排出去，所以「含 B 层」的全量复核只能由这个专用目标承担 = yes（质量规范 §4 的「每次同步一次」口径，不是逐提交记账）",
+        "当前 C65 全量扫描与分组风险审阅证据 docs/evidence/C65/ported-bandit-scan.json 由 validator 独立绑定 = yes（issue=0，-）；Bandit 1.9.4，generated_at=2026-09-30T21:53:51.329161+00:00，exit=1 且与 findings 一致 = yes，errors=0，记录 1048 项 / 241 个有 finding 的文件 / 15 条 B 规则（B105, B107, B110, B112, B113, B301, B307, B311, B314, B324, B403, B404, B405, B501, B603），错误流为空且结果形状有效 = yes；退出码 1 表示本轮发现了 finding，不等同于扫描执行失败",
+        "扫描源绑定当前搬运树：清单每文件 hash 已验证 325/325 个，保存条目 325 个，path/NUL/content/NUL SHA256=1869a81cb20c509f971a1e5322a7c7a650b359be096506056afe3b032bca8564，source tree valid = yes，搬运 manifest 与磁盘路径集合相同 = yes，当前 findings 与 triage identity 完整覆盖 = yes（未处置 0 项，其中未处置 HIGH 0 项）",
+        "当前分组 triage 完成 1048 项 / 15 条规则，规则 disposition、basis、follow_up 与 finding 一致 = yes；实际 HIGH finding 31 项，未处置 HIGH 0 项，HIGH 审阅覆盖 = yes，AI 审阅的直接用户授权 = yes，审阅完成 = yes",
+        "反序列化风险组 B301/B403 有明确审阅 = yes；B301/B307 RCE finding 均保留为风险 = yes；security_fixed=no、unresolved_risks=yes，不将审阅表述为修复或零风险",
+        "搬运 manifest 源文件与磁盘 py 文件覆盖一致 = yes （磁盘 325 个 py 文件）"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "target_ok": "yes",
+        "target_recipe": "-bandit -r opendata_http -f json -o docs/evidence/A2/bandit-ported.json @python -c \"import json;d=json.load(open('docs/evidence/A2/bandit-po",
+        "daily_excludes_ported": "yes",
+        "bandit_exclude_dirs": ".git, __pycache__, node_modules, opendata_http",
+        "ported_files": "325",
+        "archive": "docs/evidence/C65/ported-bandit-scan.json",
+        "security_evidence_valid": "yes",
+        "security_issue_count": "0",
+        "security_issue_summary": "-",
+        "scan_source_tree_valid": "yes",
+        "scan_manifest_ok": "yes",
+        "scan_python_files": "325",
+        "scan_source_files_verified": "325",
+        "scan_source_hash": "1869a81cb20c509f971a1e5322a7c7a650b359be096506056afe3b032bca8564",
+        "scan_source_files_saved": "325",
+        "archive_produced_by": "1.9.4",
+        "archive_generated_at": "2026-09-30T21:53:51.329161+00:00",
+        "scan_errors": "0",
+        "scanner_exit": "1",
+        "scanner_exit_consistent": "yes",
+        "scan_findings": "1048",
+        "scan_high_findings": "31",
+        "scan_files": "241",
+        "scan_rules": "15",
+        "scan_rule_names": "B105, B107, B110, B112, B113, B301, B307, B311, B314, B324, B403, B404, B405, B501, B603",
+        "scan_b_only": "yes",
+        "scan_manifest_matches_tree": "yes",
+        "scan_findings_covered": "yes",
+        "scan_stray_names": "-",
+        "triage_rules": "15",
+        "triage_findings": "1048",
+        "findings_untriaged": "0",
+        "untriaged_high": "0",
+        "triage_rule_review_valid": "yes",
+        "triage_high_reviewed": "yes",
+        "triage_deser_reviewed": "yes",
+        "triage_rce_retained": "yes",
+        "triage_reviewer_authorized": "yes",
+        "triage_review_complete": "yes",
+        "triage_security_fixed": "no",
+        "triage_unresolved_risks": "yes",
+        "surface_covered": "yes"
+      }
+    },
+    {
+      "item": "AC-16|01",
+      "key": "AC-16|01|8d062d86",
+      "state": "gap",
+      "summary": "七个自研 provider 包逐个查「提交说明声明 + 逐包审查留档」，规则文本在位不算数",
+      "readings": [
+        "自研 provider 包 7 个（git 跟踪清单里带 registration.py 的目录数）：akshare, ecb, fred, imf, oecd, ths, yfinance",
+        "合规规则写在 docs/proposals/openbb-migration/README.md：留痕要求里点着「无 OpenBB 源码参照」= yes；同文档 §6 把 AST 断言从「零 akshare」扩展到「零 openbb」= yes",
+        "提交说明带这句声明的包 0 个（-），没带的 akshare, ecb, fred, imf, oecd, ths, yfinance",
+        "留档（docs/evidence/ 里与探针读数同形的文件先剔除，再要求同一行里既点到包名又写得到「无 OpenBB 源码参照」）覆盖 7 个包、绑定行 2 行：akshare, ecb, fred, imf, oecd, ths, yfinance",
+        "另有 5 个包把「no OpenBB code was consulted」写进了自己模块的 docstring —— 那是代码里的自声明，不是逐包审查记录，本条按字面不认"
+      ],
+      "reason": "「审查留档」这一面从没成文：规则写在合规文档里（提交说明声明 + 对照表记上游事实来源），但 7 个自研 provider 里提交说明带「无 OpenBB 源码参照」的只有 0 个（缺：akshare, ecb, fred, imf, oecd, ths, yfinance），docs/evidence/ 下逐包点名且有「审查」字样的留档覆盖 7 个（同一行绑定 2 行；带探针读数同形的档案已先剔除）。模块 docstring 里的自声明（5 个包）与 THIRD_PARTY_NOTICES.md 里那句「本仓库不含任何 OpenBB 源码或其近似复制」都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录。历史提交说明补不回来（不改写历史），要收口得由一次真实的人工审查按包留档，本轮不代拟",
+      "closure": "declared_pkgs: 0 -> 7; recorded_binds: 2 -> 7; undeclared_list: akshare, ecb, fred, imf, oecd, ths, yfinance -> -",
+      "facts": {
+        "provider_pkgs": "7",
+        "provider_list": "akshare, ecb, fred, imf, oecd, ths, yfinance",
+        "rule_written": "yes",
+        "rule_extends_ast": "yes",
+        "declared_pkgs": "0",
+        "declared_list": "-",
+        "recorded_pkgs": "7",
+        "recorded_binds": "2",
+        "recorded_list": "akshare, ecb, fred, imf, oecd, ths, yfinance",
+        "code_declared_pkgs": "5",
+        "undeclared_list": "akshare, ecb, fred, imf, oecd, ths, yfinance"
+      }
+    },
+    {
+      "item": "AC-16|02",
+      "key": "AC-16|02|ee0d6156",
+      "state": "gap",
+      "summary": "运行时四包逐个 AST 解析找 openbb import 根（带正向对照），再核两项人工核查",
+      "readings": [
+        "运行时四包（opendata, opendata_http, opendata_fuyao, opendata_client）跟踪的 py 文件 542 个，逐个 AST 解析成功 542 个，共读到 95 个不同的顶层 import 根 —— 走查不是空转（正向对照）；其中 import 根为 openbb / openbb-* 的 0 个：-",
+        "零依赖扫描器 scripts/codemod/verify_no_akshare.py 的 FORBIDDEN_ROOTS = （akshare, openbb），含 openbb = yes；该文件正文里 openbb 出现 11 处（含 --self-test 的故意违规样本，即这条断言自己是会响的）",
+        "运行时代码里字面出现 openbb（大小写不敏感）的文件 6 个：opendata/data/openbb_map.py, opendata/data/providers/ecb/models/_client.py, opendata/data/providers/fred/models/_client.py, opendata/data/providers/imf/models/_client.py —— 前者是 FR-7 对照表加载器（接口命名属事实性信息），后者是 provider 模块 docstring 里的 clean-room 自声明，都不是源码",
+        "判据括号里的两项核查：提交说明带「无 OpenBB 源码参照」的 provider 包 0/7 个；逐包人工抽查留档覆盖 7/7 个（同一行绑定 2 行，带探针读数同形的档案已剔除）"
+      ],
+      "reason": "留档计数 7 个包却没有同行的绑定行（读到 2 行）—— 那说明计数来自整份文档的一次性引用，或来自探针自己写下的档案，不是逐包人工比对记录",
+      "closure": "declared_pkgs: 0 -> 7; recorded_binds: 2 -> 7",
+      "facts": {
+        "runtime_py": "542",
+        "runtime_py_files": "542",
+        "import_roots_seen": "95",
+        "openbb_imports": "0",
+        "openbb_import_names": "-",
+        "forbidden_covers_openbb": "yes",
+        "forbidden_roots": "akshare, openbb",
+        "scanner_self_test_lines": "11",
+        "code_openbb_names": "6",
+        "code_openbb_list": "opendata/data/openbb_map.py, opendata/data/providers/ecb/models/_client.py, opendata/data/providers/fred/models/_client.py, opendata/data/providers/imf/models/_client.py",
+        "declared_pkgs": "0",
+        "provider_pkgs": "7",
+        "recorded_pkgs": "7",
+        "recorded_binds": "2"
+      }
+    },
+    {
+      "item": "AC-16|03",
+      "key": "AC-16|03|aa9e45ea",
+      "state": "proven",
+      "summary": "搬运树逐文件 MIT 头 + 来源 commit 与 lock 相等，外加台账点名的路径真存在于磁盘",
+      "readings": [
+        "搬运树 325 个清单内 py 文件逐个读前 6 行（走查 325 个 = yes）：缺 MIT 版权声明 0 个（-），缺来源标注 0 个（-）",
+        "来源标注里的 commit 只有 1 个取值、与 lock 的 c4f6a631c259 相等 = yes；URL 与 lock 逐字不等的 0 个（-）",
+        "THIRD_PARTY_NOTICES.md 写得到来源仓库（github.com 链接）= yes、写得到 lock 那个完整 40 位 commit = yes、写得到 MIT = yes",
+        "同一份台账里以反引号点名的仓库内路径，磁盘/跟踪清单上不存在的 0 个：-"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "listed_py": "325",
+        "walked": "325",
+        "walk_ok": "yes",
+        "mit_missing": "0",
+        "mit_missing_names": "-",
+        "source_missing": "0",
+        "source_missing_names": "-",
+        "banner_commits": "1",
+        "lock_commit": "c4f6a631c259783dbc2507b6b27d179b3e88079d",
+        "commit_ok": "yes",
+        "url_missing": "0",
+        "url_missing_names": "-",
+        "lock_url": "https://github.com/cloudQuant/akshare.git",
+        "notices_ok": "yes",
+        "resource_count": "2",
+        "notices_repo": "yes",
+        "notices_commit": "yes",
+        "notices_mit": "yes",
+        "stale_paths": "0",
+        "stale_path_names": "-"
+      }
+    },
+    {
+      "item": "AC-16|04",
+      "key": "AC-16|04|d12a3819",
+      "state": "proven",
+      "summary": "MIT 子树里没有自研 registration.py 也不 import BSL 侧，再禁掉 BSL 侧跑一遍导入",
+      "readings": [
+        "搬运树里带 registration.py 的文件 0 个（-）、落在 */providers/* 下的 0 个（-）—— 判据点名的「registration.py 等自研代码不在 opendata_http/ 内」；opendata_http/ 的 py 文件里 import 根命中 BSL 侧（opendata, opendata_fuyao, opendata_client）的 0 个：-",
+        "另一面是真的跑一遍：起一个把 opendata, opendata_fuyao, opendata_client 全部拒于 meta_path 的解释器，先自证闸门会响（import opendata.core.database 被拦 = yes），再 import 3 个 opendata_http 入口（datasets / stock.cons / utils）：IMPORTED=3，退出码 0，失败读数为 (absent)"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "ported_py": "899",
+        "reg_inside": "0",
+        "reg_inside_names": "-",
+        "prov_inside": "0",
+        "prov_inside_names": "-",
+        "crossings": "0",
+        "crossing_names": "-",
+        "standalone_exit": "0",
+        "control_blocked": "yes",
+        "standalone_failed": "(absent)",
+        "imported_modules": "3",
+        "standalone_ok": "yes"
+      }
+    },
+    {
+      "item": "AC-16|08",
+      "key": "AC-16|08|d249c013",
+      "state": "proven",
+      "summary": "LICENSE 首行逐字 BSL 1.1 + 四个必填条款齐备，README 与数据权利登记各有免责正文",
+      "readings": [
+        "LICENSE 第一行逐字为「Business Source License 1.1」；BSL 的四个必填条款（Licensor / Additional Use Grant / Change Date / Change License）读到 4/4：Licensor, Additional Use Grant, Change Date, Change License，缺 -",
+        "数据免责声明：README.md 有该小节标题 = yes，正文含「不构成任何投资建议」= yes；docs/data-rights-registry.md 有同名小节 = yes，正文同句 = yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "license_line1": "Business Source License 1.1",
+        "bsl_fields": "4",
+        "bsl_field_names": "Licensor, Additional Use Grant, Change Date, Change License",
+        "missing_fields": "-",
+        "disclaimer_heading": "yes",
+        "disclaimer_body_ok": "yes",
+        "registry_disclaimer": "yes",
+        "registry_body_ok": "yes"
+      }
+    },
+    {
+      "item": "AC-19|01",
+      "key": "AC-19|01|de4c675d",
+      "state": "gap",
+      "summary": "备份脚本 + 两库 dump + 仓库内的每日触发点 + RPO/binlog 声明与一次实测取值",
+      "readings": [
+        "备份脚本在跟踪清单 = yes；dump_one 调用 2 次（metadata, warehouse），mysqldump 真实调用 1 处（前置检查那行不计）",
+        "扫描人口 2043 个跟踪文件（tests/docs/web、脚本自身与探针自身已排除，且读 `git ls-files -z`：默认输出会把中文文件名八进制转义）；每日触发点 1 处（scripts/ops/backup_runner.sh）；脚本头部注释里那行 `0 2 * * *` 不算触发点（被调方不能当自己的证据）",
+        "Compose `backup` profile = yes（按需启动）；镜像链 = yes；runner 每日 02:00 UTC 循环 = yes；完整接线 = yes（源码配置不证明当前部署已启动）",
+        "RPO ≤24h 的声明面 = yes；binlog 写进手册 = yes，手册把它列为可选附录 = yes",
+        "实测过的 `log_bin` 取值（只认 ON/OFF，格式串里的 `ON|OFF` 备选不算）0 份档案（-）；语料剔除面 docs/evidence/, docs/quality/, docs/迭代计划/ —— 档案面与结论面都不算实测，探针离线不连库，配置片段不算读数",
+        "C64 isolated MySQL ROW binlog measured=yes; actual scheduled deployment and backup freshness=no; isolated restoration does not establish production RPO"
+      ],
+      "reason": "每日触发源码和隔离双库恢复已验证，隔离 ROW binlog 取值=yes；正式部署中每日任务运行、备份新鲜度及 binlog 实际生效证据=no，生产 RPO ≤24h 尚未验收",
+      "closure": "binlog_attested: 0 -> 1; binlog_attested_list: - -> docs/operations-backup-restore.md; binlog_optional: yes -> no; deployment_observed: no -> yes",
+      "facts": {
+        "scan_population": "2043",
+        "attestation_excluded": "docs/evidence/, docs/quality/, docs/迭代计划/",
+        "script_tracked": "yes",
+        "dump_calls": "2",
+        "dump_labels": "metadata, warehouse",
+        "dump_sites": "1",
+        "schedule_sites": "1",
+        "schedule_list": "scripts/ops/backup_runner.sh",
+        "backup_profile": "yes",
+        "backup_image": "yes",
+        "daily_runner": "yes",
+        "schedule_chain": "yes",
+        "doc_rpo": "yes",
+        "doc_binlog": "yes",
+        "binlog_optional": "yes",
+        "binlog_attested": "0",
+        "binlog_attested_list": "-",
+        "isolated_binlog": "yes",
+        "deployment_observed": "no"
+      }
+    },
+    {
+      "item": "AC-19|02",
+      "key": "AC-19|02|0b2d2b55",
+      "state": "proven",
+      "summary": "A0 演练档案：早于本轮存在 + 六步检查单逐条通过 + 两个隔离恢复库 + 归进 DoD",
+      "readings": [
+        "演练档案 docs/evidence/A0/restore-drill.txt 在跟踪清单 = yes，检查单表头读得到 = yes（同档另有两张从 `| 1 |` 起头的表 —— §4 缺陷 8 行、§5 移交 3 行；判定只看这张表头之下的行）",
+        "首次入库 2026-09-22（提交 0a9fba28df98），早于本轮 = yes —— 一轮不能给自己的演练记录背书（C62 的机读回声教训）",
+        "检查单 6 步，带 ✅ 标记 6 步",
+        "两个隔离恢复库均可指认 2/2；关键表行数比对 = yes，起栈后 /health 读到 status=healthy = yes",
+        "A0 DoD 里点着这份档案 = yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "drill_tracked": "yes",
+        "checklist_found": "yes",
+        "drill_commit": "0a9fba28df98",
+        "drill_added": "2026-09-22",
+        "drill_preexisting": "yes",
+        "steps": "6",
+        "steps_passed": "6",
+        "isolated_dbs": "2",
+        "rowcmp": "yes",
+        "health": "yes",
+        "in_a0_dod": "yes"
+      }
+    },
+    {
+      "item": "AC-19|03",
+      "key": "AC-19|03|347500f4",
+      "state": "proven",
+      "summary": "四类策略 + 四个执行器 + 四个配置键，再加运行时包里的真调用点",
+      "readings": [
+        "策略四类读到 4/4（日线永久 / 分钟线 N 年 / 缓存 TTL / 差异明细导出），执行器 4/4（purge_expired_rows, purge_diff_report, purge_minute_archives, purge_raw_response_cache），四个配置键 4/4",
+        "生产侧调用点 1 处（opendata/pipeline/maintenance.py）—— tests/ 里的引用不算调用点，retention.py 自己的内部转调也不算",
+        "调度行 = yes，kind 可执行 = yes，派发到执行器 = yes；默认 report-only = yes（RETENTION_EXECUTION_ENABLED 默认 false，显式开启才删除）；命名行为用例失败项 = -（- 表示全部通过）"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "policy_kinds": "4",
+        "executors": "4",
+        "executor_list": "purge_expired_rows, purge_diff_report, purge_minute_archives, purge_raw_response_cache",
+        "config_keys": "4",
+        "prod_callers": "1",
+        "caller_list": "opendata/pipeline/maintenance.py",
+        "schedule_row": "yes",
+        "kind_executable": "yes",
+        "dispatcher": "yes",
+        "report_only_default": "yes",
+        "report_only_test": "-"
+      }
+    },
+    {
+      "item": "AC-19|04",
+      "key": "AC-19|04|7e6332ef",
+      "state": "gap",
+      "summary": "四类 Key 健康的分类规则 + 到期信号 + 分级落点与带外告警通道",
+      "readings": [
+        "四类健康类别在位 4/4（key-validity / key-expiry / revocation-or-ban / quota-left）",
+        "线上可触发的分类：401/403→credential-rejected = yes，429→quota-exhausted = yes；到期分类或主动探测 = yes（本平台自签 Key 的 is_expired 不算，判据点名的是权威源）",
+        "分级落点 2 处运行时模块调用 credential_health（opendata/api/pipeline.py, opendata/pipeline/key_health_notifications.py，定义处 patrol.py 已排除）；带外告警通道 1 处（opendata/pipeline/key_health_notifications.py）—— 只有 /health 可拉取 ≠ 告警生效",
+        "operator-supplied expiry metadata supported = yes；独立 observation TTL 与通知测试 3/3 通过 (-)：过期只报告 observation-expired、不会被当作恢复；余量未知时保持 None，不补造配额",
+        "independent live evidence: issuer expiry=no, remaining quota=no, notification delivery=no; metadata and mocks do not prove these",
+        "模块自己的边界声明在位 = yes，未观测只报 yes（这句被删而探测仍未做 ⇒ 判 gap）"
+      ],
+      "reason": "判据要类别、可触发信号、分级落点、通知通道与观察状态测试共同成立；当前读到 4/4 类，operator expiry support=yes，分级落点=2、通知通道=1，observation tests=3/3。观察 TTL 过期不能替代 key 恢复，quota 余量未知时也不能填入数值；还缺供应商到期/余量和实际通知送达的独立现场证据",
+      "closure": "delivery_observed: no -> yes; issuer_expiry_observed: no -> yes; quota_remaining_observed: no -> yes",
+      "facts": {
+        "classes_declared": "4",
+        "rejected_rule": "yes",
+        "quota_rule": "yes",
+        "expiry_signal": "yes",
+        "presence_only": "yes",
+        "disclosure": "yes",
+        "issuer_expiry_observed": "no",
+        "quota_remaining_observed": "no",
+        "delivery_observed": "no",
+        "alert_sites": "2",
+        "alert_list": "opendata/api/pipeline.py, opendata/pipeline/key_health_notifications.py",
+        "notify_sites": "1",
+        "notify_list": "opendata/pipeline/key_health_notifications.py",
+        "observation_runs": "3",
+        "observation_passed": "3",
+        "observation_bad": "-"
+      }
+    },
+    {
+      "item": "AC-19|05",
+      "key": "AC-19|05|5c9afeec",
+      "state": "proven",
+      "summary": "清单逐行四列覆盖数 + 生效方式承载形态 + 全局条款与代码事实是否自洽",
+      "readings": [
+        "在用键名行 64 条，四列齐且无空单元格 64 条（另有 1 条属第十节「已被移除的配置」两列表，不计入在配置项）",
+        "表头里带「生效方式」列的 0 处；全局条款（改后需重启后端进程）在位 = yes；逐行标注「热加载」0 条",
+        "代码侧 6 个运行时模块在调用点读 get_settings()（opendata/data/providers/ecb/models/_client.py, opendata/data/providers/fred/models/_client.py, opendata/data/providers/imf/models/_client.py）；get_settings 仍被 @lru_cache 冻结 = yes —— 去掉缓存而逐行无标注 ⇒ 文档在骗人，判 gap"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "doc_tracked": "yes",
+        "live_rows": "64",
+        "rows_complete": "64",
+        "removed_rows": "1",
+        "effect_col_headers": "0",
+        "global_clause": "yes",
+        "hotload_marked": "0",
+        "settings_cached": "yes",
+        "percall_reads": "6",
+        "percall_list": "opendata/data/providers/ecb/models/_client.py, opendata/data/providers/fred/models/_client.py, opendata/data/providers/imf/models/_client.py"
+      }
+    },
+    {
+      "item": "AC-8|04",
+      "key": "AC-8|04|9c3f54f1",
+      "state": "proven",
+      "summary": "C65 frozen-source full daily-write run with rows/pages/time/RSS bound across raw, matrix, and driver",
+      "readings": [
+        "benchmark validator = yes，issues = 0 (-)；冻结源码身份 = yes（current SHA exact match = no，已接受单行初始状态修正 = yes），当前 SHA = 5c6a8b3b7048284c8b0ddc81219518eb48aff95b1ddb19772ed958985ca2fc47，冻结 SHA = 4a47f4dcc746ad57d5c36ce379aa6816d337aa275e32f3b88eca932ff6107063",
+        "full run: source=ths / stock_daily / ods_stock_daily_ths，rows requested/read/written/source = 10310289/10310289/10310289/10310289，pages read/written = 207/207，requested rows = total source rows = yes",
+        "full run status=complete，elapsed=2211.298866 s，current RSS=41631744 bytes，peak RSS=323862528 bytes；原始记录完整 = yes，matrix/driver/source 身份一致 = yes/yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "benchmark_valid": "yes",
+        "benchmark_issue_count": "0",
+        "benchmark_issue_codes": "-",
+        "source_identity_verified": "yes",
+        "source_frozen_sha256": "4a47f4dcc746ad57d5c36ce379aa6816d337aa275e32f3b88eca932ff6107063",
+        "source_current_sha256": "5c6a8b3b7048284c8b0ddc81219518eb48aff95b1ddb19772ed958985ca2fc47",
+        "source_matches_frozen": "no",
+        "source_initial_status_correction": "yes",
+        "benchmark_scale_count": "3",
+        "benchmark_scales_present": "yes",
+        "memory_all_scales_below_2_gib": "yes",
+        "memory_full_peak_le_1m": "yes",
+        "memory_observation_scope": "the three C65 runs at page_size 50000 only",
+        "100000_rows_requested": "100000",
+        "100000_source_rows_exact": "10310289",
+        "100000_rows_read": "100000",
+        "100000_rows_written": "100000",
+        "100000_pages_read": "2",
+        "100000_pages_written": "2",
+        "100000_target_rows_before": "0",
+        "100000_target_rows_after": "100000",
+        "100000_elapsed_seconds": "269.010563",
+        "100000_current_rss_bytes": "117342208",
+        "100000_peak_rss_bytes": "288260096",
+        "100000_status": "limited-complete",
+        "100000_raw_record_count": "4",
+        "100000_historical_progress_status_error_count": "3",
+        "100000_source": "ths",
+        "100000_domain": "stock_daily",
+        "100000_table": "ods_stock_daily_ths",
+        "100000_raw_complete": "yes",
+        "100000_source_sha256_bound": "yes",
+        "100000_body_final_identity": "yes",
+        "100000_historical_progress_annotation": "yes",
+        "100000_elapsed_positive": "yes",
+        "100000_current_rss_positive": "yes",
+        "100000_peak_rss_positive": "yes",
+        "100000_rows_equal": "yes",
+        "100000_source_rows_match": "no",
+        "100000_pages_equal": "yes",
+        "100000_target_rows_equal": "yes",
+        "1000000_rows_requested": "1000000",
+        "1000000_source_rows_exact": "10310289",
+        "1000000_rows_read": "1000000",
+        "1000000_rows_written": "1000000",
+        "1000000_pages_read": "20",
+        "1000000_pages_written": "20",
+        "1000000_target_rows_before": "0",
+        "1000000_target_rows_after": "1000000",
+        "1000000_elapsed_seconds": "424.211518",
+        "1000000_current_rss_bytes": "278200320",
+        "1000000_peak_rss_bytes": "365723648",
+        "1000000_status": "limited-complete",
+        "1000000_raw_record_count": "22",
+        "1000000_historical_progress_status_error_count": "21",
+        "1000000_source": "ths",
+        "1000000_domain": "stock_daily",
+        "1000000_table": "ods_stock_daily_ths",
+        "1000000_raw_complete": "yes",
+        "1000000_source_sha256_bound": "yes",
+        "1000000_body_final_identity": "yes",
+        "1000000_historical_progress_annotation": "yes",
+        "1000000_elapsed_positive": "yes",
+        "1000000_current_rss_positive": "yes",
+        "1000000_peak_rss_positive": "yes",
+        "1000000_rows_equal": "yes",
+        "1000000_source_rows_match": "no",
+        "1000000_pages_equal": "yes",
+        "1000000_target_rows_equal": "yes",
+        "full_rows_requested": "10310289",
+        "full_source_rows_exact": "10310289",
+        "full_rows_read": "10310289",
+        "full_rows_written": "10310289",
+        "full_pages_read": "207",
+        "full_pages_written": "207",
+        "full_target_rows_before": "0",
+        "full_target_rows_after": "10310289",
+        "full_elapsed_seconds": "2211.298866",
+        "full_current_rss_bytes": "41631744",
+        "full_peak_rss_bytes": "323862528",
+        "full_status": "complete",
+        "full_raw_record_count": "209",
+        "full_historical_progress_status_error_count": "208",
+        "full_source": "ths",
+        "full_domain": "stock_daily",
+        "full_table": "ods_stock_daily_ths",
+        "full_raw_complete": "yes",
+        "full_source_sha256_bound": "yes",
+        "full_body_final_identity": "yes",
+        "full_historical_progress_annotation": "yes",
+        "full_elapsed_positive": "yes",
+        "full_current_rss_positive": "yes",
+        "full_peak_rss_positive": "yes",
+        "full_rows_equal": "yes",
+        "full_source_rows_match": "yes",
+        "full_pages_equal": "yes",
+        "full_target_rows_equal": "yes",
+        "all_scales_complete": "yes",
+        "full_peak_le_1m": "yes"
+      }
+    },
+    {
+      "item": "§5|01",
+      "key": "§5|01|8cab47ff",
+      "state": "proven",
+      "summary": "Three frozen-source write scales with complete rows/pages/time/RSS and an observed full-to-1m peak comparison",
+      "readings": [
+        "三档完整性 = yes，scale count = 3，source identity = yes；validator valid/issues = yes/0",
+        "100000: rows=100000, pages=2, time=269.010563 s, current/peak RSS=117342208/288260096 bytes; 1000000: rows=1000000, pages=20, time=424.211518 s, current/peak RSS=278200320/365723648 bytes; full: rows=10310289, pages=207, time=2211.298866 s, current/peak RSS=41631744/323862528 bytes",
+        "实测 full peak=323862528 bytes，1m peak=365723648 bytes，full <= 1m = yes；所有 scale <2GiB 观察值 = yes（仅展示，不作为本项阈值；范围=the three C65 runs at page_size 50000 only）"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "benchmark_valid": "yes",
+        "benchmark_issue_count": "0",
+        "benchmark_issue_codes": "-",
+        "source_identity_verified": "yes",
+        "source_frozen_sha256": "4a47f4dcc746ad57d5c36ce379aa6816d337aa275e32f3b88eca932ff6107063",
+        "source_current_sha256": "5c6a8b3b7048284c8b0ddc81219518eb48aff95b1ddb19772ed958985ca2fc47",
+        "source_matches_frozen": "no",
+        "source_initial_status_correction": "yes",
+        "benchmark_scale_count": "3",
+        "benchmark_scales_present": "yes",
+        "memory_all_scales_below_2_gib": "yes",
+        "memory_full_peak_le_1m": "yes",
+        "memory_observation_scope": "the three C65 runs at page_size 50000 only",
+        "100000_rows_requested": "100000",
+        "100000_source_rows_exact": "10310289",
+        "100000_rows_read": "100000",
+        "100000_rows_written": "100000",
+        "100000_pages_read": "2",
+        "100000_pages_written": "2",
+        "100000_target_rows_before": "0",
+        "100000_target_rows_after": "100000",
+        "100000_elapsed_seconds": "269.010563",
+        "100000_current_rss_bytes": "117342208",
+        "100000_peak_rss_bytes": "288260096",
+        "100000_status": "limited-complete",
+        "100000_raw_record_count": "4",
+        "100000_historical_progress_status_error_count": "3",
+        "100000_source": "ths",
+        "100000_domain": "stock_daily",
+        "100000_table": "ods_stock_daily_ths",
+        "100000_raw_complete": "yes",
+        "100000_source_sha256_bound": "yes",
+        "100000_body_final_identity": "yes",
+        "100000_historical_progress_annotation": "yes",
+        "100000_elapsed_positive": "yes",
+        "100000_current_rss_positive": "yes",
+        "100000_peak_rss_positive": "yes",
+        "100000_rows_equal": "yes",
+        "100000_source_rows_match": "no",
+        "100000_pages_equal": "yes",
+        "100000_target_rows_equal": "yes",
+        "1000000_rows_requested": "1000000",
+        "1000000_source_rows_exact": "10310289",
+        "1000000_rows_read": "1000000",
+        "1000000_rows_written": "1000000",
+        "1000000_pages_read": "20",
+        "1000000_pages_written": "20",
+        "1000000_target_rows_before": "0",
+        "1000000_target_rows_after": "1000000",
+        "1000000_elapsed_seconds": "424.211518",
+        "1000000_current_rss_bytes": "278200320",
+        "1000000_peak_rss_bytes": "365723648",
+        "1000000_status": "limited-complete",
+        "1000000_raw_record_count": "22",
+        "1000000_historical_progress_status_error_count": "21",
+        "1000000_source": "ths",
+        "1000000_domain": "stock_daily",
+        "1000000_table": "ods_stock_daily_ths",
+        "1000000_raw_complete": "yes",
+        "1000000_source_sha256_bound": "yes",
+        "1000000_body_final_identity": "yes",
+        "1000000_historical_progress_annotation": "yes",
+        "1000000_elapsed_positive": "yes",
+        "1000000_current_rss_positive": "yes",
+        "1000000_peak_rss_positive": "yes",
+        "1000000_rows_equal": "yes",
+        "1000000_source_rows_match": "no",
+        "1000000_pages_equal": "yes",
+        "1000000_target_rows_equal": "yes",
+        "full_rows_requested": "10310289",
+        "full_source_rows_exact": "10310289",
+        "full_rows_read": "10310289",
+        "full_rows_written": "10310289",
+        "full_pages_read": "207",
+        "full_pages_written": "207",
+        "full_target_rows_before": "0",
+        "full_target_rows_after": "10310289",
+        "full_elapsed_seconds": "2211.298866",
+        "full_current_rss_bytes": "41631744",
+        "full_peak_rss_bytes": "323862528",
+        "full_status": "complete",
+        "full_raw_record_count": "209",
+        "full_historical_progress_status_error_count": "208",
+        "full_source": "ths",
+        "full_domain": "stock_daily",
+        "full_table": "ods_stock_daily_ths",
+        "full_raw_complete": "yes",
+        "full_source_sha256_bound": "yes",
+        "full_body_final_identity": "yes",
+        "full_historical_progress_annotation": "yes",
+        "full_elapsed_positive": "yes",
+        "full_current_rss_positive": "yes",
+        "full_peak_rss_positive": "yes",
+        "full_rows_equal": "yes",
+        "full_source_rows_match": "yes",
+        "full_pages_equal": "yes",
+        "full_target_rows_equal": "yes",
+        "all_scales_complete": "yes",
+        "full_peak_le_1m": "yes"
+      }
+    },
+    {
+      "item": "AC-10|02",
+      "key": "AC-10|02|a2296996",
+      "state": "proven",
+      "summary": "Direct requester confirmation reconciled against every current active provider/domain pair",
+      "readings": [
+        "当前活跃 openbb_map legs = 33 条 / 7 providers；确认记录 = 33 条，pair set 精确相等 = yes （missing=0，extra=0，duplicates=0/0）",
+        "直接人类回复与请求方 = yes/yes；空场景/请求方/用途 = 0/0/0；用途错配=0，activation 未确认=0",
+        "确认范围：requester/purpose/activation only; not copyright/source/field mapping；issues=0：-"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "requester_evidence_valid": "yes",
+        "requester_problem_count": "0",
+        "requester_problem_summary": "-",
+        "direct_human_confirmation": "yes",
+        "direct_reply_matches": "yes",
+        "reply_declared_count": "33",
+        "requester_source_map_matches": "yes",
+        "active_map_leg_count": "33",
+        "active_map_unique_pairs": "33",
+        "active_provider_count": "7",
+        "map_duplicate_pairs": "0",
+        "evidence_leg_count": "33",
+        "evidence_unique_pairs": "33",
+        "evidence_duplicate_pairs": "0",
+        "missing_pairs": "0",
+        "extra_pairs": "0",
+        "pair_set_equal": "yes",
+        "declared_count_matches": "yes",
+        "declared_provider_count_matches": "yes",
+        "scenario_missing": "0",
+        "scenario_mismatch": "0",
+        "requester_missing": "0",
+        "requester_mismatch": "0",
+        "purpose_missing": "0",
+        "purpose_mismatch": "0",
+        "activation_unconfirmed": "0",
+        "proof_scope": "requester/purpose/activation only; not copyright/source/field mapping"
+      }
+    },
+    {
+      "item": "AC-10|03",
+      "key": "AC-10|03|72598062",
+      "state": "proven",
+      "summary": "Current registered provider sources have a complete, user-authorized, hash-bound review against the pinned OpenBB baseline",
+      "readings": [
+        "当前已注册 provider = akshare, ecb, fred, imf, oecd, ths, yfinance（7），审阅范围 = current_registered_provider_packages；源码/审阅/相似度清单 = 71/71/71 个 Python 文件，源 SHA 绑定完整 = yes（条目数=71）",
+        "源码可解析 = yes，OpenBB import = 0（零导入=yes）；固定基线 = 3e071fcc2cd9f891cac6040ae60296dba76dab46，审阅授权 = yes",
+        "候选/未审候选 = 0/0，审阅完成 = yes（packages=yes，nearest=yes）；nearest review = 3 项，正向结论 = yes，档案 SHA 互绑 = yes；validator valid/issues = yes/0（-）"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "provider_review_valid": "yes",
+        "provider_review_issue_count": "0",
+        "provider_review_issue_codes": "-",
+        "provider_scope": "current_registered_provider_packages",
+        "provider_count": "7",
+        "provider_names": "akshare, ecb, fred, imf, oecd, ths, yfinance",
+        "reviewed_provider_names": "akshare, ecb, fred, imf, oecd, ths, yfinance",
+        "current_source_file_count": "71",
+        "source_hash_entry_count": "71",
+        "reviewed_source_file_count": "71",
+        "similarity_source_file_count": "71",
+        "baseline_source_file_count": "121",
+        "current_source_hashes_bound": "yes",
+        "provider_sources_parsed": "yes",
+        "openbb_import_count": "0",
+        "zero_openbb_imports": "yes",
+        "reviewer_authorized": "yes",
+        "openbb_baseline_commit": "3e071fcc2cd9f891cac6040ae60296dba76dab46",
+        "candidate_count": "0",
+        "unreviewed_candidates": "0",
+        "package_reviews_complete": "yes",
+        "nearest_review_complete": "yes",
+        "review_complete": "yes",
+        "nearest_review_count": "3",
+        "nearest_positive_result": "yes",
+        "artifact_sha_bindings_match": "yes"
+      }
+    },
+    {
+      "item": "AC-6|02",
+      "key": "AC-6|02|1f610b61",
+      "state": "proven",
+      "summary": "Offline recorded-fixture compare PASS measured against the validated 9-group B1.1 module denominator",
+      "readings": [
+        "当前 Compare Case = 18：PASS/PENDING/FAIL = 14/4/0；原 compare exit=1（与未完成项一致=yes），D10 failed=no",
+        "经 port_scope 逐路径验证的B1.1组：PASS覆盖 6/9（66.67%），最低组数=2；覆盖组=bond, fund, futures, index, option, stock_fundamental",
+        "PASS source paths=7/245 py （2.86%，披露用，不作为20%分母）；Pending=stock_daily_raw, stock_daily_qfq, index_daily_em, fund_etf_daily_em，不计入PASS；rtol=1e-09，报告仅写入临时目录=yes",
+        "source paths/hashes与批次核对 = yes；scope问题=-；路径问题=-"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "port_scope_valid": "yes",
+        "port_scope_problem_summary": "-",
+        "b1_scope_groups_valid": "yes",
+        "b1_scope_group_count": "9",
+        "b1_scope_group_names": "bond, economic, fund, futures, futures_derivative, index, option, stock_feature, stock_fundamental",
+        "b1_python_file_count": "245",
+        "case_path_mapping_valid": "yes",
+        "case_path_problem_count": "0",
+        "case_path_problem_summary": "-",
+        "case_count": "18",
+        "case_statuses_complete": "yes",
+        "case_pass_count": "14",
+        "case_fail_count": "0",
+        "case_pending_count": "4",
+        "pending_excluded": "yes",
+        "compare_exit_code": "1",
+        "compare_exit_consistent": "yes",
+        "compare_report_temporary": "yes",
+        "compare_rtol": "1e-09",
+        "d10_failed": "no",
+        "passing_groups": "6",
+        "passing_group_names": "bond, fund, futures, index, option, stock_fundamental",
+        "required_groups": "2",
+        "group_coverage_percent": "66.67",
+        "pass_files": "7",
+        "file_coverage_percent": "2.86",
+        "pending_case_names": "stock_daily_raw, stock_daily_qfq, index_daily_em, fund_etf_daily_em",
+        "fail_case_names": "-",
+        "sample_scope_note": "module-group denominator; file percentage is disclosed only"
+      }
+    }
+  ]
+}

@@ -15,10 +15,10 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, cast
 
 from opendata.data.capability import Capability
-from opendata.data.protocol import FetchContext, Fetcher, QueryParams
+from opendata.data.protocol import FetchContext, Fetcher, FetchResult, QueryParams
 from opendata.data.registry import get_registry
 from opendata.pipeline import patrol as patrol_module
 from opendata.pipeline.patrol import probe_params
@@ -70,12 +70,10 @@ class _StubCatalog(Fetcher[_StubCatalogQuery, tuple[_StubRow, ...]]):
             _StubRow("10011420.SH", date(2026, 10, 1)),
         )
 
-    def transform_data(
-        self, raw: tuple[_StubRow, ...], params: _StubCatalogQuery
-    ) -> tuple[_StubRow, ...]:
+    def transform_data(self, raw: tuple[_StubRow, ...], params: _StubCatalogQuery) -> FetchResult:
         """Pass the rows through unchanged."""
         del params
-        return raw
+        return cast("FetchResult", raw)
 
 
 def _stub_the_catalog() -> None:

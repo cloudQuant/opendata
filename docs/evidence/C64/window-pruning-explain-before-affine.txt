@@ -1,0 +1,50 @@
+ARCHIVE_ROUND=C64
+date: 2026-09-30T04:23:47.688180+00:00
+head: d552c081950edffce167e3dfc0be74f37a6950a1 + current worktree
+command: Anaconda base python scripts/ops/window_partition_explain.py
+scope: existing configured warehouse; EXPLAIN and information_schema SELECT only; no writes
+2026-09-30 06:23:50.328 | INFO     | opendata.core.token_blacklist:_create_blacklist:186 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+dialect=mysql database=opendata_data
+query_module_sha=ce2ea20632dd
+domains_requested=20 default_window_days=365
+domain=bond_daily table=dwd_bond_daily landed=no (skipped, not counted)
+domain=economy_cpi table=dwd_economy_cpi landed=no (skipped, not counted)
+domain=economy_gdp table=dwd_economy_gdp landed=no (skipped, not counted)
+domain=economy_rate table=dwd_economy_rate landed=no (skipped, not counted)
+domain=economy_unemployment table=dwd_economy_unemployment landed=no (skipped, not counted)
+domain=financial_indicator table=dwd_financial_indicator time_field=report_period window=2025-09-30..2026-09-30 partitions_total=4 partitions_read=2 read=p2025,p2026 pruned=yes
+  sql=SELECT `symbol`, `report_period`, `announce_date`, `indicator`, `value`, `unit`, `revision`, `source`, `_merged_at`, `_diff_flag`, `_as_of` FROM `dwd_financial_indicator` WHERE `report_period` >= :start AND `report_period` <= :end ORDER BY `symbol`, `report_period` LIMIT :limit OFFSET :offset
+  params={'start': '2025-09-30', 'end': '2026-09-30', 'limit': '200', 'offset': '0'}
+  plan=[{"id": 1, "select_type": "SIMPLE", "table": "dwd_financial_indicator", "partitions": "p2025,p2026", "type": "index", "possible_keys": null, "key": "PRIMARY", "key_len": "1283", "ref": null, "rows": 1, "filtered": 100.0, "Extra": "Using where"}]
+domain=financial_statement table=dwd_financial_statement time_field=report_period window=2025-09-30..2026-09-30 partitions_total=4 partitions_read=2 read=p2025,p2026 pruned=yes
+  sql=SELECT `symbol`, `statement_type`, `report_period`, `announce_date`, `item`, `value`, `revision`, `source`, `_merged_at`, `_diff_flag`, `_as_of` FROM `dwd_financial_statement` WHERE `report_period` >= :start AND `report_period` <= :end ORDER BY `symbol`, `report_period` LIMIT :limit OFFSET :offset
+  params={'start': '2025-09-30', 'end': '2026-09-30', 'limit': '200', 'offset': '0'}
+  plan=[{"id": 1, "select_type": "SIMPLE", "table": "dwd_financial_statement", "partitions": "p2025,p2026", "type": "ALL", "possible_keys": null, "key": null, "key_len": null, "ref": null, "rows": 1, "filtered": 100.0, "Extra": "Using where; Using filesort"}]
+domain=fund_action table=dwd_fund_action landed=no (skipped, not counted)
+domain=fund_etf_daily table=dwd_fund_etf_daily landed=no (skipped, not counted)
+domain=futures_daily table=dwd_futures_daily landed=no (skipped, not counted)
+domain=futures_fundamentals table=dwd_futures_fundamentals landed=no (skipped, not counted)
+domain=index_constituent table=dwd_index_constituent time_field=as_of window=2025-09-30..2026-09-30 partitions_total=4 partitions_read=2 read=p2025,p2026 pruned=yes
+  sql=SELECT `index_symbol`, `symbol`, `as_of`, `weight`, `source`, `_merged_at`, `_diff_flag`, `_as_of` FROM `dwd_index_constituent` WHERE `as_of` >= :start AND `as_of` <= :end ORDER BY `index_symbol`, `symbol`, `as_of` LIMIT :limit OFFSET :offset
+  params={'start': '2025-09-30', 'end': '2026-09-30', 'limit': '200', 'offset': '0'}
+  plan=[{"id": 1, "select_type": "SIMPLE", "table": "dwd_index_constituent", "partitions": "p2025,p2026", "type": "index", "possible_keys": null, "key": "PRIMARY", "key_len": "519", "ref": null, "rows": 1, "filtered": 100.0, "Extra": "Using where"}]
+domain=index_daily table=dwd_index_daily landed=no (skipped, not counted)
+domain=instrument table=dwd_instrument landed=no (skipped, not counted)
+domain=option_daily table=dwd_option_daily landed=no (skipped, not counted)
+domain=stock_action table=dwd_stock_action time_field=ex_date window=2025-09-30..2026-09-30 partitions_total=4 partitions_read=2 read=p2025,p2026 pruned=yes
+  sql=SELECT `symbol`, `ex_date`, `cash_dividend`, `stock_dividend`, `rights_shares`, `rights_price`, `source`, `_merged_at`, `_diff_flag`, `_as_of` FROM `dwd_stock_action` WHERE `ex_date` >= :start AND `ex_date` <= :end ORDER BY `symbol`, `ex_date` LIMIT :limit OFFSET :offset
+  params={'start': '2025-09-30', 'end': '2026-09-30', 'limit': '200', 'offset': '0'}
+  plan=[{"id": 1, "select_type": "SIMPLE", "table": "dwd_stock_action", "partitions": "p2025,p2026", "type": "index", "possible_keys": null, "key": "PRIMARY", "key_len": "261", "ref": null, "rows": 1, "filtered": 100.0, "Extra": "Using where"}]
+domain=stock_adjust table=dwd_stock_adjust time_field=trade_date window=2025-09-30..2026-09-30 partitions_total=4 partitions_read=1 read=p2026 pruned=yes
+  sql=SELECT `symbol`, `trade_date`, `qfq_factor`, `hfq_factor`, `source`, `_merged_at`, `_diff_flag`, `_as_of` FROM `dwd_stock_adjust` WHERE `trade_date` >= :start AND `trade_date` <= :end ORDER BY `symbol`, `trade_date` LIMIT :limit OFFSET :offset
+  params={'start': '2025-09-30', 'end': '2026-09-30', 'limit': '200', 'offset': '0'}
+  plan=[{"id": 1, "select_type": "SIMPLE", "table": "dwd_stock_adjust", "partitions": "p2026", "type": "index", "possible_keys": null, "key": "PRIMARY", "key_len": "261", "ref": null, "rows": 200, "filtered": 11.11, "Extra": "Using where"}]
+domain=stock_daily table=dwd_stock_daily time_field=trade_date window=2025-09-30..2026-09-30 partitions_total=4 partitions_read=2 read=p2025,p2026 pruned=yes
+  sql=SELECT `symbol`, `trade_date`, `open`, `high`, `low`, `close`, `volume`, `amount`, `source`, `_merged_at`, `_diff_flag`, `_as_of` FROM `dwd_stock_daily` WHERE `trade_date` >= :start AND `trade_date` <= :end ORDER BY `symbol`, `trade_date` LIMIT :limit OFFSET :offset
+  params={'start': '2025-09-30', 'end': '2026-09-30', 'limit': '200', 'offset': '0'}
+  plan=[{"id": 1, "select_type": "SIMPLE", "table": "dwd_stock_daily", "partitions": "p2025,p2026", "type": "index", "possible_keys": null, "key": "PRIMARY", "key_len": "261", "ref": null, "rows": 200, "filtered": 11.11, "Extra": "Using where"}]
+domain=stock_daily_overseas table=dwd_stock_daily_overseas landed=no (skipped, not counted)
+domain=trading_calendar table=dwd_trading_calendar landed=no (skipped, not counted)
+landed_partitioned_tables=6 pruned_yes=6 pruned_no=0
+explain_pruned=all
+EXPLAIN_EXIT=0

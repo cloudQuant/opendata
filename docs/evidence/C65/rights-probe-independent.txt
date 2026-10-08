@@ -1,0 +1,20 @@
+ROUND=C65
+DATE=2026-09-30T14:42:05.348834+00:00
+COMMAND=/tmp/opendata-c64-clean-env-20260930/bin/python -m pytest tests/test_acceptance_item_probe.py --no-cov -m 'not e2e' -q
+SHA256 README.md 321b68d601db7266ebee9f5a87f378cea05ca86a164df4ff4b670e0a9fd11816
+SHA256 scripts/quality/acceptance_item_probe.py 5474d6e0cf065b7708c6f9083a58275c72e9c9f4d9e896e3f5079a02e3fa105c
+SHA256 tests/test_acceptance_item_probe.py 6bde598258e47c95f8e0e8f7fd487e9d209c32836f2e435ae0f666f1e05c3b72
+SHA256 docs/data-rights-registry.md ca5a69529033d7e72fc66ee92f6a516cdd1b30b9a9d6f9f3d673b55919f9b33b
+============================= test session starts ==============================
+platform darwin -- Python 3.11.8, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: platformdirs-4.12.2, cov-7.1.0, xdist-3.8.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 18 items
+
+tests/test_acceptance_item_probe.py ..................                   [100%]
+
+============================= 18 passed in 38.20s ==============================
+
+EXIT=0

@@ -11,10 +11,15 @@ import json
 import tempfile
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
 import pandas as pd
 import yaml
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from opendata.data.models import ContractModel
 
 from opendata.data import mapping as mapping_module
 from opendata.data.mapping import (
@@ -89,7 +94,8 @@ def _sina_items(frame: pd.DataFrame) -> list[str]:
 
     fetcher = AkshareFinancialStatementFetcher()
     params = fetcher.transform_query(symbol="600519", statement_type="资产负债表")
-    return [str(row.model_dump()["item"]) for row in fetcher.transform_data(frame, params)]
+    rows = cast("Sequence[ContractModel]", fetcher.transform_data(frame, params))
+    return [str(row.model_dump()["item"]) for row in rows]
 
 
 def face_a_legs_and_declarations() -> None:
@@ -157,10 +163,11 @@ def face_c_live_reads() -> None:
     print(f"  ths(fuyao) income 科目数 = {len(income)}；首两个 = {income[:2]}；末个 = {income[-1]}")
     print(f"  akshare sina 熔解出的 item = {_sina_items(_SINA_FRAME)}")
     fetcher = AkshareFinancialIndicatorFetcher()
-    melted = [
-        row.model_dump()
-        for row in fetcher.transform_data(_EM_FRAME, fetcher.transform_query(symbol="600519"))
-    ]
+    rows = cast(
+        "Sequence[ContractModel]",
+        fetcher.transform_data(_EM_FRAME, fetcher.transform_query(symbol="600519")),
+    )
+    melted = [row.model_dump() for row in rows]
     print(f"  akshare em 熔解出的 indicator = {[row['indicator'] for row in melted]}")
     first = melted[0]
     print(f"    行数={len(melted)} 首行 report_period={first['report_period']}")
@@ -213,7 +220,8 @@ def face_e_table_moves_the_melt() -> None:
 
             def melt(frame: pd.DataFrame) -> list[dict[str, Any]]:
                 """一帧熔成契约行（按字段名读，见 _sina_items 的同款理由）."""
-                return [row.model_dump() for row in fetcher.transform_data(frame, params)]
+                rows = cast("Sequence[ContractModel]", fetcher.transform_data(frame, params))
+                return [row.model_dump() for row in rows]
 
             _write_akshare(tmp, exclude=["数据源", "是否审计", "币种", "类型", "更新日期"])
             kept = {str(row["item"]) for row in melt(_SINA_FRAME_NUMERIC_PAGE)}

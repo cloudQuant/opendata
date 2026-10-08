@@ -1,0 +1,60 @@
+Date: 2026-09-30T11:43:04.727115+00:00
+Command: same-run coverage JSON export and independent weighted threshold review
+Source: completed C64/full-gate.txt and final-source-manifest.json
+
+Wrote JSON report to /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C64/coverage-final.json
+{
+  "total_percent": 89.03757076685538,
+  "packages": {
+    "opendata/data/": {
+      "files": 92,
+      "covered_statements": 3411,
+      "statements": 3648,
+      "covered_branches": 887,
+      "branches": 1056,
+      "covered_opportunities": 4298,
+      "opportunities": 4704,
+      "percent": 91.36904761904762
+    },
+    "opendata/pipeline/": {
+      "files": 35,
+      "covered_statements": 4393,
+      "statements": 4790,
+      "covered_branches": 1163,
+      "branches": 1374,
+      "covered_opportunities": 5556,
+      "opportunities": 6164,
+      "percent": 90.13627514600908
+    },
+    "opendata_fuyao/": {
+      "files": 9,
+      "covered_statements": 1109,
+      "statements": 1164,
+      "covered_branches": 339,
+      "branches": 374,
+      "covered_opportunities": 1448,
+      "opportunities": 1538,
+      "percent": 94.148244473342
+    }
+  },
+  "A2_collected": {
+    "files": 180,
+    "covered_statements": 13159,
+    "statements": 14420,
+    "covered_branches": 3228,
+    "branches": 3898,
+    "covered_opportunities": 16387,
+    "opportunities": 18318,
+    "percent": 89.4584561633366
+  },
+  "checks": {
+    "total_at_least_84": true,
+    "collected_a2_at_least_85": true,
+    "opendata/data/at_least_90": true,
+    "opendata/pipeline/at_least_90": true,
+    "opendata_fuyao/at_least_90": true
+  }
+}
+PRIMARY_FINAL_COVERAGE_REVIEW_EXIT=0
+
+COVERAGE_PRIMARY_REVIEW_EXIT=0

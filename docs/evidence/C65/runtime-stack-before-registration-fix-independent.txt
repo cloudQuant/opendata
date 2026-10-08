@@ -1,0 +1,6 @@
+Date: 2026-09-30T21:17:53.321515+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: scripts/ops/verify_isolated_stack.py --apply --output docs/evidence/C65/runtime-stack-current.json
+{"date": "2026-09-30", "endpoint": "http://127.0.0.1:33566", "error": {"type": "isolated_registration_failed"}, "frontend_login": null, "health": {"database": "connected", "status": "healthy"}, "mode": "apply", "source": {"image_id": "sha256:98e742d7bef8e627c9330a202d162e61c2518e8b5c368f3c7782d2f74067b1dc", "source_identity": "fa709f01027c1d34f623d46ccd0c99d1048d2e333d834cae0935e0fea6583725"}, "static": {"asset_count": 5, "assets_valid": true, "home_http_200": true}, "userdb_write_isolated": false}
+
+EXIT=1

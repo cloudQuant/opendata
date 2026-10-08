@@ -26,12 +26,14 @@ Run (stdout redirected to the sibling ``.txt``)::
 from __future__ import annotations
 
 from datetime import date
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from opendata.data.providers import register_providers
 from opendata.data.registry import get_registry
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from opendata.data.models import Instrument
 
 #: Rows a page may leave undated and still count as fully dated - the same
@@ -68,7 +70,7 @@ def main() -> int:
     """Compare both predicates across the three catalog shapes."""
     register_providers()
     routed = get_registry().resolve_domain("instrument", source="ths")
-    rows = list(routed.fetch(asset_type="a-share"))
+    rows = list(cast("Sequence[Instrument]", routed.fetch(asset_type="a-share")))
     total = len(rows)
     live_nulls = sum(1 for row in rows if row.list_date is None)
     print(f"[1] 真机读到的 a-share 目录：{total} 行，list_date 空 {live_nulls} 行")

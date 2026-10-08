@@ -1,0 +1,47 @@
+Date: 2026-09-30
+Branch: dev
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Worktree: uncommitted C64 development based on this HEAD; initial checkout clean
+Command: Anaconda base inline Python + real TestClient lifespan; APP_ENV=development TESTING=false; owned MySQL port 33564; generated temporary credentials; health, login, catalog and 11th login 429
+REVIEW_EXIT=0
+
+Output source: opendata-iter01-startup-login-health-run4-20260930.log
+2026-09-30 02:34:43.108 | INFO     | opendata.core.token_blacklist:_create_blacklist:186 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+2026-09-30 02:34:44.121 | INFO     | opendata.main:lifespan:108 - Starting opendata v0.1.0
+2026-09-30 02:34:44.121 | INFO     | opendata.main:lifespan:109 - Environment: development
+2026-09-30 02:34:44.233 | INFO     | opendata.core.database:create_tables:220 - Database tables created successfully
+2026-09-30 02:34:44.264 | INFO     | opendata.core.database:init_db:206 - Database already initialized
+2026-09-30 02:34:44.312 | INFO     | opendata.main:lifespan:171 - Registered 33 provider capabilities
+2026-09-30 02:34:44.313 | WARNING  | opendata.main:lifespan:197 - Scheduler DISABLED: explicitly disabled by ENABLE_SCHEDULER
+2026-09-30 02:34:44.314 | INFO     | opendata.main:lifespan:199 - Application startup complete
+2026-09-30 02:34:44.327 | INFO     | opendata.middleware.request_logging:dispatch:33 - POST /api/auth/login
+2026-09-30 02:34:44.675 | INFO     | opendata.middleware.request_logging:dispatch:52 - POST /api/auth/login 200 (348.5ms)
+2026-09-30 02:34:44.679 | INFO     | opendata.middleware.request_logging:dispatch:33 - GET /api/v1/data/catalog
+2026-09-30 02:34:44.715 | WARNING  | opendata.pipeline.trading_calendar:warehouse_calendar:257 - trading calendar contract unavailable from dwd_trading_calendar: (pymysql.err.ProgrammingError) (1146, "Table 'opendata_iter01_data.dwd_trading_calendar' doesn't exist")
+[SQL: SELECT * FROM `dwd_trading_calendar` ORDER BY `date`]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+2026-09-30 02:34:45.247 | INFO     | opendata.middleware.request_logging:dispatch:52 - GET /api/v1/data/catalog 200 (568.0ms)
+2026-09-30 02:34:45.252 | INFO     | opendata.middleware.request_logging:dispatch:33 - POST /api/auth/login
+2026-09-30 02:34:45.258 | WARNING  | opendata.middleware.request_logging:dispatch:52 - POST /api/auth/login 401 (6.1ms)
+2026-09-30 02:34:45.260 | INFO     | opendata.middleware.request_logging:dispatch:33 - POST /api/auth/login
+2026-09-30 02:34:45.266 | WARNING  | opendata.middleware.request_logging:dispatch:52 - POST /api/auth/login 401 (6.0ms)
+2026-09-30 02:34:45.268 | INFO     | opendata.middleware.request_logging:dispatch:33 - POST /api/auth/login
+2026-09-30 02:34:45.273 | WARNING  | opendata.middleware.request_logging:dispatch:52 - POST /api/auth/login 401 (5.0ms)
+2026-09-30 02:34:45.275 | INFO     | opendata.middleware.request_logging:dispatch:33 - POST /api/auth/login
+2026-09-30 02:34:45.280 | WARNING  | opendata.middleware.request_logging:dispatch:52 - POST /api/auth/login 401 (4.7ms)
+2026-09-30 02:34:45.282 | INFO     | opendata.middleware.request_logging:dispatch:33 - POST /api/auth/login
+2026-09-30 02:34:45.286 | WARNING  | opendata.middleware.request_logging:dispatch:52 - POST /api/auth/login 401 (4.5ms)
+2026-09-30 02:34:45.288 | INFO     | opendata.middleware.request_logging:dispatch:33 - POST /api/auth/login
+2026-09-30 02:34:45.294 | WARNING  | opendata.middleware.request_logging:dispatch:52 - POST /api/auth/login 401 (5.6ms)
+2026-09-30 02:34:45.296 | INFO     | opendata.middleware.request_logging:dispatch:33 - POST /api/auth/login
+2026-09-30 02:34:45.301 | WARNING  | opendata.middleware.request_logging:dispatch:52 - POST /api/auth/login 401 (5.1ms)
+2026-09-30 02:34:45.303 | INFO     | opendata.middleware.request_logging:dispatch:33 - POST /api/auth/login
+2026-09-30 02:34:45.308 | WARNING  | opendata.middleware.request_logging:dispatch:52 - POST /api/auth/login 401 (5.2ms)
+2026-09-30 02:34:45.309 | INFO     | opendata.middleware.request_logging:dispatch:33 - POST /api/auth/login
+2026-09-30 02:34:45.314 | WARNING  | opendata.middleware.request_logging:dispatch:52 - POST /api/auth/login 401 (4.5ms)
+2026-09-30 02:34:45.316 | INFO     | opendata.middleware.request_logging:dispatch:33 - POST /api/auth/login
+2026-09-30 02:34:45.318 | WARNING  | opendata.middleware.request_logging:dispatch:52 - POST /api/auth/login 429 (2.2ms)
+2026-09-30 02:34:45.320 | INFO     | opendata.main:lifespan:204 - Shutting down application...
+2026-09-30 02:34:45.320 | INFO     | opendata.core.database:close_db:227 - Database connections closed
+2026-09-30 02:34:45.321 | INFO     | opendata.main:lifespan:213 - Application shutdown complete
+PASS real lifespan: database connected; scheduler explicitly stopped; login=200; authenticated catalog=200; login 10/min limit=429

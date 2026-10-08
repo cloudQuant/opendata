@@ -1,0 +1,39 @@
+Date: 2026-10-01T00:41:35.215057+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: conda run --no-capture-output -n base python /tmp/opendata_c65_run_checks.py; fixed-environment commands below
+Scope: owned33565 acceptance schemas; scheduler/upstream keys/SMTP disabled; live e2e default-deny; production3306 writes=0
+
+Actual argv: ['python', 'scripts/quality/acceptance_ledger_check.py']
+census: items=130 proven=114 gap=16 unreviewed=0 ticked=114
+OK: items=130 proven=114 gap=16 unreviewed=0 ticked=114 across 22 group(s) and 19 §10 row(s) reconcile.
+
+CHECK_EXIT=0
+
+Actual argv: ['python', 'scripts/quality/evidence_traceability.py']
+# evidence traceability over docs/evidence/
+  rounds        = 75
+  files census  = 981 (gate logs: 126)
+  dates in gate logs = header 117/126, printed by the run 9/126
+  branch named in header = 102/126 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 0
+
+OK: evidence archive matches the frozen baseline (0 legacy entr(ies)).
+
+CHECK_EXIT=0
+
+Actual argv: ['python', 'scripts/quality/ratchet.py']
+OK: quality debt did not increase.
+  ruff_selfdev: 148 (snapshot 148)
+  mypy_selfdev: 0 (snapshot 0)
+  bandit_selfdev: 1 (snapshot 1)
+  ruff_ported: 2188 (snapshot 2188)
+  direct_http_ported: 1071 (snapshot 1071)
+
+CHECK_EXIT=0
+
+DRIVER_EXIT=0

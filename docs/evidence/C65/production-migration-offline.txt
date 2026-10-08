@@ -1,0 +1,101 @@
+Date: 2026-10-01T00:18:10.967742+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: conda run --no-capture-output -n base python /tmp/opendata_c65_run_checks.py; fixed-environment commands below
+Scope: owned33565 acceptance schemas; scheduler/upstream keys/SMTP disabled; live e2e default-deny; production3306 writes=0
+
+Actual argv: ['python', '-m', 'alembic', '-c', 'alembic_data.ini', 'upgrade', '0005_dwd_stock_adjust:head', '--sql']
+INFO  [alembic.runtime.migration] Context impl MySQLImpl.
+INFO  [alembic.runtime.migration] Generating static SQL
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade 0005_dwd_stock_adjust -> 0006_dwd_daily_legs, Create DWD tables for index, futures, and option daily bars.
+-- Running upgrade 0005_dwd_stock_adjust -> 0006_dwd_daily_legs
+
+CREATE TABLE IF NOT EXISTS `dwd_index_daily` (
+  `symbol` varchar(64) NOT NULL,
+  `trade_date` date NOT NULL,
+  `open` double NOT NULL,
+  `high` double NOT NULL,
+  `low` double NOT NULL,
+  `close` double NOT NULL,
+  `volume` double NOT NULL,
+  `amount` double NOT NULL,
+  `source` varchar(32) NOT NULL,
+  `_merged_at` datetime NOT NULL,
+  `_diff_flag` tinyint(1) NOT NULL DEFAULT 0,
+  `_as_of` date NOT NULL,
+  PRIMARY KEY (`symbol`, `trade_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+PARTITION BY RANGE COLUMNS(`trade_date`) (
+  PARTITION p2026 VALUES LESS THAN ('2027-01-01'),
+  PARTITION p2027 VALUES LESS THAN ('2028-01-01'),
+  PARTITION p2028 VALUES LESS THAN ('2029-01-01'),
+  PARTITION pmax VALUES LESS THAN (MAXVALUE)
+);;
+
+CREATE TABLE IF NOT EXISTS `dwd_futures_daily` (
+  `symbol` varchar(64) NOT NULL,
+  `trade_date` date NOT NULL,
+  `open` double NOT NULL,
+  `high` double NOT NULL,
+  `low` double NOT NULL,
+  `close` double NOT NULL,
+  `volume` double NOT NULL,
+  `amount` double NOT NULL,
+  `source` varchar(32) NOT NULL,
+  `_merged_at` datetime NOT NULL,
+  `_diff_flag` tinyint(1) NOT NULL DEFAULT 0,
+  `_as_of` date NOT NULL,
+  PRIMARY KEY (`symbol`, `trade_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+PARTITION BY RANGE COLUMNS(`trade_date`) (
+  PARTITION p2026 VALUES LESS THAN ('2027-01-01'),
+  PARTITION p2027 VALUES LESS THAN ('2028-01-01'),
+  PARTITION p2028 VALUES LESS THAN ('2029-01-01'),
+  PARTITION pmax VALUES LESS THAN (MAXVALUE)
+);;
+
+CREATE TABLE IF NOT EXISTS `dwd_option_daily` (
+  `symbol` varchar(64) NOT NULL,
+  `trade_date` date NOT NULL,
+  `open` double NOT NULL,
+  `high` double NOT NULL,
+  `low` double NOT NULL,
+  `close` double NOT NULL,
+  `volume` double NOT NULL,
+  `amount` double NOT NULL,
+  `source` varchar(32) NOT NULL,
+  `_merged_at` datetime NOT NULL,
+  `_diff_flag` tinyint(1) NOT NULL DEFAULT 0,
+  `_as_of` date NOT NULL,
+  PRIMARY KEY (`symbol`, `trade_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+PARTITION BY RANGE COLUMNS(`trade_date`) (
+  PARTITION p2026 VALUES LESS THAN ('2027-01-01'),
+  PARTITION p2027 VALUES LESS THAN ('2028-01-01'),
+  PARTITION p2028 VALUES LESS THAN ('2029-01-01'),
+  PARTITION pmax VALUES LESS THAN (MAXVALUE)
+);;
+
+UPDATE alembic_version_data SET version_num='0006_dwd_daily_legs' WHERE alembic_version_data.version_num = '0005_dwd_stock_adjust';
+
+INFO  [alembic.runtime.migration] Running upgrade 0006_dwd_daily_legs -> 0007_affine_stock_adjust, Add affine adjustment coefficients to stock-adjust rows.
+-- Running upgrade 0006_dwd_daily_legs -> 0007_affine_stock_adjust
+
+ALTER TABLE dwd_stock_adjust ADD COLUMN qfq_scale DOUBLE;
+
+ALTER TABLE dwd_stock_adjust ADD COLUMN qfq_offset DOUBLE;
+
+ALTER TABLE dwd_stock_adjust ADD COLUMN hfq_scale DOUBLE;
+
+ALTER TABLE dwd_stock_adjust ADD COLUMN hfq_offset DOUBLE;
+
+ALTER TABLE dwd_stock_adjust ADD COLUMN adjustment_version VARCHAR(255);
+
+ALTER TABLE dwd_stock_adjust ADD COLUMN legacy_source VARCHAR(255);
+
+UPDATE alembic_version_data SET version_num='0007_affine_stock_adjust' WHERE alembic_version_data.version_num = '0006_dwd_daily_legs';
+
+
+CHECK_EXIT=0
+
+DRIVER_EXIT=0

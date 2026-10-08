@@ -20,15 +20,17 @@ from __future__ import annotations
 
 from collections import Counter
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from opendata.data.providers import register_providers
 from opendata.data.registry import get_registry
 from opendata.pipeline.patrol import SHAPE_NO_READING, FieldCanary, evaluate_canary
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from typing import Any
 
+    from opendata.data.models import ContractModel
     from opendata.data.protocol import Fetcher
 
 #: 逐类量的资产类型：两类常驻缺口（fund-etf 全空 / futures 散值）、两类满值基线。
@@ -66,7 +68,7 @@ def measure(fetcher: Fetcher[Any, Any]) -> dict[tuple[str, str], list[Reading]]:
         print(f"\n== {asset_type} ==")
         for read in range(1, READS_PER_TYPE + 1):
             try:
-                rows = fetcher.fetch(asset_type=asset_type)
+                rows = cast("Sequence[ContractModel]", fetcher.fetch(asset_type=asset_type))
             except Exception as exc:  # 上游瞬态：记 no-reading，不记成字段塌陷
                 for field in FIELDS:
                     observed.setdefault((asset_type, field), []).append((SHAPE_NO_READING, 0, 0))

@@ -1,0 +1,64 @@
+Date: 2026-09-30T22:05:32.273387+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: /tmp/opendata-c64-clean-env-20260930/bin/python scripts/ops/replay_warehouse_pipeline.py --start 2016-09-24 --end 2026-09-24 --apply --manifest docs/evidence/C65/replay-full-manifest.json --interrupt-after-shards 2
+Replay_SHA256: d5d072cbec7ff2bb8d006746a2212045b155ff990454a120f5ba13daeb2a6da6
+Scope: frozen existing ODS source snapshot; all symbols in this window; source API calls=0; native3306 writes=0
+{"apply": true, "current_rss_bytes": 105824256, "current_rss_source": "ps", "elapsed_seconds": 527.246281, "mode": "existing-ods-replay", "native_writes": 0, "peak_rss_bytes": 149569536, "peak_rss_source": "resource.getrusage", "record": "initial", "rss_unit": "bytes", "shard_size": 25, "shards_total": 223, "source_api_calls": 0, "source_observation": "existing_ods_snapshot_only", "source_rows_exact": 10310289, "source_schema": "opendata_c65_bench_full_6a2145", "source_schema_sha256": "5c6351c4a709fefd3de98264741bc9ae36089763a7291732b63738e8573d132c", "source_table": "ods_stock_daily_ths", "status": "validated", "symbol_count": 5568, "window": {"end": "2026-09-24", "start": "2016-09-24"}, "window_rows_exact": 10307812}
+{"elapsed_seconds": 534.492954, "mode": "existing-ods-replay", "record": "fetch", "rows": 2429, "source_api_calls": 0, "symbol": "000001.SZ"}
+{"elapsed_seconds": 534.541682, "mode": "existing-ods-replay", "record": "fetch", "rows": 2423, "source_api_calls": 0, "symbol": "000002.SZ"}
+{"elapsed_seconds": 534.584572, "mode": "existing-ods-replay", "record": "fetch", "rows": 2311, "source_api_calls": 0, "symbol": "000006.SZ"}
+{"elapsed_seconds": 534.625525, "mode": "existing-ods-replay", "record": "fetch", "rows": 2191, "source_api_calls": 0, "symbol": "000007.SZ"}
+{"elapsed_seconds": 534.707626, "mode": "existing-ods-replay", "record": "fetch", "rows": 2357, "source_api_calls": 0, "symbol": "000008.SZ"}
+{"elapsed_seconds": 534.761227, "mode": "existing-ods-replay", "record": "fetch", "rows": 2428, "source_api_calls": 0, "symbol": "000009.SZ"}
+{"elapsed_seconds": 534.807254, "mode": "existing-ods-replay", "record": "fetch", "rows": 2425, "source_api_calls": 0, "symbol": "000010.SZ"}
+{"elapsed_seconds": 534.855219, "mode": "existing-ods-replay", "record": "fetch", "rows": 2428, "source_api_calls": 0, "symbol": "000011.SZ"}
+{"elapsed_seconds": 534.903326, "mode": "existing-ods-replay", "record": "fetch", "rows": 2428, "source_api_calls": 0, "symbol": "000012.SZ"}
+{"elapsed_seconds": 534.954964, "mode": "existing-ods-replay", "record": "fetch", "rows": 2428, "source_api_calls": 0, "symbol": "000014.SZ"}
+{"elapsed_seconds": 535.009715, "mode": "existing-ods-replay", "record": "fetch", "rows": 2390, "source_api_calls": 0, "symbol": "000016.SZ"}
+{"elapsed_seconds": 535.059141, "mode": "existing-ods-replay", "record": "fetch", "rows": 2413, "source_api_calls": 0, "symbol": "000017.SZ"}
+{"elapsed_seconds": 535.102869, "mode": "existing-ods-replay", "record": "fetch", "rows": 2271, "source_api_calls": 0, "symbol": "000019.SZ"}
+{"elapsed_seconds": 535.151232, "mode": "existing-ods-replay", "record": "fetch", "rows": 2361, "source_api_calls": 0, "symbol": "000020.SZ"}
+{"elapsed_seconds": 535.200298, "mode": "existing-ods-replay", "record": "fetch", "rows": 2427, "source_api_calls": 0, "symbol": "000021.SZ"}
+{"elapsed_seconds": 535.254852, "mode": "existing-ods-replay", "record": "fetch", "rows": 2422, "source_api_calls": 0, "symbol": "000025.SZ"}
+{"elapsed_seconds": 535.326481, "mode": "existing-ods-replay", "record": "fetch", "rows": 2428, "source_api_calls": 0, "symbol": "000026.SZ"}
+{"elapsed_seconds": 535.38615, "mode": "existing-ods-replay", "record": "fetch", "rows": 2428, "source_api_calls": 0, "symbol": "000027.SZ"}
+{"elapsed_seconds": 535.438192, "mode": "existing-ods-replay", "record": "fetch", "rows": 2428, "source_api_calls": 0, "symbol": "000028.SZ"}
+{"elapsed_seconds": 535.470809, "mode": "existing-ods-replay", "record": "fetch", "rows": 1428, "source_api_calls": 0, "symbol": "000029.SZ"}
+{"elapsed_seconds": 535.521692, "mode": "existing-ods-replay", "record": "fetch", "rows": 2428, "source_api_calls": 0, "symbol": "000030.SZ"}
+{"elapsed_seconds": 535.593496, "mode": "existing-ods-replay", "record": "fetch", "rows": 2243, "source_api_calls": 0, "symbol": "000031.SZ"}
+{"elapsed_seconds": 535.652546, "mode": "existing-ods-replay", "record": "fetch", "rows": 2279, "source_api_calls": 0, "symbol": "000032.SZ"}
+{"elapsed_seconds": 535.712051, "mode": "existing-ods-replay", "record": "fetch", "rows": 2195, "source_api_calls": 0, "symbol": "000034.SZ"}
+{"elapsed_seconds": 535.768616, "mode": "existing-ods-replay", "record": "fetch", "rows": 2203, "source_api_calls": 0, "symbol": "000035.SZ"}
+{"elapsed_seconds": 544.759514, "mode": "existing-ods-replay", "peak_rss_bytes": 267223040, "pipeline_id": "stock_daily:ths:2016-09-24..2026-09-24:8d6aa46ddbf1feab", "record": "shard", "shard": 0, "shards_done": 1, "shards_failed": 0, "shards_resumed": 0, "shards_total": 223, "status": "done"}
+{"elapsed_seconds": 544.804033, "mode": "existing-ods-replay", "peak_rss_bytes": 267223040, "pipeline_id": "stock_daily:ths:2016-09-24..2026-09-24:8d6aa46ddbf1feab", "record": "shard", "shard": 1, "shards_done": 1, "shards_failed": 0, "shards_resumed": 0, "shards_total": 223, "status": "running"}
+{"elapsed_seconds": 544.945513, "mode": "existing-ods-replay", "record": "fetch", "rows": 2428, "source_api_calls": 0, "symbol": "000036.SZ"}
+{"elapsed_seconds": 545.05216, "mode": "existing-ods-replay", "record": "fetch", "rows": 2389, "source_api_calls": 0, "symbol": "000037.SZ"}
+{"elapsed_seconds": 545.110607, "mode": "existing-ods-replay", "record": "fetch", "rows": 2423, "source_api_calls": 0, "symbol": "000039.SZ"}
+{"elapsed_seconds": 545.194492, "mode": "existing-ods-replay", "record": "fetch", "rows": 2295, "source_api_calls": 0, "symbol": "000042.SZ"}
+{"elapsed_seconds": 545.278427, "mode": "existing-ods-replay", "record": "fetch", "rows": 2360, "source_api_calls": 0, "symbol": "000045.SZ"}
+{"elapsed_seconds": 545.371408, "mode": "existing-ods-replay", "record": "fetch", "rows": 2320, "source_api_calls": 0, "symbol": "000048.SZ"}
+{"elapsed_seconds": 545.570597, "mode": "existing-ods-replay", "record": "fetch", "rows": 2422, "source_api_calls": 0, "symbol": "000049.SZ"}
+{"elapsed_seconds": 546.179901, "mode": "existing-ods-replay", "record": "fetch", "rows": 2306, "source_api_calls": 0, "symbol": "000050.SZ"}
+{"elapsed_seconds": 546.313383, "mode": "existing-ods-replay", "record": "fetch", "rows": 2428, "source_api_calls": 0, "symbol": "000055.SZ"}
+{"elapsed_seconds": 547.205469, "mode": "existing-ods-replay", "record": "fetch", "rows": 2318, "source_api_calls": 0, "symbol": "000056.SZ"}
+{"elapsed_seconds": 547.805707, "mode": "existing-ods-replay", "record": "fetch", "rows": 2421, "source_api_calls": 0, "symbol": "000058.SZ"}
+{"elapsed_seconds": 548.240764, "mode": "existing-ods-replay", "record": "fetch", "rows": 2428, "source_api_calls": 0, "symbol": "000059.SZ"}
+{"elapsed_seconds": 549.582562, "mode": "existing-ods-replay", "record": "fetch", "rows": 2428, "source_api_calls": 0, "symbol": "000060.SZ"}
+{"elapsed_seconds": 550.087302, "mode": "existing-ods-replay", "record": "fetch", "rows": 2353, "source_api_calls": 0, "symbol": "000061.SZ"}
+{"elapsed_seconds": 550.439551, "mode": "existing-ods-replay", "record": "fetch", "rows": 2400, "source_api_calls": 0, "symbol": "000062.SZ"}
+{"elapsed_seconds": 550.740437, "mode": "existing-ods-replay", "record": "fetch", "rows": 2379, "source_api_calls": 0, "symbol": "000063.SZ"}
+{"elapsed_seconds": 551.062548, "mode": "existing-ods-replay", "record": "fetch", "rows": 2420, "source_api_calls": 0, "symbol": "000065.SZ"}
+{"elapsed_seconds": 551.359075, "mode": "existing-ods-replay", "record": "fetch", "rows": 2412, "source_api_calls": 0, "symbol": "000066.SZ"}
+{"elapsed_seconds": 551.672328, "mode": "existing-ods-replay", "record": "fetch", "rows": 2428, "source_api_calls": 0, "symbol": "000068.SZ"}
+{"elapsed_seconds": 551.904685, "mode": "existing-ods-replay", "record": "fetch", "rows": 2428, "source_api_calls": 0, "symbol": "000069.SZ"}
+{"elapsed_seconds": 552.19348, "mode": "existing-ods-replay", "record": "fetch", "rows": 2426, "source_api_calls": 0, "symbol": "000070.SZ"}
+{"elapsed_seconds": 552.449382, "mode": "existing-ods-replay", "record": "fetch", "rows": 2427, "source_api_calls": 0, "symbol": "000078.SZ"}
+{"elapsed_seconds": 552.685865, "mode": "existing-ods-replay", "record": "fetch", "rows": 2412, "source_api_calls": 0, "symbol": "000088.SZ"}
+{"elapsed_seconds": 552.921007, "mode": "existing-ods-replay", "record": "fetch", "rows": 2428, "source_api_calls": 0, "symbol": "000089.SZ"}
+{"elapsed_seconds": 553.16107, "mode": "existing-ods-replay", "record": "fetch", "rows": 2423, "source_api_calls": 0, "symbol": "000090.SZ"}
+{"elapsed_seconds": 565.533935, "mode": "existing-ods-replay", "peak_rss_bytes": 267223040, "pipeline_id": "stock_daily:ths:2016-09-24..2026-09-24:8d6aa46ddbf1feab", "record": "shard", "shard": 1, "shards_done": 2, "shards_failed": 0, "shards_resumed": 0, "shards_total": 223, "status": "done"}
+{"elapsed_seconds": 565.551249, "mode": "existing-ods-replay", "peak_rss_bytes": 267223040, "pipeline_id": "stock_daily:ths:2016-09-24..2026-09-24:8d6aa46ddbf1feab", "record": "shard", "shard": 2, "shards_done": 2, "shards_failed": 0, "shards_resumed": 0, "shards_total": 223, "status": "running"}
+{"current_rss_bytes": 78364672, "current_rss_source": "ps", "elapsed_seconds": 565.842858, "hook_steps": {}, "mode": "existing-ods-replay", "peak_rss_bytes": 267223040, "peak_rss_source": "resource.getrusage", "pipeline_id": "stock_daily:ths:2016-09-24..2026-09-24:8d6aa46ddbf1feab", "record": "interrupted", "rss_unit": "bytes", "shards_done": 2, "shards_done_total": 2, "shards_failed": 0, "shards_resumed": 0, "shards_total": 223, "status": "interrupted"}
+{"coverage_scope": "source_ods_window_only_not_current_market", "current_rss_bytes": 78413824, "current_rss_source": "ps", "elapsed_seconds": 565.85277, "expected_symbols": 5568, "expected_window_rows": 10307812, "failure_count": 0, "fetch_symbol_calls": 50, "full_coverage_verified": false, "hook_steps": {}, "mode": "existing-ods-replay", "native_writes": 0, "notification_delivery": "suppressed_internal_replay", "peak_rss_bytes": 267223040, "peak_rss_source": "resource.getrusage", "pipeline_error_code": null, "pipeline_error_type": null, "pipeline_id": "stock_daily:ths:2016-09-24..2026-09-24:8d6aa46ddbf1feab", "record": "final", "rows_written_this_run": 0, "rss_unit": "bytes", "shards_done": 2, "shards_done_total": 2, "shards_failed": 0, "shards_resumed": 0, "shards_total": 223, "source_api_calls": 0, "source_observation": "existing_ods_snapshot_only", "source_rows_exact": 10310289, "source_schema": "opendata_c65_bench_full_6a2145", "source_schema_sha256": "5c6351c4a709fefd3de98264741bc9ae36089763a7291732b63738e8573d132c", "status": "interrupted", "target_dwd_first_date": null, "target_dwd_last_date": null, "target_dwd_rows_exact": 0, "target_dwd_symbols": 0, "target_dwd_window_rows_exact": 0, "target_ods_first_date": "2016-09-26", "target_ods_last_date": "2026-09-24", "target_ods_rows_exact": 118094, "target_ods_symbols": 50, "target_ods_window_rows_exact": 118094, "window": {"end": "2026-09-24", "start": "2016-09-24"}}
+
+EXIT=75

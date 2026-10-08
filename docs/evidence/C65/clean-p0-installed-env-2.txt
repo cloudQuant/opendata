@@ -1,0 +1,32 @@
+Date: 2026-09-30T21:30:35.962069+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: installed-package imports; pip check; pytest tests -m integration and not e2e --no-cov -o addopts=; isolated fixture copy without source packages
+Wheel_SHA256: 09ccf8cf25f197cba6c0f5826c838949fd36eadb26d42a0943768b8a45c85be9
+{"absent": {"akshare": true, "openbb": true, "openbb_platform": true}, "installed_paths": ["/private/tmp/opendata-c64-clean-env-b-20260930/lib/python3.11/site-packages/opendata/__init__.py", "/private/tmp/opendata-c64-clean-env-b-20260930/lib/python3.11/site-packages/opendata_http/__init__.py", "/private/tmp/opendata-c64-clean-env-b-20260930/lib/python3.11/site-packages/opendata_fuyao/__init__.py"]}
+
+IMPORT_EXIT=0
+No broken requirements found.
+
+PIP_CHECK_EXIT=0
+============================= test session starts ==============================
+platform darwin -- Python 3.11.8, pytest-9.1.1, pluggy-1.6.0
+rootdir: /private/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/opendata-c65-wheel-d07h16ow/verification
+configfile: pytest.ini
+plugins: platformdirs-4.12.2, cov-7.1.0, xdist-3.8.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 294 items / 83 deselected / 211 selected
+
+tests/test_data_query_api.py ...................                         [  9%]
+tests/test_data_query_http_warehouse.py ................................ [ 24%]
+................                                                         [ 31%]
+tests/test_dwd_merge.py ...............................                  [ 46%]
+tests/test_index_constituent_asof.py .....................               [ 56%]
+tests/test_ods_writer.py ..............................                  [ 70%]
+tests/test_p0_providers.py .................................             [ 86%]
+tests/test_pipeline_jobs.py .....                                        [ 88%]
+tests/test_pipeline_run_api.py .......                                   [ 91%]
+tests/test_pipeline_runner.py .................                          [100%]
+
+===================== 211 passed, 83 deselected in 53.85s ======================
+
+P0_EXIT=0

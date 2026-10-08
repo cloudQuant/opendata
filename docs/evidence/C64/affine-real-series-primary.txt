@@ -1,0 +1,15 @@
+Date: 2026-09-30T09:24:50.264278+00:00
+Scope: configured native3306 warehouse READ ONLY; five actual symbols copied to owned MySQL33564; rebuild and all writes only in owned disposable schema
+Symbols: 600519,000001,000002,000009,600036
+ACTUAL_READ_ONLY_COPY ods_stock_daily_ths: rows=12142; sha256=3a379985f2b916ee4ece1738b7230e0930c992011e2ea45107573dc78d412116
+ACTUAL_READ_ONLY_COPY ods_stock_action_ths: rows=151; sha256=da11947c5e510fdb11134a937608072846f4b5e77a76df81a2400d686fc74d90
+ACTUAL_READ_ONLY_COPY dwd_stock_daily: rows=657; sha256=0850eba7552f0be1405cb89aba4879f36e49a0ba74c1c17e84c94a2eb453f7f4
+ACTUAL_READ_ONLY_COPY dwd_stock_adjust: rows=940; sha256=e8c0382b4be21457ecbc92faeb9379aba32a5e238eeaeb704f26192cf8a60d4c
+NATIVE_WAREHOUSE_WRITES=0; transaction_read_only=1
+ACTUAL_REBUILD_DRY_RUN FactorBuildResult(rows_written=0, symbols=5, rows_planned=12140, events_outside_basis=97, legacy_rows_preserved=940)
+ACTUAL_REBUILD_OWNED_ONLY FactorBuildResult(rows_written=12140, symbols=5, rows_planned=12140, events_outside_basis=97, legacy_rows_preserved=940)
+Command: ['/tmp/opendata-c64-clean-env-20260930/bin/python', 'scripts/ops/qfq_official_check.py', '--symbols', '600519,000001,000002,000009,600036', '--start', '2026-01-05', '--methods', 'qfq,hfq', '--official', 'akshare', '--out', 'docs/evidence/C64/qfq-official-akshare-affine-real.txt']
+OFFICIAL_COMPARISON_EXIT=1
+PRIMARY_AFFINE_REAL_SERIES_EXIT=1
+OWN_REAL_SERIES_SCHEMA_CLEANED=PASS
+ERROR conda.cli.main_run:execute(125): `conda run /tmp/opendata-c64-clean-env-20260930/bin/python /tmp/opendata-c64-affine-real-series-review.py` failed. (See above for error)

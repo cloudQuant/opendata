@@ -1,0 +1,63 @@
+{
+  "env": {
+    "python": "3.11.8"
+  },
+  "items": [
+    {
+      "item": "AC-13|05",
+      "key": "AC-13|05|f127fc1d",
+      "state": "proven",
+      "summary": "raw-response TTL cache and actual adjusted-query isolation",
+      "readings": [
+        "C64 fresh named behavior checks: 4/4 nodes passed",
+        "runtime binding=yes; scope=fresh raw-byte cache and SQLite factor-backed REST qfq/hfq checks; deleting cache preserves ODS watermark and computed queries; no formula change"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "4",
+        "c64_exit": "0",
+        "c64_passed": "4",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "fresh raw-byte cache and SQLite factor-backed REST qfq/hfq checks; deleting cache preserves ODS watermark and computed queries; no formula change"
+      }
+    },
+    {
+      "item": "AC-19|04",
+      "key": "AC-19|04|7e6332ef",
+      "state": "gap",
+      "summary": "四类 Key 健康的分类规则 + 到期信号 + 分级落点与带外告警通道",
+      "readings": [
+        "四类健康类别在位 4/4（key-validity / key-expiry / revocation-or-ban / quota-left）",
+        "线上可触发的分类：401/403→credential-rejected = yes，429→quota-exhausted = yes；到期分类或主动探测 = yes（本平台自签 Key 的 is_expired 不算，判据点名的是权威源）",
+        "分级落点 2 处运行时模块调用 credential_health（opendata/api/pipeline.py, opendata/pipeline/key_health_notifications.py，定义处 patrol.py 已排除）；带外告警通道 1 处（opendata/pipeline/key_health_notifications.py）—— 只有 /health 可拉取 ≠ 告警生效",
+        "operator-supplied expiry metadata supported = yes；独立 observation TTL 与通知测试 3/3 通过 (-)：过期只报告 observation-expired、不会被当作恢复；余量未知时保持 None，不补造配额",
+        "independent live evidence: issuer expiry=no, remaining quota=no, notification delivery=no; metadata and mocks do not prove these",
+        "模块自己的边界声明在位 = yes，未观测只报 yes（这句被删而探测仍未做 ⇒ 判 gap）"
+      ],
+      "reason": "判据要类别、可触发信号、分级落点、通知通道与观察状态测试共同成立；当前读到 4/4 类，operator expiry support=yes，分级落点=2、通知通道=1，observation tests=3/3。观察 TTL 过期不能替代 key 恢复，quota 余量未知时也不能填入数值；还缺供应商到期/余量和实际通知送达的独立现场证据",
+      "closure": "alert_list: opendata/api/pipeline.py, opendata/pipeline/key_health_notifications.py -> opendata/api/pipeline.py; alert_sites: 2 -> 1; delivery_observed: no -> yes; issuer_expiry_observed: no -> yes; quota_remaining_observed: no -> yes",
+      "facts": {
+        "classes_declared": "4",
+        "rejected_rule": "yes",
+        "quota_rule": "yes",
+        "expiry_signal": "yes",
+        "presence_only": "yes",
+        "disclosure": "yes",
+        "issuer_expiry_observed": "no",
+        "quota_remaining_observed": "no",
+        "delivery_observed": "no",
+        "alert_sites": "2",
+        "alert_list": "opendata/api/pipeline.py, opendata/pipeline/key_health_notifications.py",
+        "notify_sites": "1",
+        "notify_list": "opendata/pipeline/key_health_notifications.py",
+        "observation_runs": "3",
+        "observation_passed": "3",
+        "observation_bad": "-"
+      }
+    }
+  ]
+}

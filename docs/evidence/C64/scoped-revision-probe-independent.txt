@@ -1,0 +1,22 @@
+date: 2026-09-30T04:47:37.901848+00:00
+head: d552c081950edffce167e3dfc0be74f37a6950a1 + frozen scoped reader and probe changes
+command: ['/tmp/opendata-iter01-quality-env-20260930/bin/python', '-m', 'pytest', 'tests/test_pipeline_templates.py', 'tests/test_dwd_merge.py', 'tests/test_probe_node_outcomes.py', 'tests/test_acceptance_item_probe.py', '-q', '--no-cov', '-m', 'not e2e']
+============================= test session starts ==============================
+platform darwin -- Python 3.11.8, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: asyncio-0.24.0, cov-6.0.0, Faker-37.5.3, anyio-4.11.0, flask-1.3.0, doctestplus-1.6.0, html-4.1.1, xdist-3.8.0, time-machine-2.16.0, timeout-2.4.0, metadata-3.1.1, rerunfailures-14.0, playwright-0.7.0, mock-3.14.1, ordering-0.6, sugar-1.1.1, benchmark-5.1.0, allure-pytest-2.15.2, langsmith-0.4.38, base-url-2.1.0, dash-2.18.2, picked-0.5.1, hypothesis-6.148.5, requests-mock-1.12.1
+asyncio: mode=Mode.AUTO, default_loop_scope=function
+collected 112 items / 1 deselected / 111 selected
+
+tests/test_pipeline_templates.py ....................................... [ 35%]
+..............................                                           [ 62%]
+tests/test_dwd_merge.py ..............................                   [ 89%]
+tests/test_probe_node_outcomes.py .....                                  [ 93%]
+tests/test_acceptance_item_probe.py .......                              [100%]
+
+====================== 111 passed, 1 deselected in 1.37s =======================
+PYTEST_EXIT=0
+actual seven canonical/alias HTTP, freshness and calendar named-node outcomes: {'test_alias_freshness_uses_canonical_domain_and_table': 'passed', 'test_the_dwd_door_names_its_baseline': 'passed', 'test_the_two_doors_agree_on_the_same_domain': 'passed', 'test_the_ods_door_measures_that_sources_own_table': 'passed', 'test_a_leg_with_no_table_still_reports_the_baseline': 'passed', 'test_unknown_freshness_domain_is_a_404': 'passed', 'test_the_baseline_is_taken_through_the_calendar_on_the_pinned_day': 'passed'}
+BATCH_REAL_RUN_EXIT=0

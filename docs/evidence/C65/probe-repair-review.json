@@ -1,0 +1,33 @@
+{
+  "round": "C65",
+  "date": "2026-10-01",
+  "reviewer": "Codex primary",
+  "scope": "NUL-safe tracked path inventory; exact public rule allowlist; bounded revision propagation call chain; real persisted progress and subscriber lifecycle",
+  "independent_checks": {
+    "probe_and_env_regressions": {
+      "passed": 42,
+      "evidence": "probe-repair-independent.txt"
+    },
+    "changed_python_a2": {
+      "files": 475,
+      "exit": 0,
+      "evidence": "probe-repair-independent.txt"
+    },
+    "integration_real_state": {
+      "passed": 6,
+      "evidence": "integration-real-state-independent.txt"
+    },
+    "shell_audit": {
+      "findings": 0,
+      "t1": "met",
+      "evidence": "integration-real-state-independent.txt"
+    }
+  },
+  "reviewed_source_sha256": {
+    "scripts/quality/acceptance_item_probe.py": "6f660aa3b30364d01deb20988830e8da3b911eb616fbc42a35e124dd3cff2fae",
+    "tests/test_acceptance_item_probe.py": "853cba36abeb33d25e2ebdfa0456c9d3a8ab76c356eedf4a51133cc4bc23bd1f",
+    "tests/test_iteration01_integration_contracts.py": "4b7bb0fb5b9030b6195fdadab6ad39b4f92dc2141a875421e36cfd8ac0f5845e"
+  },
+  "no_acceptance_criterion_change": true,
+  "data_rights_or_production_acceptance_not_claimed": true
+}

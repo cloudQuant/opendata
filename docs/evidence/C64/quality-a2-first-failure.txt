@@ -1,0 +1,537 @@
+Date: 2026-09-30 (Europe/Madrid)
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1 + uncommitted C64 changes
+Command: pinned quality venv through Anaconda base; python scripts/quality/a2_check.py
+Exit: 1
+Scope: Default A0 baseline, 436 Python files. Failed first full A2 attempt, preserved unchanged. Subsequent type-only source repairs are documented in README.
+
+A2 files: 436
+  alembic/versions/2026_09_22-0001_initial_schema.py
+  alembic/versions/2026_09_23-0002_pipeline_progress.py
+  alembic/versions/2026_09_23-0003_api_keys.py
+  alembic/versions/2026_09_30-0004_minute_archive.py
+  alembic/versions/2026_09_30-0005_pipeline_tasks.py
+  alembic/versions/2026_09_30-0006_pipeline_steps.py
+  alembic_data/env.py
+  alembic_data/versions/20260923-0001_ods_dwd_p0.py
+  alembic_data/versions/20260923-0002_dq_diff_report.py
+  alembic_data/versions/20260923-0003_ods_ths.py
+  alembic_data/versions/20260923-0004_batch_watermark.py
+  alembic_data/versions/20260923-0005_dwd_stock_adjust.py
+  alembic_data/versions/20260930-0006_dwd_daily_legs.py
+  docs/evidence/C15/futures-calendar-probe.py
+  docs/evidence/C16/index-bare-code-defect.py
+  docs/evidence/C16/probe-param-audit.py
+  docs/evidence/C18/index-bare-code-live.py
+  docs/evidence/C18/index-code-rule-audit.py
+  docs/evidence/C18/instrument-list-date-canary.py
+  docs/evidence/C19/catalog-date-field-shape.py
+  docs/evidence/C19/catalog-flip-rate.py
+  docs/evidence/C19/criterion-teeth.py
+  docs/evidence/C21/flaky-retry-attribution.py
+  docs/evidence/C21/update_time-tz-pin.py
+  docs/evidence/C24/fallback_generality_sweep.py
+  docs/evidence/C24/guard_mutation_proof.py
+  docs/evidence/C25/canary-injection-attribution.py
+  docs/evidence/C25/field-canary-measure.py
+  docs/evidence/C25/mutation-proof.py
+  docs/evidence/C26/fixture-live-cells.py
+  docs/evidence/C26/mutation-proof.py
+  docs/evidence/C26/silent-drop-measure.py
+  docs/evidence/C27/em-channel-measure.py
+  docs/evidence/C27/judge-falsification.py
+  docs/evidence/C27/qfq-chain-measure.py
+  docs/evidence/C27/refusal-shape.py
+  docs/evidence/C28/graded-shapes-render.py
+  docs/evidence/C29/guard-falsification.py
+  docs/evidence/C29/guard-teeth-mutation.py
+  docs/evidence/C29/real-tree-probe.py
+  docs/evidence/C29/test-plane-census.py
+  docs/evidence/C30/e2e-plane-census.py
+  docs/evidence/C30/guard-falsification.py
+  docs/evidence/C30/guard-teeth-mutation.py
+  docs/evidence/C31/endpoint-contract-census.py
+  docs/evidence/C31/endpoint-guard-mutation.py
+  docs/evidence/C32/payload_shape_census.py
+  docs/evidence/C34/index_constituent_generality_sweep.py
+  docs/evidence/C36/gitleaks-counterfactual.py
+  docs/evidence/C36/zero_dep_scanner_HEAD.py
+  docs/evidence/C37/attribution.py
+  docs/evidence/C37/cross_env_port_replay.py
+  docs/evidence/C38/loguru-format-census.py
+  docs/evidence/C38/mutation-proof.py
+  docs/evidence/C38b/coverage-face-recompute.py
+  docs/evidence/C38b/mutation-proof.py
+  docs/evidence/C39/loguru-mutation.py
+  docs/evidence/C42/duplicate-symbol-scan.py
+  docs/evidence/C42/guard-removal-reading.py
+  docs/evidence/C42/scan-failure-face.py
+  docs/evidence/C43/public-api-face-census.py
+  docs/evidence/C44/behaviour_counterfactuals.py
+  docs/evidence/C44/census_counterfactuals.py
+  docs/evidence/C44/golden_millis.py
+  docs/evidence/C44/golden_millis_counterfactuals.py
+  docs/evidence/C44/shell_audit.py
+  docs/evidence/C45/port_counterfactuals.py
+  docs/evidence/C45/ratchet_counterfactuals.py
+  docs/evidence/C46/before_census.py
+  docs/evidence/C46/warehouse_census.py
+  docs/evidence/C47/matrix_census.py
+  docs/evidence/C48/cross_check_census.py
+  docs/evidence/C48/face_regression_probe.py
+  docs/evidence/C49/ac9_residual_census.py
+  docs/evidence/C50/probe_gate_census.py
+  docs/evidence/C51/zero_dep_clean_env_census.py
+  docs/evidence/C52/falsify_dwd_merge.py
+  docs/evidence/C53/caliber_face.py
+  docs/evidence/C54/caliber_pivot_face.py
+  docs/evidence/C59/run_counterfacts.py
+  docs/evidence/C60/run_a2_comply.py
+  docs/evidence/C60/run_c60.py
+  examples/consumer_handoff.py
+  opendata/api/__init__.py
+  opendata/api/auth.py
+  opendata/api/data.py
+  opendata/api/data_query.py
+  opendata/api/data_subscribe.py
+  opendata/api/dependencies.py
+  opendata/api/keys.py
+  opendata/api/minute_data.py
+  opendata/api/pipeline.py
+  opendata/api/rate_limit.py
+  opendata/api/schemas.py
+  opendata/api/tables.py
+  opendata/api/tasks.py
+  opendata/api/websocket.py
+  opendata/cli.py
+  opendata/core/api_key_rate_limit.py
+  opendata/core/config.py
+  opendata/core/database.py
+  opendata/core/security.py
+  opendata/core/token_blacklist.py
+  opendata/data/__init__.py
+  opendata/data/adjust.py
+  opendata/data/capability.py
+  opendata/data/domains.py
+  opendata/data/http_client.py
+  opendata/data/mapping.py
+  opendata/data/minute_archive.py
+  opendata/data/models/__init__.py
+  opendata/data/models/adjustment.py
+  opendata/data/models/base.py
+  opendata/data/models/financial.py
+  opendata/data/models/futures.py
+  opendata/data/models/index.py
+  opendata/data/models/macro.py
+  opendata/data/models/market.py
+  opendata/data/models/metadata.py
+  opendata/data/openbb_map.py
+  opendata/data/protocol.py
+  opendata/data/providers/__init__.py
+  opendata/data/providers/akshare/__init__.py
+  opendata/data/providers/akshare/_source.py
+  opendata/data/providers/akshare/models/__init__.py
+  opendata/data/providers/akshare/models/_normalize.py
+  opendata/data/providers/akshare/models/bond_daily.py
+  opendata/data/providers/akshare/models/financial_indicator.py
+  opendata/data/providers/akshare/models/financial_statement.py
+  opendata/data/providers/akshare/models/fund_etf_daily.py
+  opendata/data/providers/akshare/models/futures_daily.py
+  opendata/data/providers/akshare/models/index_constituent.py
+  opendata/data/providers/akshare/models/index_daily.py
+  opendata/data/providers/akshare/models/option_daily.py
+  opendata/data/providers/akshare/models/stock_action.py
+  opendata/data/providers/akshare/models/stock_daily.py
+  opendata/data/providers/akshare/registration.py
+  opendata/data/providers/ecb/__init__.py
+  opendata/data/providers/ecb/_source.py
+  opendata/data/providers/ecb/models/__init__.py
+  opendata/data/providers/ecb/models/_client.py
+  opendata/data/providers/ecb/models/_series.py
+  opendata/data/providers/ecb/models/cpi.py
+  opendata/data/providers/ecb/models/gdp.py
+  opendata/data/providers/ecb/models/rate.py
+  opendata/data/providers/ecb/registration.py
+  opendata/data/providers/fred/__init__.py
+  opendata/data/providers/fred/_source.py
+  opendata/data/providers/fred/models/__init__.py
+  opendata/data/providers/fred/models/_client.py
+  opendata/data/providers/fred/models/_series.py
+  opendata/data/providers/fred/models/cpi.py
+  opendata/data/providers/fred/models/gdp.py
+  opendata/data/providers/fred/models/unemployment.py
+  opendata/data/providers/fred/registration.py
+  opendata/data/providers/imf/__init__.py
+  opendata/data/providers/imf/_source.py
+  opendata/data/providers/imf/models/__init__.py
+  opendata/data/providers/imf/models/_client.py
+  opendata/data/providers/imf/models/_indicator.py
+  opendata/data/providers/imf/models/cpi.py
+  opendata/data/providers/imf/models/gdp.py
+  opendata/data/providers/imf/models/unemployment.py
+  opendata/data/providers/imf/registration.py
+  opendata/data/providers/oecd/__init__.py
+  opendata/data/providers/oecd/_source.py
+  opendata/data/providers/oecd/models/__init__.py
+  opendata/data/providers/oecd/models/_client.py
+  opendata/data/providers/oecd/models/cpi.py
+  opendata/data/providers/oecd/models/unemployment.py
+  opendata/data/providers/oecd/registration.py
+  opendata/data/providers/ths/__init__.py
+  opendata/data/providers/ths/_source.py
+  opendata/data/providers/ths/models/__init__.py
+  opendata/data/providers/ths/models/_client.py
+  opendata/data/providers/ths/models/financial_statement.py
+  opendata/data/providers/ths/models/fund_action.py
+  opendata/data/providers/ths/models/fund_etf_daily.py
+  opendata/data/providers/ths/models/futures_daily.py
+  opendata/data/providers/ths/models/index_constituent.py
+  opendata/data/providers/ths/models/index_daily.py
+  opendata/data/providers/ths/models/instrument.py
+  opendata/data/providers/ths/models/option_daily.py
+  opendata/data/providers/ths/models/stock_action.py
+  opendata/data/providers/ths/models/stock_daily.py
+  opendata/data/providers/ths/models/trading_calendar.py
+  opendata/data/providers/ths/registration.py
+  opendata/data/providers/yfinance/__init__.py
+  opendata/data/providers/yfinance/_source.py
+  opendata/data/providers/yfinance/models/__init__.py
+  opendata/data/providers/yfinance/models/_sdk.py
+  opendata/data/providers/yfinance/models/stock_daily.py
+  opendata/data/providers/yfinance/registration.py
+  opendata/data/raw_response_cache.py
+  opendata/data/registry.py
+  opendata/data_fetch/providers/akshare_provider.py
+  opendata/main.py
+  opendata/middleware/request_logging.py
+  opendata/middleware/security.py
+  opendata/models/__init__.py
+  opendata/models/api_key.py
+  opendata/models/data_script.py
+  opendata/models/data_table.py
+  opendata/models/interface.py
+  opendata/models/minute_archive.py
+  opendata/models/pipeline.py
+  opendata/models/pipeline_step.py
+  opendata/models/task.py
+  opendata/models/user.py
+  opendata/pipeline/__init__.py
+  opendata/pipeline/alert_matrix.py
+  opendata/pipeline/alerts.py
+  opendata/pipeline/cross_check.py
+  opendata/pipeline/cross_check_service.py
+  opendata/pipeline/ddl.py
+  opendata/pipeline/diff_alerts.py
+  opendata/pipeline/diff_report.py
+  opendata/pipeline/dump_import.py
+  opendata/pipeline/dwd_backfill.py
+  opendata/pipeline/dwd_merge.py
+  opendata/pipeline/factor_builder.py
+  opendata/pipeline/factors.py
+  opendata/pipeline/freshness.py
+  opendata/pipeline/jobs.py
+  opendata/pipeline/key_health.py
+  opendata/pipeline/key_health_notifications.py
+  opendata/pipeline/maintenance.py
+  opendata/pipeline/metadata_refresh.py
+  opendata/pipeline/notify.py
+  opendata/pipeline/ods_watermark.py
+  opendata/pipeline/ods_writer.py
+  opendata/pipeline/partitions.py
+  opendata/pipeline/patrol.py
+  opendata/pipeline/query.py
+  opendata/pipeline/retention.py
+  opendata/pipeline/retry.py
+  opendata/pipeline/runner.py
+  opendata/pipeline/scheduled_patrol.py
+  opendata/pipeline/scheduling.py
+  opendata/pipeline/subscription.py
+  opendata/pipeline/table_page.py
+  opendata/pipeline/templates.py
+  opendata/pipeline/trading_calendar.py
+  opendata/pipeline/watermark.py
+  opendata/services/api_key_service.py
+  opendata/services/data_acquisition.py
+  opendata/services/execution_service.py
+  opendata/services/interface_loader.py
+  opendata/services/notification_service.py
+  opendata/services/retry_service.py
+  opendata/services/scheduler.py
+  opendata/services/scheduler_service.py
+  opendata/services/script_service.py
+  opendata/utils/serialization.py
+  opendata_client/opendata_client/__init__.py
+  opendata_client/opendata_client/client.py
+  opendata_fuyao/__init__.py
+  opendata_fuyao/credentials.py
+  opendata_fuyao/dumps.py
+  opendata_fuyao/endpoint_map.py
+  opendata_fuyao/endpoints.py
+  opendata_fuyao/envelope.py
+  opendata_fuyao/errors.py
+  opendata_fuyao/http_client.py
+  opendata_fuyao/rate_limiter.py
+  scripts/codemod/compare_with_upstream.py
+  scripts/codemod/fetch_upstream.py
+  scripts/codemod/gen_manifest.py
+  scripts/codemod/legacy_transfer.py
+  scripts/codemod/port_module.py
+  scripts/codemod/qfq_chain_checks.py
+  scripts/codemod/report_port.py
+  scripts/codemod/verify_no_akshare.py
+  scripts/ops/akshare_fallback_cross_check.py
+  scripts/ops/authority_reconcile_check.py
+  scripts/ops/backfill_dwd.py
+  scripts/ops/calendar_expectation_check.py
+  scripts/ops/fuyao_endpoint_inventory.py
+  scripts/ops/fuyao_envelope_recorder.py
+  scripts/ops/health_patrol.py
+  scripts/ops/import_minute_archive.py
+  scripts/ops/macro_authority_cross_check.py
+  scripts/ops/metadata_backbone_landing.py
+  scripts/ops/qfq_official_check.py
+  scripts/ops/suspension_shape_check.py
+  scripts/ops/ths_financial_statement_cross_check.py
+  scripts/ops/ths_fund_action_cross_check.py
+  scripts/ops/ths_fund_etf_cross_check.py
+  scripts/ops/ths_futures_option_cross_check.py
+  scripts/ops/ths_index_constituent_cross_check.py
+  scripts/ops/ths_index_cross_check.py
+  scripts/ops/ths_instrument_cross_check.py
+  scripts/ops/ths_trading_calendar_cross_check.py
+  scripts/ops/window_partition_explain.py
+  scripts/ops/yfinance_overseas_cross_check.py
+  scripts/quality/a2_check.py
+  scripts/quality/acceptance_item_probe.py
+  scripts/quality/acceptance_ledger_check.py
+  scripts/quality/check_brand.py
+  scripts/quality/evidence_traceability.py
+  scripts/quality/frontend_e2e_plane.py
+  scripts/quality/frontend_test_collection.py
+  scripts/quality/loguru_render_check.py
+  scripts/quality/openbb_inventory_plane.py
+  scripts/quality/ratchet.py
+  scripts/quality/scan_js_points.py
+  scripts/quality/secret_scan_check.py
+  tests/conftest.py
+  tests/fuyao_golden.py
+  tests/test_a2_exclusion_scope.py
+  tests/test_acceptance_item_probe.py
+  tests/test_acceptance_probe_gate.py
+  tests/test_adjust.py
+  tests/test_akshare_provider.py
+  tests/test_alembic_migrations.py
+  tests/test_alert_matrix.py
+  tests/test_api_data_full.py
+  tests/test_api_dependencies.py
+  tests/test_api_key_rate_limit.py
+  tests/test_api_keys.py
+  tests/test_api_rate_limit.py
+  tests/test_api_tables_lifecycle.py
+  tests/test_authority_reconciliation.py
+  tests/test_backup_mysql.py
+  tests/test_cli.py
+  tests/test_cli_direct.py
+  tests/test_compose_operational_config.py
+  tests/test_config.py
+  tests/test_contract_models.py
+  tests/test_core.py
+  tests/test_cross_check.py
+  tests/test_cross_check_service.py
+  tests/test_csv_serialization.py
+  tests/test_data_acquisition_coverage.py
+  tests/test_data_acquisition_details.py
+  tests/test_data_acquisition_direct.py
+  tests/test_data_catalog.py
+  tests/test_data_mapping.py
+  tests/test_data_path_aliases.py
+  tests/test_data_query.py
+  tests/test_data_query_api.py
+  tests/test_data_query_http_warehouse.py
+  tests/test_data_subscribe.py
+  tests/test_database_bootstrap.py
+  tests/test_database_extended.py
+  tests/test_database_functions.py
+  tests/test_diff_alerts.py
+  tests/test_diff_report.py
+  tests/test_domains.py
+  tests/test_dump_import.py
+  tests/test_dwd_backfill.py
+  tests/test_dwd_merge.py
+  tests/test_e2e_opt_in_guard.py
+  tests/test_ecb_provider.py
+  tests/test_factor_builder_e2e.py
+  tests/test_factor_builder_unit.py
+  tests/test_factors.py
+  tests/test_fallback_degradation.py
+  tests/test_fetch_upstream.py
+  tests/test_fred_provider.py
+  tests/test_freshness.py
+  tests/test_frontend_collection_guard.py
+  tests/test_frontend_e2e_guard.py
+  tests/test_frontend_endpoint_contract.py
+  tests/test_frontend_typecheck_guard.py
+  tests/test_futures_fetcher.py
+  tests/test_fuyao_dumps.py
+  tests/test_fuyao_endpoint_map.py
+  tests/test_fuyao_endpoints.py
+  tests/test_fuyao_recorded_envelopes.py
+  tests/test_fuyao_transport.py
+  tests/test_http_client.py
+  tests/test_imf_provider.py
+  tests/test_index_constituent_asof.py
+  tests/test_interface_loader.py
+  tests/test_interface_loader_coverage.py
+  tests/test_interface_loader_details.py
+  tests/test_iteration01_integration_contracts.py
+  tests/test_js_execution_points.py
+  tests/test_key_health.py
+  tests/test_key_health_notifications.py
+  tests/test_legacy_transfer.py
+  tests/test_loguru_render_check.py
+  tests/test_macro_http_governance.py
+  tests/test_macro_routing.py
+  tests/test_main_app.py
+  tests/test_main_coverage.py
+  tests/test_mapping_pivot.py
+  tests/test_minute_archive.py
+  tests/test_minute_data_api.py
+  tests/test_models_extended.py
+  tests/test_notify_unit.py
+  tests/test_ods_watermark.py
+  tests/test_ods_writer.py
+  tests/test_oecd_provider.py
+  tests/test_openbb_inventory_guard.py
+  tests/test_openbb_map.py
+  tests/test_opendata_client.py
+  tests/test_p0_integration_surface.py
+  tests/test_p0_providers.py
+  tests/test_p1_daily_fetchers.py
+  tests/test_partition_maintenance.py
+  tests/test_patrol.py
+  tests/test_pipeline_jobs.py
+  tests/test_pipeline_metadata.py
+  tests/test_pipeline_retry.py
+  tests/test_pipeline_run_api.py
+  tests/test_pipeline_runner.py
+  tests/test_pipeline_templates.py
+  tests/test_port_fail_closed.py
+  tests/test_port_fidelity.py
+  tests/test_port_module.py
+  tests/test_ported_import_closure.py
+  tests/test_provider_conformance.py
+  tests/test_provider_registry.py
+  tests/test_qfq_official_check.py
+  tests/test_quality_gates.py
+  tests/test_raw_response_cache.py
+  tests/test_retention.py
+  tests/test_retention_maintenance.py
+  tests/test_retry_service.py
+  tests/test_retry_service_coverage.py
+  tests/test_routing_seam.py
+  tests/test_scheduled_patrol.py
+  tests/test_scheduled_pipeline_tasks.py
+  tests/test_scheduler_details.py
+  tests/test_services_extended.py
+  tests/test_sina_window_fidelity.py
+  tests/test_table_page.py
+  tests/test_ths_dwd_integration.py
+  tests/test_ths_provider.py
+  tests/test_trading_calendar.py
+  tests/test_warehouse_ddl.py
+  tests/test_warehouse_migrations.py
+  tests/test_watermark.py
+  tests/test_yfinance_provider.py
+
+FAIL ruff check
+E501 Line too long (101 > 100)
+  --> alembic/versions/2026_09_30-0006_pipeline_steps.py:69:101
+   |
+67 |     op.drop_index("ix_pipeline_symbol_windows_pipeline_id", table_name="pipeline_symbol_windows")
+68 |     op.drop_table("pipeline_symbol_windows")
+69 |     op.drop_index("ix_pipeline_step_checkpoints_pipeline_id", table_name="pipeline_step_checkpoints")
+   |                                                                                                     ^
+70 |     op.drop_table("pipeline_step_checkpoints")
+   |
+
+Found 1 error.
+FAIL ruff format --check
+Would reformat: alembic/versions/2026_09_30-0006_pipeline_steps.py
+1 file would be reformatted, 435 files already formatted
+FAIL mypy
+docs/evidence/C37/cross_env_port_replay.py:110: error: Module has no attribute "json"  [attr-defined]
+docs/evidence/C37/cross_env_port_replay.py:115: error: Incompatible types in assignment (expression has type "def get(url: str | bytes, params: SupportsItems[str | bytes | int | float, str | bytes | int | float | Iterable[str | bytes | int | float] | None] | tuple[str | bytes | int | float, str | bytes | int | float | Iterable[str | bytes | int | float] | None] | Iterable[tuple[str | bytes | int | float, str | bytes | int | float | Iterable[str | bytes | int | float] | None]] | str | bytes | None = ..., *, data: Iterable[bytes] | str | bytes | SupportsRead[str | bytes] | list[tuple[Any, Any]] | tuple[tuple[Any, Any], ...] | Mapping[Any, Any] | None = ..., headers: Mapping[str, str | bytes | None] | None = ..., cookies: CookieJar | MutableMapping[str, str] | None = ..., files: Mapping[str, SupportsRead[str | bytes] | str | bytes | tuple[str | None, SupportsRead[str | bytes] | str | bytes] | tuple[str | None, SupportsRead[str | bytes] | str | bytes, str] | tuple[str | None, SupportsRead[str | bytes] | str | bytes, str, Mapping[str, str]]] | Iterable[tuple[str, SupportsRead[str | bytes] | str | bytes | tuple[str | None, SupportsRead[str | bytes] | str | bytes] | tuple[str | None, SupportsRead[str | bytes] | str | bytes, str] | tuple[str | None, SupportsRead[str | bytes] | str | bytes, str, Mapping[str, str]]]] | None = ..., auth: tuple[str, str] | AuthBase | Callable[[PreparedRequest], PreparedRequest] | None = ..., timeout: float | tuple[float, float] | tuple[float, None] | None = ..., allow_redirects: bool = ..., proxies: MutableMapping[str, str] | None = ..., hooks: Mapping[str, Iterable[Callable[[Response], Any]] | Callable[[Response], Any]] | None = ..., stream: bool | None = ..., verify: bool | str | None = ..., cert: str | tuple[str, str] | None = ..., json: Any | None = ...) -> RecordedResponse", variable has type "def get(url: str | bytes, params: SupportsItems[str | bytes | int | float, str | bytes | int | float | Iterable[str | bytes | int | float] | None] | tuple[str | bytes | int | float, str | bytes | int | float | Iterable[str | bytes | int | float] | None] | Iterable[tuple[str | bytes | int | float, str | bytes | int | float | Iterable[str | bytes | int | float] | None]] | str | bytes | None = ..., *, data: Iterable[bytes] | str | bytes | SupportsRead[str | bytes] | list[tuple[Any, Any]] | tuple[tuple[Any, Any], ...] | Mapping[Any, Any] | None = ..., headers: Mapping[str, str | bytes | None] | None = ..., cookies: CookieJar | MutableMapping[str, str] | None = ..., files: Mapping[str, SupportsRead[str | bytes] | str | bytes | tuple[str | None, SupportsRead[str | bytes] | str | bytes] | tuple[str | None, SupportsRead[str | bytes] | str | bytes, str] | tuple[str | None, SupportsRead[str | bytes] | str | bytes, str, Mapping[str, str]]] | Iterable[tuple[str, SupportsRead[str | bytes] | str | bytes | tuple[str | None, SupportsRead[str | bytes] | str | bytes] | tuple[str | None, SupportsRead[str | bytes] | str | bytes, str] | tuple[str | None, SupportsRead[str | bytes] | str | bytes, str, Mapping[str, str]]]] | None = ..., auth: tuple[str, str] | AuthBase | Callable[[PreparedRequest], PreparedRequest] | None = ..., timeout: float | tuple[float, float] | tuple[float, None] | None = ..., allow_redirects: bool = ..., proxies: MutableMapping[str, str] | None = ..., hooks: Mapping[str, Iterable[Callable[[Response], Any]] | Callable[[Response], Any]] | None = ..., stream: bool | None = ..., verify: bool | str | None = ..., cert: str | tuple[str, str] | None = ..., json: Any | None = ...) -> Response")  [assignment]
+scripts/codemod/qfq_chain_checks.py:89: error: Returning Any from function declared to return "DataFrame"  [no-any-return]
+scripts/codemod/compare_with_upstream.py:833: error: No overload variant of "isna" matches argument type "object"  [call-overload]
+scripts/codemod/compare_with_upstream.py:833: note: Possible overload variants:
+scripts/codemod/compare_with_upstream.py:833: note:     def isna(obj: DataFrame) -> DataFrame
+scripts/codemod/compare_with_upstream.py:833: note:     def isna(obj: Series[Any]) -> Series[bool]
+scripts/codemod/compare_with_upstream.py:833: note:     def [ScalarT: str | bytes | date | datetime | timedelta | <7 more items> | complex | integer[Any] | floating[Any] | complexfloating[Any, Any]] isna(obj: Index[Any] | ExtensionArray | list[ScalarT]) -> ndarray[tuple[int], dtype[Any]]
+scripts/codemod/compare_with_upstream.py:833: note:     def [ShapeT: tuple[int, ...]] isna(obj: ndarray[ShapeT, dtype[Any]]) -> ndarray[ShapeT, dtype[Any]]
+scripts/codemod/compare_with_upstream.py:833: note:     def isna(obj: list[Any]) -> ndarray[tuple[Any, ...], dtype[Any]]
+scripts/codemod/compare_with_upstream.py:833: note:     def isna(obj: str | bytes | date | datetime | timedelta | <7 more items> | complex | integer[Any] | floating[Any] | complexfloating[Any, Any] | NaTType | NAType | None) -> TypeIs[NaTType | NAType | None]
+docs/evidence/C27/judge-falsification.py:170: error: Returning Any from function declared to return "DataFrame"  [no-any-return]
+docs/evidence/C27/judge-falsification.py:273: error: Incompatible types in assignment (expression has type "DataFrame", variable has type "list[float]")  [assignment]
+docs/evidence/C27/judge-falsification.py:277: error: Argument 2 to "check_factor_steps" has incompatible type "list[float]"; expected "DataFrame"  [arg-type]
+docs/evidence/C27/judge-falsification.py:279: error: Argument 2 to "check_synthesis" has incompatible type "list[float]"; expected "DataFrame"  [arg-type]
+docs/evidence/C27/judge-falsification.py:283: error: Argument 4 to "_window_diffs" has incompatible type "list[float]"; expected "DataFrame"  [arg-type]
+scripts/ops/yfinance_overseas_cross_check.py:72: error: Returning Any from function declared to return "DataFrame"  [no-any-return]
+scripts/ops/yfinance_overseas_cross_check.py:78: error: Returning Any from function declared to return "DataFrame"  [no-any-return]
+scripts/ops/yfinance_overseas_cross_check.py:192: error: "Hashable" has no attribute "model_dump"  [attr-defined]
+scripts/ops/yfinance_overseas_cross_check.py:194: error: Returning Any from function declared to return "DataFrame"  [no-any-return]
+scripts/ops/yfinance_overseas_cross_check.py:207: error: Returning Any from function declared to return "DataFrame"  [no-any-return]
+scripts/ops/yfinance_overseas_cross_check.py:367: error: Item "Hashable" of "Any | Hashable" has no attribute "date"  [union-attr]
+scripts/ops/ths_trading_calendar_cross_check.py:291: error: "Hashable" has no attribute "date"  [attr-defined]
+scripts/ops/ths_trading_calendar_cross_check.py:292: error: "Hashable" has no attribute "date"  [attr-defined]
+scripts/ops/ths_trading_calendar_cross_check.py:294: error: Argument 2 to "_header" has incompatible type "list[Hashable]"; expected "Sequence[TradingCalendar]"  [arg-type]
+scripts/ops/ths_trading_calendar_cross_check.py:295: error: Argument 1 to "check_shape" has incompatible type "list[Hashable]"; expected "Sequence[TradingCalendar]"  [arg-type]
+scripts/ops/ths_instrument_cross_check.py:282: error: Argument 1 to "tuple" has incompatible type "Sequence[ContractModel] | DataFrame"; expected "Iterable[Instrument]"  [arg-type]
+scripts/ops/ths_index_cross_check.py:87: error: Returning Any from function declared to return "DataFrame"  [no-any-return]
+scripts/ops/ths_index_cross_check.py:87: error: "Hashable" has no attribute "model_dump"  [attr-defined]
+scripts/ops/ths_index_cross_check.py:118: error: No overload variant of "read_csv" matches argument type "GzipFile"  [call-overload]
+scripts/ops/ths_index_cross_check.py:118: note: Possible overload variants:
+scripts/ops/ths_index_cross_check.py:118: note:     def [HashableT: Hashable] read_csv(filepath_or_buffer: str | PathLike[str] | ReadCsvBuffer[bytes] | ReadCsvBuffer[str], *, sep: str | None = ..., delimiter: str | None = ..., header: int | Sequence[int] | Literal['infer'] | None = ..., names: MutableSequence[Any] | ndarray[tuple[int], dtype[Any]] | tuple[Any, ...] | range | None = ..., index_col: int | str | Sequence[str | int] | Literal[False] | None = ..., usecols: SequenceNotStr[Hashable] | range | ExtensionArray | ndarray[Any, dtype[Any]] | Index[Any] | Series[Any] | Callable[[HashableT], bool] | None = ..., dtype: ExtensionDtype | str | dtype[generic] | type[complex] | type[bool] | type[object] | type[str] | Mapping[Hashable, ExtensionDtype | str | dtype[generic] | type[complex] | type[bool] | type[object] | type[str]] | Mapping[Hashable, ExtensionDtype | str | dtype[generic] | type[complex] | type[bool] | type[object] | type[str] | Mapping[Hashable, ExtensionDtype | str | dtype[generic] | type[complex] | type[bool] | type[object] | type[str]]] | None = ..., engine: Literal['c', 'python', 'pyarrow', 'python-fwf'] | None = ..., converters: Mapping[int | str, Callable[[str], Any]] | Mapping[int, Callable[[str], Any]] | Mapping[str, Callable[[str], Any]] | None = ..., true_values: list[str] | None = ..., false_values: list[str] | None = ..., skipinitialspace: bool = ..., skiprows: int | Sequence[int] | Callable[[int], bool] | None = ..., skipfooter: int = ..., nrows: int | None = ..., na_values: Sequence[str] | Mapping[str, Sequence[str]] | None = ..., keep_default_na: bool = ..., na_filter: bool = ..., skip_blank_lines: bool = ..., parse_dates: bool | list[int] | list[str] | None = ..., date_format: dict[Hashable, str] | str | None = ..., dayfirst: bool = ..., cache_dates: bool = ..., iterator: Literal[True], chunksize: int | None = ..., compression: Literal['infer', 'gzip', 'bz2', 'zip', 'xz', 'zstd', 'tar'] | dict[str, Any] | None = ..., thousands: str | None = ..., decimal: str = ..., lineterminator: str | None = ..., quotechar: str = ..., quoting: Literal[0, 1, 2, 3] = ..., doublequote: bool = ..., escapechar: str | None = ..., comment: str | None = ..., encoding: str | None = ..., encoding_errors: str | None = ..., dialect: str | Dialect | None = ..., on_bad_lines: Literal['error', 'warn', 'skip'] | Callable[[list[str]], list[str] | None] = ..., low_memory: bool = ..., memory_map: bool = ..., float_precision: Literal['high', 'legacy', 'round_trip'] | None = ..., storage_options: dict[str, Any] | None | None = ..., dtype_backend: Literal['pyarrow', 'numpy_nullable'] | Literal[_NoDefault.no_default] = ...) -> TextFileReader
+scripts/ops/ths_index_cross_check.py:118: note:     def [HashableT: Hashable] read_csv(filepath_or_buffer: str | PathLike[str] | ReadCsvBuffer[bytes] | ReadCsvBuffer[str], *, sep: str | None = ..., delimiter: str | None = ..., header: int | Sequence[int] | Literal['infer'] | None = ..., names: MutableSequence[Any] | ndarray[tuple[int], dtype[Any]] | tuple[Any, ...] | range | None = ..., index_col: int | str | Sequence[str | int] | Literal[False] | None = ..., usecols: SequenceNotStr[Hashable] | range | ExtensionArray | ndarray[Any, dtype[Any]] | Index[Any] | Series[Any] | Callable[[HashableT], bool] | None = ..., dtype: ExtensionDtype | str | dtype[generic] | type[complex] | type[bool] | type[object] | type[str] | Mapping[Hashable, ExtensionDtype | str | dtype[generic] | type[complex] | type[bool] | type[object] | type[str]] | Mapping[Hashable, ExtensionDtype | str | dtype[generic] | type[complex] | type[bool] | type[object] | type[str] | Mapping[Hashable, ExtensionDtype | str | dtype[generic] | type[complex] | type[bool] | type[object] | type[str]]] | None = ..., engine: Literal['c', 'python', 'pyarrow', 'python-fwf'] | None = ..., converters: Mapping[int | str, Callable[[str], Any]] | Mapping[int, Callable[[str], Any]] | Mapping[str, Callable[[str], Any]] | None = ..., true_values: list[str] | None = ..., false_values: list[str] | None = ..., skipinitialspace: bool = ..., skiprows: int | Sequence[int] | Callable[[int], bool] | None = ..., skipfooter: int = ..., nrows: int | None = ..., na_values: Sequence[str] | Mapping[str, Sequence[str]] | None = ..., keep_default_na: bool = ..., na_filter: bool = ..., skip_blank_lines: bool = ..., parse_dates: bool | list[int] | list[str] | None = ..., date_format: dict[Hashable, str] | str | None = ..., dayfirst: bool = ..., cache_dates: bool = ..., iterator: bool = ..., chunksize: int, compression: Literal['infer', 'gzip', 'bz2', 'zip', 'xz', 'zstd', 'tar'] | dict[str, Any] | None = ..., thousands: str | None = ..., decimal: str = ..., lineterminator: str | None = ..., quotechar: str = ..., quoting: Literal[0, 1, 2, 3] = ..., doublequote: bool = ..., escapechar: str | None = ..., comment: str | None = ..., encoding: str | None = ..., encoding_errors: str | None = ..., dialect: str | Dialect | None = ..., on_bad_lines: Literal['error', 'warn', 'skip'] | Callable[[list[str]], list[str] | None] = ..., low_memory: bool = ..., memory_map: bool = ..., float_precision: Literal['high', 'legacy', 'round_trip'] | None = ..., storage_options: dict[str, Any] | None | None = ..., dtype_backend: Literal['pyarrow', 'numpy_nullable'] | Literal[_NoDefault.no_default] = ...) -> TextFileReader
+scripts/ops/ths_index_cross_check.py:118: note:     def [HashableT: Hashable] read_csv(filepath_or_buffer: str | PathLike[str] | ReadCsvBuffer[bytes] | ReadCsvBuffer[str], *, sep: str | None = ..., delimiter: str | None = ..., header: int | Sequence[int] | Literal['infer'] | None = ..., names: MutableSequence[Any] | ndarray[tuple[int], dtype[Any]] | tuple[Any, ...] | range | None = ..., index_col: int | str | Sequence[str | int] | Literal[False] | None = ..., usecols: SequenceNotStr[Hashable] | range | ExtensionArray | ndarray[Any, dtype[Any]] | Index[Any] | Series[Any] | Callable[[HashableT], bool] | None = ..., dtype: ExtensionDtype | str | dtype[generic] | type[complex] | type[bool] | type[object] | type[str] | Mapping[Hashable, ExtensionDtype | str | dtype[generic] | type[complex] | type[bool] | type[object] | type[str]] | Mapping[Hashable, ExtensionDtype | str | dtype[generic] | type[complex] | type[bool] | type[object] | type[str] | Mapping[Hashable, ExtensionDtype | str | dtype[generic] | type[complex] | type[bool] | type[object] | type[str]]] | None = ..., engine: Literal['c', 'python', 'pyarrow', 'python-fwf'] | None = ..., converters: Mapping[int | str, Callable[[str], Any]] | Mapping[int, Callable[[str], Any]] | Mapping[str, Callable[[str], Any]] | None = ..., true_values: list[str] | None = ..., false_values: list[str] | None = ..., skipinitialspace: bool = ..., skiprows: int | Sequence[int] | Callable[[int], bool] | None = ..., skipfooter: int = ..., nrows: int | None = ..., na_values: Sequence[str] | Mapping[str, Sequence[str]] | None = ..., keep_default_na: bool = ..., na_filter: bool = ..., skip_blank_lines: bool = ..., parse_dates: bool | list[int] | list[str] | None = ..., date_format: dict[Hashable, str] | str | None = ..., dayfirst: bool = ..., cache_dates: bool = ..., iterator: Literal[False] = ..., chunksize: None = ..., compression: Literal['infer', 'gzip', 'bz2', 'zip', 'xz', 'zstd', 'tar'] | dict[str, Any] | None = ..., thousands: str | None = ..., decimal: str = ..., lineterminator: str | None = ..., quotechar: str = ..., quoting: Literal[0, 1, 2, 3] = ..., doublequote: bool = ..., escapechar: str | None = ..., comment: str | None = ..., encoding: str | None = ..., encoding_errors: str | None = ..., dialect: str | Dialect | None = ..., on_bad_lines: Literal['error', 'warn', 'skip'] | Callable[[list[str]], list[str] | None] = ..., low_memory: bool = ..., memory_map: bool = ..., float_precision: Literal['high', 'legacy', 'round_trip'] | None = ..., storage_options: dict[str, Any] | None | None = ..., dtype_backend: Literal['pyarrow', 'numpy_nullable'] | Literal[_NoDefault.no_default] = ...) -> DataFrame
+scripts/ops/ths_index_cross_check.py:137: error: Returning Any from function declared to return "DataFrame"  [no-any-return]
+scripts/ops/ths_index_constituent_cross_check.py:149: error: Incompatible return value type (got "tuple[list[Hashable], Any | None]", expected "tuple[list[IndexConstituent], Any]")  [return-value]
+scripts/ops/ths_index_constituent_cross_check.py:149: error: "Hashable" has no attribute "as_of"  [attr-defined]
+scripts/ops/ths_futures_option_cross_check.py:68: error: Returning Any from function declared to return "DataFrame"  [no-any-return]
+scripts/ops/ths_futures_option_cross_check.py:74: error: Returning Any from function declared to return "DataFrame"  [no-any-return]
+scripts/ops/ths_futures_option_cross_check.py:80: error: Returning Any from function declared to return "DataFrame"  [no-any-return]
+scripts/ops/ths_futures_option_cross_check.py:88: error: Returning Any from function declared to return "DataFrame"  [no-any-return]
+scripts/ops/ths_futures_option_cross_check.py:163: error: "Hashable" has no attribute "model_dump"  [attr-defined]
+scripts/ops/ths_futures_option_cross_check.py:165: error: Returning Any from function declared to return "DataFrame"  [no-any-return]
+scripts/ops/ths_futures_option_cross_check.py:176: error: Returning Any from function declared to return "DataFrame"  [no-any-return]
+scripts/ops/ths_fund_etf_cross_check.py:1021: error: "Hashable" has no attribute "trade_date"  [attr-defined]
+scripts/ops/ths_fund_etf_cross_check.py:1025: error: "Hashable" has no attribute "open"  [attr-defined]
+scripts/ops/ths_fund_etf_cross_check.py:1025: error: "Hashable" has no attribute "high"  [attr-defined]
+scripts/ops/ths_fund_etf_cross_check.py:1025: error: "Hashable" has no attribute "low"  [attr-defined]
+scripts/ops/ths_fund_etf_cross_check.py:1025: error: "Hashable" has no attribute "close"  [attr-defined]
+scripts/ops/ths_fund_etf_cross_check.py:1042: error: "Hashable" has no attribute "trade_date"  [attr-defined]
+scripts/ops/ths_fund_etf_cross_check.py:1042: error: "Hashable" has no attribute "close"  [attr-defined]
+scripts/ops/ths_fund_action_cross_check.py:174: error: Argument 1 to "tuple" has incompatible type "Sequence[ContractModel] | DataFrame"; expected "Iterable[CorporateAction]"  [arg-type]
+scripts/ops/ths_financial_statement_cross_check.py:479: error: Argument 1 to "list" has incompatible type "Sequence[ContractModel] | DataFrame"; expected "Iterable[FinancialStatement]"  [arg-type]
+scripts/ops/ths_financial_statement_cross_check.py:491: error: Argument 1 to "list" has incompatible type "Sequence[ContractModel] | DataFrame"; expected "Iterable[FinancialStatement]"  [arg-type]
+scripts/ops/ths_financial_statement_cross_check.py:589: error: Argument 1 to "list" has incompatible type "Sequence[ContractModel] | DataFrame"; expected "Iterable[FinancialStatement]"  [arg-type]
+docs/evidence/C54/caliber_pivot_face.py:92: error: "Hashable" has no attribute "model_dump"  [attr-defined]
+docs/evidence/C54/caliber_pivot_face.py:161: error: "Hashable" has no attribute "model_dump"  [attr-defined]
+docs/evidence/C54/caliber_pivot_face.py:216: error: "Hashable" has no attribute "model_dump"  [attr-defined]
+docs/evidence/C26/silent-drop-measure.py:127: error: Redundant cast to "DataFrame"  [redundant-cast]
+docs/evidence/C26/silent-drop-measure.py:474: error: List comprehension has incompatible type List[dict[Hashable, Any]]; expected List[dict[str, Any]]  [misc]
+docs/evidence/C26/fixture-live-cells.py:96: error: "Hashable" has no attribute "ex_date"  [attr-defined]
+docs/evidence/C26/fixture-live-cells.py:101: error: "Hashable" has no attribute "cash_dividend"  [attr-defined]
+docs/evidence/C26/fixture-live-cells.py:101: error: "Hashable" has no attribute "stock_dividend"  [attr-defined]
+docs/evidence/C26/fixture-live-cells.py:101: error: "Hashable" has no attribute "rights_shares"  [attr-defined]
+docs/evidence/C26/fixture-live-cells.py:101: error: "Hashable" has no attribute "rights_price"  [attr-defined]
+docs/evidence/C25/field-canary-measure.py:84: error: Argument 2 to "evaluate_canary" has incompatible type "Sequence[ContractModel] | DataFrame"; expected "Sequence[object]"  [arg-type]
+docs/evidence/C19/criterion-teeth.py:73: error: Generator has incompatible item type "int"; expected "bool"  [misc]
+docs/evidence/C19/criterion-teeth.py:73: error: "Hashable" has no attribute "list_date"  [attr-defined]
+docs/evidence/C19/criterion-teeth.py:90: error: Generator has incompatible item type "int"; expected "bool"  [misc]
+docs/evidence/C19/criterion-teeth.py:90: error: Argument 1 to "shaped" has incompatible type "list[Hashable]"; expected "list[Instrument]"  [arg-type]
+docs/evidence/C16/probe-param-audit.py:73: error: Return type "tuple[_StubRow, ...]" of "transform_data" incompatible with return type "Sequence[ContractModel] | DataFrame" in supertype "opendata.data.protocol.Fetcher"  [override]
+scripts/ops/metadata_backbone_landing.py:111: error: Incompatible return value type (got "Sequence[ContractModel] | DataFrame", expected "Sequence[object]")  [return-value]
+examples/consumer_handoff.py:188: error: Returning Any from function declared to return "DataFrame"  [no-any-return]
+FAIL: A2 gate failed on: ruff check, ruff format, mypy
+
+ok   bandit
+ERROR conda.cli.main_run:execute(125): `conda run env PATH=/tmp/opendata-iter01-quality-env-20260930/bin:/Applications/ChatGPT.app/Contents/Resources/codex-cli/codex-path:/Users/yunjinqi/.opencode/bin:/Users/yunjinqi/.joyincode/runtime/workspaces/backtrader_web-433a785d/xdg-data/../bin:/Users/yunjinqi/.codebuddy/bin:/Users/yunjinqi/bin:/Users/yunjinqi/.bun/bin:/Users/yunjinqi/.antigravity/antigravity/bin:/opt/homebrew/opt/postgresql@17/bin:/Users/yunjinqi/.codebuddy/bin:/Users/yunjinqi/.codeium/windsurf/bin:/opt/homebrew/Cellar/openjdk/24.0.1/libexec/openjdk.jdk/Contents/Home/bin:/Users/yunjinqi/vcpkg:/opt/homebrew/bin:/opt/homebrew/sbin:/Users/yunjinqi/vcpkg:/opt/homebrew/opt/postgresql@17/bin:/opt/local/bin:/opt/local/sbin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/TeX/texbin:/Applications/VMware Fusion.app/Contents/Public:/usr/local/go/bin:/Users/yunjinqi/.codex/tmp/arg0/codex-arg0YvsqQp:/Applications/ChatGPT.app/Contents/Resources/codex-cli/codex-path:/Users/yunjinqi/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/override:/Users/yunjinqi/.opencode/bin:/Users/yunjinqi/.joyincode/runtime/workspaces/backtrader_web-433a785d/bin:/Users/yunjinqi/.codebuddy/bin:/Users/yunjinqi/bin:/Users/yunjinqi/.bun/bin:/Users/yunjinqi/.antigravity/antigravity/bin:/opt/homebrew/opt/postgresql@17/bin:/Users/yunjinqi/.codeium/windsurf/bin:/opt/homebrew/Cellar/openjdk/24.0.1/libexec/openjdk.jdk/Contents/Home/bin:/Users/yunjinqi/vcpkg:/Users/yunjinqi/opt/anaconda3/bin:/Users/yunjinqi/opt/anaconda3/condabin:/opt/homebrew/bin:/opt/homebrew/sbin:/opt/local/bin:/opt/local/sbin:/Users/yunjinqi/Users/yunjinqi/vcpkg:/Users/yunjinqi/.cache/codex-runtimes/codex-primary-runtime/dependencies/bin/fallback:/Applications/ChatGPT.app/Contents/Resources:/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS:/Users/yunjinqi/Users/yunjinqi/vcpkg /tmp/opendata-iter01-quality-env-20260930/bin/python scripts/quality/a2_check.py` failed. (See above for error)

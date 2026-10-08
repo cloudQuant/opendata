@@ -1,0 +1,4164 @@
+{
+  "schema": "opendata-c65-provider-similarity/v1",
+  "generated_date": "2026-10-01",
+  "comparison": {
+    "local_repo": "/Users/yunjinqi/Documents/new_projects/opendata",
+    "local_head": "d552c081950edffce167e3dfc0be74f37a6950a1",
+    "local_worktree_dirty": true,
+    "baseline_repo": "/Users/yunjinqi/Documents/new_projects/OpenBB",
+    "baseline_commit": "3e071fcc2cd9f891cac6040ae60296dba76dab46",
+    "baseline_worktree_clean": true,
+    "providers_local": [
+      "akshare",
+      "ecb",
+      "fred",
+      "imf",
+      "oecd",
+      "ths",
+      "yfinance"
+    ],
+    "providers_baseline": [
+      "ecb",
+      "fred",
+      "imf",
+      "oecd",
+      "yfinance"
+    ]
+  },
+  "method": {
+    "scope": "Function/method bodies in all current 7-provider Python files versus production Python under the 5 pinned OpenBB provider packages.",
+    "ast_node_count": "Raw Python AST nodes in each function body or statement-list block, including nested descendants.",
+    "block_inventory": "Each function body and each nonempty nested body/orelse/finalbody/handlers/cases statement list; blocks smaller than 41 AST nodes excluded.",
+    "normalization": "Locally bound names (function args and stored/deleted identifiers) normalized; call targets, attribute names, keyword names, constants/strings, operators, node types and ordered traversal retained.",
+    "candidate_filter": "Review candidate requires node-count ratio >=0.55, ordered normalized AST-token SequenceMatcher ratio >=0.62, and token-multiset Dice >=0.50. The token stream retains call targets, attribute names, keyword names, constants/strings, operators, node types and order; matching API/schema field names alone does not satisfy both structural thresholds. Shared call/literal/operator counts are reported as diagnostics, not gates.",
+    "ranking": "score = 0.60*ordered token ratio + 0.25*multiset Dice + 0.15*node-count ratio; this is a triage rank, not a finding.",
+    "limitations": [
+      "Heuristic AST screening can miss transformed, reordered, split, or cross-function copying and is not a clone detector.",
+      "Common libraries, framework patterns, APIs, and provider schemas can produce structural similarity; candidates need human review.",
+      "Only provider source package Python files were scanned; openbb_core, integration tests, documentation, and absent upstream providers akshare/ths were excluded.",
+      "Current code hashes cannot establish historical authoring process, clean-room history, or legal/data-rights conclusions."
+    ],
+    "actions_not_performed": [
+      "No OpenBB source was downloaded.",
+      "No source code snippets are included in this artifact.",
+      "No repository files were modified.",
+      "No network/HTTP calls, database calls, tests, or gates were run.",
+      "No .env file was read."
+    ],
+    "nearest_pairs": "For each local block with a size/multiset prefilter match, the highest weighted score pair is recorded even when below review-candidate thresholds.",
+    "score": "0.60*ordered normalized AST-token ratio + 0.25*multiset Dice + 0.15*node-count ratio; ranking aid only, not a finding or legal/provenance conclusion."
+  },
+  "counts": {
+    "local_provider_python_files": 71,
+    "local_functions_methods": 146,
+    "local_blocks_over_40_nodes": 109,
+    "baseline_provider_python_files": 121,
+    "baseline_functions_methods": 555,
+    "baseline_blocks_over_40_nodes": 1227,
+    "review_candidates": 0,
+    "nearest_pairs": 109,
+    "local_parse_errors": [],
+    "baseline_parse_errors": [],
+    "by_provider_local": {
+      "akshare": {
+        "python_files": 15,
+        "functions_methods": 45
+      },
+      "ecb": {
+        "python_files": 9,
+        "functions_methods": 9
+      },
+      "fred": {
+        "python_files": 9,
+        "functions_methods": 10
+      },
+      "imf": {
+        "python_files": 9,
+        "functions_methods": 9
+      },
+      "oecd": {
+        "python_files": 7,
+        "functions_methods": 15
+      },
+      "ths": {
+        "python_files": 16,
+        "functions_methods": 45
+      },
+      "yfinance": {
+        "python_files": 6,
+        "functions_methods": 13
+      }
+    },
+    "by_provider_baseline": {
+      "ecb": {
+        "python_files": 9,
+        "functions_methods": 14
+      },
+      "fred": {
+        "python_files": 41,
+        "functions_methods": 172
+      },
+      "imf": {
+        "python_files": 26,
+        "functions_methods": 187
+      },
+      "oecd": {
+        "python_files": 12,
+        "functions_methods": 62
+      },
+      "yfinance": {
+        "python_files": 33,
+        "functions_methods": 120
+      }
+    }
+  },
+  "source_manifests": {
+    "local_files_sha256": [
+      {
+        "path": "opendata/data/providers/akshare/__init__.py",
+        "sha256": "3b1dc4ae6a6bc0a06787991de969e89b5b5eeacd8c8c14e161160fba7353f180"
+      },
+      {
+        "path": "opendata/data/providers/akshare/_source.py",
+        "sha256": "a41aa82924f82a56da4cbc9dff33949cc708e23368ad645668030bd16ce263ac"
+      },
+      {
+        "path": "opendata/data/providers/akshare/models/__init__.py",
+        "sha256": "a5f000921c7e6a07c2bf9d7f4d3ced8fcf9a32117caf094550a58241a26f8b75"
+      },
+      {
+        "path": "opendata/data/providers/akshare/models/_normalize.py",
+        "sha256": "ac90f5a7b1386f5477ab1394b18cb294621cd3ab28d2dacefbb234aa5859e420"
+      },
+      {
+        "path": "opendata/data/providers/akshare/models/bond_daily.py",
+        "sha256": "f1141f64f39c655dcf5e8aef746b1a18864134fcec93c13584e1a94461792504"
+      },
+      {
+        "path": "opendata/data/providers/akshare/models/financial_indicator.py",
+        "sha256": "53e442f41961b3c90f9261bd44369cfa582431158eebd82677bc2802c6be50f8"
+      },
+      {
+        "path": "opendata/data/providers/akshare/models/financial_statement.py",
+        "sha256": "d4dd729c4af2cda0dba597fac50eb1e5660cf1d778cd90b549a5f6facbbf8e9e"
+      },
+      {
+        "path": "opendata/data/providers/akshare/models/fund_etf_daily.py",
+        "sha256": "315484f6567944250facf5f8cf3c05d15560879ebb9f5025c475d9f32c7b000b"
+      },
+      {
+        "path": "opendata/data/providers/akshare/models/futures_daily.py",
+        "sha256": "9cd75aa9c93517e6ea12b8f0bfd5dd43c9fa29c92e72ac2f919eb0982a0d5b96"
+      },
+      {
+        "path": "opendata/data/providers/akshare/models/index_constituent.py",
+        "sha256": "1246c93d2dc6be02f6742f688c278f7392601fa11d91f8080ba6f436cd6d8fbe"
+      },
+      {
+        "path": "opendata/data/providers/akshare/models/index_daily.py",
+        "sha256": "51f5528c8c456df2763c843346c53b1e7de379ce10a40528012fcda70e4dc203"
+      },
+      {
+        "path": "opendata/data/providers/akshare/models/option_daily.py",
+        "sha256": "85d33e91db9aab0a1baa08387d7b4804155f6d325399fa320d6aab0a9be4d5b9"
+      },
+      {
+        "path": "opendata/data/providers/akshare/models/stock_action.py",
+        "sha256": "ef8856736e8f802d95d3bfd3a052e6660147a728107ebbcd4ebe0c02de8e0445"
+      },
+      {
+        "path": "opendata/data/providers/akshare/models/stock_daily.py",
+        "sha256": "ef71a6814fed0f12bffdfabcea7e1349e6815211e53a993be54ddf0303b3a488"
+      },
+      {
+        "path": "opendata/data/providers/akshare/registration.py",
+        "sha256": "f9a8629190a1a9e5673c63a3e37f9b1aa3d7d7bb6ea9049818386b7d4846ced1"
+      },
+      {
+        "path": "opendata/data/providers/ecb/__init__.py",
+        "sha256": "5eabd0ed841cc15119aab1488b671b91df4fdc6f5ab69acbbbd2c6d450f38137"
+      },
+      {
+        "path": "opendata/data/providers/ecb/_source.py",
+        "sha256": "e17ff8738ad50d6f2099e27df3193e813ecb6e3285e8538c3d22eccee6fdb867"
+      },
+      {
+        "path": "opendata/data/providers/ecb/models/__init__.py",
+        "sha256": "948b333c5683fe24eb1b260a7efc63003da1fd424a4b4cb09e9c1952f8f60268"
+      },
+      {
+        "path": "opendata/data/providers/ecb/models/_client.py",
+        "sha256": "c6dde2cc49064a24f14ce089f58f88e7b74ec82cbffb1c39e5b8cb1c22e0e158"
+      },
+      {
+        "path": "opendata/data/providers/ecb/models/_series.py",
+        "sha256": "0f07ff808081cf4a0a4d6ed7dbcac8421c2bbab4991b2bbaf29651ccb99e5dfd"
+      },
+      {
+        "path": "opendata/data/providers/ecb/models/cpi.py",
+        "sha256": "ead0937cf41dd85c97627ab7694eb247ff1f3b63bc39ad60b90ccccc5844c5f9"
+      },
+      {
+        "path": "opendata/data/providers/ecb/models/gdp.py",
+        "sha256": "a89a277a678f210e27578f9a13cd567ffe36e14c128de62a783b745d0940a180"
+      },
+      {
+        "path": "opendata/data/providers/ecb/models/rate.py",
+        "sha256": "fc3cc333d39291b78b53baad28e2e4467e0efff6e4d0b0f8ffd5a33292f55769"
+      },
+      {
+        "path": "opendata/data/providers/ecb/registration.py",
+        "sha256": "6d841133d574f279aa205c0ced96fe425f51edea7ba1ddd52f10231454215da2"
+      },
+      {
+        "path": "opendata/data/providers/fred/__init__.py",
+        "sha256": "6dda5fd4bf956224e3bb79db13733e8f3dd4ccc6bb2aa1245f81c28f3b7feafa"
+      },
+      {
+        "path": "opendata/data/providers/fred/_source.py",
+        "sha256": "31f659373c234f59077736352222712e6176f4b15b2a4c70b959db6ed83502ef"
+      },
+      {
+        "path": "opendata/data/providers/fred/models/__init__.py",
+        "sha256": "222566d3af4a69dae5c319ee44988899bbf2972ae61419cf9c0d0654ff021aa1"
+      },
+      {
+        "path": "opendata/data/providers/fred/models/_client.py",
+        "sha256": "25730ad7832bac1df67f2912e49bd1f96015c08c121470075377ba6bf1c272e5"
+      },
+      {
+        "path": "opendata/data/providers/fred/models/_series.py",
+        "sha256": "0e6ccdeeae419be8ad4093d547b210a11cede172ed6742201e314e0fa2261984"
+      },
+      {
+        "path": "opendata/data/providers/fred/models/cpi.py",
+        "sha256": "7cebe59c831cc94426e5f3933620cfe958fdfb328248759c8eb07072d5c1019c"
+      },
+      {
+        "path": "opendata/data/providers/fred/models/gdp.py",
+        "sha256": "0d7430ad6da8f695807d45c048dc20e4746c5de8e28fd9adce35a3a607c41f64"
+      },
+      {
+        "path": "opendata/data/providers/fred/models/unemployment.py",
+        "sha256": "1ff80ec19ac4680b45bb063f547f82439c459502cf37488cca83a19f28ad944e"
+      },
+      {
+        "path": "opendata/data/providers/fred/registration.py",
+        "sha256": "2991f87b924bd483fe0de554509d9ca15bfac5cde862af93bceb70fdcf3f37f9"
+      },
+      {
+        "path": "opendata/data/providers/imf/__init__.py",
+        "sha256": "868175ea9cc077b257f43d1a01e282cb274d4a20782d794ecbad25b01726466c"
+      },
+      {
+        "path": "opendata/data/providers/imf/_source.py",
+        "sha256": "aa1f074ba35964f1b06da55a93c0161c458edd9da37cb277510107a201781351"
+      },
+      {
+        "path": "opendata/data/providers/imf/models/__init__.py",
+        "sha256": "72d33da82169ddf9be5c6c6f26280b5b2440d0cbf10088eb49e459b213095822"
+      },
+      {
+        "path": "opendata/data/providers/imf/models/_client.py",
+        "sha256": "aa136e6c0087324d5540b0817d401242167dabdab2b04a219830938b9a42a79b"
+      },
+      {
+        "path": "opendata/data/providers/imf/models/_indicator.py",
+        "sha256": "23b42ad82460d367ba8736d496d32f0a2b5b5ef137604bc421dc101bff53c544"
+      },
+      {
+        "path": "opendata/data/providers/imf/models/cpi.py",
+        "sha256": "3d7b7380623ae54bc91748e12bc2dde44fc4734c7ffb1d2c86c53904d30c2aa3"
+      },
+      {
+        "path": "opendata/data/providers/imf/models/gdp.py",
+        "sha256": "567a42fdabc58123476957a6babfcf4618704de6d962694e46437055a4cbb6a9"
+      },
+      {
+        "path": "opendata/data/providers/imf/models/unemployment.py",
+        "sha256": "dda28b2b9ec4765437e09340b4ab2609be2100b4969be53df0ea2d50dc620d87"
+      },
+      {
+        "path": "opendata/data/providers/imf/registration.py",
+        "sha256": "e635ebd7af5c285530a74395322fa0fdca9232f6676653db01a6e4fdfb658e13"
+      },
+      {
+        "path": "opendata/data/providers/oecd/__init__.py",
+        "sha256": "848a515584aa659f199b6b7cd28c456487a34f9e9a434530d7217ea4761bc80e"
+      },
+      {
+        "path": "opendata/data/providers/oecd/_source.py",
+        "sha256": "eb6200dc34dc6cb639b5d790b5ac81f866b9740fcd04ce9328b7e19d686b2b2b"
+      },
+      {
+        "path": "opendata/data/providers/oecd/models/__init__.py",
+        "sha256": "a38610af8193c7baf303161dc7e15ab5cc43fbc0b06ad2fe8554f0d6b3786886"
+      },
+      {
+        "path": "opendata/data/providers/oecd/models/_client.py",
+        "sha256": "d6bbc8005785a780f3711b50fce8d375387d66c30c27da4742fb4514ee4d5ccf"
+      },
+      {
+        "path": "opendata/data/providers/oecd/models/cpi.py",
+        "sha256": "a177dfd51db46fb97d16fa9d9ff7c860b300979d879229f0ff3ab1c6cc4acf12"
+      },
+      {
+        "path": "opendata/data/providers/oecd/models/unemployment.py",
+        "sha256": "3c3a19ef99682d22b515f46082cee9d08702fbf81634dfdd056c6b8513c4fdff"
+      },
+      {
+        "path": "opendata/data/providers/oecd/registration.py",
+        "sha256": "7c49bdb0b17fb97d61b270cbf6b92806b4c2bb67204ede7635b54f7bfb09dc7f"
+      },
+      {
+        "path": "opendata/data/providers/ths/__init__.py",
+        "sha256": "a253585711b8073f145fb7d244c3666c3d1fea9c20cb9cc641300796b7027f74"
+      },
+      {
+        "path": "opendata/data/providers/ths/_source.py",
+        "sha256": "af64d3badb5e5fd9cc453c555105f460348afbf05125b19d3fc84b9532bf3252"
+      },
+      {
+        "path": "opendata/data/providers/ths/models/__init__.py",
+        "sha256": "3089ed0a3e14542beab5244443a93ab4771b56278515bb0882ba0387be41a098"
+      },
+      {
+        "path": "opendata/data/providers/ths/models/_client.py",
+        "sha256": "e8af12a9fb9f7a9b7565c16db3fc3e073785c9d3b1fccc642e3791687442374d"
+      },
+      {
+        "path": "opendata/data/providers/ths/models/financial_statement.py",
+        "sha256": "21f8d6f5c5a3a5ea2c9c937628f4e380c5325b51c025f2efc18c9d3a2ffe08c3"
+      },
+      {
+        "path": "opendata/data/providers/ths/models/fund_action.py",
+        "sha256": "8b1cdc5d8ec1aafd153ad314fa9211edc79536339aac2ec55696cb798fa684a2"
+      },
+      {
+        "path": "opendata/data/providers/ths/models/fund_etf_daily.py",
+        "sha256": "2df7dda399d621534d9e7b27a666449f06d6a8c61e85f9f1683ce26d4604d793"
+      },
+      {
+        "path": "opendata/data/providers/ths/models/futures_daily.py",
+        "sha256": "832a45736d8c5db7492a7ecac4fa1343431f7932361b32e16c53ed0ff098a269"
+      },
+      {
+        "path": "opendata/data/providers/ths/models/index_constituent.py",
+        "sha256": "3da0055b2c74cf245e48d8c86f96275b50e937c70135fd7d884afa2fa479b23b"
+      },
+      {
+        "path": "opendata/data/providers/ths/models/index_daily.py",
+        "sha256": "e803d4b999e8e055df4cdb18b1036576572087395198c332ac4c261d5b5fcc42"
+      },
+      {
+        "path": "opendata/data/providers/ths/models/instrument.py",
+        "sha256": "17335d56cdd05e21c385850a6d287cac74cd9857c97e02a3c889ca5b837b9528"
+      },
+      {
+        "path": "opendata/data/providers/ths/models/option_daily.py",
+        "sha256": "4b06c063c6fdf7543441121d876ce30f2d97447efd15dd3b5adae0093a675e57"
+      },
+      {
+        "path": "opendata/data/providers/ths/models/stock_action.py",
+        "sha256": "d3e3286361a3172b72cbba4e45a5bb18c896a8b45227e492f85d0b0cb0688d19"
+      },
+      {
+        "path": "opendata/data/providers/ths/models/stock_daily.py",
+        "sha256": "22c6704daa467c69fe665ed243cf4f1745f47c320025647edfacf1d35ebc872c"
+      },
+      {
+        "path": "opendata/data/providers/ths/models/trading_calendar.py",
+        "sha256": "43381fa8689925153170fbee0e1f84473a50ba6d4995840518238d7edd589eec"
+      },
+      {
+        "path": "opendata/data/providers/ths/registration.py",
+        "sha256": "74aaef85998e8f887da0176686fba215f2928ff1f001a34dac0676580764a085"
+      },
+      {
+        "path": "opendata/data/providers/yfinance/__init__.py",
+        "sha256": "1bd87b9f86ae35fbb8069065b8c43d5762518ae1e02bcebdfc3c2fabd7ab9cd4"
+      },
+      {
+        "path": "opendata/data/providers/yfinance/_source.py",
+        "sha256": "a9778b5196452e72153065bd42f2ee3d5b516eebc556de02c843a38a7a7c4cb5"
+      },
+      {
+        "path": "opendata/data/providers/yfinance/models/__init__.py",
+        "sha256": "5fd6550bc2e1a76ea9e06373a10608828667fb070517301cd4bdf02f54429bb0"
+      },
+      {
+        "path": "opendata/data/providers/yfinance/models/_sdk.py",
+        "sha256": "9113750191e84717f65c5511df3758c3189f0cdb0af900921fc718b69aebe34c"
+      },
+      {
+        "path": "opendata/data/providers/yfinance/models/stock_daily.py",
+        "sha256": "7090e8dd3b1dfa887e86fc81afe4be95dcb6f08027868c7315782cbd52288424"
+      },
+      {
+        "path": "opendata/data/providers/yfinance/registration.py",
+        "sha256": "456fcc9fbaf1e1c2018772b13c953007cfd343e12baf58108dcac2dcd9059bb0"
+      }
+    ],
+    "local_sorted_manifest_sha256": "3e79bd386471dae63449276388c5cb73768dae422e4b163eab2d0a673917a1ba",
+    "baseline_files_sha256": [
+      {
+        "path": "openbb_platform/providers/ecb/openbb_ecb/__init__.py",
+        "sha256": "e980cbfd316993b99e645dd60d44f2db30fba738e574f57f12efbaca6854e88a"
+      },
+      {
+        "path": "openbb_platform/providers/ecb/openbb_ecb/models/__init__.py",
+        "sha256": "621e2ee97d8edcafe61725f7d6c2fff0c17950bc725f5de839b95bf14a83b161"
+      },
+      {
+        "path": "openbb_platform/providers/ecb/openbb_ecb/models/balance_of_payments.py",
+        "sha256": "a710b68fbed62914e935d4224bceec0f71ae54517c86f19071f38b255d5ff81f"
+      },
+      {
+        "path": "openbb_platform/providers/ecb/openbb_ecb/models/currency_reference_rates.py",
+        "sha256": "83aab1f3c34f1291bd981d9848c78a811580c41ff42ecc428962a7e182735411"
+      },
+      {
+        "path": "openbb_platform/providers/ecb/openbb_ecb/models/yield_curve.py",
+        "sha256": "89db006762bd7fb138dcc0205de4d274224e16ace79708f280f12c9400be4b43"
+      },
+      {
+        "path": "openbb_platform/providers/ecb/openbb_ecb/utils/__init__.py",
+        "sha256": "9f6ac02dad4117c0df1b74c070b022817fecc2c19362097eb5ba83fe197fc4f4"
+      },
+      {
+        "path": "openbb_platform/providers/ecb/openbb_ecb/utils/bps_series.py",
+        "sha256": "374e2df1e5951fbe70cf1cc72c7ed752a57ea305e5fc013fb7b0b99e4363b3a3"
+      },
+      {
+        "path": "openbb_platform/providers/ecb/openbb_ecb/utils/ecb_helpers.py",
+        "sha256": "6d2c8688bf40c0817721bedd8fa661c8839281c46d43ef42e2c082c744d341b2"
+      },
+      {
+        "path": "openbb_platform/providers/ecb/openbb_ecb/utils/yield_curve_series.py",
+        "sha256": "5f54bdcb55867ba2aaed12afd27e2d99b25d21515bce88315abcb0cb938c616b"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/__init__.py",
+        "sha256": "ae3a4afd36eebdf885bcab0d6faa1790baeff9eef799bca24484eb3586a2eb4e"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/ameribor.py",
+        "sha256": "2f95de6202f4cfb57c629ca76c2faa1c863bb22b00061934daf9a6d93246f066"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/balance_of_payments.py",
+        "sha256": "aa78c275b7e0154e5c09a90bc0c9ce42bf0c5c6e153cc6d5ba7db74ca4923e19"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/bond_indices.py",
+        "sha256": "cac9b5a637ba79908d1e18c04fc1ffe2dee5dbe54ca40bf6e9c521ea8b8fe566"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/commercial_paper.py",
+        "sha256": "188e738582e46503df33ebb4dc90ee8f3e128b353b5f502e63e39c31f8033263"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/commodity_spot_prices.py",
+        "sha256": "dbacaba0dac90e512ee32adb870c17c0a497e5837abbe3c30e0fb2c8ec3fb73a"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/consumer_price_index.py",
+        "sha256": "a9e84affbc82e97263e315154b5b44d5128f59a0b073fd34a3e35045d3bc1d1a"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/dwpcr_rates.py",
+        "sha256": "8e919d73be512590d8c6c8d10e0b2d23a9ef4deed62d00b2c30b8fdf5a3e71d0"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/ecb_interest_rates.py",
+        "sha256": "380b46e5b1f0efd777f02d999f3ac9a9556e435bc3d3a98eec2f9b22170fb95e"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/economic_calendar.py",
+        "sha256": "965e3654a49d2fe966535e77531afbced97805fba04c789b20aee5db1d26facc"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/euro_short_term_rate.py",
+        "sha256": "6b4eb6d33c2063f384a3219f5f98aef7ba0aa6eae21ca8b97d4c0c74116a454a"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/fed_projections.py",
+        "sha256": "582b77b2a7895316fc142559e4b799ff5901d33fe7a13198172669f1cc3efeb6"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/federal_funds_rate.py",
+        "sha256": "6749a2ae6ad3b2f827adb3aa69b3827d53aa67daca8e93b332584b9f4c33b4a4"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/ffrmc.py",
+        "sha256": "d20162326de4bfb4257e412468fa7c5418ebe15f799c9e39fd2946c135dca176"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/high_quality_market.py",
+        "sha256": "fcd86b6c4f4892ffff30b4bb221c991779e48652141f0af51cce4048e37642a2"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/iorb_rates.py",
+        "sha256": "13410563c2eaf38fd39bdc45f0c496cb6bc79d24bb3080136f464239b1c94870"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/manufacturing_outlook_ny.py",
+        "sha256": "471523ac30a604ba15834a2d63d0543dd5a97f4e9ff4590a0018c1df94d89d4d"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/manufacturing_outlook_texas.py",
+        "sha256": "abeb6de977d39bc5eafebd9e3299837661e121c73b71049c1cc55c9fe3331024"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/mortgage_indices.py",
+        "sha256": "113b0f28b76977b3f6254105c73a9ef683c449017b0fa0b32486bf88b30d51ac"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/non_farm_payrolls.py",
+        "sha256": "6281155dc2b413055bdd896d3f7aaf067779bcd01520047532a00a2736ee9c94"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/overnight_bank_funding_rate.py",
+        "sha256": "c926307f5133e9574b97d59b271ba0e1c7187597597e0d600c52ca3a26f75f5c"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/personal_consumption_expenditures.py",
+        "sha256": "ca0376f9ec135a2278f94494d8218ce7dfce1565cec525b6e410c6d80cafe7da"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/regional.py",
+        "sha256": "39acdb79a901deddfe2cdbb1780a3937efe700ebc532c6cee29485194048cabb"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/release_table.py",
+        "sha256": "5896661852248d56f07584c14936893ca9f6827e51154efa81d42ecf3447a245"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/retail_prices.py",
+        "sha256": "1f91355b78dfe026df0440ac93581ba8273607ceb027ccfacaafb6d3a46a7377"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/search.py",
+        "sha256": "384c61d22ccd07ca65a93f4e31e5e544640a5f9ebfb788221ee8cf0ed8469b71"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/senior_loan_officer_survey.py",
+        "sha256": "dca03303a7276276c011ec03e91170c91fe95830b0a17e4f1ac6d80b62191d93"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/series.py",
+        "sha256": "e4af7d7e6109b8229f0d1d5bf0bb41f4ff360f265976d6f7a477ddb933074979"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/sofr.py",
+        "sha256": "9872e18d450ce49c067e4ce6ee7ae42350575c9f3fc908c2f19292906942804b"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/sonia_rates.py",
+        "sha256": "cf1fe3173a44837e7fea4ebc6b522daa75d15c4b476154f92fdb5a126717870a"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/spot.py",
+        "sha256": "d4b36c44c50d129351e362741bb95e74aebfbeb62f138758057a4b48aa374f55"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/survey_of_economic_conditions_chicago.py",
+        "sha256": "f17a52e0ce922b70f3daa8f0f79063ec549e6a9b2cf44702dcde688869da70cd"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/tbffr.py",
+        "sha256": "3c9cb53ea1b4c95559879bfb81cd67a659dee6865e771864ed6ed10bd8ae50cd"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/tips_yields.py",
+        "sha256": "a2c293bec9e1311ecd8e1cced9d5e5c59096444f4d7873475c8adb4c7abbceea"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/tmc.py",
+        "sha256": "bab540e42c83af1419f28582ee1826a912b9ba2fae88da6ea7c3bc1b34d5ab14"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/university_of_michigan.py",
+        "sha256": "4c0ce47073ba811803ac64576d0f49cf6334336c831ee2f1a15168465c267ffe"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/models/yield_curve.py",
+        "sha256": "094cfe839c011296dd5131fef675c0e5dbc6c6835152e24466f3b2efd30612a8"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/utils/__init__.py",
+        "sha256": "4e5dd22342aa3a741a0e566528ffdbc0d22beb7d0aba3fcc6db21dbe254141d5"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/utils/fred_base.py",
+        "sha256": "9c98e00aed52dc116b5df148d81f5f1f8eede30542fa59b4dbb6ead81148eae0"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/utils/fred_helpers.py",
+        "sha256": "dadc98be0285a2a23b4fafee7609bcc738ed62e3b169fa4ede87d22d6b9c104e"
+      },
+      {
+        "path": "openbb_platform/providers/fred/openbb_fred/utils/rate_limiter.py",
+        "sha256": "4f195818db3696bd851f538ff3bb6af0a8883fe07bc734b2ccc1383beb52a284"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/__init__.py",
+        "sha256": "5145896209728e63563b79e83ed5214912a6241dd26f512f5e0c184db010a328"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/assets/__init__.py",
+        "sha256": "9f0d973a0783cbc964ef02136e0a30c05e2d77f2b12a7cbdb03d07e148dd7e81"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/imf_router.py",
+        "sha256": "90dba43edf5ae78ab7beaa8410ee69eb9e26afef38eeaad09faf7bff4b0522cb"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/models/__init__.py",
+        "sha256": "06dac50fe85c783ca57f34f24d1365512975c4de5cffd28945a19b9839ab8180"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/models/available_indicators.py",
+        "sha256": "e526951bf0c9046295c855c4145074cdb8d28aebb837e9628a383d129429ede7"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/models/consumer_price_index.py",
+        "sha256": "c13f227f07fd24954048009ab9e716ad66f59638138fc75d42b78e5c12a388f1"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/models/direction_of_trade.py",
+        "sha256": "144bbc862d159f2c135d4a8c6271a2d426b0f02f9e12b2af5731d73fdf8a7d52"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/models/economic_indicators.py",
+        "sha256": "830f637e46129fd07ad60e8c5e1fa13bd77aefcbf99b2afb47e497358a468672"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/models/indicator_metadata.py",
+        "sha256": "cf797ef16444574d6e74fd7b768fab3fd48251bdcacca666fd25953932990206"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/models/maritime_chokepoint_info.py",
+        "sha256": "f14d90ddf91e536a9a52b40ac661d8ca3fd927052b511f4956eb1d83870e864c"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/models/maritime_chokepoint_volume.py",
+        "sha256": "06c35289ad709f26ef5056ab0673ee8f4ea49cd3672a0ab965a9cc516c8161b5"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/models/port_info.py",
+        "sha256": "95d72ca8c517b28cab7d6f276523308a3267561aaf469ef5781037e544d0917f"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/models/port_volume.py",
+        "sha256": "6daaae4d5359c5d6fd9d1def9a80dc732d54e79b6b9244c81e33470dad526ac9"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/utils/__init__.py",
+        "sha256": "a9c80432e3d89bb77443b0d293c34a1cd84f85fb3a9b0a33b07f3eea9405756d"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/utils/constants.py",
+        "sha256": "4bee6e3cedb30f4a9ecdbcaaba823766b0fa13c03025db787dabd92825452a1a"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/utils/dot_helpers.py",
+        "sha256": "d3a9819936e90b19da24637b804f959af4db08aa836fb73f788a08caf44749f3"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/utils/helpers.py",
+        "sha256": "b26bf120057b473cf35d55d20cb05240894f28a7e271c7f4352959b59d07feb3"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/utils/metadata.py",
+        "sha256": "fc61dbc24169d62f73d47bca111179527f5810d2430b0f3334e89319244c424a"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/utils/port_watch_helpers.py",
+        "sha256": "bfc9c343a8151f04da2dac42897b2d35ab7a7945ae8b164c66a97e67a9291310"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/utils/progressive_helper.py",
+        "sha256": "c1407b4663cbcd7f82a75353f8073111feb02dd8541097c47ccfb0c0475c35ed"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+        "sha256": "309fb7a140576e099493256bc14e921d74286bed03069b392ca0aa450b6077b2"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+        "sha256": "abcf82f21be493445b48e99b9b95c2725f1e4baea5be2ac5f3b92119d9ae8138"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/utils/table_presentation.py",
+        "sha256": "7b33891dedd1c742953d1db3482d13fe3d85e98735a1095f095890f0dfa7c7ee"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/views/__init__.py",
+        "sha256": "3a88111d1d2dd6601cdd74f26a02f3ac1c3119984bfbec8d5f2a861956c6dee6"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/views/maritime_chokepoint_info.py",
+        "sha256": "d49872675ca913e194e7aa81bd3a9f30275e43bd5c0546fd7dcfd1b9d4732322"
+      },
+      {
+        "path": "openbb_platform/providers/imf/openbb_imf/views/port_info.py",
+        "sha256": "72d4dc7b8d09cdc1a82ed31cdaa62a467e4b46a2f7d6d9916b951caa4879fb91"
+      },
+      {
+        "path": "openbb_platform/providers/oecd/openbb_oecd/__init__.py",
+        "sha256": "364437b609b4aafabba8252cd0c1fc709bd34c87967f6cc638b308fe1dd1f9f4"
+      },
+      {
+        "path": "openbb_platform/providers/oecd/openbb_oecd/models/composite_leading_indicator.py",
+        "sha256": "1a85398b7fe2f12a6cb879a3cecf68436f760938938c3ca20229901f8c5a20af"
+      },
+      {
+        "path": "openbb_platform/providers/oecd/openbb_oecd/models/consumer_price_index.py",
+        "sha256": "976d9fa0881b659645a55abb0a4f519ef0c2468ee84da95401ba4e01abbc0262"
+      },
+      {
+        "path": "openbb_platform/providers/oecd/openbb_oecd/models/country_interest_rates.py",
+        "sha256": "b90a2f6f4249d62dfe883fb6a02dd92f9c1374639d14478dc2b6aca76493a6d7"
+      },
+      {
+        "path": "openbb_platform/providers/oecd/openbb_oecd/models/gdp_forecast.py",
+        "sha256": "a2a12f7a4fea3b61e0495aeb9af9ebaa743b70eeba7ce364f8e941d6459d2d51"
+      },
+      {
+        "path": "openbb_platform/providers/oecd/openbb_oecd/models/gdp_nominal.py",
+        "sha256": "7902abbbc0fd7acf3279ce379b78337b71357274f143998fa5dbc2caa156142b"
+      },
+      {
+        "path": "openbb_platform/providers/oecd/openbb_oecd/models/gdp_real.py",
+        "sha256": "7aeba1ce94b8708d5da330ad942b082cc29b52fbcc6c88731029d3c14da08a67"
+      },
+      {
+        "path": "openbb_platform/providers/oecd/openbb_oecd/models/house_price_index.py",
+        "sha256": "438d17448b1cb6889edc3cd8d3b798693b41c2e82bfcab95f6aa62f854a4ae6e"
+      },
+      {
+        "path": "openbb_platform/providers/oecd/openbb_oecd/models/share_price_index.py",
+        "sha256": "dd8b626adc0d8c8d4327397e05944270b5189cf61fd6a3532d18156e89adf528"
+      },
+      {
+        "path": "openbb_platform/providers/oecd/openbb_oecd/models/unemployment.py",
+        "sha256": "57c7e5c5a3d472bb6641689cbb4168b1e0142ddcae5a3024c5b055bf5010fca1"
+      },
+      {
+        "path": "openbb_platform/providers/oecd/openbb_oecd/utils/constants.py",
+        "sha256": "07215e9699cb787fd1d84ae624e165ee9a11449fb29b26d1eaaa996cc2a34af6"
+      },
+      {
+        "path": "openbb_platform/providers/oecd/openbb_oecd/utils/helpers.py",
+        "sha256": "2d7dee58690987ce1ec8de9056703279e34469d58f29d1e2929c4f2eba75d58b"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/__init__.py",
+        "sha256": "a7b85014364f1c3cefc0214ec86345693e2fa65cdff714b2c7b7c0f5c043a3b5"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/__init__.py",
+        "sha256": "41f2f38f2854eba556a19b1d9821f985bac1a121c5038f64802a5a85f2a1bee8"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/active.py",
+        "sha256": "6f28bb011fd9d9b347bb58d974de2492cbe86d558383a7099c42491baea1ede6"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/aggressive_small_caps.py",
+        "sha256": "456929252895855ac26b9eb07efe43c88eb8484d8f4ca6758318812e635a42b4"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/available_indices.py",
+        "sha256": "5b2f44488a6a349fbe387bc995582fb169655e3468ac53ebef498c5d54ba5019"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/balance_sheet.py",
+        "sha256": "8724e28edbfd3030df9860f532b526cbee318e0f83e87afeb0d4d9f702e671c6"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/cash_flow.py",
+        "sha256": "5e191461cc7ebf46e996e7270eb7309e56a6649ee113720b3714a1f75b5b6857"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/company_news.py",
+        "sha256": "919d9dadfa5fb12db78c5c1b482f76bd178119cf5ee01ca7833e92f866e149f9"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/crypto_historical.py",
+        "sha256": "eb2bcef45059191c09aa9fb1146c196da6da876024009233d3c9b0d2d515b662"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/currency_historical.py",
+        "sha256": "d7422fca2fcb9edfbdec8996526dac289a22b8e3b8266ef8d4d00b5224b0f16f"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/equity_historical.py",
+        "sha256": "f8cc3030c604bcec1b8d3ee1d3fb7e1d79e472dbcc92c7fda474d60d696cf20a"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/equity_profile.py",
+        "sha256": "9d327c51cae6fa4c75547249f6d9c9e1fbc938c6df4211a05e3ba34df78ebb42"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/equity_quote.py",
+        "sha256": "624f77704f0095a811cdfb3b8a9fb7fcc2fc3c6db4098924acde416915117da3"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/equity_screener.py",
+        "sha256": "2305a39d9725020b5d2c11b29ce89051eb602e0bab37cb287937c9dd49990fc2"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/etf_info.py",
+        "sha256": "4f239af20245a901dd534ee5806f59146e617ab21f35f2cd954d68f94e5335ea"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/futures_curve.py",
+        "sha256": "5c3eefd5820916661a73f9c41aa5bb0db3253f06659698811e5dfc441674e52b"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/futures_historical.py",
+        "sha256": "73631a473df8dcbe9862cbc1385d2f20bc2c86c3757e13af73892e1ee0194df9"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/gainers.py",
+        "sha256": "0d91d1f5e3a4dcf86c7c36be4d80d41082f8317880b5b9fc3731a0c8cdcee94d"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/growth_tech_equities.py",
+        "sha256": "246ceedabbb3f855910fcfcf22ae60e43e22fe5e7541cf6564576484884a048b"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/historical_dividends.py",
+        "sha256": "797bcb0782104789f1cd48f08748e1fdaf29895a3e6deb6a229520faddffd312"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/income_statement.py",
+        "sha256": "96aae61e4f4f41e89af5623d20430f3b8cfdd6a8a63af588effcaef5405ed4b3"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/index_historical.py",
+        "sha256": "f0035977edcd740828f349a03960d0bb95c51fbaf77fb40925ffb1b1146577ff"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/key_executives.py",
+        "sha256": "f7a36565994c0bd7b9dd36e1eb369f6583eac3ba990a74371e8692571c7b0d9d"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/key_metrics.py",
+        "sha256": "481f804c7f2f4042387d9edf2176479ce7a1ce26e982523cbb99a68db964703a"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/losers.py",
+        "sha256": "1ee4c806ab71a2dc1e5769bae349760e9ee337d3b05cd0c293ea7c67f12b9e0d"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/options_chains.py",
+        "sha256": "417e7002307f44244f4fc2965f6654b4a885d21f5354418359c62c6ff2aed993"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/price_target_consensus.py",
+        "sha256": "97b0dfba9d23842af6bc38d277e323ca435d267ee895ac43690683ed47158fa7"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/share_statistics.py",
+        "sha256": "8b91ff47e29cb329f7550b8e3e0706111ea6675507ea247cd5ee1f2b4854b73b"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/undervalued_growth_equities.py",
+        "sha256": "82aaa4755f21badf4728e14ce58e8ce2857e6ad71503821d796d213c95b6734d"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/models/undervalued_large_caps.py",
+        "sha256": "0fbe4b8a182bb70a3ba96f297577371665525f6553d10ec3be64fe18045e1dd1"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/utils/__init__.py",
+        "sha256": "f1e36564ab37568864814b679f6ed101ecb6614ec1fc73d8b1471d07d4745fdd"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/utils/helpers.py",
+        "sha256": "3a882e7884a50336bbb57a00ec8a6b34f8a91b47e57b5c18dbe3786b0113fde3"
+      },
+      {
+        "path": "openbb_platform/providers/yfinance/openbb_yfinance/utils/references.py",
+        "sha256": "59c362114cc9782b4c5ea08236630fdaab757139c4a9fde0ef1e295d75bdb222"
+      }
+    ],
+    "baseline_sorted_manifest_sha256": "7dc81fbaee2939a60406d484a172465ab10bda2971512ec1f1043d547448661a"
+  },
+  "candidates": [],
+  "nearest_pairs": [
+    {
+      "local_path": "opendata/data/providers/ths/models/fund_action.py",
+      "local_function": "ThsFundActionFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        116,
+        138
+      ],
+      "local_ast_node_count": 79,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_presentation.py",
+      "baseline_function": "pivot_table_mode",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "While.body",
+      "baseline_span": [
+        1436,
+        1444
+      ],
+      "baseline_ast_node_count": 86,
+      "ordered_token_ratio": 0.5851,
+      "multiset_dice": 0.7021,
+      "node_count_ratio": 0.9186,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 2
+      },
+      "score": 0.6644,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/index_constituent.py",
+      "local_function": "AkshareIndexConstituentFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "For.body",
+      "local_span": [
+        97,
+        108
+      ],
+      "local_ast_node_count": 96,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder.build_url",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        68,
+        82
+      ],
+      "baseline_ast_node_count": 92,
+      "ordered_token_ratio": 0.553,
+      "multiset_dice": 0.7097,
+      "node_count_ratio": 0.9583,
+      "shared_anchor_counts": {
+        "call_names": 2,
+        "long_string_literals": 0,
+        "operator_kinds": 2
+      },
+      "score": 0.653,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/index_daily.py",
+      "local_function": "AkshareIndexDailyFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        59,
+        80
+      ],
+      "local_ast_node_count": 54,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/models/consumer_price_index.py",
+      "baseline_function": "ImfConsumerPriceIndexFetcher.aextract_data",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "Try.body",
+      "baseline_span": [
+        468,
+        477
+      ],
+      "baseline_ast_node_count": 43,
+      "ordered_token_ratio": 0.5941,
+      "multiset_dice": 0.6139,
+      "node_count_ratio": 0.7963,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.6293,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/trading_calendar.py",
+      "local_function": "ThsTradingCalendarFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        107,
+        125
+      ],
+      "local_ast_node_count": 42,
+      "baseline_path": "openbb_platform/providers/yfinance/openbb_yfinance/models/futures_curve.py",
+      "baseline_function": "YFinanceFuturesCurveFetcher.aextract_data",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        49,
+        60
+      ],
+      "baseline_ast_node_count": 41,
+      "ordered_token_ratio": 0.5376,
+      "multiset_dice": 0.6237,
+      "node_count_ratio": 0.9762,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.6249,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/financial_statement.py",
+      "local_function": "AkshareFinancialStatementFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "For.body",
+      "local_span": [
+        101,
+        118
+      ],
+      "local_ast_node_count": 97,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder.build_url",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        68,
+        82
+      ],
+      "baseline_ast_node_count": 92,
+      "ordered_token_ratio": 0.4906,
+      "multiset_dice": 0.6792,
+      "node_count_ratio": 0.9485,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 2
+      },
+      "score": 0.6064,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/fund_etf_daily.py",
+      "local_function": "AkshareFundEtfDailyFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        63,
+        85
+      ],
+      "local_ast_node_count": 59,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/models/consumer_price_index.py",
+      "baseline_function": "ImfConsumerPriceIndexFetcher.aextract_data",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "Try.body",
+      "baseline_span": [
+        468,
+        477
+      ],
+      "baseline_ast_node_count": 43,
+      "ordered_token_ratio": 0.5714,
+      "multiset_dice": 0.5905,
+      "node_count_ratio": 0.7288,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5998,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/financial_indicator.py",
+      "local_function": "AkshareFinancialIndicatorFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "For.body",
+      "local_span": [
+        113,
+        126
+      ],
+      "local_ast_node_count": 47,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/helpers.py",
+      "baseline_function": "build_codelist_to_hierarchies_map",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        829,
+        834
+      ],
+      "baseline_ast_node_count": 52,
+      "ordered_token_ratio": 0.4854,
+      "multiset_dice": 0.6796,
+      "node_count_ratio": 0.9038,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5967,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/stock_daily.py",
+      "local_function": "ThsStockDailyFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        87,
+        106
+      ],
+      "local_ast_node_count": 46,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/models/personal_consumption_expenditures.py",
+      "baseline_function": "FredPersonalConsumptionExpendituresFetcher.transform_data",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        231,
+        244
+      ],
+      "baseline_ast_node_count": 45,
+      "ordered_token_ratio": 0.5043,
+      "multiset_dice": 0.5739,
+      "node_count_ratio": 0.9783,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5928,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/instrument.py",
+      "local_function": "ThsInstrumentFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "For.body",
+      "local_span": [
+        157,
+        165
+      ],
+      "local_ast_node_count": 47,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+      "baseline_function": "ImfTableBuilder.get_table",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.orelse",
+      "baseline_span": [
+        984,
+        988
+      ],
+      "baseline_ast_node_count": 41,
+      "ordered_token_ratio": 0.5217,
+      "multiset_dice": 0.587,
+      "node_count_ratio": 0.8723,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5906,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/yfinance/models/_sdk.py",
+      "local_function": "require_history_frame",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        29,
+        70
+      ],
+      "local_ast_node_count": 107,
+      "baseline_path": "openbb_platform/providers/oecd/openbb_oecd/models/consumer_price_index.py",
+      "baseline_function": "OECDCPIFetcher.transform_query",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        150,
+        159
+      ],
+      "baseline_ast_node_count": 84,
+      "ordered_token_ratio": 0.5156,
+      "multiset_dice": 0.6489,
+      "node_count_ratio": 0.785,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5893,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/financial_indicator.py",
+      "local_function": "AkshareFinancialIndicatorFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "For.body",
+      "local_span": [
+        108,
+        126
+      ],
+      "local_ast_node_count": 99,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/imf_router.py",
+      "baseline_function": "presentation_table_choices",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        512,
+        518
+      ],
+      "baseline_ast_node_count": 64,
+      "ordered_token_ratio": 0.5475,
+      "multiset_dice": 0.6369,
+      "node_count_ratio": 0.6465,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5847,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/yfinance/models/stock_daily.py",
+      "local_function": "_naive_dates",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        45,
+        56
+      ],
+      "local_ast_node_count": 44,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/utils/rate_limiter.py",
+      "baseline_function": "fred_get",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "With.body",
+      "baseline_span": [
+        244,
+        250
+      ],
+      "baseline_ast_node_count": 42,
+      "ordered_token_ratio": 0.5106,
+      "multiset_dice": 0.5319,
+      "node_count_ratio": 0.9545,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5825,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/financial_statement.py",
+      "local_function": "AkshareFinancialStatementFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "For.body",
+      "local_span": [
+        106,
+        118
+      ],
+      "local_ast_node_count": 52,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_presentation.py",
+      "baseline_function": "pivot_table_mode",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        1888,
+        1893
+      ],
+      "baseline_ast_node_count": 46,
+      "ordered_token_ratio": 0.4762,
+      "multiset_dice": 0.6286,
+      "node_count_ratio": 0.8846,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5755,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/financial_indicator.py",
+      "local_function": "AkshareFinancialIndicatorFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        60,
+        87
+      ],
+      "local_ast_node_count": 59,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/models/consumer_price_index.py",
+      "baseline_function": "ImfConsumerPriceIndexQueryParams.validate_country",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        344,
+        355
+      ],
+      "baseline_ast_node_count": 60,
+      "ordered_token_ratio": 0.4593,
+      "multiset_dice": 0.6074,
+      "node_count_ratio": 0.9833,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5749,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/stock_daily.py",
+      "local_function": "AkshareStockDailyFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        54,
+        77
+      ],
+      "local_ast_node_count": 64,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/models/consumer_price_index.py",
+      "baseline_function": "ImfConsumerPriceIndexFetcher.aextract_data",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "Try.body",
+      "baseline_span": [
+        468,
+        477
+      ],
+      "baseline_ast_node_count": 43,
+      "ordered_token_ratio": 0.5505,
+      "multiset_dice": 0.5688,
+      "node_count_ratio": 0.6719,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5733,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/_client.py",
+      "local_function": "credentials",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        66,
+        83
+      ],
+      "local_ast_node_count": 48,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+      "baseline_function": "ImfTableBuilder.get_table",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        186,
+        192
+      ],
+      "baseline_ast_node_count": 51,
+      "ordered_token_ratio": 0.4912,
+      "multiset_dice": 0.5439,
+      "node_count_ratio": 0.9412,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5719,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/yfinance/models/stock_daily.py",
+      "local_function": "YfinanceStockDailyFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        210,
+        235
+      ],
+      "local_ast_node_count": 70,
+      "baseline_path": "openbb_platform/providers/yfinance/openbb_yfinance/models/futures_historical.py",
+      "baseline_function": "YFinanceFuturesHistoricalFetcher.extract_data",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        125,
+        142
+      ],
+      "baseline_ast_node_count": 55,
+      "ordered_token_ratio": 0.5152,
+      "multiset_dice": 0.5758,
+      "node_count_ratio": 0.7857,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5709,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/financial_statement.py",
+      "local_function": "ThsFinancialStatementFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        137,
+        155
+      ],
+      "local_ast_node_count": 82,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/models/non_farm_payrolls.py",
+      "baseline_function": "FredNonFarmPayrollsFetcher.transform_data",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        364,
+        380
+      ],
+      "baseline_ast_node_count": 75,
+      "ordered_token_ratio": 0.4505,
+      "multiset_dice": 0.6154,
+      "node_count_ratio": 0.9146,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5614,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/registration.py",
+      "local_function": "register",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        70,
+        95
+      ],
+      "local_ast_node_count": 96,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+      "baseline_function": "ImfTableBuilder.get_table",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        1504,
+        1516
+      ],
+      "baseline_ast_node_count": 76,
+      "ordered_token_ratio": 0.4516,
+      "multiset_dice": 0.6774,
+      "node_count_ratio": 0.7917,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5591,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ecb/registration.py",
+      "local_function": "register",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        29,
+        49
+      ],
+      "local_ast_node_count": 96,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+      "baseline_function": "ImfTableBuilder.get_table",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        1504,
+        1516
+      ],
+      "baseline_ast_node_count": 76,
+      "ordered_token_ratio": 0.4516,
+      "multiset_dice": 0.6774,
+      "node_count_ratio": 0.7917,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5591,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/fred/registration.py",
+      "local_function": "register",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        29,
+        49
+      ],
+      "local_ast_node_count": 96,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+      "baseline_function": "ImfTableBuilder.get_table",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        1504,
+        1516
+      ],
+      "baseline_ast_node_count": 76,
+      "ordered_token_ratio": 0.4516,
+      "multiset_dice": 0.6774,
+      "node_count_ratio": 0.7917,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5591,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/imf/registration.py",
+      "local_function": "register",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        29,
+        49
+      ],
+      "local_ast_node_count": 96,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+      "baseline_function": "ImfTableBuilder.get_table",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        1504,
+        1516
+      ],
+      "baseline_ast_node_count": 76,
+      "ordered_token_ratio": 0.4516,
+      "multiset_dice": 0.6774,
+      "node_count_ratio": 0.7917,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5591,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/oecd/registration.py",
+      "local_function": "register",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        27,
+        47
+      ],
+      "local_ast_node_count": 96,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+      "baseline_function": "ImfTableBuilder.get_table",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        1504,
+        1516
+      ],
+      "baseline_ast_node_count": 76,
+      "ordered_token_ratio": 0.4516,
+      "multiset_dice": 0.6774,
+      "node_count_ratio": 0.7917,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5591,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/registration.py",
+      "local_function": "register",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        64,
+        88
+      ],
+      "local_ast_node_count": 96,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+      "baseline_function": "ImfTableBuilder.get_table",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        1504,
+        1516
+      ],
+      "baseline_ast_node_count": 76,
+      "ordered_token_ratio": 0.4516,
+      "multiset_dice": 0.6774,
+      "node_count_ratio": 0.7917,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5591,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/yfinance/registration.py",
+      "local_function": "register",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        23,
+        43
+      ],
+      "local_ast_node_count": 96,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+      "baseline_function": "ImfTableBuilder.get_table",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        1504,
+        1516
+      ],
+      "baseline_ast_node_count": 76,
+      "ordered_token_ratio": 0.4516,
+      "multiset_dice": 0.6774,
+      "node_count_ratio": 0.7917,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5591,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/_normalize.py",
+      "local_function": "em_symbol",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        31,
+        50
+      ],
+      "local_ast_node_count": 51,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder._extract_dataset_attributes",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        1219,
+        1222
+      ],
+      "baseline_ast_node_count": 50,
+      "ordered_token_ratio": 0.4444,
+      "multiset_dice": 0.5812,
+      "node_count_ratio": 0.9804,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.559,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/index_constituent.py",
+      "local_function": "AkshareIndexConstituentFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        83,
+        109
+      ],
+      "local_ast_node_count": 131,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder.build_url",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        68,
+        82
+      ],
+      "baseline_ast_node_count": 92,
+      "ordered_token_ratio": 0.4762,
+      "multiset_dice": 0.6667,
+      "node_count_ratio": 0.7023,
+      "shared_anchor_counts": {
+        "call_names": 2,
+        "long_string_literals": 0,
+        "operator_kinds": 2
+      },
+      "score": 0.5577,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/stock_action.py",
+      "local_function": "ThsStockActionFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        62,
+        81
+      ],
+      "local_ast_node_count": 47,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/models/iorb_rates.py",
+      "baseline_function": "FREDIORBFetcher.extract_data",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        46,
+        54
+      ],
+      "baseline_ast_node_count": 53,
+      "ordered_token_ratio": 0.4554,
+      "multiset_dice": 0.5743,
+      "node_count_ratio": 0.8868,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5499,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/_client.py",
+      "local_function": "_resolve_by_listing",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        149,
+        159
+      ],
+      "local_ast_node_count": 68,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/models/direction_of_trade.py",
+      "baseline_function": "ImfDirectionOfTradeQueryParams._validate_country_fields",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        74,
+        83
+      ],
+      "baseline_ast_node_count": 52,
+      "ordered_token_ratio": 0.4571,
+      "multiset_dice": 0.6429,
+      "node_count_ratio": 0.7647,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5497,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/fred/models/_series.py",
+      "local_function": "FredSeriesFetcher._record",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        98,
+        118
+      ],
+      "local_ast_node_count": 51,
+      "baseline_path": "openbb_platform/providers/yfinance/openbb_yfinance/utils/helpers.py",
+      "baseline_function": "get_futures_curve",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        441,
+        446
+      ],
+      "baseline_ast_node_count": 48,
+      "ordered_token_ratio": 0.4444,
+      "multiset_dice": 0.5641,
+      "node_count_ratio": 0.9412,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5489,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/financial_statement.py",
+      "local_function": "ThsFinancialStatementFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        108,
+        132
+      ],
+      "local_ast_node_count": 57,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/models/dwpcr_rates.py",
+      "baseline_function": "FREDDiscountWindowPrimaryCreditRateFetcher.extract_data",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        67,
+        81
+      ],
+      "baseline_ast_node_count": 58,
+      "ordered_token_ratio": 0.4248,
+      "multiset_dice": 0.5841,
+      "node_count_ratio": 0.9828,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5483,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/instrument.py",
+      "local_function": "ThsInstrumentFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "With.body",
+      "local_span": [
+        156,
+        165
+      ],
+      "local_ast_node_count": 55,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_presentation.py",
+      "baseline_function": "HierarchyContext.find_ancestor_part_prefix",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        962,
+        969
+      ],
+      "baseline_ast_node_count": 45,
+      "ordered_token_ratio": 0.4727,
+      "multiset_dice": 0.5636,
+      "node_count_ratio": 0.8182,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5473,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ecb/models/_series.py",
+      "local_function": "EcbSeriesFetcher._record",
+      "local_function_kind": "function",
+      "local_block_kind": "Try.body",
+      "local_span": [
+        114,
+        119
+      ],
+      "local_ast_node_count": 55,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/models/release_table.py",
+      "baseline_function": "FredReleaseTableFetcher.aextract_data.get_one",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        150,
+        154
+      ],
+      "baseline_ast_node_count": 60,
+      "ordered_token_ratio": 0.4444,
+      "multiset_dice": 0.5714,
+      "node_count_ratio": 0.9167,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.547,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/financial_statement.py",
+      "local_function": "AkshareFinancialStatementFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        81,
+        119
+      ],
+      "local_ast_node_count": 171,
+      "baseline_path": "openbb_platform/providers/oecd/openbb_oecd/utils/helpers.py",
+      "baseline_function": "oecd_xml_to_df",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        72,
+        116
+      ],
+      "baseline_ast_node_count": 140,
+      "ordered_token_ratio": 0.4345,
+      "multiset_dice": 0.6488,
+      "node_count_ratio": 0.8187,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5457,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/yfinance/models/_sdk.py",
+      "local_function": "require_split_history",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        74,
+        103
+      ],
+      "local_ast_node_count": 112,
+      "baseline_path": "openbb_platform/providers/yfinance/openbb_yfinance/utils/helpers.py",
+      "baseline_function": "yf_download",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        564,
+        576
+      ],
+      "baseline_ast_node_count": 117,
+      "ordered_token_ratio": 0.4291,
+      "multiset_dice": 0.5747,
+      "node_count_ratio": 0.9573,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5447,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/index_constituent.py",
+      "local_function": "ThsIndexConstituentFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        109,
+        133
+      ],
+      "local_ast_node_count": 60,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_presentation.py",
+      "baseline_function": "HierarchyContext.find_sibling_common_prefix",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        567,
+        571
+      ],
+      "baseline_ast_node_count": 44,
+      "ordered_token_ratio": 0.4727,
+      "multiset_dice": 0.6,
+      "node_count_ratio": 0.7333,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5436,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/stock_daily.py",
+      "local_function": "AkshareStockDailyFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "For.body",
+      "local_span": [
+        95,
+        110
+      ],
+      "local_ast_node_count": 115,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/models/high_quality_market.py",
+      "baseline_function": "FredHighQualityMarketCorporateBondFetcher.aextract_data",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        104,
+        120
+      ],
+      "baseline_ast_node_count": 111,
+      "ordered_token_ratio": 0.4202,
+      "multiset_dice": 0.5837,
+      "node_count_ratio": 0.9652,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5428,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/stock_action.py",
+      "local_function": "AkshareStockActionFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "If.orelse",
+      "local_span": [
+        140,
+        162
+      ],
+      "local_ast_node_count": 140,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder.build_url.format_date",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        103,
+        129
+      ],
+      "baseline_ast_node_count": 132,
+      "ordered_token_ratio": 0.4207,
+      "multiset_dice": 0.589,
+      "node_count_ratio": 0.9429,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 4
+      },
+      "score": 0.5411,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/oecd/models/cpi.py",
+      "local_function": "OecdCpiFetcher._record",
+      "local_function_kind": "function",
+      "local_block_kind": "Try.body",
+      "local_span": [
+        121,
+        126
+      ],
+      "local_ast_node_count": 49,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/models/release_table.py",
+      "baseline_function": "FredReleaseTableFetcher.aextract_data.get_one",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        150,
+        154
+      ],
+      "baseline_ast_node_count": 60,
+      "ordered_token_ratio": 0.4576,
+      "multiset_dice": 0.5763,
+      "node_count_ratio": 0.8167,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5411,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/oecd/models/unemployment.py",
+      "local_function": "OecdUnemploymentFetcher._record",
+      "local_function_kind": "function",
+      "local_block_kind": "Try.body",
+      "local_span": [
+        128,
+        133
+      ],
+      "local_ast_node_count": 49,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/models/release_table.py",
+      "baseline_function": "FredReleaseTableFetcher.aextract_data.get_one",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        150,
+        154
+      ],
+      "baseline_ast_node_count": 60,
+      "ordered_token_ratio": 0.4576,
+      "multiset_dice": 0.5763,
+      "node_count_ratio": 0.8167,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5411,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/financial_indicator.py",
+      "local_function": "AkshareFinancialIndicatorFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        90,
+        127
+      ],
+      "local_ast_node_count": 176,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/models/regional.py",
+      "baseline_function": "FredRegionalDataFetcher.transform_data",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        263,
+        282
+      ],
+      "baseline_ast_node_count": 177,
+      "ordered_token_ratio": 0.3508,
+      "multiset_dice": 0.7173,
+      "node_count_ratio": 0.9944,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 3
+      },
+      "score": 0.5389,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/bond_daily.py",
+      "local_function": "AkshareBondDailyFetcher.sina_code",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        117,
+        135
+      ],
+      "local_ast_node_count": 56,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_presentation.py",
+      "baseline_function": "HierarchyContext.find_ancestor_part_prefix",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        962,
+        969
+      ],
+      "baseline_ast_node_count": 45,
+      "ordered_token_ratio": 0.4516,
+      "multiset_dice": 0.5806,
+      "node_count_ratio": 0.8036,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5367,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ecb/models/_series.py",
+      "local_function": "EcbSeriesFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        76,
+        97
+      ],
+      "local_ast_node_count": 63,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/models/port_volume.py",
+      "baseline_function": "ImfPortVolumeQueryParams.validate_port_code",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        143,
+        148
+      ],
+      "baseline_ast_node_count": 57,
+      "ordered_token_ratio": 0.438,
+      "multiset_dice": 0.5401,
+      "node_count_ratio": 0.9048,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5335,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/oecd/models/cpi.py",
+      "local_function": "OecdCpiFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        83,
+        104
+      ],
+      "local_ast_node_count": 63,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/models/port_volume.py",
+      "baseline_function": "ImfPortVolumeQueryParams.validate_port_code",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        143,
+        148
+      ],
+      "baseline_ast_node_count": 57,
+      "ordered_token_ratio": 0.438,
+      "multiset_dice": 0.5401,
+      "node_count_ratio": 0.9048,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5335,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/oecd/models/unemployment.py",
+      "local_function": "OecdUnemploymentFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        91,
+        111
+      ],
+      "local_ast_node_count": 63,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/models/port_volume.py",
+      "baseline_function": "ImfPortVolumeQueryParams.validate_port_code",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        143,
+        148
+      ],
+      "baseline_ast_node_count": 57,
+      "ordered_token_ratio": 0.438,
+      "multiset_dice": 0.5401,
+      "node_count_ratio": 0.9048,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5335,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/financial_statement.py",
+      "local_function": "ThsFinancialStatementFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "With.body",
+      "local_span": [
+        124,
+        132
+      ],
+      "local_ast_node_count": 41,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/models/federal_funds_rate.py",
+      "baseline_function": "FredFederalFundsRateFetcher.aextract_data",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "Try.body",
+      "baseline_span": [
+        159,
+        169
+      ],
+      "baseline_ast_node_count": 42,
+      "ordered_token_ratio": 0.3889,
+      "multiset_dice": 0.6111,
+      "node_count_ratio": 0.9762,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5325,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/yfinance/models/stock_daily.py",
+      "local_function": "as_traded_bars",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        134,
+        150
+      ],
+      "local_ast_node_count": 92,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+      "baseline_function": "ImfTableBuilder.get_table",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        465,
+        471
+      ],
+      "baseline_ast_node_count": 75,
+      "ordered_token_ratio": 0.4405,
+      "multiset_dice": 0.5833,
+      "node_count_ratio": 0.8152,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5324,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/instrument.py",
+      "local_function": "ThsInstrumentFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        173,
+        193
+      ],
+      "local_ast_node_count": 85,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/progressive_helper.py",
+      "baseline_function": "ImfParamsBuilder._get_dimensions_in_order",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        42,
+        57
+      ],
+      "baseline_ast_node_count": 88,
+      "ordered_token_ratio": 0.3662,
+      "multiset_dice": 0.6667,
+      "node_count_ratio": 0.9659,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5313,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/_client.py",
+      "local_function": "resolve_code",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        109,
+        136
+      ],
+      "local_ast_node_count": 95,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+      "baseline_function": "ImfTableBuilder.get_table",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        977,
+        996
+      ],
+      "baseline_ast_node_count": 97,
+      "ordered_token_ratio": 0.3796,
+      "multiset_dice": 0.6204,
+      "node_count_ratio": 0.9794,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5298,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/yfinance/models/stock_daily.py",
+      "local_function": "split_events",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        60,
+        95
+      ],
+      "local_ast_node_count": 181,
+      "baseline_path": "openbb_platform/providers/yfinance/openbb_yfinance/utils/helpers.py",
+      "baseline_function": "get_futures_curve",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "If.orelse",
+      "baseline_span": [
+        433,
+        451
+      ],
+      "baseline_ast_node_count": 165,
+      "ordered_token_ratio": 0.3958,
+      "multiset_dice": 0.6198,
+      "node_count_ratio": 0.9116,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5292,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/instrument.py",
+      "local_function": "ThsInstrumentFetcher.transform_query",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        118,
+        137
+      ],
+      "local_ast_node_count": 63,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/metadata.py",
+      "baseline_function": "ImfMetadata.search_indicators",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        367,
+        376
+      ],
+      "baseline_ast_node_count": 61,
+      "ordered_token_ratio": 0.4,
+      "multiset_dice": 0.5733,
+      "node_count_ratio": 0.9683,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5286,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/fred/models/_client.py",
+      "local_function": "require_api_key",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        61,
+        79
+      ],
+      "local_ast_node_count": 62,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_presentation.py",
+      "baseline_function": "HierarchyContext.find_ancestor_part_prefix",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        1007,
+        1015
+      ],
+      "baseline_ast_node_count": 62,
+      "ordered_token_ratio": 0.4082,
+      "multiset_dice": 0.5306,
+      "node_count_ratio": 1.0,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5276,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/fred/models/_series.py",
+      "local_function": "FredSeriesFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        74,
+        94
+      ],
+      "local_ast_node_count": 67,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/models/port_volume.py",
+      "baseline_function": "ImfPortVolumeQueryParams.validate_port_code",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        143,
+        148
+      ],
+      "baseline_ast_node_count": 57,
+      "ordered_token_ratio": 0.4286,
+      "multiset_dice": 0.5714,
+      "node_count_ratio": 0.8507,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5276,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/stock_action.py",
+      "local_function": "_parse_rights_plan",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        262,
+        279
+      ],
+      "local_ast_node_count": 43,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_presentation.py",
+      "baseline_function": "pivot_table_mode._track_skipped_parent_ids",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        1888,
+        1893
+      ],
+      "baseline_ast_node_count": 46,
+      "ordered_token_ratio": 0.4124,
+      "multiset_dice": 0.5567,
+      "node_count_ratio": 0.9348,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5268,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/stock_action.py",
+      "local_function": "AkshareStockActionFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "If.body",
+      "local_span": [
+        118,
+        138
+      ],
+      "local_ast_node_count": 151,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+      "baseline_function": "ImfTableBuilder.get_table",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        1266,
+        1289
+      ],
+      "baseline_ast_node_count": 129,
+      "ordered_token_ratio": 0.3925,
+      "multiset_dice": 0.6293,
+      "node_count_ratio": 0.8543,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 4
+      },
+      "score": 0.521,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/financial_indicator.py",
+      "local_function": "_numeric",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        131,
+        146
+      ],
+      "local_ast_node_count": 56,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/helpers.py",
+      "baseline_function": "parse_codelist_id_from_urn",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        550,
+        567
+      ],
+      "baseline_ast_node_count": 56,
+      "ordered_token_ratio": 0.4031,
+      "multiset_dice": 0.5116,
+      "node_count_ratio": 1.0,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5198,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/financial_statement.py",
+      "local_function": "_numeric",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        123,
+        138
+      ],
+      "local_ast_node_count": 56,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/helpers.py",
+      "baseline_function": "parse_codelist_id_from_urn",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        550,
+        567
+      ],
+      "baseline_ast_node_count": 56,
+      "ordered_token_ratio": 0.4031,
+      "multiset_dice": 0.5116,
+      "node_count_ratio": 1.0,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5198,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/index_constituent.py",
+      "local_function": "_numeric",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        113,
+        128
+      ],
+      "local_ast_node_count": 56,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/helpers.py",
+      "baseline_function": "parse_codelist_id_from_urn",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        550,
+        567
+      ],
+      "baseline_ast_node_count": 56,
+      "ordered_token_ratio": 0.4031,
+      "multiset_dice": 0.5116,
+      "node_count_ratio": 1.0,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5198,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/stock_action.py",
+      "local_function": "_numeric",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        214,
+        229
+      ],
+      "local_ast_node_count": 56,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/helpers.py",
+      "baseline_function": "parse_codelist_id_from_urn",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        550,
+        567
+      ],
+      "baseline_ast_node_count": 56,
+      "ordered_token_ratio": 0.4031,
+      "multiset_dice": 0.5116,
+      "node_count_ratio": 1.0,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5198,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/trading_calendar.py",
+      "local_function": "ThsTradingCalendarFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        130,
+        157
+      ],
+      "local_ast_node_count": 168,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_presentation.py",
+      "baseline_function": "pivot_table_mode",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        1429,
+        1446
+      ],
+      "baseline_ast_node_count": 166,
+      "ordered_token_ratio": 0.3297,
+      "multiset_dice": 0.6919,
+      "node_count_ratio": 0.9881,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 3
+      },
+      "score": 0.519,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/_normalize.py",
+      "local_function": "as_date",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        89,
+        105
+      ],
+      "local_ast_node_count": 64,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder._extract_attribute_value",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        1245,
+        1253
+      ],
+      "baseline_ast_node_count": 64,
+      "ordered_token_ratio": 0.3611,
+      "multiset_dice": 0.5972,
+      "node_count_ratio": 1.0,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 2
+      },
+      "score": 0.516,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ecb/models/_client.py",
+      "local_function": "EcbProviderError.__init__",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        44,
+        57
+      ],
+      "local_ast_node_count": 67,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder.fetch_data",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        621,
+        627
+      ],
+      "baseline_ast_node_count": 66,
+      "ordered_token_ratio": 0.3692,
+      "multiset_dice": 0.5846,
+      "node_count_ratio": 0.9851,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5155,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/fred/models/_client.py",
+      "local_function": "FredProviderError.__init__",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        43,
+        57
+      ],
+      "local_ast_node_count": 67,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder.fetch_data",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        621,
+        627
+      ],
+      "baseline_ast_node_count": 66,
+      "ordered_token_ratio": 0.3692,
+      "multiset_dice": 0.5846,
+      "node_count_ratio": 0.9851,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5155,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/imf/models/_client.py",
+      "local_function": "ImfProviderError.__init__",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        39,
+        52
+      ],
+      "local_ast_node_count": 67,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder.fetch_data",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        621,
+        627
+      ],
+      "baseline_ast_node_count": 66,
+      "ordered_token_ratio": 0.3692,
+      "multiset_dice": 0.5846,
+      "node_count_ratio": 0.9851,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5155,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/oecd/models/_client.py",
+      "local_function": "OecdProviderError.__init__",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        74,
+        88
+      ],
+      "local_ast_node_count": 67,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder.fetch_data",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        621,
+        627
+      ],
+      "baseline_ast_node_count": 66,
+      "ordered_token_ratio": 0.3692,
+      "multiset_dice": 0.5846,
+      "node_count_ratio": 0.9851,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5155,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ecb/models/_client.py",
+      "local_function": "fetch_observations",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        81,
+        115
+      ],
+      "local_ast_node_count": 153,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_presentation.py",
+      "baseline_function": "pivot_indicator_mode",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        1292,
+        1317
+      ],
+      "baseline_ast_node_count": 152,
+      "ordered_token_ratio": 0.3463,
+      "multiset_dice": 0.6328,
+      "node_count_ratio": 0.9935,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 4
+      },
+      "score": 0.515,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/stock_action.py",
+      "local_function": "AkshareStockActionFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        73,
+        91
+      ],
+      "local_ast_node_count": 78,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_presentation.py",
+      "baseline_function": "parse_unit_and_scale",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        138,
+        143
+      ],
+      "baseline_ast_node_count": 62,
+      "ordered_token_ratio": 0.4371,
+      "multiset_dice": 0.5298,
+      "node_count_ratio": 0.7949,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5139,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ecb/models/_series.py",
+      "local_function": "EcbSeriesFetcher._normalize_period",
+      "local_function_kind": "function",
+      "local_block_kind": "If.body",
+      "local_span": [
+        144,
+        147
+      ],
+      "local_ast_node_count": 50,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder._extract_dataset_attributes",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        1219,
+        1222
+      ],
+      "baseline_ast_node_count": 50,
+      "ordered_token_ratio": 0.375,
+      "multiset_dice": 0.5536,
+      "node_count_ratio": 1.0,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5134,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/oecd/models/_client.py",
+      "local_function": "normalize_period",
+      "local_function_kind": "function",
+      "local_block_kind": "If.body",
+      "local_span": [
+        46,
+        49
+      ],
+      "local_ast_node_count": 50,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder._extract_dataset_attributes",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        1219,
+        1222
+      ],
+      "baseline_ast_node_count": 50,
+      "ordered_token_ratio": 0.375,
+      "multiset_dice": 0.5536,
+      "node_count_ratio": 1.0,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5134,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/oecd/models/_client.py",
+      "local_function": "fetch_observations",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        113,
+        149
+      ],
+      "local_ast_node_count": 170,
+      "baseline_path": "openbb_platform/providers/yfinance/openbb_yfinance/models/historical_dividends.py",
+      "baseline_function": "YFinanceHistoricalDividendsFetcher.extract_data",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        47,
+        68
+      ],
+      "baseline_ast_node_count": 190,
+      "ordered_token_ratio": 0.3667,
+      "multiset_dice": 0.6286,
+      "node_count_ratio": 0.8947,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 5
+      },
+      "score": 0.5114,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/imf/models/_indicator.py",
+      "local_function": "ImfIndicatorFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        73,
+        95
+      ],
+      "local_ast_node_count": 131,
+      "baseline_path": "openbb_platform/providers/ecb/openbb_ecb/utils/ecb_helpers.py",
+      "baseline_function": "get_series_data",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        5,
+        40
+      ],
+      "baseline_ast_node_count": 135,
+      "ordered_token_ratio": 0.3922,
+      "multiset_dice": 0.5163,
+      "node_count_ratio": 0.9704,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 2
+      },
+      "score": 0.5099,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/_client.py",
+      "local_function": "client",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        88,
+        105
+      ],
+      "local_ast_node_count": 43,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_presentation.py",
+      "baseline_function": "pivot_table_mode",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        1617,
+        1621
+      ],
+      "baseline_ast_node_count": 45,
+      "ordered_token_ratio": 0.3913,
+      "multiset_dice": 0.5217,
+      "node_count_ratio": 0.9556,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5086,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/bond_daily.py",
+      "local_function": "AkshareBondDailyFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "For.body",
+      "local_span": [
+        96,
+        112
+      ],
+      "local_ast_node_count": 98,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder.build_url",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        68,
+        82
+      ],
+      "baseline_ast_node_count": 92,
+      "ordered_token_ratio": 0.3619,
+      "multiset_dice": 0.6,
+      "node_count_ratio": 0.9388,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.508,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/futures_daily.py",
+      "local_function": "AkshareFuturesDailyFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "For.body",
+      "local_span": [
+        98,
+        114
+      ],
+      "local_ast_node_count": 103,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder.build_url",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        68,
+        82
+      ],
+      "baseline_ast_node_count": 92,
+      "ordered_token_ratio": 0.3611,
+      "multiset_dice": 0.6111,
+      "node_count_ratio": 0.8932,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5034,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/option_daily.py",
+      "local_function": "AkshareOptionDailyFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "For.body",
+      "local_span": [
+        98,
+        114
+      ],
+      "local_ast_node_count": 103,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder.build_url",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        68,
+        82
+      ],
+      "baseline_ast_node_count": 92,
+      "ordered_token_ratio": 0.3611,
+      "multiset_dice": 0.6111,
+      "node_count_ratio": 0.8932,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5034,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/imf/models/_client.py",
+      "local_function": "fetch_indicator",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        69,
+        99
+      ],
+      "local_ast_node_count": 139,
+      "baseline_path": "openbb_platform/providers/ecb/openbb_ecb/models/currency_reference_rates.py",
+      "baseline_function": "ECBCurrencyReferenceRatesFetcher.extract_data",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        43,
+        63
+      ],
+      "baseline_ast_node_count": 130,
+      "ordered_token_ratio": 0.386,
+      "multiset_dice": 0.5263,
+      "node_count_ratio": 0.9353,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.5034,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/index_daily.py",
+      "local_function": "ThsIndexDailyFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        68,
+        89
+      ],
+      "local_ast_node_count": 95,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/metadata.py",
+      "baseline_function": "ImfMetadata._fetch_single_codelist",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        563,
+        577
+      ],
+      "baseline_ast_node_count": 93,
+      "ordered_token_ratio": 0.3805,
+      "multiset_dice": 0.5073,
+      "node_count_ratio": 0.9789,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.502,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/yfinance/models/stock_daily.py",
+      "local_function": "lookahead_factors",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        99,
+        118
+      ],
+      "local_ast_node_count": 124,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_presentation.py",
+      "baseline_function": "extract_unit_scale_from_title",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        332,
+        348
+      ],
+      "baseline_ast_node_count": 136,
+      "ordered_token_ratio": 0.3755,
+      "multiset_dice": 0.556,
+      "node_count_ratio": 0.9118,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 2
+      },
+      "score": 0.501,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/yfinance/models/stock_daily.py",
+      "local_function": "YfinanceStockDailyFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        238,
+        276
+      ],
+      "local_ast_node_count": 127,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/models/consumer_price_index.py",
+      "baseline_function": "FREDConsumerPriceIndexFetcher.transform_data",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        119,
+        145
+      ],
+      "baseline_ast_node_count": 124,
+      "ordered_token_ratio": 0.3401,
+      "multiset_dice": 0.5986,
+      "node_count_ratio": 0.9764,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.5002,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/fred/models/_client.py",
+      "local_function": "fetch_observations",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        103,
+        143
+      ],
+      "local_ast_node_count": 178,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/models/available_indicators.py",
+      "baseline_function": "ImfAvailableIndicatorsFetcher.extract_data",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        130,
+        163
+      ],
+      "baseline_ast_node_count": 151,
+      "ordered_token_ratio": 0.377,
+      "multiset_dice": 0.5792,
+      "node_count_ratio": 0.8483,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.4983,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/bond_daily.py",
+      "local_function": "AkshareBondDailyFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        81,
+        113
+      ],
+      "local_ast_node_count": 171,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/models/regional.py",
+      "baseline_function": "FredRegionalDataFetcher.transform_data",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        263,
+        282
+      ],
+      "baseline_ast_node_count": 177,
+      "ordered_token_ratio": 0.3209,
+      "multiset_dice": 0.6364,
+      "node_count_ratio": 0.9661,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.4965,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ecb/models/_series.py",
+      "local_function": "EcbSeriesFetcher._record",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        101,
+        121
+      ],
+      "local_ast_node_count": 74,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/imf_router.py",
+      "baseline_function": "indicator_choices",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        894,
+        902
+      ],
+      "baseline_ast_node_count": 67,
+      "ordered_token_ratio": 0.3636,
+      "multiset_dice": 0.5697,
+      "node_count_ratio": 0.9054,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.4964,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ecb/models/_client.py",
+      "local_function": "_http_get",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        61,
+        71
+      ],
+      "local_ast_node_count": 60,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/port_watch_helpers.py",
+      "baseline_function": "map_port_country_code",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        41,
+        59
+      ],
+      "baseline_ast_node_count": 57,
+      "ordered_token_ratio": 0.3902,
+      "multiset_dice": 0.4553,
+      "node_count_ratio": 0.95,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.4905,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/fred/models/_client.py",
+      "local_function": "_http_get",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        83,
+        93
+      ],
+      "local_ast_node_count": 60,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/port_watch_helpers.py",
+      "baseline_function": "map_port_country_code",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        41,
+        59
+      ],
+      "baseline_ast_node_count": 57,
+      "ordered_token_ratio": 0.3902,
+      "multiset_dice": 0.4553,
+      "node_count_ratio": 0.95,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.4905,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/oecd/models/_client.py",
+      "local_function": "_http_get",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        92,
+        102
+      ],
+      "local_ast_node_count": 60,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/port_watch_helpers.py",
+      "baseline_function": "map_port_country_code",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        41,
+        59
+      ],
+      "baseline_ast_node_count": 57,
+      "ordered_token_ratio": 0.3902,
+      "multiset_dice": 0.4553,
+      "node_count_ratio": 0.95,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.4905,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/fund_etf_daily.py",
+      "local_function": "AkshareFundEtfDailyFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        88,
+        116
+      ],
+      "local_ast_node_count": 146,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/utils/rate_limiter.py",
+      "baseline_function": "fred_get_many",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        289,
+        315
+      ],
+      "baseline_ast_node_count": 122,
+      "ordered_token_ratio": 0.3841,
+      "multiset_dice": 0.5362,
+      "node_count_ratio": 0.8356,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.4898,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/index_daily.py",
+      "local_function": "AkshareIndexDailyFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        83,
+        111
+      ],
+      "local_ast_node_count": 146,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/utils/rate_limiter.py",
+      "baseline_function": "fred_get_many",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        289,
+        315
+      ],
+      "baseline_ast_node_count": 122,
+      "ordered_token_ratio": 0.3841,
+      "multiset_dice": 0.5362,
+      "node_count_ratio": 0.8356,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.4898,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/oecd/models/cpi.py",
+      "local_function": "OecdCpiFetcher._record",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        108,
+        128
+      ],
+      "local_ast_node_count": 68,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/models/release_table.py",
+      "baseline_function": "FredReleaseTableFetcher.aextract_data",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        150,
+        154
+      ],
+      "baseline_ast_node_count": 60,
+      "ordered_token_ratio": 0.383,
+      "multiset_dice": 0.5106,
+      "node_count_ratio": 0.8824,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.4898,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/oecd/models/unemployment.py",
+      "local_function": "OecdUnemploymentFetcher._record",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        115,
+        135
+      ],
+      "local_ast_node_count": 68,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/models/release_table.py",
+      "baseline_function": "FredReleaseTableFetcher.aextract_data",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        150,
+        154
+      ],
+      "baseline_ast_node_count": 60,
+      "ordered_token_ratio": 0.383,
+      "multiset_dice": 0.5106,
+      "node_count_ratio": 0.8824,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.4898,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/futures_daily.py",
+      "local_function": "ThsFuturesDailyFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        66,
+        92
+      ],
+      "local_ast_node_count": 99,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/metadata.py",
+      "baseline_function": "ImfMetadata._bulk_fetch_and_cache_codelists",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        616,
+        630
+      ],
+      "baseline_ast_node_count": 93,
+      "ordered_token_ratio": 0.3732,
+      "multiset_dice": 0.4976,
+      "node_count_ratio": 0.9394,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.4892,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/option_daily.py",
+      "local_function": "ThsOptionDailyFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        68,
+        94
+      ],
+      "local_ast_node_count": 99,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/metadata.py",
+      "baseline_function": "ImfMetadata._bulk_fetch_and_cache_codelists",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        616,
+        630
+      ],
+      "baseline_ast_node_count": 93,
+      "ordered_token_ratio": 0.3732,
+      "multiset_dice": 0.4976,
+      "node_count_ratio": 0.9394,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.4892,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ecb/models/_series.py",
+      "local_function": "EcbSeriesFetcher._normalize_period",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        125,
+        152
+      ],
+      "local_ast_node_count": 119,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+      "baseline_function": "ImfTableBuilder.get_table.parse_date",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        804,
+        814
+      ],
+      "baseline_ast_node_count": 110,
+      "ordered_token_ratio": 0.3395,
+      "multiset_dice": 0.583,
+      "node_count_ratio": 0.9244,
+      "shared_anchor_counts": {
+        "call_names": 2,
+        "long_string_literals": 0,
+        "operator_kinds": 3
+      },
+      "score": 0.4881,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/oecd/models/_client.py",
+      "local_function": "normalize_period",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        28,
+        54
+      ],
+      "local_ast_node_count": 119,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+      "baseline_function": "ImfTableBuilder.get_table.parse_date",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        804,
+        814
+      ],
+      "baseline_ast_node_count": 110,
+      "ordered_token_ratio": 0.3395,
+      "multiset_dice": 0.583,
+      "node_count_ratio": 0.9244,
+      "shared_anchor_counts": {
+        "call_names": 2,
+        "long_string_literals": 0,
+        "operator_kinds": 3
+      },
+      "score": 0.4881,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/stock_action.py",
+      "local_function": "AkshareStockActionFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        94,
+        164
+      ],
+      "local_ast_node_count": 380,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/helpers.py",
+      "baseline_function": "parse_search_query",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        571,
+        652
+      ],
+      "baseline_ast_node_count": 260,
+      "ordered_token_ratio": 0.3844,
+      "multiset_dice": 0.6128,
+      "node_count_ratio": 0.6842,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 5
+      },
+      "score": 0.4865,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/stock_daily.py",
+      "local_function": "AkshareStockDailyFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        80,
+        111
+      ],
+      "local_ast_node_count": 177,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/models/high_quality_market.py",
+      "baseline_function": "FredHighQualityMarketCorporateBondFetcher.aextract_data",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "AsyncFunctionDef.body",
+      "baseline_span": [
+        101,
+        120
+      ],
+      "baseline_ast_node_count": 125,
+      "ordered_token_ratio": 0.3929,
+      "multiset_dice": 0.5774,
+      "node_count_ratio": 0.7062,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.486,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/instrument.py",
+      "local_function": "ThsInstrumentFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        140,
+        168
+      ],
+      "local_ast_node_count": 95,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/models/consumer_price_index.py",
+      "baseline_function": "ImfConsumerPriceIndexQueryParams.validate_country",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        336,
+        357
+      ],
+      "baseline_ast_node_count": 95,
+      "ordered_token_ratio": 0.3188,
+      "multiset_dice": 0.57,
+      "node_count_ratio": 1.0,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.4838,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/stock_action.py",
+      "local_function": "AkshareStockActionFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "For.body",
+      "local_span": [
+        117,
+        162
+      ],
+      "local_ast_node_count": 301,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder._extract_dataset_attributes",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        1168,
+        1208
+      ],
+      "baseline_ast_node_count": 302,
+      "ordered_token_ratio": 0.299,
+      "multiset_dice": 0.6183,
+      "node_count_ratio": 0.9967,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.4835,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/stock_action.py",
+      "local_function": "_report_drops",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        178,
+        210
+      ],
+      "local_ast_node_count": 73,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+      "baseline_function": "ImfTableBuilder.get_table",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        465,
+        471
+      ],
+      "baseline_ast_node_count": 75,
+      "ordered_token_ratio": 0.3529,
+      "multiset_dice": 0.4837,
+      "node_count_ratio": 0.9733,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.4787,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/trading_calendar.py",
+      "local_function": "_with_neighbours",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        163,
+        187
+      ],
+      "local_ast_node_count": 95,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder.fetch_data",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        796,
+        801
+      ],
+      "baseline_ast_node_count": 63,
+      "ordered_token_ratio": 0.4072,
+      "multiset_dice": 0.5389,
+      "node_count_ratio": 0.6632,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.4785,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/stock_daily.py",
+      "local_function": "ThsStockDailyFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        59,
+        84
+      ],
+      "local_ast_node_count": 101,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/metadata.py",
+      "baseline_function": "ImfMetadata._bulk_fetch_and_cache_codelists",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        616,
+        630
+      ],
+      "baseline_ast_node_count": 93,
+      "ordered_token_ratio": 0.3594,
+      "multiset_dice": 0.4793,
+      "node_count_ratio": 0.9208,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.4736,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/futures_daily.py",
+      "local_function": "AkshareFuturesDailyFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        80,
+        116
+      ],
+      "local_ast_node_count": 156,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/models/direction_of_trade.py",
+      "baseline_function": "ImfDirectionOfTradeQueryParams._validate_country_fields",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        54,
+        85
+      ],
+      "baseline_ast_node_count": 148,
+      "ordered_token_ratio": 0.305,
+      "multiset_dice": 0.5924,
+      "node_count_ratio": 0.9487,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.4734,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/financial_statement.py",
+      "local_function": "ThsFinancialStatementFetcher.transform_query",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        78,
+        103
+      ],
+      "local_ast_node_count": 98,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/helpers.py",
+      "baseline_function": "resolve_country_code",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        40,
+        60
+      ],
+      "baseline_ast_node_count": 80,
+      "ordered_token_ratio": 0.3382,
+      "multiset_dice": 0.5894,
+      "node_count_ratio": 0.8163,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.4727,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/fund_etf_daily.py",
+      "local_function": "AkshareFundEtfDailyFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "For.body",
+      "local_span": [
+        101,
+        115
+      ],
+      "local_ast_node_count": 96,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder.build_url",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        68,
+        82
+      ],
+      "baseline_ast_node_count": 92,
+      "ordered_token_ratio": 0.2967,
+      "multiset_dice": 0.6029,
+      "node_count_ratio": 0.9583,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.4725,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/index_daily.py",
+      "local_function": "AkshareIndexDailyFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "For.body",
+      "local_span": [
+        96,
+        110
+      ],
+      "local_ast_node_count": 96,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder.build_url",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        68,
+        82
+      ],
+      "baseline_ast_node_count": 92,
+      "ordered_token_ratio": 0.2967,
+      "multiset_dice": 0.6029,
+      "node_count_ratio": 0.9583,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.4725,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/ths/models/fund_etf_daily.py",
+      "local_function": "ThsFundEtfDailyFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        113,
+        145
+      ],
+      "local_ast_node_count": 100,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/models/economic_calendar.py",
+      "baseline_function": "FredEconomicCalendarFetcher.aextract_data",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "AsyncFunctionDef.body",
+      "baseline_span": [
+        175,
+        199
+      ],
+      "baseline_ast_node_count": 106,
+      "ordered_token_ratio": 0.3364,
+      "multiset_dice": 0.514,
+      "node_count_ratio": 0.9434,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.4719,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/imf/models/_client.py",
+      "local_function": "_http_get",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        56,
+        65
+      ],
+      "local_ast_node_count": 57,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_presentation.py",
+      "baseline_function": "pivot_table_mode.get_sort_value",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        2266,
+        2275
+      ],
+      "baseline_ast_node_count": 59,
+      "ordered_token_ratio": 0.3206,
+      "multiset_dice": 0.5344,
+      "node_count_ratio": 0.9661,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.4709,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/option_daily.py",
+      "local_function": "AkshareOptionDailyFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        84,
+        115
+      ],
+      "local_ast_node_count": 164,
+      "baseline_path": "openbb_platform/providers/fred/openbb_fred/utils/fred_helpers.py",
+      "baseline_function": "get_spot_series_id",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "function_body",
+      "baseline_span": [
+        356,
+        375
+      ],
+      "baseline_ast_node_count": 148,
+      "ordered_token_ratio": 0.3164,
+      "multiset_dice": 0.5791,
+      "node_count_ratio": 0.9024,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 1
+      },
+      "score": 0.47,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/stock_action.py",
+      "local_function": "_report_drops",
+      "local_function_kind": "function",
+      "local_block_kind": "If.body",
+      "local_span": [
+        200,
+        206
+      ],
+      "local_ast_node_count": 44,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py",
+      "baseline_function": "ImfTableBuilder.get_table",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "If.body",
+      "baseline_span": [
+        186,
+        192
+      ],
+      "baseline_ast_node_count": 51,
+      "ordered_token_ratio": 0.3585,
+      "multiset_dice": 0.4528,
+      "node_count_ratio": 0.8627,
+      "shared_anchor_counts": {
+        "call_names": 1,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.4577,
+      "tier": "nearest_pair"
+    },
+    {
+      "local_path": "opendata/data/providers/imf/models/_indicator.py",
+      "local_function": "ImfIndicatorFetcher._point",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        99,
+        120
+      ],
+      "local_ast_node_count": 46,
+      "baseline_path": "openbb_platform/providers/yfinance/openbb_yfinance/utils/helpers.py",
+      "baseline_function": "get_futures_curve",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        441,
+        446
+      ],
+      "baseline_ast_node_count": 48,
+      "ordered_token_ratio": 0.2963,
+      "multiset_dice": 0.5185,
+      "node_count_ratio": 0.9583,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.4512,
+      "tier": "nearest_pair"
+    }
+  ]
+}

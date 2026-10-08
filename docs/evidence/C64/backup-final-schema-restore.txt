@@ -1,0 +1,535 @@
+# C64 final dual-database backup and restore
+
+Date: 2026-09-30 03:41:58 UTC through 2026-09-30 03:42:07 UTC
+HEAD: d552c08
+Working tree was dirty before this run; this run staged or committed nothing.
+
+## Git status before this run
+
+ M .env.example
+ M QUICKSTART.md
+ A alembic/versions/2026_09_30-0004_minute_archive.py
+ A alembic/versions/2026_09_30-0005_pipeline_tasks.py
+ A alembic/versions/2026_09_30-0006_pipeline_steps.py
+ A alembic_data/versions/20260930-0006_dwd_daily_legs.py
+ M docker-compose.yml
+ M docs/evidence/C16/probe-param-audit.py
+ M docs/evidence/C19/criterion-teeth.py
+ M docs/evidence/C25/field-canary-measure.py
+ M docs/evidence/C26/fixture-live-cells.py
+ M docs/evidence/C26/silent-drop-measure.py
+ M docs/evidence/C27/judge-falsification.py
+ M docs/evidence/C37/cross_env_port_replay.py
+ M docs/evidence/C54/caliber_pivot_face.py
+ A docs/evidence/C64/README.md
+ A docs/evidence/C64/acceptance-decisions.md
+ A docs/evidence/C64/alias-query-independent.txt
+ A docs/evidence/C64/backup-restore.txt
+ A docs/evidence/C64/baseline-tests.txt
+ A docs/evidence/C64/cache-independent-tests.txt
+ A docs/evidence/C64/cache-key-probes.json
+ A docs/evidence/C64/cache-key-probes.txt
+ A docs/evidence/C64/consumer-key-independent.txt
+ A docs/evidence/C64/dwd-mysql-scenarios.txt
+ A docs/evidence/C64/final-40-probes.json
+ A docs/evidence/C64/final-40-probes.txt
+ A docs/evidence/C64/final-isolated-mysql-resume-client.txt
+ A docs/evidence/C64/final-live-gaps.json
+ A docs/evidence/C64/final-live-gaps.txt
+ A docs/evidence/C64/frontend-checks.txt
+ A docs/evidence/C64/frontend-final-browser.txt
+ A docs/evidence/C64/frontend-real-stack.png
+ A docs/evidence/C64/frontend-real-stack.txt
+ A docs/evidence/C64/gate-run1-failed-loguru.txt
+ A docs/evidence/C64/http-independent-tests.txt
+ A docs/evidence/C64/integration-independent.txt
+ A docs/evidence/C64/isolated-mysql-tests.txt
+ A docs/evidence/C64/main-migration-0005.txt
+ A docs/evidence/C64/main-migration-0006.txt
+ A docs/evidence/C64/minute-migration.txt
+ A docs/evidence/C64/minute-mysql-api.txt
+ A docs/evidence/C64/new-item-probes.json
+ A docs/evidence/C64/new-item-probes.txt
+ A docs/evidence/C64/ops-independent-tests.txt
+ A docs/evidence/C64/pipeline-ops-independent-final.txt
+ A docs/evidence/C64/pipeline-tasks-independent-run2.txt
+ A docs/evidence/C64/quality-a2-first-failure.txt
+ A docs/evidence/C64/quality-a2-repaired.txt
+ A docs/evidence/C64/remaining-items-audit.md
+ A docs/evidence/C64/reproduce-local-acceptance.md
+ A docs/evidence/C64/selected-probes.json
+ A docs/evidence/C64/selected-probes.txt
+ A docs/evidence/C64/startup-login-health.txt
+ A docs/evidence/C64/warehouse-gb-query.txt
+ A docs/evidence/C64/warehouse-readonly-inventory.txt
+ M docs/operations-backup-restore.md
+ A docs/operations-consumer-api-keys.md
+ A docs/operations-data-query.md
+ A docs/operations-dwd-backfill.md
+ A docs/operations-http-governance.md
+ A docs/operations-minute-archive.md
+ A docs/operations-pipeline-resume.md
+ A docs/operations-pipeline-tasks.md
+ A docs/operations-provider-patrol.md
+ A docs/operations-raw-response-cache.md
+ M docs/quality/acceptance-item-ledger.json
+ M docs/quality/acceptance-probe-faces.json
+ M docs/quality/ratchet.json
+ M docs/quality/zero-dep-baseline.json
+ M "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2431-\351\207\215\346\236\204\346\225\260\346\215\256\344\270\255\345\217\260/\351\252\214\346\224\266\346\226\207\346\241\243.md"
+ M "docs/\351\205\215\347\275\256\351\241\271\346\270\205\345\215\225.md"
+ M examples/consumer_handoff.py
+ M frontend/e2e/fixtures.ts
+ M frontend/e2e/scripts.spec.ts
+ M frontend/e2e/tasks.spec.ts
+ M frontend/src/__tests__/api/envelope.test.ts
+ M frontend/src/__tests__/catalog.test.ts
+ A frontend/src/__tests__/layout-navigation.test.ts
+ M frontend/src/__tests__/router/index.test.ts
+ M frontend/src/__tests__/stores/tasks.test.ts
+ M frontend/src/__tests__/types/index.test.ts
+ M frontend/src/api/catalog.ts
+ M frontend/src/router/index.ts
+ M frontend/src/types/index.ts
+ M frontend/src/views/DataCatalogView.vue
+ M frontend/src/views/ExecutionsView.vue
+ M frontend/src/views/LayoutView.vue
+ M frontend/src/views/ScriptsView.vue
+ M frontend/src/views/TasksView.vue
+ M opendata/api/__init__.py
+ M opendata/api/auth.py
+ M opendata/api/data_query.py
+ M opendata/api/dependencies.py
+ A opendata/api/minute_data.py
+ M opendata/api/pipeline.py
+ M opendata/api/rate_limit.py
+ M opendata/api/schemas.py
+ M opendata/api/tasks.py
+ A opendata/core/api_key_rate_limit.py
+ M opendata/core/config.py
+ M opendata/data/domains.py
+ M opendata/data/domains.yaml
+ M opendata/data/http_client.py
+ M opendata/data/mapping.py
+ A opendata/data/minute_archive.py
+ M opendata/data/models/base.py
+ M opendata/data/providers/akshare/models/_normalize.py
+ M opendata/data/providers/akshare/models/bond_daily.py
+ M opendata/data/providers/akshare/models/financial_indicator.py
+ M opendata/data/providers/akshare/models/financial_statement.py
+ M opendata/data/providers/akshare/models/fund_etf_daily.py
+ M opendata/data/providers/akshare/models/futures_daily.py
+ M opendata/data/providers/akshare/models/index_constituent.py
+ M opendata/data/providers/akshare/models/index_daily.py
+ M opendata/data/providers/akshare/models/option_daily.py
+ M opendata/data/providers/akshare/models/stock_action.py
+ M opendata/data/providers/akshare/models/stock_daily.py
+ M opendata/data/providers/ecb/models/_client.py
+ M opendata/data/providers/fred/models/_client.py
+ M opendata/data/providers/imf/models/_client.py
+ M opendata/data/providers/oecd/models/_client.py
+ M opendata/data/providers/yfinance/models/_sdk.py
+ M opendata/data/providers/yfinance/models/stock_daily.py
+ A opendata/data/raw_response_cache.py
+ M opendata/data/registry.py
+ M opendata/models/__init__.py
+ A opendata/models/minute_archive.py
+ A opendata/models/pipeline_step.py
+ M opendata/models/task.py
+ M opendata/pipeline/cross_check_service.py
+ M opendata/pipeline/dump_import.py
+ A opendata/pipeline/dwd_backfill.py
+ M opendata/pipeline/dwd_merge.py
+ M opendata/pipeline/jobs.py
+ M opendata/pipeline/key_health.py
+ A opendata/pipeline/key_health_notifications.py
+ A opendata/pipeline/maintenance.py
+ A opendata/pipeline/metadata_refresh.py
+ A opendata/pipeline/ods_watermark.py
+ M opendata/pipeline/patrol.py
+ M opendata/pipeline/query.py
+ M opendata/pipeline/retention.py
+ M opendata/pipeline/runner.py
+ A opendata/pipeline/scheduled_patrol.py
+ M opendata/pipeline/schedules.yaml
+ M opendata/pipeline/templates.py
+ M opendata/services/data_acquisition.py
+ M opendata/services/execution_service.py
+ M opendata/services/retry_service.py
+ M opendata/services/scheduler.py
+ M opendata_fuyao/http_client.py
+ M opendata_fuyao/rate_limiter.py
+ M scripts/codemod/compare_with_upstream.py
+ M scripts/codemod/qfq_chain_checks.py
+ A scripts/ops/Dockerfile.backup
+ A scripts/ops/backfill_dwd.py
+ M scripts/ops/backup_mysql.sh
+ A scripts/ops/backup_runner.sh
+ A scripts/ops/import_minute_archive.py
+ M scripts/ops/metadata_backbone_landing.py
+ M scripts/ops/ths_financial_statement_cross_check.py
+ M scripts/ops/ths_fund_action_cross_check.py
+ M scripts/ops/ths_fund_etf_cross_check.py
+ M scripts/ops/ths_futures_option_cross_check.py
+ M scripts/ops/ths_index_constituent_cross_check.py
+ M scripts/ops/ths_index_cross_check.py
+ M scripts/ops/ths_instrument_cross_check.py
+ M scripts/ops/ths_trading_calendar_cross_check.py
+ M scripts/ops/yfinance_overseas_cross_check.py
+ M scripts/quality/acceptance_item_probe.py
+ M scripts/quality/loguru_render_check.py
+ A tests/test_acceptance_item_probe.py
+ A tests/test_api_key_rate_limit.py
+ M tests/test_api_keys.py
+ A tests/test_api_rate_limit.py
+ A tests/test_backup_mysql.py
+ A tests/test_compose_operational_config.py
+ M tests/test_cross_check_service.py
+ M tests/test_data_catalog.py
+ M tests/test_data_mapping.py
+ A tests/test_data_path_aliases.py
+ M tests/test_data_query_api.py
+ M tests/test_data_query_http_warehouse.py
+ M tests/test_domains.py
+ A tests/test_dwd_backfill.py
+ M tests/test_dwd_merge.py
+ M tests/test_fuyao_transport.py
+ M tests/test_http_client.py
+ A tests/test_iteration01_integration_contracts.py
+ M tests/test_key_health.py
+ A tests/test_key_health_notifications.py
+ M tests/test_loguru_render_check.py
+ A tests/test_macro_http_governance.py
+ A tests/test_minute_archive.py
+ A tests/test_minute_data_api.py
+ A tests/test_ods_watermark.py
+ M tests/test_partition_maintenance.py
+ M tests/test_patrol.py
+ M tests/test_pipeline_jobs.py
+ A tests/test_pipeline_metadata.py
+ M tests/test_pipeline_runner.py
+ M tests/test_pipeline_templates.py
+ M tests/test_provider_registry.py
+ A tests/test_raw_response_cache.py
+ M tests/test_retention.py
+ A tests/test_retention_maintenance.py
+ M tests/test_retry_service_coverage.py
+ A tests/test_scheduled_patrol.py
+ A tests/test_scheduled_pipeline_tasks.py
+ M tests/test_ths_provider.py
+
+## Diff stat before this run
+
+ .env.example                                       |   35 +-
+ QUICKSTART.md                                      |  358 +-
+ alembic/versions/2026_09_30-0004_minute_archive.py |   68 +
+ alembic/versions/2026_09_30-0005_pipeline_tasks.py |   65 +
+ alembic/versions/2026_09_30-0006_pipeline_steps.py |   70 +
+ .../versions/20260930-0006_dwd_daily_legs.py       |   40 +
+ docker-compose.yml                                 |   53 +-
+ docs/evidence/C16/probe-param-audit.py             |   10 +-
+ docs/evidence/C19/criterion-teeth.py               |    6 +-
+ docs/evidence/C25/field-canary-measure.py          |    6 +-
+ docs/evidence/C26/fixture-live-cells.py            |    7 +-
+ docs/evidence/C26/silent-drop-measure.py           |    5 +-
+ docs/evidence/C27/judge-falsification.py           |   20 +-
+ docs/evidence/C37/cross_env_port_replay.py         |    8 +-
+ docs/evidence/C54/caliber_pivot_face.py            |   22 +-
+ docs/evidence/C64/README.md                        |   60 +
+ docs/evidence/C64/acceptance-decisions.md          |   32 +
+ docs/evidence/C64/alias-query-independent.txt      |   23 +
+ docs/evidence/C64/backup-restore.txt               |   18 +
+ docs/evidence/C64/baseline-tests.txt               | 6941 ++++++++++++++++++++
+ docs/evidence/C64/cache-independent-tests.txt      |   20 +
+ docs/evidence/C64/cache-key-probes.json            |   63 +
+ docs/evidence/C64/cache-key-probes.txt             |   32 +
+ docs/evidence/C64/consumer-key-independent.txt     |   21 +
+ docs/evidence/C64/dwd-mysql-scenarios.txt          |   13 +
+ docs/evidence/C64/final-40-probes.json             |  857 +++
+ docs/evidence/C64/final-40-probes.txt              |  331 +
+ .../C64/final-isolated-mysql-resume-client.txt     |   21 +
+ docs/evidence/C64/final-live-gaps.json             |   78 +
+ docs/evidence/C64/final-live-gaps.txt              |   36 +
+ docs/evidence/C64/frontend-checks.txt              |  151 +
+ docs/evidence/C64/frontend-final-browser.txt       |   40 +
+ docs/evidence/C64/frontend-real-stack.png          |  Bin 0 -> 125093 bytes
+ docs/evidence/C64/frontend-real-stack.txt          |    9 +
+ docs/evidence/C64/gate-run1-failed-loguru.txt      |   98 +
+ docs/evidence/C64/http-independent-tests.txt       |  270 +
+ docs/evidence/C64/integration-independent.txt      |   19 +
+ docs/evidence/C64/isolated-mysql-tests.txt         |   36 +
+ docs/evidence/C64/main-migration-0005.txt          |    9 +
+ docs/evidence/C64/main-migration-0006.txt          |    9 +
+ docs/evidence/C64/minute-migration.txt             |   15 +
+ docs/evidence/C64/minute-mysql-api.txt             |   11 +
+ docs/evidence/C64/new-item-probes.json             |  121 +
+ docs/evidence/C64/new-item-probes.txt              |   74 +
+ docs/evidence/C64/ops-independent-tests.txt        |  228 +
+ .../C64/pipeline-ops-independent-final.txt         |   34 +
+ .../C64/pipeline-tasks-independent-run2.txt        |   25 +
+ docs/evidence/C64/quality-a2-first-failure.txt     |  537 ++
+ docs/evidence/C64/quality-a2-repaired.txt          |  450 ++
+ docs/evidence/C64/remaining-items-audit.md         |  257 +
+ docs/evidence/C64/reproduce-local-acceptance.md    |   56 +
+ docs/evidence/C64/selected-probes.json             |  121 +
+ docs/evidence/C64/selected-probes.txt              |   55 +
+ docs/evidence/C64/startup-login-health.txt         |   47 +
+ docs/evidence/C64/warehouse-gb-query.txt           |   11 +
+ docs/evidence/C64/warehouse-readonly-inventory.txt |   19 +
+ docs/operations-backup-restore.md                  |   87 +-
+ docs/operations-consumer-api-keys.md               |   19 +
+ docs/operations-data-query.md                      |   65 +
+ docs/operations-dwd-backfill.md                    |   47 +
+ docs/operations-http-governance.md                 |   60 +
+ docs/operations-minute-archive.md                  |   94 +
+ docs/operations-pipeline-resume.md                 |   66 +
+ docs/operations-pipeline-tasks.md                  |   88 +
+ docs/operations-provider-patrol.md                 |   39 +
+ docs/operations-raw-response-cache.md              |   31 +
+ docs/quality/acceptance-item-ledger.json           |  794 ++-
+ docs/quality/acceptance-probe-faces.json           |  138 +
+ docs/quality/ratchet.json                          |   12 +-
+ docs/quality/zero-dep-baseline.json                |    6 +-
+ ...252\214\346\224\266\346\226\207\346\241\243.md" |  145 +-
+ ...275\256\351\241\271\346\270\205\345\215\225.md" |   33 +-
+ examples/consumer_handoff.py                       |    4 +-
+ frontend/e2e/fixtures.ts                           |  128 +-
+ frontend/e2e/scripts.spec.ts                       |  222 +-
+ frontend/e2e/tasks.spec.ts                         |   40 +-
+ frontend/src/__tests__/api/envelope.test.ts        |   27 +
+ frontend/src/__tests__/catalog.test.ts             |  184 +-
+ frontend/src/__tests__/layout-navigation.test.ts   |   63 +
+ frontend/src/__tests__/router/index.test.ts        |   33 +-
+ frontend/src/__tests__/stores/tasks.test.ts        |    1 +
+ frontend/src/__tests__/types/index.test.ts         |   26 +
+ frontend/src/api/catalog.ts                        |   39 +-
+ frontend/src/router/index.ts                       |    8 +-
+ frontend/src/types/index.ts                        |    7 +-
+ frontend/src/views/DataCatalogView.vue             |  390 +-
+ frontend/src/views/ExecutionsView.vue              |  153 +-
+ frontend/src/views/LayoutView.vue                  |   24 +-
+ frontend/src/views/ScriptsView.vue                 |   64 +-
+ frontend/src/views/TasksView.vue                   |   92 +-
+ opendata/api/__init__.py                           |    2 +
+ opendata/api/auth.py                               |   71 +-
+ opendata/api/data_query.py                         |  447 +-
+ opendata/api/dependencies.py                       |   17 +
+ opendata/api/minute_data.py                        |  102 +
+ opendata/api/pipeline.py                           |    3 +
+ opendata/api/rate_limit.py                         |   75 +-
+ opendata/api/schemas.py                            |  111 +-
+ opendata/api/tasks.py                              |  122 +-
+ opendata/core/api_key_rate_limit.py                |  310 +
+ opendata/core/config.py                            |   80 +-
+ opendata/data/domains.py                           |    5 +-
+ opendata/data/domains.yaml                         |    8 +
+ opendata/data/http_client.py                       |  477 +-
+ opendata/data/mapping.py                           |   25 +-
+ opendata/data/minute_archive.py                    |  989 +++
+ opendata/data/models/base.py                       |   10 +-
+ .../data/providers/akshare/models/_normalize.py    |    6 +-
+ .../data/providers/akshare/models/bond_daily.py    |    7 +-
+ .../akshare/models/financial_indicator.py          |    7 +-
+ .../akshare/models/financial_statement.py          |    9 +-
+ .../providers/akshare/models/fund_etf_daily.py     |   19 +-
+ .../data/providers/akshare/models/futures_daily.py |    7 +-
+ .../providers/akshare/models/index_constituent.py  |    7 +-
+ .../data/providers/akshare/models/index_daily.py   |   17 +-
+ .../data/providers/akshare/models/option_daily.py  |    7 +-
+ .../data/providers/akshare/models/stock_action.py  |    4 +-
+ .../data/providers/akshare/models/stock_daily.py   |   21 +-
+ opendata/data/providers/ecb/models/_client.py      |   14 +-
+ opendata/data/providers/fred/models/_client.py     |   14 +-
+ opendata/data/providers/imf/models/_client.py      |   13 +-
+ opendata/data/providers/oecd/models/_client.py     |   14 +-
+ opendata/data/providers/yfinance/models/_sdk.py    |    7 +-
+ .../data/providers/yfinance/models/stock_daily.py  |   22 +-
+ opendata/data/raw_response_cache.py                |  534 ++
+ opendata/data/registry.py                          |   51 +-
+ opendata/models/__init__.py                        |   20 +-
+ opendata/models/minute_archive.py                  |   64 +
+ opendata/models/pipeline_step.py                   |   64 +
+ opendata/models/task.py                            |   23 +-
+ opendata/pipeline/cross_check_service.py           |   59 +-
+ opendata/pipeline/dump_import.py                   |   68 +-
+ opendata/pipeline/dwd_backfill.py                  |  564 ++
+ opendata/pipeline/dwd_merge.py                     |   54 +-
+ opendata/pipeline/jobs.py                          |   91 +-
+ opendata/pipeline/key_health.py                    |  139 +-
+ opendata/pipeline/key_health_notifications.py      |  470 ++
+ opendata/pipeline/maintenance.py                   |  187 +
+ opendata/pipeline/metadata_refresh.py              |  152 +
+ opendata/pipeline/ods_watermark.py                 |  184 +
+ opendata/pipeline/patrol.py                        |  107 +-
+ opendata/pipeline/query.py                         |   69 +-
+ opendata/pipeline/retention.py                     |   95 +-
+ opendata/pipeline/runner.py                        |  380 +-
+ opendata/pipeline/scheduled_patrol.py              |  779 +++
+ opendata/pipeline/schedules.yaml                   |   16 +
+ opendata/pipeline/templates.py                     |  211 +-
+ opendata/services/data_acquisition.py              |    4 +-
+ opendata/services/execution_service.py             |    2 +-
+ opendata/services/retry_service.py                 |    9 +-
+ opendata/services/scheduler.py                     |  151 +-
+ opendata_fuyao/http_client.py                      |  299 +-
+ opendata_fuyao/rate_limiter.py                     |   67 +-
+ scripts/codemod/compare_with_upstream.py           |    7 +-
+ scripts/codemod/qfq_chain_checks.py                |    4 +-
+ scripts/ops/Dockerfile.backup                      |    8 +
+ scripts/ops/backfill_dwd.py                        |   88 +
+ scripts/ops/backup_mysql.sh                        |  264 +-
+ scripts/ops/backup_runner.sh                       |   17 +
+ scripts/ops/import_minute_archive.py               |  160 +
+ scripts/ops/metadata_backbone_landing.py           |   11 +-
+ scripts/ops/ths_financial_statement_cross_check.py |   39 +-
+ scripts/ops/ths_fund_action_cross_check.py         |    5 +-
+ scripts/ops/ths_fund_etf_cross_check.py            |   14 +-
+ scripts/ops/ths_futures_option_cross_check.py      |   28 +-
+ scripts/ops/ths_index_constituent_cross_check.py   |    8 +-
+ scripts/ops/ths_index_cross_check.py               |   19 +-
+ scripts/ops/ths_instrument_cross_check.py          |    5 +-
+ scripts/ops/ths_trading_calendar_cross_check.py    |    4 +-
+ scripts/ops/yfinance_overseas_cross_check.py       |   30 +-
+ scripts/quality/acceptance_item_probe.py           | 2213 ++++++-
+ scripts/quality/loguru_render_check.py             |    7 +-
+ tests/test_acceptance_item_probe.py                |  193 +
+ tests/test_api_key_rate_limit.py                   |  378 ++
+ tests/test_api_keys.py                             |   62 +-
+ tests/test_api_rate_limit.py                       |  140 +
+ tests/test_backup_mysql.py                         |  312 +
+ tests/test_compose_operational_config.py           |   21 +
+ tests/test_cross_check_service.py                  |   33 +
+ tests/test_data_catalog.py                         |   65 +
+ tests/test_data_mapping.py                         |   26 +
+ tests/test_data_path_aliases.py                    |  325 +
+ tests/test_data_query_api.py                       |   41 +
+ tests/test_data_query_http_warehouse.py            |  452 +-
+ tests/test_domains.py                              |   35 +-
+ tests/test_dwd_backfill.py                         |  444 ++
+ tests/test_dwd_merge.py                            |   46 +-
+ tests/test_fuyao_transport.py                      |  203 +-
+ tests/test_http_client.py                          |  220 +
+ tests/test_iteration01_integration_contracts.py    |  788 +++
+ tests/test_key_health.py                           |   49 +
+ tests/test_key_health_notifications.py             |  391 ++
+ tests/test_loguru_render_check.py                  |   77 +
+ tests/test_macro_http_governance.py                |  138 +
+ tests/test_minute_archive.py                       |  719 ++
+ tests/test_minute_data_api.py                      |  220 +
+ tests/test_ods_watermark.py                        |  135 +
+ tests/test_partition_maintenance.py                |   23 +-
+ tests/test_patrol.py                               |   75 +-
+ tests/test_pipeline_jobs.py                        |  298 +-
+ tests/test_pipeline_metadata.py                    |  141 +
+ tests/test_pipeline_runner.py                      |  298 +-
+ tests/test_pipeline_templates.py                   |   74 +
+ tests/test_provider_registry.py                    |   84 +
+ tests/test_raw_response_cache.py                   |  783 +++
+ tests/test_retention.py                            |   95 +-
+ tests/test_retention_maintenance.py                |  225 +
+ tests/test_retry_service_coverage.py               |   12 +
+ tests/test_scheduled_patrol.py                     |  598 ++
+ tests/test_scheduled_pipeline_tasks.py             |  391 ++
+ tests/test_ths_provider.py                         |   26 +-
+ 211 files changed, 33152 insertions(+), 1627 deletions(-)
+
+## Scope and command summary
+
+Docker config: /tmp/opendata-iteration01-docker
+Target: container opendata-iteration01-acceptance; verified host mapping 127.0.0.1:33564
+Source databases: opendata_iter01 (14 tables) and opendata_iter01_data (18 tables); main Alembic version 0006
+Temporary restore schemas: opendata_iter01_c64_final_restore and opendata_iter01_data_c64_final_restore (both dropped after comparison)
+Repository script: scripts/ops/backup_mysql.sh; BACKUP_ENV_FILE explicitly referenced a mode-600 temporary dotenv; private temporary BACKUP_DIR; both client hosts and ports explicitly set to 127.0.0.1:33564.
+Independent random metadata and warehouse backup accounts used distinct credentials. Credentials are omitted.
+Each account had SELECT, SHOW VIEW, TRIGGER on its own database and PROCESS, SHOW_ROUTINE for MySQL 8 mysqldump requirements. Both accounts were dropped before restore.
+Restored through the target container's MySQL socket; ran exact COUNT(*) per base table; compared normalized SHOW CREATE TABLE for both 0006 tables; removed restore schemas and temporary files/users.
+No provider was contacted, no 3306 endpoint was used, and source schemas remained count-identical before/after backup.
+MySQL client: mysqldump  Ver 10.13 Distrib 5.7.24, for osx11.1 (x86_64)
+
+## Exit results
+
+target port verification: 0
+temporary account provisioning: 0
+repository backup script: 0
+metadata gzip -t: 0
+warehouse gzip -t: 0
+source per-table count stability: 0
+temporary resources cleanup: 0
+backup users dropped: 0
+restore schemas created: 0
+metadata restore: 0
+warehouse restore: 0
+metadata per-table count comparison: 0
+warehouse per-table count comparison: 0
+0006 DDL structure comparisons: 0
+temporary resources cleanup verification: 0
+mysqldump version: 0
+Overall run: 0
+
+## Backup script output
+
+opendata backup started at 20260930T034200Z_87510
+==> dumping metadata database to /var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/opendata-c64-backup-final-lhl3r9g3/dumps/metadata_20260930T034200Z_87510.sql.gz
+==> dumping warehouse database to /var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/opendata-c64-backup-final-lhl3r9g3/dumps/warehouse_20260930T034200Z_87510.sql.gz
+==> pruning backups older than 30 days
+opendata backup finished
+
+## Compressed dump results
+
+metadata compressed bytes: 3344
+metadata SHA256: f0873835608c830d49908436bc5d6a04030a14673272782b237417b3e3964548
+warehouse compressed bytes: 3015
+warehouse SHA256: 92a3f381a93c7812c1e7ba9a036767d7fc9d475c58c0dd84b7847a5a945433e1
+
+## Exact metadata table row counts (source = restored)
+
+table	rows
+alembic_version	1
+api_keys	0
+data_interfaces	0
+data_scripts	0
+data_tables	0
+interface_categories	8
+interface_parameters	0
+minute_archive_shards	0
+pipeline_progress	0
+pipeline_step_checkpoints	0
+pipeline_symbol_windows	0
+scheduled_tasks	0
+task_executions	0
+users	1
+
+## Exact warehouse table row counts (source = restored)
+
+table	rows
+alembic_version_data	1
+batch_watermark	0
+dq_diff_report	0
+dwd_financial_indicator	0
+dwd_financial_statement	0
+dwd_futures_daily	2
+dwd_index_constituent	0
+dwd_index_daily	2
+dwd_option_daily	2
+dwd_stock_action	2
+dwd_stock_adjust	0
+dwd_stock_daily	0
+ods_futures_daily_ths	3
+ods_index_daily_ths	3
+ods_option_daily_ths	3
+ods_stock_action_ths	4
+ods_stock_daily_akshare	0
+ods_stock_daily_ths	0
+
+## 0006 schema comparison
+
+Source and restored SHOW CREATE TABLE output matched after normalizing only the AUTO_INCREMENT counter.
+pipeline_step_checkpoints normalized DDL SHA256: ce16474c9b9e84440c864d835775c0ad44428f6f6062a23ea2cf0561c432b6a5
+pipeline_symbol_windows normalized DDL SHA256: 6a55bdf963b5dec1924eec76b023d18735b1ed52fdf9b393d216b4d509868cdb
+pipeline_step_checkpoints	CREATE TABLE `pipeline_step_checkpoints` (\n  `id` int NOT NULL AUTO_INCREMENT,\n  `pipeline_id` varchar(255) NOT NULL,\n  `step` varchar(32) NOT NULL,\n  `status` enum('pending','running','done','failed') NOT NULL,\n  `attempts` int NOT NULL,\n  `error` text,\n  `updated_at` datetime NOT NULL,\n  `completed_at` datetime DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `uq_pipeline_step_checkpoint` (`pipeline_id`,`step`),\n  KEY `ix_pipeline_step_checkpoints_pipeline_id` (`pipeline_id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+pipeline_symbol_windows	CREATE TABLE `pipeline_symbol_windows` (\n  `id` int NOT NULL AUTO_INCREMENT,\n  `pipeline_id` varchar(255) NOT NULL,\n  `source` varchar(32) NOT NULL,\n  `symbol` varchar(64) NOT NULL,\n  `window_start` date DEFAULT NULL,\n  `window_end` date DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `uq_pipeline_symbol_window` (`pipeline_id`,`source`,`symbol`),\n  KEY `ix_pipeline_symbol_windows_pipeline_id` (`pipeline_id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+## Cleanup
+
+temporary users, restore schemas, dotenv, compressed dumps, and MySQL defaults files removed; verification found zero temporary users and schemas
+Evidence excludes all credentials.

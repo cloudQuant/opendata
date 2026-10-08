@@ -1,0 +1,24 @@
+C65 | 2026-09-30 | Primary offline pinned-response fidelity comparison
+COMMAND conda base + pinned clean Python; compare_with_upstream.compare(); only REPORT_PATH redirected into C65
+SOURCE_SHA256 b7f6a73e9820c89bf7c6a16ddeeaa1c9ce45546503ca0f9abfbd5c481a76f2f2
+PENDING stock_daily_raw: no recorded fixture (re-run --record)
+PENDING stock_daily_qfq: no recorded fixture (re-run --record)
+PASS stock_action_dividend: 31 rows, 0 diff(s), 0 处文本不同而浮点在 rtol=1e-09 内一致
+PASS stock_action_rights: 3 rows, 0 diff(s), 0 处文本不同而浮点在 rtol=1e-09 内一致
+PASS financial_statement: 103 rows, 0 diff(s), 0 处文本不同而浮点在 rtol=1e-09 内一致
+PASS financial_indicator: 103 rows, 0 diff(s), 0 处文本不同而浮点在 rtol=1e-09 内一致
+PASS index_constituent: 300 rows, 0 diff(s), 0 处文本不同而浮点在 rtol=1e-09 内一致
+PASS futures_daily_sina: 4251 rows, 0 diff(s), 0 处文本不同而浮点在 rtol=1e-09 内一致
+PASS option_daily_sina: 23 rows, 0 diff(s), 0 处文本不同而浮点在 rtol=1e-09 内一致
+PASS bond_daily_sina: 4806 rows, 0 diff(s), 0 处文本不同而浮点在 rtol=1e-09 内一致
+PENDING index_daily_em: no recorded fixture (re-run --record)
+PENDING fund_etf_daily_em: no recorded fixture (re-run --record)
+PASS stock_daily_sina_raw: 22 rows, 0 diff(s), 0 处文本不同而浮点在 rtol=1e-09 内一致
+PASS stock_daily_sina_qfq: 22 rows, 0 diff(s), 0 处文本不同而浮点在 rtol=1e-09 内一致
+PASS index_daily_sina: 6000 rows, 0 diff(s), 0 处文本不同而浮点在 rtol=1e-09 内一致
+PASS fund_etf_daily_sina: 3484 rows, 0 diff(s), 0 处文本不同而浮点在 rtol=1e-09 内一致
+PASS stock_daily_sina_raw_wide: 118 rows, 0 diff(s), 0 处文本不同而浮点在 rtol=1e-09 内一致
+PASS stock_daily_sina_qfq_wide: 118 rows, 0 diff(s), 0 处文本不同而浮点在 rtol=1e-09 内一致
+report written to /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C65/port-fidelity-current-report.md
+
+EXIT=1

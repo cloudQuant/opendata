@@ -1,0 +1,14 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.11.8, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: platformdirs-4.12.2, cov-7.1.0, xdist-3.8.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 33 items
+
+tests/test_backup_mysql.py ........                                      [ 24%]
+tests/test_minute_backup_snapshot.py ........                            [ 48%]
+tests/test_minute_archive.py ...............                             [ 93%]
+tests/test_compose_operational_config.py ..                              [100%]
+
+============================= 33 passed in 30.96s ==============================

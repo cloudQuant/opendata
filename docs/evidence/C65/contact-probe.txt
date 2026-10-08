@@ -1,0 +1,25 @@
+ROUND=C65
+DATE=2026-09-30T14:43:14.505017+00:00
+COMMAND=/tmp/opendata-c64-clean-env-20260930/bin/python scripts/quality/acceptance_item_probe.py --item 'AC-1|07' --json docs/evidence/C65/contact-probe.json
+SHA256 README.md 321b68d601db7266ebee9f5a87f378cea05ca86a164df4ff4b670e0a9fd11816
+SHA256 scripts/quality/acceptance_item_probe.py 5474d6e0cf065b7708c6f9083a58275c72e9c9f4d9e896e3f5079a02e3fa105c
+SHA256 tests/test_acceptance_item_probe.py 6bde598258e47c95f8e0e8f7fd487e9d209c32836f2e435ae0f666f1e05c3b72
+SHA256 docs/data-rights-registry.md ca5a69529033d7e72fc66ee92f6a516cdd1b30b9a9d6f9f3d673b55919f9b33b
+
+### AC-1|07  (document line 127)
+判据原文：LICENSE 为 BSL 1.1 且四要素齐备；`LICENSE-AKSHARE` + `THIRD_PARTY_NOTICES.md`（含资源权利登记）；README 含授权说明、商务联系方式与**数据免责声明**
+本探针：BSL 四要素 + 搬运许可 + README 三项（含商务联系方式为真实可达）
+台账现状：state=gap，文档勾选=False
+  - LICENSE opens with Business Source License 1.1 = yes
+  - parameter block = Additional Use Grant, Change Date, Change License, Licensed Work, Licensor (missing of the four = 0); Change License = MIT License
+  - LICENSE-AKSHARE present and MIT = yes
+  - THIRD_PARTY_NOTICES.md has 4 sections; embedded-resource rights block = yes
+  - README 授权/许可说明 = yes; 数据免责声明 = yes
+  - README 商务联系方式 = 商务授权联系：cloudQuant — [个人主页](https://yunjinqi.top) / [GitHub](https://gi (placeholder = no)
+VERDICT AC-1|07: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+wrote docs/evidence/C65/contact-probe.json
+
+EXIT=0

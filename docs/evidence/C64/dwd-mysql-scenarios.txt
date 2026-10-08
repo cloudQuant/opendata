@@ -1,0 +1,13 @@
+Date: 2026-09-30
+Branch: dev
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Worktree: uncommitted C64 development based on this HEAD; initial checkout clean
+Command: Anaconda base inline Python: four domain backfill_dwd scenarios against owned MySQL 8 on 33564; explicit ths; 2024-01-01..2024-01-31; page_size=1; rerun and collision checks
+REVIEW_EXIT=0
+
+Output source: opendata-iter01-dwd-mysql-review-run2-20260930.log
+stock_action PASS: bounded 2 pages, window excludes February, idempotent 2 rows, source and trace verified
+index_daily PASS: bounded 2 pages, window excludes February, idempotent 2 rows, source and trace verified
+futures_daily PASS: bounded 2 pages, window excludes February, idempotent 2 rows, source and trace verified
+option_daily PASS: bounded 2 pages, window excludes February, idempotent 2 rows, source and trace verified
+stock_action collision PASS: refused before first write

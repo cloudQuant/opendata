@@ -1,0 +1,721 @@
+Date: 2026-10-01T00:43:04.892307+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: conda run --no-capture-output -n base python /tmp/opendata_c65_run_checks.py; fixed-environment commands below
+Scope: owned33565 acceptance schemas; scheduler/upstream keys/SMTP disabled; live e2e default-deny; production3306 writes=0
+
+Actual argv: ['make', 'gate']
+===== gate: brand-check =====
+python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:148
+  .env.example:149
+  .env.example:150
+  .env.example:151
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+===== gate: zero-dep-check =====
+python scripts/codemod/verify_no_akshare.py --self-test
+OK: scanner self-test passed (13 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+python scripts/codemod/verify_no_akshare.py
+OK: 542 file(s) walked (opendata=206, opendata_client=2, opendata_fuyao=9, opendata_http=325), python 3.11, scanner 3; no new upstream references (frozen baseline: 0).
+===== gate: secret-check =====
+python scripts/quality/secret_scan_check.py
+
+    ○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
+
+2:44AM INF 281 commits scanned.
+2:44AM INF scanned ~92313643 bytes (92.31 MB) in 1m2.3s
+2:44AM INF no leaks found
+device: gitleaks 8.30.1, command: gitleaks detect --source . --config .gitleaks.toml --redact
+===== gate: ledger-check =====
+python scripts/quality/acceptance_ledger_check.py
+census: items=130 proven=114 gap=16 unreviewed=0 ticked=114
+OK: items=130 proven=114 gap=16 unreviewed=0 ticked=114 across 22 group(s) and 19 §10 row(s) reconcile.
+===== gate: evidence-traceability =====
+python scripts/quality/evidence_traceability.py
+# evidence traceability over docs/evidence/
+  rounds        = 75
+  files census  = 985 (gate logs: 126)
+  dates in gate logs = header 117/126, printed by the run 9/126
+  branch named in header = 102/126 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 0
+
+OK: evidence archive matches the frozen baseline (0 legacy entr(ies)).
+===== gate: js-points-check =====
+python scripts/quality/scan_js_points.py --check
+OK: JS execution points unchanged (engine 76, eval 35, exec 0)
+===== gate: loguru-check =====
+python scripts/quality/loguru_render_check.py
+note    scripts/quality/loguru_render_check.py:214 logger.error: template built at runtime
+note    scripts/quality/loguru_render_check.py:248 stdlib.error: template built at runtime
+note    tests/test_loguru_render_check.py:232 logger.error: template built at runtime
+note    tests/test_loguru_render_check.py:265 box.error: template built at runtime
+swept   opendata: 206 file(s)
+swept   opendata_http: 325 file(s)
+swept   opendata_fuyao: 9 file(s)
+swept   opendata_client: 2 file(s)
+swept   scripts: 57 file(s)
+swept   tests: 215 file(s)
+
+loguru-render-check: calls-with-args=28 findings=0 unjudged=4
+OK: every logger call passes arguments its renderer can substitute.
+===== gate: a2-check =====
+python scripts/quality/a2_check.py
+A2 files: 475
+  alembic/versions/2026_09_22-0001_initial_schema.py
+  alembic/versions/2026_09_23-0002_pipeline_progress.py
+  alembic/versions/2026_09_23-0003_api_keys.py
+  alembic/versions/2026_09_30-0004_minute_archive.py
+  alembic/versions/2026_09_30-0005_pipeline_tasks.py
+  alembic/versions/2026_09_30-0006_pipeline_steps.py
+  alembic_data/env.py
+  alembic_data/versions/20260923-0001_ods_dwd_p0.py
+  alembic_data/versions/20260923-0002_dq_diff_report.py
+  alembic_data/versions/20260923-0003_ods_ths.py
+  alembic_data/versions/20260923-0004_batch_watermark.py
+  alembic_data/versions/20260923-0005_dwd_stock_adjust.py
+  alembic_data/versions/20260930-0006_dwd_daily_legs.py
+  alembic_data/versions/20260930-0007_affine_stock_adjust.py
+  docs/evidence/C15/futures-calendar-probe.py
+  docs/evidence/C16/index-bare-code-defect.py
+  docs/evidence/C16/probe-param-audit.py
+  docs/evidence/C18/index-bare-code-live.py
+  docs/evidence/C18/index-code-rule-audit.py
+  docs/evidence/C18/instrument-list-date-canary.py
+  docs/evidence/C19/catalog-date-field-shape.py
+  docs/evidence/C19/catalog-flip-rate.py
+  docs/evidence/C19/criterion-teeth.py
+  docs/evidence/C21/flaky-retry-attribution.py
+  docs/evidence/C21/update_time-tz-pin.py
+  docs/evidence/C24/fallback_generality_sweep.py
+  docs/evidence/C24/guard_mutation_proof.py
+  docs/evidence/C25/canary-injection-attribution.py
+  docs/evidence/C25/field-canary-measure.py
+  docs/evidence/C25/mutation-proof.py
+  docs/evidence/C26/fixture-live-cells.py
+  docs/evidence/C26/mutation-proof.py
+  docs/evidence/C26/silent-drop-measure.py
+  docs/evidence/C27/em-channel-measure.py
+  docs/evidence/C27/judge-falsification.py
+  docs/evidence/C27/qfq-chain-measure.py
+  docs/evidence/C27/refusal-shape.py
+  docs/evidence/C28/graded-shapes-render.py
+  docs/evidence/C29/guard-falsification.py
+  docs/evidence/C29/guard-teeth-mutation.py
+  docs/evidence/C29/real-tree-probe.py
+  docs/evidence/C29/test-plane-census.py
+  docs/evidence/C30/e2e-plane-census.py
+  docs/evidence/C30/guard-falsification.py
+  docs/evidence/C30/guard-teeth-mutation.py
+  docs/evidence/C31/endpoint-contract-census.py
+  docs/evidence/C31/endpoint-guard-mutation.py
+  docs/evidence/C32/payload_shape_census.py
+  docs/evidence/C34/index_constituent_generality_sweep.py
+  docs/evidence/C36/gitleaks-counterfactual.py
+  docs/evidence/C36/zero_dep_scanner_HEAD.py
+  docs/evidence/C37/attribution.py
+  docs/evidence/C37/cross_env_port_replay.py
+  docs/evidence/C38/loguru-format-census.py
+  docs/evidence/C38/mutation-proof.py
+  docs/evidence/C38b/coverage-face-recompute.py
+  docs/evidence/C38b/mutation-proof.py
+  docs/evidence/C39/loguru-mutation.py
+  docs/evidence/C42/duplicate-symbol-scan.py
+  docs/evidence/C42/guard-removal-reading.py
+  docs/evidence/C42/scan-failure-face.py
+  docs/evidence/C43/public-api-face-census.py
+  docs/evidence/C44/behaviour_counterfactuals.py
+  docs/evidence/C44/census_counterfactuals.py
+  docs/evidence/C44/golden_millis.py
+  docs/evidence/C44/golden_millis_counterfactuals.py
+  docs/evidence/C44/shell_audit.py
+  docs/evidence/C45/port_counterfactuals.py
+  docs/evidence/C45/ratchet_counterfactuals.py
+  docs/evidence/C46/before_census.py
+  docs/evidence/C46/warehouse_census.py
+  docs/evidence/C47/matrix_census.py
+  docs/evidence/C48/cross_check_census.py
+  docs/evidence/C48/face_regression_probe.py
+  docs/evidence/C49/ac9_residual_census.py
+  docs/evidence/C50/probe_gate_census.py
+  docs/evidence/C51/zero_dep_clean_env_census.py
+  docs/evidence/C52/falsify_dwd_merge.py
+  docs/evidence/C53/caliber_face.py
+  docs/evidence/C54/caliber_pivot_face.py
+  docs/evidence/C59/run_counterfacts.py
+  docs/evidence/C60/run_a2_comply.py
+  docs/evidence/C60/run_c60.py
+  examples/consumer_handoff.py
+  opendata/api/__init__.py
+  opendata/api/auth.py
+  opendata/api/data.py
+  opendata/api/data_query.py
+  opendata/api/data_subscribe.py
+  opendata/api/dependencies.py
+  opendata/api/keys.py
+  opendata/api/minute_data.py
+  opendata/api/pipeline.py
+  opendata/api/rate_limit.py
+  opendata/api/schemas.py
+  opendata/api/tables.py
+  opendata/api/tasks.py
+  opendata/api/websocket.py
+  opendata/cli.py
+  opendata/core/api_key_rate_limit.py
+  opendata/core/config.py
+  opendata/core/database.py
+  opendata/core/security.py
+  opendata/core/token_blacklist.py
+  opendata/data/__init__.py
+  opendata/data/adjust.py
+  opendata/data/capability.py
+  opendata/data/domains.py
+  opendata/data/http_client.py
+  opendata/data/mapping.py
+  opendata/data/minute_archive.py
+  opendata/data/models/__init__.py
+  opendata/data/models/adjustment.py
+  opendata/data/models/base.py
+  opendata/data/models/financial.py
+  opendata/data/models/futures.py
+  opendata/data/models/index.py
+  opendata/data/models/macro.py
+  opendata/data/models/market.py
+  opendata/data/models/metadata.py
+  opendata/data/openbb_map.py
+  opendata/data/protocol.py
+  opendata/data/providers/__init__.py
+  opendata/data/providers/akshare/__init__.py
+  opendata/data/providers/akshare/_source.py
+  opendata/data/providers/akshare/models/__init__.py
+  opendata/data/providers/akshare/models/_normalize.py
+  opendata/data/providers/akshare/models/bond_daily.py
+  opendata/data/providers/akshare/models/financial_indicator.py
+  opendata/data/providers/akshare/models/financial_statement.py
+  opendata/data/providers/akshare/models/fund_etf_daily.py
+  opendata/data/providers/akshare/models/futures_daily.py
+  opendata/data/providers/akshare/models/index_constituent.py
+  opendata/data/providers/akshare/models/index_daily.py
+  opendata/data/providers/akshare/models/option_daily.py
+  opendata/data/providers/akshare/models/stock_action.py
+  opendata/data/providers/akshare/models/stock_daily.py
+  opendata/data/providers/akshare/registration.py
+  opendata/data/providers/ecb/__init__.py
+  opendata/data/providers/ecb/_source.py
+  opendata/data/providers/ecb/models/__init__.py
+  opendata/data/providers/ecb/models/_client.py
+  opendata/data/providers/ecb/models/_series.py
+  opendata/data/providers/ecb/models/cpi.py
+  opendata/data/providers/ecb/models/gdp.py
+  opendata/data/providers/ecb/models/rate.py
+  opendata/data/providers/ecb/registration.py
+  opendata/data/providers/fred/__init__.py
+  opendata/data/providers/fred/_source.py
+  opendata/data/providers/fred/models/__init__.py
+  opendata/data/providers/fred/models/_client.py
+  opendata/data/providers/fred/models/_series.py
+  opendata/data/providers/fred/models/cpi.py
+  opendata/data/providers/fred/models/gdp.py
+  opendata/data/providers/fred/models/unemployment.py
+  opendata/data/providers/fred/registration.py
+  opendata/data/providers/imf/__init__.py
+  opendata/data/providers/imf/_source.py
+  opendata/data/providers/imf/models/__init__.py
+  opendata/data/providers/imf/models/_client.py
+  opendata/data/providers/imf/models/_indicator.py
+  opendata/data/providers/imf/models/cpi.py
+  opendata/data/providers/imf/models/gdp.py
+  opendata/data/providers/imf/models/unemployment.py
+  opendata/data/providers/imf/registration.py
+  opendata/data/providers/oecd/__init__.py
+  opendata/data/providers/oecd/_source.py
+  opendata/data/providers/oecd/models/__init__.py
+  opendata/data/providers/oecd/models/_client.py
+  opendata/data/providers/oecd/models/cpi.py
+  opendata/data/providers/oecd/models/unemployment.py
+  opendata/data/providers/oecd/registration.py
+  opendata/data/providers/ths/__init__.py
+  opendata/data/providers/ths/_source.py
+  opendata/data/providers/ths/models/__init__.py
+  opendata/data/providers/ths/models/_client.py
+  opendata/data/providers/ths/models/financial_statement.py
+  opendata/data/providers/ths/models/fund_action.py
+  opendata/data/providers/ths/models/fund_etf_daily.py
+  opendata/data/providers/ths/models/futures_daily.py
+  opendata/data/providers/ths/models/index_constituent.py
+  opendata/data/providers/ths/models/index_daily.py
+  opendata/data/providers/ths/models/instrument.py
+  opendata/data/providers/ths/models/option_daily.py
+  opendata/data/providers/ths/models/stock_action.py
+  opendata/data/providers/ths/models/stock_daily.py
+  opendata/data/providers/ths/models/trading_calendar.py
+  opendata/data/providers/ths/registration.py
+  opendata/data/providers/yfinance/__init__.py
+  opendata/data/providers/yfinance/_source.py
+  opendata/data/providers/yfinance/models/__init__.py
+  opendata/data/providers/yfinance/models/_sdk.py
+  opendata/data/providers/yfinance/models/stock_daily.py
+  opendata/data/providers/yfinance/registration.py
+  opendata/data/raw_response_cache.py
+  opendata/data/registry.py
+  opendata/data_fetch/providers/akshare_provider.py
+  opendata/main.py
+  opendata/middleware/request_logging.py
+  opendata/middleware/security.py
+  opendata/models/__init__.py
+  opendata/models/api_key.py
+  opendata/models/data_script.py
+  opendata/models/data_table.py
+  opendata/models/interface.py
+  opendata/models/minute_archive.py
+  opendata/models/pipeline.py
+  opendata/models/pipeline_step.py
+  opendata/models/task.py
+  opendata/models/user.py
+  opendata/pipeline/__init__.py
+  opendata/pipeline/affected_keys.py
+  opendata/pipeline/alert_matrix.py
+  opendata/pipeline/alerts.py
+  opendata/pipeline/cross_check.py
+  opendata/pipeline/cross_check_service.py
+  opendata/pipeline/ddl.py
+  opendata/pipeline/diff_alerts.py
+  opendata/pipeline/diff_report.py
+  opendata/pipeline/dump_import.py
+  opendata/pipeline/dwd_backfill.py
+  opendata/pipeline/dwd_merge.py
+  opendata/pipeline/factor_builder.py
+  opendata/pipeline/factors.py
+  opendata/pipeline/freshness.py
+  opendata/pipeline/jobs.py
+  opendata/pipeline/key_health.py
+  opendata/pipeline/key_health_notifications.py
+  opendata/pipeline/maintenance.py
+  opendata/pipeline/metadata_refresh.py
+  opendata/pipeline/notify.py
+  opendata/pipeline/ods_watermark.py
+  opendata/pipeline/ods_writer.py
+  opendata/pipeline/partitions.py
+  opendata/pipeline/patrol.py
+  opendata/pipeline/query.py
+  opendata/pipeline/retention.py
+  opendata/pipeline/retry.py
+  opendata/pipeline/runner.py
+  opendata/pipeline/scheduled_patrol.py
+  opendata/pipeline/scheduling.py
+  opendata/pipeline/subscription.py
+  opendata/pipeline/table_page.py
+  opendata/pipeline/templates.py
+  opendata/pipeline/trading_calendar.py
+  opendata/pipeline/watermark.py
+  opendata/services/api_key_service.py
+  opendata/services/data_acquisition.py
+  opendata/services/execution_service.py
+  opendata/services/interface_loader.py
+  opendata/services/notification_service.py
+  opendata/services/retry_service.py
+  opendata/services/scheduler.py
+  opendata/services/scheduler_service.py
+  opendata/services/script_service.py
+  opendata/utils/serialization.py
+  opendata_client/opendata_client/__init__.py
+  opendata_client/opendata_client/client.py
+  opendata_fuyao/__init__.py
+  opendata_fuyao/credentials.py
+  opendata_fuyao/dumps.py
+  opendata_fuyao/endpoint_map.py
+  opendata_fuyao/endpoints.py
+  opendata_fuyao/envelope.py
+  opendata_fuyao/errors.py
+  opendata_fuyao/http_client.py
+  opendata_fuyao/rate_limiter.py
+  scripts/codemod/compare_with_upstream.py
+  scripts/codemod/fetch_upstream.py
+  scripts/codemod/gen_manifest.py
+  scripts/codemod/legacy_transfer.py
+  scripts/codemod/port_module.py
+  scripts/codemod/qfq_chain_checks.py
+  scripts/codemod/report_port.py
+  scripts/codemod/verify_no_akshare.py
+  scripts/ops/akshare_fallback_cross_check.py
+  scripts/ops/authority_reconcile_check.py
+  scripts/ops/backfill_dwd.py
+  scripts/ops/backup_minute_snapshot.py
+  scripts/ops/benchmark_ods_write.py
+  scripts/ops/calendar_expectation_check.py
+  scripts/ops/compare_official_parquet.py
+  scripts/ops/fuyao_endpoint_inventory.py
+  scripts/ops/fuyao_envelope_recorder.py
+  scripts/ops/health_patrol.py
+  scripts/ops/import_minute_archive.py
+  scripts/ops/macro_authority_cross_check.py
+  scripts/ops/metadata_backbone_landing.py
+  scripts/ops/migrate_legacy_stock_daily.py
+  scripts/ops/qfq_official_check.py
+  scripts/ops/rebuild_adjustment_factors.py
+  scripts/ops/replay_warehouse_pipeline.py
+  scripts/ops/suspension_shape_check.py
+  scripts/ops/ths_financial_statement_cross_check.py
+  scripts/ops/ths_fund_action_cross_check.py
+  scripts/ops/ths_fund_etf_cross_check.py
+  scripts/ops/ths_futures_option_cross_check.py
+  scripts/ops/ths_index_constituent_cross_check.py
+  scripts/ops/ths_index_cross_check.py
+  scripts/ops/ths_instrument_cross_check.py
+  scripts/ops/ths_trading_calendar_cross_check.py
+  scripts/ops/verify_isolated_stack.py
+  scripts/ops/window_partition_explain.py
+  scripts/ops/yfinance_overseas_cross_check.py
+  scripts/quality/a2_check.py
+  scripts/quality/acceptance_item_probe.py
+  scripts/quality/acceptance_ledger_check.py
+  scripts/quality/check_brand.py
+  scripts/quality/evidence_traceability.py
+  scripts/quality/frontend_e2e_plane.py
+  scripts/quality/frontend_test_collection.py
+  scripts/quality/loguru_render_check.py
+  scripts/quality/openbb_inventory_plane.py
+  scripts/quality/port_scope.py
+  scripts/quality/ported_security_evidence.py
+  scripts/quality/provider_source_review_evidence.py
+  scripts/quality/ratchet.py
+  scripts/quality/runtime_stack_evidence.py
+  scripts/quality/scan_js_points.py
+  scripts/quality/secret_scan_check.py
+  scripts/quality/write_benchmark_evidence.py
+  tests/conftest.py
+  tests/fuyao_golden.py
+  tests/test_a2_exclusion_scope.py
+  tests/test_acceptance_item_probe.py
+  tests/test_acceptance_probe_gate.py
+  tests/test_adjust.py
+  tests/test_affected_key_spool.py
+  tests/test_affine_adjustment_query.py
+  tests/test_akshare_provider.py
+  tests/test_alembic_migrations.py
+  tests/test_alert_matrix.py
+  tests/test_api_data_full.py
+  tests/test_api_dependencies.py
+  tests/test_api_key_rate_limit.py
+  tests/test_api_keys.py
+  tests/test_api_rate_limit.py
+  tests/test_api_tables_lifecycle.py
+  tests/test_authority_reconciliation.py
+  tests/test_backup_mysql.py
+  tests/test_c65_evidence_probes.py
+  tests/test_check_brand.py
+  tests/test_cli.py
+  tests/test_cli_direct.py
+  tests/test_compose_operational_config.py
+  tests/test_config.py
+  tests/test_container_build_contract.py
+  tests/test_contract_models.py
+  tests/test_core.py
+  tests/test_cross_check.py
+  tests/test_cross_check_service.py
+  tests/test_csv_serialization.py
+  tests/test_data_acquisition_coverage.py
+  tests/test_data_acquisition_details.py
+  tests/test_data_acquisition_direct.py
+  tests/test_data_catalog.py
+  tests/test_data_mapping.py
+  tests/test_data_path_aliases.py
+  tests/test_data_query.py
+  tests/test_data_query_api.py
+  tests/test_data_query_http_warehouse.py
+  tests/test_data_subscribe.py
+  tests/test_database_bootstrap.py
+  tests/test_database_extended.py
+  tests/test_database_functions.py
+  tests/test_diff_alerts.py
+  tests/test_diff_report.py
+  tests/test_domains.py
+  tests/test_dump_import.py
+  tests/test_dwd_backfill.py
+  tests/test_dwd_backfill_edge_cases.py
+  tests/test_dwd_merge.py
+  tests/test_e2e_opt_in_guard.py
+  tests/test_ecb_provider.py
+  tests/test_env_example_security.py
+  tests/test_factor_builder_e2e.py
+  tests/test_factor_builder_unit.py
+  tests/test_factors.py
+  tests/test_fallback_degradation.py
+  tests/test_fetch_upstream.py
+  tests/test_fred_provider.py
+  tests/test_freshness.py
+  tests/test_frontend_collection_guard.py
+  tests/test_frontend_e2e_guard.py
+  tests/test_frontend_endpoint_contract.py
+  tests/test_frontend_typecheck_guard.py
+  tests/test_futures_derivative_port.py
+  tests/test_futures_fetcher.py
+  tests/test_fuyao_dumps.py
+  tests/test_fuyao_endpoint_map.py
+  tests/test_fuyao_endpoints.py
+  tests/test_fuyao_recorded_envelopes.py
+  tests/test_fuyao_transport.py
+  tests/test_http_client.py
+  tests/test_imf_provider.py
+  tests/test_index_constituent_asof.py
+  tests/test_interface_loader.py
+  tests/test_interface_loader_coverage.py
+  tests/test_interface_loader_details.py
+  tests/test_isolated_stack_guard.py
+  tests/test_iteration01_integration_contracts.py
+  tests/test_js_execution_points.py
+  tests/test_key_health.py
+  tests/test_key_health_notifications.py
+  tests/test_legacy_stock_daily_transfer.py
+  tests/test_legacy_transfer.py
+  tests/test_loguru_render_check.py
+  tests/test_macro_http_governance.py
+  tests/test_macro_routing.py
+  tests/test_main_app.py
+  tests/test_main_coverage.py
+  tests/test_mapping_pivot.py
+  tests/test_minute_archive.py
+  tests/test_minute_archive_integrity_edges.py
+  tests/test_minute_backup_snapshot.py
+  tests/test_minute_data_api.py
+  tests/test_models_extended.py
+  tests/test_notify_unit.py
+  tests/test_ods_watermark.py
+  tests/test_ods_write_benchmark.py
+  tests/test_ods_writer.py
+  tests/test_oecd_provider.py
+  tests/test_official_parquet_comparison.py
+  tests/test_openbb_inventory_guard.py
+  tests/test_openbb_map.py
+  tests/test_opendata_client.py
+  tests/test_p0_integration_surface.py
+  tests/test_p0_providers.py
+  tests/test_p1_daily_fetchers.py
+  tests/test_partition_maintenance.py
+  tests/test_patrol.py
+  tests/test_pipeline_bounded_hooks.py
+  tests/test_pipeline_jobs.py
+  tests/test_pipeline_metadata.py
+  tests/test_pipeline_retry.py
+  tests/test_pipeline_run_api.py
+  tests/test_pipeline_runner.py
+  tests/test_pipeline_templates.py
+  tests/test_port_fail_closed.py
+  tests/test_port_fidelity.py
+  tests/test_port_module.py
+  tests/test_port_scope.py
+  tests/test_ported_import_closure.py
+  tests/test_ported_security_evidence.py
+  tests/test_probe_node_outcomes.py
+  tests/test_provider_conformance.py
+  tests/test_provider_registry.py
+  tests/test_provider_source_review_evidence.py
+  tests/test_qfq_official_check.py
+  tests/test_quality_gates.py
+  tests/test_raw_response_cache.py
+  tests/test_raw_response_cache_edge_cases.py
+  tests/test_rebuild_adjustment_factors.py
+  tests/test_retention.py
+  tests/test_retention_maintenance.py
+  tests/test_retry_service.py
+  tests/test_retry_service_coverage.py
+  tests/test_routing_seam.py
+  tests/test_runtime_stack_evidence.py
+  tests/test_scheduled_patrol.py
+  tests/test_scheduled_pipeline_tasks.py
+  tests/test_scheduler_details.py
+  tests/test_services_extended.py
+  tests/test_sina_window_fidelity.py
+  tests/test_table_page.py
+  tests/test_ths_dwd_integration.py
+  tests/test_ths_provider.py
+  tests/test_trading_calendar.py
+  tests/test_upstream_reference_policy.py
+  tests/test_warehouse_ddl.py
+  tests/test_warehouse_migrations.py
+  tests/test_warehouse_pipeline_replay.py
+  tests/test_watermark.py
+  tests/test_write_benchmark_evidence.py
+  tests/test_yfinance_provider.py
+
+ok   ruff check
+ok   ruff format --check
+ok   mypy
+ok   bandit
+
+OK: A2 files meet the full A2 standard (ruff + format + mypy + bandit).
+===== gate: quality-ratchet =====
+python scripts/quality/ratchet.py
+OK: quality debt did not increase.
+  ruff_selfdev: 148 (snapshot 148)
+  mypy_selfdev: 0 (snapshot 0)
+  bandit_selfdev: 1 (snapshot 1)
+  ruff_ported: 2188 (snapshot 2188)
+  direct_http_ported: 1071 (snapshot 1071)
+===== gate: public-api-quality =====
+python scripts/quality/public_api.py
+A2 public callables : 986
+docstring coverage  : 100.0% (986/986)
+annotation coverage : 100.0% (986/986)
+OK: docstring and annotation coverage are both 100%.
+===== gate: acceptance-probe-check =====
+python scripts/quality/acceptance_item_probe.py --gate-check
+FAIL: acceptance-probe gate:
+  AC-17|05 / ruff_ported 高于快照: the judge still says proven, so the item is not really gated on this face
+  AC-17|05 / direct_http_ported 高于快照: the judge still says proven, so the item is not really gated on this face
+
+### gate-check  (115 个探针，一遍 measure)
+  - 本遍墙钟 = 640.3 s，读到事实的探针 115/115，测不出来的：无
+  - 工作树：604 entry(ies), first: A  .dockerignore —— worktree/index/history 面只在干净时判，否则记为 deferred 并点名
+VERDICT AC-10|02: proven
+VERDICT AC-10|03: proven
+VERDICT AC-10|04: proven
+VERDICT AC-10|05: proven
+VERDICT AC-11|01: proven
+VERDICT AC-11|02: gap — 留档那次 run 有 10 行 ERROR —— 官方端点没答上来等于没对照；真机对照未过：FAIL 0 行 / PASS 0 行（容差 2e-3 不放宽，见档案里的 over_tolerance 与 ratio 平台分布） —— 合成与对照的判定口径不变（逐日 shape dev 对 2e-3），要改的是证据不是判据
+VERDICT AC-11|03: proven
+VERDICT AC-11|04: proven
+VERDICT AC-11|05: proven
+VERDICT AC-11|06: proven
+VERDICT AC-11|07: proven
+VERDICT AC-11|08: proven
+VERDICT AC-11|09: proven
+VERDICT AC-11|10: proven
+VERDICT AC-11|11: proven
+VERDICT AC-11|12: proven
+VERDICT AC-12|01: proven
+VERDICT AC-12|02: proven
+VERDICT AC-12|03: proven
+VERDICT AC-13|01: proven
+VERDICT AC-13|02: proven
+VERDICT AC-13|03: proven
+VERDICT AC-13|04: proven
+VERDICT AC-13|05: proven
+VERDICT AC-13|06: proven
+VERDICT AC-13|07: proven
+VERDICT AC-14|01: proven
+VERDICT AC-14|02: proven
+VERDICT AC-14|03: proven
+VERDICT AC-16|01: gap — 「审查留档」这一面从没成文：规则写在合规文档里（提交说明声明 + 对照表记上游事实来源），但 7 个自研 provider 里提交说明带「无 OpenBB 源码参照」的只有 0 个（缺：akshare, ecb, fred, imf, oecd, ths, yfinance），docs/evidence/ 下逐包点名且有「审查」字样的留档覆盖 7 个（同一行绑定 8 行；带探针读数同形的档案已先剔除）。模块 docstring 里的自声明（5 个包）与 THIRD_PARTY_NOTICES.md 里那句「本仓库不含任何 OpenBB 源码或其近似复制」都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录。历史提交说明补不回来（不改写历史），要收口得由一次真实的人工审查按包留档，本轮不代拟
+VERDICT AC-16|02: gap — 「全库无 OpenBB 源码或其近似复制」的否定面成立（AST 走查 0 个 openbb import 根，扫描器禁止清单含 openbb 且自带会响的违规样本），但判据括号里点名的两项核查都没做过：提交声明核查 0/7，人工抽查留档 7/7。「近似复制」只能靠逐包人工比对判定，本轮不以「import 为零」冒充它已被抽查过
+VERDICT AC-16|03: proven
+VERDICT AC-16|04: proven
+VERDICT AC-16|06: proven
+VERDICT AC-16|07: proven
+VERDICT AC-16|08: proven
+VERDICT AC-17|01: proven
+VERDICT AC-17|03: proven
+VERDICT AC-17|05: proven
+VERDICT AC-17|07: proven
+VERDICT AC-17|08: proven
+VERDICT AC-17|10: proven
+VERDICT AC-18|01: proven
+VERDICT AC-18|02: proven
+VERDICT AC-18|03: proven
+VERDICT AC-19|01: gap — 每日触发源码和隔离双库恢复已验证，隔离 ROW binlog 取值=yes；正式部署中每日任务运行、备份新鲜度及 binlog 实际生效证据=no，生产 RPO ≤24h 尚未验收
+VERDICT AC-19|02: proven
+VERDICT AC-19|03: proven
+VERDICT AC-19|04: gap — 判据要类别、可触发信号、分级落点、通知通道与观察状态测试共同成立；当前读到 4/4 类，operator expiry support=yes，分级落点=2、通知通道=1，observation tests=3/3。观察 TTL 过期不能替代 key 恢复，quota 余量未知时也不能填入数值；还缺供应商到期/余量和实际通知送达的独立现场证据
+VERDICT AC-19|05: proven
+VERDICT AC-1|01: proven
+VERDICT AC-1|02: proven
+VERDICT AC-1|03: proven
+VERDICT AC-1|04: proven
+VERDICT AC-1|05: proven
+VERDICT AC-1|06: proven
+VERDICT AC-1|07: proven
+VERDICT AC-1|08: proven
+VERDICT AC-1|09: proven
+VERDICT AC-1|10: gap — residue, files git has never seen, uncommitted edits, or a first commit that left part of the project out -- 'first complete commit' has to mean the whole move landed
+VERDICT AC-2|01: proven
+VERDICT AC-2|02: proven
+VERDICT AC-2|03: proven
+VERDICT AC-2|04: proven
+VERDICT AC-2|05: proven
+VERDICT AC-3|01: proven
+VERDICT AC-3|02: proven
+VERDICT AC-3|03: proven
+VERDICT AC-3|04: proven
+VERDICT AC-3|05: proven
+VERDICT AC-4|01: proven
+VERDICT AC-4|02: proven
+VERDICT AC-4|03: proven
+VERDICT AC-5|01: proven
+VERDICT AC-5|02: proven
+VERDICT AC-5|03: proven
+VERDICT AC-5|04: proven
+VERDICT AC-5|05: proven
+VERDICT AC-5|06: proven
+VERDICT AC-5|07: proven
+VERDICT AC-6|01: proven
+VERDICT AC-6|02: proven
+VERDICT AC-6|03: proven
+VERDICT AC-7|01: proven
+VERDICT AC-7|02: proven
+VERDICT AC-7|03: proven
+VERDICT AC-7|04: proven
+VERDICT AC-7|05: proven
+VERDICT AC-7|06: proven
+VERDICT AC-8|01: proven
+VERDICT AC-8|02: proven
+VERDICT AC-8|03: proven
+VERDICT AC-8|04: proven
+VERDICT AC-8|05: gap — 分区面两头都要有：接线（yaml 行 + kind 可执行 + 派发到真的 ``ensure``）与仓库现状（分区列点名、上界不再落后、apply 后复跑留档）。C57/C58 是历史档案，不是本轮新做的生产读数；``REORGANIZE`` 是生产仓库的 DDL，仍缺经确认的 apply 与新读数
+VERDICT AC-8|06: gap — 跨年写入这条判据要有「跑过」的证据而不是「有用例」：用例是 e2e 面（门禁不跑），且需要 fresh scoped production evidence。C57 是较早子集、C58 是较晚完整档案；两份都不是本轮 fresh production read，也没有本轮获准的用例运行留档
+VERDICT AC-8|07: proven
+VERDICT AC-9|01: proven
+VERDICT AC-9|02: proven
+VERDICT AC-9|03: proven
+VERDICT AC-9|04: proven
+VERDICT AC-9|05: proven
+VERDICT AC-9|06: proven
+VERDICT AC-9|07: proven
+VERDICT AC-9|08: gap — 「直通模式可用」判的是这张单源域的表里真的有行、并能按 layer=dwd 读回去：本轮把整窗 raise 换成逐键拒绝（C49 量到 55,073 行里 1 个键两义，dwd_stock_action 因此一直是空的），代码面已经通了；剩下的 0 行需要一次经确认的 warehouse 写入（重算落库），不是再改判定口径
+VERDICT AC-9|09: proven
+VERDICT §4|01: proven
+VERDICT §4|05: proven
+VERDICT §5|01: proven
+VERDICT §5|03: proven
+VERDICT §5|04: proven
+VERDICT §5|05: proven
+VERDICT §6|01: proven
+VERDICT §6|02: proven
+VERDICT §6|03: proven
+VERDICT §6|04: proven
+  - 反事实面：115/115 个探针走到了判定，739 条 break 各被施加一次、每条都要求把干净读数打回 gap
+  - 台账↔读数：agrees=114, unflipped=0, open=0, deferred=1, stale-proof=0（共 115 格有读数） —— 只有 stale-proof 是红灯：台账记 proven 而探针现在读出 gap，且读的那一面与这一刻无关
+  - deferred（时刻面，等工作树干净再判）：AC-1|10
+  - 面基线：115 个探针里 22 个在读 moment 面；proven 而无探针 7 个，基线 7 个（只降不升）
+  - 成员自证：`acceptance-probe-check` 在 `gate:` 配方里 = yes
+make[1]: *** [acceptance-probe-check] Error 1
+make: *** [gate] Error 2
+
+CHECK_EXIT=2
+GATE_EXIT=2
+
+DRIVER_EXIT=2

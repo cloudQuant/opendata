@@ -1,0 +1,54 @@
+Date: 2026-09-30T06:42:36.325885+00:00
+Scope: final frozen worktree, dual clean P0 archive; primary recompute + targeted counterfacts.
+
+### AC-18|01  (document line 254)
+判据原文：**新鲜度接口与告警**：各域最新数据日期与滞后天数可查；缺失触发告警（迭代 1A）
+本探针：新鲜度门交出日期/滞后/基准日 + 缺失告警真到达通道 + 调度执行器接线
+台账现状：state=proven，文档勾选=True
+  - 新鲜度门 faces: 7/7 nodes passed
+  - opendata/api/data_query.py::domain_freshness route = yes, delegates to _domain_freshness = yes, carries latest + lag_days = yes, and returns expected_data_date 2 time(s) — a lag cannot be checked without the date it was measured against, so both branches have to name it
+  - 告警面: 9/9 nodes passed
+  - 调度接线: the template dispatcher mentions FRESHNESS = yes, the executor is an executable kind = yes, it is handed the WS broadcast = yes
+VERDICT AC-18|01: proven
+
+### AC-18|02  (document line 255)
+判据原文：**数据目录页/接口**：按数据域组织，展示覆盖标的数、时间范围、各源最近更新、新鲜度、质量标记（迭代 1B）
+本探针：按域一行五个读数：接口给得出、页面显示得出、单元面与真机页各自断言过
+台账现状：state=proven，文档勾选=True
+  - 目录接口 faces: 7/7 nodes passed
+  - 五个读数在页面上有列名且被断言：缺 -
+  - 真机页（Playwright）逐读数断言：缺 -
+  - 载荷类型 frontend/src/api/catalog.ts 承载 5/5 个字段 (coverage/sources/lag_days/quality/expected_data_date)，页面显示的是接口量出来的那一次
+  - 基准日在页面出现并被断言 = yes，下钻 = yes，单元面采集器无未授权排除 = yes
+VERDICT AC-18|02: proven
+
+### AC-11|04  (document line 214)
+判据原文：**默认时间窗**：不带日期区间的查询不会触发全分区扫描（EXPLAIN 验证）
+本探针：无区间请求仍被默认窗与行数上限夹住（实测绿），且判据点名的 EXPLAIN 真的发到了跑着的 MySQL 上：每张已落地的分区表都只读到部分分区，留档按查询层摘要钉住
+台账现状：state=proven，文档勾选=True
+  - 时间窗面（HTTP 两条 + 边界单元三条）: 5/5 nodes passed
+  - 默认窗 = 365 天，由 ``window_bounds`` 在无区间时补上 = yes；``build_data_select`` 的 ``LIMIT :limit`` 行数上限 = yes
+  - 判据点名的验证方式：在 449 个代码文件里找真发出去的 EXPLAIN（整句字面量 ``EXPLAIN [ANALYZE] SELECT|FORMAT`` 与拼接前缀 ``"EXPLAIN " +`` 两种形状，仪器必须拼 SQL 才谈得上「这个端点的查询」），命中 1 处（scripts/ops/window_partition_explain.py）
+  - 执行计划留档（读的是最新那一份：docs/evidence/C64/window-pruning-explain.txt，正文声明轮次 C64，与所在目录一致 = yes）：已落地且带分区的 dwd 表 6 张，其中计划只读到部分分区的 6 张、读到全部分区的 0 张
+  - 留档属于哪一版拼 SQL 的代码：正文 ``query_module_sha=ce2ea20632dd`` 对当下 ``opendata/pipeline/query.py`` = ce2ea20632dd → yes
+VERDICT AC-11|04: proven
+
+### AC-16|07  (document line 278)
+判据原文：**正向证据**：在未安装 akshare/openbb 的干净环境中 P0 域集成测试通过〔C51 转正。此前这条**指认不出自己的用例集**：`pytest.ini` 注册了 `integration` marker 却没有任何用例应用它（可独立复核：`git grep -l "pytest\.mark\.integration" HEAD -- tests/` = 0 命中，而 `HEAD:pytest.ini` 第 23 行就在注册它），于是 `pytest -m "integration and not e2e"` 在开发解释器与干净 venv 里都选中 `0 / 3358 deselected`（`docs/evidence/C51/census-before.txt` 面 5a/5b/7b，exit=5）。现把 A4.1 迁移（`alembic_data/versions/20260923-0001_ods_dwd_p0.py` 的 `_DWD_TABLES`）5 个 P0 域全部点到，标记集 = 8 个单元（7 个模块级 `pytestmark` + `tests/test_pipeline_jobs.py::TestFullCheckExecutor`），改动只有 9 行接线。判定面：`tests/test_p0_integration_surface.py` 4 条断言，各自可单独打红（`docs/evidence/C51/guard-counterfacts.txt`）。正向证据：同一选择式在两个解释器各跑一遍、逐条用例名不裁剪，**151 passed / 0 failed / 0 skipped × 2**，B 段是本轮新建的 venv——依赖面恰为 `pyproject.toml` 的 `.[web,dev]`，`akshare`/`openbb`/`openbb_platform` 三者均 absent，`pip check` 无破洞（构造过程 `docs/evidence/C51/clean-env-build.txt`，运行 `clean-env-integration-run.txt`）。判据口径：`skipped` 必须为 0（静默跳过不算通过），且扩展标记集而不重跑干净环境会被 `archive_blind` 报红（这条是刻意的棘轮）。全程 `-m "integration and not e2e" --no-cov`，仓库侧 e2e/真库不在此面内（ASGITransport 不跑 lifespan，fixture 引擎为 sqlite 内存库）〕
+本探针：选择式有可指的名字（marker 注册 + 9 个标记单元 + 5 个 P0 域全覆盖），本机和留档的干净 venv 都全绿，且留档是最新一轮自己写的、覆盖当前标记集
+台账现状：state=proven，文档勾选=True
+  - 选择式 `-m 'integration and not e2e'` 有名字了：marker 注册 = yes，--strict-markers = yes，标记单元 9 个 = tests/test_data_query_api.py, tests/test_data_query_http_warehouse.py, tests/test_dwd_merge.py, tests/test_index_constituent_asof.py, tests/test_ods_writer.py, tests/test_p0_providers.py, tests/test_pipeline_jobs.py::TestFullCheckExecutor, tests/test_pipeline_run_api.py, tests/test_pipeline_runner.py
+  - P0 域覆盖：A4.1 迁移的 5 个域全部被这组用例点到，缺 = 0（-）
+  - 本机这一遍（解释器内 akshare/openbb 均不可导入 = yes）：exit=0，202 passed / 0 failed / 0 skipped；另有 3577 条被选择式挡在外面（含全部仓库 e2e）
+  - 干净 venv 留档（读的是最新那一份：docs/evidence/C64/clean-env-integration-run.txt，正文声明轮次 C64，与所在目录一致 = yes）：CLEAN_RUN_EXIT=0，202 passed, 3577 deselected in 153.99s (0:02:33)；留档里两个上游包都记为 absent = yes；留档点到过 11 个模块，当前标记集里没被留档覆盖的 = 0
+VERDICT AC-16|07: proven
+
+### AC-9|07  (document line 197)
+判据原文：**修订传播**：ods 中已存在 key 被修正后，dwd 对应行同步更新（单测）
+本探针：修订节点全绿（含生产 scoped ODS reader）+ 传播链五段（交键/重拼/下传/upsert）
+台账现状：state=proven，文档勾选=True
+  - 修订行为节点: 7/7 passed —— 覆盖窗口外改值、生产 scoped reader、None 水位、多源和无关行排除
+  - 传播链五段: runner 交出被改的键 = yes、run_hook 把 ods 拼法重拼成契约键 = yes、reader 收到这批键 = yes、键进入差异重算 = yes、写侧按业务键 upsert = yes
+VERDICT AC-9|07: proven
+TARGETED_COUNTERFACTS_PASS=48
+ALL_FIVE_PROVEN_EXIT=0

@@ -1,0 +1,17 @@
+ROUND=C65
+DATE=2026-09-30T15:18:29.973009+00:00
+COMMAND=/tmp/opendata-c64-clean-env-20260930/bin/python -m pytest tests/test_ods_write_benchmark.py --no-cov -m not e2e -q
+SHA256 4a47f4dcc746ad57d5c36ce379aa6816d337aa275e32f3b88eca932ff6107063
+============================= test session starts ==============================
+platform darwin -- Python 3.11.8, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: platformdirs-4.12.2, cov-7.1.0, xdist-3.8.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 17 items
+
+tests/test_ods_write_benchmark.py .................                      [100%]
+
+============================== 17 passed in 0.35s ==============================
+
+EXIT=0

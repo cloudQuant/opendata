@@ -1,0 +1,23 @@
+ROUND=C65
+DATE=2026-09-30T15:08:59.080539+00:00
+COMMAND=/tmp/opendata-c64-clean-env-20260930/bin/python -m pytest tests/test_ods_write_benchmark.py tests/test_e2e_opt_in_guard.py tests/test_futures_derivative_port.py --no-cov -m 'not e2e' -q
+SHA256 scripts/ops/benchmark_ods_write.py 311ccdb72c44474fc4335a9a28646d6f863ce60bdc74617893ef6153977caec2
+SHA256 tests/test_ods_write_benchmark.py 266c9541ef944fe7c8dcb29360c4c9b4eb364883aaf04604b9fe9c04c206b197
+SHA256 tests/test_futures_derivative_port.py a8eb426552c4891fe64b5073c544a42fc0a624602cc758873eb83a4fe663ec19
+SHA256 opendata_http/upstream.lock f63cba6e183b94f47b12768afa69ecd50a4cb2ac403c2750fbed27df1dfec8c3
+SHA256 opendata_http/manifest.json 4ff5f0d03039a21e4cce4202123986748ab14ae1e888425f30a068e0cc142cf1
+============================= test session starts ==============================
+platform darwin -- Python 3.11.8, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: platformdirs-4.12.2, cov-7.1.0, xdist-3.8.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 43 items
+
+tests/test_ods_write_benchmark.py ...............                        [ 34%]
+tests/test_e2e_opt_in_guard.py ..........................                [ 95%]
+tests/test_futures_derivative_port.py ..                                 [100%]
+
+============================= 43 passed in 33.05s ==============================
+
+EXIT=0

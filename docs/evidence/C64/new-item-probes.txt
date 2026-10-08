@@ -1,0 +1,74 @@
+Date: 2026-09-30
+Branch: dev
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Worktree: uncommitted C64 changes
+Command: Pinned Anaconda acceptance_item_probe.py --item AC-4|01 --item AC-4|02 --item AC-7|06 --item §5|04 --item §5|05; GB dated_evidence matcher rerun below
+REVIEW_EXIT=0
+
+
+### AC-4|01  (document line 148)
+判据原文：统一超时/重试/并发上限/限流退避生效（mock 上游验证 429 与频率码退避）
+本探针：timeout / 429 retry / per-host rate / concurrency actual mocks
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 5/5 nodes passed
+  - runtime binding=yes; scope=offline actual transport mocks; no real supplier ban or uptime claim
+VERDICT AC-4|01: proven
+
+### AC-4|02  (document line 149)
+判据原文：失败分类（网络/限流/参数/未就绪/不可用）落结构化日志（源/端点/参数摘要/耗时/request_id）
+本探针：structured safe transport failure events
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 4/4 nodes passed
+  - runtime binding=yes; scope=offline structured-event behavior and credential redaction
+VERDICT AC-4|02: proven
+
+### AC-7|06  (document line 175)
+判据原文：**Key 缺失时路由跳过该源并发醒目告警**（而非静默降级）
+本探针：missing credentials exclusion and visible warning
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=current registry resolution; no supplier availability claim
+VERDICT AC-7|06: proven
+
+### §5|04  (document line 311)
+判据原文：REST 分页查询在 GB 级表上响应可控（有索引验证，EXPLAIN 无全表扫描）
+本探针：one real GB ODS table bounded REST/CSV and EXPLAIN evidence
+台账现状：state=unreviewed，文档勾选=False
+  - dated_pass=yes
+  - gb_table=yes
+  - http_rows=yes
+  - indexed=yes
+  - bounded_time=yes
+  - read_only=yes
+  - one indexed stock_daily THS ODS table; 15-day/one-symbol/12-row query; no all-table or P95 claim
+VERDICT §5|04: proven
+
+### §5|05  (document line 312)
+判据原文：**分钟线查询走文件存储**（不进入 MySQL；D13）
+本探针：file-backed minute query with isolated mainDB index
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=fresh temporary file/SQLite checks plus C64 isolated MySQL/Parquet REST; no deployment or file RPO claim
+VERDICT §5|05: proven
+
+census: proven=5
+（5 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+wrote /tmp/opendata-c64-new-probes-run2.json
+
+Matcher naming calibration rerun (same GB archive):
+
+### §5|04  (document line 311)
+判据原文：REST 分页查询在 GB 级表上响应可控（有索引验证，EXPLAIN 无全表扫描）
+本探针：one real GB ODS table bounded REST/CSV and EXPLAIN evidence
+台账现状：state=unreviewed，文档勾选=False
+  - dated_evidence=yes
+  - gb_table=yes
+  - http_rows=yes
+  - indexed=yes
+  - bounded_time=yes
+  - read_only=yes
+  - one indexed stock_daily THS ODS table; 15-day/one-symbol/12-row query; no all-table or P95 claim
+VERDICT §5|04: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）

@@ -1,0 +1,19 @@
+Date: 2026-09-30T11:49:49.525929+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Source: completed C64 full-gate.txt; final-source-manifest.json
+Command: docker ps -a exact owned container; docker image inspect IDs; docker image rm exact owned tags
+Scope: owned MySQL33564 auto-remove container and two verified backup image tags; no global prune; native3306 unchanged
+First post-stop immediate observation retained in final-owned-resource-cleanup-first-observation.txt.
+Untagged: opendata-iteration01-backup:acceptance
+Deleted: sha256:bddbde2e759027f2f2f426d1b3992c23e46abb9c235db92e6ee7d0b456b4793f
+Deleted: sha256:f44866b5043955ddd8cfc7bc516a16f9465a1cf1814304ad105a942f451fe1e0
+Deleted: sha256:1c04e94e744bfd0957b698f9e0b87a6e6b6b19e07c21ed225b0df5a683f79656
+Deleted: sha256:23ae2168f811004b079993e37c98a79256380f971d7a74362e21fcbb731b1f38
+Deleted: sha256:e7ab0110b1e5eceb77bbcdfc0600eb9672d34b07d566324f9e9e193ea7ad1d1c
+Untagged: opendata-iteration01-backup:paired-acceptance
+Deleted: sha256:f7a9ffa05652606f33e456640d3275ed4e0bdb89bd600e3f43466474b295f6be
+
+OWNED_CONTAINER_REMOVED=PASS
+OWNED_IMAGE_TAGS_REMOVED=PASS
+Temporary clean interpreters and declared browser runtime retained for reproducibility.
+PRIMARY_RESOURCE_CLEANUP_EXIT=0

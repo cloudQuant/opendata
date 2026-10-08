@@ -22,7 +22,7 @@ from __future__ import annotations
 import sys
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -145,7 +145,7 @@ def _corrupted(kind: str, raw: pd.DataFrame, qfq: pd.DataFrame, ex_index: int) -
     Raises:
         KeyError: On an unknown ``kind``, so a typo cannot silently no-op.
     """
-    frame = qfq.copy()
+    frame = cast("pd.DataFrame", qfq.copy())
     raw_close = checks.floats_of(raw, "close")
     factors = checks.factor_chain(raw, frame)
 
@@ -261,8 +261,8 @@ def main() -> int:
     print("== 1. 旧判据（A1 恒真）对着坏数据的表现 ==")
     survived = 0
     for kind in ("uniform", *CORRUPTIONS):
-        bad = checks.floats_of(_corrupted(kind, raw, qfq, ex_index), "close")
-        hit = old_a1_judge(raw_close, bad)
+        bad_close = checks.floats_of(_corrupted(kind, raw, qfq, ex_index), "close")
+        hit = old_a1_judge(raw_close, bad_close)
         survived += int(hit)
         print(f"  qfq 改成 {kind:<12} -> 旧判据 {'仍然 PASS（恒真）' if hit else 'FAIL'}")
 
@@ -270,17 +270,21 @@ def main() -> int:
     print("== 2. 三条新判据对着同一批坏数据的表现 ==")
     verdicts: dict[str, str] = {}
     for kind in ("uniform", *CORRUPTIONS):
-        bad = _corrupted(kind, raw, qfq, ex_index)
+        bad_frame = _corrupted(kind, raw, qfq, ex_index)
         _run(
             verdicts,
             f"{kind:<12} 台阶判据",
-            partial(checks.check_factor_steps, raw, bad, dividends),
+            partial(checks.check_factor_steps, raw, bad_frame, dividends),
         )
-        _run(verdicts, f"{kind:<12} 合成判据", partial(checks.check_synthesis, raw, bad))
+        _run(
+            verdicts,
+            f"{kind:<12} 合成判据",
+            partial(checks.check_synthesis, raw, bad_frame),
+        )
         _run(
             verdicts,
             f"{kind:<12} 窗口自洽",
-            partial(_window_diffs, narrow_raw, narrow_qfq, raw, bad),
+            partial(_window_diffs, narrow_raw, narrow_qfq, raw, bad_frame),
         )
 
     print()

@@ -1,0 +1,8 @@
+ROUND=C65
+DATE=2026-09-30T14:56:28.484940+00:00
+COMMAND=Anaconda base clean Python actual Fuyao download_url+HTTPS stream; no presigned URL or key persisted
+REQUEST_OFFICIAL_DUMP=a_share_daily_k_1d_none_10d
+OFFICIAL_DUMP_METADATA={"dump_id": "a_share_daily_k_1d_none_10d", "bytes": 1078277, "sha256": "070b957a201f2e76f1ba21cf362430bfac83f4d594de36ba349e16b3acca62fb", "rows": 55552, "row_groups": 1, "schema": "thscode: string\ncurrency: string\ninterval: string\nadjusted: string\ndate_ms: int64 not null\nopen_price: double not null\nhigh_price: double not null\nlow_price: double not null\nclose_price: double not null\nvolume: double not null\nturnover: double not null\n-- schema metadata --\nwriter.model.name: 'com.myhexin.fuyao.financial.api.apiserver.entity.dto.' + 20", "sample_path": "/tmp/opendata-c65-official-parquet/a_share_daily_k_1d_none_10d.parquet"}
+REQUEST_OFFICIAL_DUMP=a_share_adjustment_factors_event_none_all
+OFFICIAL_DUMP_METADATA={"dump_id": "a_share_adjustment_factors_event_none_all", "bytes": 298457, "sha256": "39e1f4cdeca0bad9fd3a4617f2c30d48d3031015f8c6d0e9b8c62426589d553a", "rows": 57530, "row_groups": 1, "schema": "thscode: string\nticker: string\nex_date_ms: int64 not null\ndividend_per_share: double not null\nper_share_bonus: double not null\nallotment_ratio: double not null\nallotment_price: double not null\ncurrency: string\n-- schema metadata --\nwriter.model.name: 'com.myhexin.fuyao.financial.api.apiserver.entity.dto.' + 30", "sample_path": "/tmp/opendata-c65-official-parquet/a_share_adjustment_factors_event_none_all.parquet"}
+EXIT=0

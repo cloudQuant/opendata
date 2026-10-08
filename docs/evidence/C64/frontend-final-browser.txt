@@ -1,0 +1,40 @@
+Date: 2026-09-30
+Branch: dev
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Worktree: uncommitted C64 changes; initial checkout clean
+Command: cd frontend && CI=1 npx playwright test --reporter=list (after sole catalog navigation change; previous same shell ESLint, vue-tsc -b --force, Vitest 114 passed; their latest output was not redirected, so this file contains only browser output)
+REVIEW_EXIT=0
+
+Output source: opendata-iter01-frontend-final-e2e-20260930.log
+[WebServer] (node:88552) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 21 tests using 1 worker
+
+(node:88676) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:88676) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › e2e/auth.spec.ts:5:3 › Authentication E2E › login page loads (819ms)
+  ✓   2 [chromium] › e2e/auth.spec.ts:12:3 › Authentication E2E › register page loads (266ms)
+  ✓   3 [chromium] › e2e/auth.spec.ts:17:3 › Authentication E2E › unauthenticated user redirected to login (287ms)
+  ✓   4 [chromium] › e2e/auth.spec.ts:29:3 › Authentication E2E › login with invalid credentials submits and leaves no session (513ms)
+  ✓   5 [chromium] › e2e/auth.spec.ts:66:3 › Authentication E2E › unknown routes send an anonymous user to login with the target kept (285ms)
+  ✓   6 [chromium] › e2e/auth.spec.ts:77:3 › Authentication E2E › 404 page renders for a signed-in user (294ms)
+  ✓   7 [chromium] › e2e/scripts.spec.ts:22:3 › Scripts & Data Tables E2E › scripts page requires authentication (276ms)
+  ✓   8 [chromium] › e2e/scripts.spec.ts:27:3 › Scripts & Data Tables E2E › tables page requires authentication (292ms)
+  ✓   9 [chromium] › e2e/scripts.spec.ts:32:3 › Scripts & Data Tables E2E › executions page requires authentication (298ms)
+  ✓  10 [chromium] › e2e/scripts.spec.ts:38:5 › Scripts & Data Tables E2E › Authenticated › legacy script list shows real DataScript identities (617ms)
+  ✓  11 [chromium] › e2e/scripts.spec.ts:51:5 › Scripts & Data Tables E2E › Authenticated › merged catalog is the default at both catalog URLs and filters by market and dataset (2.8s)
+  ✓  12 [chromium] › e2e/scripts.spec.ts:91:5 › Scripts & Data Tables E2E › Authenticated › catalog function drilldown reaches legacy list and an actual script detail route (1.2s)
+  ✓  13 [chromium] › e2e/scripts.spec.ts:115:5 › Scripts & Data Tables E2E › Authenticated › catalog renders an API error and an empty payload visibly (1.0s)
+  ✓  14 [chromium] › e2e/scripts.spec.ts:145:5 › Scripts & Data Tables E2E › Authenticated › tables list shows data and the warehouse layers (790ms)
+  ✓  15 [chromium] › e2e/scripts.spec.ts:160:5 › Scripts & Data Tables E2E › Authenticated › table detail shows schema and preview (1.2s)
+  ✓  16 [chromium] › e2e/scripts.spec.ts:183:5 › Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel (668ms)
+  ✓  17 [chromium] › e2e/scripts.spec.ts:209:5 › Scripts & Data Tables E2E › Authenticated › catalog page shows a domain with its five readings (765ms)
+  ✓  18 [chromium] › e2e/tasks.spec.ts:23:3 › Tasks Management E2E › tasks page requires authentication (292ms)
+  ✓  19 [chromium] › e2e/tasks.spec.ts:30:5 › Tasks Management E2E › Authenticated › tasks list page loads (683ms)
+  ✓  20 [chromium] › e2e/tasks.spec.ts:43:5 › Tasks Management E2E › Authenticated › can create a new task (2.1s)
+  ✓  21 [chromium] › e2e/tasks.spec.ts:80:5 › Tasks Management E2E › Authenticated › the 执行记录 action opens that task’s executions (864ms)
+
+  21 passed (22.1s)

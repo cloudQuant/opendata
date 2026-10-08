@@ -1,0 +1,12 @@
+ARCHIVE_ROUND=C64
+date: 2026-09-30T04:47:48.133385+00:00
+head: d552c081950edffce167e3dfc0be74f37a6950a1 + final frozen worktree
+command: development and declared-only clean interpreters -m pytest tests -m "integration and not e2e" --no-cov -v; clean pip check
+scope: live e2e disabled; configured databases point only at owned isolated MySQL 33564; Redis and scheduler disabled
+INTERPRETER=development /tmp/opendata-iter01-quality-env-20260930/bin/python
+Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+AssertionError
+akshare: present
+openbb: present
+openbb_platform: absent

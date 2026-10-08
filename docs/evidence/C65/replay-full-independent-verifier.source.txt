@@ -1,0 +1,44 @@
+from pathlib import Path
+from datetime import datetime, timezone
+import hashlib,json,time
+import pymysql
+root=Path('/Users/yunjinqi/Documents/new_projects/opendata'); e=root/'docs/evidence/C65'
+m=json.loads((e/'replay-full-manifest.json').read_text())
+if m['status'] != 'complete': raise SystemExit('Replay not terminal done; independent check not started')
+source='opendata_c65_bench_full_6a2145'; target='opendata_c65_replay_full_data_e25963'; meta='opendata_c65_replay_full_meta_e25963'
+assert (m['source_schema'],m['target_schema'],m['metadata_schema']) == (source,target,meta)
+assert m['source_observation']=='existing_ods_snapshot_only'
+source_hashes=m['runtime_code_sha256']; drift=[]
+for rel,expected in source_hashes.items():
+ p=(e/'replay-tool-frozen.source.txt') if rel=='scripts/ops/replay_warehouse_pipeline.py' else root/rel
+ if hashlib.sha256(p.read_bytes()).hexdigest()!=expected: drift.append(rel)
+assert not drift, 'Bound executed-source drift'
+for f in ('replay-full-interrupt.txt','replay-full-resume.txt'):
+ text=(e/f).read_text(); assert ('EXIT=75' in text if f.endswith('interrupt.txt') else 'EXIT=0' in text)
+c=pymysql.connect(host='127.0.0.1',port=33565,user='root',password='',autocommit=True,read_timeout=7200)
+q=c.cursor(); report={'archive_round':'C65','date':datetime.now(timezone.utc).isoformat(),'command':'conda run -n base python /tmp/opendata_c65_full_replay_verify.py; independent SELECT-only full-window count/key/value joins on owned33565', 'window':m['window'],'source_observation':m['source_observation'],'native_writes':0,'source_api_calls':0,'bound_runtime_files_checked':len(source_hashes),'bound_runtime_files_drift':drift,'frozen_replay_sha256':source_hashes['scripts/ops/replay_warehouse_pipeline.py'],'queries':[]}
+def read(sql,args=()):
+ assert sql.lstrip().upper().startswith('SELECT ') and ';' not in sql
+ t=time.monotonic(); q.execute(sql,args); rows=q.fetchall(); report['queries'].append({'sql':sql,'duration_seconds':round(time.monotonic()-t,6)})
+ return rows
+params=(m['window']['start'],m['window']['end'])
+report['source_window_rows'],report['source_symbols'],report['source_plain_symbols']=read(f"SELECT COUNT(*),COUNT(DISTINCT thscode),COUNT(DISTINCT SUBSTRING_INDEX(thscode,'.',1)) FROM `{source}`.ods_stock_daily_ths WHERE trade_date BETWEEN %s AND %s",params)[0]
+report['ods_rows']=read(f'SELECT COUNT(*) FROM `{target}`.ods_stock_daily_ths')[0][0]
+report['dwd_rows']=read(f'SELECT COUNT(*) FROM `{target}`.dwd_stock_daily')[0][0]
+raw=['date_ms','currency','interval','adjusted','open_price','high_price','low_price','close_price','volume','turnover']
+raw_mismatch=' OR '.join(f'NOT (o.`{col}` <=> s.`{col}`)' for col in raw)
+norm={'open':'open_price','high':'high_price','low':'low_price','close':'close_price','volume':'volume','amount':'turnover'}
+norm_mismatch=' OR '.join(f'NOT (d.`{col}` <=> s.`{src}`)' for col,src in norm.items())
+sql=f'''SELECT COUNT(*),SUM(o.thscode IS NULL),SUM(d.symbol IS NULL),SUM({raw_mismatch}),SUM({norm_mismatch}),SUM(NOT(o._source <=> 'ths')),SUM(NOT(d.source <=> 'ths')) FROM `{source}`.ods_stock_daily_ths s LEFT JOIN `{target}`.ods_stock_daily_ths o ON o.thscode=s.thscode AND o.trade_date=s.trade_date LEFT JOIN `{target}`.dwd_stock_daily d ON d.symbol=SUBSTRING_INDEX(s.thscode,'.',1) AND d.trade_date=s.trade_date WHERE s.trade_date BETWEEN %s AND %s'''
+keys=['joined_source_rows','missing_ods_keys','missing_dwd_keys','ods_raw_value_mismatch_rows','dwd_normalized_value_mismatch_rows','ods_source_mismatch_rows','dwd_source_mismatch_rows']
+report.update(zip(keys,(int(x or 0) for x in read(sql,params)[0])))
+report['shards_by_status']=dict(read(f'SELECT status,COUNT(*) FROM `{meta}`.pipeline_progress GROUP BY status'))
+report['progress_rows_written'],report['progress_error_rows'],report['distinct_shards']=map(int,read(f'SELECT SUM(rows_written),SUM(error IS NOT NULL),COUNT(DISTINCT shard) FROM `{meta}`.pipeline_progress')[0])
+report['hooks_by_status']=[{'step':a,'status':b,'count':n} for a,b,n in read(f'SELECT step,status,COUNT(*) FROM `{meta}`.pipeline_step_checkpoints GROUP BY step,status')]
+report['symbol_windows']=read(f'SELECT COUNT(*) FROM `{meta}`.pipeline_symbol_windows')[0][0]
+expected=m['window_rows_exact']; shards=(len(m['symbols'])+24)//25
+report['pass']=bool(all(report[k]==expected for k in ('source_window_rows','ods_rows','dwd_rows','joined_source_rows','progress_rows_written')) and report['source_symbols']==len(m['symbols'])==report['source_plain_symbols'] and all(report[k]==0 for k in keys[1:]) and report['shards_by_status']=={'DONE':shards} and report['distinct_shards']==shards and report['progress_error_rows']==0 and sorted((h['step'],h['status'],h['count']) for h in report['hooks_by_status'])==[('merge','done',1),('meta','done',1),('notify','done',1)])
+report['limits']='existing immutable ODS snapshot coverage only; latest vendor fetch/current listed universe not independently proven; external delivery suppressed'
+c.close(); (e/'replay-full-independent-sql.json').write_text(json.dumps(report,ensure_ascii=False,indent=2,default=str)+'\n')
+print(json.dumps({k:v for k,v in report.items() if k!='queries'},ensure_ascii=False,default=str))
+raise SystemExit(0 if report['pass'] else 1)

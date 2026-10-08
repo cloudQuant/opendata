@@ -1,0 +1,20 @@
+Date: 2026-09-30T22:03:09.340840+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: fixed-env pytest tests/test_legacy_stock_daily_transfer.py --no-cov -o addopts=; scripts/ops/migrate_legacy_stock_daily.py --apply --output docs/evidence/C65/legacy-transfer-current.json
+Tool_SHA256: a89c27039f4899021720e1676200545d9650975e7ba7de5bb3d57ee2fd1dfa13
+============================= test session starts ==============================
+platform darwin -- Python 3.11.8, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: platformdirs-4.12.2, cov-7.1.0, xdist-3.8.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 30 items
+
+tests/test_legacy_stock_daily_transfer.py .............................. [100%]
+
+============================== 30 passed in 0.16s ==============================
+
+TEST_EXIT=0
+{"status": "FAIL", "error_classification": "invalid_numeric_field_成交额", "report": "docs/evidence/C65/legacy-transfer-current.json"}
+
+TRANSFER_EXIT=1

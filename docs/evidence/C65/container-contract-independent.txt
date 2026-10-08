@@ -1,0 +1,16 @@
+C65 | 2026-09-30 | Primary container contract
+COMMAND /tmp/opendata-c64-clean-env-20260930/bin/python -m pytest -q --no-cov tests/test_container_build_contract.py
+HASHES {"Dockerfile": "e9872244c18ab4855c4bdb6d6707b5251cc4fe469bcd06c0c2b7aed668bf1fb3", ".dockerignore": "02c459eacefd6c1415c1f4b8a94e6d177b7a5debb33ae0dab43bea724d511b03", "tests/test_container_build_contract.py": "39103ac548b4edf0417b244afd6e6bb6f2c002eb46cda48f5211f76c5f4b8509"}
+============================= test session starts ==============================
+platform darwin -- Python 3.11.8, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: platformdirs-4.12.2, cov-7.1.0, xdist-3.8.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 4 items
+
+tests/test_container_build_contract.py ....                              [100%]
+
+============================== 4 passed in 0.08s ===============================
+
+EXIT=0

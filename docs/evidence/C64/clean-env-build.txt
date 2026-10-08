@@ -1,0 +1,96 @@
+ARCHIVE_ROUND=C64
+date: 2026-09-30T04:28:38.857748+00:00
+head: d552c081950edffce167e3dfc0be74f37a6950a1 + current worktree
+command: clean venv pip uninstall opendata; pip install --no-deps fresh source copy; pip check and import inventory
+source: git cached and nonignored current files copied into /tmp/opendata-c64-clean-source-20260930
+scope: no system site packages; dependencies from declared .[web,dev]; fresh source excludes ignored build artifacts
+prior build: ignored build/lib/akshare dated 2026-09-22 contaminated checkout wheel; initial actual output retained in clean-env-build-contaminated.txt. User build directory preserved.
+COMMAND=['/tmp/opendata-c64-clean-env-20260930/bin/python', '-m', 'pip', 'uninstall', '-y', 'opendata']
+Found existing installation: opendata 0.1.0
+Uninstalling opendata-0.1.0:
+  Successfully uninstalled opendata-0.1.0
+STEP_EXIT=0
+COMMAND=['/tmp/opendata-c64-clean-env-20260930/bin/python', '-m', 'pip', 'install', '--disable-pip-version-check', '--no-deps', '/tmp/opendata-c64-clean-source-20260930']
+Processing /tmp/opendata-c64-clean-source-20260930
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: opendata
+  Building wheel for opendata (pyproject.toml): started
+  Building wheel for opendata (pyproject.toml): finished with status 'done'
+  Created wheel for opendata: filename=opendata-0.1.0-py3-none-any.whl size=1407387 sha256=ef7127d284070b5da51f42e3af44fd336df44dbed2e64a97a8d0e94fc39cebfb
+  Stored in directory: /Users/yunjinqi/Library/Caches/pip/wheels/96/6b/11/72d97826620867bacc1456fbd905a5e5067c1b577c5ca6a549
+Successfully built opendata
+Installing collected packages: opendata
+Successfully installed opendata-0.1.0
+STEP_EXIT=0
+COMMAND=['/tmp/opendata-c64-clean-env-20260930/bin/python', '-m', 'pip', 'check']
+No broken requirements found.
+STEP_EXIT=0
+COMMAND=['/tmp/opendata-c64-clean-env-20260930/bin/python', '-c', "import importlib.util; names=('akshare','openbb','openbb_platform'); specs=[importlib.util.find_spec(n) for n in names]; [print(n+': '+('present' if s else 'absent')) for n,s in zip(names,specs)]; assert all(s is None for s in specs)"]
+akshare: absent
+openbb: absent
+openbb_platform: absent
+STEP_EXIT=0
+BUILD_EXIT=0
+
+FINAL_FROZEN_SOURCE_REFRESH date: 2026-09-30T04:47:38.812813+00:00
+command: clean interpreter pip install --no-deps --force-reinstall fresh source copy
+Processing /tmp/opendata-c64-clean-source-20260930
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: opendata
+  Building wheel for opendata (pyproject.toml): started
+  Building wheel for opendata (pyproject.toml): finished with status 'done'
+  Created wheel for opendata: filename=opendata-0.1.0-py3-none-any.whl size=1408189 sha256=d5ebad7128e489e04303a8f97cddeb38b6687f826ee14bc26ae2e8617db52a51
+  Stored in directory: /Users/yunjinqi/Library/Caches/pip/wheels/96/6b/11/72d97826620867bacc1456fbd905a5e5067c1b577c5ca6a549
+Successfully built opendata
+Installing collected packages: opendata
+  Attempting uninstall: opendata
+    Found existing installation: opendata 0.1.0
+    Uninstalling opendata-0.1.0:
+      Successfully uninstalled opendata-0.1.0
+Successfully installed opendata-0.1.0
+FINAL_REFRESH_EXIT=0
+installed_templates_sha_matches_frozen_worktree=yes
+
+FINAL COMPOSITE REPAIR PACKAGE REFRESH: 2026-09-30T05:20:57.699122+00:00
+opendata/pipeline/templates.py sha256=c28ae71b33e29a87f9168479690a91c8e3807f42fef3f03b38e265146f42ca5e
+opendata/data/http_client.py sha256=31135f697bd9d11f4739c26da68dc1d7cdac5835283f81454cb0ab2d93bbc738
+Processing /tmp/opendata-c64-clean-source-20260930
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Getting requirements to build wheel: started
+  Getting requirements to build wheel: finished with status 'done'
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'done'
+Building wheels for collected packages: opendata
+  Building wheel for opendata (pyproject.toml): started
+  Building wheel for opendata (pyproject.toml): finished with status 'done'
+  Created wheel for opendata: filename=opendata-0.1.0-py3-none-any.whl size=1408243 sha256=8160d61ac8f2f057bab87859c05161f9c35f5916948f53a4167b6550c5df25e9
+  Stored in directory: /Users/yunjinqi/Library/Caches/pip/wheels/96/6b/11/72d97826620867bacc1456fbd905a5e5067c1b577c5ca6a549
+Successfully built opendata
+Installing collected packages: opendata
+  Attempting uninstall: opendata
+    Found existing installation: opendata 0.1.0
+    Uninstalling opendata-0.1.0:
+      Successfully uninstalled opendata-0.1.0
+Successfully installed opendata-0.1.0
+
+[notice] A new release of pip is available: 24.0 -> 26.2.1
+[notice] To update, run: python -m pip install --upgrade pip
+FINAL_PACKAGE_REFRESH_EXIT=0
+akshare: absent
+openbb: absent
+openbb_platform: absent
+INSTALLED_SOURCE_MATCH opendata/pipeline/templates.py=True
+INSTALLED_SOURCE_MATCH opendata/data/http_client.py=True
+No broken requirements found.
+FINAL_PIP_CHECK_EXIT=0

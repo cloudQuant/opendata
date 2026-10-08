@@ -1,0 +1,22 @@
+Date: 2026-09-30T11:50:56.079446+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: scripts/quality/evidence_traceability.py after final artifacts
+Source: full-gate.txt; final-source-manifest.json; final-delivery-review.txt
+
+# evidence traceability over docs/evidence/
+  rounds        = 74
+  files census  = 809 (gate logs: 125)
+  dates in gate logs = header 116/125, printed by the run 9/125
+  branch named in header = 102/125 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 1
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 0
+    identity: docs/evidence/C64/quality-a2-final-frozen.txt
+NEW VIOLATION: docs/evidence/C64/quality-a2-final-frozen.txt#identity
+
+FAIL: 1 new traceability violation(s) against a 0-entry baseline.
+
+FINAL_EVIDENCE_TRACEABILITY_EXIT=1

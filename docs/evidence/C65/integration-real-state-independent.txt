@@ -1,0 +1,29 @@
+Date: 2026-10-01T00:13:37.609427+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: conda run --no-capture-output -n base python /tmp/opendata_c65_run_checks.py; fixed-environment commands below
+Scope: owned33565 acceptance schemas; scheduler/upstream keys/SMTP disabled; live e2e default-deny; production3306 writes=0
+
+Actual argv: ['python', '-m', 'pytest', 'tests/test_iteration01_integration_contracts.py', '--no-cov', '-o', 'addopts=', '-q']
+......                                                                   [100%]
+6 passed in 4.12s
+
+CHECK_EXIT=0
+
+Actual argv: ['python', 'docs/evidence/C44/shell_audit.py']
+shell_count[self-reference] = 0
+shell_count[vacuous-assert] = 0
+shell_count[constant-shell] = 0
+shell_count[source-form-check] = 0
+files_scanned = 212
+fixture_cases = 9
+fixture_sha_ok = yes
+provenance = yes
+t1_error_cases = 6
+t1_success_cases = 9
+t1_normalize_cases = 4
+t1_golden_days = 24
+VERDICT shells=clean t1=met exit=0
+
+CHECK_EXIT=0
+
+DRIVER_EXIT=0

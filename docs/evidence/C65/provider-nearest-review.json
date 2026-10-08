@@ -1,0 +1,121 @@
+{
+  "archive_round": "C65",
+  "generated_at": "2026-09-30T22:38:17.357893+00:00",
+  "reviewer": {
+    "name": "Codex primary",
+    "kind": "AI",
+    "authorization": "用户直接回复：你帮我直接审阅"
+  },
+  "review_scope": "current seven provider Python packages; fixed five OpenBB provider baselines; no historical-development or whole-repository provenance assertion",
+  "provider_review_sha256": "96b6c8f5dbaf2982fe7755a0caeb805346f2adc19747c33f3b09e9474b637aeb",
+  "similarity_inventory_sha256": "bd5065a01695734738bc2f28bec639451243f9e07cfcccbc45fbe9e40b168d3a",
+  "review_complete": true,
+  "unreviewed_candidates": 0,
+  "nearest_pair_reviews": [
+    {
+      "local_path": "opendata/data/providers/ths/models/fund_action.py",
+      "local_function": "ThsFundActionFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        116,
+        138
+      ],
+      "local_ast_node_count": 79,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_presentation.py",
+      "baseline_function": "pivot_table_mode",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "While.body",
+      "baseline_span": [
+        1436,
+        1444
+      ],
+      "baseline_ast_node_count": 86,
+      "ordered_token_ratio": 0.5851,
+      "multiset_dice": 0.7021,
+      "node_count_ratio": 0.9186,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 2
+      },
+      "score": 0.6644,
+      "tier": "nearest_pair",
+      "reviewed": true,
+      "result": "NO_SHARED_COMPLEX_IMPLEMENTATION_OBSERVED",
+      "basis": "THS基金事件按ex_date过滤窗口的tuple生成式，对比IMF父节点链遍历继承unit/scale；目的、调用与数据结构不同，未见共享实现块。"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/index_constituent.py",
+      "local_function": "AkshareIndexConstituentFetcher.transform_data",
+      "local_function_kind": "function",
+      "local_block_kind": "For.body",
+      "local_span": [
+        97,
+        108
+      ],
+      "local_ast_node_count": 96,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/query_builder.py",
+      "baseline_function": "ImfQueryBuilder.build_url",
+      "baseline_function_kind": "function",
+      "baseline_block_kind": "For.body",
+      "baseline_span": [
+        68,
+        82
+      ],
+      "baseline_ast_node_count": 92,
+      "ordered_token_ratio": 0.553,
+      "multiset_dice": 0.7097,
+      "node_count_ratio": 0.9583,
+      "shared_anchor_counts": {
+        "call_names": 2,
+        "long_string_literals": 0,
+        "operator_kinds": 2
+      },
+      "score": 0.653,
+      "tier": "nearest_pair",
+      "reviewed": true,
+      "result": "NO_SHARED_COMPLEX_IMPLEMENTATION_OBSERVED",
+      "basis": "本地指数成分逐行转IndexConstituent并校验日期/代码，对比IMF维度通配符与SDMX查询key拼装；共享for/None分支为通用结构，具体调用与逻辑不同。"
+    },
+    {
+      "local_path": "opendata/data/providers/akshare/models/index_daily.py",
+      "local_function": "AkshareIndexDailyFetcher.extract_data",
+      "local_function_kind": "function",
+      "local_block_kind": "function_body",
+      "local_span": [
+        59,
+        80
+      ],
+      "local_ast_node_count": 54,
+      "baseline_path": "openbb_platform/providers/imf/openbb_imf/models/consumer_price_index.py",
+      "baseline_function": "ImfConsumerPriceIndexFetcher.aextract_data",
+      "baseline_function_kind": "async_function",
+      "baseline_block_kind": "Try.body",
+      "baseline_span": [
+        468,
+        477
+      ],
+      "baseline_ast_node_count": 43,
+      "ordered_token_ratio": 0.5941,
+      "multiset_dice": 0.6139,
+      "node_count_ratio": 0.7963,
+      "shared_anchor_counts": {
+        "call_names": 0,
+        "long_string_literals": 0,
+        "operator_kinds": 0
+      },
+      "score": 0.6293,
+      "tier": "nearest_pair",
+      "reviewed": true,
+      "result": "NO_SHARED_COMPLEX_IMPLEMENTATION_OBSERVED",
+      "basis": "本地Eastmoney历史接口日期格式%Y%m%d及固定默认边界，对比IMF query_builder SDMX CPI取数及%Y-%m-%d；共享日期格式化形态不构成复杂实现复制。"
+    }
+  ],
+  "limitations": [
+    "Heuristic AST screening can miss transformed, reordered, split, or cross-function copying and is not a clone detector.",
+    "Common libraries, framework patterns, APIs, and provider schemas can produce structural similarity; candidates need human review.",
+    "Only provider source package Python files were scanned; openbb_core, integration tests, documentation, and absent upstream providers akshare/ths were excluded.",
+    "Current code hashes cannot establish historical authoring process, clean-room history, or legal/data-rights conclusions."
+  ]
+}

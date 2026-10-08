@@ -1,0 +1,17 @@
+Date: 2026-09-30T21:29:26.474955+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: pytest tests/test_warehouse_pipeline_replay.py tests/test_container_contract.py --no-cov -o addopts=
+2026-09-30 23:29:31.033 | INFO     | opendata.core.token_blacklist:_create_blacklist:186 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+ERROR: file or directory not found: tests/test_container_contract.py
+
+============================= test session starts ==============================
+platform darwin -- Python 3.11.8, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: platformdirs-4.12.2, cov-7.1.0, xdist-3.8.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 0 items
+
+============================ no tests ran in 0.01s =============================
+
+EXIT=4

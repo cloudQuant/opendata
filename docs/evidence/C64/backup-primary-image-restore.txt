@@ -1,0 +1,21 @@
+Date: 2026-09-30T04:00:34.872548+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1 + uncommitted C64 changes
+Command: Primary Anaconda-base acceptance harness; actual owned MySQL-8 backup image runs scripts/ops/backup_mysql.sh; gzip verification, restores, COUNT(*) and normalized SHOW CREATE TABLE comparisons.
+Scope: Docker network shared only with owned acceptance container (host 127.0.0.1:33564); container-local 3306 is not the native host MySQL. No provider calls.
+
+mysqldump  Ver 8.0.46 for Linux on aarch64 (MySQL Community Server - GPL)
+
+Actual backup image script output:
+opendata backup started at 20260930T040040Z_1
+==> dumping metadata database to /backups/metadata_20260930T040040Z_1.sql.gz
+==> dumping warehouse database to /backups/warehouse_20260930T040040Z_1.sql.gz
+==> pruning backups older than 30 days
+opendata backup finished
+
+metadata: PASS; tables=14; rows=10; gzip_bytes=3346; SHA256=09d142679cdfc7751180b4687ee2bba9053190605a26ab58cf9ad2ebcf538ca0
+warehouse: PASS; tables=18; rows=22; gzip_bytes=3014; SHA256=bb04bfb106c037b5e75f73065943ea8e8397c9c29fe2c0f3214ff66df8501c10
+pipeline_step_checkpoints: DDL PASS; normalized SHA256=ce16474c9b9e84440c864d835775c0ad44428f6f6062a23ea2cf0561c432b6a5
+pipeline_symbol_windows: DDL PASS; normalized SHA256=6a55bdf963b5dec1924eec76b023d18735b1ed52fdf9b393d216b4d509868cdb
+All independent primary backup/restore comparisons passed.
+Temporary primary restore schemas/users/files removed; counts=0/0.
+Exit: 0

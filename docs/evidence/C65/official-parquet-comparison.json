@@ -1,0 +1,569 @@
+{
+  "schema_version": 1,
+  "sources": {
+    "market_dump_documentation": {
+      "url": "https://fuyao.aicubes.cn/llms-full.txt",
+      "retrieved_at": "2026-09-30T15:01:20.590097+00:00",
+      "sha256": "599fe34d0a497535f795cde31f938a7fe8ee6441eedb67882e934b4e58c002c3",
+      "capture_record": "docs/evidence/C65/official-parquet-doc-fetch.json",
+      "section_url": "https://fuyao.aicubes.cn/docs/api-reference/market-dumps/",
+      "facts": [
+        "daily key (thscode, date_ms); adjustment key (thscode, ex_date_ms)",
+        "timestamps are Unix milliseconds interpreted in Asia/Shanghai",
+        "daily volume is shares; prices and turnover are CNY",
+        "adjustment amounts and ratios are per-share values, with no percent conversion"
+      ]
+    },
+    "official_file_download_record": "docs/evidence/C65/official-parquet-download.json"
+  },
+  "files": [
+    {
+      "kind": "daily",
+      "dump_id": "a_share_daily_k_1d_none_10d",
+      "doc_section": "market-dumps: daily-k-10d",
+      "file": {
+        "file_name": "a_share_daily_k_1d_none_10d.parquet",
+        "bytes": 1078277,
+        "sha256": "070b957a201f2e76f1ba21cf362430bfac83f4d594de36ba349e16b3acca62fb"
+      },
+      "source_provenance": {
+        "download_record": "docs/evidence/C65/official-parquet-download.json",
+        "retrieved_at": "2026-09-30T14:56:28.484940+00:00",
+        "source_endpoint": "https://fuyao.aicubes.cn/api/dump/market-dumps/daily-k-10d/download-url",
+        "recorded_official_sample": "a_share_daily_k_1d_none_10d.parquet",
+        "recorded_bytes": 1078277,
+        "recorded_rows": 55552,
+        "recorded_sha256": "070b957a201f2e76f1ba21cf362430bfac83f4d594de36ba349e16b3acca62fb",
+        "input_sha256_matches_recorded_sample": true,
+        "input_file_name_matches_record": true,
+        "short_lived_presigned_url": "omitted",
+        "input_row_count_matches_record": true
+      },
+      "status": "PASS",
+      "issues": [],
+      "mapping": [
+        {
+          "source_column": "thscode",
+          "parsed_field": "symbol",
+          "transform": "identity; preserve exchange suffix",
+          "unit": "ticker",
+          "expected_type_family": "string"
+        },
+        {
+          "source_column": "currency",
+          "parsed_field": null,
+          "transform": "validate constant CNY",
+          "unit": "currency code",
+          "expected_type_family": "string"
+        },
+        {
+          "source_column": "interval",
+          "parsed_field": null,
+          "transform": "validate constant 1d",
+          "unit": "interval",
+          "expected_type_family": "string"
+        },
+        {
+          "source_column": "adjusted",
+          "parsed_field": null,
+          "transform": "validate constant none",
+          "unit": "adjustment mode",
+          "expected_type_family": "string"
+        },
+        {
+          "source_column": "date_ms",
+          "parsed_field": "trade_date",
+          "transform": "Unix milliseconds to Asia/Shanghai date",
+          "unit": "milliseconds",
+          "expected_type_family": "integer"
+        },
+        {
+          "source_column": "open_price",
+          "parsed_field": "open",
+          "transform": "numeric identity; no rescaling",
+          "unit": "CNY per share",
+          "expected_type_family": "numeric"
+        },
+        {
+          "source_column": "high_price",
+          "parsed_field": "high",
+          "transform": "numeric identity; no rescaling",
+          "unit": "CNY per share",
+          "expected_type_family": "numeric"
+        },
+        {
+          "source_column": "low_price",
+          "parsed_field": "low",
+          "transform": "numeric identity; no rescaling",
+          "unit": "CNY per share",
+          "expected_type_family": "numeric"
+        },
+        {
+          "source_column": "close_price",
+          "parsed_field": "close",
+          "transform": "numeric identity; no rescaling",
+          "unit": "CNY per share",
+          "expected_type_family": "numeric"
+        },
+        {
+          "source_column": "volume",
+          "parsed_field": "volume",
+          "transform": "numeric identity; no shares-to-lots conversion",
+          "unit": "shares",
+          "expected_type_family": "numeric"
+        },
+        {
+          "source_column": "turnover",
+          "parsed_field": "amount",
+          "transform": "numeric identity; no rescaling",
+          "unit": "CNY",
+          "expected_type_family": "numeric"
+        }
+      ],
+      "value_compare_kind": "project parser output vs each row of the supplied parquet",
+      "duplicate_key_alignment": "compare every occurrence per normalized key in original source order; duplicate keys still fail validation",
+      "official_documentation_values": "partial API examples are recorded separately; no dump-row example is asserted unless its key is documented",
+      "raw": {
+        "row_count": 55552,
+        "column_names": [
+          "thscode",
+          "currency",
+          "interval",
+          "adjusted",
+          "date_ms",
+          "open_price",
+          "high_price",
+          "low_price",
+          "close_price",
+          "volume",
+          "turnover"
+        ],
+        "schema": [
+          {
+            "name": "thscode",
+            "arrow_type": "string",
+            "arrow_type_family": "string",
+            "nullable": true,
+            "expected_type_family": "string"
+          },
+          {
+            "name": "currency",
+            "arrow_type": "string",
+            "arrow_type_family": "string",
+            "nullable": true,
+            "expected_type_family": "string"
+          },
+          {
+            "name": "interval",
+            "arrow_type": "string",
+            "arrow_type_family": "string",
+            "nullable": true,
+            "expected_type_family": "string"
+          },
+          {
+            "name": "adjusted",
+            "arrow_type": "string",
+            "arrow_type_family": "string",
+            "nullable": true,
+            "expected_type_family": "string"
+          },
+          {
+            "name": "date_ms",
+            "arrow_type": "int64",
+            "arrow_type_family": "integer",
+            "nullable": false,
+            "expected_type_family": "integer"
+          },
+          {
+            "name": "open_price",
+            "arrow_type": "double",
+            "arrow_type_family": "numeric",
+            "nullable": false,
+            "expected_type_family": "numeric"
+          },
+          {
+            "name": "high_price",
+            "arrow_type": "double",
+            "arrow_type_family": "numeric",
+            "nullable": false,
+            "expected_type_family": "numeric"
+          },
+          {
+            "name": "low_price",
+            "arrow_type": "double",
+            "arrow_type_family": "numeric",
+            "nullable": false,
+            "expected_type_family": "numeric"
+          },
+          {
+            "name": "close_price",
+            "arrow_type": "double",
+            "arrow_type_family": "numeric",
+            "nullable": false,
+            "expected_type_family": "numeric"
+          },
+          {
+            "name": "volume",
+            "arrow_type": "double",
+            "arrow_type_family": "numeric",
+            "nullable": false,
+            "expected_type_family": "numeric"
+          },
+          {
+            "name": "turnover",
+            "arrow_type": "double",
+            "arrow_type_family": "numeric",
+            "nullable": false,
+            "expected_type_family": "numeric"
+          }
+        ],
+        "null_counts": {
+          "thscode": 0,
+          "currency": 0,
+          "interval": 0,
+          "adjusted": 0,
+          "date_ms": 0,
+          "open_price": 0,
+          "high_price": 0,
+          "low_price": 0,
+          "close_price": 0,
+          "volume": 0,
+          "turnover": 0
+        },
+        "key_columns": [
+          "thscode",
+          "date_ms"
+        ],
+        "null_key_row_count": 0,
+        "duplicate_key_group_count": 0,
+        "duplicate_key_groups": []
+      },
+      "official_api_example_comparison": {
+        "status": "NOT_COMPARABLE",
+        "documentation_url": "https://fuyao.aicubes.cn/docs/api-reference/prices/",
+        "reason": "The documented daily API example requests adjust=forward; the supplied dump is adjusted=none."
+      },
+      "comparison": {
+        "parsed_rows": 55552,
+        "raw_row_occurrences": 55552,
+        "raw_rows_with_unique_model_key": 55552,
+        "duplicate_parsed_keys": [],
+        "missing_parsed_key_count": 0,
+        "missing_parsed_keys": [],
+        "unexpected_parsed_key_count": 0,
+        "unexpected_parsed_keys": [],
+        "missing_parsed_occurrence_count": 0,
+        "unexpected_parsed_occurrence_count": 0,
+        "occurrence_count_deltas": [],
+        "value_diff_count": 0,
+        "value_diffs": [],
+        "rtol": 1e-09,
+        "absolute_tolerance": 0.0,
+        "max_absolute_error": 0.0,
+        "max_relative_error": 0.0,
+        "relative_error_undefined_for_zero_expected_count": 0
+      }
+    },
+    {
+      "kind": "adjustment",
+      "dump_id": "a_share_adjustment_factors_event_none_all",
+      "doc_section": "market-dumps: adjustment-factors",
+      "file": {
+        "file_name": "a_share_adjustment_factors_event_none_all.parquet",
+        "bytes": 298457,
+        "sha256": "39e1f4cdeca0bad9fd3a4617f2c30d48d3031015f8c6d0e9b8c62426589d553a"
+      },
+      "source_provenance": {
+        "download_record": "docs/evidence/C65/official-parquet-download.json",
+        "retrieved_at": "2026-09-30T14:56:28.484940+00:00",
+        "source_endpoint": "https://fuyao.aicubes.cn/api/dump/market-dumps/adjustment-factors/download-url",
+        "recorded_official_sample": "a_share_adjustment_factors_event_none_all.parquet",
+        "recorded_bytes": 298457,
+        "recorded_rows": 57530,
+        "recorded_sha256": "39e1f4cdeca0bad9fd3a4617f2c30d48d3031015f8c6d0e9b8c62426589d553a",
+        "input_sha256_matches_recorded_sample": true,
+        "input_file_name_matches_record": true,
+        "short_lived_presigned_url": "omitted",
+        "input_row_count_matches_record": true
+      },
+      "status": "FAIL",
+      "issues": [
+        {
+          "code": "duplicate_raw_keys",
+          "groups": [
+            {
+              "key": [
+                "000601.SZ",
+                878486400000
+              ],
+              "count": 2
+            },
+            {
+              "key": [
+                "000812.SZ",
+                906393600000
+              ],
+              "count": 2
+            },
+            {
+              "key": [
+                "603883.SH",
+                1719417600000
+              ],
+              "count": 2
+            }
+          ]
+        },
+        {
+          "code": "duplicate_parsed_keys"
+        }
+      ],
+      "mapping": [
+        {
+          "source_column": "thscode",
+          "parsed_field": "symbol",
+          "transform": "identity; preserve exchange suffix",
+          "unit": "ticker",
+          "expected_type_family": "string"
+        },
+        {
+          "source_column": "ticker",
+          "parsed_field": null,
+          "transform": "validate equals thscode without exchange suffix",
+          "unit": "display ticker",
+          "expected_type_family": "string"
+        },
+        {
+          "source_column": "ex_date_ms",
+          "parsed_field": "ex_date",
+          "transform": "Unix milliseconds to Asia/Shanghai date",
+          "unit": "milliseconds",
+          "expected_type_family": "integer"
+        },
+        {
+          "source_column": "dividend_per_share",
+          "parsed_field": "cash_dividend",
+          "transform": "numeric identity; no rescaling",
+          "unit": "CNY per share",
+          "expected_type_family": "numeric"
+        },
+        {
+          "source_column": "per_share_bonus",
+          "parsed_field": "stock_dividend",
+          "transform": "numeric identity; preserve ratio",
+          "unit": "shares per share ratio",
+          "expected_type_family": "numeric"
+        },
+        {
+          "source_column": "allotment_ratio",
+          "parsed_field": "rights_shares",
+          "transform": "numeric identity; preserve ratio",
+          "unit": "shares per share ratio",
+          "expected_type_family": "numeric"
+        },
+        {
+          "source_column": "allotment_price",
+          "parsed_field": "rights_price",
+          "transform": "numeric identity; no rescaling",
+          "unit": "CNY per share",
+          "expected_type_family": "numeric"
+        },
+        {
+          "source_column": "currency",
+          "parsed_field": null,
+          "transform": "validate constant CNY",
+          "unit": "currency code",
+          "expected_type_family": "string"
+        }
+      ],
+      "value_compare_kind": "project parser output vs each row of the supplied parquet",
+      "duplicate_key_alignment": "compare every occurrence per normalized key in original source order; duplicate keys still fail validation",
+      "official_documentation_values": "partial API examples are recorded separately; no dump-row example is asserted unless its key is documented",
+      "raw": {
+        "row_count": 57530,
+        "column_names": [
+          "thscode",
+          "ticker",
+          "ex_date_ms",
+          "dividend_per_share",
+          "per_share_bonus",
+          "allotment_ratio",
+          "allotment_price",
+          "currency"
+        ],
+        "schema": [
+          {
+            "name": "thscode",
+            "arrow_type": "string",
+            "arrow_type_family": "string",
+            "nullable": true,
+            "expected_type_family": "string"
+          },
+          {
+            "name": "ticker",
+            "arrow_type": "string",
+            "arrow_type_family": "string",
+            "nullable": true,
+            "expected_type_family": "string"
+          },
+          {
+            "name": "ex_date_ms",
+            "arrow_type": "int64",
+            "arrow_type_family": "integer",
+            "nullable": false,
+            "expected_type_family": "integer"
+          },
+          {
+            "name": "dividend_per_share",
+            "arrow_type": "double",
+            "arrow_type_family": "numeric",
+            "nullable": false,
+            "expected_type_family": "numeric"
+          },
+          {
+            "name": "per_share_bonus",
+            "arrow_type": "double",
+            "arrow_type_family": "numeric",
+            "nullable": false,
+            "expected_type_family": "numeric"
+          },
+          {
+            "name": "allotment_ratio",
+            "arrow_type": "double",
+            "arrow_type_family": "numeric",
+            "nullable": false,
+            "expected_type_family": "numeric"
+          },
+          {
+            "name": "allotment_price",
+            "arrow_type": "double",
+            "arrow_type_family": "numeric",
+            "nullable": false,
+            "expected_type_family": "numeric"
+          },
+          {
+            "name": "currency",
+            "arrow_type": "string",
+            "arrow_type_family": "string",
+            "nullable": true,
+            "expected_type_family": "string"
+          }
+        ],
+        "null_counts": {
+          "thscode": 0,
+          "ticker": 0,
+          "ex_date_ms": 0,
+          "dividend_per_share": 0,
+          "per_share_bonus": 0,
+          "allotment_ratio": 0,
+          "allotment_price": 0,
+          "currency": 0
+        },
+        "key_columns": [
+          "thscode",
+          "ex_date_ms"
+        ],
+        "null_key_row_count": 0,
+        "duplicate_key_group_count": 3,
+        "duplicate_key_groups": [
+          {
+            "key": [
+              "000601.SZ",
+              878486400000
+            ],
+            "count": 2
+          },
+          {
+            "key": [
+              "000812.SZ",
+              906393600000
+            ],
+            "count": 2
+          },
+          {
+            "key": [
+              "603883.SH",
+              1719417600000
+            ],
+            "count": 2
+          }
+        ]
+      },
+      "official_api_example_comparison": {
+        "documentation_url": "https://fuyao.aicubes.cn/docs/api-reference/corporate-actions/",
+        "source_snapshot": "599fe34d0a497535f795cde31f938a7fe8ee6441eedb67882e934b4e58c002c3",
+        "status": "RECORDED",
+        "rows": [
+          {
+            "key": [
+              "600519.SH",
+              1766073600000
+            ],
+            "status": "MATCH",
+            "checked_columns": [
+              "dividend_per_share",
+              "per_share_bonus"
+            ],
+            "diffs": []
+          },
+          {
+            "key": [
+              "600519.SH",
+              1437062400000
+            ],
+            "status": "MATCH",
+            "checked_columns": [
+              "dividend_per_share",
+              "per_share_bonus"
+            ],
+            "diffs": []
+          }
+        ],
+        "scope_note": "Official per-ticker API documentation example; partial fields, compared only when the same key is present in the supplied dump."
+      },
+      "comparison": {
+        "parsed_rows": 57530,
+        "raw_row_occurrences": 57530,
+        "raw_rows_with_unique_model_key": 57527,
+        "duplicate_parsed_keys": [
+          {
+            "key": [
+              "000601.SZ",
+              "1997-11-03"
+            ],
+            "count": 2
+          },
+          {
+            "key": [
+              "000812.SZ",
+              "1998-09-22"
+            ],
+            "count": 2
+          },
+          {
+            "key": [
+              "603883.SH",
+              "2024-06-27"
+            ],
+            "count": 2
+          }
+        ],
+        "missing_parsed_key_count": 0,
+        "missing_parsed_keys": [],
+        "unexpected_parsed_key_count": 0,
+        "unexpected_parsed_keys": [],
+        "missing_parsed_occurrence_count": 0,
+        "unexpected_parsed_occurrence_count": 0,
+        "occurrence_count_deltas": [],
+        "value_diff_count": 0,
+        "value_diffs": [],
+        "rtol": 1e-09,
+        "absolute_tolerance": 0.0,
+        "max_absolute_error": 0.0,
+        "max_relative_error": 0.0,
+        "relative_error_undefined_for_zero_expected_count": 0
+      }
+    }
+  ],
+  "status": "FAIL"
+}

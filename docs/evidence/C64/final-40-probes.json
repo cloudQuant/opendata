@@ -1,0 +1,857 @@
+{
+  "env": {
+    "python": "3.11.8"
+  },
+  "items": [
+    {
+      "item": "AC-3|01",
+      "key": "AC-3|01|d4d8d4f4",
+      "state": "proven",
+      "summary": "bundled provider registration",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=offline registrations; historical opendata_providers uses current providers"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline registrations; historical opendata_providers uses current providers"
+      }
+    },
+    {
+      "item": "AC-3|02",
+      "key": "AC-3|02|ad9b6149",
+      "state": "proven",
+      "summary": "authority and health fallback",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=offline actual registry resolution"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline actual registry resolution"
+      }
+    },
+    {
+      "item": "AC-3|03",
+      "key": "AC-3|03|cb527b75",
+      "state": "proven",
+      "summary": "precise explicit routing",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=offline explicit routing and rejection; no live supplier request"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline explicit routing and rejection; no live supplier request"
+      }
+    },
+    {
+      "item": "AC-3|04",
+      "key": "AC-3|04|d95b04a8",
+      "state": "proven",
+      "summary": "unverified and reserved notes exclusion",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=offline verified/notes eligibility, both reserved note values"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline verified/notes eligibility, both reserved note values"
+      }
+    },
+    {
+      "item": "AC-3|05",
+      "key": "AC-3|05|8d653c0a",
+      "state": "proven",
+      "summary": "capability and source registry APIs",
+      "readings": [
+        "C64 fresh named behavior checks: 4/4 nodes passed",
+        "runtime binding=yes; scope=offline authenticated read-only API and current registry contents"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "4",
+        "c64_exit": "0",
+        "c64_passed": "4",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline authenticated read-only API and current registry contents"
+      }
+    },
+    {
+      "item": "AC-6|03",
+      "key": "AC-6|03|e76f832b",
+      "state": "proven",
+      "summary": "incomplete comparison cannot enter auto",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=offline unverified exclusion; no supplier comparison claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline unverified exclusion; no supplier comparison claim"
+      }
+    },
+    {
+      "item": "AC-7|01",
+      "key": "AC-7|01|bffe5960",
+      "state": "proven",
+      "summary": "fuyao envelope auth and backoff",
+      "readings": [
+        "C64 fresh named behavior checks: 4/4 nodes passed",
+        "runtime binding=yes; scope=fresh offline HTTP mocks; historical live smoke A3 separately retained"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "4",
+        "c64_exit": "0",
+        "c64_passed": "4",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "fresh offline HTTP mocks; historical live smoke A3 separately retained"
+      }
+    },
+    {
+      "item": "AC-7|02",
+      "key": "AC-7|02|7569b003",
+      "state": "proven",
+      "summary": "business error messages and remedies",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=current complete error-table validation"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "current complete error-table validation"
+      }
+    },
+    {
+      "item": "AC-7|04",
+      "key": "AC-7|04|89c5e0b2",
+      "state": "proven",
+      "summary": "official endpoint map coverage",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=official archived document inventory and bidirectional map checks"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "official archived document inventory and bidirectional map checks"
+      }
+    },
+    {
+      "item": "AC-7|05",
+      "key": "AC-7|05|cb279570",
+      "state": "proven",
+      "summary": "THS contract registration",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=offline registered domains and contract-backed fetcher declarations"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline registered domains and contract-backed fetcher declarations"
+      }
+    },
+    {
+      "item": "AC-10|05",
+      "key": "AC-10|05|dc7ec3a5",
+      "state": "proven",
+      "summary": "enabled provider compatibility map",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=naming interoperability only; no cleanroom rights assertion"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "naming interoperability only; no cleanroom rights assertion"
+      }
+    },
+    {
+      "item": "AC-11|06",
+      "key": "AC-11|06|eca44525",
+      "state": "proven",
+      "summary": "catalog and freshness routes",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=temporary SQLite handler checks; HTTP route separately covered"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "temporary SQLite handler checks; HTTP route separately covered"
+      }
+    },
+    {
+      "item": "AC-11|08",
+      "key": "AC-11|08|d0506524",
+      "state": "proven",
+      "summary": "missed batch meta replay",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=local websocket protocol and persisted batch fixtures"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "local websocket protocol and persisted batch fixtures"
+      }
+    },
+    {
+      "item": "AC-11|09",
+      "key": "AC-11|09|70838100",
+      "state": "proven",
+      "summary": "full message ceilings and fallback",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=offline bounded framing and remedy assertions"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline bounded framing and remedy assertions"
+      }
+    },
+    {
+      "item": "AC-11|10",
+      "key": "AC-11|10|80d48620",
+      "state": "proven",
+      "summary": "existing routes regression",
+      "readings": [
+        "C64 fresh named behavior checks: 6/6 nodes passed",
+        "runtime binding=yes; scope=offline main-database fixture REST routes and root websocket mounts"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "6",
+        "c64_exit": "0",
+        "c64_passed": "6",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline main-database fixture REST routes and root websocket mounts"
+      }
+    },
+    {
+      "item": "AC-11|11",
+      "key": "AC-11|11|82ca6675",
+      "state": "proven",
+      "summary": "minimal REST and websocket client",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=mock REST/protocol; separate local socket evidence"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "mock REST/protocol; separate local socket evidence"
+      }
+    },
+    {
+      "item": "AC-12|01",
+      "key": "AC-12|01|c1ad31fa",
+      "state": "proven",
+      "summary": "upstream lock provenance and hashes",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=real two-commit temporary git fixture; shipped lock contains full hash inventory"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "real two-commit temporary git fixture; shipped lock contains full hash inventory"
+      }
+    },
+    {
+      "item": "AC-12|02",
+      "key": "AC-12|02|9f581f51",
+      "state": "proven",
+      "summary": "upstream inventory and signature diff",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=fresh local git fixture and historical 147-file commit-interval rehearsal"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "fresh local git fixture and historical 147-file commit-interval rehearsal"
+      }
+    },
+    {
+      "item": "AC-13|01",
+      "key": "AC-13|01|94c78c31",
+      "state": "proven",
+      "summary": "scheduled six-step pipeline task",
+      "readings": [
+        "C64 fresh named behavior checks: 4/4 nodes passed",
+        "runtime binding=yes; scope=temporary DB dispatch, factory and ODS/DWD metadata; separate migration evidence"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "4",
+        "c64_exit": "0",
+        "c64_passed": "4",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "temporary DB dispatch, factory and ODS/DWD metadata; separate migration evidence"
+      }
+    },
+    {
+      "item": "AC-13|03",
+      "key": "AC-13|03|45950181",
+      "state": "proven",
+      "summary": "resume completed shards and retry partial failures",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=SQLite control restart and writer fixtures; separate MySQL resume evidence"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "SQLite control restart and writer fixtures; separate MySQL resume evidence"
+      }
+    },
+    {
+      "item": "§5|03",
+      "key": "§5|03|1c964297",
+      "state": "proven",
+      "summary": "bounded rate-limit retry mechanism",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=offline 429 substitute; no live ban or quota claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline 429 substitute; no live ban or quota claim"
+      }
+    },
+    {
+      "item": "§6|01",
+      "key": "§6|01|7054ff90",
+      "state": "proven",
+      "summary": "step checkpoints resume hooks including metadata",
+      "readings": [
+        "C64 fresh named behavior checks: 4/4 nodes passed",
+        "runtime binding=yes; scope=SQLite step re-entry; notification is at-least-once"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "4",
+        "c64_exit": "0",
+        "c64_passed": "4",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "SQLite step re-entry; notification is at-least-once"
+      }
+    },
+    {
+      "item": "§6|02",
+      "key": "§6|02|a6ebdfb3",
+      "state": "proven",
+      "summary": "persistent scheduler reload",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=file-backed SQLite restart; actual task reload and legacy script path"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "file-backed SQLite restart; actual task reload and legacy script path"
+      }
+    },
+    {
+      "item": "AC-6|01",
+      "key": "AC-6|01|4f5b0f7b",
+      "state": "proven",
+      "summary": "archived P0 replay observations",
+      "readings": [
+        "recorded observations=yes; provenance=yes",
+        "A2 replay: 14 PASS cases; Sina alternatives; four Eastmoney cases pending; no P1 coverage claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "observations": "yes",
+        "provenance": "yes",
+        "scope": "A2 replay: 14 PASS cases; Sina alternatives; four Eastmoney cases pending; no P1 coverage claim"
+      }
+    },
+    {
+      "item": "AC-7|03",
+      "key": "AC-7|03|10995291",
+      "state": "proven",
+      "summary": "actual historical fuyao smoke and dump",
+      "readings": [
+        "recorded observations=yes; provenance=yes",
+        "A3 live smoke and ten-day dump; no current Key or ten-year claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "observations": "yes",
+        "provenance": "yes",
+        "scope": "A3 live smoke and ten-day dump; no current Key or ten-year claim"
+      }
+    },
+    {
+      "item": "AC-12|03",
+      "key": "AC-12|03|0d686b17",
+      "state": "proven",
+      "summary": "maintenance budget and abandonment process",
+      "readings": [
+        "recorded observations=yes; provenance=yes",
+        "documented budget/process; no actual staffing allocation claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "observations": "yes",
+        "provenance": "yes",
+        "scope": "documented budget/process; no actual staffing allocation claim"
+      }
+    },
+    {
+      "item": "§4|01",
+      "key": "§4|01|65cded67",
+      "state": "proven",
+      "summary": "historical dual-source measured differences",
+      "readings": [
+        "recorded observations=yes; provenance=yes",
+        "B1 2026-01-05..07-21: 719314 compared keys; akshare leg from legacy migration, no fresh dual capture"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "observations": "yes",
+        "provenance": "yes",
+        "scope": "B1 2026-01-05..07-21: 719314 compared keys; akshare leg from legacy migration, no fresh dual capture"
+      }
+    },
+    {
+      "item": "§4|05",
+      "key": "§4|05|0bb21c83",
+      "state": "proven",
+      "summary": "historical independent index sample",
+      "readings": [
+        "recorded observations=yes; provenance=yes",
+        "C5 index_daily: 3 live legs plus one fixture; no all-domain or current-provider claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "observations": "yes",
+        "provenance": "yes",
+        "scope": "C5 index_daily: 3 live legs plus one fixture; no all-domain or current-provider claim"
+      }
+    },
+    {
+      "item": "§6|04",
+      "key": "§6|04|38929914",
+      "state": "proven",
+      "summary": "current isolated dual-database restore",
+      "readings": [
+        "recorded observations=yes; provenance=yes",
+        "C64 isolated MySQL restore; no production activation or file RPO claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "observations": "yes",
+        "provenance": "yes",
+        "scope": "C64 isolated MySQL restore; no production activation or file RPO claim"
+      }
+    },
+    {
+      "item": "AC-14|01",
+      "key": "AC-14|01|29b3754f",
+      "state": "proven",
+      "summary": "consumer Key lifecycle and rate limit",
+      "readings": [
+        "C64 fresh named behavior checks: 9/9 nodes passed",
+        "runtime binding=yes; scope=local key checks; Redis fake, deployment unverified"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "9",
+        "c64_exit": "0",
+        "c64_passed": "9",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "local key checks; Redis fake, deployment unverified"
+      }
+    },
+    {
+      "item": "AC-13|04",
+      "key": "AC-13|04|9b4606b9",
+      "state": "proven",
+      "summary": "ODS truth after raw-cache deletion",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=actual job + SQLite ODS + raw-cache deletion; no provider requests"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "actual job + SQLite ODS + raw-cache deletion; no provider requests"
+      }
+    },
+    {
+      "item": "AC-13|06",
+      "key": "AC-13|06|f440f22d",
+      "state": "proven",
+      "summary": "single-symbol isolation and browser retry",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=local browser API fixtures {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; actual backend retry with SQLite controls"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "local browser API fixtures {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; actual backend retry with SQLite controls"
+      }
+    },
+    {
+      "item": "§6|03",
+      "key": "§6|03|407cf9b8",
+      "state": "proven",
+      "summary": "browser failed-list download and retry",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=local browser downloads/errors {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; backend SQLite retry/list checks"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "local browser downloads/errors {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; backend SQLite retry/list checks"
+      }
+    },
+    {
+      "item": "AC-11|12",
+      "key": "AC-11|12|f1c47ff1",
+      "state": "proven",
+      "summary": "legacy loader and frontend gate membership",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=current loader/route regression; frontend targets are actual gate members"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "current loader/route regression; frontend targets are actual gate members"
+      }
+    },
+    {
+      "item": "AC-10|04",
+      "key": "AC-10|04|4e30a2d0",
+      "state": "proven",
+      "summary": "optional SDK provider isolation",
+      "readings": [
+        "C64 fresh named behavior checks: 1/1 nodes passed",
+        "runtime binding=yes; scope=SDK blocked in subprocess; ECB registry/routing/mock fetch still works"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "1",
+        "c64_exit": "0",
+        "c64_passed": "1",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "SDK blocked in subprocess; ECB registry/routing/mock fetch still works"
+      }
+    },
+    {
+      "item": "AC-11|07",
+      "key": "AC-11|07|8b7cc309",
+      "state": "proven",
+      "summary": "ODS commit to actual local websocket notification",
+      "readings": [
+        "C64 fresh named behavior checks: 4/4 nodes passed",
+        "runtime binding=yes; scope=real local WS chain; three SQLite adapters; separate MySQL writer evidence"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "4",
+        "c64_exit": "0",
+        "c64_passed": "4",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "real local WS chain; three SQLite adapters; separate MySQL writer evidence"
+      }
+    },
+    {
+      "item": "AC-13|02",
+      "key": "AC-13|02|3c4bde92",
+      "state": "proven",
+      "summary": "actual production lifespan scheduler ownership",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=actual lifespan with safe DB/bootstrap seams; no deployment activation"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "actual lifespan with safe DB/bootstrap seams; no deployment activation"
+      }
+    },
+    {
+      "item": "AC-14|02",
+      "key": "AC-14|02|d72a3496",
+      "state": "proven",
+      "summary": "degraded local consumer handoff and real backtest",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=section0 fallback: local HTTP/Key/40 bars/backtrader; no platform claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "section0 fallback: local HTTP/Key/40 bars/backtrader; no platform claim"
+      }
+    },
+    {
+      "item": "AC-14|03",
+      "key": "AC-14|03|03ada075",
+      "state": "proven",
+      "summary": "fresh documented consumer script reproduction",
+      "readings": [
+        "C64 fresh named behavior checks: 1/1 nodes passed",
+        "runtime binding=yes; scope=current script/local HTTP: 40 bars/calls/time/range; section0 fallback"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "1",
+        "c64_exit": "0",
+        "c64_passed": "1",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "current script/local HTTP: 40 bars/calls/time/range; section0 fallback"
+      }
+    },
+    {
+      "item": "AC-4|03",
+      "key": "AC-4|03|7d283c38",
+      "state": "proven",
+      "summary": "daily P0 patrol, persisted streaks and retryable notification delivery",
+      "readings": [
+        "C64 fresh named behavior checks: 6/6 nodes passed",
+        "runtime binding=yes; scope=fresh offline P0/persistent-outbox checks and actual UTC CronTrigger; disabled by default; business time and live suppliers remain unverified"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "6",
+        "c64_exit": "0",
+        "c64_passed": "6",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "fresh offline P0/persistent-outbox checks and actual UTC CronTrigger; disabled by default; business time and live suppliers remain unverified"
+      }
+    }
+  ]
+}

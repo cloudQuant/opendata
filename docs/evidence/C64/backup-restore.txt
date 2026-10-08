@@ -1,0 +1,18 @@
+Date: 2026-09-30
+Branch: dev
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Worktree: uncommitted C64 development based on this HEAD; initial checkout clean
+Command: Anaconda base inline Python + owned Docker backup image: independent credentials; dual database dump; gzip validation; restore into fresh owned databases; exact table names and row counts; actual binlog settings
+REVIEW_EXIT=0
+
+Output source: opendata-iter01-backup-restore-review-20260930.log
+opendata backup started at 20260930T000759Z_1
+==> dumping metadata database to /backups/metadata_20260930T000759Z_1.sql.gz
+==> dumping warehouse database to /backups/warehouse_20260930T000759Z_1.sql.gz
+==> pruning backups older than 30 days
+opendata backup finished
+
+
+metadata PASS: gzip validated, separate credential used, 11 tables restored; exact row counts 10
+warehouse PASS: gzip validated, separate credential used, 18 tables restored; exact row counts 22
+Disposable runtime binlog: {'binlog_expire_logs_seconds': '604800', 'binlog_format': 'ROW', 'log_bin': 'ON'}

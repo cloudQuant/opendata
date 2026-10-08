@@ -1,0 +1,39 @@
+Date: 2026-09-30T08:04:04.844935+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1 + C64 worktree
+Browser: PLAYWRIGHT_BROWSERS_PATH=/tmp/opendata-c64-pw-browsers-20260930
+
+### AC-11|10  (document line 220)
+判据原文：既有 `/ws/executions`、`/tables`、任务/执行/用户等路由回归通过
+本探针：existing routes regression
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 6/6 nodes passed
+  - runtime binding=yes; scope=offline main-database fixture REST routes and root websocket mounts
+VERDICT AC-11|10: proven
+
+### AC-13|06  (document line 237)
+判据原文：单标的失败不阻断全局；**失败清单一键重试**（前端可用）
+本探针：single-symbol isolation and browser retry
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=local browser API fixtures {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; actual backend retry with SQLite controls
+VERDICT AC-13|06: proven
+
+### AC-18|03  (document line 256)
+判据原文：前端"数据接口"页与数据目录合并（目录为默认视图，函数级明细下钻）
+本探针：数据接口页是否已并入目录（目录为默认视图，函数级明细在下钻里）
+台账现状：state=proven，文档勾选=True
+  - 目录导航项 = 1 (nav.catalog -> /data)
+  - `/scripts` 是否渲染目录视图 = yes
+  - Playwright `merged catalog is the default at both catalog URLs and filters by market and dataset` = passed （/scripts 与 /data 默认目录、市场/数据集筛选、注册函数明细面）
+  - 目录内函数明细控件及其可见用例 = yes
+  - Playwright `catalog function drilldown reaches legacy list and an actual script detail route` = passed；真实脚本详情路由 = yes
+VERDICT AC-18|03: proven
+
+### §6|03  (document line 321)
+判据原文：失败清单导出与**一键重试**路径可用
+本探针：browser failed-list download and retry
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=local browser downloads/errors {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; backend SQLite retry/list checks
+VERDICT §6|03: proven
+PRIMARY_FOUR_BINDINGS_REVIEW_EXIT=0; proven=4; counterfacts=18

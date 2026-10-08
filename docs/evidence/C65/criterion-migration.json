@@ -1,0 +1,67 @@
+{
+  "round": "C65",
+  "date": "2026-09-30T14:57:58.970387+00:00",
+  "approval": "用户对 criterion-conflict-proposal.md 的回复：按提案实施并保留旧新判据对账",
+  "unchanged_identities": 127,
+  "total": 130,
+  "items": [
+    {
+      "old_key": "AC-1|03|afb7fc32",
+      "old_text": "**裸词 `akshare` 的逐词白名单**（该词是上游库与数据源名，必须保留在署名与集成层）：`akshare/`（迭代 A2 起为 `opendata_http/`）、`THIRD_PARTY_NOTICES.md`、`LICENSE-AKSHARE`、`README.md` 与 `CODE_QUALITY.md`（沿革引用）、`scripts/codemod/`、`tests/`、`docs/`（含 `docs/evidence/` 的逐字命令输出）。集成层 `import akshare` 的清除属 FR-17（1B-B5），其存量由 AC-16 的基线冻结、只降不升",
+      "old_ledger": {
+        "state": "gap",
+        "round": "C40",
+        "date": "2026-09-26",
+        "reason": "裸词 akshare 命中 611 个跟踪文件，其中搬运树 opendata_http/ 315；**条目白名单之外仍有 70 个**：适配层包 opendata/data/providers/akshare/ 15 个 + 55 个（opendata/data 注册表与映射 11、scripts/ops 跨供应商对照脚本 8、opendata/pipeline 5、scripts/quality 4、opendata/api 3、core/models/data_fetch/utils/services/main/cli 11、根文档 ARCHITECTURE.md+QUICKSTART.md 2、构建运维面 Makefile/Dockerfile/.pre-commit-config.yaml/bandit.yaml/pyproject.toml/requirements.txt/.env.example 7、frontend 2、alembic_data/versions 1、opendata_fuyao/endpoint_map.yaml 1）。条目列的 7 个面写于 A0，A2 改名与 B5 去依赖之后从没跟上：白名单该不该覆盖适配层与对照脚本是**措辞决策**，不由本轮替用户定。另一处如实登记：从条目原文回读白名单时，`akshare/` 与括注 `opendata_http/` 被解析成同一条（10 条里有 1 对重复）。集成层 import akshare 的存量另由 AC-16 基线冻结（2 个文件），不在此条判定内。",
+        "evidence": [
+          "docs/evidence/C40/probe-all.txt",
+          "docs/evidence/C40/probe-readings.json",
+          "docs/evidence/C40/README.md",
+          "docs/quality/zero-dep-baseline.json"
+        ]
+      },
+      "new_key": "AC-1|03|37d05f56",
+      "new_text": "**裸词 `akshare` 的逐词白名单**：署名、上游沿革与搬运代码沿用原路径白名单（`akshare/`，迭代 A2 起为 `opendata_http/`；`THIRD_PARTY_NOTICES.md`、`LICENSE-AKSHARE`、`README.md`、`CODE_QUALITY.md`、`scripts/codemod/`、`tests/`、`docs/`）；第一方实现中仅允许用于数据源/API 标识、来源适配器、映射、对照工具和构建声明。新增允许项须在 `docs/quality/akshare-reference-allowlist.json` 逐路径、用途、审核日期登记并与实际命中双向对账；未登记、新增或用途不符即失败。旧品牌 token 仍由 AC-1 第 2 条要求零残留；运行时 `akshare`/`openbb` 包依赖由 AC-16 的 AST 扫描要求零引用。"
+    },
+    {
+      "old_key": "AC-1|09|1c8469ac",
+      "old_text": "**凭证未入版本库**：`git ls-files | grep -E '\\.env|\\.idea|\\.pid'` 为空；`gitleaks detect` 全历史扫描 0 命中（白名单仅含文档/模板）；上游硬编码凭证已处置并登记——`akshare/stock/cons.py`、`akshare/bond/bond_convert.py`、`akshare/bond/bond_china_money.py`、`akshare/futures/futures_hf_em.py`、`akshare/option/option_em.py`",
+      "old_ledger": {
+        "state": "gap",
+        "round": "C40",
+        "date": "2026-09-26",
+        "reason": "全历史扫描器今天实跑通过（make secret-check exit 0，`no leaks found`），上游 5 个硬编码凭证文件登记 5/5、残留凭证形状字面量 0。两条仍未满足：①条目字面的 `git ls-files | grep -E '\\.env|\\.idea|\\.pid'`读出 **1 条 `.env.example`**（按真实凭证形状重跑 `(^|/)\\.env$`、`.idea/`、`*.pid` 为 0）——这与 AC-1|03 明文允许 .env.example 作为模板面**互相矛盾**，要么改条目措辞要么删模板；②『白名单仅含文档/模板』按今天不成立：.gitleaks.toml 全局豁免 2 条中非文档/模板 1 条（`\\.egg-info/`，构建产物），另有 2 个 per-rule 豁免块（C36 那条形状豁免的代价已由反事实量出：全大写带点的 4 段值会被放过）。本轮把 C36 的 reason 更新为这一版（C36 只说了豁免面，没说两条判据互斥）。",
+        "evidence": [
+          "docs/evidence/C40/probe-all.txt",
+          "docs/evidence/C40/probe-readings.json",
+          "docs/evidence/C40/README.md",
+          ".gitleaks.toml",
+          "docs/evidence/C36/gitleaks-counterfactual.log",
+          "docs/evidence/A0/secret-audit.txt"
+        ]
+      },
+      "new_key": "AC-1|09|9a1b761f",
+      "new_text": "**凭证未入版本库**：跟踪文件中没有实际 `.env`/`.env.*` 配置、`.idea` 工作区或 `.pid` 运行文件，仅允许不含真实凭证的 `.env.example` 模板；扫描工具必须对模板内容执行凭证检测。`gitleaks detect` 全历史扫描 0 命中，白名单仅含经审核的文档/模板及公开非凭证标识，不允许生成物目录的通用豁免；上游硬编码凭证已处置并登记——`akshare/stock/cons.py`、`akshare/bond/bond_convert.py`、`akshare/bond/bond_china_money.py`、`akshare/futures/futures_hf_em.py`、`akshare/option/option_em.py`，搬运后按 `opendata_http/` 对应路径核对。"
+    },
+    {
+      "old_key": "AC-5|03|c14ac7c3",
+      "old_text": "codemod 差异报告人工待办清零；**AST 级静态扫描**零 `akshare` 运行时引用（含字符串常量与动态导入）",
+      "old_ledger": {
+        "state": "gap",
+        "round": "C61",
+        "date": "2026-09-28",
+        "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-5|01' --item 'AC-5|02' --item 'AC-5|03' --item 'AC-5|04' --item 'AC-5|05' --item 'AC-5|06' --item 'AC-5|07'（七格一次跑，全读只读/离线：sha256 逐条现算 + `gen_manifest.py --check` + 搬运树 313 文件头走查 + datasets.py 当场调用 + bandit 档案复核）",
+        "reason": "「codemod 差异报告人工待办清零」这一半到了（docs/port-report.md 自报待办 0 条、清单段落首行「（无 —— 待办清零）」且无挂着的复选项）；没到的是「AST 级静态扫描零 `akshare` 运行时引用（含字符串常量与动态导入）」：`scripts/codemod/verify_no_akshare.py` exit 0 且 --self-test exit 0，import 形态 0、动态导入 0，**字符串常量形态 3 条**并正是冻结基线里那 3 条产品事实的名字面量（opendata/data/openbb_map.py、opendata/models/data_script.py、opendata/pipeline/patrol.py；扫描器原话 517 file(s) walked，opendata_http=313）。抹平它只有两条路，两条都要改判据本身：①把扫描器字符串规则改窄＝回头放宽已勾的 AC-16|05「AST 口径」；②改掉这三处真实数据源名的拼写＝给扫描器做伪装，正是 C35 收口过的门禁空转。**同一道题 AC-16|06 已登记为用户/产品决策（task #64）**，这里不重复改判、也不换个说法再判一次。",
+        "evidence": [
+          "docs/evidence/C61/README.md",
+          "docs/evidence/C61/probe-items-ac5.txt",
+          "docs/evidence/C61/probe-self-test.txt",
+          "docs/quality/zero-dep-baseline.json",
+          "scripts/codemod/verify_no_akshare.py"
+        ]
+      },
+      "new_key": "AC-5|03|46ab5fb5",
+      "new_text": "codemod 差异报告人工待办清零；**AST 级静态扫描**零 `akshare`/`openbb` 包运行时依赖（Import、ImportFrom、动态导入参数及真正模块路径字符串）。来源名、对照表 schema 等产品元数据须按 AC-1 第 3 条逐项登记，并证明未用于加载模块；不能通过改拼写规避扫描。扫描器自测必须拒绝裸根动态导入、变量间接导入、带子模块路径及新增未登记标识。"
+    }
+  ]
+}

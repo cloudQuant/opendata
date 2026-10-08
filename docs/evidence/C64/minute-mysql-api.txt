@@ -1,0 +1,11 @@
+Date: 2026-09-30
+Branch: dev
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Worktree: uncommitted C64 changes; initial checkout clean
+Command: Anaconda base Python inline acceptance harness: isolated mainDB=opendata_iter01:33564; ingest_minute_shard / actual FastAPI minute router / GET two deterministic pages; TemporaryDirectory Parquet; injected Principal; records 2026-09-29..30; all fixture metadata cleaned in finally
+REVIEW_EXIT=0
+
+Output source: opendata-iter01-minute-mysql-file-api-20260930.log
+2026-09-30 03:22:02.800 | INFO     | opendata.core.token_blacklist:_create_blacklist:186 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+2026-09-30 03:22:03.734 | ERROR    | opendata.api.minute_data:query_minute_data:94 - minute archive integrity check failed: indexed minute archive checksum does not match
+PASS: real MySQL metadata (3 shards / 4 rows), DATETIME(6), UTC normalization, idempotent merge, immutable old file, actual Parquet REST, deterministic two pages, projections, domain authorization, date.max=400, corrupt file=500; no minute table in warehouse. Offline fixtures only; principal injection and auth separately verified.

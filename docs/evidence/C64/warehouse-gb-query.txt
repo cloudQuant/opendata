@@ -1,0 +1,11 @@
+Date: 2026-09-30
+Branch: dev
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Worktree: uncommitted C64 based on this HEAD
+Command: Anaconda base inline ASGI acceptance harness: inject authenticated principal; use configured existing warehouse; READ ONLY every transaction; latest 600519.SH date minus 15 days; real ODS query, export and EXPLAIN
+REVIEW_EXIT=0
+
+2026-09-30 02:49:34.206 | INFO     | opendata.core.token_blacklist:_create_blacklist:186 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+Observed query: 200 columns= ['thscode', 'trade_date', 'close_price'] row count= 12
+Observed CSV count: 12
+{"table": "ods_stock_daily_ths", "estimated_rows": 10212910, "bytes": 1622343680, "window": ["2026-09-09", "2026-09-24"], "http_query_status": 200, "rows": 12, "http_csv_status": 200, "csv_rows": 12, "elapsed_seconds": 0.8963, "explain": [{"id": 1, "select_type": "SIMPLE", "table": "ods_stock_daily_ths", "partitions": "p2026", "type": "range", "possible_keys": "PRIMARY", "key": "PRIMARY", "key_len": "133", "ref": null, "rows": 12, "filtered": 100.0, "Extra": "Using where"}], "writes": 0, "scope": "configured existing warehouse; principal injected; real HTTP handler and real SQL; READ ONLY on every transaction"}

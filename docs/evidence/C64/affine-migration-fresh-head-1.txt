@@ -1,0 +1,9 @@
+INFO  [alembic.runtime.migration] Context impl MySQLImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_ods_dwd_p0, A4.1: P0 warehouse tables (dwd x5, ods stock daily x1).
+INFO  [alembic.runtime.migration] Running upgrade 0001_ods_dwd_p0 -> 0002_dq_diff_report, dq diff report.
+INFO  [alembic.runtime.migration] Running upgrade 0002_dq_diff_report -> 0003_ods_ths, ods tables for the fuyao (THS) source.
+INFO  [alembic.runtime.migration] Running upgrade 0003_ods_ths -> 0004_batch_watermark, batch watermark for the WS data subscription.
+INFO  [alembic.runtime.migration] Running upgrade 0004_batch_watermark -> 0005_dwd_stock_adjust, dwd table for the stock-adjust domain (AC-11 adjust, design D10).
+INFO  [alembic.runtime.migration] Running upgrade 0005_dwd_stock_adjust -> 0006_dwd_daily_legs, Create DWD tables for index, futures, and option daily bars.
+INFO  [alembic.runtime.migration] Running upgrade 0006_dwd_daily_legs -> 0007_affine_stock_adjust, Add affine adjustment coefficients to stock-adjust rows.

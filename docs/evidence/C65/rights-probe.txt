@@ -1,0 +1,26 @@
+ROUND=C65
+DATE=2026-09-30T14:43:16.242449+00:00
+COMMAND=/tmp/opendata-c64-clean-env-20260930/bin/python scripts/quality/acceptance_item_probe.py --item 'AC-1|08' --json docs/evidence/C65/rights-probe.json
+SHA256 README.md 321b68d601db7266ebee9f5a87f378cea05ca86a164df4ff4b670e0a9fd11816
+SHA256 scripts/quality/acceptance_item_probe.py 5474d6e0cf065b7708c6f9083a58275c72e9c9f4d9e896e3f5079a02e3fa105c
+SHA256 tests/test_acceptance_item_probe.py 6bde598258e47c95f8e0e8f7fd487e9d209c32836f2e435ae0f666f1e05c3b72
+SHA256 docs/data-rights-registry.md ca5a69529033d7e72fc66ee92f6a516cdd1b30b9a9d6f9f3d673b55919f9b33b
+
+### AC-1|08  (document line 128)
+判据原文：**数据源权利登记表**存在且覆盖全部数据源（来源/条款链接/允许用途/复核日期/责任人）
+本探针：只读§1登记表：每个已引来源须有条款、用途、日期与责任人
+台账现状：state=gap，文档勾选=False
+  - §1 table valid = yes; rows = 11; columns = #, 数据源, 接入方式, 条款链接, 允许本项目落库, 允许再分发, 允许商业使用, 复核日期, 责任人, 状态
+  - rows carrying a real 复核日期 = 0/11
+  - rows still answering a permitted use with 待确认 = 11/11
+  - rows whose 条款链接 is prose instead of a URL = 8/11
+  - rows with an empty or unspecified 责任人 = 0/11
+  - registry rows cited by docs/proposals/openbb-migration/provider-inventory.yaml = 10, citations with no row = 0
+  - 补齐到可判：dated: 0 -> 11; undecided: 11 -> 0; unlinked: 8 -> 0
+VERDICT AC-1|08: gap — one or more source rows lacks a complete clause URL, permitted-use decision, review date, responsible party, or cited-source match
+
+census: gap=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+wrote docs/evidence/C65/rights-probe.json
+
+EXIT=0

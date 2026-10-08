@@ -1,0 +1,83 @@
+{
+  "round": "C65",
+  "date": "2026-09-30T15:15:56.953775+00:00",
+  "schema": "opendata_c65_affine_current_d5cf5c73",
+  "symbols": [
+    "600519",
+    "000001",
+    "000002",
+    "000009",
+    "600036"
+  ],
+  "native_writes": 0,
+  "official_input_sha256": [
+    {
+      "dump_id": "a_share_daily_k_1d_none_10d",
+      "bytes": 1078277,
+      "sha256": "070b957a201f2e76f1ba21cf362430bfac83f4d594de36ba349e16b3acca62fb",
+      "rows": 55552,
+      "row_groups": 1,
+      "schema": "thscode: string\ncurrency: string\ninterval: string\nadjusted: string\ndate_ms: int64 not null\nopen_price: double not null\nhigh_price: double not null\nlow_price: double not null\nclose_price: double not null\nvolume: double not null\nturnover: double not null\n-- schema metadata --\nwriter.model.name: 'com.myhexin.fuyao.financial.api.apiserver.entity.dto.' + 20",
+      "sample_path": "/tmp/opendata-c65-official-parquet/a_share_daily_k_1d_none_10d.parquet"
+    },
+    {
+      "dump_id": "a_share_adjustment_factors_event_none_all",
+      "bytes": 298457,
+      "sha256": "39e1f4cdeca0bad9fd3a4617f2c30d48d3031015f8c6d0e9b8c62426589d553a",
+      "rows": 57530,
+      "row_groups": 1,
+      "schema": "thscode: string\nticker: string\nex_date_ms: int64 not null\ndividend_per_share: double not null\nper_share_bonus: double not null\nallotment_ratio: double not null\nallotment_price: double not null\ncurrency: string\n-- schema metadata --\nwriter.model.name: 'com.myhexin.fuyao.financial.api.apiserver.entity.dto.' + 30",
+      "sample_path": "/tmp/opendata-c65-official-parquet/a_share_adjustment_factors_event_none_all.parquet"
+    }
+  ],
+  "migration_exit": 0,
+  "copied": {
+    "ods_stock_daily_ths": {
+      "rows": 12142,
+      "sha256": "3a379985f2b916ee4ece1738b7230e0930c992011e2ea45107573dc78d412116"
+    },
+    "ods_stock_action_ths": {
+      "rows": 151,
+      "sha256": "da11947c5e510fdb11134a937608072846f4b5e77a76df81a2400d686fc74d90"
+    },
+    "dwd_stock_daily": {
+      "rows": 657,
+      "sha256": "0850eba7552f0be1405cb89aba4879f36e49a0ba74c1c17e84c94a2eb453f7f4"
+    },
+    "dwd_stock_adjust": {
+      "rows": 940,
+      "sha256": "e8c0382b4be21457ecbc92faeb9379aba32a5e238eeaeb704f26192cf8a60d4c"
+    }
+  },
+  "official_refresh": {
+    "ods_stock_daily_ths": {
+      "rows": 50,
+      "last_date": "2026-09-30"
+    },
+    "ods_stock_action_ths": {
+      "rows": 151,
+      "last_date": "2026-09-24"
+    }
+  },
+  "dwd_backfill": {
+    "domain": "stock_daily",
+    "source": "ths",
+    "start": "2026-01-05",
+    "end": "2026-09-30",
+    "ods_table": "ods_stock_daily_ths",
+    "dwd_table": "dwd_stock_daily",
+    "preflight_pages": 1,
+    "rows_preflighted": 905,
+    "pages_read": 1,
+    "rows_read": 905,
+    "rows_normalized": 905,
+    "rows_merged": 905,
+    "rows_written": 905,
+    "diff_flagged": 0,
+    "collision_keys": []
+  },
+  "rebuild_preview": "FactorBuildResult(rows_written=0, symbols=5, rows_planned=12160, events_outside_basis=96, legacy_rows_preserved=940)",
+  "rebuild_applied": "FactorBuildResult(rows_written=12160, symbols=5, rows_planned=12160, events_outside_basis=96, legacy_rows_preserved=940)",
+  "official_exit": 1,
+  "exit": 1
+}

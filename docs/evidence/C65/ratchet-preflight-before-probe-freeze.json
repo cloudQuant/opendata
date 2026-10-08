@@ -1,0 +1,34 @@
+{
+  "archive_round": "C65",
+  "generated_at": "2026-09-30T23:22:08.022175+00:00",
+  "command": "fixed-environment scripts.quality.ratchet.measure(); guarded read-only metrics",
+  "metrics": {
+    "ruff_selfdev": 152,
+    "mypy_selfdev": 0,
+    "bandit_selfdev": 3,
+    "ruff_ported": 2188,
+    "direct_http_ported": 1071
+  },
+  "file_counts": {
+    "opendata": 206,
+    "opendata_fuyao": 9,
+    "scripts": 57,
+    "tests": 215,
+    "alembic": 7,
+    "alembic_data": 8,
+    "opendata_http": 325
+  },
+  "tools": {
+    "ruff": "ruff 0.15.20",
+    "mypy": "mypy 2.3.1 (compiled: yes)",
+    "bandit": "__main__.py 1.9.4"
+  },
+  "conditions": {
+    "self_ruff_no_growth": false,
+    "self_mypy_no_growth": true,
+    "self_bandit_no_growth": false,
+    "tool_versions_exact": true,
+    "reviewed_ported_counts_exact": true
+  },
+  "all_measured_conditions_pass": false
+}

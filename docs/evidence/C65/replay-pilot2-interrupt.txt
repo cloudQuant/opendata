@@ -1,0 +1,36 @@
+Date: 2026-09-30T21:58:39.848795+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: /tmp/opendata-c64-clean-env-20260930/bin/python scripts/ops/replay_warehouse_pipeline.py --start 2026-09-21 --end 2026-09-24 --apply --manifest docs/evidence/C65/replay-pilot2-manifest.json --interrupt-after-shards 1
+Replay_SHA256: d5d072cbec7ff2bb8d006746a2212045b155ff990454a120f5ba13daeb2a6da6
+{"apply": true, "current_rss_bytes": 142475264, "current_rss_source": "ps", "elapsed_seconds": 8.622514, "mode": "existing-ods-replay", "native_writes": 0, "peak_rss_bytes": 146210816, "peak_rss_source": "resource.getrusage", "record": "initial", "rss_unit": "bytes", "shard_size": 25, "shards_total": 223, "source_api_calls": 0, "source_observation": "existing_ods_snapshot_only", "source_rows_exact": 10310289, "source_schema": "opendata_c65_bench_full_6a2145", "source_schema_sha256": "5c6351c4a709fefd3de98264741bc9ae36089763a7291732b63738e8573d132c", "source_table": "ods_stock_daily_ths", "status": "validated", "symbol_count": 5557, "window": {"end": "2026-09-24", "start": "2026-09-21"}, "window_rows_exact": 16665}
+{"elapsed_seconds": 22.967723, "mode": "existing-ods-replay", "record": "fetch", "rows": 4, "source_api_calls": 0, "symbol": "000001.SZ"}
+{"elapsed_seconds": 22.975765, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000002.SZ"}
+{"elapsed_seconds": 22.982031, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000006.SZ"}
+{"elapsed_seconds": 22.993539, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000007.SZ"}
+{"elapsed_seconds": 22.999881, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000008.SZ"}
+{"elapsed_seconds": 23.010283, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000009.SZ"}
+{"elapsed_seconds": 23.01886, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000010.SZ"}
+{"elapsed_seconds": 23.030788, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000011.SZ"}
+{"elapsed_seconds": 23.038545, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000012.SZ"}
+{"elapsed_seconds": 23.044615, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000014.SZ"}
+{"elapsed_seconds": 23.050219, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000017.SZ"}
+{"elapsed_seconds": 23.05864, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000019.SZ"}
+{"elapsed_seconds": 23.06424, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000020.SZ"}
+{"elapsed_seconds": 23.070854, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000021.SZ"}
+{"elapsed_seconds": 23.076418, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000025.SZ"}
+{"elapsed_seconds": 23.083919, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000026.SZ"}
+{"elapsed_seconds": 23.091652, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000027.SZ"}
+{"elapsed_seconds": 23.09834, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000028.SZ"}
+{"elapsed_seconds": 23.104563, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000029.SZ"}
+{"elapsed_seconds": 23.112245, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000030.SZ"}
+{"elapsed_seconds": 23.118813, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000031.SZ"}
+{"elapsed_seconds": 23.128616, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000032.SZ"}
+{"elapsed_seconds": 23.134061, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000034.SZ"}
+{"elapsed_seconds": 23.139569, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000035.SZ"}
+{"elapsed_seconds": 23.150204, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000036.SZ"}
+{"elapsed_seconds": 23.326006, "mode": "existing-ods-replay", "peak_rss_bytes": 163397632, "pipeline_id": "stock_daily:ths:2026-09-21..2026-09-24:3842ad7964c61344", "record": "shard", "shard": 0, "shards_done": 1, "shards_failed": 0, "shards_resumed": 0, "shards_total": 223, "status": "done"}
+{"elapsed_seconds": 23.341719, "mode": "existing-ods-replay", "peak_rss_bytes": 163397632, "pipeline_id": "stock_daily:ths:2026-09-21..2026-09-24:3842ad7964c61344", "record": "shard", "shard": 1, "shards_done": 1, "shards_failed": 0, "shards_resumed": 0, "shards_total": 223, "status": "running"}
+{"current_rss_bytes": 130973696, "current_rss_source": "ps", "elapsed_seconds": 23.464111, "hook_steps": {}, "mode": "existing-ods-replay", "peak_rss_bytes": 163397632, "peak_rss_source": "resource.getrusage", "pipeline_id": "stock_daily:ths:2026-09-21..2026-09-24:3842ad7964c61344", "record": "interrupted", "rss_unit": "bytes", "shards_done": 1, "shards_done_total": 1, "shards_failed": 0, "shards_resumed": 0, "shards_total": 223, "status": "interrupted"}
+{"coverage_scope": "source_ods_window_only_not_current_market", "current_rss_bytes": 130990080, "current_rss_source": "ps", "elapsed_seconds": 23.473994, "expected_symbols": 5557, "expected_window_rows": 16665, "failure_count": 0, "fetch_symbol_calls": 25, "full_coverage_verified": false, "hook_steps": {}, "mode": "existing-ods-replay", "native_writes": 0, "notification_delivery": "suppressed_internal_replay", "peak_rss_bytes": 163397632, "peak_rss_source": "resource.getrusage", "pipeline_error_code": null, "pipeline_error_type": null, "pipeline_id": "stock_daily:ths:2026-09-21..2026-09-24:3842ad7964c61344", "record": "final", "rows_written_this_run": 0, "rss_unit": "bytes", "shards_done": 1, "shards_done_total": 1, "shards_failed": 0, "shards_resumed": 0, "shards_total": 223, "source_api_calls": 0, "source_observation": "existing_ods_snapshot_only", "source_rows_exact": 10310289, "source_schema": "opendata_c65_bench_full_6a2145", "source_schema_sha256": "5c6351c4a709fefd3de98264741bc9ae36089763a7291732b63738e8573d132c", "status": "interrupted", "target_dwd_first_date": null, "target_dwd_last_date": null, "target_dwd_rows_exact": 0, "target_dwd_symbols": 0, "target_dwd_window_rows_exact": 0, "target_ods_first_date": "2026-09-21", "target_ods_last_date": "2026-09-24", "target_ods_rows_exact": 76, "target_ods_symbols": 25, "target_ods_window_rows_exact": 76, "window": {"end": "2026-09-24", "start": "2026-09-21"}}
+
+EXIT=75

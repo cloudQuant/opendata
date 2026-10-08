@@ -1,0 +1,10 @@
+date: 2026-09-30T04:57:08.306569+00:00
+head: d552c081950edffce167e3dfc0be74f37a6950a1 + current worktree
+command: private redis-server (TCP port0, no persistence); two independent Anaconda-derived clean Python processes each call production APIKeyRateLimiter.check eight times on one shared ID
+scope: own isolated Unix socket only; no production/app deployment/credentials
+actual_outcomes=[null, null, null, null, null, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60]
+shared_atomic_minute_limit=PASS (two OS processes; 5 allowed / 11 denied out of16)
+numeric_key_isolation=PASS; bounded_TTL_ms=[60705, 60666]; Redis_server_clock_rolling_expiry=PASS
+shared_backend_outage=PASS (unavailable; no local fallback)
+REDIS_ACCEPTANCE_EXIT=0
+owned_redis_stopped=yes; private socket/state cleaned on context exit

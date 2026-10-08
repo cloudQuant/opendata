@@ -1,0 +1,76 @@
+/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/coverage/inorout.py:558: CoverageWarning: Module opendata.pipeline.dwd_backfill was never imported. (module-not-imported); see https://coverage.readthedocs.io/en/7.16.2/messages.html#warning-module-not-imported
+  self.warn(f"Module {pkg} was never imported.", slug="module-not-imported")
+/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/coverage/control.py:967: CoverageWarning: No data was collected. (no-data-collected); see https://coverage.readthedocs.io/en/7.16.2/messages.html#warning-no-data-collected
+  self._warn("No data was collected.", slug="no-data-collected")
+
+ERROR conda.cli.main_run:execute(125): `conda run /tmp/opendata-c64-clean-env-20260930/bin/python -m coverage run --branch --source=opendata.pipeline.dwd_backfill -m pytest --noconftest -q --override-ini=addopts=--strict-markers tests/test_dwd_backfill.py tests/test_dwd_backfill_edge_cases.py` failed. (See above for error)
+
+==================================== ERRORS ====================================
+_________________ ERROR collecting tests/test_dwd_backfill.py __________________
+ImportError while importing test module '/Users/yunjinqi/Documents/new_projects/opendata/tests/test_dwd_backfill.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pandas/__init__.py:11: in <module>
+    __import__(_dependency)
+/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/numpy/__init__.py:112: in <module>
+    from numpy.__config__ import show_config
+/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/numpy/__config__.py:4: in <module>
+    from numpy._core._multiarray_umath import (
+/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/numpy/_core/__init__.py:24: in <module>
+    from . import multiarray
+/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/numpy/_core/multiarray.py:11: in <module>
+    from . import _multiarray_umath, overrides
+E   ImportError: cannot load module more than once per process
+
+The above exception was the direct cause of the following exception:
+../../../opt/anaconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_dwd_backfill.py:6: in <module>
+    import pandas as pd
+/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pandas/__init__.py:13: in <module>
+    raise ImportError(
+E   ImportError: Unable to import required dependency numpy. Please see the traceback for details.
+____________ ERROR collecting tests/test_dwd_backfill_edge_cases.py ____________
+ImportError while importing test module '/Users/yunjinqi/Documents/new_projects/opendata/tests/test_dwd_backfill_edge_cases.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pandas/__init__.py:11: in <module>
+    __import__(_dependency)
+/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/numpy/__init__.py:112: in <module>
+    from numpy.__config__ import show_config
+/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/numpy/__config__.py:4: in <module>
+    from numpy._core._multiarray_umath import (
+/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/numpy/_core/__init__.py:24: in <module>
+    from . import multiarray
+/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/numpy/_core/multiarray.py:11: in <module>
+    from . import _multiarray_umath, overrides
+E   ImportError: cannot load module more than once per process
+
+The above exception was the direct cause of the following exception:
+../../../opt/anaconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_dwd_backfill_edge_cases.py:11: in <module>
+    from opendata.pipeline.dwd_backfill import backfill_dwd
+opendata/pipeline/__init__.py:8: in <module>
+    from opendata.pipeline.ddl import (
+opendata/pipeline/ddl.py:32: in <module>
+    from opendata.data.domains import contract_model, dwd_table, ods_table, require_domain
+opendata/data/domains.py:28: in <module>
+    from opendata.data import models as _models
+opendata/data/models/__init__.py:9: in <module>
+    from opendata.data.models.adjustment import AdjustFactor, CorporateAction
+opendata/data/models/adjustment.py:7: in <module>
+    from opendata.data.models.base import ContractModel
+opendata/data/models/base.py:14: in <module>
+    import pandas as pd
+/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pandas/__init__.py:13: in <module>
+    raise ImportError(
+E   ImportError: Unable to import required dependency numpy. Please see the traceback for details.
+=========================== short test summary info ============================
+ERROR tests/test_dwd_backfill.py
+ERROR tests/test_dwd_backfill_edge_cases.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!!
+2 errors in 2.04s
+

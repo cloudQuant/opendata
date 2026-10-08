@@ -1,0 +1,194 @@
+date: 2026-09-30T04:33:49.354573+00:00
+head: d552c081950edffce167e3dfc0be74f37a6950a1 + current frozen frontend worktree
+command: ['make', 'frontend-lint', 'frontend-typecheck', 'frontend-collection', 'frontend-test', 'frontend-e2e']
+env: CI=1; Playwright one worker; actual vue-tsc -b --force
+# Check-only: the gate must never rewrite sources. Use `npm run lint` to auto-fix.
+cd frontend && npx eslint .
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/__tests__/stores/auth.test.ts
+  116:5  warning  Unexpected `await` of a non-Promise (non-"Thenable") value  @typescript-eslint/await-thenable
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/components/common/StatCard.vue
+  6:3  warning  Prop 'icon' requires default value to be set  vue/require-default-prop
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/components/common/__tests__/EmptyState.test.ts
+  8:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/components/common/__tests__/FilterBar.test.ts
+  7:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/components/common/__tests__/PageHeader.test.ts
+  6:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/components/common/__tests__/StatusBadge.test.ts
+  7:12  warning  Prop 'type' requires default value to be set    vue/require-default-prop
+  7:26  warning  Prop 'size' requires default value to be set    vue/require-default-prop
+  7:40  warning  Prop 'effect' requires default value to be set  vue/require-default-prop
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/views/SettingsView.vue
+  225:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  228:3  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  229:3  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/views/TableDetailView.vue
+  43:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  52:3  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/views/TasksView.vue
+  118:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  129:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  145:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  159:3  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  168:3  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  169:3  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/views/UsersView.vue
+  56:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  71:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  81:3  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  87:5  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  90:3  warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+
+/Users/yunjinqi/Documents/new_projects/opendata/frontend/src/views/admin/InterfaceManagement.vue
+  342:38  warning  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  380:11  warning  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  402:55  warning  Unexpected any. Specify a different type                                                                                                                            @typescript-eslint/no-explicit-any
+  411:3   warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  440:3   warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  452:7   warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  518:7   warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  563:3   warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+  564:3   warning  Promises must be awaited, end with a call to .catch, end with a call to .then with a rejection handler or be explicitly marked as ignored with the `void` operator  @typescript-eslint/no-floating-promises
+
+✖ 33 problems (0 errors, 33 warnings)
+
+cd frontend && npx vue-tsc -b --force
+python scripts/quality/frontend_test_collection.py
+frontend dir : /Users/yunjinqi/Documents/new_projects/opendata/frontend
+test excludes: ['e2e/**', 'node_modules/**', 'dist/**']
+on disk (src): 15 files
+collected    : 15 files
+PASS: every test file on disk is collected by the frontend run.
+cd frontend && npx vitest run --testTimeout=15000
+
+ RUN  v4.0.18 /Users/yunjinqi/Documents/new_projects/opendata/frontend
+
+ ✓ src/__tests__/router/index.test.ts (12 tests) 550ms
+     ✓ exports a router instance  537ms
+ ✓ src/components/common/__tests__/PageHeader.test.ts (4 tests) 41ms
+ ✓ src/__tests__/stores/tasks.test.ts (12 tests) 71ms
+ ✓ src/__tests__/stores/auth.test.ts (11 tests) 56ms
+ ✓ src/components/common/__tests__/StatusBadge.test.ts (3 tests) 36ms
+stderr | src/components/common/__tests__/EmptyState.test.ts > EmptyState.vue > renders with icon
+[Vue warn]: Vue received a Component that was made a reactive object. This can lead to unnecessary performance overhead and should be avoided by marking the component with `markRaw` or using `shallowRef` instead of `ref`. 
+Component that was made reactive:  { name: 'Plus', __name: 'plus', setup: [Function: setup] } 
+  at <ElIcon key=0 size=80 class="empty-icon" > 
+  at <ElEmpty description="暂无数据" > 
+  at <EmptyState icon= { name: 'Plus', __name: 'plus', setup: [Function: setup] } ref="VTU_COMPONENT" > 
+  at <VTUROOT>
+
+ ✓ src/components/common/__tests__/EmptyState.test.ts (5 tests) 58ms
+ ✓ src/components/common/__tests__/FilterBar.test.ts (5 tests) 1803ms
+     ✓ renders with filters  1183ms
+     ✓ emits filter-change event when filter value changes  554ms
+ ✓ src/__tests__/types/index.test.ts (11 tests) 3ms
+ ✓ src/__tests__/composables/useStoreAction.test.ts (17 tests) 21ms
+ ✓ src/__tests__/utils/request.test.ts (5 tests) 9ms
+ ✓ src/__tests__/layout-navigation.test.ts (1 test) 1974ms
+     ✓ keeps the data catalog as the sole data entry and uses the opendata mark when collapsed  1969ms
+ ✓ src/__tests__/composables/useApiCall.test.ts (9 tests) 18ms
+ ✓ src/components/common/__tests__/StatCard.test.ts (3 tests) 57ms
+ ✓ src/__tests__/catalog.test.ts (11 tests) 4927ms
+     ✓ states the baseline every lag is measured against  1889ms
+     ✓ renders the five readings for a measured domain  709ms
+     ✓ groups by registered market and labels missing market metadata explicitly  546ms
+     ✓ opens registered provider callable, endpoint, and parameter metadata  442ms
+     ✓ keeps "not measured" apart from "nothing" and apart from "clean"  397ms
+     ✓ drills into a domain preview on demand  473ms
+     ✓ does not let an older preview response replace a newer selection  462ms
+ ✓ src/__tests__/api/envelope.test.ts (6 tests) 21ms
+
+ Test Files  15 passed (15)
+      Tests  115 passed (115)
+   Start at  06:34:48
+   Duration  16.64s (transform 41.38s, setup 0ms, import 71.30s, tests 9.65s, environment 18.37s)
+
+python scripts/quality/frontend_e2e_plane.py
+  ASSERTS         e2e/auth.spec.ts:5       Authentication E2E › login page loads
+  ASSERTS         e2e/auth.spec.ts:12      Authentication E2E › register page loads
+  ASSERTS         e2e/auth.spec.ts:17      Authentication E2E › unauthenticated user redirected to login
+  ASSERTS         e2e/auth.spec.ts:29      Authentication E2E › login with invalid credentials submits and leaves no session
+  ASSERTS         e2e/auth.spec.ts:66      Authentication E2E › unknown routes send an anonymous user to login with the target kept
+  ASSERTS         e2e/auth.spec.ts:77      Authentication E2E › 404 page renders for a signed-in user
+  ASSERTS         e2e/scripts.spec.ts:23   Scripts & Data Tables E2E › scripts page requires authentication
+  ASSERTS         e2e/scripts.spec.ts:28   Scripts & Data Tables E2E › tables page requires authentication
+  ASSERTS         e2e/scripts.spec.ts:33   Scripts & Data Tables E2E › executions page requires authentication
+  ASSERTS         e2e/scripts.spec.ts:39   Scripts & Data Tables E2E › Authenticated › legacy script list shows real DataScript identities
+  ASSERTS         e2e/scripts.spec.ts:52   Scripts & Data Tables E2E › Authenticated › merged catalog is the default at both catalog URLs and filters by market and dataset
+  ASSERTS         e2e/scripts.spec.ts:92   Scripts & Data Tables E2E › Authenticated › catalog function drilldown reaches legacy list and an actual script detail route
+  ASSERTS         e2e/scripts.spec.ts:116  Scripts & Data Tables E2E › Authenticated › catalog renders an API error and an empty payload visibly
+  ASSERTS         e2e/scripts.spec.ts:146  Scripts & Data Tables E2E › Authenticated › tables list shows data and the warehouse layers
+  ASSERTS         e2e/scripts.spec.ts:161  Scripts & Data Tables E2E › Authenticated › table detail shows schema and preview
+  ASSERTS         e2e/scripts.spec.ts:184  Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel
+  ASSERTS         e2e/scripts.spec.ts:210  Scripts & Data Tables E2E › Authenticated › retry posts and reloads the failed-shard list
+  ASSERTS         e2e/scripts.spec.ts:242  Scripts & Data Tables E2E › Authenticated › failed-shard export downloads the visible JSON response
+  ASSERTS         e2e/scripts.spec.ts:266  Scripts & Data Tables E2E › Authenticated › empty failed-shard list is visible and exports an empty JSON array
+  ASSERTS         e2e/scripts.spec.ts:288  Scripts & Data Tables E2E › Authenticated › failed-shard export errors are visible to the operator
+  ASSERTS         e2e/scripts.spec.ts:307  Scripts & Data Tables E2E › Authenticated › failed-shard load errors are visible and disable export
+  ASSERTS         e2e/scripts.spec.ts:322  Scripts & Data Tables E2E › Authenticated › catalog page shows a domain with its five readings
+  ASSERTS         e2e/tasks.spec.ts:17     Tasks Management E2E › tasks page requires authentication
+  ASSERTS         e2e/tasks.spec.ts:24     Tasks Management E2E › Authenticated › tasks list page loads
+  ASSERTS         e2e/tasks.spec.ts:40     Tasks Management E2E › Authenticated › pipeline task opens a read-only detail while script editing stays available
+  ASSERTS         e2e/tasks.spec.ts:65     Tasks Management E2E › Authenticated › can create a new task
+  ASSERTS         e2e/tasks.spec.ts:102    Tasks Management E2E › Authenticated › the 执行记录 action opens that task’s executions
+
+== classified tally ==
+  ASSERTS         27
+  LEAVES          27
+runner tally      : 27 tests in 3 files (playwright test --list)
+static vs runner  : MATCH
+named gaps        : 0
+pages covered     : /data /executions /scripts /tables /tasks
+pages uncovered   : (none)
+findings          : 0
+PASS: every declared e2e leaf carries a verdict that can fail.
+cd frontend && npx playwright test --reporter=list
+[WebServer] (node:41659) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 27 tests using 1 worker
+
+(node:41773) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41773) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › e2e/auth.spec.ts:5:3 › Authentication E2E › login page loads (673ms)
+  ✓   2 [chromium] › e2e/auth.spec.ts:12:3 › Authentication E2E › register page loads (246ms)
+  ✓   3 [chromium] › e2e/auth.spec.ts:17:3 › Authentication E2E › unauthenticated user redirected to login (269ms)
+  ✓   4 [chromium] › e2e/auth.spec.ts:29:3 › Authentication E2E › login with invalid credentials submits and leaves no session (576ms)
+  ✓   5 [chromium] › e2e/auth.spec.ts:66:3 › Authentication E2E › unknown routes send an anonymous user to login with the target kept (259ms)
+  ✓   6 [chromium] › e2e/auth.spec.ts:77:3 › Authentication E2E › 404 page renders for a signed-in user (278ms)
+  ✓   7 [chromium] › e2e/scripts.spec.ts:23:3 › Scripts & Data Tables E2E › scripts page requires authentication (260ms)
+  ✓   8 [chromium] › e2e/scripts.spec.ts:28:3 › Scripts & Data Tables E2E › tables page requires authentication (262ms)
+  ✓   9 [chromium] › e2e/scripts.spec.ts:33:3 › Scripts & Data Tables E2E › executions page requires authentication (258ms)
+  ✓  10 [chromium] › e2e/scripts.spec.ts:39:5 › Scripts & Data Tables E2E › Authenticated › legacy script list shows real DataScript identities (754ms)
+  ✓  11 [chromium] › e2e/scripts.spec.ts:52:5 › Scripts & Data Tables E2E › Authenticated › merged catalog is the default at both catalog URLs and filters by market and dataset (2.5s)
+  ✓  12 [chromium] › e2e/scripts.spec.ts:92:5 › Scripts & Data Tables E2E › Authenticated › catalog function drilldown reaches legacy list and an actual script detail route (1.2s)
+  ✓  13 [chromium] › e2e/scripts.spec.ts:116:5 › Scripts & Data Tables E2E › Authenticated › catalog renders an API error and an empty payload visibly (852ms)
+  ✓  14 [chromium] › e2e/scripts.spec.ts:146:5 › Scripts & Data Tables E2E › Authenticated › tables list shows data and the warehouse layers (682ms)
+  ✓  15 [chromium] › e2e/scripts.spec.ts:161:5 › Scripts & Data Tables E2E › Authenticated › table detail shows schema and preview (1.4s)
+  ✓  16 [chromium] › e2e/scripts.spec.ts:184:5 › Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel (669ms)
+  ✓  17 [chromium] › e2e/scripts.spec.ts:210:5 › Scripts & Data Tables E2E › Authenticated › retry posts and reloads the failed-shard list (774ms)
+  ✓  18 [chromium] › e2e/scripts.spec.ts:242:5 › Scripts & Data Tables E2E › Authenticated › failed-shard export downloads the visible JSON response (469ms)
+  ✓  19 [chromium] › e2e/scripts.spec.ts:266:5 › Scripts & Data Tables E2E › Authenticated › empty failed-shard list is visible and exports an empty JSON array (669ms)
+  ✓  20 [chromium] › e2e/scripts.spec.ts:288:5 › Scripts & Data Tables E2E › Authenticated › failed-shard export errors are visible to the operator (680ms)
+  ✓  21 [chromium] › e2e/scripts.spec.ts:307:5 › Scripts & Data Tables E2E › Authenticated › failed-shard load errors are visible and disable export (650ms)
+  ✓  22 [chromium] › e2e/scripts.spec.ts:322:5 › Scripts & Data Tables E2E › Authenticated › catalog page shows a domain with its five readings (664ms)
+  ✓  23 [chromium] › e2e/tasks.spec.ts:17:3 › Tasks Management E2E › tasks page requires authentication (257ms)
+  ✓  24 [chromium] › e2e/tasks.spec.ts:24:5 › Tasks Management E2E › Authenticated › tasks list page loads (655ms)
+  ✓  25 [chromium] › e2e/tasks.spec.ts:40:5 › Tasks Management E2E › Authenticated › pipeline task opens a read-only detail while script editing stays available (1.6s)
+  ✓  26 [chromium] › e2e/tasks.spec.ts:65:5 › Tasks Management E2E › Authenticated › can create a new task (1.9s)
+  ✓  27 [chromium] › e2e/tasks.spec.ts:102:5 › Tasks Management E2E › Authenticated › the 执行记录 action opens that task’s executions (858ms)
+
+  27 passed (25.2s)
+FRONTEND_EXIT=0

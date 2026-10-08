@@ -1,0 +1,20 @@
+Date: 2026-09-30T21:31:43.269383+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: pytest tests/test_isolated_stack_guard.py --no-cov -o addopts=; scripts/ops/verify_isolated_stack.py --apply --output docs/evidence/C65/runtime-stack-current.json
+Verifier_SHA256: 5c5934793a54d0cbfc3805470d30cdd6669285067a22af60cc3abc34af360264
+============================= test session starts ==============================
+platform darwin -- Python 3.11.8, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: platformdirs-4.12.2, cov-7.1.0, xdist-3.8.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 19 items
+
+tests/test_isolated_stack_guard.py ...................                   [100%]
+
+============================== 19 passed in 0.11s ==============================
+
+GUARD_TEST_EXIT=0
+{"date": "2026-09-30", "endpoint": "http://127.0.0.1:33566", "error": {"type": "playwright_flow_failed"}, "frontend_login": null, "health": {"database": "connected", "status": "healthy"}, "mode": "apply", "source": {"image_id": "sha256:98e742d7bef8e627c9330a202d162e61c2518e8b5c368f3c7782d2f74067b1dc", "source_identity": "fa709f01027c1d34f623d46ccd0c99d1048d2e333d834cae0935e0fea6583725"}, "static": {"asset_count": 5, "assets_valid": true, "home_http_200": true}, "userdb_write_isolated": true}
+
+RUNTIME_EXIT=1

@@ -1,0 +1,36 @@
+Date: 2026-09-30 (Europe/Madrid)
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1 + uncommitted C64 changes
+Command: Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item AC-19\|01 --item AC-19\|04 --json /tmp/opendata-c64-final-live-gaps.json
+Exit: 0
+Scope: Judge successfully ran; both criteria remain GAP. Exit zero is not an acceptance PASS. No live providers or notification delivery.
+
+
+### AC-19|01  (document line 259)
+判据原文：**备份策略落地**：每日备份 + binlog，RPO ≤24h〔C63 做成条目级判定面（measure_ac19_01 / judge_ac19_01 + 6 条反事实），**不勾**：判据要的是「每日备份」，而现场唯一缺的就是那个「每日」。读数五面分开——脚本面：`scripts/ops/backup_mysql.sh` 在跟踪清单 = yes，`dump_one` 调用 2 次（元数据库 + 仓库库各一次全量）、`mysqldump` 真实调用 1 处（前置检查那行不计，判定式按语句而不是按字面出现次数）；调度面：**每日触发点 0 处**，扫描人口 1625 个跟踪文件（`tests/`、`docs/`、`web/`、脚本自身与探针自身已排除），仓库里没有任何调度定义或 make 目标去跑它，只有脚本头部注释里那行 `0 2 * * *` 与手册里同一行——被调方不能当自己的证据（C62 的机读回声教训，本轮把它固化成 `PROBE_SELF_REL` 排除面，并把扫描人口打进读数，「0 处」从此说得清是在多大的人口里读到 0）；声明面：`docs/operations-backup-restore.md` 里 RPO ≤24h = yes、binlog = yes，但手册把它列为**可选附录**；实测面：仓库里带一次实测 `log_bin` 取值（只认 ON/OFF 的实取形状，格式串里的 `ON|OFF` 备选不算）的档案 **0 份**——语料再剔掉档案面与结论面（`docs/evidence/`、`docs/quality/`、`docs/迭代计划/`：档案是每轮的过程留痕，任何一轮写过一次取值形状都会被后面每一轮当成实测；台账与验收文档写的正是本轮的结论。这是 C62 机读回声的第二处），探针离线不连库，配置片段不算读数 ⇒ RPO ≤24h 今天是靠每日全量兜底、不是靠 binlog。`repair` 面写的是缺什么：一个真调度点 + 一次真取值，档案第 10 行逐字给的是 `binlog_attested_list: - -> docs/operations-backup-restore.md` —— 取值要落在运维手册这类**长期事实面**里，写进 `docs/evidence/` 的任何一档或台账里的那一份正好被自己的判据剔掉；起 crontab 属部署动作、连库取值需现场确认，本轮不代拟〕
+本探针：备份脚本 + 两库 dump + 仓库内的每日触发点 + RPO/binlog 声明与一次实测取值
+台账现状：state=gap，文档勾选=False
+  - 备份脚本在跟踪清单 = yes；dump_one 调用 2 次（metadata, warehouse），mysqldump 真实调用 1 处（前置检查那行不计）
+  - 扫描人口 1709 个跟踪文件（tests/docs/web、脚本自身与探针自身已排除，且读 `git ls-files -z`：默认输出会把中文文件名八进制转义）；每日触发点 1 处（scripts/ops/backup_runner.sh）；脚本头部注释里那行 `0 2 * * *` 不算触发点（被调方不能当自己的证据）
+  - Compose `backup` profile = yes（按需启动）；镜像链 = yes；runner 每日 02:00 UTC 循环 = yes；完整接线 = yes（源码配置不证明当前部署已启动）
+  - RPO ≤24h 的声明面 = yes；binlog 写进手册 = yes，手册把它列为可选附录 = yes
+  - 实测过的 `log_bin` 取值（只认 ON/OFF，格式串里的 `ON|OFF` 备选不算）0 份档案（-）；语料剔除面 docs/evidence/, docs/quality/, docs/迭代计划/ —— 档案面与结论面都不算实测，探针离线不连库，配置片段不算读数
+  - C64 isolated MySQL ROW binlog measured=yes; actual scheduled deployment and backup freshness=no; isolated restoration does not establish production RPO
+  - 补齐到可判：binlog_attested: 0 -> 1; binlog_attested_list: - -> docs/operations-backup-restore.md; binlog_optional: yes -> no; deployment_observed: no -> yes
+VERDICT AC-19|01: gap — 每日触发源码和隔离双库恢复已验证，隔离 ROW binlog 取值=yes；正式部署中每日任务运行、备份新鲜度及 binlog 实际生效证据=no，生产 RPO ≤24h 尚未验收
+
+### AC-19|04  (document line 262)
+判据原文：权威源 Key 配额/到期/封禁监控告警生效〔C63 做成条目级判定面（measure_ac19_04 / judge_ac19_04 + 7 条反事实），**不勾**：判据的动词是「生效」，现场是分类在位而信号与通道缺。四类健康类别 4/4（key-validity / key-expiry / revocation-or-ban / quota-left），线上可触发的被动归类两条都在（401/403→credential-rejected = yes、429→quota-exhausted = yes；判定按 if/elif/return 语句里的成对规则，不按注释里的字符串）；**到期这一类没有任何可触发的信号 = no**——本平台自签 Key 的 `is_expired` 与 `token_blacklist` 不算，判据点名的是**权威源** Key；分级落点 1 处运行时模块调用 `credential_health`（`opendata/api/pipeline.py`，定义处 `patrol.py` 已排除，不能当自己的告警落点），而**带外告警通道 0 处** ⇒ 只有 `/health` 可拉取 ≠ 告警生效：配额只到 warn、封禁只到 alert，无人被通知。模块自己那句「不发布权威源 Key 的到期/剩余额度/吊销状态」的边界声明仍要求在位（这句被删而探测仍未做 ⇒ 判 gap），未观测继续只报 `presence-only`〕
+本探针：四类 Key 健康的分类规则 + 到期信号 + 分级落点与带外告警通道
+台账现状：state=gap，文档勾选=False
+  - 四类健康类别在位 4/4（key-validity / key-expiry / revocation-or-ban / quota-left）
+  - 线上可触发的分类：401/403→credential-rejected = yes，429→quota-exhausted = yes；到期分类或主动探测 = yes（本平台自签 Key 的 is_expired 不算，判据点名的是权威源）
+  - 分级落点 2 处运行时模块调用 credential_health（opendata/api/pipeline.py, opendata/pipeline/key_health_notifications.py，定义处 patrol.py 已排除）；带外告警通道 1 处（opendata/pipeline/key_health_notifications.py）—— 只有 /health 可拉取 ≠ 告警生效
+  - operator-supplied expiry metadata supported = yes；独立 observation TTL 与通知测试 3/3 通过 (-)：过期只报告 observation-expired、不会被当作恢复；余量未知时保持 None，不补造配额
+  - independent live evidence: issuer expiry=no, remaining quota=no, notification delivery=no; metadata and mocks do not prove these
+  - 模块自己的边界声明在位 = yes，未观测只报 yes（这句被删而探测仍未做 ⇒ 判 gap）
+  - 补齐到可判：delivery_observed: no -> yes; issuer_expiry_observed: no -> yes; quota_remaining_observed: no -> yes
+VERDICT AC-19|04: gap — 判据要类别、可触发信号、分级落点、通知通道与观察状态测试共同成立；当前读到 4/4 类，operator expiry support=yes，分级落点=2、通知通道=1，observation tests=3/3。观察 TTL 过期不能替代 key 恢复，quota 余量未知时也不能填入数值；还缺供应商到期/余量和实际通知送达的独立现场证据
+
+census: gap=2
+（2 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+wrote /tmp/opendata-c64-final-live-gaps.json

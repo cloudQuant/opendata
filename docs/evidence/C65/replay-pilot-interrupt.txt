@@ -1,0 +1,61 @@
+Date: 2026-09-30T21:41:48.073767+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: scripts/ops/replay_warehouse_pipeline.py --start 2026-09-21 --end 2026-09-24 --apply --manifest docs/evidence/C65/replay-pilot-manifest.json --interrupt-after-shards 1
+Replay_SHA256: 2a48a758a315e93a1b73d45623843dae851895f96970b5b2a21280b54d1d5f0f
+{"apply": true, "current_rss_bytes": 141737984, "current_rss_source": "ps", "elapsed_seconds": 10.269615, "mode": "existing-ods-replay", "native_writes": 0, "peak_rss_bytes": 152485888, "peak_rss_source": "resource.getrusage", "record": "initial", "rss_unit": "bytes", "shard_size": 25, "shards_total": 223, "source_api_calls": 0, "source_observation": "existing_ods_snapshot_only", "source_rows_exact": 10310289, "source_schema": "opendata_c65_bench_full_6a2145", "source_schema_sha256": "5c6351c4a709fefd3de98264741bc9ae36089763a7291732b63738e8573d132c", "source_table": "ods_stock_daily_ths", "status": "validated", "symbol_count": 5557, "window": {"end": "2026-09-24", "start": "2026-09-21"}, "window_rows_exact": 16665}
+{"elapsed_seconds": 22.613172, "mode": "existing-ods-replay", "record": "fetch", "rows": 4, "source_api_calls": 0, "symbol": "000001.SZ"}
+{"elapsed_seconds": 22.618796, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000002.SZ"}
+{"elapsed_seconds": 22.622197, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000006.SZ"}
+{"elapsed_seconds": 22.625312, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000007.SZ"}
+{"elapsed_seconds": 22.634836, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000008.SZ"}
+{"elapsed_seconds": 22.638823, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000009.SZ"}
+{"elapsed_seconds": 22.643328, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000010.SZ"}
+{"elapsed_seconds": 22.647398, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000011.SZ"}
+{"elapsed_seconds": 22.650313, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000012.SZ"}
+{"elapsed_seconds": 22.653236, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000014.SZ"}
+{"elapsed_seconds": 22.656607, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000017.SZ"}
+{"elapsed_seconds": 22.659351, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000019.SZ"}
+{"elapsed_seconds": 22.663032, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000020.SZ"}
+{"elapsed_seconds": 22.667341, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000021.SZ"}
+{"elapsed_seconds": 22.673199, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000025.SZ"}
+{"elapsed_seconds": 22.680337, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000026.SZ"}
+{"elapsed_seconds": 22.685821, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000027.SZ"}
+{"elapsed_seconds": 22.690466, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000028.SZ"}
+{"elapsed_seconds": 22.693791, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000029.SZ"}
+{"elapsed_seconds": 22.697865, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000030.SZ"}
+{"elapsed_seconds": 22.709336, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000031.SZ"}
+{"elapsed_seconds": 22.721428, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000032.SZ"}
+{"elapsed_seconds": 22.727407, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000034.SZ"}
+{"elapsed_seconds": 22.739055, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000035.SZ"}
+{"elapsed_seconds": 22.749993, "mode": "existing-ods-replay", "record": "fetch", "rows": 3, "source_api_calls": 0, "symbol": "000036.SZ"}
+{"elapsed_seconds": 22.90901, "mode": "existing-ods-replay", "peak_rss_bytes": 162578432, "pipeline_id": "stock_daily:ths:2026-09-21..2026-09-24:3842ad7964c61344", "record": "shard", "shard": 0, "shards_done": 1, "shards_failed": 0, "shards_resumed": 0, "shards_total": 223, "status": "done"}
+{"elapsed_seconds": 22.918824, "mode": "existing-ods-replay", "peak_rss_bytes": 162578432, "pipeline_id": "stock_daily:ths:2026-09-21..2026-09-24:3842ad7964c61344", "record": "shard", "shard": 1, "shards_done": 1, "shards_failed": 0, "shards_resumed": 0, "shards_total": 223, "status": "running"}
+{"current_rss_bytes": 105971712, "current_rss_source": "ps", "elapsed_seconds": 23.003133, "hook_steps": {}, "mode": "existing-ods-replay", "peak_rss_bytes": 162578432, "peak_rss_source": "resource.getrusage", "pipeline_id": "stock_daily:ths:2026-09-21..2026-09-24:3842ad7964c61344", "record": "interrupted", "rss_unit": "bytes", "shards_done": 1, "shards_done_total": 1, "shards_failed": 0, "shards_resumed": 0, "shards_total": 223, "status": "interrupted"}
+{"coverage_scope": "source_ods_window_only_not_current_market", "current_rss_bytes": 106004480, "current_rss_source": "ps", "elapsed_seconds": 23.011509, "expected_symbols": 5557, "expected_window_rows": 16665, "failure_count": 0, "fetch_symbol_calls": 25, "full_coverage_verified": false, "hook_steps": {}, "mode": "existing-ods-replay", "native_writes": 0, "notification_delivery": "suppressed_internal_replay", "peak_rss_bytes": 162578432, "peak_rss_source": "resource.getrusage", "pipeline_error_code": null, "pipeline_error_type": null, "pipeline_id": "stock_daily:ths:2026-09-21..2026-09-24:3842ad7964c61344", "record": "final", "rows_written_this_run": 0, "rss_unit": "bytes", "shards_done": 1, "shards_done_total": 1, "shards_failed": 0, "shards_resumed": 0, "shards_total": 223, "source_api_calls": 0, "source_observation": "existing_ods_snapshot_only", "source_rows_exact": 10310289, "source_schema": "opendata_c65_bench_full_6a2145", "source_schema_sha256": "5c6351c4a709fefd3de98264741bc9ae36089763a7291732b63738e8573d132c", "status": "interrupted", "target_dwd_first_date": null, "target_dwd_last_date": null, "target_dwd_rows_exact": 0, "target_dwd_symbols": 0, "target_dwd_window_rows_exact": 0, "target_ods_first_date": "2026-09-21", "target_ods_last_date": "2026-09-24", "target_ods_rows_exact": 76, "target_ods_symbols": 25, "target_ods_window_rows_exact": 76, "window": {"end": "2026-09-24", "start": "2026-09-21"}}
+Exception closing connection <AdaptedConnection <aiomysql.connection.Connection object at 0x11daaa890>>
+Traceback (most recent call last):
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/sqlalchemy/pool/base.py", line 372, in _close_connection
+    self._dialect.do_close(connection)
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 948, in do_close
+    dbapi_connection.close()
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/sqlalchemy/dialects/mysql/aiomysql.py", line 111, in close
+    await_(self._connection.ensure_closed())
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/sqlalchemy/util/concurrency.py", line 167, in await_
+    return current.parent.switch(awaitable)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/sqlalchemy/util/concurrency.py", line 205, in greenlet_spawn
+    value = await result
+            ^^^^^^^^^^^^
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/aiomysql/connection.py", line 351, in ensure_closed
+    self.close()
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/aiomysql/connection.py", line 339, in close
+    self._writer.transport.close()
+  File "/Users/yunjinqi/opt/anaconda3/lib/python3.11/asyncio/selector_events.py", line 864, in close
+    self._loop.call_soon(self._call_connection_lost, None)
+  File "/Users/yunjinqi/opt/anaconda3/lib/python3.11/asyncio/base_events.py", line 762, in call_soon
+    self._check_closed()
+  File "/Users/yunjinqi/opt/anaconda3/lib/python3.11/asyncio/base_events.py", line 520, in _check_closed
+    raise RuntimeError('Event loop is closed')
+RuntimeError: Event loop is closed
+
+EXIT=75

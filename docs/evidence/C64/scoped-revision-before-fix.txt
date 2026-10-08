@@ -1,0 +1,153 @@
+capture date: 2026-09-30T04:43:00.372172+00:00
+head: d552c081950edffce167e3dfc0be74f37a6950a1 + current worktree
+command: Anaconda base python -m pytest three TestScopedOdsReader nodes (exact command is preserved in raw output below) --no-cov
+scope: worker initial real SQLite scoped-reader reproduction; before subsequent date normalization repair
+observed result: 3 failed, PYTEST_EXIT=1
+
+============================= test session starts ==============================
+platform darwin -- Python 3.11.8, pytest-8.4.2, pluggy-1.6.0
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: asyncio-0.24.0, cov-6.0.0, Faker-37.5.3, anyio-4.11.0, flask-1.3.0, doctestplus-1.6.0, html-4.1.1, xdist-3.8.0, time-machine-2.16.0, timeout-2.4.0, metadata-3.1.1, rerunfailures-14.0, playwright-0.7.0, mock-3.14.1, ordering-0.6, sugar-1.1.1, benchmark-5.1.0, allure-pytest-2.15.2, langsmith-0.4.38, base-url-2.1.0, dash-2.18.2, picked-0.5.1, hypothesis-6.148.5, requests-mock-1.12.1
+asyncio: mode=Mode.AUTO, default_loop_scope=function
+collected 3 items
+
+tests/test_pipeline_templates.py FFF                                     [100%]
+
+=================================== FAILURES ===================================
+_ TestScopedOdsReader.test_run_hook_merges_scoped_old_revision_and_excludes_other_rows _
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/arrays/arrow/array.py:944: in _cmp_method
+    result = pc_func(self._pa_array, self._box_pa(other))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pyarrow/compute.py:252: in wrapper
+    return func.call(args, None, memory_pool)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pyarrow/_compute.pyx:399: in pyarrow._compute.Function.call
+    ???
+pyarrow/error.pxi:155: in pyarrow.lib.pyarrow_internal_check_status
+    ???
+pyarrow/error.pxi:92: in pyarrow.lib.check_status
+    ???
+E   pyarrow.lib.ArrowNotImplementedError: Function 'greater_equal' has no kernel matching input types (large_string, date32[day])
+
+During handling of the above exception, another exception occurred:
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/arrays/arrow/array.py:951: in _cmp_method
+    result[valid] = op(np_array[valid], other)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: '>=' not supported between instances of 'str' and 'datetime.date'
+
+During handling of the above exception, another exception occurred:
+tests/test_pipeline_templates.py:1034: in test_run_hook_merges_scoped_old_revision_and_excludes_other_rows
+    stats = await service.run_hook(context)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+opendata/pipeline/dwd_merge.py:272: in run_hook
+    return await self.run(
+opendata/pipeline/dwd_merge.py:240: in run
+    frames = {
+opendata/pipeline/dwd_merge.py:241: in <dictcomp>
+    source: self._read_source(
+opendata/pipeline/dwd_merge.py:305: in _read_source
+    return scoped_reader(
+opendata/pipeline/templates.py:812: in read
+    ].between(bounds.start, bounds.end)
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/series.py:6153: in between
+    lmask = self >= left
+            ^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/ops/common.py:85: in new_method
+    return method(self, other)
+           ^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/arraylike.py:62: in __ge__
+    return self._cmp_method(other, operator.ge)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/series.py:6735: in _cmp_method
+    res_values = ops.comparison_op(lvalues, rvalues, op)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/ops/array_ops.py:341: in comparison_op
+    res_values = op(lvalues, rvalues)
+                 ^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/ops/common.py:85: in new_method
+    return method(self, other)
+           ^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/arraylike.py:62: in __ge__
+    return self._cmp_method(other, operator.ge)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/arrays/string_arrow.py:590: in _cmp_method
+    result = super()._cmp_method(other, op)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/arrays/arrow/array.py:953: in _cmp_method
+    result = ops.invalid_comparison(self, other, op)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/ops/invalid.py:55: in invalid_comparison
+    raise TypeError(f"Invalid comparison between dtype={left.dtype} and {typ}")
+E   TypeError: Invalid comparison between dtype=str and date
+_ TestScopedOdsReader.test_multisource_run_hook_reads_only_affected_rows_when_symbol_window_is_none _
+tests/test_pipeline_templates.py:1127: in test_multisource_run_hook_reads_only_affected_rows_when_symbol_window_is_none
+    assert stats.rows == 1
+E   assert 0 == 1
+E    +  where 0 = MergeStats(rows=0, diff_flagged=0, degraded_rows=0, passthrough=False, colliding=()).rows
+_ TestScopedOdsReader.test_scoped_reader_without_a_symbol_window_uses_requested_range_and_affected_date _
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/arrays/arrow/array.py:944: in _cmp_method
+    result = pc_func(self._pa_array, self._box_pa(other))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pyarrow/compute.py:252: in wrapper
+    return func.call(args, None, memory_pool)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+pyarrow/_compute.pyx:399: in pyarrow._compute.Function.call
+    ???
+pyarrow/error.pxi:155: in pyarrow.lib.pyarrow_internal_check_status
+    ???
+pyarrow/error.pxi:92: in pyarrow.lib.check_status
+    ???
+E   pyarrow.lib.ArrowNotImplementedError: Function 'greater_equal' has no kernel matching input types (large_string, date32[day])
+
+During handling of the above exception, another exception occurred:
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/arrays/arrow/array.py:951: in _cmp_method
+    result[valid] = op(np_array[valid], other)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: '>=' not supported between instances of 'str' and 'datetime.date'
+
+During handling of the above exception, another exception occurred:
+tests/test_pipeline_templates.py:1155: in test_scoped_reader_without_a_symbol_window_uses_requested_range_and_affected_date
+    frame = templates.ods_frame_reader(engine, "stock_daily", "akshare")(
+opendata/pipeline/templates.py:799: in read
+    in_window = frame[contract_date_field].between(start, end)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/series.py:6153: in between
+    lmask = self >= left
+            ^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/ops/common.py:85: in new_method
+    return method(self, other)
+           ^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/arraylike.py:62: in __ge__
+    return self._cmp_method(other, operator.ge)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/series.py:6735: in _cmp_method
+    res_values = ops.comparison_op(lvalues, rvalues, op)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/ops/array_ops.py:341: in comparison_op
+    res_values = op(lvalues, rvalues)
+                 ^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/ops/common.py:85: in new_method
+    return method(self, other)
+           ^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/arraylike.py:62: in __ge__
+    return self._cmp_method(other, operator.ge)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/arrays/string_arrow.py:590: in _cmp_method
+    result = super()._cmp_method(other, op)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/arrays/arrow/array.py:953: in _cmp_method
+    result = ops.invalid_comparison(self, other, op)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/site-packages/pandas/core/ops/invalid.py:55: in invalid_comparison
+    raise TypeError(f"Invalid comparison between dtype={left.dtype} and {typ}")
+E   TypeError: Invalid comparison between dtype=str and date
+=========================== short test summary info ============================
+FAILED tests/test_pipeline_templates.py::TestScopedOdsReader::test_run_hook_merges_scoped_old_revision_and_excludes_other_rows
+FAILED tests/test_pipeline_templates.py::TestScopedOdsReader::test_multisource_run_hook_reads_only_affected_rows_when_symbol_window_is_none
+FAILED tests/test_pipeline_templates.py::TestScopedOdsReader::test_scoped_reader_without_a_symbol_window_uses_requested_range_and_affected_date
+============================== 3 failed in 1.79s ===============================
+ERROR conda.cli.main_run:execute(125): `conda run python -m pytest -q --no-cov --tb=short tests/test_pipeline_templates.py::TestScopedOdsReader::test_run_hook_merges_scoped_old_revision_and_excludes_other_rows tests/test_pipeline_templates.py::TestScopedOdsReader::test_multisource_run_hook_reads_only_affected_rows_when_symbol_window_is_none tests/test_pipeline_templates.py::TestScopedOdsReader::test_scoped_reader_without_a_symbol_window_uses_requested_range_and_affected_date` failed. (See above for error)
+

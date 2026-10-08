@@ -1,0 +1,107 @@
+{
+  "round": "C65",
+  "date": "2026-09-30T15:58:09.724406+00:00",
+  "identity": "Primary real routed FRED JSON provider vs independently parsed official CSV",
+  "official_docs": "https://fred.stlouisfed.org/docs/api/fred/series_observations.html",
+  "window": [
+    "2020-01-01",
+    "2026-08-01"
+  ],
+  "rtol": 1e-09,
+  "key_configured": true,
+  "production_db_writes": 0,
+  "key_logged": false,
+  "same_publisher_comparison": true,
+  "independent_statistical_truth_comparison": false,
+  "prior_failure": "fred-official-comparison-first-csv-reader-failure.json",
+  "csv_schema_observed": [
+    "period_start_date",
+    "<series_id>",
+    "realtime_start_date",
+    "realtime_end_date"
+  ],
+  "legs": [
+    {
+      "provider": "fred",
+      "domain": "economy_cpi",
+      "series_id": "CPIAUCSL",
+      "official_endpoint": "https://api.stlouisfed.org/fred/series/observations",
+      "official_http_status": 200,
+      "official_capture": "2026-09-30T15:55:13+00:00",
+      "attempts": [
+        {
+          "number": 1,
+          "status": "READABLE"
+        }
+      ],
+      "status": "PASS",
+      "provider_rows": 80,
+      "official_rows": 80,
+      "official_unique_dates": 80,
+      "provider_unique_dates": 80,
+      "official_sha256": "339c89d999ba2f98454a97c662ce811a69882697178f495d9623f1239e43dd48",
+      "raw_file": "/tmp/opendata-c65-fred/CPIAUCSL-official.zip",
+      "wrong_series_id_count": 0,
+      "diff_count": 0,
+      "diff_samples": [],
+      "first": "2020-01-01",
+      "last": "2026-08-01",
+      "provider_source_sha256": "0e6ccdeeae419be8ad4093d547b210a11cede172ed6742201e314e0fa2261984"
+    },
+    {
+      "provider": "fred",
+      "domain": "economy_gdp",
+      "series_id": "GDPC1",
+      "official_endpoint": "https://api.stlouisfed.org/fred/series/observations",
+      "official_http_status": 200,
+      "official_capture": "2026-09-30T15:55:13+00:00",
+      "attempts": [
+        {
+          "number": 1,
+          "status": "READABLE"
+        }
+      ],
+      "status": "PASS",
+      "provider_rows": 26,
+      "official_rows": 26,
+      "official_unique_dates": 26,
+      "provider_unique_dates": 26,
+      "official_sha256": "20695d26f0ccfae4b52936d19258628d41729d2d150d10242f1de1ed779d5b50",
+      "raw_file": "/tmp/opendata-c65-fred/GDPC1-official.zip",
+      "wrong_series_id_count": 0,
+      "diff_count": 0,
+      "diff_samples": [],
+      "first": "2020-01-01",
+      "last": "2026-04-01",
+      "provider_source_sha256": "0e6ccdeeae419be8ad4093d547b210a11cede172ed6742201e314e0fa2261984"
+    },
+    {
+      "provider": "fred",
+      "domain": "economy_unemployment",
+      "series_id": "UNRATE",
+      "official_endpoint": "https://api.stlouisfed.org/fred/series/observations",
+      "official_http_status": 200,
+      "official_capture": "2026-09-30T15:55:13+00:00",
+      "attempts": [
+        {
+          "number": 1,
+          "status": "READABLE"
+        }
+      ],
+      "status": "PASS",
+      "provider_rows": 80,
+      "official_rows": 80,
+      "official_unique_dates": 80,
+      "provider_unique_dates": 80,
+      "official_sha256": "1b67cd9053b3acdef5dac766b4ebae224e585062813ab0f8cfa848e62d6acfd3",
+      "raw_file": "/tmp/opendata-c65-fred/UNRATE-official.zip",
+      "wrong_series_id_count": 0,
+      "diff_count": 0,
+      "diff_samples": [],
+      "first": "2020-01-01",
+      "last": "2026-08-01",
+      "provider_source_sha256": "0e6ccdeeae419be8ad4093d547b210a11cede172ed6742201e314e0fa2261984"
+    }
+  ],
+  "status": "PASS"
+}

@@ -1,0 +1,82 @@
+Date: 2026-09-30T09:39:42.314600+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1 + frozen uncommitted C64 worktree
+Command: make gate; A2 default A0 baseline; no A2_BASE_REF override
+Environment: Anaconda-created declared clean venv; owned MySQL33564; Redis/scheduler/live e2e disabled; native warehouse writes=0
+Interpreter: /tmp/opendata-c64-clean-env-20260930/bin/python
+Source manifest files: 1052
+Browser runtime: /tmp/opendata-c64-pw-browsers-20260930/chromium_headless_shell-1208/chrome-headless-shell-mac-arm64/chrome-headless-shell; sha256=a46b3b1e63163fa2d2437fb6ae967cb5a73b50050bca32f1964e6129b6228244
+Manifest: docs/evidence/C64/final-source-manifest.json
+python: /tmp/opendata-c64-clean-env-20260930/bin/python
+pytest: /tmp/opendata-c64-clean-env-20260930/bin/pytest
+ruff: /tmp/opendata-c64-clean-env-20260930/bin/ruff
+mypy: /tmp/opendata-c64-clean-env-20260930/bin/mypy
+bandit: /tmp/opendata-c64-clean-env-20260930/bin/bandit
+===== gate: brand-check =====
+python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:147
+  .env.example:148
+  .env.example:149
+  .env.example:150
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+===== gate: zero-dep-check =====
+python scripts/codemod/verify_no_akshare.py --self-test
+OK: scanner self-test passed (8 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+python scripts/codemod/verify_no_akshare.py
+OK: 529 file(s) walked (opendata=205, opendata_client=2, opendata_fuyao=9, opendata_http=313), python 3.11, scanner 2; no new upstream references (frozen baseline: 3).
+===== gate: secret-check =====
+python scripts/quality/secret_scan_check.py
+device: gitleaks 8.30.1, command: gitleaks detect --source . --config .gitleaks.toml --redact
+
+    ○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
+
+11:42AM INF 281 commits scanned.
+11:42AM INF scanned ~92313643 bytes (92.31 MB) in 1m58s
+11:42AM INF no leaks found
+===== gate: ledger-check =====
+python scripts/quality/acceptance_ledger_check.py
+census: items=130 proven=100 gap=30 unreviewed=0 ticked=100
+OK: items=130 proven=100 gap=30 unreviewed=0 ticked=100 across 22 group(s) and 19 §10 row(s) reconcile.
+===== gate: evidence-traceability =====
+python scripts/quality/evidence_traceability.py
+# evidence traceability over docs/evidence/
+  rounds        = 74
+  files census  = 788 (gate logs: 122)
+  dates in gate logs = header 113/122, printed by the run 9/122
+  branch named in header = 102/122 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 1
+    untracked: docs/evidence/C64/affine-bank-raw-attribution.txt
+NEW VIOLATION: docs/evidence/C64/affine-bank-raw-attribution.txt#untracked
+
+FAIL: 1 new traceability violation(s) against a 0-entry baseline.
+make[1]: *** [evidence-traceability] Error 1
+make: *** [gate] Error 2
+GATE_EXIT=2
+elapsed_seconds=174.72
+SOURCE_FROZEN_CHECK=PASS

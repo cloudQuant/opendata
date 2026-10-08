@@ -1,0 +1,32 @@
+{
+  "round": "C65",
+  "date": "2026-09-30T16:05:29.029137+00:00",
+  "identity": "actual configured metadata and warehouse read-only logical backup",
+  "command": "bash scripts/ops/backup_mysql.sh with credentials from Settings via child environment; no values printed",
+  "source_main_schema": "opendata",
+  "source_warehouse_schema": "opendata_data",
+  "source_port": 3306,
+  "warehouse_port": 3306,
+  "script_sha256": "5665e16b40e5238b8c5e92437e9138128011c0b5b122dc30c9a593dc8ce553ca",
+  "native_database_writes": 0,
+  "backup_root": "/tmp/opendata-c65-native-backup",
+  "minute_archive_included": false,
+  "backup_job_deployed": false,
+  "binlog_replay_tested": false,
+  "credentials_logged": false,
+  "exit": 0,
+  "elapsed_seconds": 841.273,
+  "status": "PASS",
+  "files": [
+    {
+      "path": "/tmp/opendata-c65-native-backup/metadata_20260930T160529Z_52788.sql.gz",
+      "bytes": 3539,
+      "sha256": "23da0090ef9f1e5b44014204801fc9064f350442ec5bc4eee24529eb787f538f"
+    },
+    {
+      "path": "/tmp/opendata-c65-native-backup/warehouse_20260930T160529Z_52788.sql.gz",
+      "bytes": 323138586,
+      "sha256": "7fc97bb23b94da9e7f98083a6318835b3df6c6674ba572e093e27c8b11675ba9"
+    }
+  ]
+}

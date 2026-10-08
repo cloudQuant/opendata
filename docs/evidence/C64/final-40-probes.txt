@@ -1,0 +1,331 @@
+Date: 2026-09-30 (Europe/Madrid)
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1 + uncommitted C64 changes
+Branch: dev
+Command: /Users/yunjinqi/opt/anaconda3/bin/conda run --no-capture-output -n base /tmp/opendata-iter01-quality-env-20260930/bin/python scripts/quality/acceptance_item_probe.py --item 'AC-3|01' --item 'AC-3|02' --item 'AC-3|03' --item 'AC-3|04' --item 'AC-3|05' --item 'AC-6|03' --item 'AC-7|01' --item 'AC-7|02' --item 'AC-7|04' --item 'AC-7|05' --item 'AC-10|05' --item 'AC-11|06' --item 'AC-11|08' --item 'AC-11|09' --item 'AC-11|10' --item 'AC-11|11' --item 'AC-12|01' --item 'AC-12|02' --item 'AC-13|01' --item 'AC-13|03' --item '§5|03' --item '§6|01' --item '§6|02' --item 'AC-6|01' --item 'AC-7|03' --item 'AC-12|03' --item '§4|01' --item '§4|05' --item '§6|04' --item 'AC-14|01' --item 'AC-13|04' --item 'AC-13|06' --item '§6|03' --item 'AC-11|12' --item 'AC-10|04' --item 'AC-11|07' --item 'AC-13|02' --item 'AC-14|02' --item 'AC-14|03' --item 'AC-4|03' --json /tmp/opendata-c64-final-40-probes.json
+Exit: 0
+Scope: Fresh primary aggregate remeasurement; offline checks and explicit archived facts; browser retry/download checks actually run. No live providers or production writes.
+
+
+### AC-3|01  (document line 140)
+判据原文：opendata_http / opendata_fuyao / opendata_providers 的能力均注册进 ProviderRegistry
+本探针：bundled provider registration
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=offline registrations; historical opendata_providers uses current providers
+VERDICT AC-3|01: proven
+
+### AC-3|02  (document line 141)
+判据原文：`source="auto"` 按权威度+可用性路由并可降级（单测：权威源故障→次选接管）
+本探针：authority and health fallback
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=offline actual registry resolution
+VERDICT AC-3|02: proven
+
+### AC-3|03  (document line 142)
+判据原文：显式 source 精确路由，源失败时报错不静默降级（单测）
+本探针：precise explicit routing
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=offline explicit routing and rejection; no live supplier request
+VERDICT AC-3|03: proven
+
+### AC-3|04  (document line 143)
+判据原文：**`verified=false` 与 `notes="on-demand"/"upstream-pending"` 的能力不参与 auto 路由**（单测）
+本探针：unverified and reserved notes exclusion
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=offline verified/notes eligibility, both reserved note values
+VERDICT AC-3|04: proven
+
+### AC-3|05  (document line 144)
+判据原文：`GET /api/v1/data/capabilities`、`/sources` 返回注册表内容（**只读接口，随 A1 交付**）
+本探针：capability and source registry APIs
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 4/4 nodes passed
+  - runtime binding=yes; scope=offline authenticated read-only API and current registry contents
+VERDICT AC-3|05: proven
+
+### AC-6|03  (document line 166)
+判据原文：**未完成对照的能力在注册表中标注 `verified=false`**，且不参与 auto 路由
+本探针：incomplete comparison cannot enter auto
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=offline unverified exclusion; no supplier comparison claim
+VERDICT AC-6|03: proven
+
+### AC-7|01  (document line 170)
+判据原文：客户端：认证/信封解析/错误码映射/429 与 4001 退避（单测 mock + 真机冒烟）
+本探针：fuyao envelope auth and backoff
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 4/4 nodes passed
+  - runtime binding=yes; scope=fresh offline HTTP mocks; historical live smoke A3 separately retained
+VERDICT AC-7|01: proven
+
+### AC-7|02  (document line 171)
+判据原文：**错误业务文案表**覆盖全部错误码，含中文文案 + 处置建议
+本探针：business error messages and remedies
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=current complete error-table validation
+VERDICT AC-7|02: proven
+
+### AC-7|04  (document line 173)
+判据原文：迭代 1B：端点映射表覆盖官方文档全部分组（基础/A股/期货/期权/基金）100%
+本探针：official endpoint map coverage
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=official archived document inventory and bidirectional map checks
+VERDICT AC-7|04: proven
+
+### AC-7|05  (document line 174)
+判据原文：P0 域输出映射为统一契约模型，注册为 source=ths
+本探针：THS contract registration
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=offline registered domains and contract-backed fetcher declarations
+VERDICT AC-7|05: proven
+
+### AC-10|05  (document line 206)
+判据原文：compat 对照表（openbb_map.yaml）覆盖已启用 provider
+本探针：enabled provider compatibility map
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=naming interoperability only; no cleanroom rights assertion
+VERDICT AC-10|05: proven
+
+### AC-11|06  (document line 215)
+判据原文：**`GET /api/v1/data/catalog` 与 `/{domain}/freshness` 可用**（AC-18）
+本探针：catalog and freshness routes
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=temporary SQLite handler checks; HTTP route separately covered
+VERDICT AC-11|06: proven
+
+### AC-11|08  (document line 217)
+判据原文：**断线补发**：`since_batch_id` 可补发断线期间的 meta 事件
+本探针：missed batch meta replay
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=local websocket protocol and persisted batch fixtures
+VERDICT AC-11|08: proven
+
+### AC-11|09  (document line 218)
+判据原文：full 模式（实验性）：单帧超限自动分帧；极端总量降级 meta 且带 `truncated` 标记
+本探针：full message ceilings and fallback
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=offline bounded framing and remedy assertions
+VERDICT AC-11|09: proven
+
+### AC-11|10  (document line 219)
+判据原文：既有 `/ws/executions`、`/tables`、任务/执行/用户等路由回归通过
+本探针：existing routes regression
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 6/6 nodes passed
+  - runtime binding=yes; scope=offline main-database fixture REST routes and root websocket mounts
+VERDICT AC-11|10: proven
+
+### AC-11|11  (document line 220)
+判据原文：**`opendata_client/` 最小客户端可运行**（REST 分页 + adjust 参数 + WS 订阅回调）
+本探针：minimal REST and websocket client
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=mock REST/protocol; separate local socket evidence
+VERDICT AC-11|11: proven
+
+### AC-12|01  (document line 225)
+判据原文：`upstream.lock` 记录 akshare 仓库 URL + **基线 commit** + 每文件哈希并随库入库
+本探针：upstream lock provenance and hashes
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=real two-commit temporary git fixture; shipped lock contains full hash inventory
+VERDICT AC-12|01: proven
+
+### AC-12|02  (document line 226)
+判据原文：同步工具对上游新 commit 产出新增/修改/删除清单与关键函数 diff 摘要（演练一次；可用历史 commit 区间模拟）
+本探针：upstream inventory and signature diff
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=fresh local git fixture and historical 147-file commit-interval rehearsal
+VERDICT AC-12|02: proven
+
+### AC-13|01  (document line 231)
+判据原文：pipeline 六步作为调度单元运行；`scheduled_tasks` 支持 pipeline 型任务
+本探针：scheduled six-step pipeline task
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 4/4 nodes passed
+  - runtime binding=yes; scope=temporary DB dispatch, factory and ODS/DWD metadata; separate migration evidence
+VERDICT AC-13|01: proven
+
+### AC-13|03  (document line 233)
+判据原文：断点续拉：大任务中断后重启跳过已完成分片（集成测试）
+本探针：resume completed shards and retry partial failures
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=SQLite control restart and writer fixtures; separate MySQL resume evidence
+VERDICT AC-13|03: proven
+
+### §5|03  (document line 310)
+判据原文：默认并发/频率配置下未触发同花顺封禁（429 有退避记录即视为机制生效）
+本探针：bounded rate-limit retry mechanism
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=offline 429 substitute; no live ban or quota claim
+VERDICT §5|03: proven
+
+### §6|01  (document line 318)
+判据原文：pipeline 步级检查点：任一步失败后可从当前步重入（集成测试）
+本探针：step checkpoints resume hooks including metadata
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 4/4 nodes passed
+  - runtime binding=yes; scope=SQLite step re-entry; notification is at-least-once
+VERDICT §6|01: proven
+
+### §6|02  (document line 319)
+判据原文：调度重启后任务从 `scheduled_tasks` 重载（既有能力回归）
+本探针：persistent scheduler reload
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=file-backed SQLite restart; actual task reload and legacy script path
+VERDICT §6|02: proven
+
+### AC-6|01  (document line 164)
+判据原文：P0 域函数与 akshare 原实现做录制回放对照：字段结构与取值一致（浮点在容忍度内）
+本探针：archived P0 replay observations
+台账现状：state=unreviewed，文档勾选=False
+  - recorded observations=yes; provenance=yes
+  - A2 replay: 14 PASS cases; Sina alternatives; four Eastmoney cases pending; no P1 coverage claim
+VERDICT AC-6|01: proven
+
+### AC-7|03  (document line 172)
+判据原文：迭代 1A：`/api/meta/*`（Instrument/Calendar）+ `prices` + 除复权事件可用；market-dumps 真机拉取一个全市场 dump 成功解析
+本探针：actual historical fuyao smoke and dump
+台账现状：state=unreviewed，文档勾选=False
+  - recorded observations=yes; provenance=yes
+  - A3 live smoke and ten-day dump; no current Key or ten-year claim
+VERDICT AC-7|03: proven
+
+### AC-12|03  (document line 227)
+判据原文：**上游维护预算机制**（每迭代 10~15%）与"失效即弃"流程落档
+本探针：maintenance budget and abandonment process
+台账现状：state=unreviewed，文档勾选=False
+  - recorded observations=yes; provenance=yes
+  - documented budget/process; no actual staffing allocation claim
+VERDICT AC-12|03: proven
+
+### §4|01  (document line 298)
+判据原文：双源校对报告（A 股日线 ths vs akshare）：产出差异率统计；真实差异人工复核确认为源差异而非程序错误
+本探针：historical dual-source measured differences
+台账现状：state=unreviewed，文档勾选=False
+  - recorded observations=yes; provenance=yes
+  - B1 2026-01-05..07-21: 719314 compared keys; akshare leg from legacy migration, no fresh dual capture
+VERDICT §4|01: proven
+
+### §4|05  (document line 302)
+判据原文：**金标准核对**：P0 域抽样与第三方基准（交易所/官方数据）核对一次
+本探针：historical independent index sample
+台账现状：state=unreviewed，文档勾选=False
+  - recorded observations=yes; provenance=yes
+  - C5 index_daily: 3 live legs plus one fixture; no all-domain or current-provider claim
+VERDICT §4|05: proven
+
+### §6|04  (document line 321)
+判据原文：**备份恢复演练**完成（见 AC-19）
+本探针：current isolated dual-database restore
+台账现状：state=unreviewed，文档勾选=False
+  - recorded observations=yes; provenance=yes
+  - C64 isolated MySQL restore; no production activation or file RPO claim
+VERDICT §6|04: proven
+
+### AC-14|01  (document line 242)
+判据原文：消费方 API Key 可用：创建/吊销/scopes 白名单/基础限速/**过期**均生效（单测）
+本探针：consumer Key lifecycle and rate limit
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 9/9 nodes passed
+  - runtime binding=yes; scope=local key checks; Redis fake, deployment unverified
+VERDICT AC-14|01: proven
+
+### AC-13|04  (document line 234)
+判据原文：**水位以 ods 为准**：缓存清理后重跑仍能正确判断增量区间（集成测试）
+本探针：ODS truth after raw-cache deletion
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=actual job + SQLite ODS + raw-cache deletion; no provider requests
+VERDICT AC-13|04: proven
+
+### AC-13|06  (document line 236)
+判据原文：单标的失败不阻断全局；**失败清单一键重试**（前端可用）
+本探针：single-symbol isolation and browser retry
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=local browser API fixtures {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; actual backend retry with SQLite controls
+VERDICT AC-13|06: proven
+
+### §6|03  (document line 320)
+判据原文：失败清单导出与**一键重试**路径可用
+本探针：browser failed-list download and retry
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=local browser downloads/errors {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; backend SQLite retry/list checks
+VERDICT §6|03: proven
+
+### AC-11|12  (document line 221)
+判据原文：旧机制迁移收口：interface_loader 读注册声明（兼容开关移除）；前端 Scripts/Tables/Tasks 页适配；**前端 e2e 与前端质量门禁纳入 `make gate`**
+本探针：legacy loader and frontend gate membership
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=current loader/route regression; frontend targets are actual gate members
+VERDICT AC-11|12: proven
+
+### AC-10|04  (document line 205)
+判据原文：可选依赖：不安装某 provider 的 SDK 不影响其它 provider 导入与路由（单测）
+本探针：optional SDK provider isolation
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 1/1 nodes passed
+  - runtime binding=yes; scope=SDK blocked in subprocess; ECB registry/routing/mock fetch still works
+VERDICT AC-10|04: proven
+
+### AC-11|07  (document line 216)
+判据原文：`WS /ws/data/subscribe`：**首帧认证**（无 query token）；订阅→pipeline 落库→收到 `data.update`（meta）；退订生效；心跳沿用
+本探针：ODS commit to actual local websocket notification
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 4/4 nodes passed
+  - runtime binding=yes; scope=real local WS chain; three SQLite adapters; separate MySQL writer evidence
+VERDICT AC-11|07: proven
+
+### AC-13|02  (document line 232)
+判据原文：**调度归属由显式 `ENABLE_SCHEDULER` 控制**；生产未配置时启动即失败（集成验证）
+本探针：actual production lifespan scheduler ownership
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=actual lifespan with safe DB/bootstrap seams; no deployment activation
+VERDICT AC-13|02: proven
+
+### AC-14|02  (document line 243)
+判据原文：backtrader_web 经 `opendata_client`（API Key）取 A 股日线，完成一次回测数据准备并成功运行回测
+本探针：degraded local consumer handoff and real backtest
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=section0 fallback: local HTTP/Key/40 bars/backtrader; no platform claim
+VERDICT AC-14|02: proven
+
+### AC-14|03  (document line 244)
+判据原文：对接过程记录（调用接口、数据量、耗时）；按 QUICKSTART 黄金路径可复跑
+本探针：fresh documented consumer script reproduction
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 1/1 nodes passed
+  - runtime binding=yes; scope=current script/local HTTP: 40 bars/calls/time/range; section0 fallback
+VERDICT AC-14|03: proven
+
+### AC-4|03  (document line 150)
+判据原文：**P0 域接口每日健康巡检**可运行，失败累计触发告警
+本探针：daily P0 patrol, persisted streaks and retryable notification delivery
+台账现状：state=unreviewed，文档勾选=False
+  - C64 fresh named behavior checks: 6/6 nodes passed
+  - runtime binding=yes; scope=fresh offline P0/persistent-outbox checks and actual UTC CronTrigger; disabled by default; business time and live suppliers remain unverified
+VERDICT AC-4|03: proven
+
+census: proven=40
+（40 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+wrote /tmp/opendata-c64-final-40-probes.json

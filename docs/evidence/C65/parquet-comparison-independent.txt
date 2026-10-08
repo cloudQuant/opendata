@@ -1,0 +1,19 @@
+C65 | 2026-09-30 | Primary independent corrected comparator
+COMMAND /tmp/opendata-c64-clean-env-20260930/bin/python -m pytest -q --no-cov tests/test_official_parquet_comparison.py
+scripts/ops/compare_official_parquet.py sha256=18553b449936e418471e680f875b93d4ea4ce8ccaff0689e8762671266aa72ed
+tests/test_official_parquet_comparison.py sha256=02d8c25640221ed00c818ead6dd20d579108857eaf3e6e461cbe55a7da1b7649
+============================= test session starts ==============================
+platform darwin -- Python 3.11.8, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: platformdirs-4.12.2, cov-7.1.0, xdist-3.8.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 12 items
+
+tests/test_official_parquet_comparison.py ............                   [100%]
+
+============================== 12 passed in 0.66s ==============================
+
+EXIT=0
+REAL_COMMAND /tmp/opendata-c64-clean-env-20260930/bin/python scripts/ops/compare_official_parquet.py --daily-parquet /tmp/opendata-c65-official-parquet/a_share_daily_k_1d_none_10d.parquet --adjustment-parquet /tmp/opendata-c65-official-parquet/a_share_adjustment_factors_event_none_all.parquet --out docs/evidence/C65/official-parquet-comparison.json
+EXIT=1

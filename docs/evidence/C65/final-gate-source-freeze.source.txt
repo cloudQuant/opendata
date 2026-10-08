@@ -1,0 +1,18 @@
+from pathlib import Path
+from datetime import datetime,timezone
+import hashlib,json,subprocess,sys
+root=Path('/Users/yunjinqi/Documents/new_projects/opendata'); output=root/'docs/evidence/C65/final-gate-source-state.json'
+roots=('opendata/','opendata_http/','opendata_fuyao/','opendata_client/','scripts/','tests/','alembic/','alembic_data/','frontend/','docs/quality/')
+explicit={'Dockerfile','.dockerignore','docker-compose.yml','.env.example','.gitleaks.toml','Makefile','pytest.ini','pyproject.toml','requirements.txt','alembic.ini','alembic_data.ini','logging_config.ini','.pre-commit-config.yaml','bandit.yaml','README.md','THIRD_PARTY_NOTICES.md','CODE_QUALITY.md','docs/data-rights-registry.md','docs/迭代计划/迭代1-重构数据中台/验收文档.md'}
+raw=subprocess.check_output(['git','ls-files','--cached','--others','--exclude-standard','-z'],cwd=root)
+paths=sorted({v.decode() for v in raw.split(b'\0') if v}); files={}
+for rel in paths:
+ if rel not in explicit and not rel.startswith(roots): continue
+ if any(x in Path(rel).parts for x in ('node_modules','dist','__pycache__','.pytest_cache','.ruff_cache','.mypy_cache','private')) or rel.endswith(('.pyc','.tsbuildinfo')): continue
+ p=root/rel
+ if p.is_file(): files[rel]=hashlib.sha256(p.read_bytes()).hexdigest()
+identity=hashlib.sha256(json.dumps(files,sort_keys=True).encode()).hexdigest()
+if '--verify' in sys.argv:
+ old=json.loads(output.read_text()); drift=sorted(set(files)^set(old['files']))+sorted(k for k in set(files)&set(old['files']) if files[k]!=old['files'][k]); print('Source freeze verification',len(files),'files; drift',drift); raise SystemExit(bool(drift))
+report={'archive_round':'C65','generated_at':datetime.now(timezone.utc).isoformat(),'head':subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),'scope':'managed/nonignored application, tools, tests, frontend, quality configurations and named build/config/acceptance inputs; excludes credentials/cache/generated builds and evidence archive','source_identity':identity,'file_count':len(files),'files':files}
+output.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n'); print('Frozen gate input files',len(files),'identity',identity)

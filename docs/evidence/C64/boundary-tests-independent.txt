@@ -1,0 +1,22 @@
+Date: 2026-09-30T07:16:49.374567+00:00
+Command: ['/tmp/opendata-c64-clean-env-20260930/bin/python', '-m', 'coverage', 'run', '--branch', '--source=opendata,opendata_fuyao', '-m', 'pytest', '--no-cov', '-q', '-m', 'not e2e', 'tests/test_minute_archive.py', 'tests/test_minute_archive_integrity_edges.py', 'tests/test_dwd_backfill.py', 'tests/test_dwd_backfill_edge_cases.py', 'tests/test_e2e_opt_in_guard.py']
+Scope: frozen source, clean interpreter, temporary SQLite only; live writes disabled; isolated COVERAGE_FILE.
+============================= test session starts ==============================
+platform darwin -- Python 3.11.8, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: platformdirs-4.12.2, cov-7.1.0, xdist-3.8.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 113 items
+
+tests/test_minute_archive.py ...............                             [ 13%]
+tests/test_minute_archive_integrity_edges.py ........................... [ 37%]
+.............................                                            [ 62%]
+tests/test_dwd_backfill.py ..........                                    [ 71%]
+tests/test_dwd_backfill_edge_cases.py ......                             [ 76%]
+tests/test_e2e_opt_in_guard.py ..........................                [100%]
+
+============================= 113 passed in 42.85s =============================
+INDEPENDENT_BOUNDARY_EXIT=0
+Wrote JSON report to /tmp/opendata-c64-primary-edge-coverage-20260930.json
+Coverage failure: total of 29.64 is less than fail-under=84.00

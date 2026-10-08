@@ -1,0 +1,5 @@
+date: 2026-09-30T04:52:31.042715+00:00
+head: d552c081950edffce167e3dfc0be74f37a6950a1 + frozen rate-limiter worktree
+command: isolated redis-server private unix socket; two independent Anaconda Python processes each call APIKeyRateLimiter.check eight times for one shared numeric ID
+scope: own ephemeral Redis only; no TCP listener, app deployment or production Redis; no secrets
+HARNESS_EXIT=1: base Redis client lacks aclose(); child cleanup failed before completed acceptance; own Redis process stopped.

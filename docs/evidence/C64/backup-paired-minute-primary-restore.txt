@@ -1,0 +1,13 @@
+Date: 2026-09-30T06:43:01.394757+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1 + uncommitted frozen C64 source
+Scope: independent primary paired-backup restore; owned MySQL8 container on host33564; no native warehouse, provider calls or SMTP.
+Image: opendata-iteration01-backup:paired-acceptance
+Actual image backup output:
+paired backup snapshot published: snapshot_20260930T064306Z_6734ba93f58b (pruned=0)
+
+metadata: exact table row counts PASS; tables=14 rows=12 SQL_GZIP_SHA256=5d1194c0b17c2c8fe210c7b7b0e7647cdc81a02d21dbdd86c7f22ffda2b64acb
+warehouse: exact table row counts PASS; tables=18 rows=22 SQL_GZIP_SHA256=728cd137029bfd705d8f5aa240f98f74cd7026a456e47d8c2a37083b100acaa3
+Minute restore: PASS; 2 indexed shards / 3 immutable files / 4 queried rows; corrected close=10.5; .123456/.234567 microseconds preserved.
+Manifest payload hashes + per-file hashes + tar safety + lock ownership + source stability: PASS
+Cleanup: source original counts restored; owned restore schemas/users/private files removed.
+PRIMARY_PAIRED_DRILL_EXIT=0

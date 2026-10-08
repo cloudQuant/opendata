@@ -1,0 +1,35 @@
+{
+  "env": {
+    "python": "3.11.8"
+  },
+  "items": [
+    {
+      "item": "AC-1|08",
+      "key": "AC-1|08|2e7a9f6f",
+      "state": "gap",
+      "summary": "只读§1登记表：每个已引来源须有条款、用途、日期与责任人",
+      "readings": [
+        "§1 table valid = yes; rows = 11; columns = #, 数据源, 接入方式, 条款链接, 允许本项目落库, 允许再分发, 允许商业使用, 复核日期, 责任人, 状态",
+        "rows carrying a real 复核日期 = 0/11",
+        "rows still answering a permitted use with 待确认 = 11/11",
+        "rows whose 条款链接 is prose instead of a URL = 8/11",
+        "rows with an empty or unspecified 责任人 = 0/11",
+        "registry rows cited by docs/proposals/openbb-migration/provider-inventory.yaml = 10, citations with no row = 0"
+      ],
+      "reason": "one or more source rows lacks a complete clause URL, permitted-use decision, review date, responsible party, or cited-source match",
+      "closure": "dated: 0 -> 11; undecided: 11 -> 0; unlinked: 8 -> 0",
+      "facts": {
+        "table_valid": "yes",
+        "rows": "11",
+        "columns": "#, 数据源, 接入方式, 条款链接, 允许本项目落库, 允许再分发, 允许商业使用, 复核日期, 责任人, 状态",
+        "dated": "0",
+        "undecided": "11",
+        "unlinked": "8",
+        "responsible_missing": "0",
+        "cited": "10",
+        "uncovered": "0",
+        "uncovered_sample": ""
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+Date: 2026-09-30T23:11:39.765170+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: conda run --no-capture-output -n base python /tmp/opendata_c65_run_checks.py; fixed-environment commands below
+Scope: owned33565 acceptance schemas; scheduler/upstream keys/SMTP disabled; live e2e default-deny; production3306 writes=0
+
+Actual argv: ['/Users/yunjinqi/opt/anaconda3/bin/python', '/tmp/opendata_c65_full_replay_verify.py']
+{"archive_round": "C65", "date": "2026-09-30T23:11:39.910907+00:00", "command": "conda run -n base python /tmp/opendata_c65_full_replay_verify.py; independent SELECT-only full-window count/key/value joins on owned33565", "window": {"end": "2026-09-24", "start": "2016-09-24"}, "source_observation": "existing_ods_snapshot_only", "native_writes": 0, "source_api_calls": 0, "bound_runtime_files_checked": 14, "bound_runtime_files_drift": [], "frozen_replay_sha256": "d5d072cbec7ff2bb8d006746a2212045b155ff990454a120f5ba13daeb2a6da6", "source_window_rows": 10307812, "source_symbols": 5568, "source_plain_symbols": 5568, "ods_rows": 10307812, "dwd_rows": 10307812, "joined_source_rows": 10307812, "missing_ods_keys": 0, "missing_dwd_keys": 0, "ods_raw_value_mismatch_rows": 0, "dwd_normalized_value_mismatch_rows": 0, "ods_source_mismatch_rows": 0, "dwd_source_mismatch_rows": 0, "shards_by_status": {"DONE": 223}, "progress_rows_written": 10307812, "progress_error_rows": 0, "distinct_shards": 223, "hooks_by_status": [{"step": "merge", "status": "done", "count": 1}, {"step": "notify", "status": "done", "count": 1}, {"step": "meta", "status": "done", "count": 1}], "symbol_windows": 5568, "pass": true, "limits": "existing immutable ODS snapshot coverage only; latest vendor fetch/current listed universe not independently proven; external delivery suppressed"}
+
+CHECK_EXIT=0
+
+DRIVER_EXIT=0

@@ -124,7 +124,7 @@ def _raw_action_pages(symbol: str) -> pd.DataFrame:
     from opendata.data.providers.akshare.models.stock_action import AkshareStockActionFetcher
 
     raw = AkshareStockActionFetcher().extract_data(_query(symbol), FetchContext())
-    return cast("pd.DataFrame", raw)
+    return raw
 
 
 def _normalize(
@@ -471,7 +471,8 @@ def _em_allotment() -> pd.DataFrame:
 def _em_rows(symbol: str) -> list[dict[str, Any]]:
     """The allotment rows one symbol publishes on the other vendor's table."""
     frame = _em_allotment()
-    return [row for row in frame.to_dict("records") if str(row.get("股票代码")) == symbol]
+    records = cast("list[dict[str, Any]]", frame.to_dict("records"))
+    return [row for row in records if str(row.get("股票代码")) == symbol]
 
 
 def cross_check_rights() -> tuple[int, int, int]:

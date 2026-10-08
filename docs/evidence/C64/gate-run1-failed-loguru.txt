@@ -1,0 +1,98 @@
+Date: 2026-09-30T03:26:37.647552+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1 + uncommitted C64 changes
+Branch: dev
+Command: env -u OPENDATA_ALLOW_LIVE_E2E MYSQL_HOST=127.0.0.1 MYSQL_PORT=33564 MYSQL_USER=root MYSQL_PASSWORD=empty MYSQL_DATABASE=opendata_iter01 DATA_MYSQL_HOST=127.0.0.1 DATA_MYSQL_PORT=33564 DATA_MYSQL_USER=root DATA_MYSQL_PASSWORD=empty DATA_MYSQL_DATABASE=opendata_iter01_data REDIS_URL=empty ENABLE_SCHEDULER=false APP_ENV=testing CI=1 Anaconda base + pinned quality venv; make gate
+Scope: Complete default make gate. Owned isolated MySQL only; normal live e2e guard unset. No production writes or upstream probes.
+
+===== gate: brand-check =====
+python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:143
+  .env.example:144
+  .env.example:145
+  .env.example:146
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+===== gate: zero-dep-check =====
+python scripts/codemod/verify_no_akshare.py --self-test
+OK: scanner self-test passed (8 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+python scripts/codemod/verify_no_akshare.py
+OK: 529 file(s) walked (opendata=205, opendata_client=2, opendata_fuyao=9, opendata_http=313), python 3.11, scanner 2; no new upstream references (frozen baseline: 3).
+===== gate: secret-check =====
+python scripts/quality/secret_scan_check.py
+
+    ○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
+
+5:29AM INF 281 commits scanned.
+5:29AM INF scanned ~92313643 bytes (92.31 MB) in 1m52s
+5:29AM INF no leaks found
+device: gitleaks 8.30.1, command: gitleaks detect --source . --config .gitleaks.toml --redact
+===== gate: ledger-check =====
+python scripts/quality/acceptance_ledger_check.py
+census: items=130 proven=100 gap=30 unreviewed=0 ticked=100
+OK: items=130 proven=100 gap=30 unreviewed=0 ticked=100 across 22 group(s) and 19 §10 row(s) reconcile.
+===== gate: evidence-traceability =====
+python scripts/quality/evidence_traceability.py
+# evidence traceability over docs/evidence/
+  rounds        = 74
+  files census  = 703 (gate logs: 115)
+  dates in gate logs = header 106/115, printed by the run 9/115
+  branch named in header = 100/115 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 0
+
+OK: evidence archive matches the frozen baseline (0 legacy entr(ies)).
+===== gate: js-points-check =====
+python scripts/quality/scan_js_points.py --check
+OK: JS execution points unchanged (engine 76, eval 35, exec 0)
+===== gate: loguru-check =====
+python scripts/quality/loguru_render_check.py
+FAIL: the logger arguments above never reach the log.
+FINDING opendata/data/raw_response_cache.py:406 logger.warning: no % spec for the args
+    family=stdlib  template='raw response cache safety miss'
+FINDING opendata_fuyao/http_client.py:219 logger.warning: no % spec for the args
+    family=stdlib  template='raw response cache entry rejected'
+FINDING opendata_fuyao/http_client.py:397 logger.info: no % spec for the args
+    family=stdlib  template='fuyao HTTP request'
+FINDING opendata_fuyao/http_client.py:456 logger.warning: no % spec for the args
+    family=stdlib  template='raw response cache configuration unavailable'
+note    scripts/quality/loguru_render_check.py:212 logger.error: template built at runtime
+note    scripts/quality/loguru_render_check.py:246 stdlib.error: template built at runtime
+note    tests/test_loguru_render_check.py:185 logger.error: template built at runtime
+note    tests/test_loguru_render_check.py:216 box.error: template built at runtime
+swept   opendata: 205 file(s)
+swept   opendata_http: 313 file(s)
+swept   opendata_fuyao: 9 file(s)
+swept   opendata_client: 2 file(s)
+swept   scripts: 45 file(s)
+swept   tests: 190 file(s)
+
+loguru-render-check: calls-with-args=31 findings=4 unjudged=4
+make[1]: *** [loguru-check] Error 1
+make: *** [gate] Error 2
+
+GATE_EXIT=2

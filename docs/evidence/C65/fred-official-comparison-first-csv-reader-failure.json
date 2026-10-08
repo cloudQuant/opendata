@@ -1,0 +1,129 @@
+{
+  "round": "C65",
+  "date": "2026-09-30T15:55:13.553279+00:00",
+  "identity": "Primary live FRED provider vs official zipped CSV",
+  "official_docs": "https://fred.stlouisfed.org/docs/api/fred/series_observations.html",
+  "window": [
+    "2020-01-01",
+    "2026-08-01"
+  ],
+  "rtol": 1e-09,
+  "comparison_kind": "same publisher, independent CSV representation and reader; not independent economic measurement",
+  "production_db_writes": 0,
+  "key_logged": false,
+  "legs": [
+    {
+      "provider": "fred",
+      "domain": "economy_cpi",
+      "series_id": "CPIAUCSL",
+      "official_endpoint": "https://api.stlouisfed.org/fred/series/observations",
+      "attempts": [
+        {
+          "number": 1,
+          "status": "ERROR",
+          "error_type": "RuntimeError",
+          "stable_code": null,
+          "http_status": null
+        },
+        {
+          "number": 2,
+          "status": "ERROR",
+          "error_type": "RuntimeError",
+          "stable_code": null,
+          "http_status": null
+        },
+        {
+          "number": 3,
+          "status": "ERROR",
+          "error_type": "RuntimeError",
+          "stable_code": null,
+          "http_status": null
+        }
+      ],
+      "official_http_status": 200,
+      "csv_columns": [
+        "period_start_date",
+        "CPIAUCSL",
+        "realtime_start_date",
+        "realtime_end_date"
+      ],
+      "status": "ERROR"
+    },
+    {
+      "provider": "fred",
+      "domain": "economy_gdp",
+      "series_id": "GDPC1",
+      "official_endpoint": "https://api.stlouisfed.org/fred/series/observations",
+      "attempts": [
+        {
+          "number": 1,
+          "status": "ERROR",
+          "error_type": "RuntimeError",
+          "stable_code": null,
+          "http_status": null
+        },
+        {
+          "number": 2,
+          "status": "ERROR",
+          "error_type": "RuntimeError",
+          "stable_code": null,
+          "http_status": null
+        },
+        {
+          "number": 3,
+          "status": "ERROR",
+          "error_type": "RuntimeError",
+          "stable_code": null,
+          "http_status": null
+        }
+      ],
+      "official_http_status": 200,
+      "csv_columns": [
+        "period_start_date",
+        "GDPC1",
+        "realtime_start_date",
+        "realtime_end_date"
+      ],
+      "status": "ERROR"
+    },
+    {
+      "provider": "fred",
+      "domain": "economy_unemployment",
+      "series_id": "UNRATE",
+      "official_endpoint": "https://api.stlouisfed.org/fred/series/observations",
+      "attempts": [
+        {
+          "number": 1,
+          "status": "ERROR",
+          "error_type": "RuntimeError",
+          "stable_code": null,
+          "http_status": null
+        },
+        {
+          "number": 2,
+          "status": "ERROR",
+          "error_type": "RuntimeError",
+          "stable_code": null,
+          "http_status": null
+        },
+        {
+          "number": 3,
+          "status": "ERROR",
+          "error_type": "RuntimeError",
+          "stable_code": null,
+          "http_status": null
+        }
+      ],
+      "official_http_status": 200,
+      "csv_columns": [
+        "period_start_date",
+        "UNRATE",
+        "realtime_start_date",
+        "realtime_end_date"
+      ],
+      "status": "ERROR"
+    }
+  ],
+  "key_configured": true,
+  "status": "INCOMPLETE"
+}

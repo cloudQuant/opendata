@@ -1,0 +1,189 @@
+{
+  "archive_round": "C65",
+  "generated_at": "2026-09-30T21:57:23.615585+00:00",
+  "reviewer": {
+    "name": "Codex primary",
+    "kind": "AI",
+    "authorization": "用户直接回复：你帮我直接审阅"
+  },
+  "openbb_baseline": {
+    "path": "/Users/yunjinqi/Documents/new_projects/OpenBB",
+    "head": "3e071fcc2cd9f891cac6040ae60296dba76dab46",
+    "read_only": true
+  },
+  "scope": "7当前provider包71py的源码与对应OpenBB客户端/模型；公共API事实与三阶段命名不视作实现复制证据",
+  "packages": [
+    {
+      "provider": "akshare",
+      "python_files": 15,
+      "source_files_sha256": {
+        "opendata/data/providers/akshare/__init__.py": "3b1dc4ae6a6bc0a06787991de969e89b5b5eeacd8c8c14e161160fba7353f180",
+        "opendata/data/providers/akshare/_source.py": "a41aa82924f82a56da4cbc9dff33949cc708e23368ad645668030bd16ce263ac",
+        "opendata/data/providers/akshare/models/__init__.py": "a5f000921c7e6a07c2bf9d7f4d3ced8fcf9a32117caf094550a58241a26f8b75",
+        "opendata/data/providers/akshare/models/_normalize.py": "ac90f5a7b1386f5477ab1394b18cb294621cd3ab28d2dacefbb234aa5859e420",
+        "opendata/data/providers/akshare/models/bond_daily.py": "f1141f64f39c655dcf5e8aef746b1a18864134fcec93c13584e1a94461792504",
+        "opendata/data/providers/akshare/models/financial_indicator.py": "53e442f41961b3c90f9261bd44369cfa582431158eebd82677bc2802c6be50f8",
+        "opendata/data/providers/akshare/models/financial_statement.py": "d4dd729c4af2cda0dba597fac50eb1e5660cf1d778cd90b549a5f6facbbf8e9e",
+        "opendata/data/providers/akshare/models/fund_etf_daily.py": "315484f6567944250facf5f8cf3c05d15560879ebb9f5025c475d9f32c7b000b",
+        "opendata/data/providers/akshare/models/futures_daily.py": "9cd75aa9c93517e6ea12b8f0bfd5dd43c9fa29c92e72ac2f919eb0982a0d5b96",
+        "opendata/data/providers/akshare/models/index_constituent.py": "1246c93d2dc6be02f6742f688c278f7392601fa11d91f8080ba6f436cd6d8fbe",
+        "opendata/data/providers/akshare/models/index_daily.py": "51f5528c8c456df2763c843346c53b1e7de379ce10a40528012fcda70e4dc203",
+        "opendata/data/providers/akshare/models/option_daily.py": "85d33e91db9aab0a1baa08387d7b4804155f6d325399fa320d6aab0a9be4d5b9",
+        "opendata/data/providers/akshare/models/stock_action.py": "ef8856736e8f802d95d3bfd3a052e6660147a728107ebbcd4ebe0c02de8e0445",
+        "opendata/data/providers/akshare/models/stock_daily.py": "ef71a6814fed0f12bffdfabcea7e1349e6815211e53a993be54ddf0303b3a488",
+        "opendata/data/providers/akshare/registration.py": "f9a8629190a1a9e5673c63a3e37f9b1aa3d7d7bb6ea9049818386b7d4846ced1"
+      },
+      "active_legs": 10,
+      "verified_legs": 0,
+      "reviewed": true,
+      "review_result": "NO_COMPLEX_COPY_OBSERVED_IN_MATCHED_SCOPE",
+      "comparison": "无同名OpenBB provider；本地adapter调用冻结MIT搬运源；15文件检查注册/查询/映射边界。",
+      "basis": "当前适配器来源已核对；AKShare底层数据许可按端点单独登记。",
+      "historical_development_declaration": "UNVERIFIED"
+    },
+    {
+      "provider": "ecb",
+      "python_files": 9,
+      "source_files_sha256": {
+        "opendata/data/providers/ecb/__init__.py": "5eabd0ed841cc15119aab1488b671b91df4fdc6f5ab69acbbbd2c6d450f38137",
+        "opendata/data/providers/ecb/_source.py": "e17ff8738ad50d6f2099e27df3193e813ecb6e3285e8538c3d22eccee6fdb867",
+        "opendata/data/providers/ecb/models/__init__.py": "948b333c5683fe24eb1b260a7efc63003da1fd424a4b4cb09e9c1952f8f60268",
+        "opendata/data/providers/ecb/models/_client.py": "c6dde2cc49064a24f14ce089f58f88e7b74ec82cbffb1c39e5b8cb1c22e0e158",
+        "opendata/data/providers/ecb/models/_series.py": "0f07ff808081cf4a0a4d6ed7dbcac8421c2bbab4991b2bbaf29651ccb99e5dfd",
+        "opendata/data/providers/ecb/models/cpi.py": "ead0937cf41dd85c97627ab7694eb247ff1f3b63bc39ad60b90ccccc5844c5f9",
+        "opendata/data/providers/ecb/models/gdp.py": "a89a277a678f210e27578f9a13cd567ffe36e14c128de62a783b745d0940a180",
+        "opendata/data/providers/ecb/models/rate.py": "fc3cc333d39291b78b53baad28e2e4467e0efff6e4d0b0f8ffd5a33292f55769",
+        "opendata/data/providers/ecb/registration.py": "6d841133d574f279aa205c0ced96fe425f51edea7ba1ddd52f10231454215da2"
+      },
+      "active_legs": 3,
+      "verified_legs": 3,
+      "reviewed": true,
+      "review_result": "NO_COMPLEX_COPY_OBSERVED_IN_MATCHED_SCOPE",
+      "comparison": "本地series CSV KEY/TIME_PERIOD/OBS_VALUE 与 /service/data 接口；OpenBB yieldcurve走data-detail-api JSON+期限并行聚合。",
+      "basis": "共享公开SDMX字段/endpoint，不同数据流与算法。",
+      "historical_development_declaration": "UNVERIFIED"
+    },
+    {
+      "provider": "fred",
+      "python_files": 9,
+      "source_files_sha256": {
+        "opendata/data/providers/fred/__init__.py": "6dda5fd4bf956224e3bb79db13733e8f3dd4ccc6bb2aa1245f81c28f3b7feafa",
+        "opendata/data/providers/fred/_source.py": "31f659373c234f59077736352222712e6176f4b15b2a4c70b959db6ed83502ef",
+        "opendata/data/providers/fred/models/__init__.py": "222566d3af4a69dae5c319ee44988899bbf2972ae61419cf9c0d0654ff021aa1",
+        "opendata/data/providers/fred/models/_client.py": "25730ad7832bac1df67f2912e49bd1f96015c08c121470075377ba6bf1c272e5",
+        "opendata/data/providers/fred/models/_series.py": "0e6ccdeeae419be8ad4093d547b210a11cede172ed6742201e314e0fa2261984",
+        "opendata/data/providers/fred/models/cpi.py": "7cebe59c831cc94426e5f3933620cfe958fdfb328248759c8eb07072d5c1019c",
+        "opendata/data/providers/fred/models/gdp.py": "0d7430ad6da8f695807d45c048dc20e4746c5de8e28fd9adce35a3a607c41f64",
+        "opendata/data/providers/fred/models/unemployment.py": "1ff80ec19ac4680b45bb063f547f82439c459502cf37488cca83a19f28ad944e",
+        "opendata/data/providers/fred/registration.py": "2991f87b924bd483fe0de554509d9ca15bfac5cde862af93bceb70fdcf3f37f9"
+      },
+      "active_legs": 3,
+      "verified_legs": 3,
+      "reviewed": true,
+      "review_result": "NO_COMPLEX_COPY_OBSERVED_IN_MATCHED_SCOPE",
+      "comparison": "双方公开FRED endpoint及三阶段名称相同；本地单series date/value缺失点保留，OpenBB多series metadata/frequency/realtime与宽表处理不同。",
+      "basis": "共同字段/接口事实不等同复杂代码复制。",
+      "historical_development_declaration": "UNVERIFIED"
+    },
+    {
+      "provider": "imf",
+      "python_files": 9,
+      "source_files_sha256": {
+        "opendata/data/providers/imf/__init__.py": "868175ea9cc077b257f43d1a01e282cb274d4a20782d794ecbad25b01726466c",
+        "opendata/data/providers/imf/_source.py": "aa1f074ba35964f1b06da55a93c0161c458edd9da37cb277510107a201781351",
+        "opendata/data/providers/imf/models/__init__.py": "72d33da82169ddf9be5c6c6f26280b5b2440d0cbf10088eb49e459b213095822",
+        "opendata/data/providers/imf/models/_client.py": "aa136e6c0087324d5540b0817d401242167dabdab2b04a219830938b9a42a79b",
+        "opendata/data/providers/imf/models/_indicator.py": "23b42ad82460d367ba8736d496d32f0a2b5b5ef137604bc421dc101bff53c544",
+        "opendata/data/providers/imf/models/cpi.py": "3d7b7380623ae54bc91748e12bc2dde44fc4734c7ffb1d2c86c53904d30c2aa3",
+        "opendata/data/providers/imf/models/gdp.py": "567a42fdabc58123476957a6babfcf4618704de6d962694e46437055a4cbb6a9",
+        "opendata/data/providers/imf/models/unemployment.py": "dda28b2b9ec4765437e09340b4ab2609be2100b4969be53df0ea2d50dc620d87",
+        "opendata/data/providers/imf/registration.py": "e635ebd7af5c285530a74395322fa0fdca9232f6676653db01a6e4fdfb658e13"
+      },
+      "active_legs": 3,
+      "verified_legs": 3,
+      "reviewed": true,
+      "review_result": "NO_COMPLEX_COPY_OBSERVED_IN_MATCHED_SCOPE",
+      "comparison": "本地DataMapper values[indicator][country] annual mapping，OpenBB SDMX query builder+数据流metadata不同。",
+      "basis": "对应客户端与fetcher实现路径不同。",
+      "historical_development_declaration": "UNVERIFIED"
+    },
+    {
+      "provider": "oecd",
+      "python_files": 7,
+      "source_files_sha256": {
+        "opendata/data/providers/oecd/__init__.py": "848a515584aa659f199b6b7cd28c456487a34f9e9a434530d7217ea4761bc80e",
+        "opendata/data/providers/oecd/_source.py": "eb6200dc34dc6cb639b5d790b5ac81f866b9740fcd04ce9328b7e19d686b2b2b",
+        "opendata/data/providers/oecd/models/__init__.py": "a38610af8193c7baf303161dc7e15ab5cc43fbc0b06ad2fe8554f0d6b3786886",
+        "opendata/data/providers/oecd/models/_client.py": "d6bbc8005785a780f3711b50fce8d375387d66c30c27da4742fb4514ee4d5ccf",
+        "opendata/data/providers/oecd/models/cpi.py": "a177dfd51db46fb97d16fa9d9ff7c860b300979d879229f0ff3ab1c6cc4acf12",
+        "opendata/data/providers/oecd/models/unemployment.py": "3c3a19ef99682d22b515f46082cee9d08702fbf81634dfdd056c6b8513c4fdff",
+        "opendata/data/providers/oecd/registration.py": "7c49bdb0b17fb97d61b270cbf6b92806b4c2bb67204ede7635b54f7bfb09dc7f"
+      },
+      "active_legs": 2,
+      "verified_legs": 2,
+      "reviewed": true,
+      "review_result": "NO_COMPLEX_COPY_OBSERVED_IN_MATCHED_SCOPE",
+      "comparison": "本地HICP/LFS_INDIC八维key+CSV重构+手工月/季/年日期；OpenBB DF_PRICES_ALL/DF_IALFS_UNE_M query过滤、国家映射、百分数缩放。",
+      "basis": "本地未观察到对应OpenBB复杂筛选/缓存/数据处理块。",
+      "historical_development_declaration": "UNVERIFIED"
+    },
+    {
+      "provider": "ths",
+      "python_files": 16,
+      "source_files_sha256": {
+        "opendata/data/providers/ths/__init__.py": "a253585711b8073f145fb7d244c3666c3d1fea9c20cb9cc641300796b7027f74",
+        "opendata/data/providers/ths/_source.py": "af64d3badb5e5fd9cc453c555105f460348afbf05125b19d3fc84b9532bf3252",
+        "opendata/data/providers/ths/models/__init__.py": "3089ed0a3e14542beab5244443a93ab4771b56278515bb0882ba0387be41a098",
+        "opendata/data/providers/ths/models/_client.py": "e8af12a9fb9f7a9b7565c16db3fc3e073785c9d3b1fccc642e3791687442374d",
+        "opendata/data/providers/ths/models/financial_statement.py": "21f8d6f5c5a3a5ea2c9c937628f4e380c5325b51c025f2efc18c9d3a2ffe08c3",
+        "opendata/data/providers/ths/models/fund_action.py": "8b1cdc5d8ec1aafd153ad314fa9211edc79536339aac2ec55696cb798fa684a2",
+        "opendata/data/providers/ths/models/fund_etf_daily.py": "2df7dda399d621534d9e7b27a666449f06d6a8c61e85f9f1683ce26d4604d793",
+        "opendata/data/providers/ths/models/futures_daily.py": "832a45736d8c5db7492a7ecac4fa1343431f7932361b32e16c53ed0ff098a269",
+        "opendata/data/providers/ths/models/index_constituent.py": "3da0055b2c74cf245e48d8c86f96275b50e937c70135fd7d884afa2fa479b23b",
+        "opendata/data/providers/ths/models/index_daily.py": "e803d4b999e8e055df4cdb18b1036576572087395198c332ac4c261d5b5fcc42",
+        "opendata/data/providers/ths/models/instrument.py": "17335d56cdd05e21c385850a6d287cac74cd9857c97e02a3c889ca5b837b9528",
+        "opendata/data/providers/ths/models/option_daily.py": "4b06c063c6fdf7543441121d876ce30f2d97447efd15dd3b5adae0093a675e57",
+        "opendata/data/providers/ths/models/stock_action.py": "d3e3286361a3172b72cbba4e45a5bb18c896a8b45227e492f85d0b0cb0688d19",
+        "opendata/data/providers/ths/models/stock_daily.py": "22c6704daa467c69fe665ed243cf4f1745f47c320025647edfacf1d35ebc872c",
+        "opendata/data/providers/ths/models/trading_calendar.py": "43381fa8689925153170fbee0e1f84473a50ba6d4995840518238d7edd589eec",
+        "opendata/data/providers/ths/registration.py": "74aaef85998e8f887da0176686fba215f2928ff1f001a34dac0676580764a085"
+      },
+      "active_legs": 11,
+      "verified_legs": 11,
+      "reviewed": true,
+      "review_result": "NO_COMPLEX_COPY_OBSERVED_IN_MATCHED_SCOPE",
+      "comparison": "无同名OpenBB provider；本地11个Fetcher封装Fuyao接口及自身批量/公司行动/ETF还原。",
+      "basis": "当前THS源实现已核对；官方Parquet行动键冲突仍为FAIL。",
+      "historical_development_declaration": "UNVERIFIED"
+    },
+    {
+      "provider": "yfinance",
+      "python_files": 6,
+      "source_files_sha256": {
+        "opendata/data/providers/yfinance/__init__.py": "1bd87b9f86ae35fbb8069065b8c43d5762518ae1e02bcebdfc3c2fabd7ab9cd4",
+        "opendata/data/providers/yfinance/_source.py": "a9778b5196452e72153065bd42f2ee3d5b516eebc556de02c843a38a7a7c4cb5",
+        "opendata/data/providers/yfinance/models/__init__.py": "5fd6550bc2e1a76ea9e06373a10608828667fb070517301cd4bdf02f54429bb0",
+        "opendata/data/providers/yfinance/models/_sdk.py": "9113750191e84717f65c5511df3758c3189f0cdb0af900921fc718b69aebe34c",
+        "opendata/data/providers/yfinance/models/stock_daily.py": "7090e8dd3b1dfa887e86fc81afe4be95dcb6f08027868c7315782cbd52288424",
+        "opendata/data/providers/yfinance/registration.py": "456fcc9fbaf1e1c2018772b13c953007cfd343e12baf58108dcac2dcd9059bb0"
+      },
+      "active_legs": 1,
+      "verified_legs": 1,
+      "reviewed": true,
+      "review_result": "NO_COMPLEX_COPY_OBSERVED_IN_MATCHED_SCOPE",
+      "comparison": "本地Ticker.history auto_adjust=False + 完整splits + 严格窗口/回溯复权还原；OpenBB yf_download多ticker/action/adjusted mode不同。",
+      "basis": "公开Yahoo SDK调用一致；本地还原算法与OpenBB对应实现不同。",
+      "historical_development_declaration": "UNVERIFIED"
+    }
+  ],
+  "active_legs": 33,
+  "verified_legs": 23,
+  "registered_unverified_legs": 10,
+  "historical_commit_declarations_verified": 0,
+  "claims_excluded": [
+    "历史开发没有参照任何源码",
+    "全仓近似复制数学证明",
+    "第三方数据使用授权",
+    "全部provider已对照PASS"
+  ]
+}

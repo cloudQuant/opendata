@@ -1,0 +1,45 @@
+[
+  {
+    "Id": "8af7a2231a1d9845b69eb5caf747077e94bcbb29fad8de9f27a910151fc04b30",
+    "Name": "/opendata-iteration01-c65-app",
+    "Image": "sha256:3c8f9415734277069d65ba22f4594d189760cfe07dbd753fa9744f30afd60afc",
+    "Config": {
+      "Image": "opendata-iteration01:c65-current",
+      "Labels": {
+        "codex.source": "c6bd1179740a703c79fdad95dba52a81206bc5a22159ba4a1f60798b26f1c50b",
+        "codex.task": "opendata-c65"
+      },
+      "Env": [
+        "MYSQL_PORT=33565",
+        "DATA_MYSQL_HOST=host.docker.internal",
+        "DATA_MYSQL_DATABASE=opendata_data",
+        "MYSQL_HOST=host.docker.internal",
+        "MYSQL_DATABASE=opendata",
+        "DATA_MYSQL_PORT=33565"
+      ]
+    },
+    "HostConfig": {
+      "PortBindings": {
+        "8000/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "33566"
+          }
+        ]
+      }
+    },
+    "NetworkSettings": {
+      "Ports": {
+        "8000/tcp": [
+          {
+            "HostIp": "127.0.0.1",
+            "HostPort": "33566"
+          }
+        ]
+      }
+    },
+    "State": {
+      "Status": "running"
+    }
+  }
+]

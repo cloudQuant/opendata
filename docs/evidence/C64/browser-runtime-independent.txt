@@ -1,0 +1,43 @@
+Date: 2026-09-30
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1 + frozen C64 frontend
+Command: CI=1 PLAYWRIGHT_BROWSERS_PATH=/tmp/opendata-c64-pw-browsers-20260930 ./node_modules/.bin/playwright test --reporter=list
+BROWSER_EXIT=0
+
+[WebServer] (node:21012) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 27 tests using 1 worker
+
+(node:21082) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:21082) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › e2e/auth.spec.ts:5:3 › Authentication E2E › login page loads (1.2s)
+  ✓   2 [chromium] › e2e/auth.spec.ts:12:3 › Authentication E2E › register page loads (343ms)
+  ✓   3 [chromium] › e2e/auth.spec.ts:17:3 › Authentication E2E › unauthenticated user redirected to login (519ms)
+  ✓   4 [chromium] › e2e/auth.spec.ts:29:3 › Authentication E2E › login with invalid credentials submits and leaves no session (740ms)
+  ✓   5 [chromium] › e2e/auth.spec.ts:66:3 › Authentication E2E › unknown routes send an anonymous user to login with the target kept (364ms)
+  ✓   6 [chromium] › e2e/auth.spec.ts:77:3 › Authentication E2E › 404 page renders for a signed-in user (389ms)
+  ✓   7 [chromium] › e2e/scripts.spec.ts:23:3 › Scripts & Data Tables E2E › scripts page requires authentication (387ms)
+  ✓   8 [chromium] › e2e/scripts.spec.ts:28:3 › Scripts & Data Tables E2E › tables page requires authentication (459ms)
+  ✓   9 [chromium] › e2e/scripts.spec.ts:33:3 › Scripts & Data Tables E2E › executions page requires authentication (380ms)
+  ✓  10 [chromium] › e2e/scripts.spec.ts:39:5 › Scripts & Data Tables E2E › Authenticated › legacy script list shows real DataScript identities (853ms)
+  ✓  11 [chromium] › e2e/scripts.spec.ts:52:5 › Scripts & Data Tables E2E › Authenticated › merged catalog is the default at both catalog URLs and filters by market and dataset (3.2s)
+  ✓  12 [chromium] › e2e/scripts.spec.ts:92:5 › Scripts & Data Tables E2E › Authenticated › catalog function drilldown reaches legacy list and an actual script detail route (2.0s)
+  ✓  13 [chromium] › e2e/scripts.spec.ts:116:5 › Scripts & Data Tables E2E › Authenticated › catalog renders an API error and an empty payload visibly (1.6s)
+  ✓  14 [chromium] › e2e/scripts.spec.ts:146:5 › Scripts & Data Tables E2E › Authenticated › tables list shows data and the warehouse layers (836ms)
+  ✓  15 [chromium] › e2e/scripts.spec.ts:161:5 › Scripts & Data Tables E2E › Authenticated › table detail shows schema and preview (1.2s)
+  ✓  16 [chromium] › e2e/scripts.spec.ts:184:5 › Scripts & Data Tables E2E › Authenticated › executions list shows history and the failed-shard panel (855ms)
+  ✓  17 [chromium] › e2e/scripts.spec.ts:210:5 › Scripts & Data Tables E2E › Authenticated › retry posts and reloads the failed-shard list (1.0s)
+  ✓  18 [chromium] › e2e/scripts.spec.ts:242:5 › Scripts & Data Tables E2E › Authenticated › failed-shard export downloads the visible JSON response (654ms)
+  ✓  19 [chromium] › e2e/scripts.spec.ts:266:5 › Scripts & Data Tables E2E › Authenticated › empty failed-shard list is visible and exports an empty JSON array (875ms)
+  ✓  20 [chromium] › e2e/scripts.spec.ts:288:5 › Scripts & Data Tables E2E › Authenticated › failed-shard export errors are visible to the operator (892ms)
+  ✓  21 [chromium] › e2e/scripts.spec.ts:307:5 › Scripts & Data Tables E2E › Authenticated › failed-shard load errors are visible and disable export (790ms)
+  ✓  22 [chromium] › e2e/scripts.spec.ts:322:5 › Scripts & Data Tables E2E › Authenticated › catalog page shows a domain with its five readings (960ms)
+  ✓  23 [chromium] › e2e/tasks.spec.ts:17:3 › Tasks Management E2E › tasks page requires authentication (446ms)
+  ✓  24 [chromium] › e2e/tasks.spec.ts:24:5 › Tasks Management E2E › Authenticated › tasks list page loads (847ms)
+  ✓  25 [chromium] › e2e/tasks.spec.ts:40:5 › Tasks Management E2E › Authenticated › pipeline task opens a read-only detail while script editing stays available (1.7s)
+  ✓  26 [chromium] › e2e/tasks.spec.ts:65:5 › Tasks Management E2E › Authenticated › can create a new task (2.2s)
+  ✓  27 [chromium] › e2e/tasks.spec.ts:102:5 › Tasks Management E2E › Authenticated › the 执行记录 action opens that task’s executions (893ms)
+
+  27 passed (34.8s)

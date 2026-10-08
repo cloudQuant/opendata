@@ -1,0 +1,26 @@
+{
+  "archive_round": "C65",
+  "generated_at": "2026-09-30T23:38:34.194430+00:00",
+  "reviewer": "Codex primary",
+  "decision": "ACCEPT_CONTROLLED_REQUIRED_B_SCOPE_REFREEZE",
+  "basis": "FR4/D9 futures_derivative required; 12 source-preserving modules and 13 upstream-style facade exports reviewed; first-party metrics did not grow; A2 full check exit0; versions fixed",
+  "before_metrics": {
+    "ruff_selfdev": 148,
+    "mypy_selfdev": 0,
+    "bandit_selfdev": 1,
+    "ruff_ported": 2144,
+    "direct_http_ported": 1044
+  },
+  "after_metrics": {
+    "ruff_selfdev": 148,
+    "mypy_selfdev": 0,
+    "bandit_selfdev": 1,
+    "ruff_ported": 2188,
+    "direct_http_ported": 1071
+  },
+  "before_snapshot_sha256": "036b0bf616892324cc4b081c6a075740d54a589d1815934042fee11844ecaf27",
+  "after_snapshot_sha256": "b5422de107b4ee1e35863b3a1458e186a5edfe14fe24ea6311e4e6a107ede187",
+  "a2_driver_sha256": "15fb90477849e9454618233c317388cf249874f75f174b12a8326b801e311954",
+  "actual_refreeze_driver_sha256": "f85b9512d0eea4949460f99de6e42abc86880417968557eee01756b601b28738",
+  "not_claimed": "unmodified old facade debt; zero ported security findings; permission for future first-party debt growth"
+}

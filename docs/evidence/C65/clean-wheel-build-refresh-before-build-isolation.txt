@@ -1,0 +1,41 @@
+Date: 2026-09-30T22:01:19.921442+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: fixed-env pip wheel frozen source --no-deps --no-build-isolation; install exact wheel into two clean environments
+Processing /var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/opendata-c65-wheel-final-v_723plg/source
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'error'
+  error: subprocess-exited-with-error
+  
+  × Preparing metadata (pyproject.toml) did not run successfully.
+  │ exit code: 1
+  ╰─> [15 lines of output]
+      /tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/setuptools/config/pyprojecttoml.py:108: _BetaConfiguration: Support for `[tool.setuptools]` in `pyproject.toml` is still *beta*.
+        warnings.warn(msg, _BetaConfiguration)
+      running dist_info
+      creating /private/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/pip-modern-metadata-n145vkev/opendata.egg-info
+      writing /private/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/pip-modern-metadata-n145vkev/opendata.egg-info/PKG-INFO
+      writing dependency_links to /private/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/pip-modern-metadata-n145vkev/opendata.egg-info/dependency_links.txt
+      writing requirements to /private/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/pip-modern-metadata-n145vkev/opendata.egg-info/requires.txt
+      writing top-level names to /private/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/pip-modern-metadata-n145vkev/opendata.egg-info/top_level.txt
+      writing manifest file '/private/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/pip-modern-metadata-n145vkev/opendata.egg-info/SOURCES.txt'
+      reading manifest file '/private/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/pip-modern-metadata-n145vkev/opendata.egg-info/SOURCES.txt'
+      adding license file 'LICENSE'
+      adding license file 'LICENSE-AKSHARE'
+      writing manifest file '/private/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/pip-modern-metadata-n145vkev/opendata.egg-info/SOURCES.txt'
+      creating '/private/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/pip-modern-metadata-n145vkev/opendata-0.1.0.dist-info'
+      error: invalid command 'bdist_wheel'
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+error: metadata-generation-failed
+
+× Encountered error while generating package metadata.
+╰─> See above for output.
+
+note: This is an issue with the package mentioned above, not pip.
+hint: See above for details.
+
+[notice] A new release of pip is available: 24.0 -> 26.2.1
+[notice] To update, run: python -m pip install --upgrade pip
+
+BUILD_EXIT=1

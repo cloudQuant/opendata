@@ -1,0 +1,7 @@
+Date: 2026-09-30T21:56:28.823622+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: /tmp/opendata-c64-clean-env-20260930/bin/python scripts/ops/verify_isolated_stack.py --apply --output docs/evidence/C65/runtime-stack-current.json
+Verifier_SHA256: 5c5934793a54d0cbfc3805470d30cdd6669285067a22af60cc3abc34af360264
+{"date": "2026-09-30", "endpoint": "http://127.0.0.1:33566", "error": null, "frontend_login": {"catalog": {"authenticated_element": ".user-dropdown .username", "authenticated_element_visible": true, "title": "数据目录 - opendata", "url": "http://127.0.0.1:33566/data"}, "dashboard": {"authenticated_element": ".user-dropdown .username", "authenticated_element_visible": true, "title": "首页 - opendata", "url": "http://127.0.0.1:33566/"}, "ok": true}, "health": {"database": "connected", "status": "healthy"}, "mode": "apply", "source": {"image_id": "sha256:3c8f9415734277069d65ba22f4594d189760cfe07dbd753fa9744f30afd60afc", "source_identity": "c6bd1179740a703c79fdad95dba52a81206bc5a22159ba4a1f60798b26f1c50b"}, "static": {"asset_count": 2, "assets_valid": true, "home_http_200": true}, "userdb_write_isolated": true}
+
+RUNTIME_EXIT=0

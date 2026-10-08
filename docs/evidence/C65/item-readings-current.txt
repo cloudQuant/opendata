@@ -1,0 +1,1108 @@
+Date: 2026-10-01T00:29:03.194571+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: conda run --no-capture-output -n base python /tmp/opendata_c65_run_checks.py; fixed-environment commands below
+Scope: owned33565 acceptance schemas; scheduler/upstream keys/SMTP disabled; live e2e default-deny; production3306 writes=0
+
+Actual argv: ['python', 'scripts/quality/acceptance_item_probe.py', '--all', '--json', 'docs/evidence/C65/item-readings-current.json']
+
+### AC-10|04  (document line 210)
+判据原文：可选依赖：不安装某 provider 的 SDK 不影响其它 provider 导入与路由（单测）
+本探针：optional SDK provider isolation
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 1/1 nodes passed
+  - runtime binding=yes; scope=SDK blocked in subprocess; ECB registry/routing/mock fetch still works
+VERDICT AC-10|04: proven
+
+### AC-11|07  (document line 221)
+判据原文：`WS /ws/data/subscribe`：**首帧认证**（无 query token）；订阅→pipeline 落库→收到 `data.update`（meta）；退订生效；心跳沿用
+本探针：ODS commit to actual local websocket notification
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 4/4 nodes passed
+  - runtime binding=yes; scope=real local WS chain; three SQLite adapters; separate MySQL writer evidence
+VERDICT AC-11|07: proven
+
+### AC-13|02  (document line 237)
+判据原文：**调度归属由显式 `ENABLE_SCHEDULER` 控制**；生产未配置时启动即失败（集成验证）
+本探针：actual production lifespan scheduler ownership
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=actual lifespan with safe DB/bootstrap seams; no deployment activation
+VERDICT AC-13|02: proven
+
+### AC-14|02  (document line 248)
+判据原文：backtrader_web 经 `opendata_client`（API Key）取 A 股日线，完成一次回测数据准备并成功运行回测
+本探针：degraded local consumer handoff and real backtest
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=section0 fallback: local HTTP/Key/40 bars/backtrader; no platform claim
+VERDICT AC-14|02: proven
+
+### AC-14|03  (document line 249)
+判据原文：对接过程记录（调用接口、数据量、耗时）；按 QUICKSTART 黄金路径可复跑
+本探针：fresh documented consumer script reproduction
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 1/1 nodes passed
+  - runtime binding=yes; scope=current script/local HTTP: 40 bars/calls/time/range; section0 fallback
+VERDICT AC-14|03: proven
+
+### AC-14|01  (document line 247)
+判据原文：消费方 API Key 可用：创建/吊销/scopes 白名单/基础限速/**过期**均生效（单测）
+本探针：consumer Key lifecycle and rate limit
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 9/9 nodes passed
+  - runtime binding=yes; scope=local key checks; Redis fake, deployment unverified
+VERDICT AC-14|01: proven
+
+### AC-13|04  (document line 239)
+判据原文：**水位以 ods 为准**：缓存清理后重跑仍能正确判断增量区间（集成测试）
+本探针：ODS truth after raw-cache deletion
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=actual job + SQLite ODS + raw-cache deletion; no provider requests
+VERDICT AC-13|04: proven
+
+### AC-13|06  (document line 241)
+判据原文：单标的失败不阻断全局；**失败清单一键重试**（前端可用）
+本探针：single-symbol isolation and browser retry
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=local browser API fixtures {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; actual backend retry with SQLite controls
+VERDICT AC-13|06: proven
+
+### §6|03  (document line 325)
+判据原文：失败清单导出与**一键重试**路径可用
+本探针：browser failed-list download and retry
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=local browser downloads/errors {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; backend SQLite retry/list checks
+VERDICT §6|03: proven
+
+### AC-11|12  (document line 226)
+判据原文：旧机制迁移收口：interface_loader 读注册声明（兼容开关移除）；前端 Scripts/Tables/Tasks 页适配；**前端 e2e 与前端质量门禁纳入 `make gate`**
+本探针：legacy loader and frontend gate membership
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=current loader/route regression; frontend targets are actual gate members
+VERDICT AC-11|12: proven
+
+### AC-6|01  (document line 169)
+判据原文：P0 域函数与 akshare 原实现做录制回放对照：字段结构与取值一致（浮点在容忍度内）
+本探针：archived P0 replay observations
+台账现状：state=proven，文档勾选=True
+  - recorded observations=yes; provenance=yes
+  - A2 replay: 14 PASS cases; Sina alternatives; four Eastmoney cases pending; no P1 coverage claim
+VERDICT AC-6|01: proven
+
+### AC-7|03  (document line 177)
+判据原文：迭代 1A：`/api/meta/*`（Instrument/Calendar）+ `prices` + 除复权事件可用；market-dumps 真机拉取一个全市场 dump 成功解析
+本探针：actual historical fuyao smoke and dump
+台账现状：state=proven，文档勾选=True
+  - recorded observations=yes; provenance=yes
+  - A3 live smoke and ten-day dump; no current Key or ten-year claim
+VERDICT AC-7|03: proven
+
+### AC-12|03  (document line 232)
+判据原文：**上游维护预算机制**（每迭代 10~15%）与"失效即弃"流程落档
+本探针：maintenance budget and abandonment process
+台账现状：state=proven，文档勾选=True
+  - recorded observations=yes; provenance=yes
+  - documented budget/process; no actual staffing allocation claim
+VERDICT AC-12|03: proven
+
+### §4|01  (document line 303)
+判据原文：双源校对报告（A 股日线 ths vs akshare）：产出差异率统计；真实差异人工复核确认为源差异而非程序错误
+本探针：historical dual-source measured differences
+台账现状：state=proven，文档勾选=True
+  - recorded observations=yes; provenance=yes
+  - B1 2026-01-05..07-21: 719314 compared keys; akshare leg from legacy migration, no fresh dual capture
+VERDICT §4|01: proven
+
+### §4|05  (document line 307)
+判据原文：**金标准核对**：P0 域抽样与第三方基准（交易所/官方数据）核对一次
+本探针：historical independent index sample
+台账现状：state=proven，文档勾选=True
+  - recorded observations=yes; provenance=yes
+  - C5 index_daily: 3 live legs plus one fixture; no all-domain or current-provider claim
+VERDICT §4|05: proven
+
+### §6|04  (document line 326)
+判据原文：**备份恢复演练**完成（见 AC-19）
+本探针：current isolated dual-database restore
+台账现状：state=proven，文档勾选=True
+  - recorded observations=yes; provenance=yes
+  - C64 isolated MySQL restore; no production activation or file RPO claim
+VERDICT §6|04: proven
+
+### AC-3|01  (document line 145)
+判据原文：opendata_http / opendata_fuyao / opendata_providers 的能力均注册进 ProviderRegistry
+本探针：bundled provider registration
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=offline registrations; historical opendata_providers uses current providers
+VERDICT AC-3|01: proven
+
+### AC-3|02  (document line 146)
+判据原文：`source="auto"` 按权威度+可用性路由并可降级（单测：权威源故障→次选接管）
+本探针：authority and health fallback
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=offline actual registry resolution
+VERDICT AC-3|02: proven
+
+### AC-3|03  (document line 147)
+判据原文：显式 source 精确路由，源失败时报错不静默降级（单测）
+本探针：precise explicit routing
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=offline explicit routing and rejection; no live supplier request
+VERDICT AC-3|03: proven
+
+### AC-3|04  (document line 148)
+判据原文：**`verified=false` 与 `notes="on-demand"/"upstream-pending"` 的能力不参与 auto 路由**（单测）
+本探针：unverified and reserved notes exclusion
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=offline verified/notes eligibility, both reserved note values
+VERDICT AC-3|04: proven
+
+### AC-3|05  (document line 149)
+判据原文：`GET /api/v1/data/capabilities`、`/sources` 返回注册表内容（**只读接口，随 A1 交付**）
+本探针：capability and source registry APIs
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 4/4 nodes passed
+  - runtime binding=yes; scope=offline authenticated read-only API and current registry contents
+VERDICT AC-3|05: proven
+
+### AC-6|03  (document line 171)
+判据原文：**未完成对照的能力在注册表中标注 `verified=false`**，且不参与 auto 路由
+本探针：incomplete comparison cannot enter auto
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=offline unverified exclusion; no supplier comparison claim
+VERDICT AC-6|03: proven
+
+### AC-7|01  (document line 175)
+判据原文：客户端：认证/信封解析/错误码映射/429 与 4001 退避（单测 mock + 真机冒烟）
+本探针：fuyao envelope auth and backoff
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 4/4 nodes passed
+  - runtime binding=yes; scope=fresh offline HTTP mocks; historical live smoke A3 separately retained
+VERDICT AC-7|01: proven
+
+### AC-7|02  (document line 176)
+判据原文：**错误业务文案表**覆盖全部错误码，含中文文案 + 处置建议
+本探针：business error messages and remedies
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=current complete error-table validation
+VERDICT AC-7|02: proven
+
+### AC-7|04  (document line 178)
+判据原文：迭代 1B：端点映射表覆盖官方文档全部分组（基础/A股/期货/期权/基金）100%
+本探针：official endpoint map coverage
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=official archived document inventory and bidirectional map checks
+VERDICT AC-7|04: proven
+
+### AC-7|05  (document line 179)
+判据原文：P0 域输出映射为统一契约模型，注册为 source=ths
+本探针：THS contract registration
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=offline registered domains and contract-backed fetcher declarations
+VERDICT AC-7|05: proven
+
+### AC-10|05  (document line 211)
+判据原文：compat 对照表（openbb_map.yaml）覆盖已启用 provider
+本探针：enabled provider compatibility map
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=naming interoperability only; no cleanroom rights assertion
+VERDICT AC-10|05: proven
+
+### AC-11|06  (document line 220)
+判据原文：**`GET /api/v1/data/catalog` 与 `/{domain}/freshness` 可用**（AC-18）
+本探针：catalog and freshness routes
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=temporary SQLite handler checks; HTTP route separately covered
+VERDICT AC-11|06: proven
+
+### AC-11|08  (document line 222)
+判据原文：**断线补发**：`since_batch_id` 可补发断线期间的 meta 事件
+本探针：missed batch meta replay
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=local websocket protocol and persisted batch fixtures
+VERDICT AC-11|08: proven
+
+### AC-11|09  (document line 223)
+判据原文：full 模式（实验性）：单帧超限自动分帧；极端总量降级 meta 且带 `truncated` 标记
+本探针：full message ceilings and fallback
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=offline bounded framing and remedy assertions
+VERDICT AC-11|09: proven
+
+### AC-11|10  (document line 224)
+判据原文：既有 `/ws/executions`、`/tables`、任务/执行/用户等路由回归通过
+本探针：existing routes regression
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 6/6 nodes passed
+  - runtime binding=yes; scope=offline main-database fixture REST routes and root websocket mounts
+VERDICT AC-11|10: proven
+
+### AC-11|11  (document line 225)
+判据原文：**`opendata_client/` 最小客户端可运行**（REST 分页 + adjust 参数 + WS 订阅回调）
+本探针：minimal REST and websocket client
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=mock REST/protocol; separate local socket evidence
+VERDICT AC-11|11: proven
+
+### AC-12|01  (document line 230)
+判据原文：`upstream.lock` 记录 akshare 仓库 URL + **基线 commit** + 每文件哈希并随库入库
+本探针：upstream lock provenance and hashes
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=real two-commit temporary git fixture; shipped lock contains full hash inventory
+VERDICT AC-12|01: proven
+
+### AC-12|02  (document line 231)
+判据原文：同步工具对上游新 commit 产出新增/修改/删除清单与关键函数 diff 摘要（演练一次；可用历史 commit 区间模拟）
+本探针：upstream inventory and signature diff
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=fresh local git fixture and historical 147-file commit-interval rehearsal
+VERDICT AC-12|02: proven
+
+### AC-13|01  (document line 236)
+判据原文：pipeline 六步作为调度单元运行；`scheduled_tasks` 支持 pipeline 型任务
+本探针：scheduled six-step pipeline task
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 4/4 nodes passed
+  - runtime binding=yes; scope=temporary DB dispatch, factory and ODS/DWD metadata; separate migration evidence
+VERDICT AC-13|01: proven
+
+### AC-13|03  (document line 238)
+判据原文：断点续拉：大任务中断后重启跳过已完成分片（集成测试）
+本探针：resume completed shards and retry partial failures
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=SQLite control restart and writer fixtures; separate MySQL resume evidence
+VERDICT AC-13|03: proven
+
+### §5|03  (document line 315)
+判据原文：默认并发/频率配置下未触发同花顺封禁（429 有退避记录即视为机制生效）
+本探针：bounded rate-limit retry mechanism
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=offline 429 substitute; no live ban or quota claim
+VERDICT §5|03: proven
+
+### §6|01  (document line 323)
+判据原文：pipeline 步级检查点：任一步失败后可从当前步重入（集成测试）
+本探针：step checkpoints resume hooks including metadata
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 4/4 nodes passed
+  - runtime binding=yes; scope=SQLite step re-entry; notification is at-least-once
+VERDICT §6|01: proven
+
+### §6|02  (document line 324)
+判据原文：调度重启后任务从 `scheduled_tasks` 重载（既有能力回归）
+本探针：persistent scheduler reload
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 2/2 nodes passed
+  - runtime binding=yes; scope=file-backed SQLite restart; actual task reload and legacy script path
+VERDICT §6|02: proven
+
+### AC-4|03  (document line 155)
+判据原文：**P0 域接口每日健康巡检**可运行，失败累计触发告警
+本探针：daily P0 patrol, persisted streaks and retryable notification delivery
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 6/6 nodes passed
+  - runtime binding=yes; scope=fresh offline P0/persistent-outbox checks and actual UTC CronTrigger; disabled by default; business time and live suppliers remain unverified
+VERDICT AC-4|03: proven
+
+### AC-13|05  (document line 240)
+判据原文：缓存只存原始响应；**复权序列不被长期缓存**（集成验证）
+本探针：raw-response TTL cache and actual adjusted-query isolation
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 4/4 nodes passed
+  - runtime binding=yes; scope=fresh raw-byte cache and SQLite factor-backed REST qfq/hfq checks; deleting cache preserves ODS watermark and computed queries; no formula change
+VERDICT AC-13|05: proven
+
+### AC-4|01  (document line 153)
+判据原文：统一超时/重试/并发上限/限流退避生效（mock 上游验证 429 与频率码退避）
+本探针：timeout / 429 retry / per-host rate / concurrency actual mocks
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 5/5 nodes passed
+  - runtime binding=yes; scope=offline actual transport mocks; no real supplier ban or uptime claim
+VERDICT AC-4|01: proven
+
+### AC-4|02  (document line 154)
+判据原文：失败分类（网络/限流/参数/未就绪/不可用）落结构化日志（源/端点/参数摘要/耗时/request_id）
+本探针：structured safe transport failure events
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 4/4 nodes passed
+  - runtime binding=yes; scope=offline structured-event behavior and credential redaction
+VERDICT AC-4|02: proven
+
+### AC-7|06  (document line 180)
+判据原文：**Key 缺失时路由跳过该源并发醒目告警**（而非静默降级）
+本探针：missing credentials exclusion and visible warning
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=current registry resolution; no supplier availability claim
+VERDICT AC-7|06: proven
+
+### §5|05  (document line 317)
+判据原文：**分钟线查询走文件存储**（不进入 MySQL；D13）
+本探针：file-backed minute query with isolated mainDB index
+台账现状：state=proven，文档勾选=True
+  - C64 fresh named behavior checks: 3/3 nodes passed
+  - runtime binding=yes; scope=fresh temporary file/SQLite checks plus C64 isolated MySQL/Parquet REST; no deployment or file RPO claim
+VERDICT §5|05: proven
+
+### §5|04  (document line 316)
+判据原文：REST 分页查询在 GB 级表上响应可控（有索引验证，EXPLAIN 无全表扫描）
+本探针：one real GB ODS table bounded REST/CSV and EXPLAIN evidence
+台账现状：state=proven，文档勾选=True
+  - dated_evidence=yes
+  - gb_table=yes
+  - http_rows=yes
+  - indexed=yes
+  - bounded_time=yes
+  - read_only=yes
+  - one indexed stock_daily THS ODS table; 15-day/one-symbol/12-row query; no all-table or P95 claim
+VERDICT §5|04: proven
+
+### AC-1|01  (document line 124)
+判据原文：`pyproject.toml` name=opendata、version=0.1.0；主包为 `opendata/`
+本探针：项目自我命名与主包（name / version / opendata/）
+台账现状：state=proven，文档勾选=True
+  - pyproject project.name = opendata
+  - pyproject project.version = 0.1.0
+  - opendata/__init__.py tracked = yes
+  - tracked files under the old app/ layout = 0
+  - first setuptools find include = opendata*
+VERDICT AC-1|01: proven
+
+### AC-1|02  (document line 125)
+判据原文：**无旧品牌残留（可复算）**：`python scripts/quality/check_brand.py` 全绿——旧品牌 token（`akshare_web`、`akshare-web`、`akshare_user`、`akshare_data`、`akshare_mysql`、`akshare_warehouse`、`akshare_redis`、`akshare_backend`、`akshare_frontend`、`akshare_certbot`、`akshare_network`、`akshare_root_pass`、`akshare_pass`）零命中，且无 `from app.` / `import app.` 残留
+本探针：判据列出的 token 清单 == 扫描器执行的清单，且扫描与独立 grep 都为零
+台账现状：state=proven，文档勾选=True
+  - tokens enumerated by the item = 13; enforced by check_brand.py = 13; identical = yes
+  - $ python scripts/quality/check_brand.py -> exit 0: OK: no brand residue and no rename leftovers.
+  - independent grep for `from app.` / `import app.` over 505 own .py files -> 0 file(s)
+VERDICT AC-1|02: proven
+
+### AC-1|03  (document line 126)
+判据原文：**裸词 `akshare` 的逐词白名单**：署名、上游沿革与搬运代码沿用原路径白名单（`akshare/`，迭代 A2 起为 `opendata_http/`；`THIRD_PARTY_NOTICES.md`、`LICENSE-AKSHARE`、`README.md`、`CODE_QUALITY.md`、`scripts/codemod/`、`tests/`、`docs/`）；第一方实现中仅允许用于数据源/API 标识、来源适配器、映射、对照工具和构建声明。新增允许项须在 `docs/quality/akshare-reference-allowlist.json` 逐路径、用途、审核日期登记并与实际命中双向对账；未登记、新增或用途不符即失败。旧品牌 token 仍由 AC-1 第 2 条要求零残留；运行时 `akshare`/`openbb` 包依赖由 AC-16 的 AST 扫描要求零引用。
+本探针：裸词 akshare 的白名单是否真的覆盖全部命中面
+台账现状：state=gap，文档勾选=False
+  - whitelist read back out of the item (9 entries): opendata_http/, THIRD_PARTY_NOTICES.md, LICENSE-AKSHARE, README.md, CODE_QUALITY.md, scripts/codemod/, tests/, docs/, docs/quality/akshare-reference-allowlist.json
+  - tracked files carrying the bare word `akshare` = 917, of which the vendored tree = 327
+  - unregistered hits outside that whitelist = 0 (+0 unshown): -
+  - path register valid = yes (81 entries; stale paths=0, stale SHA=0, invalid metadata/schema=0, unreadable tracked files=0)
+  - exact AST metadata exceptions = 3/3
+  - AC-16's frozen integration-layer findings = 0 ()
+VERDICT AC-1|03: proven
+
+### AC-1|04  (document line 127)
+判据原文：**改名覆盖补全**：容器名（`akshare_mysql`/`akshare_warehouse`/`akshare_redis`/`akshare_backend`/`akshare_frontend`/`akshare_certbot`）、`akshare_user`、根目录文档、Makefile/pre-commit 路径
+本探针：容器名 / DB 用户 / 根文档 / Makefile·pre-commit 四个面各自成立
+台账现状：state=proven，文档勾选=True
+  - compose container_name set: opendata_mysql, opendata_warehouse, opendata_redis, opendata_backend, opendata_frontend, opendata_certbot, opendata_backup -> not opendata_* = 0
+  - compose named networks: opendata_network
+  - `opendata_user` missing from: - (checked .env.example, compose, init.sql)
+  - pre-rename tokens in the 7 machine surfaces = 0
+  - root documents: lines that still *use* a token = 0; lines that name it as history = 3 (沿革引用, allowed by AC-1|03 over 4 files)
+  - root-level file *names* still carrying a token = 0
+  - Makefile path references = 21, absent = 0
+  - pre-commit files:/exclude: regexes = 8, matching no tracked file = 0
+VERDICT AC-1|04: proven
+
+### AC-1|05  (document line 128)
+判据原文：MySQL 双库名为 opendata / opendata_data，**四处配置面一致**（`config.py` 默认值、`.env.example`、`docker-compose.yml`、`init.sql`）；后端启动、前端登录、/health 均正常
+本探针：双库名四处一致（可静态量）+ 后端/前端/health 运行时（要真机）
+台账现状：state=gap，文档勾选=False
+  - config.py defaults, .env.example, docker-compose.yml, init.sql all read opendata / opendata_data = yes
+  -   config.py = opendata / opendata_data
+  -   .env.example = opendata / opendata_data
+  -   docker-compose.yml = opendata / opendata_data
+  -   init.sql = opendata / opendata_data
+  - backend start / frontend login / GET /health = validated (evidence issues 0: none)
+  -   isolated endpoint = http://127.0.0.1:33566; image/source = sha256:3c8f9415734277069d65ba22f4594d189760cfe07dbd753fa9744f30afd60afc / c6bd1179740a703c79fdad95dba52a81206bc5a22159ba4a1f60798b26f1c50b
+  -   database = connected; static assets = 2; frontend identity = verified
+VERDICT AC-1|05: proven
+
+### AC-1|06  (document line 129)
+判据原文：**`docker compose up` 默认启动即可用**（数据仓库容器不再依赖 `--profile`）
+本探针：数据仓库容器不再挂在 --profile 上
+台账现状：state=proven，文档勾选=True
+  - services sitting behind a profile: backup=- backup, certbot=- ssl
+  - mysql_warehouse requires --profile = no
+  - `docker compose config --services` resolved 0 service(s) and lists the warehouse = n/a (exit 1: error while interpolating services.mysql.environment.MYSQL_ROOT_PASSWORD: requir)
+VERDICT AC-1|06: proven
+
+### AC-1|07  (document line 130)
+判据原文：LICENSE 为 BSL 1.1 且四要素齐备；`LICENSE-AKSHARE` + `THIRD_PARTY_NOTICES.md`（含资源权利登记）；README 含授权说明、商务联系方式与**数据免责声明**
+本探针：BSL 四要素 + 搬运许可 + README 三项（含商务联系方式为真实可达）
+台账现状：state=proven，文档勾选=True
+  - LICENSE opens with Business Source License 1.1 = yes
+  - parameter block = Additional Use Grant, Change Date, Change License, Licensed Work, Licensor (missing of the four = 0); Change License = MIT License
+  - LICENSE-AKSHARE present and MIT = yes
+  - THIRD_PARTY_NOTICES.md has 4 sections; embedded-resource rights block = yes
+  - README 授权/许可说明 = yes; 数据免责声明 = yes
+  - README 商务联系方式 = 商务授权联系：cloudQuant — [个人主页](https://yunjinqi.top) / [GitHub](https://gi (placeholder = no)
+VERDICT AC-1|07: proven
+
+### AC-1|08  (document line 131)
+判据原文：**数据源权利登记表**存在且覆盖全部数据源（来源/条款链接/允许用途/复核日期/责任人）
+本探针：只读§1登记表：每个已引来源须有条款、用途、日期与责任人
+台账现状：state=gap，文档勾选=False
+  - §1 table valid = yes; rows = 11; columns = #, 数据源, 接入方式, 条款链接, 允许本项目落库, 允许再分发, 允许商业使用, 复核日期, 责任人, 状态
+  - rows carrying a real 复核日期 = 11/11
+  - rows still answering a permitted use with 待确认 = 0/11
+  - rows whose 条款链接 is prose instead of a URL = 0/11
+  - rows with an empty or unspecified 责任人 = 0/11
+  - registry rows cited by docs/proposals/openbb-migration/provider-inventory.yaml = 10, citations with no row = 0
+VERDICT AC-1|08: proven
+
+### AC-1|09  (document line 132)
+判据原文：**凭证未入版本库**：跟踪文件中没有实际 `.env`/`.env.*` 配置、`.idea` 工作区或 `.pid` 运行文件，仅允许不含真实凭证的 `.env.example` 模板；扫描工具必须对模板内容执行凭证检测。`gitleaks detect` 全历史扫描 0 命中，白名单仅含经审核的文档/模板及公开非凭证标识，不允许生成物目录的通用豁免；上游硬编码凭证已处置并登记——`akshare/stock/cons.py`、`akshare/bond/bond_convert.py`、`akshare/bond/bond_china_money.py`、`akshare/futures/futures_hf_em.py`、`akshare/option/option_em.py`，搬运后按 `opendata_http/` 对应路径核对。
+本探针：git 面 / 扫描器豁免面 / 上游 5 文件处置 / 全历史扫描器实跑
+台账现状：state=gap，文档勾选=False
+  - legacy path grep finds 1 paths because the allowed template is named; real `.env`/`.env.*`, `.idea` components, or `.pid` files = 0
+  - tracked env templates = 1 (.env.example); global path exemptions = 0 (none required = yes)
+  - global path exemption names = 0 -
+  - per-rule allowlist blocks = 2; exact public-rule exceptions preserved = yes
+  - upstream credential files registered in docs/evidence/A0/secret-audit.txt = 5/5; cred-shaped literals left in them = 0
+  - $ python scripts/quality/secret_scan_check.py -> exit 0: exit=0; findings=0; locations=-
+  - isolated `.env.example` scan (unchanged config, no path exclusions) -> exit 0: findings=0; locations=-
+VERDICT AC-1|09: proven
+
+### AC-1|10  (document line 133)
+判据原文：拷贝残留已清除；git 已完成首次完整提交
+本探针：残留文件 + 从未进库的文件 + 首次提交的树完整性
+台账现状：state=proven，文档勾选=True
+  - tracked paths matching a copy-residue shape = 0
+  - untracked-and-not-ignored files = 0
+  - tracked files with uncommitted edits = 598 (.dockerignore, .env.example, .gitleaks.toml, Dockerfile, QUICKSTART.md, README.md, THIRD_PARTY_NOTICES.md, alembic/versions/2026_09_30-0004_minute_archive.py)
+  - first commit touching opendata/__init__.py = 4ee1bbca "4ee1bbc 2026-09-22 chore(a0): establish opendata foundation (brand, licence, qua"
+  - its tree = 712 files, holding every part of the project it should (missing: -), against 2054 tracked today (34.7%; the rest arrived with later rounds, which is growth)
+  - 补齐到可判：dirty: 598 -> 0; dirty_sample: .dockerignore, .env.example, .gitleaks.toml, Dockerfile, QUICKSTART.md, README.md, THIRD_PARTY_NOTICES.md, alembic/versions/2026_09_30-0004_minute_archive.py -> ; first_tree: 712 -> 2054
+VERDICT AC-1|10: gap — residue, files git has never seen, uncommitted edits, or a first commit that left part of the project out -- 'first complete commit' has to mean the whole move landed
+
+### AC-2|01  (document line 137)
+判据原文：P0 域标准化模型（`Bar`/`AdjustFactor`/`CorporateAction`/`FinancialStatement`/`IndexConstituent`/`FuturesFundamentals`）可序列化为 DataFrame 与 pydantic 双形态（单测覆盖）
+本探针：六个 P0 模型逐模型双形态 + fail-closed 节点实跑
+台账现状：state=proven，文档勾选=True
+  - ALL_MODELS parametrizes 9 model(s); the six P0 names are covered for 6 (missing: -)
+  - round-trip + fail-closed nodes run = 12, passed = 12
+  - the file exercises both forms (DataFrame to_frame/from_frame, model_dump) = yes
+VERDICT AC-2|01: proven
+
+### AC-2|02  (document line 138)
+判据原文：**`Instrument` 与 `TradingCalendar` 模型就位**，且被全市场回补与增量窗口逻辑引用（单测）
+本探针：元数据两模型存在且被测（绿），另一面是被回补/窗口逻辑 import
+台账现状：state=proven，文档勾选=True
+  - both classes subclass ContractModel in opendata/data/models/metadata.py = yes
+  - the five field-set/semantics/round-trip nodes = 5/5 passed
+  - backfill / incremental-window modules importing the contracts = 2 (opendata/pipeline/jobs.py, opendata/pipeline/templates.py)
+  - modules that only mention the names (docstrings, or a same-named local class) = 0 (-)
+VERDICT AC-2|02: proven
+
+### AC-2|03  (document line 139)
+判据原文：**`Bar` 只含不复权 OHLC**；复权序列由 `Bar` + `AdjustFactor` 合成（单测：合成结果与 akshare 官方 qfq 序列对照）
+本探针：Bar 字段面 + 合成用例 + 与录制的官方 qfq 序列真对照
+台账现状：state=proven，文档勾选=True
+  - Bar field-set node (no adjusted price may exist on the model) = passed
+  - tests/test_adjust.py (synthesising from Bar + AdjustFactor) = 21 passed, 0 failed (exit 0)
+  - official-series face: 2 case(s) collected [em, sina(\u5bbd)], 2 passed / 2 skipped / 0 failed (exit 0)
+VERDICT AC-2|03: proven
+
+### AC-2|04  (document line 140)
+判据原文：三段式协议基类（QueryParams/Fetcher/Capability）就位，`normalize()` 承担字段映射/单位换算/key 规范化（单测覆盖）
+本探针：基类三段齐备，且 normalize() 自身承担映射/换算/键规范化
+台账现状：state=proven，文档勾选=True
+  - protocol bases in opendata/data/protocol.py = FetchContext, Fetcher, QueryParams; Capability model = yes
+  - Fetcher stage methods = 3 (transform_query / extract_data / transform_data)
+  - normalize_frame() bodies the three jobs itself: field mapping = yes, unit conversion = yes, key normalization = yes
+  - named unit nodes = 5/5 passed; not green: -
+VERDICT AC-2|04: proven
+
+### AC-2|05  (document line 141)
+判据原文：**`domains.yaml` 注册表**存在，表名/REST/WS 三处由它派生且一致（单测校验）
+本探针：注册表存在、三处名字由它派生（且无第二处硬写）、派生用例全绿
+台账现状：state=proven，文档勾选=True
+  - domains.yaml declares 20 domain(s): 20 rest_path and 20 contract entries, rest paths unique = yes
+  - table/WS names written into the registry instead of derived = 0
+  - tests/test_domains.py = 26 passed, 0 failed (exit 0)
+  - derivation nodes = 5/5 passed
+VERDICT AC-2|05: proven
+
+### AC-13|07  (document line 242)
+判据原文：**告警矩阵生效**：pipeline 失败 / 连续失败 / 分区缺失 / 磁盘水位
+本探针：四类各有生产者、各有判定行、各被调度执行器真喂输入，测不到仍记进范围
+台账现状：state=proven，文档勾选=True
+  - 四类节点: 8/8 passed
+  - 接线节点: 4/4 passed
+  - 判据原文点名的类数 = 4/4；判定引擎产出的 rule = consecutive_failures, disk_water, freshness, partition_missing, pipeline_failure，四类齐 = 4/4
+  - 生产者齐备 = 4/4（缺: -）；执行器喂入的三类输入 = 3/3（未喂: -）
+  - 范围诚实字段 = 3/3 —— 测不到要读成 None/0 而不是健康
+VERDICT AC-13|07: proven
+
+### AC-17|03  (document line 290)
+判据原文：**A1 层（存量）**：mypy/ruff 债务不高于基线快照，只降不升；**修改过的文件按 A2 标准达标**（"触碰即达标"）
+本探针：棘轮三项存量债务 + 上限自身历史只降不升 + 三个静态平面各读到多少 + 触碰集↔A2 集一一对应
+台账现状：state=proven，文档勾选=True
+  - scripts/quality/ratchet.py exit 0（face=none，printed=3/3）：存量债务 ruff_selfdev 148(≤148), mypy_selfdev 0(≤0), bandit_selfdev 1(≤1)
+  - 上限自己的历史（12 次转换）：抬高存量上限的次数 0；近 2 次转换里消失的被测根 0，更早历史 1；存量上限轨迹 ruff_selfdev 404→148 / mypy_selfdev 35→0 / bandit_selfdev 6→1。棘轮只比较工作区与快照，抬高上限这一步此前无人计量（4ee1bbc->2b68225 akshare）
+  - 平面可见性：6 个自研根磁盘 502 个 .py，ruff 自己走到 502（看不见 0）；mypy 目标 212/230，被它排除的 18 个里 18 个在棘轮点名的遗留区（opendata/data_fetch/）之内、0 个是没人声明的 exclude（这 18 个仍全部被 ruff 读到）；bandit 287/287，被它漏掉的 0 个（ruff 也看不见的 0）必须为 0：三个平面各自把一份存量计数，exclude 吞掉的根既不产生读数也不产生红灯，所以谁被排除必须点名，不能只在配置文件里悄悄加一行
+  - 全体 tracked .py = 899，既不在任何被测根下、也不在 A2 集里的 0
+  - 触碰即达标：自基线起改动 475 个 .py ↔ A2 集 475 个（a2-check exit 0），其中按名字被排除出 A2 的 0 个、排除项里的自研代码 0 个
+VERDICT AC-17|03: proven
+
+### AC-17|05  (document line 292)
+判据原文：搬运代码（`opendata_http/`）：仅 E/F 检查、未做 format/isort 重排（与上游可 diff）；pre-commit 含 `exclude: opendata_http/`；lint 债务不高于棘轮快照
+本探针：搬运树只按 E/F 计量（豁免量得出来）+ 未重排且逐文件重放一致 + 三处登记与 pre-commit exclude 一致
+台账现状：state=proven，文档勾选=True
+  - scripts/quality/ratchet.py exit 0（face=none）：搬运债务 ruff_ported 2188(≤2188), direct_http_ported 1071(≤1071)；门禁打印的 ruff_ported 与独立跑的 --select E,F 计数一致 = yes（E/F 2188）；直连计数的动词集合 delete, get, head, patch, post, put, request 完整 = yes
+  - 「仅 E/F」豁免挡住的量：同一棵树按自研规则集跑是 9878 条、按 I 规则 233 条，E/F 只有 2188 条 —— 豁免若不存在，门禁当场全红，所以它必须被登记而不是被假装没有
+  - 「未做 format/isort 重排」：216 个文件是 ``ruff format`` 会重写的、233 条 import 顺序违例 —— 重排过一次的树不可能与上游逐行 diff
+  - 重放对账（scripts/codemod/report_port.py，需本机有锁定 commit 的上游干净克隆）：exit 0，锁内 327 条记录 / 报告 327 行 / 逐字一致 327 行 / 待办 0 条；磁盘 325 个 .py，其中未登记的 0 个；现场渲染与已归档的 docs/port-report.md 逐字节一致 = yes
+  - 人工改动三处登记：opendata_http/upstream.lock 9 条、THIRD_PARTY_NOTICES.md 9 条、scripts/codemod/port_module.py:MANUAL_EDITS 9 条，不一致 0 条（重放只认 MANUAL_EDITS，读者只看到登记文档）
+  - .pre-commit-config.yaml：共 15 个 hook（HEAD 15 个），其中排除搬运树的 4 个，比 HEAD 少的 0 个；排除的 hook id：end-of-file-fixer, ruff, ruff-format, trailing-whitespace
+  - 搬运上限历史（12 次转换）：抬高 5 次、其中搬运文件数未变的 1 次；近 2 次转换消失的被测根 0。判据原文只要求「债务不高于棘轮快照」，故抬高只作待复核登记；轨迹 ruff_ported 1418→2188 / direct_http_ported 1270→1071（3757285->d66dd99 ruff_ported 1305->2145; 4ee1bbc->2b68225 akshare）
+VERDICT AC-17|05: proven
+
+### AC-17|07  (document line 294)
+判据原文：公共 API：**新增**公开 callable docstring 与参数注解覆盖率 100%
+本探针：门禁面（固定目录内 100%/100%）+ 目录外的新增自研文件按同一把尺子再量一遍
+台账现状：state=proven，文档勾选=True
+  - scripts/quality/public_api.py exit 0: 986 callable(s) over 6 of its fixed scope director(ies) exist; docstring 100.0%, annotation 100.0%; empty-scope branch taken = no
+  - 新增面 outside that fixed list (A2 files that are not tests or evidence) = 88 file(s) / 365 callable(s), below standard = 0
+  - A1 存量 outside the fixed list, gated by 触碰即达标 rather than by this item = 36 file(s) / 67 callable(s), below standard = 6 (opendata/api/metrics.py:166, opendata/api/metrics.py:171, scripts/init_tasks_and_tables.py:33, scripts/init_tasks_and_tables.py:106, scripts/init_tasks_and_tables.py:177, scripts/init_tasks_and_tables.py:221)
+  - excluded test/evidence trees, disclosed rather than dropped = 3516 callable(s), below standard = 2762
+VERDICT AC-17|07: proven
+
+### AC-17|08  (document line 295)
+判据原文：反空壳抽审：无自指测试、无单断言空壳、无 `inspect.getsource` 形式检查；T1 模块具备错误翻译真实信封样例 ≥3 + 黄金向量 + normalize 真实报文 ≥3
+本探针：§5.1 四类空壳全树为零 + §5.2 T1 三问由真实录制信封与预计算黄金向量回答
+台账现状：state=proven，文档勾选=True
+  - docs/evidence/C44/shell_audit.py exit 0（shells=clean t1=met）：自指=0, 恒真断言=0, 定义抄写=0, 源码形式检查=0
+  - population = 212 个 test_*.py，census 扫到 212 个：全树零必须是「全树」，漏扫的那部分只是把空壳藏在读数之外；未被 git 跟踪的 0 个不算证据（CI 看不见的面无法复算）
+  - §5.2 T1 三问：t1_error_cases=6(≥3), t1_success_cases=9(≥1), t1_normalize_cases=4(≥3), t1_golden_days=24(≥1)
+  - 录制夹具 = 9 例，逐条 sha 复算 = yes，来源可追溯 = yes：手造「理想报文」在这一问上过不去
+VERDICT AC-17|08: proven
+
+### AC-17|10  (document line 297)
+判据原文：历次里程碑的验证证据（命令 + 输出摘要 + 日期）可追溯
+本探针：evidence-traceability 六个面全零 + 日期两读覆盖全部 gate 日志 + 无档案被删
+台账现状：state=proven，文档勾选=True
+  - scripts/quality/evidence_traceability.py exit 0, says OK = yes, reports a new violation = no; frozen ceiling = 0 legacy entr(ies)
+  - archive = 75 round(s), 979 file(s) in the census, 989 tracked now, 0 added once and then removed
+  - gaps by face: narrative=0, date=0, identity=0, command=0, exit=0, untracked=0
+  - date answers among gate logs = header 117 + printed by the run 9 out of 126: 日期 is satisfied by either face, and the two together have to cover every gate log
+VERDICT AC-17|10: proven
+
+### AC-18|01  (document line 258)
+判据原文：**新鲜度接口与告警**：各域最新数据日期与滞后天数可查；缺失触发告警（迭代 1A）
+本探针：新鲜度门交出日期/滞后/基准日 + 缺失告警真到达通道 + 调度执行器接线
+台账现状：state=proven，文档勾选=True
+  - 新鲜度门 faces: 7/7 nodes passed
+  - opendata/api/data_query.py::domain_freshness route = yes, delegates to _domain_freshness = yes, carries latest + lag_days = yes, and returns expected_data_date 2 time(s) — a lag cannot be checked without the date it was measured against, so both branches have to name it
+  - 告警面: 9/9 nodes passed
+  - 调度接线: the template dispatcher mentions FRESHNESS = yes, the executor is an executable kind = yes, it is handed the WS broadcast = yes
+VERDICT AC-18|01: proven
+
+### AC-18|02  (document line 259)
+判据原文：**数据目录页/接口**：按数据域组织，展示覆盖标的数、时间范围、各源最近更新、新鲜度、质量标记（迭代 1B）
+本探针：按域一行五个读数：接口给得出、页面显示得出、单元面与真机页各自断言过
+台账现状：state=proven，文档勾选=True
+  - 目录接口 faces: 7/7 nodes passed
+  - 五个读数在页面上有列名且被断言：缺 -
+  - 真机页（Playwright）逐读数断言：缺 -
+  - 载荷类型 frontend/src/api/catalog.ts 承载 5/5 个字段 (coverage/sources/lag_days/quality/expected_data_date)，页面显示的是接口量出来的那一次
+  - 基准日在页面出现并被断言 = yes，下钻 = yes，单元面采集器无未授权排除 = yes
+VERDICT AC-18|02: proven
+
+### AC-18|03  (document line 260)
+判据原文：前端"数据接口"页与数据目录合并（目录为默认视图，函数级明细下钻）
+本探针：数据接口页是否已并入目录（目录为默认视图，函数级明细在下钻里）
+台账现状：state=proven，文档勾选=True
+  - 目录导航项 = 1 (nav.catalog -> /data)
+  - `/scripts` 是否渲染目录视图 = yes
+  - Playwright `merged catalog is the default at both catalog URLs and filters by market and dataset` = passed （/scripts 与 /data 默认目录、市场/数据集筛选、注册函数明细面）
+  - 目录内函数明细控件及其可见用例 = yes
+  - Playwright `catalog function drilldown reaches legacy list and an actual script detail route` = passed；真实脚本详情路由 = yes
+VERDICT AC-18|03: proven
+
+### AC-9|02  (document line 196)
+判据原文：注入差异样本被校对作业捕获，`dq_diff_report` 记录 domain/源对/key/字段/两源值/偏差/verdict
+本探针：每周校对有真的触发器，注入的差异被比出来并逐列写进 dq_diff_report
+台账现状：state=proven，文档勾选=True
+  - 捕获面: 7/7 nodes passed
+  - opendata/pipeline/diff_report.py: 判据点名的列缺 -，``ReportRow`` 少字段 -，表名在位 yes —— 列名与字段必须同时在场：写入走 as_params() 的 getattr
+  - 生产触发: full_check 是可执行 kind = yes，_execute_template 派发它 = yes，执行器真的建服务并跑 = yes，窗口取自两条腿共有的日子 = yes，schedules.yaml 里有这一行 = yes
+  - 落库通路: build_cross_check 交出 write_report=DiffReportWriter = yes
+VERDICT AC-9|02: proven
+
+### AC-9|04  (document line 198)
+判据原文：**告警治理**：白名单容忍项生效、相同差异不重复告警、差异率突增才升级
+本探针：治理三则各有来源与寿命：白名单读得到、去重与差异率基线跨比对、被抑制也留痕
+台账现状：state=proven，文档勾选=True
+  - 治理三则节点: 9/9 passed
+  - opendata/pipeline/diff_governance.json: 形状合法 = yes，容忍项 0 条、其中无 reason 的 0 条（容忍为空是量出来的结论，不是没配过；无凭据的容忍项即判红）
+  - 判定面: 白名单 yes / 去重集 yes / 差异率基线 yes / 突升级到 critical yes
+  - 状态寿命: 策略是进程级单例 = yes，白名单有来源 = yes，校对服务用的是它而不是每次新建 = yes，被抑制的决定照样交给 notifier 记录 = yes
+VERDICT AC-9|04: proven
+
+### AC-9|05  (document line 199)
+判据原文：告警双通道：SMTP 邮件 + WS `data.diff_alert` 事件广播
+本探针：一次判定同时到 WS 广播、按域过滤的 hub 与 SMTP 邮件，且每条通道的结果可报告
+台账现状：state=proven，文档勾选=True
+  - 通道节点: 10/10 passed
+  - WS 面: 事件名 data.diff_alert 在位 = yes，广播被调用 = yes，订阅 hub 被调用 = yes，hub 按域过滤 = yes
+  - 邮件面: 渲染函数被调用 = yes，走的是共享 SMTP 传输 = yes，配置门 settings.smtp_host/user 读到 2/2
+  - 装配与报告: production_dispatcher 交出四条通道 = 4/4，一次 notify 同时喂三处 = yes，投递结果逐通道可报告 = yes，每次调用留一条记录 = yes
+VERDICT AC-9|05: proven
+
+### AC-9|03  (document line 197)
+判据原文：**反例用例**：① 字段名不匹配时必须报错而非静默通过；② 单位未归一时必须产生 mismatch
+本探针：两种错输入各有一个会响的判定，且都跑在 compare_source_frames 这个生产入口上
+台账现状：state=proven，文档勾选=True
+  - 反例节点: 4/4 passed
+  - ①字段名不匹配: 报错面在位 = yes，且两条反例都走生产入口 compare_source_frames = yes（只测 normalize_frame 不算，校对作业读的是这个函数）
+  - ②单位未归一: mismatch 断言点名字段 = yes
+  - tolerance 配对面: 一侧整字典交出已移除且逐字段合并 = yes，取紧的那条 = yes，正反两个方向都量 = yes
+VERDICT AC-9|03: proven
+
+### AC-9|08  (document line 202)
+判据原文：**单源域 dwd 直通模式可用**（`layer=dwd` 查询不报错）
+本探针：歧义键逐键拒绝（不再整窗不交）+ layer=dwd 走生产查询面 + 表里真的有行
+台账现状：state=gap，文档勾选=False
+  - 直通节点: 6/6 passed
+  - 歧义键处理: 逐键拒绝（不再整窗 raise）= yes，旧的一 raise 就什么都不交的形状已移除 = yes，拒绝的键要报得出来 = yes，列缺失仍然 fail closed = yes
+  - 查询面: layer=dwd 走生产 _key/build_data_select 建得出 SQL = yes，且直通输出列 == dwd 表声明列（落得了这张表）
+  - docs/evidence/C49/census-post-fix.txt 的真库读数：stock_action/ths 直通交出 55071 行，而 dwd_stock_action 实际 0 行 —— 差的那一段是一次未确认的落库写入
+  - 补齐到可判：landed_rows: 0 -> 55071
+VERDICT AC-9|08: gap — 「直通模式可用」判的是这张单源域的表里真的有行、并能按 layer=dwd 读回去：本轮把整窗 raise 换成逐键拒绝（C49 量到 55,073 行里 1 个键两义，dwd_stock_action 因此一直是空的），代码面已经通了；剩下的 0 行需要一次经确认的 warehouse 写入（重算落库），不是再改判定口径
+
+### AC-9|09  (document line 203)
+判据原文：dwd 重算幂等
+本探针：同输入重算逐格不动 + 键集排序 + 写侧 key 级 upsert + dwd 主键就是业务键
+台账现状：state=proven，文档勾选=True
+  - 重算节点: 5/5 passed
+  - 确定性面: 键集排序 = yes（不排序则同输入两遍输出顺序可变），写侧走 key 级 upsert = yes，dwd 表的 PRIMARY KEY 就是业务键 = yes —— 三者同时成立，重跑才是改同一行而不是多插一行
+  - 真库那一格（e2e，test_merge_writes_rows_with_trace_columns_and_is_idempotent）本轮读数 = exit=5，门禁选择式不跑它，所以判定落在上面三条代码面 + 纯函数节点上
+VERDICT AC-9|09: proven
+
+### AC-8|05  (document line 188)
+判据原文：**分区**：大表按 `RANGE COLUMNS(trade_date)` 年分区 + MAXVALUE 兜底；**分区维护任务**可运行
+本探针：接线四读（yaml 行 / kind 可执行 / 派发到本体 / 本体真的调 ensure）+ DDL 渲染面 + 真仓库年度上界只读档案；apply 半是生产 DDL，等一次经确认的执行才翻正
+台账现状：state=gap，文档勾选=False
+  - ``schedules.yaml`` 的 ``partition-maintenance`` 行 = yes；kind 在 ``EXECUTABLE_KINDS`` 里 = yes（不在则注册时被跳过，cron 行只剩外观），``_execute_template`` 派发到本体 = yes
+  - 本体做 apply 半 = yes（调 ``ensure`` 而不是只出 plan —— C48 的量法在告警矩阵里，那一面按设计不动 DDL）
+  - ``ddl.py`` 渲染 ``RANGE COLUMNS`` 年分区 + ``MAXVALUE`` 兜底 = yes
+  - 历史分区面（docs/evidence/C57/partition-horizon.txt）：注册表 20 张 / 已分区 6 张 / 当时年度上界缺 5 张；档案里有分区列读数 = yes
+  - C57 historical subset (2026-09-28 13:01 +0200): tables=20 / partitioned=6 / gap_tables=5; later full census C58 (2026-09-28 13:40 +0200): registered=53 / partitioned=9 / gap_tables=8; both are archived reads, not a fresh production census
+  - 经确认的 apply 留档（docs/evidence/C57/partition-apply.txt）存在 = no
+  - 补齐到可判：applied_face: no -> yes; live_gap_tables: 5 -> 0
+VERDICT AC-8|05: gap — 分区面两头都要有：接线（yaml 行 + kind 可执行 + 派发到真的 ``ensure``）与仓库现状（分区列点名、上界不再落后、apply 后复跑留档）。C57/C58 是历史档案，不是本轮新做的生产读数；``REORGANIZE`` 是生产仓库的 DDL，仍缺经确认的 apply 与新读数
+
+### AC-8|06  (document line 189)
+判据原文：**跨年写入用例**：模拟新年度数据写入成功（无"no partition for value"错误）
+本探针：用例三读（自建 probe 表 / 新年度插入被断言 / 落点分区名被断言）+ 它是 e2e 面所以门禁不跑 + 真仓库那年还缺一张分区；「写成功」要有跑过的留档
+台账现状：state=gap，文档勾选=False
+  - 用例在 tests/test_partition_maintenance.py：自建 ``_probe_*`` 表 = yes，插入新年度那一行（2027-03-01 进 probe 表）= yes，精确 placement 断言 = p2027,pmax (2 条；p2027=1、pmax=0)
+  - 标记 = e2e（``make gate`` 不跑 e2e，所以这一面必须另留档才算跑过）
+  - C57 历史面当时还缺年度分区的表 = 5 张 —— 缺的那一年会落进 ``pmax``：写入不报错，但年分区形同不存在，所以「写成功」必须有落点断言
+  - C57 historical subset (2026-09-28 13:01 +0200): tables=20 / partitioned=6 / gap_tables=5; later full census C58 (2026-09-28 13:40 +0200): registered=53 / partitioned=9 / gap_tables=8; both are archived reads, not a fresh production census
+  - 本轮留档里有一次真跑 = no
+  - 补齐到可判：fallback_gap: 5 -> 0; ran_live: no -> yes
+VERDICT AC-8|06: gap — 跨年写入这条判据要有「跑过」的证据而不是「有用例」：用例是 e2e 面（门禁不跑），且需要 fresh scoped production evidence。C57 是较早子集、C58 是较晚完整档案；两份都不是本轮 fresh production read，也没有本轮获准的用例运行留档
+
+### AC-8|01  (document line 184)
+判据原文：ods 表命名规范 `ods_<domain>_<source>`；**含源原始列 + `_source/_fetched_at/_batch_id` 元数据列**；业务 key 主键
+本探针：形状三面：派生点（ods_table 一处返回模板）+ 渲染点（三元组无条件追加、主键由 key 渲染、不出自增 id）+ 真仓库当场逐表读数；注册 33 条 ods 腿与真 3 张表的差额披露给 |08
+台账现状：state=proven，文档勾选=True
+  - 单元面 3/3 passed
+  - 命名只有一处派生（``domains.ods_table`` 返回 ``ods_<domain>_<source>``）= yes；三元组无条件追加 = yes，声明齐 3/3
+  - 主键由业务 key 渲染 = yes，key 缺失 fail closed = yes，生成器不再出自增 id = yes
+  - 真仓库（docs/evidence/C58/ods-face.txt）：ods 表 3 张 —— 命名合规 3、三元组齐全 3、业务 key 主键 3、带自增 id 0；注册表里应有 33 条 ods 腿（差额是 |08 的落库覆盖面，不是本格的形状判据）
+VERDICT AC-8|01: proven
+
+### AC-8|02  (document line 185)
+判据原文：**数据仓库 DDL 由独立 alembic 环境管理**；应用启动不建表（单测/集成验证）
+本探针：通路而不是意图：配置/URL/版本表三处分叉 + 启动建表点唯一且在生产分支之外 + 仓库 engine 在单测里换成会炸的桩 + 真仓库两套版本表各自在当前版本
+台账现状：state=proven，文档勾选=True
+  - 单元面 6/6 passed —— 含「启动建表碰不到仓库 engine」（engine 换成会炸的桩）与「Base.metadata 里一张仓库表都没有」两格，迁移链另有图/离线渲染两格
+  - 两套环境分开：script_location 分叉 = yes，仓库 env 不挂 target_metadata（无从 generate 出 ORM 表）= yes，URL 取 ``data_database_url`` = yes，版本表各自一张 = yes，控制 env 里出现仓库 URL = no
+  - 启动面：``lifespan`` 里 ``create_tables()`` 只有一处且在 ``is_production`` 分支之外 = yes；``create_tables`` 只做 ``Base.metadata.create_all``、不引 ``data_engine`` = yes
+  - 真仓库侧（docs/evidence/C58/ods-face.txt）：控制库里的仓库表 0 张，两套版本表各自在当前版本 = yes
+VERDICT AC-8|02: proven
+
+### AC-8|03  (document line 186)
+判据原文：upsert **key 级**幂等（重复执行无副作用；价格修正场景下不产生重复行，单测）
+本探针：判据原文点名的单测面：五格节点（builder 形状 + 两条落库路径 + 同键两次还是一行）加语句三面（AS new 别名式 / UPDATE 段不碰 key / 空列表 fail closed）；真库那格是 e2e，读数只披露
+台账现状：state=proven，文档勾选=True
+  - 单测面（判据原文点名的这一面）5/5 passed —— 两条 builder 形状、staging/direct 两条落库路径的语句序列，以及「同一 key 落两次还是一行、值就地改」那一格
+  - upsert 走 ``AS new`` 别名式 = yes；两条路径都把业务 key 挡在 UPDATE 赋值之外（改 key 就不是修同一行）= yes；空列表 fail closed 计数 = 2（>=2 才覆盖两条 builder）
+  - 真库那一格（e2e，test_corrected_value_updates_in_place_without_duplicating）本轮读数 = exit=5：``-m 'not e2e'`` 的选择式不跑它，本格判定落在上面那一面，「修正后不产生重复行」要在真库上跑一次才算跑过 —— 那是需要确认的仓库写
+VERDICT AC-8|03: proven
+
+### AC-8|07  (document line 190)
+判据原文：无 `id` 列的 ods 表在 `/tables` 分页可用
+本探针：ORDER BY 由表形状推出：回落链 id→业务主键→首列、limit/offset 走绑定参数、无列可排 fail closed、端点真的读 table_shape 再拼 SQL、模块里不回潮硬编码 ORDER BY id；五格节点含 SQLite 真翻页与端点那一格 HTTP
+台账现状：state=proven，文档勾选=True
+  - 单元/集成面 5/5 passed —— 含 SQLite 真表翻页（三行两页，每行只出现一次）与端点那一格 HTTP 请求
+  - 排序列回落链 ``id`` → 业务主键 → 首列 = yes / yes；limit/offset 走绑定参数 = yes；无列可排 fail closed = yes
+  - 端点 ``/tables/{id}/data`` 先读表形状再拼分页 SQL = yes；模块里残留硬编码 ``ORDER BY id`` = no
+VERDICT AC-8|07: proven
+
+### AC-9|01  (document line 195)
+判据原文：**口径映射表**存在且覆盖 P0 域（字段映射/单位换算/复权口径/key 规范化/停牌语义/差异率分母）
+本探针：表在（load_mapping/normalize_frame）+ P0 五域逐个可指名 + 六类口径由表承载
+台账现状：state=proven，文档勾选=True
+  - 表在不在: opendata/data/mapping.py 有 load_mapping/normalize_frame = yes，可导出 mapping_as_json = yes，源文件 = akshare, ths
+  - P0 覆盖: 5/5 个 P0 域在这张表里
+  - 六类口径落表: 字段映射=yes、单位换算=yes、复权口径=yes、key 规范化=yes、停牌语义=yes、差异率分母=yes
+  - 另两面（只在代码里、不在这张表里时不计入覆盖）: 复权在 opendata/data/adjust.py = yes，差异率分母在 opendata/pipeline/cross_check.py = yes
+VERDICT AC-9|01: proven
+
+### AC-9|06  (document line 200)
+判据原文：dwd 合并：权威源存在则取权威、缺失降级填补；`source` 留痕正确；`_diff_flag` 打标正确；**`_as_of` 版本列写入**
+本探针：服务层三条节点全绿 + 权威降级/source/_diff_flag/_as_of 四面代码面在位
+台账现状：state=proven，文档勾选=True
+  - 服务层与合并层节点: 3/3 passed
+  - 四问各自的代码面: 权威缺失才降级 = yes、source 留痕 = yes、_diff_flag 打标 = yes、_as_of 写入 = yes
+  - _as_of 取的是窗口末而不是别的日期: service.run 传 as_of=end = yes；四列同时是 dwd 的留痕列定义 = yes
+VERDICT AC-9|06: proven
+
+### AC-9|07  (document line 201)
+判据原文：**修订传播**：ods 中已存在 key 被修正后，dwd 对应行同步更新（单测）
+本探针：修订节点全绿（含生产 scoped ODS reader）+ run/batch/hook 的 affected_keys 传播链完整
+台账现状：state=proven，文档勾选=True
+  - 修订行为节点: 7/7 passed —— 覆盖窗口外改值、生产 scoped reader、None 水位、多源和无关行排除
+  - 传播链: runner 交键 = yes、run 委托 batch 并传键 = yes、batch reader 收键 = yes、普通/scoped reader 收键 = yes/yes、batch diff 收键 = yes、partition hook 重拼契约键 = yes、context hook 重拼契约键 = yes、写侧按业务键 upsert = yes
+VERDICT AC-9|07: proven
+
+### AC-17|01  (document line 288)
+判据原文：`make gate` 全绿且逐项显式阻断（`brand-check` / `zero-dep-check` / **`a2-check`（A2 零容忍）** / `quality-ratchet`（A1 棘轮） / `public-api-quality` / `test-cov` / **前端五项**（`frontend-lint`／`frontend-typecheck`／`frontend-collection`／`frontend-test`／`frontend-e2e`），无子项失败被汇总掩盖。全树 `make lint|typecheck|security` 为**开发者视图**、不参与门禁：A1 存量债务由棘轮判定，若把全树静态检查放进门禁将永久红灯或被迫放水（见 `CODE_QUALITY.md` §9）〔C36 加性更正：①**门禁成员不止上列七项**，另有 `secret-check`（凭证全历史扫描，gitleaks 版本按 `docs/quality/secret-scan.json` 钉住，版本漂移即失败、缺工具即失败不允许 skip）与 `ledger-check`（验收条目级清单 ↔ §10 台账对账）。②"全绿"还有一个此前未登记的前提：**必须在 `pip install -e ".[web,dev]"` 的可复现环境里成立**。C36 前本地 `make gate` 全绿而 CI 自 09-23 起五连红，原因是 `opendata_http/__init__.py` 的 eager facade 使 300+ 搬运模块的 module-scope import 成为运行时依赖，而 `curl_cffi` 无人声明 ⇒ CI 的 `test-cov` 死于 conftest import。现由 `tests/test_ported_import_closure.py` 在门禁内把这件事量成判据（含"阻断 module-scope 依赖必炸、阻断懒依赖不炸"的双向反事实）。依据 `docs/evidence/C36/README.md`〕
+本探针：成员名单、横幅与成员一一配对、三种掩盖形状为零、make 自己数出的成员数与配方相符、可复现环境、判定成员在名单里
+台账现状：state=proven，文档勾选=True
+  - gate members = 17（brand-check, zero-dep-check, secret-check, ledger-check, evidence-traceability, js-points-check, loguru-check, a2-check, quality-ratchet, public-api-quality, acceptance-probe-check, test-cov, frontend-lint, frontend-typecheck, frontend-collection, frontend-test, frontend-e2e）；每项一个 sub-make，前一项非零即中止；横幅 18 段 = 成员数 + 收尾那一段，逐项配对 = yes（错位的成员位 0 个，最后一段写的是 PASSED）
+  - 能被汇总掩盖的三种形状：`-` 前缀 0 行、`|| echo` 0 行、一行串两个成员 0 行；没有配方的成员 0
+  - make 自己的答案：`make -n gate` exit 0，数出 17 个 sub-make —— 配方文本与 make 实际启动的成员必须相等，否则被量的是这份文件而不是那道门禁
+  - 开发者视图不得进门禁：成员里出现 `lint/typecheck/security/format` 的个数 = 0
+  - 可复现环境（C36 加性更正）：`import opendata, sys; print(opendata.__file__)` exit 0，来自 /Users/yunjinqi/Documents/new_projects/opendata/opendata/__init__.py，在本树内 = yes
+  - 判定成员自证：`acceptance-probe-check` 在成员名单里 = yes；判据原文点名了 14 项，未被点名的 4 项 = evidence-traceability, js-points-check, loguru-check, acceptance-probe-check —— 点名的少一个不是缺陷：条目文本是台账的内容哈希键，把成员数写进判据会让每一次加成员都改写判据
+VERDICT AC-17|01: proven
+
+### AC-16|06  (document line 281)
+判据原文：集成层的 `import akshare` 残留（FR-17 于 1B-B5 清除）冻结于 `docs/quality/zero-dep-baseline.json`：**只降不升**，新增即失败；A2 搬运完成后基线清零；另需**正向证据**：在未安装 akshare/openbb 的干净环境中 P0 域集成测试通过〔C51 复核，**不勾**：这条判据现在只有一个面没到——「基线清零」，而它已不是"再读一遍"能解决的面。现场 AST 走查 `import 形态 = 0`、`动态 import 形态 = 0`（`docs/evidence/C51/census-after.txt` 面 2），基线里剩下的 3 条全是**产品事实的名字面量**：`opendata/data/openbb_map.py:125` 的 `openbb` 是 FR-7 对照表自己的字段名，`opendata/models/data_script.py:74` 的 `akshare` 是 `DataScript.source` 的溯源默认值（搬运脚本与 P0 迁移同一写法在写它），`opendata/pipeline/patrol.py:468` 的是 `key_status()` 的数据源标签。抹平它只有两条路，两条都要改判据本身：①把扫描器的字符串规则改窄＝回头放宽已勾的条目 5「AST 口径」——本轮拒绝；②改掉这三处拼写＝给扫描器做伪装——正是 C35 刚收口的那种门禁空转。**已按用户/产品决策登记（与 task #52 同列）**。判据后半句要求的正向证据自 C51 起成立，但它落在条目 7 那一格，不顶替本格的清零；"只降不升、新增即失败"两条门禁命令（`make zero-dep-check` = `--self-test` + 默认核对）本轮原样复跑均 exit=0〕
+本探针：零依赖断言两条门禁命令都绿、只降不升的门禁在位、import/动态形态为零、引用策略和 scanner 版本有效、冻结基线条数为零
+台账现状：state=gap，文档勾选=False
+  - 零依赖断言（门禁那两条命令原样）：check exit=0，--self-test exit=0；扫描面 = opendata, opendata_http, opendata_fuyao, opendata_client
+  - 判据原文要清的是「集成层的 `import akshare` 残留」：AST 走查 import 形态 = 0，动态 import 形态 = 0 —— 这一项已经是零
+  - 基线还冻着 0 条（现场走查 0 条，新增即失败 = yes，只降不升的门禁在位 = yes，引用策略有效 = yes、基线 scanner 版本有效 = yes）：0 条是名字面量，落在 
+  - 扫描器自己怎么说：OK: 542 file(s) walked (opendata=206, opendata_client=2, opendata_fuyao=9, opendata_http=325), python 3.11, scanner 3; no new upstream references (frozen baseline: 0).
+VERDICT AC-16|06: proven
+
+### AC-16|07  (document line 282)
+判据原文：**正向证据**：在未安装 akshare/openbb 的干净环境中 P0 域集成测试通过〔C51 转正。此前这条**指认不出自己的用例集**：`pytest.ini` 注册了 `integration` marker 却没有任何用例应用它（可独立复核：`git grep -l "pytest\.mark\.integration" HEAD -- tests/` = 0 命中，而 `HEAD:pytest.ini` 第 23 行就在注册它），于是 `pytest -m "integration and not e2e"` 在开发解释器与干净 venv 里都选中 `0 / 3358 deselected`（`docs/evidence/C51/census-before.txt` 面 5a/5b/7b，exit=5）。现把 A4.1 迁移（`alembic_data/versions/20260923-0001_ods_dwd_p0.py` 的 `_DWD_TABLES`）5 个 P0 域全部点到，标记集 = 8 个单元（7 个模块级 `pytestmark` + `tests/test_pipeline_jobs.py::TestFullCheckExecutor`），改动只有 9 行接线。判定面：`tests/test_p0_integration_surface.py` 4 条断言，各自可单独打红（`docs/evidence/C51/guard-counterfacts.txt`）。正向证据：同一选择式在两个解释器各跑一遍、逐条用例名不裁剪，**151 passed / 0 failed / 0 skipped × 2**，B 段是本轮新建的 venv——依赖面恰为 `pyproject.toml` 的 `.[web,dev]`，`akshare`/`openbb`/`openbb_platform` 三者均 absent，`pip check` 无破洞（构造过程 `docs/evidence/C51/clean-env-build.txt`，运行 `clean-env-integration-run.txt`）。判据口径：`skipped` 必须为 0（静默跳过不算通过），且扩展标记集而不重跑干净环境会被 `archive_blind` 报红（这条是刻意的棘轮）。全程 `-m "integration and not e2e" --no-cov`，仓库侧 e2e/真库不在此面内（ASGITransport 不跑 lifespan，fixture 引擎为 sqlite 内存库）〕
+本探针：选择式有可指的名字（marker 注册 + 9 个标记单元 + 5 个 P0 域全覆盖），本机和留档的干净 venv 都全绿，且留档是最新一轮自己写的、覆盖当前标记集
+台账现状：state=proven，文档勾选=True
+  - 选择式 `-m 'integration and not e2e'` 有名字了：marker 注册 = yes，--strict-markers = yes，标记单元 9 个 = tests/test_data_query_api.py, tests/test_data_query_http_warehouse.py, tests/test_dwd_merge.py, tests/test_index_constituent_asof.py, tests/test_ods_writer.py, tests/test_p0_providers.py, tests/test_pipeline_jobs.py::TestFullCheckExecutor, tests/test_pipeline_run_api.py, tests/test_pipeline_runner.py
+  - P0 域覆盖：A4.1 迁移的 5 个域全部被这组用例点到，缺 = 0（-）
+  - 本机这一遍（解释器内 akshare/openbb 均不可导入 = yes）：exit=0，218 passed / 0 failed / 0 skipped；另有 3938 条被选择式挡在外面（含全部仓库 e2e）
+  - 干净 venv 留档（读的是最新那一份：docs/evidence/C65/clean-env-integration-run.txt，正文声明轮次 C65，与所在目录一致 = yes）：CLEAN_RUN_EXIT=0，211 passed, 83 deselected in 69.10s (0:01:09)；留档里两个上游包都记为 absent = yes；留档点到过 9 个模块，当前标记集里没被留档覆盖的 = 0
+VERDICT AC-16|07: proven
+
+### AC-11|01  (document line 215)
+判据原文：`GET /api/v1/data/{asset_class}/{domain}` 支持 symbols/start/end/source/layer/**adjust**/fields/分页，默认 `layer=dwd`、`adjust=none`；响应 schema 与契约一致；OpenAPI 文档生成
+本探针：路由与 OpenAPI 在、判据点名的 9 个入参真在签名里、默认层与复权就是 dwd/none、响应按契约列交出
+台账现状：state=proven，文档勾选=True
+  - 路由/契约面（OpenAPI 两条 + 替身仓库 HTTP 四条）: 6/6 nodes passed
+  - 路由形状 ``/{asset_class}/{domain}`` = yes，载荷同时交回 columns 与 rows（响应 schema 可对契约） = yes
+  - 判据点名的 9 个入参都在处理器的签名里：缺 = -（AST 读数，注释里写什么不算）
+  - 声明的默认值：layer = dwd，adjust = none；这两条是契约的一部分，改一个就等于改了默认口径
+VERDICT AC-11|01: proven
+
+### AC-11|02  (document line 216)
+判据原文：**`adjust=qfq|hfq` 服务端计算**：同一标的 qfq 序列与 akshare 官方 qfq 对照一致（容忍度内）
+本探针：qfq/hfq 由服务端按因子表合成（缺因子 400、缺表 501）；官方对照腿是分派表条目，默认 akshare 并解析到搬运模块，留档一次真机 run 的腿与 module:function 都要与现值一致
+台账现状：state=gap，文档勾选=False
+  - 复权面（HTTP 五条 + 因子算术两条 + 判定与对照腿十五条）: 23/23 nodes passed
+  - 服务端合成 = yes（``_adjusted_rows`` 真的调 ``apply_adjust_to_rows``，不是把参数读一遍就丢掉）
+  - 官方对照腿：``scripts/ops/qfq_official_check.py`` 的 ``DEFAULT_OFFICIAL_LEG`` = akshare，分派表 akshare 条目 target = opendata_http.stock_feature.stock_hist_em:stock_zh_a_hist，该模块头部声明 akshare 出身 = yes（判据点名的就是 ``opendata_http.stock_feature.stock_hist_em``）
+  - 留档真机 run（docs/evidence/C65/qfq-official-akshare-current.txt）：头部记的腿 = akshare，module:function = opendata_http.stock_feature.stock_hist_em:stock_zh_a_hist；PASS 0 行 / FAIL 0 行 / ERROR 10 行
+  - 补齐到可判：run_error_rows: 10 -> 0; run_ok_rows: 0 -> 10
+VERDICT AC-11|02: gap — 留档那次 run 有 10 行 ERROR —— 官方端点没答上来等于没对照；真机对照未过：FAIL 0 行 / PASS 0 行（容差 2e-3 不放宽，见档案里的 over_tolerance 与 ratio 平台分布） —— 合成与对照的判定口径不变（逐日 shape dev 对 2e-3），要改的是证据不是判据
+
+### AC-11|03  (document line 217)
+判据原文：**参数安全**：`fields` 白名单校验（`fields=open;DROP TABLE` 返回 400）；`layer`/`source`/`adjust` 枚举校验；`symbols` 绑定参数；导出 CSV 公式注入转义
+本探针：判据点名的四个安全面各自有实测：白名单 400 且不执行、三个枚举、符号绑定、导出公式转义发生在 handler 里
+台账现状：state=proven，文档勾选=True
+  - 参数安全面（HTTP 13 条，全部走真路由）: 13/13 nodes passed
+  - 判据那条字面载荷 ``fields=open;DROP TABLE`` 出现在用例里 = yes；这条断言除了 400 还回读表里的行数，所以「没执行」是被量的而不是被说的
+  - 枚举校验：layer/adjust 的注解里还有不是 Literal 的吗 = -；source 按注册腿校验 = yes（判据列了三个枚举面，少一个就只做到两个）
+  - symbols 的取值进的是绑定字典 = yes，SQL 文本里出现的只有 ``:{name}`` 占位 = yes；导出公式转义发生在 handler 里 = yes（``_csv_stream`` 调 ``serialize_for_csv``）
+VERDICT AC-11|03: proven
+
+### AC-11|04  (document line 218)
+判据原文：**默认时间窗**：不带日期区间的查询不会触发全分区扫描（EXPLAIN 验证）
+本探针：无区间请求仍被默认窗与行数上限夹住（实测绿），且判据点名的 EXPLAIN 真的发到了跑着的 MySQL 上：每张已落地的分区表都只读到部分分区，留档按查询层摘要钉住
+台账现状：state=proven，文档勾选=True
+  - 时间窗面（HTTP 两条 + 边界单元三条）: 5/5 nodes passed
+  - 默认窗 = 365 天，由 ``window_bounds`` 在无区间时补上 = yes；``build_data_select`` 的 ``LIMIT :limit`` 行数上限 = yes
+  - 判据点名的验证方式：在 484 个代码文件里找真发出去的 EXPLAIN（整句字面量 ``EXPLAIN [ANALYZE] SELECT|FORMAT`` 与拼接前缀 ``"EXPLAIN " +`` 两种形状，仪器必须拼 SQL 才谈得上「这个端点的查询」），命中 2 处（scripts/ops/window_partition_explain.py, tests/test_ods_write_benchmark.py）
+  - 执行计划留档（读的是最新那一份：docs/evidence/C64/window-pruning-explain.txt，正文声明轮次 C64，与所在目录一致 = yes）：已落地且带分区的 dwd 表 6 张，其中计划只读到部分分区的 6 张、读到全部分区的 0 张
+  - 留档属于哪一版拼 SQL 的代码：正文 ``query_module_sha=2f73f2bf9d44`` 对当下 ``opendata/pipeline/query.py`` = 2f73f2bf9d44 → yes
+VERDICT AC-11|04: proven
+
+### AC-11|05  (document line 219)
+判据原文：`GET /api/v1/data/domains/{domain}/diff-report` 可查差异报告
+本探针：diff-report 门按域取 dq_diff_report 的样本差异行，受同一套 scope/batch/limit 约束
+台账现状：state=proven，文档勾选=True
+  - 差异报告面（HTTP 四条 + OpenAPI 一条）: 5/5 nodes passed
+  - 路由 ``/domains/{domain}/diff-report`` 已注册并进 OpenAPI = yes，读的是 dq_diff_report（与校对器写的明细表同一个常量） = yes
+  - 门禁 = yes（按域的 scope 先判），``batch_id`` 只取一次校对 = yes，``limit`` 与查询页同带上限 = yes
+  - 四条 HTTP 用例分别钉住：差异行真的交出来、按 batch_id 选一次跑、limit 有上限、表还没迁移时读出空而不是 500
+VERDICT AC-11|05: proven
+
+### AC-5|01  (document line 159)
+判据原文：**`manifest.json` 逐项校验通过**（文件清单 + sha256 + 资源清单 + 计数）——不再以写死的模块数字作为验收依据
+本探针：manifest 的每条 sha/计数全部对着磁盘现算，且与 upstream.lock 的文件集相等
+台账现状：state=proven，文档勾选=True
+  - 清单 325 个 py + 2 个资源 = 327 条，逐条现算 sha256（327 条能读到磁盘内容）：对不上 0 条、磁盘上没有 0 条
+  - 磁盘反查：py 325 个（清单没登记的 0：-）、非 py 文件 2 个（未登记为资源 0：-），清单里过时条目 0：-
+  - 四个计数逐个与现算相等：py_files=yes、resource_files=yes、total_files=yes、total_lines=yes（现算行数 94530）；upstream.lock 与 manifest 的文件集相等 = yes（327 条）
+  - 仪器原话（scripts/codemod/gen_manifest.py --check，exit 0）：OK: manifest.json is up to date
+VERDICT AC-5|01: proven
+
+### AC-5|02  (document line 160)
+判据原文：迭代 1A：P0 域子模块搬运完成；迭代 1B：P1 域子模块搬运完成
+本探针：搬运面的实际使用与 D9 范围对得上，且 1A/1B 批次有机器可读的声明字段
+台账现状：state=gap，文档勾选=False
+  - 搬运清单 325 个 py 文件，来自上游 13 个子包：bond, economic, file_fold, fund, futures, futures_derivative, index, option, pro, stock, stock_feature, stock_fundamental, utils
+  - 首方代码以 ``opendata_http.<name>`` 取用 11 个端点函数，聚合层没导出的 0 个：-（akshare 腿模块 11 个）
+  - 需求 D9 点名的范围内 11 个子包（原文：stock、stock_feature、stock_fundamental、futures、futures_derivative、index、fund、opti），清单里没有的 0 个：-；点名移出的 8 个非金融子包混进来的 0 个：-
+  - 逐路径锁/manifest/磁盘核验 = yes（核对 327 条：325 py + 2 资源；问题 0：-）
+  - 能读出 1A/1B 批次的机器字段 = docs/evidence/C65/port-scope-manifest.json#files.batch
+VERDICT AC-5|02: proven
+
+### AC-5|03  (document line 161)
+判据原文：codemod 差异报告人工待办清零；**AST 级静态扫描**零 `akshare`/`openbb` 包运行时依赖（Import、ImportFrom、动态导入参数及真正模块路径字符串）。来源名、对照表 schema 等产品元数据须按 AC-1 第 3 条逐项登记，并证明未用于加载模块；不能通过改拼写规避扫描。扫描器自测必须拒绝裸根动态导入、变量间接导入、带子模块路径及新增未登记标识。
+本探针：差异报告待办为零，且 AST 扫描在 import/动态/字符串三个形态与冻结基线上都清零
+台账现状：state=gap，文档勾选=False
+  - 差异报告（docs/port-report.md）自报人工待办 0 条，清单段落首行「（无 —— 待办清零）」且没有挂着的复选项 = yes
+  - AST 级静态扫描（scripts/codemod/verify_no_akshare.py，exit 0 / --self-test exit 0）：import 形态 0、动态导入 0、字符串常量 0；reference policy valid=yes with 3 exact exceptions
+  - 扫描器冻着的基线 0 条 （scanner version current=yes），字符串形态落在 -
+  - 扫描器原话：exit=0; findings=0 (scanner output omitted)
+VERDICT AC-5|03: proven
+
+### AC-5|04  (document line 162)
+判据原文：根目录 `akshare/` 已删除；未安装 akshare 的环境中 P0 域函数可用
+本探针：根目录与索引与解释器三面都没有 akshare，而首方代码取用的端点全部可达
+台账现状：state=proven，文档勾选=True
+  - 根目录 `akshare/` 在磁盘上 = no，git 索引里该前缀下 0 个文件：-
+  - 本解释器 `importlib.util.find_spec('akshare')` = absent；`import opendata_http` exit=0（(no output)）
+  - 首方代码取用的 11 个端点函数逐个 `callable(getattr(...))`，取不到的 0 个：-（探针 exit 0）
+  - 干净 venv 侧证（docs/evidence/C65/clean-env-integration-run.txt，ARCHIVE_ROUND=C65，本轮自写 = yes）里 akshare 报 absent = yes
+VERDICT AC-5|04: proven
+
+### AC-5|05  (document line 163)
+判据原文：每文件头保留 MIT 版权声明 + 来源标注
+本探针：搬运树每个 py 文件都带 MIT 声明与来源行，来源 commit/URL 与 lock 逐字相等
+台账现状：state=proven，文档勾选=True
+  - 清单里 325 个 py 文件逐个读前 6 行（走查 325 个，与清单相等 = yes）：缺 MIT 声明 0 个（-）、缺来源标注 0 个（-）
+  - 来源标注里的 commit 只有 1 个取值，与 manifest/upstream.lock 的 c4f6a631c259 相等 = yes；URL 与 lock_url （https://github.com/cloudQuant/akshare.git）逐字不等的 0 个：-
+  - 许可证台账（THIRD_PARTY_NOTICES.md）同时说得到 akshare 与 MIT = yes
+  - 清单里 2 个资源文件（json/js）不带这类头部 —— 判据指的是搬运的源文件，资源由 manifest.json 与许可证台账各自登记，本轮只披露不判定
+VERDICT AC-5|05: proven
+
+### AC-5|06  (document line 164)
+判据原文：**内置资源引用可用**：`datasets.py` 的资源访问函数可运行（或明确标注不可用并登记）
+本探针：datasets.py 的资源访问函数当场调用：或返回路径，或 raise 且回指仪器派生的登记段
+台账现状：state=proven，文档勾选=True
+  - opendata_http/datasets.py 里 2 个资源访问函数（get_ths_js, get_crypto_info_csv）当场调用：返回路径的 0 个（-）、raise 里明说不可用的 2 个（get_ths_js, get_crypto_info_csv）、报别的异常的 0 个：-
+  - 标注不可用的 2 个函数的 raise 文本都回指登记文件 docs/port-report.md = yes（get_ths_js, get_crypto_info_csv）；登记段落在位 = yes，表体 2 行（get_ths_js, get_crypto_info_csv）、逐个点名这些函数且不多不少 = yes
+  - 登记表的行与重放表行同形（行首为 '| `'）的 0 行 —— 不为 0 时 docs/port-report.md 的「每文件一行」计数会把登记行算进搬运清单，于是 scripts/codemod/report_port.py 自己生成的这一节判倒 AC-17|05
+  - 登记处由报告仪器（scripts/codemod/report_port.py）从 `datasets.py` 的 raise 语句与 upstream.lock 派生，不是手写段落
+  - 清单登记的 2 个内置资源在磁盘齐备 = yes（2/2）
+VERDICT AC-5|06: proven
+
+### AC-5|07  (document line 165)
+判据原文：**搬运层安全扫描**（bandit 含 B 层）完成并人工 triage 留档
+本探针：搬运层专用 Bandit 全量扫描绑定当前源码，逐 finding 审阅并保留已知风险
+台账现状：state=gap，文档勾选=False
+  - 搬运层专用扫描目标 `Makefile:security-ported` 在位且打的是 opendata_http/ = yes（recipe：-bandit -r opendata_http -f json -o docs/evidence/A2/bandit-ported.json @python -c "import json;d=json.load(open('docs/evidence/A2/bandit-po）；日常 `make security` 按 bandit.yaml 的 exclude_dirs（.git, __pycache__, node_modules, opendata_http）把搬运层排出去，所以「含 B 层」的全量复核只能由这个专用目标承担 = yes（质量规范 §4 的「每次同步一次」口径，不是逐提交记账）
+  - 当前 C65 全量扫描与分组风险审阅证据 docs/evidence/C65/ported-bandit-scan.json 由 validator 独立绑定 = yes（issue=0，-）；Bandit 1.9.4，generated_at=2026-09-30T21:53:51.329161+00:00，exit=1 且与 findings 一致 = yes，errors=0，记录 1048 项 / 241 个有 finding 的文件 / 15 条 B 规则（B105, B107, B110, B112, B113, B301, B307, B311, B314, B324, B403, B404, B405, B501, B603），错误流为空且结果形状有效 = yes；退出码 1 表示本轮发现了 finding，不等同于扫描执行失败
+  - 扫描源绑定当前搬运树：清单每文件 hash 已验证 325/325 个，保存条目 325 个，path/NUL/content/NUL SHA256=1869a81cb20c509f971a1e5322a7c7a650b359be096506056afe3b032bca8564，source tree valid = yes，搬运 manifest 与磁盘路径集合相同 = yes，当前 findings 与 triage identity 完整覆盖 = yes（未处置 0 项，其中未处置 HIGH 0 项）
+  - 当前分组 triage 完成 1048 项 / 15 条规则，规则 disposition、basis、follow_up 与 finding 一致 = yes；实际 HIGH finding 31 项，未处置 HIGH 0 项，HIGH 审阅覆盖 = yes，AI 审阅的直接用户授权 = yes，审阅完成 = yes
+  - 反序列化风险组 B301/B403 有明确审阅 = yes；B301/B307 RCE finding 均保留为风险 = yes；security_fixed=no、unresolved_risks=yes，不将审阅表述为修复或零风险
+  - 搬运 manifest 源文件与磁盘 py 文件覆盖一致 = yes （磁盘 325 个 py 文件）
+VERDICT AC-5|07: proven
+
+### AC-16|01  (document line 276)
+判据原文：代码审查记录：全部自研 provider 均有"独立编写 + 无源码参照"审查留档〔C62 做成条目级判定面（measure_ac16_01 / judge_ac16_01 + 5 条反事实），**不勾**：这条缺的不是读数，是那份留档本身。现场读数——git 跟踪清单里带 `registration.py` 的自研 provider 包 **7 个**（akshare、ecb、fred、imf、oecd、ths、yfinance），提交说明带「无 OpenBB 源码参照」的 **0/7**；`docs/evidence/` 里同时写得到该句与「审查」字样、并按包名点名该包的留档 **0/7**。另有 5 个包把 `no OpenBB code was consulted` 写进自己模块的 docstring——那是代码里的自声明，按字面不认作审查记录。规则文本确实在位（`docs/proposals/openbb-migration/README.md` 的留痕要求点着该句，同文档把 AST 断言从「零 akshare」扩展到「零 openbb」），但判据要的是「全部 provider 均有」的逐包记录，不是一次性的全库断言。历史提交说明补不回来（不改写历史），要收口得由一次真实的人工逐包审查留档；探针的 `repair` 面（declared 0→7、recorded 0→7）写的是缺什么，本轮不代拟〕
+本探针：七个自研 provider 包逐个查「提交说明声明 + 逐包审查留档」，规则文本在位不算数
+台账现状：state=gap，文档勾选=False
+  - 自研 provider 包 7 个（git 跟踪清单里带 registration.py 的目录数）：akshare, ecb, fred, imf, oecd, ths, yfinance
+  - 合规规则写在 docs/proposals/openbb-migration/README.md：留痕要求里点着「无 OpenBB 源码参照」= yes；同文档 §6 把 AST 断言从「零 akshare」扩展到「零 openbb」= yes
+  - 提交说明带这句声明的包 0 个（-），没带的 akshare, ecb, fred, imf, oecd, ths, yfinance
+  - 留档（docs/evidence/ 里与探针读数同形的文件先剔除，再要求同一行里既点到包名又写得到「无 OpenBB 源码参照」）覆盖 7 个包、绑定行 8 行：akshare, ecb, fred, imf, oecd, ths, yfinance
+  - 另有 5 个包把「no OpenBB code was consulted」写进了自己模块的 docstring —— 那是代码里的自声明，不是逐包审查记录，本条按字面不认
+  - 补齐到可判：declared_pkgs: 0 -> 7; recorded_binds: 8 -> 7; undeclared_list: akshare, ecb, fred, imf, oecd, ths, yfinance -> -
+VERDICT AC-16|01: gap — 「审查留档」这一面从没成文：规则写在合规文档里（提交说明声明 + 对照表记上游事实来源），但 7 个自研 provider 里提交说明带「无 OpenBB 源码参照」的只有 0 个（缺：akshare, ecb, fred, imf, oecd, ths, yfinance），docs/evidence/ 下逐包点名且有「审查」字样的留档覆盖 7 个（同一行绑定 8 行；带探针读数同形的档案已先剔除）。模块 docstring 里的自声明（5 个包）与 THIRD_PARTY_NOTICES.md 里那句「本仓库不含任何 OpenBB 源码或其近似复制」都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录。历史提交说明补不回来（不改写历史），要收口得由一次真实的人工审查按包留档，本轮不代拟
+
+### AC-16|02  (document line 277)
+判据原文：全库无 OpenBB 源码或其近似复制（人工抽查 + 提交声明核查）〔C62 做成条目级判定面（measure_ac16_02 / judge_ac16_02 + 6 条反事实），**不勾**：判据括号的否定面这轮第一次量全，且**正向对照先行**——运行时四包（`opendata`、`opendata_http`、`opendata_fuyao`、`opendata_client`）git 跟踪的 py 文件 517 个、AST 逐个解析成功 **517 个**，共读到 **88 个**不同的顶层 import 根（走查不是空转），其中 openbb / openbb-* 的 **0 个**；`scripts/codemod/verify_no_akshare.py` 的 `FORBIDDEN_ROOTS` =（akshare, openbb）含 openbb = yes，该文件正文 openbb 出现 5 处（含 `--self-test` 的故意违规样本，即这条断言自己是会响的）。字面出现 openbb 的运行时文件 6 个：FR-7 对照表加载器（接口命名属事实性信息）+ 5 个 provider docstring 的 clean-room 自声明，都不是源码。但判据括号点名的**两项核查**现场是提交声明 0/7、人工抽查留档 0/7，而「近似复制」只能靠逐包人工比对判定 ⇒ 不以「import 为零」冒充它已被抽查过。**本轮 judge 被自己的反事实修强过一处**：`--self-test` 施加「一个运行时文件解析不了，走查面比跟踪面小」（516/517）时判定仍读 proven，因为旧口径只要求解析数 > 0，被静默跳过的文件不会让这条变红；现把「走查面 == 跟踪面」钉进判定式顶层，零读数必须建立在全量覆盖上（档案 `docs/evidence/C62/self-test.txt` 与 `README.md` 的披露段）〕
+本探针：运行时四包逐个 AST 解析找 openbb import 根（带正向对照），再核两项人工核查
+台账现状：state=gap，文档勾选=False
+  - 运行时四包（opendata, opendata_http, opendata_fuyao, opendata_client）跟踪的 py 文件 542 个，逐个 AST 解析成功 542 个，共读到 95 个不同的顶层 import 根 —— 走查不是空转（正向对照）；其中 import 根为 openbb / openbb-* 的 0 个：-
+  - 零依赖扫描器 scripts/codemod/verify_no_akshare.py 的 FORBIDDEN_ROOTS = （akshare, openbb），含 openbb = yes；该文件正文里 openbb 出现 11 处（含 --self-test 的故意违规样本，即这条断言自己是会响的）
+  - 运行时代码里字面出现 openbb（大小写不敏感）的文件 6 个：opendata/data/openbb_map.py, opendata/data/providers/ecb/models/_client.py, opendata/data/providers/fred/models/_client.py, opendata/data/providers/imf/models/_client.py —— 前者是 FR-7 对照表加载器（接口命名属事实性信息），后者是 provider 模块 docstring 里的 clean-room 自声明，都不是源码
+  - 判据括号里的两项核查：提交说明带「无 OpenBB 源码参照」的 provider 包 0/7 个；逐包人工抽查留档覆盖 7/7 个（同一行绑定 8 行，带探针读数同形的档案已剔除）
+  - 补齐到可判：declared_pkgs: 0 -> 7; recorded_binds: 8 -> 7
+VERDICT AC-16|02: gap — 「全库无 OpenBB 源码或其近似复制」的否定面成立（AST 走查 0 个 openbb import 根，扫描器禁止清单含 openbb 且自带会响的违规样本），但判据括号里点名的两项核查都没做过：提交声明核查 0/7，人工抽查留档 7/7。「近似复制」只能靠逐包人工比对判定，本轮不以「import 为零」冒充它已被抽查过
+
+### AC-16|03  (document line 278)
+判据原文：`opendata_http` 每文件 MIT 版权声明 + `THIRD_PARTY_NOTICES.md`（来源仓库 + commit）完整〔C62 转正（measure_ac16_03 / judge_ac16_03 + 7 条反事实）：搬运树 313 个清单内 py 文件逐个读前 6 行，缺 MIT 版权声明 **0**、缺来源标注 **0**、来源 URL 与 lock 逐字不等 **0**，来源 commit **只有 1 个取值**且与 `upstream.lock` 的 `c4f6a631c259` 相等；`THIRD_PARTY_NOTICES.md` 三读（来源仓库 github.com 链接 / lock 那个完整 40 位 commit / MIT）均在位。**本轮改了一处产品事实**：同一份台账里以反引号点名的仓库内路径，原先有 1 条假指针——`opendata_providers/compat/openbb_map.yaml` 是 1C 计划落点、该包从未创建（C36 已量过它全树不存在），现按实际路径更正为 `opendata/data/openbb_map.yaml` 并在原句旁注明历史。这件事被做成面 `stale_paths`（今天 0 条）并配一条反事实（施加 1 ⇒ 回 gap），「台账点名的路径真存在」从此不靠肉眼〕
+本探针：搬运树逐文件 MIT 头 + 来源 commit 与 lock 相等，外加台账点名的路径真存在于磁盘
+台账现状：state=proven，文档勾选=True
+  - 搬运树 325 个清单内 py 文件逐个读前 6 行（走查 325 个 = yes）：缺 MIT 版权声明 0 个（-），缺来源标注 0 个（-）
+  - 来源标注里的 commit 只有 1 个取值、与 lock 的 c4f6a631c259 相等 = yes；URL 与 lock 逐字不等的 0 个（-）
+  - THIRD_PARTY_NOTICES.md 写得到来源仓库（github.com 链接）= yes、写得到 lock 那个完整 40 位 commit = yes、写得到 MIT = yes
+  - 同一份台账里以反引号点名的仓库内路径，磁盘/跟踪清单上不存在的 0 个：-
+VERDICT AC-16|03: proven
+
+### AC-16|04  (document line 279)
+判据原文：**混合许可边界可验证**：`registration.py` 等自研代码不在 `opendata_http/` 内；MIT 子树在无 BSL 模块时可独立运行〔C62 转正（measure_ac16_04 / judge_ac16_04 + 5 条反事实），两面都是现场算的。静态面——搬运树里带 `registration.py` 的文件 **0 个**、落在 `*/providers/*` 下的 **0 个**、`opendata_http/` 的 py 文件里 import 根命中 BSL 侧（`opendata`、`opendata_fuyao`、`opendata_client`）的 **0 个**。运行面——不引用搬运树闭包测试的叙述，而是现起一个把 BSL 三包全部拒于 `sys.meta_path` 的解释器：**先自证闸门会响**（`import opendata.core.database` 被拦 = yes；读不到该读数即判 gap，闸门失效不会给出 proven），再 import 3 个 MIT 入口（`opendata_http.datasets`、`opendata_http.stock.cons`、`opendata_http.utils`）⇒ `IMPORTED=3`、退出码 0、失败读数 `(absent)`〕
+本探针：MIT 子树里没有自研 registration.py 也不 import BSL 侧，再禁掉 BSL 侧跑一遍导入
+台账现状：state=proven，文档勾选=True
+  - 搬运树里带 registration.py 的文件 0 个（-）、落在 */providers/* 下的 0 个（-）—— 判据点名的「registration.py 等自研代码不在 opendata_http/ 内」；opendata_http/ 的 py 文件里 import 根命中 BSL 侧（opendata, opendata_fuyao, opendata_client）的 0 个：-
+  - 另一面是真的跑一遍：起一个把 opendata, opendata_fuyao, opendata_client 全部拒于 meta_path 的解释器，先自证闸门会响（import opendata.core.database 被拦 = yes），再 import 3 个 opendata_http 入口（datasets / stock.cons / utils）：IMPORTED=3，退出码 0，失败读数为 (absent)
+VERDICT AC-16|04: proven
+
+### AC-16|08  (document line 283)
+判据原文：LICENSE 为 BSL 1.1；**数据免责声明**存在〔C62 转正（measure_ac16_08 / judge_ac16_08 + 5 条反事实）：`LICENSE` 第一行逐字为「Business Source License 1.1」，BSL 的四个必填条款 Licensor / Additional Use Grant / Change Date / Change License 读到 **4/4**、缺 0；数据免责声明不看标题——`README.md` 有该小节且正文含「不构成任何投资建议」，`docs/data-rights-registry.md` 同名小节同句均在位，两处各自可单独打红〕
+本探针：LICENSE 首行逐字 BSL 1.1 + 四个必填条款齐备，README 与数据权利登记各有免责正文
+台账现状：state=proven，文档勾选=True
+  - LICENSE 第一行逐字为「Business Source License 1.1」；BSL 的四个必填条款（Licensor / Additional Use Grant / Change Date / Change License）读到 4/4：Licensor, Additional Use Grant, Change Date, Change License，缺 -
+  - 数据免责声明：README.md 有该小节标题 = yes，正文含「不构成任何投资建议」= yes；docs/data-rights-registry.md 有同名小节 = yes，正文同句 = yes
+VERDICT AC-16|08: proven
+
+### AC-19|01  (document line 264)
+判据原文：**备份策略落地**：每日备份 + binlog，RPO ≤24h〔C63 做成条目级判定面（measure_ac19_01 / judge_ac19_01 + 6 条反事实），**不勾**：判据要的是「每日备份」，而现场唯一缺的就是那个「每日」。读数五面分开——脚本面：`scripts/ops/backup_mysql.sh` 在跟踪清单 = yes，`dump_one` 调用 2 次（元数据库 + 仓库库各一次全量）、`mysqldump` 真实调用 1 处（前置检查那行不计，判定式按语句而不是按字面出现次数）；调度面：**每日触发点 0 处**，扫描人口 1625 个跟踪文件（`tests/`、`docs/`、`web/`、脚本自身与探针自身已排除），仓库里没有任何调度定义或 make 目标去跑它，只有脚本头部注释里那行 `0 2 * * *` 与手册里同一行——被调方不能当自己的证据（C62 的机读回声教训，本轮把它固化成 `PROBE_SELF_REL` 排除面，并把扫描人口打进读数，「0 处」从此说得清是在多大的人口里读到 0）；声明面：`docs/operations-backup-restore.md` 里 RPO ≤24h = yes、binlog = yes，但手册把它列为**可选附录**；实测面：仓库里带一次实测 `log_bin` 取值（只认 ON/OFF 的实取形状，格式串里的 `ON|OFF` 备选不算）的档案 **0 份**——语料再剔掉档案面与结论面（`docs/evidence/`、`docs/quality/`、`docs/迭代计划/`：档案是每轮的过程留痕，任何一轮写过一次取值形状都会被后面每一轮当成实测；台账与验收文档写的正是本轮的结论。这是 C62 机读回声的第二处），探针离线不连库，配置片段不算读数 ⇒ RPO ≤24h 今天是靠每日全量兜底、不是靠 binlog。`repair` 面写的是缺什么：一个真调度点 + 一次真取值，档案第 10 行逐字给的是 `binlog_attested_list: - -> docs/operations-backup-restore.md` —— 取值要落在运维手册这类**长期事实面**里，写进 `docs/evidence/` 的任何一档或台账里的那一份正好被自己的判据剔掉；起 crontab 属部署动作、连库取值需现场确认，本轮不代拟〕
+本探针：备份脚本 + 两库 dump + 仓库内的每日触发点 + RPO/binlog 声明与一次实测取值
+台账现状：state=gap，文档勾选=False
+  - 备份脚本在跟踪清单 = yes；dump_one 调用 2 次（metadata, warehouse），mysqldump 真实调用 1 处（前置检查那行不计）
+  - 扫描人口 2054 个跟踪文件（tests/docs/web、脚本自身与探针自身已排除，且读 `git ls-files -z`：默认输出会把中文文件名八进制转义）；每日触发点 1 处（scripts/ops/backup_runner.sh）；脚本头部注释里那行 `0 2 * * *` 不算触发点（被调方不能当自己的证据）
+  - Compose `backup` profile = yes（按需启动）；镜像链 = yes；runner 每日 02:00 UTC 循环 = yes；完整接线 = yes（源码配置不证明当前部署已启动）
+  - RPO ≤24h 的声明面 = yes；binlog 写进手册 = yes，手册把它列为可选附录 = yes
+  - 实测过的 `log_bin` 取值（只认 ON/OFF，格式串里的 `ON|OFF` 备选不算）0 份档案（-）；语料剔除面 docs/evidence/, docs/quality/, docs/迭代计划/ —— 档案面与结论面都不算实测，探针离线不连库，配置片段不算读数
+  - C64 isolated MySQL ROW binlog measured=yes; actual scheduled deployment and backup freshness=no; isolated restoration does not establish production RPO
+  - 补齐到可判：binlog_attested: 0 -> 1; binlog_attested_list: - -> docs/operations-backup-restore.md; binlog_optional: yes -> no; deployment_observed: no -> yes
+VERDICT AC-19|01: gap — 每日触发源码和隔离双库恢复已验证，隔离 ROW binlog 取值=yes；正式部署中每日任务运行、备份新鲜度及 binlog 实际生效证据=no，生产 RPO ≤24h 尚未验收
+
+### AC-19|02  (document line 265)
+判据原文：**恢复演练完成一次**并记录（纳入 A0 DoD）〔C63 转正（measure_ac19_02 / judge_ac19_02 + 7 条反事实）：档案 `docs/evidence/A0/restore-drill.txt` 首次入库 **2026-09-22**（提交 0a9fba28df98），早于本轮 = yes —— 一轮不能给自己的演练记录背书，这条历史闸是本轮新加的；检查单 6 步 6 个 ✅，且判定只读表头 `| # | 步骤 | 通过判据 | 结果 |` 之下的行（同一份档案另有两张也从 `| 1 |` 起头的表 —— §4 缺陷 8 行、§5 移交 3 行，按字面抓行会把它们当检查单步数）；两个隔离恢复库 `opendata_restore_check` / `opendata_data_restore_check` 均可指认 2/2，关键表行数比对与起栈后 `/health` 读到 `status=healthy` 都读自档案正文；A0 DoD 点着这份档案 = yes〕
+本探针：A0 演练档案：早于本轮存在 + 六步检查单逐条通过 + 两个隔离恢复库 + 归进 DoD
+台账现状：state=proven，文档勾选=True
+  - 演练档案 docs/evidence/A0/restore-drill.txt 在跟踪清单 = yes，检查单表头读得到 = yes（同档另有两张从 `| 1 |` 起头的表 —— §4 缺陷 8 行、§5 移交 3 行；判定只看这张表头之下的行）
+  - 首次入库 2026-09-22（提交 0a9fba28df98），早于本轮 = yes —— 一轮不能给自己的演练记录背书（C62 的机读回声教训）
+  - 检查单 6 步，带 ✅ 标记 6 步
+  - 两个隔离恢复库均可指认 2/2；关键表行数比对 = yes，起栈后 /health 读到 status=healthy = yes
+  - A0 DoD 里点着这份档案 = yes
+VERDICT AC-19|02: proven
+
+### AC-19|03  (document line 266)
+判据原文：保留策略声明并实现（日线永久 / 分钟线 N 年 / 缓存 TTL / 差异明细导出）〔C63 做成条目级判定面（measure_ac19_03 / judge_ac19_03 + 4 条反事实），**不勾**：「声明并实现」缺的是实现面。声明三面全在位——策略四类 4/4（日线永久 / 分钟线 N 年 / 缓存 TTL / 差异明细导出）、执行器 4/4（`purge_expired_rows`、`purge_diff_report`、`purge_minute_archives`、`purge_raw_response_cache`）、配置键 4/4（`CACHE_DIR`、`CACHE_TTL_SECONDS`、`RETENTION_DIFF_REPORT_DAYS`、`RETENTION_MINUTE_YEARS`）；实现面：运行时四包里**生产调用点 0 处**（`tests/` 里的引用不算调用点，`retention.py` 自己的内部转调也不算）。⇒ 保留策略今天是一套**只有测试会跑**的执行器：不接调度或接口，过期数据就不会真被清。**这项不做「顺手接上」**：把执行器接进调度意味着分钟线按 N 年、差异明细按天开始真删生产数据，属需用户确认的破坏性动作，与 task #52/#64 同列登记〕
+本探针：四类策略 + 四个执行器 + 四个配置键，再加运行时包里的真调用点
+台账现状：state=proven，文档勾选=True
+  - 策略四类读到 4/4（日线永久 / 分钟线 N 年 / 缓存 TTL / 差异明细导出），执行器 4/4（purge_expired_rows, purge_diff_report, purge_minute_archives, purge_raw_response_cache），四个配置键 4/4
+  - 生产侧调用点 1 处（opendata/pipeline/maintenance.py）—— tests/ 里的引用不算调用点，retention.py 自己的内部转调也不算
+  - 调度行 = yes，kind 可执行 = yes，派发到执行器 = yes；默认 report-only = yes（RETENTION_EXECUTION_ENABLED 默认 false，显式开启才删除）；命名行为用例失败项 = -（- 表示全部通过）
+VERDICT AC-19|03: proven
+
+### AC-19|04  (document line 267)
+判据原文：权威源 Key 配额/到期/封禁监控告警生效〔C63 做成条目级判定面（measure_ac19_04 / judge_ac19_04 + 7 条反事实），**不勾**：判据的动词是「生效」，现场是分类在位而信号与通道缺。四类健康类别 4/4（key-validity / key-expiry / revocation-or-ban / quota-left），线上可触发的被动归类两条都在（401/403→credential-rejected = yes、429→quota-exhausted = yes；判定按 if/elif/return 语句里的成对规则，不按注释里的字符串）；**到期这一类没有任何可触发的信号 = no**——本平台自签 Key 的 `is_expired` 与 `token_blacklist` 不算，判据点名的是**权威源** Key；分级落点 1 处运行时模块调用 `credential_health`（`opendata/api/pipeline.py`，定义处 `patrol.py` 已排除，不能当自己的告警落点），而**带外告警通道 0 处** ⇒ 只有 `/health` 可拉取 ≠ 告警生效：配额只到 warn、封禁只到 alert，无人被通知。模块自己那句「不发布权威源 Key 的到期/剩余额度/吊销状态」的边界声明仍要求在位（这句被删而探测仍未做 ⇒ 判 gap），未观测继续只报 `presence-only`〕
+本探针：四类 Key 健康的分类规则 + 到期信号 + 分级落点与带外告警通道
+台账现状：state=gap，文档勾选=False
+  - 四类健康类别在位 4/4（key-validity / key-expiry / revocation-or-ban / quota-left）
+  - 线上可触发的分类：401/403→credential-rejected = yes，429→quota-exhausted = yes；到期分类或主动探测 = yes（本平台自签 Key 的 is_expired 不算，判据点名的是权威源）
+  - 分级落点 2 处运行时模块调用 credential_health（opendata/api/pipeline.py, opendata/pipeline/key_health_notifications.py，定义处 patrol.py 已排除）；带外告警通道 1 处（opendata/pipeline/key_health_notifications.py）—— 只有 /health 可拉取 ≠ 告警生效
+  - operator-supplied expiry metadata supported = yes；独立 observation TTL 与通知测试 3/3 通过 (-)：过期只报告 observation-expired、不会被当作恢复；余量未知时保持 None，不补造配额
+  - independent live evidence: issuer expiry=no, remaining quota=no, notification delivery=no; metadata and mocks do not prove these
+  - 模块自己的边界声明在位 = yes，未观测只报 yes（这句被删而探测仍未做 ⇒ 判 gap）
+  - 补齐到可判：delivery_observed: no -> yes; issuer_expiry_observed: no -> yes; quota_remaining_observed: no -> yes
+VERDICT AC-19|04: gap — 判据要类别、可触发信号、分级落点、通知通道与观察状态测试共同成立；当前读到 4/4 类，operator expiry support=yes，分级落点=2、通知通道=1，observation tests=3/3。观察 TTL 过期不能替代 key 恢复，quota 余量未知时也不能填入数值；还缺供应商到期/余量和实际通知送达的独立现场证据
+
+### AC-19|05  (document line 268)
+判据原文：《配置项清单》文档存在（键名/含义/改动影响/生效方式）〔C63 转正（measure_ac19_05 / judge_ac19_05 + 4 条反事实），并**先修了仪器自己的一处盲区**：`git ls-files` 默认按 `core.quotePath` 把非 ASCII 路径八进制转义，按字面比对 `docs/配置项清单.md` 永不为真 ⇒ 一份在册文档会被读成不存在（正向对照先行：改读 `-z` 后 1625 条里该文件名可指认；全仓库非 ASCII 的跟踪路径今日只在 `docs/` 下）。读数：在用键名行 54 条、四列（键名/含义/默认值/改动影响）齐全且无空单元格 54 条，另有 1 条属第十节「已被移除的配置」两列表，不计入在配置项。**如实披露四字段里最薄的一格**：「生效方式」不是逐行列（带该列的表头 0 处、逐行「热加载」标注 0 条），而是文档第 5 行的一句全局条款「修改后需重启后端进程」。本格之所以仍判 proven，是这句与代码事实**自洽**：`get_settings` 被 `@lru_cache` 冻结 = yes，而 4 个运行时模块在调用点读 `get_settings()`（ecb/fred/imf 的 `_client.py` 等）读的是缓存后的同一份。判定式把这件事钉成条件：去掉缓存而逐行无标注 ⇒ 全局条款就成了假话 ⇒ 回 gap（配一条反事实）。补「逐行生效方式列」属文档加宽，登记不代拟〕
+本探针：清单逐行四列覆盖数 + 生效方式承载形态 + 全局条款与代码事实是否自洽
+台账现状：state=proven，文档勾选=True
+  - 在用键名行 64 条，四列齐且无空单元格 64 条（另有 1 条属第十节「已被移除的配置」两列表，不计入在配置项）
+  - 表头里带「生效方式」列的 0 处；全局条款（改后需重启后端进程）在位 = yes；逐行标注「热加载」0 条
+  - 代码侧 6 个运行时模块在调用点读 get_settings()（opendata/data/providers/ecb/models/_client.py, opendata/data/providers/fred/models/_client.py, opendata/data/providers/imf/models/_client.py）；get_settings 仍被 @lru_cache 冻结 = yes —— 去掉缓存而逐行无标注 ⇒ 文档在骗人，判 gap
+VERDICT AC-19|05: proven
+
+### AC-8|04  (document line 187)
+判据原文：**写入基准测试**记录在案（单源日线全量落库耗时与内存）
+本探针：C65 frozen-source full daily-write run with rows/pages/time/RSS bound across raw, matrix, and driver
+台账现状：state=gap，文档勾选=False
+  - benchmark validator = yes，issues = 0 (-)；冻结源码身份 = yes（current SHA exact match = no，已接受单行初始状态修正 = yes），当前 SHA = 5c6a8b3b7048284c8b0ddc81219518eb48aff95b1ddb19772ed958985ca2fc47，冻结 SHA = 4a47f4dcc746ad57d5c36ce379aa6816d337aa275e32f3b88eca932ff6107063
+  - full run: source=ths / stock_daily / ods_stock_daily_ths，rows requested/read/written/source = 10310289/10310289/10310289/10310289，pages read/written = 207/207，requested rows = total source rows = yes
+  - full run status=complete，elapsed=2211.298866 s，current RSS=41631744 bytes，peak RSS=323862528 bytes；原始记录完整 = yes，matrix/driver/source 身份一致 = yes/yes
+VERDICT AC-8|04: proven
+
+### §5|01  (document line 313)
+判据原文：**写入基准**：单源日线全量落库耗时与内存记录在案（内存恒定，不随数据量线性增长）
+本探针：Three frozen-source write scales with complete rows/pages/time/RSS and an observed full-to-1m peak comparison
+台账现状：state=gap，文档勾选=False
+  - 三档完整性 = yes，scale count = 3，source identity = yes；validator valid/issues = yes/0
+  - 100000: rows=100000, pages=2, time=269.010563 s, current/peak RSS=117342208/288260096 bytes; 1000000: rows=1000000, pages=20, time=424.211518 s, current/peak RSS=278200320/365723648 bytes; full: rows=10310289, pages=207, time=2211.298866 s, current/peak RSS=41631744/323862528 bytes
+  - 实测 full peak=323862528 bytes，1m peak=365723648 bytes，full <= 1m = yes；所有 scale <2GiB 观察值 = yes（仅展示，不作为本项阈值；范围=the three C65 runs at page_size 50000 only）
+VERDICT §5|01: proven
+
+### AC-10|02  (document line 208)
+判据原文：每个 provider 标注"消费场景 + 请求方"；标不出场景的移出本迭代
+本探针：Direct requester confirmation reconciled against every current active provider/domain pair
+台账现状：state=proven，文档勾选=True
+  - 当前活跃 openbb_map legs = 33 条 / 7 providers；确认记录 = 33 条，pair set 精确相等 = yes （missing=0，extra=0，duplicates=0/0）
+  - 直接人类回复与请求方 = yes/yes；空场景/请求方/用途 = 0/0/0；用途错配=0，activation 未确认=0
+  - 确认范围：requester/purpose/activation only; not copyright/source/field mapping；issues=0：-
+VERDICT AC-10|02: proven
+
+### AC-10|03  (document line 209)
+判据原文：每 provider 零 OpenBB 源码（审查记录留档）
+本探针：Current registered provider sources have a complete, user-authorized, hash-bound review against the pinned OpenBB baseline
+台账现状：state=gap，文档勾选=False
+  - 当前已注册 provider = akshare, ecb, fred, imf, oecd, ths, yfinance（7），审阅范围 = current_registered_provider_packages；源码/审阅/相似度清单 = 71/71/71 个 Python 文件，源 SHA 绑定完整 = yes（条目数=71）
+  - 源码可解析 = yes，OpenBB import = 0（零导入=yes）；固定基线 = 3e071fcc2cd9f891cac6040ae60296dba76dab46，审阅授权 = yes
+  - 候选/未审候选 = 0/0，审阅完成 = yes（packages=yes，nearest=yes）；nearest review = 3 项，正向结论 = yes，档案 SHA 互绑 = yes；validator valid/issues = yes/0（-）
+VERDICT AC-10|03: proven
+
+### AC-6|02  (document line 170)
+判据原文：迭代 1B：其余子模块抽样 ≥20% 对照通过；产出对照报告（覆盖率/差异清单/容忍度说明）
+本探针：Offline recorded-fixture compare PASS measured against the validated 9-group B1.1 module denominator
+台账现状：state=gap，文档勾选=False
+  - 当前 Compare Case = 18：PASS/PENDING/FAIL = 14/4/0；原 compare exit=1（与未完成项一致=yes），D10 failed=no
+  - 经 port_scope 逐路径验证的B1.1组：PASS覆盖 6/9（66.67%），最低组数=2；覆盖组=bond, fund, futures, index, option, stock_fundamental
+  - PASS source paths=7/245 py （2.86%，披露用，不作为20%分母）；Pending=stock_daily_raw, stock_daily_qfq, index_daily_em, fund_etf_daily_em，不计入PASS；rtol=1e-09，报告仅写入临时目录=yes
+  - source paths/hashes与批次核对 = yes；scope问题=-；路径问题=-
+VERDICT AC-6|02: proven
+
+census: gap=9, proven=106
+（115 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+wrote docs/evidence/C65/item-readings-current.json
+
+CHECK_EXIT=0
+
+DRIVER_EXIT=0

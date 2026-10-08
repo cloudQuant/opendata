@@ -1,0 +1,31 @@
+AC-11 server-side adjust vs the official akshare series
+
+script: scripts/ops/qfq_official_check.py
+window: 2026-01-05 .. 2026-09-30
+symbols: 600519, 000001, 000002, 000009, 600036
+ours: dwd_stock_daily (unadjusted) with dwd_stock_adjust coefficients,
+  via build_data_select + apply_adjust_to_rows (the REST query path)
+official: akshare opendata_http.stock_feature.stock_hist_em:stock_zh_a_hist (adjust=qfq|hfq) -- different source and factor chain
+tolerance: relative 0.002 on close (official feeds round to 2 decimals)
+
+## adjust=qfq
+
+| symbol | bars | bars over tol | anchor (ours/official) | max abs dev | max shape dev | leg retries | result |
+|---|---|---|---|---|---|---|---|
+| 600519 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 600519 qfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=1&secid=1.600519&beg=20260105&end=20260930) |
+| 000001 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 000001 qfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=1&secid=0.000001&beg=20260105&end=20260930) |
+| 000002 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 000002 qfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=1&secid=0.000002&beg=20260105&end=20260930) |
+| 000009 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 000009 qfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=1&secid=0.000009&beg=20260105&end=20260930) |
+| 600036 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 600036 qfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=1&secid=1.600036&beg=20260105&end=20260930) |
+
+## adjust=hfq
+
+| symbol | bars | bars over tol | anchor (ours/official) | max abs dev | max shape dev | leg retries | result |
+|---|---|---|---|---|---|---|---|
+| 600519 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 600519 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=1.600519&beg=20260105&end=20260930) |
+| 000001 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 000001 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=0.000001&beg=20260105&end=20260930) |
+| 000002 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 000002 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=0.000002&beg=20260105&end=20260930) |
+| 000009 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 000009 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=0.000009&beg=20260105&end=20260930) |
+| 600036 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 600036 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=1.600036&beg=20260105&end=20260930) |
+
+result: FAIL (10 failing symbol/method pairs)

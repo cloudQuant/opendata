@@ -1,0 +1,32 @@
+{
+  "round": "C65",
+  "date": "2026-09-30T20:53:30.133073+00:00",
+  "command": "docker run current built image; docker inspect owned app State; redacted docker logs analysis",
+  "container": "opendata-iteration01-c65-app",
+  "state": {
+    "Status": "exited",
+    "Running": false,
+    "Paused": false,
+    "Restarting": false,
+    "OOMKilled": false,
+    "Dead": false,
+    "Pid": 0,
+    "ExitCode": 3,
+    "Error": "",
+    "StartedAt": "2026-09-30T20:50:52.435287044Z",
+    "FinishedAt": "2026-09-30T20:50:54.50737517Z",
+    "Health": {
+      "Status": "unhealthy",
+      "FailingStreak": 0,
+      "Log": []
+    }
+  },
+  "status": "FAIL",
+  "phase": "module-import-before-startup",
+  "finding": "declared SQLAlchemy dependency lacks asyncio extra on ARM64; greenlet absent",
+  "exception_type": "ImportError",
+  "evidence_excerpt": "The SQLAlchemy asyncio module requires that the Python 'greenlet' library is installed.  In order to ensure this dependency is available, use the 'sqlalchemy[asyncio]' install target:  'pip install sqlalchemy[asyncio]'",
+  "native_3306_writes": 0,
+  "upstream_calls": 0,
+  "credentials_recorded": false
+}

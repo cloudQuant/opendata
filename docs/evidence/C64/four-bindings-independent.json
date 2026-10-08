@@ -1,0 +1,175 @@
+{
+  "date": "2026-09-30T08:06:07.056433+00:00",
+  "items": [
+    {
+      "item": "AC-11|10",
+      "key": "AC-11|10|80d48620",
+      "state": "proven",
+      "summary": "existing routes regression",
+      "readings": [
+        "C64 fresh named behavior checks: 6/6 nodes passed",
+        "runtime binding=yes; scope=offline main-database fixture REST routes and root websocket mounts"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "6",
+        "c64_exit": "0",
+        "c64_passed": "6",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline main-database fixture REST routes and root websocket mounts"
+      },
+      "counterfacts": [
+        {
+          "label": "named behavior check fails",
+          "state": "gap"
+        },
+        {
+          "label": "named node is absent",
+          "state": "gap"
+        },
+        {
+          "label": "a required node is skipped",
+          "state": "gap"
+        },
+        {
+          "label": "runtime binding removed",
+          "state": "gap"
+        }
+      ]
+    },
+    {
+      "item": "AC-13|06",
+      "key": "AC-13|06|f440f22d",
+      "state": "proven",
+      "summary": "single-symbol isolation and browser retry",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=local browser API fixtures {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; actual backend retry with SQLite controls"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "local browser API fixtures {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; actual backend retry with SQLite controls"
+      },
+      "counterfacts": [
+        {
+          "label": "named behavior check fails",
+          "state": "gap"
+        },
+        {
+          "label": "named node is absent",
+          "state": "gap"
+        },
+        {
+          "label": "a required node is skipped",
+          "state": "gap"
+        },
+        {
+          "label": "runtime binding removed",
+          "state": "gap"
+        }
+      ]
+    },
+    {
+      "item": "AC-18|03",
+      "key": "AC-18|03|ae559f45",
+      "state": "proven",
+      "summary": "数据接口页是否已并入目录（目录为默认视图，函数级明细在下钻里）",
+      "readings": [
+        "目录导航项 = 1 (nav.catalog -> /data)",
+        "`/scripts` 是否渲染目录视图 = yes",
+        "Playwright `merged catalog is the default at both catalog URLs and filters by market and dataset` = passed （/scripts 与 /data 默认目录、市场/数据集筛选、注册函数明细面）",
+        "目录内函数明细控件及其可见用例 = yes",
+        "Playwright `catalog function drilldown reaches legacy list and an actual script detail route` = passed；真实脚本详情路由 = yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "page_titles": "nav.catalog -> /data",
+        "nav_entries": "1",
+        "route_is_catalog": "yes",
+        "detail_in_catalog": "yes",
+        "detail_route": "yes",
+        "merged_e2e": "passed",
+        "function_detail_e2e": "passed"
+      },
+      "counterfacts": [
+        {
+          "label": "又出现第二个数据接口页面",
+          "state": "gap"
+        },
+        {
+          "label": "数据接口路由不再渲染目录视图",
+          "state": "gap"
+        },
+        {
+          "label": "目录页读不到函数级明细",
+          "state": "gap"
+        },
+        {
+          "label": "下钻终点（接口详情路由）被删",
+          "state": "gap"
+        },
+        {
+          "label": "merged catalog 可见行为用例变红或缺失",
+          "state": "gap"
+        },
+        {
+          "label": "旧函数列表到真实脚本详情用例变红或缺失",
+          "state": "gap"
+        }
+      ]
+    },
+    {
+      "item": "§6|03",
+      "key": "§6|03|407cf9b8",
+      "state": "proven",
+      "summary": "browser failed-list download and retry",
+      "readings": [
+        "C64 fresh named behavior checks: 2/2 nodes passed",
+        "runtime binding=yes; scope=local browser downloads/errors {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; backend SQLite retry/list checks"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "2",
+        "c64_exit": "0",
+        "c64_passed": "2",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "local browser downloads/errors {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; backend SQLite retry/list checks"
+      },
+      "counterfacts": [
+        {
+          "label": "named behavior check fails",
+          "state": "gap"
+        },
+        {
+          "label": "named node is absent",
+          "state": "gap"
+        },
+        {
+          "label": "a required node is skipped",
+          "state": "gap"
+        },
+        {
+          "label": "runtime binding removed",
+          "state": "gap"
+        }
+      ]
+    }
+  ]
+}

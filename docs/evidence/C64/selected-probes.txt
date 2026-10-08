@@ -1,0 +1,55 @@
+Date: 2026-09-30
+Branch: dev
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Worktree: uncommitted C64 changes
+Command: Anaconda base Python scripts/quality/acceptance_item_probe.py --item AC-18|03 --item AC-19|03 --item AC-19|01 --item AC-19|04 --json /tmp/opendata-iter01-selected-probes-20260930.json
+REVIEW_EXIT=0
+
+
+### AC-18|03  (document line 253)
+判据原文：前端"数据接口"页与数据目录合并（目录为默认视图，函数级明细下钻）
+本探针：数据接口页是否已并入目录（目录为默认视图，函数级明细在下钻里）
+台账现状：state=gap，文档勾选=False
+  - 目录导航项 = 1 (nav.catalog -> /data)
+  - `/scripts` 是否渲染目录视图 = yes
+  - Playwright `merged catalog is the default at both catalog URLs and filters by market and dataset` = passed （/scripts 与 /data 默认目录、市场/数据集筛选、注册函数明细面）
+  - 目录内函数明细控件及其可见用例 = yes
+  - Playwright `catalog function drilldown reaches legacy list and an actual script detail route` = passed；真实脚本详情路由 = yes
+VERDICT AC-18|03: proven
+
+### AC-19|03  (document line 259)
+判据原文：保留策略声明并实现（日线永久 / 分钟线 N 年 / 缓存 TTL / 差异明细导出）〔C63 做成条目级判定面（measure_ac19_03 / judge_ac19_03 + 4 条反事实），**不勾**：「声明并实现」缺的是实现面。声明三面全在位——策略四类 4/4（日线永久 / 分钟线 N 年 / 缓存 TTL / 差异明细导出）、执行器 4/4（`purge_expired_rows`、`purge_diff_report`、`purge_minute_archives`、`purge_raw_response_cache`）、配置键 4/4（`CACHE_DIR`、`CACHE_TTL_SECONDS`、`RETENTION_DIFF_REPORT_DAYS`、`RETENTION_MINUTE_YEARS`）；实现面：运行时四包里**生产调用点 0 处**（`tests/` 里的引用不算调用点，`retention.py` 自己的内部转调也不算）。⇒ 保留策略今天是一套**只有测试会跑**的执行器：不接调度或接口，过期数据就不会真被清。**这项不做「顺手接上」**：把执行器接进调度意味着分钟线按 N 年、差异明细按天开始真删生产数据，属需用户确认的破坏性动作，与 task #52/#64 同列登记〕
+本探针：四类策略 + 四个执行器 + 四个配置键，再加运行时包里的真调用点
+台账现状：state=gap，文档勾选=False
+  - 策略四类读到 4/4（日线永久 / 分钟线 N 年 / 缓存 TTL / 差异明细导出），执行器 4/4（purge_expired_rows, purge_diff_report, purge_minute_archives, purge_raw_response_cache），四个配置键 4/4
+  - 生产侧调用点 1 处（opendata/pipeline/maintenance.py）—— tests/ 里的引用不算调用点，retention.py 自己的内部转调也不算
+  - 调度行 = yes，kind 可执行 = yes，派发到执行器 = yes；默认 report-only = yes（RETENTION_EXECUTION_ENABLED 默认 false，显式开启才删除）；命名行为用例失败项 = -（- 表示全部通过）
+VERDICT AC-19|03: proven
+
+### AC-19|01  (document line 257)
+判据原文：**备份策略落地**：每日备份 + binlog，RPO ≤24h〔C63 做成条目级判定面（measure_ac19_01 / judge_ac19_01 + 6 条反事实），**不勾**：判据要的是「每日备份」，而现场唯一缺的就是那个「每日」。读数五面分开——脚本面：`scripts/ops/backup_mysql.sh` 在跟踪清单 = yes，`dump_one` 调用 2 次（元数据库 + 仓库库各一次全量）、`mysqldump` 真实调用 1 处（前置检查那行不计，判定式按语句而不是按字面出现次数）；调度面：**每日触发点 0 处**，扫描人口 1625 个跟踪文件（`tests/`、`docs/`、`web/`、脚本自身与探针自身已排除），仓库里没有任何调度定义或 make 目标去跑它，只有脚本头部注释里那行 `0 2 * * *` 与手册里同一行——被调方不能当自己的证据（C62 的机读回声教训，本轮把它固化成 `PROBE_SELF_REL` 排除面，并把扫描人口打进读数，「0 处」从此说得清是在多大的人口里读到 0）；声明面：`docs/operations-backup-restore.md` 里 RPO ≤24h = yes、binlog = yes，但手册把它列为**可选附录**；实测面：仓库里带一次实测 `log_bin` 取值（只认 ON/OFF 的实取形状，格式串里的 `ON|OFF` 备选不算）的档案 **0 份**——语料再剔掉档案面与结论面（`docs/evidence/`、`docs/quality/`、`docs/迭代计划/`：档案是每轮的过程留痕，任何一轮写过一次取值形状都会被后面每一轮当成实测；台账与验收文档写的正是本轮的结论。这是 C62 机读回声的第二处），探针离线不连库，配置片段不算读数 ⇒ RPO ≤24h 今天是靠每日全量兜底、不是靠 binlog。`repair` 面写的是缺什么：一个真调度点 + 一次真取值，档案第 10 行逐字给的是 `binlog_attested_list: - -> docs/operations-backup-restore.md` —— 取值要落在运维手册这类**长期事实面**里，写进 `docs/evidence/` 的任何一档或台账里的那一份正好被自己的判据剔掉；起 crontab 属部署动作、连库取值需现场确认，本轮不代拟〕
+本探针：备份脚本 + 两库 dump + 仓库内的每日触发点 + RPO/binlog 声明与一次实测取值
+台账现状：state=gap，文档勾选=False
+  - 备份脚本在跟踪清单 = yes；dump_one 调用 2 次（metadata, warehouse），mysqldump 真实调用 1 处（前置检查那行不计）
+  - 扫描人口 1664 个跟踪文件（tests/docs/web、脚本自身与探针自身已排除，且读 `git ls-files -z`：默认输出会把中文文件名八进制转义）；每日触发点 1 处（scripts/ops/backup_runner.sh）；脚本头部注释里那行 `0 2 * * *` 不算触发点（被调方不能当自己的证据）
+  - Compose `backup` profile = yes（按需启动）；镜像链 = yes；runner 每日 02:00 UTC 循环 = yes；完整接线 = yes（源码配置不证明当前部署已启动）
+  - RPO ≤24h 的声明面 = yes；binlog 写进手册 = no，手册把它列为可选附录 = yes
+  - 实测过的 `log_bin` 取值（只认 ON/OFF，格式串里的 `ON|OFF` 备选不算）0 份档案（-）；语料剔除面 docs/evidence/, docs/quality/, docs/迭代计划/ —— 档案面与结论面都不算实测，探针离线不连库，配置片段不算读数
+  - 补齐到可判：binlog_attested: 0 -> 1; binlog_attested_list: - -> docs/operations-backup-restore.md; binlog_optional: yes -> no; doc_binlog: no -> yes
+VERDICT AC-19|01: gap — 每日触发点在位，但 binlog 面只剩手册里标为「可选」的附录：没有任何一份档案带一次实测的 log_bin 取值（当前 0 份），RPO ≤24h 因此是靠每日全量兜底、不是靠 binlog
+
+### AC-19|04  (document line 260)
+判据原文：权威源 Key 配额/到期/封禁监控告警生效〔C63 做成条目级判定面（measure_ac19_04 / judge_ac19_04 + 7 条反事实），**不勾**：判据的动词是「生效」，现场是分类在位而信号与通道缺。四类健康类别 4/4（key-validity / key-expiry / revocation-or-ban / quota-left），线上可触发的被动归类两条都在（401/403→credential-rejected = yes、429→quota-exhausted = yes；判定按 if/elif/return 语句里的成对规则，不按注释里的字符串）；**到期这一类没有任何可触发的信号 = no**——本平台自签 Key 的 `is_expired` 与 `token_blacklist` 不算，判据点名的是**权威源** Key；分级落点 1 处运行时模块调用 `credential_health`（`opendata/api/pipeline.py`，定义处 `patrol.py` 已排除，不能当自己的告警落点），而**带外告警通道 0 处** ⇒ 只有 `/health` 可拉取 ≠ 告警生效：配额只到 warn、封禁只到 alert，无人被通知。模块自己那句「不发布权威源 Key 的到期/剩余额度/吊销状态」的边界声明仍要求在位（这句被删而探测仍未做 ⇒ 判 gap），未观测继续只报 `presence-only`〕
+本探针：四类 Key 健康的分类规则 + 到期信号 + 分级落点与带外告警通道
+台账现状：state=gap，文档勾选=False
+  - 四类健康类别在位 4/4（key-validity / key-expiry / revocation-or-ban / quota-left）
+  - 线上可触发的分类：401/403→credential-rejected = yes，429→quota-exhausted = yes；到期分类或主动探测 = yes（本平台自签 Key 的 is_expired 不算，判据点名的是权威源）
+  - 分级落点 2 处运行时模块调用 credential_health（opendata/api/pipeline.py, opendata/pipeline/key_health_notifications.py，定义处 patrol.py 已排除）；带外告警通道 1 处（opendata/pipeline/key_health_notifications.py）—— 只有 /health 可拉取 ≠ 告警生效
+  - issuer expiry metadata/signal = yes；独立 observation TTL 与通知测试 3/3 通过 (-)：过期只报告 observation-expired、不会被当作恢复；余量未知时保持 None，不补造配额
+  - 模块自己的边界声明在位 = no，未观测只报 yes（这句被删而探测仍未做 ⇒ 判 gap）
+  - 补齐到可判：alert_list: opendata/api/pipeline.py, opendata/pipeline/key_health_notifications.py -> opendata/api/pipeline.py; alert_sites: 2 -> 1; disclosure: no -> yes
+VERDICT AC-19|04: gap — 判据要类别、可触发信号、分级落点、通知通道与观察状态测试共同成立；当前读到 4/4 类，issuer expiry signal=yes，分级落点=2、通知通道=1，observation tests=3/3。观察 TTL 过期不能替代 key 恢复，quota 余量未知时也不能填入数值
+
+census: gap=2, proven=2
+（4 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+wrote /tmp/opendata-iter01-selected-probes-20260930.json

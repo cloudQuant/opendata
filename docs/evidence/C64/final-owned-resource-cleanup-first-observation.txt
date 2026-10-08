@@ -1,0 +1,11 @@
+Date: 2026-09-30T11:46:43.912301+00:00
+Source: completed C64 full-gate.txt; final-source-manifest.json
+Scope: exact owned MySQL33564 auto-remove container and two verified backup image tags; no bind mounts, no global prune, native3306 unchanged
+Flag --time has been deprecated, use --timeout instead
+opendata-iteration01-acceptance
+
+Observed first wrapper result: post-stop immediate empty-container-list assertion failed; wrapper exit=1; image removal was not reached.
+Traceback (most recent call last):
+  File "<stdin>", line 26, in <module>
+AssertionError
+Later independent docker ps -a exact-name inspection returned an empty list.

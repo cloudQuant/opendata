@@ -1,0 +1,121 @@
+{
+  "env": {
+    "python": "3.11.8"
+  },
+  "items": [
+    {
+      "item": "AC-4|01",
+      "key": "AC-4|01|e3c017e7",
+      "state": "proven",
+      "summary": "timeout / 429 retry / per-host rate / concurrency actual mocks",
+      "readings": [
+        "C64 fresh named behavior checks: 5/5 nodes passed",
+        "runtime binding=yes; scope=offline actual transport mocks; no real supplier ban or uptime claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "5",
+        "c64_exit": "0",
+        "c64_passed": "5",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline actual transport mocks; no real supplier ban or uptime claim"
+      }
+    },
+    {
+      "item": "AC-4|02",
+      "key": "AC-4|02|2b146f20",
+      "state": "proven",
+      "summary": "structured safe transport failure events",
+      "readings": [
+        "C64 fresh named behavior checks: 4/4 nodes passed",
+        "runtime binding=yes; scope=offline structured-event behavior and credential redaction"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "4",
+        "c64_exit": "0",
+        "c64_passed": "4",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "offline structured-event behavior and credential redaction"
+      }
+    },
+    {
+      "item": "AC-7|06",
+      "key": "AC-7|06|db29e204",
+      "state": "proven",
+      "summary": "missing credentials exclusion and visible warning",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=current registry resolution; no supplier availability claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "current registry resolution; no supplier availability claim"
+      }
+    },
+    {
+      "item": "§5|04",
+      "key": "§5|04|d73d5844",
+      "state": "proven",
+      "summary": "one real GB ODS table bounded REST/CSV and EXPLAIN evidence",
+      "readings": [
+        "dated_pass=yes",
+        "gb_table=yes",
+        "http_rows=yes",
+        "indexed=yes",
+        "bounded_time=yes",
+        "read_only=yes",
+        "one indexed stock_daily THS ODS table; 15-day/one-symbol/12-row query; no all-table or P95 claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "dated_pass": "yes",
+        "gb_table": "yes",
+        "http_rows": "yes",
+        "indexed": "yes",
+        "bounded_time": "yes",
+        "read_only": "yes",
+        "scope": "one indexed stock_daily THS ODS table; 15-day/one-symbol/12-row query; no all-table or P95 claim"
+      }
+    },
+    {
+      "item": "§5|05",
+      "key": "§5|05|7565a580",
+      "state": "proven",
+      "summary": "file-backed minute query with isolated mainDB index",
+      "readings": [
+        "C64 fresh named behavior checks: 3/3 nodes passed",
+        "runtime binding=yes; scope=fresh temporary file/SQLite checks plus C64 isolated MySQL/Parquet REST; no deployment or file RPO claim"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "c64_runs": "3",
+        "c64_exit": "0",
+        "c64_passed": "3",
+        "c64_failed": "0",
+        "c64_skipped": "0",
+        "c64_absent": "-",
+        "binding": "yes",
+        "scope": "fresh temporary file/SQLite checks plus C64 isolated MySQL/Parquet REST; no deployment or file RPO claim"
+      }
+    }
+  ]
+}

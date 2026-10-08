@@ -1,0 +1,1383 @@
+{
+  "schema_version": "1.0",
+  "artifact_purpose": "Current primary AI field-mapping review, authorized directly by the user; factual inventory retained for traceability.",
+  "repository": "/Users/yunjinqi/Documents/new_projects/opendata",
+  "scope": {
+    "source_files": [
+      "opendata/data/openbb_map.yaml",
+      "opendata/data/mappings/akshare.yaml",
+      "opendata/data/mappings/ths.yaml",
+      "docs/evidence/C65/mapping-review-package.md",
+      "available source code, evidence, fixtures, and frozen official Parquet samples"
+    ],
+    "excluded_work": [
+      "repository edits",
+      "database access",
+      "HTTP access",
+      "full gate"
+    ],
+    "python_runtime_rule": "/Users/yunjinqi/opt/anaconda3/bin/conda run -n base python ..."
+  },
+  "inventory_summary": {
+    "crosswalk_provider_domain_rows": 34,
+    "active_non_pending_legs": 33,
+    "active_status_counts_from_crosswalk": {
+      "verified": 23,
+      "registered": 10
+    },
+    "pending_rows_excluded_from_active_inventory": 1,
+    "pending_leg": {
+      "provider": "ths",
+      "domain": "financial_indicator",
+      "line_ref": "opendata/data/openbb_map.yaml:85-90"
+    },
+    "duplicate_provider_domain_pairs": 0,
+    "explicit_field_mapping_yaml_domain_count": 10,
+    "explicit_field_mapping_yaml_counts": {
+      "akshare": 4,
+      "ths": 6
+    },
+    "active_legs_without_explicit_field_mapping_in_these_two_yaml_files": 23,
+    "meaning_boundary": "Crosswalk status and historical live-check evidence are not C65 field/unit/business-key signoff. C65 package states human review is pending and leaves signature conclusions blank."
+  },
+  "evidence_refs": {
+    "crosswalk_scope_and_status": {
+      "files": [
+        {
+          "path": "opendata/data/openbb_map.yaml",
+          "lines": "14-116"
+        }
+      ],
+      "fact": "Crosswalk contains 34 provider/domain rows; THS financial_indicator is pending and excluded, leaving 33 active rows. Status labels are crosswalk capability states."
+    },
+    "field_mapping_inventory_and_manual_review_boundary": {
+      "files": [
+        {
+          "path": "docs/evidence/C65/mapping-review-package.md",
+          "lines": "4-20,126-157"
+        }
+      ],
+      "fact": "Two mapping YAMLs contain 10 source/domain maps; C65 package states waiting for cloudQuant human review and does not sign off."
+    },
+    "akshare_mapping_yaml": {
+      "files": [
+        {
+          "path": "opendata/data/mappings/akshare.yaml",
+          "lines": "13-125"
+        }
+      ],
+      "fact": "Contains stock_daily, index_constituent, financial_statement, financial_indicator mappings."
+    },
+    "ths_mapping_yaml": {
+      "files": [
+        {
+          "path": "opendata/data/mappings/ths.yaml",
+          "lines": "14-209"
+        }
+      ],
+      "fact": "Contains stock_daily, stock_action, index_daily, futures_daily, option_daily, financial_statement mappings."
+    },
+    "macro_contract": {
+      "files": [
+        {
+          "path": "opendata/data/models/macro.py",
+          "lines": "18-23"
+        }
+      ],
+      "fact": "MacroSeries contract is a narrow series_id/date/value shape; this review did not find per-provider field/unit maps in the two mapping YAMLs."
+    },
+    "ths_daily_parquet": {
+      "files": [
+        {
+          "path": "docs/evidence/C65/mapping-review-package.md",
+          "lines": "24-40,42-74,132"
+        },
+        {
+          "path": "/tmp/opendata-c65-official-parquet/a_share_daily_k_1d_none_10d.parquet",
+          "lines": null
+        },
+        {
+          "path": "/tmp/opendata-c65-official-parquet/llms-full.txt",
+          "lines": "666-683"
+        },
+        {
+          "path": "opendata/pipeline/dump_import.py",
+          "lines": "123-133,149-187"
+        },
+        {
+          "path": "opendata/data/mapping.py",
+          "lines": "482-515,518-558"
+        },
+        {
+          "path": "opendata_fuyao/endpoints.py",
+          "lines": "472-489"
+        }
+      ],
+      "observed_raw_schema": [
+        "thscode",
+        "currency",
+        "interval",
+        "adjusted",
+        "date_ms",
+        "open_price",
+        "high_price",
+        "low_price",
+        "close_price",
+        "volume",
+        "turnover"
+      ],
+      "sample_rows": 55552,
+      "distinct_thscode": 5566,
+      "duplicate_raw_key_count_for_thscode_date_ms": 0,
+      "date_ms_semantics": "Official docs say Asia/Shanghai midnight; volume is shares; turnover is original currency; A-share sample currency is CNY.",
+      "sha256": "070b957a201f2e76f1ba21cf362430bfac83f4d594de36ba349e16b3acca62fb",
+      "raw_to_prepared_fact": "Raw parquet has date_ms, not trade_date. dump_import.prepare_daily_k_frame derives trade_date from date_ms. normalize_frame requires declared source columns already present; ms_column is used by reverse projection. REST adapter separately converts its millisecond date field.",
+      "boundary": "This is a real official Parquet sample, not a row-level REST payload comparison or a full-market/10-year coverage proof."
+    },
+    "ths_action_parquet": {
+      "files": [
+        {
+          "path": "docs/evidence/C65/mapping-review-package.md",
+          "lines": "24-40,75-106,133,149-150"
+        },
+        {
+          "path": "/tmp/opendata-c65-official-parquet/a_share_adjustment_factors_event_none_all.parquet",
+          "lines": null
+        },
+        {
+          "path": "/tmp/opendata-c65-official-parquet/llms-full.txt",
+          "lines": "685-696,953-958"
+        },
+        {
+          "path": "opendata/pipeline/dump_import.py",
+          "lines": "136-146,190-227,323-335"
+        },
+        {
+          "path": "scripts/ops/compare_official_parquet.py",
+          "lines": "635-650,696-710"
+        },
+        {
+          "path": "tests/test_official_parquet_comparison.py",
+          "lines": "333-351"
+        },
+        {
+          "path": "docs/evidence/C65/official-parquet-comparison.json",
+          "lines": "268-320,524-568"
+        }
+      ],
+      "observed_raw_schema": [
+        "thscode",
+        "ticker",
+        "ex_date_ms",
+        "dividend_per_share",
+        "per_share_bonus",
+        "allotment_ratio",
+        "allotment_price",
+        "currency"
+      ],
+      "sample_rows": 57530,
+      "sha256": "39e1f4cdeca0bad9fd3a4617f2c30d48d3031015f8c6d0e9b8c62426589d553a",
+      "duplicate_key": [
+        "thscode",
+        "ex_date_ms"
+      ],
+      "duplicate_groups": [
+        {
+          "key": {
+            "thscode": "000601.SZ",
+            "ticker": "000601",
+            "ex_date_ms": 878486400000
+          },
+          "rows": [
+            {
+              "dividend_per_share": 0,
+              "per_share_bonus": 0.4,
+              "allotment_ratio": 0,
+              "allotment_price": 0,
+              "currency": "CNY"
+            },
+            {
+              "dividend_per_share": 0,
+              "per_share_bonus": 0.4,
+              "allotment_ratio": 0,
+              "allotment_price": 0,
+              "currency": "CNY"
+            }
+          ],
+          "classification": "identical duplicate rows"
+        },
+        {
+          "key": {
+            "thscode": "000812.SZ",
+            "ticker": "000812",
+            "ex_date_ms": 906393600000
+          },
+          "rows": [
+            {
+              "dividend_per_share": 0.2,
+              "per_share_bonus": 0,
+              "allotment_ratio": 0,
+              "allotment_price": 0,
+              "currency": "CNY"
+            },
+            {
+              "dividend_per_share": 0,
+              "per_share_bonus": 0.1,
+              "allotment_ratio": 0,
+              "allotment_price": 0,
+              "currency": "CNY"
+            }
+          ],
+          "classification": "conflicting values: cash versus bonus"
+        },
+        {
+          "key": {
+            "thscode": "603883.SH",
+            "ticker": "603883",
+            "ex_date_ms": 1719417600000
+          },
+          "rows": [
+            {
+              "dividend_per_share": 0.16,
+              "per_share_bonus": 0,
+              "allotment_ratio": 0,
+              "allotment_price": 0,
+              "currency": "CNY"
+            },
+            {
+              "dividend_per_share": 0.5,
+              "per_share_bonus": 0.3,
+              "allotment_ratio": 0,
+              "allotment_price": 0,
+              "currency": "CNY"
+            }
+          ],
+          "classification": "conflicting values: cash and bonus differ"
+        }
+      ],
+      "event_identity_fact": "Available official docs/schema support thscode and ex_date_ms as key fields and ticker as display code; no supported event_type, record_date, or stable source event ID was found. ODS event_key is content-derived, not an official event identity.",
+      "comparator_fact": "Official comparison record is FAIL with duplicate_raw_keys and duplicate_parsed_keys; 57530 parsed rows, 57527 unique model keys, zero value differences.",
+      "uniqueness_conclusion": "The current candidate contract key [symbol, ex_date] is not unique on this official sample. Existing comparator fails closed on raw/parsed duplicate keys. No approved deduplication or conflict resolution policy is evidenced."
+    },
+    "ths_action_rest_boundary": {
+      "files": [
+        {
+          "path": "opendata/data/providers/ths/models/stock_action.py",
+          "lines": "1-10"
+        },
+        {
+          "path": "opendata_fuyao/endpoints.py",
+          "lines": "493-529"
+        },
+        {
+          "path": "opendata/data/mappings/ths.yaml",
+          "lines": "41-57"
+        }
+      ],
+      "observed_rest_fields": [
+        "ex_date_ms",
+        "dividend_per_share",
+        "per_share_bonus",
+        "ticker"
+      ],
+      "rest_adapter_behavior": "Constructs cash_dividend and stock_dividend; does not map rights_shares or rights_price from REST; rights unit has not been observed.",
+      "parquet_difference": "Parquet contains allotment_ratio and allotment_price; this does not establish their availability or units on REST."
+    },
+    "fin_statement_contract": {
+      "files": [
+        {
+          "path": "opendata/data/models/financial.py",
+          "lines": "10-31"
+        },
+        {
+          "path": "opendata/data/mappings/akshare.yaml",
+          "lines": "62-95"
+        },
+        {
+          "path": "opendata/data/mappings/ths.yaml",
+          "lines": "136-209"
+        },
+        {
+          "path": "alembic_data/versions/20260923-0001_ods_dwd_p0.py",
+          "lines": "36-40"
+        }
+      ],
+      "fact": "Contract documents announce_date and revision as dimensions for first releases/restatements and PIT queries. Both current statement mapping business keys omit announce_date and revision. No evidence in this review establishes that the sources retain only a single version."
+    },
+    "akshare_statement_sample": {
+      "files": [
+        {
+          "path": "docs/evidence/C65/mapping-review-package.md",
+          "lines": "112-115"
+        }
+      ],
+      "observed_values": {
+        "report_date": "20260630",
+        "announcement_date": "20260815",
+        "total_assets": 309050784569.31,
+        "currency": "CNY",
+        "statement_type_source": "合并期末",
+        "table_name_source": "资产负债表"
+      },
+      "fact": "Current mapping passes Chinese statement/item source vocabulary through; contract docs expect normalized statement type and item codes. Sample candidate unit is CNY and scale 1; code/item normalization remains a human review point."
+    },
+    "akshare_indicator_sample": {
+      "files": [
+        {
+          "path": "docs/evidence/C65/mapping-review-package.md",
+          "lines": "112-116"
+        },
+        {
+          "path": "opendata/data/mappings/akshare.yaml",
+          "lines": "96-125"
+        },
+        {
+          "path": "opendata/data/models/financial.py",
+          "lines": "34-49"
+        }
+      ],
+      "observed_values": {
+        "SECUCODE": "600519.SH",
+        "REPORT_DATE": "2026-06-30 00:00:00",
+        "NOTICE_DATE": "2026-08-15 00:00:00",
+        "EPSJB": 35.57,
+        "ROEJQ": 16.75
+      },
+      "raw_unit_column_observed": false,
+      "fact": "Indicators have mixed units; unit is optional in contract but raw sample has no unit column. Mapping declares unit <- unit. Indicator codes are source passthrough; candidate business key omits announce_date and revision."
+    },
+    "akshare_constituent_sample": {
+      "files": [
+        {
+          "path": "docs/evidence/C65/mapping-review-package.md",
+          "lines": "112-114,139,151"
+        },
+        {
+          "path": "opendata/data/mappings/akshare.yaml",
+          "lines": "42-56"
+        },
+        {
+          "path": "opendata/data/providers/akshare/models/index_constituent.py",
+          "lines": "3-7,26-39"
+        }
+      ],
+      "observed_values": {
+        "date": "2026-08-31",
+        "index_code": "300",
+        "member_code": "1",
+        "weight": 0.433
+      },
+      "candidate_output": {
+        "index_symbol": "000300",
+        "symbol": "000001",
+        "as_of": "2026-08-31",
+        "weight": 0.433,
+        "weight_unit": "percent",
+        "scale": 1
+      },
+      "fact": "C65 marks ready for human review; port zfill behavior supports code-padding candidate. Source model says weight is percent and as_of is the actual CSI list date."
+    },
+    "index_asof_semantics": {
+      "files": [
+        {
+          "path": "opendata/data/providers/akshare/models/index_constituent.py",
+          "lines": "26-39"
+        },
+        {
+          "path": "opendata/data/providers/ths/models/index_constituent.py",
+          "lines": "4-15,37-51"
+        },
+        {
+          "path": "docs/evidence/C65/mapping-review-package.md",
+          "lines": "114"
+        }
+      ],
+      "fact": "AkShare as_of is the date belonging to the CSI close-weight list. THS only publishes current membership with no list date and uses request observation day. C34 records quarter-reconstitution membership differences."
+    },
+    "fred_comparison": {
+      "files": [
+        {
+          "path": "docs/evidence/C65/fred-official-comparison.json",
+          "lines": "14-16,23-103"
+        }
+      ],
+      "fact": "Same-publisher official FRED JSON/CSV comparison, explicitly not an independent statistical truth comparison.",
+      "legs": [
+        {
+          "provider": "fred",
+          "domain": "economy_cpi",
+          "series_id": "CPIAUCSL",
+          "provider_rows": 80,
+          "official_rows": 80,
+          "diff_count": 0
+        },
+        {
+          "provider": "fred",
+          "domain": "economy_gdp",
+          "series_id": "GDPC1",
+          "provider_rows": 26,
+          "official_rows": 26,
+          "diff_count": 0
+        },
+        {
+          "provider": "fred",
+          "domain": "economy_unemployment",
+          "series_id": "UNRATE",
+          "provider_rows": 80,
+          "official_rows": 80,
+          "diff_count": 0
+        }
+      ]
+    },
+    "yfinance_source_fact": {
+      "files": [
+        {
+          "path": "opendata/data/providers/yfinance/models/stock_daily.py",
+          "lines": "1-24,133-150"
+        }
+      ],
+      "fact": "Provider documents quote-currency/share OHLCV, nullable amount, and explicit handling of dividend/split adjustments; no C65 official raw schema or row sample for Yahoo was included."
+    },
+    "historical_aggregate_only": {
+      "files": [
+        {
+          "path": "docs/evidence/C65/mapping-review-package.md",
+          "lines": "119-122,128"
+        }
+      ],
+      "fact": "THS index_daily (C5), futures_daily and option_daily (C6), and financial_statement (C10) have historical aggregate/cross-source evidence but no row-level raw sample in this package."
+    },
+    "calendar_and_instrument": {
+      "files": [
+        {
+          "path": "opendata/data/openbb_map.yaml",
+          "lines": "96-109"
+        },
+        {
+          "path": "opendata/data/providers/ths/models/trading_calendar.py",
+          "lines": "48-69"
+        },
+        {
+          "path": "opendata/data/providers/ths/models/instrument.py",
+          "lines": "15-41,89-101"
+        }
+      ],
+      "fact": "Calendar is a trailing-year window and does not include current day; instrument catalog is a current snapshot, has no delisted A-shares, and list_date may be hollow. Neither has a field map in the two reviewed mapping YAMLs."
+    },
+    "fund_etf_historical_fact": {
+      "files": [
+        {
+          "path": "opendata/data/openbb_map.yaml",
+          "lines": "48-57"
+        }
+      ],
+      "fact": "Crosswalk cites C20 evidence that THS ETF REST returns forward-adjusted sequence and conversion uses fund_action; this is historical behavior evidence, not a current raw field/unit mapping."
+    },
+    "fund_action_historical_fact": {
+      "files": [
+        {
+          "path": "opendata/data/openbb_map.yaml",
+          "lines": "110-116"
+        }
+      ],
+      "fact": "Crosswalk cites C15 14-event comparison and states AkShare Sina fund_action shape is cumulative and differs from the contract event shape."
+    },
+    "map_execution_layer": {
+      "files": [
+        {
+          "path": "opendata/data/mappings/ths.yaml",
+          "lines": "1-10,14-54"
+        },
+        {
+          "path": "opendata/pipeline/dump_import.py",
+          "lines": "149-187,190-227"
+        },
+        {
+          "path": "opendata/data/mapping.py",
+          "lines": "482-515,518-558"
+        }
+      ],
+      "fact": "Raw Parquet date_ms/ex_date_ms are transformed into prepared trade_date/ex_date. Direct normalize_frame requires mapped source columns to exist and does not derive dates from ms_column; denormalize_frame derives milliseconds in reverse."
+    }
+  },
+  "legs": [
+    {
+      "id": 1,
+      "provider": "akshare",
+      "domain": "stock_daily",
+      "active": true,
+      "status_from_crosswalk": "registered",
+      "explicit_mapping_yaml": "opendata/data/mappings/akshare.yaml:13-36",
+      "evidence_refs": [
+        "akshare_mapping_yaml"
+      ],
+      "raw_proof": [
+        "C65 recorded Sina stock_zh_a_daily sample is a different route from the declared Eastmoney mapping.",
+        "Fixture has no row-level code field matching the current declaration."
+      ],
+      "risks": [
+        "volume scale 100 is declared but not validated by the declared endpoint sample",
+        "date and symbol fields are not proven against current mapping source"
+      ],
+      "review_conclusion": "The available C65 sample does not establish the declared endpoint field or volume mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "The available C65 sample does not establish the declared endpoint field or volume mapping."
+      }
+    },
+    {
+      "id": 2,
+      "provider": "ths",
+      "domain": "stock_daily",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": "opendata/data/mappings/ths.yaml:14-40",
+      "evidence_refs": [
+        "ths_daily_parquet",
+        "map_execution_layer"
+      ],
+      "raw_proof": [
+        "Official 10d Parquet: 55,552 rows, 5,566 distinct thscode, no duplicate (thscode,date_ms).",
+        "Raw columns include date_ms, OHLC price fields, volume, turnover; no raw trade_date."
+      ],
+      "risks": [
+        "plain suffix stripping has only bounded sample proof",
+        "Parquet is not REST-row evidence",
+        "file covers 10d sample, not full universe or 10y"
+      ],
+      "review_conclusion": "Official Parquet supports the listed raw fields and sample values; date is derived before the mapping layer and plain-code/key semantics remain for human review.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "QUALIFIED_SAMPLE_REVIEW",
+        "basis": "Official Parquet supports the listed raw fields and sample values; date is derived before the mapping layer and plain-code/key semantics remain for human review."
+      }
+    },
+    {
+      "id": 3,
+      "provider": "yfinance",
+      "domain": "stock_daily_overseas",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "yfinance_source_fact"
+      ],
+      "raw_proof": [
+        "Provider source code describes SDK adjustment behavior and local as-traded restoration."
+      ],
+      "risks": [
+        "no explicit field map in the two YAMLs",
+        "no C65 official raw Yahoo sample/schema"
+      ],
+      "review_conclusion": "Source code documents transformation behavior, but this C65 inventory does not support field/unit/key signoff.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Source code documents transformation behavior, but this C65 inventory does not support field/unit/key signoff."
+      }
+    },
+    {
+      "id": 4,
+      "provider": "ecb",
+      "domain": "economy_cpi",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "macro_contract"
+      ],
+      "raw_proof": [],
+      "risks": [
+        "no C65 row-level ECB sample or field mapping",
+        "series unit/frequency/vintage semantics unverified here"
+      ],
+      "review_conclusion": "No C65 evidence here for provider-specific field, unit, or key mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "No C65 evidence here for provider-specific field, unit, or key mapping."
+      }
+    },
+    {
+      "id": 5,
+      "provider": "fred",
+      "domain": "economy_cpi",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "macro_contract",
+        "fred_comparison"
+      ],
+      "raw_proof": [
+        "CPIAUCSL official FRED JSON/CSV comparison: 80 rows each, zero value/date differences."
+      ],
+      "risks": [
+        "same-publisher comparison, not independent truth",
+        "unit, series metadata, vintage and provider-wide normalization not established"
+      ],
+      "review_conclusion": "Evidence supports sample date/value parity for CPIAUCSL only.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Evidence supports sample date/value parity for CPIAUCSL only."
+      }
+    },
+    {
+      "id": 6,
+      "provider": "imf",
+      "domain": "economy_cpi",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "macro_contract"
+      ],
+      "raw_proof": [],
+      "risks": [
+        "no C65 row-level IMF sample or field mapping",
+        "units and series key semantics unverified here"
+      ],
+      "review_conclusion": "No C65 evidence here for provider-specific field, unit, or key mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "No C65 evidence here for provider-specific field, unit, or key mapping."
+      }
+    },
+    {
+      "id": 7,
+      "provider": "oecd",
+      "domain": "economy_cpi",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "macro_contract"
+      ],
+      "raw_proof": [],
+      "risks": [
+        "no C65 row-level OECD sample or field mapping",
+        "units, frequency and series key semantics unverified here"
+      ],
+      "review_conclusion": "No C65 evidence here for provider-specific field, unit, or key mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "No C65 evidence here for provider-specific field, unit, or key mapping."
+      }
+    },
+    {
+      "id": 8,
+      "provider": "ecb",
+      "domain": "economy_gdp",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "macro_contract"
+      ],
+      "raw_proof": [],
+      "risks": [
+        "no C65 row-level ECB sample or field mapping",
+        "units, frequency and vintage unverified here"
+      ],
+      "review_conclusion": "No C65 evidence here for provider-specific field, unit, or key mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "No C65 evidence here for provider-specific field, unit, or key mapping."
+      }
+    },
+    {
+      "id": 9,
+      "provider": "fred",
+      "domain": "economy_gdp",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "macro_contract",
+        "fred_comparison"
+      ],
+      "raw_proof": [
+        "GDPC1 official FRED JSON/CSV comparison: 26 rows each, zero value/date differences."
+      ],
+      "risks": [
+        "same-publisher comparison, not independent truth",
+        "unit, metadata, vintage and broader series normalization not established"
+      ],
+      "review_conclusion": "Evidence supports sample date/value parity for GDPC1 only.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Evidence supports sample date/value parity for GDPC1 only."
+      }
+    },
+    {
+      "id": 10,
+      "provider": "imf",
+      "domain": "economy_gdp",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "macro_contract"
+      ],
+      "raw_proof": [],
+      "risks": [
+        "no C65 row-level IMF sample or field mapping",
+        "units, frequency and vintage unverified here"
+      ],
+      "review_conclusion": "No C65 evidence here for provider-specific field, unit, or key mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "No C65 evidence here for provider-specific field, unit, or key mapping."
+      }
+    },
+    {
+      "id": 11,
+      "provider": "fred",
+      "domain": "economy_unemployment",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "macro_contract",
+        "fred_comparison"
+      ],
+      "raw_proof": [
+        "UNRATE official FRED JSON/CSV comparison: 80 rows each, zero value/date differences."
+      ],
+      "risks": [
+        "same-publisher comparison, not independent truth",
+        "units, seasonal adjustment metadata and vintage not established"
+      ],
+      "review_conclusion": "Evidence supports sample date/value parity for UNRATE only.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Evidence supports sample date/value parity for UNRATE only."
+      }
+    },
+    {
+      "id": 12,
+      "provider": "imf",
+      "domain": "economy_unemployment",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "macro_contract"
+      ],
+      "raw_proof": [],
+      "risks": [
+        "no C65 row-level IMF sample or field mapping",
+        "unit and series semantics unverified here"
+      ],
+      "review_conclusion": "No C65 evidence here for provider-specific field, unit, or key mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "No C65 evidence here for provider-specific field, unit, or key mapping."
+      }
+    },
+    {
+      "id": 13,
+      "provider": "oecd",
+      "domain": "economy_unemployment",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "macro_contract"
+      ],
+      "raw_proof": [],
+      "risks": [
+        "no C65 row-level OECD sample or field mapping",
+        "unit and series semantics unverified here"
+      ],
+      "review_conclusion": "No C65 evidence here for provider-specific field, unit, or key mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "No C65 evidence here for provider-specific field, unit, or key mapping."
+      }
+    },
+    {
+      "id": 14,
+      "provider": "ecb",
+      "domain": "economy_rate",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "macro_contract"
+      ],
+      "raw_proof": [],
+      "risks": [
+        "no C65 row-level ECB sample or field mapping",
+        "rate type and percentage scale unverified here"
+      ],
+      "review_conclusion": "No C65 evidence here for provider-specific field, unit, or key mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "No C65 evidence here for provider-specific field, unit, or key mapping."
+      }
+    },
+    {
+      "id": 15,
+      "provider": "akshare",
+      "domain": "futures_daily",
+      "active": true,
+      "status_from_crosswalk": "registered",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "akshare_mapping_yaml"
+      ],
+      "raw_proof": [],
+      "risks": [
+        "no field map in reviewed YAMLs",
+        "no C65 endpoint row sample for contract code, time, volume or amount"
+      ],
+      "review_conclusion": "Current C65 materials do not establish this leg's field/unit/key mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Current C65 materials do not establish this leg's field/unit/key mapping."
+      }
+    },
+    {
+      "id": 16,
+      "provider": "ths",
+      "domain": "futures_daily",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": "opendata/data/mappings/ths.yaml:89-113",
+      "evidence_refs": [
+        "ths_mapping_yaml",
+        "historical_aggregate_only"
+      ],
+      "raw_proof": [
+        "C6 has historical 65-day overlap and aggregate comparison but no row-level THS raw field sample."
+      ],
+      "risks": [
+        "volume/amount units not independently sampled here",
+        "date is keyed through timestamp",
+        "suspension behavior explicitly unmeasured"
+      ],
+      "review_conclusion": "Historical aggregates do not establish raw field/unit mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Historical aggregates do not establish raw field/unit mapping."
+      }
+    },
+    {
+      "id": 17,
+      "provider": "akshare",
+      "domain": "fund_etf_daily",
+      "active": true,
+      "status_from_crosswalk": "registered",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "akshare_mapping_yaml"
+      ],
+      "raw_proof": [],
+      "risks": [
+        "no field map in reviewed YAMLs",
+        "no C65 raw endpoint sample for fields, unit, adjustment basis or key"
+      ],
+      "review_conclusion": "Current C65 materials do not establish this leg's field/unit/key mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Current C65 materials do not establish this leg's field/unit/key mapping."
+      }
+    },
+    {
+      "id": 18,
+      "provider": "ths",
+      "domain": "fund_etf_daily",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "fund_etf_historical_fact"
+      ],
+      "raw_proof": [
+        "Crosswalk cites C20 adjusted-series and fund_action conversion history."
+      ],
+      "risks": [
+        "no explicit field map in reviewed YAMLs",
+        "C20 behavior evidence is not C65 raw field/unit/key signoff"
+      ],
+      "review_conclusion": "Historical adjustment evidence does not establish a current raw field map.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Historical adjustment evidence does not establish a current raw field map."
+      }
+    },
+    {
+      "id": 19,
+      "provider": "akshare",
+      "domain": "index_daily",
+      "active": true,
+      "status_from_crosswalk": "registered",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "akshare_mapping_yaml"
+      ],
+      "raw_proof": [],
+      "risks": [
+        "no field map in reviewed YAMLs",
+        "no C65 raw field/value sample for date, prices, volume or amount"
+      ],
+      "review_conclusion": "Current C65 materials do not establish this leg's field/unit/key mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Current C65 materials do not establish this leg's field/unit/key mapping."
+      }
+    },
+    {
+      "id": 20,
+      "provider": "ths",
+      "domain": "index_daily",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": "opendata/data/mappings/ths.yaml:61-84",
+      "evidence_refs": [
+        "ths_mapping_yaml",
+        "historical_aggregate_only"
+      ],
+      "raw_proof": [
+        "C5 has date-window/aggregate comparison but no row-level THS raw sample."
+      ],
+      "risks": [
+        "date conversion and volume/amount units not signed from raw rows"
+      ],
+      "review_conclusion": "Aggregate comparison does not establish raw field/unit mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Aggregate comparison does not establish raw field/unit mapping."
+      }
+    },
+    {
+      "id": 21,
+      "provider": "akshare",
+      "domain": "option_daily",
+      "active": true,
+      "status_from_crosswalk": "registered",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "akshare_mapping_yaml"
+      ],
+      "raw_proof": [],
+      "risks": [
+        "no field map in reviewed YAMLs",
+        "no C65 raw sample for contract identity, date, prices, volume or amount"
+      ],
+      "review_conclusion": "Current C65 materials do not establish this leg's field/unit/key mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Current C65 materials do not establish this leg's field/unit/key mapping."
+      }
+    },
+    {
+      "id": 22,
+      "provider": "ths",
+      "domain": "option_daily",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": "opendata/data/mappings/ths.yaml:114-135",
+      "evidence_refs": [
+        "ths_mapping_yaml",
+        "historical_aggregate_only"
+      ],
+      "raw_proof": [
+        "C6 records normalized volume 46 for THS versus 44 for Sina on CU2611P102000.SHF at 2026-06-04; no raw THS row."
+      ],
+      "risks": [
+        "some option volume source semantics unresolved",
+        "contract identifier and volume unit not signed from raw sample"
+      ],
+      "review_conclusion": "Historical normalized comparison does not establish raw fields or volume unit.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Historical normalized comparison does not establish raw fields or volume unit."
+      }
+    },
+    {
+      "id": 23,
+      "provider": "akshare",
+      "domain": "bond_daily",
+      "active": true,
+      "status_from_crosswalk": "registered",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "crosswalk_scope_and_status"
+      ],
+      "raw_proof": [],
+      "risks": [
+        "no field map in reviewed YAMLs",
+        "no C65 raw endpoint sample for bond key or units"
+      ],
+      "review_conclusion": "Current C65 materials do not establish this leg's field/unit/key mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Current C65 materials do not establish this leg's field/unit/key mapping."
+      }
+    },
+    {
+      "id": 24,
+      "provider": "ths",
+      "domain": "stock_action",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": "opendata/data/mappings/ths.yaml:41-57",
+      "evidence_refs": [
+        "ths_action_parquet",
+        "ths_action_rest_boundary",
+        "map_execution_layer"
+      ],
+      "raw_proof": [
+        "Official Parquet has 57,530 rows and 3 repeated keys/6 rows.",
+        "REST observed fields are cash, bonus, ex_date_ms, ticker; REST rights fields remain unobserved."
+      ],
+      "risks": [
+        "candidate [symbol,ex_date] is non-unique in official sample",
+        "two groups conflict",
+        "no supported official event identity/type field",
+        "Parquet allotment fields do not prove REST fields or units",
+        "raw ex_date_ms is transformed before mapping-layer ex_date"
+      ],
+      "review_conclusion": "Parquet sample contains key collisions and lacks a source identity field capable of resolving them; REST and Parquet field evidence must remain separate.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "FAIL_CONFLICTING_BUSINESS_KEY",
+        "basis": "Parquet sample contains key collisions and lacks a source identity field capable of resolving them; REST and Parquet field evidence must remain separate."
+      }
+    },
+    {
+      "id": 25,
+      "provider": "akshare",
+      "domain": "stock_action",
+      "active": true,
+      "status_from_crosswalk": "registered",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "akshare_mapping_yaml"
+      ],
+      "raw_proof": [
+        "C65 records Sina dividend and rights fixtures, including dividend sample and rights sample."
+      ],
+      "risks": [
+        "no current YAML mapping",
+        "fixture values do not establish target unit or event key",
+        "rights proportion interpretation must not be inferred"
+      ],
+      "review_conclusion": "Raw fixtures exist but no target mapping/unit/key is supported by this review.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Raw fixtures exist but no target mapping/unit/key is supported by this review."
+      }
+    },
+    {
+      "id": 26,
+      "provider": "akshare",
+      "domain": "financial_statement",
+      "active": true,
+      "status_from_crosswalk": "registered",
+      "explicit_mapping_yaml": "opendata/data/mappings/akshare.yaml:62-95",
+      "evidence_refs": [
+        "akshare_statement_sample",
+        "fin_statement_contract"
+      ],
+      "raw_proof": [
+        "Recorded Sina row 2026-06-30, announcement 2026-08-15, total assets 309050784569.31 CNY, source Chinese table/item names."
+      ],
+      "risks": [
+        "Chinese statement/item passthrough differs from normalized contract codes",
+        "business key omits announce_date and revision needed by PIT contract"
+      ],
+      "review_conclusion": "Sample supports the observed fields/value but leaves normalization and PIT key completeness unresolved.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_PIT_OR_UNIT_MAPPING",
+        "basis": "Sample supports the observed fields/value but leaves normalization and PIT key completeness unresolved."
+      }
+    },
+    {
+      "id": 27,
+      "provider": "ths",
+      "domain": "financial_statement",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": "opendata/data/mappings/ths.yaml:140-209",
+      "evidence_refs": [
+        "historical_aggregate_only",
+        "fin_statement_contract"
+      ],
+      "raw_proof": [
+        "C10 has aggregate period/cell/difference counts, no raw statement row in C65 package."
+      ],
+      "risks": [
+        "business key omits announce_date/revision",
+        "raw groups/units/date conversion not available for C65 row review"
+      ],
+      "review_conclusion": "Aggregate C10 comparisons do not establish row-level mapping; PIT key dimensions remain absent from the declared key.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_PIT_OR_UNIT_MAPPING",
+        "basis": "Aggregate C10 comparisons do not establish row-level mapping; PIT key dimensions remain absent from the declared key."
+      }
+    },
+    {
+      "id": 28,
+      "provider": "akshare",
+      "domain": "financial_indicator",
+      "active": true,
+      "status_from_crosswalk": "registered",
+      "explicit_mapping_yaml": "opendata/data/mappings/akshare.yaml:96-125",
+      "evidence_refs": [
+        "akshare_indicator_sample"
+      ],
+      "raw_proof": [
+        "Recorded JSON has SECUCODE=600519.SH, REPORT_DATE=2026-06-30, NOTICE_DATE=2026-08-15, EPSJB=35.57, ROEJQ=16.75; raw unit column not observed."
+      ],
+      "risks": [
+        "unit <- unit mapping source column absent in raw sample",
+        "mixed units cannot be inferred",
+        "indicator passthrough is not normalized contract code",
+        "key omits announce_date/revision"
+      ],
+      "review_conclusion": "Observed raw values do not determine unit; declared unit/key normalization is not established.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_PIT_OR_UNIT_MAPPING",
+        "basis": "Observed raw values do not determine unit; declared unit/key normalization is not established."
+      }
+    },
+    {
+      "id": 29,
+      "provider": "akshare",
+      "domain": "index_constituent",
+      "active": true,
+      "status_from_crosswalk": "registered",
+      "explicit_mapping_yaml": "opendata/data/mappings/akshare.yaml:42-56",
+      "evidence_refs": [
+        "akshare_constituent_sample",
+        "index_asof_semantics"
+      ],
+      "raw_proof": [
+        "Recorded CSI response sample: date 2026-08-31, index code 300, member code 1, weight 0.433."
+      ],
+      "risks": [
+        "code padding depends on upstream port normalization",
+        "sample scale candidate is 1 percent unit",
+        "source parsing and business key need human review"
+      ],
+      "review_conclusion": "Recorded sample supports a candidate list-date/percent mapping but does not itself sign the normalization.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Recorded sample supports a candidate list-date/percent mapping but does not itself sign the normalization."
+      }
+    },
+    {
+      "id": 30,
+      "provider": "ths",
+      "domain": "index_constituent",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "index_asof_semantics"
+      ],
+      "raw_proof": [
+        "Source model states current list only, no list date, observation day used as as_of, weight None."
+      ],
+      "risks": [
+        "as_of semantics differ from AkShare list date",
+        "quarterly membership mismatches documented",
+        "no field map in reviewed YAMLs"
+      ],
+      "review_conclusion": "Same key name does not denote the same membership effective date across the two sources.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EFFECTIVE_DATE_SEMANTICS",
+        "basis": "Same key name does not denote the same membership effective date across the two sources."
+      }
+    },
+    {
+      "id": 31,
+      "provider": "ths",
+      "domain": "trading_calendar",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "calendar_and_instrument"
+      ],
+      "raw_proof": [
+        "Provider model says only CN-SSE label and rolling trailing-year window; existing evidence covers bounded date overlap."
+      ],
+      "risks": [
+        "no field map in reviewed YAMLs",
+        "no C65 row-level raw mapping sample",
+        "window params/current/future dates not established"
+      ],
+      "review_conclusion": "Existing calendar cross-check evidence is bounded and does not establish a current field map.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Existing calendar cross-check evidence is bounded and does not establish a current field map."
+      }
+    },
+    {
+      "id": 32,
+      "provider": "ths",
+      "domain": "instrument",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "calendar_and_instrument"
+      ],
+      "raw_proof": [
+        "Provider model describes current snapshot, no delisted A shares, and intermittently hollow list_date."
+      ],
+      "risks": [
+        "no field map in reviewed YAMLs",
+        "no C65 raw row-level field sample",
+        "snapshot is not historical listing coverage"
+      ],
+      "review_conclusion": "Existing universe evidence does not establish a historical instrument field mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Existing universe evidence does not establish a historical instrument field mapping."
+      }
+    },
+    {
+      "id": 33,
+      "provider": "ths",
+      "domain": "fund_action",
+      "active": true,
+      "status_from_crosswalk": "verified",
+      "explicit_mapping_yaml": null,
+      "evidence_refs": [
+        "fund_action_historical_fact"
+      ],
+      "raw_proof": [
+        "Crosswalk cites C15 14-event comparison for 510300; AkShare Sina source is described as cumulative-flow shape."
+      ],
+      "risks": [
+        "no field map in reviewed YAMLs",
+        "no C65 raw row/unit/key sample",
+        "cross-source shape differs"
+      ],
+      "review_conclusion": "Historical date/amount comparison does not establish a current raw field mapping.",
+      "primary_review": {
+        "reviewer": "Codex primary (AI)",
+        "authorization": "用户直接回复：你帮我直接审阅",
+        "review_complete": true,
+        "decision": "GAP_EVIDENCE_REMAINS",
+        "basis": "Historical date/amount comparison does not establish a current raw field mapping."
+      }
+    }
+  ],
+  "validation_performed": [
+    "Read-only inspection of crosswalk, mapping YAMLs, C65 package, relevant source/model code and evidence JSON.",
+    "Direct read of the two official Parquet samples with pyarrow using the required Anaconda base Python environment; no network/database calls.",
+    "No repository files edited; no full gate run."
+  ],
+  "primary_review": {
+    "generated_at": "2026-09-30T21:59:31.197628+00:00",
+    "reviewer": "Codex primary (AI)",
+    "authorization": "用户直接回复：你帮我直接审阅",
+    "review_complete": true,
+    "field_mapping_acceptance": "INCOMPLETE",
+    "full_scope_approved": false,
+    "source_files_sha256": {
+      "opendata/data/openbb_map.yaml": "77acaa6d236185f9fa5383b9e829d7f24aa0ed1ee1272b956aef4f40e3fc8e2b",
+      "opendata/data/mappings/akshare.yaml": "fd61df12b1c73593be841f0e450af954fe8ba9dfc35538c02c5fa12270c62cef",
+      "opendata/data/mappings/ths.yaml": "d68eb2658cf7241a0e02c1f1a13a6724a9adc268cc14b19fea9299518b1b7418"
+    },
+    "decision": "已对33腿逐项作出当前审阅结论；有原始样本的限定范围可确认，缺证/冲突保留；不得推导全部字段映射通过"
+  }
+}

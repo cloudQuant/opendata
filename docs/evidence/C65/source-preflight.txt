@@ -1,0 +1,12 @@
+ROUND=C65
+DATE=2026-09-30T14:56:25.194353+00:00
+COMMAND=Anaconda base clean Python read-only confirmation SELECT @@SESSION.transaction_read_only; review earlier completed schema/census reads; logging Decimal formatting repaired
+READ_ONLY=1
+EXACT_SOURCE_CENSUS={"rows_exact": 10310289, "symbols_exact": 5568, "first_date": "2016-09-23", "last_date": "2026-09-24"}
+CENSUS_EVIDENCE=docs/evidence/C65/source-preflight-first-failure.txt
+GLOBAL_FLAGS={"log_bin": 1, "binlog_format": "ROW", "binlog_expire_logs_seconds": 2592000, "read_only": 0, "super_read_only": 0}
+WAREHOUSE_VERSION=0005_dwd_stock_adjust
+SOURCE_DDL_SHA256=7324feca37f603f8ecf0d88c9f7e1e35734eb057950121988bc583fec9e2af1c
+PARTITIONS=[{"TABLE_NAME": "dwd_financial_indicator", "partitions_count": 4, "pmax_count": "1", "p2027_count": "0"}, {"TABLE_NAME": "dwd_financial_statement", "partitions_count": 4, "pmax_count": "1", "p2027_count": "0"}, {"TABLE_NAME": "dwd_index_constituent", "partitions_count": 4, "pmax_count": "1", "p2027_count": "0"}, {"TABLE_NAME": "dwd_stock_action", "partitions_count": 4, "pmax_count": "1", "p2027_count": "0"}, {"TABLE_NAME": "dwd_stock_adjust", "partitions_count": 4, "pmax_count": "1", "p2027_count": "1"}, {"TABLE_NAME": "dwd_stock_daily", "partitions_count": 4, "pmax_count": "1", "p2027_count": "0"}, {"TABLE_NAME": "ods_stock_action_ths", "partitions_count": 37, "pmax_count": "1", "p2027_count": "0"}, {"TABLE_NAME": "ods_stock_daily_akshare", "partitions_count": 4, "pmax_count": "1", "p2027_count": "0"}, {"TABLE_NAME": "ods_stock_daily_ths", "partitions_count": 13, "pmax_count": "1", "p2027_count": "0"}]
+PREVIOUS_FAILURES_PRESERVED=2
+EXIT=0

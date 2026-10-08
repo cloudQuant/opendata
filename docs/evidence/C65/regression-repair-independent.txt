@@ -1,0 +1,31 @@
+Date: 2026-09-30T20:39:59.925567+00:00
+Commit/HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: conda run -n base /tmp/opendata-c64-clean-env-20260930/bin/python -m pytest tests/test_env_example_security.py tests/test_macro_routing.py tests/test_fallback_degradation.py tests/test_patrol.py tests/test_ods_write_benchmark.py --no-cov -q -o addopts=
+Scope: offline regressions; no live e2e
+........................................................................ [ 63%]
+..........................................                               [100%]
+=============================== warnings summary ===============================
+tests/test_patrol.py::TestHealthApi::test_sources_endpoint_lists_credentials
+tests/test_patrol.py::TestHealthApi::test_sources_endpoint_grades_keys_without_rendering_one
+tests/test_patrol.py::TestHealthApi::test_patrol_endpoint_grades_the_leg_that_failed
+tests/test_patrol.py::TestHealthApi::test_manual_patrol_feeds_the_passive_key_health_store
+tests/test_patrol.py::TestHealthApi::test_patrol_endpoint_reports_probe_results
+tests/test_patrol.py::TestHealthApi::test_patrol_endpoint_reports_a_rescued_leg_as_flaky
+tests/test_patrol.py::TestHealthApi::test_patrol_endpoint_reports_a_hollow_column_on_a_healthy_leg
+  /tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/jwt/api_jwt.py:149: InsecureKeyLengthWarning: The HMAC key is 26 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+tests/test_patrol.py::TestHealthApi::test_sources_endpoint_lists_credentials
+tests/test_patrol.py::TestHealthApi::test_sources_endpoint_grades_keys_without_rendering_one
+tests/test_patrol.py::TestHealthApi::test_patrol_endpoint_grades_the_leg_that_failed
+tests/test_patrol.py::TestHealthApi::test_manual_patrol_feeds_the_passive_key_health_store
+tests/test_patrol.py::TestHealthApi::test_patrol_endpoint_reports_probe_results
+tests/test_patrol.py::TestHealthApi::test_patrol_endpoint_reports_a_rescued_leg_as_flaky
+tests/test_patrol.py::TestHealthApi::test_patrol_endpoint_reports_a_hollow_column_on_a_healthy_leg
+  /tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/jwt/api_jwt.py:370: InsecureKeyLengthWarning: The HMAC key is 26 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    decoded = self.decode_complete(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+114 passed, 14 warnings in 31.45s
+
+REGRESSION_EXIT=0

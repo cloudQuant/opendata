@@ -1,0 +1,15 @@
+Date: 2026-09-30
+Branch: dev
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Worktree: uncommitted C64 changes; initial checkout clean
+Command: Anaconda base Python alembic command.downgrade(0003), command.upgrade(head), mainDB opendata_iter01:33564; assert minute index empty before downgrade; information_schema datetime_precision=6 after upgrade
+REVIEW_EXIT=0
+
+Output source: opendata-iter01-app-migration-0004-fsp6-20260930.log
+INFO  [alembic.runtime.migration] Context impl MySQLImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running downgrade 0004 -> 0003, Index immutable local minute Parquet shards.
+INFO  [alembic.runtime.migration] Context impl MySQLImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade 0003 -> 0004, Index immutable local minute Parquet shards.
+PASS mainDB migration head=0004; min_timestamp/max_timestamp DATETIME_PRECISION=6: [('max_timestamp', 6), ('min_timestamp', 6)]

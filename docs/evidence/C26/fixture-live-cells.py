@@ -14,7 +14,7 @@ credential read.
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import pandas as pd
 
@@ -23,6 +23,9 @@ from opendata.data.providers import register_providers
 from opendata.data.registry import get_registry
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from opendata.data.models import CorporateAction
     from opendata.data.protocol import Fetcher
 
 #: symbol, indicator, and the 公告日期 prefixes whose rows the fixtures copy.
@@ -92,7 +95,7 @@ def main() -> int:
         picked = page[dates.str.startswith(prefixes)] if prefixes else page
         print(f"  夹具复制的行（公告日期前缀={prefixes or '全部'}）共 {len(picked)} 行：")
         print(_cells(picked))
-        actions = list(fetcher.transform_data(page.copy(), params))
+        actions = cast("Sequence[CorporateAction]", fetcher.transform_data(page.copy(), params))
         dated = {action.ex_date: action for action in actions}
         print(f"  适配层在整页 {len(page)} 行上返回 {len(actions)} 条：")
         for ex_date in sorted(dated):

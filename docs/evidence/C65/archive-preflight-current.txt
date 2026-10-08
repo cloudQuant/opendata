@@ -1,0 +1,50 @@
+Date: 2026-10-01T00:10:27.792827+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: conda run --no-capture-output -n base python /tmp/opendata_c65_run_checks.py; fixed-environment commands below
+Scope: owned33565 acceptance schemas; scheduler/upstream keys/SMTP disabled; live e2e default-deny; production3306 writes=0
+
+Actual argv: ['python', 'scripts/quality/check_brand.py']
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:148
+  .env.example:149
+  .env.example:150
+  .env.example:151
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+
+CHECK_EXIT=0
+
+Actual argv: ['python', 'scripts/quality/evidence_traceability.py']
+# evidence traceability over docs/evidence/
+  rounds        = 75
+  files census  = 973 (gate logs: 126)
+  dates in gate logs = header 117/126, printed by the run 9/126
+  branch named in header = 102/126 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 0
+
+OK: evidence archive matches the frozen baseline (0 legacy entr(ies)).
+
+CHECK_EXIT=0
+
+DRIVER_EXIT=0

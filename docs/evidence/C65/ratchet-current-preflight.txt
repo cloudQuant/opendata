@@ -1,0 +1,44 @@
+Date: 2026-09-30T23:29:27.139218+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1
+Command: conda run --no-capture-output -n base python /tmp/opendata_c65_run_checks.py; fixed-environment commands below
+Scope: owned33565 acceptance schemas; scheduler/upstream keys/SMTP disabled; live e2e default-deny; production3306 writes=0
+
+Actual argv: ['/tmp/opendata-c64-clean-env-20260930/bin/python', '/tmp/opendata_c65_ratchet_preflight.py']
+{
+  "archive_round": "C65",
+  "generated_at": "2026-09-30T23:29:56.037985+00:00",
+  "command": "fixed-environment scripts.quality.ratchet.measure(); guarded read-only metrics",
+  "metrics": {
+    "ruff_selfdev": 148,
+    "mypy_selfdev": 0,
+    "bandit_selfdev": 1,
+    "ruff_ported": 2188,
+    "direct_http_ported": 1071
+  },
+  "file_counts": {
+    "opendata": 206,
+    "opendata_fuyao": 9,
+    "scripts": 57,
+    "tests": 215,
+    "alembic": 7,
+    "alembic_data": 8,
+    "opendata_http": 325
+  },
+  "tools": {
+    "ruff": "ruff 0.15.20",
+    "mypy": "mypy 2.3.1 (compiled: yes)",
+    "bandit": "__main__.py 1.9.4"
+  },
+  "conditions": {
+    "self_ruff_no_growth": true,
+    "self_mypy_no_growth": true,
+    "self_bandit_no_growth": true,
+    "tool_versions_exact": true,
+    "reviewed_ported_counts_exact": true
+  },
+  "all_measured_conditions_pass": true
+}
+
+CHECK_EXIT=0
+
+DRIVER_EXIT=0

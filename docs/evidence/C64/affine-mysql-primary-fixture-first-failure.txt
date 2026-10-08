@@ -1,0 +1,88 @@
+2026-09-30 11:02:30.044 | INFO     | opendata.core.token_blacklist:_create_blacklist:186 - Token blacklist using in-memory backend (set REDIS_URL for multi-worker support)
+Date: 2026-09-30T09:02:30.576679+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1 + frozen C64 affine changes
+Scope: only owned disposable MySQL33564 schemas; no native3306/provider/SMTP/production writes
+Migration head: exit=0
+FRESH_UPGRADE_COLUMNS=PASS
+Migration 0006_dwd_daily_legs: exit=0
+Migration head: exit=0
+EXISTING_UPGRADE_OLD_VALUES_AND_NULL_FIELDS=PASS
+OWN_SCHEMAS_CLEANED=PASS
+Traceback (most recent call last):
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1943, in _exec_single_context
+    self.dialect.do_execute(
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 1180, in do_execute
+    cursor.execute(statement, parameters)
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pymysql/cursors.py", line 170, in execute
+    result = self._query(query)
+             ^^^^^^^^^^^^^^^^^^
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pymysql/cursors.py", line 335, in _query
+    conn.query(q)
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pymysql/connections.py", line 581, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pymysql/connections.py", line 857, in _read_query_result
+    result.read()
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pymysql/connections.py", line 1290, in read
+    first_packet = self.connection._read_packet()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pymysql/connections.py", line 810, in _read_packet
+    packet.raise_for_error()
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pymysql/protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pymysql/err.py", line 154, in raise_mysql_exception
+    raise errorclass(errno, errval, sqlstate=sqlstate)
+pymysql.err.DataError: (1406, "Data too long for column 'ticker' at row 1")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/tmp/opendata-c64-affine-mysql-review.py", line 70, in <module>
+    execute(old, 'INSERT INTO ods_stock_action_ths (thscode,ticker,ex_date,ex_date_ms,event_key,dividend_per_share,per_share_bonus,allotment_ratio,allotment_price,currency,_source,_fetched_at,_batch_id) VALUES (:s,:s,:d,1,:k,:c,:b,0,0,\'CNY\',\'ths\',NOW(),\'c64-primary\')', {'s':s,'d':day,'k':key,'c':cash,'b':bonus})
+  File "/tmp/opendata-c64-affine-mysql-review.py", line 36, in execute
+    return conn.execute(text(sql), params or {})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1448, in execute
+    return meth(
+           ^^^^^
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 533, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1668, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1822, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1962, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2332, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1943, in _exec_single_context
+    self.dialect.do_execute(
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 1180, in do_execute
+    cursor.execute(statement, parameters)
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pymysql/cursors.py", line 170, in execute
+    result = self._query(query)
+             ^^^^^^^^^^^^^^^^^^
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pymysql/cursors.py", line 335, in _query
+    conn.query(q)
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pymysql/connections.py", line 581, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pymysql/connections.py", line 857, in _read_query_result
+    result.read()
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pymysql/connections.py", line 1290, in read
+    first_packet = self.connection._read_packet()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pymysql/connections.py", line 810, in _read_packet
+    packet.raise_for_error()
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pymysql/protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "/tmp/opendata-c64-clean-env-20260930/lib/python3.11/site-packages/pymysql/err.py", line 154, in raise_mysql_exception
+    raise errorclass(errno, errval, sqlstate=sqlstate)
+sqlalchemy.exc.DataError: (pymysql.err.DataError) (1406, "Data too long for column 'ticker' at row 1")
+[SQL: INSERT INTO ods_stock_action_ths (thscode,ticker,ex_date,ex_date_ms,event_key,dividend_per_share,per_share_bonus,allotment_ratio,allotment_price,currency,_source,_fetched_at,_batch_id) VALUES (%(s)s,%(s)s,%(d)s,1,%(k)s,%(c)s,%(b)s,0,0,'CNY','ths',NOW(),'c64-primary')]
+[parameters: {'s': 'C64_AFFINE_PRIMARY.SH', 'd': datetime.date(2026, 9, 22), 'k': 'cash', 'c': 5, 'b': 0}]
+(Background on this error at: https://sqlalche.me/e/21/9h9h)
+ERROR conda.cli.main_run:execute(125): `conda run /tmp/opendata-c64-clean-env-20260930/bin/python /tmp/opendata-c64-affine-mysql-review.py` failed. (See above for error)

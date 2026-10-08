@@ -1,0 +1,53 @@
+{
+  "round": "C65",
+  "date": "2026-09-30T15:09:12.175787+00:00",
+  "created_schemas": [
+    "opendata_c65_bench_100000_345393"
+  ],
+  "runs": [
+    {
+      "size": "100000",
+      "schema": "opendata_c65_bench_100000_345393",
+      "elapsed_driver_seconds": 10.184,
+      "command": "/tmp/opendata-c64-clean-env-20260930/bin/python scripts/ops/benchmark_ods_write.py --source ths --page-size 50000 --apply --limit-rows 100000",
+      "exit": 1,
+      "evidence": "docs/evidence/C65/write-benchmark-100000.jsonl",
+      "final": {
+        "business_key": [
+          "thscode",
+          "trade_date"
+        ],
+        "byte_unit": "bytes",
+        "current_rss_bytes": 75743232,
+        "current_rss_source": "ps",
+        "domain": "stock_daily",
+        "elapsed_seconds": 3.580624,
+        "error_type": "PermissionError",
+        "full_source_write_verified": false,
+        "limit_rows": 100000,
+        "mode": "apply",
+        "page_size": 50000,
+        "pages_read": 0,
+        "pages_written": 0,
+        "peak_rss_bytes": 138084352,
+        "peak_rss_source": "resource.getrusage",
+        "python_executable": "/tmp/opendata-c64-clean-env-20260930/bin/python",
+        "python_implementation": "CPython",
+        "python_version": "3.11.8",
+        "record": "final",
+        "rows_read": 0,
+        "rows_requested": null,
+        "rows_written": 0,
+        "rss_unit": "bytes",
+        "source": "ths",
+        "source_rows_exact": null,
+        "source_scan_complete": false,
+        "source_sha256": "311ccdb72c44474fc4335a9a28646d6f863ce60bdc74617893ef6153977caec2",
+        "status": "error",
+        "table": "ods_stock_daily_ths",
+        "target_rows_after": null,
+        "target_rows_before": 0
+      }
+    }
+  ]
+}

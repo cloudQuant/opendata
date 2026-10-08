@@ -1,0 +1,21 @@
+C65 | 2026-09-30T16:27:10.014320+00:00 | Primary independent targeted check
+COMMAND ['/tmp/opendata-c64-clean-env-20260930/bin/python', '-m', 'pytest', '-q', '--no-cov', '-m', 'not e2e', 'tests/test_fred_provider.py', 'tests/test_authority_reconciliation.py', 'tests/test_provider_registry.py', 'tests/test_openbb_map.py', 'tests/test_openbb_inventory_guard.py', 'tests/test_env_example_security.py']
+HASHES {"tests/test_fred_provider.py": "f2af1ca433d793de405377a3f9872afec8a8f6c9fa54681f6d5722a94aad2d54", "tests/test_authority_reconciliation.py": "4360f491a856f600805d310b669685c17474989338a3428dca56df9f2942c692", "tests/test_provider_registry.py": "5c091159966cc7fa3648bf1df10b4d26aa988e6f15b9476439a5ae2c3125d2d8", "tests/test_openbb_map.py": "19b14d33597b0258d61282cf0dde63ae05b24f91daceb4b51f4d3956e1f6e0d7", "tests/test_openbb_inventory_guard.py": "c5d5d8b028c1d3b73cb9d5b3fc2959dd17074ac75a8069786a186ef8d5a27e54", "tests/test_env_example_security.py": "717fec02a35863e830fa0a9b04451ddbdd683a993fb803125ec961827294b4a4"}
+============================= test session starts ==============================
+platform darwin -- Python 3.11.8, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: platformdirs-4.12.2, cov-7.1.0, xdist-3.8.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 115 items
+
+tests/test_fred_provider.py .................                            [ 14%]
+tests/test_authority_reconciliation.py ......................            [ 33%]
+tests/test_provider_registry.py .................................        [ 62%]
+tests/test_openbb_map.py .............                                   [ 73%]
+tests/test_openbb_inventory_guard.py ............................        [ 98%]
+tests/test_env_example_security.py ..                                    [100%]
+
+============================= 115 passed in 15.24s =============================
+
+EXIT=0

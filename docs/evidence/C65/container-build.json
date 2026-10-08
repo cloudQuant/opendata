@@ -1,0 +1,19 @@
+{
+  "round": "C65",
+  "date": "2026-09-30T16:22:20.332946+00:00",
+  "identity": "Primary actual Docker build",
+  "command": "/opt/homebrew/bin/docker build --progress=plain --label codex.task=opendata-c65 -t opendata-iteration01:c65 .",
+  "runtime_acceptance": "NOT_RUN",
+  "final_source_acceptance": false,
+  "build_contract_hashes": {
+    "Dockerfile": "e9872244c18ab4855c4bdb6d6707b5251cc4fe469bcd06c0c2b7aed668bf1fb3",
+    ".dockerignore": "02c459eacefd6c1415c1f4b8a94e6d177b7a5debb33ae0dab43bea724d511b03",
+    "tests/test_container_build_contract.py": "39103ac548b4edf0417b244afd6e6bb6f2c002eb46cda48f5211f76c5f4b8509"
+  },
+  "prior_cli_failure": "container-build-first-cli-failure.json",
+  "private_buildx_setup": "existing installed Docker Desktop binary linked under temporary cli-plugins; no installation",
+  "exit": 0,
+  "status": "PASS",
+  "elapsed_seconds": 1337.05,
+  "image_id": "sha256:7fe258ecf47befab0c07a8f75622e0983880ff799a3f7940e65eb4b1d7598d65"
+}

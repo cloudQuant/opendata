@@ -1,0 +1,48 @@
+.. qfq 600519: 131 bars, shape dev 3.06e-06
+.. qfq 000001: 131 bars, shape dev 1.42e-03
+.. qfq 000002: 131 bars, shape dev 0.00e+00
+.. qfq 000009: 131 bars, shape dev 2.22e-16
+.. qfq 600036: 131 bars, shape dev 1.85e-04
+!! 600519 hfq: RuntimeError: official leg 'akshare' gave no series for 600519 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=1.600519&beg=20260105&end=20260923)
+!! 000001 hfq: RuntimeError: official leg 'akshare' gave no series for 000001 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=0.000001&beg=20260105&end=20260923)
+!! 000002 hfq: RuntimeError: official leg 'akshare' gave no series for 000002 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=0.000002&beg=20260105&end=20260923)
+!! 000009 hfq: RuntimeError: official leg 'akshare' gave no series for 000009 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=0.000009&beg=20260105&end=20260923)
+!! 600036 hfq: RuntimeError: official leg 'akshare' gave no series for 600036 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=1.600036&beg=20260105&end=20260923)
+AC-11 server-side adjust vs the official akshare series
+
+script: scripts/ops/qfq_official_check.py
+window: 2026-01-05 .. 2026-09-23 (clamped to the dwd_stock_adjust ceiling)
+symbols: 600519, 000001, 000002, 000009, 600036
+ours: dwd_stock_daily (unadjusted) with dwd_stock_adjust coefficients,
+  via build_data_select + apply_adjust_to_rows (the REST query path)
+official: akshare opendata_http.stock_feature.stock_hist_em:stock_zh_a_hist (adjust=qfq|hfq) -- different source and factor chain
+tolerance: relative 0.002 on close (official feeds round to 2 decimals)
+
+## adjust=qfq
+
+| symbol | bars | bars over tol | anchor (ours/official) | max abs dev | max shape dev | leg retries | result |
+|---|---|---|---|---|---|---|---|
+- 600519 qfq over tolerance: 0 of 131 bars; levels(ours/official / anchor): 1x131
+| 600519 | 131 | 0 | 0.999997 | 3.59e-06 | 3.06e-06 | 0 | PASS |
+- 000001 qfq over tolerance: 0 of 131 bars; levels(ours/official / anchor): 0.99984x6 1.00002x5 1.00009x5 1.00032x5 1.00014x4 1.00027x4
+| 000001 | 131 | 0 | 1.024062 | 2.55e-02 | 1.42e-03 | 0 | PASS |
+- 000002 qfq over tolerance: 0 of 131 bars; levels(ours/official / anchor): 1x131
+| 000002 | 131 | 0 | 1.000000 | 0.00e+00 | 0.00e+00 | 0 | PASS |
+- 000009 qfq over tolerance: 0 of 131 bars; levels(ours/official / anchor): 1x131
+| 000009 | 131 | 0 | 1.000000 | 2.22e-16 | 2.22e-16 | 0 | PASS |
+- 600036 qfq over tolerance: 0 of 131 bars; levels(ours/official / anchor): 1x109 1.00018x9 1.00008x8 0.99999x5
+| 600036 | 131 | 0 | 0.999921 | 1.05e-04 | 1.85e-04 | 0 | PASS |
+
+## adjust=hfq
+
+| symbol | bars | bars over tol | anchor (ours/official) | max abs dev | max shape dev | leg retries | result |
+|---|---|---|---|---|---|---|---|
+| 600519 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 600519 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=1.600519&beg=20260105&end=20260923) |
+| 000001 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 000001 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=0.000001&beg=20260105&end=20260923) |
+| 000002 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 000002 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=0.000002&beg=20260105&end=20260923) |
+| 000009 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 000009 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=0.000009&beg=20260105&end=20260923) |
+| 600036 | - | - | - | - | - | - | ERROR RuntimeError: official leg 'akshare' gave no series for 600036 hfq in 3 attempts (last: HTTPError: 502 Server Error: Bad Gateway for url: https://push2delay.eastmoney.com/api/qt/stock/kline/get?fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf59%2Cf60%2Cf61%2Cf116&ut=7eea3edcaed734bea9cbfc24409ed989&klt=101&fqt=2&secid=1.600036&beg=20260105&end=20260923) |
+
+result: FAIL (5 failing symbol/method pairs)
+
+report written to /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C64/qfq-official-akshare-affine-real.txt

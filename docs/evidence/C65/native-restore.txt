@@ -1,0 +1,66 @@
+C65 | 2026-09-30T16:24:04.146306+00:00 | Primary actual isolated restore
+COMMAND mysql --protocol=TCP --host=127.0.0.1 --port=33565 --user=root < owned gzip dumps
+{
+  "round": "C65",
+  "date": "2026-09-30T16:24:04.146306+00:00",
+  "identity": "Primary actual native dual backup restore to owned Docker MySQL",
+  "source_port": 3306,
+  "target_host": "127.0.0.1",
+  "target_port": 33565,
+  "native_database_writes": 0,
+  "status": "PASS",
+  "dump_database_directives": 0,
+  "restores": [
+    {
+      "label": "metadata",
+      "path": "/tmp/opendata-c65-native-backup/metadata_20260930T160529Z_52788.sql.gz",
+      "sha256": "23da0090ef9f1e5b44014204801fc9064f350442ec5bc4eee24529eb787f538f",
+      "bytes": 3539,
+      "target_schema": "opendata_c65_metadata_20260930_restore",
+      "table_names": [
+        "alembic_version",
+        "api_keys",
+        "data_interfaces",
+        "data_scripts",
+        "data_tables",
+        "interface_categories",
+        "interface_parameters",
+        "pipeline_progress",
+        "scheduled_tasks",
+        "task_executions",
+        "users"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 15.883,
+      "status": "PASS",
+      "private_error_path": "/tmp/opendata-c65-native-backup/metadata-restore-private-output.txt"
+    },
+    {
+      "label": "warehouse",
+      "path": "/tmp/opendata-c65-native-backup/warehouse_20260930T160529Z_52788.sql.gz",
+      "sha256": "7fc97bb23b94da9e7f98083a6318835b3df6c6674ba572e093e27c8b11675ba9",
+      "bytes": 323138586,
+      "target_schema": "opendata_c65_warehouse_20260930_restore",
+      "table_names": [
+        "alembic_version_data",
+        "batch_watermark",
+        "dq_diff_report",
+        "dwd_financial_indicator",
+        "dwd_financial_statement",
+        "dwd_index_constituent",
+        "dwd_stock_action",
+        "dwd_stock_adjust",
+        "dwd_stock_daily",
+        "ods_stock_action_ths",
+        "ods_stock_daily_akshare",
+        "ods_stock_daily_ths"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 1866.133,
+      "status": "PASS",
+      "private_error_path": "/tmp/opendata-c65-native-backup/warehouse-restore-private-output.txt"
+    }
+  ],
+  "binlog_point_in_time_replay": "NOT_RUN",
+  "atomic_cross_database_snapshot": false
+}

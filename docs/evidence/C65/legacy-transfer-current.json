@@ -1,0 +1,219 @@
+{
+  "format_version": 1,
+  "status": "FAIL",
+  "mode": "apply",
+  "connection_attempted": true,
+  "source_schema": "akshare_data",
+  "source_table": "STOCK_ZH_A_HIST",
+  "source_rows_expected": 617371,
+  "conversion_policy": {
+    "columns": [
+      "日期",
+      "股票代码",
+      "开盘",
+      "收盘",
+      "最高",
+      "最低",
+      "成交量",
+      "成交额",
+      "振幅",
+      "涨跌幅",
+      "涨跌额",
+      "换手率"
+    ],
+    "business_key": [
+      "股票代码",
+      "日期"
+    ],
+    "date": "strict YYYY-MM-DD text to DATE",
+    "volume": "BIGINT to exactly representable DOUBLE; no unit scaling",
+    "turnover_rate": "strict finite decimal text to DOUBLE",
+    "auxiliary_metrics": "preserve NULL; finite numeric values to DOUBLE"
+  },
+  "source_rows": 617371,
+  "source_columns": {
+    "日期": {
+      "column_type": "text",
+      "nullable": true
+    },
+    "股票代码": {
+      "column_type": "text",
+      "nullable": true
+    },
+    "开盘": {
+      "column_type": "double",
+      "nullable": true
+    },
+    "收盘": {
+      "column_type": "double",
+      "nullable": true
+    },
+    "最高": {
+      "column_type": "double",
+      "nullable": true
+    },
+    "最低": {
+      "column_type": "double",
+      "nullable": true
+    },
+    "成交量": {
+      "column_type": "bigint",
+      "nullable": true
+    },
+    "成交额": {
+      "column_type": "double",
+      "nullable": true
+    },
+    "振幅": {
+      "column_type": "double",
+      "nullable": true
+    },
+    "涨跌幅": {
+      "column_type": "double",
+      "nullable": true
+    },
+    "涨跌额": {
+      "column_type": "double",
+      "nullable": true
+    },
+    "换手率": {
+      "column_type": "text",
+      "nullable": true
+    }
+  },
+  "source_endpoint": {
+    "host": "127.0.0.1",
+    "port": 3306,
+    "schema": "akshare_data"
+  },
+  "target_schema": "opendata_c65_legacy_e25963",
+  "target_table": "ods_stock_daily_akshare",
+  "target_endpoint": {
+    "host": "127.0.0.1",
+    "port": 33565,
+    "schema": "opendata_c65_legacy_e25963"
+  },
+  "target_rows_before": 0,
+  "target_rows_after": null,
+  "target_rows_hashed": 0,
+  "target_columns": [
+    {
+      "name": "_batch_id",
+      "column_type": "char(36)",
+      "nullable": false
+    },
+    {
+      "name": "_fetched_at",
+      "column_type": "datetime",
+      "nullable": false
+    },
+    {
+      "name": "_source",
+      "column_type": "varchar(32)",
+      "nullable": false
+    },
+    {
+      "name": "开盘",
+      "column_type": "double",
+      "nullable": false
+    },
+    {
+      "name": "成交量",
+      "column_type": "double",
+      "nullable": false
+    },
+    {
+      "name": "成交额",
+      "column_type": "double",
+      "nullable": false
+    },
+    {
+      "name": "振幅",
+      "column_type": "double",
+      "nullable": true
+    },
+    {
+      "name": "换手率",
+      "column_type": "double",
+      "nullable": true
+    },
+    {
+      "name": "收盘",
+      "column_type": "double",
+      "nullable": false
+    },
+    {
+      "name": "日期",
+      "column_type": "date",
+      "nullable": false
+    },
+    {
+      "name": "最低",
+      "column_type": "double",
+      "nullable": false
+    },
+    {
+      "name": "最高",
+      "column_type": "double",
+      "nullable": false
+    },
+    {
+      "name": "涨跌幅",
+      "column_type": "double",
+      "nullable": true
+    },
+    {
+      "name": "涨跌额",
+      "column_type": "double",
+      "nullable": true
+    },
+    {
+      "name": "股票代码",
+      "column_type": "varchar(64)",
+      "nullable": false
+    }
+  ],
+  "target_primary_key": [
+    "股票代码",
+    "日期"
+  ],
+  "target_partitions": [
+    "p2024",
+    "p2025",
+    "p2026",
+    "pmax"
+  ],
+  "target_migration_head": [
+    "0007_affine_stock_adjust"
+  ],
+  "target_engine": "innodb",
+  "rows_read": 0,
+  "rows_inserted": 0,
+  "page_size": 1000,
+  "source_sha256": null,
+  "target_sha256": null,
+  "full_stream_hash_match": false,
+  "full_source_transfer_verified": false,
+  "fetched_at_utc": "2026-09-30T22:03:53+00:00",
+  "batch_id": "e644d63c-df17-4876-8e85-026bd9d790a4",
+  "source_files_sha256": {
+    "scripts/ops/migrate_legacy_stock_daily.py": "a89c27039f4899021720e1676200545d9650975e7ba7de5bb3d57ee2fd1dfa13",
+    "scripts/codemod/legacy_transfer.py": "fc801f0b5c3b3fb9ee5733433cc316b9b5df947793cce1cd6176e4c3eb0e0503",
+    "alembic_data/versions/20260923-0001_ods_dwd_p0.py": "df63a5cc1ea8f6ba03bcd8a0a934ccd5722c791a14fbbf5530793ab0039605ea",
+    "opendata/data/mappings/akshare.yaml": "fd61df12b1c73593be841f0e450af954fe8ba9dfc35538c02c5fa12270c62cef",
+    "docs/evidence/C65/legacy-current-inventory.json": "c8731b5ca9220aabb6b616b2bcf2cef8ff85282f1962972c6087a2ae39bfde77"
+  },
+  "elapsed_seconds": 85.80937129200902,
+  "peak_rss_bytes": 166166528,
+  "rss_unit": "bytes",
+  "error_classification": "invalid_numeric_field_成交额",
+  "started_at_utc": "2026-09-30T22:03:16.202535+00:00",
+  "finished_at_utc": "2026-09-30T22:04:42.009183+00:00",
+  "command": [
+    "/tmp/opendata-c64-clean-env-20260930/bin/python",
+    "scripts/ops/migrate_legacy_stock_daily.py",
+    "--apply",
+    "--output",
+    "docs/evidence/C65/legacy-transfer-current.json"
+  ]
+}

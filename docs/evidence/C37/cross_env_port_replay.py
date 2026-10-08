@@ -17,7 +17,8 @@ import json
 import sys
 import types
 from pathlib import Path
-from typing import Any
+from types import ModuleType
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -107,12 +108,13 @@ def main() -> int:
     print(f"platform: {sys.platform}")
     import requests.compat as compat
 
-    print(f"requests .json() 用的 json 模块: {compat.json.__name__}")
+    json_module = cast("ModuleType", compat.__dict__["json"])
+    print(f"requests .json() 用的 json 模块: {json_module.__name__}")
 
     with gzip.open(FIXTURE / "responses.json.gz") as handle:
         entries: list[dict[str, Any]] = json.loads(handle.read())
     cursor = iter(entries)
-    requests.get = lambda *a, **k: RecordedResponse(next(cursor))
+    requests.get = cast("Any", lambda *a, **k: RecordedResponse(next(cursor)))
 
     fetcher = load_fetcher()
     frame = fetcher(stock="sh600519", symbol="资产负债表")

@@ -1,0 +1,16 @@
+# evidence traceability over docs/evidence/
+  rounds        = 74
+  files census  = 749 (gate logs: 120)
+  dates in gate logs = header 111/120, printed by the run 9/120
+  branch named in header = 102/120 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 1
+    untracked: docs/evidence/C64/pre-gate-coverage-scope.json
+NEW VIOLATION: docs/evidence/C64/pre-gate-coverage-scope.json#untracked
+
+FAIL: 1 new traceability violation(s) against a 0-entry baseline.
+ERROR conda.cli.main_run:execute(125): `conda run /tmp/opendata-c64-clean-env-20260930/bin/python scripts/quality/evidence_traceability.py` failed. (See above for error)

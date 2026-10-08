@@ -1,0 +1,29 @@
+Date: 2026-09-30T09:03:47.281549+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1 + frozen C64 affine source
+Scope: primary independent regression; clean Anaconda-created environment; no live e2e/provider/SMTP; owned MySQL33564 only
+Command: ['/tmp/opendata-c64-clean-env-20260930/bin/python', '-m', 'pytest', 'tests/test_adjust.py', 'tests/test_factors.py', 'tests/test_factor_builder_unit.py', 'tests/test_contract_models.py', 'tests/test_warehouse_ddl.py', 'tests/test_warehouse_migrations.py', 'tests/test_data_query.py', 'tests/test_data_query_http_warehouse.py', 'tests/test_opendata_client.py', 'tests/test_affine_adjustment_query.py', 'tests/test_rebuild_adjustment_factors.py', 'tests/test_acceptance_item_probe.py', '-m', 'not e2e', '--no-cov', '-q']
+============================= test session starts ==============================
+platform darwin -- Python 3.11.8, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: platformdirs-4.12.2, cov-7.1.0, xdist-3.8.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 275 items / 7 deselected / 268 selected
+
+tests/test_adjust.py .....................                               [  7%]
+tests/test_factors.py ......................                             [ 16%]
+tests/test_factor_builder_unit.py ...............................        [ 27%]
+tests/test_contract_models.py .......................................... [ 43%]
+.......................                                                  [ 51%]
+tests/test_warehouse_ddl.py .............                                [ 56%]
+tests/test_warehouse_migrations.py .......                               [ 59%]
+tests/test_data_query.py ....................                            [ 66%]
+tests/test_data_query_http_warehouse.py ................................ [ 78%]
+...............                                                          [ 84%]
+tests/test_opendata_client.py ...........................                [ 94%]
+tests/test_affine_adjustment_query.py ....                               [ 95%]
+tests/test_rebuild_adjustment_factors.py ....                            [ 97%]
+tests/test_acceptance_item_probe.py .......                              [100%]
+
+================= 268 passed, 7 deselected in 66.00s (0:01:05) =================
+PRIMARY_AFFINE_FOCUSED_EXIT=0

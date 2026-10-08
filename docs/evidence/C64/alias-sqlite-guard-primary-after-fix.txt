@@ -1,0 +1,18 @@
+Date: 2026-09-30T11:03:01.058090+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1 + C64 owned test fixes
+Command: ['/tmp/opendata-c64-clean-env-20260930/bin/python', '-m', 'pytest', 'tests/test_data_path_aliases.py', 'tests/test_rebuild_adjustment_factors.py', 'tests/test_e2e_opt_in_guard.py', '-m', 'not e2e', '--no-cov', '-q']
+Scope: unchanged runtime/scripts/migrations/quality ledger; Anaconda-created pinned venv; three full modules; no coverage writes; native warehouse writes=0
+============================= test session starts ==============================
+platform darwin -- Python 3.11.8, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/yunjinqi/Documents/new_projects/opendata
+configfile: pytest.ini
+plugins: platformdirs-4.12.2, cov-7.1.0, xdist-3.8.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 40 items
+
+tests/test_data_path_aliases.py .........                                [ 22%]
+tests/test_rebuild_adjustment_factors.py .....                           [ 35%]
+tests/test_e2e_opt_in_guard.py ..........................                [100%]
+
+============================= 40 passed in 20.24s ==============================
+PRIMARY_ALIAS_SQLITE_GUARD_EXIT=0

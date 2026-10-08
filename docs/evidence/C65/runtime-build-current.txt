@@ -1,0 +1,289 @@
+Date: 2026-09-30T21:50:03.932339+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1 + current runtime source manifest
+Command: /opt/homebrew/bin/docker build --progress=plain --label codex.task=opendata-c65 --label codex.source=c6bd1179740a703c79fdad95dba52a81206bc5a22159ba4a1f60798b26f1c50b -t opendata-iteration01:c65-current .
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.66kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.11-slim
+#2 DONE 0.8s
+
+#3 [internal] load metadata for docker.io/library/node:20-alpine
+#3 DONE 0.9s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 794B done
+#4 DONE 0.0s
+
+#5 [builder  1/15] FROM docker.io/library/python:3.11-slim@sha256:e41613d42d4891e4930f79523f93f81bbc7632584ec65e36ab055f41a800b41e
+#5 resolve docker.io/library/python:3.11-slim@sha256:e41613d42d4891e4930f79523f93f81bbc7632584ec65e36ab055f41a800b41e 0.0s done
+#5 DONE 0.0s
+
+#6 [frontend-builder 1/6] FROM docker.io/library/node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293
+#6 resolve docker.io/library/node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 0.0s done
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 transferring context: 613.47kB 0.1s done
+#7 DONE 0.1s
+
+#8 [builder  2/15] WORKDIR /opendata
+#8 CACHED
+
+#9 [builder  3/15] RUN apt-get update && apt-get install -y     gcc     g++     default-libmysqlclient-dev     pkg-config     && rm -rf /var/lib/apt/lists/*
+#9 CACHED
+
+#10 [builder  4/15] COPY requirements.txt .
+#10 CACHED
+
+#11 [builder  5/15] RUN pip install --no-cache-dir --upgrade pip &&     pip install --no-cache-dir -r requirements.txt
+#11 CACHED
+
+#12 [frontend-builder 3/6] COPY frontend/package.json frontend/package-lock.json ./
+#12 CACHED
+
+#13 [frontend-builder 2/6] WORKDIR /frontend
+#13 CACHED
+
+#14 [frontend-builder 4/6] RUN npm ci --ignore-scripts
+#14 CACHED
+
+#15 [builder  6/15] COPY pyproject.toml README.md LICENSE LICENSE-AKSHARE THIRD_PARTY_NOTICES.md ./
+#15 DONE 0.1s
+
+#16 [frontend-builder 5/6] COPY frontend/ .
+#16 DONE 0.3s
+
+#17 [builder  7/15] COPY opendata/ ./opendata/
+#17 DONE 0.2s
+
+#18 [builder  8/15] COPY opendata_http/ ./opendata_http/
+#18 DONE 0.4s
+
+#19 [frontend-builder 6/6] RUN npm run build
+#19 ...
+
+#20 [builder  9/15] COPY opendata_fuyao/ ./opendata_fuyao/
+#20 DONE 0.1s
+
+#21 [builder 10/15] COPY opendata_client/ ./opendata_client/
+#21 DONE 0.0s
+
+#22 [builder 11/15] COPY alembic/ ./alembic/
+#22 DONE 0.0s
+
+#23 [builder 12/15] COPY alembic_data/ ./alembic_data/
+#23 DONE 0.0s
+
+#19 [frontend-builder 6/6] RUN npm run build
+#19 ...
+
+#24 [builder 13/15] COPY alembic.ini alembic_data.ini logging_config.ini ./
+#24 DONE 0.0s
+
+#25 [builder 14/15] RUN pip install --no-cache-dir .
+#25 1.379 Processing ./.
+#25 1.384   Installing build dependencies: started
+#25 3.039   Installing build dependencies: finished with status 'done'
+#25 3.045   Getting requirements to build wheel: started
+#25 3.932   Getting requirements to build wheel: finished with status 'done'
+#25 3.936   Preparing metadata (pyproject.toml): started
+#25 4.298   Preparing metadata (pyproject.toml): finished with status 'done'
+#25 4.308 Requirement already satisfied: requests>=2.31.0 in /usr/local/lib/python3.11/site-packages (from opendata==0.1.0) (2.34.2)
+#25 4.615 Collecting curl_cffi>=0.7.0 (from opendata==0.1.0)
+#25 4.699   Downloading curl_cffi-0.16.3-cp310-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl.metadata (17 kB)
+#25 4.723 Requirement already satisfied: urllib3>=2.0.7 in /usr/local/lib/python3.11/site-packages (from opendata==0.1.0) (2.8.0)
+#25 6.224 Collecting aiohttp>=3.9.0 (from opendata==0.1.0)
+#25 6.250   Downloading aiohttp-3.14.3-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (8.3 kB)
+#25 6.259 Requirement already satisfied: beautifulsoup4>=4.12.0 in /usr/local/lib/python3.11/site-packages (from opendata==0.1.0) (4.15.0)
+#25 6.262 Requirement already satisfied: lxml>=5.0.0 in /usr/local/lib/python3.11/site-packages (from opendata==0.1.0) (6.1.3)
+#25 6.262 Requirement already satisfied: openpyxl>=3.1.0 in /usr/local/lib/python3.11/site-packages (from opendata==0.1.0) (3.1.5)
+#25 6.295 Collecting xlrd>=2.0.1 (from opendata==0.1.0)
+#25 6.317   Downloading xlrd-2.0.2-py2.py3-none-any.whl.metadata (3.5 kB)
+#25 6.322 Requirement already satisfied: pandas>=2.2.3 in /usr/local/lib/python3.11/site-packages (from opendata==0.1.0) (3.0.6)
+#25 6.439 Collecting pyarrow>=15.0.0 (from opendata==0.1.0)
+#25 6.464   Downloading pyarrow-25.0.1-cp311-cp311-manylinux_2_28_aarch64.whl.metadata (3.0 kB)
+#25 6.466 Requirement already satisfied: numpy>=2.1.3 in /usr/local/lib/python3.11/site-packages (from opendata==0.1.0) (2.4.6)
+#25 6.469 Requirement already satisfied: html5lib>=1.1 in /usr/local/lib/python3.11/site-packages (from opendata==0.1.0) (1.1)
+#25 6.469 Requirement already satisfied: jsonpath>=0.82 in /usr/local/lib/python3.11/site-packages (from opendata==0.1.0) (0.82.2)
+#25 6.469 Requirement already satisfied: tqdm>=4.66.0 in /usr/local/lib/python3.11/site-packages (from opendata==0.1.0) (4.70.1)
+#25 6.469 Requirement already satisfied: tabulate>=0.9.0 in /usr/local/lib/python3.11/site-packages (from opendata==0.1.0) (0.10.0)
+#25 6.469 Requirement already satisfied: scipy>=1.13.0 in /usr/local/lib/python3.11/site-packages (from opendata==0.1.0) (1.17.1)
+#25 6.471 Requirement already satisfied: decorator>=5.1.1 in /usr/local/lib/python3.11/site-packages (from opendata==0.1.0) (5.3.1)
+#25 6.474 Requirement already satisfied: mini-racer>=0.6.0 in /usr/local/lib/python3.11/site-packages (from opendata==0.1.0) (0.14.1)
+#25 6.474 Requirement already satisfied: PyYAML>=6.0 in /usr/local/lib/python3.11/site-packages (from opendata==0.1.0) (6.0.3)
+#25 6.497 Collecting aiohappyeyeballs>=2.5.0 (from aiohttp>=3.9.0->opendata==0.1.0)
+#25 6.520   Downloading aiohappyeyeballs-2.7.1-py3-none-any.whl.metadata (5.9 kB)
+#25 6.543 Collecting aiosignal>=1.4.0 (from aiohttp>=3.9.0->opendata==0.1.0)
+#25 6.561   Downloading aiosignal-1.4.0-py3-none-any.whl.metadata (3.7 kB)
+#25 6.593 Collecting attrs>=17.3.0 (from aiohttp>=3.9.0->opendata==0.1.0)
+#25 6.615   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+#25 6.716 Collecting frozenlist>=1.1.1 (from aiohttp>=3.9.0->opendata==0.1.0)
+#25 6.738   Downloading frozenlist-1.8.0-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (20 kB)
+#25 7.071 Collecting multidict<7.0,>=4.5 (from aiohttp>=3.9.0->opendata==0.1.0)
+#25 7.089   Downloading multidict-6.9.1-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (5.3 kB)
+#25 7.175 Collecting propcache>=0.2.0 (from aiohttp>=3.9.0->opendata==0.1.0)
+#25 7.196   Downloading propcache-0.5.4-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (25 kB)
+#25 7.203 Requirement already satisfied: typing_extensions>=4.4 in /usr/local/lib/python3.11/site-packages (from aiohttp>=3.9.0->opendata==0.1.0) (4.16.0)
+#25 7.597 Collecting yarl<2.0,>=1.17.0 (from aiohttp>=3.9.0->opendata==0.1.0)
+#25 7.622   Downloading yarl-1.25.1-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (111 kB)
+#25 7.657 Requirement already satisfied: idna>=2.0 in /usr/local/lib/python3.11/site-packages (from yarl<2.0,>=1.17.0->aiohttp>=3.9.0->opendata==0.1.0) (3.20)
+#25 7.663 Requirement already satisfied: soupsieve>=1.6.1 in /usr/local/lib/python3.11/site-packages (from beautifulsoup4>=4.12.0->opendata==0.1.0) (2.10)
+#25 7.666 Requirement already satisfied: cffi>=2.0.0 in /usr/local/lib/python3.11/site-packages (from curl_cffi>=0.7.0->opendata==0.1.0) (2.1.1)
+#25 7.666 Requirement already satisfied: certifi>=2024.2.2 in /usr/local/lib/python3.11/site-packages (from curl_cffi>=0.7.0->opendata==0.1.0) (2026.7.22)
+#25 7.667 Requirement already satisfied: pycparser in /usr/local/lib/python3.11/site-packages (from cffi>=2.0.0->curl_cffi>=0.7.0->opendata==0.1.0) (3.0)
+#25 7.678 Requirement already satisfied: six>=1.9 in /usr/local/lib/python3.11/site-packages (from html5lib>=1.1->opendata==0.1.0) (1.17.0)
+#25 7.679 Requirement already satisfied: webencodings in /usr/local/lib/python3.11/site-packages (from html5lib>=1.1->opendata==0.1.0) (0.6.1)
+#25 7.695 Requirement already satisfied: et-xmlfile in /usr/local/lib/python3.11/site-packages (from openpyxl>=3.1.0->opendata==0.1.0) (2.0.0)
+#25 7.700 Requirement already satisfied: python-dateutil>=2.8.2 in /usr/local/lib/python3.11/site-packages (from pandas>=2.2.3->opendata==0.1.0) (2.9.0.post0)
+#25 7.719 Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.11/site-packages (from requests>=2.31.0->opendata==0.1.0) (3.5.2)
+#25 7.767 Downloading aiohttp-3.14.3-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (1.8 MB)
+#25 7.856    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 24.0 MB/s  0:00:00
+#25 7.882 Downloading multidict-6.9.1-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (315 kB)
+#25 7.914 Downloading yarl-1.25.1-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (116 kB)
+#25 7.932 Downloading aiohappyeyeballs-2.7.1-py3-none-any.whl (15 kB)
+#25 7.955 Downloading aiosignal-1.4.0-py3-none-any.whl (7.5 kB)
+#25 7.998 Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+#25 8.023 Downloading curl_cffi-0.16.3-cp310-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl (12.8 MB)
+#25 8.559    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.8/12.8 MB 24.2 MB/s  0:00:00
+#25 8.577 Downloading frozenlist-1.8.0-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (233 kB)
+#25 8.629 Downloading propcache-0.5.4-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (238 kB)
+#25 8.678 Downloading pyarrow-25.0.1-cp311-cp311-manylinux_2_28_aarch64.whl (46.8 MB)
+#25 10.45    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 46.8/46.8 MB 27.0 MB/s  0:00:01
+#25 10.47 Downloading xlrd-2.0.2-py2.py3-none-any.whl (96 kB)
+#25 10.61 Building wheels for collected packages: opendata
+#25 10.62   Building wheel for opendata (pyproject.toml): started
+#25 ...
+
+#19 [frontend-builder 6/6] RUN npm run build
+#19 1.375 
+#19 1.375 > opendata-frontend@0.1.0 build
+#19 1.375 > vue-tsc && vite build
+#19 1.375 
+#19 3.969 vite v6.4.1 building for production...
+#19 4.262 transforming...
+#19 ...
+
+#25 [builder 14/15] RUN pip install --no-cache-dir .
+#25 11.60   Building wheel for opendata (pyproject.toml): finished with status 'done'
+#25 11.60   Created wheel for opendata: filename=opendata-0.1.0-py3-none-any.whl size=1441513 sha256=e69d5d618483f28de9e67e29604f14386e0f45e3bc010b8373bebf1b7e359df3
+#25 11.60   Stored in directory: /tmp/pip-ephem-wheel-cache-4c5svnsf/wheels/1e/b4/22/bb178d12f8d693e90b01020056d3c9e14f136061dd3eb196cc
+#25 11.61 Successfully built opendata
+#25 11.88 Installing collected packages: xlrd, pyarrow, propcache, multidict, frozenlist, attrs, aiohappyeyeballs, yarl, curl_cffi, aiosignal, aiohttp, opendata
+#25 18.83 
+#25 18.83 Successfully installed aiohappyeyeballs-2.7.1 aiohttp-3.14.3 aiosignal-1.4.0 attrs-26.1.0 curl_cffi-0.16.3 frozenlist-1.8.0 multidict-6.9.1 opendata-0.1.0 propcache-0.5.4 pyarrow-25.0.1 xlrd-2.0.2 yarl-1.25.1
+#25 18.83 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+#25 DONE 19.9s
+
+#19 [frontend-builder 6/6] RUN npm run build
+#19 ...
+
+#26 [builder 15/15] RUN useradd -m -u 1000 appuser &&     chown -R appuser:appuser /opendata
+#26 ...
+
+#19 [frontend-builder 6/6] RUN npm run build
+#19 21.12 ✓ 1708 modules transformed.
+#19 22.44 rendering chunks...
+#19 23.70 computing gzip size...
+#19 23.85 dist/index.html                                    0.56 kB │ gzip:   0.37 kB
+#19 23.85 dist/assets/NotFoundView-CaCGtREi.css              0.30 kB │ gzip:   0.20 kB
+#19 23.85 dist/assets/TablesView-BajwVAPo.css                0.35 kB │ gzip:   0.17 kB
+#19 23.85 dist/assets/ScriptsView-CNEfDCn2.css               0.38 kB │ gzip:   0.20 kB
+#19 23.85 dist/assets/UsersView-DY4G6XzZ.css                 0.40 kB │ gzip:   0.19 kB
+#19 23.86 dist/assets/LoginView-ChqGmBoU.css                 0.41 kB │ gzip:   0.26 kB
+#19 23.86 dist/assets/RegisterView-CU9RioK-.css              0.42 kB │ gzip:   0.26 kB
+#19 23.86 dist/assets/TasksView-ClxptaJf.css                 0.46 kB │ gzip:   0.24 kB
+#19 23.86 dist/assets/InterfaceManagement-S0keBek1.css       0.47 kB │ gzip:   0.25 kB
+#19 23.86 dist/assets/ScriptDetailView-us3O_j7A.css          0.60 kB │ gzip:   0.31 kB
+#19 23.86 dist/assets/ExecutionsView-BK6jmtt9.css            0.88 kB │ gzip:   0.38 kB
+#19 23.86 dist/assets/el-card-DGFn2Dlf.css                   0.92 kB │ gzip:   0.33 kB
+#19 23.86 dist/assets/el-empty-D4ZqTl4F.css                  1.20 kB │ gzip:   0.47 kB
+#19 23.86 dist/assets/el-page-header-ByC6uClG.css            1.46 kB │ gzip:   0.50 kB
+#19 23.86 dist/assets/DataCatalogView-az_ammji.css           1.51 kB │ gzip:   0.46 kB
+#19 23.86 dist/assets/el-loading-BGx_81yz.css                1.61 kB │ gzip:   0.55 kB
+#19 23.86 dist/assets/HomeView-jDwwE2v4.css                  3.39 kB │ gzip:   1.09 kB
+#19 23.86 dist/assets/el-descriptions-item-o9ObloqJ.css      3.42 kB │ gzip:   0.60 kB
+#19 23.86 dist/assets/el-alert-G57rL0jl.css                  3.46 kB │ gzip:   0.75 kB
+#19 23.86 dist/assets/el-scrollbar-dPQ2-wqA.css              3.78 kB │ gzip:   0.89 kB
+#19 23.86 dist/assets/el-overlay-Bi7JI5AB.css                3.81 kB │ gzip:   1.05 kB
+#19 23.86 dist/assets/el-switch-BmTFCygm.css                 3.93 kB │ gzip:   0.95 kB
+#19 23.86 dist/assets/el-input-number-D6iOyBgb.css           4.34 kB │ gzip:   0.91 kB
+#19 23.86 dist/assets/el-form-item-DdFfujyr.css              4.77 kB │ gzip:   0.90 kB
+#19 23.86 dist/assets/el-tag-DjxZVOpb.css                    5.73 kB │ gzip:   0.95 kB
+#19 23.86 dist/assets/el-pagination-DvY-LlDT.css             6.92 kB │ gzip:   1.20 kB
+#19 23.86 dist/assets/el-radio-button-DgMjfCw2.css           7.63 kB │ gzip:   1.42 kB
+#19 23.86 dist/assets/el-select-CS5JQKo7.css                 9.20 kB │ gzip:   1.93 kB
+#19 23.86 dist/assets/el-input-haxN-bjV.css                 11.19 kB │ gzip:   1.79 kB
+#19 23.86 dist/assets/TableDetailView-DRn21xXc.css          15.44 kB │ gzip:   2.42 kB
+#19 23.86 dist/assets/LayoutView-rRZqNeXn.css               23.83 kB │ gzip:   3.57 kB
+#19 23.86 dist/assets/el-table-column-BMyxChP6.css          26.13 kB │ gzip:   3.84 kB
+#19 23.86 dist/assets/SettingsView-BTBYngsQ.css             39.86 kB │ gzip:   4.18 kB
+#19 23.88 dist/assets/index-CFGjiphw.css                   356.76 kB │ gzip:  48.87 kB
+#19 23.88 dist/assets/constants-j43KRkEh.js                  0.10 kB │ gzip:   0.10 kB
+#19 23.88 dist/assets/error-CzP7eurJ.js                      0.43 kB │ gzip:   0.27 kB
+#19 23.88 dist/assets/tables-hJu7qMYS.js                     0.48 kB │ gzip:   0.29 kB
+#19 23.88 dist/assets/NotFoundView-DMez4CK1.js               0.55 kB │ gzip:   0.44 kB
+#19 23.88 dist/assets/scripts-DfZeeehH.js                    0.66 kB │ gzip:   0.28 kB
+#19 23.88 dist/assets/data-CpYjFem6.js                       0.74 kB │ gzip:   0.37 kB
+#19 23.88 dist/assets/LoginView-BwvEZcMj.js                  2.22 kB │ gzip:   1.15 kB
+#19 23.88 dist/assets/RegisterView-D_ZFAgcP.js               2.78 kB │ gzip:   1.26 kB
+#19 23.88 dist/assets/TableDetailView-CkMjpkgm.js            3.18 kB │ gzip:   1.51 kB
+#19 23.88 dist/assets/LayoutView-DH5anboD.js                 3.25 kB │ gzip:   1.46 kB
+#19 23.88 dist/assets/ScriptDetailView-DuWaISOZ.js           3.27 kB │ gzip:   1.49 kB
+#19 23.88 dist/assets/ScriptsView-I-oOx7XN.js                3.56 kB │ gzip:   1.76 kB
+#19 23.88 dist/assets/UsersView-Dee9UONA.js                  3.79 kB │ gzip:   1.88 kB
+#19 23.88 dist/assets/HomeView-BKS0ORp8.js                   4.13 kB │ gzip:   1.85 kB
+#19 23.88 dist/assets/TablesView-Kn8q4WGu.js                 4.75 kB │ gzip:   2.05 kB
+#19 23.88 dist/assets/ExecutionsView-C8FdTqiJ.js             6.38 kB │ gzip:   2.61 kB
+#19 23.88 dist/assets/TasksView-CJ9Tov1_.js                  8.53 kB │ gzip:   3.17 kB
+#19 23.88 dist/assets/SettingsView-BK4Sut6j.js              10.58 kB │ gzip:   3.18 kB
+#19 23.88 dist/assets/InterfaceManagement-DHuHi5OH.js       10.94 kB │ gzip:   3.92 kB
+#19 23.88 dist/assets/DataCatalogView-BFNhwTwK.js           11.49 kB │ gzip:   4.32 kB
+#19 23.88 dist/assets/index-DF36Mjoi.js                  1,285.25 kB │ gzip: 416.94 kB
+#19 23.88 ✓ built in 19.82s
+#19 23.88 
+#19 23.88 (!) Some chunks are larger than 600 kB after minification. Consider:
+#19 23.88 - Using dynamic import() to code-split the application
+#19 23.88 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+#19 23.88 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+#19 DONE 24.3s
+
+#26 [builder 15/15] RUN useradd -m -u 1000 appuser &&     chown -R appuser:appuser /opendata
+#26 DONE 4.5s
+
+#27 [stage-2 2/8] RUN apt-get update && apt-get install -y     libmariadb3     curl     && rm -rf /var/lib/apt/lists/*
+#27 CACHED
+
+#28 [stage-2 3/8] RUN useradd -m -u 1000 appuser
+#28 CACHED
+
+#29 [stage-2 4/8] COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+#29 DONE 11.2s
+
+#30 [stage-2 5/8] COPY --from=builder /usr/local/bin /usr/local/bin
+#30 DONE 0.4s
+
+#31 [stage-2 6/8] COPY --from=builder --chown=appuser:appuser /opendata /opendata
+#31 DONE 0.6s
+
+#32 [stage-2 7/8] COPY --from=frontend-builder --chown=appuser:appuser /frontend/dist /opendata/frontend/dist
+#32 DONE 0.1s
+
+#33 [stage-2 8/8] WORKDIR /opendata
+#33 DONE 0.0s
+
+#34 exporting to image
+#34 exporting layers
+#34 exporting layers 45.8s done
+#34 exporting manifest sha256:afaf4326f59ba8efcd5c474b63de8b7e437c2ac163dc202c9ac466f174931370 0.0s done
+#34 exporting config sha256:d3da90545399c539d8444adc72d3c03995843ce56f7653b34e13ab5104c5d11d done
+#34 exporting attestation manifest sha256:044aa06248f3fb75f5e8429bce7986270dbc1028b027ae197653bcf84ceebf29 0.0s done
+#34 exporting manifest list sha256:3c8f9415734277069d65ba22f4594d189760cfe07dbd753fa9744f30afd60afc done
+#34 naming to docker.io/library/opendata-iteration01:c65-current done
+#34 unpacking to docker.io/library/opendata-iteration01:c65-current
+#34 unpacking to docker.io/library/opendata-iteration01:c65-current 15.6s done
+#34 DONE 61.4s
+
+BUILD_EXIT=0

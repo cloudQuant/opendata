@@ -1,0 +1,15 @@
+Date: 2026-09-30T03:51:31.003845+00:00
+HEAD: d552c081950edffce167e3dfc0be74f37a6950a1 + uncommitted C64 changes
+Command: ['docker', '--config', '/tmp/opendata-iteration01-docker', 'exec', 'opendata-iteration01-acceptance', 'mysql', '-uroot', '-N', '-B', '-e', "SELECT VERSION(); SELECT table_schema,COUNT(*) FROM information_schema.tables WHERE table_schema IN ('opendata_iter01','opendata_iter01_data') AND table_type='BASE TABLE' GROUP BY table_schema; SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name LIKE '%c64_final_restore%'; SELECT COUNT(*) FROM mysql.user WHERE User LIKE '%c64%'; SELECT @@log_bin,@@binlog_format,@@binlog_expire_logs_seconds;"]
+Exit: 0
+Scope: Primary inspected restore archive and independently rechecked owned isolated server census, binlog and cleanup. Restore replay performed by bounded executor, not repeated by primary.
+
+Initial broad c64 user census also found c64_meta and c64_warehouse from the earlier owned-container drill. These two owned temporary accounts were removed with explicit DROP USER in this container only; no source data row was changed.
+Final observations (server version, table counts, restore schemas, all c64 users, binlog):
+8.0.46
+opendata_iter01	14
+opendata_iter01_data	18
+0
+0
+1	ROW	604800
+All six final observations match expectations.

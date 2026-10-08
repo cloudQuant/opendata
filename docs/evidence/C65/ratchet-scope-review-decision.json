@@ -1,0 +1,38 @@
+{
+  "archive_round": "C65",
+  "generated_at": "2026-09-30T22:47:00.204343+00:00",
+  "reviewer": "Codex primary",
+  "authorized_scope": "iteration01 FR4/D9 explicitly required futures_derivative; current source-preserving B layer extension",
+  "review_artifact_sha256": "deea4a3cb9ef975289c41aa9bf5eddb5c2ea9e85ba51ef7369c83063a3e9ca42",
+  "old_snapshot_sha256": "036b0bf616892324cc4b081c6a075740d54a589d1815934042fee11844ecaf27",
+  "decision": "ALLOW_CONTROLLED_B_SCOPE_REFREEZE_AFTER_A2_ZERO_AND_SELFDEV_NO_GROWTH",
+  "actual_delta": {
+    "new_python_files": 12,
+    "new_facade_exports": 13,
+    "new_files_E501": 21,
+    "old_facade_new_E402": 10,
+    "old_facade_new_F401": 13,
+    "new_direct_http": 27
+  },
+  "old_313_scope_ruff_increase": 23,
+  "old_313_scope_direct_http_increase": 0,
+  "other_old_paths_growth": 0,
+  "conditions": {
+    "ruff_selfdev_max": 148,
+    "mypy_selfdev_max": 0,
+    "bandit_selfdev_max": 1,
+    "a2_check_exit": 0,
+    "pinned_tool_versions_unchanged": true
+  },
+  "before": {
+    "ruff_ported": 2144,
+    "direct_http_ported": 1044,
+    "ported_python_files": 313
+  },
+  "after_reviewed": {
+    "ruff_ported": 2188,
+    "direct_http_ported": 1071,
+    "ported_python_files": 325
+  },
+  "not_claimed": "old 313-file Ruff debt unchanged; zero ported debt; zero security risks; generic permission to grow first-party debt"
+}

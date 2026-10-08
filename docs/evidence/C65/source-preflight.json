@@ -1,0 +1,189 @@
+{
+  "round": "C65",
+  "date": "2026-09-30T14:56:25.194353+00:00",
+  "command": "Anaconda base clean Python read-only confirmation SELECT @@SESSION.transaction_read_only; review earlier completed schema/census reads; logging Decimal formatting repaired",
+  "scope": "configured local source READ ONLY; no DDL/DML/provider calls",
+  "transaction_read_only": 1,
+  "global_flags": {
+    "log_bin": 1,
+    "binlog_format": "ROW",
+    "binlog_expire_logs_seconds": 2592000,
+    "read_only": 0,
+    "super_read_only": 0
+  },
+  "stock_daily_ths": {
+    "rows_exact": 10310289,
+    "symbols_exact": 5568,
+    "first_date": "2016-09-23",
+    "last_date": "2026-09-24"
+  },
+  "census_seconds": 169.299,
+  "exit": 0,
+  "census_evidence": "docs/evidence/C65/source-preflight-first-failure.txt",
+  "warehouse_version": "0005_dwd_stock_adjust",
+  "schema": "opendata_data",
+  "source_columns": [
+    {
+      "COLUMN_NAME": "thscode",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null
+    },
+    {
+      "COLUMN_NAME": "trade_date",
+      "COLUMN_TYPE": "date",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null
+    },
+    {
+      "COLUMN_NAME": "date_ms",
+      "COLUMN_TYPE": "bigint",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null
+    },
+    {
+      "COLUMN_NAME": "currency",
+      "COLUMN_TYPE": "varchar(8)",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": null
+    },
+    {
+      "COLUMN_NAME": "interval",
+      "COLUMN_TYPE": "varchar(8)",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": null
+    },
+    {
+      "COLUMN_NAME": "adjusted",
+      "COLUMN_TYPE": "varchar(16)",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": null
+    },
+    {
+      "COLUMN_NAME": "open_price",
+      "COLUMN_TYPE": "double",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": null
+    },
+    {
+      "COLUMN_NAME": "high_price",
+      "COLUMN_TYPE": "double",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": null
+    },
+    {
+      "COLUMN_NAME": "low_price",
+      "COLUMN_TYPE": "double",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": null
+    },
+    {
+      "COLUMN_NAME": "close_price",
+      "COLUMN_TYPE": "double",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": null
+    },
+    {
+      "COLUMN_NAME": "volume",
+      "COLUMN_TYPE": "double",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": null
+    },
+    {
+      "COLUMN_NAME": "turnover",
+      "COLUMN_TYPE": "double",
+      "IS_NULLABLE": "YES",
+      "COLUMN_DEFAULT": null
+    },
+    {
+      "COLUMN_NAME": "_source",
+      "COLUMN_TYPE": "varchar(32)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null
+    },
+    {
+      "COLUMN_NAME": "_fetched_at",
+      "COLUMN_TYPE": "datetime",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null
+    },
+    {
+      "COLUMN_NAME": "_batch_id",
+      "COLUMN_TYPE": "char(36)",
+      "IS_NULLABLE": "NO",
+      "COLUMN_DEFAULT": null
+    }
+  ],
+  "source_indexes": [
+    {
+      "INDEX_NAME": "PRIMARY",
+      "NON_UNIQUE": 0,
+      "SEQ_IN_INDEX": 1,
+      "COLUMN_NAME": "thscode"
+    },
+    {
+      "INDEX_NAME": "PRIMARY",
+      "NON_UNIQUE": 0,
+      "SEQ_IN_INDEX": 2,
+      "COLUMN_NAME": "trade_date"
+    }
+  ],
+  "partition_tables": [
+    {
+      "TABLE_NAME": "dwd_financial_indicator",
+      "partitions_count": 4,
+      "pmax_count": "1",
+      "p2027_count": "0"
+    },
+    {
+      "TABLE_NAME": "dwd_financial_statement",
+      "partitions_count": 4,
+      "pmax_count": "1",
+      "p2027_count": "0"
+    },
+    {
+      "TABLE_NAME": "dwd_index_constituent",
+      "partitions_count": 4,
+      "pmax_count": "1",
+      "p2027_count": "0"
+    },
+    {
+      "TABLE_NAME": "dwd_stock_action",
+      "partitions_count": 4,
+      "pmax_count": "1",
+      "p2027_count": "0"
+    },
+    {
+      "TABLE_NAME": "dwd_stock_adjust",
+      "partitions_count": 4,
+      "pmax_count": "1",
+      "p2027_count": "1"
+    },
+    {
+      "TABLE_NAME": "dwd_stock_daily",
+      "partitions_count": 4,
+      "pmax_count": "1",
+      "p2027_count": "0"
+    },
+    {
+      "TABLE_NAME": "ods_stock_action_ths",
+      "partitions_count": 37,
+      "pmax_count": "1",
+      "p2027_count": "0"
+    },
+    {
+      "TABLE_NAME": "ods_stock_daily_akshare",
+      "partitions_count": 4,
+      "pmax_count": "1",
+      "p2027_count": "0"
+    },
+    {
+      "TABLE_NAME": "ods_stock_daily_ths",
+      "partitions_count": 13,
+      "pmax_count": "1",
+      "p2027_count": "0"
+    }
+  ],
+  "source_ddl_sha256": "7324feca37f603f8ecf0d88c9f7e1e35734eb057950121988bc583fec9e2af1c",
+  "previous_failure": "second run completed DB queries then TypeError serializing Decimal partition counts for log; preserved raw"
+}
