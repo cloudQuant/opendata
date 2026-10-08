@@ -18,6 +18,7 @@ from opendata.data.providers.fmp.provider import PROVIDER as FMP_PROVIDER
 from opendata.data.providers.fred.provider import PROVIDER as FRED_PROVIDER
 from opendata.data.providers.imf.provider import PROVIDER as IMF_PROVIDER
 from opendata.data.providers.oecd.provider import PROVIDER as OECD_PROVIDER
+from opendata.data.providers.sec.provider import PROVIDER as SEC_PROVIDER
 from opendata.data.providers.ths.provider import PROVIDER as THS_PROVIDER
 from opendata.data.providers.yfinance.provider import PROVIDER as YFINANCE_PROVIDER
 
@@ -74,7 +75,7 @@ _UPSTREAM_PROVIDERS: tuple[Provider, ...] = (
     _reserved_provider("finviz"),
     _reserved_provider("government_us"),
     _reserved_provider("nasdaq", "api_key"),
-    _reserved_provider("sec"),
+    SEC_PROVIDER,
     _reserved_provider("stockgrid"),
     _reserved_provider("tmx"),
     _reserved_provider("tradier", "api_key", "account_type"),
@@ -89,7 +90,7 @@ PROVIDERS: tuple[Provider, ...] = (
 _PROVIDERS_BY_SOURCE = {provider.source: provider for provider in PROVIDERS}
 # Preserve the legacy capability registration order for callers that observe
 # registry iteration order (for example, the capabilities API).
-_REGISTRATION_ORDER = (
+_LEGACY_REGISTRATION_ORDER = (
     AKSHARE_PROVIDER,
     ECB_PROVIDER,
     FRED_PROVIDER,
@@ -100,6 +101,22 @@ _REGISTRATION_ORDER = (
     BLS_PROVIDER,
     FMP_PROVIDER,
 )
+
+
+def registration_order() -> tuple[Provider, ...]:
+    """Return every locally implemented provider in the order it registers.
+
+    The legacy tuple is kept verbatim because callers observe registry iteration order, and
+    anything implemented but not named there is appended in ``PROVIDERS`` order. Deriving the tail
+    is the point: a hand-maintained registration list is how a declared model ends up invisible to
+    the runtime that is supposed to route it, and the omission stays green because nothing asks.
+    """
+    listed = {provider.source for provider in _LEGACY_REGISTRATION_ORDER}
+    return _LEGACY_REGISTRATION_ORDER + tuple(
+        provider
+        for provider in PROVIDERS
+        if provider.is_implemented and provider.source not in listed
+    )
 
 
 def list_providers() -> tuple[Provider, ...]:
@@ -200,7 +217,7 @@ def register_providers(
 
         registry = get_registry()
     registered: list[Capability] = []
-    for provider in _REGISTRATION_ORDER:
+    for provider in registration_order():
         registered.extend(register_provider(provider.source, registry))
     return registered
 
@@ -214,4 +231,5 @@ __all__ = [
     "list_providers",
     "register_provider",
     "register_providers",
+    "registration_order",
 ]

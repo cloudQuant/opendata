@@ -23,10 +23,12 @@ from opendata.data.providers.bls.models._contracts import BlsCatalogItem, BlsObs
 from opendata.data.providers.bls.models.search import BlsSearchQuery
 from opendata.data.providers.bls.models.series import BlsSeriesQuery
 from opendata.data.providers.catalog import (
+    engine_declared_models,
     get_provider,
     health_check,
     list_providers,
     register_providers,
+    registration_order,
 )
 from opendata.data.providers.ecb.models._reference_rates import RawReferenceRateRecord
 from opendata.data.providers.ecb.models._series_query import (
@@ -398,9 +400,17 @@ def test_registration_preserves_legacy_order_and_binds_eleven_models_exactly() -
     registered = register_providers(registry)
 
     assert len(list_providers()) == 34
-    assert len(registered) == len(registry.capabilities()) == 44
-    assert len({capability.source for capability in registry.capabilities()}) == 9
-    assert sum(not provider.is_implemented for provider in list_providers()) == 25
+    # Two identities, not two snapshots: every binding contributes exactly one capability, and
+    # exactly the implemented sources contribute one. A reserved entry that registered, or an
+    # implemented package that registered nothing, fails here without anyone re-counting by hand.
+    assert (
+        len(registered)
+        == len(registry.capabilities())
+        == sum(len(provider.fetcher_bindings) for provider in list_providers())
+    )
+    assert len({capability.source for capability in registry.capabilities()}) == sum(
+        1 for provider in list_providers() if provider.is_implemented
+    )
 
     expected_legacy_sources = (
         ["akshare"] * 10
@@ -421,14 +431,29 @@ def test_registration_preserves_legacy_order_and_binds_eleven_models_exactly() -
         for capability in registered
         if _capability_identity(capability) not in new_capability_identities
     ]
-    assert [capability.source for capability in legacy_capabilities] == expected_legacy_sources
-    assert [capability.source for capability in registered[-4:]] == ["bls", "bls", "fmp", "fmp"]
+    legacy_count = len(expected_legacy_sources)
+    legacy_prefix = [capability.source for capability in legacy_capabilities[:legacy_count]]
+    assert legacy_prefix == expected_legacy_sources
+    # An implemented provider the legacy tuple does not name is appended by
+    # catalog.registration_order(), so the whole registration is the legacy block followed by the
+    # derived tail, each source contiguous. The hand-maintained list this file used to freeze as the
+    # literal 44 is the omission this ordering refuses.
+    grouped: list[str] = []
+    for capability in registered:
+        if not grouped or grouped[-1] != capability.source:
+            grouped.append(capability.source)
+    assert grouped == [provider.source for provider in registration_order()]
 
     descriptors = {
         (descriptor.source, descriptor.model): descriptor
         for descriptor in registry.list_model_descriptors()
     }
-    assert set(descriptors) == new_models
+    # A canonical provider/model identity may come from exactly two places: a hand-written slice
+    # work order, or the declarative engine. Neither list is repeated here, so a declaration added
+    # in a provider package is accounted for without editing this file.
+    declared = {(source, spec.model) for source, spec in engine_declared_models()}
+    assert new_models & declared == set()
+    assert set(descriptors) == new_models | declared
     for case in _MODEL_CASES:
         provider = get_provider(case.source)
         binding = provider.fetcher_dict[case.model_id]
@@ -442,6 +467,29 @@ def test_registration_preserves_legacy_order_and_binds_eleven_models_exactly() -
     with pytest.raises(LookupError, match="unknown provider model"):
         registry.resolve_model("fmp", "UnknownModel")
     assert register_providers(registry) == []
+
+
+def test_every_implemented_provider_and_declared_model_reaches_the_registry() -> None:
+    """A binding that never registers leaves its model unroutable and used to stay green.
+
+    Both faces are generated from discovery: the registration set must equal the implemented set,
+    and every model the declarative engine advertises must resolve to the very spec it was built
+    from. Adding a provider package therefore cannot be forgotten here -- the omission this face
+    refuses is the one a hand-maintained list makes.
+    """
+    registry = ProviderRegistry()
+    register_providers(registry)
+
+    named = {provider.source for provider in registration_order()}
+    implemented = {provider.source for provider in list_providers() if provider.is_implemented}
+    assert implemented - named == set()
+    assert named - implemented == set()
+
+    declared = engine_declared_models()
+    for source, spec in declared:
+        fetcher = registry.resolve_model(source, spec.model)
+        assert fetcher.model_spec is spec
+        assert fetcher.capability.verified is False
 
 
 def test_fmp_and_bls_health_checks_are_local_and_do_not_overstate_access(
