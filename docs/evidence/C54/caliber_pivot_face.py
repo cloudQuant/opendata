@@ -156,7 +156,7 @@ def face_c_live_reads() -> None:
     from opendata.data.providers.akshare.models.financial_indicator import (
         AkshareFinancialIndicatorFetcher,
     )
-    from opendata_fuyao.endpoints import financial_statement_items
+    from opendata.data.providers.ths.endpoints import financial_statement_items
 
     _face("面 C 三个熔解器的现场读数")
     income = financial_statement_items("income")
@@ -207,7 +207,7 @@ def face_e_table_moves_the_melt() -> None:
     from opendata.data.providers.akshare.models.financial_statement import (
         AkshareFinancialStatementFetcher,
     )
-    from opendata_fuyao.endpoints import financial_statement_items
+    from opendata.data.providers.ths.endpoints import financial_statement_items
 
     _face("面 E 反事实：表改一行，熔解结果跟着动")
     original_dir = mapping_module._MAPPINGS_DIR

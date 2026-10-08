@@ -1,0 +1,69 @@
+python=3.11.8 scanned_python_files=69
+files_with_real_imports=11
+  docs/evidence/C15/futures-calendar-probe.py:25 from opendata_fuyao.endpoints import FUTURES_PRICES_ENDPOINT -> opendata/data/providers/ths/endpoints.py [on-disk]
+  docs/evidence/C15/futures-calendar-probe.py:30 from opendata_fuyao.errors import FuyaoError -> opendata/data/providers/ths/transport/errors.py [on-disk]
+  docs/evidence/C16/index-bare-code-defect.py:21 from opendata_fuyao import endpoints -> opendata/data/providers/ths/endpoints.py [on-disk]
+  docs/evidence/C16/index-bare-code-defect.py:22 from opendata_fuyao.errors import FuyaoError -> opendata/data/providers/ths/transport/errors.py [on-disk]
+  docs/evidence/C18/index-bare-code-live.py:28 from opendata_fuyao.errors import FuyaoError -> opendata/data/providers/ths/transport/errors.py [on-disk]
+  docs/evidence/C18/index-bare-code-live.py:34 from opendata_fuyao import FuyaoHttpClient -> REFUSED(the historical Fuyao directory has no single file identity)
+  docs/evidence/C18/index-code-rule-audit.py:28 from opendata_fuyao import endpoints -> opendata/data/providers/ths/endpoints.py [on-disk]
+  docs/evidence/C18/index-code-rule-audit.py:33 from opendata_fuyao import FuyaoHttpClient -> REFUSED(the historical Fuyao directory has no single file identity)
+  docs/evidence/C18/instrument-list-date-canary.py:25 from opendata_fuyao import endpoints -> opendata/data/providers/ths/endpoints.py [on-disk]
+  docs/evidence/C18/instrument-list-date-canary.py:28 from opendata_fuyao import FuyaoHttpClient -> REFUSED(the historical Fuyao directory has no single file identity)
+  docs/evidence/C19/catalog-date-field-shape.py:37 from opendata_fuyao import endpoints -> opendata/data/providers/ths/endpoints.py [on-disk]
+  docs/evidence/C19/catalog-date-field-shape.py:42 from opendata_fuyao import FuyaoHttpClient -> REFUSED(the historical Fuyao directory has no single file identity)
+  docs/evidence/C19/catalog-flip-rate.py:53 from opendata_fuyao import endpoints -> opendata/data/providers/ths/endpoints.py [on-disk]
+  docs/evidence/C19/catalog-flip-rate.py:56 from opendata_fuyao import FuyaoHttpClient -> REFUSED(the historical Fuyao directory has no single file identity)
+  docs/evidence/C26/silent-drop-measure.py:611 from opendata_fuyao.endpoints import ADJUSTMENT_FACTORS_ENDPOINT -> opendata/data/providers/ths/endpoints.py [on-disk]
+  docs/evidence/C26/silent-drop-measure.py:465 import opendata_http -> opendata/data/providers/akshare/_vendor [on-disk]
+  docs/evidence/C27/em-channel-measure.py:183 import opendata_http.index.index_zh_em -> opendata/data/providers/akshare/_vendor/index/index_zh_em.py [on-disk]
+  docs/evidence/C27/em-channel-measure.py:233 import opendata_http.index.index_zh_em -> opendata/data/providers/akshare/_vendor/index/index_zh_em.py [on-disk]
+  docs/evidence/C27/refusal-shape.py:133 import opendata_http.index.index_zh_em -> opendata/data/providers/akshare/_vendor/index/index_zh_em.py [on-disk]
+  docs/evidence/C28/graded-shapes-render.py:46 from opendata_fuyao.errors import error_for_transport -> opendata/data/providers/ths/transport/errors.py [on-disk]
+import_sites=20 refused_by_authority=5 target_missing_on_disk=0
+files_with_string_only_hits=17  (mentions inside a string constant, NOT imports: those scripts run as they stand)
+  docs/evidence/C21/update_time-tz-pin.py 66:opendata_http (inside a string constant)
+  docs/evidence/C26/mutation-proof.py 39:opendata_fuyao (inside a string constant)
+  docs/evidence/C36/zero_dep_scanner_HEAD.py 40:opendata_http (inside a string constant)
+  docs/evidence/C36/zero_dep_scanner_HEAD.py 41:opendata_fuyao (inside a string constant)
+  docs/evidence/C37/attribution.py 139:opendata_http (inside a string constant)
+  docs/evidence/C37/attribution.py 273:opendata_http (inside a string constant)
+  docs/evidence/C37/attribution.py 274:opendata_http (inside a string constant)
+  docs/evidence/C37/cross_env_port_replay.py 76:opendata_http (inside a string constant)
+  docs/evidence/C37/cross_env_port_replay.py 92:opendata_http (inside a string constant)
+  docs/evidence/C37/cross_env_port_replay.py 29:opendata_http (inside a string constant)
+  docs/evidence/C37/cross_env_port_replay.py 84:opendata_http (inside a string constant)
+  docs/evidence/C37/cross_env_port_replay.py 85:opendata_http (inside a string constant)
+  docs/evidence/C37/cross_env_port_replay.py 86:opendata_http (inside a string constant)
+  docs/evidence/C37/cross_env_port_replay.py 84:opendata_http (inside a string constant)
+  docs/evidence/C37/cross_env_port_replay.py 85:opendata_http (inside a string constant)
+  docs/evidence/C37/cross_env_port_replay.py 86:opendata_http (inside a string constant)
+  docs/evidence/C38/loguru-format-census.py 284:opendata_http (inside a string constant)
+  docs/evidence/C38b/coverage-face-recompute.py 16:opendata_fuyao (inside a string constant)
+  docs/evidence/C39/loguru-mutation.py 179:opendata_http (inside a string constant)
+  docs/evidence/C39/loguru-mutation.py 180:opendata_http (inside a string constant)
+  docs/evidence/C44/behaviour_counterfactuals.py 120:opendata_fuyao (inside a string constant)
+  docs/evidence/C44/behaviour_counterfactuals.py 129:opendata_fuyao (inside a string constant)
+  docs/evidence/C44/census_counterfactuals.py 46:opendata_fuyao (inside a string constant)
+  docs/evidence/C44/golden_millis.py 1:opendata_fuyao (inside a string constant)
+  docs/evidence/C44/shell_audit.py 33:opendata_fuyao (inside a string constant)
+  docs/evidence/C45/port_counterfactuals.py 1:opendata_http (inside a string constant)
+  docs/evidence/C45/port_counterfactuals.py 46:opendata_http (inside a string constant)
+  docs/evidence/C45/port_counterfactuals.py 48:opendata_http (inside a string constant)
+  docs/evidence/C45/port_counterfactuals.py 64:opendata_http (inside a string constant)
+  docs/evidence/C45/port_counterfactuals.py 228:opendata_http (inside a string constant)
+  docs/evidence/C45/ratchet_counterfactuals.py 53:opendata_http (inside a string constant)
+  docs/evidence/C51/zero_dep_clean_env_census.py 68:opendata_http (inside a string constant)
+  docs/evidence/C51/zero_dep_clean_env_census.py 69:opendata_fuyao (inside a string constant)
+  docs/evidence/C60/run_a2_comply.py 181:opendata_fuyao (inside a string constant)
+  docs/evidence/C60/run_c60.py 115:opendata_fuyao (inside a string constant)
+
+--- retired-name availability face (find_spec only; nothing executed) ---
+  positive control: opendata resolvable=True (repo root is on the search path)
+  opendata_fuyao: resolvable=False (importing it now raises ModuleNotFoundError)
+  opendata_http: resolvable=False (importing it now raises ModuleNotFoundError)
+  canonical opendata/data/providers/ths: is_dir=True python_files=26
+  canonical opendata/data/providers/akshare/_vendor: is_dir=True python_files=325
+  this census imports no retired name; it parses the records that do
+HEAD=refs/heads/dev b0d96d569ed3
+self_sha256=5a06e323f4b27edf

@@ -1,0 +1,133 @@
+# C68 退休导入修复留档（opendata_fuyao / opendata_http -> 现canonical路径）
+# collected_at_utc=2026-10-08T18:26:00Z
+# branch=dev
+# HEAD=b0d96d5 fix(acceptance): C67 棘轮范围面交给布局权威分层，AC-17|03 的判定重新可达
+# python=Python 3.11.8  （档案录制时为 3.13.5；本轮三份 body 均未出现版本相关行）
+# 布局权威=scripts/quality/source_layout.py 的 historical_identity() + _FUYAO_PATHS
+#   opendata_fuyao/errors.py      -> opendata/data/providers/ths/transport/errors.py
+#   opendata_fuyao/endpoints.py   -> opendata/data/providers/ths/endpoints.py
+# 规则：修复必须由「重算输出与档案 body 逐字节相同」证明；证不了的修复一律回退。
+# git status --porcelain（采集时，本目录除外）：
+#    M docs/evidence/C54/caliber_pivot_face.py
+#    M opendata/data/providers/_engine/http_json.py   （非本轮改动，本轮未触碰 scripts/ 与 opendata/）
+# 负臂命令形态说明：三份脚本均从仓库根以 python3 运行；C54 需要仓库根在 sys.path 上（见其小节）。
+
+================================================================================
+1) docs/evidence/C28/graded-shapes-render.py      档案 docs/evidence/C28/graded-shapes-render.txt
+================================================================================
+[a] 负臂（未修改先跑，证明档案确实跑不动）
+    命令：python3 docs/evidence/C28/graded-shapes-render.py
+    退出码：1
+    stderr 末行：ModuleNotFoundError: No module named 'opendata_fuyao'
+    （倒数第二行：from opendata_fuyao.errors import error_for_transport, error_for_upstream_code）
+
+[b] 修复（只改第 46 行导入，逻辑/打印/判定面一字未动）
+    from opendata.data.providers.ths.transport.errors import (
+        error_for_transport,
+        error_for_upstream_code,
+    )
+
+[c] 修复后重跑
+    命令：python3 -u docs/evidence/C28/graded-shapes-render.py
+    退出码：0    stdout=7213 字节    stderr=0 字节
+
+[d] 逐字节比对
+    分箱标记（档案第 16 行）：===== 输出（未裁剪） =====
+    档案 body：7160 字节  sha256=52223ea64a5a691085ea077c2f976e9701df3c9cba125144c4c661c0e930dd68
+    重算 body：7213 字节  sha256=d09d1f1b1112a284d51c172ffe1b8ae1dfafe8858a2a186394819eb96d340301
+    判定：DIFFERENT  ==> 按规则回退（git checkout -- docs/evidence/C28/graded-shapes-render.py），未动档案
+
+    全部差异（archived vs recomputed，仅两处）：
+      @@ -4,3 +4,3 @@
+               ths       fuyao 2003（凭证被拒）                   -> credential-rejected 归因=FUYAO_PERMISSION
+             -            归档文案=FuyaoError: FUYAO_PERMISSION: 无该数据端点的访问权限
+             +            归档文案=FuyaoError: FUYAO_PERMISSION: 权限不足，或凭据无效/已吊销（录制实测该形态回的是本码而非 2001）
+             @@ -71,2 +71 @@
+               巡检文案字段是否含 Key 值：False
+             -exit=0
+    差异归因（不改口、不放宽比对，只登记）：
+      * 不是墙钟值：FUYAO_PERMISSION 的文案自 C28 录制（2026-09-26, HEAD=c062580）之后在仓库里被改写过，
+        现值取自 opendata/data/providers/ths/transport/error_messages.yaml:41（第 2003 码走文案表，非硬编码），
+        直调 canonical 模块可复核：
+          PYTHONPATH=. python3 -c "from opendata.data.providers.ths.transport.errors import error_for_upstream_code as f; print(str(f(2003)))"
+          -> FUYAO_PERMISSION: 权限不足，或凭据无效/已吊销（录制实测该形态回的是本码而非 2001）
+        分类档位（credential-rejected / 归因 / level / owner）、泄漏计数、脱敏读数逐行未变。
+      * 档案 body 末行 `exit=0` 是采集器附加的页脚，不在脚本 stdout 内。
+      结论：这份档案不是「导入名坏了」，是「底层文案数据在 C28 之后合法漂移」——重算无法逐字节复现，
+            故修复不成立；档案保持原样，脚本保持原样。
+
+[e] ruff（当前源码态=已回退的原样）
+    python3 -m ruff check --no-cache docs/evidence/C28/graded-shapes-render.py -> All checks passed!（退出码 0）
+
+================================================================================
+2) docs/evidence/C44/census_counterfactuals.py    档案 docs/evidence/C44/census-counterfactuals.txt
+================================================================================
+[a] 负臂：不存在。未修改直接跑就是通的。
+    命令：python3 docs/evidence/C44/census_counterfactuals.py
+    退出码：0    stdout=533 字节    stderr=0 字节
+    即：这份档案本来就是可复跑的，不属于 C66 搬迁造成的不可再现证据。
+
+[b] 拒绝修改（未做任何编辑，工作树里该文件保持未改）
+    第 50 行 `from opendata_fuyao.endpoints import shanghai_midnight_millis` 不是脚本自己的导入，
+    它在 _SHELL_CASES 的源码字符串里（第 42 行起的夹具），由脚本写进临时目录的假 tests/ 文件，
+    只被 docs/evidence/C44/shell_audit.py 做 ast.parse 静态识别（case 1「自指」的命中样本），从不执行。
+    改这行等于改判据的输入样本本身 —— 触到「never change what the script judges」这条红线，
+    而且布局权威里也没有「夹具字符串」这一类映射可依据。故按「需要未列出的映射就上报、不猜」处理。
+
+[c] 未修改重跑（用来正面登记：档案今天仍逐字节可复现）
+    命令：python3 docs/evidence/C44/census_counterfactuals.py
+    退出码：0
+
+[d] 逐字节比对
+    分箱标记（档案第 31 行）：--- 以下为完整未裁剪输出（本行以上为 provenance 抬头）---
+    档案 body：533 字节  sha256=4289a0e451f50129234f4ba3e4ebca1f9ead8932b0a641ca4d029b1073458607
+    重算 body：533 字节  sha256=4289a0e451f50129234f4ba3e4ebca1f9ead8932b0a641ca4d029b1073458607
+    判定：IDENTICAL（零编辑复现，证明该档案的可再现性与 C66 搬迁无关）
+
+[e] ruff（原样文件）
+    python3 -m ruff check --no-cache docs/evidence/C44/census_counterfactuals.py -> All checks passed!（退出码 0）
+
+================================================================================
+3) docs/evidence/C54/caliber_pivot_face.py        档案 docs/evidence/C54/caliber-pivot-faces.txt
+================================================================================
+[a] 负臂
+    命令：python3 docs/evidence/C54/caliber_pivot_face.py
+    退出码：1
+    stderr 末行：ModuleNotFoundError: No module named 'opendata'
+      （该脚本自身不做 sys.path 引导，档案抬头的 command=python -u docs/evidence/C54/caliber_pivot_face.py
+        要成立必须仓库根在路径上；这不是退休名故障，属于运行环境前置，故换下面这一臂。）
+    命令：PYTHONPATH=. python3 -u docs/evidence/C54/caliber_pivot_face.py
+    退出码：1
+    stderr 末行：ModuleNotFoundError: No module named 'opendata_fuyao'
+      （倒数第二行：File ".../caliber_pivot_face.py", line 159, in face_c_live_reads
+        -> from opendata_fuyao.endpoints import financial_statement_items）
+
+[b] 修复（只改第 159 行与第 210 行两处函数内导入，其余一字未动）
+    from opendata.data.providers.ths.endpoints import financial_statement_items
+
+[c] 修复后重跑
+    命令：PYTHONPATH=. python3 -u docs/evidence/C54/caliber_pivot_face.py
+    退出码：0    stdout=4988 字节    stderr=0 字节
+    连接面=不连库（脚本抬头自证）：只读 opendata/data/mappings/*.yaml 与已注册 provider 表；
+    面 E 的探针表写在 TemporaryDirectory 里，返回即删。全程无网络、无凭证。
+
+[d] 逐字节比对
+    分箱标记：档案第 1–9 行为 `# ` provenance 抬头，第 10 行空行起为 body（首行 `=== 面 A ...`）
+    档案 body：4988 字节  sha256=5fca1ef06972979d2267833ce80cc4483df157c940305671698a1e64adc9b706
+    重算 body：4988 字节  sha256=5fca1ef06972979d2267833ce80cc4483df157c940305671698a1e64adc9b706
+    判定：IDENTICAL  ==> 修复成立，保留
+    ruff format 之后复跑第二次，sha256 仍为 5fca1ef0...（4988 字节），未受格式化影响。
+
+[e] ruff
+    python3 -m ruff format --no-cache docs/evidence/C54/caliber_pivot_face.py -> 1 file left unchanged（退出码 0）
+    python3 -m ruff check  --no-cache docs/evidence/C54/caliber_pivot_face.py -> All checks passed!（退出码 0）
+    两处改动行宽度 78 列 < 100；档案里其余 >100 列的行均为 C54 原有的中文说明/字符串，本轮未新增长行。
+
+================================================================================
+本轮小结（三选一成立）
+================================================================================
+  C28  修复 DIFFERENT -> 已回退，脚本与档案双双保持原样；不可再现的根因是文案数据漂移，不是导入名。
+  C44  负臂不成立（未改即 exit=0 且 body IDENTICAL）-> 拒绝编辑，退休名只是判据夹具内容。
+  C54  修复 IDENTICAL -> 保留（唯一入档的载体修复，docs/evidence/C54/caliber_pivot_face.py 处于 M 态）。
+  未触碰：scripts/ tests/ opendata/ pyproject.toml docs/quality/ 以及任何既有 .txt/.md 档案 body。
+  未运行：make / make gate / pytest / acceptance_item_probe.py / make security-ported / 任何连网探针。
