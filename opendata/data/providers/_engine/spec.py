@@ -151,6 +151,10 @@ class PaginationSpec:
             raise ValueError("cursor pagination requires cursor_key and cursor_field")
         if self.kind in {"offset", "page"} and not self.limit_key:
             raise ValueError(f"{self.kind} pagination requires limit_key")
+        # Without an offset key nothing in the request changes between pages, so the same page would
+        # be re-requested until max_pages fired. A bound is not a paging strategy.
+        if self.kind in {"offset", "page"} and not self.offset_key:
+            raise ValueError(f"{self.kind} pagination requires offset_key")
 
 
 @dataclass(frozen=True)
@@ -259,4 +263,14 @@ class ModelSpec:
             if placeholder not in declared:
                 raise ValueError(
                     f"{self.model}: path placeholder {placeholder!r} is not a declared parameter"
+                )
+        # ``render_path`` refuses a placeholder with no value, but only at fetch time; a placeholder
+        # that is optional and has no default is a declaration that cannot address a resource on its
+        # own, so the task author is told when the record is written rather than on first query.
+        by_name = {parameter.name: parameter for parameter in self.params}
+        for placeholder in self.path_placeholders:
+            parameter = by_name[placeholder]
+            if not parameter.required and parameter.default is None:
+                raise ValueError(
+                    f"{self.model}: path placeholder {placeholder!r} must be required or defaulted"
                 )
