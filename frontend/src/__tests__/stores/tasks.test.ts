@@ -25,6 +25,7 @@ describe('useTaskStore', () => {
     name: 'Test Task',
     description: 'Test Description',
     user_id: 1,
+    task_kind: 'script',
     script_id: 'test_script',
     script_name: 'Test Script',
     schedule_type: 'daily',

@@ -72,7 +72,10 @@ class TestAkshareProviderFetchData:
 
         with (
             patch.object(pd.DataFrame, "__init__", return_value=None),
-            patch("opendata_http.stock_zh_a_spot_em", return_value=mock_df),
+            patch(
+                "opendata.data.providers.akshare._vendor.stock_zh_a_spot_em",
+                return_value=mock_df,
+            ),
         ):
             result = provider.fetch_ak_data("stock_zh_a_spot_em")
             assert isinstance(result, pd.DataFrame)

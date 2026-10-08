@@ -33,6 +33,7 @@ VERB_CALL = re.compile(
 METHOD_FIELD = re.compile(r"method:\s*[`'\"](\w+)[`'\"]")
 TEMPLATE_SEGMENT = re.compile(r"\$\{[^}]*\}")
 BASE_URL_FIELD = re.compile(r"baseURL:\s*[`'\"]([^`'\"]+)[`'\"]")
+HTTP_METHODS = {"get", "post", "put", "patch", "delete", "options", "head", "trace"}
 
 # The extractor's own floor: 43 calls across 8 modules as measured. The numbers
 # sit low enough to survive a real refactor and high enough that if either
@@ -91,29 +92,34 @@ def as_regex(template: str) -> re.Pattern[str]:
     return re.compile("^" + re.sub(r"\{[^/}]+\}|\$\{[^}]*\}", "[^/]+", template) + "$")
 
 
+def openapi_routes_under(schema: dict, prefix: str) -> list[tuple[str, str]]:
+    """Enumerate documented HTTP operations under ``prefix`` from OpenAPI."""
+    return sorted(
+        (method.upper(), path[len(prefix) :])
+        for path, operations in schema.get("paths", {}).items()
+        if path.startswith(prefix + "/")
+        for method in operations
+        if method.lower() in HTTP_METHODS
+    )
+
+
 def declared_backend_routes() -> list[tuple[str, str]]:
     """(METHOD, path template) registered on the app's api router."""
+    from fastapi import FastAPI
+
     from opendata.api import api_router  # imported lazily: the app module is heavy
 
-    routes: list[tuple[str, str]] = []
-    for route in api_router.routes:
-        template = str(getattr(route, "path", ""))
-        methods = sorted(getattr(route, "methods", None) or ())
-        routes.extend((method, template) for method in methods)
-    return routes
+    prefix = frontend_base_url()
+    probe = FastAPI()
+    probe.include_router(api_router, prefix=prefix)
+    return openapi_routes_under(probe.openapi(), prefix)
 
 
 def app_routes_under(prefix: str) -> list[tuple[str, str]]:
     """(METHOD, template) the assembled app actually answers, made relative to ``prefix``."""
     from opendata.main import app
 
-    return [
-        (method, path[len(prefix) :])
-        for route in app.routes
-        for method in sorted(getattr(route, "methods", None) or ())
-        for path in [getattr(route, "path", "")]
-        if path.startswith(prefix + "/")
-    ]
+    return openapi_routes_under(app.openapi(), prefix)
 
 
 def backend_table() -> list[tuple[str, re.Pattern[str]]]:

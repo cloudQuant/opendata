@@ -23,6 +23,7 @@ from fastapi.testclient import TestClient
 from starlette.websockets import WebSocketDisconnect
 
 from opendata.api import data_subscribe as subscribe_api
+from opendata.data.domains import DomainSpec, load_domains
 from opendata.main import app
 from opendata.pipeline.subscription import (
     MAX_FRAME_ROWS,
@@ -438,6 +439,7 @@ class TestSocketAuth:
 
 class TestSocketSubscription:
     def test_subscribe_acknowledges_and_reports_the_replay_count(self, ws_client):
+        assert not load_domains()["stock_daily"].semantics_declared
         with ws_client.websocket_connect("/ws/data/subscribe") as ws:
             _auth(ws)
             ws.send_text(json.dumps({"action": "subscribe", "domain": "stock_daily"}))
@@ -448,6 +450,89 @@ class TestSocketSubscription:
         assert frame["domain"] == "stock_daily"
         assert frame["payload"] == "meta"
         assert frame["replayed"] == 0
+
+    def test_semantic_domains_without_subscribe_permission_stop_before_replay(self):
+        denied_domains = tuple(
+            domain
+            for domain, spec in load_domains().items()
+            if spec.semantics_declared and "subscribe" not in spec.permissions
+        )
+        engine_calls: list[str] = []
+
+        def forbidden_engine():
+            engine_calls.append("called")
+            raise AssertionError("a domain without subscribe permission reached the warehouse")
+
+        with (
+            patch.object(subscribe_api, "principal_resolver", _resolver(_Principal())),
+            patch.object(subscribe_api, "warehouse_engine_factory", forbidden_engine),
+            TestClient(app) as client,
+        ):
+            for domain in denied_domains:
+                with client.websocket_connect("/ws/data/subscribe") as ws:
+                    _auth(ws)
+                    ws.send_text(json.dumps({"action": "subscribe", "domain": domain}))
+                    frame = ws.receive_json()
+                assert frame["code"] == "DOMAIN_FORBIDDEN", domain
+
+        assert "sonia" in denied_domains
+        assert engine_calls == []
+
+    def test_explicit_subscribe_permission_keeps_acl_and_replay_gates(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from opendata.data import domains as domains_module
+
+        base = load_domains()["sonia"]
+        test_domain = "sonia_subscribe_test"
+        values = base.model_dump(mode="python")
+        values.update(
+            rest_path="macro/sonia-subscribe-test",
+            permissions=("query", "subscribe"),
+        )
+        synthetic_spec = DomainSpec.model_validate(values)
+        synthetic_domains = {**load_domains(), test_domain: synthetic_spec}
+        monkeypatch.setattr(domains_module, "load_domains", lambda: synthetic_domains)
+
+        engine_calls: list[str] = []
+        replay_calls: list[str] = []
+
+        def allowed_engine():
+            engine_calls.append("called")
+            return object()
+
+        def latest_batches(engine, *, domain: str, limit=None):
+            replay_calls.append(domain)
+            return []
+
+        with (
+            patch.object(subscribe_api, "principal_resolver", _resolver(_Principal())),
+            patch.object(subscribe_api, "warehouse_engine_factory", allowed_engine),
+            patch.object(subscribe_api, "latest_batches", latest_batches),
+            TestClient(app) as client,
+        ):
+            with client.websocket_connect("/ws/data/subscribe") as ws:
+                _auth(ws)
+                ws.send_text(json.dumps({"action": "subscribe", "domain": test_domain}))
+                allowed = ws.receive_json()
+            assert allowed["type"] == "subscribe.ok"
+
+        assert engine_calls == ["called"]
+        assert replay_calls == [test_domain]
+
+        engine_calls.clear()
+        with (
+            patch.object(subscribe_api, "principal_resolver", _resolver(_ScopedPrincipal())),
+            patch.object(subscribe_api, "warehouse_engine_factory", allowed_engine),
+            TestClient(app) as client,
+            client.websocket_connect("/ws/data/subscribe") as ws,
+        ):
+            _auth(ws)
+            ws.send_text(json.dumps({"action": "subscribe", "domain": test_domain}))
+            denied = ws.receive_json()
+
+        assert denied["code"] == "DOMAIN_FORBIDDEN"
+        assert engine_calls == []
 
     def test_unknown_domain_is_refused(self, ws_client):
         with ws_client.websocket_connect("/ws/data/subscribe") as ws:
@@ -856,21 +941,27 @@ class TestWebSocketMounts:
     application root rather than under the versioned REST prefix.
     """
 
-    def test_both_sockets_are_mounted_at_the_root(self):
-        from opendata.main import app
+    def test_both_sockets_are_mounted_at_the_root(self, ws_client):
+        with ws_client.websocket_connect("/ws/data/subscribe") as socket:
+            assert _auth(socket)["type"] == "auth.ok"
 
-        paths = {route.path for route in app.routes if "websocket" in type(route).__name__.lower()}
+        with (
+            pytest.raises(WebSocketDisconnect) as caught,
+            ws_client.websocket_connect("/ws/executions"),
+        ):
+            pass
 
-        assert "/ws/data/subscribe" in paths
-        assert "/ws/executions" in paths
+        assert caught.value.code == 4001  # authenticated before accept
 
-    def test_the_versioned_prefix_does_not_carry_sockets(self):
-        from opendata.main import app
+    def test_the_versioned_prefix_does_not_carry_sockets(self, ws_client):
+        for path in ("/api/v1/ws/data/subscribe", "/api/v1/ws/executions"):
+            with (
+                pytest.raises(WebSocketDisconnect) as caught,
+                ws_client.websocket_connect(path),
+            ):
+                pass
 
-        paths = {route.path for route in app.routes}
-
-        assert "/api/v1/ws/data/subscribe" not in paths
-        assert "/api/v1/ws/executions" not in paths
+            assert caught.value.code == 1000, f"unexpected versioned websocket at {path}"
 
     def test_executions_socket_still_refuses_a_missing_token(self):
         from opendata.main import app

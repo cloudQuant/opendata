@@ -51,6 +51,8 @@ class ThsIndexConstituentFetcher(Fetcher[ThsIndexConstituentQuery, tuple[IndexCo
     direction.
     """
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="index",
         domain="index_constituent",
@@ -97,7 +99,7 @@ class ThsIndexConstituentFetcher(Fetcher[ThsIndexConstituentQuery, tuple[IndexCo
             ThsProviderError: Credentials missing or the code is not exactly
                 one instrument in the upstream index universe.
         """
-        from opendata_fuyao.endpoints import fetch_index_constituents
+        from opendata.data.providers.ths.endpoints import fetch_index_constituents
 
         with client(timeout_seconds=ctx.timeout) as active:
             code = resolve_index_code(active, params.symbol)

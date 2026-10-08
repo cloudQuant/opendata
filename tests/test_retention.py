@@ -6,11 +6,14 @@ keep a maintenance job from deleting daily bars.
 """
 
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
 from opendata.core.config import settings
+from opendata.models.minute_archive import MinuteArchiveShard
 from opendata.pipeline.diff_report import REPORT_COLUMNS
 from opendata.pipeline.retention import (
     MINUTE_ARCHIVE,
@@ -134,20 +137,88 @@ class TestPurgeGuards:
 
 
 class TestMinuteArchives:
-    def test_removes_years_outside_the_window(self, tmp_path):
-        for year in (2015, 2016, 2024, 2026):
-            directory = tmp_path / "stock_daily" / "600519" / str(year)
-            directory.mkdir(parents=True)
-            (directory / "part.parquet").write_bytes(b"x")
+    def _seed_shard(self, engine, root, day: date) -> object:
+        digest = f"{day.year % 10}" * 64
+        relative_path = (
+            f"stock_daily/600519/{day.year:04d}/{day.isoformat()}_sample-feed_1m_{digest}.parquet"
+        )
+        path = root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"indexed test file")
+        record = MinuteArchiveShard(
+            domain="stock_daily",
+            symbol="600519",
+            source="sample-feed",
+            period="1m",
+            day=day,
+            relative_path=relative_path,
+            row_count=1,
+            min_timestamp=datetime.combine(day, datetime.min.time(), tzinfo=timezone.utc),
+            max_timestamp=datetime.combine(day, datetime.min.time(), tzinfo=timezone.utc),
+            sha256=digest,
+        )
+        with Session(engine) as session, session.begin():
+            session.add(record)
+        return path
 
-        removed = [path.name for path in purge_minute_archives(tmp_path, keep_years=3, today=NOW)]
+    def test_removes_only_expired_indexed_shards_and_reports_counts(self, tmp_path):
+        engine = create_engine(f"sqlite:///{tmp_path / 'metadata.db'}")
+        MinuteArchiveShard.__table__.create(engine)
+        root = tmp_path / "minute_archive"
+        old_paths = [
+            self._seed_shard(engine, root, date(2015, 1, 1)),
+            self._seed_shard(engine, root, date(2016, 1, 1)),
+        ]
+        retained_paths = [
+            self._seed_shard(engine, root, date(2024, 1, 1)),
+            self._seed_shard(engine, root, date(2026, 1, 1)),
+        ]
 
-        assert removed == ["2015", "2016"]  # 2024/2025/2026 retained
-        assert (tmp_path / "stock_daily" / "600519" / "2024").exists()
-        assert not (tmp_path / "stock_daily" / "600519" / "2015").exists()
+        report = purge_minute_archives(
+            root,
+            metadata_engine=engine,
+            keep_years=3,
+            today=NOW,
+            dry_run=True,
+        )
+        assert (report.candidates, report.deleted, report.files_deleted) == (2, 0, 0)
+        assert all(path.exists() for path in old_paths + retained_paths)
+
+        deleted = purge_minute_archives(
+            root,
+            metadata_engine=engine,
+            keep_years=3,
+            today=NOW,
+        )
+
+        assert (deleted.candidates, deleted.deleted, deleted.files_deleted) == (2, 2, 2)
+        assert not any(path.exists() for path in old_paths)
+        assert all(path.exists() for path in retained_paths)
+        with Session(engine) as session:
+            rows = session.query(MinuteArchiveShard).all()
+        assert {row.day for row in rows} == {date(2024, 1, 1), date(2026, 1, 1)}
+        engine.dispose()
 
     def test_missing_root_is_a_noop(self, tmp_path):
-        assert purge_minute_archives(tmp_path / "absent", keep_years=3) == []
+        engine = create_engine(f"sqlite:///{tmp_path / 'metadata.db'}")
+        MinuteArchiveShard.__table__.create(engine)
+        result = purge_minute_archives(
+            tmp_path / "absent",
+            metadata_engine=engine,
+            keep_years=3,
+        )
+        assert (result.candidates, result.deleted, result.files_deleted) == (0, 0, 0)
+        engine.dispose()
+
+    def test_missing_index_fails_closed(self, tmp_path):
+        engine = create_engine(f"sqlite:///{tmp_path / 'metadata.db'}")
+        with pytest.raises(RetentionError, match="metadata index is unavailable"):
+            purge_minute_archives(
+                tmp_path / "minute_archive",
+                metadata_engine=engine,
+                keep_years=3,
+            )
+        engine.dispose()
 
     def test_non_positive_window_is_refused(self, tmp_path):
         with pytest.raises(RetentionError, match="refusing to purge"):

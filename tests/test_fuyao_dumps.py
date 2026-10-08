@@ -17,8 +17,8 @@ import httpx
 import pytest
 
 from opendata.data.models import Bar, CorporateAction
-from opendata_fuyao import FuyaoCredentials, FuyaoError, FuyaoHttpClient
-from opendata_fuyao.dumps import (
+from opendata.data.providers.ths import FuyaoCredentials, FuyaoError, FuyaoHttpClient
+from opendata.data.providers.ths.dumps import (
     ADJUSTMENT_FACTOR_COLUMNS,
     DAILY_K_COLUMNS,
     DUMP_SPECS,
@@ -108,7 +108,7 @@ class TestPresignedUrl:
         assert not presigned.is_expired()
 
     def test_missing_url_is_refused(self):
-        from opendata_fuyao import parse_envelope
+        from opendata.data.providers.ths import parse_envelope
 
         payload = {"code": 0, "message": "ok", "request_id": "r", "data": {}}
 
@@ -237,7 +237,7 @@ class TestDownload:
 
     def test_malformed_expiry_is_refused(self):
         """预签名有效期只认 ISO-8601，坏值不能悄悄当成「永不过期」."""
-        from opendata_fuyao import parse_envelope
+        from opendata.data.providers.ths import parse_envelope
 
         payload = {
             "code": 0,

@@ -19,15 +19,17 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Install akshare package
-COPY pyproject.toml setup.cfg* ./
-COPY akshare/ ./akshare/
-RUN pip install --no-cache-dir .
-
-# Copy application code (akshare already cached above)
+# Copy the application package and its runtime package data before installing
+# the project from its current PEP 621 metadata.
+COPY pyproject.toml README.md LICENSE LICENSE-AKSHARE THIRD_PARTY_NOTICES.md ./
 COPY opendata/ ./opendata/
+COPY opendata_client/ ./opendata_client/
 COPY alembic/ ./alembic/
-COPY alembic.ini logging_config.ini ./
+COPY alembic_data/ ./alembic_data/
+COPY alembic.ini alembic_data.ini logging_config.ini ./
+
+# Install the application and resolve its declared runtime dependencies.
+RUN pip install --no-cache-dir .
 
 # Create non-root user
 RUN useradd -m -u 1000 appuser && \
@@ -57,9 +59,6 @@ RUN useradd -m -u 1000 appuser
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy akshare package
-COPY --from=builder /opendata/akshare /opendata/akshare
-
 # Copy application code
 COPY --from=builder --chown=appuser:appuser /opendata /opendata
 
@@ -79,7 +78,6 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Run the application with gunicorn (multi-worker production mode)
-# Override workers via WORKERS env var; defaults to 1 for safety
+# Run the application with gunicorn; WORKERS defaults to a single worker.
 # For single-process mode: CMD ["uvicorn", "opendata.main:app", "--host", "0.0.0.0", "--port", "8000"]
 CMD ["sh", "-c", "gunicorn opendata.main:app -w ${WORKERS:-1} -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000 --timeout 120 --graceful-timeout 30 --access-logfile -"]

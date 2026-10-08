@@ -74,7 +74,7 @@ from collections.abc import Mapping
 from datetime import date, timedelta
 from math import floor, log10
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, NamedTuple, TypeVar
+from typing import TYPE_CHECKING, Any, NamedTuple, TypeVar, cast
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -83,9 +83,9 @@ if str(ROOT) not in sys.path:
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
-    from opendata.data.models import CorporateAction
-    from opendata_fuyao import FuyaoHttpClient
-    from opendata_fuyao.envelope import FuyaoEnvelope
+    from opendata.data.models import Bar, CorporateAction
+    from opendata.data.providers.ths import FuyaoHttpClient
+    from opendata.data.providers.ths.transport.envelope import FuyaoEnvelope
 
 T = TypeVar("T")
 
@@ -225,8 +225,8 @@ def _ask(
     Returns:
         ``(envelope, "")`` or ``(None, first line of the error)``.
     """
-    from opendata_fuyao import FuyaoError
-    from opendata_fuyao.endpoints import shanghai_midnight_millis
+    from opendata.data.providers.ths import FuyaoError
+    from opendata.data.providers.ths.endpoints import shanghai_midnight_millis
 
     params: dict[str, Any] = {
         "thscode": symbol,
@@ -251,7 +251,7 @@ def _fingerprint(envelope: FuyaoEnvelope | None) -> str:
 
 def _rows_of(envelope: FuyaoEnvelope) -> list[PublishedRow]:
     """Fold envelope rows into ascending :class:`PublishedRow` values."""
-    from opendata_fuyao.endpoints import millis_to_trading_date
+    from opendata.data.providers.ths.endpoints import millis_to_trading_date
 
     rows = [
         PublishedRow(
@@ -290,7 +290,7 @@ def _reference_window(sina_symbol: str, start: date, end: date) -> dict[date, Oh
     """Sina's **unadjusted** daily bars: ``{trade_date: (OHLC, volume, amount)}``."""
 
     def call() -> dict[date, Ohlcv]:
-        from opendata_http.fund.fund_etf_sina import fund_etf_hist_sina
+        from opendata.data.providers.akshare._vendor.fund.fund_etf_sina import fund_etf_hist_sina
 
         frame = fund_etf_hist_sina(symbol=sina_symbol)
         out: dict[date, Ohlcv] = {}
@@ -383,8 +383,8 @@ def _events(qualified: str) -> tuple[CorporateAction, ...]:
     """The conversion key: ths per-unit pre-tax distributions (the C15 leg)."""
 
     def call() -> tuple[CorporateAction, ...]:
+        from opendata.data.providers.ths.endpoints import fetch_fund_dividends
         from opendata.data.providers.ths.models._client import client
-        from opendata_fuyao.endpoints import fetch_fund_dividends
 
         with client(timeout_seconds=60.0) as active:
             return fetch_fund_dividends(active, symbol=qualified)
@@ -936,8 +936,8 @@ def judge_channel_guards(failures: list[str]) -> None:
 
 def judge_parameters(failures: list[str]) -> None:
     """Criterion E - the parameter surface and the envelope echo."""
+    from opendata.data.providers.ths.endpoints import millis_to_trading_date
     from opendata.data.providers.ths.models._client import client
-    from opendata_fuyao.endpoints import millis_to_trading_date
 
     print("\n## E. 参数面：adjust / interval / limit / 信封回显\n")
     start = date.today() - timedelta(days=400)
@@ -1009,7 +1009,10 @@ def judge_leg(facts: Sequence[FundFacts], failures: list[str]) -> None:
     )
     end = date.today() - timedelta(days=1)
     start = end - timedelta(days=WINDOW_DAYS)
-    bars = tuple(routed.fetch(symbol=FUNDS[0][0], start_date=start, end_date=end))
+    bars = cast(
+        "tuple[Bar, ...]",
+        tuple(routed.fetch(symbol=FUNDS[0][0], start_date=start, end_date=end)),
+    )
     fact = facts[0]
     print(
         f"- 路由取回 {len(bars)} 根（窗口 {start}→{end}）；"
@@ -1038,7 +1041,10 @@ def judge_leg(facts: Sequence[FundFacts], failures: list[str]) -> None:
     print(f"- notes 是否载明滚动深度：{notes_ok}")
     if not notes_ok:
         failures.append("F: capability.notes 未载明滚动深度")
-    bare = tuple(routed.fetch(symbol=BARE_ROUTE_SYMBOL, start_date=start, end_date=end))
+    bare = cast(
+        "tuple[Bar, ...]",
+        tuple(routed.fetch(symbol=BARE_ROUTE_SYMBOL, start_date=start, end_date=end)),
+    )
     same_bare = [(b.trade_date, b.close) for b in bare] == [(b.trade_date, b.close) for b in bars]
     print(f"- 裸码 {BARE_ROUTE_SYMBOL} 经 ETF 目录解析：{len(bare)} 根，与合格码一致={same_bare}")
     if not same_bare:

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, ref, watch, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { tablesApi } from '@/api/tables'
@@ -9,38 +9,81 @@ import type { TableDataResponse, TableSchema } from '@/types'
 const route = useRoute()
 const router = useRouter()
 
-const tableId = ref(route.params.id as string)
+const tableId = ref(String(route.params.id ?? ''))
 const schema = ref<TableSchema | null>(null)
 const previewData = ref<TableDataResponse | null>(null)
-const loading = ref(false)
+const schemaLoading = ref(false)
+const previewLoading = ref(false)
+const loading = computed(() => schemaLoading.value || previewLoading.value)
 const activeTab = ref('schema')
+let routeGeneration = 0
+let schemaController: AbortController | null = null
+let previewController: AbortController | null = null
 
-async function loadSchema() {
-  loading.value = true
+function isCurrentRoute(tableIdForRequest: string, generation: number): boolean {
+  return (
+    generation === routeGeneration &&
+    tableIdForRequest === tableId.value &&
+    tableIdForRequest === String(route.params.id ?? '')
+  )
+}
+
+async function loadSchema(
+  tableIdForRequest: string,
+  generation: number,
+  controller: AbortController
+) {
+  schemaLoading.value = true
   try {
-    schema.value = await tablesApi.getSchema(tableId.value)
+    const result = await tablesApi.getSchema(tableIdForRequest, controller.signal)
+    if (isCurrentRoute(tableIdForRequest, generation)) {
+      schema.value = result
+    }
   } catch (error) {
-    ElMessage.error(getApiErrorMessage(error) || '加载表结构失败')
+    if (isCurrentRoute(tableIdForRequest, generation) && !controller.signal.aborted) {
+      ElMessage.error(getApiErrorMessage(error) || '加载表结构失败')
+    }
   } finally {
-    loading.value = false
+    if (isCurrentRoute(tableIdForRequest, generation)) {
+      schemaLoading.value = false
+    }
+    if (schemaController === controller) {
+      schemaController = null
+    }
   }
 }
 
-async function loadPreview() {
-  loading.value = true
+async function loadPreview(
+  tableIdForRequest: string,
+  generation: number,
+  controller: AbortController
+) {
+  previewLoading.value = true
   try {
-    previewData.value = await tablesApi.getData(tableId.value, 1, 100)
+    const result = await tablesApi.getData(tableIdForRequest, 1, 100, controller.signal)
+    if (isCurrentRoute(tableIdForRequest, generation)) {
+      previewData.value = result
+    }
   } catch (error) {
-    ElMessage.error(getApiErrorMessage(error) || '加载预览数据失败')
+    if (isCurrentRoute(tableIdForRequest, generation) && !controller.signal.aborted) {
+      ElMessage.error(getApiErrorMessage(error) || '加载预览数据失败')
+    }
   } finally {
-    loading.value = false
+    if (isCurrentRoute(tableIdForRequest, generation)) {
+      previewLoading.value = false
+    }
+    if (previewController === controller) {
+      previewController = null
+    }
   }
 }
 
 function handleTabChange(tabName: string | number) {
   activeTab.value = String(tabName)
-  if (tabName === 'preview' && !previewData.value) {
-    loadPreview()
+  if (tabName === 'preview' && !previewData.value && !previewLoading.value) {
+    const controller = new AbortController()
+    previewController = controller
+    void loadPreview(tableId.value, routeGeneration, controller)
   }
 }
 
@@ -48,8 +91,33 @@ function goBack() {
   router.back()
 }
 
-onMounted(() => {
-  loadSchema()
+watch(
+  () => String(route.params.id ?? ''),
+  (nextTableId) => {
+    const generation = ++routeGeneration
+    schemaController?.abort()
+    previewController?.abort()
+    schemaController = null
+    previewController = null
+    tableId.value = nextTableId
+    schema.value = null
+    previewData.value = null
+    activeTab.value = 'schema'
+    schemaLoading.value = false
+    previewLoading.value = false
+    const controller = new AbortController()
+    schemaController = controller
+    void loadSchema(nextTableId, generation, controller)
+  },
+  { immediate: true }
+)
+
+onBeforeUnmount(() => {
+  routeGeneration += 1
+  schemaController?.abort()
+  previewController?.abort()
+  schemaController = null
+  previewController = null
 })
 </script>
 

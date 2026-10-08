@@ -52,6 +52,11 @@ function handleSizeChange(size: number) {
   void loadScripts()
 }
 
+function handlePageChange(page: number) {
+  currentPage.value = page
+  void loadScripts()
+}
+
 function handleViewDetail(script: DataScript) {
   void router.push(`/scripts/${script.script_id}`)
 }
@@ -84,27 +89,23 @@ onMounted(() => {
       <template #header>
         <div class="header">
           <span>数据接口</span>
-          <el-tag type="info">
-            共 {{ total }} 个接口
-          </el-tag>
+          <el-tag type="info"> 共 {{ total }} 个接口 </el-tag>
         </div>
       </template>
 
       <div class="content">
+        <el-alert
+          title="此处是旧版 DataScript 函数目录。它与 Provider 注册能力没有一对一映射；注册 Provider 函数请从数据目录查看。"
+          type="info"
+          :closable="false"
+          show-icon
+        />
+
         <!-- Category Filter -->
         <div class="category-filter">
-          <el-radio-group
-            v-model="selectedCategory"
-            @change="handleCategoryChange"
-          >
-            <el-radio-button value="">
-              全部
-            </el-radio-button>
-            <el-radio-button
-              v-for="category in categories"
-              :key="category"
-              :value="category"
-            >
+          <el-radio-group v-model="selectedCategory" @change="handleCategoryChange">
+            <el-radio-button value=""> 全部 </el-radio-button>
+            <el-radio-button v-for="category in categories" :key="category" :value="category">
               {{ category }}
             </el-radio-button>
           </el-radio-group>
@@ -125,45 +126,19 @@ onMounted(() => {
         </div>
 
         <!-- Script List -->
-        <el-table
-          v-loading="loading"
-          :data="scripts"
-          style="width: 100%"
-          stripe
-        >
-          <el-table-column
-            prop="script_name"
-            label="接口名称"
-            min-width="200"
-          />
-          <el-table-column
-            prop="description"
-            label="描述"
-            show-overflow-tooltip
-          />
-          <el-table-column
-            prop="category"
-            label="类别"
-            width="120"
-          >
+        <el-table v-loading="loading" :data="scripts" style="width: 100%" stripe>
+          <el-table-column prop="script_name" label="接口名称" min-width="200" />
+          <el-table-column prop="description" label="描述" show-overflow-tooltip />
+          <el-table-column prop="category" label="类别" width="120">
             <template #default="{ row }">
               <el-tag size="small">
                 {{ row.category }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column
-            label="操作"
-            width="150"
-            fixed="right"
-          >
+          <el-table-column label="操作" width="150" fixed="right">
             <template #default="{ row }">
-              <el-button
-                type="primary"
-                link
-                size="small"
-                @click="handleViewDetail(row)"
-              >
+              <el-button type="primary" link size="small" @click="handleViewDetail(row)">
                 查看详情
               </el-button>
             </template>
@@ -178,6 +153,7 @@ onMounted(() => {
             :page-sizes="[10, 20, 50, 100]"
             :total="total"
             layout="total, sizes, prev, pager, next, jumper"
+            @current-change="handlePageChange"
             @size-change="handleSizeChange"
           />
         </div>

@@ -215,6 +215,11 @@ class TestAdjust:
                 "trade_date": date(2024, 1, 2),
                 "qfq_factor": 0.5,
                 "hfq_factor": 2.0,
+                "qfq_scale": 0.5,
+                "qfq_offset": 0.0,
+                "hfq_scale": 2.0,
+                "hfq_offset": 0.0,
+                "adjustment_version": "affine-v1",
             }
         ]
 
@@ -288,7 +293,14 @@ class TestAdjust:
                 "amount": 1.0,
             }
         ]
-        factors = [{"symbol": "600519", "trade_date": date(2024, 1, 2), "qfq_factor": 0.5}]
+        factors = [
+            {
+                "symbol": "600519",
+                "trade_date": date(2024, 1, 2),
+                "qfq_factor": 0.5,
+                "hfq_factor": 1.0,
+            }
+        ]
 
         assert (
             apply_adjust_to_rows("stock_daily", rows, method="qfq", factors=factors)[0]["close"]

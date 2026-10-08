@@ -22,6 +22,14 @@ def _write(tmp_path, body: str):
     return str(path)
 
 
+def _load_shipped_map():
+    """Load the registry projection after explicitly registering local providers."""
+    from opendata.data.providers import register_providers
+
+    register_providers()
+    return load_openbb_map()
+
+
 @pytest.fixture(autouse=True)
 def _clear_cache():
     load_openbb_map.cache_clear()
@@ -31,22 +39,34 @@ def _clear_cache():
 
 class TestShippedMap:
     def test_loads_and_validates(self):
-        entries = load_openbb_map()
+        entries = _load_shipped_map()
 
         assert entries
         assert all(entry.scenario for entry in entries)
 
     def test_confirmed_models_are_never_guesses(self):
-        confirmed = {entry.model for entry in load_openbb_map() if entry.model != "TBD"}
+        confirmed = {entry.model for entry in _load_shipped_map() if entry.model != "TBD"}
 
-        # 这些名字来自对上游 fetcher_dict 声明的机械解析（provider-inventory.yaml）：
+        # 除新接入的 ECB 本地 binding 外，这些名字来自上游 fetcher_dict 的机械解析
+        # （provider-inventory.yaml）：
         # EquityHistorical/ConsumerPriceIndex/FuturesHistorical/EtfHistorical
         # （后者由 alpha_vantage、tiingo、cboe 三个 provider 声明）
-        assert confirmed <= {
+        # 三个 ECB 名称则由本地受控 binding 明确注册。
+        assert confirmed == {
             "EquityHistorical",
             "ConsumerPriceIndex",
             "FuturesHistorical",
             "EtfHistorical",
+            "FredSearch",
+            "FredSeries",
+            "SOFR",
+            "BlsSearch",
+            "BlsSeries",
+            "EquityQuote",
+            "CurrencyReferenceRates",
+            "YieldCurve",
+            "BalanceOfPayments",
+            "SONIA",
         }
 
     def test_enabled_capabilities_are_covered(self):
@@ -59,10 +79,28 @@ class TestShippedMap:
             (capability.source, capability.domain) for capability in get_registry().capabilities()
         }
 
-        assert registered <= covered_capabilities()
+        assert registered == covered_capabilities()
+
+    def test_fred_officially_checked_domains_are_marked_verified(self):
+        fred_rows = {
+            (ours.domain, ours.status)
+            for entry in _load_shipped_map()
+            for ours in entry.ours
+            if ours.provider == "fred"
+        }
+
+        assert fred_rows == {
+            ("economy_cpi", "verified"),
+            ("economy_gdp", "verified"),
+            ("economy_unemployment", "verified"),
+            ("fred_search", "registered"),
+            ("fred_series", "registered"),
+            ("sofr", "registered"),
+            ("sonia", "registered"),
+        }
 
     def test_tbd_entries_are_explicit(self):
-        tbd = [entry for entry in load_openbb_map() if entry.model == "TBD"]
+        tbd = [entry for entry in _load_shipped_map() if entry.model == "TBD"]
 
         assert tbd  # 财务/指数成分的 OpenBB 模型名尚未从上游确认
         assert all(entry.scenario for entry in tbd)

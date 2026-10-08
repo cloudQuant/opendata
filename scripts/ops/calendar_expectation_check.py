@@ -53,8 +53,8 @@ def fetch_upstream_open_days() -> tuple[frozenset[date], date, date]:
     Raises:
         RuntimeError: When the calendar comes back empty.
     """
+    from opendata.data.providers.ths.endpoints import fetch_trading_calendar
     from opendata.data.providers.ths.models._client import client
-    from opendata_fuyao.endpoints import fetch_trading_calendar
 
     with client() as fuyao:
         rows = fetch_trading_calendar(fuyao, exchange="CN-SSE")

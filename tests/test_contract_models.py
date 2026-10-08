@@ -248,3 +248,53 @@ class TestSemantics:
             payload = sample(model).model_dump()
             with pytest.raises(ValidationError, match="not_a_design_field"):
                 model(**payload, not_a_design_field=1)
+
+
+class TestAdjustmentFactorVersioning:
+    def test_affine_coefficients_round_trip_with_legacy_lineage(self):
+        row = sample(
+            AdjustFactor,
+            qfq_scale=1.0,
+            qfq_offset=-5.0,
+            hfq_scale=1.0,
+            hfq_offset=5.0,
+            adjustment_version="affine-v1",
+            legacy_source="ths-import-v1",
+        )
+
+        assert AdjustFactor.from_frame(AdjustFactor.to_frame([row])) == [row]
+
+    @pytest.mark.parametrize(
+        "overrides, message",
+        [
+            ({"adjustment_version": "affine-v1", "qfq_scale": 1.0}, "all four"),
+            ({"adjustment_version": "future-v9"}, "unknown adjustment version"),
+            (
+                {
+                    "adjustment_version": "affine-v1",
+                    "qfq_scale": 0.0,
+                    "qfq_offset": 0.0,
+                    "hfq_scale": 1.0,
+                    "hfq_offset": 0.0,
+                },
+                "qfq_scale must be positive",
+            ),
+            ({"qfq_scale": 1.0, "qfq_offset": 0.0}, "legacy adjustment rows"),
+            ({"qfq_factor": 0.0}, "qfq_factor must be finite and positive"),
+            ({"hfq_factor": -1.0}, "hfq_factor must be finite and positive"),
+        ],
+    )
+    def test_inconsistent_coefficient_versions_are_rejected(self, overrides, message):
+        with pytest.raises(ValidationError, match=message):
+            sample(AdjustFactor, **overrides)
+
+    def test_non_finite_affine_offset_is_rejected(self):
+        with pytest.raises(ValidationError):
+            sample(
+                AdjustFactor,
+                qfq_scale=1.0,
+                qfq_offset=float("nan"),
+                hfq_scale=1.0,
+                hfq_offset=0.0,
+                adjustment_version="affine-v1",
+            )

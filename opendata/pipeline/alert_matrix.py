@@ -7,8 +7,8 @@ its own tests, so a domain whose table had vanished produced an ``Alert``
 object no channel ever carried. This module is that join, and it is where
 each of the matrix's four signals gets its measurement:
 
-* **freshness** - the warehouse: one dwd reading per domain plus one ods
-  reading per registered ``(domain, source)`` leg.
+* **freshness** - the warehouse: one dwd reading per measurable warehouse
+  domain plus one ods reading per registered ``(domain, source)`` leg.
 * **pipeline failure / consecutive failures** - the control database's
   ``pipeline_progress`` checkpoint, aggregated per run and then per leg.
 * **partition gaps** - the A4.3 horizon planner, over the warehouse tables
@@ -16,6 +16,12 @@ each of the matrix's four signals gets its measurement:
   reads is the production one.
 * **disk water level** - the filesystem, through ``shutil.disk_usage``
   (no psutil: the package ships without third-party SDKs).
+
+Provider-native model domains with complete query semantics and a matching
+canonical Registry descriptor are listed as deferred for freshness and
+partition readings. Their native period or snapshot semantics have no daily
+warehouse freshness policy, so they must not be evaluated against the
+trading-calendar date.
 
 Two decisions are worth stating because the criteria ("缺失触发告警",
 "告警矩阵生效") do not decide them:
@@ -55,7 +61,7 @@ from opendata.pipeline.freshness import (
 from opendata.pipeline.watermark import utcnow
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable, Sequence
+    from collections.abc import Awaitable, Callable, Mapping, Sequence
     from datetime import date
 
     from sqlalchemy import Engine
@@ -73,6 +79,9 @@ class MatrixScope:
         source_legs: ods tables measured.
         unmapped_legs: legs whose source has no field mapping for the
             domain, so no column exists to read.
+        deferred_domains: Complete query-semantic native model domains
+            excluded from daily warehouse freshness and partition reads.
+        deferred_legs: Registered source legs belonging to deferred domains.
         failure_legs: ``(domain, source)`` pairs with any run history in
             ``pipeline_progress``, None when the control database was not
             given (nothing was read, as opposed to nothing failed).
@@ -89,13 +98,17 @@ class MatrixScope:
     failure_legs: int | None = None
     partitioned_tables: int = 0
     disk_path: str | None = None
+    deferred_domains: tuple[str, ...] = ()
+    deferred_legs: int = 0
 
-    def as_dict(self) -> dict[str, int | str | None]:
+    def as_dict(self) -> dict[str, int | list[str] | str | None]:
         """Serialize the scope for a job result or a log line."""
         return {
             "domains": self.domains,
             "source_legs": self.source_legs,
             "unmapped_legs": self.unmapped_legs,
+            "deferred_domains": list(self.deferred_domains),
+            "deferred_legs": self.deferred_legs,
             "failure_legs": self.failure_legs,
             "partitioned_tables": self.partitioned_tables,
             "disk_path": self.disk_path,
@@ -173,7 +186,7 @@ def collect_freshness(
     expected: date,
     domains: Sequence[str] | None = None,
 ) -> tuple[tuple[FreshnessReport, ...], MatrixScope]:
-    """Read the latest date of every registered table.
+    """Read the latest date of every measurable registered warehouse table.
 
     Both layers are measured: ``dwd_<domain>`` answers "is the merged
     data current?" and ``ods_<domain>_<source>`` answers "did this source
@@ -191,7 +204,12 @@ def collect_freshness(
     reports: list[FreshnessReport] = []
     unmapped = 0
     legs = registered_legs(domains)
-    for domain, sources in legs.items():
+    deferred_domains = _deferred_model_domains(legs)
+    deferred_set = set(deferred_domains)
+    measured_legs = {
+        domain: sources for domain, sources in legs.items() if domain not in deferred_set
+    }
+    for domain, sources in measured_legs.items():
         reports.append(dwd_freshness(engine, domain, expected=expected))
         for source in sources:
             report = _ods_leg(engine, domain, source, expected=expected)
@@ -200,11 +218,80 @@ def collect_freshness(
             else:
                 reports.append(report)
     scope = MatrixScope(
-        domains=len(legs),
-        source_legs=len(reports) - len(legs),
+        domains=len(measured_legs),
+        source_legs=len(reports) - len(measured_legs),
         unmapped_legs=unmapped,
+        deferred_domains=deferred_domains,
+        deferred_legs=sum(len(legs[domain]) for domain in deferred_domains),
     )
     return tuple(reports), scope
+
+
+def _deferred_model_domains(legs: Mapping[str, tuple[str, ...]]) -> tuple[str, ...]:
+    """Resolve native model domains from complete semantics and exact Registry bindings.
+
+    This metadata-only filter intentionally requires both a complete query
+    declaration and a canonical model descriptor whose resolved Fetcher
+    agrees on its model id and entire capability identity. A semantics flag
+    by itself never removes a domain from warehouse freshness.
+    """
+    if not legs:
+        return ()
+
+    from opendata.data.domains import require_domain_semantics
+    from opendata.data.registry import get_registry
+
+    registry = get_registry()
+    query_domains: set[str] = set()
+    for domain in legs:
+        try:
+            spec = require_domain_semantics(domain)
+        except LookupError:
+            continue
+        if "query" in spec.permissions:
+            query_domains.add(domain)
+    if not query_domains:
+        return ()
+
+    registered_capabilities = {
+        (
+            capability.asset_class,
+            capability.domain,
+            capability.period,
+            capability.market,
+            capability.source,
+        ): capability.verified
+        for capability in registry.capabilities()
+    }
+    deferred: set[str] = set()
+    for descriptor in registry.list_model_descriptors():
+        domain = descriptor.domain
+        if domain not in query_domains or descriptor.source not in legs[domain]:
+            continue
+        try:
+            fetcher = registry.resolve_model(descriptor.source, descriptor.model)
+        except LookupError:
+            continue
+
+        capability = getattr(fetcher, "capability", None)
+        capability_identity = (
+            getattr(capability, "asset_class", None),
+            getattr(capability, "domain", None),
+            getattr(capability, "period", None),
+            getattr(capability, "market", None),
+            getattr(capability, "source", None),
+        )
+        if (
+            getattr(fetcher, "canonical_model", None) != descriptor.model
+            or descriptor.source != capability_identity[4]
+            or domain != capability_identity[1]
+            or descriptor.full_capability_identity != capability_identity
+            or registered_capabilities.get(capability_identity) != descriptor.verified
+            or getattr(capability, "verified", None) != descriptor.verified
+        ):
+            continue
+        deferred.add(domain)
+    return tuple(sorted(deferred))
 
 
 def _ods_leg(
@@ -356,7 +443,11 @@ def warehouse_tables(domains: Sequence[str] | None = None) -> tuple[str, ...]:
     from opendata.data.domains import dwd_table
 
     tables: set[str] = set()
-    for domain, sources in registered_legs(domains).items():
+    legs = registered_legs(domains)
+    deferred = set(_deferred_model_domains(legs))
+    for domain, sources in legs.items():
+        if domain in deferred:
+            continue
         tables.add(dwd_table(domain))
         tables.update(ods_table(domain, source) for source in sources)
     return tuple(sorted(tables))
@@ -390,10 +481,11 @@ def collect_partitions(
     from opendata.pipeline.freshness import partition_plans_for
     from opendata.pipeline.partitions import PartitionMaintainer
 
+    tables = warehouse_tables(domains)
+    if not tables:
+        return {}, 0
     maintainer = PartitionMaintainer(engine)
-    partitioned = tuple(
-        name for name in warehouse_tables(domains) if maintainer.is_partitioned(name)
-    )
+    partitioned = tuple(name for name in tables if maintainer.is_partitioned(name))
     if not partitioned:
         return {}, 0
     plans = partition_plans_for(
@@ -500,6 +592,8 @@ async def run_alert_matrix(
         domains=scope.domains,
         source_legs=scope.source_legs,
         unmapped_legs=scope.unmapped_legs,
+        deferred_domains=scope.deferred_domains,
+        deferred_legs=scope.deferred_legs,
         failure_legs=failure_legs,
         partitioned_tables=partitioned,
         disk_path=disk_path_used,

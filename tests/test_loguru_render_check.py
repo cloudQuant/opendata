@@ -78,10 +78,46 @@ class TestBindingAwareJudgement:
         source = STDLIB_MODULE + 'logger.warning("freshness unavailable for {}: {}", t, exc)\n'
         assert [site.template for site in dropped(source)] == ["freshness unavailable for {}: {}"]
 
+    def test_stdlib_control_keywords_do_not_count_as_format_arguments(self) -> None:
+        source = (
+            STDLIB_MODULE + 'logger.warning("cache safety miss", extra={"cache_key": key}, '
+            "exc_info=True, stack_info=False, stacklevel=2)\n"
+        )
+        assert guard.sites_of(source, "synthetic.py") == []
+        assert dropped(source) == []
+
+    def test_stdlib_control_keywords_do_not_hide_a_real_format_error(self) -> None:
+        source = (
+            STDLIB_MODULE + 'logger.warning("cache safety miss", cache_key, '
+            'extra={"cache_key": cache_key}, exc_info=True, stack_info=False, stacklevel=2)\n'
+        )
+        assert [site.template for site in dropped(source)] == ["cache safety miss"]
+
+    def test_stdlib_control_keywords_allow_a_real_format_argument(self) -> None:
+        source = (
+            STDLIB_MODULE + 'logger.warning("cache miss for %s", table, extra={"table": table}, '
+            "exc_info=True, stack_info=False, stacklevel=2)\n"
+        )
+        assert judged(source)[0].family == guard.STDLIB
+        assert dropped(source) == []
+
     def test_arguments_with_no_placeholder_are_lost_on_both(self) -> None:
         for module in (LOGURU_MODULE, STDLIB_MODULE):
             source = module + 'logger.info("query finished", domain, exc)\n'
             assert [site.template for site in dropped(source)] == ["query finished"]
+
+    def test_loguru_named_keyword_arguments_remain_format_arguments(self) -> None:
+        source = (
+            LOGURU_MODULE
+            + 'logger.warning("cache miss for {table}", table=table)\n'
+            + 'logger.warning("cache safety miss", extra={"cache_key": key})\n'
+        )
+        rows = judged(source)
+        assert [row.template for row in rows] == [
+            "cache miss for {table}",
+            "cache safety miss",
+        ]
+        assert [site.template for site in dropped(source)] == ["cache safety miss"]
 
     def test_log_method_takes_the_level_before_the_template(self) -> None:
         source = LOGURU_MODULE + 'logger.log("warning", "row count failed: %s", exc)\n'
@@ -156,6 +192,17 @@ class TestAttributeFormFace:
         assert [row.family for row in unjudged(source)] == [guard.UNRESOLVED]
         assert dropped(source) == []
 
+    def test_control_keyword_is_not_exempt_for_ambiguous_or_unresolved_receivers(self) -> None:
+        ambiguous_source = self.INJECTED.replace(
+            "        pass\n",
+            '        self.logger.warning("cache safety miss", extra={"cache_key": key})\n',
+        )
+        unresolved_source = (
+            LOGURU_MODULE + 'other.logger.warning("cache safety miss", extra={"cache_key": key})\n'
+        )
+        assert [site.family for site in dropped(ambiguous_source)] == [guard.AMBIGUOUS]
+        assert [row.family for row in unjudged(unresolved_source)] == [guard.UNRESOLVED]
+
     def test_function_local_binding_shadows_the_module_import(self) -> None:
         """A local ``getLogger`` is the classic stdlib idiom inside a loguru module."""
         source = (
@@ -203,7 +250,9 @@ class TestRenderersMeasuredNotQuoted:
         """Return ``(at the handler, on stderr)`` for ``template`` plus two arguments."""
         stream = io.StringIO()
         broken = io.StringIO()
-        box = logging.getLogger("c39-stdlib-probe")
+        # A private logger keeps pytest's caplog handler out of the failing
+        # formatting path while the real StreamHandler still reports TypeError.
+        box = logging.Logger("c39-stdlib-probe")
         handler = logging.StreamHandler(stream)
         handler.setFormatter(logging.Formatter("%(message)s"))
         box.addHandler(handler)
@@ -225,6 +274,36 @@ class TestRenderersMeasuredNotQuoted:
         reached, reported = self.render_on_logging("Could not get row count for table %s: %s")
         assert reached == "Could not get row count for table 7: boom\n"
         assert reported == ""
+
+    def test_logging_extra_field_and_message_reach_the_handler(self) -> None:
+        class RecordHandler(logging.Handler):
+            """Capture the actual record before a formatter changes it."""
+
+            def __init__(self) -> None:
+                super().__init__()
+                self.records: list[logging.LogRecord] = []
+
+            def emit(self, record: logging.LogRecord) -> None:
+                self.records.append(record)
+
+        box = logging.getLogger("loguru-render-check-extra")
+        handler = RecordHandler()
+        previous_level, previous_propagate = box.level, box.propagate
+        box.addHandler(handler)
+        box.setLevel(logging.DEBUG)
+        box.propagate = False
+        try:
+            box.warning("cache safety miss", extra={"cache_key": "daily:600519"})
+        finally:
+            box.removeHandler(handler)
+            box.setLevel(previous_level)
+            box.propagate = previous_propagate
+            handler.close()
+
+        assert len(handler.records) == 1
+        record = handler.records[0]
+        assert record.getMessage() == "cache safety miss"
+        assert record.__dict__["cache_key"] == "daily:600519"
 
     def test_logging_reports_a_brace_template_and_renders_nothing(self) -> None:
         """The mirror image: loud on stderr, and the message never reaches the sink."""

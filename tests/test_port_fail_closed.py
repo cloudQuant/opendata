@@ -3,8 +3,8 @@
 Two ported index functions swallow transport failures and return an empty
 frame, which incremental scheduling cannot tell apart from a legitimately
 empty window (holiday / weekend-only ranges). These tests pin the registered
-manual edits in ``opendata_http/index/*``, so a re-port that replays pristine
-upstream code turns red instead of silently under-fetching.
+manual edits in ``opendata/data/providers/akshare/_vendor/index/*``, so a re-port
+that replays pristine upstream code turns red instead of silently under-fetching.
 
 The distinction each test protects: *refusal* (no candidate answered) raises,
 *answered but empty* stays an empty frame.
@@ -18,12 +18,12 @@ import pandas as pd
 import pytest
 import requests
 
+from opendata.data.providers.akshare._vendor.index import index_cons, index_zh_em
+from opendata.data.providers.akshare._vendor.utils import request as em_request
 from opendata.data.providers.akshare.models.index_constituent import (
     AkshareIndexConstituentFetcher,
 )
 from opendata.data.providers.akshare.models.index_daily import AkshareIndexDailyFetcher
-from opendata_http.index import index_cons, index_zh_em
-from opendata_http.utils import request as em_request
 
 #: Columns the ported index kline frame publishes (upstream Chinese names).
 KLINE_COLUMNS = (

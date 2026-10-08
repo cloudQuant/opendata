@@ -1,14 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import type { User, LoginRequest, RegisterRequest } from '@/types'
+import type { AuthUser, LoginRequest, RegisterRequest } from '@/types'
 import { authApi } from '@/api/auth'
 import { useStoreAction } from '@/composables/useStoreAction'
 
 export const useAuthStore = defineStore(
   'auth',
   () => {
-    const user = ref<User | null>(null)
+    const user = ref<AuthUser | null>(null)
     const accessToken = ref<string | null>(null)
     const refreshToken = ref<string | null>(null)
     const actionHelper = useStoreAction()
@@ -40,13 +40,16 @@ export const useAuthStore = defineStore(
       await actionHelper.execute(
         async () => {
           const response = await authApi.register(data)
+          user.value = null
           accessToken.value = response.access_token
           refreshToken.value = response.refresh_token
-          if (response.user) {
-            user.value = response.user
-          } else {
-            const me = await authApi.getCurrentUser()
-            user.value = me as unknown as User
+          try {
+            user.value = await authApi.getCurrentUser()
+          } catch (error) {
+            user.value = null
+            accessToken.value = null
+            refreshToken.value = null
+            throw error
           }
           return response
         },
@@ -88,7 +91,7 @@ export const useAuthStore = defineStore(
       actionHelper.reset()
     }
 
-    function setUser(userData: User): void {
+    function setUser(userData: AuthUser): void {
       user.value = userData
     }
 
@@ -113,4 +116,3 @@ export const useAuthStore = defineStore(
     },
   }
 )
-

@@ -18,8 +18,8 @@ import pytest_asyncio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+import opendata.data.providers.akshare._vendor as opendata_http
 import opendata.services.interface_loader as loader_module
-import opendata_http
 from opendata.data.models import (
     Bar,
     CorporateAction,

@@ -27,7 +27,7 @@ import asyncio
 from dataclasses import dataclass, field
 from datetime import date
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 import pandas as pd
 from loguru import logger
@@ -37,6 +37,10 @@ from opendata.data.domains import dwd_table, ods_table, require_domain
 from opendata.data.models import Instrument
 from opendata.pipeline.alert_matrix import run_alert_matrix, warehouse_tables
 from opendata.pipeline.freshness import dwd_freshness, ods_freshness
+from opendata.pipeline.ods_watermark import (
+    effective_symbol_windows,
+    read_ods_watermarks,
+)
 from opendata.pipeline.templates import (
     PIPELINE_TEMPLATES,
     TemplateKind,
@@ -58,6 +62,13 @@ if TYPE_CHECKING:
     from opendata.pipeline.runner import PipelineOutcome, Window
     from opendata.pipeline.templates import ScheduleTemplate
 
+
+class _ModelDumpRow(Protocol):
+    """Minimal contract for normalized rows projected back into ODS."""
+
+    def model_dump(self, *, mode: str) -> dict[str, object]: ...
+
+
 #: Domains with a six-step builder today (one builder per chain).
 SUPPORTED_DOMAINS = frozenset({"stock_daily"})
 
@@ -72,6 +83,9 @@ EXECUTABLE_KINDS = frozenset(
         TemplateKind.FRESHNESS,
         TemplateKind.FULL_CHECK,
         TemplateKind.PARTITION_MAINTENANCE,
+        TemplateKind.RETENTION,
+        TemplateKind.KEY_HEALTH,
+        TemplateKind.SCHEDULED_PATROL,
     }
 )
 
@@ -143,6 +157,20 @@ class JobResult:
                     "shards_done": outcome.shards_done,
                     "shards_failed": outcome.shards_failed,
                     "resumed_shards": outcome.resumed_shards,
+                    "effective_windows": {
+                        source: {
+                            symbol: (
+                                {
+                                    "start": bounds.start.isoformat(),
+                                    "end": bounds.end.isoformat(),
+                                }
+                                if bounds is not None
+                                else None
+                            )
+                            for symbol, bounds in symbol_windows.items()
+                        }
+                        for source, symbol_windows in outcome.source_windows.items()
+                    },
                 }
                 for source, outcome in self.outcomes.items()
             },
@@ -239,15 +267,51 @@ def make_fetch_symbol(
     def fetch(symbol: str, window: Window) -> pd.DataFrame:
         query = fetcher.transform_query(symbol=symbol, start_date=window.start, end_date=window.end)
         raw = fetcher.extract_data(query, ctx)
-        if isinstance(raw, pd.DataFrame):
-            return raw
-        from opendata.data.mapping import denormalize_frame, require_domain_mapping
-
-        rows = [row if isinstance(row, dict) else row.model_dump(mode="python") for row in raw]
-        mapping = require_domain_mapping(source, domain)
-        return denormalize_frame(pd.DataFrame(rows), mapping)
+        return _ods_frame_from_raw(raw, domain, source)
 
     return fetch
+
+
+def make_fetch_symbol_async(
+    domain: str, source: str, *, timeout: float = 30.0
+) -> Callable[[str, Window], Awaitable[pd.DataFrame]]:
+    """Build the production async step-1 callback while retaining ODS raw shape.
+
+    The provider's normal ``fetch_async`` entry normalizes contract values.
+    Pipeline ODS writes intentionally retain source columns and units, so this
+    callback uses the protocol's bounded/native ``fetch_raw_async`` seam.
+    """
+    from opendata.data.protocol import FetchContext
+
+    fetcher = resolve_fetcher(domain, source)
+    ctx = FetchContext(timeout=timeout)
+
+    async def fetch(symbol: str, window: Window) -> pd.DataFrame:
+        raw = await fetcher.fetch_raw_async(
+            ctx=ctx,
+            symbol=symbol,
+            start_date=window.start,
+            end_date=window.end,
+        )
+        return _ods_frame_from_raw(raw, domain, source)
+
+    return fetch
+
+
+def _ods_frame_from_raw(raw: object, domain: str, source: str) -> pd.DataFrame:
+    """Keep raw DataFrames intact and project contract rows to ODS spelling."""
+    if isinstance(raw, pd.DataFrame):
+        return raw
+    from opendata.data.mapping import denormalize_frame, require_domain_mapping
+
+    rows = [
+        cast("dict[str, object]", row)
+        if isinstance(row, dict)
+        else cast("_ModelDumpRow", row).model_dump(mode="python")
+        for row in cast("Sequence[object]", raw)
+    ]
+    mapping = require_domain_mapping(source, domain)
+    return denormalize_frame(pd.DataFrame(rows), mapping)
 
 
 def landed_instruments(
@@ -275,7 +339,7 @@ def landed_instruments(
             rows = (
                 conn.execute(
                     text(
-                        f"SELECT * FROM `{INSTRUMENT_TABLE}` ORDER BY `symbol` LIMIT :cap"  # noqa: S608  # derived table
+                        f"SELECT * FROM `{INSTRUMENT_TABLE}` ORDER BY `symbol` LIMIT :cap"  # noqa: S608  # nosec B608
                     ),
                     {"cap": max(limit, 1)},
                 )
@@ -417,7 +481,7 @@ def symbol_universe(
         with engine.connect() as conn:
             rows = conn.execute(
                 text(
-                    f"SELECT DISTINCT symbol FROM `{table}` ORDER BY symbol LIMIT :cap"  # noqa: S608  # derived table
+                    f"SELECT DISTINCT symbol FROM `{table}` ORDER BY symbol LIMIT :cap"  # noqa: S608  # nosec B608
                 ),
                 {"cap": cap},
             ).all()
@@ -496,19 +560,33 @@ async def run_incremental_job(
     feeds = [authoritative]
     if second_source is not None and second_source != authoritative:
         feeds.insert(0, second_source)
+    source_windows = {
+        feed: effective_symbol_windows(
+            universe,
+            window,
+            read_ods_watermarks(warehouse, domain, feed, universe, end=window.end),
+            lookback_days=lookback_days,
+        )
+        for feed in feeds
+    }
     outcomes: dict[str, PipelineOutcome] = {}
     for rank, feed in enumerate(feeds):
         is_authoritative = rank == len(feeds) - 1
         pipeline = build_stock_daily_pipeline(
             engine=warehouse,
             session_maker=maker,
-            fetch_symbol=make_fetch_symbol(domain, feed),
+            fetch_symbol=make_fetch_symbol_async(domain, feed),
             symbols=universe,
             source=feed,
             second_source=second_source if is_authoritative else None,
             shard_size=shard_size,
+            run_variant=f"feeds={','.join(feeds)}|lookback={lookback_days}",
         )
-        outcomes[feed] = await pipeline.run(window, resume=resume)
+        outcomes[feed] = await pipeline.run(
+            window,
+            resume=resume,
+            source_windows=source_windows,
+        )
 
     return JobResult(
         domain=domain,
@@ -544,7 +622,7 @@ def _count_in_window(engine: Engine, domain: str, window: Window) -> int:
         with engine.connect() as conn:
             row = conn.execute(
                 text(
-                    f"SELECT COUNT(*) FROM `{table}` WHERE trade_date BETWEEN :s AND :e"  # noqa: S608  # derived table
+                    f"SELECT COUNT(*) FROM `{table}` WHERE trade_date BETWEEN :s AND :e"  # noqa: S608  # nosec B608
                 ),
                 {"s": window.start, "e": window.end},
             ).one()
@@ -635,7 +713,7 @@ async def register_builtin_jobs(
             job_id=job_id,
             func=run,
             trigger_type="cron",
-            trigger_args={"cron_expression": template.cron},
+            trigger_args={"cron_expression": template.cron, "timezone": template.timezone},
             job_name=f"pipeline:{template.name}",
         )
         job_ids.append(job_id)
@@ -671,7 +749,12 @@ class _CronSink:
         # ``cron_expression`` is the service wrapper's own vocabulary;
         # APScheduler wants a trigger instance.
         expression = args.pop("cron_expression", None)
-        trigger = CronTrigger.from_crontab(str(expression)) if expression else trigger_type
+        timezone_name = str(args.pop("timezone", "Asia/Shanghai"))
+        trigger = (
+            CronTrigger.from_crontab(str(expression), timezone=timezone_name)
+            if expression
+            else trigger_type
+        )
         self._scheduler.add_job(
             func,
             trigger=trigger,
@@ -721,6 +804,12 @@ async def _execute_template(template: ScheduleTemplate) -> dict[str, Any]:
         return await _execute_full_check(template)
     if template.kind is TemplateKind.PARTITION_MAINTENANCE:
         return await _execute_partition_maintenance(template)
+    if template.kind is TemplateKind.RETENTION:
+        return await _execute_retention(template)
+    if template.kind is TemplateKind.KEY_HEALTH:
+        return await _execute_key_health(template)
+    if template.kind is TemplateKind.SCHEDULED_PATROL:
+        return await _execute_scheduled_patrol(template)
     payload = template.payload
     domain = str(payload.get("domain", "stock_daily"))
     if domain not in SUPPORTED_DOMAINS:
@@ -741,6 +830,13 @@ async def _execute_template(template: ScheduleTemplate) -> dict[str, Any]:
         second_source=payload.get("second_source"),
     )
     return result.as_dict()
+
+
+async def _execute_scheduled_patrol(template: ScheduleTemplate) -> dict[str, Any]:
+    """Execute the separately-owned scheduled provider patrol lazily."""
+    from opendata.pipeline.scheduled_patrol import execute_scheduled_patrol
+
+    return await execute_scheduled_patrol(template)
 
 
 async def _execute_freshness(template: ScheduleTemplate) -> dict[str, Any]:
@@ -1003,6 +1099,32 @@ async def _execute_partition_maintenance(template: ScheduleTemplate) -> dict[str
     return run.as_dict()
 
 
+async def _execute_retention(template: ScheduleTemplate) -> dict[str, Any]:
+    """Run bounded retention in report-only mode unless explicitly enabled."""
+    from opendata.core.config import settings
+    from opendata.data.minute_archive import get_minute_archive_engine
+    from opendata.pipeline.maintenance import run_retention
+
+    result = await asyncio.to_thread(
+        run_retention,
+        warehouse_engine(),
+        dry_run=not settings.retention_execution_enabled,
+        minute_metadata_engine=get_minute_archive_engine(),
+    )
+    payload = result.as_dict()
+    logger.info(f"retention maintenance {template.name}: {payload}")
+    return payload
+
+
+async def _execute_key_health(template: ScheduleTemplate) -> dict[str, Any]:
+    """Notify on passive key-health changes without starting provider requests."""
+    from opendata.pipeline.key_health_notifications import notify_scheduled_key_health
+
+    result = await notify_scheduled_key_health()
+    logger.info(f"key health maintenance {template.name}: {result}")
+    return result
+
+
 def _payload_domains(payload: Mapping[str, object]) -> tuple[str, ...] | None:
     """Resolve the ``domains`` token of a freshness template.
 
@@ -1036,6 +1158,7 @@ __all__ = [
     "SUPPORTED_DOMAINS",
     "JobResult",
     "make_fetch_symbol",
+    "make_fetch_symbol_async",
     "register_builtin_jobs",
     "resolve_fetcher",
     "run_incremental_job",

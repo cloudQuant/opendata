@@ -1,0 +1,12 @@
+FROM mysql:8.0
+
+WORKDIR /opendata
+RUN microdnf install -y python3 && microdnf clean all
+COPY scripts/ops/backup_mysql.sh /opendata/scripts/ops/backup_mysql.sh
+COPY scripts/ops/backup_runner.sh /opendata/scripts/ops/backup_runner.sh
+COPY scripts/ops/backup_minute_snapshot.py /opendata/scripts/ops/backup_minute_snapshot.py
+RUN chmod 0755 /opendata/scripts/ops/backup_mysql.sh \
+    /opendata/scripts/ops/backup_runner.sh \
+    /opendata/scripts/ops/backup_minute_snapshot.py
+
+ENTRYPOINT ["/opendata/scripts/ops/backup_runner.sh"]

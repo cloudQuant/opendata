@@ -30,6 +30,14 @@ from contextlib import redirect_stdout
 from pathlib import Path
 
 from scripts.quality import openbb_inventory_plane as guard
+from scripts.quality.provider_model_inventory import (
+    DEFAULT_UPSTREAM_PATH,
+    LEDGER_RELATIVE_PATH,
+    load_pinned_provider_metadata,
+    load_task_ledger,
+    validate_credentials,
+    validate_inventory,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 INVENTORY = REPO_ROOT / "docs/proposals/openbb-migration/provider-inventory.yaml"
@@ -41,6 +49,24 @@ BEFORE = REPO_ROOT / "docs/evidence/C33/provider-inventory.before.yaml"
 #: fourteen findings on the file this round replaced.
 BEFORE_TEXT = BEFORE.read_text(encoding="utf-8")
 RIGHTS_TEXT = RIGHTS.read_text(encoding="utf-8")
+
+
+def fixed_authority() -> tuple[dict[str, list[str]], dict[str, list[str]], list[dict[str, str]]]:
+    """Load and validate the fixed AST/CSV model and credential authority."""
+    source_files, records, credentials, source_issues = load_pinned_provider_metadata(
+        DEFAULT_UPSTREAM_PATH
+    )
+    ledger = load_task_ledger(REPO_ROOT / LEDGER_RELATIVE_PATH)
+    model_issues, _ = validate_inventory(records, ledger, source_files)
+    credential_issues = validate_credentials(credentials, ledger)
+    assert source_issues == []
+    assert model_issues == []
+    assert credential_issues == []
+    models: dict[str, list[str]] = {}
+    for record in records:
+        models.setdefault(record.provider, []).append(record.model)
+    return models, credentials, ledger
+
 
 MINI_RIGHTS = """# 数据源权利登记表
 
@@ -165,10 +191,22 @@ def test_shipped_record_deserializes() -> None:
 
 def test_shipped_record_agrees_with_the_tree() -> None:
     """The gate judgment: the baseline and the live registry say the same thing."""
+    inventory_text = INVENTORY.read_text(encoding="utf-8")
+    rows_by_provider = {row.provider: row.fields for row in guard.parse_rows(inventory_text)}
+    assert guard.declared_rights(rows_by_provider["bls"]["rights_rows"]) == [
+        "BLS（美国劳工统计局）"
+    ]
+    assert guard.declared_rights(rows_by_provider["fmp"]["rights_rows"]) == [
+        "FMP（EquityHistorical / EquityQuote）"
+    ]
+    models, credentials, ledger = fixed_authority()
     found = guard.findings(
-        INVENTORY.read_text(encoding="utf-8"),
+        inventory_text,
         RIGHTS_TEXT,
         guard.live_legs(),
+        models,
+        credentials,
+        ledger,
     )
     assert [str(finding) for finding in found] == []
 
@@ -180,14 +218,22 @@ def test_pre_fix_record_reddens_the_same_rules() -> None:
     the test above just as well.
     """
     legs = guard.live_legs()
-    found = guard.findings(BEFORE_TEXT, RIGHTS_TEXT, legs)
-    assert len(found) == 14, [str(finding) for finding in found]
+    models, credentials, ledger = fixed_authority()
+    found = guard.findings(BEFORE_TEXT, RIGHTS_TEXT, legs, models, credentials, ledger)
+    assert len(found) >= 14, [str(finding) for finding in found]
     assert {finding.kind for finding in found} == {
         "PARSE",
         "MISSING ROW",
         "STALE STATUS",
         "RIGHTS LINK",
         "COUNT CLAIM",
+        "MODEL ELISION",
+        "MODEL COUNT",
+        "MODEL SET",
+        "CREDENTIAL MISMATCH",
+        "CAPABILITY COUNT",
+        "MODEL TASK STATUS",
+        "REQUESTER STATUS",
     }
     text = "\n".join(str(finding) for finding in found)
     assert "`akshare` registers 10 capabilities" in text
@@ -238,7 +284,7 @@ def test_unverified_status_while_every_leg_is_routable_reddens() -> None:
 
 
 def test_the_middle_state_is_nameable_and_exact() -> None:
-    """已实现未对照 is the state fred and akshare are in; only that word passes."""
+    """已实现未对照 remains the exact state for a registered unverified leg."""
     for status in (guard.STATUS_TODO, guard.STATUS_VERIFIED):
         text = record(row("demo", status, rights=["同花顺扶摇 API"]))
         assert kinds(text, UNVERIFIED_LEGS) == ["STALE STATUS"]
@@ -295,7 +341,13 @@ def test_local_provider_count_must_equal_the_body() -> None:
 
 def test_header_prose_numbers_are_claims_and_are_checked() -> None:
     """Both figures of the 规模 line: directories and fetcher models."""
-    providers = row("demo", guard.STATUS_VERIFIED, rights=["同花顺扶摇 API"], fetchers=3)
+    providers = row(
+        "demo",
+        guard.STATUS_VERIFIED,
+        rights=["同花顺扶摇 API"],
+        fetchers=3,
+        models="[A, B, C]",
+    )
     assert kinds(record(providers, prose=(1, 3)), VERIFIED_LEGS) == []
     assert kinds(record(providers, prose=(33, 3)), VERIFIED_LEGS) == ["COUNT CLAIM"]
     assert kinds(record(providers, prose=(1, 348)), VERIFIED_LEGS) == ["COUNT CLAIM"]
@@ -339,6 +391,30 @@ def test_serving_source_without_a_rights_link_reddens() -> None:
 def test_every_named_rights_row_must_exist() -> None:
     text = record(row("demo", guard.STATUS_VERIFIED, rights=["同花顺扶摇 API", "不存在的源"]))
     assert kinds(text, VERIFIED_LEGS) == ["RIGHTS LINK"]
+
+
+def test_new_provider_specific_rights_rows_must_exist_in_registration_table() -> None:
+    """The BLS/FMP links stay red if their source-specific registry rows disappear."""
+    rights_without_new_sources = "\n".join(
+        line
+        for line in RIGHTS_TEXT.splitlines()
+        if "| BLS（美国劳工统计局） |" not in line
+        and "| FMP（EquityHistorical / EquityQuote） |" not in line
+    )
+    models, credentials, ledger = fixed_authority()
+    found = guard.findings(
+        INVENTORY.read_text(encoding="utf-8"),
+        rights_without_new_sources,
+        guard.live_legs(),
+        models,
+        credentials,
+        ledger,
+    )
+    assert [(finding.kind, finding.text.split("`")[1]) for finding in found] == [
+        ("RIGHTS LINK", "bls"),
+        ("RIGHTS LINK", "fmp"),
+    ]
+    assert all("not a 数据源" in finding.text for finding in found)
 
 
 def test_local_rows_may_name_several_rights_rows() -> None:
@@ -418,29 +494,87 @@ def test_bare_dash_scalars_redden_parse_and_still_describe_the_body() -> None:
     assert len(guard.parse_rows(broken)) == 1
 
 
-# --- MODEL ELISION is reported, not judged --------------------------------------
+# --- MODEL completeness ---------------------------------------------------------
 
 
-def test_truncated_model_lists_are_never_a_finding() -> None:
-    """Eliding upstream model names is honest when the row says so; judging it could
-    only be satisfied by inventing names, so the rule must not exist."""
+def test_truncated_model_lists_are_judged() -> None:
+    """The fixed AST, not a hand-written ellipsis, owns the complete model list."""
     elided = record(
         row(
             "demo",
             guard.STATUS_VERIFIED,
             rights=["同花顺扶摇 API"],
-            fetchers=36,
+            fetchers=3,
             models="[A, B, ...]",
         )
     )
+    full_models = "[A, B, C]"
     full = record(
         row(
             "demo",
             guard.STATUS_VERIFIED,
             rights=["同花顺扶摇 API"],
-            fetchers=36,
-            models="[A, B, C]",
+            fetchers=3,
+            models=full_models,
         )
     )
-    assert kinds(elided, VERIFIED_LEGS) == kinds(full, VERIFIED_LEGS) == []
-    assert guard.model_elisions(guard.parse_rows(elided)) == ["demo: 2 listed of 36 stated"]
+    assert "MODEL ELISION" in kinds(elided, VERIFIED_LEGS)
+    assert kinds(full, VERIFIED_LEGS) == []
+    assert guard.model_elisions(guard.parse_rows(elided)) == ["demo: 2 listed of 3 stated"]
+
+
+def test_missing_eia_model_fails_against_fixed_model_authority() -> None:
+    eia_models = ["PetroleumStatusReport", "ShortTermEnergyOutlook"]
+    text = record(row("eia", guard.STATUS_TODO, fetchers=1, models="[PetroleumStatusReport]"))
+    found = guard.findings(
+        text,
+        MINI_RIGHTS,
+        NO_LEGS,
+        {"eia": eia_models},
+    )
+
+    assert any(f.kind == "MODEL SET" and "ShortTermEnergyOutlook" in f.text for f in found)
+
+
+def test_duplicate_model_identity_fails() -> None:
+    text = record(row("demo", guard.STATUS_TODO, fetchers=2, models="[SameModel, SameModel]"))
+
+    found = guard.findings(text, MINI_RIGHTS, NO_LEGS, {"demo": ["SameModel", "OtherModel"]})
+
+    assert any(f.kind == "MODEL DUPLICATE" for f in found)
+    assert any(f.kind == "MODEL SET" for f in found)
+
+
+def test_declared_model_count_must_match_the_list_and_fixed_denominator() -> None:
+    text = "upstream_model_count: 3\nunique_upstream_model_count: 3\n" + record(
+        row("demo", guard.STATUS_TODO, fetchers=2, models="[ModelOne, ModelTwo]")
+    )
+    text = text.replace(
+        "    models: [ModelOne, ModelTwo]\n",
+        "    models: [ModelOne, ModelTwo]\n    model_count: 3\n",
+    )
+
+    found = guard.findings(
+        text,
+        MINI_RIGHTS,
+        NO_LEGS,
+        {"demo": ["ModelOne", "ModelTwo"]},
+    )
+
+    assert any(f.kind == "MODEL COUNT" for f in found)
+
+
+def test_fixed_credentials_must_match_manifest() -> None:
+    text = record(
+        row("demo", guard.STATUS_TODO, credentials="[fred_api_key]"),
+    )
+
+    found = guard.findings(
+        text,
+        MINI_RIGHTS,
+        NO_LEGS,
+        {"demo": ["SomethingElse"]},
+        {"demo": ["api_key"]},
+    )
+
+    assert any(f.kind == "CREDENTIAL MISMATCH" for f in found)

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { scriptsApi } from '@/api/scripts'
 import { dataApi } from '@/api/data'
+import { interfacesApi, type DataInterfaceSummary } from '@/api/interfaces'
 import { getApiErrorMessage } from '@/utils/error'
 import type { DataScript, Parameter } from '@/types'
 
@@ -13,7 +14,25 @@ const router = useRouter()
 const script = ref<DataScript | null>(null)
 const loading = ref(false)
 const downloading = ref(false)
-const executionId = ref<number | null>(null)
+const interfaces = ref<DataInterfaceSummary[]>([])
+const interfacesLoading = ref(false)
+const interfacesLoaded = ref(false)
+const interfacesError = ref('')
+const selectedInterfaceId = ref<number | null>(null)
+
+const selectedInterface = computed(() =>
+  interfaces.value.find((iface) => iface.id === selectedInterfaceId.value && iface.is_active)
+)
+const canCreateDownload = computed(() =>
+  Boolean(
+    script.value &&
+      interfacesLoaded.value &&
+      !interfacesLoading.value &&
+      !interfacesError.value &&
+      !downloading.value &&
+      selectedInterface.value
+  )
+)
 
 async function loadScript() {
   loading.value = true
@@ -27,19 +46,45 @@ async function loadScript() {
   }
 }
 
+async function loadInterfaces() {
+  interfacesLoading.value = true
+  interfacesLoaded.value = false
+  interfacesError.value = ''
+  interfaces.value = []
+  selectedInterfaceId.value = null
+
+  try {
+    interfaces.value = await interfacesApi.listEnabled()
+    interfacesLoaded.value = true
+  } catch (error) {
+    interfacesError.value = getApiErrorMessage(error, '加载可用数据接口失败，请稍后重试')
+  } finally {
+    interfacesLoading.value = false
+  }
+}
+
 async function handleDownload() {
-  if (!script.value) return
+  const interfaceId = selectedInterface.value?.id
+  if (!script.value || !canCreateDownload.value || interfaceId === undefined) return
 
   downloading.value = true
+  let result
   try {
-    const result = await dataApi.download(script.value.id, {})
-    executionId.value = result.execution_id
-    ElMessage.success('下载任务已创建')
-    await router.push('/executions')
+    result = await dataApi.download(interfaceId, {})
   } catch (error) {
     ElMessage.error(getApiErrorMessage(error) || '创建下载任务失败')
-  } finally {
     downloading.value = false
+    return
+  }
+
+  downloading.value = false
+  if (!Number.isSafeInteger(result.execution_id) || result.execution_id <= 0) return
+
+  ElMessage.success('下载任务已创建')
+  try {
+    await router.push('/executions')
+  } catch {
+    ElMessage.error('任务已创建，但暂时无法打开执行记录')
   }
 }
 
@@ -49,6 +94,7 @@ function goBack() {
 
 onMounted(() => {
   void loadScript()
+  void loadInterfaces()
 })
 </script>
 
@@ -162,14 +208,75 @@ onMounted(() => {
           </el-table>
         </div>
 
+        <div class="section download-section">
+          <h3>下载数据</h3>
+          <p>选择已启用的数据接口以创建下载任务。</p>
+
+          <el-alert
+            v-if="interfacesError"
+            :title="interfacesError"
+            type="error"
+            :closable="false"
+            show-icon
+          />
+          <div
+            v-else-if="interfacesLoading"
+            class="interface-loading"
+            role="status"
+          >
+            正在加载可用数据接口...
+          </div>
+          <el-alert
+            v-else-if="interfacesLoaded && interfaces.length === 0"
+            title="当前没有可用的数据接口，无法创建下载任务"
+            type="warning"
+            :closable="false"
+            show-icon
+          />
+
+          <el-button
+            v-if="interfacesError"
+            class="reload-interfaces"
+            @click="loadInterfaces"
+          >
+            重新加载数据接口
+          </el-button>
+
+          <el-form-item
+            v-if="interfacesLoaded && interfaces.length > 0"
+            label="数据接口"
+          >
+            <el-select
+              v-model="selectedInterfaceId"
+              data-testid="download-interface-select"
+              :disabled="interfacesLoading || downloading"
+              placeholder="请选择数据接口"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="iface in interfaces"
+                :key="iface.id"
+                :label="iface.display_name"
+                :value="iface.id"
+              >
+                <div class="interface-option">
+                  <span class="interface-name">{{ iface.display_name }}</span>
+                  <span class="interface-description">{{ iface.description || '暂无描述' }}</span>
+                </div>
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </div>
+
         <!-- Actions -->
         <div class="actions">
           <el-button
             type="primary"
             :loading="downloading"
+            :disabled="!canCreateDownload"
             @click="handleDownload"
           >
-            立即下载
+            创建下载任务
           </el-button>
           <el-button @click="router.push('/tasks')">
             创建定时任务
@@ -217,6 +324,39 @@ onMounted(() => {
   margin-top: 24px;
   display: flex;
   gap: 12px;
+}
+
+.download-section p {
+  margin: -6px 0 16px;
+  color: #606266;
+}
+
+.interface-loading {
+  color: #606266;
+  margin: 12px 0;
+}
+
+.reload-interfaces {
+  margin-top: 12px;
+}
+
+.interface-option {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.5;
+  padding: 4px 0;
+}
+
+.interface-name {
+  color: #303133;
+}
+
+.interface-description {
+  overflow: hidden;
+  color: #909399;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 code {

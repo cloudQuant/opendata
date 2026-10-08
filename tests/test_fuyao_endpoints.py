@@ -23,8 +23,8 @@ from opendata.data.models import (
     Instrument,
     TradingCalendar,
 )
-from opendata_fuyao import FuyaoCredentials, FuyaoError, FuyaoHttpClient
-from opendata_fuyao.endpoints import (
+from opendata.data.providers.ths import FuyaoCredentials, FuyaoError, FuyaoHttpClient
+from opendata.data.providers.ths.endpoints import (
     ADJUSTMENT_FACTORS_ENDPOINT,
     BALANCE_SHEETS_ENDPOINT,
     CALENDAR_ENDPOINT,
@@ -110,7 +110,7 @@ def _envelope_at(items: Sequence[Mapping[str, Any]], timestamp_ms: int | None) -
 
 
 def _parse(raw: bytes):
-    from opendata_fuyao import parse_envelope
+    from opendata.data.providers.ths import parse_envelope
 
     return parse_envelope(json.loads(raw))
 

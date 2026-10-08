@@ -53,6 +53,18 @@ if TYPE_CHECKING:
 
 DEFAULT_SYMBOLS = ("600519", "000001", "000002", "000009", "600036")
 FACTOR_TABLE = "dwd_stock_adjust"
+FACTOR_FIELDS = (
+    "symbol",
+    "trade_date",
+    "qfq_factor",
+    "hfq_factor",
+    "qfq_scale",
+    "qfq_offset",
+    "hfq_scale",
+    "hfq_offset",
+    "adjustment_version",
+    "legacy_source",
+)
 TOLERANCE = 2e-3  # the official feeds round prices to 2 decimals; ~5e-4 at 10 CNY
 MAX_DIFFS = 5
 
@@ -84,13 +96,15 @@ class OfficialLeg:
 
 OFFICIAL_LEGS: dict[str, OfficialLeg] = {
     "akshare": OfficialLeg(
-        target="opendata_http.stock_feature.stock_hist_em:stock_zh_a_hist",
+        target=(
+            "opendata.data.providers.akshare._vendor.stock_feature.stock_hist_em:stock_zh_a_hist"
+        ),
         date_column="日期",
         close_column="收盘",
         prefixed_symbol=False,
     ),
     "sina": OfficialLeg(
-        target="opendata_http.stock.stock_zh_a_sina:stock_zh_a_daily",
+        target=("opendata.data.providers.akshare._vendor.stock.stock_zh_a_sina:stock_zh_a_daily"),
         date_column="date",
         close_column="close",
         prefixed_symbol=True,
@@ -218,12 +232,12 @@ def _server_side_series(
             page += 1
 
         factor_sql = (
-            f"SELECT symbol, trade_date, qfq_factor, hfq_factor FROM `{FACTOR_TABLE}` "  # noqa: S608
+            f"SELECT * FROM `{FACTOR_TABLE}` "  # noqa: S608
             "WHERE symbol = :symbol AND trade_date BETWEEN :start AND :end"
         )
         factors = [
-            dict(r)
-            for r in conn.execute(
+            {key: row[key] for key in FACTOR_FIELDS if key in row}
+            for row in conn.execute(
                 text(factor_sql),
                 {"symbol": symbol, "start": start, "end": end},
             )
@@ -407,7 +421,7 @@ def main(argv: list[str] | None = None) -> int:
         f"script: {REPO_RELATIVE}",
         f"window: {args.start} .. {args.end}{clamped}",
         f"symbols: {', '.join(symbols)}",
-        "ours: dwd_stock_daily (unadjusted) x dwd_stock_adjust factors,",
+        "ours: dwd_stock_daily (unadjusted) with dwd_stock_adjust coefficients,",
         "  via build_data_select + apply_adjust_to_rows (the REST query path)",
         f"official: {args.official} {leg_spec(args.official).target} "
         "(adjust=qfq|hfq) -- different source and factor chain",

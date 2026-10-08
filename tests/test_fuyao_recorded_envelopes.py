@@ -28,8 +28,7 @@ from typing import Any
 import httpx
 import pytest
 
-from opendata_fuyao.credentials import FuyaoCredentials
-from opendata_fuyao.endpoints import (
+from opendata.data.providers.ths.endpoints import (
     PRICES_ENDPOINT,
     build_prices_request,
     normalize_bars,
@@ -37,9 +36,10 @@ from opendata_fuyao.endpoints import (
     normalize_instruments,
     shanghai_midnight_millis,
 )
-from opendata_fuyao.envelope import parse_envelope
-from opendata_fuyao.errors import FuyaoError
-from opendata_fuyao.http_client import API_KEY_HEADER, FuyaoHttpClient
+from opendata.data.providers.ths.transport.credentials import FuyaoCredentials
+from opendata.data.providers.ths.transport.envelope import parse_envelope
+from opendata.data.providers.ths.transport.errors import FuyaoError
+from opendata.data.providers.ths.transport.http_client import API_KEY_HEADER, FuyaoHttpClient
 
 FIXTURE_DIR = Path(__file__).parent / "fixtures" / "upstream" / "fuyao_t1_envelopes"
 #: 录制件里的标的与交易所（断言逐字段时作为期望值的一部分，必须由测试显式给出）。

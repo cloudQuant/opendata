@@ -102,7 +102,7 @@ class TestOfflineReplay:
     def test_upgrade_renders_every_p0_table(self):
         sql = _render(["upgrade", "head", "--sql"])
 
-        for table in (*P0_DWD_TABLES, *P0_ODS_TABLES):
+        for table in (*P0_DWD_TABLES, "dwd_stock_adjust", *P0_ODS_TABLES):
             assert f"CREATE TABLE IF NOT EXISTS `{table}`" in sql
         assert "PARTITION pmax VALUES LESS THAN (MAXVALUE)" in sql
         assert "alembic_version_data" in sql
@@ -135,6 +135,50 @@ class TestOfflineReplay:
             )
             in sql
         )
+
+    def test_adjustment_migration_keeps_0005_legacy_shape_and_adds_affine_fields(self):
+        sql = _render(["upgrade", "head", "--sql"])
+        create_start = sql.index("CREATE TABLE IF NOT EXISTS `dwd_stock_adjust`")
+        create_end = sql.index(";", create_start)
+        original_table = sql[create_start:create_end]
+
+        assert "`qfq_factor` double NOT NULL" in original_table
+        assert "`hfq_factor` double NOT NULL" in original_table
+        assert "PRIMARY KEY (`symbol`, `trade_date`)" in original_table
+        assert "PARTITION BY RANGE COLUMNS(`trade_date`)" in original_table
+        assert "`qfq_scale`" not in original_table
+        assert "`legacy_source`" not in original_table
+        for column in (
+            "qfq_scale",
+            "qfq_offset",
+            "hfq_scale",
+            "hfq_offset",
+            "adjustment_version",
+            "legacy_source",
+        ):
+            assert sql.count(f"ADD COLUMN {column}") == 1
+        assert "DROP COLUMN" not in sql
+
+    def test_affine_downgrade_drops_only_new_columns(self):
+        sql = _render(
+            [
+                "downgrade",
+                "0007_affine_stock_adjust:0006_dwd_daily_legs",
+                "--sql",
+            ]
+        )
+
+        for column in (
+            "qfq_scale",
+            "qfq_offset",
+            "hfq_scale",
+            "hfq_offset",
+            "adjustment_version",
+            "legacy_source",
+        ):
+            assert f"DROP COLUMN {column}" in sql
+        assert "DROP COLUMN qfq_factor" not in sql
+        assert "DROP COLUMN hfq_factor" not in sql
 
     def test_downgrade_renders_drops(self):
         # Offline downgrades need the explicit range (no DB to read from).
@@ -201,6 +245,7 @@ class TestLiveReplay:
             _render_with(ini, ["upgrade", "head"])
             names = set(inspect(scratch).get_table_names())
             assert set(P0_DWD_TABLES) <= names
+            assert "dwd_stock_adjust" in names
             assert set(P0_ODS_TABLES) <= names
             with scratch.connect() as connection:
                 version = connection.execute(

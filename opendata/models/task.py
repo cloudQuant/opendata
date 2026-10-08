@@ -46,6 +46,13 @@ class ScheduleType(str, enum.Enum):
     INTERVAL = "interval"
 
 
+class TaskKind(str, enum.Enum):
+    """Supported scheduled task executors."""
+
+    SCRIPT = "script"
+    PIPELINE = "pipeline"
+
+
 class TriggeredBy(str, enum.Enum):
     """Execution trigger type enumeration."""
 
@@ -62,7 +69,8 @@ class ScheduledTask(Base):
         name: Task name
         description: Task description
         user_id: Owner user ID
-        script_id: Data script to execute
+        task_kind: Executor selected for the task.
+        script_id: Data script to execute, or None for pipeline tasks.
         schedule_type: Type of schedule
         schedule_expression: Schedule expression (cron or preset)
         parameters: Parameters to pass to script
@@ -94,10 +102,16 @@ class ScheduledTask(Base):
         ForeignKey("users.id"),
         nullable=False,
     )
-    script_id: Mapped[str] = mapped_column(
+    task_kind: Mapped[str] = mapped_column(
+        String(16),
+        default=TaskKind.SCRIPT.value,
+        server_default=TaskKind.SCRIPT.value,
+        nullable=False,
+    )
+    script_id: Mapped[str | None] = mapped_column(
         String(100),
         ForeignKey("data_scripts.script_id"),
-        nullable=False,
+        nullable=True,
     )
     schedule_type: Mapped[ScheduleType] = mapped_column(
         Enum(ScheduleType),
@@ -139,6 +153,7 @@ class ScheduledTask(Base):
             "name": self.name,
             "description": self.description,
             "user_id": self.user_id,
+            "task_kind": self.task_kind,
             "script_id": self.script_id,
             "script_name": script_name,
             "schedule_type": self.schedule_type.value,
@@ -209,7 +224,7 @@ class TaskExecution(Base):
         ForeignKey("scheduled_tasks.id"),
         nullable=True,
     )
-    script_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    script_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     params: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     status: Mapped[TaskStatus] = mapped_column(
         Enum(TaskStatus),

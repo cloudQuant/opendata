@@ -15,7 +15,7 @@ can land as a科目. The declared ``item`` values stay Chinese because no
 normalized-code mapping exists for this leg (AC-4).
 """
 
-from typing import ClassVar
+from typing import ClassVar, cast
 
 import pandas as pd
 
@@ -36,6 +36,8 @@ class FinancialStatementQuery(QueryParams):
 
 class AkshareFinancialStatementFetcher(Fetcher[FinancialStatementQuery, pd.DataFrame]):
     """One of sina's three statements for one A-share symbol."""
+
+    async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
@@ -68,10 +70,14 @@ class AkshareFinancialStatementFetcher(Fetcher[FinancialStatementQuery, pd.DataF
         Returns:
             The wide upstream frame.
         """
-        import opendata_http  # lazy: load the ported tree on routing only
+        # lazy: load the ported tree on routing only
+        import opendata.data.providers.akshare._vendor as opendata_http
 
-        return opendata_http.stock_financial_report_sina(
-            stock=sina_symbol(params.symbol), symbol=params.statement_type
+        return cast(
+            "pd.DataFrame",
+            opendata_http.stock_financial_report_sina(
+                stock=sina_symbol(params.symbol), symbol=params.statement_type
+            ),
         )
 
     def transform_data(self, raw: pd.DataFrame, params: FinancialStatementQuery) -> FetchResult:

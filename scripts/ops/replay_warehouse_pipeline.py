@@ -1,0 +1,1393 @@
+#!/usr/bin/env python3
+"""Replay an existing THS stock-daily ODS snapshot through the warehouse pipeline.
+
+The source is read in a guarded repeatable-read transaction. The default mode
+only counts the source and resolves the requested window's full symbol
+universe; apply is required to write to pre-migrated isolated schemas. The CLI
+never calls the THS provider and never prints a database URL, password, SQL
+statement, or raw source row.
+"""
+
+from __future__ import annotations
+
+import argparse
+import asyncio
+import hashlib
+import ipaddress
+import json
+import os
+import struct
+import sys
+import time
+from contextlib import suppress
+from datetime import date, datetime
+from decimal import Decimal
+from pathlib import Path
+from tempfile import mkstemp
+from typing import TYPE_CHECKING, Protocol, cast
+
+import pandas as pd
+from sqlalchemy import create_engine, inspect, text
+from sqlalchemy.engine import URL, Connection, Engine, make_url
+from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
+
+_REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPOSITORY_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPOSITORY_ROOT))
+
+from opendata.data.domains import dwd_table  # noqa: E402
+from opendata.data.mapping import require_domain_mapping  # noqa: E402
+from opendata.models.data_table import DataTable  # noqa: E402
+from opendata.models.pipeline import PipelineProgress  # noqa: E402
+from opendata.models.pipeline_step import (  # noqa: E402
+    PipelineStepCheckpoint,
+    PipelineSymbolWindow,
+)
+from opendata.pipeline.runner import DataPipeline, PipelineOutcome, Window  # noqa: E402
+from opendata.pipeline.templates import build_stock_daily_pipeline  # noqa: E402
+from scripts.ops import benchmark_ods_write as _benchmark  # noqa: E402
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Mapping, Sequence
+
+    from opendata.data.mapping import DomainMapping
+
+
+class _HashDigest(Protocol):
+    """Minimal hashlib interface used while feeding canonical fingerprints."""
+
+    def update(self, data: bytes, /) -> None: ...
+
+
+MODE = "existing-ods-replay"
+SOURCE_URL_ENV = "C65_REPLAY_SOURCE_URL"
+TARGET_URL_ENV = "C65_REPLAY_TARGET_URL"
+METADATA_URL_ENV = "C65_REPLAY_METADATA_URL"
+MANIFEST_VERSION = 2
+DEFAULT_SHARD_SIZE = 25
+MAX_SHARD_SIZE = 50
+MAX_ROWS_PER_SYMBOL = 20_000
+MAX_WINDOW_SPAN_DAYS = 3_653
+FINGERPRINT_FETCH_SIZE = 1_000
+_RUNTIME_FILE_PATHS = (
+    "scripts/ops/replay_warehouse_pipeline.py",
+    "scripts/ops/benchmark_ods_write.py",
+    "opendata/pipeline/runner.py",
+    "opendata/pipeline/templates.py",
+    "opendata/pipeline/affected_keys.py",
+    "opendata/pipeline/ods_writer.py",
+    "opendata/pipeline/dwd_merge.py",
+    "opendata/models/pipeline.py",
+    "opendata/models/pipeline_step.py",
+    "opendata/data/mapping.py",
+    "opendata/data/registry.py",
+    "opendata/data/domains.py",
+    "opendata/data/mappings/ths.yaml",
+    "opendata/data/domains.yaml",
+)
+_MAIN_PROGRESS_TABLES = (
+    PipelineProgress.__tablename__,
+    PipelineStepCheckpoint.__tablename__,
+    PipelineSymbolWindow.__tablename__,
+)
+
+
+class ReplayManifestError(ValueError):
+    """The persistent replay manifest is invalid or no longer matches inputs."""
+
+
+class ControlledReplayInterrupt(BaseException):
+    """Stop after the requested count of real DONE shards."""
+
+
+def _date_arg(value: str) -> date:
+    """Parse an ISO calendar date without exposing environment data."""
+    try:
+        return date.fromisoformat(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("expected YYYY-MM-DD") from exc
+
+
+def _shard_size_arg(value: str) -> int:
+    """Parse a shard size within this tool's fixed upper bound."""
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("shard size must be an integer from 1 to 50") from exc
+    if not 1 <= parsed <= MAX_SHARD_SIZE:
+        raise argparse.ArgumentTypeError("shard size must be an integer from 1 to 50")
+    return parsed
+
+
+def _positive_int_arg(value: str) -> int:
+    """Parse a positive shard count."""
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("must be a positive integer") from exc
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return parsed
+
+
+def _parser() -> argparse.ArgumentParser:
+    """Build a CLI with no URL or credential arguments."""
+    parser = argparse.ArgumentParser(
+        description=(
+            "Count read-only by default; apply replays existing THS ODS rows "
+            "through the production stock-daily pipeline into isolated schemas."
+        )
+    )
+    parser.add_argument("--start", required=True, type=_date_arg, help="inclusive YYYY-MM-DD")
+    parser.add_argument("--end", required=True, type=_date_arg, help="inclusive YYYY-MM-DD")
+    parser.add_argument("--shard-size", type=_shard_size_arg, default=DEFAULT_SHARD_SIZE)
+    parser.add_argument("--apply", action="store_true", help="write through the pipeline")
+    parser.add_argument("--resume", action="store_true", help="resume a matching manifest")
+    parser.add_argument("--manifest", type=Path, help="local mode-0600 resume manifest")
+    parser.add_argument(
+        "--interrupt-after-shards",
+        type=_positive_int_arg,
+        help="controlled stop after this many actual shards are DONE",
+    )
+    return parser
+
+
+def _parse_mysql_url(value: str, label: str) -> URL:
+    """Parse a MySQL URL without including its value in an error."""
+    try:
+        parsed = make_url(value)
+    except Exception as exc:
+        raise ValueError(f"invalid {label} database URL") from exc
+    if parsed.drivername not in {"mysql", "mysql+pymysql"}:
+        raise ValueError(f"{label} database must use MySQL")
+    if not parsed.host or not parsed.database:
+        raise ValueError(f"{label} database URL must name a host and schema")
+    return parsed
+
+
+def _validate_urls(source_url: str, target_url: str, metadata_url: str) -> None:
+    """Require isolated loopback replay schemas and a distinct source."""
+    _benchmark._validate_database_urls(source_url, target_url)
+    source = _parse_mysql_url(source_url, "source")
+    target = _parse_mysql_url(target_url, "target")
+    metadata = _parse_mysql_url(metadata_url, "metadata")
+    for label, parsed in (("metadata", metadata), ("target", target)):
+        host = str(parsed.host or "").casefold()
+        loopback = host == "localhost"
+        if not loopback:
+            with suppress(ValueError):
+                loopback = ipaddress.ip_address(host).is_loopback
+        if not loopback:
+            raise ValueError(f"{label} database host must be loopback")
+        if parsed.port != _benchmark.TARGET_PORT:
+            raise ValueError(f"{label} database port must be {_benchmark.TARGET_PORT}")
+        database = str(parsed.database or "")
+        prefix = "opendata_c65_replay_"
+        if not database.startswith(prefix) or len(database) <= len(prefix):
+            raise ValueError(f"{label} schema must use the isolated {prefix} prefix")
+    if str(metadata.database).casefold() == str(target.database).casefold():
+        raise ValueError("metadata and data replay schemas must be separate")
+    if _benchmark._endpoint_key(metadata) == _benchmark._endpoint_key(target):
+        raise ValueError("metadata and data replay databases must be different")
+    if _benchmark._endpoint_key(source) in {
+        _benchmark._endpoint_key(target),
+        _benchmark._endpoint_key(metadata),
+    }:
+        raise ValueError("source and replay databases must be different")
+
+
+def _canonical_json(value: object) -> bytes:
+    """Encode JSON deterministically for fingerprints."""
+    return json.dumps(
+        value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False
+    ).encode("utf-8")
+
+
+def _endpoint_digest(url: URL) -> str:
+    """Bind an endpoint without storing its URL or credentials."""
+    identity = {
+        "host": str(url.host or "").casefold(),
+        "port": url.port or 3306,
+        "database": str(url.database or "").casefold(),
+    }
+    return hashlib.sha256(_canonical_json(identity)).hexdigest()
+
+
+def _runtime_code_fingerprints(paths: Mapping[str, Path] | None = None) -> dict[str, str]:
+    """Hash the replay tool and every production file that defines its semantics."""
+    files = paths or {
+        relative_path: _REPOSITORY_ROOT / relative_path for relative_path in _RUNTIME_FILE_PATHS
+    }
+    return {
+        relative_path: hashlib.sha256(path.read_bytes()).hexdigest()
+        for relative_path, path in sorted(files.items())
+    }
+
+
+def _new_sync_engine(url: str) -> Engine:
+    """Create a synchronous engine for source or replay reads."""
+    return create_engine(url, pool_pre_ping=True)
+
+
+def _new_async_engine(url: URL) -> AsyncEngine:
+    """Create the async metadata engine used by DataPipeline."""
+    return create_async_engine(url, pool_pre_ping=True)
+
+
+def _metadata_async_url(value: str) -> URL:
+    """Convert the replay metadata URL to the application async driver."""
+    return _parse_mysql_url(value, "metadata").set(drivername="mysql+aiomysql")
+
+
+def _table_schema(connection: Connection, table: str) -> _benchmark.TableSchema:
+    """Reflect existing MySQL tables through SELECT-only metadata queries."""
+    if connection.dialect.name == "mysql":
+        return _benchmark._table_schema(connection, table)
+
+    # SQLite is used only by offline tests; it has no MySQL information_schema.
+    inspector = inspect(connection)
+    if not inspector.has_table(table):
+        raise LookupError("required replay table is missing")
+    columns = tuple(
+        sorted(
+            (
+                str(column["name"]),
+                str(column["type"]).casefold(),
+                bool(column.get("nullable", True)),
+            )
+            for column in inspector.get_columns(table)
+        )
+    )
+    primary_key = tuple(inspector.get_pk_constraint(table).get("constrained_columns") or ())
+    if not columns:
+        raise LookupError("required replay table has no columns")
+    return _benchmark.TableSchema(columns=columns, primary_key=primary_key)
+
+
+def _require_schema_match(
+    source: _benchmark.TableSchema,
+    target: _benchmark.TableSchema,
+    key: tuple[str, ...],
+) -> None:
+    """Require identical ODS columns and the registered raw business key."""
+    if source.columns != target.columns:
+        raise ValueError("source and target ODS schemas differ")
+    if source.primary_key != key or target.primary_key != key:
+        raise ValueError("source and target ODS keys must match the registered THS business key")
+
+
+def _as_date(value: object) -> date | None:
+    """Normalize database date and timestamp scalars for summaries."""
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    return date.fromisoformat(str(value)[:10])
+
+
+def _typed_fingerprint_value(value: object) -> tuple[bytes, bytes]:
+    """Encode one SQL scalar with an unambiguous type tag and exact payload."""
+    if value is None:
+        return b"N", b""
+    if isinstance(value, bool):
+        return b"B", b"1" if value else b"0"
+    if isinstance(value, datetime):
+        return b"T", value.isoformat(timespec="microseconds").encode("ascii")
+    if isinstance(value, date):
+        return b"D", value.isoformat().encode("ascii")
+    if isinstance(value, Decimal):
+        sign, digits, exponent = value.as_tuple()
+        payload = f"{sign}:{''.join(str(digit) for digit in digits)}:{exponent}"
+        return b"M", payload.encode("ascii")
+    if isinstance(value, float):
+        return b"F", struct.pack(">d", value)
+    if isinstance(value, int):
+        return b"I", str(value).encode("ascii")
+    if isinstance(value, str):
+        return b"S", value.encode("utf-8")
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        return b"Y", bytes(value)
+    raise TypeError("source window contains an unsupported SQL scalar type")
+
+
+def _update_row_fingerprint(digest: _HashDigest, values: Sequence[object]) -> None:
+    """Add one fixed-schema row using typed fields and 64-bit length prefixes."""
+    digest.update(b"R" + len(values).to_bytes(4, "big"))
+    for value in values:
+        tag, payload = _typed_fingerprint_value(value)
+        digest.update(tag + len(payload).to_bytes(8, "big") + payload)
+
+
+def _fingerprint_source_window(
+    connection: Connection,
+    *,
+    table: str,
+    schema: _benchmark.TableSchema,
+    symbol_column: str,
+    date_column: str,
+    window: Window,
+    expected_symbol_counts: Mapping[str, int],
+    expected_rows: int,
+) -> dict[str, object]:
+    """Hash every bounded-window source row with constant-size fetch batches."""
+    column_names = [column[0] for column in schema.columns]
+    selected = ", ".join(_benchmark._quote_identifier(name) for name in column_names)
+    ordered = ", ".join(_benchmark._quote_identifier(name) for name in schema.primary_key)
+    statement = text(
+        f"SELECT {selected} FROM {_benchmark._quote_identifier(table)} "  # noqa: S608
+        f"WHERE {_benchmark._quote_identifier(date_column)} >= :window_start "
+        f"AND {_benchmark._quote_identifier(date_column)} <= :window_end "
+        f"ORDER BY {ordered}"
+    )
+    result = connection.execution_options(
+        stream_results=True, max_row_buffer=FINGERPRINT_FETCH_SIZE
+    ).execute(statement, {"window_start": window.start, "window_end": window.end})
+    whole_digest = hashlib.sha256()
+    symbol_digests = {symbol: hashlib.sha256() for symbol in expected_symbol_counts}
+    symbol_counts = dict.fromkeys(expected_symbol_counts, 0)
+    rows_seen = 0
+    previous_key: tuple[object, ...] | None = None
+    try:
+        while batch := result.fetchmany(FINGERPRINT_FETCH_SIZE):
+            for row in batch:
+                values = tuple(row)
+                if len(values) != len(column_names):
+                    raise RuntimeError("source fingerprint row has an invalid column count")
+                row_by_name = dict(zip(column_names, values, strict=True))
+                raw_symbol = row_by_name.get(symbol_column)
+                if not isinstance(raw_symbol, str) or raw_symbol not in symbol_digests:
+                    raise RuntimeError("source fingerprint returned a symbol outside the snapshot")
+                raw_date = _as_date(row_by_name.get(date_column))
+                if raw_date is None or not window.start <= raw_date <= window.end:
+                    raise RuntimeError("source fingerprint returned a date outside the window")
+                row_key = tuple(
+                    raw_symbol if key == symbol_column else row_by_name.get(key)
+                    for key in schema.primary_key
+                )
+                if previous_key is not None and row_key <= previous_key:
+                    raise RuntimeError("source fingerprint keys are not strictly ordered")
+                previous_key = row_key
+                _update_row_fingerprint(whole_digest, values)
+                _update_row_fingerprint(symbol_digests[raw_symbol], values)
+                symbol_counts[raw_symbol] += 1
+                rows_seen += 1
+    finally:
+        result.close()
+    if rows_seen != expected_rows or symbol_counts != dict(expected_symbol_counts):
+        raise RuntimeError("source values and exact replay counts differ in the snapshot")
+    return {
+        "algorithm": "sha256-typed-length-prefixed-v1",
+        "rows_exact": rows_seen,
+        "sha256": whole_digest.hexdigest(),
+        "by_symbol_sha256": {
+            symbol: digest.hexdigest() for symbol, digest in sorted(symbol_digests.items())
+        },
+    }
+
+
+def _read_source_snapshot(
+    connection: Connection,
+    *,
+    table: str,
+    mapping: DomainMapping,
+    schema: _benchmark.TableSchema,
+    window: Window,
+    include_fingerprint: bool,
+) -> dict[str, object]:
+    """Count the whole ODS source and pin the exact window symbol universe."""
+    columns = {column[0] for column in schema.columns}
+    symbol_column = mapping.fields["symbol"].source_column
+    date_column = mapping.fields["trade_date"].source_column
+    for column in (symbol_column, date_column, *mapping.source_key):
+        if column not in columns:
+            raise ValueError("registered THS fields are missing from the source ODS table")
+    quoted_table = _benchmark._quote_identifier(table)
+    quoted_symbol = _benchmark._quote_identifier(symbol_column)
+    quoted_date = _benchmark._quote_identifier(date_column)
+    total_rows = int(
+        connection.execute(
+            text(f"SELECT COUNT(*) FROM {quoted_table}")  # noqa: S608
+        ).scalar_one()
+    )
+    parameters = {"window_start": window.start, "window_end": window.end}
+    symbols: Sequence[object] = (
+        connection.execute(
+            text(
+                f"SELECT DISTINCT {quoted_symbol} FROM {quoted_table} "  # noqa: S608
+                f"WHERE {quoted_date} >= :window_start AND {quoted_date} <= :window_end "
+                f"ORDER BY {quoted_symbol}"
+            ),
+            parameters,
+        )
+        .scalars()
+        .all()
+    )
+    rows = connection.execute(
+        text(
+            f"SELECT {quoted_symbol}, COUNT(*), MIN({quoted_date}), MAX({quoted_date}) "  # noqa: S608
+            f"FROM {quoted_table} WHERE {quoted_date} >= :window_start "
+            f"AND {quoted_date} <= :window_end GROUP BY {quoted_symbol} "
+            f"ORDER BY {quoted_symbol}"
+        ),
+        parameters,
+    ).all()
+    rows = sorted(rows, key=lambda row: str(row[0]))
+    ordered_symbols = sorted(str(symbol) for symbol in symbols)
+    if any(not isinstance(symbol, str) or not symbol for symbol in symbols):
+        raise ValueError("source window contains an invalid THS symbol")
+    if ordered_symbols != [str(row[0]) for row in rows]:
+        raise ValueError("source symbol list and exact per-symbol counts differ")
+    symbol_counts: list[tuple[str, int]] = []
+    normalized_counts: dict[str, int] = {}
+    normalized_symbols: set[str] = set()
+    first_day: date | None = None
+    last_day: date | None = None
+    for raw_symbol, raw_count, raw_first, raw_last in rows:
+        if not isinstance(raw_symbol, str) or not raw_symbol:
+            raise ValueError("source window contains an invalid THS symbol")
+        count = int(raw_count)
+        if count <= 0 or count > MAX_ROWS_PER_SYMBOL:
+            raise ValueError("a THS symbol exceeds the bounded replay row limit")
+        symbol_first = _as_date(raw_first)
+        symbol_last = _as_date(raw_last)
+        if symbol_first is None or symbol_last is None:
+            raise ValueError("source window date summary is incomplete")
+        raw_key = tuple(raw_symbol if key == "symbol" else symbol_first for key in mapping.key)
+        contract_key = mapping.to_contract_key(raw_key)
+        contract_symbol = contract_key[mapping.key.index("symbol")]
+        if not isinstance(contract_symbol, str) or not contract_symbol:
+            raise ValueError("THS mapping produced an invalid normalized symbol")
+        if contract_symbol in normalized_symbols:
+            raise ValueError("THS symbols collide after mapping normalization")
+        normalized_symbols.add(contract_symbol)
+        normalized_counts[contract_symbol] = count
+        symbol_counts.append((raw_symbol, count))
+        first_day = symbol_first if first_day is None else min(first_day, symbol_first)
+        last_day = symbol_last if last_day is None else max(last_day, symbol_last)
+    result: dict[str, object] = {
+        "source_rows_exact": total_rows,
+        "window_rows_exact": sum(int(item[1]) for item in symbol_counts),
+        "symbols": ordered_symbols,
+        "symbol_row_counts": symbol_counts,
+        "normalized_symbol_row_counts": normalized_counts,
+        "normalized_symbols": sorted(normalized_symbols),
+        "window_first_date": first_day.isoformat() if first_day else None,
+        "window_last_date": last_day.isoformat() if last_day else None,
+        "symbol_column": symbol_column,
+        "date_column": date_column,
+    }
+    if include_fingerprint:
+        result["window_fingerprint"] = _fingerprint_source_window(
+            connection,
+            table=table,
+            schema=schema,
+            symbol_column=symbol_column,
+            date_column=date_column,
+            window=window,
+            expected_symbol_counts=dict(symbol_counts),
+            expected_rows=sum(count for _, count in symbol_counts),
+        )
+    return result
+
+
+def _fetch_symbol_rows(
+    connection: Connection,
+    *,
+    table: str,
+    schema: _benchmark.TableSchema,
+    symbol_column: str,
+    date_column: str,
+    key: tuple[str, ...],
+    symbol: str,
+    window: Window,
+    expected_rows: int,
+) -> pd.DataFrame:
+    """Fetch one capped symbol in stable raw-key order from the same snapshot."""
+    selected = ", ".join(_benchmark._quote_identifier(column[0]) for column in schema.columns)
+    ordered = ", ".join(_benchmark._quote_identifier(column) for column in key)
+    quoted_table = _benchmark._quote_identifier(table)
+    quoted_symbol = _benchmark._quote_identifier(symbol_column)
+    quoted_date = _benchmark._quote_identifier(date_column)
+    statement = text(
+        f"SELECT {selected} FROM {quoted_table} WHERE {quoted_symbol} = :symbol "  # noqa: S608
+        f"AND {quoted_date} >= :window_start AND {quoted_date} <= :window_end "
+        f"ORDER BY {ordered}"
+    )
+    result = connection.execution_options(
+        stream_results=True, max_row_buffer=MAX_ROWS_PER_SYMBOL
+    ).execute(
+        statement,
+        {"symbol": symbol, "window_start": window.start, "window_end": window.end},
+    )
+    try:
+        rows = result.fetchmany(MAX_ROWS_PER_SYMBOL + 1)
+    finally:
+        result.close()
+    if len(rows) != expected_rows or len(rows) > MAX_ROWS_PER_SYMBOL:
+        raise RuntimeError("source symbol row count changed within the replay snapshot")
+    frame: pd.DataFrame = pd.DataFrame.from_records(
+        [tuple(row) for row in rows],
+        columns=[column[0] for column in schema.columns],
+    )
+    if not frame.empty and (
+        not frame[symbol_column].eq(symbol).all()
+        or not frame[date_column].map(lambda value: _is_in_window(value, window)).all()
+    ):
+        raise RuntimeError("source query returned rows outside the selected window")
+    return frame
+
+
+def _is_in_window(value: object, window: Window) -> bool:
+    """Return whether a database date scalar falls inside an inclusive window."""
+    parsed = _as_date(value)
+    return parsed is not None and window.start <= parsed <= window.end
+
+
+def _exact_count(connection: Connection, table: str) -> int:
+    """Count all rows in an existing registry-derived table."""
+    return int(
+        connection.execute(
+            text(f"SELECT COUNT(*) FROM {_benchmark._quote_identifier(table)}")  # noqa: S608
+        ).scalar_one()
+    )
+
+
+def _table_window_summary(
+    connection: Connection,
+    *,
+    table: str,
+    symbol_column: str,
+    date_column: str,
+    window: Window,
+) -> dict[str, object]:
+    """Return exact per-symbol counts and dates for one table/window."""
+    quoted_table = _benchmark._quote_identifier(table)
+    quoted_symbol = _benchmark._quote_identifier(symbol_column)
+    quoted_date = _benchmark._quote_identifier(date_column)
+    rows = connection.execute(
+        text(
+            f"SELECT {quoted_symbol}, COUNT(*), MIN({quoted_date}), MAX({quoted_date}) "  # noqa: S608
+            f"FROM {quoted_table} WHERE {quoted_date} >= :window_start "
+            f"AND {quoted_date} <= :window_end GROUP BY {quoted_symbol} "
+            f"ORDER BY {quoted_symbol}"
+        ),
+        {"window_start": window.start, "window_end": window.end},
+    ).all()
+    counts: dict[str, int] = {}
+    first_day: date | None = None
+    last_day: date | None = None
+    for symbol, raw_count, raw_first, raw_last in rows:
+        if not isinstance(symbol, str) or not symbol:
+            raise ValueError("target table contains an invalid symbol")
+        counts[symbol] = int(raw_count)
+        first = _as_date(raw_first)
+        last = _as_date(raw_last)
+        if first is None or last is None:
+            raise ValueError("target table date summary is incomplete")
+        first_day = first if first_day is None else min(first_day, first)
+        last_day = last if last_day is None else max(last_day, last)
+    return {
+        "row_count": sum(counts.values()),
+        "symbol_count": len(counts),
+        "symbol_row_counts": counts,
+        "first_date": first_day.isoformat() if first_day else None,
+        "last_date": last_day.isoformat() if last_day else None,
+    }
+
+
+def _require_existing_pipeline_tables(metadata_engine: Engine) -> None:
+    """Fail unless the pre-migrated control schema has the required tables."""
+    required = {DataTable.__tablename__, *_MAIN_PROGRESS_TABLES}
+    with metadata_engine.connect() as connection:
+        inspector = inspect(connection)
+        missing = sorted(table for table in required if not inspector.has_table(table))
+    if missing:
+        raise LookupError("pre-migrated metadata schema is missing required pipeline tables")
+
+
+def _require_first_apply_empty(target_engine: Engine, metadata_engine: Engine, *, ods: str) -> None:
+    """Require a pristine dedicated target before creating the first manifest."""
+    dwd = dwd_table("stock_daily")
+    with target_engine.connect() as connection:
+        inspector = inspect(connection)
+        if not inspector.has_table(ods) or not inspector.has_table(dwd):
+            raise LookupError("pre-migrated data schema is missing ODS or DWD tables")
+        if _exact_count(connection, ods) != 0 or _exact_count(connection, dwd) != 0:
+            raise ValueError("first apply requires empty ODS and DWD tables")
+    with metadata_engine.connect() as connection:
+        if any(_exact_count(connection, table) != 0 for table in _MAIN_PROGRESS_TABLES):
+            raise ValueError("first apply requires empty pipeline progress tables")
+
+
+def _validate_partial_target(
+    target_engine: Engine,
+    *,
+    ods: str,
+    expected_rows: int,
+    raw_symbol_counts: Mapping[str, int],
+    normalized_symbol_counts: Mapping[str, int],
+    window: Window,
+) -> None:
+    """Reject resume target contents outside the exact window or source universe."""
+    dwd = dwd_table("stock_daily")
+    with target_engine.connect() as connection:
+        ods_total = _exact_count(connection, ods)
+        dwd_total = _exact_count(connection, dwd)
+        ods_summary = _table_window_summary(
+            connection,
+            table=ods,
+            symbol_column="thscode",
+            date_column="trade_date",
+            window=window,
+        )
+        dwd_summary = _table_window_summary(
+            connection,
+            table=dwd,
+            symbol_column="symbol",
+            date_column="trade_date",
+            window=window,
+        )
+    if ods_total != ods_summary["row_count"] or dwd_total != dwd_summary["row_count"]:
+        raise ValueError("replay target contains rows outside the manifest window")
+    if ods_total > expected_rows or dwd_total > expected_rows:
+        raise ValueError("replay target has more rows than the source window")
+    ods_counts = ods_summary["symbol_row_counts"]
+    dwd_counts = dwd_summary["symbol_row_counts"]
+    if not isinstance(ods_counts, dict) or not isinstance(dwd_counts, dict):
+        raise RuntimeError("target summary has an invalid symbol count map")
+    if not set(ods_counts).issubset(raw_symbol_counts):
+        raise ValueError("replay ODS contains symbols outside the source manifest")
+    if not set(dwd_counts).issubset(normalized_symbol_counts):
+        raise ValueError("replay DWD contains symbols outside the normalized source manifest")
+    if any(count > raw_symbol_counts[symbol] for symbol, count in ods_counts.items()):
+        raise ValueError("replay ODS has more rows for a symbol than the source manifest")
+    if any(count > normalized_symbol_counts[symbol] for symbol, count in dwd_counts.items()):
+        raise ValueError("replay DWD has more rows for a symbol than the source manifest")
+
+
+def _pipeline_state(
+    metadata_engine: Engine, pipeline_id: str
+) -> tuple[dict[int, str], dict[str, str]]:
+    """Read durable shard and hook checkpoints from the actual metadata schema."""
+    with metadata_engine.connect() as connection:
+        shard_rows = connection.execute(
+            text(
+                f"SELECT shard, status FROM "  # noqa: S608
+                f"{_benchmark._quote_identifier(PipelineProgress.__tablename__)} "
+                "WHERE pipeline_id = :pipeline_id ORDER BY shard"
+            ),
+            {"pipeline_id": pipeline_id},
+        ).all()
+        hook_rows = connection.execute(
+            text(
+                f"SELECT step, status FROM "  # noqa: S608
+                f"{_benchmark._quote_identifier(PipelineStepCheckpoint.__tablename__)} "
+                "WHERE pipeline_id = :pipeline_id ORDER BY step"
+            ),
+            {"pipeline_id": pipeline_id},
+        ).all()
+    return (
+        {int(shard): str(status).casefold() for shard, status in shard_rows},
+        {str(step): str(status).casefold() for step, status in hook_rows},
+    )
+
+
+def _atomic_write_manifest(path: Path, manifest: dict[str, object]) -> None:
+    """Atomically replace a local JSON manifest with mode 0600."""
+    if path.is_symlink():
+        raise ValueError("manifest path must not be a symbolic link")
+    if not path.parent.is_dir():
+        raise ValueError("manifest parent directory must already exist")
+    descriptor, temporary_name = mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    temporary = Path(temporary_name)
+    try:
+        os.fchmod(descriptor, 0o600)
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            json.dump(manifest, stream, ensure_ascii=False, sort_keys=True, indent=2)
+            stream.write("\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+        directory_fd = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(directory_fd)
+        finally:
+            os.close(directory_fd)
+    except BaseException:
+        with suppress(OSError):
+            os.close(descriptor)
+        with suppress(OSError):
+            temporary.unlink()
+        raise
+
+
+def _read_manifest(path: Path) -> dict[str, object]:
+    """Read and structurally validate a caller-owned manifest."""
+    if path.is_symlink() or not path.is_file():
+        raise ReplayManifestError("resume manifest is not a regular file")
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ReplayManifestError("resume manifest is unreadable") from exc
+    if not isinstance(value, dict) or value.get("manifest_version") != MANIFEST_VERSION:
+        raise ReplayManifestError("resume manifest version is invalid")
+    done_shards = value.get("done_shards")
+    if (
+        not isinstance(done_shards, list)
+        or any(
+            not isinstance(index, int) or isinstance(index, bool) or index < 0
+            for index in done_shards
+        )
+        or done_shards != sorted(set(done_shards))
+    ):
+        raise ReplayManifestError("resume manifest shard checkpoint is invalid")
+    return value
+
+
+def _require_manifest_identity(
+    manifest: dict[str, object], expected: dict[str, object], *, total_shards: int
+) -> None:
+    """Refuse changed window, schema, universe, counts, or destination."""
+    for key, value in expected.items():
+        if manifest.get(key) != value:
+            raise ReplayManifestError(f"resume manifest inputs no longer match ({key})")
+    done_shards = manifest["done_shards"]
+    if not isinstance(done_shards, list):
+        raise ReplayManifestError("resume manifest shard checkpoint is invalid")
+    if any(index >= total_shards for index in done_shards):
+        raise ReplayManifestError("resume manifest contains a shard outside this plan")
+
+
+def _build_pipeline(**kwargs: object) -> DataPipeline:
+    """Production stock-daily builder seam for isolated tests."""
+    return build_stock_daily_pipeline(**kwargs)  # type: ignore[arg-type]
+
+
+async def _internal_replay_notify(_context: object) -> dict[str, str]:
+    """Make clear this historical replay does not send external events."""
+    return {"delivery": "suppressed", "mode": MODE}
+
+
+async def _dispose_async_engine(engine: AsyncEngine) -> None:
+    """Dispose the asynchronous control engine."""
+    await engine.dispose()
+
+
+async def _run_pipeline_with_disposal(
+    pipeline: DataPipeline,
+    engine: AsyncEngine,
+    *,
+    window: Window,
+    resume: bool,
+    on_disposal_start: Callable[[], None],
+) -> PipelineOutcome:
+    """Run and dispose the pipeline's async engine on the same event loop."""
+    try:
+        return await pipeline.run(window, resume=resume)
+    finally:
+        on_disposal_start()
+        await _dispose_async_engine(engine)
+
+
+def _error_code(exc: BaseException) -> str:
+    """Return a stable safe category without serializing exception text."""
+    if isinstance(exc, ControlledReplayInterrupt):
+        return "controlled_interrupt"
+    if isinstance(exc, ReplayManifestError):
+        return "manifest_mismatch"
+    if isinstance(exc, PermissionError):
+        return "source_write_blocked"
+    if isinstance(exc, (ValueError, LookupError, argparse.ArgumentError)):
+        return "validation_failed"
+    if isinstance(exc, OSError):
+        return "local_io_failed"
+    return "replay_failed"
+
+
+def run_replay(
+    *,
+    window: Window,
+    source_url: str,
+    target_url: str,
+    metadata_url: str,
+    apply: bool = False,
+    resume: bool = False,
+    manifest_path: Path | None = None,
+    shard_size: int = DEFAULT_SHARD_SIZE,
+    interrupt_after_shards: int | None = None,
+    progress: Callable[[dict[str, object]], None] | None = None,
+) -> dict[str, object]:
+    """Count or replay one bounded THS window through the production pipeline.
+
+    URL arguments are an internal testing seam. The CLI populates them
+    exclusively from the three task-specific environment variables.
+    """
+    started = time.monotonic()
+    if window.end < window.start:
+        raise ValueError("window end must not precede start")
+    if (window.end - window.start).days > MAX_WINDOW_SPAN_DAYS:
+        raise ValueError("replay window must not exceed ten years")
+    if not 1 <= shard_size <= MAX_SHARD_SIZE:
+        raise ValueError("shard size must be between 1 and 50")
+    if resume and not apply:
+        raise ValueError("resume requires apply")
+    if interrupt_after_shards is not None and not apply:
+        raise ValueError("controlled interruption requires apply")
+    if apply and manifest_path is None:
+        raise ValueError("apply requires a local manifest path")
+    if not apply and manifest_path is not None:
+        raise ValueError("manifest path is only accepted with apply")
+    _validate_urls(source_url, target_url, metadata_url)
+    source_parsed = _parse_mysql_url(source_url, "source")
+    target_parsed = _parse_mysql_url(target_url, "target")
+    metadata_parsed = _parse_mysql_url(metadata_url, "metadata")
+    runtime_code_fingerprints = _runtime_code_fingerprints()
+
+    source_engine: Engine | None = None
+    target_engine: Engine | None = None
+    metadata_engine: Engine | None = None
+    metadata_async_engine: AsyncEngine | None = None
+    metadata_async_engine_disposal_started = False
+    try:
+        source_engine = _new_sync_engine(source_url)
+        source_spec = _benchmark._source_spec("ths")
+        mapping = require_domain_mapping("ths", "stock_daily")
+        with _benchmark._readonly_source_snapshot(source_engine) as source_connection:
+            source_schema = _table_schema(source_connection, source_spec.table)
+            snapshot = _read_source_snapshot(
+                source_connection,
+                table=source_spec.table,
+                mapping=mapping,
+                schema=source_schema,
+                window=window,
+                include_fingerprint=apply,
+            )
+            raw_symbols = snapshot["symbols"]
+            if not isinstance(raw_symbols, list) or any(
+                not isinstance(symbol, str) for symbol in raw_symbols
+            ):
+                raise RuntimeError("source snapshot returned an invalid symbol list")
+            symbols = cast("list[str]", raw_symbols)
+            raw_symbol_counts = snapshot["symbol_row_counts"]
+            if not isinstance(raw_symbol_counts, list):
+                raise RuntimeError("source snapshot returned invalid per-symbol counts")
+            symbol_count_pairs: list[tuple[str, int]] = []
+            for pair in raw_symbol_counts:
+                if not isinstance(pair, tuple) or len(pair) != 2:
+                    raise RuntimeError("source snapshot returned invalid per-symbol counts")
+                raw_symbol, raw_count = pair
+                if not isinstance(raw_symbol, str) or type(raw_count) is not int:
+                    raise RuntimeError("source snapshot returned invalid per-symbol counts")
+                symbol_count_pairs.append((raw_symbol, raw_count))
+            symbol_counts = dict(symbol_count_pairs)
+            normalized_counts = snapshot["normalized_symbol_row_counts"]
+            if not isinstance(normalized_counts, dict) or any(
+                not isinstance(symbol, str) or not isinstance(count, int)
+                for symbol, count in normalized_counts.items()
+            ):
+                raise RuntimeError("source snapshot returned invalid normalized row counts")
+            normalized_counts = cast("dict[str, int]", normalized_counts)
+            if apply and not symbols:
+                raise ValueError("apply requires a source symbol in the selected window")
+            total_shards = (len(symbols) + shard_size - 1) // shard_size
+            if interrupt_after_shards is not None and (interrupt_after_shards >= total_shards):
+                raise ValueError("controlled interruption must leave a next shard to fetch")
+
+            schema_document = {
+                "columns": [list(column) for column in source_schema.columns],
+                "primary_key": list(source_schema.primary_key),
+            }
+            mapping_document = {
+                "key": list(mapping.key),
+                "fields": {
+                    name: {
+                        "source_column": field.source_column,
+                        "normalize": field.normalize,
+                        "scale": field.scale,
+                        "ms_column": field.ms_column,
+                    }
+                    for name, field in sorted(mapping.fields.items())
+                },
+            }
+            manifest_path_digest = (
+                hashlib.sha256(str(manifest_path.resolve()).encode("utf-8")).hexdigest()
+                if manifest_path is not None
+                else None
+            )
+            expected_identity: dict[str, object] = {
+                "manifest_version": MANIFEST_VERSION,
+                "mode": MODE,
+                "source_observation": "existing_ods_snapshot_only",
+                "source": "ths",
+                "source_schema": str(source_parsed.database),
+                "source_endpoint_sha256": _endpoint_digest(source_parsed),
+                "source_table": source_spec.table,
+                "source_schema_sha256": hashlib.sha256(
+                    _canonical_json(schema_document)
+                ).hexdigest(),
+                "mapping_sha256": hashlib.sha256(_canonical_json(mapping_document)).hexdigest(),
+                "window": {"start": window.start.isoformat(), "end": window.end.isoformat()},
+                "symbols": symbols,
+                "symbol_row_counts": [[symbol, count] for symbol, count in symbol_count_pairs],
+                "source_rows_exact": snapshot["source_rows_exact"],
+                "window_rows_exact": snapshot["window_rows_exact"],
+                "window_fingerprint": snapshot.get("window_fingerprint"),
+                "runtime_code_sha256": runtime_code_fingerprints,
+                "business_key": list(source_spec.key),
+                "symbol_column": snapshot["symbol_column"],
+                "date_column": snapshot["date_column"],
+                "max_rows_per_symbol": MAX_ROWS_PER_SYMBOL,
+                "shard_size": shard_size,
+                "target_schema": str(target_parsed.database),
+                "target_endpoint_sha256": _endpoint_digest(target_parsed),
+                "metadata_schema": str(metadata_parsed.database),
+                "metadata_endpoint_sha256": _endpoint_digest(metadata_parsed),
+                "manifest_path_sha256": manifest_path_digest,
+            }
+            initial: dict[str, object] = {
+                "record": "initial",
+                "mode": MODE,
+                "source_observation": "existing_ods_snapshot_only",
+                "status": "validated",
+                "apply": apply,
+                "source_schema": str(source_parsed.database),
+                "source_table": source_spec.table,
+                "source_schema_sha256": expected_identity["source_schema_sha256"],
+                "window": expected_identity["window"],
+                "source_rows_exact": snapshot["source_rows_exact"],
+                "window_rows_exact": snapshot["window_rows_exact"],
+                "symbol_count": len(symbols),
+                "shards_total": total_shards,
+                "shard_size": shard_size,
+                "native_writes": 0,
+                "source_api_calls": 0,
+                "elapsed_seconds": round(time.monotonic() - started, 6),
+                **_benchmark._memory_reading(),
+            }
+            if not apply:
+                report = {
+                    **initial,
+                    "record": "final",
+                    "status": "dry_run",
+                    "full_coverage_verified": False,
+                    "elapsed_seconds": round(time.monotonic() - started, 6),
+                    **_benchmark._memory_reading(),
+                }
+                if progress is not None:
+                    progress(initial)
+                    progress(report)
+                return report
+
+            if manifest_path is None:
+                raise ValueError("apply requires a local manifest path")
+            target_engine = _new_sync_engine(target_url)
+            metadata_engine = _new_sync_engine(metadata_url)
+            metadata_async_engine = _new_async_engine(_metadata_async_url(metadata_url))
+            session_maker = async_sessionmaker(
+                metadata_async_engine, expire_on_commit=False, autoflush=False
+            )
+            _require_existing_pipeline_tables(metadata_engine)
+            with target_engine.connect() as target_connection:
+                target_schema = _table_schema(target_connection, source_spec.table)
+                if not inspect(target_connection).has_table(dwd_table("stock_daily")):
+                    raise LookupError(
+                        "pre-migrated data schema is missing the stock-daily DWD table"
+                    )
+            _require_schema_match(source_schema, target_schema, source_spec.key)
+
+            if resume:
+                manifest = _read_manifest(manifest_path)
+                _require_manifest_identity(manifest, expected_identity, total_shards=total_shards)
+                _validate_partial_target(
+                    target_engine,
+                    ods=source_spec.table,
+                    expected_rows=sum(symbol_counts.values()),
+                    raw_symbol_counts=symbol_counts,
+                    normalized_symbol_counts=normalized_counts,
+                    window=window,
+                )
+            else:
+                if manifest_path.exists() or manifest_path.is_symlink():
+                    raise ReplayManifestError("first apply requires a new manifest path")
+                _require_first_apply_empty(target_engine, metadata_engine, ods=source_spec.table)
+                manifest = {**expected_identity, "done_shards": [], "status": "ready"}
+                _atomic_write_manifest(manifest_path, manifest)
+
+            first_done = manifest["done_shards"]
+            if not isinstance(first_done, list):
+                raise ReplayManifestError("resume manifest shard checkpoint is invalid")
+            first_done_shards = {int(index) for index in first_done}
+            fetch_count = 0
+            fetch_index = {str(symbol): index for index, symbol in enumerate(symbols)}
+            pipeline_id_holder: dict[str, str] = {}
+            emitted_shard_statuses: dict[int, str] = {}
+
+            def emit_shard_changes() -> dict[int, str]:
+                pipeline_id = pipeline_id_holder["pipeline_id"]
+                current_shards, _ = _pipeline_state(metadata_engine, pipeline_id)
+                if any(index < 0 or index >= total_shards for index in current_shards):
+                    raise ReplayManifestError("metadata has checkpoints outside this shard plan")
+                actual_done = sorted(
+                    index for index, state in current_shards.items() if state == "done"
+                )
+                previous_done = manifest["done_shards"]
+                if not isinstance(previous_done, list):
+                    raise ReplayManifestError("manifest shard checkpoint is invalid")
+                if not set(previous_done).issubset(actual_done):
+                    raise ReplayManifestError("metadata lost a checkpoint recorded in the manifest")
+                manifest["done_shards"] = actual_done
+                manifest["status"] = "running"
+                _atomic_write_manifest(manifest_path, manifest)
+                for index, state in sorted(current_shards.items()):
+                    if emitted_shard_statuses.get(index) == state:
+                        continue
+                    emitted_shard_statuses[index] = state
+                    if progress is not None:
+                        progress(
+                            {
+                                "record": "shard",
+                                "mode": MODE,
+                                "pipeline_id": pipeline_id,
+                                "shard": index,
+                                "status": state,
+                                "shards_total": total_shards,
+                                "shards_resumed": len(first_done_shards),
+                                "shards_done": len(actual_done),
+                                "shards_failed": sum(
+                                    value == "failed" for value in current_shards.values()
+                                ),
+                                "elapsed_seconds": round(time.monotonic() - started, 6),
+                                "peak_rss_bytes": _benchmark._memory_reading()["peak_rss_bytes"],
+                            }
+                        )
+                return current_shards
+
+            def fetch_symbol(symbol: str, requested_window: Window) -> pd.DataFrame:
+                nonlocal fetch_count
+                position = fetch_index.get(symbol)
+                if position is None or requested_window != window:
+                    raise ValueError("pipeline requested a symbol or window outside the manifest")
+                if position > 0 and position % shard_size == 0:
+                    states = emit_shard_changes()
+                    done_count = sum(state == "done" for state in states.values())
+                    if interrupt_after_shards is not None and done_count >= interrupt_after_shards:
+                        raise ControlledReplayInterrupt
+                fetch_count += 1
+                try:
+                    frame = _fetch_symbol_rows(
+                        source_connection,
+                        table=source_spec.table,
+                        schema=source_schema,
+                        symbol_column=str(snapshot["symbol_column"]),
+                        date_column=str(snapshot["date_column"]),
+                        key=source_spec.key,
+                        symbol=symbol,
+                        window=window,
+                        expected_rows=symbol_counts[symbol],
+                    )
+                except Exception as exc:
+                    if progress is not None:
+                        progress(
+                            {
+                                "record": "fetch",
+                                "mode": MODE,
+                                "symbol": symbol,
+                                "status": "failed",
+                                "error_type": type(exc).__name__,
+                                "error_code": _error_code(exc),
+                                "elapsed_seconds": round(time.monotonic() - started, 6),
+                            }
+                        )
+                    raise
+                if progress is not None:
+                    progress(
+                        {
+                            "record": "fetch",
+                            "mode": MODE,
+                            "symbol": symbol,
+                            "rows": len(frame),
+                            "source_api_calls": 0,
+                            "elapsed_seconds": round(time.monotonic() - started, 6),
+                        }
+                    )
+                return frame
+
+            pipeline = _build_pipeline(
+                engine=target_engine,
+                session_maker=session_maker,
+                fetch_symbol=fetch_symbol,
+                symbols=symbols,
+                source="ths",
+                shard_size=shard_size,
+                notify=_internal_replay_notify,
+                run_variant=MODE,
+            )
+            pipeline_id = pipeline._pipeline_id(window)
+            pipeline_id_holder["pipeline_id"] = pipeline_id
+            shard_statuses, _ = _pipeline_state(metadata_engine, pipeline_id)
+            actual_done = sorted(
+                index for index, state in shard_statuses.items() if state == "done"
+            )
+            if resume and actual_done != sorted(first_done_shards):
+                raise ReplayManifestError("manifest and durable DONE shard set differ")
+            if not resume and shard_statuses:
+                raise ValueError("first apply requires empty progress for this pipeline")
+            emitted_shard_statuses.update(shard_statuses)
+            if progress is not None:
+                progress(initial)
+
+            current_outcome: PipelineOutcome | None = None
+            interrupted = False
+            pipeline_error: BaseException | None = None
+
+            def mark_async_engine_disposal_started() -> None:
+                nonlocal metadata_async_engine_disposal_started
+                metadata_async_engine_disposal_started = True
+
+            try:
+                if metadata_async_engine is None:
+                    raise RuntimeError("metadata async engine was not initialized")
+                current_outcome = asyncio.run(
+                    _run_pipeline_with_disposal(
+                        pipeline,
+                        metadata_async_engine,
+                        window=window,
+                        resume=resume,
+                        on_disposal_start=mark_async_engine_disposal_started,
+                    )
+                )
+            except ControlledReplayInterrupt:
+                interrupted = True
+            except Exception as exc:
+                pipeline_error = exc
+
+            emit_shard_changes()
+            final_shards, final_hooks = _pipeline_state(metadata_engine, pipeline_id)
+            done_shards = sorted(index for index, state in final_shards.items() if state == "done")
+            failed_shards = sorted(
+                index for index, state in final_shards.items() if state == "failed"
+            )
+            if any(index < 0 or index >= total_shards for index in final_shards):
+                raise ReplayManifestError("metadata has shard indexes outside the replay plan")
+            manifest["done_shards"] = done_shards
+
+            with target_engine.connect() as target_connection:
+                ods_total = _exact_count(target_connection, source_spec.table)
+                dwd_name = dwd_table("stock_daily")
+                dwd_total = _exact_count(target_connection, dwd_name)
+                ods_summary = _table_window_summary(
+                    target_connection,
+                    table=source_spec.table,
+                    symbol_column="thscode",
+                    date_column="trade_date",
+                    window=window,
+                )
+                dwd_summary = _table_window_summary(
+                    target_connection,
+                    table=dwd_name,
+                    symbol_column="symbol",
+                    date_column="trade_date",
+                    window=window,
+                )
+            source_total = sum(symbol_counts.values())
+            source_first = snapshot["window_first_date"]
+            source_last = snapshot["window_last_date"]
+            expected_dwd_counts = dict(normalized_counts)
+            row_verification = (
+                ods_total == source_total
+                and dwd_total == source_total
+                and ods_summary["row_count"] == source_total
+                and dwd_summary["row_count"] == source_total
+                and ods_summary["symbol_row_counts"] == symbol_counts
+                and dwd_summary["symbol_row_counts"] == expected_dwd_counts
+                and ods_summary["first_date"] == source_first
+                and ods_summary["last_date"] == source_last
+                and dwd_summary["first_date"] == source_first
+                and dwd_summary["last_date"] == source_last
+            )
+            all_shards_done = (
+                len(done_shards) == total_shards and not failed_shards and not interrupted
+            )
+            hook_names = {"merge", "notify", "meta"}
+            hooks_done = hook_names.issubset(
+                {name for name, state in final_hooks.items() if state == "done"}
+            )
+            outcome_failures = (
+                len(current_outcome.failures) if current_outcome is not None else len(failed_shards)
+            )
+            if pipeline_error is not None and outcome_failures == 0:
+                outcome_failures = 1
+            status = (
+                "interrupted"
+                if interrupted and not failed_shards and pipeline_error is None
+                else "failed"
+                if failed_shards or outcome_failures or pipeline_error is not None
+                else "complete"
+                if all_shards_done and hooks_done and row_verification
+                else "incomplete"
+            )
+            manifest["status"] = status
+            _atomic_write_manifest(manifest_path, manifest)
+            if interrupted and progress is not None:
+                progress(
+                    {
+                        "record": "interrupted",
+                        "mode": MODE,
+                        "status": status,
+                        "pipeline_id": pipeline_id,
+                        "shards_total": total_shards,
+                        "shards_resumed": len(first_done_shards),
+                        "shards_done": len(set(done_shards) - first_done_shards),
+                        "shards_done_total": len(done_shards),
+                        "shards_failed": len(failed_shards),
+                        "hook_steps": final_hooks,
+                        "elapsed_seconds": round(time.monotonic() - started, 6),
+                        **_benchmark._memory_reading(),
+                    }
+                )
+            report = {
+                "record": "final",
+                "mode": MODE,
+                "source_observation": "existing_ods_snapshot_only",
+                "status": status,
+                "pipeline_id": pipeline_id,
+                "source_schema": str(source_parsed.database),
+                "source_schema_sha256": expected_identity["source_schema_sha256"],
+                "window": expected_identity["window"],
+                "source_rows_exact": snapshot["source_rows_exact"],
+                "expected_window_rows": source_total,
+                "expected_symbols": len(symbols),
+                "target_ods_rows_exact": ods_total,
+                "target_dwd_rows_exact": dwd_total,
+                "target_ods_window_rows_exact": ods_summary["row_count"],
+                "target_dwd_window_rows_exact": dwd_summary["row_count"],
+                "target_ods_symbols": ods_summary["symbol_count"],
+                "target_dwd_symbols": dwd_summary["symbol_count"],
+                "target_ods_first_date": ods_summary["first_date"],
+                "target_ods_last_date": ods_summary["last_date"],
+                "target_dwd_first_date": dwd_summary["first_date"],
+                "target_dwd_last_date": dwd_summary["last_date"],
+                "full_coverage_verified": bool(
+                    all_shards_done and hooks_done and row_verification and not outcome_failures
+                ),
+                "coverage_scope": "source_ods_window_only_not_current_market",
+                "shards_total": total_shards,
+                "shards_resumed": (
+                    current_outcome.resumed_shards
+                    if current_outcome is not None
+                    else len(first_done_shards)
+                ),
+                "shards_done": (
+                    current_outcome.shards_done
+                    if current_outcome is not None
+                    else len(set(done_shards) - first_done_shards)
+                ),
+                "shards_done_total": len(done_shards),
+                "shards_failed": len(failed_shards),
+                "failure_count": outcome_failures,
+                "pipeline_error_type": (
+                    type(pipeline_error).__name__ if pipeline_error is not None else None
+                ),
+                "pipeline_error_code": (
+                    _error_code(pipeline_error) if pipeline_error is not None else None
+                ),
+                "rows_written_this_run": (
+                    current_outcome.rows_written if current_outcome is not None else 0
+                ),
+                "fetch_symbol_calls": fetch_count,
+                "source_api_calls": 0,
+                "native_writes": 0,
+                "hook_steps": final_hooks,
+                "notification_delivery": "suppressed_internal_replay",
+                "elapsed_seconds": round(time.monotonic() - started, 6),
+                **_benchmark._memory_reading(),
+            }
+            if progress is not None:
+                progress(report)
+            return report
+    finally:
+        for engine in (source_engine, target_engine, metadata_engine):
+            if engine is not None:
+                engine.dispose()
+        if metadata_async_engine is not None and not metadata_async_engine_disposal_started:
+            asyncio.run(_dispose_async_engine(metadata_async_engine))
+
+
+def _main_urls() -> tuple[str, str, str]:
+    """Read mandatory task-specific URLs without falling back to app settings."""
+    values = []
+    for name in (SOURCE_URL_ENV, TARGET_URL_ENV, METADATA_URL_ENV):
+        value = os.environ.get(name)
+        if not value:
+            raise ValueError(f"{name} must be configured")
+        values.append(value)
+    return values[0], values[1], values[2]
+
+
+def _print_error(error_type: str, error_code: str) -> None:
+    """Emit a redacted terminal failure record."""
+    print(
+        json.dumps(
+            {
+                "record": "final",
+                "mode": MODE,
+                "status": "failed",
+                "error_type": error_type,
+                "error_code": error_code,
+                "source_api_calls": 0,
+                "native_writes": 0,
+            },
+            sort_keys=True,
+        ),
+        file=sys.stderr,
+        flush=True,
+    )
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Run the CLI and print redacted JSONL records."""
+    args = _parser().parse_args(argv)
+    if args.resume and not args.apply:
+        _print_error("ValueError", "validation_failed")
+        return 1
+    if args.apply and args.manifest is None:
+        _print_error("ValueError", "validation_failed")
+        return 1
+    if not args.apply and args.manifest is not None:
+        _print_error("ValueError", "validation_failed")
+        return 1
+    try:
+        source_url, target_url, metadata_url = _main_urls()
+        report = run_replay(
+            window=Window(start=args.start, end=args.end),
+            source_url=source_url,
+            target_url=target_url,
+            metadata_url=metadata_url,
+            apply=args.apply,
+            resume=args.resume,
+            manifest_path=args.manifest,
+            shard_size=args.shard_size,
+            interrupt_after_shards=args.interrupt_after_shards,
+            progress=lambda record: print(
+                json.dumps(record, sort_keys=True, ensure_ascii=False, default=str), flush=True
+            ),
+        )
+    except KeyboardInterrupt:
+        _print_error("KeyboardInterrupt", "interrupted")
+        return 130
+    except BaseException as exc:
+        _print_error(type(exc).__name__, _error_code(exc))
+        return 1
+    if report["status"] == "failed":
+        return 1
+    if report["status"] == "interrupted":
+        return 75
+    if report["status"] == "incomplete":
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

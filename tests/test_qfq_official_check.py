@@ -23,6 +23,10 @@ leg_module = _module.leg_module
 leg_fetcher = _module.leg_fetcher
 OFFICIAL_LEGS = _module.OFFICIAL_LEGS
 DEFAULT_OFFICIAL_LEG = _module.DEFAULT_OFFICIAL_LEG
+EXPECTED_MODULES = {
+    "akshare": "opendata.data.providers.akshare._vendor.stock_feature.stock_hist_em",
+    "sina": "opendata.data.providers.akshare._vendor.stock.stock_zh_a_sina",
+}
 
 
 class TestSinaSymbol:
@@ -56,7 +60,8 @@ class TestOfficialLegMap:
         assert DEFAULT_OFFICIAL_LEG == "akshare"
 
     def test_akshare_leg_resolves_to_the_ported_module(self) -> None:
-        assert leg_module("akshare") == "opendata_http.stock_feature.stock_hist_em"
+        assert leg_module("akshare") == EXPECTED_MODULES["akshare"]
+        assert leg_module("sina") == EXPECTED_MODULES["sina"]
 
     def test_the_resolved_akshare_module_declares_its_provenance(self) -> None:
         origin = importlib.util.find_spec(leg_module("akshare")).origin
@@ -68,9 +73,11 @@ class TestOfficialLegMap:
         for leg in sorted(OFFICIAL_LEGS):
             fetcher = leg_fetcher(leg)
             _, _, function_name = leg_spec(leg).target.partition(":")
+            module = importlib.import_module(EXPECTED_MODULES[leg])
 
             assert fetcher.__qualname__ == function_name
-            assert fetcher.__module__ == leg_module(leg)
+            assert fetcher.__module__ == EXPECTED_MODULES[leg]
+            assert fetcher is getattr(module, function_name)
 
     def test_unknown_leg_fails_closed_instead_of_defaulting(self) -> None:
         with pytest.raises(ValueError, match="unknown official leg"):

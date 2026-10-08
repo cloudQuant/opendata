@@ -15,6 +15,8 @@ from opendata.data.providers.ecb.models._series import EcbSeriesFetcher
 class EcbGdpFetcher(EcbSeriesFetcher):
     """National-account GDP observations for one MNA series key."""
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_gdp",

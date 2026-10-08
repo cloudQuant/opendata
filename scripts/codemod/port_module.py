@@ -1,7 +1,7 @@
-"""Port upstream akshare submodules into ``opendata_http`` (design §5.2/§5.6).
+"""Port upstream akshare submodules into the bundled vendor package (design §5.2/§5.6).
 
 The porting source is the *upstream repository tree* pinned by
-``opendata_http/upstream.lock`` - never the in-repo legacy copy, which
+``opendata/data/providers/akshare/_vendor/upstream.lock`` - never the in-repo legacy copy, which
 diverged from upstream long before this project (208 files differ, so
 only the locked baseline keeps diff-sync meaningful).
 
@@ -40,12 +40,18 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from loguru import logger
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.codemod.migrate_provider_layout import (  # noqa: E402
+    MigrationConfig,
+    _lazy_vendor_init,
+)
+
 UPSTREAM_PACKAGE = "akshare"
-PORTED_PACKAGE = "opendata_http"
-PORTED_ROOT = REPO_ROOT / PORTED_PACKAGE
+PORTED_PACKAGE = "opendata.data.providers.akshare._vendor"
+PORTED_ROOT = REPO_ROOT.joinpath(*PORTED_PACKAGE.split("."))
 LOCK_PATH = PORTED_ROOT / "upstream.lock"
 DEFAULT_UPSTREAM_REPO = REPO_ROOT.parent / "akshare"
 RESOURCE_SUFFIXES = frozenset({".js", ".json", ".dat"})
@@ -106,9 +112,12 @@ MANUAL_EDITS: tuple[ManualEdit, ...] = (
         "（C11a 静默欠抓缺陷）",
         transforms=(
             (
-                r"from opendata_http\.utils\.func import fetch_paginated_data\n",
-                "from opendata_http.utils.func import fetch_paginated_data\n"
-                "from opendata_http.utils.request import request_eastmoney\n",
+                r"from opendata\.data\.providers\.akshare\._vendor\.utils\.func import "
+                r"fetch_paginated_data\n",
+                "from opendata.data.providers.akshare._vendor.utils.func import "
+                "fetch_paginated_data\n"
+                "from opendata.data.providers.akshare._vendor.utils.request import "
+                "request_eastmoney\n",
             ),
             (
                 r"    data_json = None\n    for secid in candidate_secids:\n",
@@ -195,8 +204,8 @@ MANUAL_EDITS: tuple[ManualEdit, ...] = (
                 "from io import StringIO\nfrom zoneinfo import ZoneInfo\n",
             ),
             (
-                r"from opendata_http\.utils\.tqdm import get_tqdm\n",
-                "from opendata_http.utils.tqdm import get_tqdm\n"
+                r"from opendata\.data\.providers\.akshare\._vendor\.utils\.tqdm import get_tqdm\n",
+                "from opendata.data.providers.akshare._vendor.utils.tqdm import get_tqdm\n"
                 "\n"
                 "# 人工改动：update_time 是 epoch 秒，语义上是北京时间。上游不传 tz，"
                 "取本机时区，\n"
@@ -220,7 +229,8 @@ MANUAL_EDITS: tuple[ManualEdit, ...] = (
         "fail closed with a clear error (A2.3 标注不可用)",
         transforms=(
             (
-                r'    with resources\.path\("opendata_http\.data", file\) as f:\n'
+                r'    with resources\.path('
+                r'"opendata\.data\.providers\.akshare\._vendor\.data", file\) as f:\n'
                 r"        data_file_path = f\n"
                 r"        return data_file_path",
                 "    raise RuntimeError(\n"
@@ -308,7 +318,7 @@ class UpstreamLock:
 
     def record(self, result: PortResult) -> None:
         """Upsert one ported file's baseline record."""
-        rel = result.ported_path.removeprefix(PORTED_PACKAGE + "/")
+        rel = result.ported_path
         self.files[rel] = {
             "path": rel,
             "upstream_path": result.upstream_path,
@@ -328,7 +338,7 @@ def sha256_bytes(data: bytes) -> str:
 
 
 def rewrite_imports(source: str) -> tuple[str, int]:
-    """Rewrite ``akshare`` import prefixes to ``opendata_http``.
+    """Rewrite ``akshare`` imports to the bundled vendor package.
 
     Uses the AST to locate import statements, so mentions of akshare
     inside comments or docstrings are left untouched.
@@ -368,7 +378,8 @@ def rewrite_imports(source: str) -> tuple[str, int]:
 def rewrite_strings(source: str) -> tuple[str, int]:
     """Rewrite pure module-path string constants of the old package.
 
-    ``"akshare.utils.demjson"`` becomes ``"opendata_http.utils.demjson"``;
+    ``"akshare.utils.demjson"`` becomes
+    ``"opendata.data.providers.akshare._vendor.utils.demjson"``;
     a bare ``"akshare"`` label is not a module path and stays as-is
     (the zero-dep scanner applies the same distinction).
 
@@ -478,7 +489,7 @@ def port_source(
     """
     result = PortResult(
         upstream_path=upstream_path,
-        ported_path=f"{PORTED_PACKAGE}/{upstream_path.removeprefix(UPSTREAM_PACKAGE + '/')}",
+        ported_path=upstream_path.removeprefix(UPSTREAM_PACKAGE + "/"),
         status="ported",
         upstream_sha256=sha256_text(source),
     )
@@ -568,13 +579,10 @@ def _imported_names(block: list[str]) -> set[str]:
 
 
 def _subset_init(source: str, ported_modules: set[str]) -> tuple[str, int, int]:
-    """Filter the aggregator ``__init__.py`` to the ported modules only.
+    """Filter an upstream aggregator for deterministic legacy-source checks.
 
-    Design §5.2 rule 2: the mirror keeps the same-name exports for
-    the ported subset; imports of unported modules are dropped so the
-    flat ``opendata_http.<function>`` API works without pulling the
-    whole upstream tree. Matching is MODULE-level (``a/b/c``), so a
-    partially ported submodule (single files) keeps exactly its own
+    Matching is module-level (``a/b/c``), so a partially ported
+    submodule (single files) keeps exactly its own
     imports. Handles one-line and parenthesized multi-line import
     blocks, and drops module-level alias assignments (``new = old``)
     whose right-hand name is no longer defined after filtering.
@@ -653,8 +661,7 @@ def port_submodule(
     Args:
         submodule: Submodule name under ``akshare/`` (e.g. ``utils``)
             or a top-level file name (e.g. ``datasets``); the special
-            name ``__init__`` ports the aggregator with subset
-            filtering.
+            name ``__init__`` regenerates the lazy root export facade.
         upstream_repo: Clean local clone at the locked commit.
         lock: The baseline lock, updated in place for every file.
         dry_run: Compute results without writing files.
@@ -681,7 +688,6 @@ def port_submodule(
         candidates = sorted(source_dir.rglob("*"))
     else:
         raise ValueError(f"unknown submodule {submodule!r}: {source_dir} does not exist")
-    ported_modules = {rel.removesuffix(".py") for rel in lock.files}
     results: list[PortResult] = []
     for path in candidates:
         if not path.is_file() or "__pycache__" in path.parts:
@@ -695,7 +701,7 @@ def port_submodule(
             data = path.read_bytes()
             result = PortResult(
                 upstream_path=upstream_path,
-                ported_path=target.relative_to(PORTED_ROOT.parent).as_posix(),
+                ported_path=target.relative_to(PORTED_ROOT).as_posix(),
                 status="ported",
                 upstream_sha256=sha256_bytes(data),
                 ported_sha256=sha256_bytes(data),
@@ -704,21 +710,30 @@ def port_submodule(
             existing_bytes = target.read_bytes() if target.exists() else None
             if existing_bytes is not None and sha256_bytes(existing_bytes) == result.ported_sha256:
                 result.status = "skipped-identical"
+        elif upstream_path == _INIT_UPSTREAM_PATH:
+            source_text = path.read_text(encoding="utf-8")
+            facade_payload, _facade_report = _lazy_vendor_init(
+                path,
+                MigrationConfig(
+                    repo_root=REPO_ROOT,
+                    akshare_new_namespace=PORTED_PACKAGE,
+                ),
+            )
+            payload = facade_payload
+            result = PortResult(
+                upstream_path=upstream_path,
+                ported_path=target.relative_to(PORTED_ROOT).as_posix(),
+                status="ported",
+                upstream_sha256=sha256_text(source_text),
+                ported_sha256=sha256_bytes(facade_payload),
+            )
+            existing_bytes = target.read_bytes() if target.exists() else None
+            if existing_bytes is not None and sha256_bytes(existing_bytes) == result.ported_sha256:
+                result.status = "skipped-identical"
         else:
             text = path.read_text(encoding="utf-8")
-            pristine_sha = sha256_text(text)
-            if upstream_path == _INIT_UPSTREAM_PATH:
-                text, kept_imports, dropped_imports = _subset_init(text, ported_modules)
-                logger.info(
-                    f"init subset: kept {kept_imports} import blocks "
-                    f"({dropped_imports} dropped for unported submodules)"
-                )
             payload, result = port_source(text, upstream_path, lock.url, lock.commit)
-            result.ported_path = target.relative_to(PORTED_ROOT.parent).as_posix()
-            if upstream_path == _INIT_UPSTREAM_PATH:
-                # The lock's baseline must reference the PRISTINE upstream
-                # file, not the subset-filtered porting input.
-                result.upstream_sha256 = pristine_sha
+            result.ported_path = target.relative_to(PORTED_ROOT).as_posix()
             existing_text = target.read_text(encoding="utf-8") if target.exists() else None
             if existing_text is not None and sha256_text(existing_text) == result.ported_sha256:
                 result.status = "skipped-identical"
@@ -765,7 +780,7 @@ def main(argv: list[str] | None = None) -> int:
 
     for result in all_results:
         print(
-            f"{result.status:<18} {result.ported_path} "
+            f"{result.status:<18} {PORTED_ROOT / result.ported_path} "
             f"(imports={result.import_rewrites} strings={result.string_rewrites} "
             f"manual_edits={result.manual_edits})"
         )

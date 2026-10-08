@@ -1,14 +1,14 @@
 # 搬运差异报告（A1.5/A1.6，FR-5）
 
 - 上游基线：`https://github.com/cloudQuant/akshare.git` @ `c4f6a631c259783dbc2507b6b27d179b3e88079d`
-- 已搬运文件：315（含资源）
+- 已搬运文件：327（含资源）
 - 人工待办：**0**（A1.6 验收要求为 0）
 
 ## 逐文件对照（改写计数与重放一致性）
 
 | 文件 | 上游路径 | import 改写 | 字符串改写 | 人工改动 | 重放一致 |
 |------|---------|------------|-----------|---------|---------|
-| `__init__.py` | `akshare/__init__.py` | 284 | 0 | False | ✓ |
+| `__init__.py` | `akshare/__init__.py` | 294 | 0 | False | ✓ |
 | `_version.py` | `akshare/_version.py` | 0 | 0 | False | ✓ |
 | `bond/__init__.py` | `akshare/bond/__init__.py` | 0 | 0 | False | ✓ |
 | `bond/bond_buy_back_em.py` | `akshare/bond/bond_buy_back_em.py` | 0 | 0 | False | ✓ |
@@ -109,6 +109,18 @@
 | `futures/receipt.py` | `akshare/futures/receipt.py` | 3 | 0 | False | ✓ |
 | `futures/requests_fun.py` | `akshare/futures/requests_fun.py` | 0 | 0 | False | ✓ |
 | `futures/symbol_var.py` | `akshare/futures/symbol_var.py` | 1 | 0 | False | ✓ |
+| `futures_derivative/__init__.py` | `akshare/futures_derivative/__init__.py` | 0 | 0 | False | ✓ |
+| `futures_derivative/cons.py` | `akshare/futures_derivative/cons.py` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_contract_info_cffex.py` | `akshare/futures_derivative/futures_contract_info_cffex.py` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_contract_info_czce.py` | `akshare/futures_derivative/futures_contract_info_czce.py` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_contract_info_dce.py` | `akshare/futures_derivative/futures_contract_info_dce.py` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_contract_info_gfex.py` | `akshare/futures_derivative/futures_contract_info_gfex.py` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_contract_info_ine.py` | `akshare/futures_derivative/futures_contract_info_ine.py` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_contract_info_shfe.py` | `akshare/futures_derivative/futures_contract_info_shfe.py` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_cot_sina.py` | `akshare/futures_derivative/futures_cot_sina.py` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_hog.py` | `akshare/futures_derivative/futures_hog.py` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_index_sina.py` | `akshare/futures_derivative/futures_index_sina.py` | 2 | 0 | False | ✓ |
+| `futures_derivative/futures_spot_sys.py` | `akshare/futures_derivative/futures_spot_sys.py` | 0 | 0 | False | ✓ |
 | `index/__init__.py` | `akshare/index/__init__.py` | 0 | 0 | False | ✓ |
 | `index/cons.py` | `akshare/index/cons.py` | 0 | 0 | False | ✓ |
 | `index/index_cflp.py` | `akshare/index/index_cflp.py` | 0 | 0 | False | ✓ |

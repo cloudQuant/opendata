@@ -13,11 +13,9 @@ exclude_dirs:
   - ".git"
   - "__pycache__"
   - "node_modules"
-  # Vendored upstream source (renamed akshare/ -> opendata_http/ in milestone
-  # A2; the old name is gone, so it needs no entry here). Ported code is not
-  # rescanned daily (quality spec §4); it gets a one-off full scan with manual
-  # triage in A2 instead.
-  - "opendata_http"
+  # Nested upstream source has a separate ported audit. The exact prefix keeps
+  # the first-party adapter under the same provider in the regular scan.
+  - "opendata/data/providers/akshare/_vendor/"
 
 # Tests to skip with rationale
 skips:

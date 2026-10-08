@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { dataApi, pipelineApi, type FailedShard } from '@/api/data'
 import { getApiErrorMessage } from '@/utils/error'
@@ -8,15 +9,42 @@ import type { Execution, ExecutionStats, TaskStatusType } from '@/types'
 import { PAGINATION } from '@/config/constants'
 
 const executions = ref<Execution[]>([])
+const route = useRoute()
 const loading = ref(false)
 const error = ref<string | null>(null)
+const taskFilterError = ref<string | null>(null)
+const selectedTaskId = ref<number | null>(null)
 const stats = ref<ExecutionStats | null>(null)
 const failures = ref<FailedShard[]>([])
 const failuresLoading = ref(false)
+const failuresLoaded = ref(false)
+const failuresError = ref<string | null>(null)
 const retrying = ref(false)
 const currentPage = ref(1)
 const pageSize = ref(PAGINATION.DEFAULT_PAGE_SIZE)
 const total = ref(0)
+let executionsRequestId = 0
+
+function readTaskFilter(): { taskId: number | null; error: string | null } {
+  const rawTaskId = route.query.task_id
+  if (rawTaskId === undefined) return { taskId: null, error: null }
+  if (typeof rawTaskId !== 'string' || !/^[1-9]\d*$/.test(rawTaskId)) {
+    return { taskId: null, error: '任务 ID 无效，请从任务列表重新打开执行记录。' }
+  }
+
+  const taskId = Number(rawTaskId)
+  if (!Number.isSafeInteger(taskId) || taskId <= 0) {
+    return { taskId: null, error: '任务 ID 无效，请从任务列表重新打开执行记录。' }
+  }
+  return { taskId, error: null }
+}
+
+function updateTaskFilter() {
+  const result = readTaskFilter()
+  selectedTaskId.value = result.taskId
+  taskFilterError.value = result.error
+  return result
+}
 
 // Keyed by the backend's own word list (opendata/models/task.py:28-36), and
 // typed `Record<TaskStatusType, …>` so the compiler holds the map to it: a
@@ -34,31 +62,54 @@ const statusMap: Record<
 }
 
 async function loadExecutions() {
+  if (taskFilterError.value) return
+
+  const requestId = ++executionsRequestId
   loading.value = true
   error.value = null
   try {
     const res = await dataApi.listExecutions({
       page: currentPage.value,
       page_size: pageSize.value,
+      ...(selectedTaskId.value === null ? {} : { task_id: selectedTaskId.value }),
     })
+    if (requestId !== executionsRequestId) return
     executions.value = res.items ?? []
     total.value = res.total ?? 0
   } catch (e) {
+    if (requestId !== executionsRequestId) return
     error.value = e instanceof Error ? e.message : getApiErrorMessage(e)
   } finally {
-    loading.value = false
+    if (requestId === executionsRequestId) loading.value = false
   }
 }
 
+watch(
+  () => route.query.task_id,
+  () => {
+    executionsRequestId += 1
+    currentPage.value = 1
+    executions.value = []
+    total.value = 0
+    error.value = null
+    loading.value = false
+    const result = updateTaskFilter()
+    if (!result.error) void loadExecutions()
+  }
+)
+
 async function loadFailures() {
   failuresLoading.value = true
+  failuresError.value = null
   try {
     const data = await pipelineApi.failures({ limit: 100 })
     failures.value = data.failures
   } catch (e) {
+    failuresError.value = getApiErrorMessage(e)
     logger.apiError('/pipeline/failures', e)
   } finally {
     failuresLoading.value = false
+    failuresLoaded.value = true
   }
 }
 
@@ -72,6 +123,26 @@ async function handleRetryFailed() {
     ElMessage.error(getApiErrorMessage(e))
   } finally {
     retrying.value = false
+  }
+}
+
+function exportFailures() {
+  try {
+    const payload = JSON.stringify(
+      { count: failures.value.length, failures: failures.value },
+      null,
+      2
+    )
+    const blob = new Blob([payload], { type: 'application/json;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'pipeline-failures.json'
+    link.click()
+    window.setTimeout(() => URL.revokeObjectURL(url), 0)
+  } catch (e) {
+    logger.apiError('/pipeline/failures/export', e)
+    ElMessage.error('失败清单导出失败')
   }
 }
 
@@ -102,26 +173,21 @@ function getStatusInfo(status: TaskStatusType) {
 }
 
 onMounted(async () => {
-  await loadFailures()
-  await Promise.all([loadExecutions(), loadStats()])
+  updateTaskFilter()
+  await Promise.all([loadFailures(), loadExecutions(), loadStats()])
 })
 </script>
 
 <template>
   <div class="executions-view">
     <!-- Stats Cards -->
-    <div
-      v-if="stats"
-      class="stats-cards"
-    >
+    <div v-if="stats" class="stats-cards">
       <el-card class="stat-card">
         <div class="stat-content">
           <div class="stat-value">
             {{ stats.total_count }}
           </div>
-          <div class="stat-label">
-            总执行次数
-          </div>
+          <div class="stat-label">总执行次数</div>
         </div>
       </el-card>
       <el-card class="stat-card success">
@@ -129,9 +195,7 @@ onMounted(async () => {
           <div class="stat-value">
             {{ stats.success_count }}
           </div>
-          <div class="stat-label">
-            成功次数
-          </div>
+          <div class="stat-label">成功次数</div>
         </div>
       </el-card>
       <el-card class="stat-card danger">
@@ -139,46 +203,56 @@ onMounted(async () => {
           <div class="stat-value">
             {{ stats.failed_count }}
           </div>
-          <div class="stat-label">
-            失败次数
-          </div>
+          <div class="stat-label">失败次数</div>
         </div>
       </el-card>
       <el-card class="stat-card warning">
         <div class="stat-content">
-          <div class="stat-value">
-            {{ stats.success_rate.toFixed(1) }}%
-          </div>
-          <div class="stat-label">
-            成功率
-          </div>
+          <div class="stat-value">{{ stats.success_rate.toFixed(1) }}%</div>
+          <div class="stat-label">成功率</div>
         </div>
       </el-card>
     </div>
 
     <!-- Failed pipeline shards (B3.2 / AC-13 一键重试) -->
-    <el-card v-if="failures.length > 0 || failuresLoading" class="failures-card">
+    <el-card v-if="failuresLoaded || failuresLoading" class="failures-card">
       <template #header>
         <div class="failures-header">
           <span>失败分片（管线断点续拉）</span>
-          <el-button
-            type="danger"
-            size="small"
-            :loading="retrying"
-            @click="handleRetryFailed"
-          >
-            一键重试
-          </el-button>
+          <div class="failures-actions">
+            <el-button
+              data-testid="export-failures"
+              size="small"
+              :disabled="failuresLoading || failuresError !== null"
+              @click="exportFailures"
+            >
+              导出 JSON
+            </el-button>
+            <el-button
+              v-if="failures.length > 0 && failuresError === null"
+              type="danger"
+              size="small"
+              :loading="retrying"
+              @click="handleRetryFailed"
+            >
+              一键重试
+            </el-button>
+          </div>
         </div>
       </template>
-      <el-table v-loading="failuresLoading" :data="failures" size="small" max-height="240">
+      <el-alert
+        v-if="failuresError"
+        :title="`失败清单加载失败：${failuresError}`"
+        type="error"
+        :closable="false"
+      />
+      <el-empty v-else-if="!failuresLoading && failures.length === 0" description="暂无失败分片" />
+      <el-table v-else v-loading="failuresLoading" :data="failures" size="small" max-height="240">
         <el-table-column prop="domain" label="域" width="140" />
         <el-table-column prop="source" label="源" width="90" />
         <el-table-column prop="shard" label="分片" width="70" />
         <el-table-column label="窗口" width="200">
-          <template #default="{ row }">
-            {{ row.window.start }} .. {{ row.window.end }}
-          </template>
+          <template #default="{ row }"> {{ row.window.start }} .. {{ row.window.end }} </template>
         </el-table-column>
         <el-table-column prop="pipeline_id" label="管线" min-width="200" show-overflow-tooltip />
         <el-table-column prop="error" label="错误" min-width="220" show-overflow-tooltip />
@@ -188,8 +262,28 @@ onMounted(async () => {
     <!-- Executions Table -->
     <el-card>
       <template #header>
-        <span>执行记录</span>
+        <div class="executions-header">
+          <span>执行记录</span>
+          <span v-if="selectedTaskId !== null" data-testid="task-filter">
+            当前任务：{{ selectedTaskId }}
+          </span>
+        </div>
       </template>
+
+      <el-alert
+        v-if="selectedTaskId !== null || taskFilterError"
+        title="统计卡片和失败分片仍为全局数据"
+        type="info"
+        :closable="false"
+      />
+
+      <el-alert
+        v-if="taskFilterError"
+        :title="taskFilterError"
+        type="error"
+        :closable="false"
+        class="error-alert"
+      />
 
       <!-- Error Alert -->
       <el-alert
@@ -199,63 +293,30 @@ onMounted(async () => {
         :closable="false"
         class="error-alert"
       >
-        <el-button type="primary" size="small" @click="loadExecutions">
-          重试
-        </el-button>
+        <el-button type="primary" size="small" @click="loadExecutions"> 重试 </el-button>
       </el-alert>
 
-      <el-table
-        v-loading="loading"
-        :data="executions"
-        style="width: 100%"
-        stripe
-      >
-        <el-table-column
-          prop="id"
-          label="ID"
-          width="80"
-        />
-        <el-table-column
-          prop="script_id"
-          label="脚本ID"
-          width="100"
-        />
-        <el-table-column
-          label="状态"
-          width="100"
-        >
+      <el-table v-if="!taskFilterError" v-loading="loading" :data="executions" style="width: 100%" stripe>
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="script_id" label="脚本ID" width="100" />
+        <el-table-column label="状态" width="100">
           <template #default="{ row }">
-            <el-tag
-              :type="getStatusInfo(row.status).type"
-              size="small"
-            >
+            <el-tag :type="getStatusInfo(row.status).type" size="small">
               {{ getStatusInfo(row.status).text }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column
-          prop="start_time"
-          label="开始时间"
-          width="180"
-        >
+        <el-table-column prop="start_time" label="开始时间" width="180">
           <template #default="{ row }">
             {{ new Date(row.start_time).toLocaleString() }}
           </template>
         </el-table-column>
-        <el-table-column
-          prop="duration"
-          label="耗时(秒)"
-          width="100"
-        >
+        <el-table-column prop="duration" label="耗时(秒)" width="100">
           <template #default="{ row }">
             {{ row.duration ? row.duration.toFixed(2) : '-' }}
           </template>
         </el-table-column>
-        <el-table-column
-          prop="rows_after"
-          label="行数(前/后)"
-          width="140"
-        >
+        <el-table-column prop="rows_after" label="行数(前/后)" width="140">
           <!-- `rows_processed` lived on the download-progress payload only; the
                execution record carries rows_before/rows_after (models/task.py:272-273).
                `??`, not `||`: a run that landed 0 rows is an answer, not a blank. -->
@@ -263,11 +324,7 @@ onMounted(async () => {
             {{ row.rows_before ?? '-' }} → {{ row.rows_after ?? '-' }}
           </template>
         </el-table-column>
-        <el-table-column
-          prop="error_message"
-          label="错误信息"
-          show-overflow-tooltip
-        />
+        <el-table-column prop="error_message" label="错误信息" show-overflow-tooltip />
       </el-table>
 
       <div class="pagination">
@@ -342,5 +399,9 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+.failures-actions {
+  display: flex;
+  gap: 8px;
 }
 </style>

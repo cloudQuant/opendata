@@ -179,6 +179,39 @@ class TestCrossCheckService:
         assert summary.domain == "stock_daily"
         assert summary.batch_id == f"xcheck:stock_daily:{WINDOW.label()}"
 
+    async def test_hook_reads_both_sources_through_the_same_union_window(self):
+        frames = self._frames(close_b=1688.0)
+        service, _, _, _ = self._service(frames)
+        reads: dict[str, tuple[tuple[str, ...] | None, dict[str, Window | None] | None]] = {}
+
+        def reader_for(source):
+            def read(window, *, symbols=None, symbol_windows=None):
+                reads[source] = (symbols, symbol_windows)
+                return frames[source].copy()
+
+            return read
+
+        service.readers = {source: reader_for(source) for source in frames}
+        union = Window(start=date(2020, 1, 2), end=date(2024, 1, 31))
+        context = PipelineContext(
+            domain="stock_daily",
+            source="akshare",
+            window=union,
+            affected_keys=[],
+            symbols=("600519",),
+            source_windows={
+                "akshare": {"600519": None},
+                "ths": {"600519": union},
+            },
+            comparison_windows={"600519": union},
+            pipeline_id="resume-fingerprint",
+        )
+
+        await service.run_hook(context)
+
+        expected = (("600519",), {"600519": union})
+        assert reads == {"akshare": expected, "ths": expected}
+
     async def test_unknown_source_mapping_fails_closed(self):
         mapping = DomainMapping(
             domain="stock_daily",
@@ -201,3 +234,85 @@ class TestCrossCheckService:
         )
         with pytest.raises(LookupError, match="ths"):
             await service.run(BATCH_ID, WINDOW)
+
+    async def test_partitioned_hook_aggregates_once_with_global_sample_cap(self):
+        from opendata.pipeline.cross_check_service import hook_batch_id
+        from opendata.pipeline.runner import PipelineContext
+
+        symbols = tuple(f"{index:06d}" for index in range(105))
+        frame_a = pd.DataFrame(
+            {
+                "symbol": symbols,
+                "trade_date": [date(2024, 1, 2)] * len(symbols),
+                "close": [float(index) + 10 for index in range(len(symbols))],
+            }
+        )
+        frame_b = frame_a.assign(close=frame_a["close"] + 1.0).iloc[:-1].copy()
+        windows = dict.fromkeys(symbols, WINDOW)
+        calls: list[tuple[str, tuple[str, ...]]] = []
+
+        def readers(frames):
+            result = {}
+            for source in ("akshare", "ths"):
+
+                def read(window, *, symbols=None, symbol_windows=None, source=source):
+                    selected = tuple(symbols or ())
+                    calls.append((source, selected))
+                    return frames[source].loc[frames[source]["symbol"].isin(selected)].copy()
+
+                result[source] = read
+            return result
+
+        bounded_service, written, alerts, notified = self._service(
+            {"akshare": frame_a, "ths": frame_b}
+        )
+        bounded_service.readers = readers({"akshare": frame_a, "ths": frame_b})
+        children = []
+        for offset in range(0, len(symbols), 50):
+            batch = symbols[offset : offset + 50]
+            children.append(
+                PipelineContext(
+                    domain="stock_daily",
+                    source="akshare",
+                    window=WINDOW,
+                    affected_keys=[(symbol, date(2024, 1, 2)) for symbol in batch],
+                    symbols=batch,
+                    source_windows={"akshare": dict.fromkeys(batch, WINDOW)},
+                    comparison_windows=dict.fromkeys(batch, WINDOW),
+                    pipeline_id="bounded-cross-check",
+                )
+            )
+        context = PipelineContext(
+            domain="stock_daily",
+            source="akshare",
+            window=WINDOW,
+            affected_keys=[],
+            symbols=symbols,
+            source_windows={"akshare": windows},
+            comparison_windows=windows,
+            pipeline_id="bounded-cross-check",
+            partition_contexts=lambda: iter(children),
+        )
+
+        bounded = await bounded_service.run_hook(context)
+        assert bounded.compared_keys == 105
+        assert bounded.deviation_count == 104
+        assert bounded.missing_count == 1
+        assert bounded.per_field == {"close": 104}
+        assert len(bounded.samples) == 100
+        assert bounded.checked_at == CHECKED_AT
+        assert len(written) == 1 and written[0] == bounded
+        assert len(alerts) == len(notified) == 1
+        assert notified[0] == bounded
+        assert max(len(batch) for _, batch in calls) <= 50
+
+        calls.clear()
+        full_service, _, _, _ = self._service({"akshare": frame_a, "ths": frame_b})
+        full_service.readers = readers({"akshare": frame_a, "ths": frame_b})
+        full = await full_service.run(
+            hook_batch_id(context),
+            WINDOW,
+            symbols=symbols,
+            symbol_windows=windows,
+        )
+        assert bounded == full

@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import re
 import shutil
@@ -45,7 +46,10 @@ from collections import Counter
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-from typing import Final
+from typing import TYPE_CHECKING, Final
+
+if TYPE_CHECKING:
+    from types import ModuleType
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DOC_PATH = "docs/迭代计划/迭代1-重构数据中台/验收文档.md"
@@ -229,6 +233,44 @@ def _tracked(paths: tuple[str, ...]) -> frozenset[str]:
     return frozenset(line for line in probe.stdout.splitlines() if line)
 
 
+@lru_cache(maxsize=8)
+def _source_layout_module(root: Path) -> ModuleType:
+    """Load the shared historical-identity map rooted beside the checked-out tool."""
+    layout_path = root / "scripts/quality/source_layout.py"
+    if not layout_path.is_file():
+        raise LedgerError(f"scripts/quality/source_layout.py is missing under {root}")
+    module_name = (
+        "opendata_acceptance_source_layout_"
+        + hashlib.sha256(str(layout_path.resolve()).encode("utf-8")).hexdigest()[:16]
+    )
+    spec = importlib.util.spec_from_file_location(module_name, layout_path)
+    if spec is None or spec.loader is None:
+        raise LedgerError(f"scripts/quality/source_layout.py cannot be loaded under {root}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    try:
+        spec.loader.exec_module(module)
+    except Exception as exc:
+        sys.modules.pop(module_name, None)
+        raise LedgerError(f"scripts/quality/source_layout.py failed to load: {exc}") from exc
+    return module
+
+
+def _historical_evidence_identity(path: str) -> str:
+    """Map one ledger evidence reference to its current source-tree identity."""
+    module = _source_layout_module(REPO_ROOT)
+    mapper = getattr(module, "historical_identity", None)
+    if not callable(mapper):
+        raise LedgerError("scripts/quality/source_layout.py has no historical_identity mapper")
+    try:
+        canonical = mapper(path)
+    except Exception as exc:
+        raise LedgerError(f"cannot map {path!r}: {exc}") from exc
+    if not isinstance(canonical, str) or not canonical:
+        raise LedgerError(f"historical_identity returned no canonical path for {path!r}")
+    return canonical
+
+
 def _entry_problems(entry: dict[str, object], key: str) -> list[str]:
     """A ``proven`` claim is only as good as the command and the files it names."""
     problems: list[str] = []
@@ -242,16 +284,27 @@ def _entry_problems(entry: dict[str, object], key: str) -> list[str]:
     if not (isinstance(evidence, list) and evidence):
         problems.append(f"{key}: proven without evidence paths")
         return problems
-    present: list[str] = []
+    present: list[tuple[str, str]] = []
     for path in evidence:
         if not (isinstance(path, str) and path):
             problems.append(f"{key}: evidence entry is not a path")
-        elif not (REPO_ROOT / path).is_file():
-            problems.append(f"{key}: evidence path does not exist: {path}")
+            continue
+        try:
+            canonical = _historical_evidence_identity(path)
+        except LedgerError as exc:
+            problems.append(f"{key}: evidence path has no safe current identity: {path}: {exc}")
+            continue
+        if not (REPO_ROOT / canonical).is_file():
+            problems.append(f"{key}: evidence path does not exist: {path} (canonical: {canonical})")
         else:
-            present.append(path)
-    untracked = sorted(set(present) - _tracked(tuple(sorted(present))))
-    problems += [f"{key}: evidence path is not tracked by git: {path}" for path in untracked]
+            present.append((path, canonical))
+    canonical_paths = tuple(sorted({canonical for _, canonical in present}))
+    untracked = set(canonical_paths) - _tracked(canonical_paths)
+    problems += [
+        f"{key}: evidence path is not tracked by git: {original} (canonical: {canonical})"
+        for original, canonical in sorted(set(present))
+        if canonical in untracked
+    ]
     return problems
 
 

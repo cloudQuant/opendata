@@ -36,7 +36,7 @@ import argparse
 import sys
 from datetime import date, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple, cast
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -45,10 +45,11 @@ if str(ROOT) not in sys.path:
 REPO_RELATIVE = Path(__file__).resolve().relative_to(ROOT)
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping
+    from collections.abc import Callable, Mapping, Sequence
 
     import pandas as pd
 
+    from opendata.data.models import OverseasBar
     from opendata.data.protocol import Fetcher
 
 
@@ -67,15 +68,15 @@ class Leg(NamedTuple):
 
 
 def _us_sina(symbol: str) -> pd.DataFrame:
-    from opendata_http.stock.stock_us_sina import stock_us_daily
+    from opendata.data.providers.akshare._vendor.stock.stock_us_sina import stock_us_daily
 
-    return stock_us_daily(symbol=symbol, adjust="")
+    return cast("pd.DataFrame", stock_us_daily(symbol=symbol, adjust=""))
 
 
 def _hk_sina(symbol: str) -> pd.DataFrame:
-    from opendata_http.stock.stock_hk_sina import stock_hk_daily
+    from opendata.data.providers.akshare._vendor.stock.stock_hk_sina import stock_hk_daily
 
-    return stock_hk_daily(symbol=symbol, adjust="")
+    return cast("pd.DataFrame", stock_hk_daily(symbol=symbol, adjust=""))
 
 
 SINA_CHANNELS: Mapping[str, Callable[[str], pd.DataFrame]] = {
@@ -188,8 +189,11 @@ def _ours_frame(fetcher: Fetcher[Any, Any], symbol: str, start: date, end: date)
     """Read one window through the routing path and flatten it to a frame."""
     import pandas as pd
 
-    rows = fetcher.fetch(symbol=symbol, start_date=start, end_date=end)
-    frame = pd.DataFrame([row.model_dump() for row in rows])
+    rows = cast(
+        "Sequence[OverseasBar]",
+        fetcher.fetch(symbol=symbol, start_date=start, end_date=end),
+    )
+    frame: pd.DataFrame = pd.DataFrame([row.model_dump() for row in rows])
     frame["trade_date"] = pd.to_datetime(frame["trade_date"]).dt.date
     return frame
 
@@ -204,7 +208,7 @@ def _sina_frame(channel: str, sina_symbol: str, start: date, end: date) -> pd.Da
     out = frame.copy()
     out["trade_date"] = pd.to_datetime(out["date"]).dt.date
     windowed = out[(out["trade_date"] >= start) & (out["trade_date"] <= end)]
-    return windowed.reset_index(drop=True)
+    return cast("pd.DataFrame", windowed.reset_index(drop=True))
 
 
 def _compare(ours: pd.DataFrame, theirs: pd.DataFrame, fields: tuple[str, ...]) -> dict[str, Any]:
@@ -357,14 +361,20 @@ def _counterfactual(leg: Leg) -> dict[str, float]:
     theirs = _sina_frame(leg.sina_channel, leg.sina_symbol, leg.start, leg.end)
     theirs = theirs.set_index("trade_date")
     kwargs = {"start": leg.start.isoformat(), "end": (leg.end + timedelta(days=1)).isoformat()}
-    adjusted = yfinance.Ticker(leg.yf_symbol).history(auto_adjust=True, interval="1d", **kwargs)
-    raw = yfinance.Ticker(leg.yf_symbol).history(auto_adjust=False, interval="1d", **kwargs)
+    adjusted = cast(
+        "pd.DataFrame",
+        yfinance.Ticker(leg.yf_symbol).history(auto_adjust=True, interval="1d", **kwargs),
+    )
+    raw = cast(
+        "pd.DataFrame",
+        yfinance.Ticker(leg.yf_symbol).history(auto_adjust=False, interval="1d", **kwargs),
+    )
     window_local = as_traded_bars(raw, raw[SPLITS_COLUMN])
     out: dict[str, float] = {"dividends": float(raw["Dividends"].sum())}
     for label, frame in (("auto_adjust", adjusted), ("window_local", window_local)):
         deviations = []
         for trade_date, value in frame["Close"].items():
-            reference = theirs["close"].get(trade_date.date())
+            reference = theirs["close"].get(cast("pd.Timestamp", trade_date).date())
             if reference:
                 deviations.append(abs(float(value) / float(reference) - 1.0))
         out[label] = max(deviations, default=float("nan"))

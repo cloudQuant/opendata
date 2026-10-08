@@ -11,14 +11,14 @@ opendata 采用 BSL 1.1（见 [`LICENSE`](LICENSE)），但仓库内**内嵌的�
 |----|------|
 | 来源仓库 | https://github.com/akfamily/akshare |
 | 基线 commit | `c4f6a631c259783dbc2507b6b27d179b3e88079d` |
-| 基线本地副本 | 仓库根 `akshare/`（迭代 A2 起更名为 `opendata_http/`） |
-| 许可证 | MIT（全文见 [`LICENSE-AKSHARE`](LICENSE-AKSHARE)） |
+| 当前本地副本 | `opendata/data/providers/akshare/_vendor/`；历史根为 `akshare/`，迭代 A2 更名为 `opendata_http/`，迭代2并入 provider |
+| 许可证 | MIT（根副本 [`LICENSE-AKSHARE`](LICENSE-AKSHARE)；子树副本 [`_vendor/LICENSE-AKSHARE`](opendata/data/providers/akshare/_vendor/LICENSE-AKSHARE)） |
 | 版权 | Copyright (c) 2019-2026 Albert King |
 | 引入方式 | 源码级搬运，保留原版权声明与来源标注 |
 
 ### 许可边界（重要）
 
-- `akshare/`（后为 `opendata_http/`）内的文件**保留 MIT 许可**，他人仍可按 MIT 条款取用；
+- `opendata/data/providers/akshare/_vendor/` 内的搬运文件**保留 MIT 许可**，他人仍可按 MIT 条款取用；
   仓库整体的 BSL 1.1 **不改变**这部分代码的许可。
 - 自研代码（统一契约、provider 路由、pipeline、API 服务层等）**不得置于搬运包内**，以保证
   MIT 子树可在不依赖 BSL 模块的情况下独立运行。
@@ -27,7 +27,7 @@ opendata 采用 BSL 1.1（见 [`LICENSE`](LICENSE)），但仓库内**内嵌的�
 
 ### 人工改动登记（manual edits）
 
-搬运代码原则上与上游逐行可 diff（便于上游同步）。人工改动分两类，全部登记在
+下表的 `akshare/` 路径是原上游身份，现行本地对应 `_vendor/` 下的同名相对路径。迭代2目录迁移另记录原始来源哈希与命名空间改写后的哈希；两者不能混用。搬运代码原则上与上游逐行可 diff（便于上游同步）。人工改动分两类，全部登记在
 `scripts/codemod/port_module.py::MANUAL_EDITS`（重跑 codemod 会重放，不会静默丢失），
 并在 `upstream.lock` 标记 `manual_edits = true`。
 
@@ -101,3 +101,7 @@ opendata 采用 BSL 1.1（见 [`LICENSE`](LICENSE)），但仓库内**内嵌的�
 条款与再分发边界单独登记于 [`docs/data-rights-registry.md`](docs/data-rights-registry.md)。
 
 数据免责声明见 [`README.md`](README.md) 许可证章节。
+<!-- C65 public-terms review -->
+数据权利与源码许可证分别复核。2026-09-30 的逐源公开条款结论见 [数据权利登记表](docs/data-rights-registry.md)及 [C65 审阅记录](docs/evidence/C65/data-rights-review.md)；其中附条件许可不覆盖第三方数据或未授予的下游用途。本文件列示源码许可不构成数据再分发授权。
+
+2026-10-08 的新增审阅在登记表 v1.3 第12/13行：BLS 官方统计按公共领域及 API 条款附条件复用；FMP 本轮两个离线行情原型未取得本项目适用的产品订阅、集中留存或多用户展示许可证明，因此未批准真实采集与分发。自研适配代码的许可证不改变这些数据用途限制；其余新源仍待逐产品登记。

@@ -71,7 +71,7 @@ def _cases() -> list[dict[str, Any]]:
         One entry per request: fixture name, endpoint, query parameters, and whether the
         real credential or the bogus one should be presented.
     """
-    from opendata_fuyao.endpoints import (
+    from opendata.data.providers.ths.endpoints import (
         CALENDAR_ENDPOINT,
         build_prices_request,
         build_tickers_search_request,
@@ -170,7 +170,7 @@ def _present(case: dict[str, Any]) -> tuple[str, str]:
     from opendata.data.providers.ths.models._client import credentials as resolve
 
     if case["bogus"]:
-        from opendata_fuyao.credentials import DEFAULT_FUYAO_API_BASE_URL
+        from opendata.data.providers.ths.transport.credentials import DEFAULT_FUYAO_API_BASE_URL
 
         return DEFAULT_FUYAO_API_BASE_URL, BOGUS_CREDENTIAL_SENTINEL
     active = resolve()
@@ -191,7 +191,7 @@ def _record_one(case: dict[str, Any]) -> dict[str, Any]:
     """
     import httpx
 
-    from opendata_fuyao.http_client import API_KEY_HEADER
+    from opendata.data.providers.ths.transport.http_client import API_KEY_HEADER
 
     base_url, presented = _present(case)
     url = f"{base_url}{case['endpoint']}"

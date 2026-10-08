@@ -5,10 +5,12 @@ plaintext appears once, expiry and revocation are fail-closed, and an
 API key only reaches the domains its scopes cover.
 """
 
-from datetime import UTC, datetime, timedelta
+from collections.abc import Iterator
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
-from sqlalchemy import select, text
+from sqlalchemy import Engine, create_engine, select, text
+from sqlalchemy.pool import StaticPool
 
 from opendata.models.api_key import ApiKey, ApiKeyStatus
 from opendata.services.api_key_service import (
@@ -27,6 +29,46 @@ from tests.conftest import get_auth_headers
 
 def _plaintext_of(issued) -> str:
     return issued.plaintext
+
+
+@pytest.fixture
+def sqlite_query_warehouse(test_client) -> Iterator[Engine]:
+    """Override the read-only query API with a local in-memory warehouse."""
+    from opendata.api.data_query import get_warehouse_engine
+    from opendata.main import app
+
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    today = date.today().isoformat()
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "CREATE TABLE dwd_index_constituent ("
+                "index_symbol TEXT NOT NULL, symbol TEXT NOT NULL, as_of DATE NOT NULL, "
+                "weight REAL, PRIMARY KEY (index_symbol, symbol, as_of))"
+            )
+        )
+        connection.execute(
+            text(
+                "INSERT INTO dwd_index_constituent "
+                "(index_symbol, symbol, as_of, weight) "
+                "VALUES ('000300', '600519', :as_of, 0.5)"
+            ),
+            {"as_of": today},
+        )
+
+    def use_sqlite_warehouse() -> Engine:
+        return engine
+
+    app.dependency_overrides[get_warehouse_engine] = use_sqlite_warehouse
+    try:
+        yield engine
+    finally:
+        app.dependency_overrides.pop(get_warehouse_engine, None)
+        engine.dispose()
 
 
 class TestKeyMaterial:
@@ -342,7 +384,9 @@ class TestApiKeyAuthentication:
         assert response.status_code == 201
         return response.json()["key"]
 
-    async def test_bearer_and_header_forms_both_authenticate(self, test_client, test_user_token):
+    async def test_bearer_and_header_forms_both_authenticate(
+        self, test_client, test_user_token, sqlite_query_warehouse
+    ):
         key = await self._key(test_client, test_user_token, ["*"])
 
         via_bearer = await test_client.get(
@@ -387,15 +431,19 @@ class TestApiKeyAuthentication:
 
         assert response.status_code == 401
 
-    async def test_scopes_limit_the_reachable_domains(self, test_client, test_user_token):
+    async def test_scopes_limit_the_reachable_domains(
+        self, test_client, test_user_token, sqlite_query_warehouse
+    ):
         from opendata.data.providers import register_providers
 
         register_providers()  # ASGITransport does not run the lifespan
         key = await self._key(test_client, test_user_token, ["index_constituent"])
 
+        today = date.today().isoformat()
+
         allowed = await test_client.get(
             "/api/v1/data/index/index_constituent",
-            params={"symbols": "000300"},
+            params={"symbols": "000300", "start": today, "end": today},
             headers={"X-API-Key": key},
         )
         denied = await test_client.get(
@@ -410,7 +458,9 @@ class TestApiKeyAuthentication:
         assert listed == {"index_constituent"}  # the catalog hides the rest
         assert allowed.status_code != 403  # past the scope gate
 
-    async def test_empty_scopes_deny_every_domain(self, test_client, test_user_token):
+    async def test_empty_scopes_deny_every_domain(
+        self, test_client, test_user_token, sqlite_query_warehouse
+    ):
         key = await self._key(test_client, test_user_token, [])
 
         response = await test_client.get(

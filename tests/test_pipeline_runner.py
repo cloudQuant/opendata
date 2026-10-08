@@ -14,11 +14,12 @@ from datetime import date
 import pandas as pd
 import pytest
 import pytest_asyncio
-from sqlalchemy import create_engine, pool, select, text
+from sqlalchemy import create_engine, pool, select, text, update
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from opendata.core.database import Base
 from opendata.models.pipeline import PipelineProgress, ShardStatus
+from opendata.models.pipeline_step import PipelineStepCheckpoint, PipelineStepStatus
 from opendata.pipeline.ddl import Column, ods_table_ddl
 from opendata.pipeline.ods_writer import OdsWriter
 from opendata.pipeline.runner import (
@@ -166,7 +167,10 @@ class TestPipelineRun:
         pipeline = self._pipeline(main_db, writer, fetch)
         outcome = await pipeline.run(WINDOW)
 
-        assert outcome.shards_done == 3  # every shard still wrote its good rows
+        # Good rows land, but this shard remains retryable until every
+        # symbol in it succeeds on a later run.
+        assert outcome.shards_done == 2
+        assert outcome.shards_failed == 1
         assert [failure.symbol for failure in outcome.failures] == ["000001"]
         assert "000000" in writer.symbols()
         assert "000002" in writer.symbols()
@@ -232,6 +236,296 @@ class TestPipelineRun:
 
         assert outcome.resumed_shards == 0
         assert len(calls) == 5
+
+    async def test_per_symbol_windows_skip_current_symbols_and_keep_their_bounds(self, main_db):
+        calls: list[tuple[str, Window]] = []
+        old = Window(start=date(2020, 1, 1), end=WINDOW.end)
+        windows = {
+            "000000": old,
+            "000001": None,
+            "000002": None,
+            "000003": None,
+            "000004": None,
+        }
+        pipeline = self._pipeline(
+            main_db,
+            FakeWriter(),
+            lambda symbol, window: calls.append((symbol, window)) or _frame(symbol),
+            shard_size=2,
+        )
+
+        outcome = await pipeline.run(
+            WINDOW,
+            source_windows={"akshare": windows},
+        )
+
+        assert calls == [("000000", old)]
+        assert outcome.source_windows["akshare"] == windows
+
+    async def test_failed_hook_resumes_at_that_step_with_rebuilt_keys(self, main_db):
+        writer = FakeWriter()
+        calls = {"cross": 0, "merge": 0, "notify": 0}
+        seen_keys: list[list[tuple[object, ...]]] = []
+
+        async def cross_check(context):
+            calls["cross"] += 1
+
+        async def merge(context):
+            calls["merge"] += 1
+            seen_keys.append(list(context.affected_keys))
+            if calls["merge"] == 1:
+                raise RuntimeError("merge interrupted")
+
+        async def notify(context):
+            calls["notify"] += 1
+
+        window_plan = {"akshare": dict.fromkeys(self._symbols(), WINDOW)}
+        first = self._pipeline(
+            main_db,
+            writer,
+            lambda symbol, window: _frame(symbol),
+            cross_check=cross_check,
+            merge=merge,
+            notify=notify,
+            load_affected_keys=lambda context: [("reconstructed", date(2024, 1, 9))],
+        )
+        with pytest.raises(RuntimeError, match="merge interrupted"):
+            await first.run(WINDOW, source_windows=window_plan)
+        first_id = first._pipeline_id(WINDOW)
+
+        resumed = self._pipeline(
+            main_db,
+            FakeWriter(),
+            lambda symbol, window: pytest.fail("completed shards must not fetch"),
+            cross_check=cross_check,
+            merge=merge,
+            notify=notify,
+            load_affected_keys=lambda context: [("reconstructed", date(2024, 1, 9))],
+        )
+        second = await resumed.run(WINDOW, source_windows={"akshare": {}})
+
+        assert second.pipeline_id == first_id
+        assert second.resumed_shards == second.shards_total
+        assert calls == {"cross": 1, "merge": 2, "notify": 1}
+        assert seen_keys[1] == [("reconstructed", date(2024, 1, 9))]
+        async with main_db() as session:
+            rows = (
+                (
+                    await session.execute(
+                        select(PipelineStepCheckpoint).where(
+                            PipelineStepCheckpoint.pipeline_id == first_id
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+        assert {row.step: row.status for row in rows} == {
+            "cross_check": PipelineStepStatus.DONE,
+            "merge": PipelineStepStatus.DONE,
+            "notify": PipelineStepStatus.DONE,
+        }
+
+    async def test_meta_hook_failure_retries_without_repeating_prior_hooks(self, main_db):
+        calls = {"cross": 0, "merge": 0, "notify": 0, "meta": 0}
+
+        async def count(name: str, context):
+            calls[name] += 1
+            if name == "meta" and calls[name] == 1:
+                raise RuntimeError("metadata store unavailable")
+
+        options = {
+            "cross_check": lambda context: count("cross", context),
+            "merge": lambda context: count("merge", context),
+            "notify": lambda context: count("notify", context),
+            "meta": lambda context: count("meta", context),
+        }
+        pipeline = self._pipeline(
+            main_db,
+            FakeWriter(),
+            lambda symbol, window: _frame(symbol),
+            **options,
+        )
+
+        with pytest.raises(RuntimeError, match="metadata store unavailable"):
+            await pipeline.run(WINDOW)
+        resumed = self._pipeline(
+            main_db,
+            FakeWriter(),
+            lambda symbol, window: pytest.fail("done shards must be skipped"),
+            **options,
+        )
+        outcome = await resumed.run(WINDOW)
+
+        assert outcome.resumed_shards == outcome.shards_total
+        assert calls == {"cross": 1, "merge": 1, "notify": 1, "meta": 2}
+
+    async def test_resume_false_reexecutes_completed_hook_checkpoints(self, main_db):
+        calls = {"cross": 0, "merge": 0, "notify": 0}
+
+        async def count(name: str, context):
+            calls[name] += 1
+
+        pipeline = self._pipeline(
+            main_db,
+            FakeWriter(),
+            lambda symbol, window: _frame(symbol),
+            cross_check=lambda context: count("cross", context),
+            merge=lambda context: count("merge", context),
+            notify=lambda context: count("notify", context),
+        )
+        await pipeline.run(WINDOW)
+        await pipeline.run(WINDOW, resume=False)
+
+        assert calls == {"cross": 2, "merge": 2, "notify": 2}
+
+    async def test_different_symbol_universes_do_not_resume_each_other(self, main_db):
+        calls: list[str] = []
+
+        def make(symbol: str) -> DataPipeline:
+            return DataPipeline(
+                PipelineSpec(
+                    domain="stock_daily",
+                    source="akshare",
+                    key=("symbol", "trade_date"),
+                    symbols=[symbol],
+                ),
+                session_maker=main_db,
+                write_ods=FakeWriter(),
+                fetch_symbol=lambda item, window: calls.append(item) or _frame(item),
+            )
+
+        first = await make("000001").run(WINDOW)
+        second = await make("000002").run(WINDOW)
+
+        assert first.pipeline_id != second.pipeline_id
+        assert calls == ["000001", "000002"]
+        assert second.resumed_shards == 0
+
+    @staticmethod
+    def _symbols() -> list[str]:
+        return [f"{index:06d}" for index in range(5)]
+
+    async def test_partial_shard_failure_is_retried_without_duplicate_ods_keys(self, main_db):
+        class IdempotentWriter:
+            def __init__(self):
+                self.rows: dict[tuple[str, date], dict[str, object]] = {}
+
+            def __call__(self, frame: pd.DataFrame) -> int:
+                for record in frame.to_dict("records"):
+                    self.rows[(record["symbol"], record["trade_date"])] = record
+                return len(frame)
+
+        writer = IdempotentWriter()
+
+        def first_fetch(symbol: str, window: Window) -> pd.DataFrame:
+            if symbol == "000002":
+                raise RuntimeError("one symbol failed")
+            return _frame(symbol)
+
+        spec = PipelineSpec(
+            domain="stock_daily",
+            source="akshare",
+            key=("symbol", "trade_date"),
+            symbols=["000001", "000002"],
+            shard_size=2,
+        )
+        first = DataPipeline(
+            spec,
+            session_maker=main_db,
+            write_ods=writer,
+            fetch_symbol=first_fetch,
+        )
+        initial = await first.run(WINDOW)
+
+        assert initial.shards_done == 0
+        assert initial.shards_failed == 1
+        assert len(writer.rows) == 1
+
+        retried = DataPipeline(
+            spec,
+            session_maker=main_db,
+            write_ods=writer,
+            fetch_symbol=lambda symbol, window: _frame(symbol),
+        )
+        second = await retried.run(WINDOW)
+
+        assert second.resumed_shards == 0
+        assert second.shards_done == 1
+        assert len(writer.rows) == 2
+
+    async def test_new_ods_write_invalidates_hook_steps_before_writer_can_crash(self, main_db):
+        class SimulatedProcessCrash(BaseException):
+            pass
+
+        class CommitThenCrashWriter:
+            def __init__(self):
+                self.keys: set[tuple[str, date]] = set()
+                self.crash_next = False
+
+            def __call__(self, frame: pd.DataFrame) -> int:
+                self.keys.update(
+                    (row.symbol, row.trade_date) for row in frame.itertuples(index=False)
+                )
+                if self.crash_next:
+                    self.crash_next = False
+                    raise SimulatedProcessCrash()
+                return len(frame)
+
+        writer = CommitThenCrashWriter()
+        hook_calls = {"cross": 0, "merge": 0, "notify": 0}
+
+        async def hook(name: str, context):
+            hook_calls[name] += 1
+
+        pipeline = DataPipeline(
+            PipelineSpec(
+                domain="stock_daily",
+                source="akshare",
+                key=("symbol", "trade_date"),
+                symbols=["000001"],
+            ),
+            session_maker=main_db,
+            write_ods=writer,
+            fetch_symbol=lambda symbol, window: _frame(symbol),
+            cross_check=lambda context: hook("cross", context),
+            merge=lambda context: hook("merge", context),
+            notify=lambda context: hook("notify", context),
+        )
+        initial = await pipeline.run(WINDOW)
+        async with main_db() as session:
+            await session.execute(
+                update(PipelineProgress)
+                .where(
+                    PipelineProgress.pipeline_id == initial.pipeline_id,
+                    PipelineProgress.shard == 0,
+                )
+                .values(status=ShardStatus.FAILED)
+            )
+            await session.commit()
+        writer.crash_next = True
+
+        with pytest.raises(SimulatedProcessCrash):
+            await pipeline.run(WINDOW)
+        async with main_db() as session:
+            steps = (
+                (
+                    await session.execute(
+                        select(PipelineStepCheckpoint).where(
+                            PipelineStepCheckpoint.pipeline_id == initial.pipeline_id
+                        )
+                    )
+                )
+                .scalars()
+                .all()
+            )
+        assert all(step.status is PipelineStepStatus.PENDING for step in steps)
+        assert len(writer.keys) == 1
+
+        await pipeline.run(WINDOW)
+
+        assert hook_calls == {"cross": 2, "merge": 2, "notify": 2}
+        assert len(writer.keys) == 1
 
     async def test_concurrent_run_of_the_same_domain_is_locked_out(self, main_db):
         from opendata.pipeline import runner

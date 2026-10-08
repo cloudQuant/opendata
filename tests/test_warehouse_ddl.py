@@ -165,6 +165,29 @@ class TestDwdDdl:
         assert columns["weight"].nullable is True
         assert columns["symbol"].nullable is False
 
+    def test_affine_adjustment_columns_are_nullable_and_in_stock_adjust_ddl(self):
+        columns = {column.name: column for column in contract_columns("stock_adjust")}
+        ddl = dwd_table_ddl(
+            "stock_adjust",
+            key=("symbol", "trade_date"),
+            partition_key="trade_date",
+            start_year=2025,
+            years=2,
+        )
+
+        for name in (
+            "qfq_scale",
+            "qfq_offset",
+            "hfq_scale",
+            "hfq_offset",
+            "adjustment_version",
+            "legacy_source",
+        ):
+            assert columns[name].nullable is True
+            assert f"`{name}`" in ddl
+        assert "`qfq_factor` double NOT NULL" in ddl
+        assert "`hfq_factor` double NOT NULL" in ddl
+
     def test_invalid_domain_fails_closed(self):
         with pytest.raises(LookupError, match="unknown domain"):
             dwd_table_ddl("not_a_domain", key=("symbol",))

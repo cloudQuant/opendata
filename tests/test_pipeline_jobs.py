@@ -9,7 +9,7 @@ real end-to-end run of this module is the acceptance evidence in
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import TYPE_CHECKING, Any
 
 import pandas as pd
@@ -43,13 +43,22 @@ class FakePipeline:
         self.rows = rows
         self.ran: list[tuple[Window, bool]] = []
 
-    async def run(self, window: Window, *, resume: bool = True) -> PipelineOutcome:
+    async def run(
+        self,
+        window: Window,
+        *,
+        resume: bool = True,
+        source_windows: Mapping[str, Mapping[str, Window | None]] | None = None,
+    ) -> PipelineOutcome:
         self.ran.append((window, resume))
         return PipelineOutcome(
             pipeline_id=f"stock_daily:{self.source}:{window.label()}",
             shards_total=1,
             shards_done=1,
             rows_written=self.rows,
+            source_windows={
+                source: dict(windows) for source, windows in (source_windows or {}).items()
+            },
         )
 
 
@@ -76,8 +85,9 @@ def stubbed_run(monkeypatch: pytest.MonkeyPatch) -> list[dict[str, Any]]:
 
     monkeypatch.setattr(jobs, "build_stock_daily_pipeline", fake_build)
     monkeypatch.setattr(
-        jobs, "make_fetch_symbol", lambda domain, source: lambda s, w: pd.DataFrame()
+        jobs, "make_fetch_symbol_async", lambda domain, source: lambda s, w: pd.DataFrame()
     )
+    monkeypatch.setattr(jobs, "read_ods_watermarks", lambda *args, **kwargs: {})
     monkeypatch.setattr(jobs, "_count_in_window", lambda engine, domain, window: 7)
     monkeypatch.setattr(
         jobs, "_freshness", lambda engine, domain, sources, *, expected: {"dwd": None}
@@ -109,6 +119,165 @@ def logged() -> Iterator[list[tuple[str, str]]]:
 
 class TestRunIncrementalJob:
     """The batch orchestration: universe, run order, cross-check pairing."""
+
+    async def test_ods_watermark_controls_reruns_after_raw_cache_invalidation(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path,
+    ) -> None:
+        from sqlalchemy import UniqueConstraint, select
+        from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+        from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+        from opendata.core.database import Base
+        from opendata.data.mapping import require_domain_mapping
+        from opendata.data.raw_response_cache import RawResponseCache
+        from opendata.models.pipeline_step import PipelineStepCheckpoint, PipelineSymbolWindow
+        from opendata.pipeline.runner import DataPipeline, PipelineSpec
+
+        first_day = date(2026, 9, 23)
+        next_day = date(2026, 9, 24)
+        symbols = ["000001", "600519"]
+        warehouse = create_engine("sqlite://")
+        metadata = MetaData()
+        ods = Table(
+            "ods_stock_daily_akshare",
+            metadata,
+            Column("股票代码", String, nullable=False),
+            Column("日期", Date, nullable=False),
+            Column("收盘", String, nullable=False),
+            UniqueConstraint("股票代码", "日期"),
+        )
+        metadata.create_all(warehouse)
+        assert (
+            Base.metadata.tables[PipelineStepCheckpoint.__tablename__]
+            is PipelineStepCheckpoint.__table__
+        )
+        assert (
+            Base.metadata.tables[PipelineSymbolWindow.__tablename__]
+            is PipelineSymbolWindow.__table__
+        )
+        control = create_async_engine("sqlite+aiosqlite:///:memory:")
+        async with control.begin() as connection:
+            await connection.run_sync(Base.metadata.create_all)
+        maker = async_sessionmaker(control, expire_on_commit=False)
+        calls: list[tuple[str, Window]] = []
+
+        def fetch(symbol: str, window: Window) -> pd.DataFrame:
+            calls.append((symbol, window))
+            exchange = "SZ" if symbol.startswith("0") else "SH"
+            return pd.DataFrame(
+                {
+                    "股票代码": [f"{symbol}.{exchange}"],
+                    "日期": [window.end],
+                    "收盘": ["10.0"],
+                }
+            )
+
+        def write_ods(frame: pd.DataFrame) -> int:
+            records = frame.to_dict("records")
+            statement = sqlite_insert(ods).values(records)
+            statement = statement.on_conflict_do_update(
+                index_elements=["股票代码", "日期"],
+                set_={"收盘": statement.excluded["收盘"]},
+            )
+            with warehouse.begin() as connection:
+                connection.execute(statement)
+            return len(frame)
+
+        def build_pipeline(**kwargs: Any) -> DataPipeline:
+            mapping = require_domain_mapping(str(kwargs["source"]), "stock_daily")
+            spec = PipelineSpec(
+                domain="stock_daily",
+                source=str(kwargs["source"]),
+                key=mapping.source_key,
+                symbols=kwargs["symbols"],
+                shard_size=int(kwargs["shard_size"]),
+                variant=str(kwargs["run_variant"]),
+            )
+            return DataPipeline(
+                spec,
+                session_maker=maker,
+                write_ods=write_ods,
+                fetch_symbol=kwargs["fetch_symbol"],
+            )
+
+        monkeypatch.setattr(jobs, "build_stock_daily_pipeline", build_pipeline)
+        monkeypatch.setattr(jobs, "make_fetch_symbol_async", lambda domain, source: fetch)
+        monkeypatch.setattr(jobs, "_count_in_window", lambda engine, domain, window: 0)
+        monkeypatch.setattr(
+            jobs, "_freshness", lambda engine, domain, sources, *, expected: {"dwd": None}
+        )
+        cache = RawResponseCache(tmp_path, ttl_seconds=60)
+        cache_identity = {
+            "source": "akshare",
+            "endpoint": "https://cache.example/stock-daily",
+            "params": {"symbol": "600519", "as_of": first_day.isoformat()},
+            "context": {"adjust_basis": "none"},
+        }
+        assert cache.put(
+            method="GET",
+            **cache_identity,
+            status_code=200,
+            content=b"cached fixture",
+        )
+        assert cache.get(**cache_identity) is not None
+
+        calendar = calendar_from_days([first_day, next_day])
+        first = await jobs.run_incremental_job(
+            source="akshare",
+            symbols=symbols,
+            as_of=first_day,
+            calendar=calendar,
+            engine=warehouse,
+            session_maker=maker,
+            resume=False,
+        )
+        assert calls == [(symbol, Window(first_day, first_day)) for symbol in symbols]
+        assert first.outcomes["akshare"].source_windows["akshare"] == {
+            symbol: Window(first_day, first_day) for symbol in symbols
+        }
+
+        cache.invalidate(**cache_identity)
+        assert cache.get(**cache_identity) is None
+        calls.clear()
+        repeated = await jobs.run_incremental_job(
+            source="akshare",
+            symbols=symbols,
+            as_of=first_day,
+            calendar=calendar,
+            engine=warehouse,
+            session_maker=maker,
+            resume=False,
+        )
+        assert calls == []
+        assert repeated.outcomes["akshare"].source_windows["akshare"] == dict.fromkeys(
+            symbols, None
+        )
+
+        advanced = await jobs.run_incremental_job(
+            source="akshare",
+            symbols=symbols,
+            as_of=next_day,
+            calendar=calendar,
+            engine=warehouse,
+            session_maker=maker,
+            resume=False,
+        )
+        assert calls == [(symbol, Window(next_day, next_day)) for symbol in symbols]
+        assert advanced.outcomes["akshare"].source_windows["akshare"] == {
+            symbol: Window(next_day, next_day) for symbol in symbols
+        }
+        with warehouse.connect() as connection:
+            landed_days = (
+                connection.execute(select(ods.c["日期"]).distinct().order_by(ods.c["日期"]))
+                .scalars()
+                .all()
+            )
+        assert landed_days == [first_day, next_day]
+
+        warehouse.dispose()
+        await control.dispose()
 
     async def test_rejects_a_domain_without_a_builder(self) -> None:
         with pytest.raises(ValueError, match="no pipeline builder"):
@@ -715,7 +884,10 @@ class TestRegisterBuiltinJobs:
         assert set(scheduler.jobs) == {"pipeline_inc"}
         entry = scheduler.jobs["pipeline_inc"]
         assert entry["trigger_type"] == "cron"
-        assert entry["trigger_args"] == {"cron_expression": "30 17 * * 1-5"}
+        assert entry["trigger_args"] == {
+            "cron_expression": "30 17 * * 1-5",
+            "timezone": "Asia/Shanghai",
+        }
 
     async def test_the_registered_callable_runs_the_injected_executor(self) -> None:
         scheduler = FakeScheduler()
@@ -741,11 +913,11 @@ class TestRegisterBuiltinJobs:
             "pipeline_p0-weekly-full-cross-check",
             "pipeline_partition-maintenance",
             "pipeline_freshness-check",
+            "pipeline_retention-maintenance",
+            "pipeline_key-health-notifications",
+            "pipeline_p0-provider-patrol",
         ]
-        # Nothing is skipped any more, and that is the property: each of the
-        # four shipped kinds has a body, so a row the UI lists as scheduled is
-        # a row that really runs at its cron time. C48 paid for freshness,
-        # C57 for partition maintenance.
+        # Nothing is skipped: each shipped kind has an executor.
         assert set(scheduler.jobs) == set(job_ids)
 
     async def test_the_weekly_row_carries_the_full_check_body(self) -> None:
@@ -768,12 +940,111 @@ class TestRegisterBuiltinJobs:
         assert seen == ["p0-weekly-full-cross-check"]
         assert result == {"ok": True}
         assert scheduler.jobs["pipeline_p0-weekly-full-cross-check"]["trigger_args"] == {
-            "cron_expression": "0 2 * * 0"
+            "cron_expression": "0 2 * * 0",
+            "timezone": "Asia/Shanghai",
         }
 
 
 class TestExecuteTemplate:
     """The scheduler body: payload in, counters out, fail closed on gaps."""
+
+    async def test_scheduled_patrol_dispatch_is_lazy_and_returns_its_report(self, monkeypatch):
+        from opendata.pipeline import scheduled_patrol
+
+        seen: list[ScheduleTemplate] = []
+
+        async def report(template: ScheduleTemplate) -> dict[str, object]:
+            seen.append(template)
+            return {"enabled": False, "provider_calls": 0}
+
+        monkeypatch.setattr(scheduled_patrol, "execute_scheduled_patrol", report)
+        template = ScheduleTemplate(
+            name="patrol-test",
+            cron="0 18 * * *",
+            kind=TemplateKind.SCHEDULED_PATROL,
+            payload={"tier": "P0"},
+            timezone="UTC",
+        )
+
+        result = await jobs._execute_template(template)
+
+        assert seen == [template]
+        assert result == {"enabled": False, "provider_calls": 0}
+
+    async def test_retention_job_is_report_only_unless_explicitly_enabled(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        from opendata.core.config import settings
+        from opendata.data import minute_archive
+        from opendata.pipeline import maintenance
+
+        modes: list[bool] = []
+        metadata_engines: list[object] = []
+        warehouse = object()
+        metadata = object()
+
+        class _Result:
+            def as_dict(self) -> dict[str, object]:
+                return {"dry_run": modes[-1], "actions": []}
+
+        def run_retention(
+            engine: object,
+            *,
+            dry_run: bool,
+            minute_metadata_engine: object,
+        ) -> _Result:
+            assert engine is warehouse
+            modes.append(dry_run)
+            metadata_engines.append(minute_metadata_engine)
+            return _Result()
+
+        monkeypatch.setattr(jobs, "warehouse_engine", lambda: warehouse)
+        monkeypatch.setattr(minute_archive, "get_minute_archive_engine", lambda: metadata)
+        monkeypatch.setattr(maintenance, "run_retention", run_retention)
+        template = ScheduleTemplate(
+            name="retention-test",
+            cron="0 4 * * *",
+            kind=TemplateKind.RETENTION,
+            payload={"targets": "bounded"},
+        )
+
+        monkeypatch.setattr(settings, "retention_execution_enabled", False)
+        report = await jobs._execute_template(template)
+        monkeypatch.setattr(settings, "retention_execution_enabled", True)
+        executing = await jobs._execute_template(template)
+
+        assert modes == [True, False]
+        assert metadata_engines == [metadata, metadata]
+        assert report["dry_run"] is True
+        assert executing["dry_run"] is False
+
+    async def test_key_health_job_calls_the_passive_notifier(self, monkeypatch) -> None:
+        from opendata.pipeline import key_health_notifications
+        from opendata.pipeline import patrol as patrol_module
+
+        async def forbidden_patrol() -> None:
+            pytest.fail("the scheduled key-health job must not probe providers")
+
+        async def passive_report() -> dict[str, object]:
+            return {"observations": 0, "sources": {}}
+
+        monkeypatch.setattr(patrol_module, "patrol", forbidden_patrol)
+        monkeypatch.setattr(
+            key_health_notifications,
+            "notify_scheduled_key_health",
+            passive_report,
+        )
+        template = ScheduleTemplate(
+            name="key-health-test",
+            cron="0 9 * * *",
+            kind=TemplateKind.KEY_HEALTH,
+            payload={"observations": "recent-patrol"},
+        )
+
+        result = await jobs._execute_template(template)
+
+        assert result == {"observations": 0, "sources": {}}
 
     async def test_payload_routes_to_the_named_sources(
         self, monkeypatch: pytest.MonkeyPatch
@@ -893,6 +1164,8 @@ class TestFreshnessExecutor:
             "domains": 20,
             "source_legs": 28,
             "unmapped_legs": 5,
+            "deferred_domains": [],
+            "deferred_legs": 0,
             "failure_legs": None,
             "partitioned_tables": 0,
             "disk_path": None,
@@ -1254,6 +1527,9 @@ class TestAttachBuiltinJobs:
             "pipeline_p0-weekly-full-cross-check",
             "pipeline_partition-maintenance",
             "pipeline_freshness-check",
+            "pipeline_retention-maintenance",
+            "pipeline_key-health-notifications",
+            "pipeline_p0-provider-patrol",
         ]
         trigger = recorded[0]["trigger"]
         assert type(trigger).__name__ == "CronTrigger"
@@ -1267,6 +1543,14 @@ class TestAttachBuiltinJobs:
         freshness_trigger = recorded[3]["trigger"]
         assert type(freshness_trigger).__name__ == "CronTrigger"
         assert "hour='8'" in str(freshness_trigger) and "minute='30'" in str(freshness_trigger)
+        assert "hour='4'" in str(recorded[4]["trigger"])
+        assert "hour='9'" in str(recorded[5]["trigger"])
+        patrol = recorded[6]["trigger"]
+        assert str(patrol.timezone) == "UTC"
+        next_fire = patrol.get_next_fire_time(
+            None, datetime(2026, 10, 1, 0, 0, tzinfo=timezone.utc)
+        )
+        assert next_fire == datetime(2026, 10, 1, 18, 0, tzinfo=timezone.utc)
         assert recorded[0]["id"] == "pipeline_p0-stock-daily-incremental"
         assert "cron_expression" not in recorded[0]
 
@@ -1455,21 +1739,54 @@ class TestPartitionMaintenanceJob:
         assert order == ["register", "read"]
 
     def test_the_registered_census_reaches_the_ods_layer(self):
-        """The real registry, read the way the cron row reads it: ods legs in, names well-formed."""
-        from opendata.data.domains import load_domains
+        """Pin the registry-derived legacy table plan without claiming live table existence."""
+        from opendata.data.domains import dwd_table, load_domains, ods_table
         from opendata.data.providers import register_providers
-        from opendata.pipeline.alert_matrix import warehouse_tables
+        from opendata.pipeline.alert_matrix import registered_legs, warehouse_tables
+
+        deferred_domains = {
+            "bls_search",
+            "bls_series",
+            "currency_reference_rates",
+            "equity_historical",
+            "equity_quote",
+            "fred_search",
+            "fred_series",
+            "sofr",
+            "sonia",
+            "balance_of_payments",
+            "yield_curve",
+        }
 
         register_providers()
         tables = warehouse_tables()
         known = set(load_domains())
+        legs = registered_legs()
+        measured_domains = known - deferred_domains
         ods = [table for table in tables if table.startswith("ods_")]
+        expected_ods = {
+            ods_table(domain, source) for domain in measured_domains for source in legs[domain]
+        }
+        expected_dwd = {dwd_table(domain) for domain in measured_domains}
+        deferred_legs = sum(len(legs[domain]) for domain in deferred_domains)
 
         assert ods, "census 里没有 ods 表：注册表读空了，维护面覆盖不到落库层"
+        assert len(known) == 31
+        assert deferred_domains <= known
+        assert set(legs) == known
+        assert sum(len(sources) for sources in legs.values()) == 44
+        assert len(measured_domains) == 20
+        assert len(deferred_domains) == 11
+        assert len(measured_domains) + len(deferred_domains) == len(known)
+        assert len(expected_ods) == 33
+        assert len(expected_dwd) == 20
+        assert deferred_legs == 11
+        assert len(expected_ods) + deferred_legs == 44
+        assert set(ods) == expected_ods
         for table in ods:
             tail = table[len("ods_") :].rsplit("_", 1)
             assert len(tail) == 2 and tail[0] in known, f"{table} 不是 ods_<domain>_<source>"
-        assert set(tables) - set(ods) == {f"dwd_{domain}" for domain in known}
+        assert set(tables) - set(ods) == expected_dwd
 
     async def test_the_shipped_row_dispatches_to_the_partition_body(self, monkeypatch):
         """Registering a cron row is not the same as it reaching a body (C48)."""

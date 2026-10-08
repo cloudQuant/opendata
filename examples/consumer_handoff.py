@@ -25,7 +25,7 @@ import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 # The client is a sibling package (git dependency in the consumer).
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "opendata_client"))
@@ -185,7 +185,7 @@ def _as_frame(bars: list[dict[str, object]]) -> pd.DataFrame:
 
     frame = pd.DataFrame(bars)
     frame["trade_date"] = pd.to_datetime(frame["trade_date"])
-    return frame.set_index("trade_date")[list(BAR_COLUMNS[1:])]
+    return cast("pd.DataFrame", frame.set_index("trade_date")[list(BAR_COLUMNS[1:])])
 
 
 def main(argv: list[str] | None = None) -> int:

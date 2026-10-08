@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import Any
 
-import httpx
+from opendata.data.http_client import HttpFetchError, get_shared_http_client
 
 IMF_DEFAULT_BASE_URL = "https://www.imf.org/external/datamapper/api/v1"
 
@@ -53,8 +53,15 @@ class ImfProviderError(RuntimeError):
 
 
 def _http_get(url: str, timeout: float | None) -> tuple[int, str]:
-    """Single GET returning ``(status, text)``; monkeypatched in tests."""
-    response = httpx.get(url, timeout=timeout if timeout is not None else 30.0)
+    """Governed GET returning ``(status, text)``; monkeypatched in tests."""
+    try:
+        response = get_shared_http_client().get(
+            url,
+            timeout=timeout if timeout is not None else 30.0,
+            source="imf",
+        )
+    except HttpFetchError as exc:
+        raise ImfProviderError("IMF_HTTP_ERROR", status=exc.status, url=exc.url) from exc
     return response.status_code, response.text
 
 

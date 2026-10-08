@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Any
 
-import httpx
+from opendata.data.http_client import HttpFetchError, get_shared_http_client
 
 if TYPE_CHECKING:
     from datetime import date
@@ -80,8 +80,16 @@ def require_api_key() -> str:
 
 
 def _http_get(url: str, params: dict[str, str], timeout: float | None) -> tuple[int, str]:
-    """Single GET returning ``(status, text)``; monkeypatched in tests."""
-    response = httpx.get(url, params=params, timeout=timeout if timeout is not None else 30.0)
+    """Governed GET returning ``(status, text)``; monkeypatched in tests."""
+    try:
+        response = get_shared_http_client().get(
+            url,
+            params=params,
+            timeout=timeout if timeout is not None else 30.0,
+            source="fred",
+        )
+    except HttpFetchError as exc:
+        raise FredProviderError("FRED_HTTP_ERROR", status=exc.status, url=exc.url) from exc
     return response.status_code, response.text
 
 

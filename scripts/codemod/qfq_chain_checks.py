@@ -1,10 +1,16 @@
-"""Falsifiable checks for the D10 qfq factor chain (AC-11 / AC-6).
+"""Falsifiable checks for recorded legacy scalar qfq chains (AC-11 / AC-6).
 
 The check this module replaces derived the factor as ``qfq_close / raw_close`` and
 then asserted that ``raw * factor`` reproduces ``qfq_close``. ``apply_adjust``
 multiplies by exactly that ratio (``opendata/data/adjust.py:66``), so the assertion
 could only fail if multiplication itself were broken — it lived behind a skip for
 five rounds precisely because nothing read it as circular.
+
+These codemod checks judge the recorded upstream fixtures, which carry the
+vendor's legacy scalar qfq series rather than this warehouse's affine factors.
+They deliberately keep that historical fixture contract and the legacy
+``AdjustFactor`` branch; the persisted affine chain is checked by
+``scripts/ops/qfq_official_check.py`` through the REST query math.
 
 Both checks here take their expectation from outside the qfq series:
 
@@ -24,7 +30,7 @@ Tolerances are measured, not guessed — see ``STEP_FLOOR`` / ``ADJUST_TOLERANCE
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from datetime import date
@@ -86,7 +92,7 @@ def normalize(frame: pd.DataFrame) -> pd.DataFrame:
         Frame carrying exactly ``trade_date/open/high/low/close/volume/amount``.
     """
     columns = ["trade_date", "open", "high", "low", "close", "volume", "amount"]
-    return frame.rename(columns=COLUMN_ALIASES)[columns]
+    return cast("pd.DataFrame", frame.rename(columns=COLUMN_ALIASES)[columns])
 
 
 def dates_of(frame: pd.DataFrame) -> list[date]:

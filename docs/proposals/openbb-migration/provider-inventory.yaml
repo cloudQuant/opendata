@@ -2,7 +2,7 @@
 #
 # 上游基线：OpenBB/openbb_platform @ 3e071fcc2cd9f891cac6040ae60296dba76dab46
 # 生成方式：解析各 provider 包的 Provider(fetcher_dict=...) 与 pyproject 依赖（只读形态事实，未复制源码）
-# 规模：32 个 provider 目录 / 348 个 fetcher 模型（与 README §3「providers/*（32 个）」同一口径）
+# 规模：32 个 provider 目录 / 350 个 fetcher 模型（与 README §3「providers/*（32 个）」同一口径）
 # 字段：batch=P0/P1/P2；scenario=消费场景（准入条件）；estimate_person_days=粗估人日（含上游对照）
 #       credentials / sdk_dependencies = 上游 provider 的依赖名列表，无依赖者写 []
 #       C33 之前这两种字段一共 64 处，没有一处是列表：34 处写的是裸 `-`（YAML 的序列标记而不是值，
@@ -26,6 +26,17 @@ provider_count: 32
 local_provider_count: 2
 version: 1
 upstream_commit: 3e071fcc2cd9f891cac6040ae60296dba76dab46
+upstream_model_count: 350
+unique_upstream_model_count: 202
+registered_source_count: 9
+registered_capability_count: 44
+auto_routable_capability_count: 23
+model_implementation_task_status: MIXED
+model_live_verification_status: NOT_RUN
+model_implementation_task_status_counts: {IN_PROGRESS: 13, NOT_RUN: 337}
+model_live_verification_task_status_counts: {NOT_RUN: 350}
+model_scenario_status_counts: {NOT_ASSESSED: 350}
+model_requester_confirmation_status_counts: {CONFIRMED: 85, NOT_ASSESSED: 265}
 providers:
   - provider: ecb
     batch: P0
@@ -34,84 +45,168 @@ providers:
     sdk_dependencies: [xmltodict]
     credentials: []
     scenario: 欧元区宏观（AI 研究）
+    requester: cloudQuant
+    requester_purpose: 量化研究、回测与数据中台
+    requester_confirmed_date: 2026-09-30
+    requester_evidence: docs/evidence/C65/provider-requester-confirmation.json
     estimate_person_days: 2.0
-    status: 已对照转正
+    model_count: 3
+    implementation_task_status: IN_PROGRESS
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: CONFIRMED
+    registered_capability_count: 6
+    auto_routable_capability_count: 3
+    status: 已实现未对照
     rights_rows: [ECB / IMF / OECD]
   - provider: fred
     batch: P0
     fetchers: 36
-    models: [Ameribor, BalanceOfPayments, BondIndices, CommercialPaper, CommoditySpotPrices, ConsumerPriceIndex, ...]
+    models: [BalanceOfPayments, BondIndices, CommoditySpotPrices, ConsumerPriceIndex, SOFR, EuroShortTermRate, SONIA, Ameribor, FederalFundsRate, PROJECTIONS, IORB, DiscountWindowPrimaryCreditRate, EconomicCalendar, EuropeanCentralBankInterestRates, ManufacturingOutlookNY, ManufacturingOutlookTexas, MortgageIndices, NonFarmPayrolls, OvernightBankFundingRate, PersonalConsumptionExpenditures, CommercialPaper, FredReleaseTable, FredSearch, FredSeries, FredRegional, RetailPrices, SeniorLoanOfficerSurvey, SpotRate, HighQualityMarketCorporateBond, TreasuryConstantMaturity, SelectedTreasuryConstantMaturity, SelectedTreasuryBill, SurveyOfEconomicConditionsChicago, TipsYields, UniversityOfMichigan, YieldCurve]
     sdk_dependencies: []
-    credentials: [fred_api_key]
+    credentials: [api_key]
     scenario: 宏观利率与通胀（AI 研究/资产配置）
+    requester: cloudQuant
+    requester_purpose: 量化研究、回测与数据中台
+    requester_confirmed_date: 2026-09-30
+    requester_evidence: docs/evidence/C65/provider-requester-confirmation.json
     estimate_person_days: 14.0
+    model_count: 36
+    implementation_task_status: MIXED
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: CONFIRMED
+    registered_capability_count: 7
+    auto_routable_capability_count: 3
     status: 已实现未对照
     rights_rows: [FRED]
   - provider: imf
     batch: P0
     fetchers: 8
-    models: [AvailableIndicators, ConsumerPriceIndex, DirectionOfTrade, EconomicIndicators, MaritimeChokePointInfo, MaritimeChokePointVolume, ...]
+    models: [AvailableIndicators, ConsumerPriceIndex, DirectionOfTrade, EconomicIndicators, MaritimeChokePointInfo, MaritimeChokePointVolume, PortInfo, PortVolume]
     sdk_dependencies: [openbb-platform-api, openbb-economy, openbb-charting, async-lru, defusedxml]
     credentials: []
     scenario: 国际宏观（AI 研究）
+    requester: cloudQuant
+    requester_purpose: 量化研究、回测与数据中台
+    requester_confirmed_date: 2026-09-30
+    requester_evidence: docs/evidence/C65/provider-requester-confirmation.json
     estimate_person_days: 4.0
+    model_count: 8
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: CONFIRMED
+    registered_capability_count: 3
+    auto_routable_capability_count: 3
     status: 已对照转正
     rights_rows: [ECB / IMF / OECD]
   - provider: oecd
     batch: P0
     fetchers: 9
-    models: [CompositeLeadingIndicator, ConsumerPriceIndex, CountryInterestRates, GdpForecast, GdpNominal, GdpReal, ...]
+    models: [CompositeLeadingIndicator, ConsumerPriceIndex, CountryInterestRates, GdpNominal, GdpReal, GdpForecast, HousePriceIndex, SharePriceIndex, Unemployment]
     sdk_dependencies: [defusedxml]
     credentials: []
     scenario: OECD 宏观（AI 研究）
+    requester: cloudQuant
+    requester_purpose: 量化研究、回测与数据中台
+    requester_confirmed_date: 2026-09-30
+    requester_evidence: docs/evidence/C65/provider-requester-confirmation.json
     estimate_person_days: 4.0
+    model_count: 9
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: CONFIRMED
+    registered_capability_count: 2
+    auto_routable_capability_count: 2
     status: 已对照转正
     rights_rows: [ECB / IMF / OECD]
   - provider: yfinance
     batch: P0
     fetchers: 29
-    models: [AvailableIndices, BalanceSheet, CashFlowStatement, CompanyNews, CryptoHistorical, CurrencyHistorical, ...]
+    models: [AvailableIndices, BalanceSheet, CashFlowStatement, CompanyNews, CryptoHistorical, CurrencyHistorical, EquityActive, EquityAggressiveSmallCaps, EquityGainers, EquityHistorical, EquityInfo, EquityLosers, EquityQuote, EquityScreener, EquityUndervaluedGrowth, EquityUndervaluedLargeCaps, EtfHistorical, EtfInfo, FuturesCurve, FuturesHistorical, GrowthTechEquities, HistoricalDividends, IncomeStatement, IndexHistorical, KeyExecutives, KeyMetrics, OptionsChains, PriceTargetConsensus, ShareStatistics]
     sdk_dependencies: [yfinance]
     credentials: []
     scenario: 海外行情（回测数据准备）
+    requester: cloudQuant
+    requester_purpose: 量化研究、回测与数据中台
+    requester_confirmed_date: 2026-09-30
+    requester_evidence: docs/evidence/C65/provider-requester-confirmation.json
     estimate_person_days: 8.0
+    model_count: 29
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: CONFIRMED
+    registered_capability_count: 1
+    auto_routable_capability_count: 1
     status: 已对照转正
     rights_rows: [Yahoo Finance]
   - provider: alpha_vantage
     batch: P1
     fetchers: 3
-    models: [EquityHistorical, EtfHistorical, HistoricalEps]
+    models: [EquityHistorical, HistoricalEps, EtfHistorical]
     sdk_dependencies: []
-    credentials: [alpha_vantage_api_key]
+    credentials: [api_key]
     scenario: 商业源（需 Key；待场景确认）
     estimate_person_days: 2.0
+    model_count: 3
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: bls
     batch: P1
     fetchers: 2
     models: [BlsSearch, BlsSeries]
     sdk_dependencies: []
-    credentials: [bls_api_key]
+    credentials: [api_key]
     scenario: 其余宏观（待场景确认）
     estimate_person_days: 2.0
-    status: 待实现
+    model_count: 2
+    implementation_task_status: IN_PROGRESS
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 2
+    auto_routable_capability_count: 0
+    status: 已实现未对照
+    rights_rows: [BLS（美国劳工统计局）]
   - provider: econdb
     batch: P1
     fetchers: 8
-    models: [AvailableIndicators, CountryProfile, EconomicIndicators, ExportDestinations, GdpNominal, GdpReal, ...]
+    models: [AvailableIndicators, CountryProfile, EconomicIndicators, ExportDestinations, GdpNominal, GdpReal, PortVolume, YieldCurve]
     sdk_dependencies: [aiohttp-client-cache, aiosqlite]
-    credentials: [econdb_api_key]
+    credentials: [api_key]
     scenario: 宏观聚合（待场景确认）
     estimate_person_days: 4.0
+    model_count: 8
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: eia
     batch: P1
-    fetchers: 0
-    models: []
+    fetchers: 2
+    models: [PetroleumStatusReport, ShortTermEnergyOutlook]
     sdk_dependencies: [async-lru, openpyxl, xlrd]
-    credentials: []
+    credentials: [api_key]
     scenario: 能源宏观（待场景确认）
     estimate_person_days: 1.0
+    model_count: 2
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: famafrench
     batch: P1
@@ -121,33 +216,62 @@ providers:
     credentials: []
     scenario: 学术因子（待场景确认）
     estimate_person_days: 4.0
+    model_count: 6
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: federal_reserve
     batch: P1
     fetchers: 13
-    models: [CentralBankHoldings, FederalFundsRate, FomcDocuments, InflationExpectations, MoneyMeasures, OvernightBankFundingRate, ...]
+    models: [CentralBankHoldings, FederalFundsRate, FomcDocuments, InflationExpectations, MoneyMeasures, OvernightBankFundingRate, PrimaryDealerFails, PrimaryDealerPositioning, SOFR, SvenssonYieldCurve, TotalFactorProductivity, TreasuryRates, YieldCurve]
     sdk_dependencies: [openpyxl, openbb-economy, openbb-fixedincome, openbb-platform-api, beautifulsoup4]
     credentials: []
     scenario: 其余宏观（待场景确认）
     estimate_person_days: 8.0
+    model_count: 13
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: fmp
     batch: P1
     fetchers: 69
-    models: [AnalystEstimates, AvailableIndices, BalanceSheet, BalanceSheetGrowth, CalendarDividend, CalendarEarnings, ...]
+    models: [AnalystEstimates, AvailableIndices, BalanceSheet, BalanceSheetGrowth, CalendarDividend, CalendarEarnings, CalendarEvents, CalendarIpo, CalendarSplits, CashFlowStatement, CashFlowStatementGrowth, CompanyFilings, CompanyNews, CryptoHistorical, CryptoSearch, CurrencyHistorical, CurrencyPairs, CurrencySnapshots, DiscoveryFilings, EarningsCallTranscript, EconomicCalendar, EquityActive, EquityHistorical, EquityOwnership, EquityPeers, EquityInfo, EquityGainers, EquityLosers, EquityQuote, EquityScreener, EsgScore, EtfCountries, EtfEquityExposure, EtfHoldings, EtfInfo, EtfPricePerformance, EtfSearch, EtfSectors, ExecutiveCompensation, FinancialRatios, ForwardEbitdaEstimates, ForwardEpsEstimates, HistoricalDividends, HistoricalEmployees, HistoricalEps, HistoricalMarketCap, HistoricalSplits, IncomeStatement, IncomeStatementGrowth, IndexConstituents, IndexHistorical, InsiderTrading, InstitutionalOwnership, KeyExecutives, KeyMetrics, MarketSnapshots, NportDisclosure, PricePerformance, PriceTarget, PriceTargetConsensus, RevenueBusinessLine, RevenueGeographic, RiskPremium, ShareStatistics, TreasuryRates, WorldNews, EtfHistorical, YieldCurve, GovernmentTrades]
     sdk_dependencies: []
-    credentials: [fmp_api_key]
+    credentials: [api_key]
     scenario: 商业源（需 Key；待场景确认）
     estimate_person_days: 14.0
-    status: 待实现
+    model_count: 69
+    implementation_task_status: MIXED
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 2
+    auto_routable_capability_count: 0
+    status: 已实现未对照
+    rights_rows: [FMP（EquityHistorical / EquityQuote）]
   - provider: intrinio
     batch: P1
     fetchers: 38
-    models: [BalanceSheet, CalendarIpo, CashFlowStatement, CompanyFilings, CompanyNews, CurrencyPairs, ...]
+    models: [BalanceSheet, CalendarIpo, CashFlowStatement, CompanyFilings, CompanyNews, CurrencyPairs, EquityHistorical, EquityInfo, EquityQuote, EquitySearch, EtfHistorical, EtfHoldings, EtfInfo, EtfPricePerformance, EtfSearch, FinancialRatios, ForwardEbitdaEstimates, ForwardEpsEstimates, ForwardPeEstimates, ForwardSalesEstimates, FredSeries, HistoricalAttributes, HistoricalDividends, HistoricalMarketCap, IncomeStatement, IndexHistorical, InsiderTrading, KeyMetrics, LatestAttributes, MarketSnapshots, OptionsChains, OptionsSnapshots, OptionsUnusual, PriceTargetConsensus, ReportedFinancials, SearchAttributes, ShareStatistics, WorldNews]
     sdk_dependencies: [requests-cache]
-    credentials: [intrinio_api_key]
+    credentials: [api_key]
     scenario: 商业源（需 Key；待场景确认）
     estimate_person_days: 14.0
+    model_count: 38
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: multpl
     batch: P1
@@ -157,6 +281,13 @@ providers:
     credentials: []
     scenario: 估值宏观（待场景确认）
     estimate_person_days: 2.0
+    model_count: 1
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: seeking_alpha
     batch: P1
@@ -166,69 +297,125 @@ providers:
     credentials: []
     scenario: 商业源（待场景确认）
     estimate_person_days: 2.0
+    model_count: 3
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: tiingo
     batch: P1
     fetchers: 7
-    models: [CompanyNews, CryptoHistorical, CurrencyHistorical, EquityHistorical, EtfHistorical, TrailingDividendYield, ...]
+    models: [EquityHistorical, EtfHistorical, CompanyNews, WorldNews, CryptoHistorical, CurrencyHistorical, TrailingDividendYield]
     sdk_dependencies: []
-    credentials: [tiingo_token]
+    credentials: [token]
     scenario: 商业源（需 Key；待场景确认）
     estimate_person_days: 4.0
+    model_count: 7
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: tradingeconomics
     batch: P1
     fetchers: 1
     models: [EconomicCalendar]
     sdk_dependencies: []
-    credentials: [tradingeconomics_api_key]
+    credentials: [api_key]
     scenario: 其余宏观（待场景确认）
     estimate_person_days: 2.0
+    model_count: 1
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: benzinga
     batch: P2
     fetchers: 4
-    models: [AnalystSearch, CompanyNews, PriceTarget, WorldNews]
+    models: [AnalystSearch, CompanyNews, WorldNews, PriceTarget]
     sdk_dependencies: []
-    credentials: [benzinga_api_key]
+    credentials: [api_key]
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 4.0
+    model_count: 4
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: biztoc
     batch: P2
     fetchers: 1
     models: [WorldNews]
     sdk_dependencies: []
-    credentials: [biztoc_api_key]
+    credentials: [api_key]
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 2.0
+    model_count: 1
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: cboe
     batch: P2
     fetchers: 11
-    models: [AvailableIndices, EquityHistorical, EquityQuote, EquitySearch, EtfHistorical, FuturesCurve, ...]
+    models: [AvailableIndices, EquityHistorical, EquityQuote, EquitySearch, EtfHistorical, IndexConstituents, FuturesCurve, IndexHistorical, IndexSearch, IndexSnapshots, OptionsChains]
     sdk_dependencies: [aiohttp-client-cache, aiosqlite]
     credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 8.0
+    model_count: 11
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: cftc
     batch: P2
     fetchers: 2
     models: [COT, COTSearch]
     sdk_dependencies: [openbb-platform-api]
-    credentials: [cftc_app_token]
+    credentials: [app_token]
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 2.0
+    model_count: 2
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: congress_gov
     batch: P2
     fetchers: 8
-    models: [CongressAmendmentInfo, CongressAmendmentText, CongressAmendments, CongressBillInfo, CongressBillText, CongressBills, ...]
+    models: [CongressBills, CongressBillInfo, CongressBillText, CongressAmendments, CongressAmendmentInfo, CongressAmendmentText, CongressCommitteeInfo, CongressCommitteeDocuments]
     sdk_dependencies: []
-    credentials: [congress_gov_api_key]
+    credentials: [api_key]
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 4.0
+    model_count: 8
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: deribit
     batch: P2
@@ -238,24 +425,45 @@ providers:
     credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 4.0
+    model_count: 5
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: finra
     batch: P2
     fetchers: 2
-    models: [EquityShortInterest, OTCAggregate]
+    models: [OTCAggregate, EquityShortInterest]
     sdk_dependencies: []
     credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 2.0
+    model_count: 2
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: finviz
     batch: P2
     fetchers: 7
-    models: [CompareGroups, EquityInfo, EquityScreener, EtfPricePerformance, KeyMetrics, PricePerformance, ...]
+    models: [CompareGroups, EtfPricePerformance, EquityInfo, EquityScreener, KeyMetrics, PricePerformance, PriceTarget]
     sdk_dependencies: [finvizfinance]
     credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 4.0
+    model_count: 7
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: government_us
     batch: P2
@@ -265,24 +473,45 @@ providers:
     credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 4.0
+    model_count: 6
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: nasdaq
     batch: P2
     fetchers: 9
-    models: [CalendarDividend, CalendarEarnings, CalendarIpo, CompanyFilings, EconomicCalendar, EquityScreener, ...]
+    models: [CalendarDividend, CalendarEarnings, CalendarIpo, CompanyFilings, EconomicCalendar, EquitySearch, EquityScreener, HistoricalDividends, TopRetail]
     sdk_dependencies: [openbb-platform-api, async-lru, random-user-agent, nasdaq-data-link]
-    credentials: [nasdaq_api_key]
+    credentials: [api_key]
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 4.0
+    model_count: 9
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: sec
     batch: P2
     fetchers: 24
-    models: [BalanceSheet, BalanceSheetGrowth, CashFlowStatement, CashFlowStatementGrowth, CikMap, CompanyFilings, ...]
+    models: [BalanceSheet, BalanceSheetGrowth, CashFlowStatement, CashFlowStatementGrowth, CikMap, CompanyFilings, CompareCompanyFacts, EquityFTD, EquitySearch, Filings, Form13FHR, SecHtmFile, IncomeStatement, IncomeStatementGrowth, InsiderTrading, InstitutionsSearch, LatestFinancialReports, ManagementDiscussionAnalysis, NportDisclosure, RssLitigation, SchemaFiles, SecFiling, SicSearch, SymbolMap]
     sdk_dependencies: [aiohttp-client-cache, aiosqlite, defusedxml, xmltodict, beautifulsoup4, lxml]
     credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 8.0
+    model_count: 24
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: stockgrid
     batch: P2
@@ -292,33 +521,61 @@ providers:
     credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 2.0
+    model_count: 1
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: tmx
     batch: P2
     fetchers: 24
-    models: [AvailableIndices, BondPrices, CalendarEarnings, CompanyFilings, CompanyNews, EquityGainers, ...]
+    models: [AvailableIndices, BondPrices, CalendarEarnings, CompanyFilings, CompanyNews, EquityHistorical, EquityInfo, EquityQuote, EquitySearch, EtfSearch, EtfHoldings, EtfSectors, EtfCountries, EtfHistorical, EtfInfo, EquityGainers, HistoricalDividends, IndexConstituents, IndexSectors, IndexSnapshots, InsiderTrading, OptionsChains, PriceTargetConsensus, TreasuryPrices]
     sdk_dependencies: [aiohttp-client-cache, aiosqlite, random-user-agent, exchange-calendars]
     credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 8.0
+    model_count: 24
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: tradier
     batch: P2
     fetchers: 5
-    models: [EquityHistorical, EquityQuote, EquitySearch, EtfHistorical, OptionsChains]
+    models: [EquityHistorical, EtfHistorical, EquityQuote, EquitySearch, OptionsChains]
     sdk_dependencies: []
-    credentials: [tradier_api_key, tradier_account_type]
+    credentials: [api_key, account_type]
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 4.0
+    model_count: 5
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
   - provider: wsj
     batch: P2
     fetchers: 3
-    models: [ETFActive, ETFGainers, ETFLosers]
+    models: [ETFGainers, ETFLosers, ETFActive]
     sdk_dependencies: []
     credentials: []
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 2.0
+    model_count: 3
+    implementation_task_status: NOT_RUN
+    live_verification_status: NOT_RUN
+    model_scenario_status: NOT_ASSESSED
+    requester_confirmation_status: NOT_ASSESSED
+    registered_capability_count: 0
+    auto_routable_capability_count: 0
     status: 待实现
 # 合计粗估人日（32 provider）：153
 
@@ -332,6 +589,13 @@ local_providers:
   - provider: ths
     origin: 自研直连（opendata_fuyao，商业服务，需 X-api-key）
     scenario: A 股/ETF/期货/期权行情、标的目录、公司事件与交易日历（§7 真机场景的主源）
+    requester: cloudQuant
+    requester_purpose: 量化研究、回测与数据中台
+    requester_confirmed_date: 2026-09-30
+    requester_evidence: docs/evidence/C65/provider-requester-confirmation.json
+    requester_confirmation_status: CONFIRMED
+    registered_capability_count: 11
+    auto_routable_capability_count: 11
     status: 已对照转正
     rights_rows: [同花顺扶摇 API]
     notes: >-
@@ -341,6 +605,13 @@ local_providers:
   - provider: akshare
     origin: 搬运层 opendata_http（A2 里程碑 B 层）+ 自研模型层
     scenario: 国内公共 HTTP 退路（东方财富/新浪/腾讯/雪球/交易所/统计局）
+    requester: cloudQuant
+    requester_purpose: 量化研究、回测与数据中台
+    requester_confirmed_date: 2026-09-30
+    requester_evidence: docs/evidence/C65/provider-requester-confirmation.json
+    requester_confirmation_status: CONFIRMED
+    registered_capability_count: 10
+    auto_routable_capability_count: 0
     status: 已实现未对照
     rights_rows: [东方财富, 新浪财经, 腾讯财经, 雪球, 交易所官网, 国家统计局]
     notes: >-
@@ -348,4 +619,3 @@ local_providers:
       source="auto" 会跳过它们（registry.resolve 的 ranked 过滤）⇒ 国内域的 auto 腿今天只有
       ths 一条；"退路存在" 与 "退路可路由" 是两件事，C24 量的是前者。
       转正需要 AC-6 口径的真机逐字段对照，不是一行 status 改动。
-

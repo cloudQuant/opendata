@@ -25,6 +25,7 @@ from opendata.data.models import (
     TradingCalendar,
 )
 from opendata.data.protocol import FetchContext
+from opendata.data.providers.ths.endpoints import FUND_ETF_DEPTH_DAYS, millis_to_trading_date
 from opendata.data.providers.ths.models._client import (
     ThsProviderError,
     client,
@@ -48,12 +49,11 @@ from opendata.data.providers.ths.models.stock_daily import ThsStockDailyFetcher
 from opendata.data.providers.ths.models.trading_calendar import ThsTradingCalendarFetcher
 from opendata.data.providers.ths.registration import FETCHERS, register
 from opendata.data.registry import ProviderRegistry, authority_baseline, get_registry
-from opendata_fuyao.endpoints import FUND_ETF_DEPTH_DAYS, millis_to_trading_date
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-    from opendata_fuyao import FuyaoHttpClient
+    from opendata.data.providers.ths import FuyaoHttpClient
 
 DAY_MS = 1704124800000  # 2024-01-02 00:00 +08:00
 
@@ -164,7 +164,7 @@ DISCLOSE_MS = 1713196800000  # 2024-04-16
 
 def _statement_row(statement: str = "income", **overrides) -> dict:
     """一张报表的一个报告期（科目值全为 1.0，只验形状与身份）."""
-    from opendata_fuyao.endpoints import financial_statement_items
+    from opendata.data.providers.ths.endpoints import financial_statement_items
 
     row = {
         "thscode": "600519.SH",
@@ -197,7 +197,7 @@ def _factory(handler):  # httpx handler
 
 
 def _mock_client(handler) -> FuyaoHttpClient:  # httpx handler
-    from opendata_fuyao import FuyaoCredentials, FuyaoHttpClient
+    from opendata.data.providers.ths import FuyaoCredentials, FuyaoHttpClient
 
     return FuyaoHttpClient(
         credentials=FuyaoCredentials("ths-test-key", base_url="https://fuyao.test"),
@@ -251,8 +251,9 @@ class TestRegistration:
             ("fund", "fund_etf_daily", "1D", "cn"),
         }
 
-    def test_every_verified_domain_auto_routes_to_ths(self):
+    def test_every_verified_domain_auto_routes_to_ths(self, monkeypatch: pytest.MonkeyPatch):
         """A verified ths capability must win ``source=auto`` for its domain."""
+        monkeypatch.setenv("FUYAO_API_KEY", "routing-test-only")
         from opendata.data.providers import register_providers
         from opendata.data.registry import get_registry
 
@@ -606,6 +607,29 @@ class TestSymbolResolution:
 
 
 class TestCredentials:
+    def test_auto_requires_key_but_explicit_fetch_keeps_credential_error(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
+        from opendata.data.providers import register_providers
+
+        monkeypatch.delenv("FUYAO_API_KEY", raising=False)
+        monkeypatch.setattr("opendata.core.config.settings.fuyao_api_key", None, raising=False)
+        register_providers()
+        registry = get_registry()
+
+        with pytest.raises(LookupError, match="credential-eligible verified auto candidate"):
+            registry.resolve_domain("stock_daily", market="cn")
+
+        # A key arriving after registration takes effect at the next resolve.
+        monkeypatch.setenv("FUYAO_API_KEY", "routing-test-only")
+        assert registry.resolve_domain("stock_daily", market="cn").capability.source == "ths"
+
+        # Explicit routing remains catalog-visible and only fails when fetched.
+        monkeypatch.delenv("FUYAO_API_KEY", raising=False)
+        routed = registry.resolve_domain("stock_daily", source="ths")
+        with pytest.raises(ThsProviderError, match="THS_NOT_CONFIGURED"):
+            routed.fetch(symbol="600519.SH")
+
     def test_missing_key_fails_closed(self, monkeypatch: pytest.MonkeyPatch):
         monkeypatch.delenv("FUYAO_API_KEY", raising=False)
         monkeypatch.setattr("opendata.core.config.settings.fuyao_api_key", None, raising=False)
@@ -631,8 +655,8 @@ class TestCredentials:
         self, monkeypatch: pytest.MonkeyPatch, timeout: float | None
     ):
         """每次 fetch 一个短生命周期客户端，退出时必须关闭."""
+        from opendata.data.providers.ths import FuyaoCredentials
         from opendata.data.providers.ths.models import _client as client_module
-        from opendata_fuyao import FuyaoCredentials
 
         expected = FuyaoCredentials("ths-test-key", base_url="https://fuyao.test")
         built: dict[str, object] = {}
@@ -920,7 +944,7 @@ class TestFinancialStatementAdapter:
         self, monkeypatch: pytest.MonkeyPatch
     ):
         """上游一行一个报告期（新→旧），契约要一科目一行、按报告期升序."""
-        from opendata_fuyao.endpoints import financial_statement_items
+        from opendata.data.providers.ths.endpoints import financial_statement_items
 
         seen: dict[str, str] = {}
 
@@ -1387,7 +1411,7 @@ class TestFundActionAdapter:
 
     def test_rows_the_upstream_cannot_reconcile_fail_closed(self, monkeypatch: pytest.MonkeyPatch):
         """自带的 ``dividend_count`` 与逐笔对不上时不发事件流：宁可挂，不发半截分红。"""
-        from opendata_fuyao import FuyaoError
+        from opendata.data.providers.ths import FuyaoError
 
         def handler(request: httpx.Request) -> httpx.Response:
             return httpx.Response(
@@ -1503,7 +1527,7 @@ class TestFundEtfDailyAdapter:
 
     def test_the_default_window_is_the_rolling_depth(self, monkeypatch: pytest.MonkeyPatch):
         """不给窗口就取满可答范围：起点是「上海今天 - 1827」，不是成立日。"""
-        from opendata_fuyao import endpoints
+        from opendata.data.providers.ths import endpoints
 
         monkeypatch.setattr(endpoints, "shanghai_today", lambda now=None: date(2026, 9, 25))
         starts: list[int] = []
@@ -1525,7 +1549,7 @@ class TestFundEtfDailyAdapter:
         self, monkeypatch: pytest.MonkeyPatch
     ):
         """地板之前上游回 code=0 空帧：静默不可辨，不能让它冒充「这就是全历史」。"""
-        from opendata_fuyao import FuyaoError
+        from opendata.data.providers.ths import FuyaoError
 
         calls: list[str] = []
 

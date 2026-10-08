@@ -15,7 +15,7 @@ export const useExecutionStore = defineStore(
     const runningExecutions = ref<Execution[]>([])
 
     const filters = ref<{
-      script_id?: number
+      script_id?: string
       status?: string
     }>({})
 
@@ -33,7 +33,7 @@ export const useExecutionStore = defineStore(
       () => listHelper.items.value.filter((e) => e.status === 'completed').length
     )
 
-    async function fetchExecutions(params?: PaginationParams & { script_id?: number; status?: string }) {
+    async function fetchExecutions(params?: PaginationParams & { script_id?: string; status?: string }) {
       await listHelper.load(
         async ({ page, pageSize }) => {
           const response: PaginatedResponse<Execution> = await dataApi.listExecutions({
@@ -95,7 +95,7 @@ export const useExecutionStore = defineStore(
       )
     }
 
-    function setFilters(newFilters: { script_id?: number; status?: string }) {
+    function setFilters(newFilters: { script_id?: string; status?: string }) {
       filters.value = { ...filters.value, ...newFilters }
       listHelper.page.value = 1
     }

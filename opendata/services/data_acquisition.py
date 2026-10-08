@@ -10,13 +10,13 @@ import functools
 import hashlib
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import pandas as pd
 from loguru import logger
 from sqlalchemy import text
 
-import opendata_http as ak
+import opendata.data.providers.akshare._vendor as ak
 from opendata.models.data_table import DataTable
 from opendata.models.interface import DataInterface
 from opendata.models.task import TaskExecution, TaskStatus
@@ -174,7 +174,7 @@ class DataAcquisitionService:
         if fetcher is None:
             return await self._call_akshare_function(interface, parameters)
         kwargs = {name: value for name, value in parameters.items() if value is not None}
-        result = fetcher.fetch(**kwargs)
+        result = await fetcher.fetch_async(**kwargs)
         return self._as_frame(result)
 
     def _resolve_fetcher(self, interface: DataInterface) -> Fetcher[Any, Any] | None:
@@ -425,7 +425,7 @@ class DataAcquisitionService:
                 axis=1,
             )
         )
-        records = data.to_dict("records")
+        records = cast("list[dict[str, Any]]", data.to_dict("records"))
 
         # Build INSERT IGNORE statement (duplicates rejected by UNIQUE row_hash)
         columns = list(data.columns)  # includes row_hash

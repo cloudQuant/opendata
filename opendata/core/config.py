@@ -6,12 +6,13 @@ Integrates with cloud_quant database configuration.
 
 import json
 import os
+from datetime import date, datetime
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 from urllib.parse import quote_plus
 
-from pydantic import Field, ValidationInfo, field_validator
+from pydantic import AliasChoices, Field, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from opendata.utils.constants import DEFAULT_SECRET_KEY
@@ -37,11 +38,19 @@ class Settings(BaseSettings):
 
     # Server Settings (0.0.0.0 intentional for Docker/cloud - listen on all interfaces)
     host: str = Field(
-        default="0.0.0.0",  # noqa: S104  # intentional for Docker/cloud (bandit B104 rationale)
+        default="0.0.0.0",  # noqa: S104  # nosec B104
         description="Server host",
     )  # B104 skipped in bandit.yaml (Docker)
     port: int = Field(default=8000, description="Server port")
     workers: int = Field(default=1, description="Number of worker processes")
+
+    provider_source_policy_file: Path | None = Field(
+        default=None,
+        description=(
+            "PROVIDER_SOURCE_POLICY_FILE: absolute path to the source policy document; "
+            "unset or empty disables source-policy grants"
+        ),
+    )
 
     # Database Settings (Shared with cloud_quant)
     mysql_host: str = Field(default="localhost", description="MySQL host")
@@ -98,6 +107,12 @@ class Settings(BaseSettings):
     smtp_password: str | None = Field(default=None, description="SMTP password")
     emails_from_email: str | None = Field(default=None, description="From email address")
     emails_from_name: str = Field(default="opendata", description="From email name")
+    key_health_notification_emails: list[str] = Field(
+        default_factory=list,
+        description=(
+            "KEY_HEALTH_NOTIFICATION_EMAILS: explicit recipients for upstream key health alerts"
+        ),
+    )
 
     # Task Scheduler Settings
     enable_scheduler: bool | None = Field(
@@ -112,6 +127,19 @@ class Settings(BaseSettings):
     )
     scheduler_max_workers: int = Field(
         default=3, description="Maximum number of concurrent task workers"
+    )
+    patrol_enabled: bool = Field(
+        default=False,
+        description=(
+            "PATROL_ENABLED: allow scheduled provider probes; false reports disabled without I/O"
+        ),
+    )
+    patrol_failure_alert_threshold: int = Field(
+        default=2,
+        ge=1,
+        description=(
+            "PATROL_FAILURE_ALERT_THRESHOLD: consecutive failed daily runs before a WS alert"
+        ),
     )
     task_retry_max_attempts: int = Field(
         default=3, description="Maximum number of task retry attempts"
@@ -133,6 +161,30 @@ class Settings(BaseSettings):
     # key is provided).
     fred_api_key: str | None = Field(
         default=None, description="FRED_API_KEY: FRED web service key; unset disables fred"
+    )
+    fuyao_api_key_expires_at: date | None = Field(
+        default=None,
+        description=(
+            "FUYAO_API_KEY_EXPIRES_AT: issuer-supplied expiry date (ISO 8601); unset means unknown"
+        ),
+    )
+    fred_api_key_expires_at: date | None = Field(
+        default=None,
+        description=(
+            "FRED_API_KEY_EXPIRES_AT: issuer-supplied expiry date (ISO 8601); unset means unknown"
+        ),
+    )
+    key_expiry_warning_days: int = Field(
+        default=14,
+        ge=1,
+        description="KEY_EXPIRY_WARNING_DAYS: days before expiry to raise a warning",
+    )
+    key_health_observation_ttl_hours: int = Field(
+        default=24,
+        ge=1,
+        description=(
+            "KEY_HEALTH_OBSERVATION_TTL_HOURS: age after which passive patrol observations expire"
+        ),
     )
     fred_api_base_url: str | None = Field(
         default=None,
@@ -184,7 +236,12 @@ class Settings(BaseSettings):
     # Retention (design §8.5, milestone A4.10)
     cache_dir: Path = Field(
         default=Path(os.environ.get("LOCALAPPDATA", Path.home() / ".cache")) / "opendata",
+        validation_alias=AliasChoices("CACHE_DIR", "OPENDATA_CACHE_DIR", "cache_dir"),
         description="CACHE_DIR: root for raw-response cache files (never versioned)",
+    )
+    raw_response_cache_enabled: bool = Field(
+        default=False,
+        description="RAW_RESPONSE_CACHE_ENABLED: opt in to raw successful GET response caching",
     )
     cache_ttl_seconds: int = Field(
         default=900, description="CACHE_TTL_SECONDS: raw-response cache TTL in seconds"
@@ -196,6 +253,13 @@ class Settings(BaseSettings):
     retention_minute_years: int = Field(
         default=10,
         description="RETENTION_MINUTE_YEARS: minute-line archive retention in years",
+    )
+    retention_execution_enabled: bool = Field(
+        default=False,
+        description=(
+            "RETENTION_EXECUTION_ENABLED: allow scheduled retention to delete expired assets; "
+            "otherwise report candidates only"
+        ),
     )
 
     # Rate Limiting
@@ -257,6 +321,22 @@ class Settings(BaseSettings):
                 )
         return v
 
+    @field_validator("provider_source_policy_file", mode="before")
+    @classmethod
+    def validate_provider_source_policy_file(cls, value: object) -> Path | None:
+        """Accept only an absolute policy path; unset or empty disables it."""
+        if value is None or value == "":
+            return None
+        if isinstance(value, Path):
+            path = value
+        elif isinstance(value, str):
+            path = Path(value)
+        else:
+            raise ValueError("must be an absolute path")
+        if not path.is_absolute():
+            raise ValueError("must be an absolute path")
+        return path
+
     @field_validator(
         "cache_ttl_seconds",
         "retention_diff_report_days",
@@ -269,6 +349,26 @@ class Settings(BaseSettings):
         if v <= 0:
             raise ValueError(f"{info.field_name} must be positive, got {v}")
         return v
+
+    @field_validator("fuyao_api_key_expires_at", "fred_api_key_expires_at", mode="before")
+    @classmethod
+    def parse_issuer_key_expiry(cls, value: object) -> date | None:
+        """Parse optional issuer-supplied expiry metadata as a calendar date."""
+        if value is None or value == "":
+            return None
+        if isinstance(value, datetime):
+            return value.date()
+        if isinstance(value, date):
+            return value
+        if isinstance(value, str):
+            try:
+                return date.fromisoformat(value)
+            except ValueError:
+                try:
+                    return datetime.fromisoformat(value.replace("Z", "+00:00")).date()
+                except ValueError as exc:
+                    raise ValueError("must be an ISO 8601 date or timestamp") from exc
+        raise ValueError("must be an ISO 8601 date or timestamp")
 
     @field_validator("cors_origins", mode="before")
     @classmethod

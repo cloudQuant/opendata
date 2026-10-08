@@ -21,17 +21,17 @@ from __future__ import annotations
 import hashlib
 import uuid
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import pandas as pd
 
-from opendata.pipeline.ods_writer import OdsWriter
-from opendata_fuyao.dumps import (
+from opendata.data.providers.ths.dumps import (
     ADJUSTMENT_FACTOR_COLUMNS,
     DAILY_K_COLUMNS,
     DUMP_SPECS,
     UNADJUSTED,
 )
+from opendata.pipeline.ods_writer import OdsWriter
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -166,22 +166,25 @@ def prepare_daily_k_frame(frame: pd.DataFrame) -> pd.DataFrame:
     if selected.empty:
         raise DumpImportError(f"daily K dump carries no {UNADJUSTED!r} rows")
     selected["trade_date"] = shanghai_dates(selected["date_ms"])
-    return selected[
-        [
-            "thscode",
-            "trade_date",
-            "date_ms",
-            "currency",
-            "interval",
-            "adjusted",
-            "open_price",
-            "high_price",
-            "low_price",
-            "close_price",
-            "volume",
-            "turnover",
-        ]
-    ]
+    return cast(
+        "pd.DataFrame",
+        selected[
+            [
+                "thscode",
+                "trade_date",
+                "date_ms",
+                "currency",
+                "interval",
+                "adjusted",
+                "open_price",
+                "high_price",
+                "low_price",
+                "close_price",
+                "volume",
+                "turnover",
+            ]
+        ],
+    )
 
 
 def prepare_adjustment_frame(frame: pd.DataFrame) -> pd.DataFrame:
@@ -205,20 +208,23 @@ def prepare_adjustment_frame(frame: pd.DataFrame) -> pd.DataFrame:
         raise DumpImportError("adjustment dump is empty")
     selected["ex_date"] = shanghai_dates(selected["ex_date_ms"])
     selected["event_key"] = selected[list(_EVENT_KEY_COLUMNS)].apply(event_digest, axis=1)
-    return selected[
-        [
-            "thscode",
-            "ticker",
-            "ex_date",
-            "ex_date_ms",
-            "event_key",
-            "dividend_per_share",
-            "per_share_bonus",
-            "allotment_ratio",
-            "allotment_price",
-            "currency",
-        ]
-    ]
+    return cast(
+        "pd.DataFrame",
+        selected[
+            [
+                "thscode",
+                "ticker",
+                "ex_date",
+                "ex_date_ms",
+                "event_key",
+                "dividend_per_share",
+                "per_share_bonus",
+                "allotment_ratio",
+                "allotment_price",
+                "currency",
+            ]
+        ],
+    )
 
 
 def _read_parquet(path: Path) -> pd.DataFrame:

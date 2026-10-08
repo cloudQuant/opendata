@@ -34,11 +34,12 @@ from opendata.pipeline.ods_writer import build_upsert_sql
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Mapping, Sequence
+    from collections.abc import Mapping as MappingType
 
     from sqlalchemy import Engine
 
     from opendata.data.mapping import DomainMapping
-    from opendata.pipeline.runner import PipelineContext
+    from opendata.pipeline.runner import PipelineContext, Window
 
     #: Reads one source's rows for a window and a set of affected keys.
     Reader = Callable[[date, date, set], "pd.DataFrame"]
@@ -216,6 +217,8 @@ class DwdMergeService:
         end: date,
         *,
         affected_keys: set[tuple] | frozenset[tuple] = frozenset(),
+        symbols: Sequence[str] | None = None,
+        symbol_windows: MappingType[str, Window | None] | None = None,
     ) -> MergeStats:
         """Merge the window plus the affected keys.
 
@@ -224,6 +227,9 @@ class DwdMergeService:
             end: Window end date.
             affected_keys: Keys to recompute even when outside the
                 window (revision propagation).
+            symbols: Requested universe for a bounded source read.
+            symbol_windows: Per-symbol union ranges shared by all
+                source readers.
 
         Returns:
             The merge stats.
@@ -231,16 +237,46 @@ class DwdMergeService:
         Raises:
             LookupError: If a source lacks a reader (fail closed).
         """
+        return await self._run_batch(
+            start,
+            end,
+            affected_keys=affected_keys,
+            symbols=symbols,
+            symbol_windows=symbol_windows,
+            merged_at=self.merged_at or datetime.now(timezone.utc),
+            as_of=end,
+        )
+
+    async def _run_batch(
+        self,
+        start: date,
+        end: date,
+        *,
+        affected_keys: set[tuple] | frozenset[tuple],
+        symbols: Sequence[str] | None,
+        symbol_windows: MappingType[str, Window | None] | None,
+        merged_at: datetime,
+        as_of: date,
+    ) -> MergeStats:
+        """Merge and write one bounded partition with shared timestamps."""
         frames = {
-            source: self._reader(source)(start, end, set(affected_keys)) for source in self.sources
+            source: self._read_source(
+                source,
+                start,
+                end,
+                set(affected_keys),
+                symbols=symbols,
+                symbol_windows=symbol_windows,
+            )
+            for source in self.sources
         }
         merged, stats = merge_source_frames(
             self.domain,
             frames,
             authority=self.authority,
             key=self._key(),
-            as_of=end,
-            merged_at=self.merged_at or datetime.now(timezone.utc),
+            as_of=as_of,
+            merged_at=merged_at,
             extra_diff_keys=frozenset(affected_keys),
         )
         self.write_dwd(merged)
@@ -255,11 +291,73 @@ class DwdMergeService:
         Returns:
             The merge stats (ignored by the runner, useful in tests).
         """
+        if context.partition_contexts is not None:
+            merged_at = self.merged_at or datetime.now(timezone.utc)
+            totals = MergeStats(
+                rows=0,
+                diff_flagged=0,
+                degraded_rows=0,
+                passthrough=len(self.sources) == 1,
+            )
+            for partition in context.partition_contexts():
+                stats = await self._run_batch(
+                    context.window.start,
+                    context.window.end,
+                    affected_keys=self._contract_keys(partition),
+                    symbols=partition.symbols or None,
+                    symbol_windows=partition.comparison_windows or None,
+                    merged_at=merged_at,
+                    as_of=context.window.end,
+                )
+                totals = MergeStats(
+                    rows=totals.rows + stats.rows,
+                    diff_flagged=totals.diff_flagged + stats.diff_flagged,
+                    degraded_rows=totals.degraded_rows + stats.degraded_rows,
+                    passthrough=stats.passthrough,
+                    colliding=(*totals.colliding, *stats.colliding),
+                )
+            return totals
         return await self.run(
             context.window.start,
             context.window.end,
             affected_keys=self._contract_keys(context),
+            symbols=context.symbols or None,
+            symbol_windows=context.comparison_windows or None,
         )
+
+    def _read_source(
+        self,
+        source: str,
+        start: date,
+        end: date,
+        affected_keys: set[tuple],
+        *,
+        symbols: Sequence[str] | None,
+        symbol_windows: MappingType[str, Window | None] | None,
+    ) -> pd.DataFrame:
+        """Call a scoped ODS reader when it supports that boundary."""
+        import inspect
+
+        reader = self._reader(source)
+        try:
+            parameters = inspect.signature(reader).parameters
+        except (TypeError, ValueError):
+            parameters = None
+        if parameters is not None and (
+            "symbol_windows" in parameters
+            or any(item.kind is inspect.Parameter.VAR_KEYWORD for item in parameters.values())
+        ):
+            from typing import cast
+
+            scoped_reader = cast("Callable[..., pd.DataFrame]", reader)
+            return scoped_reader(
+                start,
+                end,
+                affected_keys,
+                symbols=symbols,
+                symbol_windows=symbol_windows,
+            )
+        return reader(start, end, affected_keys)
 
     def _contract_keys(self, context: PipelineContext) -> set[tuple]:
         """Re-spell the run's affected keys as the keys the merge compares.

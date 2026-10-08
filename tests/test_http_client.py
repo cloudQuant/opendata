@@ -6,8 +6,13 @@ classification, rate limiting, the circuit breaker and their
 interaction with success paths.
 """
 
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
+
 import pytest
 import requests
+from loguru import logger
 
 from opendata.data.http_client import (
     FailureCategory,
@@ -103,6 +108,69 @@ class TestSuccessPath:
     def test_config_is_strict(self):
         with pytest.raises(Exception):
             HttpClientConfig(bogus=1)
+
+    def test_rate_and_concurrency_limits_must_be_positive(self):
+        for field, value in (
+            ("max_attempts", 0),
+            ("rate_limit_per_host", 0.0),
+            ("rate_burst", 0),
+            ("max_concurrency_per_host", 0),
+        ):
+            with pytest.raises(Exception):
+                HttpClientConfig(**{field: value})
+
+    @pytest.mark.parametrize(
+        ("field", "value"),
+        [
+            ("connect_timeout", 0.0),
+            ("connect_timeout", -1.0),
+            ("read_timeout", 0.0),
+            ("read_timeout", -1.0),
+            ("backoff_base", -0.1),
+            ("backoff_jitter", -0.1),
+            ("rate_max_wait", -0.1),
+            ("breaker_threshold", 0),
+            ("breaker_cooldown", -0.1),
+        ],
+    )
+    def test_governance_settings_reject_out_of_range_values(self, field, value):
+        with pytest.raises(Exception):
+            HttpClientConfig(**{field: value})
+
+    @pytest.mark.parametrize(
+        "field",
+        [
+            "connect_timeout",
+            "read_timeout",
+            "backoff_base",
+            "backoff_jitter",
+            "rate_max_wait",
+            "breaker_cooldown",
+        ],
+    )
+    def test_float_governance_settings_reject_nan(self, field):
+        with pytest.raises(Exception):
+            HttpClientConfig(**{field: float("nan")})
+
+    def test_zero_is_allowed_for_optional_waits_and_cooldowns(self):
+        config = HttpClientConfig(
+            backoff_base=0.0,
+            backoff_jitter=0.0,
+            rate_max_wait=0.0,
+            breaker_cooldown=0.0,
+        )
+
+        assert config.backoff_base == 0.0
+        assert config.backoff_jitter == 0.0
+        assert config.rate_max_wait == 0.0
+        assert config.breaker_cooldown == 0.0
+
+    def test_governance_defaults_are_bounded(self):
+        config = HttpClientConfig()
+
+        assert config.rate_limit_per_host == 5.0
+        assert config.rate_burst == 10
+        assert config.max_concurrency_per_host == 4
 
 
 class TestRetries:
@@ -218,6 +286,91 @@ class TestCircuitBreaker:
         session.script = [200]
         assert client.get(URL).status_code == 200
 
+    def test_breaker_cooldown_allows_only_one_concurrent_probe(self):
+        config = HttpClientConfig(
+            rate_limit_per_host=None,
+            max_attempts=1,
+            breaker_threshold=1,
+            breaker_cooldown=5.0,
+        )
+        clock = FakeClock()
+        probe_entered = threading.Event()
+        release_probe = threading.Event()
+
+        class BlockingProbeSession(FakeSession):
+            block_next = False
+
+            def request(self, method, url, **kwargs):
+                if self.block_next:
+                    self.calls.append((method, url, kwargs))
+                    probe_entered.set()
+                    if not release_probe.wait(timeout=1.0):
+                        raise AssertionError("probe release timed out")
+                    return FakeResponse(200)
+                return super().request(method, url, **kwargs)
+
+        session = BlockingProbeSession([429])
+        client = GovernedHttpClient(
+            config,
+            session=session,
+            sleep=clock.sleep,
+            time_fn=clock.time,
+            jitter_fn=lambda: 0.0,
+        )
+        with pytest.raises(HttpFetchError):
+            client.get(URL)
+        session.block_next = True
+        clock.now += 6.0
+
+        try:
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                probe = pool.submit(client.get, URL)
+                assert probe_entered.wait(timeout=1.0)
+                with pytest.raises(HttpFetchError) as blocked:
+                    client.get(URL)
+                assert blocked.value.attempts == 0
+                assert len(session.calls) == 2
+                release_probe.set()
+                assert probe.result(timeout=1.0).status_code == 200
+        finally:
+            release_probe.set()
+
+        assert len(session.calls) == 2
+
+    @pytest.mark.parametrize(
+        ("failure", "category"),
+        [
+            (requests.Timeout(), FailureCategory.TIMEOUT),
+            (requests.ConnectionError(), FailureCategory.NETWORK),
+        ],
+    )
+    def test_failed_half_open_probe_reopens_breaker(self, failure, category):
+        config = HttpClientConfig(
+            rate_limit_per_host=None,
+            breaker_threshold=3,
+            breaker_cooldown=5.0,
+        )
+        client, session, clock = make_client([429, 429, 429, failure, 200], config=config)
+        with pytest.raises(HttpFetchError):
+            client.get(URL)
+        clock.now += 6.0
+
+        with pytest.raises(HttpFetchError) as probe_error:
+            client.get(URL)
+        assert probe_error.value.category is category
+        assert probe_error.value.attempts == 1
+        assert not probe_error.value.retryable
+        assert len(session.calls) == 4
+
+        with pytest.raises(HttpFetchError) as blocked:
+            client.get(URL)
+        assert blocked.value.attempts == 0
+        assert len(session.calls) == 4
+
+        clock.now += 6.0
+        assert client.get(URL).status_code == 200
+        assert len(session.calls) == 5
+
     def test_breaker_isolated_per_host(self):
         config = HttpClientConfig(breaker_threshold=3)
         client, session, _ = make_client([429, 429, 429, 200], config=config)
@@ -291,3 +444,70 @@ class TestFailures:
     def test_host_is_lowercased(self):
         client, _, _ = make_client([200])
         assert client.get("http://EXAMPLE.com/x").status_code == 200
+
+
+def test_host_concurrency_limit_is_shared_across_thread_local_sessions(monkeypatch):
+    lock = threading.Lock()
+    release = threading.Event()
+    reached_limit = threading.Event()
+    active = 0
+    peak = 0
+
+    class BlockingSession:
+        def request(self, method, url, **kwargs):
+            nonlocal active, peak
+            with lock:
+                active += 1
+                peak = max(peak, active)
+                if peak >= 2:
+                    reached_limit.set()
+            release.wait(timeout=2.0)
+            with lock:
+                active -= 1
+            return FakeResponse(200)
+
+    monkeypatch.setattr(requests, "Session", BlockingSession)
+    client = GovernedHttpClient(
+        HttpClientConfig(
+            rate_limit_per_host=None,
+            max_attempts=1,
+            max_concurrency_per_host=2,
+        )
+    )
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        futures = [pool.submit(client.get, URL) for _ in range(8)]
+        assert reached_limit.wait(timeout=1.0)
+        time.sleep(0.03)
+        with lock:
+            assert peak == 2
+        release.set()
+        assert [future.result(timeout=2.0).status_code for future in futures] == [200] * 8
+
+
+def test_transport_events_redact_url_credentials_parameters_and_exception_text():
+    client = GovernedHttpClient(
+        HttpClientConfig(rate_limit_per_host=None, max_attempts=1),
+        session=FakeSession([requests.ConnectionError("raw-exception-secret")]),
+    )
+    events = []
+    sink = logger.add(lambda message: events.append(message.record["extra"]), level="INFO")
+    try:
+        with pytest.raises(HttpFetchError) as exc:
+            client.get(
+                "https://user:password@example.test/data?token=url-secret",
+                params={"access_token": "parameter-secret"},
+                source="test",
+            )
+    finally:
+        logger.remove(sink)
+
+    assert exc.value.url == "https://example.test/data"
+    event = next(item for item in events if item.get("event") == "governed_http_request")
+    assert event["endpoint"] == "https://example.test/data"
+    assert event["parameter_summary"] == {
+        "keys": ("access_token",),
+        "redacted_keys": ("access_token",),
+    }
+    for secret in ("password", "url-secret", "parameter-secret", "raw-exception-secret"):
+        assert secret not in str(exc.value)
+        assert secret not in repr(event)

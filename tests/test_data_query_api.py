@@ -7,6 +7,7 @@ the happy paths and the injection cases against real tables are
 """
 
 from datetime import date
+from uuid import uuid4
 
 import pytest
 from sqlalchemy import create_engine, pool, text
@@ -126,10 +127,16 @@ class TestAgainstTheWarehouse:
                 connection.execute(text("SELECT 1"))
         except Exception as exc:  # any connection failure means skip
             pytest.skip(f"warehouse database unreachable: {type(exc).__name__}")
+        ods_probe_symbol = f"QUERY_PROBE_ODS_{uuid4().hex[:12]}"
+        self._ods_probe_symbol = ods_probe_symbol
         with engine.begin() as connection:
             connection.execute(
                 text("DELETE FROM `dwd_stock_daily` WHERE `symbol` = :probe"),
                 {"probe": self.SYMBOL},
+            )
+            connection.execute(
+                text("DELETE FROM `ods_stock_daily_akshare` WHERE `股票代码` = :probe"),
+                {"probe": ods_probe_symbol},
             )
             connection.execute(
                 text(
@@ -141,11 +148,24 @@ class TestAgainstTheWarehouse:
                 ),
                 {"probe": self.SYMBOL},
             )
+            connection.execute(
+                text(
+                    "INSERT INTO `ods_stock_daily_akshare` "
+                    "(`日期`, `股票代码`, `开盘`, `收盘`, `最高`, `最低`, `成交量`, `成交额`, "
+                    "`_source`, `_fetched_at`, `_batch_id`) VALUES "
+                    "('2024-01-05', :probe, 1, 1, 1, 1, 1, 1, 'akshare', NOW(), :batch_id)"
+                ),
+                {"probe": ods_probe_symbol, "batch_id": str(uuid4())},
+            )
         yield engine
         with engine.begin() as connection:
             connection.execute(
                 text("DELETE FROM `dwd_stock_daily` WHERE `symbol` = :probe"),
                 {"probe": self.SYMBOL},
+            )
+            connection.execute(
+                text("DELETE FROM `ods_stock_daily_akshare` WHERE `股票代码` = :probe"),
+                {"probe": ods_probe_symbol},
             )
         engine.dispose()
 
@@ -237,6 +257,7 @@ class TestAgainstTheWarehouse:
         row = domains["stock_daily"]
 
         assert row["asset_class"] == "equity"
+        assert row["markets"] == ["cn"]
         assert row["layer"] == "dwd" and row["table"] == "dwd_stock_daily"
         assert row["freshness_field"] == "trade_date"
         assert row["status"] in {"fresh", "stale", "missing"}
@@ -253,6 +274,25 @@ class TestAgainstTheWarehouse:
         for leg in row["sources"]:
             assert leg["status"] in {"fresh", "stale", "missing", "unmapped"}
             assert leg["verified"] in (True, False)
+        akshare = next(cap for cap in row["capabilities"] if cap["source"] == "akshare")
+        assert akshare["market"] == "cn"
+        assert akshare["domain"] == "stock_daily"
+        assert akshare["period"] == "1D"
+        assert akshare["callable"]["name"].endswith(".fetch")
+        assert akshare["endpoint"] == {
+            "name": "query_domain_data",
+            "method": "GET",
+            "path": "/api/v1/data/equity/stock_daily",
+            "query_filters": {"source": "akshare", "period": "1D"},
+        }
+        assert {parameter["name"] for parameter in akshare["parameters"]} >= {
+            "symbol",
+            "market",
+            "source",
+        }
+        assert set(data["markets"]) == {
+            market for catalog_row in data["domains"] for market in catalog_row["markets"]
+        }
         assert data["domains_total"] == len(data["domains"])
         assert data["source_legs_total"] == sum(len(r["sources"]) for r in data["domains"])
         assert data["expected_data_date"]
@@ -318,6 +358,7 @@ class TestAgainstTheWarehouse:
         assert response.status_code == 200
         data = response.json()["data"]
         assert data["source"] == "akshare"
+        assert data["latest"] is not None
         assert data["field"] == "日期"
 
     async def test_diff_report_endpoint_answers_even_without_rows(

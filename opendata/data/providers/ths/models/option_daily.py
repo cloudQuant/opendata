@@ -38,6 +38,8 @@ class ThsOptionDailyFetcher(Fetcher[ThsOptionDailyQuery, tuple[Bar, ...]]):
     an independent option series (see ``docs/evidence/C6``).
     """
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="option",
         domain="option_daily",
@@ -78,7 +80,7 @@ class ThsOptionDailyFetcher(Fetcher[ThsOptionDailyQuery, tuple[Bar, ...]]):
             ThsProviderError: Credentials missing, or the code is a bare
                 contract code that this endpoint cannot resolve.
         """
-        from opendata_fuyao.endpoints import (
+        from opendata.data.providers.ths.endpoints import (
             OPTIONS_PRICES_ENDPOINT,
             fetch_period_daily_bars,
         )

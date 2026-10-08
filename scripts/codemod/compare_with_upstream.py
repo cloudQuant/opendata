@@ -5,13 +5,13 @@ Two modes:
 
 * ``--record`` (needs network + the upstream checkout): runs each P0
   case through the *upstream* akshare checkout pinned in
-  ``opendata_http/upstream.lock``, records every HTTP response, and
+  ``opendata/data/providers/akshare/_vendor/upstream.lock``, records every HTTP response, and
   stores the upstream output as the reference frame
   (``reference.csv.gz``) plus case metadata (``meta.json``, which
   carries the live dtypes). The upstream HEAD must match the lock's
   commit, otherwise the recording fails closed.
 * ``--compare`` (offline): replays the recorded HTTP responses into
-  the *ported* ``opendata_http`` tree and compares its output with
+  the lazily loaded vendor exports and compares their output with
   the stored reference frame under the AC-6 tolerance: identical
   columns (order included), identical shape, identical dtypes, and
   cell values equal (floats via ``rtol=1e-9``, NaN==NaN).
@@ -37,17 +37,23 @@ import sys
 from collections.abc import Sequence  # noqa: TC003 - no future annotations in this script
 from dataclasses import dataclass
 from datetime import date
+from importlib import import_module
 from pathlib import Path
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.codemod import qfq_chain_checks as checks  # noqa: E402 - needs REPO_ROOT on sys.path
 
+if TYPE_CHECKING:
+    from pandas._typing import Scalar
+
 FIXTURES_DIR = REPO_ROOT / "tests" / "fixtures" / "upstream"
 REPORT_PATH = REPO_ROOT / "docs" / "evidence" / "A2" / "compare-report.md"
-LOCK_PATH = REPO_ROOT / "opendata_http" / "upstream.lock"
+LOCK_PATH = (
+    REPO_ROOT / "opendata" / "data" / "providers" / "akshare" / "_vendor" / "upstream.lock"
+)
 DEFAULT_UPSTREAM = Path("/Users/yunjinqi/Documents/new_projects/akshare")
 
 #: Relative float tolerance for cell comparison (AC-6: floats within tolerance).
@@ -56,7 +62,7 @@ RTOL = 1e-9
 MAX_DIFFS = 10
 
 _UPSTREAM_CASE_MODULE = "akshare"
-_PORTED_CASE_MODULE = "opendata_http"
+_PORTED_CASE_MODULE = "opendata.data.providers.akshare._vendor"
 
 
 @dataclass(frozen=True)
@@ -363,7 +369,7 @@ def _deserialize_response(entry: dict[str, Any]) -> Any:  # noqa: ANN401  # unty
 
 
 def _load_case_function(module_name: str, function: str) -> Any:  # noqa: ANN401  # dynamic fetch
-    module = __import__(module_name)
+    module = import_module(module_name)
     return getattr(module, function)
 
 
@@ -686,7 +692,7 @@ def _compare_frames(
             right_values = np.array([np.nan if v is None else v for v in right], dtype=float)
             same = np.isclose(left_values, right_values, rtol=RTOL, equal_nan=True)
             if not bool(same.all()):
-                bad = (~same).nonzero()[0][:MAX_DIFFS]
+                bad = np.flatnonzero(~same)[:MAX_DIFFS]
                 diffs.extend(
                     f"cell {column}[{row}]: {left_values[row]!r} != {right_values[row]!r}"
                     for row in bad
@@ -830,7 +836,7 @@ def _cell(value: object, *, numeric: bool) -> float | str | None:
         return None
     if isinstance(value, float) and np.isnan(value):
         return None
-    if pd.isna(value):
+    if pd.isna(cast("Scalar", value)):
         return None
     if numeric and isinstance(value, (int, float, str)):
         return float(value)
@@ -894,7 +900,10 @@ def _check_sina_window_consistency() -> tuple[str, list[str]]:
     cases = [*checks.NARROW_PAIR, *checks.WIDE_PAIR]
     if not all((FIXTURES_DIR / case / "reference.csv.gz").exists() for case in cases):
         return "", []
-    return checks.check_window_consistency(*[_normalized_frame(case) for case in cases])
+    result: tuple[str, list[str]] = checks.check_window_consistency(
+        *[_normalized_frame(case) for case in cases]
+    )
+    return result
 
 
 def _write_report(

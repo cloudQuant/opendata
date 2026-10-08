@@ -1,21 +1,10 @@
 # gitleaks configuration (A0.1 credential isolation)
 #
-# Design rule: allowlist only what is *provably* a placeholder or a generated
-# artifact. Never allowlist a path just because it contains a real credential --
-# remove the credential instead. A wide `^docs/` allowlist previously hid a real
-# token literal in docs/evidence/; see docs/evidence/A0/secret-audit.txt §5.
+# Design rule: do not exclude paths from scanning. A wide `^docs/` allowlist
+# previously hid a real token literal in docs/evidence/; see docs/evidence/A0/secret-audit.txt §5.
 
 [extend]
 useDefault = true
-
-[allowlist]
-description = "Placeholder templates and generated build artifacts only."
-paths = [
-  # Committed template; holds placeholders like `change-me` by design.
-  '''\.env\.example$''',
-  # `pip install -e .` output (gitignored) embeds README curl examples.
-  '''\.egg-info/''',
-]
 
 # Markdown documentation shows shell examples such as
 # `curl -H "Authorization: Bearer <token>" ...`; only this noisy rule is exempt
@@ -41,8 +30,9 @@ paths = [
 [[rules]]
 id = "generic-api-key"
 [rules.allowlist]
-description = "Public SDMX dataflow keys name a statistic; they are not credentials."
+description = "SDMX dataflow keys are public identifiers; API_KEY_FAILURE_DELAY_SECONDS=0.05 is the non-secret delay setting after an empty template value."
 regexTarget = "secret"
 regexes = [
   '''^[A-Z0-9]{1,12}(\.[A-Z0-9_]{1,14}){3,}$''',
+  '''^API_KEY_FAILURE_DELAY_SECONDS=0\.05$''',
 ]

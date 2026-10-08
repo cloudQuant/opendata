@@ -1,11 +1,5 @@
 import { test, expect } from '@playwright/test'
-import {
-  executionsPlane,
-  seedSession,
-  stubApi,
-  tasksPlane,
-  type Plane,
-} from './fixtures'
+import { executionsPlane, seedSession, stubApi, tasksPlane, type Plane } from './fixtures'
 
 /** The backend's own gate on this field: opendata/api/schemas.py:229. */
 const SCHEDULE_TYPES = /^(once|daily|weekly|monthly|cron|interval)$/
@@ -33,10 +27,38 @@ test.describe('Tasks Management E2E', () => {
       await page.goto('/tasks')
 
       await expect(page.getByText('C32TASK_ALPHA')).toBeVisible()
+      await expect(page.getByText('C32TASK_PIPELINE')).toBeVisible()
+      await expect(page.getByText('Pipeline', { exact: true })).toBeVisible()
+      await expect(page.getByText('stock_daily', { exact: true })).toBeVisible()
       await expect(page.getByText('0 0 * * *')).toBeVisible()
       // The create dialog's script picker is fed on mount, which is why this page
       // asks for /scripts/ too (measured: docs/evidence/C32/frontend-request-census.txt).
       expect(plane.served()).toContain('GET /api/v1/scripts/')
+      expect(plane.unstubbed()).toEqual([])
+    })
+
+    test('pipeline task opens a read-only detail while script editing stays available', async ({
+      page,
+    }) => {
+      const plane = await stubApi(page, tasksPlane())
+      await seedSession(page)
+      await page.goto('/tasks')
+
+      const pipelineRow = page.getByRole('row').filter({ hasText: 'C32TASK_PIPELINE' })
+      await pipelineRow.getByRole('button', { name: '查看' }).click()
+      const pipelineDialog = page.getByRole('dialog')
+      await expect(pipelineDialog).toContainText('Pipeline 任务为只读展示')
+      await expect(pipelineDialog.getByText('stock_daily')).toBeVisible()
+      await expect(pipelineDialog.locator('.el-form')).toHaveCount(0)
+      await expect(pipelineDialog.getByRole('button', { name: '保存' })).toHaveCount(0)
+      await pipelineDialog.getByRole('button', { name: '关闭', exact: true }).click()
+
+      const scriptRow = page.getByRole('row').filter({ hasText: 'C32TASK_ALPHA' })
+      await scriptRow.getByRole('button', { name: '编辑' }).click()
+      const scriptDialog = page.getByRole('dialog')
+      await expect(scriptDialog.locator('.el-form')).toBeVisible()
+      await expect(scriptDialog.locator('.el-form-item', { hasText: '数据接口' })).toBeVisible()
+      await expect(scriptDialog.getByRole('button', { name: '保存' })).toBeVisible()
       expect(plane.unstubbed()).toEqual([])
     })
 
@@ -72,7 +94,7 @@ test.describe('Tasks Management E2E', () => {
         schedule_expression: '0 * * * *',
       })
       expect(String((submitted as { schedule_type?: string }).schedule_type)).toMatch(
-        SCHEDULE_TYPES,
+        SCHEDULE_TYPES
       )
       expect(plane.unstubbed()).toEqual([])
     })
@@ -82,9 +104,15 @@ test.describe('Tasks Management E2E', () => {
       await seedSession(page)
       await page.goto('/tasks')
 
-      await page.getByRole('button', { name: '执行记录' }).click()
+      const executionListRequest = page.waitForRequest((request) => {
+        const url = new URL(request.url())
+        return url.pathname.endsWith('/executions/')
+      })
+      await page.getByRole('button', { name: '执行记录' }).first().click()
       // The one thing the row action really does: navigate with the task id kept.
       await expect(page).toHaveURL('/executions?task_id=71')
+      const request = await executionListRequest
+      expect(new URL(request.url()).searchParams.get('task_id')).toBe('71')
       await expect(page.getByText('C32PIPE_LINE_1')).toBeVisible()
       expect(plane.unstubbed()).toEqual([])
     })

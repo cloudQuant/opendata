@@ -126,20 +126,35 @@ class TestFactorBuilder:
         assert result.symbols == 1
         assert result.rows_written == 2
         with warehouse.connect() as connection:
-            rows = connection.execute(
-                text(
-                    "SELECT `symbol`, `trade_date`, `qfq_factor`, `hfq_factor` "
-                    "FROM `dwd_stock_adjust` WHERE `symbol` = :probe ORDER BY `trade_date`"
-                ),
-                {"probe": PROBE},
-            ).fetchall()
+            rows = (
+                connection.execute(
+                    text(
+                        "SELECT `symbol`, `trade_date`, `qfq_factor`, `hfq_factor`, `qfq_scale`, "
+                        "`qfq_offset`, `hfq_scale`, `hfq_offset`, `adjustment_version`, "
+                        "`legacy_source`, `source` "
+                        "FROM `dwd_stock_adjust` WHERE `symbol` = :probe ORDER BY `trade_date`"
+                    ),
+                    {"probe": PROBE},
+                )
+                .mappings()
+                .all()
+            )
         assert len(rows) == 2
         day1, day2 = rows
-        assert day1[1] == DAY1 and day2[1] == EVENT_DAY
-        assert day1[2] == pytest.approx(0.9)  # 9/10: qfq before the dividend
-        assert day1[3] == pytest.approx(1.0)  # hfq anchor
-        assert day2[2] == pytest.approx(1.0)  # qfq anchor on the ex-date
-        assert day2[3] == pytest.approx(10.0 / 9.0)
+        assert day1["trade_date"] == DAY1 and day2["trade_date"] == EVENT_DAY
+        # The prior ratio contract remains available for old consumers.
+        assert day1["qfq_factor"] == pytest.approx(0.9)
+        assert day1["hfq_factor"] == pytest.approx(1.0)
+        assert day2["qfq_factor"] == pytest.approx(1.0)
+        assert day2["hfq_factor"] == pytest.approx(10.0 / 9.0)
+        # The new affine contract expresses a one-CNY cash event as subtraction/addition.
+        assert (day1["qfq_scale"], day1["qfq_offset"]) == pytest.approx((1.0, -1.0))
+        assert (day2["qfq_scale"], day2["qfq_offset"]) == pytest.approx((1.0, 0.0))
+        assert (day1["hfq_scale"], day1["hfq_offset"]) == pytest.approx((1.0, 0.0))
+        assert (day2["hfq_scale"], day2["hfq_offset"]) == pytest.approx((1.0, 1.0))
+        assert day1["adjustment_version"] == day2["adjustment_version"] == "affine-v1"
+        assert day1["legacy_source"] == day2["legacy_source"] == "corporate-action-ratio-v1"
+        assert day1["source"] == day2["source"] == "corporate-action-affine-v1"
 
     def test_builder_is_idempotent(self, warehouse):
         from opendata.pipeline.factor_builder import FactorBuilder
@@ -196,10 +211,14 @@ class TestAdjustRest:
             connection.execute(
                 text(
                     "INSERT INTO `dwd_stock_adjust` "
-                    "(`symbol`, `trade_date`, `qfq_factor`, `hfq_factor`, `source`, "
+                    "(`symbol`, `trade_date`, `qfq_factor`, `hfq_factor`, `qfq_scale`, "
+                    "`qfq_offset`, `hfq_scale`, `hfq_offset`, `adjustment_version`, "
+                    "`legacy_source`, `source`, "
                     "`_merged_at`, `_diff_flag`, `_as_of`) VALUES "
-                    "(:probe, :d1, 0.9, 1.0, 'ths', NOW(), 0, NOW()), "
-                    "(:probe, :d2, 1.0, :ratio, 'ths', NOW(), 0, NOW())"
+                    "(:probe, :d1, 0.9, 1.0, 1.0, -1.0, 1.0, 0.0, 'affine-v1', "
+                    "'corporate-action-ratio-v1', 'corporate-action-affine-v1', NOW(), 0, NOW()), "
+                    "(:probe, :d2, 1.0, :ratio, 1.0, 0.0, 1.0, 1.0, 'affine-v1', "
+                    "'corporate-action-ratio-v1', 'corporate-action-affine-v1', NOW(), 0, NOW())"
                 ),
                 {"probe": PROBE, "d1": DAY1, "d2": EVENT_DAY, "ratio": 10.0 / 9.0},
             )
@@ -226,7 +245,7 @@ class TestAdjustRest:
 
         assert response.status_code == 200, response.text[:600]
         rows = {row["trade_date"]: row for row in response.json()["data"]["rows"]}
-        assert rows[str(DAY1)]["close"] == pytest.approx(9.0)  # 10 x 9/10
+        assert rows[str(DAY1)]["close"] == pytest.approx(9.0)  # 10 - 1.0 CNY cash
         assert rows[str(EVENT_DAY)]["close"] == pytest.approx(12.0)  # anchor day
 
     async def test_adjust_hfq_serves_the_other_scale(self, warehouse, test_client, test_user_token):
@@ -242,7 +261,7 @@ class TestAdjustRest:
         assert response.status_code == 200
         rows = {row["trade_date"]: row for row in response.json()["data"]["rows"]}
         assert rows[str(DAY1)]["close"] == pytest.approx(10.0)  # hfq anchor
-        assert rows[str(EVENT_DAY)]["close"] == pytest.approx(12.0 * 10.0 / 9.0)
+        assert rows[str(EVENT_DAY)]["close"] == pytest.approx(13.0)  # 12 + 1.0 CNY cash
 
 
 def _upgrade(repo_root) -> None:

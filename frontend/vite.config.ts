@@ -25,60 +25,6 @@ export default defineConfig({
   },
   build: {
     chunkSizeWarningLimit: 600,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('element-plus')) {
-            if (id.includes('@element-plus/icons-vue')) {
-              return 'element-icons'
-            }
-            if (id.includes('element-plus/es/components/')) {
-              return 'element-components'
-            }
-            if (id.includes('element-plus/es/locale')) {
-              return 'element-locale'
-            }
-            if (id.includes('element-plus/es/utils')) {
-              return 'element-utils'
-            }
-            return 'element-core'
-          }
-          if (id.includes('vue/') || id.includes('pinia') || id.includes('vue-router')) {
-            return 'vue-vendor'
-          }
-          if (id.includes('axios')) {
-            return 'axios'
-          }
-          if (id.includes('echarts') || id.includes('zrender')) {
-            return 'echarts-vendor'
-          }
-          if (id.includes('dayjs')) {
-            return 'dayjs'
-          }
-          if (id.includes('lodash')) {
-            return 'lodash'
-          }
-          if (id.includes('vue-i18n')) {
-            return 'vue-i18n'
-          }
-          if (id.includes('/src/views/')) {
-            const match = id.match(/src\/views\/([^/]+)/)
-            if (match) {
-              return `view-${match[1].toLowerCase()}`
-            }
-          }
-          if (id.includes('/src/stores/')) {
-            return 'app-stores'
-          }
-          if (id.includes('/src/api/')) {
-            return 'app-api'
-          }
-          if (id.includes('/src/composables/')) {
-            return 'app-composables'
-          }
-        }
-      }
-    }
   },
   test: {
     globals: true,
@@ -114,6 +60,12 @@ export default defineConfig({
         statements: 60,
       },
     },
+  },
+  preview: {
+    host: '127.0.0.1',
+    port: 4173,
+    strictPort: true,
+    proxy: {},
   },
   server: {
     port: 5173,

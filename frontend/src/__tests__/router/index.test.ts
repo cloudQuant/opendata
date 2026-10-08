@@ -24,7 +24,7 @@ describe('Router', () => {
   it('has login route', async () => {
     const { default: router } = await import('@/router/index')
     const routes = router.getRoutes()
-    const loginRoute = routes.find(r => r.name === 'Login')
+    const loginRoute = routes.find((r) => r.name === 'Login')
     expect(loginRoute).toBeDefined()
     expect(loginRoute?.path).toBe('/login')
   })
@@ -32,7 +32,7 @@ describe('Router', () => {
   it('has register route', async () => {
     const { default: router } = await import('@/router/index')
     const routes = router.getRoutes()
-    const registerRoute = routes.find(r => r.name === 'Register')
+    const registerRoute = routes.find((r) => r.name === 'Register')
     expect(registerRoute).toBeDefined()
     expect(registerRoute?.path).toBe('/register')
   })
@@ -40,35 +40,48 @@ describe('Router', () => {
   it('has home route', async () => {
     const { default: router } = await import('@/router/index')
     const routes = router.getRoutes()
-    const homeRoute = routes.find(r => r.name === 'Home')
+    const homeRoute = routes.find((r) => r.name === 'Home')
     expect(homeRoute).toBeDefined()
   })
 
   it('has scripts route', async () => {
     const { default: router } = await import('@/router/index')
     const routes = router.getRoutes()
-    const scriptsRoute = routes.find(r => r.name === 'Scripts')
+    const scriptsRoute = routes.find((r) => r.name === 'Scripts')
     expect(scriptsRoute).toBeDefined()
+    expect(scriptsRoute?.path).toBe('/scripts')
+    expect(scriptsRoute?.components?.default).toBeDefined()
+  })
+
+  it('keeps the legacy function list and real script detail routes', async () => {
+    const { default: router } = await import('@/router/index')
+    const routes = router.getRoutes()
+    const functionList = routes.find((r) => r.name === 'ScriptFunctions')
+    const scriptDetail = routes.find((r) => r.name === 'ScriptDetail')
+
+    expect(functionList?.path).toBe('/scripts/functions')
+    expect(functionList?.components?.default).toBeDefined()
+    expect(scriptDetail?.path).toBe('/scripts/:id')
   })
 
   it('has tasks route', async () => {
     const { default: router } = await import('@/router/index')
     const routes = router.getRoutes()
-    const tasksRoute = routes.find(r => r.name === 'Tasks')
+    const tasksRoute = routes.find((r) => r.name === 'Tasks')
     expect(tasksRoute).toBeDefined()
   })
 
   it('has tables route', async () => {
     const { default: router } = await import('@/router/index')
     const routes = router.getRoutes()
-    const tablesRoute = routes.find(r => r.name === 'Tables')
+    const tablesRoute = routes.find((r) => r.name === 'Tables')
     expect(tablesRoute).toBeDefined()
   })
 
   it('has users route (admin)', async () => {
     const { default: router } = await import('@/router/index')
     const routes = router.getRoutes()
-    const usersRoute = routes.find(r => r.name === 'Users')
+    const usersRoute = routes.find((r) => r.name === 'Users')
     expect(usersRoute).toBeDefined()
     expect(usersRoute?.meta?.requiresAdmin).toBe(true)
   })
@@ -76,7 +89,7 @@ describe('Router', () => {
   it('has settings route (admin)', async () => {
     const { default: router } = await import('@/router/index')
     const routes = router.getRoutes()
-    const settingsRoute = routes.find(r => r.name === 'Settings')
+    const settingsRoute = routes.find((r) => r.name === 'Settings')
     expect(settingsRoute).toBeDefined()
     expect(settingsRoute?.meta?.requiresAdmin).toBe(true)
   })
@@ -84,14 +97,14 @@ describe('Router', () => {
   it('has 404 not found route', async () => {
     const { default: router } = await import('@/router/index')
     const routes = router.getRoutes()
-    const notFoundRoute = routes.find(r => r.name === 'NotFound')
+    const notFoundRoute = routes.find((r) => r.name === 'NotFound')
     expect(notFoundRoute).toBeDefined()
   })
 
   it('has executions route', async () => {
     const { default: router } = await import('@/router/index')
     const routes = router.getRoutes()
-    const executionsRoute = routes.find(r => r.name === 'Executions')
+    const executionsRoute = routes.find((r) => r.name === 'Executions')
     expect(executionsRoute).toBeDefined()
   })
 })

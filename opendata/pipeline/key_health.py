@@ -27,19 +27,21 @@ This module turns that text into a graded, owned classification:
   text the patrol archives, with the values this process holds replaced rather
   than trusted to the URL rule alone.
 
-The boundary is stated as plainly as the capability: **no source in this repo
-publishes a Key's expiry, remaining quota or revocation status** (the AC-19
-演进项). A report therefore never says "healthy" on the strength of a Key being
-configured; it says ``presence-only`` and lists what stays unverified. Only a
-classified failure can raise a level, and only an observation can raise it as
-high as ``alert`` - which is what keeps "we could not look" from reading as
-"we looked and it was fine".
+The boundary is stated as plainly as the capability: no provider API in this
+repo publishes remaining quota or revocation status. Operators may supply an
+issuer's expiry date as metadata, but an absent value stays **unknown** and is
+not an active validity check. A report therefore never says "healthy" on the
+strength of a Key being configured; it says ``presence-only`` and lists what
+stays unverified. A known issuer expiry can raise the level to ``warn`` or
+``alert`` without claiming a remote probe; a classified observation reports
+observed rejection, quota, or source failures.
 """
 
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from datetime import date
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 
@@ -226,7 +228,7 @@ class KeyReport:
         required: Whether the source cannot work without a Key.
         configured: Whether a Key is present in this process's settings.
         endpoint: Host the credential is sent to (never a query, never a Key).
-        level: One of the ``LEVEL_*`` values, worst observation wins.
+        level: One of the ``LEVEL_*`` values, worst observation or expiry wins.
         owner: Who has to act; None when nothing asks anyone to act.
         classes: Observed classes with their counts, worst first.
         attributions: Distinct metadata-only attributions behind the classes.
@@ -245,6 +247,10 @@ class KeyReport:
     attributions: tuple[str, ...]
     unverified: tuple[str, ...]
     note: str
+    expires_at: str | None = None
+    days_until_expiry: int | None = None
+    expiry_state: str = "unknown"
+    remaining_quota: int | None = None
 
     def as_dict(self) -> dict[str, Any]:
         """Return the credential payload for an API response or a report line.
@@ -265,6 +271,10 @@ class KeyReport:
             "attributions": list(self.attributions),
             "unverified": list(self.unverified),
             "note": self.note,
+            "expires_at": self.expires_at,
+            "days_until_expiry": self.days_until_expiry,
+            "expiry_state": self.expiry_state,
+            "remaining_quota": self.remaining_quota,
         }
 
 
@@ -378,6 +388,9 @@ def build_report(
     configured: bool,
     endpoint: str,
     observations: Sequence[FailureObservation],
+    expires_at: date | None = None,
+    as_of: date | None = None,
+    expiry_warning_days: int = 14,
 ) -> KeyReport:
     """Grade one source's credential health from presence and observations.
 
@@ -388,17 +401,40 @@ def build_report(
         endpoint: Host the credential is sent to.
         observations: Classified probe failures for this source. A source that
             was never probed contributes none.
+        expires_at: Optional issuer-supplied expiry date; None means unknown.
+        as_of: Reference date for expiry calculations (tests and reports).
+        expiry_warning_days: Inclusive warning window before expiry.
 
     Returns:
         The report. An absent required Key is an ``alert`` with no observation
-        to show; a configured Key with no failure is ``presence-only``, because
-        nothing looked at whether the Key still works.
+        to show. A configured Key with no failure is ``presence-only`` unless
+        issuer metadata reports an expired or soon-to-expire credential.
     """
+    if expiry_warning_days <= 0:
+        raise ValueError("expiry_warning_days must be positive")
+    observed_expiry = expires_at if required and configured else None
+    days_until_expiry = (
+        None if observed_expiry is None else (observed_expiry - (as_of or date.today())).days
+    )
+    expiry_state = _expiry_state(days_until_expiry, expiry_warning_days)
+    expiry_text = ""
+    if observed_expiry is not None and days_until_expiry is not None:
+        expiry_text = f"；issuer到期日={observed_expiry.isoformat()}，剩余{days_until_expiry}天"
+    expiry_level = {
+        "expired": LEVEL_ALERT,
+        "expiring-soon": LEVEL_WARN,
+    }.get(expiry_state)
+
     own = tuple(obs for obs in observations if obs.source == source)
     if own:
         classes = _ranked_classes(own)
-        level = CLASS_LEVELS[classes[0][0]]
-        owner = CLASS_OWNERS[classes[0][0]]
+        observed_level = CLASS_LEVELS[classes[0][0]]
+        level = _higher_level(observed_level, expiry_level)
+        owner = (
+            "凭据负责人"
+            if expiry_level is not None and _level_rank(expiry_level) < _level_rank(observed_level)
+            else CLASS_OWNERS[classes[0][0]]
+        )
         return KeyReport(
             source=source,
             required=required,
@@ -409,7 +445,10 @@ def build_report(
             classes=classes,
             attributions=_attributions(own),
             unverified=UNVERIFIED_WITHOUT_ACTIVE_CHECK,
-            note=_observed_note(source, classes, required, configured),
+            note=_observed_note(source, classes, required, configured) + expiry_text,
+            expires_at=observed_expiry.isoformat() if observed_expiry else None,
+            days_until_expiry=days_until_expiry,
+            expiry_state=expiry_state,
         )
     if not required:
         return KeyReport(
@@ -423,6 +462,9 @@ def build_report(
             attributions=(),
             unverified=(),
             note="该源不需要 Key，凭证面不对它作判断",
+            expires_at=None,
+            days_until_expiry=days_until_expiry,
+            expiry_state=expiry_state,
         )
     if not configured:
         return KeyReport(
@@ -435,23 +477,80 @@ def build_report(
             classes=((CLASS_NOT_CONFIGURED, 1),),
             attributions=(),
             unverified=UNVERIFIED_WITHOUT_ACTIVE_CHECK,
-            note=f"{source} 必须 Key 未配置：部署缺口，与源侧健康无关",
+            note=f"{source} 必须 Key 未配置：部署缺口，与源侧健康无关" + expiry_text,
+            expires_at=observed_expiry.isoformat() if observed_expiry else None,
+            days_until_expiry=days_until_expiry,
+            expiry_state=expiry_state,
         )
     return KeyReport(
         source=source,
         required=required,
         configured=configured,
         endpoint=endpoint,
-        level=LEVEL_PRESENCE_ONLY,
-        owner=None,
+        level=_higher_level(LEVEL_PRESENCE_ONLY, expiry_level),
+        owner="凭据负责人" if expiry_level is not None else None,
         classes=(),
         attributions=(),
         unverified=UNVERIFIED_WITHOUT_ACTIVE_CHECK,
-        note=(
-            f"{source} 已配置 Key 且本轮巡检未见失败；本轮没有到期/封禁主动探测，也未见任何 429，"
-            "所以本行不等于 Key 有效"
-        ),
+        note=_presence_note(source, expiry_state, observed_expiry, days_until_expiry),
+        expires_at=observed_expiry.isoformat() if observed_expiry else None,
+        days_until_expiry=days_until_expiry,
+        expiry_state=expiry_state,
     )
+
+
+def _higher_level(observed: str, expiry: str | None) -> str:
+    """Return the more severe of a probe grade and an expiry grade."""
+    if expiry is None or _level_rank(observed) <= _level_rank(expiry):
+        return observed
+    return expiry
+
+
+def _presence_note(
+    source: str,
+    expiry_state: str,
+    expires_at: date | None,
+    days_until_expiry: int | None,
+) -> str:
+    """Describe key presence and issuer date without claiming live validity."""
+    if expires_at is None:
+        return (
+            f"{source} 已配置 Key；issuer 未提供到期日，状态未知；"
+            "本轮没有 401/403/429 观测或主动验证，凭据有效性与剩余配额未知"
+        )
+    if days_until_expiry is None:
+        expiry_status = f"issuer 提供的到期日 {expires_at.isoformat()} 状态未能计算"
+    elif expiry_state == "expired":
+        expiry_status = f"issuer 提供的到期日 {expires_at.isoformat()} 已过期"
+    elif expiry_state == "expiring-soon":
+        expiry_status = (
+            f"issuer 提供的到期日为 {expires_at.isoformat()}，剩余 {days_until_expiry} 天"
+        )
+    else:
+        expiry_status = f"issuer 提供的到期日为 {expires_at.isoformat()}"
+    return (
+        f"{source} 已配置 Key；{expiry_status}；到期元数据不验证远端当前是否接受凭据，"
+        "本轮没有主动验证有效性，剩余配额未知"
+    )
+
+
+def _expiry_state(days_until_expiry: int | None, warning_days: int) -> str:
+    """Classify issuer-supplied expiry metadata without guessing when absent.
+
+    Args:
+        days_until_expiry: Days remaining, or None when no issuer value exists.
+        warning_days: Inclusive warning window before expiry.
+
+    Returns:
+        ``unknown``, ``expired``, ``expiring-soon`` or ``valid``.
+    """
+    if days_until_expiry is None:
+        return "unknown"
+    if days_until_expiry < 0:
+        return "expired"
+    if days_until_expiry <= warning_days:
+        return "expiring-soon"
+    return "valid"
 
 
 def _class_for_status(status: int) -> str:

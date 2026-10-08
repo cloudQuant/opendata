@@ -65,6 +65,8 @@ class ThsFinancialStatementFetcher(
     effective figure, so there is no restatement series to number.
     """
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="financial_statement",
@@ -118,7 +120,7 @@ class ThsFinancialStatementFetcher(
             ThsProviderError: Credentials missing or the code is not exactly
                 one instrument in the upstream stock universe.
         """
-        from opendata_fuyao.endpoints import fetch_financial_statements
+        from opendata.data.providers.ths.endpoints import fetch_financial_statements
 
         with client(timeout_seconds=ctx.timeout) as active:
             code = resolve_code(active, params.symbol)

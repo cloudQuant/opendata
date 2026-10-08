@@ -25,7 +25,7 @@ upstream SDK's public interface is referenced, no OpenBB code was consulted.
 """
 
 from dataclasses import dataclass
-from typing import ClassVar
+from typing import ClassVar, cast
 
 import numpy as np
 import pandas as pd
@@ -41,7 +41,7 @@ PRICE_COLUMNS: tuple[str, ...] = ("Open", "High", "Low", "Close")
 SPLITS_COLUMN = "Stock Splits"
 
 
-def _naive_dates(index: object) -> pd.DatetimeIndex:
+def _naive_dates(index: pd.Index) -> pd.DatetimeIndex:
     """Drop the upstream's exchange tz, keeping the session dates in row order.
 
     Args:
@@ -53,7 +53,7 @@ def _naive_dates(index: object) -> pd.DatetimeIndex:
     stamps = pd.DatetimeIndex(pd.to_datetime(index))
     if stamps.tz is not None:
         stamps = stamps.tz_localize(None)
-    return stamps.normalize()
+    return cast("pd.DatetimeIndex", stamps.normalize())
 
 
 def split_events(frame: pd.DataFrame, splits: pd.Series) -> pd.Series:
@@ -84,18 +84,18 @@ def split_events(frame: pd.DataFrame, splits: pd.Series) -> pd.Series:
     history.index = _naive_dates(history.index)
     history = history.sort_index()
     if SPLITS_COLUMN not in frame.columns:
-        return history
+        return cast("pd.Series", history)
     observed = pd.Series(pd.to_numeric(frame[SPLITS_COLUMN], errors="coerce")).astype("float64")
     observed.index = _naive_dates(frame.index)
     observed = observed[observed > 0.0]
     if observed.empty:
-        return history
+        return cast("pd.Series", history)
     if history.empty or not observed.equals(history.reindex(observed.index).fillna(0.0)):
         raise YfinanceProviderError("YFINANCE_SPLITS_UNAVAILABLE")
-    return history
+    return cast("pd.Series", history)
 
 
-def lookahead_factors(row_dates: pd.DatetimeIndex, events: pd.Series) -> pd.Series:
+def lookahead_factors(row_dates: pd.Index, events: pd.Series) -> pd.Series:
     """Return each session's product of *strictly later* split ratios.
 
     Args:
@@ -109,13 +109,13 @@ def lookahead_factors(row_dates: pd.DatetimeIndex, events: pd.Series) -> pd.Seri
     """
     dates = _naive_dates(row_dates)
     if events.empty:
-        return pd.Series(1.0, index=dates)
+        return cast("pd.Series", pd.Series(1.0, index=dates))
     trailing = np.cumprod(events.values[::-1])[::-1]
     positions = events.index.searchsorted(dates, side="right")
     # A position past the last split means there is nothing left to undo.
     clamped = np.minimum(positions, len(events) - 1)
     factors = np.where(positions == len(events), 1.0, trailing[clamped])
-    return pd.Series(factors, index=dates)
+    return cast("pd.Series", pd.Series(factors, index=dates))
 
 
 @dataclass(frozen=True)
@@ -143,7 +143,7 @@ def as_traded_bars(frame: pd.DataFrame, splits: pd.Series) -> pd.DataFrame:
     """
     events = split_events(frame, splits)
     factor = lookahead_factors(frame.index, events)
-    restored = frame.copy()
+    restored = cast("pd.DataFrame", frame.copy())
     for column in PRICE_COLUMNS:
         restored[column] = frame[column].to_numpy(dtype="float64") * factor.to_numpy()
     restored["Volume"] = frame["Volume"].to_numpy(dtype="float64") / factor.to_numpy()
@@ -164,7 +164,7 @@ def settled_rows(frame: pd.DataFrame) -> pd.DataFrame:
     Returns:
         The rows with a complete OHLC set.
     """
-    return frame.dropna(subset=list(PRICE_COLUMNS))
+    return cast("pd.DataFrame", frame.dropna(subset=list(PRICE_COLUMNS)))
 
 
 class StockDailyOverseasQuery(QueryParams):
@@ -181,6 +181,8 @@ class YfinanceStockDailyFetcher(Fetcher[StockDailyOverseasQuery, YfinanceHistory
     implement first, verify against the official values, see
     ``docs/evidence/C8/``).
     """
+
+    async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",

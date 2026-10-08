@@ -1,0 +1,782 @@
+{
+  "schema_version": 1,
+  "scanner_version": 4,
+  "entries": [
+    {
+      "path": ".env.example",
+      "purpose": "无凭证配置模板中的来源选择、适配器和上游说明；实际凭证仍由 gitleaks 扫描。",
+      "category": "build-declaration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "19357b3a5c29eb11eff0d12bb04b283f5fd8b4bf21d2e28e3e8e8bb6caa8a146",
+      "ast_exceptions": []
+    },
+    {
+      "path": ".pre-commit-config.yaml",
+      "purpose": "分层检查的来源搬运路径和工具名称，沿用质量规范；不加载外部包。",
+      "category": "build-declaration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "5013565b9e5388aa871bef237c634e3625ece549c6eb9f05799dc52b4a6c64cb",
+      "ast_exceptions": []
+    },
+    {
+      "path": "ARCHITECTURE.md",
+      "purpose": "架构沿革、来源协议、ODS来源表与适配器描述，保留来源语义。",
+      "category": "documentation",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "cf490146b2bedd5c6aa768f363e2eb6bec67d969bdd9d0483d375bba6ef1ca52",
+      "ast_exceptions": []
+    },
+    {
+      "path": "Makefile",
+      "purpose": "搬运根路径、质量门禁和零依赖扫描入口的名称说明。",
+      "category": "build-declaration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "7f41b5b3dbf65ed79330d6dd668676e35f7898706e76cd50dbc8acb0a9801432",
+      "ast_exceptions": []
+    },
+    {
+      "path": "alembic_data/versions/20260923-0001_ods_dwd_p0.py",
+      "purpose": "ODS来源表的迁移DDL及默认source身份，保留数仓溯源。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "df63a5cc1ea8f6ba03bcd8a0a934ccd5722c791a14fbbf5530793ab0039605ea",
+      "ast_exceptions": []
+    },
+    {
+      "path": "bandit.yaml",
+      "purpose": "搬运层与自研层的分层检查说明；不豁免自研来源适配器。",
+      "category": "build-declaration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "9699cd44c25443177b453500f96843e130502be0ac7436ad82d39409fc31c596",
+      "ast_exceptions": []
+    },
+    {
+      "path": "frontend/e2e/fixtures.ts",
+      "purpose": "前端测试样本与断言中的来源身份。",
+      "category": "test-fixture",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "689da859b57a2589637b95418b1d4e474fce28e5d825345be6019dbf5469b632",
+      "ast_exceptions": []
+    },
+    {
+      "path": "frontend/e2e/scripts.spec.ts",
+      "purpose": "前端测试样本与断言中的来源身份。",
+      "category": "test-fixture",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "e9ad68b7f7502d8b3ef3b1391afbf5b3342f700fbdf3434e8b1aa0733e6c2f01",
+      "ast_exceptions": []
+    },
+    {
+      "path": "frontend/src/__tests__/api/envelope.test.ts",
+      "purpose": "前端测试样本与断言中的来源身份。",
+      "category": "test-fixture",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "d5c8d77f063d374b3f518ceb0b458d9c123dda67388d6e4ba1a1e5b91194a0a2",
+      "ast_exceptions": []
+    },
+    {
+      "path": "frontend/src/__tests__/catalog.test.ts",
+      "purpose": "前端测试样本与断言中的来源身份。",
+      "category": "test-fixture",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "74a278f3d977a25ad8d8dd7e96ec78223cedff9fbcece2b5379ff0afe5a21a37",
+      "ast_exceptions": []
+    },
+    {
+      "path": "frontend/src/__tests__/types/index.test.ts",
+      "purpose": "前端测试样本与断言中的来源身份。",
+      "category": "test-fixture",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "64935b80504a2433d91da79b245227fd05cbad374cc5451386fe51b7160e5857",
+      "ast_exceptions": []
+    },
+    {
+      "path": "frontend/src/views/DataCatalogView.vue",
+      "purpose": "数据目录页面显示来源名称和源域覆盖。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "0d91f0041fa5fc232c2bd390fdebae32759190d8014832baf8b9e7fc80ff9e2a",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/__init__.py",
+      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "faad39a2960ba3459980f4b4dc5b164ec3209168b77583cf96c70350cc70216f",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/api/interfaces.py",
+      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "e59f5cb6587bd02accee89d13cf018d8dfe7afad0ba60b7c38b7f03f65e32e53",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/api/metrics.py",
+      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "83a74b857de4f3375f7f236f9d56ed48cd3a59d681596eea3eee9a2fb9756b83",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/api/schemas.py",
+      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "0b051a3c865198c1f1eba1ae54c18292029fa20496035e9d304cfe17d3db5b10",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/cli.py",
+      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "7af2c0632e9d3176bd22f1c06654f70c351f073ac5ccc81693381654e1aad558",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/core/config.py",
+      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "c101456d4c37ab13bbb2afd78e5ec77e0a92cdc031ec4d821a590a21518c56e9",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/core/database.py",
+      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "24c1aea7ff8c265451afab853d314151c49e4152fd95310dcd2440b0364f4fd3",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/authority.json",
+      "purpose": "数据源名称、来源字段/单位/业务键或跨来源权威度声明；用于溯源和口径映射。",
+      "category": "mapping",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "619eaf314a79aed1e5790e0263862ce64a271c45c96977011bb0eb0f56580de1",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/domains.py",
+      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "2d5ecdea36d743a89a3cdf04ce02d90810d306ac8d0390202b48ae3f57fd1e77",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/http_client.py",
+      "purpose": "请求日志/治理中的数据源标识及首方搬运HTTP通道说明。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "57a2a4dd3096bf5648411d712b2f753794a44bb340ba13bfd925c889dca9831e",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/mappings/akshare.yaml",
+      "purpose": "数据源名称、来源字段/单位/业务键或跨来源权威度声明；用于溯源和口径映射。",
+      "category": "mapping",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "fd61df12b1c73593be841f0e450af954fe8ba9dfc35538c02c5fa12270c62cef",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/mappings/ths.yaml",
+      "purpose": "数据源名称、来源字段/单位/业务键或跨来源权威度声明；用于溯源和口径映射。",
+      "category": "mapping",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "d68eb2658cf7241a0e02c1f1a13a6724a9adc268cc14b19fea9299518b1b7418",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/openbb_map.py",
+      "purpose": "FR-7映射记录的openbb字段名，仅作schema键读取，不作模块加载参数。",
+      "category": "mapping",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "ccfa72a95d6eb88592be87c022fb4837ecb47069f1db5cddaa5e25eff6655f53",
+      "ast_exceptions": [
+        {
+          "kind": "openbb_model_lookup",
+          "scope": "_parse_entry",
+          "callee": "entry.get",
+          "slot": "arg:0",
+          "literal": "openbb"
+        }
+      ]
+    },
+    {
+      "path": "opendata/data/openbb_map.yaml",
+      "purpose": "数据源名称、来源字段/单位/业务键或跨来源权威度声明；用于溯源和口径映射。",
+      "category": "mapping",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "77acaa6d236185f9fa5383b9e829d7f24aa0ed1ee1272b956aef4f40e3fc8e2b",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/__init__.py",
+      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "ab30360db3fd2d0cc8bdd90769768fec73ab273bf7b55db4f0e90e0107d6c638",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/akshare/__init__.py",
+      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "8049f9ff20dc5141c4b191c27569fb76696f28b1f74e78128d49e14c1ae687b2",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/akshare/_source.py",
+      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "a41aa82924f82a56da4cbc9dff33949cc708e23368ad645668030bd16ce263ac",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/akshare/models/__init__.py",
+      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "a5f000921c7e6a07c2bf9d7f4d3ced8fcf9a32117caf094550a58241a26f8b75",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/akshare/models/_normalize.py",
+      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "ac90f5a7b1386f5477ab1394b18cb294621cd3ab28d2dacefbb234aa5859e420",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/akshare/models/bond_daily.py",
+      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "c58da21d39952ecc42024b162c022a80b602257129b570c911c320bce30fbf97",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/akshare/models/financial_indicator.py",
+      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "cc1e6dfb745920af815f476b77b5c93bd8158dc8d3f00bc529e58b9e79ae6d48",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/akshare/models/financial_statement.py",
+      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "f74e7fa363e77fa34dc2d8494b1cd7bbfbd9efe27f44c86e1e026217dadea66f",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/akshare/models/fund_etf_daily.py",
+      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "9023fe6205da631535aebb924405d9096104258f5987e819363d53995592783a",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/akshare/models/futures_daily.py",
+      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "51cbd0e4d49096fd25074db78bf2ff40176536337c7b7f71f61cd36c31a5d792",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/akshare/models/index_constituent.py",
+      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "e4d71764ce5e23df0029302a94f77ca1a1413526fc188bacf2563f353eb65561",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/akshare/models/index_daily.py",
+      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "e94c7294499fa1c224303ac2ed43ed2f1acf0dcf3ddbcc90b1effdead44b3bac",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/akshare/models/option_daily.py",
+      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "fa03b4912427cf1ee5fc433f819ff00a920e1dc5ab3635f29d68d2682180984b",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/akshare/models/stock_action.py",
+      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "68229308d22562e2ba101827241c8a882980ac030ed0b5916d501dfadf1046ed",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/akshare/models/stock_daily.py",
+      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "f3472b15074f423ac5076c31ff6238b8db5bc1a2c708fa5df156befb2b3b5b2d",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/akshare/provider.py",
+      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-08",
+      "reviewer": "Qoder agent C65 re-pin; bound to scanner EXPECTED_METADATA_EXCEPTIONS",
+      "sha256": "5c145bd2a964824239beea5ec0cd95c00f0846797b0cfe5c924f9218555f4c99",
+      "ast_exceptions": [
+        {
+          "kind": "akshare_provider_source",
+          "scope": "module.PROVIDER",
+          "callee": "Provider",
+          "slot": "keyword:source",
+          "literal": "akshare"
+        }
+      ]
+    },
+    {
+      "path": "opendata/data/providers/akshare/registration.py",
+      "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-08",
+      "reviewer": "Qoder agent C65 re-pin; bound to scanner EXPECTED_METADATA_EXCEPTIONS",
+      "sha256": "dfd26d5bd040408b98f77261f7f307b39520ff2d305a741e267a4864ac27523e",
+      "ast_exceptions": [
+        {
+          "kind": "akshare_registration_source",
+          "scope": "register",
+          "callee": "register_provider",
+          "slot": "arg:0",
+          "literal": "akshare"
+        },
+        {
+          "kind": "akshare_fetchers_source",
+          "scope": "__getattr__:FETCHERS",
+          "callee": "fetchers_for",
+          "slot": "arg:0",
+          "literal": "akshare"
+        }
+      ]
+    },
+    {
+      "path": "opendata/data/providers/ths/models/fund_etf_daily.py",
+      "purpose": "THS首方适配器中保留与akshare来源的口径/路由对照说明。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "3c606621f6fbf9ba8e2f52914f25d9283b0378aecdd6ef81b853d7a35c4148b8",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/ths/models/index_daily.py",
+      "purpose": "THS首方适配器中保留与akshare来源的口径/路由对照说明。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "c8f382b997d1a2fd2235dec6f66aa16d148480e25d9a267a74322d7fab1b12f8",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/ths/models/trading_calendar.py",
+      "purpose": "THS首方适配器中保留与akshare来源的口径/路由对照说明。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "b3990ef76ff23b2abff0916173009fed70ea9c79f98261fd7503dcd0f263c44b",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/ths/registration.py",
+      "purpose": "THS首方适配器中保留与akshare来源的口径/路由对照说明。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "6fd663b544c19d2138161ce726be09bd073321c1ba4b3c270ccde6984d78aaf3",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data_fetch/__init__.py",
+      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "801976395cb3838bc3938765aec098e9fe40bb0ba082d77f7dd5d117e64773d7",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data_fetch/scripts/__init__.py",
+      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "cd12921c268327c0b719abd22ef3784e3ad5675b8253de31cf46b471f98d86f8",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/main.py",
+      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "85e1216379de4850d06bc45d446ff4d0b61851196377514400e7058c28e7dbfe",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/models/data_script.py",
+      "purpose": "DataScript.source的akshare默认来源标签，用于来源追踪与适配器分派，不加载外部包。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "b81435239774b6374dae1e4dd37e2c5f0f9ddb02d5d87f03631b7da1af0fc09f",
+      "ast_exceptions": [
+        {
+          "kind": "data_script_source_default",
+          "scope": "DataScript.source",
+          "callee": "mapped_column",
+          "slot": "keyword:default",
+          "literal": "akshare"
+        }
+      ]
+    },
+    {
+      "path": "opendata/models/interface.py",
+      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "7b81c191e6c30c5395fac5e4785d534fb05fd8591648f4cc245fd9201b7dbddf",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/pipeline/ddl.py",
+      "purpose": "按source名称派生ODS表名、默认来源和数据溯源列。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "6058b9c8636e411a6182f093429e2369d02f1d560551d707315b498da316c5e3",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/pipeline/diff_governance.json",
+      "purpose": "数据源名称、来源字段/单位/业务键或跨来源权威度声明；用于溯源和口径映射。",
+      "category": "mapping",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "f3fb493829b5c3aca084027a462b5a0bbe9a1fc7761234fc49631aca895b9ec3",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/pipeline/jobs.py",
+      "purpose": "根据注册来源身份解析首方fetcher及调度任务，不导入外部来源包。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "3e397c0f1947c17034cb02a5d98ae0e527a1adef1939d26697ef73121b103246",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/pipeline/patrol.py",
+      "purpose": "巡检中的akshare来源身份与key_status字典标签，匹配首方ProviderRegistry。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "5615e32ba7407f0bd7dce16377c4702eac43f474ba05e1abfa98c3e65bf4f2d9",
+      "ast_exceptions": [
+        {
+          "kind": "patrol_key_status_label",
+          "scope": "key_status",
+          "callee": "dict",
+          "slot": "dict_key",
+          "literal": "akshare"
+        }
+      ]
+    },
+    {
+      "path": "opendata/pipeline/schedules.yaml",
+      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "632f3839d8a0cc7b68563b60211bacbd954cb2993e7e6004ec30524f8be30a22",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/pipeline/templates.py",
+      "purpose": "ths+akshare双源流水线模板与首方注册表分派。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "3db19b5bdf89b10cd94b0b14bed3c8753ba3e9fc80adfc1867946857fa6d838f",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/services/data_acquisition.py",
+      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "82b13251aac025098796e60bef58233b3badb07142c7a6a1025722821fc50440",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/utils/helpers.py",
+      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
+      "category": "runtime-integration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "90a18aa64c983fef6f309e47ccf5f2038ed74c0dbc7cf98b25eef2fbc54b2051",
+      "ast_exceptions": []
+    },
+    {
+      "path": "pyproject.toml",
+      "purpose": "来源搬运质量规则、包归属和历史依赖的声明；运行时依赖须由AST扫描确认。",
+      "category": "build-declaration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "480f5e43d61c84d13e38ef80d22216d55d67649b450f233210f1812f5a1c04bc",
+      "ast_exceptions": []
+    },
+    {
+      "path": "requirements.txt",
+      "purpose": "搬运来源的依赖说明与首方依赖清单，不允许恢复外部akshare包依赖。",
+      "category": "build-declaration",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "6ad69da39f4b969a4f30af54f7d509ff46e83e4896ee29dcabbd96da1385bbc5",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/ops/akshare_fallback_cross_check.py",
+      "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
+      "category": "cross-check",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "750546bb417a32dd77b6733f4217184eda2695577473e54d0471f375d2155ee3",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/ops/benchmark_ods_write.py",
+      "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
+      "category": "cross-check",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "5c6a8b3b7048284c8b0ddc81219518eb48aff95b1ddb19772ed958985ca2fc47",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/ops/migrate_legacy_stock_daily.py",
+      "purpose": "用户授权旧库逐表审查及隔离迁移中的实际旧库名称；仅作为被审数据库标识，不加载外部包。",
+      "category": "operations-tool",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "a89c27039f4899021720e1676200545d9650975e7ba7de5bb3d57ee2fd1dfa13",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/ops/qfq_official_check.py",
+      "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
+      "category": "cross-check",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "194d4d04aaa818f6b67ce71e101adf0e69e546dff71719a2f5547be4dcb805a3",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/ops/suspension_shape_check.py",
+      "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
+      "category": "cross-check",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "a7ad4a39ce4d13a5719e7cc83af552e54ce6753b6dd4533911ad2c55204063e9",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/ops/ths_financial_statement_cross_check.py",
+      "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
+      "category": "cross-check",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "eda12562d0d48757c1389e86224e54c5ed62a86cb16bb5468ab17935b24f5bb8",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/ops/ths_fund_action_cross_check.py",
+      "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
+      "category": "cross-check",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "c495c2d1d0d1cfacfd412b56d3bfee36c25411eee52590ffbb353de3d20f7495",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/ops/ths_fund_etf_cross_check.py",
+      "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
+      "category": "cross-check",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "ea3bb4fe84a520a073562cdc0f16b54cc4c9f365947406975a73d907d4ce0031",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/ops/ths_futures_option_cross_check.py",
+      "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
+      "category": "cross-check",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "9cfe80a6e2e1c2e0fd92e293212f50652e9f31017394bba31197c3777f82dce2",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/ops/ths_index_constituent_cross_check.py",
+      "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
+      "category": "cross-check",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "b48e67ad11c490813bd15b09ae73e89e91ecdb2c4550c6c76dc10375a5e78206",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/ops/ths_index_cross_check.py",
+      "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
+      "category": "cross-check",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "7ec2857c2667566ab37f6b6b4d97891e3a3f36561ec875ff418932550170fd52",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/ops/ths_trading_calendar_cross_check.py",
+      "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
+      "category": "cross-check",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "b76a8222fb282bb68e8f99454ec5477135fae10221be1b14341f4a99de9f85ef",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/quality/a2_check.py",
+      "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。",
+      "category": "operations-tool",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "84eb1d67cb2be8bace4720179b3adf4ccf1460b9c452ce705cedb8559701c48e",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/quality/acceptance_item_probe.py",
+      "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。",
+      "category": "operations-tool",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "63ffb30f65b68b53a37ac104732ca05233b16dde27354f945df5b00dce9c25b3",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/quality/check_brand.py",
+      "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。",
+      "category": "operations-tool",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "3a534f361553c5faaa84d61032933bc4cbc69d4e1b1aec07369f3ff48daf9e78",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/quality/openbb_inventory_plane.py",
+      "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。",
+      "category": "operations-tool",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "a2c6b4e5d8e4dd2729c2534ef2fd4b7b2cfcb9801d0ed689ef48e79a24d1062a",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/quality/port_scope.py",
+      "purpose": "锁定上游akshare搬运来源、域与模块分母的结构化审计，不加载外部包。",
+      "category": "operations-tool",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "bd4531d8bbd8a97be515c744f323990dd4a63f6471533d3af0a2c7bdbae3a9f5",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/quality/provider_source_review_evidence.py",
+      "purpose": "当前7个provider源码审查的来源名称、OpenBB基线与字节绑定，来源名不加载外部包。",
+      "category": "operations-tool",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "55c9797e5185a2a36b8a73ff4d8eea46b32ca30afc8e5e8604d5e04ec7ebfffe",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/quality/ratchet.py",
+      "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。",
+      "category": "operations-tool",
+      "reviewed_date": "2026-10-01",
+      "reviewer": "Codex primary; authorized C65 criterion migration",
+      "sha256": "80845ea3835d72c9686a8680c47f24520da5e02a75bd6427fb859c89fbbf17b6",
+      "ast_exceptions": []
+    }
+  ]
+}

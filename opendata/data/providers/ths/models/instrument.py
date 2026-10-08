@@ -101,6 +101,8 @@ class ThsInstrumentFetcher(Fetcher[ThsInstrumentQuery, tuple[Instrument, ...]]):
     what trades *today*, not a survivorship-bias-free one.
     """
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="metadata",
         domain="instrument",
@@ -149,7 +151,7 @@ class ThsInstrumentFetcher(Fetcher[ThsInstrumentQuery, tuple[Instrument, ...]]):
         Raises:
             ThsProviderError: Credentials missing, or the pages never ended.
         """
-        from opendata_fuyao.endpoints import list_instruments
+        from opendata.data.providers.ths.endpoints import list_instruments
 
         rows: list[Instrument] = []
         with client(timeout_seconds=ctx.timeout) as active:

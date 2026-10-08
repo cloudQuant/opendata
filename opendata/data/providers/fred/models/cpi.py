@@ -14,11 +14,15 @@ from opendata.data.providers.fred.models._series import FredSeriesFetcher
 class FredCpiFetcher(FredSeriesFetcher):
     """CPI observations for one FRED series (for example ``CPIAUCSL``)."""
 
+    async_mode = "bounded_thread"
+
+    #: Verified against 80 official CPIAUCSL CSV observations (date/value, rtol=1e-9).
+    #: Evidence: docs/evidence/C65/fred-official-comparison.json and .txt.
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_cpi",
         period="1M",
         market="us",
         source=SOURCE,
-        verified=False,
+        verified=True,
     )

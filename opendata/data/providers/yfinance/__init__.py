@@ -1,10 +1,17 @@
-"""First-party yfinance provider package (C1 P0, FR-7).
+"""Lightweight public package interface for yfinance."""
 
-The SDK is an optional dependency imported only by ``models/_sdk.py``;
-registration and routing work without it, and fetching fails closed with a
-stable code when it is absent.
-"""
 
-from opendata.data.providers.yfinance.registration import FETCHERS, register
+def __getattr__(name: str) -> object:
+    """Load compatibility exports only when explicitly requested."""
+    if name == "register":
+        from opendata.data.providers.yfinance.registration import register
+
+        return register
+    if name == "FETCHERS":
+        from opendata.data.providers.yfinance.registration import FETCHERS
+
+        return FETCHERS
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = ["FETCHERS", "register"]

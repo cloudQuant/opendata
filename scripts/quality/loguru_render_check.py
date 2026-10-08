@@ -52,11 +52,19 @@ from loguru import logger
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.quality.source_layout import (  # noqa: E402
+    FIRST_PARTY,
+    PORTED,
+    SourceLayoutError,
+    iter_unique_python_files,
+)
+
 #: Directories swept; printed with the reading so a shrink of the face is visible.
 CHECK_ROOTS: Final = (
     "opendata",
-    "opendata_http",
-    "opendata_fuyao",
     "opendata_client",
     "scripts",
     "tests",
@@ -96,6 +104,8 @@ LEVELS: Final = frozenset(
 )
 #: Conversion specifiers recognised by ``logging``'s %-formatting.
 PERCENT_SPECS: Final = ("%%", "%d", "%r", "%a", "%f", "%e", "%x", "%o", "%s")
+#: ``logging`` call options that do not participate in %-formatting.
+STDLIB_CONTROL_KEYWORDS: Final = frozenset({"extra", "exc_info", "stack_info", "stacklevel"})
 #: Name shapes treated as a logger even when this file cannot resolve them.
 LOGGER_NAME_HINTS: Final = ("logger", "log")
 
@@ -445,7 +455,10 @@ def _site_of(
         # through. A message built at runtime - including an f-string that *does*
         # pass arguments - is disclosed rather than judged.
         template, literal = ast.unparse(template_node), False
-    if len(call.args) - index - 1 + len(call.keywords) <= 0:
+    keyword_args = len(call.keywords)
+    if family == STDLIB:
+        keyword_args -= sum(keyword.arg in STDLIB_CONTROL_KEYWORDS for keyword in call.keywords)
+    if len(call.args) - index - 1 + keyword_args <= 0:
         return None
     return Site(rel, call.lineno, receiver, level, family, template, literal)
 
@@ -527,30 +540,36 @@ def scan(roots: tuple[str, ...] = CHECK_ROOTS) -> Sweep:
     findings: list[Site] = []
     unjudged: list[Site] = []
     total = 0
-    per_root: dict[str, int] = {}
-    for root in roots:
-        base = REPO_ROOT / root
-        files = sorted(base.rglob("*.py")) if base.is_dir() else []
-        swept = 0
-        for path in files:
-            if any(part in SKIP_DIR_PARTS for part in path.parts):
-                continue
-            try:
-                source = path.read_text(encoding="utf-8")
-            except (UnicodeDecodeError, OSError):
-                continue
-            swept += 1
-            try:
-                rows = sites_of(source, path.relative_to(REPO_ROOT).as_posix())
-            except SyntaxError:
-                continue
-            total += len(rows)
-            for site in rows:
-                if site.why_unjudged:
-                    unjudged.append(site)
-                elif verdict_of(site) is not None:
-                    findings.append(site)
-        per_root[root] = swept
+    per_root: dict[str, int] = dict.fromkeys(roots, 0)
+    sources = iter_unique_python_files(
+        REPO_ROOT,
+        roots,
+        layers=frozenset({FIRST_PARTY, PORTED}),
+    )
+    for source_file in sources:
+        path = source_file.path
+        if any(part in SKIP_DIR_PARTS for part in path.parts):
+            continue
+        try:
+            source = path.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError) as exc:
+            raise SourceLayoutError(f"cannot read source file: {source_file.identity}") from exc
+        owner = next(
+            root
+            for root in roots
+            if source_file.identity == root or source_file.identity.startswith(f"{root}/")
+        )
+        per_root[owner] += 1
+        try:
+            rows = sites_of(source, source_file.identity)
+        except SyntaxError:
+            continue
+        total += len(rows)
+        for site in rows:
+            if site.why_unjudged:
+                unjudged.append(site)
+            elif verdict_of(site) is not None:
+                findings.append(site)
     return Sweep(
         findings=sorted(findings, key=lambda s: (s.file, s.line)),
         unjudged=sorted(unjudged, key=lambda s: (s.file, s.line)),
@@ -577,7 +596,11 @@ def run(argv: list[str] | None = None) -> int:
     if args.probe:
         return probe()
 
-    sweep = scan()
+    try:
+        sweep = scan()
+    except SourceLayoutError as exc:
+        print(f"FAIL: loguru scan surface is broken: {exc}", file=sys.stderr)
+        return 1
     for site in sweep.findings:
         reason = verdict_of(site)
         print(f"FINDING {site.where} {site.receiver}.{site.level}: {reason}")

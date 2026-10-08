@@ -53,18 +53,6 @@
       ],
       "note": "这条勾的不是『扫描器绿』而是『扫描器查的就是判据列的那些东西』：条目原文枚举的 13 个 token 与 check_brand.py 里 BRAND_TOKENS 逐项对账（清单从扫描器 AST 派生，不复制第二份），再跑一次脚本取 exit 0，最后用独立 grep 复核 `from app.`/`import app.`（412 个自有 .py，0 命中）。边界：本轮不证扫描器对大小写/分隔符变体的鲁棒性，那属 check_brand 自己的面。"
     },
-    "AC-1|03|afb7fc32": {
-      "state": "gap",
-      "round": "C40",
-      "date": "2026-09-26",
-      "reason": "裸词 akshare 命中 611 个跟踪文件，其中搬运树 opendata_http/ 315；**条目白名单之外仍有 70 个**：适配层包 opendata/data/providers/akshare/ 15 个 + 55 个（opendata/data 注册表与映射 11、scripts/ops 跨供应商对照脚本 8、opendata/pipeline 5、scripts/quality 4、opendata/api 3、core/models/data_fetch/utils/services/main/cli 11、根文档 ARCHITECTURE.md+QUICKSTART.md 2、构建运维面 Makefile/Dockerfile/.pre-commit-config.yaml/bandit.yaml/pyproject.toml/requirements.txt/.env.example 7、frontend 2、alembic_data/versions 1、opendata_fuyao/endpoint_map.yaml 1）。条目列的 7 个面写于 A0，A2 改名与 B5 去依赖之后从没跟上：白名单该不该覆盖适配层与对照脚本是**措辞决策**，不由本轮替用户定。另一处如实登记：从条目原文回读白名单时，`akshare/` 与括注 `opendata_http/` 被解析成同一条（10 条里有 1 对重复）。集成层 import akshare 的存量另由 AC-16 基线冻结（2 个文件），不在此条判定内。",
-      "evidence": [
-        "docs/evidence/C40/probe-all.txt",
-        "docs/evidence/C40/probe-readings.json",
-        "docs/evidence/C40/README.md",
-        "docs/quality/zero-dep-baseline.json"
-      ]
-    },
     "AC-1|04|019bc6fc": {
       "state": "proven",
       "round": "C40",
@@ -80,15 +68,21 @@
       "note": "四个面分开量：compose 六个 container_name 全部落在 opendata_* 且网络名为 opendata_network；opendata_user 在 .env.example/compose/init.sql 三处齐备；7 个机器面（compose/.env.example/init.sql/config.py/Makefile/.pre-commit/Dockerfile）旧 token 命中 0；Makefile 17 条路径引用 0 缺失、pre-commit 8 条 files/exclude 正则 0 条指向不存在的文件（空转正则以前没人查）。披露：根文档按 AC-1|03 分成『仍在使用旧名』(0 容忍) 与『沿革点名旧名』(3 行/4 文件，允许) 两类，分型靠 PROVENANCE_MARKER 关键词共现，不是语义判定。"
     },
     "AC-1|05|db9002ff": {
-      "state": "gap",
-      "round": "C40",
-      "date": "2026-09-26",
-      "reason": "判据前一半已过：config.py 默认值 / .env.example / docker-compose.yml / init.sql 四处都读到 opendata / opendata_data（consistent=yes，逐处值已打印）。后一半没过且本轮不能代替它过：『后端启动、前端登录、/health 正常』需要真把栈起来，今天是 `no-engine`（docker info exit 1: Cannot connect to the Docker daemon）。启动 Docker 引擎不在自主动作范围内，登记为需用户确认；no-engine（跑不了）与 fail（跑了但不对）在探针里是两个不同的读数，不互相顶替。",
+      "state": "proven",
+      "round": "C65",
+      "date": "2026-10-01",
+      "command": "Anaconda base outer driver invokes fixed Python scripts/quality/acceptance_item_probe.py --all --json docs/evidence/C65/item-readings-current.json; actual argv and CHECK_EXIT in docs/evidence/C65/item-readings-current.txt",
       "evidence": [
-        "docs/evidence/C40/probe-all.txt",
-        "docs/evidence/C40/probe-readings.json",
-        "docs/evidence/C40/README.md"
-      ]
+        "docs/evidence/C65/item-readings-current.json",
+        "docs/evidence/C65/item-readings-current.txt",
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/runtime-build-source.json",
+        "docs/evidence/C65/runtime-build-current.txt",
+        "docs/evidence/C65/runtime-stack-current.json",
+        "docs/evidence/C65/runtime-stack-current-independent.txt",
+        "docs/evidence/C65/runtime-probe-independent.txt"
+      ],
+      "note": "当前源代码绑定686项Docker COPY投影、真实build与owned33565/33566默认双库名、healthy/connected及真实前端登录首页/目录均通过；driver/当前verifier SHA与镜像来源互绑。证明当前隔离正常栈，不宣称正式部署。"
     },
     "AC-1|06|3ce38e4e": {
       "state": "proven",
@@ -104,43 +98,32 @@
       "note": "判据只管数据仓库容器：`mysql_warehouse` 不挂 profile=yes。仍带 profile 的只有 certbot(ssl)，照实报不判红。`docker compose config --services` 因 MYSQL_ROOT_PASSWORD 需要插值而 exit 1 ⇒ 该面记 n/a 并改用 compose 文件静态解析，不让环境缺项冒充结论。本轮不声称栈能起来（那是 AC-1|05 的运行时面，今天 no-engine）。"
     },
     "AC-1|07|2be7c221": {
-      "state": "gap",
-      "round": "C40",
-      "date": "2026-09-26",
-      "reason": "许可面全绿：LICENSE 以 Business Source License 1.1 开头、参数块五键齐（缺 0/四要素，Change Date 2030-09-22、Change License MIT）、LICENSE-AKSHARE 为 MIT、THIRD_PARTY_NOTICES.md 四节含嵌入资源权利块、README 授权说明与数据免责声明均在。唯一卡点是判据明写的『商务联系方式』：README L160 现在是自标占位的 `cloud@example.com（占位，发布前替换为正式联系方式）`（placeholder=yes）。这是要用户提供的文本，编一个能过判据的邮箱就是造假，故不勾。",
+      "state": "proven",
+      "round": "C65",
+      "date": "2026-09-30",
+      "command": "/Users/yunjinqi/opt/anaconda3/bin/conda run --no-capture-output -n base /tmp/opendata-c64-clean-env-20260930/bin/python scripts/quality/acceptance_item_probe.py --item AC-1|07 --json docs/evidence/C65/contact-probe.json",
       "evidence": [
-        "docs/evidence/C40/probe-all.txt",
-        "docs/evidence/C40/probe-readings.json",
-        "docs/evidence/C40/README.md",
+        "docs/evidence/C65/contact-probe.txt",
+        "docs/evidence/C65/contact-probe.json",
+        "README.md",
         "LICENSE",
+        "LICENSE-AKSHARE",
         "THIRD_PARTY_NOTICES.md"
-      ]
+      ],
+      "note": "用户提供负责人 cloudQuant 和公开主页/GitHub 联系渠道，README 的商务授权联系已替换占位文本。独立探针许可证、四要素、第三方登记、免责声明及真实联系文本全部通过；主页可达性不是本条判据，不由联系人输入推定数据权利签认。"
     },
     "AC-1|08|2e7a9f6f": {
-      "state": "gap",
-      "round": "C40",
-      "date": "2026-09-26",
-      "reason": "登记表存在且列齐（16 行 × 十列，含复核日期与责任人两列），覆盖对账也过：provider-inventory.yaml 引用的 10 行全部有对应行、无悬空引用。但『覆盖全部数据源（来源/条款链接/允许用途/复核日期/责任人）』按内容量 today：复核日期真填 **0/16**、允许用途仍答『待确认』 **11/16**、条款链接写成散文而非 URL **13/16**。列在不等内容在——填这些是法务/产品复核结论，本轮能做的只是把它变成三个可复算的数（dated/undecided/unlinked），已做。",
+      "state": "proven",
+      "round": "C65",
+      "date": "2026-10-01",
+      "command": "Anaconda base outer driver invokes fixed Python scripts/quality/acceptance_item_probe.py --all --json docs/evidence/C65/item-readings-current.json; actual argv and CHECK_EXIT in docs/evidence/C65/item-readings-current.txt",
       "evidence": [
-        "docs/evidence/C40/probe-all.txt",
-        "docs/evidence/C40/probe-readings.json",
-        "docs/evidence/C40/README.md",
-        "docs/data-rights-registry.md"
-      ]
-    },
-    "AC-1|09|1c8469ac": {
-      "state": "gap",
-      "round": "C40",
-      "date": "2026-09-26",
-      "reason": "全历史扫描器今天实跑通过（make secret-check exit 0，`no leaks found`），上游 5 个硬编码凭证文件登记 5/5、残留凭证形状字面量 0。两条仍未满足：①条目字面的 `git ls-files | grep -E '\\.env|\\.idea|\\.pid'`读出 **1 条 `.env.example`**（按真实凭证形状重跑 `(^|/)\\.env$`、`.idea/`、`*.pid` 为 0）——这与 AC-1|03 明文允许 .env.example 作为模板面**互相矛盾**，要么改条目措辞要么删模板；②『白名单仅含文档/模板』按今天不成立：.gitleaks.toml 全局豁免 2 条中非文档/模板 1 条（`\\.egg-info/`，构建产物），另有 2 个 per-rule 豁免块（C36 那条形状豁免的代价已由反事实量出：全大写带点的 4 段值会被放过）。本轮把 C36 的 reason 更新为这一版（C36 只说了豁免面，没说两条判据互斥）。",
-      "evidence": [
-        "docs/evidence/C40/probe-all.txt",
-        "docs/evidence/C40/probe-readings.json",
-        "docs/evidence/C40/README.md",
-        ".gitleaks.toml",
-        "docs/evidence/C36/gitleaks-counterfactual.log",
-        "docs/evidence/A0/secret-audit.txt"
-      ]
+        "docs/evidence/C65/item-readings-current.json",
+        "docs/evidence/C65/item-readings-current.txt",
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/data-rights-review.md"
+      ],
+      "note": "11条数据源登记已逐项列公开条款URL、用途边界、日期和责任人。用户授权主线程审阅；完成登记不等同于允许所有落库/自动获取/商业使用或再分发。限制、需授权与不适用项照实保留。"
     },
     "AC-1|10|0c44a7ef": {
       "state": "proven",
@@ -244,28 +227,106 @@
       "note": "注册表 20 域 / 20 个 rest_path / 20 个 contract 条目、REST 路径唯一；『派生且一致』的反面判据是另有一处硬写但今天恰好一样，所以量的是把表名/WS 名写成字面量的条数（今天 0）；tests/test_domains.py 23 passed + 派生节点 5/5。"
     },
     "AC-3|01|d4d8d4f4": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-3|01'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 3/3 nodes passed；runtime binding=yes; scope=offline registrations; historical opendata_providers uses current providers"
     },
     "AC-3|02|ad9b6149": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-3|02'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 3/3 nodes passed；runtime binding=yes; scope=offline actual registry resolution"
     },
     "AC-3|03|cb527b75": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-3|03'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 3/3 nodes passed；runtime binding=yes; scope=offline explicit routing and rejection; no live supplier request"
     },
     "AC-3|04|d95b04a8": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-3|04'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 3/3 nodes passed；runtime binding=yes; scope=offline verified/notes eligibility, both reserved note values"
     },
     "AC-3|05|8d653c0a": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-3|05'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 4/4 nodes passed；runtime binding=yes; scope=offline authenticated read-only API and current registry contents"
     },
     "AC-4|01|e3c017e7": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "evidence": [
+        "docs/evidence/C64/new-item-probes.txt",
+        "docs/evidence/C64/new-item-probes.json",
+        "docs/evidence/C64/README.md"
+      ],
+      "command": "/Users/yunjinqi/opt/anaconda3/bin/conda run -n base python scripts/quality/acceptance_item_probe.py --item AC-4|01",
+      "note": "C64 fresh named behavior checks: 5/5 nodes passed；runtime binding=yes; scope=offline actual transport mocks; no real supplier ban or uptime claim"
     },
     "AC-4|02|2b146f20": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "evidence": [
+        "docs/evidence/C64/new-item-probes.txt",
+        "docs/evidence/C64/new-item-probes.json",
+        "docs/evidence/C64/README.md"
+      ],
+      "command": "/Users/yunjinqi/opt/anaconda3/bin/conda run -n base python scripts/quality/acceptance_item_probe.py --item AC-4|02",
+      "note": "C64 fresh named behavior checks: 4/4 nodes passed；runtime binding=yes; scope=offline structured-event behavior and credential redaction"
     },
     "AC-4|03|7d283c38": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-4|03'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 6/6 nodes passed；runtime binding=yes; scope=fresh offline P0/persistent-outbox checks and actual UTC CronTrigger; disabled by default; business time and live suppliers remain unverified"
     },
     "AC-5|01|d68d5995": {
       "state": "proven",
@@ -283,32 +344,20 @@
       "note": "判据要的是「逐项」而不是「写死的数字」，所以这一格把 315 条全部现算一遍：清单 313 py + 2 资源 = 315 条，每条 sha256 对磁盘现算，对不上 0 条、磁盘上没有 0 条；反方向也查 —— 磁盘上清单没登记的 py 0 个、未登记为资源的非 py 文件 0 个、清单里已过时的条目 0 个。四个计数逐个与现算相等（py_files / resource_files / total_files / total_lines，现算行数 93205）；`upstream.lock` 的文件集与 manifest 相等（315 条）。仪器原话 `scripts/codemod/gen_manifest.py --check` → `OK: manifest.json is up to date`（exit 0，见 docs/evidence/C61/register-and-diff.txt）。**没有以任何写死的模块/文件数字作为判定输入**，判据原文一字未动。"
     },
     "AC-5|02|d833746f": {
-      "state": "gap",
-      "round": "C61",
-      "date": "2026-09-28",
-      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-5|01' --item 'AC-5|02' --item 'AC-5|03' --item 'AC-5|04' --item 'AC-5|05' --item 'AC-5|06' --item 'AC-5|07'（七格一次跑，全读只读/离线：sha256 逐条现算 + `gen_manifest.py --check` + 搬运树 313 文件头走查 + datasets.py 当场调用 + bandit 档案复核）",
-      "reason": "「P0 域子模块搬运完成 / P1 域子模块搬运完成」缺一个机器可读的分母：`opendata/data/domains.yaml` 与 `Capability` 都不带 batch/priority/tier 字段，需求 D9 与实施计划 B1.1 的子模块清单写在「stock、stock_feature、…、utils **等**」这类散文里，所以「完成」无法从树上判。已量的两半是实的：首方代码以 ``opendata_http.<name>`` 取用的 11 个端点函数聚合层全部导出（缺 0）、被点名移出本迭代的 8 个非金融子包一个都没混进来（0）；D9 点名范围内真正没搬的只有 `futures_derivative` 1 个，而它是否属于 P0/P1 也要同一份字段来定。补齐路径写进探针 repair：`tier_field: - -> opendata/data/domains.yaml#batch` + `scope_missing: 1 -> 0`。**谁声明哪个域属哪一批是产品/接口决策，本轮不替它编字段。**另登记仪器缺陷：第一版把散文里的「utils 等」切成一个子包名，量出「缺失 2 个」其中一条是解析残渣，修法是剥掉行尾「等」再比（不是把 utils 特判掉），修后 readings 见 docs/evidence/C61/probe-items-ac5.txt；本格结论没变，但 gap 的理由必须是真的。",
+      "state": "proven",
+      "round": "C65",
+      "date": "2026-10-01",
+      "command": "Anaconda base outer driver invokes fixed Python scripts/quality/acceptance_item_probe.py --all --json docs/evidence/C65/item-readings-current.json; actual argv and CHECK_EXIT in docs/evidence/C65/item-readings-current.txt",
       "evidence": [
-        "docs/evidence/C61/README.md",
-        "docs/evidence/C61/probe-items-ac5.txt",
-        "docs/evidence/C61/probe-self-test.txt",
-        "docs/迭代计划/迭代1-重构数据中台/需求文档.md",
-        "opendata/data/domains.yaml"
-      ]
-    },
-    "AC-5|03|c14ac7c3": {
-      "state": "gap",
-      "round": "C61",
-      "date": "2026-09-28",
-      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-5|01' --item 'AC-5|02' --item 'AC-5|03' --item 'AC-5|04' --item 'AC-5|05' --item 'AC-5|06' --item 'AC-5|07'（七格一次跑，全读只读/离线：sha256 逐条现算 + `gen_manifest.py --check` + 搬运树 313 文件头走查 + datasets.py 当场调用 + bandit 档案复核）",
-      "reason": "「codemod 差异报告人工待办清零」这一半到了（docs/port-report.md 自报待办 0 条、清单段落首行「（无 —— 待办清零）」且无挂着的复选项）；没到的是「AST 级静态扫描零 `akshare` 运行时引用（含字符串常量与动态导入）」：`scripts/codemod/verify_no_akshare.py` exit 0 且 --self-test exit 0，import 形态 0、动态导入 0，**字符串常量形态 3 条**并正是冻结基线里那 3 条产品事实的名字面量（opendata/data/openbb_map.py、opendata/models/data_script.py、opendata/pipeline/patrol.py；扫描器原话 517 file(s) walked，opendata_http=313）。抹平它只有两条路，两条都要改判据本身：①把扫描器字符串规则改窄＝回头放宽已勾的 AC-16|05「AST 口径」；②改掉这三处真实数据源名的拼写＝给扫描器做伪装，正是 C35 收口过的门禁空转。**同一道题 AC-16|06 已登记为用户/产品决策（task #64）**，这里不重复改判、也不换个说法再判一次。",
-      "evidence": [
-        "docs/evidence/C61/README.md",
-        "docs/evidence/C61/probe-items-ac5.txt",
-        "docs/evidence/C61/probe-self-test.txt",
-        "docs/quality/zero-dep-baseline.json",
-        "scripts/codemod/verify_no_akshare.py"
-      ]
+        "docs/evidence/C65/item-readings-current.json",
+        "docs/evidence/C65/item-readings-current.txt",
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/port-scope-manifest.json",
+        "docs/evidence/C65/port-scope-review.md",
+        "docs/evidence/C65/port-report-current.md",
+        "docs/evidence/C65/port-report-current.txt"
+      ],
+      "note": "范围清单327项含325py+2资源，连接锁定上游及当前源SHA；P0完整搬运以及B1九模块组逐路径核对，codemod重放0TODO。"
     },
     "AC-5|04|edaaf674": {
       "state": "proven",
@@ -355,48 +404,139 @@
       "note": "判据给两条支路，实测走的是第二条「明确标注不可用并登记」，所以三件事都要成立：①调用是真的 —— `opendata_http/datasets.py` 里 2 个资源访问函数（get_ths_js / get_crypto_info_csv）当场执行，返回路径 0 个、raise 且文案明说 unavailable 2 个、报别的异常 0 个；②标注要有地方接住 —— 两条 raise 文本都回指 `docs/port-report.md`，该文件里「内置资源不可用登记」段落在位、表体 2 行、逐个点名这两个函数且不多不少（多一行=登记了没被 raise 的，少一行=漏登记）；③登记处必须是可重放的 —— 这一节由 `scripts/codemod/report_port.py` 从 datasets.py 的 raise 语句与 upstream.lock 派生（本轮 +93 行仪器改动），不是手写进报告正文：port-report.md 整体是生成物且与已提交档案逐字节比对（AC-17|05）。另读：清单登记的 2 个内置资源在磁盘齐备（2/2）。把函数改成真能读搬运树内的路径要动 datasets.py 正文，会破坏与 upstream.lock 的确定性重放，属搬运基线决策，本轮不做。【C61 追加，同轮不翻格】这一节的行形状原本写成 `| \\`get_ths_js\\` |`，与同一份报告里「每个搬运文件一行」的重放表同形，而 `AC-17|05` 数 rows_total 用的就是这个行首前缀 —— 于是登记行被算进搬运清单，rows_total 317 ≠ upstream.lock 315，把本轮没碰过的 `AC-17|05` 从 proven 判成 gap（冲突计数由 `git show 759be9c:docs/port-report.md` 的原始字节现算，见 ac5-06-shape-fix.txt 头部）。修法改生产物不改判据：登记行去掉反引号，`AC-5|06` 改按首列形状认数据行（首列是标识符才算），并新增面 `shape_clash`（登记段里与重放表同形的行数，今天读 0）进 judge 的顶层合取 + 一条反事实（施加 shape_clash=2 ⇒ 本格回 gap）；正控用 759be9c 的真实登记段喂进今天的 measure，读到 shape_clash=2、register_rows=0 ⇒ gap，证明解析器不是换了一种硬编码形状。修复后 `AC-17|05` 回到 proven（锁 315 / 报告 315 行 / 逐字一致 315 / 现场渲染与档案逐字节一致）。`--sync-faces` 写回后面基线与已提交版本逐字节相同（新面不读 git 时刻）。"
     },
     "AC-5|07|68f3347f": {
-      "state": "gap",
-      "round": "C61",
-      "date": "2026-09-28",
-      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-5|01' --item 'AC-5|02' --item 'AC-5|03' --item 'AC-5|04' --item 'AC-5|05' --item 'AC-5|06' --item 'AC-5|07'（七格一次跑，全读只读/离线：sha256 逐条现算 + `gen_manifest.py --check` + 搬运树 313 文件头走查 + datasets.py 当场调用 + bandit 档案复核）",
-      "reason": "判据两半：扫描在面（在）与人工 triage 留档（这份留档已经跟不上树）。本轮自写全量档案 docs/evidence/C61/ported-bandit-scan.json（archive_round=C61、generated_at=2026-09-28T20:33:11Z、命令 bandit -q -r opendata_http -f json）：1021 项 / 234 个文件带 finding / 13 条规则（B105,B107,B110,B112,B113,B301,B307,B311,B324,B403,B404,B501,B603），全是 B 层且文件全在搬运清单内。而 docs/evidence/A2/bandit-ported-triage.md 自己声明扫的是 131 个 py 文件 / 328 项、处置 10 条规则，搬运树今天是 313 个 py 文件 ⇒ 覆盖面不等，**5 项落在 triage 从未处置过的规则上**：B403@futures/cons.py:13、B301@futures/cons.py:576、B324@stock_feature/stock_a_indicator.py:50、B324@stock_feature/stock_info.py:36、:37。那句免罪句「无 B608（SQL 拼接）、无 B324（弱哈希）、无 pickle/yaml.load 类反序列化项；builtin exec 站点 0」描述的是当初那棵树 —— 本轮实测它点名的 B324 出现 3 项；反序列化那一半按 bandit 测试名匹配到 0 条，所以读数里两条分开写、不合并成「triage 依旧成立」。逐条人工处置是这件事的正当收口（要人判断，本轮不给它补假处置）。另两处如实交代：①**没有跑 `make security-ported`** —— 它的 `-o` 硬写 docs/evidence/A2/bandit-ported.json，覆写它等于改写前一轮的证据，所以本轮用同一条命令自己扫、产物落进 C61；②仪器缺陷：旧版把 Makefile 的 `@#` 注释算进 recipe，读数截断后只剩注释，且 `PORTED_ROOT in recipe` 会被注释里的路径名满足（改扫别处也照判 yes），现在注释行不进 recipe。",
+      "state": "proven",
+      "round": "C65",
+      "date": "2026-10-01",
+      "command": "Anaconda base outer driver invokes fixed Python scripts/quality/acceptance_item_probe.py --all --json docs/evidence/C65/item-readings-current.json; actual argv and CHECK_EXIT in docs/evidence/C65/item-readings-current.txt",
       "evidence": [
-        "docs/evidence/C61/README.md",
-        "docs/evidence/C61/probe-items-ac5.txt",
-        "docs/evidence/C61/probe-self-test.txt",
-        "docs/evidence/C61/ported-bandit-scan.json",
-        "docs/evidence/A2/bandit-ported-triage.md",
-        "docs/evidence/A2/bandit-ported.json",
-        "Makefile",
-        "bandit.yaml"
-      ]
+        "docs/evidence/C65/item-readings-current.json",
+        "docs/evidence/C65/item-readings-current.txt",
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/ported-bandit-scan.json",
+        "docs/evidence/C65/ported-security-triage.json",
+        "docs/evidence/C65/ported-security-review.md",
+        "docs/evidence/C65/security-brand-independent.txt"
+      ],
+      "note": "固定Bandit1.9.4扫描325py：1048finding、15规则、31HIGH、0错误；用户授权当前AI主线程逐规则triage全部finding身份留档。此项只证明扫描及审阅，31HIGH/TLS/eval/pickle等仍未修复，不宣称安全就绪。"
     },
     "AC-6|01|4f5b0f7b": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-6|01'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "recorded observations=yes; provenance=yes；A2 replay: 14 PASS cases; Sina alternatives; four Eastmoney cases pending; no P1 coverage claim"
     },
     "AC-6|02|1f610b61": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C65",
+      "date": "2026-10-01",
+      "command": "Anaconda base outer driver invokes fixed Python scripts/quality/acceptance_item_probe.py --all --json docs/evidence/C65/item-readings-current.json; actual argv and CHECK_EXIT in docs/evidence/C65/item-readings-current.txt",
+      "evidence": [
+        "docs/evidence/C65/item-readings-current.json",
+        "docs/evidence/C65/item-readings-current.txt",
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/port-sampling-acceptance.md",
+        "docs/evidence/C65/port-fidelity-current-report.md",
+        "docs/evidence/C65/port-fidelity-current.txt",
+        "docs/evidence/C65/benchmark-port-independent.txt"
+      ],
+      "note": "保留原文子模块分母：1B九组中6组有通过的record/replay对照，66.67%达到20%；报告14PASS/0FAIL/4PENDING，未判案例不进分子。文件覆盖7/245=2.86%显式披露；不声称文件级20%或全部搬运均对照通过。"
     },
     "AC-6|03|e76f832b": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-6|03'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 3/3 nodes passed；runtime binding=yes; scope=offline unverified exclusion; no supplier comparison claim"
     },
     "AC-7|01|bffe5960": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-7|01'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 4/4 nodes passed；runtime binding=yes; scope=fresh offline HTTP mocks; historical live smoke A3 separately retained"
     },
     "AC-7|02|7569b003": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-7|02'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 3/3 nodes passed；runtime binding=yes; scope=current complete error-table validation"
     },
     "AC-7|03|10995291": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-7|03'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "recorded observations=yes; provenance=yes；A3 live smoke and ten-day dump; no current Key or ten-year claim"
     },
     "AC-7|04|89c5e0b2": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-7|04'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 3/3 nodes passed；runtime binding=yes; scope=official archived document inventory and bidirectional map checks"
     },
     "AC-7|05|cb279570": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-7|05'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 3/3 nodes passed；runtime binding=yes; scope=offline registered domains and contract-backed fetcher declarations"
     },
     "AC-7|06|db29e204": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "evidence": [
+        "docs/evidence/C64/new-item-probes.txt",
+        "docs/evidence/C64/new-item-probes.json",
+        "docs/evidence/C64/README.md"
+      ],
+      "command": "/Users/yunjinqi/opt/anaconda3/bin/conda run -n base python scripts/quality/acceptance_item_probe.py --item AC-7|06",
+      "note": "C64 fresh named behavior checks: 3/3 nodes passed；runtime binding=yes; scope=current registry resolution; no supplier availability claim"
     },
     "AC-8|01|98ae06d2": {
       "state": "proven",
@@ -441,32 +581,40 @@
       "note": "判据原文点名「单测」，判定就落在那一面：**5 格节点全绿**（两条 builder 的形状断言 + staging/direct 两条落库路径的语句序列 + ``test_landing_the_same_key_twice_is_one_row_written_in_place``「同一 key 落两次还是一行、值就地改」）。语句三面各自承重：``AS new`` 别名式（不是 VALUES() 旧写法）、``if column not in set(key)`` 把业务 key 挡在 ``ON DUPLICATE KEY UPDATE`` 赋值之外（改 key 就不是修同一行，两条路径都要有）、空列表 ``raise ValueError(\"cannot build a …\")`` 在两条 builder 里各计一次（``fails_closed=2``，只有一条 builder 有关闭面就红）。**披露而非隐瞒的一面**：真库那格 ``TestLiveUpsert::test_corrected_value_updates_in_place_without_duplicating`` 是 ``@pytest.mark.e2e``，本轮 ``-m \"not e2e\"`` 的选择式不跑它（读数 ``exit=5``，即「一条都没选中」而不是「跑了但失败」），所以「修正后不产生重复行」在**真 MySQL**上仍欠一次真跑 —— 那是需要用户确认的仓库写，本轮未做、也没把它算成本格的证据。"
     },
     "AC-8|04|9c3f54f1": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C65",
+      "date": "2026-10-01",
+      "command": "Anaconda base outer driver invokes fixed Python scripts/quality/acceptance_item_probe.py --all --json docs/evidence/C65/item-readings-current.json; actual argv and CHECK_EXIT in docs/evidence/C65/item-readings-current.txt",
+      "evidence": [
+        "docs/evidence/C65/item-readings-current.json",
+        "docs/evidence/C65/item-readings-current.txt",
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/write-benchmark-matrix.json",
+        "docs/evidence/C65/write-benchmark-matrix-driver.txt",
+        "docs/evidence/C65/write-benchmark-full.jsonl",
+        "docs/evidence/C65/write-benchmark-acceptance.md"
+      ],
+      "note": "三个隔离全新目标规模实测100k、1m、单源THS全量10,310,289行，记录耗时及峰值RSS、窗口/页数/源数据身份和真实落库行数。"
     },
     "AC-8|05|3dd663e5": {
       "state": "gap",
-      "round": "C57",
-      "date": "2026-09-28",
-      "reason": "本轮把「分区维护任务可运行」从一条外观 cron 做成真执行器：`schedules.yaml` 的 `partition-maintenance` 行（cron `0 3 * * *`，payload `years_ahead=2`）此前不在 `jobs.EXECUTABLE_KINDS` 里，注册阶段就被跳过——声明与真仓库从未相连。补齐后接线四读全 yes（yaml 行 / kind 可执行 / 派发到本体 / 本体调 `ensure` 而不是只出 plan），`ddl.py` 的 `RANGE COLUMNS` + `MAXVALUE` 渲染 yes。仓库面（docs/evidence/C57/partition-horizon.txt，`PARTITION_FACE_EXIT=0`）：注册仓库表 20 张 / 已分区 6 张 / 年度上界仍缺 5 张（各缺 `p2027` 一个，合计 5 个年度分区）；分区列按域分别是 `trade_date`(2) / `report_period`(2) / `as_of`(1) / `ex_date`(1)，与判据原文只点名 `trade_date` 有措辞级差异——按各自业务日期列分区更对，但改判据措辞属产品决定，本轮只量不改。还缺的两面都等用户点头：`live_gap_tables: 5 -> 0` 与 `applied_face: no -> yes`——补这一年是对生产仓库执行 `REORGANIZE PARTITION pmax`；代价面本轮先量了（6 张表 `pmax` 行数合计 0，⇒ 只动元数据、不重写数据行），但 DDL 不在本轮自行执行。**副作用需知会**：job 接上后 `dev` 启动会注册这条 03:00（本机时区）cron，下一次触发就会自动补这 5 张表。",
+      "round": "C65",
+      "date": "2026-10-01",
+      "reason": "当前正式3306数仓未迁移至完整注册分区集；owned33565迁移/维护测试通过不能替代正式仓库分区覆盖。",
       "evidence": [
-        "docs/evidence/C57/README.md",
-        "docs/evidence/C57/partition-horizon.txt",
-        "docs/evidence/C57/run_partition_horizon.sh",
-        "docs/evidence/C57/probe-items-ac8.txt",
-        "docs/evidence/C57/run_probe_c57.sh",
-        "opendata/pipeline/jobs.py"
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/source-preflight.json",
+        "docs/evidence/C65/isolated-replay-legacy-schema-heads.txt"
       ]
     },
     "AC-8|06|0bd99b7d": {
       "state": "gap",
-      "round": "C57",
-      "date": "2026-09-28",
-      "reason": "跨年写入要的是「跑过」的证据而不是「有用例」。用例面 yes：`tests/test_partition_maintenance.py` 自建 `_probe_partition_maintenance`、插入 `2027-03-01` 那一行、并断言落点 `assert placements == [\"p2027\"]`（:147，读数 1 行）。这一格还顺手抓到仪器自己的缺陷：`asserted_lines` 数的是 `expect(` 行，用在 `assert` 风格的测试文件上恒为 0，会把已经存在的断言读成假 gap；已按本文件风格就地改成 `assert` 行计数，**没有**改共享 helper 的语义（那会牵动别的格子）。仍缺两面：①用例带 `@pytest.mark.e2e`，`make gate` 不跑 e2e，故 `ran_live=no`，跑它要在仓库建删 `_probe_*` 表，同属仓库写操作，等确认；②真仓库 2027 年界仍缺 5 张表（`fallback_gap=5`），缺的那一年现在会落进 `pmax` 且**不报错**——判据字面「无 no partition for value 错误」因此永远为真，而年分区形同不存在，这正是判据要落点断言的理由。补齐路径与 |05 是同一件事：一次经确认的 `REORGANIZE` 把上界补齐 + 一次 e2e 真跑留档。",
+      "round": "C65",
+      "date": "2026-10-01",
+      "reason": "隔离库跨年写入及真实分区精确count通过，当前正式仓库完整注册分区集尚无相同实测。",
       "evidence": [
-        "docs/evidence/C57/README.md",
-        "docs/evidence/C57/probe-items-ac8.txt",
-        "docs/evidence/C57/partition-horizon.txt",
-        "tests/test_partition_maintenance.py"
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/source-preflight.json"
       ]
     },
     "AC-8|07|1f09a9c3": {
@@ -484,7 +632,16 @@
       "note": "无 ``id`` 列的表能不能分页，判的是「排序列从哪来」：回落链 ``id`` → 业务主键 → 首列三档都在 ``table_shape`` 的产出上（``\"id\" in columns`` 后 ``return list(key_columns)``、再 ``return list(columns[:1])``），``LIMIT :limit OFFSET :offset`` 走绑定参数而非拼接，无列可排时 ``\"has no columns to order by\"`` fail closed；端点面要求 ``get_table_data`` 函数体里真的先 ``table_shape(`` 再 ``page_sql(``（只改 SQL 不改装配顺序，读到的仍是硬编码），且模块里 ``ORDER BY id`` 回潮数 = 0。**5 格节点含两条真翻页**：``TestTableShapeIntegration`` 用 SQLite 真表跑三行两页、断言每行只出现一次（形状推断在真 SQL 上成立与否由此判定，不是读常量），加 ``/tables/{id}/data`` 那条无 id 列端点的 HTTP 用例。判据原文一字未动。"
     },
     "AC-8|08|169daf79": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C65",
+      "date": "2026-10-01",
+      "reason": "全量恢复来自既有THS ODS快照，source API calls=0；AkShare十条启用腿尚未对照通过，旧库迁移也因NULL拒绝。尚无双源全市场及四域真实抓取/落库本轮证据。",
+      "evidence": [
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/replay-full-independent-sql.json",
+        "docs/evidence/C65/provider-source-review.json",
+        "docs/evidence/C65/legacy-transfer-current.json"
+      ]
     },
     "AC-9|01|e67169e2": {
       "state": "proven",
@@ -625,10 +782,17 @@
     },
     "AC-9|07|96ff13a5": {
       "state": "proven",
-      "round": "C52",
-      "date": "2026-09-27",
-      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-9|07'（VERDICT proven：`两条单测: 2/2 passed` ＋ 传播链五段全 yes） ＋ python -m pytest tests/test_dwd_merge.py -q --no-header -p no:cacheprovider --no-cov -m 'not e2e'（29 passed / 1 deselected，PYTEST_EXIT=0，见 docs/evidence/C52/pytest-dwd-merge-file.txt） ＋ python docs/evidence/C52/falsify_dwd_merge.py（M4 `self._reader(source)(start, end, set(affected_keys))` → `set()` 一处改写，把 `test_revision_of_an_existing_key_changes_the_dwd_row` 与本体探针同时扳红后逐字节还原） ＋ make gate 回填前一遍：gate-run1-prebackfill.txt 7,503 行完整未裁剪（7 行溯源头 + 7,496 行正文）、18 段 `===== gate:` 横幅、`GATE_EXIT=0` 读自档案自身末行、`real 9:01.16`；成员 11 = `36/36 个探针走到了判定，283 条 break`、`本遍墙钟 = 324.3 s`、`台账↔读数：agrees=32, unflipped=2, open=1, deferred=1, stale-proof=0`（两个 unflipped 正是 AC-9|06 与 AC-9|07：探针已读到 proven 而台账还写着 unreviewed；open=1 是 AC-9|01 读出 gap 而台账还没记 gap；deferred=1 是时刻面格 AC-1|10 因为工作树有 6 处在飞行中被让判），`VERDICT AC-9|06: proven` / `VERDICT AC-9|07: proven` / `VERDICT AC-9|01: gap`；成员 12 = `3281 passed, 6 skipped in 103.30s`、`TOTAL 11636 1086 2874 288 89.28%`",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "/Users/yunjinqi/opt/anaconda3/bin/conda run -n base /tmp/opendata-c64-clean-env-20260930/bin/python scripts/quality/acceptance_item_probe.py --item 'AC-9|07'（本轮五项复算全部proven、48条定向反事实均打回gap）；历史命令（C52）：python scripts/quality/acceptance_item_probe.py --item 'AC-9|07'（VERDICT proven：`两条单测: 2/2 passed` ＋ 传播链五段全 yes） ＋ python -m pytest tests/test_dwd_merge.py -q --no-header -p no:cacheprovider --no-cov -m 'not e2e'（29 passed / 1 deselected，PYTEST_EXIT=0，见 docs/evidence/C52/pytest-dwd-merge-file.txt） ＋ python docs/evidence/C52/falsify_dwd_merge.py（M4 `self._reader(source)(start, end, set(affected_keys))` → `set()` 一处改写，把 `test_revision_of_an_existing_key_changes_the_dwd_row` 与本体探针同时扳红后逐字节还原） ＋ make gate 回填前一遍：gate-run1-prebackfill.txt 7,503 行完整未裁剪（7 行溯源头 + 7,496 行正文）、18 段 `===== gate:` 横幅、`GATE_EXIT=0` 读自档案自身末行、`real 9:01.16`；成员 11 = `36/36 个探针走到了判定，283 条 break`、`本遍墙钟 = 324.3 s`、`台账↔读数：agrees=32, unflipped=2, open=1, deferred=1, stale-proof=0`（两个 unflipped 正是 AC-9|06 与 AC-9|07：探针已读到 proven 而台账还写着 unreviewed；open=1 是 AC-9|01 读出 gap 而台账还没记 gap；deferred=1 是时刻面格 AC-1|10 因为工作树有 6 处在飞行中被让判），`VERDICT AC-9|06: proven` / `VERDICT AC-9|07: proven` / `VERDICT AC-9|01: gap`；成员 12 = `3281 passed, 6 skipped in 103.30s`、`TOTAL 11636 1086 2874 288 89.28%`",
       "evidence": [
+        "docs/evidence/C64/repaired-five-probes.txt",
+        "docs/evidence/C64/repaired-five-probes.json",
+        "tests/test_pipeline_templates.py",
+        "opendata/pipeline/templates.py",
+        "docs/evidence/C64/composite-revision-before-fix.txt",
+        "docs/evidence/C64/composite-revision-independent.txt",
+        "docs/evidence/C64/scoped-revision-probe-independent.txt",
         "docs/evidence/C52/README.md",
         "docs/evidence/C52/probe-items-ac9-three.txt",
         "docs/evidence/C52/falsify_dwd_merge.py",
@@ -637,24 +801,21 @@
         "docs/evidence/C52/gate-run1-prebackfill.txt",
         "opendata/pipeline/dwd_merge.py",
         "opendata/pipeline/runner.py",
-        "tests/test_dwd_merge.py"
+        "tests/test_dwd_merge.py",
+        "docs/evidence/C64/repaired-five-probes-final.txt",
+        "docs/evidence/C64/repaired-five-probes-final.json"
       ],
-      "note": "「同步更新」钉在值上而不是行存在上：reader 按窗口取数，修订键 (`600519`, 2023-12-29) 在第二遍的窗口（2024-01-01..01-31）之外，只有 `affected_keys` 真的下传才取得到那一行；同一条用例随后再跑一遍不带 `affected_keys` 并断言该键根本不在输出里，所以传播面不是白拿的。五段链（runner 交键 / `_contract_keys` 重拼契约键 / reader 收键 / `extra_diff_keys` 参与差异重算 / 写侧 `build_upsert_sql` 按业务键 upsert）各一条代码面读数。"
+      "note": "C64 发现并修复生产scoped reader遗漏超窗修订及字符串日期比较问题；7个行为节点全部通过，新增财报/财务指标复合业务键的正确日期索引与同日无关项排除，含真实SQLite ODS读取→run_hook将旧值5改为6.5、None水位多源和无关/未选标的排除；SQL日期参数绑定保留。 历史笔记（C52）：「同步更新」钉在值上而不是行存在上：reader 按窗口取数，修订键 (`600519`, 2023-12-29) 在第二遍的窗口（2024-01-01..01-31）之外，只有 `affected_keys` 真的下传才取得到那一行；同一条用例随后再跑一遍不带 `affected_keys` 并断言该键根本不在输出里，所以传播面不是白拿的。五段链（runner 交键 / `_contract_keys` 重拼契约键 / reader 收键 / `extra_diff_keys` 参与差异重算 / 写侧 `build_upsert_sql` 按业务键 upsert）各一条代码面读数。"
     },
     "AC-9|08|a87bfe6f": {
       "state": "gap",
-      "round": "C49",
-      "date": "2026-09-27",
-      "reason": "代码面本轮已通，判据的后一半没通，所以不勾。修前实测（census 面 8）：`ods_stock_action_ths` 经生产 reader 交出 55,073 行，`merge_source_frames` **整窗 `raise`**（`source 'ths' has duplicate business key ('603883', datetime.date(2024, 6, 27))`）⇒ 直通一行都不交，`dwd_stock_action` 自始至终 0 行。本轮把整窗拒绝改成逐键拒绝（该键两组都丢弃、其余照常落、被拒的键逐条进新增的 `MergeStats.colliding`报告；键列缺失仍 fail closed）⇒ 同一批输入现在交出 55,071 行，且直通输出列与 `dwd_stock_action` 的声明列**恰好同集**，`layer=dwd` 用生产 `_key`/`build_data_select` 建得出 SQL（这两面各有用例）。仍然差两件事，都不是「再改一次判定口径」能补的：①**表里 0 行**——落库是一次生产数仓写入（`DwdWriter.write` 的 key 级 upsert），按本仓既有规则须经用户确认；②**另外 3 个单源域连表都没有**——面 7 用生产 `_inspect_columns` 逐域实测，`dwd_futures_daily`/`dwd_index_daily`/`dwd_option_daily` 返回 0 列（表真的存在=False），endpoint 在建 SQL 之前就 404；`ddl.dwd_table_ddl` 对任何已注册域都渲染得出 DDL，但**生产里没有任何调用点应用它**（只有测试调用）。另登记一条：那个两义键本身（603883 / 2024-06-27，0.16 现金 vs 0.5 现金 + 0.3 送）是契约装不下的形状——主键 `(symbol, ex_date)` 容不下同除息日两套方案，要么加宽键（DDL + 迁移 + 定「方案」字段），要么维持「拒绝并报告」这条当前行为。二者都须用户决定。",
+      "round": "C65",
+      "date": "2026-10-01",
+      "reason": "隔离单源DWD查询/回填已测试；现有正式仓库对应公司行动DWD未回填，官方事件原始业务键3组重复、2组冲突，gold样本与正式落地面仍未闭合。",
       "evidence": [
-        "docs/evidence/C49/README.md",
-        "docs/evidence/C49/census-pre-fix.txt",
-        "docs/evidence/C49/census-post-fix.txt",
-        "docs/evidence/C49/probe-items-three-prebackfill.txt",
-        "docs/evidence/C49/gate-run1-prebackfill-attempt.txt",
-        "docs/evidence/C49/a2-check-after-c48-instrument-fix.txt",
-        "opendata/pipeline/dwd_merge.py",
-        "tests/test_dwd_merge.py"
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/mapping-review-results.json",
+        "docs/evidence/C65/official-parquet-comparison.json"
       ]
     },
     "AC-9|09|ca69bd21": {
@@ -681,19 +842,70 @@
       "note": "这一格此前**唯一的幂等见证是 `@pytest.mark.e2e` 里的一条**（`TestDwdWriteAgainstMysql::test_merge_writes_rows_with_trace_columns_and_is_idempotent`），而门禁与探针的选择式都是 `-m \"not e2e\"` ⇒ 它在门禁里一次都没跑过（探针读它的当前值 `exit=5`，即整条被 deselect）。本轮把判定面建在门禁**跑得到**的地方：输出确定性（`all_keys = sorted(...)`，不排序则同输入两遍的顺序可变）＋ 写侧 key 级 upsert（`DwdWriter.write` 走 `build_upsert_sql(table, columns, key)`，UPDATE 集不含键列）＋ dwd 表主键就是业务键（`_table_ddl` 的 `PRIMARY KEY`）三条代码面，加 5 条纯函数节点（同输入两遍逐格相等且 stats 相等、字典顺序不改变输出、晚一点的时钟只动 `_merged_at`、同键落两次是同一行就地更新、空重算什么都不写）。**没有放宽判据**：真库那一格仍然只是披露（不参与合式），把它当判据就等于把这一格挂在一条门禁永不执行的用例上。顺带量到并如实登记：`batch_watermark` 0 行而 `dwd_stock_daily` 719,316 行（C38b 已把该表定性为「会被按 domain 清掉的弱审计面」）——不属于本格判据，另案登记。"
     },
     "AC-10|01|a6c002e5": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C65",
+      "date": "2026-10-01",
+      "reason": "当前33条启用能力中23verified、10registered未对照通过（均AkShare）；当前7包源码审阅不能替代每条启用能力取数对照。",
+      "evidence": [
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/provider-source-review.json",
+        "docs/evidence/C65/mapping-review-results.json"
+      ]
     },
     "AC-10|02|a2296996": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C65",
+      "date": "2026-09-30",
+      "command": "Primary read-only YAML active-leg/scenario census; direct user requester confirmation 2026-09-30",
+      "evidence": [
+        "docs/evidence/C65/provider-requester-confirmation.json",
+        "docs/evidence/C65/provider-review-package.md",
+        "docs/proposals/openbb-migration/provider-inventory.yaml"
+      ],
+      "note": "33 registered/verified active legs across seven enabled providers; nonempty consumption scenarios; cloudQuant directly confirmed responsibility for all 33 for quant research, backtesting and data platform. No rights/source review approval inferred."
     },
     "AC-10|03|72598062": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C65",
+      "date": "2026-10-01",
+      "command": "Anaconda base outer driver invokes fixed Python scripts/quality/acceptance_item_probe.py --all --json docs/evidence/C65/item-readings-current.json; actual argv and CHECK_EXIT in docs/evidence/C65/item-readings-current.txt",
+      "evidence": [
+        "docs/evidence/C65/item-readings-current.json",
+        "docs/evidence/C65/item-readings-current.txt",
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/provider-source-review.json",
+        "docs/evidence/C65/provider-similarity-inventory.json",
+        "docs/evidence/C65/provider-nearest-review.json",
+        "docs/evidence/C65/provider-review-independent.txt",
+        "docs/evidence/C65/probe-wiring-independent.txt"
+      ],
+      "note": "当前7包71py逐文件SHA、固定OpenBB五包121py对照、AST候选0及最近三对源码主线程实际审阅均留档且互绑；结论限当前比较范围。用户授权AI审阅，不伪称cloudQuant亲自签认，不证明历史clean-room开发方法或全库近似源码不存在。"
     },
     "AC-10|04|4e30a2d0": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-10|04'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 1/1 nodes passed；runtime binding=yes; scope=SDK blocked in subprocess; ECB registry/routing/mock fetch still works"
     },
     "AC-10|05|dc7ec3a5": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-10|05'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 2/2 nodes passed；runtime binding=yes; scope=naming interoperability only; no cleanroom rights assertion"
     },
     "AC-11|01|55260732": {
       "state": "proven",
@@ -712,16 +924,13 @@
     },
     "AC-11|02|47ebc0df": {
       "state": "gap",
-      "round": "C56",
-      "date": "2026-09-28",
-      "reason": "对照腿本轮从「自报」变成「可验」：scripts/ops/qfq_official_check.py 的官方序列改成分派表 OFFICIAL_LEGS + --official，默认腿 DEFAULT_OFFICIAL_LEG=akshare，探针不再信脚本自报，而是四读交叉——默认腿的常量、AST 解析分派表 akshare 条目的 target、该 target 指向模块的头部声明（# Ported from akshare）、以及留档 run 头部的 official: 行与其中 module:function 必须等于分派表现值（仪器改了 run 没重跑就会被判 stale）。四条读数都过：默认腿 akshare → opendata_http.stock_feature.stock_hist_em:stock_zh_a_hist，run 记的腿与 target 逐字一致。判据要的是「一致（容忍度内）」，这一半还是 FAIL：docs/evidence/C56/qfq-official-akshare.txt 量到 PASS 0 / FAIL 1 / ERROR 9，600519 qfq 131 根里 29 根超容差（shape dev 3.15e-03，over-tolerance 跨 2026-02-05..2026-07-21，level 分布 1.00306x19 0.99987x4 …），9 行 ERROR 是 em 端点 502/空帧（腿已按 3 次退避重试，空帧一律算 ERROR 不算对照）。超容差的那 29 根已归因，且结论不是「上游抖」：docs/evidence/C56/qfq-attribution.txt A 段量我们自己的因子链在窗口里只有 2 个取值、只在 2026-06-26 换过一次值（177 行），所以偏离的 bar 根本不是除息日；C 段量 sina 不复权与我们的 dwd 不复权 131 根共同 bar 差异 0 根（最大相对差 0.00e+00），数据层没问题；D 段把官方 qfq 对不复权价做机制检验，得到 official/raw = 1.000000000 − 28.02 x (1/raw)（截距偏离 1 为 -1.11e-16，事件前其余 111 根残差 max 0.0000 元），且事件之后 18 根 official 与不复权价最大绝对差 0.0000 元 —— 官方那条是「价格减现金分红 28.02 元」的减法链，我们的服务端合成是「不复权价 x 0.976879605643」的乘法链，两者只在最后一个事件之后逐根相等，事件之前的相对差按 D/P(t) 随价格水平漂移，正好就是 B 段那条从 0.99785 爬到 1.00315 再锁在 1.00306 的形状。这是复权口径差，不是数据错，也不是能靠中位数锚定吸收的常数偏移，所以不靠放宽容差蒙过去（2e-3 与逐日 shape dev 判据一字未改）。补齐路径因此是开发项而非证据项：要么服务端合成按事件做减法（因子表要能承载每股现金分红/送转比例，而不是只有一个乘性 qfq_factor），要么把 qfq_factor 换成与官方同口径的算法；两条都要重跑一次真机对照并把 ERROR 行清到 0。",
+      "round": "C65",
+      "date": "2026-10-01",
+      "reason": "当前服务端affine复权及隔离真实MySQL回归通过；本轮五标的×qfq/hfq官方对照10腿均HTTP502/ERROR，未取得合格官方序列，不能用历史qfq或夹具转正。",
       "evidence": [
-        "docs/evidence/C56/qfq-official-akshare.txt",
-        "docs/evidence/C56/qfq-attribution.txt",
-        "docs/evidence/C56/probe-all.txt",
-        "docs/evidence/C56/probe-self-test.txt",
-        "docs/evidence/C56/README.md",
-        "docs/evidence/C55/probe-ac11-items.txt"
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/affine-current-official-summary.json",
+        "docs/evidence/C65/qfq-official-akshare-current.txt"
       ]
     },
     "AC-11|03|9e33b3df": {
@@ -741,10 +950,13 @@
     },
     "AC-11|04|7d8f0545": {
       "state": "proven",
-      "round": "C55",
-      "date": "2026-09-28",
-      "command": "python -u scripts/ops/window_partition_explain.py（真仓库只读 EXPLAIN，留档：bash docs/evidence/C55/run_window_explain.sh）+ python scripts/quality/acceptance_item_probe.py --item 'AC-11|01' --item 'AC-11|02' --item 'AC-11|03' --item 'AC-11|04' --item 'AC-11|05'（判定面 = 时间窗节点面 5 条 + 留档对账）",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "/Users/yunjinqi/opt/anaconda3/bin/conda run -n base /tmp/opendata-c64-clean-env-20260930/bin/python scripts/quality/acceptance_item_probe.py --item 'AC-11|04'（本轮五项复算全部proven、48条定向反事实均打回gap）；历史命令（C55）：python -u scripts/ops/window_partition_explain.py（真仓库只读 EXPLAIN，留档：bash docs/evidence/C55/run_window_explain.sh）+ python scripts/quality/acceptance_item_probe.py --item 'AC-11|01' --item 'AC-11|02' --item 'AC-11|03' --item 'AC-11|04' --item 'AC-11|05'（判定面 = 时间窗节点面 5 条 + 留档对账）",
       "evidence": [
+        "docs/evidence/C64/repaired-five-probes.txt",
+        "docs/evidence/C64/repaired-five-probes.json",
+        "docs/evidence/C64/window-pruning-explain.txt",
         "docs/evidence/C55/probe-ac11-items.txt",
         "docs/evidence/C55/probe-all.txt",
         "docs/evidence/C55/self-test.txt",
@@ -752,9 +964,11 @@
         "docs/evidence/C55/window-pruning-explain.txt",
         "docs/evidence/C55/run_window_explain.sh",
         "scripts/ops/window_partition_explain.py",
-        "tests/test_data_query_http_warehouse.py"
+        "tests/test_data_query_http_warehouse.py",
+        "docs/evidence/C64/repaired-five-probes-final.txt",
+        "docs/evidence/C64/repaired-five-probes-final.json"
       ],
-      "note": "窗口这一半本来就是绿的实测：不带区间时 window_bounds 补 365 天默认窗、build_data_select 带 LIMIT :limit 行数上限、生成的 SELECT 以分区键为谓词，节点面 5/5 passed（HTTP 两条 + 边界单元三条）。判据写的验证方式是 EXPLAIN，本轮补的就是那一面而不是拿 SQL 文本顶它：新仪器 scripts/ops/window_partition_explain.py 把 20 个注册域逐个交给 build_data_select 现拼（与 REST 端点同一条语句、同样只有绑定参数），对跑着的 MySQL 发 EXPLAIN 读 partitions 列。实测：仓库里 6 张已落地且带分区的 dwd 表（stock_daily / stock_adjust / stock_action / index_constituent / financial_statement / financial_indicator，时间列分别是 trade_date / trade_date / ex_date / as_of / report_period / report_period），每张 partitions_total=4，计划读到的分区数 1～2（stock_daily 是 p2025,p2026，走 PRIMARY，rows 估计 200），landed_partitioned_tables=6 pruned_yes=6 pruned_no=0，进程按「全 yes 才 0」退出。其余 14 个域 dwd 表还没落地，仪器显式写 landed=no 并跳过 —— 不计进分母，也不拿它们凑数。探针侧本轮加 4 条反事实（|04 的反事实数 6 → 10，全表 320 → 325）：explain_faces 由 0 变 1（代理正则同时认整句字面量 EXPLAIN [ANALYZE] SELECT|FORMAT 与拼接前缀 \"EXPLAIN \" +，因为仪器必须拼 SQL 才谈得上端点那条查询，两种形状都在读数行里点名）、explain_tables_landed=0、explain_pruned_no=1、explain_archive_is_current=no、explain_archive_in_place=no 各打回一次 gap。留档对账口径：正文的 query_module_sha 必须等于当下 opendata/pipeline/query.py 的摘要（留档属于拼出那条 SQL 的那一版代码，改了查询层就得重跑），ARCHIVE_ROUND 必须等于留档所在目录。"
+      "note": "C64 当前查询层摘要与本轮真实只读 EXPLAIN 一致；现有6张分区表全部裁剪分区，其余未落地域显式不计。 历史笔记（C55）：窗口这一半本来就是绿的实测：不带区间时 window_bounds 补 365 天默认窗、build_data_select 带 LIMIT :limit 行数上限、生成的 SELECT 以分区键为谓词，节点面 5/5 passed（HTTP 两条 + 边界单元三条）。判据写的验证方式是 EXPLAIN，本轮补的就是那一面而不是拿 SQL 文本顶它：新仪器 scripts/ops/window_partition_explain.py 把 20 个注册域逐个交给 build_data_select 现拼（与 REST 端点同一条语句、同样只有绑定参数），对跑着的 MySQL 发 EXPLAIN 读 partitions 列。实测：仓库里 6 张已落地且带分区的 dwd 表（stock_daily / stock_adjust / stock_action / index_constituent / financial_statement / financial_indicator，时间列分别是 trade_date / trade_date / ex_date / as_of / report_period / report_period），每张 partitions_total=4，计划读到的分区数 1～2（stock_daily 是 p2025,p2026，走 PRIMARY，rows 估计 200），landed_partitioned_tables=6 pruned_yes=6 pruned_no=0，进程按「全 yes 才 0」退出。其余 14 个域 dwd 表还没落地，仪器显式写 landed=no 并跳过 —— 不计进分母，也不拿它们凑数。探针侧本轮加 4 条反事实（|04 的反事实数 6 → 10，全表 320 → 325）：explain_faces 由 0 变 1（代理正则同时认整句字面量 EXPLAIN [ANALYZE] SELECT|FORMAT 与拼接前缀 \"EXPLAIN \" +，因为仪器必须拼 SQL 才谈得上端点那条查询，两种形状都在读数行里点名）、explain_tables_landed=0、explain_pruned_no=1、explain_archive_is_current=no、explain_archive_in_place=no 各打回一次 gap。留档对账口径：正文的 query_module_sha 必须等于当下 opendata/pipeline/query.py 的摘要（留档属于拼出那条 SQL 的那一版代码，改了查询层就得重跑），ARCHIVE_ROUND 必须等于留档所在目录。"
     },
     "AC-11|05|0e5e8e85": {
       "state": "proven",
@@ -772,52 +986,215 @@
       "note": "路由 /api/v1/data/domains/{domain}/diff-report 已注册并进 OpenAPI，读的是 dq_diff_report —— 与校对器写明细用的同一个常量，不是抄来的表名。门禁三条同样有读数：按域的 scope 先判（无权限拿不到别人的差异行）、batch_id 只取一次校对、limit 与查询页同带上限。四条 HTTP 用例分别钉住差异行真的交出来、按 batch_id 选一次跑、limit 有上限、表还没迁移时读出空而不是 500。节点面 5/5 passed。"
     },
     "AC-11|06|eca44525": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-11|06'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 3/3 nodes passed；runtime binding=yes; scope=temporary SQLite handler checks; HTTP route separately covered"
     },
     "AC-11|07|8b7cc309": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-11|07'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 4/4 nodes passed；runtime binding=yes; scope=real local WS chain; three SQLite adapters; separate MySQL writer evidence"
     },
     "AC-11|08|d0506524": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-11|08'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 2/2 nodes passed；runtime binding=yes; scope=local websocket protocol and persisted batch fixtures"
     },
     "AC-11|09|70838100": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-11|09'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 3/3 nodes passed；runtime binding=yes; scope=offline bounded framing and remedy assertions"
     },
     "AC-11|10|80d48620": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-11|10'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py",
+        "docs/evidence/C64/four-bindings-independent.txt",
+        "docs/evidence/C64/four-bindings-independent.json"
+      ],
+      "note": "C64 fresh named behavior checks: 6/6 nodes passed；runtime binding=yes; scope=offline main-database fixture REST routes and root websocket mounts；C64 最终具名/浏览器绑定独立复查 4/4 proven、18 个反例均打回 gap；显式使用与锁文件匹配的独立 Chromium 路径，原门禁第五遍环境失败记录保留。"
     },
     "AC-11|11|82ca6675": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-11|11'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 3/3 nodes passed；runtime binding=yes; scope=mock REST/protocol; separate local socket evidence"
     },
     "AC-11|12|f1c47ff1": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-11|12'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 3/3 nodes passed；runtime binding=yes; scope=current loader/route regression; frontend targets are actual gate members"
     },
     "AC-12|01|c1ad31fa": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-12|01'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 2/2 nodes passed；runtime binding=yes; scope=real two-commit temporary git fixture; shipped lock contains full hash inventory"
     },
     "AC-12|02|9f581f51": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-12|02'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 2/2 nodes passed；runtime binding=yes; scope=fresh local git fixture and historical 147-file commit-interval rehearsal"
     },
     "AC-12|03|0d686b17": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-12|03'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "recorded observations=yes; provenance=yes；documented budget/process; no actual staffing allocation claim"
     },
     "AC-13|01|94c78c31": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-13|01'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 4/4 nodes passed；runtime binding=yes; scope=temporary DB dispatch, factory and ODS/DWD metadata; separate migration evidence"
     },
     "AC-13|02|3c4bde92": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-13|02'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 2/2 nodes passed；runtime binding=yes; scope=actual lifespan with safe DB/bootstrap seams; no deployment activation"
     },
     "AC-13|03|45950181": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-13|03'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 3/3 nodes passed；runtime binding=yes; scope=SQLite control restart and writer fixtures; separate MySQL resume evidence"
     },
     "AC-13|04|9b4606b9": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-13|04'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 2/2 nodes passed；runtime binding=yes; scope=actual job + SQLite ODS + raw-cache deletion; no provider requests"
     },
     "AC-13|05|f127fc1d": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "evidence": [
+        "docs/evidence/C64/cache-key-probes.txt",
+        "docs/evidence/C64/cache-key-probes.json",
+        "docs/evidence/C64/README.md"
+      ],
+      "command": "/Users/yunjinqi/opt/anaconda3/bin/conda run -n base python scripts/quality/acceptance_item_probe.py --item AC-13|05",
+      "note": "C64 fresh named behavior checks: 4/4 nodes passed；runtime binding=yes; scope=fresh raw-byte cache and SQLite factor-backed REST qfq/hfq checks; deleting cache preserves ODS watermark and computed queries; no formula change"
     },
     "AC-13|06|f440f22d": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-13|06'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py",
+        "docs/evidence/C64/four-bindings-independent.txt",
+        "docs/evidence/C64/four-bindings-independent.json"
+      ],
+      "note": "C64 fresh named behavior checks: 2/2 nodes passed；runtime binding=yes; scope=local browser API fixtures {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; actual backend retry with SQLite controls；C64 最终具名/浏览器绑定独立复查 4/4 proven、18 个反例均打回 gap；显式使用与锁文件匹配的独立 Chromium 路径，原门禁第五遍环境失败记录保留。"
     },
     "AC-13|07|4a567140": {
       "state": "proven",
@@ -845,29 +1222,89 @@
       "note": "判据原文点名的四类各有生产者、各有判定行、各被调度执行器真喂输入——这是「生效」与「规则存在」的差别：C46 刚落地的 `run_alert_matrix` 给 `evaluate_alerts` 交的是 `failures=() / partition_plans={} / disk=None` 三个写死的空参，签名里连 `control_engine/current_year/disk_path` 三个入口都没有，`opendata/` 全树 grep 不到三个生产者（`disk_usage` 四个字符在 `opendata/` 里一次都没有，`retention.py:312` 只有 `shutil.rmtree`）⇒ 真机只可能产出 `freshness` 一类，而「零告警」与「这三类根本没测」逐字同形。四条设计约束：①失败面 **SQL 侧按 run 聚合**（`GROUP BY pipeline_id, domain, source, window_end`，任一分片失败即整 run 失败，streak 数 run 不数分片，上限 `FAILURE_RUN_WINDOW=10`）——第一版按 `row_limit` 读分片行 + 边界窗口 `partial` 标记被本轮**否掉**：唯一被读到的 run 被切断会漏报，而把边界 run 一律标不可判会凭空造出告警；②分区面**只报不改**（`before_cursor_execute` 语句间谍钉零条 ALTER/REORGANIZE，`PartitionMaintainer.ensure` 打桩即炸；活库 170 条全 SELECT 独立互证）；③磁盘面报出**实际量到的卷名**并走到最近的已存在祖先，无路径 ⇒ `(None, None)` 即不声称任何事；④`MatrixScope` 的 `failure_legs/partitioned_tables/disk_path` 让「没测」不等于「健康」——没有控制库时 `failure_legs` 是 `None` 而不是 `0`，`legs_with_history` 把「checkpoint 表是空的」与「跑批是健康的」分开。**探针读的是调用点关键字而不是签名**：只声明不传参的那一类永远读成零告警，这正是修前的形状。**不计入本勾的部分（登记为须用户决定）**：磁盘口径量的是 `settings.data_dir`（相对 `data`）所在卷 `'.'`（`ratio=0.7703`），与远端 MySQL 容量无关，改配置语义属运维决策；8 张表的 `p2027` 分区缺口不修（补分区是生产 DDL）；一条调度运行现在产 34 条告警（26 freshness 多为从未落地的表），分级/收敛待评审；连续失败面今天只有薄历史（全库 1 行、FAILED=0），多窗口 streak 只由单元面三个失败窗口钉住；`dwd_trading_calendar` 仍未落库（census `tier=weekday-rule`、`expected=2026-09-25`）；`full_check`/`partition_maintenance` 两 kind 的执行器仍缺（C46 登记）。真机 census 刻意 `broadcast=None`，故档案里 `delivered=0` 不是投递失败——投递面由 `test_one_run_delivers_every_kind_the_matrix_decides`（`delivered == len(alerts) == len(frames)`）与 AC-18|01 负责。全程只读、无 DDL、未读取或打印任何密钥值或 `.env` 内容。"
     },
     "AC-13|08|22db1473": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C65",
+      "date": "2026-10-01",
+      "reason": "隔离scheduler正常启动与任务注册通过；没有交易日真实定时获取当日K并推进正式ODS新鲜度的本轮证据。",
+      "evidence": [
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/runtime-stack-current.json",
+        "docs/evidence/C65/source-preflight.json"
+      ]
     },
     "AC-14|01|29b3754f": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-14|01'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 9/9 nodes passed；runtime binding=yes; scope=local key checks; Redis fake, deployment unverified"
     },
     "AC-14|02|d72a3496": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-14|02'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 2/2 nodes passed；runtime binding=yes; scope=section0 fallback: local HTTP/Key/40 bars/backtrader; no platform claim"
     },
     "AC-14|03|03ada075": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item 'AC-14|03'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 1/1 nodes passed；runtime binding=yes; scope=current script/local HTTP: 40 bars/calls/time/range; section0 fallback"
     },
     "AC-15|01|fb5944d3": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C65",
+      "date": "2026-10-01",
+      "reason": "只读盘点完整1026表、结构/权限基线与本轮native writes=0已留档；实际旧库访问账户仍有写权限，不能声明旧库ACL已只读。",
+      "evidence": [
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/legacy-current-inventory.json",
+        "docs/evidence/C65/legacy-per-table-review.csv",
+        "docs/evidence/C65/legacy-migration-review.md"
+      ]
     },
     "AC-15|02|45433a89": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C65",
+      "date": "2026-10-01",
+      "reason": "用户决定逐表迁移审查完成后再决定删除，DROP仍未授权。已盘点1026表：1映射、1025未建立业务迁移映射并保留；唯一映射表617371行中616694行必填成交额NULL，真实隔离迁移拒绝、目标写入0，不能补0或删除。",
+      "evidence": [
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/legacy-per-table-review.csv",
+        "docs/evidence/C65/legacy-field-quality-census.json",
+        "docs/evidence/C65/legacy-transfer-current.json",
+        "docs/evidence/C65/legacy-migration-review.md"
+      ]
     },
     "AC-18|01|2524a54e": {
       "state": "proven",
-      "round": "C46",
-      "date": "2026-09-27",
-      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-18|01'（VERDICT proven：新鲜度门 6/6 节点、告警面 9/9 节点、调度接线三条事实） ＋ python -m pytest tests/test_data_catalog.py tests/test_alert_matrix.py -q --no-cov -p no:cacheprovider -m 'not e2e'（29 passed = 14 目录 + 15 告警矩阵） ＋ python -m pytest tests/test_freshness.py tests/test_trading_calendar.py tests/test_data_query_api.py -q --no-cov -m 'not e2e'（58 passed / 15 deselected） ＋ python docs/evidence/C46/warehouse_census.py --live（真机只读：33 条注册腿 → 7 条有读数 fresh=1/stale=4/missing=22、unmapped=26） ＋ python scripts/quality/acceptance_item_probe.py --self-test（23 探针 / 162 反事实全扳红，exit 0） ＋ make gate（回填前 17 节 GATE_EXIT=0；回填后另跑一遍）",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "/Users/yunjinqi/opt/anaconda3/bin/conda run -n base /tmp/opendata-c64-clean-env-20260930/bin/python scripts/quality/acceptance_item_probe.py --item 'AC-18|01'（本轮五项复算全部proven、48条定向反事实均打回gap）；历史命令（C46）：python scripts/quality/acceptance_item_probe.py --item 'AC-18|01'（VERDICT proven：新鲜度门 6/6 节点、告警面 9/9 节点、调度接线三条事实） ＋ python -m pytest tests/test_data_catalog.py tests/test_alert_matrix.py -q --no-cov -p no:cacheprovider -m 'not e2e'（29 passed = 14 目录 + 15 告警矩阵） ＋ python -m pytest tests/test_freshness.py tests/test_trading_calendar.py tests/test_data_query_api.py -q --no-cov -m 'not e2e'（58 passed / 15 deselected） ＋ python docs/evidence/C46/warehouse_census.py --live（真机只读：33 条注册腿 → 7 条有读数 fresh=1/stale=4/missing=22、unmapped=26） ＋ python scripts/quality/acceptance_item_probe.py --self-test（23 探针 / 162 反事实全扳红，exit 0） ＋ make gate（回填前 17 节 GATE_EXIT=0；回填后另跑一遍）",
       "evidence": [
+        "docs/evidence/C64/repaired-five-probes.txt",
+        "docs/evidence/C64/repaired-five-probes.json",
+        "docs/evidence/C64/scoped-revision-probe-independent.txt",
         "docs/evidence/C46/README.md",
         "docs/evidence/C46/before_census.py",
         "docs/evidence/C46/before-census-head.txt",
@@ -885,16 +1322,21 @@
         "opendata/pipeline/schedules.yaml",
         "opendata/api/data_query.py",
         "tests/test_alert_matrix.py",
-        "tests/test_data_catalog.py"
+        "tests/test_data_catalog.py",
+        "docs/evidence/C64/repaired-five-probes-final.txt",
+        "docs/evidence/C64/repaired-five-probes-final.json"
       ],
-      "note": "判据原文两问各有读数。①**各域最新数据日期与滞后天数可查**：`GET /api/v1/data/{domain}/freshness` 同时交出 latest、lag_days 与 expected_data_date——滞后天数离开基准日就无法复核，所以两条分支都必须点名它（探针记为 `returns expected_data_date 2 time(s)`）；基准日由日历判据解析（C12 的 `_expected_data_date`，每请求一次），不再读墙上时钟。②**缺失触发告警**：此前这一格是**声明了但没人执行**——两棵树 census 读到 HEAD 上`EXECUTABLE_KINDS = ['INCREMENTAL']`，而 `['FRESHNESS','FULL_CHECK','PARTITION_MAINTENANCE']` 三种 kind 无任何 executor 认领，`jobs.py::_execute_freshness` 不存在、`_execute_template` 既不认 FRESHNESS 也不接 broadcast。本轮新增 `alert_matrix.py`：`registered_legs()` 从注册表拿腿（不是从 `authority.json` 猜），dwd 与每条 ods 腿都测（前者答「合并数据新不新」，后者答「这个源交付没交付」，两问合起来才分得清上游断供与合并没跑），`_ods_leg` 把「mapping 里没有可测列」折成 `unmapped_legs` 计数而不是伪造一条没人能处理的 missing 告警，投递只在判据翻红时发生且投递失败只记日志。反事实 10 条：把 executor 摘掉、把 broadcast 摘掉、把 ods 腿摘掉、把基准日改回墙上时钟、把 unmapped 折成 missing 各自扳红一条，故 proven 不是靠接线名字读的。**未记账的相邻两格**：`FULL_CHECK`/`PARTITION_MAINTENANCE` 仍无 executor（登记为 C47 候选）；真机 census 暴露 `dwd_trading_calendar` 从未落地 ⇒ 基准日静默退回工作日，以及一条未来日期读数 `lag_days=-14` 仍判 fresh，两条都如实登记而未改判据。"
+      "note": "C64 对新鲜度包装路由到共享实现的委托增加独立反事实，7个读数/HTTP节点与9个告警节点全部通过；实际读取helper两分支都返回基准日。 历史笔记（C46）：判据原文两问各有读数。①**各域最新数据日期与滞后天数可查**：`GET /api/v1/data/{domain}/freshness` 同时交出 latest、lag_days 与 expected_data_date——滞后天数离开基准日就无法复核，所以两条分支都必须点名它（探针记为 `returns expected_data_date 2 time(s)`）；基准日由日历判据解析（C12 的 `_expected_data_date`，每请求一次），不再读墙上时钟。②**缺失触发告警**：此前这一格是**声明了但没人执行**——两棵树 census 读到 HEAD 上`EXECUTABLE_KINDS = ['INCREMENTAL']`，而 `['FRESHNESS','FULL_CHECK','PARTITION_MAINTENANCE']` 三种 kind 无任何 executor 认领，`jobs.py::_execute_freshness` 不存在、`_execute_template` 既不认 FRESHNESS 也不接 broadcast。本轮新增 `alert_matrix.py`：`registered_legs()` 从注册表拿腿（不是从 `authority.json` 猜），dwd 与每条 ods 腿都测（前者答「合并数据新不新」，后者答「这个源交付没交付」，两问合起来才分得清上游断供与合并没跑），`_ods_leg` 把「mapping 里没有可测列」折成 `unmapped_legs` 计数而不是伪造一条没人能处理的 missing 告警，投递只在判据翻红时发生且投递失败只记日志。反事实 10 条：把 executor 摘掉、把 broadcast 摘掉、把 ods 腿摘掉、把基准日改回墙上时钟、把 unmapped 折成 missing 各自扳红一条，故 proven 不是靠接线名字读的。**未记账的相邻两格**：`FULL_CHECK`/`PARTITION_MAINTENANCE` 仍无 executor（登记为 C47 候选）；真机 census 暴露 `dwd_trading_calendar` 从未落地 ⇒ 基准日静默退回工作日，以及一条未来日期读数 `lag_days=-14` 仍判 fresh，两条都如实登记而未改判据。"
     },
     "AC-18|02|15d13296": {
       "state": "proven",
-      "round": "C46",
-      "date": "2026-09-27",
-      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-18|02'（VERDICT proven：目录接口 7/7 节点、五个读数四面齐、载荷 5/5 字段、基准日/下钻/采集器无未授权排除 = yes） ＋ python docs/evidence/C46/before_census.py --root <tree>（可复算前后对比：catalog 闭合函数体 HEAD 11 keys「判据五项缺 4」→ 本轮 29 keys「缺 0」） ＋ python -m pytest tests/test_data_catalog.py -q --no-cov -m 'not e2e'（14 passed） ＋ cd frontend && npx vitest run src/__tests__/catalog.test.ts src/__tests__/api/envelope.test.ts（14 passed = 8 + 6） ＋ make frontend-e2e（e2e/scripts.spec.ts:114 catalog 页读数断言，18 passed） ＋ make gate（回填前 17 节 GATE_EXIT=0；回填后另跑一遍）",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "/Users/yunjinqi/opt/anaconda3/bin/conda run -n base /tmp/opendata-c64-clean-env-20260930/bin/python scripts/quality/acceptance_item_probe.py --item 'AC-18|02'（本轮五项复算全部proven、48条定向反事实均打回gap）；历史命令（C46）：python scripts/quality/acceptance_item_probe.py --item 'AC-18|02'（VERDICT proven：目录接口 7/7 节点、五个读数四面齐、载荷 5/5 字段、基准日/下钻/采集器无未授权排除 = yes） ＋ python docs/evidence/C46/before_census.py --root <tree>（可复算前后对比：catalog 闭合函数体 HEAD 11 keys「判据五项缺 4」→ 本轮 29 keys「缺 0」） ＋ python -m pytest tests/test_data_catalog.py -q --no-cov -m 'not e2e'（14 passed） ＋ cd frontend && npx vitest run src/__tests__/catalog.test.ts src/__tests__/api/envelope.test.ts（14 passed = 8 + 6） ＋ make frontend-e2e（e2e/scripts.spec.ts:114 catalog 页读数断言，18 passed） ＋ make gate（回填前 17 节 GATE_EXIT=0；回填后另跑一遍）",
       "evidence": [
+        "docs/evidence/C64/repaired-five-probes.txt",
+        "docs/evidence/C64/repaired-five-probes.json",
+        "docs/evidence/C64/frontend-final-independent.txt",
         "docs/evidence/C46/README.md",
         "docs/evidence/C46/before_census.py",
         "docs/evidence/C46/before-census-head.txt",
@@ -912,30 +1354,36 @@
         "frontend/src/__tests__/catalog.test.ts",
         "frontend/src/__tests__/api/envelope.test.ts",
         "tests/test_data_catalog.py",
-        "tests/test_frontend_endpoint_contract.py"
+        "tests/test_frontend_endpoint_contract.py",
+        "docs/evidence/C64/repaired-five-probes-final.txt",
+        "docs/evidence/C64/repaired-five-probes-final.json"
       ],
-      "note": "判据原文列了五个读数（覆盖标的数 / 时间范围 / 各源最近更新 / 新鲜度 / 质量标记），本轮把「展示了」改判成「每个读数在四面同时出现」：**列标签**（页面有这一列名）× **页面形状**（真机载荷渲染出行）× **单元断言**（vitest 逐个断言值）× **真机断言**（Playwright 断的是渲染后的文本而不是接口 JSON），缺一面就不算转正。接口侧 `catalog` 行由 11 keys 补到 29 keys（`coverage{rows,symbols,start,end,symbol_columns,field,facts}`、`quality{diff_flagged,diff_report_rows,flag}`、`sources[{source,verified,table,status∈fresh|stale|missing|unmapped,reason,latest,lag_days}]`、表头 `expected_data_date/domains_total/source_legs_total`）。两处口径是判据本体：`quality` 只在 `coverage is None` 时才为 None，`_diff_report_counts` 区分 None（没测）与 {}（测了、没有差异）——否则前端把「没测」显示成「没有质量问题」。9 条反事实分别把列名、单元断言、真机断言、载荷字段、基准日抬头、下钻、采集器排除各扳红一条。「各源最近更新」的腿表从 `dwd_table` 换成 `ods_table(domain, source)`：在 HEAD 上那条读数以 dwd 表为对象，**每一条源腿都只能读成 missing**（同一个日期被算成所有源的日期）。**不计入本勾的部分**：真机页的「真跑过」由门禁 `frontend-e2e` 节承载（18 passed），探针侧只按 `asserted_lines` 认它断言了哪几个读数；一条 warehouse e2e 见证（`test_every_catalog_reading_reaches_a_consumer`）按 §7 真机纪律未擅自跑。"
+      "note": "C64 页面标签增加域总计后，更新精确标签绑定；7个后端节点、五个读数的页面/单元/浏览器断言和载荷字段完整，最新前端独立浏览器27项通过。 历史笔记（C46）：判据原文列了五个读数（覆盖标的数 / 时间范围 / 各源最近更新 / 新鲜度 / 质量标记），本轮把「展示了」改判成「每个读数在四面同时出现」：**列标签**（页面有这一列名）× **页面形状**（真机载荷渲染出行）× **单元断言**（vitest 逐个断言值）× **真机断言**（Playwright 断的是渲染后的文本而不是接口 JSON），缺一面就不算转正。接口侧 `catalog` 行由 11 keys 补到 29 keys（`coverage{rows,symbols,start,end,symbol_columns,field,facts}`、`quality{diff_flagged,diff_report_rows,flag}`、`sources[{source,verified,table,status∈fresh|stale|missing|unmapped,reason,latest,lag_days}]`、表头 `expected_data_date/domains_total/source_legs_total`）。两处口径是判据本体：`quality` 只在 `coverage is None` 时才为 None，`_diff_report_counts` 区分 None（没测）与 {}（测了、没有差异）——否则前端把「没测」显示成「没有质量问题」。9 条反事实分别把列名、单元断言、真机断言、载荷字段、基准日抬头、下钻、采集器排除各扳红一条。「各源最近更新」的腿表从 `dwd_table` 换成 `ods_table(domain, source)`：在 HEAD 上那条读数以 dwd 表为对象，**每一条源腿都只能读成 missing**（同一个日期被算成所有源的日期）。**不计入本勾的部分**：真机页的「真跑过」由门禁 `frontend-e2e` 节承载（18 passed），探针侧只按 `asserted_lines` 认它断言了哪几个读数；一条 warehouse e2e 见证（`test_every_catalog_reading_reaches_a_consumer`）按 §7 真机纪律未擅自跑。"
     },
     "AC-18|03|ae559f45": {
-      "state": "gap",
-      "round": "C46",
-      "date": "2026-09-27",
-      "reason": "合并要求的是一个页面：目录为默认视图、函数级明细在它下面。今天 `/data` 与 `/scripts` 仍是两条路由两个视图（census 读到标题含「数据接口」的页面 = 1、`/scripts` 不渲染目录视图、`DataCatalogView.vue` 读不到函数级明细），目录的下钻只预览数据行，从不落到接口/函数那一层。join 的料是齐的（§11.1 已把 `data_interfaces.name` 以域名命名），缺的是页面合并本身——而合并必然要让一个导航项消失，属产品决定，不在本轮自行裁定。探针 4 条反事实登记了补齐路径（detail_in_catalog no→yes、page_titles、route_is_catalog no→yes），C47 候选。",
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base Python scripts/quality/acceptance_item_probe.py --item AC-18|03; independent checks in cited evidence",
       "evidence": [
-        "docs/evidence/C46/README.md",
-        "docs/evidence/C46/probe-ac18-03.txt",
-        "docs/evidence/C46/before-census-head.txt",
-        "docs/evidence/C46/after-census-worktree.txt"
-      ]
+        "docs/evidence/C64/selected-probes.txt",
+        "docs/evidence/C64/selected-probes.json",
+        "docs/evidence/C64/frontend-final-browser.txt",
+        "docs/evidence/C64/README.md",
+        "docs/evidence/C64/four-bindings-independent.txt",
+        "docs/evidence/C64/four-bindings-independent.json"
+      ],
+      "note": "目录成为 /data 与 /scripts 默认视图；仅一个目录侧栏入口；注册函数明细下钻可达旧函数列表和真实详情。独立全前端类型检查、114 Vitest 与 21 Playwright 已通过，探针逐名执行两条浏览器用例。；C64 最终具名/浏览器绑定独立复查 4/4 proven、18 个反例均打回 gap；显式使用与锁文件匹配的独立 Chromium 路径，原门禁第五遍环境失败记录保留。"
     },
     "AC-19|01|de4c675d": {
       "state": "gap",
-      "round": "C63",
-      "date": "2026-09-29",
-      "reason": "判据要「每日备份 + binlog，RPO ≤24h」。在位：`scripts/ops/backup_mysql.sh` 于跟踪清单、`dump_one` 2 次调用（元数据 + 仓库两库）、手册里 RPO ≤24h 与 binlog 的声明。缺的两件：①**每日触发点 0 处** —— 仓库里没有任何调度定义或 make 目标去跑它，只有脚本头部注释与手册里各一行 `0 2 * * *` 示例，而被调方不能当自己的证据（探针自身亦已从扫描人口剔除，避免 C62 那类机读回声）；②binlog 只剩手册里标注为「可选」的附录，仓库内 **0 份**档案带一次实测的 `log_bin` 取值（语料只认 ON/OFF 的实取形状，格式串里的 `ON|OFF` 备选不算；剔除面是整张档案面与结论面 —— `docs/evidence/`、`docs/quality/`、`docs/迭代计划/`：只剔「本轮那一个目录」会留下后面每轮被前面每轮污染的口子，而修前那 4 份命中全是本轮自己的陈述，修后复算回到 0 份）⇒ RPO ≤24h 是靠每日全量兜底、不是靠 binlog。收口需要人的授权动作：把备份接进调度属部署变更，连库读 `log_bin` 属现场确认，本轮不代拟。",
+      "round": "C65",
+      "date": "2026-10-01",
+      "reason": "隔离备份/恢复预演通过；正式每日成功备份序列、binlog恢复覆盖及RPO≤24h的运行现场证据尚未证明。",
       "evidence": [
-        "docs/evidence/C63/README.md",
-        "docs/evidence/C63/probe-items-ac19.txt"
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/native-backup.json",
+        "docs/evidence/C65/native-restore.json"
       ],
       "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-19|01'（脚本面/调度面/声明面/实测面四面分读；扫描人口 `git ls-files -z` 1625 个跟踪文件）"
     },
@@ -951,26 +1399,28 @@
       ]
     },
     "AC-19|03|347500f4": {
-      "state": "gap",
-      "round": "C63",
-      "date": "2026-09-29",
-      "reason": "「声明并实现」只到声明面：策略四类 4/4、执行器 4/4（`purge_expired_rows` / `purge_diff_report` / `purge_minute_archives` / `purge_raw_response_cache`）、配置键 4/4 全在位，而运行时四包（`opendata`、`opendata_http`、`opendata_fuyao`、`opendata_client`）里**生产调用点 0 处** ⇒ 这套保留策略今天只有测试会跑，不接调度或接口就不会真清过期数据。本轮故意不「顺手接上」：接线会让分钟线按 N 年、差异明细按天开始真删生产数据，属需用户确认的破坏性动作（与 task #52/#64 同列登记）。",
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base Python scripts/quality/acceptance_item_probe.py --item AC-19|03; independent checks in cited evidence",
       "evidence": [
-        "docs/evidence/C63/README.md",
-        "docs/evidence/C63/probe-items-ac19.txt"
+        "docs/evidence/C64/selected-probes.txt",
+        "docs/evidence/C64/selected-probes.json",
+        "docs/evidence/C64/ops-independent-tests.txt",
+        "docs/evidence/C64/README.md"
       ],
-      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-19|03'（策略/执行器/配置键/生产调用点四面分读，tests 与 retention.py 自调不计）"
+      "note": "四类策略/执行器/配置在位；retention 模板、kind 派发和周期维护已接线。默认 report-only，显式开启才删除；分钟清理使用不同于 warehouse 的 mainDB 索引，安全边界和索引/文件一致性有行为检查。未开启现有部署的实际删除。"
     },
     "AC-19|04|7e6332ef": {
       "state": "gap",
-      "round": "C63",
-      "date": "2026-09-29",
-      "reason": "判据动词是「生效」。在位：四类健康类别 4/4、401/403→credential-rejected 与 429→quota-exhausted 两条线上归类、`opendata/api/pipeline.py` 一处分级落点（定义处 `patrol.py` 已排除）、模块自己的边界披露句仍在位且未观测只报 `presence-only`。缺的两件：①**到期**这一类没有任何可触发信号 —— 本平台自签 Key 的 `is_expired`、`core/token_blacklist.py` 都不算，判据点名的是权威源 Key，而`key_health.py` 自己写着源侧不发布到期/剩余额度/吊销状态；②**带外告警通道 0 处** ⇒ 配额只到 warn、封禁只到 alert，只有 `/health` 可拉取不等于有人被通知。收口需要一条真实的通知通道与运维台账侧的颁发日记录，属仓库外授权，本轮不代拟。",
+      "round": "C65",
+      "date": "2026-10-01",
       "evidence": [
-        "docs/evidence/C63/README.md",
-        "docs/evidence/C63/probe-items-ac19.txt"
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/replay-full-resume.txt",
+        "docs/evidence/C65/runtime-stack-current.json"
       ],
-      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-19|04'（类别与线上归类按语句对读 + 到期信号形状 + 分级落点与带外通道，patrol.py 不作自己的落点）"
+      "reason": "本地通知/重试与健康巡检测试通过；真实SMTP/业务联系人送达证据未执行，回放notify hook为suppressed_internal_replay，不算外部送达。"
     },
     "AC-19|05|5c9afeec": {
       "state": "proven",
@@ -997,25 +1447,33 @@
       "note": "扫描面自 C36 起可机器执行：包集合 + 逐包文件数普查（与 find(1) 核对，515）+ 扫描器版本 + 已验证解释器次版本入库，缩水即 SURFACE_SHRANK、失配即 SURFACE_STALE，两个方向都在 --self-test 里咬合。"
     },
     "AC-16|06|2eb4fb66": {
-      "state": "gap",
-      "round": "C51",
-      "date": "2026-09-27",
-      "reason": "「基线清零」是这条唯一没到的面，而它不是再读一遍能解决的：现场 AST 走查 import 形态=0、动态 import 形态=0（docs/evidence/C51/census-after.txt 面 2），基线剩下的 3 条全是产品事实的名字面量 —— opendata/data/openbb_map.py:125（FR-7 对照表自己的字段名）、opendata/models/data_script.py:74（DataScript.source 的溯源默认值）、opendata/pipeline/patrol.py:468（key_status() 的数据源标签）。抹平它只有两条路，两条都要改判据本身：①把扫描器字符串规则改窄＝回头放宽已勾的 AC-16|05「AST 口径」，本轮拒绝；②改掉这三处拼写＝给扫描器做伪装，正是 C35 刚收口的那种门禁空转。**属用户/产品决策（与 task #52 同列）**。本轮做到的：「只降不升、新增即失败」两条门禁命令原样复跑 exit=0（--self-test + 默认核对，517 文件走查，逐字正文见 docs/evidence/C51/zero-dep-rerun-c51.txt，末行 ZERO_DEP_CHECK_EXIT=0）；判据后半句要求的正向证据成立，但它落在 AC-16|07 那一格，不顶替本格的清零。",
+      "state": "proven",
+      "round": "C65",
+      "date": "2026-10-01",
+      "command": "Anaconda base outer driver invokes fixed Python scripts/quality/acceptance_item_probe.py --all --json docs/evidence/C65/item-readings-current.json; actual argv and CHECK_EXIT in docs/evidence/C65/item-readings-current.txt",
       "evidence": [
-        "docs/quality/zero-dep-baseline.json",
-        "docs/evidence/C51/census-before.txt",
-        "docs/evidence/C51/census-after.txt",
-        "docs/evidence/C51/zero-dep-rerun-c51.txt",
-        "docs/evidence/C51/README.md",
-        "docs/evidence/C36/zero-dep-surface-after.txt"
-      ]
+        "docs/evidence/C65/item-readings-current.json",
+        "docs/evidence/C65/item-readings-current.txt",
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/zero-dep-baseline-before.json",
+        "docs/evidence/C65/zero-dependency-current-independent.txt",
+        "docs/evidence/C65/clean-wheel-current.json",
+        "docs/evidence/C65/clean-env-integration-run.txt",
+        "docs/evidence/C65/clean-p0-installed-env-1.txt",
+        "docs/evidence/C65/clean-p0-installed-env-2.txt"
+      ],
+      "note": "原版本2的三条产品元数据基线保留；经用户批准策略迁移至版本3，当前基线0、真实模块依赖0且新增即失败。当前wheel无akshare/openbb/openbb_platform的两独立环境，P0集成各211passed、pip check均0。"
     },
     "AC-16|07|b17eac77": {
       "state": "proven",
-      "round": "C51",
-      "date": "2026-09-27",
-      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-16|07'（判定面 = tests/test_p0_integration_surface.py 4 条断言 + 本机与干净 venv 各一遍 `pytest tests -m 'integration and not e2e' --no-cov`，B 段读数读自 docs/evidence/C*/ 里轮次号最大的那份留档（C55 起重建为 docs/evidence/C55/clean-env-integration-run.txt））",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "/Users/yunjinqi/opt/anaconda3/bin/conda run -n base /tmp/opendata-c64-clean-env-20260930/bin/python scripts/quality/acceptance_item_probe.py --item 'AC-16|07'（本轮五项复算全部proven、48条定向反事实均打回gap）；历史命令（C51）：python scripts/quality/acceptance_item_probe.py --item 'AC-16|07'（判定面 = tests/test_p0_integration_surface.py 4 条断言 + 本机与干净 venv 各一遍 `pytest tests -m 'integration and not e2e' --no-cov`，B 段读数读自 docs/evidence/C*/ 里轮次号最大的那份留档（C55 起重建为 docs/evidence/C55/clean-env-integration-run.txt））",
       "evidence": [
+        "docs/evidence/C64/repaired-five-probes.txt",
+        "docs/evidence/C64/repaired-five-probes.json",
+        "docs/evidence/C64/clean-env-build.txt",
+        "docs/evidence/C64/clean-env-integration-run.txt",
         "docs/evidence/C51/clean-env-integration-run.txt",
         "docs/evidence/C51/clean-env-build.txt",
         "docs/evidence/C51/census-before.txt",
@@ -1024,9 +1482,14 @@
         "docs/evidence/C51/README.md",
         "tests/test_p0_integration_surface.py",
         "docs/evidence/C55/clean-env-integration-run.txt",
-        "docs/evidence/C55/run_p0_integration_surface.sh"
+        "docs/evidence/C55/run_p0_integration_surface.sh",
+        "docs/evidence/C64/repaired-five-probes-final.txt",
+        "docs/evidence/C64/repaired-five-probes-final.json",
+        "docs/evidence/C64/affine-clean-environments-refresh.txt",
+        "docs/evidence/C64/clean-env-integration-before-affine.txt",
+        "docs/evidence/C64/affine-mysql-e2e-independent.txt"
       ],
-      "note": "C36 的替代装置（tests/test_ported_import_closure.py 的 meta-path 阻断）证明的是依赖声明完备，不是这条，本轮不用它顶替；改把这条变得可指认：marker 注册而 0 应用 ⇒ 选择式选中 0/3358（HEAD 可独立复核：git grep -l \"pytest\\.mark\\.integration\" HEAD -- tests/ = 0 命中）。现 8 个标记单元覆盖 A4.1 迁移的 5 个 P0 域（净 9 行接线），两个解释器各 151 passed / 0 failed / 0 skipped；干净 venv 的依赖面恰为 pyproject 的 .[web,dev]，akshare/openbb/openbb_platform 均 absent。刻意留的棘轮：skipped 必须为 0（静默跳过不算通过），archive_blind 要求扩展标记集后重跑干净环境留档。 C55 复核：给 AC-11 的入口级 HTTP 面新增 tests/test_data_query_http_warehouse.py（integration）之后，archive_blind 立刻把这格打回 gap —— 这条棘轮按设计咬住了「加了模块不重跑干净环境」，本轮选择重建留档而不是放宽判据：只装 pyproject .[web,dev] 的 venv（/tmp/c55-clean/venv，akshare/openbb/openbb_platform 三者 absent）与开发解释器各跑一遍 -m 'integration and not e2e' --no-cov，两个解释器各 177 passed / 0 failed / 0 skipped（3277 deselected），标记集现为 9 个单元。判定面同时加两格读数：clean_archive（探针读的是 docs/evidence/C*/ 里轮次号最大的那一份，不再钉死 C51）与 archive_self_written（留档正文声明的 ARCHIVE_ROUND 必须等于它所在目录），后者反事实一条，堵的是「把旧留档拷进新目录」这条捷径。"
+      "note": "C64 仿射扩展后最终刷新：两个独立 Anaconda-created clean venv 从同一份独立源码 wheel 安装，运行时四包共529个Python源码文件SHA逐个匹配。两环境各217 passed / 0 failed / 0 skipped（3687 deselected），上游akshare/openbb/openbb_platform均absent，无全局site-packages，pip check通过。原202项双环境记录独立保存在clean-env-integration-before-affine.txt；全局Python包与旧build目录保留。 历史记录：C64 最终刷新：两套独立、只安装声明依赖的干净解释器各 202 passed / 0 failed / 0 skipped（3577 deselected），上游三包均 absent，pip check 通过，安装源码 opendata/opendata_fuyao 共214个文件SHA一致；用户全局包保留。C64 声明依赖的 Anaconda 独立环境重新运行集成选择式：202 passed / 0 failed / 0 skipped；akshare/openbb/openbb_platform 均不可导入。开发base全局包保留，完整探针在独立解释器中执行。 历史笔记（C51）：C36 的替代装置（tests/test_ported_import_closure.py 的 meta-path 阻断）证明的是依赖声明完备，不是这条，本轮不用它顶替；改把这条变得可指认：marker 注册而 0 应用 ⇒ 选择式选中 0/3358（HEAD 可独立复核：git grep -l \"pytest\\.mark\\.integration\" HEAD -- tests/ = 0 命中）。现 8 个标记单元覆盖 A4.1 迁移的 5 个 P0 域（净 9 行接线），两个解释器各 151 passed / 0 failed / 0 skipped；干净 venv 的依赖面恰为 pyproject 的 .[web,dev]，akshare/openbb/openbb_platform 均 absent。刻意留的棘轮：skipped 必须为 0（静默跳过不算通过），archive_blind 要求扩展标记集后重跑干净环境留档。 C55 复核：给 AC-11 的入口级 HTTP 面新增 tests/test_data_query_http_warehouse.py（integration）之后，archive_blind 立刻把这格打回 gap —— 这条棘轮按设计咬住了「加了模块不重跑干净环境」，本轮选择重建留档而不是放宽判据：只装 pyproject .[web,dev] 的 venv（/tmp/c55-clean/venv，akshare/openbb/openbb_platform 三者 absent）与开发解释器各跑一遍 -m 'integration and not e2e' --no-cov，两个解释器各 177 passed / 0 failed / 0 skipped（3277 deselected），标记集现为 9 个单元。判定面同时加两格读数：clean_archive（探针读的是 docs/evidence/C*/ 里轮次号最大的那一份，不再钉死 C51）与 archive_self_written（留档正文声明的 ARCHIVE_ROUND 必须等于它所在目录），后者反事实一条，堵的是「把旧留档拷进新目录」这条捷径。"
     },
     "AC-16|09|187c7829": {
       "state": "proven",
@@ -1232,10 +1695,29 @@
       "note": "此前没有任何机器面在数「历次里程碑的证据可追溯」。现按判据原文的四问（叙述/日期/身份/命令+exit）加一面「档案是否还在版本库里」逐面读数：53 个轮次目录 / 425 份档案 / 71 份 gate 日志，六个面 narrative=date=identity=command=exit=untracked=0，冻结上限 0 条 ⇒ 今后任何一条新违规都会让 make gate 变红；git log --diff-filter=A 与 git ls-files 的差集为 0（档案从未被删过，删掉一份就带走它的命令与 exit 读数）。日期面被本轮改窄过一次并留了可见的两个计数（header 65/71 + printed by the run 6/71，判据要求两者之和覆盖全部 gate 日志）：A2/A4/A5/C4/C9/C13 六份档案的日期是运行自己打进日志的（loguru 行 / pytest·npm 时钟）而不在抬头 40 行内，原规则量的其实是「日期写在第几行」。收窄理由与六份档案的原始时间戳逐条见 README 第二节；这六份档案一字未改。不证明什么：工具查的是档案里写没写，一份伪造但格式齐全的日志能过 command/exit 面（TEETH-1 反过来用正是这个意思），可交叉的只有 identity 与 git 首见日期，二者都是必要条件。另登记一条流程缺陷：新成员第一跑把自己的运行日志判红了（gate-run1.txt，GATE_EXIT=2，两个 NEW VIOLATION 都点名它），处置是改归档流程（日志先写到 docs/evidence/ 之外、运行返回后落档）而不是改判据，第二跑按新流程绿。"
     },
     "§4|01|65cded67": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item '§4|01'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "recorded observations=yes; provenance=yes；B1 2026-01-05..07-21: 719314 compared keys; akshare leg from legacy migration, no fresh dual capture"
     },
     "§4|02|f9317f21": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C65",
+      "date": "2026-10-01",
+      "reason": "用户授权字段/单位/key审阅已实际执行33条启用能力；公司行动重复键和值冲突、财报公告/修订时点、部分单位语义及未verified腿原始样本仍缺，整体INCOMPLETE。已不是泛称等待人工确认。",
+      "evidence": [
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/mapping-review-results.json",
+        "docs/evidence/C65/mapping-review-package.md",
+        "docs/evidence/C65/official-parquet-comparison.json"
+      ]
     },
     "§4|03|b0da1909": {
       "state": "proven",
@@ -1250,70 +1732,176 @@
       "note": "容忍度仍是 RTOL=1e-9（compare_with_upstream.py:54，本轮未改），且只在「一侧真是 float 实例」时才参与判读；被放过的差异必须写进 notes（「文本不同但浮点在 rtol 内一致」），报告表头新增一列记条数。M2 变异（把 rtol 放宽到 1e-2）会让 test_value_change_in_object_column_still_fails 立刻红，所以这一勾不是靠放水量出来的。纯文本格（日期、代码列）仍逐字符相等才过。"
     },
     "§4|04|2cea237f": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C65",
+      "date": "2026-10-01",
+      "reason": "本轮搬运录制回放14PASS、4PENDING；官方Parquet股票日线样本通过而公司行动原始key冲突拒绝。局部通过不能替代本条整体归档对照面闭合。",
+      "evidence": [
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/port-fidelity-current-report.md",
+        "docs/evidence/C65/official-parquet-comparison.json"
+      ]
     },
     "§4|05|0bb21c83": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item '§4|05'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "recorded observations=yes; provenance=yes；C5 index_daily: 3 live legs plus one fixture; no all-domain or current-provider claim"
     },
     "§5|01|8cab47ff": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C65",
+      "date": "2026-10-01",
+      "command": "Anaconda base outer driver invokes fixed Python scripts/quality/acceptance_item_probe.py --all --json docs/evidence/C65/item-readings-current.json; actual argv and CHECK_EXIT in docs/evidence/C65/item-readings-current.txt",
+      "evidence": [
+        "docs/evidence/C65/item-readings-current.json",
+        "docs/evidence/C65/item-readings-current.txt",
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/write-benchmark-matrix.json",
+        "docs/evidence/C65/write-benchmark-matrix-driver.txt",
+        "docs/evidence/C65/write-benchmark-acceptance.md",
+        "docs/evidence/C65/benchmark-guard-repair-independent.txt"
+      ],
+      "note": "100k/1m/10,310,289行分别独立进程同规格写入测量，峰值RSS274.91/348.78/308.86MiB，未随行数呈线性增长；只证这三个规模的有界写入观测，不宣称任意规模恒定内存或额外2GiB阈值。"
     },
     "§5|02|74658e59": {
-      "state": "unreviewed"
+      "state": "gap",
+      "round": "C65",
+      "date": "2026-10-01",
+      "reason": "真实隔离十年快照中断75→恢复0已完成5568标的/10,307,812行/223DONE，跳过完成2shards；独立全键及10raw+6DWD值比较缺键/差异均0。来源截至9/24的既有ODS，当前全市场Universe及最新供应商取数未独立证明，保留此范围缺口。",
+      "evidence": [
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/replay-full-manifest.json",
+        "docs/evidence/C65/replay-full-interrupt.txt",
+        "docs/evidence/C65/replay-full-resume.txt",
+        "docs/evidence/C65/replay-full-independent-sql.json",
+        "docs/evidence/C65/replay-full-independent-sql.txt",
+        "docs/evidence/C65/replay-full-independent-review.json"
+      ]
     },
     "§5|03|1c964297": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item '§5|03'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 2/2 nodes passed；runtime binding=yes; scope=offline 429 substitute; no live ban or quota claim"
     },
     "§5|04|d73d5844": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "evidence": [
+        "docs/evidence/C64/new-item-probes.txt",
+        "docs/evidence/C64/new-item-probes.json",
+        "docs/evidence/C64/README.md"
+      ],
+      "command": "/Users/yunjinqi/opt/anaconda3/bin/conda run -n base python scripts/quality/acceptance_item_probe.py --item §5|04",
+      "note": "dated_pass=yes；gb_table=yes；http_rows=yes；indexed=yes；bounded_time=yes；read_only=yes；one indexed stock_daily THS ODS table; 15-day/one-symbol/12-row query; no all-table or P95 claim"
     },
     "§5|05|7565a580": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "evidence": [
+        "docs/evidence/C64/new-item-probes.txt",
+        "docs/evidence/C64/new-item-probes.json",
+        "docs/evidence/C64/README.md"
+      ],
+      "command": "/Users/yunjinqi/opt/anaconda3/bin/conda run -n base python scripts/quality/acceptance_item_probe.py --item §5|05",
+      "note": "C64 fresh named behavior checks: 3/3 nodes passed；runtime binding=yes; scope=fresh temporary file/SQLite checks plus C64 isolated MySQL/Parquet REST; no deployment or file RPO claim"
     },
     "§6|01|7054ff90": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item '§6|01'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 4/4 nodes passed；runtime binding=yes; scope=SQLite step re-entry; notification is at-least-once"
     },
     "§6|02|a6ebdfb3": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item '§6|02'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "C64 fresh named behavior checks: 2/2 nodes passed；runtime binding=yes; scope=file-backed SQLite restart; actual task reload and legacy script path"
     },
     "§6|03|407cf9b8": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item '§6|03'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py",
+        "docs/evidence/C64/four-bindings-independent.txt",
+        "docs/evidence/C64/four-bindings-independent.json"
+      ],
+      "note": "C64 fresh named behavior checks: 2/2 nodes passed；runtime binding=yes; scope=local browser downloads/errors {'retry': 'passed', 'export': 'passed', 'empty': 'passed', 'export_error': 'passed', 'load_error': 'passed'}; backend SQLite retry/list checks；C64 最终具名/浏览器绑定独立复查 4/4 proven、18 个反例均打回 gap；显式使用与锁文件匹配的独立 Chromium 路径，原门禁第五遍环境失败记录保留。"
     },
     "§6|04|38929914": {
-      "state": "unreviewed"
+      "state": "proven",
+      "round": "C64",
+      "date": "2026-09-30",
+      "command": "Anaconda base + pinned quality venv; python scripts/quality/acceptance_item_probe.py --item '§6|04'",
+      "evidence": [
+        "docs/evidence/C64/final-40-probes.txt",
+        "docs/evidence/C64/final-40-probes.json",
+        "docs/evidence/C64/README.md",
+        "scripts/quality/acceptance_item_probe.py"
+      ],
+      "note": "recorded observations=yes; provenance=yes；C64 isolated MySQL restore; no production activation or file RPO claim"
     },
     "AC-16|01|8d062d86": {
       "state": "gap",
-      "reason": "判据要「全部自研 provider 均有审查留档」，现场是逐包 0/7：git 跟踪清单里带 `registration.py` 的自研 provider 包 7 个（akshare、ecb、fred、imf、oecd、ths、yfinance），提交说明带「无 OpenBB 源码参照」的 0 个，`docs/evidence/` 里同时写得到该句与「审查」字样并按包名点名该包的留档 0 个。规则文本在位（`docs/proposals/openbb-migration/README.md` 的留痕要求 + 该文档把 AST 断言扩展到「零 openbb」）、模块 docstring 里的 `no OpenBB code was consulted` 自声明覆盖 5 个包，但两者都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录，按判据字面不认。历史提交说明补不回来（不改写历史），收口要一次真实的人工逐包审查留档，本轮不代拟。",
+      "reason": "用户授权的当前7包源码审阅已完成；该条还要求历史开发依据/提交声明核查，当前无对应历史开发声明证据。不能替作者回填声明或从当前比较反推历史过程。",
       "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-16|01'（七包逐个 git log 声明核查 + docs/evidence/ 逐包点名留档核查）",
       "note": "AC-16|01 判定面为 moment 面（依赖 git 历史与跟踪清单），最终复核以干净树的 `make gate` 遍为准。 门禁遍复测又露出第二处仪器缺陷（本轮自查）：`record_bodies` 原按整文件匹配，本轮自己写进 docs/evidence/C62/ 的档案同时满足「含该句声明」与「含审查字样」并按包名点名 ⇒ 留档面被本轮的机读回声喂成 7/7。现剔除带探针读数同形标记的档案、包名与声明须同一行绑定、新面 recorded_binds 进判定式顶层（各配一条反事实）。修后留档读数回到 0 包/0 绑定行，本格结论仍是 gap。 修后复验（干净树两遍）：`gate-run2-final.txt` 第 515/516 行读到留档 0 个包（同一行绑定 0 行）/0/7，与本轮逐项跑同形；`probe-check-after-fix.txt` 第 65 行是 59/59 探针、460 条反事实逐条打回 gap，第 66 行 agrees=59 / stale-proof=0。五格终值未翻。",
-      "round": "C62",
-      "date": "2026-09-29",
+      "round": "C65",
+      "date": "2026-10-01",
       "evidence": [
-        "docs/evidence/C62/README.md",
-        "docs/evidence/C62/probe-items-ac16.txt",
-        "docs/evidence/C62/self-test.txt",
-        "docs/evidence/C62/guards.txt",
-        "docs/evidence/C62/probe-check-after-fix.txt",
-        "docs/evidence/C62/gate-run1.txt",
-        "docs/evidence/C62/gate-run2-final.txt"
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/provider-source-review.json",
+        "docs/evidence/C65/provider-review-package.md"
       ]
     },
     "AC-16|02|ee0d6156": {
       "state": "gap",
-      "reason": "否定面本轮第一次量全并带正向对照：运行时四包 517 个跟踪 py 文件逐个 AST 解析成功 517 个，读到 88 个不同顶层 import 根，其中 openbb / openbb-* 0 个；`verify_no_akshare.py` 的 `FORBIDDEN_ROOTS` 含 openbb 且正文有 5 处 openbb（含 `--self-test` 故意违规样本，即这条断言会响）。字面出现 openbb 的运行时文件 6 个，全是 FR-7 对照表加载器与 provider docstring 的 clean-room 自声明，无源码。但判据括号点名的两项核查都没做过：提交声明核查 0/7、逐包人工抽查留档 0/7；「近似复制」只能靠逐包人工比对判定，不以「import 为零」冒充已被抽查过。",
+      "reason": "当前7包对固定OpenBB基线审阅及零运行时包依赖扫描已完成；全库近似复制的人工抽查范围和历史提交声明核查仍未完整，当前provider范围不替代全库/历史断言。",
       "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-16|02'（运行时四包 AST 走查 + 扫描器禁止清单 + 两项人工核查面）",
       "note": "本轮由 `--self-test` 抓到并补强一处判据漏洞：旧 judge 只要求解析数 > 0，施加「走查面比跟踪面小（516/517）」的反事实仍读 proven；现把「解析数 == 跟踪文件数」钉进判定式顶层，零读数必须建立在全量覆盖上。判据原文一字未动。 门禁遍复测又露出第二处仪器缺陷（本轮自查）：`record_bodies` 原按整文件匹配，本轮自己写进 docs/evidence/C62/ 的档案同时满足「含该句声明」与「含审查字样」并按包名点名 ⇒ 留档面被本轮的机读回声喂成 7/7。现剔除带探针读数同形标记的档案、包名与声明须同一行绑定、新面 recorded_binds 进判定式顶层（各配一条反事实）。修后留档读数回到 0 包/0 绑定行，本格结论仍是 gap。 修后复验（干净树两遍）：`gate-run2-final.txt` 第 515/516 行读到留档 0 个包（同一行绑定 0 行）/0/7，与本轮逐项跑同形；`probe-check-after-fix.txt` 第 65 行是 59/59 探针、460 条反事实逐条打回 gap，第 66 行 agrees=59 / stale-proof=0。五格终值未翻。",
-      "round": "C62",
-      "date": "2026-09-29",
+      "round": "C65",
+      "date": "2026-10-01",
       "evidence": [
-        "docs/evidence/C62/README.md",
-        "docs/evidence/C62/probe-items-ac16.txt",
-        "docs/evidence/C62/self-test.txt",
-        "docs/evidence/C62/guards.txt",
-        "docs/evidence/C62/probe-check-after-fix.txt",
-        "docs/evidence/C62/gate-run1.txt",
-        "docs/evidence/C62/gate-run2-final.txt"
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/provider-nearest-review.json",
+        "docs/evidence/C65/provider-similarity-inventory.json",
+        "docs/evidence/C65/provider-review-package.md"
       ]
     },
     "AC-16|03|aa9e45ea": {
@@ -1363,6 +1951,49 @@
         "docs/evidence/C62/gate-run1.txt",
         "docs/evidence/C62/gate-run2-final.txt"
       ]
+    },
+    "AC-1|03|37d05f56": {
+      "state": "proven",
+      "round": "C65",
+      "date": "2026-10-01",
+      "command": "Anaconda base outer driver invokes fixed Python scripts/quality/acceptance_item_probe.py --all --json docs/evidence/C65/item-readings-current.json; actual argv and CHECK_EXIT in docs/evidence/C65/item-readings-current.txt",
+      "evidence": [
+        "docs/evidence/C65/item-readings-current.json",
+        "docs/evidence/C65/item-readings-current.txt",
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/reference-policy-review.md",
+        "docs/evidence/C65/zero-dependency-current-independent.txt"
+      ],
+      "note": "逐路径来源名登记81项、3处固定AST元数据例外，双向对账与源码SHA均有效；零包依赖扫描仍完整执行，没有自研目录通用豁免。"
+    },
+    "AC-1|09|9a1b761f": {
+      "state": "proven",
+      "round": "C65",
+      "date": "2026-10-01",
+      "command": "Anaconda base outer driver invokes fixed Python scripts/quality/acceptance_item_probe.py --all --json docs/evidence/C65/item-readings-current.json; actual argv and CHECK_EXIT in docs/evidence/C65/item-readings-current.txt",
+      "evidence": [
+        "docs/evidence/C65/item-readings-current.json",
+        "docs/evidence/C65/item-readings-current.txt",
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/secret-history-current-independent.txt",
+        "docs/evidence/C65/ported-security-triage.json"
+      ],
+      "note": "无实际凭证配置/工作区残留跟踪，唯一.env.example模板接受真实内容凭证扫描；全历史gitleaks零发现，无生成物目录通用白名单。搬运层公共token候选的未确认安全风险仍见triage，不把扫描0解释成安全无风险。"
+    },
+    "AC-5|03|46ab5fb5": {
+      "state": "proven",
+      "round": "C65",
+      "date": "2026-10-01",
+      "command": "Anaconda base outer driver invokes fixed Python scripts/quality/acceptance_item_probe.py --all --json docs/evidence/C65/item-readings-current.json; actual argv and CHECK_EXIT in docs/evidence/C65/item-readings-current.txt",
+      "evidence": [
+        "docs/evidence/C65/item-readings-current.json",
+        "docs/evidence/C65/item-readings-current.txt",
+        "docs/evidence/C65/acceptance-review-current.md",
+        "docs/evidence/C65/reference-policy-review.md",
+        "docs/evidence/C65/port-report-current.md",
+        "docs/evidence/C65/zero-dependency-current-independent.txt"
+      ],
+      "note": "codemod人工差异待办清零；扫描器V3基线0、包Import/ImportFrom/动态模块引用0，13坏样本拒绝、4正常样本接受及23策略回归通过；仅3固定AST元数据位置豁免，未改拼写隐藏依赖。"
     }
   }
 }

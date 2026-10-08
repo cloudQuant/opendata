@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""JS execution point registry for the ported tree (A2.6).
+"""JS execution point registry for the vendored AkShare tree (A2.6).
 
-The ported ``opendata_http`` tree executes JavaScript in two ways
+The vendored AkShare tree executes JavaScript in two ways
 that must stay visible across upstream re-syncs:
 
 * ``py_mini_racer.MiniRacer()`` engine sites: the executed payload is
@@ -35,9 +35,24 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-TARGET = REPO_ROOT / "opendata_http"
+VENDOR_ROOT = "opendata/data/providers/akshare/_vendor"
+TARGET = REPO_ROOT / VENDOR_ROOT
 REGISTRY_PATH = REPO_ROOT / "docs" / "quality" / "js-execution-points.json"
 REGISTRY_VERSION = 1
+
+# Direct script execution starts with scripts/quality on sys.path. Add the
+# checkout root so the shared source-layout policy is used in both CLI and
+# imported-test execution.
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.quality.source_layout import (  # noqa: E402
+    PORTED,
+    PathClassifier,
+    SourceLayoutError,
+    classify_path,
+    iter_unique_python_files,
+)
 
 #: Engine instantiations; catches every ``MiniRacer()`` call.
 _ENGINE_PATTERN = re.compile(r"MiniRacer\(\)")
@@ -49,8 +64,13 @@ _BUILTIN_EXEC_PATTERN = re.compile(r"(?<![\w.])exec\(")
 SCOPE_CHANGED = "scan scope changed silently"
 
 
-def scan() -> dict[str, Any]:
-    """Scan the ported tree for JS execution points.
+def scan(
+    *,
+    root: Path = REPO_ROOT,
+    roots: tuple[str, ...] = (VENDOR_ROOT,),
+    classifier: PathClassifier = classify_path,
+) -> dict[str, Any]:
+    """Scan unique ported files for JS execution points.
 
     Returns:
         Registry payload: engine and eval inventories plus totals.
@@ -58,11 +78,16 @@ def scan() -> dict[str, Any]:
     engine: Counter[str] = Counter()
     builtin_eval: Counter[str] = Counter()
     builtin_exec: Counter[str] = Counter()
-    for path in sorted(TARGET.rglob("*.py")):
-        if "__pycache__" in path.parts:
-            continue
+    sources = iter_unique_python_files(
+        root,
+        roots,
+        layers=frozenset({PORTED}),
+        classifier=classifier,
+    )
+    for source in sources:
+        path = source.path
         text = path.read_text(encoding="utf-8")
-        relative = path.relative_to(REPO_ROOT).as_posix()
+        relative = source.identity
         for pattern, counter in (
             (_ENGINE_PATTERN, engine),
             (_BUILTIN_EVAL_PATTERN, builtin_eval),
@@ -74,7 +99,7 @@ def scan() -> dict[str, Any]:
     return {
         "version": REGISTRY_VERSION,
         "engine": "py_mini_racer",
-        "js_payload_source": "opendata_http/stock/cons.py:hk_js_decode (hardcoded literal)",
+        "js_payload_source": (f"{VENDOR_ROOT}/stock/cons.py:hk_js_decode (hardcoded literal)"),
         "engine_sites": dict(sorted(engine.items())),
         "builtin_eval_sites": dict(sorted(builtin_eval.items())),
         "builtin_exec_sites": dict(sorted(builtin_exec.items())),
@@ -105,7 +130,11 @@ def check() -> int:
     if registry is None:
         print(f"FAIL: registry missing or unreadable ({REGISTRY_PATH}); run --update")
         return 1
-    current = scan()
+    try:
+        current = scan()
+    except (OSError, SourceLayoutError) as exc:
+        print(f"FAIL: source scan incomplete: {exc}")
+        return 1
     drift = False
     for key in ("engine_sites", "builtin_eval_sites", "builtin_exec_sites"):
         recorded, live = registry.get(key, {}), current[key]
@@ -113,6 +142,10 @@ def check() -> int:
             if recorded.get(name) != live.get(name):
                 print(f"{SCOPE_CHANGED}: {key} {name}: {recorded.get(name)} -> {live.get(name)}")
                 drift = True
+    for key in ("js_payload_source", "totals"):
+        if registry.get(key) != current[key]:
+            print(f"{SCOPE_CHANGED}: {key}: {registry.get(key)} -> {current[key]}")
+            drift = True
     if drift:
         print("review the new/changed JS execution points, then run --update")
         return 1
@@ -131,7 +164,11 @@ def update() -> int:
     Returns:
         Process exit code (always 0).
     """
-    current = scan()
+    try:
+        current = scan()
+    except (OSError, SourceLayoutError) as exc:
+        print(f"FAIL: source scan incomplete: {exc}")
+        return 1
     REGISTRY_PATH.parent.mkdir(parents=True, exist_ok=True)
     REGISTRY_PATH.write_text(
         json.dumps(current, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"

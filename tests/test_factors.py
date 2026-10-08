@@ -61,8 +61,25 @@ class TestEventRatio:
         with pytest.raises(ValueError, match="prev_close"):
             event_ratio(event, 0.0)
 
+    def test_non_finite_or_negative_event_inputs_fail_closed(self):
+        for event in (
+            FactorEvent("600519", _d(10), cash_dividend=float("nan")),
+            FactorEvent("600519", _d(10), bonus=-0.1),
+            FactorEvent("600519", _d(10), allotment_ratio=0.1, allotment_price=-1.0),
+        ):
+            with pytest.raises(ValueError, match="finite and non-negative"):
+                event_ratio(event, 10.0)
+
     def test_payout_beyond_the_price_fails_closed(self):
         event = FactorEvent("600519", _d(10), cash_dividend=20.0)
+
+        with pytest.raises(ValueError, match="payout exceeds"):
+            event_ratio(event, 10.0)
+
+    def test_cash_above_close_fails_even_when_rights_funding_would_offset_it(self):
+        event = FactorEvent(
+            "600519", _d(10), cash_dividend=11.0, allotment_ratio=0.2, allotment_price=100.0
+        )
 
         with pytest.raises(ValueError, match="payout exceeds"):
             event_ratio(event, 10.0)
@@ -182,3 +199,88 @@ class TestCumulate:
         by_day = {f.trade_date: f for f in factors}
         assert _d(10) in by_day
         assert by_day[_d(10)].hfq_factor == pytest.approx(10.0 / 9.0)
+
+    def test_affine_cash_transform_preserves_the_cash_offset(self):
+        event = FactorEvent("600519", _d(3), cash_dividend=5.0)
+        factors = cumulate_factors(
+            [event],
+            _closes("600519", [(1, 100.0), (2, 120.0), (3, 125.0)]),
+        )
+
+        by_day = {factor.trade_date: factor for factor in factors}
+        assert by_day[_d(1)].qfq_scale == pytest.approx(1.0)
+        assert by_day[_d(1)].qfq_offset == pytest.approx(-5.0)
+        assert 100.0 * by_day[_d(1)].qfq_scale + by_day[_d(1)].qfq_offset == pytest.approx(95.0)
+        assert 120.0 * by_day[_d(2)].qfq_scale + by_day[_d(2)].qfq_offset == pytest.approx(115.0)
+        assert by_day[_d(3)].qfq_scale == pytest.approx(1.0)
+        assert by_day[_d(3)].qfq_offset == pytest.approx(0.0)
+        assert 125.0 * by_day[_d(3)].hfq_scale + by_day[_d(3)].hfq_offset == pytest.approx(130.0)
+        assert all(factor.adjustment_version == "affine-v1" for factor in factors)
+
+    def test_affine_coefficients_cover_bonus_rights_and_combined_actions(self):
+        cases = [
+            (FactorEvent("600519", _d(3), bonus=0.25), (0.8, 0.0)),
+            (
+                FactorEvent("600519", _d(3), allotment_ratio=0.2, allotment_price=10.0),
+                (1 / 1.2, 2.0 / 1.2),
+            ),
+            (
+                FactorEvent(
+                    "600519",
+                    _d(3),
+                    cash_dividend=5.0,
+                    bonus=0.2,
+                    allotment_ratio=0.1,
+                    allotment_price=20.0,
+                ),
+                (1 / 1.3, -3.0 / 1.3),
+            ),
+        ]
+        for event, expected in cases:
+            factors = cumulate_factors(
+                [event], _closes("600519", [(1, 100.0), (2, 120.0), (3, 130.0)])
+            )
+            prior = next(factor for factor in factors if factor.trade_date == _d(1))
+            assert (prior.qfq_scale, prior.qfq_offset) == pytest.approx(expected)
+
+    def test_affine_cash_offset_matches_c56_cash_dividend_evidence(self):
+        factors = cumulate_factors(
+            [FactorEvent("600519", _d(3), cash_dividend=28.02)],
+            _closes("600519", [(1, 1268.0), (2, 1300.0), (3, 1290.0)]),
+        )
+
+        prior = factors[0]
+        assert 1268.0 * prior.qfq_scale + prior.qfq_offset == pytest.approx(1239.98)
+
+    def test_affine_event_composition_keeps_non_commuting_order(self):
+        factors = cumulate_factors(
+            [
+                FactorEvent("600519", _d(2), cash_dividend=5.0),
+                FactorEvent("600519", _d(3), bonus=0.25),
+            ],
+            _closes("600519", [(1, 100.0), (2, 110.0), (3, 115.0)]),
+        )
+
+        first = next(factor for factor in factors if factor.trade_date == _d(1))
+        last = next(factor for factor in factors if factor.trade_date == _d(3))
+        assert (first.qfq_scale, first.qfq_offset) == pytest.approx((0.8, -4.0))
+        assert (last.hfq_scale, last.hfq_offset) == pytest.approx((1.25, 5.0))
+
+    def test_affine_events_after_latest_bar_do_not_move_latest_anchor(self):
+        factors = cumulate_factors(
+            [FactorEvent("600519", _d(3), cash_dividend=5.0)],
+            _closes("600519", [(1, 100.0), (2, 120.0)]),
+        )
+
+        latest = factors[-1]
+        assert (latest.qfq_scale, latest.qfq_offset) == (1.0, 0.0)
+
+    def test_multiple_same_day_events_are_ambiguous(self):
+        with pytest.raises(ValueError, match="ambiguous multiple corporate actions"):
+            cumulate_factors(
+                [
+                    FactorEvent("600519", _d(10), cash_dividend=1.0, event_key="cash"),
+                    FactorEvent("600519", _d(10), bonus=0.1, event_key="bonus"),
+                ],
+                _closes("600519", [(1, 10.0), (10, 12.0)]),
+            )

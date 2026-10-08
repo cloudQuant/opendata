@@ -17,7 +17,7 @@ from loguru import logger as _default_logger
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import opendata_http as ak
+import opendata.data.providers.akshare._vendor as ak
 from opendata.core.config import settings
 
 # Connection pool singleton

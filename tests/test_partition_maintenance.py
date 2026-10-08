@@ -129,20 +129,15 @@ class TestCrossYearWrite:
                     "VALUES ('600519', '2027-03-01', 1.0)"
                 )
             )
-            placements = (
-                connection.execute(
-                    text(
-                        "SELECT PARTITION_NAME FROM information_schema.PARTITIONS "
-                        "WHERE TABLE_SCHEMA = DATABASE() "
-                        "AND TABLE_NAME = '_probe_partition_maintenance' "
-                        "AND PARTITION_NAME IS NOT NULL AND TABLE_ROWS > 0"
-                    )
-                )
-                .scalars()
-                .all()
-            )
+            p2027_rows = connection.execute(
+                text("SELECT COUNT(*) FROM `_probe_partition_maintenance` PARTITION (p2027)")
+            ).scalar_one()
+            pmax_rows = connection.execute(
+                text("SELECT COUNT(*) FROM `_probe_partition_maintenance` PARTITION (pmax)")
+            ).scalar_one()
 
-        assert placements == ["p2027"]
+        assert p2027_rows == 1
+        assert pmax_rows == 0
 
     def test_maintenance_is_idempotent(self, warehouse):
         from opendata.pipeline.partitions import PartitionMaintainer

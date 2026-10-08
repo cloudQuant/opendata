@@ -1,10 +1,10 @@
-"""Generate the porting diff report (design §5.6, FR-5).
+"""Generate the bundled AKShare vendor report (design §5.6, FR-5).
 
 Verifies every ported file against its upstream baseline and writes
 ``docs/port-report.md``. The report's pending-TODO section is the A1.6
 acceptance surface (待办清零):
 
-* **import gaps** - a ported module importing ``opendata_http.*`` that
+* **import gaps** - a ported module importing the bundled vendor namespace that
   is not (yet) ported; the import closure is incomplete;
 * **manual drift** - a ported file whose content differs from the
   deterministic codemod replay of its upstream source (an unregistered
@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import hashlib
 import sys
 from pathlib import Path
 
@@ -31,13 +32,16 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
+from scripts.codemod.migrate_provider_layout import (  # noqa: E402
+    MigrationConfig,
+    _lazy_vendor_init,
+)
 from scripts.codemod.port_module import (  # noqa: E402
     _INIT_UPSTREAM_PATH,
     DEFAULT_UPSTREAM_REPO,
     PORTED_PACKAGE,
     PORTED_ROOT,
     UpstreamLock,
-    _subset_init,
     port_source,
     sha256_text,
 )
@@ -45,10 +49,11 @@ from scripts.codemod.port_module import (  # noqa: E402
 REPORT_PATH = Path("docs/port-report.md")
 RESOURCE_REGISTER_HEADING = "## 内置资源不可用登记（A2.3，AC-5|06）"
 _DATASETS_MODULE = "datasets.py"
+_UNLOCKED_METADATA = frozenset({"upstream.lock", "manifest.json", "LICENSE-AKSHARE"})
 
 
 def _module_exists(ported_root: Path, module: str) -> bool:
-    """Whether an ``opendata_http.*`` module path exists in the tree."""
+    """Whether a bundled vendor module path exists in the tree."""
     if module == PORTED_PACKAGE:
         return ported_root.is_dir()
     if not module.startswith(PORTED_PACKAGE + "."):
@@ -61,7 +66,7 @@ def collect_import_gaps(ported_root: Path) -> list[str]:
     """Find ported modules whose intra-package imports are unported.
 
     Args:
-        ported_root: The ``opendata_http`` directory.
+        ported_root: The bundled AKShare vendor directory.
 
     Returns:
         Human-readable gap descriptions, one per broken import.
@@ -97,6 +102,21 @@ def collect_import_gaps(ported_root: Path) -> list[str]:
     return gaps
 
 
+def collect_unlocked_files(ported_root: Path, lock: UpstreamLock) -> list[str]:
+    """Fail closed when the recursive vendor inventory contains unpinned files."""
+    discovered = {
+        path.relative_to(ported_root).as_posix()
+        for path in ported_root.rglob("*")
+        if path.is_file()
+        and "__pycache__" not in path.parts
+        and path.relative_to(ported_root).as_posix() not in _UNLOCKED_METADATA
+    }
+    return [
+        f"{rel}: file exists in the vendor tree but is absent from upstream.lock"
+        for rel in sorted(discovered - set(lock.files))
+    ]
+
+
 def _message_parts(raise_stmt: ast.Raise) -> list[ast.expr]:
     """The interpolated pieces of a raised message, so the register can quote it verbatim."""
     exc = raise_stmt.exc
@@ -122,7 +142,7 @@ def collect_resource_register(ported_root: Path, lock: UpstreamLock) -> list[dic
     """Read the ported resource accessors and record which ones declare themselves unavailable.
 
     Args:
-        ported_root: The ``opendata_http`` directory.
+        ported_root: The bundled AKShare vendor directory.
         lock: The baseline lock, used to say whether the resource exists somewhere in the tree.
 
     Returns:
@@ -156,13 +176,18 @@ def collect_resource_register(ported_root: Path, lock: UpstreamLock) -> list[dic
     return rows
 
 
+def _sha256_bytes(data: bytes) -> str:
+    """Hash exact file bytes so binary resources retain their provenance."""
+    return hashlib.sha256(data).hexdigest()
+
+
 def collect_drift(
     ported_root: Path, lock: UpstreamLock, upstream_repo: Path
 ) -> tuple[list[str], list[dict[str, object]]]:
     """Compare ported content against the deterministic replay.
 
     Args:
-        ported_root: The ``opendata_http`` directory.
+        ported_root: The bundled AKShare vendor directory.
         lock: The baseline lock.
         upstream_repo: Clean upstream clone at the locked commit.
 
@@ -182,22 +207,30 @@ def collect_drift(
             todos.append(f"{rel}: upstream file {upstream_path} disappeared upstream")
             continue
         pristine_bytes = pristine.read_bytes()
-        pristine_sha = sha256_text(pristine_bytes.decode("utf-8", errors="replace"))
+        pristine_sha = (
+            sha256_text(pristine.read_text(encoding="utf-8"))
+            if pristine.suffix == ".py"
+            else _sha256_bytes(pristine_bytes)
+        )
         if pristine_sha != str(record["sha256"]):
             todos.append(
                 f"{rel}: upstream sha256 drifted from the lock "
                 f"(lock={str(record['sha256'])[:12]}, now={pristine_sha[:12]}); re-pin?"
             )
             continue
+        ported_bytes = ported.read_bytes()
+        ported_sha = _sha256_bytes(ported_bytes)
         if ported.suffix != ".py":
             # Resources are copied verbatim: ported == upstream.
-            matches = sha256_text(ported.read_text(encoding="utf-8")) == pristine_sha
+            matches = ported_bytes == pristine_bytes
             if not matches:
                 todos.append(f"{rel}: resource differs from the upstream original")
             table.append(
                 {
                     "path": rel,
                     "upstream_path": upstream_path,
+                    "upstream_sha256": pristine_sha,
+                    "ported_sha256": ported_sha,
                     "import_rewrites": 0,
                     "string_rewrites": 0,
                     "manual_edits": record.get("manual_edits", False),
@@ -205,21 +238,42 @@ def collect_drift(
                 }
             )
             continue
-        replay_text = pristine_bytes.decode("utf-8")
         if upstream_path == _INIT_UPSTREAM_PATH:
-            # The aggregator is ported with subset filtering; the replay
-            # must apply the same deterministic filter.
-            ported_modules = {rel.removesuffix(".py") for rel in lock.files}
-            replay_text, _kept, _dropped = _subset_init(replay_text, ported_modules)
+            expected_facade, _facade_report = _lazy_vendor_init(
+                pristine,
+                MigrationConfig(
+                    repo_root=_REPO_ROOT,
+                    akshare_new_namespace=PORTED_PACKAGE,
+                ),
+            )
+            matches = ported_bytes == expected_facade
+            if not matches:
+                todos.append(f"{rel}: lazy facade differs from the deterministic export map")
+            table.append(
+                {
+                    "path": rel,
+                    "upstream_path": upstream_path,
+                    "upstream_sha256": pristine_sha,
+                    "ported_sha256": ported_sha,
+                    "import_rewrites": 0,
+                    "string_rewrites": 0,
+                    "manual_edits": record.get("manual_edits", False),
+                    "replay_matches": matches,
+                }
+            )
+            continue
+        replay_text = pristine.read_text(encoding="utf-8")
         expected, result = port_source(replay_text, upstream_path, lock.url, lock.commit)
-        actual = ported.read_text(encoding="utf-8")
-        matches = sha256_text(actual) == result.ported_sha256 == sha256_text(expected)
+        expected_sha = sha256_text(expected)
+        matches = ported_sha == result.ported_sha256 == expected_sha
         if not matches:
             todos.append(f"{rel}: ported content differs from the codemod replay (manual edit?)")
         table.append(
             {
                 "path": rel,
                 "upstream_path": upstream_path,
+                "upstream_sha256": pristine_sha,
+                "ported_sha256": ported_sha,
                 "import_rewrites": result.import_rewrites,
                 "string_rewrites": result.string_rewrites,
                 "manual_edits": record.get("manual_edits", False),
@@ -242,7 +296,7 @@ def build_report(
     Returns:
         The markdown text and the pending TODO list.
     """
-    gaps = collect_import_gaps(PORTED_ROOT)
+    gaps = collect_import_gaps(PORTED_ROOT) + collect_unlocked_files(PORTED_ROOT, lock)
     drift, table = collect_drift(PORTED_ROOT, lock, upstream_repo)
     todos = gaps + drift
 
@@ -255,11 +309,14 @@ def build_report(
         "",
         "## 逐文件对照（改写计数与重放一致性）",
         "",
-        "| 文件 | 上游路径 | import 改写 | 字符串改写 | 人工改动 | 重放一致 |",
-        "|------|---------|------------|-----------|---------|---------|",
+        "| 文件 | 上游路径 | 上游 SHA-256 | 搬运 SHA-256 | import 改写 | 字符串改写 | "
+        "人工改动 | 重放一致 |",
+        "|------|---------|------------|-------------|------------|-----------|---------|---------|",
     ]
     lines.extend(
-        f"| `{row['path']}` | `{row['upstream_path']}` | {row['import_rewrites']} "
+        f"| `{row['path']}` | `{row['upstream_path']}` "
+        f"| `{str(row['upstream_sha256'])[:12]}` | `{str(row['ported_sha256'])[:12]}` "
+        f"| {row['import_rewrites']} "
         f"| {row['string_rewrites']} | {row['manual_edits']} | "
         f"{'✓' if row['replay_matches'] else '✗'} |"
         for row in table
@@ -291,8 +348,10 @@ def build_report(
         lines += [
             "",
             "- 「同名文件在搬运清单内 = 是」只说明该文件作为资源被搬进来了、"
-            "路径与上游 `akshare.data` 约定不同，不代表函数可运行：两条 `raise` 都在函数体第一句。",
-            "- 把这两个函数改成读搬运树内的路径需要改 `opendata_http/datasets.py` 正文，"
+            "路径与上游 `akshare.data` 约定不同，不代表函数可运行：两条 `raise` 都在函数体"
+            "第一句。",
+            "- 把这两个函数改成读搬运树内的路径需要改 "
+            "`opendata/data/providers/akshare/_vendor/datasets.py` 正文，"
             "那会让该文件与 `upstream.lock` 的确定性重放不再一致（`AC-17|05` 的重放面），"
             "属搬运基线决策，不在本报告口径内。",
         ]

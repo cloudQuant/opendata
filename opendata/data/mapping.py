@@ -38,7 +38,7 @@ import json
 from dataclasses import dataclass, field
 from functools import cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import pandas as pd
 import yaml
@@ -512,7 +512,7 @@ def normalize_frame(frame: pd.DataFrame, mapping: DomainMapping) -> pd.DataFrame
         if field_mapping.normalize == "plain":
             series = series.map(_plain_value)
         values[contract_field] = series
-    return pd.DataFrame(values, columns=list(mapping.fields))
+    return cast("pd.DataFrame", pd.DataFrame(values, columns=list(mapping.fields)))
 
 
 def denormalize_frame(frame: pd.DataFrame, mapping: DomainMapping) -> pd.DataFrame:
@@ -555,7 +555,7 @@ def denormalize_frame(frame: pd.DataFrame, mapping: DomainMapping) -> pd.DataFra
             projected[field_mapping.ms_column] = _shanghai_millis(
                 projected[field_mapping.source_column]
             )
-    return projected
+    return cast("pd.DataFrame", projected)
 
 
 def _shanghai_millis(dates: pd.Series) -> pd.Series:
@@ -565,10 +565,23 @@ def _shanghai_millis(dates: pd.Series) -> pd.Series:
         dates: Date (or date-like) series.
 
     Returns:
-        An int64 millisecond series.
+        An integer millisecond series. Missing dates stay missing rather
+        than turning into pandas' integer NaT sentinel.
     """
-    localized = pd.to_datetime(dates).dt.tz_localize("Asia/Shanghai")
-    return (localized.astype("int64") // 10**6).astype("int64")
+    localized = pd.to_datetime(dates)
+    if localized.dt.tz is None:
+        localized = localized.dt.tz_localize("Asia/Shanghai")
+    else:
+        localized = localized.dt.tz_convert("Asia/Shanghai")
+    utc_nanoseconds = localized.dt.tz_convert("UTC").dt.as_unit("ns").astype("int64")
+    milliseconds = utc_nanoseconds // 10**6
+    if localized.isna().any():
+        nullable_milliseconds = milliseconds.where(localized.notna(), pd.NA)
+        return cast(
+            "pd.Series[Any]",
+            pd.Series(nullable_milliseconds, index=dates.index, dtype="Int64"),
+        )
+    return cast("pd.Series[Any]", pd.Series(milliseconds, index=dates.index, dtype="int64"))
 
 
 def _plain_value(value: object) -> object:

@@ -153,13 +153,34 @@ class TestCollection:
 
         A leg with no registered field mapping cannot be read; the scope has
         to account for it, or a silently unreadable surface would look
-        healthy. 26 of the 33 registered legs are in that state today.
+        healthy. Native model domains are accounted for separately from the
+        legacy warehouse surface.
         """
         reports, scope = alert_matrix.collect_freshness(lagging_warehouse, expected=EXPECTED)
         legs = alert_matrix.registered_legs()
 
-        assert scope.domains == len(legs)
-        assert scope.source_legs + scope.unmapped_legs == sum(len(v) for v in legs.values())
+        assert scope.domains == 20
+        assert scope.deferred_domains == (
+            "balance_of_payments",
+            "bls_search",
+            "bls_series",
+            "currency_reference_rates",
+            "equity_historical",
+            "equity_quote",
+            "fred_search",
+            "fred_series",
+            "sofr",
+            "sonia",
+            "yield_curve",
+        )
+        assert scope.deferred_legs == 11
+        assert scope.domains + len(scope.deferred_domains) == len(legs) == 31
+        assert scope.source_legs + scope.unmapped_legs == 33
+        assert (
+            scope.source_legs + scope.unmapped_legs + scope.deferred_legs
+            == sum(len(v) for v in legs.values())
+            == 44
+        )
         assert scope.unmapped_legs > 0  # measured on the registry, not invented
         assert len(reports) == scope.domains + scope.source_legs
 
@@ -185,15 +206,34 @@ class TestCollection:
         direction is asserted too, or the number could drift either way.
         """
         legs = alert_matrix.registered_legs()
+        deferred_domains = alert_matrix._deferred_model_domains(legs)
+        legacy_legs = {
+            domain: sources for domain, sources in legs.items() if domain not in deferred_domains
+        }
         unmapped = [
             f"{domain}/{source}"
-            for domain, sources in legs.items()
+            for domain, sources in legacy_legs.items()
             for source in sources
             if not _leg_is_measurable(domain, source)
         ]
 
-        assert sum(len(v) for v in legs.values()) == 33
+        assert sum(len(v) for v in legacy_legs.values()) == 33
         assert len(unmapped) == 23
+        assert sum(len(v) for v in legs.values()) == 44
+        assert deferred_domains == (
+            "balance_of_payments",
+            "bls_search",
+            "bls_series",
+            "currency_reference_rates",
+            "equity_historical",
+            "equity_quote",
+            "fred_search",
+            "fred_series",
+            "sofr",
+            "sonia",
+            "yield_curve",
+        )
+        assert sum(len(legs[domain]) for domain in deferred_domains) == 11
         assert "stock_daily/akshare" not in unmapped
         assert "economy_cpi/fred" in unmapped
         for leg in (
@@ -628,6 +668,10 @@ class TestMatrixScopeHonesty:
         assert run.scope.partitioned_tables == 0
         assert run.scope.disk_path is None
         assert run.scope.as_dict()["failure_legs"] is None
+        assert run.scope.deferred_domains == ()
+        assert run.scope.deferred_legs == 0
+        assert run.scope.as_dict()["deferred_domains"] == []
+        assert run.scope.as_dict()["deferred_legs"] == 0
 
     async def test_the_control_engine_turns_the_failure_rows_on(self, lagging_warehouse) -> None:
         control = _control_engine()

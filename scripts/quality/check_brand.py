@@ -91,6 +91,18 @@ WHITELISTED_FILES = (
     "tests/test_legacy_transfer.py",
 )
 
+# These two files describe the same read-only legacy source used by
+# ``legacy_transfer.py``. Allow only this schema token in these exact paths; they
+# remain subject to every other brand-token and package-reference check.
+TOKEN_PATH_ALLOWLIST: dict[str, frozenset[str]] = {
+    "akshare_data": frozenset(
+        {
+            "scripts/ops/migrate_legacy_stock_daily.py",
+            "tests/test_legacy_stock_daily_transfer.py",
+        }
+    ),
+}
+
 
 @dataclass(frozen=True)
 class Hit:
@@ -142,6 +154,8 @@ def scan_token(token: str) -> list[Hit]:
     lowered = token.lower()
     for path in _iter_text_files():
         rel = path.relative_to(REPO_ROOT).as_posix()
+        if rel in TOKEN_PATH_ALLOWLIST.get(lowered, frozenset()):
+            continue
         for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
             if lowered in line.lower():
                 hits.append(Hit(rel, number, line.strip()))

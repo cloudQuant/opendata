@@ -13,15 +13,22 @@ fails closed instead of comparing a source with itself.
 
 from __future__ import annotations
 
+import hashlib
+import inspect
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 from opendata.pipeline.alerts import AlertPolicy
-from opendata.pipeline.cross_check import DiffSummary, compare_source_frames
+from opendata.pipeline.cross_check import (
+    DEFAULT_SAMPLE_LIMIT,
+    DiffSummary,
+    FieldDiff,
+    compare_source_frames,
+)
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping
-    from datetime import datetime
+    from collections.abc import Callable, Mapping, Sequence
 
     import pandas as pd
 
@@ -63,7 +70,11 @@ def hook_batch_id(context: PipelineContext) -> str:
     Returns:
         The batch identifier.
     """
-    return batch_id_for(context.domain, context.window)
+    base = batch_id_for(context.domain, context.window)
+    if not context.pipeline_id:
+        return base
+    digest = hashlib.sha256(context.pipeline_id.encode("utf-8")).hexdigest()[:16]
+    return f"{base}:{digest}"
 
 
 @dataclass
@@ -98,12 +109,22 @@ class CrossCheckService:
         """Materialize the alert policy (stateful across runs)."""
         self._policy = self.policy if self.policy is not None else AlertPolicy()
 
-    async def run(self, batch_id: str, window: Window) -> DiffSummary:
+    async def run(
+        self,
+        batch_id: str,
+        window: Window,
+        *,
+        symbols: Sequence[str] | None = None,
+        symbol_windows: Mapping[str, Window | None] | None = None,
+    ) -> DiffSummary:
         """Compare both sources for one window.
 
         Args:
             batch_id: Batch identifier of the run.
             window: Date window to compare.
+            symbols: Requested universe for a bounded source read.
+            symbol_windows: Per-symbol union ranges shared by both
+                source readers.
 
         Returns:
             The comparison summary (also written to the report).
@@ -115,9 +136,9 @@ class CrossCheckService:
         source_a, source_b = self.sources
         summary = compare_source_frames(
             self.domain,
-            self._reader(source_a)(window),
+            self._read(source_a, window, symbols=symbols, symbol_windows=symbol_windows),
             self._mapping(source_a),
-            self._reader(source_b)(window),
+            self._read(source_b, window, symbols=symbols, symbol_windows=symbol_windows),
             self._mapping(source_b),
             source_a=source_a,
             source_b=source_b,
@@ -138,7 +159,76 @@ class CrossCheckService:
             The comparison summary (ignored by the runner, useful for
             logging and tests).
         """
-        return await self.run(hook_batch_id(context), context.window)
+        if context.partition_contexts is not None:
+            batch_id = hook_batch_id(context)
+            checked_at = self.checked_at or datetime.now(timezone.utc)
+            compared_keys = 0
+            deviation_count = 0
+            missing_count = 0
+            per_field: dict[str, int] = {}
+            samples: list[FieldDiff] = []
+            for partition in context.partition_contexts():
+                summary = self._compare_batch(
+                    batch_id,
+                    context.window,
+                    symbols=partition.symbols,
+                    symbol_windows=partition.comparison_windows,
+                    checked_at=checked_at,
+                )
+                compared_keys += summary.compared_keys
+                deviation_count += summary.deviation_count
+                missing_count += summary.missing_count
+                for field_name, count in summary.per_field.items():
+                    per_field[field_name] = per_field.get(field_name, 0) + count
+                if len(samples) < DEFAULT_SAMPLE_LIMIT:
+                    samples.extend(summary.samples[: DEFAULT_SAMPLE_LIMIT - len(samples)])
+            aggregate = DiffSummary(
+                domain=self.domain,
+                source_a=self.sources[0],
+                source_b=self.sources[1],
+                checked_at=checked_at,
+                batch_id=batch_id,
+                compared_keys=compared_keys,
+                deviation_count=deviation_count,
+                missing_count=missing_count,
+                per_field=per_field,
+                samples=samples,
+            )
+            self.write_report(aggregate)
+            await self._notify(aggregate)
+            return aggregate
+        if not context.symbols or not context.comparison_windows:
+            return await self.run(hook_batch_id(context), context.window)
+        return await self.run(
+            hook_batch_id(context),
+            context.window,
+            symbols=context.symbols,
+            symbol_windows=context.comparison_windows,
+        )
+
+    def _compare_batch(
+        self,
+        batch_id: str,
+        window: Window,
+        *,
+        symbols: Sequence[str],
+        symbol_windows: Mapping[str, Window | None],
+        checked_at: datetime,
+    ) -> DiffSummary:
+        """Compare one symbol batch without writing or notifying."""
+        source_a, source_b = self.sources
+        return compare_source_frames(
+            self.domain,
+            self._read(source_a, window, symbols=symbols, symbol_windows=symbol_windows),
+            self._mapping(source_a),
+            self._read(source_b, window, symbols=symbols, symbol_windows=symbol_windows),
+            self._mapping(source_b),
+            source_a=source_a,
+            source_b=source_b,
+            batch_id=batch_id,
+            checked_at=checked_at,
+            sample_limit=DEFAULT_SAMPLE_LIMIT,
+        )
 
     def _mapping(self, source: str) -> DomainMapping:
         """Return one source's domain mapping or fail closed."""
@@ -155,6 +245,30 @@ class CrossCheckService:
                 f"no reader registered for source {source!r} in domain {self.domain!r}"
             )
         return self.readers[source]
+
+    def _read(
+        self,
+        source: str,
+        window: Window,
+        *,
+        symbols: Sequence[str] | None,
+        symbol_windows: Mapping[str, Window | None] | None,
+    ) -> pd.DataFrame:
+        """Pass the allowed symbol/window selection to scoped readers."""
+        reader = self._reader(source)
+        try:
+            parameters = inspect.signature(reader).parameters
+        except (TypeError, ValueError):
+            parameters = None
+        if parameters is not None and (
+            "symbol_windows" in parameters
+            or any(item.kind is inspect.Parameter.VAR_KEYWORD for item in parameters.values())
+        ):
+            from typing import cast
+
+            scoped_reader = cast("Callable[..., pd.DataFrame]", reader)
+            return scoped_reader(window, symbols=symbols, symbol_windows=symbol_windows)
+        return reader(window)
 
     async def _notify(self, summary: DiffSummary) -> None:
         """Apply the alert policy and hand the pair to the notifier.

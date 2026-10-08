@@ -15,6 +15,8 @@ from opendata.data.providers.imf.models._indicator import ImfIndicatorFetcher
 class ImfGdpFetcher(ImfIndicatorFetcher):
     """Annual real GDP growth for one country (``NGDP_RPCH``)."""
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_gdp",

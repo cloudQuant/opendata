@@ -28,7 +28,21 @@ export interface User {
   updated_at: string
 }
 
-// Auth
+// Auth response identities retain the field names returned by the auth API.
+export interface AuthUser {
+  user_id: number
+  email: string
+  role: 'admin' | 'user'
+  is_active?: boolean
+  created_at: string
+  updated_at: string | null
+}
+
+// The /auth/me profile includes account activity state.
+export interface CurrentAuthUser extends AuthUser {
+  is_active: boolean
+}
+
 export interface LoginRequest {
   email: string
   password: string
@@ -40,11 +54,25 @@ export interface RegisterRequest {
   password_confirm: string
 }
 
-export interface AuthResponse {
+export interface AuthTokens {
   access_token: string
   refresh_token: string
-  user: User
 }
+
+// POST /auth/login
+export interface AuthResponse extends AuthTokens {
+  require_password_change: boolean
+  user: AuthUser
+}
+
+// POST /auth/register returns identity and tokens, but not a profile object.
+export interface RegisterResponse extends AuthTokens {
+  user_id: number
+  email: string
+}
+
+// POST /auth/refresh rotates tokens without returning a user.
+export type RefreshTokenResponse = AuthTokens
 
 // Data Script / Interface
 export interface DataScript {
@@ -77,12 +105,15 @@ export interface Parameter {
 }
 
 // Task
+export type TaskKindType = 'script' | 'pipeline'
+
 export interface Task {
   id: number
   name: string
   description: string | null
   user_id: number
-  script_id: string
+  task_kind: TaskKindType
+  script_id: string | null
   script_name: string | null
   schedule_type: string
   schedule_expression: string
@@ -106,7 +137,7 @@ export interface Execution {
   id: number
   execution_id: string
   task_id: number | null
-  script_id: string
+  script_id: string | null
   status: TaskStatusType
   start_time: string | null
   end_time: string | null

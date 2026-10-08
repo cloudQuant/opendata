@@ -18,13 +18,17 @@ hands back: no row outside the window, and - the other half of the contract
 
 from __future__ import annotations
 
-import contextlib
+import importlib
+import socket
+import subprocess
 import sys
 from datetime import date
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, NoReturn
 
 import pandas as pd
 import pytest
+from requests import Request
+from requests.sessions import Session
 
 from opendata.data.providers import register_providers
 from opendata.data.providers.akshare.models._normalize import within_window
@@ -103,6 +107,9 @@ UPSTREAM_WINDOWED_LEGS = frozenset({"stock_daily", "index_daily", "fund_etf_dail
 #: keyed, so extraction naming no window is the expected shape, not a hole.
 PERIOD_KEYED_LEGS = frozenset({"financial_indicator", "financial_statement", "index_constituent"})
 
+_AKSHARE_PACKAGE = "opendata.data.providers.akshare"
+_AKSHARE_VENDOR = f"{_AKSHARE_PACKAGE}._vendor"
+
 LEG_CASES = pytest.mark.parametrize(
     ("domain", "date_attr", "frame_factory"),
     WINDOW_BLIND_LEGS,
@@ -126,10 +133,10 @@ def _stubbed(monkeypatch: MonkeyPatch, domain: str, frame: pd.DataFrame) -> Fetc
 
 
 class _OutboundRecorder:
-    """Stand in for the ported ``opendata_http`` layer: keep every outbound call."""
+    """Stand in for the canonical ported AKShare vendor package."""
 
     def __init__(self) -> None:
-        self.calls: list[dict[str, Any]] = []
+        self.calls: list[tuple[str, dict[str, Any]]] = []
 
     def __getattr__(self, name: str) -> Callable[..., pd.DataFrame]:
         """Answer any upstream function with an empty frame, after recording it."""
@@ -137,31 +144,124 @@ class _OutboundRecorder:
             raise AttributeError(name)
 
         def call(*_args: Any, **kwargs: Any) -> pd.DataFrame:
-            self.calls.append(kwargs)
+            self.calls.append((name, kwargs))
             return pd.DataFrame()
 
         return call
 
 
-def _window_reaches_upstream(domain: str, monkeypatch: MonkeyPatch) -> bool:
+class _OutboundBlockedError(RuntimeError):
+    """Raised when the test reaches any real outbound transport path."""
+
+
+class _OutboundTripwire:
+    """Record and reject network/process paths before they can send anything."""
+
+    def __init__(self) -> None:
+        self.attempts: list[str] = []
+
+    def block(self, operation: str) -> NoReturn:
+        self.attempts.append(operation)
+        raise _OutboundBlockedError(f"unexpected outbound attempt through {operation}")
+
+    def socket_connect(self, _sock: Any, address: Any) -> NoReturn:
+        self.block(f"socket.connect({address!r})")
+
+    def socket_connect_ex(self, _sock: Any, address: Any) -> NoReturn:
+        self.block(f"socket.connect_ex({address!r})")
+
+    def create_connection(self, address: Any, *_args: Any, **_kwargs: Any) -> NoReturn:
+        self.block(f"socket.create_connection({address!r})")
+
+    def getaddrinfo(self, host: Any, *_args: Any, **_kwargs: Any) -> NoReturn:
+        self.block(f"socket.getaddrinfo({host!r})")
+
+    def requests_send(self, _session: Any, *_args: Any, **_kwargs: Any) -> NoReturn:
+        self.block("requests.Session.send")
+
+    def subprocess_run(self, *_args: Any, **_kwargs: Any) -> NoReturn:
+        self.block("subprocess.run")
+
+
+def _install_outbound_tripwire(monkeypatch: MonkeyPatch) -> _OutboundTripwire:
+    """Make every common HTTP and socket path fail before network I/O."""
+    tripwire = _OutboundTripwire()
+
+    def socket_connect(sock: Any, address: Any) -> NoReturn:
+        tripwire.socket_connect(sock, address)
+
+    def socket_connect_ex(sock: Any, address: Any) -> NoReturn:
+        tripwire.socket_connect_ex(sock, address)
+
+    monkeypatch.setattr(socket.socket, "connect", socket_connect)
+    monkeypatch.setattr(socket.socket, "connect_ex", socket_connect_ex)
+    monkeypatch.setattr(socket, "create_connection", tripwire.create_connection)
+    monkeypatch.setattr(socket, "getaddrinfo", tripwire.getaddrinfo)
+    monkeypatch.setattr(Session, "send", tripwire.requests_send)
+    monkeypatch.setattr(subprocess, "run", tripwire.subprocess_run)
+    return tripwire
+
+
+def test_outbound_tripwire_rejects_transport_paths_before_sending(
+    monkeypatch: MonkeyPatch,
+) -> None:
+    """The test guard rejects socket, requests, and curl paths without sending."""
+    tripwire = _install_outbound_tripwire(monkeypatch)
+
+    with socket.socket() as sock, pytest.raises(_OutboundBlockedError, match="socket.connect"):
+        sock.connect(("192.0.2.1", 80))
+
+    request = Request("GET", "https://example.invalid").prepare()
+    with Session() as session, pytest.raises(_OutboundBlockedError, match="requests.Session.send"):
+        session.send(request)
+
+    with pytest.raises(_OutboundBlockedError, match="subprocess.run"):
+        subprocess.run([sys.executable, "-c", "pass"], check=False)
+
+    assert len(tripwire.attempts) == 3
+
+
+def _window_reaches_upstream(
+    domain: str,
+    monkeypatch: MonkeyPatch,
+    tripwire: _OutboundTripwire,
+) -> bool:
     """Ask one leg for the window and watch whether the dates left through upstream.
 
     Args:
         domain: The akshare domain to probe.
-        monkeypatch: pytest fixture, used to swap the ported http layer out.
+        monkeypatch: pytest fixture, used to swap the canonical vendor package.
+        tripwire: Test-local guard that prevents real outbound requests.
 
     Returns:
         True when an outbound call carried exactly this start/end pair.
     """
     recorder = _OutboundRecorder()
-    monkeypatch.setitem(sys.modules, "opendata_http", recorder)
+    package = importlib.import_module(_AKSHARE_PACKAGE)
+    vendor = importlib.import_module(_AKSHARE_VENDOR)
+    assert sys.modules[_AKSHARE_VENDOR] is vendor
+    assert package._vendor is vendor
+    monkeypatch.setitem(sys.modules, _AKSHARE_VENDOR, recorder)
+    monkeypatch.setattr(package, "_vendor", recorder)
+    assert sys.modules[_AKSHARE_VENDOR] is recorder
+    assert package._vendor is recorder
+
     fetcher = _fetcher(domain)
     # 空帧会让某些腿在 normalize 处 fail-closed（financial_indicator 就是这样）：
     # 要读的是出站调用，它在 normalize 之前就已经发生了。
-    with contextlib.suppress(Exception):
+    try:
         list(fetcher.fetch(symbol="10011425", start_date=WINDOW_START, end_date=WINDOW_END))
+    except _OutboundBlockedError:
+        raise
+    except Exception:
+        pass
 
-    return any(_carries_window(kwargs) for kwargs in recorder.calls)
+    assert not tripwire.attempts, (
+        f"{domain} escaped the patched AKShare vendor namespace and reached "
+        f"the outbound tripwire: {tripwire.attempts}"
+    )
+    assert recorder.calls, f"{domain} did not call the patched canonical AKShare vendor package"
+    return any(_carries_window(kwargs) for _, kwargs in recorder.calls)
 
 
 def _carries_window(kwargs: dict[str, Any]) -> bool:
@@ -245,7 +345,13 @@ def test_every_akshare_leg_is_triaged_by_what_it_asks_upstream(
     register_providers()
     registry = get_registry()
     akshare_domains = {cap.domain for cap in registry.capabilities() if cap.source == "akshare"}
-    pushed = {domain for domain in akshare_domains if _window_reaches_upstream(domain, monkeypatch)}
+    tripwire = _install_outbound_tripwire(monkeypatch)
+    pushed = {
+        domain
+        for domain in sorted(akshare_domains)
+        if _window_reaches_upstream(domain, monkeypatch, tripwire)
+    }
 
     assert pushed == UPSTREAM_WINDOWED_LEGS
     assert akshare_domains == pushed | {leg[0] for leg in WINDOW_BLIND_LEGS} | PERIOD_KEYED_LEGS
+    assert not tripwire.attempts

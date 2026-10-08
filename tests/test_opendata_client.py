@@ -6,11 +6,16 @@ transport, and one real round trip over a socket against the running
 ASGI app, which is what the consumer hand-off actually does.
 """
 
+import copy
 import json
+import os
 import socket
+import subprocess
+import sys
 import threading
 import time
 from datetime import date
+from pathlib import Path
 
 import httpx
 import pytest
@@ -61,7 +66,11 @@ class TestRequestContract:
 
         with _client(handler) as client:
             page = client.stock_daily(
-                ["600519", "000001"], start="2024-01-01", end="2024-01-31", adjust="qfq"
+                ["600519", "000001"],
+                start="2024-01-01",
+                end="2024-01-31",
+                adjust="qfq",
+                fields=("open", "high", "low", "close"),
             )
 
         assert seen["path"] == "/api/v1/data/equity/stock_daily"
@@ -71,6 +80,7 @@ class TestRequestContract:
         assert params["layer"] == "dwd"
         assert params["start"] == "2024-01-01"
         assert params["end"] == "2024-01-31"
+        assert params["fields"] == "open,high,low,close"
         assert seen["headers"]["x-api-key"] == "od-test-key"
         assert isinstance(page, Page)
         assert page.symbols() == {"600519"}
@@ -648,3 +658,591 @@ class TestSubscriptionProtocol:
             client.close()
 
         assert update.data == ({"symbol": "600519"},)
+
+
+class TestProviderModelMetadata:
+    def test_provider_models_filters_by_source_and_uses_api_key(self):
+        descriptor = {"source": "akshare", "model": "stock_daily", "domain": "stock_daily"}
+        seen: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request)
+            return _envelope([descriptor])
+
+        with _client(handler) as client:
+            assert client.provider_models(source="akshare") == [descriptor]
+
+        assert len(seen) == 1
+        assert seen[0].url.path == "/api/v1/providers/models"
+        assert seen[0].url.query == b"source=akshare"
+        assert seen[0].headers["x-api-key"] == "od-test-key"
+
+    def test_provider_models_without_filter_accepts_empty_directory(self):
+        seen: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request)
+            return _envelope([])
+
+        with _client(handler) as client:
+            assert client.provider_models() == []
+
+        assert seen[0].url.path == "/api/v1/providers/models"
+        assert seen[0].url.query == b""
+        assert seen[0].headers["x-api-key"] == "od-test-key"
+
+    def test_provider_model_schema_preserves_complete_schema(self):
+        payload = {
+            "source": "akshare",
+            "model": "stock_daily",
+            "domain": "stock_daily",
+            "capability_identity": "equity.stock_daily",
+            "verified": True,
+            "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "$ref": "#/$defs/Query",
+                "$defs": {
+                    "Query": {
+                        "type": "object",
+                        "properties": {
+                            "symbols": {"type": "array", "default": []},
+                            "adjust": {"enum": ["none", "qfq", "hfq"], "nullable": True},
+                        },
+                    }
+                },
+            },
+        }
+        seen: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request)
+            return _envelope(payload)
+
+        with _client(handler) as client:
+            result = client.provider_model_schema("akshare", "stock_daily")
+
+        assert result == payload
+        assert result["schema"] == payload["schema"]
+        assert len(seen) == 1
+        assert seen[0].url.path == "/api/v1/providers/akshare/models/stock_daily/schema"
+        assert seen[0].url.query == b""
+        assert seen[0].headers["x-api-key"] == "od-test-key"
+
+    def test_provider_model_schema_accepts_unicode_identifiers(self):
+        payload = {"source": "数据源", "model": "日线_行情", "schema": {"type": "object"}}
+        seen: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request)
+            return _envelope(payload)
+
+        with _client(handler) as client:
+            assert client.provider_model_schema("数据源", "日线_行情") == payload
+
+        assert len(seen) == 1
+
+    @pytest.mark.parametrize(
+        ("method", "args", "kwargs"),
+        [
+            ("provider_models", (), {"source": "auto"}),
+            ("provider_models", (), {"source": "AUTO"}),
+            ("provider_models", (), {"source": "class"}),
+            ("provider_models", (), {"source": "bad/name"}),
+            ("provider_models", (), {"source": "bad?source=other"}),
+            ("provider_models", (), {"source": 7}),
+            ("provider_model_schema", ("auto", "model"), {}),
+            ("provider_model_schema", ("source", "class"), {}),
+            ("provider_model_schema", ("source", "bad/model"), {}),
+            ("provider_model_schema", (None, "model"), {}),
+        ],
+    )
+    def test_invalid_provider_model_identity_fails_before_transport(self, method, args, kwargs):
+        seen: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request)
+            return _envelope([])
+
+        with (
+            _client(handler) as client,
+            pytest.raises(ValueError, match="valid provider/model identifier"),
+        ):
+            getattr(client, method)(*args, **kwargs)
+
+        assert seen == []
+
+    @pytest.mark.parametrize("payload", [None, {}, ["not-a-descriptor"], [{}, "bad"]])
+    def test_provider_models_rejects_malformed_payload(self, payload):
+        with (
+            _client(lambda request: _envelope(payload)) as client,
+            pytest.raises(OpendataClientError, match="provider models response"),
+        ):
+            client.provider_models()
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            None,
+            [],
+            {"source": "akshare", "model": "stock_daily"},
+            {"source": "akshare", "model": "stock_daily", "schema": []},
+            {"source": "other", "model": "stock_daily", "schema": {}},
+            {"source": "akshare", "model": "other", "schema": {}},
+        ],
+    )
+    def test_provider_model_schema_rejects_bad_shape_or_identity(self, payload):
+        with (
+            _client(lambda request: _envelope(payload)) as client,
+            pytest.raises(OpendataClientError, match="provider model schema response"),
+        ):
+            client.provider_model_schema("akshare", "stock_daily")
+
+    @pytest.mark.parametrize(
+        ("status", "error_type"),
+        [
+            (400, InvalidQueryError),
+            (401, AuthenticationError),
+            (403, PermissionDeniedError),
+            (404, NotFoundError),
+            (429, OpendataClientError),
+            (500, OpendataClientError),
+        ],
+    )
+    @pytest.mark.parametrize("method", ["models", "schema"])
+    def test_provider_model_endpoints_reuse_http_error_mapping(self, method, status, error_type):
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(status, json={"detail": "metadata request denied"})
+
+        with (
+            _client(handler) as client,
+            pytest.raises(error_type, match=f"HTTP {status}: metadata request denied"),
+        ):
+            if method == "models":
+                client.provider_models()
+            else:
+                client.provider_model_schema("akshare", "stock_daily")
+
+    def test_sdk_cold_import_does_not_load_opendata_application(self, tmp_path):
+        sdk_source = Path(__file__).resolve().parents[1] / "opendata_client"
+        code = """
+import sys
+from pathlib import Path
+import opendata_client
+assert Path(opendata_client.__file__).resolve().parent == Path(sys.argv[1]) / "opendata_client"
+assert not any(name == "opendata" or name.startswith("opendata.") for name in sys.modules)
+"""
+        env = os.environ.copy()
+        for name in ("PYTHONHOME", "PYTHONPATH", "PYTHONUSERBASE"):
+            env.pop(name, None)
+        env["PYTHONPATH"] = str(sdk_source)
+        env["PYTHONNOUSERSITE"] = "1"
+
+        result = subprocess.run(  # noqa: S603  # fixed interpreter and constant script
+            [sys.executable, "-c", code, str(sdk_source)],
+            cwd=tmp_path,
+            env=env,
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+
+        assert result.returncode == 0, result.stdout + result.stderr
+
+
+class TestProviderModelQuery:
+    def test_fred_revision_query_uses_exact_post_body_and_does_not_add_context(self):
+        query = {
+            "series_id": "GDP",
+            "realtime_start": "2024-01-01",
+            "realtime_end": "2024-12-31",
+            "vintage_date": "2024-06-01",
+            "optional_filter": None,
+            "extension": {"preserve": [1, None, {"note": "unchanged"}]},
+        }
+        response_data = {
+            "source": "fred",
+            "model": "SeriesObservations",
+            "domain": "fred_series",
+            "verified": True,
+            "observed_at": "2026-10-08T02:00:00+00:00",
+            "completeness": "NOT_ASSESSED",
+            "results": [
+                {
+                    "series_id": "GDP",
+                    "date": "2024-01-01",
+                    "value": "123.4",
+                    "realtime_start": "2024-06-01",
+                    "realtime_end": "2024-06-01",
+                    "metadata": {"vintage": "2024-06-01", "footnotes": None},
+                }
+            ],
+            "pagination": None,
+        }
+        seen: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request)
+            return _envelope(response_data)
+
+        with _client(handler) as client:
+            result = client.query_provider_model("fred", "SeriesObservations", query)
+
+        assert result == response_data
+        assert seen[0].method == "POST"
+        assert seen[0].url.path == "/api/v1/providers/fred/models/SeriesObservations/query"
+        assert seen[0].headers["x-api-key"] == "od-test-key"
+        body = json.loads(seen[0].content)
+        assert body == {"query": query}
+        assert set(body) == {"query"}
+        assert "ctx" not in body and "budget" not in body and "grant" not in body
+
+    def test_bls_search_preserves_items_as_results_and_page_metadata(self):
+        query = {"survey": "ce", "offset": 2, "limit": 1, "source": "auto"}
+        response_data = {
+            "source": "bls",
+            "model": "BlsSearch",
+            "domain": "bls_search",
+            "verified": False,
+            "observed_at": "2026-10-08T02:00:00+00:00",
+            "completeness": "NOT_ASSESSED",
+            "results": [
+                {
+                    "series_id": "CES0000000001",
+                    "title": "Average hourly earnings",
+                    "dimensions": {"industry_code": "000000"},
+                    "source_metadata": {"source_file": "ce.series"},
+                    "footnotes": [{"code": "P", "text": "Preliminary"}],
+                    "catalog_as_of": None,
+                }
+            ],
+            "pagination": {"total": 7, "offset": 2, "limit": 1},
+        }
+        seen: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request)
+            return _envelope(response_data)
+
+        with _client(handler) as client:
+            result = client.query_provider_model("bls", "BlsSearch", query)
+
+        assert result == response_data
+        assert result["results"][0]["footnotes"] == [{"code": "P", "text": "Preliminary"}]
+        assert result["pagination"] == {"total": 7, "offset": 2, "limit": 1}
+        assert seen[0].url.path == "/api/v1/providers/bls/models/BlsSearch/query"
+        assert json.loads(seen[0].content) == {"query": query}
+
+    def test_empty_page_beyond_total_is_a_valid_pagination_result(self):
+        response_data = {
+            "source": "bls",
+            "model": "BlsSearch",
+            "domain": "bls_search",
+            "verified": False,
+            "observed_at": "2026-10-08T02:00:00+00:00",
+            "completeness": "NOT_ASSESSED",
+            "results": [],
+            "pagination": {"total": 0, "offset": 50, "limit": 10},
+        }
+
+        with _client(lambda request: _envelope(response_data)) as client:
+            result = client.query_provider_model("bls", "BlsSearch", {"offset": 50, "limit": 10})
+
+        assert result == response_data
+
+    def test_large_fmp_timestamp_and_nullable_metadata_round_trip(self):
+        timestamp = 2**53 + 123
+        query = {
+            "symbol": "AAPL",
+            "timestamp": timestamp,
+            "optional": None,
+            "enabled": True,
+            "ratio": 1.25,
+            "filters": [{"kind": "raw", "optional": None}],
+        }
+        original_query = copy.deepcopy(query)
+        response_data = {
+            "source": "fmp",
+            "model": "HistoricalPriceFull",
+            "domain": "equity_price_history",
+            "verified": True,
+            "observed_at": "2026-10-08T02:00:00+00:00",
+            "completeness": "NOT_ASSESSED",
+            "results": [
+                {
+                    "symbol": "AAPL",
+                    "timestamp": timestamp,
+                    "price": None,
+                    "metadata": {"provider_fields": ["timestamp", None]},
+                }
+            ],
+            "pagination": None,
+        }
+        seen: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request)
+            return _envelope(response_data)
+
+        with _client(handler) as client:
+            result = client.query_provider_model("fmp", "HistoricalPriceFull", query)
+
+        assert result == response_data
+        assert result["results"][0]["timestamp"] == timestamp
+        assert result["results"][0]["price"] is None
+        assert json.loads(seen[0].content) == {"query": query}
+        assert query == original_query
+
+    def test_numeric_string_object_keys_are_retained_without_mutation(self):
+        query = {"1": "first", "01": "second", "nested": [{"2": "third"}]}
+        original_query = copy.deepcopy(query)
+        response_data = {
+            "source": "fred",
+            "model": "SeriesObservations",
+            "results": [],
+            "pagination": None,
+        }
+        seen: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request)
+            return _envelope(response_data)
+
+        with _client(handler) as client:
+            result = client.query_provider_model("fred", "SeriesObservations", query)
+
+        assert result == response_data
+        assert json.loads(seen[0].content) == {"query": query}
+        assert query == original_query
+
+    def test_non_string_object_keys_fail_before_post_without_mutation(self):
+        queries = [
+            {1: "first", "1": "second"},
+            {"nested": {1: "numeric key"}},
+            {"nested": [{None: "null key"}]},
+            {"nested": [{"deeper": {False: "boolean key"}}]},
+        ]
+        snapshots = [copy.deepcopy(query) for query in queries]
+        seen: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request)
+            return _envelope({})
+
+        with _client(handler) as client:
+            for query in queries:
+                with pytest.raises(ValueError) as error:
+                    client.query_provider_model("fred", "SeriesObservations", query)
+                assert error.value.__cause__ is None
+                assert error.value.__context__ is None
+
+        assert seen == []
+        assert queries == snapshots
+
+    def test_cyclic_and_over_deep_queries_fail_before_post(self):
+        cyclic: dict[str, object] = {}
+        cyclic["self"] = cyclic
+
+        deep_value: list[object] = []
+        cursor = deep_value
+        for _ in range(300):
+            child: list[object] = []
+            cursor.append(child)
+            cursor = child
+        queries = [cyclic, {"deep": deep_value}]
+        seen: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request)
+            return _envelope({})
+
+        with _client(handler) as client:
+            for query in queries:
+                with pytest.raises(ValueError) as error:
+                    client.query_provider_model("fred", "SeriesObservations", query)
+                assert error.value.__cause__ is None
+                assert error.value.__context__ is None
+
+        assert seen == []
+
+    @pytest.mark.parametrize(
+        ("source", "model"),
+        [
+            ("auto", "Model"),
+            ("Source", "auto"),
+            ("bad/source", "Model"),
+            ("Source", "bad?model=x"),
+            (None, "Model"),
+            ("Source", 7),
+        ],
+    )
+    def test_invalid_identity_fails_before_post(self, source, model):
+        seen: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request)
+            return _envelope({})
+
+        with (
+            _client(handler) as client,
+            pytest.raises(ValueError, match="valid provider/model identifier"),
+        ):
+            client.query_provider_model(source, model, {})
+
+        assert seen == []
+
+    @pytest.mark.parametrize(
+        "query",
+        [
+            None,
+            [],
+            {"non_finite": float("nan")},
+            {"non_finite": float("inf")},
+            {"not_json": object()},
+            {"unpaired_surrogate": "\ud800"},
+        ],
+    )
+    def test_non_json_or_non_finite_query_fails_before_post(self, query):
+        seen: list[httpx.Request] = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            seen.append(request)
+            return _envelope({})
+
+        with _client(handler) as client, pytest.raises(ValueError) as error:
+            client.query_provider_model("fred", "SeriesObservations", query)
+
+        assert seen == []
+        assert error.value.__cause__ is None
+        assert error.value.__context__ is None
+
+    @pytest.mark.parametrize(
+        ("status", "error_type"),
+        [
+            (400, InvalidQueryError),
+            (401, AuthenticationError),
+            (403, PermissionDeniedError),
+            (404, NotFoundError),
+            (429, OpendataClientError),
+            (501, UnsupportedQueryError),
+            (503, OpendataClientError),
+            (504, OpendataClientError),
+        ],
+    )
+    def test_http_errors_reuse_status_mapping(self, status, error_type):
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(status, json={"detail": "query rejected"})
+
+        with (
+            _client(handler) as client,
+            pytest.raises(error_type, match=f"HTTP {status}: query rejected"),
+        ):
+            client.query_provider_model("fred", "SeriesObservations", {"series_id": "GDP"})
+
+    def test_transport_error_does_not_expose_secret_exception_text_or_cause(self):
+        secret = "FAKE_PROVIDER_SECRET_DO_NOT_LEAK"
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            raise httpx.ConnectError(f"connection failed: {secret}", request=request)
+
+        with _client(handler) as client, pytest.raises(OpendataClientError) as error:
+            client.query_provider_model("fred", "SeriesObservations", {"series_id": secret})
+
+        assert secret not in str(error.value)
+        assert error.value.__cause__ is None
+        assert error.value.__context__ is None
+
+    def test_invalid_json_does_not_expose_response_text_or_cause(self):
+        secret = "FAKE_RESPONSE_SECRET_DO_NOT_LEAK"
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                200,
+                content=f"not-json {secret}".encode(),
+                headers={"content-type": "application/json"},
+            )
+
+        with _client(handler) as client, pytest.raises(OpendataClientError) as error:
+            client.query_provider_model("fred", "SeriesObservations", {"series_id": "GDP"})
+
+        assert secret not in str(error.value)
+        assert error.value.__cause__ is None
+        assert error.value.__context__ is None
+
+    def test_failed_success_envelope_does_not_expose_message_or_cause(self):
+        secret = "FAKE_ENVELOPE_SECRET_DO_NOT_LEAK"
+
+        with (
+            _client(lambda request: _envelope(None, success=False, message=secret)) as client,
+            pytest.raises(OpendataClientError) as error,
+        ):
+            client.query_provider_model("fred", "SeriesObservations", {"series_id": "GDP"})
+
+        assert secret not in str(error.value)
+        assert error.value.__cause__ is None
+        assert error.value.__context__ is None
+
+    @pytest.mark.parametrize(
+        "data",
+        [
+            [],
+            {"source": "other", "model": "SeriesObservations", "results": [], "pagination": None},
+            {"source": "fred", "model": "other", "results": [], "pagination": None},
+            {"source": "fred", "model": "SeriesObservations", "results": "bad", "pagination": None},
+            {"source": "fred", "model": "SeriesObservations", "results": [[]], "pagination": None},
+            {"source": "fred", "model": "SeriesObservations", "results": []},
+            {
+                "source": "fred",
+                "model": "SeriesObservations",
+                "results": [],
+                "pagination": [],
+            },
+            {
+                "source": "fred",
+                "model": "SeriesObservations",
+                "results": [],
+                "pagination": {"total": 1, "offset": 0},
+            },
+            {
+                "source": "fred",
+                "model": "SeriesObservations",
+                "results": [],
+                "pagination": {"total": True, "offset": 0, "limit": 1},
+            },
+            {
+                "source": "fred",
+                "model": "SeriesObservations",
+                "results": [],
+                "pagination": {"total": 1, "offset": -1, "limit": 1},
+            },
+            {
+                "source": "fred",
+                "model": "SeriesObservations",
+                "results": [],
+                "pagination": {"total": 1, "offset": 0, "limit": 0},
+            },
+            {
+                "source": "fred",
+                "model": "SeriesObservations",
+                "results": [{"value": 1}, {"value": 2}],
+                "pagination": {"total": 2, "offset": 0, "limit": 1},
+            },
+            {
+                "source": "fred",
+                "model": "SeriesObservations",
+                "results": [{"value": 1}],
+                "pagination": {"total": 1, "offset": 1, "limit": 1},
+            },
+        ],
+    )
+    def test_malformed_query_response_shape_fails_safely(self, data):
+        secret = "FAKE_SHAPE_SECRET_DO_NOT_LEAK"
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return _envelope(data)
+
+        with _client(handler) as client, pytest.raises(OpendataClientError) as error:
+            client.query_provider_model("fred", "SeriesObservations", {"series_id": secret})
+
+        assert secret not in str(error.value)
+        assert error.value.__cause__ is None
+        assert error.value.__context__ is None

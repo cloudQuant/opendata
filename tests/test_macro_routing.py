@@ -25,6 +25,7 @@ from typing import Any
 
 import pytest
 
+from opendata.data import registry as registry_module
 from opendata.data.protocol import Fetcher
 from opendata.data.providers.ecb.models.cpi import EcbCpiFetcher
 from opendata.data.providers.ecb.models.gdp import EcbGdpFetcher
@@ -99,13 +100,24 @@ class TestMarketDimension:
         message = str(excinfo.value)
         assert "eu" in message
         assert "global" in message
+        assert "us" in message
 
-    def test_narrowing_the_market_answers_without_a_guess(self) -> None:
+    def test_narrowing_the_market_answers_without_a_guess(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(
+            registry_module,
+            "_source_has_credentials",
+            lambda source: source == "fred",
+        )
         registry = build_registry(MACRO_LEGS)
         euro = registry.resolve_domain("economy_cpi", period="1M", market="eu")
         assert euro.capability.market == "eu"
         global_leg = registry.resolve_domain("economy_cpi", period="1A", market="global")
         assert global_leg.capability.market == "global"
+        us = registry.resolve_domain("economy_cpi", period="1M", market="us")
+        assert us.capability.source == "fred"
+        assert us.capability.market == "us"
 
     def test_resolve_domain_matches_resolve(self) -> None:
         """The catalog-facing entry must be ``resolve`` with the same filters."""
@@ -133,7 +145,14 @@ class TestMarketDimension:
         assert registry.resolve_domain("economy_rate").capability.source == "ecb"
 
     def test_unverified_leg_still_never_answers_auto(self) -> None:
-        registry = build_registry(MACRO_LEGS)
+        class UnverifiedFredCpiFetcher(FredCpiFetcher):
+            """Test-local copy of FRED's capability with verification disabled."""
+
+            capability = FredCpiFetcher.capability.model_copy(update={"verified": False})
+
+        # This declarative copy exercises only the unverified branch; deployed
+        # FRED registration continues to use its verified capability.
+        registry = build_registry((UnverifiedFredCpiFetcher,))
         with pytest.raises(LookupError, match="no verified capability"):
             registry.resolve_domain("economy_cpi", period="1M", market="us")
 
@@ -176,13 +195,13 @@ class TestAuthorityDecidesNotRegistrationOrder:
     def test_baseline_is_what_wins_after_a_degradation(self) -> None:
         """Ranking must survive the first candidate going unhealthy."""
         registry = build_registry(MACRO_LEGS)
-        top = registry.resolve_domain("economy_unemployment")
+        top = registry.resolve_domain("economy_unemployment", period="1A", market="global")
         registry.mark_unavailable(top)
-        fallen = registry.resolve_domain("economy_unemployment")
+        fallen = registry.resolve_domain("economy_unemployment", period="1A", market="global")
         assert fallen.capability.source != top.capability.source
         assert fallen.capability.domain == "economy_unemployment"
         registry.mark_available(top)
-        assert registry.resolve_domain("economy_unemployment") is top
+        assert registry.resolve_domain("economy_unemployment", period="1A", market="global") is top
 
 
 class TestBaselineCoversMacro:

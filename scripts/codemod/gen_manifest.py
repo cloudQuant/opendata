@@ -1,4 +1,4 @@
-"""Generate ``opendata_http/manifest.json`` (design §5.6, FR-5).
+"""Generate the bundled AKShare vendor manifest (design §5.6, FR-5).
 
 The manifest freezes the ported tree's state: every file with its
 sha256, the resource (non-``.py``) inventory, per-file line counts and
@@ -40,7 +40,7 @@ def generate_manifest(
     """Build the manifest of the ported tree.
 
     Args:
-        ported_root: The ``opendata_http`` directory.
+        ported_root: The ``opendata.data.providers.akshare._vendor`` directory.
         lock: The baseline lock; loaded from the default path when None.
 
     Returns:
@@ -76,7 +76,10 @@ def generate_manifest(
             files.append(
                 {
                     "path": rel,
+                    # ``sha256`` is the migrated file bytes; the lock retains
+                    # the pristine upstream source hash separately.
                     "sha256": digest,
+                    "upstream_sha256": record["sha256"],
                     "lines": lines,
                     "upstream_path": record["upstream_path"],
                     "manual_edits": record.get("manual_edits", False),
@@ -84,7 +87,12 @@ def generate_manifest(
             )
         else:
             resources.append(
-                {"path": rel, "sha256": digest, "upstream_path": record["upstream_path"]}
+                {
+                    "path": rel,
+                    "sha256": digest,
+                    "upstream_sha256": record["sha256"],
+                    "upstream_path": record["upstream_path"],
+                }
             )
 
     return {
@@ -103,7 +111,7 @@ def generate_manifest(
 
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point; exit code 1 on failure."""
-    parser = argparse.ArgumentParser(description="Generate opendata_http/manifest.json.")
+    parser = argparse.ArgumentParser(description="Generate the AKShare vendor manifest.")
     parser.add_argument("--check", action="store_true", help="verify instead of writing")
     args = parser.parse_args(argv)
 

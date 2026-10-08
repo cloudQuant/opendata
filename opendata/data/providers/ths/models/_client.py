@@ -21,8 +21,8 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
 from opendata.core.config import settings
-from opendata_fuyao import FuyaoCredentials, FuyaoHttpClient
-from opendata_fuyao.endpoints import (
+from opendata.data.providers.ths import FuyaoCredentials, FuyaoHttpClient
+from opendata.data.providers.ths.endpoints import (
     FUND_ASSET_TYPE,
     FUTURES_ASSET_TYPE,
     INDEX_ASSET_TYPE,

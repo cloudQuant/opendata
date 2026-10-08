@@ -14,6 +14,8 @@ from opendata.data.providers.imf.models._indicator import ImfIndicatorFetcher
 class ImfCpiFetcher(ImfIndicatorFetcher):
     """Annual CPI observations for one country (``PCPIPCH``)."""
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_cpi",

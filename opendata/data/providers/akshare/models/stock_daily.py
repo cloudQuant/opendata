@@ -5,7 +5,7 @@ Unit conversion: upstream ``成交量`` is in lots (手), the contract
 stores shares, so ``normalize()`` multiplies by 100 (design §8.2).
 """
 
-from typing import ClassVar
+from typing import ClassVar, cast
 
 import pandas as pd
 
@@ -25,6 +25,8 @@ class StockDailyQuery(QueryParams):
 
 class AkshareStockDailyFetcher(Fetcher[StockDailyQuery, pd.DataFrame]):
     """Daily OHLCV bars for one A-share symbol (unadjusted by default)."""
+
+    async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
@@ -60,15 +62,21 @@ class AkshareStockDailyFetcher(Fetcher[StockDailyQuery, pd.DataFrame]):
         Returns:
             The upstream frame (Chinese columns, volume in lots).
         """
-        import opendata_http  # lazy: load the ported tree on routing only
+        # lazy: load the ported tree on routing only
+        import opendata.data.providers.akshare._vendor as opendata_http
 
-        return opendata_http.stock_zh_a_hist(
-            symbol=plain_symbol(params.symbol),
-            period="daily",
-            start_date=params.start_date.strftime("%Y%m%d") if params.start_date else "19700101",
-            end_date=params.end_date.strftime("%Y%m%d") if params.end_date else "20500101",
-            adjust=params.adjust,
-            timeout=ctx.timeout,
+        return cast(
+            "pd.DataFrame",
+            opendata_http.stock_zh_a_hist(
+                symbol=plain_symbol(params.symbol),
+                period="daily",
+                start_date=params.start_date.strftime("%Y%m%d")
+                if params.start_date
+                else "19700101",
+                end_date=params.end_date.strftime("%Y%m%d") if params.end_date else "20500101",
+                adjust=params.adjust,
+                timeout=ctx.timeout,
+            ),
         )
 
     def transform_data(self, raw: pd.DataFrame, params: StockDailyQuery) -> FetchResult:

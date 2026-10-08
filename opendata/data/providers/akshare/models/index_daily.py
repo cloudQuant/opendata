@@ -9,7 +9,7 @@ Unit conversion follows design §8.2: upstream ``成交量`` is in lots
 100 - the same rule the A-share daily chain applies.
 """
 
-from typing import ClassVar
+from typing import ClassVar, cast
 
 import pandas as pd
 
@@ -31,6 +31,8 @@ class IndexDailyQuery(QueryParams):
 
 class AkshareIndexDailyFetcher(Fetcher[IndexDailyQuery, pd.DataFrame]):
     """Daily OHLCV bars for one China stock index (e.g. ``000300``)."""
+
+    async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(
         asset_class="index",
@@ -65,13 +67,19 @@ class AkshareIndexDailyFetcher(Fetcher[IndexDailyQuery, pd.DataFrame]):
         Returns:
             The upstream frame (Chinese columns, volume in lots).
         """
-        import opendata_http  # lazy: load the ported tree on routing only
+        # lazy: load the ported tree on routing only
+        import opendata.data.providers.akshare._vendor as opendata_http
 
-        return opendata_http.index_zh_a_hist(
-            symbol=plain_symbol(params.symbol),
-            period="daily",
-            start_date=params.start_date.strftime("%Y%m%d") if params.start_date else "19700101",
-            end_date=params.end_date.strftime("%Y%m%d") if params.end_date else "20500101",
+        return cast(
+            "pd.DataFrame",
+            opendata_http.index_zh_a_hist(
+                symbol=plain_symbol(params.symbol),
+                period="daily",
+                start_date=params.start_date.strftime("%Y%m%d")
+                if params.start_date
+                else "19700101",
+                end_date=params.end_date.strftime("%Y%m%d") if params.end_date else "20500101",
+            ),
         )
 
     def transform_data(self, raw: pd.DataFrame, params: IndexDailyQuery) -> FetchResult:

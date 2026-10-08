@@ -12,7 +12,7 @@ same shape the migrated legacy A-share data has; the contract field
 must stay present for the model but carries no fabricated value.
 """
 
-from typing import ClassVar
+from typing import ClassVar, cast
 
 import pandas as pd
 
@@ -35,6 +35,8 @@ class FuturesDailyQuery(QueryParams):
 
 class AkshareFuturesDailyFetcher(Fetcher[FuturesDailyQuery, pd.DataFrame]):
     """Daily OHLCV bars for one commodity-futures main contract."""
+
+    async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(
         asset_class="futures",
@@ -69,9 +71,13 @@ class AkshareFuturesDailyFetcher(Fetcher[FuturesDailyQuery, pd.DataFrame]):
         Returns:
             The upstream frame.
         """
-        import opendata_http  # lazy: load the ported tree on routing only
+        # lazy: load the ported tree on routing only
+        import opendata.data.providers.akshare._vendor as opendata_http
 
-        return opendata_http.futures_zh_daily_sina(symbol=plain_symbol(params.symbol))
+        return cast(
+            "pd.DataFrame",
+            opendata_http.futures_zh_daily_sina(symbol=plain_symbol(params.symbol)),
+        )
 
     def transform_data(self, raw: pd.DataFrame, params: FuturesDailyQuery) -> FetchResult:
         """Normalize the Sina frame into ``Bar`` rows (the normalize stage).

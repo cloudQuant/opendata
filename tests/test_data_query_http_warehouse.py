@@ -19,6 +19,8 @@ dialect，鸭子类型的假 engine 会被它的 ``except Exception: return []``
 ods DDL）。
 """
 
+import csv
+import io
 from datetime import date, datetime, timedelta
 
 import pytest
@@ -32,6 +34,7 @@ from sqlalchemy import (
     String,
     Table,
     create_engine,
+    event,
     func,
     insert,
     pool,
@@ -41,7 +44,7 @@ from sqlalchemy import (
 )
 
 from opendata.api.data_query import DIFF_TABLE, FACTOR_TABLE, get_warehouse_engine
-from opendata.data.domains import dwd_table
+from opendata.data.domains import dwd_table, ods_table
 from opendata.data.providers import register_providers
 from opendata.main import app
 from opendata.pipeline.ddl import DWD_TRACE_COLUMNS, contract_columns
@@ -63,6 +66,9 @@ FORMULA_SYMBOLS = ("=cmd|'/C calc'!A0", "+1+1", "@SUM(1+1)", "\t=hybrid")
 
 #: The merged daily table the whole module reads and exports.
 BARS_TABLE = dwd_table("stock_daily")
+FINANCIAL_TABLE = dwd_table("financial_statement")
+THS_ODS_TABLE = ods_table("stock_daily", "ths")
+AKSHARE_ODS_TABLE = ods_table("stock_daily", "akshare")
 
 
 def _auth(token: str) -> dict[str, str]:
@@ -99,6 +105,99 @@ def _bars_table(md: MetaData) -> Table:
     )
 
 
+def _financial_statement_table(md: MetaData) -> Table:
+    """Small DWD financial table with the report and announcement dates."""
+    return Table(
+        FINANCIAL_TABLE,
+        md,
+        Column("symbol", String(64), primary_key=True),
+        Column("statement_type", String(32), nullable=False),
+        Column("report_period", Date, primary_key=True),
+        Column("announce_date", Date),
+        Column("item", String(64), nullable=False),
+        Column("value", Float),
+        Column("revision", Integer, nullable=False),
+        Column("source", String(32), nullable=False),
+        Column("_merged_at", DateTime, nullable=False),
+        Column("_diff_flag", Integer, nullable=False),
+        Column("_as_of", Date),
+    )
+
+
+def _ods_table(md: MetaData, source: str, *, include_date: bool = True) -> Table:
+    """A raw daily ODS table with its native source columns and primary key."""
+    if source == "ths":
+        business_columns = [Column("thscode", String(64), primary_key=True)]
+        if include_date:
+            business_columns.append(Column("trade_date", Date, primary_key=True))
+        business_columns.extend(
+            [
+                Column("open_price", Float),
+                Column("high_price", Float),
+                Column("low_price", Float),
+                Column("close_price", Float),
+                Column("volume", Float),
+                Column("turnover", Float),
+            ]
+        )
+    elif source == "akshare":
+        business_columns = [Column("股票代码", String(64), primary_key=True)]
+        if include_date:
+            business_columns.append(Column("日期", Date, primary_key=True))
+        business_columns.extend(
+            [
+                Column("开盘", Float),
+                Column("最高", Float),
+                Column("最低", Float),
+                Column("收盘", Float),
+                Column("成交量", Float),
+                Column("成交额", Float),
+            ]
+        )
+    else:
+        raise ValueError(f"unsupported ODS test source {source!r}")
+    return Table(
+        ods_table("stock_daily", source),
+        md,
+        *business_columns,
+        Column("_source", String(32), nullable=False),
+        Column("_fetched_at", DateTime, nullable=False),
+        Column("_batch_id", String(36), nullable=False),
+    )
+
+
+def _raw_ods_row(source: str, symbol: str, day: date) -> dict[str, object]:
+    """A source-shaped stock row; AKShare volume remains in its raw lots unit."""
+    metadata = {
+        "_source": source,
+        "_fetched_at": datetime(2026, 9, 26, 8, 0, 0),
+        "_batch_id": f"{source}-{symbol}-{day.isoformat()}",
+    }
+    if source == "ths":
+        return {
+            "thscode": symbol,
+            "trade_date": day,
+            "open_price": 21.0,
+            "high_price": 24.0,
+            "low_price": 20.0,
+            "close_price": 23.5,
+            "volume": 1200.0,
+            "turnover": 2400.0,
+            **metadata,
+        }
+    return {
+        "股票代码": symbol,
+        "日期": day,
+        "开盘": 21.0,
+        "最高": 24.0,
+        "最低": 20.0,
+        "收盘": 23.5,
+        "成交量": 12.0,
+        "成交额": 2400.0,
+        **metadata,
+    }
+
+
 def _diffs_table(md: MetaData) -> Table:
     """``dq_diff_report`` as alembic 0002 declares it.
 
@@ -122,19 +221,36 @@ def _diffs_table(md: MetaData) -> Table:
     )
 
 
-def _factors_table(md: MetaData) -> Table:
-    """``dwd_stock_adjust``: the four columns ``_factor_rows`` selects."""
-    return Table(
-        FACTOR_TABLE,
-        md,
+def _factors_table(md: MetaData, *, affine: bool = False) -> Table:
+    """A legacy factor table, optionally extended with affine coefficients."""
+    columns = [
         Column("symbol", String(64), primary_key=True),
         Column("trade_date", Date, primary_key=True),
         Column("qfq_factor", Float, nullable=False),
         Column("hfq_factor", Float, nullable=False),
-    )
+    ]
+    if affine:
+        columns.extend(
+            [
+                Column("qfq_scale", Float),
+                Column("qfq_offset", Float),
+                Column("hfq_scale", Float),
+                Column("hfq_offset", Float),
+                Column("adjustment_version", String(32)),
+                Column("legacy_source", String(64)),
+            ]
+        )
+    return Table(FACTOR_TABLE, md, *columns)
 
 
-def _bar(symbol: str, day: date, *, open_: float = 1.0, close: float = 2.0) -> dict:
+def _bar(
+    symbol: str,
+    day: date,
+    *,
+    open_: float = 1.0,
+    close: float = 2.0,
+    source: str = "ths",
+) -> dict:
     return {
         "symbol": symbol,
         "trade_date": day,
@@ -144,7 +260,7 @@ def _bar(symbol: str, day: date, *, open_: float = 1.0, close: float = 2.0) -> d
         "close": close,
         "volume": 1000.0,
         "amount": 2000.0,
-        "source": "ths",
+        "source": source,
         "_merged_at": datetime(2026, 9, 26, 8, 0, 0),
         "_diff_flag": 0,
         "_as_of": day,
@@ -153,6 +269,30 @@ def _bar(symbol: str, day: date, *, open_: float = 1.0, close: float = 2.0) -> d
 
 def _factor(symbol: str, day: date, *, qfq: float, hfq: float) -> dict:
     return {"symbol": symbol, "trade_date": day, "qfq_factor": qfq, "hfq_factor": hfq}
+
+
+def _affine_factor(
+    symbol: str,
+    day: date,
+    *,
+    qfq: float,
+    hfq: float,
+    qfq_scale: float | None,
+    qfq_offset: float | None,
+    hfq_scale: float | None,
+    hfq_offset: float | None,
+    version: str | None = "affine-v1",
+    legacy_source: str | None = "corporate-action-ratio-v1",
+) -> dict:
+    return {
+        **_factor(symbol, day, qfq=qfq, hfq=hfq),
+        "qfq_scale": qfq_scale,
+        "qfq_offset": qfq_offset,
+        "hfq_scale": hfq_scale,
+        "hfq_offset": hfq_offset,
+        "adjustment_version": version,
+        "legacy_source": legacy_source,
+    }
 
 
 def _diff(
@@ -190,20 +330,41 @@ def warehouse(test_client):
     """
     engines: list = []
 
-    def build(*, bars=(), diffs=(), factors=None):
+    def build(
+        *,
+        bars=(),
+        diffs=(),
+        factors=None,
+        affine_factors: bool = False,
+        ods_rows=None,
+        missing_ods_dates=(),
+        financial_rows=(),
+    ):
         md = MetaData()
         tables = {"bars": _bars_table(md), "diffs": _diffs_table(md)}
+        if financial_rows:
+            tables["financial"] = _financial_statement_table(md)
+        ods_tables = {
+            source: _ods_table(md, source, include_date=source not in missing_ods_dates)
+            for source in (ods_rows or {})
+        }
+        tables.update({f"ods:{source}": table for source, table in ods_tables.items()})
         engine = create_engine(
             "sqlite://", poolclass=pool.StaticPool, connect_args={"check_same_thread": False}
         )
         md.create_all(engine)
         if factors is not None:
-            tables["factors"] = _factors_table(md)
+            tables["factors"] = _factors_table(md, affine=affine_factors)
             tables["factors"].create(engine)
         with engine.begin() as connection:
             for name, rows in (("bars", bars), ("diffs", diffs), ("factors", factors or ())):
                 if rows:
                     connection.execute(insert(tables[name]), list(rows))
+            if financial_rows:
+                connection.execute(insert(tables["financial"]), list(financial_rows))
+            for source, rows in (ods_rows or {}).items():
+                if rows:
+                    connection.execute(insert(ods_tables[source]), list(rows))
         app.dependency_overrides[get_warehouse_engine] = lambda: engine
         engines.append(engine)
         return engine
@@ -298,6 +459,278 @@ class TestQuerySchema:
 
         assert [row["trade_date"] for row in response.json()["data"]["rows"]] == [
             RECENT.isoformat()
+        ]
+
+
+class TestFinancialQueryFilters:
+    async def test_report_period_and_announcement_date_filter_dwd_and_export(
+        self, warehouse, test_client, test_user_token
+    ):
+        rows = [
+            {
+                "symbol": symbol,
+                "statement_type": "income",
+                "report_period": report_period,
+                "announce_date": announce_date,
+                "item": "net_profit",
+                "value": value,
+                "revision": 1,
+                "source": "ths",
+                "_merged_at": datetime(2026, 9, 26, 8, 0, 0),
+                "_diff_flag": 0,
+                "_as_of": report_period,
+            }
+            for symbol, report_period, announce_date, value in (
+                ("AAA", RECENT, RECENT + timedelta(days=1), 1.0),
+                ("BBB", RECENT, RECENT + timedelta(days=2), 2.0),
+                (
+                    "CCC",
+                    RECENT - timedelta(days=20),
+                    RECENT + timedelta(days=1),
+                    3.0,
+                ),
+            )
+        ]
+        warehouse(financial_rows=rows)
+        url = "/api/v1/data/equity/financial_statement"
+        params = {
+            "period": RECENT.isoformat(),
+            "report_date": (RECENT + timedelta(days=1)).isoformat(),
+            "start": (RECENT - timedelta(days=30)).isoformat(),
+            "end": (RECENT + timedelta(days=3)).isoformat(),
+            "fields": "announce_date,item,value",
+        }
+
+        response = await test_client.get(url, params=params, headers=_auth(test_user_token))
+        export = await test_client.get(
+            f"{url}/export", params=params, headers=_auth(test_user_token)
+        )
+
+        assert response.status_code == 200
+        assert [(row["symbol"], row["item"]) for row in response.json()["data"]["rows"]] == [
+            ("AAA", "net_profit")
+        ]
+        assert export.status_code == 200
+        csv_rows = list(csv.DictReader(io.StringIO(export.text)))
+        assert [(row["symbol"], row["item"]) for row in csv_rows] == [("AAA", "net_profit")]
+
+    async def test_financial_filters_are_rejected_for_nonfinancial_domains(
+        self, warehouse, test_client, test_user_token
+    ):
+        warehouse(bars=[_bar("600519", RECENT)])
+
+        for filter_params in ({"period": RECENT.isoformat()}, {"report_date": RECENT.isoformat()}):
+            for url in (QUERY_URL, EXPORT_URL):
+                response = await test_client.get(
+                    url, params=filter_params, headers=_auth(test_user_token)
+                )
+                assert response.status_code == 400
+                assert "only for financial domains" in response.json()["detail"]
+
+    async def test_invalid_window_is_rejected_before_json_or_csv_starts(
+        self, warehouse, test_client, test_user_token
+    ):
+        warehouse(bars=[_bar("600519", RECENT)])
+        params = {
+            "start": (RECENT + timedelta(days=1)).isoformat(),
+            "end": RECENT.isoformat(),
+        }
+
+        for url in (QUERY_URL, EXPORT_URL):
+            response = await test_client.get(url, params=params, headers=_auth(test_user_token))
+            assert response.status_code == 400
+            assert "after end" in response.json()["detail"]
+
+
+class TestRawOdsQueryAndExport:
+    """ODS endpoints expose source-native columns, values, and key order."""
+
+    async def test_ths_and_akshare_queries_and_exports_use_native_fields(
+        self, warehouse, test_client, test_user_token
+    ):
+        ods_rows = {
+            "ths": [
+                _raw_ods_row("ths", "600519.SH", RECENT),
+                _raw_ods_row("ths", "600519.SH", RECENT - timedelta(days=1)),
+                _raw_ods_row("ths", "000001.SZ", RECENT),
+            ],
+            "akshare": [
+                _raw_ods_row("akshare", "600519", RECENT),
+                _raw_ods_row("akshare", "600519", RECENT - timedelta(days=1)),
+                _raw_ods_row("akshare", "000001", RECENT),
+            ],
+        }
+        warehouse(ods_rows=ods_rows)
+        cases = (
+            (
+                "ths",
+                "600519.SH",
+                "close_price",
+                ["thscode", "trade_date", "close_price"],
+                "thscode",
+                "close_price",
+                "600519.SH",
+                "23.5",
+            ),
+            (
+                "akshare",
+                "600519",
+                "收盘,成交量",
+                ["股票代码", "日期", "收盘", "成交量"],
+                "股票代码",
+                "成交量",
+                "600519",
+                "12.0",
+            ),
+        )
+
+        for (
+            source,
+            symbol,
+            fields,
+            expected_columns,
+            symbol_column,
+            value_column,
+            raw_symbol,
+            raw_value,
+        ) in cases:
+            params = {
+                "layer": "ods",
+                "source": source,
+                "symbols": symbol,
+                "start": RECENT.isoformat(),
+                "end": RECENT.isoformat(),
+                "fields": fields,
+            }
+            response = await test_client.get(
+                QUERY_URL, params=params, headers=_auth(test_user_token)
+            )
+
+            assert response.status_code == 200
+            data = response.json()["data"]
+            assert data["columns"] == expected_columns
+            assert data["count"] == 1
+            row = data["rows"][0]
+            assert row[symbol_column] == raw_symbol
+            assert row[value_column] == float(raw_value)
+            assert row[expected_columns[1]] == RECENT.isoformat()
+
+            export = await test_client.get(
+                f"{QUERY_URL}/export",
+                params={**params, "limit": 10},
+                headers=_auth(test_user_token),
+            )
+            assert export.status_code == 200
+            csv_rows = list(csv.reader(io.StringIO(export.text)))
+            assert csv_rows[0] == expected_columns
+            assert csv_rows[1][0] == raw_symbol
+            assert csv_rows[1][1] == RECENT.isoformat()
+            assert csv_rows[1][expected_columns.index(value_column)] == raw_value
+
+    async def test_ods_symbols_are_bound_native_literals(
+        self, warehouse, test_client, test_user_token
+    ):
+        engine = warehouse(
+            ods_rows={
+                "ths": [_raw_ods_row("ths", "600519.SH", RECENT)],
+            }
+        )
+        injected = "600519.SH' OR 1=1 --"
+
+        response = await test_client.get(
+            QUERY_URL,
+            params={"layer": "ods", "source": "ths", "symbols": injected},
+            headers=_auth(test_user_token),
+        )
+
+        assert response.status_code == 200
+        assert response.json()["data"]["rows"] == []
+        with engine.connect() as connection:
+            count = select(func.count()).select_from(table(THS_ODS_TABLE))
+            assert connection.execute(count).scalar_one() == 1
+
+    async def test_ods_rejects_contract_fields_adjustment_and_pivot_sources(
+        self, warehouse, test_client, test_user_token
+    ):
+        warehouse(ods_rows={"ths": [_raw_ods_row("ths", "600519.SH", RECENT)]})
+        invalid_field = await test_client.get(
+            QUERY_URL,
+            params={"layer": "ods", "source": "ths", "fields": "close"},
+            headers=_auth(test_user_token),
+        )
+        adjustment = await test_client.get(
+            QUERY_URL,
+            params={"layer": "ods", "source": "ths", "adjust": "qfq"},
+            headers=_auth(test_user_token),
+        )
+        pivot = await test_client.get(
+            "/api/v1/data/equity/financial_statement",
+            params={"layer": "ods", "source": "akshare"},
+            headers=_auth(test_user_token),
+        )
+
+        assert invalid_field.status_code == 400
+        assert "unknown fields" in invalid_field.json()["detail"]
+        assert adjustment.status_code == 400
+        assert "raw ODS" in adjustment.json()["detail"]
+        assert pivot.status_code == 400
+        assert "one-to-one" in pivot.json()["detail"]
+
+        filtered_pivot = await test_client.get(
+            "/api/v1/data/equity/financial_statement",
+            params={"layer": "ods", "source": "akshare", "period": RECENT.isoformat()},
+            headers=_auth(test_user_token),
+        )
+        assert filtered_pivot.status_code == 400
+        assert "one-to-one" in filtered_pivot.json()["detail"]
+
+    async def test_ods_missing_its_mapped_time_column_returns_a_clear_400(
+        self, warehouse, test_client, test_user_token
+    ):
+        warehouse(ods_rows={"ths": []}, missing_ods_dates=("ths",))
+
+        response = await test_client.get(
+            QUERY_URL,
+            params={"layer": "ods", "source": "ths"},
+            headers=_auth(test_user_token),
+        )
+
+        assert response.status_code == 400
+        assert "schema does not match" in response.json()["detail"]
+
+
+class TestDwdSourceProvenance:
+    async def test_explicit_source_filters_dwd_rows_and_auto_stays_merged(
+        self, warehouse, test_client, test_user_token
+    ):
+        warehouse(
+            bars=[
+                _bar("600519", RECENT, source="ths"),
+                _bar("000001", RECENT, source="akshare"),
+            ]
+        )
+        symbols = "000001,600519"
+
+        merged = await test_client.get(
+            QUERY_URL, params={"symbols": symbols}, headers=_auth(test_user_token)
+        )
+        selected = await test_client.get(
+            QUERY_URL,
+            params={"symbols": symbols, "source": "ths"},
+            headers=_auth(test_user_token),
+        )
+        export = await test_client.get(
+            f"{QUERY_URL}/export",
+            params={"symbols": symbols, "source": "akshare", "fields": "close"},
+            headers=_auth(test_user_token),
+        )
+
+        assert [row["symbol"] for row in merged.json()["data"]["rows"]] == ["000001", "600519"]
+        assert [row["symbol"] for row in selected.json()["data"]["rows"]] == ["600519"]
+        assert export.status_code == 200
+        assert export.text.splitlines() == [
+            "symbol,trade_date,close",
+            f"000001,{RECENT.isoformat()},2.0",
         ]
 
 
@@ -437,6 +870,53 @@ class TestCsvExport:
         assert response.status_code == 400
         assert "unknown fields" in response.json()["detail"]
 
+    async def test_a_partial_final_batch_starts_after_rows_already_written(
+        self, warehouse, test_client, test_user_token
+    ):
+        rows = [_bar(f"S{index:05d}", RECENT) for index in range(10_002)]
+        warehouse(bars=rows)
+
+        response = await test_client.get(
+            EXPORT_URL, params={"limit": 10_001}, headers=_auth(test_user_token)
+        )
+
+        assert response.status_code == 200
+        symbols = [row[0] for row in list(csv.reader(io.StringIO(response.text)))[1:]]
+        assert len(symbols) == 10_001
+        assert len(set(symbols)) == 10_001
+        assert symbols == [f"S{index:05d}" for index in range(10_001)]
+
+    async def test_a_streaming_database_failure_interrupts_without_leaking_sql(
+        self, warehouse, monkeypatch
+    ):
+        from opendata.api.data_query import _csv_stream
+        from opendata.pipeline.query import DataQuery
+
+        engine = warehouse(bars=[])
+
+        def fail_fetch(*_args, **_kwargs):
+            raise RuntimeError("SELECT secret_column FROM secret_table")
+
+        monkeypatch.setattr("opendata.api.data_query._fetch_rows", fail_fetch)
+        stream = _csv_stream(
+            engine,
+            DataQuery(domain="stock_daily"),
+            table=BARS_TABLE,
+            columns=tuple(column.name for column in contract_columns("stock_daily")),
+            key=("symbol", "trade_date"),
+            selected=("symbol", "trade_date"),
+            time_field=None,
+            symbol_field=None,
+            period_field=None,
+            report_date_field=None,
+            limit=1,
+        )
+
+        assert await anext(stream) == "symbol,trade_date\r\n"
+        with pytest.raises(RuntimeError, match="CSV export failed before completion") as exc_info:
+            await anext(stream)
+        assert "SELECT" not in str(exc_info.value)
+
 
 class TestServerSideAdjust:
     """AC-11|02 的服务端半：qfq/hfq 由 Bar + 因子表合成，缺因子就 fail closed。"""
@@ -446,7 +926,19 @@ class TestServerSideAdjust:
     ):
         warehouse(
             bars=[_bar("600519", RECENT, open_=2.0, close=4.0)],
-            factors=[_factor("600519", RECENT, qfq=0.5, hfq=2.0)],
+            factors=[
+                _affine_factor(
+                    "600519",
+                    RECENT,
+                    qfq=0.5,
+                    hfq=2.0,
+                    qfq_scale=0.5,
+                    qfq_offset=0.0,
+                    hfq_scale=2.0,
+                    hfq_offset=0.0,
+                )
+            ],
+            affine_factors=True,
         )
 
         response = await test_client.get(
@@ -465,7 +957,19 @@ class TestServerSideAdjust:
     ):
         warehouse(
             bars=[_bar("600519", RECENT, open_=2.0, close=4.0)],
-            factors=[_factor("600519", RECENT, qfq=0.5, hfq=2.0)],
+            factors=[
+                _affine_factor(
+                    "600519",
+                    RECENT,
+                    qfq=0.5,
+                    hfq=2.0,
+                    qfq_scale=0.5,
+                    qfq_offset=0.0,
+                    hfq_scale=2.0,
+                    hfq_offset=0.0,
+                )
+            ],
+            affine_factors=True,
         )
 
         response = await test_client.get(
@@ -476,6 +980,484 @@ class TestServerSideAdjust:
 
         row = response.json()["data"]["rows"][0]
         assert (row["open"], row["close"]) == (4.0, 8.0)
+
+    async def test_legacy_factor_table_without_new_columns_keeps_multiplicative_rows(
+        self, warehouse, test_client, test_user_token
+    ):
+        warehouse(
+            bars=[_bar("600519", RECENT, open_=2.0, close=4.0)],
+            factors=[_factor("600519", RECENT, qfq=0.5, hfq=2.0)],
+        )
+
+        response = await test_client.get(
+            QUERY_URL,
+            params={"symbols": "600519", "adjust": "qfq"},
+            headers=_auth(test_user_token),
+        )
+
+        assert response.status_code == 200
+        row = response.json()["data"]["rows"][0]
+        assert (row["open"], row["close"]) == (1.0, 2.0)
+
+    async def test_affine_qfq_json_and_csv_apply_cash_offset_and_preserve_nonprice_fields(
+        self, warehouse, test_client, test_user_token
+    ):
+        previous_day = RECENT - timedelta(days=1)
+        warehouse(
+            bars=[
+                _bar("600519", previous_day, open_=100.0, close=120.0),
+                _bar("600519", RECENT, open_=90.0, close=100.0),
+            ],
+            factors=[
+                _affine_factor(
+                    "600519",
+                    previous_day,
+                    qfq=0.9,
+                    hfq=1.0,
+                    qfq_scale=1.0,
+                    qfq_offset=-5.0,
+                    hfq_scale=1.0,
+                    hfq_offset=0.0,
+                ),
+                _affine_factor(
+                    "600519",
+                    RECENT,
+                    qfq=1.0,
+                    hfq=10.0 / 9.0,
+                    qfq_scale=1.0,
+                    qfq_offset=0.0,
+                    hfq_scale=1.0,
+                    hfq_offset=5.0,
+                ),
+            ],
+            affine_factors=True,
+        )
+
+        response = await test_client.get(
+            QUERY_URL,
+            params={
+                "symbols": "600519",
+                "adjust": "qfq",
+                "fields": "open,high,low,close,volume,amount",
+            },
+            headers=_auth(test_user_token),
+        )
+        export = await test_client.get(
+            EXPORT_URL,
+            params={
+                "symbols": "600519",
+                "adjust": "qfq",
+                "fields": "close,volume,amount",
+            },
+            headers=_auth(test_user_token),
+        )
+        raw = await test_client.get(
+            QUERY_URL,
+            params={"symbols": "600519", "adjust": "none"},
+            headers=_auth(test_user_token),
+        )
+
+        assert response.status_code == export.status_code == raw.status_code == 200
+        payload = response.json()["data"]
+        assert payload["adjust"] == "qfq"
+        assert payload["columns"] == [
+            "symbol",
+            "trade_date",
+            "open",
+            "high",
+            "low",
+            "close",
+            "volume",
+            "amount",
+        ]
+        adjusted_rows = payload["rows"]
+        assert (adjusted_rows[0]["open"], adjusted_rows[0]["high"]) == (95.0, 115.0)
+        assert (adjusted_rows[0]["low"], adjusted_rows[0]["close"]) == (95.0, 115.0)
+        assert (adjusted_rows[1]["open"], adjusted_rows[1]["close"]) == (90.0, 100.0)
+        assert [(row["volume"], row["amount"]) for row in adjusted_rows] == [
+            (1000.0, 2000.0),
+            (1000.0, 2000.0),
+        ]
+        assert "qfq_offset" not in adjusted_rows[0]
+        assert "legacy_source" not in adjusted_rows[0]
+        assert raw.json()["data"]["rows"][0]["close"] == 120.0
+        exported = list(csv.reader(io.StringIO(export.text)))
+        assert exported[0] == ["symbol", "trade_date", "close", "volume", "amount"]
+        assert exported[1] == ["600519", previous_day.isoformat(), "115.0", "1000.0", "2000.0"]
+
+    async def test_affine_hfq_applies_the_inverse_cash_offset(
+        self, warehouse, test_client, test_user_token
+    ):
+        previous_day = RECENT - timedelta(days=1)
+        warehouse(
+            bars=[
+                _bar("600519", previous_day, open_=100.0, close=120.0),
+                _bar("600519", RECENT, open_=90.0, close=100.0),
+            ],
+            factors=[
+                _affine_factor(
+                    "600519",
+                    previous_day,
+                    qfq=0.9,
+                    hfq=1.0,
+                    qfq_scale=1.0,
+                    qfq_offset=-5.0,
+                    hfq_scale=1.0,
+                    hfq_offset=0.0,
+                ),
+                _affine_factor(
+                    "600519",
+                    RECENT,
+                    qfq=1.0,
+                    hfq=10.0 / 9.0,
+                    qfq_scale=1.0,
+                    qfq_offset=0.0,
+                    hfq_scale=1.0,
+                    hfq_offset=5.0,
+                ),
+            ],
+            affine_factors=True,
+        )
+
+        response = await test_client.get(
+            QUERY_URL,
+            params={"symbols": "600519", "adjust": "hfq"},
+            headers=_auth(test_user_token),
+        )
+
+        assert response.status_code == 200
+        rows = response.json()["data"]["rows"]
+        assert (rows[0]["open"], rows[0]["close"]) == (100.0, 120.0)
+        assert (rows[1]["open"], rows[1]["close"]) == (95.0, 105.0)
+        assert [(row["volume"], row["amount"]) for row in rows] == [
+            (1000.0, 2000.0),
+            (1000.0, 2000.0),
+        ]
+
+    @pytest.mark.parametrize(
+        ("adjust", "expected_close"),
+        [("qfq", 115.0), ("hfq", 125.0)],
+    )
+    @pytest.mark.parametrize(
+        ("requested_fields", "expected_columns"),
+        [
+            ("close,volume,amount", ["symbol", "trade_date", "close", "volume", "amount"]),
+            ("close", ["symbol", "trade_date", "close"]),
+            ("volume", ["symbol", "trade_date", "volume"]),
+        ],
+    )
+    async def test_adjusted_field_subsets_work_in_json_and_csv(
+        self,
+        warehouse,
+        test_client,
+        test_user_token,
+        adjust,
+        expected_close,
+        requested_fields,
+        expected_columns,
+    ):
+        warehouse(
+            bars=[_bar("600519", RECENT, open_=100.0, close=120.0)],
+            factors=[
+                _affine_factor(
+                    "600519",
+                    RECENT,
+                    qfq=0.9,
+                    hfq=1.1,
+                    qfq_scale=1.0,
+                    qfq_offset=-5.0,
+                    hfq_scale=1.0,
+                    hfq_offset=5.0,
+                )
+            ],
+            affine_factors=True,
+        )
+        params = {
+            "symbols": "600519",
+            "adjust": adjust,
+            "fields": requested_fields,
+        }
+
+        response = await test_client.get(QUERY_URL, params=params, headers=_auth(test_user_token))
+        export = await test_client.get(EXPORT_URL, params=params, headers=_auth(test_user_token))
+
+        assert response.status_code == export.status_code == 200
+        payload = response.json()["data"]
+        assert payload["columns"] == expected_columns
+        assert list(payload["rows"][0]) == expected_columns
+        assert set(payload["rows"][0]) == set(expected_columns)
+        if "close" in requested_fields.split(","):
+            assert payload["rows"][0]["close"] == expected_close
+        if "volume" in requested_fields.split(","):
+            assert payload["rows"][0]["volume"] == 1000.0
+        exported = list(csv.reader(io.StringIO(export.text)))
+        assert exported[0] == expected_columns
+        assert len(exported[1]) == len(expected_columns)
+        if "close" in requested_fields.split(","):
+            assert exported[1][expected_columns.index("close")] == str(expected_close)
+        if "volume" in requested_fields.split(","):
+            assert exported[1][expected_columns.index("volume")] == "1000.0"
+
+    async def test_json_rejects_legacy_and_affine_rows_mixed_for_one_symbol(
+        self, warehouse, test_client, test_user_token
+    ):
+        previous_day = RECENT - timedelta(days=1)
+        warehouse(
+            bars=[
+                _bar("600519", previous_day, open_=100.0, close=120.0),
+                _bar("600519", RECENT, open_=90.0, close=100.0),
+            ],
+            factors=[
+                _affine_factor(
+                    "600519",
+                    previous_day,
+                    qfq=0.9,
+                    hfq=1.0,
+                    qfq_scale=None,
+                    qfq_offset=None,
+                    hfq_scale=None,
+                    hfq_offset=None,
+                    version=None,
+                    legacy_source="historical-ths",
+                ),
+                _affine_factor(
+                    "600519",
+                    RECENT,
+                    qfq=1.0,
+                    hfq=1.1,
+                    qfq_scale=1.0,
+                    qfq_offset=0.0,
+                    hfq_scale=1.0,
+                    hfq_offset=5.0,
+                ),
+            ],
+            affine_factors=True,
+        )
+
+        response = await test_client.get(
+            QUERY_URL,
+            params={
+                "symbols": "600519",
+                "adjust": "qfq",
+                "fields": "close",
+                "page_size": 1,
+            },
+            headers=_auth(test_user_token),
+        )
+
+        assert response.status_code == 400
+        assert "mixed adjustment versions" in response.json()["detail"]
+
+    async def test_csv_rejects_adjustment_version_change_across_batches(
+        self, warehouse, test_client, test_user_token, monkeypatch
+    ):
+        monkeypatch.setattr("opendata.api.data_query.EXPORT_BATCH_ROWS", 1)
+        previous_day = RECENT - timedelta(days=1)
+        warehouse(
+            bars=[
+                _bar("600519", previous_day, open_=100.0, close=120.0),
+                _bar("600519", RECENT, open_=90.0, close=100.0),
+            ],
+            factors=[
+                _affine_factor(
+                    "600519",
+                    previous_day,
+                    qfq=0.9,
+                    hfq=1.0,
+                    qfq_scale=None,
+                    qfq_offset=None,
+                    hfq_scale=None,
+                    hfq_offset=None,
+                    version="legacy-multiplicative-v1",
+                    legacy_source="historical-ths",
+                ),
+                _affine_factor(
+                    "600519",
+                    RECENT,
+                    qfq=1.0,
+                    hfq=1.1,
+                    qfq_scale=1.0,
+                    qfq_offset=0.0,
+                    hfq_scale=1.0,
+                    hfq_offset=5.0,
+                ),
+            ],
+            affine_factors=True,
+        )
+
+        response = await test_client.get(
+            EXPORT_URL,
+            params={"symbols": "600519", "adjust": "qfq", "fields": "close"},
+            headers=_auth(test_user_token),
+        )
+        assert response.status_code == 400
+        assert "mixed adjustment versions" in response.json()["detail"]
+
+    async def test_json_paged_window_ignores_unmatched_and_other_symbol_factors(
+        self, warehouse, test_client, test_user_token
+    ):
+        previous_day = RECENT - timedelta(days=1)
+        warehouse(
+            bars=[
+                _bar("000001", RECENT, open_=20.0, close=22.0),
+                _bar("600519", RECENT, open_=100.0, close=120.0),
+            ],
+            factors=[
+                _affine_factor(
+                    "000001",
+                    RECENT,
+                    qfq=0.5,
+                    hfq=2.0,
+                    qfq_scale=0.5,
+                    qfq_offset=0.0,
+                    hfq_scale=2.0,
+                    hfq_offset=0.0,
+                ),
+                _affine_factor(
+                    "600519",
+                    previous_day,
+                    qfq=0.9,
+                    hfq=1.1,
+                    qfq_scale=0.9,
+                    qfq_offset=0.0,
+                    hfq_scale=1.1,
+                    hfq_offset=0.0,
+                ),
+                _affine_factor(
+                    "600519",
+                    RECENT,
+                    qfq=0.9,
+                    hfq=1.1,
+                    qfq_scale=None,
+                    qfq_offset=None,
+                    hfq_scale=None,
+                    hfq_offset=None,
+                    version="legacy-multiplicative-v1",
+                    legacy_source="historical-ths",
+                ),
+            ],
+            affine_factors=True,
+        )
+
+        response = await test_client.get(
+            QUERY_URL,
+            params={
+                "symbols": "000001,600519",
+                "start": RECENT.isoformat(),
+                "end": RECENT.isoformat(),
+                "adjust": "qfq",
+                "page_size": 1,
+            },
+            headers=_auth(test_user_token),
+        )
+
+        assert response.status_code == 200
+        assert len(response.json()["data"]["rows"]) == 1
+
+    async def test_adjustment_reads_only_current_batch_factor_keys_in_sql(
+        self, warehouse, test_client, test_user_token, monkeypatch
+    ):
+        monkeypatch.setattr("opendata.api.data_query.MAX_PAGE_SIZE", 1)
+        trade_days = [RECENT - timedelta(days=2), RECENT - timedelta(days=1), RECENT]
+        orphan_day = RECENT - timedelta(days=3)
+        engine = warehouse(
+            bars=[_bar("600519", day, close=20.0 + index) for index, day in enumerate(trade_days)],
+            factors=[
+                _affine_factor(
+                    "600519",
+                    day,
+                    qfq=1.0,
+                    hfq=1.0,
+                    qfq_scale=1.0,
+                    qfq_offset=0.0,
+                    hfq_scale=1.0,
+                    hfq_offset=0.0,
+                )
+                for day in trade_days
+            ]
+            + [
+                _affine_factor(
+                    "600519",
+                    orphan_day,
+                    qfq=1.0,
+                    hfq=1.0,
+                    qfq_scale=None,
+                    qfq_offset=None,
+                    hfq_scale=None,
+                    hfq_offset=None,
+                    version="affine-v9",
+                )
+            ],
+            affine_factors=True,
+        )
+        factor_queries: list[tuple[str, tuple[str, ...]]] = []
+
+        def record_factor_select(connection, cursor, statement, parameters, context, executemany):
+            if statement.startswith("SELECT * FROM `dwd_stock_adjust`"):
+                values = parameters.values() if isinstance(parameters, dict) else parameters
+                factor_queries.append((statement, tuple(str(value) for value in values)))
+
+        event.listen(engine, "before_cursor_execute", record_factor_select)
+        try:
+            response = await test_client.get(
+                QUERY_URL,
+                params={
+                    "symbols": "600519",
+                    "start": trade_days[0].isoformat(),
+                    "end": trade_days[-1].isoformat(),
+                    "adjust": "qfq",
+                    "page_size": 1,
+                },
+                headers=_auth(test_user_token),
+            )
+        finally:
+            event.remove(engine, "before_cursor_execute", record_factor_select)
+
+        assert response.status_code == 200
+        assert len(factor_queries) == 4  # three preflight batches and the returned page
+        assert all(statement.count("`trade_date` =") == 1 for statement, _ in factor_queries)
+        assert all(len(values) == 2 for _, values in factor_queries)
+        assert all(values[0] == "600519" for _, values in factor_queries)
+        queried_days = {values[1] for _, values in factor_queries}
+        assert queried_days == {day.isoformat() for day in trade_days}
+        assert orphan_day.isoformat() not in queried_days
+
+    @pytest.mark.parametrize(
+        ("version", "qfq_offset", "message"),
+        [
+            ("affine-v1", None, "requires all four"),
+            ("affine-v9", 0.0, "unknown adjustment version"),
+        ],
+    )
+    async def test_incomplete_or_unknown_affine_rows_fail_closed(
+        self, warehouse, test_client, test_user_token, version, qfq_offset, message
+    ):
+        warehouse(
+            bars=[_bar("600519", RECENT)],
+            factors=[
+                _affine_factor(
+                    "600519",
+                    RECENT,
+                    qfq=1.0,
+                    hfq=1.0,
+                    qfq_scale=1.0,
+                    qfq_offset=qfq_offset,
+                    hfq_scale=1.0,
+                    hfq_offset=0.0,
+                    version=version,
+                )
+            ],
+            affine_factors=True,
+        )
+
+        response = await test_client.get(
+            QUERY_URL,
+            params={"symbols": "600519", "adjust": "qfq"},
+            headers=_auth(test_user_token),
+        )
+
+        assert response.status_code == 400
+        assert message in response.json()["detail"]
 
     async def test_a_bar_without_its_factor_row_is_a_400_not_a_half_adjusted_series(
         self, warehouse, test_client, test_user_token

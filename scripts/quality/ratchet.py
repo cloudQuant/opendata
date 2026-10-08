@@ -37,18 +37,27 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.quality.source_layout import (  # noqa: E402
+    FIRST_PARTY,
+    PORTED,
+    VENDOR_ROOT,
+    iter_unique_python_files,
+)
+
 SNAPSHOT_PATH = "docs/quality/ratchet.json"
 SNAPSHOT_VERSION = 1
 
-# A3.1: the fuyao transport package is self-developed, so it joins the
-# self-dev scope (controlled scope switch; counts must not rise because of it).
-# C45: the two alembic envs join the same way. They are first-party Python and
+# The Fuyao transport now lives under opendata and is scanned once with that
+# first-party tree. C45: the two alembic envs join the same way. They are Python and
 # were read by *no* plane at all (a2-check filtered the roots, ruff and mypy
 # excluded them, and the ratchet never listed them). Their 28 ruff violations
 # were fixed rather than grandfathered, so all five metrics are unchanged.
-SELFDEV_PATHS = ("opendata", "opendata_fuyao", "scripts", "tests", "alembic", "alembic_data")
-MYPY_PATHS = ("opendata", "opendata_fuyao", "alembic", "alembic_data")
-BANDIT_PATHS = ("opendata", "opendata_fuyao", "scripts", "alembic", "alembic_data")
+SELFDEV_PATHS = ("opendata", "scripts", "tests", "alembic", "alembic_data")
+MYPY_PATHS = ("opendata", "alembic", "alembic_data")
+BANDIT_PATHS = ("opendata", "scripts", "alembic", "alembic_data")
 # A1 legacy zone: ``opendata/data_fetch/`` is the pre-iteration tree and stays
 # mypy-dark (quality spec §4, mirrored by ``[tool.mypy].exclude``). It is named
 # here because a plane-visibility census cannot otherwise tell a grandfathered
@@ -56,9 +65,8 @@ BANDIT_PATHS = ("opendata", "opendata_fuyao", "scripts", "alembic", "alembic_dat
 # ``mypy_selfdev`` without a line of code changing. 18 files, all of them under
 # this prefix.
 MYPY_LEGACY_ZONE = ("opendata/data_fetch/",)
-# A2.2: the ported tree moved from akshare/ to opendata_http/;
-# the scope switch was re-frozen with --force-update (controlled event).
-PORTED_PATHS = ("opendata_http",)
+# Ported source has a separate audit root nested inside opendata/.
+PORTED_PATHS = (VENDOR_ROOT,)
 
 HTTP_VERBS = frozenset({"get", "post", "put", "delete", "head", "patch", "request"})
 
@@ -113,10 +121,19 @@ def _tool_version(module: str) -> str:
 
 
 def _py_files(package: str) -> list[Path]:
-    base = REPO_ROOT / package
-    if not base.is_dir():
-        return []
-    return [p for p in sorted(base.rglob("*.py")) if "__pycache__" not in p.parts]
+    """Return unique Python files for one classified source root."""
+    layer = PORTED if package == VENDOR_ROOT else FIRST_PARTY
+    try:
+        return [
+            source.path
+            for source in iter_unique_python_files(
+                REPO_ROOT,
+                (package,),
+                layers=frozenset({layer}),
+            )
+        ]
+    except RuntimeError as exc:
+        raise ToolError(str(exc)) from exc
 
 
 def file_counts() -> dict[str, int]:
@@ -129,10 +146,21 @@ def file_counts() -> dict[str, int]:
 
 def count_ruff(paths: tuple[str, ...], *, select: str | None = None) -> int:
     """Count ruff violations over ``paths``, honouring the project config."""
+    layer = PORTED if select == "E,F" else FIRST_PARTY
+    try:
+        source_paths = iter_unique_python_files(
+            REPO_ROOT,
+            paths,
+            layers=frozenset({layer}),
+        )
+    except RuntimeError as exc:
+        raise ToolError(str(exc)) from exc
+    if not source_paths:
+        raise ToolError(f"no Python files in declared {layer} scan roots: {paths}")
     args = [sys.executable, "-m", "ruff", "check", "--output-format=json", "--quiet"]
     if select is not None:
         args.extend(["--select", select])
-    args.extend(paths)
+    args.extend(source.identity for source in source_paths)
     result = _run(args)
     if result.returncode not in (0, 1):
         raise ToolError(f"ruff failed: {result.stderr.strip() or result.stdout.strip()}")
@@ -147,13 +175,23 @@ def count_ruff(paths: tuple[str, ...], *, select: str | None = None) -> int:
 
 def count_mypy(paths: tuple[str, ...]) -> int:
     """Count mypy ``error:`` lines over ``paths``."""
+    try:
+        source_paths = iter_unique_python_files(
+            REPO_ROOT,
+            paths,
+            layers=frozenset({FIRST_PARTY}),
+        )
+    except RuntimeError as exc:
+        raise ToolError(str(exc)) from exc
+    if not source_paths:
+        raise ToolError(f"no Python files in declared mypy roots: {paths}")
     args = [
         sys.executable,
         "-m",
         "mypy",
         "--no-color-output",
         "--no-error-summary",
-        *paths,
+        *(source.identity for source in source_paths),
     ]
     result = _run(args)
     if result.returncode not in (0, 1):
@@ -163,6 +201,16 @@ def count_mypy(paths: tuple[str, ...]) -> int:
 
 def count_bandit(paths: tuple[str, ...]) -> int:
     """Count bandit findings over ``paths``."""
+    try:
+        source_paths = iter_unique_python_files(
+            REPO_ROOT,
+            paths,
+            layers=frozenset({FIRST_PARTY}),
+        )
+    except RuntimeError as exc:
+        raise ToolError(str(exc)) from exc
+    if not source_paths:
+        raise ToolError(f"no Python files in declared Bandit roots: {paths}")
     args = [
         sys.executable,
         "-m",
@@ -172,8 +220,7 @@ def count_bandit(paths: tuple[str, ...]) -> int:
         "-f",
         "json",
         "-q",
-        "-r",
-        *paths,
+        *(source.identity for source in source_paths),
     ]
     result = _run(args)
     if result.returncode not in (0, 1):
@@ -308,6 +355,22 @@ def check() -> int:
     except ToolError as exc:
         print(f"FAIL: {exc}", file=sys.stderr)
         return 1
+
+    count_deltas = [
+        (package, counts.get(package), snapshot.file_counts.get(package))
+        for package in sorted(set(counts) | set(snapshot.file_counts))
+        if counts.get(package) != snapshot.file_counts.get(package)
+    ]
+    if count_deltas:
+        print("FILE COUNTS (current vs expected migration):")
+        for package, current, expected in count_deltas:
+            current_text = "(absent)" if current is None else str(current)
+            expected_text = "(absent)" if expected is None else str(expected)
+            delta = "n/a" if current is None or expected is None else f"{current - expected:+d}"
+            print(
+                f"  {package}: current={current_text} "
+                f"expected_migration={expected_text} delta={delta}"
+            )
 
     changes = _scope_changes(snapshot, counts, tools)
     if changes:

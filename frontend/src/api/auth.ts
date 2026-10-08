@@ -1,5 +1,12 @@
 import request from '@/utils/request'
-import type { AuthResponse, LoginRequest, RegisterRequest } from '@/types'
+import type {
+  AuthResponse,
+  CurrentAuthUser,
+  LoginRequest,
+  RefreshTokenResponse,
+  RegisterRequest,
+  RegisterResponse,
+} from '@/types'
 
 export const authApi = {
   // Login
@@ -12,7 +19,7 @@ export const authApi = {
   },
 
   // Register
-  register(data: RegisterRequest): Promise<AuthResponse> {
+  register(data: RegisterRequest): Promise<RegisterResponse> {
     return request({
       url: '/auth/register',
       method: 'POST',
@@ -21,7 +28,7 @@ export const authApi = {
   },
 
   // Refresh token
-  refreshToken(refreshToken: string): Promise<AuthResponse> {
+  refreshToken(refreshToken: string): Promise<RefreshTokenResponse> {
     return request({
       url: '/auth/refresh',
       method: 'POST',
@@ -38,7 +45,7 @@ export const authApi = {
   },
 
   // Get current user
-  getCurrentUser(): Promise<AuthResponse['user']> {
+  getCurrentUser(): Promise<CurrentAuthUser> {
     return request({
       url: '/auth/me',
       method: 'GET',

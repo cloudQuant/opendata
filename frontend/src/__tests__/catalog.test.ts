@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { catalogApi, type DataPage } from '@/api/catalog'
+import {
+  catalogApi,
+  type CatalogCapability,
+  type CatalogEntry,
+  type DataPage,
+} from '@/api/catalog'
 import DataCatalogView from '@/views/DataCatalogView.vue'
 
 // The API modules go through the shared axios instance; point it at a stub.
@@ -23,6 +28,29 @@ const ENTRIES = [
   {
     domain: 'stock_daily',
     asset_class: 'equity',
+    markets: ['cn'],
+    capabilities: [
+      {
+        asset_class: 'equity',
+        domain: 'stock_daily',
+        period: '1D',
+        market: 'cn',
+        source: 'akshare',
+        verified: true,
+        notes: '',
+        callable: {
+          module: 'opendata.data.providers.akshare.models.stock_daily',
+          name: 'AkshareStockDailyFetcher.fetch',
+        },
+        endpoint: {
+          name: 'query_domain_data',
+          method: 'GET',
+          path: '/api/v1/data/equity/stock_daily',
+          query_filters: { source: 'akshare', period: '1D' },
+        },
+        parameters: [{ name: 'symbol', type: 'str', required: true, description: null }],
+      },
+    ],
     display_name: 'A股日线行情',
     layer: 'dwd',
     table: 'dwd_stock_daily',
@@ -62,6 +90,43 @@ const ENTRIES = [
   {
     domain: 'economy_cpi',
     asset_class: 'economy',
+    markets: ['eu', 'global'],
+    capabilities: [
+      {
+        asset_class: 'economy',
+        domain: 'economy_cpi',
+        period: '1M',
+        market: 'eu',
+        source: 'ecb',
+        verified: true,
+        notes: '',
+        callable: { module: 'opendata.data.providers.ecb.models.cpi', name: 'EcbCpiFetcher.fetch' },
+        endpoint: {
+          name: 'query_domain_data',
+          method: 'GET',
+          path: '/api/v1/data/economy/economy_cpi',
+          query_filters: { source: 'ecb', period: '1M' },
+        },
+        parameters: [{ name: 'series', type: 'str', required: true, description: null }],
+      },
+      {
+        asset_class: 'economy',
+        domain: 'economy_cpi',
+        period: '1M',
+        market: 'global',
+        source: 'imf',
+        verified: false,
+        notes: '',
+        callable: { module: 'opendata.data.providers.imf.models.cpi', name: 'ImfCpiFetcher.fetch' },
+        endpoint: {
+          name: 'query_domain_data',
+          method: 'GET',
+          path: '/api/v1/data/economy/economy_cpi',
+          query_filters: { source: 'imf', period: '1M' },
+        },
+        parameters: [{ name: 'series', type: 'str', required: true, description: null }],
+      },
+    ],
     display_name: '宏观CPI',
     layer: 'dwd',
     table: 'dwd_economy_cpi',
@@ -88,6 +153,29 @@ const ENTRIES = [
   {
     domain: 'fund_action',
     asset_class: 'equity',
+    markets: [],
+    capabilities: [
+      {
+        asset_class: 'equity',
+        domain: 'fund_action',
+        period: 'snapshot',
+        market: '',
+        source: 'ths',
+        verified: false,
+        notes: '',
+        callable: {
+          module: 'opendata.data.providers.ths.models.fund_action',
+          name: 'ThsFundActionFetcher.fetch',
+        },
+        endpoint: {
+          name: 'query_domain_data',
+          method: 'GET',
+          path: '/api/v1/data/equity/fund_action',
+          query_filters: { source: 'ths', period: 'snapshot' },
+        },
+        parameters: [],
+      },
+    ],
     display_name: '基金分红',
     layer: 'dwd',
     table: 'dwd_fund_action',
@@ -115,10 +203,160 @@ const ENTRIES = [
 
 const CATALOG = {
   domains: ENTRIES,
+  markets: ['cn', 'eu', 'global'],
   expected_data_date: '2026-09-22',
   domains_total: 3,
   source_legs_total: 4,
 }
+
+const PENDING_ENDPOINT_CAPABILITY: CatalogCapability = {
+  asset_class: 'equity',
+  domain: 'c32_metadata_only_daily',
+  period: '1D',
+  market: 'cn',
+  source: 'akshare',
+  verified: true,
+  notes: '',
+  callable: {
+    module: 'opendata.data.providers.akshare.models.stock_daily',
+    name: 'AkshareStockDailyFetcher.fetch',
+  },
+  endpoint: null,
+  parameters: [{ name: 'symbol', type: 'str', required: true, description: null }],
+}
+
+const PENDING_ENDPOINT_ENTRY: CatalogEntry = {
+  domain: 'c32_metadata_only_daily',
+  asset_class: 'equity',
+  markets: ['cn'],
+  capabilities: [PENDING_ENDPOINT_CAPABILITY],
+  display_name: 'C32已注册日线接口',
+  layer: null,
+  table: null,
+  freshness_field: null,
+  latest: null,
+  lag_days: null,
+  status: 'unmapped',
+  coverage: null,
+  quality: null,
+  sources: [
+    {
+      source: 'akshare',
+      verified: true,
+      table: null,
+      status: 'unmapped',
+      reason: 'domain_not_declared',
+      latest: null,
+      lag_days: null,
+    },
+  ],
+  domain_defined: false,
+  service_state: 'metadata_only',
+  reason: 'domain_not_declared',
+}
+
+const PROVIDER_QUERY_ENTRIES: CatalogEntry[] = [
+  {
+    domain: 'fred_search',
+    asset_class: 'macro',
+    markets: ['us'],
+    capabilities: [
+      {
+        asset_class: 'macro',
+        domain: 'fred_search',
+        period: 'snapshot',
+        market: 'us',
+        source: 'fred',
+        verified: false,
+        notes: '',
+        callable: {
+          module: 'opendata.data.providers.fred.models.search',
+          name: 'FredSearchFetcher.fetch',
+        },
+        endpoint: null,
+        model_query_endpoint: {
+          model: 'FredSearch',
+          method: 'POST',
+          path: '/api/v1/providers/fred/models/FredSearch/query',
+        },
+        parameters: [{ name: 'search_text', type: 'str', required: true, description: null }],
+      },
+    ],
+    display_name: 'FRED 系列目录检索',
+    layer: null,
+    table: null,
+    freshness_field: null,
+    latest: null,
+    lag_days: null,
+    status: 'unmapped',
+    coverage: null,
+    quality: null,
+    sources: [
+      {
+        source: 'fred',
+        verified: false,
+        table: null,
+        status: 'unmapped',
+        reason: 'transient_model',
+        latest: null,
+        lag_days: null,
+      },
+    ],
+    domain_defined: true,
+    service_state: 'provider_query',
+    reason: 'transient_model',
+  },
+  {
+    domain: 'equity_historical',
+    asset_class: 'stock',
+    markets: ['us'],
+    capabilities: [
+      {
+        asset_class: 'stock',
+        domain: 'equity_historical',
+        period: '1d',
+        market: 'us',
+        source: 'fmp',
+        verified: false,
+        notes: '',
+        callable: {
+          module: 'opendata.data.providers.fmp.models.equity_historical',
+          name: 'EquityHistoricalFetcher.fetch',
+        },
+        endpoint: null,
+        model_query_endpoint: {
+          model: 'EquityHistorical',
+          method: 'POST',
+          path: '/api/v1/providers/fmp/models/EquityHistorical/query',
+        },
+        parameters: [{ name: 'symbol', type: 'str', required: true, description: null }],
+      },
+    ],
+    display_name: '美股历史行情',
+    layer: null,
+    table: null,
+    freshness_field: null,
+    latest: null,
+    lag_days: null,
+    status: 'unmapped',
+    coverage: null,
+    quality: null,
+    sources: [
+      {
+        source: 'fmp',
+        verified: false,
+        table: null,
+        status: 'unmapped',
+        reason: 'warehouse_not_ready',
+        latest: null,
+        lag_days: null,
+      },
+    ],
+    domain_defined: true,
+    service_state: 'provider_query',
+    reason: 'warehouse_not_ready',
+  },
+]
 
 const PAGE: DataPage = {
   domain: 'stock_daily',
@@ -149,6 +387,15 @@ describe('catalogApi', () => {
     // dropping it would leave "滞后 1 天" without a reference.
     expect(catalog.expected_data_date).toBe('2026-09-22')
     expect(catalog.source_legs_total).toBe(4)
+    expect(catalog.markets).toEqual(['cn', 'eu', 'global'])
+    expect(catalog.domains[0].capabilities[0].callable.name).toBe('AkshareStockDailyFetcher.fetch')
+    const endpoint = catalog.domains[0].capabilities[0].endpoint
+    expect(endpoint).not.toBeNull()
+    expect(endpoint?.query_filters).toEqual({
+      source: 'akshare',
+      period: '1D',
+    })
+    expect(catalog.domains[0].capabilities[0].parameters[0].name).toBe('symbol')
   })
 
   it('returns an empty catalog when the payload is missing', async () => {
@@ -156,6 +403,7 @@ describe('catalogApi', () => {
 
     expect(await catalogApi.catalog()).toEqual({
       domains: [],
+      markets: [],
       expected_data_date: '',
       domains_total: 0,
       source_legs_total: 0,
@@ -220,6 +468,119 @@ describe('DataCatalogView', () => {
     expect(row).toContain('有差异') // 质量
   })
 
+  it('groups by registered market and labels missing market metadata explicitly', async () => {
+    get.mockResolvedValue(CATALOG)
+    const wrapper = mount(DataCatalogView)
+
+    await flushPromises()
+
+    const groups = wrapper.findAll('[data-testid="market-group"]')
+    expect(groups.map(flat)).toHaveLength(4)
+    expect(flat(groups[0])).toContain('市场：cn')
+    expect(flat(groups[0])).toContain('A股日线行情')
+    expect(flat(groups[1])).toContain('市场：eu')
+    expect(flat(groups[1])).toContain('宏观CPI')
+    expect(flat(groups[2])).toContain('市场：global')
+    expect(flat(groups[2])).toContain('宏观CPI')
+    expect(flat(groups[3])).toContain('市场：未知市场')
+    expect(flat(wrapper)).toContain('不按市场拆分')
+  })
+
+  it('opens registered provider callable, endpoint, and parameter metadata', async () => {
+    get.mockResolvedValue(CATALOG)
+    const wrapper = mount(DataCatalogView)
+
+    await flushPromises()
+    await wrapper.find('[data-testid="registered-functions"]')!.trigger('click')
+    await flushPromises()
+
+    const dialog = flat(wrapper)
+    expect(dialog).toContain('AkshareStockDailyFetcher.fetch')
+    expect(dialog).toContain('GET /api/v1/data/equity/stock_daily')
+    expect(dialog).toContain('source=akshare · period=1D')
+    expect(dialog).toContain('symbol: str（必填）')
+    expect(dialog).toContain('不会触发 Provider 抓取')
+  })
+
+  it('shows native provider-model routes separately from unavailable warehouse reads', async () => {
+    get.mockResolvedValue({
+      ...CATALOG,
+      domains: [...CATALOG.domains, ...PROVIDER_QUERY_ENTRIES],
+      markets: [...CATALOG.markets, 'us'],
+      domains_total: 5,
+      source_legs_total: 6,
+    })
+    const wrapper = mount(DataCatalogView)
+    await flushPromises()
+
+    const rowFor = (domain: string) =>
+      wrapper.findAll('tbody tr').find((row) => flat(row).includes(domain))!
+    const fredRow = rowFor('fred_search')
+    expect(flat(fredRow)).toContain('fred 未映射 · 未验证')
+    expect(fredRow.find('.leg-tag').attributes('title')).toBe('transient_model')
+    await fredRow.find('[data-testid="registered-functions"]').trigger('click')
+    await flushPromises()
+
+    let dialog = flat(wrapper)
+    expect(dialog).toContain('POST /api/v1/providers/fred/models/FredSearch/query')
+    expect(dialog).toContain('原生模型：FredSearch')
+    expect(dialog).toContain('仓库读取尚未就绪（当前仅提供源模型查询入口）')
+    expect(dialog).not.toContain('GET /api/v1/data/macro/fred_search')
+    expect(dialog).toContain('许可约束')
+
+    const historicalRow = rowFor('equity_historical')
+    expect(flat(historicalRow)).toContain('fmp 未映射 · 未验证')
+    expect(historicalRow.find('.leg-tag').attributes('title')).toBe('warehouse_not_ready')
+    await historicalRow.find('[data-testid="registered-functions"]').trigger('click')
+    await flushPromises()
+
+    dialog = flat(wrapper)
+    expect(dialog).toContain('POST /api/v1/providers/fmp/models/EquityHistorical/query')
+    expect(dialog).toContain('原生模型：EquityHistorical')
+    expect(dialog).toContain('仓库读取尚未就绪（当前仅提供源模型查询入口）')
+    expect(dialog).not.toContain('GET /api/v1/data/stock/equity_historical')
+    expect(get).toHaveBeenCalledTimes(1)
+    expect(get).toHaveBeenCalledWith('/data/catalog')
+  })
+
+  it('shows registered metadata when its domain has no data-service endpoint', async () => {
+    get.mockResolvedValue({
+      ...CATALOG,
+      domains: [...CATALOG.domains, PENDING_ENDPOINT_ENTRY],
+      domains_total: 4,
+    })
+    const wrapper = mount(DataCatalogView)
+
+    await flushPromises()
+
+    const pendingRow = wrapper
+      .findAll('tbody tr')
+      .find((row) => flat(row).includes('c32_metadata_only_daily'))!
+    const pendingReadings = pendingRow.findAll('td').map(flat)
+    expect(pendingReadings[0]).toBe('C32已注册日线接口')
+    expect(pendingReadings[3]).toBe('—')
+    expect(pendingReadings[4]).toBe('—')
+    expect(pendingReadings[5]).toContain('未映射')
+    expect(pendingReadings[6]).toContain('akshare 未映射 · 已验证')
+    expect(pendingReadings[7]).toBe('—')
+    const sourceTag = pendingRow.findAll('.leg-tag').find((tag) => flat(tag).includes('akshare'))
+    expect(sourceTag?.attributes('title')).toBe('domain_not_declared')
+    expect(flat(sourceTag!)).toContain('akshare 未映射 · 已验证')
+
+    const registeredFunctions = wrapper.findAll('[data-testid="registered-functions"]')
+    await registeredFunctions[1].trigger('click')
+    await flushPromises()
+
+    const dialog = flat(wrapper)
+    expect(dialog).toContain('AkshareStockDailyFetcher.fetch')
+    expect(dialog).toContain('akshare')
+    expect(dialog).toContain('cn')
+    expect(dialog).toContain('symbol: str（必填）')
+    expect(dialog).toContain('数据服务尚未接通')
+    expect(dialog).not.toContain('/api/v1/data/equity/c32_metadata_only_daily')
+    expect(dialog).not.toContain('source=akshare · period=1D')
+  })
+
   it('keeps "not measured" apart from "nothing" and apart from "clean"', async () => {
     get.mockResolvedValue(CATALOG)
     const wrapper = mount(DataCatalogView)
@@ -227,7 +588,10 @@ describe('DataCatalogView', () => {
     await flushPromises()
 
     const rows = wrapper.findAll('tbody tr')
-    const cpi = rows[1].findAll('td').map(flat)
+    const cpi = rows
+      .find((row) => row.findAll('td').map(flat)[1] === 'economy_cpi')!
+      .findAll('td')
+      .map(flat)
     expect(cpi[0]).toBe('宏观CPI')
     // An empty table is a measured 0 rows, not a dash.
     expect(cpi[3]).toBe('0 行 · —')
@@ -236,16 +600,23 @@ describe('DataCatalogView', () => {
     expect(cpi[6]).toContain('fred 未映射')
     expect(cpi[7]).toBe('未测量') // 表在，但没有 `_diff_flag` 列可测
 
-    const fundAction = rows[2].findAll('td').map(flat)
+    const fundAction = rows
+      .find((row) => row.findAll('td').map(flat)[1] === 'fund_action')!
+      .findAll('td')
+      .map(flat)
     expect(fundAction[0]).toBe('基金分红')
     expect(fundAction[3]).toBe('—') // 表不存在：连 0 行都不是
     expect(fundAction[7]).toBe('—')
     expect(fundAction[6]).toContain('ths 缺失')
     // 未映射 leg carries why on the tag itself, or the reader cannot tell a
     // missing field mapping from a missing table.
-    expect(rows[1].findAll('td')[6].find('[title]').attributes('title')).toBe(
-      "unknown source 'fred'; mappings available: ['akshare', 'ths']"
-    )
+    expect(
+      rows
+        .find((row) => row.findAll('td').map(flat)[1] === 'economy_cpi')!
+        .findAll('td')[6]
+        .find('[title]')
+        .attributes('title')
+    ).toBe("unknown source 'fred'; mappings available: ['akshare', 'ths']")
   })
 
   it('drills into a domain preview on demand', async () => {
@@ -268,5 +639,43 @@ describe('DataCatalogView', () => {
     // A row is a domain now, not a (domain, source) leg: the drill-down names
     // the merged table it read rather than a single source.
     expect(dialog).toContain('共 1 行（最近 20 行预览）· 表 dwd_stock_daily')
+  })
+
+  it('does not let an older preview response replace a newer selection', async () => {
+    let resolveFirst!: (page: DataPage) => void
+    let resolveSecond!: (page: DataPage) => void
+    get.mockResolvedValueOnce(CATALOG)
+    get
+      .mockReturnValueOnce(
+        new Promise<DataPage>((resolve) => {
+          resolveFirst = resolve
+        })
+      )
+      .mockReturnValueOnce(
+        new Promise<DataPage>((resolve) => {
+          resolveSecond = resolve
+        })
+      )
+    const wrapper = mount(DataCatalogView)
+
+    await flushPromises()
+    const previewButtons = wrapper.findAll('button').filter((button) => button.text() === '预览')
+    await previewButtons[0].trigger('click')
+    await previewButtons[1].trigger('click')
+
+    resolveSecond({
+      ...PAGE,
+      domain: 'economy_cpi',
+      asset_class: 'economy',
+      columns: ['marker'],
+      rows: [{ marker: 'newer' }],
+    })
+    await flushPromises()
+    resolveFirst({ ...PAGE, rows: [{ close: 'stale' }] })
+    await flushPromises()
+
+    expect(flat(wrapper)).toContain('宏观CPI（economy_cpi）')
+    expect(flat(wrapper)).toContain('newer')
+    expect(flat(wrapper)).not.toContain('stale')
   })
 })

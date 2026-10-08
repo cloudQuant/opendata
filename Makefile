@@ -22,13 +22,12 @@
 # developer view cannot quietly be narrower than what the ratchet counts.
 # (alembic/ and alembic_data/ joined the planes in C45; before that a ruff or
 # bandit finding there moved the gate number but appeared in no make target.)
-PY_SELFDEV := opendata opendata_fuyao scripts tests alembic alembic_data
-PY_MYPY := opendata opendata_fuyao alembic alembic_data
-PY_BANDIT := opendata opendata_fuyao scripts alembic alembic_data
-# Ported tree (B). Milestone A2 renamed akshare/ to opendata_http/; this
-# variable was left behind, so `make lint` had been failing on its third
-# command (ruff check --select E,F akshare: directory not found) ever since.
-PY_PORTED := opendata_http
+PY_SELFDEV := opendata scripts tests alembic alembic_data
+PY_MYPY := opendata alembic alembic_data
+PY_BANDIT := opendata scripts alembic alembic_data
+# Ported tree (B). It receives an explicit E/F scan even though the regular
+# first-party Ruff walk excludes this exact nested prefix.
+PY_PORTED := opendata/data/providers/akshare/_vendor
 
 help:
 	@echo "Gate:             gate"
@@ -63,14 +62,14 @@ security:
 	bandit -c bandit.yaml -r $(PY_BANDIT)
 
 # B-layer (ported) one-off full scan with manual triage (A2.6). The daily
-# `security` target excludes opendata_http by design (quality spec §4: the
+# `security` target excludes the nested vendor package by design (quality spec §4: the
 # ported tree is byte-faithful to upstream and gets one full review per
 # sync, not per-commit debt accounting). Re-run on re-sync:
 #   make security-ported
 security-ported:
 	@# bandit exits 1 when it finds anything; findings are the expected
 	@# output here, so tolerate the status and validate the artefact below.
-	-bandit -r opendata_http -f json -o docs/evidence/A2/bandit-ported.json
+	-bandit -r opendata/data/providers/akshare/_vendor -f json -o docs/evidence/A2/bandit-ported.json
 	@python -c "import json;d=json.load(open('docs/evidence/A2/bandit-ported.json'));r=d['results'];from collections import Counter;print('ported scan:', len(r), 'findings ->', dict(Counter(x['test_id'] for x in r)))"
 
 js-points-check:

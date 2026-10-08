@@ -181,11 +181,14 @@ def _reader_for(frames: dict[str, pd.DataFrame], name: str):
 class TestDwdMergeService:
     def _service(self, frames, **overrides):
         written: list[pd.DataFrame] = []
+        readers = overrides.pop(
+            "readers", {name: _reader_for(frames, name) for name in ("ths", "akshare")}
+        )
         service = DwdMergeService(
             "stock_daily",
             sources=("ths", "akshare"),
             authority=("ths", "akshare"),
-            readers={name: _reader_for(frames, name) for name in ("ths", "akshare")},
+            readers=readers,
             write_dwd=lambda frame: written.append(frame) or len(frame),
             key=KEY,
             merged_at=MERGED_AT,
@@ -384,6 +387,47 @@ class TestDwdMergeService:
         assert stats.rows == 2
         assert written
 
+    async def test_hook_reads_both_sources_through_the_same_union_window(self):
+        from opendata.pipeline.runner import PipelineContext, Window
+
+        frames = {
+            "ths": _frame(AUTHORITY_ROWS),
+            "akshare": _frame(AUTHORITY_ROWS, source_close_offset=1.0),
+        }
+        reads: dict[str, tuple[tuple[str, ...] | None, dict[str, Window | None] | None]] = {}
+
+        def reader_for(source):
+            def read(start, end, affected_keys, *, symbols=None, symbol_windows=None):
+                reads[source] = (symbols, symbol_windows)
+                return frames[source].copy()
+
+            return read
+
+        service, written = self._service(
+            frames,
+            readers={source: reader_for(source) for source in frames},
+        )
+        union = Window(start=date(2020, 1, 2), end=date(2024, 1, 31))
+        context = PipelineContext(
+            domain="stock_daily",
+            source="akshare",
+            window=union,
+            affected_keys=[],
+            symbols=("600519",),
+            source_windows={
+                "akshare": {"600519": None},
+                "ths": {"600519": union},
+            },
+            comparison_windows={"600519": union},
+            pipeline_id="resume-fingerprint",
+        )
+
+        stats = await service.run_hook(context)
+
+        expected = (("600519",), {"600519": union})
+        assert reads == {"ths": expected, "akshare": expected}
+        assert stats.rows == len(written[0])
+
     async def test_the_hook_re_spells_the_affected_keys_so_the_flag_lands(self):
         """Step 2 reports the keys it wrote in the *source* spelling; the merge
         indexes by contract key. Handing the raw spelling straight to
@@ -441,6 +485,140 @@ class TestDwdMergeService:
         assert ("600888", date(2023, 12, 29)) in {
             (row.symbol, row.trade_date) for row in written[0].itertuples()
         }
+
+    async def test_partitioned_hook_matches_whole_merge_and_shares_run_stamps(self):
+        from opendata.pipeline.runner import PipelineContext, Window
+
+        symbols = tuple(f"{index:06d}" for index in range(105))
+        active_day = date(2024, 1, 2)
+        revised_key = (symbols[0], date(2023, 12, 29))
+        authority_rows = [
+            (symbol, active_day, float(index + 10)) for index, symbol in enumerate(symbols[:-1])
+        ] + [(*revised_key, 4.0)]
+        secondary_rows = [
+            (symbol, active_day, float(index + 11)) for index, symbol in enumerate(symbols)
+        ] + [(*revised_key, 4.0)]
+        frames = {"ths": _frame(authority_rows), "akshare": _frame(secondary_rows)}
+        window = Window(start=date(2024, 1, 1), end=date(2024, 1, 31))
+        windows = dict.fromkeys(symbols, window)
+        affected = [revised_key]
+        children = [
+            PipelineContext(
+                domain="stock_daily",
+                source="ths",
+                window=window,
+                affected_keys=[revised_key] if offset == 0 else [],
+                symbols=batch,
+                source_windows={"ths": dict.fromkeys(batch, window)},
+                comparison_windows=dict.fromkeys(batch, window),
+                pipeline_id="partitioned-merge",
+            )
+            for offset in range(0, len(symbols), 50)
+            for batch in (symbols[offset : offset + 50],)
+        ]
+
+        def scoped_readers(read_log):
+            readers = {}
+            for source in ("ths", "akshare"):
+
+                def read(
+                    start,
+                    end,
+                    affected_keys,
+                    *,
+                    symbols=None,
+                    symbol_windows=None,
+                    source=source,
+                ):
+                    selected_symbols = tuple(symbols or ())
+                    read_log.append((source, selected_symbols))
+                    frame = frames[source]
+                    in_symbols = (
+                        pd.Series(True, index=frame.index)
+                        if symbols is None
+                        else frame["symbol"].isin(selected_symbols)
+                    )
+                    in_window = frame["trade_date"].between(start, end)
+                    row_keys = list(zip(frame["symbol"], frame["trade_date"], strict=True))
+                    revised = pd.Series(
+                        [key in affected_keys for key in row_keys], index=frame.index
+                    )
+                    return frame.loc[in_symbols & (in_window | revised)].copy()
+
+                readers[source] = read
+            return readers
+
+        bounded_reads = []
+        bounded_writes = []
+        bounded = DwdMergeService(
+            "stock_daily",
+            sources=("ths", "akshare"),
+            authority=("ths", "akshare"),
+            readers=scoped_readers(bounded_reads),
+            write_dwd=lambda frame: bounded_writes.append(frame.copy()) or len(frame),
+            key=KEY,
+            merged_at=None,
+        )
+        bounded_context = PipelineContext(
+            domain="stock_daily",
+            source="ths",
+            window=window,
+            affected_keys=affected,
+            symbols=symbols,
+            source_windows={"ths": windows},
+            comparison_windows=windows,
+            pipeline_id="partitioned-merge",
+            partition_contexts=lambda: iter(children),
+        )
+        bounded_stats = await bounded.run_hook(bounded_context)
+
+        whole_reads = []
+        whole_writes = []
+        whole = DwdMergeService(
+            "stock_daily",
+            sources=("ths", "akshare"),
+            authority=("ths", "akshare"),
+            readers=scoped_readers(whole_reads),
+            write_dwd=lambda frame: whole_writes.append(frame.copy()) or len(frame),
+            key=KEY,
+            merged_at=MERGED_AT,
+        )
+        whole_context = PipelineContext(
+            domain="stock_daily",
+            source="ths",
+            window=window,
+            affected_keys=affected,
+            symbols=symbols,
+            source_windows={"ths": windows},
+            comparison_windows=windows,
+            pipeline_id="partitioned-merge",
+        )
+        whole_stats = await whole.run_hook(whole_context)
+
+        assert bounded_stats == whole_stats
+        assert len(bounded_writes) == 3
+        bounded_frame = pd.concat(bounded_writes, ignore_index=True).sort_values(
+            list(KEY), ignore_index=True
+        )
+        whole_frame = whole_writes[0].sort_values(list(KEY), ignore_index=True)
+        pd.testing.assert_frame_equal(
+            bounded_frame.drop(columns=["_merged_at"]),
+            whole_frame.drop(columns=["_merged_at"]),
+        )
+        assert (
+            bounded_frame.loc[
+                (bounded_frame["symbol"] == symbols[0])
+                & (bounded_frame["trade_date"] == revised_key[1]),
+                "_diff_flag",
+            ].iloc[0]
+            == 1
+        )
+        assert (
+            bounded_frame.loc[bounded_frame["symbol"] == symbols[-1], "source"].iloc[0] == "akshare"
+        )
+        assert bounded_frame["_merged_at"].nunique() == 1
+        assert set(bounded_frame["_as_of"]) == {window.end}
+        assert max(len(batch) for _, batch in bounded_reads) <= 50
 
 
 class TestAmbiguousKey:

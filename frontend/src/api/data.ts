@@ -8,12 +8,20 @@ import type {
 
 export const dataApi = {
   // Trigger data download
-  download(scriptId: number, parameters: Record<string, unknown>): Promise<{ execution_id: number; status: string }> {
-    return request({
+  async download(interfaceId: number, parameters: Record<string, unknown>): Promise<DataDownloadResult> {
+    const result = await request<DataDownloadResult, DataDownloadResult>({
       url: '/data/download',
       method: 'POST',
-      data: { script_id: scriptId, parameters },
+      data: { interface_id: interfaceId, parameters },
+      // A download is accepted only when the server confirms task creation.
+      validateStatus: (status) => status === 202,
     })
+
+    if (!result || !Number.isSafeInteger(result.execution_id) || result.execution_id <= 0) {
+      throw new Error('服务器未返回有效的下载任务信息')
+    }
+
+    return result
   },
 
   // Get execution detail
@@ -25,7 +33,9 @@ export const dataApi = {
   },
 
   // Get execution list
-  listExecutions(params?: PaginationParams & { script_id?: number; status?: string }): Promise<PaginatedResponse<Execution>> {
+  listExecutions(
+    params?: PaginationParams & { task_id?: number; script_id?: string; status?: string }
+  ): Promise<PaginatedResponse<Execution>> {
     return request({
       url: '/executions/',
       method: 'GET',
@@ -58,6 +68,12 @@ export const dataApi = {
       method: 'GET',
     })
   },
+}
+
+export interface DataDownloadResult {
+  execution_id: number
+  status: string
+  message?: string | null
 }
 
 // ---------------------------------------------------------------------------

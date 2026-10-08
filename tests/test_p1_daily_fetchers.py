@@ -159,10 +159,16 @@ class TestP1DailyRegistration:
         assert contract_model(case[1]) is Bar
 
     @pytest.mark.parametrize("case", CASES, ids=_case_id)
-    def test_explicit_source_resolves_and_auto_refuses(self, case: tuple[Any, ...]) -> None:
+    def test_explicit_source_resolves_and_auto_refuses(
+        self, case: tuple[Any, ...], monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from opendata.data import registry as registry_module
         from opendata.data.providers import register_providers
         from opendata.data.registry import get_registry
 
+        monkeypatch.setattr(
+            registry_module, "_source_has_credentials", lambda source: source == "ths"
+        )
         register_providers()
         registry = get_registry()
         fetcher: Any = case[0]

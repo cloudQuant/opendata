@@ -230,8 +230,8 @@ def _catalog(asset_type: str) -> tuple[list[Mapping[str, Any]], date | None]:
         RuntimeError: Retries used up, or no page ever came back short.
         Exception: The last transport error that triggered a retry.
     """
+    from opendata.data.providers.ths.endpoints import TICKERS_LIST_ENDPOINT, envelope_snapshot
     from opendata.data.providers.ths.models._client import client
-    from opendata_fuyao.endpoints import TICKERS_LIST_ENDPOINT, envelope_snapshot
 
     last: Exception | None = None
     for attempt in range(RETRY_ATTEMPTS):
@@ -278,9 +278,8 @@ def _contracts(asset_type: str) -> tuple[Instrument, ...]:
     from opendata.data.registry import get_registry
 
     register_providers()
-    return tuple(
-        get_registry().resolve_domain("instrument", source="ths").fetch(asset_type=asset_type)
-    )
+    rows = get_registry().resolve_domain("instrument", source="ths").fetch(asset_type=asset_type)
+    return cast("tuple[Instrument, ...]", tuple(rows))
 
 
 def _as_date(value: object) -> date | None:
@@ -403,7 +402,7 @@ def member_reports(catalog: Sequence[Instrument]) -> list[MemberReport]:
     Returns:
         One report per reference index.
     """
-    import opendata_http
+    import opendata.data.providers.akshare._vendor as opendata_http
 
     by_plain = {_plain(row.symbol): row for row in catalog}
     reports: list[MemberReport] = []
@@ -497,7 +496,7 @@ def listing_reports(catalog: Sequence[Instrument]) -> list[ListingReport]:
         One report per sampled symbol; ``bars`` is ``-1`` when the reference
         call itself failed, which is reported as unjudged rather than as a pass.
     """
-    from opendata_http.stock.stock_zh_a_sina import stock_zh_a_daily
+    from opendata.data.providers.akshare._vendor.stock.stock_zh_a_sina import stock_zh_a_daily
 
     reports: list[ListingReport] = []
     for label, row in _sample(catalog):

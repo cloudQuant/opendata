@@ -15,6 +15,8 @@ from opendata.data.providers.imf.models._indicator import ImfIndicatorFetcher
 class ImfUnemploymentFetcher(ImfIndicatorFetcher):
     """Annual unemployment rate for one country (``LUR``)."""
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_unemployment",

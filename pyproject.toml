@@ -29,8 +29,9 @@ classifiers = [
 ]
 dependencies = [
     "requests>=2.31.0",
-    # C36: the ported tree is imported through opendata_http/__init__.py, which is
-    # upstream akshare's eager facade (306 ported modules land in sys.modules for a
+    # C36: the ported tree is imported through
+    # opendata/data/providers/akshare/_vendor/__init__.py, upstream akshare's eager
+    # facade (306 ported modules land in sys.modules for a
     # plain `import opendata.main`), so every third-party library that facade touches
     # at import time is a *runtime* dependency of this project. curl_cffi and urllib3
     # were missing; CI failed on `ModuleNotFoundError: curl_cffi` for five pushes.
@@ -38,10 +39,11 @@ dependencies = [
     # The ported code only uses the `requests.Session()` compatibility layer (no
     # `impersonate=`), and this round exercised curl_cffi 0.13.0.
     "curl_cffi>=0.7.0",
-    # Imported directly by ported modules (opendata_http/**), not only via requests.
+    # Imported directly by modules under the nested vendor package.
     "urllib3>=2.0.7",
     "aiohttp>=3.9.0",
     "beautifulsoup4>=4.12.0",
+    "defusedxml>=0.7.1",
     "lxml>=5.0.0",
     "openpyxl>=3.1.0",
     # The ported tree reads legacy .xls files (CSI index files) via
@@ -74,10 +76,9 @@ web = [
     "uvicorn[standard]>=0.32.0",
     "pydantic>=2.9.2",
     "pydantic-settings>=2.6.0",
-    "sqlalchemy>=2.0.35",
-    # SQLAlchemy's async engine needs greenlet. SQLAlchemy only pulls it in for
-    # specific platform_machine values, so macOS arm64 (Apple Silicon) misses it
-    # and every async DB test dies with ValueError; declare it explicitly.
+    "sqlalchemy[asyncio]>=2.0.35",
+    # Keep the async runtime's greenlet requirement explicit for macOS arm64;
+    # the SQLAlchemy asyncio extra above also requests it through package metadata.
     "greenlet>=3.0",
     "alembic>=1.14.0",
     "pymysql>=1.1.1",
@@ -101,6 +102,9 @@ web = [
     "gunicorn>=22.0.0",
 ]
 dev = [
+    # AC-14|02 consumer acceptance runs a small backtrader backtest; this is
+    # test-only and deliberately leaves the consumer's supported version open.
+    "backtrader",
     "pytest>=8.3.0",
     "pytest-asyncio>=0.24.0",
     "pytest-cov>=6.0.0",
@@ -124,12 +128,9 @@ Homepage = "https://github.com/cloudQuant/opendata"
 Repository = "https://github.com/cloudQuant/opendata"
 
 [tool.setuptools.packages.find]
-# Explicit list previously named only the two top-level packages, so
-# opendata.api/core/... were never packaged (editable installs hid it).
-# The vendored tree ships as opendata_http/ - milestone A2 renamed the old
-# top-level akshare/ away, and the akshare provider legs import it by that
-# name.
-include = ["opendata*", "opendata_http*", "opendata_fuyao*"]
+# Discover the application package and its subpackages. The independent
+# opendata_client distribution lives beside it and is intentionally separate.
+include = ["opendata", "opendata.*"]
 
 [tool.setuptools.package-data]
 # §5.5: *.js must be explicit - the previous config missed it and wheels
@@ -144,10 +145,17 @@ opendata = [
     "data/mappings/*.yaml",
     "pipeline/schedules.yaml",
 ]
-opendata_http = ["*.dat", "*.json", "*.js"]
-# A3.1: the fuyao error-message table is data shipped with the package.
-opendata_fuyao = ["*.yaml"]
-"opendata_http.file_fold" = ["*.json"]
+"opendata.data.providers.akshare._vendor" = [
+    "*.dat",
+    "*.json",
+    "*.js",
+    "*.lock",
+    "LICENSE-AKSHARE",
+]
+"opendata.data.providers.akshare._vendor.file_fold" = ["calendar.json"]
+"opendata.data.providers.akshare._vendor.stock_feature" = ["ths.js"]
+"opendata.data.providers.ths" = ["*.yaml"]
+"opendata.data.providers.ths.transport" = ["*.yaml"]
 
 [tool.ruff]
 line-length = 100
@@ -158,9 +166,9 @@ exclude = [
     # first-party package opendata/data/providers/akshare/ - 15 modules were
     # dark to `ruff check opendata`. Every entry below is root-anchored (the
     # trailing slash is what anchors it; "/akshare" matches nothing at all).
-    # The vendored tree is opendata_http/; the old top-level akshare/ was
-    # renamed away in milestone A2, so it needs no entry.
-    "opendata_http/",
+    # The nested upstream package has a separate E/F audit. The first-party
+    # AkShare adapter beside it remains in this walk.
+    "opendata/data/providers/akshare/_vendor/",
     # C45: alembic/ and alembic_data/ used to be excluded on the stated
     # rationale "revision files are tool-generated scaffolding". That is not
     # what they are: alembic_data/versions/*.py are hand-written modules that
@@ -276,16 +284,12 @@ disallow_untyped_defs = true
 disallow_incomplete_defs = true
 check_untyped_defs = true
 ignore_missing_imports = true
-# C35: mypy matches this list with re.search, so an unanchored name excludes
-# that string *anywhere in the path*: the old bare "akshare" kept
-# opendata/data/providers/akshare/ out of `mypy opendata/` even though the
-# vendored top-level akshare/ had been renamed away. Anchored with ^, each
-# entry is a root tree. (exclude never applies to files passed explicitly -
-# a2-check passes files, so the A2 mypy leg was already covering this tree.)
+# Mypy matches this list with re.search, so the vendor exclusion must name the
+# exact package prefix and leave the first-party adapter in scope.
 # C45: ^alembic/ and ^alembic_data/ were dropped together with the ruff
 # entries above; the walk over both roots measures 0 errors.
 exclude = [
-    "^opendata_http/",
+    "^opendata/data/providers/akshare/_vendor/",
     "^tests/",
     "^opendata/data_fetch/",
 ]
@@ -293,10 +297,13 @@ exclude = [
 # A1 debt is managed by docs/quality/ratchet.json (quality spec §7), not by
 # relaxing the rules above.
 
-# A2.2: the ported tree replaces akshare/; mypy's exclude does not stop
-# import-following, so silence it explicitly like the old vendored tree.
+# Mypy excludes do not stop import-following, so silence imports from the
+# nested vendor package explicitly as well.
 [[tool.mypy.overrides]]
-module = "opendata_http.*"
+module = [
+    "opendata.data.providers.akshare._vendor",
+    "opendata.data.providers.akshare._vendor.*",
+]
 follow_imports = "skip"
 
 # A1 legacy zone: data_fetch stays mypy-dark (mirrors the exclude above);
@@ -312,8 +319,12 @@ follow_imports = "skip"
 [tool.coverage.run]
 # 与 pytest.ini 的 --cov 保持一致（命令行优先级更高）：只改这里不会生效，
 # 裸 `coverage run -m pytest` 才会读到本行。
-source = ["opendata", "opendata_fuyao"]
-omit = ["opendata/__init__.py", "tests/*"]
+source = ["opendata"]
+omit = [
+    "opendata/__init__.py",
+    "opendata/data/providers/akshare/_vendor/*",
+    "tests/*",
+]
 branch = true
 
 [tool.coverage.report]

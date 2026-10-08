@@ -419,6 +419,12 @@ async def _subscribe(ws: WebSocket, session: _Session, message: dict[str, Any]) 
     if not session.principal.allows_domain(domain):
         await _send(ws, _error("DOMAIN_FORBIDDEN", domain=domain))
         return
+    from opendata.data.domains import require_domain
+
+    spec = require_domain(domain)
+    if spec.semantics_declared and "subscribe" not in spec.permissions:
+        await _send(ws, _error("DOMAIN_FORBIDDEN", domain=domain))
+        return
     if domain not in session.subscriptions and len(session.subscriptions) >= (
         MAX_SUBSCRIPTIONS_PER_CONNECTION
     ):

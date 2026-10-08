@@ -5,7 +5,7 @@ Provides endpoints for user registration, login, token refresh, and logout.
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 from sqlalchemy import select
@@ -46,21 +46,8 @@ class ChangePasswordRequest(BaseModel):
     new_password: str
 
 
-@router.post(
-    "/register",
-    response_model=APIResponse,
-    status_code=status.HTTP_201_CREATED,
-    responses={
-        400: {"model": ErrorResponse, "description": "Bad Request (email exists, validation)"},
-        429: {"model": ErrorResponse, "description": "Rate limit exceeded"},
-    },
-)
-@rate_limit("5/minute")  # Limit registration attempts
-async def register(
-    request: RegisterRequest,
-    db: AsyncSession = Depends(get_db),
-) -> APIResponse:
-    """Register a new user account.
+async def _register_payload(request: RegisterRequest, db: AsyncSession) -> APIResponse:
+    """Register a new user account from its JSON payload.
 
     Creates a new user with regular user role.
     """
@@ -123,23 +110,33 @@ async def register(
 
 
 @router.post(
-    "/login",
+    "/register",
     response_model=APIResponse,
+    status_code=status.HTTP_201_CREATED,
     responses={
-        401: {"model": ErrorResponse, "description": "Invalid credentials"},
-        403: {"model": ErrorResponse, "description": "Account disabled"},
+        400: {"model": ErrorResponse, "description": "Bad Request (email exists, validation)"},
         429: {"model": ErrorResponse, "description": "Rate limit exceeded"},
     },
 )
-@rate_limit("10/minute")
-async def login(
-    request: LoginRequest,
+@rate_limit("5/minute")
+async def register(
+    request: Request,
+    payload: RegisterRequest,
+    response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> APIResponse:
-    """Authenticate user and return access token.
+    """Register a new user account.
 
-    Validates credentials and returns JWT access token for authentication.
+    Creates a new user with regular user role.
     """
+    return await _register_payload(payload, db)
+
+
+register.__original_func__ = _register_payload  # type: ignore[attr-defined]
+
+
+async def _login_payload(request: LoginRequest, db: AsyncSession) -> APIResponse:
+    """Authenticate from a login JSON payload and return tokens."""
     email = request.email.lower()
 
     result = await db.execute(select(User).where(User.email == email))
@@ -186,6 +183,32 @@ async def login(
             },
         },
     )
+
+
+@router.post(
+    "/login",
+    response_model=APIResponse,
+    responses={
+        401: {"model": ErrorResponse, "description": "Invalid credentials"},
+        403: {"model": ErrorResponse, "description": "Account disabled"},
+        429: {"model": ErrorResponse, "description": "Rate limit exceeded"},
+    },
+)
+@rate_limit("10/minute")
+async def login(
+    request: Request,
+    payload: LoginRequest,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+) -> APIResponse:
+    """Authenticate user and return access token.
+
+    Validates credentials and returns JWT access token for authentication.
+    """
+    return await _login_payload(payload, db)
+
+
+login.__original_func__ = _login_payload  # type: ignore[attr-defined]
 
 
 @router.post(

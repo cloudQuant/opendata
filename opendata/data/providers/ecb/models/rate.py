@@ -15,6 +15,8 @@ from opendata.data.providers.ecb.models._series import EcbSeriesFetcher
 class EcbRateFetcher(EcbSeriesFetcher):
     """ECB key interest rates (for example the MRO ``MRR_FR.LEV``)."""
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_rate",

@@ -220,6 +220,9 @@ async def run_source_patrol(
         Per-capability probe results plus the key status and graded health.
     """
     results = list(await patrol())
+    from opendata.pipeline.key_health_notifications import record_patrol_observations
+
+    record_patrol_observations(results)
     return APIResponse(
         success=True,
         message="success",

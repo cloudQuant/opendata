@@ -14,11 +14,15 @@ from opendata.data.providers.fred.models._series import FredSeriesFetcher
 class FredUnemploymentFetcher(FredSeriesFetcher):
     """Unemployment rate observations for one FRED series (``UNRATE``)."""
 
+    async_mode = "bounded_thread"
+
+    #: Verified against 80 official UNRATE CSV observations (date/value, rtol=1e-9).
+    #: Evidence: docs/evidence/C65/fred-official-comparison.json and .txt.
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_unemployment",
         period="1M",
         market="us",
         source=SOURCE,
-        verified=False,
+        verified=True,
     )

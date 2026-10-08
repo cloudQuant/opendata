@@ -1,14 +1,18 @@
-"""
-opendata - multi-source financial data platform.
+"""opendata - multi-source financial data platform."""
 
-This package provides a web interface and API for managing akshare
-financial data interfaces with scheduled task support.
-"""
+from typing import Any
 
 __version__ = "0.1.0"
 __author__ = "cloud"
 __email__ = "cloud@example.com"
 
-from opendata.core.config import settings
-
 __all__ = ["settings"]
+
+
+def __getattr__(name: str) -> Any:  # noqa: ANN401 - lazy module attribute
+    """Load legacy package-level settings only when a caller requests it."""
+    if name == "settings":
+        from opendata.core.config import settings
+
+        return settings
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

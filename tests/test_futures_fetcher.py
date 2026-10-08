@@ -121,11 +121,15 @@ class TestRouting:
 
         assert isinstance(fetcher, AkshareFuturesDailyFetcher)
 
-    def test_auto_routes_to_the_verified_ths_leg(self):
+    def test_auto_routes_to_the_verified_ths_leg(self, monkeypatch):
         """C6 graduated ``futures_daily``, so auto now resolves instead of refusing."""
+        from opendata.data import registry as registry_module
         from opendata.data.providers import register_providers
         from opendata.data.registry import get_registry
 
+        monkeypatch.setattr(
+            registry_module, "_source_has_credentials", lambda source: source == "ths"
+        )
         register_providers()
 
         resolved = get_registry().resolve("futures", "futures_daily", source="auto")

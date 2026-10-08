@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { tasksApi } from '@/api/tasks'
@@ -18,6 +18,10 @@ const currentTask = ref<Task | null>(null)
 const currentPage = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
+const dialogTitle = computed(() => {
+  if (dialogMode.value === 'create') return '创建任务'
+  return currentTask.value?.task_kind === 'pipeline' ? 'Pipeline 任务详情' : '编辑任务'
+})
 
 // Task form
 const taskForm = ref({
@@ -85,6 +89,14 @@ function handleCreate() {
 function handleEdit(task: Task) {
   dialogMode.value = 'edit'
   currentTask.value = task
+  if (task.task_kind === 'pipeline') {
+    dialogVisible.value = true
+    return
+  }
+  if (task.script_id === null) {
+    ElMessage.error('脚本任务缺少脚本 ID，无法编辑')
+    return
+  }
   taskForm.value = {
     name: task.name,
     script_id: task.script_id,
@@ -147,6 +159,11 @@ function handleViewExecutions(task: Task) {
   router.push(`/executions?task_id=${task.id}`)
 }
 
+function pipelineDomain(task: Task): string {
+  const domain = task.parameters?.domain
+  return typeof domain === 'string' && domain.trim() ? domain : '未指定'
+}
+
 onMounted(() => {
   loadTasks()
   loadScripts()
@@ -180,10 +197,21 @@ onMounted(() => {
           min-width="180"
         />
         <el-table-column
-          prop="script_id"
-          label="脚本ID"
-          width="100"
-        />
+          label="执行器 / 域"
+          min-width="140"
+        >
+          <template #default="{ row }">
+            <el-tag size="small">
+              {{ row.task_kind === 'pipeline' ? 'Pipeline' : '脚本' }}
+            </el-tag>
+            <div v-if="row.task_kind === 'pipeline'" class="pipeline-domain">
+              {{ pipelineDomain(row) }}
+            </div>
+            <div v-else class="script-id">
+              {{ row.script_id || '—' }}
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column
           label="调度类型"
           width="100"
@@ -204,7 +232,14 @@ onMounted(() => {
           width="80"
         >
           <template #default="{ row }">
+            <el-tag
+              v-if="row.task_kind === 'pipeline'"
+              size="small"
+            >
+              {{ row.is_active ? '已启用' : '已停用' }}
+            </el-tag>
             <el-switch
+              v-else
               :model-value="row.is_active"
               @change="handleToggle(row)"
             />
@@ -231,7 +266,7 @@ onMounted(() => {
               size="small"
               @click="handleEdit(row)"
             >
-              编辑
+              {{ row.task_kind === 'pipeline' ? '查看' : '编辑' }}
             </el-button>
             <el-button
               link
@@ -241,6 +276,7 @@ onMounted(() => {
               执行记录
             </el-button>
             <el-button
+              v-if="row.task_kind === 'script'"
               type="danger"
               link
               size="small"
@@ -266,10 +302,38 @@ onMounted(() => {
     <!-- Create/Edit Dialog -->
     <el-dialog
       v-model="dialogVisible"
-      :title="dialogMode === 'create' ? '创建任务' : '编辑任务'"
+      :title="dialogTitle"
       width="600px"
     >
+      <div v-if="dialogMode === 'edit' && currentTask?.task_kind === 'pipeline'">
+        <el-alert
+          title="Pipeline 任务为只读展示"
+          description="当前页面不提供 Pipeline 参数编辑。请由管理员通过支持的任务配置入口管理此任务。"
+          type="info"
+          :closable="false"
+          show-icon
+        />
+        <el-descriptions
+          :column="1"
+          border
+          class="pipeline-details"
+        >
+          <el-descriptions-item label="任务名称">
+            {{ currentTask.name }}
+          </el-descriptions-item>
+          <el-descriptions-item label="数据域">
+            {{ pipelineDomain(currentTask) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="调度表达式">
+            {{ currentTask.schedule_expression }}
+          </el-descriptions-item>
+          <el-descriptions-item label="状态">
+            {{ currentTask.is_active ? '已启用' : '已停用' }}
+          </el-descriptions-item>
+        </el-descriptions>
+      </div>
       <el-form
+        v-else
         :model="taskForm"
         label-width="100px"
       >
@@ -339,9 +403,10 @@ onMounted(() => {
 
       <template #footer>
         <el-button @click="dialogVisible = false">
-          取消
+          {{ dialogMode === 'edit' && currentTask?.task_kind === 'pipeline' ? '关闭' : '取消' }}
         </el-button>
         <el-button
+          v-if="!(dialogMode === 'edit' && currentTask?.task_kind === 'pipeline')"
           type="primary"
           @click="handleSubmit"
         >
@@ -373,5 +438,16 @@ onMounted(() => {
   font-size: 12px;
   color: #909399;
   margin-top: 4px;
+}
+
+.pipeline-domain,
+.script-id {
+  margin-top: 4px;
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+}
+
+.pipeline-details {
+  margin-top: 16px;
 }
 </style>

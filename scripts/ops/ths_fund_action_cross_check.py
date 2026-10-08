@@ -48,7 +48,7 @@ import time
 from collections.abc import Mapping
 from datetime import date, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, NamedTuple, TypeVar
+from typing import TYPE_CHECKING, Any, NamedTuple, TypeVar, cast
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -141,8 +141,8 @@ def _raw_dividends(qualified: str) -> RawDividends:
     Returns:
         The raw rows and the endpoint's own ``dividend_count`` / ``dividend_total``.
     """
+    from opendata.data.providers.ths.endpoints import FUND_DIVIDENDS_ENDPOINT
     from opendata.data.providers.ths.models._client import client
-    from opendata_fuyao.endpoints import FUND_DIVIDENDS_ENDPOINT
 
     def call() -> RawDividends:
         with client(timeout_seconds=60.0) as active:
@@ -171,7 +171,8 @@ def _events_via_registry(symbol: str) -> tuple[CorporateAction, ...]:
     from opendata.data.registry import get_registry
 
     register_providers()
-    return tuple(get_registry().resolve_domain("fund_action", source="ths").fetch(symbol=symbol))
+    rows = get_registry().resolve_domain("fund_action", source="ths").fetch(symbol=symbol)
+    return cast("tuple[CorporateAction, ...]", tuple(rows))
 
 
 def _events_via_transport(qualified: str) -> tuple[CorporateAction, ...]:
@@ -183,8 +184,8 @@ def _events_via_transport(qualified: str) -> tuple[CorporateAction, ...]:
     Returns:
         Events as ``normalize_fund_dividends`` publishes them.
     """
+    from opendata.data.providers.ths.endpoints import fetch_fund_dividends
     from opendata.data.providers.ths.models._client import client
-    from opendata_fuyao.endpoints import fetch_fund_dividends
 
     def call() -> tuple[CorporateAction, ...]:
         with client(timeout_seconds=60.0) as active:
@@ -203,7 +204,7 @@ def _sina_cumulative(sina_symbol: str) -> list[tuple[date, float]]:
         ``(date, cumulative amount)`` pairs in ascending order; empty when the
         vendor has no record for the fund.
     """
-    from opendata_http.fund.fund_etf_sina import fund_etf_dividend_sina
+    from opendata.data.providers.akshare._vendor.fund.fund_etf_sina import fund_etf_dividend_sina
 
     def call() -> list[tuple[date, float]]:
         frame = fund_etf_dividend_sina(symbol=sina_symbol)
@@ -225,7 +226,7 @@ def _sina_close(sina_symbol: str, start: date, end: date) -> dict[date, float]:
     Returns:
         ``{trade_date: close}``.
     """
-    from opendata_http.fund.fund_etf_sina import fund_etf_hist_sina
+    from opendata.data.providers.akshare._vendor.fund.fund_etf_sina import fund_etf_hist_sina
 
     def call() -> dict[date, float]:
         frame = fund_etf_hist_sina(symbol=sina_symbol)
@@ -252,8 +253,11 @@ def _fuyao_qfq_close(qualified: str, start: date, end: date) -> dict[date, float
     Returns:
         ``{trade_date: close}``.
     """
+    from opendata.data.providers.ths.endpoints import (
+        millis_to_trading_date,
+        shanghai_midnight_millis,
+    )
     from opendata.data.providers.ths.models._client import client
-    from opendata_fuyao.endpoints import millis_to_trading_date, shanghai_midnight_millis
 
     def call() -> dict[date, float]:
         with client(timeout_seconds=60.0) as active:
@@ -326,8 +330,8 @@ def _collect_facts() -> list[FundFacts]:
 
 def judge_shape(facts: Sequence[FundFacts], failures: list[str]) -> None:
     """Criterion A - the published stream satisfies the contract, both ways round."""
-    from opendata_fuyao import FuyaoError, parse_envelope
-    from opendata_fuyao.endpoints import normalize_fund_dividends
+    from opendata.data.providers.ths import FuyaoError, parse_envelope
+    from opendata.data.providers.ths.endpoints import normalize_fund_dividends
 
     print("## A. 契约形状自证（含两条必须挂的反例）\n")
     print("| 基金 | 事件数 | 每份现金区间 | 降序唯一 | 符号与非现金字段 | 搬运层一致 | 判定 |")
@@ -444,7 +448,7 @@ def judge_amounts(facts: Sequence[FundFacts], failures: list[str]) -> None:
 
 def judge_self_checks(facts: Sequence[FundFacts], failures: list[str]) -> None:
     """Criterion D - what the endpoint's own totals and codes actually say."""
-    from opendata_fuyao.endpoints import IMPLEMENTED_PROGRESS
+    from opendata.data.providers.ths.endpoints import IMPLEMENTED_PROGRESS
 
     print("\n## D. 上游自带自校验（``dividend_count`` / ``dividend_total`` / ``progress``）\n")
     print(

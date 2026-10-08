@@ -14,7 +14,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    command: --default-authentication-plugin=mysql_native_password
+    command: --default-authentication-plugin=mysql_native_password --log-bin=mysql-bin --binlog-expire-logs-seconds=604800 --binlog-format=ROW
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -36,7 +36,7 @@ services:
       - "3307:3306"
     volumes:
       - warehouse_data:/var/lib/mysql
-    command: --default-authentication-plugin=mysql_native_password
+    command: --default-authentication-plugin=mysql_native_password --log-bin=mysql-bin --binlog-expire-logs-seconds=604800 --binlog-format=ROW
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -84,6 +84,21 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       APP_ENV: ${APP_ENV:-production}
       WORKERS: ${WORKERS:-1}
+      ENABLE_SCHEDULER: ${ENABLE_SCHEDULER:?ENABLE_SCHEDULER must be explicitly set for production}
+      DATA_DIR: /opendata/data
+      PATROL_ENABLED: ${PATROL_ENABLED:-false}
+      PATROL_FAILURE_ALERT_THRESHOLD: ${PATROL_FAILURE_ALERT_THRESHOLD:-2}
+      RAW_RESPONSE_CACHE_ENABLED: ${RAW_RESPONSE_CACHE_ENABLED:-false}
+      CACHE_DIR: /opendata/data/cache
+      CACHE_TTL_SECONDS: ${CACHE_TTL_SECONDS:-900}
+      RETENTION_EXECUTION_ENABLED: ${RETENTION_EXECUTION_ENABLED:-false}
+      FUYAO_API_KEY: ${FUYAO_API_KEY:-}
+      FUYAO_API_KEY_EXPIRES_AT: ${FUYAO_API_KEY_EXPIRES_AT:-}
+      FRED_API_KEY: ${FRED_API_KEY:-}
+      FRED_API_KEY_EXPIRES_AT: ${FRED_API_KEY_EXPIRES_AT:-}
+      KEY_EXPIRY_WARNING_DAYS: ${KEY_EXPIRY_WARNING_DAYS:-14}
+      KEY_HEALTH_OBSERVATION_TTL_HOURS: ${KEY_HEALTH_OBSERVATION_TTL_HOURS:-24}
+      KEY_HEALTH_NOTIFICATION_EMAILS: "${KEY_HEALTH_NOTIFICATION_EMAILS:-[]}"
       ADMIN_DEFAULT_PASSWORD: ${ADMIN_DEFAULT_PASSWORD:-}
     depends_on:
       mysql:
@@ -133,6 +148,45 @@ services:
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     profiles:
       - ssl
+
+  # Daily logical backup. Opt in with `docker compose --profile backup up -d`.
+  # Optional backup-only credentials override the app accounts. The fallback
+  # app accounts lack global mysqldump privileges such as PROCESS/SHOW_ROUTINE.
+  # This service is never started by the default profile.
+  backup:
+    build:
+      context: .
+      dockerfile: scripts/ops/Dockerfile.backup
+    container_name: opendata_backup
+    restart: unless-stopped
+    profiles:
+      - backup
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: ${BACKUP_MYSQL_USER:-${MYSQL_USER:-opendata_user}}
+      MYSQL_PASSWORD: ${BACKUP_MYSQL_PASSWORD:-${MYSQL_PASSWORD:?MYSQL_PASSWORD must be set (see .env.example)}}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-opendata}
+      DATA_MYSQL_HOST: mysql_warehouse
+      DATA_MYSQL_PORT: 3306
+      DATA_MYSQL_USER: ${BACKUP_DATA_MYSQL_USER:-${WAREHOUSE_USER:-opendata_user}}
+      DATA_MYSQL_PASSWORD: ${BACKUP_DATA_MYSQL_PASSWORD:-${WAREHOUSE_PASSWORD:?WAREHOUSE_PASSWORD must be set (see .env.example)}}
+      DATA_MYSQL_DATABASE: ${WAREHOUSE_DATABASE:-opendata_data}
+      BACKUP_ENV_FILE: ""
+      BACKUP_DIR: /backups
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+      BACKUP_PYTHON: python3
+      BACKUP_MINUTE_ARCHIVE_DIR: /data/minute_archive
+    volumes:
+      - ./backups:/backups
+      # Archive bytes are read-only by convention; the service writes only the
+      # shared .snapshot.lock file needed for a consistent paired snapshot.
+      - ./data:/data
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mysql_warehouse:
+        condition: service_healthy
 
 volumes:
   mysql_data:

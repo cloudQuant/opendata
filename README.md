@@ -16,7 +16,7 @@ opendata 为 backtrader / ai-for-investor / bt_api_py 等项目提供统一数�
 | **1B** 国内数据全覆盖 + 服务化 | A 股四件套 + 期货双源落库，REST/WS + 客户端对外可用 | 未开始 |
 | **1C** 海外与宏观 + 验收收口 | 海外/宏观数据可用，上游同步就绪，端到端验收 | 未开始 |
 
-设计文档与验收标准见 [`docs/迭代计划/迭代1-重构数据中台/`](docs/迭代计划/迭代1-重构数据中台/)。
+迭代1设计与验收标准见 [`docs/迭代计划/迭代1-重构数据中台/`](docs/迭代计划/迭代1-重构数据中台/)。迭代2正在统一provider布局并补齐固定350个模型任务，执行状态见[迭代2开发验收记录](docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/开发验收记录.md)；整体尚未验收完成。
 
 ## 三个数据源
 
@@ -24,7 +24,7 @@ opendata 为 backtrader / ai-for-investor / bt_api_py 等项目提供统一数�
 |------|------|--------|------------------|
 | [akshare](https://github.com/akfamily/akshare) | HTTP 爬取各站点 | MIT | **按需源码级搬运**，保留版权声明 |
 | [OpenBB](https://github.com/OpenBB-finance/OpenBB) | provider 插件体系 | AGPL-3.0 | **仅借鉴架构，实现全部自研**（零源码复制） |
-| 同花顺扶摇 API | REST（`X-api-key`） | 商业服务 | 自建客户端 `opendata_fuyao/` |
+| 同花顺扶摇 API | REST（`X-api-key`） | 商业服务 | 自建客户端位于 `opendata/data/providers/ths/`，传输层位于其 `transport/` |
 
 向 akshare 与 OpenBB 的致谢与许可证边界见 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。
 
@@ -114,13 +114,15 @@ opendata/
 │   ├── api/                   # REST / WS 路由
 │   ├── core/                  # 配置、数据库、安全
 │   ├── models/  services/     # ORM 模型与业务逻辑
-│   ├── data/                  # ★ 统一契约与 provider 路由（迭代 1A-A1）
+│   ├── data/                  # 统一契约与唯一 provider 注册/路由
+│   │   └── providers/         # 自研 provider 描述、模型与注册入口
+│   │       ├── akshare/       # 自研 AkShare 适配器
+│   │       │   └── _vendor/   # 搬运源码与资源，保留 MIT 许可
+│   │       ├── ths/           # THS 端点、模型、导入与 transport 传输层
+│   │       └── ...            # 其他来源；注册状态和模型完成状态分别记账
 │   ├── pipeline/              # ★ 数据域 pipeline（迭代 1A-A4）
 │   └── data_fetch/            # 既有脚本框架（向 provider 体系迁移）
-├── akshare/                   # 内嵌 akshare 源码（迭代 A2 起更名为 opendata_http/）
-├── opendata_fuyao/            # ★ 同花顺扶摇客户端（迭代 1A-A3）
-├── opendata_providers/        # ★ 自研 provider（迭代 1C）
-├── opendata_client/           # ★ 最小 Python 客户端（迭代 1B）
+├── opendata_client/           # 独立安装的 REST/WS Python 消费方 SDK
 ├── frontend/                  # Vue3 + TypeScript 前端
 ├── alembic/                   # 元数据库迁移
 ├── alembic_data/              # ★ 数据仓库独立迁移环境（迭代 1A-A4）
@@ -129,7 +131,7 @@ opendata/
 └── docs/                      # 设计、部署与验收文档
 ```
 
-`★` 标记的目录在对应迭代里程碑中创建。
+原 `opendata_http/` 与 `opendata_fuyao/` 已分别并入上面的 AkShare 与 THS provider；消费方 SDK 保持独立安装包。
 
 ## 开发与代码质量
 
@@ -157,7 +159,7 @@ make gate               # 全部门禁聚合，逐项阻断（CI 与本地验收
 [`LICENSE-AKSHARE`](LICENSE-AKSHARE) 与 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)；
 该部分代码他人仍可按 MIT 条款取用。
 
-商务授权联系：`cloud@example.com`（占位，发布前替换为正式联系方式）。
+商务授权联系：cloudQuant — [个人主页](https://yunjinqi.top) / [GitHub](https://github.com/cloudQuant)。
 授权范围为**软件使用许可**，不含数据再分发。
 
 ### 数据免责声明
@@ -165,3 +167,7 @@ make gate               # 全部门禁聚合，逐项阻断（CI 与本地验收
 opendata 本身不生产数据。所有数据均来源于第三方站点与商业 API，本项目不主张任何数据权利，
 亦不对数据的准确性、完整性与时效性作出保证。消费方须自行确认其数据使用方式符合数据来源方的
 条款与适用法律。本项目不构成任何投资建议。
+<!-- C65: public-terms review is separate from technical provider verification. -->
+数据用途边界已逐源记录于[数据权利登记表](docs/data-rights-registry.md)：公开许可可作为依据，免费接口和开源客户端不自动授予全部数据的落库、再分发或商业使用权。软件许可不包含第三方数据许可；已通过技术对照的源仍须遵守其登记条件。
+
+迭代2新增 BLS 与 FMP 的专属登记。BLS 统计复用须遵守来源、访问日期、免责声明与限额条件；FMP 两个行情模型仅完成离线原型接线，本项目尚无适用订阅与多用户数据许可证明，未批准真实采集、集中落库或分发。新能力均未进入自动选源；模型覆盖和真实验收状态见[开发验收记录](docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/开发验收记录.md)。

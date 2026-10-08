@@ -24,14 +24,16 @@ from sqlalchemy import (
     Date,
     DateTime,
     Engine,
+    Float,
     Integer,
     MetaData,
     String,
     Table,
     create_engine,
+    event,
 )
 
-from opendata.data.domains import dwd_table
+from opendata.data.domains import dwd_table, ods_table
 from opendata.data.models import Instrument, TradingCalendar
 from opendata.pipeline import templates
 from opendata.pipeline.runner import Window
@@ -152,7 +154,22 @@ class TestScheduleTemplates:
             TemplateKind.FULL_CHECK,
             TemplateKind.PARTITION_MAINTENANCE,
             TemplateKind.FRESHNESS,
+            TemplateKind.RETENTION,
+            TemplateKind.KEY_HEALTH,
+            TemplateKind.SCHEDULED_PATROL,
         }
+
+    def test_scheduled_patrol_is_daily_p0_and_calibration_is_explicit(self):
+        template = next(
+            item for item in PIPELINE_TEMPLATES if item.kind is TemplateKind.SCHEDULED_PATROL
+        )
+
+        assert template.name == "p0-provider-patrol"
+        assert template.cron == "0 18 * * *"
+        assert template.timezone == "UTC"
+        assert template.payload == {"tier": "P0"}
+        assert "UTC" in template.note
+        assert "校准" in template.note
 
     def test_incremental_template_targets_the_p0_domain(self):
         template = next(
@@ -185,6 +202,9 @@ class TestPipelineFactory:
         assert pipeline.spec.domain == "stock_daily"
         assert pipeline.spec.source == "akshare"
         assert pipeline.spec.table == "ods_stock_daily_akshare"
+        assert pipeline.bounded_partitions.batch_size == 50
+        assert pipeline.bounded_partitions.for_request("600519.SH") == "600519"
+        assert pipeline.bounded_partitions.for_key(("600519.SZ", date(2024, 1, 2))) == "600519"
         # The hooks are bound methods of the step services.
         assert isinstance(pipeline.merge.__self__, DwdMergeService)
         # Cross-check needs a second source: the A3 THS feed.
@@ -761,8 +781,41 @@ class TestLoadOdsRows:
             {"股票代码": "000001", "日期": date(2026, 1, 6), "收盘": 9.5},
         ]
 
+    def test_symbol_reads_bind_independent_union_windows(self):
+        engine = _RecordingWarehouse(columns=_AK_COLUMNS, rows=[])
+        first = templates.Window(start=date(2020, 1, 1), end=date(2024, 1, 31))
+        second = templates.Window(start=date(2023, 2, 1), end=date(2024, 1, 31))
 
-def _ods_row(symbol: str, day: date) -> dict:
+        templates._load_ods_rows(
+            engine,
+            "ods_stock_daily_akshare",
+            "stock_daily",
+            date(2020, 1, 1),
+            date(2024, 1, 31),
+            set(),
+            time_column="日期",
+            symbol_column="股票代码",
+            symbols=("600519", "000001"),
+            symbol_windows={"600519": first, "000001": second},
+        )
+
+        assert "`股票代码` = :symbol_0" in engine.sql
+        assert "`股票代码` = :symbol_1" in engine.sql
+        assert "`日期` >= :start_0 AND `日期` <= :end_0" in engine.sql
+        assert "`日期` >= :start_1 AND `日期` <= :end_1" in engine.sql
+        assert engine.params == {
+            "symbol_0": "600519",
+            "symbol_prefix_0": "600519.%",
+            "start_0": first.start,
+            "end_0": first.end,
+            "symbol_1": "000001",
+            "symbol_prefix_1": "000001.%",
+            "start_1": second.start,
+            "end_1": second.end,
+        }
+
+
+def _ods_row(symbol: str, day: date, *, close: float = 1.5) -> dict:
     """One complete akshare ods row (the mapping fails closed on gaps)."""
     return {
         "股票代码": symbol,
@@ -770,9 +823,60 @@ def _ods_row(symbol: str, day: date) -> dict:
         "开盘": 1.0,
         "最高": 2.0,
         "最低": 0.5,
-        "收盘": 1.5,
+        "收盘": close,
         "成交量": 100.0,
         "成交额": 150.0,
+    }
+
+
+def _stock_ods_engine(akshare_rows: list[dict], ths_rows: list[dict] | None = None) -> Engine:
+    """Create real SQLite ODS tables for scoped merge-reader tests."""
+    engine = create_engine("sqlite://")
+    metadata = MetaData()
+    akshare = Table(
+        ods_table("stock_daily", "akshare"),
+        metadata,
+        Column("股票代码", String(32), nullable=False),
+        Column("日期", Date(), nullable=False),
+        Column("开盘", Float),
+        Column("最高", Float),
+        Column("最低", Float),
+        Column("收盘", Float),
+        Column("成交量", Float),
+        Column("成交额", Float),
+    )
+    ths = Table(
+        ods_table("stock_daily", "ths"),
+        metadata,
+        Column("thscode", String(32), nullable=False),
+        Column("trade_date", Date(), nullable=False),
+        Column("open_price", Float),
+        Column("high_price", Float),
+        Column("low_price", Float),
+        Column("close_price", Float),
+        Column("volume", Float),
+        Column("turnover", Float),
+    )
+    metadata.create_all(engine)
+    with engine.begin() as connection:
+        if akshare_rows:
+            connection.execute(akshare.insert(), akshare_rows)
+        if ths_rows:
+            connection.execute(ths.insert(), ths_rows)
+    return engine
+
+
+def _ths_ods_row(symbol: str, day: date, *, close: float = 1.5) -> dict:
+    """One complete THS ODS row for multi-source scoped-reader tests."""
+    return {
+        "thscode": symbol,
+        "trade_date": day,
+        "open_price": 1.0,
+        "high_price": 2.0,
+        "low_price": 0.5,
+        "close_price": close,
+        "volume": 100.0,
+        "turnover": 150.0,
     }
 
 
@@ -876,6 +980,411 @@ class TestFrameReaderWindow:
         assert frame.empty
 
 
+class TestScopedOdsReader:
+    """Real SQLite reads keep revisions scoped to selected symbols and dates."""
+
+    def test_unscoped_composite_financial_key_reads_only_the_affected_old_item(self):
+        table_name = ods_table("financial_statement", "akshare")
+        engine = create_engine("sqlite://")
+        metadata = MetaData()
+        statement_table = Table(
+            table_name,
+            metadata,
+            Column("symbol", String(32), nullable=False),
+            Column("statement_type", String(32), nullable=False),
+            Column("report_period", Date(), nullable=False),
+            Column("announce_date", Date(), nullable=False),
+            Column("item", String(64), nullable=False),
+            Column("value", Float),
+            Column("revision", Integer),
+        )
+        metadata.create_all(engine)
+        affected_day = date(2020, 12, 31)
+        active_day = date(2026, 1, 6)
+        with engine.begin() as connection:
+            connection.execute(
+                statement_table.insert(),
+                [
+                    {
+                        "symbol": "600519.SH",
+                        "statement_type": "income",
+                        "report_period": affected_day,
+                        "announce_date": date(2021, 3, 25),
+                        "item": "net_profit",
+                        "value": 10.0,
+                        "revision": 1,
+                    },
+                    {
+                        "symbol": "600519.SH",
+                        "statement_type": "income",
+                        "report_period": affected_day,
+                        "announce_date": date(2021, 3, 25),
+                        "item": "revenue",
+                        "value": 20.0,
+                        "revision": 1,
+                    },
+                    {
+                        "symbol": "600519.SH",
+                        "statement_type": "income",
+                        "report_period": active_day,
+                        "announce_date": active_day,
+                        "item": "net_profit",
+                        "value": 30.0,
+                        "revision": 1,
+                    },
+                ],
+            )
+
+        try:
+            reader = templates.ods_frame_reader(engine, "financial_statement", "akshare")
+            affected_keys = {("600519", "income", affected_day, "net_profit")}
+            frame = reader(
+                date(2026, 1, 1),
+                date(2026, 1, 31),
+                affected_keys,
+            )
+            scoped_frame = reader(
+                date(2026, 1, 1),
+                date(2026, 1, 31),
+                affected_keys,
+                symbols=("600519",),
+                symbol_windows={"600519": Window(start=date(2026, 1, 1), end=date(2026, 1, 31))},
+            )
+        finally:
+            engine.dispose()
+
+        expected_keys = {
+            ("600519", "income", affected_day, "net_profit"),
+            ("600519", "income", active_day, "net_profit"),
+        }
+        key_columns = ["symbol", "statement_type", "report_period", "item"]
+        returned_keys = set(frame[key_columns].itertuples(index=False, name=None))
+        scoped_keys = set(scoped_frame[key_columns].itertuples(index=False, name=None))
+        assert returned_keys == expected_keys
+        assert scoped_keys == expected_keys
+        affected = frame.loc[frame["report_period"] == affected_day]
+        assert affected["value"].tolist() == [10.0]
+        scoped_affected = scoped_frame.loc[scoped_frame["report_period"] == affected_day]
+        assert scoped_affected["value"].tolist() == [10.0]
+
+    def test_unscoped_financial_indicator_key_uses_its_report_period_index(self):
+        table_name = ods_table("financial_indicator", "akshare")
+        engine = create_engine("sqlite://")
+        metadata = MetaData()
+        indicator_table = Table(
+            table_name,
+            metadata,
+            Column("symbol", String(32), nullable=False),
+            Column("report_period", Date(), nullable=False),
+            Column("announce_date", Date(), nullable=False),
+            Column("indicator", String(64), nullable=False),
+            Column("value", Float),
+            Column("unit", String(32)),
+            Column("revision", Integer),
+        )
+        metadata.create_all(engine)
+        affected_day = date(2020, 12, 31)
+        active_day = date(2026, 1, 6)
+        with engine.begin() as connection:
+            connection.execute(
+                indicator_table.insert(),
+                [
+                    {
+                        "symbol": "600519.SH",
+                        "report_period": affected_day,
+                        "announce_date": date(2021, 3, 25),
+                        "indicator": "ROEJQ",
+                        "value": 12.0,
+                        "unit": "%",
+                        "revision": 1,
+                    },
+                    {
+                        "symbol": "600519.SH",
+                        "report_period": affected_day,
+                        "announce_date": date(2021, 3, 25),
+                        "indicator": "EPSJB",
+                        "value": 3.0,
+                        "unit": "元/股",
+                        "revision": 1,
+                    },
+                    {
+                        "symbol": "600519.SH",
+                        "report_period": active_day,
+                        "announce_date": active_day,
+                        "indicator": "ROEJQ",
+                        "value": 13.0,
+                        "unit": "%",
+                        "revision": 1,
+                    },
+                ],
+            )
+
+        try:
+            frame = templates.ods_frame_reader(engine, "financial_indicator", "akshare")(
+                date(2026, 1, 1),
+                date(2026, 1, 31),
+                {("600519", affected_day, "ROEJQ")},
+            )
+        finally:
+            engine.dispose()
+
+        expected_keys = {
+            ("600519", affected_day, "ROEJQ"),
+            ("600519", active_day, "ROEJQ"),
+        }
+        returned_keys = set(
+            frame[["symbol", "report_period", "indicator"]].itertuples(index=False, name=None)
+        )
+        assert returned_keys == expected_keys
+
+    @pytest.mark.asyncio
+    async def test_run_hook_merges_scoped_old_revision_and_excludes_other_rows(self):
+        from opendata.data.mapping import require_domain_mapping
+        from opendata.pipeline.dwd_merge import DwdMergeService
+        from opendata.pipeline.runner import PipelineContext
+
+        active = Window(start=date(2026, 1, 5), end=date(2026, 1, 9))
+        revised_day = date(2025, 12, 20)
+        unrelated_old_day = date(2025, 12, 21)
+        active_day = date(2026, 1, 6)
+        engine = _stock_ods_engine(
+            [
+                _ods_row("600519", revised_day, close=6.5),
+                _ods_row("600519", unrelated_old_day, close=8.0),
+                _ods_row("600519", active_day, close=7.0),
+                _ods_row("000001", revised_day, close=99.0),
+                _ods_row("000001", active_day, close=99.0),
+            ]
+        )
+        selects = []
+
+        def record_select(_conn, _cursor, statement, parameters, _context, _executemany):
+            if statement.startswith("SELECT * FROM"):
+                selects.append((statement, parameters))
+
+        event.listen(engine, "before_cursor_execute", record_select)
+        dwd_values = {("600519", revised_day): 5.0}
+
+        def write_dwd(frame):
+            for row in frame.to_dict("records"):
+                dwd_values[(row["symbol"], row["trade_date"])] = row["close"]
+            return len(frame)
+
+        service = DwdMergeService(
+            domain="stock_daily",
+            sources=("akshare",),
+            authority=("akshare",),
+            readers={"akshare": templates.ods_frame_reader(engine, "stock_daily", "akshare")},
+            mappings={"akshare": require_domain_mapping("akshare", "stock_daily")},
+            write_dwd=write_dwd,
+            key=("symbol", "trade_date"),
+        )
+        context = PipelineContext(
+            domain="stock_daily",
+            source="akshare",
+            window=active,
+            affected_keys=(("600519.SH", revised_day),),
+            symbols=("600519",),
+            comparison_windows={"600519": active},
+        )
+        try:
+            stats = await service.run_hook(context)
+        finally:
+            event.remove(engine, "before_cursor_execute", record_select)
+            engine.dispose()
+
+        assert stats.rows == 2
+        assert dwd_values[("600519", revised_day)] == 6.5
+        assert dwd_values[("600519", active_day)] == 7.0
+        assert ("600519", unrelated_old_day) not in dwd_values
+        assert ("000001", revised_day) not in dwd_values
+        assert ("000001", active_day) not in dwd_values
+        assert len(selects) == 1
+        statement, parameters = selects[0]
+        assert "`日期` IN (?)" in statement
+        bound_values = {str(value) for value in parameters}
+        assert str(revised_day) in bound_values
+        assert str(unrelated_old_day) not in bound_values
+        assert "000001" not in bound_values
+
+    @pytest.mark.asyncio
+    async def test_multisource_run_hook_reads_only_affected_rows_when_symbol_window_is_none(
+        self,
+    ):
+        from opendata.data.mapping import require_domain_mapping
+        from opendata.pipeline.dwd_merge import DwdMergeService
+        from opendata.pipeline.runner import PipelineContext
+
+        revised_day = date(2025, 12, 20)
+        unrelated_old_day = date(2025, 12, 21)
+        active = Window(start=date(2026, 1, 5), end=date(2026, 1, 9))
+        engine = _stock_ods_engine(
+            [
+                _ods_row("600519", revised_day, close=6.5),
+                _ods_row("600519", unrelated_old_day, close=8.0),
+                _ods_row("000001", revised_day, close=99.0),
+            ],
+            [
+                _ths_ods_row("600519.SH", revised_day, close=6.4),
+                _ths_ods_row("600519.SH", unrelated_old_day, close=8.1),
+                _ths_ods_row("000001.SZ", revised_day, close=99.0),
+            ],
+        )
+        selects = []
+        source_frames = {}
+
+        def record_select(_conn, _cursor, statement, parameters, _context, _executemany):
+            if statement.startswith("SELECT * FROM"):
+                selects.append((statement, parameters))
+
+        event.listen(engine, "before_cursor_execute", record_select)
+        mappings = {
+            source: require_domain_mapping(source, "stock_daily") for source in ("akshare", "ths")
+        }
+        readers = {}
+        for source in mappings:
+            real_reader = templates.ods_frame_reader(engine, "stock_daily", source)
+
+            def capture_reader(start, end, keys, *, _source=source, _reader=real_reader, **kwargs):
+                frame = _reader(start, end, keys, **kwargs)
+                source_frames[_source] = frame
+                return frame
+
+            readers[source] = capture_reader
+        dwd_values = {("600519", revised_day): 5.0}
+
+        def write_dwd(frame):
+            for row in frame.to_dict("records"):
+                dwd_values[(row["symbol"], row["trade_date"])] = row["close"]
+            return len(frame)
+
+        service = DwdMergeService(
+            domain="stock_daily",
+            sources=("akshare", "ths"),
+            authority=("akshare", "ths"),
+            readers=readers,
+            mappings=mappings,
+            write_dwd=write_dwd,
+            key=("symbol", "trade_date"),
+        )
+        context = PipelineContext(
+            domain="stock_daily",
+            source="akshare",
+            window=active,
+            affected_keys=(("600519.SH", revised_day),),
+            symbols=("600519",),
+            comparison_windows={"600519": None},
+        )
+        try:
+            stats = await service.run_hook(context)
+        finally:
+            event.remove(engine, "before_cursor_execute", record_select)
+            engine.dispose()
+
+        assert stats.rows == 1
+        assert stats.diff_flagged == 1
+        assert dwd_values[("600519", revised_day)] == 6.5
+        assert set(source_frames) == {"akshare", "ths"}
+        assert all(len(frame) == 1 for frame in source_frames.values())
+        assert {str(frame.iloc[0]["trade_date"])[:10] for frame in source_frames.values()} == {
+            str(revised_day)
+        }
+        assert len(selects) == 2
+        for statement, parameters in selects:
+            assert "`trade_date` IN (?)" in statement or "`日期` IN (?)" in statement
+            bound_values = {str(value) for value in parameters}
+            assert str(revised_day) in bound_values
+            assert str(unrelated_old_day) not in bound_values
+            assert "000001" not in bound_values
+
+    def test_scoped_reader_without_a_symbol_window_uses_requested_range_and_affected_date(self):
+        active = Window(start=date(2026, 1, 5), end=date(2026, 1, 9))
+        revised_day = date(2025, 12, 20)
+        active_day = date(2026, 1, 6)
+        engine = _stock_ods_engine(
+            [
+                _ods_row("600519", revised_day, close=6.5),
+                _ods_row("600519", active_day, close=7.0),
+                _ods_row("000001", active_day, close=99.0),
+            ]
+        )
+        try:
+            frame = templates.ods_frame_reader(engine, "stock_daily", "akshare")(
+                active.start,
+                active.end,
+                {("600519.SH", revised_day)},
+                symbols=("600519",),
+                symbol_windows=None,
+            )
+        finally:
+            engine.dispose()
+
+        assert sorted(str(value)[:10] for value in frame["trade_date"]) == [
+            str(revised_day),
+            str(active_day),
+        ]
+        assert set(frame["symbol"]) == {"600519"}
+
+
+def test_resume_key_loader_reads_and_yields_one_bounded_partition_at_a_time(monkeypatch):
+    from opendata.data.mapping import require_domain_mapping
+    from opendata.pipeline.runner import PipelineContext
+
+    symbols = tuple(f"{index:06d}" for index in range(105))
+    read_batches = []
+    mapping = require_domain_mapping("akshare", "stock_daily")
+
+    def reader_factory(engine, domain, source):
+        def read(start, end, affected_keys, *, symbols=None, symbol_windows=None):
+            batch = tuple(symbols or ())
+            read_batches.append(batch)
+            return pd.DataFrame(
+                {
+                    "symbol": batch,
+                    "trade_date": [date(2024, 1, 2)] * len(batch),
+                }
+            )
+
+        return read
+
+    monkeypatch.setattr(templates, "ods_frame_reader", reader_factory)
+    active = Window(start=date(2024, 1, 1), end=date(2024, 1, 31))
+    children = [
+        PipelineContext(
+            domain="stock_daily",
+            source="akshare",
+            window=active,
+            affected_keys=[],
+            symbols=batch,
+            source_windows={"akshare": dict.fromkeys(batch, active)},
+            comparison_windows=dict.fromkeys(batch, active),
+            pipeline_id="resume-partitions",
+        )
+        for offset in range(0, len(symbols), 50)
+        for batch in (symbols[offset : offset + 50],)
+    ]
+    context = PipelineContext(
+        domain="stock_daily",
+        source="akshare",
+        window=active,
+        affected_keys=[],
+        symbols=symbols,
+        source_windows={"akshare": dict.fromkeys(symbols, active)},
+        comparison_windows=dict.fromkeys(symbols, active),
+        pipeline_id="resume-partitions",
+        partition_contexts=lambda: iter(children),
+    )
+
+    loaded = templates._ods_affected_keys(object(), "stock_daily", ("akshare",))(context)
+
+    assert not isinstance(loaded, list)
+    loaded_keys = list(loaded)
+    assert len(loaded_keys) == 105
+    assert all(len(key) == len(mapping.key) for key in loaded_keys)
+    assert tuple(key[0] for key in loaded_keys) == symbols
+    assert [len(batch) for batch in read_batches] == [50, 50, 5]
+
+
 class TestScheduleTemplateFailClosed:
     """A deployment without its schedule definitions must not start empty."""
 
@@ -910,6 +1419,18 @@ class TestScheduleTemplateFailClosed:
                 "templates:\n  - name: n\n    cron: '0 1 * * *'\n    kind: time_travel\n", tmp_path
             )
 
+    def test_scheduled_patrol_rejects_non_p0_or_extra_payload_fields(self, tmp_path):
+        for payload in ("{tier: P1}", "{tier: P0, domains: [stock_daily]}", "{}"):
+            with pytest.raises(RuntimeError, match="scheduled_patrol payload"):
+                self._load(
+                    "templates:\n"
+                    "  - name: patrol\n"
+                    "    cron: '0 18 * * *'\n"
+                    "    kind: scheduled_patrol\n"
+                    f"    payload: {payload}\n",
+                    tmp_path,
+                )
+
     def test_a_well_formed_file_loads_with_its_defaults(self, tmp_path):
         entries = self._load(
             "templates:\n"
@@ -927,8 +1448,22 @@ class TestScheduleTemplateFailClosed:
         assert [entry.name for entry in entries] == ["nightly", "weekly-check"]
         assert entries[0].payload == {"domain": "stock_daily"}
         assert entries[0].note == ""
+        assert entries[0].timezone == "Asia/Shanghai"
         assert entries[1].payload == {}
         assert entries[1].kind is TemplateKind.FULL_CHECK
+        assert entries[1].timezone == "Asia/Shanghai"
+
+    def test_an_invalid_timezone_fails_closed(self, tmp_path):
+        with pytest.raises(RuntimeError, match="valid IANA zone"):
+            self._load(
+                "templates:\n"
+                "  - name: patrol\n"
+                "    cron: '0 18 * * *'\n"
+                "    kind: scheduled_patrol\n"
+                "    timezone: Not/A_Timezone\n"
+                "    payload: {tier: P0}\n",
+                tmp_path,
+            )
 
 
 def test_a_negative_lookback_is_refused_not_silently_ignored():

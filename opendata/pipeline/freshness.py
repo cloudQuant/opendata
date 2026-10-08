@@ -1,13 +1,13 @@
 """Freshness checks and the operational alert matrix (A4.8).
 
-Freshness: each domain has one date column that answers "how current
-is this data?" - it is derived from the contract model (the first
-``date``-typed field: ``trade_date`` for bars, ``ex_date`` for
-corporate actions, ``report_period`` for financials, ``as_of`` for
-index membership, ``date`` for calendars) and the check reads
-``MAX(<column>)`` from the domain's warehouse table. A table that does
-not exist is a ``missing`` report - an alert, never a crash - which is
-the design's "模拟数据缺失触发告警" case.
+Freshness reads ``MAX(<column>)`` from a domain's warehouse table. A
+domain with declared semantics uses only its declared ``time_field``
+and only when that contract field is day-level ``date``. Legacy v1
+domains that omit all semantics fields retain the historical first-
+``date``-field fallback. A domain without a supported date field fails
+closed instead of inferring freshness from unrelated metadata. A table
+that does not exist is a ``missing`` report - an alert, never a crash -
+which is the design's "模拟数据缺失触发告警" case.
 
 The alert matrix turns the four operational signals from the
 requirements into one decision list: pipeline failures, consecutive
@@ -151,11 +151,14 @@ class Alert:
 
 
 def freshness_field(domain: str) -> str:
-    """Derive the date column that measures a domain's freshness.
+    """Resolve the day-level freshness date column for a domain.
 
-    The first ``date``-typed contract field wins; the contract field
-    order is stable, so the rule is deterministic and needs no extra
-    registry entry.
+    A domain with declared semantics must name its own ``time_field``;
+    that exact field is accepted only when its contract annotation is a
+    date (optionally wrapped in ``Optional`` or ``Annotated``). A
+    declared null or non-date field is unsupported and never falls back
+    to another date-looking contract field. Legacy v1 domains that omit
+    all semantics fields keep the historical first-date-field rule.
 
     Args:
         domain: Registered domain identifier.
@@ -165,11 +168,29 @@ def freshness_field(domain: str) -> str:
 
     Raises:
         LookupError: If the domain is unknown.
-        ValueError: If the contract model has no date field (the domain
-            cannot be freshness-checked; fail closed).
+        ValueError: If the declared time field is null, missing, or not
+            a supported date annotation, or a legacy contract has no
+            date field.
     """
-    require_domain(domain)
+    spec = require_domain(domain)
     model = contract_model(domain)
+    if spec.semantics_declared:
+        field_name = spec.time_field
+        if field_name is None:
+            raise ValueError(f"domain {domain!r} declares no time_field for day-level freshness")
+        contract_field = model.model_fields.get(field_name)
+        if contract_field is None:
+            raise ValueError(
+                f"domain {domain!r} declares unknown time_field {field_name!r} "
+                "for day-level freshness"
+            )
+        if not _is_date_type(contract_field.annotation):
+            raise ValueError(
+                f"domain {domain!r} time_field {field_name!r} is not a date field; "
+                "day-level freshness is unsupported"
+            )
+        return field_name
+
     for name, contract_field in model.model_fields.items():
         if _is_date_type(contract_field.annotation):
             return name
@@ -469,12 +490,20 @@ def _disk_alerts(disk: DiskUsage, settings: AlertSettings) -> list[Alert]:
 
 
 def _is_date_type(annotation: object) -> bool:
-    """Whether a contract field annotation is a plain ``date``."""
+    """Whether an annotation resolves only to ``date`` (not ``datetime``)."""
     from datetime import date as date_type
-    from typing import get_args
+    from types import UnionType
+    from typing import Annotated, Union, get_args, get_origin
 
-    candidates = get_args(annotation) or (annotation,)
-    return any(candidate is date_type for candidate in candidates)
+    origin = get_origin(annotation)
+    if origin is Annotated:
+        args = get_args(annotation)
+        return bool(args) and _is_date_type(args[0])
+    if origin in {Union, UnionType}:
+        args = get_args(annotation)
+        candidates = tuple(candidate for candidate in args if candidate is not type(None))
+        return bool(candidates) and all(_is_date_type(candidate) for candidate in candidates)
+    return annotation is date_type
 
 
 def _as_date(value: object) -> date | None:

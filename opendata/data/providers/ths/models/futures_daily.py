@@ -37,6 +37,8 @@ class ThsFuturesDailyFetcher(Fetcher[ThsFuturesDailyQuery, tuple[Bar, ...]]):
     an independent futures series (see ``docs/evidence/C6``).
     """
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="futures",
         domain="futures_daily",
@@ -76,7 +78,7 @@ class ThsFuturesDailyFetcher(Fetcher[ThsFuturesDailyQuery, tuple[Bar, ...]]):
             ThsProviderError: Credentials missing or the code is not exactly
                 one contract in the upstream futures catalog.
         """
-        from opendata_fuyao.endpoints import (
+        from opendata.data.providers.ths.endpoints import (
             FUTURES_PRICES_ENDPOINT,
             fetch_period_daily_bars,
         )

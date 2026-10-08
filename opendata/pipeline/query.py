@@ -161,6 +161,11 @@ def build_data_select(
     table: str,
     columns: Sequence[str],
     key: Sequence[str],
+    time_field: str | None = None,
+    symbol_field: str | None = None,
+    period_field: str | None = None,
+    report_date_field: str | None = None,
+    offset: int | None = None,
     today: date | None = None,
     max_rows: int = MAX_PAGE_SIZE,
 ) -> tuple[str, dict[str, object]]:
@@ -171,6 +176,15 @@ def build_data_select(
         table: Target table (validated before quoting).
         columns: Columns the table has, in table order.
         key: Business-key columns used for deterministic ordering.
+        time_field: Native date column for a source-shaped table; defaults
+            to the contract date field.
+        symbol_field: Native symbol column for a source-shaped table;
+            defaults to ``symbol``.
+        period_field: Native report-period column for financial filters;
+            defaults to ``report_period``.
+        report_date_field: Native announcement-date column for financial
+            filters; defaults to ``announce_date``.
+        offset: Explicit zero-based row offset, used by bounded exports.
         today: Current date (injected for deterministic tests).
         max_rows: Page-size ceiling; the interactive query keeps the
             default, the export raises it deliberately.
@@ -184,29 +198,72 @@ def build_data_select(
     """
     if query.layer not in LAYERS:
         raise ValueError(f"unknown layer {query.layer!r}; expected one of {LAYERS}")
-    if not _IDENTIFIER_RE.match(table):
+    if not _IDENTIFIER_RE.fullmatch(table):
         raise ValueError(f"invalid SQL identifier {table!r}")
     if query.page < 1:
         raise ValueError(f"page must be >= 1, got {query.page}")
+    if offset is not None and offset < 0:
+        raise ValueError("offset must be >= 0")
     start, end = window_bounds(query, today=today or date.today())
     selected = validate_fields(query.fields, available=columns, always_include=key)
-    time_field = resolve_time_field(query.domain)
+    effective_time_field = time_field or resolve_time_field(query.domain)
+    effective_symbol_field = symbol_field or "symbol"
+    effective_period_field = period_field or "report_period"
+    effective_report_date_field = report_date_field or "announce_date"
+    identifiers = {table, *columns, *key, effective_time_field}
+    if query.symbols:
+        identifiers.add(effective_symbol_field)
+    source_filter = query.layer == "dwd" and query.source != "auto"
+    if source_filter:
+        identifiers.add("source")
+    if query.period is not None:
+        identifiers.add(effective_period_field)
+    if query.report_date is not None:
+        identifiers.add(effective_report_date_field)
+    if any(not _IDENTIFIER_RE.fullmatch(identifier) for identifier in identifiers):
+        raise ValueError("invalid SQL column identifier")
+    if effective_time_field not in columns:
+        raise ValueError(f"time field {effective_time_field!r} is not a table column")
+    if query.symbols and effective_symbol_field not in columns:
+        raise ValueError(f"symbol field {effective_symbol_field!r} is not a table column")
+    if source_filter and "source" not in columns:
+        raise ValueError("explicit source filtering requires the DWD source trace column")
+    if query.period is not None and effective_period_field not in columns:
+        raise ValueError("report-period filter field is not a table column")
+    if query.report_date is not None and effective_report_date_field not in columns:
+        raise ValueError("report-date filter field is not a table column")
     page_size = min(query.page_size, max_rows)
     params: dict[str, object] = {
         "start": start,
         "end": end,
         "limit": page_size,
-        "offset": (query.page - 1) * page_size,
+        "offset": offset if offset is not None else (query.page - 1) * page_size,
     }
-    where = [f"`{time_field}` >= :start", f"`{time_field}` <= :end"]
+    where = [
+        f"`{effective_time_field}` >= :start",
+        f"`{effective_time_field}` <= :end",
+    ]
     if query.symbols:
         names = []
         for index, symbol in enumerate(query.symbols):
             name = f"symbol_{index}"
             params[name] = symbol
             names.append(f":{name}")
-        where.append(f"`symbol` IN ({', '.join(names)})")
-    order = ", ".join(f"`{column}`" for column in key) or f"`{time_field}`"
+        where.append(f"`{effective_symbol_field}` IN ({', '.join(names)})")
+    if source_filter:
+        params["source_filter"] = query.source
+        where.append("`source` = :source_filter")
+    if query.period is not None:
+        try:
+            period = date.fromisoformat(query.period)
+        except ValueError as exc:
+            raise ValueError("period must be an ISO report-period date (YYYY-MM-DD)") from exc
+        params["period"] = period
+        where.append(f"`{effective_period_field}` = :period")
+    if query.report_date is not None:
+        params["report_date"] = query.report_date
+        where.append(f"`{effective_report_date_field}` = :report_date")
+    order = ", ".join(f"`{column}`" for column in key) or f"`{effective_time_field}`"
     select_list = ", ".join(f"`{column}`" for column in selected)
     sql = (
         f"SELECT {select_list} FROM `{table}` "
@@ -229,8 +286,9 @@ def apply_adjust_to_rows(
         domain: Registered domain identifier.
         rows: Raw rows as read from the warehouse.
         method: ``none`` / ``qfq`` / ``hfq``.
-        factors: Cumulative factor rows (``symbol``, ``trade_date``,
-            ``qfq_factor``, ``hfq_factor``).
+        factors: Factor rows (``symbol``, ``trade_date``, legacy
+            ``qfq_factor``/``hfq_factor``, optional affine coefficients,
+            and optional ``adjustment_version``).
 
     Returns:
         The rows with adjusted prices (``none`` returns them as-is).
@@ -262,7 +320,10 @@ def apply_adjust_to_rows(
 
     factor_index: dict[tuple, dict[str, object]] = {}
     for entry in factors:
-        factor_index[(entry.get("symbol"), entry.get("trade_date"))] = entry
+        key = (entry.get("symbol"), entry.get("trade_date"))
+        if key in factor_index:
+            raise ValueError(f"duplicate adjust factor for {key!r}")
+        factor_index[key] = entry
     bars: list[Bar] = []
     for row in rows:
         biz_key = (row.get("symbol"), row.get("trade_date"))
@@ -289,8 +350,14 @@ def apply_adjust_to_rows(
             AdjustFactor(
                 symbol=str(factor["symbol"]),
                 trade_date=factor["trade_date"],  # type: ignore[arg-type]
-                qfq_factor=float(factor.get("qfq_factor", 1.0)),  # type: ignore[arg-type]
-                hfq_factor=float(factor.get("hfq_factor", 1.0)),  # type: ignore[arg-type]
+                qfq_factor=float(factor["qfq_factor"]),  # type: ignore[arg-type]
+                hfq_factor=float(factor["hfq_factor"]),  # type: ignore[arg-type]
+                qfq_scale=factor.get("qfq_scale"),  # type: ignore[arg-type]
+                qfq_offset=factor.get("qfq_offset"),  # type: ignore[arg-type]
+                hfq_scale=factor.get("hfq_scale"),  # type: ignore[arg-type]
+                hfq_offset=factor.get("hfq_offset"),  # type: ignore[arg-type]
+                adjustment_version=factor.get("adjustment_version"),  # type: ignore[arg-type]
+                legacy_source=factor.get("legacy_source"),  # type: ignore[arg-type]
             )
             for factor in factors
         ],

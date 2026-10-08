@@ -38,7 +38,7 @@ import sys
 import warnings
 from datetime import date
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple, cast
 
 warnings.filterwarnings("ignore")
 
@@ -281,13 +281,13 @@ def main(argv: list[str] | None = None) -> int:
     from sqlalchemy import create_engine
 
     from opendata.core.config import settings
+    from opendata.data.providers.ths.endpoints import CALENDAR_ENDPOINT
     from opendata.data.providers.ths.models.trading_calendar import ThsTradingCalendarFetcher
-    from opendata_fuyao.endpoints import CALENDAR_ENDPOINT
 
     fetcher = _calendar_fetcher()
     if not isinstance(fetcher, ThsTradingCalendarFetcher):  # 路由必须落在这一条腿上
         raise RuntimeError(f"trading_calendar/ths resolves to {type(fetcher).__name__}")
-    rows = list(fetcher.fetch())
+    rows = cast("list[TradingCalendar]", list(fetcher.fetch()))
     open_days = frozenset(row.date for row in rows)
     window = (rows[0].date, rows[-1].date)
 

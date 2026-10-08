@@ -19,6 +19,7 @@ plane hides it.
 from __future__ import annotations
 
 import json
+from datetime import date
 from typing import TYPE_CHECKING
 
 import httpx
@@ -28,6 +29,10 @@ from requests.exceptions import HTTPError
 from opendata.data.providers.ecb.models._client import EcbProviderError
 from opendata.data.providers.fred.models._client import FredProviderError
 from opendata.data.providers.ths.models._client import ThsProviderError
+from opendata.data.providers.ths.transport.errors import (
+    error_for_transport,
+    error_for_upstream_code,
+)
 from opendata.pipeline.key_health import (
     CLASS_CREDENTIAL_REJECTED,
     CLASS_LEVELS,
@@ -56,7 +61,6 @@ from opendata.pipeline.key_health import (
     redact,
 )
 from opendata.pipeline.patrol import credential_health
-from opendata_fuyao.errors import error_for_transport, error_for_upstream_code
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -604,6 +608,54 @@ class TestPayloadCarriesNoCredential:
         note = credential_health(settings=_Settings())["ths"].note
         assert "到期" in note
         assert "429" in note
+
+    def test_issuer_expiry_metadata_sets_severity_without_claiming_a_probe(self) -> None:
+        base = {
+            "required": True,
+            "configured": True,
+            "endpoint": "fuyao.aicubes.cn",
+            "observations": (),
+            "as_of": date(2026, 9, 30),
+        }
+        expired = build_report("ths", **base, expires_at=date(2026, 9, 29))
+        soon = build_report("ths", **base, expires_at=date(2026, 10, 3))
+
+        assert expired.level == LEVEL_ALERT
+        assert expired.expiry_state == "expired"
+        assert expired.owner == "凭据负责人"
+        assert "2026-09-29" in expired.note
+        assert "有效性" in expired.note
+        assert soon.level == LEVEL_WARN
+        assert soon.expiry_state == "expiring-soon"
+        assert "未提供到期日" not in soon.note
+
+    def test_expiry_does_not_elevate_unconfigured_or_optional_sources(self) -> None:
+        expired = date(2026, 9, 29)
+        unconfigured = build_report(
+            "ths",
+            required=True,
+            configured=False,
+            endpoint="fuyao.aicubes.cn",
+            observations=(),
+            expires_at=expired,
+            as_of=date(2026, 9, 30),
+        )
+        optional = build_report(
+            "akshare",
+            required=False,
+            configured=True,
+            endpoint="n/a",
+            observations=(),
+            expires_at=expired,
+            as_of=date(2026, 9, 30),
+        )
+
+        assert unconfigured.level == LEVEL_ALERT
+        assert unconfigured.classes[0][0] == CLASS_NOT_CONFIGURED
+        assert unconfigured.expiry_state == "unknown"
+        assert optional.level == LEVEL_NOT_APPLICABLE
+        assert optional.expiry_state == "unknown"
+        assert optional.expires_at is None
 
 
 def _rendered(reports: dict[str, KeyReport]) -> dict[str, dict[str, object]]:

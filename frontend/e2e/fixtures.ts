@@ -160,6 +160,31 @@ export function scriptsPlane(): Record<string, unknown> {
   }
 }
 
+/** Actual `DataScript` detail returned by `GET /scripts/{script_id}`. */
+export function scriptDetailPlane(): Record<string, unknown> {
+  return {
+    'GET /api/v1/scripts/c32_alpha': envelope(
+      script('c32_alpha', 'C32SCRIPT_ALPHA 日线', '股票数据')
+    ),
+    'GET /api/v1/data/interfaces/': envelope({
+      items: [
+        {
+          id: 91,
+          name: 'c32_stock_daily',
+          display_name: 'C32_REGISTERED_STOCK_DAILY 注册行情接口',
+          description: 'C32_REGISTERED_INTERFACE_DESCRIPTION',
+          category_name: 'C32CAT_ALPHA',
+          is_active: true,
+        },
+      ],
+      total: 1,
+      page: 1,
+      page_size: 100,
+      total_pages: 1,
+    }),
+  }
+}
+
 /** What `/tables` reads: the registry page plus the ods/dwd layer view. */
 export function tablesPlane(): Record<string, unknown> {
   return {
@@ -218,7 +243,13 @@ export function tableDetailPlane(): Record<string, unknown> {
     'GET /api/v1/tables/3201/schema': {
       table_name: 'C32TABLE_ALPHA',
       columns: [
-        { name: 'C32COL_TRADE_DATE', type: 'varchar(10)', nullable: false, key: 'PRI', default: null },
+        {
+          name: 'C32COL_TRADE_DATE',
+          type: 'varchar(10)',
+          nullable: false,
+          key: 'PRI',
+          default: null,
+        },
         { name: 'C32COL_CLOSE', type: 'decimal(10,4)', nullable: true, key: null, default: null },
       ],
       row_count: 12345,
@@ -303,6 +334,7 @@ export function executionsPlane(): Record<string, unknown> {
         },
       ],
     }),
+    'POST /api/v1/pipeline/retry-failed': envelope({ reset: 1 }),
   }
 }
 
@@ -314,6 +346,7 @@ export function tasksPlane(): Record<string, unknown> {
     name: 'C32TASK_ALPHA',
     description: 'c32 fixture task',
     user_id: 1,
+    task_kind: 'script',
     script_id: 'c32_alpha',
     script_name: 'C32SCRIPT_ALPHA 日线',
     schedule_type: 'daily',
@@ -328,12 +361,28 @@ export function tasksPlane(): Record<string, unknown> {
     created_at: ISO,
     updated_at: ISO,
   }
+  const pipelineTask = {
+    ...task,
+    id: 72,
+    name: 'C32TASK_PIPELINE',
+    description: 'c32 pipeline fixture task',
+    task_kind: 'pipeline',
+    script_id: null,
+    script_name: null,
+    schedule_expression: '0 2 * * *',
+    parameters: { domain: 'stock_daily', source: 'ths', limit: 20 },
+  }
   return {
-    'GET /api/v1/tasks/': envelope({ items: [task], total: 1, page: 1, page_size: 20 }),
+    'GET /api/v1/tasks/': envelope({
+      items: [task, pipelineTask],
+      total: 2,
+      page: 1,
+      page_size: 20,
+    }),
     'GET /api/v1/scripts/': scriptsPlane()['GET /api/v1/scripts/'],
     // tasks.py:250-261 really INSERTs into scheduled_tasks — the e2e plane never
     // lets this reach a live backend, it is answered by this stub.
-    'POST /api/v1/tasks/': envelope({ ...task, id: 72, name: 'C32TASK_CREATED' }),
+    'POST /api/v1/tasks/': envelope({ ...task, id: 73, name: 'C32TASK_CREATED' }),
   }
 }
 
@@ -346,10 +395,56 @@ export function tasksPlane(): Record<string, unknown> {
 export function catalogPlane(): Record<string, unknown> {
   return {
     'GET /api/v1/data/catalog': envelope({
+      markets: ['cn', 'eu', 'global'],
       domains: [
         {
           domain: 'c32_stock_daily',
           asset_class: 'stock',
+          markets: ['cn'],
+          capabilities: [
+            {
+              asset_class: 'stock',
+              domain: 'c32_stock_daily',
+              period: '1D',
+              market: 'cn',
+              source: 'ths',
+              verified: true,
+              notes: '',
+              callable: {
+                module: 'opendata.data.providers.ths.models.stock_daily',
+                name: 'ThsStockDailyFetcher.fetch',
+              },
+              endpoint: {
+                name: 'query_domain_data',
+                method: 'GET',
+                path: '/api/v1/data/stock/c32_stock_daily',
+                query_filters: { source: 'ths', period: '1D' },
+              },
+              parameters: [
+                { name: 'symbol', type: 'str', required: true, description: 'Symbol to query' },
+              ],
+            },
+            {
+              asset_class: 'stock',
+              domain: 'c32_stock_daily',
+              period: '1D',
+              market: 'cn',
+              source: 'sina',
+              verified: false,
+              notes: '',
+              callable: {
+                module: 'opendata.data.providers.sina.models.stock_daily',
+                name: 'SinaStockDailyFetcher.fetch',
+              },
+              endpoint: {
+                name: 'query_domain_data',
+                method: 'GET',
+                path: '/api/v1/data/stock/c32_stock_daily',
+                query_filters: { source: 'sina', period: '1D' },
+              },
+              parameters: [],
+            },
+          ],
           display_name: 'C32DOM_ALPHA A股日线',
           layer: 'dwd',
           table: 'dwd_c32_stock_daily',
@@ -389,6 +484,49 @@ export function catalogPlane(): Record<string, unknown> {
         {
           domain: 'c32_index_daily',
           asset_class: 'index',
+          markets: ['eu', 'global'],
+          capabilities: [
+            {
+              asset_class: 'index',
+              domain: 'c32_index_daily',
+              period: '1D',
+              market: 'eu',
+              source: 'ecb',
+              verified: true,
+              notes: '',
+              callable: {
+                module: 'opendata.data.providers.ecb.models.index_daily',
+                name: 'EcbIndexDailyFetcher.fetch',
+              },
+              endpoint: {
+                name: 'query_domain_data',
+                method: 'GET',
+                path: '/api/v1/data/index/c32_index_daily',
+                query_filters: { source: 'ecb', period: '1D' },
+              },
+              parameters: [],
+            },
+            {
+              asset_class: 'index',
+              domain: 'c32_index_daily',
+              period: '1D',
+              market: 'global',
+              source: 'yfinance',
+              verified: false,
+              notes: '',
+              callable: {
+                module: 'opendata.data.providers.yfinance.models.index_daily',
+                name: 'YfinanceIndexDailyFetcher.fetch',
+              },
+              endpoint: {
+                name: 'query_domain_data',
+                method: 'GET',
+                path: '/api/v1/data/index/c32_index_daily',
+                query_filters: { source: 'yfinance', period: '1D' },
+              },
+              parameters: [],
+            },
+          ],
           display_name: 'C32DOM_BETA 指数日线',
           layer: 'dwd',
           table: 'dwd_c32_index_daily',

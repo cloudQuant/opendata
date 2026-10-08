@@ -47,17 +47,25 @@ import argparse
 import ast
 import hashlib
 import importlib.util
+import inspect
+import io
 import json
+import math
+import os
 import re
 import shutil
 import subprocess  # nosec B404
 import sys
 import tempfile
 import time
+import xml.etree.ElementTree as ET  # nosec B405  # pytest-generated private temp report
+from contextlib import redirect_stdout, suppress
 from dataclasses import dataclass
+from datetime import date
 from functools import lru_cache
-from pathlib import Path
-from typing import TYPE_CHECKING, Final
+from pathlib import Path, PurePosixPath
+from typing import TYPE_CHECKING, Any, Final, Protocol, cast
+from urllib.parse import urlsplit
 
 import tomllib
 import yaml
@@ -191,6 +199,18 @@ PYTEST_TALLY = re.compile(r"(\d+) (passed|failed|errors?|skipped|deselected)")
 Facts = dict[str, str]
 
 
+class PortScopeAuditResult(Protocol):
+    """The small result surface the AC-5|02 probe reads from the scope auditor."""
+
+    valid: bool
+    checked_paths: int
+    python_paths: int
+    resource_paths: int
+    problems: tuple[str, ...]
+    batch_field: str
+    problem_summary: str
+
+
 class ProbeError(RuntimeError):
     """A surface a probe needs is missing, which is a finding rather than a skip."""
 
@@ -300,10 +320,10 @@ class Context:
     def tracked(self) -> list[str]:
         """Every path git would ship, measured once."""
         if self._tracked is None:
-            code, out = run_argv(["git", "ls-files"])
+            code, out = run_argv(["git", "ls-files", "-z"], cwd=self.root)
             if code != 0:
-                raise ProbeError(f"git ls-files failed: {out.strip()[:120]}")
-            self._tracked = sorted(line for line in out.splitlines() if line)
+                raise ProbeError(f"git ls-files -z failed: {out.strip()[:120]}")
+            self._tracked = sorted(path for path in out.split("\x00") if path)
         return list(self._tracked)
 
     def item(self, item: str) -> DocItem:
@@ -328,7 +348,7 @@ class Context:
 # --------------------------------------------------------------------------- #
 
 
-def run_argv(argv: Sequence[str]) -> tuple[int, str]:
+def run_argv(argv: Sequence[str], *, cwd: Path = REPO_ROOT) -> tuple[int, str]:
     """Run a literal command in the repository and return ``(exit, output)``.
 
     No shell, so a pattern containing a ``;`` stays a pattern. A non-zero exit is a reading,
@@ -336,6 +356,7 @@ def run_argv(argv: Sequence[str]) -> tuple[int, str]:
 
     Args:
         argv: Executable and its arguments.
+        cwd: Repository directory to run from; defaults to the repository root.
 
     Returns:
         The exit code and stdout+stderr concatenated.
@@ -343,7 +364,7 @@ def run_argv(argv: Sequence[str]) -> tuple[int, str]:
     try:
         proc = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled
             list(argv),
-            cwd=REPO_ROOT,
+            cwd=cwd,
             capture_output=True,
             text=True,
             shell=False,
@@ -597,6 +618,34 @@ def resolve_repair(facts: Facts, repair: Facts) -> Facts:
         else:
             clean[key] = value
     return clean
+
+
+def resolve_break(facts: Facts, break_facts: tuple[tuple[str, str], ...]) -> Facts:
+    """Apply literal counterfacts or a strict ``*fact_key+1`` mutation.
+
+    The relative form keeps an upper-bound counterfact one unit above the snapshot measured in
+    this run. It deliberately accepts only that exact spelling and a non-negative decimal fact;
+    malformed or missing references fail explicitly instead of silently becoming a literal.
+    """
+    mutated = dict(facts)
+    for key, value in break_facts:
+        if not value.startswith("*") or "+" not in value:
+            mutated[key] = value
+            continue
+        match = re.fullmatch(r"\*([A-Za-z][A-Za-z0-9_]*)\+1", value)
+        if match is None:
+            raise ValueError(f"invalid relative break value for {key}: {value!r}")
+        reference = match.group(1)
+        referenced = facts.get(reference)
+        if referenced is None:
+            raise ValueError(f"relative break for {key} references missing fact {reference!r}")
+        if re.fullmatch(r"[0-9]+", referenced) is None:
+            raise ValueError(
+                f"relative break for {key} requires a non-negative integer fact "
+                f"{reference!r}, got {referenced!r}"
+            )
+        mutated[key] = str(int(referenced) + 1)
+    return mutated
 
 
 def first_capture(text: str, pattern: str) -> str:
@@ -877,15 +926,32 @@ def judge_ac1_02(facts: Facts) -> Verdict:
 
 
 def whitelist_buckets(text: str) -> list[str]:
-    """The path whitelist an item enumerates, read back out of its own wording."""
+    """Read only complete backticked paths from the item's whitelist wording."""
     buckets: list[str] = []
     for token in BACKTICK.findall(text):
         bare = token.strip().rstrip("、,。")
-        if " " in bare or bare.startswith(("from ", "import ")):
+        if not _is_complete_reference_path(bare):
             continue
-        if "/" in bare or bare.endswith(".md") or bare.startswith("LICENSE"):
-            buckets.append("opendata_http/" if bare == "akshare/" else bare)
+        normalized = "opendata_http/" if bare == "akshare/" else bare
+        if normalized not in buckets:
+            buckets.append(normalized)
     return buckets
+
+
+def _is_complete_reference_path(value: str) -> bool:
+    """Accept directory paths and filename-shaped tokens, excluding concepts and commands."""
+    if not value or "\\" in value or ":" in value or value.startswith("/"):
+        return False
+    directory = value.endswith("/")
+    path_text = value[:-1] if directory else value
+    path = PurePosixPath(path_text)
+    if (
+        not path.parts
+        or path.as_posix() != path_text
+        or any(part in {"", ".", ".."} for part in path.parts)
+    ):
+        return False
+    return directory or bool(path.suffix) or path.name.startswith("LICENSE-")
 
 
 def covered_by(path: str, buckets: Sequence[str]) -> bool:
@@ -903,17 +969,98 @@ def covered_by(path: str, buckets: Sequence[str]) -> bool:
     return False
 
 
+def bare_token_paths(root: Path, paths: Iterable[str]) -> tuple[set[str], list[str]]:
+    """Return tracked files with a bare token and paths that could not be read."""
+    pattern = re.compile(rb"\bakshare\b")
+    hits: set[str] = set()
+    unreadable: list[str] = []
+    for rel in paths:
+        path = root / rel
+        if not path.is_file():
+            unreadable.append(rel)
+            continue
+        try:
+            content = path.read_bytes()
+        except OSError:
+            unreadable.append(rel)
+            continue
+        if pattern.search(content):
+            hits.add(rel)
+    return hits, unreadable
+
+
+def reference_policy_audit(
+    ctx: Context,
+    *,
+    actual_hit_paths: set[str],
+    excluded_paths: set[str],
+) -> Facts:
+    """Audit path metadata, source hashes and both sides of the hit/register join."""
+    rel = "docs/quality/akshare-reference-allowlist.json"
+    raw: object = None
+    parse_error = ""
+    policy_module = script_module("scripts/codemod/verify_no_akshare.py")
+    try:
+        raw = json.loads(ctx.read(rel))
+        policy = policy_module.parse_reference_policy(raw)
+    except (ProbeError, json.JSONDecodeError, policy_module.ReferencePolicyError) as exc:
+        policy = None
+        parse_error = str(exc)
+
+    problems: list[str] = []
+    if policy is not None:
+        problems = policy_module.reference_policy_problems(
+            raw,
+            ctx.root,
+            actual_hit_paths=actual_hit_paths,
+            excluded_paths=excluded_paths,
+        )
+    unregistered = [problem for problem in problems if problem.startswith("unregistered hit path:")]
+    stale_paths = [problem for problem in problems if problem.startswith("stale registered path:")]
+    sha_mismatch = [problem for problem in problems if problem.startswith("stale sha256:")]
+    metadata_problems = [
+        problem
+        for problem in problems
+        if problem not in unregistered
+        and problem not in stale_paths
+        and problem not in sha_mismatch
+    ]
+    entries = raw.get("entries") if isinstance(raw, dict) else None
+    entry_count = len(entries) if isinstance(entries, list) else 0
+    exception_count = (
+        sum(len(entry.ast_exceptions) for entry in policy.entries) if policy is not None else 0
+    )
+    invalid = policy is None or bool(problems)
+    return {
+        "policy_valid": flag(not invalid),
+        "policy_error": (parse_error or "; ".join(problems))[:180] or "-",
+        "policy_entries": count(entry_count),
+        "metadata_exceptions": count(exception_count),
+        "metadata_expected": count(len(policy_module.EXPECTED_METADATA_EXCEPTIONS)),
+        "unregistered": count(len(unregistered)),
+        "unregistered_sample": ", ".join(
+            problem.removeprefix("unregistered hit path: ") for problem in unregistered[:10]
+        ),
+        "stale_paths": count(len(stale_paths)),
+        "sha_mismatch": count(len(sha_mismatch)),
+        "metadata_invalid": count(int(policy is None or bool(metadata_problems))),
+    }
+
+
 def measure_ac1_03(ctx: Context) -> Facts:
     """Ask where the bare word ``akshare`` still appears and whether the item lists those places."""
     item = ctx.item("AC-1|03")
     buckets = whitelist_buckets(item.text)
-    pattern = re.compile(r"\bakshare\b")
     tracked = ctx.tracked()
-    hits = grep_files(tracked, pattern)
-    vendored = [rel for rel in hits if rel.startswith("opendata_http/")]
-    outside = [
-        rel for rel in hits if not covered_by(rel, buckets) and not rel.startswith("opendata_http/")
-    ]
+    hit_paths, unreadable = bare_token_paths(ctx.root, tracked)
+    excluded = {rel for rel in hit_paths if covered_by(rel, buckets)}
+    policy_facts = reference_policy_audit(
+        ctx,
+        actual_hit_paths=hit_paths,
+        excluded_paths=excluded,
+    )
+    unregistered = int(policy_facts["unregistered"])
+    vendored = sorted(rel for rel in hit_paths if rel.startswith("opendata_http/"))
     baseline = json.loads(ctx.read("docs/quality/zero-dep-baseline.json"))
     integration = sorted(
         {
@@ -925,36 +1072,65 @@ def measure_ac1_03(ctx: Context) -> Facts:
     return {
         "buckets": count(len(buckets)),
         "bucket_names": ", ".join(buckets) or "(none)",
-        "hit_files": count(len(hits)),
+        "hit_files": count(len(hit_paths)),
         "vendored": count(len(vendored)),
-        "outside": count(len(outside)),
-        "outside_sample": ", ".join(sorted(outside)[:10]),
-        "outside_more": count(max(0, len(outside) - 10)),
+        "outside": count(unregistered),
+        "outside_sample": policy_facts["unregistered_sample"],
+        "outside_more": count(max(0, unregistered - 10)),
+        "unreadable": count(len(unreadable)),
+        **policy_facts,
         "integration_frozen": count(len(integration)),
         "integration_files": ", ".join(integration),
     }
 
 
 def judge_ac1_03(facts: Facts) -> Verdict:
-    """``AC-1|03``: every bare-token hit sits somewhere the item itself names."""
-    ok = facts["outside"] == "0"
+    """``AC-1|03``: old paths stay named and every other hit has a current reviewed entry."""
+    ok = (
+        facts["outside"] == "0"
+        and facts["unreadable"] == "0"
+        and facts["policy_valid"] == "yes"
+        and facts["stale_paths"] == "0"
+        and facts["sha_mismatch"] == "0"
+        and facts["metadata_invalid"] == "0"
+        and facts["metadata_exceptions"] == facts["metadata_expected"]
+    )
     readings = (
         f"whitelist read back out of the item ({facts['buckets']} entries): "
         f"{facts['bucket_names']}",
         f"tracked files carrying the bare word `akshare` = {facts['hit_files']}, of which the "
         f"vendored tree = {facts['vendored']}",
-        f"hits outside that whitelist = {facts['outside']} (+{facts['outside_more']} unshown): "
+        f"unregistered hits outside that whitelist = {facts['outside']} "
+        f"(+{facts['outside_more']} unshown): "
         f"{facts['outside_sample'] or '-'}",
+        f"path register valid = {facts['policy_valid']} ({facts['policy_entries']} entries; "
+        f"stale paths={facts['stale_paths']}, stale SHA={facts['sha_mismatch']}, "
+        f"invalid metadata/schema={facts['metadata_invalid']}, "
+        f"unreadable tracked files={facts['unreadable']})",
+        f"exact AST metadata exceptions = {facts['metadata_exceptions']}"
+        f"/{facts['metadata_expected']}",
         f"AC-16's frozen integration-layer findings = {facts['integration_frozen']} "
         f"({facts['integration_files']})",
     )
-    reason = (
-        ""
-        if ok
-        else "the item's enumerated whitelist does not describe the tree: the word is in "
-        "build and operational surfaces it never listed. Closing this needs a wording decision "
-        "(what the whitelist is supposed to cover after A2/B5), not a re-read"
-    )
+    reasons: list[str] = []
+    if facts["outside"] != "0":
+        reasons.append(f"{facts['outside']} unregistered hit path(s) remain")
+    if facts["unreadable"] != "0":
+        reasons.append(f"{facts['unreadable']} tracked path(s) could not be read")
+    if facts["policy_valid"] != "yes":
+        reasons.append(f"path register is invalid ({facts['policy_error']})")
+    if facts["stale_paths"] != "0":
+        reasons.append(f"{facts['stale_paths']} registered path(s) are no longer current hits")
+    if facts["sha_mismatch"] != "0":
+        reasons.append(f"{facts['sha_mismatch']} registered path SHA value(s) are stale")
+    if facts["metadata_invalid"] != "0":
+        reasons.append("path register metadata is missing or invalid")
+    if facts["metadata_exceptions"] != facts["metadata_expected"]:
+        reasons.append(
+            f"AST exception bindings differ from the scanner's {facts['metadata_expected']} "
+            "approved contexts"
+        )
+    reason = "; ".join(reasons) if not ok else ""
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
 
@@ -1069,7 +1245,7 @@ def judge_ac1_04(facts: Facts) -> Verdict:
 
 
 def measure_ac1_05(ctx: Context) -> Facts:
-    """Read the two database names from four configuration surfaces, then ask about runtime."""
+    """Read four database-name surfaces and validate saved C65 runtime evidence."""
     config = ctx.read("opendata/core/config.py")
 
     def default(field: str) -> str:
@@ -1093,21 +1269,44 @@ def measure_ac1_05(ctx: Context) -> Facts:
     surfaces["init_sql"] += f"{created[1] if len(created) > 1 else '(absent)'}"
     expected = f"{MAIN_DB} / {WAREHOUSE_DB}"
     consistent = flag(all(text == expected for text in surfaces.values()))
-    rc, out = run_argv(["docker", "info", "--format", "{{.ServerVersion}}"])
-    note = (out.strip().splitlines() or ["(no output)"])[-1][:80]
+    root_entry = str(ctx.root.resolve())
+    inserted_root = root_entry not in sys.path
+    if inserted_root:
+        sys.path.insert(0, root_entry)
+    try:
+        from scripts.quality.runtime_stack_evidence import validate as validate_runtime_stack
+
+        runtime_result = validate_runtime_stack(ctx.root)
+    finally:
+        if inserted_root:
+            with suppress(ValueError):
+                sys.path.remove(root_entry)
     return {
         **surfaces,
         "consistent": consistent,
-        "docker_rc": count(rc),
-        "docker_note": note,
-        "runtime": "no-engine" if rc != 0 else "not-started",
+        "runtime": runtime_result.state,
+        "runtime_valid": flag(runtime_result.valid),
+        "runtime_issue_count": count(len(runtime_result.issues)),
+        "runtime_issue_summary": ",".join(issue.code for issue in runtime_result.issues[:8])
+        or "none",
+        "runtime_endpoint": runtime_result.facts.get("endpoint", ""),
+        "runtime_image": runtime_result.facts.get("image_id", ""),
+        "runtime_source": runtime_result.facts.get("source_identity", ""),
+        "runtime_health_database": runtime_result.facts.get("health_database", "unknown"),
+        "runtime_static_asset_count": runtime_result.facts.get("static_asset_count", "0"),
+        "runtime_frontend_identity": runtime_result.facts.get("frontend_identity", "unverified"),
     }
 
 
 def judge_ac1_05(facts: Facts) -> Verdict:
     """``AC-1|05``: the names agree in four places -- and the stack serving is a second claim."""
     static_ok = facts["consistent"] == "yes"
-    ok = static_ok and facts["runtime"] == "ok"
+    runtime_ok = (
+        facts["runtime"] == "validated"
+        and facts["runtime_valid"] == "yes"
+        and facts["runtime_issue_count"] == "0"
+    )
+    ok = static_ok and runtime_ok
     expected = f"{MAIN_DB} / {WAREHOUSE_DB}"
     readings = (
         f"config.py defaults, .env.example, docker-compose.yml, init.sql all read {expected} = "
@@ -1117,15 +1316,20 @@ def judge_ac1_05(facts: Facts) -> Verdict:
         f"  docker-compose.yml = {facts['compose']}",
         f"  init.sql = {facts['init_sql']}",
         f"backend start / frontend login / GET /health = {facts['runtime']} "
-        f"(docker info exit {facts['docker_rc']}: {facts['docker_note']})",
+        f"(evidence issues {facts['runtime_issue_count']}: {facts['runtime_issue_summary']})",
+        f"  isolated endpoint = {facts['runtime_endpoint']}; image/source = "
+        f"{facts['runtime_image']} / {facts['runtime_source']}",
+        f"  database = {facts['runtime_health_database']}; static assets = "
+        f"{facts['runtime_static_asset_count']}; frontend identity = "
+        f"{facts['runtime_frontend_identity']}",
     )
     reason = (
         ""
         if ok
-        else "the four configuration surfaces are half the item; the other half is that the stack "
-        "actually serves -- backend up, a frontend login, /health answering. It needs the "
-        "stack started, which is the user's call, so the runtime face is reported as no-engine or "
-        "not-started rather than assumed to work"
+        else "the four configuration surfaces are half the item; the other half requires current "
+        "apply evidence for the isolated stack, a healthy connected database, validated static "
+        "assets, and authenticated dashboard/catalog pages. The runtime reading names any failed "
+        "or missing evidence"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
@@ -1242,26 +1446,116 @@ def judge_ac1_07(facts: Facts) -> Verdict:
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
 
+def _parse_rights_registration_table(text: str) -> tuple[bool, list[str], list[dict[str, str]]]:
+    """Parse only the single, well-formed registration table in section 1."""
+    lines = text.splitlines()
+    section_heads = [
+        index
+        for index, line in enumerate(lines)
+        if re.fullmatch(r"##\s+1\.\s*登记表\s*", line.strip())
+    ]
+    if len(section_heads) != 1:
+        return False, [], []
+
+    start = section_heads[0] + 1
+    end = next(
+        (index for index in range(start, len(lines)) if re.match(r"^##\s+", lines[index])),
+        len(lines),
+    )
+    blocks: list[list[str]] = []
+    current: list[str] = []
+    for line in lines[start:end]:
+        stripped = line.strip()
+        if stripped.startswith("|") and stripped.endswith("|"):
+            current.append(stripped)
+        elif current:
+            blocks.append(current)
+            current = []
+    if current:
+        blocks.append(current)
+    if len(blocks) != 1 or len(blocks[0]) < 3:
+        return False, [], []
+
+    def cells(line: str) -> list[str]:
+        return [cell.strip() for cell in line.strip("|").split("|")]
+
+    header = cells(blocks[0][0])
+    separator = cells(blocks[0][1])
+    required = (
+        "#",
+        "数据源",
+        "条款链接",
+        "允许本项目落库",
+        "允许再分发",
+        "允许商业使用",
+        "复核日期",
+        "责任人",
+    )
+    if (
+        len(header) != len(separator)
+        or len(set(header)) != len(header)
+        or any(name not in header for name in required)
+        or not all(re.fullmatch(r":?-{3,}:?", cell) for cell in separator)
+    ):
+        return False, header, []
+
+    records: list[dict[str, str]] = []
+    row_ids: set[str] = set()
+    for line in blocks[0][2:]:
+        values = cells(line)
+        if (
+            len(values) != len(header)
+            or not re.fullmatch(r"\d+", values[0])
+            or values[0] in row_ids
+        ):
+            return False, header, []
+        row_ids.add(values[0])
+        records.append(dict(zip(header, values, strict=True)))
+    return bool(records), header, records
+
+
 def measure_ac1_08(ctx: Context) -> Facts:
-    """Parse the rights registry and ask whether it is filled in, not merely present."""
-    text = ctx.read("docs/data-rights-registry.md")
-    rows = [line for line in text.splitlines() if re.match(r"^\|\s*\d+\s*\|", line)]
-    header = next((line for line in text.splitlines() if line.startswith("| #")), "")
-    cells = [c.strip() for c in header.strip("|").split("|")]
+    """Measure only the section-1 registration table and its required fields."""
+    try:
+        text = ctx.read("docs/data-rights-registry.md")
+    except ProbeError:
+        text = ""
+    table_valid, cells, records = _parse_rights_registration_table(text)
+    if not table_valid:
+        records = []
 
-    def column(row: str, name: str) -> str:
-        for index, cell in enumerate(cells):
-            if name in cell:
-                parts = [c.strip() for c in row.strip("|").split("|")]
-                if index < len(parts):
-                    return parts[index]
-        return ""
+    def unspecified(value: str) -> bool:
+        normalized = value.strip().casefold()
+        if normalized in {"", "-", "—", "n/a", "na", "none", "tbd", "unknown"}:
+            return True
+        return any(
+            marker in normalized
+            for marker in ("待确认", "未指定", "未填写", "待分配", "unspecified")
+        )
 
-    dated = [r for r in rows if re.search(r"\d{4}-\d{2}-\d{2}", column(r, "复核日期"))]
+    def has_http_url(value: str) -> bool:
+        if not value or re.search(r"\s", value):
+            return False
+        try:
+            parsed = urlsplit(value)
+        except ValueError:
+            return False
+        return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+
+    dated = 0
+    undecided = 0
+    unlinked = 0
+    responsible_missing = 0
     uses = ("允许本项目落库", "允许再分发", "允许商业使用")
-    undecided = [r for r in rows if any("待确认" in column(r, u) for u in uses)]
-    unlinked = [r for r in rows if not column(r, "条款链接").startswith("http")]
-    named = {column(r, "数据源") for r in rows}
+    for record in records:
+        review_date = record["复核日期"]
+        with suppress(ValueError):
+            dated += int(date.fromisoformat(review_date).isoformat() == review_date)
+        undecided += int(any(unspecified(record[name]) for name in uses))
+        unlinked += int(not has_http_url(record["条款链接"]))
+        responsible_missing += int(unspecified(record["责任人"]))
+
+    named = {record["数据源"] for record in records}
     inventory_text = ctx.read(RIGHTS_INVENTORY)
     cited: set[str] = set()
     for line in inventory_text.splitlines():
@@ -1271,11 +1565,13 @@ def measure_ac1_08(ctx: Context) -> Facts:
     known = [row for row in named if row]
     uncovered = sorted(c for c in cited if not any(c in row or row.startswith(c) for row in known))
     return {
-        "rows": count(len(rows)),
+        "table_valid": "yes" if table_valid else "no",
+        "rows": count(len(records)),
         "columns": ", ".join(cells),
-        "dated": count(len(dated)),
-        "undecided": count(len(undecided)),
-        "unlinked": count(len(unlinked)),
+        "dated": count(dated),
+        "undecided": count(undecided),
+        "unlinked": count(unlinked),
+        "responsible_missing": count(responsible_missing),
         "cited": count(len(cited)),
         "uncovered": count(len(uncovered)),
         "uncovered_sample": ", ".join(uncovered[:6]),
@@ -1283,43 +1579,203 @@ def measure_ac1_08(ctx: Context) -> Facts:
 
 
 def judge_ac1_08(facts: Facts) -> Verdict:
-    """``AC-1|08``: the registry exists, covers every cited source, and has been reviewed."""
+    """``AC-1|08``: section 1 is complete for all cited sources and names reviewers."""
     ok = (
-        int(facts["rows"]) > 0
+        facts["table_valid"] == "yes"
+        and int(facts["rows"]) > 0
         and facts["dated"] == facts["rows"]
         and facts["undecided"] == "0"
         and facts["unlinked"] == "0"
+        and facts["responsible_missing"] == "0"
         and facts["uncovered"] == "0"
     )
     readings = (
-        f"rows = {facts['rows']}; columns = {facts['columns']}",
+        f"§1 table valid = {facts['table_valid']}; rows = {facts['rows']}; "
+        f"columns = {facts['columns']}",
         f"rows carrying a real 复核日期 = {facts['dated']}/{facts['rows']}",
         f"rows still answering a permitted use with 待确认 = {facts['undecided']}/{facts['rows']}",
         f"rows whose 条款链接 is prose instead of a URL = {facts['unlinked']}/{facts['rows']}",
+        f"rows with an empty or unspecified 责任人 = "
+        f"{facts['responsible_missing']}/{facts['rows']}",
         f"registry rows cited by {RIGHTS_INVENTORY} = {facts['cited']}, citations with no row = "
         f"{facts['uncovered']}"
         + (f" ({facts['uncovered_sample']})" if facts["uncovered_sample"] else ""),
     )
     reason = (
-        "the registry is a shell waiting on a legal/product review: no row carries a review date, "
-        "every permitted-use cell says 待确认, and some clause links are prose. Filling it in is a "
-        "decision this round cannot make for the user"
+        "§1 is missing, malformed, or empty"
+        if facts["table_valid"] != "yes"
+        else "one or more source rows lacks a complete clause URL, permitted-use decision, "
+        "review date, responsible party, or cited-source match"
         if not ok
         else ""
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
 
+def classify_secret_paths(paths: Iterable[str]) -> tuple[list[str], list[str], list[str]]:
+    """Return forbidden env files, non-root templates, and forbidden generated paths."""
+    env_files: list[str] = []
+    templates: list[str] = []
+    generated: list[str] = []
+    for path in paths:
+        parts = Path(path).parts
+        name = parts[-1] if parts else ""
+        if name == ".env.example":
+            templates.append(path)
+        elif re.match(r"^\.env(?:$|\.)", name):
+            env_files.append(path)
+        if ".idea" in parts or name.endswith(".pid"):
+            generated.append(path)
+    return sorted(env_files), sorted(templates), sorted(generated)
+
+
+def config_has_no_global_path_exemption(config: str) -> bool:
+    """Require the scanner config to leave every path, including `.env.example`, eligible."""
+    try:
+        parsed = tomllib.loads(config)
+    except tomllib.TOMLDecodeError:
+        return False
+    allowlist = parsed.get("allowlist")
+    if allowlist is None:
+        return True
+    if not isinstance(allowlist, dict):
+        return False
+    paths = allowlist.get("paths", [])
+    return isinstance(paths, list) and not paths
+
+
+def _safe_finding_summary(records: object) -> tuple[int, str]:
+    """Render only count and rule/file/line; never serialize match or secret fields."""
+    if not isinstance(records, list):
+        return 0, "report-shape-invalid"
+    locations: list[str] = []
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+        rule = record.get("RuleID")
+        path = record.get("File")
+        line = record.get("StartLine")
+        if isinstance(rule, str) and isinstance(path, str) and isinstance(line, int):
+            locations.append(f"{rule}@{path}:{line}")
+    return len(records), ", ".join(locations[:10]) or "-"
+
+
+def scan_env_template(
+    template_text: str, config: str, *, tool: str = "gitleaks"
+) -> tuple[int, str]:
+    """Run a redacted no-git scan of only a temporary copy of the env template."""
+    if not config_has_no_global_path_exemption(config):
+        return 2, "global-path-exemption-present-or-config-invalid"
+    with tempfile.TemporaryDirectory(prefix="opendata-env-template-scan-") as temporary:
+        root = Path(temporary)
+        source = root / "source"
+        source.mkdir()
+        (source / ".env.example").write_text(template_text, encoding="utf-8")
+        config_path = root / ".gitleaks.toml"
+        config_path.write_text(config, encoding="utf-8")
+        report_path = root / "report.json"
+        argv = [
+            tool,
+            "detect",
+            "--no-git",
+            "--source",
+            str(source),
+            "--config",
+            str(config_path),
+            "--redact",
+            "--report-format",
+            "json",
+            "--report-path",
+            str(report_path),
+        ]
+        try:
+            result = subprocess.run(  # noqa: S603 -- argv uses only pinned scanner config.
+                argv,
+                capture_output=True,
+                text=True,
+                check=False,
+            )  # nosec B603 -- fixed argv; no shell and only a repository-pinned scanner.
+        except FileNotFoundError:
+            return 127, "scanner-not-installed"
+        if not report_path.is_file():
+            return result.returncode or 2, "report-missing"
+        try:
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return result.returncode or 2, "report-invalid"
+        finding_count, locations = _safe_finding_summary(report)
+        return result.returncode, f"findings={finding_count}; locations={locations}"
+
+
+def redacted_gitleaks_summary(output: str, exit_code: int) -> str:
+    """Extract safe location metadata without echoing finding text or secret values."""
+    rule = "unknown-rule"
+    path = "unknown-file"
+    line = "?"
+    locations: list[str] = []
+    for text in output.splitlines():
+        found_rule = re.match(r"^\s*RuleID:\s*(.+?)\s*$", text)
+        found_path = re.match(r"^\s*File:\s*(.+?)\s*$", text)
+        found_line = re.match(r"^\s*(?:StartLine|Line):\s*(\d+)\s*$", text)
+        if found_rule:
+            if rule != "unknown-rule" or path != "unknown-file" or line != "?":
+                locations.append(f"{rule}@{path}:{line}")
+            rule, path, line = found_rule.group(1), "unknown-file", "?"
+        if found_path:
+            path = found_path.group(1)
+        if found_line:
+            line = found_line.group(1)
+    if rule != "unknown-rule" or path != "unknown-file" or line != "?":
+        locations.append(f"{rule}@{path}:{line}")
+    return (
+        f"exit={exit_code}; findings={len(locations)}; locations={', '.join(locations[:10]) or '-'}"
+    )
+
+
+GENERIC_API_KEY_ALLOWED_REGEXES: Final = (
+    r"^[A-Z0-9]{1,12}(\.[A-Z0-9_]{1,14}){3,}$",
+    r"^API_KEY_FAILURE_DELAY_SECONDS=0\.05$",
+)
+
+
+def public_gitleaks_rule_shapes(rule_map: dict[str, Any]) -> bool:
+    """Accept only the two reviewed public-rule patterns, with no broadened additions."""
+    if len(rule_map) != 2 or set(rule_map) != {"curl-auth-header", "generic-api-key"}:
+        return False
+    curl_rule = rule_map.get("curl-auth-header")
+    api_rule = rule_map.get("generic-api-key")
+    if not isinstance(curl_rule, dict) or not isinstance(api_rule, dict):
+        return False
+    curl_allow = curl_rule.get("allowlist")
+    api_allow = api_rule.get("allowlist")
+    if not isinstance(curl_allow, dict) or not isinstance(api_allow, dict):
+        return False
+    return (
+        curl_allow.get("paths") == [r"\.md$"]
+        and api_allow.get("regexTarget") == "secret"
+        and api_allow.get("regexes") == list(GENERIC_API_KEY_ALLOWED_REGEXES)
+    )
+
+
 def measure_ac1_09(ctx: Context) -> Facts:
-    """Split the clause into git's answer, the scanner's exemptions, and upstream files."""
+    """Split tracked paths, exact allowlist shape and actual scanner runs."""
     tracked = ctx.tracked()
     literal = [p for p in tracked if re.search(r"\.env|\.idea|\.pid", p)]
-    strict = [p for p in tracked if re.search(r"(^|/)\.env$|(^|/)\.idea(/|$)|\.pid$", p)]
+    env_files, templates, generated = classify_secret_paths(tracked)
     config = ctx.read(".gitleaks.toml")
-    head = config.split("[[rules]]")[0]
-    allow_paths = re.findall(r"'''([^'\n]+)'''", head)
-    rule_blocks = config.count("[[rules]]")
-    non_template = [p for p in allow_paths if "env" not in p and "example" not in p]
+    parsed = tomllib.loads(config)
+    allowlist = parsed.get("allowlist", {})
+    allow_paths = allowlist.get("paths", []) if isinstance(allowlist, dict) else []
+    raw_rules = parsed.get("rules", [])
+    rule_blocks = raw_rules if isinstance(raw_rules, list) else []
+    rule_map = {
+        rule.get("id"): rule
+        for rule in rule_blocks
+        if isinstance(rule, dict) and isinstance(rule.get("id"), str)
+    }
+    global_paths = [str(path) for path in allow_paths] if isinstance(allow_paths, list) else []
+    exact_paths = not global_paths
+    rule_shapes = public_gitleaks_rule_shapes(cast("dict[str, Any]", rule_map))
     files = (
         "opendata_http/stock/cons.py",
         "opendata_http/bond/bond_convert.py",
@@ -1333,57 +1789,85 @@ def measure_ac1_09(ctx: Context) -> Facts:
         r"(?:token|api_?key|password|pwd|secret)[\"']?\s*[:=]\s*[\"'][A-Za-z0-9_.\-]{16,}[\"']",
         re.IGNORECASE,
     )
-    live = grep_files([f for f in files if (REPO_ROOT / f).is_file()], cred_shape)
+    live = grep_files([f for f in files if (ctx.root / f).is_file()], cred_shape)
     code, out = run_argv([sys.executable, "scripts/quality/secret_scan_check.py"])
-    lines = [line for line in out.splitlines() if line.strip()]
+    template_text = ctx.read(".env.example") if (ctx.root / ".env.example").is_file() else ""
+    template_config_ok = config_has_no_global_path_exemption(config)
+    manifest = json.loads(ctx.read("docs/quality/secret-scan.json"))
+    scan_argv = manifest.get("scan_argv", [])
+    tool = str(scan_argv[0]) if isinstance(scan_argv, list) and scan_argv else "gitleaks"
+    template_rc, template_summary = scan_env_template(template_text, config, tool=tool)
     return {
         "literal": count(len(literal)),
         "literal_sample": ", ".join(literal[:5]),
-        "strict": count(len(strict)),
-        "allow_paths": count(len(allow_paths)),
-        "allow_names": ", ".join(allow_paths),
-        "non_template": count(len(non_template)),
-        "non_template_names": ", ".join(non_template),
-        "rule_blocks": count(rule_blocks),
+        "strict": count(len(env_files) + len(generated)),
+        "env_paths": count(len(env_files)),
+        "env_sample": ", ".join(env_files[:5]),
+        "template_paths": count(len(templates)),
+        "template_names": ", ".join(templates),
+        "generated_paths": count(len(generated)),
+        "generated_sample": ", ".join(generated[:5]),
+        "allow_paths": count(len(global_paths)),
+        "allow_names": ", ".join(global_paths),
+        "exact_paths": flag(exact_paths),
+        "non_template": count(len(global_paths)),
+        "non_template_names": ", ".join(global_paths),
+        "rule_blocks": count(len(rule_blocks)),
+        "rule_shapes": flag(rule_shapes),
         "registered": count(len(registered)),
         "upstream_files": count(len(files)),
         "live_shapes": count(len(live)),
         "gitleaks_rc": count(code),
-        "secret_check_line": (lines[-1] if lines else "(no output)")[:110],
+        "secret_check_line": redacted_gitleaks_summary(out, code),
+        "template_config_ok": flag(template_config_ok),
+        "template_scan_rc": count(template_rc),
+        "template_scan_summary": template_summary,
     }
 
 
 def judge_ac1_09(facts: Facts) -> Verdict:
-    """``AC-1|09``: nothing secret is tracked, and exemptions are only docs/templates."""
+    """``AC-1|09``: real env/IDE/pid paths fail, and the sole template is scanned."""
     ok = (
-        facts["literal"] == "0"
-        and facts["strict"] == "0"
+        facts["strict"] == "0"
+        and facts["template_paths"] == "1"
+        and facts["template_names"] == ".env.example"
+        and facts["exact_paths"] == "yes"
+        and facts["allow_paths"] == "0"
         and facts["non_template"] == "0"
-        and facts["rule_blocks"] == "0"
+        and facts["rule_blocks"] == "2"
+        and facts["rule_shapes"] == "yes"
         and facts["registered"] == facts["upstream_files"]
         and facts["live_shapes"] == "0"
         and facts["gitleaks_rc"] == "0"
+        and facts["template_config_ok"] == "yes"
+        and facts["template_scan_rc"] == "0"
     )
     readings = (
-        f"`git ls-files | grep -E '\\.env|\\.idea|\\.pid'` -> {facts['literal']} path(s)"
-        + (f" ({facts['literal_sample']})" if facts["literal_sample"] else ""),
-        f"the same grep as real files (`(^|/)\\.env$`, `.idea/`, `*.pid`) -> {facts['strict']}",
-        f".gitleaks.toml global allowlist = {facts['allow_paths']} ({facts['allow_names']}); "
-        f"entries that are neither a doc nor a template = {facts['non_template']}"
-        + (f" ({facts['non_template_names']})" if facts["non_template_names"] else ""),
-        f"per-rule allowlist blocks = {facts['rule_blocks']} (C36 added a shape-scoped "
-        f"generic-api-key exemption, whose widening C36 measured by counterfact)",
+        f"legacy path grep finds {facts['literal']} paths because the allowed template is named; "
+        f"real `.env`/`.env.*`, `.idea` components, or `.pid` files = {facts['strict']}"
+        + (
+            f" ({facts['env_sample']}; {facts['generated_sample']})"
+            if facts["strict"] != "0"
+            else ""
+        ),
+        f"tracked env templates = {facts['template_paths']} ({facts['template_names']}); "
+        f"global path exemptions = {facts['allow_paths']} (none required = {facts['exact_paths']})",
+        f"global path exemption names = {facts['non_template']} "
+        + (f"({facts['non_template_names']})" if facts["non_template_names"] else "-"),
+        f"per-rule allowlist blocks = {facts['rule_blocks']}; "
+        f"exact public-rule exceptions preserved = "
+        f"{facts['rule_shapes']}",
         f"upstream credential files registered in docs/evidence/A0/secret-audit.txt = "
         f"{facts['registered']}/{facts['upstream_files']}; cred-shaped literals left in them = "
         f"{facts['live_shapes']}",
         f"$ python scripts/quality/secret_scan_check.py -> exit {facts['gitleaks_rc']}: "
         f"{facts['secret_check_line']}",
+        f"isolated `.env.example` scan (unchanged config, no path exclusions) -> "
+        f"exit {facts['template_scan_rc']}: {facts['template_scan_summary']}",
     )
     reason = (
-        "the literal grep the item names hits `.env.example`, the template AC-1|03 permits; the "
-        "allowlist is not only docs/templates -- it carries a generated-artifact path plus a "
-        "shape-scoped rule exemption. Both need a wording or config decision, and the counterfact "
-        "evidence in docs/evidence/C36 shows the exemption is not free"
+        "a real environment/IDE/pid path, stale or broadened allowlist, changed public rule "
+        "exception, unregistered upstream file, or unscanned/credential-bearing template remains"
         if not ok
         else ""
     )
@@ -1811,7 +2295,17 @@ def script_module(rel: str) -> ModuleType:
     # class through the module registry during processing, so an unregistered module dies with
     # ``AttributeError: 'NoneType' object has no attribute '__dict__'`` -- a confusing way for a
     # probe to fail while the tool it loads is perfectly healthy.
-    spec = importlib.util.spec_from_file_location(f"opendata_script_{rel}", path)
+    # The synthetic name must be a dotless, slash-free identifier. ``ModuleSpec.parent`` is
+    # ``name.rpartition(".")[0]``, and ``__package__`` is that parent, so naming the module after
+    # its path (``...verify_no_akshare.py``) hands a top-level script a non-empty ``__package__``.
+    # A script that branches on ``if __package__:`` to choose between package-relative imports and
+    # ``sys.path.insert(0, REPO_ROOT)`` then takes the package branch and dies with
+    # ``ModuleNotFoundError: No module named 'scripts.quality'`` -- under ``make``, whose
+    # ``sys.path[0]`` is ``scripts/quality``, not the repository root.
+    spec = importlib.util.spec_from_file_location(
+        f"opendata_script_{rel.replace('/', '_').removesuffix('.py')}",
+        path,
+    )
     if spec is None or spec.loader is None:
         raise ProbeError(f"{rel} cannot be loaded as a module")
     module = importlib.util.module_from_spec(spec)
@@ -3088,9 +3582,20 @@ CATALOG_E2E_REL: Final = "frontend/e2e/scripts.spec.ts"
 ROUTER_REL: Final = "frontend/src/router/index.ts"
 VITE_CONFIG_REL: Final = "frontend/vite.config.ts"
 FRONTEND_COLLECTOR: Final = "scripts/quality/frontend_test_collection.py"
+CATALOG_LAYOUT_REL: Final = "frontend/src/views/LayoutView.vue"
+AC18_03_E2E_TITLES: Final = {
+    "merged_catalog": (
+        "merged catalog is the default at both catalog URLs and filters by market and dataset"
+    ),
+    "function_detail": (
+        "catalog function drilldown reaches legacy list and an actual script detail route"
+    ),
+}
 
 #: 「各域最新数据日期与滞后天数可查」：一条门的读法一个节点，缺一条就是少一问。
 FRESHNESS_QUERY_NODES: Final = (
+    "tests/test_data_path_aliases.py::TestPathAliasHttpBehavior::"
+    "test_alias_freshness_uses_canonical_domain_and_table",
     "tests/test_data_catalog.py::TestTheFreshnessDoor::test_the_dwd_door_names_its_baseline",
     "tests/test_data_catalog.py::TestTheFreshnessDoor::test_the_two_doors_agree_on_the_same_domain",
     "tests/test_data_catalog.py::TestTheFreshnessDoor::"
@@ -3141,11 +3646,11 @@ CATALOG_READING_NODES: Final = (
 #: 判据点名的五个读数，逐个配上：页面列名、页面上只有真测量才会出现的形状、
 #: 单元面与真机页各自断言它时用到的字样。少任何一面，该读数就只是列名。
 CATALOG_READINGS: Final = (
-    ("覆盖标的数", 'label="覆盖"', "标的", "标的", "标的"),
-    ("时间范围", 'label="时间范围"', "~", "~", "~"),
+    ("覆盖标的数", 'label="覆盖（域总计）"', "标的", "标的", "标的"),
+    ("时间范围", 'label="时间范围（域总计）"', "~", "~", "~"),
     ("各源最近更新", 'label="各源最近更新"', "已验证", "已验证", "已验证"),
-    ("新鲜度", 'label="新鲜度"', "滞后", "滞后", "滞后"),
-    ("质量标记", 'label="质量"', "未测量", "未测量", "未测量"),
+    ("新鲜度", 'label="新鲜度（域总计）"', "滞后", "滞后", "滞后"),
+    ("质量标记", 'label="质量（域总计）"', "未测量", "未测量", "未测量"),
 )
 
 #: 载荷里承载这五个读数的字段；接口与页面必须同名，否则页面显示的是另一次测量。
@@ -3165,9 +3670,157 @@ def asserted_lines(text: str, token: str) -> int:
     return sum(1 for line in text.splitlines() if "expect(" in line and token in line)
 
 
+def _normalized_pytest_file(value: str) -> str | None:
+    """Return a repo-relative test file from a pytest JUnit ``file`` attribute."""
+    path = Path(value.replace("\\", "/"))
+    if path.is_absolute():
+        try:
+            return path.resolve(strict=False).relative_to(REPO_ROOT).as_posix()
+        except ValueError:
+            return None
+    try:
+        return (REPO_ROOT / path).resolve(strict=False).relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        return None
+
+
+def _junit_node_id(testcase: ET.Element) -> str | None:
+    """Reconstruct a pytest node id only when its JUnit location is unambiguous."""
+    file_name = testcase.get("file")
+    class_name = testcase.get("classname")
+    test_name = testcase.get("name")
+    if not file_name or not class_name or not test_name:
+        return None
+
+    normalized_file = _normalized_pytest_file(file_name)
+    if normalized_file is None or not normalized_file.endswith(".py"):
+        return None
+    module_path = Path(normalized_file).with_suffix("")
+    if module_path.name == "__init__":
+        module_path = module_path.parent
+    module_name = module_path.as_posix().replace("/", ".")
+    if class_name == module_name:
+        class_path = ""
+    elif class_name.startswith(f"{module_name}."):
+        class_path = class_name[len(module_name) + 1 :]
+    else:
+        return None
+
+    parts = [normalized_file]
+    if class_path:
+        parts.extend(class_path.split("."))
+    parts.append(test_name)
+    return "::".join(parts)
+
+
+def _junit_case_status(testcase: ET.Element) -> str:
+    """Map a single JUnit testcase to the conservative status used by the probe."""
+    child_tags = {child.tag.rsplit("}", 1)[-1] for child in testcase}
+    if "error" in child_tags:
+        return "error"
+    if "failure" in child_tags:
+        return "failed"
+    if "skipped" in child_tags:
+        return "skipped"
+    return "passed"
+
+
+def _junit_node_outcomes(nodes: Sequence[str], report_path: Path, exit_code: int) -> dict[str, str]:
+    """Match requested node ids to exact JUnit cases; ambiguity never passes."""
+    if exit_code != 0:
+        return dict.fromkeys(nodes, f"runner-exit={exit_code}")
+    try:
+        # The report is created by the local pytest process in this private temp directory.
+        root = ET.parse(report_path).getroot()  # noqa: S314  # nosec B314
+    except (ET.ParseError, OSError):
+        return dict.fromkeys(nodes, "missing-report")
+
+    case_nodes: list[tuple[str, ET.Element]] = []
+    for testcase in root.iter():
+        if testcase.tag.rsplit("}", 1)[-1] != "testcase":
+            continue
+        node_id = _junit_node_id(testcase)
+        if node_id is not None:
+            case_nodes.append((node_id, testcase))
+
+    request_counts: dict[str, int] = {}
+    for node in nodes:
+        request_counts[node] = request_counts.get(node, 0) + 1
+    requested_ids = set(nodes)
+
+    results: dict[str, str] = {}
+    for node in dict.fromkeys(nodes):
+        if request_counts[node] > 1:
+            results[node] = "ambiguous"
+            continue
+
+        matching = [case for case_node, case in case_nodes if case_node == node]
+        if len(matching) > 1:
+            results[node] = "ambiguous"
+            continue
+
+        requested_parent, separator, requested_name = node.rpartition("::")
+        if not separator:
+            results[node] = "ambiguous"
+            continue
+        requested_family = requested_name.partition("[")[0]
+        siblings = [
+            case_node
+            for case_node, _case in case_nodes
+            if case_node.rpartition("::")[0] == requested_parent
+            and case_node.rpartition("::")[2].partition("[")[0] == requested_family
+            and case_node != node
+            and case_node not in requested_ids
+        ]
+        if siblings:
+            results[node] = "ambiguous"
+        elif len(matching) == 1:
+            results[node] = _junit_case_status(matching[0])
+        else:
+            results[node] = "missing"
+    return results
+
+
 def outcomes(nodes: Sequence[str]) -> dict[str, str]:
-    """Run each node id once and key the result by the test name."""
-    return {node.split("::")[-1]: node_outcome(node) for node in nodes}
+    """Run one pytest process for the node group and key exact results by test name."""
+    if not nodes:
+        return {}
+
+    unique_nodes = list(dict.fromkeys(nodes))
+    output_key_counts: dict[str, int] = {}
+    for node in nodes:
+        key = node.split("::")[-1]
+        output_key_counts[key] = output_key_counts.get(key, 0) + 1
+
+    with tempfile.TemporaryDirectory(prefix="acceptance-probe-nodes-") as temporary:
+        report_path = Path(temporary) / "junit.xml"
+        argv = [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            "--no-header",
+            "-p",
+            "no:cacheprovider",
+            "--no-cov",
+            "-m",
+            "not e2e",
+            "-o",
+            "junit_family=xunit1",
+            f"--junitxml={report_path}",
+            *unique_nodes,
+        ]
+        exit_code, _output = run_argv(argv)
+        node_results = _junit_node_outcomes(unique_nodes, report_path, exit_code)
+
+    results: dict[str, str] = {}
+    for node in unique_nodes:
+        key = node.split("::")[-1]
+        if output_key_counts[key] > 1:
+            results[key] = "ambiguous"
+        else:
+            results[key] = node_results.get(node, "missing")
+    return results
 
 
 def bad_of(results: dict[str, str]) -> str:
@@ -3180,7 +3833,8 @@ def measure_ac18_01(ctx: Context) -> Facts:
     query = outcomes(FRESHNESS_QUERY_NODES)
     alert = outcomes(FRESHNESS_ALERT_NODES)
     api = ctx.read(DATA_QUERY_REL)
-    door = function_body(api, "domain_freshness")
+    public_door = function_body(api, "domain_freshness")
+    door = function_body(api, "_domain_freshness")
     jobs = ctx.read(PIPELINE_JOBS_REL)
     return {
         "query_runs": count(len(query)),
@@ -3190,6 +3844,7 @@ def measure_ac18_01(ctx: Context) -> Facts:
         "alert_passed": count(sum(1 for seen in alert.values() if seen == "passed")),
         "alert_bad": bad_of(alert),
         "door_route": flag("/domains/{domain}/freshness" in api),
+        "door_delegates": flag("return await _domain_freshness(" in public_door),
         "door_readings": flag("lag_days" in door and "latest" in door),
         "door_baseline": count(door.count('"expected_data_date"')),
         "job_wired": flag("TemplateKind.FRESHNESS" in function_body(jobs, "_execute_template")),
@@ -3210,6 +3865,7 @@ def judge_ac18_01(facts: Facts) -> Verdict:
         and facts["alert_passed"] == facts["alert_runs"]
         and facts["alert_bad"] == "-"
         and facts["door_route"] == "yes"
+        and facts["door_delegates"] == "yes"
         and facts["door_readings"] == "yes"
         and number(facts["door_baseline"]) >= 2
         and facts["job_wired"] == "yes"
@@ -3219,7 +3875,8 @@ def judge_ac18_01(facts: Facts) -> Verdict:
     readings = (
         f"新鲜度门 faces: {facts['query_passed']}/{facts['query_runs']} nodes passed"
         + (f"; not green: {facts['query_bad']}" if facts["query_bad"] != "-" else ""),
-        f"{DATA_QUERY_REL}::domain_freshness route = {facts['door_route']}, carries "
+        f"{DATA_QUERY_REL}::domain_freshness route = {facts['door_route']}, delegates to "
+        f"_domain_freshness = {facts['door_delegates']}, carries "
         f"latest + lag_days = {facts['door_readings']}, and returns expected_data_date "
         f"{facts['door_baseline']} time(s) — a lag cannot be checked without the date it "
         "was measured against, so both branches have to name it",
@@ -3301,25 +3958,106 @@ def judge_ac18_02(facts: Facts) -> Verdict:
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
 
+def playwright_outcomes(output: str, titles: Mapping[str, str], exit_code: int) -> dict[str, str]:
+    """Read named leaf outcomes from Playwright's JSON reporter output."""
+    try:
+        report = json.loads(output)
+    except json.JSONDecodeError:
+        return dict.fromkeys(titles, f"runner-exit={exit_code}")
+
+    found: dict[str, list[str]] = {}
+    stack = list(report.get("suites", []))
+    while stack:
+        suite = stack.pop()
+        if not isinstance(suite, dict):
+            continue
+        stack.extend(suite.get("suites", []))
+        candidates: list[tuple[str, dict[str, object]]] = []
+        for test in suite.get("tests", []):
+            if not isinstance(test, dict):
+                continue
+            for key, title in titles.items():
+                if test.get("title") == title:
+                    candidates.append((key, test))
+        for spec in suite.get("specs", []):
+            if not isinstance(spec, dict):
+                continue
+            for key, title in titles.items():
+                if spec.get("title") != title:
+                    continue
+                spec_tests = spec.get("tests", [])
+                candidates.extend(
+                    (key, test)
+                    for test in (spec_tests if spec_tests else [spec])
+                    if isinstance(test, dict)
+                )
+        for key, test in candidates:
+            results = test.get("results", [])
+            last_result = results[-1] if isinstance(results, list) and results else None
+            last_status = (
+                last_result.get("status") if isinstance(last_result, dict) else "missing-result"
+            )
+            if test.get("status") == "expected" and last_status == "passed":
+                found.setdefault(key, []).append("passed")
+            elif test.get("status") == "skipped":
+                found.setdefault(key, []).append("skipped")
+            else:
+                found.setdefault(key, []).append("failed")
+    return {
+        key: seen[0] if len(seen) == 1 else "missing" if not seen else "ambiguous"
+        for key in titles
+        for seen in (found.get(key, []),)
+    }
+
+
+def run_catalog_e2e() -> dict[str, str]:
+    """Run the two named browser cases that cover the merged catalog and function detail."""
+    titles = AC18_03_E2E_TITLES
+    grep = "|".join(re.escape(title) for title in titles.values())
+    code, output = run_argv(
+        [
+            "./node_modules/.bin/playwright",
+            "test",
+            "e2e/scripts.spec.ts",
+            "--reporter=json",
+            "--workers=1",
+            "--retries=0",
+            "--grep",
+            grep,
+        ],
+        cwd=REPO_ROOT / "frontend",
+    )
+    return playwright_outcomes(output, titles, code)
+
+
 def measure_ac18_03(ctx: Context) -> Facts:
-    """Does one page own both views, with the catalog as its default and detail under it?"""
+    """Run named browser cases for the merged catalog and its function-level drill-down."""
     router = ctx.read(ROUTER_REL)
-    view = ctx.read(CATALOG_VIEW_REL)
-    titles = re.findall(r"title: '([^']+)'", router)
-    interface_titles = [title for title in titles if "数据接口" in title]
+    layout = ctx.read(CATALOG_LAYOUT_REL)
     merged = re.search(
         r"path: 'scripts',\s*\n\s*name: '[^']+',\s*\n\s*component: \(\) => "
         r"import\('([^']+)'\)",
         router,
     )
+    catalog_nav = re.findall(r"\{\s*index:\s*'/data',\s*name:\s*t\('nav\.catalog'\)", layout)
+    detail_route = re.search(
+        r"path: 'scripts/:id',\s*\n\s*name: '[^']+',\s*\n\s*component: \(\) => "
+        r"import\('@/views/ScriptDetailView\.vue'\)",
+        router,
+    )
+    e2e = run_catalog_e2e()
     return {
-        "page_titles": ", ".join(interface_titles) or "-",
-        "nav_entries": count(len(interface_titles)),
+        "page_titles": "nav.catalog -> /data" if catalog_nav else "-",
+        "nav_entries": count(len(catalog_nav)),
         "route_is_catalog": flag(
             merged is not None and merged.group(1).endswith("DataCatalogView.vue")
         ),
-        "detail_in_catalog": flag("data/interfaces" in view or "接口" in view),
-        "detail_route": flag("接口详情" in router),
+        # This named browser case asserts the visible registered-function panel,
+        # including a concrete fetcher, endpoint, and required parameter.
+        "detail_in_catalog": flag(e2e["merged_catalog"] == "passed"),
+        "detail_route": flag(detail_route is not None and e2e["function_detail"] == "passed"),
+        "merged_e2e": e2e["merged_catalog"],
+        "function_detail_e2e": e2e["function_detail"],
     }
 
 
@@ -3330,21 +4068,25 @@ def judge_ac18_03(facts: Facts) -> Verdict:
         and facts["route_is_catalog"] == "yes"
         and facts["detail_in_catalog"] == "yes"
         and facts["detail_route"] == "yes"
+        and facts["merged_e2e"] == "passed"
+        and facts["function_detail_e2e"] == "passed"
     )
     readings = (
-        f"路由标题含「数据接口」的页面 = {facts['nav_entries']} ({facts['page_titles']})",
+        f"目录导航项 = {facts['nav_entries']} ({facts['page_titles']})",
         f"`/scripts` 是否渲染目录视图 = {facts['route_is_catalog']}",
-        f"{CATALOG_VIEW_REL} 是否读到函数级明细（data/interfaces / 接口） = "
-        f"{facts['detail_in_catalog']}",
-        f"下钻终点（接口详情路由）仍在 = {facts['detail_route']}",
+        f"Playwright `{AC18_03_E2E_TITLES['merged_catalog']}` = {facts['merged_e2e']} "
+        "（/scripts 与 /data 默认目录、市场/数据集筛选、注册函数明细面）",
+        f"目录内函数明细控件及其可见用例 = {facts['detail_in_catalog']}",
+        f"Playwright `{AC18_03_E2E_TITLES['function_detail']}` = "
+        f"{facts['function_detail_e2e']}；真实脚本详情路由 = {facts['detail_route']}",
     )
     reason = (
         ""
         if ok
-        else "合并要求的是一个页面：目录为默认视图、函数级明细在它下面。今天 /data 与 /scripts 仍是"
-        "两条路由两个视图，目录的下钻只预览数据行，从不落到接口/函数那一层；接口清单按 §11.1 已经"
-        "以域名命名（data_interfaces.name == domain），join 的料是齐的，缺的是页面合并本身——"
-        "而合并必然要让一个导航项消失，属产品决定"
+        else "合并判据尚未由这两个具名浏览器用例全部证明：分别检查 /scripts 与 /data 的目录默认页、"
+        "市场和数据集筛选、目录内注册函数明细，以及旧函数列表到真实脚本详情页的下钻；"
+        f"本轮结果为 merged_catalog={facts['merged_e2e']}、"
+        f"function_detail={facts['function_detail_e2e']}"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
@@ -4145,10 +4887,20 @@ DWD_SERVICE_NODES: Final = (
     "tests/test_dwd_merge.py::TestMergeSourceFrames::test_point_in_time_columns_are_stamped",
 )
 
-#: 修订传播的两条单测：一条证明 key 被重算进合并单元，一条证明那一行的值真的换了。
+#: 修订传播同时覆盖普通 reader 与生产 scoped reader 的窗口、None 水位及改值链路。
 DWD_REVISION_NODES: Final = (
     "tests/test_dwd_merge.py::TestDwdMergeService::test_revision_of_an_existing_key_changes_the_dwd_row",
     "tests/test_dwd_merge.py::TestDwdMergeService::test_affected_keys_extend_the_merge_unit",
+    "tests/test_pipeline_templates.py::TestScopedOdsReader::"
+    "test_run_hook_merges_scoped_old_revision_and_excludes_other_rows",
+    "tests/test_pipeline_templates.py::TestScopedOdsReader::"
+    "test_multisource_run_hook_reads_only_affected_rows_when_symbol_window_is_none",
+    "tests/test_pipeline_templates.py::TestScopedOdsReader::"
+    "test_scoped_reader_without_a_symbol_window_uses_requested_range_and_affected_date",
+    "tests/test_pipeline_templates.py::TestScopedOdsReader::"
+    "test_unscoped_composite_financial_key_reads_only_the_affected_old_item",
+    "tests/test_pipeline_templates.py::TestScopedOdsReader::"
+    "test_unscoped_financial_indicator_key_uses_its_report_period_index",
 )
 
 
@@ -4171,6 +4923,7 @@ def domains_in_yaml(text: str) -> tuple[str, ...]:
 PARTITIONS_REL: Final = "opendata/pipeline/partitions.py"
 PARTITION_TESTS_REL: Final = "tests/test_partition_maintenance.py"
 PARTITION_FACE_REL: Final = "docs/evidence/C57/partition-horizon.txt"
+PARTITION_CENSUS_REL: Final = "docs/evidence/C58/ods-face.txt"
 PARTITION_APPLY_REL: Final = "docs/evidence/C57/partition-apply.txt"
 
 
@@ -4178,6 +4931,31 @@ def _facts_line(source: str) -> dict[str, str]:
     """Parse the ``FACTS k=v`` line a live face printed, if there is one."""
     line = next((row for row in source.splitlines() if row.startswith("FACTS ")), "")
     return dict(token.split("=", 1) for token in line.split()[1:] if "=" in token)
+
+
+def partition_census_archive_reading(ctx: Context) -> str:
+    """Disclose the historical C57 subset beside the later, larger C58 census."""
+    horizon = ctx.read(PARTITION_FACE_REL)
+    full_census = ctx.read(PARTITION_CENSUS_REL)
+    horizon_facts = _facts_line(horizon)
+    census_facts = _facts_line(full_census)
+    horizon_round = re.search(r"^ARCHIVE_ROUND=(\S+)", horizon, re.M)
+    census_round = re.search(r"^ARCHIVE_ROUND=(\S+)", full_census, re.M)
+    horizon_date = re.search(r"^date:\s*(.+)$", horizon, re.M)
+    census_date = re.search(r"^date:\s*(.+)$", full_census, re.M)
+    return (
+        f"{horizon_round.group(1) if horizon_round else 'unknown'} historical subset "
+        f"({horizon_date.group(1) if horizon_date else 'date unknown'}): "
+        f"tables={horizon_facts.get('tables', '(absent)')} / "
+        f"partitioned={horizon_facts.get('partitioned', '(absent)')} / "
+        f"gap_tables={horizon_facts.get('gap_tables', '(absent)')}; later full census "
+        f"{census_round.group(1) if census_round else 'unknown'} "
+        f"({census_date.group(1) if census_date else 'date unknown'}): "
+        f"registered={census_facts.get('registered', '(absent)')} / "
+        f"partitioned={census_facts.get('partitioned', '(absent)')} / "
+        f"gap_tables={census_facts.get('gap_tables', '(absent)')}; both are archived reads, "
+        "not a fresh production census"
+    )
 
 
 def measure_ac8_05(ctx: Context) -> Facts:
@@ -4215,6 +4993,7 @@ def measure_ac8_05(ctx: Context) -> Facts:
         "live_gap_tables": live.get("gap_tables", "(absent)"),
         "live_keys": flag("分区列" in face and live.get("keys") is not None),
         "applied_face": flag(applied.is_file()),
+        "census_archives": partition_census_archive_reading(ctx),
     }
 
 
@@ -4238,19 +5017,100 @@ def judge_ac8_05(facts: Facts) -> Verdict:
         f"本体做 apply 半 = {facts['apply_half']}（调 ``ensure`` 而不是只出 plan —— "
         "C48 的量法在告警矩阵里，那一面按设计不动 DDL）",
         f"``ddl.py`` 渲染 ``RANGE COLUMNS`` 年分区 + ``MAXVALUE`` 兜底 = {facts['ddl_layout']}",
-        f"真仓库读数（{PARTITION_FACE_REL}）：注册表 {facts['live_tables']} 张 / 已分区 "
-        f"{facts['live_partitioned']} 张 / 年度上界仍缺 {facts['live_gap_tables']} 张；"
+        f"历史分区面（{PARTITION_FACE_REL}）：注册表 {facts['live_tables']} 张 / 已分区 "
+        f"{facts['live_partitioned']} 张 / 当时年度上界缺 {facts['live_gap_tables']} 张；"
         f"档案里有分区列读数 = {facts['live_keys']}",
+        facts["census_archives"],
         f"经确认的 apply 留档（{PARTITION_APPLY_REL}）存在 = {facts['applied_face']}",
     )
     reason = (
         ""
         if ok
         else "分区面两头都要有：接线（yaml 行 + kind 可执行 + 派发到真的 ``ensure``）与仓库现状"
-        "（分区列点名、上界不再落后、apply 后复跑留档）——本轮只有接线与落后读数，"
-        "``REORGANIZE`` 是生产仓库的 DDL，等一次经确认的执行"
+        "（分区列点名、上界不再落后、apply 后复跑留档）。C57/C58 是历史档案，"
+        "不是本轮新做的生产读数；``REORGANIZE`` 是生产仓库的 DDL，仍缺经确认的 apply 与新读数"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def exact_partition_placement_assertions(source: str) -> tuple[str, ...]:
+    """Return partitions whose exact row counts are queried and asserted in the cross-year case."""
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return ()
+
+    test_method: ast.FunctionDef | ast.AsyncFunctionDef | None = None
+    for node in tree.body:
+        if not isinstance(node, ast.ClassDef) or node.name != "TestCrossYearWrite":
+            continue
+        test_method = next(
+            (
+                child
+                for child in node.body
+                if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and child.name == "test_maintenance_extends_partitions_and_new_year_rows_land_alone"
+            ),
+            None,
+        )
+        break
+    if test_method is None:
+        return ()
+
+    assigned_partitions: dict[str, str] = {}
+    for ast_node in ast.walk(test_method):
+        if not isinstance(ast_node, ast.Assign) or len(ast_node.targets) != 1:
+            continue
+        target = ast_node.targets[0]
+        if not isinstance(target, ast.Name) or not isinstance(ast_node.value, ast.Call):
+            continue
+        scalar = ast_node.value
+        if not isinstance(scalar.func, ast.Attribute) or scalar.func.attr != "scalar_one":
+            continue
+        execute = scalar.func.value
+        if not isinstance(execute, ast.Call) or not isinstance(execute.func, ast.Attribute):
+            continue
+        if execute.func.attr != "execute" or not execute.args:
+            continue
+        text_call = execute.args[0]
+        if not isinstance(text_call, ast.Call) or not isinstance(text_call.func, ast.Name):
+            continue
+        if text_call.func.id != "text" or len(text_call.args) != 1:
+            continue
+        sql_node = text_call.args[0]
+        if not isinstance(sql_node, ast.Constant) or not isinstance(sql_node.value, str):
+            continue
+        sql = " ".join(sql_node.value.split())
+        match = re.fullmatch(
+            r"SELECT COUNT\(\*\) FROM `_probe_partition_maintenance` "
+            r"PARTITION \((p2027|pmax)\)",
+            sql,
+            re.I,
+        )
+        if match:
+            assigned_partitions[target.id] = match.group(1).lower()
+
+    expected_rows = {"p2027": 1, "pmax": 0}
+    proven: set[str] = set()
+    for ast_node in ast.walk(test_method):
+        if not isinstance(ast_node, ast.Assert) or not isinstance(ast_node.test, ast.Compare):
+            continue
+        comparison = ast_node.test
+        if len(comparison.ops) != 1 or not isinstance(comparison.ops[0], ast.Eq):
+            continue
+        if len(comparison.comparators) != 1:
+            continue
+        left, right = comparison.left, comparison.comparators[0]
+        if isinstance(left, ast.Name) and isinstance(right, ast.Constant):
+            name, value = left.id, right.value
+        elif isinstance(right, ast.Name) and isinstance(left, ast.Constant):
+            name, value = right.id, left.value
+        else:
+            continue
+        partition = assigned_partitions.get(name)
+        if partition is not None and type(value) is int and value == expected_rows[partition]:
+            proven.add(partition)
+    return tuple(partition for partition in ("p2027", "pmax") if partition in proven)
 
 
 def measure_ac8_06(ctx: Context) -> Facts:
@@ -4258,21 +5118,18 @@ def measure_ac8_06(ctx: Context) -> Facts:
     spec = ctx.read(PARTITION_TESTS_REL)
     face = ctx.read(PARTITION_FACE_REL)
     live = _facts_line(face)
+    placements = exact_partition_placement_assertions(spec)
     return {
         "case_file": flag("_probe_partition_maintenance" in spec),
         "inserts_new_year": flag(
             "'2027-03-01'" in spec and "INSERT INTO `_probe_partition_maintenance`" in spec
         ),
-        "asserts_placement": count(
-            sum(
-                1
-                for line in spec.splitlines()
-                if line.lstrip().startswith("assert ") and "placements ==" in line
-            )
-        ),
+        "asserts_placement": count(len(placements)),
+        "placement_partitions": ",".join(placements) or "-",
         "marked": "e2e" if "@pytest.mark.e2e" in spec else "no",
         "fallback_gap": live.get("gap_tables", "(absent)"),
         "ran_live": flag("PARTITION_E2E_EXIT=0" in face),
+        "census_archives": partition_census_archive_reading(ctx),
     }
 
 
@@ -4281,7 +5138,8 @@ def judge_ac8_06(facts: Facts) -> Verdict:
     ok = (
         facts["case_file"] == "yes"
         and facts["inserts_new_year"] == "yes"
-        and positive(facts["asserts_placement"])
+        and facts["asserts_placement"] == "2"
+        and facts["placement_partitions"] == "p2027,pmax"
         and facts["marked"] == "e2e"
         and facts["fallback_gap"] == "0"
         and facts["ran_live"] == "yes"
@@ -4289,17 +5147,20 @@ def judge_ac8_06(facts: Facts) -> Verdict:
     readings = (
         f"用例在 {PARTITION_TESTS_REL}：自建 ``_probe_*`` 表 = {facts['case_file']}，"
         f"插入新年度那一行（2027-03-01 进 probe 表）= {facts['inserts_new_year']}，"
-        f"落点分区名被断言 = {facts['asserts_placement']} 行",
+        f"精确 placement 断言 = {facts['placement_partitions']} "
+        f"({facts['asserts_placement']} 条；p2027=1、pmax=0)",
         f"标记 = {facts['marked']}（``make gate`` 不跑 e2e，所以这一面必须另留档才算跑过）",
-        f"真仓库当下还缺年度分区的表 = {facts['fallback_gap']} 张 —— 缺的那一年会落进 "
+        f"C57 历史面当时还缺年度分区的表 = {facts['fallback_gap']} 张 —— 缺的那一年会落进 "
         "``pmax``：写入不报错，但年分区形同不存在，所以「写成功」必须有落点断言",
+        facts["census_archives"],
         f"本轮留档里有一次真跑 = {facts['ran_live']}",
     )
     reason = (
         ""
         if ok
         else "跨年写入这条判据要有「跑过」的证据而不是「有用例」：用例是 e2e 面（门禁不跑），"
-        "而真仓库的年度上界还落后一年 —— 补这一年是生产仓库的 DDL，等一次经确认的执行"
+        "且需要 fresh scoped production evidence。C57 是较早子集、C58 是较晚完整档案；"
+        "两份都不是本轮 fresh production read，也没有本轮获准的用例运行留档"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
@@ -4774,21 +5635,234 @@ def judge_ac9_06(facts: Facts) -> Verdict:
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
 
+def _ac9_07_call_chain_facts(source: str) -> Facts:
+    """Read affected-key arguments from the service call graph with AST nodes."""
+    no_chain = {
+        "run_delegates_affected_keys": "no",
+        "batch_reader_gets_keys": "no",
+        "batch_merge_gets_keys": "no",
+        "normal_reader_gets_keys": "no",
+        "scoped_reader_gets_keys": "no",
+        "reader_gets_keys": "no",
+        "keys_extend_diffs": "no",
+        "partition_hook_resells_keys": "no",
+        "context_hook_resells_keys": "no",
+        "hook_resells_keys": "no",
+    }
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return no_chain
+    service_classes = [
+        node
+        for node in tree.body
+        if isinstance(node, ast.ClassDef) and node.name == "DwdMergeService"
+    ]
+    if len(service_classes) != 1:
+        return no_chain
+    methods: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
+    for node in service_classes[0].body:
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        if node.name not in {"run", "_run_batch", "run_hook", "_read_source"}:
+            continue
+        if node.name in methods:
+            return no_chain
+        methods[node.name] = node
+
+    def self_method_calls(node: ast.AST | None, name: str) -> list[ast.Call]:
+        if node is None:
+            return []
+        return [
+            call
+            for call in ast.walk(node)
+            if isinstance(call, ast.Call)
+            and isinstance(call.func, ast.Attribute)
+            and isinstance(call.func.value, ast.Name)
+            and call.func.value.id == "self"
+            and call.func.attr == name
+        ]
+
+    def keyword_value(call: ast.Call, name: str) -> ast.expr | None:
+        matches = [keyword.value for keyword in call.keywords if keyword.arg == name]
+        return matches[0] if len(matches) == 1 else None
+
+    def is_name(node: ast.expr | None, name: str) -> bool:
+        return isinstance(node, ast.Name) and node.id == name
+
+    def collection_of(node: ast.expr | None, wrapper: str, item: str) -> bool:
+        return (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == wrapper
+            and len(node.args) == 1
+            and not node.keywords
+            and is_name(node.args[0], item)
+        )
+
+    def contract_keys_of(node: ast.expr | None, item: str) -> bool:
+        return (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "self"
+            and node.func.attr == "_contract_keys"
+            and len(node.args) == 1
+            and not node.keywords
+            and is_name(node.args[0], item)
+        )
+
+    run_method = methods.get("run")
+    batch_method = methods.get("_run_batch")
+    hook_method = methods.get("run_hook")
+    delegation_calls = self_method_calls(run_method, "_run_batch")
+    run_delegates = (
+        len(delegation_calls) == 1
+        and is_name(keyword_value(delegation_calls[0], "affected_keys"), "affected_keys")
+        and run_method is not None
+        and any(
+            isinstance(statement, ast.Return)
+            and isinstance(statement.value, ast.Await)
+            and statement.value.value is delegation_calls[0]
+            for statement in run_method.body
+        )
+    )
+
+    reader_calls = self_method_calls(batch_method, "_read_source")
+    batch_reader_gets_keys = (
+        len(reader_calls) == 1
+        and len(reader_calls[0].args) >= 4
+        and collection_of(reader_calls[0].args[3], "set", "affected_keys")
+    )
+    merge_calls = [
+        call
+        for call in (ast.walk(batch_method) if batch_method is not None else [])
+        if isinstance(call, ast.Call)
+        and isinstance(call.func, ast.Name)
+        and call.func.id == "merge_source_frames"
+    ]
+    batch_merge_gets_keys = len(merge_calls) == 1 and collection_of(
+        keyword_value(merge_calls[0], "extra_diff_keys"), "frozenset", "affected_keys"
+    )
+    source_reader_method = methods.get("_read_source")
+
+    def returned_local_reader_gets_keys(name: str) -> bool:
+        if source_reader_method is None:
+            return False
+        calls = [
+            statement.value
+            for statement in ast.walk(source_reader_method)
+            if isinstance(statement, ast.Return)
+            and isinstance(statement.value, ast.Call)
+            and isinstance(statement.value.func, ast.Name)
+            and statement.value.func.id == name
+        ]
+        return (
+            len(calls) == 1
+            and len(calls[0].args) >= 3
+            and is_name(calls[0].args[2], "affected_keys")
+        )
+
+    normal_reader_gets_keys = returned_local_reader_gets_keys("reader")
+    scoped_reader_gets_keys = returned_local_reader_gets_keys("scoped_reader")
+
+    def is_partition_test(node: ast.expr) -> bool:
+        return (
+            isinstance(node, ast.Compare)
+            and isinstance(node.left, ast.Attribute)
+            and isinstance(node.left.value, ast.Name)
+            and node.left.value.id == "context"
+            and node.left.attr == "partition_contexts"
+            and len(node.ops) == 1
+            and isinstance(node.ops[0], ast.IsNot)
+            and len(node.comparators) == 1
+            and isinstance(node.comparators[0], ast.Constant)
+            and node.comparators[0].value is None
+        )
+
+    partition_ifs = [
+        node
+        for node in (ast.walk(hook_method) if hook_method is not None else [])
+        if isinstance(node, ast.If) and is_partition_test(node.test)
+    ]
+    partition_hook_resells = False
+    context_hook_resells = False
+    if len(partition_ifs) == 1 and hook_method is not None:
+        partition_if = partition_ifs[0]
+        partition_calls: list[ast.Call] = []
+        for nested_node in (
+            nested for statement in partition_if.body for nested in ast.walk(statement)
+        ):
+            if not isinstance(nested_node, ast.For) or not is_name(nested_node.target, "partition"):
+                continue
+            iterator = nested_node.iter
+            if not (
+                isinstance(iterator, ast.Call)
+                and isinstance(iterator.func, ast.Attribute)
+                and isinstance(iterator.func.value, ast.Name)
+                and iterator.func.value.id == "context"
+                and iterator.func.attr == "partition_contexts"
+            ):
+                continue
+            partition_calls.extend(self_method_calls(nested_node, "_run_batch"))
+        partition_hook_resells = len(partition_calls) == 1 and contract_keys_of(
+            keyword_value(partition_calls[0], "affected_keys"), "partition"
+        )
+        try:
+            branch_index = hook_method.body.index(partition_if)
+        except ValueError:
+            branch_index = -1
+        if branch_index >= 0:
+            for statement in hook_method.body[branch_index + 1 :]:
+                if not isinstance(statement, ast.Return) or not isinstance(
+                    statement.value, ast.Await
+                ):
+                    continue
+                call = statement.value.value
+                if not (
+                    isinstance(call, ast.Call)
+                    and isinstance(call.func, ast.Attribute)
+                    and isinstance(call.func.value, ast.Name)
+                    and call.func.value.id == "self"
+                    and call.func.attr == "run"
+                ):
+                    continue
+                context_hook_resells = contract_keys_of(
+                    keyword_value(call, "affected_keys"), "context"
+                )
+                break
+
+    return {
+        "run_delegates_affected_keys": flag(run_delegates),
+        "batch_reader_gets_keys": flag(batch_reader_gets_keys),
+        "batch_merge_gets_keys": flag(batch_merge_gets_keys),
+        "normal_reader_gets_keys": flag(normal_reader_gets_keys),
+        "scoped_reader_gets_keys": flag(scoped_reader_gets_keys),
+        "reader_gets_keys": flag(
+            run_delegates
+            and batch_reader_gets_keys
+            and normal_reader_gets_keys
+            and scoped_reader_gets_keys
+        ),
+        "keys_extend_diffs": flag(run_delegates and batch_merge_gets_keys),
+        "partition_hook_resells_keys": flag(partition_hook_resells),
+        "context_hook_resells_keys": flag(context_hook_resells),
+        "hook_resells_keys": flag(partition_hook_resells and context_hook_resells),
+    }
+
+
 def measure_ac9_07(ctx: Context) -> Facts:
-    """Run the two revision nodes, then read how a corrected key travels down the chain."""
+    """Run revision nodes including scoped ODS reads, then trace corrected keys."""
     nodes = outcomes(DWD_REVISION_NODES)
     merge = ctx.read(DWD_MERGE_REL)
-    run = method_body(merge, "DwdMergeService", "run")
-    hook = method_body(merge, "DwdMergeService", "run_hook")
+    call_chain = _ac9_07_call_chain_facts(merge)
     runner = ctx.read(RUNNER_REL)
     writer = method_body(merge, "DwdWriter", "write")
     return {
         "runs": count(len(nodes)),
         "passed": count(sum(1 for seen in nodes.values() if seen == "passed")),
         "bad": bad_of(nodes),
-        "reader_gets_keys": flag("self._reader(source)(start, end, set(affected_keys))" in run),
-        "keys_extend_diffs": flag("extra_diff_keys=frozenset(affected_keys)" in run),
-        "hook_resells_keys": flag("affected_keys=self._contract_keys(context)" in hook),
+        **call_chain,
         "runner_publishes_keys": flag("affected_keys" in runner and "_affected_keys" in runner),
         "writer_upserts": flag("build_upsert_sql" in writer),
     }
@@ -4797,8 +5871,15 @@ def measure_ac9_07(ctx: Context) -> Facts:
 def judge_ac9_07(facts: Facts) -> Verdict:
     """``AC-9|07``: a key corrected in ods re-writes its dwd row, and the unit test says so."""
     faces = (
+        "run_delegates_affected_keys",
+        "batch_reader_gets_keys",
+        "batch_merge_gets_keys",
+        "normal_reader_gets_keys",
+        "scoped_reader_gets_keys",
         "reader_gets_keys",
         "keys_extend_diffs",
+        "partition_hook_resells_keys",
+        "context_hook_resells_keys",
         "hook_resells_keys",
         "runner_publishes_keys",
         "writer_upserts",
@@ -4810,14 +5891,17 @@ def judge_ac9_07(facts: Facts) -> Verdict:
         and all(facts[face] == "yes" for face in faces)
     )
     readings = (
-        f"两条单测: {facts['passed']}/{facts['runs']} passed"
+        f"修订行为节点: {facts['passed']}/{facts['runs']} passed"
         + (f"; not green: {facts['bad']}" if facts["bad"] != "-" else "")
-        + " —— 一条测「修正后的 key 被重算进合并单元」，一条测「那一行的值真的换了」",
-        "传播链五段: runner 交出被改的键 = "
-        f"{facts['runner_publishes_keys']}、run_hook 把 ods 拼法重拼成契约键 = "
-        f"{facts['hook_resells_keys']}、reader 收到这批键 = {facts['reader_gets_keys']}、"
-        f"键进入差异重算 = {facts['keys_extend_diffs']}、"
-        f"写侧按业务键 upsert = {facts['writer_upserts']}",
+        + " —— 覆盖窗口外改值、生产 scoped reader、None 水位、多源和无关行排除",
+        "传播链: runner 交键 = "
+        f"{facts['runner_publishes_keys']}、run 委托 batch 并传键 = "
+        f"{facts['run_delegates_affected_keys']}、batch reader 收键 = "
+        f"{facts['batch_reader_gets_keys']}、普通/scoped reader 收键 = "
+        f"{facts['normal_reader_gets_keys']}/{facts['scoped_reader_gets_keys']}、batch diff 收键 = "
+        f"{facts['batch_merge_gets_keys']}、partition hook 重拼契约键 = "
+        f"{facts['partition_hook_resells_keys']}、context hook 重拼契约键 = "
+        f"{facts['context_hook_resells_keys']}、写侧按业务键 upsert = {facts['writer_upserts']}",
     )
     reason = (
         ""
@@ -4833,6 +5917,7 @@ def judge_ac9_07(facts: Facts) -> Verdict:
 # --------------------------------------------------------------------------- #
 
 ZERO_DEP_SCANNER: Final = "scripts/codemod/verify_no_akshare.py"
+REFERENCE_POLICY_REL: Final = "docs/quality/akshare-reference-allowlist.json"
 P0_INTEGRATION_SELECTOR: Final = "integration and not e2e"
 P0_MIGRATION_REL: Final = "alembic_data/versions/20260923-0001_ods_dwd_p0.py"
 
@@ -4848,6 +5933,52 @@ QUERY_DIGEST_KEY: Final = "query_module_sha"
 
 #: The two packages the criterion requires to be absent.
 UPSTREAM_PACKAGES: Final = ("akshare", "openbb")
+
+
+def zero_dep_snapshot() -> tuple[ModuleType, list[Any], Facts]:
+    """Read the current policy, scan findings and baseline without hiding stale evidence."""
+    scanner = script_module(ZERO_DEP_SCANNER)
+    policy_error = ""
+    policy = None
+    try:
+        policy = scanner.load_reference_policy()
+        policy_valid = "yes"
+        findings = scanner.collect(scanner.DEFAULT_TARGETS)
+    except scanner.ReferencePolicyError as exc:
+        policy_valid = "no"
+        policy_error = str(exc)
+        findings = scanner.collect_raw(scanner.DEFAULT_TARGETS)
+
+    try:
+        baseline_raw = json.loads((REPO_ROOT / scanner.BASELINE_PATH).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        baseline_raw = {}
+    baseline_findings = baseline_raw.get("findings", []) if isinstance(baseline_raw, dict) else []
+    if not isinstance(baseline_findings, list):
+        baseline_findings = []
+    baseline_current = (
+        isinstance(baseline_raw, dict)
+        and baseline_raw.get("scanner_version") == scanner.SCANNER_VERSION
+        and baseline_raw.get("version") == scanner.BASELINE_VERSION
+    )
+    return (
+        scanner,
+        findings,
+        {
+            "policy_valid": policy_valid,
+            "policy_error": policy_error[:150] or "-",
+            "metadata_exceptions": count(sum(len(entry.ast_exceptions) for entry in policy.entries))
+            if policy is not None
+            else "0",
+            # Read from the scanner rather than pinned here: the scanner is the artifact that
+            # decides which AST metadata exceptions are approved, and it rejects a policy that
+            # binds them any way but exactly-once-each. A literal count in this probe was a
+            # second copy of that decision and went stale the moment the scanner version moved.
+            "metadata_expected": count(len(scanner.EXPECTED_METADATA_EXCEPTIONS)),
+            "baseline_current": flag(baseline_current),
+            "frozen": count(len(baseline_findings)),
+        },
+    )
 
 
 def marker_names_in(node: ast.AST) -> set[str]:
@@ -4921,21 +6052,30 @@ def measure_ac16_06(ctx: Context) -> Facts:
     """Run the frozen zero-dependency assertion, then split what it still finds by shape."""
     code, out = run_argv([sys.executable, ZERO_DEP_SCANNER])
     self_code, _ = run_argv([sys.executable, ZERO_DEP_SCANNER, "--self-test"])
-    scanner = script_module(ZERO_DEP_SCANNER)
-    findings = scanner.collect(scanner.DEFAULT_TARGETS)
-    frozen = scanner.load_baseline()
+    scanner, findings, policy_facts = zero_dep_snapshot()
     kinds = {
         kind: sum(1 for finding in findings if finding.kind == kind)
         for kind in ("import", "dynamic", "string")
     }
-    frozen_keys = {entry[0:3] for entry in frozen.entries}
+    try:
+        frozen_raw = json.loads((REPO_ROOT / scanner.BASELINE_PATH).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        frozen_raw = {}
+    baseline_entries = frozen_raw.get("findings", []) if isinstance(frozen_raw, dict) else []
+    if not isinstance(baseline_entries, list):
+        baseline_entries = []
+    frozen_keys = {
+        (entry.get("file"), entry.get("module"), entry.get("kind"))
+        for entry in baseline_entries
+        if isinstance(entry, dict)
+    }
     update_body = function_body(ctx.read(ZERO_DEP_SCANNER), "update")
     refuses_growth = "refusing to grow the baseline" in update_body
     return {
         "detector_exit": str(code),
         "detector_ok_line": first_capture(out, r"^(OK: .*)$"),
         "self_test_exit": str(self_code),
-        "frozen": count(len(frozen.entries)),
+        **policy_facts,
         "live": count(len(findings)),
         "import_live": count(kinds["import"]),
         "dynamic_live": count(kinds["dynamic"]),
@@ -4954,6 +6094,9 @@ def judge_ac16_06(facts: Facts) -> Verdict:
         and facts["self_test_exit"] == "0"
         and facts["only_down"] == "yes"
         and facts["no_new_reference"] == "yes"
+        and facts["policy_valid"] == "yes"
+        and facts["baseline_current"] == "yes"
+        and facts["metadata_exceptions"] == facts["metadata_expected"]
         and facts["import_live"] == "0"
         and facts["dynamic_live"] == "0"
         and facts["frozen"] == "0"
@@ -4964,14 +6107,18 @@ def judge_ac16_06(facts: Facts) -> Verdict:
         f"判据原文要清的是「集成层的 `import akshare` 残留」：AST 走查 import 形态 = "
         f"{facts['import_live']}，动态 import 形态 = {facts['dynamic_live']} —— 这一项已经是零",
         f"基线还冻着 {facts['frozen']} 条（现场走查 {facts['live']} 条，"
-        f"新增即失败 = {facts['no_new_reference']}，只降不升的门禁在位 = {facts['only_down']}）："
+        f"新增即失败 = {facts['no_new_reference']}，只降不升的门禁在位 = {facts['only_down']}，"
+        f"引用策略有效 = {facts['policy_valid']}、"
+        f"基线 scanner 版本有效 = {facts['baseline_current']}）："
         f"{facts['string_live']} 条是名字面量，落在 {facts['string_files']}",
         f"扫描器自己怎么说：{facts['detector_ok_line'] or '-'}",
     )
     reason = (
         ""
         if ok
-        else "「基线清零」是这条唯一没到的面，而要把它抹平只有两条路，两条都要改判据本身：①把扫描器"
+        else "引用策略或其 SHA/AST 绑定不成立，或冻结基线版本/清零面未通过；"
+        "不能以未登记路径或旧扫描器版本"
+        "宣称清零。另「基线清零」是这条需原样保持的判定面，而要把它抹平只有两条路，两条都要改判据本身：①把扫描器"
         "的字符串规则改窄（等于回头放宽已勾的 AC-16|05「AST 口径」，本轮拒绝）；②改掉这三处产品事实"
         "的拼写 —— `openbb_map.py` 的 `openbb` 是 FR-7 对照表自己的字段名，`data_script.py` 的 "
         "`akshare` 是 `DataScript.source` 的溯源默认值（搬运脚本与 P0 迁移同一写法在写它），"
@@ -5130,7 +6277,7 @@ HTTP_WAREHOUSE_REL: Final = "tests/test_data_query_http_warehouse.py"
 API_CONTRACT_REL: Final = "tests/test_data_query_api.py"
 ADJUST_UNIT_REL: Final = "tests/test_data_query.py"
 QFQ_OFFICIAL_REL: Final = "scripts/ops/qfq_official_check.py"
-QFQ_OFFICIAL_RUN: Final = "docs/evidence/C56/qfq-official-akshare.txt"
+QFQ_OFFICIAL_RUN: Final = "docs/evidence/C65/qfq-official-akshare-current.txt"
 
 #: The module AC-11|02 names when it says "akshare 官方 qfq": the ported akshare fetcher. A
 #: leg that resolves anywhere else is some other vendor's chain wearing the criterion's word.
@@ -5689,8 +6836,6 @@ PORTED_MANIFEST: Final = f"{PORTED_ROOT}/manifest.json"
 GEN_MANIFEST_TOOL: Final = "scripts/codemod/gen_manifest.py"
 DATASETS_REL: Final = f"{PORTED_ROOT}/datasets.py"
 REQ_DOC_REL: Final = "docs/迭代计划/迭代1-重构数据中台/需求文档.md"
-A2_TRIAGE_REL: Final = "docs/evidence/A2/bandit-ported-triage.md"
-PORTED_BANDIT_BASENAME: Final = "ported-bandit-scan.json"
 FIRST_PARTY_TREES: Final = ("opendata", "opendata_client", "opendata_fuyao", "scripts", "tests")
 SECURITY_PORTED_TARGET: Final = "security-ported"
 BANDIT_CONFIG: Final = "bandit.yaml"
@@ -5786,20 +6931,19 @@ def ported_reexports() -> frozenset[str]:
 
 
 @lru_cache(maxsize=1)
+def port_scope_audit() -> PortScopeAuditResult:
+    """Reconcile the frozen port-batch inventory against the live lock, manifest, and disk."""
+    module = script_module("scripts/quality/port_scope.py")
+    audit_factory = module.__dict__.get("audit_port_scope")
+    if not callable(audit_factory):
+        raise ProbeError("port_scope.py has no audit_port_scope function")
+    audit = cast("Callable[[Path], PortScopeAuditResult]", audit_factory)
+    return audit(REPO_ROOT)
+
+
 def ported_batch_field() -> str:
-    """Which machine-readable field states a domain's 1A/1B batch, or ``-`` when none does."""
-    payload = yaml.safe_load((REPO_ROOT / "opendata/data/domains.yaml").read_text(encoding="utf-8"))
-    domains = payload.get("domains") if isinstance(payload, dict) else None
-    rows = list(domains.values()) if isinstance(domains, dict) else list(domains or [])
-    keys = {str(key) for row in rows if isinstance(row, dict) for key in row}
-    for wanted in ("batch", "priority", "tier"):
-        if wanted in keys:
-            return f"opendata/data/domains.yaml#{wanted}"
-    capability = (REPO_ROOT / "opendata/data/capability.py").read_text(encoding="utf-8")
-    for wanted in ("batch", "priority", "tier"):
-        if re.search(rf"^    {wanted}: ", capability, re.MULTILINE):
-            return f"opendata/data/capability.py#{wanted}"
-    return "-"
+    """Return the manifest batch field only when its complete path inventory validates."""
+    return str(port_scope_audit().batch_field)
 
 
 def measure_ac5_01(ctx: Context) -> Facts:
@@ -5914,6 +7058,7 @@ def judge_ac5_01(facts: Facts) -> Verdict:
 
 def measure_ac5_02(ctx: Context) -> Facts:
     """Ask what the ported tree actually carries and whether the 1A/1B split is readable."""
+    scope_audit = port_scope_audit()
     files = manifest_entries(ported_manifest(), "files")
     packages = sorted(
         {
@@ -5959,7 +7104,13 @@ def measure_ac5_02(ctx: Context) -> Facts:
         "excluded_named": count(len(excluded_packages)),
         "excluded_present": count(len(excluded_present)),
         "excluded_present_names": ", ".join(excluded_present) or "-",
-        "tier_field": ported_batch_field(),
+        "port_scope_valid": flag(bool(scope_audit.valid)),
+        "port_scope_checked": count(int(scope_audit.checked_paths)),
+        "port_scope_python": count(int(scope_audit.python_paths)),
+        "port_scope_resources": count(int(scope_audit.resource_paths)),
+        "port_scope_problems": count(len(scope_audit.problems)),
+        "port_scope_problem_summary": str(scope_audit.problem_summary),
+        "tier_field": str(scope_audit.batch_field),
     }
 
 
@@ -5970,6 +7121,7 @@ def judge_ac5_02(facts: Facts) -> Verdict:
         and facts["called_missing"] == "0"
         and facts["excluded_present"] == "0"
         and facts["scope_missing"] == "0"
+        and facts["port_scope_valid"] == "yes"
         and facts["tier_field"] != "-"
     )
     readings = (
@@ -5982,17 +7134,22 @@ def judge_ac5_02(facts: Facts) -> Verdict:
         f"清单里没有的 {facts['scope_missing']} 个：{facts['scope_missing_names']}；"
         f"点名移出的 {facts['excluded_named']} 个非金融子包混进来的 "
         f"{facts['excluded_present']} 个：{facts['excluded_present_names']}",
+        f"逐路径锁/manifest/磁盘核验 = {facts['port_scope_valid']}（核对 "
+        f"{facts['port_scope_checked']} 条：{facts['port_scope_python']} py + "
+        f"{facts['port_scope_resources']} 资源；问题 {facts['port_scope_problems']}："
+        f"{facts['port_scope_problem_summary']}）",
         f"能读出 1A/1B 批次的机器字段 = {facts['tier_field']}",
     )
     reason = (
         ""
         if ok
-        else "「P0 域子模块搬运完成 / P1 域子模块搬运完成」缺一个机器可读的分母：`domains.yaml` 与 "
-        "`Capability` 都不带 batch/priority/tier 字段，需求 D9 与实施计划 B1.1 的子模块清单都写在"
-        "「…等」这类散文里，所以「完成」today 无法从树上判。已量的两半是实的：首方代码取用的端点"
-        "全部导出、被移出本迭代的非金融子包一个都没混进来；散文点名的 "
-        f"{facts['scope_missing_names']} 是否属于 P0/P1 也要同一份字段来定。钉出这个字段是产品/接口"
-        "决策（谁声明哪个域属哪一批），本轮不替它编"
+        else (
+            "AC-5|02 的搬运范围证据不完整：首方调用必须都有聚合导出；"
+            "D9 点名和排除的子模块必须与清单一致，"
+            "并且 C65 批次清单要逐路径匹配当前 upstream.lock、port manifest、磁盘路径与 sha256；"
+            f"当前问题为 {facts['port_scope_problem_summary']}。"
+            "批次按路径组描述实施范围，不推导或改写数据域优先级。"
+        )
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
@@ -6002,8 +7159,7 @@ def measure_ac5_03(ctx: Context) -> Facts:
     report = ctx.read(PORT_REPORT_ARCHIVE)
     code, out = run_argv([sys.executable, ZERO_DEP_SCANNER])
     self_code, _ = run_argv([sys.executable, ZERO_DEP_SCANNER, "--self-test"])
-    scanner = script_module(ZERO_DEP_SCANNER)
-    findings = scanner.collect(scanner.DEFAULT_TARGETS)
+    scanner, findings, policy_facts = zero_dep_snapshot()
     kinds = {
         kind: sum(1 for finding in findings if finding.kind == kind)
         for kind in ("import", "dynamic", "string")
@@ -6019,13 +7175,13 @@ def measure_ac5_03(ctx: Context) -> Facts:
         ),
         "todo_section_head": body[0][:60] if body else "(空)",
         "detector_exit": str(code),
-        "detector_note": (out.strip().splitlines() or ["(no output)"])[-1][:120],
+        "detector_note": f"exit={code}; findings={len(findings)} (scanner output omitted)",
         "self_test_exit": str(self_code),
+        **policy_facts,
         "import_live": count(kinds["import"]),
         "dynamic_live": count(kinds["dynamic"]),
         "string_live": count(kinds["string"]),
         "string_files": ", ".join(sorted({f.file for f in findings if f.kind == "string"})) or "-",
-        "frozen": count(len(scanner.load_baseline().entries)),
     }
 
 
@@ -6036,6 +7192,9 @@ def judge_ac5_03(facts: Facts) -> Verdict:
         and facts["todo_section_ok"] == "yes"
         and facts["detector_exit"] == "0"
         and facts["self_test_exit"] == "0"
+        and facts["policy_valid"] == "yes"
+        and facts["baseline_current"] == "yes"
+        and facts["metadata_exceptions"] == facts["metadata_expected"]
         and facts["import_live"] == "0"
         and facts["dynamic_live"] == "0"
         and facts["string_live"] == "0"
@@ -6047,15 +7206,21 @@ def judge_ac5_03(facts: Facts) -> Verdict:
         f"{facts['todo_section_ok']}",
         f"AST 级静态扫描（{ZERO_DEP_SCANNER}，exit {facts['detector_exit']} / "
         f"--self-test exit {facts['self_test_exit']}）：import 形态 {facts['import_live']}、"
-        f"动态导入 {facts['dynamic_live']}、字符串常量 {facts['string_live']}",
-        f"扫描器冻着的基线 {facts['frozen']} 条，字符串形态落在 {facts['string_files'] or '-'}",
+        f"动态导入 {facts['dynamic_live']}、字符串常量 {facts['string_live']}；"
+        f"reference policy valid={facts['policy_valid']} with "
+        f"{facts['metadata_exceptions']} exact exceptions",
+        f"扫描器冻着的基线 {facts['frozen']} 条 "
+        f"（scanner version current={facts['baseline_current']}），"
+        f"字符串形态落在 {facts['string_files'] or '-'}",
         f"扫描器原话：{facts['detector_note']}",
     )
     reason = (
         ""
         if ok
-        else "判据原文把「含字符串常量与动态导入」写进了零引用口径，基线里剩下的就是那 "
-        f"{facts['string_live']} 条产品事实的名字面量（{facts['string_files']}）。"
+        else "引用策略/基线版本/AST 清零面未通过，或判据原文的零引用口径仍有 findings；"
+        "不能用过期白名单"
+        "或过期基线声称通过。基线里剩余的名字面量为 "
+        f"{facts['string_live']} 条（{facts['string_files']}）。"
         "抹平它只有两条路，"
         "两条都要改判据本身：①把扫描器字符串规则改窄（等于放宽已勾的 AC-16|05「AST 口径」）；"
         "②改掉这三处真实数据源名的拼写（正是 C35 收口过的门禁空转）。同一道题 AC-16|06 已经"
@@ -6345,13 +7510,8 @@ def judge_ac5_06(facts: Facts) -> Verdict:
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
 
-def bandit_triaged_rules(ctx: Context) -> frozenset[str]:
-    """The rule ids the A2 manual triage disposes of, read from its summary table."""
-    return frozenset(re.findall(r"^\|\s*(B\d{3})", ctx.read(A2_TRIAGE_REL), re.MULTILINE))
-
-
 def measure_ac5_07(ctx: Context) -> Facts:
-    """Compare the ported security scan on record against the tree as it stands now."""
+    """Bind current Bandit scan and risk-preserving triage to the ported source tree."""
     recipes = make_recipes(ctx.read("Makefile"))
     # make 的 recipe 里 `@#` 与 `#` 都是注释；把它们算进命令会让 target_ok 被注释养活，
     # 也会让读数只打印注释、看不见真正执行的命令
@@ -6361,93 +7521,106 @@ def measure_ac5_07(ctx: Context) -> Facts:
         if not line.lstrip("@").startswith("#")
     )
     listed_py = {entry_path(entry) for entry in manifest_entries(ported_manifest(), "files")}
-    ported_now = len(py_files_under(PORTED_ROOT))
+    ported_now = set(py_files_under(PORTED_ROOT))
     exclude_dirs = [
         str(item)
         for item in ((yaml.safe_load(ctx.read(BANDIT_CONFIG)) or {}).get("exclude_dirs") or [])
     ]
-    archive_rel, archive_dir = newest_round_archive(PORTED_BANDIT_BASENAME)
-    findings: list[dict[str, object]] = []
-    declared, produced_by, generated_at = "", "", ""
-    if archive_rel != "-":
-        payload = json.loads(ctx.read(archive_rel))
-        if isinstance(payload, dict):
-            declared = str(payload.get("archive_round", ""))
-            produced_by = str(payload.get("produced_by", ""))
-            generated_at = str(payload.get("generated_at", ""))
-            scan = payload.get("scan") if isinstance(payload.get("scan"), dict) else payload
-            raw = scan.get("results") if isinstance(scan, dict) else None
-            findings = [item for item in (raw or []) if isinstance(item, dict)]
-    rules = sorted({str(item.get("test_id")) for item in findings})
-    triaged = bandit_triaged_rules(ctx)
-    untriaged = [item for item in findings if str(item.get("test_id")) not in triaged]
-    scanned = sorted(
-        {str(item.get("filename", "")).split(f"{PORTED_ROOT}/")[-1] for item in findings}
-    )
-    stray = sorted(name for name in scanned if name not in listed_py)
-    triage = ctx.read(A2_TRIAGE_REL)
-    absolution = first_capture(triage, r"^(无 B\d{3}[^。\n]*)。")
-    cleared = sorted(set(re.findall(r"B\d{3}", absolution)))
-    contradicted = sorted(rule for rule in cleared if rule in set(rules))
-    deser = sorted(
-        {
-            f"{item.get('test_id')}({item.get('test_name')})"
-            for item in findings
-            if any(word in str(item.get("test_name", "")).lower() for word in ("pickle", "yaml"))
-        }
-    )
-    claimed_files = first_capture(triage, r"扫描对象：`" + PORTED_ROOT + r"/`（(\d+) 个 py 文件")
+    root_entry = str(ctx.root.resolve())
+    inserted_root = root_entry not in sys.path
+    if inserted_root:
+        sys.path.insert(0, root_entry)
+    try:
+        from scripts.quality.ported_security_evidence import SCAN_REL, validate
+
+        security = validate(ctx.root)
+    finally:
+        if inserted_root:
+            with suppress(ValueError):
+                sys.path.remove(root_entry)
+    measured = security.facts
+    issue_codes = security.issues
+    manifest_paths = {f"{PORTED_ROOT}/{path}" for path in listed_py}
+    surface_covered = listed_py == {path.removeprefix(f"{PORTED_ROOT}/") for path in ported_now}
+    findings = int(measured.get("finding_count", 0))
+    high_count = int(measured.get("high_count", 0))
+    triaged_count = int(measured.get("triaged_findings", 0))
+    rule_count = int(measured.get("rule_count", 0))
+    scan_files = int(measured.get("scan_files", 0))
+    issue_count = int(measured.get("issue_count", len(issue_codes)))
     return {
         "target_ok": flag(bool(ported_recipe) and PORTED_ROOT in ported_recipe),
         "target_recipe": ported_recipe[:140] or "-",
         "daily_excludes_ported": flag(PORTED_ROOT in exclude_dirs),
         "bandit_exclude_dirs": ", ".join(exclude_dirs) or "-",
-        "ported_files": count(ported_now),
-        "archive": archive_rel,
-        "archive_round": declared or "-",
-        "archive_produced_by": produced_by[:120] or "-",
-        "archive_generated_at": generated_at or "-",
-        "archive_self_written": flag(bool(declared) and declared == archive_dir),
-        "scan_findings": count(len(findings)),
-        "scan_files": count(len(scanned)),
-        "scan_rules": count(len(rules)),
-        "scan_rule_names": ", ".join(rules) or "-",
-        "scan_b_only": flag(bool(rules) and all(rule.startswith("B") for rule in rules)),
-        "scan_manifest_ok": flag(not stray and bool(findings)),
-        "scan_stray_names": ", ".join(stray[:4]) or "-",
-        "triage_rules": count(len(triaged)),
-        "findings_untriaged": count(len(untriaged)),
-        "untriaged_detail": ", ".join(
-            f"{item.get('test_id')}@{str(item.get('filename', '')).split(f'{PORTED_ROOT}/')[-1]}"
-            f":{item.get('line_number')}"
-            for item in untriaged[:6]
-        )
-        or "-",
-        "triage_files_claimed": claimed_files,
-        "triage_findings_claimed": first_capture(triage, r"bandit-ported\.json`（(\d+) 项）"),
-        "triage_absolution": absolution[:80],
-        "cleared_rules": ", ".join(cleared) or "-",
-        "cleared_present": count(len(contradicted)),
-        "cleared_present_names": ", ".join(contradicted) or "-",
-        "deser_present": count(len(deser)),
-        "deser_names": ", ".join(deser) or "-",
-        "surface_covered": flag(claimed_files == count(ported_now)),
+        "ported_files": count(len(ported_now)),
+        "archive": str(SCAN_REL),
+        "security_evidence_valid": flag(security.valid),
+        "security_issue_count": count(issue_count),
+        "security_issue_summary": ", ".join(issue.code for issue in issue_codes[:8]) or "-",
+        "scan_source_tree_valid": flag(bool(measured.get("source_tree_valid"))),
+        "scan_manifest_ok": flag(bool(measured.get("source_tree_valid"))),
+        "scan_python_files": count(int(measured.get("python_files", 0))),
+        "scan_source_files_verified": count(int(measured.get("source_files_verified", 0))),
+        "scan_source_hash": str(measured.get("source_sha256", "")) or "-",
+        "scan_source_files_saved": count(int(measured.get("source_files_saved", 0))),
+        "archive_produced_by": str(measured.get("scanner_version", "")) or "-",
+        "archive_generated_at": str(measured.get("generated_at", "")) or "-",
+        "scan_errors": str(measured.get("scan_errors", "invalid")),
+        "scanner_exit": str(measured.get("scanner_exit", "unknown")),
+        "scanner_exit_consistent": flag(bool(measured.get("scanner_exit_consistent"))),
+        "scan_findings": count(findings),
+        "scan_high_findings": count(high_count),
+        "scan_files": count(scan_files),
+        "scan_rules": count(rule_count),
+        "scan_rule_names": str(measured.get("rule_names", "")) or "-",
+        "scan_b_only": flag(bool(measured.get("all_rules_bandit"))),
+        "scan_manifest_matches_tree": flag(manifest_paths == ported_now),
+        "scan_findings_covered": flag(bool(measured.get("finding_coverage"))),
+        "scan_stray_names": "-",
+        "triage_rules": count(rule_count),
+        "triage_findings": count(triaged_count),
+        "findings_untriaged": count(int(measured.get("untriaged_findings", 0))),
+        "untriaged_high": count(int(measured.get("untriaged_high", 0))),
+        "triage_rule_review_valid": flag(bool(measured.get("rule_review_valid"))),
+        "triage_high_reviewed": flag(bool(measured.get("high_reviewed"))),
+        "triage_deser_reviewed": flag(bool(measured.get("deser_reviewed"))),
+        "triage_rce_retained": flag(bool(measured.get("rce_findings_retained"))),
+        "triage_reviewer_authorized": flag(bool(measured.get("reviewer_authorized"))),
+        "triage_review_complete": flag(bool(measured.get("review_complete"))),
+        "triage_security_fixed": flag(bool(measured.get("security_fixed"))),
+        "triage_unresolved_risks": flag(bool(measured.get("unresolved_risks"))),
+        "surface_covered": flag(surface_covered),
     }
 
 
 def judge_ac5_07(facts: Facts) -> Verdict:
     """``AC-5|07``: the ported tree's bandit run is on record and the triage covers all of it."""
-    ok = (
-        facts["target_ok"] == "yes"
-        and facts["archive"] != "-"
-        and facts["archive_self_written"] == "yes"
-        and facts["scan_manifest_ok"] == "yes"
-        and facts["scan_b_only"] == "yes"
-        and number(facts["scan_findings"]) > 0
-        and facts["findings_untriaged"] == "0"
-        and facts["cleared_present"] == "0"
-        and facts["deser_present"] == "0"
-        and facts["surface_covered"] == "yes"
+    ok = all(
+        (
+            facts["target_ok"] == "yes",
+            facts["security_evidence_valid"] == "yes",
+            facts["security_issue_count"] == "0",
+            facts["scan_source_tree_valid"] == "yes",
+            facts["scanner_exit_consistent"] == "yes",
+            facts["scan_errors"] == "0",
+            facts["archive"] != "-",
+            facts["scan_b_only"] == "yes",
+            facts["scan_manifest_matches_tree"] == "yes",
+            number(facts["scan_findings"]) > 0,
+            facts["scan_findings_covered"] == "yes",
+            facts["findings_untriaged"] == "0",
+            facts["untriaged_high"] == "0",
+            facts["triage_rule_review_valid"] == "yes",
+            facts["triage_high_reviewed"] == "yes",
+            facts["triage_deser_reviewed"] == "yes",
+            facts["triage_rce_retained"] == "yes",
+            facts["triage_reviewer_authorized"] == "yes",
+            facts["triage_review_complete"] == "yes",
+            facts["triage_security_fixed"] == "no",
+            facts["triage_unresolved_risks"] == "yes",
+            facts["surface_covered"] == "yes",
+        )
     )
     readings = (
         f"搬运层专用扫描目标 `Makefile:{SECURITY_PORTED_TARGET}` 在位且打的是 {PORTED_ROOT}/ = "
@@ -6455,39 +7628,50 @@ def judge_ac5_07(facts: Facts) -> Verdict:
         f"{BANDIT_CONFIG} 的 exclude_dirs（{facts['bandit_exclude_dirs']}）把搬运层排出去，"
         f"所以「含 B 层」的全量复核只能由这个专用目标承担 = {facts['daily_excludes_ported']}"
         "（质量规范 §4 的「每次同步一次」口径，不是逐提交记账）",
-        f"本轮全量扫描留档 {facts['archive']}（自报 archive_round={facts['archive_round']}，"
-        f"本轮自写 = {facts['archive_self_written']}，"
-        f"generated_at={facts['archive_generated_at']}，"
-        f"命令={facts['archive_produced_by']}）：{facts['scan_findings']} 项 / "
-        f"{facts['scan_files']} 个有 finding 的文件 / {facts['scan_rules']} 条规则"
-        f"（{facts['scan_rule_names']}），全是 B 层 = {facts['scan_b_only']}；"
-        f"文件全在搬运清单内 = {facts['scan_manifest_ok']}（清单外：{facts['scan_stray_names']}）",
-        f"人工 triage（{A2_TRIAGE_REL}）处置 {facts['triage_rules']} 条规则，自己声明扫的是 "
-        f"{facts['triage_files_claimed']} 个 py 文件 / {facts['triage_findings_claimed']} 项，"
-        f"而搬运树今天是 {facts['ported_files']} 个 py 文件 —— "
-        f"覆盖面相等 = {facts['surface_covered']}",
-        f"同一份 triage 的免罪句「{facts['triage_absolution']}」点名的规则有 "
-        f"{facts['cleared_present']} 条在本轮实测里出现了：{facts['cleared_present_names']}；"
-        f"它说「无 pickle/yaml.load 类反序列化项」，本轮按 bandit 自己的测试名匹配到 "
-        f"{facts['deser_present']} 条：{facts['deser_names']}",
-        f"今天这次扫描里落在未处置规则上的还有 {facts['findings_untriaged']} 项："
-        f"{facts['untriaged_detail']}",
+        f"当前 C65 全量扫描与分组风险审阅证据 {facts['archive']} 由 validator 独立绑定 = "
+        f"{facts['security_evidence_valid']}（issue={facts['security_issue_count']}，"
+        f"{facts['security_issue_summary']}）；Bandit {facts['archive_produced_by']}，"
+        f"generated_at={facts['archive_generated_at']}，exit={facts['scanner_exit']} "
+        "且与 findings 一致 = "
+        f"{facts['scanner_exit_consistent']}，errors={facts['scan_errors']}，记录 "
+        f"{facts['scan_findings']} 项 / {facts['scan_files']} 个有 finding 的文件 / "
+        f"{facts['scan_rules']} 条 B 规则（{facts['scan_rule_names']}），"
+        "错误流为空且结果形状有效 = "
+        f"{facts['scan_b_only']}；退出码 1 表示本轮发现了 finding，不等同于扫描执行失败",
+        f"扫描源绑定当前搬运树：清单每文件 hash 已验证 {facts['scan_source_files_verified']}/"
+        f"{facts['scan_python_files']} 个，保存条目 {facts['scan_source_files_saved']} 个，"
+        f"path/NUL/content/NUL SHA256={facts['scan_source_hash']}，source tree valid = "
+        f"{facts['scan_source_tree_valid']}，搬运 manifest 与磁盘路径集合相同 = "
+        f"{facts['scan_manifest_matches_tree']}，当前 findings 与 triage identity 完整覆盖 = "
+        f"{facts['scan_findings_covered']}（未处置 {facts['findings_untriaged']} 项，"
+        f"其中未处置 HIGH {facts['untriaged_high']} 项）",
+        f"当前分组 triage 完成 {facts['triage_findings']} 项 / {facts['triage_rules']} 条规则，"
+        f"规则 disposition、basis、follow_up 与 finding 一致 = "
+        f"{facts['triage_rule_review_valid']}；"
+        f"实际 HIGH finding {facts['scan_high_findings']} 项，"
+        f"未处置 HIGH {facts['untriaged_high']} 项，"
+        f"HIGH 审阅覆盖 = {facts['triage_high_reviewed']}，AI 审阅的直接用户授权 = "
+        f"{facts['triage_reviewer_authorized']}，审阅完成 = {facts['triage_review_complete']}",
+        f"反序列化风险组 B301/B403 有明确审阅 = {facts['triage_deser_reviewed']}；"
+        f"B301/B307 RCE finding 均保留为风险 = {facts['triage_rce_retained']}；"
+        f"security_fixed={facts['triage_security_fixed']}、unresolved_risks="
+        f"{facts['triage_unresolved_risks']}，不将审阅表述为修复或零风险",
+        f"搬运 manifest 源文件与磁盘 py 文件覆盖一致 = {facts['surface_covered']} "
+        f"（磁盘 {facts['ported_files']} 个 py 文件）",
     )
     reason = (
         ""
         if ok
-        else "「安全扫描完成并人工 triage 留档」缺的是留档与今天的树对得上："
-        "A2 那份 triage 声明它扫了 "
-        f"{facts['triage_files_claimed']} 个 py 文件（{facts['triage_findings_claimed']} 项），"
-        f"搬运树已长到 {facts['ported_files']} 个（本轮全量 {facts['scan_findings']} 项、"
-        f"{facts['scan_rules']} 条规则），其中 {facts['findings_untriaged']} 项属于 triage "
-        f"从未处置过的规则（{facts['untriaged_detail']}）；那句「"
-        f"{facts['triage_absolution']}」描述的是当初那棵树，"
-        "本轮实测里 triage 点名「无」的规则出现了 "
-        f"{facts['cleared_present']} 条（{facts['cleared_present_names']}）、"
-        "pickle/yaml 类反序列化 "
-        f"{facts['deser_present']} 条（{facts['deser_names']}）。逐条人工处置是这件事的正当收口，"
-        "本轮不给它补假处置"
+        else "当前验收要求本轮扫描、源树、逐 finding triage 和保留风险结论能够相互核对："
+        f"security evidence valid={facts['security_evidence_valid']}（issues="
+        f"{facts['security_issue_count']} {facts['security_issue_summary']}），"
+        f"source tree={facts['scan_source_tree_valid']}，"
+        f"coverage={facts['scan_findings_covered']}，"
+        f"untriaged={facts['findings_untriaged']} / HIGH={facts['untriaged_high']}，"
+        f"rule review={facts['triage_rule_review_valid']}，deserialization review="
+        f"{facts['triage_deser_reviewed']}，RCE retained={facts['triage_rce_retained']}，"
+        f"security_fixed={facts['triage_security_fixed']}，unresolved risks="
+        f"{facts['triage_unresolved_risks']}"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
@@ -6583,12 +7767,27 @@ def provider_packages(ctx: Context) -> list[str]:
 
 
 def runtime_py_files(ctx: Context) -> list[str]:
-    """Tracked ``.py`` paths under the four shipped roots."""
+    """Tracked ``.py`` paths under the four shipped roots that are present on disk.
+
+    ``git ls-files`` reports the *index*, so a file deleted in the worktree is still listed while
+    it is no longer shipped. The AC-16 face walks the shipped packages' import graph, and an
+    unreadable path there is not a finding about OpenBB -- it is a walker reading a directory that
+    is gone. Presence is filtered here, at the population, so every consumer of this census (the
+    import map, the name scan) measures the same tree rather than one that crashes halfway through.
+    """
     return sorted(
         rel
         for rel in ctx.tracked()
-        if rel.endswith(".py") and rel.split("/")[0] in RUNTIME_PY_ROOTS
+        if rel.endswith(".py")
+        and rel.split("/")[0] in RUNTIME_PY_ROOTS
+        and (ctx.root / rel).is_file()
     )
+
+
+def runtime_py_files_with_optional(ctx: Context, optional_paths: Sequence[str]) -> list[str]:
+    """Add named worktree runtime files without changing the global tracked-file surface."""
+    present = {rel for rel in optional_paths if (ctx.root / rel).is_file()}
+    return sorted(set(runtime_py_files(ctx)) | present)
 
 
 @lru_cache(maxsize=1)
@@ -6918,72 +8117,577 @@ def judge_ac16_03(facts: Facts) -> Verdict:
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
 
+AC16_VENDOR_TREE = Path("opendata/data/providers/akshare/_vendor")
+AC16_EXPECTED_PYTHON_FILES = 325
+AC16_EXPECTED_RESOURCE_FILES = 2
+AC16_VENDOR_PREFIX = "opendata.data.providers.akshare._vendor"
+AC16_NAMESPACE_NAMES = (
+    "opendata",
+    "opendata.data",
+    "opendata.data.providers",
+    "opendata.data.providers.akshare",
+)
+AC16_ENTRY_SOURCES = {
+    "opendata.data.providers.akshare._vendor.datasets": "datasets.py",
+    "opendata.data.providers.akshare._vendor.stock.cons": "stock/cons.py",
+    "opendata.data.providers.akshare._vendor.utils": "utils/__init__.py",
+}
+AC16_CONTROL_MODULES = {
+    "core_database": "opendata.core",
+    "sibling_provider": "opendata.data.providers.bls",
+    "client_root": "opendata_client",
+}
+AC16_BLOCKED_IMPORTS = frozenset(AC16_CONTROL_MODULES.values())
+AC16_HASH_PINS = (
+    "manifest_sha256",
+    "manifest_file_identity_sha256",
+    "manifest_resource_identity_sha256",
+    "source_tree_sha256",
+    "resource_tree_sha256",
+)
+
+
+def _ac16_json(value: object) -> str:
+    """Encode one audit detail as a stable fact, including malformed/missing values."""
+    try:
+        return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    except (TypeError, ValueError):
+        return "null"
+
+
+def _ac16_decode(value: str) -> object:
+    """Decode an audit detail fact without letting malformed evidence raise in the judge."""
+    try:
+        return json.loads(value)
+    except (TypeError, json.JSONDecodeError):
+        return None
+
+
+def _ac16_path_within(candidate: object, root: object) -> bool:
+    """Whether a reported filesystem path resolves at or below the reported root."""
+    if not isinstance(candidate, str) or not candidate or not isinstance(root, str) or not root:
+        return False
+    try:
+        path = Path(candidate).resolve()
+        base = Path(root).resolve()
+        return path == base or base in path.parents
+    except (OSError, RuntimeError, ValueError):
+        return False
+
+
+def _ac16_namespace_ok(records: object, cwd: str) -> bool:
+    """Verify all namespace ancestors are source-free and rooted in the isolated copy."""
+    if not isinstance(records, dict) or set(records) != set(AC16_NAMESPACE_NAMES) or not cwd:
+        return False
+    for name in AC16_NAMESPACE_NAMES:
+        record = records.get(name)
+        if not isinstance(record, dict):
+            return False
+        expected = Path(cwd).joinpath(*name.split("."))
+        location = record.get("expected_location")
+        locations = record.get("search_locations")
+        if (
+            record.get("file", "missing") is not None
+            or record.get("origin", "missing") is not None
+            or not isinstance(location, str)
+            or Path(location).resolve() != expected.resolve()
+            or not isinstance(locations, list)
+            or len(locations) != 1
+            or not isinstance(locations[0], str)
+            or Path(locations[0]).resolve() != expected.resolve()
+        ):
+            return False
+    return True
+
+
+def _ac16_loaded_modules_ok(records: object, cwd: str) -> bool:
+    """Verify every loaded ``opendata`` module came from the isolated vendor copy."""
+    if not isinstance(records, dict) or not cwd:
+        return False
+    required = set(AC16_NAMESPACE_NAMES) | set(AC16_ENTRY_SOURCES)
+    if not required <= set(records):
+        return False
+    vendor_root = str(Path(cwd) / AC16_VENDOR_TREE)
+    for name, record in records.items():
+        if name != "opendata" and not name.startswith("opendata."):
+            return False
+        if not isinstance(record, dict):
+            return False
+        if name in AC16_NAMESPACE_NAMES:
+            if (
+                record.get("file", "missing") is not None
+                or record.get("origin", "missing") is not None
+            ):
+                return False
+            locations = record.get("search_locations")
+            expected = str(Path(cwd).joinpath(*name.split(".")))
+            if not isinstance(locations, list) or locations != [expected]:
+                return False
+            continue
+        if name != AC16_VENDOR_PREFIX and not name.startswith(f"{AC16_VENDOR_PREFIX}."):
+            return False
+        for key in ("file", "origin"):
+            if not _ac16_path_within(record.get(key), vendor_root):
+                return False
+        locations = record.get("search_locations", [])
+        if not isinstance(locations, list) or any(
+            not _ac16_path_within(path, vendor_root) for path in locations
+        ):
+            return False
+    return True
+
+
+def _ac16_entry_imports_ok(records: object, cwd: str) -> bool:
+    """Require the three declared entry imports and pin their origins to the copied tree."""
+    if not isinstance(records, dict) or set(records) != set(AC16_ENTRY_SOURCES):
+        return False
+    vendor_root = Path(cwd) / AC16_VENDOR_TREE
+    for name, relative in AC16_ENTRY_SOURCES.items():
+        record = records.get(name)
+        if not isinstance(record, dict) or record.get("status") != "imported":
+            return False
+        expected = (vendor_root / relative).resolve()
+        for key in ("file", "origin"):
+            value = record.get(key)
+            if not isinstance(value, str) or Path(value).resolve() != expected:
+                return False
+    return True
+
+
+def _ac16_controls_ok(records: object) -> bool:
+    """Require all deliberate boundary-crossing controls to fail with ImportError."""
+    if not isinstance(records, dict) or set(records) != set(AC16_CONTROL_MODULES):
+        return False
+    for name, blocked_module in AC16_CONTROL_MODULES.items():
+        record = records.get(name)
+        if (
+            not isinstance(record, dict)
+            or record.get("blocked_module") != blocked_module
+            or record.get("status") != "blocked_import_error"
+            or record.get("error_type") != "ImportError"
+        ):
+            return False
+    return True
+
+
 def measure_ac16_04(ctx: Context) -> Facts:
-    """Boundary read twice: statically from the import graph, then by actually running it."""
-    ported_py = [p for p in ctx.tracked() if p.startswith(PORTED_ROOT + "/") and p.endswith(".py")]
-    crossings: list[str] = []
-    blocked = set(BSL_IMPORT_ROOTS)
-    for rel in ported_py:
-        found = import_roots(rel)
-        if found and found & blocked:
-            crossings.append(rel)
-    inside_reg = [
-        rel
-        for rel in ctx.tracked()
-        if rel.startswith(PORTED_ROOT + "/") and rel.endswith("/registration.py")
-    ]
-    inside_prov = [
-        rel
-        for rel in ctx.tracked()
-        if rel.startswith(PORTED_ROOT + "/") and "/providers/" in "/" + rel
-    ]
-    code, out = run_argv([sys.executable, "-c", STANDALONE_PROBE_CODE])
-    return {
-        "ported_py": count(len([p for p in ctx.tracked() if p.endswith(".py")])),
-        "reg_inside": count(len(inside_reg)),
-        "reg_inside_names": ", ".join(inside_reg[:3]) or "-",
-        "prov_inside": count(len(inside_prov)),
-        "prov_inside_names": ", ".join(inside_prov[:3]) or "-",
-        "crossings": count(len(crossings)),
-        "crossing_names": ", ".join(crossings[:3]) or "-",
-        "standalone_exit": count(code),
-        "control_blocked": flag("CONTROL=blocked" in out),
-        "standalone_failed": first_capture(out, r"^FAILED=(.*)$"),
-        "imported_modules": first_capture(out, r"^IMPORTED=(\d+)$"),
-        "standalone_ok": flag(code == 0 and "CONTROL=blocked" in out and "IMPORTED=" in out),
+    """Audit current disk sources, then import the copied vendor tree in isolation."""
+    boundary = script_module("scripts/quality/vendor_independence.py")
+    report = boundary.audit_vendor_boundary(ctx.root)
+    if not isinstance(report, dict):
+        raise ProbeError("vendor boundary audit returned a non-object report")
+    counts = report.get("counts")
+    pins = report.get("source_pins")
+    isolation = report.get("isolation")
+    crossings = report.get("ast_crossings")
+    if not isinstance(counts, dict):
+        counts = {}
+    if not isinstance(pins, dict):
+        pins = {}
+    if not isinstance(isolation, dict):
+        isolation = {}
+    if not isinstance(crossings, list):
+        crossings = []
+
+    vendor_root = ctx.root / AC16_VENDOR_TREE
+    try:
+        relative_py = sorted(
+            path.relative_to(vendor_root).as_posix()
+            for path in vendor_root.rglob("*.py")
+            if path.is_file()
+        )
+    except OSError:
+        relative_py = []
+    registrations = [name for name in relative_py if Path(name).name == "registration.py"]
+    providers = [name for name in relative_py if "providers" in Path(name).parts]
+    crossing_names = sorted(
+        str(item.get("path", "(unknown)")) for item in crossings if isinstance(item, dict)
+    )
+    imports = isolation.get("imports")
+    controls = isolation.get("controls")
+    ancestors = isolation.get("ancestors")
+    loaded = isolation.get("loaded_opendata")
+    sys_path = isolation.get("sys_path")
+    baseline_sys_path = isolation.get("baseline_sys_path")
+    network_attempts = isolation.get("network_attempts")
+    repository_path_leaks = isolation.get("repository_path_leaks")
+    isolation_issues = isolation.get("issues")
+    audit_issues = report.get("issues")
+    cwd = isolation.get("cwd")
+    actual_hash_pins = all(
+        isinstance(pins.get(key), str) and re.fullmatch(r"[0-9a-f]{64}", pins[key])
+        for key in AC16_HASH_PINS
+    )
+    upstream_commit = pins.get("upstream_commit")
+    pins_valid = (
+        actual_hash_pins
+        and isinstance(upstream_commit, str)
+        and re.fullmatch(r"[0-9a-f]{40}", upstream_commit) is not None
+    )
+    namespace_ok = _ac16_namespace_ok(ancestors, cwd if isinstance(cwd, str) else "")
+    loaded_ok = _ac16_loaded_modules_ok(loaded, cwd if isinstance(cwd, str) else "")
+    imports_ok = _ac16_entry_imports_ok(imports, cwd if isinstance(cwd, str) else "")
+    controls_ok = _ac16_controls_ok(controls)
+    controls_count = len(controls) if isinstance(controls, dict) else 0
+    import_count = (
+        sum(
+            1
+            for value in imports.values()
+            if isinstance(value, dict) and value.get("status") == "imported"
+        )
+        if isinstance(imports, dict)
+        else 0
+    )
+    namespace_count = len(ancestors) if isinstance(ancestors, dict) else 0
+    loaded_count = len(loaded) if isinstance(loaded, dict) else 0
+    isolation_ok = isolation.get("valid") is True
+    controls_blocked = controls_ok
+    standalone_ok = isolation_ok and imports_ok and controls_ok
+    malformed_crossings = [item for item in crossings if not isinstance(item, dict)]
+
+    def audit_count(key: str) -> str:
+        value = counts.get(key)
+        if isinstance(value, int) and not isinstance(value, bool):
+            return count(value)
+        return "(absent)"
+
+    result: Facts = {
+        # Compatibility facts used by existing AC16 consumers and counterfacts.
+        "ported_py": audit_count("actual_python_files"),
+        "reg_inside": count(len(registrations)),
+        "reg_inside_names": ", ".join(registrations[:3]) or "-",
+        "prov_inside": count(len(providers)),
+        "prov_inside_names": ", ".join(providers[:3]) or "-",
+        "crossings": audit_count("ast_crossings"),
+        "crossing_names": ", ".join(crossing_names[:3]) or "-",
+        "standalone_exit": count(0 if isolation.get("status") == "passed" else 1),
+        "control_blocked": flag(controls_blocked),
+        "standalone_failed": "; ".join(
+            str(item)
+            for item in [
+                *(audit_issues if isinstance(audit_issues, list) else []),
+                *(isolation_issues if isinstance(isolation_issues, list) else []),
+            ]
+        )[:500]
+        or "(absent)",
+        "imported_modules": count(import_count),
+        "standalone_ok": flag(standalone_ok),
+        # Current source, manifest, parser, and inventory evidence.
+        "audit_root": str(ctx.root.resolve()),
+        "vendor_root": AC16_VENDOR_TREE.as_posix(),
+        "vendor_valid": flag(report.get("valid") is True),
+        "manifest_present": flag((vendor_root / "manifest.json").is_file()),
+        "expected_python_files": audit_count("expected_python_files"),
+        "manifest_python_files": audit_count("manifest_python_files"),
+        "vendor_python_files": audit_count("actual_python_files"),
+        "parsed_python_files": audit_count("parsed_python_files"),
+        "expected_resource_files": audit_count("expected_resource_files"),
+        "manifest_resource_files": audit_count("manifest_resource_files"),
+        "vendor_resource_files": audit_count("actual_resource_files"),
+        "vendor_total_files": audit_count("actual_total_files"),
+        "vendor_imports": audit_count("vendor_imports"),
+        "namespace_imports": audit_count("namespace_imports"),
+        "third_party_imports": audit_count("third_party_imports"),
+        "facade_module_paths": audit_count("facade_module_paths"),
+        "facade_vendor_module_paths": audit_count("facade_vendor_module_paths"),
+        "facade_third_party_module_paths": audit_count("facade_third_party_module_paths"),
+        "facade_third_party_targets_json": _ac16_json(report.get("facade_third_party_targets")),
+        "source_pins_valid": flag(pins_valid),
+        **{key: str(pins.get(key, "")) for key in AC16_HASH_PINS},
+        "upstream_commit": str(upstream_commit or ""),
+        "ast_crossings_json": _ac16_json(crossings),
+        "audit_issues_json": _ac16_json(audit_issues),
+        "audit_issue_count": count(len(audit_issues)) if isinstance(audit_issues, list) else "-1",
+        "malformed_crossing_count": count(len(malformed_crossings)),
+        # Isolated-import evidence. JSON facts retain the complete tool-returned inventories.
+        "isolation_valid": flag(isolation_ok),
+        "isolation_status": str(isolation.get("status", "")),
+        "isolation_cwd": str(cwd or ""),
+        "namespace_count": count(namespace_count),
+        "namespace_sources_clean": flag(namespace_ok),
+        "namespace_json": _ac16_json(ancestors),
+        "imports_json": _ac16_json(imports),
+        "controls_json": _ac16_json(controls),
+        "loaded_opendata_count": count(loaded_count),
+        "loaded_opendata_json": _ac16_json(loaded),
+        "loaded_modules_isolated": flag(loaded_ok),
+        "sys_path_json": _ac16_json(sys_path),
+        "baseline_sys_path_json": _ac16_json(baseline_sys_path),
+        "repository_path_leaks_json": _ac16_json(repository_path_leaks),
+        "blocked_imports_json": _ac16_json(isolation.get("blocked_imports")),
+        "network_attempts_json": _ac16_json(network_attempts),
+        "isolation_issues_json": _ac16_json(isolation_issues),
+        "entry_imports_valid": flag(imports_ok),
+        "control_count": count(controls_count),
+        "controls_complete": flag(controls_ok),
     }
+    return result
 
 
 def judge_ac16_04(facts: Facts) -> Verdict:
-    """``AC-16|04``: the MIT subtree is separable, and that is demonstrated by running it."""
+    """Require complete current-source and isolated-import evidence for AC16|04."""
+
+    def get(key: str) -> str:
+        return facts.get(key, "")
+
+    namespace = _ac16_decode(get("namespace_json"))
+    imports = _ac16_decode(get("imports_json"))
+    controls = _ac16_decode(get("controls_json"))
+    loaded = _ac16_decode(get("loaded_opendata_json"))
+    sys_path = _ac16_decode(get("sys_path_json"))
+    baseline_sys_path = _ac16_decode(get("baseline_sys_path_json"))
+    leaks = _ac16_decode(get("repository_path_leaks_json"))
+    blocked = _ac16_decode(get("blocked_imports_json"))
+    network = _ac16_decode(get("network_attempts_json"))
+    facade_targets = _ac16_decode(get("facade_third_party_targets_json"))
+    audit_issues = _ac16_decode(get("audit_issues_json"))
+    isolation_issues = _ac16_decode(get("isolation_issues_json"))
+    crossings = _ac16_decode(get("ast_crossings_json"))
+    cwd = get("isolation_cwd")
+    repo_root = get("audit_root")
+    pins_valid = (
+        all(re.fullmatch(r"[0-9a-f]{64}", get(key)) is not None for key in AC16_HASH_PINS)
+        and re.fullmatch(r"[0-9a-f]{40}", get("upstream_commit")) is not None
+    )
+    isolated_root_ok = (
+        (
+            Path(cwd).is_absolute()
+            and not _ac16_path_within(cwd, repo_root)
+            and not _ac16_path_within(repo_root, cwd)
+        )
+        if cwd and repo_root
+        else False
+    )
+    paths_do_not_leak = (
+        isinstance(sys_path, list)
+        and isinstance(baseline_sys_path, list)
+        and all(isinstance(path, str) and path for path in [*sys_path, *baseline_sys_path])
+        and sys_path == [cwd, *baseline_sys_path]
+        and all(not _ac16_path_within(path, repo_root) for path in sys_path)
+        and isinstance(leaks, list)
+        and not leaks
+    )
+    blocked_imports_ok = (
+        isinstance(blocked, list)
+        and len(blocked) == len(AC16_BLOCKED_IMPORTS)
+        and frozenset(blocked) == AC16_BLOCKED_IMPORTS
+    )
+    no_attempts_or_issues = (
+        isinstance(network, list)
+        and not network
+        and isinstance(audit_issues, list)
+        and not audit_issues
+        and isinstance(isolation_issues, list)
+        and not isolation_issues
+    )
+    facade_ok = (
+        number(get("facade_module_paths")) > 0
+        and number(get("facade_vendor_module_paths")) > 0
+        and number(get("facade_third_party_module_paths")) >= 0
+        and isinstance(facade_targets, list)
+        and all(isinstance(target, str) and target for target in facade_targets)
+        and facade_targets == sorted(set(facade_targets))
+        and number(get("facade_third_party_module_paths")) >= len(facade_targets)
+        and number(get("facade_module_paths"))
+        == number(get("facade_vendor_module_paths"))
+        + number(get("facade_third_party_module_paths"))
+    )
+    counts_ok = (
+        get("manifest_present") == "yes"
+        and number(get("expected_python_files")) == AC16_EXPECTED_PYTHON_FILES
+        and number(get("manifest_python_files")) == AC16_EXPECTED_PYTHON_FILES
+        and number(get("vendor_python_files")) == AC16_EXPECTED_PYTHON_FILES
+        and get("ported_py") == str(AC16_EXPECTED_PYTHON_FILES)
+        and number(get("parsed_python_files")) == AC16_EXPECTED_PYTHON_FILES
+        and number(get("expected_resource_files")) == AC16_EXPECTED_RESOURCE_FILES
+        and number(get("manifest_resource_files")) == AC16_EXPECTED_RESOURCE_FILES
+        and number(get("vendor_resource_files")) == AC16_EXPECTED_RESOURCE_FILES
+        and number(get("vendor_total_files"))
+        == AC16_EXPECTED_PYTHON_FILES + AC16_EXPECTED_RESOURCE_FILES
+        and number(get("crossings")) == 0
+        and isinstance(crossings, list)
+        and not crossings
+        and get("malformed_crossing_count") == "0"
+        and get("vendor_valid") == "yes"
+        and get("source_pins_valid") == "yes"
+        and pins_valid
+        and facade_ok
+    )
+    ancestors_ok = (
+        get("namespace_count") == str(len(AC16_NAMESPACE_NAMES))
+        and get("namespace_sources_clean") == "yes"
+        and _ac16_namespace_ok(namespace, cwd)
+    )
+    imports_ok = (
+        get("imported_modules") == str(len(AC16_ENTRY_SOURCES))
+        and get("entry_imports_valid") == "yes"
+        and _ac16_entry_imports_ok(imports, cwd)
+    )
+    controls_ok = (
+        get("control_count") == str(len(AC16_CONTROL_MODULES))
+        and get("controls_complete") == "yes"
+        and get("control_blocked") == "yes"
+        and _ac16_controls_ok(controls)
+        and blocked_imports_ok
+    )
+    loaded_ok = (
+        positive(get("loaded_opendata_count"))
+        and get("loaded_modules_isolated") == "yes"
+        and isinstance(loaded, dict)
+        and number(get("loaded_opendata_count")) == len(loaded)
+        and _ac16_loaded_modules_ok(loaded, cwd)
+    )
+    isolation_ok = (
+        get("isolation_valid") == "yes"
+        and get("isolation_status") == "passed"
+        and get("standalone_exit") == "0"
+        and get("standalone_ok") == "yes"
+        and isolated_root_ok
+        and ancestors_ok
+        and imports_ok
+        and controls_ok
+        and loaded_ok
+        and paths_do_not_leak
+        and no_attempts_or_issues
+    )
     ok = (
-        facts["reg_inside"] == "0"
-        and facts["prov_inside"] == "0"
-        and facts["crossings"] == "0"
-        and facts["standalone_ok"] == "yes"
-        and facts["control_blocked"] == "yes"
-        and number(facts["imported_modules"]) > 0
+        number(get("reg_inside")) == 0
+        and number(get("prov_inside")) == 0
+        and counts_ok
+        and isolation_ok
     )
     readings = (
-        f"搬运树里带 registration.py 的文件 {facts['reg_inside']} 个"
-        f"（{facts['reg_inside_names']}）、落在 */providers/* 下的 {facts['prov_inside']} 个"
-        f"（{facts['prov_inside_names']}）—— 判据点名的「registration.py 等自研代码不在 "
-        f"{PORTED_ROOT}/ 内」；{PORTED_ROOT}/ 的 py 文件里 import 根命中 BSL 侧"
-        f"（{', '.join(BSL_IMPORT_ROOTS)}）的 {facts['crossings']} 个：{facts['crossing_names']}",
-        f"另一面是真的跑一遍：起一个把 {', '.join(BSL_IMPORT_ROOTS)} 全部拒于 meta_path 的"
-        f"解释器，先自证闸门会响（import {STANDALONE_CONTROL_MODULE} 被拦 = "
-        f"{facts['control_blocked']}），再 import {len(STANDALONE_MODULES)} 个 {PORTED_ROOT} "
-        f"入口（datasets / stock.cons / utils）：IMPORTED={facts['imported_modules']}，"
-        f"退出码 {facts['standalone_exit']}，失败读数为 {facts['standalone_failed']}",
+        f"当前磁盘 {get('vendor_root')}：Python {get('vendor_python_files')}/"
+        f"{get('manifest_python_files')}（expected {get('expected_python_files')}，parsed "
+        f"{get('parsed_python_files')}），资源 {get('vendor_resource_files')}/"
+        f"{get('manifest_resource_files')}；总计 {get('vendor_total_files')}；静态跨界 "
+        f"{get('crossings')}；facade module paths {get('facade_module_paths')} = "
+        f"vendor {get('facade_vendor_module_paths')} + external "
+        f"{get('facade_third_party_module_paths')}",
+        f"Manifest/source pins：manifest {get('manifest_sha256')}；file identity "
+        f"{get('manifest_file_identity_sha256')}；resource identity "
+        f"{get('manifest_resource_identity_sha256')}；source tree {get('source_tree_sha256')}；"
+        f"resource tree {get('resource_tree_sha256')}；upstream commit {get('upstream_commit')}",
+        f"真实复制树隔离导入：status={get('isolation_status')}，入口 "
+        f"{get('imported_modules')}/{len(AC16_ENTRY_SOURCES)}，控制拦截 "
+        f"{get('control_count')}/{len(AC16_CONTROL_MODULES)}，namespace ancestors "
+        f"{get('namespace_count')}/{len(AC16_NAMESPACE_NAMES)}，加载模块 "
+        f"{get('loaded_opendata_count')}；network attempts "
+        f"{get('network_attempts_json')}，checkout leaks {get('repository_path_leaks_json')}",
+        f"vendor 子树内自研文件：registration.py {get('reg_inside')} 个 "
+        f"({get('reg_inside_names')})，providers 路径 {get('prov_inside')} 个 "
+        f"({get('prov_inside_names')})；legacy import count={get('imported_modules')}，"
+        f"standalone exit={get('standalone_exit')}，失败={get('standalone_failed')}",
     )
     reason = (
         ""
         if ok
-        else "「混合许可边界可验证」两半都要：MIT 子树里没有自研注册代码、没有指向 BSL 侧"
-        "的 import，"
-        "且把 BSL 侧真的禁掉之后搬运树仍 import 得起来（闸门不自证就什么都证明不了）"
+        else "AC-16|04 只有在当前磁盘 manifest 与 325 个可解析 Python 文件、2 个资源、"
+        "逐文件 source pins、完整静态 import/facade 检查，以及临时复制树中的真实入口导入、"
+        "namespace 来源、三项拒绝控制、无网络尝试和无 checkout/sys.path 泄漏全部齐备时才通过"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def _ac16_clean_repair_facts() -> Facts:
+    """A complete hypothetical clean reading used only by the judge counterfact harness."""
+    isolated = "/isolated/ac16-boundary"
+    repo = "/workspace/opendata"
+    isolated_vendor = str(Path(isolated) / AC16_VENDOR_TREE)
+    ancestors: dict[str, object] = {}
+    loaded: dict[str, object] = {}
+    for name in AC16_NAMESPACE_NAMES:
+        location = str(Path(isolated).joinpath(*name.split(".")))
+        ancestors[name] = {
+            "expected_location": location,
+            "file": None,
+            "origin": None,
+            "search_locations": [location],
+        }
+        loaded[name] = {"file": None, "origin": None, "search_locations": [location]}
+    imports: dict[str, object] = {}
+    for name, relative in AC16_ENTRY_SOURCES.items():
+        path = str(Path(isolated_vendor) / relative)
+        imports[name] = {"file": path, "origin": path, "status": "imported"}
+        loaded[name] = {"file": path, "origin": path, "search_locations": []}
+    controls = {
+        name: {
+            "blocked_module": module,
+            "error_type": "ImportError",
+            "status": "blocked_import_error",
+        }
+        for name, module in AC16_CONTROL_MODULES.items()
+    }
+    return {
+        "ported_py": str(AC16_EXPECTED_PYTHON_FILES),
+        "reg_inside": "0",
+        "reg_inside_names": "-",
+        "prov_inside": "0",
+        "prov_inside_names": "-",
+        "crossings": "0",
+        "crossing_names": "-",
+        "standalone_exit": "0",
+        "control_blocked": "yes",
+        "standalone_failed": "(absent)",
+        "imported_modules": str(len(AC16_ENTRY_SOURCES)),
+        "standalone_ok": "yes",
+        "audit_root": repo,
+        "vendor_root": AC16_VENDOR_TREE.as_posix(),
+        "vendor_valid": "yes",
+        "manifest_present": "yes",
+        "expected_python_files": str(AC16_EXPECTED_PYTHON_FILES),
+        "manifest_python_files": str(AC16_EXPECTED_PYTHON_FILES),
+        "vendor_python_files": str(AC16_EXPECTED_PYTHON_FILES),
+        "parsed_python_files": str(AC16_EXPECTED_PYTHON_FILES),
+        "expected_resource_files": str(AC16_EXPECTED_RESOURCE_FILES),
+        "manifest_resource_files": str(AC16_EXPECTED_RESOURCE_FILES),
+        "vendor_resource_files": str(AC16_EXPECTED_RESOURCE_FILES),
+        "vendor_total_files": str(AC16_EXPECTED_PYTHON_FILES + AC16_EXPECTED_RESOURCE_FILES),
+        "vendor_imports": "238",
+        "namespace_imports": "0",
+        "third_party_imports": "1153",
+        "facade_module_paths": "987",
+        "facade_vendor_module_paths": "986",
+        "facade_third_party_module_paths": "1",
+        "facade_third_party_targets_json": '["akqmt"]',
+        "source_pins_valid": "yes",
+        **dict.fromkeys(AC16_HASH_PINS, "a" * 64),
+        "upstream_commit": "a" * 40,
+        "ast_crossings_json": "[]",
+        "audit_issues_json": "[]",
+        "audit_issue_count": "0",
+        "malformed_crossing_count": "0",
+        "isolation_valid": "yes",
+        "isolation_status": "passed",
+        "isolation_cwd": isolated,
+        "namespace_count": str(len(AC16_NAMESPACE_NAMES)),
+        "namespace_sources_clean": "yes",
+        "namespace_json": _ac16_json(ancestors),
+        "imports_json": _ac16_json(imports),
+        "controls_json": _ac16_json(controls),
+        "loaded_opendata_count": str(len(loaded)),
+        "loaded_opendata_json": _ac16_json(loaded),
+        "loaded_modules_isolated": "yes",
+        "sys_path_json": _ac16_json([isolated, "/python/lib/python311.zip"]),
+        "baseline_sys_path_json": _ac16_json(["/python/lib/python311.zip"]),
+        "repository_path_leaks_json": "[]",
+        "blocked_imports_json": _ac16_json(sorted(AC16_BLOCKED_IMPORTS)),
+        "network_attempts_json": "[]",
+        "isolation_issues_json": "[]",
+        "entry_imports_valid": "yes",
+        "control_count": str(len(AC16_CONTROL_MODULES)),
+        "controls_complete": "yes",
+    }
+
+
+def _ac16_namespace_source_counterfact_json() -> str:
+    """Represent a copied namespace ancestor accidentally resolving to BSL source."""
+    records = _ac16_decode(_ac16_clean_repair_facts()["namespace_json"])
+    if not isinstance(records, dict) or not isinstance(records.get("opendata"), dict):
+        return "{}"
+    records["opendata"]["file"] = "/workspace/opendata/opendata/__init__.py"
+    records["opendata"]["origin"] = "/workspace/opendata/opendata/__init__.py"
+    return _ac16_json(records)
 
 
 def measure_ac16_08(ctx: Context) -> Facts:
@@ -7037,11 +8741,16 @@ def judge_ac16_08(facts: Facts) -> Verdict:
 # --------------------------------------------------------------------------- #
 
 AC19_BACKUP_REL: Final = "scripts/ops/backup_mysql.sh"
+AC19_COMPOSE_REL: Final = "docker-compose.yml"
+AC19_BACKUP_DOCKERFILE_REL: Final = "scripts/ops/Dockerfile.backup"
+AC19_BACKUP_RUNNER_REL: Final = "scripts/ops/backup_runner.sh"
 AC19_BR_DOC_REL: Final = "docs/operations-backup-restore.md"
 AC19_DRILL_REL: Final = "docs/evidence/A0/restore-drill.txt"
 AC19_A0_README_REL: Final = "docs/evidence/A0/README.md"
 AC19_RETENTION_REL: Final = "opendata/pipeline/retention.py"
+AC19_MAINTENANCE_REL: Final = "opendata/pipeline/maintenance.py"
 AC19_KEYHEALTH_REL: Final = "opendata/pipeline/key_health.py"
+AC19_KEYNOTIFY_REL: Final = "opendata/pipeline/key_health_notifications.py"
 AC19_PATROL_REL: Final = "opendata/pipeline/patrol.py"
 AC19_CONFIG_REL: Final = "opendata/core/config.py"
 AC19_CONFIG_DOC_REL: Final = "docs/配置项清单.md"
@@ -7060,6 +8769,18 @@ AC19_RETENTION_KEYS: Final = (
     "CACHE_TTL_SECONDS",
     "RETENTION_DIFF_REPORT_DAYS",
     "RETENTION_MINUTE_YEARS",
+)
+AC19_RETENTION_NODES: Final = (
+    "tests/test_pipeline_jobs.py::TestExecuteTemplate::"
+    "test_retention_job_is_report_only_unless_explicitly_enabled",
+)
+AC19_OBSERVATION_NODES: Final = (
+    "tests/test_key_health_notifications.py::TestRecentObservationStore::"
+    "test_ttl_expiry_is_unknown_and_is_not_a_confirmed_recovery",
+    "tests/test_key_health_notifications.py::TestKeyHealthNotifier::"
+    "test_ttl_expiry_event_is_not_labeled_as_recovery",
+    "tests/test_key_health_notifications.py::TestKeyHealthNotifier::"
+    "test_unchanged_alert_is_not_sent_twice_and_quota_stays_unknown",
 )
 #: key_health.py:119 自己列出的四类：没有主动探测就只是未验证。
 AC19_KEY_CLASSES: Final = ("key-validity", "key-expiry", "revocation-or-ban", "quota-left")
@@ -7136,8 +8857,49 @@ def measure_ac19_01(ctx: Context) -> Facts:
     paths = ac19_tracked(ctx)
     script = ctx.read(AC19_BACKUP_REL) if AC19_BACKUP_REL in set(paths) else ""
     doc = ctx.read(AC19_BR_DOC_REL)
-    labels = re.findall(r'^dump_one\s+[^\n]*"([a-z_]+)"', script, re.M)
-    sites = schedule_sites_for(ctx, paths, "backup_mysql")
+    compose = yaml.safe_load(ctx.read(AC19_COMPOSE_REL))
+    services = compose.get("services") if isinstance(compose, dict) else None
+    backup_service = services.get("backup") if isinstance(services, dict) else None
+    build = backup_service.get("build") if isinstance(backup_service, dict) else None
+    profiles = backup_service.get("profiles", []) if isinstance(backup_service, dict) else []
+    backup_profile = flag(isinstance(profiles, list) and "backup" in profiles)
+    backup_image_src = ctx.read(AC19_BACKUP_DOCKERFILE_REL)
+    backup_runner = ctx.read(AC19_BACKUP_RUNNER_REL)
+    dockerfile = build.get("dockerfile") if isinstance(build, dict) else ""
+    backup_image = flag(
+        dockerfile == AC19_BACKUP_DOCKERFILE_REL
+        and "COPY scripts/ops/backup_mysql.sh" in backup_image_src
+        and "COPY scripts/ops/backup_runner.sh" in backup_image_src
+        and 'ENTRYPOINT ["/opendata/scripts/ops/backup_runner.sh"]' in backup_image_src
+    )
+    runner_lines = code_lines(backup_runner)
+    daily_runner = flag(
+        any(line == "while true; do" for line in runner_lines)
+        and any("read -r hour minute second" in line and "date -u" in line for line in runner_lines)
+        and any(
+            line == "now_seconds=$((10#$hour * 3600 + 10#$minute * 60 + 10#$second))"
+            for line in runner_lines
+        )
+        and any(line == "target_seconds=$((2 * 3600))" for line in runner_lines)
+        and any(
+            line == "wait_seconds=$(((target_seconds - now_seconds + 86400) % 86400))"
+            for line in runner_lines
+        )
+        and any(line == "if ((wait_seconds == 0)); then" for line in runner_lines)
+        and any(line == "wait_seconds=86400" for line in runner_lines)
+        and any(line == 'sleep "$wait_seconds"' for line in runner_lines)
+        and any(line == "/opendata/scripts/ops/backup_mysql.sh" for line in runner_lines)
+    )
+    schedule_chain = flag(
+        backup_profile == "yes" and backup_image == "yes" and daily_runner == "yes"
+    )
+    labels = re.findall(
+        r'^dump_one\s+"[^"]+"\s+"[^"]+"\s+"[^"]+"\s+(metadata|warehouse)\b',
+        script,
+        re.M,
+    )
+    schedule_paths = sorted(set(paths) | {AC19_BACKUP_RUNNER_REL})
+    sites = schedule_sites_for(ctx, schedule_paths, "backup_mysql")
     # 「binlog 生效」要一次实测取值：文档第 49 行 `log_bin = /var/lib/...` 是配置片段，格式串
     # `ON|OFF` 也不是取值；语料再剔掉档案面与结论面（见 ATTESTATION_SKIP_PREFIXES）—— 复算时
     # 本轮自己写的「0 份档案」那句话会被读成 4 份。
@@ -7149,6 +8911,17 @@ def measure_ac19_01(ctx: Context) -> Facts:
         and BINLOG_VALUE.search(ctx.read(rel))
     ]
     doc_lines = doc.splitlines()
+    isolated = ctx.read("docs/evidence/C64/backup-restore.txt")
+    deployment_path = "docs/evidence/C64/backup-deployment-live.json"
+    try:
+        deployed = (
+            json.loads(ctx.read(deployment_path)) if (ctx.root / deployment_path).is_file() else {}
+        )
+    except json.JSONDecodeError:
+        deployed = {}
+    if not isinstance(deployed, dict):
+        deployed = {}
+    deployment_age = deployed.get("last_successful_backup_age_hours")
     return {
         "scan_population": count(len(paths)),
         "attestation_excluded": ", ".join(ATTESTATION_SKIP_PREFIXES),
@@ -7158,11 +8931,29 @@ def measure_ac19_01(ctx: Context) -> Facts:
         "dump_sites": count(mysqldump_invocations(script)),
         "schedule_sites": count(len(sites)),
         "schedule_list": ", ".join(sorted(set(sites))[:4]) or "-",
+        "backup_profile": backup_profile,
+        "backup_image": backup_image,
+        "daily_runner": daily_runner,
+        "schedule_chain": schedule_chain,
         "doc_rpo": flag(any("RPO" in ln and "24" in ln for ln in doc_lines)),
-        "doc_binlog": flag(any("log_bin" in ln for ln in doc_lines)),
+        "doc_binlog": flag(any("log_bin" in ln or "ROW binlog" in ln for ln in doc_lines)),
         "binlog_optional": flag(any("binlog" in ln.lower() and "可选" in ln for ln in doc_lines)),
         "binlog_attested": count(len(attested)),
         "binlog_attested_list": ", ".join(sorted(set(attested))[:3]) or "-",
+        "isolated_binlog": flag(
+            "REVIEW_EXIT=0" in isolated
+            and "'log_bin': 'ON'" in isolated
+            and "'binlog_format': 'ROW'" in isolated
+        ),
+        "deployment_observed": flag(
+            deployed.get("scope") == "independent-live-backup-deployment"
+            and deployed.get("backup_service_running") is True
+            and deployed.get("log_bin") == "ON"
+            and isinstance(deployment_age, (int, float))
+            and not isinstance(deployment_age, bool)
+            and 0 <= deployment_age <= 24
+            and bool(deployed.get("delivery_evidence"))
+        ),
     }
 
 
@@ -7173,9 +8964,14 @@ def judge_ac19_01(facts: Facts) -> Verdict:
         and facts["dump_calls"] == "2"
         and number(facts["dump_sites"]) >= 1
         and number(facts["schedule_sites"]) >= 1
+        and facts["backup_profile"] == "yes"
+        and facts["backup_image"] == "yes"
+        and facts["daily_runner"] == "yes"
+        and facts["schedule_chain"] == "yes"
         and facts["doc_rpo"] == "yes"
         and facts["doc_binlog"] == "yes"
         and number(facts["binlog_attested"]) >= 1
+        and facts["deployment_observed"] == "yes"
     )
     readings = (
         f"备份脚本在跟踪清单 = {facts['script_tracked']}；dump_one 调用 "
@@ -7185,12 +8981,18 @@ def judge_ac19_01(facts: Facts) -> Verdict:
         "排除，且读 `git ls-files -z`：默认输出会把中文文件名八进制转义）；每日触发点 "
         f"{facts['schedule_sites']} 处（{facts['schedule_list']}）；"
         "脚本头部注释里那行 `0 2 * * *` 不算触发点（被调方不能当自己的证据）",
+        f"Compose `backup` profile = {facts['backup_profile']}（按需启动）；镜像链 = "
+        f"{facts['backup_image']}；runner 每日 02:00 UTC 循环 = {facts['daily_runner']}；"
+        f"完整接线 = {facts['schedule_chain']}（源码配置不证明当前部署已启动）",
         f"RPO ≤24h 的声明面 = {facts['doc_rpo']}；binlog 写进手册 = {facts['doc_binlog']}，"
         f"手册把它列为可选附录 = {facts['binlog_optional']}",
         f"实测过的 `log_bin` 取值（只认 ON/OFF，格式串里的 `ON|OFF` 备选不算）"
         f"{facts['binlog_attested']} 份档案（{facts['binlog_attested_list']}）；语料剔除面 "
         f"{facts['attestation_excluded']} —— 档案面与结论面都不算实测，探针离线不连库，"
         "配置片段不算读数",
+        f"C64 isolated MySQL ROW binlog measured={facts['isolated_binlog']}; "
+        f"actual scheduled deployment and backup freshness={facts['deployment_observed']}; "
+        "isolated restoration does not establish production RPO",
     )
     if ok:
         reason = ""
@@ -7202,11 +9004,11 @@ def judge_ac19_01(facts: Facts) -> Verdict:
             f"{facts['dump_calls']} 次（{facts['dump_labels']}）、RPO 声明 {facts['doc_rpo']}、"
             f"binlog 手册 {facts['doc_binlog']}（列为可选 = {facts['binlog_optional']}）"
         )
-    elif number(facts["binlog_attested"]) < 1:
+    elif number(facts["binlog_attested"]) < 1 or facts["deployment_observed"] != "yes":
         reason = (
-            "每日触发点在位，但 binlog 面只剩手册里标为「可选」的附录："
-            f"没有任何一份档案带一次实测的 log_bin 取值（当前 {facts['binlog_attested']} 份），"
-            "RPO ≤24h 因此是靠每日全量兜底、不是靠 binlog"
+            "每日触发源码和隔离双库恢复已验证，隔离 ROW binlog 取值="
+            f"{facts['isolated_binlog']}；正式部署中每日任务运行、备份新鲜度及 binlog "
+            f"实际生效证据={facts['deployment_observed']}，生产 RPO ≤24h 尚未验收"
         )
     else:
         reason = (
@@ -7314,7 +9116,8 @@ def judge_ac19_02(facts: Facts) -> Verdict:
 def retention_callers(ctx: Context) -> list[str]:
     """Runtime modules (never tests/) that actually call one of the purge executors."""
     hits: list[str] = []
-    for rel in runtime_py_files(ctx):
+    runtime = runtime_py_files_with_optional(ctx, (AC19_MAINTENANCE_REL,))
+    for rel in runtime:
         if rel == AC19_RETENTION_REL:
             continue
         body = ctx.read(rel)
@@ -7330,6 +9133,33 @@ def measure_ac19_03(ctx: Context) -> Facts:
     """
     src = ctx.read(AC19_RETENTION_REL)
     cfg = ctx.read(AC19_CONFIG_REL)
+    jobs = ctx.read(PIPELINE_JOBS_REL)
+    schedule = yaml.safe_load(ctx.read(SCHEDULES_REL))
+    templates = schedule.get("templates") if isinstance(schedule, dict) else None
+    rows = templates if isinstance(templates, list) else []
+    schedule_row = flag(
+        any(
+            isinstance(row, dict)
+            and row.get("name") == "retention-maintenance"
+            and row.get("kind") == "retention"
+            for row in rows
+        )
+    )
+    executable = flag("TemplateKind.RETENTION" in set_literal_members(jobs, "EXECUTABLE_KINDS"))
+    dispatcher = function_body(jobs, "_execute_template")
+    dispatched = flag("TemplateKind.RETENTION" in dispatcher and "_execute_retention" in dispatcher)
+    executor = function_body(jobs, "_execute_retention")
+    dry_run_default = flag(
+        bool(
+            re.search(
+                r"retention_execution_enabled:\s*bool\s*=\s*Field\(\s*default=False",
+                cfg,
+            )
+        )
+        and "run_retention" in executor
+        and "dry_run=not settings.retention_execution_enabled" in executor
+    )
+    retention_results = outcomes(AC19_RETENTION_NODES)
     defs = [name for name in AC19_RETENTION_FUNCS if re.search(rf"^def {name}\(", src, re.M)]
     callers = retention_callers(ctx)
     return {
@@ -7341,6 +9171,11 @@ def measure_ac19_03(ctx: Context) -> Facts:
         "config_keys": count(sum(1 for key in AC19_RETENTION_KEYS if key in cfg)),
         "prod_callers": count(len(callers)),
         "caller_list": ", ".join(sorted(callers)[:4]) or "-",
+        "schedule_row": schedule_row,
+        "kind_executable": executable,
+        "dispatcher": dispatched,
+        "report_only_default": dry_run_default,
+        "report_only_test": bad_of(retention_results),
     }
 
 
@@ -7351,6 +9186,11 @@ def judge_ac19_03(facts: Facts) -> Verdict:
         and facts["executors"] == "4"
         and facts["config_keys"] == "4"
         and number(facts["prod_callers"]) >= 1
+        and facts["schedule_row"] == "yes"
+        and facts["kind_executable"] == "yes"
+        and facts["dispatcher"] == "yes"
+        and facts["report_only_default"] == "yes"
+        and facts["report_only_test"] == "-"
     )
     readings = (
         f"策略四类读到 {facts['policy_kinds']}/4（日线永久 / 分钟线 N 年 / 缓存 TTL / "
@@ -7358,15 +9198,18 @@ def judge_ac19_03(facts: Facts) -> Verdict:
         f"四个配置键 {facts['config_keys']}/4",
         f"生产侧调用点 {facts['prod_callers']} 处（{facts['caller_list']}）—— "
         "tests/ 里的引用不算调用点，retention.py 自己的内部转调也不算",
+        f"调度行 = {facts['schedule_row']}，kind 可执行 = {facts['kind_executable']}，"
+        f"派发到执行器 = {facts['dispatcher']}；默认 report-only = "
+        f"{facts['report_only_default']}（RETENTION_EXECUTION_ENABLED 默认 false，"
+        f"显式开启才删除）；命名行为用例失败项 = {facts['report_only_test']}（- 表示全部通过）",
     )
     reason = (
         ""
         if ok
         else (
-            f"「声明并实现」缺的是实现面：策略 {facts['policy_kinds']}/4、执行器 "
-            f"{facts['executors']}/4（{facts['executor_list']}）、配置键 {facts['config_keys']}/4 "
-            f"都在位，但运行时四包里没有任何模块调用它们（生产调用点 {facts['prod_callers']} 处）。"
-            "保留策略今天是一套**只有测试会跑**的执行器：不接调度或接口，过期数据就不会真被清"
+            f"策略 {facts['policy_kinds']}/4、执行器 {facts['executors']}/4、配置键 "
+            f"{facts['config_keys']}/4、运行时调用点 {facts['prod_callers']}；还要求调度行、"
+            "可执行 kind、jobs 派发以及默认 report-only 行为都成立。细项读数见上方各面"
         )
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
@@ -7417,29 +9260,38 @@ def measure_ac19_04(ctx: Context) -> Facts:
     rejected, quota = status_class_rules(src)
     # patrol.py 是 credential_health 的定义处，不能当自己的告警落点。
     own = {AC19_KEYHEALTH_REL, AC19_PATROL_REL}
-    graded = [
-        rel
-        for rel in runtime_py_files(ctx)
-        if rel not in own and "credential_health(" in ctx.read(rel)
-    ]
+    runtime = runtime_py_files_with_optional(ctx, (AC19_KEYNOTIFY_REL,))
+    graded = [rel for rel in runtime if rel not in own and "credential_health(" in ctx.read(rel)]
     notified = [
         rel
-        for rel in runtime_py_files(ctx)
+        for rel in runtime
         if rel != AC19_KEYHEALTH_REL
         and re.search(r"credential_health|KeyReport", ctx.read(rel))
         and re.search(r"build_notify_hook|notify\(", ctx.read(rel))
     ]
+    observation_results = outcomes(AC19_OBSERVATION_NODES)
+    live_path = "docs/evidence/C64/key-monitoring-live.json"
+    live_source = ctx.read(live_path) if (ctx.root / live_path).is_file() else ""
     return {
         "classes_declared": count(sum(1 for name in AC19_KEY_CLASSES if f'"{name}"' in src)),
         "rejected_rule": flag(rejected),
         "quota_rule": flag(quota),
         "expiry_signal": flag(key_expiry_signal(src)),
         "presence_only": flag("presence-only" in src),
-        "disclosure": flag("publishes a Key's expiry" in src),
+        "disclosure": flag(
+            "publishes remaining quota or revocation status" in src
+            and "not an active validity check" in src
+        ),
+        **key_monitoring_observations(live_source),
         "alert_sites": count(len(graded)),
         "alert_list": ", ".join(sorted(graded)[:4]) or "-",
         "notify_sites": count(len(notified)),
         "notify_list": ", ".join(sorted(notified)[:4]) or "-",
+        "observation_runs": count(len(observation_results)),
+        "observation_passed": count(
+            sum(1 for seen in observation_results.values() if seen == "passed")
+        ),
+        "observation_bad": bad_of(observation_results),
     }
 
 
@@ -7453,6 +9305,12 @@ def judge_ac19_04(facts: Facts) -> Verdict:
         and number(facts["alert_sites"]) >= 1
         and number(facts["notify_sites"]) >= 1
         and facts["disclosure"] == "yes"
+        and facts["observation_runs"] == "3"
+        and facts["observation_passed"] == facts["observation_runs"]
+        and facts["observation_bad"] == "-"
+        and facts["issuer_expiry_observed"] == "yes"
+        and facts["quota_remaining_observed"] == "yes"
+        and facts["delivery_observed"] == "yes"
     )
     readings = (
         f"四类健康类别在位 {facts['classes_declared']}/4（key-validity / key-expiry / "
@@ -7464,6 +9322,15 @@ def judge_ac19_04(facts: Facts) -> Verdict:
         f"（{facts['alert_list']}，定义处 patrol.py 已排除）；"
         f"带外告警通道 {facts['notify_sites']} 处（{facts['notify_list']}）—— "
         "只有 /health 可拉取 ≠ 告警生效",
+        f"operator-supplied expiry metadata supported = {facts['expiry_signal']}；"
+        f"独立 observation TTL 与通知测试 "
+        f"{facts['observation_passed']}/{facts['observation_runs']} 通过 "
+        f"({facts['observation_bad']})：过期只报告 observation-expired、不会被当作恢复；"
+        "余量未知时保持 None，不补造配额",
+        f"independent live evidence: issuer expiry={facts['issuer_expiry_observed']}, "
+        f"remaining quota={facts['quota_remaining_observed']}, "
+        f"notification delivery={facts['delivery_observed']}; "
+        "metadata and mocks do not prove these",
         f"模块自己的边界声明在位 = {facts['disclosure']}，未观测只报 "
         f"{facts['presence_only']}（这句被删而探测仍未做 ⇒ 判 gap）",
     )
@@ -7471,17 +9338,52 @@ def judge_ac19_04(facts: Facts) -> Verdict:
         ""
         if ok
         else (
-            f"判据要「配额/到期/封禁监控告警**生效**」：类别与被动归类都在位"
-            f"（{facts['classes_declared']}/4 类，401/403={facts['rejected_rule']}、"
-            f"429={facts['quota_rule']}），但到期这一类没有任何可触发的信号"
-            f"（{facts['expiry_signal']}；模块自己写着没有源发布到期/余量/吊销状态，披露句 = "
-            f"{facts['disclosure']}），且 Key 分级只进 /health 的拉取面"
-            f"（分级落点 {facts['alert_sites']} 处 = {facts['alert_list']}，"
-            f"带外通道 {facts['notify_sites']} 处）—— 配额只到 warn、封禁只到 alert，"
-            "都无人被通知"
+            f"判据要类别、可触发信号、分级落点、通知通道与观察状态测试共同成立；当前读到 "
+            f"{facts['classes_declared']}/4 类，operator expiry support={facts['expiry_signal']}，"
+            f"分级落点={facts['alert_sites']}、通知通道={facts['notify_sites']}，"
+            f"observation tests={facts['observation_passed']}/{facts['observation_runs']}。"
+            "观察 TTL 过期不能替代 key 恢复，quota 余量未知时也不能填入数值；"
+            "还缺供应商到期/余量和实际通知送达的独立现场证据"
         )
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def key_monitoring_observations(source: str) -> Facts:
+    """Read independent live measurements; operator metadata alone stays unverified."""
+    try:
+        record = json.loads(source)
+    except (json.JSONDecodeError, TypeError):
+        record = {}
+    if not isinstance(record, dict):
+        record = {}
+    live = (
+        record.get("scope") == "independent-live-key-monitoring"
+        and record.get("provider") in {"ths", "fred"}
+        and isinstance(record.get("observed_at"), str)
+        and bool(record.get("observed_at"))
+    )
+    remaining = record.get("remaining_quota")
+    return {
+        "issuer_expiry_observed": flag(
+            live
+            and record.get("expiry_provenance") == "issuer"
+            and isinstance(record.get("expiry_date"), str)
+            and bool(record.get("expiry_date"))
+        ),
+        "quota_remaining_observed": flag(
+            live
+            and isinstance(remaining, (int, float))
+            and not isinstance(remaining, bool)
+            and remaining >= 0
+        ),
+        "delivery_observed": flag(
+            live
+            and record.get("notification_delivered") is True
+            and record.get("notification_channel") in {"websocket", "smtp"}
+            and bool(record.get("delivery_evidence"))
+        ),
+    }
 
 
 def filled_cells(line: str) -> int:
@@ -7573,10 +9475,2516 @@ def judge_ac19_05(facts: Facts) -> Verdict:
 
 
 # --------------------------------------------------------------------------- #
+# C64 remaining implementation: fresh named behavior checks and bounded evidence
+# --------------------------------------------------------------------------- #
+
+
+C64_HTTP_NODES: Final = (
+    "tests/test_http_client.py::TestSuccessPath::test_governance_kwargs_passed_to_transport",
+    "tests/test_http_client.py::TestCircuitBreaker::test_429_retried_within_request",
+    "tests/test_http_client.py::TestRateLimiting::test_burst_allowed_then_wait",
+    "tests/test_http_client.py::test_host_concurrency_limit_is_shared_across_thread_local_sessions",
+    "tests/test_fuyao_transport.py::TestRateLimiter::test_cooldown_blocks_until_retry_after",
+)
+C64_LOG_NODES: Final = (
+    "tests/test_macro_http_governance.py::test_structured_events_correlate_retries_and_redact_credentials",
+    "tests/test_http_client.py::test_transport_events_redact_url_credentials_parameters_and_exception_text",
+    "tests/test_fuyao_transport.py::TestHttpClient::test_structured_event_redacts_credentials_and_parameter_values",
+    "tests/test_fuyao_transport.py::TestHttpClient::test_transport_event_does_not_log_exception_text",
+)
+C64_CREDENTIAL_NODES: Final = (
+    "tests/test_provider_registry.py::TestCredentialRouting::test_auto_skips_missing_ths_credentials_and_warns_safely",
+    "tests/test_provider_registry.py::TestCredentialRouting::test_auto_fails_clearly_when_only_credentialed_source_is_verified",
+    "tests/test_provider_registry.py::TestCredentialRouting::test_key_added_after_registry_creation_enables_fred",
+)
+C64_MINUTE_NODES: Final = (
+    "tests/test_minute_archive.py::test_microsecond_timestamp_survives_index_and_parquet_round_trip",
+    "tests/test_minute_archive.py::test_multi_day_multi_symbol_pages_are_sorted_without_duplicates",
+    "tests/test_minute_data_api.py::test_minute_query_reads_only_main_index_and_local_parquet",
+)
+C64_CACHE_NODES: Final = (
+    "tests/test_raw_response_cache.py::test_cache_key_normalizes_order_and_separates_response_dimensions",
+    "tests/test_raw_response_cache.py::test_ttl_and_only_successful_statuses_are_cached",
+    "tests/test_raw_response_cache.py::test_corrupted_entry_is_a_warning_and_safe_miss",
+    "tests/test_raw_response_cache.py::test_ac13_05_actual_dwd_adjustment_route_never_caches_synthetic_series",
+)
+C64_PATROL_NODES: Final = (
+    "tests/test_scheduled_patrol.py::TestPatrolFailureStore::test_two_failures_cross_threshold_once_and_survive_store_recreation",
+    "tests/test_scheduled_patrol.py::TestPatrolFailureStore::test_threshold_notification_retries_after_failed_delivery_and_store_restart",
+    "tests/test_scheduled_patrol.py::TestPatrolFailureStore::test_recovery_notification_retries_after_failed_delivery_and_store_restart",
+    "tests/test_scheduled_patrol.py::TestScheduledPatrolExecution::test_disabled_default_reports_without_registry_or_provider_access",
+    "tests/test_scheduled_patrol.py::TestScheduledPatrolExecution::test_only_explicit_verified_p0_capabilities_are_probed",
+    "tests/test_pipeline_jobs.py::TestAttachBuiltinJobs::test_registers_the_cron_jobs_on_the_raw_scheduler",
+)
+
+
+def _c64_behavior(facts: Facts) -> Verdict:
+    """Accept fresh named checks only when the implementation binding is present."""
+    ok = plane_is_green(facts, "c64") and facts["binding"] == "yes"
+    return Verdict(
+        PROVEN if ok else GAP,
+        (
+            plane_reading(facts, "c64", "C64 fresh named behavior checks"),
+            f"runtime binding={facts['binding']}; scope={facts['scope']}",
+        ),
+        "" if ok else "A required named behavior check or its runtime binding is missing.",
+    )
+
+
+def measure_c64_ac4_01(ctx: Context) -> Facts:
+    """Check timeout, 429 retry, bucket rate and shared host concurrency behavior."""
+    source = ctx.read("opendata/data/http_client.py")
+    return {
+        **node_plane_facts("c64", C64_HTTP_NODES),
+        "binding": flag("with self._semaphore_for(host)" in source and "max_attempts" in source),
+        "scope": "offline actual transport mocks; no real supplier ban or uptime claim",
+    }
+
+
+def _read_historical_source(ctx: Context, historical_path: str) -> str:
+    """Read the canonical current file for a retained historical source identity.
+
+    ``Context.read`` intentionally stays a literal current-tree read. This narrow adapter uses
+    the shared source-layout map for the handful of probes whose names predate the current
+    provider tree; it never falls back to reading the old path.
+    """
+    layout = script_module("scripts/quality/source_layout.py")
+    return ctx.read(layout.historical_identity(historical_path))
+
+
+def measure_c64_ac4_02(ctx: Context) -> Facts:
+    """Check request correlation and safe structured failure events in both transports."""
+    sources = (
+        ctx.read("opendata/data/http_client.py"),
+        _read_historical_source(ctx, "opendata_fuyao/http_client.py"),
+    )
+    fields = (
+        "source",
+        "endpoint",
+        "parameter_summary",
+        "elapsed_seconds",
+        "request_id",
+        "failure_category",
+    )
+    return {
+        **node_plane_facts("c64", C64_LOG_NODES),
+        "binding": flag(all(all(f'"{field}"' in source for field in fields) for source in sources)),
+        "scope": "offline structured-event behavior and credential redaction",
+    }
+
+
+def measure_c64_ac7_06(ctx: Context) -> Facts:
+    """Check missing-key auto exclusion, visible warning and no unverified promotion."""
+    source = ctx.read("opendata/data/registry.py")
+    return {
+        **node_plane_facts("c64", C64_CREDENTIAL_NODES),
+        "binding": flag("AUTO_ROUTE_CREDENTIAL_MISSING" in source and "logger.warning" in source),
+        "scope": "current registry resolution; no supplier availability claim",
+    }
+
+
+def measure_c64_minute(ctx: Context) -> Facts:
+    """Check actual file query behavior and mainDB metadata versus warehouse rows."""
+    source = ctx.read("opendata/data/minute_archive.py")
+    api = ctx.read("opendata/api/minute_data.py")
+    archive = ctx.read("docs/evidence/C64/minute-mysql-api.txt")
+    return {
+        **node_plane_facts("c64", C64_MINUTE_NODES),
+        "binding": flag(
+            "parquet" in source
+            and "query_minute_archive" in api
+            and "REVIEW_EXIT=0" in archive
+            and "no minute table in warehouse" in archive
+        ),
+        "scope": (
+            "fresh temporary file/SQLite checks plus C64 isolated MySQL/Parquet REST; "
+            "no deployment or file RPO claim"
+        ),
+    }
+
+
+def measure_c64_cache(ctx: Context) -> Facts:
+    """Check actual factor-backed qfq/hfq routes leave raw HTTP cache unchanged."""
+    cache = ctx.read("opendata/data/raw_response_cache.py")
+    transport = ctx.read("opendata/data/http_client.py")
+    return {
+        **node_plane_facts("c64", C64_CACHE_NODES),
+        "binding": flag(
+            "get_configured_raw_response_cache" in transport
+            and "raw_responses" in cache
+            and "_MAX_BODY_BYTES" in cache
+        ),
+        "scope": (
+            "fresh raw-byte cache and SQLite factor-backed REST qfq/hfq checks; "
+            "deleting cache preserves ODS watermark and computed queries; no formula change"
+        ),
+    }
+
+
+def measure_c64_patrol(ctx: Context) -> Facts:
+    """Check daily P0 selection, persistent transitions and failed delivery retry."""
+    jobs = ctx.read("opendata/pipeline/jobs.py")
+    patrol = ctx.read("opendata/pipeline/scheduled_patrol.py")
+    schedules = yaml.safe_load(ctx.read("opendata/pipeline/schedules.yaml"))
+    rows = schedules if isinstance(schedules, list) else []
+    # The YAML schema may wrap the schedule rows; never assume an empty list passed.
+    if isinstance(schedules, dict):
+        rows = schedules.get("templates", [])
+    configured = (
+        any(
+            isinstance(row, dict)
+            and row.get("kind") == "scheduled_patrol"
+            and row.get("cron") == "0 18 * * *"
+            and row.get("timezone") == "UTC"
+            for row in rows
+        )
+        if isinstance(rows, list)
+        else False
+    )
+    return {
+        **node_plane_facts("c64", C64_PATROL_NODES),
+        "binding": flag(
+            configured
+            and "execute_scheduled_patrol(template)" in jobs
+            and "acknowledge" in patrol
+            and "notification_id" in patrol
+        ),
+        "scope": (
+            "fresh offline P0/persistent-outbox checks and actual UTC CronTrigger; "
+            "disabled by default; business time and live suppliers remain unverified"
+        ),
+    }
+
+
+def measure_c64_gb_query(ctx: Context) -> Facts:
+    """Read the independently run GB-table query with its explicit bounded scope."""
+    source = ctx.read("docs/evidence/C64/warehouse-gb-query.txt")
+    records: list[dict[str, object]] = []
+    for line in source.splitlines():
+        if line.startswith("{"):
+            try:
+                entry = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(entry, dict):
+                records.append(entry)
+    entry = records[-1] if records else {}
+    plan = entry.get("explain")
+    scans = plan if isinstance(plan, list) else []
+    return {
+        "dated_evidence": flag(
+            "Date: 2026-09-30" in source and "REVIEW_EXIT=0" in source and "HEAD: d552c08" in source
+        ),
+        "gb_table": flag(
+            isinstance(entry.get("bytes"), int) and int(str(entry["bytes"])) >= 1_000_000_000
+        ),
+        "http_rows": flag(
+            entry.get("http_query_status") == 200
+            and entry.get("http_csv_status") == 200
+            and isinstance(entry.get("rows"), int)
+            and int(str(entry["rows"])) > 0
+            and entry.get("rows") == entry.get("csv_rows")
+        ),
+        "indexed": flag(
+            bool(scans)
+            and all(
+                isinstance(row, dict)
+                and row.get("type") in {"range", "ref", "eq_ref", "const"}
+                and bool(row.get("key"))
+                for row in scans
+            )
+        ),
+        "bounded_time": flag(
+            isinstance(entry.get("elapsed_seconds"), (int, float))
+            and 0 < float(str(entry["elapsed_seconds"])) < 10
+        ),
+        "read_only": flag(
+            entry.get("writes") == 0 and "READ ONLY on every transaction" in str(entry.get("scope"))
+        ),
+        "scope": (
+            "one indexed stock_daily THS ODS table; 15-day/one-symbol/12-row query; "
+            "no all-table or P95 claim"
+        ),
+    }
+
+
+def judge_c64_gb_query(facts: Facts) -> Verdict:
+    """Require every recorded GB-table measurement face; absence cannot be green."""
+    fields = ("dated_evidence", "gb_table", "http_rows", "indexed", "bounded_time", "read_only")
+    ok = all(facts[field] == "yes" for field in fields)
+    return Verdict(
+        PROVEN if ok else GAP,
+        tuple(f"{field}={facts[field]}" for field in fields) + (facts["scope"],),
+        "" if ok else "GB-table HTTP/CSV/index/elapsed/read-only measurement is incomplete.",
+    )
+
+
+def measure_c64_registry(ctx: Context) -> Facts:
+    """Measure bundled provider registration from current named behavior and binding."""
+    source = ctx.read("opendata/data/providers/__init__.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_p0_providers.py::TestRegistration::test_registers_the_p0_capabilities_plus_b1_domains",
+                "tests/test_ths_provider.py::TestRegistration::test_registers_the_verified_fuyao_capabilities",
+                "tests/test_openbb_map.py::TestShippedMap::test_enabled_capabilities_are_covered",
+            ),
+        ),
+        "binding": flag(
+            all(
+                token in source
+                for token in (
+                    "register_akshare()",
+                    "register_ths()",
+                    "register_fred()",
+                    "register_ecb()",
+                    "register_imf()",
+                    "register_oecd()",
+                    "register_yfinance()",
+                )
+            )
+        ),
+        "scope": "offline registrations; historical opendata_providers uses current providers",
+    }
+
+
+def measure_c64_auto(ctx: Context) -> Facts:
+    """Measure authority and health fallback from current named behavior and binding."""
+    source = ctx.read("opendata/data/registry.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_provider_registry.py::TestAutoRouting::test_auto_prefers_authority_source",
+                "tests/test_provider_registry.py::TestAutoRouting::test_auto_degrades_to_next_when_unhealthy",
+                "tests/test_provider_registry.py::TestAutoRouting::test_auto_fails_when_all_unhealthy",
+            ),
+        ),
+        "binding": flag(
+            all(token in source for token in ("mark_unavailable", "participates_in_auto"))
+        ),
+        "scope": "offline actual registry resolution",
+    }
+
+
+def measure_c64_explicit(ctx: Context) -> Facts:
+    """Measure precise explicit routing from current named behavior and binding."""
+    source = ctx.read("opendata/data/registry.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_provider_registry.py::TestExplicitRouting::test_explicit_source_routes_directly",
+                "tests/test_provider_registry.py::TestExplicitRouting::test_explicit_source_no_fallback",
+                "tests/test_provider_registry.py::TestExplicitRouting::test_period_and_market_filters",
+            ),
+        ),
+        "binding": flag(
+            all(token in source for token in ('source != "auto"', "no registered capability"))
+        ),
+        "scope": "offline explicit routing and rejection; no live supplier request",
+    }
+
+
+def measure_c64_reserved(ctx: Context) -> Facts:
+    """Measure unverified and reserved notes exclusion from current named behavior and binding."""
+    source = ctx.read("opendata/data/capability.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_provider_registry.py::TestAutoRouting::test_unverified_excluded_from_auto",
+                "tests/test_provider_registry.py::TestAutoRouting::test_reserved_notes_excluded_from_auto[on-demand]",
+                "tests/test_provider_registry.py::TestAutoRouting::test_reserved_notes_excluded_from_auto[upstream-pending]",
+            ),
+        ),
+        "binding": flag(
+            all(token in source for token in ("participates_in_auto", "self.verified"))
+        ),
+        "scope": "offline verified/notes eligibility, both reserved note values",
+    }
+
+
+def measure_c64_cap_api(ctx: Context) -> Facts:
+    """Measure capability and source registry APIs from current named behavior and binding."""
+    source = ctx.read("opendata/api/data.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_p0_providers.py::TestCapabilitiesEndpoint::test_capabilities_api_lists_p0_capabilities",
+                "tests/test_p0_providers.py::TestCapabilitiesEndpoint::test_sources_api_exposes_authority_and_registered",
+                "tests/test_p0_providers.py::TestCapabilitiesEndpoint::test_capabilities_requires_authentication",
+                "tests/test_p0_providers.py::TestCapabilitiesEndpoint::test_sources_requires_authentication",
+            ),
+        ),
+        "binding": flag(
+            all(token in source for token in ("get_registry().capabilities()", "authority"))
+        ),
+        "scope": "offline authenticated read-only API and current registry contents",
+    }
+
+
+def measure_c64_unverified(ctx: Context) -> Facts:
+    """Measure incomplete comparison cannot enter auto from current named behavior and binding."""
+    source = ctx.read("opendata/data/registry.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_p0_providers.py::TestRegistration::test_capabilities_declared_unverified",
+                "tests/test_p0_providers.py::TestRegistration::test_auto_routing_excludes_unverified",
+                "tests/test_provider_registry.py::TestAutoRouting::test_unverified_excluded_from_auto",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("participates_in_auto",))),
+        "scope": "offline unverified exclusion; no supplier comparison claim",
+    }
+
+
+def measure_c64_fuyao_transport(ctx: Context) -> Facts:
+    """Measure fuyao envelope auth and backoff from current named behavior and binding."""
+    source = _read_historical_source(ctx, "opendata_fuyao/http_client.py")
+    smoke = ctx.read("docs/evidence/A3/fuyao-live-smoke.txt")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_fuyao_transport.py::TestHttpClient::test_successful_get_sends_the_key_header_and_parses",
+                "tests/test_fuyao_transport.py::TestHttpClient::test_auth_error_is_not_retried",
+                "tests/test_fuyao_transport.py::TestHttpClient::test_http_429_enters_cooldown_and_is_retried",
+                "tests/test_fuyao_transport.py::TestErrorClassification::test_codes_map_to_stable_categories[4001-rate_limited-True]",
+            ),
+        ),
+        "binding": flag(
+            all(token in source for token in ("max_attempts", "retryable"))
+            and "4 passed, 26 deselected" in smoke
+            and "https://fuyao.aicubes.cn" in smoke
+        ),
+        "scope": "fresh offline HTTP mocks; historical live smoke A3 separately retained",
+    }
+
+
+def measure_c64_fuyao_errors(ctx: Context) -> Facts:
+    """Measure business error messages and remedies from current named behavior and binding."""
+    source = _read_historical_source(ctx, "opendata_fuyao/error_messages.yaml")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_fuyao_transport.py::TestErrorMessages::test_every_registered_code_has_an_entry",
+                "tests/test_fuyao_transport.py::TestErrorMessages::test_every_transport_key_has_an_entry",
+                "tests/test_fuyao_transport.py::TestErrorMessages::test_entries_declare_category_message_and_advice",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("category:", "message:", "advice:"))),
+        "scope": "current complete error-table validation",
+    }
+
+
+def measure_c64_fuyao_map(ctx: Context) -> Facts:
+    """Measure official endpoint map coverage from current named behavior and binding."""
+    source = _read_historical_source(ctx, "opendata_fuyao/endpoint_map.yaml")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_fuyao_endpoint_map.py::test_every_doc_section_is_mapped",
+                "tests/test_fuyao_endpoint_map.py::test_every_doc_endpoint_is_mapped",
+                "tests/test_fuyao_endpoint_map.py::test_coverage_totals_reconcile",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("version:", "sections:"))),
+        "scope": "official archived document inventory and bidirectional map checks",
+    }
+
+
+def measure_c64_ths_contract(ctx: Context) -> Facts:
+    """Measure THS contract registration from current named behavior and binding."""
+    source = ctx.read("opendata/data/providers/ths/registration.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_ths_provider.py::TestRegistration::test_registers_the_verified_fuyao_capabilities",
+                "tests/test_ths_provider.py::TestRegistration::test_fetchers_declare_the_registered_domains",
+                "tests/test_ths_provider.py::TestRegistration::test_every_verified_domain_auto_routes_to_ths",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("FETCHERS", "verified"))),
+        "scope": "offline registered domains and contract-backed fetcher declarations",
+    }
+
+
+def measure_c64_openbb_map(ctx: Context) -> Facts:
+    """Measure enabled provider compatibility map from current named behavior and binding."""
+    source = ctx.read("opendata/data/openbb_map.yaml")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_openbb_map.py::TestShippedMap::test_enabled_capabilities_are_covered",
+                "tests/test_openbb_map.py::TestShippedMap::test_confirmed_models_are_never_guesses",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("version:", "entries:"))),
+        "scope": "naming interoperability only; no cleanroom rights assertion",
+    }
+
+
+def measure_c64_freshness_api(ctx: Context) -> Facts:
+    """Measure catalog and freshness routes from current named behavior and binding."""
+    source = ctx.read("opendata/api/data_query.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_data_catalog.py::TestFiveReadings::test_a_populated_domain_carries_every_reading",
+                "tests/test_data_catalog.py::TestTheFreshnessDoor::test_the_two_doors_agree_on_the_same_domain",
+                "tests/test_data_catalog.py::TestTheFreshnessDoor::test_the_ods_door_measures_that_sources_own_table",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("freshness", "catalog"))),
+        "scope": "temporary SQLite handler checks; HTTP route separately covered",
+    }
+
+
+def measure_c64_replay(ctx: Context) -> Facts:
+    """Measure missed batch meta replay from current named behavior and binding."""
+    source = ctx.read("opendata/api/data_subscribe.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_data_subscribe.py::TestSocketReplay::test_since_batch_id_replays_the_missed_batches",
+                "tests/test_data_subscribe.py::TestSocketReplay::test_replayed_batches_of_other_layers_are_filtered_out",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("since_batch_id", "replay"))),
+        "scope": "local websocket protocol and persisted batch fixtures",
+    }
+
+
+def measure_c64_frames(ctx: Context) -> Facts:
+    """Measure full message ceilings and fallback from current named behavior and binding."""
+    source = ctx.read("opendata/pipeline/subscription.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_data_subscribe.py::TestFraming::test_payload_over_the_row_ceiling_is_chunked",
+                "tests/test_data_subscribe.py::TestFraming::test_payload_over_the_total_ceiling_degrades_to_meta",
+                "tests/test_data_subscribe.py::TestFraming::test_truncated_meta_explains_the_remedy",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("truncated",))),
+        "scope": "offline bounded framing and remedy assertions",
+    }
+
+
+def measure_c64_routes(ctx: Context) -> Facts:
+    """Measure existing routes regression from current named behavior and binding."""
+    source = ctx.read("opendata/api/__init__.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_data_subscribe.py::TestWebSocketMounts::test_both_sockets_are_mounted_at_the_root",
+                "tests/test_data_subscribe.py::TestWebSocketMounts::test_executions_socket_still_refuses_a_missing_token",
+                "tests/test_api_tables_full.py::TestListTables::test_list_tables",
+                "tests/test_api_users_full.py::TestListUsers::test_list_users_as_admin",
+                "tests/test_api_tasks_full.py::TestListTasks::test_list_tasks_as_user",
+                "tests/test_api_executions_full.py::TestGetExecutions::test_get_executions",
+            ),
+        ),
+        "binding": flag(
+            all(
+                token in source
+                for token in (
+                    "include_router(tables_router",
+                    "include_router(tasks_router",
+                    "include_router(users_router",
+                    "include_router(executions_router",
+                )
+            )
+        ),
+        "scope": "offline main-database fixture REST routes and root websocket mounts",
+    }
+
+
+def measure_c64_client(ctx: Context) -> Facts:
+    """Measure minimal REST and websocket client from current named behavior and binding."""
+    source = ctx.read("opendata_client/opendata_client/client.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_opendata_client.py::TestPagination::test_stock_daily_all_collects_every_page",
+                "tests/test_opendata_client.py::TestRequestContract::test_stock_daily_sends_the_documented_parameters",
+                "tests/test_opendata_client.py::TestSubscriptionProtocol::test_events_yield_updates_and_raise_on_error_frames",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("stock_daily_all", "since_batch_id"))),
+        "scope": "mock REST/protocol; separate local socket evidence",
+    }
+
+
+def measure_c64_lock(ctx: Context) -> Facts:
+    """Measure upstream lock provenance and hashes from current named behavior and binding."""
+    source = _read_historical_source(ctx, "opendata_http/upstream.lock")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_fetch_upstream.py::TestLockVerification::test_lock_that_matches_reports_nothing",
+                "tests/test_fetch_upstream.py::TestLockVerification::test_drifted_hash_is_reported",
+            ),
+        ),
+        "binding": flag(
+            all(
+                token in source
+                for token in ("commit", "sha256", "https://github.com/cloudQuant/akshare")
+            )
+        ),
+        "scope": "real two-commit temporary git fixture; shipped lock contains full hash inventory",
+    }
+
+
+def measure_c64_sync(ctx: Context) -> Facts:
+    """Measure upstream inventory and signature diff from current named behavior and binding."""
+    source = ctx.read("docs/evidence/C2/sync-drill-report.md")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_fetch_upstream.py::TestChangedFiles::test_inventory_lists_add_modify_delete",
+                "tests/test_fetch_upstream.py::TestFunctionSignatures::test_function_diff_reports_added_removed_changed",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("147", "fcdbf25", "c4f6a631c259"))),
+        "scope": "fresh local git fixture and historical 147-file commit-interval rehearsal",
+    }
+
+
+def measure_c64_scheduled_pipeline(ctx: Context) -> Facts:
+    """Measure scheduled six-step pipeline task from current named behavior and binding."""
+    source = ctx.read("opendata/models/task.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_scheduled_pipeline_tasks.py::test_pipeline_executor_dispatches_allowlisted_six_step_arguments",
+                "tests/test_scheduled_pipeline_tasks.py::test_pipeline_task_create_requires_admin_and_list_handles_null_script",
+                "tests/test_pipeline_templates.py::TestPipelineFactory::test_wires_the_six_step_services",
+                "tests/test_pipeline_metadata.py::test_refreshes_ods_and_dwd_metadata_idempotently",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("task_kind", "parameters"))),
+        "scope": "temporary DB dispatch, factory and ODS/DWD metadata; separate migration evidence",
+    }
+
+
+def measure_c64_resume(ctx: Context) -> Facts:
+    """Measure completed-shard resume and partial-failure retry."""
+    source = ctx.read("opendata/pipeline/runner.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_pipeline_runner.py::TestPipelineRun::test_completed_shards_are_skipped_on_resume",
+                "tests/test_pipeline_runner.py::TestPipelineRun::test_partial_shard_failure_is_retried_without_duplicate_ods_keys",
+                "tests/test_pipeline_runner.py::TestPipelineRun::test_different_symbol_universes_do_not_resume_each_other",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("symbol_windows", "resume"))),
+        "scope": "SQLite control restart and writer fixtures; separate MySQL resume evidence",
+    }
+
+
+def measure_c64_ban_mechanism(ctx: Context) -> Facts:
+    """Measure bounded rate-limit retry mechanism from current named behavior and binding."""
+    source = _read_historical_source(ctx, "opendata_fuyao/http_client.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_fuyao_transport.py::TestHttpClient::test_http_429_enters_cooldown_and_is_retried",
+                "tests/test_fuyao_transport.py::TestRateLimiter::test_cooldown_blocks_until_retry_after",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("retryable", "record_rate_limit"))),
+        "scope": "offline 429 substitute; no live ban or quota claim",
+    }
+
+
+def measure_c64_steps(ctx: Context) -> Facts:
+    """Measure hook checkpoint re-entry, including metadata."""
+    source = ctx.read("opendata/pipeline/runner.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_pipeline_runner.py::TestPipelineRun::test_failed_hook_resumes_at_that_step_with_rebuilt_keys",
+                "tests/test_pipeline_runner.py::TestPipelineRun::test_meta_hook_failure_retries_without_repeating_prior_hooks",
+                "tests/test_pipeline_runner.py::TestPipelineRun::test_new_ods_write_invalidates_hook_steps_before_writer_can_crash",
+                "tests/test_pipeline_runner.py::TestPipelineRun::test_resume_false_reexecutes_completed_hook_checkpoints",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("self.meta", "PipelineStepCheckpoint"))),
+        "scope": "SQLite step re-entry; notification is at-least-once",
+    }
+
+
+def measure_c64_reload(ctx: Context) -> Facts:
+    """Measure persistent scheduler reload from current named behavior and binding."""
+    source = ctx.read("opendata/services/scheduler.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_scheduled_pipeline_tasks.py::test_scheduler_restart_reloads_pipeline_task_from_temporary_database",
+                "tests/test_scheduled_pipeline_tasks.py::test_script_executor_path_still_runs_and_records_script_id",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("task_kind", "pipeline"))),
+        "scope": "file-backed SQLite restart; actual task reload and legacy script path",
+    }
+
+
+def c64_node_probe(
+    item: str, expects: str, summary: str, measure: Callable[[Context], Facts], runs: int
+) -> Probe:
+    """Declare strict named-node planes with a counterfact for each failure mode."""
+    return Probe(
+        item=item,
+        expects=expects,
+        summary=summary,
+        measure=measure,
+        judge=_c64_behavior,
+        breaks=(
+            Break("named behavior check fails", (("c64_exit", "1"),), GAP),
+            Break("named node is absent", (("c64_absent", "missing"),), GAP),
+            Break("a required node is skipped", (("c64_skipped", "1"),), GAP),
+            Break("runtime binding removed", (("binding", "no"),), GAP),
+        ),
+        repair={
+            "c64_runs": str(runs),
+            "c64_exit": "0",
+            "c64_passed": str(runs),
+            "c64_failed": "0",
+            "c64_skipped": "0",
+            "c64_absent": "-",
+            "binding": "yes",
+        },
+    )
+
+
+def judge_c64_archive(facts: Facts) -> Verdict:
+    """Require the actual recorded observations and their stated provenance."""
+    ok = facts["observations"] == "yes" and facts["provenance"] == "yes"
+    return Verdict(
+        PROVEN if ok else GAP,
+        (
+            f"recorded observations={facts['observations']}; provenance={facts['provenance']}",
+            facts["scope"],
+        ),
+        "" if ok else "Required archived observation or provenance is missing.",
+    )
+
+
+def c64_archive_probe(
+    item: str, expects: str, summary: str, measure: Callable[[Context], Facts]
+) -> Probe:
+    """Keep historical evidence criteria falsifiable without rerunning live suppliers."""
+    return Probe(
+        item=item,
+        expects=expects,
+        summary=summary,
+        measure=measure,
+        judge=judge_c64_archive,
+        breaks=(
+            Break("recorded observations absent", (("observations", "no"),), GAP),
+            Break("record provenance absent", (("provenance", "no"),), GAP),
+        ),
+        repair={"observations": "yes", "provenance": "yes"},
+    )
+
+
+def measure_c64_p0_comparison(ctx: Context) -> Facts:
+    """Read complete P0 replay cases with their floating tolerance and pending disclosure."""
+    report = ctx.read("docs/evidence/A2/compare-report.md")
+    cases = [row for row in report.splitlines() if row.startswith("| ") and "| PASS |" in row]
+    functions = (
+        "stock_history_dividend_detail",
+        "stock_financial_report_sina",
+        "stock_financial_analysis_indicator_em",
+        "index_stock_cons_weight_csindex",
+        "futures_zh_daily_sina",
+        "option_sse_daily_sina",
+        "stock_zh_a_daily",
+        "stock_zh_index_daily",
+        "fund_etf_hist_sina",
+    )
+    return {
+        "observations": flag(
+            bool(cases) and all(any(name in row for row in cases) for name in functions)
+        ),
+        "provenance": flag(
+            "recorded from the upstream checkout pinned in upstream.lock" in report
+            and "rtol=1e-09" in report
+            and "Pending (network)" in report
+        ),
+        "scope": (
+            f"A2 replay: {len(cases)} PASS cases; Sina alternatives; "
+            "four Eastmoney cases pending; no P1 coverage claim"
+        ),
+    }
+
+
+def measure_c64_fuyao_live_archive(ctx: Context) -> Facts:
+    """Read the live P0 smoke and one actual all-market dump import, retaining their limits."""
+    smoke = ctx.read("docs/evidence/A3/fuyao-live-smoke.txt")
+    dump = ctx.read("docs/evidence/A3/fuyao-dump-import.txt")
+    return {
+        "observations": flag(
+            "4 passed, 26 deselected" in smoke
+            and "dump 55510 行" in dump
+            and "写入 55510" in dump
+            and "57441" in dump
+        ),
+        "provenance": flag(
+            "fuyao P0" in smoke
+            and "https://fuyao.aicubes.cn" in smoke
+            and "真机导入结果" in dump
+            and "未导入 10 年全量 dump" in dump
+        ),
+        "scope": "A3 live smoke and ten-day dump; no current Key or ten-year claim",
+    }
+
+
+def measure_c64_maintenance_budget(ctx: Context) -> Facts:
+    """Read the documented maintenance budget and concrete abandonment workflow."""
+    plan = ctx.read("docs/迭代计划/迭代1-重构数据中台/实施计划.md")
+    process = ctx.read("docs/evidence/C2/README.md")
+    return {
+        "observations": flag(
+            "10~15% 人力" in plan
+            and "## 3. 失效即弃流程" in process
+            and all(
+                token in process
+                for token in (
+                    "fetch_upstream.py --diff",
+                    "port_module.py",
+                    "compare_with_upstream.py",
+                    "健康标记降级",
+                )
+            )
+        ),
+        "provenance": flag("每迭代预留" in plan and "2026-09-24" in process),
+        "scope": "documented budget/process; no actual staffing allocation claim",
+    }
+
+
+def measure_c64_dual_comparison_archive(ctx: Context) -> Facts:
+    """Read measured differences and attribution, retaining legacy-source disclosure."""
+    report = ctx.read("docs/evidence/B1/dual-source-cross-check.txt")
+    return {
+        "observations": flag(
+            all(
+                token in report
+                for token in (
+                    "compared_keys=719314",
+                    "deviation_count=1989684",
+                    "missing_count=103555",
+                    "per_field=",
+                    "差异归因（人工复核结论）",
+                    "未发现程序性错误",
+                )
+            )
+        ),
+        "provenance": flag(
+            "2026-09-24" in report and "ths vs akshare" in report and "旧库迁移" in report
+        ),
+        "scope": (
+            "B1 2026-01-05..07-21: 719314 compared keys; "
+            "akshare leg from legacy migration, no fresh dual capture"
+        ),
+    }
+
+
+def measure_c64_gold_archive(ctx: Context) -> Facts:
+    """Read independent-vendor index samples and tolerate only the declared comparison window."""
+    report = ctx.read("docs/evidence/C5/ths-index-cross-check.txt")
+    live = [row for row in report.splitlines() if "| live |" in row]
+    return {
+        "observations": flag(
+            bool(live)
+            and all("| PASS |" in row for row in live)
+            and "0 failing legs" in report
+            and "tolerance:" in report
+            and "overlap >= 0.95" in report
+        ),
+        "provenance": flag(
+            "official: sina stock_zh_index_daily -- different vendor" in report
+            and "window: 2026-01-05 .. 2026-09-24" in report
+        ),
+        "scope": (
+            f"C5 index_daily: {len(live)} live legs plus one fixture; "
+            "no all-domain or current-provider claim"
+        ),
+    }
+
+
+def measure_c64_restore_archive(ctx: Context) -> Facts:
+    """Read this round's actual dual-database dump and complete row-count restoration."""
+    report = ctx.read("docs/evidence/C64/backup-restore.txt")
+    return {
+        "observations": flag(
+            (
+                "metadata PASS: gzip validated, separate credential used, "
+                "11 tables restored; exact row counts 10"
+            )
+            in report
+            and (
+                "warehouse PASS: gzip validated, separate credential used, "
+                "18 tables restored; exact row counts 22"
+            )
+            in report
+        ),
+        "provenance": flag(
+            "Date: 2026-09-30" in report
+            and "HEAD: d552c081950edffce167e3dfc0be74f37a6950a1" in report
+            and "REVIEW_EXIT=0" in report
+            and "owned Docker backup image" in report
+        ),
+        "scope": "C64 isolated MySQL restore; no production activation or file RPO claim",
+    }
+
+
+C64_RETRY_E2E_TITLES: Final = {
+    "retry": "retry posts and reloads the failed-shard list",
+    "export": "failed-shard export downloads the visible JSON response",
+    "empty": "empty failed-shard list is visible and exports an empty JSON array",
+    "export_error": "failed-shard export errors are visible to the operator",
+    "load_error": "failed-shard load errors are visible and disable export",
+}
+
+
+@lru_cache(maxsize=1)
+def run_c64_retry_e2e() -> dict[str, str]:
+    """Execute the named retry/export browser cases once per measurement process."""
+    titles = C64_RETRY_E2E_TITLES
+    grep = "|".join(re.escape(title) for title in titles.values())
+    code, output = run_argv(
+        [
+            "./node_modules/.bin/playwright",
+            "test",
+            "e2e/scripts.spec.ts",
+            "--reporter=json",
+            "--workers=1",
+            "--retries=0",
+            "--grep",
+            grep,
+        ],
+        cwd=REPO_ROOT / "frontend",
+    )
+    return playwright_outcomes(output, titles, code)
+
+
+def measure_c64_key_limit(ctx: Context) -> Facts:
+    """Check key lifecycle, scope rejection and actual shared rolling-limit dependency."""
+    source = ctx.read("opendata/api/dependencies.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_api_key_rate_limit.py::test_local_limit_allows_n_then_returns_positive_retry_after",
+                "tests/test_api_key_rate_limit.py::test_local_window_rolls_over_at_sixty_seconds",
+                "tests/test_api_key_rate_limit.py::test_local_concurrent_requests_never_admit_more_than_limit",
+                "tests/test_api_key_rate_limit.py::test_api_key_limit_is_shared_across_current_principal_endpoints_and_not_testing_bypassed",
+                "tests/test_api_key_rate_limit.py::test_scopes_and_invalid_key_lifecycle_are_checked_before_limiter",
+                "tests/test_api_key_rate_limit.py::test_configured_redis_failure_is_503_without_local_fallback_or_secret_logging",
+                "tests/test_api_keys.py::TestApiKeyEndpoints::test_creation_returns_the_plaintext_once",
+                "tests/test_api_keys.py::TestApiKeyEndpoints::test_revoke_and_rotate_lifecycle",
+                "tests/test_api_keys.py::TestApiKeyService::test_expired_key_stops_authenticating",
+            ),
+        ),
+        "binding": flag(
+            "api_key_rate_limiter.check(record.id, record.rate_limit)" in source
+            and '"Retry-After"' in source
+        ),
+        "scope": "local key checks; Redis fake, deployment unverified",
+    }
+
+
+def measure_c64_ods_cache_rerun(ctx: Context) -> Facts:
+    """Run one actual incremental job again after actual raw-cache invalidation."""
+    source = ctx.read("opendata/pipeline/jobs.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_pipeline_jobs.py::TestRunIncrementalJob::test_ods_watermark_controls_reruns_after_raw_cache_invalidation",
+                "tests/test_ods_watermark.py::test_reads_latest_mapped_ods_date_for_each_requested_symbol",
+            ),
+        ),
+        "binding": flag("read_ods_watermarks(warehouse, domain, feed" in source),
+        "scope": "actual job + SQLite ODS + raw-cache deletion; no provider requests",
+    }
+
+
+def measure_c64_retry_browser(ctx: Context) -> Facts:
+    """Measure shard isolation and the browser's POST/reload/retry path."""
+    browser = run_c64_retry_e2e()
+    source = ctx.read("frontend/src/views/ExecutionsView.vue")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_pipeline_runner.py::TestPipelineRun::test_single_symbol_failure_does_not_block_its_shard",
+                "tests/test_pipeline_retry.py::TestPipelineApi::test_retry_endpoint_is_idempotent_and_reports_the_count",
+            ),
+        ),
+        "binding": flag(all(value == "passed" for value in browser.values()) and "retry" in source),
+        "scope": f"local browser API fixtures {browser}; actual backend retry with SQLite controls",
+    }
+
+
+def measure_c64_export_browser(ctx: Context) -> Facts:
+    """Measure actual JSON download, empty/error paths and backend retry idempotence."""
+    browser = run_c64_retry_e2e()
+    source = ctx.read("frontend/src/views/ExecutionsView.vue")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_pipeline_retry.py::TestPipelineApi::test_retry_endpoint_is_idempotent_and_reports_the_count",
+                "tests/test_pipeline_retry.py::TestListFailures::test_lists_only_failed_shards",
+            ),
+        ),
+        "binding": flag(
+            all(value == "passed" for value in browser.values()) and "JSON.stringify" in source
+        ),
+        "scope": f"local browser downloads/errors {browser}; backend SQLite retry/list checks",
+    }
+
+
+def measure_c64_legacy_frontend(ctx: Context) -> Facts:
+    """Measure legacy loader removal and load-bearing frontend quality/e2e targets."""
+    makefile = ctx.read("Makefile")
+    archive = ctx.read("docs/evidence/C64/frontend-checks.txt")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_interface_loader.py::TestInterfaceLoader::test_legacy_reflection_surface_is_gone",
+                "tests/test_api_tasks_full.py::TestListTasks::test_list_tasks_as_user",
+                "tests/test_api_tables_full.py::TestListTables::test_list_tables",
+            ),
+        ),
+        "binding": flag(
+            all(
+                name in gate_members(makefile)
+                for name in (
+                    "frontend-lint",
+                    "frontend-typecheck",
+                    "frontend-collection",
+                    "frontend-test",
+                    "frontend-e2e",
+                )
+            )
+            and "21 passed" in archive
+        ),
+        "scope": "current loader/route regression; frontend targets are actual gate members",
+    }
+
+
+def measure_c64_sdk_isolation(ctx: Context) -> Facts:
+    """Measure optional SDK provider isolation."""
+    source = ctx.read("opendata/data/providers/__init__.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_iteration01_integration_contracts.py::test_missing_yfinance_sdk_does_not_block_ecb_registration_routing_or_fetch",
+            ),
+        ),
+        "binding": flag(
+            all(token in source for token in ("register_yfinance()", "register_ecb()"))
+        ),
+        "scope": "SDK blocked in subprocess; ECB registry/routing/mock fetch still works",
+    }
+
+
+def measure_c64_pipeline_socket(ctx: Context) -> Facts:
+    """Measure ODS commit to actual local websocket notification."""
+    source = ctx.read("opendata/pipeline/notify.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_iteration01_integration_contracts.py::test_pipeline_commits_ods_then_notifies_a_real_websocket_subscriber",
+                "tests/test_data_subscribe.py::TestSocketAuth::test_first_frame_must_be_auth",
+                "tests/test_data_subscribe.py::TestSocketDelivery::test_unsubscribed_domain_stops_receiving",
+                "tests/test_data_subscribe.py::TestSocketSubscription::test_ping_gets_a_pong",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("hub.publish", "record_batch"))),
+        "scope": "real local WS chain; three SQLite adapters; separate MySQL writer evidence",
+    }
+
+
+def measure_c64_lifespan(ctx: Context) -> Facts:
+    """Measure actual production lifespan scheduler ownership."""
+    source = ctx.read("opendata/main.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_iteration01_integration_contracts.py::test_production_lifespan_rejects_unset_scheduler_before_scheduler_start",
+                "tests/test_iteration01_integration_contracts.py::test_production_lifespan_starts_and_shuts_down_with_scheduler_explicitly_disabled",
+            ),
+        ),
+        "binding": flag(
+            all(token in source for token in ("scheduler_decision(", "settings.enable_scheduler"))
+        ),
+        "scope": "actual lifespan with safe DB/bootstrap seams; no deployment activation",
+    }
+
+
+def measure_c64_consumer_backtest(ctx: Context) -> Facts:
+    """Measure degraded local consumer handoff and real backtest."""
+    source = ctx.read("examples/consumer_handoff.py")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_iteration01_integration_contracts.py::test_consumer_handoff_example_reads_seeded_rows_from_local_api",
+                "tests/test_iteration01_integration_contracts.py::test_consumer_handoff_example_runs_tiny_backtrader_case_when_installed",
+            ),
+        ),
+        "binding": flag(all(token in source for token in ("OpendataClient", "cerebro.run()"))),
+        "scope": "section0 fallback: local HTTP/Key/40 bars/backtrader; no platform claim",
+    }
+
+
+def measure_c64_consumer_golden(ctx: Context) -> Facts:
+    """Measure fresh documented consumer script reproduction."""
+    source = ctx.read("QUICKSTART.md")
+    return {
+        **node_plane_facts(
+            "c64",
+            (
+                "tests/test_iteration01_integration_contracts.py::test_consumer_handoff_example_reads_seeded_rows_from_local_api",
+            ),
+        ),
+        "binding": flag(
+            all(
+                token in source
+                for token in ("OPENDATA_API_KEY", "examples/consumer_handoff.py", "--no-backtest")
+            )
+        ),
+        "scope": "current script/local HTTP: 40 bars/calls/time/range; section0 fallback",
+    }
+
+
+BENCHMARK_EVIDENCE_REL = "scripts/quality/write_benchmark_evidence.py"
+BENCHMARK_SCALE_NAMES = ("100000", "1000000", "full")
+OPENBB_MAP_REL = "opendata/data/openbb_map.yaml"
+REQUESTER_CONFIRMATION_REL = "docs/evidence/C65/provider-requester-confirmation.json"
+EXPECTED_REQUESTER = "cloudQuant"
+EXPECTED_REQUEST_PURPOSE = "量化研究、回测与数据中台"
+EXPECTED_DIRECT_REQUESTER_REPLY = "cloudQuant负责全部33条，用于量化研究、回测与数据中台"
+COMPARE_SCRIPT_REL = "scripts/codemod/compare_with_upstream.py"
+AC6_B1_1_PLAN_GROUP_COUNTS: Final = {
+    "stock_feature": 69,
+    "stock_fundamental": 23,
+    "futures": 32,
+    "index": 27,
+    "fund": 27,
+    "option": 19,
+    "bond": 17,
+    "economic": 19,
+}
+AC6_B1_1_EXTRA_GROUPS: Final = frozenset({"futures_derivative"})
+AC6_B1_1_EXPECTED_GROUPS: Final = frozenset({*AC6_B1_1_PLAN_GROUP_COUNTS, *AC6_B1_1_EXTRA_GROUPS})
+AC6_B1_1_GROUP_NAMES: Final = ", ".join(sorted(AC6_B1_1_EXPECTED_GROUPS))
+PORT_SCOPE_INVENTORY_REL = "docs/evidence/C65/port-scope-manifest.json"
+PORTED_MANIFEST_REL = "opendata_http/manifest.json"
+UPSTREAM_LOCK_REL = "opendata_http/upstream.lock"
+
+
+def _fact(value: object) -> str:
+    """Serialize a measurement as a stable string for the probe framework."""
+    if value is True:
+        return "yes"
+    if value is False:
+        return "no"
+    return "-" if value is None else str(value)
+
+
+def _positive_number(value: str) -> bool:
+    """Whether one serialized measurement is finite and strictly positive."""
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return False
+    return math.isfinite(numeric) and numeric > 0
+
+
+def _benchmark_facts(ctx: Context) -> Facts:
+    """Read the benchmark evidence validator into string-only item facts."""
+    facts: Facts = {
+        "benchmark_valid": "no",
+        "benchmark_issue_count": "1",
+        "benchmark_issue_codes": "validator unavailable",
+        "source_identity_verified": "no",
+        "source_frozen_sha256": "-",
+        "source_current_sha256": "-",
+        "source_matches_frozen": "no",
+        "source_initial_status_correction": "no",
+        "benchmark_scale_count": "0",
+        "benchmark_scales_present": "no",
+        "memory_all_scales_below_2_gib": "no",
+        "memory_full_peak_le_1m": "no",
+        "memory_observation_scope": "-",
+    }
+    try:
+        validator_module = script_module(BENCHMARK_EVIDENCE_REL)
+        validate = validator_module.__dict__.get("validate")
+        if not callable(validate):
+            return facts
+        result = validate(ctx.root)
+        raw_facts = getattr(result, "facts", {})
+        if not isinstance(raw_facts, dict):
+            raw_facts = {}
+        issues = getattr(result, "issues", ())
+        if not isinstance(issues, (list, tuple)):
+            issues = ()
+        issue_codes = [str(getattr(issue, "code", "unknown")) for issue in issues]
+        source = raw_facts.get("source_identity", raw_facts.get("source", {}))
+        if not isinstance(source, dict):
+            source = {}
+        if isinstance(raw_facts.get("source_identity_verified"), bool):
+            source_verified = raw_facts["source_identity_verified"]
+        else:
+            source_verified = source.get("source_identity_verified") is True
+        scales = raw_facts.get("scales", {})
+        if not isinstance(scales, dict):
+            scales = {}
+        memory = raw_facts.get("memory_observation", {})
+        if not isinstance(memory, dict):
+            memory = {}
+
+        facts.update(
+            benchmark_valid=_fact(getattr(result, "valid", False) is True),
+            benchmark_issue_count=str(len(issues)),
+            benchmark_issue_codes=", ".join(issue_codes[:8]) or "-",
+            source_identity_verified=_fact(source_verified),
+            source_frozen_sha256=_fact(source.get("frozen_sha256", source.get("expected_sha256"))),
+            source_current_sha256=_fact(source.get("current_sha256")),
+            source_matches_frozen=_fact(source.get("current_matches_frozen")),
+            source_initial_status_correction=_fact(
+                source.get("allowed_initial_state_status_correction")
+            ),
+            benchmark_scale_count=str(raw_facts.get("scale_count", len(scales))),
+            benchmark_scales_present=_fact(set(scales) == set(BENCHMARK_SCALE_NAMES)),
+            memory_all_scales_below_2_gib=_fact(memory.get("all_scales_below_2_gib")),
+            memory_full_peak_le_1m=_fact(memory.get("full_peak_le_1000000_peak")),
+            memory_observation_scope=_fact(memory.get("observation_scope")),
+        )
+
+        for scale in BENCHMARK_SCALE_NAMES:
+            record = scales.get(scale, {})
+            if not isinstance(record, dict):
+                record = {}
+            final = record.get("raw_final", {})
+            if not isinstance(final, dict):
+                final = {}
+            prefix = f"{scale}_"
+            raw_fields = {
+                "rows_requested": record.get("rows_requested"),
+                "source_rows_exact": record.get("source_rows_exact"),
+                "rows_read": record.get("rows_read"),
+                "rows_written": record.get("rows_written"),
+                "pages_read": record.get("pages_read"),
+                "pages_written": record.get("pages_written"),
+                "target_rows_before": record.get("target_rows_before"),
+                "target_rows_after": record.get("target_rows_after"),
+                "elapsed_seconds": record.get("elapsed_seconds"),
+                "current_rss_bytes": final.get("current_rss_bytes"),
+                "peak_rss_bytes": record.get("peak_rss_bytes"),
+                "status": record.get("status"),
+                "raw_record_count": record.get("raw_record_count"),
+                "historical_progress_status_error_count": record.get(
+                    "historical_progress_status_error_count"
+                ),
+                "source": final.get("source"),
+                "domain": final.get("domain"),
+                "table": final.get("table"),
+            }
+            boolean_fields = {
+                "raw_complete": record.get("raw_complete"),
+                "source_sha256_bound": record.get("source_sha256_bound"),
+                "body_final_identity": record.get("body_final_identity"),
+                "historical_progress_annotation": record.get("historical_progress_annotation"),
+            }
+            facts.update({prefix + key: _fact(value) for key, value in raw_fields.items()})
+            facts.update({prefix + key: _fact(value) for key, value in boolean_fields.items()})
+            facts[prefix + "elapsed_positive"] = _fact(
+                _positive_number(facts[prefix + "elapsed_seconds"])
+            )
+            facts[prefix + "current_rss_positive"] = _fact(
+                _positive_number(facts[prefix + "current_rss_bytes"])
+            )
+            facts[prefix + "peak_rss_positive"] = _fact(
+                _positive_number(facts[prefix + "peak_rss_bytes"])
+            )
+            facts[prefix + "rows_equal"] = _fact(
+                facts[prefix + "rows_requested"]
+                == facts[prefix + "rows_read"]
+                == facts[prefix + "rows_written"]
+            )
+            facts[prefix + "source_rows_match"] = _fact(
+                facts[prefix + "rows_requested"] == facts[prefix + "source_rows_exact"]
+            )
+            facts[prefix + "pages_equal"] = _fact(
+                facts[prefix + "pages_read"] != "-"
+                and facts[prefix + "pages_read"] == facts[prefix + "pages_written"]
+            )
+            facts[prefix + "target_rows_equal"] = _fact(
+                facts[prefix + "target_rows_before"] == "0"
+                and facts[prefix + "target_rows_after"] == facts[prefix + "rows_written"]
+            )
+
+        facts["all_scales_complete"] = _fact(
+            facts["benchmark_scales_present"] == "yes"
+            and all(
+                facts[f"{scale}_{field}"] == "yes"
+                for scale in BENCHMARK_SCALE_NAMES
+                for field in (
+                    "raw_complete",
+                    "source_sha256_bound",
+                    "body_final_identity",
+                    "rows_equal",
+                    "pages_equal",
+                    "target_rows_equal",
+                    "elapsed_positive",
+                    "current_rss_positive",
+                    "peak_rss_positive",
+                )
+            )
+        )
+        facts["full_peak_le_1m"] = facts["memory_full_peak_le_1m"]
+        return facts
+    except Exception as exc:
+        facts["benchmark_issue_codes"] = f"validator raised {type(exc).__name__}"
+        return facts
+
+
+def judge_ac8_04(facts: Facts) -> Verdict:
+    """Require a complete single-source full-run time and memory record."""
+    ok = (
+        facts["benchmark_valid"] == "yes"
+        and facts["benchmark_issue_count"] == "0"
+        and facts["source_identity_verified"] == "yes"
+        and facts["full_raw_complete"] == "yes"
+        and facts["full_source_sha256_bound"] == "yes"
+        and facts["full_body_final_identity"] == "yes"
+        and facts["full_status"] == "complete"
+        and facts["full_rows_equal"] == "yes"
+        and facts["full_source_rows_match"] == "yes"
+        and facts["full_pages_equal"] == "yes"
+        and facts["full_target_rows_equal"] == "yes"
+        and facts["full_elapsed_positive"] == "yes"
+        and facts["full_current_rss_positive"] == "yes"
+        and facts["full_peak_rss_positive"] == "yes"
+        and facts["full_source"] == "ths"
+        and facts["full_domain"] == "stock_daily"
+        and facts["full_table"] == "ods_stock_daily_ths"
+    )
+    readings = (
+        f"benchmark validator = {facts['benchmark_valid']}，issues = "
+        f"{facts['benchmark_issue_count']} ({facts['benchmark_issue_codes']})；"
+        f"冻结源码身份 = {facts['source_identity_verified']}（current SHA exact match = "
+        f"{facts['source_matches_frozen']}，已接受单行初始状态修正 = "
+        f"{facts['source_initial_status_correction']}），当前 SHA = "
+        f"{facts['source_current_sha256']}，冻结 SHA = {facts['source_frozen_sha256']}",
+        f"full run: source={facts['full_source']} / {facts['full_domain']} / "
+        f"{facts['full_table']}，rows requested/read/written/source = "
+        f"{facts['full_rows_requested']}/{facts['full_rows_read']}/"
+        f"{facts['full_rows_written']}/{facts['full_source_rows_exact']}，"
+        f"pages read/written = {facts['full_pages_read']}/{facts['full_pages_written']}，"
+        f"requested rows = total source rows = {facts['full_source_rows_match']}",
+        f"full run status={facts['full_status']}，elapsed={facts['full_elapsed_seconds']} s，"
+        f"current RSS={facts['full_current_rss_bytes']} bytes，"
+        f"peak RSS={facts['full_peak_rss_bytes']} bytes；原始记录完整 = "
+        f"{facts['full_raw_complete']}，matrix/driver/source 身份一致 = "
+        f"{facts['full_body_final_identity']}/{facts['full_source_sha256_bound']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "AC-8|04 需要冻结源码下可逐项复核的单源全量行数、页数、耗时及 RSS 记录；"
+        f"当前 validator issue={facts['benchmark_issue_count']}，full raw_complete="
+        f"{facts['full_raw_complete']}。"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def judge_section5_01(facts: Facts) -> Verdict:
+    """Require the measured three-scale memory observation without a fixed ratio threshold."""
+    ok = (
+        facts["benchmark_valid"] == "yes"
+        and facts["benchmark_issue_count"] == "0"
+        and facts["source_identity_verified"] == "yes"
+        and facts["benchmark_scale_count"] == "3"
+        and facts["benchmark_scales_present"] == "yes"
+        and facts["all_scales_complete"] == "yes"
+        and facts["full_peak_le_1m"] == "yes"
+    )
+    scale_readings = "; ".join(
+        f"{scale}: rows={facts[f'{scale}_rows_read']}, pages={facts[f'{scale}_pages_read']}, "
+        f"time={facts[f'{scale}_elapsed_seconds']} s, current/peak RSS="
+        f"{facts[f'{scale}_current_rss_bytes']}/{facts[f'{scale}_peak_rss_bytes']} bytes"
+        for scale in BENCHMARK_SCALE_NAMES
+    )
+    readings = (
+        f"三档完整性 = {facts['all_scales_complete']}，scale count = "
+        f"{facts['benchmark_scale_count']}，source identity = {facts['source_identity_verified']}；"
+        f"validator valid/issues = {facts['benchmark_valid']}/{facts['benchmark_issue_count']}",
+        scale_readings,
+        f"实测 full peak={facts['full_peak_rss_bytes']} bytes，1m peak="
+        f"{facts['1000000_peak_rss_bytes']} bytes，full <= 1m = {facts['full_peak_le_1m']}；"
+        f"所有 scale <2GiB 观察值 = {facts['memory_all_scales_below_2_gib']}"
+        f"（仅展示，不作为本项阈值；范围={facts['memory_observation_scope']}）",
+    )
+    reason = (
+        ""
+        if ok
+        else "§5|01 需要三个规模均有冻结源码绑定的完整实测记录，并且本轮 full peak RSS "
+        "不高于 1m peak；"
+        f"当前三档完整={facts['all_scales_complete']}，full<=1m={facts['full_peak_le_1m']}。"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac10_02(ctx: Context) -> Facts:
+    """Reconcile the requester's direct reply against every current active provider/domain leg."""
+    problems: list[str] = []
+    map_pairs: list[tuple[str, str]] = []
+    map_scenarios: dict[tuple[str, str], str] = {}
+    active_statuses = {"registered", "verified"}
+    try:
+        mapping = yaml.safe_load(ctx.read(OPENBB_MAP_REL))
+        entries = mapping.get("entries") if isinstance(mapping, dict) else None
+        if not isinstance(entries, list):
+            problems.append("openbb map entries are missing")
+            entries = []
+        for entry in entries:
+            if not isinstance(entry, dict):
+                problems.append("openbb map entry is not an object")
+                continue
+            scenario = entry.get("scenario")
+            legs = entry.get("ours")
+            if not isinstance(legs, list):
+                problems.append("openbb map ours list is missing")
+                continue
+            for leg in legs:
+                if not isinstance(leg, dict):
+                    problems.append("openbb map leg is not an object")
+                    continue
+                status = leg.get("status")
+                if status == "pending":
+                    continue
+                if status not in active_statuses:
+                    problems.append("openbb map has an unknown active status")
+                    continue
+                provider = leg.get("provider")
+                domain = leg.get("domain")
+                pair = (provider, domain)
+                if not all(isinstance(part, str) and part.strip() for part in pair):
+                    problems.append("openbb map has an incomplete provider/domain pair")
+                    continue
+                canonical_pair = (str(provider), str(domain))
+                map_pairs.append(canonical_pair)
+                if not isinstance(scenario, str) or not scenario.strip():
+                    problems.append("openbb map has an empty scenario")
+                else:
+                    map_scenarios[canonical_pair] = scenario
+        map_pair_set = set(map_pairs)
+        map_duplicates = len(map_pairs) - len(map_pair_set)
+        if map_duplicates:
+            problems.append("openbb map repeats an active provider/domain pair")
+    except Exception as exc:
+        mapping = {}
+        map_pair_set = set()
+        map_duplicates = 0
+        problems.append(f"openbb map could not be read ({type(exc).__name__})")
+
+    evidence: object = {}
+    try:
+        evidence = json.loads(ctx.read(REQUESTER_CONFIRMATION_REL))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ProbeError) as exc:
+        problems.append(f"requester confirmation could not be read ({type(exc).__name__})")
+    if not isinstance(evidence, dict):
+        evidence = {}
+        problems.append("requester confirmation is not an object")
+    evidence_rows = evidence.get("legs")
+    if not isinstance(evidence_rows, list):
+        evidence_rows = []
+        problems.append("requester confirmation legs are missing")
+
+    evidence_pairs: list[tuple[str, str]] = []
+    requester_missing = requester_mismatch = 0
+    scenario_missing = scenario_mismatch = 0
+    purpose_missing = purpose_mismatch = 0
+    activation_unconfirmed = malformed_pairs = 0
+    for row in evidence_rows:
+        if not isinstance(row, dict):
+            malformed_pairs += 1
+            continue
+        provider = row.get("provider")
+        domain = row.get("domain")
+        if not all(isinstance(part, str) and part.strip() for part in (provider, domain)):
+            malformed_pairs += 1
+        else:
+            pair = (str(provider), str(domain))
+            evidence_pairs.append(pair)
+            scenario = row.get("scenario")
+            if not isinstance(scenario, str) or not scenario.strip():
+                scenario_missing += 1
+            elif pair in map_scenarios and scenario != map_scenarios[pair]:
+                scenario_mismatch += 1
+        requester = row.get("requester")
+        if not isinstance(requester, str) or not requester.strip():
+            requester_missing += 1
+        elif requester != EXPECTED_REQUESTER:
+            requester_mismatch += 1
+        purpose = row.get("purpose")
+        if not isinstance(purpose, str) or not purpose.strip():
+            purpose_missing += 1
+        elif purpose != EXPECTED_REQUEST_PURPOSE:
+            purpose_mismatch += 1
+        if row.get("continued_activation_confirmed") is not True:
+            activation_unconfirmed += 1
+    evidence_pair_set = set(evidence_pairs)
+    evidence_duplicates = len(evidence_pairs) - len(evidence_pair_set)
+    missing_pairs = map_pair_set - evidence_pair_set
+    extra_pairs = evidence_pair_set - map_pair_set
+    direct_reply = evidence.get("user_reply")
+    reply_match = isinstance(direct_reply, str) and direct_reply == EXPECTED_DIRECT_REQUESTER_REPLY
+    reply_count_match = (
+        re.fullmatch(
+            r"cloudQuant负责全部(\d+)条，用于量化研究、回测与数据中台",
+            direct_reply,
+        )
+        if isinstance(direct_reply, str)
+        else None
+    )
+    declared_reply_count = reply_count_match.group(1) if reply_count_match else "-"
+    provider_count = len({provider for provider, _domain in map_pair_set})
+    declared_count = evidence.get("count")
+    declared_provider_count = evidence.get("provider_count")
+    map_source_matches = evidence.get("source_map") == OPENBB_MAP_REL
+    direct_human = (
+        evidence.get("confirmation_kind") == "direct human user reply in current Codex chat"
+        and reply_match
+        and evidence.get("criterion") == "AC-10|02"
+        and evidence.get("round") == "C65"
+    )
+    pair_set_equal = (
+        map_pair_set == evidence_pair_set
+        and map_duplicates == 0
+        and evidence_duplicates == 0
+        and malformed_pairs == 0
+    )
+    count_matches = (
+        isinstance(declared_count, int)
+        and not isinstance(declared_count, bool)
+        and declared_count == len(map_pairs)
+        and declared_reply_count == str(len(map_pairs))
+        and len(evidence_rows) == len(map_pairs)
+    )
+    provider_count_matches = (
+        isinstance(declared_provider_count, int)
+        and not isinstance(declared_provider_count, bool)
+        and declared_provider_count == provider_count
+    )
+    field_issue_count = sum(
+        (
+            requester_missing,
+            requester_mismatch,
+            scenario_missing,
+            scenario_mismatch,
+            purpose_missing,
+            purpose_mismatch,
+            activation_unconfirmed,
+        )
+    )
+    problems.extend(
+        summary
+        for failed, summary in (
+            (not pair_set_equal, "requester leg set differs from active map"),
+            (not map_source_matches, "requester evidence source map differs"),
+            (not direct_human, "direct human confirmation is missing or differs"),
+            (not count_matches, "declared count differs from current active map"),
+            (not provider_count_matches, "declared provider count differs from active map"),
+            (field_issue_count > 0, "requester/scenario/purpose/activation fields are incomplete"),
+        )
+        if failed
+    )
+    return {
+        "requester_evidence_valid": flag(not problems),
+        "requester_problem_count": count(len(problems)),
+        "requester_problem_summary": "; ".join(dict.fromkeys(problems)) or "-",
+        "direct_human_confirmation": flag(direct_human),
+        "direct_reply_matches": flag(reply_match),
+        "reply_declared_count": declared_reply_count,
+        "requester_source_map_matches": flag(map_source_matches),
+        "active_map_leg_count": count(len(map_pairs)),
+        "active_map_unique_pairs": count(len(map_pair_set)),
+        "active_provider_count": count(provider_count),
+        "map_duplicate_pairs": count(map_duplicates),
+        "evidence_leg_count": count(len(evidence_rows)),
+        "evidence_unique_pairs": count(len(evidence_pair_set)),
+        "evidence_duplicate_pairs": count(evidence_duplicates),
+        "missing_pairs": count(len(missing_pairs)),
+        "extra_pairs": count(len(extra_pairs)),
+        "pair_set_equal": flag(pair_set_equal),
+        "declared_count_matches": flag(count_matches),
+        "declared_provider_count_matches": flag(provider_count_matches),
+        "scenario_missing": count(scenario_missing),
+        "scenario_mismatch": count(scenario_mismatch),
+        "requester_missing": count(requester_missing),
+        "requester_mismatch": count(requester_mismatch),
+        "purpose_missing": count(purpose_missing),
+        "purpose_mismatch": count(purpose_mismatch),
+        "activation_unconfirmed": count(activation_unconfirmed),
+        "proof_scope": "requester/purpose/activation only; not copyright/source/field mapping",
+    }
+
+
+def judge_ac10_02(facts: Facts) -> Verdict:
+    """Require direct requester confirmation for every current active provider/domain leg."""
+    ok = (
+        facts["requester_evidence_valid"] == "yes"
+        and facts["direct_human_confirmation"] == "yes"
+        and facts["direct_reply_matches"] == "yes"
+        and facts["requester_source_map_matches"] == "yes"
+        and facts["pair_set_equal"] == "yes"
+        and facts["declared_count_matches"] == "yes"
+        and facts["declared_provider_count_matches"] == "yes"
+        and facts["missing_pairs"] == "0"
+        and facts["extra_pairs"] == "0"
+        and facts["map_duplicate_pairs"] == "0"
+        and facts["evidence_duplicate_pairs"] == "0"
+        and facts["scenario_missing"] == "0"
+        and facts["scenario_mismatch"] == "0"
+        and facts["requester_missing"] == "0"
+        and facts["requester_mismatch"] == "0"
+        and facts["purpose_missing"] == "0"
+        and facts["purpose_mismatch"] == "0"
+        and facts["activation_unconfirmed"] == "0"
+    )
+    readings = (
+        f"当前活跃 openbb_map legs = {facts['active_map_leg_count']} 条 / "
+        f"{facts['active_provider_count']} providers；确认记录 = "
+        f"{facts['evidence_leg_count']} 条，pair set 精确相等 = {facts['pair_set_equal']} "
+        f"（missing={facts['missing_pairs']}，extra={facts['extra_pairs']}，"
+        f"duplicates={facts['map_duplicate_pairs']}/{facts['evidence_duplicate_pairs']}）",
+        f"直接人类回复与请求方 = {facts['direct_human_confirmation']}/"
+        f"{facts['direct_reply_matches']}；空场景/请求方/用途 = "
+        f"{facts['scenario_missing']}/{facts['requester_missing']}/{facts['purpose_missing']}；"
+        f"用途错配={facts['purpose_mismatch']}，activation 未确认="
+        f"{facts['activation_unconfirmed']}",
+        f"确认范围：{facts['proof_scope']}；issues={facts['requester_problem_count']}："
+        f"{facts['requester_problem_summary']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "AC-10|02 需要请求方对当前每个 active provider/domain leg 的场景、用途和"
+        "持续启用作直接确认；"
+        f"当前逐项核对问题={facts['requester_problem_summary']}。"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac10_03(ctx: Context) -> Facts:
+    """Validate the current provider source review and its bounded positive findings."""
+    root_entry = str(ctx.root.resolve())
+    inserted_root = root_entry not in sys.path
+    if inserted_root:
+        sys.path.insert(0, root_entry)
+    try:
+        from scripts.quality import provider_source_review_evidence as provider_review
+
+        result = provider_review.validate(ctx.root)
+    finally:
+        if inserted_root:
+            with suppress(ValueError):
+                sys.path.remove(root_entry)
+
+    measured = result.facts
+    issue_codes = [issue.code for issue in result.issues]
+    nearest_review: dict[str, Any] = {}
+    try:
+        nearest_review_value = json.loads(ctx.read(provider_review.NEAREST_REVIEW_REL.as_posix()))
+        if isinstance(nearest_review_value, dict):
+            nearest_review = nearest_review_value
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ProbeError):
+        pass
+
+    provider_names = measured.get("provider_names")
+    provider_names_text = (
+        ", ".join(str(name) for name in provider_names) if isinstance(provider_names, list) else "-"
+    )
+    reviewed_provider_names = measured.get("reviewed_provider_names")
+    reviewed_provider_names_text = (
+        ", ".join(str(name) for name in reviewed_provider_names)
+        if isinstance(reviewed_provider_names, list)
+        else "-"
+    )
+    current_hashes = measured.get("current_source_files_sha256")
+    source_hash_count = len(current_hashes) if isinstance(current_hashes, dict) else 0
+    package_reviews_complete = (
+        isinstance(provider_names, list)
+        and isinstance(reviewed_provider_names, list)
+        and provider_names == reviewed_provider_names
+        and len(reviewed_provider_names) == measured.get("provider_count")
+        and len(reviewed_provider_names) == 7
+    )
+    file_set_or_hash_issues = any(
+        code.endswith("-hash-mismatch") or code.endswith("-file-set-mismatch")
+        for code in issue_codes
+    )
+    nearest_rows = nearest_review.get("nearest_pair_reviews")
+    nearest_results = (
+        [row.get("result") for row in nearest_rows if isinstance(row, dict)]
+        if isinstance(nearest_rows, list)
+        else []
+    )
+    nearest_positive_result = (
+        isinstance(nearest_rows, list)
+        and len(nearest_rows) == 3
+        and len(nearest_results) == 3
+        and all(
+            value == provider_review.EXPECTED_NEAREST_REVIEW_RESULT for value in nearest_results
+        )
+    )
+    return {
+        "provider_review_valid": flag(result.valid),
+        "provider_review_issue_count": count(len(result.issues)),
+        "provider_review_issue_codes": ", ".join(issue_codes[:8]) or "-",
+        "provider_scope": str(measured.get("scope", "-")),
+        "provider_count": str(measured.get("provider_count", "-")),
+        "provider_names": provider_names_text,
+        "reviewed_provider_names": reviewed_provider_names_text,
+        "current_source_file_count": str(measured.get("python_files", "-")),
+        "source_hash_entry_count": count(source_hash_count),
+        "reviewed_source_file_count": str(measured.get("reviewed_python_files", "-")),
+        "similarity_source_file_count": str(measured.get("similarity_manifest_python_files", "-")),
+        "baseline_source_file_count": str(measured.get("baseline_manifest_python_files", "-")),
+        "current_source_hashes_bound": flag(not file_set_or_hash_issues),
+        "provider_sources_parsed": flag(measured.get("all_current_provider_python_parsed") is True),
+        "openbb_import_count": str(measured.get("openbb_import_count", "-")),
+        "zero_openbb_imports": flag(measured.get("zero_openbb_imports") is True),
+        "reviewer_authorized": flag(measured.get("reviewer_authorized") is True),
+        "openbb_baseline_commit": str(measured.get("openbb_baseline_commit", "-")),
+        "candidate_count": str(measured.get("candidate_count", "-")),
+        "unreviewed_candidates": str(measured.get("unreviewed_candidates", "-")),
+        "package_reviews_complete": flag(package_reviews_complete),
+        "nearest_review_complete": flag(nearest_review.get("review_complete") is True),
+        "review_complete": flag(
+            package_reviews_complete and nearest_review.get("review_complete") is True
+        ),
+        "nearest_review_count": str(measured.get("nearest_review_count", "-")),
+        "nearest_positive_result": flag(nearest_positive_result),
+        "artifact_sha_bindings_match": flag(measured.get("artifact_sha_bindings_match") is True),
+    }
+
+
+def judge_ac10_03(facts: Facts) -> Verdict:
+    """Require current, hash-bound review evidence for every enabled provider source."""
+    expected_providers = "akshare, ecb, fred, imf, oecd, ths, yfinance"
+    ok = all(
+        (
+            facts["provider_review_valid"] == "yes",
+            facts["provider_review_issue_count"] == "0",
+            facts["provider_scope"] == "current_registered_provider_packages",
+            facts["provider_count"] == "7",
+            facts["provider_names"] == expected_providers,
+            facts["reviewed_provider_names"] == expected_providers,
+            facts["current_source_file_count"] == "71",
+            facts["source_hash_entry_count"] == "71",
+            facts["reviewed_source_file_count"] == "71",
+            facts["similarity_source_file_count"] == "71",
+            number(facts["baseline_source_file_count"]) == 121,
+            facts["current_source_hashes_bound"] == "yes",
+            facts["provider_sources_parsed"] == "yes",
+            facts["openbb_import_count"] == "0",
+            facts["zero_openbb_imports"] == "yes",
+            facts["reviewer_authorized"] == "yes",
+            facts["openbb_baseline_commit"] == "3e071fcc2cd9f891cac6040ae60296dba76dab46",
+            facts["candidate_count"] == "0",
+            facts["unreviewed_candidates"] == "0",
+            facts["package_reviews_complete"] == "yes",
+            facts["nearest_review_complete"] == "yes",
+            facts["review_complete"] == "yes",
+            facts["nearest_review_count"] == "3",
+            facts["nearest_positive_result"] == "yes",
+            facts["artifact_sha_bindings_match"] == "yes",
+        )
+    )
+    readings = (
+        f"当前已注册 provider = {facts['provider_names']}（{facts['provider_count']}），审阅范围 = "
+        f"{facts['provider_scope']}；源码/审阅/相似度清单 = {facts['current_source_file_count']}/"
+        f"{facts['reviewed_source_file_count']}/"
+        f"{facts['similarity_source_file_count']} 个 Python 文件，"
+        f"源 SHA 绑定完整 = {facts['current_source_hashes_bound']}（条目数="
+        f"{facts['source_hash_entry_count']}）",
+        f"源码可解析 = {facts['provider_sources_parsed']}，OpenBB import = "
+        f"{facts['openbb_import_count']}（零导入={facts['zero_openbb_imports']}）；固定基线 = "
+        f"{facts['openbb_baseline_commit']}，审阅授权 = {facts['reviewer_authorized']}",
+        f"候选/未审候选 = {facts['candidate_count']}/{facts['unreviewed_candidates']}，审阅完成 = "
+        f"{facts['review_complete']}（packages={facts['package_reviews_complete']}，"
+        f"nearest={facts['nearest_review_complete']}）；nearest review = "
+        f"{facts['nearest_review_count']} 项，正向结论 = {facts['nearest_positive_result']}，"
+        f"档案 SHA 互绑 = {facts['artifact_sha_bindings_match']}；"
+        f"validator valid/issues = {facts['provider_review_valid']}/"
+        f"{facts['provider_review_issue_count']}（{facts['provider_review_issue_codes']}）",
+    )
+    reason = (
+        ""
+        if ok
+        else "AC-10|03 需要当前 provider 源码审阅完整、与源码及固定 OpenBB 基线绑定，"
+        "并保留零导入与已完成的正向审阅结论；"
+        f"当前问题摘要={facts['provider_review_issue_codes']}。"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def _case_source_mapping(
+    ctx: Context,
+    compare_module: ModuleType,
+    scope_rows: dict[str, dict[str, Any]],
+    manifest_rows: dict[str, dict[str, Any]],
+    lock_rows: dict[str, dict[str, Any]],
+) -> tuple[dict[str, tuple[str, str]], list[str]]:
+    """Bind each compare case's runtime function to a hashed, scope-labelled source path."""
+    case_modules: dict[str, tuple[str, str]] = {}
+    problems: list[str] = []
+    loader = compare_module.__dict__.get("_load_case_function")
+    package_name = compare_module.__dict__.get("_PORTED_CASE_MODULE")
+    cases = compare_module.__dict__.get("CASES")
+    if not callable(loader) or not isinstance(package_name, str) or not isinstance(cases, tuple):
+        return {}, ["compare module CASES/source loader is unavailable"]
+    try:
+        layout = script_module("scripts/quality/source_layout.py")
+        canonical_root_identity = layout.historical_identity("opendata_http")
+        repo_root = ctx.root.resolve()
+        port_root = (repo_root / canonical_root_identity).resolve(strict=True)
+        port_root.relative_to(repo_root)
+        if not port_root.is_dir():
+            raise ValueError("canonical vendor root is not a directory")
+    except (OSError, RuntimeError, ValueError) as exc:
+        return {}, [f"canonical vendor root unavailable ({type(exc).__name__})"]
+    for case in cases:
+        name = getattr(case, "name", None)
+        function_name = getattr(case, "function", None)
+        if not isinstance(name, str) or not isinstance(function_name, str):
+            problems.append("compare case has no name/function")
+            continue
+        try:
+            function = loader(package_name, function_name)
+            source = inspect.getsourcefile(function)
+            if source is None:
+                raise ValueError("function source is unavailable")
+            source_file = Path(source).resolve()
+            relative = source_file.relative_to(port_root).as_posix()
+            scope_row = scope_rows.get(relative)
+            manifest_row = manifest_rows.get(relative)
+            lock_row = lock_rows.get(relative)
+            if scope_row is None or manifest_row is None or lock_row is None:
+                raise ValueError("source path is not present in lock/manifest/scope rows")
+            if not source_file.is_file():
+                raise ValueError("source file is not on disk")
+            source_sha = hashlib.sha256(source_file.read_bytes()).hexdigest()
+            scope_sha = scope_row.get("sha256")
+            scope_sha = scope_sha if isinstance(scope_sha, dict) else {}
+            module = PurePosixPath(relative).parts[0]
+            batch = scope_row.get("batch")
+            expected_batch = "B1.1_FUTURES_DERIVATIVE" if module == "futures_derivative" else "B1.1"
+            if not isinstance(batch, list) or not all(isinstance(name, str) for name in batch):
+                raise ValueError("source batch tags are not a string list")
+            if module in AC6_B1_1_EXPECTED_GROUPS:
+                batch_matches_group = expected_batch in batch
+            else:
+                batch_matches_group = not {
+                    "B1.1",
+                    "B1.1_FUTURES_DERIVATIVE",
+                }.intersection(batch)
+            if (
+                scope_row.get("module") != module
+                or scope_row.get("kind") != "python"
+                or not batch_matches_group
+                or not isinstance(manifest_row.get("sha256"), str)
+                or manifest_row.get("sha256") != source_sha
+                or lock_row.get("sha256") != scope_sha.get("upstream_lock")
+                or scope_sha.get("manifest_ported_snapshot") != source_sha
+            ):
+                raise ValueError("source path/module/hash differs from validated port scope")
+            case_modules[name] = (relative, module)
+        except (OSError, ValueError, TypeError, AttributeError) as exc:
+            problems.append(f"{name}: {type(exc).__name__}")
+    return case_modules, problems
+
+
+def measure_ac6_02(ctx: Context) -> Facts:
+    """Replay recorded fixtures offline and derive actual 1B module-group coverage."""
+    problems: list[str] = []
+    scope_valid = False
+    expected_groups = set(AC6_B1_1_EXPECTED_GROUPS)
+    scope_rows: dict[str, dict[str, Any]] = {}
+    manifest_rows: dict[str, dict[str, Any]] = {}
+    lock_rows: dict[str, dict[str, Any]] = {}
+    b1_python_paths: set[str] = set()
+    scope_groups: set[str] = set()
+    scope_groups_valid = False
+    try:
+        scope_module = script_module("scripts/quality/port_scope.py")
+        audit_port_scope = scope_module.__dict__.get("audit_port_scope")
+        audit = audit_port_scope(ctx.root) if callable(audit_port_scope) else None
+        scope_valid = getattr(audit, "valid", False) is True
+        if not scope_valid:
+            problems.append(str(getattr(audit, "problem_summary", "port scope unavailable")))
+        raw_plan_counts = getattr(scope_module, "B1_1_PLAN_MODULE_FILE_COUNTS", {})
+        raw_extra_groups = getattr(scope_module, "B1_1_EXTRA_D9_MODULES", ())
+        raw_python_file_count = getattr(scope_module, "B1_1_PYTHON_FILE_COUNT", None)
+        port_scope_definition_valid = (
+            isinstance(raw_plan_counts, dict)
+            and raw_plan_counts == AC6_B1_1_PLAN_GROUP_COUNTS
+            and set(raw_extra_groups) == set(AC6_B1_1_EXTRA_GROUPS)
+            and raw_python_file_count == 245
+        )
+        if not port_scope_definition_valid:
+            problems.append("port_scope B1.1 definitions differ from the fixed 9-group denominator")
+        inventory = json.loads(ctx.read(PORT_SCOPE_INVENTORY_REL))
+        manifest = json.loads(_read_historical_source(ctx, PORTED_MANIFEST_REL))
+        lock = json.loads(_read_historical_source(ctx, UPSTREAM_LOCK_REL))
+        for row in inventory.get("files", []):
+            if isinstance(row, dict) and isinstance(row.get("path"), str):
+                if row["path"] in scope_rows:
+                    problems.append("duplicate path in port scope inventory")
+                scope_rows[row["path"]] = row
+        for row in manifest.get("files", []) + manifest.get("resources", []):
+            if isinstance(row, dict) and isinstance(row.get("path"), str):
+                if row["path"] in manifest_rows:
+                    problems.append("duplicate path in port manifest")
+                manifest_rows[row["path"]] = row
+        for row in lock.get("files", []):
+            if isinstance(row, dict) and isinstance(row.get("path"), str):
+                if row["path"] in lock_rows:
+                    problems.append("duplicate path in upstream.lock")
+                lock_rows[row["path"]] = row
+        if not isinstance(inventory.get("files"), list):
+            problems.append("port scope inventory files are not a list")
+        for path, row in scope_rows.items():
+            batch = row.get("batch")
+            module = PurePosixPath(path).parts[0]
+            if not isinstance(batch, list):
+                continue
+            if (
+                ("B1.1" in batch or "B1.1_FUTURES_DERIVATIVE" in batch)
+                and row.get("kind") == "python"
+                and path.endswith(".py")
+            ):
+                b1_python_paths.add(path)
+                scope_groups.add(module)
+        scope_groups_valid = (
+            scope_valid and port_scope_definition_valid and scope_groups == expected_groups
+        )
+        if not scope_groups_valid:
+            problems.append(
+                "validated B1.1 scope does not contain exactly the nine required groups"
+            )
+    except Exception as exc:
+        scope_groups_valid = False
+        problems.append(f"port scope inputs unavailable ({type(exc).__name__})")
+
+    case_modules: dict[str, tuple[str, str]] = {}
+    case_path_problems: list[str] = []
+    # token门禁状态枚举非凭据：PASS/FAIL/PENDING 表示比较结果状态。
+    case_status_counts = {"PASS": 0, "FAIL": 0, "PENDING": 0}  # nosec B105
+    pass_groups: set[str] = set()
+    pass_files: set[str] = set()
+    fail_case_names: list[str] = []
+    status_valid = False
+    report_written = False
+    compare_exit: int | None = None
+    rtol = "-"
+    d10_failed: bool | None = None
+    case_count = fail_count = pending_count = 0
+    pending_names: list[str] = []
+    try:
+        compare_module = script_module(COMPARE_SCRIPT_REL)
+        cases = compare_module.__dict__.get("CASES")
+        if not isinstance(cases, tuple):
+            raise ValueError("compare CASES is not a tuple")
+        case_count = len(cases)
+        rtol = str(getattr(compare_module, "RTOL", "-"))
+        case_modules, case_path_problems = _case_source_mapping(
+            ctx, compare_module, scope_rows, manifest_rows, lock_rows
+        )
+        compare_namespace = compare_module.__dict__
+        original_report_path = compare_namespace["REPORT_PATH"]
+        original_fixture_dir = compare_namespace["FIXTURES_DIR"]
+        original_writer = compare_namespace["_write_report"]
+        original_env = {
+            key: os.environ.get(key)
+            for key in (
+                "AKSHARE_EASTMONEY_AUTO_CURL_INTERFACE",
+                "AKSHARE_EASTMONEY_CURL_INTERFACE",
+            )
+        }
+        capture: dict[str, Any] = {}
+
+        def capture_report(
+            results: list[dict[str, Any]], d10_report: dict[str, Any], pending: list[str]
+        ) -> None:
+            capture["results"] = list(results)
+            capture["d10"] = dict(d10_report)
+            capture["pending"] = list(pending)
+            original_writer(results, d10_report, pending)
+
+        try:
+            with tempfile.TemporaryDirectory(prefix="opendata-c65-compare-") as temp_dir:
+                temporary_report = Path(temp_dir) / "compare-report.md"
+                compare_namespace["REPORT_PATH"] = temporary_report
+                compare_namespace["FIXTURES_DIR"] = ctx.root / "tests" / "fixtures" / "upstream"
+                compare_namespace["_write_report"] = capture_report
+                with redirect_stdout(io.StringIO()):
+                    compare_exit = compare_module.compare()
+                report_written = (
+                    temporary_report.is_file()
+                    and temporary_report.parent.resolve() == Path(temp_dir).resolve()
+                )
+        finally:
+            compare_namespace["REPORT_PATH"] = original_report_path
+            compare_namespace["FIXTURES_DIR"] = original_fixture_dir
+            compare_namespace["_write_report"] = original_writer
+            for key, value in original_env.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
+        results = capture.get("results", [])
+        pending_value = capture.get("pending", [])
+        if isinstance(pending_value, list):
+            pending_names = pending_value
+        else:
+            pending_names = []
+            problems.append("offline compare pending result shape is invalid")
+        result_by_name: dict[str, dict[str, Any]] = {}
+        duplicate_results = False
+        for result in results if isinstance(results, list) else []:
+            case = result.get("case") if isinstance(result, dict) else None
+            name = getattr(case, "name", None)
+            if not isinstance(name, str) or name in result_by_name:
+                duplicate_results = True
+                continue
+            result_by_name[name] = result
+        pending_set = set(pending_names) if isinstance(pending_names, list) else set()
+        case_names = [getattr(case, "name", None) for case in cases]
+        expected_names = {name for name in case_names if isinstance(name, str)}
+        status_names = set(result_by_name) | pending_set
+        status_valid = (
+            len(case_names) == len(expected_names)
+            and not duplicate_results
+            and len(pending_set) == len(pending_names)
+            and set(result_by_name).isdisjoint(pending_set)
+            and status_names == expected_names
+        )
+        if not status_valid:
+            problems.append(
+                "offline compare results do not classify every unique Case exactly once"
+            )
+        for case in cases:
+            name = getattr(case, "name", None)
+            if not isinstance(name, str):
+                continue
+            result = result_by_name.get(name)
+            if result is not None:
+                status = "PASS" if result.get("ok") is True else "FAIL"
+                if status == "FAIL":
+                    fail_case_names.append(name)
+            elif name in pending_set:
+                status = "PENDING"
+            else:
+                continue
+            case_status_counts[status] += 1
+            case_modules_for_case = case_modules.get(name)
+            if status == "PASS" and case_modules_for_case is not None:
+                path, module = case_modules_for_case
+                scope_row = scope_rows.get(path, {})
+                batch = scope_row.get("batch", [])
+                if module in expected_groups and isinstance(batch, list):
+                    expected_batch = (
+                        "B1.1_FUTURES_DERIVATIVE" if module == "futures_derivative" else "B1.1"
+                    )
+                    if expected_batch in batch:
+                        pass_groups.add(module)
+                        pass_files.add(path)
+        fail_count = case_status_counts["FAIL"]
+        pending_count = case_status_counts["PENDING"]
+        d10 = capture.get("d10")
+        if isinstance(d10, dict) and isinstance(d10.get("failed"), bool):
+            d10_failed = d10["failed"]
+        expected_exit = int(fail_count > 0 or pending_count > 0 or d10_failed is True)
+        exit_consistent = compare_exit == expected_exit
+        if not exit_consistent:
+            problems.append("compare process exit does not match FAIL/PENDING/D10 findings")
+    except Exception as exc:
+        case_path_problems.append(f"compare replay failed ({type(exc).__name__})")
+        exit_consistent = False
+        problems.append(f"offline compare unavailable ({type(exc).__name__})")
+
+    pass_group_count = len(pass_groups)
+    group_total = len(expected_groups)
+    required_groups = math.ceil(group_total * 0.2) if group_total else 0
+    file_denominator = len(b1_python_paths)
+    file_coverage = (100 * len(pass_files) / file_denominator) if file_denominator else 0.0
+    group_coverage = (100 * pass_group_count / group_total) if group_total else 0.0
+    case_paths_valid = (
+        bool(case_modules) and not case_path_problems and len(case_modules) == case_count
+    )
+    comparison_pass = case_status_counts["PASS"]
+    comparison_pending = case_status_counts["PENDING"]
+    comparison_fail = case_status_counts["FAIL"]
+    return {
+        "port_scope_valid": flag(scope_valid),
+        "port_scope_problem_summary": "; ".join(problems[:5]) or "-",
+        "b1_scope_groups_valid": flag(scope_groups_valid),
+        "b1_scope_group_count": count(group_total),
+        "b1_scope_group_names": AC6_B1_1_GROUP_NAMES,
+        "b1_python_file_count": count(file_denominator),
+        "case_path_mapping_valid": flag(case_paths_valid),
+        "case_path_problem_count": count(len(case_path_problems)),
+        "case_path_problem_summary": "; ".join(case_path_problems[:5]) or "-",
+        "case_count": count(case_count),
+        "case_statuses_complete": flag(
+            case_count > 0 and status_valid and sum(case_status_counts.values()) == case_count
+        ),
+        "case_pass_count": count(comparison_pass),
+        "case_fail_count": count(comparison_fail),
+        "case_pending_count": count(comparison_pending),
+        "pending_excluded": "yes",
+        "compare_exit_code": _fact(compare_exit),
+        "compare_exit_consistent": flag(exit_consistent),
+        "compare_report_temporary": flag(report_written),
+        "compare_rtol": rtol,
+        "d10_failed": _fact(d10_failed),
+        "passing_groups": count(pass_group_count),
+        "passing_group_names": ", ".join(sorted(pass_groups)) or "-",
+        "required_groups": count(required_groups),
+        "group_coverage_percent": f"{group_coverage:.2f}",
+        "pass_files": count(len(pass_files)),
+        "file_coverage_percent": f"{file_coverage:.2f}",
+        "pending_case_names": ", ".join(str(name) for name in pending_names[:8]) or "-",
+        "fail_case_names": ", ".join(fail_case_names[:8]) or "-",
+        "sample_scope_note": "module-group denominator; file percentage is disclosed only",
+    }
+
+
+def judge_ac6_02(facts: Facts) -> Verdict:
+    """Require actual offline PASS cases to cover at least 20% of the validated B1.1 groups."""
+    try:
+        enough_groups = int(facts["passing_groups"]) >= int(facts["required_groups"])
+        valid_denominator = int(facts["b1_scope_group_count"]) == 9
+        file_denominator_valid = int(facts["b1_python_file_count"]) == 245
+        pass_files_positive = int(facts["pass_files"]) > 0
+    except (KeyError, ValueError):
+        enough_groups = valid_denominator = file_denominator_valid = pass_files_positive = False
+    ok = (
+        facts["port_scope_valid"] == "yes"
+        and facts["b1_scope_groups_valid"] == "yes"
+        and facts["b1_scope_group_names"] == AC6_B1_1_GROUP_NAMES
+        and facts["case_path_mapping_valid"] == "yes"
+        and facts["case_statuses_complete"] == "yes"
+        and facts["compare_report_temporary"] == "yes"
+        and facts["compare_rtol"] == "1e-09"
+        and facts["case_fail_count"] == "0"
+        and facts["pending_excluded"] == "yes"
+        and facts["compare_exit_consistent"] == "yes"
+        and facts["d10_failed"] == "no"
+        and valid_denominator
+        and file_denominator_valid
+        and enough_groups
+        and pass_files_positive
+    )
+    readings = (
+        f"当前 Compare Case = {facts['case_count']}：PASS/PENDING/FAIL = "
+        f"{facts['case_pass_count']}/{facts['case_pending_count']}/{facts['case_fail_count']}；"
+        f"原 compare exit={facts['compare_exit_code']}（与未完成项一致="
+        f"{facts['compare_exit_consistent']}），D10 failed={facts['d10_failed']}",
+        f"经 port_scope 逐路径验证的B1.1组：PASS覆盖 {facts['passing_groups']}/"
+        f"{facts['b1_scope_group_count']}（{facts['group_coverage_percent']}%），"
+        f"最低组数={facts['required_groups']}；覆盖组={facts['passing_group_names']}",
+        f"PASS source paths={facts['pass_files']}/{facts['b1_python_file_count']} py "
+        f"（{facts['file_coverage_percent']}%，披露用，不作为20%分母）；"
+        f"Pending={facts['pending_case_names']}，不计入PASS；rtol={facts['compare_rtol']}，"
+        f"报告仅写入临时目录={facts['compare_report_temporary']}",
+        f"source paths/hashes与批次核对 = {facts['case_path_mapping_valid']}；"
+        f"scope问题={facts['port_scope_problem_summary']}；路径问题="
+        f"{facts['case_path_problem_summary']}",
+    )
+    reason = (
+        ""
+        if ok
+        else "AC-6|02 需要以真实离线对照 PASS 覆盖至少20%的已核验B1.1模块组，且任何 FAIL、"
+        "虚假来源路径/批次或容忍度改动都不能通过；PENDING不计分子。"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+# --------------------------------------------------------------------------- #
 # The probe table
 # --------------------------------------------------------------------------- #
 
 PROBES: Final[tuple[Probe, ...]] = (
+    c64_node_probe(
+        "AC-10|04",
+        "不影响其它 provider",
+        "optional SDK provider isolation",
+        measure_c64_sdk_isolation,
+        1,
+    ),
+    c64_node_probe(
+        "AC-11|07",
+        "首帧认证",
+        "ODS commit to actual local websocket notification",
+        measure_c64_pipeline_socket,
+        4,
+    ),
+    c64_node_probe(
+        "AC-13|02",
+        "生产未配置时启动即失败",
+        "actual production lifespan scheduler ownership",
+        measure_c64_lifespan,
+        2,
+    ),
+    c64_node_probe(
+        "AC-14|02",
+        "成功运行回测",
+        "degraded local consumer handoff and real backtest",
+        measure_c64_consumer_backtest,
+        2,
+    ),
+    c64_node_probe(
+        "AC-14|03",
+        "QUICKSTART 黄金路径",
+        "fresh documented consumer script reproduction",
+        measure_c64_consumer_golden,
+        1,
+    ),
+    c64_node_probe(
+        "AC-14|01", "基础限速", "consumer Key lifecycle and rate limit", measure_c64_key_limit, 9
+    ),
+    c64_node_probe(
+        "AC-13|04",
+        "水位以 ods 为准",
+        "ODS truth after raw-cache deletion",
+        measure_c64_ods_cache_rerun,
+        2,
+    ),
+    c64_node_probe(
+        "AC-13|06",
+        "一键重试",
+        "single-symbol isolation and browser retry",
+        measure_c64_retry_browser,
+        2,
+    ),
+    c64_node_probe(
+        "§6|03",
+        "失败清单导出",
+        "browser failed-list download and retry",
+        measure_c64_export_browser,
+        2,
+    ),
+    c64_node_probe(
+        "AC-11|12",
+        "旧机制迁移收口",
+        "legacy loader and frontend gate membership",
+        measure_c64_legacy_frontend,
+        3,
+    ),
+    c64_archive_probe(
+        "AC-6|01", "录制回放对照", "archived P0 replay observations", measure_c64_p0_comparison
+    ),
+    c64_archive_probe(
+        "AC-7|03",
+        "真机拉取一个全市场 dump",
+        "actual historical fuyao smoke and dump",
+        measure_c64_fuyao_live_archive,
+    ),
+    c64_archive_probe(
+        "AC-12|03",
+        "10~15%",
+        "maintenance budget and abandonment process",
+        measure_c64_maintenance_budget,
+    ),
+    c64_archive_probe(
+        "§4|01",
+        "差异人工复核",
+        "historical dual-source measured differences",
+        measure_c64_dual_comparison_archive,
+    ),
+    c64_archive_probe(
+        "§4|05", "第三方基准", "historical independent index sample", measure_c64_gold_archive
+    ),
+    c64_archive_probe(
+        "§6|04",
+        "备份恢复演练",
+        "current isolated dual-database restore",
+        measure_c64_restore_archive,
+    ),
+    c64_node_probe(
+        "AC-3|01", "能力均注册", "bundled provider registration", measure_c64_registry, 3
+    ),
+    c64_node_probe(
+        "AC-3|02", "权威度+可用性", "authority and health fallback", measure_c64_auto, 3
+    ),
+    c64_node_probe("AC-3|03", "显式 source", "precise explicit routing", measure_c64_explicit, 3),
+    c64_node_probe(
+        "AC-3|04", "不参与 auto", "unverified and reserved notes exclusion", measure_c64_reserved, 3
+    ),
+    c64_node_probe(
+        "AC-3|05", "只读接口", "capability and source registry APIs", measure_c64_cap_api, 4
+    ),
+    c64_node_probe(
+        "AC-6|03",
+        "未完成对照",
+        "incomplete comparison cannot enter auto",
+        measure_c64_unverified,
+        3,
+    ),
+    c64_node_probe(
+        "AC-7|01", "429 与 4001", "fuyao envelope auth and backoff", measure_c64_fuyao_transport, 4
+    ),
+    c64_node_probe(
+        "AC-7|02", "中文文案", "business error messages and remedies", measure_c64_fuyao_errors, 3
+    ),
+    c64_node_probe("AC-7|04", "100%", "official endpoint map coverage", measure_c64_fuyao_map, 3),
+    c64_node_probe(
+        "AC-7|05", "source=ths", "THS contract registration", measure_c64_ths_contract, 3
+    ),
+    c64_node_probe(
+        "AC-10|05",
+        "openbb_map.yaml",
+        "enabled provider compatibility map",
+        measure_c64_openbb_map,
+        2,
+    ),
+    c64_node_probe(
+        "AC-11|06", "freshness", "catalog and freshness routes", measure_c64_freshness_api, 3
+    ),
+    c64_node_probe("AC-11|08", "断线补发", "missed batch meta replay", measure_c64_replay, 2),
+    c64_node_probe(
+        "AC-11|09", "full 模式", "full message ceilings and fallback", measure_c64_frames, 3
+    ),
+    c64_node_probe("AC-11|10", "路由回归", "existing routes regression", measure_c64_routes, 6),
+    c64_node_probe(
+        "AC-11|11", "REST 分页", "minimal REST and websocket client", measure_c64_client, 3
+    ),
+    c64_node_probe(
+        "AC-12|01", "每文件哈希", "upstream lock provenance and hashes", measure_c64_lock, 2
+    ),
+    c64_node_probe(
+        "AC-12|02", "函数 diff", "upstream inventory and signature diff", measure_c64_sync, 2
+    ),
+    c64_node_probe(
+        "AC-13|01", "六步", "scheduled six-step pipeline task", measure_c64_scheduled_pipeline, 4
+    ),
+    c64_node_probe(
+        "AC-13|03",
+        "断点续拉",
+        "resume completed shards and retry partial failures",
+        measure_c64_resume,
+        3,
+    ),
+    c64_node_probe(
+        "§5|03",
+        "429 有退避记录",
+        "bounded rate-limit retry mechanism",
+        measure_c64_ban_mechanism,
+        2,
+    ),
+    c64_node_probe(
+        "§6|01",
+        "任一步失败",
+        "step checkpoints resume hooks including metadata",
+        measure_c64_steps,
+        4,
+    ),
+    c64_node_probe("§6|02", "重载", "persistent scheduler reload", measure_c64_reload, 2),
+    Probe(
+        item="AC-4|03",
+        expects="巡检",
+        summary="daily P0 patrol, persisted streaks and retryable notification delivery",
+        measure=measure_c64_patrol,
+        judge=_c64_behavior,
+        breaks=(
+            Break("named behavior check fails", (("c64_exit", "1"),), GAP),
+            Break("named node is absent", (("c64_absent", "missing"),), GAP),
+            Break("a required node is skipped", (("c64_skipped", "1"),), GAP),
+            Break("runtime binding removed", (("binding", "no"),), GAP),
+        ),
+        repair={
+            "c64_runs": "6",
+            "c64_exit": "0",
+            "c64_passed": "6",
+            "c64_failed": "0",
+            "c64_skipped": "0",
+            "c64_absent": "-",
+            "binding": "yes",
+        },
+    ),
+    Probe(
+        item="AC-13|05",
+        expects="缓存只存原始响应",
+        summary="raw-response TTL cache and actual adjusted-query isolation",
+        measure=measure_c64_cache,
+        judge=_c64_behavior,
+        breaks=(
+            Break("named behavior check fails", (("c64_exit", "1"),), GAP),
+            Break("named node is absent", (("c64_absent", "missing"),), GAP),
+            Break("a required node is skipped", (("c64_skipped", "1"),), GAP),
+            Break("runtime binding removed", (("binding", "no"),), GAP),
+        ),
+        repair={
+            "c64_runs": "4",
+            "c64_exit": "0",
+            "c64_passed": "4",
+            "c64_failed": "0",
+            "c64_skipped": "0",
+            "c64_absent": "-",
+            "binding": "yes",
+        },
+    ),
+    Probe(
+        item="AC-4|01",
+        expects="统一超时",
+        summary="timeout / 429 retry / per-host rate / concurrency actual mocks",
+        measure=measure_c64_ac4_01,
+        judge=_c64_behavior,
+        breaks=(
+            Break("named behavior check fails", (("c64_exit", "1"),), GAP),
+            Break("named node is absent", (("c64_absent", "missing"),), GAP),
+            Break("a required node is skipped", (("c64_skipped", "1"),), GAP),
+            Break("runtime binding removed", (("binding", "no"),), GAP),
+        ),
+        repair={
+            "c64_runs": "5",
+            "c64_exit": "0",
+            "c64_passed": "5",
+            "c64_failed": "0",
+            "c64_skipped": "0",
+            "c64_absent": "-",
+            "binding": "yes",
+        },
+    ),
+    Probe(
+        item="AC-4|02",
+        expects="失败分类",
+        summary="structured safe transport failure events",
+        measure=measure_c64_ac4_02,
+        judge=_c64_behavior,
+        breaks=(
+            Break("named behavior check fails", (("c64_exit", "1"),), GAP),
+            Break("named node is absent", (("c64_absent", "missing"),), GAP),
+            Break("a required node is skipped", (("c64_skipped", "1"),), GAP),
+            Break("runtime binding removed", (("binding", "no"),), GAP),
+        ),
+        repair={
+            "c64_runs": "4",
+            "c64_exit": "0",
+            "c64_passed": "4",
+            "c64_failed": "0",
+            "c64_skipped": "0",
+            "c64_absent": "-",
+            "binding": "yes",
+        },
+    ),
+    Probe(
+        item="AC-7|06",
+        expects="Key 缺失",
+        summary="missing credentials exclusion and visible warning",
+        measure=measure_c64_ac7_06,
+        judge=_c64_behavior,
+        breaks=(
+            Break("named behavior check fails", (("c64_exit", "1"),), GAP),
+            Break("named node is absent", (("c64_absent", "missing"),), GAP),
+            Break("a required node is skipped", (("c64_skipped", "1"),), GAP),
+            Break("runtime binding removed", (("binding", "no"),), GAP),
+        ),
+        repair={
+            "c64_runs": "3",
+            "c64_exit": "0",
+            "c64_passed": "3",
+            "c64_failed": "0",
+            "c64_skipped": "0",
+            "c64_absent": "-",
+            "binding": "yes",
+        },
+    ),
+    Probe(
+        item="§5|05",
+        expects="分钟线查询走文件存储",
+        summary="file-backed minute query with isolated mainDB index",
+        measure=measure_c64_minute,
+        judge=_c64_behavior,
+        breaks=(
+            Break("named behavior check fails", (("c64_exit", "1"),), GAP),
+            Break("named node is absent", (("c64_absent", "missing"),), GAP),
+            Break("a required node is skipped", (("c64_skipped", "1"),), GAP),
+            Break("runtime binding removed", (("binding", "no"),), GAP),
+        ),
+        repair={
+            "c64_runs": "3",
+            "c64_exit": "0",
+            "c64_passed": "3",
+            "c64_failed": "0",
+            "c64_skipped": "0",
+            "c64_absent": "-",
+            "binding": "yes",
+        },
+    ),
+    Probe(
+        item="§5|04",
+        expects="GB 级表",
+        summary="one real GB ODS table bounded REST/CSV and EXPLAIN evidence",
+        measure=measure_c64_gb_query,
+        judge=judge_c64_gb_query,
+        breaks=(
+            Break("missing dated_evidence", (("dated_evidence", "no"),), GAP),
+            Break("missing gb_table", (("gb_table", "no"),), GAP),
+            Break("missing http_rows", (("http_rows", "no"),), GAP),
+            Break("missing indexed", (("indexed", "no"),), GAP),
+            Break("missing bounded_time", (("bounded_time", "no"),), GAP),
+            Break("missing read_only", (("read_only", "no"),), GAP),
+        ),
+        repair={
+            "dated_evidence": "yes",
+            "gb_table": "yes",
+            "http_rows": "yes",
+            "indexed": "yes",
+            "bounded_time": "yes",
+            "read_only": "yes",
+        },
+    ),
     Probe(
         item="AC-1|01",
         expects="pyproject.toml",
@@ -7636,7 +12044,7 @@ PROBES: Final[tuple[Probe, ...]] = (
         judge=judge_ac1_03,
         breaks=(
             Break(
-                "白名单外多一个文件",
+                "实际命中有一条没有登记",
                 (
                     ("outside", "1"),
                     ("outside_sample", "pyproject.toml"),
@@ -7651,8 +12059,28 @@ PROBES: Final[tuple[Probe, ...]] = (
                 ),
                 GAP,
             ),
+            Break("登记表缺失或空表", (("policy_valid", "no"),), GAP),
+            Break("登记表 SHA 与文件内容不相等", (("sha_mismatch", "1"),), GAP),
+            Break("登记中多出一条当前没有命中的旧路径", (("stale_paths", "1"),), GAP),
+            Break(
+                "purpose/category/review date/reviewer 缺失或不合规",
+                (("metadata_invalid", "1"),),
+                GAP,
+            ),
+            Break("新增的 AST 例外不绑定唯一获准上下文", (("metadata_exceptions", "2"),), GAP),
+            Break("本轮 tracked hit 文件有路径不可读", (("unreadable", "1"),), GAP),
         ),
-        repair={"outside": "0", "outside_sample": ""},
+        repair={
+            "outside": "0",
+            "outside_sample": "",
+            "unreadable": "0",
+            "policy_valid": "yes",
+            "stale_paths": "0",
+            "sha_mismatch": "0",
+            "metadata_invalid": "0",
+            "metadata_exceptions": "3",
+            "metadata_expected": "3",
+        },
     ),
     Probe(
         item="AC-1|04",
@@ -7715,11 +12143,24 @@ PROBES: Final[tuple[Probe, ...]] = (
         measure=measure_ac1_05,
         judge=judge_ac1_05,
         breaks=(
-            Break("运行时正常但仓库名漂移", (("runtime", "ok"), ("consistent", "no")), GAP),
-            Break("四处一致但引擎没起来", (("runtime", "no-engine"), ("consistent", "yes")), GAP),
-            Break("引擎在跑但栈没起", (("runtime", "not-started"), ("consistent", "yes")), GAP),
+            Break("运行时正常但仓库名漂移", (("runtime", "validated"), ("consistent", "no")), GAP),
+            Break(
+                "四处一致但当前运行证据失败", (("runtime", "failed"), ("consistent", "yes")), GAP
+            ),
+            Break("四处一致但栈没有启动", (("runtime", "not-started"), ("consistent", "yes")), GAP),
+            Break(
+                "运行状态声称validated但仍有证据问题",
+                (("runtime", "validated"), ("runtime_issue_count", "1"), ("consistent", "yes")),
+                GAP,
+            ),
         ),
-        repair={"consistent": "yes", "runtime": "ok"},
+        repair={
+            "consistent": "yes",
+            "runtime": "validated",
+            "runtime_valid": "yes",
+            "runtime_issue_count": "0",
+            "runtime_issue_summary": "none",
+        },
     ),
     Probe(
         item="AC-1|06",
@@ -7769,7 +12210,7 @@ PROBES: Final[tuple[Probe, ...]] = (
     Probe(
         item="AC-1|08",
         expects="数据源权利登记表",
-        summary="登记表存在之外：逐行是否真复核过，且覆盖清单引用的每个源",
+        summary="只读§1登记表：每个已引来源须有条款、用途、日期与责任人",
         measure=measure_ac1_08,
         judge=judge_ac1_08,
         breaks=(
@@ -7782,14 +12223,17 @@ PROBES: Final[tuple[Probe, ...]] = (
                 ),
                 GAP,
             ),
-            Break("一行没写复核日期", (("dated", "15"),), GAP),
+            Break("登记表缺失、畸形或被清空", (("table_valid", "no"), ("rows", "0")), GAP),
+            Break("一行没写复核日期", (("dated", "0"),), GAP),
             Break("条款链接列写成散文", (("unlinked", "5"),), GAP),
-            Break("登记表被清空", (("rows", "0"), ("dated", "0")), GAP),
+            Break("责任人列为空或未指定", (("responsible_missing", "1"),), GAP),
         ),
         repair={
+            "table_valid": "yes",
             "dated": "*rows",
             "undecided": "0",
             "unlinked": "0",
+            "responsible_missing": "0",
             "uncovered": "0",
             "uncovered_sample": "",
         },
@@ -7802,37 +12246,50 @@ PROBES: Final[tuple[Probe, ...]] = (
         judge=judge_ac1_09,
         breaks=(
             Break(
-                "字面 grep 命中模板",
+                "真实 .env 或 .env.* 文件进库",
                 (
-                    ("literal", "1"),
-                    ("literal_sample", ".env.example"),
+                    ("strict", "1"),
+                    ("env_paths", "1"),
+                    ("env_sample", ".env.production"),
                 ),
                 GAP,
             ),
-            Break("真的 .env 进了库", (("strict", "1"),), GAP),
+            Break(".idea 目录或 .pid 工件进库", (("strict", "1"), ("generated_paths", "1")), GAP),
+            Break("出现额外 .env.example 模板路径", (("template_paths", "2"),), GAP),
             Break(
-                "豁免表里留着非文档路径",
-                (
-                    ("non_template", "1"),
-                    ("non_template_names", "\\.egg-info/"),
-                ),
+                "全局路径豁免重新引入",
+                (("exact_paths", "no"), ("allow_paths", "1"), ("template_config_ok", "no")),
                 GAP,
             ),
-            Break("规则级豁免又加一条", (("rule_blocks", "1"),), GAP),
+            Break(
+                "公共规则级例外被扩宽、移除或增加额外 regex",
+                (("rule_shapes", "no"),),
+                GAP,
+            ),
             Break("上游 5 文件漏登记一条", (("registered", "4"),), GAP),
             Break("搬运代码里还留着凭证形状字面量", (("live_shapes", "2"),), GAP),
             Break("全历史扫描器变红", (("gitleaks_rc", "1"),), GAP),
+            Break(".env.example 只依赖路径豁免而未扫描", (("template_config_ok", "no"),), GAP),
+            Break("模板实际含有凭证形状", (("template_scan_rc", "1"),), GAP),
         ),
         repair={
-            "literal": "0",
-            "literal_sample": "",
             "strict": "0",
+            "env_paths": "0",
+            "generated_paths": "0",
+            "template_paths": "1",
+            "template_names": ".env.example",
+            "exact_paths": "yes",
+            "allow_paths": "0",
+            "allow_names": "",
             "non_template": "0",
             "non_template_names": "",
-            "rule_blocks": "0",
+            "rule_blocks": "2",
+            "rule_shapes": "yes",
             "registered": "*upstream_files",
             "live_shapes": "0",
             "gitleaks_rc": "0",
+            "template_config_ok": "yes",
+            "template_scan_rc": "0",
         },
     ),
     Probe(
@@ -8160,8 +12617,12 @@ PROBES: Final[tuple[Probe, ...]] = (
                 "棘轮以扫描范围变化变红", (("ratchet_exit", "1"), ("ratchet_face", "scope")), GAP
             ),
             Break("两项搬运债务有一项没被打印", (("printed", "1"),), GAP),
-            Break("ruff_ported 高于快照", (("cur_ruff_ported", "2145"),), GAP),
-            Break("direct_http_ported 高于快照", (("cur_direct_http_ported", "1045"),), GAP),
+            Break("ruff_ported 高于快照", (("cur_ruff_ported", "*snap_ruff_ported+1"),), GAP),
+            Break(
+                "direct_http_ported 高于快照",
+                (("cur_direct_http_ported", "*snap_direct_http_ported+1"),),
+                GAP,
+            ),
             Break(
                 "门禁打印的搬运计数不再是 E/F 数（select 被加宽或改窄）",
                 (("select_matches", "no"),),
@@ -8427,6 +12888,7 @@ PROBES: Final[tuple[Probe, ...]] = (
             Break("告警投递面变红", (("alert_passed", "8"),), GAP),
             Break("缺失不再触发告警", (("alert_bad", "告警=exit=1"),), GAP),
             Break("新鲜度路由整条消失", (("door_route", "no"),), GAP),
+            Break("路由不再调用实际读数实现", (("door_delegates", "no"),), GAP),
             Break("门不再交出滞后天数", (("door_readings", "no"),), GAP),
             Break("门只在成功分支报基准日，no data 分支不报", (("door_baseline", "1"),), GAP),
             Break("调度模板不再派发新鲜度执行器", (("job_wired", "no"),), GAP),
@@ -8441,6 +12903,7 @@ PROBES: Final[tuple[Probe, ...]] = (
             "alert_passed": "*alert_runs",
             "alert_bad": "-",
             "door_route": "yes",
+            "door_delegates": "yes",
             "door_readings": "yes",
             "door_baseline": "2",
             "job_wired": "yes",
@@ -8488,6 +12951,10 @@ PROBES: Final[tuple[Probe, ...]] = (
             Break("数据接口路由不再渲染目录视图", (("route_is_catalog", "no"),), GAP),
             Break("目录页读不到函数级明细", (("detail_in_catalog", "no"),), GAP),
             Break("下钻终点（接口详情路由）被删", (("detail_route", "no"),), GAP),
+            Break("merged catalog 可见行为用例变红或缺失", (("merged_e2e", "failed"),), GAP),
+            Break(
+                "旧函数列表到真实脚本详情用例变红或缺失", (("function_detail_e2e", "failed"),), GAP
+            ),
         ),
         repair={
             "nav_entries": "1",
@@ -8495,6 +12962,8 @@ PROBES: Final[tuple[Probe, ...]] = (
             "route_is_catalog": "yes",
             "detail_in_catalog": "yes",
             "detail_route": "yes",
+            "merged_e2e": "passed",
+            "function_detail_e2e": "passed",
         },
     ),
     Probe(
@@ -8766,6 +13235,11 @@ PROBES: Final[tuple[Probe, ...]] = (
             Break("用例不再自建 probe 表", (("case_file", "no"),), GAP),
             Break("新年度那行没被插入", (("inserts_new_year", "no"),), GAP),
             Break("落点分区名没被断言（只赌写入不报错）", (("asserts_placement", "0"),), GAP),
+            Break(
+                "pmax 溢出断言被删除或改成非零",
+                (("asserts_placement", "1"), ("placement_partitions", "p2027")),
+                GAP,
+            ),
             Break("e2e 标记被摘（于是门禁里悄悄不跑）", (("marked", "no"),), GAP),
             Break("真仓库那一年仍缺", (("fallback_gap", "1"),), GAP),
             Break("没有一次真跑的留档", (("ran_live", "no"),), GAP),
@@ -8773,10 +13247,8 @@ PROBES: Final[tuple[Probe, ...]] = (
         repair={
             "case_file": "yes",
             "inserts_new_year": "yes",
-            # A literal target, not ``*asserts_placement``: today's tree asserts the landing
-            # partition, so copying the reading would make "someone deleted the assertion" fail
-            # the self-test instead of reading as a gap on this cell.
-            "asserts_placement": "1",
+            "asserts_placement": "2",
+            "placement_partitions": "p2027,pmax",
             "marked": "e2e",
             "fallback_gap": "0",
             "ran_live": "yes",
@@ -9009,20 +13481,38 @@ PROBES: Final[tuple[Probe, ...]] = (
     Probe(
         item="AC-9|07",
         expects="ods 中已存在 key 被修正后，dwd 对应行同步更新（单测）",
-        summary="两条修订节点全绿 + 传播链五段（交键/重拼契约键/下传 reader/键级 upsert）",
+        summary=(
+            "修订节点全绿（含生产 scoped ODS reader）+ run/batch/hook 的 affected_keys 传播链完整"
+        ),
         measure=measure_ac9_07,
         judge=judge_ac9_07,
         breaks=(
             Break("修订传播节点变红（值不再同步）", (("passed", "1"), ("bad", "x=exit=1")), GAP),
             Break("节点被改名（两条里少一条就不算链上有人看过）", (("runs", "1"),), GAP),
             Break(
-                "affected_keys 不再下传 reader（窗口外的修订取不到数）",
-                (("reader_gets_keys", "no"),),
+                "run 不再把 affected_keys 委托给 batch（后续 reader 与 diff 链均断开）",
+                (("run_delegates_affected_keys", "no"),),
                 GAP,
             ),
-            Break("修订键不再参与差异重算", (("keys_extend_diffs", "no"),), GAP),
             Break(
-                "run_hook 不再把 ods 拼法重拼成契约键（600519.SH 对不上 600519）",
+                "batch 不再把 affected_keys 交给 _read_source（窗口外的修订取不到数）",
+                (("batch_reader_gets_keys", "no"),),
+                GAP,
+            ),
+            Break(
+                "普通 reader 不再收到 affected_keys",
+                (("normal_reader_gets_keys", "no"),),
+                GAP,
+            ),
+            Break(
+                "scoped reader 不再收到 affected_keys",
+                (("scoped_reader_gets_keys", "no"),),
+                GAP,
+            ),
+            Break("batch 不再把修订键传入差异重算", (("batch_merge_gets_keys", "no"),), GAP),
+            Break(
+                "partition 或普通 context hook 不再把 ods 拼法重拼成契约键 "
+                "（600519.SH 对不上 600519）",
                 (("hook_resells_keys", "no"),),
                 GAP,
             ),
@@ -9038,8 +13528,15 @@ PROBES: Final[tuple[Probe, ...]] = (
         repair={
             "passed": "*runs",
             "bad": "-",
+            "run_delegates_affected_keys": "yes",
+            "batch_reader_gets_keys": "yes",
+            "batch_merge_gets_keys": "yes",
+            "normal_reader_gets_keys": "yes",
+            "scoped_reader_gets_keys": "yes",
             "reader_gets_keys": "yes",
             "keys_extend_diffs": "yes",
+            "partition_hook_resells_keys": "yes",
+            "context_hook_resells_keys": "yes",
             "hook_resells_keys": "yes",
             "runner_publishes_keys": "yes",
             "writer_upserts": "yes",
@@ -9117,7 +13614,7 @@ PROBES: Final[tuple[Probe, ...]] = (
         item="AC-16|06",
         expects="A2 搬运完成后基线清零",
         summary="零依赖断言两条门禁命令都绿、只降不升的门禁在位、import/动态形态为零、"
-        "冻结基线条数为零",
+        "引用策略和 scanner 版本有效、冻结基线条数为零",
         measure=measure_ac16_06,
         judge=judge_ac16_06,
         breaks=(
@@ -9135,6 +13632,9 @@ PROBES: Final[tuple[Probe, ...]] = (
             Break("动态 import 绕过面回来了", (("dynamic_live", "1"), ("frozen", "4")), GAP),
             Break("新增引用不再被拒（现场比冻结多一条也算过）", (("no_new_reference", "no"),), GAP),
             Break("--update 不再拒绝长大（只降不升被拆）", (("only_down", "no"),), GAP),
+            Break("引用策略缺失、SHA 过期或 AST 描述不匹配", (("policy_valid", "no"),), GAP),
+            Break("旧 scanner 基线仍被当成当前版本", (("baseline_current", "no"),), GAP),
+            Break("三个精确元数据例外未全部绑定", (("metadata_exceptions", "2"),), GAP),
             Break("基线还在（本轮实际卡住的那一格：3 条没清零）", (("frozen", "3"),), GAP),
         ),
         repair={
@@ -9144,6 +13644,10 @@ PROBES: Final[tuple[Probe, ...]] = (
             "dynamic_live": "0",
             "no_new_reference": "yes",
             "only_down": "yes",
+            "policy_valid": "yes",
+            "baseline_current": "yes",
+            "metadata_exceptions": "3",
+            "metadata_expected": "3",
             "frozen": "0",
         },
     ),
@@ -9463,14 +13967,38 @@ PROBES: Final[tuple[Probe, ...]] = (
             Break("有一个被取用的端点聚合层没导出", (("called_missing", "1"),), GAP),
             Break("点名移出本迭代的子包混进了清单", (("excluded_present", "1"),), GAP),
             Break("D9 点名的子包有没搬到的", (("scope_missing", "1"),), GAP),
+            Break("搬运路径/批次清单未通过逐项核验", (("port_scope_valid", "no"),), GAP),
             Break("没有任何机器字段能说 1A/1B 批次", (("tier_field", "-"),), GAP),
         ),
         repair={
             "has_calls": "yes",
+            "package_count": "13",
+            "package_names": (
+                "bond, economic, file_fold, fund, futures, futures_derivative, index, option, "
+                "pro, stock, stock_feature, stock_fundamental, utils"
+            ),
+            "manifest_files": "325",
+            "leg_modules": "11",
+            "first_party_calls": "11",
             "called_missing": "0",
+            "called_missing_names": "-",
+            "scope_named": "11",
+            "scope_named_raw": (
+                "stock、stock_feature、stock_fundamental、futures、futures_derivative、index、"
+                "fund、option、bond、economic、utils"
+            ),
             "excluded_present": "0",
+            "excluded_named": "8",
+            "excluded_present_names": "-",
             "scope_missing": "0",
-            "tier_field": "opendata/data/domains.yaml#batch",
+            "scope_missing_names": "-",
+            "port_scope_valid": "yes",
+            "port_scope_checked": "327",
+            "port_scope_python": "325",
+            "port_scope_resources": "2",
+            "port_scope_problems": "0",
+            "port_scope_problem_summary": "-",
+            "tier_field": "docs/evidence/C65/port-scope-manifest.json#files.batch",
         },
     ),
     Probe(
@@ -9487,6 +14015,9 @@ PROBES: Final[tuple[Probe, ...]] = (
             Break("有一个 import 形态的上游引用", (("import_live", "1"),), GAP),
             Break("有一处动态导入取上游模块", (("dynamic_live", "1"),), GAP),
             Break("有一处字符串常量指向上游", (("string_live", "1"),), GAP),
+            Break("reference policy 缺失或 SHA/AST 绑定过期", (("policy_valid", "no"),), GAP),
+            Break("零依赖基线还是旧 scanner 版本", (("baseline_current", "no"),), GAP),
+            Break("精确元数据例外计数不等于三", (("metadata_exceptions", "2"),), GAP),
             Break("冻结基线没有清零", (("frozen", "1"),), GAP),
         ),
         repair={
@@ -9497,6 +14028,10 @@ PROBES: Final[tuple[Probe, ...]] = (
             "import_live": "0",
             "dynamic_live": "0",
             "string_live": "0",
+            "policy_valid": "yes",
+            "baseline_current": "yes",
+            "metadata_exceptions": "3",
+            "metadata_expected": "3",
             "frozen": "0",
         },
     ),
@@ -9580,30 +14115,57 @@ PROBES: Final[tuple[Probe, ...]] = (
     Probe(
         item="AC-5|07",
         expects="人工 triage 留档",
-        summary="搬运层专用 bandit 目标 + 本轮全量留档，triage 覆盖面等于今天的树且免罪句仍成立",
+        summary="搬运层专用 Bandit 全量扫描绑定当前源码，逐 finding 审阅并保留已知风险",
         measure=measure_ac5_07,
         judge=judge_ac5_07,
         breaks=(
             Break("没有搬运层专用扫描目标", (("target_ok", "no"),), GAP),
-            Break("本轮没有全量扫描留档", (("archive", "-"), ("archive_self_written", "no")), GAP),
-            Break("留档不是本轮自写的", (("archive_self_written", "no"),), GAP),
-            Break("留档扫到的文件在搬运清单外", (("scan_manifest_ok", "no"),), GAP),
-            Break("留档里没有 B 层规则", (("scan_b_only", "no"),), GAP),
-            Break("有一项落在 triage 未处置的规则上", (("findings_untriaged", "1"),), GAP),
-            Break("triage 说「无」的规则又出现", (("cleared_present", "1"),), GAP),
-            Break("出现 pickle/yaml 类反序列化项", (("deser_present", "1"),), GAP),
-            Break("triage 声明的覆盖面小于今天的树", (("surface_covered", "no"),), GAP),
+            Break(
+                "当前扫描或分组风险审阅证据缺失或无效", (("security_evidence_valid", "no"),), GAP
+            ),
+            Break("本轮扫描不再绑定当前源码", (("scan_source_tree_valid", "no"),), GAP),
+            Break("triage 缺少当前 finding 或身份不匹配", (("scan_findings_covered", "no"),), GAP),
+            Break("HIGH finding 未完整审阅", (("untriaged_high", "1"),), GAP),
+            Break(
+                "规则审阅缺 basis/disposition/follow-up", (("triage_rule_review_valid", "no"),), GAP
+            ),
+            Break("没有直接授权 AI 审阅", (("triage_reviewer_authorized", "no"),), GAP),
+            Break("反序列化组没有明确风险审阅", (("triage_deser_reviewed", "no"),), GAP),
+            Break("B301/B307 RCE finding 被删除或免罪", (("triage_rce_retained", "no"),), GAP),
+            Break("人工 triage 尚未完成", (("triage_review_complete", "no"),), GAP),
+            Break("审阅报告错误声称已修复", (("triage_security_fixed", "yes"),), GAP),
+            Break("审阅报告隐去未解决风险", (("triage_unresolved_risks", "no"),), GAP),
+            Break("扫描记录含错误或无 finding", (("scan_errors", "1"),), GAP),
+            Break("扫描没有发现可审阅的结果", (("scan_findings", "0"),), GAP),
+            Break(
+                "当前搬运 manifest 与源文件集合不一致", (("scan_manifest_matches_tree", "no"),), GAP
+            ),
+            Break("manifest 覆盖范围小于磁盘搬运树", (("surface_covered", "no"),), GAP),
         ),
         repair={
             "target_ok": "yes",
-            "archive_self_written": "yes",
+            "security_evidence_valid": "yes",
+            "security_issue_count": "0",
+            "scan_source_tree_valid": "yes",
+            "scanner_exit_consistent": "yes",
+            "scan_errors": "0",
+            "scan_findings": "*scan_findings",
+            "archive": "*archive",
             "scan_manifest_ok": "yes",
             "scan_b_only": "yes",
             "findings_untriaged": "0",
-            "cleared_present": "0",
-            "deser_present": "0",
+            "untriaged_high": "0",
+            "scan_findings_covered": "yes",
+            "triage_rule_review_valid": "yes",
+            "triage_high_reviewed": "yes",
+            "triage_deser_reviewed": "yes",
+            "triage_rce_retained": "yes",
+            "triage_reviewer_authorized": "yes",
+            "triage_review_complete": "yes",
+            "triage_security_fixed": "no",
+            "triage_unresolved_risks": "yes",
+            "scan_manifest_matches_tree": "yes",
             "surface_covered": "yes",
-            "triage_files_claimed": "*ported_files",
         },
     ),
     Probe(
@@ -9737,7 +14299,8 @@ PROBES: Final[tuple[Probe, ...]] = (
     Probe(
         item="AC-16|04",
         expects="混合许可边界可验证",
-        summary="MIT 子树里没有自研 registration.py 也不 import BSL 侧，再禁掉 BSL 侧跑一遍导入",
+        summary="当前磁盘 325 Python + 2 resources 与 source pins 完整，并在隔离复制树真实导入；"
+        "namespace 来源、网络尝试和 checkout 泄漏均受检查",
         measure=measure_ac16_04,
         judge=judge_ac16_04,
         breaks=(
@@ -9762,17 +14325,38 @@ PROBES: Final[tuple[Probe, ...]] = (
                 (("control_blocked", "no"), ("standalone_exit", "1")),
                 GAP,
             ),
+            Break("vendor manifest 缺失", (("manifest_present", "no"),), GAP),
+            Break(
+                "manifest/磁盘资源 inventory 少一个文件",
+                (("manifest_resource_files", "1"),),
+                GAP,
+            ),
+            Break(
+                "namespace ancestor 意外加载仓库 BSL 源文件",
+                (
+                    ("namespace_sources_clean", "no"),
+                    ("namespace_json", _ac16_namespace_source_counterfact_json()),
+                ),
+                GAP,
+            ),
+            Break(
+                "隔离导入期间出现出站网络尝试",
+                (("network_attempts_json", '["socket.connect:127.0.0.1:443"]'),),
+                GAP,
+            ),
+            Break(
+                "隔离解释器路径泄漏回当前 checkout",
+                (
+                    ("repository_path_leaks_json", '["/workspace/opendata/opendata"]'),
+                    (
+                        "sys_path_json",
+                        '["/tmp/ac16-boundary-isolation","/workspace/opendata/opendata"]',
+                    ),
+                ),
+                GAP,
+            ),
         ),
-        repair={
-            "reg_inside": "0",
-            "prov_inside": "0",
-            "crossings": "0",
-            "control_blocked": "yes",
-            "standalone_ok": "yes",
-            "standalone_exit": "0",
-            "imported_modules": "3",
-            "standalone_failed": "(absent)",
-        },
+        repair=_ac16_clean_repair_facts(),
     ),
     Probe(
         item="AC-16|08",
@@ -9808,6 +14392,7 @@ PROBES: Final[tuple[Probe, ...]] = (
         measure=measure_ac19_01,
         judge=judge_ac19_01,
         breaks=(
+            Break("没有正式部署运行与备份新鲜度证据", (("deployment_observed", "no"),), GAP),
             Break(
                 "备份脚本不在跟踪清单里",
                 (("script_tracked", "no"), ("dump_calls", "0"), ("dump_sites", "0")),
@@ -9824,6 +14409,10 @@ PROBES: Final[tuple[Probe, ...]] = (
                 (("schedule_sites", "0"), ("schedule_list", "-")),
                 GAP,
             ),
+            Break("Compose 备份服务不再位于可选 backup profile", (("backup_profile", "no"),), GAP),
+            Break("备份 runner 镜像不再安装并执行", (("backup_image", "no"),), GAP),
+            Break("每日 02:00 UTC runner 时钟或调用路径失效", (("daily_runner", "no"),), GAP),
+            Break("profile、镜像和 runner 的完整链路断开", (("schedule_chain", "no"),), GAP),
             Break("RPO ≤24h 的声明面被删", (("doc_rpo", "no"),), GAP),
             Break(
                 "binlog 只有「可选」附录、没有一次实测取值",
@@ -9837,11 +14426,17 @@ PROBES: Final[tuple[Probe, ...]] = (
             "dump_labels": "metadata, warehouse",
             "dump_sites": "1",
             "schedule_sites": "1",
-            "schedule_list": "opendata/pipeline/jobs.py",
+            "schedule_list": "scripts/ops/backup_runner.sh",
+            "backup_profile": "yes",
+            "backup_image": "yes",
+            "daily_runner": "yes",
+            "schedule_chain": "yes",
             "doc_rpo": "yes",
             "doc_binlog": "yes",
             "binlog_optional": "no",
             "binlog_attested": "1",
+            "isolated_binlog": "yes",
+            "deployment_observed": "yes",
             # 取值要落在**长期事实面**上：整个档案面（`docs/evidence/`）与结论面都在被剔之列 ——
             # 一轮不能给自己的读数背书，写进任何一轮档案或台账的那一份正是判据自己排除掉的那一份，
             # 补了也还是 0。
@@ -9908,6 +14503,20 @@ PROBES: Final[tuple[Probe, ...]] = (
                 (("prod_callers", "0"), ("caller_list", "-")),
                 GAP,
             ),
+            Break("保留策略模板行被删或改名", (("schedule_row", "no"),), GAP),
+            Break("retention kind 不再可执行", (("kind_executable", "no"),), GAP),
+            Break("jobs dispatcher 不再转给 retention executor", (("dispatcher", "no"),), GAP),
+            Break("默认从 report-only 改成执行清理", (("report_only_default", "no"),), GAP),
+            Break(
+                "report-only 与显式开启的行为用例变红",
+                (
+                    (
+                        "report_only_test",
+                        "test_retention_job_is_report_only_unless_explicitly_enabled=exit=1",
+                    ),
+                ),
+                GAP,
+            ),
         ),
         repair={
             "policy_kinds": "4",
@@ -9915,7 +14524,12 @@ PROBES: Final[tuple[Probe, ...]] = (
             "executor_list": ", ".join(AC19_RETENTION_FUNCS),
             "config_keys": "4",
             "prod_callers": "1",
-            "caller_list": "opendata/pipeline/jobs.py",
+            "caller_list": "opendata/pipeline/maintenance.py",
+            "schedule_row": "yes",
+            "kind_executable": "yes",
+            "dispatcher": "yes",
+            "report_only_default": "yes",
+            "report_only_test": "-",
         },
     ),
     Probe(
@@ -9934,7 +14548,10 @@ PROBES: Final[tuple[Probe, ...]] = (
             Break(
                 "429 不再归到 quota-exhausted（配额面失去唯一信号）", (("quota_rule", "no"),), GAP
             ),
-            Break("到期既无分类也无主动探测（现场形状）", (("expiry_signal", "no"),), GAP),
+            Break("没有运维登记到期时间的分类能力", (("expiry_signal", "no"),), GAP),
+            Break("没有供应商到期的实际证据", (("issuer_expiry_observed", "no"),), GAP),
+            Break("没有供应商余量的实际证据", (("quota_remaining_observed", "no"),), GAP),
+            Break("通知通道只有 mock 没有实际送达", (("delivery_observed", "no"),), GAP),
             Break(
                 "没有任何运行时模块调用 credential_health，分级无处可读",
                 (("alert_sites", "0"), ("alert_list", "-")),
@@ -9950,18 +14567,54 @@ PROBES: Final[tuple[Probe, ...]] = (
                 (("disclosure", "no"),),
                 GAP,
             ),
+            Break(
+                "过期 observation 被当成成功恢复，或 TTL 用例变红",
+                (
+                    (
+                        "observation_bad",
+                        "test_ttl_expiry_is_unknown_and_is_not_a_confirmed_recovery=exit=1",
+                    ),
+                ),
+                GAP,
+            ),
+            Break(
+                "通知把 observation 过期伪装成 key 恢复",
+                (
+                    (
+                        "observation_bad",
+                        "test_ttl_expiry_event_is_not_labeled_as_recovery=exit=1",
+                    ),
+                ),
+                GAP,
+            ),
+            Break(
+                "未测 quota 被伪装成数值",
+                (
+                    (
+                        "observation_bad",
+                        "test_unchanged_alert_is_not_sent_twice_and_quota_stays_unknown=exit=1",
+                    ),
+                ),
+                GAP,
+            ),
         ),
         repair={
             "classes_declared": "4",
             "rejected_rule": "yes",
             "quota_rule": "yes",
             "expiry_signal": "yes",
+            "issuer_expiry_observed": "yes",
+            "quota_remaining_observed": "yes",
+            "delivery_observed": "yes",
             "presence_only": "yes",
             "disclosure": "yes",
-            "alert_sites": "1",
-            "alert_list": "opendata/api/pipeline.py",
+            "alert_sites": "2",
+            "alert_list": "opendata/api/pipeline.py, opendata/pipeline/key_health_notifications.py",
             "notify_sites": "1",
-            "notify_list": "opendata/pipeline/patrol.py",
+            "notify_list": "opendata/pipeline/key_health_notifications.py",
+            "observation_runs": "3",
+            "observation_passed": "3",
+            "observation_bad": "-",
         },
     ),
     Probe(
@@ -10001,6 +14654,288 @@ PROBES: Final[tuple[Probe, ...]] = (
             "percall_list": "opendata/data/providers/fred/models/_client.py",
         },
     ),
+    Probe(
+        item="AC-8|04",
+        expects="写入基准测试",
+        summary=(
+            "C65 frozen-source full daily-write run with rows/pages/time/RSS bound across raw, "
+            "matrix, and driver"
+        ),
+        measure=_benchmark_facts,
+        judge=judge_ac8_04,
+        breaks=(
+            Break(
+                "benchmark evidence has a validation issue",
+                (("benchmark_valid", "no"), ("benchmark_issue_count", "1")),
+                GAP,
+            ),
+            Break(
+                "source identity is no longer verified", (("source_identity_verified", "no"),), GAP
+            ),
+            Break("full raw record is incomplete", (("full_raw_complete", "no"),), GAP),
+            Break(
+                "full requested/read/written/total-source row counts no longer agree",
+                (("full_rows_equal", "no"), ("full_source_rows_match", "no")),
+                GAP,
+            ),
+            Break("full page totals no longer agree", (("full_pages_equal", "no"),), GAP),
+            Break(
+                "full run is missing a measured time or RSS value",
+                (("full_peak_rss_positive", "no"),),
+                GAP,
+            ),
+        ),
+        repair={
+            "benchmark_valid": "yes",
+            "benchmark_issue_count": "0",
+            "source_identity_verified": "yes",
+            "full_raw_complete": "yes",
+            "full_source_sha256_bound": "yes",
+            "full_body_final_identity": "yes",
+            "full_status": "complete",
+            "full_rows_equal": "yes",
+            "full_source_rows_match": "yes",
+            "full_pages_equal": "yes",
+            "full_target_rows_equal": "yes",
+            "full_elapsed_positive": "yes",
+            "full_current_rss_positive": "yes",
+            "full_peak_rss_positive": "yes",
+            "full_source": "ths",
+            "full_domain": "stock_daily",
+            "full_table": "ods_stock_daily_ths",
+        },
+    ),
+    Probe(
+        item="§5|01",
+        expects="写入基准",
+        summary=(
+            "Three frozen-source write scales with complete rows/pages/time/RSS and an observed "
+            "full-to-1m peak comparison"
+        ),
+        measure=_benchmark_facts,
+        judge=judge_section5_01,
+        breaks=(
+            Break(
+                "benchmark evidence or source validation is invalid",
+                (("benchmark_valid", "no"),),
+                GAP,
+            ),
+            Break(
+                "fewer than all three scale runs are present",
+                (("benchmark_scales_present", "no"),),
+                GAP,
+            ),
+            Break(
+                "scale count no longer contains exactly three runs",
+                (("benchmark_scale_count", "2"),),
+                GAP,
+            ),
+            Break("at least one scale record is incomplete", (("all_scales_complete", "no"),), GAP),
+            Break("full peak RSS exceeds the 1m peak", (("full_peak_le_1m", "no"),), GAP),
+        ),
+        repair={
+            "benchmark_valid": "yes",
+            "benchmark_issue_count": "0",
+            "source_identity_verified": "yes",
+            "benchmark_scale_count": "3",
+            "benchmark_scales_present": "yes",
+            "all_scales_complete": "yes",
+            "full_peak_le_1m": "yes",
+        },
+    ),
+    Probe(
+        item="AC-10|02",
+        expects="消费场景 + 请求方",
+        summary=(
+            "Direct requester confirmation reconciled against every current active "
+            "provider/domain pair"
+        ),
+        measure=measure_ac10_02,
+        judge=judge_ac10_02,
+        breaks=(
+            Break(
+                "confirmation pair set misses or adds an active mapping leg",
+                (("pair_set_equal", "no"), ("missing_pairs", "1"), ("extra_pairs", "1")),
+                GAP,
+            ),
+            Break(
+                "the confirmation repeats a provider/domain pair",
+                (("evidence_duplicate_pairs", "1"), ("pair_set_equal", "no")),
+                GAP,
+            ),
+            Break("the direct human reply is absent", (("direct_human_confirmation", "no"),), GAP),
+            Break("one active leg has no scenario", (("scenario_missing", "1"),), GAP),
+            Break(
+                "one active leg omits its requester or purpose",
+                (("requester_missing", "1"), ("purpose_missing", "1")),
+                GAP,
+            ),
+            Break("continued activation is not confirmed", (("activation_unconfirmed", "1"),), GAP),
+        ),
+        repair={
+            "requester_evidence_valid": "yes",
+            "requester_problem_count": "0",
+            "direct_human_confirmation": "yes",
+            "direct_reply_matches": "yes",
+            "reply_declared_count": "33",
+            "requester_source_map_matches": "yes",
+            "active_map_leg_count": "33",
+            "active_map_unique_pairs": "33",
+            "active_provider_count": "7",
+            "map_duplicate_pairs": "0",
+            "evidence_leg_count": "33",
+            "evidence_unique_pairs": "33",
+            "evidence_duplicate_pairs": "0",
+            "missing_pairs": "0",
+            "extra_pairs": "0",
+            "pair_set_equal": "yes",
+            "declared_count_matches": "yes",
+            "declared_provider_count_matches": "yes",
+            "scenario_missing": "0",
+            "scenario_mismatch": "0",
+            "requester_missing": "0",
+            "requester_mismatch": "0",
+            "purpose_missing": "0",
+            "purpose_mismatch": "0",
+            "activation_unconfirmed": "0",
+            "proof_scope": "requester/purpose/activation only; not copyright/source/field mapping",
+        },
+    ),
+    Probe(
+        item="AC-10|03",
+        expects="每 provider 零 OpenBB 源码",
+        summary=(
+            "Current registered provider sources have a complete, user-authorized, hash-bound "
+            "review against the pinned OpenBB baseline"
+        ),
+        measure=measure_ac10_03,
+        judge=judge_ac10_03,
+        breaks=(
+            Break(
+                "current source SHA inventory is missing or no longer matches the review",
+                (
+                    ("current_source_file_count", "70"),
+                    ("source_hash_entry_count", "70"),
+                    ("current_source_hashes_bound", "no"),
+                ),
+                GAP,
+            ),
+            Break(
+                "an OpenBB source import appears in a provider package",
+                (("openbb_import_count", "1"), ("zero_openbb_imports", "no")),
+                GAP,
+            ),
+            Break(
+                "the current review lacks direct user authorization",
+                (("reviewer_authorized", "no"),),
+                GAP,
+            ),
+            Break(
+                "a new source candidate has not passed the review",
+                (("candidate_count", "1"), ("unreviewed_candidates", "1")),
+                GAP,
+            ),
+            Break(
+                "a nearest-pair review reports shared complex implementation",
+                (("nearest_positive_result", "no"),),
+                GAP,
+            ),
+            Break(
+                "the evidence validator reports a missing or stale binding",
+                (("provider_review_valid", "no"), ("provider_review_issue_count", "1")),
+                GAP,
+            ),
+        ),
+        repair={
+            "provider_review_valid": "yes",
+            "provider_review_issue_count": "0",
+            "provider_review_issue_codes": "-",
+            "provider_scope": "current_registered_provider_packages",
+            "provider_count": "7",
+            "provider_names": "akshare, ecb, fred, imf, oecd, ths, yfinance",
+            "reviewed_provider_names": "akshare, ecb, fred, imf, oecd, ths, yfinance",
+            "current_source_file_count": "71",
+            "source_hash_entry_count": "71",
+            "reviewed_source_file_count": "71",
+            "similarity_source_file_count": "71",
+            "baseline_source_file_count": "121",
+            "current_source_hashes_bound": "yes",
+            "provider_sources_parsed": "yes",
+            "openbb_import_count": "0",
+            "zero_openbb_imports": "yes",
+            "reviewer_authorized": "yes",
+            "openbb_baseline_commit": "3e071fcc2cd9f891cac6040ae60296dba76dab46",
+            "candidate_count": "0",
+            "unreviewed_candidates": "0",
+            "package_reviews_complete": "yes",
+            "nearest_review_complete": "yes",
+            "review_complete": "yes",
+            "nearest_review_count": "3",
+            "nearest_positive_result": "yes",
+            "artifact_sha_bindings_match": "yes",
+        },
+    ),
+    Probe(
+        item="AC-6|02",
+        expects="子模块抽样 ≥20% 对照通过",
+        summary=(
+            "Offline recorded-fixture compare PASS measured against the validated 9-group "
+            "B1.1 module denominator"
+        ),
+        measure=measure_ac6_02,
+        judge=judge_ac6_02,
+        breaks=(
+            Break(
+                "the port scope or its B1.1 group proof is invalid",
+                (("port_scope_valid", "no"),),
+                GAP,
+            ),
+            Break(
+                "a compare case no longer maps to a validated source path and batch",
+                (("case_path_mapping_valid", "no"),),
+                GAP,
+            ),
+            Break("any compare case fails", (("case_fail_count", "1"),), GAP),
+            Break("PASS groups fall below ceil(9 × 20%)", (("passing_groups", "1"),), GAP),
+            Break("the compare tolerance changes", (("compare_rtol", "1e-06"),), GAP),
+            Break("PENDING cases are no longer excluded", (("pending_excluded", "no"),), GAP),
+        ),
+        repair={
+            "port_scope_valid": "yes",
+            "port_scope_problem_summary": "-",
+            "b1_scope_groups_valid": "yes",
+            "b1_scope_group_count": "9",
+            "b1_scope_group_names": AC6_B1_1_GROUP_NAMES,
+            "b1_python_file_count": "245",
+            "case_path_mapping_valid": "yes",
+            "case_path_problem_count": "0",
+            "case_path_problem_summary": "-",
+            "case_count": "18",
+            "case_statuses_complete": "yes",
+            # token门禁状态枚举非凭据：这是 PASS 比较结果数量。
+            "case_pass_count": "14",  # nosec B105
+            "case_fail_count": "0",
+            "case_pending_count": "4",
+            "pending_excluded": "yes",
+            "compare_exit_code": "1",
+            "compare_exit_consistent": "yes",
+            "compare_report_temporary": "yes",
+            "compare_rtol": "1e-09",
+            "d10_failed": "no",
+            "passing_groups": "6",
+            "passing_group_names": "bond, fund, futures, index, option, stock_fundamental",
+            "required_groups": "2",
+            "group_coverage_percent": "66.67",
+            # token门禁状态枚举非凭据：这是通过的源路径数量。
+            "pass_files": "7",  # nosec B105
+            "file_coverage_percent": "2.86",
+            "pending_case_names": (
+                "stock_daily_raw, stock_daily_qfq, index_daily_em, fund_etf_daily_em"
+            ),
+            "fail_case_names": "-",
+            "sample_scope_note": "module-group denominator; file percentage is disclosed only",
+        },
+    ),
 )
 
 
@@ -10028,7 +14963,7 @@ def parse_items(text: str) -> list[DocItem]:
             continue
         section = SECTION_HEADING.match(line)
         if section:
-            group = None
+            group = None if section.group(1) == "10" else f"§{section.group(1)}"
             continue
         box = ITEM_LINE.match(line)
         if box and group:
@@ -10224,9 +15159,12 @@ def self_test_findings(
                     f"{probe.item} / {brk.label}: states facts no measure produces: {stray}"
                 )
                 continue
+            try:
+                mutated = resolve_break(clean, brk.facts)
+            except ValueError as exc:
+                failures.append(f"{probe.item} / {brk.label}: invalid counterfact: {exc}")
+                continue
             applied += 1
-            mutated = dict(clean)
-            mutated.update(brk.facts)
             if probe.judge(mutated).state != GAP:
                 failures.append(
                     f"{probe.item} / {brk.label}: the judge still says proven, so the item is not "

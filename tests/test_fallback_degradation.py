@@ -42,7 +42,7 @@ Shape = tuple[str, str, str, str]  # asset_class, domain, period, market
 
 #: Rows whose ranked legs do not share any shape, and why that is on purpose:
 #: C22 lists ``economy_gdp`` so the coverage guard cannot silently regress,
-#: while its two legs answer different questions (1Q/eu vs 1A/global).
+#: while its three legs answer different questions (1Q/eu, 1Q/us, 1A/global).
 SHAPE_SPLIT_EXCEPTIONS: frozenset[str] = frozenset({"economy_gdp"})
 
 #: Rows that advertise an order ``auto`` does not honor. ``fund_etf_daily``
@@ -186,14 +186,18 @@ class TestRankedLegsCanCompete:
         """
         assert shape_census("stock_action") == {("1D", "cn"): ["ths", "akshare"]}
 
-    def test_economy_gdp_exception_is_still_two_different_questions(self):
-        """A pinned exception stays one only while the shapes stay disjoint."""
-        assert shape_census("economy_gdp") == {("1Q", "eu"): ["ecb"], ("1A", "global"): ["imf"]}
+    def test_economy_gdp_exception_remains_disjoint_by_market_and_period(self):
+        """The pinned row's three legs still answer three distinct shapes."""
+        assert shape_census("economy_gdp") == {
+            ("1Q", "eu"): ["ecb"],
+            ("1Q", "us"): ["fred"],
+            ("1A", "global"): ["imf"],
+        }
 
     def test_economy_cpi_row_competes_where_it_claims_to(self):
-        """Three ranked legs, but only the 1M/eu pair can replace each other."""
+        """Only the 1M/eu pair competes; US monthly and global annual stay distinct."""
         assert shape_census("economy_cpi")[("1M", "eu")] == ["ecb", "oecd"]
-        assert leg_shapes("economy_cpi") == {("1M", "eu"), ("1A", "global")}
+        assert leg_shapes("economy_cpi") == {("1M", "eu"), ("1A", "global"), ("1M", "us")}
 
 
 class TestRowOrderIsTheOrderAutoUses:

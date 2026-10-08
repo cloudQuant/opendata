@@ -17,8 +17,10 @@ from typing import Any
 import httpx
 import pytest
 
+from opendata.data import registry as registry_module
 from opendata.data.capability import Capability
 from opendata.data.protocol import FetchContext, Fetcher, QueryParams
+from opendata.data.providers.ths.endpoints import FUND_ETF_DEPTH_DAYS
 from opendata.data.registry import ProviderRegistry
 from opendata.pipeline import patrol as patrol_module
 from opendata.pipeline.key_health import (
@@ -46,7 +48,6 @@ from opendata.pipeline.patrol import (
     rolling_futures_params,
     rolling_option_params,
 )
-from opendata_fuyao.endpoints import FUND_ETF_DEPTH_DAYS
 
 #: A Key-in-query source writes the query, and so the credential, into the
 #: message ``raise_for_status()`` raises. The patrol archives that message, so
@@ -123,6 +124,11 @@ def _registry(*fetchers: StubFetcher) -> ProviderRegistry:
     return registry
 
 
+def _allow_stub_ths_auto_route(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Make local THS stubs credential-eligible without user environment state."""
+    monkeypatch.setattr(registry_module, "_source_has_credentials", lambda source: source == "ths")
+
+
 @pytest.fixture
 def real_registry() -> ProviderRegistry:
     """The process registry with every bundled provider registered."""
@@ -194,6 +200,44 @@ class TestPatrol:
 
         assert results == []
 
+    async def test_explicit_selection_probes_only_the_selected_registered_leg(self):
+        selected = StubFetcher(_capability("stock_daily"))
+        excluded = StubFetcher(_capability("economy_cpi", source="ecb"))
+        registry = _registry(selected, excluded)
+
+        results = await patrol(registry, capabilities=[selected.capability])
+
+        assert [(result.domain, result.source) for result in results] == [("stock_daily", "ths")]
+        assert selected.calls == 1
+        assert excluded.calls == 0
+
+    async def test_one_selected_source_failure_does_not_stop_other_p0_legs(self):
+        failed = StubFetcher(_capability("stock_daily"), raise_on=RuntimeError("source down"))
+        healthy = StubFetcher(_capability("stock_action"))
+        registry = _registry(failed, healthy)
+
+        results = await patrol(registry, capabilities=[failed.capability, healthy.capability])
+
+        assert [(result.domain, result.ok) for result in results] == [
+            ("stock_daily", False),
+            ("stock_action", True),
+        ]
+        assert failed.calls == 2
+        assert healthy.calls == 1
+
+    async def test_selected_rolling_probe_keeps_full_registry_for_metadata_lookup(
+        self, offline_catalog: None
+    ):
+        selected = StubFetcher(_capability("option_daily"))
+        registry = _registry(selected)
+
+        results = await patrol(registry, capabilities=[selected.capability])
+
+        assert len(results) == 1
+        assert results[0].ok is True
+        assert selected.seen["symbol"] == "10011425.SH"
+        assert selected.calls == 1
+
     async def test_probe_uses_the_minimal_params(self):
         fetcher = StubFetcher(_capability("stock_daily"))
         registry = _registry(fetcher)
@@ -214,8 +258,9 @@ class TestPatrol:
         with pytest.raises(LookupError):
             registry.resolve("equity", "stock_daily", source="auto")
 
-    async def test_missing_probe_is_reported_without_blaming_the_source(self):
+    async def test_missing_probe_is_reported_without_blaming_the_source(self, monkeypatch):
         """An unconfigured probe is the patrol's gap, not a broken source."""
+        _allow_stub_ths_auto_route(monkeypatch)
         fetcher = StubFetcher(_capability("not_a_real_domain"))
         registry = _registry(fetcher)
 
@@ -231,7 +276,8 @@ class TestPatrol:
 class TestProbeRetry:
     """One blip is retried; a retry that saved the leg is named out loud."""
 
-    async def test_a_single_blip_is_retried_and_the_source_stays_routable(self):
+    async def test_a_single_blip_is_retried_and_the_source_stays_routable(self, monkeypatch):
+        _allow_stub_ths_auto_route(monkeypatch)
         fetcher = StubFetcher(
             _capability("stock_daily"),
             raise_on=RuntimeError("connection reset"),
@@ -624,6 +670,7 @@ class TestPatrolCanaryWiring:
         in exactly this column; pulling ths out of ``auto`` over it would take
         down ten healthy legs to report one hollow date.
         """
+        _allow_stub_ths_auto_route(monkeypatch)
         fetcher = StubFetcher(_capability("instrument"), returns=[_catalog_row(None)])
         registry = _registry(fetcher)
         marked: list[object] = []
@@ -726,6 +773,29 @@ class TestProbeParamCoverage:
             query = fetcher.transform_query(**params)
 
             assert set(params) <= set(query.model_fields_set)
+
+    @pytest.mark.parametrize(
+        ("domain", "period", "series_id"),
+        [
+            ("economy_cpi", "1M", "CPIAUCSL"),
+            ("economy_gdp", "1Q", "GDPC1"),
+            ("economy_unemployment", "1M", "UNRATE"),
+        ],
+        ids=["cpi-us-monthly", "gdp-us-quarterly", "unemployment-us-monthly"],
+    )
+    def test_fred_probe_uses_the_official_series_and_us_market(
+        self,
+        real_registry: ProviderRegistry,
+        domain: str,
+        period: str,
+        series_id: str,
+    ) -> None:
+        capability = real_registry.resolve("macro", domain, source="fred").capability
+        params = probe_params(capability, real_registry, today=date(2026, 9, 25))
+
+        assert capability.verified is True
+        assert (capability.period, capability.market) == (period, "us")
+        assert params["series_id"] == series_id
 
 
 class TestRollingProbes:
@@ -883,8 +953,13 @@ class TestHealthApi:
         # the row says presence-only, names what no check ruled out, and says so
         # in the note the operator reads.
         assert (data["sources"]["ths"]["configured"], ths["level"]) == (True, LEVEL_PRESENCE_ONLY)
-        assert "Key 有效" in ths["note"]
+        assert "issuer 未提供到期日" in ths["note"]
+        assert "状态未知" in ths["note"]
+        assert "本轮没有 401/403/429 观测或主动验证" in ths["note"]
+        assert "凭据有效性与剩余配额未知" in ths["note"]
+        assert "Key 有效" not in ths["note"]
         assert "key-expiry" in ths["unverified"]
+        assert CANARY not in response.text
         assert "api_key" not in response.text
 
     async def test_patrol_endpoint_grades_the_leg_that_failed(
@@ -913,6 +988,36 @@ class TestHealthApi:
         assert data["credential_health"]["ths"]["owner"] == "凭据负责人"
         assert CANARY not in response.text
         assert "api_key" not in response.text
+
+    async def test_manual_patrol_feeds_the_passive_key_health_store(
+        self, test_client, test_user_token, monkeypatch
+    ):
+        """The manual probe producer records only its sanitized class/status."""
+        from opendata.pipeline.key_health_notifications import (
+            _OBSERVATIONS,
+            recent_patrol_observations,
+        )
+
+        _OBSERVATIONS.clear()
+        registry = _registry(
+            StubFetcher(_capability("stock_daily"), raise_on=_leaky_error(429, "Too Many Requests"))
+        )
+        monkeypatch.setattr("opendata.api.pipeline.patrol", lambda: _patrol_done(registry))
+        try:
+            response = await test_client.post(
+                "/api/v1/health/patrol",
+                headers={"Authorization": f"Bearer {test_user_token}"},
+            )
+
+            snapshot = recent_patrol_observations()
+            assert response.status_code == 200
+            assert len(snapshot.observations) == 1
+            assert snapshot.observations[0].source == "ths"
+            assert snapshot.observations[0].failure_class == CLASS_QUOTA_EXHAUSTED
+            assert snapshot.observations[0].attribution == "status=429"
+            assert CANARY not in str(snapshot.observations)
+        finally:
+            _OBSERVATIONS.clear()
 
     async def test_patrol_endpoint_reports_probe_results(
         self, test_client, test_user_token, monkeypatch

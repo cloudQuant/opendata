@@ -14,11 +14,15 @@ from opendata.data.providers.fred.models._series import FredSeriesFetcher
 class FredGdpFetcher(FredSeriesFetcher):
     """Real GDP observations for one FRED series (for example ``GDPC1``)."""
 
+    async_mode = "bounded_thread"
+
+    #: Verified against 26 official GDPC1 CSV observations (date/value, rtol=1e-9).
+    #: Evidence: docs/evidence/C65/fred-official-comparison.json and .txt.
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_gdp",
         period="1Q",
         market="us",
         source=SOURCE,
-        verified=False,
+        verified=True,
     )

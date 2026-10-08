@@ -38,6 +38,8 @@ class UnemploymentQuery(QueryParams):
 class OecdUnemploymentFetcher(Fetcher[UnemploymentQuery, list[dict[str, object]]]):
     """Unemployment-rate observations for one LFS_INDIC series key."""
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_unemployment",

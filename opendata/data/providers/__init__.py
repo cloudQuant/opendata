@@ -1,41 +1,34 @@
-"""Self-developed provider registrations (design §1.4, license boundary).
+"""Lightweight public exports for the built-in provider catalog."""
 
-Fetchers wrapping the ported ``opendata_http`` tree are self-developed
-code and therefore live here, never inside ``opendata_http/`` itself
-(design "boundary is verifiable": the ported subtree stays a pristine
-MIT island). Overseas providers follow the same shape in their own
-packages once they land.
-"""
+from importlib import import_module
+from typing import TYPE_CHECKING
 
-from opendata.data.capability import Capability
+if TYPE_CHECKING:
+    from opendata.data.providers.catalog import PROVIDERS as PROVIDERS
+    from opendata.data.providers.catalog import fetchers_for as fetchers_for
+    from opendata.data.providers.catalog import get_provider as get_provider
+    from opendata.data.providers.catalog import health_check as health_check
+    from opendata.data.providers.catalog import list_providers as list_providers
+    from opendata.data.providers.catalog import register_provider as register_provider
+    from opendata.data.providers.catalog import register_providers as register_providers
+
+_CATALOG_EXPORTS = {
+    "PROVIDERS",
+    "fetchers_for",
+    "get_provider",
+    "health_check",
+    "list_providers",
+    "register_provider",
+    "register_providers",
+}
 
 
-def register_providers() -> list[Capability]:
-    """Register every bundled provider into the process registry.
+def __getattr__(name: str) -> object:
+    """Expose catalog operations without importing models at package import."""
+    if name not in _CATALOG_EXPORTS:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    catalog = import_module("opendata.data.providers.catalog")
+    return getattr(catalog, name)
 
-    Idempotent: capabilities already present are skipped, so repeated
-    startup calls (tests, multi-entry lifespan) never raise.
 
-    Returns:
-        The newly registered capabilities (empty when all were
-        already present).
-    """
-    # Lazy import: registration must not pull the ported tree (or any
-    # heavy module) into processes that never fetch (design §7.1).
-    from opendata.data.providers.akshare import register as register_akshare
-    from opendata.data.providers.ecb import register as register_ecb
-    from opendata.data.providers.fred import register as register_fred
-    from opendata.data.providers.imf import register as register_imf
-    from opendata.data.providers.oecd import register as register_oecd
-    from opendata.data.providers.ths import register as register_ths
-    from opendata.data.providers.yfinance import register as register_yfinance
-
-    return [
-        *register_akshare(),
-        *register_ecb(),
-        *register_fred(),
-        *register_imf(),
-        *register_oecd(),
-        *register_ths(),
-        *register_yfinance(),
-    ]
+__all__ = sorted(_CATALOG_EXPORTS)

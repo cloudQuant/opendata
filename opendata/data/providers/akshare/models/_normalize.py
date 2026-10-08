@@ -9,7 +9,7 @@ filters the caller's range locally.
 """
 
 from datetime import date
-from typing import cast
+from typing import Any, cast
 
 import pandas as pd
 
@@ -97,7 +97,9 @@ def as_date(value: object) -> date | None:
     """
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return None
-    parsed = pd.to_datetime(value, errors="coerce")
+    # A cell read from an upstream DataFrame has a dynamic scalar type;
+    # pandas owns coercion and invalid-value handling at this boundary.
+    parsed = pd.to_datetime(cast("Any", value), errors="coerce")
     if pd.isna(parsed):
         return None
     return cast("date", parsed.date())

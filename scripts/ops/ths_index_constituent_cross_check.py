@@ -38,7 +38,7 @@ import argparse
 import sys
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple, cast
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -122,14 +122,16 @@ def _ths_fetcher() -> Fetcher[Any, Any]:
 
 def _reference_members(symbol: str) -> tuple[set[str], date]:
     """Read 中证官网的当日成分股清单，返回裸码集合与其清单日期."""
-    import opendata_http
+    import opendata.data.providers.akshare._vendor as opendata_http
 
     frame = opendata_http.index_stock_cons_csindex(symbol=symbol)
     members = {str(code).strip().zfill(MEMBER_CODE_LENGTH) for code in frame["成分券代码"]}
     return members, max(frame["日期"])
 
 
-def _ours_members(fetcher: Fetcher[Any, Any], symbol: str) -> tuple[list[IndexConstituent], Any]:
+def _ours_members(
+    fetcher: Fetcher[Any, Any], symbol: str
+) -> tuple[list[IndexConstituent], date | None]:
     """Fetch one index through the routing path, with the burst-limit backoff.
 
     Args:
@@ -145,7 +147,7 @@ def _ours_members(fetcher: Fetcher[Any, Any], symbol: str) -> tuple[list[IndexCo
     last: Exception | None = None
     for attempt in range(RETRY_ATTEMPTS):
         try:
-            rows = list(fetcher.fetch(symbol=symbol))
+            rows = cast("list[IndexConstituent]", list(fetcher.fetch(symbol=symbol)))
             return rows, rows[0].as_of if rows else None
         except Exception as exc:  # noqa: PERF203  # 上游断连是瞬时的：重试而不是放弃
             # 把「跑不通」和「数据不对」分开：只有重试用尽才算这条腿失败。
@@ -411,8 +413,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", default="docs/evidence/C9/ths-index-constituent-cross-check.txt")
     args = parser.parse_args(argv)
 
+    from opendata.data.providers.ths.endpoints import INDEX_CONSTITUENTS_ENDPOINT
     from opendata.data.providers.ths.models.index_constituent import ThsIndexConstituentFetcher
-    from opendata_fuyao.endpoints import INDEX_CONSTITUENTS_ENDPOINT
 
     fetcher = _ths_fetcher()
     if not isinstance(fetcher, ThsIndexConstituentFetcher):  # 路由必须落在这一条腿上

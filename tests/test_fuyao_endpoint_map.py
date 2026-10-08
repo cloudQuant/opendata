@@ -15,7 +15,7 @@ import pytest
 import yaml
 
 from opendata.data.domains import load_domains
-from opendata_fuyao.endpoint_map import (
+from opendata.data.providers.ths.endpoint_map import (
     ENDPOINT_MAP_PATH,
     FAMILIES,
     STATUSES,

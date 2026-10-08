@@ -21,7 +21,7 @@ C22 补了四条宏观权威行，也留了一条明确的覆盖面边界：它�
 是各自有理由的（C22 实测过 ``economy_rate``；另外三条是本轮去假腿之后剩下的真实
 单腿），所以本模块把它们钉成显式清单，而不是让"要不要写行"重新变成随手的事。
 
-这里全部按活注册表（``register_providers()`` 之后的 33 条能力）判，而不是按某个
+这里全部按活注册表（``register_providers()`` 之后的 44 条能力）判，而不是按某个
 手写的腿清单判——那正是 C22 遗留、本轮要收掉的那条边界。谁排在前面不在本模块的
 判据里：那是真机跨 vendor 对照的事（``tests/test_macro_routing.py`` 与
 ``docs/evidence/C22``）。本模块只保证"表说的腿确实存在，存在的腿确实归表管"。
@@ -54,6 +54,24 @@ PHANTOM_PAIRS: tuple[tuple[str, str], ...] = (
 #: ``fund_action`` is ths-only, ``stock_daily_overseas`` is yfinance-only.
 SINGLE_SOURCE_EXEMPTIONS: frozenset[str] = frozenset(
     {"bond_daily", "fund_action", "stock_daily_overseas"}
+)
+
+# Query-native domains are absent from the authority table while their model
+# bindings remain unverified and outside the legacy warehouse table plan.
+NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
+    {
+        "bls_search",
+        "bls_series",
+        "currency_reference_rates",
+        "equity_historical",
+        "equity_quote",
+        "fred_search",
+        "fred_series",
+        "sofr",
+        "sonia",
+        "balance_of_payments",
+        "yield_curve",
+    }
 )
 
 #: Domains served by one source but still holding a row. Each is a real leg, not
@@ -144,13 +162,59 @@ class TestLiveTableMatchesLiveRegistry:
         assert set(authority_baseline()) == multi_source | SINGLE_SOURCE_ROWS
 
     def test_domains_without_a_row_are_exactly_the_single_source_ones(self):
-        """The gap is only the size AC-10 signed up for - nothing unranked hides in it."""
+        """Separate deliberate single-source gaps from native model domains."""
         served = sources_per_domain()
         unlisted = set(served) - set(authority_baseline())
 
-        assert unlisted == SINGLE_SOURCE_EXEMPTIONS
-        for domain in unlisted:
+        assert SINGLE_SOURCE_EXEMPTIONS.isdisjoint(NATIVE_MODEL_DOMAINS)
+        assert unlisted == SINGLE_SOURCE_EXEMPTIONS | NATIVE_MODEL_DOMAINS
+        for domain in SINGLE_SOURCE_EXEMPTIONS:
             assert len(served[domain]) == 1
+
+        specs = load_domains()
+        registry = get_registry()
+        native_descriptors = {
+            domain: [
+                descriptor
+                for descriptor in registry.list_model_descriptors()
+                if descriptor.domain == domain
+            ]
+            for domain in NATIVE_MODEL_DOMAINS
+        }
+        assert set(native_descriptors) == NATIVE_MODEL_DOMAINS
+        assert all(len(descriptors) == 1 for descriptors in native_descriptors.values())
+        for domain, descriptors in native_descriptors.items():
+            spec = specs[domain]
+            descriptor = descriptors[0]
+            fetcher = registry.resolve_model(descriptor.source, descriptor.model)
+            capability = fetcher.capability
+
+            assert spec.semantics_declared is True
+            assert "query" in spec.permissions
+            assert len(served[domain]) == 1
+            assert descriptor.source in served[domain]
+            assert descriptor.model == fetcher.canonical_model
+            assert descriptor.full_capability_identity == (
+                capability.asset_class,
+                capability.domain,
+                capability.period,
+                capability.market,
+                capability.source,
+            )
+            assert capability.domain == domain
+            assert descriptor.verified is False
+            assert capability.verified is False
+
+        # This is the registry-derived legacy table plan only; it does not
+        # query a warehouse or assert that any planned table exists there.
+        from opendata.pipeline.alert_matrix import warehouse_tables
+
+        planned_tables = warehouse_tables()
+        assert all(f"dwd_{domain}" not in planned_tables for domain in NATIVE_MODEL_DOMAINS)
+        assert all(
+            not any(table.startswith(f"ods_{domain}_") for table in planned_tables)
+            for domain in NATIVE_MODEL_DOMAINS
+        )
 
     def test_declared_domains_are_either_served_or_named_as_unserved(self):
         served = sources_per_domain()
@@ -172,9 +236,8 @@ class TestLiveTableMatchesLiveRegistry:
         }
 
         assert reconcile_authority(live_capabilities(), baseline=table) == (
-            # The count names every source serving the domain, verified or not:
-            # economy_gdp has an unverified fred leg too, and saying "3" is what
-            # tells a reader which legs a missing row would have ranked.
+            # The count names every source serving the domain, whether or not it
+            # has the credential required by auto routing.
             "unlisted-domain: economy_gdp is served by 3 sources but has no row",
             "unlisted-domain: stock_daily is served by 2 sources but has no row",
         )
@@ -229,13 +292,7 @@ class TestReconciliationRules:
         assert reconcile_authority(caps, baseline={}) == ()
 
     def test_unverified_leg_may_stay_out_of_the_table(self):
-        """The exempt direction, tested or the rule is wrong.
-
-        ``fred`` legs are unverified and key-required, so they never enter
-        ``source=auto`` ranking; demanding a row for them would claim a
-        cross-market ordering that ``_reject_cross_market_auto`` makes
-        unreachable - which is why the shipped ``economy_*`` rows omit it.
-        """
+        """A synthetic unverified leg does not need ranking in the authority table."""
         caps = [
             _cap("economy_cpi", "ecb", asset_class="macro", period="1M", market="eu"),
             _cap(

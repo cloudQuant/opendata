@@ -2,7 +2,7 @@
 """Upstream sync drill (AC-12 / C2): diff the locked commit vs a new ref.
 
 The ported tree is frozen to the commit recorded in
-``opendata_http/upstream.lock`` (design §12). When upstream moves, the
+``opendata/data/providers/akshare/_vendor/upstream.lock`` (design §12). When upstream moves, the
 sync flow is ``diff → 评估 → port_module 重跑 → 对照 → 提交``; this
 tool is the first step - it answers "what changed upstream" without
 touching the ported tree:
@@ -40,7 +40,9 @@ if TYPE_CHECKING:
 
 # The ported tree lives next to this script's package parent.
 REPO_ROOT = Path(__file__).resolve().parents[2]
-LOCK_PATH = REPO_ROOT / "opendata_http" / "upstream.lock"
+LOCK_PATH = (
+    REPO_ROOT / "opendata" / "data" / "providers" / "akshare" / "_vendor" / "upstream.lock"
+)
 
 
 @dataclass(frozen=True)
@@ -153,6 +155,22 @@ def _git(cwd: Path, *args: str) -> str:
     return result.stdout
 
 
+def _git_bytes(cwd: Path, *args: str) -> bytes:
+    """Run git without decoding output, for provenance hashes of resources."""
+    result = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, no shell
+        [_git_exe(), *args],
+        cwd=cwd,
+        capture_output=True,
+        shell=False,
+        check=False,
+    )
+    if result.returncode != 0:
+        stderr = result.stderr.decode("utf-8", errors="replace").strip()
+        stdout = result.stdout.decode("utf-8", errors="replace").strip()
+        raise UpstreamSyncError(f"git {' '.join(args)} failed: {stderr or stdout}")
+    return result.stdout
+
+
 def changed_files(repo: Path, base: str, head: str) -> list[FileChange]:
     """List the files changed between two commits.
 
@@ -258,11 +276,19 @@ def verify_lock(repo: Path, lock: dict) -> list[str]:
     for entry in lock["files"]:
         upstream_path = entry.get("upstream_path") or f"akshare/{entry['path']}"
         try:
-            blob = _git(repo, "show", f"{base}:{upstream_path}")
+            blob = _git_bytes(repo, "show", f"{base}:{upstream_path}")
+            if upstream_path.endswith(".py"):
+                # Python source locks are based on UTF-8 text read with
+                # universal newline handling; resources are exact raw bytes.
+                digest_source = (
+                    blob.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n").encode("utf-8")
+                )
+            else:
+                digest_source = blob
         except UpstreamSyncError:
             drifted.append(f"{upstream_path}: missing at {base}")
             continue
-        digest = hashlib.sha256(blob.encode("utf-8")).hexdigest()
+        digest = hashlib.sha256(digest_source).hexdigest()
         if digest != entry["sha256"]:
             drifted.append(
                 f"{upstream_path}: sha256 {digest[:16]}... != locked {entry['sha256'][:16]}..."

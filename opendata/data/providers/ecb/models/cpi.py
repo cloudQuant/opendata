@@ -14,6 +14,8 @@ from opendata.data.providers.ecb.models._series import EcbSeriesFetcher
 class EcbCpiFetcher(EcbSeriesFetcher):
     """HICP observations for one ECB series (for example the euro-area ANR)."""
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_cpi",

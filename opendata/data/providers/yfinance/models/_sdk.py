@@ -13,7 +13,7 @@ function.
 from __future__ import annotations
 
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import pandas as pd
 
@@ -66,7 +66,8 @@ def require_history_frame(
         history_kwargs["end"] = (end + timedelta(days=1)).isoformat()
     if timeout is not None:
         history_kwargs["timeout"] = timeout
-    return yfinance.Ticker(symbol.strip()).history(**history_kwargs)
+    history = yfinance.Ticker(symbol.strip()).history(**history_kwargs)
+    return cast("pd.DataFrame | None", history)
 
 
 def require_split_history(symbol: str) -> pd.Series:
@@ -99,7 +100,7 @@ def require_split_history(symbol: str) -> pd.Series:
     if isinstance(splits, pd.DataFrame):
         column = "Stock Splits" if "Stock Splits" in splits.columns else splits.columns[0]
         splits = splits[column]
-    return pd.Series(splits).astype("float64")
+    return cast("pd.Series", pd.Series(splits).astype("float64"))
 
 
 def _require_sdk() -> Any:  # noqa: ANN401  # untyped optional SDK

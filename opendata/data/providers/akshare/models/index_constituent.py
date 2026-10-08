@@ -6,7 +6,7 @@ as the contract specifies; the exchange disambiguation (Shanghai /
 Shenzhen / inter-bank code columns) is already resolved upstream.
 """
 
-from typing import ClassVar
+from typing import ClassVar, cast
 
 import pandas as pd
 
@@ -38,6 +38,8 @@ class AkshareIndexConstituentFetcher(Fetcher[IndexConstituentQuery, pd.DataFrame
     itself, not metadata. See ``docs/evidence/C34/``; a flip needs a re-run of
     that sweep with no mismatch left.
     """
+
+    async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(
         asset_class="index",
@@ -72,9 +74,13 @@ class AkshareIndexConstituentFetcher(Fetcher[IndexConstituentQuery, pd.DataFrame
         Returns:
             The upstream frame with resolved constituent codes.
         """
-        import opendata_http  # lazy: load the ported tree on routing only
+        # lazy: load the ported tree on routing only
+        import opendata.data.providers.akshare._vendor as opendata_http
 
-        return opendata_http.index_stock_cons_weight_csindex(symbol=plain_symbol(params.symbol))
+        return cast(
+            "pd.DataFrame",
+            opendata_http.index_stock_cons_weight_csindex(symbol=plain_symbol(params.symbol)),
+        )
 
     def transform_data(self, raw: pd.DataFrame, params: IndexConstituentQuery) -> FetchResult:
         """Normalize the weight file into contract rows.

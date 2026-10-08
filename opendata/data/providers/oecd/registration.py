@@ -1,50 +1,31 @@
-"""Capability registration for the oecd source (C1 P0).
-
-One fetcher per implemented domain; the HTTP access lives in
-``models/_client.py`` so registration never touches the network.
-"""
+"""Compatibility registration facade for oecd."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from opendata.data.providers.oecd.models.cpi import OecdCpiFetcher
-from opendata.data.providers.oecd.models.unemployment import OecdUnemploymentFetcher
+from opendata.data.providers.catalog import fetchers_for, register_provider
 
 if TYPE_CHECKING:
+    from typing import Any
+
     from opendata.data.capability import Capability
     from opendata.data.protocol import Fetcher
     from opendata.data.registry import ProviderRegistry
 
-#: The implemented oecd fetchers.
-FETCHERS: tuple[Fetcher[Any, Any], ...] = (
-    OecdCpiFetcher(),
-    OecdUnemploymentFetcher(),
-)
+    FETCHERS: tuple[Fetcher[Any, Any], ...]
 
 
 def register(registry: ProviderRegistry | None = None) -> list[Capability]:
-    """Register the oecd fetchers into the registry, idempotently.
+    """Register oecd's provider-described fetchers into the registry."""
+    return register_provider("oecd", registry)
 
-    Args:
-        registry: Target registry; defaults to the process-wide singleton.
 
-    Returns:
-        The capabilities newly registered by this call.
-    """
-    if registry is None:
-        from opendata.data.registry import get_registry
-
-        registry = get_registry()
-    existing = {(capability.domain, capability.source) for capability in registry.capabilities()}
-    registered: list[Capability] = []
-    for fetcher in FETCHERS:
-        capability = fetcher.capability
-        if (capability.domain, capability.source) in existing:
-            continue
-        registry.register(fetcher)
-        registered.append(capability)
-    return registered
+def __getattr__(name: str) -> tuple[Fetcher[Any, Any], ...]:
+    """Project the legacy ``FETCHERS`` export from the provider descriptor."""
+    if name == "FETCHERS":
+        return fetchers_for("oecd")
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 __all__ = ["FETCHERS", "register"]

@@ -63,6 +63,10 @@ request.interceptors.response.use(
     return res.data ?? res
   },
   async (error: AxiosError) => {
+    if (axios.isCancel(error)) {
+      return Promise.reject(error)
+    }
+
     const authStore = useAuthStore()
 
     if (error.response) {

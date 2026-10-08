@@ -42,7 +42,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import date, timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
@@ -104,12 +104,15 @@ def _legs(
     def fetch_instruments() -> Sequence[object]:
         rows: list[object] = []
         for asset_type in asset_types:
-            rows.extend(catalog.fetch(ctx=ctx, asset_type=asset_type))
+            rows.extend(cast("Sequence[object]", catalog.fetch(ctx=ctx, asset_type=asset_type)))
         return rows
 
     def fetch_calendar() -> Sequence[object]:
-        return calendar.fetch(
-            ctx=ctx, exchange=exchange, start_date=window.start, end_date=window.end
+        return cast(
+            "Sequence[object]",
+            calendar.fetch(
+                ctx=ctx, exchange=exchange, start_date=window.start, end_date=window.end
+            ),
         )
 
     return fetch_instruments, fetch_calendar

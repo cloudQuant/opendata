@@ -11,7 +11,7 @@ multiplies by 100. ``adjust`` is exposed because the upstream offers
 qfq/hfq klines, but the contract stays unadjusted by default (D10).
 """
 
-from typing import ClassVar
+from typing import ClassVar, cast
 
 import pandas as pd
 
@@ -34,6 +34,8 @@ class FundEtfDailyQuery(QueryParams):
 
 class AkshareFundEtfDailyFetcher(Fetcher[FundEtfDailyQuery, pd.DataFrame]):
     """Daily OHLCV bars for one on-exchange ETF (e.g. ``510300``)."""
+
+    async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(
         asset_class="fund",
@@ -69,14 +71,20 @@ class AkshareFundEtfDailyFetcher(Fetcher[FundEtfDailyQuery, pd.DataFrame]):
         Returns:
             The upstream frame (Chinese columns, volume in lots).
         """
-        import opendata_http  # lazy: load the ported tree on routing only
+        # lazy: load the ported tree on routing only
+        import opendata.data.providers.akshare._vendor as opendata_http
 
-        return opendata_http.fund_etf_hist_em(
-            symbol=plain_symbol(params.symbol),
-            period="daily",
-            start_date=params.start_date.strftime("%Y%m%d") if params.start_date else "19700101",
-            end_date=params.end_date.strftime("%Y%m%d") if params.end_date else "20500101",
-            adjust=params.adjust,
+        return cast(
+            "pd.DataFrame",
+            opendata_http.fund_etf_hist_em(
+                symbol=plain_symbol(params.symbol),
+                period="daily",
+                start_date=params.start_date.strftime("%Y%m%d")
+                if params.start_date
+                else "19700101",
+                end_date=params.end_date.strftime("%Y%m%d") if params.end_date else "20500101",
+                adjust=params.adjust,
+            ),
         )
 
     def transform_data(self, raw: pd.DataFrame, params: FundEtfDailyQuery) -> FetchResult:

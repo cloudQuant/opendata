@@ -15,6 +15,10 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from opendata.core.api_key_rate_limit import (
+    APIKeyRateLimitUnavailableError,
+    api_key_rate_limiter,
+)
 from opendata.core.config import settings
 from opendata.core.database import get_db
 from opendata.core.security import verify_token
@@ -189,6 +193,19 @@ async def get_current_principal(
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="API key owner is disabled",
+            )
+        try:
+            retry_after = await api_key_rate_limiter.check(record.id, record.rate_limit)
+        except APIKeyRateLimitUnavailableError:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="API key rate limiter unavailable",
+            ) from None
+        if retry_after is not None:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="API key request limit exceeded",
+                headers={"Retry-After": str(max(1, retry_after))},
             )
         return Principal(user=owner, api_key_id=record.id, scopes=tuple(record.scopes or ()))
 

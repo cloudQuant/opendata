@@ -24,14 +24,20 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# A2 scope: only paths that exist now or are created by iteration 1. Missing
-# directories are skipped silently, which is safe because the list is fixed and
-# a directory cannot disappear without a scope change being reviewed here.
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.quality.source_layout import (  # noqa: E402
+    FIRST_PARTY,
+    SourceLayoutError,
+    iter_unique_python_files,
+)
+
+# A2 scope: all roots are required to exist and contain source files. The
+# merged Fuyao transport is covered once through opendata/data.
 A2_SCOPE = (
     "opendata/data",
     "opendata/pipeline",
-    "opendata_fuyao",
-    "opendata_providers",
     "opendata_client",
     "scripts/quality",
     "scripts/codemod",
@@ -136,14 +142,12 @@ def collect_symbols(source: str, file: str) -> list[Symbol]:
 
 def iter_files() -> list[Path]:
     """Return every Python file in the A2 scope."""
-    files: list[Path] = []
-    for entry in A2_SCOPE:
-        base = REPO_ROOT / entry
-        if base.is_dir():
-            files.extend(
-                path for path in sorted(base.rglob("*.py")) if "__pycache__" not in path.parts
-            )
-    return files
+    sources = iter_unique_python_files(
+        REPO_ROOT,
+        A2_SCOPE,
+        layers=frozenset({FIRST_PARTY}),
+    )
+    return [source.path for source in sources]
 
 
 def report() -> int:
@@ -182,7 +186,11 @@ def main(argv: list[str] | None = None) -> int:
     """Run the public API check from the command line."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.parse_args(argv)
-    return report()
+    try:
+        return report()
+    except SourceLayoutError as exc:
+        print(f"FAIL: public API scan surface is broken: {exc}", file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":

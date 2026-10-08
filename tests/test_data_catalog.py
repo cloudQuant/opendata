@@ -15,6 +15,7 @@ recreate the production schema or skip. The HTTP shape stays covered by
 """
 
 from datetime import date
+from typing import Any, get_type_hints
 
 import pytest
 from sqlalchemy import (
@@ -33,11 +34,25 @@ from sqlalchemy import (
 
 from opendata.api import data_query
 from opendata.api.dependencies import Principal
-from opendata.data.domains import dwd_table, ods_table
+from opendata.data.capability import Capability
+from opendata.data.domains import dwd_table, load_domains, ods_table
+from opendata.data.protocol import Fetcher
 from opendata.data.providers import register_providers
+from opendata.data.providers.fred.models.search import FredSearchFetcher
+from opendata.data.registry import ProviderRegistry, get_registry
 from opendata.models.user import User
 
 EXPECTED = date(2026, 9, 25)
+PROVIDER_MODEL_DOMAINS = frozenset(
+    {
+        "fred_search",
+        "fred_series",
+        "bls_search",
+        "bls_series",
+        "equity_historical",
+        "equity_quote",
+    }
+)
 
 
 @pytest.fixture(autouse=True)
@@ -141,6 +156,21 @@ def warehouse(monkeypatch: pytest.MonkeyPatch):
     engine.dispose()
 
 
+@pytest.fixture
+def provider_model_domains_unmapped(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep metadata-only counterfactuals explicit as DomainSpecs are added."""
+    domain_specs = load_domains()
+    monkeypatch.setattr(
+        data_query,
+        "load_domains",
+        lambda: {
+            domain: spec
+            for domain, spec in domain_specs.items()
+            if domain not in PROVIDER_MODEL_DOMAINS
+        },
+    )
+
+
 def _bar(symbol: str, day: date, flag: int) -> dict:
     return {
         "symbol": symbol,
@@ -223,11 +253,359 @@ class TestFiveReadings:
 
     async def test_the_totals_describe_the_rows_the_caller_got(self, warehouse) -> None:
         data = await _catalog(warehouse)
+        legacy_domains = {
+            domain for domain, spec in load_domains().items() if not spec.semantics_declared
+        }
+        expected_domains = set(data_query.registered_legs()) | {
+            capability.domain for capability in get_registry().capabilities()
+        }
 
         assert data["domains_total"] == len(data["domains"])
         assert data["source_legs_total"] == sum(len(row["sources"]) for row in data["domains"])
         assert data["expected_data_date"] == EXPECTED.isoformat()
-        assert {row["domain"] for row in data["domains"]} == set(data_query.registered_legs())
+        assert data["domains_total"] == len(expected_domains)
+        assert {row["domain"] for row in data["domains"]} == expected_domains
+        assert all(
+            row["domain_defined"] is True and row["service_state"] == "warehouse"
+            for row in data["domains"]
+            if row["domain"] in legacy_domains
+        )
+
+    async def test_markets_and_registered_callable_details_follow_capabilities(
+        self, warehouse
+    ) -> None:
+        """Market groups and function metadata come from the live registry."""
+        data = await _catalog(warehouse)
+        capabilities = get_registry().capabilities()
+        rows = {row["domain"]: row for row in data["domains"]}
+        expected_markets: dict[str, set[str]] = {}
+        for capability in capabilities:
+            market = capability.market.strip()
+            if market:
+                expected_markets.setdefault(capability.domain, set()).add(market)
+
+        assert data["markets"] == sorted(
+            {market for markets in expected_markets.values() for market in markets}
+        )
+        for domain, markets in expected_markets.items():
+            assert rows[domain]["markets"] == sorted(markets)
+            assert {
+                (item["market"], item["source"], item["period"])
+                for item in rows[domain]["capabilities"]
+            } == {
+                (cap.market, cap.source, cap.period) for cap in capabilities if cap.domain == domain
+            }
+        assert set(rows) == set(data_query.registered_legs()) | set(expected_markets)
+
+        multi_market = next(
+            domain for domain, markets in expected_markets.items() if len(markets) > 1
+        )
+        assert rows[multi_market]["markets"] == sorted(expected_markets[multi_market])
+
+        stock_capability = next(
+            capability
+            for capability in capabilities
+            if capability.domain == "stock_daily" and capability.source == "akshare"
+        )
+        function = next(
+            item
+            for item in rows["stock_daily"]["capabilities"]
+            if item["source"] == stock_capability.source
+        )
+        fetcher = get_registry().resolve(
+            stock_capability.asset_class,
+            stock_capability.domain,
+            period=stock_capability.period,
+            market=stock_capability.market,
+            source=stock_capability.source,
+        )
+        assert function["callable"] == {
+            "module": type(fetcher).__module__,
+            "name": f"{type(fetcher).__name__}.fetch",
+        }
+        assert function["endpoint"] == {
+            "name": "query_domain_data",
+            "method": "GET",
+            "path": "/api/v1/data/equity/stock_daily",
+            "query_filters": {"source": "akshare", "period": "1D"},
+        }
+        assert function["model_query_endpoint"] is None
+        assert {parameter["name"] for parameter in function["parameters"]} >= {
+            "symbol",
+            "source",
+            "market",
+        }
+
+    async def test_undeclared_model_domains_are_metadata_only(
+        self, warehouse, provider_model_domains_unmapped
+    ) -> None:
+        data = await _catalog(warehouse)
+        registry = get_registry()
+        capabilities = registry.capabilities()
+        declared_domains = set(data_query.load_domains())
+        model_domains = {capability.domain for capability in capabilities} - declared_domains
+        rows = {row["domain"]: row for row in data["domains"]}
+        descriptors_by_domain: dict[str, set[str]] = {}
+        for descriptor in registry.list_model_descriptors():
+            descriptors_by_domain.setdefault(descriptor.domain, set()).add(descriptor.model)
+
+        assert model_domains == {
+            "bls_search",
+            "bls_series",
+            "equity_historical",
+            "equity_quote",
+            "fred_search",
+            "fred_series",
+        }
+        for domain in model_domains:
+            domain_capabilities = [cap for cap in capabilities if cap.domain == domain]
+            row = rows[domain]
+
+            assert row["domain_defined"] is False
+            assert row["service_state"] == "metadata_only"
+            assert row["reason"] == "domain_not_declared"
+            assert row["status"] == "unmapped"
+            assert row["display_name"] == " / ".join(sorted(descriptors_by_domain[domain]))
+            assert row["asset_class"] == domain_capabilities[0].asset_class
+            assert row["markets"] == sorted({cap.market for cap in domain_capabilities})
+            for field in (
+                "layer",
+                "table",
+                "freshness_field",
+                "latest",
+                "lag_days",
+                "coverage",
+                "quality",
+            ):
+                assert row[field] is None
+
+            capability_rows = row["capabilities"]
+            assert {
+                (
+                    item["asset_class"],
+                    item["domain"],
+                    item["period"],
+                    item["market"],
+                    item["source"],
+                )
+                for item in capability_rows
+            } == {
+                (cap.asset_class, cap.domain, cap.period, cap.market, cap.source)
+                for cap in domain_capabilities
+            }
+            assert all(item["endpoint"] is None for item in capability_rows)
+            assert all(item["model_query_endpoint"] is None for item in capability_rows)
+            for capability in domain_capabilities:
+                item = next(
+                    item
+                    for item in capability_rows
+                    if item["source"] == capability.source
+                    and item["period"] == capability.period
+                    and item["market"] == capability.market
+                )
+                fetcher = registry.resolve(
+                    capability.asset_class,
+                    capability.domain,
+                    period=capability.period,
+                    market=capability.market,
+                    source=capability.source,
+                )
+                assert item["verified"] == capability.verified
+                assert item["callable"] == {
+                    "module": type(fetcher).__module__,
+                    "name": f"{type(fetcher).__name__}.fetch",
+                }
+                query_model = get_type_hints(type(fetcher).transform_query)["return"]
+                assert {parameter["name"] for parameter in item["parameters"]} == set(
+                    query_model.model_fields
+                )
+            assert {item["source"] for item in row["sources"]} == {
+                cap.source for cap in domain_capabilities
+            }
+            for leg in row["sources"]:
+                matching = [cap for cap in domain_capabilities if cap.source == leg["source"]]
+                assert leg["verified"] == all(cap.verified for cap in matching)
+                assert leg["table"] is None
+                assert leg["status"] == "unmapped"
+                assert leg["reason"] == "domain_not_declared"
+                assert leg["latest"] is None
+                assert leg["lag_days"] is None
+
+    async def test_metadata_only_domains_bypass_warehouse_helpers_and_fetchers(
+        self, warehouse, monkeypatch: pytest.MonkeyPatch, provider_model_domains_unmapped
+    ) -> None:
+        capabilities = get_registry().capabilities()
+        unknown_domains = {cap.domain for cap in capabilities} - set(data_query.load_domains())
+        assert unknown_domains
+
+        def reject_unknown(domain: str, *, original):
+            if domain in unknown_domains:
+                raise AssertionError(f"warehouse helper called for {domain}")
+            return original(domain)
+
+        original_dwd_table = data_query.dwd_table
+        original_display_name = data_query._display_name
+        monkeypatch.setattr(
+            data_query,
+            "dwd_table",
+            lambda domain: reject_unknown(domain, original=original_dwd_table),
+        )
+        monkeypatch.setattr(
+            data_query,
+            "_display_name",
+            lambda domain: reject_unknown(domain, original=original_display_name),
+        )
+
+        original_freshness = data_query._freshness
+
+        async def guarded_freshness(engine, domain, *args, **kwargs):
+            if domain in unknown_domains:
+                raise AssertionError(f"freshness helper called for {domain}")
+            return await original_freshness(engine, domain, *args, **kwargs)
+
+        monkeypatch.setattr(data_query, "_freshness", guarded_freshness)
+
+        original_coverage = data_query._coverage_facts
+
+        async def guarded_coverage(engine, domain, *args, **kwargs):
+            if domain in unknown_domains:
+                raise AssertionError(f"coverage helper called for {domain}")
+            return await original_coverage(engine, domain, *args, **kwargs)
+
+        monkeypatch.setattr(data_query, "_coverage_facts", guarded_coverage)
+
+        original_source_leg = data_query._source_leg
+
+        async def guarded_source_leg(engine, domain, *args, **kwargs):
+            if domain in unknown_domains:
+                raise AssertionError(f"source leg helper called for {domain}")
+            return await original_source_leg(engine, domain, *args, **kwargs)
+
+        monkeypatch.setattr(data_query, "_source_leg", guarded_source_leg)
+
+        patched_fetchers: set[type] = set()
+        for capability in capabilities:
+            if capability.domain not in unknown_domains:
+                continue
+            fetcher = get_registry().resolve(
+                capability.asset_class,
+                capability.domain,
+                period=capability.period,
+                market=capability.market,
+                source=capability.source,
+            )
+            fetcher_type = type(fetcher)
+            if fetcher_type in patched_fetchers:
+                continue
+
+            def reject_fetch(*_args, _domain=capability.domain, **_kwargs):
+                raise AssertionError(f"provider fetch called for {_domain}")
+
+            monkeypatch.setattr(fetcher_type, "fetch", reject_fetch)
+            patched_fetchers.add(fetcher_type)
+
+        data = await _catalog(warehouse)
+        assert unknown_domains <= {row["domain"] for row in data["domains"]}
+
+    async def test_metadata_only_source_verification_is_conservative_and_order_independent(
+        self, warehouse, monkeypatch: pytest.MonkeyPatch, provider_model_domains_unmapped
+    ) -> None:
+        live_registry = get_registry()
+        false_capability = next(
+            cap
+            for cap in live_registry.capabilities()
+            if cap.domain == "fred_search" and cap.source == "fred"
+        )
+        false_fetcher = live_registry.resolve(
+            false_capability.asset_class,
+            false_capability.domain,
+            period=false_capability.period,
+            market=false_capability.market,
+            source=false_capability.source,
+        )
+        true_capability = Capability(
+            asset_class=false_capability.asset_class,
+            domain=false_capability.domain,
+            period="snapshot_verified",
+            market=false_capability.market,
+            source=false_capability.source,
+            verified=True,
+            notes=false_capability.notes,
+        )
+
+        class VerifiedFredSearchFetcher(FredSearchFetcher):
+            capability = true_capability
+
+        true_fetcher = VerifiedFredSearchFetcher()
+
+        def registry_with_order(
+            source_fetchers: tuple[Fetcher[Any, Any], Fetcher[Any, Any]],
+        ) -> ProviderRegistry:
+            registry = ProviderRegistry()
+            for capability in live_registry.capabilities():
+                if capability.domain == "fred_search" and capability.source == "fred":
+                    continue
+                registry.register(
+                    live_registry.resolve(
+                        capability.asset_class,
+                        capability.domain,
+                        period=capability.period,
+                        market=capability.market,
+                        source=capability.source,
+                    )
+                )
+            for fetcher in source_fetchers:
+                registry.register(fetcher)
+            for descriptor in live_registry.list_model_descriptors():
+                asset_class, domain, period, market, source = descriptor.capability_identity
+                registry.register_model(
+                    descriptor.source,
+                    descriptor.model,
+                    registry.resolve(
+                        asset_class,
+                        domain,
+                        period=period,
+                        market=market,
+                        source=source,
+                    ),
+                )
+            return registry
+
+        orderings = (
+            ((false_fetcher, true_fetcher), [("snapshot", False), ("snapshot_verified", True)]),
+            ((true_fetcher, false_fetcher), [("snapshot_verified", True), ("snapshot", False)]),
+        )
+        for fetchers, expected_order in orderings:
+            registry = registry_with_order(fetchers)
+            registered = [
+                cap
+                for cap in registry.capabilities()
+                if cap.domain == "fred_search" and cap.source == "fred"
+            ]
+            assert [(cap.period, cap.verified) for cap in registered] == expected_order
+
+            with monkeypatch.context() as scoped_monkeypatch:
+                scoped_monkeypatch.setattr(
+                    data_query, "get_registry", lambda _registry=registry: _registry
+                )
+                data = await _catalog(warehouse)
+
+            row = next(item for item in data["domains"] if item["domain"] == "fred_search")
+            assert {item["period"]: item["verified"] for item in row["capabilities"]} == {
+                "snapshot": False,
+                "snapshot_verified": True,
+            }
+            assert row["sources"] == [
+                {
+                    "source": "fred",
+                    "verified": False,
+                    "table": None,
+                    "status": "unmapped",
+                    "reason": "domain_not_declared",
+                    "latest": None,
+                    "lag_days": None,
+                }
+            ]
 
 
 class TestUnmeasurableLegs:
@@ -277,6 +655,24 @@ class TestScopeFiltering:
 
         assert [row["domain"] for row in data["domains"]] == ["stock_daily"]
         assert data["domains_total"] == 1
+        assert data["markets"] == data["domains"][0]["markets"]
+
+    async def test_a_scope_for_an_unmapped_model_domain_does_not_leak_siblings(
+        self, warehouse, provider_model_domains_unmapped
+    ) -> None:
+        data = await _catalog(warehouse, scopes=("fred_search",))
+
+        assert [row["domain"] for row in data["domains"]] == ["fred_search"]
+        assert data["domains_total"] == 1
+        assert data["source_legs_total"] == 1
+        row = data["domains"][0]
+        assert row["domain_defined"] is False
+        assert row["asset_class"] == "macro"
+        assert {item["domain"] for item in row["capabilities"]} == {"fred_search"}
+        assert {item["source"] for item in row["capabilities"]} == {"fred"}
+        assert {item["source"] for item in row["sources"]} == {"fred"}
+        assert "bls_search" not in repr(data)
+        assert "fred_series" not in repr(data)
 
     async def test_a_scope_selects_exactly_the_domains_it_names(self, warehouse) -> None:
         data = await _catalog(warehouse, scopes=("stock_action", "index_constituent"))

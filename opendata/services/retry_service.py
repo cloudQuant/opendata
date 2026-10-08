@@ -116,6 +116,11 @@ class RetryService:
             f"original execution: {original_execution.execution_id}"
         )
 
+        script_id = task.script_id
+        if script_id is None:
+            logger.warning("Pipeline task retries are handled by the pipeline executor")
+            return False
+
         try:
             # Create new execution record for retry
             from opendata.services.execution_service import ExecutionService
@@ -124,7 +129,7 @@ class RetryService:
 
             new_execution = await execution_service.create_execution(
                 task_id=task.id,
-                script_id=task.script_id,
+                script_id=script_id,
                 params=task.parameters,
                 triggered_by=original_execution.triggered_by,
                 operator_id=original_execution.operator_id,
@@ -148,7 +153,7 @@ class RetryService:
 
             try:
                 result = await data_service.execute_script(
-                    task.script_id,
+                    script_id,
                     task.parameters or {},
                     task.timeout,
                 )

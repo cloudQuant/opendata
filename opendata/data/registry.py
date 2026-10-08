@@ -16,6 +16,10 @@ packages).
 from __future__ import annotations
 
 import json
+import keyword
+import logging
+import os
+from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -27,6 +31,32 @@ if TYPE_CHECKING:
     from opendata.data.protocol import Fetcher
 
 _AUTHORITY_PATH = Path(__file__).parent / "authority.json"
+_CREDENTIAL_REQUIREMENTS = {
+    "ths": ("FUYAO_API_KEY", "fuyao_api_key"),
+    "fred": ("FRED_API_KEY", "fred_api_key"),
+}
+logger = logging.getLogger(__name__)
+
+
+def _credential_environment_name(source: str) -> str | None:
+    """Return the environment variable that enables a credentialed source."""
+    requirement = _CREDENTIAL_REQUIREMENTS.get(source.lower())
+    return requirement[0] if requirement is not None else None
+
+
+def _source_has_credentials(source: str) -> bool:
+    """Check the same environment-then-settings key sources as provider clients."""
+    requirement = _CREDENTIAL_REQUIREMENTS.get(source.lower())
+    if requirement is None:
+        return True
+    environment_name, settings_name = requirement
+    value = os.environ.get(environment_name)
+    if value and value.strip():
+        return True
+    from opendata.core.config import get_settings
+
+    settings_value = getattr(get_settings(), settings_name, None)
+    return isinstance(settings_value, str) and bool(settings_value.strip())
 
 
 @lru_cache(maxsize=1)
@@ -144,6 +174,40 @@ def _capability_key(capability: Capability) -> str:
     )
 
 
+@dataclass(frozen=True)
+class ProviderModelDescriptor:
+    """Immutable provider/model identity derived from a registered capability."""
+
+    source: str
+    model: str
+    domain: str
+    capability_identity: tuple[str, str, str, str, str]
+    verified: bool
+
+    @property
+    def full_capability_identity(self) -> tuple[str, str, str, str, str]:
+        """Expose the complete routing identity under an explicit name."""
+        return self.capability_identity
+
+
+def _validate_model_identity(source: str, model: str) -> None:
+    """Reject malformed and auto-routed provider/model identities."""
+    if (
+        not isinstance(source, str)
+        or not source.isidentifier()
+        or keyword.iskeyword(source)
+        or source.casefold() == "auto"
+    ):
+        raise ValueError(f"invalid provider source identity: {source!r}")
+    if (
+        not isinstance(model, str)
+        or not model.isidentifier()
+        or keyword.iskeyword(model)
+        or model.casefold() == "auto"
+    ):
+        raise ValueError(f"invalid provider model identity: {model!r}")
+
+
 class ProviderRegistry:
     """Process-wide registry of data source fetchers (design §4.3).
 
@@ -160,6 +224,7 @@ class ProviderRegistry:
     def __init__(self) -> None:
         """Initialize an empty registry with all sources healthy."""
         self._fetchers: dict[str, Fetcher[Any, Any]] = {}
+        self._model_capability_keys: dict[tuple[str, str], str] = {}
         self._registration_order: dict[str, int] = {}
         self._healthy: dict[str, bool] = {}
 
@@ -182,6 +247,125 @@ class ProviderRegistry:
     def capabilities(self) -> list[Capability]:
         """List the capabilities of all registered fetchers."""
         return [fetcher.capability for fetcher in self._fetchers.values()]
+
+    def register_model(self, source: str, model: str, fetcher: Fetcher[Any, Any]) -> None:
+        """Bind one canonical provider/model identity to an already registered fetcher.
+
+        Model identity is a second index into the capability registry, not a
+        second fetcher store. The exact registered object must be supplied so
+        this operation cannot silently alias another implementation.
+        """
+        capability_key, (model_id,), _ = self._validate_model_bindings(
+            source, (model,), fetcher, allow_unregistered=False
+        )
+        self._model_capability_keys[(source, model_id)] = capability_key
+
+    def register_provider_models(
+        self,
+        source: str,
+        models: Iterable[str],
+        fetcher: Fetcher[Any, Any],
+    ) -> bool:
+        """Register a fetcher and its canonical model aliases as one checked operation.
+
+        Returns whether the capability itself was newly registered. Existing
+        same-object capability/model bindings are idempotent; collisions are
+        rejected before either the capability or model index is changed.
+        """
+        if isinstance(models, str):
+            raise TypeError("models must be an iterable of model identifiers, not a string")
+        model_ids = tuple(models)
+        if not model_ids:
+            raise ValueError("register_provider_models requires at least one model id")
+        capability_key, validated_ids, add_capability = self._validate_model_bindings(
+            source, model_ids, fetcher, allow_unregistered=True
+        )
+        if add_capability:
+            self.register(fetcher)
+        for model_id in validated_ids:
+            self._model_capability_keys[(source, model_id)] = capability_key
+        return add_capability
+
+    def _validate_model_bindings(
+        self,
+        source: str,
+        models: tuple[str, ...],
+        fetcher: Fetcher[Any, Any],
+        *,
+        allow_unregistered: bool,
+    ) -> tuple[str, tuple[str, ...], bool]:
+        """Validate all aliases before mutating the capability/model maps."""
+        if not models:
+            raise ValueError("provider model bindings must not be empty")
+        if len(models) != len(set(models)):
+            raise ValueError("provider model bindings must not contain duplicate ids")
+        for model in models:
+            _validate_model_identity(source, model)
+
+        capability = fetcher.capability
+        if capability.source != source:
+            raise ValueError(
+                f"fetcher source {capability.source!r} does not match provider {source!r}"
+            )
+        capability_key = _capability_key(capability)
+        registered_fetcher = self._fetchers.get(capability_key)
+        add_capability = registered_fetcher is None
+        if registered_fetcher is not fetcher and not (allow_unregistered and add_capability):
+            raise ValueError("provider model binding requires the exact registered fetcher object")
+
+        for model in models:
+            existing_key = self._model_capability_keys.get((source, model))
+            if existing_key is None:
+                continue
+            if existing_key != capability_key:
+                raise ValueError(
+                    f"provider model {source}/{model} is already bound to another capability"
+                )
+            if self._fetchers.get(existing_key) is not fetcher:
+                raise ValueError(
+                    "provider model binding requires the exact registered fetcher object"
+                )
+        return capability_key, models, add_capability
+
+    def resolve_model(self, source: str, model: str) -> Fetcher[Any, Any]:
+        """Resolve one explicit canonical provider/model identity without fallback."""
+        _validate_model_identity(source, model)
+        capability_key = self._model_capability_keys.get((source, model))
+        if capability_key is None:
+            raise LookupError(f"unknown provider model: {source}/{model}")
+        fetcher = self._fetchers.get(capability_key)
+        if fetcher is None:
+            raise RuntimeError(
+                f"provider model binding references missing capability: {source}/{model}"
+            )
+        return fetcher
+
+    def list_model_descriptors(self) -> tuple[ProviderModelDescriptor, ...]:
+        """Describe current provider/model bindings from the capability map."""
+        descriptors: list[ProviderModelDescriptor] = []
+        for (source, model), capability_key in self._model_capability_keys.items():
+            fetcher = self._fetchers.get(capability_key)
+            if fetcher is None:
+                raise RuntimeError(
+                    f"provider model binding references missing capability: {source}/{model}"
+                )
+            capability = fetcher.capability
+            descriptors.append(
+                ProviderModelDescriptor(
+                    source=source,
+                    model=model,
+                    domain=capability.domain,
+                    capability_identity=(
+                        capability.asset_class,
+                        capability.domain,
+                        capability.period,
+                        capability.market,
+                        capability.source,
+                    ),
+                    verified=capability.verified,
+                )
+            )
+        return tuple(descriptors)
 
     def mark_unavailable(self, fetcher: Fetcher[Any, Any]) -> None:
         """Mark a fetcher unhealthy so auto routing skips it.
@@ -263,13 +447,32 @@ class ProviderRegistry:
         )
         if market is None:
             self._reject_cross_market_auto(asset_class, domain, ranked)
+        missing_credentials: list[str] = []
         for key, fetcher in ranked:
-            if self._healthy.get(key, True):
-                return fetcher
+            if not self._healthy.get(key, True):
+                continue
+            source_name = fetcher.capability.source
+            credential_name = _credential_environment_name(source_name)
+            if credential_name is not None and not _source_has_credentials(source_name):
+                logger.warning(
+                    "AUTO_ROUTE_CREDENTIAL_MISSING source=%s domain=%s credential=%s",
+                    source_name,
+                    domain,
+                    credential_name,
+                )
+                missing_credentials.append(source_name)
+                continue
+            return fetcher
         if not ranked:
             raise LookupError(
                 f"no verified capability registered for {asset_class}/{domain} "
                 f"(period={period}, market={market})"
+            )
+        if missing_credentials:
+            sources = ", ".join(dict.fromkeys(missing_credentials))
+            raise LookupError(
+                f"no credential-eligible verified auto candidate for {asset_class}/{domain}; "
+                f"missing credentials for source(s): {sources}"
             )
         raise LookupError(f"all auto candidates for {asset_class}/{domain} are unavailable")
 

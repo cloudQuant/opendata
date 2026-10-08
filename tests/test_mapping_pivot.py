@@ -434,7 +434,7 @@ class TestMeltersFollowTheTable:
     """The declaration is load-bearing: change it and the melt moves."""
 
     def test_the_fuyao_group_accessor_reads_the_table(self, tmp_mappings):
-        from opendata_fuyao.endpoints import financial_statement_items
+        from opendata.data.providers.ths.endpoints import financial_statement_items
 
         _write_source(
             tmp_mappings,
@@ -449,8 +449,8 @@ class TestMeltersFollowTheTable:
         assert financial_statement_items("income") == ("only_this_item",)
 
     def test_the_fuyao_group_accessor_refuses_an_undeclared_statement(self, tmp_mappings):
-        from opendata_fuyao import FuyaoError
-        from opendata_fuyao.endpoints import financial_statement_items
+        from opendata.data.providers.ths import FuyaoError
+        from opendata.data.providers.ths.endpoints import financial_statement_items
 
         _write_source(tmp_mappings, "ths", {"financial_statement": _GROUPED})
 
@@ -487,7 +487,7 @@ class TestMeltersFollowTheTable:
         assert {row.item for row in fetcher.transform_data(frame, params)} == {"货币资金"}
 
     def test_the_em_announce_guard_names_the_declared_column(self, tmp_mappings, monkeypatch):
-        import opendata_http
+        import opendata.data.providers.akshare._vendor as opendata_http
         from opendata.data.protocol import FetchContext
         from opendata.data.providers.akshare.models.financial_indicator import (
             AkshareFinancialIndicatorFetcher,

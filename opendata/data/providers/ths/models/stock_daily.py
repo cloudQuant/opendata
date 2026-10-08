@@ -31,6 +31,8 @@ class ThsStockDailyFetcher(Fetcher[StockDailyQuery, tuple[Bar, ...]]):
     cases), which is what the flag means for a first-party client.
     """
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="stock_daily",
@@ -71,7 +73,7 @@ class ThsStockDailyFetcher(Fetcher[StockDailyQuery, tuple[Bar, ...]]):
         """
         from datetime import date, datetime, timezone
 
-        from opendata_fuyao.endpoints import fetch_daily_bars
+        from opendata.data.providers.ths.endpoints import fetch_daily_bars
 
         start = params.start_date or date(1990, 1, 1)
         end = params.end_date or datetime.now(timezone.utc).date()

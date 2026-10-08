@@ -28,3 +28,19 @@ templates:
     kind: freshness
     payload: {domains: all}
     note: "新鲜度与告警矩阵（A4.8）：测全部注册域的 dwd + 各源 ods，缺表即 critical 告警上 WS"
+  - name: retention-maintenance
+    cron: "0 4 * * *"
+    kind: retention
+    payload: {targets: bounded}
+    note: "默认仅报告候选数；仅 RETENTION_EXECUTION_ENABLED=true 执行有界清理"
+  - name: key-health-notifications
+    cron: "0 9 * * *"
+    kind: key_health
+    payload: {observations: recent-patrol}
+    note: "仅消费近期手动巡检分类和 issuer 到期元数据，不主动请求上游；余量未知"
+  - name: p0-provider-patrol
+    cron: "0 18 * * *"
+    timezone: UTC
+    kind: scheduled_patrol
+    payload: {tier: P0}
+    note: "每日 18:00 UTC 占位时点待真实业务时间校准；仅 PATROL_ENABLED=true 时主动巡检"

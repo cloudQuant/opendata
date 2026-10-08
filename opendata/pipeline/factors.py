@@ -1,30 +1,42 @@
-"""Cumulative adjustment factors from corporate actions (design D10).
+"""Cumulative corporate-action adjustment factors (design D10).
 
-The platform never stores adjusted prices; ``adjust=qfq|hfq`` is
-synthesized at query time from ``Bar x AdjustFactor``. This module is
-the other half of that contract: it turns the event stream (cash
-dividends, stock bonuses, rights issues) plus the unadjusted close
-series into the per-day cumulative factor rows.
+Adjusted OHLC is synthesized at query time. Legacy rows (a missing
+``adjustment_version`` or ``legacy-multiplicative-v1``) use
+``qfq_factor`` and ``hfq_factor`` as multiplication ratios. Those fields
+remain on ``affine-v1`` rows for historical lineage; affine queries use
+the corresponding ``qfq_scale``/``qfq_offset`` or
+``hfq_scale``/``hfq_offset`` to calculate ``scale * raw_price + offset``.
+The query path refuses a selected series that mixes legacy and affine
+rows for the same symbol.
 
-The ratio of one event on its ex-date is the value-equivalence of
-holding one share through the event (design §8.1):
+For lineage, the legacy ratio of one event on its ex-date is the
+value-equivalence of holding one share through the event (design §8.1)::
 
     reference = (prev_close - cash_dividend + allotment_ratio * allotment_price)
                 / (1 + bonus + allotment_ratio)
     ratio     = prev_close / reference
 
-* **hfq** anchors the earliest price at 1.0: the factor is the running
-  product of the ratios of every event up to that date.
-* **qfq** anchors the latest price at 1.0: the factor is the running
-  product of the *inverse* ratios of every event after that date.
+An affine event maps its pre-event price to its post-event price as
+``T(x) = a*x + b``, where ``a = 1 / (1 + bonus + allotment_ratio)`` and
+``b`` is the event's net cash and rights-price amount divided by
+``1 + bonus + allotment_ratio``. Composition follows function order:
+``(a2, b2) o (a1, b1) = (a2*a1, a2*b1+b2)``.
 
-``prev_close`` is the last close before the ex-date; without it the
-event cannot be priced (the ratio needs the price the event acts on),
-so cumulation fails closed for events whose previous close is unknown.
+* **qfq** composes forward event transforms strictly after a bar's date
+  through that symbol's last available bar. The last bar is the identity
+  anchor, with scale 1 and offset 0.
+* **hfq** composes inverse event transforms after that symbol's first
+  available bar through the bar's date. The first bar is the identity
+  anchor, with scale 1 and offset 0.
+
+``prev_close`` is the last close before an ex-date; without it the event
+cannot be priced, so cumulation fails closed when a required previous
+close is unknown.
 """
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -52,6 +64,7 @@ class FactorEvent:
         bonus: Stock dividend, shares per share held.
         allotment_ratio: Rights shares per share held.
         allotment_price: Price paid per rights share (CNY).
+        event_key: Source event identifier retained for traceability.
     """
 
     symbol: str
@@ -60,6 +73,7 @@ class FactorEvent:
     bonus: float = 0.0
     allotment_ratio: float = 0.0
     allotment_price: float = 0.0
+    event_key: str | None = None
 
 
 def event_ratio(event: FactorEvent, prev_close: float) -> float:
@@ -77,8 +91,14 @@ def event_ratio(event: FactorEvent, prev_close: float) -> float:
             lands outside the sanity band (a dividend larger than the
             price or a nonsense rights price must fail closed).
     """
-    if prev_close <= _ZERO_TOLERANCE:
-        raise ValueError(f"{event.symbol}: non-positive prev_close {prev_close}")
+    validate_event(event)
+    if not math.isfinite(prev_close) or prev_close <= _ZERO_TOLERANCE:
+        raise ValueError(f"{event.symbol}: non-finite or non-positive prev_close {prev_close}")
+    if event.cash_dividend > prev_close:
+        raise ValueError(
+            f"{event.symbol} @ {event.ex_date}: event payout exceeds prev_close "
+            f"{prev_close}; cannot compute a factor"
+        )
     denominator = prev_close - event.cash_dividend + event.allotment_ratio * event.allotment_price
     if denominator <= _ZERO_TOLERANCE:
         raise ValueError(
@@ -92,6 +112,43 @@ def event_ratio(event: FactorEvent, prev_close: float) -> float:
             f"[{_MIN_RATIO}, {_MAX_RATIO}]; refusing a nonsense factor"
         )
     return ratio
+
+
+def validate_event(event: FactorEvent) -> None:
+    """Reject malformed event quantities before either adjustment math."""
+    values = {
+        "cash_dividend": event.cash_dividend,
+        "bonus": event.bonus,
+        "allotment_ratio": event.allotment_ratio,
+        "allotment_price": event.allotment_price,
+    }
+    for name, value in values.items():
+        if not math.isfinite(value) or value < 0:
+            raise ValueError(
+                f"{event.symbol} @ {event.ex_date}: {name} must be finite and non-negative"
+            )
+
+
+def _event_transform(event: FactorEvent) -> tuple[float, float]:
+    """Return the affine transform from pre-event to post-event prices."""
+    share_count = 1.0 + event.bonus + event.allotment_ratio
+    if share_count <= _ZERO_TOLERANCE:
+        raise ValueError(f"{event.symbol} @ {event.ex_date}: invalid share count")
+    scale = 1.0 / share_count
+    offset = (-event.cash_dividend + event.allotment_ratio * event.allotment_price) / share_count
+    if not math.isfinite(scale) or not math.isfinite(offset) or scale <= 0:
+        raise ValueError(f"{event.symbol} @ {event.ex_date}: invalid affine event transform")
+    return scale, offset
+
+
+def _compose(outer: tuple[float, float], inner: tuple[float, float]) -> tuple[float, float]:
+    """Compose affine transforms, returning ``outer(inner(x))``."""
+    outer_scale, outer_offset = outer
+    inner_scale, inner_offset = inner
+    return (
+        outer_scale * inner_scale,
+        outer_scale * inner_offset + outer_offset,
+    )
 
 
 def cumulate_factors(
@@ -121,12 +178,22 @@ def cumulate_factors(
     close_by_symbol: dict[str, dict[date, float]] = {}
     symbols: set[str] = set()
     for symbol, day, close in closes:
-        close_by_symbol.setdefault(symbol, {})[day] = close
+        symbol_closes = close_by_symbol.setdefault(symbol, {})
+        if day in symbol_closes:
+            raise ValueError(f"duplicate close for {(symbol, day)}")
+        if not math.isfinite(close) or close <= 0:
+            raise ValueError(f"{symbol} @ {day}: close must be finite and positive")
+        symbol_closes[day] = close
         symbols.add(symbol)
 
     by_symbol: dict[str, list[FactorEvent]] = {}
     for event in events:
-        by_symbol.setdefault(event.symbol, []).append(event)
+        symbol_events = by_symbol.setdefault(event.symbol, [])
+        if any(existing.ex_date == event.ex_date for existing in symbol_events):
+            raise ValueError(
+                f"{event.symbol} @ {event.ex_date}: ambiguous multiple corporate actions"
+            )
+        symbol_events.append(event)
         symbols.add(event.symbol)
 
     factors: list[AdjustFactor] = []
@@ -143,7 +210,7 @@ def cumulate_factors(
                 )
             ratios[event.ex_date] = event_ratio(event, previous)
         days = sorted(set(symbol_closes) | set(trading_days or ()))
-        factors.extend(_factors_for_symbol(symbol, symbol_events, ratios, days))
+        factors.extend(_factors_for_symbol(symbol, symbol_events, ratios, days, symbol_closes))
     return factors
 
 
@@ -168,6 +235,7 @@ def _factors_for_symbol(
     events: Sequence[FactorEvent],
     ratios: dict[date, float],
     days: Sequence[date],
+    closes: dict[date, float],
 ) -> list[AdjustFactor]:
     """Emit one factor row per day for one symbol.
 
@@ -181,6 +249,7 @@ def _factors_for_symbol(
         events: The symbol's events in ex-date order.
         ratios: Event ratio by ex-date.
         days: Days to emit rows for (sorted).
+        closes: Available raw closes defining the affine anchor range.
 
     Returns:
         The factor rows, one per day.
@@ -195,18 +264,46 @@ def _factors_for_symbol(
         suffix[index] = suffix[index + 1] / ratios[events[index].ex_date]
 
     rows: list[AdjustFactor] = []
+    first_day = min(closes) if closes else days[0]
+    last_day = max(closes) if closes else days[-1]
+    affine_events = [
+        (event, _event_transform(event))
+        for event in events
+        if first_day < event.ex_date <= last_day
+    ]
+    affine_suffix = [(1.0, 0.0)] * (len(affine_events) + 1)
+    for index in range(len(affine_events) - 1, -1, -1):
+        affine_suffix[index] = _compose(affine_suffix[index + 1], affine_events[index][1])
     hfq = 1.0
     next_event = 0
+    affine_hfq = (1.0, 0.0)
+    next_affine_event = 0
     for day in days:
         while next_event < count and events[next_event].ex_date <= day:
             hfq *= ratios[events[next_event].ex_date]
             next_event += 1
+        while (
+            next_affine_event < len(affine_events)
+            and affine_events[next_affine_event][0].ex_date <= day
+        ):
+            event_scale, event_offset = affine_events[next_affine_event][1]
+            inverse = (1.0 / event_scale, -event_offset / event_scale)
+            affine_hfq = _compose(affine_hfq, inverse)
+            next_affine_event += 1
+        qfq_transform = affine_suffix[next_affine_event]
+
         rows.append(
             AdjustFactor(
                 symbol=symbol,
                 trade_date=day,
                 qfq_factor=round(suffix[next_event], 12),
                 hfq_factor=round(hfq, 12),
+                qfq_scale=qfq_transform[0],
+                qfq_offset=qfq_transform[1],
+                hfq_scale=affine_hfq[0],
+                hfq_offset=affine_hfq[1],
+                adjustment_version="affine-v1",
+                legacy_source="corporate-action-ratio-v1",
             )
         )
     return rows

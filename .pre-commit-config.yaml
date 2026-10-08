@@ -2,21 +2,21 @@
 # Install: pip install pre-commit && pre-commit install
 # Run manually: pre-commit run --all-files
 #
-# Ported akshare code lives in opendata_http/ and must stay diffable against
-# upstream (design §5.2 rule 7), so every reformatting hook is excluded there.
+# Ported akshare code lives under opendata/data/providers/akshare/_vendor/ and
+# must stay diffable against upstream, so reformatting hooks exclude that prefix.
 
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.0
+    rev: v0.15.20
     hooks:
       - id: ruff
         args: [--fix]
-        exclude: ^opendata_http/
+        exclude: ^opendata/data/providers/akshare/_vendor/
       - id: ruff-format
-        exclude: ^opendata_http/
+        exclude: ^opendata/data/providers/akshare/_vendor/
 
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.10
+    rev: 1.9.4
     hooks:
       - id: bandit
         args: ["-c", "bandit.yaml", "-r", "opendata/"]
@@ -31,9 +31,9 @@ repos:
     rev: v5.0.0
     hooks:
       - id: trailing-whitespace
-        exclude: ^opendata_http/
+        exclude: ^opendata/data/providers/akshare/_vendor/
       - id: end-of-file-fixer
-        exclude: ^opendata_http/
+        exclude: ^opendata/data/providers/akshare/_vendor/
       - id: check-yaml
       - id: check-json
       - id: check-added-large-files

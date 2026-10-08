@@ -15,7 +15,7 @@ em dataset mixes 元, 元/股 and % per column and that has never been
 measured - the table declares no unit it cannot back.
 """
 
-from typing import ClassVar
+from typing import ClassVar, cast
 
 import pandas as pd
 
@@ -35,6 +35,8 @@ class FinancialIndicatorQuery(QueryParams):
 
 class AkshareFinancialIndicatorFetcher(Fetcher[FinancialIndicatorQuery, pd.DataFrame]):
     """Main-finance indicators by report period for one symbol."""
+
+    async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
@@ -72,10 +74,14 @@ class AkshareFinancialIndicatorFetcher(Fetcher[FinancialIndicatorQuery, pd.DataF
                 the 口径映射表 names (the contract requires one).
             RuntimeError: If the 口径映射表 declares no melt for this domain.
         """
-        import opendata_http  # lazy: load the ported tree on routing only
+        # lazy: load the ported tree on routing only
+        import opendata.data.providers.akshare._vendor as opendata_http
 
         announce_column = require_pivot(SOURCE, "financial_indicator").row_column("announce_date")
-        frame = opendata_http.stock_financial_analysis_indicator_em(symbol=em_symbol(params.symbol))
+        frame = cast(
+            "pd.DataFrame",
+            opendata_http.stock_financial_analysis_indicator_em(symbol=em_symbol(params.symbol)),
+        )
         if announce_column not in frame.columns:
             raise ValueError(
                 f"upstream indicator dataset lacks {announce_column}; "

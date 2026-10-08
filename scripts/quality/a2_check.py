@@ -48,6 +48,11 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from scripts.quality.source_layout import PORTED, classify_path  # noqa: E402
+
 BASELINE_PATH = "docs/quality/baseline.json"
 
 #: Top-level trees the A2 layer does not own. Matched against the first path
@@ -60,7 +65,7 @@ BASELINE_PATH = "docs/quality/baseline.json"
 #: from every static plane at once (``a2-check``, the ratchet, ruff's walk and
 #: mypy's walk). Only the ``script.py.mako`` templates are generated artifacts,
 #: and they are not ``.py``.
-EXCLUDED_ROOT_DIRS = frozenset({"akshare", "frontend", "opendata_http"})
+EXCLUDED_ROOT_DIRS = frozenset({"akshare", "frontend"})
 
 # Resolved once so the subprocess call never uses a partial executable path.
 GIT = shutil.which("git")
@@ -100,6 +105,8 @@ def _is_a2_candidate(name: str) -> bool:
         return False
     parts = Path(name).parts
     if parts and parts[0] in EXCLUDED_ROOT_DIRS:
+        return False
+    if classify_path(name) == PORTED:
         return False
     return (REPO_ROOT / name).is_file()
 
@@ -239,6 +246,8 @@ def _drop_reason(name: str) -> str:
     first = name.split("/", 1)[0]
     if first in EXCLUDED_ROOT_DIRS:
         return f"root tree {first}/ is outside the A2 layer"
+    if classify_path(name) == PORTED:
+        return "nested vendor package is outside the A2 layer"
     if not (REPO_ROOT / name).is_file():
         return "not present in the working tree"
     return "not an A2 candidate"

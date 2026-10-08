@@ -21,21 +21,21 @@ entries:
     scenario: 宏观 CPI（AI 研究 / 资产配置）
     ours:
       - {provider: ecb, domain: economy_cpi, contract: MacroSeries, status: verified}
-      - {provider: fred, domain: economy_cpi, contract: MacroSeries, status: registered}
+      - {provider: fred, domain: economy_cpi, contract: MacroSeries, status: verified}
       - {provider: imf, domain: economy_cpi, contract: MacroSeries, status: verified}
       - {provider: oecd, domain: economy_cpi, contract: MacroSeries, status: verified}
   - openbb: {model: TBD}
     scenario: 宏观 GDP（AI 研究 / 资产配置）
     ours:
       - {provider: ecb, domain: economy_gdp, contract: MacroSeries, status: verified}
-      - {provider: fred, domain: economy_gdp, contract: MacroSeries, status: registered}
+      - {provider: fred, domain: economy_gdp, contract: MacroSeries, status: verified}
       - {provider: imf, domain: economy_gdp, contract: MacroSeries, status: verified}
   - openbb: {model: TBD}
     scenario: 宏观失业率（AI 研究 / 资产配置）
     ours:
       - {provider: imf, domain: economy_unemployment, contract: MacroSeries, status: verified}
       - {provider: oecd, domain: economy_unemployment, contract: MacroSeries, status: verified}
-      - {provider: fred, domain: economy_unemployment, contract: MacroSeries, status: registered}
+      - {provider: fred, domain: economy_unemployment, contract: MacroSeries, status: verified}
   - openbb: {model: TBD}
     scenario: 宏观利率（AI 研究 / 资产配置 / 回测融资成本）
     ours:

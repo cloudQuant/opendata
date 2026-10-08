@@ -69,6 +69,8 @@ class ThsTradingCalendarFetcher(Fetcher[ThsTradingCalendarQuery, tuple[TradingCa
     nothing here: it is the same vendor as the calendar.
     """
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="metadata",
         domain="trading_calendar",
@@ -116,7 +118,7 @@ class ThsTradingCalendarFetcher(Fetcher[ThsTradingCalendarQuery, tuple[TradingCa
         Raises:
             ThsProviderError: Credentials missing, or upstream returned nothing.
         """
-        from opendata_fuyao.endpoints import fetch_trading_calendar
+        from opendata.data.providers.ths.endpoints import fetch_trading_calendar
 
         with client(timeout_seconds=ctx.timeout) as active:
             rows = fetch_trading_calendar(active, exchange=params.exchange)

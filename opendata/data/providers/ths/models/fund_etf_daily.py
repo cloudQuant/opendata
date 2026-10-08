@@ -68,6 +68,8 @@ class ThsFundEtfDailyFetcher(Fetcher[ThsFundEtfDailyQuery, tuple[Bar, ...]]):
     were discriminated on live ex-dates (see ``docs/evidence/C20``).
     """
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="fund",
         domain="fund_etf_daily",
@@ -127,7 +129,7 @@ class ThsFundEtfDailyFetcher(Fetcher[ThsFundEtfDailyQuery, tuple[Bar, ...]]):
                 frame), or the distribution stream disagrees with its own
                 totals, which leaves this leg unable to un-adjust anything.
         """
-        from opendata_fuyao.endpoints import (
+        from opendata.data.providers.ths.endpoints import (
             FUND_ETF_DEPTH_DAYS,
             fetch_fund_etf_bars,
             shanghai_today,

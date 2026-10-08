@@ -25,11 +25,13 @@ contains the partition key.
 from __future__ import annotations
 
 import re
+import types
 from dataclasses import dataclass
 from datetime import date, datetime
-from typing import get_args
+from typing import Annotated, Literal, TypeGuard, Union, get_args, get_origin
 
 from opendata.data.domains import contract_model, dwd_table, ods_table, require_domain
+from opendata.data.models.base import ContractModel
 
 #: DDL identifiers. Word characters only (never a backtick, quote,
 #: whitespace or separator), so an identifier can never break out of
@@ -255,7 +257,12 @@ def _validate_identifier(name: str) -> None:
 
 def _is_optional(annotation: object) -> bool:
     """Whether a contract field annotation allows None."""
-    return type(None) in get_args(annotation)
+    base = _strip_annotated(annotation)
+    if get_origin(base) not in (Union, types.UnionType):
+        return False
+    args = get_args(base)
+    non_none = tuple(arg for arg in args if arg is not type(None))
+    return len(args) == 2 and len(non_none) == 1
 
 
 def _sql_type(annotation: object, name: str) -> str:
@@ -273,6 +280,10 @@ def _sql_type(annotation: object, name: str) -> str:
             than guessing a column type).
     """
     base = _strip_optional(annotation)
+    if get_origin(base) is Literal:
+        base = _literal_value_type(base)
+        if base is None:
+            raise ValueError(f"unsupported contract field type {annotation!r} for column {name!r}")
     if base is bool:  # before int: bool is an int subclass
         return "tinyint(1)"
     if base is float:
@@ -285,12 +296,108 @@ def _sql_type(annotation: object, name: str) -> str:
         return "date"
     if base is str:
         return f"varchar({_KEY_STRING_LENGTHS.get(name, _DEFAULT_STRING_LENGTH)})"
+    if _is_json_structured_type(base):
+        return "json"
     raise ValueError(f"unsupported contract field type {base!r} for column {name!r}")
 
 
 def _strip_optional(annotation: object) -> object:
-    """Unwrap ``X | None`` to ``X``; other annotations pass through."""
-    args = tuple(arg for arg in get_args(annotation) if arg is not type(None))
-    if len(args) == 1 and len(get_args(annotation)) > 1:
-        return args[0]
-    return annotation
+    """Unwrap one optional arm and all surrounding ``Annotated`` wrappers."""
+    base = _strip_annotated(annotation)
+    if get_origin(base) not in (Union, types.UnionType):
+        return base
+    args = get_args(base)
+    non_none = tuple(arg for arg in args if arg is not type(None))
+    if len(args) == 2 and len(non_none) == 1:
+        return _strip_annotated(non_none[0])
+    return base
+
+
+def _strip_annotated(annotation: object) -> object:
+    """Unwrap nested ``Annotated`` metadata without changing the base type."""
+    base = annotation
+    while get_origin(base) is Annotated:
+        args = get_args(base)
+        if not args:
+            break
+        base = args[0]
+    return base
+
+
+def _literal_value_type(annotation: object) -> type[object] | None:
+    """Return the homogeneous native scalar type of a supported Literal."""
+    values = get_args(annotation)
+    if not values:
+        return None
+    value_types = {type(value) for value in values}
+    if len(value_types) != 1:
+        return None
+    value_type = next(iter(value_types))
+    if value_type not in (str, int, bool):
+        return None
+    return value_type
+
+
+def _is_json_structured_type(annotation: object) -> bool:
+    """Whether a root annotation is a safely representable JSON structure."""
+    base = _strip_annotated(annotation)
+    origin = get_origin(base)
+    seen_models: frozenset[type[ContractModel]] = frozenset()
+    if origin in (dict, list, tuple):
+        return _is_json_value_type(base, seen_models)
+    return _is_contract_model_type(base) and _is_json_value_type(base, seen_models)
+
+
+def _is_json_value_type(
+    annotation: object,
+    seen_models: frozenset[type[ContractModel]],
+) -> bool:
+    """Recursively validate a type made only of JSON values and contracts."""
+    base = _strip_annotated(annotation)
+    origin = get_origin(base)
+
+    if origin in (Union, types.UnionType):
+        args = get_args(base)
+        non_none = tuple(arg for arg in args if arg is not type(None))
+        if len(args) == 2 and len(non_none) == 1:
+            return _is_json_value_type(non_none[0], seen_models)
+        return False
+    if base is type(None) or base in (str, int, float, bool):
+        return True
+    if origin is Literal:
+        return _literal_value_type(base) is not None
+    if origin is dict:
+        args = get_args(base)
+        return (
+            len(args) == 2
+            and _strip_annotated(args[0]) is str
+            and _is_json_value_type(args[1], seen_models)
+        )
+    if origin is list:
+        args = get_args(base)
+        return len(args) == 1 and _is_json_value_type(args[0], seen_models)
+    if origin is tuple:
+        args = get_args(base)
+        if not args:
+            return False
+        if len(args) == 2 and args[1] is Ellipsis:
+            return _is_json_value_type(args[0], seen_models)
+        return all(_is_json_value_type(arg, seen_models) for arg in args)
+    if _is_contract_model_type(base):
+        if base in seen_models:
+            return True
+        nested_seen = seen_models | {base}
+        return all(
+            _is_json_value_type(field.annotation, nested_seen)
+            for field in base.model_fields.values()
+        )
+    return False
+
+
+def _is_contract_model_type(annotation: object) -> TypeGuard[type[ContractModel]]:
+    """Whether an annotation is a concrete ContractModel subclass."""
+    return (
+        isinstance(annotation, type)
+        and annotation is not ContractModel
+        and issubclass(annotation, ContractModel)
+    )

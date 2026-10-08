@@ -33,6 +33,8 @@ class CpiQuery(QueryParams):
 class OecdCpiFetcher(Fetcher[CpiQuery, list[dict[str, object]]]):
     """HICP observations for one OECD series (a full 8-dimension key)."""
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="macro",
         domain="economy_cpi",

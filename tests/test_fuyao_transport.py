@@ -7,11 +7,16 @@
 from __future__ import annotations
 
 import json
+import logging
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 
 import httpx
 import pytest
 
-from opendata_fuyao import (
+from opendata.data.providers.ths import (
     CODE_CATEGORIES,
     LOCAL_BLOCKING_CODES,
     RATE_LIMIT_CODES,
@@ -27,7 +32,9 @@ from opendata_fuyao import (
     load_error_messages,
     parse_envelope,
 )
-from opendata_fuyao.errors import ErrorTableError
+from opendata.data.providers.ths.transport.errors import ErrorTableError
+
+HTTP_CLIENT_LOGGER = FuyaoHttpClient.__module__
 
 
 def _envelope(code: int = 0, *, items: list | None = None, message: str = "success") -> bytes:
@@ -218,6 +225,18 @@ class TestErrorMessages:
 
 
 class TestRateLimiter:
+    def test_short_lived_default_clients_share_host_governance_state(self):
+        credentials = FuyaoCredentials("k", base_url="https://fuyao.shared.test")
+        first = FuyaoHttpClient(credentials=credentials)
+        second = FuyaoHttpClient(credentials=credentials)
+        try:
+            assert first._limiter is second._limiter
+            assert first._limiter.rate_per_second == 5.0
+            assert first._limiter.burst == 10
+        finally:
+            first.close()
+            second.close()
+
     def test_burst_then_exhaustion(self):
         limiter = FuyaoRateLimiter(rate_per_second=1.0, burst=2)
 
@@ -257,10 +276,88 @@ class TestRateLimiter:
         limiter = FuyaoRateLimiter(rate_per_second=10.0, burst=1, clock=lambda: now["t"])
         limiter.record_rate_limit(retry_after_seconds=5.0)
 
-        limiter.wait_and_acquire(waits.append)
+        def advance_clock(seconds: float) -> None:
+            waits.append(seconds)
+            now["t"] += seconds
+
+        limiter.wait_and_acquire(advance_clock)
 
         assert waits == [pytest.approx(5.0)]
         assert limiter.cooldown_remaining == 0.0
+
+    def test_wait_does_not_clear_a_concurrently_extended_cooldown(self):
+        now = {"t": 0.0}
+        sleeping = threading.Event()
+        release_sleep = threading.Event()
+        limiter = FuyaoRateLimiter(rate_per_second=10.0, burst=1, clock=lambda: now["t"])
+        limiter.record_rate_limit(retry_after_seconds=5.0)
+
+        def controlled_sleep(seconds: float) -> None:
+            assert seconds == pytest.approx(5.0)
+            sleeping.set()
+            assert release_sleep.wait(timeout=1.0)
+            now["t"] += seconds
+
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            pending = pool.submit(limiter.wait_and_acquire, controlled_sleep)
+            assert sleeping.wait(timeout=1.0)
+            limiter.record_rate_limit(retry_after_seconds=10.0)
+            release_sleep.set()
+            with pytest.raises(FuyaoError) as exc:
+                pending.result(timeout=1.0)
+
+        assert exc.value.category == "http"
+        assert "rate_limited_wait" in exc.value.code
+        assert limiter.cooldown_remaining == pytest.approx(5.0)
+
+    def test_host_concurrency_wait_is_bounded_and_rate_limited(self):
+        from opendata.data.providers.ths.transport.rate_limiter import (
+            get_shared_concurrency_gate,
+            shared_host_request,
+        )
+
+        host = "fuyao.gate-timeout.test"
+        gate = get_shared_concurrency_gate(host)
+        for _ in range(4):
+            gate.acquire()
+        try:
+            with (
+                pytest.raises(FuyaoError) as exc,
+                shared_host_request(host, wait_timeout_seconds=0.01),
+            ):
+                pytest.fail("a saturated host gate should not be acquired")
+        finally:
+            for _ in range(4):
+                gate.release()
+
+        assert exc.value.category == "rate_limited"
+        assert "host_concurrency_wait_timeout" in exc.value.code
+
+    def test_client_classifies_host_concurrency_timeout(self, monkeypatch, caplog):
+        @contextmanager
+        def busy_host(_host):
+            raise error_for_transport("rate_limited", detail="host_concurrency_wait_timeout")
+            yield
+
+        monkeypatch.setattr(f"{HTTP_CLIENT_LOGGER}.shared_host_request", busy_host)
+        with (
+            caplog.at_level(logging.INFO, logger=HTTP_CLIENT_LOGGER),
+            _client(
+                lambda _request: pytest.fail("busy host must fail before transport"), max_attempts=1
+            ) as client,
+            pytest.raises(FuyaoError) as exc,
+        ):
+            client.get("/api/a-share/prices", params={"api_key": "query-secret"})
+
+        assert exc.value.category == "rate_limited"
+        event = next(
+            record
+            for record in caplog.records
+            if getattr(record, "event", None) == "governed_http_request"
+        )
+        assert event.failure_category == "rate_limited"
+        assert event.endpoint.endswith("/api/a-share/prices")
+        assert "query-secret" not in str(event.__dict__)
 
     def test_default_cooldown_is_one_second(self):
         limiter = FuyaoRateLimiter(rate_per_second=10.0, burst=1)
@@ -338,7 +435,12 @@ class TestHttpClient:
         assert exc.value.category == "transient"
 
     def test_http_429_enters_cooldown_and_is_retried(self):
-        limiter = FuyaoRateLimiter(rate_per_second=10.0, burst=10)
+        now = {"t": 0.0}
+        limiter = FuyaoRateLimiter(
+            rate_per_second=10.0,
+            burst=10,
+            clock=lambda: now["t"],
+        )
         calls: list[int] = []
 
         def handler(request: httpx.Request) -> httpx.Response:
@@ -353,7 +455,7 @@ class TestHttpClient:
             client=httpx.Client(transport=httpx.MockTransport(handler)),
             rate_limiter=limiter,
             max_attempts=2,
-            sleep=lambda seconds: None,
+            sleep=lambda seconds: now.__setitem__("t", now["t"] + seconds),
         )
 
         result = client.get("/api/a-share/prices")
@@ -455,3 +557,100 @@ class TestHttpClient:
 
         assert exc.value.category == "not_ready"
         assert len(calls) == 1
+
+    def test_structured_event_redacts_credentials_and_parameter_values(self, caplog):
+        with (
+            caplog.at_level(logging.INFO, logger=HTTP_CLIENT_LOGGER),
+            _client(
+                lambda _request: httpx.Response(200, content=_envelope(3002, message="not ready")),
+                max_attempts=1,
+            ) as client,
+            pytest.raises(FuyaoError),
+        ):
+            client.get(
+                "/api/a-share/prices",
+                params={"thscode": "600519.SH", "api_token": "query-secret"},
+            )
+
+        event = next(
+            record
+            for record in caplog.records
+            if getattr(record, "event", None) == "governed_http_request"
+        )
+        assert event.source == "ths"
+        assert event.endpoint == "https://fuyao.test/api/a-share/prices"
+        assert event.parameter_summary == {
+            "keys": ("api_token", "thscode"),
+            "redacted_keys": ("api_token",),
+        }
+        assert event.request_id
+        assert event.attempt == 1
+        assert event.status == 200
+        assert event.failure_category == "not_ready"
+        assert event.elapsed_seconds >= 0.0
+        assert "fuyao-test-key" not in str(event.__dict__)
+        assert "query-secret" not in str(event.__dict__)
+
+    def test_transport_event_does_not_log_exception_text(self, caplog):
+        def handler(request: httpx.Request) -> httpx.Response:
+            raise httpx.ConnectError("raw-exception-secret", request=request)
+
+        with (
+            caplog.at_level(logging.INFO, logger=HTTP_CLIENT_LOGGER),
+            _client(handler, max_attempts=1) as client,
+            pytest.raises(FuyaoError),
+        ):
+            client.get("/api/a-share/prices", params={"api_token": "query-secret"})
+
+        event = next(
+            record
+            for record in caplog.records
+            if getattr(record, "event", None) == "governed_http_request"
+        )
+        assert event.failure_category == "network"
+        assert event.status is None
+        for secret in ("fuyao-test-key", "query-secret", "raw-exception-secret"):
+            assert secret not in str(event.__dict__)
+
+    def test_short_lived_clients_share_a_per_host_concurrency_cap(self):
+        lock = threading.Lock()
+        release = threading.Event()
+        reached_limit = threading.Event()
+        active = 0
+        peak = 0
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            nonlocal active, peak
+            with lock:
+                active += 1
+                peak = max(peak, active)
+                if peak >= 4:
+                    reached_limit.set()
+            release.wait(timeout=2.0)
+            with lock:
+                active -= 1
+            return httpx.Response(200, content=_envelope())
+
+        clients = [
+            FuyaoHttpClient(
+                credentials=FuyaoCredentials("k", base_url="https://fuyao.concurrent.test"),
+                client=httpx.Client(transport=httpx.MockTransport(handler)),
+                rate_limiter=FuyaoRateLimiter(rate_per_second=1000.0, burst=100),
+                max_attempts=1,
+                sleep=lambda _seconds: None,
+            )
+            for _ in range(8)
+        ]
+        try:
+            with ThreadPoolExecutor(max_workers=8) as pool:
+                futures = [pool.submit(client.get, "/api/a-share/prices") for client in clients]
+                assert reached_limit.wait(timeout=1.0)
+                time.sleep(0.03)
+                with lock:
+                    assert peak == 4
+                release.set()
+                assert [future.result(timeout=2.0).status_code for future in futures] == [200] * 8
+        finally:
+            release.set()
+            for client in clients:
+                client.close()

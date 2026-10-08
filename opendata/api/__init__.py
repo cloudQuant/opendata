@@ -14,7 +14,9 @@ from opendata.api.executions import router as executions_router
 from opendata.api.interfaces import router as interfaces_router
 from opendata.api.keys import router as keys_router
 from opendata.api.metrics import router as metrics_router
+from opendata.api.minute_data import router as minute_data_router
 from opendata.api.pipeline import router as pipeline_router
+from opendata.api.provider_models import router as provider_models_router
 from opendata.api.scripts import router as scripts_router
 from opendata.api.tables import router as tables_router
 from opendata.api.tasks import router as tasks_router
@@ -35,6 +37,7 @@ api_router.include_router(interfaces_router, prefix="/data/interfaces", tags=["D
 api_router.include_router(tasks_router, prefix="/tasks", tags=["Scheduled Tasks"])
 api_router.include_router(data_router, prefix="/data", tags=["Data Acquisition"])
 api_router.include_router(data_query_router, prefix="/data", tags=["Data Query"])
+api_router.include_router(minute_data_router, prefix="/data", tags=["Minute Data"])
 api_router.include_router(tables_router, prefix="/tables", tags=["Data Tables"])
 api_router.include_router(users_router, prefix="/users", tags=["User Management"])
 api_router.include_router(keys_router, prefix="/keys", tags=["API Keys"])
@@ -43,3 +46,4 @@ api_router.include_router(executions_router, prefix="/executions", tags=["Task E
 api_router.include_router(settings_api.router, prefix="/settings", tags=["Settings"])
 api_router.include_router(metrics_router, tags=["Metrics"])
 api_router.include_router(pipeline_router, tags=["Pipeline"])
+api_router.include_router(provider_models_router, prefix="/providers", tags=["Provider Models"])

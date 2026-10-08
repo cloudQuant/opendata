@@ -39,6 +39,8 @@ class ThsIndexDailyFetcher(Fetcher[ThsIndexDailyQuery, tuple[Bar, ...]]):
     an independent index series (see ``docs/evidence/C5``).
     """
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="index",
         domain="index_daily",
@@ -78,7 +80,7 @@ class ThsIndexDailyFetcher(Fetcher[ThsIndexDailyQuery, tuple[Bar, ...]]):
             ThsProviderError: Credentials missing or the code is not exactly
                 one instrument in the upstream index universe.
         """
-        from opendata_fuyao.endpoints import fetch_index_daily_bars
+        from opendata.data.providers.ths.endpoints import fetch_index_daily_bars
 
         start = params.start_date or date(1990, 1, 1)
         end = params.end_date or datetime.now(timezone.utc).date()

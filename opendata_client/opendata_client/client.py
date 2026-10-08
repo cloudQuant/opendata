@@ -18,6 +18,11 @@ does not, so a consumer that only pulls history installs nothing extra.
 from __future__ import annotations
 
 import json
+import keyword
+import math
+import os
+from collections.abc import Mapping
+from contextlib import suppress
 from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any
 
@@ -31,6 +36,7 @@ DEFAULT_PAGE_SIZE = 500
 DEFAULT_TIMEOUT = 30.0
 #: Seconds to wait for the server's first answer after subscribing.
 DEFAULT_WS_TIMEOUT = 30.0
+_MAX_PROVIDER_QUERY_DEPTH = 256
 
 
 class OpendataClientError(RuntimeError):
@@ -59,6 +65,80 @@ class UnsupportedQueryError(OpendataClientError):
 
 class SubscriptionError(OpendataClientError):
     """The data subscription socket failed or reported an error frame."""
+
+
+def _validate_provider_model_identity(value: object, name: str) -> str:
+    """Reject provider/model path components outside the server identity contract."""
+    if (
+        not isinstance(value, str)
+        or not value.isidentifier()
+        or keyword.iskeyword(value)
+        or value.casefold() == "auto"
+    ):
+        raise ValueError(f"{name} must be a valid provider/model identifier")
+    return value
+
+
+def _query_has_only_json_values(value: dict[str, Any]) -> bool:
+    """Check JSON-native values and ordinary string keys without recursion."""
+    pending: list[tuple[Any, int, bool]] = [(value, 0, False)]
+    active_containers: set[int] = set()
+
+    while pending:
+        current, depth, exiting = pending.pop()
+        if exiting:
+            active_containers.remove(id(current))
+            continue
+        if depth > _MAX_PROVIDER_QUERY_DEPTH:
+            return False
+
+        value_type = type(current)
+        if current is None or value_type in (str, bool, int):
+            continue
+        if value_type is float:
+            if not math.isfinite(current):
+                return False
+            continue
+
+        if value_type is dict:
+            container_id = id(current)
+            if container_id in active_containers:
+                return False
+            active_containers.add(container_id)
+            pending.append((current, depth, True))
+            for key, child in current.items():
+                if type(key) is not str:
+                    return False
+                pending.append((child, depth + 1, False))
+            continue
+
+        if value_type is list:
+            container_id = id(current)
+            if container_id in active_containers:
+                return False
+            active_containers.add(container_id)
+            pending.append((current, depth, True))
+            pending.extend((child, depth + 1, False) for child in current)
+            continue
+
+        return False
+
+    return True
+
+
+def _to_dataframe(
+    rows: list[dict[str, Any]] | tuple[dict[str, Any], ...],
+    columns: list[str] | None = None,
+) -> Any:  # noqa: ANN401  # pandas is an optional runtime dependency
+    """Convert rows to a pandas DataFrame when the frames extra is installed."""
+    try:
+        import pandas as pd
+    except ImportError as exc:
+        raise ImportError(
+            "DataFrame conversion requires pandas; install it with "
+            "`pip install 'opendata-client[frames]'`."
+        ) from exc
+    return pd.DataFrame(rows, columns=columns)
 
 
 @dataclass(frozen=True)
@@ -115,6 +195,20 @@ class DataUpdate:
             data=tuple(message.get("data") or ()),
         )
 
+    def to_dataframe(self) -> Any:  # noqa: ANN401  # pandas is optional
+        """Convert this update's rows to a pandas DataFrame.
+
+        Column order follows first occurrence across the rows because
+        notification frames do not include REST column metadata.
+
+        Returns:
+            The update data as a DataFrame.
+
+        Raises:
+            ImportError: If the ``frames`` extra is not installed.
+        """
+        return _to_dataframe(self.data)
+
 
 @dataclass(frozen=True)
 class Page:
@@ -141,6 +235,20 @@ class Page:
             The set of symbol values found in ``rows``.
         """
         return {str(row["symbol"]) for row in self.rows if "symbol" in row}
+
+    def to_dataframe(self) -> Any:  # noqa: ANN401  # pandas is optional
+        """Convert the page rows to a pandas DataFrame.
+
+        Column order follows the service's ``columns`` metadata. Empty
+        pages retain those columns when the service supplied them.
+
+        Returns:
+            The page rows as a DataFrame.
+
+        Raises:
+            ImportError: If the ``frames`` extra is not installed.
+        """
+        return _to_dataframe(self.rows, self.columns or None)
 
 
 def _symbol_list(values: str | Sequence[str] | None) -> list[str]:
@@ -451,6 +559,705 @@ class OpendataClient:
         """
         data = self._get("/data/catalog", {}) or {}
         return list(data.get("domains") or [])
+
+    def provider_models(self, *, source: str | None = None) -> list[dict[str, Any]]:
+        """List registered provider model descriptors visible to this credential.
+
+        Args:
+            source: Optional exact provider identity filter.
+
+        Returns:
+            The registered provider model descriptors, or an empty list.
+
+        Raises:
+            ValueError: If an explicit source is not a valid exact identity.
+            OpendataClientError: If the API returns a malformed payload.
+        """
+        if source is not None:
+            source = _validate_provider_model_identity(source, "source")
+        data = self._get("/providers/models", {"source": source})
+        if not isinstance(data, list) or any(not isinstance(item, dict) for item in data):
+            raise OpendataClientError("provider models response has an invalid shape")
+        return data
+
+    def provider_model_schema(self, source: str, model: str) -> dict[str, Any]:
+        """Read the complete query validation schema for one registered model.
+
+        Args:
+            source: Exact provider identity.
+            model: Exact provider model identity.
+
+        Returns:
+            The metadata and complete JSON Schema returned by the API.
+
+        Raises:
+            ValueError: If either identity is not a valid exact identity.
+            OpendataClientError: If the API returns malformed or mismatched metadata.
+        """
+        source = _validate_provider_model_identity(source, "source")
+        model = _validate_provider_model_identity(model, "model")
+        data = self._get(f"/providers/{source}/models/{model}/schema", {})
+        if (
+            not isinstance(data, Mapping)
+            or not isinstance(data.get("schema"), Mapping)
+            or data.get("source") != source
+            or data.get("model") != model
+        ):
+            raise OpendataClientError("provider model schema response has an invalid shape")
+        return dict(data)
+
+    def query_provider_model(
+        self, source: str, model: str, query: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        """Execute one query through an exact registered provider model.
+
+        The server applies authorization and a bounded execution context. This
+        method sends only the caller's complete query object and never creates
+        or serializes a trusted execution context.
+
+        Args:
+            source: Exact provider identity.
+            model: Exact provider model identity.
+            query: Complete model query object.
+
+        Returns:
+            The complete result metadata and rows returned by the API.
+
+        Raises:
+            ValueError: If an identity is invalid or the query is not JSON-compatible.
+            OpendataClientError: If the request fails or the API response is malformed.
+        """
+        source = _validate_provider_model_identity(source, "source")
+        model = _validate_provider_model_identity(model, "model")
+        if not isinstance(query, Mapping):
+            raise ValueError("query must be a JSON-compatible object")
+
+        body_content: bytes | None = None
+        with suppress(Exception):  # caller mappings may fail while being copied or encoded
+            query_copy = dict(query)
+            if _query_has_only_json_values(query_copy):
+                body_content = json.dumps(
+                    {"query": query_copy},
+                    allow_nan=False,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                ).encode("utf-8")
+        if body_content is None:
+            raise ValueError("query must use JSON values, finite numbers, and string object keys")
+
+        response: httpx.Response | None = None
+        with suppress(httpx.HTTPError):
+            response = self._client.post(
+                f"/api/v1/providers/{source}/models/{model}/query",
+                content=body_content,
+                headers={"Content-Type": "application/json"},
+            )
+        if response is None:
+            raise OpendataClientError("provider model query request failed")
+
+        self._raise_for_status(response)
+        envelope: Any = None
+        with suppress(ValueError):
+            envelope = response.json()
+        if not isinstance(envelope, Mapping) or envelope.get("success") is not True:
+            raise OpendataClientError("provider model query returned an invalid response envelope")
+
+        data = envelope.get("data")
+        if (
+            not isinstance(data, Mapping)
+            or data.get("source") != source
+            or data.get("model") != model
+            or not isinstance(data.get("results"), list)
+            or any(not isinstance(row, dict) for row in data["results"])
+            or "pagination" not in data
+        ):
+            raise OpendataClientError("provider model query returned an invalid response shape")
+
+        pagination = data["pagination"]
+        if pagination is not None:
+            if not isinstance(pagination, Mapping):
+                raise OpendataClientError("provider model query returned invalid pagination")
+            total = pagination.get("total")
+            offset = pagination.get("offset")
+            limit = pagination.get("limit")
+            results = data["results"]
+            if (
+                type(total) is not int
+                or type(offset) is not int
+                or type(limit) is not int
+                or total < 0
+                or offset < 0
+                or limit < 1
+                or len(results) > limit
+                or (results and offset + len(results) > total)
+            ):
+                raise OpendataClientError("provider model query returned invalid pagination")
+
+        return dict(data)
+
+    def query_provider_model_warehouse(
+        self, source: str, model: str, query: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        """Read one bounded page from a provider model's native warehouse table.
+
+        This method requests one bounded warehouse page. It sends the caller's
+        query unchanged and does not follow pagination or convert
+        provider-specific date and period fields.
+
+        Args:
+            source: Exact provider identity.
+            model: Exact provider model identity.
+            query: Complete JSON-compatible warehouse query object.
+
+        Returns:
+            The complete native warehouse result metadata and rows.
+
+        Raises:
+            ValueError: If an identity is invalid or the query is not JSON-compatible.
+            OpendataClientError: If the request fails or the response is malformed.
+        """
+        source = _validate_provider_model_identity(source, "source")
+        model = _validate_provider_model_identity(model, "model")
+        if not isinstance(query, Mapping):
+            raise ValueError("query must be a JSON-compatible object")
+
+        body_content: bytes | None = None
+        with suppress(Exception):  # caller mappings may fail while being copied or encoded
+            query_copy = dict(query)
+            if _query_has_only_json_values(query_copy):
+                body_content = json.dumps(
+                    {"query": query_copy},
+                    allow_nan=False,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                ).encode("utf-8")
+        if body_content is None:
+            raise ValueError("query must use JSON values, finite numbers, and string object keys")
+
+        response: httpx.Response | None = None
+        with suppress(httpx.HTTPError):
+            response = self._client.post(
+                f"/api/v1/providers/{source}/models/{model}/warehouse/query",
+                content=body_content,
+                headers={"Content-Type": "application/json"},
+            )
+        if response is None:
+            raise OpendataClientError("provider model warehouse query request failed")
+
+        if not response.is_success:
+            error_type = _ERRORS.get(response.status_code, OpendataClientError)
+            raise error_type(f"HTTP {response.status_code}: provider model warehouse query failed")
+
+        envelope: Any = None
+        with suppress(ValueError):
+            envelope = response.json()
+        if not isinstance(envelope, Mapping) or envelope.get("success") is not True:
+            raise OpendataClientError(
+                "provider model warehouse query returned an invalid response envelope"
+            )
+
+        data = envelope.get("data")
+        if not isinstance(data, Mapping):
+            raise OpendataClientError(
+                "provider model warehouse query returned an invalid response shape"
+            )
+        data_has_json_values = False
+        with suppress(Exception):  # decoded response mappings are untrusted input
+            data_has_json_values = _query_has_only_json_values(dict(data))
+        if not data_has_json_values:
+            raise OpendataClientError("provider model warehouse query returned invalid JSON values")
+
+        required_fields = {
+            "source",
+            "model",
+            "domain",
+            "verified",
+            "read_at",
+            "completeness",
+            "snapshot_scope",
+            "results",
+            "pagination",
+        }
+        if (
+            not required_fields.issubset(data)
+            or data.get("source") != source
+            or data.get("model") != model
+            or not isinstance(data.get("domain"), str)
+            or not data["domain"]
+            or type(data.get("verified")) is not bool
+            or not isinstance(data.get("read_at"), str)
+            or not data["read_at"]
+            or data.get("completeness") != "NOT_ASSESSED"
+            or data.get("snapshot_scope") != "single_read_transaction"
+            or not isinstance(data.get("results"), list)
+            or any(not isinstance(row, dict) for row in data["results"])
+        ):
+            raise OpendataClientError(
+                "provider model warehouse query returned an invalid response shape"
+            )
+
+        pagination = data["pagination"]
+        page_fields = {"limit", "offset", "returned", "total"}
+        if not isinstance(pagination, Mapping) or not page_fields.issubset(pagination):
+            raise OpendataClientError("provider model warehouse query returned invalid pagination")
+        limit = pagination["limit"]
+        offset = pagination["offset"]
+        returned = pagination["returned"]
+        results = data["results"]
+        if (
+            type(limit) is not int
+            or type(offset) is not int
+            or type(returned) is not int
+            or pagination["total"] is not None
+            or not 1 <= limit <= 1000
+            or offset < 0
+            or returned != len(results)
+            or returned > limit
+        ):
+            raise OpendataClientError("provider model warehouse query returned invalid pagination")
+
+        return dict(data)
+
+    def ingest_provider_model(
+        self, source: str, model: str, query: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        """Submit one source-native query to the provider-model ingest API.
+
+        The query is sent unchanged inside the API request envelope. The
+        returned receipt reports the API's capture and storage metadata.
+
+        Args:
+            source: Exact provider identity.
+            model: Exact provider model identity.
+            query: Complete JSON-compatible source query object.
+
+        Returns:
+            The complete ingest receipt returned by the API.
+
+        Raises:
+            ValueError: If an identity is invalid or the query is not JSON-compatible.
+            OpendataClientError: If the request fails or the response is malformed.
+        """
+        from datetime import datetime, timedelta
+        from uuid import RFC_4122, UUID
+
+        source = _validate_provider_model_identity(source, "source")
+        model = _validate_provider_model_identity(model, "model")
+        if not isinstance(query, Mapping):
+            raise ValueError("query must be a JSON-compatible object")
+
+        body_content: bytes | None = None
+        with suppress(Exception):  # caller mappings may fail while being copied or encoded
+            query_copy = dict(query)
+            if _query_has_only_json_values(query_copy):
+                body_content = json.dumps(
+                    {"query": query_copy},
+                    allow_nan=False,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                ).encode("utf-8")
+        if body_content is None:
+            raise ValueError("query must use JSON values, finite numbers, and string object keys")
+
+        response: httpx.Response | None = None
+        with suppress(httpx.HTTPError):
+            response = self._client.post(
+                f"/api/v1/providers/{source}/models/{model}/ingest",
+                content=body_content,
+                headers={"Content-Type": "application/json"},
+            )
+        if response is None:
+            raise OpendataClientError("provider model ingest request failed")
+
+        if not response.is_success:
+            error_type = _ERRORS.get(response.status_code, OpendataClientError)
+            raise error_type(f"HTTP {response.status_code}: provider model ingest failed")
+
+        envelope: Any = None
+        with suppress(Exception):  # do not reflect untrusted response parser errors
+            envelope = response.json()
+        if not isinstance(envelope, Mapping) or envelope.get("success") is not True:
+            raise OpendataClientError("provider model ingest returned an invalid response envelope")
+
+        data = envelope.get("data")
+        if not isinstance(data, Mapping):
+            raise OpendataClientError("provider model ingest returned an invalid response shape")
+        data_has_json_values = False
+        with suppress(Exception):  # decoded response mappings are untrusted input
+            data_has_json_values = _query_has_only_json_values(dict(data))
+        if not data_has_json_values:
+            raise OpendataClientError("provider model ingest returned invalid JSON values")
+
+        required_fields = {
+            "source",
+            "model",
+            "domain",
+            "verified",
+            "batch_id",
+            "observed_at",
+            "raw_rows",
+            "stored_rows",
+            "raw_scope",
+            "completeness",
+            "transaction_scope",
+        }
+        if (
+            not required_fields.issubset(data)
+            or data.get("source") != source
+            or data.get("model") != model
+            or not isinstance(data.get("domain"), str)
+            or not data["domain"]
+            or type(data.get("verified")) is not bool
+            or not isinstance(data.get("batch_id"), str)
+            or not isinstance(data.get("observed_at"), str)
+            or type(data.get("raw_rows")) is not int
+            or type(data.get("stored_rows")) is not int
+            or not 0 <= data["raw_rows"] <= 10_000
+            or not 0 <= data["stored_rows"] <= 10_000
+            or data.get("raw_scope") != "extract_data_output"
+            or data.get("completeness") != "NOT_ASSESSED"
+            or data.get("transaction_scope") != "ods_and_dwd_single_transaction"
+        ):
+            raise OpendataClientError("provider model ingest returned an invalid response shape")
+
+        batch_id = data["batch_id"]
+        parsed_batch_id: UUID | None = None
+        with suppress(ValueError, AttributeError, TypeError):
+            parsed_batch_id = UUID(batch_id)
+        if (
+            parsed_batch_id is None
+            or str(parsed_batch_id) != batch_id
+            or parsed_batch_id.version != 4
+            or parsed_batch_id.variant != RFC_4122
+        ):
+            raise OpendataClientError("provider model ingest returned an invalid response shape")
+
+        observed_at = data["observed_at"]
+        parsed_observed_at: datetime | None = None
+        with suppress(ValueError, OverflowError):
+            parsed_observed_at = datetime.fromisoformat(observed_at.replace("Z", "+00:00"))
+        if (
+            parsed_observed_at is None
+            or parsed_observed_at.tzinfo is None
+            or parsed_observed_at.utcoffset() != timedelta(0)
+            or not (observed_at.endswith("+00:00") or observed_at.endswith("Z"))
+        ):
+            raise OpendataClientError("provider model ingest returned an invalid response shape")
+
+        return dict(data)
+
+    def export_provider_model(
+        self,
+        *,
+        source: str,
+        model: str,
+        query: Mapping[str, Any],
+        destination: str | os.PathLike[str],
+        overwrite: bool = False,
+    ) -> dict[str, Any]:
+        """Write one integrity-checked native warehouse export to a file.
+
+        The API returns one bounded NDJSON snapshot. Bytes are copied to a
+        private temporary file and published only after the complete stream,
+        metadata, row count, length, and digest have been verified.
+
+        Args:
+            source: Exact provider identity.
+            model: Exact provider model identity.
+            query: JSON-compatible export options and filters.
+            destination: File path where the verified NDJSON should be written.
+            overwrite: Whether to atomically replace an existing regular file.
+
+        Returns:
+            The export metadata, verified row and byte counts, digest, and
+            caller-supplied destination.
+
+        Raises:
+            ValueError: If an identity, query, overwrite flag, or destination is invalid.
+            OpendataClientError: If the request or export validation fails.
+        """
+        import hashlib
+        import stat
+        import tempfile
+        from pathlib import Path
+
+        source = _validate_provider_model_identity(source, "source")
+        model = _validate_provider_model_identity(model, "model")
+        if type(overwrite) is not bool:
+            raise ValueError("overwrite must be a bool")
+        if not isinstance(query, Mapping):
+            raise ValueError("query must be a JSON-compatible object")
+
+        query_copy: dict[str, Any] = {}
+        try:
+            for key, value in query.items():
+                if type(key) is not str or key in query_copy:
+                    raise ValueError("query must use unique string keys")
+                query_copy[key] = value
+        except Exception:
+            raise ValueError("query must be a JSON-compatible object") from None
+
+        allowed_query_fields = {"filters", "start", "end", "max_records", "max_bytes"}
+        if set(query_copy) - allowed_query_fields:
+            raise ValueError("query contains unsupported export fields")
+
+        max_records = query_copy.get("max_records", _EXPORT_MAX_RECORDS)
+        max_bytes = query_copy.get("max_bytes", _EXPORT_MAX_BYTES)
+        if type(max_records) is not int or not 1 <= max_records <= _EXPORT_MAX_RECORDS:
+            raise ValueError("max_records must be an integer from 1 through 200000")
+        if type(max_bytes) is not int or not 1 <= max_bytes <= _EXPORT_MAX_BYTES:
+            raise ValueError("max_bytes must be an integer from 1 through 67108864")
+
+        body_content: bytes | None = None
+        with suppress(Exception):
+            if _query_has_only_json_values(query_copy):
+                body_content = json.dumps(
+                    {"query": query_copy},
+                    allow_nan=False,
+                    ensure_ascii=False,
+                    separators=(",", ":"),
+                ).encode("utf-8")
+        if body_content is None:
+            raise ValueError("query must use JSON values, finite numbers, and string object keys")
+
+        try:
+            destination_text = os.fspath(destination)
+        except Exception:
+            raise ValueError("destination must be a filesystem path") from None
+        if not isinstance(destination_text, str) or not destination_text:
+            raise ValueError("destination must be a non-empty text path")
+        try:
+            destination_path = Path(destination_text)
+            if not destination_path.parent.is_dir():
+                raise ValueError("destination parent must be an existing directory")
+            try:
+                destination_stat = os.lstat(destination_path)
+            except FileNotFoundError:
+                destination_stat = None
+            if destination_stat is not None:
+                if stat.S_ISLNK(destination_stat.st_mode) or not stat.S_ISREG(
+                    destination_stat.st_mode
+                ):
+                    raise ValueError("destination must be a regular file path")
+                if not overwrite:
+                    raise ValueError("destination already exists")
+        except ValueError:
+            raise
+        except Exception:
+            raise ValueError("destination is not available") from None
+
+        temporary_path: Path | None = None
+        temporary_fd: int | None = None
+        try:
+            with self._client.stream(
+                "POST",
+                f"/api/v1/providers/{source}/models/{model}/warehouse/export",
+                content=body_content,
+                headers={"Content-Type": "application/json"},
+            ) as response:
+                if response.status_code != 200:
+                    error_type = _ERRORS.get(response.status_code, OpendataClientError)
+                    raise error_type(
+                        f"HTTP {response.status_code}: provider model warehouse export failed"
+                    )
+
+                content_type = response.headers.get("content-type", "")
+                if content_type.split(";", 1)[0].strip().casefold() != "application/x-ndjson":
+                    raise OpendataClientError("provider model warehouse export has invalid headers")
+                content_encoding = response.headers.get("content-encoding")
+                if (
+                    content_encoding is not None
+                    and content_encoding.strip().casefold() != "identity"
+                ):
+                    raise OpendataClientError("provider model warehouse export has invalid headers")
+
+                content_length = _provider_export_uint_header(response.headers, "content-length")
+                header_row_count = _provider_export_uint_header(response.headers, "x-row-count")
+                expected_digest = response.headers.get("x-content-sha256", "")
+                header_created_at = response.headers.get("x-export-created-at")
+                header_created_timestamp = _provider_export_parse_utc_timestamp(header_created_at)
+                if (
+                    content_length > max_bytes
+                    or header_row_count > max_records
+                    or len(expected_digest) != 64
+                    or any(char not in "0123456789abcdef" for char in expected_digest)
+                    or response.headers.get("x-ndjson-schema-version") != "1"
+                    or response.headers.get("x-snapshot-complete") != "true"
+                    or response.headers.get("x-snapshot-consistency") != _EXPORT_CONSISTENCY
+                    or response.headers.get("x-completeness") != _EXPORT_COMPLETENESS
+                    or header_created_timestamp is None
+                ):
+                    raise OpendataClientError("provider model warehouse export has invalid headers")
+
+                temporary_fd, temporary_name = tempfile.mkstemp(
+                    prefix=f".{destination_path.name}.",
+                    suffix=".opendata-export.tmp",
+                    dir=destination_path.parent,
+                )
+                temporary_path = Path(temporary_name)
+                os.fchmod(temporary_fd, 0o600)
+                output = os.fdopen(temporary_fd, "wb")
+                temporary_fd = None
+                digest = hashlib.sha256()
+                total_bytes = 0
+                row_count = 0
+                line_buffer = bytearray()
+                metadata: dict[str, Any] | None = None
+                summary_seen = False
+
+                with output:
+                    for chunk in response.iter_bytes(chunk_size=_EXPORT_CHUNK_SIZE):
+                        if not isinstance(chunk, bytes):
+                            raise OpendataClientError(
+                                "provider model warehouse export stream is invalid"
+                            )
+                        total_bytes += len(chunk)
+                        if total_bytes > max_bytes or total_bytes > content_length:
+                            raise OpendataClientError(
+                                "provider model warehouse export exceeds its byte limit"
+                            )
+                        if output.write(chunk) != len(chunk):
+                            raise OSError("short export write")
+                        digest.update(chunk)
+                        line_buffer.extend(chunk)
+
+                        while True:
+                            newline_at = line_buffer.find(b"\n")
+                            if newline_at < 0:
+                                if len(line_buffer) > max_bytes:
+                                    raise OpendataClientError(
+                                        "provider model export line exceeds byte limit"
+                                    )
+                                break
+                            raw_line = bytes(line_buffer[:newline_at])
+                            del line_buffer[: newline_at + 1]
+                            if raw_line.endswith(b"\r"):
+                                raw_line = raw_line[:-1]
+                            if not raw_line:
+                                raise OpendataClientError(
+                                    "provider model warehouse export contains an empty line"
+                                )
+                            record = _decode_provider_export_line(raw_line)
+
+                            if metadata is None:
+                                metadata_created_timestamp = _provider_export_parse_utc_timestamp(
+                                    record.get("created_at")
+                                )
+                                if (
+                                    set(record) != _EXPORT_METADATA_FIELDS
+                                    or record.get("kind") != "metadata"
+                                    or type(record.get("schema_version")) is not int
+                                    or record.get("schema_version") != 1
+                                    or record.get("source") != source
+                                    or record.get("model") != model
+                                    or not isinstance(record.get("domain"), str)
+                                    or not record["domain"]
+                                    or type(record.get("verified")) is not bool
+                                    or metadata_created_timestamp is None
+                                    or metadata_created_timestamp != header_created_timestamp
+                                    or record.get("consistency") != _EXPORT_CONSISTENCY
+                                    or record.get("completeness") != _EXPORT_COMPLETENESS
+                                ):
+                                    raise OpendataClientError(
+                                        "provider model warehouse export metadata is invalid"
+                                    )
+                                metadata = record
+                                continue
+
+                            if summary_seen:
+                                raise OpendataClientError(
+                                    "provider model warehouse export has trailing records"
+                                )
+                            kind = record.get("kind")
+                            if kind == "row":
+                                if set(record) != _EXPORT_ROW_FIELDS or not isinstance(
+                                    record.get("data"), dict
+                                ):
+                                    raise OpendataClientError(
+                                        "provider model warehouse export row is invalid"
+                                    )
+                                row_count += 1
+                                if row_count > max_records or row_count > header_row_count:
+                                    raise OpendataClientError(
+                                        "provider model warehouse export row count is invalid"
+                                    )
+                            elif kind == "summary":
+                                if (
+                                    set(record) != _EXPORT_SUMMARY_FIELDS
+                                    or type(record.get("rows")) is not int
+                                    or record.get("rows") != row_count
+                                    or record.get("rows") != header_row_count
+                                    or record.get("snapshot_complete") is not True
+                                ):
+                                    raise OpendataClientError(
+                                        "provider model warehouse export summary is invalid"
+                                    )
+                                summary_seen = True
+                            else:
+                                raise OpendataClientError(
+                                    "provider model warehouse export record is invalid"
+                                )
+
+                    if line_buffer:
+                        raise OpendataClientError(
+                            "provider model warehouse export is missing its final newline"
+                        )
+                    if (
+                        metadata is None
+                        or not summary_seen
+                        or row_count != header_row_count
+                        or total_bytes != content_length
+                        or digest.hexdigest() != expected_digest
+                    ):
+                        raise OpendataClientError(
+                            "provider model warehouse export failed integrity checks"
+                        )
+                    output.flush()
+                    os.fsync(output.fileno())
+
+            if temporary_path is None:
+                raise OpendataClientError("provider model warehouse export was not staged")
+            if overwrite:
+                try:
+                    final_stat = os.lstat(destination_path)
+                except FileNotFoundError:
+                    final_stat = None
+                if final_stat is not None and (
+                    stat.S_ISLNK(final_stat.st_mode) or not stat.S_ISREG(final_stat.st_mode)
+                ):
+                    raise OpendataClientError(
+                        "provider model warehouse export destination is not a regular file"
+                    )
+                os.replace(temporary_path, destination_path)
+            else:
+                os.link(temporary_path, destination_path, follow_symlinks=False)
+                os.unlink(temporary_path)
+            temporary_path = None
+
+            result = dict(metadata)
+            result.update(
+                {
+                    "row_count": row_count,
+                    "byte_count": total_bytes,
+                    "sha256": expected_digest,
+                    "snapshot_complete": True,
+                    "destination": destination_text,
+                }
+            )
+            return result
+        except OpendataClientError:
+            raise
+        except Exception:
+            raise OpendataClientError(
+                "provider model warehouse export failed validation or transfer"
+            ) from None
+        finally:
+            if temporary_fd is not None:
+                with suppress(OSError):
+                    os.close(temporary_fd)
+            if temporary_path is not None:
+                with suppress(OSError):
+                    temporary_path.unlink()
 
     def freshness(self, domain: str, *, source: str | None = None) -> dict[str, Any]:
         """Report how current one domain is (design §9.4).
@@ -767,3 +1574,94 @@ _ERRORS: dict[int, type[OpendataClientError]] = {
     429: OpendataClientError,
     501: UnsupportedQueryError,
 }
+
+_EXPORT_MAX_RECORDS = 200_000
+_EXPORT_MAX_BYTES = 64 * 1024 * 1024
+_EXPORT_CHUNK_SIZE = 64 * 1024
+_EXPORT_CONSISTENCY = "single_repeatable_read_transaction"
+_EXPORT_COMPLETENESS = "NOT_ASSESSED"
+_EXPORT_METADATA_FIELDS = frozenset(
+    {
+        "kind",
+        "schema_version",
+        "source",
+        "model",
+        "domain",
+        "verified",
+        "created_at",
+        "consistency",
+        "completeness",
+    }
+)
+_EXPORT_ROW_FIELDS = frozenset({"kind", "data"})
+_EXPORT_SUMMARY_FIELDS = frozenset({"kind", "rows", "snapshot_complete"})
+
+
+def _provider_export_uint_header(headers: httpx.Headers, name: str) -> int:
+    """Read one canonical, nonnegative decimal export header."""
+    value = headers.get(name)
+    if (
+        value is None
+        or not value
+        or not value.isascii()
+        or not value.isdecimal()
+        or (len(value) > 1 and value.startswith("0"))
+    ):
+        raise OpendataClientError("provider model warehouse export has invalid headers")
+    try:
+        return int(value)
+    except ValueError:
+        raise OpendataClientError("provider model warehouse export has invalid headers") from None
+
+
+def _provider_export_parse_utc_timestamp(value: object) -> object | None:
+    """Parse an ISO timestamp with an explicit UTC offset."""
+    import re
+    from datetime import datetime, timedelta
+
+    if (
+        not isinstance(value, str)
+        or re.fullmatch(
+            r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}"
+            r"(?:\.[0-9]{1,6})?(?:Z|\+00:00)",
+            value,
+        )
+        is None
+    ):
+        return None
+    normalized = f"{value[:-1]}+00:00" if value.endswith("Z") else value
+    try:
+        timestamp = datetime.fromisoformat(normalized)
+    except (OverflowError, ValueError):
+        return None
+    if timestamp.tzinfo is None or timestamp.utcoffset() != timedelta(0):
+        return None
+    return timestamp
+
+
+def _decode_provider_export_line(line: bytes) -> dict[str, Any]:
+    """Decode a strict JSON object line with duplicate and depth checks."""
+
+    def reject_constant(_value: str) -> None:
+        raise ValueError("non-finite JSON number")
+
+    def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate JSON key")
+            result[key] = value
+        return result
+
+    try:
+        text = line.decode("utf-8", errors="strict")
+        value = json.loads(
+            text,
+            object_pairs_hook=unique_object,
+            parse_constant=reject_constant,
+        )
+    except (RecursionError, UnicodeDecodeError, ValueError):
+        raise ValueError("invalid export JSON line") from None
+    if not isinstance(value, dict) or not _query_has_only_json_values(value):
+        raise ValueError("invalid export JSON values")
+    return value

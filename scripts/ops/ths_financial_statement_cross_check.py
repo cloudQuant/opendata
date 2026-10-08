@@ -36,7 +36,7 @@ import sys
 import time
 from datetime import date
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple, cast
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -475,23 +475,29 @@ def _run_leg(leg: Leg, ths: Fetcher[Any, Any], sina: Fetcher[Any, Any]) -> LegRe
     try:
         ours = _retry(
             f"{leg.label} ths",
-            lambda: list(
-                ths.fetch(
-                    symbol=leg.ths_symbol,
-                    statement_type=leg.statement_type,
-                    period=leg.period,
-                    start_date=leg.start_date,
-                    end_date=leg.end_date,
-                )
+            lambda: cast(
+                "list[FinancialStatement]",
+                list(
+                    ths.fetch(
+                        symbol=leg.ths_symbol,
+                        statement_type=leg.statement_type,
+                        period=leg.period,
+                        start_date=leg.start_date,
+                        end_date=leg.end_date,
+                    )
+                ),
             ),
         )
         ref = _retry(
             f"{leg.label} 新浪",
-            lambda: list(
-                sina.fetch(
-                    symbol=leg.reference_symbol,
-                    statement_type=SINA_STATEMENT_TYPES[leg.statement_type],
-                )
+            lambda: cast(
+                "list[FinancialStatement]",
+                list(
+                    sina.fetch(
+                        symbol=leg.reference_symbol,
+                        statement_type=SINA_STATEMENT_TYPES[leg.statement_type],
+                    )
+                ),
             ),
         )
     except Exception as exc:  # 跑不通也记成 FAIL，不能让整轮证据作废
@@ -586,7 +592,10 @@ def _run_alias(
     try:
         rows = _retry(
             f"{alias.label} ths",
-            lambda: list(ths.fetch(symbol=alias.ths_symbol, statement_type=alias.spelled)),
+            lambda: cast(
+                "list[FinancialStatement]",
+                list(ths.fetch(symbol=alias.ths_symbol, statement_type=alias.spelled)),
+            ),
         )
     except Exception as exc:  # 跑不通也记成 FAIL，不能让整轮证据作废
         print(f"!! {alias.label}: {type(exc).__name__}: {exc}", file=sys.stderr)
@@ -605,7 +614,7 @@ def _run_alias(
 
 def _header() -> list[str]:
     """Static preamble explaining what the run judges."""
-    from opendata_fuyao.endpoints import (
+    from opendata.data.providers.ths.endpoints import (
         BALANCE_SHEETS_ENDPOINT,
         CASH_FLOW_STATEMENTS_ENDPOINT,
         INCOME_STATEMENTS_ENDPOINT,

@@ -34,8 +34,14 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'scripts',
         name: 'Scripts',
+        component: () => import('@/views/DataCatalogView.vue'),
+        meta: { title: '数据目录' },
+      },
+      {
+        path: 'scripts/functions',
+        name: 'ScriptFunctions',
         component: () => import('@/views/ScriptsView.vue'),
-        meta: { title: '数据接口' },
+        meta: { title: '旧版脚本函数' },
       },
       {
         path: 'scripts/:id',

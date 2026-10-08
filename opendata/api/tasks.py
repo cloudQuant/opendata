@@ -16,11 +16,12 @@ from opendata.api.schemas import (
     ScheduleTemplate,
     TaskCreateRequest,
     TaskUpdateRequest,
+    validate_pipeline_task_parameters,
 )
 from opendata.core.database import get_db
 from opendata.models.data_script import DataScript
 from opendata.models.task import ScheduledTask, ScheduleType
-from opendata.models.user import User
+from opendata.models.user import User, UserRole
 from opendata.services.scheduler import task_scheduler
 
 router = APIRouter()
@@ -121,6 +122,8 @@ def _apply_task_update(task: ScheduledTask, request: TaskUpdateRequest) -> None:
         task.max_retries = request.max_retries
     if request.timeout is not None:
         task.timeout = request.timeout
+    if "script_id" in request.model_fields_set:
+        task.script_id = request.script_id
 
 
 @router.get("/schedule/templates")
@@ -170,7 +173,7 @@ async def list_tasks(
     tasks = result.scalars().all()
 
     # Batch-load script names to avoid N+1 queries
-    script_ids = list({t.script_id for t in tasks})
+    script_ids = list({t.script_id for t in tasks if t.script_id is not None})
     script_name_map: dict[str, str | None] = {}
     if script_ids:
         scripts_result = await db.execute(
@@ -182,7 +185,7 @@ async def list_tasks(
 
     items = []
     for task in tasks:
-        script_name = script_name_map.get(task.script_id)
+        script_name = script_name_map.get(task.script_id) if task.script_id is not None else None
         items.append(task.to_dict(script_name=script_name))
 
     return APIResponse(
@@ -204,23 +207,32 @@ async def create_task(
     db: AsyncSession = Depends(get_db),
 ) -> APIResponse:
     """Create a new scheduled task."""
-    # Verify script exists
-    script_result = await db.execute(
-        select(DataScript).where(DataScript.script_id == request.script_id)
-    )
-    script = script_result.scalar_one_or_none()
-
-    if script is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Data script not found",
+    script: DataScript | None = None
+    if request.task_kind == "pipeline":
+        if current_user.role != UserRole.ADMIN:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Administrator permission is required for pipeline tasks",
+            )
+        parameters = validate_pipeline_task_parameters(request.parameters)
+    else:
+        script_result = await db.execute(
+            select(DataScript).where(DataScript.script_id == request.script_id)
         )
+        script = script_result.scalar_one_or_none()
 
-    if not script.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Data script is not active",
-        )
+        if script is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Data script not found",
+            )
+
+        if not script.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Data script is not active",
+            )
+        parameters = request.parameters or {}
 
     # Validate schedule type
     try:
@@ -236,10 +248,11 @@ async def create_task(
         name=request.name,
         description=request.description,
         user_id=current_user.id,
+        task_kind=request.task_kind,
         script_id=request.script_id,
         schedule_type=schedule_type,
         schedule_expression=request.schedule_expression,
-        parameters=request.parameters or {},
+        parameters=parameters,
         is_active=request.is_active,
         retry_on_failure=request.retry_on_failure,
         max_retries=request.max_retries,
@@ -257,7 +270,7 @@ async def create_task(
     return APIResponse(
         success=True,
         message="Task created successfully",
-        data=_task_to_dict(task, script.script_name),
+        data=_task_to_dict(task, script.script_name if script else None),
     )
 
 
@@ -287,10 +300,12 @@ async def get_task(
         )
 
     # Get script info
-    script_result = await db.execute(
-        select(DataScript).where(DataScript.script_id == task.script_id)
-    )
-    script = script_result.scalar_one_or_none()
+    script = None
+    if task.script_id is not None:
+        script_result = await db.execute(
+            select(DataScript).where(DataScript.script_id == task.script_id)
+        )
+        script = script_result.scalar_one_or_none()
     script_name = script.script_name if script else None
 
     return APIResponse(
@@ -325,6 +340,43 @@ async def update_task(
             detail="Access denied",
         )
 
+    if request.task_kind is not None and request.task_kind != task.task_kind:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Task executor type cannot be changed",
+        )
+
+    if task.task_kind == "pipeline":
+        if current_user.role != UserRole.ADMIN:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=("Administrator permission is required to update pipeline tasks"),
+            )
+        if "script_id" in request.model_fields_set:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Pipeline tasks cannot include script_id",
+            )
+        try:
+            task.parameters = validate_pipeline_task_parameters(
+                request.parameters if request.parameters is not None else task.parameters
+            )
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(exc),
+            ) from None
+    elif "script_id" in request.model_fields_set:
+        script_result = await db.execute(
+            select(DataScript).where(DataScript.script_id == request.script_id)
+        )
+        script = script_result.scalar_one_or_none()
+        if script is None or not script.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Data script not found or inactive",
+            )
+
     try:
         _apply_task_update(task, request)
     except ValueError:
@@ -343,10 +395,12 @@ async def update_task(
     else:
         await task_scheduler.remove_task(task.id)
 
-    script_result = await db.execute(
-        select(DataScript).where(DataScript.script_id == task.script_id)
-    )
-    script = script_result.scalar_one_or_none()
+    script = None
+    if task.script_id is not None:
+        script_result = await db.execute(
+            select(DataScript).where(DataScript.script_id == task.script_id)
+        )
+        script = script_result.scalar_one_or_none()
     script_name = script.script_name if script else None
 
     return APIResponse(
@@ -379,6 +433,12 @@ async def delete_task(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied",
+        )
+
+    if task.task_kind == "pipeline" and current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator permission is required to delete pipeline tasks",
         )
 
     # Remove from scheduler
@@ -417,6 +477,12 @@ async def trigger_task(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied",
+        )
+
+    if task.task_kind == "pipeline" and current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator permission is required to trigger pipeline tasks",
         )
 
     # Trigger execution

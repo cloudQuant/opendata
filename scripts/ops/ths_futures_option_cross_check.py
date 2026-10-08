@@ -34,7 +34,7 @@ import argparse
 import sys
 from datetime import date
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple, cast
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -43,10 +43,11 @@ if str(ROOT) not in sys.path:
 REPO_RELATIVE = Path(__file__).resolve().relative_to(ROOT)
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping
+    from collections.abc import Callable, Mapping, Sequence
 
     import pandas as pd
 
+    from opendata.data.models import ContractModel
     from opendata.data.protocol import Fetcher
 
 
@@ -63,30 +64,41 @@ class Leg(NamedTuple):
 
 #: sina reference channels, resolved lazily so the script imports offline.
 def _futures_sina(symbol: str) -> pd.DataFrame:
-    from opendata_http.futures.futures_zh_sina import futures_zh_daily_sina
+    from opendata.data.providers.akshare._vendor.futures.futures_zh_sina import (
+        futures_zh_daily_sina,
+    )
 
-    return futures_zh_daily_sina(symbol=symbol)
+    return cast("pd.DataFrame", futures_zh_daily_sina(symbol=symbol))
 
 
 def _commodity_option_sina(symbol: str) -> pd.DataFrame:
-    from opendata_http.option.option_commodity_sina import option_commodity_hist_sina
+    from opendata.data.providers.akshare._vendor.option.option_commodity_sina import (
+        option_commodity_hist_sina,
+    )
 
-    return option_commodity_hist_sina(symbol=symbol)
+    return cast("pd.DataFrame", option_commodity_hist_sina(symbol=symbol))
 
 
 def _cffex_option_sina(symbol: str) -> pd.DataFrame:
-    from opendata_http.option.option_finance_sina import option_cffex_zz1000_daily_sina
+    from opendata.data.providers.akshare._vendor.option.option_finance_sina import (
+        option_cffex_zz1000_daily_sina,
+    )
 
-    return option_cffex_zz1000_daily_sina(symbol=symbol)
+    return cast("pd.DataFrame", option_cffex_zz1000_daily_sina(symbol=symbol))
 
 
 def _sse_option_sina(symbol: str) -> pd.DataFrame:
     """SSE ETF options: sina labels four columns in Chinese."""
-    from opendata_http.option.option_finance_sina import option_sse_daily_sina
+    from opendata.data.providers.akshare._vendor.option.option_finance_sina import (
+        option_sse_daily_sina,
+    )
 
-    frame = option_sse_daily_sina(symbol=symbol)
-    return frame.rename(
-        columns={"日期": "date", "开盘": "open", "最高": "high", "最低": "low", "收盘": "close"}
+    frame = cast("pd.DataFrame", option_sse_daily_sina(symbol=symbol))
+    return cast(
+        "pd.DataFrame",
+        frame.rename(
+            columns={"日期": "date", "开盘": "open", "最高": "high", "最低": "low", "收盘": "close"}
+        ),
     )
 
 
@@ -159,8 +171,10 @@ def _ths_frame(fetcher: Fetcher[Any, Any], symbol: str, start: date, end: date) 
     """Read one window through the routing path and flatten it to a frame."""
     import pandas as pd
 
-    rows = fetcher.fetch(symbol=symbol, start_date=start, end_date=end)
-    frame = pd.DataFrame([row.model_dump() for row in rows])
+    rows = cast(
+        "Sequence[ContractModel]", fetcher.fetch(symbol=symbol, start_date=start, end_date=end)
+    )
+    frame: pd.DataFrame = pd.DataFrame([row.model_dump() for row in rows])
     frame["trade_date"] = pd.to_datetime(frame["trade_date"]).dt.date
     return frame
 
@@ -173,7 +187,7 @@ def _sina_frame(channel: str, sina_symbol: str, start: date, end: date) -> pd.Da
     out = frame.copy()
     out["trade_date"] = pd.to_datetime(out["date"]).dt.date
     windowed = out[(out["trade_date"] >= start) & (out["trade_date"] <= end)]
-    return windowed.reset_index(drop=True)
+    return cast("pd.DataFrame", windowed.reset_index(drop=True))
 
 
 def _compare(ours: pd.DataFrame, theirs: pd.DataFrame, fields: tuple[str, ...]) -> dict[str, Any]:

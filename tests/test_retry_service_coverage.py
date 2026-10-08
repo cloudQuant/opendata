@@ -52,6 +52,18 @@ class TestScheduleRetry:
 
 class TestExecuteRetry:
     @pytest.mark.asyncio
+    async def test_pipeline_task_is_not_sent_to_script_retry_runner(self, svc, mock_db):
+        original_exec = MagicMock()
+        original_exec.execution_id = "orig1"
+
+        task = MagicMock()
+        task.id = 1
+        task.script_id = None
+
+        assert await svc.execute_retry(original_exec, task, 1) is False
+        mock_db.commit.assert_not_awaited()
+
+    @pytest.mark.asyncio
     async def test_success(self, svc, mock_db):
         """Mock the inner imports since DataService module doesn't exist."""
         original_exec = MagicMock()

@@ -29,7 +29,6 @@ const menuItems = computed(() => {
   const items = [
     { index: '/', name: t('nav.home'), icon: 'HomeFilled' },
     { index: '/data', name: t('nav.catalog'), icon: 'DataAnalysis' },
-    { index: '/scripts', name: t('nav.scripts'), icon: 'Document' },
     { index: '/tasks', name: t('nav.tasks'), icon: 'Timer' },
     { index: '/executions', name: t('nav.executions'), icon: 'List' },
     { index: '/tables', name: t('nav.tables'), icon: 'Grid' },
@@ -64,13 +63,10 @@ function handleLanguageChange(lang: Locale) {
 
 <template>
   <el-container class="layout-container">
-    <el-aside
-      :width="isCollapse ? '64px' : '200px'"
-      class="sidebar"
-    >
+    <el-aside :width="isCollapse ? '64px' : '200px'" class="sidebar">
       <div class="logo">
         <span v-if="!isCollapse">opendata</span>
-        <span v-else>ak</span>
+        <span v-else>od</span>
       </div>
       <el-menu
         :default-active="activeMenu"
@@ -78,11 +74,7 @@ function handleLanguageChange(lang: Locale) {
         :collapse-transition="false"
         router
       >
-        <el-menu-item
-          v-for="item in menuItems"
-          :key="item.index"
-          :index="item.index"
-        >
+        <el-menu-item v-for="item in menuItems" :key="item.index" :index="item.index">
           <el-icon><component :is="item.icon" /></el-icon>
           <template #title>
             {{ item.name }}
@@ -94,11 +86,7 @@ function handleLanguageChange(lang: Locale) {
     <el-container>
       <el-header class="header">
         <div class="header-left">
-          <el-button
-            :icon="isCollapse ? 'Expand' : 'Fold'"
-            text
-            @click="toggleCollapse"
-          />
+          <el-button :icon="isCollapse ? 'Expand' : 'Fold'" text @click="toggleCollapse" />
         </div>
         <div class="header-right">
           <el-dropdown @command="handleLanguageChange">
@@ -118,7 +106,9 @@ function handleLanguageChange(lang: Locale) {
               </el-dropdown-menu>
             </template>
           </el-dropdown>
-          <el-tooltip :content="themeStore.mode === 'dark' ? t('theme.toggleLight') : t('theme.toggleDark')">
+          <el-tooltip
+            :content="themeStore.mode === 'dark' ? t('theme.toggleLight') : t('theme.toggleDark')"
+          >
             <el-button
               :icon="themeStore.mode === 'dark' ? Sunny : Moon"
               circle

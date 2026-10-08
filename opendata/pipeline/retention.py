@@ -16,9 +16,8 @@ from __future__ import annotations
 
 import csv
 import enum
-import shutil
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -31,6 +30,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from sqlalchemy import Engine
+
+    from opendata.data.minute_archive import MinuteArchivePurgeResult
 
 
 class RetentionError(RuntimeError):
@@ -200,17 +201,19 @@ def purge_expired_rows(
     table: str,
     date_column: str,
     older_than_days: int | None = None,
+    dry_run: bool = False,
 ) -> int:
-    """Delete rows older than the table's declared retention.
+    """Count or delete rows older than the table's declared retention.
 
     Args:
         engine: Warehouse engine.
         table: Table to purge; must be a bounded (``days``) rule.
         date_column: Timestamp column driving the cutoff.
         older_than_days: Override for the rule's limit.
+        dry_run: Return the candidate count without deleting when true.
 
     Returns:
-        Number of deleted rows.
+        Candidate rows in dry-run mode; otherwise rows actually deleted.
 
     Raises:
         RetentionError: If the table is permanent/uncovered, the limit
@@ -225,25 +228,34 @@ def purge_expired_rows(
     if not days or days <= 0:
         raise RetentionError(f"refusing to purge {table} with a non-positive window: {days!r}")
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
-    statement = f"DELETE FROM {_identifier(table)} WHERE {_identifier(date_column)} < :cutoff"
+    # Both dynamic identifiers are rejected unless they are plain names.
+    count_statement = (
+        f"SELECT COUNT(*) FROM {_identifier(table)} WHERE {_identifier(date_column)} < :cutoff"  # nosec B608
+    )
+    statement = f"DELETE FROM {_identifier(table)} WHERE {_identifier(date_column)} < :cutoff"  # nosec B608
     with engine.begin() as connection:
+        candidates = int(connection.execute(text(count_statement), {"cutoff": cutoff}).scalar_one())
+        if dry_run:
+            return candidates
         result = connection.execute(text(statement), {"cutoff": cutoff})
     return int(result.rowcount or 0)
 
 
-def purge_diff_report(engine: Engine) -> int:
-    """Purge ``dq_diff_report`` rows past the declared window.
+def purge_diff_report(engine: Engine, *, dry_run: bool = False) -> int:
+    """Count or purge ``dq_diff_report`` rows past the declared window.
 
     Args:
         engine: Warehouse engine.
+        dry_run: Return the candidate count without deleting when true.
 
     Returns:
-        Number of deleted rows.
+        Candidate rows in dry-run mode; otherwise rows actually deleted.
     """
     return purge_expired_rows(
         engine,
         table=DQ_DIFF_REPORT_TABLE,
         date_column="checked_at",
+        dry_run=dry_run,
     )
 
 
@@ -261,7 +273,7 @@ def export_diff_details(engine: Engine, path: Path | str) -> int:
         Number of exported rows.
     """
     columns = ", ".join(_identifier(column) for column in REPORT_COLUMNS)
-    statement = f"SELECT {columns} FROM {_identifier(DQ_DIFF_REPORT_TABLE)} ORDER BY `checked_at`"
+    statement = f"SELECT {columns} FROM {_identifier(DQ_DIFF_REPORT_TABLE)} ORDER BY `checked_at`"  # nosec B608
     destination = Path(path)
     destination.parent.mkdir(parents=True, exist_ok=True)
     with engine.connect() as connection:
@@ -276,42 +288,54 @@ def export_diff_details(engine: Engine, path: Path | str) -> int:
 def purge_minute_archives(
     root: Path | str,
     *,
+    metadata_engine: Engine | None = None,
     keep_years: int | None = None,
-    today: datetime | None = None,
-) -> list[Path]:
-    """Remove minute-line Parquet year partitions past the window.
+    today: date | datetime | None = None,
+    dry_run: bool = False,
+) -> MinuteArchivePurgeResult:
+    """Count or retire expired indexed minute shards and their immutable files.
 
-    The archive layout is ``domain/symbol/year`` (design §13); every
-    directory named after a year outside the retained window is
-    removed. A missing root is a no-op: archives that were never
-    written must not fail a maintenance run.
+    Deletion is driven by the main-database metadata index. The index row
+    is removed transactionally under the same process-local shard lock used
+    by archive readers and writers, before canonical old files are unlinked.
+    Unindexed directories and files are never recursively removed.
 
     Args:
         root: Archive root directory.
+        metadata_engine: Synchronous main-database engine for the shard index.
         keep_years: Override for the rule's limit.
-        today: Override for "now" (tests).
+        today: Override for "today" (tests).
+        dry_run: Return candidates without removing them when true.
 
     Returns:
-        The removed year directories.
+        Indexed candidate count, deleted metadata count, file count, and cleanup errors.
 
     Raises:
-        RetentionError: If the window is not positive.
+        RetentionError: If the window or index engine is invalid/unavailable.
     """
     rule = rule_for(MINUTE_ARCHIVE)
     years = keep_years if keep_years is not None else rule.limit
     if not years or years <= 0:
         raise RetentionError(f"refusing to purge {MINUTE_ARCHIVE} with window {years!r}")
-    archive_root = Path(root)
-    if not archive_root.exists():
-        return []
-    cutoff_year = (today or datetime.now(timezone.utc)).year - years + 1
-    removed = []
-    for candidate in sorted(archive_root.rglob("*")):
-        name = candidate.name
-        if candidate.is_dir() and len(name) == 4 and name.isdigit() and int(name) < cutoff_year:
-            shutil.rmtree(candidate)
-            removed.append(candidate)
-    return removed
+    if metadata_engine is None:
+        raise RetentionError("minute archive deletion requires the main-database metadata index")
+    from opendata.data.minute_archive import (
+        MinuteArchiveIndexError,
+        MinuteArchiveValidationError,
+        purge_expired_minute_shards,
+    )
+
+    effective_today = today.date() if isinstance(today, datetime) else today
+    try:
+        return purge_expired_minute_shards(
+            metadata_engine,
+            root,
+            keep_years=years,
+            today=effective_today,
+            dry_run=dry_run,
+        )
+    except (MinuteArchiveIndexError, MinuteArchiveValidationError) as exc:
+        raise RetentionError(f"minute archive retention failed: {exc}") from exc
 
 
 def purge_raw_response_cache(
@@ -319,16 +343,18 @@ def purge_raw_response_cache(
     root: Path | str | None = None,
     ttl_seconds: int | None = None,
     now: datetime | None = None,
+    dry_run: bool = False,
 ) -> int:
-    """Remove cached raw responses older than the TTL (design §13).
+    """Count or remove cached raw responses older than the TTL (design §13).
 
     Args:
         root: Cache root; defaults to the configured ``CACHE_DIR``.
         ttl_seconds: Override for the rule's limit.
         now: Override for "now" (tests).
+        dry_run: Return the candidate count without unlinking when true.
 
     Returns:
-        Number of removed files.
+        Candidate file count in dry-run mode; otherwise removed file count.
 
     Raises:
         RetentionError: If the TTL is not positive.
@@ -343,7 +369,10 @@ def purge_raw_response_cache(
     cutoff = (now or datetime.now(timezone.utc)).timestamp() - ttl
     removed = 0
     for path in cache_root.rglob("*"):
+        if path.name == ".env":
+            continue
         if path.is_file() and path.stat().st_mtime < cutoff:
-            path.unlink()
             removed += 1
+            if not dry_run:
+                path.unlink()
     return removed

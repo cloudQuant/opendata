@@ -34,7 +34,7 @@ import asyncio
 import time
 from dataclasses import dataclass
 from datetime import date, timedelta
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, TypedDict, cast
 
 from loguru import logger
 
@@ -78,21 +78,47 @@ PROBE_RETRY_BACKOFF = 2.0
 #: while ``index_constituent`` stays qualified so the pass-the-symbol-through
 #: path is covered too and a catalog outage does not fail both legs alike.
 ProbeParams = dict[str, str | date]
+
+
+class KeyStatus(TypedDict):
+    """Public, non-secret metadata for one configured provider key."""
+
+    required: bool
+    configured: bool
+    endpoint: str
+    expires_at: date | None
+
+
 PROBE_PARAMS: dict[tuple[str, str], ProbeParams] = {
     ("economy_cpi", "ecb"): {
         "series_id": "ICP/M.U2.N.000000.4.ANR",
         "start_date": date(2024, 1, 1),
         "end_date": date(2024, 12, 31),
     },
+    ("economy_cpi", "fred"): {
+        "series_id": "CPIAUCSL",
+        "start_date": date(2020, 1, 1),
+        "end_date": date(2026, 8, 1),
+    },
     ("economy_gdp", "ecb"): {
         "series_id": "MNA/Q.N.I9.W2.S1.S1.B.B1GQ._Z._Z._Z.EUR.LR.N",
         "start_date": date(2023, 1, 1),
         "end_date": date(2024, 12, 31),
     },
+    ("economy_gdp", "fred"): {
+        "series_id": "GDPC1",
+        "start_date": date(2020, 1, 1),
+        "end_date": date(2026, 8, 1),
+    },
     ("economy_rate", "ecb"): {
         "series_id": "FM/B.U2.EUR.4F.KR.MRR_FR.LEV",
         "start_date": date(2022, 1, 1),
         "end_date": date(2024, 12, 31),
+    },
+    ("economy_unemployment", "fred"): {
+        "series_id": "UNRATE",
+        "start_date": date(2020, 1, 1),
+        "end_date": date(2026, 8, 1),
     },
     ("economy_cpi", "imf"): {
         "indicator": "PCPIPCH",
@@ -440,7 +466,7 @@ def evaluate_canary(canary: FieldCanary, rows: Sequence[object]) -> CanaryReadin
 
 def key_status(
     settings: Any | None = None,  # noqa: ANN401  # duck-typed settings for tests
-) -> dict[str, dict[str, object]]:
+) -> dict[str, KeyStatus]:
     """Report which sources have their credentials configured.
 
     A source that requires a key but has none configured is not a
@@ -458,27 +484,43 @@ def key_status(
 
     settings = settings or app_settings
 
-    keys = {
-        "ths": {"present": bool(settings.fuyao_api_key), "required": True},
-        "fred": {"present": bool(settings.fred_api_key), "required": True},
-        "yfinance": {"present": True, "required": False},
-        "ecb": {"present": True, "required": False},
-        "imf": {"present": True, "required": False},
-        "oecd": {"present": True, "required": False},
-        "akshare": {"present": True, "required": False},
+    keys: dict[str, tuple[bool, bool, date | None]] = {
+        "ths": (
+            bool(settings.fuyao_api_key),
+            True,
+            _configured_expiry(getattr(settings, "fuyao_api_key_expires_at", None)),
+        ),
+        "fred": (
+            bool(settings.fred_api_key),
+            True,
+            _configured_expiry(getattr(settings, "fred_api_key_expires_at", None)),
+        ),
+        "yfinance": (True, False, None),
+        "ecb": (True, False, None),
+        "imf": (True, False, None),
+        "oecd": (True, False, None),
+        "akshare": (True, False, None),
     }
-    return {
-        source: {
-            "required": info["required"],
-            "configured": info["present"],
-            "endpoint": "fuyao.aicubes.cn"
-            if source == "ths"
-            else "api.stlouisfed.org"
-            if source == "fred"
-            else "n/a",
+    status: dict[str, KeyStatus] = {}
+    for source, (configured, required, expires_at) in keys.items():
+        status[source] = {
+            "required": required,
+            "configured": configured,
+            "endpoint": (
+                "fuyao.aicubes.cn"
+                if source == "ths"
+                else "api.stlouisfed.org"
+                if source == "fred"
+                else "n/a"
+            ),
+            "expires_at": expires_at,
         }
-        for source, info in keys.items()
-    }
+    return status
+
+
+def _configured_expiry(value: object) -> date | None:
+    """Return only a validated date from optional issuer metadata."""
+    return value if isinstance(value, date) else None
 
 
 def key_values(settings: Any | None = None) -> tuple[str, ...]:  # noqa: ANN401
@@ -510,6 +552,9 @@ def key_values(settings: Any | None = None) -> tuple[str, ...]:  # noqa: ANN401
 def credential_health(
     settings: Any | None = None,  # noqa: ANN401  # duck-typed settings for tests
     results: Sequence[PatrolResult] = (),
+    *,
+    recent_observations: Sequence[FailureObservation] = (),
+    as_of: date | None = None,
 ) -> dict[str, KeyReport]:
     """Grade each source's credential plane (AC-19 / NFR-5).
 
@@ -522,6 +567,9 @@ def credential_health(
         results: Probe results of one patrol. A leg that passed on its retry
             still contributes its first failure, so a 429 the retry absorbed is
             reported as quota consumption rather than hidden.
+        recent_observations: Sanitized failures from the process-local passive
+            health store.
+        as_of: Reference date for issuer-supplied expiry metadata.
 
     Returns:
         ``{source: KeyReport}``, metadata only - no Key value, no header, no URL
@@ -529,12 +577,17 @@ def credential_health(
         ``not-applicable``; a configured Key that was never seen to fail is
         ``presence-only``, never healthy. Call ``as_dict()`` to render one.
     """
+    if settings is None:
+        from opendata.core.config import settings as app_settings
+
+        settings = app_settings
     statuses = key_status(settings)
-    observations = tuple(
+    observed_results = tuple(
         FailureObservation(result.source, str(result.failure_class), result.attribution)
         for result in results
         if result.failure_class is not None
     )
+    observations = (*observed_results, *recent_observations)
     return {
         source: build_report(
             source,
@@ -542,28 +595,43 @@ def credential_health(
             configured=bool(info["configured"]),
             endpoint=str(info["endpoint"]),
             observations=observations,
+            expires_at=(
+                info.get("expires_at") if isinstance(info.get("expires_at"), date) else None
+            ),
+            as_of=as_of,
+            expiry_warning_days=int(getattr(settings, "key_expiry_warning_days", 14)),
         )
         for source, info in statuses.items()
     }
 
 
-async def patrol(registry: ProviderRegistry | None = None) -> Sequence[PatrolResult]:
-    """Probe every verified capability and refresh the registry health.
+async def patrol(
+    registry: ProviderRegistry | None = None,
+    *,
+    capabilities: Sequence[Capability] | None = None,
+) -> Sequence[PatrolResult]:
+    """Probe selected verified capabilities and refresh registry health.
 
     Args:
         registry: Registry to probe; defaults to the process singleton.
+        capabilities: Optional selected legs to probe. The full registry
+            remains available to rolling probe resolvers for metadata
+            dependencies. None preserves the historical all-capabilities
+            behavior.
 
     Returns:
-        One result per registered verified capability, in registration
+        One result per selected registered verified capability, in input
         order, each naming the attempts it used up and the column-shape
-        readings taken after its pass.
+        readings taken after its pass. With no selection, every verified
+        registry capability is probed as before.
     """
     from opendata.data.registry import get_registry
 
     registry = registry or get_registry()
     secrets = key_values()
     results: list[PatrolResult] = []
-    for capability in registry.capabilities():
+    selected_capabilities = registry.capabilities() if capabilities is None else capabilities
+    for capability in selected_capabilities:
         if not capability.verified:
             continue
         try:

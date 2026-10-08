@@ -1,20 +1,20 @@
 """A first-party file may not vanish from a static plane because of its *name*
 (C35, AC-2 / AC-17).
 
-Milestone A2 renamed the vendored top-level ``akshare/`` to ``opendata_http/``
-and left four exclusion configs pointing at the old name. Three of those configs
-match by path *segment* or substring rather than by root directory, so the
-provider package ``opendata/data/providers/akshare/`` - 15 modules of first-party
-code that happen to sit under a directory named after the vendor - was invisible
-to:
+The vendored AkShare package now lives at the exact nested prefix
+``opendata/data/providers/akshare/_vendor/``. Its first-party sibling adapter
+must remain visible, while the nested upstream package receives a separate
+ported audit. The vendor exclusion therefore must match the full component
+prefix and not merely the word ``akshare`` or ``_vendor``. The adapter package
+contains 15+ first-party modules and is checked by:
 
-  * ``ruff check opendata`` (walked 176 of the 191 files under ``opendata/``);
+  * ``ruff check opendata`` (excluding only the nested vendor prefix);
   * ``mypy opendata/`` (a deliberate ``x: int = "s"`` in the package produced no
     line of output);
   * bandit, *including the leg a2-check runs on files it is handed* (the same
     marker line was reported as B404 when the file was copied out of the repo,
     and reported nowhere once it sat in the package);
-  * and ``a2_check._is_a2_candidate``, which dropped all 15 from the A2 set
+  * and ``a2_check._is_a2_candidate``, which must keep all adapter files in A2
     before any tool was even called.
 
 The debt that was hiding was small (6 ``I001``, 5 files needing ``ruff format``,
@@ -48,6 +48,7 @@ import tomllib
 import yaml
 
 from scripts.quality import a2_check as guard
+from scripts.quality.source_layout import FIRST_PARTY, VENDOR_ROOT, classify_path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -71,6 +72,11 @@ def tree_files(tree: str) -> list[str]:
         for path in (REPO_ROOT / tree).rglob("*.py")
         if "__pycache__" not in path.parts
     )
+
+
+def files_in_layer(tree: str, layer: str) -> list[str]:
+    """Return Python paths classified into one exact source layer."""
+    return [name for name in tree_files(tree) if classify_path(name) == layer]
 
 
 def ruff_walked(tree: str) -> set[str]:
@@ -101,9 +107,9 @@ class TestTheCollidingPackageIsInvisibleToNoPlane:
 
     def test_the_package_is_still_there_to_lose(self) -> None:
         """Keep the sweeps below from going vacuous if the tree is ever moved."""
-        assert len(tree_files(COLLISION_PACKAGE)) >= 15
+        assert len(files_in_layer(COLLISION_PACKAGE, FIRST_PARTY)) >= 15
 
-    @pytest.mark.parametrize("rel_path", tree_files(COLLISION_PACKAGE))
+    @pytest.mark.parametrize("rel_path", files_in_layer(COLLISION_PACKAGE, FIRST_PARTY))
     def test_a2_gate_accepts_each_file(self, rel_path: str) -> None:
         assert guard._is_a2_candidate(rel_path) is True
 
@@ -111,7 +117,11 @@ class TestTheCollidingPackageIsInvisibleToNoPlane:
         """The predicate alone is not the gate: check the real resolved set."""
         resolved = guard.resolve_files(None)
         assert resolved is not None, "A2 baseline missing - the gate is inactive"
-        missing = [name for name in tree_files(COLLISION_PACKAGE) if name not in set(resolved)]
+        missing = [
+            name
+            for name in files_in_layer(COLLISION_PACKAGE, FIRST_PARTY)
+            if name not in set(resolved)
+        ]
         assert missing == [], f"dropped from the zero-tolerance set: {missing}"
 
     def test_no_first_party_file_is_dropped_from_the_a2_set(self) -> None:
@@ -119,16 +129,16 @@ class TestTheCollidingPackageIsInvisibleToNoPlane:
             name
             for tree in FIRST_PARTY_TREES
             for name in tree_files(tree)
-            if guard._is_a2_candidate(name) is False
+            if classify_path(name) == FIRST_PARTY and guard._is_a2_candidate(name) is False
         ]
         assert offenders == [], f"silently excluded by name: {offenders}"
 
 
-class TestRootTreesStayExcluded:
-    """The other half: the ported/legacy layers must not be pulled in by name."""
+class TestPortedTreeStaysSeparate:
+    """The other half: ported code must stay outside first-party A2 checks."""
 
-    @pytest.mark.parametrize("rel_path", ["opendata_http/__init__.py"])
-    def test_existing_root_tree_files_are_not_a2_candidates(self, rel_path: str) -> None:
+    @pytest.mark.parametrize("rel_path", [f"{VENDOR_ROOT}/__init__.py"])
+    def test_nested_vendor_files_are_not_a2_candidates(self, rel_path: str) -> None:
         assert (REPO_ROOT / rel_path).is_file(), f"{rel_path} moved - this case proves nothing"
         assert guard._is_a2_candidate(rel_path) is False
 
@@ -162,10 +172,9 @@ class TestRootTreesStayExcluded:
         silence C35 exploited.
         """
         from_root = ruff_walked(".")
-        # Non-vacuity: the root walk really does carry the first-party trees, so
-        # an empty `ported` below is an exclusion working and not an empty scan.
-        assert set(tree_files("opendata")) <= from_root
-        ported = {name for name in tree_files("opendata_http") if name in from_root}
+        expected_first_party = set(files_in_layer("opendata", FIRST_PARTY))
+        assert expected_first_party <= from_root
+        ported = {name for name in tree_files(VENDOR_ROOT) if name in from_root}
         assert ported == set(), f"ported files linted as first-party: {sorted(ported)[:5]}"
 
 
@@ -174,7 +183,7 @@ class TestRuffWalkCoversEveryFirstPartyFile:
 
     @pytest.mark.parametrize("tree", FIRST_PARTY_TREES)
     def test_walk_census_equals_tree_census(self, tree: str) -> None:
-        on_disk = set(tree_files(tree))
+        on_disk = set(files_in_layer(tree, FIRST_PARTY))
         walked = ruff_walked(tree)
         assert walked == on_disk, (
             f"ruff walks {len(walked)} of {len(on_disk)} files under {tree}/; "
@@ -201,8 +210,11 @@ class TestMypyExcludesOnlyWhatItSays:
     """``[tool.mypy].exclude`` is a ``re.search`` over the path - so it anchors."""
 
     def test_only_the_legacy_data_fetch_subtree_is_dark_under_opendata(self) -> None:
-        dark = [name for name in tree_files("opendata") if mypy_excludes(name)]
+        dark = [name for name in files_in_layer("opendata", FIRST_PARTY) if mypy_excludes(name)]
         assert set(dark) == set(tree_files("opendata/data_fetch"))
+        assert set(tree_files(VENDOR_ROOT)) <= {
+            name for name in tree_files("opendata") if mypy_excludes(name)
+        }
 
     def test_the_package_that_collided_is_not_dark(self) -> None:
         sample = tree_files(f"{COLLISION_PACKAGE}/models")
@@ -211,10 +223,21 @@ class TestMypyExcludesOnlyWhatItSays:
 
     @pytest.mark.parametrize(
         "rel_path",
-        ["opendata_http/x.py", "tests/x.py"],
+        [f"{VENDOR_ROOT}/x.py", "tests/x.py"],
     )
     def test_documented_root_trees_stay_out(self, rel_path: str) -> None:
         assert mypy_excludes(rel_path) is True
+
+    @pytest.mark.parametrize(
+        "rel_path",
+        [
+            "opendata/data/providers/akshare/adapter.py",
+            "opendata/data/providers/akshare/_vendorish/adapter.py",
+            "other/_vendor/adapter.py",
+        ],
+    )
+    def test_vendor_exclusion_is_component_bounded(self, rel_path: str) -> None:
+        assert mypy_excludes(rel_path) is False
 
     @pytest.mark.parametrize("rel_path", ["alembic/x.py", "alembic_data/x.py"])
     def test_the_migration_roots_are_not_mypy_dark(self, rel_path: str) -> None:
@@ -246,16 +269,29 @@ class TestBanditExcludesNoFirstPartyName:
     def test_no_entry_is_a_substring_of_a_first_party_path(self) -> None:
         entries = BANDIT_CONFIG["exclude_dirs"]
         assert entries, "exclude_dirs emptied - this case would prove nothing"
-        first_party = {name for tree in FIRST_PARTY_TREES for name in tree_files(tree)}
+        first_party = {
+            name for tree in FIRST_PARTY_TREES for name in files_in_layer(tree, FIRST_PARTY)
+        }
         hits = sorted(
             f"{entry} matched {name}" for entry in entries for name in first_party if entry in name
         )
         assert hits == [], f"bandit never scans these: {hits[:10]}"
 
-    def test_the_ported_tree_is_still_excluded(self) -> None:
-        ported = tree_files("opendata_http")
-        assert ported, "opendata_http/ moved - this case proves nothing"
-        assert any(entry in ported[0] for entry in BANDIT_CONFIG["exclude_dirs"])
+    def test_the_nested_ported_tree_is_still_excluded(self) -> None:
+        ported = tree_files(VENDOR_ROOT)
+        assert ported, f"{VENDOR_ROOT}/ moved - this case proves nothing"
+        assert all(any(entry in name for entry in BANDIT_CONFIG["exclude_dirs"]) for name in ported)
+
+    @pytest.mark.parametrize(
+        "rel_path",
+        [
+            "opendata/data/providers/akshare/adapter.py",
+            "opendata/data/providers/akshare/_vendorish/adapter.py",
+            "other/_vendor/adapter.py",
+        ],
+    )
+    def test_vendor_exclusion_does_not_match_similar_names(self, rel_path: str) -> None:
+        assert not any(entry in rel_path for entry in BANDIT_CONFIG["exclude_dirs"])
 
 
 class TestDeveloperViewTargetsExist:

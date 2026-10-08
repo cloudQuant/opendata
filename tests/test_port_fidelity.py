@@ -2,7 +2,7 @@
 
 Each case replays the HTTP transcript recorded from the upstream
 checkout (``scripts/codemod/compare_with_upstream.py --record``) into
-the ported ``opendata_http`` tree and asserts the output matches the
+the bundled vendor export and asserts the output matches the
 recorded upstream frame (identical columns, shape, dtypes and cell
 values within the AC-6 float tolerance). Cases without a recording
 (network refusal at record time) are skipped with the recorded
@@ -48,7 +48,7 @@ def test_ported_output_matches_upstream(case: comparator.Case) -> None:
     entries = comparator._read_transcript(FIXTURES_DIR / case.name / "responses.json.gz")
     meta = json.loads((FIXTURES_DIR / case.name / "meta.json").read_text(encoding="utf-8"))
     reference = comparator._read_reference_frame(FIXTURES_DIR / case.name / "reference.csv.gz")
-    function = comparator._load_case_function("opendata_http", case.function)
+    function = comparator._load_case_function(comparator._PORTED_CASE_MODULE, case.function)
 
     comparator._pin_pure_requests_channel()
     replayer = comparator.HttpReplayer(entries)
@@ -173,7 +173,7 @@ def test_financial_statement_update_dates_ignore_the_machine_timezone() -> None:
         pytest.skip(f"recording pending for {case.name}: {reason}")
 
     reference = comparator._read_reference_frame(FIXTURES_DIR / case.name / "reference.csv.gz")
-    function = comparator._load_case_function("opendata_http", case.function)
+    function = comparator._load_case_function(comparator._PORTED_CASE_MODULE, case.function)
     comparator._pin_pure_requests_channel()
     entries = comparator._read_transcript(FIXTURES_DIR / case.name / "responses.json.gz")
     expected = list(reference["更新日期"])

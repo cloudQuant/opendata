@@ -9,10 +9,12 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 from loguru import logger
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from opendata.core.database import async_session_maker
 from opendata.models.task import ScheduledTask, ScheduleType, TaskStatus, TriggeredBy
+from opendata.models.user import User, UserRole
 from opendata.services.execution_service import ExecutionService
 from opendata.services.scheduler_service import init_scheduler_service
 from opendata.services.script_service import ScriptService
@@ -153,28 +155,33 @@ class TaskScheduler:
 
     async def _execute_task_wrapper(self, task_id: int) -> None:
         """Execute task with error handling and retry logic."""
-        async with async_session_maker() as db:
-            from sqlalchemy import select
+        current_task = asyncio.current_task()
+        if current_task is not None:
+            self._running_tasks[task_id] = current_task
+        try:
+            async with async_session_maker() as db:
+                from sqlalchemy import select
 
-            # Get task
-            result = await db.execute(select(ScheduledTask).where(ScheduledTask.id == task_id))
-            task = result.scalar_one_or_none()
+                result = await db.execute(select(ScheduledTask).where(ScheduledTask.id == task_id))
+                task = result.scalar_one_or_none()
 
-            if task is None:
-                logger.error(f"Task {task_id} not found")
-                return
+                if task is None:
+                    logger.error(f"Task {task_id} not found")
+                    return
 
-            if not task.is_active:
-                logger.info(f"Task {task_id} is not active, skipping")
-                return
+                if not task.is_active:
+                    logger.info(f"Task {task_id} is not active, skipping")
+                    return
 
-            # Execute with retry
-            await self._execute_with_retry(task, db)
+                await self._execute_with_retry(task, db)
+        finally:
+            if self._running_tasks.get(task_id) is current_task:
+                self._running_tasks.pop(task_id, None)
 
     async def _execute_with_retry(self, task: ScheduledTask, db: AsyncSession) -> None:
         """Execute task with retry mechanism."""
         execution_service = ExecutionService(db)
-        script_service = ScriptService(db)
+        script_service = ScriptService(db) if task.task_kind == "script" else None
 
         max_attempts = task.max_retries if task.retry_on_failure else 1
         timeout = task.timeout if task.timeout > 0 else None
@@ -187,6 +194,26 @@ class TaskScheduler:
                 params=task.parameters,
                 triggered_by=TriggeredBy.SCHEDULER,
             )
+
+            if task.task_kind == "pipeline" and not await self._is_active_pipeline_admin(
+                db, task.user_id
+            ):
+                rejected_at = datetime.now(timezone.utc)
+                await execution_service.update_execution(
+                    execution_id=execution.execution_id,
+                    status=TaskStatus.FAILED,
+                    end_time=rejected_at,
+                    error_message="Pipeline task owner must be an active administrator",
+                )
+                task.last_execution_at = rejected_at
+                await db.commit()
+                await self._broadcast_status(
+                    execution.execution_id,
+                    task.id,
+                    TaskStatus.FAILED,
+                    error_message="Pipeline task owner is not authorized",
+                )
+                return
 
             try:
                 # Update status to running
@@ -203,32 +230,56 @@ class TaskScheduler:
                     TaskStatus.RUNNING,
                 )
 
-                # Get table row count before execution
-                script = await script_service.get_script(task.script_id)
                 rows_before = None
                 provider = None
-                if script and script.target_table:
-                    from opendata.data_fetch.providers.akshare_provider import AkshareProvider
-
-                    provider = AkshareProvider()
-                    rows_before = provider.get_table_row_count(script.target_table)
-
-                # Execute script
-                result = await script_service.execute_script(
-                    script_id=task.script_id,
-                    execution_id=execution.execution_id,
-                    params=task.parameters,
-                    timeout=timeout,
-                )
-
-                # Get row count after execution (reuse provider)
                 rows_after = None
-                if script and script.target_table:
-                    if provider is None:
+                if task.task_kind == "pipeline":
+                    from opendata.api.schemas import validate_pipeline_task_parameters
+                    from opendata.pipeline.jobs import run_incremental_job
+
+                    pipeline_parameters = validate_pipeline_task_parameters(task.parameters)
+                    pipeline_run = run_incremental_job(**pipeline_parameters)
+                    outcome = (
+                        await asyncio.wait_for(pipeline_run, timeout=timeout)
+                        if timeout is not None
+                        else await pipeline_run
+                    )
+                    result = {
+                        "success": outcome.failures == 0,
+                        "data": outcome.as_dict(),
+                        "error": (
+                            f"Pipeline completed with {outcome.failures} failed shard(s)"
+                            if outcome.failures
+                            else None
+                        ),
+                    }
+                elif task.task_kind == "script":
+                    if script_service is None or task.script_id is None:
+                        raise RuntimeError("Script task is missing its script executor")
+                    script = await script_service.get_script(task.script_id)
+                    if script and script.target_table:
                         from opendata.data_fetch.providers.akshare_provider import AkshareProvider
 
                         provider = AkshareProvider()
-                    rows_after = provider.get_table_row_count(script.target_table)
+                        rows_before = provider.get_table_row_count(script.target_table)
+
+                    result = await script_service.execute_script(
+                        script_id=task.script_id,
+                        execution_id=execution.execution_id,
+                        params=task.parameters,
+                        timeout=timeout,
+                    )
+
+                    if script and script.target_table:
+                        if provider is None:
+                            from opendata.data_fetch.providers.akshare_provider import (
+                                AkshareProvider,
+                            )
+
+                            provider = AkshareProvider()
+                        rows_after = provider.get_table_row_count(script.target_table)
+                else:
+                    raise RuntimeError(f"Unknown task executor: {task.task_kind}")
 
                 # Update execution result
                 if result.get("success"):
@@ -267,11 +318,18 @@ class TaskScheduler:
             except Exception as e:
                 logger.error(f"Task {task.name} (ID: {task.id}) attempt {attempt + 1} failed: {e}")
 
+                failure_status = (
+                    TaskStatus.TIMEOUT if isinstance(e, TimeoutError) else TaskStatus.FAILED
+                )
+                failure_message = str(e) or (
+                    "Task timed out" if failure_status == TaskStatus.TIMEOUT else "Task failed"
+                )
+
                 await execution_service.update_execution(
                     execution_id=execution.execution_id,
-                    status=TaskStatus.FAILED,
+                    status=failure_status,
                     end_time=datetime.now(timezone.utc),
-                    error_message=str(e),
+                    error_message=failure_message,
                 )
 
                 await db.commit()
@@ -280,8 +338,8 @@ class TaskScheduler:
                 await self._broadcast_status(
                     execution.execution_id,
                     task.id,
-                    TaskStatus.FAILED,
-                    error_message=str(e),
+                    failure_status,
+                    error_message=failure_message,
                 )
 
                 # Send failure notification (WebSocket + optional email)
@@ -292,7 +350,7 @@ class TaskScheduler:
                         task_id=task.id,
                         task_name=task.name,
                         execution_id=execution.execution_id,
-                        error_message=str(e),
+                        error_message=failure_message,
                         retry_count=attempt + 1,
                         max_retries=max_attempts,
                     )
@@ -353,6 +411,12 @@ class TaskScheduler:
             if task is None:
                 raise ValueError(f"Task {task_id} not found")
 
+            if task.task_kind == "pipeline":
+                if user_id is None or not await self._is_active_pipeline_admin(db, user_id):
+                    raise PermissionError("Administrator permission is required for pipeline tasks")
+                if not await self._is_active_pipeline_admin(db, task.user_id):
+                    raise PermissionError("Pipeline task owner is not an active administrator")
+
             # Snapshot the value we need so we don't touch this session later
             task_id_val = task.id
 
@@ -384,6 +448,15 @@ class TaskScheduler:
         bg.add_done_callback(_on_done)
 
         return execution_id
+
+    @staticmethod
+    async def _is_active_pipeline_admin(db: AsyncSession, user_id: int) -> bool:
+        """Read current role state before any scheduled pipeline provider work."""
+        result = await db.execute(
+            select(User).where(User.id == user_id).execution_options(populate_existing=True)
+        )
+        user = result.scalar_one_or_none()
+        return user is not None and user.is_active and user.role == UserRole.ADMIN
 
     async def cancel_task(self, task_id: int) -> bool:
         """Cancel a running task execution.

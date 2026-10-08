@@ -13,7 +13,7 @@ bond codes do not follow the A-share prefix inference, so the query
 passes it through lowercased rather than guessing an exchange.
 """
 
-from typing import ClassVar
+from typing import ClassVar, cast
 
 import pandas as pd
 
@@ -35,6 +35,8 @@ class BondDailyQuery(QueryParams):
 
 class AkshareBondDailyFetcher(Fetcher[BondDailyQuery, pd.DataFrame]):
     """Daily OHLCV bars for one convertible bond (e.g. ``sh010107``)."""
+
+    async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(
         asset_class="bond",
@@ -70,9 +72,13 @@ class AkshareBondDailyFetcher(Fetcher[BondDailyQuery, pd.DataFrame]):
         Returns:
             The upstream frame.
         """
-        import opendata_http  # lazy: load the ported tree on routing only
+        # lazy: load the ported tree on routing only
+        import opendata.data.providers.akshare._vendor as opendata_http
 
-        return opendata_http.bond_zh_hs_cov_daily(symbol=self.sina_code(params.symbol))
+        return cast(
+            "pd.DataFrame",
+            opendata_http.bond_zh_hs_cov_daily(symbol=self.sina_code(params.symbol)),
+        )
 
     def transform_data(self, raw: pd.DataFrame, params: BondDailyQuery) -> FetchResult:
         """Normalize the bond frame into ``Bar`` rows (the normalize stage).

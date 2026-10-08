@@ -29,6 +29,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, TypeVar, cast
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import pandas as pd
 from pydantic import BaseModel, ValidationError
@@ -36,10 +37,11 @@ from pydantic import BaseModel, ValidationError
 from opendata.data.mapping import normalize_frame, require_domain_mapping
 from opendata.data.models import Instrument, TradingCalendar
 from opendata.data.models.base import ContractModel
+from opendata.pipeline.affected_keys import SymbolPartitioning
 from opendata.pipeline.runner import DataPipeline, PipelineSpec, Window
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping, Sequence
+    from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
 
     from sqlalchemy import Engine
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -47,7 +49,7 @@ if TYPE_CHECKING:
     from opendata.pipeline.alerts import AlertPolicy, Notifier
     from opendata.pipeline.cross_check_service import CrossCheckService
     from opendata.pipeline.dwd_merge import DwdMergeService
-    from opendata.pipeline.runner import Hook
+    from opendata.pipeline.runner import Hook, PipelineContext
     from opendata.pipeline.trading_calendar import CalendarView
 
 
@@ -58,6 +60,9 @@ class TemplateKind(str, enum.Enum):
     FULL_CHECK = "full_check"
     PARTITION_MAINTENANCE = "partition_maintenance"
     FRESHNESS = "freshness"
+    RETENTION = "retention"
+    KEY_HEALTH = "key_health"
+    SCHEDULED_PATROL = "scheduled_patrol"
 
 
 @dataclass(frozen=True)
@@ -77,6 +82,7 @@ class ScheduleTemplate:
     kind: TemplateKind
     payload: Mapping[str, str]
     note: str = ""
+    timezone: str = "Asia/Shanghai"
 
 
 #: Templates file next to this module (data, not code).
@@ -129,12 +135,25 @@ def _parse_template(entry: object, source_path: Path) -> ScheduleTemplate:  # pa
     if not isinstance(entry, dict):
         raise RuntimeError(f"schedule template {entry!r} in {source_path} is not a mapping")
     try:
+        kind = TemplateKind(str(entry["kind"]))
+        raw_payload = entry.get("payload") or {}
+        if not isinstance(raw_payload, dict):
+            raise TypeError("payload must be a mapping")
+        payload = dict(raw_payload)
+        if kind is TemplateKind.SCHEDULED_PATROL and payload != {"tier": "P0"}:
+            raise ValueError("scheduled_patrol payload must be exactly {tier: P0}")
+        timezone_name = str(entry.get("timezone", "Asia/Shanghai"))
+        try:
+            ZoneInfo(timezone_name)
+        except (ZoneInfoNotFoundError, ValueError) as exc:
+            raise ValueError(f"timezone must be a valid IANA zone, got {timezone_name!r}") from exc
         return ScheduleTemplate(
             name=str(entry["name"]),
             cron=str(entry["cron"]),
-            kind=TemplateKind(str(entry["kind"])),
-            payload=dict(entry.get("payload") or {}),
+            kind=kind,
+            payload=payload,
             note=str(entry.get("note", "")),
+            timezone=timezone_name,
         )
     except (KeyError, TypeError, ValueError) as exc:
         raise RuntimeError(
@@ -530,13 +549,14 @@ def build_stock_daily_pipeline(
     *,
     engine: Engine,
     session_maker: async_sessionmaker[AsyncSession],
-    fetch_symbol: Callable[[str, Window], pd.DataFrame],
+    fetch_symbol: Callable[[str, Window], pd.DataFrame | Awaitable[pd.DataFrame]],
     symbols: Sequence[str],
     source: str | None = None,
     second_source: str | None = None,
     shard_size: int = 500,
     batch_id: str | None = None,
     notify: Hook | None = None,
+    run_variant: str = "",
 ) -> DataPipeline:
     """Build the stock-daily pipeline of the P0 daily chain.
 
@@ -555,6 +575,8 @@ def build_stock_daily_pipeline(
         notify: Step-5 hook override; None wires the default batch
             notifier, which records the watermark and pushes the
             ``data.update`` event (design §10.2).
+        run_variant: Stable request identity such as source pair and
+            lookback policy, included in the shard-plan fingerprint.
 
     Returns:
         The wired pipeline, ready for ``run(window)``.
@@ -562,6 +584,7 @@ def build_stock_daily_pipeline(
     from uuid import uuid4
 
     from opendata.pipeline.dwd_merge import DwdMergeService
+    from opendata.pipeline.metadata_refresh import build_pipeline_metadata_hook
     from opendata.pipeline.notify import build_notify_hook
     from opendata.pipeline.ods_writer import OdsWriter
 
@@ -578,9 +601,20 @@ def build_stock_daily_pipeline(
         key=ods_key,
         symbols=tuple(symbols),
         shard_size=shard_size,
+        variant=run_variant,
     )
     writer = OdsWriter(engine)
     batch = batch_id or str(uuid4())
+    symbol_key_index = ods_key.index(
+        require_domain_mapping(resolved_source, "stock_daily").fields["symbol"].source_column
+    )
+    source_mapping = require_domain_mapping(resolved_source, "stock_daily")
+    contract_symbol_index = source_mapping.key.index("symbol")
+
+    def normalize_partition_symbol(symbol: object) -> object:
+        raw_key: list[object] = [None] * len(source_mapping.source_key)
+        raw_key[symbol_key_index] = symbol
+        return source_mapping.to_contract_key(raw_key)[contract_symbol_index]
 
     def write_ods(frame: pd.DataFrame) -> int:
         return writer.write(
@@ -631,7 +665,57 @@ def build_stock_daily_pipeline(
         cross_check=cross_check.run_hook if cross_check else None,
         merge=merge.run_hook,
         notify=step_five,
+        meta=build_pipeline_metadata_hook(
+            engine,
+            session_maker,
+            domain="stock_daily",
+            sources=sources,
+        ),
+        load_affected_keys=_ods_affected_keys(engine, "stock_daily", sources),
+        bounded_partitions=SymbolPartitioning(
+            symbol_key_index=symbol_key_index,
+            normalize_symbol=normalize_partition_symbol,
+            batch_size=50,
+        ),
     )
+
+
+def _ods_affected_keys(
+    engine: Engine, domain: str, sources: Sequence[str]
+) -> Callable[[PipelineContext], Iterable[tuple[object, ...]]]:
+    """Reconstruct landed contract keys when all shards were resumed."""
+    readers = {source: ods_frame_reader(engine, domain, source) for source in sources}
+    mappings = {source: require_domain_mapping(source, domain) for source in sources}
+
+    def load(context: PipelineContext) -> Iterable[tuple[object, ...]]:
+        def keys_for(partition: PipelineContext) -> Iterable[tuple[object, ...]]:
+            for source, reader in readers.items():
+                frame = reader(
+                    partition.window.start,
+                    partition.window.end,
+                    set(),
+                    symbols=partition.symbols,
+                    symbol_windows=partition.comparison_windows,
+                )
+                if not frame.empty:
+                    mapping = mappings[source]
+                    yield from (
+                        tuple(row)
+                        for row in frame[list(mapping.key)].itertuples(index=False, name=None)
+                    )
+
+        if context.partition_contexts is None:
+            # Preserve the generic path's prior materialized return shape.
+            return list(dict.fromkeys(keys_for(context)))
+        partition_contexts = context.partition_contexts
+
+        def iter_partitioned() -> Iterable[tuple[object, ...]]:
+            for partition in partition_contexts():
+                yield from keys_for(partition)
+
+        return iter_partitioned()
+
+    return load
 
 
 def ods_frame_reader(engine: Engine, domain: str, source: str) -> Callable:
@@ -655,36 +739,119 @@ def ods_frame_reader(engine: Engine, domain: str, source: str) -> Callable:
     mapping = require_domain_mapping(source, domain)
     contract_date_field = resolve_time_field(domain)
     source_date_column = mapping.fields[contract_date_field].source_column
+    date_index = (
+        mapping.key.index(contract_date_field) if contract_date_field in mapping.key else None
+    )
 
-    def read(start: date, end: date, affected_keys: set[tuple]) -> pd.DataFrame:
-        # The affected keys arrive in the ods spelling of the source that
-        # was just written; every other source spells its symbol
-        # differently (``thscode`` vs ``股票代码``). So the read stays a
-        # window read, widened to cover the affected dates, and the keys
-        # are matched after normalization - which is source-agnostic.
+    def read(
+        start: date,
+        end: date,
+        affected_keys: set[tuple],
+        *,
+        symbols: Sequence[str] | None = None,
+        symbol_windows: Mapping[str, Window | None] | None = None,
+    ) -> pd.DataFrame:
+        # The affected keys arrive in the contract spelling after the merge
+        # service normalizes them. A scoped read includes each selected
+        # symbol's own window plus exact affected dates for that symbol;
+        # it never widens every symbol to the oldest affected date.
         keys = {mapping.to_contract_key(key) for key in affected_keys}
-        dates = [key[-1] for key in keys if isinstance(key[-1], date)]
+        dates: list[date] = []
+        if date_index is not None:
+            for key in keys:
+                if len(key) <= date_index:
+                    continue
+                affected_date = key[date_index]
+                if isinstance(affected_date, date):
+                    dates.append(affected_date)
         lower = min([start, *dates]) if dates else start
         upper = max([end, *dates]) if dates else end
-        rows = _load_ods_rows(
-            engine,
-            ods_table(domain, source),
-            domain,
-            lower,
-            upper,
-            set(),
-            time_column=source_date_column,
-        )
+        if symbols is not None or symbol_windows is not None:
+            scoped_symbols = symbols if symbols is not None else tuple(symbol_windows or {})
+            affected_symbol_dates: dict[str, tuple[date, ...]] = {}
+            if keys and date_index is not None and "symbol" in mapping.key:
+                symbol_index = mapping.key.index("symbol")
+                affected_dates_by_symbol: dict[object, set[date]] = {}
+                for key in keys:
+                    if len(key) <= max(symbol_index, date_index):
+                        continue
+                    affected_date = key[date_index]
+                    if not isinstance(affected_date, date):
+                        continue
+                    affected_dates_by_symbol.setdefault(key[symbol_index], set()).add(affected_date)
+                for symbol in dict.fromkeys(scoped_symbols):
+                    window_key: list[object] = [None] * len(mapping.key)
+                    window_key[symbol_index] = symbol
+                    contract_symbol = mapping.to_contract_key(window_key)[symbol_index]
+                    bounds = (
+                        symbol_windows.get(symbol)
+                        if symbol_windows is not None
+                        else Window(start, end)
+                    )
+                    affected_dates = affected_dates_by_symbol.get(contract_symbol, set())
+                    if bounds is not None:
+                        affected_dates = {
+                            day for day in affected_dates if day < bounds.start or day > bounds.end
+                        }
+                    if affected_dates:
+                        affected_symbol_dates[symbol] = tuple(sorted(affected_dates))
+            rows = _load_ods_rows(
+                engine,
+                ods_table(domain, source),
+                domain,
+                start,
+                end,
+                set(),
+                time_column=source_date_column,
+                symbol_column=mapping.fields["symbol"].source_column,
+                symbols=scoped_symbols,
+                symbol_windows=symbol_windows,
+                affected_symbol_dates=affected_symbol_dates,
+            )
+        else:
+            rows = _load_ods_rows(
+                engine,
+                ods_table(domain, source),
+                domain,
+                lower,
+                upper,
+                set(),
+                time_column=source_date_column,
+            )
         if not rows:
-            return pd.DataFrame()
+            empty_frame: pd.DataFrame = pd.DataFrame()
+            return empty_frame
         frame = normalize_ods_rows(rows, domain=domain, source=source)
+        # SQL drivers may return date columns as strings (notably when
+        # materialized through pandas 3). Normalize them before comparing
+        # windows or matching contract business keys.
+        frame[contract_date_field] = pd.to_datetime(frame[contract_date_field]).dt.date
         if not keys:
             return frame
-        in_window = frame[contract_date_field].between(start, end)
+        if symbols is not None or symbol_windows is not None:
+            scoped_symbols = symbols if symbols is not None else tuple(symbol_windows or {})
+            if symbol_windows is None or "symbol" not in mapping.key:
+                in_window = frame[contract_date_field].between(start, end)
+            else:
+                in_window = pd.Series(False, index=frame.index, dtype=bool)
+                symbol_index = mapping.key.index("symbol")
+                for symbol in dict.fromkeys(scoped_symbols):
+                    bounds = symbol_windows.get(symbol)
+                    if bounds is None:
+                        continue
+                    source_key: list[object] = [None] * len(mapping.key)
+                    source_key[symbol_index] = symbol
+                    contract_symbol = mapping.to_contract_key(source_key)[symbol_index]
+                    in_window |= (frame["symbol"] == contract_symbol) & frame[
+                        contract_date_field
+                    ].between(bounds.start, bounds.end)
+        else:
+            in_window = frame[contract_date_field].between(start, end)
         matches = frame[list(mapping.key)].apply(
             lambda row: tuple(row) in keys, axis=1
         )  # affected keys outside the window
-        return frame[in_window | matches]
+        filtered_frame: pd.DataFrame = frame[in_window | matches]
+        return filtered_frame
 
     return read
 
@@ -709,18 +876,39 @@ def ods_raw_reader(engine: Engine, domain: str, source: str) -> Callable[[Window
 
     source_date_column = _source_date_column(domain, source)
     table = ods_table(domain, source)
+    mapping = require_domain_mapping(source, domain)
 
-    def read(window: Window) -> pd.DataFrame:
-        rows = _load_ods_rows(
-            engine,
-            table,
-            domain,
-            window.start,
-            window.end,
-            set(),
-            time_column=source_date_column,
-        )
-        return pd.DataFrame(rows)
+    def read(
+        window: Window,
+        *,
+        symbols: Sequence[str] | None = None,
+        symbol_windows: Mapping[str, Window | None] | None = None,
+    ) -> pd.DataFrame:
+        if symbols is not None or symbol_windows is not None:
+            rows = _load_ods_rows(
+                engine,
+                table,
+                domain,
+                window.start,
+                window.end,
+                set(),
+                time_column=source_date_column,
+                symbol_column=mapping.fields["symbol"].source_column,
+                symbols=symbols,
+                symbol_windows=symbol_windows,
+            )
+        else:
+            rows = _load_ods_rows(
+                engine,
+                table,
+                domain,
+                window.start,
+                window.end,
+                set(),
+                time_column=source_date_column,
+            )
+        raw_frame: pd.DataFrame = pd.DataFrame(rows)
+        return raw_frame
 
     return read
 
@@ -764,7 +952,7 @@ def ods_leg_span(
     column = _source_date_column(domain, source)
     table = ods_table(domain, source)
     floor = date.today() - timedelta(days=probe_days)
-    sql = f"SELECT MIN(`{column}`), MAX(`{column}`) FROM `{table}` WHERE `{column}` >= :floor"  # noqa: S608  # names derived from the mapping
+    sql = f"SELECT MIN(`{column}`), MAX(`{column}`) FROM `{table}` WHERE `{column}` >= :floor"  # noqa: S608  # nosec B608
     with engine.connect() as connection:
         oldest, newest = connection.execute(text(sql), {"floor": floor}).one()
     if oldest is None or newest is None:
@@ -836,6 +1024,9 @@ def _load_ods_rows(
     *,
     time_column: str | None = None,
     symbol_column: str = "symbol",
+    symbols: Sequence[str] | None = None,
+    symbol_windows: Mapping[str, Window | None] | None = None,
+    affected_symbol_dates: Mapping[str, Sequence[date]] | None = None,
 ) -> list[dict]:
     """Read ods rows for the window plus the affected keys.
 
@@ -849,6 +1040,11 @@ def _load_ods_rows(
         time_column: Source's date column; defaults to the contract
             field name (only correct for sources that name it the same).
         symbol_column: Source's symbol column, for the same reason.
+        symbols: Optional selected symbols for a bounded read.
+        symbol_windows: Optional per-symbol effective windows; absent
+            or ``None`` entries are excluded from a scoped read.
+        affected_symbol_dates: Exact out-of-window dates to read for each
+            selected symbol; the selected-symbol predicate still applies.
 
     Returns:
         The raw ods rows.
@@ -859,9 +1055,9 @@ def _load_ods_rows(
 
     field = time_column or resolve_time_field(domain)
     params: dict[str, object] = {"start": start, "end": end}
-    sql = f"SELECT * FROM `{table}` WHERE `{field}` >= :start AND `{field}` <= :end"  # noqa: S608
+    sql = f"SELECT * FROM `{table}` WHERE `{field}` >= :start AND `{field}` <= :end"  # noqa: S608  # nosec B608
     keys = sorted(affected_keys)
-    if keys:
+    if keys and symbols is None:
         placeholders = []
         for index, (symbol, trade_date) in enumerate(keys):
             params[f"symbol_{index}"] = symbol
@@ -869,7 +1065,70 @@ def _load_ods_rows(
             placeholders.append(
                 f"(`{symbol_column}` = :symbol_{index} AND `{field}` = :day_{index})"
             )
-        sql = f"SELECT * FROM `{table}` WHERE ({' OR '.join(placeholders)})"  # noqa: S608
+        sql = f"SELECT * FROM `{table}` WHERE ({' OR '.join(placeholders)})"  # noqa: S608  # nosec B608
+    elif symbols is not None:
+        scoped = [
+            (
+                symbol,
+                symbol_windows.get(symbol) if symbol_windows is not None else Window(start, end),
+                tuple(sorted(set(affected_symbol_dates.get(symbol, ()))))
+                if affected_symbol_dates is not None
+                else (),
+            )
+            for symbol in dict.fromkeys(symbols)
+        ]
+        scoped = [
+            (symbol, bounds, affected_dates)
+            for symbol, bounds, affected_dates in scoped
+            if bounds is not None or affected_dates
+        ]
+        if not scoped:
+            return []
+        chunks: list[list[tuple[str, Window | None, tuple[date, ...]]]] = [
+            [
+                (symbol, bounds, affected_dates)
+                for symbol, bounds, affected_dates in scoped[index : index + 200]
+            ]
+            for index in range(0, len(scoped), 200)
+        ]
+        output: list[dict] = []
+        for chunk in chunks:
+            clauses = []
+            chunk_params: dict[str, object] = {}
+            for index, (symbol, bounds, affected_dates) in enumerate(chunk):
+                exact = f"symbol_{index}"
+                prefix = f"symbol_prefix_{index}"
+                escaped = symbol.replace("!", "!!").replace("%", "!%").replace("_", "!_")
+                chunk_params[exact] = symbol
+                chunk_params[prefix] = f"{escaped}.%"
+                symbol_match = (
+                    f"(`{symbol_column}` = :{exact} OR `{symbol_column}` LIKE :{prefix} ESCAPE '!')"
+                )
+                date_conditions = []
+                if bounds is not None:
+                    start_param = f"start_{index}"
+                    end_param = f"end_{index}"
+                    chunk_params[start_param] = bounds.start
+                    chunk_params[end_param] = bounds.end
+                    date_conditions.append(
+                        f"(`{field}` >= :{start_param} AND `{field}` <= :{end_param})"
+                    )
+                if affected_dates:
+                    day_params = []
+                    for day_index, day in enumerate(affected_dates):
+                        day_param = f"affected_day_{index}_{day_index}"
+                        chunk_params[day_param] = day
+                        day_params.append(f":{day_param}")
+                    date_conditions.append(f"`{field}` IN ({', '.join(day_params)})")
+                clauses.append(f"({symbol_match} AND ({' OR '.join(date_conditions)}))")
+            scoped_sql = text(
+                f"SELECT * FROM `{table}` WHERE {' OR '.join(clauses)}"  # noqa: S608  # nosec B608
+            )
+            with engine.connect() as connection:
+                result = connection.execute(scoped_sql, chunk_params)
+                columns = list(result.keys())
+                output.extend(dict(zip(columns, row, strict=True)) for row in result.fetchall())
+        return output
     with engine.connect() as connection:
         result = connection.execute(text(sql), params)
         columns = list(result.keys())

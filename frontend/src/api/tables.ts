@@ -18,22 +18,25 @@ export const tablesApi = {
   },
 
   // Get table schema
-  getSchema(tableId: string | number): Promise<TableSchema> {
+  getSchema(tableId: string | number, signal?: AbortSignal): Promise<TableSchema> {
     return request({
       url: `/tables/${tableId}/schema`,
       method: 'GET',
+      signal,
     })
   },
 
   getData(
     tableId: string | number,
     page: number = 1,
-    pageSize: number = 100
+    pageSize: number = 100,
+    signal?: AbortSignal
   ): Promise<TableDataResponse> {
     return request({
       url: `/tables/${tableId}/data`,
       method: 'GET',
       params: { page, page_size: pageSize },
+      signal,
     })
   },
 

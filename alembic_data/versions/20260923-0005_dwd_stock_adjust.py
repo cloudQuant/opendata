@@ -14,7 +14,7 @@ rest of the layer.
 """
 
 from alembic import op
-from opendata.pipeline.ddl import dwd_table_ddl
+from opendata.pipeline.ddl import DWD_TRACE_COLUMNS, Column, _table_ddl
 
 revision = "0005_dwd_stock_adjust"
 down_revision = "0004_batch_watermark"
@@ -23,12 +23,26 @@ depends_on = None
 
 
 def upgrade() -> None:
-    """Create the stock-adjust dwd table."""
+    """Create the original multiplication-only stock-adjust table.
+
+    Keep this revision's column set stable for databases that have already
+    applied it; affine fields arrive in the additive 0007 revision.
+    """
+    legacy_columns = [
+        Column("symbol", "varchar(64)", nullable=False),
+        Column("trade_date", "date", nullable=False),
+        Column("qfq_factor", "double", nullable=False),
+        Column("hfq_factor", "double", nullable=False),
+        *DWD_TRACE_COLUMNS,
+    ]
     op.execute(
-        dwd_table_ddl(
-            "stock_adjust",
+        _table_ddl(
+            "dwd_stock_adjust",
+            legacy_columns,
             key=("symbol", "trade_date"),
             partition_key="trade_date",
+            start_year=None,
+            years=3,
         )
     )
 

@@ -32,6 +32,8 @@ class ThsStockActionFetcher(Fetcher[StockActionQuery, tuple[CorporateAction, ...
     against the live endpoint (A3.2/A3.4 live cases).
     """
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
         domain="stock_action",
@@ -72,7 +74,7 @@ class ThsStockActionFetcher(Fetcher[StockActionQuery, tuple[CorporateAction, ...
             ThsProviderError: Credentials missing or the symbol is not
                 resolvable to exactly one upstream code.
         """
-        from opendata_fuyao.endpoints import fetch_adjustment_factors
+        from opendata.data.providers.ths.endpoints import fetch_adjustment_factors
 
         with client(timeout_seconds=ctx.timeout) as active:
             code = resolve_code(active, params.symbol)

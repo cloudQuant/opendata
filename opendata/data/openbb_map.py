@@ -10,10 +10,13 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from functools import lru_cache
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import yaml
+
+if TYPE_CHECKING:
+    from opendata.data.domains import DomainSpec
 
 #: The map file shipped with the package.
 OPENBB_MAP_PATH = Path(__file__).parent / "openbb_map.yaml"
@@ -65,22 +68,8 @@ class OpenBBMapEntry:
     ours: tuple[OursCapability, ...]
 
 
-@lru_cache(maxsize=1)
-def load_openbb_map(path: str | None = None) -> tuple[OpenBBMapEntry, ...]:
-    """Load and validate the compatibility map (fail closed).
-
-    Args:
-        path: Override for tests; defaults to the shipped file.
-
-    Returns:
-        The entries in file order.
-
-    Raises:
-        OpenBBMapError: The file is unreadable, malformed, or an entry
-            violates the schema or the domain rule (a non-pending entry
-            names a domain the registry does not know).
-    """
-    source = Path(path) if path else OPENBB_MAP_PATH
+def _read_map_file(source: Path) -> tuple[OpenBBMapEntry, ...]:
+    """Read and validate one version-1 map file without registry access."""
     try:
         payload = yaml.safe_load(source.read_text(encoding="utf-8"))
     except (OSError, yaml.YAMLError) as exc:
@@ -92,6 +81,184 @@ def load_openbb_map(path: str | None = None) -> tuple[OpenBBMapEntry, ...]:
         raise OpenBBMapError(f"openbb map {source} must declare a non-empty entries list")
     entries = [_parse_entry(entry, source) for entry in raw_entries]
     return tuple(entries)
+
+
+def _project_default_map() -> tuple[OpenBBMapEntry, ...]:
+    """Project current registry facts over the shipped legacy scenarios."""
+    legacy_entries = _read_map_file(OPENBB_MAP_PATH)
+
+    from opendata.data.providers.catalog import get_provider
+    from opendata.data.registry import get_registry
+
+    registry = get_registry()
+    capabilities = registry.capabilities()
+    descriptors = registry.list_model_descriptors()
+    capabilities_by_pair: dict[tuple[str, str], list[bool]] = {}
+    for capability in capabilities:
+        pair = (capability.source, capability.domain)
+        capabilities_by_pair.setdefault(pair, []).append(capability.verified)
+
+    projected_entries: list[OpenBBMapEntry] = []
+    covered: set[tuple[str, str]] = set()
+    for entry in legacy_entries:
+        projected_rows: list[OursCapability] = []
+        for ours in entry.ours:
+            if ours.status == "pending":
+                projected_rows.append(ours)
+                continue
+
+            pair = (ours.provider, ours.domain)
+            verified_values = capabilities_by_pair.get(pair)
+            if not verified_values:
+                raise OpenBBMapError(
+                    f"enabled legacy capability {ours.provider}/{ours.domain} in "
+                    f"{entry.model!r} is missing from the provider registry"
+                )
+            domain_spec = _require_domain_spec(ours.domain, entry.model, OPENBB_MAP_PATH)
+            if ours.contract != domain_spec.contract:
+                raise OpenBBMapError(
+                    f"legacy capability {ours.provider}/{ours.domain} in {entry.model!r} "
+                    f"declares contract {ours.contract!r}, but the domain registry declares "
+                    f"{domain_spec.contract!r}"
+                )
+            status = "verified" if all(verified_values) else "registered"
+            projected_rows.append(
+                OursCapability(
+                    provider=ours.provider,
+                    domain=ours.domain,
+                    contract=domain_spec.contract,
+                    status=status,
+                )
+            )
+            covered.add(pair)
+        projected_entries.append(
+            OpenBBMapEntry(model=entry.model, scenario=entry.scenario, ours=tuple(projected_rows))
+        )
+
+    for descriptor in descriptors:
+        if descriptor.capability_identity[1] != descriptor.domain:
+            raise OpenBBMapError(
+                f"registry descriptor {descriptor.source}/{descriptor.model} has an "
+                "inconsistent domain identity"
+            )
+        if descriptor.capability_identity[4] != descriptor.source:
+            raise OpenBBMapError(
+                f"registry descriptor {descriptor.source}/{descriptor.model} has an "
+                "inconsistent source identity"
+            )
+        pair = (descriptor.source, descriptor.domain)
+        if pair not in capabilities_by_pair:
+            raise OpenBBMapError(
+                f"registry model {descriptor.source}/{descriptor.model} has no capability"
+            )
+
+        try:
+            binding = get_provider(descriptor.source).fetcher_dict.get(descriptor.model)
+        except KeyError as exc:
+            raise OpenBBMapError(
+                f"registry model {descriptor.source}/{descriptor.model} has no local binding"
+            ) from exc
+        if binding is None:
+            raise OpenBBMapError(
+                f"registry model {descriptor.source}/{descriptor.model} has no local binding"
+            )
+        if descriptor.model not in binding.canonical_model_ids:
+            raise OpenBBMapError(
+                f"registry model {descriptor.source}/{descriptor.model} is not an exact "
+                "canonical binding"
+            )
+        if binding.scenario is None:
+            raise OpenBBMapError(
+                f"registry model {descriptor.source}/{descriptor.model} has no scenario"
+            )
+        try:
+            fetcher = registry.resolve_model(descriptor.source, descriptor.model)
+        except (LookupError, RuntimeError) as exc:
+            raise OpenBBMapError(
+                f"registry model {descriptor.source}/{descriptor.model} cannot resolve its fetcher"
+            ) from exc
+        if (type(fetcher).__module__, type(fetcher).__name__) != (
+            binding.module,
+            binding.class_name,
+        ):
+            raise OpenBBMapError(
+                f"registry model {descriptor.source}/{descriptor.model} does not match its "
+                "exact local fetcher binding"
+            )
+        capability = fetcher.capability
+        actual_identity = (
+            capability.asset_class,
+            capability.domain,
+            capability.period,
+            capability.market,
+            capability.source,
+        )
+        if descriptor.capability_identity != actual_identity:
+            raise OpenBBMapError(
+                f"registry model {descriptor.source}/{descriptor.model} has a stale capability "
+                "descriptor"
+            )
+
+        domain_spec = _require_domain_spec(descriptor.domain, descriptor.model, OPENBB_MAP_PATH)
+        status = "verified" if descriptor.verified else "registered"
+        canonical_row = OursCapability(
+            provider=descriptor.source,
+            domain=descriptor.domain,
+            contract=domain_spec.contract,
+            status=status,
+        )
+        matching_index = next(
+            (
+                index
+                for index, entry in enumerate(projected_entries)
+                if entry.model == descriptor.model and entry.scenario == binding.scenario
+            ),
+            None,
+        )
+        if matching_index is None:
+            projected_entries.append(
+                OpenBBMapEntry(
+                    model=descriptor.model,
+                    scenario=binding.scenario,
+                    ours=(canonical_row,),
+                )
+            )
+        else:
+            entry = projected_entries[matching_index]
+            if canonical_row not in entry.ours:
+                projected_entries[matching_index] = OpenBBMapEntry(
+                    model=entry.model,
+                    scenario=entry.scenario,
+                    ours=(*entry.ours, canonical_row),
+                )
+        covered.add(pair)
+
+    registered_pairs = set(capabilities_by_pair)
+    if covered != registered_pairs:
+        missing = sorted(registered_pairs - covered)
+        unexpected = sorted(covered - registered_pairs)
+        raise OpenBBMapError(
+            "projected compatibility map does not match the provider registry; "
+            f"missing={missing}, unexpected={unexpected}"
+        )
+    return tuple(projected_entries)
+
+
+class _OpenBBMapLoader:
+    """Callable loader retaining the historical ``cache_clear`` test API."""
+
+    def __call__(self, path: str | None = None) -> tuple[OpenBBMapEntry, ...]:
+        """Load the dynamic default projection or a strict custom v1 file."""
+        if path is not None:
+            return _read_map_file(Path(path))
+        return _project_default_map()
+
+    @staticmethod
+    def cache_clear() -> None:
+        """Keep compatibility with callers; map results are no longer cached."""
+
+
+load_openbb_map = _OpenBBMapLoader()
 
 
 def covered_capabilities() -> frozenset[tuple[str, str]]:
@@ -179,6 +346,18 @@ def _require_registered_domain(domain: str, model: str, source: Path) -> None:
         raise OpenBBMapError(
             f"ours row of {model!r} in {source} names unregistered domain {domain!r}; "
             "only pending rows may do that"
+        ) from exc
+
+
+def _require_domain_spec(domain: str, model: str, source: Path) -> DomainSpec:
+    """Return a real DomainSpec or fail closed with map context."""
+    from opendata.data.domains import require_domain
+
+    try:
+        return require_domain(domain)
+    except LookupError as exc:
+        raise OpenBBMapError(
+            f"ours row of {model!r} in {source} names unregistered domain {domain!r}"
         ) from exc
 
 

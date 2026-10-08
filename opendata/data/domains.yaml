@@ -14,6 +14,7 @@ domains:
     display_name: A股日线行情
     rest_path: stock/daily
     contract: Bar
+    priority: P0
   economy_cpi:
     display_name: 宏观CPI
     rest_path: economy/cpi
@@ -38,26 +39,32 @@ domains:
     display_name: A股复权因子
     rest_path: stock/adjust
     contract: AdjustFactor
+    priority: P0
   stock_action:
     display_name: A股除权除息事件
     rest_path: stock/actions
     contract: CorporateAction
+    priority: P0
   financial_statement:
     display_name: 财务报表
     rest_path: financial/statements
     contract: FinancialStatement
+    priority: P0
   financial_indicator:
     display_name: 财务指标
     rest_path: financial/indicators
     contract: FinancialIndicator
+    priority: P0
   index_constituent:
     display_name: 指数成分股
     rest_path: index/constituents
     contract: IndexConstituent
+    priority: P0
   futures_daily:
     display_name: 期货日线行情
     rest_path: futures/daily
     contract: Bar
+    priority: P0
   index_daily:
     display_name: 指数日线行情
     rest_path: index/daily
@@ -78,6 +85,7 @@ domains:
     display_name: 期货合约基本面
     rest_path: futures/fundamentals
     contract: FuturesFundamentals
+    priority: P0
   instrument:
     display_name: 标的元数据
     rest_path: meta/instruments
@@ -90,3 +98,163 @@ domains:
     display_name: 基金分红事件
     rest_path: fund/actions
     contract: CorporateAction
+  fred_search:
+    display_name: FRED 系列目录检索
+    rest_path: macro/fred-search
+    contract: SeriesCatalogItem
+    temporal_kind: snapshot
+    time_field: last_updated
+    natural_key: [series_id]
+    filter_dims: [series_id, frequency, units, seasonal_adjustment]
+    storage_mode: transient
+    permissions: [query]
+  fred_series:
+    display_name: FRED 经济观测序列
+    rest_path: macro/fred-series
+    contract: SeriesObservation
+    temporal_kind: series
+    time_field: date
+    natural_key:
+      - series_id
+      - date
+      - realtime_start
+      - realtime_end
+      - transform_units
+      - output_type
+      - requested_frequency
+      - requested_aggregation_method
+    filter_dims:
+      - series_id
+      - date
+      - realtime_start
+      - realtime_end
+      - transform_units
+      - output_type
+      - requested_frequency
+      - requested_aggregation_method
+    storage_mode: upsert
+    permissions: [query, store, export]
+  sofr:
+    display_name: SOFR 融资成本观测序列
+    rest_path: macro/sofr
+    contract: FredSofrObservation
+    temporal_kind: series
+    time_field: date
+    natural_key:
+      - series_id
+      - date
+      - realtime_start
+      - realtime_end
+      - transform_units
+      - output_type
+      - requested_frequency
+      - requested_aggregation_method
+    filter_dims:
+      - series_id
+      - date
+      - realtime_start
+      - realtime_end
+      - transform_units
+      - output_type
+      - requested_frequency
+      - requested_aggregation_method
+    storage_mode: transient
+    permissions: [query]
+  sonia:
+    display_name: SONIA 英镑融资成本观测序列
+    rest_path: macro/sonia
+    contract: FredSoniaObservation
+    temporal_kind: series
+    time_field: date
+    natural_key:
+      - series_id
+      - parameter
+      - date
+      - realtime_start
+      - realtime_end
+      - transform_units
+      - output_type
+      - requested_frequency
+      - requested_aggregation_method
+    filter_dims:
+      - series_id
+      - parameter
+      - date
+      - realtime_start
+      - realtime_end
+      - transform_units
+      - output_type
+      - requested_frequency
+      - requested_aggregation_method
+    storage_mode: transient
+    permissions: [query]
+  bls_search:
+    display_name: 美国劳工统计局系列目录
+    rest_path: macro/bls-search
+    contract: BlsCatalogItem
+    temporal_kind: snapshot
+    time_field: catalog_as_of
+    natural_key: [survey, series_id]
+    filter_dims: [survey, series_id]
+    storage_mode: transient
+    permissions: [query]
+  bls_series:
+    display_name: 美国劳工统计局观测序列
+    rest_path: macro/bls-series
+    contract: BlsObservation
+    temporal_kind: series
+    time_field: year
+    natural_key: [series_id, year, period]
+    filter_dims: [series_id, year, period, api_version]
+    storage_mode: upsert
+    permissions: [query, store, export]
+  equity_historical:
+    display_name: 美股历史行情
+    rest_path: equity/historical
+    contract: EquityHistorical
+    temporal_kind: series
+    time_field: date
+    natural_key: [symbol, date]
+    filter_dims: [symbol, date, query_window_scope, close_adjustment_semantics]
+    storage_mode: upsert
+    permissions: [query, store, export]
+  equity_quote:
+    display_name: 美股报价快照
+    rest_path: equity/quote
+    contract: EquityQuote
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [symbol]
+    filter_dims: [symbol, exchange]
+    storage_mode: transient
+    permissions: [query]
+  currency_reference_rates:
+    display_name: 欧元日参考汇率
+    rest_path: currency/reference-rates
+    contract: CurrencyReferenceRate
+    temporal_kind: series
+    time_field: date
+    natural_key: [series_key, date]
+    filter_dims: [series_key, date, quote_currency, base_currency]
+    storage_mode: transient
+    permissions: [query]
+  yield_curve:
+    display_name: 欧元区收益率曲线
+    rest_path: macro/yield-curve
+    contract: EcbYieldCurveObservation
+    temporal_kind: series
+    time_field: date
+    natural_key: [series_key, date]
+    filter_dims: [series_key, date, frequency, ref_area, currency]
+    storage_mode: transient
+    permissions: [query]
+  balance_of_payments:
+    display_name: 国际收支
+    rest_path: macro/balance-of-payments
+    contract: EcbBalanceOfPaymentsObservation
+    temporal_kind: series
+    time_field: period
+    natural_key: [series_key, period]
+    filter_dims: [series_key, period, frequency, ref_area, counterpart_area, unit_measure]
+    storage_mode: transient
+    permissions: [query]

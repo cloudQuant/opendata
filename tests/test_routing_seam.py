@@ -30,6 +30,8 @@ class StubQuery(QueryParams):
 class StubFetcher(Fetcher[StubQuery, object]):
     """Returns its preconfigured result and records the call."""
 
+    async_mode = "bounded_thread"
+
     def __init__(self, capability: Capability, result: object):
         self.capability = capability
         self.result = result
@@ -73,6 +75,11 @@ def patch_registry(monkeypatch, *fetchers: StubFetcher) -> ProviderRegistry:
     return registry
 
 
+def allow_stub_ths_auto_route(monkeypatch) -> None:
+    """Make the local THS stub credential-eligible without reading user config."""
+    monkeypatch.setattr(registry_module, "_source_has_credentials", lambda source: source == "ths")
+
+
 class TestFetchRouting:
     async def test_unregistered_interface_falls_back_to_legacy(self, monkeypatch):
         patch_registry(monkeypatch)  # empty registry
@@ -86,6 +93,7 @@ class TestFetchRouting:
         legacy.assert_awaited_once()
 
     async def test_registered_domain_routes_to_fetcher(self, monkeypatch):
+        allow_stub_ths_auto_route(monkeypatch)
         fetcher = StubFetcher(make_capability(), result=pd.DataFrame({"close": [1.0]}))
         patch_registry(monkeypatch, fetcher)
         service = DataAcquisitionService()
@@ -101,6 +109,7 @@ class TestFetchRouting:
         assert [call[0] for call in fetcher.calls] == ["600519.SH"]
 
     async def test_contract_models_become_frame(self, monkeypatch):
+        allow_stub_ths_auto_route(monkeypatch)
         rows = [
             Bar(
                 symbol="600519.SH",
@@ -123,6 +132,7 @@ class TestFetchRouting:
         assert frame["close"].tolist() == [1710.2]
 
     async def test_empty_model_sequence_becomes_none(self, monkeypatch):
+        allow_stub_ths_auto_route(monkeypatch)
         fetcher = StubFetcher(make_capability(), result=[])
         patch_registry(monkeypatch, fetcher)
         service = DataAcquisitionService()
@@ -147,7 +157,8 @@ class TestFetchRouting:
 
 
 class TestResolveDomain:
-    def test_resolves_registered_domain(self):
+    def test_resolves_registered_domain(self, monkeypatch):
+        allow_stub_ths_auto_route(monkeypatch)
         registry = ProviderRegistry()
         fetcher = StubFetcher(make_capability(), result=None)
         registry.register(fetcher)

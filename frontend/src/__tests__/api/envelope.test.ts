@@ -51,6 +51,29 @@ const CATALOG = {
     {
       domain: 'stock_daily',
       asset_class: 'equity',
+      markets: ['cn'],
+      capabilities: [
+        {
+          asset_class: 'equity',
+          domain: 'stock_daily',
+          period: '1D',
+          market: 'cn',
+          source: 'akshare',
+          verified: true,
+          notes: '',
+          callable: {
+            module: 'opendata.data.providers.akshare.models.stock_daily',
+            name: 'AkshareStockDailyFetcher.fetch',
+          },
+          endpoint: {
+            name: 'query_domain_data',
+            method: 'GET',
+            path: '/api/v1/data/equity/stock_daily',
+            query_filters: { source: 'akshare', period: '1D' },
+          },
+          parameters: [{ name: 'symbol', type: 'str', required: true, description: null }],
+        },
+      ],
       display_name: 'A股日线行情',
       layer: 'dwd',
       table: 'dwd_stock_daily',
@@ -90,6 +113,8 @@ const CATALOG = {
     {
       domain: 'economy_cpi',
       asset_class: 'economy',
+      markets: ['eu', 'global'],
+      capabilities: [],
       display_name: '宏观CPI',
       layer: 'dwd',
       table: 'dwd_economy_cpi',
@@ -112,6 +137,7 @@ const CATALOG = {
       ],
     },
   ],
+  markets: ['cn', 'eu', 'global'],
   expected_data_date: '2026-09-22',
   domains_total: 2,
   source_legs_total: 3,
@@ -195,6 +221,7 @@ describe('catalogApi over the real interceptor', () => {
     // with the baseline still set (test_data_catalog pins the same reading).
     answer({
       domains: [],
+      markets: [],
       expected_data_date: '2026-09-22',
       domains_total: 0,
       source_legs_total: 0,

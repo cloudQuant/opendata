@@ -1,8 +1,7 @@
-"""Unit tests for the fred provider (C1 P0).
+"""Unit tests for the verified FRED provider capabilities (C1 P0, C65).
 
-No network and no API key are needed: the HTTP layer is monkeypatched and
-the keyless path is asserted directly. Live verification against official
-series values is deferred per R2 (no FRED_API_KEY configured yet).
+The official-value comparison is archived separately; these tests use no network and
+cover registration, exact capability filtering, key gating, and response validation.
 """
 
 from __future__ import annotations
@@ -20,6 +19,8 @@ from opendata.data.providers.fred import register
 from opendata.data.providers.fred._source import SOURCE
 from opendata.data.providers.fred.models._client import FredProviderError
 from opendata.data.providers.fred.models.cpi import FredCpiFetcher
+from opendata.data.providers.fred.models.gdp import FredGdpFetcher
+from opendata.data.providers.fred.models.unemployment import FredUnemploymentFetcher
 from opendata.data.registry import get_registry
 
 if TYPE_CHECKING:
@@ -59,25 +60,51 @@ class TestRegistration:
         assert capability.period == "1M"
         assert capability.market == "us"
         assert capability.source == SOURCE == "fred"
-        assert capability.verified is False
+        assert capability.verified is True
 
     def test_register_is_idempotent(self) -> None:
         assert register() == []
 
-    def test_unverified_capability_is_not_auto_routed(self) -> None:
-        """fred is the only ``1M``/``us`` CPI leg and it is unverified: auto must refuse.
+    @pytest.mark.parametrize(
+        ("domain", "period", "fetcher_type"),
+        [
+            ("economy_cpi", "1M", FredCpiFetcher),
+            ("economy_gdp", "1Q", FredGdpFetcher),
+            ("economy_unemployment", "1M", FredUnemploymentFetcher),
+        ],
+    )
+    def test_auto_routes_each_verified_capability_with_matching_filters(
+        self, domain: str, period: str, fetcher_type: type[object]
+    ) -> None:
+        resolved = get_registry().resolve_domain(domain, period=period, market="us")
 
-        The old form of this check asked auto without naming a market, so
-        its outcome depended on which other macro providers had already
-        registered into the shared singleton in this process.
-        """
-        with pytest.raises(LookupError, match="no verified capability"):
-            get_registry().resolve_domain("economy_cpi", period="1M", market="us")
+        assert isinstance(resolved, fetcher_type)
 
-    def test_explicit_source_reaches_the_unverified_leg(self) -> None:
-        """Naming fred bypasses verification: the caller owns that choice."""
-        resolved = get_registry().resolve_domain("economy_cpi", market="us", source="fred")
+    def test_explicit_source_requires_matching_market_domain_and_period(self) -> None:
+        resolved = get_registry().resolve_domain(
+            "economy_cpi", market="us", period="1M", source="fred"
+        )
         assert isinstance(resolved, FredCpiFetcher)
+
+        for kwargs in (
+            {"domain": "economy_cpi", "market": "eu", "period": "1M"},
+            {"domain": "economy_cpi", "market": "us", "period": "1Q"},
+            {"domain": "economy_rate", "market": "us", "period": "1M"},
+        ):
+            with pytest.raises(LookupError, match="no registered capability"):
+                get_registry().resolve_domain(source="fred", **kwargs)
+
+    def test_missing_key_keeps_verified_fred_out_of_auto_routing(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.delenv("FRED_API_KEY")
+        monkeypatch.setattr(
+            "opendata.core.config.get_settings",
+            lambda: type("S", (), {"fred_api_key": None, "fred_api_base_url": None})(),
+        )
+
+        with pytest.raises(LookupError, match="no credential-eligible verified auto candidate"):
+            get_registry().resolve_domain("economy_cpi", period="1M", market="us")
 
 
 class TestQuery:

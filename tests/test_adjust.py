@@ -69,6 +69,148 @@ class TestApplyAdjust:
             103.0 * 1.25,
         ]
 
+    def test_affine_adjustment_applies_scale_and_offset_to_ohlc(self):
+        affine = [
+            AdjustFactor(
+                symbol="600519.SH",
+                trade_date=trade_date,
+                qfq_factor=0.8,
+                hfq_factor=1.25,
+                qfq_scale=1.0,
+                qfq_offset=-5.0,
+                hfq_scale=1.0,
+                hfq_offset=5.0,
+                adjustment_version="affine-v1",
+            )
+            for trade_date in (date(2024, 6, 3), date(2024, 6, 4), date(2024, 6, 5))
+        ]
+
+        adjusted = apply_adjust(make_bars(), affine, "qfq")
+
+        assert adjusted[0].open == pytest.approx(95.0)
+        assert adjusted[0].high == pytest.approx(105.0)
+        assert adjusted[0].low == pytest.approx(85.0)
+        assert adjusted[0].close == pytest.approx(96.0)
+        assert adjusted[0].volume == make_bars()[0].volume
+        assert adjusted[0].amount == make_bars()[0].amount
+
+    def test_model_copy_cannot_bypass_affine_runtime_validation(self):
+        factor = make_factors()[0].model_copy(
+            update={"adjustment_version": "affine-v1", "qfq_scale": float("inf")}
+        )
+        with pytest.raises(ValueError, match="invalid affine adjustment coefficients"):
+            apply_adjust(make_bars()[:1], [factor], "qfq")
+
+    def test_model_copy_cannot_bypass_legacy_factor_validation(self):
+        factor = make_factors()[0].model_copy(update={"qfq_factor": 0.0})
+
+        with pytest.raises(ValueError, match="invalid legacy adjustment factors"):
+            apply_adjust(make_bars()[:1], [factor], "qfq")
+
+    def test_model_copy_non_numeric_legacy_factor_fails_closed(self):
+        factor = make_factors()[0].model_copy(update={"qfq_factor": "invalid"})
+
+        with pytest.raises(ValueError, match="invalid legacy adjustment factors"):
+            apply_adjust(make_bars()[:1], [factor], "qfq")
+
+    def test_finite_factor_that_overflows_price_arithmetic_is_rejected(self):
+        factor = make_factors()[0].model_copy(update={"qfq_factor": 1e308})
+
+        with pytest.raises(ValueError, match="adjusted OHLC.*must be finite"):
+            apply_adjust(make_bars()[:1], [factor], "qfq")
+
+    def test_finite_affine_scale_that_overflows_price_arithmetic_is_rejected(self):
+        factor = AdjustFactor(
+            symbol="600519.SH",
+            trade_date=date(2024, 6, 3),
+            qfq_factor=1.0,
+            hfq_factor=1.0,
+            qfq_scale=1e308,
+            qfq_offset=0.0,
+            hfq_scale=1.0,
+            hfq_offset=0.0,
+            adjustment_version="affine-v1",
+        )
+
+        with pytest.raises(ValueError, match="adjusted OHLC.*must be finite"):
+            apply_adjust(make_bars()[:1], [factor], "qfq")
+
+    def test_model_copy_non_numeric_affine_coefficient_fails_closed(self):
+        factor = make_factors()[0].model_copy(
+            update={
+                "adjustment_version": "affine-v1",
+                "qfq_scale": "invalid",
+                "qfq_offset": 0.0,
+                "hfq_scale": 1.0,
+                "hfq_offset": 0.0,
+            }
+        )
+
+        with pytest.raises(ValueError, match="invalid affine adjustment coefficients"):
+            apply_adjust(make_bars()[:1], [factor], "qfq")
+
+    def test_same_symbol_cannot_mix_legacy_and_affine_rows(self):
+        affine = AdjustFactor(
+            symbol="600519.SH",
+            trade_date=date(2024, 6, 4),
+            qfq_factor=1.0,
+            hfq_factor=1.0,
+            qfq_scale=1.0,
+            qfq_offset=-5.0,
+            hfq_scale=1.0,
+            hfq_offset=5.0,
+            adjustment_version="affine-v1",
+        )
+
+        with pytest.raises(ValueError, match="mixed adjustment versions for 600519.SH"):
+            apply_adjust(make_bars()[:2], [make_factors()[0], affine], "qfq")
+
+    def test_symbols_can_use_different_adjustment_families(self):
+        legacy_bar = make_bars()[0]
+        affine_bar = legacy_bar.model_copy(update={"symbol": "000001.SZ"})
+        affine_factor = AdjustFactor(
+            symbol="000001.SZ",
+            trade_date=legacy_bar.trade_date,
+            qfq_factor=1.0,
+            hfq_factor=1.0,
+            qfq_scale=1.0,
+            qfq_offset=-5.0,
+            hfq_scale=1.0,
+            hfq_offset=5.0,
+            adjustment_version="affine-v1",
+        )
+
+        adjusted = apply_adjust([legacy_bar, affine_bar], [make_factors()[0], affine_factor], "qfq")
+
+        assert adjusted[0].close == pytest.approx(legacy_bar.close * 0.8)
+        assert adjusted[1].close == pytest.approx(affine_bar.close - 5.0)
+
+    def test_none_and_explicit_legacy_versions_share_a_family(self):
+        second_factor = make_factors()[1].model_copy(
+            update={"adjustment_version": "legacy-multiplicative-v1"}
+        )
+
+        adjusted = apply_adjust(make_bars()[:2], [make_factors()[0], second_factor], "qfq")
+
+        assert [bar.close for bar in adjusted] == [101.0 * 0.8, 102.0 * 0.9]
+
+    def test_unmatched_factor_versions_do_not_affect_selected_bars(self):
+        affine_unused = AdjustFactor(
+            symbol="600519.SH",
+            trade_date=date(2024, 6, 4),
+            qfq_factor=1.0,
+            hfq_factor=1.0,
+            qfq_scale=1.0,
+            qfq_offset=0.0,
+            hfq_scale=1.0,
+            hfq_offset=0.0,
+            adjustment_version="affine-v1",
+        )
+
+        adjusted = apply_adjust(make_bars()[:1], [make_factors()[0], affine_unused], "qfq")
+
+        assert adjusted[0].close == pytest.approx(make_bars()[0].close * 0.8)
+
     def test_volume_and_amount_never_adjusted(self):
         raw = make_bars()
         adjusted = apply_adjust(raw, make_factors(), "qfq")

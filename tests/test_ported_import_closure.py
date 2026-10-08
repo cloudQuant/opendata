@@ -2,13 +2,10 @@
 
 Why this file exists
 -------------------
-``opendata_http/__init__.py`` is upstream akshare's *eager* facade: importing one
-ported module runs hundreds of them. ``curl_cffi`` is imported at module scope by
-``opendata_http/stock_feature/stock_hk_valuation_baidu.py`` and was declared
-nowhere, so ``pip install -e ".[web,dev]"`` produced an environment where
-``import opendata.main`` raised ``ModuleNotFoundError`` and CI's ``test-cov`` leg
-died at conftest import - while every local run stayed green, because the
-developer's environment had that library from somewhere else.
+The AKShare vendor facade is lazy: importing the app or its metadata must not run
+the 325 migrated source modules. Reading a selected export must load its real
+implementation and its module-scope dependencies. ``curl_cffi`` is used by one
+such export and remains part of that measured dependency closure.
 
 The device
 ---------
@@ -29,6 +26,7 @@ from __future__ import annotations
 
 import ast
 import importlib.metadata
+import json
 import os
 import subprocess
 import sys
@@ -44,9 +42,13 @@ if TYPE_CHECKING:
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 APP_IMPORT = "opendata.main"
+VENDOR_PACKAGE = "opendata.data.providers.akshare._vendor"
+VENDOR_ROOT = REPO_ROOT / "opendata" / "data" / "providers" / "akshare" / "_vendor"
+VENDOR_LOCK = VENDOR_ROOT / "upstream.lock"
+LEGACY_VENDOR_PACKAGE = "opendata_http"
 # Must match the install step in .github/workflows/ci.yml (`pip install -e ".[web,dev]"`).
 CI_EXTRAS = ("web", "dev")
-RUNTIME_ROOTS = ("opendata", "opendata_http", "opendata_fuyao", "opendata_client")
+RUNTIME_ROOTS = ("opendata", "opendata_fuyao", "opendata_client")
 
 _CLOSURE_DUMP = """
 import sys
@@ -55,8 +57,17 @@ __import__(sys.argv[1])
 print("|".join(sorted(set(sys.modules) - before)))
 """
 
+_EXPORT_CLOSURE_DUMP = """
+import importlib, sys
+before = set(sys.modules)
+facade = importlib.import_module(sys.argv[1])
+getattr(facade, sys.argv[2])
+print("|".join(sorted(set(sys.modules) - before)))
+"""
+
 _BLOCK_PROBE = """
 import sys
+import importlib
 
 blocked = {m.split(".")[0] for m in sys.argv[2].split(",") if m}
 
@@ -70,7 +81,9 @@ class _Blocker:
 
 sys.meta_path.insert(0, _Blocker())
 try:
-    __import__(sys.argv[1])
+    module = importlib.import_module(sys.argv[1])
+    if len(sys.argv) > 3:
+        getattr(module, sys.argv[3])
 except Exception as exc:
     print("BLOCKED_SO_IMPORT_FAILED " + type(exc).__name__)
     sys.exit(1)
@@ -78,9 +91,11 @@ print("IMPORT_STILL_OK")
 """
 
 
-def _run_child(code: str, *args: str) -> subprocess.CompletedProcess[str]:
+def _run_child(
+    code: str, import_target: str = APP_IMPORT, *args: str
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell is never used
-        [sys.executable, "-c", code, APP_IMPORT, *args],
+        [sys.executable, "-c", code, import_target, *args],
         cwd=str(REPO_ROOT),
         capture_output=True,
         text=True,
@@ -89,20 +104,54 @@ def _run_child(code: str, *args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-@lru_cache(maxsize=1)
-def import_closure() -> frozenset[str]:
-    """Module names that ``import opendata.main`` puts into ``sys.modules``."""
-    result = _run_child(_CLOSURE_DUMP)
+@lru_cache(maxsize=8)
+def import_closure(import_target: str = APP_IMPORT, export: str | None = None) -> frozenset[str]:
+    """Module names loaded by an app import or one selected lazy vendor export."""
+    code = _CLOSURE_DUMP if export is None else _EXPORT_CLOSURE_DUMP
+    args = () if export is None else (export,)
+    result = _run_child(code, import_target, *args)
     assert result.returncode == 0, (
-        f"{APP_IMPORT} does not import in a clean child:\n{result.stderr[-700:]}"
+        f"{import_target} import does not complete in a clean child:\n{result.stderr[-700:]}"
     )
     return frozenset(x for x in result.stdout.strip().split("|") if x)
 
 
-def first_party_files_that_executed() -> list[str]:
+def locked_vendor_python_files() -> tuple[Path, ...]:
+    """Resolve the full Python inventory from the preserved lock, fail on missing paths."""
+    lock = json.loads(VENDOR_LOCK.read_text(encoding="utf-8"))
+    files = tuple(
+        VENDOR_ROOT / Path(entry["path"])
+        for entry in lock["files"]
+        if Path(entry["path"]).suffix == ".py"
+    )
+    missing = [path.relative_to(VENDOR_ROOT).as_posix() for path in files if not path.is_file()]
+    assert not missing, f"Python files recorded in upstream.lock are missing: {missing}"
+    return files
+
+
+def locked_vendor_modules() -> frozenset[str]:
+    """The complete Python module inventory recorded by the preserved upstream lock."""
+    modules: set[str] = set()
+    for source_path in locked_vendor_python_files():
+        relative = source_path.relative_to(VENDOR_ROOT)
+        parts = (
+            relative.parent.parts
+            if relative.name == "__init__.py"
+            else relative.with_suffix("").parts
+        )
+        suffix = ".".join(parts)
+        modules.add(VENDOR_PACKAGE if not suffix else f"{VENDOR_PACKAGE}.{suffix}")
+    return frozenset(modules)
+
+
+def first_party_files_that_executed(
+    import_target: str = APP_IMPORT, export: str | None = None
+) -> list[str]:
     """Closure members that are our own files - the ones whose imports we own."""
     return sorted(
-        m for m in import_closure() if any(m == r or m.startswith(f"{r}.") for r in RUNTIME_ROOTS)
+        m
+        for m in import_closure(import_target, export)
+        if any(m == r or m.startswith(f"{r}.") for r in RUNTIME_ROOTS)
     )
 
 
@@ -153,7 +202,7 @@ def _scan(path: Path) -> tuple[frozenset[str], frozenset[str]]:
     the deployment may not have. Those are not import-time requirements, and a first
     version of this guard cried wolf about exactly that: ``sentry_sdk``
     (``opendata/main.py:84`` under ``except ImportError``) and ``akqmt``
-    (``opendata_http/__init__.py:5811``) both raised "declare this" for libraries
+    (the old eager vendor facade) both raised "declare this" for libraries
     the shipped app never needs to boot.
     """
     try:
@@ -188,9 +237,9 @@ def _scan(path: Path) -> tuple[frozenset[str], frozenset[str]]:
 def module_scope_imports(path: Path) -> set[str]:
     """Top-level names the file imports where a failure would propagate out.
 
-    The distinction is the whole point: ``akqmt`` and ``playwright`` are imported by
-    ported modules too, but not on a path that runs at import time, so an uninstalled
-    one never breaks ``import opendata.main``.
+    The distinction is the whole point: ``akqmt`` and ``playwright`` appear in the
+    vendor tree but stay outside a selected export's module-scope closure unless that
+    export actually imports them.
     """
     return set(_scan(path)[0])
 
@@ -273,23 +322,29 @@ def _third_party(names: Iterable[str]) -> frozenset[str]:
     )
 
 
-def _imported_names(scan: Callable[[Path], set[str]]) -> frozenset[str]:
+def _imported_names(
+    scan: Callable[[Path], set[str]], import_target: str, export: str | None
+) -> frozenset[str]:
     out: set[str] = set()
-    for module in first_party_files_that_executed():
+    for module in first_party_files_that_executed(import_target, export):
         path = module_to_path(module)
         if path is not None:
             out |= scan(path)
     return _third_party(out)
 
 
-def runtime_requirements() -> frozenset[str]:
-    """Third-party top-levels that a module-scope ``import`` really executes."""
-    return _imported_names(module_scope_imports)
+def runtime_requirements(
+    import_target: str = APP_IMPORT, export: str | None = None
+) -> frozenset[str]:
+    """Third-party imports for the selected app or lazy export closure."""
+    return _imported_names(module_scope_imports, import_target, export)
 
 
-def guarded_runtime_imports() -> frozenset[str]:
+def guarded_runtime_imports(
+    import_target: str = APP_IMPORT, export: str | None = None
+) -> frozenset[str]:
     """Third-party top-levels imported under a handler that swallows the failure."""
-    return _imported_names(guarded_imports)
+    return _imported_names(guarded_imports, import_target, export)
 
 
 def uncovered_requirements(modules: Iterable[str]) -> list[str]:
@@ -297,18 +352,44 @@ def uncovered_requirements(modules: Iterable[str]) -> list[str]:
     return [m for m in sorted(set(modules)) if not (provider_distributions(m) & reachable)]
 
 
-def blocking_breaks_app_import(modules: Iterable[str]) -> bool:
-    return _run_child(_BLOCK_PROBE, ",".join(sorted(set(modules)))).returncode != 0
-
-
-def test_the_facade_really_is_eager() -> None:
-    """Anti-vacuous precondition: importing the app pulls in the ported tree."""
-    ported = {m for m in import_closure() if m == "opendata_http" or m.startswith("opendata_http.")}
-    assert len(ported) >= 300, f"expected 300+ ported modules in the closure, got {len(ported)}"
-    assert len(first_party_files_that_executed()) >= 300, "the closure census itself is broken"
-    assert "curl_cffi" in runtime_requirements(), (
-        "the C36 defect must stay inside the measured surface"
+def blocking_breaks_app_import(
+    modules: Iterable[str], import_target: str = APP_IMPORT, export: str | None = None
+) -> bool:
+    args = (",".join(sorted(set(modules))),) if export is None else (
+        ",".join(sorted(set(modules))),
+        export,
     )
+    return _run_child(_BLOCK_PROBE, import_target, *args).returncode != 0
+
+
+def test_the_facade_is_lazy_and_exports_on_demand() -> None:
+    """Use the lock inventory and fresh children to verify lazy loading directly."""
+    locked = locked_vendor_modules()
+    assert len(locked) == 325, (
+        f"the upstream lock must retain 325 Python modules, got {len(locked)}"
+    )
+
+    metadata_closure = import_closure(VENDOR_PACKAGE, "__version__")
+    assert locked & metadata_closure == {VENDOR_PACKAGE, f"{VENDOR_PACKAGE}._version"}
+    assert not any(
+        module == LEGACY_VENDOR_PACKAGE or module.startswith(f"{LEGACY_VENDOR_PACKAGE}.")
+        for module in metadata_closure
+    ), "the obsolete top-level package must not be restored as a shim"
+
+    selected_closure = import_closure(VENDOR_PACKAGE, "futures_hog_core")
+    selected_modules = locked & selected_closure
+    implementation = f"{VENDOR_PACKAGE}.futures_derivative.futures_hog"
+    assert implementation in selected_modules
+    assert len(selected_modules) < len(locked), "one export must not load the full vendor tree"
+    assert not any(
+        module == "akshare" or module.startswith("akshare.") for module in selected_closure
+    ), "the selected export must resolve inside the migrated namespace"
+    assert not any(
+        module == "openbb" or module.startswith("openbb.") for module in selected_closure
+    ), "the selected export must not load the external OpenBB runtime"
+
+    missing = uncovered_requirements(runtime_requirements(VENDOR_PACKAGE, "futures_hog_core"))
+    assert not missing, f"the selected export has undeclared module-scope imports: {missing}"
 
 
 def test_every_module_scope_import_is_reachable_from_the_declared_set() -> None:
@@ -320,20 +401,31 @@ def test_every_module_scope_import_is_reachable_from_the_declared_set() -> None:
     )
 
 
+    # Lazy exports are absent from the cold app's module closure, so preserve the
+    # former whole-tree requirement census by scanning every Python file named by
+    # the lock rather than narrowing coverage to files that happened to load.
+    vendor_imports: set[str] = set()
+    for source_path in locked_vendor_python_files():
+        vendor_imports |= module_scope_imports(source_path)
+    vendor_missing = uncovered_requirements(_third_party(vendor_imports))
+    assert not vendor_missing, (
+        f"undeclared module-scope imports in locked vendor files: {vendor_missing}"
+    )
+
+
 def test_guarded_imports_are_optional_and_stay_out_of_the_requirement_set() -> None:
     """A swallowed ``ImportError`` is an optional integration, not an undeclared dependency.
 
-    ``sentry_sdk`` and ``akqmt`` were the two names the first version of this guard
-    demanded we declare; both sit under ``except ImportError`` at module level
-    (``opendata/main.py:83``, ``opendata_http/__init__.py:5810``). The classification is
-    not taken on faith from the AST - the block probe below is the empirical check, and
-    it would also catch the opposite error of marking a real requirement optional.
+    ``sentry_sdk`` remains a guarded app import. ``akqmt`` is exposed only through a
+    lazy optional facade entry, so it is outside the cold app-import AST closure. The
+    block probe below checks guarded app imports empirically.
     """
     guarded = guarded_runtime_imports()
-    assert {"sentry_sdk", "akqmt"} <= guarded, (
+    assert "sentry_sdk" in guarded, (
         f"the walker no longer classifies the optional imports as guarded: {sorted(guarded)}"
     )
-    assert not ({"sentry_sdk", "akqmt"} & runtime_requirements())
+    assert "sentry_sdk" not in runtime_requirements()
+    assert "akqmt" not in runtime_requirements()
     assert "curl_cffi" not in guarded, (
         "curl_cffi is a genuine import-time requirement and must not be classed as guarded"
     )
@@ -344,8 +436,9 @@ def test_guarded_imports_are_optional_and_stay_out_of_the_requirement_set() -> N
 
 
 def test_curl_cffi_regression_stays_declared() -> None:
-    """The C36 defect itself: a ported module imports curl_cffi at module scope and it
-    was declared nowhere, so five CI pushes died at conftest import."""
+    """The lazy HK valuation export still declares its module-scope curl_cffi use."""
+    selected_requirements = runtime_requirements(VENDOR_PACKAGE, "stock_hk_valuation_baidu")
+    assert "curl_cffi" in selected_requirements
     assert "curl-cffi" in reachable_distributions(), (
         "curl-cffi must be declared or transitively reachable"
     )
@@ -355,14 +448,19 @@ def test_curl_cffi_regression_stays_declared() -> None:
 
 
 def test_the_block_probe_device_has_teeth_in_both_directions() -> None:
-    """Hiding an import-time dependency must break the app; hiding a lazy one must not.
+    """Hiding an export dependency fails on access while cold app import stays lazy.
 
     Without the negative control this guard could pass vacuously: a device that reports
     "failed" for every module would call noise a defect, and one that reports "fine" for
     every module would hide the C36 defect again.
     """
-    assert blocking_breaks_app_import({"curl_cffi"}), (
-        "blocking curl_cffi did not break `import opendata.main` - the probe is dead"
+    assert not blocking_breaks_app_import({"curl_cffi"}), (
+        "blocking the lazy curl_cffi export must not break `import opendata.main`"
+    )
+    assert blocking_breaks_app_import(
+        {"curl_cffi"}, VENDOR_PACKAGE, "stock_hk_valuation_baidu"
+    ), (
+        "blocking curl_cffi did not break the selected export access - the probe is dead"
     )
     assert "openpyxl" not in runtime_requirements(), "openpyxl is expected to stay a lazy import"
     assert not blocking_breaks_app_import({"openpyxl"}), (
@@ -375,7 +473,7 @@ def test_metadata_resolution_beats_name_matching() -> None:
 
     An ad-hoc AST-vs-pyproject name comparison in C36 flagged six libraries as
     undeclared; bs4 -> beautifulsoup4 and py_mini_racer -> mini-racer were already
-    declared, and akqmt/playwright are imported by ported files the facade never runs.
+    declared, while akqmt and playwright remain behind lazy entry points.
     """
     for module in ("py_mini_racer", "bs4", "yaml", "dateutil"):
         assert provider_distributions(module), (

@@ -4,7 +4,7 @@ Defines request/response schemas used across API endpoints.
 """
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
@@ -220,12 +220,87 @@ class InterfaceListResponse(BaseModel):
 
 
 # Task schemas
+class PipelineTaskParameters(BaseModel):
+    """Validated arguments for the existing six-step incremental runner."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    domain: str = Field(default="stock_daily", min_length=1, max_length=64)
+    source: str | None = Field(None, min_length=1, max_length=64, pattern=r"^[a-z][a-z0-9_]*$")
+    second_source: str | None = Field(
+        None, min_length=1, max_length=64, pattern=r"^[a-z][a-z0-9_]*$"
+    )
+    symbols: list[str] | None = Field(None, min_length=1, max_length=5000)
+    limit: int = Field(default=5000, ge=1, le=50000)
+    lookback_days: int = Field(default=0, ge=0, le=3650)
+    shard_size: int = Field(default=200, ge=1, le=1000)
+
+    @field_validator("domain")
+    @classmethod
+    def validate_supported_domain(cls, value: str) -> str:
+        """Reject domains without a registered six-step builder."""
+        from opendata.pipeline.jobs import SUPPORTED_DOMAINS
+
+        if value not in SUPPORTED_DOMAINS:
+            raise ValueError(f"unsupported pipeline domain: {value}")
+        return value
+
+    @field_validator("symbols")
+    @classmethod
+    def validate_symbols(cls, value: list[str] | None) -> list[str] | None:
+        """Reject blank or duplicate explicit symbol identifiers."""
+        if value is None:
+            return None
+        if any(not symbol.strip() for symbol in value):
+            raise ValueError("symbols must not contain blank identifiers")
+        if len(set(value)) != len(value):
+            raise ValueError("symbols must be unique")
+        return value
+
+    @model_validator(mode="after")
+    def validate_sources(self) -> "PipelineTaskParameters":
+        """Ensure explicit sources are registered for the selected domain."""
+        from opendata.data.providers import register_providers
+        from opendata.data.registry import get_registry
+        from opendata.pipeline.templates import default_source
+
+        registry = get_registry()
+        if not registry.capabilities():
+            register_providers()
+        available_sources = {
+            capability.source
+            for capability in registry.capabilities()
+            if capability.domain == self.domain
+        }
+        if not available_sources:
+            raise ValueError(f"no registered provider source for domain: {self.domain}")
+
+        effective_source = self.source or default_source(self.domain)
+        if effective_source not in available_sources:
+            raise ValueError(f"source is not registered for domain: {self.domain}")
+        if self.second_source is not None:
+            if self.second_source not in available_sources:
+                raise ValueError(f"second_source is not registered for domain: {self.domain}")
+            if self.second_source == effective_source:
+                raise ValueError("source and second_source must differ")
+        return self
+
+
+def validate_pipeline_task_parameters(parameters: dict[str, Any] | None) -> dict[str, Any]:
+    """Validate and normalize the allowlisted arguments for a pipeline task."""
+    validated = PipelineTaskParameters.model_validate(parameters or {})
+    return validated.model_dump(exclude_unset=True)
+
+
 class TaskCreateRequest(BaseModel):
     """Task creation request schema."""
 
-    name: str
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(..., min_length=1, max_length=255)
     description: str | None = None
-    script_id: str
+    task_kind: Literal["script", "pipeline"] = "script"
+    script_id: str | None = None
     schedule_type: str = Field(..., pattern="^(once|daily|weekly|monthly|cron|interval)$")
     schedule_expression: str
     parameters: dict[str, Any] | None = None
@@ -234,12 +309,28 @@ class TaskCreateRequest(BaseModel):
     max_retries: int = Field(default=3, ge=0, le=10)
     timeout: int = Field(default=0, ge=0)
 
+    @model_validator(mode="after")
+    def validate_task_kind(self) -> "TaskCreateRequest":
+        """Require exactly the configuration shape used by the selected executor."""
+        if self.task_kind == "script":
+            if not self.script_id:
+                raise ValueError("script tasks require script_id")
+            return self
+        if self.script_id is not None:
+            raise ValueError("pipeline tasks cannot include script_id")
+        self.parameters = validate_pipeline_task_parameters(self.parameters)
+        return self
+
 
 class TaskUpdateRequest(BaseModel):
     """Task update request schema."""
 
+    model_config = ConfigDict(extra="forbid")
+
     name: str | None = Field(None, min_length=1, max_length=255)
     description: str | None = Field(None, max_length=500)
+    task_kind: Literal["script", "pipeline"] | None = None
+    script_id: str | None = Field(None, min_length=1, max_length=100)
     schedule_type: str | None = Field(None, pattern="^(once|daily|weekly|monthly|cron|interval)$")
     schedule_expression: str | None = None
     parameters: dict[str, Any] | None = None
@@ -247,6 +338,17 @@ class TaskUpdateRequest(BaseModel):
     retry_on_failure: bool | None = None
     max_retries: int | None = Field(None, ge=0, le=10)
     timeout: int | None = Field(None, ge=0)
+
+    @model_validator(mode="after")
+    def validate_task_kind(self) -> "TaskUpdateRequest":
+        """Reject self-contained pipeline/script combinations in partial updates."""
+        if self.task_kind == "pipeline" and self.script_id is not None:
+            raise ValueError("pipeline tasks cannot include script_id")
+        if "script_id" in self.model_fields_set and self.script_id is None:
+            raise ValueError("script_id cannot be cleared")
+        if self.task_kind == "pipeline" and self.parameters is not None:
+            self.parameters = validate_pipeline_task_parameters(self.parameters)
+        return self
 
 
 class TaskResponse(BaseModel):
@@ -256,7 +358,8 @@ class TaskResponse(BaseModel):
     name: str
     description: str | None
     user_id: int
-    script_id: str
+    task_kind: Literal["script", "pipeline"]
+    script_id: str | None
     script_name: str | None = None
     schedule_type: str
     schedule_expression: str

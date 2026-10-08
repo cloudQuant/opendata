@@ -173,6 +173,32 @@ class TestDenormalizeFrame:
         projected = denormalize_frame(frame, mapping)
         assert list(shanghai_dates(projected["date_ms"])) == [date(2024, 1, 2)]
         assert projected["date_ms"].dtype == "int64"
+        assert projected["date_ms"].iloc[0] == 1_704_124_800_000
+
+    def test_millisecond_conversion_handles_timezone_and_nat(self):
+        from opendata.data.mapping import denormalize_frame
+
+        mapping = require_domain_mapping("ths", "stock_daily")
+        frame = pd.DataFrame(
+            {
+                "symbol": ["600519.SH", "000001.SZ"],
+                "trade_date": pd.Series(
+                    [pd.Timestamp("2024-01-01T16:00:00Z"), pd.NaT], dtype="object"
+                ),
+                "open": [1.0, 1.0],
+                "high": [2.0, 2.0],
+                "low": [0.5, 0.5],
+                "close": [1.5, 1.5],
+                "volume": [10.0, 10.0],
+                "amount": [15.0, 15.0],
+            }
+        )
+
+        projected = denormalize_frame(frame, mapping)
+
+        assert projected["date_ms"].iloc[0] == 1_704_124_800_000
+        assert pd.isna(projected["date_ms"].iloc[1])
+        assert str(projected["date_ms"].dtype) == "Int64"
 
     def test_the_index_leg_lands_in_ods_and_reads_back_as_contract_rows(self):
         """C5: the ths index bars take the same write path as the stock bars."""

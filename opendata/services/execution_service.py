@@ -33,7 +33,7 @@ class ExecutionService:
     async def create_execution(
         self,
         task_id: int,
-        script_id: str,
+        script_id: str | None,
         params: dict | None = None,
         triggered_by: TriggeredBy = TriggeredBy.SCHEDULER,
         operator_id: int | None = None,

@@ -27,7 +27,7 @@ import statistics
 import sys
 from datetime import date
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
@@ -37,9 +37,11 @@ REPO_RELATIVE = Path(__file__).resolve().relative_to(ROOT)
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "upstream"
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Mapping, Sequence
 
     import pandas as pd
+
+    from opendata.data.models import ContractModel
 
 #: ths code, sina symbol, reference channel (``fixture`` stays offline).
 #: The first leg asks for a **bare** code so the run also proves the index
@@ -83,8 +85,11 @@ def _ths_frame(code: str, start: date, end: date) -> pd.DataFrame:
 
     register_providers()
     routed = get_registry().resolve_domain("index_daily", source="ths")
-    rows = routed.fetch(symbol=code, start_date=start, end_date=end)
-    return pd.DataFrame([row.model_dump() for row in rows])
+    rows = cast(
+        "Sequence[ContractModel]", routed.fetch(symbol=code, start_date=start, end_date=end)
+    )
+    frame: pd.DataFrame = pd.DataFrame([row.model_dump() for row in rows])
+    return frame
 
 
 def _sina_from_fixture(sina_symbol: str, start: date, end: date) -> pd.DataFrame:
@@ -114,16 +119,16 @@ def _sina_from_fixture(sina_symbol: str, start: date, end: date) -> pd.DataFrame
     recorded = str(meta.get("kwargs", {}).get("symbol", ""))
     if recorded != sina_symbol:
         raise RuntimeError(f"fixture records {recorded!r}, not {sina_symbol!r}")
-    with gzip.open(case / "reference.csv.gz", "rb") as handle:
+    with gzip.open(case / "reference.csv.gz", "rt", encoding="utf-8") as handle:
         frame = pd.read_csv(handle)
     return _sina_window(frame, start, end)
 
 
 def _sina_live(sina_symbol: str, start: date, end: date) -> pd.DataFrame:
     """Fetch the official sina index series over the same window."""
-    from opendata_http.index.index_stock_zh import stock_zh_index_daily
+    from opendata.data.providers.akshare._vendor.index.index_stock_zh import stock_zh_index_daily
 
-    frame = stock_zh_index_daily(symbol=sina_symbol)
+    frame = cast("pd.DataFrame", stock_zh_index_daily(symbol=sina_symbol))
     return _sina_window(frame, start, end)
 
 
@@ -134,7 +139,7 @@ def _sina_window(frame: pd.DataFrame, start: date, end: date) -> pd.DataFrame:
     out = frame.copy()
     out["trade_date"] = pd.to_datetime(out["date"]).dt.date
     windowed = out[(out["trade_date"] >= start) & (out["trade_date"] <= end)]
-    return windowed.reset_index(drop=True)
+    return cast("pd.DataFrame", windowed.reset_index(drop=True))
 
 
 def _compare(

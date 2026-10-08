@@ -11,7 +11,7 @@ ex-date.
 """
 
 import re
-from typing import ClassVar
+from typing import ClassVar, cast
 
 import pandas as pd
 from loguru import logger
@@ -37,6 +37,8 @@ class StockActionQuery(QueryParams):
 
 class AkshareStockActionFetcher(Fetcher[StockActionQuery, pd.DataFrame]):
     """Dividend and rights events for one A-share symbol."""
+
+    async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(
         asset_class="equity",
@@ -81,14 +83,15 @@ class AkshareStockActionFetcher(Fetcher[StockActionQuery, pd.DataFrame]):
             Frame with an extra ``indicator`` column marking the
             source page (``分红`` / ``配股``).
         """
-        import opendata_http  # lazy: load the ported tree on routing only
+        # lazy: load the ported tree on routing only
+        import opendata.data.providers.akshare._vendor as opendata_http
 
         symbol = plain_symbol(params.symbol)
         dividends = opendata_http.stock_history_dividend_detail(symbol=symbol, indicator="分红")
         dividends = dividends.assign(indicator="分红")
         rights = opendata_http.stock_history_dividend_detail(symbol=symbol, indicator="配股")
         rights = rights.assign(indicator="配股")
-        return pd.concat([dividends, rights], ignore_index=True)
+        return cast("pd.DataFrame", pd.concat([dividends, rights], ignore_index=True))
 
     def transform_data(self, raw: pd.DataFrame, params: StockActionQuery) -> FetchResult:
         """Normalize the pages into ``CorporateAction`` rows.

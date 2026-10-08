@@ -16,8 +16,9 @@ that file back. What a write-only record became, measured at the start of this r
     21 were bare scalars (``sdk_dependencies: xmltodict``) and 9 were one comma-joined
     string — those two shapes *do* parse, as strings, so a tool reading them counted 1
     dependency and tested membership by substring;
-  * all 32 rows say ``待实现`` while 7 sources register 33 capabilities, 20 of which are
-    auto-routable (the other 13 are registered, importable, and skipped by ``auto``);
+  * C33 snapshot: all 32 rows say ``待实现`` while 7 sources register 33 capabilities,
+    20 of which are auto-routable (the other 13 are registered, importable, and skipped
+    by ``auto``);
   * the two largest sources in the system — ``ths`` (11 capabilities) and ``akshare`` (10) —
     have no row at all, so 21 of 33 live capabilities are invisible to the baseline;
   * its own header claims "33 个 provider 目录" while the body holds 32 rows and the
@@ -37,15 +38,19 @@ Seven rules, each of which can be non-zero in both directions:
     ``待实现`` iff no capability is registered, ``已对照转正`` iff every capability of the
     source takes part in ``auto`` routing, ``已实现未对照`` otherwise. "Otherwise" is the
     state this round made nameable: implemented, importable, routable by explicit source,
-    and still excluded from ``auto`` — which is where ``fred`` and ``akshare`` sit today.
+    and still excluded from ``auto``. The C33 snapshot placed ``fred`` and ``akshare`` in
+    this state; C65 comparison promoted FRED's three registered capabilities, and the
+    current registry count is 23 auto-routable / 10 registered but not auto-routable.
   * ``COUNT CLAIM`` — declared counts and the header's prose numbers must equal the body.
   * ``RIGHTS LINK`` — a source that serves data must name its row in
     ``docs/data-rights-registry.md``; AC-1 gate R3 says an unregistered source may not be
     routed, so the baseline that tracks routing must be able to point at the registration.
 
-``MODEL ELISION`` is reported and deliberately not judged: the upstream ``models: [...]``
-lists are truncated with ``...`` in 15 rows, and an elided list that says so is honest. The
-names were never written down, and this plane will not invent them.
+Model completeness is judged from the fixed upstream AST and model task ledger. An explicit
+``...``, a mismatch between ``fetchers`` and listed keys, duplicate names, or a provider/model
+set mismatch fails the plane. Registry capability counts and model-task status are separate
+fields: a source with one verified capability does not imply that its full upstream model set
+is implemented.
 
 The registry side is read in-process (import + ``register_providers()``); no network, no
 MySQL, no credential is touched. Callers that want to judge a copy of the record — the
@@ -59,12 +64,16 @@ import re
 import shutil
 import subprocess  # nosec B404
 import sys
+from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Final
+from typing import TYPE_CHECKING, Any, Final, cast
 
 import yaml
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
 
 REPO_ROOT: Final = Path(__file__).resolve().parents[2]
 GIT: Final = shutil.which("git") or "git"
@@ -87,7 +96,10 @@ HEADER_PROSE: Final = re.compile(
     r"规模：(?P<providers>\d+)\s*个\s*provider 目录 / (?P<fetchers>\d+) 个"
 )
 DECLARED_COUNT: Final = re.compile(
-    r"^(?P<key>provider_count|local_provider_count):\s*(?P<value>\d+)\s*$", re.MULTILINE
+    r"^(?P<key>provider_count|local_provider_count|upstream_model_count|"
+    r"unique_upstream_model_count|registered_source_count|registered_capability_count|"
+    r"auto_routable_capability_count):\s*(?P<value>\d+)\s*$",
+    re.MULTILINE,
 )
 RIGHTS_TABLE_ROW: Final = re.compile(r"^\|\s*(?P<number>\d+)\s*\|(?P<cells>.*)$")
 
@@ -108,6 +120,14 @@ KINDS: Final = (
     "STALE STATUS",
     "COUNT CLAIM",
     "RIGHTS LINK",
+    "MODEL ELISION",
+    "MODEL DUPLICATE",
+    "MODEL COUNT",
+    "MODEL SET",
+    "CREDENTIAL MISMATCH",
+    "CAPABILITY COUNT",
+    "MODEL TASK STATUS",
+    "REQUESTER STATUS",
 )
 
 
@@ -385,7 +405,8 @@ def live_legs() -> dict[str, list[tuple[str, bool]]]:
         from opendata.data.registry import get_registry
     except ImportError as exc:
         raise RuntimeError(f"cannot import the provider tree: {exc}") from exc
-    register_providers()
+    register = cast("Any", register_providers)
+    register()
     legs: dict[str, list[tuple[str, bool]]] = {}
     for cap in get_registry().capabilities():
         legs.setdefault(cap.source, []).append((cap.domain, cap.participates_in_auto()))
@@ -408,7 +429,7 @@ def expected_status(legs: list[tuple[str, bool]]) -> str:
 
 
 def model_elisions(rows: list[Row]) -> list[str]:
-    """Report the rows whose upstream model list is shorter than the count it states.
+    """Return rows whose model list is explicitly elided or shorter than its fetcher count.
 
     Args:
         rows: The parsed record rows.
@@ -419,18 +440,46 @@ def model_elisions(rows: list[Row]) -> list[str]:
     out: list[str] = []
     for row in rows:
         stated = row.fields.get("fetchers", "")
-        if not stated.isdigit():
-            continue
-        listed = len(flow_list(row.fields.get("models", "")))
-        if int(stated) > listed:
+        model_text = row.fields.get("models", "")
+        listed = len(flow_list(model_text))
+        has_ellipsis = "..." in model_text
+        if has_ellipsis or (stated.isdigit() and int(stated) > listed):
             out.append(f"{row.provider}: {listed} listed of {stated} stated")
     return out
+
+
+def _yaml_provider_rows(text: str) -> dict[tuple[str, str], dict[str, object]]:
+    """Return parsed provider rows keyed by section/name when the document is valid YAML."""
+    try:
+        body = yaml.safe_load(text)
+    except yaml.YAMLError:
+        return {}
+    if not isinstance(body, dict):
+        return {}
+    parsed: dict[tuple[str, str], dict[str, object]] = {}
+    for section in SECTIONS:
+        entries = body.get(section)
+        if not isinstance(entries, list):
+            continue
+        for entry in entries:
+            if isinstance(entry, dict) and isinstance(entry.get("provider"), str):
+                parsed[(section, entry["provider"])] = entry
+    return parsed
+
+
+def _summary_status(values: Sequence[str]) -> str:
+    """Return a stable status summary for model tasks from the ledger."""
+    distinct = sorted(set(values))
+    return distinct[0] if len(distinct) == 1 else "MIXED"
 
 
 def findings(
     inventory_text: str,
     rights_text: str,
     legs: dict[str, list[tuple[str, bool]]],
+    expected_models: Mapping[str, Sequence[str]] | None = None,
+    expected_credentials: Mapping[str, Sequence[str]] | None = None,
+    ledger_rows: Sequence[Mapping[str, object]] | None = None,
 ) -> list[Finding]:
     """Judge the record against the registry and the rights registry.
 
@@ -438,11 +487,15 @@ def findings(
         inventory_text: Whole ``provider-inventory.yaml`` contents.
         rights_text: Whole ``docs/data-rights-registry.md`` contents.
         legs: Registry-side legs, from :func:`live_legs` or a test fixture.
+        expected_models: Fixed AST identities, keyed by upstream provider, when available.
+        expected_credentials: Fixed AST credential names, keyed by provider, when available.
+        ledger_rows: Model-level task states, separate from registry source ``status``.
 
     Returns:
         Every violated rule, in report order. Empty means the record and the tree agree.
     """
     rows = parse_rows(inventory_text)
+    parsed_rows = _yaml_provider_rows(inventory_text)
     by_provider: dict[str, list[Row]] = {}
     for row in rows:
         by_provider.setdefault(row.provider, []).append(row)
@@ -517,6 +570,120 @@ def findings(
                 if not any(link in name for name in registry)
             )
 
+    upstream_rows = [row for row in rows if row.section == "providers"]
+    actual_models: dict[str, list[str]] = {}
+    for row in upstream_rows:
+        parsed = parsed_rows.get((row.section, row.provider), {})
+        value = parsed.get("models")
+        models = (
+            [item for item in value if isinstance(item, str)]
+            if isinstance(value, list)
+            else flow_list(row.fields.get("models", ""))
+        )
+        actual_models[row.provider] = models
+        raw_models = row.fields.get("models", "")
+        if "..." in raw_models or "..." in models:
+            out.append(
+                Finding(
+                    "MODEL ELISION",
+                    f"`{row.provider}` model list contains `...` and is not a complete "
+                    "identity list",
+                )
+            )
+        duplicate_models = sorted(model for model, count in Counter(models).items() if count > 1)
+        if duplicate_models:
+            out.append(
+                Finding(
+                    "MODEL DUPLICATE",
+                    f"`{row.provider}` repeats upstream model names: {duplicate_models}",
+                )
+            )
+        fetchers = row.fields.get("fetchers", "")
+        if fetchers.isdigit() and int(fetchers) != len(models):
+            out.append(
+                Finding(
+                    "MODEL COUNT",
+                    f"`{row.provider}` fetchers is {fetchers}, but models lists "
+                    f"{len(models)} names",
+                )
+            )
+        model_count = row.fields.get("model_count")
+        if model_count is not None and (
+            not model_count.isdigit() or int(model_count) != len(models)
+        ):
+            out.append(
+                Finding(
+                    "MODEL COUNT",
+                    f"`{row.provider}` model_count is {model_count}, but models lists "
+                    f"{len(models)} names",
+                )
+            )
+
+    if expected_models is not None:
+        expected_providers = set(expected_models)
+        actual_providers = set(actual_models)
+        out.extend(
+            Finding(
+                "MODEL SET",
+                f"provider `{provider}` is absent from one side of the fixed AST/model manifest",
+            )
+            for provider in sorted(expected_providers ^ actual_providers)
+        )
+        for provider in sorted(expected_providers & actual_providers):
+            expected_names = list(expected_models[provider])
+            actual_names = actual_models[provider]
+            if set(actual_names) != set(expected_names):
+                out.append(
+                    Finding(
+                        "MODEL SET",
+                        f"`{provider}` model identities differ: "
+                        f"missing={sorted(set(expected_names) - set(actual_names))}, "
+                        f"extra={sorted(set(actual_names) - set(expected_names))}",
+                    )
+                )
+        expected_count = sum(len(models) for models in expected_models.values())
+        expected_unique_count = len(
+            {model for models in expected_models.values() for model in models}
+        )
+        fixed_counts = declared_counts(inventory_text)
+        if fixed_counts.get("upstream_model_count") != expected_count:
+            out.append(
+                Finding(
+                    "MODEL COUNT",
+                    f"upstream_model_count is {fixed_counts.get('upstream_model_count')}, "
+                    f"fixed AST has {expected_count}",
+                )
+            )
+        if fixed_counts.get("unique_upstream_model_count") != expected_unique_count:
+            out.append(
+                Finding(
+                    "MODEL COUNT",
+                    "unique_upstream_model_count is "
+                    f"{fixed_counts.get('unique_upstream_model_count')}, "
+                    f"fixed AST has {expected_unique_count}",
+                )
+            )
+
+    if expected_credentials is not None:
+        for row in upstream_rows:
+            expected_credential_names = set(expected_credentials.get(row.provider, ()))
+            parsed = parsed_rows.get((row.section, row.provider), {})
+            value = parsed.get("credentials")
+            actual_credential_names = (
+                {item for item in value if isinstance(item, str)}
+                if isinstance(value, list)
+                else set(flow_list(row.fields.get("credentials", "")))
+            )
+            if actual_credential_names != expected_credential_names:
+                out.append(
+                    Finding(
+                        "CREDENTIAL MISMATCH",
+                        f"`{row.provider}` credentials differ from fixed AST: "
+                        f"expected={sorted(expected_credential_names)}, "
+                        f"actual={sorted(actual_credential_names)}",
+                    )
+                )
+
     counts = declared_counts(inventory_text)
     prose = header_prose(inventory_text)
     upstream = [row for row in rows if row.section == "providers"]
@@ -556,16 +723,223 @@ def findings(
                     f"header prose claims {prose[1]} fetcher 模型, the rows sum to {stated}",
                 )
             )
+
+    actual_model_count = sum(len(models) for models in actual_models.values())
+    actual_unique_model_count = len(
+        {model for models in actual_models.values() for model in models}
+    )
+    for field, expected_numeric in (
+        ("upstream_model_count", actual_model_count),
+        ("unique_upstream_model_count", actual_unique_model_count),
+    ):
+        declared_model_count = counts.get(field)
+        if declared_model_count is not None and declared_model_count != expected_numeric:
+            out.append(
+                Finding(
+                    "MODEL COUNT",
+                    f"{field} is {declared_model_count}, "
+                    f"but listed upstream models yield {expected_numeric}",
+                )
+            )
+
+    actual_capability_count = sum(len(source_legs) for source_legs in legs.values())
+    actual_auto_count = sum(1 for source_legs in legs.values() for _, auto in source_legs if auto)
+    required_runtime_counts = {
+        "registered_source_count": len(legs),
+        "registered_capability_count": actual_capability_count,
+        "auto_routable_capability_count": actual_auto_count,
+    }
+    for field, registry_count in required_runtime_counts.items():
+        declared_runtime_count = counts.get(field)
+        if declared_runtime_count is None and expected_models is not None:
+            out.append(
+                Finding("CAPABILITY COUNT", f"manifest is missing `{field}` runtime metadata")
+            )
+        elif declared_runtime_count is not None and declared_runtime_count != registry_count:
+            out.append(
+                Finding(
+                    "CAPABILITY COUNT",
+                    f"{field} is {declared_runtime_count}, "
+                    f"but ProviderRegistry reports {registry_count}",
+                )
+            )
+    for row in rows:
+        source_legs = legs.get(row.provider, [])
+        per_source_counts = {
+            "registered_capability_count": len(source_legs),
+            "auto_routable_capability_count": sum(1 for _, auto in source_legs if auto),
+        }
+        for field, registry_count in per_source_counts.items():
+            declared_source_count = row.fields.get(field)
+            if (
+                declared_source_count is None
+                and expected_models is not None
+                and row.section == "providers"
+            ):
+                out.append(
+                    Finding(
+                        "CAPABILITY COUNT",
+                        f"`{row.provider}` is missing `{field}` runtime metadata",
+                    )
+                )
+            elif declared_source_count is not None and (
+                not declared_source_count.isdigit() or int(declared_source_count) != registry_count
+            ):
+                out.append(
+                    Finding(
+                        "CAPABILITY COUNT",
+                        f"`{row.provider}` {field} is {declared_source_count}, "
+                        f"but ProviderRegistry reports {registry_count}",
+                    )
+                )
+
+    if ledger_rows is not None:
+        implementation_counts = Counter(
+            str(row.get("implementation_task_status", "")) for row in ledger_rows
+        )
+        live_counts = Counter(str(row.get("live_verification_status", "")) for row in ledger_rows)
+        scenario_counts = Counter(str(row.get("scenario_status", "")) for row in ledger_rows)
+        expected_status_fields = {
+            "model_implementation_task_status": _summary_status(
+                [str(row.get("implementation_task_status", "")) for row in ledger_rows]
+            ),
+            "model_live_verification_status": _summary_status(
+                [str(row.get("live_verification_status", "")) for row in ledger_rows]
+            ),
+        }
+        try:
+            document = yaml.safe_load(inventory_text)
+        except yaml.YAMLError:
+            document = {}
+        if isinstance(document, dict):
+            for field, expected_task_status in expected_status_fields.items():
+                if document.get(field) != expected_task_status:
+                    out.append(
+                        Finding(
+                            "MODEL TASK STATUS",
+                            f"{field} is {document.get(field)}, "
+                            f"CSV model tasks summarize to {expected_task_status}",
+                        )
+                    )
+            expected_count_maps = {
+                "model_implementation_task_status_counts": dict(implementation_counts),
+                "model_live_verification_task_status_counts": dict(live_counts),
+                "model_scenario_status_counts": dict(scenario_counts),
+            }
+            for field, expected_status_counts in expected_count_maps.items():
+                if document.get(field) != expected_status_counts:
+                    out.append(
+                        Finding(
+                            "MODEL TASK STATUS",
+                            f"{field} is {document.get(field)}, "
+                            f"CSV task counts are {expected_status_counts}",
+                        )
+                    )
+        impl_by_provider: dict[str, list[str]] = {}
+        live_by_provider: dict[str, list[str]] = {}
+        scenario_by_provider: dict[str, list[str]] = {}
+        for ledger_row in ledger_rows:
+            provider = str(ledger_row.get("provider", ""))
+            impl_by_provider.setdefault(provider, []).append(
+                str(ledger_row.get("implementation_task_status", ""))
+            )
+            live_by_provider.setdefault(provider, []).append(
+                str(ledger_row.get("live_verification_status", ""))
+            )
+            scenario_by_provider.setdefault(provider, []).append(
+                str(ledger_row.get("scenario_status", ""))
+            )
+        for provider in sorted(impl_by_provider):
+            parsed = parsed_rows.get(("providers", provider), {})
+            expected_provider_status = {
+                "implementation_task_status": _summary_status(impl_by_provider[provider]),
+                "live_verification_status": _summary_status(live_by_provider.get(provider, [])),
+                "model_scenario_status": _summary_status(scenario_by_provider.get(provider, [])),
+            }
+            for field, expected_provider_task_status in expected_provider_status.items():
+                if parsed.get(field) != expected_provider_task_status:
+                    out.append(
+                        Finding(
+                            "MODEL TASK STATUS",
+                            f"`{provider}` {field} is {parsed.get(field)}, "
+                            f"CSV tasks summarize to {expected_provider_task_status}",
+                        )
+                    )
+        requester_counts: Counter[str] = Counter()
+        for provider, models in actual_models.items():
+            parsed = parsed_rows.get(("providers", provider), {})
+            confirmation = parsed.get("requester_confirmation_status")
+            if confirmation in {"CONFIRMED", "NOT_ASSESSED"}:
+                requester_counts[str(confirmation)] += len(models)
+            elif expected_models is not None:
+                out.append(
+                    Finding(
+                        "REQUESTER STATUS",
+                        f"`{provider}` is missing requester_confirmation_status metadata",
+                    )
+                )
+        if isinstance(document, dict) and document.get(
+            "model_requester_confirmation_status_counts"
+        ) != dict(requester_counts):
+            out.append(
+                Finding(
+                    "REQUESTER STATUS",
+                    "model_requester_confirmation_status_counts does not match "
+                    "per-source confirmation states",
+                )
+            )
+    for row in rows:
+        parsed = parsed_rows.get((row.section, row.provider), {})
+        confirmation = parsed.get("requester_confirmation_status")
+        explicit_confirmation = bool(
+            parsed.get("requester")
+            and parsed.get("requester_confirmed_date")
+            and parsed.get("requester_evidence")
+        )
+        if confirmation not in {"CONFIRMED", "NOT_ASSESSED"}:
+            if expected_models is not None:
+                out.append(
+                    Finding(
+                        "REQUESTER STATUS",
+                        f"`{row.provider}` has no valid requester confirmation state",
+                    )
+                )
+        elif confirmation == "CONFIRMED" and not explicit_confirmation:
+            out.append(
+                Finding(
+                    "REQUESTER STATUS",
+                    f"`{row.provider}` is marked CONFIRMED without requester/date/evidence fields",
+                )
+            )
+        elif confirmation == "NOT_ASSESSED" and (
+            parsed.get("requester_confirmed_date") or parsed.get("requester_evidence")
+        ):
+            out.append(
+                Finding(
+                    "REQUESTER STATUS",
+                    f"`{row.provider}` has confirmation evidence but remains NOT_ASSESSED",
+                )
+            )
     return out
 
 
-def report(inventory_text: str, rights_text: str, legs: dict[str, list[tuple[str, bool]]]) -> int:
+def report(
+    inventory_text: str,
+    rights_text: str,
+    legs: dict[str, list[tuple[str, bool]]],
+    expected_models: Mapping[str, Sequence[str]] | None = None,
+    expected_credentials: Mapping[str, Sequence[str]] | None = None,
+    ledger_rows: Sequence[Mapping[str, object]] | None = None,
+) -> int:
     """Print the tallies, the counters and every finding of one run.
 
     Args:
         inventory_text: Whole record contents.
         rights_text: Whole rights registry contents.
         legs: The registry-side legs.
+        expected_models: Fixed provider/model identities, if loaded.
+        expected_credentials: Fixed AST credential names, if loaded.
+        ledger_rows: Model task rows, separate from runtime capability status.
 
     Returns:
         The process exit code: ``0`` with no judged finding, ``1`` with any.
@@ -574,7 +948,14 @@ def report(inventory_text: str, rights_text: str, legs: dict[str, list[tuple[str
     upstream = [row for row in rows if row.section == "providers"]
     local = [row for row in rows if row.section == "local_providers"]
     elided = model_elisions(rows)
-    found = findings(inventory_text, rights_text, legs)
+    found = findings(
+        inventory_text,
+        rights_text,
+        legs,
+        expected_models,
+        expected_credentials,
+        ledger_rows,
+    )
 
     sections = f"providers {len(upstream)} + local {len(local)}"
     print(f"record rows                  : {len(rows)} = {sections}")
@@ -587,7 +968,7 @@ def report(inventory_text: str, rights_text: str, legs: dict[str, list[tuple[str
     print(f"rights registry §1 rows      : {len(rights_rows(rights_text))}")
     listed = sum(len(flow_list(row.fields.get("models", ""))) for row in rows)
     print(f"model names listed           : {listed}")
-    print(f"rows with elided model lists : {len(elided)}  (reported, not judged)")
+    print(f"rows with elided model lists : {len(elided)}  (judged)")
     print()
     print("== counters ==")
     for kind in KINDS:
@@ -599,7 +980,7 @@ def report(inventory_text: str, rights_text: str, legs: dict[str, list[tuple[str
     if not found:
         print("  (none)")
     print()
-    print("== reported, not judged ==")
+    print("== model elision details (judged) ==")
     for line in elided:
         print(f"  MODEL ELISION: {line}")
     if not elided:
@@ -624,6 +1005,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--inventory", type=Path, default=INVENTORY)
     parser.add_argument("--rights", type=Path, default=RIGHTS_REGISTRY)
+    parser.add_argument(
+        "--upstream-path",
+        type=Path,
+        default=Path("/Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform"),
+    )
+    parser.add_argument(
+        "--task-ledger",
+        type=Path,
+        default=REPO_ROOT / "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv",
+    )
     args = parser.parse_args(argv)
 
     def display(path: Path) -> str:
@@ -652,7 +1043,7 @@ def main(argv: list[str] | None = None) -> int:
     print("           (static read + in-process registry; no network, no MySQL, no credential)")
     print("exit code: 0 = agrees with the tree; 1 = any judged finding; 2 = registry unavailable")
     print(f"rules judged ({len(KINDS)}): {', '.join(KINDS)}")
-    print("           MODEL ELISION is reported but not judged")
+    print("           model identity is judged against the fixed upstream AST and task ledger")
     print()
     print("--- git status --porcelain captured before the run ---")
     print(git_text("status", "--porcelain") or "(clean)")
@@ -663,8 +1054,37 @@ def main(argv: list[str] | None = None) -> int:
     except RuntimeError as exc:
         print(f"RUNTIME UNAVAILABLE: {exc}")
         return 2
+    try:
+        from scripts.quality.provider_model_inventory import (
+            UPSTREAM_COMMIT,
+            UpstreamUnavailableError,
+            build_inventory_report,
+            load_task_ledger,
+        )
+
+        static_report = build_inventory_report(args.upstream_path, args.task_ledger)
+        if static_report["status"] != "PASS":
+            print(f"FIXED AST INVENTORY {static_report['status']} at {UPSTREAM_COMMIT}")
+            for issue in static_report["issues"]:
+                print(f"  {issue}")
+            return 2 if static_report["status"] == "NOT_AVAILABLE" else 1
+        models_by_provider: dict[str, list[str]] = {}
+        for model in static_report["reconstructed_models"]:
+            models_by_provider.setdefault(model["provider"], []).append(model["model"])
+        ledger_rows = load_task_ledger(args.task_ledger)
+    except UpstreamUnavailableError as exc:
+        print(f"FIXED AST INVENTORY NOT_AVAILABLE: {exc}")
+        return 2
+    except (OSError, UnicodeError, ValueError) as exc:
+        print(f"FIXED AST INVENTORY FAIL: {exc}")
+        return 1
     return report(
-        args.inventory.read_text(encoding="utf-8"), args.rights.read_text(encoding="utf-8"), legs
+        args.inventory.read_text(encoding="utf-8"),
+        args.rights.read_text(encoding="utf-8"),
+        legs,
+        models_by_provider,
+        static_report["provider_credentials"],
+        ledger_rows,
     )
 
 

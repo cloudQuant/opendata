@@ -59,6 +59,8 @@ class ThsFundActionFetcher(Fetcher[ThsFundActionQuery, tuple[CorporateAction, ..
     for digit (see ``docs/evidence/C15``).
     """
 
+    async_mode = "bounded_thread"
+
     capability: ClassVar[Capability] = Capability(
         asset_class="fund",
         domain="fund_action",
@@ -104,7 +106,7 @@ class ThsFundActionFetcher(Fetcher[ThsFundActionQuery, tuple[CorporateAction, ..
                 (unknown progress code, missing ex-date, non-positive cash) or
                 its own totals disagree with its rows.
         """
-        from opendata_fuyao.endpoints import fetch_fund_dividends
+        from opendata.data.providers.ths.endpoints import fetch_fund_dividends
 
         with client(timeout_seconds=ctx.timeout) as active:
             code = resolve_fund_code(active, params.symbol)
