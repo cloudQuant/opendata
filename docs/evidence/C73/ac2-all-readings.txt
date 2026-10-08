@@ -1,0 +1,31 @@
+# AC2 plane readings — 25 rows, per-case faces and the failed checks
+# command: python scripts/quality/ac2_case_probe.py --all
+# generated: 2026-10-08T23:21:28Z
+
+AC2-01 line=24  holds_offline offline=holds_offline ce=- upstream AST recompute agrees with the ledger
+AC2-02 line=25  gap          offline=holds_offline ce=- failed: every registered source is mapped; no unnamed placeholder rows in the derived map
+AC2-03 line=26  blocked_leg  offline=holds_offline ce=- move map, bindings, capabilities and YAML loading align
+AC2-04 line=27  gap          offline=holds_offline ce=- failed: the rewrites are traceable inside the manifest; every vendored file whose lines changed is flagged manual
+AC2-05 line=28  holds_offline offline=holds_offline ce=- MIT text preserved; cold import stays light with a live control arm
+AC2-06 line=29  blocked_leg  offline=holds_offline ce=- declaration and disk agree; the install leg is still owed
+AC2-07 line=30  gap          offline=holds_offline ce=- failed: toolchain preflight is not ENV_BLOCKED; ported security evidence validates against the shipped root
+AC2-08 line=31  gap          offline=holds_offline ce=- failed: 350 delta records; every row has a confirmed scenario; family status assessed on every row; rights registered per model
+AC2-09 line=32  gap          offline=holds_offline ce=- failed: required/optional decided on every model
+AC2-10 line=33  gap          offline=holds_offline ce=- failed: all 350 reach DEV_DONE; no row left at NOT_RUN
+AC2-11 line=34  gap          offline=holds_offline ce=- failed: all 85 reach DEV_DONE; no semantic regression (each of the 85 live-verified)
+AC2-12 line=35  gap          offline=holds_offline ce=- failed: all 33 reach DEV_DONE; each has its applicable real comparison
+AC2-13 line=36  gap          offline=holds_offline ce=- failed: all 120 reach DEV_DONE; every exposure row carries an access decision; no pending decision is left implicit
+AC2-14 line=37  gap          offline=holds_offline ce=- failed: all 112 reach DEV_DONE; each verified against its own contract family
+AC2-15 line=38  blocked_leg  offline=holds_offline ce=- selection, degradation and three budget scopes all bite
+AC2-16 line=39  gap          offline=holds_offline ce=- failed: all 350 rows carry an applicability declaration
+AC2-17 line=40  gap          offline=holds_offline ce=- failed: a CLI entry exists for provider models; coverage is recorded per model
+AC2-18 line=41  gap          offline=holds_offline ce=- failed: a stable business key is named in code; gold samples backfilled
+AC2-19 line=42  gap          offline=holds_offline ce=- failed: warehouse reads honour as_of; the SDK exposes as_of; two publishes/restatements are sampled offline
+AC2-20 line=43  gap          offline=holds_offline ce=- failed: PIT parameters reach the SDK; an installable SDK artifact exists
+AC2-21 line=44  blocked_leg  offline=holds_offline ce=- the download path is id-consistent and status-honest
+AC2-22 line=45  gap          offline=holds_offline ce=- failed: current ported security evidence validates
+AC2-23 line=46  gap          offline=holds_offline ce=- failed: P95 latency recorded; connection count recorded; an after-run exists for the same payload
+AC2-24 line=47  gap          offline=holds_offline ce=- failed: every reading names archived evidence; all 16 gaps closed
+AC2-25 line=48  gap          offline=holds_offline ce=- failed: the tree is clean; the archived record names this exact commit; GATE_EXIT is recorded and zero; every declared member ran in the record
+STATE_COUNTS {"holds_offline": 2, "gap": 19, "blocked_leg": 4}
+IDENTITY {"head": "0be42b7", "branch": "dev", "dirty_files": 5, "doc_sha256": "a65a1667eb22e052edf0d0fe6afd258b708805f798e2a78cb8ad3187e4a9dbc2", "python": "3.11.8"}

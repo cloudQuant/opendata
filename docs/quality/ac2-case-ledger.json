@@ -1,0 +1,817 @@
+{
+  "version": 1,
+  "generated_at": "2026-10-08T23:21:47+00:00",
+  "document": "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/验收文档.md",
+  "identity": {
+    "head": "0be42b7",
+    "branch": "dev",
+    "dirty_files": 5,
+    "doc_sha256": "a65a1667eb22e052edf0d0fe6afd258b708805f798e2a78cb8ad3187e4a9dbc2",
+    "python": "3.11.8"
+  },
+  "denominator": 25,
+  "counts": {
+    "holds_offline": 2,
+    "gap": 19,
+    "blocked_leg": 4
+  },
+  "cases": [
+    {
+      "case": "AC2-01",
+      "doc_line": 24,
+      "criterion": "32目录/350唯一provider×model/202名称可由上游重建；逐源模型列表、具体键行/SHA匹配；EIA两键/凭据正确",
+      "summary": "上游 AST 在固定 commit 独立重算，与正式清单和 350 行台账逐行一致。",
+      "state": "holds_offline",
+      "offline_state": "holds_offline",
+      "reason": "upstream AST recompute agrees with the ledger",
+      "missing_legs": [],
+      "readings": [
+        "authority_source=git show at fixed commit",
+        "credential_sources=15",
+        "duplicates=0",
+        "eia_credentials=[\"api_key\"]",
+        "eia_models=2",
+        "executed_upstream=NOT_EVALUATED",
+        "expected_models=350",
+        "expected_providers=32",
+        "expected_unique=202",
+        "hashed_rows=350",
+        "issues=0",
+        "ledger_rows=350",
+        "models=350",
+        "providers=32",
+        "source_files=32",
+        "status=PASS",
+        "unique_identities=350",
+        "unique_models=202",
+        "upstream_commit=3e071fcc2cd9f891cac6040ae60296dba76dab46"
+      ],
+      "repair": "重跑 provider_model_inventory 并逐行 diff；任何计数变化都要有上游事实。",
+      "counter_examples": "6/6",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-01"
+    },
+    {
+      "case": "AC2-02",
+      "doc_line": 25,
+      "criterion": "单一运行时注册真相，派生物无重名/幽灵/缺能力；当前7源行为保持，迁移数据流可重建",
+      "summary": "34 个描述符、活 registry 与派生 map/库存双向一致，无第二注册表。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: every registered source is mapped; no unnamed placeholder rows in the derived map",
+      "missing_legs": [],
+      "readings": [
+        "capabilities=46",
+        "declared_fetchers=46",
+        "descriptor_sources_unique=34",
+        "descriptors=34",
+        "duplicate_openbb_models=0",
+        "ghost_legs_named=-",
+        "inventory_capabilities=46",
+        "inventory_local=2",
+        "inventory_providers=32",
+        "map_entries=17",
+        "map_ghost_providers=0",
+        "map_missing_sources=3",
+        "missing_legs_named=bls,cboe,fmp",
+        "placeholder_openbb_models=13",
+        "registered_sources=10",
+        "reused_fetcher_classes=0",
+        "second_registry_sites=0",
+        "verified_caps=23"
+      ],
+      "repair": "注册与投影全部由描述符派生；派生物只能由工具重写，不能手填。当前实测缺口：bls/cboe/fmp 三个已注册源未进 openbb_map，且 17 条映射里 13 条的 openbb 模型名是 TBD 占位。",
+      "counter_examples": "8/8",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-02"
+    },
+    {
+      "case": "AC2-03",
+      "doc_line": 26,
+      "criterion": "11个原文件全部映射，现有11条能力和原错误/限流行为保持",
+      "summary": "THS 11 个原文件的移动映射、11 条能力、三处 YAML 与错误/限流表全部保持。",
+      "state": "blocked_leg",
+      "offline_state": "holds_offline",
+      "reason": "move map, bindings, capabilities and YAML loading align",
+      "missing_legs": [
+        [
+          "archive_field",
+          "原错误/限流行为的逐条等值需要把 tests/fixtures/upstream 的录制信封逐条重放比对"
+        ]
+      ],
+      "readings": [
+        "envelope_fixture_files=2",
+        "error_symbols=2",
+        "lazy_bindings=11",
+        "move_map_entries=11",
+        "rate_limit_sites=8",
+        "retryable_fields=13",
+        "ths_capabilities=11",
+        "ths_py_files=26",
+        "ths_test_functions=272",
+        "yaml_load_sites=2",
+        "yaml_present=3"
+      ],
+      "repair": "逐条重放 fuyao_t1_envelopes 并对比原错误码/限流分支。",
+      "counter_examples": "5/5",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-03"
+    },
+    {
+      "case": "AC2-04",
+      "doc_line": 27,
+      "criterion": "原集合325.py+calendar.json/ths.js=327=lock.files；329−327恰为manifest.json/upstream.lock，新增控制文件另账；实际函数名/签名/语义保真；逐节点改写、人工差异可追溯、幂等",
+      "summary": "327 文件清单、锁与快照双向一致、逐节点改写与人工差异标记、重放幂等。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: the rewrites are traceable inside the manifest; every vendored file whose lines changed is flagged manual",
+      "missing_legs": [
+        [
+          "archive_field",
+          "临时重放 codemod 两次需要写入副本，本轮不触碰工作树"
+        ]
+      ],
+      "readings": [
+        "archive_import_rewrite_total=531",
+        "archive_manual_edits_true_rows=9",
+        "archive_port_report_rows=327",
+        "archive_snapshot_matches=327",
+        "archive_string_rewrite_total=2",
+        "census_file_without_pin_change=0",
+        "census_files=166",
+        "census_line_sum=532",
+        "census_row_sum=532",
+        "census_rows=166",
+        "census_sha_rows=166",
+        "census_statements=532",
+        "control_file_rows_in_lock=0",
+        "disk_python_files=325",
+        "line_changed_paths=__init__.py",
+        "line_changed_unflagged=1",
+        "line_count_changed_rows=1",
+        "lock_python=325",
+        "lock_records=327",
+        "lock_resources=2",
+        "manifest_files=325",
+        "manifest_resources=2",
+        "manifest_rows_with_rewrite_provenance=0",
+        "manifest_vs_disk_mismatch=166",
+        "manual_edits_true_rows=9",
+        "path_sets_equal=True",
+        "retired_root_import_nodes=0",
+        "same_line_rewrites=165",
+        "stale_pin_files=166",
+        "stale_pin_outside_census=0"
+      ],
+      "repair": "重生成 manifest/upstream.lock 并登记改写行（旧→新 SHA 与 166 改写分母同源），把聚合入口 5830→2001 行的替换标成人工差异，再在临时副本重放两次验证幂等。",
+      "counter_examples": "9/9",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-04"
+    },
+    {
+      "case": "AC2-05",
+      "doc_line": 28,
+      "criterion": "MIT头与全文保留；不初始化settings/DB/scheduler、不拉其他source重依赖",
+      "summary": "MIT 头与全文保留；导入 provider 元数据不拉起 settings/DB/重依赖，并带反向对照臂。",
+      "state": "holds_offline",
+      "offline_state": "holds_offline",
+      "reason": "MIT text preserved; cold import stays light with a live control arm",
+      "missing_legs": [],
+      "readings": [
+        "heavy_after_app_import=[\"apscheduler\", \"fastapi\", \"loguru\", \"opendata.core.config\", \"sqlalchemy\"]",
+        "heavy_after_metadata_import=[]",
+        "license_file_present=True",
+        "license_lines=21",
+        "mit_header_files=325",
+        "vendor_independence_exit=0",
+        "vendor_independence_valid=True",
+        "vendor_py_files=325"
+      ],
+      "repair": "把副作用移出包导入路径；保留 app 导入臂作为探针有效性对照。",
+      "counter_examples": "5/5",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-05"
+    },
+    {
+      "case": "AC2-06",
+      "doc_line": 29,
+      "criterion": "calendar.json、ths.js、两THS YAML、manifest.json、upstream.lock和MIT全文LICENSE-AKSHARE在两种发行物齐全；pip check和安装组合成功",
+      "summary": "七项发行资源在盘上并被 package-data 声明；wheel/sdist 待干净环境验证。",
+      "state": "blocked_leg",
+      "offline_state": "holds_offline",
+      "reason": "declaration and disk agree; the install leg is still owed",
+      "missing_legs": [
+        [
+          "clean_environment",
+          "wheel+sdist 干净环境安装、pip check 与最小入口执行未做"
+        ]
+      ],
+      "readings": [
+        "bsl_text_in_mit_tree=False",
+        "built_artifacts=0",
+        "covered_by_package_data=7",
+        "resource_asserting_tests=43",
+        "resource_files_on_disk=7",
+        "resource_files_total=7",
+        "uncovered_paths=-"
+      ],
+      "repair": "构建 wheel/sdist，在干净环境安装后读取七项资源并跑最小入口。",
+      "counter_examples": "4/4",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-06"
+    },
+    {
+      "case": "AC2-07",
+      "doc_line": 30,
+      "criterion": "前置当前gate/扫描基线齐；334.py逐文件归类不重复，资源另账；coverage旧/新文件清单保持first-party口径，_vendor显式omit且ported仍受检，THS自研仍覆盖；以1071解释复算，counterfact有效",
+      "summary": "搬迁前后零依赖/coverage/安全/质量债务身份一致；版本漂移显式记为 ENV_BLOCKED。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: toolchain preflight is not ENV_BLOCKED; ported security evidence validates against the shipped root",
+      "missing_legs": [
+        [
+          "archive_field",
+          "coverage 新旧文件清单逐文件对照需要 test-cov 成员（约 400s）"
+        ],
+        [
+          "warehouse",
+          "bandit 重跑需要新的档案目录，本轮明令不运行 make security-ported"
+        ]
+      ],
+      "readings": [
+        "baseline_scope=opendata,opendata/data/providers/akshare/_vendor,opendata_client",
+        "baseline_scope_sum=637",
+        "census_identity_holds=True",
+        "coverage_omits_vendor=True",
+        "coverage_source=['opendata']",
+        "declared_scope=opendata,opendata/data/providers/akshare/_vendor,opendata_client",
+        "direct_http_ported_pin=1071",
+        "empty_scope_buckets=0",
+        "ported_security_declares_relocation=True",
+        "ported_security_detail=-",
+        "ported_security_issue_codes=scan-finding-path-invalid,scan-source-current-mismatch,scan-stale,source-tree-relocated,triage-source-current-mismatch,triage-stale",
+        "ported_security_issue_count=1053",
+        "ported_security_recorded_root=opendata_http",
+        "preflight_exit=1",
+        "preflight_issues=2",
+        "preflight_status=ENV_BLOCKED",
+        "vendor_file_count=325",
+        "walker_count=637",
+        "walker_detail=opendata=310, opendata/data/providers/akshare/_vendor=325, opendata_client=2",
+        "zero_dep_exit=0"
+      ],
+      "repair": "在冻结干净树上跑 test-cov 与安全档案，再逐文件对照清单。",
+      "counter_examples": "7/7",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-07"
+    },
+    {
+      "case": "AC2-08",
+      "doc_line": 31,
+      "criterion": "具体参数/字段/单位/分页/市场/时间差异及依据；requester=cloudQuant、具体scenario已确认；逐产品条款/允许用途/登记状态及三项结论明确，限制体现在操作门禁；TBD有映射/非等价说明",
+      "summary": "族级卡与 350 条来源差异记录逐条落地，权利状态驱动操作门禁。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: 350 delta records; every row has a confirmed scenario; family status assessed on every row; rights registered per model",
+      "missing_legs": [
+        [
+          "live_upstream",
+          "逐产品条款/允许用途需要重新读取来源官方条款页"
+        ],
+        [
+          "human_decision",
+          "三项结论与登记状态需要具名人工复核"
+        ]
+      ],
+      "readings": [
+        "domain_permission_gate=True",
+        "family_card_doc_files=0",
+        "family_status_assessed=0",
+        "gate_decision_states=3",
+        "gate_host_scope=True",
+        "ledger_rows=350",
+        "provider_delta_filled=0",
+        "requester_named=350",
+        "rights_registered_rows=0",
+        "rights_registry_rows=14",
+        "scenario_filled=0"
+      ],
+      "repair": "逐族填差异记录与 scenario，并把已复核权利映射到门禁。",
+      "counter_examples": "5/5",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-08"
+    },
+    {
+      "case": "AC2-09",
+      "doc_line": 32,
+      "criterion": "稳定可诊断状态；其他provider可用；缺凭据不发请求；必需/可选逐模型判定",
+      "summary": "缺 Key/缺 SDK/额度与 host 限制给出可诊断状态，缺凭据不发请求，必需性逐模型判定。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: required/optional decided on every model",
+      "missing_legs": [
+        [
+          "live_upstream",
+          "额度/host 真实限制与「其他 provider 仍可用」需要真实 key 与真实来源"
+        ]
+      ],
+      "readings": [
+        "auto_route_skip=1",
+        "credential_assessed_rows=0",
+        "credential_specs=5",
+        "guard_before_client=1",
+        "health_states=4",
+        "health_stays_local=True",
+        "isolation_tests=53",
+        "verified_sources=6"
+      ],
+      "repair": "逐模型判定必需/可选写入台账，并用录制响应验证缺凭据分支。",
+      "counter_examples": "5/5",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-09"
+    },
+    {
+      "case": "AC2-10",
+      "doc_line": 33,
+      "criterion": "实际取数代码+离线正反例+标准契约+入口；分片集合覆盖适用350身份；真实对照另记，并需e2e标记及精确OPENDATA_ALLOW_LIVE_E2E闸门",
+      "summary": "350 个模型实例各有实现、离线正反例、标准契约与服务入口，真实对照另记。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: all 350 reach DEV_DONE; no row left at NOT_RUN",
+      "missing_legs": [
+        [
+          "live_upstream",
+          "真实上游对照需要授权后的 e2e 腿"
+        ]
+      ],
+      "readings": [
+        "contract_test_files=test_cboe_engine_provider.py,test_provider_engine_contract.py,test_provider_model_contracts.py",
+        "contract_test_functions=90",
+        "dev_done=0",
+        "e2e_marker_declared=True",
+        "gate_live_confirmation=True",
+        "in_progress=15",
+        "ledger_rows=350",
+        "live_verification_run=0",
+        "not_run=335",
+        "obb2_task_ids=350"
+      ],
+      "repair": "按切片把 NOT_RUN/IN_PROGRESS 推进到 DEV_DONE，并为每片留离线正反例。",
+      "counter_examples": "4/4",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-10"
+    },
+    {
+      "case": "AC2-11",
+      "doc_line": 34,
+      "criterion": "每条完成AC2-10，现有能力语义无回退，明确ECB等候选域是否等价",
+      "summary": "5 个既有来源的 85 条模型逐条完成 AC2-10，且原有 12 条能力语义无回退。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: all 85 reach DEV_DONE; no semantic regression (each of the 85 live-verified)",
+      "missing_legs": [
+        [
+          "archive_field",
+          "原 12 条能力的逐条身份未在任何档案登记，无法离线逐条比对"
+        ],
+        [
+          "live_upstream",
+          "85 条的 SOURCE_VERIFIED 需要真实对照"
+        ]
+      ],
+      "readings": [
+        "p0_dev_done=0",
+        "p0_inventory_fetchers=85",
+        "p0_live_verified=0",
+        "p0_localized_verified_caps=12",
+        "p0_provider_names=ecb,fred,imf,oecd,yfinance",
+        "p0_providers=5",
+        "p0_registry_caps=19",
+        "p0_rows=85"
+      ],
+      "repair": "把 5 源原能力身份登记进库存文档，再逐条推进 85 行。",
+      "counter_examples": "5/5",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-11"
+    },
+    {
+      "case": "AC2-12",
+      "doc_line": 35,
+      "criterion": "每条完成AC2-10及适用真实对照",
+      "summary": "7 个宏观来源的 33 条模型逐条完成 AC2-10 与适用真实对照，EIA 模型数按上游登记。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: all 33 reach DEV_DONE; each has its applicable real comparison",
+      "missing_legs": [
+        [
+          "live_upstream",
+          "宏观序列的真实对照需要授权 e2e 腿"
+        ]
+      ],
+      "readings": [
+        "eia_ledger_rows=2",
+        "eia_upstream_models=2",
+        "macro_dev_done=0",
+        "macro_live_verified=0",
+        "macro_provider_names=bls,econdb,eia,famafrench,federal_reserve,multpl,tradingeconomics",
+        "macro_providers=7",
+        "macro_rows=33"
+      ],
+      "repair": "逐条完成 33 行，并按上游事实校正 EIA 模型数。",
+      "counter_examples": "4/4",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-12"
+    },
+    {
+      "case": "AC2-13",
+      "doc_line": 36,
+      "criterion": "每条完成AC2-10；Key必需性、当前官方档位/配额、负责人/申请或不申请决定有依据；与权利三项独立",
+      "summary": "120 条商业/聚合模型逐条完成，跨阶段 15 源 195 行凭据暴露都有访问决定。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: all 120 reach DEV_DONE; every exposure row carries an access decision; no pending decision is left implicit",
+      "missing_legs": [
+        [
+          "human_decision",
+          "申请/不申请的决定与配额档位需要负责人具名确认"
+        ],
+        [
+          "live_upstream",
+          "当前官方档位/配额需要官方页面与真实调用"
+        ]
+      ],
+      "readings": [
+        "access_assessment_pending=155",
+        "commercial_dev_done=0",
+        "commercial_providers=5",
+        "commercial_rows=120",
+        "decisions_made=0",
+        "decisions_pending=195",
+        "exposed_providers=15",
+        "exposed_rows=195",
+        "exposed_rows_decided=0"
+      ],
+      "repair": "逐行写入访问决定，并把不申请的行显式留在台账内。",
+      "counter_examples": "4/4",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-13"
+    },
+    {
+      "case": "AC2-14",
+      "doc_line": 37,
+      "criterion": "每条完成AC2-10，快照/报价/新闻/披露/衍生品按相应契约验证",
+      "summary": "15 个其他来源的 112 条模型按快照/报价/新闻/披露/衍生品各自契约完成。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: all 112 reach DEV_DONE; each verified against its own contract family",
+      "missing_legs": [
+        [
+          "live_upstream",
+          "112 条的真实对照与契约验证需要授权 e2e 腿"
+        ]
+      ],
+      "readings": [
+        "other_dev_done=0",
+        "other_live_verified=0",
+        "other_provider_names=benzinga,biztoc,cboe,cftc,congress_gov,deribit,finra,finviz,government_us,nasdaq,sec,stockgrid,tmx,tradier,wsj",
+        "other_providers=15",
+        "other_rows=112",
+        "phase_count=3",
+        "phase_partition_sums_to_350=True"
+      ],
+      "repair": "逐条实现并按契约族分类验证，不把请求型报价扩成实时服务。",
+      "counter_examples": "4/4",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-14"
+    },
+    {
+      "case": "AC2-15",
+      "doc_line": 38,
+      "criterion": "显式源不回退；auto排除未验证/缺配置/用途不符；市场/频率/口径匹配；逐源/全局/host预算最小上限有效",
+      "summary": "显式选择不回退，auto 排除未验证/缺配置/用途不符，导入零网络，三层预算有最小上限。",
+      "state": "blocked_leg",
+      "offline_state": "holds_offline",
+      "reason": "selection, degradation and three budget scopes all bite",
+      "missing_legs": [
+        [
+          "live_upstream",
+          "真实降级顺序、429 与未知额度 probe 行为需要真实来源"
+        ]
+      ],
+      "readings": [
+        "auto_condition_sites=3",
+        "auto_routable=23",
+        "budget_test_functions=49",
+        "capabilities=46",
+        "fail_closed_messages=2",
+        "global_rate_constant=True",
+        "host_concurrency_limiter=11",
+        "host_grant_scope=True",
+        "import_time_fetch=[]",
+        "source_budget_constant=True",
+        "task_budget_constant=True",
+        "verified_caps=23"
+      ],
+      "repair": "补 host 级并发闸门，并用录制响应验证降级顺序。",
+      "counter_examples": "5/5",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-15"
+    },
+    {
+      "case": "AC2-16",
+      "doc_line": 39,
+      "criterion": "共用标准化/错误链；阻塞SDK有界，取消不推进未完成水位；全350行有适用性声明，unsupported在I/O前诊断",
+      "summary": "统一 async 包装：350 行逐行声明适用性，unsupported 在 I/O 前拒绝，非法模式被拒。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: all 350 rows carry an applicability declaration",
+      "missing_legs": [
+        [
+          "warehouse",
+          "取消不推进未完成水位需要真实执行与水位对照"
+        ]
+      ],
+      "readings": [
+        "assessed=2",
+        "bounded_thread=2",
+        "engine_read_sites=7",
+        "not_assessed=348",
+        "rows=350",
+        "spec_arms=[2, \"rejected\", \"accepted\"]",
+        "unsupported=0",
+        "unsupported_refusal_tests=6"
+      ],
+      "repair": "逐行判定 async_mode（bounded_thread/unsupported）并写入台账。",
+      "counter_examples": "5/5",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-16"
+    },
+    {
+      "case": "AC2-17",
+      "doc_line": 40,
+      "criterion": "清晰的存储/查询模式、正确参数/分页/过滤/权限，目录显示真实覆盖",
+      "summary": "模型族从 Fetcher 到 ODS/DWD 到 API/CLI/SDK 四层可达，目录显示真实覆盖。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: a CLI entry exists for provider models; coverage is recorded per model",
+      "missing_legs": [
+        [
+          "warehouse",
+          "存储/查询模式的实际结果需要真实库"
+        ]
+      ],
+      "readings": [
+        "api_model_routes=6",
+        "api_route_modules=5",
+        "api_route_verbs=get:2,post:4",
+        "api_routes_without_path=0",
+        "cli_model_commands=0",
+        "coverage_status_assessed=0",
+        "dwd_symbols=3",
+        "layer_flags_in_descriptor=1",
+        "ods_writer_symbols=3",
+        "sdk_methods=4"
+      ],
+      "repair": "补 provider-model CLI 入口与描述符的分层可达声明。",
+      "counter_examples": "7/7",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-17"
+    },
+    {
+      "case": "AC2-18",
+      "doc_line": 41,
+      "criterion": "稳定业务键保留独立事件；冲突可审计；因子/DWD/WS受影响范围正确",
+      "summary": "公司行动的稳定业务键、冲突可审计与因子/DWD/WS 修订传播，并有 gold 样本回填。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: a stable business key is named in code; gold samples backfilled",
+      "missing_legs": [
+        [
+          "warehouse",
+          "双源冲突行的实际合并与水位传播需要真实库写入"
+        ]
+      ],
+      "readings": [
+        "business_key_sites=0",
+        "conflict_fixtures=0",
+        "conflict_symbols=3",
+        "contract_symbols=3",
+        "factor_symbols=4",
+        "gold_dir_names=stock_action_dividend,stock_action_rights",
+        "gold_dirs=2",
+        "offline_test_functions=103"
+      ],
+      "repair": "命名稳定业务键，补双源冲突夹具与修订传播回归。",
+      "counter_examples": "4/4",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-18"
+    },
+    {
+      "case": "AC2-19",
+      "doc_line": 42,
+      "criterion": "公开前不可见；公开后见当时版本；后来重述不改旧as_of结果；时区/精度声明一致",
+      "summary": "两次发布/重述样本下，公开前不可见、公开后见当时版本、旧 as_of 结果不被重述改写。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: warehouse reads honour as_of; the SDK exposes as_of; two publishes/restatements are sampled offline",
+      "missing_legs": [
+        [
+          "warehouse",
+          "两次发布/重述的真实行需要授权库写入（e2e 腿）"
+        ]
+      ],
+      "readings": [
+        "alembic_data_versions=7",
+        "api_as_of_parameter=True",
+        "pit_test_functions=32",
+        "pit_trace_columns=3",
+        "read_path_as_of_sites=2",
+        "restatement_fixtures=0",
+        "sdk_as_of_sites=0",
+        "write_as_of_sites=4"
+      ],
+      "repair": "在仓库读取路径与 SDK 上加 as_of 过滤，并补重述样本。",
+      "counter_examples": "5/5",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-19"
+    },
+    {
+      "case": "AC2-20",
+      "doc_line": 43,
+      "criterion": "metadata准确；最小安装不漏loguru；ws extra真实存在；新模型/PIT参数可用",
+      "summary": "SDK 独立安装：声明面与导入面一致，loguru 不漏，ws extra 真实存在。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: PIT parameters reach the SDK; an installable SDK artifact exists",
+      "missing_legs": [
+        [
+          "clean_environment",
+          "干净环境独立安装与 REST/ws 实际运行未执行"
+        ]
+      ],
+      "readings": [
+        "built_sdk_artifact=0",
+        "loguru_declared=True",
+        "loguru_imported=True",
+        "paging_class=True",
+        "root_ws_extra_declared=False",
+        "sdk_dependencies=[\"httpx>=0.27\", \"loguru>=0.7\"]",
+        "sdk_extras=[\"frames\", \"ws\"]",
+        "sdk_pit_parameter=False",
+        "websockets_imported=True",
+        "ws_extra_declared=True"
+      ],
+      "repair": "构建并在干净环境安装 opendata-client[ws]，跑最小 REST 与 ws 入口。",
+      "counter_examples": "5/5",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-20"
+    },
+    {
+      "case": "AC2-21",
+      "doc_line": 44,
+      "criterion": "ID语义与interface_id等实际schema一致，页面成功/失败状态准确",
+      "summary": "前端下载按钮到后端路由的任务 ID 语义一致，失败状态如实反馈。",
+      "state": "blocked_leg",
+      "offline_state": "holds_offline",
+      "reason": "the download path is id-consistent and status-honest",
+      "missing_legs": [
+        [
+          "live_upstream",
+          "真实下载任务状态流转需要前端 e2e 成员（gate 内）"
+        ]
+      ],
+      "readings": [
+        "accepted_status_only=True",
+        "be_id_sites=1",
+        "download_route=True",
+        "execution_id_carried_back=True",
+        "fe_422_case=True",
+        "fe_error_not_success_case=True",
+        "fe_id_sites=1",
+        "fe_test_cases=12",
+        "ids_match=True",
+        "view_uses_selected_interface=True"
+      ],
+      "repair": "保持 interface_id 单一语义，并为每个失败状态留组件测试。",
+      "counter_examples": "5/5",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-21"
+    },
+    {
+      "case": "AC2-22",
+      "doc_line": 45,
+      "criterion": "配额/重试有界、永久错误不重试、raw响应可诊断且脱敏；关键风险处置有语义证据",
+      "summary": "请求/安全债务：超时、限流与重试有界，raw 响应可诊断，TLS/解析风险有语义证据。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: current ported security evidence validates",
+      "missing_legs": [
+        [
+          "archive_field",
+          "重生成 ported bandit/triage 档案需要 bandit 重跑；本轮明令不运行 make security-ported"
+        ]
+      ],
+      "readings": [
+        "attempt_bounds=3",
+        "direct_http_ported_pin=1071",
+        "engine_timeout_applied=True",
+        "engine_timeout_constant=True",
+        "first_party_tls_disable=0",
+        "ported_security_detail=Issue(code='scan-finding-path-invalid', message='Bandit finding is outside the current source file set'),Issue(code='scan-source-current-mismatch', message='sca",
+        "ported_security_issue_count=1053",
+        "raw_diagnosis_codes=13",
+        "retry_gate_files=opendata/data/http_client.py,opendata/data/providers/ths/transport/http_client.py",
+        "retryability_gates=2",
+        "scan_archive_present=True",
+        "throttle_handling=38",
+        "triage_archive_present=True",
+        "vendor_tls_disable=79"
+      ],
+      "repair": "把安全校验器指向 vendored 身份，并把 bandit 输出写到本波新目录（不覆盖 A2）。",
+      "counter_examples": "8/8",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-22"
+    },
+    {
+      "case": "AC2-23",
+      "doc_line": 46,
+      "criterion": "结果不变；P95/RSS/连接数/SQL计划有记录；瓶颈优化可解释，符合已定容量约定",
+      "summary": "同数据/索引/配置的负载前后比较，P95、RSS、连接数与 SQL 计划都有记录。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: P95 latency recorded; connection count recorded; an after-run exists for the same payload",
+      "missing_legs": [
+        [
+          "warehouse",
+          "前后同负载基准需要真实 MySQL 运行（未授权）"
+        ]
+      ],
+      "readings": [
+        "after_run_bundles=0",
+        "bundle_files=4",
+        "bundle_rows=236",
+        "connection_count_recorded=False",
+        "explain_script_present=True",
+        "p95_recorded=False",
+        "recorded_metrics=business_key,byte_unit,current_rss_bytes,current_rss_source,domain,elapsed_seconds,error_type,full_source_write_verified,limit_rows,mode,page_number,page_rows,page_size,pages_read,pages_written,peak_r",
+        "rss_recorded=True",
+        "validator_exit=0"
+      ],
+      "repair": "在授权窗口跑 benchmark_ods_write 前后两版，并留 P95/连接数指标。",
+      "counter_examples": "5/5",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-23"
+    },
+    {
+      "case": "AC2-24",
+      "doc_line": 47,
+      "criterion": "15项归档缺读数及其中8个gap均有当前结果/具体BLOCKED原因；每项符合原关闭条件，现场有现场证据",
+      "summary": "同一冻结树上先取 130 条迭代1 AC 读数，再逐条关闭原 16 个 gap，身份与历史保留。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: every reading names archived evidence; all 16 gaps closed",
+      "missing_legs": [
+        [
+          "human_decision",
+          "4 个新增 provider 的权限复核与 AC-19 运维授权"
+        ],
+        [
+          "archive_field",
+          "AC-1|05 需要隔离 docker 栈重跑；AC-16|07 需要干净解释器（当前 conda 树带 akshare/openbb）"
+        ]
+      ],
+      "readings": [
+        "ac_1_10_cell_count=1",
+        "ac_1_10_cells=AC-1|10|0c44a7ef",
+        "gap=16",
+        "group_counts_sum=130",
+        "group_heading_symdiff=0",
+        "items_total_field=130",
+        "iter1_ac_headings=19",
+        "ledger_check_exit=0",
+        "ledger_items=130",
+        "missing_evidence_files=5",
+        "missing_evidence_named=opendata_fuyao/endpoints.py,opendata_fuyao/error_messages.yaml,opendata_http/datasets.py",
+        "proven=114",
+        "proven_without_command=0",
+        "report_tail=  §6     条目级 4/4  §10: (无 §10 行)",
+        "unreviewed=0"
+      ],
+      "repair": "按分组重算 manifest/port-scope 后逐条重取证，并保留原身份与历史分列。",
+      "counter_examples": "6/6",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-24"
+    },
+    {
+      "case": "AC2-25",
+      "doc_line": 48,
+      "criterion": "所有适用子检查真实exit=0，证据同树，未闭合范围明示，发行产物可复现",
+      "summary": "发布候选同源冻结：清单、适用 AC、独立回归、整 gate 与文档/包/镜像同树。",
+      "state": "gap",
+      "offline_state": "holds_offline",
+      "reason": "failed: the tree is clean; the archived record names this exact commit; GATE_EXIT is recorded and zero; every declared member ran in the record",
+      "missing_legs": [
+        [
+          "archive_field",
+          "整 gate 需要在冻结干净树上跑满 17 个成员（含 a2-check 约 1300s）"
+        ],
+        [
+          "clean_environment",
+          "wheel/镜像复现未执行"
+        ]
+      ],
+      "readings": [
+        "dirty_files=5",
+        "evidence_case_dirs=82",
+        "gate_exit_line=absent",
+        "gate_member_runs=0",
+        "gate_members_declared=17",
+        "gate_record_path=absent",
+        "gate_records_for_head=0",
+        "gate_records_total=66",
+        "head=0be42b7",
+        "inventory_status=\"PASS\"",
+        "latest_record_any_tree=docs/evidence/C9/gate.txt"
+      ],
+      "repair": "在冻结树上跑完整 make gate 并留 17 条成员退出码，再补包与镜像。",
+      "counter_examples": "6/6",
+      "command": "python scripts/quality/ac2_case_probe.py --item AC2-25"
+    }
+  ]
+}
