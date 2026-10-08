@@ -1,0 +1,62 @@
+repo: /Users/yunjinqi/Documents/new_projects/opendata
+  pinned opendata/data/providers/_engine/http_json.py sha256=3a435a0d631925bc
+  pinned opendata/data/providers/_engine/spec.py sha256=64375a1747944781
+  pinned opendata/data/providers/_engine/testing.py sha256=69e1e84774673687
+
+[control] no tamper: rc=0 failed_lines=0 :: ======================= 214 passed, 23 skipped in 0.61s ========================
+
+[tamper] D2  short page measured against the declared default instead of the size sent
+  rc=1 failed_lines=1 :: ================== 1 failed, 213 passed, 23 skipped in 0.70s ===================
+  expected failing ids matched=1/1 ['test_caller_set_page_size_survives_into_every_request']
+  | FAILED tests/test_provider_engine_contract.py::TestPaginationAndCompleteness::test_caller_set_page_size_survives_into_every_request
+
+[tamper] D3  page totals summed rather than agreed on
+  rc=1 failed_lines=9 :: ================== 9 failed, 205 passed, 23 skipped in 0.85s ===================
+  expected failing ids matched=2/2 ['test_pages_repeating_one_declared_total_read_complete', 'test_declared_total_is_read_once_and_agrees_with_the_rows']
+  | FAILED tests/test_provider_engine_contract.py::TestPaginationAndCompleteness::test_caller_set_page_size_survives_into_every_request
+  | FAILED tests/test_provider_engine_contract.py::TestPaginationAndCompleteness::test_pages_repeating_one_declared_total_read_complete
+  | FAILED tests/test_provider_engine_contract.py::TestPaginationAndCompleteness::test_pages_that_disagree_on_the_total_are_a_conflict
+  | FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_credential_requirement_fails_before_any_send[probe::ProbePagedTotal]
+  | FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_typical_request_normalizes_the_declared_columns[probe::ProbePagedTotal]
+  | FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_optional_column_absent_reads_as_null[probe::ProbePagedTotal]
+  | FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_paging_drives_from_the_declaration_and_stops_on_a_short_page[probe::ProbePagedTotal]
+  | FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_declared_total_is_read_once_and_agrees_with_the_rows[probe::ProbePagedTotal]
+  | FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_pages_that_disagree_on_the_total_are_a_conflict[probe::ProbePagedTotal]
+  other failures while broken (also legitimate, listed for the record): 7
+
+[tamper] Fixture scripted with identical records on every page (no row offset)
+  rc=1 failed_lines=3 :: ================== 3 failed, 211 passed, 23 skipped in 0.71s ===================
+  expected failing ids matched=1/1 ['test_typical_request_normalizes_the_declared_columns']
+  | FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_typical_request_normalizes_the_declared_columns[probe::ProbeCursorRows]
+  | FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_typical_request_normalizes_the_declared_columns[probe::ProbeOffsetPath]
+  | FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_typical_request_normalizes_the_declared_columns[probe::ProbePagedTotal]
+
+[tamper] Declaration rule removed: page/offset accepted without an offset key
+  rc=1 failed_lines=1 :: ================== 1 failed, 213 passed, 23 skipped in 0.69s ===================
+  expected failing ids matched=1/1 ['test_paging_without_an_offset_key_is_refused']
+  | FAILED tests/test_provider_model_contracts.py::TestDeclarationRules::test_paging_without_an_offset_key_is_refused
+
+[tamper] Declaration rule removed: an optional path placeholder is accepted
+  rc=1 failed_lines=1 :: ================== 1 failed, 213 passed, 23 skipped in 0.69s ===================
+  expected failing ids matched=1/1 ['test_optional_path_placeholder_without_default_is_refused']
+  | FAILED tests/test_provider_model_contracts.py::TestDeclarationRules::test_optional_path_placeholder_without_default_is_refused
+
+[tamper] resolve_rows: an absent pointer reads as an empty result instead of a shape failure
+  rc=1 failed_lines=6 :: ================== 6 failed, 208 passed, 23 skipped in 0.74s ===================
+  expected failing ids matched=1/1 ['test_a_document_carrying_no_record_list_is_a_shape_failure']
+  | FAILED tests/test_provider_engine_contract.py::TestEmptyVersusMissing::test_absent_pointer_is_shape_invalid
+  | FAILED tests/test_provider_engine_contract.py::TestEmptyVersusMissing::test_records_instead_of_envelope_is_shape_invalid
+  | FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_a_document_carrying_no_record_list_is_a_shape_failure[cboe::IndexConstituents]
+  | FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_a_document_carrying_no_record_list_is_a_shape_failure[probe::ProbeCursorRows]
+  | FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_a_document_carrying_no_record_list_is_a_shape_failure[probe::ProbeOffsetPath]
+  | FAILED tests/test_provider_model_contracts.py::TestDeclarationIsTheContract::test_a_document_carrying_no_record_list_is_a_shape_failure[probe::ProbePagedTotal]
+  other failures while broken (also legitimate, listed for the record): 2
+
+[restored] rc=0 failed_lines=0 :: ======================= 214 passed, 23 skipped in 0.62s ========================
+  restore opendata/data/providers/_engine/http_json.py sha256=3a435a0d631925bc IDENTICAL
+  restore opendata/data/providers/_engine/spec.py sha256=64375a1747944781 IDENTICAL
+  restore opendata/data/providers/_engine/testing.py sha256=69e1e84774673687 IDENTICAL
+
+self sha256 = 28975ab1902a03b7
+legs=6 problems=0
+VERDICT: COUNTERFACTS HOLD
