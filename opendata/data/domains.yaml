@@ -258,3 +258,23 @@ domains:
     filter_dims: [series_key, period, frequency, ref_area, counterpart_area, unit_measure]
     storage_mode: transient
     permissions: [query]
+  cboe_available_indices:
+    display_name: CBOE 美国指数目录
+    rest_path: index/cboe-available-indices
+    contract: CboeAvailableIndex
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [symbol]
+    filter_dims: [symbol]
+    storage_mode: transient
+    permissions: [query]
+  cboe_index_constituent_quotes:
+    display_name: CBOE 欧洲指数成分报价
+    rest_path: index/cboe-constituent-quotes
+    contract: CboeIndexConstituentQuote
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [symbol]
+    filter_dims: [symbol]
+    storage_mode: transient
+    permissions: [query]

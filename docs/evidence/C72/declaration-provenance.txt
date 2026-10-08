@@ -1,0 +1,10 @@
+self-test: correct declaration accepted, mutating arms=9 fired=9
+declared models: 2
+upstream: /Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform pinned=3e071fcc2cd9 sheet providers=32 models=350 ledger tasks=350
+cboe::AvailableIndices                   cols=12/12 params=0/1 sha=79dffe2b6543 violations=0
+cboe::IndexConstituents                  cols=16/15 params=1/1 sha=1f6914db7451 violations=0
+info UPSTREAM_PARAM_UNCOVERED   AvailableIndices: upstream field not declared (client-side or unused): ['use_cache']
+info COLUMN_FROM_ENVELOPE       IndexConstituents: no upstream record field, carried by row_envelope: ['currency']
+machine-readable report -> docs/evidence/C72/declaration-provenance.json
+models=2 findings=2 violations=0 info=2 self_test=9/9
+VERDICT: DECLARATION PROVENANCE HOLDS

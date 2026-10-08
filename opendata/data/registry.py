@@ -486,9 +486,13 @@ class ProviderRegistry:
     ) -> Fetcher[Any, Any]:
         """Route by domain identifier (catalog-facing, FR-17).
 
-        Domains are unique across asset classes (domains.yaml), so
-        matching by domain is unambiguous: the first capability found
-        supplies the asset class for the full routing rules.
+        A domain is one contract, but providers may declare it under
+        different asset classes (``ths`` serves ``instrument`` as
+        ``metadata`` while ``cboe`` serves it as an ``index`` catalog),
+        so the asset class comes from the capability being asked for:
+        with an explicit source from that source's own leg, and for
+        ``"auto"`` from the first leg registered, which is what auto
+        ranking then re-scores.
         ``period`` / ``market`` are forwarded rather than dropped -
         they are what tells the euro-area macro legs from the global
         ones, and a catalog caller that knows which one it wants has
@@ -507,16 +511,26 @@ class ProviderRegistry:
             LookupError: If no capability is registered for the domain,
                 or auto routing would have to pick across markets.
         """
-        for fetcher in self._fetchers.values():
-            if fetcher.capability.domain == domain:
-                return self.resolve(
-                    fetcher.capability.asset_class,
-                    domain,
-                    period=period,
-                    market=market,
-                    source=source,
-                )
-        raise LookupError(f"no capability registered for domain {domain!r}")
+        matching = [
+            fetcher for fetcher in self._fetchers.values() if fetcher.capability.domain == domain
+        ]
+        if not matching:
+            raise LookupError(f"no capability registered for domain {domain!r}")
+        wanted = next(
+            (
+                fetcher
+                for fetcher in matching
+                if source != "auto" and fetcher.capability.source == source
+            ),
+            matching[0],
+        )
+        return self.resolve(
+            wanted.capability.asset_class,
+            domain,
+            period=period,
+            market=market,
+            source=source,
+        )
 
     @staticmethod
     def _reject_cross_market_auto(

@@ -417,6 +417,69 @@ def test_new_provider_specific_rights_rows_must_exist_in_registration_table() ->
     assert all("not a 数据源" in finding.text for finding in found)
 
 
+def registration_rows(text: str) -> list[tuple[int, str]]:
+    """Index the §1 registration table's rows the way the plane's own reader does.
+
+    Args:
+        text: Whole ``docs/data-rights-registry.md`` contents.
+
+    Returns:
+        ``(line index, 数据源 cell)`` for every §1 table row, in file order.
+    """
+    rows: list[tuple[int, str]] = []
+    in_section = False
+    for index, line in enumerate(text.splitlines()):
+        if line.startswith("## "):
+            in_section = line.startswith("## 1")
+            continue
+        if not in_section:
+            continue
+        match = guard.RIGHTS_TABLE_ROW.match(line.strip())
+        if not match:
+            continue
+        cells = [cell.strip() for cell in match.group("cells").split("|")]
+        if cells:
+            rows.append((index, cells[0]))
+    return rows
+
+
+def test_every_declared_rights_row_is_load_bearing() -> None:
+    """Delete a registration row and the sources that name it are the only ones reddened.
+
+    The shipped file is green, so a ``rights_rows:`` name nothing really reads would stay green
+    with its §1 line deleted. This asks the runtime which sources serve, takes every row name each
+    one declares, and requires each deletion to produce exactly one RIGHTS LINK per declaring
+    source — no more (the rest of the plane stays green) and no fewer (a name matching no row is
+    reported as an instrument bug rather than passed over).
+    """
+    inventory_text = INVENTORY.read_text(encoding="utf-8")
+    models, credentials, ledger = fixed_authority()
+    rows_by_provider = {row.provider: row.fields for row in guard.parse_rows(inventory_text)}
+    served = {source: legs for source, legs in guard.live_legs().items() if legs}
+
+    declared: dict[str, list[str]] = {}
+    for source in served:
+        for link in guard.declared_rights(rows_by_provider[source]["rights_rows"]):
+            declared.setdefault(link, []).append(source)
+    assert {source for sources in declared.values() for source in sources} == set(served)
+
+    lines = RIGHTS_TEXT.splitlines()
+    with_nothing_removed = guard.findings(
+        inventory_text, RIGHTS_TEXT, served, models, credentials, ledger
+    )
+    assert [str(finding) for finding in with_nothing_removed] == []
+
+    for link, sources in sorted(declared.items()):
+        targets = [index for index, name in registration_rows(RIGHTS_TEXT) if link in name]
+        assert targets, f"`{link}` names no §1 row, so this face measured nothing"
+        stripped = "\n".join(line for index, line in enumerate(lines) if index not in targets)
+        found = guard.findings(inventory_text, stripped, served, models, credentials, ledger)
+        assert [(finding.kind, finding.text.split("`")[1]) for finding in found] == [
+            ("RIGHTS LINK", source) for source in sorted(sources)
+        ], link
+        assert all("not a 数据源" in finding.text for finding in found)
+
+
 def test_local_rows_may_name_several_rights_rows() -> None:
     text = record(
         row("not_yet", guard.STATUS_TODO),

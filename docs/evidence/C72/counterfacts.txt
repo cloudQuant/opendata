@@ -1,0 +1,16 @@
+PASS  F1 resolve_domain routes by the asked-for source's own asset class
+      both legs route by their own asset class; the old first-leg formula still raises LookupError(source 'probe_b' has no registered capability for index/probe_shared_domain (period=None, market=None))
+PASS  F2 an undeclared parameter is refused by naming every rejected key
+      code=CBOE_QUERY_INVALID rejected=['probe_absent_one', 'probe_absent_two']; a valid query served 1 row
+PASS  F3 rows are the domain's contract class, and only that class is served
+      cboe::AvailableIndices->CboeAvailableIndex ,cboe::IndexConstituents->CboeIndexConstituentQuote; look-alike refused; mismatch refused: AvailableIndices: declared columns ['probe_invented'] do not match contract CboeAvailableIndex
+PASS  F4 a boolean is refused for a numeric column on a contract row
+      current_price=True -> last_price in rejected; without symbol -> symbol in missing; current_price=1.5 -> last_price=1.5
+PASS  F5 the provenance audit's domain checks arm against the live registry
+      self-test 9/9; live declarations green over 33 domains; 3 mutations fired (unreviewed arm 'bond_daily')
+PASS  F6 the capability census holds as an identity across two enumerations
+      registered=46 = hand 44 + engine 2 over 10 sources {'akshare': 10, 'ecb': 6, 'fred': 7, 'imf': 3, 'oecd': 2, 'ths': 11, 'yfinance': 1, 'bls': 2, 'fmp': 2, 'cboe': 2}; domains=33 reviewed=13; duplicate key refused
+PASS  F7 every declared rights row is load-bearing for its serving source
+      serving_sources=10 row_names=13 section1_rows=14; each of the 13 deletions reddened only its declaring source; baseline green
+FACES=7 PASS=7 FAIL=0
+HARNESS_EXIT=0

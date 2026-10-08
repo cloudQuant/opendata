@@ -19,10 +19,15 @@ if TYPE_CHECKING:
     from sqlalchemy.engine import Engine
 
 EXPECTED = date(2026, 10, 7)
+#: Sorted; ``alert_matrix._deferred_model_domains`` returns this order. The two cboe legs joined it
+#: when ``cboe_available_indices``/``cboe_index_constituent_quotes`` entered ``domains.yaml`` and
+#: became registrable -- transient snapshot domains with no legacy warehouse table either way.
 NATIVE_MODEL_DOMAINS = (
     "balance_of_payments",
     "bls_search",
     "bls_series",
+    "cboe_available_indices",
+    "cboe_index_constituent_quotes",
     "currency_reference_rates",
     "equity_historical",
     "equity_quote",
@@ -107,14 +112,14 @@ def test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tab
         reports, scope = alert_matrix.collect_freshness(engine, expected=EXPECTED)
         tables = alert_matrix.warehouse_tables()
 
-        assert len(legs) == 31
-        assert sum(len(sources) for sources in legs.values()) == 44
+        assert len(legs) == 33
+        assert sum(len(sources) for sources in legs.values()) == 46
         assert scope.domains == 20
         assert scope.deferred_domains == NATIVE_MODEL_DOMAINS
-        assert scope.deferred_legs == 11
+        assert scope.deferred_legs == 13
         assert scope.source_legs + scope.unmapped_legs == 33
-        assert scope.domains + len(scope.deferred_domains) == 31
-        assert scope.source_legs + scope.unmapped_legs + scope.deferred_legs == 44
+        assert scope.domains + len(scope.deferred_domains) == 33
+        assert scope.source_legs + scope.unmapped_legs + scope.deferred_legs == 46
         assert len(reports) == scope.domains + scope.source_legs
         assert len(statements) == len(reports) == 30
         assert all(
@@ -130,7 +135,7 @@ def test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tab
         )
         scope_dict = scope.as_dict()
         assert scope_dict["deferred_domains"] == list(NATIVE_MODEL_DOMAINS)
-        assert scope_dict["deferred_legs"] == 11
+        assert scope_dict["deferred_legs"] == 13
     finally:
         engine.dispose()
 

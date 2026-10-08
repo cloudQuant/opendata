@@ -52,6 +52,9 @@ class TestShippedMap:
         # EquityHistorical/ConsumerPriceIndex/FuturesHistorical/EtfHistorical
         # （后者由 alpha_vantage、tiingo、cboe 三个 provider 声明）
         # 三个 ECB 名称则由本地受控 binding 明确注册。
+        # AvailableIndices/IndexConstituents 同样出自该清单的 cboe 行
+        # （`models: [AvailableIndices, …, IndexConstituents, …]`），本轮把这两条做成了
+        # 声明式引擎声明；两条能力 verified=False，不进 auto 路由。
         assert confirmed == {
             "EquityHistorical",
             "ConsumerPriceIndex",
@@ -67,6 +70,8 @@ class TestShippedMap:
             "YieldCurve",
             "BalanceOfPayments",
             "SONIA",
+            "AvailableIndices",
+            "IndexConstituents",
         }
 
     def test_enabled_capabilities_are_covered(self):

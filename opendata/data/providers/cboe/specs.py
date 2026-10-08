@@ -18,7 +18,7 @@ CBOE_BASE_URL = "https://cdn.cboe.com"
 #: The index directory, which is also the pre-flight other cboe models consult.
 AVAILABLE_INDICES = ModelSpec(
     model="AvailableIndices",
-    domain="cboe_index_catalog",
+    domain="cboe_available_indices",
     asset_class="index",
     period="snapshot",
     market="us",
@@ -55,7 +55,7 @@ AVAILABLE_INDICES = ModelSpec(
 #: One European index's constituent quotes, addressed by symbol in the path.
 INDEX_CONSTITUENTS = ModelSpec(
     model="IndexConstituents",
-    domain="cboe_index_constituents",
+    domain="cboe_index_constituent_quotes",
     asset_class="index",
     period="snapshot",
     market="eu",

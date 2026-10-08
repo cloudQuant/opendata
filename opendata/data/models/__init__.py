@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from opendata.data.models.adjustment import AdjustFactor, CorporateAction
 from opendata.data.models.base import ContractModel
+from opendata.data.models.cboe_index import CboeAvailableIndex, CboeIndexConstituentQuote
 from opendata.data.models.currency import CurrencyReferenceRate, SdmxGroupContext
 from opendata.data.models.ecb_series import (
     EcbBalanceOfPaymentsObservation,
@@ -42,6 +43,8 @@ __all__ = [
     "BlsCatalogPage",
     "BlsFootnote",
     "BlsObservation",
+    "CboeAvailableIndex",
+    "CboeIndexConstituentQuote",
     "MacroSeries",
     "OverseasBar",
     "ContractModel",

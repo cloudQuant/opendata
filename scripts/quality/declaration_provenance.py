@@ -2,17 +2,21 @@
 
 A ``ModelSpec`` is written by a person, so the claim it makes about an upstream endpoint needs the
 same kind of check a hand-written fetcher gets from its own test file. This tool asks the runtime
-which models are declared (``catalog.engine_declared_models``), and for each one measures four
-things against the pinned upstream tree:
+which models are declared (``catalog.engine_declared_models``), and for each one measures five
+things:
 
 * the model identity exists in the iteration-2 task ledger (the 350-row denominator),
 * the declared output columns are exactly the upstream standard model's column names,
 * every declared query parameter is a field of the upstream ``QueryParams`` class,
-* the declared host and the literal path segments appear somewhere in that provider's package.
+* the declared host and the literal path segments appear somewhere in that provider's package,
+* the declared domain is registered with reviewed semantics and its columns are that domain's
+  contract, because the engine publishes the contract class and only rows of that class are served.
 
-The first three are set comparisons on facts the sheet already publishes. The fourth is a
-containment test on the upstream package text: it cannot prove a URL is right for a live response --
-that stays SOURCE_VERIFIED -- but it does refuse a declaration whose endpoint was invented.
+The first four are set comparisons and containment tests on facts the pinned upstream tree already
+publishes. The endpoint test cannot prove a URL is right for a live response -- that stays
+SOURCE_VERIFIED -- but it does refuse a declaration whose endpoint was invented. The fifth is a
+repository-local fact the upstream sheet cannot reveal: a declaration may match upstream perfectly
+and still name rows no query or ingest service accepts.
 
 Every check is run against a mutated copy of its own input before the audit starts, because a judge
 that can only print OK is not measuring anything.
@@ -33,6 +37,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from opendata.data.domains import contract_model, load_domains  # noqa: E402
 from opendata.data.providers._engine.spec import (  # noqa: E402
     ColumnSpec,
     ModelSpec,
@@ -57,6 +62,9 @@ VIOLATIONS = frozenset(
         "HOST_UNBACKED",
         "PATH_UNBACKED",
         "NO_MODELS_DECLARED",
+        "DOMAIN_UNREGISTERED",
+        "DOMAIN_NO_SEMANTICS",
+        "CONTRACT_COLUMNS_DISAGREE",
     }
 )
 
@@ -175,6 +183,60 @@ def endpoint_disagree(spec: ModelSpec, package_text: str) -> list[Finding]:
     return findings
 
 
+def registered_domains() -> dict[str, tuple[bool, frozenset[str]]]:
+    """Map each registered domain to whether it is reviewed and what its contract publishes.
+
+    Read from the live registry rather than a fixture so the audit cannot pass against a domain
+    somebody only meant to register.
+    """
+    domains: dict[str, tuple[bool, frozenset[str]]] = {}
+    for domain, spec in load_domains().items():
+        if not spec.semantics_declared:
+            domains[domain] = (False, frozenset())
+            continue
+        domains[domain] = (True, frozenset(contract_model(domain).model_fields))
+    return domains
+
+
+def domain_disagree(
+    spec: ModelSpec, domains: dict[str, tuple[bool, frozenset[str]]]
+) -> list[Finding]:
+    """Require the declaration's domain to exist and its columns to be that domain's contract.
+
+    The engine publishes ``contract_model(domain)`` for a reviewed domain, and the query and ingest
+    services accept a row only when its class is exactly that model. So a declaration on an
+    unreviewed domain, or one whose columns do not match the contract, names rows nothing can
+    serve -- a fact the upstream sheet cannot reveal, because it only describes upstream.
+    """
+    if spec.domain not in domains:
+        return [
+            Finding(
+                "DOMAIN_UNREGISTERED",
+                spec.model,
+                f"domain {spec.domain!r} is not in opendata/data/domains.yaml",
+            )
+        ]
+    declared, contract_fields = domains[spec.domain]
+    if not declared:
+        return [
+            Finding(
+                "DOMAIN_NO_SEMANTICS",
+                spec.model,
+                f"domain {spec.domain!r} has no reviewed semantics, so its rows reach no service",
+            )
+        ]
+    disagree = sorted(declared_columns(spec) ^ contract_fields)
+    if disagree:
+        return [
+            Finding(
+                "CONTRACT_COLUMNS_DISAGREE",
+                spec.model,
+                f"columns and contract {spec.domain!r} differ on: {disagree}",
+            )
+        ]
+    return []
+
+
 def package_source(upstream_root: Path, source: str) -> str:
     """Concatenate a provider package's upstream Python text, excluding its tests."""
     root = upstream_root / "providers" / source
@@ -200,9 +262,11 @@ def audit(
         )
         return findings, rows
     packages: dict[str, str] = {}
+    domains = registered_domains()
     for source, spec in models:
         model_id = f"{source}::{spec.model}"
         entry = ((sheet.get(source) or {}).get("models") or {}).get(spec.model)
+        model_findings = domain_disagree(spec, domains)
         if f"OBB2-{source}-{spec.model}" not in ledger_ids:
             findings.append(
                 Finding(
@@ -213,10 +277,11 @@ def audit(
             findings.append(
                 Finding("NO_SHEET_ENTRY", model_id, "no interface facts were extracted")
             )
+            findings.extend(model_findings)
             rows.append(f"{model_id:40} sheet=missing")
             continue
         packages.setdefault(source, package_source(upstream_root, source))
-        model_findings = (
+        model_findings += (
             columns_disagree(spec, entry)
             + params_disagree(spec, entry)
             + endpoint_disagree(spec, packages[source])
@@ -265,6 +330,14 @@ def self_test_entry() -> SheetEntry:
 
 SELF_TEST_PACKAGE = 'URL = f"https://example.test/api/v1/quotes/{symbol}.json"'
 
+#: A registry the self-test can be correct against, plus one unreviewed domain to stand in for a
+#: legacy entry. ``self_test`` mirrors the declaration's own columns; the contract comparison is
+#: armed by a column the fixture contract does not publish.
+SELF_TEST_DOMAINS: dict[str, tuple[bool, frozenset[str]]] = {
+    "self_test": (True, frozenset({"bid", "ask"})),
+    "self_test_legacy": (False, frozenset()),
+}
+
 
 def run_self_test() -> tuple[int, int, list[str]]:
     """Show each check accepts the correct declaration and refuses each targeted fabrication.
@@ -273,6 +346,7 @@ def run_self_test() -> tuple[int, int, list[str]]:
     not. A non-empty note list is a bug in this file, not in the declarations.
     """
     spec, entry, package = self_test_spec(), self_test_entry(), SELF_TEST_PACKAGE
+    domains = SELF_TEST_DOMAINS
     notes: list[str] = []
     arms = 0
     fired = 0
@@ -280,7 +354,8 @@ def run_self_test() -> tuple[int, int, list[str]]:
     clean = [
         finding
         for finding in (
-            columns_disagree(spec, entry)
+            domain_disagree(spec, domains)
+            + columns_disagree(spec, entry)
             + params_disagree(spec, entry)
             + endpoint_disagree(spec, package)
         )
@@ -330,6 +405,23 @@ def run_self_test() -> tuple[int, int, list[str]]:
             "path fabricated",
             endpoint_disagree(replace(spec, path="/api/v1/nope/{symbol}.json"), package),
             "PATH_UNBACKED",
+        ),
+        (
+            "domain nobody registered",
+            domain_disagree(replace(spec, domain="self_test_absent"), domains),
+            "DOMAIN_UNREGISTERED",
+        ),
+        (
+            "domain carries no reviewed semantics",
+            domain_disagree(replace(spec, domain="self_test_legacy"), domains),
+            "DOMAIN_NO_SEMANTICS",
+        ),
+        (
+            "columns differ from the domain's contract",
+            domain_disagree(
+                replace(spec, columns=(*spec.columns, ColumnSpec("invented", "str"))), domains
+            ),
+            "CONTRACT_COLUMNS_DISAGREE",
         ),
     ]
     for label, produced, expected in cases:

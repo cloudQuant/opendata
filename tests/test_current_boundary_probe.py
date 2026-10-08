@@ -156,6 +156,12 @@ def _clean_ac17_05_facts(snapshot: int) -> dict[str, str]:
         "flat_raises": "0",
         "flat_raise_detail": "",
         "vanish_older_detail": "",
+        # ``ceiling_history()`` emits these two with the vanish faces: a root that leaves the
+        # census while its file count reappears under another root is forgiven by the scope face
+        # but still printed for the reader (docs/evidence/C67/README.md §2), so the harness has to
+        # measure it too. ``raise_detail`` / ``vanish_older`` are read only by AC-17|03's judge.
+        "reparented": "0",
+        "reparented_detail": "",
         "trend": "flat",
     }
     for metric in PORTED_METRICS:
@@ -180,6 +186,55 @@ def test_ac17_05_upper_bound_counterfacts_follow_each_snapshot(snapshot: int) ->
         assert mutated[target] == str(snapshot + 1)
         assert mutated[referenced] == str(snapshot)
         assert judge_ac17_05(mutated).state == GAP
+
+
+def test_ac17_05_clean_fixture_declares_every_fact_the_judge_reads() -> None:
+    """A fact ``judge_ac17_05`` interpolates has to be measured here, never defaulted there.
+
+    This harness hand-writes the clean reading, so it silently out-grows ``ceiling_history()``
+    whenever a reading gains a face: the judge then raises ``KeyError`` from inside its own prose,
+    which takes both counterfact arms down for a reason that has nothing to do with ceiling
+    arithmetic. Defaulting the key to ``0`` in the judge would be worse -- it would print a
+    measured-looking zero for a scope change nobody measured.
+    """
+    missing: list[str] = []
+
+    class _Recording(dict[str, str]):
+        def __missing__(self, key: str) -> str:
+            missing.append(key)
+            raise KeyError(key)
+
+    try:
+        verdict = judge_ac17_05(_Recording(_clean_ac17_05_facts(1)))
+    except KeyError as error:
+        pytest.fail(
+            f"judge_ac17_05 interpolates the fact {error.args[0]!r}, which this fixture does not "
+            "measure: add it to _clean_ac17_05_facts, do not default it inside the judge"
+        )
+    assert missing == []
+    assert verdict.state == PROVEN
+
+
+def test_ac17_05_prints_a_measured_reparenting_without_gating_it() -> None:
+    """A forgiven re-parenting is a reading, not a ceiling: AC-17|05 原文只要求债务不高于快照.
+
+    So a non-zero ``reparented`` has to reach the reader verbatim and still leave the item proven.
+    The pair also proves the prose interpolates the measurement instead of printing a constant.
+    """
+    clean = _clean_ac17_05_facts(7)
+    moved = {
+        **clean,
+        "reparented": "1",
+        "reparented_detail": "3cf0cf7->3f05f63 opendata_fuyao(9)",
+    }
+    assert judge_ac17_05(clean).state == PROVEN
+
+    verdict = judge_ac17_05(moved)
+    reading = "\n".join(verdict.readings)
+    assert verdict.state == PROVEN
+    assert "从名单退出但文件计数在他处回来的 1 个" in reading
+    assert "3cf0cf7->3f05f63 opendata_fuyao(9)" in reading
+    assert "从他处回来的 0 个" not in reading
 
 
 @pytest.mark.parametrize(

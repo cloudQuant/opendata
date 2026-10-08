@@ -1,0 +1,24 @@
+{
+  "declared_models": [
+    "cboe::AvailableIndices",
+    "cboe::IndexConstituents"
+  ],
+  "findings": [
+    {
+      "code": "UPSTREAM_PARAM_UNCOVERED",
+      "detail": "upstream field not declared (client-side or unused): ['use_cache']",
+      "model": "AvailableIndices"
+    },
+    {
+      "code": "COLUMN_FROM_ENVELOPE",
+      "detail": "no upstream record field, carried by row_envelope: ['currency']",
+      "model": "IndexConstituents"
+    }
+  ],
+  "self_test": {
+    "arms": 9,
+    "fired": 9
+  },
+  "sheet_sha256": "5e648883ae7643ad7ed719c1fec5a20fa63c9a5fc282a253ec10a78a76876c31",
+  "upstream_commit": "3e071fcc2cd9f891cac6040ae60296dba76dab46"
+}

@@ -1,0 +1,93 @@
+# Full offline suite, before and after C72's six census re-pins
+# date: 2026-10-09 (+0800), branch dev, HEAD 2c21b68 with this wave's uncommitted diff
+# command (both runs, identical):
+#   python3 -m pytest -q --no-cov -p no:cacheprovider
+#   the first run was also reproduced as: python3 -m pytest -q --no-cov -p no:cacheprovider 2>&1 | tail -30
+
+## reading 1 -- before the re-pin (the wave's first full run)
+
+=========== 6 failed, 20826 passed, 121 skipped in 388.17s (0:06:28) ===========
+
+FAILED tests/test_alert_matrix.py::TestCollection::test_every_leg_is_measured_or_counted_never_dropped
+FAILED tests/test_alert_matrix.py::TestCollection::test_a_leg_with_no_field_mapping_is_the_measured_majority
+FAILED tests/test_alert_matrix_model_domains.py::test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tables
+FAILED tests/test_authority_reconciliation.py::TestLiveTableMatchesLiveRegistry::test_domains_without_a_row_are_exactly_the_single_source_ones
+FAILED tests/test_ecb_reference_registration.py::test_real_ecb_bindings_register_three_canonical_models_without_auto_promotion
+FAILED tests/test_pipeline_jobs.py::TestPartitionMaintenanceJob::test_the_registered_census_reaches_the_ods_layer
+
+Assertion lines as pytest printed them (including pytest's own truncations). The `#` note names the
+location pytest printed immediately above the line; it is my annotation, not part of the quote.
+
+    E   AssertionError: assert 46 == 44          # tests/test_ecb_reference_registration.py:203, len(registry.capabilities())
+    E   AssertionError: assert 33 == 31          # tests/test_pipeline_jobs.py:1774, len(known)
+    E   AssertionError: assert 33 == 31          # tests/test_alert_matrix_model_domains.py:110, len(legs)
+    E   assert 46 == 44                          # tests/test_alert_matrix.py:222, sum(len(v) for v in legs.values())
+    E   AssertionError: assert {'balance_of_..._quotes', ...} == frozenset({'b...orical', ...})
+    E                                            # tests/test_authority_reconciliation.py:170, unlisted == SINGLE_SOURCE_EXEMPTIONS | NATIVE_MODEL_DOMAINS
+    E     Extra items in the left set:
+    E     'cboe_index_constituent_quotes'
+    E     'cboe_available_indices'
+    E   AssertionError: assert ('balance_of_...e_rates', ...) == ('balance_of_...y_quote', ...)
+    E                                            # tests/test_alert_matrix.py:163, scope.deferred_domains
+    E     At index 3 diff: 'cboe_available_indices' != 'currency_reference_rates'
+    E     Left contains 2 more items, first extra item: 'sonia'
+
+## reading 2 -- after the re-pin
+
+================ 20832 passed, 121 skipped in 390.51s (0:06:30) ================
+SUITE_EXIT=0
+
+## the identity that makes reading 2 a clearance rather than a disappearance
+
+20826 passed + 6 failed = 20832 passed; skipped stayed 121; no file left the collection list. A
+re-pin that deleted an assertion would lower the passed count, not raise it by exactly the number of
+items that had been red. README.md section 6 carries the per-face before/after values and the
+invariants that did not move: 20 measurable domains, 33 measured legs, 33 ods tables, 20 dwd tables,
+30 statements, 23 auto-routable capabilities.
+
+## where the new face values came from (measured, not typed)
+
+    PYTHONPATH=. python3 - <<'PY'
+    from opendata.data.providers import register_providers
+    register_providers()
+    from opendata.pipeline import alert_matrix
+    from opendata.data.registry import get_registry
+    from opendata.data.domains import load_domains
+
+    legs = alert_matrix.registered_legs()
+    deferred = alert_matrix._deferred_model_domains(legs)
+    deferred_set = set(deferred)
+    measured = {d: s for d, s in legs.items() if d not in deferred_set}
+    print("len(legs)", len(legs))
+    print("sum legs", sum(len(v) for v in legs.values()))
+    print("scope.domains (measured)", len(measured))
+    print("sum measured legs", sum(len(v) for v in measured.values()))
+    print("deferred_domains tuple", deferred)
+    print("deferred_legs", sum(len(legs[d]) for d in deferred))
+    print("domains.yaml len", len(load_domains()))
+    reg = get_registry()
+    caps = reg.capabilities()
+    print("registry.capabilities", len(caps))
+    print("auto-participating", sum(c.participates_in_auto() for c in caps))
+    print("descriptors", len(list(reg.list_model_descriptors())))
+    for d in ("cboe_available_indices", "cboe_index_constituent_quotes"):
+        print("cboe leg", d, legs.get(d), "measurable-domain?", d in measured)
+    PY
+
+    len(legs) 33
+    sum legs 46
+    scope.domains (measured) 20
+    sum measured legs 33
+    deferred_domains tuple ('balance_of_payments', 'bls_search', 'bls_series', 'cboe_available_indices',
+      'cboe_index_constituent_quotes', 'currency_reference_rates', 'equity_historical', 'equity_quote',
+      'fred_search', 'fred_series', 'sofr', 'sonia', 'yield_curve')
+    deferred_legs 13
+    domains.yaml len 33
+    registry.capabilities 46
+    auto-participating 23
+    descriptors 13
+    cboe leg cboe_available_indices ('cboe',) measurable-domain? False
+    cboe leg cboe_index_constituent_quotes ('cboe',) measurable-domain? False
+
+The last two lines are the reason no legacy face moved: both cboe legs are single-source and are
+*not* in the measurable set, so they join the deferred side only.

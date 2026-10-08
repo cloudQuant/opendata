@@ -18,6 +18,7 @@ import json
 import math
 import os
 import re
+import sys
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date
@@ -26,6 +27,7 @@ from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Literal, cast
 from pydantic import BeforeValidator, ConfigDict, ValidationError, create_model
 
 from opendata.data.capability import Capability
+from opendata.data.domains import contract_model, load_domains
 from opendata.data.models.base import ContractModel
 from opendata.data.protocol import FetchContext, Fetcher
 
@@ -45,13 +47,25 @@ _PATH_SEGMENT = re.compile(r"^[A-Za-z0-9._~\-]+$")
 class ProviderEngineError(RuntimeError):
     """Stable, attributable failure of an engine-driven provider model."""
 
-    def __init__(self, code: str, *, status: int | None = None, url: str | None = None) -> None:
+    def __init__(
+        self,
+        code: str,
+        *,
+        status: int | None = None,
+        url: str | None = None,
+        rejected: Sequence[str] = (),
+        missing: Sequence[str] = (),
+    ) -> None:
         """Store the code and the request that produced it."""
         self.code = code
         self.status = status
         self.url = url
+        self.rejected = tuple(rejected)
+        self.missing = tuple(missing)
         detail = "" if status is None else f" status={status}"
         detail += "" if url is None else f" url={url}"
+        detail += "" if not self.rejected else f" rejected={list(self.rejected)}"
+        detail += "" if not self.missing else f" missing={list(self.missing)}"
         super().__init__(code + detail)
 
 
@@ -120,7 +134,30 @@ def build_query_model(spec: ModelSpec) -> type[Any]:
 
 
 def build_row_model(spec: ModelSpec) -> type[ContractModel]:
-    """Build the contract row class exposing exactly the declared columns."""
+    """Return the row class this declaration publishes.
+
+    A domain with declared semantics owns a reviewed contract model, and the services that serve a
+    provider model accept a row only when ``type(row)`` is exactly that class
+    (``provider_model_query._serialize_contract_row``, ``provider_model_ingest`` contract check).
+    Publishing the contract itself is therefore what makes a declaration readable end to end; a
+    synthesized look-alike class produces rows those services refuse, and the refusal surfaces at
+    query time -- far away from the declaration that caused it.
+
+    Raises:
+        ValueError: If the domain's contract fields are not exactly the declared column names -- a
+            declaration may neither add a column the reviewed contract lacks nor drop one it has.
+    """
+    domain_spec = load_domains().get(spec.domain)
+    if domain_spec is not None and domain_spec.semantics_declared:
+        contract_type = contract_model(spec.domain)
+        declared = {column.name for column in spec.columns}
+        contract_fields = set(contract_type.model_fields)
+        if declared != contract_fields:
+            raise ValueError(
+                f"{spec.model}: declared columns {sorted(declared ^ contract_fields)} "
+                f"do not match contract {contract_type.__name__}"
+            )
+        return contract_type
     fields: dict[str, tuple[Any, Any]] = {}
     for column in spec.columns:
         annotation = _column_type(column)
@@ -226,6 +263,17 @@ def _reject_non_finite(value: object, spec: ModelSpec) -> None:
         raise ProviderEngineError(f"{spec.error_prefix}_SHAPE_INVALID")
 
 
+def _reject_bool_for_numeric(column: ColumnSpec, value: object, spec: ModelSpec) -> None:
+    """Refuse a published boolean where the declaration says a number.
+
+    A row built through a domain's contract class carries only that class's annotation, and pydantic
+    widens ``True`` to ``1`` for an ``int`` field. The declared column kind is what records that
+    upstream published a flag, so the refusal is judged on the declaration, not on the row class.
+    """
+    if column.kind in ("int", "float") and isinstance(value, bool):
+        raise ProviderEngineError(f"{spec.error_prefix}_SHAPE_INVALID", rejected=(column.name,))
+
+
 def normalize_record(
     record: object,
     document: object,
@@ -244,6 +292,7 @@ def normalize_record(
             continue
         value = record[key]
         _reject_non_finite(value, spec)
+        _reject_bool_for_numeric(column, value, spec)
         values[column.name] = value
     # A record value always wins: an envelope fact is a fallback for what the record does not
     # publish, not a replacement for what it does. ``row_envelope`` keys are declared columns, so
@@ -256,15 +305,19 @@ def normalize_record(
             and envelope_key in document
         ):
             _reject_non_finite(document[envelope_key], spec)
+            _reject_bool_for_numeric(column, document[envelope_key], spec)
             values[column.name] = document[envelope_key]
             continue
         if column.required:
-            raise ProviderEngineError(f"{spec.error_prefix}_SHAPE_INVALID")
+            raise ProviderEngineError(f"{spec.error_prefix}_SHAPE_INVALID", missing=(column.name,))
         values[column.name] = None
     try:
         return row_model(**values)
-    except ValidationError:
-        raise ProviderEngineError(f"{spec.error_prefix}_SHAPE_INVALID") from None
+    except ValidationError as error:
+        raise ProviderEngineError(
+            f"{spec.error_prefix}_SHAPE_INVALID",
+            rejected=sorted({str(item["loc"][0]) for item in error.errors() if item.get("loc")}),
+        ) from None
 
 
 def _credential_value(spec: ModelSpec) -> str:
@@ -521,8 +574,18 @@ def make_http_json_fetcher(source: str, spec: ModelSpec) -> type[Fetcher[Any, An
             """Reject anything the declaration does not accept, before any I/O."""
             try:
                 return declared_query_model.model_validate(kwargs)
-            except ValidationError:
-                raise ProviderEngineError(f"{spec.error_prefix}_QUERY_INVALID") from None
+            except ValidationError as exc:
+                # The declaration and the caller are written by different people, and a code alone
+                # cannot tell a typo in a parameter name from a missing one -- so the refusal says
+                # which keys upstream does not accept. Names only; values are never echoed.
+                raise ProviderEngineError(
+                    f"{spec.error_prefix}_QUERY_INVALID",
+                    rejected=sorted(
+                        str(error["loc"][0])
+                        for error in exc.errors()
+                        if error["loc"] and error["type"] == "extra_forbidden"
+                    ),
+                ) from None
 
         def extract_data(self, params: object, ctx: FetchContext) -> tuple[object, ...]:
             """Fetch every declared page and keep each raw response document."""
@@ -566,4 +629,8 @@ def make_http_json_fetcher(source: str, spec: ModelSpec) -> type[Fetcher[Any, An
     published_name = f"{source.replace('_', ' ').title().replace(' ', '')}{spec.model}Fetcher"
     EngineFetcher.__name__ = published_name
     EngineFetcher.__qualname__ = published_name
+    # The class reports the module that declares it, not the factory that built it. Design §7.1
+    # derives a provider's routing label from its package directory, and the OpenBB map plane
+    # admits a registry model only when it resolves to its exact local binding ``(module, name)``.
+    EngineFetcher.__module__ = cast("str", sys._getframe(1).f_globals["__name__"])
     return EngineFetcher

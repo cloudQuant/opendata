@@ -91,8 +91,8 @@ class TestProviderRegistration:
         registry = ProviderRegistry()
         capabilities = register_provider("cboe", registry)
         assert {c.domain for c in capabilities} == {
-            "cboe_index_catalog",
-            "cboe_index_constituents",
+            "cboe_available_indices",
+            "cboe_index_constituent_quotes",
         }
         assert all(c.source == "cboe" for c in capabilities)
         assert not any(c.verified for c in capabilities)

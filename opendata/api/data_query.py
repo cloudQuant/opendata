@@ -27,10 +27,12 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Literal, get_type_hints
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.routing import APIRoute
 from loguru import logger
 from sqlalchemy import create_engine, text
 from sqlalchemy.pool import NullPool
+from starlette.responses import Response
 
 from opendata.api.dependencies import (  # FastAPI resolves them at runtime
     CurrentPrincipal,
@@ -70,15 +72,65 @@ from opendata.pipeline.trading_calendar import resolve_calendar
 from opendata.utils.serialization import serialize_for_json
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator, Mapping, Sequence
+    from collections.abc import AsyncIterator, Callable, Coroutine, Mapping, Sequence
 
     from sqlalchemy import Engine
+    from starlette.requests import Request
 
     from opendata.data.capability import Capability
     from opendata.data.domains import DomainSpec
     from opendata.data.protocol import Fetcher
 
-router = APIRouter()
+#: Status codes whose response may not carry a body (Starlette's own rule).
+_BODYLESS_STATUSES = frozenset({100, 101, 102, 103, 204, 205, 304})
+
+
+def _error_response(exc: HTTPException) -> Response:
+    """Render one endpoint error as FastAPI's ``HTTPException`` handler would.
+
+    Args:
+        exc: The error the endpoint raised, with its status and ``detail``.
+
+    Returns:
+        The JSON body ``{"detail": exc.detail}`` (or a bodyless response).
+    """
+    if exc.status_code in _BODYLESS_STATUSES:
+        return Response(status_code=exc.status_code, headers=exc.headers)
+    return JSONResponse({"detail": exc.detail}, status_code=exc.status_code, headers=exc.headers)
+
+
+class _DetailedErrorRoute(APIRoute):
+    """Route class that answers its own error body instead of re-raising it.
+
+    An application may register a catch-all handler for a whole HTTP status:
+    ``opendata/main.py`` registers ``@app.exception_handler(404)`` to hand
+    unknown frontend paths to the SPA build, and for an ``/api/`` path that
+    handler answers ``{"detail": "Not Found"}`` for *every* 404. Starlette
+    looks status codes up before exception classes
+    (``starlette/_exception_handler.py``: ``status_handlers.get(exc.status_code)``),
+    so a 404 raised by an endpoint never reaches FastAPI's ``HTTPException``
+    handler and its reason is lost. ``table 'dwd_stock_daily' is not
+    available`` - the canonical answer of a missing warehouse table, which
+    this API gives *before* any read - then reads as the same body a path that
+    never matched a route produces, and a caller cannot tell the two apart.
+    Building the response here keeps the reason in the payload whatever the
+    deployment registers for a status code.
+    """
+
+    def get_route_handler(self) -> Callable[[Request], Coroutine[Any, Any, Response]]:
+        """Wrap the endpoint handler so its errors leave as answers, not raises."""
+        answer_request = super().get_route_handler()
+
+        async def handler(request: Request) -> Response:
+            try:
+                return await answer_request(request)
+            except HTTPException as exc:
+                return _error_response(exc)
+
+        return handler
+
+
+router = APIRouter(route_class=_DetailedErrorRoute)
 
 #: Adjust factor table of the stock-adjust domain (A4.1 scope: pending).
 FACTOR_TABLE = "dwd_stock_adjust"

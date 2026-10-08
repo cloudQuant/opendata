@@ -1,0 +1,79 @@
+C33 OpenBB provider inventory reconciliation — provider-inventory.yaml vs
+opendata/data/providers + the live registry + docs/data-rights-registry.md
+generated: 2026-10-09 05:15:28 +0800
+branch=dev
+HEAD=2c21b68
+python=3.11.8
+command: python scripts/quality/openbb_inventory_plane.py
+           --inventory docs/evidence/C72/provider-inventory.head.yaml --rights docs/data-rights-registry.md
+           (static read + in-process registry; no network, no MySQL, no credential)
+exit code: 0 = agrees with the tree; 1 = any judged finding; 2 = registry unavailable
+rules judged (15): PARSE, FIELD SHAPE, MISSING ROW, DUPLICATE ROW, STALE STATUS, COUNT CLAIM, RIGHTS LINK, MODEL ELISION, MODEL DUPLICATE, MODEL COUNT, MODEL SET, CREDENTIAL MISMATCH, CAPABILITY COUNT, MODEL TASK STATUS, REQUESTER STATUS
+           model identity is judged against the fixed upstream AST and task ledger
+
+--- git status --porcelain captured before the run ---
+M docs/data-rights-registry.md
+ M docs/proposals/openbb-migration/provider-inventory.yaml
+ M "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/\346\250\241\345\236\213\345\210\207\347\211\207\345\267\245\344\275\234\345\215\225.md"
+ M "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/\346\250\241\345\236\213\347\272\247\344\273\273\345\212\241\346\270\205\345\215\225.csv"
+ M opendata/api/data_query.py
+ M opendata/data/domains.yaml
+ M opendata/data/models/__init__.py
+ M opendata/data/providers/_engine/http_json.py
+ M opendata/data/providers/cboe/specs.py
+ M opendata/data/providers/sec/models/__init__.py
+ M opendata/data/providers/sec/provider.py
+ M opendata/data/registry.py
+ M scripts/quality/declaration_provenance.py
+ M tests/test_acceptance_item_probe.py
+ M tests/test_cboe_engine_provider.py
+ M tests/test_current_boundary_probe.py
+ M tests/test_openbb_inventory_guard.py
+ M tests/test_provider_catalog.py
+ M tests/test_provider_conformance.py
+ M tests/test_provider_domains.py
+ M tests/test_provider_model_contracts.py
+?? docs/evidence/C70/
+?? docs/evidence/C72/
+?? opendata/data/models/cboe_index.py
+?? opendata/data/providers/sec/specs.py
+?? tests/test_sec_engine_provider.py
+--- end git status ---
+
+record rows                  : 34 = providers 32 + local 2
+record statuses              : ['已实现未对照', '已对照转正', '待实现']
+sources serving capabilities : 10 -> akshare, bls, cboe, ecb, fmp, fred, imf, oecd, ths, yfinance
+capabilities registered      : 46 (23 auto-routable)
+rights registry §1 rows      : 14
+model names listed           : 350
+rows with elided model lists : 0  (judged)
+
+== counters ==
+  PARSE          0
+  FIELD SHAPE    0
+  MISSING ROW    0
+  DUPLICATE ROW  0
+  STALE STATUS   1
+  COUNT CLAIM    0
+  RIGHTS LINK    1
+  MODEL ELISION  0
+  MODEL DUPLICATE 0
+  MODEL COUNT    0
+  MODEL SET      0
+  CREDENTIAL MISMATCH 0
+  CAPABILITY COUNT 3
+  MODEL TASK STATUS 2
+  REQUESTER STATUS 0
+
+== findings (judged) ==
+  STALE STATUS: `cboe` says 待实现 but the registry says 已实现未对照: 2 capabilities (0 auto-routable)
+  RIGHTS LINK: `cboe` serves 2 capabilities with no `rights_rows:`, so the AC-1 gate cannot be traced from the baseline
+  CAPABILITY COUNT: registered_source_count is 9, but ProviderRegistry reports 10
+  CAPABILITY COUNT: registered_capability_count is 44, but ProviderRegistry reports 46
+  CAPABILITY COUNT: `cboe` registered_capability_count is 0, but ProviderRegistry reports 2
+  MODEL TASK STATUS: model_implementation_task_status_counts is {'IN_PROGRESS': 13, 'NOT_RUN': 337}, CSV task counts are {'NOT_RUN': 335, 'IN_PROGRESS': 15}
+  MODEL TASK STATUS: `cboe` implementation_task_status is NOT_RUN, CSV tasks summarize to MIXED
+
+== model elision details (judged) ==
+  (none)
+EXIT=1

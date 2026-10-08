@@ -16,10 +16,12 @@ import pytest
 
 from opendata.data.provider import LazyFetcherBinding, Provider
 from opendata.data.providers.catalog import (
+    engine_declared_models,
     get_provider,
     health_check,
     list_providers,
     register_providers,
+    registration_order,
 )
 from opendata.data.registry import ProviderRegistry
 
@@ -168,7 +170,7 @@ assert not any(
     assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
 
 
-def test_registration_and_legacy_fetchers_project_the_same_44_capabilities() -> None:
+def test_registration_and_legacy_fetchers_project_the_same_capabilities() -> None:
     registry = ProviderRegistry()
     registered = register_providers(registry)
     source_fetchers = []
@@ -199,12 +201,21 @@ def test_registration_and_legacy_fetchers_project_the_same_44_capabilities() -> 
 
     expected = {_capability_identity(fetcher.capability) for fetcher in source_fetchers}
     actual = {_capability_identity(capability) for capability in registry.capabilities()}
+    # The declarations are a second, derived population: their count is what the catalog publishes,
+    # and an identity they share with a hand-written leg would mean a declaration replaced it.
+    declared_models = engine_declared_models()
+    declared = {
+        _capability_identity(registry.resolve_model(source, spec.model).capability)
+        for source, spec in declared_models
+    }
     expected_registration_order = [
-        source for source, count in expected_counts.items() for _ in range(count)
+        provider.source for provider in registration_order() for _ in provider.fetcher_bindings
     ]
-    assert len(registered) == 44
-    assert len(actual) == 44
-    assert actual == expected
+    assert len(expected) == len(source_fetchers)
+    assert len(declared) == len(declared_models)
+    assert len(registered) == len(source_fetchers) + len(declared_models)
+    assert actual == expected | declared
+    assert expected & declared == set()
     assert [capability.source for capability in registered] == expected_registration_order
     assert register_providers(registry) == []
 

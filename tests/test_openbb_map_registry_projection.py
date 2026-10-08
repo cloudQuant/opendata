@@ -30,6 +30,8 @@ CANONICAL_SCENARIOS = {
     ("ecb", "CurrencyReferenceRates"): "保留ECB源维度与属性的欧元日参考汇率研究",
     ("ecb", "YieldCurve"): "保留ECB七维与源属性的日度收益率曲线研究",
     ("ecb", "BalanceOfPayments"): "保留ECB十七维与原月季度期间的国际收支研究",
+    ("cboe", "AvailableIndices"): "指数目录发现：列出 cboe 发布的全部指数及其计算时段与延迟",
+    ("cboe", "IndexConstituents"): "成分股快照：取出一只欧洲指数在源端发布的全部成分及其盘中报价",
 }
 
 

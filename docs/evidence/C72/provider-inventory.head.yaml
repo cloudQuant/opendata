@@ -28,12 +28,12 @@ version: 1
 upstream_commit: 3e071fcc2cd9f891cac6040ae60296dba76dab46
 upstream_model_count: 350
 unique_upstream_model_count: 202
-registered_source_count: 10
-registered_capability_count: 46
+registered_source_count: 9
+registered_capability_count: 44
 auto_routable_capability_count: 23
 model_implementation_task_status: MIXED
 model_live_verification_status: NOT_RUN
-model_implementation_task_status_counts: {IN_PROGRESS: 15, NOT_RUN: 335}
+model_implementation_task_status_counts: {IN_PROGRESS: 13, NOT_RUN: 337}
 model_live_verification_task_status_counts: {NOT_RUN: 350}
 model_scenario_status_counts: {NOT_ASSESSED: 350}
 model_requester_confirmation_status_counts: {CONFIRMED: 85, NOT_ASSESSED: 265}
@@ -378,14 +378,13 @@ providers:
     scenario: 待消费场景确认（AC-10：标不出场景即移出本迭代）
     estimate_person_days: 8.0
     model_count: 11
-    implementation_task_status: MIXED
+    implementation_task_status: NOT_RUN
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 2
+    registered_capability_count: 0
     auto_routable_capability_count: 0
-    status: 已实现未对照
-    rights_rows: [Cboe（cdn.cboe.com 公开接口）]
+    status: 待实现
   - provider: cftc
     batch: P2
     fetchers: 2

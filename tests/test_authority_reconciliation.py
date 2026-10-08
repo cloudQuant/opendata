@@ -58,10 +58,15 @@ SINGLE_SOURCE_EXEMPTIONS: frozenset[str] = frozenset(
 
 # Query-native domains are absent from the authority table while their model
 # bindings remain unverified and outside the legacy warehouse table plan.
+# The two cboe snapshots joined when their domains entered ``domains.yaml``: each is
+# ``verified=False``, single-source and ``storage_mode: transient``, so there is still
+# nothing to rank and no legacy table to watch.
 NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
     {
         "bls_search",
         "bls_series",
+        "cboe_available_indices",
+        "cboe_index_constituent_quotes",
         "currency_reference_rates",
         "equity_historical",
         "equity_quote",

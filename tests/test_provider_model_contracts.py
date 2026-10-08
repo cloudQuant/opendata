@@ -28,6 +28,7 @@ from datetime import date
 
 import pytest
 
+from opendata.data.domains import contract_model, load_domains
 from opendata.data.providers._engine import http_json
 from opendata.data.providers._engine.http_json import (
     HttpResponse,
@@ -329,6 +330,24 @@ class TestDeclarationIsTheContract:
         declared = [column.name for column in spec.columns]
         assert list(fetcher.row_model.model_fields) == declared  # type: ignore[attr-defined]
 
+    def test_rows_use_the_class_the_serving_services_accept(
+        self, source: str, spec: ModelSpec
+    ) -> None:
+        """A semantics-declared domain publishes its contract class, and only that class is
+        served.
+        ``provider_model_query._serialize_contract_row`` and the ingest path accept a row only when
+        ``type(row)`` is exactly the domain's contract model, so a synthesized look-alike is not
+        servable however well its columns match. A domain without declared semantics has no reviewed
+        contract to publish, so the synthesized class is the honest answer there -- and this face
+        says which of the two a declaration got.
+        """
+        fetcher, _ = build(source, spec)
+        domain = load_domains().get(spec.domain)
+        if domain is None or not domain.semantics_declared:
+            assert fetcher.row_model.__name__ == f"{spec.model}Row"  # type: ignore[attr-defined]
+            return
+        assert fetcher.row_model is contract_model(spec.domain)
+
     def test_undeclared_parameter_is_refused_before_any_send(
         self, source: str, spec: ModelSpec
     ) -> None:
@@ -460,6 +479,56 @@ class TestDeclarationIsTheContract:
             )
             code = code_raised(spec, source, *pages, **valid_query_kwargs(spec))
             assert code == f"{spec.error_prefix}_SHAPE_INVALID", column.name
+
+    def test_a_refused_shape_names_the_column_it_refused(
+        self, source: str, spec: ModelSpec
+    ) -> None:
+        """``*_SHAPE_INVALID`` has to say which column it is talking about.
+
+        A bare code sends a caller back to the raw response with nothing to grep for. Binding rows
+        to the domain's contract class also moved construction off the synthesized annotations, so
+        the declaration-side guard is the only place that still knows the column's name.
+        """
+        numeric = [column for column in spec.columns if column.kind in ("int", "float")]
+        if not numeric:
+            pytest.skip(f"{spec.model} declares no numeric column")
+        column = numeric[0]
+        pages = amend_first_record(
+            spec, pages_for(spec, 1), column.source_key or column.name, value=True
+        )
+        fetcher, _ = build(source, spec, *pages)
+        with pytest.raises(ProviderEngineError) as raised:
+            fetcher.fetch(  # type: ignore[attr-defined]
+                ctx=fixture_context(source, spec, sends=3), **valid_query_kwargs(spec)
+            )
+        assert column.name in list(raised.value.rejected)
+
+    def test_an_unpublished_required_column_is_named_when_the_row_is_refused(
+        self, source: str, spec: ModelSpec
+    ) -> None:
+        """A row the source did not publish is refused with that column in ``missing``.
+
+        ``row_envelope`` columns are excluded because an envelope value is the declared fallback
+        for a record that omits them, so dropping one is a valid response rather than a shape
+        failure.
+        """
+        column_by_record = [
+            column
+            for column in spec.columns
+            if column.required and column.name not in spec.row_envelope
+        ]
+        if not column_by_record:
+            pytest.skip(f"{spec.model} has no required column the record alone must publish")
+        column = column_by_record[0]
+        pages = amend_first_record(
+            spec, pages_for(spec, 1), column.source_key or column.name, drop=True
+        )
+        fetcher, _ = build(source, spec, *pages)
+        with pytest.raises(ProviderEngineError) as raised:
+            fetcher.fetch(  # type: ignore[attr-defined]
+                ctx=fixture_context(source, spec, sends=3), **valid_query_kwargs(spec)
+            )
+        assert column.name in list(raised.value.missing)
 
     def test_non_finite_float_is_refused(self, source: str, spec: ModelSpec) -> None:
         floats = [column for column in spec.columns if column.kind == "float"]

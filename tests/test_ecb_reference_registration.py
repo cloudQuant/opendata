@@ -200,8 +200,17 @@ def test_real_ecb_bindings_register_three_canonical_models_without_auto_promotio
     register_providers(registry)
     descriptors = registry.list_model_descriptors()
     assert len(list_providers()) == 34
-    assert len(registry.capabilities()) == 44
-    assert len(descriptors) == 11
+    # 44 capabilities and 11 descriptors held while cboe's two domains were absent from
+    # ``domains.yaml``; registering them made both legs and both model ids visible here.
+    assert len(registry.capabilities()) == 46
+    assert len(descriptors) == 13
+    assert {item.model for item in descriptors if item.source == "cboe"} == {
+        "AvailableIndices",
+        "IndexConstituents",
+    }
+    assert all(item.verified is False for item in descriptors if item.source == "cboe"), (
+        "cboe stays outside auto routing"
+    )
     assert {item.model for item in descriptors if item.source == "ecb"} == {
         _MODEL,
         "YieldCurve",

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 import yaml
 
 from opendata.data.domains import contract_model, load_domains, require_domain_semantics
-from opendata.data.providers.catalog import register_providers
+from opendata.data.providers.catalog import engine_declared_models, register_providers
 from opendata.data.registry import ProviderRegistry
 from opendata.services.api_key_service import key_allows_domain, normalize_scope_input
 
@@ -252,14 +252,26 @@ def _capability_identity(capability: Capability) -> tuple[str, str, str, str, st
     )
 
 
-def test_eleven_production_domains_preserve_v1_legacy_entries_and_explicit_semantics() -> None:
+def _declared_domain_ids() -> set[str]:
+    """Domain ids the declarative engine publishes.
+
+    A declaration names a domain that already exists or adds nothing the platform can route; listing
+    these here is what keeps a new engine model from silently reusing a legacy domain whose contract
+    model describes different columns.
+    """
+    return {spec.domain for _source, spec in engine_declared_models()}
+
+
+def test_production_domains_preserve_v1_legacy_entries_and_explicit_semantics() -> None:
     registry_path = Path(__file__).parents[1] / "opendata/data/domains.yaml"
     raw_registry = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
     specs = load_domains()
+    declared_domains = _declared_domain_ids()
 
     assert raw_registry["version"] == 1
-    assert set(specs) == LEGACY_DOMAIN_IDS | set(EXPECTED_DOMAINS)
-    assert len(specs) == 31
+    assert set(specs) == LEGACY_DOMAIN_IDS | set(EXPECTED_DOMAINS) | declared_domains
+    assert len(specs) == len(LEGACY_DOMAIN_IDS | set(EXPECTED_DOMAINS) | declared_domains)
+    assert not LEGACY_DOMAIN_IDS & declared_domains, "a declaration may not reuse a legacy domain"
     assert all(not specs[domain].semantics_declared for domain in LEGACY_DOMAIN_IDS)
     assert {domain for domain, spec in specs.items() if spec.priority == "P0"} == (
         EXPECTED_P0_DOMAINS
@@ -290,7 +302,7 @@ def test_eleven_production_domains_preserve_v1_legacy_entries_and_explicit_seman
         assert spec.priority is None
 
 
-def test_eleven_domain_contracts_match_exact_registered_provider_models() -> None:
+def test_declared_domain_contracts_match_exact_registered_provider_models() -> None:
     registry = ProviderRegistry()
     register_providers(registry)
     descriptors = {
@@ -298,9 +310,13 @@ def test_eleven_domain_contracts_match_exact_registered_provider_models() -> Non
         for descriptor in registry.list_model_descriptors()
     }
     expected_identities = {(source, model_id) for source, model_id, *_ in EXPECTED_DOMAINS.values()}
+    declared_models = {(source, spec.model) for source, spec in engine_declared_models()}
 
-    assert len(descriptors) == 11
-    assert set(descriptors) == expected_identities
+    # The hand-listed eleven keep their exact identities; the declarative tail is enumerated by what
+    # the catalog publishes rather than folded into a literal, so a new declaration is judged on its
+    # own domain binding instead of making this count stale.
+    assert set(descriptors) == expected_identities | declared_models
+    assert expected_identities & declared_models == set()
     for domain, expected in EXPECTED_DOMAINS.items():
         source, model_id, fetcher_class, contract, *_ = expected
         fetcher = registry.resolve_model(source, model_id)
@@ -312,6 +328,22 @@ def test_eleven_domain_contracts_match_exact_registered_provider_models() -> Non
         assert descriptor.capability_identity == _capability_identity(fetcher.capability)
         assert descriptor.verified is False
         assert contract_model(domain).__name__ == contract
+
+    for source, spec in engine_declared_models():
+        descriptor = descriptors[(source, spec.model)]
+        domain = load_domains().get(spec.domain)
+        fetcher = registry.resolve_model(source, spec.model)
+        assert domain is not None, f"{source}::{spec.model} names unregistered domain {spec.domain}"
+        assert descriptor.domain == spec.domain
+        assert descriptor.capability_identity == _capability_identity(fetcher.capability)
+        assert descriptor.verified is False
+        # A declaration is only servable while its rows are the domain's contract class, and the
+        # engine picks that class only for a domain whose semantics are declared.
+        assert domain.semantics_declared, f"{spec.domain} declares no semantics"
+        assert "query" in domain.permissions, f"{spec.domain} cannot be queried"
+        assert set(contract_model(spec.domain).model_fields) == {
+            column.name for column in spec.columns
+        }
 
 
 def test_domain_query_permission_does_not_grant_default_api_key_scope() -> None:

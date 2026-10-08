@@ -164,6 +164,8 @@ class TestCollection:
             "balance_of_payments",
             "bls_search",
             "bls_series",
+            "cboe_available_indices",
+            "cboe_index_constituent_quotes",
             "currency_reference_rates",
             "equity_historical",
             "equity_quote",
@@ -173,13 +175,13 @@ class TestCollection:
             "sonia",
             "yield_curve",
         )
-        assert scope.deferred_legs == 11
-        assert scope.domains + len(scope.deferred_domains) == len(legs) == 31
+        assert scope.deferred_legs == 13
+        assert scope.domains + len(scope.deferred_domains) == len(legs) == 33
         assert scope.source_legs + scope.unmapped_legs == 33
         assert (
             scope.source_legs + scope.unmapped_legs + scope.deferred_legs
             == sum(len(v) for v in legs.values())
-            == 44
+            == 46
         )
         assert scope.unmapped_legs > 0  # measured on the registry, not invented
         assert len(reports) == scope.domains + scope.source_legs
@@ -219,11 +221,13 @@ class TestCollection:
 
         assert sum(len(v) for v in legacy_legs.values()) == 33
         assert len(unmapped) == 23
-        assert sum(len(v) for v in legs.values()) == 44
+        assert sum(len(v) for v in legs.values()) == 46
         assert deferred_domains == (
             "balance_of_payments",
             "bls_search",
             "bls_series",
+            "cboe_available_indices",
+            "cboe_index_constituent_quotes",
             "currency_reference_rates",
             "equity_historical",
             "equity_quote",
@@ -233,7 +237,7 @@ class TestCollection:
             "sonia",
             "yield_curve",
         )
-        assert sum(len(legs[domain]) for domain in deferred_domains) == 11
+        assert sum(len(legs[domain]) for domain in deferred_domains) == 13
         assert "stock_daily/akshare" not in unmapped
         assert "economy_cpi/fred" in unmapped
         for leg in (

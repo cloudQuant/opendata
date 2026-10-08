@@ -1747,6 +1747,8 @@ class TestPartitionMaintenanceJob:
         deferred_domains = {
             "bls_search",
             "bls_series",
+            "cboe_available_indices",
+            "cboe_index_constituent_quotes",
             "currency_reference_rates",
             "equity_historical",
             "equity_quote",
@@ -1771,17 +1773,17 @@ class TestPartitionMaintenanceJob:
         deferred_legs = sum(len(legs[domain]) for domain in deferred_domains)
 
         assert ods, "census 里没有 ods 表：注册表读空了，维护面覆盖不到落库层"
-        assert len(known) == 31
+        assert len(known) == 33
         assert deferred_domains <= known
         assert set(legs) == known
-        assert sum(len(sources) for sources in legs.values()) == 44
+        assert sum(len(sources) for sources in legs.values()) == 46
         assert len(measured_domains) == 20
-        assert len(deferred_domains) == 11
+        assert len(deferred_domains) == 13
         assert len(measured_domains) + len(deferred_domains) == len(known)
         assert len(expected_ods) == 33
         assert len(expected_dwd) == 20
-        assert deferred_legs == 11
-        assert len(expected_ods) + deferred_legs == 44
+        assert deferred_legs == 13
+        assert len(expected_ods) + deferred_legs == 46
         assert set(ods) == expected_ods
         for table in ods:
             tail = table[len("ods_") :].rsplit("_", 1)
