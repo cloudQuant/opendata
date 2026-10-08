@@ -1,0 +1,175 @@
+C72 — zero-dep scan surface re-freeze and the catalog.py reference-pin re-audit
+================================================================================
+
+Date      : 2026-10-09 05:56 +0800 (local), 2026-10-08T22:0xZ UTC
+Branch    : dev
+HEAD      : 0164751 (the cboe registration commit this record follows)
+Trigger   : `make gate` member 3 of 17, `zero-dep-check`, failed fast on the frozen tree.
+            Nothing in this file was optional: a gate that stops at member 2 cannot produce the
+            AC2-25 release-candidate reading at all.
+
+--------------------------------------------------------------------------------
+1. The failure, verbatim
+--------------------------------------------------------------------------------
+
+    ===== gate: zero-dep-check =====
+    python scripts/codemod/verify_no_akshare.py --self-test
+    OK: scanner self-test passed (13 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+    python scripts/codemod/verify_no_akshare.py
+    FAIL: the scan surface moved:
+      - archived file census no longer describes the tree: opendata archived 303 but walks 310 file(s)
+      Re-freeze with --update only when the move is intended; a package that lost files is a package that
+      stopped being looked at, and a census that no longer matches the tree is a number nobody can read as evidence.
+    make[1]: *** [zero-dep-check] Error 1
+    make: *** [gate] Error 2
+    GATE_EXIT=2
+
+Members actually reached before fail-fast: `brand-check` (OK), `zero-dep-check` (FAIL). Banners seen in the log: 2.
+
+--------------------------------------------------------------------------------
+2. Is the move intended? (the question the tool asks, answered by enumeration)
+--------------------------------------------------------------------------------
+
+    git diff --diff-filter=A --name-only 3f05f63..HEAD -- opendata/ | grep -v _vendor   -> 7 files
+    git diff --diff-filter=D --name-only 3f05f63..HEAD -- opendata/ | grep -v _vendor   -> 0 files
+
+    opendata/data/models/cboe_index.py              (C72: cboe snapshot domain models)
+    opendata/data/providers/sec/__init__.py         (C71: sec provider package)
+    opendata/data/providers/sec/_source.py
+    opendata/data/providers/sec/models/__init__.py
+    opendata/data/providers/sec/provider.py
+    opendata/data/providers/sec/registration.py
+    opendata/data/providers/sec/specs.py
+
+303 + 7 - 0 = 310, and the walk reports 310. The census arithmetic closes exactly, which is what makes
+the move "intended": no file vanished (a lost file would mean a package that stopped being looked at),
+and the added files are the two provider packages this wave and its parent registered. `--update` may
+only tighten a baseline (script docstring line 17), and the findings side stayed at 0, so the freeze
+tightens nothing and relaxes nothing.
+
+--------------------------------------------------------------------------------
+3. Second, deeper failure the re-freeze path exposed
+--------------------------------------------------------------------------------
+
+    python scripts/codemod/verify_no_akshare.py --update
+    FAIL: refusing to freeze an unusable reference policy: stale sha256: opendata/data/providers/catalog.py
+    UPDATE_EXIT=1
+
+`--update` rewrites the *baseline* only; the reference policy (`docs/quality/akshare-reference-allowlist.json`)
+pins a per-file sha256 for every path allowed to contain an `akshare` reference, and `catalog.py` had been
+rewritten after C66 pinned it (C72 changed registration to be derived). The scanner treats ANY hash drift as
+a problem unconditionally (`verify_no_akshare.py:600-603`), which is correct: a hash pin is the only tamper
+evidence that the reviewed content is still the reviewed content.
+
+A hash refresh would be the wrong repair if the allowance's *substance* had changed — a file that grew a new
+reference needs a review, not a digest bump. So the drift was audited against the pinned content, by locating
+the revision whose bytes hash to the pin and comparing the akshare-bearing lines:
+
+    pinned sha256  c2467502db2c6dc5df9418d89f06b46dd77ac2f10785a9c932396f964a35ff85
+    matches        opendata/data/providers/catalog.py at 3f05f636 (C66) — 1 of 3 revisions touching it
+    live  sha256   10dcfe1420952a34a89ad2369852a9e268f8d5db5c40fe745f03708b67fbc0ef
+
+    occurrence lines @ 3f05f63            occurrence lines @ HEAD
+    :13 import PROVIDER as AKSHARE_PROVIDER   :13 identical text
+    :86 AKSHARE_PROVIDER,                     :88 identical text
+    :92 AKSHARE_PROVIDER,                     :94 identical text
+    count=3                                   count=3
+
+Same three lines, same kinds, only the line numbers moved (86→88, 92→94) because C72's derived registration
+inserted two lines above them. The registered `purpose` ("统一目录把搬运后的 akshare provider 作为来源标识注册
+进 provider×模型目录，import 的是 `opendata.data.providers.akshare.provider` 的模块路径。") still describes the
+file. The pin was therefore re-audited, not merely re-pointed, and the entry's `reviewer`/`reviewed_date`
+carry the audit instead of silently advancing.
+
+--------------------------------------------------------------------------------
+4. Whole-policy audit (all 87 entries, not just the one that failed)
+--------------------------------------------------------------------------------
+
+Probe: /tmp/ac2-pin-audit.py — for every entry: does the live file exist, does its sha256 equal the pin,
+and for each drift, does the pinned content resolve to a revision in this repo's history, and are the
+akshare-bearing occurrence lines identical between pinned and live content (as a sorted multiset of stripped
+lines)?
+
+    before the edit                      after the edit
+    entries=87                           entries=87
+    drifted=1                            drifted=0
+      DRIFT opendata/data/providers/catalog.py
+    missing_from_tree=0                  missing_from_tree=0
+    pin_matches_no_revision=0            pin_matches_no_revision=0
+    occurrences_changed=0                occurrences_changed=0
+    VERDICT: every drift is a content     VERDICT: no pin drifts
+    change around the same allowed
+    occurrences                          AUDIT_EXIT=0
+
+Self-correction, kept in the record: the first version of this probe printed `drifted=0` and
+`VERDICT: at least one drift needs a review, not a hash refresh` in the same pass. The guard was written as
+`if drifted and not (changed or unresolved or missing)` — a no-drift tree fell through to the failure branch.
+The counters were right and the verdict line was wrong, so the instrument was fixed (a third branch printing
+`no pin drifts`), not the reading. The output above is the fixed script.
+
+--------------------------------------------------------------------------------
+5. Re-freeze and both arms
+--------------------------------------------------------------------------------
+
+    python scripts/codemod/verify_no_akshare.py --update
+    Wrote docs/quality/zero-dep-baseline.json: 0 frozen reference(s) across 637 file(s).
+    UPDATE_EXIT=0
+
+    git diff -- docs/quality/zero-dep-baseline.json        (one line, +1/-1)
+    -    "opendata": 303,
+    +    "opendata": 310,
+        "opendata/data/providers/akshare/_vendor": 325,   (unchanged)
+        "opendata_client": 2                               (unchanged)
+
+    python scripts/codemod/verify_no_akshare.py
+    OK: 637 file(s) walked (opendata=310, opendata/data/providers/akshare/_vendor=325, opendata_client=2),
+        python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+    PLAIN_EXIT=0
+
+    python scripts/codemod/verify_no_akshare.py --self-test
+    OK: scanner self-test passed (13 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+    SELF_EXIT=0
+
+Both arms are required: the plain scan proves the current tree, the self-test proves the scanner still
+detects planted violations and still refuses a scan surface that moved — the guard that fired in §1 is the
+guard under test, so clearing the failure cannot be done by disabling it.
+
+Scope note for AC2-07 (which judges that the migration kept the selfdev/ported/zero-dep identities): the
+walked total is 637 = 310 opendata + 325 _vendor + 2 opendata_client, and `_vendor` is a separate scope
+entry, so the 310 is first-party only. The 325 is the ported file census AC2-04 names.
+
+--------------------------------------------------------------------------------
+6. Gate members run individually after the fix (real exit codes, no pipes)
+--------------------------------------------------------------------------------
+
+    brand-check              EXIT=0  OK: no brand residue and no rename leftovers.
+    zero-dep-check           EXIT=0  OK: 637 file(s) walked (…)
+    secret-check             EXIT=2  FAIL: the history scan reports credentials (exit 1) — see §7
+    ledger-check             EXIT=0  OK: items=130 proven=114 gap=16 unreviewed=0 ticked=114 across 22 group(s)
+    evidence-traceability    EXIT=0  OK: evidence archive matches the frozen baseline (0 legacy entr(ies)).
+    js-points-check          EXIT=0  OK: JS execution points unchanged (engine 76, eval 35, exec 0)
+    loguru-check             EXIT=0  OK: every logger call passes arguments its renderer can substitute.
+    quality-ratchet          EXIT=0  NOTE: run --update to freeze the new low.   (exit 0: a drop, not a rise)
+    public-api-quality       EXIT=0  OK: docstring and annotation coverage are both 100%.
+    acceptance-probe-check   EXIT=2  FAIL: acceptance-probe gate: — 10 cells read stale-proof, see §7
+
+Members NOT yet run this round: `a2-check` (~1300 s, contains the counterfact self-test), `test-cov`
+(full suite + 84% floor), and the five frontend members. The full `make gate` therefore has not yet been
+taken green, and no claim of a green gate is made anywhere in C72.
+
+--------------------------------------------------------------------------------
+7. The two failures that survive this fix (both pre-existing, neither caused by the cboe wave)
+--------------------------------------------------------------------------------
+
+- `secret-check`: `gitleaks detect --source . --config .gitleaks.toml --redact` scans the whole history
+  (293 commits, ~126.35 MB, 441 leaks found, scanner 8.30.1). Triage is in progress and its result is not
+  yet recorded here; a real credential among 441 findings is a stop condition, not an allowlist entry.
+- `acceptance-probe-check`: 10 cells in `stale-proof` — ledger records `proven` while the probe now measures
+  `gap` on non-moment faces — named cells AC-1|05, AC-3|01, AC-5|01, AC-5|02, AC-5|07, AC-6|02, AC-7|05,
+  AC-10|03, AC-10|04, AC-16|07. Symptom quoted from the AC-5|07 line: `source-tree-relocated`,
+  `scan-finding-path-invalid` ×5 — consistent with probe surfaces still naming the retired
+  `opendata_http` / `opendata_fuyao` roots. Diagnosis is recorded in the next C72 checkpoint, not here.
+
+Also deferred (5 cells, waiting for a clean worktree, not red): AC-17|03, AC-17|08, AC-1|09, AC-1|10, AC-5|04.
+This record was written while the two `docs/quality` files were still uncommitted, so those five faces were
+deliberately not judged.
