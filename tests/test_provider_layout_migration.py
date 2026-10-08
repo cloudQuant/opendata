@@ -221,7 +221,9 @@ def test_frozen_akshare_root_header_and_version_export_are_preserved(
     monkeypatch.setattr(migration, "_module_path_exists", lambda *_args: True)
     source_header = b"".join(source_bytes.splitlines(keepends=True)[:2])
 
-    generated, report = migration._lazy_vendor_init(old_init, MigrationConfig(repo_root=tmp_path))
+    generated, report = migration._lazy_vendor_init(
+        source_bytes, old_init.parent, MigrationConfig(repo_root=tmp_path)
+    )
 
     assert generated.startswith(source_header)
     assert b"c4f6a631c259783dbc2507b6b27d179b3e88079d" in source_header

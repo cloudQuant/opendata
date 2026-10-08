@@ -11,10 +11,17 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+from scripts.quality.source_layout import VENDOR_ROOT
+
 EVIDENCE_DIR = Path("docs/evidence/C65")
 SCAN_REL = EVIDENCE_DIR / "ported-bandit-scan.json"
 TRIAGE_REL = EVIDENCE_DIR / "ported-security-triage.json"
 PORT_ROOT = "opendata_http"
+#: Where ``PORT_ROOT``'s files live since C66. The evidence is read in the identity space it was
+#: written in, so this is only used to name the cause when the recorded root is gone -- a reader
+#: chasing "ported source tree is missing" would be looking for a tree that ships under another
+#: path, while the real finding is that this scan and triage predate the relocation.
+PORT_ROOT_NOW = VENDOR_ROOT
 EXPECTED_ROUND = "C65"
 EXPECTED_SCANNER_VERSION = "1.9.4"
 EXPECTED_SOURCE_HASH_ALGORITHM = "sorted relative POSIX path UTF-8 + NUL + file bytes + NUL"
@@ -169,7 +176,17 @@ def _validate_current_source(
 ) -> tuple[dict[str, str], str | None, int, int]:
     port_root = root / PORT_ROOT
     if not port_root.is_dir():
-        _add_issue(issues, "source-tree-missing", "ported source tree is missing")
+        relocated = (root / PORT_ROOT_NOW).is_dir()
+        _add_issue(
+            issues,
+            "source-tree-relocated" if relocated else "source-tree-missing",
+            (
+                f"this evidence scans {PORT_ROOT}, which C66 moved to {PORT_ROOT_NOW}: the scan "
+                "and triage have to be re-run before they can certify the shipped tree"
+                if relocated
+                else "ported source tree is missing"
+            ),
+        )
         return {}, None, 0, 0
     actual_paths = sorted(
         path.relative_to(root).as_posix()

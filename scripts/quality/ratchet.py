@@ -42,8 +42,8 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.quality.source_layout import (  # noqa: E402
     FIRST_PARTY,
-    PORTED,
     VENDOR_ROOT,
+    classify_path,
     iter_unique_python_files,
 )
 
@@ -122,7 +122,9 @@ def _tool_version(module: str) -> str:
 
 def _py_files(package: str) -> list[Path]:
     """Return unique Python files for one classified source root."""
-    layer = PORTED if package == VENDOR_ROOT else FIRST_PARTY
+    layer = classify_path(package)
+    if layer is None:
+        raise ToolError(f"{package}: declared scan root is not a classified source layer")
     try:
         return [
             source.path
@@ -144,19 +146,36 @@ def file_counts() -> dict[str, int]:
     return counts
 
 
+def _layers_for(paths: tuple[str, ...]) -> frozenset[str]:
+    """The layer each declared scan root belongs to, asked of the layout authority.
+
+    Deriving the layer from ``select`` instead tied two independent choices together: asking for
+    the ported tree under the *project* config (``select=None``) resolved to the first-party layer,
+    which matches no file under the vendor root and raised "no Python files in declared roots". A
+    root's own classification is the only authority that stays correct after a relocation.
+    """
+    layers: set[str] = set()
+    for path in paths:
+        layer = classify_path(path)
+        if layer is None:
+            raise ToolError(f"{path}: declared scan root is not a classified source layer")
+        layers.add(layer)
+    return frozenset(layers)
+
+
 def count_ruff(paths: tuple[str, ...], *, select: str | None = None) -> int:
     """Count ruff violations over ``paths``, honouring the project config."""
-    layer = PORTED if select == "E,F" else FIRST_PARTY
+    layer = _layers_for(paths)
     try:
         source_paths = iter_unique_python_files(
             REPO_ROOT,
             paths,
-            layers=frozenset({layer}),
+            layers=layer,
         )
     except RuntimeError as exc:
         raise ToolError(str(exc)) from exc
     if not source_paths:
-        raise ToolError(f"no Python files in declared {layer} scan roots: {paths}")
+        raise ToolError(f"no Python files in declared {sorted(layer)} scan roots: {paths}")
     args = [sys.executable, "-m", "ruff", "check", "--output-format=json", "--quiet"]
     if select is not None:
         args.extend(["--select", select])

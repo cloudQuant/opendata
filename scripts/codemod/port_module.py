@@ -47,6 +47,8 @@ if str(REPO_ROOT) not in sys.path:
 from scripts.codemod.migrate_provider_layout import (  # noqa: E402
     MigrationConfig,
     _lazy_vendor_init,
+    _module_in_namespace,
+    _module_target,
 )
 
 UPSTREAM_PACKAGE = "akshare"
@@ -229,7 +231,7 @@ MANUAL_EDITS: tuple[ManualEdit, ...] = (
         "fail closed with a clear error (A2.3 标注不可用)",
         transforms=(
             (
-                r'    with resources\.path('
+                r"    with resources\.path\("
                 r'"opendata\.data\.providers\.akshare\._vendor\.data", file\) as f:\n'
                 r"        data_file_path = f\n"
                 r"        return data_file_path",
@@ -502,6 +504,47 @@ def port_source(
     return source, result
 
 
+def _ported_module_exists(ported_root: Path, module: str) -> bool:
+    """Whether a vendored dotted module is a file or a package inside the ported tree."""
+    if module == PORTED_PACKAGE:
+        return ported_root.is_dir()
+    if not module.startswith(PORTED_PACKAGE + "."):
+        return False
+    candidate = ported_root.joinpath(*module.removeprefix(PORTED_PACKAGE + ".").split("."))
+    return candidate.with_suffix(".py").is_file() or (candidate / "__init__.py").is_file()
+
+
+def vendor_init_facade(pristine: Path, ported_root: Path, upstream_url: str, commit: str) -> bytes:
+    """Rebuild the ported root ``__init__.py`` from the pristine upstream export table.
+
+    Upstream's root publishes every module upstream has; the vendored tree ports a subset of them,
+    so the deterministic replay is upstream's statement list pruned to the targets that landed in
+    ``ported_root`` and then rendered by the migration's own facade writer. Pruning happens here and
+    not inside the writer so that the writer keeps refusing to bless a root export whose module is
+    missing during a real migration.
+    """
+    config = MigrationConfig(
+        repo_root=REPO_ROOT,
+        akshare_old_namespace=UPSTREAM_PACKAGE,
+        akshare_new_namespace=PORTED_PACKAGE,
+    )
+    padded = prepend_porting_header(pristine.read_text(encoding="utf-8"), upstream_url, commit)
+    dropped: set[int] = set()
+    for node in ast.parse(padded).body:
+        if not isinstance(node, ast.ImportFrom) or node.level != 0:
+            continue
+        module = node.module or ""
+        if module == "akqmt" or not _module_in_namespace(module, UPSTREAM_PACKAGE):
+            continue
+        target = _module_target(module, config)
+        if target is None or not _ported_module_exists(ported_root, target):
+            dropped.update(range(node.lineno - 1, node.end_lineno or node.lineno))
+    lines = padded.splitlines(keepends=True)
+    pruned = "".join(line for index, line in enumerate(lines) if index not in dropped)
+    payload, _report = _lazy_vendor_init(pruned.encode("utf-8"), pristine.parent, config)
+    return payload
+
+
 def _git(repo: Path, *args: str) -> str:
     """Run a literal git command in a repository and return stdout."""
     argv = ["git", "-C", str(repo), *args]
@@ -712,13 +755,7 @@ def port_submodule(
                 result.status = "skipped-identical"
         elif upstream_path == _INIT_UPSTREAM_PATH:
             source_text = path.read_text(encoding="utf-8")
-            facade_payload, _facade_report = _lazy_vendor_init(
-                path,
-                MigrationConfig(
-                    repo_root=REPO_ROOT,
-                    akshare_new_namespace=PORTED_PACKAGE,
-                ),
-            )
+            facade_payload = vendor_init_facade(path, PORTED_ROOT, lock.url, lock.commit)
             payload = facade_payload
             result = PortResult(
                 upstream_path=upstream_path,

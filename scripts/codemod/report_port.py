@@ -32,10 +32,6 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from scripts.codemod.migrate_provider_layout import (  # noqa: E402
-    MigrationConfig,
-    _lazy_vendor_init,
-)
 from scripts.codemod.port_module import (  # noqa: E402
     _INIT_UPSTREAM_PATH,
     DEFAULT_UPSTREAM_REPO,
@@ -44,6 +40,7 @@ from scripts.codemod.port_module import (  # noqa: E402
     UpstreamLock,
     port_source,
     sha256_text,
+    vendor_init_facade,
 )
 
 REPORT_PATH = Path("docs/port-report.md")
@@ -239,13 +236,7 @@ def collect_drift(
             )
             continue
         if upstream_path == _INIT_UPSTREAM_PATH:
-            expected_facade, _facade_report = _lazy_vendor_init(
-                pristine,
-                MigrationConfig(
-                    repo_root=_REPO_ROOT,
-                    akshare_new_namespace=PORTED_PACKAGE,
-                ),
-            )
+            expected_facade = vendor_init_facade(pristine, ported_root, lock.url, lock.commit)
             matches = ported_bytes == expected_facade
             if not matches:
                 todos.append(f"{rel}: lazy facade differs from the deterministic export map")

@@ -11,7 +11,8 @@
 
 线上锚点取录制件每条记录的 ``start``（应为某日零点）与 ``end + 1ms``（``end`` 是不含
 上界的最后时刻，+1ms 即次日零点）。任一来源与表里的值不一致、或录制参数本身不落在
-零点上，都非零退出。生产实现 ``opendata_fuyao.endpoints.shanghai_midnight_millis``
+零点上，都非零退出。生产实现 ``opendata.data.providers.ths.endpoints.shanghai_midnight_millis``
+（C66 之前名为 ``opendata_fuyao.endpoints``，同一函数搬家）
 只做信息性对照：它若与表不一致，说明实现漂移（该红的是用例，不是这张表）。
 
 用法::
@@ -84,7 +85,7 @@ def recorded_wire_anchors() -> list[tuple[str, str, date, int]]:
 
 def production_millis(day: date) -> int:
     """信息性对照：被测实现算出来的同一个零点."""
-    from opendata_fuyao.endpoints import shanghai_midnight_millis
+    from opendata.data.providers.ths.endpoints import shanghai_midnight_millis
 
     return shanghai_midnight_millis(day)
 

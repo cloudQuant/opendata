@@ -50,9 +50,15 @@ def _annassign_fields(node: ast.ClassDef) -> list[dict[str, Any]]:
     return fields
 
 
-def _class_index(root: Path) -> dict[str, dict[str, Any]]:
-    """Index every class declaration by name with its annotated fields and bases."""
+def _class_index(root: Path) -> tuple[dict[str, dict[str, Any]], list[str]]:
+    """Index every class declaration by name with its annotated fields and bases.
+
+    The repeated names come back separately: stashing a ``list[str]`` under a ``"_ambiguous"``
+    key inside the index would put a non-entry value in a class-name keyed map, where
+    ``_resolved_fields`` walks by name and could pick it up as an entry.
+    """
     index: dict[str, dict[str, Any]] = {}
+    ambiguous: list[str] = []
     for path in sorted(root.rglob("*.py")):
         if any(part in {".git", "__pycache__", "tests", "test"} for part in path.parts):
             continue
@@ -72,10 +78,10 @@ def _class_index(root: Path) -> dict[str, dict[str, Any]]:
             # A subclass may repeat a name across files; keep the first in
             # deterministic path order and record the ambiguity instead.
             if node.name in index:
-                index.setdefault("_ambiguous", []).append(node.name)
+                ambiguous.append(node.name)
                 continue
             index[node.name] = entry
-    return index
+    return index, ambiguous
 
 
 def _resolved_fields(class_name: str, index: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
@@ -190,7 +196,7 @@ def extract(upstream: Path) -> dict[str, Any]:
     parameter names with their declared types, and the output column names -
     the facts a declaration needs. Nothing but names and annotations is read.
     """
-    index = _class_index(upstream)
+    index, _ = _class_index(upstream)
     providers_root = upstream / "providers"
     spec: dict[str, Any] = {}
     packages = (p for p in sorted(providers_root.iterdir()) if p.is_dir())

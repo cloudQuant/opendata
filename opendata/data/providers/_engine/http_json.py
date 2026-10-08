@@ -491,9 +491,7 @@ def make_http_json_fetcher(source: str, spec: ModelSpec) -> type[Fetcher[Any, An
             record list, the list itself. Both are declared shapes; anything else is a shape
             failure, and ``params`` is not consulted here because the query stage already ran.
             """
-            if type(raw) is not tuple or any(
-                not isinstance(page, (dict, list)) for page in raw
-            ):
+            if type(raw) is not tuple or any(not isinstance(page, (dict, list)) for page in raw):
                 raise ProviderEngineError(f"{spec.error_prefix}_SHAPE_INVALID")
             rows: list[ContractModel] = []
             for page in raw:

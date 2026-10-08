@@ -1,0 +1,18 @@
+# C67 复算控制：C44 黄金向量档案的导入改指搬迁后位置（opendata.data.providers.ths.endpoints）
+# branch=dev HEAD=5080639
+# python=3.11.8  命令: python3 docs/evidence/C44/golden_millis.py
+
+## 1. 反面：C66 删除顶层 opendata_fuyao 后，档案原来的导入名不可解析
+   import opendata_fuyao -> rc=1 ModuleNotFoundError: No module named 'opendata_fuyao'
+
+## 2. 修复后的档案脚本离线运行
+   rc=0
+   days_pinned = 22 + wire_anchors = 2
+   recorded_records_with_window = 6
+   recorded_wire_days = ['1990-01-01', '1990-01-06', '2000-01-01', '2024-01-02', '2024-01-12']
+   VERDICT derivations=3 pinned=22 wire_anchors=12 wire_pinned_days=1 problems=0 exit=0
+
+## 3. 重算正文 vs 档案正文（以 provenance 标记行切分，逐字节）
+   archive_body_bytes=246 sha256=be2f505254aafbb4
+   recompute_body_bytes=246 sha256=be2f505254aafbb4
+   VERDICT recompute_vs_archive=IDENTICAL

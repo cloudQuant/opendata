@@ -15,6 +15,7 @@ from scripts.quality.acceptance_item_probe import (
     DWD_REVISION_NODES,
     GAP,
     GENERIC_API_KEY_ALLOWED_REGEXES,
+    PORTED_ROOT,
     PROVEN,
     QFQ_OFFICIAL_RUN,
     REPO_ROOT,
@@ -22,10 +23,13 @@ from scripts.quality.acceptance_item_probe import (
     Context,
     _ac9_07_call_chain_facts,
     bare_token_paths,
+    census_of,
     classify_secret_paths,
     config_has_no_global_path_exemption,
     covered_by,
     exact_partition_placement_assertions,
+    first_party_py_files_under,
+    gitleaks_leak_count,
     judge_ac1_03,
     judge_ac1_08,
     judge_ac1_09,
@@ -38,9 +42,12 @@ from scripts.quality.acceptance_item_probe import (
     playwright_outcomes,
     probe_for,
     public_gitleaks_rule_shapes,
+    py_files_under,
     resolve_repair,
     run_argv,
     scan_env_template,
+    scope_reparented,
+    scope_vanished,
     whitelist_buckets,
 )
 from scripts.quality.acceptance_ledger_check import parse_doc
@@ -360,6 +367,7 @@ def test_ac1_03_judge_requires_a_current_bidirectional_path_register() -> None:
         "policy_error": "-",
         "policy_entries": "3",
         "metadata_exceptions": "3",
+        "metadata_expected": "3",
         "unregistered": "0",
         "unregistered_sample": "",
         "stale_paths": "0",
@@ -431,7 +439,7 @@ def test_ac1_03_whitelist_reads_only_explicit_complete_paths() -> None:
     buckets = whitelist_buckets(approved)
 
     assert buckets == [
-        "opendata_http/",
+        f"{PORTED_ROOT}/",
         "THIRD_PARTY_NOTICES.md",
         "LICENSE-AKSHARE",
         "README.md",
@@ -447,10 +455,49 @@ def test_ac1_03_whitelist_reads_only_explicit_complete_paths() -> None:
 
     assert whitelist_buckets("普通文档提及 `docs/`，但没有获批短语。") == ["docs/"]
     assert whitelist_buckets("旧文案列出 `akshare/` 和 `tests/`。") == [
-        "opendata_http/",
+        f"{PORTED_ROOT}/",
         "tests/",
     ]
+    # 两个历史拼法（旧名 akshare/ 与迁移名 opendata_http/）说的是同一棵树，必须收成同一个桶
+    both = whitelist_buckets("同时写旧名 `akshare/` 与迁移名 `opendata_http/`。")
+    assert both == [f"{PORTED_ROOT}/"], both
     assert whitelist_buckets("非路径 token `LICENSE` 与 `daily`。") == []
+
+
+def test_scope_vanished_pairs_a_renamed_root_with_its_current_census_key() -> None:
+    """改名按 census 键对齐，重挂靠文件总量对齐；真缩范围两种对齐都救不了。"""
+    newer = {"opendata": 215, "scripts": 57, PORTED_ROOT: 325}
+    older = {"opendata": 215, "scripts": 57, "opendata_http": 313}
+
+    assert scope_vanished(newer, older) == ()
+    assert census_of({"file_counts": older}, [PORTED_ROOT]) == 313
+
+    narrowed = {name: value for name, value in newer.items() if name != "scripts"}
+    assert scope_vanished(narrowed, older) == ("scripts",)
+
+    # 无单一身份的旧根（Fuyao 的十二个文件散进了 THS provider）：计数在他处回来就是搬家，
+    # 名单里退出这件事仍然要打出来给读者看，不能当成什么都没发生。
+    with_fuyao = {**older, "opendata_fuyao": 12}
+    moved = {"opendata": 227, "scripts": 57, PORTED_ROOT: 325}
+    assert scope_vanished(moved, with_fuyao) == ()
+    assert scope_reparented(moved, with_fuyao) == ("opendata_fuyao",)
+
+    # 别的根一个文件都没多出来：这次是真的没有被测到了
+    flat = {"opendata": 215, "scripts": 57, PORTED_ROOT: 313}
+    assert scope_vanished(flat, {**older, "opendata_fuyao": 4}) == ("opendata_fuyao",)
+
+
+def test_selfdev_population_leaves_the_nested_vendor_tree_out() -> None:
+    """搬运树嵌在 opendata/ 里：自研存量口径要按布局权威分层，同姓的首方适配层不能一起丢掉。"""
+    naive = py_files_under("opendata")
+    first_party = first_party_py_files_under("opendata")
+    vendored = [name for name in naive if name.startswith(f"{PORTED_ROOT}/")]
+
+    assert vendored, "搬运树不再嵌在自研根下时，这条测试就测不到混合种群了"
+    assert not [name for name in first_party if name.startswith(f"{PORTED_ROOT}/")]
+    assert len(naive) - len(first_party) == len(vendored)
+    assert "opendata/data/providers/akshare/__init__.py" in first_party
+    assert py_files_under(PORTED_ROOT) == vendored
 
 
 def test_ac5_02_scope_break_turns_a_repaired_reading_red() -> None:
@@ -499,6 +546,12 @@ def test_ac1_09_template_config_has_no_global_path_exception() -> None:
     )
 
 
+def test_ac1_09_leak_count_reads_the_scanners_own_both_arms() -> None:
+    assert gitleaks_leak_count("12:35AM WRN leaks found: 441\n") == "441"
+    assert gitleaks_leak_count("12:41AM INF no leaks found\n") == "0"
+    assert gitleaks_leak_count("scanned 125 MB in 37s\n") == "(unreadable)"
+
+
 def test_ac1_09_judge_rejects_any_global_path_exemption() -> None:
     clean = {
         "strict": "0",
@@ -511,15 +564,18 @@ def test_ac1_09_judge_rejects_any_global_path_exemption() -> None:
         "rule_shapes": "yes",
         "registered": "5",
         "upstream_files": "5",
+        "upstream_present": "5",
+        "upstream_absent_names": "",
         "live_shapes": "0",
         "gitleaks_rc": "0",
+        "scan_leaks": "0",
         "template_config_ok": "yes",
         "template_scan_rc": "0",
         "literal": "1",
         "env_sample": "",
         "generated_sample": "",
         "non_template_names": "",
-        "secret_check_line": "exit=0; findings=0; locations=-",
+        "secret_check_line": "exit=0; leaks=0; locations=-",
         "template_scan_summary": "findings=0; locations=-",
     }
 
@@ -565,15 +621,18 @@ def test_ac1_09_accepts_only_the_two_exact_public_rule_regexes() -> None:
         "rule_shapes": "yes",
         "registered": "5",
         "upstream_files": "5",
+        "upstream_present": "5",
+        "upstream_absent_names": "",
         "live_shapes": "0",
         "gitleaks_rc": "0",
+        "scan_leaks": "0",
         "template_config_ok": "yes",
         "template_scan_rc": "0",
         "literal": "1",
         "env_sample": "",
         "generated_sample": "",
         "non_template_names": "",
-        "secret_check_line": "exit=0; findings=0; locations=-",
+        "secret_check_line": "exit=0; leaks=0; locations=-",
         "template_scan_summary": "findings=0; locations=-",
     }
     assert probe.judge(clean).state == PROVEN

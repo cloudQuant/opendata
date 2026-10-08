@@ -93,6 +93,24 @@
       "ast_exceptions": []
     },
     {
+      "path": "frontend/src/__tests__/home-view.test.ts",
+      "purpose": "前端用例把脚本 id `akshare.stock_zh_a_hist` 当作路由参数断言跳转，是数据源标识字面量，不 import 上游包。",
+      "category": "test-fixture",
+      "reviewed_date": "2026-10-08",
+      "reviewer": "Qoder agent C66; post-migration per-path review of the bare-word hits",
+      "sha256": "d2c4339605be4bfdbb96cd5ab27cfe649762f467595a63e6fc626b7834352ef1",
+      "ast_exceptions": []
+    },
+    {
+      "path": "frontend/src/__tests__/scripts-view.test.ts",
+      "purpose": "脚本列表用例用 `akshare.stock_daily`/`akshare.stock_zh_a_hist` 造 fixture 并断言详情路由，是数据源标识字面量。",
+      "category": "test-fixture",
+      "reviewed_date": "2026-10-08",
+      "reviewer": "Qoder agent C66; post-migration per-path review of the bare-word hits",
+      "sha256": "09a30d271dac9e77bf39bec4859419517134bfde5a642ec1a1f63831d160feb2",
+      "ast_exceptions": []
+    },
+    {
       "path": "frontend/src/__tests__/types/index.test.ts",
       "purpose": "前端测试样本与断言中的来源身份。",
       "category": "test-fixture",
@@ -108,15 +126,6 @@
       "reviewed_date": "2026-10-01",
       "reviewer": "Codex primary; authorized C65 criterion migration",
       "sha256": "0d91f0041fa5fc232c2bd390fdebae32759190d8014832baf8b9e7fc80ff9e2a",
-      "ast_exceptions": []
-    },
-    {
-      "path": "opendata/__init__.py",
-      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
-      "category": "runtime-integration",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "faad39a2960ba3459980f4b4dc5b164ec3209168b77583cf96c70350cc70216f",
       "ast_exceptions": []
     },
     {
@@ -245,21 +254,12 @@
       "ast_exceptions": []
     },
     {
-      "path": "opendata/data/providers/__init__.py",
-      "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
-      "category": "runtime-integration",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "ab30360db3fd2d0cc8bdd90769768fec73ab273bf7b55db4f0e90e0107d6c638",
-      "ast_exceptions": []
-    },
-    {
       "path": "opendata/data/providers/akshare/__init__.py",
       "purpose": "首方akshare来源适配器、契约模型、归一化或注册说明；调用opendata_http搬运实现并保留来源身份。",
       "category": "source-adapter",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "8049f9ff20dc5141c4b191c27569fb76696f28b1f74e78128d49e14c1ae687b2",
+      "reviewed_date": "2026-10-09",
+      "reviewer": "Qoder agent C67; digest re-pin after this round's edits, token purpose unchanged",
+      "sha256": "d06880ec7dab1e22ba78506372e702d622de86a85d65d47e4fce715859b23bb7",
       "ast_exceptions": []
     },
     {
@@ -421,6 +421,24 @@
       ]
     },
     {
+      "path": "opendata/data/providers/catalog.py",
+      "purpose": "统一目录把搬运后的 akshare provider 作为来源标识注册进 provider×模型目录，import 的是 `opendata.data.providers.akshare.provider` 的模块路径。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-08",
+      "reviewer": "Qoder agent C66; post-migration per-path review of the bare-word hits",
+      "sha256": "c2467502db2c6dc5df9418d89f06b46dd77ac2f10785a9c932396f964a35ff85",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data/providers/ths/endpoint_map.yaml",
+      "purpose": "THS 端点映射的 scenario 说明里登记降级/权威来源序（ths 主源、akshare 降级），是来源标识与映射声明。",
+      "category": "mapping",
+      "reviewed_date": "2026-10-08",
+      "reviewer": "Qoder agent C66; post-migration per-path review of the bare-word hits",
+      "sha256": "b391ee24ad40a1eefc306083cddbd10c463dfd0f4f13477bb90cb98ecd99e777",
+      "ast_exceptions": []
+    },
+    {
       "path": "opendata/data/providers/ths/models/fund_etf_daily.py",
       "purpose": "THS首方适配器中保留与akshare来源的口径/路由对照说明。",
       "category": "source-adapter",
@@ -448,21 +466,21 @@
       "ast_exceptions": []
     },
     {
-      "path": "opendata/data/providers/ths/registration.py",
-      "purpose": "THS首方适配器中保留与akshare来源的口径/路由对照说明。",
-      "category": "source-adapter",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "6fd663b544c19d2138161ce726be09bd073321c1ba4b3c270ccde6984d78aaf3",
-      "ast_exceptions": []
-    },
-    {
       "path": "opendata/data_fetch/__init__.py",
       "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
       "category": "runtime-integration",
       "reviewed_date": "2026-10-01",
       "reviewer": "Codex primary; authorized C65 criterion migration",
       "sha256": "801976395cb3838bc3938765aec098e9fe40bb0ba082d77f7dd5d117e64773d7",
+      "ast_exceptions": []
+    },
+    {
+      "path": "opendata/data_fetch/providers/akshare_provider.py",
+      "purpose": "兼容层适配器以 `opendata.data.providers.akshare._vendor` 的名字对外声明来源，取用的是搬运包自身，不是上游 `akshare` 根。",
+      "category": "source-adapter",
+      "reviewed_date": "2026-10-08",
+      "reviewer": "Qoder agent C66; post-migration per-path review of the bare-word hits",
+      "sha256": "bfb1e8cfd91fe687039940cdd20b0ad91c6c930ba38a91b020a3300e94145c25",
       "ast_exceptions": []
     },
     {
@@ -593,9 +611,9 @@
       "path": "pyproject.toml",
       "purpose": "来源搬运质量规则、包归属和历史依赖的声明；运行时依赖须由AST扫描确认。",
       "category": "build-declaration",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "480f5e43d61c84d13e38ef80d22216d55d67649b450f233210f1812f5a1c04bc",
+      "reviewed_date": "2026-10-09",
+      "reviewer": "Qoder agent C67; digest re-pin after this round's edits, token purpose unchanged",
+      "sha256": "54dc6a92e08a1710a05d502177fe33e307858d8b1560b4793ad5fc1ab0a4a3f9",
       "ast_exceptions": []
     },
     {
@@ -707,12 +725,30 @@
       "ast_exceptions": []
     },
     {
+      "path": "scripts/ops/ths_instrument_cross_check.py",
+      "purpose": "交叉对照工具从搬运包取 sina 通道与 THS 主源逐格对账，akshare 只出现在搬运包路径里。",
+      "category": "cross-check",
+      "reviewed_date": "2026-10-08",
+      "reviewer": "Qoder agent C66; post-migration per-path review of the bare-word hits",
+      "sha256": "a4da42e8a7431830c25b99f4100c4abfe3cb5dc82b5d8d3357ed5df55ad7028c",
+      "ast_exceptions": []
+    },
+    {
       "path": "scripts/ops/ths_trading_calendar_cross_check.py",
       "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
       "category": "cross-check",
       "reviewed_date": "2026-10-01",
       "reviewer": "Codex primary; authorized C65 criterion migration",
       "sha256": "b76a8222fb282bb68e8f99454ec5477135fae10221be1b14341f4a99de9f85ef",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/ops/yfinance_overseas_cross_check.py",
+      "purpose": "境外行情对照工具从搬运包取美股/港股 sina 通道，akshare 只出现在搬运包路径里。",
+      "category": "cross-check",
+      "reviewed_date": "2026-10-08",
+      "reviewer": "Qoder agent C66; post-migration per-path review of the bare-word hits",
+      "sha256": "c54e5db8eb3885e80d50519a2bccb662f9a655790e47ce952001c588f0e5c6be",
       "ast_exceptions": []
     },
     {
@@ -728,9 +764,9 @@
       "path": "scripts/quality/acceptance_item_probe.py",
       "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。",
       "category": "operations-tool",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "63ffb30f65b68b53a37ac104732ca05233b16dde27354f945df5b00dce9c25b3",
+      "reviewed_date": "2026-10-09",
+      "reviewer": "Qoder agent C67; digest re-pin after this round's edits, token purpose unchanged",
+      "sha256": "d2d68235b8f9df832723ab4bd4ba64cbf648ce3bbf3bdb56ea75dda89a1f3705",
       "ast_exceptions": []
     },
     {
@@ -770,12 +806,30 @@
       "ast_exceptions": []
     },
     {
-      "path": "scripts/quality/ratchet.py",
-      "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。",
-      "category": "operations-tool",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "80845ea3835d72c9686a8680c47f24520da5e02a75bd6427fb859c89fbbf17b6",
+      "path": "scripts/quality/scan_js_points.py",
+      "purpose": "前端取点扫描器声明搬运层根路径常量，用于把 vendor 文件排除在首方口径外。",
+      "category": "build-declaration",
+      "reviewed_date": "2026-10-08",
+      "reviewer": "Qoder agent C66; post-migration per-path review of the bare-word hits",
+      "sha256": "232415523595c657c5373ad6e2ef2b9aaeeacbea435cdf20f0c295126f60fba7",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/quality/source_layout.py",
+      "purpose": "唯一的源码布局权威在此声明 VENDOR_ROOT，ratchet、台账检查与 codemod 都读这一个答案。",
+      "category": "build-declaration",
+      "reviewed_date": "2026-10-08",
+      "reviewer": "Qoder agent C66; post-migration per-path review of the bare-word hits",
+      "sha256": "e4650a4e1010b3146c8e7a10e1632b490d954fe94e333fba73da0ba3b37b5605",
+      "ast_exceptions": []
+    },
+    {
+      "path": "scripts/quality/vendor_independence.py",
+      "purpose": "搬运层独立性检查声明 vendor 相对路径、点分前缀与历史根名，用来判定独立性是否还在。",
+      "category": "build-declaration",
+      "reviewed_date": "2026-10-08",
+      "reviewer": "Qoder agent C66; post-migration per-path review of the bare-word hits",
+      "sha256": "4c8201849997a423ee58f2a3127439c5cbad013fb8f65b9e9b2dbee69029b5a7",
       "ast_exceptions": []
     }
   ]

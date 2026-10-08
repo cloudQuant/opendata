@@ -1,5 +1,11 @@
 """Lightweight public package interface for imf."""
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from opendata.data.providers.imf.registration import FETCHERS as FETCHERS
+    from opendata.data.providers.imf.registration import register as register
+
 
 def __getattr__(name: str) -> object:
     """Load compatibility exports only when explicitly requested."""

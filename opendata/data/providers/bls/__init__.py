@@ -1,5 +1,11 @@
 """Lightweight BLS provider facade."""
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from opendata.data.providers.bls.registration import FETCHERS as FETCHERS
+    from opendata.data.providers.bls.registration import register as register
+
 
 def __getattr__(name: str) -> object:
     """Load compatibility exports only when explicitly requested."""

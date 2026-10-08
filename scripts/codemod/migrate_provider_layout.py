@@ -877,11 +877,18 @@ def _module_path_exists(source_root: Path, module: str, namespace: str) -> bool:
     return path.with_suffix(".py").is_file() or (path / "__init__.py").is_file()
 
 
-def _lazy_vendor_init(old_init: Path, config: MigrationConfig) -> tuple[bytes, dict[str, Any]]:
+def _lazy_vendor_init(
+    source_bytes: bytes, source_dir: Path, config: MigrationConfig
+) -> tuple[bytes, dict[str, Any]]:
+    """Render the lazy flat facade from one header-padded AKShare root export table.
+
+    Bytes come in rather than being read from a path because the replay source -- pristine upstream
+    plus the provenance header -- exists nowhere on disk; pointing at the raw upstream file used to
+    trip the header guard and silently unverified the ported root's own row.
+    """
     try:
-        source_bytes = old_init.read_bytes()
         source = source_bytes.decode("utf-8")
-        tree = ast.parse(source, filename=str(old_init))
+        tree = ast.parse(source, filename=str(source_dir / "__init__.py"))
     except (SyntaxError, UnicodeDecodeError) as exc:
         raise MigrationError(f"cannot parse AKShare root export table: {exc}") from exc
     source_header_lines = source_bytes.splitlines(keepends=True)[:2]
@@ -925,7 +932,7 @@ def _lazy_vendor_init(old_init: Path, config: MigrationConfig) -> tuple[bytes, d
         if not module.startswith(config.akshare_new_namespace):
             raise MigrationError(f"unexpected non-vendored root export {export!r} from {module!r}")
         source_module = config.akshare_old_namespace + module[len(config.akshare_new_namespace) :]
-        if not _module_path_exists(old_init.parent, source_module, config.akshare_old_namespace):
+        if not _module_path_exists(source_dir, source_module, config.akshare_old_namespace):
             raise MigrationError(
                 f"root export {export!r} points to missing source module {source_module!r}"
             )
@@ -1216,7 +1223,9 @@ def _build_plan(
     ):
         source_rel = source_path.relative_to(config.repo_root).as_posix()
         if source_path == lazy_init_source:
-            content, lazy_export_report = _lazy_vendor_init(source_path, config)
+            content, lazy_export_report = _lazy_vendor_init(
+                source_path.read_bytes(), source_path.parent, config
+            )
             _unused_rewrite, imports, dynamic = _rewrite_source(
                 source_path.read_text(encoding="utf-8"),
                 filename=source_rel,

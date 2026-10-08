@@ -1,0 +1,27 @@
+
+### AC-17|03  (document line 290)
+判据原文：**A1 层（存量）**：mypy/ruff 债务不高于基线快照，只降不升；**修改过的文件按 A2 标准达标**（"触碰即达标"）
+本探针：棘轮三项存量债务 + 上限自身历史只降不升 + 三个静态平面各读到多少 + 触碰集↔A2 集一一对应
+台账现状：state=proven，文档勾选=True
+  - scripts/quality/ratchet.py exit 0（face=none，printed=3/3）：存量债务 ruff_selfdev 147(≤148), mypy_selfdev 0(≤0), bandit_selfdev 1(≤1)
+  - 上限自己的历史（13 次转换）：抬高存量上限的次数 0；近 2 次转换里消失的被测根 0，更早历史 1；从名单退出但文件计数在他处回来的 1 个；存量上限轨迹 ruff_selfdev 404→148 / mypy_selfdev 35→0 / bandit_selfdev 6→1。棘轮只比较工作区与快照，抬高上限这一步此前无人计量（4ee1bbc->2b68225 akshare; 3cf0cf7->3f05f63 opendata_fuyao(9)）
+  - 平面可见性：5 个自研根磁盘 680 个 .py，ruff 自己走到 680（看不见 0）；mypy 目标 300/318，被它排除的 18 个里 18 个在棘轮点名的遗留区（opendata/data_fetch/）之内、0 个是没人声明的 exclude（这 18 个仍全部被 ruff 读到）；bandit 381/381，被它漏掉的 0 个（ruff 也看不见的 0）必须为 0：三个平面各自把一份存量计数，exclude 吞掉的根既不产生读数也不产生红灯，所以谁被排除必须点名，不能只在配置文件里悄悄加一行
+  - 全体 tracked .py = 1077，既不在任何被测根下、也不在 A2 集里的 0
+  - 触碰即达标：自基线起改动 656 个 .py ↔ A2 集 656 个（a2-check exit 0），其中按名字被排除出 A2 的 0 个、排除项里的自研代码 0 个
+VERDICT AC-17|03: proven
+
+### AC-17|05  (document line 292)
+判据原文：搬运代码（`opendata_http/`）：仅 E/F 检查、未做 format/isort 重排（与上游可 diff）；pre-commit 含 `exclude: opendata_http/`；lint 债务不高于棘轮快照
+本探针：搬运树只按 E/F 计量（豁免量得出来）+ 未重排且逐文件重放一致 + 三处登记与 pre-commit exclude 一致
+台账现状：state=proven，文档勾选=True
+  - scripts/quality/ratchet.py exit 0（face=none）：搬运债务 ruff_ported 1867(≤2188), direct_http_ported 1071(≤1071)；门禁打印的 ruff_ported 与独立跑的 --select E,F 计数一致 = yes（E/F 1867）；直连计数的动词集合 delete, get, head, patch, post, put, request 完整 = yes
+  - 「仅 E/F」豁免挡住的量：同一棵树按自研规则集跑是 9305 条、按 I 规则 111 条，E/F 只有 1867 条 —— 豁免若不存在，门禁当场全红，所以它必须被登记而不是被假装没有
+  - 「未做 format/isort 重排」：220 个文件是 ``ruff format`` 会重写的、111 条 import 顺序违例 —— 重排过一次的树不可能与上游逐行 diff
+  - 重放对账（scripts/codemod/report_port.py，需本机有锁定 commit 的上游干净克隆）：exit 0，锁内 327 条记录 / 报告 327 行 / 逐字一致 327 行 / 待办 0 条；磁盘 325 个 .py，其中未登记的 0 个；现场渲染与已归档的 docs/port-report.md 逐字节一致 = yes
+  - 人工改动三处登记：opendata/data/providers/akshare/_vendor/upstream.lock 9 条、THIRD_PARTY_NOTICES.md 9 条、scripts/codemod/port_module.py:MANUAL_EDITS 9 条，不一致 0 条（重放只认 MANUAL_EDITS，读者只看到登记文档）
+  - .pre-commit-config.yaml：共 15 个 hook（HEAD 15 个），其中排除搬运树的 4 个，比 HEAD 少的 0 个；排除的 hook id：end-of-file-fixer, ruff, ruff-format, trailing-whitespace
+  - 搬运上限历史（13 次转换）：抬高 5 次、其中搬运文件数未变的 1 次；近 2 次转换消失的被测根 0、从名单退出但文件计数在他处回来的 1 个。判据原文只要求「债务不高于棘轮快照」，故抬高只作待复核登记；轨迹 ruff_ported 1418→2188 / direct_http_ported 1270→1071（3757285->d66dd99 ruff_ported 1305->2145; 4ee1bbc->2b68225 akshare; 3cf0cf7->3f05f63 opendata_fuyao(9)）
+VERDICT AC-17|05: proven
+
+census: proven=2
+（2 item(s) recomputed against docs/quality/acceptance-item-ledger.json）

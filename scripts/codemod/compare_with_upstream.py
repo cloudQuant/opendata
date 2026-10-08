@@ -51,9 +51,7 @@ if TYPE_CHECKING:
 
 FIXTURES_DIR = REPO_ROOT / "tests" / "fixtures" / "upstream"
 REPORT_PATH = REPO_ROOT / "docs" / "evidence" / "A2" / "compare-report.md"
-LOCK_PATH = (
-    REPO_ROOT / "opendata" / "data" / "providers" / "akshare" / "_vendor" / "upstream.lock"
-)
+LOCK_PATH = REPO_ROOT / "opendata" / "data" / "providers" / "akshare" / "_vendor" / "upstream.lock"
 DEFAULT_UPSTREAM = Path("/Users/yunjinqi/Documents/new_projects/akshare")
 
 #: Relative float tolerance for cell comparison (AC-6: floats within tolerance).

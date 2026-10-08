@@ -883,7 +883,12 @@ def measure_ac1_02(ctx: Context) -> Facts:
     own = [
         p
         for p in ctx.tracked()
-        if p.endswith(".py") and not p.startswith(("opendata_http/", "docs/"))
+        if p.endswith(".py")
+        and not p.startswith("docs/")
+        # The ported tree moved *inside* ``opendata/``, so a root-name literal would no longer
+        # exclude it: 325 MIT files would be counted as our own code. The classifier answers the
+        # same question the old prefix did -- is this first-party? -- whatever the tree is called.
+        and _LAYOUT.classify_path(p) != _LAYOUT.PORTED
     ]
     hits = grep_files(own, app_ref)
     lines = [line for line in out.splitlines() if line.strip()]
@@ -925,6 +930,25 @@ def judge_ac1_02(facts: Facts) -> Verdict:
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
 
+#: Every spelling the document has ever used for the ported tree's root.
+_PORTED_ROOT_TOKENS: Final = ("akshare/", "akshare", "opendata_http/", "opendata_http")
+
+
+def _ported_bucket(bare: str) -> str:
+    """Map a whitelist token naming the ported tree onto wherever it lives today.
+
+    The item has named that root three times in its life: ``akshare/``, then ``opendata_http/``,
+    then the provider package. Keeping the superseded spellings as their own buckets would leave a
+    dead prefix in the whitelist while the real tree sat outside it, so every historical name
+    collapses onto the current one instead of covering nothing.
+    """
+    for token in _PORTED_ROOT_TOKENS:
+        if bare == token.rstrip("/") or bare.startswith(token):
+            rest = bare[len(token) :].lstrip("/")
+            return f"{PORTED_ROOT}/{rest}" if rest else f"{PORTED_ROOT}/"
+    return bare
+
+
 def whitelist_buckets(text: str) -> list[str]:
     """Read only complete backticked paths from the item's whitelist wording."""
     buckets: list[str] = []
@@ -932,7 +956,12 @@ def whitelist_buckets(text: str) -> list[str]:
         bare = token.strip().rstrip("、,。")
         if not _is_complete_reference_path(bare):
             continue
-        normalized = "opendata_http/" if bare == "akshare/" else bare
+        # The item's whitelist names the upstream root ``akshare/``; the instrument has to answer
+        # "which files are the ported copy?" against wherever that copy lives today, because the
+        # tree was relocated into the provider package. Reading the literal root name instead
+        # would leave all 327 ported files outside the whitelist and re-litigate a decision the
+        # item already closed.
+        normalized = _ported_bucket(bare)
         if normalized not in buckets:
             buckets.append(normalized)
     return buckets
@@ -1060,7 +1089,7 @@ def measure_ac1_03(ctx: Context) -> Facts:
         excluded_paths=excluded,
     )
     unregistered = int(policy_facts["unregistered"])
-    vendored = sorted(rel for rel in hit_paths if rel.startswith("opendata_http/"))
+    vendored = sorted(rel for rel in hit_paths if rel.startswith(f"{PORTED_ROOT}/"))
     baseline = json.loads(ctx.read("docs/quality/zero-dep-baseline.json"))
     integration = sorted(
         {
@@ -1707,6 +1736,22 @@ def scan_env_template(
         return result.returncode, f"findings={finding_count}; locations={locations}"
 
 
+def gitleaks_leak_count(output: str) -> str:
+    """The scanner's own leak count, read off the line it prints for it.
+
+    The pinned ``scan_argv`` writes no report file, so this log line is the only number the run
+    itself produces. Counting ``RuleID:`` blocks instead invents a clean zero next to a failing
+    exit: 441 history findings read as ``findings=0`` on the AC-1|09 face while the scan was red,
+    which is a machine-readable echo that contradicts its own verdict.
+    """
+    found = re.search(r"leaks found:\s*(\d+)", output)
+    if found:
+        return found.group(1)
+    if "no leaks found" in output:
+        return "0"
+    return "(unreadable)"
+
+
 def redacted_gitleaks_summary(output: str, exit_code: int) -> str:
     """Extract safe location metadata without echoing finding text or secret values."""
     rule = "unknown-rule"
@@ -1728,7 +1773,8 @@ def redacted_gitleaks_summary(output: str, exit_code: int) -> str:
     if rule != "unknown-rule" or path != "unknown-file" or line != "?":
         locations.append(f"{rule}@{path}:{line}")
     return (
-        f"exit={exit_code}; findings={len(locations)}; locations={', '.join(locations[:10]) or '-'}"
+        f"exit={exit_code}; leaks={gitleaks_leak_count(output)}; "
+        f"locations={', '.join(locations[:10]) or '-'}"
     )
 
 
@@ -1776,20 +1822,27 @@ def measure_ac1_09(ctx: Context) -> Facts:
     global_paths = [str(path) for path in allow_paths] if isinstance(allow_paths, list) else []
     exact_paths = not global_paths
     rule_shapes = public_gitleaks_rule_shapes(cast("dict[str, Any]", rule_map))
-    files = (
+    # The audit names these files by the path they carried when a person read them. The tree has
+    # since moved into the provider package, so the credential-literal grep runs against the
+    # current identity of the same five files, and a mapping that no longer resolves on disk is
+    # counted: a grep that silently skips absent paths measures nothing, which is how this face
+    # read green while the relocation was in flight.
+    reviewed = (
         "opendata_http/stock/cons.py",
         "opendata_http/bond/bond_convert.py",
         "opendata_http/bond/bond_china_money.py",
         "opendata_http/futures/futures_hf_em.py",
         "opendata_http/option/option_em.py",
     )
+    files = tuple(_LAYOUT.historical_identity(name) for name in reviewed)
     audit = ctx.read("docs/evidence/A0/secret-audit.txt")
-    registered = [f for f in files if f.split("opendata_http/", 1)[1] in audit]
+    registered = [f for f in files if f.removeprefix(f"{PORTED_ROOT}/") in audit]
+    present = [f for f in files if (ctx.root / f).is_file()]
     cred_shape = re.compile(
         r"(?:token|api_?key|password|pwd|secret)[\"']?\s*[:=]\s*[\"'][A-Za-z0-9_.\-]{16,}[\"']",
         re.IGNORECASE,
     )
-    live = grep_files([f for f in files if (ctx.root / f).is_file()], cred_shape)
+    live = grep_files(present, cred_shape)
     code, out = run_argv([sys.executable, "scripts/quality/secret_scan_check.py"])
     template_text = ctx.read(".env.example") if (ctx.root / ".env.example").is_file() else ""
     template_config_ok = config_has_no_global_path_exemption(config)
@@ -1816,8 +1869,11 @@ def measure_ac1_09(ctx: Context) -> Facts:
         "rule_shapes": flag(rule_shapes),
         "registered": count(len(registered)),
         "upstream_files": count(len(files)),
+        "upstream_present": count(len(present)),
+        "upstream_absent_names": ", ".join(sorted(set(files) - set(present))[:5]),
         "live_shapes": count(len(live)),
         "gitleaks_rc": count(code),
+        "scan_leaks": gitleaks_leak_count(out),
         "secret_check_line": redacted_gitleaks_summary(out, code),
         "template_config_ok": flag(template_config_ok),
         "template_scan_rc": count(template_rc),
@@ -1837,8 +1893,10 @@ def judge_ac1_09(facts: Facts) -> Verdict:
         and facts["rule_blocks"] == "2"
         and facts["rule_shapes"] == "yes"
         and facts["registered"] == facts["upstream_files"]
+        and facts["upstream_present"] == facts["upstream_files"]
         and facts["live_shapes"] == "0"
         and facts["gitleaks_rc"] == "0"
+        and facts["scan_leaks"] == "0"
         and facts["template_config_ok"] == "yes"
         and facts["template_scan_rc"] == "0"
     )
@@ -1857,17 +1915,24 @@ def judge_ac1_09(facts: Facts) -> Verdict:
         f"per-rule allowlist blocks = {facts['rule_blocks']}; "
         f"exact public-rule exceptions preserved = "
         f"{facts['rule_shapes']}",
-        f"upstream credential files registered in docs/evidence/A0/secret-audit.txt = "
-        f"{facts['registered']}/{facts['upstream_files']}; cred-shaped literals left in them = "
-        f"{facts['live_shapes']}",
-        f"$ python scripts/quality/secret_scan_check.py -> exit {facts['gitleaks_rc']}: "
-        f"{facts['secret_check_line']}",
+        "upstream credential files registered in docs/evidence/A0/secret-audit.txt = "
+        f"{facts['registered']}/{facts['upstream_files']}; mapped identities still on disk = "
+        f"{facts['upstream_present']}"
+        + (
+            f" (missing: {facts['upstream_absent_names']})"
+            if facts["upstream_absent_names"]
+            else ""
+        )
+        + f"; cred-shaped literals left in them = {facts['live_shapes']}",
+        f"$ python scripts/quality/secret_scan_check.py -> exit {facts['gitleaks_rc']} "
+        f"(scanner-reported leaks = {facts['scan_leaks']}): {facts['secret_check_line']}",
         f"isolated `.env.example` scan (unchanged config, no path exclusions) -> "
         f"exit {facts['template_scan_rc']}: {facts['template_scan_summary']}",
     )
     reason = (
         "a real environment/IDE/pid path, stale or broadened allowlist, changed public rule "
-        "exception, unregistered upstream file, or unscanned/credential-bearing template remains"
+        "exception, unregistered or missing upstream file, a leak the history scanner counts, or "
+        "an unscanned/credential-bearing template remains"
         if not ok
         else ""
     )
@@ -2394,11 +2459,47 @@ RATCHET_TOOL: Final = "scripts/quality/ratchet.py"
 PORT_REPORT_TOOL: Final = "scripts/codemod/report_port.py"
 PORT_MODULE_TOOL: Final = "scripts/codemod/port_module.py"
 
+#: The ported tree's one and only identity source. ``source_layout`` is what the ratchet, the
+#: ledger checker and the codemod already agree on; a probe that spelled the root a third way
+#: would read a directory that no longer exists and call the silence a passing grade.
+_LAYOUT: Final = script_module("scripts/quality/source_layout.py")
+PORTED_ROOT: Final = str(_LAYOUT.VENDOR_ROOT)
+#: The dotted form, i.e. what an interpreter has to import and what an ``import a.b.c`` binds.
+PORTED_MODULE: Final = PORTED_ROOT.replace("/", ".")
+#: The name ``import opendata.data.providers.akshare._vendor`` puts in the caller's namespace.
+PORTED_BIND_NAME: Final = PORTED_MODULE.rpartition(".")[2]
+
+
+def ported_module_identity(dotted: str) -> str:
+    """Translate a historical dotted module to the dotted name it has today.
+
+    A criterion that names a ported module by its pre-relocation dotted path stops being
+    satisfiable once the file moves: the dispatch table resolves to the new name, so the equality
+    can never hold and the item's gap could not be closed by any amount of real work.
+    """
+    canonical: str = _LAYOUT.historical_identity(dotted.replace(".", "/"))
+    return canonical.replace("/", ".")
+
+
+def current_target_identity(target: str) -> str:
+    """Re-express a recorded ``module:function`` binding in today's module names.
+
+    Only the archive side of the comparison is translated: the live dispatch table has to name an
+    importable module *as the tree stands now*, so a table that still carries a pre-relocation
+    path reads as the gap it is. A run that really bound a different leg still lands on a
+    different module, and a mapping the layout cannot name raises rather than passing quietly.
+    """
+    module, separator, function = target.partition(":")
+    if not separator:
+        return target
+    return f"{ported_module_identity(module)}:{function}"
+
+
 #: The frozen ceiling, the replay archive, the ported tree's own manifest, and the licence
 #: document that is supposed to name every deviation inside it.
 RATCHET_SNAPSHOT: Final = "docs/quality/ratchet.json"
 PORT_REPORT_ARCHIVE: Final = "docs/port-report.md"
-UPSTREAM_LOCK: Final = "opendata_http/upstream.lock"
+UPSTREAM_LOCK: Final = f"{PORTED_ROOT}/upstream.lock"
 #: The shape ``report_port.py`` uses for one row per ported file, and the only shape ``AC-17|05``
 #: counts. Any other table in the same report that starts its rows with this prefix is silently
 #: added to that file count, so ``AC-5|06`` measures the collision instead of assuming it away.
@@ -2420,7 +2521,7 @@ PORTED_HTTP_VERBS: Final = frozenset({"get", "post", "put", "delete", "head", "p
 
 #: A path under the ported tree, put to every hook in the pre-commit config: *would this hook have
 #: been handed a ported file?* That is the question the item's ``exclude`` clause answers.
-PORTED_PROBE_PATH: Final = "opendata_http/stock/cons.py"
+PORTED_PROBE_PATH: Final = f"{PORTED_ROOT}/stock/cons.py"
 
 
 def run_split(argv: Sequence[str]) -> tuple[int, str]:
@@ -2454,6 +2555,20 @@ def py_files_under(root: str) -> list[str]:
         for path in base.rglob("*.py")
         if "__pycache__" not in path.parts
     )
+
+
+def first_party_py_files_under(root: str) -> list[str]:
+    """The ``.py`` paths under one root that the layout authority calls first-party.
+
+    The vendored tree nests *inside* ``opendata/``, so a plain walk of the selfdev roots counts
+    every ported file as first-party debt. Those files are AC-17|05's population, and leaving them
+    in this one pins ``ruff_dark`` and ``mypy_dark_outside_legacy`` at 325 permanently: the red
+    would read as "an exclude swallowed a first-party root" while the real cause is that two
+    different populations were added together, and no amount of real work turns it green.
+    """
+    return [
+        name for name in py_files_under(root) if _LAYOUT.classify_path(name) == _LAYOUT.FIRST_PARTY
+    ]
 
 
 def ruff_walked(paths: Sequence[str]) -> set[str]:
@@ -2638,9 +2753,31 @@ def snapshot_transitions(
     ]
 
 
+def _census_key(name: str) -> str:
+    """One census key in current source identity, or itself when it has no single identity."""
+    try:
+        identity: str = _LAYOUT.historical_identity(name)
+    except _LAYOUT.SourceLayoutError:
+        return name
+    return identity
+
+
+def canonical_counts(counts: dict[str, int]) -> dict[str, int]:
+    """Snapshot census keys expressed in today's source identity.
+
+    The ported root was renamed under recorded controlled events (upstream ``akshare`` ->
+    ``opendata_http`` in A2, then into the vendor package in C66). Comparing census keys by literal
+    name made each rename read as a scan scope that quietly disappeared, which is the opposite of
+    what the face is for; mapping through the layout authority's own history function keeps a
+    renamed root matched to the key that replaced it, while a root that is genuinely gone still has
+    no counterpart.
+    """
+    return {_census_key(name): value for name, value in counts.items()}
+
+
 def census_of(payload: dict[str, object], roots: Sequence[str]) -> int:
     """How many files a snapshot says were scanned under ``roots`` -- the growth a raise needs."""
-    counts = section_ints(payload, "file_counts")
+    counts = canonical_counts(section_ints(payload, "file_counts"))
     return sum(counts.get(root, 0) for root in roots)
 
 
@@ -2660,8 +2797,34 @@ def ceilings_raised(newer: dict[str, int], older: dict[str, int]) -> dict[str, s
 
 
 def scope_vanished(newer: dict[str, int], older: dict[str, int]) -> tuple[str, ...]:
-    """Measured packages that disappeared from the snapshot's own census list."""
-    return tuple(sorted(set(older) - set(newer)))
+    """Census keys that left the list with nowhere for their files to have gone.
+
+    Two relations must fail before a key is called gone. Names are matched under
+    :func:`canonical_counts`, so a root renamed by a recorded controlled event lines up with the
+    key that replaced it. And a key with no single identity -- the Fuyao directory, whose nine
+    ``.py`` files were distributed into the THS provider instead of moving as a block -- is
+    forgiven when the newer census counts at least as many files as it lost: the population is
+    still measured, it only changed parent. An exclude that swallows a root leaves the total
+    short by exactly that root's count, which is the contraction this face exists to catch.
+    """
+    canon_new, canon_old = canonical_counts(newer), canonical_counts(older)
+    kept = sum(value for key, value in canon_old.items() if key in canon_new)
+    reappearing = sum(canon_new.values()) - kept
+    return tuple(
+        key for key in sorted(set(canon_old) - set(canon_new)) if canon_old[key] > reappearing
+    )
+
+
+def scope_reparented(newer: dict[str, int], older: dict[str, int]) -> tuple[str, ...]:
+    """Keys that left the census list while their file count reappeared under another root.
+
+    Reported rather than quietly forgiven: a re-parenting is still a scope change a reader of the
+    snapshot should see, and printing it is what keeps "the files moved" distinguishable from
+    "the files stopped being measured" in the next round's reading.
+    """
+    gone = set(scope_vanished(newer, older))
+    canon_new, canon_old = canonical_counts(newer), canonical_counts(older)
+    return tuple(key for key in sorted(set(canon_old) - set(canon_new)) if key not in gone)
 
 
 #: How many snapshot transitions count as "this round's": the working tree against HEAD, and
@@ -2701,6 +2864,7 @@ def ceiling_history(ctx: Context, names: Sequence[str], roots: Sequence[str]) ->
 
     raised: list[str] = []
     flat_raises: list[str] = []
+    reparented: list[str] = []
     vanished: list[list[str]] = [[], []]
     for index, (new_label, old_label, newer, older) in enumerate(steps):
         flat_census = census_of(newer, roots) == census_of(older, roots)
@@ -2713,10 +2877,13 @@ def ceiling_history(ctx: Context, names: Sequence[str], roots: Sequence[str]) ->
             raised.append(entry)
             if flat_census:
                 flat_raises.append(entry)
-        gone = scope_vanished(
-            section_ints(newer, "file_counts"),
-            section_ints(older, "file_counts"),
-        )
+        older_counts = canonical_counts(section_ints(older, "file_counts"))
+        newer_counts = canonical_counts(section_ints(newer, "file_counts"))
+        reparented += [
+            f"{old_label}->{new_label} {root}({older_counts[root]})"
+            for root in scope_reparented(newer_counts, older_counts)
+        ]
+        gone = scope_vanished(newer_counts, older_counts)
         bucket = vanished[0] if index < RECENT_TRANSITIONS else vanished[1]
         bucket += [f"{old_label}->{new_label} {root}" for root in gone]
 
@@ -2735,6 +2902,8 @@ def ceiling_history(ctx: Context, names: Sequence[str], roots: Sequence[str]) ->
         "vanish_recent_detail": "; ".join(vanished[0]),
         "vanish_older": count(len(vanished[1])),
         "vanish_older_detail": "; ".join(vanished[1]),
+        "reparented": count(len(reparented)),
+        "reparented_detail": "; ".join(reparented),
         "trend": " / ".join(f"{name} {_at(oldest, name)}→{_at(newest, name)}" for name in names),
     }
 
@@ -2862,11 +3031,11 @@ def measure_ac17_03(ctx: Context) -> Facts:
     #: with the same characters (``scripts`` vs a hypothetical ``scripts_legacy``).
     measured = tuple(f"{root}/" for root in (*selfdev, *ported))
 
-    disk_selfdev = {path for root in selfdev for path in py_files_under(root)}
+    disk_selfdev = {path for root in selfdev for path in first_party_py_files_under(root)}
     walked = ruff_walked(selfdev)
-    disk_mypy = {path for root in mypy_paths for path in py_files_under(root)}
+    disk_mypy = {path for root in mypy_paths for path in first_party_py_files_under(root)}
     targets = mypy_targets(mypy_paths)
-    disk_bandit = {path for root in bandit_paths for path in py_files_under(root)}
+    disk_bandit = {path for root in bandit_paths for path in first_party_py_files_under(root)}
     scanned = bandit_scanned(bandit_paths)
 
     baseline_error = a2.BaselineError
@@ -2989,15 +3158,16 @@ def judge_ac17_03(facts: Facts) -> Verdict:
         detail_of(
             f"上限自己的历史（{facts['hist_steps']} 次转换）：抬高存量上限的次数 "
             f"{facts['raises']}；近 {RECENT_TRANSITIONS} 次转换里消失的被测根 "
-            f"{facts['vanish_recent']}，更早历史 {facts['vanish_older']}；"
-            f"存量上限轨迹 {facts['trend']}。棘轮只比较工作区与快照，"
-            "抬高上限这一步此前无人计量",
+            f"{facts['vanish_recent']}，更早历史 {facts['vanish_older']}；从名单退出但文件计数"
+            f"在他处回来的 {facts['reparented']} 个；存量上限轨迹 {facts['trend']}。"
+            "棘轮只比较工作区与快照，抬高上限这一步此前无人计量",
             "; ".join(
                 listing
                 for listing in (
                     facts["raise_detail"],
                     facts["vanish_recent_detail"],
                     facts["vanish_older_detail"],
+                    facts["reparented_detail"],
                 )
                 if listing
             ),
@@ -3199,7 +3369,8 @@ def judge_ac17_05(facts: Facts) -> Verdict:
         detail_of(
             f"搬运上限历史（{facts['hist_steps']} 次转换）：抬高 {facts['raises']} 次、"
             f"其中搬运文件数未变的 {facts['flat_raises']} 次；近 "
-            f"{RECENT_TRANSITIONS} 次转换消失的被测根 {facts['vanish_recent']}。"
+            f"{RECENT_TRANSITIONS} 次转换消失的被测根 {facts['vanish_recent']}、"
+            f"从名单退出但文件计数在他处回来的 {facts['reparented']} 个。"
             f"判据原文只要求「债务不高于棘轮快照」，故抬高只作待复核登记；轨迹 "
             f"{facts['trend']}",
             "; ".join(
@@ -3207,6 +3378,7 @@ def judge_ac17_05(facts: Facts) -> Verdict:
                 for listing in (
                     facts["flat_raise_detail"],
                     facts["vanish_older_detail"],
+                    facts["reparented_detail"],
                 )
                 if listing
             ),
@@ -6279,9 +6451,10 @@ ADJUST_UNIT_REL: Final = "tests/test_data_query.py"
 QFQ_OFFICIAL_REL: Final = "scripts/ops/qfq_official_check.py"
 QFQ_OFFICIAL_RUN: Final = "docs/evidence/C65/qfq-official-akshare-current.txt"
 
-#: The module AC-11|02 names when it says "akshare 官方 qfq": the ported akshare fetcher. A
-#: leg that resolves anywhere else is some other vendor's chain wearing the criterion's word.
-QFQ_AKSHARE_MODULE: Final = "opendata_http.stock_feature.stock_hist_em"
+#: The module AC-11|02 names when it says "akshare 官方 qfq": the ported akshare fetcher, in the
+#: dotted form it carries on disk today. A leg that resolves anywhere else is some other vendor's
+#: chain wearing the criterion's word.
+QFQ_AKSHARE_MODULE: Final = ported_module_identity("opendata_http.stock_feature.stock_hist_em")
 
 #: The knobs AC-11|01 enumerates, plus the pagination pair the same clause asks for.
 QUERY_KNOBS: Final = ("symbols", "start", "end", "source", "layer", "adjust", "fields")
@@ -6567,7 +6740,7 @@ def measure_ac11_02(ctx: Context) -> Facts:
         "leg_module": module,
         "leg_is_ported_akshare": flag("# Ported from akshare" in header),
         "run_official_leg": first_capture(run, r"^official: (\w+)"),
-        "run_official_target": first_capture(run, r"^official: \w+ (\S+)"),
+        "run_official_target": current_target_identity(first_capture(run, r"^official: \w+ (\S+)")),
         "run_ok_rows": count(len(re.findall(r"\|\s*PASS\s*\|", run))),
         "run_fail_rows": count(len(re.findall(r"\|\s*FAIL\s*\|", run))),
         "run_error_rows": count(len(re.findall(r"\|\s*ERROR\b", run))),
@@ -6690,7 +6863,7 @@ def measure_ac11_04(ctx: Context) -> Facts:
     scan = [
         rel
         for root in EXPLAIN_ROOTS
-        for rel in py_files_under(root)
+        for rel in first_party_py_files_under(root)
         if not rel.endswith("acceptance_item_probe.py")
     ]
     hits = grep_files(scan, EXPLAIN_STATEMENT)
@@ -6831,12 +7004,16 @@ def judge_ac11_05(facts: Facts) -> Verdict:
 # AC-5: the ported tree (manifest, package breadth, headers, resources, security)
 # --------------------------------------------------------------------------- #
 
-PORTED_ROOT: Final = "opendata_http"
+#: The ported root, its manifest and its dataset register all come from ``PORTED_ROOT`` above,
+#: which is read off :mod:`scripts.quality.source_layout` -- the tree moved into the akshare
+#: provider package, and a literal here would be a second, drifting answer to where it lives.
 PORTED_MANIFEST: Final = f"{PORTED_ROOT}/manifest.json"
 GEN_MANIFEST_TOOL: Final = "scripts/codemod/gen_manifest.py"
 DATASETS_REL: Final = f"{PORTED_ROOT}/datasets.py"
 REQ_DOC_REL: Final = "docs/迭代计划/迭代1-重构数据中台/需求文档.md"
-FIRST_PARTY_TREES: Final = ("opendata", "opendata_client", "opendata_fuyao", "scripts", "tests")
+#: First-party roots, walked through the shared classifier so the ``_vendor`` subtree nested
+#: inside ``opendata/`` is counted as ported and never as first-party call sites.
+FIRST_PARTY_TREES: Final = ("opendata", "opendata_client", "scripts", "tests")
 SECURITY_PORTED_TARGET: Final = "security-ported"
 BANDIT_CONFIG: Final = "bandit.yaml"
 
@@ -6844,7 +7021,7 @@ BANDIT_CONFIG: Final = "bandit.yaml"
 #: interpreter AC-16|07 proves carries no ``akshare``: an attribute the aggregator does not
 #: re-export is a function a first-party leg would fail to reach at routing time.
 PORTED_CALL_SNIPPET: Final = (
-    "import sys, opendata_http as ak\n"
+    f"import sys, {PORTED_MODULE} as ak\n"
     "missing = [n for n in sys.argv[1:] if not callable(getattr(ak, n, None))]\n"
     "print('\\n'.join(f'MISSING:{n}' for n in missing))\n"
 )
@@ -6885,48 +7062,78 @@ def entry_path(entry: dict[str, object]) -> str:
 def ported_call_targets() -> tuple[str, ...]:
     """Every name first-party code calls on the ported flat API, import aliases included.
 
-    ``import opendata_http as ak`` is as much a claim on the aggregator's surface as
-    ``opendata_http.stock_zh_a_hist()``, so the alias is resolved per file before the attributes
-    under it are counted; a leg that reaches for a name the facade does not re-export is a routing
-    failure waiting for the next ``fetch``.
+    ``import opendata.data.providers.akshare._vendor as ak`` is as much a claim on the
+    aggregator's surface as ``_vendor.stock_zh_a_hist()``, so the alias is resolved per file
+    before the attributes under it are counted; a leg that reaches for a name the facade does
+    not re-export is a routing failure waiting for the next ``fetch``.
+
+    The walk goes through the shared classifier rather than a bare ``rglob``: the ported subtree
+    now lives inside ``opendata/``, so an unclassified walk would count 325 MIT files as
+    first-party call sites and quietly widen this denominator.
     """
     found: set[str] = set()
-    for tree in FIRST_PARTY_TREES:
-        base = REPO_ROOT / tree
-        if not base.is_dir():
+    files = _LAYOUT.iter_unique_python_files(
+        REPO_ROOT,
+        FIRST_PARTY_TREES,
+        layers=frozenset({_LAYOUT.FIRST_PARTY}),
+    )
+    for source in files:
+        path = REPO_ROOT / source.identity
+        try:
+            parsed = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
+        except (SyntaxError, OSError):
             continue
-        for path in sorted(base.rglob("*.py")):
-            if "__pycache__" in path.parts:
+        bound = {PORTED_BIND_NAME}
+        for node in ast.walk(parsed):
+            if isinstance(node, ast.Import):
+                bound.update(
+                    alias.asname or alias.name
+                    for alias in node.names
+                    if alias.name == PORTED_MODULE
+                )
+        for node in ast.walk(parsed):
+            if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
                 continue
-            try:
-                parsed = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
-            except SyntaxError:
-                continue
-            bound = {PORTED_ROOT}
-            for node in ast.walk(parsed):
-                if isinstance(node, ast.Import):
-                    bound.update(
-                        alias.asname or alias.name
-                        for alias in node.names
-                        if alias.name == PORTED_ROOT
-                    )
-            for node in ast.walk(parsed):
-                if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
-                    continue
-                receiver = node.func.value
-                if isinstance(receiver, ast.Name) and receiver.id in bound:
-                    found.add(node.func.attr)
+            receiver = node.func.value
+            if isinstance(receiver, ast.Name) and receiver.id in bound:
+                found.add(node.func.attr)
     return tuple(sorted(found))
 
 
 @lru_cache(maxsize=1)
 def ported_reexports() -> frozenset[str]:
-    """The flat API names the ported aggregator re-exports from its submodules."""
+    """The flat API names the ported aggregator publishes, in either of its two shapes.
+
+    Before the move the aggregator spelled every endpoint as a static ``from opendata_http.stock
+    import ...``; the migrated facade is lazy and keeps its surface in a module-level ``_EXPORTS``
+    register resolved through ``__getattr__``. An AST scan that only knew the static form would
+    read an empty surface and report a perfectly reachable flat API as dead, so both shapes count
+    here. A register entry is accepted only when the module it points at is inside the ported
+    package: a name resolved out of a first-party BSL module is not part of the MIT surface, and
+    dropping it turns the claim ``every called name is published`` back into a red light.
+    """
     text = (REPO_ROOT / PORTED_ROOT / "__init__.py").read_text(encoding="utf-8", errors="replace")
     names: set[str] = set()
-    for node in ast.walk(ast.parse(text)):
-        if isinstance(node, ast.ImportFrom) and str(node.module or "").startswith(PORTED_ROOT):
+    tree = ast.parse(text)
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.ImportFrom):
+            continue
+        if str(node.module or "").startswith(PORTED_MODULE) or node.level > 0:
             names.update(alias.asname or alias.name for alias in node.names)
+    for statement in tree.body:
+        if not isinstance(statement, ast.Assign):
+            continue
+        if not any(isinstance(t, ast.Name) and t.id == "_EXPORTS" for t in statement.targets):
+            continue
+        if not isinstance(statement.value, ast.Dict):
+            continue
+        for key, value in zip(statement.value.keys, statement.value.values, strict=True):
+            if not isinstance(key, ast.Constant) or not isinstance(key.value, str):
+                continue
+            elements = value.elts if isinstance(value, ast.Tuple) else []
+            origin = elements[0].value if isinstance(elements[0], ast.Constant) else ""
+            if str(origin).startswith(PORTED_MODULE):
+                names.add(key.value)
     return frozenset(names)
 
 
@@ -7235,7 +7442,7 @@ def measure_ac5_04(ctx: Context) -> Facts:
     code, out = run_argv(["git", "ls-files", "akshare/"])
     tracked = sorted(line for line in out.splitlines() if line)
     spec = importlib.util.find_spec("akshare")
-    import_code, import_out = run_argv([sys.executable, "-c", f"import {PORTED_ROOT}"])
+    import_code, import_out = run_argv([sys.executable, "-c", f"import {PORTED_MODULE}"])
     names = ported_call_targets()
     call_code, call_out = run_argv([sys.executable, "-c", PORTED_CALL_SNIPPET, *names])
     absent = sorted(
@@ -7281,7 +7488,7 @@ def judge_ac5_04(facts: Facts) -> Verdict:
         f"根目录 `akshare/` 在磁盘上 = {facts['root_dir']}，git 索引里该前缀下 "
         f"{facts['tracked_under_root']} 个文件：{facts['tracked_names']}",
         f"本解释器 `importlib.util.find_spec('akshare')` = {facts['spec']}；"
-        f"`import {PORTED_ROOT}` exit={facts['import_exit']}（{facts['import_note']}）",
+        f"`import {PORTED_MODULE}` exit={facts['import_exit']}（{facts['import_note']}）",
         f"首方代码取用的 {facts['call_targets']} 个端点函数逐个 `callable(getattr(...))`，"
         f"取不到的 {facts['callable_missing']} 个：{facts['callable_missing_names']}"
         f"（探针 exit {facts['call_probe_exit']}）",
@@ -7691,49 +7898,11 @@ CODE_CLEAN_ROOM_PHRASE: Final = "no OpenBB code was consulted"
 # record -- and an echo names every provider, so a round would credit itself for measuring itself.
 PROBE_ECHO_MARKERS: Final = ("VERDICT ", "判据原文：", "本探针：", "台账现状：")
 
-#: First-party roots under the BSL licence -- what the MIT subtree may not import.
-BSL_IMPORT_ROOTS: Final = ("opendata", "opendata_fuyao", "opendata_client")
-
-#: The four shipped packages -- the only surface 「全库无 OpenBB 源码」 can be measured on.
-RUNTIME_PY_ROOTS: Final = ("opendata", "opendata_http", "opendata_fuyao", "opendata_client")
-
-#: Entry points the MIT subtree has to reach on its own.
-STANDALONE_MODULES: Final = (
-    "opendata_http.datasets",
-    "opendata_http.stock.cons",
-    "opendata_http.utils",
-)
-
-#: If importing this raises nothing the standalone run proved nothing.
-STANDALONE_CONTROL_MODULE: Final = "opendata.core.database"
-
-#: Run in its own interpreter: the BSL roots are made unimportable, then the MIT subtree is
-#: imported for real. Written as one string so the probe adds no second ``subprocess`` site.
-STANDALONE_PROBE_CODE: Final = """
-import importlib, sys
-BLOCKED = ("opendata", "opendata_fuyao", "opendata_client")
-class _BslBlocker:
-    def find_spec(self, name, path=None, target=None):
-        if name.split(".")[0] in BLOCKED:
-            raise ImportError("blocked BSL root: " + name)
-        return None
-sys.meta_path.insert(0, _BslBlocker())
-control = "not-blocked"
-try:
-    importlib.import_module("opendata.core.database")
-except ImportError:
-    control = "blocked"
-MODS = ("opendata_http.datasets", "opendata_http.stock.cons", "opendata_http.utils")
-try:
-    for name in MODS:
-        importlib.import_module(name)
-except BaseException as exc:
-    print("CONTROL=" + control)
-    print("FAILED=" + type(exc).__name__ + ": " + str(exc)[:120])
-    raise SystemExit(1)
-print("CONTROL=" + control)
-print("IMPORTED=" + str(len(MODS)))
-""".strip()
+#: The shipped packages -- the only surface 「全库无 OpenBB 源码」 can be measured on. C66 folded
+#: the ported akshare tree and the THS transport *inside* ``opendata``, so the two names the
+#: relocation removed are gone from this tuple rather than silently matching nothing: a root that
+#: no path starts with shrinks the census without changing a single printed number.
+RUNTIME_PY_ROOTS: Final = ("opendata", "opendata_client")
 
 
 @lru_cache(maxsize=4096)  # one entry per shipped file, which is fewer
@@ -7767,7 +7936,7 @@ def provider_packages(ctx: Context) -> list[str]:
 
 
 def runtime_py_files(ctx: Context) -> list[str]:
-    """Tracked ``.py`` paths under the four shipped roots that are present on disk.
+    """Tracked ``.py`` paths under the shipped roots that are present on disk.
 
     ``git ls-files`` reports the *index*, so a file deleted in the worktree is still listed while
     it is no longer shipped. The AC-16 face walks the shipped packages' import graph, and an
@@ -7827,7 +7996,7 @@ def clean_room_commits(names: Sequence[str]) -> list[str]:
 def clean_room_in_code(names: Sequence[str]) -> list[str]:
     """Which provider packages state the same thing inside their own module docstrings."""
     hits = grep_files(
-        py_files_under(SELFDEV_PROVIDER_ROOT),
+        first_party_py_files_under(SELFDEV_PROVIDER_ROOT),
         re.compile(re.escape(CODE_CLEAN_ROOM_PHRASE), re.IGNORECASE),
     )
     covered = set(names)
@@ -8022,8 +8191,8 @@ def judge_ac16_02(facts: Facts) -> Verdict:
         and number(facts["recorded_binds"]) >= number(facts["recorded_pkgs"])
     )
     readings = (
-        f"运行时四包（{', '.join(RUNTIME_PY_ROOTS)}）跟踪的 py 文件 "
-        f"{facts['runtime_py_files']} 个，"
+        f"运行时发货面（{', '.join(RUNTIME_PY_ROOTS)}，搬运层自 C66 起在 opendata 之内）"
+        f"跟踪的 py 文件 {facts['runtime_py_files']} 个，"
         f"逐个 AST 解析成功 {facts['runtime_py']} 个，共读到 {facts['import_roots_seen']} 个不同的"
         f"顶层 import 根 —— 走查不是空转（正向对照）；其中 import 根为 openbb / openbb-* 的 "
         f"{facts['openbb_imports']} 个：{facts['openbb_import_names']}",
@@ -12078,8 +12247,10 @@ PROBES: Final[tuple[Probe, ...]] = (
             "stale_paths": "0",
             "sha_mismatch": "0",
             "metadata_invalid": "0",
-            "metadata_exceptions": "3",
-            "metadata_expected": "3",
+            # The scanner's approved-context register is the denominator, so the clean reading
+            # copies it instead of pinning yesterday's number: a literal went stale the day the
+            # sixth context was added and the repaired face stopped looking like a real pass.
+            "metadata_exceptions": "*metadata_expected",
         },
     ),
     Probe(
@@ -12267,8 +12438,21 @@ PROBES: Final[tuple[Probe, ...]] = (
                 GAP,
             ),
             Break("上游 5 文件漏登记一条", (("registered", "4"),), GAP),
+            Break(
+                "上游文件的历史路径映射不到树上的现存文件",
+                (
+                    ("upstream_present", "4"),
+                    ("upstream_absent_names", f"{PORTED_ROOT}/stock/cons.py"),
+                ),
+                GAP,
+            ),
             Break("搬运代码里还留着凭证形状字面量", (("live_shapes", "2"),), GAP),
             Break("全历史扫描器变红", (("gitleaks_rc", "1"),), GAP),
+            Break(
+                "扫描器自报的泄漏数不是 0（读数与 exit 码互相矛盾的那一面）",
+                (("scan_leaks", "441"),),
+                GAP,
+            ),
             Break(".env.example 只依赖路径豁免而未扫描", (("template_config_ok", "no"),), GAP),
             Break("模板实际含有凭证形状", (("template_scan_rc", "1"),), GAP),
         ),
@@ -12286,8 +12470,11 @@ PROBES: Final[tuple[Probe, ...]] = (
             "rule_blocks": "2",
             "rule_shapes": "yes",
             "registered": "*upstream_files",
+            "upstream_present": "*upstream_files",
+            "upstream_absent_names": "",
             "live_shapes": "0",
             "gitleaks_rc": "0",
+            "scan_leaks": "0",
             "template_config_ok": "yes",
             "template_scan_rc": "0",
         },
@@ -13634,7 +13821,11 @@ PROBES: Final[tuple[Probe, ...]] = (
             Break("--update 不再拒绝长大（只降不升被拆）", (("only_down", "no"),), GAP),
             Break("引用策略缺失、SHA 过期或 AST 描述不匹配", (("policy_valid", "no"),), GAP),
             Break("旧 scanner 基线仍被当成当前版本", (("baseline_current", "no"),), GAP),
-            Break("三个精确元数据例外未全部绑定", (("metadata_exceptions", "2"),), GAP),
+            Break(
+                "精确元数据例外计数不等于 scanner 获准的上下文数",
+                (("metadata_exceptions", "2"),),
+                GAP,
+            ),
             Break("基线还在（本轮实际卡住的那一格：3 条没清零）", (("frozen", "3"),), GAP),
         ),
         repair={
@@ -13646,8 +13837,7 @@ PROBES: Final[tuple[Probe, ...]] = (
             "only_down": "yes",
             "policy_valid": "yes",
             "baseline_current": "yes",
-            "metadata_exceptions": "3",
-            "metadata_expected": "3",
+            "metadata_exceptions": "*metadata_expected",
             "frozen": "0",
         },
     ),
@@ -13756,17 +13946,19 @@ PROBES: Final[tuple[Probe, ...]] = (
             ),
             Break(
                 "akshare 条目指的是 sina 模块（换个键名自称 akshare）",
-                (("leg_module", "opendata_http.stock.stock_zh_a_sina"),),
+                (("leg_module", ported_module_identity("opendata_http.stock.stock_zh_a_sina")),),
                 GAP,
             ),
             Break("解析到的模块不再声明 akshare 出身", (("leg_is_ported_akshare", "no"),), GAP),
             Break("留档那次 run 走的不是当场默认腿", (("run_official_leg", "sina"),), GAP),
             Break(
-                "仪器改了、留档还是旧的那次 run",
+                "仪器改了、留档还是别的腿那次 run",
                 (
                     (
                         "run_official_target",
-                        "opendata_http.stock.stock_zh_a_sina:stock_zh_a_daily",
+                        current_target_identity(
+                            "opendata_http.stock.stock_zh_a_sina:stock_zh_a_daily"
+                        ),
                     ),
                 ),
                 GAP,
@@ -14017,7 +14209,11 @@ PROBES: Final[tuple[Probe, ...]] = (
             Break("有一处字符串常量指向上游", (("string_live", "1"),), GAP),
             Break("reference policy 缺失或 SHA/AST 绑定过期", (("policy_valid", "no"),), GAP),
             Break("零依赖基线还是旧 scanner 版本", (("baseline_current", "no"),), GAP),
-            Break("精确元数据例外计数不等于三", (("metadata_exceptions", "2"),), GAP),
+            Break(
+                "精确元数据例外计数不等于 scanner 获准的上下文数",
+                (("metadata_exceptions", "2"),),
+                GAP,
+            ),
             Break("冻结基线没有清零", (("frozen", "1"),), GAP),
         ),
         repair={
@@ -14030,8 +14226,7 @@ PROBES: Final[tuple[Probe, ...]] = (
             "string_live": "0",
             "policy_valid": "yes",
             "baseline_current": "yes",
-            "metadata_exceptions": "3",
-            "metadata_expected": "3",
+            "metadata_exceptions": "*metadata_expected",
             "frozen": "0",
         },
     ),

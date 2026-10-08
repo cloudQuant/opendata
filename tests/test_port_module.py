@@ -206,9 +206,7 @@ class TestSubmodulePort:
         assert lock.files["file_fold/opaque.dat"]["sha256"] == sha256_bytes(opaque)
         assert all(result.import_rewrites == 0 for result in results)
 
-    def test_root_port_generates_lazy_facade_and_preserves_source_hash(
-        self, tmp_path, monkeypatch
-    ):
+    def test_root_port_generates_lazy_facade_and_preserves_source_hash(self, tmp_path, monkeypatch):
         repo = make_upstream_repo(tmp_path)
         ported_root = tmp_path / "_vendor"
         monkeypatch.setattr(port_module, "PORTED_ROOT", ported_root)
@@ -444,9 +442,7 @@ def test_compare_numeric_diff_indices_preserve_tolerance_and_nan_semantics():
     reference = pd.DataFrame({"close": [1.0, np.nan, 3.0]})
     ported = pd.DataFrame({"close": [1.0, np.nan, 4.0]})
 
-    assert _compare_frames(reference, ported, {"close": "float64"}) == [
-        "cell close[2]: 3.0 != 4.0"
-    ]
+    assert _compare_frames(reference, ported, {"close": "float64"}) == ["cell close[2]: 3.0 != 4.0"]
 
 
 class TestInitLock:

@@ -6,335 +6,335 @@
 
 ## 逐文件对照（改写计数与重放一致性）
 
-| 文件 | 上游路径 | import 改写 | 字符串改写 | 人工改动 | 重放一致 |
-|------|---------|------------|-----------|---------|---------|
-| `__init__.py` | `akshare/__init__.py` | 294 | 0 | False | ✓ |
-| `_version.py` | `akshare/_version.py` | 0 | 0 | False | ✓ |
-| `bond/__init__.py` | `akshare/bond/__init__.py` | 0 | 0 | False | ✓ |
-| `bond/bond_buy_back_em.py` | `akshare/bond/bond_buy_back_em.py` | 0 | 0 | False | ✓ |
-| `bond/bond_cb_sina.py` | `akshare/bond/bond_cb_sina.py` | 0 | 0 | False | ✓ |
-| `bond/bond_cb_ths.py` | `akshare/bond/bond_cb_ths.py` | 0 | 0 | False | ✓ |
-| `bond/bond_cbond.py` | `akshare/bond/bond_cbond.py` | 1 | 0 | False | ✓ |
-| `bond/bond_china.py` | `akshare/bond/bond_china.py` | 2 | 0 | False | ✓ |
-| `bond/bond_china_money.py` | `akshare/bond/bond_china_money.py` | 1 | 0 | True | ✓ |
-| `bond/bond_convert.py` | `akshare/bond/bond_convert.py` | 1 | 0 | True | ✓ |
-| `bond/bond_em.py` | `akshare/bond/bond_em.py` | 1 | 0 | False | ✓ |
-| `bond/bond_gb_sina.py` | `akshare/bond/bond_gb_sina.py` | 0 | 0 | False | ✓ |
-| `bond/bond_info_cm.py` | `akshare/bond/bond_info_cm.py` | 2 | 0 | False | ✓ |
-| `bond/bond_issue_cninfo.py` | `akshare/bond/bond_issue_cninfo.py` | 1 | 0 | False | ✓ |
-| `bond/bond_nafmii.py` | `akshare/bond/bond_nafmii.py` | 0 | 0 | False | ✓ |
-| `bond/bond_summary.py` | `akshare/bond/bond_summary.py` | 0 | 0 | False | ✓ |
-| `bond/bond_zh_cov.py` | `akshare/bond/bond_zh_cov.py` | 5 | 0 | False | ✓ |
-| `bond/bond_zh_sina.py` | `akshare/bond/bond_zh_sina.py` | 4 | 0 | False | ✓ |
-| `bond/cons.py` | `akshare/bond/cons.py` | 0 | 0 | False | ✓ |
-| `datasets.py` | `akshare/datasets.py` | 0 | 2 | True | ✓ |
-| `economic/__init__.py` | `akshare/economic/__init__.py` | 0 | 0 | False | ✓ |
-| `economic/cons.py` | `akshare/economic/cons.py` | 0 | 0 | False | ✓ |
-| `economic/macro_australia.py` | `akshare/economic/macro_australia.py` | 0 | 0 | False | ✓ |
-| `economic/macro_bank.py` | `akshare/economic/macro_bank.py` | 0 | 0 | False | ✓ |
-| `economic/macro_canada.py` | `akshare/economic/macro_canada.py` | 0 | 0 | False | ✓ |
-| `economic/macro_china.py` | `akshare/economic/macro_china.py` | 3 | 0 | False | ✓ |
-| `economic/macro_china_hk.py` | `akshare/economic/macro_china_hk.py` | 0 | 0 | False | ✓ |
-| `economic/macro_china_nbs.py` | `akshare/economic/macro_china_nbs.py` | 0 | 0 | False | ✓ |
-| `economic/macro_constitute.py` | `akshare/economic/macro_constitute.py` | 0 | 0 | False | ✓ |
-| `economic/macro_euro.py` | `akshare/economic/macro_euro.py` | 0 | 0 | False | ✓ |
-| `economic/macro_finance_ths.py` | `akshare/economic/macro_finance_ths.py` | 0 | 0 | False | ✓ |
-| `economic/macro_germany.py` | `akshare/economic/macro_germany.py` | 0 | 0 | False | ✓ |
-| `economic/macro_info_ws.py` | `akshare/economic/macro_info_ws.py` | 0 | 0 | False | ✓ |
-| `economic/macro_japan.py` | `akshare/economic/macro_japan.py` | 0 | 0 | False | ✓ |
-| `economic/macro_other.py` | `akshare/economic/macro_other.py` | 0 | 0 | False | ✓ |
-| `economic/macro_swiss.py` | `akshare/economic/macro_swiss.py` | 0 | 0 | False | ✓ |
-| `economic/macro_uk.py` | `akshare/economic/macro_uk.py` | 0 | 0 | False | ✓ |
-| `economic/macro_usa.py` | `akshare/economic/macro_usa.py` | 0 | 0 | False | ✓ |
-| `economic/marco_cnbs.py` | `akshare/economic/marco_cnbs.py` | 0 | 0 | False | ✓ |
-| `exceptions.py` | `akshare/exceptions.py` | 0 | 0 | False | ✓ |
-| `file_fold/__init__.py` | `akshare/file_fold/__init__.py` | 0 | 0 | False | ✓ |
-| `file_fold/calendar.json` | `akshare/file_fold/calendar.json` | 0 | 0 | False | ✓ |
-| `fund/__init__.py` | `akshare/fund/__init__.py` | 0 | 0 | False | ✓ |
-| `fund/fund_amac.py` | `akshare/fund/fund_amac.py` | 1 | 0 | False | ✓ |
-| `fund/fund_announcement_em.py` | `akshare/fund/fund_announcement_em.py` | 0 | 0 | False | ✓ |
-| `fund/fund_aum_em.py` | `akshare/fund/fund_aum_em.py` | 0 | 0 | False | ✓ |
-| `fund/fund_em.py` | `akshare/fund/fund_em.py` | 4 | 0 | False | ✓ |
-| `fund/fund_etf_em.py` | `akshare/fund/fund_etf_em.py` | 2 | 0 | False | ✓ |
-| `fund/fund_etf_sina.py` | `akshare/fund/fund_etf_sina.py` | 2 | 0 | False | ✓ |
-| `fund/fund_etf_sse.py` | `akshare/fund/fund_etf_sse.py` | 0 | 0 | False | ✓ |
-| `fund/fund_etf_szse.py` | `akshare/fund/fund_etf_szse.py` | 0 | 0 | False | ✓ |
-| `fund/fund_etf_ths.py` | `akshare/fund/fund_etf_ths.py` | 0 | 0 | False | ✓ |
-| `fund/fund_fee_em.py` | `akshare/fund/fund_fee_em.py` | 0 | 0 | False | ✓ |
-| `fund/fund_fhsp_em.py` | `akshare/fund/fund_fhsp_em.py` | 1 | 0 | False | ✓ |
-| `fund/fund_info_ths.py` | `akshare/fund/fund_info_ths.py` | 1 | 0 | False | ✓ |
-| `fund/fund_init_em.py` | `akshare/fund/fund_init_em.py` | 1 | 0 | False | ✓ |
-| `fund/fund_init_ths.py` | `akshare/fund/fund_init_ths.py` | 0 | 0 | False | ✓ |
-| `fund/fund_lof_em.py` | `akshare/fund/fund_lof_em.py` | 2 | 0 | False | ✓ |
-| `fund/fund_manager.py` | `akshare/fund/fund_manager.py` | 2 | 0 | False | ✓ |
-| `fund/fund_overview_em.py` | `akshare/fund/fund_overview_em.py` | 0 | 0 | False | ✓ |
-| `fund/fund_portfolio_em.py` | `akshare/fund/fund_portfolio_em.py` | 1 | 0 | False | ✓ |
-| `fund/fund_position_lg.py` | `akshare/fund/fund_position_lg.py` | 1 | 0 | False | ✓ |
-| `fund/fund_rank_em.py` | `akshare/fund/fund_rank_em.py` | 1 | 0 | False | ✓ |
-| `fund/fund_rating.py` | `akshare/fund/fund_rating.py` | 0 | 0 | False | ✓ |
-| `fund/fund_report_cninfo.py` | `akshare/fund/fund_report_cninfo.py` | 1 | 0 | False | ✓ |
-| `fund/fund_scale_em.py` | `akshare/fund/fund_scale_em.py` | 1 | 0 | False | ✓ |
-| `fund/fund_scale_sina.py` | `akshare/fund/fund_scale_sina.py` | 1 | 0 | False | ✓ |
-| `fund/fund_scale_szse.py` | `akshare/fund/fund_scale_szse.py` | 0 | 0 | False | ✓ |
-| `fund/fund_xq.py` | `akshare/fund/fund_xq.py` | 0 | 0 | False | ✓ |
-| `futures/__init__.py` | `akshare/futures/__init__.py` | 0 | 0 | False | ✓ |
-| `futures/cons.py` | `akshare/futures/cons.py` | 0 | 0 | False | ✓ |
-| `futures/cot.py` | `akshare/futures/cot.py` | 3 | 0 | False | ✓ |
-| `futures/futures_basis.py` | `akshare/futures/futures_basis.py` | 3 | 0 | False | ✓ |
-| `futures/futures_comex_em.py` | `akshare/futures/futures_comex_em.py` | 1 | 0 | False | ✓ |
-| `futures/futures_comm_ctp.py` | `akshare/futures/futures_comm_ctp.py` | 0 | 0 | False | ✓ |
-| `futures/futures_comm_js.py` | `akshare/futures/futures_comm_js.py` | 0 | 0 | False | ✓ |
-| `futures/futures_comm_qihuo.py` | `akshare/futures/futures_comm_qihuo.py` | 0 | 0 | False | ✓ |
-| `futures/futures_contract_detail.py` | `akshare/futures/futures_contract_detail.py` | 1 | 0 | False | ✓ |
-| `futures/futures_daily_bar.py` | `akshare/futures/futures_daily_bar.py` | 2 | 0 | False | ✓ |
-| `futures/futures_foreign.py` | `akshare/futures/futures_foreign.py` | 1 | 0 | False | ✓ |
-| `futures/futures_hf_em.py` | `akshare/futures/futures_hf_em.py` | 1 | 0 | True | ✓ |
-| `futures/futures_hist_em.py` | `akshare/futures/futures_hist_em.py` | 1 | 0 | False | ✓ |
-| `futures/futures_hq_sina.py` | `akshare/futures/futures_hq_sina.py` | 1 | 0 | False | ✓ |
-| `futures/futures_index_ccidx.py` | `akshare/futures/futures_index_ccidx.py` | 0 | 0 | False | ✓ |
-| `futures/futures_inventory_99.py` | `akshare/futures/futures_inventory_99.py` | 0 | 0 | False | ✓ |
-| `futures/futures_inventory_em.py` | `akshare/futures/futures_inventory_em.py` | 1 | 0 | False | ✓ |
-| `futures/futures_inventory_em_varieties.py` | `akshare/futures/futures_inventory_em_varieties.py` | 0 | 0 | False | ✓ |
-| `futures/futures_news_shmet.py` | `akshare/futures/futures_news_shmet.py` | 0 | 0 | False | ✓ |
-| `futures/futures_roll_yield.py` | `akshare/futures/futures_roll_yield.py` | 3 | 0 | False | ✓ |
-| `futures/futures_rule.py` | `akshare/futures/futures_rule.py` | 0 | 0 | False | ✓ |
-| `futures/futures_rule_em.py` | `akshare/futures/futures_rule_em.py` | 1 | 0 | False | ✓ |
-| `futures/futures_settle.py` | `akshare/futures/futures_settle.py` | 2 | 0 | False | ✓ |
-| `futures/futures_settlement_price_sgx.py` | `akshare/futures/futures_settlement_price_sgx.py` | 1 | 0 | False | ✓ |
-| `futures/futures_spot_stock_em.py` | `akshare/futures/futures_spot_stock_em.py` | 1 | 0 | False | ✓ |
-| `futures/futures_stock_js.py` | `akshare/futures/futures_stock_js.py` | 0 | 0 | False | ✓ |
-| `futures/futures_to_spot.py` | `akshare/futures/futures_to_spot.py` | 0 | 0 | False | ✓ |
-| `futures/futures_warehouse_receipt.py` | `akshare/futures/futures_warehouse_receipt.py` | 0 | 0 | False | ✓ |
-| `futures/futures_zh_sina.py` | `akshare/futures/futures_zh_sina.py` | 3 | 0 | False | ✓ |
-| `futures/receipt.py` | `akshare/futures/receipt.py` | 3 | 0 | False | ✓ |
-| `futures/requests_fun.py` | `akshare/futures/requests_fun.py` | 0 | 0 | False | ✓ |
-| `futures/symbol_var.py` | `akshare/futures/symbol_var.py` | 1 | 0 | False | ✓ |
-| `futures_derivative/__init__.py` | `akshare/futures_derivative/__init__.py` | 0 | 0 | False | ✓ |
-| `futures_derivative/cons.py` | `akshare/futures_derivative/cons.py` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_contract_info_cffex.py` | `akshare/futures_derivative/futures_contract_info_cffex.py` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_contract_info_czce.py` | `akshare/futures_derivative/futures_contract_info_czce.py` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_contract_info_dce.py` | `akshare/futures_derivative/futures_contract_info_dce.py` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_contract_info_gfex.py` | `akshare/futures_derivative/futures_contract_info_gfex.py` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_contract_info_ine.py` | `akshare/futures_derivative/futures_contract_info_ine.py` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_contract_info_shfe.py` | `akshare/futures_derivative/futures_contract_info_shfe.py` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_cot_sina.py` | `akshare/futures_derivative/futures_cot_sina.py` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_hog.py` | `akshare/futures_derivative/futures_hog.py` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_index_sina.py` | `akshare/futures_derivative/futures_index_sina.py` | 2 | 0 | False | ✓ |
-| `futures_derivative/futures_spot_sys.py` | `akshare/futures_derivative/futures_spot_sys.py` | 0 | 0 | False | ✓ |
-| `index/__init__.py` | `akshare/index/__init__.py` | 0 | 0 | False | ✓ |
-| `index/cons.py` | `akshare/index/cons.py` | 0 | 0 | False | ✓ |
-| `index/index_cflp.py` | `akshare/index/index_cflp.py` | 0 | 0 | False | ✓ |
-| `index/index_cni.py` | `akshare/index/index_cni.py` | 0 | 0 | False | ✓ |
-| `index/index_cons.py` | `akshare/index/index_cons.py` | 1 | 0 | True | ✓ |
-| `index/index_csindex.py` | `akshare/index/index_csindex.py` | 0 | 0 | False | ✓ |
-| `index/index_cx.py` | `akshare/index/index_cx.py` | 0 | 0 | False | ✓ |
-| `index/index_drewry.py` | `akshare/index/index_drewry.py` | 1 | 0 | False | ✓ |
-| `index/index_eri.py` | `akshare/index/index_eri.py` | 0 | 0 | False | ✓ |
-| `index/index_global_em.py` | `akshare/index/index_global_em.py` | 1 | 0 | False | ✓ |
-| `index/index_global_sina.py` | `akshare/index/index_global_sina.py` | 1 | 0 | False | ✓ |
-| `index/index_hog.py` | `akshare/index/index_hog.py` | 0 | 0 | False | ✓ |
-| `index/index_kq_fz.py` | `akshare/index/index_kq_fz.py` | 0 | 0 | False | ✓ |
-| `index/index_kq_ss.py` | `akshare/index/index_kq_ss.py` | 0 | 0 | False | ✓ |
-| `index/index_option_qvix.py` | `akshare/index/index_option_qvix.py` | 0 | 0 | False | ✓ |
-| `index/index_research_fund_sw.py` | `akshare/index/index_research_fund_sw.py` | 1 | 0 | False | ✓ |
-| `index/index_research_sw.py` | `akshare/index/index_research_sw.py` | 1 | 0 | False | ✓ |
-| `index/index_spot.py` | `akshare/index/index_spot.py` | 0 | 0 | False | ✓ |
-| `index/index_stock_hk.py` | `akshare/index/index_stock_hk.py` | 2 | 0 | False | ✓ |
-| `index/index_stock_us_sina.py` | `akshare/index/index_stock_us_sina.py` | 1 | 0 | False | ✓ |
-| `index/index_stock_zh.py` | `akshare/index/index_stock_zh.py` | 5 | 0 | False | ✓ |
-| `index/index_stock_zh_csindex.py` | `akshare/index/index_stock_zh_csindex.py` | 0 | 0 | False | ✓ |
-| `index/index_sugar.py` | `akshare/index/index_sugar.py` | 0 | 0 | False | ✓ |
-| `index/index_sw.py` | `akshare/index/index_sw.py` | 1 | 0 | False | ✓ |
-| `index/index_yw.py` | `akshare/index/index_yw.py` | 0 | 0 | False | ✓ |
-| `index/index_zh_a_scope.py` | `akshare/index/index_zh_a_scope.py` | 0 | 0 | False | ✓ |
-| `index/index_zh_em.py` | `akshare/index/index_zh_em.py` | 1 | 0 | True | ✓ |
-| `option/__init__.py` | `akshare/option/__init__.py` | 0 | 0 | False | ✓ |
-| `option/cons.py` | `akshare/option/cons.py` | 0 | 0 | False | ✓ |
-| `option/option_comm_qihuo.py` | `akshare/option/option_comm_qihuo.py` | 0 | 0 | False | ✓ |
-| `option/option_commodity.py` | `akshare/option/option_commodity.py` | 1 | 0 | False | ✓ |
-| `option/option_commodity_sina.py` | `akshare/option/option_commodity_sina.py` | 1 | 0 | False | ✓ |
-| `option/option_contract_info_ctp.py` | `akshare/option/option_contract_info_ctp.py` | 0 | 0 | False | ✓ |
-| `option/option_current_sse.py` | `akshare/option/option_current_sse.py` | 0 | 0 | False | ✓ |
-| `option/option_current_szse.py` | `akshare/option/option_current_szse.py` | 1 | 0 | False | ✓ |
-| `option/option_czce.py` | `akshare/option/option_czce.py` | 0 | 0 | False | ✓ |
-| `option/option_daily_stats_sse_szse.py` | `akshare/option/option_daily_stats_sse_szse.py` | 1 | 0 | False | ✓ |
-| `option/option_em.py` | `akshare/option/option_em.py` | 1 | 0 | True | ✓ |
-| `option/option_finance.py` | `akshare/option/option_finance.py` | 2 | 0 | False | ✓ |
-| `option/option_finance_sina.py` | `akshare/option/option_finance_sina.py` | 2 | 0 | False | ✓ |
-| `option/option_lhb_em.py` | `akshare/option/option_lhb_em.py` | 0 | 0 | False | ✓ |
-| `option/option_margin.py` | `akshare/option/option_margin.py` | 0 | 0 | False | ✓ |
-| `option/option_premium_analysis_em.py` | `akshare/option/option_premium_analysis_em.py` | 1 | 0 | False | ✓ |
-| `option/option_risk_analysis_em.py` | `akshare/option/option_risk_analysis_em.py` | 1 | 0 | False | ✓ |
-| `option/option_risk_indicator_sse.py` | `akshare/option/option_risk_indicator_sse.py` | 0 | 0 | False | ✓ |
-| `option/option_value_analysis_em.py` | `akshare/option/option_value_analysis_em.py` | 1 | 0 | False | ✓ |
-| `pro/__init__.py` | `akshare/pro/__init__.py` | 0 | 0 | False | ✓ |
-| `pro/client.py` | `akshare/pro/client.py` | 0 | 0 | False | ✓ |
-| `pro/cons.py` | `akshare/pro/cons.py` | 0 | 0 | False | ✓ |
-| `pro/data_pro.py` | `akshare/pro/data_pro.py` | 2 | 0 | False | ✓ |
-| `request.py` | `akshare/request.py` | 2 | 0 | False | ✓ |
-| `stock/__init__.py` | `akshare/stock/__init__.py` | 0 | 0 | False | ✓ |
-| `stock/cons.py` | `akshare/stock/cons.py` | 0 | 0 | True | ✓ |
-| `stock/stock_allotment_cninfo.py` | `akshare/stock/stock_allotment_cninfo.py` | 1 | 0 | False | ✓ |
-| `stock/stock_ask_bid_em.py` | `akshare/stock/stock_ask_bid_em.py` | 0 | 0 | False | ✓ |
-| `stock/stock_board_concept_em.py` | `akshare/stock/stock_board_concept_em.py` | 2 | 0 | False | ✓ |
-| `stock/stock_board_industry_em.py` | `akshare/stock/stock_board_industry_em.py` | 2 | 0 | False | ✓ |
-| `stock/stock_cg_equity_mortgage.py` | `akshare/stock/stock_cg_equity_mortgage.py` | 1 | 0 | False | ✓ |
-| `stock/stock_cg_guarantee.py` | `akshare/stock/stock_cg_guarantee.py` | 1 | 0 | False | ✓ |
-| `stock/stock_cg_lawsuit.py` | `akshare/stock/stock_cg_lawsuit.py` | 1 | 0 | False | ✓ |
-| `stock/stock_dividend_cninfo.py` | `akshare/stock/stock_dividend_cninfo.py` | 1 | 0 | False | ✓ |
-| `stock/stock_dzjy_em.py` | `akshare/stock/stock_dzjy_em.py` | 0 | 0 | False | ✓ |
-| `stock/stock_fund_em.py` | `akshare/stock/stock_fund_em.py` | 3 | 0 | False | ✓ |
-| `stock/stock_fund_hold.py` | `akshare/stock/stock_fund_hold.py` | 0 | 0 | False | ✓ |
-| `stock/stock_gsrl_em.py` | `akshare/stock/stock_gsrl_em.py` | 0 | 0 | False | ✓ |
-| `stock/stock_hk_comparison_em.py` | `akshare/stock/stock_hk_comparison_em.py` | 0 | 0 | False | ✓ |
-| `stock/stock_hk_famous.py` | `akshare/stock/stock_hk_famous.py` | 1 | 0 | False | ✓ |
-| `stock/stock_hk_fhpx_ths.py` | `akshare/stock/stock_hk_fhpx_ths.py` | 0 | 0 | False | ✓ |
-| `stock/stock_hk_hot_rank_em.py` | `akshare/stock/stock_hk_hot_rank_em.py` | 0 | 0 | False | ✓ |
-| `stock/stock_hk_sina.py` | `akshare/stock/stock_hk_sina.py` | 2 | 0 | False | ✓ |
-| `stock/stock_hold_control_cninfo.py` | `akshare/stock/stock_hold_control_cninfo.py` | 1 | 0 | False | ✓ |
-| `stock/stock_hold_control_em.py` | `akshare/stock/stock_hold_control_em.py` | 0 | 0 | False | ✓ |
-| `stock/stock_hold_num_cninfo.py` | `akshare/stock/stock_hold_num_cninfo.py` | 1 | 0 | False | ✓ |
-| `stock/stock_hot_rank_em.py` | `akshare/stock/stock_hot_rank_em.py` | 0 | 0 | False | ✓ |
-| `stock/stock_hot_search_baidu.py` | `akshare/stock/stock_hot_search_baidu.py` | 0 | 0 | False | ✓ |
-| `stock/stock_hot_up_em.py` | `akshare/stock/stock_hot_up_em.py` | 0 | 0 | False | ✓ |
-| `stock/stock_hsgt_em.py` | `akshare/stock/stock_hsgt_em.py` | 1 | 0 | False | ✓ |
-| `stock/stock_industry.py` | `akshare/stock/stock_industry.py` | 1 | 0 | False | ✓ |
-| `stock/stock_industry_cninfo.py` | `akshare/stock/stock_industry_cninfo.py` | 1 | 0 | False | ✓ |
-| `stock/stock_industry_pe_cninfo.py` | `akshare/stock/stock_industry_pe_cninfo.py` | 1 | 0 | False | ✓ |
-| `stock/stock_industry_sw.py` | `akshare/stock/stock_industry_sw.py` | 1 | 0 | False | ✓ |
-| `stock/stock_info.py` | `akshare/stock/stock_info.py` | 2 | 0 | False | ✓ |
-| `stock/stock_info_em.py` | `akshare/stock/stock_info_em.py` | 0 | 0 | False | ✓ |
-| `stock/stock_intraday_em.py` | `akshare/stock/stock_intraday_em.py` | 1 | 0 | False | ✓ |
-| `stock/stock_intraday_sina.py` | `akshare/stock/stock_intraday_sina.py` | 1 | 0 | False | ✓ |
-| `stock/stock_ipo_summary_cninfo.py` | `akshare/stock/stock_ipo_summary_cninfo.py` | 1 | 0 | False | ✓ |
-| `stock/stock_new_cninfo.py` | `akshare/stock/stock_new_cninfo.py` | 1 | 0 | False | ✓ |
-| `stock/stock_news_cx.py` | `akshare/stock/stock_news_cx.py` | 0 | 0 | False | ✓ |
-| `stock/stock_profile_cninfo.py` | `akshare/stock/stock_profile_cninfo.py` | 1 | 0 | False | ✓ |
-| `stock/stock_profile_em.py` | `akshare/stock/stock_profile_em.py` | 0 | 0 | False | ✓ |
-| `stock/stock_rank_forecast.py` | `akshare/stock/stock_rank_forecast.py` | 1 | 0 | False | ✓ |
-| `stock/stock_repurchase_em.py` | `akshare/stock/stock_repurchase_em.py` | 0 | 0 | False | ✓ |
-| `stock/stock_share_changes_cninfo.py` | `akshare/stock/stock_share_changes_cninfo.py` | 1 | 0 | False | ✓ |
-| `stock/stock_share_hold.py` | `akshare/stock/stock_share_hold.py` | 1 | 0 | False | ✓ |
-| `stock/stock_stop.py` | `akshare/stock/stock_stop.py` | 0 | 0 | False | ✓ |
-| `stock/stock_summary.py` | `akshare/stock/stock_summary.py` | 1 | 0 | False | ✓ |
-| `stock/stock_us_famous.py` | `akshare/stock/stock_us_famous.py` | 1 | 0 | False | ✓ |
-| `stock/stock_us_js.py` | `akshare/stock/stock_us_js.py` | 0 | 0 | False | ✓ |
-| `stock/stock_us_pink.py` | `akshare/stock/stock_us_pink.py` | 2 | 0 | False | ✓ |
-| `stock/stock_us_sina.py` | `akshare/stock/stock_us_sina.py` | 1 | 0 | False | ✓ |
-| `stock/stock_weibo_nlp.py` | `akshare/stock/stock_weibo_nlp.py` | 0 | 0 | False | ✓ |
-| `stock/stock_xq.py` | `akshare/stock/stock_xq.py` | 0 | 0 | False | ✓ |
-| `stock/stock_zh_a_sina.py` | `akshare/stock/stock_zh_a_sina.py` | 3 | 0 | False | ✓ |
-| `stock/stock_zh_a_special.py` | `akshare/stock/stock_zh_a_special.py` | 1 | 0 | False | ✓ |
-| `stock/stock_zh_a_tick_163.py` | `akshare/stock/stock_zh_a_tick_163.py` | 0 | 0 | False | ✓ |
-| `stock/stock_zh_a_tick_tx.py` | `akshare/stock/stock_zh_a_tick_tx.py` | 0 | 0 | False | ✓ |
-| `stock/stock_zh_a_tx.py` | `akshare/stock/stock_zh_a_tx.py` | 0 | 0 | False | ✓ |
-| `stock/stock_zh_ah_tx.py` | `akshare/stock/stock_zh_ah_tx.py` | 3 | 0 | False | ✓ |
-| `stock/stock_zh_b_sina.py` | `akshare/stock/stock_zh_b_sina.py` | 2 | 0 | False | ✓ |
-| `stock/stock_zh_comparison_em.py` | `akshare/stock/stock_zh_comparison_em.py` | 0 | 0 | False | ✓ |
-| `stock/stock_zh_kcb_report.py` | `akshare/stock/stock_zh_kcb_report.py` | 0 | 0 | False | ✓ |
-| `stock/stock_zh_kcb_sina.py` | `akshare/stock/stock_zh_kcb_sina.py` | 2 | 0 | False | ✓ |
-| `stock_feature/__init__.py` | `akshare/stock_feature/__init__.py` | 0 | 0 | False | ✓ |
-| `stock_feature/cons.py` | `akshare/stock_feature/cons.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_a_below_net_asset_statistics.py` | `akshare/stock_feature/stock_a_below_net_asset_statistics.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_a_high_low.py` | `akshare/stock_feature/stock_a_high_low.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_a_indicator.py` | `akshare/stock_feature/stock_a_indicator.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_a_pe_and_pb.py` | `akshare/stock_feature/stock_a_pe_and_pb.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_account_em.py` | `akshare/stock_feature/stock_account_em.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_all_pb.py` | `akshare/stock_feature/stock_all_pb.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_analyst_em.py` | `akshare/stock_feature/stock_analyst_em.py` | 2 | 0 | False | ✓ |
-| `stock_feature/stock_board_concept_ths.py` | `akshare/stock_feature/stock_board_concept_ths.py` | 3 | 0 | False | ✓ |
-| `stock_feature/stock_board_industry_ths.py` | `akshare/stock_feature/stock_board_industry_ths.py` | 3 | 0 | False | ✓ |
-| `stock_feature/stock_buffett_index_lg.py` | `akshare/stock_feature/stock_buffett_index_lg.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_classify_sina.py` | `akshare/stock_feature/stock_classify_sina.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_comment_em.py` | `akshare/stock_feature/stock_comment_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_concept_futu.py` | `akshare/stock_feature/stock_concept_futu.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_congestion_lg.py` | `akshare/stock_feature/stock_congestion_lg.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_cyq_em.py` | `akshare/stock_feature/stock_cyq_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_disclosure_cninfo.py` | `akshare/stock_feature/stock_disclosure_cninfo.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_dxsyl_em.py` | `akshare/stock_feature/stock_dxsyl_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_ebs_lg.py` | `akshare/stock_feature/stock_ebs_lg.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_esg_sina.py` | `akshare/stock_feature/stock_esg_sina.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_fhps_em.py` | `akshare/stock_feature/stock_fhps_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_fhps_ths.py` | `akshare/stock_feature/stock_fhps_ths.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_fund_flow.py` | `akshare/stock_feature/stock_fund_flow.py` | 2 | 0 | False | ✓ |
-| `stock_feature/stock_gddh_em.py` | `akshare/stock_feature/stock_gddh_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_gdfx_em.py` | `akshare/stock_feature/stock_gdfx_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_gdhs.py` | `akshare/stock_feature/stock_gdhs.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_gdzjc_em.py` | `akshare/stock_feature/stock_gdzjc_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_gpzy_em.py` | `akshare/stock_feature/stock_gpzy_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_gxl_lg.py` | `akshare/stock_feature/stock_gxl_lg.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_hist_em.py` | `akshare/stock_feature/stock_hist_em.py` | 2 | 0 | False | ✓ |
-| `stock_feature/stock_hist_tx.py` | `akshare/stock_feature/stock_hist_tx.py` | 3 | 0 | False | ✓ |
-| `stock_feature/stock_hk_valuation_baidu.py` | `akshare/stock_feature/stock_hk_valuation_baidu.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_hot_xq.py` | `akshare/stock_feature/stock_hot_xq.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_hsgt_em.py` | `akshare/stock_feature/stock_hsgt_em.py` | 2 | 0 | False | ✓ |
-| `stock_feature/stock_hsgt_exchange_rate.py` | `akshare/stock_feature/stock_hsgt_exchange_rate.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_hsgt_min_em.py` | `akshare/stock_feature/stock_hsgt_min_em.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_info.py` | `akshare/stock_feature/stock_info.py` | 2 | 0 | False | ✓ |
-| `stock_feature/stock_inner_trade_xq.py` | `akshare/stock_feature/stock_inner_trade_xq.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_irm_cninfo.py` | `akshare/stock_feature/stock_irm_cninfo.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_jgdy_em.py` | `akshare/stock_feature/stock_jgdy_em.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_lh_yybpm.py` | `akshare/stock_feature/stock_lh_yybpm.py` | 2 | 0 | False | ✓ |
-| `stock_feature/stock_lhb_em.py` | `akshare/stock_feature/stock_lhb_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_lhb_sina.py` | `akshare/stock_feature/stock_lhb_sina.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_margin_em.py` | `akshare/stock_feature/stock_margin_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_margin_sse.py` | `akshare/stock_feature/stock_margin_sse.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_margin_szse.py` | `akshare/stock_feature/stock_margin_szse.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_market_legu.py` | `akshare/stock_feature/stock_market_legu.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_pankou_em.py` | `akshare/stock_feature/stock_pankou_em.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_qsjy_em.py` | `akshare/stock_feature/stock_qsjy_em.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_report_em.py` | `akshare/stock_feature/stock_report_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_research_report_em.py` | `akshare/stock_feature/stock_research_report_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_sns_sseinfo.py` | `akshare/stock_feature/stock_sns_sseinfo.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_sy_em.py` | `akshare/stock_feature/stock_sy_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_technology_ths.py` | `akshare/stock_feature/stock_technology_ths.py` | 2 | 0 | False | ✓ |
-| `stock_feature/stock_tfp_em.py` | `akshare/stock_feature/stock_tfp_em.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_three_report_em.py` | `akshare/stock_feature/stock_three_report_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_ttm_lyr.py` | `akshare/stock_feature/stock_ttm_lyr.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_us_valuation_baidu.py` | `akshare/stock_feature/stock_us_valuation_baidu.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_value_em.py` | `akshare/stock_feature/stock_value_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_yjbb_em.py` | `akshare/stock_feature/stock_yjbb_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_yjyg_cninfo.py` | `akshare/stock_feature/stock_yjyg_cninfo.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_yjyg_em.py` | `akshare/stock_feature/stock_yjyg_em.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_yzxdr_em.py` | `akshare/stock_feature/stock_yzxdr_em.py` | 2 | 0 | False | ✓ |
-| `stock_feature/stock_zdhtmx_em.py` | `akshare/stock_feature/stock_zdhtmx_em.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_zf_pg.py` | `akshare/stock_feature/stock_zf_pg.py` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_zh_valuation_baidu.py` | `akshare/stock_feature/stock_zh_valuation_baidu.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_zh_vote_baidu.py` | `akshare/stock_feature/stock_zh_vote_baidu.py` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_ztb_em.py` | `akshare/stock_feature/stock_ztb_em.py` | 0 | 0 | False | ✓ |
-| `stock_feature/ths.js` | `akshare/stock_feature/ths.js` | 0 | 0 | False | ✓ |
-| `stock_fundamental/__init__.py` | `akshare/stock_fundamental/__init__.py` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_basic_info_xq.py` | `akshare/stock_fundamental/stock_basic_info_xq.py` | 1 | 0 | False | ✓ |
-| `stock_fundamental/stock_finance_hk_em.py` | `akshare/stock_fundamental/stock_finance_hk_em.py` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_finance_sina.py` | `akshare/stock_fundamental/stock_finance_sina.py` | 1 | 0 | True | ✓ |
-| `stock_fundamental/stock_finance_ths.py` | `akshare/stock_fundamental/stock_finance_ths.py` | 1 | 0 | False | ✓ |
-| `stock_fundamental/stock_finance_us_em.py` | `akshare/stock_fundamental/stock_finance_us_em.py` | 1 | 0 | False | ✓ |
-| `stock_fundamental/stock_gbjg_em.py` | `akshare/stock_fundamental/stock_gbjg_em.py` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_hold.py` | `akshare/stock_fundamental/stock_hold.py` | 1 | 0 | False | ✓ |
-| `stock_fundamental/stock_ipo_declare.py` | `akshare/stock_fundamental/stock_ipo_declare.py` | 2 | 0 | False | ✓ |
-| `stock_fundamental/stock_ipo_review.py` | `akshare/stock_fundamental/stock_ipo_review.py` | 2 | 0 | False | ✓ |
-| `stock_fundamental/stock_ipo_ths.py` | `akshare/stock_fundamental/stock_ipo_ths.py` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_ipo_tutor.py` | `akshare/stock_fundamental/stock_ipo_tutor.py` | 2 | 0 | False | ✓ |
-| `stock_fundamental/stock_kcb_detail_sse.py` | `akshare/stock_fundamental/stock_kcb_detail_sse.py` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_kcb_sse.py` | `akshare/stock_fundamental/stock_kcb_sse.py` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_notice.py` | `akshare/stock_fundamental/stock_notice.py` | 1 | 0 | False | ✓ |
-| `stock_fundamental/stock_profit_forecast_em.py` | `akshare/stock_fundamental/stock_profit_forecast_em.py` | 1 | 0 | False | ✓ |
-| `stock_fundamental/stock_profit_forecast_hk_etnet.py` | `akshare/stock_fundamental/stock_profit_forecast_hk_etnet.py` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_profit_forecast_ths.py` | `akshare/stock_fundamental/stock_profit_forecast_ths.py` | 1 | 0 | False | ✓ |
-| `stock_fundamental/stock_recommend.py` | `akshare/stock_fundamental/stock_recommend.py` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_register_em.py` | `akshare/stock_fundamental/stock_register_em.py` | 2 | 0 | False | ✓ |
-| `stock_fundamental/stock_restricted_em.py` | `akshare/stock_fundamental/stock_restricted_em.py` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_zygc.py` | `akshare/stock_fundamental/stock_zygc.py` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_zyjs_ths.py` | `akshare/stock_fundamental/stock_zyjs_ths.py` | 0 | 0 | False | ✓ |
-| `utils/__init__.py` | `akshare/utils/__init__.py` | 0 | 0 | False | ✓ |
-| `utils/cons.py` | `akshare/utils/cons.py` | 0 | 0 | False | ✓ |
-| `utils/context.py` | `akshare/utils/context.py` | 0 | 0 | False | ✓ |
-| `utils/demjson.py` | `akshare/utils/demjson.py` | 0 | 0 | False | ✓ |
-| `utils/func.py` | `akshare/utils/func.py` | 2 | 0 | False | ✓ |
-| `utils/multi_decrypt.py` | `akshare/utils/multi_decrypt.py` | 0 | 0 | False | ✓ |
-| `utils/request.py` | `akshare/utils/request.py` | 0 | 0 | False | ✓ |
-| `utils/token_process.py` | `akshare/utils/token_process.py` | 1 | 0 | False | ✓ |
-| `utils/tqdm.py` | `akshare/utils/tqdm.py` | 0 | 0 | False | ✓ |
+| 文件 | 上游路径 | 上游 SHA-256 | 搬运 SHA-256 | import 改写 | 字符串改写 | 人工改动 | 重放一致 |
+|------|---------|------------|-------------|------------|-----------|---------|---------|
+| `__init__.py` | `akshare/__init__.py` | `42391b2448bb` | `0a5d0d9eb41d` | 0 | 0 | False | ✓ |
+| `_version.py` | `akshare/_version.py` | `aabe70222b65` | `8a3008ebe2f3` | 0 | 0 | False | ✓ |
+| `bond/__init__.py` | `akshare/bond/__init__.py` | `44c4dfd5b4f9` | `c21b9119462f` | 0 | 0 | False | ✓ |
+| `bond/bond_buy_back_em.py` | `akshare/bond/bond_buy_back_em.py` | `897be22b879b` | `d271057305c4` | 0 | 0 | False | ✓ |
+| `bond/bond_cb_sina.py` | `akshare/bond/bond_cb_sina.py` | `fb586d02c59d` | `6d8801e0a2df` | 0 | 0 | False | ✓ |
+| `bond/bond_cb_ths.py` | `akshare/bond/bond_cb_ths.py` | `b31a5c1abe6d` | `73cd4ed37744` | 0 | 0 | False | ✓ |
+| `bond/bond_cbond.py` | `akshare/bond/bond_cbond.py` | `cd0500fbc245` | `5ce0dc1d55fe` | 1 | 0 | False | ✓ |
+| `bond/bond_china.py` | `akshare/bond/bond_china.py` | `1a3a76c7668d` | `322f9b5240e0` | 2 | 0 | False | ✓ |
+| `bond/bond_china_money.py` | `akshare/bond/bond_china_money.py` | `4e90ab2e4db3` | `11a1382970b9` | 1 | 0 | True | ✓ |
+| `bond/bond_convert.py` | `akshare/bond/bond_convert.py` | `9291a7d21a11` | `57b245a9ac14` | 1 | 0 | True | ✓ |
+| `bond/bond_em.py` | `akshare/bond/bond_em.py` | `139d7d07aa70` | `5bfe835cfed7` | 1 | 0 | False | ✓ |
+| `bond/bond_gb_sina.py` | `akshare/bond/bond_gb_sina.py` | `fcdefb0ff358` | `43086479f5b6` | 0 | 0 | False | ✓ |
+| `bond/bond_info_cm.py` | `akshare/bond/bond_info_cm.py` | `fbb40bacb26b` | `fd70d2644052` | 2 | 0 | False | ✓ |
+| `bond/bond_issue_cninfo.py` | `akshare/bond/bond_issue_cninfo.py` | `b4fa19845fbf` | `9c630b5b793f` | 1 | 0 | False | ✓ |
+| `bond/bond_nafmii.py` | `akshare/bond/bond_nafmii.py` | `71e91ca1bc97` | `649c0bd5c177` | 0 | 0 | False | ✓ |
+| `bond/bond_summary.py` | `akshare/bond/bond_summary.py` | `fd9d8e563137` | `9941f00abaf9` | 0 | 0 | False | ✓ |
+| `bond/bond_zh_cov.py` | `akshare/bond/bond_zh_cov.py` | `a4acf1b04b0c` | `3f8617074d79` | 5 | 0 | False | ✓ |
+| `bond/bond_zh_sina.py` | `akshare/bond/bond_zh_sina.py` | `1846ae534624` | `b7d7a2b5539b` | 4 | 0 | False | ✓ |
+| `bond/cons.py` | `akshare/bond/cons.py` | `958dff329357` | `263058a8dc9b` | 0 | 0 | False | ✓ |
+| `datasets.py` | `akshare/datasets.py` | `acab91359aea` | `5e3b7e47b60d` | 0 | 2 | True | ✓ |
+| `economic/__init__.py` | `akshare/economic/__init__.py` | `edd5894ab3ec` | `c3f23b25c5aa` | 0 | 0 | False | ✓ |
+| `economic/cons.py` | `akshare/economic/cons.py` | `81451fba3382` | `6716813e5452` | 0 | 0 | False | ✓ |
+| `economic/macro_australia.py` | `akshare/economic/macro_australia.py` | `6307c401be9e` | `ff35f5fb12d5` | 0 | 0 | False | ✓ |
+| `economic/macro_bank.py` | `akshare/economic/macro_bank.py` | `c06feee70e58` | `91a9a4dd69d9` | 0 | 0 | False | ✓ |
+| `economic/macro_canada.py` | `akshare/economic/macro_canada.py` | `20a5ea182878` | `958e1d69001b` | 0 | 0 | False | ✓ |
+| `economic/macro_china.py` | `akshare/economic/macro_china.py` | `42aeab61c394` | `b4c511095519` | 3 | 0 | False | ✓ |
+| `economic/macro_china_hk.py` | `akshare/economic/macro_china_hk.py` | `c1e6c6fef565` | `409d83cdd795` | 0 | 0 | False | ✓ |
+| `economic/macro_china_nbs.py` | `akshare/economic/macro_china_nbs.py` | `ab5784ddde65` | `2a2b2a632efa` | 0 | 0 | False | ✓ |
+| `economic/macro_constitute.py` | `akshare/economic/macro_constitute.py` | `7027d6ba9289` | `a33fbbbb4d55` | 0 | 0 | False | ✓ |
+| `economic/macro_euro.py` | `akshare/economic/macro_euro.py` | `98914d1d5de5` | `afbd5fad3ef5` | 0 | 0 | False | ✓ |
+| `economic/macro_finance_ths.py` | `akshare/economic/macro_finance_ths.py` | `bb4a9549955a` | `37999bc54fed` | 0 | 0 | False | ✓ |
+| `economic/macro_germany.py` | `akshare/economic/macro_germany.py` | `e08ec1f24079` | `0c78ef46f7b6` | 0 | 0 | False | ✓ |
+| `economic/macro_info_ws.py` | `akshare/economic/macro_info_ws.py` | `b743c372c582` | `86ef35a7126c` | 0 | 0 | False | ✓ |
+| `economic/macro_japan.py` | `akshare/economic/macro_japan.py` | `0211cab609b4` | `3d2e04656f01` | 0 | 0 | False | ✓ |
+| `economic/macro_other.py` | `akshare/economic/macro_other.py` | `547b9d465fb2` | `989bb034d0cc` | 0 | 0 | False | ✓ |
+| `economic/macro_swiss.py` | `akshare/economic/macro_swiss.py` | `372d80926ac3` | `282ade310e29` | 0 | 0 | False | ✓ |
+| `economic/macro_uk.py` | `akshare/economic/macro_uk.py` | `961d89282bec` | `7ba231574ac3` | 0 | 0 | False | ✓ |
+| `economic/macro_usa.py` | `akshare/economic/macro_usa.py` | `139621c32d52` | `8b03ebd87fa2` | 0 | 0 | False | ✓ |
+| `economic/marco_cnbs.py` | `akshare/economic/marco_cnbs.py` | `8162f2e3cf5e` | `0c6afb5f6496` | 0 | 0 | False | ✓ |
+| `exceptions.py` | `akshare/exceptions.py` | `5842632214a6` | `8991c9e6c4f0` | 0 | 0 | False | ✓ |
+| `file_fold/__init__.py` | `akshare/file_fold/__init__.py` | `44c4dfd5b4f9` | `c21b9119462f` | 0 | 0 | False | ✓ |
+| `file_fold/calendar.json` | `akshare/file_fold/calendar.json` | `f1f1ce33c5cc` | `f1f1ce33c5cc` | 0 | 0 | False | ✓ |
+| `fund/__init__.py` | `akshare/fund/__init__.py` | `44c4dfd5b4f9` | `c21b9119462f` | 0 | 0 | False | ✓ |
+| `fund/fund_amac.py` | `akshare/fund/fund_amac.py` | `b03a24a8d484` | `236b0ef62b3f` | 1 | 0 | False | ✓ |
+| `fund/fund_announcement_em.py` | `akshare/fund/fund_announcement_em.py` | `e44d3f793e76` | `e1f904cac92d` | 0 | 0 | False | ✓ |
+| `fund/fund_aum_em.py` | `akshare/fund/fund_aum_em.py` | `2f95ad8010e4` | `5eee705f55d2` | 0 | 0 | False | ✓ |
+| `fund/fund_em.py` | `akshare/fund/fund_em.py` | `385a95982c18` | `88e92ec93921` | 4 | 0 | False | ✓ |
+| `fund/fund_etf_em.py` | `akshare/fund/fund_etf_em.py` | `b962b42763e1` | `33b1ee8b83fb` | 2 | 0 | False | ✓ |
+| `fund/fund_etf_sina.py` | `akshare/fund/fund_etf_sina.py` | `2c83042b7e98` | `a307ee265ef4` | 2 | 0 | False | ✓ |
+| `fund/fund_etf_sse.py` | `akshare/fund/fund_etf_sse.py` | `11643f655712` | `c0791856eab6` | 0 | 0 | False | ✓ |
+| `fund/fund_etf_szse.py` | `akshare/fund/fund_etf_szse.py` | `05d9087044e3` | `8d1c5c0d9f48` | 0 | 0 | False | ✓ |
+| `fund/fund_etf_ths.py` | `akshare/fund/fund_etf_ths.py` | `411a161687df` | `2ad2a0a19d3a` | 0 | 0 | False | ✓ |
+| `fund/fund_fee_em.py` | `akshare/fund/fund_fee_em.py` | `fb0447b1eb99` | `2eaa994e0f89` | 0 | 0 | False | ✓ |
+| `fund/fund_fhsp_em.py` | `akshare/fund/fund_fhsp_em.py` | `1bd8ffc1bd94` | `c3fc1c959f2d` | 1 | 0 | False | ✓ |
+| `fund/fund_info_ths.py` | `akshare/fund/fund_info_ths.py` | `936c0a25a0d8` | `8f25b9dba788` | 1 | 0 | False | ✓ |
+| `fund/fund_init_em.py` | `akshare/fund/fund_init_em.py` | `f67adabd7237` | `aa7936ae4d8d` | 1 | 0 | False | ✓ |
+| `fund/fund_init_ths.py` | `akshare/fund/fund_init_ths.py` | `dd32785a8a41` | `a43ab2c8297b` | 0 | 0 | False | ✓ |
+| `fund/fund_lof_em.py` | `akshare/fund/fund_lof_em.py` | `0947b9766d1a` | `1d1c8c9d4634` | 2 | 0 | False | ✓ |
+| `fund/fund_manager.py` | `akshare/fund/fund_manager.py` | `a62422d406ea` | `eb0bb0443ac8` | 2 | 0 | False | ✓ |
+| `fund/fund_overview_em.py` | `akshare/fund/fund_overview_em.py` | `2364876945e7` | `599203076c89` | 0 | 0 | False | ✓ |
+| `fund/fund_portfolio_em.py` | `akshare/fund/fund_portfolio_em.py` | `8cc629b77ceb` | `fa998dbee981` | 1 | 0 | False | ✓ |
+| `fund/fund_position_lg.py` | `akshare/fund/fund_position_lg.py` | `9540407ed0ba` | `e38f7a1d540a` | 1 | 0 | False | ✓ |
+| `fund/fund_rank_em.py` | `akshare/fund/fund_rank_em.py` | `86634488cb6c` | `fce2997f17d0` | 1 | 0 | False | ✓ |
+| `fund/fund_rating.py` | `akshare/fund/fund_rating.py` | `8a0986332f21` | `99d5e8fe3fee` | 0 | 0 | False | ✓ |
+| `fund/fund_report_cninfo.py` | `akshare/fund/fund_report_cninfo.py` | `ae1ced69adc9` | `29002d5d4ca5` | 1 | 0 | False | ✓ |
+| `fund/fund_scale_em.py` | `akshare/fund/fund_scale_em.py` | `165e2bbbe8f5` | `9c0adad4c35b` | 1 | 0 | False | ✓ |
+| `fund/fund_scale_sina.py` | `akshare/fund/fund_scale_sina.py` | `034a88cd6050` | `35dffba9fa5e` | 1 | 0 | False | ✓ |
+| `fund/fund_scale_szse.py` | `akshare/fund/fund_scale_szse.py` | `0bfb4ba1b67d` | `4d63a1371a6c` | 0 | 0 | False | ✓ |
+| `fund/fund_xq.py` | `akshare/fund/fund_xq.py` | `03131907ef78` | `039c195dc459` | 0 | 0 | False | ✓ |
+| `futures/__init__.py` | `akshare/futures/__init__.py` | `44c4dfd5b4f9` | `c21b9119462f` | 0 | 0 | False | ✓ |
+| `futures/cons.py` | `akshare/futures/cons.py` | `543704ff6aa5` | `4066ac6387c5` | 0 | 0 | False | ✓ |
+| `futures/cot.py` | `akshare/futures/cot.py` | `074245d8069f` | `0c59f9f14a9c` | 3 | 0 | False | ✓ |
+| `futures/futures_basis.py` | `akshare/futures/futures_basis.py` | `b068f3079728` | `6dd7dd3bc41a` | 3 | 0 | False | ✓ |
+| `futures/futures_comex_em.py` | `akshare/futures/futures_comex_em.py` | `34fc0e083ea5` | `03f1405a9097` | 1 | 0 | False | ✓ |
+| `futures/futures_comm_ctp.py` | `akshare/futures/futures_comm_ctp.py` | `232551094be1` | `da7b84b38427` | 0 | 0 | False | ✓ |
+| `futures/futures_comm_js.py` | `akshare/futures/futures_comm_js.py` | `0bf873880597` | `b5c569d40cf1` | 0 | 0 | False | ✓ |
+| `futures/futures_comm_qihuo.py` | `akshare/futures/futures_comm_qihuo.py` | `1fecdfee3974` | `bc3678087ff3` | 0 | 0 | False | ✓ |
+| `futures/futures_contract_detail.py` | `akshare/futures/futures_contract_detail.py` | `f162d8a8bab1` | `981d5b35450a` | 1 | 0 | False | ✓ |
+| `futures/futures_daily_bar.py` | `akshare/futures/futures_daily_bar.py` | `c547fcc877d3` | `ad0bd1944ecf` | 2 | 0 | False | ✓ |
+| `futures/futures_foreign.py` | `akshare/futures/futures_foreign.py` | `7f93ace536b8` | `1161148e598d` | 1 | 0 | False | ✓ |
+| `futures/futures_hf_em.py` | `akshare/futures/futures_hf_em.py` | `95e9ae4b1069` | `1af064603142` | 1 | 0 | True | ✓ |
+| `futures/futures_hist_em.py` | `akshare/futures/futures_hist_em.py` | `c97902fe6732` | `9eb6ca039203` | 1 | 0 | False | ✓ |
+| `futures/futures_hq_sina.py` | `akshare/futures/futures_hq_sina.py` | `64bb14137f7f` | `82fa1c6767c7` | 1 | 0 | False | ✓ |
+| `futures/futures_index_ccidx.py` | `akshare/futures/futures_index_ccidx.py` | `c35a76c1a3aa` | `717cfb8c0502` | 0 | 0 | False | ✓ |
+| `futures/futures_inventory_99.py` | `akshare/futures/futures_inventory_99.py` | `9df8b33f5bd7` | `b6ef1327b05a` | 0 | 0 | False | ✓ |
+| `futures/futures_inventory_em.py` | `akshare/futures/futures_inventory_em.py` | `6c6b251bf02c` | `77a53f8e9751` | 1 | 0 | False | ✓ |
+| `futures/futures_inventory_em_varieties.py` | `akshare/futures/futures_inventory_em_varieties.py` | `bfcc46ea04c2` | `4ba154e9c799` | 0 | 0 | False | ✓ |
+| `futures/futures_news_shmet.py` | `akshare/futures/futures_news_shmet.py` | `d5ea59dccc03` | `42b94f0b1627` | 0 | 0 | False | ✓ |
+| `futures/futures_roll_yield.py` | `akshare/futures/futures_roll_yield.py` | `b49e614fce84` | `20f960b9c621` | 3 | 0 | False | ✓ |
+| `futures/futures_rule.py` | `akshare/futures/futures_rule.py` | `f514e8bc45a6` | `e2f749023901` | 0 | 0 | False | ✓ |
+| `futures/futures_rule_em.py` | `akshare/futures/futures_rule_em.py` | `a9c5df61989b` | `2e1090c33bce` | 1 | 0 | False | ✓ |
+| `futures/futures_settle.py` | `akshare/futures/futures_settle.py` | `96bb258b3368` | `e0eee3d04af7` | 2 | 0 | False | ✓ |
+| `futures/futures_settlement_price_sgx.py` | `akshare/futures/futures_settlement_price_sgx.py` | `a19d1987d013` | `60de0ac51732` | 1 | 0 | False | ✓ |
+| `futures/futures_spot_stock_em.py` | `akshare/futures/futures_spot_stock_em.py` | `e3708f900a2e` | `1c7f423ae46e` | 1 | 0 | False | ✓ |
+| `futures/futures_stock_js.py` | `akshare/futures/futures_stock_js.py` | `f9814817dd32` | `a72c0223b56a` | 0 | 0 | False | ✓ |
+| `futures/futures_to_spot.py` | `akshare/futures/futures_to_spot.py` | `991438eebb0c` | `4c628ea9a3df` | 0 | 0 | False | ✓ |
+| `futures/futures_warehouse_receipt.py` | `akshare/futures/futures_warehouse_receipt.py` | `9b63da9e9a43` | `25c5bf51a481` | 0 | 0 | False | ✓ |
+| `futures/futures_zh_sina.py` | `akshare/futures/futures_zh_sina.py` | `b44bac3e81ad` | `76fefca6aa19` | 3 | 0 | False | ✓ |
+| `futures/receipt.py` | `akshare/futures/receipt.py` | `8d2d37045f79` | `ff4c53d37689` | 3 | 0 | False | ✓ |
+| `futures/requests_fun.py` | `akshare/futures/requests_fun.py` | `d29203f27448` | `ae805834e2b4` | 0 | 0 | False | ✓ |
+| `futures/symbol_var.py` | `akshare/futures/symbol_var.py` | `d0d386dc0a32` | `96b3f27ada96` | 1 | 0 | False | ✓ |
+| `futures_derivative/__init__.py` | `akshare/futures_derivative/__init__.py` | `08e1723f4d60` | `114189e2960d` | 0 | 0 | False | ✓ |
+| `futures_derivative/cons.py` | `akshare/futures_derivative/cons.py` | `5641b51ccc0f` | `327b7128e988` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_contract_info_cffex.py` | `akshare/futures_derivative/futures_contract_info_cffex.py` | `7551dda8fee7` | `0c1d207af79a` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_contract_info_czce.py` | `akshare/futures_derivative/futures_contract_info_czce.py` | `3d039c5f50c1` | `4687ff67ec2d` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_contract_info_dce.py` | `akshare/futures_derivative/futures_contract_info_dce.py` | `6dde32af1464` | `243de9981501` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_contract_info_gfex.py` | `akshare/futures_derivative/futures_contract_info_gfex.py` | `9e521e5df2a8` | `8cb7a965a3dc` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_contract_info_ine.py` | `akshare/futures_derivative/futures_contract_info_ine.py` | `bf008f1be565` | `fed1e4c551f3` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_contract_info_shfe.py` | `akshare/futures_derivative/futures_contract_info_shfe.py` | `36324d62a465` | `2409c6014224` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_cot_sina.py` | `akshare/futures_derivative/futures_cot_sina.py` | `0a6a19bbfa48` | `4029298d5261` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_hog.py` | `akshare/futures_derivative/futures_hog.py` | `f1555def0e4b` | `d3e38994a9c0` | 0 | 0 | False | ✓ |
+| `futures_derivative/futures_index_sina.py` | `akshare/futures_derivative/futures_index_sina.py` | `b98926e18bd7` | `da4c9e567a76` | 2 | 0 | False | ✓ |
+| `futures_derivative/futures_spot_sys.py` | `akshare/futures_derivative/futures_spot_sys.py` | `1d6d55b967d4` | `8d3467c5e729` | 0 | 0 | False | ✓ |
+| `index/__init__.py` | `akshare/index/__init__.py` | `44c4dfd5b4f9` | `c21b9119462f` | 0 | 0 | False | ✓ |
+| `index/cons.py` | `akshare/index/cons.py` | `b2cb71be1b5d` | `e81d1f4dfbfe` | 0 | 0 | False | ✓ |
+| `index/index_cflp.py` | `akshare/index/index_cflp.py` | `1d62a2eba986` | `e34641e1bdbb` | 0 | 0 | False | ✓ |
+| `index/index_cni.py` | `akshare/index/index_cni.py` | `422d323130e9` | `922458c10d4d` | 0 | 0 | False | ✓ |
+| `index/index_cons.py` | `akshare/index/index_cons.py` | `b2ca1599163b` | `c739e4332665` | 1 | 0 | True | ✓ |
+| `index/index_csindex.py` | `akshare/index/index_csindex.py` | `f8bbe4ba0c4d` | `5d83676de505` | 0 | 0 | False | ✓ |
+| `index/index_cx.py` | `akshare/index/index_cx.py` | `8cb1977deda1` | `89c7c7ec3840` | 0 | 0 | False | ✓ |
+| `index/index_drewry.py` | `akshare/index/index_drewry.py` | `04ced5e8ff0a` | `da04c67073cc` | 1 | 0 | False | ✓ |
+| `index/index_eri.py` | `akshare/index/index_eri.py` | `375c8fdbf9f4` | `6b7225df9ada` | 0 | 0 | False | ✓ |
+| `index/index_global_em.py` | `akshare/index/index_global_em.py` | `f5d5d680541e` | `0417eb2906cd` | 1 | 0 | False | ✓ |
+| `index/index_global_sina.py` | `akshare/index/index_global_sina.py` | `340a2850a0fa` | `ec4c0a942c8e` | 1 | 0 | False | ✓ |
+| `index/index_hog.py` | `akshare/index/index_hog.py` | `91bf3aec155a` | `1d44c1544977` | 0 | 0 | False | ✓ |
+| `index/index_kq_fz.py` | `akshare/index/index_kq_fz.py` | `c1316ac47588` | `eee729b6e89f` | 0 | 0 | False | ✓ |
+| `index/index_kq_ss.py` | `akshare/index/index_kq_ss.py` | `54b8692926b5` | `14f74c90eebc` | 0 | 0 | False | ✓ |
+| `index/index_option_qvix.py` | `akshare/index/index_option_qvix.py` | `d4791ea2ab60` | `0d163c8c9ca1` | 0 | 0 | False | ✓ |
+| `index/index_research_fund_sw.py` | `akshare/index/index_research_fund_sw.py` | `22c5f0945d5b` | `e9cc1e404dea` | 1 | 0 | False | ✓ |
+| `index/index_research_sw.py` | `akshare/index/index_research_sw.py` | `cbcc7cd07417` | `5fa7ad855b32` | 1 | 0 | False | ✓ |
+| `index/index_spot.py` | `akshare/index/index_spot.py` | `99e4c14c2a76` | `5a5a54731d39` | 0 | 0 | False | ✓ |
+| `index/index_stock_hk.py` | `akshare/index/index_stock_hk.py` | `da70b36ab524` | `95c4ca61219c` | 2 | 0 | False | ✓ |
+| `index/index_stock_us_sina.py` | `akshare/index/index_stock_us_sina.py` | `2313a4e06e3d` | `a63768c5909b` | 1 | 0 | False | ✓ |
+| `index/index_stock_zh.py` | `akshare/index/index_stock_zh.py` | `bb136b769235` | `220068f28c82` | 5 | 0 | False | ✓ |
+| `index/index_stock_zh_csindex.py` | `akshare/index/index_stock_zh_csindex.py` | `b115680c3f9f` | `92de38948a9e` | 0 | 0 | False | ✓ |
+| `index/index_sugar.py` | `akshare/index/index_sugar.py` | `16ca26699ab8` | `7dc3abe69ed3` | 0 | 0 | False | ✓ |
+| `index/index_sw.py` | `akshare/index/index_sw.py` | `94d0aaf8e345` | `db1b52b8f9d3` | 1 | 0 | False | ✓ |
+| `index/index_yw.py` | `akshare/index/index_yw.py` | `a50a05ffd1cf` | `eed459c6026b` | 0 | 0 | False | ✓ |
+| `index/index_zh_a_scope.py` | `akshare/index/index_zh_a_scope.py` | `f5f126381be5` | `27e70b6b0e0d` | 0 | 0 | False | ✓ |
+| `index/index_zh_em.py` | `akshare/index/index_zh_em.py` | `9783e29bb93a` | `4bedaf3227bf` | 1 | 0 | True | ✓ |
+| `option/__init__.py` | `akshare/option/__init__.py` | `44c4dfd5b4f9` | `c21b9119462f` | 0 | 0 | False | ✓ |
+| `option/cons.py` | `akshare/option/cons.py` | `5a0797e14be4` | `14e29337d223` | 0 | 0 | False | ✓ |
+| `option/option_comm_qihuo.py` | `akshare/option/option_comm_qihuo.py` | `9236dda7ef78` | `b7ec3d8f63e6` | 0 | 0 | False | ✓ |
+| `option/option_commodity.py` | `akshare/option/option_commodity.py` | `363cb5bde80a` | `3853816a217e` | 1 | 0 | False | ✓ |
+| `option/option_commodity_sina.py` | `akshare/option/option_commodity_sina.py` | `34ddaacb07c6` | `4d9c45f54043` | 1 | 0 | False | ✓ |
+| `option/option_contract_info_ctp.py` | `akshare/option/option_contract_info_ctp.py` | `a9e8b968dd80` | `62c1229b6048` | 0 | 0 | False | ✓ |
+| `option/option_current_sse.py` | `akshare/option/option_current_sse.py` | `eb17857392b0` | `ef887c9afa9e` | 0 | 0 | False | ✓ |
+| `option/option_current_szse.py` | `akshare/option/option_current_szse.py` | `736e99a7acdd` | `0921792a951a` | 1 | 0 | False | ✓ |
+| `option/option_czce.py` | `akshare/option/option_czce.py` | `f450a0aa0c6b` | `f7c008947fc3` | 0 | 0 | False | ✓ |
+| `option/option_daily_stats_sse_szse.py` | `akshare/option/option_daily_stats_sse_szse.py` | `33c0c016f290` | `212451638d90` | 1 | 0 | False | ✓ |
+| `option/option_em.py` | `akshare/option/option_em.py` | `a77f7b60416e` | `d637d4f4e24f` | 1 | 0 | True | ✓ |
+| `option/option_finance.py` | `akshare/option/option_finance.py` | `c84ccd0d053e` | `5cb363b23d2f` | 2 | 0 | False | ✓ |
+| `option/option_finance_sina.py` | `akshare/option/option_finance_sina.py` | `b64570909816` | `98a4813a022e` | 2 | 0 | False | ✓ |
+| `option/option_lhb_em.py` | `akshare/option/option_lhb_em.py` | `9730134e8eda` | `329af0f98cef` | 0 | 0 | False | ✓ |
+| `option/option_margin.py` | `akshare/option/option_margin.py` | `8f9c32b7ca5d` | `26f3b9e015b2` | 0 | 0 | False | ✓ |
+| `option/option_premium_analysis_em.py` | `akshare/option/option_premium_analysis_em.py` | `134fd15529c4` | `ca6e5c6677d1` | 1 | 0 | False | ✓ |
+| `option/option_risk_analysis_em.py` | `akshare/option/option_risk_analysis_em.py` | `39c999e36130` | `74219604d512` | 1 | 0 | False | ✓ |
+| `option/option_risk_indicator_sse.py` | `akshare/option/option_risk_indicator_sse.py` | `0d0e1ef851d4` | `dcc525974077` | 0 | 0 | False | ✓ |
+| `option/option_value_analysis_em.py` | `akshare/option/option_value_analysis_em.py` | `288ccb2716b1` | `6906383e6a2c` | 1 | 0 | False | ✓ |
+| `pro/__init__.py` | `akshare/pro/__init__.py` | `e3b0c44298fc` | `43703466bd5f` | 0 | 0 | False | ✓ |
+| `pro/client.py` | `akshare/pro/client.py` | `5e2013e6e10a` | `91992d4d391a` | 0 | 0 | False | ✓ |
+| `pro/cons.py` | `akshare/pro/cons.py` | `6574ee8a1977` | `f4d8b39a8a58` | 0 | 0 | False | ✓ |
+| `pro/data_pro.py` | `akshare/pro/data_pro.py` | `5cba6a699354` | `9a673489d736` | 2 | 0 | False | ✓ |
+| `request.py` | `akshare/request.py` | `ec5bd1f864a1` | `e20988c185f5` | 2 | 0 | False | ✓ |
+| `stock/__init__.py` | `akshare/stock/__init__.py` | `8d26bddbad1d` | `20bf4f7ee5f1` | 0 | 0 | False | ✓ |
+| `stock/cons.py` | `akshare/stock/cons.py` | `89600a5738e0` | `e16cc610d105` | 0 | 0 | True | ✓ |
+| `stock/stock_allotment_cninfo.py` | `akshare/stock/stock_allotment_cninfo.py` | `3958d5756a76` | `ded1e074d40e` | 1 | 0 | False | ✓ |
+| `stock/stock_ask_bid_em.py` | `akshare/stock/stock_ask_bid_em.py` | `6e8ed5364a75` | `ba2b3b2fca73` | 0 | 0 | False | ✓ |
+| `stock/stock_board_concept_em.py` | `akshare/stock/stock_board_concept_em.py` | `0bfb52c0dda7` | `c178424b1fe5` | 2 | 0 | False | ✓ |
+| `stock/stock_board_industry_em.py` | `akshare/stock/stock_board_industry_em.py` | `d64d9666ca6c` | `b817943200c5` | 2 | 0 | False | ✓ |
+| `stock/stock_cg_equity_mortgage.py` | `akshare/stock/stock_cg_equity_mortgage.py` | `fd2ffb80eb65` | `1ddd6afdbbc3` | 1 | 0 | False | ✓ |
+| `stock/stock_cg_guarantee.py` | `akshare/stock/stock_cg_guarantee.py` | `b6ceea710861` | `262e6f773e65` | 1 | 0 | False | ✓ |
+| `stock/stock_cg_lawsuit.py` | `akshare/stock/stock_cg_lawsuit.py` | `644f74740e64` | `1ef97bf09bc6` | 1 | 0 | False | ✓ |
+| `stock/stock_dividend_cninfo.py` | `akshare/stock/stock_dividend_cninfo.py` | `a3d548dd1296` | `af5ca7c88b29` | 1 | 0 | False | ✓ |
+| `stock/stock_dzjy_em.py` | `akshare/stock/stock_dzjy_em.py` | `0cacf03a0d81` | `a741a3796868` | 0 | 0 | False | ✓ |
+| `stock/stock_fund_em.py` | `akshare/stock/stock_fund_em.py` | `3f59c10ac497` | `dae5ec1935ee` | 3 | 0 | False | ✓ |
+| `stock/stock_fund_hold.py` | `akshare/stock/stock_fund_hold.py` | `625bf24d6821` | `37921713cab4` | 0 | 0 | False | ✓ |
+| `stock/stock_gsrl_em.py` | `akshare/stock/stock_gsrl_em.py` | `2c5f3c3451eb` | `19b0aac4d54c` | 0 | 0 | False | ✓ |
+| `stock/stock_hk_comparison_em.py` | `akshare/stock/stock_hk_comparison_em.py` | `bd73dfaad00e` | `bb6ab8ba82fe` | 0 | 0 | False | ✓ |
+| `stock/stock_hk_famous.py` | `akshare/stock/stock_hk_famous.py` | `2540468929eb` | `949188c75827` | 1 | 0 | False | ✓ |
+| `stock/stock_hk_fhpx_ths.py` | `akshare/stock/stock_hk_fhpx_ths.py` | `68c2958e183b` | `da0c0bce45c5` | 0 | 0 | False | ✓ |
+| `stock/stock_hk_hot_rank_em.py` | `akshare/stock/stock_hk_hot_rank_em.py` | `397766d37016` | `376d17e309d3` | 0 | 0 | False | ✓ |
+| `stock/stock_hk_sina.py` | `akshare/stock/stock_hk_sina.py` | `bf20327adc78` | `7567b4b01d7c` | 2 | 0 | False | ✓ |
+| `stock/stock_hold_control_cninfo.py` | `akshare/stock/stock_hold_control_cninfo.py` | `2750865f5b59` | `8704cd61dab2` | 1 | 0 | False | ✓ |
+| `stock/stock_hold_control_em.py` | `akshare/stock/stock_hold_control_em.py` | `cc91fe1d76f2` | `a8ea33925574` | 0 | 0 | False | ✓ |
+| `stock/stock_hold_num_cninfo.py` | `akshare/stock/stock_hold_num_cninfo.py` | `258f4b719321` | `96625f2185c8` | 1 | 0 | False | ✓ |
+| `stock/stock_hot_rank_em.py` | `akshare/stock/stock_hot_rank_em.py` | `92d4476f1cac` | `303c2eec4db1` | 0 | 0 | False | ✓ |
+| `stock/stock_hot_search_baidu.py` | `akshare/stock/stock_hot_search_baidu.py` | `1781dcdf56d1` | `504dd49c03a9` | 0 | 0 | False | ✓ |
+| `stock/stock_hot_up_em.py` | `akshare/stock/stock_hot_up_em.py` | `692575408a53` | `7e0b8d6245de` | 0 | 0 | False | ✓ |
+| `stock/stock_hsgt_em.py` | `akshare/stock/stock_hsgt_em.py` | `b88e3373c22c` | `575888ab880b` | 1 | 0 | False | ✓ |
+| `stock/stock_industry.py` | `akshare/stock/stock_industry.py` | `806f05c3294a` | `c4cf4eba1ce2` | 1 | 0 | False | ✓ |
+| `stock/stock_industry_cninfo.py` | `akshare/stock/stock_industry_cninfo.py` | `faa80a58409c` | `9a3c8a0e8b69` | 1 | 0 | False | ✓ |
+| `stock/stock_industry_pe_cninfo.py` | `akshare/stock/stock_industry_pe_cninfo.py` | `970fb807b639` | `1df9a0a907c7` | 1 | 0 | False | ✓ |
+| `stock/stock_industry_sw.py` | `akshare/stock/stock_industry_sw.py` | `66266f02bd7c` | `33418fdada8e` | 1 | 0 | False | ✓ |
+| `stock/stock_info.py` | `akshare/stock/stock_info.py` | `6d69fb52d46a` | `30cb5cde1337` | 2 | 0 | False | ✓ |
+| `stock/stock_info_em.py` | `akshare/stock/stock_info_em.py` | `326443619390` | `cece843abf16` | 0 | 0 | False | ✓ |
+| `stock/stock_intraday_em.py` | `akshare/stock/stock_intraday_em.py` | `22dbeed8e8a5` | `718349d21bbc` | 1 | 0 | False | ✓ |
+| `stock/stock_intraday_sina.py` | `akshare/stock/stock_intraday_sina.py` | `eb197e670f79` | `9b07648f9e26` | 1 | 0 | False | ✓ |
+| `stock/stock_ipo_summary_cninfo.py` | `akshare/stock/stock_ipo_summary_cninfo.py` | `31afb9e06b0e` | `cce83a2c2a28` | 1 | 0 | False | ✓ |
+| `stock/stock_new_cninfo.py` | `akshare/stock/stock_new_cninfo.py` | `e99869bae7bd` | `885201198c19` | 1 | 0 | False | ✓ |
+| `stock/stock_news_cx.py` | `akshare/stock/stock_news_cx.py` | `05489bddcca2` | `588cf2a2888a` | 0 | 0 | False | ✓ |
+| `stock/stock_profile_cninfo.py` | `akshare/stock/stock_profile_cninfo.py` | `520507dc62b9` | `ce0ba3f892ad` | 1 | 0 | False | ✓ |
+| `stock/stock_profile_em.py` | `akshare/stock/stock_profile_em.py` | `a31844428bb0` | `71d24eebab6f` | 0 | 0 | False | ✓ |
+| `stock/stock_rank_forecast.py` | `akshare/stock/stock_rank_forecast.py` | `e54d1f6b8b73` | `bb06ae7bdf80` | 1 | 0 | False | ✓ |
+| `stock/stock_repurchase_em.py` | `akshare/stock/stock_repurchase_em.py` | `e827bd95ad12` | `1e83742653b2` | 0 | 0 | False | ✓ |
+| `stock/stock_share_changes_cninfo.py` | `akshare/stock/stock_share_changes_cninfo.py` | `b22cb83e2660` | `5471a4e035a2` | 1 | 0 | False | ✓ |
+| `stock/stock_share_hold.py` | `akshare/stock/stock_share_hold.py` | `870551b38959` | `53d1ced7235b` | 1 | 0 | False | ✓ |
+| `stock/stock_stop.py` | `akshare/stock/stock_stop.py` | `59116f9e5748` | `015f75e7ce72` | 0 | 0 | False | ✓ |
+| `stock/stock_summary.py` | `akshare/stock/stock_summary.py` | `d543f024d2e9` | `70ca6d12ac28` | 1 | 0 | False | ✓ |
+| `stock/stock_us_famous.py` | `akshare/stock/stock_us_famous.py` | `8e26d5a34ce1` | `27c6bfd0bc2f` | 1 | 0 | False | ✓ |
+| `stock/stock_us_js.py` | `akshare/stock/stock_us_js.py` | `56578651beca` | `074f77a0fb96` | 0 | 0 | False | ✓ |
+| `stock/stock_us_pink.py` | `akshare/stock/stock_us_pink.py` | `91d9fec8c05e` | `8d4e90f0f979` | 2 | 0 | False | ✓ |
+| `stock/stock_us_sina.py` | `akshare/stock/stock_us_sina.py` | `06548a314bf6` | `3a4abcb9216c` | 1 | 0 | False | ✓ |
+| `stock/stock_weibo_nlp.py` | `akshare/stock/stock_weibo_nlp.py` | `fa4ee0cc0bac` | `e9c7b2199c33` | 0 | 0 | False | ✓ |
+| `stock/stock_xq.py` | `akshare/stock/stock_xq.py` | `711a3c067287` | `6220fb74da26` | 0 | 0 | False | ✓ |
+| `stock/stock_zh_a_sina.py` | `akshare/stock/stock_zh_a_sina.py` | `a3acc9462598` | `ca1df55bdf97` | 3 | 0 | False | ✓ |
+| `stock/stock_zh_a_special.py` | `akshare/stock/stock_zh_a_special.py` | `136054ef714b` | `ba9b8b751ede` | 1 | 0 | False | ✓ |
+| `stock/stock_zh_a_tick_163.py` | `akshare/stock/stock_zh_a_tick_163.py` | `7af1d9423f62` | `d24439349f85` | 0 | 0 | False | ✓ |
+| `stock/stock_zh_a_tick_tx.py` | `akshare/stock/stock_zh_a_tick_tx.py` | `f873a2962a40` | `70a51f0a03c7` | 0 | 0 | False | ✓ |
+| `stock/stock_zh_a_tx.py` | `akshare/stock/stock_zh_a_tx.py` | `3ae12ea8f929` | `ad4448f5201a` | 0 | 0 | False | ✓ |
+| `stock/stock_zh_ah_tx.py` | `akshare/stock/stock_zh_ah_tx.py` | `ac7ec852d56a` | `9cf426233ec9` | 3 | 0 | False | ✓ |
+| `stock/stock_zh_b_sina.py` | `akshare/stock/stock_zh_b_sina.py` | `90b648e13cf0` | `efd46364a7a7` | 2 | 0 | False | ✓ |
+| `stock/stock_zh_comparison_em.py` | `akshare/stock/stock_zh_comparison_em.py` | `317782e8c97e` | `b0174c8d4f2d` | 0 | 0 | False | ✓ |
+| `stock/stock_zh_kcb_report.py` | `akshare/stock/stock_zh_kcb_report.py` | `ef3468bcd1aa` | `58b2fd92d431` | 0 | 0 | False | ✓ |
+| `stock/stock_zh_kcb_sina.py` | `akshare/stock/stock_zh_kcb_sina.py` | `64a168caaf58` | `89cd3b1f9bdb` | 2 | 0 | False | ✓ |
+| `stock_feature/__init__.py` | `akshare/stock_feature/__init__.py` | `736543046ca0` | `2ac9dca80627` | 0 | 0 | False | ✓ |
+| `stock_feature/cons.py` | `akshare/stock_feature/cons.py` | `87f70884ee18` | `5fb603a2baaf` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_a_below_net_asset_statistics.py` | `akshare/stock_feature/stock_a_below_net_asset_statistics.py` | `ea232570b96a` | `5919eb3c136c` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_a_high_low.py` | `akshare/stock_feature/stock_a_high_low.py` | `61b6c7e2bd86` | `fd3189b7e833` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_a_indicator.py` | `akshare/stock_feature/stock_a_indicator.py` | `ebf8134791e2` | `75b87198476d` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_a_pe_and_pb.py` | `akshare/stock_feature/stock_a_pe_and_pb.py` | `7617c1f0c005` | `998ac37905a2` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_account_em.py` | `akshare/stock_feature/stock_account_em.py` | `e15875ce8457` | `7425beec08c6` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_all_pb.py` | `akshare/stock_feature/stock_all_pb.py` | `e7b848a5ee45` | `0cef71b51f88` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_analyst_em.py` | `akshare/stock_feature/stock_analyst_em.py` | `745510a60399` | `e28330f222cf` | 2 | 0 | False | ✓ |
+| `stock_feature/stock_board_concept_ths.py` | `akshare/stock_feature/stock_board_concept_ths.py` | `4ac27f90f6ec` | `40edad9f13ca` | 3 | 0 | False | ✓ |
+| `stock_feature/stock_board_industry_ths.py` | `akshare/stock_feature/stock_board_industry_ths.py` | `7ae2bc95a75b` | `62f2e8942721` | 3 | 0 | False | ✓ |
+| `stock_feature/stock_buffett_index_lg.py` | `akshare/stock_feature/stock_buffett_index_lg.py` | `057336add918` | `ff71c2a29b03` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_classify_sina.py` | `akshare/stock_feature/stock_classify_sina.py` | `6bf01f5cf4df` | `daa17c9f7308` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_comment_em.py` | `akshare/stock_feature/stock_comment_em.py` | `2fc88b45bb1c` | `cdb258e97c87` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_concept_futu.py` | `akshare/stock_feature/stock_concept_futu.py` | `8ca27d99f749` | `083f0e311af7` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_congestion_lg.py` | `akshare/stock_feature/stock_congestion_lg.py` | `9401bee608a8` | `b28b3bf69d2f` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_cyq_em.py` | `akshare/stock_feature/stock_cyq_em.py` | `4cca1411e6d8` | `d212c9118e71` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_disclosure_cninfo.py` | `akshare/stock_feature/stock_disclosure_cninfo.py` | `565f4c04b428` | `9fe8d7867a80` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_dxsyl_em.py` | `akshare/stock_feature/stock_dxsyl_em.py` | `1e0a100ab98f` | `c4d6ac502848` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_ebs_lg.py` | `akshare/stock_feature/stock_ebs_lg.py` | `66300805cf87` | `e21fea524e42` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_esg_sina.py` | `akshare/stock_feature/stock_esg_sina.py` | `28f716d62107` | `06a2af1653ca` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_fhps_em.py` | `akshare/stock_feature/stock_fhps_em.py` | `131df9e6a8f5` | `1ffdf135e983` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_fhps_ths.py` | `akshare/stock_feature/stock_fhps_ths.py` | `87b35395af99` | `0399446b1587` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_fund_flow.py` | `akshare/stock_feature/stock_fund_flow.py` | `72a06ab05af3` | `586af2aa49b2` | 2 | 0 | False | ✓ |
+| `stock_feature/stock_gddh_em.py` | `akshare/stock_feature/stock_gddh_em.py` | `378b07fea17b` | `5fa6a208a607` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_gdfx_em.py` | `akshare/stock_feature/stock_gdfx_em.py` | `2d9b8fbba3d7` | `1266f6a4264f` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_gdhs.py` | `akshare/stock_feature/stock_gdhs.py` | `f4b47e70a132` | `69059c683c5f` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_gdzjc_em.py` | `akshare/stock_feature/stock_gdzjc_em.py` | `8666748103db` | `6cb6c263fb20` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_gpzy_em.py` | `akshare/stock_feature/stock_gpzy_em.py` | `efbdd8ac788d` | `9b092f183c47` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_gxl_lg.py` | `akshare/stock_feature/stock_gxl_lg.py` | `8f0685a231ea` | `0263b2b3629b` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_hist_em.py` | `akshare/stock_feature/stock_hist_em.py` | `292477c55d31` | `3d577e17cf6c` | 2 | 0 | False | ✓ |
+| `stock_feature/stock_hist_tx.py` | `akshare/stock_feature/stock_hist_tx.py` | `f392762da9dd` | `352a16f193cb` | 3 | 0 | False | ✓ |
+| `stock_feature/stock_hk_valuation_baidu.py` | `akshare/stock_feature/stock_hk_valuation_baidu.py` | `ed43948255c9` | `157a7d9700b3` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_hot_xq.py` | `akshare/stock_feature/stock_hot_xq.py` | `ba4aee8c9075` | `42364b88f5ad` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_hsgt_em.py` | `akshare/stock_feature/stock_hsgt_em.py` | `a62b50475098` | `9fcc8b52ce18` | 2 | 0 | False | ✓ |
+| `stock_feature/stock_hsgt_exchange_rate.py` | `akshare/stock_feature/stock_hsgt_exchange_rate.py` | `447ea8c0d7ce` | `146c2782329a` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_hsgt_min_em.py` | `akshare/stock_feature/stock_hsgt_min_em.py` | `0c136b6706db` | `bc8a2dc196c2` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_info.py` | `akshare/stock_feature/stock_info.py` | `059dfc396846` | `82c64d63dddc` | 2 | 0 | False | ✓ |
+| `stock_feature/stock_inner_trade_xq.py` | `akshare/stock_feature/stock_inner_trade_xq.py` | `5cd79085e796` | `2947a65e2e46` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_irm_cninfo.py` | `akshare/stock_feature/stock_irm_cninfo.py` | `c43d36f20965` | `3b63a93d8634` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_jgdy_em.py` | `akshare/stock_feature/stock_jgdy_em.py` | `86fb62dc1d9c` | `64ad652fbd3b` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_lh_yybpm.py` | `akshare/stock_feature/stock_lh_yybpm.py` | `ed596a03e506` | `e9b144ac8d63` | 2 | 0 | False | ✓ |
+| `stock_feature/stock_lhb_em.py` | `akshare/stock_feature/stock_lhb_em.py` | `1752f980b832` | `1591cb132267` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_lhb_sina.py` | `akshare/stock_feature/stock_lhb_sina.py` | `4ff01a3d3169` | `7e6a8bd52347` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_margin_em.py` | `akshare/stock_feature/stock_margin_em.py` | `0d1b99de7c2d` | `8a423aad0d08` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_margin_sse.py` | `akshare/stock_feature/stock_margin_sse.py` | `4f49448784b1` | `c9244e50136a` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_margin_szse.py` | `akshare/stock_feature/stock_margin_szse.py` | `186f168e00fc` | `e8998e999210` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_market_legu.py` | `akshare/stock_feature/stock_market_legu.py` | `15dbbba255d5` | `632223b6a320` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_pankou_em.py` | `akshare/stock_feature/stock_pankou_em.py` | `a329ef2469ad` | `4ee77b24977e` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_qsjy_em.py` | `akshare/stock_feature/stock_qsjy_em.py` | `2b1e74dee4ce` | `a2300d0c67d0` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_report_em.py` | `akshare/stock_feature/stock_report_em.py` | `fe75546ab3d2` | `60f57c232d0e` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_research_report_em.py` | `akshare/stock_feature/stock_research_report_em.py` | `ff3446c8eed6` | `853349d3e170` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_sns_sseinfo.py` | `akshare/stock_feature/stock_sns_sseinfo.py` | `eec83b1d3a6a` | `96469d504512` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_sy_em.py` | `akshare/stock_feature/stock_sy_em.py` | `1b2b0fd56bcf` | `813681353f67` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_technology_ths.py` | `akshare/stock_feature/stock_technology_ths.py` | `a7e2709dd779` | `414fb9da69df` | 2 | 0 | False | ✓ |
+| `stock_feature/stock_tfp_em.py` | `akshare/stock_feature/stock_tfp_em.py` | `6378e367be7c` | `60dc133736c2` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_three_report_em.py` | `akshare/stock_feature/stock_three_report_em.py` | `ea74754eff4d` | `15447385e0dd` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_ttm_lyr.py` | `akshare/stock_feature/stock_ttm_lyr.py` | `7ed95dfdae62` | `c3679d570931` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_us_valuation_baidu.py` | `akshare/stock_feature/stock_us_valuation_baidu.py` | `51c296782021` | `64c38e7642f3` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_value_em.py` | `akshare/stock_feature/stock_value_em.py` | `440f38d9d91e` | `89e2324e7f7c` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_yjbb_em.py` | `akshare/stock_feature/stock_yjbb_em.py` | `85006bd5a8fc` | `3e2db8c21f75` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_yjyg_cninfo.py` | `akshare/stock_feature/stock_yjyg_cninfo.py` | `28cd0ee6b1c1` | `33f001f0aef9` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_yjyg_em.py` | `akshare/stock_feature/stock_yjyg_em.py` | `20907350c580` | `60105e74c744` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_yzxdr_em.py` | `akshare/stock_feature/stock_yzxdr_em.py` | `fb5e8a0cfb41` | `15f3999640e2` | 2 | 0 | False | ✓ |
+| `stock_feature/stock_zdhtmx_em.py` | `akshare/stock_feature/stock_zdhtmx_em.py` | `c4245ad231e0` | `27aa09748d47` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_zf_pg.py` | `akshare/stock_feature/stock_zf_pg.py` | `9d8275b8b381` | `b8ce42293928` | 1 | 0 | False | ✓ |
+| `stock_feature/stock_zh_valuation_baidu.py` | `akshare/stock_feature/stock_zh_valuation_baidu.py` | `a316081cfebc` | `36c7d012de67` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_zh_vote_baidu.py` | `akshare/stock_feature/stock_zh_vote_baidu.py` | `7d4199954291` | `8fa8ac3936bb` | 0 | 0 | False | ✓ |
+| `stock_feature/stock_ztb_em.py` | `akshare/stock_feature/stock_ztb_em.py` | `ef31c6302677` | `961f802b5bdd` | 0 | 0 | False | ✓ |
+| `stock_feature/ths.js` | `akshare/stock_feature/ths.js` | `0163e41dfdcb` | `0163e41dfdcb` | 0 | 0 | False | ✓ |
+| `stock_fundamental/__init__.py` | `akshare/stock_fundamental/__init__.py` | `ba6b5d135e75` | `95d8957fa12b` | 0 | 0 | False | ✓ |
+| `stock_fundamental/stock_basic_info_xq.py` | `akshare/stock_fundamental/stock_basic_info_xq.py` | `e53a67e09157` | `354d5eb73b69` | 1 | 0 | False | ✓ |
+| `stock_fundamental/stock_finance_hk_em.py` | `akshare/stock_fundamental/stock_finance_hk_em.py` | `892b4e17d7fb` | `aa53125a1678` | 0 | 0 | False | ✓ |
+| `stock_fundamental/stock_finance_sina.py` | `akshare/stock_fundamental/stock_finance_sina.py` | `6e3604e1a867` | `7d5befe7e83c` | 1 | 0 | True | ✓ |
+| `stock_fundamental/stock_finance_ths.py` | `akshare/stock_fundamental/stock_finance_ths.py` | `cee9f881cf02` | `6e8f896ff628` | 1 | 0 | False | ✓ |
+| `stock_fundamental/stock_finance_us_em.py` | `akshare/stock_fundamental/stock_finance_us_em.py` | `9396d618e2e2` | `ffa6bf14d21e` | 1 | 0 | False | ✓ |
+| `stock_fundamental/stock_gbjg_em.py` | `akshare/stock_fundamental/stock_gbjg_em.py` | `83717cd733fc` | `e0c1efb90c15` | 0 | 0 | False | ✓ |
+| `stock_fundamental/stock_hold.py` | `akshare/stock_fundamental/stock_hold.py` | `862271da2de1` | `ef5729778b9b` | 1 | 0 | False | ✓ |
+| `stock_fundamental/stock_ipo_declare.py` | `akshare/stock_fundamental/stock_ipo_declare.py` | `324858020327` | `49f1173e56d5` | 2 | 0 | False | ✓ |
+| `stock_fundamental/stock_ipo_review.py` | `akshare/stock_fundamental/stock_ipo_review.py` | `5a27943847cf` | `64ac60ae32d1` | 2 | 0 | False | ✓ |
+| `stock_fundamental/stock_ipo_ths.py` | `akshare/stock_fundamental/stock_ipo_ths.py` | `d4a2960f1000` | `3e781cfe8558` | 0 | 0 | False | ✓ |
+| `stock_fundamental/stock_ipo_tutor.py` | `akshare/stock_fundamental/stock_ipo_tutor.py` | `97645d3608af` | `dc748cf590ba` | 2 | 0 | False | ✓ |
+| `stock_fundamental/stock_kcb_detail_sse.py` | `akshare/stock_fundamental/stock_kcb_detail_sse.py` | `536c38c14b8e` | `ad00ff0882f1` | 0 | 0 | False | ✓ |
+| `stock_fundamental/stock_kcb_sse.py` | `akshare/stock_fundamental/stock_kcb_sse.py` | `7030819429bb` | `6b2215405fe0` | 0 | 0 | False | ✓ |
+| `stock_fundamental/stock_notice.py` | `akshare/stock_fundamental/stock_notice.py` | `67070fcd919e` | `93e6f384da17` | 1 | 0 | False | ✓ |
+| `stock_fundamental/stock_profit_forecast_em.py` | `akshare/stock_fundamental/stock_profit_forecast_em.py` | `fd9956932cfe` | `8471073a3259` | 1 | 0 | False | ✓ |
+| `stock_fundamental/stock_profit_forecast_hk_etnet.py` | `akshare/stock_fundamental/stock_profit_forecast_hk_etnet.py` | `534039a11aae` | `b4008e88b314` | 0 | 0 | False | ✓ |
+| `stock_fundamental/stock_profit_forecast_ths.py` | `akshare/stock_fundamental/stock_profit_forecast_ths.py` | `f1fccf1b205c` | `ce8e15181a10` | 1 | 0 | False | ✓ |
+| `stock_fundamental/stock_recommend.py` | `akshare/stock_fundamental/stock_recommend.py` | `a75595170784` | `000247b3809f` | 0 | 0 | False | ✓ |
+| `stock_fundamental/stock_register_em.py` | `akshare/stock_fundamental/stock_register_em.py` | `64521bb25681` | `07b3f9b78a67` | 2 | 0 | False | ✓ |
+| `stock_fundamental/stock_restricted_em.py` | `akshare/stock_fundamental/stock_restricted_em.py` | `7b91b7a22641` | `d5dad781b94c` | 0 | 0 | False | ✓ |
+| `stock_fundamental/stock_zygc.py` | `akshare/stock_fundamental/stock_zygc.py` | `84b82d66641a` | `f06076f740d3` | 0 | 0 | False | ✓ |
+| `stock_fundamental/stock_zyjs_ths.py` | `akshare/stock_fundamental/stock_zyjs_ths.py` | `e5a9e249ff56` | `9627fb0a5fe0` | 0 | 0 | False | ✓ |
+| `utils/__init__.py` | `akshare/utils/__init__.py` | `1db2943f6bd9` | `ee81dc81ba86` | 0 | 0 | False | ✓ |
+| `utils/cons.py` | `akshare/utils/cons.py` | `3c56677641b7` | `6af0c61db0cd` | 0 | 0 | False | ✓ |
+| `utils/context.py` | `akshare/utils/context.py` | `1e5e243d4cd0` | `1967a47f2b4e` | 0 | 0 | False | ✓ |
+| `utils/demjson.py` | `akshare/utils/demjson.py` | `c53d1f714903` | `4fd9219ed697` | 0 | 0 | False | ✓ |
+| `utils/func.py` | `akshare/utils/func.py` | `9a3511623dda` | `23c46b78b4a1` | 2 | 0 | False | ✓ |
+| `utils/multi_decrypt.py` | `akshare/utils/multi_decrypt.py` | `696a0bda210f` | `57eb1ae9007f` | 0 | 0 | False | ✓ |
+| `utils/request.py` | `akshare/utils/request.py` | `54affea122c2` | `6a128f6abc04` | 0 | 0 | False | ✓ |
+| `utils/token_process.py` | `akshare/utils/token_process.py` | `9c6b609d9191` | `f9eacb12718c` | 1 | 0 | False | ✓ |
+| `utils/tqdm.py` | `akshare/utils/tqdm.py` | `32e3cdc1cb30` | `11085cbf982b` | 0 | 0 | False | ✓ |
 
 ## 人工待办清单
 
@@ -351,4 +351,4 @@
 | get_crypto_info_csv | crypto_info.zip | 否 | resource {file} is unavailable: the upstream akshare.data package never existed (A2.3); see docs/port-report.md |
 
 - 「同名文件在搬运清单内 = 是」只说明该文件作为资源被搬进来了、路径与上游 `akshare.data` 约定不同，不代表函数可运行：两条 `raise` 都在函数体第一句。
-- 把这两个函数改成读搬运树内的路径需要改 `opendata_http/datasets.py` 正文，那会让该文件与 `upstream.lock` 的确定性重放不再一致（`AC-17|05` 的重放面），属搬运基线决策，不在本报告口径内。
+- 把这两个函数改成读搬运树内的路径需要改 `opendata/data/providers/akshare/_vendor/datasets.py` 正文，那会让该文件与 `upstream.lock` 的确定性重放不再一致（`AC-17|05` 的重放面），属搬运基线决策，不在本报告口径内。

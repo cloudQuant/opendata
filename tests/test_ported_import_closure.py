@@ -355,9 +355,13 @@ def uncovered_requirements(modules: Iterable[str]) -> list[str]:
 def blocking_breaks_app_import(
     modules: Iterable[str], import_target: str = APP_IMPORT, export: str | None = None
 ) -> bool:
-    args = (",".join(sorted(set(modules))),) if export is None else (
-        ",".join(sorted(set(modules))),
-        export,
+    args = (
+        (",".join(sorted(set(modules))),)
+        if export is None
+        else (
+            ",".join(sorted(set(modules))),
+            export,
+        )
     )
     return _run_child(_BLOCK_PROBE, import_target, *args).returncode != 0
 
@@ -399,7 +403,6 @@ def test_every_module_scope_import_is_reachable_from_the_declared_set() -> None:
         f"`import {APP_IMPORT}` needs {missing}, which `{install}` does not provide. "
         "Declare them in [project.dependencies] or move the import behind a lazy boundary."
     )
-
 
     # Lazy exports are absent from the cold app's module closure, so preserve the
     # former whole-tree requirement census by scanning every Python file named by
@@ -457,9 +460,7 @@ def test_the_block_probe_device_has_teeth_in_both_directions() -> None:
     assert not blocking_breaks_app_import({"curl_cffi"}), (
         "blocking the lazy curl_cffi export must not break `import opendata.main`"
     )
-    assert blocking_breaks_app_import(
-        {"curl_cffi"}, VENDOR_PACKAGE, "stock_hk_valuation_baidu"
-    ), (
+    assert blocking_breaks_app_import({"curl_cffi"}, VENDOR_PACKAGE, "stock_hk_valuation_baidu"), (
         "blocking curl_cffi did not break the selected export access - the probe is dead"
     )
     assert "openpyxl" not in runtime_requirements(), "openpyxl is expected to stay a lazy import"

@@ -40,9 +40,7 @@ if TYPE_CHECKING:
 
 # The ported tree lives next to this script's package parent.
 REPO_ROOT = Path(__file__).resolve().parents[2]
-LOCK_PATH = (
-    REPO_ROOT / "opendata" / "data" / "providers" / "akshare" / "_vendor" / "upstream.lock"
-)
+LOCK_PATH = REPO_ROOT / "opendata" / "data" / "providers" / "akshare" / "_vendor" / "upstream.lock"
 
 
 @dataclass(frozen=True)

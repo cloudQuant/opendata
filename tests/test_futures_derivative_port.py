@@ -126,7 +126,7 @@ for name, (module_name, symbol_name) in expected.items():
     implementation = getattr(importlib.import_module(module_name), symbol_name)
     assert exported is implementation, f'{{name}} is not the original function object'
     assert inspect.signature(exported) == inspect.signature(implementation)
-version_module = importlib.import_module({(VENDOR_PACKAGE + '._version')!r})
+version_module = importlib.import_module({(VENDOR_PACKAGE + "._version")!r})
 assert vendor.__version__ is version_module.__version__
 assert vendor.__version__ == '1.18.64'
 try:

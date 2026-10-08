@@ -208,6 +208,17 @@ ignore = [
     "B008",
 ]
 
+[tool.ruff.lint.isort]
+# Both namespaces were retired by moving their files into packages (A2 renamed
+# the ported top level, C66 moved the Fuyao transport into
+# opendata/data/providers/ths/). ruff decides first-party vs third-party by
+# looking the name up on disk, so deleting the directories silently
+# re-classified every historical import in the archived evidence scripts and
+# broke I001 in 12 of them. Import classification has to be a config decision,
+# not an accident of which top-level directories exist this round; live code
+# imports neither name, so this only pins the archives' reading.
+known-first-party = ["opendata_fuyao", "opendata_http"]
+
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
