@@ -24,6 +24,7 @@ from opendata.data.providers.yfinance.provider import PROVIDER as YFINANCE_PROVI
 if TYPE_CHECKING:
     from opendata.data.capability import Capability
     from opendata.data.protocol import Fetcher
+    from opendata.data.providers._engine.spec import ModelSpec
     from opendata.data.registry import ProviderRegistry
 
 
@@ -170,6 +171,26 @@ def fetchers_for(source: str) -> tuple[Fetcher[Any, Any], ...]:
     return get_provider(source).fetchers
 
 
+def engine_declared_models() -> list[tuple[str, ModelSpec]]:
+    """Discover every declarative engine model through the runtime registration truth.
+
+    Discovery walks the provider descriptors and their lazy bindings -- the same objects the
+    registry stores -- because a hand-maintained second list of models is the failure AC2-02
+    refuses: a derived table can drift from the runtime it claims to describe. The engine type is
+    imported here rather than at module scope so importing the catalog still loads only provider
+    descriptors.
+    """
+    from opendata.data.providers._engine.spec import ModelSpec
+
+    found: list[tuple[str, ModelSpec]] = []
+    for descriptor in PROVIDERS:
+        for binding in descriptor.fetcher_bindings:
+            spec = getattr(binding.load(descriptor.source), "model_spec", None)
+            if isinstance(spec, ModelSpec):
+                found.append((descriptor.source, spec))
+    return sorted(found, key=lambda pair: f"{pair[0]}::{pair[1].model}")
+
+
 def register_providers(
     registry: ProviderRegistry | None = None,
 ) -> list[Capability]:
@@ -186,6 +207,7 @@ def register_providers(
 
 __all__ = [
     "PROVIDERS",
+    "engine_declared_models",
     "fetchers_for",
     "get_provider",
     "health_check",

@@ -63,7 +63,7 @@ class HttpResponse:
     document: Any
 
 
-#: ``(url, params, *, timeout, source) -> HttpResponse``; the test seam for I/O.
+#: ``(url, params, *, timeout, source, headers) -> HttpResponse``; the test seam for I/O.
 HttpGet = Callable[..., HttpResponse]
 
 
@@ -283,12 +283,19 @@ def _http_get_json(
     *,
     timeout: float,
     source: str,
+    headers: Mapping[str, str] | None = None,
 ) -> HttpResponse:
     """GET one JSON document through the governed client; patched in tests."""
     from opendata.data.http_client import HttpFetchError, get_shared_http_client
 
     try:
-        response = get_shared_http_client().get(url, params=params, timeout=timeout, source=source)
+        response = get_shared_http_client().get(
+            url,
+            params=params,
+            headers=dict(headers or {}),
+            timeout=timeout,
+            source=source,
+        )
     except HttpFetchError as exc:
         raise ProviderEngineError(
             f"{source.upper()}_HTTP_ERROR", status=exc.status, url=exc.url
@@ -412,6 +419,7 @@ def fetch_pages(
     if spec.credential:
         base_params[spec.credential_query_key or "api_key"] = _credential_value(spec)
     url = f"{spec.base_url.rstrip('/')}{render_path(spec, query)}"
+    headers = dict(spec.static_headers)
     get: HttpGet = transport or _http_get_json
     pages: list[object] = []
     collected = 0
@@ -423,7 +431,13 @@ def fetch_pages(
         if paging.kind == "cursor" and cursor is not None and paging.cursor_key:
             params[paging.cursor_key] = cursor
         page_size = effective_page_size(spec, params)
-        response = get(url, params, timeout=timeout, source=source or spec.error_prefix.lower())
+        response = get(
+            url,
+            params,
+            timeout=timeout,
+            source=source or spec.error_prefix.lower(),
+            headers=headers,
+        )
         _classify_status(response.status, spec, url)
         document = response.document
         rows = resolve_rows(document, spec.rows_pointer, spec)

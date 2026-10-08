@@ -32,6 +32,10 @@ _IDENTIFIER_TYPES = frozenset({"str", "int", "float", "bool", "date", "enum", "s
 #: declaration rather than a segment to encode.
 _PATH_PLACEHOLDER = re.compile(r"\{([A-Za-z_][A-Za-z0-9_]*)\}")
 
+#: An HTTP field name as RFC 7230 defines the token grammar. A declared header name that is not one
+#: of these cannot be sent, and a name built from arbitrary text is a header-injection vector.
+_HEADER_TOKEN = re.compile(r"[!#$%&'*+\-.^_`|~0-9A-Za-z]+\Z")
+
 
 def _check_identifier(value: str, label: str) -> str:
     """Return ``value`` when it is a usable, non-``auto`` python identifier."""
@@ -179,6 +183,7 @@ class ModelSpec:
         scenario: Consumer scenario the model serves, for the review record.
         error_prefix: Stable failure code prefix, usually the source in caps.
         row_envelope: Response keys copied onto every row as source facts.
+        static_headers: Request headers the endpoint requires on every page.
         notes: Anything a reviewer must not infer from the code alone.
     """
 
@@ -199,6 +204,7 @@ class ModelSpec:
     scenario: str = ""
     error_prefix: str = "PROVIDER"
     row_envelope: tuple[str, ...] = ()
+    static_headers: tuple[tuple[str, str], ...] = ()
     notes: str = ""
 
     @property
@@ -251,6 +257,24 @@ class ModelSpec:
             raise ValueError(f"{self.model}: a task without a scenario is not reviewable")
         if not self.error_prefix.isupper():
             raise ValueError(f"{self.model}: error_prefix must be upper-case")
+        # A declared header is sent verbatim on every page, so it is checked as an input that
+        # reaches the wire: an RFC 7230 token for the field name, no CR or LF in the value -- which
+        # would let one declaration inject a second header -- and no name declared in two casings,
+        # because HTTP field names are case-insensitive.
+        seen_headers: list[str] = []
+        for header in self.static_headers:
+            if not isinstance(header, tuple) or len(header) != 2:
+                raise ValueError(f"{self.model}: a static header is a (name, value) pair")
+            name, value = header
+            if not isinstance(name, str) or not _HEADER_TOKEN.match(name):
+                raise ValueError(f"{self.model}: {name!r} is not an HTTP field name")
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{self.model}: header {name!r} declares no value")
+            if any(character in value for character in "\r\n"):
+                raise ValueError(f"{self.model}: header {name!r} may not contain CR or LF")
+            if name.casefold() in seen_headers:
+                raise ValueError(f"{self.model}: header {name!r} is declared twice")
+            seen_headers.append(name.casefold())
         # Brace hygiene is checked before name resolution: ``"/a/{b"`` yields no match for the
         # placeholder pattern, so a template that cannot be substituted would otherwise be
         # accepted and then sent upstream with its braces intact.

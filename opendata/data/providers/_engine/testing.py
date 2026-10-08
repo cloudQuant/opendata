@@ -25,6 +25,8 @@ from opendata.data.request_budget import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from opendata.data.providers._engine.spec import ModelSpec
 
 RIGHTS_EVIDENCE = "test-fixture:offline-only:fake-transport"
@@ -167,6 +169,31 @@ class SyntheticTransport:
         self._responses = responses
         self.calls: list[dict[str, object]] = []
 
+    def record(
+        self,
+        url: str,
+        params: dict[str, str],
+        *,
+        timeout: float,
+        source: str,
+        headers: Mapping[str, str] | None = None,
+    ) -> None:
+        """Append one request to the call log.
+
+        Every transport shares this recorder, so a new request option cannot be recorded by one
+        class and dropped by the other two -- which is what makes the recorded request the thing
+        a case asserts on rather than a copy of what the case hoped to send.
+        """
+        self.calls.append(
+            {
+                "url": url,
+                "params": dict(params),
+                "timeout": timeout,
+                "source": source,
+                "headers": dict(headers or {}),
+            }
+        )
+
     def __call__(
         self,
         url: str,
@@ -174,12 +201,11 @@ class SyntheticTransport:
         *,
         timeout: float,
         source: str,
+        headers: Mapping[str, str] | None = None,
     ) -> HttpResponse:
         """Return the response keyed to this exact request, or fail loudly."""
         key = (url, frozenset(params.items()))
-        self.calls.append(
-            {"url": url, "params": dict(params), "timeout": timeout, "source": source}
-        )
+        self.record(url, params, timeout=timeout, source=source, headers=headers)
         try:
             return self._responses[key]
         except KeyError:
@@ -207,11 +233,10 @@ class FixedResponseTransport(SyntheticTransport):
         *,
         timeout: float,
         source: str,
+        headers: Mapping[str, str] | None = None,
     ) -> HttpResponse:
         """Record the request and return the canned response."""
-        self.calls.append(
-            {"url": url, "params": dict(params), "timeout": timeout, "source": source}
-        )
+        self.record(url, params, timeout=timeout, source=source, headers=headers)
         return self._response
 
 
@@ -237,15 +262,14 @@ class SequencedResponseTransport(SyntheticTransport):
         *,
         timeout: float,
         source: str,
+        headers: Mapping[str, str] | None = None,
     ) -> HttpResponse:
         """Serve the next scripted page.
 
         Raises:
             AssertionError: The engine asked for more pages than the script prepared.
         """
-        self.calls.append(
-            {"url": url, "params": dict(params), "timeout": timeout, "source": source}
-        )
+        self.record(url, params, timeout=timeout, source=source, headers=headers)
         if not self._pages:
             raise AssertionError(
                 f"the paging script ran out after {len(self.calls) - 1} page(s); "

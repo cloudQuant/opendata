@@ -48,26 +48,13 @@ from opendata.data.providers._engine.testing import (
     synthetic_page,
     valid_query_kwargs,
 )
-from opendata.data.providers.catalog import PROVIDERS
+from opendata.data.providers.catalog import PROVIDERS, engine_declared_models
 
-
-def registered_engine_models() -> list[tuple[str, ModelSpec]]:
-    """Discover every engine-driven model through the one runtime registration truth.
-
-    Discovery goes through the provider descriptors and their lazy bindings — the same objects the
-    registry stores — because a hand-maintained second list of models is exactly the failure AC2-02
-    refuses: a derived table can drift from the runtime it claims to describe.
-    """
-    found: list[tuple[str, ModelSpec]] = []
-    for descriptor in PROVIDERS:
-        for binding in descriptor.fetcher_bindings:
-            spec = getattr(binding.load(descriptor.source), "model_spec", None)
-            if isinstance(spec, ModelSpec):
-                found.append((descriptor.source, spec))
-    return sorted(found, key=lambda pair: f"{pair[0]}::{pair[1].model}")
-
-
-REGISTRY_MODELS = registered_engine_models()
+#: Discovery walks the provider descriptors and their lazy bindings -- the same objects the registry
+#: stores -- so a model that is registered is judged and a model no descriptor binds is not. The
+#: helper lives in the catalog because a tool that inventories the declarations must ask the runtime
+#: the same question this suite asks, and two discovery functions can drift apart.
+REGISTRY_MODELS = engine_declared_models()
 
 #: Routing id for the probe declarations. They are in no ``ProviderDescriptor``, so no runtime path
 #: reaches them; the id only names the synthetic grant the fixtures build.
@@ -93,11 +80,11 @@ PROBE_PARAMS = (
 def probe_models() -> list[tuple[str, ModelSpec]]:
     """Declarations that exercise the facets the registered population does not use.
 
-    Measured, not assumed: the registered engine population is two models, neither of which declares
-    a credential, page-by-page paging, a published total or a cursor. Every case guarded by ``if the
-    declaration carries it`` skips for all of them, so a green suite would be reporting the absence
-    of judgement. These three probes are the same cases run against declarations that do carry the
-    facets, and ``TestApplicabilityCensus`` prints which faces the registry covers on its own.
+    Measured, not assumed: ``TestApplicabilityCensus`` prints, per face, how many registered models
+    it judged, and any face the registry leaves at zero is a facet only these probes carry. A case
+    guarded by ``if the declaration carries it`` skips for a model without that facet, so a green
+    suite alone would be reporting the absence of judgement rather than the presence of one; the
+    census keeps the two claims apart.
     """
     return [
         (
@@ -164,6 +151,27 @@ def probe_models() -> list[tuple[str, ModelSpec]]:
                     cursor_field="next_cursor",
                 ),
                 scenario="离线判定面：游标翻页，末页不发布游标即结束",
+                error_prefix="PROBE",
+            ),
+        ),
+        (
+            PROBE_SOURCE,
+            ModelSpec(
+                model="ProbeStaticHeaders",
+                domain="probe_static_headers",
+                asset_class="equity",
+                period="snapshot",
+                market="us",
+                base_url="https://probe.test",
+                path="/identifiers/search.json",
+                rows_pointer="meta.data",
+                params=PROBE_PARAMS,
+                columns=PROBE_COLUMNS,
+                static_headers=(
+                    ("User-Agent", "opendata-research/1.0 (contact@example.test)"),
+                    ("Accept", "application/json"),
+                ),
+                scenario="离线判定面：源端要求的固定请求头，逐页都要带上",
                 error_prefix="PROBE",
             ),
         ),
@@ -568,6 +576,26 @@ class TestDeclarationIsTheContract:
             len(url.split("/")) == len(spec.base_url.split("/")) + len(spec.path.split("/")) - 1
         ), url
 
+    def test_declared_static_headers_are_sent_on_every_page(
+        self, source: str, spec: ModelSpec
+    ) -> None:
+        """A header the endpoint requires is not optional on the second page of a result.
+
+        The claim this face refuses is the one an engine can hide: request options assembled inside
+        the page loop can be dropped after the first send, which a single-page model never shows.
+        The same assertion is the negative arm for the models that declare no header -- they must
+        send an empty set rather than an invented one.
+        """
+        declared = dict(spec.static_headers)
+        pages = pages_for(spec, 1 if spec.pagination.kind == "none" else 2)
+        fetcher, transport = build(source, spec, *pages)
+        fetcher.fetch(  # type: ignore[attr-defined]
+            ctx=fixture_context(source, spec, sends=len(pages) + 2), **valid_query_kwargs(spec)
+        )
+        sent = [call["headers"] for call in transport.calls]
+        assert len(sent) == len(pages), sent
+        assert sent == [declared] * len(pages)
+
 
 @every_model
 class TestAsyncApplicabilityIsDeclared:
@@ -618,6 +646,8 @@ class TestApplicabilityCensus:
             ("declares_total", lambda spec: spec.pagination.total_key is not None),
             ("path_template", lambda spec: bool(spec.path_placeholders)),
             ("empty_pointer", lambda spec: spec.rows_pointer == ""),
+            ("row_envelope", lambda spec: bool(spec.row_envelope)),
+            ("static_headers", lambda spec: bool(spec.static_headers)),
         ],
     )
     def test_face_applicability_is_measured_not_assumed(self, face) -> None:
@@ -710,3 +740,31 @@ class TestDeclarationRules:
     def test_unpaged_model_needs_no_paging_keys(self) -> None:
         spec = self._base(pagination=PaginationSpec(kind="none", total_key="total"))
         assert spec.pagination.kind == "none"
+
+    def test_static_headers_may_be_declared(self) -> None:
+        spec = self._base(static_headers=(("User-Agent", "opendata-research/1.0"),))
+        assert spec.static_headers == (("User-Agent", "opendata-research/1.0"),)
+
+    def test_header_value_with_a_line_break_is_refused(self) -> None:
+        """The falsifier: CR/LF in a value is a second header, not one field."""
+        with pytest.raises(ValueError, match="may not contain CR or LF"):
+            self._base(static_headers=(("Accept", "application/json\r\nX-Injected: 1"),))
+
+    def test_header_name_that_is_not_a_token_is_refused(self) -> None:
+        with pytest.raises(ValueError, match="not an HTTP field name"):
+            self._base(static_headers=(("Bad Header", "1"),))
+        with pytest.raises(ValueError, match="not an HTTP field name"):
+            self._base(static_headers=(("Accept\r\n", "1"),))
+
+    def test_blank_header_value_is_refused(self) -> None:
+        with pytest.raises(ValueError, match="declares no value"):
+            self._base(static_headers=(("Accept", "   "),))
+
+    def test_header_declared_in_two_casings_is_refused(self) -> None:
+        """HTTP field names are case-insensitive, so two casings are one field written twice."""
+        with pytest.raises(ValueError, match="declared twice"):
+            self._base(static_headers=(("Accept", "a"), ("accept", "b")))
+
+    def test_header_entry_that_is_not_a_pair_is_refused(self) -> None:
+        with pytest.raises(ValueError, match=r"static header is a \(name, value\) pair"):
+            self._base(static_headers=(("Accept",)))
