@@ -41,9 +41,15 @@
   },
   "uncovered_providers": {},
   "out_of_scope_rows": {
+    "not_run_not_in_census": 185,
+    "in_progress_not_in_census": 13,
+    "dev_done_not_in_census": 2
+  },
+  "out_of_scope_rows_before_c75": {
     "not_run_with_credential": 185,
     "in_progress": 15
   },
+  "out_of_scope_composition_note": "C75 recompute against the ledger. The previous tally summed to the same 200 so the total closed, and that is why nobody noticed it: 15 in_progress was stale (two of those rows, cboe::AvailableIndices and cboe::IndexConstituents, have since gone DEV_DONE), and the bucket names mixed partitions -- not_run_with_credential counted rows by their credential field while in_progress counted them by census membership. All 185 of those rows read credential_requirement_status=NOT_ASSESSED, so the old label claimed a credential fact the ledger does not carry. The tally is now one partition: ledger rows whose task_id is not among the 150 census ids, bucketed by implementation_task_status. Census providers still hold 152 ledger rows -- 150 censused plus the 2 uncensused cboe rows above -- which is a second, separate partition and is reported as such rather than folded into this sum.",
   "upstream_root_ok": true,
   "upstream_commit_ok": true,
   "spot_checks": [

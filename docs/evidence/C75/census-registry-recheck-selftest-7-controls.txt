@@ -1,0 +1,76 @@
+=== C75 census-registry recheck, 7-control self-test (T1-T7 incl. the new composition controls) 
+====================================================================
+generated (UTC)   : 2026-10-09T15:58:01.445479+00:00
+command line      : python docs/evidence/C75/census-registry-recheck.py --self-test
+exit code         : 0
+git HEAD          : 2e37ab9eedba6a480f37053b802cd15478dd5e0b
+git status lines  : 6
+                      M docs/evidence/C75/census-registry-recheck.py
+                      M "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/census-audit.json"
+                      M tests/test_minute_archive.py
+                     ?? docs/evidence/C75/census-registry-recheck-after-composition-fix.txt
+                     ?? docs/evidence/C75/sec-oracle-recheck.py
+                     ?? docs/evidence/C75/sec-oracle-recheck.txt
+python            : /Users/yunjinqi/opt/anaconda3/bin/python
+=====================================================================
+
+census files: 3 -> ['census-imf-oecd-famafrench-misc.json', 'census-sec-tmx-fed-gov-finra.json', 'census-yfinance-cboe-finviz.json']
+census rows: 150 (guard 150)
+bound providers: 6  bound model ids: 16
+  bls              ['BlsSearch', 'BlsSeries']
+  cboe             ['AvailableIndices', 'IndexConstituents', 'IndexSearch']
+  ecb              ['BalanceOfPayments', 'CurrencyReferenceRates', 'YieldCurve']
+  federal_reserve  ['MoneyMeasures', 'TreasuryRates']
+  fmp              ['EquityHistorical', 'EquityQuote']
+  fred             ['FredSearch', 'FredSeries', 'SOFR', 'SONIA']
+
+contradiction face (bound AND flagged false) = 0
+flagged true total = 3  of which bound = 3  unbound = 0
+identity: total == bound + unbound -> True
+rows_expressible_today after the rewrite must read 3
+true-but-unbound (a queue, not an error) = 0
+
+census scope face: bound model ids = 16 = in-census 3 + out-of-census-scope 13
+  out of scope: bls::BlsSearch
+  out of scope: bls::BlsSeries
+  out of scope: cboe::AvailableIndices
+  out of scope: cboe::IndexConstituents
+  out of scope: ecb::BalanceOfPayments
+  out of scope: ecb::CurrencyReferenceRates
+  out of scope: ecb::YieldCurve
+  out of scope: fmp::EquityHistorical
+  out of scope: fmp::EquityQuote
+  out of scope: fred::FredSearch
+  out of scope: fred::FredSeries
+  out of scope: fred::SOFR
+  out of scope: fred::SONIA
+
+ledger arithmetic: census 150 + out-of-scope 200 == ledger 350 -> sum closes=True
+  typed out_of_scope_rows  = {'not_run_not_in_census': 185, 'in_progress_not_in_census': 13, 'dev_done_not_in_census': 2}
+  recomputed out of scope  = {'not_run_not_in_census': 185, 'in_progress_not_in_census': 13, 'dev_done_not_in_census': 2}
+  leaves close (typed == recomputed) = True
+  provider partition: 152 ledger rows for the census's providers = 150 censused + 2 uncensused -> closes=True
+  census-provider rows with NO census row: ['cboe::AvailableIndices(DEV_DONE)', 'cboe::IndexConstituents(DEV_DONE)']
+
+IN_PROGRESS ledger rows = 13: registry-bound = 11, client/Fetcher outstanding = 2
+  bound, dev installed: bls::BlsSearch
+  bound, dev installed: bls::BlsSeries
+  bound, dev installed: ecb::BalanceOfPayments
+  bound, dev installed: ecb::CurrencyReferenceRates
+  bound, dev installed: ecb::YieldCurve
+  bound, dev installed: fmp::EquityHistorical
+  bound, dev installed: fmp::EquityQuote
+  bound, dev installed: fred::FredSearch
+  bound, dev installed: fred::FredSeries
+  bound, dev installed: fred::SOFR
+  bound, dev installed: fred::SONIA
+  NOT bound, dev left : fred::EuroShortTermRate
+  NOT bound, dev left : fred::IORB
+T1 ok: row-side flip clears the face (the face is driven by the flag)
+T2 ok: removing the binding clears the face (it is driven by runtime truth)
+T3 ok: unbound-but-true stays a queue, never an error (declarable != declared; queue 0->0)
+T4 ok: seeding OBB2-federal_reserve-MoneyMeasures grew the face 0->1 (a new contradiction is caught, not swallowed)
+T5 ok: the typed tally equals a recompute of its own partition, and both the total and the provider partition close
+T6 ok: OBB2-cboe-AvailableIndices DEV_DONE->NOT_RUN keeps the out-of-scope total at 200 and the sum closing, while leaves_close flips False (the equality is the guard, not the total)
+T7 ok: the pre-C75 tally re-derives the defect on today's ledger -- it closes as a sum and fails as a split
+SELF-TEST: 7/7 controls agreed

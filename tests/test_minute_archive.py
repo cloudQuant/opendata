@@ -867,7 +867,7 @@ def test_a_dead_worker_is_reported_dead_not_as_a_lock_miss(tmp_path: Path) -> No
     exit status, so a crash is never again reported as a lock-protocol finding.
     """
     started = time.monotonic()
-    worker = subprocess.Popen(  # noqa: S603  # nosec B603
+    worker = subprocess.Popen(  # nosec B603
         [sys.executable, "-c", "import sys; sys.stderr.write('boom\\n'); raise SystemExit(3)"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,

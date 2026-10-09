@@ -157,7 +157,8 @@ def in_progress_face(bound: dict[str, set[str]]) -> tuple[int, list[str], list[s
         rows = [
             r for r in csv.DictReader(handle) if r["implementation_task_status"] == "IN_PROGRESS"
         ]
-    binding, outstanding = [], []
+    binding: list[str] = []
+    outstanding: list[str] = []
     for record in rows:
         name = f"{record['provider']}::{record['upstream_model']}"
         (
@@ -168,44 +169,107 @@ def in_progress_face(bound: dict[str, set[str]]) -> tuple[int, list[str], list[s
     return len(rows), sorted(binding), sorted(outstanding)
 
 
-def ledger_identity(rows: list[dict[str, object]]) -> dict[str, object]:
-    """Recompute the census/ledger split from the ledger itself and compare it with the typed audit.
-
-    The first draft of this check compared only the SUM, and the sum closed: 150 + (185 + 15) = 350.
-    Recomputing the LEAVES shows that is two offsetting errors, not agreement: the ledger has 152
-    rows for the census's 16 providers (the census carries 150), and 13 IN_PROGRESS rows, not 15.
-    A sum that closes over a wrong composition is the failure this check exists to catch.
-    """
-    audit = json.loads((REPO_ROOT / AUDIT_FILE).read_text(encoding="utf-8"))
-    census_providers = {str(row.get("provider")) for row in rows}
-    typed_out = {str(k): int(v) for k, v in (audit.get("out_of_scope_rows") or {}).items()}
+def read_ledger() -> list[dict[str, str]]:
+    """The 350-row task ledger, read by header name so a column move cannot mis-key a count."""
     with (REPO_ROOT / PLAN_DIR / LEDGER_CSV).open(newline="", encoding="utf-8") as handle:
-        ledger = list(csv.DictReader(handle))
-    inside = [r for r in ledger if r["provider"] in census_providers]
-    outside = [r for r in ledger if r["provider"] not in census_providers]
+        return list(csv.DictReader(handle))
+
+
+def composition(
+    ledger: list[dict[str, str]], rows: list[dict[str, object]], audit: dict[str, object]
+) -> dict[str, object]:
+    """The census/ledger split, computed one partition at a time.
+
+    Two partitions answer two different questions and the first draft of this check compared a
+    typed tally from one against a recompute from the other, which read as a mismatch that was not
+    there. The typed tally is census-id partition: the 150 census ids against the 350 ledger rows,
+    bucketed by status. The provider partition is separate: how many ledger rows belong to the
+    census's 16 providers.
+
+    The sum is deliberately not the guard. The audit used to read 185 not_run + 15 in_progress = 200
+    and the total closed; 13 rows are IN_PROGRESS and 2 have gone DEV_DONE, so one stale bucket was
+    hiding inside a correct sum. leaves_close compares the bucketed tally against a recompute of the
+    same partition, and only that fires on a stale split.
+    """
+    census_ids = {str(row.get("task_id")) for row in rows}
+    census_providers = {str(row.get("provider")) for row in rows}
+    typed_raw = audit.get("out_of_scope_rows") or {}
+    if not isinstance(typed_raw, dict):
+        raise SystemExit(f"out_of_scope_rows is not a map: {typed_raw!r}")
+    typed_out = {str(k): int(v) for k, v in typed_raw.items()}
+    outside = [r for r in ledger if r["task_id"] not in census_ids]
     rec_status: dict[str, int] = {}
     for record in outside:
-        key = f"{record['implementation_task_status'].lower()}_out_of_census_provider"
+        key = f"{record['implementation_task_status'].lower()}_not_in_census"
         rec_status[key] = rec_status.get(key, 0) + 1
+    inside = [r for r in ledger if r["provider"] in census_providers]
+    census_keys = {(str(r.get("provider")), str(r.get("upstream_model"))) for r in rows}
     absent = [
         f"{record['provider']}::{record['upstream_model']}({record['implementation_task_status']})"
         for record in inside
-        if (record["provider"], record["upstream_model"])
-        not in {(str(r.get("provider")), str(r.get("upstream_model"))) for r in rows}
+        if (record["provider"], record["upstream_model"]) not in census_keys
     ]
+    typed_census_rows = _as_int(audit.get("recomputed_total"), "recomputed_total")
+    typed_total = _as_int(audit.get("ledger_total"), "ledger_total")
     return {
         "ledger_rows": len(ledger),
-        "typed_census_rows": int(audit.get("recomputed_total") or -1),
+        "typed_census_rows": typed_census_rows,
         "ledger_rows_for_census_providers": len(inside),
         "typed_out": typed_out,
         "recomputed_out": rec_status,
-        "typed_total": int(audit.get("ledger_total") or -1),
-        "sum_closes": int(audit.get("recomputed_total") or -1) + sum(typed_out.values())
-        == len(ledger)
-        == int(audit.get("ledger_total") or -1),
-        "leaves_close": sum(typed_out.values()) == len(outside),
+        "typed_total": typed_total,
+        "sum_closes": typed_census_rows + sum(typed_out.values()) == len(ledger) == typed_total,
+        "leaves_close": typed_out == rec_status,
+        "provider_partition_closes": len(inside) == typed_census_rows + len(absent),
         "rows_missing_from_census": absent,
     }
+
+
+def ledger_identity(rows: list[dict[str, object]]) -> dict[str, object]:
+    """Recompute the census/ledger split from the live ledger and the typed audit tally."""
+    audit = json.loads((REPO_ROOT / AUDIT_FILE).read_text(encoding="utf-8"))
+    return composition(read_ledger(), rows, audit)
+
+
+def _needs(row: dict[str, object]) -> list[str]:
+    """The row's need labels as strings, for the face that prints them sorted.
+
+    A missing key reads as no need, which is what the census shape means by an absent list; a key
+    holding anything but a list is a surprise in the data and is raised, not printed as empty.
+    """
+    value = row.get("needs_engine_capability")
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise SystemExit(f"needs_engine_capability is not a list: {value!r}")
+    return [str(item) for item in value]
+
+
+def _int_map(value: object, label: str) -> dict[str, int]:
+    """One ledger_identity bucket, narrowed to the int map the face sums and prints."""
+    if not isinstance(value, dict) or not all(isinstance(v, int) for v in value.values()):
+        raise SystemExit(f"ledger_identity bucket {label} is not an int map: {value!r}")
+    return {str(k): int(v) for k, v in value.items()}
+
+
+def _as_int(value: object, label: str) -> int:
+    """One audit tally read as an int.
+
+    Absent reads as -1, which no identity can close on; a key holding a non-int is a shape
+    surprise and is raised rather than coerced.
+    """
+    if value is None:
+        return -1
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise SystemExit(f"{label} is not an int: {value!r}")
+    return int(value)
+
+
+def _as_list(value: object, label: str) -> list[object]:
+    """One ledger_identity bucket narrowed to a list; a non-list is a shape surprise, not empty."""
+    if not isinstance(value, list):
+        raise SystemExit(f"{label} is not a list: {value!r}")
+    return list(value)
 
 
 def apply_write(targets: list[dict[str, object]]) -> int:
@@ -305,6 +369,74 @@ def tampers(rows: list[dict[str, object]], bound: dict[str, set[str]]) -> list[s
     return notes
 
 
+def composition_tampers(rows: list[dict[str, object]]) -> list[str]:
+    """Three controls on the census/ledger split: the live tally, a moved row, and the old tally.
+
+    T6 is the one that matters for the guard's meaning. A row moving DEV_DONE -> NOT_RUN leaves the
+    total at 200, so the sum-closes face stays green through a wrong composition; only the bucketed
+    equality sees it. T7 feeds the pre-C75 tally back in and shows it has exactly that property.
+    """
+    audit = json.loads((REPO_ROOT / AUDIT_FILE).read_text(encoding="utf-8"))
+    ledger = read_ledger()
+    census_ids = {str(row.get("task_id")) for row in rows}
+    notes: list[str] = []
+
+    live = composition(ledger, rows, audit)
+    if live["leaves_close"] and live["sum_closes"] and live["provider_partition_closes"]:
+        notes.append(
+            "T5 ok: the typed tally equals a recompute of its own partition, and both the total "
+            "and the provider partition close"
+        )
+    else:
+        notes.append(
+            f"T5 FAIL: leaves={live['leaves_close']} sum={live['sum_closes']} "
+            f"provider={live['provider_partition_closes']}"
+        )
+
+    moved = copy.deepcopy(ledger)
+    mover = next(
+        (
+            record
+            for record in moved
+            if record["implementation_task_status"] == "DEV_DONE"
+            and record["task_id"] not in census_ids
+        ),
+        None,
+    )
+    if mover is None:
+        notes.append("T6 FAIL: no DEV_DONE row outside the census ids to move")
+    else:
+        mover["implementation_task_status"] = "NOT_RUN"
+        shifted = composition(moved, rows, audit)
+        total = sum(_int_map(shifted["typed_out"], "typed_out").values())
+        if shifted["sum_closes"] and not shifted["leaves_close"]:
+            notes.append(
+                f"T6 ok: {mover['task_id']} DEV_DONE->NOT_RUN keeps the out-of-scope total at "
+                f"{total} and the sum closing, while leaves_close flips False "
+                f"(the equality is the guard, not the total)"
+            )
+        else:
+            notes.append(
+                f"T6 FAIL: shifted ledger read sum_closes={shifted['sum_closes']} "
+                f"leaves_close={shifted['leaves_close']}"
+            )
+
+    stale = copy.deepcopy(audit)
+    stale["out_of_scope_rows"] = {"not_run_with_credential": 185, "in_progress": 15}
+    aged = composition(ledger, rows, stale)
+    if aged["sum_closes"] and not aged["leaves_close"]:
+        notes.append(
+            "T7 ok: the pre-C75 tally re-derives the defect on today's ledger -- it closes as a "
+            "sum and fails as a split"
+        )
+    else:
+        notes.append(
+            f"T7 FAIL: aged tally read sum_closes={aged['sum_closes']} "
+            f"leaves_close={aged['leaves_close']}"
+        )
+    return notes
+
+
 def main(argv: list[str]) -> int:
     """Report, self-test, or apply the one-row rewrite."""
     self_test = "--self-test" in argv
@@ -326,7 +458,7 @@ def main(argv: list[str]) -> int:
     hits = contradictions(rows, bound)
     print(f"\ncontradiction face (bound AND flagged false) = {len(hits)}")
     for row in hits:
-        print(f"  {row['task_id']:<40} needs={sorted(row.get('needs_engine_capability') or [])}")
+        print(f"  {row['task_id']:<40} needs={sorted(_needs(row))}")
     true_rows = [row for row in rows if row.get("expressible_today")]
     bound_true_rows = bound_true(rows, bound)
     print(
@@ -348,25 +480,27 @@ def main(argv: list[str]) -> int:
     for name in outside:
         print(f"  out of scope: {name}")
     ident = ledger_identity(rows)
+    typed_out = _int_map(ident["typed_out"], "typed_out")
+    recomputed_out = _int_map(ident["recomputed_out"], "recomputed_out")
     print(
         f"\nledger arithmetic: census {ident['typed_census_rows']} + out-of-scope "
-        f"{sum(ident['typed_out'].values())} == ledger {ident['ledger_rows']} -> "
+        f"{sum(typed_out.values())} == ledger {ident['ledger_rows']} -> "
         f"sum closes={ident['sum_closes']}"
     )
-    print(f"  typed out_of_scope_rows  = {ident['typed_out']}")
-    print(f"  recomputed out of scope  = {ident['recomputed_out']}")
+    print(f"  typed out_of_scope_rows  = {typed_out}")
+    print(f"  recomputed out of scope  = {recomputed_out}")
     print(f"  leaves close (typed == recomputed) = {ident['leaves_close']}")
+    uncensused = _as_list(ident["rows_missing_from_census"], "rows_missing_from_census")
     print(
-        f"  ledger rows for census providers = "
-        f"{ident['ledger_rows_for_census_providers']} vs census rows "
-        f"{ident['typed_census_rows']}"
+        f"  provider partition: {ident['ledger_rows_for_census_providers']} ledger rows for the "
+        f"census's providers = {ident['typed_census_rows']} censused + {len(uncensused)} uncensused"
+        f" -> closes={ident['provider_partition_closes']}"
     )
-    if ident["rows_missing_from_census"]:
-        print(f"  census-provider rows with NO census row: {ident['rows_missing_from_census']}")
+    if uncensused:
+        print(f"  census-provider rows with NO census row: {uncensused}")
     if not ident["leaves_close"]:
-        print("  COMPOSITION MISMATCH: the sum closes over a wrong split, so census-audit.json's")
-        print("  out_of_scope_rows is stale. Reported, not repaired here -- it is a typed tally,")
-        print("  and the 150-row denominator stays as it is.")
+        print("  COMPOSITION MISMATCH: the typed tally is not a recompute of its own partition, so")
+        print("  census-audit.json is stale even at a sum that closes.")
     total_ip, bound_ip, outstanding_ip = in_progress_face(bound)
     print(
         f"\nIN_PROGRESS ledger rows = {total_ip}: registry-bound = {len(bound_ip)}, "
@@ -378,7 +512,7 @@ def main(argv: list[str]) -> int:
         print(f"  NOT bound, dev left : {name}")
 
     if self_test:
-        notes = tampers(rows, bound)
+        notes = tampers(rows, bound) + composition_tampers(rows)
         for note in notes:
             print(note)
         failed = [note for note in notes if "FAIL" in note]

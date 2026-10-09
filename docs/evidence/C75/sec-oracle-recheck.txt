@@ -1,0 +1,182 @@
+=== C75 sec oracle recheck ==============================================
+generated (UTC)   : 2026-10-09T16:03:25+00:00
+command line      : /Users/yunjinqi/opt/anaconda3/bin/python docs/evidence/C75/sec-oracle-recheck.py
+git HEAD          : 2e37ab9eedba6a480f37053b802cd15478dd5e0b
+git status lines  : 7
+                     M docs/evidence/C75/census-registry-recheck.py
+                     M "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/census-audit.json"
+                     M tests/test_minute_archive.py
+                    ?? docs/evidence/C75/census-registry-recheck-after-composition-fix.txt
+                    ?? docs/evidence/C75/census-registry-recheck-selftest-7-controls.txt
+                    ?? docs/evidence/C75/sec-oracle-recheck.py
+                    ?? docs/evidence/C75/sec-oracle-recheck.txt
+site-packages root: /Users/yunjinqi/opt/anaconda3/lib/python3.11/site-packages (found via recorded, exists=True)
+oracle package    : /Users/yunjinqi/opt/anaconda3/lib/python3.11/site-packages/openbb_sec version 1.6.7
+
+sec census rows   : 24 (expected 24)
+buckets over 24 sec rows (must sum to the denominator):
+  absent_in_oracle      24
+  line_text_matches      0
+  line_text_differs      0
+  file_byte_identical    0
+  path_unresolvable      0
+  sum                   24  ok
+
+cite resolves in the repo tree : 24/24
+file exists in BOTH copies     : 0/24
+both copies, NOT byte-identical: 0
+
+populations: oracle openbb_sec/models/*.py = 24, repo opendata/data/providers/sec/models/*.py = 1
+the 24 resolves land on 3 distinct repo files:
+   15  opendata/data/providers/_engine/spec.py
+    8  opendata/data/providers/_engine/http_json.py
+    1  opendata/data/providers/_engine/decoders.py
+  namespace split: opendata/data/providers/_engine/* = 24, everything else = 0 -- a reading, not a gate: an 'else' hit would mean a sec row cites a first-party file outside the shared engine, which is a different state, not a failure.
+
+per row:
+  OBB2-sec-BalanceSheet                  absent_in_oracle    opendata/data/providers/_engine/spec.py:285
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/spec.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/spec.py, openbb_sec/spec.py]
+  OBB2-sec-BalanceSheetGrowth            absent_in_oracle    opendata/data/providers/_engine/spec.py:285
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/spec.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/spec.py, openbb_sec/spec.py]
+  OBB2-sec-CashFlowStatement             absent_in_oracle    opendata/data/providers/_engine/http_json.py:296
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/http_json.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/http_json.py, openbb_sec/http_json.py]
+  OBB2-sec-CashFlowStatementGrowth       absent_in_oracle    opendata/data/providers/_engine/spec.py:285
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/spec.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/spec.py, openbb_sec/spec.py]
+  OBB2-sec-CikMap                        absent_in_oracle    opendata/data/providers/_engine/http_json.py:262
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/http_json.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/http_json.py, openbb_sec/http_json.py]
+  OBB2-sec-CompanyFilings                absent_in_oracle    opendata/data/providers/_engine/http_json.py:291
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/http_json.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/http_json.py, openbb_sec/http_json.py]
+  OBB2-sec-CompareCompanyFacts           absent_in_oracle    opendata/data/providers/_engine/spec.py:272
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/spec.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/spec.py, openbb_sec/spec.py]
+  OBB2-sec-EquityFTD                     absent_in_oracle    opendata/data/providers/_engine/spec.py:272
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/spec.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/spec.py, openbb_sec/spec.py]
+  OBB2-sec-EquitySearch                  absent_in_oracle    opendata/data/providers/_engine/http_json.py:291
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/http_json.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/http_json.py, openbb_sec/http_json.py]
+  OBB2-sec-Filings                       absent_in_oracle    opendata/data/providers/_engine/http_json.py:291
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/http_json.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/http_json.py, openbb_sec/http_json.py]
+  OBB2-sec-Form13FHR                     absent_in_oracle    opendata/data/providers/_engine/spec.py:25
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/spec.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/spec.py, openbb_sec/spec.py]
+  OBB2-sec-SecHtmFile                    absent_in_oracle    opendata/data/providers/_engine/spec.py:25
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/spec.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/spec.py, openbb_sec/spec.py]
+  OBB2-sec-IncomeStatement               absent_in_oracle    opendata/data/providers/_engine/http_json.py:296
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/http_json.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/http_json.py, openbb_sec/http_json.py]
+  OBB2-sec-IncomeStatementGrowth         absent_in_oracle    opendata/data/providers/_engine/spec.py:285
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/spec.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/spec.py, openbb_sec/spec.py]
+  OBB2-sec-InsiderTrading                absent_in_oracle    opendata/data/providers/_engine/spec.py:25
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/spec.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/spec.py, openbb_sec/spec.py]
+  OBB2-sec-InstitutionsSearch            absent_in_oracle    opendata/data/providers/_engine/decoders.py:283
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/decoders.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/decoders.py, openbb_sec/decoders.py]
+  OBB2-sec-LatestFinancialReports        absent_in_oracle    opendata/data/providers/_engine/http_json.py:264
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/http_json.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/http_json.py, openbb_sec/http_json.py]
+  OBB2-sec-ManagementDiscussionAnalysis  absent_in_oracle    opendata/data/providers/_engine/spec.py:25
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/spec.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/spec.py, openbb_sec/spec.py]
+  OBB2-sec-NportDisclosure               absent_in_oracle    opendata/data/providers/_engine/spec.py:25
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/spec.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/spec.py, openbb_sec/spec.py]
+  OBB2-sec-RssLitigation                 absent_in_oracle    opendata/data/providers/_engine/spec.py:25
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/spec.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/spec.py, openbb_sec/spec.py]
+  OBB2-sec-SchemaFiles                   absent_in_oracle    opendata/data/providers/_engine/spec.py:25
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/spec.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/spec.py, openbb_sec/spec.py]
+  OBB2-sec-SecFiling                     absent_in_oracle    opendata/data/providers/_engine/spec.py:285
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/spec.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/spec.py, openbb_sec/spec.py]
+  OBB2-sec-SicSearch                     absent_in_oracle    opendata/data/providers/_engine/spec.py:25
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/spec.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/spec.py, openbb_sec/spec.py]
+  OBB2-sec-SymbolMap                     absent_in_oracle    opendata/data/providers/_engine/http_json.py:262
+    repo   : /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/providers/_engine/http_json.py
+    oracle : (none)
+    reason : no oracle file among [openbb_sec/_engine/http_json.py, openbb_sec/http_json.py]
+
+secondary face -- a name-matched model file DOES exist in the installed package:
+  22/24 rows
+  OBB2-sec-BalanceSheet                  openbb_sec/models/balance_sheet.py
+  OBB2-sec-BalanceSheetGrowth            openbb_sec/models/balance_sheet_growth.py
+  OBB2-sec-CashFlowStatement             openbb_sec/models/cash_flow.py (name-tolerant)
+  OBB2-sec-CashFlowStatementGrowth       openbb_sec/models/cash_flow.py (name-tolerant)
+  OBB2-sec-CikMap                        openbb_sec/models/cik_map.py
+  OBB2-sec-CompanyFilings                openbb_sec/models/company_filings.py
+  OBB2-sec-CompareCompanyFacts           openbb_sec/models/compare_company_facts.py
+  OBB2-sec-EquityFTD                     openbb_sec/models/equity_ftd.py
+  OBB2-sec-EquitySearch                  openbb_sec/models/equity_search.py
+  OBB2-sec-Form13FHR                     openbb_sec/models/form_13FHR.py
+  OBB2-sec-IncomeStatement               openbb_sec/models/income_statement.py
+  OBB2-sec-IncomeStatementGrowth         openbb_sec/models/income_statement_growth.py
+  OBB2-sec-InsiderTrading                openbb_sec/models/insider_trading.py
+  OBB2-sec-InstitutionsSearch            openbb_sec/models/institutions_search.py
+  OBB2-sec-LatestFinancialReports        openbb_sec/models/latest_financial_reports.py
+  OBB2-sec-ManagementDiscussionAnalysis  openbb_sec/models/management_discussion_analysis.py
+  OBB2-sec-NportDisclosure               openbb_sec/models/nport_disclosure.py
+  OBB2-sec-RssLitigation                 openbb_sec/models/rss_litigation.py
+  OBB2-sec-SchemaFiles                   openbb_sec/models/schema_files.py
+  OBB2-sec-SecFiling                     openbb_sec/models/sec_filing.py
+  OBB2-sec-SicSearch                     openbb_sec/models/sic_search.py
+  OBB2-sec-SymbolMap                     openbb_sec/models/symbol_map.py
+  rows with NO name-matched oracle model file: 2
+
+controls (a bucket face is trustworthy only if a known row lands where it was read):
+  OBB2-sec-BalanceSheet                  wants absent_in_oracle    reads absent_in_oracle
+  OBB2-sec-CikMap                        wants absent_in_oracle    reads absent_in_oracle
+  OBB2-sec-RssLitigation                 wants absent_in_oracle    reads absent_in_oracle
+  bucket line_text_matches   is empty (0 rows) -- no control invented for it
+  bucket line_text_differs   is empty (0 rows) -- no control invented for it
+  bucket file_byte_identical is empty (0 rows) -- no control invented for it
+  bucket path_unresolvable   is empty (0 rows) -- no control invented for it
+
+self-test (synthetic cites on a deepcopy; no file written, no census row mutated):
+  ok   opendata/data/providers/sec/__init__.py:1 reads line_text_differs: file found in both copies
+  ok   opendata/data/providers/sec/_source.py:1 reads absent_in_oracle
+  ok   absent_in_oracle count 24 -> 25 (+1)
+  ok   sha comparator: a file against itself hashes equal
+  ok   sha comparator: two different files do not hash equal
+SELF-TEST: 5/5 controls agreed
+
+VERDICT: 24/24 sec cites resolve only in the repo tree, i.e. the
+         cited file has no counterpart inside openbb_sec, so those 24
+         judgements rest on repo source, not on the installed oracle.
+         Rows whose file exists in both copies: 0.
+         Of those, not byte-identical: 0.
+CONTROLS OK: 3/3 named rows, SELF-TEST 5/5.
