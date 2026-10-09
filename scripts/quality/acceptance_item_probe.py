@@ -1782,6 +1782,13 @@ def redacted_gitleaks_summary(output: str, exit_code: int) -> str:
 GENERIC_API_KEY_ALLOWED_REGEXES: Final = (
     r"^[A-Z0-9]{1,12}(\.[A-Z0-9_]{1,14}){3,}$",
     r"^API_KEY_FAILURE_DELAY_SECONDS=0\.05$",
+    # C75: an exact literal, not a shape -- the only silenced value in the tree is the engine
+    # field assignment `rows_pointer=refRates` that generic-api-key read off the word `keys`.
+    r"^rows_pointer=refRates$",
+    # C75: the eleven H.15 maturity series identifiers opendata declares as ColumnSpec.source_key.
+    # The alternation enumerates those eleven ids one by one, so `source_key="<a real key>"` stays
+    # reported; docs/evidence/C75/gitleaks-counterfactual.py measures that boundary both ways.
+    r"^RIFLGFC(M01|M03|M06|Y01|Y02|Y03|Y05|Y07|Y10|Y20|Y30)_N\.B$",
 )
 
 

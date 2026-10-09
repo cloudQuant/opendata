@@ -81,6 +81,9 @@ class Replay:
     import_rewrites: int
     string_rewrites: int
     manual_edits: bool
+    #: Only the root facade carries this: how many upstream export statements the facade writer
+    #: re-homed. It is a different quantity from ``import_rewrites`` and is never added to it.
+    facade_export_count: int = 0
 
 
 @dataclass(frozen=True)
@@ -109,6 +112,12 @@ class Row:
     replay_status: str
     existing_recorded_cases: list[Any]
     existing_recorded_public_functions: list[Any]
+    facade_export_count: int = 0
+
+    @property
+    def is_root_facade(self) -> bool:
+        """Whether this row is the vendored root's lazy facade rather than a ported module."""
+        return self.upstream_path == _INIT_UPSTREAM_PATH
 
     @property
     def upstream_hash_current(self) -> bool:
@@ -116,7 +125,13 @@ class Row:
         return self.upstream_sha == self.lock_sha
 
     def to_json(self) -> dict[str, object]:
-        """Render the row in the archived key order."""
+        """Render the row in the archived key order.
+
+        No per-row "path present" key: this generator aborts before writing anything when a locked
+        path is absent from the manifest, the ported tree or the replay, so such a flag could only
+        ever render as true. Presence and upstream-path agreement are stated once, at the face where
+        they can be false: ``lock_manifest_path_set_equal`` and ``port_report_path_set_equal_lock``.
+        """
         return {
             "path": self.path,
             "module": self.module,
@@ -135,20 +150,25 @@ class Row:
             },
             "manifest": {
                 "section": self.manifest_section,
-                "path_present": True,
                 "upstream_path_matches_lock": self.manifest_upstream_path_matches_lock,
                 "manual_edits_matches_lock": self.manifest_manual_edits_matches_lock,
                 "snapshot_lines": self.snapshot_lines,
                 "current_lines": self.current_lines,
             },
             "port_report": {
-                "path_present": True,
-                "upstream_path_matches_lock": True,
                 "import_rewrites": self.import_rewrites,
                 "string_rewrites": self.string_rewrites,
                 "manual_edits_matches_lock": self.report_manual_edits_matches_lock,
                 "recorded_replay_status": self.replay_status,
             },
+            "facade": (
+                {
+                    "export_count": self.facade_export_count,
+                    "basis": "facade writer re-homed exports, not port_source rewrites",
+                }
+                if self.is_root_facade
+                else None
+            ),
             "existing_recorded_cases": self.existing_recorded_cases,
             "existing_recorded_public_functions": self.existing_recorded_public_functions,
         }
@@ -273,10 +293,18 @@ def _replay(
     text = _read_text(source)
     if upstream_path == _INIT_UPSTREAM_PATH:
         # The root facade is upstream's export table pruned to the ported modules and rendered by
-        # the migration's own writer, so its deterministic replay is ``vendor_init_facade``; it
-        # carries no rewrite counts, which is exactly how the port report rows it.
-        facade = vendor_init_facade(source, ported_root, url, commit)
-        return Replay(sha256_text(text), sha256_bytes(facade), 0, 0, recorded)
+        # the migration's own writer, so its deterministic replay is ``vendor_init_facade``. It
+        # performs no port_source rewrite, hence 0 below, and the work it does instead -- re-homing
+        # upstream's own export statements -- is carried under its own name.
+        facade, facade_report = vendor_init_facade(source, ported_root, url, commit)
+        return Replay(
+            sha256_text(text),
+            sha256_bytes(facade),
+            0,
+            0,
+            recorded,
+            int(facade_report["export_count"]),
+        )
     ported, result = port_source(text, upstream_path, url, commit)
     return Replay(
         result.upstream_sha256,
@@ -371,6 +399,7 @@ def _build_row(
         existing_recorded_public_functions=_carried_list(
             carried, "existing_recorded_public_functions", path
         ),
+        facade_export_count=replay.facade_export_count,
     )
 
 
@@ -407,6 +436,7 @@ def _reconciliation(
     """Recompute every scope counter from the rows and the records read in this run."""
     lock_paths = set(lock.files)
     report_paths = {row.path for row in rows}
+    ported_module_rows = sum(1 for row in rows if row.kind == "python" and not row.is_root_facade)
     return {
         "lock_file_records": len(lock_paths),
         "lock_python_records": sum(1 for row in rows if row.kind == "python"),
@@ -440,14 +470,20 @@ def _reconciliation(
         ),
         "port_report_import_rewrite_total": sum(row.import_rewrites for row in rows),
         "port_report_string_rewrite_total": sum(row.string_rewrites for row in rows),
+        "facade_rows": sum(1 for row in rows if row.is_root_facade),
+        "facade_export_rehomed_total": sum(row.facade_export_count for row in rows),
         "manual_edits_true_rows": sum(1 for row in rows if row.manual_edits),
         "method_note": (
             "Manifest files/resources were joined by path, not row order. Upstream and ported "
             "hashes, line counts, rewrite counts and replay verdicts were re-measured in this run "
             "by replaying the deterministic codemod against the pinned upstream checkout; reason, "
             "batch, scope_basis and the AC-6|02 recorded-fixture inventory are carried forward "
-            f"verbatim by path from {_display(carried_from)}. No test suite, gate, manifest or "
-            "report generator, comparison replay, or network call was executed."
+            f"verbatim by path from {_display(carried_from)}. The import/string rewrite totals "
+            f"cover the {ported_module_rows} modules carried through port_source; the root facade "
+            "is written by vendor_init_facade, which performs no port_source rewrite and instead "
+            "re-homes upstream's own export statements, counted by facade_export_rehomed_total. "
+            "No test suite, gate, manifest or report generator, comparison replay, or network "
+            "call was executed."
         ),
     }
 

@@ -36,6 +36,8 @@ from scripts.quality.acceptance_item_probe import (
     judge_ac11_02,
     key_monitoring_observations,
     measure_ac1_08,
+    measure_ac5_02,
+    measure_ac5_07,
     measure_ac11_02,
     parse_items,
     partition_census_archive_reading,
@@ -281,8 +283,8 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     facts = measure_ac1_08(Context(REPO_ROOT, (), {}))
 
     assert facts["table_valid"] == "yes"
-    assert facts["rows"] == "14"
-    assert facts["dated"] == facts["rows"] == "14"
+    assert facts["rows"] == "15"
+    assert facts["dated"] == facts["rows"] == "15"
     assert facts["undecided"] == "0"
     assert facts["unlinked"] == "0"
     assert facts["responsible_missing"] == "0"
@@ -313,11 +315,12 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
         10: "ECB / IMF / OECD",
         11: "商业源（FMP/Tiingo/Alpha Vantage/Intrinio/Tradier…）",
     }
-    assert set(rows) == set(range(1, 15))
+    assert set(rows) == set(range(1, 16))
     assert {row_id: rows[row_id]["数据源"] for row_id in historical_sources} == (historical_sources)
     assert rows[12]["数据源"] == "BLS（美国劳工统计局）"
     assert rows[13]["数据源"] == "FMP（EquityHistorical / EquityQuote）"
     assert rows[14]["数据源"] == "Cboe（cdn.cboe.com 公开接口）"
+    assert rows[15]["数据源"] == "美联储理事会（Board of Governors）"
 
     restricted = "已复核（受限）"
     not_applicable = "不适用（本迭代未启用）"
@@ -326,9 +329,11 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     assert rows[12]["状态"] == restricted
     assert rows[13]["状态"] == restricted
     assert rows[14]["状态"] == restricted
+    assert rows[15]["状态"] == restricted
     assert {rows[row_id]["复核日期"] for row_id in range(1, 12)} == {"2026-09-30"}
     assert rows[12]["复核日期"] == rows[13]["复核日期"] == "2026-10-08"
     assert rows[14]["复核日期"] == "2026-10-08"
+    assert rows[15]["复核日期"] == "2026-10-09"
 
     bls = rows[12]
     assert "公共领域数据可附条件使用并注明 BLS 来源" in bls["允许本项目落库"]
@@ -354,7 +359,10 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     assert "opendata/data/providers/cboe" in cboe["接入方式"]
     assert "cdn.cboe.com" in cboe["接入方式"]
     assert "无凭据" in cboe["接入方式"]
-    assert "AvailableIndices / IndexConstituents 两条已接线" in cboe["接入方式"]
+    assert (
+        "AvailableIndices / IndexConstituents / IndexSearch 三条模型描述符已接线"
+        in cboe["接入方式"]
+    )
     assert "书面同意" in cboe["允许本项目落库"]
     assert "fair use 例外不覆盖全量留存" in cboe["允许本项目落库"]
     assert "暂不批准" in cboe["允许本项目落库"]
@@ -364,10 +372,32 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     assert "非交易用途" in cboe["允许商业使用"]
     assert "暂不批准" in cboe["允许商业使用"]
     assert cboe["责任人"] == "cloudQuant / Codex"
+
+    fed = rows[15]
+    assert fed["条款链接"] == "https://www.federalreserve.gov/disclaimer.htm"
+    assert "opendata/data/providers/federal_reserve" in fed["接入方式"]
+    assert "datadownload/Output.aspx" in fed["接入方式"]
+    assert "rel=H6" in fed["接入方式"] and "rel=H15" in fed["接入方式"]
+    assert "无凭据" in fed["接入方式"]
+    assert "MoneyMeasures / TreasuryRates 两条已接线" in fed["接入方式"]
+    assert (
+        "public domain and may be copied and distributed without permission"
+        in fed["允许本项目落库"]
+    )
+    assert "Please cite to the Board as the source of the information" in fed["允许本项目落库"]
+    assert "本行只覆盖这两张发布表下载包里的统计数值" in fed["允许本项目落库"]
+    assert "须注明美联储理事会为来源" in fed["允许再分发"]
+    assert "他方来源的版权材料须向原始权利人取得许可" in fed["允许再分发"]
+    assert "unless otherwise indicated" in fed["允许商业使用"]
+    assert "本轮两张表未见另示" in fed["允许商业使用"]
+    assert fed["责任人"] == "cloudQuant / Codex"
     assert "这不是供应商授权" in registry
-    assert "不覆盖 cboe 其余 9 个上游模型" in registry
+    assert "不覆盖 cboe 其余 8 个上游模型（清单实测 11 行 = 3 DEV_DONE + 8 NOT_RUN）" in registry
     assert "evidence/C72/cboe-rights-review.md" in registry
-    assert "没有释放 FMP 或 Cboe 的真实采集、落库或对外分发动作" in registry
+    assert "不覆盖 Board 站点其余出版物" in registry
+    assert "模型清单实测 federal_reserve 共 13 行（2 DEV_DONE + 11 NOT_RUN）" in registry
+    assert "https://www.federalreserve.gov/disclaimer.htm" in registry
+    assert "没有释放 FMP 或 Cboe 或美联储的真实采集、落库或对外分发动作" in registry
 
     verdict = judge_ac1_08(facts)
     assert "登记完整性不等于所有用途获准" in registry
@@ -523,11 +553,13 @@ def test_selfdev_population_leaves_the_nested_vendor_tree_out() -> None:
 
 
 def test_ac5_02_scope_break_turns_a_repaired_reading_red() -> None:
+    ctx = Context(REPO_ROOT, (), {})
     probe = probe_for("AC-5|02")
+    clean = resolve_repair(measure_ac5_02(ctx), probe.repair)
 
-    assert probe.judge(probe.repair).state == PROVEN
+    assert probe.judge(clean).state == PROVEN
     scope_break = next(item for item in probe.breaks if "路径/批次" in item.label)
-    assert probe.judge({**probe.repair, **dict(scope_break.facts)}).state == GAP
+    assert probe.judge({**clean, **dict(scope_break.facts)}).state == GAP
 
 
 def test_ac1_09_path_rules_distinguish_real_env_from_one_template() -> None:
@@ -766,32 +798,9 @@ def test_ac1_05_runtime_counterfactuals_remain_reachable() -> None:
 
 def test_ac5_07_current_security_proof_counterfactuals_remain_reachable() -> None:
     """Each required source, triage, and retained-risk condition can turn the judge red."""
+    ctx = Context(REPO_ROOT, (), {})
     probe = probe_for("AC-5|07")
-    clean = resolve_repair(
-        {
-            "scan_findings": "1048",
-            "archive": "docs/evidence/C65/ported-bandit-scan.json",
-            "target_recipe": "bandit -r opendata_http",
-            "daily_excludes_ported": "yes",
-            "bandit_exclude_dirs": "opendata_http",
-            "security_issue_summary": "-",
-            "archive_produced_by": "1.9.4",
-            "archive_generated_at": "2026-10-01T11:30:00+00:00",
-            "scanner_exit": "1",
-            "scan_source_files_verified": "325",
-            "scan_python_files": "325",
-            "scan_source_files_saved": "325",
-            "scan_source_hash": "a" * 64,
-            "scan_files": "241",
-            "scan_rules": "15",
-            "scan_rule_names": "B301, B307",
-            "scan_high_findings": "31",
-            "triage_findings": "1048",
-            "triage_rules": "15",
-            "ported_files": "325",
-        },
-        probe.repair,
-    )
+    clean = resolve_repair(measure_ac5_07(ctx), probe.repair)
 
     assert probe.judge(clean).state == PROVEN
     for counterfact in probe.breaks:

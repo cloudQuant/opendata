@@ -32,6 +32,15 @@ CANONICAL_SCENARIOS = {
     ("ecb", "BalanceOfPayments"): "保留ECB十七维与原月季度期间的国际收支研究",
     ("cboe", "AvailableIndices"): "指数目录发现：列出 cboe 发布的全部指数及其计算时段与延迟",
     ("cboe", "IndexConstituents"): "成分股快照：取出一只欧洲指数在源端发布的全部成分及其盘中报价",
+    ("cboe", "IndexSearch"): "指数检索：在 cboe 美国指数目录中按代码或名称与描述筛选指数",
+    (
+        "federal_reserve",
+        "MoneyMeasures",
+    ): "货币供应量月表：取出 H.6 发布表在五行元数据之后的七个货币总量序列",
+    (
+        "federal_reserve",
+        "TreasuryRates",
+    ): "国债收益率日表：取出 H.15 发布表在五行元数据之后的十一个期限档",
 }
 
 

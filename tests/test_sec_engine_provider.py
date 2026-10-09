@@ -11,12 +11,32 @@ No URL, column or parameter is re-derived here -- those claims live in the decla
 :data:`opendata.data.providers.sec.specs.UPSTREAM_EVIDENCE`, which every blocker must cite. What
 is checked is the bookkeeping only this package can be trusted with, plus the one fair-access
 fact the SEC endpoints are always asked about: nothing in this package claims a live response.
+
+The file's second half re-checks the three rows ``capability-roadmap.json`` lists as covered by
+already-shipped capabilities, and refuses them from the census rather than from prose: every
+blocker has to name the need its census row records and cite that row's own proof line, and every
+recorded need is then re-measured against the live engine offline. So a blocker that stops being
+true fails here instead of quietly becoming a fabricated declaration. Those probes are synthetic
+fixtures on a reserved, non-resolving origin -- they claim no SEC endpoint and no published column.
 """
 
 from __future__ import annotations
 
+import dataclasses
+import json
 from pathlib import Path
+from typing import Any
 
+import pytest
+
+from opendata.data.providers._engine.decoders import ResponseDecodeError
+from opendata.data.providers._engine.http_json import (
+    HttpResponse,
+    ProviderEngineError,
+    make_http_json_fetcher,
+)
+from opendata.data.providers._engine.spec import ColumnSpec, DecoderSpec, ModelSpec
+from opendata.data.providers._engine.testing import SyntheticTransport, fixture_context
 from opendata.data.providers.catalog import (
     PROVIDERS,
     engine_declared_models,
@@ -30,6 +50,17 @@ from opendata.data.registry import ProviderRegistry
 from scripts.quality.provider_model_inventory import LEDGER_RELATIVE_PATH, load_task_ledger
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+#: The per-model survey the declarations must obey: one row per provider×model task, carrying the
+#: endpoint shape, the capability the engine would need and the ``expressible_today`` flag.
+CENSUS_RELATIVE_PATH = Path(
+    "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/census-sec-tmx-fed-gov-finra.json"
+)
+
+#: The roadmap artifact listing rows whose residual engine need labels name shipped capabilities.
+ROADMAP_RELATIVE_PATH = Path(
+    "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/capability-roadmap.json"
+)
 
 #: The sentence ``catalog._reserved_provider()`` writes for a source with no local implementation.
 RESERVED_SENTENCE = "Catalog identity reserved; no local fetcher is implemented."
@@ -134,3 +165,177 @@ class TestNothingHereIsLiveVerified:
         assert len(capabilities) == len(PROVIDER.fetcher_bindings)
         assert all(capability.source == "sec" for capability in capabilities)
         assert not any(capability.verified for capability in capabilities)
+
+
+#: ---- the three rows ``capability-roadmap.json`` lists as already covered, re-measured here -----
+#:
+#: Every fixture below is a SYNTHETIC capability probe written by this file. It claims no SEC
+#: endpoint: the origin is the RFC 2606 reserved ``.test`` TLD, which cannot resolve, and no column
+#: name in it is offered as a published sec field. A probe exists to be executed against the live
+#: engine, so a blocker recorded in prose cannot go stale unnoticed.
+PROBE_BASE_URL = "https://sec-refusal-probe.test"
+PROBE_ERROR_PREFIX = "SECPROBE"
+PROBE_DOCUMENT_URL = f"{PROBE_BASE_URL}/probe/document"
+PROBE_FILER_LIST_URL = f"{PROBE_BASE_URL}/probe/filer-list"
+
+#: An XBRL-style nesting: the observations sit in a list keyed by the *unit*, so the pointer that
+#: addresses the tagged concept lands on a mapping. That is what ``xbrl_tag_assembly`` means.
+UNIT_NESTED_DOCUMENT = {
+    "units": {"usd": [{"value": 1.5}, {"value": 2.5}]},
+}
+
+#: A colon-separated body with no header row, exactly the shape the recorded need names: the
+#: engine's shipped ``decode.delimited`` keys its columns off the first line, which this body lacks.
+HEADERLESS_COLON_BODY = b"1040175:ACME CAPITAL LLC\n1193054:BETA ADVISERS INC\n"
+
+
+def census_rows() -> dict[str, dict[str, Any]]:
+    """Index the sec rows of the per-model census by ledger task id."""
+    document = json.loads((REPO_ROOT / CENSUS_RELATIVE_PATH).read_text(encoding="utf-8"))
+    return {row["task_id"]: row for row in document["rows"] if row.get("provider") == "sec"}
+
+
+def roadmap_shipped_cover_needs() -> dict[str, dict[str, Any]]:
+    """Return the roadmap's ``shipped_cover_rows`` entries for sec, by upstream model."""
+    document = json.loads((REPO_ROOT / ROADMAP_RELATIVE_PATH).read_text(encoding="utf-8"))
+    return {
+        entry["upstream_model"]: entry
+        for entry in document["roadmap"]["shipped_cover_rows"]
+        if entry.get("provider") == "sec"
+    }
+
+
+def probe_spec(**overrides: Any) -> ModelSpec:
+    """One throwaway declaration, used only to exercise a capability the engine does or lacks."""
+    fields: dict[str, Any] = {
+        "model": "Probe",
+        "domain": "probe",
+        "asset_class": "equity",
+        "period": "snapshot",
+        "market": "all",
+        "base_url": PROBE_BASE_URL,
+        "path": "/probe/document",
+        "rows_pointer": "units",
+        "columns": (ColumnSpec("value", "float", required=True),),
+        "scenario": "能力探针：离线验证被记录的阻塞能力确实不存在",
+        "error_prefix": PROBE_ERROR_PREFIX,
+    }
+    fields.update(overrides)
+    return ModelSpec(**fields)
+
+
+def probe_fetcher(spec: ModelSpec, transport: SyntheticTransport) -> Any:
+    """Instantiate a generated probe fetcher against a recorded transport, never a socket."""
+    cls = make_http_json_fetcher(SOURCE, spec)
+    return type(cls.__name__, (cls,), {"http_transport": transport})()
+
+
+class TestTheRoadmapThreeStayRefused:
+    """The census, not the roadmap's label mapping, is what a sec declaration has to answer to."""
+
+    def test_the_package_constructs_no_declaration(self) -> None:
+        source_text = (REPO_ROOT / "opendata/data/providers/sec/specs.py").read_text(
+            encoding="utf-8"
+        )
+        assert source_text.count("ModelSpec(") == 0
+        assert specs.DECLARED_MODELS == ()
+        assert PROVIDER.fetcher_bindings == ()
+        assert {spec.model for source, spec in engine_declared_models() if source == "sec"} == set()
+
+    def test_the_recheck_only_names_recorded_rows(self) -> None:
+        assert set(specs.RECHECKED_THIS_ROUND) <= set(specs.NOT_DECLARABLE)
+        assert set(specs.RECHECKED_THIS_ROUND).isdisjoint(specs.DECLARED_MODELS)
+
+    @pytest.mark.parametrize(
+        ("model", "task_id"),
+        sorted(specs.RECHECKED_THIS_ROUND.items()),
+        ids=sorted(specs.RECHECKED_THIS_ROUND),
+    )
+    def test_census_denies_each_and_the_blocker_quotes_it(self, model: str, task_id: str) -> None:
+        """A refusal is honest only if it names the recorded need and the recorded proof line."""
+        row = census_rows()[task_id]
+        assert row["upstream_model"] == model
+        assert row["expressible_today"] is False, f"{model}: the census denies the declaration"
+        assert row["needs_engine_capability"], model
+        reason = specs.NOT_DECLARABLE[model]
+        for need in row["needs_engine_capability"]:
+            assert need in reason, f"{model}: the blocker never names {need}"
+        assert Path(row["evidence"]).name in reason, f"{model}: no engine proof cited"
+
+    def test_the_roadmap_needs_are_shipped_yet_do_not_unblock(self) -> None:
+        """Why these three looked declarable: the roadmap maps residual need labels, not blockers.
+
+        Its own ``method_note`` states that no engine code was executed and no fixture replayed, so
+        a ``columns.select``/``decode.delimited`` entry there cannot outrank the census row's
+        ``expressible_today: false`` -- which this test checks side by side, on disk.
+        """
+        document = json.loads((REPO_ROOT / ROADMAP_RELATIVE_PATH).read_text(encoding="utf-8"))
+        registry = document["capability_registry"]
+        rows = census_rows()
+        for model, task_id in specs.RECHECKED_THIS_ROUND.items():
+            entry = roadmap_shipped_cover_needs()[model]
+            assert entry["needs"], model
+            assert all(registry[need]["present"] is True for need in entry["needs"]), model
+            assert rows[task_id]["expressible_today"] is False, model
+
+
+class TestTheRefusedCapabilitiesAreReallyAbsent:
+    """Executed offline witnesses: the engine still cannot carry what the census says it needs."""
+
+    def test_no_declaration_field_exists_for_the_recorded_needs(self) -> None:
+        """The blocker is a missing knob, so the knob's absence is what gets asserted."""
+        declared_fields: set[str] = set()
+        for cls in (ModelSpec, ColumnSpec, DecoderSpec):
+            declared_fields |= {field.name for field in dataclasses.fields(cls)}
+        for need in (
+            "xbrl_tag_assembly",
+            "tag_column_selection",
+            "columns_derive",
+            "columns_cast",
+            "header_row",
+            "skip_rows",
+        ):
+            assert need not in declared_fields, need
+        assert {column.source_key for column in probe_spec().columns} == {None}
+
+    def test_a_tag_nested_concept_is_a_shape_failure_not_a_row(self) -> None:
+        """``CashFlowStatement``/``IncomeStatement``: no record list sits at the tagged address."""
+        spec = probe_spec()
+        canned = HttpResponse(200, UNIT_NESTED_DOCUMENT)
+        transport = SyntheticTransport({(PROBE_DOCUMENT_URL, frozenset()): canned})
+        fetcher = probe_fetcher(spec, transport)
+        with pytest.raises(ProviderEngineError) as raised:
+            fetcher.fetch(ctx=fixture_context(SOURCE, spec, sends=1))
+        assert raised.value.code == f"{PROBE_ERROR_PREFIX}_SHAPE_INVALID"
+        assert len(transport.calls) == 1
+
+    def test_a_headerless_delimited_body_refuses_instead_of_guessing_a_header(self) -> None:
+        """``InstitutionsSearch``: the shipped delimited decoder needs a published header row."""
+        spec = probe_spec(
+            path="/probe/filer-list",
+            rows_pointer="",
+            columns=(
+                ColumnSpec("identifier", "str", required=True),
+                ColumnSpec("entity_name", "str"),
+            ),
+            decoder=DecoderSpec(kind="csv", delimiter=":"),
+        )
+        canned = HttpResponse(200, None, payload=HEADERLESS_COLON_BODY)
+        transport = SyntheticTransport({(PROBE_FILER_LIST_URL, frozenset()): canned})
+        fetcher = probe_fetcher(spec, transport)
+        with pytest.raises(ResponseDecodeError) as raised:
+            fetcher.fetch(ctx=fixture_context(SOURCE, spec, sends=1))
+        assert raised.value.code == f"{PROBE_ERROR_PREFIX}_HEADER_MISMATCH"
+        assert raised.value.decoder == "csv"
+        # The first data line was eaten as the header, so nothing was published: a typed refusal.
+        assert len(transport.calls) == 1
+
+    def test_an_undeclared_parameter_is_refused_before_any_send(self) -> None:
+        """The offline guard: an undeclared key is refused before anything is asked of I/O."""
+        spec = probe_spec()
+        transport = SyntheticTransport({})
+        fetcher = probe_fetcher(spec, transport)
+        with pytest.raises(ProviderEngineError) as raised:
+            fetcher.fetch(ctx=fixture_context(SOURCE, spec, sends=1), cik="1040175")
+        assert raised.value.code.endswith("_QUERY_INVALID")
+        assert transport.calls == []

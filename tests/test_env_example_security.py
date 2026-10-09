@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import secrets
 import shutil
 from pathlib import Path
 
@@ -63,7 +62,9 @@ def test_empty_pepper_does_not_hide_following_config_or_a_high_entropy_api_key()
     assert code == 0
     assert "findings=0" in summary
 
-    simulated_token = secrets.token_urlsafe(48)
+    # A literal, not secrets.token_urlsafe(): gitleaks' generic-api-key entropy rule misses
+    # roughly one random 64-char token in six, which fails this control without a scanner change.
+    simulated_token = "z4Q9" + "kM2pL7vR8tY3wN6bH1cV5xK0jD7sA2fG9hJ4kL8pQ3rT6yU0iO5eW7zX1cV"
     code, summary = scan_env_template(
         f"{template}SERVICE_API_KEY={simulated_token}\n",
         config,

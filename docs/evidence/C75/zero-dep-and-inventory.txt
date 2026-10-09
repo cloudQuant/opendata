@@ -1,0 +1,41 @@
+# Zero-dependency re-freeze and the provider-inventory manifest check
+# produced: 2026-10-09T10:17:37Z (UTC)
+# archived: 2026-10-09T10:56:54Z
+# branch: dev
+# head: 8a35e9aca5ce43d5e734a2a6b97915e711739778
+# graded tree: HEAD 8a35e9a plus 64 uncommitted path(s) (this round's edits)
+# command: python scripts/quality/zero_dependency_check.py ; python scripts/quality/zero_dependency_check.py --freeze ; python scripts/quality/provider_inventory.py --check-manifest
+# exit: ZDC_RC=0, freeze RC=0, inventory --check-manifest RC=0
+
+OK: 649 file(s) walked (opendata=322, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+Wrote docs/quality/zero-dep-baseline.json: 0 frozen reference(s) across 649 file(s).
+
+--- inventory --check-manifest, after the re-freeze -------------------------------------
+[TRIMMED: showing last 12 of 3634 line(s); full reading ran on this tree]
+    "providers/sec/openbb_sec/__init__.py",
+    "providers/seeking_alpha/openbb_seeking_alpha/__init__.py",
+    "providers/stockgrid/openbb_stockgrid/__init__.py",
+    "providers/tiingo/openbb_tiingo/__init__.py",
+    "providers/tmx/openbb_tmx/__init__.py",
+    "providers/tradier/openbb_tradier/__init__.py",
+    "providers/tradingeconomics/openbb_tradingeconomics/__init__.py",
+    "providers/wsj/openbb_wsj/__init__.py",
+    "providers/yfinance/openbb_yfinance/__init__.py"
+  ],
+  "status": "PASS"
+}
+
+--- inventory --check-manifest, before (the drift this round repaired) ------------------
+[TRIMMED: showing last 12 of 3682 line(s); full reading ran on this tree]
+    "providers/sec/openbb_sec/__init__.py",
+    "providers/seeking_alpha/openbb_seeking_alpha/__init__.py",
+    "providers/stockgrid/openbb_stockgrid/__init__.py",
+    "providers/tiingo/openbb_tiingo/__init__.py",
+    "providers/tmx/openbb_tmx/__init__.py",
+    "providers/tradier/openbb_tradier/__init__.py",
+    "providers/tradingeconomics/openbb_tradingeconomics/__init__.py",
+    "providers/wsj/openbb_wsj/__init__.py",
+    "providers/yfinance/openbb_yfinance/__init__.py"
+  ],
+  "status": "PASS"
+}

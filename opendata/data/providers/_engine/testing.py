@@ -28,7 +28,7 @@ from opendata.data.request_budget import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Mapping, Sequence
 
     from opendata.data.providers._engine.spec import ModelSpec
 
@@ -108,6 +108,68 @@ def _cell_text(value: object) -> str:
     return "" if value is None else str(value)
 
 
+def _preamble_rows(count: int) -> list[list[str]]:
+    """Render ``count`` metadata rows that hold none of the declared column names.
+
+    Structurally faithful rather than verbatim: a real preamble is a source's own text (the Fed's
+    five ``Series Description``/``Unit:`` lines), and what the decoder depends on is only that the
+    rows are non-blank and are not the header. A blank row would be dropped by the same
+    blank-filter the decoder applies before it counts, which would silently shift the skip.
+    """
+    return [[f"preamble row {index} of {count}", "metadata"] for index in range(1, count + 1)]
+
+
+def body_from_records(
+    spec: ModelSpec,
+    records: Sequence[Mapping[str, object]],
+    *,
+    keys: Sequence[str] | None = None,
+    member: str | None = None,
+    preamble_rows: int | None = None,
+) -> bytes:
+    """Render arbitrary ``records`` as the raw body ``spec``'s decoder declares.
+
+    The lower half of :func:`synthetic_body`, exposed so a falsifier can script a body whose header
+    or cells differ from the clean synthesis. ``keys`` is the header row and defaults to every
+    declared source key in declared order; passing a shortened list is how a case publishes a table
+    the source genuinely omitted a column from -- the only form a text body has for "this key is not
+    here", since a cell left blank decodes back as a present key holding a null.
+
+    A declaration that skips a preamble gets one, because a body without it is a different body than
+    the endpoint publishes: ``preamble_rows`` defaults to the count the declaration names, and a
+    falsifier that passes some other count is how an off-by-one skip is shown to be a refusal.
+
+    SYNTHETIC like :func:`synthetic_body`: every byte is generated from the declaration, never
+    recorded from an upstream response.
+
+    Raises:
+        AssertionError: The declaration reads a JSON document, so there is no delimited body to
+            render -- the case asked the wrong fixture for its bytes.
+    """
+    decoder = spec.decoder
+    if not decoder.delimited:
+        raise AssertionError(f"{spec.model}: declares a json decoder, so no delimited body exists")
+    header = (
+        [column.source_key or column.name for column in spec.columns]
+        if keys is None
+        else list(keys)
+    )
+    table = (
+        _preamble_rows(decoder.preamble_rows if preamble_rows is None else preamble_rows)
+        + [header]
+        + [[_cell_text(record.get(key)) for key in header] for record in records]
+    )
+    buffer = io.StringIO(newline="")
+    csv.writer(buffer, delimiter=decoder.effective_delimiter, lineterminator="\n").writerows(table)
+    text = buffer.getvalue()
+    if decoder.kind != "zip_csv":
+        return text.encode("utf-8")
+    archive = io.BytesIO()
+    with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as bundle:
+        bundle.writestr(member or decoder.member or "records.csv", text)
+    return archive.getvalue()
+
+
 def synthetic_body(
     spec: ModelSpec, count: int = 1, *, start: int = 0, member: str | None = None
 ) -> bytes:
@@ -126,23 +188,11 @@ def synthetic_body(
         AssertionError: The declaration reads a JSON document, so there is no delimited body to
             render -- the case asked the wrong fixture for its bytes.
     """
-    decoder = spec.decoder
-    if not decoder.delimited:
-        raise AssertionError(f"{spec.model}: declares a json decoder, so no delimited body exists")
-    keys = [column.source_key or column.name for column in spec.columns]
-    table = [keys] + [
-        [_cell_text(synthetic_record(spec, start + index)[key]) for key in keys]
-        for index in range(count)
-    ]
-    buffer = io.StringIO(newline="")
-    csv.writer(buffer, delimiter=decoder.effective_delimiter, lineterminator="\n").writerows(table)
-    text = buffer.getvalue()
-    if decoder.kind != "zip_csv":
-        return text.encode("utf-8")
-    archive = io.BytesIO()
-    with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as bundle:
-        bundle.writestr(member or decoder.member or "records.csv", text)
-    return archive.getvalue()
+    return body_from_records(
+        spec,
+        [synthetic_record(spec, start + index) for index in range(count)],
+        member=member,
+    )
 
 
 def synthetic_raw_page(

@@ -5,6 +5,9 @@ carries calculation sessions and tick metadata, and the constituent rows are int
 rather than the ``IndexConstituent`` weight record. Each therefore gets its own contract family
 and its own domain, the way ``SeriesCatalogItem`` and ``BlsCatalogItem`` do, and the declarative
 declaration in ``opendata/data/providers/cboe/specs.py`` must name exactly these fields.
+
+The search model publishes 11 of the directory's 12 columns, omitting ``exchange``, so it cannot
+share ``CboeAvailableIndex`` and gets its own contract class.
 """
 
 from __future__ import annotations
@@ -18,6 +21,22 @@ class CboeAvailableIndex(ContractModel):
     symbol: str | None
     name: str | None
     exchange: str | None = None
+    currency: str | None = None
+    description: str | None = None
+    data_delay: str | None = None
+    open_time: str | None = None
+    close_time: str | None = None
+    time_zone: str | None = None
+    tick_days: str | None = None
+    tick_frequency: str | None = None
+    tick_period: str | None = None
+
+
+class CboeSearchedIndex(ContractModel):
+    """One index in cboe's published US index directory, as its search model publishes it."""
+
+    symbol: str | None
+    name: str | None
     currency: str | None = None
     description: str | None = None
     data_delay: str | None = None

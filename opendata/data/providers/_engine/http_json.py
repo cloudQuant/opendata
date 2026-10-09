@@ -8,6 +8,13 @@ ones. Per-model code therefore stays a declaration, and the semantics that
 acceptance judges (parameter rejection, empty-versus-missing, page
 completeness, unit fidelity) are written once and tested uniformly.
 
+The read face has three declarable facets, in the order they run: ``rows_pointer`` says where the
+records are, :class:`~opendata.data.providers._engine.spec.RowFilterSpec` says which of the
+published records the model is about, and :class:`~opendata.data.providers._engine.spec.ColumnSpec`
+says what to take out of each selected record. The middle facet is a client-side *selection*, and
+:func:`apply_row_filters` runs it between the declared-total agreement check and normalization for
+that reason.
+
 The module performs I/O only through :func:`_http_get_json`, which the contract
 suite replaces with a synthetic recorder, so no test can reach a live endpoint.
 """
@@ -30,9 +37,16 @@ from opendata.data.capability import Capability
 from opendata.data.domains import contract_model, load_domains
 from opendata.data.models.base import ContractModel
 from opendata.data.protocol import FetchContext, Fetcher
+from opendata.data.providers._engine.spec import ROW_FILTER_VALUE_SEPARATOR
 
 if TYPE_CHECKING:
-    from opendata.data.providers._engine.spec import ColumnSpec, ModelSpec, ParamSpec
+    from opendata.data.providers._engine.spec import (
+        ColumnSpec,
+        ModelSpec,
+        ParamSpec,
+        RowFilterOp,
+        RowFilterSpec,
+    )
 
 DEFAULT_TIMEOUT = 30.0
 
@@ -189,8 +203,13 @@ def encode_query(query: object, spec: ModelSpec) -> dict[str, str]:
     A parameter the path template consumes is deliberately left out of the query string: an
     upstream that encodes the resource in the URL (``/quotes/{symbol}.json``) does not accept it
     twice, and sending it twice would make the logged request differ from the declared one.
+
+    The declaration's :attr:`~ModelSpec.static_query` constants go in first and are not read from
+    the query: they are the upstream's own URL literals (which release, which series, which payload
+    format), and ``ModelSpec`` refuses one whose key a parameter, a credential or a paging key also
+    claims, so no caller-set value can overwrite the addressing the model was reviewed against.
     """
-    encoded: dict[str, str] = {}
+    encoded: dict[str, str] = dict(spec.static_query)
     consumed_by_path = set(spec.path_placeholders)
     for parameter in spec.params:
         if parameter.name in consumed_by_path:
@@ -598,6 +617,130 @@ def _declared_totals(pages: Sequence[object], spec: ModelSpec) -> list[int]:
     return [total for total in (_declared_total(page, spec) for page in pages) if total is not None]
 
 
+def _rendered(value: object) -> str:
+    """Render one validated parameter value the way a row filter compares it.
+
+    ``str(True)`` is ``"True"``, so a gate declared as ``when_value="True"`` fires on a boolean
+    parameter the way the upstream branch it mirrors does; a date renders ISO because that is the
+    string a needle is written against.
+    """
+    if value is None:
+        return ""
+    if isinstance(value, date):
+        return value.isoformat()
+    return str(value)
+
+
+def _gate_applies(row_filter: RowFilterSpec, query: object) -> bool:
+    """Whether one filter's gate is open for this query.
+
+    A filter that declares no ``when_param`` always applies. Otherwise the parameter has to carry
+    exactly ``when_value``: an omitted parameter (``None``) gates nothing, which is how a model
+    declares "branch on what the caller asked for" without the engine owning the branch.
+    """
+    if not row_filter.when_param:
+        return True
+    value = getattr(query, row_filter.when_param, None)
+    if value is None:
+        return False
+    return _rendered(value) == row_filter.when_value
+
+
+def _needle(row_filter: RowFilterSpec, query: object) -> str:
+    """The text this filter compares against, taken from the query when it declares a source."""
+    if row_filter.value_param:
+        return _rendered(getattr(query, row_filter.value_param, None))
+    return row_filter.value
+
+
+def _op_matches(
+    op: RowFilterOp,
+    cell: str,
+    needle: str,
+    alternatives: tuple[str, ...],
+    ignore_case: bool,
+) -> bool:
+    """Evaluate one predicate against one published cell."""
+    left, right = (cell.casefold(), needle.casefold()) if ignore_case else (cell, needle)
+    if op == "contains":
+        return right in left
+    if op == "equals":
+        return left == right
+    if op == "not_equals":
+        return left != right
+    if op == "prefix":
+        return left.startswith(right)
+    options = (option.casefold() for option in alternatives) if ignore_case else alternatives
+    return left in options
+
+
+def _row_matches(row_filter: RowFilterSpec, record: Mapping[str, Any], needle: str) -> bool:
+    """Whether one raw record satisfies one filter whose gate is already known to be open."""
+    if not row_filter.columns:
+        # Nothing to test, and a filter that tests nothing must not drop a row: an empty selection
+        # and a legitimate no-hit answer would become indistinguishable.
+        return True
+    alternatives = (
+        tuple(row_filter.value.split(ROW_FILTER_VALUE_SEPARATOR)) if row_filter.op == "in" else ()
+    )
+    hits: list[bool] = []
+    for key in row_filter.columns:
+        cell = record.get(key)
+        if cell is None:
+            # The record does not publish this key. Selecting is not validating, so the row simply
+            # does not match -- it is not the source's shape that is wrong, the row is not it.
+            hits.append(False)
+            continue
+        text = cell if isinstance(cell, str) else str(cell)
+        hits.append(_op_matches(row_filter.op, text, needle, alternatives, row_filter.ignore_case))
+    return all(hits) if row_filter.match == "all" else any(hits)
+
+
+def apply_row_filters(records: list[Any], query: object, spec: ModelSpec) -> list[Any]:
+    """Return the records the declaration's ``row_filters`` select, in published order.
+
+    A client-side filter is a *selection* over what the source published, not a second opinion on
+    whether the source was complete. That is why :meth:`EngineFetcher.transform_data` runs this
+    after the declared-total agreement check: completeness is judged on the unfiltered record list,
+    and ``row_filters`` can therefore never weaken that judgement -- a filter that shrank the
+    answer first would turn an ``*_INCOMPLETE`` failure into a quiet short success.
+
+    Rows are judged on the decoded record and before per-row normalization, so a filter can test a
+    key the model does not publish (cboe searches ``description`` and ``index_symbol`` while its
+    rows call them ``symbol``). Multiple filters are ANDed; within one filter ``match`` decides
+    whether any or every column has to hit.
+
+    Two declarations make a filter unable to judge anything, and both are read as "select nothing
+    away": a filter that names no ``columns``, and one whose needle resolves to the empty string
+    because the caller left the needle parameter out. Upstream's own substring search keeps every
+    row for an empty needle, and a selection that silently discarded the whole published answer
+    would be indistinguishable from a genuine no-hit result.
+
+    Raises:
+        ProviderEngineError: ``*_SHAPE_INVALID`` for a record that is not a mapping at all. A
+            missing *key* is a non-match, but a record that is not a row would be refused by
+            normalization anyway, and letting a filter discard it would present a malformed
+            document as a legitimate empty result.
+    """
+    active: list[tuple[RowFilterSpec, str]] = []
+    for row_filter in spec.row_filters:
+        if not _gate_applies(row_filter, query):
+            continue
+        needle = _needle(row_filter, query)
+        if not needle:
+            continue
+        active.append((row_filter, needle))
+    if not active:
+        return list(records)
+    kept: list[Any] = []
+    for record in records:
+        if not isinstance(record, dict):
+            raise ProviderEngineError(f"{spec.error_prefix}_SHAPE_INVALID")
+        if all(_row_matches(row_filter, record, needle) for row_filter, needle in active):
+            kept.append(record)
+    return kept
+
+
 def make_http_json_fetcher(source: str, spec: ModelSpec) -> type[Fetcher[Any, Any]]:
     """Build one provider model's fetcher class from its declaration."""
     declared_query_model = build_query_model(spec)
@@ -660,27 +803,33 @@ def make_http_json_fetcher(source: str, spec: ModelSpec) -> type[Fetcher[Any, An
 
             A page is either a response object or, for an endpoint whose whole document is the
             record list, the list itself. Both are declared shapes; anything else is a shape
-            failure, and ``params`` is not consulted here because the query stage already ran.
+            failure. ``params`` is consulted only to select rows -- the query stage already ran, so
+            no value is re-validated here.
             """
             if type(raw) is not tuple or any(not isinstance(page, (dict, list)) for page in raw):
                 raise ProviderEngineError(f"{spec.error_prefix}_SHAPE_INVALID")
-            rows: list[ContractModel] = []
-            for page in raw:
-                rows.extend(
-                    normalize_record(record, page, spec, declared_row_model)
-                    for record in resolve_rows(page, spec.rows_pointer, spec)
-                )
-            published = _declared_totals(raw, spec)
-            distinct = set(published)
+            pages = [(page, resolve_rows(page, spec.rows_pointer, spec)) for page in raw]
+            # Completeness is judged on what the source *published*, before anything is selected: a
+            # client-side filter is a selection over those records, so it runs after this check and
+            # never inside it. Filtering first would let ``row_filters`` make a short answer look
+            # agreeing -- 4 published, 1 kept, 1 expected -- which is precisely the weakening a
+            # declaration must not be able to perform.
+            published = sum(len(records) for _, records in pages)
+            totals = _declared_totals(raw, spec)
+            distinct = set(totals)
             if len(distinct) > 1:
                 raise ProviderEngineError(f"{spec.error_prefix}_TOTAL_CONFLICT")
             if distinct:
-                expected = published[0]
-                if len(rows) < expected:
+                expected = totals[0]
+                if published < expected:
                     raise ProviderEngineError(f"{spec.error_prefix}_INCOMPLETE")
-                if len(rows) > expected:
+                if published > expected:
                     raise ProviderEngineError(f"{spec.error_prefix}_TOTAL_CONFLICT")
-            return tuple(rows)
+            return tuple(
+                normalize_record(record, page, spec, declared_row_model)
+                for page, records in pages
+                for record in apply_row_filters(records, params, spec)
+            )
 
     published_name = f"{source.replace('_', ' ').title().replace(' ', '')}{spec.model}Fetcher"
     EngineFetcher.__name__ = published_name

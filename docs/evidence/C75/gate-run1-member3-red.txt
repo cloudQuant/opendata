@@ -1,0 +1,58 @@
+# gate run #1: make gate stopped red at member 3 (secret-check)
+# produced: 2026-10-09T10:31:37Z
+# branch: dev
+# head: 8a35e9aca5ce43d5e734a2a6b97915e711739778
+# graded tree: HEAD 8a35e9a plus 65 uncommitted path(s) (this round's edits)
+# command: make gate
+# exit: GATE_EXIT=2  (make: *** [gate] Error 2)
+
+HEAD=8a35e9aca5ce43d5e734a2a6b97915e711739778
+BRANCH=dev
+DATE_UTC=2026-10-09T10:30:08Z
+===== gate: brand-check =====
+python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:150
+  .env.example:151
+  .env.example:152
+  .env.example:153
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+===== gate: zero-dep-check =====
+python scripts/codemod/verify_no_akshare.py --self-test
+OK: scanner self-test passed (13 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+python scripts/codemod/verify_no_akshare.py
+OK: 649 file(s) walked (opendata=322, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+===== gate: secret-check =====
+python scripts/quality/secret_scan_check.py
+
+    ○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
+
+[90m6:31PM[0m [32mINF[0m [1m300 commits scanned.[0m
+[90m6:31PM[0m [32mINF[0m [1mscanned ~134553921 bytes (134.55 MB) in 1m11.9s[0m
+[90m6:31PM[0m [33mWRN[0m [1mleaks found: 1[0m
+FAIL: the history scan reports credentials (exit 1). Triage each finding; only a public identifier belongs in the allowlist.
+device: gitleaks 8.30.1, command: gitleaks detect --source . --config .gitleaks.toml --redact
+make[1]: *** [secret-check] Error 1
+make: *** [gate] Error 2
+GATE_EXIT=2

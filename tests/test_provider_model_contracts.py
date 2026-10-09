@@ -4,8 +4,10 @@ The engine's promise is that one declaration is as testable as one hand-written 
 acceptance cases a model must pass are generated from the declaration itself rather than from a
 per-model test file: which facets apply is decided by what the record declares (a required
 parameter, a numeric column, a paging kind, a credential, a path template), and every fixture is
-synthesized from the declared kinds and pointers. A model cannot pass by having thought to write a
-favourable test, and it cannot hide a facet that its own declaration asks for.
+synthesized from the declaration itself -- its kinds, its pointers and the response shape its
+``decoder`` names, so a csv model is answered with csv bytes and a json model with a document. A
+model cannot pass by having thought to write a favourable test, and it cannot hide a facet that its
+own declaration asks for.
 
 Nothing here reaches a network. ``_no_real_transport`` replaces the engine's only send seam with a
 failure, and each case injects a synthetic transport on the generated class, so a declaration that
@@ -27,13 +29,20 @@ from __future__ import annotations
 from datetime import date
 
 import pytest
+from pydantic import ValidationError
 
 from opendata.data.domains import contract_model, load_domains
 from opendata.data.providers._engine import http_json
-from opendata.data.providers._engine.decoders import ResponseDecodeError, decode_response
+from opendata.data.providers._engine.decoders import (
+    ResponseDecodeError,
+    decode_body,
+    decode_response,
+)
 from opendata.data.providers._engine.http_json import (
     HttpResponse,
     ProviderEngineError,
+    build_query_model,
+    encode_query,
     make_http_json_fetcher,
     paging_page_size,
 )
@@ -46,6 +55,7 @@ from opendata.data.providers._engine.spec import (
 )
 from opendata.data.providers._engine.testing import (
     SequencedResponseTransport,
+    body_from_records,
     fixture_context,
     sample_value,
     synthetic_body,
@@ -201,11 +211,34 @@ def pages_for(spec: ModelSpec, count: int) -> list[HttpResponse]:
     hits the transport's loud failure rather than a repeated body. A declared total is repeated on
     every page because repeating it is what upstreams do, and a fixture that published it once would
     leave the agreement check unjudged.
+
+    The response *shape* follows the declaration's decoder, because the answer a csv model can
+    read is not the answer a json model can read: a delimited declaration is scripted as the raw
+    bytes its own ``decoder`` names, rendered by the shipped body fixture from the same
+    ``sample_value`` cells the JSON page publishes, so every face below judges the model rather than
+    the fixture's choice of container. A text table has nowhere to carry a response-level total or
+    cursor, so a declaration asking for both is refused here by name instead of being answered with
+    a document it will not read.
     """
     paging = spec.pagination
     total_key = paging.total_key
+    cursor_field = paging.cursor_field
+    delimited = spec.decoder.delimited
+
+    def scripted(rows: int, start: int, envelope: dict[str, object]) -> HttpResponse:
+        if envelope:
+            if delimited:
+                raise AssertionError(
+                    f"{spec.model}: a {spec.decoder.kind} body carries no response-level envelope, "
+                    f"so {sorted(envelope)} cannot be scripted for it"
+                )
+            return synthetic_page(spec, rows, start=start, **envelope)
+        if delimited:
+            return synthetic_raw_page(spec, rows, start=start)
+        return synthetic_page(spec, rows, start=start)
+
     if paging.kind == "none":
-        return [synthetic_page(spec, count, **({} if total_key is None else {total_key: count}))]
+        return [scripted(count, 0, {} if total_key is None else {total_key: count})]
     size = paging_page_size(spec)
     if size <= 0:
         raise AssertionError(f"{spec.model}: the declaration gives no page size to script against")
@@ -214,15 +247,38 @@ def pages_for(spec: ModelSpec, count: int) -> list[HttpResponse]:
     seen = 0
     for index, chunk in enumerate(chunks):
         envelope: dict[str, object] = {} if total_key is None else {total_key: count}
-        cursor_field = paging.cursor_field
         if paging.kind == "cursor" and cursor_field and index + 1 < len(chunks):
             envelope[cursor_field] = f"cursor-{index + 2}"
-        pages.append(synthetic_page(spec, chunk, start=seen, **envelope))
+        pages.append(scripted(chunk, seen, envelope))
         seen += chunk
     if paging.kind != "cursor" and chunks[-1] == size:
-        trailing: dict[str, object] = {} if total_key is None else {total_key: count}
-        pages.append(synthetic_page(spec, 0, start=seen, **trailing))
+        pages.append(scripted(0, seen, {} if total_key is None else {total_key: count}))
     return pages
+
+
+def _amend_delimited_page(
+    spec: ModelSpec, page: HttpResponse, key: str, *, value: object, drop: bool
+) -> HttpResponse:
+    """Return ``page`` with its first record amended, rendered back through its own decoder.
+
+    The body is decoded by the shipped decoder rather than re-parsed here, so the header the
+    falsifier edits is the header the declaration's own reading produced.
+    """
+    if page.payload is None:
+        raise AssertionError(
+            f"{spec.model}: a {spec.decoder.kind} page scripted without a raw body"
+        )
+    records = decode_body(spec, page.payload)
+    if not records:
+        return page
+    if drop:
+        header = [name for name in records[0] if name != key]
+        for record in records:
+            record.pop(key, None)
+    else:
+        header = list(records[0])
+        records[0][key] = value
+    return HttpResponse(page.status, None, payload=body_from_records(spec, records, keys=header))
 
 
 def amend_first_record(
@@ -238,15 +294,28 @@ def amend_first_record(
     A paged fetch transforms only after its last page arrives, so a falsifier must publish the wrong
     key on each page it scripted; amending one page alone would let a later page normalize cleanly,
     and the case would judge the fixture rather than the engine.
+
+    A JSON page is amended in place, because the list the pointer resolves to is the live object
+    inside the document. A delimited page holds no dict to edit -- only bytes -- so it goes through
+    :func:`_amend_delimited_page`, where ``drop`` removes the column from the *header row* and so
+    from every row on the page. That is what a text table's "this key is not published" means, and
+    it is the form the engine reports under ``missing``; blanking one cell instead would script a
+    null value for a column the header still names, which the normalizer accepts for a nullable
+    column and refuses nowhere.
     """
+    amended: list[HttpResponse] = []
     for page in pages:
+        if spec.decoder.delimited:
+            amended.append(_amend_delimited_page(spec, page, key, value=value, drop=drop))
+            continue
         records = http_json.resolve_rows(page.document, spec.rows_pointer, spec)
         if records:
             if drop:
                 records[0].pop(key, None)
             else:
                 records[0][key] = value
-    return pages
+        amended.append(page)
+    return amended
 
 
 def unmeasured_transport(url: str, params: dict[str, str], **_: object) -> HttpResponse:
@@ -437,14 +506,86 @@ class TestDeclarationIsTheContract:
         zero rows rather than a failure, is
         :meth:`test_empty_record_list_is_zero_rows_not_an_error`.
         """
+        if spec.decoder.delimited:
+            pytest.skip(
+                f"{spec.model} reads a {spec.decoder.kind} body, where an empty document is a "
+                "wiring fault, not a shape answer; the body-path falsifier is "
+                "test_a_body_whose_header_names_no_declared_column_is_refused"
+            )
         code = code_raised(spec, source, HttpResponse(200, {}), **valid_query_kwargs(spec))
         assert code == f"{spec.error_prefix}_SHAPE_INVALID"
+
+    def test_a_body_whose_header_names_no_declared_column_is_refused(
+        self, source: str, spec: ModelSpec
+    ) -> None:
+        """The delimited counterpart of the no-records falsifier, judged on the model itself.
+
+        A text table has no document to empty out, so "no records anywhere" for it is a header that
+        shares no name with the declaration -- what a renamed column set or a wrong-shape export
+        publishes, and the reading the decoder must refuse rather than return zero rows for. Two
+        column names at least are scripted, because a single-column header against a multi-column
+        declaration is the wrong-delimiter fault, a different refusal with its own face.
+        """
+        if not spec.decoder.delimited:
+            pytest.skip(f"{spec.model} is answered by a json document, not a delimited body")
+        width = max(2, len(spec.columns))
+        header = [f"undeclared_column_{index}" for index in range(width)]
+        body = body_from_records(
+            spec, [dict(zip(header, ["value"] * width, strict=True))], keys=header
+        )
+        code = code_raised(
+            spec, source, HttpResponse(200, None, payload=body), **valid_query_kwargs(spec)
+        )
+        assert code == f"{spec.error_prefix}_HEADER_MISMATCH"
+
+    def test_the_json_page_this_suite_would_have_scripted_is_refused(
+        self, source: str, spec: ModelSpec
+    ) -> None:
+        """The counterfact for this suite's own fixture layer, aimed at the engine.
+
+        :func:`pages_for` was changed to answer a delimited declaration with raw bytes -- the
+        edit that turned 22 red cases green, and exactly the edit that could go green for the wrong
+        reason if the decoder stopped being reached. So the JSON page the same helper produces for
+        any other declaration must be refused by this model: a delimited declaration that accepted a
+        parsed document would mean the body face never ran.
+        """
+        if not spec.decoder.delimited:
+            pytest.skip(f"{spec.model} is answered by a json document")
+        code = code_raised(spec, source, synthetic_page(spec, 1), **valid_query_kwargs(spec))
+        assert code == f"{spec.error_prefix}_PAYLOAD_MISSING"
 
     def test_empty_record_list_is_zero_rows_not_an_error(
         self, source: str, spec: ModelSpec
     ) -> None:
+        """An envelope that says "understood, nothing in the window" is an empty answer."""
+        if spec.decoder.delimited:
+            pytest.skip(
+                f"{spec.model} reads a {spec.decoder.kind} body, which carries no such answer; "
+                "a header with no data rows is refused by "
+                "test_a_delimited_header_publishing_no_rows_is_a_refusal"
+            )
         _, rows = fetch(source, spec, *pages_for(spec, 0), **valid_query_kwargs(spec))
         assert rows == ()
+
+    def test_a_delimited_header_publishing_no_rows_is_a_refusal(
+        self, source: str, spec: ModelSpec
+    ) -> None:
+        """The counterpart on the body path, held to a registered model, not only to a probe.
+
+        The JSON face above can read zero records as a clean empty result because the document
+        is still the envelope the query asked for. A delimited body whose only line is a header is
+        not that: the shipped decoder refuses it as ``*_EMPTY_TABLE``, and this face records that a
+        model registered here is judged against the same reading.
+        """
+        if not spec.decoder.delimited:
+            pytest.skip(f"{spec.model} is answered by a json document, not a delimited body")
+        code = code_raised(
+            spec,
+            source,
+            HttpResponse(200, None, payload=synthetic_body(spec, 0)),
+            **valid_query_kwargs(spec),
+        )
+        assert code == f"{spec.error_prefix}_EMPTY_TABLE"
 
     def test_missing_required_source_key_is_a_shape_failure(
         self, source: str, spec: ModelSpec
@@ -460,15 +601,21 @@ class TestDeclarationIsTheContract:
             assert code == f"{spec.error_prefix}_SHAPE_INVALID", column.name
 
     def test_optional_column_absent_reads_as_null(self, source: str, spec: ModelSpec) -> None:
-        """The counterpart: an absent optional key is a null, not a shape failure."""
+        """The counterpart: an absent optional key is a null, not a shape failure.
+
+        One column at a time, because a body missing every optional key is a different table than
+        the endpoint publishes -- for a model with a single required column it is a one-column
+        header, which the decoder reads as the wrong delimiter -- while a body that omits exactly
+        one key is what a source that does not publish that column actually looks like.
+        """
         optional = [column for column in spec.columns if not column.required]
         if not optional:
             pytest.skip(f"{spec.model} declares no optional column")
-        pages = pages_for(spec, 1)
         for column in optional:
-            amend_first_record(spec, pages, column.source_key or column.name, drop=True)
-        _, rows = fetch(source, spec, *pages, **valid_query_kwargs(spec))
-        for column in optional:
+            pages = amend_first_record(
+                spec, pages_for(spec, 1), column.source_key or column.name, drop=True
+            )
+            _, rows = fetch(source, spec, *pages, **valid_query_kwargs(spec))
             assert getattr(rows[0], column.name) is None, column.name
 
     def test_boolean_published_for_a_numeric_column_is_refused(
@@ -669,6 +816,43 @@ class TestDeclarationIsTheContract:
         assert len(sent) == len(pages), sent
         assert sent == [declared] * len(pages)
 
+    def test_declared_static_query_is_sent_on_every_page(
+        self, source: str, spec: ModelSpec
+    ) -> None:
+        """The endpoint's own URL literals are constants of the request, not of the page loop.
+
+        Fed downloads address a release and a series hash inside the query string, and a body format
+        the declared decoder can read. A paging model must carry them on page two exactly as on page
+        one, so the same projection is compared against every send rather than the first.
+        """
+        declared = dict(spec.static_query)
+        pages = pages_for(spec, 1 if spec.pagination.kind == "none" else 2)
+        fetcher, transport = build(source, spec, *pages)
+        fetcher.fetch(  # type: ignore[attr-defined]
+            ctx=fixture_context(source, spec, sends=len(pages) + 2), **valid_query_kwargs(spec)
+        )
+        sent = [call["params"] for call in transport.calls]
+        assert len(sent) == len(pages), sent
+        for call in sent:
+            assert {key: call.get(key) for key in declared} == declared, declared
+
+    def test_a_constant_name_is_not_a_parameter_a_caller_may_pass(
+        self, source: str, spec: ModelSpec
+    ) -> None:
+        """The boundary :attr:`ModelSpec.static_query` exists for, measured on every declaration.
+
+        A caller who passes a constant's name is refused before any socket opens, because the
+        generated query model forbids extras -- so no request can re-address a reviewed model at a
+        different series or payload format. The arm that declares no constant is not vacuous: the
+        same strictness is measured with a name nothing in the record declares.
+        """
+        for key, value in spec.static_query:
+            with pytest.raises(ValidationError):
+                build_query_model(spec)(**{key: "overridden"})
+            assert encode_query(build_query_model(spec)(), spec).get(key) == value
+        with pytest.raises(ValidationError):
+            build_query_model(spec)(**{"a_name_no_declaration_carries": "x"})
+
 
 @every_model
 class TestAsyncApplicabilityIsDeclared:
@@ -719,8 +903,11 @@ class TestApplicabilityCensus:
             ("declares_total", lambda spec: spec.pagination.total_key is not None),
             ("path_template", lambda spec: bool(spec.path_placeholders)),
             ("empty_pointer", lambda spec: spec.rows_pointer == ""),
+            ("delimited_body", lambda spec: spec.decoder.delimited),
+            ("json_document", lambda spec: not spec.decoder.delimited),
             ("row_envelope", lambda spec: bool(spec.row_envelope)),
             ("static_headers", lambda spec: bool(spec.static_headers)),
+            ("static_query", lambda spec: bool(spec.static_query)),
         ],
     )
     def test_face_applicability_is_measured_not_assumed(self, face) -> None:
@@ -841,6 +1028,61 @@ class TestDeclarationRules:
     def test_header_entry_that_is_not_a_pair_is_refused(self) -> None:
         with pytest.raises(ValueError, match=r"static header is a \(name, value\) pair"):
             self._base(static_headers=(("Accept",)))
+
+    def test_static_query_may_be_declared(self) -> None:
+        """A blank value is allowed: upstream sends ``lastobs=`` with nothing after the sign."""
+        spec = self._base(static_query=(("rel", "H6"), ("lastobs", "")))
+        assert spec.static_query == (("rel", "H6"), ("lastobs", ""))
+
+    def test_static_query_entry_that_is_not_a_pair_is_refused(self) -> None:
+        with pytest.raises(ValueError, match=r"static query entry is a \(key, value\) pair"):
+            self._base(static_query=(("rel",)))
+
+    def test_static_query_key_that_is_not_a_query_key_is_refused(self) -> None:
+        """The falsifier: ``&`` and ``=`` are the query's own structure, so one constant whose key
+        spells either would address a second parameter from inside its own name."""
+        with pytest.raises(ValueError, match="is not a query-string key"):
+            self._base(static_query=(("rel&series", "H6"),))
+        with pytest.raises(ValueError, match="is not a query-string key"):
+            self._base(static_query=(("", "H6"),))
+
+    def test_static_query_value_with_a_line_break_is_refused(self) -> None:
+        with pytest.raises(ValueError, match="has no sendable value"):
+            self._base(static_query=(("rel", "H6\r\nX-Injected: 1"),))
+        with pytest.raises(ValueError, match="has no sendable value"):
+            self._base(static_query=(("rel", 6),))  # type: ignore[call-overload]
+
+    def test_static_query_key_claimed_by_a_parameter_is_refused(self) -> None:
+        """Two spellings of one key would let the caller's value overwrite the reviewed constant."""
+        with pytest.raises(ValueError, match="already claimed"):
+            self._base(
+                params=(ParamSpec("rel", "str", required=True),),
+                static_query=(("rel", "H6"),),
+            )
+        with pytest.raises(ValueError, match="already claimed"):
+            self._base(
+                params=(ParamSpec("start_date", "date", query_key="from"),),
+                static_query=(("from", ""),),
+            )
+
+    def test_static_query_key_claimed_by_a_credential_or_a_paging_key_is_refused(self) -> None:
+        """The paging keys are written into the same dict after the constants, so a collision there
+        would not be a second value but a silently overwritten one."""
+        with pytest.raises(ValueError, match="already claimed"):
+            self._base(
+                credential="PROBE_KEY",
+                credential_query_key="api_key",
+                static_query=(("api_key", "fixed"),),
+            )
+        with pytest.raises(ValueError, match="already claimed"):
+            self._base(
+                pagination=PaginationSpec(kind="page", limit_key="limit", offset_key="page"),
+                static_query=(("page", "1"),),
+            )
+
+    def test_static_query_key_declared_twice_is_refused(self) -> None:
+        with pytest.raises(ValueError, match="declared twice"):
+            self._base(static_query=(("rel", "H6"), ("rel", "H8")))
 
 
 #: Columns a delimited body can carry: only the kinds a text cell can actually hold.
@@ -966,6 +1208,13 @@ class TestResponseBodyDecoders:
             assert spec.decoder.member in message
 
 
+#: The declarations that were already shipped before :mod:`.decoders` let a spec choose a body
+#: shape. Their JSON behaviour must not change, so this guard names them by id instead of claiming
+#: that every declaration is JSON -- a claim that made a delimited model impossible to register.
+#: A model may be ADDED to the live population freely; none of these ids may disappear or drift.
+PRE_DECODER_JSON_IDS = frozenset({*PROBE_IDS, "cboe::AvailableIndices", "cboe::IndexConstituents"})
+
+
 class TestDecoderFacetIsJudged:
     """The decoder face is counted over both populations, so green means judged."""
 
@@ -984,8 +1233,22 @@ class TestDecoderFacetIsJudged:
         assert judged, f"decoder {kind!r}: no declaration exercises it, so this face is unmeasured"
 
     def test_the_json_path_still_reads_the_parsed_document_untouched(self) -> None:
-        """Every declaration that predates the decoders keeps its exact JSON behaviour."""
-        for source, spec in MODELS:
+        """The pre-decoder population keeps its exact JSON behaviour, judged by id.
+
+        Two-sided: every named id must still be declared (a model cannot disappear while its JSON
+        behaviour is being witnessed), still read the JSON kind, and still get the parsed document
+        back by identity. A declaration added after the decoders landed is deliberately not
+        constrained here -- that freedom is what lets a csv, tsv or zip model register at all.
+        """
+        live = {f"{source}::{spec.model}": spec for source, spec in MODELS}
+        disappeared = sorted(PRE_DECODER_JSON_IDS - set(live))
+        assert not disappeared, f"pre-decoder declarations no longer on disk: {disappeared}"
+        for identifier in sorted(PRE_DECODER_JSON_IDS):
+            spec = live[identifier]
             document: dict[str, object] = {"data": {"records": []}}
-            assert spec.decoder.kind == "json", f"{source}::{spec.model} changed decoder default"
+            assert spec.decoder.kind == "json", f"{identifier} changed decoder default"
             assert decode_response(spec, HttpResponse(200, document)) is document
+        print(
+            f"\nface pre-decoder json: {len(PRE_DECODER_JSON_IDS)} frozen of {len(live)} live"
+            f"; unconstrained additions={sorted(set(live) - PRE_DECODER_JSON_IDS)}"
+        )

@@ -68,7 +68,8 @@
       "note": "四个面分开量：compose 六个 container_name 全部落在 opendata_* 且网络名为 opendata_network；opendata_user 在 .env.example/compose/init.sql 三处齐备；7 个机器面（compose/.env.example/init.sql/config.py/Makefile/.pre-commit/Dockerfile）旧 token 命中 0；Makefile 17 条路径引用 0 缺失、pre-commit 8 条 files/exclude 正则 0 条指向不存在的文件（空转正则以前没人查）。披露：根文档按 AC-1|03 分成『仍在使用旧名』(0 容忍) 与『沿革点名旧名』(3 行/4 文件，允许) 两类，分型靠 PROVENANCE_MARKER 关键词共现，不是语义判定。"
     },
     "AC-1|05|db9002ff": {
-      "state": "proven",
+      "state": "gap",
+      "reason": "条目后半「后端启动、前端登录、/health 均正常」是运行面判据：runtime_stack_evidence 的证据有 24 小时 TTL（MAX_EVIDENCE_AGE），下面 C65（2026-10-01）留档的运行读数已过期。本轮 --item 'AC-1|05' 单条实测：前半四处配置面（config.py 默认值、.env.example、docker-compose.yml、init.sql）全部读到 opendata / opendata_data，consistent=yes；后半读出 runtime=failed 与 444 条证据问题，以 build-source-stale 与 build-source-file-hash-mismatch 为主——镜像的 686 项 Docker COPY 源投影自 C65 之后因本迭代新增/改写文件而漂移；同一次读数里栈健康面仍是 database=connected、static assets=2、frontend identity=verified。重取运行读数需要用户授权启动 Docker 栈并重建镜像（daemon 当前未运行），属部署面排期，离线不得冒充为已验证。",
       "round": "C65",
       "date": "2026-10-01",
       "command": "Anaconda base outer driver invokes fixed Python scripts/quality/acceptance_item_probe.py --all --json docs/evidence/C65/item-readings-current.json; actual argv and CHECK_EXIT in docs/evidence/C65/item-readings-current.txt",
@@ -865,7 +866,8 @@
       "note": "33 registered/verified active legs across seven enabled providers; nonempty consumption scenarios; cloudQuant directly confirmed responsibility for all 33 for quant research, backtesting and data platform. No rights/source review approval inferred."
     },
     "AC-10|03|72598062": {
-      "state": "proven",
+      "state": "gap",
+      "reason": "两条实测归因：①下面 C65（2026-10-01）留档的三份审阅 JSON 受 provider_source_review_evidence.MAX_EVIDENCE_AGE=24 小时 TTL 约束，同一棵树+同一批档案在 24 小时后就会报 source-review-stale/similarity-stale/nearest-review-stale，即本条读数是「时刻面」而非仓库稳定面；②仪器原先把包面冻结成 7 个包的字面量，落后于产品；本轮已改为「钉住 5 个基线包 + 实测当前注册包面」（provider_source_review_evidence.registered_provider_packages），当前实测 12 个 provider 包（新增 bls/cboe/federal_reserve/fmp/sec），provider py 文件面从留档的 71 涨到实测 474（其中 akshare/_vendor 325 个是 upstream.lock 逐文件哈希锁定的原文搬运，149 个是本迭代自研）。读数面已可复算：provider_source_review_evidence_build.py 从当前树重测并以 --findings（审阅人撰写的结论 JSON）为唯一人工输入重建三份档案，建完即自校验；仍未闭合的是审阅行为本身——按当前 12 包面重做一次逐文件审阅并由负责人署名，审阅人/授权串/日期一律不得代填。",
       "round": "C65",
       "date": "2026-10-01",
       "command": "Anaconda base outer driver invokes fixed Python scripts/quality/acceptance_item_probe.py --all --json docs/evidence/C65/item-readings-current.json; actual argv and CHECK_EXIT in docs/evidence/C65/item-readings-current.txt",

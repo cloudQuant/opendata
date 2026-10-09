@@ -12,5 +12,10 @@ PROVIDER = Provider(
         LazyFetcherBinding(
             "opendata.data.providers.oecd.models.unemployment", "OecdUnemploymentFetcher"
         ),
+        # No engine binding: all nine ledger rows are recorded as not declarable in
+        # ``opendata.data.providers.oecd.specs.NOT_DECLARABLE``, including the two this package
+        # declared last round and retracted when ``declaration_provenance`` showed those
+        # declarations described this repository's own clean-room reader rather than the pinned
+        # upstream models. A row becomes a binding the moment a ``ModelSpec`` for it is added.
     ),
 )

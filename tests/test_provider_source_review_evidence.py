@@ -14,7 +14,6 @@ from scripts.quality.provider_source_review_evidence import (
     EXPECTED_BASELINE_PROVIDERS,
     EXPECTED_OPENBB_COMMIT,
     EXPECTED_PACKAGE_REVIEW_RESULT,
-    EXPECTED_PROVIDERS,
     EXPECTED_REVIEW_AUTHORIZATION,
     NEAREST_REVIEW_REL,
     SIMILARITY_REL,
@@ -28,6 +27,16 @@ if TYPE_CHECKING:
 NOW = datetime(2026, 10, 1, 10, 0, tzinfo=ZoneInfo("Europe/Madrid"))
 REVIEW_GENERATED_AT = "2026-10-01T08:00:00+02:00"
 NEAREST_GENERATED_AT = "2026-10-01T09:00:00+02:00"
+
+#: The provider population this file's synthetic bundle writes into its own tmp root.
+#:
+#: The instrument no longer carries a frozen literal for this: ``registered_provider_packages``
+#: measures whatever ``opendata/data/providers`` holds under the root it is given, so a fixture
+#: that fabricates seven packages is judged against those same seven -- and the live tree's twelve
+#: are judged against the stored artifact, which is where a newly registered package must fail
+#: until its review is actually recorded. Keeping the number here, in the file that creates the
+#: dirs, is what makes the bundle's scope auditable rather than assumed.
+BUNDLE_PROVIDERS = frozenset({"akshare", "ecb", "fred", "imf", "oecd", "ths", "yfinance"})
 
 
 def _write_json(path: Path, value: object) -> None:
@@ -57,7 +66,7 @@ def _write_valid_bundle(root: Path) -> None:
     source_hashes: dict[str, str] = {}
     source_by_provider: dict[str, dict[str, str]] = {}
     local_paths: list[str] = []
-    for provider in sorted(EXPECTED_PROVIDERS):
+    for provider in sorted(BUNDLE_PROVIDERS):
         provider_dir = root / "opendata/data/providers" / provider
         provider_dir.mkdir(parents=True, exist_ok=True)
         registration = provider_dir / "registration.py"
@@ -113,7 +122,7 @@ def _write_valid_bundle(root: Path) -> None:
     _write_json(root / SOURCE_REVIEW_REL, source_review)
 
     nearest_pairs: list[dict[str, Any]] = []
-    for index, _provider in enumerate(sorted(EXPECTED_PROVIDERS)[:3]):
+    for index, _provider in enumerate(sorted(BUNDLE_PROVIDERS)[:3]):
         nearest_pairs.append(
             {
                 "local_path": local_paths[index],
@@ -141,7 +150,7 @@ def _write_valid_bundle(root: Path) -> None:
         "generated_date": "2026-10-01",
         "comparison": {
             "baseline_commit": EXPECTED_OPENBB_COMMIT,
-            "providers_local": sorted(EXPECTED_PROVIDERS),
+            "providers_local": sorted(BUNDLE_PROVIDERS),
             "providers_baseline": sorted(EXPECTED_BASELINE_PROVIDERS),
         },
         "counts": {
@@ -211,7 +220,7 @@ def test_current_provider_review_bundle_validates_with_bounded_facts(evidence_ro
 
     assert result.valid is True
     assert result.facts["scope"] == "current_registered_provider_packages"
-    assert result.facts["provider_names"] == sorted(EXPECTED_PROVIDERS)
+    assert result.facts["provider_names"] == sorted(BUNDLE_PROVIDERS)
     assert result.facts["provider_count"] == 7
     assert result.facts["python_files"] == 14
     assert result.facts["reviewed_python_files"] == 14

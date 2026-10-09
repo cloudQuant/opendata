@@ -8,7 +8,11 @@ from __future__ import annotations
 
 from opendata.data.models.adjustment import AdjustFactor, CorporateAction
 from opendata.data.models.base import ContractModel
-from opendata.data.models.cboe_index import CboeAvailableIndex, CboeIndexConstituentQuote
+from opendata.data.models.cboe_index import (
+    CboeAvailableIndex,
+    CboeIndexConstituentQuote,
+    CboeSearchedIndex,
+)
 from opendata.data.models.currency import CurrencyReferenceRate, SdmxGroupContext
 from opendata.data.models.ecb_series import (
     EcbBalanceOfPaymentsObservation,
@@ -21,6 +25,10 @@ from opendata.data.models.economic_series import (
     SeriesObservation,
 )
 from opendata.data.models.equity_price import EquityHistorical, EquityQuote
+from opendata.data.models.federal_reserve_macro import (
+    FederalReserveMoneyMeasure,
+    FederalReserveTreasuryRate,
+)
 from opendata.data.models.financial import FinancialIndicator, FinancialStatement
 from opendata.data.models.fred_sofr import FredSofrObservation
 from opendata.data.models.fred_sonia import FredSoniaObservation
@@ -45,6 +53,7 @@ __all__ = [
     "BlsObservation",
     "CboeAvailableIndex",
     "CboeIndexConstituentQuote",
+    "CboeSearchedIndex",
     "MacroSeries",
     "OverseasBar",
     "ContractModel",
@@ -54,6 +63,8 @@ __all__ = [
     "EcbYieldCurveObservation",
     "EquityHistorical",
     "EquityQuote",
+    "FederalReserveMoneyMeasure",
+    "FederalReserveTreasuryRate",
     "FinancialIndicator",
     "FinancialStatement",
     "FredOutputType",

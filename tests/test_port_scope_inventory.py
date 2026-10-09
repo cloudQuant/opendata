@@ -11,6 +11,7 @@ that boundary, so the locked-commit arm still runs the real ``verify_upstream`` 
 
 from __future__ import annotations
 
+import ast
 import json
 import shutil
 from dataclasses import dataclass, field
@@ -396,8 +397,9 @@ def _write_tree(root: Path) -> Tree:
     assert facade_target is not None
     # Every other ported module now exists, which is what the facade replay prunes against.
     pristine_root = upstream / PurePosixPath(port_module._INIT_UPSTREAM_PATH)
-    facade = port_module.vendor_init_facade(pristine_root, ported, URL, COMMIT)
+    facade, facade_report = port_module.vendor_init_facade(pristine_root, ported, URL, COMMIT)
     facade_target.write_bytes(facade)
+    assert facade_report["export_count"] > 0
     lock_rows.append(
         _lock_row(
             ROOT_FACADE,
@@ -594,6 +596,37 @@ def test_happy_path_carries_scope_claims_verbatim_and_rewrites_nothing(tree: Tre
     assert _sub(calendar, "manifest")["section"] == "resources"
     assert _sub(calendar, "manifest")["snapshot_lines"] is None
     assert _sub(calendar, "sha256")["manifest_matches_current_port_tree"] is True
+
+
+def _exports_rehomed_on_disk(tree: Tree) -> int:
+    """Count the facade's export table in the shipped source, not in the writer's own report."""
+    source = (tree.ported / ROOT_FACADE).read_text(encoding="utf-8")
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == "_EXPORTS" for target in node.targets
+        ):
+            value = node.value
+            assert isinstance(value, ast.Dict)
+            return len(value.keys)
+    raise AssertionError("the shipped facade carries no _EXPORTS table")
+
+
+def test_facade_work_is_attributed_to_the_facade_and_nowhere_else(tree: Tree) -> None:
+    """The facade re-homes exports; that count is measured from its bytes and lives on its row."""
+    payload = tree.build()
+    rows = _rows(payload)
+    recon = _reconciliation(payload)
+    expected = _exports_rehomed_on_disk(tree)
+    assert expected > 0
+    facade = _row(payload, ROOT_FACADE)
+    assert _sub(facade, "facade")["export_count"] == expected
+    assert _sub(facade, "port_report")["import_rewrites"] == 0
+    assert recon["facade_rows"] == 1
+    assert recon["facade_export_rehomed_total"] == expected
+    assert sum(1 for row in rows if row.get("facade") is None) == len(rows) - 1
+    assert recon["port_report_import_rewrite_total"] == sum(
+        int(row["port_report"]["import_rewrites"]) for row in rows if row.get("facade") is None
+    )
 
 
 def test_cli_writes_the_inventory_and_refuses_to_overwrite_without_force(

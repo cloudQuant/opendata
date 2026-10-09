@@ -22,15 +22,20 @@ EXPECTED = date(2026, 10, 7)
 #: Sorted; ``alert_matrix._deferred_model_domains`` returns this order. The two cboe legs joined it
 #: when ``cboe_available_indices``/``cboe_index_constituent_quotes`` entered ``domains.yaml`` and
 #: became registrable -- transient snapshot domains with no legacy warehouse table either way.
+#: ``cboe_index_search`` joined with its third binding, and the two federal_reserve series joined
+#: when their engine models' domains were registered (transient, query-only, no DDL either).
 NATIVE_MODEL_DOMAINS = (
     "balance_of_payments",
     "bls_search",
     "bls_series",
     "cboe_available_indices",
     "cboe_index_constituent_quotes",
+    "cboe_index_search",
     "currency_reference_rates",
     "equity_historical",
     "equity_quote",
+    "federal_reserve_money_measures",
+    "federal_reserve_treasury_rates",
     "fred_search",
     "fred_series",
     "sofr",
@@ -112,14 +117,14 @@ def test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tab
         reports, scope = alert_matrix.collect_freshness(engine, expected=EXPECTED)
         tables = alert_matrix.warehouse_tables()
 
-        assert len(legs) == 33
-        assert sum(len(sources) for sources in legs.values()) == 46
+        assert len(legs) == 36
+        assert sum(len(sources) for sources in legs.values()) == 49
         assert scope.domains == 20
         assert scope.deferred_domains == NATIVE_MODEL_DOMAINS
-        assert scope.deferred_legs == 13
+        assert scope.deferred_legs == 16
         assert scope.source_legs + scope.unmapped_legs == 33
-        assert scope.domains + len(scope.deferred_domains) == 33
-        assert scope.source_legs + scope.unmapped_legs + scope.deferred_legs == 46
+        assert scope.domains + len(scope.deferred_domains) == 36
+        assert scope.source_legs + scope.unmapped_legs + scope.deferred_legs == 49
         assert len(reports) == scope.domains + scope.source_legs
         assert len(statements) == len(reports) == 30
         assert all(
@@ -135,7 +140,7 @@ def test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tab
         )
         scope_dict = scope.as_dict()
         assert scope_dict["deferred_domains"] == list(NATIVE_MODEL_DOMAINS)
-        assert scope_dict["deferred_legs"] == 13
+        assert scope_dict["deferred_legs"] == 16
     finally:
         engine.dispose()
 

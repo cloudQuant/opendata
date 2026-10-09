@@ -1,0 +1,45 @@
+# The two shipped self-tests, which is what 'the offline acceptance面 can judge itself' means
+# produced: 2026-10-09T10:29:10Z (UTC)
+# archived: 2026-10-09T10:56:54Z
+# branch: dev
+# head: 8a35e9aca5ce43d5e734a2a6b97915e711739778
+# graded tree: HEAD 8a35e9a plus 64 uncommitted path(s) (this round's edits)
+# command: python scripts/quality/ac2_case_probe.py --self-test ; python scripts/quality/acceptance_item_probe.py --self-test
+# exit: AC2SELF_RC=0 and ITEMSELF_RC=0
+
+AC2-01 OK breaks=6 flipped=6 closure=holds_offline
+AC2-02 OK breaks=8 flipped=8 closure=holds_offline
+AC2-03 OK breaks=5 flipped=5 closure=holds_offline
+AC2-04 OK breaks=17 flipped=17 closure=holds_offline
+AC2-05 OK breaks=5 flipped=5 closure=holds_offline
+AC2-06 OK breaks=4 flipped=4 closure=holds_offline
+AC2-07 OK breaks=8 flipped=8 closure=holds_offline
+AC2-08 OK breaks=5 flipped=5 closure=holds_offline
+AC2-09 OK breaks=5 flipped=5 closure=holds_offline
+AC2-10 OK breaks=6 flipped=6 closure=holds_offline
+AC2-11 OK breaks=6 flipped=6 closure=holds_offline
+AC2-12 OK breaks=5 flipped=5 closure=holds_offline
+AC2-13 OK breaks=5 flipped=5 closure=holds_offline
+AC2-14 OK breaks=5 flipped=5 closure=holds_offline
+AC2-15 OK breaks=5 flipped=5 closure=holds_offline
+AC2-16 OK breaks=5 flipped=5 closure=holds_offline
+AC2-17 OK breaks=7 flipped=7 closure=holds_offline
+AC2-18 OK breaks=4 flipped=4 closure=holds_offline
+AC2-19 OK breaks=5 flipped=5 closure=holds_offline
+AC2-20 OK breaks=5 flipped=5 closure=holds_offline
+AC2-21 OK breaks=5 flipped=5 closure=holds_offline
+AC2-22 OK breaks=8 flipped=8 closure=holds_offline
+AC2-23 OK breaks=5 flipped=5 closure=holds_offline
+AC2-24 OK breaks=6 flipped=6 closure=holds_offline
+AC2-25 OK breaks=8 flipped=8 closure=holds_offline
+SELF_TEST PASS failures=0
+AC2SELF_RC=0
+  - 反事实面：115/115 个探针走到了判定，751 条 break 各被施加一次、每条都要求把干净读数打回 gap
+OK: 115 probe(s) measured; every judge is reachable from its declared repair, and all 751 counterfact(s) flip a clean reading back to a gap.
+ITEMSELF_RC=0
+
+Denominators on that sheet: 25 AC2 cases x their declared breaks = 153 breaks, 153 flipped; 115 item
+probes, 751 counterfacts, all 751 flipping a clean reading back to a gap. The same AC2 run earlier
+in the round was SELF_TEST FAIL failures=1 (AC-2 case 02 read closure=gap) because the inventory
+capability count had drifted from the live registry; that reading is archived next to this one, not
+deleted.

@@ -32,8 +32,8 @@ from scripts.quality.acceptance_item_probe import (
     wording_drift,
 )
 from tests.test_provider_source_review_evidence import (
+    BUNDLE_PROVIDERS,
     EXPECTED_BASELINE_PROVIDERS,
-    EXPECTED_PROVIDERS,
     SIMILARITY_REL,
     SOURCE_REVIEW_REL,
     _file_hash,
@@ -92,7 +92,7 @@ def _measure_ac10_03_at(
 
 def _write_probe_bundle(root: Path) -> None:
     """Expand the evidence fixture to the probe's synthetic 71-file scope."""
-    assert set(SYNTHETIC_PROVIDER_FILE_COUNTS) == EXPECTED_PROVIDERS
+    assert set(SYNTHETIC_PROVIDER_FILE_COUNTS) == BUNDLE_PROVIDERS
     assert set(SYNTHETIC_BASELINE_FILE_COUNTS) == EXPECTED_BASELINE_PROVIDERS
     _write_valid_bundle(root)
 
@@ -112,7 +112,7 @@ def _write_probe_bundle(root: Path) -> None:
             path.relative_to(root).as_posix(): _file_hash(path)
             for path in sorted((root / "opendata/data/providers" / provider).rglob("*.py"))
         }
-        for provider in sorted(EXPECTED_PROVIDERS)
+        for provider in sorted(BUNDLE_PROVIDERS)
     }
     for package in source_review["packages"]:
         provider = package["provider"]
@@ -326,7 +326,7 @@ def test_ac10_03_fails_closed_when_validator_reports_source_drift(
     assert probe.judge(facts).state == GAP
 
 
-def test_ac6_02_keeps_gap_when_current_canonical_scope_differs_from_frozen_evidence() -> None:
+def test_ac6_02_reads_proven_on_the_repaired_tree_with_every_break_firing() -> None:
     compare_module = script_module("scripts/codemod/compare_with_upstream.py")
     archived_report = Path(compare_module.REPORT_PATH)
     archived_before = archived_report.read_bytes() if archived_report.is_file() else None
@@ -342,16 +342,18 @@ def test_ac6_02_keeps_gap_when_current_canonical_scope_differs_from_frozen_evide
     assert Path(compare_module.REPORT_PATH) == archived_report
 
     probe = probe_for("AC-6|02")
-    assert facts["port_scope_valid"] == "no"
-    assert "disk tree/upstream.lock path sets differ" in facts["port_scope_problem_summary"]
-    assert "disk hash differs from port manifest" in facts["port_scope_problem_summary"]
-    assert "port scope inputs unavailable (ProbeError)" not in facts["port_scope_problem_summary"]
-    assert facts["b1_scope_groups_valid"] == "no"
+    # The three legs this case pinned as red were repaired in C74, not relabelled: the port-scope
+    # archive is generated from the tree it is checked against (port_scope_inventory.py), the B1
+    # scope groups are the nine vendor dirs, and the 18 case-path mismatches are gone -- so the
+    # reading below is the current one and the GAP arm lives in the counterfactuals at the bottom.
+    assert facts["port_scope_valid"] == "yes"
+    assert facts["port_scope_problem_summary"] == "-"
+    assert facts["b1_scope_groups_valid"] == "yes"
     assert facts["b1_scope_group_count"] == "9"
     assert facts["b1_python_file_count"] == "245"
-    assert facts["case_path_mapping_valid"] == "no"
-    assert facts["case_path_problem_count"] == "18"
-    assert "ValueError" in facts["case_path_problem_summary"]
+    assert facts["case_path_mapping_valid"] == "yes"
+    assert facts["case_path_problem_count"] == "0"
+    assert "ValueError" not in facts["case_path_problem_summary"]
     assert facts["case_count"] == "18"
     assert facts["case_statuses_complete"] == "yes"
     assert facts["case_pass_count"] == "14"
@@ -361,8 +363,8 @@ def test_ac6_02_keeps_gap_when_current_canonical_scope_differs_from_frozen_evide
     assert facts["compare_exit_consistent"] == "yes"
     assert facts["compare_report_temporary"] == "yes"
     assert facts["compare_rtol"] == "1e-09"
-    assert facts["passing_groups"] == "0"
-    assert facts["pass_files"] == "0"
-    assert facts["file_coverage_percent"] == "0.00"
-    assert probe.judge(facts).state == GAP
+    assert int(facts["passing_groups"]) >= int(facts["required_groups"])
+    assert facts["d10_failed"] == "no"
+    assert facts["pending_excluded"] == "yes"
+    assert probe.judge(facts).state == PROVEN
     _assert_breaks(probe, facts)

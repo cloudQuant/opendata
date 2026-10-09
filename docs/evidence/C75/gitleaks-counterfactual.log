@@ -1,0 +1,83 @@
+# C75 credential-config differential: 20 arms, each declaring the rule-id set gitleaks must report
+# produced: 2026-10-09T12:30:39Z
+# branch: dev
+# head: 8a35e9aca5ce43d5e734a2a6b97915e711739778
+# graded tree: HEAD 8a35e9a plus 86 uncommitted path(s) (this round's edits)
+# command: python docs/evidence/C75/gitleaks-counterfactual.py
+# exit: COUNTERFACT_RC=0 (last body line: "COUNTERFACT PASS: 20 arms agreed with their declared rule sets")
+#
+# Why this log replaces the 15-arm one: gate run #4 at commit 5e7c81a2e39d reported `leaks found: 13`, and
+# the triage of that report split into two causes, each of which needed arms the 15-arm version did not have.
+#
+# * 11 findings were one shape and that run's own new declaration: `source_key="RIFLGFCM01_N.B"` ..
+#   `"RIFLGFCY30_N.B"` at opendata/data/providers/federal_reserve/specs.py:193-203, rule generic-api-key,
+#   entropy 3.6644979 on every one, columns 38-64/39-65. Arms [16]-[20] measure the fourth exemption:
+#   [16] all eleven real lines exempted, [17] the same fixture with only that regex removed reports,
+#   [18] `_N.B` -> `_N.X` reports (literal, not prefix), [19] a token in that slot reports, [20] a 64-hex
+#   digest in that slot reports. [16]/[17] are the pair that makes [16] a measurement, not a silence.
+# * 2 findings were this instrument's own fixture, and they refuted the reason it was written. The token
+#   was hidden behind base64 to keep it out of the history scan; the scan decoded it. The archived report
+#   gives that one line twice: generic-api-key on the encoded literal (line 82, cols 2-77, entropy
+#   4.6977305) and github-pat on the decoded value (line 82, cols 21-76, entropy 4.921928,
+#   Tags: decoded:base64, decode-depth:1). gitleaks 8.30.1 decodes one base64 layer before matching, so
+#   encoding a fabricated secret is not a carrier. The fixture is now four nine-character literals joined
+#   at run time, and the arms still prove the assembled value is token-shaped: [4]/[5]/[19] report it.
+#   Commit 5e7c81a2e39d was unwound with `git reset --soft HEAD~1` before the next commit so those two
+#   findings never enter history -- a fix that leaves its own false positive in every later round is not
+#   a fix.
+#
+# Literal-token grep on the shipped instrument (measured, not asserted):
+#   command: grep -cE 'ghp_[0-9a-zA-Z]{36}' docs/evidence/C75/gitleaks-counterfactual.py
+#   output: 0    exit: grep_rc=1
+#   the file does carry the prefix and the body, separately: line 109 `_PAT_PREFIX = "ghp_"` and line 110
+#   `_PAT_BODY_CHUNKS = ("8kj2lm9pq", "4rt7yw3zn", "6bv1cx5ds", "2af9gh4jk")`, joined at line 111.
+#
+# Scope note on what this run cannot show: the 20 arms scan fixtures inside throwaway repos. Whether the
+# shipped config silences exactly these 13 history findings is member 3's own job, and member 3 can only
+# see committed bytes -- the H.15 lines enter history with the next commit, so the post-commit gate run
+# (gate.txt, 301 commits) is the reading that tests this exemption against the real tree.
+
+== H.15 exemption surface, read off the tree ==
+  source_key lines naming RIFLGFC in opendata/data/providers/federal_reserve/specs.py: 11
+  distinct values they carry: 11  all matched by the exemption: True
+  source_key values across every provider spec: 35 (distinct 29)
+  values the exemption matches that are NOT one of those Fed identifiers: 0 []
+== baseline: default ruleset, no allowlists (the denominator every silent arm needs) ==
+     baseline census.json            rules=['generic-api-key']
+     baseline census.json            rules=['generic-api-key']
+     baseline census.json            rules=['github-pat']
+     baseline census.json            rules=['github-pat']
+     baseline census.json            rules=['generic-api-key']
+     baseline census.json            rules=['generic-api-key']
+     baseline docs/evidence/m.json   rules=['generic-api-key']
+     baseline docs/evidence/m.json   rules=['generic-api-key', 'github-pat']
+     baseline docs/evidence/m.json   rules=['generic-api-key', 'github-pat']
+     baseline tests/ecb.json         rules=['generic-api-key']
+     baseline cfg.json               rules=['generic-api-key']
+     baseline opendata/data/providers/federal_reserve/specs.py rules=['generic-api-key']
+     baseline opendata/data/providers/federal_reserve/specs.py rules=['generic-api-key']
+     baseline opendata/data/providers/federal_reserve/specs.py rules=['github-pat']
+     baseline opendata/data/providers/federal_reserve/specs.py rules=['generic-api-key']
+
+== arms: shipped variants against declared rule-id sets ==
+[ 1] OK  shipped              census.json            expect=[] got=[] :: exempted
+[ 2] OK  no-third-regex       census.json            expect=['generic-api-key'] got=['generic-api-key'] :: control
+[ 3] OK  shipped              census.json            expect=['generic-api-key'] got=['generic-api-key'] :: literal not prefix
+[ 4] OK  shipped              census.json            expect=['github-pat'] got=['github-pat'] :: token in slot still reported
+[ 5] OK  shipped              census.json            expect=['github-pat'] got=['github-pat'] :: same, capitals spelling
+[ 6] OK  shipped              census.json            expect=['generic-api-key'] got=['generic-api-key'] :: ghp_ prefix is what it skips
+[ 7] OK  shipped              census.json            expect=['generic-api-key'] got=['generic-api-key'] :: 64-hex credential in the exempted slot
+[ 8] OK  shipped              docs/evidence/m.json   expect=[] got=[] :: C73 exempted
+[ 9] OK  no-digest-allowlist  docs/evidence/m.json   expect=['generic-api-key'] got=['generic-api-key'] :: C73 control
+[10] OK  shipped              docs/evidence/m.json   expect=['github-pat'] got=['github-pat'] :: token own line
+[11] OK  shipped              docs/evidence/m.json   expect=[] got=[] :: BOUNDARY co-located
+[12] OK  no-digest-allowlist  docs/evidence/m.json   expect=['generic-api-key', 'github-pat'] got=['generic-api-key', 'github-pat'] :: BOUNDARY control
+[13] OK  shipped              tests/ecb.json         expect=[] got=[] :: C36 exempted
+[14] OK  no-sdmx-regex        tests/ecb.json         expect=['generic-api-key'] got=['generic-api-key'] :: C36 control
+[15] OK  shipped              cfg.json               expect=['generic-api-key'] got=['generic-api-key'] :: non-path key
+[16] OK  shipped              opendata/data/providers/federal_reserve/specs.py expect=[] got=[] :: eleven H.15 ids exempted
+[17] OK  no-fed-regex         opendata/data/providers/federal_reserve/specs.py expect=['generic-api-key'] got=['generic-api-key'] :: H.15 control
+[18] OK  shipped              opendata/data/providers/federal_reserve/specs.py expect=['generic-api-key'] got=['generic-api-key'] :: one character differs
+[19] OK  shipped              opendata/data/providers/federal_reserve/specs.py expect=['github-pat'] got=['github-pat'] :: token in the source_key slot
+[20] OK  shipped              opendata/data/providers/federal_reserve/specs.py expect=['generic-api-key'] got=['generic-api-key'] :: 64-hex under source_key
+COUNTERFACT PASS: 20 arms agreed with their declared rule sets

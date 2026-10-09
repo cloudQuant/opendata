@@ -519,7 +519,9 @@ def _ported_module_exists(ported_root: Path, module: str) -> bool:
     return candidate.with_suffix(".py").is_file() or (candidate / "__init__.py").is_file()
 
 
-def vendor_init_facade(pristine: Path, ported_root: Path, upstream_url: str, commit: str) -> bytes:
+def vendor_init_facade(
+    pristine: Path, ported_root: Path, upstream_url: str, commit: str
+) -> tuple[bytes, dict[str, Any]]:
     """Rebuild the ported root ``__init__.py`` from the pristine upstream export table.
 
     Upstream's root publishes every module upstream has; the vendored tree ports a subset of them,
@@ -527,6 +529,11 @@ def vendor_init_facade(pristine: Path, ported_root: Path, upstream_url: str, com
     ``ported_root`` and then rendered by the migration's own facade writer. Pruning happens here and
     not inside the writer so that the writer keeps refusing to bless a root export whose module is
     missing during a real migration.
+
+    The report travels with the payload because the facade's own redirecting work -- how many
+    upstream exports it re-homes -- is a fact no ``port_source`` counter sees. ``AC2`` judges a row
+    by ``import_rewrites``, so that field stays the port_source-only quantity and the facade count
+    is recorded under its own name.
     """
     config = MigrationConfig(
         repo_root=REPO_ROOT,
@@ -546,8 +553,8 @@ def vendor_init_facade(pristine: Path, ported_root: Path, upstream_url: str, com
             dropped.update(range(node.lineno - 1, node.end_lineno or node.lineno))
     lines = padded.splitlines(keepends=True)
     pruned = "".join(line for index, line in enumerate(lines) if index not in dropped)
-    payload, _report = _lazy_vendor_init(pruned.encode("utf-8"), pristine.parent, config)
-    return payload
+    payload, report = _lazy_vendor_init(pruned.encode("utf-8"), pristine.parent, config)
+    return payload, report
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -760,7 +767,9 @@ def port_submodule(
                 result.status = "skipped-identical"
         elif upstream_path == _INIT_UPSTREAM_PATH:
             source_text = path.read_text(encoding="utf-8")
-            facade_payload = vendor_init_facade(path, PORTED_ROOT, lock.url, lock.commit)
+            facade_payload, _facade_report = vendor_init_facade(
+                path, PORTED_ROOT, lock.url, lock.commit
+            )
             payload = facade_payload
             result = PortResult(
                 upstream_path=upstream_path,

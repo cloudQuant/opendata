@@ -38,6 +38,27 @@ declaration. One caveat for whoever declares first: ``SEC_HEADERS`` also pins a 
 ``www.sec.gov`` (definitions.py:12), and upstream sends the ``HEADERS`` variant without it to
 ``data.sec.gov`` (company_filings.py:225) because, as its own comment says, some endpoints do not
 like that field -- so the pair a declaration sends has to be chosen per host, not per provider.
+
+Re-check of the three rows the roadmap lists as already covered (iteration-2 round):
+``capability-roadmap.json`` puts ``CashFlowStatement``, ``IncomeStatement`` and
+``InstitutionsSearch`` in ``roadmap.shipped_cover_rows``, each with a single need that names a
+capability the engine does ship (``columns.select`` for the two statements, ``decode.delimited``
+for the filer list). That list is a label-to-capability mapping over the *engine-work residue*,
+and it is not a re-measurement: the
+census rows themselves, re-read this round from ``census-sec-tmx-fed-gov-finra.json``, still carry
+``expressible_today: false`` and name the need that blocks them -- ``xbrl_tag_assembly`` and
+``tag_column_selection`` for the statements, ``delimited_rows_without_published_header`` for the
+filer list. The engine's shipped ``decode.delimited`` reads a delimited body only when its first row
+publishes a header naming a declared column (:meth:`decoders._rows_from_text`, which raises
+``HEADER_MISMATCH`` otherwise), and a column copies exactly one fixed source key
+(``normalize_record``), so neither need is met by what exists. Independently of the capability
+question, no endpoint, column name or JSON pointer for these three rows is traceable in this repo:
+no ``sec`` module is vendored under ``opendata/data/providers/akshare/_vendor``, this package has
+never held a hand-written fetcher, and the only ``sec.gov`` strings in the tree are the provider
+website and the prose cites above. Rule 2 of the declaration contract -- every URL and column must
+trace to a recorded fact -- therefore refuses all three by itself. So ``DECLARED_MODELS`` is still
+empty, ``provider.py`` still binds nothing, and :data:`RECHECKED_THIS_ROUND` names the three rows
+with the census record that settles each one.
 """
 
 from __future__ import annotations
@@ -73,9 +94,25 @@ UPSTREAM_ROWS: tuple[str, ...] = (
 )
 
 #: Models this package declares as ``ModelSpec`` records. Empty, by measurement: see the docstring.
+#: Re-measured this round by the three-row re-check below, which refused all three; this module
+#: still constructs no ``ModelSpec``.
 #: A name added here becomes discoverable through ``catalog.engine_declared_models()`` as soon as
 #: ``provider.py`` binds the fetcher its declaration generates - no other wiring is missing.
 DECLARED_MODELS: tuple[str, ...] = ()
+
+#: The three rows ``capability-roadmap.json`` lists under ``roadmap.shipped_cover_rows`` against a
+#: capability the engine already ships (``columns.select`` for the statements, ``decode.delimited``
+#: for the filer list), each mapped to the census record that re-measured it this round. All three
+#: stayed in :data:`NOT_DECLARABLE`: that roadmap list maps need *labels* over the engine-work
+#: residue and re-runs no measurement -- its own ``method_note`` says "no engine code was executed,
+#: no recorded fixture was replayed" -- while the census row still carries the blocking need
+#: (``xbrl_tag_assembly``/``tag_column_selection``, ``delimited_rows_without_published_header``) and
+#: the ``expressible_today: false`` a declaration has to obey.
+RECHECKED_THIS_ROUND: dict[str, str] = {
+    "CashFlowStatement": "OBB2-sec-CashFlowStatement",
+    "IncomeStatement": "OBB2-sec-IncomeStatement",
+    "InstitutionsSearch": "OBB2-sec-InstitutionsSearch",
+}
 
 #: Every upstream sec row that the declaration format cannot express, and the capability that
 #: blocks it. Reasons name the mechanism, not the effort: "not written yet" is not a blocker.
@@ -84,11 +121,16 @@ NOT_DECLARABLE: dict[str, str] = {
     "nesting and one row is assembled per XBRL tag (utils/company_facts.py:272, :430)",
     "BalanceSheetGrowth": "per-tag assembly plus a prior-period lookup the engine cannot express "
     "(utils/company_facts.py:335-345)",
-    "CashFlowStatement": "per-tag assembly from companyfacts, statement columns are chosen by tag "
-    "not by record key (models/cash_flow.py:431)",
+    "CashFlowStatement": "needs xbrl_tag_assembly + tag_column_selection (census "
+    "OBB2-sec-CashFlowStatement: expressible_today=false, join_needed=true over 2 endpoints, "
+    "evidence http_json.py:296 - one column copies one fixed source key); upstream picks each "
+    "value by XBRL tag (models/cash_flow.py:431)",
     "CashFlowStatementGrowth": "per-tag assembly plus prior-period growth "
     "(utils/company_facts.py:345, models/cash_flow_growth.py:427)",
-    "IncomeStatement": "per-tag assembly from companyfacts (models/income_statement.py:596)",
+    "IncomeStatement": "needs xbrl_tag_assembly + tag_column_selection (census "
+    "OBB2-sec-IncomeStatement: expressible_today=false, join_needed=true over 2 endpoints, "
+    "evidence http_json.py:296 - one column copies one fixed source key); upstream builds each "
+    "row from tag nesting (models/income_statement.py:596)",
     "IncomeStatementGrowth": "per-tag assembly plus prior-period growth "
     "(models/income_statement_growth.py:569)",
     "CikMap": "one value chosen by a pandas filter over company_tickers.json, whose document is an "
@@ -98,8 +140,10 @@ NOT_DECLARABLE: dict[str, str] = {
     "EquitySearch": "client-side substring filter over the ticker dictionary, and the ``is_fund`` "
     "branch addresses a second document whose rows are bare arrays named by ``fields`` "
     "(models/equity_search.py:66-84, utils/helpers.py:123)",
-    "InstitutionsSearch": "the source is a colon-delimited text file, split line by line into a "
-    "DataFrame, not JSON (utils/helpers.py:69, :89-101)",
+    "InstitutionsSearch": "needs delimited_rows_without_published_header (census "
+    "OBB2-sec-InstitutionsSearch: shape=binary_or_other, expressible_today=false, evidence "
+    "decoders.py:283 - a delimited body's header must name a declared column, else "
+    "HEADER_MISMATCH); upstream splits a colon-delimited text file (utils/helpers.py:69, :89)",
     "SicSearch": "an HTML page parsed by ``read_html``, then filtered client-side "
     "(models/sic_search.py:77, :96-106)",
     "CompanyFilings": "``filings.recent`` is column-oriented parallel arrays; three published "

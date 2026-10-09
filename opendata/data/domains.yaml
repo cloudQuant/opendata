@@ -278,3 +278,33 @@ domains:
     filter_dims: [symbol]
     storage_mode: transient
     permissions: [query]
+  cboe_index_search:
+    display_name: CBOE 美国指数检索
+    rest_path: index/cboe-index-search
+    contract: CboeSearchedIndex
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [symbol]
+    filter_dims: [symbol]
+    storage_mode: transient
+    permissions: [query]
+  federal_reserve_money_measures:
+    display_name: 美联储货币供应量月表
+    rest_path: macro/federal-reserve-money-measures
+    contract: FederalReserveMoneyMeasure
+    temporal_kind: series
+    time_field: month
+    natural_key: [month]
+    filter_dims: [month]
+    storage_mode: transient
+    permissions: [query]
+  federal_reserve_treasury_rates:
+    display_name: 美国国债收益率日表
+    rest_path: macro/federal-reserve-treasury-rates
+    contract: FederalReserveTreasuryRate
+    temporal_kind: series
+    time_field: date
+    natural_key: [date]
+    filter_dims: [date]
+    storage_mode: transient
+    permissions: [query]

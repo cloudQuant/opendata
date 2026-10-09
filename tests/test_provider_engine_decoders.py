@@ -2,8 +2,9 @@
 
 AC2-10 asks every provider model for a real extraction *and* a negative offline case, and the
 failure mode this file exists to kill is the silent zero: an empty body, an archive with no such
-member, a header with no data rows or a delimiter that never split anything must each raise a typed,
-model-attributed refusal instead of handing the warehouse an empty table that prints 0.
+member, a header with no data rows, a delimiter that never split anything or a declared preamble
+counted wrong must each raise a typed, model-attributed refusal instead of handing the warehouse an
+empty table that prints 0.
 
 SYNTHETIC FIXTURES ONLY. Every body here is written by this file or rendered by
 ``_engine/testing.py`` from a declaration; none of them is a recorded capture of OECD, FINRA,
@@ -37,9 +38,11 @@ from opendata.data.providers._engine.http_json import (
 from opendata.data.providers._engine.spec import ColumnSpec, DecoderSpec, ModelSpec, ParamSpec
 from opendata.data.providers._engine.testing import (
     FixedResponseTransport,
+    body_from_records,
     fixture_context,
     synthetic_body,
     synthetic_raw_page,
+    synthetic_record,
 )
 
 SOURCE = "decodertest"
@@ -219,6 +222,84 @@ class TestZipMemberDecoder:
         assert raised.value.member == "data.csv"
 
 
+#: Five metadata rows of the shape the Fed's ``Output.aspx`` downloads publish: non-blank, ragged,
+#: and naming none of the declared columns. SYNTHETIC -- this file's own text, not a capture.
+PREAMBLE_TEXT = (
+    "Series Description,M1 Not seasonally adjusted,M2 Not seasonally adjusted\n"
+    "Unit:,Currency,Currency\n"
+    "Multiplier:,1e+09,1e+09\n"
+    "Currency:,USD,USD\n"
+    "Unique Identifier:,H6/H6_M1/M1_N.M,H6/H6_M2/M2_N.M\n"
+)
+PREAMBLE_ROWS = tuple(PREAMBLE_TEXT.splitlines())
+
+
+class TestDeclaredPreambleSkip:
+    """A body that puts metadata rows ahead of its header declares how many, and is held to it."""
+
+    def test_the_declared_count_skips_the_metadata_rows_and_keeps_the_table(self) -> None:
+        spec = decoder_spec(decoder=DecoderSpec("csv", preamble_rows=len(PREAMBLE_ROWS)))
+        payload = (PREAMBLE_TEXT + CSV_TEXT).encode()
+        rows = fetch_through(spec, HttpResponse(200, None, payload=payload))
+        # Only the real header can produce these cells, so the skip is not reading its own filler.
+        assert [row.value for row in rows] == [1.5, 2.5]
+        assert [row.label for row in rows] == ["alpha", "beta, gamma"]
+
+    def test_blank_rows_are_filtered_before_the_preamble_is_counted(self) -> None:
+        """Upstream counts non-blank rows because pandas skips blank lines first; so does this."""
+        spec = decoder_spec(decoder=DecoderSpec("csv", preamble_rows=len(PREAMBLE_ROWS)))
+        padded = "\n".join(["", *PREAMBLE_ROWS, "", *CSV_TEXT.splitlines(), ""])
+        rows = fetch_through(spec, HttpResponse(200, None, payload=padded.encode()))
+        assert [row.shares for row in rows] == [100, 200]
+
+    def test_a_preamble_one_row_short_leaves_a_metadata_row_as_the_header(self) -> None:
+        """Four declared against five published: the fifth metadata row names the columns."""
+        spec = decoder_spec(decoder=DecoderSpec("csv", preamble_rows=len(PREAMBLE_ROWS) - 1))
+        payload = (PREAMBLE_TEXT + CSV_TEXT).encode()
+        with pytest.raises(ResponseDecodeError) as raised:
+            decode_body(spec, payload)
+        assert raised.value.code == "DECODER_HEADER_MISMATCH"
+        assert "['Unique Identifier:'" in raised.value.saw
+
+    def test_a_preamble_one_row_long_skips_the_header_along_with_the_rest(self) -> None:
+        """Six declared against five published: the header is eaten and a data row names columns."""
+        spec = decoder_spec(decoder=DecoderSpec("csv", preamble_rows=len(PREAMBLE_ROWS) + 1))
+        payload = (PREAMBLE_TEXT + CSV_TEXT).encode()
+        with pytest.raises(ResponseDecodeError) as raised:
+            decode_body(spec, payload)
+        assert raised.value.code == "DECODER_HEADER_MISMATCH"
+        assert "['2026-01-01'" in raised.value.saw
+
+    def test_a_body_that_is_only_its_preamble_refuses_with_both_counts(self) -> None:
+        """Five metadata rows and no table is not a zero-row answer the caller could accept."""
+        spec = decoder_spec(decoder=DecoderSpec("csv", preamble_rows=len(PREAMBLE_ROWS)))
+        with pytest.raises(ResponseDecodeError) as raised:
+            decode_body(spec, PREAMBLE_TEXT.encode())
+        assert raised.value.code == "DECODER_EMPTY_TABLE"
+        assert "a body of 5 row(s) with a declared preamble of 5 leaves no header row" in (
+            raised.value.saw
+        )
+
+    def test_a_zip_member_can_carry_a_preamble_too(self) -> None:
+        """The skip is a property of the text, not of the transport that delivered it."""
+        spec = decoder_spec(decoder=DecoderSpec("zip_csv", member="factors.csv", preamble_rows=2))
+        payload = zip_bytes({"factors.csv": "a,b,c\nd,e,f\n" + CSV_TEXT})
+        rows = fetch_through(spec, HttpResponse(200, None, payload=payload))
+        assert [row.shares for row in rows] == [100, 200]
+
+    def test_the_synthetic_fixture_renders_the_preamble_the_declaration_names(self) -> None:
+        """``synthetic_body`` ships what is declared, so a harness body and a real body agree."""
+        count = len(PREAMBLE_ROWS)
+        spec = decoder_spec(decoder=DecoderSpec("csv", preamble_rows=count))
+        rows = fetch_through(spec, HttpResponse(200, None, payload=synthetic_body(spec, 2)))
+        assert len(rows) == 2
+        # The same records with no preamble are not the body this declaration describes.
+        short = body_from_records(spec, [synthetic_record(spec, 0)], preamble_rows=0)
+        with pytest.raises(ResponseDecodeError) as raised:
+            decode_body(spec, short)
+        assert raised.value.code == "DECODER_EMPTY_TABLE"
+
+
 class TestSilentZeroIsRefused:
     """Every way a body can be nothing at all is a typed failure, never an empty table."""
 
@@ -296,6 +377,10 @@ class TestDeclarationRules:
             ("csv", {"delimiter": "||"}, "one non-line character"),
             ("csv", {"delimiter": "\n"}, "one non-line character"),
             ("csv", {"encoding": " "}, "cannot be blank"),
+            ("json", {"preamble_rows": 5}, "no preamble to skip"),
+            ("csv", {"preamble_rows": -1}, "between 0 and"),
+            ("csv", {"preamble_rows": 101}, "between 0 and"),
+            ("csv", {"preamble_rows": True}, "must be an int"),
         ],
         ids=[
             "unknown-kind",
@@ -306,6 +391,10 @@ class TestDeclarationRules:
             "two-character-delimiter",
             "newline-delimiter",
             "blank-encoding",
+            "json-preamble",
+            "negative-preamble",
+            "over-bounded-preamble",
+            "bool-preamble",
         ],
     )
     def test_malformed_decoders_are_refused(

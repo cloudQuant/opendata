@@ -9,6 +9,7 @@
 | 1.0 | 2026-10-07 | 初始计划：统一自研 Provider 与完整固定范围 | 本计划包 |
 | 1.1 | 2026-10-07 | 两份评审的 R2-01—16、F-01—11 共27条逐项处置；并入后按用户要求删除两份原文 | [评审处置记录.md](评审处置记录.md)、各文档对应章节 |
 | 1.2 | 2026-10-08 | 用户明确先完成全部开发与离线验收，真实来源和部署随后单独安排；保留完整功能范围与后续真实验收要求 | §4、§6、需求/验收文档及开发验收记录§34 |
+| 1.3 | 2026-10-09 | 注册面新增 cboe::IndexSearch 与两条美联储发布表模型；权利登记表升 v1.5 并新增 §1 #12—15 四条源级行；按行业最佳实践把状态口径改为“具名仪器读数＋分母不变”，§6 的 2026-10-08 读数留档不覆盖 | 新增§7、权利登记表、前置条件与决策清单§1、开发验收记录§37 |
 
 本计划承接迭代1，在 opendata 内自研 OpenBB 风格的 Provider、QueryParams、Fetcher、标准模型、注册与路由机制。AkShare、THS 与 FRED、yfinance 等位于同一 provider 层级，采集实现归各自 provider 管理。继续采用迭代1的零 OpenBB 源码复制、零 OpenBB 运行时依赖约束，复用现有核心并补齐能力，不另建一套并行框架。
 
@@ -73,3 +74,19 @@
 严格SourceUsePolicy配置及API身份授权、SONIA七selector完整查询注册、€STR七测度中央契约/完整Query、IORB专用契约/Query/client/Fetcher和有限完整请求profile已取得限定独立离线证明；€STR完整client/Fetcher、IORB正式注册及贴现窗口五selector模型在private接续。旧975输入pins树的6472 passed/7 skipped、87.53%合并coverage和九项quality只对应旧树。新full/quality进程未生成最终收据，不能声称当前全量PASS；实际新make gate在两个引用审计旧hash处exit2，另有€STR测试样式两告警，最小修补与新冻结验证继续。原ledger七条判定及原130AC的16 gap仍待关闭。
 
 详见[开发验收记录§36](开发验收记录.md#36-sonia注册str请求及iorb安装路径离线复验2026-10-08)与[模型切片工作单](模型切片工作单.md)。继续完成全部模型、THS/AkShare治理、PIT/公司行动及适用原AC。用户指定先全部开发和离线验收，真实来源与部署后续安排；当前开发/离线阶段仍INCOMPLETE，发布仍NO-GO。两原评审文件保持删除，评审处置记录保留。
+
+## 7. 当前开发状态（2026-10-09 复测）
+
+以下每个数字都是本轮从树上重算的读数，不是§6的顺延。仪器：`opendata.data.providers.catalog.register_providers(get_registry())`（注册面必须先填充，空注册表会把读数伪造成0）、`opendata.pipeline.alert_matrix.registered_legs()`、`scripts/quality/provider_model_inventory.py --check-manifest`、`scripts/quality/ac2_case_probe.py --self-test`、`scripts/quality/verify_no_akshare.py`、`docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv` 逐行计数。
+
+注册与路由面实测：清单`provider_count=32`＋`local_provider_count=2`（=34个Provider描述符），`registered_source_count=11`，`registered_capability_count=49`，`auto_routable_capability_count=23`，模型描述符16条且16个唯一模型名，`registered_legs()`=36个域/49条leg。交付范围分母未变：34个Provider、32个上游来源、350个固定模型条目、202个模型身份、19个工作包、25例AC2、适用原AC 130格、46个fetcher类。
+
+模型任务面实测：350行 / `upstream_model_count=350` / `unique_upstream_model_count=202`；`implementation_task_status`为5 DEV_DONE + 13 IN_PROGRESS + 332 NOT_RUN；`live_verification_status` 350行全部NOT_RUN；`scenario_status` 350行全部NOT_ASSESSED；`rights_status`为265 NOT_REGISTERED + 85 EXISTING_SOURCE_REVIEW_MODEL_PENDING。5条DEV_DONE＝cboe的AvailableIndices / IndexSearch / IndexConstituents 加 federal_reserve的MoneyMeasures / TreasuryRates，其余仍无执行见证之外的完成声称。
+
+权利登记面：`docs/data-rights-registry.md`升至v1.5，新增§1 #15 美联储理事会行（依据 [Disclaimer](https://www.federalreserve.gov/disclaimer.htm) 原文，2026-10-09审阅）；#12 BLS / #13 FMP / #14 Cboe / #15 美联储四条源级专属行齐备，其中#13与#14的落库/再分发/商业三项结论仍为“暂不批准”，#12与#15为公共领域附条件。前置条件清单的RIGHTS2-bls / cboe / federal_reserve / fmp四行因此从`NOT_REGISTERED`改标为`SOURCE_ROW_REGISTERED_MODEL_PENDING`并写明各自行覆盖范围；模型清单的`rights_status`按行记账、不因源级登记改判。登记只使审阅可追溯，三条新能力的`verified`仍为False，不进入`source="auto"`。
+
+离线验收面实测：AC2判定探针self-test 25例全部OK，153条反事实break逐条施加且每条都把干净读数打回gap，25例closure均为`holds_offline`，`SELF_TEST PASS failures=0`（AC2-02在inventory能力计数与注册面对齐后由gap转绿）。本轮只复测受影响文件（122 / 24 / 34 passed），新树的全量套件与`make gate`收据在本节定稿时仍未生成，不能声称全量PASS。零依赖census复冻后check为`OK: 649 file(s) walked`（opendata=322、`_vendor`=325、opendata_client=2），清单`--check-manifest`为RC=0。
+
+修正与被推翻的读数留档：§6的“9个已注册来源、44条能力、31个域、13 IN_PROGRESS/337 NOT_RUN、没有DEV_DONE”是2026-10-08读数，注册面新增`cboe::IndexSearch`与两条美联储发布表模型、权利面新增四条源级行后，本轮复测为11源/49能力/36域/5 DEV_DONE/13 IN_PROGRESS/332 NOT_RUN。§6的“11项canonical能力”口径不明：`model_capability_census.canonical_capabilities()`本轮为37项，那是普查标签归一后的引擎能力需要集，与旧句所指不是一回事，故本节不沿用该词，只引具名仪器读数。
+
+仍关闭中：AC-10|03需要bls / cboe / federal_reserve / oecd / sec的源码审查行为经`provider_source_review_evidence_build.py --findings`落档；AC-1|05缺Docker栈授权；AC-13 `dwd_*`落库、AC-15 DROP、`dq_diff_report` DDL、8张缺`p2027`分区的重组、磁盘水位告警口径、akshare `upstream.lock manual_edits=true`均按用户边界保持未执行；SOURCE_VERIFIED、DEPLOYMENT_VERIFIED与发布结论继续单独记账。开发/离线阶段仍INCOMPLETE，发布仍NO-GO。

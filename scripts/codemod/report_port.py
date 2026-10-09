@@ -236,7 +236,9 @@ def collect_drift(
             )
             continue
         if upstream_path == _INIT_UPSTREAM_PATH:
-            expected_facade = vendor_init_facade(pristine, ported_root, lock.url, lock.commit)
+            expected_facade, facade_report = vendor_init_facade(
+                pristine, ported_root, lock.url, lock.commit
+            )
             matches = ported_bytes == expected_facade
             if not matches:
                 todos.append(f"{rel}: lazy facade differs from the deterministic export map")
@@ -248,6 +250,9 @@ def collect_drift(
                     "ported_sha256": ported_sha,
                     "import_rewrites": 0,
                     "string_rewrites": 0,
+                    # The facade re-homes upstream's own export statements; no port_source counter
+                    # sees that, so it is stated here rather than folded into ``import_rewrites``.
+                    "facade_export_count": facade_report["export_count"],
                     "manual_edits": record.get("manual_edits", False),
                     "replay_matches": matches,
                 }

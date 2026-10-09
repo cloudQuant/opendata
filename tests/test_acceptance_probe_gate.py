@@ -425,10 +425,15 @@ class TestC51ZeroDepCells:
             "domains_missing",
             "run_exit",
             "skipped",
-            "clean_here",
+            "blocked_here",
+            "block_control_hits",
+            "block_attempted",
+            "block_leaks",
+            "block_pkgs",
             "archive_exit",
             "archive_blind",
             "archive_absent",
+            "archive_self_written",
         } <= broken["AC-16|07"]
 
     def test_the_clean_environment_archive_the_judge_reads_is_shipped(self) -> None:

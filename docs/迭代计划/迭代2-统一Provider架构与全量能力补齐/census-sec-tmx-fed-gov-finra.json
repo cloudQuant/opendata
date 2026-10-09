@@ -113,14 +113,11 @@
       "response_format": "csv",
       "row_extraction": "flat",
       "join_needed": false,
-      "needs_engine_capability": [
-        "csv_decoder",
-        "csv_header_offset"
-      ],
-      "expressible_today": false,
+      "needs_engine_capability": [],
+      "expressible_today": true,
       "existing_fetcher_class": "",
       "evidence": "providers/federal_reserve/openbb_federal_reserve/models/money_measures.py:73",
-      "notes": "datadownload/Output.aspx?rel=H6 returns CSV read with header=5; no response_format field exists in ModelSpec"
+      "notes": "datadownload/Output.aspx?rel=H6 returns a CRLF CSV whose logical row 5 is the header, behind five Series Description/Unit/Multiplier/Currency/Unique Identifier metadata rows. Both halves are declared in production now: opendata/data/providers/federal_reserve/specs.py names DecoderSpec(kind='csv', preamble_rows=5) and pins rel/series/filetype/label/layout/type as ModelSpec.static_query, so no engine capability is outstanding for the eight-column wide read the declaration makes."
     },
     {
       "task_id": "OBB2-federal_reserve-OvernightBankFundingRate",
@@ -248,14 +245,11 @@
       "response_format": "csv",
       "row_extraction": "flat",
       "join_needed": false,
-      "needs_engine_capability": [
-        "csv_decoder",
-        "csv_header_offset"
-      ],
-      "expressible_today": false,
+      "needs_engine_capability": [],
+      "expressible_today": true,
       "existing_fetcher_class": "",
       "evidence": "providers/federal_reserve/openbb_federal_reserve/models/treasury_rates.py:88",
-      "notes": "Output.aspx CSV, header=5, then DataFrame melt; no csv_decoder in the engine"
+      "notes": "Output.aspx?rel=H15 CSV, header row 5 behind five metadata rows, declared as DecoderSpec(kind='csv', preamble_rows=5) in federal_reserve/specs.py; the release constants ride in static_query. The eleven maturity columns are declared str because the same body prints ND in 8003 cells and leaves 30245 blank. Upstream's own melt of this table into long rows belongs to YieldCurve, not to this wide read."
     },
     {
       "task_id": "OBB2-federal_reserve-YieldCurve",
@@ -269,13 +263,13 @@
       "row_extraction": "flat",
       "join_needed": false,
       "needs_engine_capability": [
-        "csv_decoder",
-        "csv_header_offset"
+        "series_pivot",
+        "published_value_rescale"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/federal_reserve/openbb_federal_reserve/models/yield_curve.py:68",
-      "notes": "Output.aspx CSV with header=5; same blocker class as MoneyMeasures/TreasuryRates"
+      "notes": "Reads the same H.15 download as TreasuryRates, so the CSV decode and the five-row preamble are NOT its blockers. What is not declarable is the post-request composition: transform_data melts the eleven maturity columns into long (date, maturity, rate) rows, orders maturity by a Categorical, selects each requested date with DatetimeIndex.asof (nearest published date, not a window predicate) and divides rate by 100 (yield_curve.py:88-115). A wide declaration of it would be a second model id over rows TreasuryRates already publishes and would not be the oracle's model, so the declaration was retracted this round and the row is recorded NOT_DECLARED with these two mechanism labels (path.explode, columns.rescale, both measured absent)."
     },
     {
       "task_id": "OBB2-finra-OTCAggregate",

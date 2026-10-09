@@ -1,0 +1,37 @@
+# AC2 --self-test while AC2-02 still read gap (before the inventory was re-frozen)
+# produced: 2026-10-09T10:09:28Z (UTC)
+# archived: 2026-10-09T10:56:54Z
+# branch: dev
+# head: 8a35e9aca5ce43d5e734a2a6b97915e711739778
+# graded tree: HEAD 8a35e9a plus 64 uncommitted path(s) (this round's edits)
+# command: python scripts/quality/ac2_case_probe.py --self-test
+# exit: AC2SELF_RC=1 (failures=1)
+
+AC2-01 OK breaks=6 flipped=6 closure=holds_offline
+AC2-02 FAIL breaks=8 flipped=8 closure=gap
+    - closure reading does not hold (gap)
+AC2-03 OK breaks=5 flipped=5 closure=holds_offline
+AC2-04 OK breaks=17 flipped=17 closure=holds_offline
+AC2-05 OK breaks=5 flipped=5 closure=holds_offline
+AC2-06 OK breaks=4 flipped=4 closure=holds_offline
+AC2-07 OK breaks=8 flipped=8 closure=holds_offline
+AC2-08 OK breaks=5 flipped=5 closure=holds_offline
+AC2-09 OK breaks=5 flipped=5 closure=holds_offline
+AC2-10 OK breaks=6 flipped=6 closure=holds_offline
+AC2-11 OK breaks=6 flipped=6 closure=holds_offline
+AC2-12 OK breaks=5 flipped=5 closure=holds_offline
+AC2-13 OK breaks=5 flipped=5 closure=holds_offline
+AC2-14 OK breaks=5 flipped=5 closure=holds_offline
+AC2-15 OK breaks=5 flipped=5 closure=holds_offline
+AC2-16 OK breaks=5 flipped=5 closure=holds_offline
+AC2-17 OK breaks=7 flipped=7 closure=holds_offline
+AC2-18 OK breaks=4 flipped=4 closure=holds_offline
+AC2-19 OK breaks=5 flipped=5 closure=holds_offline
+AC2-20 OK breaks=5 flipped=5 closure=holds_offline
+AC2-21 OK breaks=5 flipped=5 closure=holds_offline
+AC2-22 OK breaks=8 flipped=8 closure=holds_offline
+AC2-23 OK breaks=5 flipped=5 closure=holds_offline
+AC2-24 OK breaks=6 flipped=6 closure=holds_offline
+AC2-25 OK breaks=8 flipped=8 closure=holds_offline
+SELF_TEST FAIL failures=1
+AC2SELF_RC=1

@@ -274,6 +274,20 @@ def _rows_from_text(
         for row in csv.reader(io.StringIO(text, newline=""), delimiter=delimiter)
         if any(cell.strip() for cell in row)
     ]
+    preamble = decoder.preamble_rows
+    if preamble:
+        # The count is taken from the blank-filtered rows because that is what the source's own
+        # reader counts: upstream hands pandas ``header=5`` with blank-line skipping already on.
+        if len(table) <= preamble:
+            return _refuse(
+                spec,
+                EMPTY_TABLE,
+                f"a body of {len(table)} row(s) with a declared preamble of {preamble} "
+                "leaves no header row",
+                member=member,
+                url=url,
+            )
+        table = table[preamble:]
     if not table:
         return _refuse(
             spec, EMPTY_TABLE, f"no header row in {len(text)} character(s)", member=member, url=url

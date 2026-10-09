@@ -1,0 +1,58 @@
+# The two earlier drafts of that differential, kept because they disagree
+# produced: 2026-10-09T10:43:28Z (UTC)
+# archived: 2026-10-09T10:56:54Z
+# branch: dev
+# head: 8a35e9aca5ce43d5e734a2a6b97915e711739778
+# graded tree: HEAD 8a35e9a plus 64 uncommitted path(s) (this round's edits)
+# command: python /tmp/c75/gitleaks_counterfactual_c75.py (drafts 1 and 2)
+# exit: COUNTERFACT_RC=1 for both drafts (2 arms disagreed each time)
+
+--- draft 1: hand-written fixtures, arms [5] and [10] disagreed ----------------=========
+[1] OK  shipped              census.json            expect=[] got=[] rc=0 quiet_side=yes
+[2] OK  shipped              census.json            expect=['generic-api-key', 'github-pat'] got=['generic-api-key', 'github-pat'] rc=1 quiet_side=no
+[3] OK  no-third-regex       census.json            expect=['generic-api-key'] got=['generic-api-key'] rc=1 quiet_side=no
+[4] OK  shipped              docs/evidence/m.json   expect=[] got=[] rc=0 quiet_side=yes
+[5] FAIL shipped              docs/evidence/m.json   expect=['github-pat'] got=[] rc=0 quiet_side=no
+[6] OK  shipped              cfg.json               expect=['generic-api-key'] got=['generic-api-key'] rc=1 quiet_side=no
+[7] OK  shipped              sdmx.json              expect=[] got=[] rc=0 quiet_side=yes
+[8] OK  shipped              sdmx.json              expect=[] got=[] rc=0 quiet_side=yes
+[9] OK  no-sdmx-regex        sdmx.json              expect=['generic-api-key'] got=['generic-api-key'] rc=1 quiet_side=no
+[10] FAIL no-digest-allowlist  docs/evidence/m.json   expect=['generic-api-key'] got=[] rc=0 quiet_side=no
+COUNTERFACT FAIL: 2 arm(s) disagreed
+
+--- draft 2: real lines, mixed-case token, arms [4] and [8] disagreed -------------------
+== baseline: default ruleset, no allowlists (the denominator every silent arm needs) ==
+     baseline census.json            rules=['generic-api-key']
+     baseline census.json            rules=['generic-api-key']
+     baseline census.json            rules=['github-pat']
+     baseline census.json            rules=['github-pat']
+     baseline docs/evidence/m.json   rules=['generic-api-key']
+     baseline docs/evidence/m.json   rules=['generic-api-key', 'github-pat']
+     baseline docs/evidence/m.json   rules=['generic-api-key', 'github-pat']
+     baseline tests/ecb.json         rules=['generic-api-key']
+     baseline cfg.json               rules=['generic-api-key']
+
+== arms: shipped variants against declared rule-id sets ==
+[ 1] OK  shipped              census.json            expect=[] got=[] :: exempted
+[ 2] OK  no-third-regex       census.json            expect=['generic-api-key'] got=['generic-api-key'] :: control
+[ 3] OK  shipped              census.json            expect=['generic-api-key'] got=['generic-api-key'] :: literal not prefix
+[ 4] FAIL shipped              census.json            expect=['generic-api-key', 'github-pat'] got=['github-pat'] :: token in slot
+[ 5] OK  shipped              census.json            expect=['github-pat'] got=['github-pat'] :: default generic-api-key charset is lowercase-only
+[ 6] OK  shipped              docs/evidence/m.json   expect=[] got=[] :: C73 exempted
+[ 7] OK  no-digest-allowlist  docs/evidence/m.json   expect=['generic-api-key'] got=['generic-api-key'] :: C73 control
+[ 8] FAIL shipped              docs/evidence/m.json   expect=['generic-api-key', 'github-pat'] got=['github-pat'] :: token own line
+[ 9] OK  shipped              docs/evidence/m.json   expect=[] got=[] :: BOUNDARY co-located
+[10] OK  no-digest-allowlist  docs/evidence/m.json   expect=['generic-api-key', 'github-pat'] got=['generic-api-key', 'github-pat'] :: BOUNDARY control
+[11] OK  shipped              tests/ecb.json         expect=[] got=[] :: C36 exempted
+[12] OK  no-sdmx-regex        tests/ecb.json         expect=['generic-api-key'] got=['generic-api-key'] :: C36 control
+[13] OK  shipped              cfg.json               expect=['generic-api-key'] got=['generic-api-key'] :: non-path key
+COUNTERFACT FAIL: 2 arm(s) disagreed with their declared rule sets
+
+Why these belong in the archive rather than in the bin: draft 1's two failures were fixture defects
+(an all-`a` digest has zero entropy so no rule can fire, and a one-line `{"path": "<hex>"}` does not
+trip the keyword-adjacency the rule needs) plus a control that was not legal gitleaks (a
+[[allowlists]] block with zero checks aborts the run, so the control drops the whole block). Draft
+2's two failures were one wrong theory held twice: that generic-api-key's value class is
+lowercase-only. The final arm [6] settles it -- the same 36-character body with the ghp_ prefix
+stripped IS reported, so the prefix is what that rule skips, in both spellings. A quiet scan would
+have hidden all of this; only the differential showed it.

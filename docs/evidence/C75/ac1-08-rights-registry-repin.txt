@@ -1,0 +1,43 @@
+# AC-1|08 real-registry pin, recomputed after this round added rights row 15 (federal_reserve)
+# produced: 2026-10-09T11:45Z
+# branch: dev
+# head: 8a35e9aca5ce43d5e734a2a6b97915e711739778 (plus this round's uncommitted paths)
+# command: python -m pytest tests/test_acceptance_item_probe.py -q --no-cov
+
+## the failure the full gate read at member 12 (verbatim, from /tmp/c75/gate-full-3.txt)
+________ test_ac1_08_real_registry_measures_complete_restricted_review _________
+[gw0] darwin -- Python 3.11.8 /Users/yunjinqi/opt/anaconda3/bin/python3.11
+tests/test_acceptance_item_probe.py:286: in test_ac1_08_real_registry_measures_complete_restricted_review
+    assert facts["rows"] == "14"
+E   AssertionError: assert '15' == '14'
+E     
+
+## the registry face, measured with the probe's own measure_ac1_08 on REPO_ROOT
+# command: python3 -c "... import acceptance_item_probe; print(measure_ac1_08(Context(Path('.'),(),{})))"
+{'table_valid': 'yes', 'rows': '15', 'dated': '15', 'undecided': '0', 'unlinked': '0', 'responsible_missing': '0', 'uncovered': '0'}
+verdict_state= proven
+
+## provenance of the 15th row (why the pin moved and what still has to hold)
+0164751 feat(provider): C72 cboe 两个域注册，六个统计面实测重钉，判定面没有放宽
+ docs/data-rights-registry.md        | 13 ++++---
+ tests/test_acceptance_item_probe.py | 75 +++++++++++++++++++++----------------
+ 2 files changed, 50 insertions(+), 38 deletions(-)
+
+## the re-pin, and the run that proves it
+# command: python -m pytest tests/test_acceptance_item_probe.py -q --no-cov
+
+============================= 42 passed in 14.06s ==============================
+
+## row 15 is this rounds uncommitted addition, not a committed one
+added_row15_lines=1
+removed_row15_lines=0
+row15_lines_on_disk=1
+
+The three counters carry the provenance claim: the registry gained exactly one row-15 line in the
+working tree, lost none, and the disk now holds one. So AC-1|08 judgement face grew by a reviewed
+row (dated 2026-10-09, responsible party cloudQuant / Codex, status 已复核（受限）, undecided 0,
+unlinked 0, uncovered 0) - the pin was stale, the registry was not. The re-pinned test now also
+judges that rows substance cell by cell (clause link, wiring text, the two quoted disclaimer
+sentences, the coverage limit) instead of only its row count, and re-pins the two prose literals the
+same edit moved: cboe 其余 9 个 -> 其余 8 个（11 = 3 DEV_DONE + 8 NOT_RUN）and the released-actions
+sentence, which now names 美联储 alongside FMP 与 Cboe.

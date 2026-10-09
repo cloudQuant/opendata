@@ -14,6 +14,7 @@ from opendata.data.providers.akshare.provider import PROVIDER as AKSHARE_PROVIDE
 from opendata.data.providers.bls.provider import PROVIDER as BLS_PROVIDER
 from opendata.data.providers.cboe.provider import PROVIDER as CBOE_PROVIDER
 from opendata.data.providers.ecb.provider import PROVIDER as ECB_PROVIDER
+from opendata.data.providers.federal_reserve.provider import PROVIDER as FEDERAL_RESERVE_PROVIDER
 from opendata.data.providers.fmp.provider import PROVIDER as FMP_PROVIDER
 from opendata.data.providers.fred.provider import PROVIDER as FRED_PROVIDER
 from opendata.data.providers.imf.provider import PROVIDER as IMF_PROVIDER
@@ -58,7 +59,7 @@ _UPSTREAM_PROVIDERS: tuple[Provider, ...] = (
     _reserved_provider("econdb", "api_key"),
     _reserved_provider("eia", "api_key"),
     _reserved_provider("famafrench"),
-    _reserved_provider("federal_reserve"),
+    FEDERAL_RESERVE_PROVIDER,
     FMP_PROVIDER,
     _reserved_provider("intrinio", "api_key"),
     _reserved_provider("multpl"),

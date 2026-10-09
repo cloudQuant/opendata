@@ -63,6 +63,10 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
+# loguru rotates logs/app.log into logs/app.<timestamp>.log.gz, which `*.log` does not match, so the
+# rotated files kept the worktree dirty and deferred the worktree-only acceptance faces.
+logs/
+
 # Flask stuff:
 instance/
 .webassets-cache

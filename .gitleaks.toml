@@ -27,14 +27,82 @@ paths = [
 # coincidence - not by path, not by file type, not by the surrounding line. A real
 # key written into one of these same files is still reported, which
 # docs/evidence/C36/gitleaks-counterfactual.log re-proves on every round.
+# C75: the same rule fired once more, on a *declarative spec note* in
+# docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/census-sec-tmx-fed-gov-finra.json
+# (commit 8a35e9a). The line is `...keys, rows_pointer=refRates; transform only drops
+# undeclared keys`; gitleaks reads the leading word `keys` as the key name and captures
+# `rows_pointer=refRates` (entropy 3.65) as the value. `rows_pointer` is an engine field
+# name and `refRates` is the public section identifier the Federal Reserve / ECB release
+# mapper points at -- neither is a credential.
+#
+# The exemption is the literal itself, not a shape: no other value can be silenced by it, so
+# a real key written after `keys, ` on the same line, an `AKIA...` id in the same field
+# position, and a token planted in this exact census file all stay reported.
+# docs/evidence/C75/gitleaks-counterfactual.log re-measures those arms against a throwaway
+# history repo, together with the C36 and C73 arms: 20 arms, each declaring the *set of rule ids*
+# gitleaks must report, and every fixture is a line read verbatim from this tree rather than a
+# hand-written shape. Two facts came out of that run and belong here:
+#
+# * the two values that go quiet under this entry are `rows_pointer=refRates` and nothing else -
+#   one extra character on the end of it (`refRatesX`) is reported again, and a 64-hex digest
+#   written into the very same `keys, ` slot is reported;
+# * a `ghp_...` token written into that slot is reported by `github-pat` but never by
+#   `generic-api-key`, even with every allowlist removed. Arm [6] isolates the reason: the same
+#   36-character body with the `ghp_` prefix stripped IS reported. So the prefix, not the value
+#   charset, is what that rule skips - which is why an earlier draft of this comment claimed a
+#   token in this slot would be reported by two rules, and why the log keeps both readings.
+#
+# The "no other credential in the file" claim is carried by the shipped scan itself, not by a
+# hand-copied regex: with this config's predecessor the full-history run reported findings=1 for
+# the whole repo and that single finding was this line (rule generic-api-key, secret
+# `rows_pointer=refRates`, entropy 3.6537566, commit 8a35e9aca5ce). That reading is scoped to the
+# tree before this round's own commit: the same command at commit 5e7c81a2e39d reported 13.
+#
+# C75, fourth entry: 11 of those 13 are one shape, and it is this round's own new declaration --
+# `source_key="RIFLGFCM01_N.B"` .. `"RIFLGFCY30_N.B"` at
+# opendata/data/providers/federal_reserve/specs.py:193-203 (11 findings, rule generic-api-key,
+# entropy 3.6644979 on every one of them, columns 38-64/39-65, commit 5e7c81a2e39d). `generic-api-
+# key` reads the field NAME `source_key` as the key name and the value as the key value. The value
+# is a column lookup key: the engine matches it against the header row of a public
+# federalreserve.gov download (the release constants themselves are confirmed against the read-only
+# oracle -- openbb_federal_reserve 1.6.2 treasury_rates.py:88-95 builds exactly
+# `rel=H15&series=bf17364827e38702b42a58cf8eaa3f78...` and does `read_csv(..., header=5)`). No
+# credential is a column name of an unauthenticated download.
+#
+# The exemption ENUMERATES those eleven ids instead of giving `source_key` a value class. A
+# value-class rule ("anything under a field called source_key") would silence a real credential
+# pasted into a ColumnSpec, which is the widening this file's header exists to refuse. Arms
+# [18]/[19]/[20] of docs/evidence/C75/gitleaks-counterfactual.log measure the difference on the
+# real file: `..._N.B` with its final character changed is reported again (the rule is the literal
+# list, not a prefix), and that same slot holding a fabricated token is reported by github-pat and
+# a 64-hex digest by generic-api-key. Arm [16] commits all eleven lines together and reads nothing,
+# arm [17] drops this one regex and gets generic-api-key back -- the pair is what makes [16] a
+# measurement rather than a silence.
+#
+# Blast radius is computed off the tree, not asserted: the spec file makes 11 `RIFLGFC` lines
+# carrying 11 distinct values, the exemption matches all of them, and across every
+# opendata/data/providers/*/specs.py (35 `source_key` values, 29 distinct) the number matched by
+# this regex that is NOT one of those Fed identifiers is 0.
+#
+# The other 2 of those 13 were this round's own differential fixture, and they are the reason the
+# instrument no longer encodes anything: docs/evidence/C75/gitleaks-counterfactual.py line 82 held
+# a fabricated token behind base64, and the history scan reported that one line TWICE --
+# generic-api-key on the encoded literal (entropy 4.6977305) and github-pat on the decoded value
+# with `Tags: [decoded:base64, decode-depth:1]`. gitleaks 8.30.1 decodes one base64 layer before
+# matching, so encoding a fabricated secret is not a carrier; the token is now assembled from four
+# nine-character literals, which no rule can read as a value. commit 5e7c81a2e39d was unwound with
+# `git reset --soft HEAD~1` before the next commit so those two findings never enter history -- the
+# gate's own fix must not become the next round's false positive.
 [[rules]]
 id = "generic-api-key"
 [rules.allowlist]
-description = "SDMX dataflow keys are public identifiers; API_KEY_FAILURE_DELAY_SECONDS=0.05 is the non-secret delay setting after an empty template value."
+description = "SDMX dataflow keys are public identifiers; API_KEY_FAILURE_DELAY_SECONDS=0.05 is the non-secret delay setting after an empty template value; rows_pointer=refRates is an engine field assignment naming a public release-table section; RIFLGFC*_N.B are the Federal Reserve H.15 maturity series identifiers declared as ColumnSpec.source_key."
 regexTarget = "secret"
 regexes = [
   '''^[A-Z0-9]{1,12}(\.[A-Z0-9_]{1,14}){3,}$''',
   '''^API_KEY_FAILURE_DELAY_SECONDS=0\.05$''',
+  '''^rows_pointer=refRates$''',
+  '''^RIFLGFC(M01|M03|M06|Y01|Y02|Y03|Y05|Y07|Y10|Y20|Y30)_N\.B$''',
 ]
 
 # C73: the archived gate/run manifests under docs/evidence/ record, for every tracked
@@ -58,6 +126,17 @@ regexes = [
 # key under a credential-named field, a 64-hex value under a non-path key such as
 # "api_key", and any other credential shape stay reported - the counterfactual proves all
 # three, and re-proves the C36 SDMX exemption above still bites.
+#
+# C75 widened the description of this boundary, not the boundary itself: because the check is
+# `regexTarget = "line"`, a credential that shares a LINE with such a pair goes quiet under every
+# rule, not only under generic-api-key. Arms [11]/[12] of
+# docs/evidence/C75/gitleaks-counterfactual.log measure both sides - a `ghp_` token appended to a
+# real pair line reports nothing while that block is present and reports github-pat + generic-api-
+# key once it is dropped, while the same token on its own following line stays reported. The
+# exposure in this tree is 3 lines (the co-located `HASHES { ... }` records under
+# docs/evidence/C65/, 6+1+6 pairs on each), and none of the 3 carries a credential; tightening the
+# rule to anchor on the pair alone would re-open those archived records, which are not this
+# round's to rewrite.
 [[allowlists]]
 description = "Evidence manifests store sha256 integrity digests of tracked files, keyed by repo-relative path."
 regexTarget = "line"

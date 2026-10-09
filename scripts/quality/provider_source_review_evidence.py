@@ -18,7 +18,11 @@ SOURCE_REVIEW_REL = EVIDENCE_DIR / "provider-source-review.json"
 SIMILARITY_REL = EVIDENCE_DIR / "provider-similarity-inventory.json"
 NEAREST_REVIEW_REL = EVIDENCE_DIR / "provider-nearest-review.json"
 PROVIDER_ROOT_REL = Path("opendata/data/providers")
-EXPECTED_PROVIDERS = frozenset({"akshare", "ecb", "fred", "imf", "oecd", "ths", "yfinance"})
+# The reviewed provider package set is not a literal here: it is derived from the live tree by
+# ``registered_provider_packages`` below, the same discovery ``_discover_sources`` walks, so the
+# instrument cannot rot when a package is registered or removed. Stored artifacts are still bound
+# to that measured set (see ``review-package-set-mismatch`` and ``_compare_manifest``).
+# EXPECTED_BASELINE_PROVIDERS stays frozen: the OpenBB baseline scope is a separate open question.
 EXPECTED_BASELINE_PROVIDERS = frozenset({"ecb", "fred", "imf", "oecd", "yfinance"})
 EXPECTED_OPENBB_COMMIT = "3e071fcc2cd9f891cac6040ae60296dba76dab46"
 EXPECTED_REVIEW_AUTHORIZATION = "用户直接回复：你帮我直接审阅"
@@ -191,17 +195,19 @@ def _safe_baseline_path(value: object) -> str | None:
     return path.as_posix()
 
 
-def _discover_sources(
-    root: Path, issues: list[Issue]
-) -> tuple[dict[str, str], dict[str, int], dict[str, int], list[str]]:
+def registered_provider_packages(root: Path, issues: list[Issue]) -> dict[str, Path]:
+    """Walk the live provider root once and map each registered package name to its directory.
+
+    A provider package is a direct child of ``opendata/data/providers`` that holds a
+    ``registration.py``. Every consumer of the reviewed package set must come through this
+    function, so the set a stored artifact is bound to and the set measured on disk are derived
+    by one walk and cannot drift apart.
+    """
     provider_root = root / PROVIDER_ROOT_REL
-    current_hashes: dict[str, str] = {}
-    provider_hashes: dict[str, dict[str, str]] = {}
-    line_counts: dict[str, int] = {}
-    openbb_imports: list[str] = []
+    package_dirs: dict[str, Path] = {}
     if not provider_root.is_dir():
         _add_issue(issues, "provider-source-root-missing", "provider source root is missing")
-        return current_hashes, {}, line_counts, openbb_imports
+        return package_dirs
 
     try:
         registrations = sorted(provider_root.rglob("registration.py"))
@@ -209,9 +215,8 @@ def _discover_sources(
         _add_issue(
             issues, "provider-discovery-failed", "provider registration files cannot be listed"
         )
-        return current_hashes, {}, line_counts, openbb_imports
+        return package_dirs
 
-    package_dirs: dict[str, Path] = {}
     for registration in registrations:
         if registration.is_symlink():
             _add_issue(
@@ -232,15 +237,31 @@ def _discover_sources(
                 issues, "provider-registration-duplicate", "provider registration is duplicated"
             )
         package_dirs[provider] = package_dir
-        provider_hashes[provider] = {}
 
-    discovered = set(package_dirs)
-    if discovered != EXPECTED_PROVIDERS:
+    if not set(package_dirs) >= EXPECTED_BASELINE_PROVIDERS:
         _add_issue(
             issues,
             "provider-package-set-mismatch",
-            "registered provider package set differs from the seven reviewed packages",
+            "registered provider packages no longer cover the pinned OpenBB baseline set",
         )
+
+    return package_dirs
+
+
+def _discover_sources(
+    root: Path, issues: list[Issue]
+) -> tuple[dict[str, str], dict[str, int], dict[str, int], list[str]]:
+    current_hashes: dict[str, str] = {}
+    provider_hashes: dict[str, dict[str, str]] = {}
+    line_counts: dict[str, int] = {}
+    openbb_imports: list[str] = []
+
+    package_dirs = registered_provider_packages(root, issues)
+    if not package_dirs:
+        return current_hashes, {}, line_counts, openbb_imports
+
+    for provider in package_dirs:
+        provider_hashes[provider] = {}
 
     for provider, package_dir in sorted(package_dirs.items()):
         try:
@@ -325,6 +346,7 @@ def _validate_review_packages(
     review: dict[str, Any],
     current_hashes: dict[str, str],
     provider_counts: dict[str, int],
+    live_providers: frozenset[str],
     issues: list[Issue],
 ) -> tuple[dict[str, str], list[str]]:
     saved_hashes: dict[str, str] = {}
@@ -354,11 +376,11 @@ def _validate_review_packages(
             continue
         package_records[provider] = record
 
-    if set(package_records) != EXPECTED_PROVIDERS:
+    if set(package_records) != live_providers:
         _add_issue(
             issues,
             "review-package-set-mismatch",
-            "source review package set differs from the seven current packages",
+            "source review package set differs from the packages registered on disk",
         )
 
     for provider in sorted(set(package_records) | set(provider_counts)):
@@ -502,6 +524,7 @@ def _validate_similarity(
     similarity: dict[str, Any],
     current_hashes: dict[str, str],
     provider_counts: dict[str, int],
+    live_providers: frozenset[str],
     issues: list[Issue],
 ) -> tuple[dict[str, str], dict[str, str], int, list[dict[str, Any]]]:
     if similarity.get("schema") != "opendata-c65-provider-similarity/v1":
@@ -530,8 +553,8 @@ def _validate_similarity(
     local_providers = comparison.get("providers_local")
     if (
         not isinstance(local_providers, list)
-        or set(local_providers) != EXPECTED_PROVIDERS
-        or len(local_providers) != len(EXPECTED_PROVIDERS)
+        or set(local_providers) != live_providers
+        or len(local_providers) != len(live_providers)
     ):
         _add_issue(
             issues,
@@ -809,9 +832,9 @@ def _validate_nearest_review(
 def validate(root: Path, now: datetime | None = None) -> ValidationResult:
     """Read and validate current provider files plus the three archived review artifacts.
 
-    The result covers the seven currently registered provider packages and their
-    byte-bound comparison to the pinned OpenBB provider inventory. It makes no
-    assertion about historical development or source outside that scope.
+    The result covers every provider package registered on disk when the check runs and their
+    byte-bound comparison to the pinned OpenBB provider inventory. It makes no assertion about
+    historical development or source outside that scope.
     """
     issues: list[Issue] = []
     now_utc = _normalize_now(now)
@@ -823,6 +846,7 @@ def validate(root: Path, now: datetime | None = None) -> ValidationResult:
     nearest = nearest or {}
 
     current_hashes, provider_counts, line_counts, openbb_imports = _discover_sources(root, issues)
+    live_providers = frozenset(provider_counts)
     source_review_generated = _validate_timestamp(
         review.get("generated_at"), "source-review", now_utc, issues
     )
@@ -845,10 +869,10 @@ def validate(root: Path, now: datetime | None = None) -> ValidationResult:
         )
 
     review_hashes, reviewed_providers = _validate_review_packages(
-        review, current_hashes, provider_counts, issues
+        review, current_hashes, provider_counts, live_providers, issues
     )
     local_manifest, baseline_manifest, candidate_count, ranked_pairs = _validate_similarity(
-        similarity, current_hashes, provider_counts, issues
+        similarity, current_hashes, provider_counts, live_providers, issues
     )
     review_sha256 = hashlib.sha256(review_bytes).hexdigest() if review_bytes is not None else None
     similarity_sha256 = (

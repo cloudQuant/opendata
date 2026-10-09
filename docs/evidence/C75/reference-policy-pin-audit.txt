@@ -1,0 +1,64 @@
+# Reference-policy pin audit, recomputed against the repo's own judge (verify_no_akshare.reference_policy_problems)
+# produced: 2026-10-09T12:30:39Z
+# branch: dev
+# head: 8a35e9aca5ce43d5e734a2a6b97915e711739778
+# graded tree: HEAD 8a35e9a plus 86 uncommitted path(s) (this round's edits)
+# command: python docs/evidence/C75/reference-policy-pin-audit.py
+# exit: AUDIT_RC=0 for both readings below
+# why: gate member 2 (`zero-dep-check`) refuses to re-freeze while any registered path's digest has moved
+# (`scripts/codemod/verify_no_akshare.py:1052` -> `load_reference_policy`), and a digest pin is the only
+# tamper evidence that reviewed content is still the reviewed content. So the repair had to be measured as
+# a re-pin, not asserted: the pin must resolve to a carrier (a revision, or the index blob when the re-pin
+# has not been committed yet), and the akshare-bearing lines must be identical across the drift.
+#
+# Two arms exist because of how this round actually ran, and both are new since the first C75 log:
+# * `pin == INDEX(staged)`: the first re-pin's bytes were staged but never committed, so `git log` could
+#   not resolve the pin and the audit printed "pin matches no revision -> needs a review". That was a
+#   misreading produced by the instrument's own carrier list, not by the tree. The index is now a second
+#   carrier, and the substantive comparison (occurrence multiset pinned vs live) runs on the entry either
+#   way: reading 1 shows 124 vs 124, identical=True.
+# * `control_rearm_*`: the corrupt-one-pin control follows the drift list, so once the drift is repaired it
+#   corrupts an unrelated entry (.env.example) and the printed 0 says nothing about the path this round
+#   moved. The re-arm arm forges only acceptance_item_probe.py's pin and the judge must name exactly that
+#   path; the verdict returns 1 if it does not. Reading 2 is therefore a proven zero, not a silence.
+
+## reading 1: AFTER the first re-pin, BEFORE the H.15 mirror (drift 1, resolved to the index)
+
+repo=/Users/yunjinqi/Documents/new_projects/opendata
+judge_problems=1
+  JUDGE: stale sha256: scripts/quality/acceptance_item_probe.py
+entries=88
+live_digest_matches=87
+digest_drift=1
+missing_from_tree=0
+census_agrees_with_judge=True
+  DRIFT scripts/quality/acceptance_item_probe.py: pin == INDEX(staged) occurrences_pinned=124 occurrences_live=124 identical=True
+pin_resolved_in_staged_blob=1
+pin_resolved_nowhere=0
+control_target=scripts/quality/acceptance_item_probe.py
+control_corrupt_one_pin_problems=1
+control_corrupt_flags_only_target=True
+control_hypothetical_full_repin_problems=0
+  (arm only: it shows nothing but hash drift separates this tree from the policy; the shipped repair re-pins ONLY the entries audited above)
+VERDICT: every drift is the same allowed occurrences under moved bytes
+
+## reading 2: AFTER the H.15 mirror re-pin (drift 0, judge 0, re-arm live)
+
+repo=/Users/yunjinqi/Documents/new_projects/opendata
+judge_problems=0
+entries=88
+live_digest_matches=88
+digest_drift=0
+missing_from_tree=0
+census_agrees_with_judge=True
+pin_resolved_in_staged_blob=0
+pin_resolved_nowhere=0
+control_target=.env.example
+control_corrupt_one_pin_problems=1
+control_corrupt_flags_only_target=True
+control_hypothetical_full_repin_problems=0
+  (arm only: it shows nothing but hash drift separates this tree from the policy; the shipped repair re-pins ONLY the entries audited above)
+control_rearm_target=scripts/quality/acceptance_item_probe.py
+control_rearm_problems=1
+control_rearm_flags_only_that_path=True
+VERDICT: every drift is the same allowed occurrences under moved bytes

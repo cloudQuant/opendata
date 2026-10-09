@@ -85,15 +85,20 @@ class TestProviderRegistration:
         provider = get_provider("cboe")
         assert "reserved" not in provider.description.lower()
         assert provider.credentials == ()
-        assert len(provider.fetcher_bindings) == 2
+        assert len(provider.fetcher_bindings) == 3
 
-    def test_registry_publishes_both_declared_models(self) -> None:
+    def test_registry_publishes_every_declared_model(self) -> None:
         registry = ProviderRegistry()
         capabilities = register_provider("cboe", registry)
-        assert {c.domain for c in capabilities} == {
+        domains = {c.domain for c in capabilities}
+        assert domains == {
             "cboe_available_indices",
             "cboe_index_constituent_quotes",
+            "cboe_index_search",
         }
+        # Two cross-faces so a silent drop cannot hide in the literal: no two bindings publish the
+        # same domain, and the published count equals the descriptor's binding count.
+        assert len(capabilities) == len(domains) == len(get_provider("cboe").fetcher_bindings)
         assert all(c.source == "cboe" for c in capabilities)
         assert not any(c.verified for c in capabilities)
 
@@ -203,7 +208,13 @@ class TestDeclarationRejectsMalformedTemplate:
 
 
 def test_pilot_records_the_non_declarable_remainder_by_name() -> None:
-    """The honest denominator: nine of eleven need composition the declaration cannot express."""
+    """The honest denominator: eight of eleven still need composition a declaration cannot express.
+
+    ``IndexSearch`` left this set when the engine grew ``row_filters``. Every cboe upstream model
+    is named exactly once across the declared three and the remaining eight, so a model cannot
+    leave the remainder without arriving in the declared column -- the two sets are checked
+    against each other, not just against their own literals.
+    """
     assert set(specs.NOT_DECLARABLE) == {
         "EquityHistorical",
         "EtfHistorical",
@@ -211,8 +222,11 @@ def test_pilot_records_the_non_declarable_remainder_by_name() -> None:
         "EquitySearch",
         "FuturesCurve",
         "IndexHistorical",
-        "IndexSearch",
         "IndexSnapshots",
         "OptionsChains",
     }
-    assert len(specs.NOT_DECLARABLE) == 9
+    assert len(specs.NOT_DECLARABLE) == 8
+    declared = {AVAILABLE_INDICES.model, INDEX_CONSTITUENTS.model, specs.INDEX_SEARCH.model}
+    assert len(declared) == 3
+    assert declared.isdisjoint(specs.NOT_DECLARABLE)
+    assert len(declared | set(specs.NOT_DECLARABLE)) == 11

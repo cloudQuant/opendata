@@ -166,22 +166,25 @@ class TestCollection:
             "bls_series",
             "cboe_available_indices",
             "cboe_index_constituent_quotes",
+            "cboe_index_search",
             "currency_reference_rates",
             "equity_historical",
             "equity_quote",
+            "federal_reserve_money_measures",
+            "federal_reserve_treasury_rates",
             "fred_search",
             "fred_series",
             "sofr",
             "sonia",
             "yield_curve",
         )
-        assert scope.deferred_legs == 13
-        assert scope.domains + len(scope.deferred_domains) == len(legs) == 33
+        assert scope.deferred_legs == 16
+        assert scope.domains + len(scope.deferred_domains) == len(legs) == 36
         assert scope.source_legs + scope.unmapped_legs == 33
         assert (
             scope.source_legs + scope.unmapped_legs + scope.deferred_legs
             == sum(len(v) for v in legs.values())
-            == 46
+            == 49
         )
         assert scope.unmapped_legs > 0  # measured on the registry, not invented
         assert len(reports) == scope.domains + scope.source_legs
@@ -221,23 +224,26 @@ class TestCollection:
 
         assert sum(len(v) for v in legacy_legs.values()) == 33
         assert len(unmapped) == 23
-        assert sum(len(v) for v in legs.values()) == 46
+        assert sum(len(v) for v in legs.values()) == 49
         assert deferred_domains == (
             "balance_of_payments",
             "bls_search",
             "bls_series",
             "cboe_available_indices",
             "cboe_index_constituent_quotes",
+            "cboe_index_search",
             "currency_reference_rates",
             "equity_historical",
             "equity_quote",
+            "federal_reserve_money_measures",
+            "federal_reserve_treasury_rates",
             "fred_search",
             "fred_series",
             "sofr",
             "sonia",
             "yield_curve",
         )
-        assert sum(len(legs[domain]) for domain in deferred_domains) == 13
+        assert sum(len(legs[domain]) for domain in deferred_domains) == 16
         assert "stock_daily/akshare" not in unmapped
         assert "economy_cpi/fred" in unmapped
         for leg in (

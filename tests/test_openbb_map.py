@@ -55,6 +55,9 @@ class TestShippedMap:
         # AvailableIndices/IndexConstituents 同样出自该清单的 cboe 行
         # （`models: [AvailableIndices, …, IndexConstituents, …]`），本轮把这两条做成了
         # 声明式引擎声明；两条能力 verified=False，不进 auto 路由。
+        # IndexSearch 与两条 federal_reserve 名称没有上游 fetcher_dict 行可抄：它们由
+        # registry 投影（list_model_descriptors）带进 map，出处是本地 provider.py/specs.py
+        # 的 scenario 声明，同样 verified=False。
         assert confirmed == {
             "EquityHistorical",
             "ConsumerPriceIndex",
@@ -72,6 +75,9 @@ class TestShippedMap:
             "SONIA",
             "AvailableIndices",
             "IndexConstituents",
+            "IndexSearch",
+            "MoneyMeasures",
+            "TreasuryRates",
         }
 
     def test_enabled_capabilities_are_covered(self):

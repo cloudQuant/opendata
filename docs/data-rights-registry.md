@@ -1,7 +1,7 @@
 # 数据源权利登记表
 
-> 版本：v1.4（迭代2新增 BLS/FMP/Cboe 专属登记；登记完整性不等于所有用途获准）
-> 日期：2026-10-08（C65 既有行复核日期仍为 2026-09-30；首版 2026-09-22）
+> 版本：v1.5（迭代2新增美联储理事会专属登记；登记完整性不等于所有用途获准）
+> 日期：2026-10-09（第15行本轮审阅；第12—14行为 2026-10-08；C65 既有行复核日期仍为 2026-09-30；首版 2026-09-22）
 > 依据：迭代1 决策 D11（数据权利与再分发）、设计 §1.3
 > 维护：数据源变更、条款变更、复核结论变化时必须更新本表
 
@@ -32,7 +32,8 @@
 | 11 | 商业源（FMP/Tiingo/Alpha Vantage/Intrinio/Tradier…） | 当前迭代未启用 | https://site.financialmodelingprep.com/terms-of-service | 当前未接入；接入前逐产品登记订阅条款，现不批准落库 | 当前未接入；不批准任何转授或分发 | 当前未接入；免费计划或 API key 不授予其他供应商商业许可 | 2026-09-30 | cloudQuant / Codex | 不适用（本迭代未启用） |
 | 12 | BLS（美国劳工统计局） | 自研 `opendata/data/providers/bls`；survey bulk 目录与 timeseries v1/v2 | https://www.bls.gov/developers/termsOfService.htm | 官方公共领域数据可附条件使用并注明 BLS 来源；保留访问日期与版本，不含受版权保护图片或受限微观数据 | 附来源、访问日期和下载后数据/分析免责声明；不冒用 BLS 标识，不将修改内容表示为 BLS 原始发布 | 公共领域声明未限制上述统计的商业用途；仍遵守 API 限额及内容真实性条件 | 2026-10-08 | cloudQuant / Codex | 已复核（受限） |
 | 13 | FMP（EquityHistorical / EquityQuote） | 自研 `opendata/data/providers/fmp`；stable historical-price-eod/full 与 quote；仅离线原型已接线 | https://site.financialmodelingprep.com/terms-of-service | 未取得本项目产品订阅及下载/集中留存适用许可证明，暂不批准 | 多用户应用、组织内部展示及第三方服务需相应协议；本项目未取得，暂不批准 | 个人计划不得用于本项目商业服务；未取得适用商业数据协议，暂不批准 | 2026-10-08 | cloudQuant / Codex | 已复核（受限） |
-| 14 | Cboe（cdn.cboe.com 公开接口） | 自研 `opendata/data/providers/cboe`；`cdn.cboe.com` 公开延迟指数 JSON，无凭据；仅 AvailableIndices / IndexConstituents 两条已接线 | https://www.cboe.com/terms | 条款要求事先取得 Cboe 书面同意方可复制或以电子检索系统存储，fair use 例外不覆盖全量留存；未取得同意，暂不批准 | 声明未经书面许可不得修改、复制或分发，暂不批准 | 材料按 AS IS 提供、明示不担保准确性与及时性且声明非交易用途；无商业数据许可依据，暂不批准 | 2026-10-08 | cloudQuant / Codex | 已复核（受限） |
+| 14 | Cboe（cdn.cboe.com 公开接口） | 自研 `opendata/data/providers/cboe`；`cdn.cboe.com` 公开延迟指数 JSON，无凭据；AvailableIndices / IndexConstituents / IndexSearch 三条模型描述符已接线（2026-10-09 注册面复测为三条；接线条数变化不改变本行三项结论） | https://www.cboe.com/terms | 条款要求事先取得 Cboe 书面同意方可复制或以电子检索系统存储，fair use 例外不覆盖全量留存；未取得同意，暂不批准 | 声明未经书面许可不得修改、复制或分发，暂不批准 | 材料按 AS IS 提供、明示不担保准确性与及时性且声明非交易用途；无商业数据许可依据，暂不批准 | 2026-10-08 | cloudQuant / Codex | 已复核（受限） |
+| 15 | 美联储理事会（Board of Governors） | 自研 `opendata/data/providers/federal_reserve`；`www.federalreserve.gov/datadownload/Output.aspx` 公开包下载（rel=H6、rel=H15），无凭据；仅 MoneyMeasures / TreasuryRates 两条已接线 | https://www.federalreserve.gov/disclaimer.htm | 免责声明把 Board 网站信息列为"Unless otherwise indicated, information on Board's website is in the public domain and may be copied and distributed without permission"，并要求"Please cite to the Board as the source of the information"；本行只覆盖这两张发布表下载包里的统计数值 | 可复制与分发，须注明美联储理事会为来源；同页另禁止把局徽与官方标志用于暗示背书，他方来源的版权材料须向原始权利人取得许可 | 公开领域声明未对上述信息另设商业用途限制；"unless otherwise indicated" 要求逐发布表核对是否有另示，本轮两张表未见另示 | 2026-10-09 | cloudQuant / Codex | 已复核（受限） |
 
 > 经 akshare 接入的源数量众多（涵盖 46 个类别），上表登记**当前及计划使用的主要源**；
 > 新增数据域时必须同步补登记，未登记的源不得进入 `source="auto"` 路由。
@@ -43,9 +44,11 @@ BLS 的 [版权声明](https://www.bls.gov/bls/linksite.htm) 将官方发布资�
 
 FMP 的 [订阅条款](https://site.financialmodelingprep.com/terms-of-service) §1.1、§2.1—2.2.2 将数据访问与具体产品/订阅范围关联，并限制个人计划、复制下载、分发及多用户展示。第13行记录当前未获适用许可的两个接口；不以 API Key 或代码实现推定许可，也不代表其余67个固定 FMP 模型已经逐产品审阅。第11行保留 C65 当时的集合登记身份和日期，其“当前未接入”是历史读数；FMP 的本轮状态以后增的第13行为准。Tiingo、Alpha Vantage、Intrinio、Tradier 仍待专属产品登记。
 
-Cboe 的第14行来自本轮对 [网站使用条款](https://www.cboe.com/terms)（"Terms and Conditions for Use of Cboe Websites"）与 [全球免责声明](https://www.cboe.com/global-disclaimers/) 的公开条款审阅，逐句出处与拉取方式见 [C72 Cboe 权利审阅](evidence/C72/cboe-rights-review.md)。条款把站点材料列为受版权/商标保护，并要求复制、修改或以电子检索系统存储须先取得 Cboe 书面同意（仅保留美国版权法 fair use 例外）；材料按 "AS IS" 提供，明示不担保准确性、完整性与及时性，且声明仅供信息/教育用途、不用于交易。第14行只覆盖本轮接线并读取的两条公开延迟指数接口（`/api/global/us_indices/definitions/all_indices.json` 与 `/api/global/european_indices/constituent_quotes/{symbol}.json`），不覆盖 cboe 其余 9 个上游模型，也不推定 Cboe 指数数据的授权许可——指数数据另有独立的许可链条，接入前须另行逐产品登记。
+Cboe 的第14行来自本轮对 [网站使用条款](https://www.cboe.com/terms)（"Terms and Conditions for Use of Cboe Websites"）与 [全球免责声明](https://www.cboe.com/global-disclaimers/) 的公开条款审阅，逐句出处与拉取方式见 [C72 Cboe 权利审阅](evidence/C72/cboe-rights-review.md)。条款把站点材料列为受版权/商标保护，并要求复制、修改或以电子检索系统存储须先取得 Cboe 书面同意（仅保留美国版权法 fair use 例外）；材料按 "AS IS" 提供，明示不担保准确性、完整性与及时性，且声明仅供信息/教育用途、不用于交易。第14行只覆盖本轮接线并读取的两个公开延迟指数接口（`/api/global/us_indices/definitions/all_indices.json` 与 `/api/global/european_indices/constituent_quotes/{symbol}.json`）；2026-10-09 注册面复测显示 cboe 已接线三条模型描述符，其中 `IndexSearch` 复用前一条 `all_indices.json` 接口做目录内筛选，不新增被读取的接口，因此接口覆盖不变、描述符计数由 2 变 3。本行不覆盖 cboe 其余 8 个上游模型（清单实测 11 行 = 3 DEV_DONE + 8 NOT_RUN），也不推定 Cboe 指数数据的授权许可——指数数据另有独立的许可链条，接入前须另行逐产品登记。
 
-登记行链接只证明来源与审阅状态可追溯；BLS/FMP/Cboe 的新增能力均 `verified=False`，不加入自动选源。本轮源码与 fixture 可以离线验证，没有释放 FMP 或 Cboe 的真实采集、落库或对外分发动作。
+美联储理事会的第15行来自本轮对 [Disclaimer](https://www.federalreserve.gov/disclaimer.htm) 的公开条款审阅：该页把 Board 网站信息列为 "Unless otherwise indicated, information on Board's website is in the public domain and may be copied and distributed without permission"，并要求 "Please cite to the Board as the source of the information"；同一页面另把局徽与官方标志列为受联邦法律保护、未经书面许可不得使用或复制，并把带版权的他方材料指向原始权利人（站点页脚的 [Website Linking Policies](https://www.federalreserve.gov/website-linking-policies.htm) 只谈外链与他方版权，不构成本行依据）。第15行只覆盖本轮两条模型读取的 `datadownload/Output.aspx` 发布表下载包（rel=H6 货币供应量、rel=H15 国债收益率），不覆盖 Board 站点其余出版物，也不代替对具体发布表 "otherwise indicated" 的逐表核对；模型清单实测 federal_reserve 共 13 行（2 DEV_DONE + 11 NOT_RUN），本行不覆盖其余 11 行 NOT_RUN 的上游模型；公开条款复核不改变两条能力的 `verified=False`，不能代替 `SOURCE_VERIFIED`。
+
+登记行链接只证明来源与审阅状态可追溯；BLS/FMP/Cboe/美联储的新增能力均 `verified=False`，不加入自动选源。本轮源码与 fixture 可以离线验证，没有释放 FMP 或 Cboe 或美联储的真实采集、落库或对外分发动作。
 
 ## 2. 待办与责任
 

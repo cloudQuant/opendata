@@ -425,8 +425,8 @@
       "purpose": "统一目录把搬运后的 akshare provider 作为来源标识注册进 provider×模型目录，import 的是 `opendata.data.providers.akshare.provider` 的模块路径。",
       "category": "source-adapter",
       "reviewed_date": "2026-10-09",
-      "reviewer": "Qoder agent C72; hash re-pinned after the derived-registration rewrite. Occurrences audited by content against the C66-reviewed revision 3f05f63: the same 3 lines (import PROVIDER as AKSHARE_PROVIDER at :13, two registrations at :88/:94), only their line numbers moved.",
-      "sha256": "10dcfe1420952a34a89ad2369852a9e268f8d5db5c40fe745f03708b67fbc0ef",
+      "reviewer": "Qoder agent C75; hash re-pinned after the federal_reserve provider replaced its reserved placeholder in the same tuple. Occurrences audited by content against 8a35e9a: still the same 3 lines (import PROVIDER as AKSHARE_PROVIDER at :13, two registrations at :89/:95, shifted by one line by the inserted federal_reserve import), and the scanner reports 0 module hits on both revisions. Original C72 note: hash re-pinned after the derived-registration rewrite, audited against the C66-reviewed revision 3f05f63.",
+      "sha256": "4386baa328f1a7802f6268dfb57833ae5727e06779ac48fc63c4168d5e4702ce",
       "ast_exceptions": []
     },
     {
@@ -774,8 +774,8 @@
       "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。本轮把三条 AC 面改成子解释器里的 import hook 见证：包名只作为字符串常量出现在被交给子进程的字面 argv 与被拒计数里，没有任何一处用它去加载外部包。",
       "category": "operations-tool",
       "reviewed_date": "2026-10-09",
-      "reviewer": "C74 primary; AC-5|07 的档案轮次标签改成从 bundle 实测（archive_round/carried_from_round）并修正 exclude_dirs 尾斜杠成员判定，未新增任何品牌名加载",
-      "sha256": "db6b7f6c2f374db4c27df415f03daa68e2413a822433f441db328ec3b1859858",
+      "reviewer": "C74 primary; AC-5|07 的档案轮次标签改成从 bundle 实测（archive_round/carried_from_round）并修正 exclude_dirs 尾斜杠成员判定，未新增任何品牌名加载；C75 primary 复核 sha 漂移：pin 命中 HEAD 8a35e9a，akshare 出现行 pinned=124 live=124 且逐行多重集完全相同，相对 pin 只多 3 行（2 行注释 + 1 行字面正则 ^rows_pointer=refRates$，把 .gitleaks.toml 的允许面逐字镜像到判定探针里），没有任何一处用它去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准；C75 secondary 复核第二次 sha 漂移：pin == INDEX(staged)（上一次重钉的字节还没提交，所以它不在任何 revision 里，审计为此新增了 index 载体臂），akshare 出现行 pinned=124 live=124 identical=True，相对 pin 只多 4 行（注释 3 行 + 字面正则 ^RIFLGFC(M01|M03|M06|Y01|Y02|Y03|Y05|Y07|Y10|Y20|Y30)_N\\.B$ 一行），仍无品牌名加载，所以仍是同一批准内容下的摘要重钉",
+      "sha256": "bfe308783c6e763b31a7b041f1bce4a0765de29d952ed1b0a86e824255e3e26e",
       "ast_exceptions": []
     },
     {
@@ -807,11 +807,11 @@
     },
     {
       "path": "scripts/quality/provider_source_review_evidence.py",
-      "purpose": "当前7个provider源码审查的来源名称、OpenBB基线与字节绑定，来源名不加载外部包。",
+      "purpose": "provider 源码审查证据工具里的上游名称字符串：OpenBB 基线 commit、被审查的 provider 包名与 openbb 导入根判定。包名不加载外部包；注册包面已改为实测（当前 12 个），钉住的只有 5 个 OpenBB 基线包。",
       "category": "operations-tool",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "55c9797e5185a2a36b8a73ff4d8eea46b32ca30afc8e5e8604d5e04ec7ebfffe",
+      "reviewed_date": "2026-10-09",
+      "reviewer": "Qoder agent C75; hash re-pinned after the registered-package discovery rewrite. Audited by content against 8a35e9a: the registered 'akshare' literal that HEAD:21 carried is gone (EXPECTED_PROVIDERS deleted in favour of registered_provider_packages), one 'openbb' literal remains at :310 as the import-root test, so the frozen reference count for this file goes 2 -> 1. Original: Codex primary; authorized C65 criterion migration.",
+      "sha256": "36b1e81de5bd8772cbd9b7bc60f2593a4d1b5ae4e7fc3b372ce574934d032804",
       "ast_exceptions": []
     },
     {
