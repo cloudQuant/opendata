@@ -5,7 +5,7 @@ commands in the "Re-derivation" section, do not trust this transcription):
 
 - Tree at launch: HEAD `eca4b5d7d6208adc99dddbc99e0b9b33823d3c14`, branch `dev`,
   `git status --porcelain | wc -l` == `0` (clean tree — the gate ran on committed state).
-- Command: `make gate` (the repo's 17-member gate), stdout+stderr captured to `/tmp/gate-run4.log`.
+- Command: make gate (the repo's 17-member gate), stdout+stderr captured to /tmp/gate-run4.log.
 - Verdict: `GATE_EXIT=2`. The wrapper that launched it reported exit 0; the file is authoritative.
 - Captured log body: 44061 lines, `sha256(/tmp/gate-run4.log)` ==
   `4a42aa9558321d9c218a8e83714a84101307ec9032f4294a9bf26dda6e132c28` (the appended tail below is

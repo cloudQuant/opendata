@@ -1,0 +1,112 @@
+# gate run 5 — stopped inside member 5 (evidence-traceability), GATE_EXIT=2
+
+Verbatim capture of the 5th gate pass of round C76. Body is pasted byte-for-byte from
+`/tmp/gate-run5.log`; every number below is recomputed from that file with the commands in
+"Re-derivation", not transcribed.
+
+- Date of the run: 2026-10-10 01:50:08 (+0800), the file mtime of `/tmp/gate-run5.log`.
+- Tree at launch: HEAD `69ef38f82ac7452fb8a6ccbcd526341adda76268`, branch `dev`. The two files
+  this round had just produced -- `docs/evidence/C76/README.md` and the one-line command-face edit
+  in `docs/evidence/C75/gate-run4-red-member12.txt` -- were still uncommitted/untracked at launch,
+  which is exactly what members 1-4 tolerated and member 5 charged.
+- Command: make gate (the repo's 17-member gate), stdout+stderr captured to /tmp/gate-run5.log.
+- Verdict: `GATE_EXIT=2` (last line of the file).
+- Captured body: 69 lines, 2576 bytes, `sha256(/tmp/gate-run5.log)` == `33bc79b33f9ceff6c2fadd425784abccf5843e33b8e07b0abd625bf9fcc68ec9`.
+- Python: 3.11.8, arm64.
+
+## What the run established
+
+Members 1-4 (`brand-check`, `zero-dep-check`, `secret-check`, `ledger-check`) passed on this tree:
+member 4 reads `items=130 proven=112 gap=18 unreviewed=0 ticked=112 across 22 group(s) and 19 §10
+row(s)`, and gitleaks reports `no leaks found` over 307 commits. The pass never reached member 12,
+so this run says nothing about the three C76 test fixes inside the full suite -- they are proven
+only by the focused 76-test invocation recorded in `member12-timing-measurements.txt`, and a full
+suite pass is run 6's job.
+
+Member 5 stopped the pass on two violations, both produced by this round and both now closed:
+
+1. `docs/evidence/C76/#narrative` — the round directory had no narrative face (`README.md`) yet.
+2. `docs/evidence/C75/gate-run4-red-member12.txt#command` — the C75 header wrote the command only
+   inside backticks; the rule's command token must sit at line start or after whitespace.
+
+This file is itself the carrier for the run that proved those two, so re-deriving faces (3) and (4)
+below on the current tree reads them as committed rather than new.
+
+## Re-derivation
+
+    shasum -a 256 /tmp/gate-run5.log        # -> the digest quoted above
+    wc -l -c /tmp/gate-run5.log             # -> 69 lines, 2576 bytes
+    tail -n 3 /tmp/gate-run5.log            # -> the FAIL line, make[1]/make Error, GATE_EXIT=2
+    grep -c '===== gate:' /tmp/gate-run5.log # -> 5 members reached
+
+## Raw capture (verbatim, 69 lines)
+
+===== gate: brand-check =====
+python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:150
+  .env.example:151
+  .env.example:152
+  .env.example:153
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+===== gate: zero-dep-check =====
+python scripts/codemod/verify_no_akshare.py --self-test
+OK: scanner self-test passed (13 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+python scripts/codemod/verify_no_akshare.py
+OK: 649 file(s) walked (opendata=322, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+===== gate: secret-check =====
+python scripts/quality/secret_scan_check.py
+
+    ○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
+
+[90m1:50AM[0m [32mINF[0m [1m307 commits scanned.[0m
+[90m1:50AM[0m [32mINF[0m [1mscanned ~148407559 bytes (148.41 MB) in 1m22s[0m
+[90m1:50AM[0m [32mINF[0m [1mno leaks found[0m
+device: gitleaks 8.30.1, command: gitleaks detect --source . --config .gitleaks.toml --redact
+===== gate: ledger-check =====
+python scripts/quality/acceptance_ledger_check.py
+census: items=130 proven=112 gap=18 unreviewed=0 ticked=112
+OK: items=130 proven=112 gap=18 unreviewed=0 ticked=112 across 22 group(s) and 19 §10 row(s) reconcile.
+===== gate: evidence-traceability =====
+python scripts/quality/evidence_traceability.py
+# evidence traceability over docs/evidence/
+  rounds        = 85
+  files census  = 1087 (gate logs: 131)
+  dates in gate logs = header 122/131, printed by the run 9/131
+  branch named in header = 106/131 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 1
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 1
+  exit       gaps = 0
+  untracked  gaps = 0
+    narrative: docs/evidence/C76/
+    command: docs/evidence/C75/gate-run4-red-member12.txt
+NEW VIOLATION: docs/evidence/C75/gate-run4-red-member12.txt#command
+NEW VIOLATION: docs/evidence/C76/#narrative
+
+FAIL: 2 new traceability violation(s) against a 0-entry baseline.
+make[1]: *** [evidence-traceability] Error 1
+make: *** [gate] Error 2
+GATE_EXIT=2

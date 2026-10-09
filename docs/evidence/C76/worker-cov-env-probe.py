@@ -10,18 +10,19 @@ matter instead of arguing from the flag's presence on the command line:
 3. the ``python -c`` grandchild spawned from inside the test.
 
 ``site-packages/pytest-cov.pth`` calls ``pytest_cov.embed.init()`` only when ``COV_CORE_SOURCE`` is
-already in ``os.environ``, so level 3's key list is the whole question. Measured answer (this file's
-face): ``COV_CORE_CONFIG``/``COV_CORE_DATAFILE``/``COV_CORE_SOURCE`` are present in the controller and
-in each xdist worker, and a ``python -c`` grandchild inherits all three -- so member 12's archive-lock
-worker IS traced, and the claim that tracing stops at the pytest process is refuted.
+already in ``os.environ``, so level 3's key list is the whole question. Measured answer (this
+file's face): ``COV_CORE_CONFIG``/``COV_CORE_DATAFILE``/``COV_CORE_SOURCE`` are present in the
+controller and in each xdist worker, and a ``python -c`` grandchild inherits all three -- so
+member 12's archive-lock worker IS traced, and the claim that tracing stops at the pytest process
+is refuted.
 
 Re-run: ``python3.11 docs/evidence/C76/worker-cov-env-probe.py``. ``--override-ini=addopts=`` drops
 pytest.ini's ``--cov-report=term-missing --cov-report=html`` so the three runs cost seconds, while
 the ``--cov=opendata`` flag under test is passed explicitly.
 
-Caveat on the boot-cost column: ``--cov-config`` points coverage at a one-line scratch config, while
-member 12 uses the repo's ``pyproject.toml`` (``branch = true``, the whole ``opendata`` source set), so
-the traced-boot number here is a lower bound on what the gate's grandchildren pay.
+Caveat on the boot-cost column: ``--cov-config`` points coverage at a one-line scratch config,
+while member 12 uses the repo's ``pyproject.toml`` (``branch = true``, the whole ``opendata``
+source set), so the traced-boot number here is a lower bound on what the gate's grandchildren pay.
 """
 
 from __future__ import annotations
@@ -29,12 +30,14 @@ from __future__ import annotations
 import json
 import os
 import shutil
-import subprocess
+import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
 REPO = Path("/Users/yunjinqi/Documents/new_projects/opendata")
-SCRATCH = Path("/tmp/cov3")
+#: Scratch root for the generated probe, its faces and its redirected coverage data. A fixed name
+#: so the re-run recipe above works verbatim; it is wiped at the start of every run.
+SCRATCH = Path("/tmp/cov3")  # nosec B108  # noqa: S108
 OUT = SCRATCH / "out"
 
 TEST_SOURCE = '''
@@ -70,7 +73,8 @@ def _boot_cost():
 def _dump():
     grand = subprocess.run(
         [sys.executable, "-c",
-         "import os,json;print('GRANDCHILD'+json.dumps(sorted(k for k in os.environ if k.startswith('COV'))))"],
+         "import os,json;print('GRANDCHILD'"
+         "+json.dumps(sorted(k for k in os.environ if k.startswith('COV'))))"],
         capture_output=True, text=True,
     )
     hits = [line for line in grand.stdout.splitlines() if line.startswith("GRANDCHILD")]
@@ -98,7 +102,15 @@ def test_dump_worker_side():
     _write()
 '''
 
-COMMON = ["--override-ini=addopts=", "-p", "no:randomly", "-p", "no:cacheprovider", "-q", "--no-header"]
+COMMON = [
+    "--override-ini=addopts=",
+    "-p",
+    "no:randomly",
+    "-p",
+    "no:cacheprovider",
+    "-q",
+    "--no-header",
+]
 ARMS = [
     ("serial-cov-on", "serial, coverage ON", ["--cov=opendata", "--cov-report="]),
     ("serial-cov-off", "serial, coverage OFF", []),
@@ -113,16 +125,24 @@ COV_CFG = SCRATCH / "cov.cfg"
 
 
 def run(arm: str, extra: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(  # nosec B603
+    """Run the generated probe under one arm; ``arm`` is what the side writes into its face."""
+    return subprocess.run(  # nosec B603  # noqa: S603
         [
-            sys.executable, "-m", "pytest",
+            sys.executable,
+            "-m",
+            "pytest",
             str(SCRATCH / "test_cov3_probe.py"),
             *extra,
             *(["--cov-config", str(COV_CFG)] if "--cov=opendata" in extra else []),
             *COMMON,
         ],
         cwd=REPO,
-        env={**os.environ, "COV3_OUT": str(OUT), "COV3_ARM": arm, "COVERAGE_FILE": str(SCRATCH / ".coverage")},
+        env={
+            **os.environ,
+            "COV3_OUT": str(OUT),
+            "COV3_ARM": arm,
+            "COVERAGE_FILE": str(SCRATCH / ".coverage"),
+        },
         capture_output=True,
         text=True,
         timeout=600,
@@ -130,6 +150,7 @@ def run(arm: str, extra: list[str]) -> subprocess.CompletedProcess[str]:
 
 
 def main() -> None:
+    """Build the scratch probe, run the three arms, then print the COV* env faces side by side."""
     shutil.rmtree(SCRATCH, ignore_errors=True)
     OUT.mkdir(parents=True)
     COV_CFG.write_text("[run]\nsource = opendata\n[report]\nfail_under = 0\n", encoding="utf-8")
@@ -138,18 +159,32 @@ def main() -> None:
     print(f"python: {sys.version.split()[0]} {sys.executable}")
     print(f"cwd (rootdir): {REPO}")
     print(f"shared flags: {' '.join(COMMON)}")
-    print(f"coverage data/config redirected to {SCRATCH} (COVERAGE_FILE + --cov-config), repo untouched")
+    print(
+        f"coverage data/config redirected to {SCRATCH} (COVERAGE_FILE + --cov-config), "
+        "repo untouched"
+    )
 
     for arm, label, extra in ARMS:
         proc = run(arm, extra)
         print(f"\n=== {label} ===")
         print(f"  argv: -m pytest <probe> {' '.join(extra)}")
         print(f"  rc={proc.returncode}")
-        for line in [l for l in proc.stdout.splitlines() if " passed" in l or " failed" in l or "ERROR" in l][:3]:
+        verdicts = [
+            line
+            for line in proc.stdout.splitlines()
+            if " passed" in line or " failed" in line or "ERROR" in line
+        ][:3]
+        for line in verdicts:
             print(f"  {line.strip()}")
         if proc.returncode != 0:
-            print("  stdout tail:\n" + "\n".join("    " + l for l in proc.stdout.splitlines()[-25:]))
-            print("  stderr tail:\n" + "\n".join("    " + l for l in proc.stderr.splitlines()[-25:]))
+            print(
+                "  stdout tail:\n"
+                + "\n".join("    " + line for line in proc.stdout.splitlines()[-25:])
+            )
+            print(
+                "  stderr tail:\n"
+                + "\n".join("    " + line for line in proc.stderr.splitlines()[-25:])
+            )
 
     print("\n=== COV* env faces ===")
     for path in sorted(OUT.glob("*.json")):
@@ -158,11 +193,15 @@ def main() -> None:
             f"  arm={face['arm']:15s} role={face['role']:10s} parent COV*={face['cov_keys']} "
             f"-> grandchild rc={face['grandchild_rc']} COV*={face['grandchild_cov_keys']}"
         )
-        print(f"    traced-boot cost (parent-side spawn -> child first line, 2 children): {face['boot_cost_s']} s")
+        print(
+            "    traced-boot cost (parent-side spawn -> child first line, 2 children): "
+            f"{face['boot_cost_s']} s"
+        )
         if face["grandchild_stderr_tail"].strip():
             print(f"    grandchild stderr: {face['grandchild_stderr_tail'].strip()}")
 
-    print(f"\n.coverage* data files in repo root after the runs: {sorted(p.name for p in REPO.glob('.coverage*'))}")
+    leftovers = sorted(p.name for p in REPO.glob(".coverage*"))
+    print(f"\n.coverage* data files in repo root after the runs: {leftovers}")
 
 
 if __name__ == "__main__":
