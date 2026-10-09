@@ -31,32 +31,144 @@ if TYPE_CHECKING:
 
     from sqlalchemy import Engine
 
-#: A worker process is a cold CPython import of sqlalchemy and pandas. Under ``pytest -n 8`` that
-#: start can take tens of seconds, and a short fixed deadline then fires while the worker is still
-#: alive -- which the old wording reported as "never attempted the lock", a false claim about the
-#: lock instead of the truth about the clock.
-WORKER_STARTUP_BUDGET_S = 90.0
+#: A worker is a second CPython: it boots, imports sqlalchemy/pandas/pyarrow, then reaches the
+#: archive's shared snapshot lock through ``_shard_lock`` while this process holds the exclusive
+#: one. Member 12 runs the suite as ``pytest -n 8`` with coverage tracing, and that tracing does
+#: reach the worker: ``COV_CORE_CONFIG``/``COV_CORE_DATAFILE``/``COV_CORE_SOURCE`` are set in the
+#: controller, in every xdist worker, and in the ``python -c`` grandchild, where pytest-cov's
+#: ``.pth`` hook acts on them (measured by docs/evidence/C76/worker-cov-env-probe.py). A deadline
+#: near the typical cost then fires while the worker is still alive -- which the old wording
+#: reported as "never attempted the lock", a claim about the lock instead of the truth about the
+#: clock.
+#:
+#: Faces, in docs/evidence/C76/member12-timing-measurements.txt with the raw output and re-run
+#: recipes. Traced boot 0.115-0.131 s against 0.04 s untraced. The worker's own clock reads
+#: 1.46-1.62 s at its ``finished-work`` stage across six repeats with seven coverage-traced pytest
+#: processes as peers, and 0.87-1.02 s for the same arm alone (untraced / traced). The two-arm test
+#: takes 12.78-17.12 s wall under that peer mix; run alone it is 7.39 s traced and 2.25 s untraced,
+#: its own call 2.53 s against 2.02 s -- the rest of that wall gap is pytest-cov's report, not the
+#: worker.
+#:
+#: Gate run 4 showed the purge arm alive and marker-less at 120 s. That number is a derivation, not
+#: a printed one: the 90 s budget then in force (``git show a6410ef:tests/test_minute_archive.py``,
+#: line 38) expired and the 30 s ``communicate`` behind it expired too
+#: (docs/evidence/C75/gate-run4-red-member12.txt, lines 43749-43767).
+#:
+#: No proxy reproduces that tail: 12 busy-spin processes multiply a cold import of this module
+#: 1.79 s -> 9.67 s median (5.4x, both arms of one paired run), which on a 1.5 s arm lands near
+#: 8 s -- an order of magnitude short of 120 s. The tail is box state (CPU plus page-in pressure
+#: across 8 traced workers), not the lock protocol, and not something a tighter constant predicts.
+#:
+#: So 240 s is twice the one observed instance, not a margin over typical cost, and the
+#: verdict no longer rides on the clock: a dead worker is reported by exit status within
+#: seconds (``test_a_dead_worker_is_reported_dead_not_as_a_lock_miss``) and a stalled one
+#: by the stage it reached with that stage's own elapsed
+#: (``test_a_stalled_alive_worker_is_killed_and_reported_by_stage``). That is how a
+#: recurrence tells "the interpreter never started" from "the import stalled" from
+#: "blocked before the acquire" -- the three shapes the old message could not separate.
+WORKER_STARTUP_BUDGET_S = 240.0
+
+#: The same bound on what a worker does after the lock is released: the parquet write for
+#: the writer arm, the metadata delete plus unlink for the purge arm. The call here used to
+#: be a bare ``communicate(timeout=30)``, which raises ``subprocess.TimeoutExpired`` -- the
+#: same uninterpretable shape, on the other side of the lock.
+WORKER_FINISH_BUDGET_S = 120.0
 
 
-def _wait_for_worker_marker(process: subprocess.Popen[str], marker: Path, reason: str) -> None:
-    """Block until the worker writes its own marker, or the worker is provably dead.
+def _wait_for_worker_marker(
+    process: subprocess.Popen[str],
+    marker: Path,
+    reason: str,
+    *,
+    stage: Path | None = None,
+    budget_s: float | None = None,
+) -> None:
+    """Block until the worker writes its own marker, or the worker is provably stuck or dead.
 
-    Distinguishing the two outcomes is the point: a dead worker has an exit status and stderr, so
-    those are reported instead of the lock claim. The worker writes the marker *before* it blocks on
-    the lock, so a legitimately blocked worker still writes it and never consumes this budget.
+    Distinguishing the outcomes is the point. The worker rewrites ``stage`` as it goes -- before its
+    first heavy import, after the imports, and again at the lock -- so a wait that expires reports
+    *where* the worker was, instead of accusing the lock of a clock problem. When the budget
+    expires the worker is stopped before its pipes are read: the caller holds the exclusive
+    snapshot lock, the worker is waiting for that lock, and ``communicate`` waits for the worker --
+    three-way, so the old order reported ``subprocess.TimeoutExpired`` and no verdict at all. A
+    dead worker is still reported by exit status, never as a lock miss.
     """
-    deadline = time.monotonic() + WORKER_STARTUP_BUDGET_S
+    budget = WORKER_STARTUP_BUDGET_S if budget_s is None else budget_s
+    started = time.monotonic()
+    deadline = started + budget
     while not marker.exists() and time.monotonic() < deadline and process.poll() is None:
         time.sleep(0.01)
     if marker.exists():
         return
+    waited = time.monotonic() - started
+    if process.poll() is None:
+        _terminate_if_alive(process)
     stdout, stderr = process.communicate(timeout=30)
+    reached = (
+        stage.read_text(encoding="utf-8") if stage is not None and stage.exists() else "<none>"
+    )
     pytest.fail(
-        f"{reason}; worker rc={process.returncode} after "
-        f"{WORKER_STARTUP_BUDGET_S:.0f}s budget\n--- stdout ---\n{stdout}\n"
+        f"{reason}; worker rc={process.returncode} after {waited:.1f}s "
+        f"(budget {budget:.0f}s), last stage={reached!r}\n--- stdout ---\n{stdout}\n"
         f"--- stderr ---\n{stderr}",
         pytrace=False,
     )
+
+
+def _terminate_if_alive(process: subprocess.Popen[str]) -> None:
+    """Stop a worker the test is finished with, so a failure cannot leave it running.
+
+    Measured on this box: a reader worker from one interrupted suite run was still alive 7h20m
+    later, polling a release file its test would never touch again and holding a SQLite
+    connection open.
+    """
+    if process.poll() is None:
+        process.terminate()
+        try:
+            process.wait(timeout=10)
+        except subprocess.TimeoutExpired:  # pragma: no cover - a worker that ignores SIGTERM
+            process.kill()
+            process.wait(timeout=10)
+
+
+def _finish_worker(
+    process: subprocess.Popen[str],
+    *,
+    reason: str,
+    stage: Path | None = None,
+    budget_s: float = WORKER_FINISH_BUDGET_S,
+) -> tuple[str, str]:
+    """Read a worker out after its lock has been released, or give a verdict about it.
+
+    The caller's side of the exchange is already over, so a worker that does not come back here is
+    stuck in its own post-lock work -- which used to surface as ``subprocess.TimeoutExpired`` and no
+    finding. The stage file is read before the process is stopped so the report says where it was.
+    """
+    started = time.monotonic()
+    try:
+        return process.communicate(timeout=budget_s)
+    except subprocess.TimeoutExpired:
+        reached = (
+            stage.read_text(encoding="utf-8") if stage is not None and stage.exists() else "<none>"
+        )
+        waited = time.monotonic() - started
+        _terminate_if_alive(process)
+        stdout, stderr = process.communicate(timeout=30)
+        pytest.fail(
+            f"{reason}; worker rc={process.returncode} after {waited:.1f}s "
+            f"(budget {budget_s:.0f}s), last output ended at stage={reached!r}\n"
+            f"--- stdout ---\n{stdout}\n--- stderr ---\n{stderr}",
+            pytrace=False,
+        )
+
+
+@pytest.fixture
+def workers() -> Iterator[list[subprocess.Popen[str]]]:
+    """Every worker a test spawns, terminated on the way out -- whether the test passed or not."""
+    spawned: list[subprocess.Popen[str]] = []
+    yield spawned
+    for worker in spawned:
+        _terminate_if_alive(worker)
 
 
 @pytest.fixture
@@ -657,6 +769,7 @@ def test_retention_waits_for_a_reader_in_another_process(
     archive_engine: Engine,
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
+    workers: list[subprocess.Popen[str]],
 ) -> None:
     """The shared per-shard flock keeps retention from unlinking an active read."""
     import opendata.data.minute_archive as archive
@@ -723,10 +836,10 @@ engine.dispose()
         stderr=subprocess.PIPE,
         text=True,
     )
+    workers.append(reader)
     _wait_for_worker_marker(
         reader, marker, "reader never reached Parquet while holding its shard lock"
     )
-
     with ThreadPoolExecutor(max_workers=1) as executor:
         purge = executor.submit(
             purge_expired_minute_shards,
@@ -738,7 +851,9 @@ engine.dispose()
         time.sleep(0.2)
         assert not purge.done()
         release.touch()
-        stdout, stderr = reader.communicate(timeout=30)
+        stdout, stderr = _finish_worker(
+            reader, reason="reader did not finish after its release file appeared"
+        )
         result = purge.result(timeout=30)
 
     assert reader.returncode == 0, (stdout, stderr)
@@ -749,6 +864,7 @@ def test_global_snapshot_lock_blocks_writer_and_expired_shard_purge_processes(
     archive_engine: Engine,
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
+    workers: list[subprocess.Popen[str]],
 ) -> None:
     """The exclusive paired-snapshot lock blocks and then releases real workers."""
     import opendata.data.minute_archive as archive
@@ -772,15 +888,23 @@ def test_global_snapshot_lock_blocks_writer_and_expired_shard_purge_processes(
 
     worker_code = r"""
 import sys
+import time
 from contextlib import contextmanager
-from datetime import date
 from pathlib import Path
+stage = Path(sys.argv[7])
+started_at = time.monotonic()
+def mark(name):
+    stage.write_text("{}@{:.2f}s".format(name, time.monotonic() - started_at), encoding="utf-8")
+mark("started")
+from datetime import date
 from sqlalchemy import create_engine
 import opendata.data.minute_archive as archive
+mark("imported")
 original_lock = archive._snapshot_file_lock
 @contextmanager
 def observed_lock(root, *, exclusive):
     if not exclusive:
+        mark("at-shared-acquire")
         Path(sys.argv[4]).write_text("waiting", encoding="utf-8")
     with original_lock(root, exclusive=exclusive):
         yield
@@ -788,6 +912,7 @@ archive._snapshot_file_lock = observed_lock
 engine = create_engine(f"sqlite:///{sys.argv[1]}")
 operation = sys.argv[3]
 if operation == "writer":
+    mark("entering-ingest")
     archive.ingest_minute_shard(
         engine,
         sys.argv[2],
@@ -807,6 +932,7 @@ if operation == "writer":
         }],
     )
 elif operation == "purge":
+    mark("entering-purge")
     result = archive.purge_expired_minute_shards(
         engine,
         sys.argv[2],
@@ -816,6 +942,7 @@ elif operation == "purge":
     assert result.deleted == 1 and result.files_deleted == 1, result
 else:
     raise AssertionError(operation)
+mark("finished-work")
 Path(sys.argv[6]).write_text("done", encoding="utf-8")
 engine.dispose()
 """
@@ -825,6 +952,7 @@ engine.dispose()
     for operation in ("writer", "purge"):
         marker = tmp_path / f"{operation}-waiting"
         done = tmp_path / f"{operation}-done"
+        stage = tmp_path / f"{operation}-stage"
         with archive._snapshot_file_lock(root, exclusive=True):
             worker = subprocess.Popen(  # noqa: S603  # nosec B603
                 [
@@ -837,6 +965,7 @@ engine.dispose()
                     str(marker),
                     today.isoformat(),
                     str(done),
+                    str(stage),
                 ],
                 cwd=Path(__file__).resolve().parents[1],
                 env=environment,
@@ -844,15 +973,23 @@ engine.dispose()
                 stderr=subprocess.PIPE,
                 text=True,
             )
+            workers.append(worker)
             _wait_for_worker_marker(
-                worker, marker, f"{operation} never attempted the global shared lock"
+                worker,
+                marker,
+                f"{operation} never attempted the global shared lock",
+                stage=stage,
             )
             time.sleep(0.2)
             assert not done.exists(), f"{operation} passed an exclusive snapshot lock"
             if operation == "purge":
                 assert expired_file is not None and expired_file.exists()
 
-        stdout, stderr = worker.communicate(timeout=30)
+        stdout, stderr = _finish_worker(
+            worker,
+            reason=f"{operation} did not finish after the exclusive snapshot lock was released",
+            stage=stage,
+        )
         assert worker.returncode == 0, (operation, stdout, stderr)
         assert done.is_file()
         if operation == "purge":
@@ -860,11 +997,11 @@ engine.dispose()
 
 
 def test_a_dead_worker_is_reported_dead_not_as_a_lock_miss(tmp_path: Path) -> None:
-    """Counterfact for the startup budget: a worker that died must fail fast, not wait 90 s.
+    """Counterfact for the startup budget: a worker that died must fail fast, not wait it out.
 
     Without this arm the larger budget would read like a relaxation -- a genuinely broken worker
-    would simply take 90 s longer before someone called it a lock miss. The message carries the
-    exit status, so a crash is never again reported as a lock-protocol finding.
+    would simply take one budget longer before someone called it a lock miss. The message
+    carries the exit status, so a crash is never again reported as a lock-protocol finding.
     """
     started = time.monotonic()
     worker = subprocess.Popen(  # nosec B603
@@ -878,3 +1015,46 @@ def test_a_dead_worker_is_reported_dead_not_as_a_lock_miss(tmp_path: Path) -> No
     elapsed = time.monotonic() - started
     assert elapsed < 20, f"dead worker took {elapsed:.1f}s -- the budget is not the exit path"
     assert "boom" in str(caught.value), "the worker's stderr was dropped from the report"
+
+
+def test_a_stalled_alive_worker_is_killed_and_reported_by_stage(tmp_path: Path) -> None:
+    """Counterfact for the release path: a live worker that never reaches the lock gets a verdict.
+
+    The gate's red run reached this shape and reported ``subprocess.TimeoutExpired`` instead of any
+    finding: the parent held the exclusive lock the worker was waiting for while ``communicate``
+    waited for the parent. This arm reproduces it -- a worker that records a stage and then polls a
+    file nobody will ever write -- and checks the three things the old path could not give: it comes
+    back inside its own budget, it names the stage the worker reached, and it leaves no process
+    behind to hold a SQLite connection open.
+    """
+    stage = tmp_path / "stage"
+    started = time.monotonic()
+    worker = subprocess.Popen(  # noqa: S603  # nosec B603
+        [
+            sys.executable,
+            "-c",
+            "import sys, time\n"
+            "from pathlib import Path\n"
+            "Path(sys.argv[1]).write_text('imported@7.00s', encoding='utf-8')\n"
+            "while not Path(sys.argv[2]).exists():\n"
+            "    time.sleep(0.01)\n",
+            str(stage),
+            str(tmp_path / "never-touched"),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    with pytest.raises(pytest.fail.Exception) as caught:
+        _wait_for_worker_marker(
+            worker,
+            tmp_path / "never-written",
+            "never attempted the lock",
+            stage=stage,
+            budget_s=2.0,
+        )
+    elapsed = time.monotonic() - started
+    message = str(caught.value)
+    assert elapsed < 20, f"stalled worker took {elapsed:.1f}s -- the release path hangs again"
+    assert "last stage='imported@" in message, message
+    assert worker.poll() is not None, "the helper left the worker running"

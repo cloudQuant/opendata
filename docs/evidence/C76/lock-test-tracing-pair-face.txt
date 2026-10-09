@@ -1,0 +1,29 @@
+=== cov-on: python3.11 -m pytest tests/test_minute_archive.py::test_global_snapshot_lock_blocks_writer_and_expired_shard_purge_processes -q -p no:randomly  --durations=3 ===
+opendata/utils/serialization.py                                       27     19     16      0  18.60%   39-41, 53-59, 75-83
+opendata/utils/validators.py                                          80     68     44      0   9.68%   21-22, 27-28, 33-39, 44-45, 50-62, 76-86, 99-111, 126-141, 155-159, 175-194
+---------------------------------------------------------------------------------------------------------------
+TOTAL                                                              26278  20825   7928    186  16.60%
+Coverage HTML written to dir htmlcov
+
+FAIL Required test coverage of 84.0% not reached. Total coverage: 16.60%
+
+============================= slowest 3 durations ==============================
+2.53s call     tests/test_minute_archive.py::test_global_snapshot_lock_blocks_writer_and_expired_shard_purge_processes
+0.04s setup    tests/test_minute_archive.py::test_global_snapshot_lock_blocks_writer_and_expired_shard_purge_processes
+
+(1 durations < 0.005s hidden.  Use -vv to show these durations.)
+============================== 1 passed in 7.39s ===============================
+  purge-stage = finished-work@1.00s
+  writer-stage = finished-work@1.02s
+
+=== cov-off: python3.11 -m pytest tests/test_minute_archive.py::test_global_snapshot_lock_blocks_writer_and_expired_shard_purge_processes -q -p no:randomly --override-ini=addopts= --durations=3 ===
+.                                                                        [100%]
+============================= slowest 3 durations ==============================
+2.02s call     tests/test_minute_archive.py::test_global_snapshot_lock_blocks_writer_and_expired_shard_purge_processes
+0.03s setup    tests/test_minute_archive.py::test_global_snapshot_lock_blocks_writer_and_expired_shard_purge_processes
+
+(1 durations < 0.005s hidden.  Use -vv to show these durations.)
+1 passed in 2.25s
+  purge-stage = finished-work@0.87s
+  writer-stage = finished-work@0.88s
+

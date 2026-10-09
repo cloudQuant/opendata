@@ -1,0 +1,220 @@
+# C76 — member 12 (test-cov) timing measurements behind the three red fixes
+
+Purpose: the three tests that made gate run 4 red were fixed by *execution*, not by argument, and
+every constant that was changed is derived from a face printed below. This file is the carrier for
+those faces. Nothing here relaxes a judge: no assertion was deleted, no threshold lowered, and the
+two budget constants moved *up* only after the failure mode they gate was made self-attributing
+(stage markers + two new counterfacts in `tests/test_minute_archive.py`).
+
+Tree and box facts at measurement time:
+
+- `git rev-parse HEAD` = `a6410efbd40bc9ff917fcd11f9ed04d04e6a6021`, branch `dev`. The four fixed
+  files (`tests/test_minute_archive.py`, `tests/test_provider_model_warehouse.py`,
+  `tests/test_sec_engine_provider.py`, `opendata/data/providers/sec/specs.py`) were dirty while
+  measuring, so the numbers describe the tree *before* this commit — which is the tree gate run 4
+  measured. Re-running the recipes below on the committed tree is expected to reproduce them within
+  the stated spread, since the edits change comments, budgets and reporting only.
+- `python3.11 -V` = Python 3.11.8 (`/Users/yunjinqi/opt/anaconda3/bin/python3.11`),
+  pytest 8.4.2, pytest-cov 6.0.0, coverage 7.10.4.
+- `sysctl -n hw.ncpu hw.memsize` = `8 17179869184` — 8 logical cores, 16 GB. Member 12 runs
+  `pytest -n 8` with branch coverage over 26,278 statements on that box, so the whole suite is at
+  100% CPU oversubscription by construction.
+
+File digests (sha256, the companions only; re-derive with `shasum -a 256 docs/evidence/C76/*`):
+
+```
+b2e128955483e64bff335ee83d5554a570d2481846df137277ad5882c279cdb5  lock-test-tracing-pair-face.txt
+eb7013cea98e1f491faaca44c0b91442321192729ffb417bc9fe25d59696fb22  proxy-run-face.txt
+1c573a0b032cee1d9d07f45c2f61c2e6c0155ff089c868bfad12732bf1e3f556  saturation-probe-face.txt
+7c1e3e0a1f9b4c6d8eee9d081a1de2ab51d554cf956a73f5e0659455acc86a8e  worker-cov-env-face.txt
+f0cc06b57ff6ec40c1bb9318143605b4638143ce804bfd9b6b1603d689280dd0  saturation-probe.py
+134ada02f91a9e9ef5bcaa4b5692c7b6863749df15a59b7f328efdcbae93cf5e  worker-cov-env-probe.py
+d68ef60bce4cb1325ba12b80695180c19f126ab0f9e3bbf012236f614a1eddd9  worker-startup-contention-probe.py
+d13fa04ad277dfd78c5dd23bef55f2b9cbbff441a8aa7be5a0c48f25c41ea757  lock-test-tracing-pair.sh
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  proxy-run-face.err  (0 bytes)
+```
+
+`proxy-run-face.err` is Face D's stderr, captured separately and empty: the contention probe printed
+its timing only on stdout, so nothing about the run was lost to a stream nobody archived.
+
+## Face A — what gate run 4 actually printed (the red)
+
+Re-derive: `sed -n '43749,43767p' docs/evidence/C75/gate-run4-red-member12.txt`
+(19 lines, sha256 `51776727864b77e956b1ad3db21a4ff4789b2ed2ce88b6e799e220fc0ff9f913`).
+
+What this excerpt carries:
+
+- the marker wait expired and then `process.communicate(timeout=30)` raised `subprocess.TimeoutExpired`
+  — the old failure path produced no verdict at all;
+- the stuck arm is `purge` (argv tail `'purge'`, `purge-waiting`, `2026-01-01`, `purge-done`);
+- the worker source is printed in the command line, which is the carrier for the refutation in
+  `docs/evidence/C76/gate-run4-header-erratum.txt`: the `waiting` write sits *before*
+  `with original_lock(...)`, so reaching the acquire is enough to signal;
+- "120 s alive and marker-less" is a *derivation*, not a printed number: the budget then in force was
+  90 s (`git show a6410ef:tests/test_minute_archive.py`, line 38: `WORKER_STARTUP_BUDGET_S = 90.0`)
+  and the traceback shows the 30 s pipe read behind it also expiring. 90 + 30 = 120.
+
+----- begin verbatim excerpt: docs/evidence/C75/gate-run4-red-member12.txt lines 43749-43767 -----
+=================================== FAILURES ===================================
+__ test_global_snapshot_lock_blocks_writer_and_expired_shard_purge_processes ___
+[gw4] darwin -- Python 3.11.8 /Users/yunjinqi/opt/anaconda3/bin/python3.11
+tests/test_minute_archive.py:847: in test_global_snapshot_lock_blocks_writer_and_expired_shard_purge_processes
+    _wait_for_worker_marker(
+tests/test_minute_archive.py:53: in _wait_for_worker_marker
+    stdout, stderr = process.communicate(timeout=30)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/subprocess.py:1209: in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../../opt/anaconda3/lib/python3.11/subprocess.py:2114: in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+../../../opt/anaconda3/lib/python3.11/subprocess.py:1253: in _check_timeout
+    raise TimeoutExpired(
+E   subprocess.TimeoutExpired: Command '['/Users/yunjinqi/opt/anaconda3/bin/python3.11', '-c', '\nimport sys\nfrom contextlib import contextmanager\nfrom datetime import date\nfrom pathlib import Path\nfrom sqlalchemy import create_engine\nimport opendata.data.minute_archive as archive\noriginal_lock = archive._snapshot_file_lock\n@contextmanager\ndef observed_lock(root, *, exclusive):\n    if not exclusive:\n        Path(sys.argv[4]).write_text("waiting", encoding="utf-8")\n    with original_lock(root, exclusive=exclusive):\n        yield\narchive._snapshot_file_lock = observed_lock\nengine = create_engine(f"sqlite:///{sys.argv[1]}")\noperation = sys.argv[3]\nif operation == "writer":\n    archive.ingest_minute_shard(\n        engine,\n        sys.argv[2],\n        domain="stock_daily",\n        symbol="AAPL",\n        source="sample-feed",\n        period="1m",\n        records=[{\n            "symbol": "AAPL",\n            "timestamp": "2026-06-01T09:30:00Z",\n            "open": 9,\n            "high": 11,\n            "low": 8,\n            "close": 10,\n            "volume": 100,\n            "amount": 1000,\n        }],\n    )\nelif operation == "purge":\n    result = archive.purge_expired_minute_shards(\n        engine,\n        sys.argv[2],\n        keep_years=10,\n        today=date.fromisoformat(sys.argv[5]),\n    )\n    assert result.deleted == 1 and result.files_deleted == 1, result\nelse:\n    raise AssertionError(operation)\nPath(sys.argv[6]).write_text("done", encoding="utf-8")\nengine.dispose()\n', '/private/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/pytest-of-yunjinqi/pytest-528/popen-gw4/test_global_snapshot_lock_bloc0/main.db', '/private/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/pytest-of-yunjinqi/pytest-528/popen-gw4/test_global_snapshot_lock_bloc0/minute_archive', 'purge', '/private/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/pytest-of-yunjinqi/pytest-528/popen-gw4/test_global_snapshot_lock_bloc0/purge-waiting', '2026-01-01', '/private/var/folders/7d/hnmknylj1w91h3cvq6mh3thm0000gn/T/pytest-of-yunjinqi/pytest-528/popen-gw4/test_global_snapshot_lock_bloc0/purge-done']' timed out after 30 seconds
+____________ test_slow_fragmented_body_uses_one_admission_deadline _____________
+[gw2] darwin -- Python 3.11.8 /Users/yunjinqi/opt/anaconda3/bin/python3.11
+tests/test_provider_model_warehouse.py:857: in test_slow_fragmented_body_uses_one_admission_deadline
+----- end verbatim excerpt -----
+
+## Face B — does coverage tracing reach the test's own subprocess? (it does; my earlier claim refuted)
+
+Instrument: `python3.11 docs/evidence/C76/worker-cov-env-probe.py`, raw output archived as
+`worker-cov-env-face.txt`. It reads `COV*` at three levels — controller, xdist worker, and the
+`python -c` grandchild spawned from inside a test — under three arms (serial with `--cov`, serial
+without, `-n 2` with `--cov`).
+
+Reading: with `--cov` active, `COV_CORE_CONFIG`, `COV_CORE_DATAFILE` and `COV_CORE_SOURCE` are present
+in the controller, in both `gw0`/`gw1` workers, *and* in the grandchild's environment; without `--cov`
+all three are absent. `site-packages/pytest-cov.pth` gates `pytest_cov.embed.init()` on exactly
+`'COV_CORE_SOURCE' in os.environ`, so the grandchild starts a traced interpreter (`pytest_cov/embed.py:50-53`
+builds `coverage.Coverage(..., data_suffix=True)`). Not established here: where those suffixed data
+files land in a gate run — the harness's grandchildren imported nothing from `source`, so no data file
+appeared in either the scratch dir or the repo root, and the claim stays at "the tracing is started".
+
+Cost, from the same harness (parent-side spawn → the child's first executed line, 2 children per arm):
+
+- untraced: `[0.04, 0.04]` s
+- traced, serial controller: `[0.115, 0.121]` s
+- traced, xdist worker: `[0.131, 0.129]` s
+
+so tracing adds ~0.08-0.09 s to the worker's boot *before* its own clock starts. The harness passes
+`--cov-config` pointing at a scratch config, while member 12 uses the repo's `pyproject.toml`
+(`branch = true`, whole `opendata` source set), so those boot numbers are a lower bound.
+
+Explicit refutation, kept in the record: an earlier probe of mine concluded "an xdist worker under
+`-n 2 --cov` carries no `COV_*` variable at all", and a sentence saying so had been written into
+`tests/test_minute_archive.py`. That was an instrument artifact — the surviving face from that probe
+is a single stub line (`40513 (none)`), one pid, read from a harness whose output was never captured.
+The corrected sentence is in the committed comment; the wrong claim is quoted here so a future reader
+can see which way the evidence moved.
+
+## Face C — the same test traced vs untraced, one box, back to back
+
+Instrument: `sh docs/evidence/C76/lock-test-tracing-pair.sh`, raw output archived as
+`lock-test-tracing-pair-face.txt`. Arm `on` keeps `pytest.ini`'s addopts (so member 12's exact flag
+set); arm `off` drops addopts.
+
+- wall: `1 passed in 7.39s` traced vs `1 passed in 2.25s` untraced
+- the test's own call: `2.53s` traced vs `2.02s` untraced (two workers, so ~0.25 s each — consistent
+  with Face B's +0.08 s traced boot plus traced imports)
+- worker stage markers (the worker's own clock, from its first line): `purge 1.00s / writer 1.02s`
+  traced vs `purge 0.87s / writer 0.88s` untraced
+- the remaining `7.39 - 2.53 = 4.86` s is pytest-cov's own work (`--cov-report=term-missing` over
+  26,278 statements + `htmlcov`), not the worker. It is in the wall but not in the budget.
+
+Limitation of this instrument, stated so it is not over-read: the worker *rewrites* its stage file as
+it goes, so the archived face carries only the last stage. Intermediate stamps are not recoverable
+after the fact.
+
+## Face D — the worker under member-12-like peer contention
+
+Instrument: `python3.11 docs/evidence/C76/worker-startup-contention-probe.py 3`, raw output archived
+as `proxy-run-face.txt`. It starts 7 peer `pytest` processes (each with the repo's traced addopts) and
+then runs the two-arm lock test plus the stall counterfact in the 8th slot.
+
+- `run 0: 2 passed in 17.12s`, `run 1: 2 passed in 13.54s`, `run 2: 2 passed in 12.78s`
+- worker's own `finished-work` clock: `purge 1.62 / writer 1.49`, `purge 1.52 / writer 1.59`,
+  `purge 1.46 / writer 1.47` → 1.46-1.62 s across six repeats, against 0.87-1.02 s alone (Face C)
+- boot probe (harness-side, therefore *untraced* — the harness is a plain `python3.11` process, not a
+  pytest one): `0.04-0.05s`
+
+Peer contention multiplies the worker's own work ~1.6-1.7x. That is the whole measured effect. It
+does not come near 120 s, which is why the budget is not derived from these numbers as a "typical +
+margin" but as twice the one observed instance.
+
+## Face E — a pure-CPU load proxy, and what it cannot reach
+
+Instrument: `python3.11 docs/evidence/C76/saturation-probe.py`, raw output archived as
+`saturation-probe-face.txt`. Arms: `n=4` cold imports of `opendata.data.minute_archive` with the
+worker's import set, and `n=30` samples of an `asyncio` sleep overshoot, at 0 and 12 busy-spin
+processes.
+
+- cold import: load 0 `median=1.7940 max=2.0059` → load 12 `median=9.6654 max=10.0398`
+  (paired run; a 5.4x multiplication of that one import)
+- applied to a 1.5 s arm that lands near 8 s — an order of magnitude short of the 120 s instance
+- `asyncio` sleep 0.3 s overshoot: `max=0.0510` s idle, `max=0.0285` s under load 12 (30 samples each;
+  the idle arm was the worse of the two, so both are quoted). The sleep-0.07 s arms read
+  `max=0.0012`/`0.0014` idle and `0.0048`/`0.0054` loaded.
+
+The overshoot row is Face F's carrier for the warehouse deadline: the relation the test needs is
+`each chunk (0.6 s) < deadline (1.0 s) < sum of chunks (1.2 s)`, i.e. 0.4 s of slack, which is ~8x the
+worst measured overshoot.
+
+## Face F — void measurements, kept so they are not re-cited as support
+
+Two numbers from my earlier harnesses are **not** used by any constant, and are recorded so they do
+not get re-mined later:
+
+1. `coverage run -p -c CODE ...` is not a valid invocation (`coverage run` has no `-c` option; it
+   errored with "no such option: -c"). A harness that printed elapsed values for those four arms
+   therefore printed numbers for runs that never started. Void; the contention probe in Face D avoids
+   the shape by invoking real pytest modules instead.
+2. An earlier "load=0" pair reported 10.97 s spawn→marker and 13.4 s for the same arm, which is
+   irreconcilable with Face D's 1.46-1.62 s child clock and Face C's 2.02 s untraced call. Cause
+   unknown (the harness's load bookkeeping was not captured), so neither number is used anywhere.
+
+## Derived constants (what changed, and which face carries it)
+
+| constant | before | after | carried by |
+| --- | --- | --- | --- |
+| `WORKER_STARTUP_BUDGET_S` (`tests/test_minute_archive.py:38` at `a6410ef`) | 90.0 s | 240.0 s | Face A (the one observed instance: 90 s budget + 30 s pipe read both expired) → 2x; Faces B/D show the mechanisms measured are ~1.7 s and ~1.6-1.7x, so no constant predicts the tail |
+| `WORKER_FINISH_BUDGET_S` (new, `tests/test_minute_archive.py`) | bare `communicate(timeout=30)` | 120.0 s | Face A (the same `TimeoutExpired` shape on the post-release side); Face C/D (post-release work ≤ 1.62 s measured) |
+| `ADMISSION_DEADLINE_S` / `BODY_CHUNK_S` (`tests/test_provider_model_warehouse.py`) | 0.1 s / 0.07 s | 1.0 s / 0.6 s | Face E's overshoot rows: the discriminating relation needs each chunk < deadline < the sum, and 0.4 s of slack is ~8x the worst measured sleep overshoot |
+
+What the budget enlargement does *not* do: mask a broken worker. Two counterfacts were added and both
+fire in seconds, so the 240 s is not an untested licence —
+
+- `test_a_dead_worker_is_reported_dead_not_as_a_lock_miss`: a worker that exits 3 is reported by exit
+  status (`rc=3`, `boom`) in well under 20 s, never as a lock miss;
+- `test_a_stalled_alive_worker_is_killed_and_reported_by_stage`: a worker given a 2 s budget that
+  stalls after its `imported` stage is killed and reported with that stage and its own elapsed.
+
+## Re-derivation
+
+```sh
+# Face A
+sed -n '43749,43767p' docs/evidence/C75/gate-run4-red-member12.txt | shasum -a 256
+git show a6410ef:tests/test_minute_archive.py | sed -n '38p'
+# Face B (~6 s)
+python3.11 docs/evidence/C76/worker-cov-env-probe.py
+# Face C (~12 s; rewrites the git-ignored .coverage/htmlcov/coverage.xml, like any local pytest run)
+sh docs/evidence/C76/lock-test-tracing-pair.sh
+# Face D (~1-3 min depending on box state)
+python3.11 docs/evidence/C76/worker-startup-contention-probe.py 3
+# Face E (~5 min; burns 12 cores for 90 s per loaded arm)
+python3.11 docs/evidence/C76/saturation-probe.py
+# the three fixed tests, as member 12 runs them
+python3.11 -m pytest tests/test_minute_archive.py tests/test_provider_model_warehouse.py \
+  tests/test_sec_engine_provider.py -q -p no:randomly
+```
+
+## Not claimed here
+
+- Members 13-17 of the gate: run 4 aborted inside member 12, and this file makes no claim about them.
+  They are established, or not, by the next full `make gate` run.
+- The cause of the 120 s instance is named as box state (CPU plus page-in pressure across 8 traced
+  workers) because no measured mechanism in Faces B/C/D/E accounts for it and the same arm completed
+  its own work in 1.5 s. That is an attribution by elimination over these four faces, not a
+  reproduction.
+- No provider call, no warehouse write, no production read happened anywhere in this file's
+  instruments; all three probes are local process/`/tmp` work.

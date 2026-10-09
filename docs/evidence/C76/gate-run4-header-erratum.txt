@@ -1,0 +1,99 @@
+# C76 — erratum for the header of docs/evidence/C75/gate-run4-red-member12.txt (failure 1)
+
+The C75 archive is not edited by this file. Its captured log tail is digest-pinned
+(`sed -n '/^----- begin untrimmed/,$p' docs/evidence/C75/gate-run4-red-member12.txt | tail -n +2 |
+shasum -a 256` = `4a42aa9558321d9c218a8e83714a84101307ec9032f4294a9bf26dda6e132c28`), so appending a
+correction to it would break the archive's own re-derivation recipe. The correction lives here and
+`docs/evidence/C75/gate-run4-red-member12.txt` stays byte-identical.
+
+Nothing in this erratum touches a number: `GATE_EXIT=2`, `3 failed, 21275 passed, 86 skipped in
+1323.27s`, `TOTAL ... 87.89%` and "`===== gate:` sections present: 12 of 17" all stand as recorded.
+What is corrected is a *mechanism sentence* in the header — prose about why the test went red, which
+was wrong.
+
+## The sentence being corrected (verbatim, archive lines 26-30)
+
+----- begin verbatim quote: docs/evidence/C75/gate-run4-red-member12.txt lines 26-30 -----
+   — `subprocess.TimeoutExpired` after 30 s inside the worker-marker wait. Mechanism, read from the
+   test source: the worker writes its "waiting" marker only under `if not exclusive:` while the
+   parent holds the exclusive paired-snapshot lock, so the purge arm can never signal; the marker
+   wait then falls into `process.communicate(timeout=30)` while the parent still holds the lock —
+   a deadlock reported as `TimeoutExpired` instead of the intended truthful `pytest.fail`.
+----- end verbatim quote -----
+
+## Refuted clause
+
+"the worker writes its 'waiting' marker only under `if not exclusive:` ... so the purge arm can never
+signal". Three independent carriers refute it:
+
+1. **The archived log contains the worker's source**, printed inside its own `TimeoutExpired` message
+   (archive lines 43749-43767, the spliced copy is in
+   `docs/evidence/C76/member12-timing-measurements.txt`): the write is
+   `if not exclusive: Path(sys.argv[4]).write_text("waiting")` followed *afterwards* by
+   `with original_lock(root, exclusive=exclusive)`. The marker is written **before** the `flock` can
+   block, so it witnesses "the worker reached the acquire", not "the worker got the lock".
+2. **The purge path does make a non-exclusive snapshot-lock call.** In
+   `opendata/data/minute_archive.py`: `purge_expired_minute_shards` (:914) → `with _shard_lock(...)`
+   (:968) → `_snapshot_file_lock(root, exclusive=False)` (:162), and :243 is
+   `fcntl.flock(descriptor, fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH)`. So the guarded branch is
+   exactly the one the purge arm takes; there is no arm that "can never signal". The exclusive lock is
+   the *parent's* single call, not the worker's.
+3. **The observed behavior contradicts it.** The same purge arm, in the same two-arm test, reaches its
+   own `finished-work` stage marker at 1.46-1.62 s of child clock under seven coverage-traced pytest
+   peers (`docs/evidence/C76/proxy-run-face.txt`, six repeats over two probe runs) and at 0.87-1.02 s
+   run alone (`docs/evidence/C76/lock-test-tracing-pair-face.txt`). An arm that could never signal
+   cannot be measured finishing its work.
+
+## Standing clause
+
+The rest of the sentence is right and is what the fix removes: the old wait fell into
+`process.communicate(timeout=30)` **while the parent still held the exclusive snapshot lock** — the
+parent waits for the worker to exit, a worker that has reached the acquire waits for the parent to
+release, three-way, so the run reported `subprocess.TimeoutExpired` and no verdict. `_wait_for_worker_marker`
+now stops the worker before reading its pipes and fails with `rc`, the waited time and the last stage
+the worker wrote; `_finish_worker` does the same on the post-release side.
+
+## Corrected cause of the marker wait expiring
+
+Not the lock protocol and not "can never signal": the worker had not reached the acquire within the
+90 s budget then in force (`git show a6410ef:tests/test_minute_archive.py`, line 38). The measured
+mechanisms are ~0.08-0.09 s of traced boot per worker, ~1.5 s of the worker's own work, ~1.6-1.7x from
+peer contention and 5.4x on a synthetic pure-CPU proxy — none of which predicts 120 s. The
+attribution is box state by elimination over those faces, see
+`docs/evidence/C76/member12-timing-measurements.txt` (Faces A-E).
+
+## Second correction, made against my own later prose
+
+While assembling those faces I measured that the gate's `--cov` flag **does** reach the test's own
+`python -c` worker (`COV_CORE_CONFIG`/`COV_CORE_DATAFILE`/`COV_CORE_SOURCE` present in the controller,
+in each xdist worker and inherited by the grandchild; `docs/evidence/C76/worker-cov-env-probe.py`). A
+sentence claiming the opposite — "tracing never reaches that worker ... an xdist worker under
+`-n 2 --cov` carries no `COV_*` variable at all" — was in the working tree of
+`tests/test_minute_archive.py` during this round's edits. It never reached a commit, so grepping
+`git log` for it finds nothing; the comment committed by this commit says the measured opposite. It
+rested on a one-line stub face (`40513 (none)`) from a harness whose output was never captured. So the
+corrected reading of failure 1 is: a *traced* worker, under 8-way contention on an 8-core box, did not
+reach the acquire inside 90 s; the old wait then deadlocked on its own failure path.
+
+## How to read failure 1 now
+
+Read it as: budget too tight for a traced worker under gate load, and a failure path that could not
+say so. Fixed by (a) stage attribution inside the worker, (b) terminate-before-read so the wait can
+never hang on the lock it is accusing, (c) `WORKER_STARTUP_BUDGET_S = 240.0` = twice the one observed
+instance, and (d) two counterfacts that fire in seconds —
+`test_a_dead_worker_is_reported_dead_not_as_a_lock_miss` and
+`test_a_stalled_alive_worker_is_killed_and_reported_by_stage` — so the larger budget cannot hide a
+dead or stalled worker. No judge was relaxed: nothing was deleted, and the two new constants are
+gated by tests rather than by prose.
+
+## Re-derivation
+
+```sh
+sed -n '26,30p'    docs/evidence/C75/gate-run4-red-member12.txt      # the sentence being corrected
+sed -n '43749,43767p' docs/evidence/C75/gate-run4-red-member12.txt    # the log's own worker source
+grep -n "def purge_expired_minute_shards\|with _shard_lock(archive_root, \*key)\|_snapshot_file_lock(root, exclusive=False)\|LOCK_EX if exclusive" \
+  opendata/data/minute_archive.py                                     # 914 / 243 / 162, and :968 among
+                                                                      # the three _shard_lock callers
+git show a6410ef:tests/test_minute_archive.py | sed -n '38p'          # the 90 s budget that expired
+python3.11 docs/evidence/C76/worker-cov-env-probe.py                  # the tracing claim, re-measured
+```

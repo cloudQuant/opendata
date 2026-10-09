@@ -189,6 +189,25 @@ UNIT_NESTED_DOCUMENT = {
 #: engine's shipped ``decode.delimited`` keys its columns off the first line, which this body lacks.
 HEADERLESS_COLON_BODY = b"1040175:ACME CAPITAL LLC\n1193054:BETA ADVISERS INC\n"
 
+#: The need set the roadmap records for each re-checked row now that the labels are split, and
+#: the shipped half of it -- the part that used to be mistaken for the whole row.
+#: ``tag_column_selection`` no longer folds onto ``columns.select`` (one column copies one fixed
+#: source key, so a tag-chosen column is a different capability), and the filer list's old
+#: ``delimited_text_decoder`` label no longer folds onto ``decode.delimited`` (a body with no
+#: published header is a different shape).
+#: Re-collapsing either label in ``LABEL_TO_CAPABILITY`` moves the derived face and breaks the
+#: equality below, so this is the pin that keeps the split from quietly reverting.
+ROADMAP_NEED_SETS_AFTER_THE_SPLIT: dict[str, set[str]] = {
+    "CashFlowStatement": {"columns.response_dependent_selection", "columns.select"},
+    "IncomeStatement": {"columns.response_dependent_selection", "columns.select"},
+    "InstitutionsSearch": {"decode.delimited_headerless"},
+}
+SHIPPED_NEEDS_WITHIN: dict[str, set[str]] = {
+    "CashFlowStatement": {"columns.select"},
+    "IncomeStatement": {"columns.select"},
+    "InstitutionsSearch": set(),
+}
+
 
 def census_rows() -> dict[str, dict[str, Any]]:
     """Index the sec rows of the per-model census by ledger task id."""
@@ -196,14 +215,29 @@ def census_rows() -> dict[str, dict[str, Any]]:
     return {row["task_id"]: row for row in document["rows"] if row.get("provider") == "sec"}
 
 
+def roadmap_document() -> dict[str, Any]:
+    """The roadmap artifact as committed: one read, so every face below shares the same bytes."""
+    return json.loads((REPO_ROOT / ROADMAP_RELATIVE_PATH).read_text(encoding="utf-8"))
+
+
 def roadmap_shipped_cover_needs() -> dict[str, dict[str, Any]]:
     """Return the roadmap's ``shipped_cover_rows`` entries for sec, by upstream model."""
-    document = json.loads((REPO_ROOT / ROADMAP_RELATIVE_PATH).read_text(encoding="utf-8"))
     return {
         entry["upstream_model"]: entry
-        for entry in document["roadmap"]["shipped_cover_rows"]
+        for entry in roadmap_document()["roadmap"]["shipped_cover_rows"]
         if entry.get("provider") == "sec"
     }
+
+
+def roadmap_build_order_needs() -> dict[str, set[str]]:
+    """Return the need set the roadmap itself records for each sec row in the engine build pool."""
+    found: dict[str, set[str]] = {}
+    for step in roadmap_document()["roadmap"]["greedy_build_order"]:
+        for row in step["newly_unlocked_rows"]:
+            if row.get("provider") == "sec":
+                assert row["upstream_model"] not in found, row["upstream_model"]
+                found[row["upstream_model"]] = set(row["needs"])
+    return found
 
 
 def probe_spec(**overrides: Any) -> ModelSpec:
@@ -263,20 +297,29 @@ class TestTheRoadmapThreeStayRefused:
             assert need in reason, f"{model}: the blocker never names {need}"
         assert Path(row["evidence"]).name in reason, f"{model}: no engine proof cited"
 
-    def test_the_roadmap_needs_are_shipped_yet_do_not_unblock(self) -> None:
-        """Why these three looked declarable: the roadmap maps residual need labels, not blockers.
+    def test_the_roadmap_no_longer_claims_any_sec_row_is_shipped(self) -> None:
+        """What the split cost: these three left ``shipped_cover_rows`` and joined the build pool.
 
-        Its own ``method_note`` states that no engine code was executed and no fixture replayed, so
-        a ``columns.select``/``decode.delimited`` entry there cannot outrank the census row's
-        ``expressible_today: false`` -- which this test checks side by side, on disk.
+        They were the roadmap's "already covered" rows only because two need labels folded onto
+        shipped capabilities. ``scripts/quality/model_capability_census.py`` now maps them to
+        ``columns.response_dependent_selection`` and ``decode.delimited_headerless``, both of which
+        the registry reads absent, so the roadmap's own face for sec measures no shipped
+        coverage at all -- the same 17 -> 3 drop that
+        ``docs/evidence/C75/label-split-counterfact.py`` proves against ``greedy_cover``. The
+        census rows keep ``expressible_today: false``.
         """
-        document = json.loads((REPO_ROOT / ROADMAP_RELATIVE_PATH).read_text(encoding="utf-8"))
-        registry = document["capability_registry"]
+        registry = roadmap_document()["capability_registry"]
         rows = census_rows()
+        assert roadmap_shipped_cover_needs() == {}, "a sec row is back in the shipped-coverage list"
+
+        build_needs = roadmap_build_order_needs()
         for model, task_id in specs.RECHECKED_THIS_ROUND.items():
-            entry = roadmap_shipped_cover_needs()[model]
-            assert entry["needs"], model
-            assert all(registry[need]["present"] is True for need in entry["needs"]), model
+            needs = build_needs[model]
+            assert needs == ROADMAP_NEED_SETS_AFTER_THE_SPLIT[model], model
+            shipped = {need for need in needs if registry[need]["present"] is True}
+            assert shipped == SHIPPED_NEEDS_WITHIN[model], model
+            blocked = needs - shipped
+            assert blocked, f"{model}: nothing blocks it, so the refusal is stale"
             assert rows[task_id]["expressible_today"] is False, model
 
 

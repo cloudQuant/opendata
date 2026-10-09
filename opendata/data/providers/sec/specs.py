@@ -39,14 +39,18 @@ declaration. One caveat for whoever declares first: ``SEC_HEADERS`` also pins a 
 ``data.sec.gov`` (company_filings.py:225) because, as its own comment says, some endpoints do not
 like that field -- so the pair a declaration sends has to be chosen per host, not per provider.
 
-Re-check of the three rows the roadmap lists as already covered (iteration-2 round):
-``capability-roadmap.json`` puts ``CashFlowStatement``, ``IncomeStatement`` and
-``InstitutionsSearch`` in ``roadmap.shipped_cover_rows``, each with a single need that names a
+Re-check of the three rows the roadmap used to list as already covered (iteration-2 round):
+``capability-roadmap.json`` put ``CashFlowStatement``, ``IncomeStatement`` and
+``InstitutionsSearch`` in ``roadmap.shipped_cover_rows``, each with a single need that named a
 capability the engine does ship (``columns.select`` for the two statements, ``decode.delimited``
-for the filer list). That list is a label-to-capability mapping over the *engine-work residue*,
-and it is not a re-measurement: the
-census rows themselves, re-read this round from ``census-sec-tmx-fed-gov-finra.json``, still carry
-``expressible_today: false`` and name the need that blocks them -- ``xbrl_tag_assembly`` and
+for the filer list). That list was a label-to-capability mapping over the *engine-work residue*,
+and it was not a re-measurement. Splitting the two over-collapsed labels in
+``scripts/quality/model_capability_census.py`` moved all three out of it: ``tag_column_selection``
+maps to ``columns.response_dependent_selection`` and the filer list's headerless body maps to
+``decode.delimited_headerless``, both read ``absent`` by the registry, so the roadmap's own face for
+sec now measures **no** shipped-coverage rows at all and these three sit in the greedy build pool.
+The census rows themselves, re-read this round from ``census-sec-tmx-fed-gov-finra.json``, still
+carry ``expressible_today: false`` and name the need that blocks them -- ``xbrl_tag_assembly`` and
 ``tag_column_selection`` for the statements, ``delimited_rows_without_published_header`` for the
 filer list. The engine's shipped ``decode.delimited`` reads a delimited body only when its first row
 publishes a header naming a declared column (:meth:`decoders._rows_from_text`, which raises
@@ -101,10 +105,12 @@ UPSTREAM_ROWS: tuple[str, ...] = (
 #: ``provider.py`` binds the fetcher its declaration generates - no other wiring is missing.
 DECLARED_MODELS: tuple[str, ...] = ()
 
-#: The three rows ``capability-roadmap.json`` lists under ``roadmap.shipped_cover_rows`` against a
+#: The three rows ``capability-roadmap.json`` listed under ``roadmap.shipped_cover_rows`` against a
 #: capability the engine already ships (``columns.select`` for the statements, ``decode.delimited``
-#: for the filer list), each mapped to the census record that re-measured it this round. All three
-#: stayed in :data:`NOT_DECLARABLE`: that roadmap list maps need *labels* over the engine-work
+#: for the filer list), each mapped to the census record that re-measured it this round. Splitting
+#: those two labels out of the shipped capabilities moved all three out of that list, so the roadmap
+#: now names no shipped-coverage sec row at all -- measured, not argued. All three stayed in
+#: :data:`NOT_DECLARABLE`: that roadmap list maps need *labels* over the engine-work
 #: residue and re-runs no measurement -- its own ``method_note`` says "no engine code was executed,
 #: no recorded fixture was replayed" -- while the census row still carries the blocking need
 #: (``xbrl_tag_assembly``/``tag_column_selection``, ``delimited_rows_without_published_header``) and

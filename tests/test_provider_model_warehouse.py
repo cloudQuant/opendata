@@ -42,6 +42,19 @@ from opendata.services.provider_model_warehouse import (
 
 _BODY_LIMIT = 1024 * 1024
 
+#: Body-read timing for ``test_slow_fragmented_body_uses_one_admission_deadline``. The relation
+#: the test needs is ``each chunk < deadline < sum of chunks``, so two 0.6s chunks under a 1.0s
+#: deadline. The previous pair (0.07s chunks under 0.1s) left 30ms for the first chunk's wake-up
+#: and the full suite under ``pytest -n 8 --cov`` ate it, reporting a starved clock as a deadline
+#: bug. The 0.4s of slack is ~8x the worst sleep overshoot measured on this box for a 0.3s sleep
+#: (51ms over 30 samples idle, 28ms over 30 samples under 12-way CPU load -- the idle arm was the
+#: worse of the two, so both are quoted; raw output in
+#: docs/evidence/C76/member12-timing-measurements.txt, Face E); the test also asserts the elapsed
+#: times it observed, so a box that eats the slack says which number broke instead of an unset
+#: ``asyncio.Event``.
+ADMISSION_DEADLINE_S = 1.0
+BODY_CHUNK_S = 0.6
+
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
 
@@ -814,49 +827,111 @@ def test_stalled_body_is_cancelled_at_context_admission_deadline(
     assert engine_calls == []
 
 
-def test_slow_fragmented_body_uses_one_admission_deadline(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    engine_calls: list[None] = []
-    monkeypatch.setattr(
-        warehouse_api,
-        "warehouse_engine_factory",
-        lambda: engine_calls.append(None),
-    )
+def _run_fragmented_body(
+    deadline_s: float,
+    engine_calls: list[None],
+) -> tuple[HTTPException | None, list[float], threading.Event, threading.Event]:
+    """Read one two-chunk body under ``deadline_s``.
+
+    Returns the HTTPException the route raised (``None`` if it never raised), the elapsed time of
+    each chunk, and the second chunk's started/cancelled signals. Shared by the composite-deadline
+    test and its control, so the two arms differ only in the deadline they hand the route.
+    """
+    chunk_elapsed: list[float] = []
+    second_started = threading.Event()
+    second_cancelled = threading.Event()
     receive_calls = 0
-    second_receive_started = asyncio.Event()
-    second_receive_cancelled = threading.Event()
+
+    async def read_chunk(payload: dict[str, Any]) -> dict[str, Any]:
+        started = time.monotonic()
+        try:
+            await asyncio.sleep(BODY_CHUNK_S)
+            return payload
+        finally:
+            chunk_elapsed.append(time.monotonic() - started)
 
     async def receive() -> Any:
         nonlocal receive_calls
         receive_calls += 1
         if receive_calls == 1:
-            await asyncio.sleep(0.07)
-            return {"type": "http.request", "body": b'{"query":', "more_body": True}
-        second_receive_started.set()
+            return await read_chunk(
+                {"type": "http.request", "body": b'{"query":', "more_body": True}
+            )
+        second_started.set()
         try:
-            await asyncio.sleep(0.07)
-            return {"type": "http.request", "body": b'{"filters":{}}}', "more_body": False}
+            return await read_chunk(
+                {"type": "http.request", "body": b'{"filters":{}}}', "more_body": False}
+            )
         finally:
-            second_receive_cancelled.set()
+            second_cancelled.set()
 
-    async def call_route() -> HTTPException:
-        with pytest.raises(HTTPException) as raised:
+    async def call_route() -> HTTPException | None:
+        try:
             await warehouse_api.query_registered_provider_model_warehouse(
                 "fred",
                 "FredSeries",
                 _request_for_receive(receive),
                 current_principal=SimpleNamespace(allows_domain=lambda _domain: True),
                 registry=_registry(),
-                ctx=_context("fred", "FredSeries", timeout=0.1),
+                ctx=_context("fred", "FredSeries", timeout=deadline_s),
             )
-        return raised.value
+        except HTTPException as raised:
+            return raised
+        return None
 
-    raised = asyncio.run(call_route())
-    assert raised.status_code == 504
-    assert second_receive_started.is_set()
-    assert second_receive_cancelled.wait(1)
+    return asyncio.run(call_route()), chunk_elapsed, second_started, second_cancelled
+
+
+@pytest.fixture
+def engine_calls(
+    monkeypatch: pytest.MonkeyPatch,
+) -> list[None]:
+    """Record every warehouse-engine construction, so "the body read finished" has a witness."""
+    calls: list[None] = []
+    monkeypatch.setattr(warehouse_api, "warehouse_engine_factory", lambda: calls.append(None))
+    return calls
+
+
+def test_slow_fragmented_body_uses_one_admission_deadline(engine_calls: list[None]) -> None:
+    """One deadline for the whole body, not one per chunk -- proven by a measured cut-short.
+
+    The discriminating relation is ``each chunk < deadline < sum of chunks``, so two 0.6s chunks
+    under a 1.0s deadline: a per-chunk deadline would let both chunks through and resolve the engine
+    (that arm is the control below), while the composite deadline has to fire mid-second-chunk.
+    ``chunk_elapsed`` is what this run actually measured, so the cut-short claim is a number rather
+    than an inference -- and a box slow enough to break the relation fails on those numbers instead
+    of leaving an unset ``asyncio.Event`` behind.
+    """
+    raised, chunk_elapsed, second_started, second_cancelled = _run_fragmented_body(
+        ADMISSION_DEADLINE_S, engine_calls
+    )
+    first, second = chunk_elapsed
+    assert raised is not None and raised.status_code == 504, chunk_elapsed
+    assert raised.detail == "Warehouse query timed out"
+    assert second_started.is_set(), f"first chunk took {first:.3f}s of {ADMISSION_DEADLINE_S}s"
+    # The witness itself: the second chunk was cut short at the composite deadline, inside the 0.6s
+    # it would have needed on its own -- which is what a per-chunk deadline could not have done.
+    assert second < BODY_CHUNK_S, f"second chunk completed ({second:.3f}s), so the deadline reset"
+    assert first < ADMISSION_DEADLINE_S, f"first chunk {first:.3f}s starved the deadline"
+    assert second_cancelled.wait(1)
     assert engine_calls == []
+
+
+def test_the_same_body_completes_when_the_deadline_is_not_the_limiter(
+    engine_calls: list[None],
+) -> None:
+    """Control: the 504 above comes from the cumulative deadline, not from the chunk shape.
+
+    With a deadline wider than both chunks, the same two-chunk body is read to the end and the route
+    reaches the engine instead of timing out -- so the first arm's cut-short is the deadline's, not
+    an artifact of ``more_body``.
+    """
+    raised, chunk_elapsed, second_started, _ = _run_fragmented_body(2.0, engine_calls)
+    assert second_started.is_set()
+    assert len(chunk_elapsed) == 2, chunk_elapsed
+    assert all(elapsed >= BODY_CHUNK_S for elapsed in chunk_elapsed), chunk_elapsed
+    assert raised is None or raised.status_code != 504, raised
+    assert engine_calls, "the body read finished but no engine was ever asked for"
 
 
 def test_context_cancellation_during_body_returns_503_and_cancels_receive(

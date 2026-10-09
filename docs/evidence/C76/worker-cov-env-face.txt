@@ -1,0 +1,31 @@
+python: 3.11.8 /Users/yunjinqi/opt/anaconda3/bin/python3.11
+cwd (rootdir): /Users/yunjinqi/Documents/new_projects/opendata
+shared flags: --override-ini=addopts= -p no:randomly -p no:cacheprovider -q --no-header
+coverage data/config redirected to /tmp/cov3 (COVERAGE_FILE + --cov-config), repo untouched
+
+=== serial, coverage ON ===
+  argv: -m pytest <probe> --cov=opendata --cov-report=
+  rc=0
+  2 passed in 1.22s
+
+=== serial, coverage OFF ===
+  argv: -m pytest <probe> 
+  rc=0
+  2 passed in 0.44s
+
+=== xdist -n 2, coverage ON ===
+  argv: -m pytest <probe> -n 2 --cov=opendata --cov-report=
+  rc=0
+  2 passed in 2.98s
+
+=== COV* env faces ===
+  arm=serial-cov-off  role=controller parent COV*=['COV3_ARM', 'COV3_OUT', 'COVERAGE_FILE'] -> grandchild rc=0 COV*=[['COV3_ARM', 'COV3_OUT', 'COVERAGE_FILE']]
+    traced-boot cost (parent-side spawn -> child first line, 2 children): [0.04, 0.04] s
+  arm=serial-cov-on   role=controller parent COV*=['COV3_ARM', 'COV3_OUT', 'COVERAGE_FILE', 'COV_CORE_CONFIG', 'COV_CORE_DATAFILE', 'COV_CORE_SOURCE'] -> grandchild rc=0 COV*=[['COV3_ARM', 'COV3_OUT', 'COVERAGE_FILE', 'COV_CORE_CONFIG', 'COV_CORE_DATAFILE', 'COV_CORE_SOURCE']]
+    traced-boot cost (parent-side spawn -> child first line, 2 children): [0.115, 0.121] s
+  arm=xdist2-cov-on   role=gw0        parent COV*=['COV3_ARM', 'COV3_OUT', 'COVERAGE_FILE', 'COV_CORE_CONFIG', 'COV_CORE_DATAFILE', 'COV_CORE_SOURCE'] -> grandchild rc=0 COV*=[['COV3_ARM', 'COV3_OUT', 'COVERAGE_FILE', 'COV_CORE_CONFIG', 'COV_CORE_DATAFILE', 'COV_CORE_SOURCE']]
+    traced-boot cost (parent-side spawn -> child first line, 2 children): [0.131, 0.129] s
+  arm=xdist2-cov-on   role=gw1        parent COV*=['COV3_ARM', 'COV3_OUT', 'COVERAGE_FILE', 'COV_CORE_CONFIG', 'COV_CORE_DATAFILE', 'COV_CORE_SOURCE'] -> grandchild rc=0 COV*=[['COV3_ARM', 'COV3_OUT', 'COVERAGE_FILE', 'COV_CORE_CONFIG', 'COV_CORE_DATAFILE', 'COV_CORE_SOURCE']]
+    traced-boot cost (parent-side spawn -> child first line, 2 children): [0.131, 0.129] s
+
+.coverage* data files in repo root after the runs: ['.coverage']
