@@ -44,6 +44,12 @@ CLI::
     python scripts/quality/model_capability_census.py
     python scripts/quality/model_capability_census.py --json docs/.../capability-roadmap.json
     python scripts/quality/model_capability_census.py --check --round-id C75
+
+``--check`` does not write, even with ``--json``: a check republishes nothing, because the verdict
+is about the tree, while the file it points at is the previous round's record. Writing in that mode
+also stamped ``DEFAULT_ROUND_ID`` unless ``--round-id`` said otherwise, which is how a PASS run came
+to relabel a C75 roadmap as C74. The default is a suggestion rather than a reading, so a run without
+``--round-id`` says so on stdout instead of printing the label as if the tree reported it.
 """
 
 from __future__ import annotations
@@ -71,7 +77,9 @@ CENSUS_CARRIED_FILES: Final = (
 )
 ROADMAP_REL: Final = f"{CENSUS_DIR_REL}/capability-roadmap.json"
 EXPECTED_CENSUS_ROWS: Final = 150
-DEFAULT_ROUND_ID: Final = "C74"
+#: A label the tool offers, not a reading of the tree: main() says so on stdout when --round-id
+#: was not passed, because a default that trails the live roadmap is otherwise printed as fact.
+DEFAULT_ROUND_ID: Final = "C75"
 SCHEMA_VERSION: Final = 1
 
 #: Where production declarations live, and the trees that are not production provider code.
@@ -93,7 +101,7 @@ LABEL_TO_CAPABILITY: Final[dict[str, str]] = {
     "csv_decoder": "decode.delimited",
     "csv_delimiter": "decode.delimited",
     "csv_header_offset": "decode.delimited",
-    "delimited_rows_without_published_header": "decode.delimited",
+    "delimited_rows_without_published_header": "decode.delimited_headerless",
     "xml_decoder": "decode.xml",
     "rss_xml_decoder": "decode.xml",
     "xlsx_decoder": "decode.tabular_file",
@@ -108,8 +116,10 @@ LABEL_TO_CAPABILITY: Final[dict[str, str]] = {
     "geojson_attribute_rows": "decode.geojson",
     "sdmx_json_decoder": "shape.nested_data_message",
     # ---- locating the record list -----------------------------------------
-    "sdmx_dotted_key_path": "path.dotted_pointer",
-    "parameterized_rows_pointer": "path.dotted_pointer",
+    # C75: these four labels name a blocker on a different surface than the present capability
+    # they used to map onto; see the four claim=False entries in REGISTRY for the closed line.
+    "sdmx_dotted_key_path": "flow.composite_key_segment",
+    "parameterized_rows_pointer": "path.parameterized_pointer",
     "rows_from_object_keys": "path.object_keys",
     "response_dict_keying": "path.object_keys",
     "object_graph_flatten": "path.object_keys",
@@ -173,7 +183,7 @@ LABEL_TO_CAPABILITY: Final[dict[str, str]] = {
     "published_value_rescale": "columns.rescale",
     "strike_scaling": "columns.rescale",
     "tag_column_selection": "columns.select",
-    "xbrl_tag_assembly": "columns.select",
+    "xbrl_tag_assembly": "columns.response_dependent_selection",
     "field_rename_map": "columns.rename",
     "param_value_mapping": "columns.rename",
     "symbol_normalization": "columns.rename",
@@ -1158,18 +1168,10 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         "structure); the engine reads a JSON document or a delimited table and nothing else.",
         probe=DeclarationProbe(call="DecoderSpec", keyword="kind", value_contains="sdmx"),
     ),
-    CapabilityEntry(
-        capability="path.dotted_pointer",
-        claim=True,
-        engine_work=True,
-        proof_file=HTTP_JSON_REL,
-        anchor='pointer.split(".")',
-        cross_file=SPEC_REL,
-        cross_anchor='rows_pointer: str = ""',
-        why="resolve_rows walks dotted parts through dicts and digit list indices, and an absent "
-        "path is *_SHAPE_INVALID rather than an empty answer.",
-        probe=DeclarationProbe(call="ModelSpec", keyword="rows_pointer", non_empty=True),
-    ),
+    # path.dotted_pointer left the taxonomy in C75, not the engine: its two labels, both re-read
+    # against source, turned out to name a composed key segment and a parameterized pointer rather
+    # than a fixed dotted path, so no census row can ask for it and the guard rejects the orphan.
+    # resolve_rows still splits on "." -- path.parameterized_pointer below anchors on that call.
     CapabilityEntry(
         capability="path.object_keys",
         claim=False,
@@ -1299,6 +1301,66 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         why="One base_url and one path string per declaration: an interval/metric/region branch "
         "that addresses different endpoints has no declaration surface.",
         probe=DeclarationProbe(call="ModelSpec", keyword="path_branches"),
+    ),
+    # ---- C75: four labels that were collapsed onto a capability they do not need -------------
+    # Each label below mapped onto a PRESENT capability, so a row carrying only that label read as
+    # already covered and left the roadmap's pending queue without any engine work being done. The
+    # row's own ``notes`` field records the same blocker with a line cite; these entries anchor on
+    # the line that closes the surface, which is the difference between "the walker is present" and
+    # "this row's need is declarable".
+    CapabilityEntry(
+        capability="flow.composite_key_segment",
+        claim=False,
+        engine_work=True,
+        proof_file=HTTP_JSON_REL,
+        anchor=r'_PATH_SEGMENT = re.compile(r"^[A-Za-z0-9._~\-]+$")',
+        cross_file=SPEC_REL,
+        cross_anchor="path_placeholders",
+        why="render_path fills one placeholder from one validated query field, and ParamSpec has "
+        "no join or derive field, so an SDMX data key built from several dimensions has nowhere to "
+        "say how it is composed. The dot itself is legal in a segment; the OECD key form "
+        "<flow>,<key> is not, because _PATH_SEGMENT omits the comma the way it omits the slash.",
+        probe=DeclarationProbe(call="ModelSpec", keyword="path_key_joins"),
+    ),
+    CapabilityEntry(
+        capability="decode.delimited_headerless",
+        claim=False,
+        engine_work=True,
+        proof_file=DECODERS_REL,
+        anchor="names = _header_names(spec, table[0], delimiter, member, url)",
+        why="preamble_rows lets a body put non-blank rows before its header, but what follows is "
+        "still read as the header and HEADER_MISMATCH fires when it names none of the declared "
+        "columns. A body that publishes no header at all, whose columns are positional, has no "
+        "declaration surface -- decode.delimited names a present decoder kind, not this.",
+        probe=DeclarationProbe(call="DecoderSpec", keyword="header_row"),
+    ),
+    CapabilityEntry(
+        capability="path.parameterized_pointer",
+        claim=False,
+        engine_work=True,
+        proof_file=HTTP_JSON_REL,
+        anchor="rows = resolve_rows(document, spec.rows_pointer, spec)",
+        cross_file=SPEC_REL,
+        cross_anchor='rows_pointer: str = ""',
+        why="Both read sites hand resolve_rows one declaration-time string, spec.rows_pointer, so "
+        "the pointer cannot depend on the response or on a query field. TMX keeps its rows under "
+        "indices[query.symbol], which is a pointer built per request rather than a fixed dotted "
+        "path; the dotted walker itself runs fine, it just has nothing to be handed here.",
+        probe=DeclarationProbe(call="ModelSpec", keyword="rows_pointer_param"),
+    ),
+    CapabilityEntry(
+        capability="columns.response_dependent_selection",
+        claim=False,
+        engine_work=True,
+        proof_file=HTTP_JSON_REL,
+        anchor="key = column.source_key or column.name",
+        cross_file=SPEC_REL,
+        cross_anchor="columns: tuple[ColumnSpec, ...]",
+        why="Each column reads exactly one declared source key, and the columns it may read are a "
+        "fixed tuple written before the request. A row whose columns are whichever XBRL tags this "
+        "issuer happened to publish cannot be declared; columns.select covers a static selection, "
+        "which is why the SEC statement rows carry both labels.",
+        probe=DeclarationProbe(call="ModelSpec", keyword="columns_from_response"),
     ),
     CapabilityEntry(
         capability="rows.filter",
@@ -1447,17 +1509,28 @@ def main(argv: list[str] | None = None) -> int:
         f"{EXPECTED_CENSUS_ROWS} rows (an unmapped label already aborts every mode)",
     )
     parser.add_argument(
-        "--round-id", default=DEFAULT_ROUND_ID, help="round label recorded in the JSON"
+        "--round-id",
+        default=None,
+        help=f"round label recorded in the JSON (tool default: {DEFAULT_ROUND_ID})",
     )
     args = parser.parse_args(argv)
+    stamped = args.round_id is not None
+    round_id = args.round_id if stamped else DEFAULT_ROUND_ID
+    if not stamped:
+        print(f"NOTE: round label {DEFAULT_ROUND_ID} is the tool default, not read from the tree")
     try:
-        report = run(round_id=str(args.round_id))
+        report = run(round_id=str(round_id))
     except (RoadmapError, ValueError, json.JSONDecodeError) as exc:
         print(f"FAIL: {exc}", file=sys.stderr)
         return 1
     print(report.render_face(bool(args.check)))
     output: Path | None = args.json
-    if output is not None:
+    if output is not None and args.check:
+        # A check run reports on the tree; publishing it would overwrite the artifact it just
+        # verified, and this mode carries DEFAULT_ROUND_ID unless told otherwise. Measured: a
+        # `--check --json` run relabelled a C75 roadmap as C74 while printing PASS.
+        print(f"READ-ONLY: {_display(output)} not written (generate mode writes; pass --round-id)")
+    elif output is not None:
         try:
             output.parent.mkdir(parents=True, exist_ok=True)
             output.write_text(serialize(report), encoding="utf-8")

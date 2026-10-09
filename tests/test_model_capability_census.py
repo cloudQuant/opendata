@@ -419,29 +419,29 @@ def test_engine_and_vendor_trees_are_not_declaration_evidence(tmp_path: Path) ->
 
 
 def test_empty_literal_declaration_does_not_exercise_a_capability(tmp_path: Path) -> None:
-    """Naming a field without using it (``rows_pointer=""``) is not a declaration that exercises
+    """Naming a field without using it (``columns=()``) is not a declaration that exercises
     it."""
     entries = _fixture_entries()
     scoped = tuple(
         replace(
             entry,
-            probe=mcc.DeclarationProbe(call="ModelSpec", keyword="rows_pointer", non_empty=True),
+            probe=mcc.DeclarationProbe(call="ModelSpec", keyword="columns", non_empty=True),
         )
-        if entry.capability == "path.dotted_pointer"
+        if entry.capability == "columns.select"
         else entry
         for entry in entries
     )
     root = _fixture_root(tmp_path, scoped)
     _write_provider_module(
         root,
-        'BLANK = ModelSpec(model="A", rows_pointer="")\n'
+        'BLANK = ModelSpec(model="A", columns=())\n'
         'NONE = ModelSpec(model="B")\n'
-        'USED = ModelSpec(model="C", rows_pointer="data")\n'
-        'NESTED = spec.ModelSpec(model="D", rows_pointer="series.0.obs")\n',
+        'USED = ModelSpec(model="C", columns=(Column(name="a"),))\n'
+        'NESTED = spec.ModelSpec(model="D", columns=(Column(name="a"), Column(name="b")))\n',
     )
     totals, by_file, _ = mcc.count_declarations(scoped, root)
-    assert totals["path.dotted_pointer"] == 2
-    assert by_file["path.dotted_pointer"] == {FIXTURE_PROVIDER_REL: 2}
+    assert totals["columns.select"] == 2
+    assert by_file["columns.select"] == {FIXTURE_PROVIDER_REL: 2}
 
 
 def test_unparsable_provider_module_fails_closed(tmp_path: Path) -> None:
@@ -609,6 +609,48 @@ def test_check_mode_exit_codes_name_the_failure(
     err = capsys.readouterr().err
     assert "drifted" in err and "decode.delimited" in err
     assert "row count" in err
+
+
+def test_check_mode_leaves_the_artifact_it_verified_untouched(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """``--check --json`` reports without publishing: the file keeps the round label it was given.
+
+    The contrast arm is the same path under generate mode, which does move its bytes. Without it
+    the equality below would also hold for a CLI that writes identical content, and that is not
+    the defect: a check run without ``--round-id`` stamped ``DEFAULT_ROUND_ID`` over a C75 roadmap.
+    """
+    entries = _fixture_entries(present=("decode.delimited",))
+    root = _fixture_root(tmp_path, entries)
+    _write_census(root, [_row("OBB2-fixture-A", ["post_body"], model="A")])
+    monkeypatch.setattr(mcc, "_REPO_ROOT", root)
+    monkeypatch.setattr(mcc, "REGISTRY", entries)
+    target = root / "roadmap.json"
+
+    assert mcc.main(["--json", str(target), "--round-id", "TEST"]) == 0
+    published = target.read_bytes()
+    assert json.loads(published)["round_id"] == "TEST"
+    capsys.readouterr()
+
+    # the row-count guard still fails this fixture; --check may not rewrite anything while doing so.
+    assert mcc.main(["--check", "--json", str(target)]) == 1
+    printed = capsys.readouterr().out
+    assert "READ-ONLY" in printed
+    assert target.read_bytes() == published
+    assert json.loads(target.read_text(encoding="utf-8"))["round_id"] == "TEST"
+    assert mcc.DEFAULT_ROUND_ID != "TEST", "the two labels must differ or the check proves nothing"
+
+    assert mcc.main(["--json", str(target), "--round-id", "TEST2"]) == 0
+    assert "OK: wrote" in capsys.readouterr().out
+    assert target.read_bytes() != published
+
+    # An unstamped label is the tool's suggestion, so the face has to say so; a stamped one may not.
+    assert mcc.main([]) == 0
+    unstamped = capsys.readouterr().out
+    assert f"round {mcc.DEFAULT_ROUND_ID}" in unstamped
+    assert "NOTE: round label" in unstamped
+    assert mcc.main(["--round-id", "TEST"]) == 0
+    assert "NOTE: round label" not in capsys.readouterr().out
 
 
 def test_unmapped_label_exits_non_zero_in_every_mode(

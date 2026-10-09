@@ -31,6 +31,33 @@ if TYPE_CHECKING:
 
     from sqlalchemy import Engine
 
+#: A worker process is a cold CPython import of sqlalchemy and pandas. Under ``pytest -n 8`` that
+#: start can take tens of seconds, and a short fixed deadline then fires while the worker is still
+#: alive -- which the old wording reported as "never attempted the lock", a false claim about the
+#: lock instead of the truth about the clock.
+WORKER_STARTUP_BUDGET_S = 90.0
+
+
+def _wait_for_worker_marker(process: subprocess.Popen[str], marker: Path, reason: str) -> None:
+    """Block until the worker writes its own marker, or the worker is provably dead.
+
+    Distinguishing the two outcomes is the point: a dead worker has an exit status and stderr, so
+    those are reported instead of the lock claim. The worker writes the marker *before* it blocks on
+    the lock, so a legitimately blocked worker still writes it and never consumes this budget.
+    """
+    deadline = time.monotonic() + WORKER_STARTUP_BUDGET_S
+    while not marker.exists() and time.monotonic() < deadline and process.poll() is None:
+        time.sleep(0.01)
+    if marker.exists():
+        return
+    stdout, stderr = process.communicate(timeout=30)
+    pytest.fail(
+        f"{reason}; worker rc={process.returncode} after "
+        f"{WORKER_STARTUP_BUDGET_S:.0f}s budget\n--- stdout ---\n{stdout}\n"
+        f"--- stderr ---\n{stderr}",
+        pytrace=False,
+    )
+
 
 @pytest.fixture
 def archive_engine(tmp_path: Path) -> Iterator[Engine]:
@@ -696,10 +723,9 @@ engine.dispose()
         stderr=subprocess.PIPE,
         text=True,
     )
-    deadline = time.monotonic() + 20
-    while not marker.exists() and time.monotonic() < deadline:
-        time.sleep(0.01)
-    assert marker.exists(), "reader never reached Parquet while holding its shard lock"
+    _wait_for_worker_marker(
+        reader, marker, "reader never reached Parquet while holding its shard lock"
+    )
 
     with ThreadPoolExecutor(max_workers=1) as executor:
         purge = executor.submit(
@@ -818,10 +844,9 @@ engine.dispose()
                 stderr=subprocess.PIPE,
                 text=True,
             )
-            deadline = time.monotonic() + 20
-            while not marker.exists() and time.monotonic() < deadline:
-                time.sleep(0.01)
-            assert marker.exists(), f"{operation} never attempted the global shared lock"
+            _wait_for_worker_marker(
+                worker, marker, f"{operation} never attempted the global shared lock"
+            )
             time.sleep(0.2)
             assert not done.exists(), f"{operation} passed an exclusive snapshot lock"
             if operation == "purge":
@@ -832,3 +857,24 @@ engine.dispose()
         assert done.is_file()
         if operation == "purge":
             assert expired_file is not None and not expired_file.exists()
+
+
+def test_a_dead_worker_is_reported_dead_not_as_a_lock_miss(tmp_path: Path) -> None:
+    """Counterfact for the startup budget: a worker that died must fail fast, not wait 90 s.
+
+    Without this arm the larger budget would read like a relaxation -- a genuinely broken worker
+    would simply take 90 s longer before someone called it a lock miss. The message carries the
+    exit status, so a crash is never again reported as a lock-protocol finding.
+    """
+    started = time.monotonic()
+    worker = subprocess.Popen(  # noqa: S603  # nosec B603
+        [sys.executable, "-c", "import sys; sys.stderr.write('boom\\n'); raise SystemExit(3)"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    with pytest.raises(pytest.fail.Exception, match="rc=3") as caught:
+        _wait_for_worker_marker(worker, tmp_path / "never-written", "never attempted the lock")
+    elapsed = time.monotonic() - started
+    assert elapsed < 20, f"dead worker took {elapsed:.1f}s -- the budget is not the exit path"
+    assert "boom" in str(caught.value), "the worker's stderr was dropped from the report"

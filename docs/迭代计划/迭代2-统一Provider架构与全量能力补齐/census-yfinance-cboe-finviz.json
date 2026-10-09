@@ -719,13 +719,16 @@
    "response_format": "json",
    "row_extraction": "nested_key",
    "join_needed": false,
-   "needs_engine_capability": [
-    "client_side_filter"
-   ],
-   "expressible_today": false,
+   "needs_engine_capability": [],
+   "expressible_today": true,
    "existing_fetcher_class": "",
    "evidence": "providers/cboe/openbb_cboe/models/index_search.py:94",
-   "notes": "Single GET of all_indices.json, then a client-side substring match over the directory; no query key is sent."
+   "notes": "Single GET of all_indices.json, then a client-side substring match over the directory; no query key is sent.",
+   "audited": {
+    "audited_by": "C75 census-vs-registry recheck",
+    "audited_date": "2026-10-09",
+    "basis": "opendata/data/providers/cboe/specs.py declares the IndexSearch ModelSpec with a declared RowFilterSpec, catalog.PROVIDERS binds cboe::IndexSearch through fetcher_bindings.canonical_model_ids, tests/test_engine_row_filters.py executes the filter, and 模型级任务清单.csv already reads implementation_task_status=DEV_DONE for that row -- so the engine expresses this slice today and the census flag was stale."
+   }
   },
   {
    "task_id": "OBB2-cboe-IndexSnapshots",

@@ -1,0 +1,61 @@
+census files: 3 -> ['census-imf-oecd-famafrench-misc.json', 'census-sec-tmx-fed-gov-finra.json', 'census-yfinance-cboe-finviz.json']
+census rows: 150 (guard 150)
+bound providers: 6  bound model ids: 16
+  bls              ['BlsSearch', 'BlsSeries']
+  cboe             ['AvailableIndices', 'IndexConstituents', 'IndexSearch']
+  ecb              ['BalanceOfPayments', 'CurrencyReferenceRates', 'YieldCurve']
+  federal_reserve  ['MoneyMeasures', 'TreasuryRates']
+  fmp              ['EquityHistorical', 'EquityQuote']
+  fred             ['FredSearch', 'FredSeries', 'SOFR', 'SONIA']
+
+contradiction face (bound AND flagged false) = 1
+  OBB2-cboe-IndexSearch                    needs=['client_side_filter']
+flagged true total = 2  of which bound = 2  unbound = 0
+identity: total == bound + unbound -> True
+rows_expressible_today after the rewrite must read 3
+true-but-unbound (a queue, not an error) = 0
+
+census scope face: bound model ids = 16 = in-census 3 + out-of-census-scope 13
+  out of scope: bls::BlsSearch
+  out of scope: bls::BlsSeries
+  out of scope: cboe::AvailableIndices
+  out of scope: cboe::IndexConstituents
+  out of scope: ecb::BalanceOfPayments
+  out of scope: ecb::CurrencyReferenceRates
+  out of scope: ecb::YieldCurve
+  out of scope: fmp::EquityHistorical
+  out of scope: fmp::EquityQuote
+  out of scope: fred::FredSearch
+  out of scope: fred::FredSeries
+  out of scope: fred::SOFR
+  out of scope: fred::SONIA
+
+ledger arithmetic: census 150 + out-of-scope 200 == ledger 350 -> sum closes=True
+  typed out_of_scope_rows  = {'not_run_with_credential': 185, 'in_progress': 15}
+  recomputed out of scope  = {'not_run_out_of_census_provider': 185, 'in_progress_out_of_census_provider': 13}
+  leaves close (typed == recomputed) = False
+  ledger rows for census providers = 152 vs census rows 150
+  census-provider rows with NO census row: ['cboe::AvailableIndices(DEV_DONE)', 'cboe::IndexConstituents(DEV_DONE)']
+  COMPOSITION MISMATCH: the sum closes over a wrong split, so census-audit.json's
+  out_of_scope_rows is stale. Reported, not repaired here -- it is a typed tally,
+  and the 150-row denominator stays as it is.
+
+IN_PROGRESS ledger rows = 13: registry-bound = 11, client/Fetcher outstanding = 2
+  bound, dev installed: bls::BlsSearch
+  bound, dev installed: bls::BlsSeries
+  bound, dev installed: ecb::BalanceOfPayments
+  bound, dev installed: ecb::CurrencyReferenceRates
+  bound, dev installed: ecb::YieldCurve
+  bound, dev installed: fmp::EquityHistorical
+  bound, dev installed: fmp::EquityQuote
+  bound, dev installed: fred::FredSearch
+  bound, dev installed: fred::FredSeries
+  bound, dev installed: fred::SOFR
+  bound, dev installed: fred::SONIA
+  NOT bound, dev left : fred::EuroShortTermRate
+  NOT bound, dev left : fred::IORB
+T1 ok: row-side flip clears the face (the face is driven by the flag)
+T2 ok: removing the binding clears the face (it is driven by runtime truth)
+T3 ok: unbound-but-true stays a queue, never an error (declarable != declared; queue 0->1)
+T4 ok: seeding OBB2-federal_reserve-MoneyMeasures grew the face 1->2 (a new contradiction is caught, not swallowed)
+SELF-TEST: 4/4 controls agreed

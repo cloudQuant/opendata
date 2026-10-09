@@ -1,0 +1,225 @@
+C75 label-split: four census labels moved off present capabilities, with the counterfact that
+attributes the verdict change to the label map and not to anything else.
+
+  head at measurement : 8c1dcac9caf59eacdec13f6cccbfbfe860790b13 (dev, 302 commits, 17 dirty paths)
+  measured at         : 2026-10-09T15:28:34Z
+  generator           : python3 scripts/quality/model_capability_census.py --round-id C75 --json <roadmap>
+  control             : python3 docs/evidence/C75/label-split-counterfact.py   (exit 0)
+
+1. what was wrong
+--------------------------------------------------------------------------------
+Four census labels were mapped onto capabilities the engine really does ship, which is a different
+claim from "this row's need is declarable". The labels, their old target, and the line that closes
+each surface:
+
+  sdmx_dotted_key_path                    -> path.dotted_pointer  (12 rows: 9 oecd, 3 imf)
+  parameterized_rows_pointer              -> path.dotted_pointer  (2 rows: tmx)
+  delimited_rows_without_published_header -> decode.delimited     (1 row: sec-InstitutionsSearch)
+  xbrl_tag_assembly                       -> columns.select       (6 rows: sec statements)
+
+Each row's own notes field already recorded the real blocker; the map just did not carry it:
+
+  OBB2-imf-ConsumerPriceIndex   "api.imf.org/external/sdmx/3.0/data/dataflow/{agency}/{flow}/+/{key}:
+                                 dotted key built from dimensions"
+  OBB2-oecd-GdpReal             "SDMX-CSV from sdmx.oecd.org/public/rest/data/<flow>,<key>,
+                                 dimension key built from query params"
+  OBB2-tmx-IndexConstituents    "rows are indices[query.symbol].constituents: rows_pointer is a
+                                 static dotted path, it cannot carry a param"
+  OBB2-sec-CashFlowStatement    "a column reads exactly one fixed source key (http_json.py:296),
+                                 so tag-selected columns cannot be declared"
+
+2. one of the four original claims was itself wrong, and what replaced it
+--------------------------------------------------------------------------------
+The first pass asserted that a positional SDMX key could not be substituted because _PATH_SEGMENT
+"refuses anything that is not exactly one segment". That is false as written: the class is
+[A-Za-z0-9._~\-] and contains the dot, so "0.0.0.0.4.0.0.0.M" is one legal segment. The real
+absence is composition, not segmentation, and it has two measured carriers:
+
+  - render_path fills each placeholder from getattr(query, name): one field in, one segment out.
+    ParamSpec fields are name, kind, query_key, required, default, enum, note -- there is no join,
+    derive or transform field, so a key assembled from several dimensions cannot be declared.
+  - the OECD key form <flow>,<key> carries a comma, and _PATH_SEGMENT omits the comma exactly the
+    way it omits the slash, so even a caller-supplied composite value is refused with
+    *_PARAM_UNENCODABLE before any socket opens.
+
+The entry therefore became flow.composite_key_segment, anchored on
+    http_json.py:58   _PATH_SEGMENT = re.compile(r"^[A-Za-z0-9._~\-]+$")
+with cross-anchor spec.py path_placeholders -- the validator that omits the comma, and the field
+list that has no join.
+
+A fifth label was examined and deliberately NOT split. symbol_normalization (1 row,
+OBB2-tmx-EtfSearch) maps to columns.rename, which is present, and the split was rejected because
+no transformation surface was read for it: the engine's rename publishes one declared key under
+one declared name (key = column.source_key or column.name), and nothing in the row states that a
+value is rewritten. That is where this record stops short of a verdict, because the row's notes
+carry a cite only for the filter half -- "single static cloudfront etfs.json document; filtering
+happens client-side in pandas (helpers.py:389)" -- and no cite at all for what symbol_normalization
+does. So the label is charged as unproven in both directions: not split, and not trusted.
+
+That leaves the row in the same shape as the contradiction closed in the registry recheck: its two
+needs are both present capabilities while its flag reads expressible_today=false, and it is one of
+the 3 surviving cover rows. The deciding reading was the cited upstream line, and it cannot be
+taken here -- measured on disk, neither carrier holds it:
+
+  ls opendata/data/providers/tmx                                   -> No such file or directory
+  ls .../site-packages/openbb_tmx*                                 -> no matches found
+
+helpers.py:389, the row's other cite, is inside that same absent package. So the flag is left
+exactly as the census has it and the row is marked unproven in both directions rather than
+certified or split; cover stays at 3 with one row resting on an unreadable cite, which is stated
+here instead of being averaged away.
+
+7. what this split does and does not prove about the upstream side
+--------------------------------------------------------------------------------
+The four new entries are proven absent from repository bytes only: each anchor is a line in this
+repo's engine, and each probe reports decls=0 because the field it names does not exist here. The
+rows' upstream claims ride on the carrier the provider has. For the tmx pair that contributes the
++2, "rows are indices[query.symbol].constituents" is an assertion about openbb_tmx bytes that are
+neither installed nor vendored -- the carrier census reads tmx as 24 rows, 23 oracle_missing and 1
+repo_only, against 58 oracle_missing rows over the whole 150 -- so the engine-side absence stands
+while the source-side shape does not. An absent capability plus an unreadable source is a row that
+cannot be closed by declaration either way: it is not evidence that TMX needs the parameterized
+pointer, only that nothing in this repo can express one if it does.
+
+3. the four new entries as the shipped tool reads them
+--------------------------------------------------------------------------------
+All four anchors resolve to a real line on disk right now, none reports a production declaration
+(which is the point: the field they name does not exist yet), and the taxonomy guard reports zero
+drift and zero failures.
+
+  flow.composite_key_segment            anchor line 58   cross found  decls=0  present=False  12 mentions
+  decode.delimited_headerless           anchor line 295  cross found  decls=0  present=False   1 mention
+  path.parameterized_pointer            anchor line 571  cross found  decls=0  present=False   2 mentions
+  columns.response_dependent_selection  anchor line 315  cross found  decls=0  present=False   6 mentions
+
+  decode.delimited_headerless names what preamble_rows does NOT cover: preamble_rows skips non-blank
+  rows before the header, and whatever follows table[0] is still read as the header, so a body that
+  publishes none has no declaration surface. path.parameterized_pointer anchors on the read site
+  itself (rows = resolve_rows(document, spec.rows_pointer, spec)) because the absence is that the
+  pointer is a declaration-time string at both call sites.
+
+4. path.dotted_pointer left the registry, and the guard is what said so
+--------------------------------------------------------------------------------
+Both labels that named it moved, so no census label could still ask for it, and the shipped guard
+refused the orphan:
+
+  FAIL: registry names capabilities no census label maps to: ['path.dotted_pointer']
+
+The entry was removed rather than the invariant being worked around -- inventing a label spelling
+no row uses would have grown labels_supported with vocabulary nobody speaks. Registry went 37 -> 40
+(+4 new, -1 retired) and canonical_capabilities() matches it exactly (gaps: [], orphans: []). The
+dotted-pointer walker is untouched in the engine; it simply is no longer a pending need, and its
+line is still cited, as the anchor of the entry that replaced it.
+
+One repo test (test_empty_literal_declaration_does_not_exercise_a_capability) exercised the
+non_empty declaration semantics through that entry. It was re-homed onto columns.select with an
+equivalent four-arm corpus (empty tuple, absent field, one non-empty, aliased receiver) and still
+expects 2 -- tests/test_model_capability_census.py, 20 passed.
+
+5. the roadmap face, before and after, measured rather than asserted
+--------------------------------------------------------------------------------
+  face                              before  after
+  rows_expressible_today                3       3      (unchanged: the cboe flip from §recheck)
+  rows_pending                        147     147      (denominator untouched)
+  shipped_cover_rows                   17       3      -14 rows now correctly charged to work
+  rows_outside_engine                  36      36
+  rows_with_no_engine_work_possible    12      12
+  rows_unlocked_by_greedy_prefix      111     111
+  registry entries                     37      40
+  drifted / failures                    0       0
+  census rows                       150/150 150/150    guard fired: False
+
+The 3 cover rows that survive are tmx/EtfSearch, tmx/EtfInfo (columns.rename + rows.filter) and
+cboe/EquitySearch (decode.delimited + rows.filter). --check verdict: PASS.
+
+6. counterfact: the drop is the label map, and the attribution is additive
+--------------------------------------------------------------------------------
+python3 docs/evidence/C75/label-split-counterfact.py  (read-only; calls the shipped greedy_cover)
+
+  shipped registry (40 entries)     cover_rows=3   pending=147
+  + dotted_pointer entry, labels unchanged   cover_rows=3
+  all four labels reverted, entry added      cover_rows=17   pending=147
+    revert only delimited_rows_without_published_header  cover_rows=4   delta=+1
+    revert only sdmx_dotted_key_path                     cover_rows=12  delta=+9
+    revert only parameterized_rows_pointer               cover_rows=5   delta=+2
+    revert only xbrl_tag_assembly                        cover_rows=5   delta=+2
+
+  C1 ok: the shipped map reproduces the roadmap's cover face (3)
+  C2 ok: the old label map reproduces the recorded pre-split face (17)
+  C3 ok: the retired entry alone changes nothing; the verdict is the label map
+  C4 ok: all 4 splits carry at least one row
+  C5 ok: attribution is additive (+14 == +14), so each of the 14 rows is charged to exactly one label
+  SELF-TEST: 5/5 controls agreed
+
+C2 is the reproducibility control: the pre-split 17 is not re-aged, it is re-derived from the old
+map on today's rows. C3 separates the two mechanisms that could have caused the drop -- adding four
+registry entries changes no verdict, only the label table does. C4 vetoes decorative splits. C5 is
+the identity that makes the per-label numbers mean something: it would break if one row carried two
+of the four labels, and it did not break, so the 14 rows partition cleanly.
+
+The +9 rather than +12 for sdmx is the census agreeing with itself: the 3 imf rows also carry
+sdmx_json_decoder, which is absent (shape.nested_data_message), so collapsing the pointer label
+could not have covered them. pending stayed 147 in every arm, so no arm reclassified a row's
+expressibility flag; only the cover verdict moved.
+
+8. the generator's own words, verbatim
+--------------------------------------------------------------------------------
+$ python3 scripts/quality/model_capability_census.py --round-id C75 --json capability-roadmap.json
+  rows: expressible today 3, pending 147; pending rows whose whole need set is already shipped: 3
+  UNPROVEN: 1 entries carry no anchor: ['outside.source_absent']
+  OK: wrote docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/capability-roadmap.json
+
+The UNPROVEN line is pre-existing and not new debt from this round: outside.source_absent names an
+absence in the world rather than a line in a proof file, so it has no anchor to cite and the tool
+says so instead of scoring it as present. The live roadmap digest is
+75f882d317f37830688ea7feec5936724098b4759e5b58c8dd0e7162aab36e56 and the pre-split digest was
+f36c778166b45e318d63a788b1acd546b545282c3e32d856d1c557dc926bcb3a.
+
+A claim I wrote in an earlier draft of this section is refuted and stays here as the finding: I
+stated that a `--check --json` run rewrote the file to exactly the generate bytes, so generate and
+check agree. They do not agree, and check has no business rewriting at all. Measured on this tree:
+
+  BEFORE --check : 75f882d317f37830688ea7feec5936724098b4759e5b58c8dd0e7162aab36e56, round_id C75
+  $ --check --json capability-roadmap.json -> "--check verdict: PASS" + "OK: wrote ..."
+  AFTER  --check : ff37d9e80db7d7bde253e6dbdeef4a7270cfc240b6adef798c187d4d6918df63, round_id C74
+
+A run whose whole job is to verify an artifact replaced that artifact with the same content under a
+different round label, and printed PASS while doing it. The label came from DEFAULT_ROUND_ID, which
+main() applies whenever --round-id is absent -- a value that was still C74 while the roadmap on disk
+was C75.
+
+9. the repair, and the re-derivation that keeps the refuted face checkable
+--------------------------------------------------------------------------------
+Two changes, both in main():
+
+  * --check never writes. With --json it prints
+    "READ-ONLY: <path> not written (generate mode writes; pass --round-id)" and leaves the bytes.
+  * --round-id has no argparse default. Absent, the face opens with
+    "NOTE: round label C75 is the tool default, not read from the tree", so a suggested label is
+    never printed as if the tree reported it; DEFAULT_ROUND_ID moved C74 -> C75 to match the
+    artifact it labels.
+
+The clobbered bytes are reproducible rather than re-aged: the two digests differ only in round_id, so
+passing the old default regenerates the damage from today's tree.
+
+$ python3 scripts/quality/model_capability_census.py --round-id C74 --json /tmp/roadmap-c74-rederived.json
+  re-derived: ff37d9e80db7d7bde253e6dbdeef4a7270cfc240b6adef798c187d4d6918df63
+  expected  : ff37d9e80db7d7bde253e6dbdeef4a7270cfc240b6adef798c187d4d6918df63   MATCH
+
+$ python3 scripts/quality/model_capability_census.py --json /tmp/roadmap-default-label.json   # no --round-id
+  unstamped digest: 75f882d317f37830688ea7feec5936724098b4759e5b58c8dd0e7162aab36e56   MATCHES live C75 face
+$ python3 scripts/quality/model_capability_census.py --check --json capability-roadmap.json
+  --check verdict: PASS
+  READ-ONLY: docs/.../capability-roadmap.json not written (generate mode writes; pass --round-id)
+  post-check   : 75f882d317f37830688ea7feec5936724098b4759e5b58c8dd0e7162aab36e56   unchanged
+
+The regression is one test, and its nodeid is grep-ready on one line:
+tests/test_model_capability_census.py::test_check_mode_leaves_the_artifact_it_verified_untouched
+Its equality assertion is not vacuous because the same path under generate mode with a different
+label does move its bytes -- the TEST -> TEST2 arm asserts the target bytes differ, which is the only
+reason asserting they do not differ after a check run means anything. `pytest
+tests/test_model_capability_census.py -q --no-cov` -> 21 passed; `ruff check` on the instrument and
+the test -> All checks passed.
+
+
+

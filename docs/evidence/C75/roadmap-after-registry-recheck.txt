@@ -1,0 +1,347 @@
+capability roadmap -- round C75
+census: 150 rows / 150 unique task_ids from 3 files (expected 150)
+taxonomy: 94 distinct raw labels, 357 mentions -> 37 canonical capabilities (96 label spellings accepted)
+rows: expressible today 3, pending 147; pending rows whose whole need set is already shipped: 17
+
+capability registry (presence read from the proof file this run)
+  present (7):
+    - columns.rename: opendata/data/providers/_engine/http_json.py:315 anchor 'key = column.source_key or column.name'
+        anchor line: key = column.source_key or column.name
+        why: Every column declares the raw key it reads and publishes it under its own name.
+    - columns.select: opendata/data/providers/_engine/http_json.py:183 anchor 'for column in spec.columns:'
+        cross-check: opendata/data/providers/_engine/http_json.py 'extra="forbid"' -> found
+        anchor line: for column in spec.columns:
+        why: normalize_record walks only the declared columns and the generated row model forbids extras, so an undeclared raw key cannot reach a row.
+    - decode.archive_member: opendata/data/providers/_engine/decoders.py:187 anchor 'zipfile.ZipFile'
+        anchor line: archive = zipfile.ZipFile(io.BytesIO(body))
+        why: One named member is selected from the archive (exact, then basename, then glob) and its bytes handed to the delimited reader -- only for a zip_csv body; an archive of XML or XLSX has no decoder kind.
+    - decode.delimited: opendata/data/providers/_engine/decoders.py:274 anchor 'csv.reader'
+        cross-check: opendata/data/providers/_engine/spec.py 'zip_csv' -> found
+        anchor line: for row in csv.reader(io.StringIO(text, newline=""), delimiter=delimiter)
+        why: decode_body reads csv/tsv/zip_csv bytes into header-keyed rows with a declarable delimiter, member and encoding.
+    - flow.url_template: opendata/data/providers/_engine/http_json.py:240 anchor 'path.replace(f"{{{name}}}", text)'
+        cross-check: opendata/data/providers/_engine/spec.py 'path_placeholders' -> found
+        anchor line: path = path.replace(f"{{{name}}}", text)
+        why: render_path substitutes each declared {placeholder} from the validated query, after _PATH_SEGMENT proves the value is exactly one URL segment.
+    - path.dotted_pointer: opendata/data/providers/_engine/http_json.py:271 anchor 'pointer.split(".")'
+        cross-check: opendata/data/providers/_engine/spec.py 'rows_pointer: str = ""' -> found
+        anchor line: for part in pointer.split("."):
+        why: resolve_rows walks dotted parts through dicts and digit list indices, and an absent path is *_SHAPE_INVALID rather than an empty answer.
+    - rows.filter: opendata/data/providers/_engine/spec.py:372 anchor 'row_filters'  [read from disk]
+        anchor line: row_filters: Client-side selections applied after the source's own completeness was judged;
+        why: Presence is read off the disk rather than asserted: row_filters is the field only a finished client-side row filter can add to ModelSpec, so this entry reports absent until it lands and present from the first run after it does.
+  absent (29):
+    - columns.cast: opendata/data/providers/_engine/http_json.py:112 anchor 'def _column_type'
+        anchor line: def _column_type(column: ColumnSpec) -> Any:  # noqa: ANN401 - dynamic pydantic field type
+        why: _column_type maps a declared kind onto one pydantic domain, so the engine enforces a value's type but never converts epoch milliseconds or reformats a published date.
+    - columns.derive: opendata/data/providers/_engine/http_json.py:322 anchor 'values[column.name] = value'
+        anchor line: values[column.name] = value
+        why: A column's value is copied out of the record verbatim; no column is computed from other columns, concatenated, or parsed out of a symbol.
+    - columns.rescale: opendata/data/providers/_engine/spec.py:149 anchor 'units: str = ""'
+        anchor line: units: str = ""
+        why: ColumnSpec keeps units verbatim for the review record and applies nothing, so a published percent or a 1/1000 strike scale cannot be declared.
+    - decode.geojson: opendata/data/providers/_engine/spec.py:25 anchor 'BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]'
+        anchor line: BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+        why: A feature collection publishes its attributes under geometry members; no kind walks them into rows.
+    - decode.html_table: opendata/data/providers/_engine/spec.py:25 anchor 'BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]'
+        anchor line: BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+        why: No html kind exists, so an HTML table cannot be declared as a body shape.
+    - decode.html_text: opendata/data/providers/_engine/spec.py:25 anchor 'BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]'
+        anchor line: BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+        why: No html kind exists, and the engine never strips markup or rewrites a body as markdown.
+    - decode.opaque_bytes: opendata/data/providers/_engine/spec.py:25 anchor 'BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]'
+        anchor line: BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+        why: A body becomes a document or it becomes rows; no kind publishes the bytes themselves as the result, which is what a PDF download needs.
+    - decode.tabular_file: opendata/data/providers/_engine/spec.py:25 anchor 'BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]'
+        anchor line: BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+        why: No workbook kind exists in the decoder vocabulary and nothing reads a sheet region.
+    - decode.text_table: opendata/data/providers/_engine/spec.py:25 anchor 'BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]'
+        anchor line: BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+        why: Only a delimited reader splits a body; a colon-delimited file or a regex-parsed line has no decoder kind.
+    - decode.xml: opendata/data/providers/_engine/spec.py:25 anchor 'BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]'
+        anchor line: BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+        why: The decoder vocabulary is a closed Literal and DecoderSpec.__post_init__ rejects anything outside it, so no declaration can ask for an XML or RSS body.
+    - flow.branch: opendata/data/providers/_engine/spec.py:381 anchor 'base_url: str'
+        anchor line: base_url: str
+        why: One base_url and one path string per declaration: an interval/metric/region branch that addresses different endpoints has no declaration surface.
+    - flow.fan_out: opendata/data/providers/_engine/http_json.py:549 anchor 'url = f"{spec.base_url.rstrip(\'/\')}{render_path(spec, query)}"'
+        anchor line: url = f"{spec.base_url.rstrip('/')}{render_path(spec, query)}"
+        why: fetch_pages builds one URL per declaration and pages it; there is no per-symbol or per-item request set to enumerate and concatenate.
+    - flow.join: opendata/data/providers/_engine/http_json.py:549 anchor 'url = f"{spec.base_url.rstrip(\'/\')}{render_path(spec, query)}"'
+        anchor line: url = f"{spec.base_url.rstrip('/')}{render_path(spec, query)}"
+        why: The same single-URL loop is the proof no second response is fetched and joined onto the first model's rows.
+    - flow.preflight_lookup: opendata/data/providers/_engine/http_json.py:549 anchor 'url = f"{spec.base_url.rstrip(\'/\')}{render_path(spec, query)}"'
+        anchor line: url = f"{spec.base_url.rstrip('/')}{render_path(spec, query)}"
+        why: The URL is known from the declaration before any request, so a directory lookup that decides the URL afterwards cannot be declared.
+    - outside.anti_bot: opendata/data/providers/_engine/http_json.py:449 anchor '429: "RATE_LIMITED"'
+        anchor line: 429: "RATE_LIMITED",
+        why: _classify_status maps a throttled status onto a stable failure code and raises it; a retry-and-warm-up loop is not the engine's semantics.
+    - outside.bespoke: opendata/data/providers/sec/specs.py:120 anchor 'NOT_DECLARABLE: dict[str, str] = {'
+        anchor line: NOT_DECLARABLE: dict[str, str] = {
+        why: Delegation to or composition of a hand-written fetcher is recorded in each provider's NOT_DECLARABLE ledger instead of being built into the engine.
+    - outside.no_request: opendata/data/providers/_engine/spec.py:422 anchor 'if not self.base_url.startswith("https://"):'
+        anchor line: if not self.base_url.startswith("https://"):
+        why: A declaration must name an https origin, so a model that only transposes a bundled constant has no static-source field to use.
+    - outside.sdk: opendata/data/providers/_engine/spec.py:10 anchor 'Nothing in this package performs I/O or imports an upstream SDK.'
+        anchor line: Nothing in this package performs I/O or imports an upstream SDK.
+        why: A model whose answer is an SDK call cannot be expressed as a declaration at all; the engine forbids SDK imports by design, so this is delegation rather than engine work.
+    - outside.stateful: opendata/data/providers/_engine/spec.py:393 anchor 'static_headers: tuple[tuple[str, str], ...] = ()'
+        anchor line: static_headers: tuple[tuple[str, str], ...] = ()
+        why: Headers a declaration sends are static pairs replayed on every page, so a cookie warmed by a prior response or a local cache store has nowhere to live.
+    - path.assemble_single_row: opendata/data/providers/_engine/http_json.py:303 anchor 'def normalize_record'
+        anchor line: def normalize_record(
+        why: normalize_record builds exactly one row out of exactly one record, so a model whose single row is assembled from many values has nowhere to say so.
+    - path.explode: opendata/data/providers/_engine/http_json.py:262 anchor 'def resolve_rows'
+        anchor line: def resolve_rows(document: object, pointer: str, spec: ModelSpec) -> list[Any]:
+        why: One pointer returns one record list; nothing re-reads the document per record, expands a nested array into rows, or pivots a series.
+    - path.object_keys: opendata/data/providers/_engine/http_json.py:281 anchor 'if not isinstance(current, list):'
+        anchor line: if not isinstance(current, list):
+        why: A document that is not a JSON array is refused, so records keyed by object member or flattened out of a graph cannot be located.
+    - request.body: opendata/data/providers/_engine/http_json.py:375 anchor 'get_shared_http_client'
+        anchor line: from opendata.data.http_client import HttpFetchError, get_shared_http_client
+        why: Names the engine's only send seam: _http_get_json calls the governed client's GET. The GET-only call is the proof that no request body can be declared.
+    - request.body_pagination: opendata/data/providers/_engine/http_json.py:476 anchor 'params[paging.offset_key] = str(collected)'
+        anchor line: params[paging.offset_key] = str(collected)
+        why: An offset is written into the query keys and never into a body, so body-driven offset paging is not expressible.
+    - request.graphql: opendata/data/providers/_engine/http_json.py:375 anchor 'get_shared_http_client'
+        anchor line: from opendata.data.http_client import HttpFetchError, get_shared_http_client
+        why: The same GET-only send seam is the proof there is no query-template request shape.
+    - request.serialised_param: opendata/data/providers/_engine/http_json.py:253 anchor '",".join(str(item) for item in value)'
+        anchor line: return ",".join(str(item) for item in value)
+        why: _encode_value renders a list parameter by comma-joining it; nothing serialises a JSON object or a key/date mapping into one query value.
+    - rows.order_limit: opendata/data/providers/_engine/http_json.py:460 anchor 'def _page_request'
+        anchor line: def _page_request(
+        why: _page_request adds paging keys and nothing else: rows stay in upstream order, with no sort and no top-n applied.
+    - shape.columnar: opendata/data/providers/_engine/http_json.py:281 anchor 'if not isinstance(current, list):'
+        anchor line: if not isinstance(current, list):
+        why: Parallel arrays under named keys are a dict, and resolve_rows only accepts a list.
+    - shape.nested_data_message: opendata/data/providers/_engine/spec.py:25 anchor 'BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]'
+        anchor line: BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+        why: SDMX-JSON needs message shaping (dimension series, observation keys, sectioned structure); the engine reads a JSON document or a delimited table and nothing else.
+  drifted (0):
+  unanchored (1):
+    - outside.source_absent: UNPROVEN - no anchor registered
+        why: A vendored upstream tree that is not in the repo is a filesystem fact this instrument does not read; recorded unanchored rather than anchored to a token whose absence would be indistinguishable from a typo.
+
+built_but_unused (present and anchored, zero production declarations exercise it)
+  - decode.archive_member
+declaration scan: 151 modules under opendata/data/providers minus _engine/_vendor/__pycache__; non-zero counts: {"columns.rename": 35, "columns.select": 5, "decode.delimited": 2, "flow.url_template": 1, "path.dotted_pointer": 1, "rows.filter": 1}
+
+roadmap (greedy subset cover over present=false engine capabilities)
+  step 0  shipped already, covers 17 pending rows
+      - oecd/CompositeLeadingIndicator needs decode.delimited, path.dotted_pointer
+      - oecd/ConsumerPriceIndex needs decode.delimited, path.dotted_pointer, rows.filter
+      - oecd/CountryInterestRates needs decode.delimited, path.dotted_pointer
+      - oecd/GdpNominal needs decode.delimited, path.dotted_pointer
+      - oecd/GdpReal needs decode.delimited, path.dotted_pointer
+      - oecd/GdpForecast needs decode.delimited, path.dotted_pointer
+      - oecd/HousePriceIndex needs decode.delimited, path.dotted_pointer
+      - oecd/SharePriceIndex needs decode.delimited, path.dotted_pointer
+      - oecd/Unemployment needs decode.delimited, path.dotted_pointer
+      - sec/CashFlowStatement needs columns.select
+      - sec/IncomeStatement needs columns.select
+      - sec/InstitutionsSearch needs decode.delimited
+      - tmx/EtfSearch needs columns.rename, rows.filter
+      - tmx/EtfInfo needs columns.rename, rows.filter
+      - tmx/IndexConstituents needs path.dotted_pointer, rows.filter
+      - tmx/IndexSectors needs path.dotted_pointer, rows.filter
+      - cboe/EquitySearch needs decode.delimited, rows.filter
+  step 1  flow.join -> +4 newly unlocked, cumulative 21
+      - sec/BalanceSheet [columns.select, flow.join]
+      - sec/BalanceSheetGrowth [columns.select, flow.join]
+      - sec/CashFlowStatementGrowth [columns.select, flow.join]
+      - sec/IncomeStatementGrowth [columns.select, flow.join]
+  step 2  path.explode -> +4 newly unlocked, cumulative 25
+      - federal_reserve/SvenssonYieldCurve [columns.rename, decode.delimited, path.explode]
+      - tmx/EtfHoldings [columns.rename, path.explode, rows.filter]
+      - tmx/EtfSectors [columns.rename, path.explode, rows.filter]
+      - tmx/EtfCountries [columns.rename, path.explode, rows.filter]
+  step 3  flow.preflight_lookup -> +3 newly unlocked, cumulative 28
+      - sec/EquityFTD [flow.preflight_lookup]
+      - cboe/EquityHistorical [flow.join, flow.preflight_lookup, rows.filter]
+      - cboe/IndexHistorical [columns.select, flow.join, flow.preflight_lookup, flow.url_template]
+  step 4  decode.text_table -> +6 newly unlocked, cumulative 34
+      - famafrench/FamaFrenchBreakpoints [decode.archive_member, decode.delimited, decode.text_table, flow.preflight_lookup]
+      - famafrench/FamaFrenchCountryPortfolioReturns [decode.archive_member, decode.delimited, decode.text_table, flow.preflight_lookup]
+      - famafrench/FamaFrenchFactors [decode.archive_member, decode.delimited, decode.text_table, flow.preflight_lookup]
+      - famafrench/FamaFrenchInternationalIndexReturns [decode.archive_member, decode.delimited, decode.text_table, flow.preflight_lookup]
+      - famafrench/FamaFrenchRegionalPortfolioReturns [decode.archive_member, decode.delimited, decode.text_table, flow.preflight_lookup]
+      - famafrench/FamaFrenchUSPortfolioReturns [decode.archive_member, decode.delimited, decode.text_table, flow.preflight_lookup]
+  step 5  columns.rescale -> +3 newly unlocked, cumulative 37
+      - federal_reserve/YieldCurve [columns.rescale, path.explode]
+      - cboe/EquityQuote [columns.rescale, flow.join, flow.preflight_lookup]
+      - cboe/IndexSnapshots [columns.rescale, columns.select, flow.url_template]
+  step 6  path.object_keys -> +3 newly unlocked, cumulative 40
+      - sec/CikMap [path.object_keys, rows.filter]
+      - sec/SymbolMap [path.object_keys, rows.filter]
+      - tmx/EquitySearch [flow.url_template, path.object_keys, rows.filter]
+  step 7  flow.fan_out -> +4 newly unlocked, cumulative 44
+      - deribit/FuturesCurve [flow.fan_out, flow.join, flow.preflight_lookup]
+      - deribit/FuturesInfo [flow.fan_out]
+      - seeking_alpha/ForwardEpsEstimates [flow.fan_out, flow.preflight_lookup, path.object_keys]
+      - seeking_alpha/ForwardSalesEstimates [flow.fan_out, flow.preflight_lookup, path.object_keys]
+  step 8  decode.xml -> +5 newly unlocked, cumulative 49
+      - sec/Form13FHR [decode.xml, flow.fan_out, flow.preflight_lookup]
+      - sec/InsiderTrading [columns.rename, decode.xml, flow.fan_out]
+      - sec/NportDisclosure [decode.xml, flow.join, flow.preflight_lookup]
+      - sec/RssLitigation [columns.rename, decode.xml]
+      - sec/SchemaFiles [decode.xml, flow.fan_out, path.object_keys]
+  step 9  decode.geojson -> +4 newly unlocked, cumulative 53
+      - imf/MaritimeChokePointInfo [decode.geojson, rows.filter]
+      - imf/MaritimeChokePointVolume [decode.geojson, flow.fan_out, flow.preflight_lookup, rows.filter]
+      - imf/PortInfo [decode.geojson, rows.filter]
+      - imf/PortVolume [decode.geojson, flow.fan_out, flow.preflight_lookup]
+  step 10  flow.branch -> +4 newly unlocked, cumulative 57
+      - federal_reserve/CentralBankHoldings [flow.branch]
+      - federal_reserve/PrimaryDealerFails [flow.branch, flow.fan_out]
+      - federal_reserve/PrimaryDealerPositioning [flow.branch, flow.fan_out]
+      - sec/CompareCompanyFacts [flow.branch, flow.join]
+  step 11  request.body -> +5 newly unlocked, cumulative 62
+      - government_us/CommodityPsdData [flow.branch, request.body, rows.filter]
+      - government_us/TreasuryPrices [decode.delimited, request.body]
+      - tmx/EquityHistorical [decode.delimited, flow.branch, flow.fan_out, request.body]
+      - tmx/EtfHistorical [flow.branch, flow.fan_out, request.body]
+      - tmx/IndexSnapshots [flow.fan_out, flow.preflight_lookup, request.body]
+  step 12  request.body_pagination -> +8 newly unlocked, cumulative 70
+      - yfinance/EquityActive [request.body, request.body_pagination]
+      - yfinance/EquityAggressiveSmallCaps [request.body, request.body_pagination]
+      - yfinance/EquityGainers [request.body, request.body_pagination]
+      - yfinance/EquityLosers [request.body, request.body_pagination]
+      - yfinance/GrowthTechEquities [request.body, request.body_pagination]
+      - yfinance/EquityUndervaluedLargeCaps [request.body, request.body_pagination]
+      - yfinance/EquityUndervaluedGrowth [request.body, request.body_pagination]
+      - yfinance/EquityScreener [request.body, request.body_pagination]
+  step 13  request.graphql -> +8 newly unlocked, cumulative 78
+      - tmx/CalendarEarnings [flow.fan_out, request.body, request.graphql]
+      - tmx/CompanyFilings [flow.join, request.body, request.graphql]
+      - tmx/EquityInfo [flow.fan_out, request.body, request.graphql]
+      - tmx/EquityQuote [flow.join, request.body, request.graphql]
+      - tmx/EquityGainers [request.body, request.graphql]
+      - tmx/HistoricalDividends [flow.fan_out, request.body, request.graphql]
+      - tmx/InsiderTrading [request.body, request.graphql]
+      - tmx/PriceTargetConsensus [flow.join, request.body, request.graphql]
+  step 14  shape.columnar -> +4 newly unlocked, cumulative 82
+      - deribit/FuturesHistorical [flow.fan_out, flow.join, shape.columnar]
+      - sec/EquitySearch [path.object_keys, rows.filter, shape.columnar]
+      - tmx/BondPrices [rows.filter, shape.columnar]
+      - tmx/TreasuryPrices [rows.filter, shape.columnar]
+  step 15  columns.derive -> +7 newly unlocked, cumulative 89
+      - deribit/OptionsChains [columns.derive, flow.fan_out, flow.preflight_lookup, shape.columnar]
+      - sec/CompanyFilings [columns.derive, flow.fan_out, shape.columnar]
+      - sec/Filings [columns.derive, flow.fan_out, shape.columnar]
+      - sec/LatestFinancialReports [columns.derive, flow.fan_out, path.explode]
+      - tmx/CompanyNews [columns.derive, request.body, request.graphql]
+      - yfinance/FuturesCurve [columns.derive, flow.join]
+      - cboe/OptionsChains [columns.derive, columns.rescale, flow.preflight_lookup, shape.columnar]
+  step 16  decode.html_table -> +4 newly unlocked, cumulative 93
+      - multpl/SP500Multiples [decode.html_table, flow.fan_out, rows.filter]
+      - federal_reserve/FomcDocuments [columns.derive, decode.html_table, flow.fan_out]
+      - government_us/WeatherBulletin [decode.html_table, decode.text_table, flow.fan_out]
+      - sec/SicSearch [decode.html_table, rows.filter]
+  step 17  shape.nested_data_message -> +4 newly unlocked, cumulative 97
+      - imf/AvailableIndicators [flow.join, flow.preflight_lookup, shape.nested_data_message]
+      - imf/ConsumerPriceIndex [path.dotted_pointer, shape.nested_data_message]
+      - imf/DirectionOfTrade [flow.preflight_lookup, path.dotted_pointer, shape.nested_data_message]
+      - imf/EconomicIndicators [flow.fan_out, flow.preflight_lookup, path.dotted_pointer, shape.nested_data_message]
+  step 18  rows.order_limit -> +3 newly unlocked, cumulative 100
+      - federal_reserve/FederalFundsRate [columns.rescale, rows.order_limit]
+      - federal_reserve/OvernightBankFundingRate [columns.rescale, rows.order_limit]
+      - federal_reserve/SOFR [columns.rescale, rows.order_limit]
+  step 19  request.serialised_param -> +3 newly unlocked, cumulative 103
+      - wsj/ETFGainers [request.serialised_param, rows.order_limit]
+      - wsj/ETFLosers [request.serialised_param, rows.order_limit]
+      - wsj/ETFActive [request.serialised_param, rows.order_limit]
+  step 20  decode.tabular_file -> +3 newly unlocked, cumulative 106
+      - federal_reserve/InflationExpectations [decode.tabular_file]
+      - federal_reserve/TotalFactorProductivity [decode.tabular_file]
+      - government_us/CommodityPsdReport [decode.tabular_file, request.serialised_param]
+  step 21  decode.html_text -> +2 newly unlocked, cumulative 108
+      - sec/SecHtmFile [decode.html_text, flow.url_template]
+      - tmx/AvailableIndices [decode.html_text, flow.join, path.object_keys]
+  step 22  columns.cast -> +1 newly unlocked, cumulative 109
+      - government_us/TreasuryAuctions [columns.cast, columns.rename]
+  step 23  decode.opaque_bytes -> +1 newly unlocked, cumulative 110
+      - government_us/WeatherBulletinDownload [decode.opaque_bytes, flow.preflight_lookup]
+  step 24  path.assemble_single_row -> +1 newly unlocked, cumulative 111
+      - sec/SecFiling [decode.html_text, flow.join, path.assemble_single_row]
+  rows unlocked once the pool is exhausted: 111 of 147 pending
+
+over-claim guard 1 -- pending rows whose needs include a non-engine capability (36):
+  - deribit/FuturesInstruments [columns.cast, outside.source_absent, rows.filter] (task_id OBB2-deribit-FuturesInstruments)
+  - seeking_alpha/CalendarEarnings [flow.fan_out, outside.anti_bot] (task_id OBB2-seeking_alpha-CalendarEarnings)
+  - stockgrid/ShortVolume [outside.source_absent] (task_id OBB2-stockgrid-ShortVolume)
+  - finra/OTCAggregate [flow.join, outside.stateful, request.body] (task_id OBB2-finra-OTCAggregate)
+  - finra/EquityShortInterest [decode.delimited, outside.stateful] (task_id OBB2-finra-EquityShortInterest)
+  - sec/ManagementDiscussionAnalysis [decode.html_text, flow.fan_out, outside.bespoke] (task_id OBB2-sec-ManagementDiscussionAnalysis)
+  - tmx/OptionsChains [decode.delimited, decode.html_table, outside.bespoke, shape.columnar] (task_id OBB2-tmx-OptionsChains)
+  - yfinance/AvailableIndices [outside.no_request] (task_id OBB2-yfinance-AvailableIndices)
+  - yfinance/BalanceSheet [columns.derive, columns.select, outside.sdk] (task_id OBB2-yfinance-BalanceSheet)
+  - yfinance/CashFlowStatement [columns.derive, columns.select, outside.sdk] (task_id OBB2-yfinance-CashFlowStatement)
+  - yfinance/IncomeStatement [columns.derive, columns.select, outside.sdk] (task_id OBB2-yfinance-IncomeStatement)
+  - yfinance/CompanyNews [flow.fan_out, outside.sdk] (task_id OBB2-yfinance-CompanyNews)
+  - yfinance/EquityInfo [flow.fan_out, outside.sdk] (task_id OBB2-yfinance-EquityInfo)
+  - yfinance/EquityQuote [flow.fan_out, outside.sdk] (task_id OBB2-yfinance-EquityQuote)
+  - yfinance/EtfInfo [flow.fan_out, outside.sdk] (task_id OBB2-yfinance-EtfInfo)
+  - yfinance/KeyMetrics [flow.fan_out, outside.sdk] (task_id OBB2-yfinance-KeyMetrics)
+  - yfinance/ShareStatistics [flow.fan_out, outside.sdk] (task_id OBB2-yfinance-ShareStatistics)
+  - yfinance/PriceTargetConsensus [flow.fan_out, outside.sdk] (task_id OBB2-yfinance-PriceTargetConsensus)
+  - yfinance/KeyExecutives [outside.sdk] (task_id OBB2-yfinance-KeyExecutives)
+  - yfinance/CryptoHistorical [outside.sdk] (task_id OBB2-yfinance-CryptoHistorical)
+  - yfinance/CurrencyHistorical [outside.sdk] (task_id OBB2-yfinance-CurrencyHistorical)
+  - yfinance/EquityHistorical [outside.sdk] (task_id OBB2-yfinance-EquityHistorical)
+  - yfinance/EtfHistorical [outside.sdk] (task_id OBB2-yfinance-EtfHistorical)
+  - yfinance/FuturesHistorical [outside.sdk] (task_id OBB2-yfinance-FuturesHistorical)
+  - yfinance/IndexHistorical [outside.sdk] (task_id OBB2-yfinance-IndexHistorical)
+  - yfinance/HistoricalDividends [outside.sdk] (task_id OBB2-yfinance-HistoricalDividends)
+  - yfinance/OptionsChains [flow.join, outside.sdk, shape.columnar] (task_id OBB2-yfinance-OptionsChains)
+  - cboe/EtfHistorical [flow.join, flow.preflight_lookup, outside.sdk, rows.filter] (task_id OBB2-cboe-EtfHistorical)
+  - cboe/FuturesCurve [columns.rename, flow.join, outside.bespoke] (task_id OBB2-cboe-FuturesCurve)
+  - finviz/CompareGroups [flow.branch, outside.sdk] (task_id OBB2-finviz-CompareGroups)
+  - finviz/EtfPricePerformance [outside.sdk] (task_id OBB2-finviz-EtfPricePerformance)
+  - finviz/PricePerformance [outside.sdk] (task_id OBB2-finviz-PricePerformance)
+  - finviz/EquityInfo [flow.fan_out, outside.sdk] (task_id OBB2-finviz-EquityInfo)
+  - finviz/KeyMetrics [flow.fan_out, outside.sdk] (task_id OBB2-finviz-KeyMetrics)
+  - finviz/PriceTarget [columns.derive, flow.fan_out, outside.sdk] (task_id OBB2-finviz-PriceTarget)
+  - finviz/EquityScreener [flow.branch, outside.sdk, rows.filter] (task_id OBB2-finviz-EquityScreener)
+  of those, rows with no engine work possible at all: 12
+over-claim guard 2 -- rows still locked after the whole engine pool (36):
+  - deribit/FuturesInstruments [columns.cast, outside.source_absent, rows.filter]
+  - seeking_alpha/CalendarEarnings [flow.fan_out, outside.anti_bot]
+  - stockgrid/ShortVolume [outside.source_absent]
+  - finra/OTCAggregate [flow.join, outside.stateful, request.body]
+  - finra/EquityShortInterest [decode.delimited, outside.stateful]
+  - sec/ManagementDiscussionAnalysis [decode.html_text, flow.fan_out, outside.bespoke]
+  - tmx/OptionsChains [decode.delimited, decode.html_table, outside.bespoke, shape.columnar]
+  - yfinance/AvailableIndices [outside.no_request]
+  - yfinance/BalanceSheet [columns.derive, columns.select, outside.sdk]
+  - yfinance/CashFlowStatement [columns.derive, columns.select, outside.sdk]
+  - yfinance/IncomeStatement [columns.derive, columns.select, outside.sdk]
+  - yfinance/CompanyNews [flow.fan_out, outside.sdk]
+  - yfinance/EquityInfo [flow.fan_out, outside.sdk]
+  - yfinance/EquityQuote [flow.fan_out, outside.sdk]
+  - yfinance/EtfInfo [flow.fan_out, outside.sdk]
+  - yfinance/KeyMetrics [flow.fan_out, outside.sdk]
+  - yfinance/ShareStatistics [flow.fan_out, outside.sdk]
+  - yfinance/PriceTargetConsensus [flow.fan_out, outside.sdk]
+  - yfinance/KeyExecutives [outside.sdk]
+  - yfinance/CryptoHistorical [outside.sdk]
+  - yfinance/CurrencyHistorical [outside.sdk]
+  - yfinance/EquityHistorical [outside.sdk]
+  - yfinance/EtfHistorical [outside.sdk]
+  - yfinance/FuturesHistorical [outside.sdk]
+  - yfinance/IndexHistorical [outside.sdk]
+  - yfinance/HistoricalDividends [outside.sdk]
+  - yfinance/OptionsChains [flow.join, outside.sdk, shape.columnar]
+  - cboe/EtfHistorical [flow.join, flow.preflight_lookup, outside.sdk, rows.filter]
+  - cboe/FuturesCurve [columns.rename, flow.join, outside.bespoke]
+  - finviz/CompareGroups [flow.branch, outside.sdk]
+  - finviz/EtfPricePerformance [outside.sdk]
+  - finviz/PricePerformance [outside.sdk]
+  - finviz/EquityInfo [flow.fan_out, outside.sdk]
+  - finviz/KeyMetrics [flow.fan_out, outside.sdk]
+  - finviz/PriceTarget [columns.derive, flow.fan_out, outside.sdk]
+  - finviz/EquityScreener [flow.branch, outside.sdk, rows.filter]
+  blocking non-engine capabilities: ['outside.anti_bot', 'outside.bespoke', 'outside.no_request', 'outside.sdk', 'outside.source_absent', 'outside.stateful']
+
+UNPROVEN: 1 entries carry no anchor: ['outside.source_absent']
+OK: wrote docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/capability-roadmap.json

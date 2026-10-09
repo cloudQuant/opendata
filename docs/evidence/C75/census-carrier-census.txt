@@ -1,0 +1,36 @@
+site-packages root: /Users/yunjinqi/opt/anaconda3/lib/python3.11/site-packages (found via recorded, exists=True)
+installed openbb_* packages: 30
+
+buckets over 150 rows (must sum to the denominator):
+  oracle_installed    64
+  oracle_missing      58
+  repo_only           28
+  no_cite              0
+  sum                150  ok
+
+cited and installed : ['openbb_federal_reserve', 'openbb_government_us', 'openbb_imf', 'openbb_oecd', 'openbb_yfinance']
+cited and MISSING   : ['openbb_cboe', 'openbb_deribit', 'openbb_famafrench', 'openbb_finra', 'openbb_finviz', 'openbb_multpl', 'openbb_seeking_alpha', 'openbb_tmx', 'openbb_wsj']
+
+per provider (rows / installed / missing / repo-only / no-cite):
+  cboe                9   0   9   0   0
+  deribit             5   0   4   1   0
+  famafrench          6   0   6   0   0
+  federal_reserve    13  12   0   1   0
+  finra               2   0   2   0   0
+  finviz              7   0   7   0   0
+  government_us       6   6   0   0   0
+  imf                 8   8   0   0   0
+  multpl              1   0   1   0   0
+  oecd                9   9   0   0   0
+  sec                24   0   0  24   0
+  seeking_alpha       3   0   3   0   0
+  stockgrid           1   0   0   1   0
+  tmx                24   0  23   1   0
+  wsj                 3   0   3   0   0
+  yfinance           29  29   0   0   0
+
+controls (a bucket face is only trustworthy if a known row lands where it was read):
+  OBB2-oecd-CompositeLeadingIndicator      wants oracle_installed  reads oracle_installed
+  OBB2-sec-CashFlowStatement               wants repo_only         reads repo_only
+  OBB2-cboe-IndexSearch                    wants oracle_missing    reads oracle_missing
+CONTROLS OK: 3/3 named rows landed in their read bucket

@@ -71,6 +71,23 @@
       "status": "absent",
       "why": "ColumnSpec keeps units verbatim for the review record and applies nothing, so a published percent or a 1/1000 strike scale cannot be declared."
     },
+    "columns.response_dependent_selection": {
+      "anchor": "key = column.source_key or column.name",
+      "anchor_found": true,
+      "anchor_line": "key = column.source_key or column.name",
+      "anchor_line_number": 315,
+      "claim": false,
+      "cross_anchor": "columns: tuple[ColumnSpec, ...]",
+      "cross_anchor_found": true,
+      "cross_file": "opendata/data/providers/_engine/spec.py",
+      "engine_work": true,
+      "present": false,
+      "production_declarations": 0,
+      "proof_file": "opendata/data/providers/_engine/http_json.py",
+      "read_from_disk": false,
+      "status": "absent",
+      "why": "Each column reads exactly one declared source key, and the columns it may read are a fixed tuple written before the request. A row whose columns are whichever XBRL tags this issuer happened to publish cannot be declared; columns.select covers a static selection, which is why the SEC statement rows carry both labels."
+    },
     "columns.select": {
       "anchor": "for column in spec.columns:",
       "anchor_found": true,
@@ -121,6 +138,23 @@
       "read_from_disk": false,
       "status": "present",
       "why": "decode_body reads csv/tsv/zip_csv bytes into header-keyed rows with a declarable delimiter, member and encoding."
+    },
+    "decode.delimited_headerless": {
+      "anchor": "names = _header_names(spec, table[0], delimiter, member, url)",
+      "anchor_found": true,
+      "anchor_line": "names = _header_names(spec, table[0], delimiter, member, url)",
+      "anchor_line_number": 295,
+      "claim": false,
+      "cross_anchor": "",
+      "cross_anchor_found": true,
+      "cross_file": "",
+      "engine_work": true,
+      "present": false,
+      "production_declarations": 0,
+      "proof_file": "opendata/data/providers/_engine/decoders.py",
+      "read_from_disk": false,
+      "status": "absent",
+      "why": "preamble_rows lets a body put non-blank rows before its header, but what follows is still read as the header and HEADER_MISMATCH fires when it names none of the declared columns. A body that publishes no header at all, whose columns are positional, has no declaration surface -- decode.delimited names a present decoder kind, not this."
     },
     "decode.geojson": {
       "anchor": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
@@ -257,6 +291,23 @@
       "read_from_disk": false,
       "status": "absent",
       "why": "One base_url and one path string per declaration: an interval/metric/region branch that addresses different endpoints has no declaration surface."
+    },
+    "flow.composite_key_segment": {
+      "anchor": "_PATH_SEGMENT = re.compile(r\"^[A-Za-z0-9._~\\-]+$\")",
+      "anchor_found": true,
+      "anchor_line": "_PATH_SEGMENT = re.compile(r\"^[A-Za-z0-9._~\\-]+$\")",
+      "anchor_line_number": 58,
+      "claim": false,
+      "cross_anchor": "path_placeholders",
+      "cross_anchor_found": true,
+      "cross_file": "opendata/data/providers/_engine/spec.py",
+      "engine_work": true,
+      "present": false,
+      "production_declarations": 0,
+      "proof_file": "opendata/data/providers/_engine/http_json.py",
+      "read_from_disk": false,
+      "status": "absent",
+      "why": "render_path fills one placeholder from one validated query field, and ParamSpec has no join or derive field, so an SDMX data key built from several dimensions has nowhere to say how it is composed. The dot itself is legal in a segment; the OECD key form <flow>,<key> is not, because _PATH_SEGMENT omits the comma the way it omits the slash."
     },
     "flow.fan_out": {
       "anchor": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
@@ -445,23 +496,6 @@
       "status": "absent",
       "why": "normalize_record builds exactly one row out of exactly one record, so a model whose single row is assembled from many values has nowhere to say so."
     },
-    "path.dotted_pointer": {
-      "anchor": "pointer.split(\".\")",
-      "anchor_found": true,
-      "anchor_line": "for part in pointer.split(\".\"):",
-      "anchor_line_number": 271,
-      "claim": true,
-      "cross_anchor": "rows_pointer: str = \"\"",
-      "cross_anchor_found": true,
-      "cross_file": "opendata/data/providers/_engine/spec.py",
-      "engine_work": true,
-      "present": true,
-      "production_declarations": 1,
-      "proof_file": "opendata/data/providers/_engine/http_json.py",
-      "read_from_disk": false,
-      "status": "present",
-      "why": "resolve_rows walks dotted parts through dicts and digit list indices, and an absent path is *_SHAPE_INVALID rather than an empty answer."
-    },
     "path.explode": {
       "anchor": "def resolve_rows",
       "anchor_found": true,
@@ -495,6 +529,23 @@
       "read_from_disk": false,
       "status": "absent",
       "why": "A document that is not a JSON array is refused, so records keyed by object member or flattened out of a graph cannot be located."
+    },
+    "path.parameterized_pointer": {
+      "anchor": "rows = resolve_rows(document, spec.rows_pointer, spec)",
+      "anchor_found": true,
+      "anchor_line": "rows = resolve_rows(document, spec.rows_pointer, spec)",
+      "anchor_line_number": 571,
+      "claim": false,
+      "cross_anchor": "rows_pointer: str = \"\"",
+      "cross_anchor_found": true,
+      "cross_file": "opendata/data/providers/_engine/spec.py",
+      "engine_work": true,
+      "present": false,
+      "production_declarations": 0,
+      "proof_file": "opendata/data/providers/_engine/http_json.py",
+      "read_from_disk": false,
+      "status": "absent",
+      "why": "Both read sites hand resolve_rows one declaration-time string, spec.rows_pointer, so the pointer cannot depend on the response or on a query field. TMX keeps its rows under indices[query.symbol], which is a pointer built per request rather than a fixed dotted path; the dotted walker itself runs fine, it just has nothing to be handed here."
     },
     "request.body": {
       "anchor": "get_shared_http_client",
@@ -678,9 +729,6 @@
       "flow.url_template": {
         "opendata/data/providers/cboe/specs.py": 1
       },
-      "path.dotted_pointer": {
-        "opendata/data/providers/cboe/specs.py": 1
-      },
       "rows.filter": {
         "opendata/data/providers/cboe/specs.py": 1
       }
@@ -690,9 +738,11 @@
       "columns.derive": 0,
       "columns.rename": 35,
       "columns.rescale": 0,
+      "columns.response_dependent_selection": 0,
       "columns.select": 5,
       "decode.archive_member": 0,
       "decode.delimited": 2,
+      "decode.delimited_headerless": 0,
       "decode.geojson": 0,
       "decode.html_table": 0,
       "decode.html_text": 0,
@@ -701,6 +751,7 @@
       "decode.text_table": 0,
       "decode.xml": 0,
       "flow.branch": 0,
+      "flow.composite_key_segment": 0,
       "flow.fan_out": 0,
       "flow.join": 0,
       "flow.preflight_lookup": 0,
@@ -712,9 +763,9 @@
       "outside.source_absent": 0,
       "outside.stateful": 0,
       "path.assemble_single_row": 0,
-      "path.dotted_pointer": 1,
       "path.explode": 0,
       "path.object_keys": 0,
+      "path.parameterized_pointer": 0,
       "request.body": 0,
       "request.body_pagination": 0,
       "request.graphql": 0,
@@ -738,51 +789,97 @@
     ],
     "greedy_build_order": [
       {
-        "capability": "flow.join",
-        "cumulative_rows_unlocked": 22,
+        "capability": "flow.composite_key_segment",
+        "cumulative_rows_unlocked": 12,
         "newly_unlocked_rows": [
           {
             "needs": [
-              "columns.select",
-              "flow.join"
+              "decode.delimited",
+              "flow.composite_key_segment"
             ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-BalanceSheet",
-            "upstream_model": "BalanceSheet"
+            "provider": "oecd",
+            "task_id": "OBB2-oecd-CompositeLeadingIndicator",
+            "upstream_model": "CompositeLeadingIndicator"
           },
           {
             "needs": [
-              "columns.select",
-              "flow.join"
+              "decode.delimited",
+              "flow.composite_key_segment",
+              "rows.filter"
             ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-BalanceSheetGrowth",
-            "upstream_model": "BalanceSheetGrowth"
+            "provider": "oecd",
+            "task_id": "OBB2-oecd-ConsumerPriceIndex",
+            "upstream_model": "ConsumerPriceIndex"
           },
           {
             "needs": [
-              "columns.select",
-              "flow.join"
+              "decode.delimited",
+              "flow.composite_key_segment"
             ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-CashFlowStatementGrowth",
-            "upstream_model": "CashFlowStatementGrowth"
+            "provider": "oecd",
+            "task_id": "OBB2-oecd-CountryInterestRates",
+            "upstream_model": "CountryInterestRates"
           },
           {
             "needs": [
-              "columns.select",
-              "flow.join"
+              "decode.delimited",
+              "flow.composite_key_segment"
             ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-IncomeStatementGrowth",
-            "upstream_model": "IncomeStatementGrowth"
+            "provider": "oecd",
+            "task_id": "OBB2-oecd-GdpNominal",
+            "upstream_model": "GdpNominal"
+          },
+          {
+            "needs": [
+              "decode.delimited",
+              "flow.composite_key_segment"
+            ],
+            "provider": "oecd",
+            "task_id": "OBB2-oecd-GdpReal",
+            "upstream_model": "GdpReal"
+          },
+          {
+            "needs": [
+              "decode.delimited",
+              "flow.composite_key_segment"
+            ],
+            "provider": "oecd",
+            "task_id": "OBB2-oecd-GdpForecast",
+            "upstream_model": "GdpForecast"
+          },
+          {
+            "needs": [
+              "decode.delimited",
+              "flow.composite_key_segment"
+            ],
+            "provider": "oecd",
+            "task_id": "OBB2-oecd-HousePriceIndex",
+            "upstream_model": "HousePriceIndex"
+          },
+          {
+            "needs": [
+              "decode.delimited",
+              "flow.composite_key_segment"
+            ],
+            "provider": "oecd",
+            "task_id": "OBB2-oecd-SharePriceIndex",
+            "upstream_model": "SharePriceIndex"
+          },
+          {
+            "needs": [
+              "decode.delimited",
+              "flow.composite_key_segment"
+            ],
+            "provider": "oecd",
+            "task_id": "OBB2-oecd-Unemployment",
+            "upstream_model": "Unemployment"
           }
         ],
-        "rows_newly_unlocked": 4
+        "rows_newly_unlocked": 9
       },
       {
         "capability": "path.explode",
-        "cumulative_rows_unlocked": 26,
+        "cumulative_rows_unlocked": 16,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -828,8 +925,272 @@
         "rows_newly_unlocked": 4
       },
       {
+        "capability": "path.object_keys",
+        "cumulative_rows_unlocked": 19,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "path.object_keys",
+              "rows.filter"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-CikMap",
+            "upstream_model": "CikMap"
+          },
+          {
+            "needs": [
+              "path.object_keys",
+              "rows.filter"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-SymbolMap",
+            "upstream_model": "SymbolMap"
+          },
+          {
+            "needs": [
+              "flow.url_template",
+              "path.object_keys",
+              "rows.filter"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-EquitySearch",
+            "upstream_model": "EquitySearch"
+          }
+        ],
+        "rows_newly_unlocked": 3
+      },
+      {
+        "capability": "shape.columnar",
+        "cumulative_rows_unlocked": 22,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "path.object_keys",
+              "rows.filter",
+              "shape.columnar"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-EquitySearch",
+            "upstream_model": "EquitySearch"
+          },
+          {
+            "needs": [
+              "rows.filter",
+              "shape.columnar"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-BondPrices",
+            "upstream_model": "BondPrices"
+          },
+          {
+            "needs": [
+              "rows.filter",
+              "shape.columnar"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-TreasuryPrices",
+            "upstream_model": "TreasuryPrices"
+          }
+        ],
+        "rows_newly_unlocked": 3
+      },
+      {
+        "capability": "columns.rescale",
+        "cumulative_rows_unlocked": 24,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.rescale",
+              "path.explode"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-YieldCurve",
+            "upstream_model": "YieldCurve"
+          },
+          {
+            "needs": [
+              "columns.rescale",
+              "columns.select",
+              "flow.url_template"
+            ],
+            "provider": "cboe",
+            "task_id": "OBB2-cboe-IndexSnapshots",
+            "upstream_model": "IndexSnapshots"
+          }
+        ],
+        "rows_newly_unlocked": 2
+      },
+      {
+        "capability": "rows.order_limit",
+        "cumulative_rows_unlocked": 27,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.rescale",
+              "rows.order_limit"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-FederalFundsRate",
+            "upstream_model": "FederalFundsRate"
+          },
+          {
+            "needs": [
+              "columns.rescale",
+              "rows.order_limit"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-OvernightBankFundingRate",
+            "upstream_model": "OvernightBankFundingRate"
+          },
+          {
+            "needs": [
+              "columns.rescale",
+              "rows.order_limit"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-SOFR",
+            "upstream_model": "SOFR"
+          }
+        ],
+        "rows_newly_unlocked": 3
+      },
+      {
+        "capability": "request.serialised_param",
+        "cumulative_rows_unlocked": 30,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "request.serialised_param",
+              "rows.order_limit"
+            ],
+            "provider": "wsj",
+            "task_id": "OBB2-wsj-ETFGainers",
+            "upstream_model": "ETFGainers"
+          },
+          {
+            "needs": [
+              "request.serialised_param",
+              "rows.order_limit"
+            ],
+            "provider": "wsj",
+            "task_id": "OBB2-wsj-ETFLosers",
+            "upstream_model": "ETFLosers"
+          },
+          {
+            "needs": [
+              "request.serialised_param",
+              "rows.order_limit"
+            ],
+            "provider": "wsj",
+            "task_id": "OBB2-wsj-ETFActive",
+            "upstream_model": "ETFActive"
+          }
+        ],
+        "rows_newly_unlocked": 3
+      },
+      {
+        "capability": "decode.tabular_file",
+        "cumulative_rows_unlocked": 33,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "decode.tabular_file"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-InflationExpectations",
+            "upstream_model": "InflationExpectations"
+          },
+          {
+            "needs": [
+              "decode.tabular_file"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-TotalFactorProductivity",
+            "upstream_model": "TotalFactorProductivity"
+          },
+          {
+            "needs": [
+              "decode.tabular_file",
+              "request.serialised_param"
+            ],
+            "provider": "government_us",
+            "task_id": "OBB2-government_us-CommodityPsdReport",
+            "upstream_model": "CommodityPsdReport"
+          }
+        ],
+        "rows_newly_unlocked": 3
+      },
+      {
+        "capability": "columns.response_dependent_selection",
+        "cumulative_rows_unlocked": 35,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.response_dependent_selection",
+              "columns.select"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-CashFlowStatement",
+            "upstream_model": "CashFlowStatement"
+          },
+          {
+            "needs": [
+              "columns.response_dependent_selection",
+              "columns.select"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-IncomeStatement",
+            "upstream_model": "IncomeStatement"
+          }
+        ],
+        "rows_newly_unlocked": 2
+      },
+      {
+        "capability": "flow.join",
+        "cumulative_rows_unlocked": 39,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.response_dependent_selection",
+              "flow.join"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-BalanceSheet",
+            "upstream_model": "BalanceSheet"
+          },
+          {
+            "needs": [
+              "columns.response_dependent_selection",
+              "flow.join"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-BalanceSheetGrowth",
+            "upstream_model": "BalanceSheetGrowth"
+          },
+          {
+            "needs": [
+              "columns.response_dependent_selection",
+              "flow.join"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-CashFlowStatementGrowth",
+            "upstream_model": "CashFlowStatementGrowth"
+          },
+          {
+            "needs": [
+              "columns.response_dependent_selection",
+              "flow.join"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-IncomeStatementGrowth",
+            "upstream_model": "IncomeStatementGrowth"
+          }
+        ],
+        "rows_newly_unlocked": 4
+      },
+      {
         "capability": "flow.preflight_lookup",
-        "cumulative_rows_unlocked": 29,
+        "cumulative_rows_unlocked": 43,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -851,6 +1212,16 @@
           },
           {
             "needs": [
+              "columns.rescale",
+              "flow.join",
+              "flow.preflight_lookup"
+            ],
+            "provider": "cboe",
+            "task_id": "OBB2-cboe-EquityQuote",
+            "upstream_model": "EquityQuote"
+          },
+          {
+            "needs": [
               "columns.select",
               "flow.join",
               "flow.preflight_lookup",
@@ -861,11 +1232,11 @@
             "upstream_model": "IndexHistorical"
           }
         ],
-        "rows_newly_unlocked": 3
+        "rows_newly_unlocked": 4
       },
       {
         "capability": "decode.text_table",
-        "cumulative_rows_unlocked": 35,
+        "cumulative_rows_unlocked": 49,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -937,79 +1308,8 @@
         "rows_newly_unlocked": 6
       },
       {
-        "capability": "columns.rescale",
-        "cumulative_rows_unlocked": 38,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.rescale",
-              "path.explode"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-YieldCurve",
-            "upstream_model": "YieldCurve"
-          },
-          {
-            "needs": [
-              "columns.rescale",
-              "flow.join",
-              "flow.preflight_lookup"
-            ],
-            "provider": "cboe",
-            "task_id": "OBB2-cboe-EquityQuote",
-            "upstream_model": "EquityQuote"
-          },
-          {
-            "needs": [
-              "columns.rescale",
-              "columns.select",
-              "flow.url_template"
-            ],
-            "provider": "cboe",
-            "task_id": "OBB2-cboe-IndexSnapshots",
-            "upstream_model": "IndexSnapshots"
-          }
-        ],
-        "rows_newly_unlocked": 3
-      },
-      {
-        "capability": "path.object_keys",
-        "cumulative_rows_unlocked": 41,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "path.object_keys",
-              "rows.filter"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-CikMap",
-            "upstream_model": "CikMap"
-          },
-          {
-            "needs": [
-              "path.object_keys",
-              "rows.filter"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-SymbolMap",
-            "upstream_model": "SymbolMap"
-          },
-          {
-            "needs": [
-              "flow.url_template",
-              "path.object_keys",
-              "rows.filter"
-            ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-EquitySearch",
-            "upstream_model": "EquitySearch"
-          }
-        ],
-        "rows_newly_unlocked": 3
-      },
-      {
         "capability": "flow.fan_out",
-        "cumulative_rows_unlocked": 45,
+        "cumulative_rows_unlocked": 54,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1020,6 +1320,16 @@
             "provider": "deribit",
             "task_id": "OBB2-deribit-FuturesCurve",
             "upstream_model": "FuturesCurve"
+          },
+          {
+            "needs": [
+              "flow.fan_out",
+              "flow.join",
+              "shape.columnar"
+            ],
+            "provider": "deribit",
+            "task_id": "OBB2-deribit-FuturesHistorical",
+            "upstream_model": "FuturesHistorical"
           },
           {
             "needs": [
@@ -1050,11 +1360,79 @@
             "upstream_model": "ForwardSalesEstimates"
           }
         ],
-        "rows_newly_unlocked": 4
+        "rows_newly_unlocked": 5
+      },
+      {
+        "capability": "columns.derive",
+        "cumulative_rows_unlocked": 60,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.derive",
+              "flow.fan_out",
+              "flow.preflight_lookup",
+              "shape.columnar"
+            ],
+            "provider": "deribit",
+            "task_id": "OBB2-deribit-OptionsChains",
+            "upstream_model": "OptionsChains"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "flow.fan_out",
+              "shape.columnar"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-CompanyFilings",
+            "upstream_model": "CompanyFilings"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "flow.fan_out",
+              "shape.columnar"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-Filings",
+            "upstream_model": "Filings"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "flow.fan_out",
+              "path.explode"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-LatestFinancialReports",
+            "upstream_model": "LatestFinancialReports"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "flow.join"
+            ],
+            "provider": "yfinance",
+            "task_id": "OBB2-yfinance-FuturesCurve",
+            "upstream_model": "FuturesCurve"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "columns.rescale",
+              "flow.preflight_lookup",
+              "shape.columnar"
+            ],
+            "provider": "cboe",
+            "task_id": "OBB2-cboe-OptionsChains",
+            "upstream_model": "OptionsChains"
+          }
+        ],
+        "rows_newly_unlocked": 6
       },
       {
         "capability": "decode.xml",
-        "cumulative_rows_unlocked": 50,
+        "cumulative_rows_unlocked": 65,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1110,7 +1488,7 @@
       },
       {
         "capability": "decode.geojson",
-        "cumulative_rows_unlocked": 54,
+        "cumulative_rows_unlocked": 69,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1155,8 +1533,54 @@
         "rows_newly_unlocked": 4
       },
       {
+        "capability": "decode.html_table",
+        "cumulative_rows_unlocked": 73,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "decode.html_table",
+              "flow.fan_out",
+              "rows.filter"
+            ],
+            "provider": "multpl",
+            "task_id": "OBB2-multpl-SP500Multiples",
+            "upstream_model": "SP500Multiples"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "decode.html_table",
+              "flow.fan_out"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-FomcDocuments",
+            "upstream_model": "FomcDocuments"
+          },
+          {
+            "needs": [
+              "decode.html_table",
+              "decode.text_table",
+              "flow.fan_out"
+            ],
+            "provider": "government_us",
+            "task_id": "OBB2-government_us-WeatherBulletin",
+            "upstream_model": "WeatherBulletin"
+          },
+          {
+            "needs": [
+              "decode.html_table",
+              "rows.filter"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-SicSearch",
+            "upstream_model": "SicSearch"
+          }
+        ],
+        "rows_newly_unlocked": 4
+      },
+      {
         "capability": "flow.branch",
-        "cumulative_rows_unlocked": 58,
+        "cumulative_rows_unlocked": 77,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1198,7 +1622,7 @@
       },
       {
         "capability": "request.body",
-        "cumulative_rows_unlocked": 63,
+        "cumulative_rows_unlocked": 82,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1254,8 +1678,103 @@
         "rows_newly_unlocked": 5
       },
       {
+        "capability": "request.graphql",
+        "cumulative_rows_unlocked": 91,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "flow.fan_out",
+              "request.body",
+              "request.graphql"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-CalendarEarnings",
+            "upstream_model": "CalendarEarnings"
+          },
+          {
+            "needs": [
+              "flow.join",
+              "request.body",
+              "request.graphql"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-CompanyFilings",
+            "upstream_model": "CompanyFilings"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "request.body",
+              "request.graphql"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-CompanyNews",
+            "upstream_model": "CompanyNews"
+          },
+          {
+            "needs": [
+              "flow.fan_out",
+              "request.body",
+              "request.graphql"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-EquityInfo",
+            "upstream_model": "EquityInfo"
+          },
+          {
+            "needs": [
+              "flow.join",
+              "request.body",
+              "request.graphql"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-EquityQuote",
+            "upstream_model": "EquityQuote"
+          },
+          {
+            "needs": [
+              "request.body",
+              "request.graphql"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-EquityGainers",
+            "upstream_model": "EquityGainers"
+          },
+          {
+            "needs": [
+              "flow.fan_out",
+              "request.body",
+              "request.graphql"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-HistoricalDividends",
+            "upstream_model": "HistoricalDividends"
+          },
+          {
+            "needs": [
+              "request.body",
+              "request.graphql"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-InsiderTrading",
+            "upstream_model": "InsiderTrading"
+          },
+          {
+            "needs": [
+              "flow.join",
+              "request.body",
+              "request.graphql"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-PriceTargetConsensus",
+            "upstream_model": "PriceTargetConsensus"
+          }
+        ],
+        "rows_newly_unlocked": 9
+      },
+      {
         "capability": "request.body_pagination",
-        "cumulative_rows_unlocked": 71,
+        "cumulative_rows_unlocked": 99,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1333,262 +1852,8 @@
         "rows_newly_unlocked": 8
       },
       {
-        "capability": "request.graphql",
-        "cumulative_rows_unlocked": 79,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "flow.fan_out",
-              "request.body",
-              "request.graphql"
-            ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-CalendarEarnings",
-            "upstream_model": "CalendarEarnings"
-          },
-          {
-            "needs": [
-              "flow.join",
-              "request.body",
-              "request.graphql"
-            ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-CompanyFilings",
-            "upstream_model": "CompanyFilings"
-          },
-          {
-            "needs": [
-              "flow.fan_out",
-              "request.body",
-              "request.graphql"
-            ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-EquityInfo",
-            "upstream_model": "EquityInfo"
-          },
-          {
-            "needs": [
-              "flow.join",
-              "request.body",
-              "request.graphql"
-            ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-EquityQuote",
-            "upstream_model": "EquityQuote"
-          },
-          {
-            "needs": [
-              "request.body",
-              "request.graphql"
-            ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-EquityGainers",
-            "upstream_model": "EquityGainers"
-          },
-          {
-            "needs": [
-              "flow.fan_out",
-              "request.body",
-              "request.graphql"
-            ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-HistoricalDividends",
-            "upstream_model": "HistoricalDividends"
-          },
-          {
-            "needs": [
-              "request.body",
-              "request.graphql"
-            ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-InsiderTrading",
-            "upstream_model": "InsiderTrading"
-          },
-          {
-            "needs": [
-              "flow.join",
-              "request.body",
-              "request.graphql"
-            ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-PriceTargetConsensus",
-            "upstream_model": "PriceTargetConsensus"
-          }
-        ],
-        "rows_newly_unlocked": 8
-      },
-      {
-        "capability": "shape.columnar",
-        "cumulative_rows_unlocked": 83,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "flow.fan_out",
-              "flow.join",
-              "shape.columnar"
-            ],
-            "provider": "deribit",
-            "task_id": "OBB2-deribit-FuturesHistorical",
-            "upstream_model": "FuturesHistorical"
-          },
-          {
-            "needs": [
-              "path.object_keys",
-              "rows.filter",
-              "shape.columnar"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-EquitySearch",
-            "upstream_model": "EquitySearch"
-          },
-          {
-            "needs": [
-              "rows.filter",
-              "shape.columnar"
-            ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-BondPrices",
-            "upstream_model": "BondPrices"
-          },
-          {
-            "needs": [
-              "rows.filter",
-              "shape.columnar"
-            ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-TreasuryPrices",
-            "upstream_model": "TreasuryPrices"
-          }
-        ],
-        "rows_newly_unlocked": 4
-      },
-      {
-        "capability": "columns.derive",
-        "cumulative_rows_unlocked": 90,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.derive",
-              "flow.fan_out",
-              "flow.preflight_lookup",
-              "shape.columnar"
-            ],
-            "provider": "deribit",
-            "task_id": "OBB2-deribit-OptionsChains",
-            "upstream_model": "OptionsChains"
-          },
-          {
-            "needs": [
-              "columns.derive",
-              "flow.fan_out",
-              "shape.columnar"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-CompanyFilings",
-            "upstream_model": "CompanyFilings"
-          },
-          {
-            "needs": [
-              "columns.derive",
-              "flow.fan_out",
-              "shape.columnar"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-Filings",
-            "upstream_model": "Filings"
-          },
-          {
-            "needs": [
-              "columns.derive",
-              "flow.fan_out",
-              "path.explode"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-LatestFinancialReports",
-            "upstream_model": "LatestFinancialReports"
-          },
-          {
-            "needs": [
-              "columns.derive",
-              "request.body",
-              "request.graphql"
-            ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-CompanyNews",
-            "upstream_model": "CompanyNews"
-          },
-          {
-            "needs": [
-              "columns.derive",
-              "flow.join"
-            ],
-            "provider": "yfinance",
-            "task_id": "OBB2-yfinance-FuturesCurve",
-            "upstream_model": "FuturesCurve"
-          },
-          {
-            "needs": [
-              "columns.derive",
-              "columns.rescale",
-              "flow.preflight_lookup",
-              "shape.columnar"
-            ],
-            "provider": "cboe",
-            "task_id": "OBB2-cboe-OptionsChains",
-            "upstream_model": "OptionsChains"
-          }
-        ],
-        "rows_newly_unlocked": 7
-      },
-      {
-        "capability": "decode.html_table",
-        "cumulative_rows_unlocked": 94,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "decode.html_table",
-              "flow.fan_out",
-              "rows.filter"
-            ],
-            "provider": "multpl",
-            "task_id": "OBB2-multpl-SP500Multiples",
-            "upstream_model": "SP500Multiples"
-          },
-          {
-            "needs": [
-              "columns.derive",
-              "decode.html_table",
-              "flow.fan_out"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-FomcDocuments",
-            "upstream_model": "FomcDocuments"
-          },
-          {
-            "needs": [
-              "decode.html_table",
-              "decode.text_table",
-              "flow.fan_out"
-            ],
-            "provider": "government_us",
-            "task_id": "OBB2-government_us-WeatherBulletin",
-            "upstream_model": "WeatherBulletin"
-          },
-          {
-            "needs": [
-              "decode.html_table",
-              "rows.filter"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-SicSearch",
-            "upstream_model": "SicSearch"
-          }
-        ],
-        "rows_newly_unlocked": 4
-      },
-      {
         "capability": "shape.nested_data_message",
-        "cumulative_rows_unlocked": 98,
+        "cumulative_rows_unlocked": 103,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1602,7 +1867,7 @@
           },
           {
             "needs": [
-              "path.dotted_pointer",
+              "flow.composite_key_segment",
               "shape.nested_data_message"
             ],
             "provider": "imf",
@@ -1611,8 +1876,8 @@
           },
           {
             "needs": [
+              "flow.composite_key_segment",
               "flow.preflight_lookup",
-              "path.dotted_pointer",
               "shape.nested_data_message"
             ],
             "provider": "imf",
@@ -1621,9 +1886,9 @@
           },
           {
             "needs": [
+              "flow.composite_key_segment",
               "flow.fan_out",
               "flow.preflight_lookup",
-              "path.dotted_pointer",
               "shape.nested_data_message"
             ],
             "provider": "imf",
@@ -1634,108 +1899,8 @@
         "rows_newly_unlocked": 4
       },
       {
-        "capability": "rows.order_limit",
-        "cumulative_rows_unlocked": 101,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.rescale",
-              "rows.order_limit"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-FederalFundsRate",
-            "upstream_model": "FederalFundsRate"
-          },
-          {
-            "needs": [
-              "columns.rescale",
-              "rows.order_limit"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-OvernightBankFundingRate",
-            "upstream_model": "OvernightBankFundingRate"
-          },
-          {
-            "needs": [
-              "columns.rescale",
-              "rows.order_limit"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-SOFR",
-            "upstream_model": "SOFR"
-          }
-        ],
-        "rows_newly_unlocked": 3
-      },
-      {
-        "capability": "request.serialised_param",
-        "cumulative_rows_unlocked": 104,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "request.serialised_param",
-              "rows.order_limit"
-            ],
-            "provider": "wsj",
-            "task_id": "OBB2-wsj-ETFGainers",
-            "upstream_model": "ETFGainers"
-          },
-          {
-            "needs": [
-              "request.serialised_param",
-              "rows.order_limit"
-            ],
-            "provider": "wsj",
-            "task_id": "OBB2-wsj-ETFLosers",
-            "upstream_model": "ETFLosers"
-          },
-          {
-            "needs": [
-              "request.serialised_param",
-              "rows.order_limit"
-            ],
-            "provider": "wsj",
-            "task_id": "OBB2-wsj-ETFActive",
-            "upstream_model": "ETFActive"
-          }
-        ],
-        "rows_newly_unlocked": 3
-      },
-      {
-        "capability": "decode.tabular_file",
-        "cumulative_rows_unlocked": 107,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "decode.tabular_file"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-InflationExpectations",
-            "upstream_model": "InflationExpectations"
-          },
-          {
-            "needs": [
-              "decode.tabular_file"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-TotalFactorProductivity",
-            "upstream_model": "TotalFactorProductivity"
-          },
-          {
-            "needs": [
-              "decode.tabular_file",
-              "request.serialised_param"
-            ],
-            "provider": "government_us",
-            "task_id": "OBB2-government_us-CommodityPsdReport",
-            "upstream_model": "CommodityPsdReport"
-          }
-        ],
-        "rows_newly_unlocked": 3
-      },
-      {
         "capability": "decode.html_text",
-        "cumulative_rows_unlocked": 109,
+        "cumulative_rows_unlocked": 105,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1760,8 +1925,33 @@
         "rows_newly_unlocked": 2
       },
       {
+        "capability": "path.parameterized_pointer",
+        "cumulative_rows_unlocked": 107,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "path.parameterized_pointer",
+              "rows.filter"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-IndexConstituents",
+            "upstream_model": "IndexConstituents"
+          },
+          {
+            "needs": [
+              "path.parameterized_pointer",
+              "rows.filter"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-IndexSectors",
+            "upstream_model": "IndexSectors"
+          }
+        ],
+        "rows_newly_unlocked": 2
+      },
+      {
         "capability": "columns.cast",
-        "cumulative_rows_unlocked": 110,
+        "cumulative_rows_unlocked": 108,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1776,8 +1966,23 @@
         "rows_newly_unlocked": 1
       },
       {
+        "capability": "decode.delimited_headerless",
+        "cumulative_rows_unlocked": 109,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "decode.delimited_headerless"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-InstitutionsSearch",
+            "upstream_model": "InstitutionsSearch"
+          }
+        ],
+        "rows_newly_unlocked": 1
+      },
+      {
         "capability": "decode.opaque_bytes",
-        "cumulative_rows_unlocked": 111,
+        "cumulative_rows_unlocked": 110,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1793,7 +1998,7 @@
       },
       {
         "capability": "path.assemble_single_row",
-        "cumulative_rows_unlocked": 112,
+        "cumulative_rows_unlocked": 111,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1809,7 +2014,7 @@
         "rows_newly_unlocked": 1
       }
     ],
-    "rows_expressible_today": 2,
+    "rows_expressible_today": 3,
     "rows_outside_engine": [
       {
         "needs": [
@@ -2138,7 +2343,7 @@
         "upstream_model": "EquityScreener"
       }
     ],
-    "rows_pending": 148,
+    "rows_pending": 147,
     "rows_still_locked_after_engine_pool": [
       {
         "needs": [
@@ -2467,116 +2672,10 @@
         "upstream_model": "EquityScreener"
       }
     ],
-    "rows_unlocked_by_greedy_prefix": 112,
+    "rows_unlocked_by_greedy_prefix": 111,
     "rows_with_empty_need_set": [],
     "rows_with_no_engine_work_possible": 12,
     "shipped_cover_rows": [
-      {
-        "needs": [
-          "decode.delimited",
-          "path.dotted_pointer"
-        ],
-        "provider": "oecd",
-        "task_id": "OBB2-oecd-CompositeLeadingIndicator",
-        "upstream_model": "CompositeLeadingIndicator"
-      },
-      {
-        "needs": [
-          "decode.delimited",
-          "path.dotted_pointer",
-          "rows.filter"
-        ],
-        "provider": "oecd",
-        "task_id": "OBB2-oecd-ConsumerPriceIndex",
-        "upstream_model": "ConsumerPriceIndex"
-      },
-      {
-        "needs": [
-          "decode.delimited",
-          "path.dotted_pointer"
-        ],
-        "provider": "oecd",
-        "task_id": "OBB2-oecd-CountryInterestRates",
-        "upstream_model": "CountryInterestRates"
-      },
-      {
-        "needs": [
-          "decode.delimited",
-          "path.dotted_pointer"
-        ],
-        "provider": "oecd",
-        "task_id": "OBB2-oecd-GdpNominal",
-        "upstream_model": "GdpNominal"
-      },
-      {
-        "needs": [
-          "decode.delimited",
-          "path.dotted_pointer"
-        ],
-        "provider": "oecd",
-        "task_id": "OBB2-oecd-GdpReal",
-        "upstream_model": "GdpReal"
-      },
-      {
-        "needs": [
-          "decode.delimited",
-          "path.dotted_pointer"
-        ],
-        "provider": "oecd",
-        "task_id": "OBB2-oecd-GdpForecast",
-        "upstream_model": "GdpForecast"
-      },
-      {
-        "needs": [
-          "decode.delimited",
-          "path.dotted_pointer"
-        ],
-        "provider": "oecd",
-        "task_id": "OBB2-oecd-HousePriceIndex",
-        "upstream_model": "HousePriceIndex"
-      },
-      {
-        "needs": [
-          "decode.delimited",
-          "path.dotted_pointer"
-        ],
-        "provider": "oecd",
-        "task_id": "OBB2-oecd-SharePriceIndex",
-        "upstream_model": "SharePriceIndex"
-      },
-      {
-        "needs": [
-          "decode.delimited",
-          "path.dotted_pointer"
-        ],
-        "provider": "oecd",
-        "task_id": "OBB2-oecd-Unemployment",
-        "upstream_model": "Unemployment"
-      },
-      {
-        "needs": [
-          "columns.select"
-        ],
-        "provider": "sec",
-        "task_id": "OBB2-sec-CashFlowStatement",
-        "upstream_model": "CashFlowStatement"
-      },
-      {
-        "needs": [
-          "columns.select"
-        ],
-        "provider": "sec",
-        "task_id": "OBB2-sec-IncomeStatement",
-        "upstream_model": "IncomeStatement"
-      },
-      {
-        "needs": [
-          "decode.delimited"
-        ],
-        "provider": "sec",
-        "task_id": "OBB2-sec-InstitutionsSearch",
-        "upstream_model": "InstitutionsSearch"
-      },
       {
         "needs": [
           "columns.rename",
@@ -2597,54 +2696,30 @@
       },
       {
         "needs": [
-          "path.dotted_pointer",
-          "rows.filter"
-        ],
-        "provider": "tmx",
-        "task_id": "OBB2-tmx-IndexConstituents",
-        "upstream_model": "IndexConstituents"
-      },
-      {
-        "needs": [
-          "path.dotted_pointer",
-          "rows.filter"
-        ],
-        "provider": "tmx",
-        "task_id": "OBB2-tmx-IndexSectors",
-        "upstream_model": "IndexSectors"
-      },
-      {
-        "needs": [
           "decode.delimited",
           "rows.filter"
         ],
         "provider": "cboe",
         "task_id": "OBB2-cboe-EquitySearch",
         "upstream_model": "EquitySearch"
-      },
-      {
-        "needs": [
-          "rows.filter"
-        ],
-        "provider": "cboe",
-        "task_id": "OBB2-cboe-IndexSearch",
-        "upstream_model": "IndexSearch"
       }
     ]
   },
   "round_id": "C75",
   "schema_version": 1,
   "taxonomy": {
-    "canonical_capability_count": 37,
+    "canonical_capability_count": 40,
     "labels_supported": 96,
     "mentions_per_capability": {
       "columns.cast": 2,
       "columns.derive": 12,
       "columns.rename": 10,
       "columns.rescale": 7,
-      "columns.select": 11,
+      "columns.response_dependent_selection": 6,
+      "columns.select": 7,
       "decode.archive_member": 6,
-      "decode.delimited": 22,
+      "decode.delimited": 21,
+      "decode.delimited_headerless": 1,
       "decode.geojson": 4,
       "decode.html_table": 5,
       "decode.html_text": 4,
@@ -2653,6 +2728,7 @@
       "decode.text_table": 7,
       "decode.xml": 5,
       "flow.branch": 9,
+      "flow.composite_key_segment": 12,
       "flow.fan_out": 38,
       "flow.join": 22,
       "flow.preflight_lookup": 25,
@@ -2664,34 +2740,34 @@
       "outside.source_absent": 2,
       "outside.stateful": 2,
       "path.assemble_single_row": 1,
-      "path.dotted_pointer": 14,
       "path.explode": 6,
       "path.object_keys": 8,
+      "path.parameterized_pointer": 2,
       "request.body": 23,
       "request.body_pagination": 8,
       "request.graphql": 9,
       "request.serialised_param": 4,
-      "rows.filter": 26,
+      "rows.filter": 25,
       "rows.order_limit": 6,
       "shape.columnar": 10,
       "shape.nested_data_message": 4
     },
     "raw_label_count": 94,
-    "raw_label_mention_count": 358,
+    "raw_label_mention_count": 357,
     "rows_needing_only_this_capability": {
-      "columns.select": 2,
-      "decode.delimited": 1,
+      "decode.delimited_headerless": 1,
       "decode.tabular_file": 2,
       "flow.branch": 1,
       "flow.fan_out": 1,
-      "flow.preflight_lookup": 1,
-      "rows.filter": 1
+      "flow.preflight_lookup": 1
     },
     "statuses": {
       "absent": [
         "columns.cast",
         "columns.derive",
         "columns.rescale",
+        "columns.response_dependent_selection",
+        "decode.delimited_headerless",
         "decode.geojson",
         "decode.html_table",
         "decode.html_text",
@@ -2700,6 +2776,7 @@
         "decode.text_table",
         "decode.xml",
         "flow.branch",
+        "flow.composite_key_segment",
         "flow.fan_out",
         "flow.join",
         "flow.preflight_lookup",
@@ -2711,6 +2788,7 @@
         "path.assemble_single_row",
         "path.explode",
         "path.object_keys",
+        "path.parameterized_pointer",
         "request.body",
         "request.body_pagination",
         "request.graphql",
@@ -2726,7 +2804,6 @@
         "decode.archive_member",
         "decode.delimited",
         "flow.url_template",
-        "path.dotted_pointer",
         "rows.filter"
       ],
       "unanchored": [
