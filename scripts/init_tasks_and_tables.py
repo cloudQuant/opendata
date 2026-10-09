@@ -124,8 +124,8 @@ async def sync_data_warehouse_tables() -> None:
 
     async with async_session_maker() as db:
         # Get existing data_tables entries
-        result = await db.execute(select(DataTable.table_name))
-        existing_tables = {row[0] for row in result.fetchall()}
+        existing_result = await db.execute(select(DataTable.table_name))
+        existing_tables = {row[0] for row in existing_result.fetchall()}
         print(f"Found {len(existing_tables)} existing entries in data_tables metadata")
 
         # Find new tables to add
@@ -133,8 +133,8 @@ async def sync_data_warehouse_tables() -> None:
         print(f"Found {len(new_tables)} new tables to sync")
 
         # Try to match tables to scripts
-        result = await db.execute(select(DataScript))
-        scripts = result.scalars().all()
+        script_result = await db.execute(select(DataScript))
+        scripts = script_result.scalars().all()
         script_map = {}
         for s in scripts:
             # Map by target_table

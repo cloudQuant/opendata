@@ -339,10 +339,10 @@ def warehouse_face(engine: Engine) -> None:
             f"  {report}: 存在，列 {len(cols[report])} 条；判据点名的 9 列在位 {len(present)}/9 "
             f"缺 {sorted(set(wanted) - set(present))}"
         )
-        print(f"  {report}: rows={_scalar(engine, f'SELECT COUNT(*) FROM `{report}`')}")  # noqa: S608
+        print(f"  {report}: rows={_scalar(engine, f'SELECT COUNT(*) FROM `{report}`')}")  # noqa: S608  # nosec B608  # report is the 'dq_diff_report' literal at line 324
         batches = _rows(
             engine,
-            f"SELECT batch_id, domain, source_a, source_b, COUNT(*) FROM `{report}` "  # noqa: S608
+            f"SELECT batch_id, domain, source_a, source_b, COUNT(*) FROM `{report}` "  # noqa: S608  # nosec B608  # report is the 'dq_diff_report' literal at line 324
             "GROUP BY batch_id, domain, source_a, source_b ORDER BY batch_id LIMIT 20",
         )
         print(f"  {report}: batch 普查 {len(batches)} 组")
@@ -356,7 +356,7 @@ def warehouse_face(engine: Engine) -> None:
         )
         shape = _rows(
             engine,
-            f"SELECT `field`, `verdict`, COUNT(*), SUM(value_a IS NULL), SUM(deviation IS NULL) "  # noqa: S608
+            f"SELECT `field`, `verdict`, COUNT(*), SUM(value_a IS NULL), SUM(deviation IS NULL) "  # noqa: S608  # nosec B608  # report is the 'dq_diff_report' literal at line 324
             f"FROM `{report}` GROUP BY `field`, `verdict` ORDER BY 3 DESC LIMIT 12",
         )
         print(f"  {report}: field × verdict 形状（判据点名的字段级记录面）")
@@ -367,7 +367,7 @@ def warehouse_face(engine: Engine) -> None:
             )
         sample = _rows(
             engine,
-            f"SELECT `biz_key`, `field` FROM `{report}` ORDER BY `biz_key` LIMIT 3",  # noqa: S608
+            f"SELECT `biz_key`, `field` FROM `{report}` ORDER BY `biz_key` LIMIT 3",  # noqa: S608  # nosec B608  # report is the 'dq_diff_report' literal at line 324
         )
         print(f"  {report}: biz_key 样例 {[(str(r[0]), str(r[1])) for r in sample]}")
     else:
@@ -377,22 +377,22 @@ def warehouse_face(engine: Engine) -> None:
     trace = ("source", "_merged_at", "_diff_flag", "_as_of")
     if dwd in tables:
         have = [c for c in trace if c in cols[dwd]]
-        print(f"  {dwd}: rows={_scalar(engine, f'SELECT COUNT(*) FROM `{dwd}`')} 留痕列在位 {have}")  # noqa: S608
+        print(f"  {dwd}: rows={_scalar(engine, f'SELECT COUNT(*) FROM `{dwd}`')} 留痕列在位 {have}")  # noqa: S608  # nosec B608  # dwd is the 'dwd_stock_daily' literal at line 376
         flagged = _rows(
             engine,
-            f"SELECT _diff_flag, COUNT(*) FROM `{dwd}` GROUP BY _diff_flag "  # noqa: S608
+            f"SELECT _diff_flag, COUNT(*) FROM `{dwd}` GROUP BY _diff_flag "  # noqa: S608  # nosec B608  # dwd is the 'dwd_stock_daily' literal at line 376
             "ORDER BY 2 DESC LIMIT 6",
         )
         print(f"  {dwd}: _diff_flag 普查 {[(int(a), int(b)) for a, b in flagged]}")
         by_source = _rows(
             engine,
-            f"SELECT source, _diff_flag, COUNT(*) FROM `{dwd}` "  # noqa: S608
+            f"SELECT source, _diff_flag, COUNT(*) FROM `{dwd}` "  # noqa: S608  # nosec B608  # dwd is the 'dwd_stock_daily' literal at line 376
             "GROUP BY source, _diff_flag ORDER BY 3 DESC LIMIT 10",
         )
         print(f"  {dwd}: _diff_flag × source 普查")
         for row in by_source:
             print(f"      source={row[0]!r} _diff_flag={int(row[1])} rows={int(row[2])}")
-        span = _rows(engine, f"SELECT MIN(_as_of), MAX(_as_of) FROM `{dwd}`")[0]  # noqa: S608
+        span = _rows(engine, f"SELECT MIN(_as_of), MAX(_as_of) FROM `{dwd}`")[0]  # noqa: S608  # nosec B608  # dwd is the 'dwd_stock_daily' literal at line 376
         print(f"  {dwd}: _as_of {span[0]} .. {span[1]}")
 
     for source in ("ths", "akshare"):
@@ -401,13 +401,13 @@ def warehouse_face(engine: Engine) -> None:
             print(f"  {table}: 不存在")
             continue
         date_col = next((c for c in cols[table] if c in ("trade_date", "日期", "date")), None)
-        total = _scalar(engine, f"SELECT COUNT(*) FROM `{table}`")  # noqa: S608
+        total = _scalar(engine, f"SELECT COUNT(*) FROM `{table}`")  # noqa: S608  # nosec B608  # table = 'ods_stock_daily_' + literal ths|akshare, gated on reflected names
         if date_col is None:
             print(f"  {table}: rows={total} 无可用的日期列名")
             continue
         span = _rows(
             engine,
-            f"SELECT MIN(`{date_col}`), MAX(`{date_col}`) FROM `{table}`",  # noqa: S608
+            f"SELECT MIN(`{date_col}`), MAX(`{date_col}`) FROM `{table}`",  # noqa: S608  # nosec B608  # read-only census; date_col is a reflected warehouse column name
         )[0]
         print(f"  {table}: rows={total} {date_col} {span[0]} .. {span[1]}")
 
