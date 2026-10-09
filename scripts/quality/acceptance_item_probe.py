@@ -11759,13 +11759,57 @@ def measure_ac10_03(ctx: Context) -> Facts:
     )
     current_hashes = measured.get("current_source_files_sha256")
     source_hash_count = len(current_hashes) if isinstance(current_hashes, dict) else 0
-    package_reviews_complete = (
-        isinstance(provider_names, list)
-        and isinstance(reviewed_provider_names, list)
-        and provider_names == reviewed_provider_names
-        and len(reviewed_provider_names) == measured.get("provider_count")
-        and len(reviewed_provider_names) == 7
+    bundle_paths = set(current_hashes) if isinstance(current_hashes, dict) else set()
+    bundle_file_counts = measured.get("provider_file_counts")
+    bundle_counts = (
+        {str(name): int(count) for name, count in bundle_file_counts.items()}
+        if isinstance(bundle_file_counts, dict)
+        else {}
     )
+
+    # The review population, counted a second way. ``_discover_sources`` walks the worktree with
+    # ``rglob``; this walks the git index and keeps only paths that are still on disk. Agreement
+    # between the two is the face that a literal package count could never be: an untracked file
+    # dropped into a provider package, or a package registered without its review row, moves one
+    # side and reads as a diff instead of silently shrinking or growing a hardcoded number.
+    registry_packages = provider_packages(ctx)
+    registry_files = {name: provider_py_files(ctx, name) for name in registry_packages}
+    registry_total = sum(len(paths) for paths in registry_files.values())
+    registry_paths = {rel for paths in registry_files.values() for rel in paths}
+    names_text = ", ".join(registry_packages)
+    registry_only_names = sorted(set(registry_packages) - set(bundle_counts))
+    bundle_only_names = sorted(set(bundle_counts) - set(registry_packages))
+    count_mismatch_packages = sorted(
+        name
+        for name in set(registry_files) & set(bundle_counts)
+        if len(registry_files[name]) != bundle_counts[name]
+    )
+    registry_only_paths = sorted(registry_paths - bundle_paths)
+    bundle_only_paths = sorted(bundle_paths - registry_paths)
+    source_faces = (
+        number(str(measured.get("python_files", "-"))),
+        source_hash_count,
+        number(str(measured.get("reviewed_python_files", "-"))),
+        number(str(measured.get("similarity_manifest_python_files", "-"))),
+    )
+
+    # The baseline side stays a *pinned* scope (a separate open question from the local census), so
+    # what the judge can require is that the artifact compared the packages the harness declares --
+    # derived here from the manifest paths, not from the artifact's own provider list.
+    baseline_names: list[str] = []
+    try:
+        similarity_value = json.loads(ctx.read(provider_review.SIMILARITY_REL.as_posix()))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ProbeError):
+        similarity_value = None
+    if isinstance(similarity_value, dict):
+        manifests = similarity_value.get("source_manifests")
+        rows = manifests.get("baseline_files_sha256") if isinstance(manifests, dict) else None
+        seen: set[str] = set()
+        for row in rows if isinstance(rows, list) else []:
+            parts = str(row.get("path", "")).split("/") if isinstance(row, dict) else []
+            if len(parts) > 2 and parts[0] == "openbb_platform" and parts[1] == "providers":
+                seen.add(parts[2])
+        baseline_names = sorted(seen)
     file_set_or_hash_issues = any(
         code.endswith("-hash-mismatch") or code.endswith("-file-set-mismatch")
         for code in issue_codes
@@ -11784,6 +11828,12 @@ def measure_ac10_03(ctx: Context) -> Facts:
             value == provider_review.EXPECTED_NEAREST_REVIEW_RESULT for value in nearest_results
         )
     )
+    package_reviews_complete = (
+        isinstance(provider_names, list)
+        and isinstance(reviewed_provider_names, list)
+        and provider_names == reviewed_provider_names
+        and len(reviewed_provider_names) == number(str(measured.get("provider_count", "-")))
+    )
     return {
         "provider_review_valid": flag(result.valid),
         "provider_review_issue_count": count(len(result.issues)),
@@ -11792,6 +11842,32 @@ def measure_ac10_03(ctx: Context) -> Facts:
         "provider_count": str(measured.get("provider_count", "-")),
         "provider_names": provider_names_text,
         "reviewed_provider_names": reviewed_provider_names_text,
+        "registry_provider_names": names_text,
+        "registry_source_file_count": str(registry_total),
+        "providers_missing_from_review": ", ".join(registry_only_names) or "-",
+        "reviewed_providers_not_registered": ", ".join(bundle_only_names) or "-",
+        "per_package_file_count_mismatches": ", ".join(count_mismatch_packages) or "-",
+        "registry_files_outside_review": count(len(registry_only_paths)),
+        "review_files_outside_registry": count(len(bundle_only_paths)),
+        "review_population_matches_registry": flag(
+            registry_total > 0
+            and not registry_only_names
+            and not bundle_only_names
+            and not count_mismatch_packages
+            and not registry_only_paths
+            and not bundle_only_paths
+            and provider_names_text == names_text
+        ),
+        "source_faces_match_registry": flag(
+            registry_total > 0 and all(value == registry_total for value in source_faces)
+        ),
+        "baseline_provider_names": ", ".join(baseline_names) or "-",
+        "baseline_providers_pinned": ", ".join(sorted(provider_review.EXPECTED_BASELINE_PROVIDERS)),
+        "baseline_scope_matches_pinned": flag(
+            bool(baseline_names)
+            and set(baseline_names) == set(provider_review.EXPECTED_BASELINE_PROVIDERS)
+        ),
+        "openbb_baseline_expected": provider_review.EXPECTED_OPENBB_COMMIT,
         "current_source_file_count": str(measured.get("python_files", "-")),
         "source_hash_entry_count": count(source_hash_count),
         "reviewed_source_file_count": str(measured.get("reviewed_python_files", "-")),
@@ -11817,27 +11893,31 @@ def measure_ac10_03(ctx: Context) -> Facts:
 
 
 def judge_ac10_03(facts: Facts) -> Verdict:
-    """Require current, hash-bound review evidence for every enabled provider source."""
-    expected_providers = "akshare, ecb, fred, imf, oecd, ths, yfinance"
+    """Require the review to cover the registry's own census, file for file.
+
+    Nothing here is a package or file count typed into the judge. The local population is two
+    independent measurements that have to agree (the git-index census the AC-16 face builds, and the
+    worktree walk the evidence validator does), and the baseline population is the provider set the
+    harness pins, re-derived from the manifest paths the artifact actually compares. Registering a
+    provider without reviewing it, leaving a file out of the bundle, or reviewing a package that is
+    no longer registered each move one side of an equality, so the item is closeable by real work on
+    a 12-package tree exactly as on a 7-package one.
+    """
     ok = all(
         (
             facts["provider_review_valid"] == "yes",
             facts["provider_review_issue_count"] == "0",
             facts["provider_scope"] == "current_registered_provider_packages",
-            facts["provider_count"] == "7",
-            facts["provider_names"] == expected_providers,
-            facts["reviewed_provider_names"] == expected_providers,
-            facts["current_source_file_count"] == "71",
-            facts["source_hash_entry_count"] == "71",
-            facts["reviewed_source_file_count"] == "71",
-            facts["similarity_source_file_count"] == "71",
-            number(facts["baseline_source_file_count"]) == 121,
+            facts["review_population_matches_registry"] == "yes",
+            facts["source_faces_match_registry"] == "yes",
             facts["current_source_hashes_bound"] == "yes",
             facts["provider_sources_parsed"] == "yes",
             facts["openbb_import_count"] == "0",
             facts["zero_openbb_imports"] == "yes",
             facts["reviewer_authorized"] == "yes",
-            facts["openbb_baseline_commit"] == "3e071fcc2cd9f891cac6040ae60296dba76dab46",
+            facts["openbb_baseline_commit"] == facts["openbb_baseline_expected"],
+            facts["baseline_scope_matches_pinned"] == "yes",
+            number(facts["baseline_source_file_count"]) > 0,
             facts["candidate_count"] == "0",
             facts["unreviewed_candidates"] == "0",
             facts["package_reviews_complete"] == "yes",
@@ -11849,15 +11929,28 @@ def judge_ac10_03(facts: Facts) -> Verdict:
         )
     )
     readings = (
-        f"当前已注册 provider = {facts['provider_names']}（{facts['provider_count']}），审阅范围 = "
-        f"{facts['provider_scope']}；源码/审阅/相似度清单 = {facts['current_source_file_count']}/"
-        f"{facts['reviewed_source_file_count']}/"
-        f"{facts['similarity_source_file_count']} 个 Python 文件，"
-        f"源 SHA 绑定完整 = {facts['current_source_hashes_bound']}（条目数="
-        f"{facts['source_hash_entry_count']}）",
-        f"源码可解析 = {facts['provider_sources_parsed']}，OpenBB import = "
-        f"{facts['openbb_import_count']}（零导入={facts['zero_openbb_imports']}）；固定基线 = "
-        f"{facts['openbb_baseline_commit']}，审阅授权 = {facts['reviewer_authorized']}",
+        f"注册面（git index 普查）= {facts['registry_provider_names']}"
+        f"（{facts['registry_source_file_count']} 个 py）；审阅档案发现面 = "
+        f"{facts['provider_names']}（{facts['provider_count']} 包 / "
+        f"{facts['current_source_file_count']} py）；两包面差 = 缺档 "
+        f"{facts['providers_missing_from_review']} / 多余 "
+        f"{facts['reviewed_providers_not_registered']}，逐包文件数错配 = "
+        f"{facts['per_package_file_count_mismatches']}，文件集差 = 档案外 "
+        f"{facts['registry_files_outside_review']} / 注册外 "
+        f"{facts['review_files_outside_registry']}；包面/文件面对齐 = "
+        f"{facts['review_population_matches_registry']}",
+        f"源码/SHA 台账/审阅/相似度四份面 = {facts['current_source_file_count']}/"
+        f"{facts['source_hash_entry_count']}/{facts['reviewed_source_file_count']}/"
+        f"{facts['similarity_source_file_count']}，全部等于注册普查 = "
+        f"{facts['source_faces_match_registry']}；源 SHA 绑定完整 = "
+        f"{facts['current_source_hashes_bound']}，源码可解析 = {facts['provider_sources_parsed']}，"
+        f"OpenBB import = {facts['openbb_import_count']}（零导入={facts['zero_openbb_imports']}）",
+        f"基线固定 = {facts['openbb_baseline_commit']}（期望 "
+        f"{facts['openbb_baseline_expected']}），"
+        f"基线包面 = {facts['baseline_provider_names']}（钉住 "
+        f"{facts['baseline_providers_pinned']}，对齐={facts['baseline_scope_matches_pinned']}），"
+        f"基线 py = {facts['baseline_source_file_count']} 个；"
+        f"审阅授权 = {facts['reviewer_authorized']}",
         f"候选/未审候选 = {facts['candidate_count']}/{facts['unreviewed_candidates']}，审阅完成 = "
         f"{facts['review_complete']}（packages={facts['package_reviews_complete']}，"
         f"nearest={facts['nearest_review_complete']}）；nearest review = "
@@ -11869,9 +11962,13 @@ def judge_ac10_03(facts: Facts) -> Verdict:
     reason = (
         ""
         if ok
-        else "AC-10|03 需要当前 provider 源码审阅完整、与源码及固定 OpenBB 基线绑定，"
-        "并保留零导入与已完成的正向审阅结论；"
-        f"当前问题摘要={facts['provider_review_issue_codes']}。"
+        else "AC-10|03 需要审阅档案覆盖当前注册 provider 的普查面（包名、逐包文件数、文件集、四份"
+        "文件计数互相对齐），并与固定的 OpenBB 基线包面与提交绑定，保留零导入、候选清零与已完成的"
+        "正向审阅结论；"
+        f"当前缺档={facts['providers_missing_from_review']}，档案外文件="
+        f"{facts['registry_files_outside_review']}，注册外文件="
+        f"{facts['review_files_outside_registry']}，基线包面对齐="
+        f"{facts['baseline_scope_matches_pinned']}，问题摘要={facts['provider_review_issue_codes']}。"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
@@ -15538,8 +15635,31 @@ PROBES: Final[tuple[Probe, ...]] = (
                 (
                     ("current_source_file_count", "70"),
                     ("source_hash_entry_count", "70"),
+                    ("source_faces_match_registry", "no"),
                     ("current_source_hashes_bound", "no"),
                 ),
+                GAP,
+            ),
+            Break(
+                "a provider package is registered on disk with no review row behind it",
+                (
+                    ("providers_missing_from_review", "sec"),
+                    ("review_population_matches_registry", "no"),
+                ),
+                GAP,
+            ),
+            Break(
+                "a provider source file appears in the census after the bundle was built",
+                (
+                    ("registry_files_outside_review", "1"),
+                    ("review_population_matches_registry", "no"),
+                    ("source_faces_match_registry", "no"),
+                ),
+                GAP,
+            ),
+            Break(
+                "the similarity artifact compares an OpenBB provider set other than the pinned one",
+                (("baseline_scope_matches_pinned", "no"),),
                 GAP,
             ),
             Break(
@@ -15573,20 +15693,27 @@ PROBES: Final[tuple[Probe, ...]] = (
             "provider_review_issue_count": "0",
             "provider_review_issue_codes": "-",
             "provider_scope": "current_registered_provider_packages",
-            "provider_count": "7",
-            "provider_names": "akshare, ecb, fred, imf, oecd, ths, yfinance",
-            "reviewed_provider_names": "akshare, ecb, fred, imf, oecd, ths, yfinance",
-            "current_source_file_count": "71",
-            "source_hash_entry_count": "71",
-            "reviewed_source_file_count": "71",
-            "similarity_source_file_count": "71",
-            "baseline_source_file_count": "121",
+            "provider_names": "*registry_provider_names",
+            "reviewed_provider_names": "*registry_provider_names",
+            "providers_missing_from_review": "-",
+            "reviewed_providers_not_registered": "-",
+            "per_package_file_count_mismatches": "-",
+            "registry_files_outside_review": "0",
+            "review_files_outside_registry": "0",
+            "review_population_matches_registry": "yes",
+            "current_source_file_count": "*registry_source_file_count",
+            "source_hash_entry_count": "*registry_source_file_count",
+            "reviewed_source_file_count": "*registry_source_file_count",
+            "similarity_source_file_count": "*registry_source_file_count",
+            "source_faces_match_registry": "yes",
             "current_source_hashes_bound": "yes",
             "provider_sources_parsed": "yes",
             "openbb_import_count": "0",
             "zero_openbb_imports": "yes",
             "reviewer_authorized": "yes",
-            "openbb_baseline_commit": "3e071fcc2cd9f891cac6040ae60296dba76dab46",
+            "openbb_baseline_commit": "*openbb_baseline_expected",
+            "baseline_provider_names": "*baseline_providers_pinned",
+            "baseline_scope_matches_pinned": "yes",
             "candidate_count": "0",
             "unreviewed_candidates": "0",
             "package_reviews_complete": "yes",
