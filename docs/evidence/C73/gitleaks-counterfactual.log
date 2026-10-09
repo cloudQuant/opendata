@@ -1,0 +1,41 @@
+===== C73 gitleaks 允许面反事实（完整未裁剪）=====
+captured_at=2026-10-09T00:07:24Z
+branch=dev  HEAD_at_capture=5a23239
+对照组 = git show 5a23239:.gitleaks.toml（探针里钉死的 CONTROL_REF，即允许面落库之前最后一版配置）
+被测形状 = 从工作区 .gitleaks.toml 解析出的 regexTarget=line 允许面（探针不再手抄这条正则）
+gitleaks=8.30.1 python=Python 3.11.8
+--- command ---
+python docs/evidence/C73/gitleaks-counterfactual.py
+--- end ---
+[0] shape under test (read from .gitleaks.toml) = "[^"\n]{2,160}?/[^"\n]{1,160}?\.[A-Za-z0-9]{1,6}": "[0-9a-f]{64}"
+=== [1] 真实仓库全历史：旧配置命中须全部落在 path->摘要 行上，新配置须为 0 ===
+旧配置 exit=1 命中=441
+  不在 path->摘要 行上的=0  样例=[]
+新配置 exit=0 命中=0  样例=[]
+允许面吞掉的命中数=441
+
+探针仓库：旧配置命中=['config.json:2[generic-api-key]', 'integrity.json:2[generic-api-key]', 'leaky.py:1[generic-api-key]', 'manifest.json:2[generic-api-key]', 'manifest.json:3[generic-api-key]']
+探针仓库：新配置 exit=1 命中=['config.json:2[generic-api-key]', 'leaky.py:1[generic-api-key]', 'manifest.json:3[generic-api-key]']
+
+=== [2] docs/evidence 里植入的真凭证必须仍然报出（paths 条件会在此失效）===
+  植入凭证 manifest.json:3[generic-api-key]: 旧=True 新=True
+  植入令牌 leaky.py:1[generic-api-key]: 旧=True 新=True
+  同档案内的摘要对 manifest.json:2[generic-api-key]: 旧=True 新=False
+
+=== [3] 非路径键名下的 64 位十六进制必须仍然报出 ===
+  非路径键 config.json:2[generic-api-key]: 旧=True 新=True
+
+=== [4] 已知代价：docs/evidence 之外的 path->摘要 也会被放过 ===
+  integrity.json:2[generic-api-key]: 旧=True 新=False
+     -> 登记为允许面的代价（见 .gitleaks.toml 已知边界与本档）
+
+=== [5] C36 的 SDMX 允许面必须不受本次改动影响 ===
+新配置对 SDMX 文件的命中=[]
+
+=== [6] 被否决的写法：paths + 形状，证明 gitleaks 的允许面条件是「或」 ===
+paths 版命中=[]
+被 paths 版吞掉、而形状版保住的=['config.json:2[generic-api-key]', 'integrity.json:2[generic-api-key]', 'leaky.py:1[generic-api-key]', 'manifest.json:2[generic-api-key]', 'manifest.json:3[generic-api-key]']
+     -> 所以 .gitleaks.toml 不用 paths 收口；形状版的三类凭证仍全部报出（[2]/[3]）
+
+OK: 允许面只吞掉 path->摘要 行；植入凭证仍报出，SDMX 允许面保持生效。
+COUNTERFACTUAL_EXIT=0

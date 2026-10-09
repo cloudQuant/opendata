@@ -36,3 +36,31 @@ regexes = [
   '''^[A-Z0-9]{1,12}(\.[A-Z0-9_]{1,14}){3,}$''',
   '''^API_KEY_FAILURE_DELAY_SECONDS=0\.05$''',
 ]
+
+# C73: the archived gate/run manifests under docs/evidence/ record, for every tracked
+# source file, the pair `"<repo/path>.<ext>": "<sha256 of that file>"`. `generic-api-key`
+# reads the file path as the key name and the 64-hex digest as the key value, so all 441
+# history findings since 5080639 came from that one shape (1 commit, 18 files, 441 of 441
+# reported lines carry such a pair, 0 credential-shaped strings in any of the 18). The
+# recompute is docs/evidence/C73/secret-triage.txt and the differential is
+# docs/evidence/C73/gitleaks-counterfactual.log.
+#
+# The exemption is deliberately keyed on the *pair*, not on a location, and measured both
+# ways: gitleaks OR-s an allowlist's conditions together, so adding `paths =
+# ['''^docs/evidence/''']` here would silence every finding in that tree regardless of
+# shape - arm [6] of docs/evidence/C73/gitleaks-counterfactual.log re-measures that variant
+# and shows a planted `ghp_` token in docs/evidence/ vanishing under it, while the shipped
+# shape rule keeps it. That is the exact accident this file's header records, so path
+# scoping stays out.
+#
+# Known boundary (measured, not assumed): a 64-lowercase-hex value written under a quoted
+# key that contains both a '/' and a file extension is exempt anywhere in the tree. A real
+# key under a credential-named field, a 64-hex value under a non-path key such as
+# "api_key", and any other credential shape stay reported - the counterfactual proves all
+# three, and re-proves the C36 SDMX exemption above still bites.
+[[allowlists]]
+description = "Evidence manifests store sha256 integrity digests of tracked files, keyed by repo-relative path."
+regexTarget = "line"
+regexes = [
+  '''"[^"\n]{2,160}?/[^"\n]{1,160}?\.[A-Za-z0-9]{1,6}": "[0-9a-f]{64}"''',
+]
