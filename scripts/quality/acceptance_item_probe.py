@@ -11488,6 +11488,285 @@ def judge_section5_01(facts: Facts) -> Verdict:
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
 
+#: AC-10|01 has to answer for a provider tree it cannot describe in the abstract, so the
+#: defaults below are the shape of an *unmeasured* reading: every judged face is left at a value
+#: the judge rejects, rather than at "0"/"yes", which would turn an import failure into a pass.
+AC10_01_UNMEASURED: Final[Facts] = {
+    "plane_import_error": "not attempted",
+    "plane_read_error": "-",
+    "catalog_identity_count": "-1",
+    "enabled_count": "-1",
+    "reserved_count": "-1",
+    "partition_identity_holds": "no",
+    "threshold_scope": "unknown",
+    "registry_leg_count": "-1",
+    "registry_unique_key_count": "-1",
+    "duplicate_registry_keys": "-1",
+    "capability_deficit": "-1",
+    "enabled_sources_without_legs": "-1",
+    "reserved_sources_with_legs": "-1",
+    "auto_routable_leg_count": "-1",
+    "unverified_leg_count": "-1",
+    "unmarked_unverified_legs": "-1",
+    "enabled_sources_fully_compared": "-1",
+    "enabled_sources_not_compared": "-1",
+    "reserved_rows_missing": "-1",
+    "reserved_rows_not_todo": "-1",
+    "capability_on_demand_marks": "-1",
+    "inventory_on_demand_marks": "-1",
+    "authority_violation_count": "-1",
+    "authority_violation_summary": "-",
+    "enabled_source_names": "-",
+    "uncompared_source_names": "-",
+    "upstream_section_rows": "-1",
+    "local_section_rows": "-1",
+}
+
+
+def measure_ac10_01(ctx: Context) -> Facts:
+    """Measure AC-10|01 against the live provider tree rather than a written tally."""
+    facts: Facts = dict(AC10_01_UNMEASURED)
+    root_entry = str(ctx.root.resolve())
+    inserted_root = root_entry not in sys.path
+    if inserted_root:
+        sys.path.insert(0, root_entry)
+    try:
+        try:
+            from opendata.data.capability import ON_DEMAND, UPSTREAM_PENDING
+            from opendata.data.providers.catalog import list_providers, register_providers
+
+            # The registry's own routing key and the C33 plane's own status rule: re-deriving
+            # either here would let the probe agree with itself instead of with the router.
+            from opendata.data.registry import (
+                ProviderRegistry,
+                _capability_key,
+                reconcile_authority,
+            )
+            from scripts.quality.openbb_inventory_plane import (
+                STATUS_TODO,
+                STATUS_VERIFIED,
+                expected_status,
+                parse_rows,
+            )
+        except ImportError as exc:
+            facts["plane_import_error"] = f"{type(exc).__name__}:{exc}"
+            return facts
+
+        try:
+            registry = ProviderRegistry()
+            register_providers(registry)
+            caps = list(registry.capabilities())
+        except (ImportError, RuntimeError, ValueError) as exc:
+            facts["plane_import_error"] = f"{type(exc).__name__}:{exc}"
+            return facts
+        facts["plane_import_error"] = "-"
+
+        providers = list(list_providers())
+        enabled = sorted(provider.source for provider in providers if provider.is_implemented)
+        reserved = sorted(provider.source for provider in providers if not provider.is_implemented)
+        declared = {provider.source: provider for provider in providers}
+
+        legs_by_source: dict[str, list[Any]] = {}
+        key_counts: dict[str, int] = {}
+        for capability in caps:
+            legs_by_source.setdefault(capability.source, []).append(capability)
+            key = _capability_key(capability)
+            key_counts[key] = key_counts.get(key, 0) + 1
+
+        # 全部注册：每个已启用 provider 自己声明的 capability 身份都在活的 registry 里。
+        deficit = sum(
+            1
+            for source in enabled
+            for capability in declared[source].capabilities
+            if _capability_key(capability) not in key_counts
+        )
+        auto_caps = [capability for capability in caps if capability.participates_in_auto()]
+        unverified = [capability for capability in caps if not capability.participates_in_auto()]
+        unmarked = [
+            capability
+            for capability in unverified
+            if capability.notes not in (ON_DEMAND, UPSTREAM_PENDING)
+        ]
+        status_by_source = {
+            source: expected_status(
+                [(capability.domain, capability.participates_in_auto()) for capability in legs]
+            )
+            for source, legs in legs_by_source.items()
+        }
+        compared = sorted(
+            source for source in enabled if status_by_source.get(source) == STATUS_VERIFIED
+        )
+        uncompared = sorted(
+            source for source in enabled if status_by_source.get(source) != STATUS_VERIFIED
+        )
+
+        rows: list[Any] = []
+        try:
+            rows = parse_rows(ctx.read(RIGHTS_INVENTORY))
+        except (OSError, UnicodeDecodeError, ProbeError) as exc:
+            facts["plane_read_error"] = f"{type(exc).__name__}"
+        row_fields: dict[str, list[dict[str, str]]] = {}
+        for row in rows:
+            row_fields.setdefault(str(row.provider), []).append(row.fields)
+        reserved_rows_missing = sum(1 for source in reserved if source not in row_fields)
+        reserved_rows_not_todo = sum(
+            1
+            for source in reserved
+            if any(fields.get("status") != STATUS_TODO for fields in row_fields.get(source, []))
+        )
+        inventory_marks = sum(
+            1
+            for fields in row_fields.values()
+            for field in fields
+            if any(str(value).strip() == ON_DEMAND for value in field.values())
+        )
+
+        violations = list(reconcile_authority(caps))
+        upstream_rows = sum(1 for row in rows if str(row.section) == "providers")
+        local_rows = sum(1 for row in rows if str(row.section) == "local_providers")
+
+        facts.update(
+            {
+                "catalog_identity_count": count(len(providers)),
+                "enabled_count": count(len(enabled)),
+                "reserved_count": count(len(reserved)),
+                "partition_identity_holds": flag(
+                    len(enabled) + len(reserved) == len(providers)
+                    and not set(enabled) & set(reserved)
+                ),
+                # 判据明写「不设 32 个全部完成作为门槛」，所以门槛的作用域本身是一条读数：
+                # 被判定的是已启用集合，而不是全部目录身份。
+                "threshold_scope": (
+                    "enabled-only" if 0 < len(enabled) < len(providers) else "whole-catalog"
+                ),
+                "registry_leg_count": count(len(caps)),
+                "registry_unique_key_count": count(len(key_counts)),
+                "duplicate_registry_keys": count(
+                    sum(1 for total in key_counts.values() if total > 1)
+                ),
+                "capability_deficit": count(deficit),
+                "enabled_sources_without_legs": count(
+                    sum(1 for source in enabled if not legs_by_source.get(source))
+                ),
+                "reserved_sources_with_legs": count(
+                    sum(1 for source in reserved if legs_by_source.get(source))
+                ),
+                "auto_routable_leg_count": count(len(auto_caps)),
+                "unverified_leg_count": count(len(unverified)),
+                "unmarked_unverified_legs": count(len(unmarked)),
+                "enabled_sources_fully_compared": count(len(compared)),
+                "enabled_sources_not_compared": count(len(uncompared)),
+                "reserved_rows_missing": count(reserved_rows_missing),
+                "reserved_rows_not_todo": count(reserved_rows_not_todo),
+                "capability_on_demand_marks": count(
+                    sum(1 for capability in caps if capability.notes == ON_DEMAND)
+                ),
+                "inventory_on_demand_marks": count(inventory_marks),
+                "authority_violation_count": count(len(violations)),
+                "authority_violation_summary": "; ".join(violations[:3]) or "-",
+                "enabled_source_names": ",".join(enabled),
+                "uncompared_source_names": ",".join(uncompared) or "-",
+                "upstream_section_rows": count(upstream_rows),
+                "local_section_rows": count(local_rows),
+            }
+        )
+        return facts
+    finally:
+        if inserted_root:
+            with suppress(ValueError):
+                sys.path.remove(root_entry)
+
+
+def judge_ac10_01(facts: Facts) -> Verdict:
+    """Judge AC-10|01 on the enabled set's registration closure and per-leg comparison."""
+    checks: tuple[tuple[str, bool], ...] = (
+        (
+            f"provider 树与 C33 面对照工具不可导入（{facts['plane_import_error']}）",
+            facts["plane_import_error"] == "-",
+        ),
+        (
+            f"inventory 读不出（{facts['plane_read_error']}）",
+            facts["plane_read_error"] == "-",
+        ),
+        (
+            "已启用+未启用 不等于目录身份全集",
+            facts["partition_identity_holds"] == "yes",
+        ),
+        (
+            f"门槛作用域不是已启用集合（{facts['threshold_scope']}）",
+            facts["threshold_scope"] == "enabled-only",
+        ),
+        (
+            f"已启用 provider 声明的 capability 有 "
+            f"{facts['capability_deficit']} 条没注册进 registry",
+            facts["capability_deficit"] == "0",
+        ),
+        (
+            f"registry 路由键重复 {facts['duplicate_registry_keys']} 个"
+            f"（{facts['registry_leg_count']} legs / {facts['registry_unique_key_count']} keys）",
+            facts["duplicate_registry_keys"] == "0"
+            and facts["registry_leg_count"] == facts["registry_unique_key_count"],
+        ),
+        (
+            f"有 {facts['enabled_sources_without_legs']} 个已启用 provider 一条 leg 都没注册",
+            facts["enabled_sources_without_legs"] == "0",
+        ),
+        (
+            f"有 {facts['reserved_sources_with_legs']} 个未启用 provider 却注册了 leg",
+            facts["reserved_sources_with_legs"] == "0",
+        ),
+        (
+            f"未启用 provider 在 inventory 缺行 {facts['reserved_rows_missing']} 个",
+            facts["reserved_rows_missing"] == "0",
+        ),
+        (
+            f"未启用 provider 的行不是「待实现」标注 {facts['reserved_rows_not_todo']} 个",
+            facts["reserved_rows_not_todo"] == "0",
+        ),
+        (
+            f"{facts['unverified_leg_count']} 条 leg 没有跨源对照（已启用集合里 "
+            f"{facts['enabled_sources_not_compared']} 个 provider 未转正："
+            f"{facts['uncompared_source_names']}）",
+            facts["unverified_leg_count"] == "0" and facts["enabled_sources_not_compared"] == "0",
+        ),
+        (
+            f"未对照的 leg 里 {facts['unmarked_unverified_legs']} 条连 §4.3 的保留标注都没有",
+            facts["unmarked_unverified_legs"] == "0",
+        ),
+        (
+            f"authority 对照表与 registry 不一致 {facts['authority_violation_count']} 条："
+            f"{facts['authority_violation_summary']}",
+            facts["authority_violation_count"] == "0",
+        ),
+    )
+    blockers = [label for label, holds in checks if not holds]
+    readings = (
+        f"目录身份 = {facts['catalog_identity_count']} 个（已启用 {facts['enabled_count']}："
+        f"{facts['enabled_source_names']}；未启用 {facts['reserved_count']}）；"
+        f"inventory 行 = {facts['upstream_section_rows']} providers + "
+        f"{facts['local_section_rows']} local_providers，门槛作用域 = "
+        f"{facts['threshold_scope']}（判据明写不设 32 个全部完成）",
+        f"注册面：registry {facts['registry_leg_count']} legs / "
+        f"{facts['registry_unique_key_count']} 唯一路由键，声明未注册 = "
+        f"{facts['capability_deficit']}，重复键 = {facts['duplicate_registry_keys']}，"
+        f"authority 反向不一致 = {facts['authority_violation_count']}",
+        f"对照面（C33 面自己的口径：全部 leg auto-routable 才算 已对照转正）："
+        f"auto-routable {facts['auto_routable_leg_count']}/{facts['registry_leg_count']} legs；"
+        f"已转正 provider {facts['enabled_sources_fully_compared']}/{facts['enabled_count']}，"
+        f"未转正 {facts['enabled_sources_not_compared']}（{facts['uncompared_source_names']}）",
+        f'「未启用者标注 notes="on-demand"」的字面子句载体读数：'
+        f"capability notes=on-demand {facts['capability_on_demand_marks']} 条，"
+        f"inventory on-demand 标注 {facts['inventory_on_demand_marks']} 行；"
+        f"未启用身份目前只由 status: 待实现 表达",
+    )
+    reason = (
+        ""
+        if not blockers
+        else "AC-10|01 要求已启用 provider 逐个注册齐全且对照通过；未满足：" + "；".join(blockers)
+    )
+    return Verdict(PROVEN if not blockers else GAP, readings, reason)
+
+
 def measure_ac10_02(ctx: Context) -> Facts:
     """Reconcile the requester's direct reply against every current active provider/domain leg."""
     problems: list[str] = []
@@ -17480,6 +17759,128 @@ PROBES: Final[tuple[Probe, ...]] = (
             "benchmark_scales_present": "yes",
             "all_scales_complete": "yes",
             "full_peak_le_1m": "yes",
+        },
+    ),
+    Probe(
+        item="AC-10|01",
+        expects="provider 全部注册且对照通过",
+        summary=(
+            "Enabled-provider registration closure plus a per-leg cross-source comparison, "
+            "judged against the live registry and the C33 inventory plane"
+        ),
+        measure=measure_ac10_01,
+        judge=judge_ac10_01,
+        breaks=(
+            Break(
+                "provider 树或 C33 面对照工具导入失败（面失效，不是通过）",
+                (("plane_import_error", "ImportError:no module named opendata"),),
+                GAP,
+            ),
+            Break(
+                "provider-inventory.yaml 读不出，未启用留痕无法核对",
+                (("plane_read_error", "ProbeError"),),
+                GAP,
+            ),
+            Break(
+                "已启用+未启用 不再等于目录身份全集",
+                (("partition_identity_holds", "no"),),
+                GAP,
+            ),
+            Break(
+                "门槛被扩成全部目录身份（判据明写不设 32 个全部完成）",
+                (("threshold_scope", "whole-catalog"),),
+                GAP,
+            ),
+            Break(
+                "一个已启用 provider 声明的 capability 没注册进 registry",
+                (("capability_deficit", "1"),),
+                GAP,
+            ),
+            Break(
+                "registry 出现重复路由键，同一 capability 有两个 fetcher",
+                (
+                    ("duplicate_registry_keys", "1"),
+                    ("registry_leg_count", "50"),
+                    ("registry_unique_key_count", "49"),
+                ),
+                GAP,
+            ),
+            Break(
+                "一个已启用 provider 一条 leg 都没注册",
+                (("enabled_sources_without_legs", "1"),),
+                GAP,
+            ),
+            Break(
+                "一个未启用 provider 却注册了 leg（标注与实现不一致）",
+                (("reserved_sources_with_legs", "1"),),
+                GAP,
+            ),
+            Break(
+                "一个未启用 provider 在 inventory 里没有行",
+                (("reserved_rows_missing", "1"),),
+                GAP,
+            ),
+            Break(
+                "一个未启用 provider 的行不是「待实现」标注",
+                (("reserved_rows_not_todo", "1"),),
+                GAP,
+            ),
+            Break(
+                "本轮真实读数：26 条 leg 没有跨源对照，7 个已启用 provider 未转正",
+                (
+                    ("unverified_leg_count", "26"),
+                    ("auto_routable_leg_count", "23"),
+                    ("enabled_sources_not_compared", "7"),
+                    (
+                        "uncompared_source_names",
+                        "akshare,bls,cboe,ecb,federal_reserve,fmp,fred",
+                    ),
+                ),
+                GAP,
+            ),
+            Break(
+                "未对照的 leg 连 §4.3 的保留标注都没有（静默跳过 auto 路由）",
+                (("unmarked_unverified_legs", "19"),),
+                GAP,
+            ),
+            Break(
+                "authority 对照表与 registry 双向不一致",
+                (
+                    ("authority_violation_count", "1"),
+                    ("authority_violation_summary", "phantom-leg: macro/fred lists no capability"),
+                ),
+                GAP,
+            ),
+        ),
+        repair={
+            "plane_import_error": "-",
+            "plane_read_error": "-",
+            "catalog_identity_count": "34",
+            "enabled_count": "11",
+            "reserved_count": "23",
+            "partition_identity_holds": "yes",
+            "threshold_scope": "enabled-only",
+            "registry_leg_count": "49",
+            "registry_unique_key_count": "49",
+            "duplicate_registry_keys": "0",
+            "capability_deficit": "0",
+            "enabled_sources_without_legs": "0",
+            "reserved_sources_with_legs": "0",
+            "auto_routable_leg_count": "49",
+            "unverified_leg_count": "0",
+            "unmarked_unverified_legs": "0",
+            "enabled_sources_fully_compared": "11",
+            "enabled_sources_not_compared": "0",
+            "reserved_rows_missing": "0",
+            "reserved_rows_not_todo": "0",
+            "capability_on_demand_marks": "0",
+            "inventory_on_demand_marks": "0",
+            "authority_violation_count": "0",
+            "authority_violation_summary": "-",
+            "enabled_source_names": "akshare,bls,cboe,ecb,federal_reserve",
+            "uncompared_source_names": "-",
+            "upstream_section_rows": "32",
+            "local_section_rows": "2",
         },
     ),
     Probe(

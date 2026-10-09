@@ -844,14 +844,20 @@
     },
     "AC-10|01|a6c002e5": {
       "state": "gap",
-      "round": "C65",
-      "date": "2026-10-01",
-      "reason": "当前33条启用能力中23verified、10registered未对照通过（均AkShare）；当前7包源码审阅不能替代每条启用能力取数对照。",
+      "reason": "C85 给这条补上了判定面：台账自 C65 起只记 gap，而 122 个探针里没有 AC-10|01，也就是没有任何东西重测过它，判据的三个子句里红在哪一个无从读出。三分面读数：①注册面全绿——34 个目录身份 = 11 已启用 + 23 未启用（恒等式 yes，门槛作用域 enabled-only，因为判据明写不设「32 个全部完成」作为门槛）；registry 49 legs / 49 唯一路由键（键由 registry 自己的 _capability_key 给出，不在探针里重算），声明未注册 0，重复键 0，authority 表反着读的不一致 0；②对照面红——49 条 leg 里 auto-routable 23 条，未达标 26 条，而 unmarked_unverified_legs = 26，即这些 leg 全部由 verified=False 排除、没有一条带 §4.3 的保留标注；按 C33 面自己的口径（一个 provider 的全部 leg 都 auto-routable 才算 已对照转正），已启用 11 个里转正 4 个、未转正 7 个：akshare,bls,cboe,ecb,federal_reserve,fmp,fred；③判据的字面子句「未启用者标注 notes=\\\"on-demand\\\"」两个载体都读到 0：Capability 里 notes=on-demand 0 条、provider-inventory.yaml 的 on-demand 标注 0 行——Provider 这个 dataclass 没有 notes 字段，未启用 provider 又不注册任何 Capability 对象，而 inventory 是 scripts/quality/provider_model_inventory.py 生成的（tests/test_provider_inventory_generation.py 钉住），所以这条只作为读数披露、不作为判定要求：把标注加上去要改生成器，而不是改台账让它变绿。反事实面：本条声明 13 条 break（由 PROBES 注册表重算，非回忆），arm1 13/13 全部把修好的读数翻回 gap，且 repair 可达（修好的读数判 proven，所以这条红不是永久红灯）；arm2 --tamper 把最后一条 break 的事实覆盖清空后读数变成 12/13 并打印 1 行 MISS，即 PASS 行有能翻转它的那一侧。闭合动作不是重跑：26 条 leg 的「对照通过」需要经授权的跨源取数对照，逐条把 verified 置真或按 §4.3 落保留标注，再重测本探针。",
+      "round": "C85",
+      "date": "2026-10-10",
+      "command": "python scripts/quality/acceptance_item_probe.py --item \"AC-10|01\" --json docs/evidence/C85/ac10-01-readings.json  (live reading; ITEM_EXIT=0 is a gap verdict that ran, not a pass) and python -u docs/evidence/C85/probe_counterfact_witness.py --item \"AC-10|01\" [REAL_EXIT=0] / the same with --tamper [TAMPER_EXIT=0 meaning the stripped break was seen as a MISS]; both bodies are fenced with declared digests",
       "evidence": [
+        "docs/evidence/C85/ac10-01-readings.json",
+        "docs/evidence/C85/ac10-01-live-reading.txt",
+        "docs/evidence/C85/ac10-01-counterfact.txt",
+        "docs/evidence/C85/probe_counterfact_witness.py",
         "docs/evidence/C65/acceptance-review-current.md",
         "docs/evidence/C65/provider-source-review.json",
         "docs/evidence/C65/mapping-review-results.json"
-      ]
+      ],
+      "note": "C65 旧 reason 的总体是「33 条启用能力」（当时的 registry 读数），本轮探针的总体是 provider 目录身份与 registry leg：34 个身份（11 已启用）对 49 条 leg。两个数不是同一口径，也不是同一天的树，旧 reason 的 23/10 划分已被本轮读数取代；下面列的 C65 三份档案保留为该历史面的载体，本轮判定不读它们。已启用/未启用由 Provider.is_implemented（有无 fetcher 绑定）导出，catalog.registration_order() 的派生尾用的是同一谓词，且本轮实测两个面完全对齐：已启用却零 leg = 0、未启用却注册了 leg = 0。"
     },
     "AC-10|02|a2296996": {
       "state": "proven",

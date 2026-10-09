@@ -1,0 +1,149 @@
+# C85 witness -- AC-10|01 counterfact face, in both arms
+
+Run pinned to branch ``dev``, HEAD ``4b8df39952be06b500075015cdc27bb211ef24f4``, probe module ``scripts/quality/acceptance_item_probe.py`` sha256
+``4a6b101ffbdd623d8a4539b0dc9dbeb678410ccb1620214094f01a68f3e207b2`` (878194 bytes). The instrument is ``docs/evidence/C85/probe_counterfact_witness.py``:
+it imports ``load_context``, ``probe_for``, ``resolve_repair``, ``wording_drift`` and the probe's
+own ``measure``/``judge`` from the acceptance probe module, so the arithmetic that decides "did
+this break flip its reading" is the gate's, not a second implementation.
+
+Why this file exists: ``--self-test`` answers one question for the whole suite and prints nothing
+per item, and ``--self-test --item X`` does **not** filter -- ``--item`` only selects what is
+printed afterwards while the self-test still measures every probe. A per-item counterfact face
+therefore had no carrier, and the break count below is derived from the ``PROBES`` registry rather
+than read off an aggregate log.
+
+Two commands ran, in this order, and both bodies are verbatim:
+
+* ``python -u docs/evidence/C85/probe_counterfact_witness.py --item "AC-10|01"`` -> ``REAL_EXIT=0``,
+  13 breaks all reaching ``gap`` on the repaired reading, and ``REPAIR REACHABLE: True``.
+* ``python -u docs/evidence/C85/probe_counterfact_witness.py --item "AC-10|01" --tamper`` ->
+  ``TAMPER_EXIT=0``. Read this exit code carefully: in the calibration arm 0 means the instrument
+  **did** see a break that no longer flips its reading (12/13, one
+  ``MISS`` line naming the stripped break, whose facts were replaced by none). If the tampered arm
+  had also printed 13/13, the real arm's number would have been a
+  hardcoded string.
+
+Started 2026-10-10T07:50:04+08:00.
+
+## Arm 1 -- the real face
+
+* fenced body: 36 lines, 3256 bytes, sha256 ``0f5756f1a7b9c37a5896039e9e9174c0b78ab4490bf05055a03e5852bea7435e``
+
+```text
+item: AC-10|01  (wording drift: clean)
+MEASURED: gap
+  - 目录身份 = 34 个（已启用 11：akshare,bls,cboe,ecb,federal_reserve,fmp,fred,imf,oecd,ths,yfinance；未启用 23）；inventory 行 = 32 providers + 2 local_providers，门槛作用域 = enabled-only（判据明写不设 32 个全部完成）
+  - 注册面：registry 49 legs / 49 唯一路由键，声明未注册 = 0，重复键 = 0，authority 反向不一致 = 0
+  - 对照面（C33 面自己的口径：全部 leg auto-routable 才算 已对照转正）：auto-routable 23/49 legs；已转正 provider 4/11，未转正 7（akshare,bls,cboe,ecb,federal_reserve,fmp,fred）
+  - 「未启用者标注 notes="on-demand"」的字面子句载体读数：capability notes=on-demand 0 条，inventory on-demand 标注 0 行；未启用身份目前只由 status: 待实现 表达
+  reason: AC-10|01 要求已启用 provider 逐个注册齐全且对照通过；未满足：26 条 leg 没有跨源对照（已启用集合里 7 个 provider 未转正：akshare,bls,cboe,ecb,federal_reserve,fmp,fred）；未对照的 leg 里 26 条连 §4.3 的保留标注都没有
+REPAIR REACHABLE: True (clean reading judges proven)
+  BITE  provider 树或 C33 面对照工具导入失败（面失效，不是通过） -> gap (want gap)
+         facts: plane_import_error: ImportError:no module named opendata
+  BITE  provider-inventory.yaml 读不出，未启用留痕无法核对 -> gap (want gap)
+         facts: plane_read_error: ProbeError
+  BITE  已启用+未启用 不再等于目录身份全集 -> gap (want gap)
+         facts: partition_identity_holds: no
+  BITE  门槛被扩成全部目录身份（判据明写不设 32 个全部完成） -> gap (want gap)
+         facts: threshold_scope: whole-catalog
+  BITE  一个已启用 provider 声明的 capability 没注册进 registry -> gap (want gap)
+         facts: capability_deficit: 1
+  BITE  registry 出现重复路由键，同一 capability 有两个 fetcher -> gap (want gap)
+         facts: duplicate_registry_keys: 1; registry_leg_count: 50; registry_unique_key_count: 49
+  BITE  一个已启用 provider 一条 leg 都没注册 -> gap (want gap)
+         facts: enabled_sources_without_legs: 1
+  BITE  一个未启用 provider 却注册了 leg（标注与实现不一致） -> gap (want gap)
+         facts: reserved_sources_with_legs: 1
+  BITE  一个未启用 provider 在 inventory 里没有行 -> gap (want gap)
+         facts: reserved_rows_missing: 1
+  BITE  一个未启用 provider 的行不是「待实现」标注 -> gap (want gap)
+         facts: reserved_rows_not_todo: 1
+  BITE  本轮真实读数：26 条 leg 没有跨源对照，7 个已启用 provider 未转正 -> gap (want gap)
+         facts: unverified_leg_count: 26; auto_routable_leg_count: 23; enabled_sources_not_compared: 7; uncompared_source_names: akshare,bls,cboe,ecb,federal_reserve,fmp,fred
+  BITE  未对照的 leg 连 §4.3 的保留标注都没有（静默跳过 auto 路由） -> gap (want gap)
+         facts: unmarked_unverified_legs: 19
+  BITE  authority 对照表与 registry 双向不一致 -> gap (want gap)
+         facts: authority_violation_count: 1; authority_violation_summary: phantom-leg: macro/fred lists no capability
+breaks biting: 13/13
+
+```
+
+## Arm 2 -- the calibration face
+
+* fenced body: 38 lines, 3316 bytes, sha256 ``a66d1ab13bdae04cb462a36bee65399a918c920b9ecd2e219f259ecfcb889dca``
+
+```text
+item: AC-10|01  (wording drift: clean)
+MEASURED: gap
+  - 目录身份 = 34 个（已启用 11：akshare,bls,cboe,ecb,federal_reserve,fmp,fred,imf,oecd,ths,yfinance；未启用 23）；inventory 行 = 32 providers + 2 local_providers，门槛作用域 = enabled-only（判据明写不设 32 个全部完成）
+  - 注册面：registry 49 legs / 49 唯一路由键，声明未注册 = 0，重复键 = 0，authority 反向不一致 = 0
+  - 对照面（C33 面自己的口径：全部 leg auto-routable 才算 已对照转正）：auto-routable 23/49 legs；已转正 provider 4/11，未转正 7（akshare,bls,cboe,ecb,federal_reserve,fmp,fred）
+  - 「未启用者标注 notes="on-demand"」的字面子句载体读数：capability notes=on-demand 0 条，inventory on-demand 标注 0 行；未启用身份目前只由 status: 待实现 表达
+  reason: AC-10|01 要求已启用 provider 逐个注册齐全且对照通过；未满足：26 条 leg 没有跨源对照（已启用集合里 7 个 provider 未转正：akshare,bls,cboe,ecb,federal_reserve,fmp,fred）；未对照的 leg 里 26 条连 §4.3 的保留标注都没有
+REPAIR REACHABLE: True (clean reading judges proven)
+CALIBRATION: --tamper empties the fact overlay of break #13
+  BITE  provider 树或 C33 面对照工具导入失败（面失效，不是通过） -> gap (want gap)
+         facts: plane_import_error: ImportError:no module named opendata
+  BITE  provider-inventory.yaml 读不出，未启用留痕无法核对 -> gap (want gap)
+         facts: plane_read_error: ProbeError
+  BITE  已启用+未启用 不再等于目录身份全集 -> gap (want gap)
+         facts: partition_identity_holds: no
+  BITE  门槛被扩成全部目录身份（判据明写不设 32 个全部完成） -> gap (want gap)
+         facts: threshold_scope: whole-catalog
+  BITE  一个已启用 provider 声明的 capability 没注册进 registry -> gap (want gap)
+         facts: capability_deficit: 1
+  BITE  registry 出现重复路由键，同一 capability 有两个 fetcher -> gap (want gap)
+         facts: duplicate_registry_keys: 1; registry_leg_count: 50; registry_unique_key_count: 49
+  BITE  一个已启用 provider 一条 leg 都没注册 -> gap (want gap)
+         facts: enabled_sources_without_legs: 1
+  BITE  一个未启用 provider 却注册了 leg（标注与实现不一致） -> gap (want gap)
+         facts: reserved_sources_with_legs: 1
+  BITE  一个未启用 provider 在 inventory 里没有行 -> gap (want gap)
+         facts: reserved_rows_missing: 1
+  BITE  一个未启用 provider 的行不是「待实现」标注 -> gap (want gap)
+         facts: reserved_rows_not_todo: 1
+  BITE  本轮真实读数：26 条 leg 没有跨源对照，7 个已启用 provider 未转正 -> gap (want gap)
+         facts: unverified_leg_count: 26; auto_routable_leg_count: 23; enabled_sources_not_compared: 7; uncompared_source_names: akshare,bls,cboe,ecb,federal_reserve,fmp,fred
+  BITE  未对照的 leg 连 §4.3 的保留标注都没有（静默跳过 auto 路由） -> gap (want gap)
+         facts: unmarked_unverified_legs: 19
+  MISS  authority 对照表与 registry 双向不一致 -> proven (want gap)
+         facts: (no facts overlaid)
+breaks biting: 12/13
+CALIBRATION PASS: the instrument can see a break that does not flip its reading
+
+```
+
+Recompute either digest with:
+
+```bash
+python3 - <<'PY'
+import hashlib, pathlib, re
+text = pathlib.Path("docs/evidence/C85/ac10-01-counterfact.txt").read_text()
+for title in ("Arm 1", "Arm 2"):
+    seg = text[text.index(title):]
+    start = seg.index("```text\n") + len("```text\n")
+    body = seg[start:seg.index("```", start)]
+    print(title, hashlib.sha256(body.encode()).hexdigest(), len(body.encode()), body.count("\n"))
+PY
+```
+
+## The declared break list, read back from ``PROBES``
+
+* ``provider 树或 C33 面对照工具导入失败（面失效，不是通过）``
+* ``provider-inventory.yaml 读不出，未启用留痕无法核对``
+* ``已启用+未启用 不再等于目录身份全集``
+* ``门槛被扩成全部目录身份（判据明写不设 32 个全部完成）``
+* ``一个已启用 provider 声明的 capability 没注册进 registry``
+* ``registry 出现重复路由键，同一 capability 有两个 fetcher``
+* ``一个已启用 provider 一条 leg 都没注册``
+* ``一个未启用 provider 却注册了 leg（标注与实现不一致）``
+* ``一个未启用 provider 在 inventory 里没有行``
+* ``一个未启用 provider 的行不是「待实现」标注``
+* ``本轮真实读数：26 条 leg 没有跨源对照，7 个已启用 provider 未转正``
+* ``未对照的 leg 连 §4.3 的保留标注都没有（静默跳过 auto 路由）``
+* ``authority 对照表与 registry 双向不一致``
+
+Totals are counted from the two bodies above, not typed: arm 1 prints 13 ``BITE`` lines
+and 0 ``MISS`` lines, arm 2 prints 1 ``MISS`` line naming
+``authority 对照表与 registry 双向不一致``. The facts overlaid per break are printed under each label, so the reader can
+see which single face a break is supposed to flip.

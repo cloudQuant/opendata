@@ -1,0 +1,97 @@
+# C85 witness -- AC-10|01 live reading, with the 28 judged facts as JSON
+
+Run pinned to branch ``dev``, HEAD ``4b8df39952be06b500075015cdc27bb211ef24f4``. This cell was recorded as ``gap`` from C65 on
+with no judgement plane at all: the committed face baseline
+``docs/quality/acceptance-probe-faces.json`` at this HEAD holds 122 probes and its ``probes`` mapping
+has no ``AC-10|01`` entry, so before this round nothing recomputed the criterion
+and nothing could have said which of its clauses the gap lives in.
+
+* worktree at run time. The probe module, the face baseline and this round's own
+  ``docs/evidence/C85/`` files are working-tree bytes; the two other modified paths (the reference
+  allowlist and ``tests/test_c85_templates.py``) are separate C85 work in flight and are not read
+  by this probe:
+
+```text
+M docs/quality/acceptance-probe-faces.json
+ M docs/quality/akshare-reference-allowlist.json
+ M scripts/quality/acceptance_item_probe.py
+ M tests/test_c85_templates.py
+?? docs/evidence/C85/ac10-01-counterfact.txt
+?? docs/evidence/C85/ac10-01-live-reading.txt
+?? docs/evidence/C85/ac10-01-readings.json
+?? docs/evidence/C85/probe_counterfact_witness.py
+?? docs/evidence/C85/reference-policy-repin.py
+?? docs/evidence/C85/reference-policy-repin.txt
+```
+
+* probe source at run time: ``scripts/quality/acceptance_item_probe.py`` sha256 ``4a6b101ffbdd623d8a4539b0dc9dbeb678410ccb1620214094f01a68f3e207b2`` (878194 bytes)
+* command: ``python scripts/quality/acceptance_item_probe.py --item "AC-10|01" --json docs/evidence/C85/ac10-01-readings.json``;
+  started 2026-10-10T07:50:04+08:00; the outer shell recorded ``ITEM_EXIT=0`` (a ``gap`` verdict is an exit-0 reading --
+  only a ``drift`` state, or a probe that raises, makes ``main`` return 1).
+
+The fenced body is the verbatim stdout+stderr. Its declared digest covers exactly the fenced
+region, so it re-derives from this archive alone:
+
+* fenced body: 16 lines, 2022 bytes, sha256 ``6359cc1d14dcb141c0a4e1714c013b10023a5a98657931ebf17abf7609589eca``
+* recompute with:
+
+```bash
+python3 - <<'PY'
+import hashlib, pathlib
+text = pathlib.Path("docs/evidence/C85/ac10-01-live-reading.txt").read_text()
+start = text.index("```text\n", text.index("recompute with")) + len("```text\n")
+end = text.index("```", start)
+body = text[start:end]
+print(hashlib.sha256(body.encode()).hexdigest(), len(body.encode()), body.count("\n"))
+PY
+```
+
+## The reading
+
+```text
+
+### AC-10|01  (document line 207)
+判据原文：**已启用** provider 全部注册且对照通过（**不设"32 个全部完成"作为门槛**；未启用者标注 `notes="on-demand"`）
+本探针：Enabled-provider registration closure plus a per-leg cross-source comparison, judged against the live registry and the C33 inventory plane
+台账现状：state=gap，文档勾选=False
+  - 目录身份 = 34 个（已启用 11：akshare,bls,cboe,ecb,federal_reserve,fmp,fred,imf,oecd,ths,yfinance；未启用 23）；inventory 行 = 32 providers + 2 local_providers，门槛作用域 = enabled-only（判据明写不设 32 个全部完成）
+  - 注册面：registry 49 legs / 49 唯一路由键，声明未注册 = 0，重复键 = 0，authority 反向不一致 = 0
+  - 对照面（C33 面自己的口径：全部 leg auto-routable 才算 已对照转正）：auto-routable 23/49 legs；已转正 provider 4/11，未转正 7（akshare,bls,cboe,ecb,federal_reserve,fmp,fred）
+  - 「未启用者标注 notes="on-demand"」的字面子句载体读数：capability notes=on-demand 0 条，inventory on-demand 标注 0 行；未启用身份目前只由 status: 待实现 表达
+  - 补齐到可判：auto_routable_leg_count: 23 -> 49; enabled_source_names: akshare,bls,cboe,ecb,federal_reserve,fmp,fred,imf,oecd,ths,yfinance -> akshare,bls,cboe,ecb,federal_reserve; enabled_sources_fully_compared: 4 -> 11; enabled_sources_not_compared: 7 -> 0; uncompared_source_names: akshare,bls,cboe,ecb,federal_reserve,fmp,fred -> -; unmarked_unverified_legs: 26 -> 0; unverified_leg_count: 26 -> 0
+VERDICT AC-10|01: gap — AC-10|01 要求已启用 provider 逐个注册齐全且对照通过；未满足：26 条 leg 没有跨源对照（已启用集合里 7 个 provider 未转正：akshare,bls,cboe,ecb,federal_reserve,fmp,fred）；未对照的 leg 里 26 条连 §4.3 的保留标注都没有
+
+census: gap=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+wrote docs/evidence/C85/ac10-01-readings.json
+
+```
+
+## The same run as machine-readable facts
+
+``ac10-01-readings.json`` is the ``--json`` face of the run above: one record with
+``item``/``key``/``state``/``summary``/``readings``/``reason``/``closure``/``facts``, and
+``facts`` holds all 28 judged entries, ``plane_import_error`` and ``plane_read_error``
+both ``-``. Three faces carry this cell:
+
+* the partition identity: 34 catalog ids = 11 enabled + 23 reserved, and the judge requires the
+  count to add up *and* the threshold scope to be the enabled set, because the criterion says
+  "do not gate on all 32 finishing";
+* the registration face: 49 registry legs / 49 unique routing keys, declared-but-unregistered 0,
+  duplicate keys 0, and ``reconcile_authority`` reporting 0 violations in both directions -- this
+  is the half of "全部注册" that reads green today;
+* the comparison face: 23 of 49 legs auto-routable and 4 of 11 enabled providers at
+  已对照转正, which is where the gap actually is.
+
+## What is not in this archive
+
+The gap is not closable by re-running. ``对照通过`` per leg requires a recorded cross-source
+comparison against another source for the same domain; 49 - 23 = 26 legs are not auto-routable, and
+``unmarked_unverified_legs`` reads 26 as well, so every one of them is excluded by
+``verified=False`` rather than by the §4.3 reserved notes. Seven of the eleven enabled providers
+(akshare, bls, cboe, ecb, federal_reserve, fmp, fred) are therefore 已实现未对照. Producing that
+evidence needs live取数 against a second source, which is an authorized act, not a measurement.
+The literal ``notes="on-demand"`` clause is also left as a reading rather than a judged
+requirement: ``Provider`` has no ``notes`` field, reserved providers register no ``Capability``
+object to carry one, and ``provider-inventory.yaml`` is generated -- the archive prints both carrier
+counts (0 and 0) so nobody can later claim the marking exists.

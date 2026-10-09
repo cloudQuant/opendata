@@ -1,0 +1,51 @@
+{
+  "env": {
+    "python": "3.11.8"
+  },
+  "items": [
+    {
+      "item": "AC-10|01",
+      "key": "AC-10|01|a6c002e5",
+      "state": "gap",
+      "summary": "Enabled-provider registration closure plus a per-leg cross-source comparison, judged against the live registry and the C33 inventory plane",
+      "readings": [
+        "目录身份 = 34 个（已启用 11：akshare,bls,cboe,ecb,federal_reserve,fmp,fred,imf,oecd,ths,yfinance；未启用 23）；inventory 行 = 32 providers + 2 local_providers，门槛作用域 = enabled-only（判据明写不设 32 个全部完成）",
+        "注册面：registry 49 legs / 49 唯一路由键，声明未注册 = 0，重复键 = 0，authority 反向不一致 = 0",
+        "对照面（C33 面自己的口径：全部 leg auto-routable 才算 已对照转正）：auto-routable 23/49 legs；已转正 provider 4/11，未转正 7（akshare,bls,cboe,ecb,federal_reserve,fmp,fred）",
+        "「未启用者标注 notes=\"on-demand\"」的字面子句载体读数：capability notes=on-demand 0 条，inventory on-demand 标注 0 行；未启用身份目前只由 status: 待实现 表达"
+      ],
+      "reason": "AC-10|01 要求已启用 provider 逐个注册齐全且对照通过；未满足：26 条 leg 没有跨源对照（已启用集合里 7 个 provider 未转正：akshare,bls,cboe,ecb,federal_reserve,fmp,fred）；未对照的 leg 里 26 条连 §4.3 的保留标注都没有",
+      "closure": "auto_routable_leg_count: 23 -> 49; enabled_source_names: akshare,bls,cboe,ecb,federal_reserve,fmp,fred,imf,oecd,ths,yfinance -> akshare,bls,cboe,ecb,federal_reserve; enabled_sources_fully_compared: 4 -> 11; enabled_sources_not_compared: 7 -> 0; uncompared_source_names: akshare,bls,cboe,ecb,federal_reserve,fmp,fred -> -; unmarked_unverified_legs: 26 -> 0; unverified_leg_count: 26 -> 0",
+      "facts": {
+        "plane_import_error": "-",
+        "plane_read_error": "-",
+        "catalog_identity_count": "34",
+        "enabled_count": "11",
+        "reserved_count": "23",
+        "partition_identity_holds": "yes",
+        "threshold_scope": "enabled-only",
+        "registry_leg_count": "49",
+        "registry_unique_key_count": "49",
+        "duplicate_registry_keys": "0",
+        "capability_deficit": "0",
+        "enabled_sources_without_legs": "0",
+        "reserved_sources_with_legs": "0",
+        "auto_routable_leg_count": "23",
+        "unverified_leg_count": "26",
+        "unmarked_unverified_legs": "26",
+        "enabled_sources_fully_compared": "4",
+        "enabled_sources_not_compared": "7",
+        "reserved_rows_missing": "0",
+        "reserved_rows_not_todo": "0",
+        "capability_on_demand_marks": "0",
+        "inventory_on_demand_marks": "0",
+        "authority_violation_count": "0",
+        "authority_violation_summary": "-",
+        "enabled_source_names": "akshare,bls,cboe,ecb,federal_reserve,fmp,fred,imf,oecd,ths,yfinance",
+        "uncompared_source_names": "akshare,bls,cboe,ecb,federal_reserve,fmp,fred",
+        "upstream_section_rows": "32",
+        "local_section_rows": "2"
+      }
+    }
+  ]
+}
