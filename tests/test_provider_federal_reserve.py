@@ -43,6 +43,7 @@ from opendata.data.providers._engine.http_json import (
     encode_query,
 )
 from opendata.data.providers._engine.testing import FixedResponseTransport, fixture_context
+from opendata.data.providers.catalog import get_provider
 from opendata.data.providers.federal_reserve import specs
 from opendata.data.providers.federal_reserve._source import SOURCE
 from opendata.data.providers.federal_reserve.models.money_measures import (
@@ -379,7 +380,7 @@ class TestDeclarationIsTheContract:
         """Registration-ready: the descriptor loads each model out of its own module."""
         assert PROVIDER.source == SOURCE == "federal_reserve"
         assert PROVIDER.credentials == ()
-        assert PROVIDER.website == "https://www.federalreserve.gov/"
+        assert get_provider(SOURCE).website == "https://www.federalreserve.gov/"
         assert [binding.canonical_model_ids for binding in PROVIDER.fetcher_bindings] == [
             ("MoneyMeasures",),
             ("TreasuryRates",),

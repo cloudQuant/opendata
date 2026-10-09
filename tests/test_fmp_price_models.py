@@ -10,6 +10,7 @@ from dataclasses import dataclass
 import pytest
 from pydantic import ValidationError
 
+from opendata.data.providers.catalog import register_provider
 from opendata.data.providers.fmp.models import (
     EquityHistorical,
     EquityHistoricalFetcher,
@@ -19,6 +20,7 @@ from opendata.data.providers.fmp.models import (
     FMPQueryLimitError,
     _client,
 )
+from opendata.data.registry import ProviderRegistry
 from tests.provider_budget_fixtures import offline_fixture_context
 
 TEST_API_KEY = "offline-test-fmp-key"
@@ -164,7 +166,16 @@ def test_historical_maps_every_stable_field_and_keeps_source_semantics(
     )
     assert client.calls[0]["params"] == {"symbol": "AAPL", "apikey": TEST_API_KEY}
     assert client.calls[0]["source"] == "fmp"
-    assert EquityHistoricalFetcher.capability.domain == "equity_historical"
+    registry = ProviderRegistry()
+    register_provider("fmp", registry)
+    routed_capability = registry.resolve_model("fmp", "EquityHistorical").capability
+    assert (
+        routed_capability.asset_class,
+        routed_capability.domain,
+        routed_capability.period,
+        routed_capability.market,
+        routed_capability.source,
+    ) == ("stock", "equity_historical", "1d", "us", "fmp")
     assert EquityHistoricalFetcher.capability.verified is False
 
 
@@ -598,8 +609,16 @@ def test_quote_maps_all_stable_fields_and_keeps_provider_time_raw(
     assert row.timestamp_semantics == "source_unverified"
     assert not hasattr(row, "as_of")
     assert client.calls[0]["url"] == "https://financialmodelingprep.com/stable/quote"
-    assert EquityQuoteFetcher.capability.domain == "equity_quote"
-    assert EquityQuoteFetcher.capability.period == "snapshot"
+    registry = ProviderRegistry()
+    register_provider("fmp", registry)
+    routed_capability = registry.resolve_model("fmp", "EquityQuote").capability
+    assert (
+        routed_capability.asset_class,
+        routed_capability.domain,
+        routed_capability.period,
+        routed_capability.market,
+        routed_capability.source,
+    ) == ("stock", "equity_quote", "snapshot", "us", "fmp")
     assert EquityQuoteFetcher.capability.verified is False
 
 

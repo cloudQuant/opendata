@@ -86,7 +86,13 @@ DEV_DONE 的 5 行是 cboe `AvailableIndices`/`IndexSearch`/`IndexConstituents` 
 
 还有一个不对称让这件事变成风险而不是洁癖：上游对这张表是**按位置命名**的（`treasury_rates.py:96` 用 `df.columns = ["date"] + maturities` 覆盖，`maturities` 在 `:18-29`），它从不读我们 `source_key` 拿去匹配的那些表头单元格 —— 所以一个写错的列名不会导致拒绝，只会导致 null 列。处置（本轮已做）：把 specs.py 的 docstring 按"有载体的事实 / 只有断言的事实"重新分栏，请求侧的每条都注明是从安装好的扩展重读的（含行号），响应侧明确写成不可在此复算；并把"给这些列名一个带摘要的树内 fixture（抓包归档）"记为待办 —— 那需要访问上游的授权，本阶段没有。`live_verification_status` 因此保持 NOT_RUN。
 
-同一批 census 的引用根也顺带读出漂移：`census-sec-tmx-fed-gov-finra.json` 里 **15 个字符串**写着 `providers/federal_reserve/...`（13 个是 `…/openbb_federal_reserve/models/*.py:NNN` 形式的 evidence 行），而这个根在本树不可解析；`record/http` 出现 0 次。也就是说这些引用指的是安装位置的包，不是仓库路径 —— 复算它们需要写明绝对 site-packages 根，属于 #35 的活，本轮如实记下条数与形状，不改判定。
+同一批 census 的引用根也顺带读出漂移，而 #35 把这条漂移**解释掉了**而不是记下就算：计数规则是"递归走每一行的每个字符串值，按字符串值计"。改写前 15 个字符串值含 `providers/federal_reserve/`，改写后 16 个；但这个子串同时命中两种完全不同的根，所以必须拆开读，否则 15→16 会被读成"引用变多了"这种毫无意义的结论：
+
+* **安装根形状** `providers/federal_reserve/openbb_federal_reserve/...`：改写前 13 个、改写后 13 个，一个没动 —— 其中 **12 个**是 `…/models/<module>.py:NNN` 形式的 evidence 行（我早先那句"13 个是 models/*.py:NNN 形式"把这两个数混了，按形状重新读数它只能是 12），`record/http` 出现 0 次；
+* **仓库根形状** `opendata/data/providers/federal_reserve/specs.py`：1 个 → 3 个，多的两个是这次重读给 SOFR、OvernightBankFundingRate 写的 `audited.basis`；
+* **第三种写法**：1 个 → 0 个。它不是引用，是 EFFR 老 notes 里一句**谈论这个形状本身**的散文 —— 原文尾部写着 `the cited providers/federal_reserve/... path resolves outside the repo root`，也就是说这条命中是"我们在描述一根无法解析的根"，被本轮按安装根绝对位置重写的 notes 取代了。
+
+13 + 1 + 1 = 15，13 + 3 + 0 = 16 —— 三个桶各自可复算，总数只是它们的和。安装根本轮落到绝对位置：`/Users/yunjinqi/opt/anaconda3/lib/python3.11/site-packages/openbb_federal_reserve/models`，版本 1.6.2，`docs/evidence/C75/fed-percent-census-recheck.py` 每一遍都先把这个根和版本打印出来，再从该目录逐行读出 `sofr.py` 的 before-validator（`:34-50`，除法 `:49`）、`overnight_bank_funding_rate.py`（`:47-61`，`:60`）、`federal_funds_rate.py`（`:63-81`，`:80`）与三处 `return sorted(results, key=lambda x: x.date)`（`:108 / :122 / :141`）；引用是读出来的，不是抄进文件的。同一遍重读改写了 3 行的判定：SOFR 与 OvernightBankFundingRate 由 `true` 降为 `false`（缺 `published_value_rescale` 与 `client_side_sort`，映射到登记表即 `columns.rescale`、`rows.order_limit`，两行状态都读作 `absent`），FederalFundsRate 仍是 `false` 但需求清单由 3 项收正为 2 项 —— `client_side_column_drop` 不是阻塞，因为它映射到 `columns.select`，而那正是引擎已交付的能力（`normalize_record` 只按声明列取值，未声明的键根本到不了行模型）。本文件里的提及数随之变动：`published_value_rescale` 2→4、`client_side_sort` 1→3、`client_side_column_drop` 1→0。路线图同一遍重生成后读到：150 行 / 150 个唯一 task_id 的分母不变，`expressible_today` 4→2，pending 146→148，`--check` PASS。这些数都是 `--write` 前后各读一次同一脚本得到的实测：改写前的整份文件已归档为 `docs/evidence/C75/census-before-rewrite.json`，桶划分与差值脚本是 `docs/evidence/C75/census-cite-buckets.py`，它这一遍的输出留在 `docs/evidence/C75/census-cite-buckets.txt`（复算命令：`python3 docs/evidence/C75/census-cite-buckets.py docs/evidence/C75/census-before-rewrite.json docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/census-sec-tmx-fed-gov-finra.json`）。
 
 ## 3. 门禁第 2 员：我自己造成的摘要漂移，用仓库自己的判定器复算
 

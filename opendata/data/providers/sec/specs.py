@@ -53,8 +53,9 @@ publishes a header naming a declared column (:meth:`decoders._rows_from_text`, w
 ``HEADER_MISMATCH`` otherwise), and a column copies exactly one fixed source key
 (``normalize_record``), so neither need is met by what exists. Independently of the capability
 question, no endpoint, column name or JSON pointer for these three rows is traceable in this repo:
-no ``sec`` module is vendored under ``opendata/data/providers/akshare/_vendor``, this package has
-never held a hand-written fetcher, and the only ``sec.gov`` strings in the tree are the provider
+no ``sec`` module is vendored under any ``opendata/data/providers/*/_vendor`` tree (the repo has
+exactly one such tree today), this package has never held a hand-written fetcher, and the only
+``sec.gov`` strings in the tree are the provider
 website and the prose cites above. Rule 2 of the declaration contract -- every URL and column must
 trace to a recorded fact -- therefore refuses all three by itself. So ``DECLARED_MODELS`` is still
 empty, ``provider.py`` still binds nothing, and :data:`RECHECKED_THIS_ROUND` names the three rows

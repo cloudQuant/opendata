@@ -140,7 +140,8 @@ class TestTheNineRowAccounting:
     """Declared plus recorded equals the nine ledger rows, and nothing is declared."""
 
     def test_package_rows_are_the_ledger_rows(self) -> None:
-        assert sorted(specs.LEDGER_ROWS) == sorted(ledger_oecd_rows())
+        from_ledger = ledger_oecd_rows()
+        assert sorted(specs.LEDGER_ROWS) == sorted(from_ledger)
         assert len(specs.LEDGER_ROWS) == 9
         assert len(set(specs.LEDGER_ROWS)) == 9
 

@@ -48,10 +48,12 @@ from opendata.data.providers._engine.testing import (
     SyntheticTransport,
     fixture_context,
 )
+from opendata.data.providers.catalog import register_provider
 from opendata.data.providers.cboe import specs
 from opendata.data.providers.cboe._source import SOURCE
 from opendata.data.providers.cboe.models.index_search import CboeIndexSearchFetcher
 from opendata.data.providers.cboe.specs import AVAILABLE_INDICES, INDEX_CONSTITUENTS, INDEX_SEARCH
+from opendata.data.registry import ProviderRegistry
 
 DIRECTORY_URL = "https://cdn.cboe.com/api/global/us_indices/definitions/all_indices.json"
 PROBE_SOURCE = "probe"
@@ -368,8 +370,17 @@ class TestCboeIndexSearchIsDeclarable:
             binding.class_name: binding.canonical_model_ids for binding in provider.fetcher_bindings
         }
         assert bindings["CboeIndexSearchFetcher"] == ("IndexSearch",)
-        assert CboeIndexSearchFetcher.canonical_model == "IndexSearch"
-        assert CboeIndexSearchFetcher.capability.domain == "cboe_index_search"
+        registry = ProviderRegistry()
+        register_provider(SOURCE, registry)
+        routed = registry.resolve_model(SOURCE, "IndexSearch")
+        assert type(routed) is CboeIndexSearchFetcher
+        assert (
+            routed.capability.asset_class,
+            routed.capability.domain,
+            routed.capability.period,
+            routed.capability.market,
+            routed.capability.source,
+        ) == ("index", "cboe_index_search", "snapshot", "us", "cboe")
 
 
 class TestIgnoreCaseIsJudgeable:

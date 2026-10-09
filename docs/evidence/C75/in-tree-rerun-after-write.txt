@@ -1,0 +1,35 @@
+repo=/Users/yunjinqi/Documents/new_projects/opendata
+oracle=openbb_federal_reserve 1.6.2 at /Users/yunjinqi/opt/anaconda3/lib/python3.11/site-packages/openbb_federal_reserve/models
+== facts re-measured against the installed oracle and this engine ==
+   specs.py yields 2 declarations and 11 NOT_DECLARED models
+   no model is both declared and NOT_DECLARED (overlap: [])
+   sofr.py:34 opens a validator over 7 fields
+   sofr.py:49 divides by 100
+   sofr.py:108 sorts by date
+   sofr.py:103-105 pop undeclared keys
+   overnight_bank_funding_rate.py:47 opens a validator over 5 fields
+   overnight_bank_funding_rate.py:60 divides by 100
+   overnight_bank_funding_rate.py:122 sorts by date
+   overnight_bank_funding_rate.py:117-119 pop undeclared keys
+   federal_funds_rate.py:63 opens a validator over 9 fields
+   federal_funds_rate.py:80 divides by 100
+   federal_funds_rate.py:141 sorts by date
+   federal_funds_rate.py:137-138 pop undeclared keys
+   spec.py:144-149 is the ColumnSpec face
+   ColumnSpec declares no scale field
+   ColumnSpec declares no sort field
+   spec.py:376-399 is the ModelSpec face
+   ModelSpec declares no scale field
+   ModelSpec declares no sort field
+   http_json.py:303-346 is normalize_record
+   normalize_record iterates declared columns
+   normalize_record builds the row from declared values
+   normalize_record never forwards undeclared keys
+   production face: specs.py declares ['MoneyMeasures', 'TreasuryRates'], NOT_DECLARED carries 11; census has 13 federal_reserve rows
+== census against production, before the rewrite: 0 problems ==
+
+census rows=69; expressible_today=true before: ['OBB2-federal_reserve-MoneyMeasures', 'OBB2-federal_reserve-TreasuryRates']
+   note OBB2-federal_reserve-FederalFundsRate: NEEDS LIST CORRECTED (C75): expressible_today stays false on the same two blockers -- openbb_federal_reserve 1.6.2 federal_funds_rate.py:63-81 rescales 9 published percents (division :80) and :141 sorts by date, while neither ColumnSpec (spec.py:144-149) nor ModelSpec (spec.py:376-399) declares a scale or a sort. Two removals: client_side_column_drop is not a blocker because normalize_record (http_json.py:303-346) builds each row from declared columns, so an undeclared key never reaches the row model, and the pops at federal_funds_rate.py:137-138 are therefore a no-op for us; and the C74 note blamed ModelSpec at spec.py:266-285, which is DecoderSpec.effective_delimiter and RowFilterSpec's docstring, not ModelSpec.
+   note OBB2-federal_reserve-OvernightBankFundingRate: DOWNGRADED true->false (C75): the retracted note already said 'same shape as EFFR', and the EFFR row reads false. The same two blockers, measured on the same lines of the same oracle: openbb_federal_reserve 1.6.2 overnight_bank_funding_rate.py:47-61 rescales 5 published percents by /100 (division :60) and :122 sorts by date. Column-drop is excluded for the same reason as SOFR: normalize_record (http_json.py:303-346) builds each row from declared columns, so an undeclared key never reaches the row model. The pops in question are overnight_bank_funding_rate.py:117-119.
+   note OBB2-federal_reserve-SOFR: DOWNGRADED true->false (C75): openbb_federal_reserve 1.6.2 sofr.py:34-50 divides 7 published percent fields by 100 in a before-validator (the division is sofr.py:49) and sofr.py:108 sorts the rows by date, while neither ColumnSpec (spec.py:144-149) nor ModelSpec (spec.py:376-399) declares a scale or a sort. The retracted note said 'params+rows_pointer cover it': that covers the request shape, not the published values. The pops at sofr.py:103-105 are NOT a blocker, because normalize_record (http_json.py:303-346) builds each row from declared columns, so an undeclared key never reaches the row model.
+ABORT: expected exactly 3 rows to move, moved 0 (already applied?)

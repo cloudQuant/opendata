@@ -1,0 +1,18 @@
+docs/evidence/C75/census-before-rewrite.json
+   rows in this file = 69, expressible_today true = 4: ['OBB2-federal_reserve-MoneyMeasures', 'OBB2-federal_reserve-OvernightBankFundingRate', 'OBB2-federal_reserve-SOFR', 'OBB2-federal_reserve-TreasuryRates']
+   substring `providers/federal_reserve/` = 15 string values, split apart: install-root=13 repo-root=1 prose=1
+   need mentions in this file: published_value_rescale=2, client_side_sort=1, client_side_column_drop=1
+docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/census-sec-tmx-fed-gov-finra.json
+   rows in this file = 69, expressible_today true = 2: ['OBB2-federal_reserve-MoneyMeasures', 'OBB2-federal_reserve-TreasuryRates']
+   substring `providers/federal_reserve/` = 16 string values, split apart: install-root=13 repo-root=3 prose=0
+   need mentions in this file: published_value_rescale=4, client_side_sort=3, client_side_column_drop=0
+delta (after - before):
+   rows 69 -> 69
+   true rows 4 -> 2: ['OBB2-federal_reserve-MoneyMeasures', 'OBB2-federal_reserve-TreasuryRates']
+   total-root strings 15 -> 16
+   install-root strings 13 -> 13
+   repo-root strings 1 -> 3
+   prose-root strings 1 -> 0
+   published_value_rescale 2 -> 4
+   client_side_sort 1 -> 3
+   client_side_column_drop 1 -> 0

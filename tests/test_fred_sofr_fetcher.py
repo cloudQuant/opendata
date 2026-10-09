@@ -17,8 +17,10 @@ from pydantic import ValidationError
 import opendata.data.providers.fred.models.sofr as sofr_module
 from opendata.data.models.fred_sofr import FredSofrObservation
 from opendata.data.protocol import FetchContext
+from opendata.data.providers.catalog import register_provider
 from opendata.data.providers.fred.models._client import FredProviderError
 from opendata.data.providers.fred.models._sofr_query import FredSofrQuery
+from opendata.data.registry import ProviderRegistry
 from opendata.data.request_budget import (
     GrantDecision,
     RequestAttemptLimitError,
@@ -157,8 +159,9 @@ def make_budget(
 
 
 def test_capability_is_unverified_variable_period_and_sofr_specific() -> None:
-    assert sofr_module.FredSofrFetcher.async_mode == "bounded_thread"
-    assert sofr_module.FredSofrFetcher.canonical_model == "SOFR"
+    registry = ProviderRegistry()
+    register_provider("fred", registry)
+    assert type(registry.resolve_model("fred", "SOFR")) is sofr_module.FredSofrFetcher
     assert sofr_module.FredSofrFetcher.capability.model_dump() == {
         "asset_class": "macro",
         "domain": "sofr",

@@ -101,7 +101,8 @@ class TestTheTwentyFourRowAccounting:
     """Declared plus recorded equals the upstream rows, exactly once each."""
 
     def test_package_rows_are_the_ledger_rows(self) -> None:
-        assert sorted(specs.UPSTREAM_ROWS) == sorted(ledger_sec_rows())
+        from_ledger = ledger_sec_rows()
+        assert sorted(specs.UPSTREAM_ROWS) == sorted(from_ledger)
         assert len(specs.UPSTREAM_ROWS) == UPSTREAM_ROW_COUNT
         assert len(set(specs.UPSTREAM_ROWS)) == UPSTREAM_ROW_COUNT
 

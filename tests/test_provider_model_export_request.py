@@ -271,7 +271,7 @@ async def test_default_zero_grant_query_grant_wrong_operation_and_acl_never_star
     with pytest.raises(ProviderModelExportRequestForbiddenError):
         await invoke(_context(), Principal(allowed=False))
     assert engine_calls == []
-    assert export_request._ACTIVE_EXPORT_SPOOLS - initial_spools == 0
+    assert initial_spools == export_request._ACTIVE_EXPORT_SPOOLS
 
 
 @pytest.mark.asyncio
@@ -309,7 +309,7 @@ async def test_identity_missing_model_and_query_shape_fail_without_engine(
     with pytest.raises(ProviderModelExportRequestLimitError):
         await invoke("fmp", "EquityHistorical", {"max_bytes": 64 * 1024 * 1024 + 1})
     assert engine_calls == []
-    assert export_request._ACTIVE_EXPORT_SPOOLS - initial_spools == 0
+    assert initial_spools == export_request._ACTIVE_EXPORT_SPOOLS
 
 
 @pytest.mark.asyncio

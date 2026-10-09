@@ -19,11 +19,13 @@ from pydantic import ValidationError
 import opendata.data.providers.fred.models.sonia as sonia_module
 from opendata.data.models.fred_sonia import FredSoniaObservation
 from opendata.data.protocol import FetchContext
+from opendata.data.providers.catalog import register_provider
 from opendata.data.providers.fred.models._client import FredProviderError
 from opendata.data.providers.fred.models._sonia_client import (
     validate_sonia_pages as validate_actual_sonia_pages,
 )
 from opendata.data.providers.fred.models._sonia_query import FredSoniaQuery
+from opendata.data.registry import ProviderRegistry
 from opendata.data.request_budget import (
     GrantDecision,
     RequestAttemptLimitError,
@@ -211,8 +213,9 @@ def make_budget(
 
 
 def test_capability_is_unverified_variable_period_and_sonia_specific() -> None:
-    assert sonia_module.FredSoniaFetcher.async_mode == "bounded_thread"
-    assert sonia_module.FredSoniaFetcher.canonical_model == "SONIA"
+    registry = ProviderRegistry()
+    register_provider("fred", registry)
+    assert type(registry.resolve_model("fred", "SONIA")) is sonia_module.FredSoniaFetcher
     assert sonia_module.FredSoniaFetcher.capability.model_dump() == {
         "asset_class": "macro",
         "domain": "sonia",

@@ -806,15 +806,6 @@
       "ast_exceptions": []
     },
     {
-      "path": "scripts/quality/provider_source_review_evidence.py",
-      "purpose": "provider 源码审查证据工具里的上游名称字符串：OpenBB 基线 commit、被审查的 provider 包名与 openbb 导入根判定。包名不加载外部包；注册包面已改为实测（当前 12 个），钉住的只有 5 个 OpenBB 基线包。",
-      "category": "operations-tool",
-      "reviewed_date": "2026-10-09",
-      "reviewer": "Qoder agent C75; hash re-pinned after the registered-package discovery rewrite. Audited by content against 8a35e9a: the registered 'akshare' literal that HEAD:21 carried is gone (EXPECTED_PROVIDERS deleted in favour of registered_provider_packages), one 'openbb' literal remains at :310 as the import-root test, so the frozen reference count for this file goes 2 -> 1. Original: Codex primary; authorized C65 criterion migration.",
-      "sha256": "36b1e81de5bd8772cbd9b7bc60f2593a4d1b5ae4e7fc3b372ce574934d032804",
-      "ast_exceptions": []
-    },
-    {
       "path": "scripts/quality/scan_js_points.py",
       "purpose": "前端取点扫描器声明搬运层根路径常量，用于把 vendor 文件排除在首方口径外。",
       "category": "build-declaration",

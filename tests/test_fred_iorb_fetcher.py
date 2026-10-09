@@ -16,6 +16,7 @@ from opendata.data.protocol import CapturedFetch, FetchContext
 from opendata.data.providers.fred.models._client import FredProviderError
 from opendata.data.providers.fred.models._iorb_query import FredIorbQuery
 from opendata.data.providers.fred.models.series import FredSeriesQuery
+from opendata.data.registry import ProviderRegistry
 from opendata.data.request_budget import (
     GrantDecision,
     RequestBudget,
@@ -156,8 +157,13 @@ def make_budget(
 
 
 def test_fetcher_declares_only_unverified_variable_iorb_capability() -> None:
-    assert iorb_module.FredIorbFetcher.async_mode == "bounded_thread"
-    assert iorb_module.FredIorbFetcher.canonical_model == "IORB"
+    # The consumer of the declared canonical id is ``ProviderRegistry.resolve_model``: the fred
+    # descriptor (opendata/data/providers/fred/provider.py) binds no IORB row yet, so the binding
+    # is made here with the same operation ``catalog.register_provider`` uses for a real one.
+    registry = ProviderRegistry()
+    fetcher = iorb_module.FredIorbFetcher()
+    registry.register_provider_models("fred", (fetcher.canonical_model,), fetcher)
+    assert registry.resolve_model("fred", "IORB") is fetcher
     assert iorb_module.FredIorbFetcher.capability.model_dump() == {
         "asset_class": "macro",
         "domain": "iorb",

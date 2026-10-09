@@ -1,0 +1,27 @@
+
+### AC-1|03  (document line 126)
+判据原文：**裸词 `akshare` 的逐词白名单**：署名、上游沿革与搬运代码沿用原路径白名单（`akshare/`，迭代 A2 起为 `opendata_http/`；`THIRD_PARTY_NOTICES.md`、`LICENSE-AKSHARE`、`README.md`、`CODE_QUALITY.md`、`scripts/codemod/`、`tests/`、`docs/`）；第一方实现中仅允许用于数据源/API 标识、来源适配器、映射、对照工具和构建声明。新增允许项须在 `docs/quality/akshare-reference-allowlist.json` 逐路径、用途、审核日期登记并与实际命中双向对账；未登记、新增或用途不符即失败。旧品牌 token 仍由 AC-1 第 2 条要求零残留；运行时 `akshare`/`openbb` 包依赖由 AC-16 的 AST 扫描要求零引用。
+本探针：裸词 akshare 的白名单是否真的覆盖全部命中面
+台账现状：state=proven，文档勾选=True
+  - whitelist read back out of the item (9 entries): opendata/data/providers/akshare/_vendor/, THIRD_PARTY_NOTICES.md, LICENSE-AKSHARE, README.md, CODE_QUALITY.md, scripts/codemod/, tests/, docs/, docs/quality/akshare-reference-allowlist.json
+  - tracked files carrying the bare word `akshare` = 986, of which the vendored tree = 327
+  - unregistered hits outside that whitelist = 1 (+0 unshown): opendata/data/providers/sec/specs.py
+  - path register valid = no (88 entries; stale paths=1, stale SHA=0, invalid metadata/schema=0, unreadable tracked files=0)
+  - exact AST metadata exceptions = 6/6
+  - AC-16's frozen integration-layer findings = 0 ()
+  - 补齐到可判：outside: 1 -> 0; outside_sample: opendata/data/providers/sec/specs.py -> ; policy_valid: no -> yes; stale_paths: 1 -> 0
+VERDICT AC-1|03: gap — 1 unregistered hit path(s) remain; path register is invalid (unregistered hit path: opendata/data/providers/sec/specs.py; stale registered path: scripts/quality/provider_source_review_evidence.py); 1 registered path(s) are no longer current hits
+
+### AC-17|08  (document line 295)
+判据原文：反空壳抽审：无自指测试、无单断言空壳、无 `inspect.getsource` 形式检查；T1 模块具备错误翻译真实信封样例 ≥3 + 黄金向量 + normalize 真实报文 ≥3
+本探针：§5.1 四类空壳全树为零 + §5.2 T1 三问由真实录制信封与预计算黄金向量回答
+台账现状：state=proven，文档勾选=True
+  - docs/evidence/C44/shell_audit.py exit 1（shells=found t1=met）：自指=2, 恒真断言=0, 定义抄写=14, 源码形式检查=0
+  - population = 309 个 test_*.py，census 扫到 309 个：全树零必须是「全树」，漏扫的那部分只是把空壳藏在读数之外；未被 git 跟踪的 0 个不算证据（CI 看不见的面无法复算）
+  - §5.2 T1 三问：t1_error_cases=6(≥3), t1_success_cases=9(≥1), t1_normalize_cases=4(≥3), t1_golden_days=24(≥1)
+  - 录制夹具 = 9 例，逐条 sha 复算 = yes，来源可追溯 = yes：手造「理想报文」在这一问上过不去
+  - 补齐到可判：constant_shell: 14 -> 0; self_reference: 2 -> 0; tool_exit: 1 -> 0; tool_shells: found -> clean
+VERDICT AC-17|08: gap — 反空壳抽审判的是形态：定义抄写、恒真断言、自指、源码形式检查四类都必须为零，且 T1 档要拿真实录制信封与预计算黄金向量来答，三问的地板（≥3/含成功/≥3）缺一不可
+
+census: gap=2
+（2 item(s) recomputed against docs/quality/acceptance-item-ledger.json）

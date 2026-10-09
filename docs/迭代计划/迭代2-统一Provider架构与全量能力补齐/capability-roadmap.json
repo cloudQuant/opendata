@@ -347,7 +347,7 @@
       "anchor": "NOT_DECLARABLE: dict[str, str] = {",
       "anchor_found": true,
       "anchor_line": "NOT_DECLARABLE: dict[str, str] = {",
-      "anchor_line_number": 119,
+      "anchor_line_number": 120,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -1634,122 +1634,42 @@
         "rows_newly_unlocked": 4
       },
       {
-        "capability": "decode.html_text",
-        "cumulative_rows_unlocked": 100,
+        "capability": "rows.order_limit",
+        "cumulative_rows_unlocked": 101,
         "newly_unlocked_rows": [
           {
             "needs": [
-              "decode.html_text",
-              "flow.url_template"
+              "columns.rescale",
+              "rows.order_limit"
             ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-SecHtmFile",
-            "upstream_model": "SecHtmFile"
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-FederalFundsRate",
+            "upstream_model": "FederalFundsRate"
           },
           {
             "needs": [
-              "decode.html_text",
-              "flow.join",
-              "path.object_keys"
-            ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-AvailableIndices",
-            "upstream_model": "AvailableIndices"
-          }
-        ],
-        "rows_newly_unlocked": 2
-      },
-      {
-        "capability": "decode.tabular_file",
-        "cumulative_rows_unlocked": 102,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "decode.tabular_file"
+              "columns.rescale",
+              "rows.order_limit"
             ],
             "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-InflationExpectations",
-            "upstream_model": "InflationExpectations"
+            "task_id": "OBB2-federal_reserve-OvernightBankFundingRate",
+            "upstream_model": "OvernightBankFundingRate"
           },
           {
             "needs": [
-              "decode.tabular_file"
+              "columns.rescale",
+              "rows.order_limit"
             ],
             "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-TotalFactorProductivity",
-            "upstream_model": "TotalFactorProductivity"
+            "task_id": "OBB2-federal_reserve-SOFR",
+            "upstream_model": "SOFR"
           }
         ],
-        "rows_newly_unlocked": 2
-      },
-      {
-        "capability": "columns.cast",
-        "cumulative_rows_unlocked": 103,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.cast",
-              "columns.rename"
-            ],
-            "provider": "government_us",
-            "task_id": "OBB2-government_us-TreasuryAuctions",
-            "upstream_model": "TreasuryAuctions"
-          }
-        ],
-        "rows_newly_unlocked": 1
-      },
-      {
-        "capability": "decode.opaque_bytes",
-        "cumulative_rows_unlocked": 104,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "decode.opaque_bytes",
-              "flow.preflight_lookup"
-            ],
-            "provider": "government_us",
-            "task_id": "OBB2-government_us-WeatherBulletinDownload",
-            "upstream_model": "WeatherBulletinDownload"
-          }
-        ],
-        "rows_newly_unlocked": 1
-      },
-      {
-        "capability": "path.assemble_single_row",
-        "cumulative_rows_unlocked": 105,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "decode.html_text",
-              "flow.join",
-              "path.assemble_single_row"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-SecFiling",
-            "upstream_model": "SecFiling"
-          }
-        ],
-        "rows_newly_unlocked": 1
+        "rows_newly_unlocked": 3
       },
       {
         "capability": "request.serialised_param",
-        "cumulative_rows_unlocked": 106,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "decode.tabular_file",
-              "request.serialised_param"
-            ],
-            "provider": "government_us",
-            "task_id": "OBB2-government_us-CommodityPsdReport",
-            "upstream_model": "CommodityPsdReport"
-          }
-        ],
-        "rows_newly_unlocked": 1
-      },
-      {
-        "capability": "rows.order_limit",
-        "cumulative_rows_unlocked": 110,
+        "cumulative_rows_unlocked": 104,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1777,22 +1697,119 @@
             "provider": "wsj",
             "task_id": "OBB2-wsj-ETFActive",
             "upstream_model": "ETFActive"
+          }
+        ],
+        "rows_newly_unlocked": 3
+      },
+      {
+        "capability": "decode.tabular_file",
+        "cumulative_rows_unlocked": 107,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "decode.tabular_file"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-InflationExpectations",
+            "upstream_model": "InflationExpectations"
           },
           {
             "needs": [
-              "columns.rescale",
-              "columns.select",
-              "rows.order_limit"
+              "decode.tabular_file"
             ],
             "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-FederalFundsRate",
-            "upstream_model": "FederalFundsRate"
+            "task_id": "OBB2-federal_reserve-TotalFactorProductivity",
+            "upstream_model": "TotalFactorProductivity"
+          },
+          {
+            "needs": [
+              "decode.tabular_file",
+              "request.serialised_param"
+            ],
+            "provider": "government_us",
+            "task_id": "OBB2-government_us-CommodityPsdReport",
+            "upstream_model": "CommodityPsdReport"
           }
         ],
-        "rows_newly_unlocked": 4
+        "rows_newly_unlocked": 3
+      },
+      {
+        "capability": "decode.html_text",
+        "cumulative_rows_unlocked": 109,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "decode.html_text",
+              "flow.url_template"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-SecHtmFile",
+            "upstream_model": "SecHtmFile"
+          },
+          {
+            "needs": [
+              "decode.html_text",
+              "flow.join",
+              "path.object_keys"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-AvailableIndices",
+            "upstream_model": "AvailableIndices"
+          }
+        ],
+        "rows_newly_unlocked": 2
+      },
+      {
+        "capability": "columns.cast",
+        "cumulative_rows_unlocked": 110,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.cast",
+              "columns.rename"
+            ],
+            "provider": "government_us",
+            "task_id": "OBB2-government_us-TreasuryAuctions",
+            "upstream_model": "TreasuryAuctions"
+          }
+        ],
+        "rows_newly_unlocked": 1
+      },
+      {
+        "capability": "decode.opaque_bytes",
+        "cumulative_rows_unlocked": 111,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "decode.opaque_bytes",
+              "flow.preflight_lookup"
+            ],
+            "provider": "government_us",
+            "task_id": "OBB2-government_us-WeatherBulletinDownload",
+            "upstream_model": "WeatherBulletinDownload"
+          }
+        ],
+        "rows_newly_unlocked": 1
+      },
+      {
+        "capability": "path.assemble_single_row",
+        "cumulative_rows_unlocked": 112,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "decode.html_text",
+              "flow.join",
+              "path.assemble_single_row"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-SecFiling",
+            "upstream_model": "SecFiling"
+          }
+        ],
+        "rows_newly_unlocked": 1
       }
     ],
-    "rows_expressible_today": 4,
+    "rows_expressible_today": 2,
     "rows_outside_engine": [
       {
         "needs": [
@@ -2121,7 +2138,7 @@
         "upstream_model": "EquityScreener"
       }
     ],
-    "rows_pending": 146,
+    "rows_pending": 148,
     "rows_still_locked_after_engine_pool": [
       {
         "needs": [
@@ -2450,7 +2467,7 @@
         "upstream_model": "EquityScreener"
       }
     ],
-    "rows_unlocked_by_greedy_prefix": 110,
+    "rows_unlocked_by_greedy_prefix": 112,
     "rows_with_empty_need_set": [],
     "rows_with_no_engine_work_possible": 12,
     "shipped_cover_rows": [
@@ -2624,8 +2641,8 @@
       "columns.cast": 2,
       "columns.derive": 12,
       "columns.rename": 10,
-      "columns.rescale": 5,
-      "columns.select": 12,
+      "columns.rescale": 7,
+      "columns.select": 11,
       "decode.archive_member": 6,
       "decode.delimited": 22,
       "decode.geojson": 4,
@@ -2655,12 +2672,12 @@
       "request.graphql": 9,
       "request.serialised_param": 4,
       "rows.filter": 26,
-      "rows.order_limit": 4,
+      "rows.order_limit": 6,
       "shape.columnar": 10,
       "shape.nested_data_message": 4
     },
-    "raw_label_count": 95,
-    "raw_label_mention_count": 355,
+    "raw_label_count": 94,
+    "raw_label_mention_count": 358,
     "rows_needing_only_this_capability": {
       "columns.select": 2,
       "decode.delimited": 1,

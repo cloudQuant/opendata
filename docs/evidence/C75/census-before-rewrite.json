@@ -39,12 +39,13 @@
       "join_needed": false,
       "needs_engine_capability": [
         "published_value_rescale",
+        "client_side_column_drop",
         "client_side_sort"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "opendata/data/providers/_engine/http_json.py:303",
-      "notes": "NEEDS LIST CORRECTED (C75): expressible_today stays false on the same two blockers -- openbb_federal_reserve 1.6.2 federal_funds_rate.py:63-81 rescales 9 published percents (division :80) and :141 sorts by date, while neither ColumnSpec (spec.py:144-149) nor ModelSpec (spec.py:376-399) declares a scale or a sort. Two removals: client_side_column_drop is not a blocker because normalize_record (http_json.py:303-346) builds each row from declared columns, so an undeclared key never reaches the row model, and the pops at federal_funds_rate.py:137-138 are therefore a no-op for us; and the C74 note blamed ModelSpec at spec.py:266-285, which is DecoderSpec.effective_delimiter and RowFilterSpec's docstring, not ModelSpec.",
+      "notes": "DOWNGRADED true->false: a record value reaches the row model unchanged (http_json.py:303) and ModelSpec has no scale/drop/sort field (spec.py:266-285), so the /100 rescale, the type/footnoteId drops and the client-side sort recorded for this module are not expressible. No vendored upstream bytes in-repo: federal_reserve is _reserved_provider at catalog.py:61 and akshare/_vendor has no federal_reserve module, so the cited providers/federal_reserve/... path resolves outside the repo root and cannot be cited",
       "audited": {
         "audited_by": "C74 census re-audit",
         "audited_date": "2026-10-09",
@@ -129,26 +130,11 @@
       "response_format": "json",
       "row_extraction": "nested_key",
       "join_needed": false,
-      "needs_engine_capability": [
-        "published_value_rescale",
-        "client_side_sort"
-      ],
-      "expressible_today": false,
+      "needs_engine_capability": [],
+      "expressible_today": true,
       "existing_fetcher_class": "",
       "evidence": "providers/federal_reserve/openbb_federal_reserve/models/overnight_bank_funding_rate.py:97",
-      "notes": "DOWNGRADED true->false (C75): the retracted note already said 'same shape as EFFR', and the EFFR row reads false. The same two blockers, measured on the same lines of the same oracle: openbb_federal_reserve 1.6.2 overnight_bank_funding_rate.py:47-61 rescales 5 published percents by /100 (division :60) and :122 sorts by date. Column-drop is excluded for the same reason as SOFR: normalize_record (http_json.py:303-346) builds each row from declared columns, so an undeclared key never reaches the row model. The pops in question are overnight_bank_funding_rate.py:117-119.",
-      "audited": {
-        "audited_by": "C75 federal percent recheck",
-        "audited_date": "2026-10-09",
-        "changed": [
-          "expressible_today",
-          "needs_engine_capability",
-          "notes"
-        ],
-        "prior_expressible_today": true,
-        "prior_needs_engine_capability": [],
-        "basis": "opendata/data/providers/federal_reserve/specs.py -- NOT_DECLARED and the model= declarations"
-      }
+      "notes": "same shape as EFFR: startDate/endDate query keys, rows_pointer=refRates; transform only drops undeclared keys"
     },
     {
       "task_id": "OBB2-federal_reserve-PrimaryDealerFails",
@@ -201,26 +187,11 @@
       "response_format": "json",
       "row_extraction": "nested_key",
       "join_needed": false,
-      "needs_engine_capability": [
-        "published_value_rescale",
-        "client_side_sort"
-      ],
-      "expressible_today": false,
+      "needs_engine_capability": [],
+      "expressible_today": true,
       "existing_fetcher_class": "",
       "evidence": "providers/federal_reserve/openbb_federal_reserve/models/sofr.py:84",
-      "notes": "DOWNGRADED true->false (C75): openbb_federal_reserve 1.6.2 sofr.py:34-50 divides 7 published percent fields by 100 in a before-validator (the division is sofr.py:49) and sofr.py:108 sorts the rows by date, while neither ColumnSpec (spec.py:144-149) nor ModelSpec (spec.py:376-399) declares a scale or a sort. The retracted note said 'params+rows_pointer cover it': that covers the request shape, not the published values. The pops at sofr.py:103-105 are NOT a blocker, because normalize_record (http_json.py:303-346) builds each row from declared columns, so an undeclared key never reaches the row model.",
-      "audited": {
-        "audited_by": "C75 federal percent recheck",
-        "audited_date": "2026-10-09",
-        "changed": [
-          "expressible_today",
-          "needs_engine_capability",
-          "notes"
-        ],
-        "prior_expressible_today": true,
-        "prior_needs_engine_capability": [],
-        "basis": "opendata/data/providers/federal_reserve/specs.py -- NOT_DECLARED and the model= declarations"
-      }
+      "notes": "/api/rates/secured/sofr/search.json, startDate/endDate, rows_pointer=refRates; params+rows_pointer cover it"
     },
     {
       "task_id": "OBB2-federal_reserve-SvenssonYieldCurve",

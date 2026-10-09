@@ -1,0 +1,15 @@
+
+### AC-1|03  (document line 126)
+判据原文：**裸词 `akshare` 的逐词白名单**：署名、上游沿革与搬运代码沿用原路径白名单（`akshare/`，迭代 A2 起为 `opendata_http/`；`THIRD_PARTY_NOTICES.md`、`LICENSE-AKSHARE`、`README.md`、`CODE_QUALITY.md`、`scripts/codemod/`、`tests/`、`docs/`）；第一方实现中仅允许用于数据源/API 标识、来源适配器、映射、对照工具和构建声明。新增允许项须在 `docs/quality/akshare-reference-allowlist.json` 逐路径、用途、审核日期登记并与实际命中双向对账；未登记、新增或用途不符即失败。旧品牌 token 仍由 AC-1 第 2 条要求零残留；运行时 `akshare`/`openbb` 包依赖由 AC-16 的 AST 扫描要求零引用。
+本探针：裸词 akshare 的白名单是否真的覆盖全部命中面
+台账现状：state=proven，文档勾选=True
+  - whitelist read back out of the item (9 entries): opendata/data/providers/akshare/_vendor/, THIRD_PARTY_NOTICES.md, LICENSE-AKSHARE, README.md, CODE_QUALITY.md, scripts/codemod/, tests/, docs/, docs/quality/akshare-reference-allowlist.json
+  - tracked files carrying the bare word `akshare` = 985, of which the vendored tree = 327
+  - unregistered hits outside that whitelist = 0 (+0 unshown): -
+  - path register valid = yes (87 entries; stale paths=0, stale SHA=0, invalid metadata/schema=0, unreadable tracked files=0)
+  - exact AST metadata exceptions = 6/6
+  - AC-16's frozen integration-layer findings = 0 ()
+VERDICT AC-1|03: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
