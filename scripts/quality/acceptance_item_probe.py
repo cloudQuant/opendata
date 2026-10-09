@@ -46,6 +46,7 @@ from __future__ import annotations
 import argparse
 import ast
 import collections
+import fnmatch
 import hashlib
 import importlib.util
 import inspect
@@ -60,6 +61,7 @@ import sys
 import tempfile
 import time
 import xml.etree.ElementTree as ET  # nosec B405  # pytest-generated private temp report
+import zipfile
 from contextlib import redirect_stdout, suppress
 from dataclasses import dataclass
 from datetime import date
@@ -13670,6 +13672,612 @@ AC17_02 = Probe(
 
 
 # --------------------------------------------------------------------------- #
+# AC-17|06: coverage of the A2 new-code population, judged on a stamped archive
+# --------------------------------------------------------------------------- #
+
+COV_LIVE_REL: Final = "coverage.xml"
+COV_STAMP_DIR: Final = "docs/evidence/C85"
+COV_ARCHIVE_XML: Final = f"{COV_STAMP_DIR}/coverage-final.xml"
+COV_ARCHIVE_HTML: Final = f"{COV_STAMP_DIR}/coverage-final-html.zip"
+COV_STAMP_REL: Final = f"{COV_STAMP_DIR}/coverage-final-stamp.json"
+COV_STAMP_TOOL: Final = "scripts/quality/coverage_archive_stamp.py"
+COV_COND_RE: Final = re.compile(r"\((\d+)/(\d+)\)")
+COV_NAMED_ROOTS: Final = ("opendata/data", "pipeline", "opendata_fuyao")
+COV_NEW_CODE_MIN: Final = 85.0
+COV_ROOT_MIN: Final = 90.0
+COV_DRIFT_MAX: Final = 0.5
+COV_SHA_RE: Final = re.compile(r"^[0-9a-fA-F]{7,40}$")
+#: The report's four counters and two rates, recomputed from the per-line data.
+COV_XML_IDENTITY_FACES: Final = 6
+COV_STAMP_AGGREGATE_FACES: Final = 5
+COV_STAMP_POPULATION_FACES: Final = 8
+COV_FORMULA_CONTROL_FACES: Final = 4
+#: Two readings of the same face, one over the floor and one a hundredth short of it.
+COV_ROOT_PCT_OK: Final = "opendata/data=90.16, pipeline=90.02, opendata_fuyao=93.79"
+COV_ROOT_PCT_BELOW: Final = "opendata/data=90.16, pipeline=88.84, opendata_fuyao=93.79"
+COV_ROOT_PCT_EDGE: Final = "opendata/data=89.99, pipeline=90.02, opendata_fuyao=93.79"
+
+
+class _CovUnit(TypedDict):
+    """One measured file: statements, missing statements, covered arcs, total arcs."""
+
+    stmts: int
+    miss: int
+    arc_cov: int
+    arc_total: int
+
+
+class _CovGroup(TypedDict):
+    """One aggregated population and its statement+branch ratio."""
+
+    files: int
+    stmts: int
+    miss: int
+    arc_cov: int
+    arc_total: int
+    pct: float
+
+
+def _cov_ratio(keys: Iterable[str], rows: Mapping[str, _CovUnit]) -> _CovGroup:
+    """_cov_ratio: aggregate the way coverage.py does -- (stmt-cov + arc-cov) / (stmt + arc)."""
+    picked = [rows[k] for k in keys if k in rows]
+    stmts = sum(u["stmts"] for u in picked)
+    miss = sum(u["miss"] for u in picked)
+    arc_cov = sum(u["arc_cov"] for u in picked)
+    arc_total = sum(u["arc_total"] for u in picked)
+    den = stmts + arc_total
+    return {
+        "files": len(picked),
+        "stmts": stmts,
+        "miss": miss,
+        "arc_cov": arc_cov,
+        "arc_total": arc_total,
+        "pct": 100.0 * (stmts - miss + arc_cov) / den if den else 0.0,
+    }
+
+
+def _cov_formula_controls() -> int:
+    """_cov_formula_controls: four arms that pin the ratio, one of them the formula it replaces."""
+    rows: dict[str, _CovUnit] = {
+        "a.py": {"stmts": 100, "miss": 10, "arc_cov": 8, "arc_total": 10},
+        "b.py": {"stmts": 50, "miss": 0, "arc_cov": 0, "arc_total": 0},
+    }
+    both = _cov_ratio(("a.py", "b.py"), rows)
+    only_b = _cov_ratio(("b.py",), rows)
+    empty = _cov_ratio((), rows)
+    covered = 150 - 10 + 8
+    return sum(
+        (
+            abs(both["pct"] - 100.0 * covered / 160) < 1e-9,
+            # A denominator of statements+2*arcs would read 84.375: one arc is one unit, not two.
+            abs(both["pct"] - 100.0 * covered / 180) > 1e-9,
+            only_b["pct"] == 100.0,
+            empty["files"] == 0 and empty["pct"] == 0.0,
+        )
+    )
+
+
+def _cov_relative(filename: str, sources: Sequence[str], root: Path) -> str:
+    """_cov_relative: resolve a Cobertura ``filename`` (relative to ``<source>``) to the repo."""
+    for source in sources:
+        with suppress(ValueError):
+            return str((Path(source) / filename).resolve().relative_to(root))
+    return filename
+
+
+def _cov_read(xml_path: Path, root: Path) -> tuple[dict[str, _CovUnit], dict[str, Any]]:
+    """_cov_read: parse one Cobertura report into per-file units plus its own counters.
+
+    Args:
+        xml_path: The report to read.
+        root: Repository root to resolve file names against.
+
+    Returns:
+        Repo-relative path -> unit, and the report's aggregate attributes.
+
+    Raises:
+        ProbeError: When the report declares no ``<source>`` root to resolve names against.
+    """
+    node = ET.parse(xml_path).getroot()  # noqa: S314  # nosec B314  # our own stamped report
+    sources = [src.text or "" for src in node.findall("./sources/source")]
+    if not sources:
+        raise ProbeError(f"{xml_path} declares no <source> root")
+    rows: dict[str, _CovUnit] = {}
+    for cls in node.iter("class"):
+        rel = _cov_relative(cls.get("filename") or "", sources, root)
+        unit: _CovUnit = {"stmts": 0, "miss": 0, "arc_cov": 0, "arc_total": 0}
+        for line in cls.iter("line"):
+            unit["stmts"] += 1
+            if not int(line.get("hits") or 0):
+                unit["miss"] += 1
+            pair = COV_COND_RE.search(line.get("condition-coverage") or "")
+            if pair:
+                unit["arc_cov"] += int(pair.group(1))
+                unit["arc_total"] += int(pair.group(2))
+        rows[rel] = unit
+    agg = {
+        "lines_valid": int(node.get("lines-valid") or 0),
+        "lines_covered": int(node.get("lines-covered") or 0),
+        "branches_valid": int(node.get("branches-valid") or 0),
+        "branches_covered": int(node.get("branches-covered") or 0),
+        "line_rate": float(node.get("line-rate") or 0.0),
+        "branch_rate": float(node.get("branch-rate") or 0.0),
+    }
+    return rows, agg
+
+
+def _cov_identity(rows: Mapping[str, _CovUnit], agg: Mapping[str, Any]) -> int:
+    """_cov_identity: how many of the report's four counters and two rates the recompute matches."""
+    lines_valid = sum(u["stmts"] for u in rows.values())
+    lines_covered = sum(u["stmts"] - u["miss"] for u in rows.values())
+    arcs_valid = sum(u["arc_total"] for u in rows.values())
+    arcs_covered = sum(u["arc_cov"] for u in rows.values())
+    return sum(
+        (
+            lines_valid == int(agg["lines_valid"]),
+            lines_covered == int(agg["lines_covered"]),
+            arcs_valid == int(agg["branches_valid"]),
+            arcs_covered == int(agg["branches_covered"]),
+            (round(lines_covered / lines_valid, 4) if lines_valid else 0.0)
+            == round(float(agg["line_rate"]), 4),
+            (round(arcs_covered / arcs_valid, 4) if arcs_valid else 0.0)
+            == round(float(agg["branch_rate"]), 4),
+        )
+    )
+
+
+def _cov_config(c: Context) -> tuple[list[str], list[str]]:
+    """_cov_config: the coverage source roots and omit globs this repository runs with."""
+    cfg = tomllib.loads((c.root / "pyproject.toml").read_text(encoding="utf-8"))
+    run = cfg["tool"]["coverage"]["run"]
+    return list(run.get("source") or []), list(run.get("omit") or [])
+
+
+def _cov_a2_split(
+    c: Context, rows: Mapping[str, _CovUnit], a2: Sequence[str]
+) -> tuple[Facts, list[str]]:
+    """_cov_a2_split: account for every A2 file against the report, so none can go missing."""
+    source_roots, omits = _cov_config(c)
+    py = [f for f in a2 if f.endswith(".py")]
+    under = [f for f in py if any(f == r or f.startswith(f"{r}/") for r in source_roots)]
+    omitted = [f for f in under if any(fnmatch.fnmatch(f, o) for o in omits)]
+    reported = sorted(f for f in under if f in rows)
+    unreported = [f for f in under if f not in rows and f not in omitted]
+    basenames = {k.rsplit("/", 1)[-1] for k in rows}
+    naive = [f for f in a2 if f in basenames]
+    return (
+        {
+            "a2_total": count(len(a2)),
+            "a2_python": count(len(py)),
+            "a2_under_source": count(len(under)),
+            "a2_config_omitted": count(len(omitted)),
+            "a2_in_report": count(len(reported)),
+            "a2_unreported": count(len(unreported)),
+            "a2_unreported_sample": ", ".join(unreported[:2]) or "-",
+            "a2_outside_source": count(len([f for f in py if f not in under])),
+            "a2_accounting": flag(len(under) == len(reported) + len(omitted) + len(unreported)),
+            "join_resolved": count(len(reported)),
+            "join_naive_basename": count(len(naive)),
+            "join_resolution_matters": flag(len(reported) > len(naive)),
+        },
+        reported,
+    )
+
+
+def _cov_retired_files(token: str) -> tuple[list[str], str]:
+    """_cov_retired_files: enumerate what a retired package held, from its deleting commit."""
+    # ``--`` is load-bearing: the path is gone from the working tree, and without the separator
+    # git parses it as a revision and exits 128, which would read as "no such history".
+    rc, out = run_argv(["git", "log", "--format=%H", "--diff-filter=D", "-n", "1", "--", token])
+    if rc != 0:
+        return [], f"{token}: 查询删除提交失败（git rc={rc}）"
+    sha = out.splitlines()[0].strip() if out.splitlines() else ""
+    if not COV_SHA_RE.match(sha):
+        return [], f"{token}: 没有删除它的提交"
+    rc2, out2 = run_argv(
+        ["git", "show", "--name-only", "--format=", "--diff-filter=D", sha, "--", token]
+    )
+    files = [line.strip() for line in out2.splitlines() if line.strip()]
+    return files, f"{token} 由 {sha[:9]} 删除，{len(files)} 个历史文件"
+
+
+def _cov_historical_map(rel: str) -> str | None:
+    """_cov_historical_map: follow one retired path forward, or say the record has no entry."""
+    try:
+        return str(_LAYOUT.historical_identity(rel))
+    except _LAYOUT.SourceLayoutError:
+        return None
+
+
+def _cov_root_keys(
+    token: str, rows: Mapping[str, _CovUnit]
+) -> tuple[list[str], str, list[str], list[str]]:
+    """_cov_root_keys: resolve one named root to measured files.
+
+    Returns:
+        The matched paths, how they were matched, the historical names the layout map cannot
+        resolve, and the resolved Python files that carry no coverage row.
+    """
+    direct = sorted(k for k in rows if k == token or k.startswith(f"{token}/"))
+    if direct:
+        return direct, "目录前缀", [], []
+    component = sorted(k for k in rows if token in PurePosixPath(k).parts)
+    if component:
+        head = PurePosixPath(component[0]).parts
+        return component, f"路径成分（{'/'.join(head[:-1])}/）", [], []
+    historical, note = _cov_retired_files(token)
+    mapped: list[str] = []
+    unmapped: list[str] = []
+    for rel in historical:
+        moved = _cov_historical_map(rel)
+        if moved is None:
+            unmapped.append(rel)
+        else:
+            mapped.append(moved)
+    pys = [m for m in mapped if m.endswith(".py")]
+    return (
+        sorted(k for k in rows if k in pys),
+        f"历史身份映射（{note}）",
+        unmapped,
+        sorted(m for m in pys if m not in rows),
+    )
+
+
+def _cov_stamp(c: Context) -> dict[str, Any]:
+    """_cov_stamp: read the record that claims which commit this archive measured."""
+    path = c.root / COV_STAMP_REL
+    if not path.is_file():
+        return {}
+    with suppress(json.JSONDecodeError, OSError):
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+        if isinstance(loaded, dict):
+            return loaded
+    return {}
+
+
+def _cov_stamp_agreements(stamp: Mapping[str, Any], group: _CovGroup) -> int:
+    """_cov_stamp_agreements: five equalities between the stamp and the archive as it sits now."""
+    agg = stamp.get("aggregates")
+    if not isinstance(agg, dict) or not agg:
+        return 0
+    return sum(
+        (
+            int(agg.get("lines_valid", -1)) == group["stmts"],
+            int(agg.get("lines_covered", -1)) == group["stmts"] - group["miss"],
+            int(agg.get("branches_valid", -1)) == group["arc_total"],
+            int(agg.get("branches_covered", -1)) == group["arc_cov"],
+            str(agg.get("combined_pct")) == f"{group['pct']:.2f}",
+        )
+    )
+
+
+def _cov_stamp_population_agreements(
+    stamp: Mapping[str, Any], pops: Mapping[str, _CovGroup]
+) -> int:
+    """_cov_stamp_population_agreements: each judged population's size and ratio, in stamp."""
+    recorded = stamp.get("populations")
+    if not isinstance(recorded, dict) or not recorded:
+        return 0
+    hits = 0
+    for name, group in pops.items():
+        entry = recorded.get(name)
+        if isinstance(entry, dict):
+            hits += int(entry.get("files", -1)) == group["files"]
+            hits += str(entry.get("combined_pct")) == f"{group['pct']:.2f}"
+    return hits
+
+
+def _cov_tree_identity(commit: str, sources: Sequence[str]) -> tuple[bool, str]:
+    """_cov_tree_identity: do the measured roots hold identical git trees at the stamp and HEAD?"""
+    if not COV_SHA_RE.match(commit):
+        return False, "-"
+    notes: list[str] = []
+    for src in sources:
+        rc_at, at = run_argv(["git", "rev-parse", f"{commit}:{src}"])
+        rc_head, head = run_argv(["git", "rev-parse", f"HEAD:{src}"])
+        if rc_at or rc_head:
+            return False, f"{src}: 取不到源码树"
+        same = at.strip() == head.strip()
+        notes.append(f"{src} {at.strip()[:12]} {'==' if same else '!='} {head.strip()[:12]}")
+        if not same:
+            return False, " | ".join(notes)
+    return True, " | ".join(notes)
+
+
+def _cov_ancestor(commit: str) -> bool:
+    """_cov_ancestor: is the stamped commit on HEAD's history rather than on a side branch?"""
+    if not COV_SHA_RE.match(commit):
+        return False
+    rc, _out = run_argv(["git", "merge-base", "--is-ancestor", commit, "HEAD"])
+    return rc == 0
+
+
+def _cov_html_archive(root: Path) -> tuple[int, int, bool]:
+    """_cov_html_archive: pages inside the archived zip, its size, and whether the index is in."""
+    path = root / COV_ARCHIVE_HTML
+    if not path.is_file():
+        return 0, 0, False
+    size = path.stat().st_size
+    with suppress(zipfile.BadZipFile, OSError), zipfile.ZipFile(path) as book:
+        names = book.namelist()
+        pages = [n for n in names if n.endswith(".html")]
+        return len(pages), size, any(n.rsplit("/", 1)[-1] == "index.html" for n in names)
+    return 0, size, False
+
+
+def measure_ac17_06(c: Context) -> Facts:
+    """measure_ac17_06: see the AC-17|06 measurement it serves."""
+    arch = c.root / COV_ARCHIVE_XML
+    live = c.root / COV_LIVE_REL
+    a2 = list(script_module(A2_CHECK_TOOL).resolve_files(None) or [])
+    facts: Facts = {
+        "formula_controls": count(_cov_formula_controls()),
+        "archive_xml_exists": flag(arch.is_file()),
+        "archive_xml_bytes": count(arch.stat().st_size if arch.is_file() else 0),
+        "live_xml_exists": flag(live.is_file()),
+        "live_xml_bytes": count(live.stat().st_size if live.is_file() else 0),
+        "stamp_exists": flag((c.root / COV_STAMP_REL).is_file()),
+        "stamp_tool": flag((c.root / COV_STAMP_TOOL).is_file()),
+    }
+    source_roots, _omits = _cov_config(c)
+    facts["coverage_sources"] = ", ".join(source_roots) or "-"
+    tracked = set(c.tracked())
+    facts["archive_tracked"] = flag(
+        COV_ARCHIVE_XML in tracked and COV_ARCHIVE_HTML in tracked and COV_STAMP_REL in tracked
+    )
+    pages, html_bytes, index_in_zip = _cov_html_archive(c.root)
+    facts["archive_html_pages"] = count(pages)
+    facts["archive_html_bytes"] = count(html_bytes)
+    facts["archive_html_index"] = flag(index_in_zip)
+
+    if not arch.is_file():
+        split, _none = _cov_a2_split(c, {}, a2)
+        facts.update(split)
+        facts.update(
+            {
+                "archive_identity": "0",
+                "archive_reported_files": "0",
+                "stamp_aggregates": "0",
+                "stamp_populations": "0",
+                "stamp_commit": "(无戳记)",
+                "stamp_ancestor": "no",
+                "tree_identity": "no",
+                "tree_identity_sample": "-",
+                "new_code_pct": "0.00",
+                "new_code_files": "0",
+                "new_code_units": "-",
+                "root_pct": "-",
+                "root_empty_pop": count(len(COV_NAMED_ROOTS)),
+                "root_resolution": "-",
+                "root_unmapped": "0",
+                "root_unmapped_sample": "-",
+                "root_absent": "0",
+                "root_absent_sample": "-",
+                "live_a2_in_report": "-",
+                "drift_max": "-",
+                "drift_within": "no",
+            }
+        )
+        return facts
+
+    rows, agg = _cov_read(arch, c.root)
+    facts["archive_identity"] = count(_cov_identity(rows, agg))
+    facts["archive_reported_files"] = count(len(rows))
+    split, new_code = _cov_a2_split(c, rows, a2)
+    facts.update(split)
+
+    pops: dict[str, _CovGroup] = {"new_code": _cov_ratio(new_code, rows)}
+    resolutions: list[str] = []
+    empty_pops = 0
+    unmapped: list[str] = []
+    absent: list[str] = []
+    for token in COV_NAMED_ROOTS:
+        keys, how, miss_map, miss_rows = _cov_root_keys(token, rows)
+        pops[token] = _cov_ratio(keys, rows)
+        resolutions.append(f"{token}={len(keys)}（{how}）")
+        empty_pops += not keys
+        unmapped += miss_map
+        absent += miss_rows
+
+    stamp = _cov_stamp(c)
+    commit = str(stamp.get("commit") or "")
+    facts["stamp_aggregates"] = count(_cov_stamp_agreements(stamp, pops["new_code"]))
+    facts["stamp_populations"] = count(_cov_stamp_population_agreements(stamp, pops))
+    facts["stamp_commit"] = commit[:9] or "(无)"
+    facts["stamp_ancestor"] = flag(_cov_ancestor(commit))
+    same, sample = _cov_tree_identity(commit, source_roots)
+    facts["tree_identity"] = flag(same)
+    facts["tree_identity_sample"] = sample
+
+    new = pops["new_code"]
+    facts["new_code_pct"] = f"{new['pct']:.2f}"
+    facts["new_code_files"] = count(new["files"])
+    facts["new_code_units"] = (
+        f"覆盖 {new['stmts'] - new['miss']}+{new['arc_cov']} / 总量 "
+        f"{new['stmts']}+{new['arc_total']}（语句+分支弧）"
+    )
+    facts["root_pct"] = ", ".join(f"{t}={pops[t]['pct']:.2f}" for t in COV_NAMED_ROOTS)
+    facts["root_empty_pop"] = count(empty_pops)
+    facts["root_resolution"] = " | ".join(resolutions)
+    facts["root_unmapped"] = count(len(unmapped))
+    facts["root_unmapped_sample"] = ", ".join(unmapped[:2]) or "-"
+    facts["root_absent"] = count(len(absent))
+    facts["root_absent_sample"] = ", ".join(absent[:2]) or "-"
+
+    if live.is_file():
+        live_rows, _live_agg = _cov_read(live, c.root)
+        live_split, live_new = _cov_a2_split(c, live_rows, a2)
+        deltas = [abs(_cov_ratio(live_new, live_rows)["pct"] - new["pct"])]
+        for token in COV_NAMED_ROOTS:
+            keys, _h, _m, _a = _cov_root_keys(token, live_rows)
+            deltas.append(abs(_cov_ratio(keys, live_rows)["pct"] - pops[token]["pct"]))
+        facts["live_a2_in_report"] = live_split["a2_in_report"]
+        facts["drift_max"] = f"{max(deltas):.2f}"
+        facts["drift_within"] = flag(max(deltas) <= COV_DRIFT_MAX)
+    else:
+        facts["live_a2_in_report"] = "-"
+        facts["drift_max"] = "-"
+        facts["drift_within"] = "no"
+    return facts
+
+
+def judge_ac17_06(facts: Facts) -> Verdict:
+    """judge_ac17_06: see the AC-17|06 measurement it serves."""
+    checks: tuple[tuple[str, bool], ...] = (
+        ("公式四臂自证未全", facts["formula_controls"] != str(COV_FORMULA_CONTROL_FACES)),
+        (
+            "归档报告重算与 coverage.py 自报不一致",
+            facts["archive_identity"] != str(COV_XML_IDENTITY_FACES),
+        ),
+        ("戳记聚合与归档现状不一致", facts["stamp_aggregates"] != str(COV_STAMP_AGGREGATE_FACES)),
+        (
+            "戳记分总体与归档现状不一致",
+            facts["stamp_populations"] != str(COV_STAMP_POPULATION_FACES),
+        ),
+        ("A2 源内计数 ≠ 报告+排除+未报告", facts["a2_accounting"] != "yes"),
+        ("源内有 A2 文件没进报告", facts["a2_unreported"] != "0"),
+        ("联接未过 <source>，总体可与报告脱钩", facts["join_resolution_matters"] != "yes"),
+        (
+            f"A2 新代码 {facts['new_code_pct']}% 未达 {COV_NEW_CODE_MIN:.0f}%",
+            float(facts["new_code_pct"]) < COV_NEW_CODE_MIN,
+        ),
+        ("有点名根解析为空总体", facts["root_empty_pop"] != "0"),
+        ("退役目录有历史身份映射不上", facts["root_unmapped"] != "0"),
+        ("映射到的文件在报告里没有行", facts["root_absent"] != "0"),
+        (
+            f"点名根未达 {COV_ROOT_MIN:.0f}%：{facts['root_pct']}",
+            not _roots_over_floor(facts["root_pct"]),
+        ),
+        (
+            "归档 xml 缺失或为空",
+            facts["archive_xml_exists"] != "yes" or not positive(facts["archive_xml_bytes"]),
+        ),
+        ("归档 xml/戳记未被 git 跟踪", facts["archive_tracked"] != "yes"),
+        (
+            "戳记或生成工具缺失",
+            facts["stamp_exists"] != "yes" or facts["stamp_tool"] != "yes",
+        ),
+        (
+            "html 归档缺失或为空",
+            not positive(facts["archive_html_bytes"]) or not positive(facts["archive_html_pages"]),
+        ),
+        ("html 归档没有 index", facts["archive_html_index"] != "yes"),
+        ("戳记 commit 不在 HEAD 的历史上", facts["stamp_ancestor"] != "yes"),
+        ("被测源码树与 HEAD 不同树", facts["tree_identity"] != "yes"),
+        ("现盘 coverage.xml 缺失", facts["live_xml_exists"] != "yes"),
+        (f"现盘与归档漂移超 ±{COV_DRIFT_MAX} 个百分点", facts["drift_within"] != "yes"),
+    )
+    ok = not any(fired for _label, fired in checks)
+    readings = (
+        f"判定总体=A2 新代码里被覆盖率工具计量的那部分：A2 {facts['a2_total']} 个文件，Python "
+        f"{facts['a2_python']}，在 coverage source（{facts['coverage_sources']}）内 "
+        f"{facts['a2_under_source']}，配置显式排除 {facts['a2_config_omitted']}，进了报告 "
+        f"{facts['a2_in_report']}，源内却没进报告 {facts['a2_unreported']}"
+        + (f"（{facts['a2_unreported_sample']}）" if facts["a2_unreported_sample"] != "-" else "")
+        + f"，源外 {facts['a2_outside_source']}；对账等式={facts['a2_accounting']}",
+        f"联接键必须过 <source>：解析后命中 {facts['join_resolved']}，"
+        f"拿 Cobertura 原始名直接对只命中 {facts['join_naive_basename']}；解析起作用="
+        f"{facts['join_resolution_matters']}——不对这一层，总体会静悄悄地变成空集然后 0/0",
+        f"公式四臂自证 {facts['formula_controls']}/4（一条臂专门否掉「分母把弧算两遍」）；"
+        f"归档报告逐行重算 vs coverage.py 自报计数与比率 = {facts['archive_identity']}/"
+        f"{COV_XML_IDENTITY_FACES}（报告里 {facts['archive_reported_files']} 个文件）",
+        f"A2 新代码 statement+branch = {facts['new_code_pct']}%（门 {COV_NEW_CODE_MIN:.0f}%），"
+        f"{facts['new_code_files']} 个文件，单位 {facts['new_code_units']}",
+        f"三个点名根 {facts['root_pct']}（门 {COV_ROOT_MIN:.0f}%），"
+        f"空总体 {facts['root_empty_pop']}；解析方式 {facts['root_resolution']}",
+        f"opendata_fuyao 是退役目录：历史映射解析失败 {facts['root_unmapped']}"
+        + (f"（{facts['root_unmapped_sample']}）" if facts["root_unmapped_sample"] != "-" else "")
+        + f"，映射到了但没有覆盖数据 {facts['root_absent']}"
+        + (f"（{facts['root_absent_sample']}）" if facts["root_absent_sample"] != "-" else "")
+        + "——名字对不上就判不成立，而不是当成空集通过",
+        f"报告归档：{COV_ARCHIVE_XML} {facts['archive_xml_bytes']} 字节、git 跟踪="
+        f"{facts['archive_tracked']}；html zip {facts['archive_html_bytes']} 字节 / "
+        f"{facts['archive_html_pages']} 页 / index={facts['archive_html_index']}",
+        f"戳记 commit={facts['stamp_commit']}，在 HEAD 历史上={facts['stamp_ancestor']}，"
+        f"被测源码树与 HEAD 同树={facts['tree_identity']}"
+        + (f"（{facts['tree_identity_sample']}）" if facts["tree_identity_sample"] != "-" else "")
+        + f"；戳记自合 {facts['stamp_aggregates']}/{COV_STAMP_AGGREGATE_FACES}、"
+        f"分总体 {facts['stamp_populations']}/{COV_STAMP_POPULATION_FACES}",
+        f"现盘 {COV_LIVE_REL} 存在={facts['live_xml_exists']}"
+        f"（{facts['live_xml_bytes']} 字节，A2 命中 {facts['live_a2_in_report']}），"
+        f"与归档最大漂移 {facts['drift_max']} 个百分点，在 ±{COV_DRIFT_MAX} 内="
+        f"{facts['drift_within']}",
+    )
+    reason = "" if ok else " / ".join(label for label, fired in checks if fired)
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def _roots_over_floor(root_pct: str) -> bool:
+    """_roots_over_floor: every named root must be present in the reading and at or over 90."""
+    chunks = [c for c in root_pct.split(", ") if "=" in c]
+    if len(chunks) != len(COV_NAMED_ROOTS):
+        return False
+    for chunk in chunks:
+        _name, _, value = chunk.partition("=")
+        try:
+            if float(value) < COV_ROOT_MIN:
+                return False
+        except ValueError:
+            return False
+    return True
+
+
+AC17_06 = Probe(
+    item="AC-17|06",
+    expects="报告（xml+html）非空归档",
+    summary="覆盖率判定挂在带戳记的归档报告上：总体逐一对账，公式与报告自证同值，点名根各自解析",
+    measure=measure_ac17_06,
+    judge=judge_ac17_06,
+    repair={
+        "formula_controls": "4",
+        "archive_identity": "6",
+        "stamp_aggregates": "5",
+        "stamp_populations": "8",
+        "a2_accounting": "yes",
+        "a2_unreported": "0",
+        "join_resolution_matters": "yes",
+        "new_code_pct": "88.09",
+        "root_empty_pop": "0",
+        "root_unmapped": "0",
+        "root_absent": "0",
+        "root_pct": COV_ROOT_PCT_OK,
+        "archive_xml_exists": "yes",
+        "archive_xml_bytes": "1214502",
+        "archive_tracked": "yes",
+        "stamp_exists": "yes",
+        "stamp_tool": "yes",
+        "archive_html_bytes": "2002747",
+        "archive_html_pages": "321",
+        "archive_html_index": "yes",
+        "stamp_ancestor": "yes",
+        "tree_identity": "yes",
+        "live_xml_exists": "yes",
+        "drift_within": "yes",
+    },
+    breaks=(
+        Break("A2 新代码掉到 84.9%", (("new_code_pct", "84.90"),), GAP),
+        Break("pipeline 实测 88.84，未到 90", (("root_pct", COV_ROOT_PCT_BELOW),), GAP),
+        Break("opendata/data 只差 0.01 个点", (("root_pct", COV_ROOT_PCT_EDGE),), GAP),
+        Break("一个点名根解析成空总体", (("root_empty_pop", "1"),), GAP),
+        Break("退役目录少一条历史身份映射", (("root_unmapped", "1"),), GAP),
+        Break("映射到的文件在报告里没有行", (("root_absent", "1"),), GAP),
+        Break("源内有个 A2 文件没进报告", (("a2_unreported", "1"),), GAP),
+        Break("A2 总体对账等式断裂", (("a2_accounting", "no"),), GAP),
+        Break("联接不过 <source>，总体与报告脱钩", (("join_resolution_matters", "no"),), GAP),
+        Break("重算与 coverage.py 自报计数不一致", (("archive_identity", "4"),), GAP),
+        Break("公式四臂断一条（弧被算两遍）", (("formula_controls", "3"),), GAP),
+        Break("戳记与归档文件不再一致", (("stamp_aggregates", "4"),), GAP),
+        Break("分总体戳记少对一项", (("stamp_populations", "7"),), GAP),
+        Break("测量之后 opendata 源码树又动了", (("tree_identity", "no"),), GAP),
+        Break("戳记 commit 不在 HEAD 的历史上", (("stamp_ancestor", "no"),), GAP),
+        Break("html 归档是空的", (("archive_html_pages", "0"),), GAP),
+        Break("归档没被 git 跟踪", (("archive_tracked", "no"),), GAP),
+        Break("现盘报告与归档漂移超限", (("drift_within", "no"),), GAP),
+    ),
+)
+
+
+# --------------------------------------------------------------------------- #
 # The probe table
 # --------------------------------------------------------------------------- #
 
@@ -17228,6 +17836,7 @@ PROBES: Final[tuple[Probe, ...]] = (
     ),
     AC16_09,
     AC17_02,
+    AC17_06,
 )
 
 
