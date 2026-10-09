@@ -1,0 +1,111 @@
+# C77 — a2-check's bandit leg: was "ok bandit" a reading of the findings, or of a parse failure?
+
+Purpose: gate run 5 printed `ok bandit` over 713 A2 files. This file records the measurement that
+decides what that line meant, and the tightening that makes it mean something.
+
+Date produced: Sat Oct 10 02:22:20 +0800 2026 (the face itself, body below, is timestamped by the
+run that printed it).
+
+Tree at measurement time:
+
+- `git rev-parse HEAD` = `450e21beeab179a9937836c2306387056c6fe9e1`, branch `dev`.
+- The measured leg is **not in HEAD**: `scripts/quality/a2_check.py` and
+  `tests/test_a2_exclusion_scope.py` were dirty while this face ran (`+42` / `+114` lines), and the
+  dirty versions are what `current_ok` came from. So the body below describes the worktree at
+  02:22, not the committed tree; `HEAD` is recorded so a reader can tell the two apart. The old body
+  is kept inside the probe as `legacy_bandit_verdict()`, byte for byte from the pre-C77 file, which
+  is why both verdicts are printed from one process rather than quoted from memory.
+- `sha256(scripts/quality/a2_check.py)` = `cad9e48444713bdad31c70fff3c7b1b3d2c3b580e2941f4d801d1e35c0bc9cab`
+  (new, fail-closed body)
+- `sha256(docs/evidence/C77/a2-bandit-escape-face.py)` = `ea8c3f24f6592728bcd4bc609604f5ae4e4fd7e07da883ebdadef3a3a9cdd3c5`
+  — the probe that printed the body below; re-running this exact file reproduces it.
+
+## What was found
+
+`a2_check._bandit` ran bandit with `-f json -q` and parsed **`stdout + stderr` as one string**.
+bandit writes its `nosec` bookkeeping warnings ("Test in comment: argv is not a test name or id,
+ignoring", "nosec encountered (B603), but no failed test") to **stderr**, and this repo's A2 set
+emits them — the live arm measures 7,540 stderr bytes against 761 stdout bytes for one file. So the
+combined string is not valid JSON, `json.loads` raised, and the handler's
+`except JSONDecodeError: return True` branch answered **"pass"**.
+
+That is the shape of the finding: an approval produced by *not reading* the tool output.
+
+## Scope, measured rather than argued
+
+The shaped arm forces a finding into stdout with the exit code pinned to 0. That state is **not
+reachable under this repo's config today**: `bandit.yaml` (1,200 bytes) carries neither `exit_zero`
+nor `level_severity`, so bandit exits non-zero when it reports, and the old `code != 0` guard
+already returned a failure. The probe prints that reading instead of asserting it
+(`shaped_state_reachable_today: False`).
+
+So the honest verdict on run 5 is: **the bandit leg's answer was correct-but-unread, and it was a
+latent fail-open** — one config knob away from passing real findings. It was *not* an observed
+mis-verdict, and this file does not claim it was. Two of my own earlier readings did, and they are
+retracted below.
+
+## Retracted
+
+- "gate run 5 got as far as member 12" — false; run 5 stopped at member 5 (traceability). Corrected
+  in `docs/evidence/C76/gate-run5-traceability-red.txt`.
+- "the C76 probe scripts are ruff clean" — false; `make lint`'s `PY_SELFDEV` excludes `docs/`, while
+  `a2-check` includes `docs/evidence/**/*.py`, and the leg reported 43 ruff + 6 bandit findings there.
+  Corrected in `docs/evidence/C76/README.md`.
+
+## Test-side companion
+
+- Command: `python3.11 -m pytest tests/test_a2_exclusion_scope.py -q -p no:randomly` rc=0
+- exit reading: `55 passed in 21.96s`
+- The run also prints `FAIL Required test coverage of 84.0% not reached. Total coverage: 15.70%`.
+  That is pytest.ini's `--cov=opendata` measuring a single test file against the whole-suite floor —
+  a harness artifact of the focused invocation, not a defect in the fix, and member 12 measures the
+  real number. It overwrote the gitignored `.coverage` at 02:22; `coverage.xml` (the gate's carrier)
+  was untouched.
+- New class `TestBanditVerdictIsReadNotGuessed`: a 4-case parametrized pair over
+  (clean / clean+warning) × (finding / finding+warning) plus a real-bandit control that needs no
+  stub (`eval('1 + 1')` → B307 is caught by the shipped leg).
+
+Re-run recipes:
+
+```
+python3.11 docs/evidence/C77/a2-bandit-escape-face.py
+python3.11 scripts/quality/a2_check.py --files docs/evidence/C77/a2-bandit-escape-face.py
+python3.11 -m pytest tests/test_a2_exclusion_scope.py -q -p no:randomly -p no:cacheprovider --no-header
+```
+
+## Face (verbatim stdout of the probe, 32 lines / 1,273 bytes, sha256 f7463f599f5eda8d4576d61df59823202501f815dd0087fa1ac5778931e856eb)
+
+```
+=== live arm: real bandit over a real A2 file ===
+  target: scripts/quality/acceptance_item_probe.py
+  rc: 0
+  stdout_bytes: 761
+  stderr_bytes: 7540
+  stderr_carries_warnings: True
+  stdout_parses_alone: True
+  parsed_results_count: 0
+  concat_parses: False
+  legacy_ok: True
+  legacy_branch: ESCAPE: stdout+stderr is not JSON, so no finding was read
+  current_ok: True
+  current_detail: read an empty results list
+
+=== shaped arm: one finding in stdout with the exit code pinned to 0 ===
+  legacy_ok: True
+  legacy_branch: ESCAPE: stdout+stderr is not JSON, so no finding was read
+  current_ok: False
+  current_detail:   scripts/quality/acceptance_item_probe.py:12 B307 use of eval
+  fix_bites: True
+
+=== scope of the shaped arm under this repo's config ===
+  bandit_yaml_bytes: 1200
+  knobs_present: {'exit_zero': False, 'level_severity': False}
+  skips_present: True
+  shaped_state_reachable_today: False
+  reading: with no exit_zero/level_severity knob, bandit exits 1 on findings, so the old leg's rc!=0 guard already caught them and the escape only mislabelled a correct verdict
+
+=== controls ===
+  legacy on a genuinely empty results list (no stderr): ok=True
+  new body on the same bytes is covered by tests/test_a2_exclusion_scope.py
+  SHAPED-ARM-FIX-BITES: True
+```

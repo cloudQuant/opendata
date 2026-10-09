@@ -217,19 +217,45 @@ def _run(args: list[str]) -> tuple[bool, str]:
     return result.returncode == 0, output.strip()
 
 
+def _run_streams(args: list[str]) -> tuple[int, str, str]:
+    """Run one tool and keep its stdout and stderr apart, so a parser can use only stdout."""
+    result = subprocess.run(  # noqa: S603  # nosec B603
+        args,
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        shell=False,
+        check=False,
+    )
+    return result.returncode, (result.stdout or ""), (result.stderr or "")
+
+
 def _bandit(files: list[str]) -> tuple[bool, str]:
-    ok, output = _run(
+    """Read bandit's JSON on stdout; output that cannot be read is a failure, never a pass.
+
+    The first version concatenated stdout and stderr before parsing. bandit writes its
+    ``nosec encountered, but no failed test`` and ``Test in comment`` warnings to stderr, and this
+    repo's A2 set carries both kinds, so a warning made the parse throw and the handler answered
+    ``True``. The gate printed ``ok bandit`` on every run in which bandit said anything at all --
+    a verdict produced by not reading the findings rather than by reading an empty list. Fail
+    closed now: stdout alone is parsed, and a non-list ``results`` or unparseable stdout reports
+    what it saw instead of passing.
+    """
+    code, stdout, stderr = _run_streams(
         [sys.executable, "-m", "bandit", "-c", "bandit.yaml", "-f", "json", "-q", *files]
     )
-    if not ok:
-        return False, output
+    if code != 0:
+        return False, (stdout + stderr).strip()
     try:
-        payload = json.loads(output or "{}")
-    except json.JSONDecodeError:
-        return True, ""
-    results = payload.get("results", [])
+        payload = json.loads(stdout or "{}")
+    except json.JSONDecodeError as error:
+        return False, (
+            f"bandit exited {code} but its stdout is not JSON ({error}); "
+            f"stdout tail={stdout[-400:]!r} stderr tail={stderr[-400:]!r}"
+        )
+    results = payload.get("results")
     if not isinstance(results, list):
-        return True, ""
+        return False, f"bandit JSON carries no results list; keys={sorted(payload)}"
     if results:
         return False, "\n".join(
             f"  {item.get('filename')}:{item.get('line_number')} "

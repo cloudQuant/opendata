@@ -38,6 +38,7 @@ answered "OK: no A2 files changed" - so an explicit request to look at one of
 them read exactly like a pass.
 """
 
+import json
 import re
 import subprocess  # literal argv, shell disabled
 import sys
@@ -310,3 +311,116 @@ class TestDeveloperViewTargetsExist:
             tree = REPO_ROOT / target
             assert tree.is_dir(), f"{name} names {target}/, which does not exist"
             assert tree_files(target), f"{name} names {target}/, which holds no .py files"
+
+
+class TestBanditVerdictIsReadNotGuessed:
+    """``ok bandit`` must come from an empty results list, never from a failed parse (C77).
+
+    ``_bandit`` used to parse ``stdout + stderr``. bandit writes its ``nosec encountered, but no
+    failed test`` and ``Test in comment`` warnings to stderr, and this repo's A2 set emits both, so
+    the parse threw on every run that warned and the handler answered ``True`` -- the same answer an
+    empty findings list gives. The four cases below keep the two readings apart: a clean stdout with
+    a warning on stderr must pass *because it parsed*, and a finding arriving on the same shape must
+    not be erased by the warning. ``_legacy_verdict`` re-runs the old body on the same input so the
+    defect is measured rather than asserted.
+    """
+
+    WARNING: str = "[manager]\tWARNING\tTest in comment: argv is not a test name or id, ignoring\n"
+    FINDING: dict[str, object] = {
+        "filename": "opendata/data/providers/sec/specs.py",
+        "line_number": 7,
+        "test_id": "B404",
+        "issue_text": "Consider possible security implications associated with subprocess.",
+    }
+
+    @staticmethod
+    def _payload(rows: list[dict[str, object]]) -> str:
+        return json.dumps({"errors": [], "generated_at": "x", "results": rows})
+
+    @staticmethod
+    def _legacy_verdict(code: int, stdout: str, stderr: str) -> tuple[bool, str]:
+        """The pre-C77 body, kept here so the contrast arm is measured, not claimed."""
+        output = (stdout or "") + (stderr or "")
+        if code != 0:
+            return False, output.strip()
+        try:
+            payload = json.loads(output or "{}")
+        except json.JSONDecodeError:
+            return True, ""
+        results = payload.get("results", [])
+        if not isinstance(results, list):
+            return True, ""
+        return (False, "legacy found results") if results else (True, "")
+
+    @pytest.mark.parametrize(
+        ("rows", "stderr", "expect_ok"),
+        [
+            ([], "", True),
+            ([], WARNING, True),
+            ([FINDING], "", False),
+            ([FINDING], WARNING, False),
+        ],
+        ids=["clean", "clean-plus-warning", "finding", "finding-plus-warning"],
+    )
+    def test_verdict_tracks_the_parsed_results_not_the_warning_face(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        rows: list[dict[str, object]],
+        stderr: str,
+        expect_ok: bool,
+    ) -> None:
+        stdout = self._payload(rows)
+        monkeypatch.setattr(guard, "_run_streams", lambda _args: (0, stdout, stderr))
+        ok, detail = guard._bandit(["opendata/data/providers/sec/specs.py"])
+        assert ok is expect_ok
+        if expect_ok:
+            assert detail == ""
+        else:
+            assert "B404" in detail and "specs.py:7" in detail
+
+    def test_the_warning_face_is_what_used_to_flip_a_finding_into_a_pass(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Same bytes, two bodies: the old one answered "ok" while a finding sat in stdout."""
+        stdout = self._payload([self.FINDING])
+        monkeypatch.setattr(guard, "_run_streams", lambda _args: (0, stdout, self.WARNING))
+        assert self._legacy_verdict(0, stdout, self.WARNING) == (True, "")
+        assert guard._bandit(["opendata/data/providers/sec/specs.py"])[0] is False
+
+    def test_unparseable_stdout_fails_closed(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        stdout, stderr = "not json at all", "[tester]\tWARNING\tsomething\n"
+        monkeypatch.setattr(guard, "_run_streams", lambda _args: (0, stdout, stderr))
+        ok, detail = guard._bandit(["opendata/x.py"])
+        assert ok is False
+        assert "not JSON" in detail and "not json at all" in detail
+
+    def test_a_real_bandit_finding_is_caught_without_any_stub(self, tmp_path: Path) -> None:
+        """End to end, no monkeypatch: a live B307 must not read as ``ok bandit``."""
+        target = tmp_path / "real_finding.py"
+        target.write_text("VALUE = eval('1 + 1')  # noqa: S307\n", encoding="utf-8")
+        ok, detail = guard._bandit([str(target)])
+        assert ok is False, f"bandit leg passed on a live eval(): {detail[:400]}"
+        assert "B307" in detail
+
+    def test_a_real_clean_file_passes_by_parsing_not_by_escape(self, tmp_path: Path) -> None:
+        """The other arm of the same pair: clean bytes plus a warning must still read ok."""
+        target = tmp_path / "real_clean.py"
+        target.write_text(
+            "import subprocess  # nosec B999\n\nprint(subprocess.__name__)\n", encoding="utf-8"
+        )
+        code, stdout, stderr = guard._run_streams(
+            [
+                sys.executable,
+                "-m",
+                "bandit",
+                "-c",
+                "bandit.yaml",
+                "-f",
+                "json",
+                "-q",
+                str(target),
+            ]
+        )
+        assert code == 0 and json.loads(stdout)["results"] == []
+        assert "WARNING" in stderr, "this arm needs a warning on stderr to mean anything"
+        assert guard._bandit([str(target)]) == (True, "")
