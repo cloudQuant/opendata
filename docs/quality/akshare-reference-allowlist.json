@@ -755,9 +755,9 @@
       "path": "scripts/quality/a2_check.py",
       "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。",
       "category": "operations-tool",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "84eb1d67cb2be8bace4720179b3adf4ccf1460b9c452ce705cedb8559701c48e",
+      "reviewed_date": "2026-10-09",
+      "reviewer": "Codex primary; authorized C65 criterion migration；C78 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 4960738 改动（bandit 腿改成读 findings 判定并加同字节双体对照臂），akshare 出现行 pinned=2 live=2 且逐行集合完全相同，扫描器 (module, kind) 命中多重集 pinned=live=1，新增 0 条 import/import_module/__import__ 形态行，没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "cad9e48444713bdad31c70fff3c7b1b3d2c3b580e2941f4d801d1e35c0bc9cab",
       "ast_exceptions": []
     },
     {
@@ -774,8 +774,8 @@
       "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。本轮把三条 AC 面改成子解释器里的 import hook 见证：包名只作为字符串常量出现在被交给子进程的字面 argv 与被拒计数里，没有任何一处用它去加载外部包。",
       "category": "operations-tool",
       "reviewed_date": "2026-10-09",
-      "reviewer": "C74 primary; AC-5|07 的档案轮次标签改成从 bundle 实测（archive_round/carried_from_round）并修正 exclude_dirs 尾斜杠成员判定，未新增任何品牌名加载；C75 primary 复核 sha 漂移：pin 命中 HEAD 8a35e9a，akshare 出现行 pinned=124 live=124 且逐行多重集完全相同，相对 pin 只多 3 行（2 行注释 + 1 行字面正则 ^rows_pointer=refRates$，把 .gitleaks.toml 的允许面逐字镜像到判定探针里），没有任何一处用它去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准；C75 secondary 复核第二次 sha 漂移：pin == INDEX(staged)（上一次重钉的字节还没提交，所以它不在任何 revision 里，审计为此新增了 index 载体臂），akshare 出现行 pinned=124 live=124 identical=True，相对 pin 只多 4 行（注释 3 行 + 字面正则 ^RIFLGFC(M01|M03|M06|Y01|Y02|Y03|Y05|Y07|Y10|Y20|Y30)_N\\.B$ 一行），仍无品牌名加载，所以仍是同一批准内容下的摘要重钉",
-      "sha256": "bfe308783c6e763b31a7b041f1bce4a0765de29d952ed1b0a86e824255e3e26e",
+      "reviewer": "C74 primary; AC-5|07 的档案轮次标签改成从 bundle 实测（archive_round/carried_from_round）并修正 exclude_dirs 尾斜杠成员判定，未新增任何品牌名加载；C75 primary 复核 sha 漂移：pin 命中 HEAD 8a35e9a，akshare 出现行 pinned=124 live=124 且逐行多重集完全相同，相对 pin 只多 3 行（2 行注释 + 1 行字面正则 ^rows_pointer=refRates$，把 .gitleaks.toml 的允许面逐字镜像到判定探针里），没有任何一处用它去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准；C75 secondary 复核第二次 sha 漂移：pin == INDEX(staged)（上一次重钉的字节还没提交，所以它不在任何 revision 里，审计为此新增了 index 载体臂），akshare 出现行 pinned=124 live=124 identical=True，相对 pin 只多 4 行（注释 3 行 + 字面正则 ^RIFLGFC(M01|M03|M06|Y01|Y02|Y03|Y05|Y07|Y10|Y20|Y30)_N\\.B$ 一行），仍无品牌名加载，所以仍是同一批准内容下的摘要重钉；C78 primary 复核第三次 sha 漂移：pin 字节属 rev 60148ce，字节被 5e335ab 改动（AC-10|03 判据去字面量：删掉 3 行 \"akshare, ecb, fred, imf, oecd, ths, yfinance\" 字面包名串，改成从注册表实测的两个人普查面对齐），akshare 出现行 pinned=124 live=124、出现次数 pinned=147 live=147、净变动 0（增 3 行删 3 行，删的正是上述 3 条字面量），扫描器 (module, kind) 命中多重集 pinned=live=13 完全相同，加载形态行 pinned=4 live=4 且新增 0 条，所以仍是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "e48ddc54d7d4adf776dc2684ba13d1a138d42fe49b08bc03f42a2e4a2b1b16ac",
       "ast_exceptions": []
     },
     {

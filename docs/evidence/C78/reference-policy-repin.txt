@@ -1,0 +1,173 @@
+# C78 witness -- the reference-policy re-pin that let gate run 6 start
+
+Run pinned to branch ``dev``, HEAD ``2535178b273f1356a926374f6d57c7a7294062ba``, with one modified tracked path (the policy file
+re-pinned below) plus this round's own harness files under ``docs/evidence/C78/``. The screen is
+read-only: it runs git, reads the policy and the two files, and writes nothing.
+
+## Gate run 6 refused before it reached the probe suite
+
+``brand-check`` passed and ``zero-dep-check`` refused, at the pin face -- so run 6 never got as
+far as a judgement probe. The log that carried this excerpt lived in ``/tmp`` and is ephemeral,
+which is why the refusal is copied here rather than cited:
+
+```text
+HEADER date=Sat Oct 10 03:54:07 +08 2026 branch=dev HEAD=2535178b273f1356a926374f6d57c7a7294062ba
+DIRTY_PATHS=0
+CMD make gate
+===== gate: brand-check =====
+python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:150
+  .env.example:151
+  .env.example:152
+  .env.example:153
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+===== gate: zero-dep-check =====
+python scripts/codemod/verify_no_akshare.py --self-test
+OK: scanner self-test passed (13 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+python scripts/codemod/verify_no_akshare.py
+FAIL: reference policy is unusable: stale sha256: scripts/quality/a2_check.py; stale sha256: scripts/quality/acceptance_item_probe.py
+make[1]: *** [zero-dep-check] Error 1
+make: *** [gate] Error 2
+GATE_RC=2
+```
+
+* fence B (the excerpt above): 36 lines, 1224 bytes, sha256 ``1bedc1e704d4deab432dcb5336e5a63e83887118069223e7957343111a2a6486``
+* it shows member 1 (``brand-check``) pass and member 2 (``zero-dep-check``) refuse with
+  ``GATE_RC=2``, so nothing in this archive is a judgement reading -- members 3 through 17 never ran.
+
+## What the re-pin changed and what it did not
+
+A digest re-pin is only honest if the approval content is unchanged, so the screen re-measured
+that content with the repository's own scanner (``scan_source``) and the repository's own pin
+judge (``reference_policy_problems``), and printed a forged arm next to each zero.
+
+```text
+policy entries (working): 87 | (committed HEAD): 87
+========================================================================
+path: scripts/quality/a2_check.py
+old pin (hash of blob at 3f05f63): 84eb1d67cb2be8bace4720179b3adf4ccf1460b9c452ce705cedb8559701c48e
+disk (hash of 4960738 blob == disk): cad9e48444713bdad31c70fff3c7b1b3d2c3b580e2941f4d801d1e35c0bc9cab
+moved-by-rev blob == disk: True
+HEAD blob == disk: True
+policy entry now pins == disk: True
+transient(pre-commit) HEAD policy still carries the old pin: True
+policy revisions carrying the old pin: 7
+findings old/live: 1 / 1
+  lines: old=364 live=390
+  brand_lines: old=2 live=2
+  brand_occurrences: old=2 live=2
+  load_shape_lines: old=0 live=0
+changed lines: added 21 removed 7 | brand-carrying added 0 removed 0
+========================================================================
+path: scripts/quality/acceptance_item_probe.py
+old pin (hash of blob at 60148ce): bfe308783c6e763b31a7b041f1bce4a0765de29d952ed1b0a86e824255e3e26e
+disk (hash of 5e335ab blob == disk): e48ddc54d7d4adf776dc2684ba13d1a138d42fe49b08bc03f42a2e4a2b1b16ac
+moved-by-rev blob == disk: True
+HEAD blob == disk: True
+policy entry now pins == disk: True
+transient(pre-commit) HEAD policy still carries the old pin: True
+policy revisions carrying the old pin: 2
+findings old/live: 13 / 13
+  lines: old=16134 live=16468
+  brand_lines: old=124 live=124
+  brand_occurrences: old=147 live=147
+  load_shape_lines: old=4 live=4
+changed lines: added 292 removed 51 | brand-carrying added 3 removed 3
+========================================================================
+CONTROL A -- reference_policy_problems(), the predicate that stopped gate run 6:
+  stale sha256 on the re-pinned policy: 0 []
+  forged scripts/quality/a2_check.py: problems 1 ['stale sha256: scripts/quality/a2_check.py']
+  forged scripts/quality/acceptance_item_probe.py: problems 1 ['stale sha256: scripts/quality/acceptance_item_probe.py']
+  every problem reported by the real policy: 0 []
+CONTROL B -- compare() on the pin bytes plus one import and one module path:
+  problems reported: 4
+   - control:tampered: finding multiset {('akshare', 'string'): 1} -> {('akshare', 'import'): 1, ('akshare.fred', 'string'): 1, ('akshare', 'string'): 1}
+   - control:tampered: brand_lines 2 -> 4
+   - control:tampered: brand_occurrences 2 -> 4
+   - control:tampered: load_shape_lines 0 -> 1
+========================================================================
+REAL problems: 0 []
+CONTROL A arms that bit: 2 of 2
+CONTROL B problems: 4
+VERDICT: SUPPORTED: digest re-pin under unchanged approval content
+```
+
+* fence A (the screen output above): 48 lines, 2597 bytes, sha256 ``f2a157ab986403e84a008cffc5d2c13c4e504eedde013190bacb6c5426e81039``
+* screen source: ``docs/evidence/C78/reference-policy-repin.py`` sha256 ``6c7e37018bb0935a8f52b9b716d51101cb5183a3ae5b9ef8a11eee33d0c0c389`` (10299 bytes) --
+  ruff, format, mypy and bandit clean under the same A2 leg as the other C78 instruments.
+* command: ``python3.11 -u docs/evidence/C78/reference-policy-repin.py`` (~1 s; rc 0)
+* both declared digests cover exactly the fenced regions, so they re-derive from this archive
+  alone (the excerpt fence is the one containing ``GATE_RC``):
+
+```bash
+python3.11 - <<'PY'
+import hashlib, pathlib, re
+text = pathlib.Path("docs/evidence/C78/reference-policy-repin.txt").read_text()
+for body in re.findall(r"```text" + chr(10) + r"(.*?)```", text, re.S):
+    label = "excerpt" if "GATE_RC" in body else "screen"
+    print(label, body.count(chr(10)), len(body.encode()), hashlib.sha256(body.encode()).hexdigest())
+PY
+```
+
+  scripts/quality/a2_check.py: old pin `84eb1d67cb2be8bace4720179b3adf4ccf1460b9c452ce705cedb8559701c48e` (blob at `3f05f63`, carried by 7 policy revision(s)) -> new pin `cad9e48444713bdad31c70fff3c7b1b3d2c3b580e2941f4d801d1e35c0bc9cab` (blob at `4960738`, == HEAD == disk); faces held: brand_lines=2, brand_occurrences=2, load_shape_lines=0 (lines moved 364 -> 390)
+  scripts/quality/acceptance_item_probe.py: old pin `bfe308783c6e763b31a7b041f1bce4a0765de29d952ed1b0a86e824255e3e26e` (blob at `60148ce`, carried by 2 policy revision(s)) -> new pin `e48ddc54d7d4adf776dc2684ba13d1a138d42fe49b08bc03f42a2e4a2b1b16ac` (blob at `5e335ab`, == HEAD == disk); faces held: brand_lines=124, brand_occurrences=147, load_shape_lines=4 (lines moved 16134 -> 16468)
+
+## Declarations, each re-derived rather than quoted
+
+* the two old pins are the hashes of blobs at ``3f05f63`` and ``60148ce``, and those revisions are
+  what the screen's own ``git show`` calls returned -- the revision constants in the screen source
+  are the only typed inputs, and the fence re-checks them;
+* both new pins equal sha256(disk), sha256(HEAD blob) and sha256(the blob of the commit that moved
+  the bytes) -- three separate digest claims, not one;
+* brand_lines, brand_occurrences and load_shape_lines are unchanged for both files, and the
+  scanner's ``(module, kind)`` finding multiset is identical (1 and 13);
+* the total-line faces did move (a2_check 364 -> 390, acceptance_item_probe 16134 -> 16468)
+  because C77 rewrote the bandit leg and C78 rewrote the AC-10|03 judge; what has to be invariant
+  is the reference content, and it is;
+* the pin judge bites: forging one entry's digest returns exactly
+  ``stale sha256: <that path>``, once per forged path, 2 of 2 arms -- the same message that stopped
+  run 6, so the zero on the re-pinned policy is a measurement and not a judge that cannot fail;
+* the content comparator bites too: one added ``import akshare`` plus one module-path string
+  produces 4 problems.
+
+## Established / not established
+
+Established: run 6's stop was a pin-staleness refusal on a clean tree at ``2535178``, not a
+judgement failure; the two drifted files carry identical reference content under the repo's own
+scanner; the re-pin is therefore a re-pin and not a new approval; the members that ran (1 and 2)
+now read green on the re-pinned policy.
+
+Not established:
+
+- that the other 85 pins are *reviewed* rather than merely *current* -- this screen only proved
+  that the two entries it touched were re-pinnable; a current digest is not an approval;
+- that the pin judge is sufficient: ``reference_policy_problems`` was called without
+  ``actual_hit_paths``, so the bidirectional hit/register reconciliation arm is not exercised here
+  (member 2's own run does exercise it, and that run is what this archive is waiting to see green);
+- that gate run 6 (the retry) is green -- it had not started when this file was written;
+- that the round label ``C78`` is right for this witness. It is this round's directory, and the
+  re-pin belongs to the same tree as the AC-10|03 rewrite that caused the drift.
+
+## Next
+
+1. Re-run ``make gate`` on the committed tree as gate run 6 and archive it verbatim.
+2. Task #48: the block-enumeration divergence in ``README.md`` section 6 still has to be settled
+   before AC-10|03 can be closed by a rebuild.

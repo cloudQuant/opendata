@@ -14,6 +14,7 @@ step is refused by the shipped code for a reason that is *about the product*, no
 | `candidate-review-scope-screen.txt` | the verbatim run (3 min 41 s, `SCREEN_EXIT=0`) at HEAD `5e335ab`, where the screen itself was still untracked (`DIRTY_PATHS=1`) | it is the face; fence digest re-derives from the archive, and the archive's own §-figures (474 = 158 + 316, 521 blocks, 9 edited-vendored, 121/1105/3e071fcc baseline, 520 pairs, 8 candidates, 107.3 s) are parsed out of its fenced body rather than typed |
 | `ac10-03-live-reading.txt` | the repaired judge's live reading plus the whole-suite counterfact face, both at HEAD `5e335ab` | it is the face; the item's 9 declared breaks are recomputed from the probe registry and the run's own 115/758 totals are cross-checked against them |
 | `block-census-differential.py` / `.txt` | shipped AST block census vs the method the archived artifact documents, over the 121 pinned baseline files | it is the face; `shipped + ClassDef.delta == reference` is checked by the builder, 11 declarations hold |
+| `reference-policy-repin.py` / `.txt` | gate run 6's refusal (two stale `sha256` pins), the re-pin, and the drift audit that says the re-pin is not a new approval | it is the face; 28 declarations re-derive both digests from `git show` at the two revisions the fence itself names, and Control A forges each pin to show `reference_policy_problems` still emits `stale sha256: <path>` |
 
 ## 1. The judge was demanding `474 -> 71`
 
@@ -178,6 +179,48 @@ archive-consistent, so a C65 zero cannot be cited about today's tree, and (b) an
 in C79 has to say which enumeration it means, because the candidate set is a function of a block
 population that three readings of one tree disagree about.
 
+## 7. Gate run 6 stopped at a pin, and the pin was bookkeeping
+
+Run 6 launched from a clean tree at `2535178` (`DIRTY_PATHS=0`). Member 1 `brand-check` passed;
+member 2 `zero-dep-check` refused:
+
+```
+FAIL: reference policy is unusable: stale sha256: scripts/quality/a2_check.py; stale sha256: scripts/quality/acceptance_item_probe.py
+```
+
+so `GATE_RC=2` before any judgement probe ran. This is the round's own doing: `5e335ab` rewrote
+`acceptance_item_probe.py` (section 1) and `4960738` rewrote `a2_check.py`, and `verify_no_akshare.py`
+re-hashes every registered path, so a stale pin is a hard stop rather than a warning. A census of all
+87 entries finds exactly these two stale — the refusal was complete, not partial.
+
+A digest re-pin is only honest if the approval content did not move, so
+`reference-policy-repin.py` re-measured it with the repository's own `scan_source` and printed a
+forged arm beside each zero:
+
+| file | old pin carried by | bytes moved by | findings old/live | brand lines / occurrences / load-shape |
+| --- | --- | --- | --- | --- |
+| `a2_check.py` | blob at `3f05f63` (7 policy revisions) | `4960738` | 1 / 1 | 2 / 2 / 0 → 2 / 2 / 0 |
+| `acceptance_item_probe.py` | blob at `60148ce` (2 policy revisions) | `5e335ab` | 13 / 13 | 124 / 147 / 4 → 124 / 147 / 4 |
+
+Line totals did move (364 → 390 and 16134 → 16468) — that is the rewrites. The reference content did
+not: identical `(module, kind)` multisets, identical brand-line/occurrence/load-shape faces, zero new
+load-shape lines. The interesting part is *why* the probe's brand face stayed at exactly 124 lines:
+section 1's fix **deleted** the three literal `akshare, ecb, fred, imf, oecd, ths, yfinance` strings,
+and three brand-carrying lines came in to replace them (a comment about the substring-negation guard
+and a `record_refusal_detail` string). The de-hardcoding is visible in the pin face as a substitution,
+not an addition.
+
+Control A is the point: forging one entry's digest makes the repo's own judge return exactly
+`stale sha256: <that path>`, 2 of 2 arms, each naming its own path — the same message that stopped
+run 6. So the `0 problems` reading on the re-pinned policy is a measurement, not a judge that cannot
+fail. Control B (one `import akshare` + one module-path string appended to the pin bytes) produces 4
+problems through the same comparator that reported 0 for the real drift.
+
+What this does *not* buy: the other 85 pins are current, not newly reviewed — a current digest is not
+an approval — and `reference_policy_problems` was called here without `actual_hit_paths`, so the
+bidirectional hit/register reconciliation arm is unexercised by this screen (member 2's own run does
+exercise it; that run is what the archive is waiting to see green).
+
 ## Established / not established
 
 Established: the old judge was unsatisfiable by real work and the new one is not — its clean reading
@@ -189,7 +232,10 @@ harness; `build_bundle` refuses to write on today's tree, by execution rather th
 source; `unreviewed_candidates` is a builder literal, and the three nearest-pair rows are genuinely
 bound to the live ranking; and the shipped builder's AST census (1105 baseline blocks) reproduces
 neither the archived artifact (1227) nor the method text that artifact carries (1279), over a tree
-whose 121 digests all still match disk.
+whose 121 digests all still match disk; and run 6's stop was a stale-pin refusal rather than a
+judgement failure, with the two drifted files shown by the repo's own scanner to carry identical
+reference content (1/1 and 13/13 findings, brand faces unchanged) and by the repo's own pin judge to
+still refuse a forged digest (2 of 2 arms).
 
 Not established:
 
@@ -201,7 +247,9 @@ Not established:
 - that any other judge is free of population literals. I grepped for the ones I typed here (`"7"`,
   `"71"`, `121`) and they are gone from `acceptance_item_probe.py`, but that is not an audit of the
   other 114 probes;
-- that the gate is green: nothing in this round has been through the full 17-member run.
+- that the gate is green: run 6 stopped at member 2 on a pin face and its retry had not finished
+  when this file was written. Members 1 and 2 read green on the re-pinned policy; members 3 through
+  17 have not been seen this round.
 
 ## Next
 
@@ -215,14 +263,14 @@ Not established:
    with per-pair conclusions. Subagents may draft readings; nothing counts until it is re-measured.
 3. AC-16's twelve canonical records still stand at `0 credited / 12 refused`, and they need the same
    review acts.
-4. Gate run 6 on a clean tree.
+4. Gate run 6's retry on the committed, re-pinned tree, archived verbatim.
 
 Re-derive this round's numbers:
 
 ```
 python3.11 -u docs/evidence/C78/candidate-review-scope-screen.py   # 3 min 41 s, writes nowhere
 python3.11 -u docs/evidence/C78/block-census-differential.py       # <1 s, read-only, two trees
+python3.11 -u docs/evidence/C78/reference-policy-repin.py          # ~1 s, read-only, two forged arms
 python3.11 -u scripts/quality/acceptance_item_probe.py --item 'AC-10|03'   # live reading
-python3.11 -u scripts/quality/acceptance_item_probe.py --item 'AC-10|03'
 python3.11 -u scripts/quality/acceptance_item_probe.py --self-test  # ~12 min
 ```
