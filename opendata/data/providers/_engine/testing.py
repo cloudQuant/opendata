@@ -10,6 +10,9 @@ model be tested without editing shared code.
 
 from __future__ import annotations
 
+import csv
+import io
+import zipfile
 from datetime import date, datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
@@ -94,6 +97,69 @@ def synthetic_page(
         cursor = nested
     cursor[parts[-1]] = records
     return HttpResponse(200, document)
+
+
+def _cell_text(value: object) -> str:
+    """Render one synthetic sample the way a delimited body publishes it."""
+    if isinstance(value, bool):
+        return "True" if value else "False"
+    if isinstance(value, list):
+        return ";".join(str(item) for item in value)
+    return "" if value is None else str(value)
+
+
+def synthetic_body(
+    spec: ModelSpec, count: int = 1, *, start: int = 0, member: str | None = None
+) -> bytes:
+    """Render ``count`` records as the raw body ``spec``'s decoder declares.
+
+    SYNTHETIC: every byte is generated from the declaration's own columns and sample values by this
+    fixture. It is not a recorded upstream capture and must never be presented as one -- a real
+    OECD, FINRA or Fama-French body belongs to its own model's verification task.
+
+    The header row is the declared source keys in declared order, because those names are the only
+    keys the row normalizer reads. A ``zip_csv`` declaration is served a real in-memory archive
+    holding one member named by ``member`` (or by its own selector), so the selector itself is
+    what a case exercises.
+
+    Raises:
+        AssertionError: The declaration reads a JSON document, so there is no delimited body to
+            render -- the case asked the wrong fixture for its bytes.
+    """
+    decoder = spec.decoder
+    if not decoder.delimited:
+        raise AssertionError(f"{spec.model}: declares a json decoder, so no delimited body exists")
+    keys = [column.source_key or column.name for column in spec.columns]
+    table = [keys] + [
+        [_cell_text(synthetic_record(spec, start + index)[key]) for key in keys]
+        for index in range(count)
+    ]
+    buffer = io.StringIO(newline="")
+    csv.writer(buffer, delimiter=decoder.effective_delimiter, lineterminator="\n").writerows(table)
+    text = buffer.getvalue()
+    if decoder.kind != "zip_csv":
+        return text.encode("utf-8")
+    archive = io.BytesIO()
+    with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as bundle:
+        bundle.writestr(member or decoder.member or "records.csv", text)
+    return archive.getvalue()
+
+
+def synthetic_raw_page(
+    spec: ModelSpec,
+    count: int = 1,
+    *,
+    start: int = 0,
+    member: str | None = None,
+    status: int = 200,
+) -> HttpResponse:
+    """Return one response whose body is the synthetic raw bytes ``spec``'s decoder reads.
+
+    ``document`` stays empty on purpose: a delimited declaration never reads it, and populating it
+    would let a decoder that ignored the payload pass on a JSON fixture's rows.
+    """
+    body = synthetic_body(spec, count, start=start, member=member)
+    return HttpResponse(status, None, payload=body)
 
 
 def valid_query_kwargs(spec: ModelSpec) -> dict[str, object]:

@@ -225,33 +225,50 @@ def evaluate_toolchain(
                 actual=".".join(str(part) for part in (python_version or ())),
             )
         )
-    if interpreter.get("conda_default_env") != "base":
+    prefix = interpreter.get("prefix")
+    conda_prefix = interpreter.get("conda_prefix")
+    conda_base = interpreter.get("conda_base_prefix")
+    executable = interpreter.get("executable")
+    base_by_prefix = (
+        isinstance(prefix, str)
+        and isinstance(conda_base, str)
+        and Path(prefix).resolve() == Path(conda_base).resolve()
+    )
+    base_by_env = interpreter.get("conda_default_env") == "base"
+    base_route = (
+        "conda-default-env" if base_by_env else ("conda-info-base" if base_by_prefix else "")
+    )
+    if not base_route:
         issues.append(
             _issue(
                 "CONDA_ENV_MISMATCH",
-                "The active interpreter is not running in the Anaconda base environment.",
+                "Neither CONDA_DEFAULT_ENV says base nor does sys.prefix equal the prefix that "
+                "`conda info --base` answers for, so the active interpreter cannot be shown to "
+                "be the Anaconda base environment.",
                 expected="base",
                 actual=interpreter.get("conda_default_env"),
+                conda_base_prefix=conda_base,
+                sys_prefix=prefix,
             )
         )
-
-    prefix = interpreter.get("prefix")
-    conda_prefix = interpreter.get("conda_prefix")
-    executable = interpreter.get("executable")
-    if not isinstance(prefix, str) or not isinstance(conda_prefix, str):
+    reference = conda_prefix if isinstance(conda_prefix, str) else conda_base
+    reference_key = "CONDA_PREFIX" if isinstance(conda_prefix, str) else "conda info --base"
+    if not isinstance(prefix, str) or not isinstance(reference, str):
         issues.append(
             _issue(
                 "BASE_PREFIX_MISSING",
-                "Could not verify the active interpreter against CONDA_PREFIX.",
+                "Could not verify the active interpreter against CONDA_PREFIX or `conda info "
+                "--base`.",
             )
         )
-    elif Path(prefix).resolve() != Path(conda_prefix).resolve():
+    elif Path(prefix).resolve() != Path(reference).resolve():
         issues.append(
             _issue(
                 "BASE_PREFIX_MISMATCH",
-                "sys.prefix and CONDA_PREFIX do not identify the same environment.",
+                f"sys.prefix and {reference_key} do not identify the same environment.",
                 sys_prefix=prefix,
-                conda_prefix=conda_prefix,
+                reference=reference,
+                reference_key=reference_key,
             )
         )
     if (
@@ -337,6 +354,8 @@ def evaluate_toolchain(
             "python_version": python_version,
             "conda_default_env": interpreter.get("conda_default_env"),
             "conda_prefix": conda_prefix,
+            "conda_base_prefix": conda_base,
+            "base_route": base_route or "none",
             "sys_prefix": prefix,
         },
         "requires_python": requires_python,
@@ -408,6 +427,35 @@ def _parse_command_version(
     return _extract_version(f"{result.stdout}\n{result.stderr}")
 
 
+def conda_base_prefix() -> str | None:
+    """The install root conda itself calls ``base``, asked of conda rather than of the shell.
+
+    ``CONDA_DEFAULT_ENV``/``CONDA_PREFIX`` only exist inside a shell that ran ``conda activate``.
+    A gate, a cron line or a ``python -c`` inherits no such variables, so reading base-ness from
+    them alone makes an Anaconda-base interpreter look ENV_BLOCKED on the machine that is actually
+    running base. ``conda info --base`` answers without activation; when it cannot be asked, the
+    env-var route is the only one left and the check still fails loudly.
+    """
+    executable = shutil.which("conda")
+    if executable is None:
+        return None
+    try:
+        result = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled
+            [executable, "info", "--base"],
+            capture_output=True,
+            text=True,
+            timeout=20,
+            shell=False,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0:
+        return None
+    answer = result.stdout.strip()
+    return answer or None
+
+
 def capture_runtime() -> dict[str, Any]:
     """Read interpreter, installed distributions, module CLIs, and PATH CLIs."""
     conda_prefix = os.environ.get("CONDA_PREFIX")
@@ -417,6 +465,7 @@ def capture_runtime() -> dict[str, Any]:
         "python_version": list(sys.version_info[:3]),
         "conda_default_env": os.environ.get("CONDA_DEFAULT_ENV"),
         "conda_prefix": conda_prefix,
+        "conda_base_prefix": conda_base_prefix(),
     }
     tools: dict[str, Any] = {}
     for name, spec in TOOLS.items():

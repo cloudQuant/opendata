@@ -1,0 +1,1821 @@
+{
+  "provider_groups": {
+    "sec": 24,
+    "tmx": 24,
+    "federal_reserve": 13,
+    "government_us": 6,
+    "finra": 2
+  },
+  "rows": [
+    {
+      "task_id": "OBB2-federal_reserve-CentralBankHoldings",
+      "provider": "federal_reserve",
+      "upstream_model": "CentralBankHoldings",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 3,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "conditional_endpoint_branch"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/federal_reserve/openbb_federal_reserve/models/central_bank_holdings.py:317",
+      "notes": "SomaHoldings util: holding_type/cusip/summary/monthly/wam branch picks 6+ different /api JSON paths"
+    },
+    {
+      "task_id": "OBB2-federal_reserve-FederalFundsRate",
+      "provider": "federal_reserve",
+      "upstream_model": "FederalFundsRate",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "published_value_rescale",
+        "client_side_column_drop",
+        "client_side_sort"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/http_json.py:303",
+      "notes": "DOWNGRADED true->false: a record value reaches the row model unchanged (http_json.py:303) and ModelSpec has no scale/drop/sort field (spec.py:266-285), so the /100 rescale, the type/footnoteId drops and the client-side sort recorded for this module are not expressible. No vendored upstream bytes in-repo: federal_reserve is _reserved_provider at catalog.py:61 and akshare/_vendor has no federal_reserve module, so the cited providers/federal_reserve/... path resolves outside the repo root and cannot be cited",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "needs_engine_capability",
+          "notes",
+          "expressible_today"
+        ],
+        "prior_expressible_today": true,
+        "prior_evidence": "providers/federal_reserve/openbb_federal_reserve/models/federal_funds_rate.py:117",
+        "prior_needs_engine_capability": [],
+        "basis": "opendata/data/providers/_engine/http_json.py:303"
+      }
+    },
+    {
+      "task_id": "OBB2-federal_reserve-FomcDocuments",
+      "provider": "federal_reserve",
+      "upstream_model": "FomcDocuments",
+      "shape": "html_scraping_or_js",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "html",
+      "row_extraction": "unknown",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "html_table_decoder",
+        "multi_request_fanout",
+        "derived_url_columns"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/federal_reserve/openbb_federal_reserve/utils/fomc_documents.py:81",
+      "notes": "GETs fomccalendars.htm per year and builds rows from anchor hrefs; no JSON document"
+    },
+    {
+      "task_id": "OBB2-federal_reserve-InflationExpectations",
+      "provider": "federal_reserve",
+      "upstream_model": "InflationExpectations",
+      "shape": "binary_or_other",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "binary",
+      "row_extraction": "unknown",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "xlsx_decoder",
+        "sheet_region_parse"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/federal_reserve/openbb_federal_reserve/models/inflation_expectations.py:149",
+      "notes": "Philadelphia Fed media .xlsx read through BytesIO; engine does json.loads only (http_json.py:333)"
+    },
+    {
+      "task_id": "OBB2-federal_reserve-MoneyMeasures",
+      "provider": "federal_reserve",
+      "upstream_model": "MoneyMeasures",
+      "shape": "get_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "csv_decoder",
+        "csv_header_offset"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/federal_reserve/openbb_federal_reserve/models/money_measures.py:73",
+      "notes": "datadownload/Output.aspx?rel=H6 returns CSV read with header=5; no response_format field exists in ModelSpec"
+    },
+    {
+      "task_id": "OBB2-federal_reserve-OvernightBankFundingRate",
+      "provider": "federal_reserve",
+      "upstream_model": "OvernightBankFundingRate",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [],
+      "expressible_today": true,
+      "existing_fetcher_class": "",
+      "evidence": "providers/federal_reserve/openbb_federal_reserve/models/overnight_bank_funding_rate.py:97",
+      "notes": "same shape as EFFR: startDate/endDate query keys, rows_pointer=refRates; transform only drops undeclared keys"
+    },
+    {
+      "task_id": "OBB2-federal_reserve-PrimaryDealerFails",
+      "provider": "federal_reserve",
+      "upstream_model": "PrimaryDealerFails",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 3,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "multi_request_concat",
+        "conditional_endpoint_branch"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/federal_reserve/openbb_federal_reserve/models/primary_dealer_fails.py:84",
+      "notes": "start_date era adds /pd/get/SBP2001 and SBP2013 timeseries docs concatenated onto pd.timeseries rows"
+    },
+    {
+      "task_id": "OBB2-federal_reserve-PrimaryDealerPositioning",
+      "provider": "federal_reserve",
+      "upstream_model": "PrimaryDealerPositioning",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "multi_request_concat",
+        "conditional_endpoint_branch"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/federal_reserve/openbb_federal_reserve/models/primary_dealer_positioning.py:111",
+      "notes": "asyncio.gather over a url list built from asof/seriesbreak choices, then appended rows"
+    },
+    {
+      "task_id": "OBB2-federal_reserve-SOFR",
+      "provider": "federal_reserve",
+      "upstream_model": "SOFR",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [],
+      "expressible_today": true,
+      "existing_fetcher_class": "",
+      "evidence": "providers/federal_reserve/openbb_federal_reserve/models/sofr.py:84",
+      "notes": "/api/rates/secured/sofr/search.json, startDate/endDate, rows_pointer=refRates; params+rows_pointer cover it"
+    },
+    {
+      "task_id": "OBB2-federal_reserve-SvenssonYieldCurve",
+      "provider": "federal_reserve",
+      "upstream_model": "SvenssonYieldCurve",
+      "shape": "get_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "csv_decoder",
+        "series_pivot",
+        "param_value_mapping"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/federal_reserve/openbb_federal_reserve/models/svensson_yield_curve.py:143",
+      "notes": "static feds200628.csv; rows are a per-series pivot of a wide CSV, not records"
+    },
+    {
+      "task_id": "OBB2-federal_reserve-TotalFactorProductivity",
+      "provider": "federal_reserve",
+      "upstream_model": "TotalFactorProductivity",
+      "shape": "binary_or_other",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "binary",
+      "row_extraction": "unknown",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "xlsx_decoder",
+        "sheet_region_parse"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/federal_reserve/openbb_federal_reserve/models/total_factor_productivity.py:19",
+      "notes": "frbsf quarterly_tfp.xlsx via pd.ExcelFile(BytesIO); http is http:// origin too"
+    },
+    {
+      "task_id": "OBB2-federal_reserve-TreasuryRates",
+      "provider": "federal_reserve",
+      "upstream_model": "TreasuryRates",
+      "shape": "get_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "csv_decoder",
+        "csv_header_offset"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/federal_reserve/openbb_federal_reserve/models/treasury_rates.py:88",
+      "notes": "Output.aspx CSV, header=5, then DataFrame melt; no csv_decoder in the engine"
+    },
+    {
+      "task_id": "OBB2-federal_reserve-YieldCurve",
+      "provider": "federal_reserve",
+      "upstream_model": "YieldCurve",
+      "shape": "get_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "csv_decoder",
+        "csv_header_offset"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/federal_reserve/openbb_federal_reserve/models/yield_curve.py:68",
+      "notes": "Output.aspx CSV with header=5; same blocker class as MoneyMeasures/TreasuryRates"
+    },
+    {
+      "task_id": "OBB2-finra-OTCAggregate",
+      "provider": "finra",
+      "upstream_model": "OTCAggregate",
+      "shape": "post_json",
+      "http_method": "POST",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "post_body",
+        "multi_request_join",
+        "session_cookie_warmup"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/finra/openbb_finra/utils/helpers.py:178",
+      "notes": "POST weeklyDownloadDetails then weeklySummary (body params); GET finra.org first for cookies (helpers.py:260)"
+    },
+    {
+      "task_id": "OBB2-finra-EquityShortInterest",
+      "provider": "finra",
+      "upstream_model": "EquityShortInterest",
+      "shape": "get_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "csv_decoder",
+        "csv_delimiter",
+        "local_cache_store"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/finra/openbb_finra/utils/data_storage.py:55",
+      "notes": "cdn.finra.org biweekly shrt{date}.csv, pipe-delimited, loaded into sqlite then queried by symbol"
+    },
+    {
+      "task_id": "OBB2-government_us-CommodityPsdData",
+      "provider": "government_us",
+      "upstream_model": "CommodityPsdData",
+      "shape": "post_json",
+      "http_method": "POST",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "post_body",
+        "conditional_endpoint_branch",
+        "client_side_filter"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/government_us/openbb_government_us/utils/psd_data_downloader.py:459",
+      "notes": "branch: POST PSDOnlineApi RunQuery (timeseries) or reportHandler.ashx report payload"
+    },
+    {
+      "task_id": "OBB2-government_us-CommodityPsdReport",
+      "provider": "government_us",
+      "upstream_model": "CommodityPsdReport",
+      "shape": "binary_or_other",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "binary",
+      "row_extraction": "unknown",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "xlsx_decoder",
+        "query_key_date_mapping"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/government_us/openbb_government_us/models/commodity_psd_report.py:147",
+      "notes": "CircularDownloader.ashx?year&month&commodity returns a spreadsheet file, not JSON"
+    },
+    {
+      "task_id": "OBB2-government_us-TreasuryAuctions",
+      "provider": "government_us",
+      "upstream_model": "TreasuryAuctions",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "param_value_mapping",
+        "date_format"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/government_us/openbb_government_us/models/treasury_auctions.py:196",
+      "notes": "GET TA_WS/securities/search&format=json: type map (bill->Bill) + %m/%d/%Y dates; ParamSpec has no format/value_map"
+    },
+    {
+      "task_id": "OBB2-government_us-TreasuryPrices",
+      "provider": "government_us",
+      "upstream_model": "TreasuryPrices",
+      "shape": "post_json",
+      "http_method": "POST",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "post_body",
+        "csv_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/government_us/openbb_government_us/models/treasury_prices.py:86",
+      "notes": "POST FedInvest/securityPriceDetail, body fields, CSV text answer; Referer/Origin are declarable via static_headers"
+    },
+    {
+      "task_id": "OBB2-government_us-WeatherBulletin",
+      "provider": "government_us",
+      "upstream_model": "WeatherBulletin",
+      "shape": "html_scraping_or_js",
+      "http_method": "GET",
+      "endpoints": 12,
+      "paged": false,
+      "response_format": "html",
+      "row_extraction": "unknown",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "html_table_decoder",
+        "multi_request_fanout",
+        "regex_row_parse"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/government_us/openbb_government_us/models/weather_bulletin.py:76",
+      "notes": "esmis.nal.usda.gov publication HTML fanned out per month (up to 12 GETs), regex over the page"
+    },
+    {
+      "task_id": "OBB2-government_us-WeatherBulletinDownload",
+      "provider": "government_us",
+      "upstream_model": "WeatherBulletinDownload",
+      "shape": "binary_or_other",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "binary",
+      "row_extraction": "unknown",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "caller_url_list",
+        "pdf_bytes_passthrough"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/government_us/openbb_government_us/models/weather_bulletin_download.py:64",
+      "notes": "downloads caller-supplied .pdf URLs and returns bytes keyed by url; path template cannot carry them"
+    },
+    {
+      "task_id": "OBB2-sec-BalanceSheet",
+      "provider": "sec",
+      "upstream_model": "BalanceSheet",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "xbrl_tag_assembly",
+        "cross_request_lookup"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/spec.py:285",
+      "notes": "ModelSpec fields (spec.py:266-285) carry no join/derive field; the prior cite pointed at sec/specs.py NOT_DECLARABLE prose, not source. Upstream sec module is not vendored in-repo: repo-wide search finds no sec upstream bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:83",
+        "prior_needs_engine_capability": [
+          "xbrl_tag_assembly",
+          "cross_request_lookup"
+        ],
+        "basis": "opendata/data/providers/_engine/spec.py:285"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-BalanceSheetGrowth",
+      "provider": "sec",
+      "upstream_model": "BalanceSheetGrowth",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "xbrl_tag_assembly",
+        "prior_period_lookup"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/spec.py:285",
+      "notes": "no join/derived-column field in ModelSpec (spec.py:266-285); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:85",
+        "prior_needs_engine_capability": [
+          "xbrl_tag_assembly",
+          "prior_period_lookup"
+        ],
+        "basis": "opendata/data/providers/_engine/spec.py:285"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-CashFlowStatement",
+      "provider": "sec",
+      "upstream_model": "CashFlowStatement",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "xbrl_tag_assembly",
+        "tag_column_selection"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/http_json.py:296",
+      "notes": "a column reads exactly one fixed source key (http_json.py:296), so tag-selected columns cannot be declared; prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:87",
+        "prior_needs_engine_capability": [
+          "xbrl_tag_assembly",
+          "tag_column_selection"
+        ],
+        "basis": "opendata/data/providers/_engine/http_json.py:296"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-CashFlowStatementGrowth",
+      "provider": "sec",
+      "upstream_model": "CashFlowStatementGrowth",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "xbrl_tag_assembly",
+        "prior_period_lookup"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/spec.py:285",
+      "notes": "no prior-period lookup / derived-column field (spec.py:266-285); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:89",
+        "prior_needs_engine_capability": [
+          "xbrl_tag_assembly",
+          "prior_period_lookup"
+        ],
+        "basis": "opendata/data/providers/_engine/spec.py:285"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-CikMap",
+      "provider": "sec",
+      "upstream_model": "CikMap",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "unknown",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "rows_from_object_keys",
+        "client_side_filter"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/http_json.py:262",
+      "notes": "resolve_rows refuses a document node that is not a list (http_json.py:262); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:94",
+        "prior_needs_engine_capability": [
+          "rows_from_object_keys",
+          "client_side_filter"
+        ],
+        "basis": "opendata/data/providers/_engine/http_json.py:262"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-CompanyFilings",
+      "provider": "sec",
+      "upstream_model": "CompanyFilings",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "columnar_parallel_arrays",
+        "derived_url_columns",
+        "multi_request_concat"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/http_json.py:291",
+      "notes": "normalize_record refuses a record that is not a dict (http_json.py:291), so column-oriented parallel arrays cannot be keyed; prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:105",
+        "prior_needs_engine_capability": [
+          "columnar_parallel_arrays",
+          "derived_url_columns",
+          "multi_request_concat"
+        ],
+        "basis": "opendata/data/providers/_engine/http_json.py:291"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-CompareCompanyFacts",
+      "provider": "sec",
+      "upstream_model": "CompareCompanyFacts",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "cross_request_join",
+        "conditional_endpoint_branch"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/spec.py:272",
+      "notes": "one path per declaration (spec.py:272) and no join field (spec.py:285); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:110",
+        "prior_needs_engine_capability": [
+          "cross_request_join",
+          "conditional_endpoint_branch"
+        ],
+        "basis": "opendata/data/providers/_engine/spec.py:272"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-EquityFTD",
+      "provider": "sec",
+      "upstream_model": "EquityFTD",
+      "shape": "get_zip_csv",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "zip",
+      "row_extraction": "unknown",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "preflight_url_discovery"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/spec.py:272",
+      "notes": "zip_csv + a one-char delimiter are declarable today (spec.py:213, decoders.py:163-224), so the old needs named capabilities that now exist; the blocker left is URL preflight, which one path cannot carry (spec.py:272). Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor; the prior cite was specs.py prose",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "needs_engine_capability",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:113",
+        "prior_needs_engine_capability": [
+          "preflight_url_discovery",
+          "zip_member_decoder",
+          "csv_delimiter"
+        ],
+        "basis": "opendata/data/providers/_engine/spec.py:272"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-EquitySearch",
+      "provider": "sec",
+      "upstream_model": "EquitySearch",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "unknown",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "rows_from_object_keys",
+        "array_rows_with_field_header",
+        "client_side_filter"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/http_json.py:291",
+      "notes": "bare array records are refused at http_json.py:291; prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:98",
+        "prior_needs_engine_capability": [
+          "rows_from_object_keys",
+          "array_rows_with_field_header",
+          "client_side_filter"
+        ],
+        "basis": "opendata/data/providers/_engine/http_json.py:291"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-Filings",
+      "provider": "sec",
+      "upstream_model": "Filings",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "columnar_parallel_arrays",
+        "derived_url_columns",
+        "multi_request_concat"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/http_json.py:291",
+      "notes": "inherits the CompanyFilings blocker at the record level (http_json.py:291) and cannot reach a second path (spec.py:272); prior cite was specs.py prose + an alias table. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:108",
+        "prior_needs_engine_capability": [
+          "columnar_parallel_arrays",
+          "derived_url_columns",
+          "multi_request_concat"
+        ],
+        "basis": "opendata/data/providers/_engine/http_json.py:291"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-Form13FHR",
+      "provider": "sec",
+      "upstream_model": "Form13FHR",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 3,
+      "paged": false,
+      "response_format": "binary",
+      "row_extraction": "unknown",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "preflight_url_discovery",
+        "multi_request_fanout",
+        "xml_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/spec.py:25",
+      "notes": "BodyDecoderKind is json|csv|tsv|zip_csv only (spec.py:25): there is no XML decoder; prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:115",
+        "prior_needs_engine_capability": [
+          "preflight_url_discovery",
+          "multi_request_fanout",
+          "xml_decoder"
+        ],
+        "basis": "opendata/data/providers/_engine/spec.py:25"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-SecHtmFile",
+      "provider": "sec",
+      "upstream_model": "SecHtmFile",
+      "shape": "html_scraping_or_js",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "html",
+      "row_extraction": "unknown",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "caller_url_template",
+        "html_to_markdown"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/spec.py:25",
+      "notes": "no html_to_markdown body kind (spec.py:25); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:133",
+        "prior_needs_engine_capability": [
+          "caller_url_template",
+          "html_to_markdown"
+        ],
+        "basis": "opendata/data/providers/_engine/spec.py:25"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-IncomeStatement",
+      "provider": "sec",
+      "upstream_model": "IncomeStatement",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "xbrl_tag_assembly",
+        "tag_column_selection"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/http_json.py:296",
+      "notes": "fixed source-key read only (http_json.py:296); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:91",
+        "prior_needs_engine_capability": [
+          "xbrl_tag_assembly",
+          "tag_column_selection"
+        ],
+        "basis": "opendata/data/providers/_engine/http_json.py:296"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-IncomeStatementGrowth",
+      "provider": "sec",
+      "upstream_model": "IncomeStatementGrowth",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "xbrl_tag_assembly",
+        "prior_period_lookup"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/spec.py:285",
+      "notes": "no derived/growth column field (spec.py:266-285); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:92",
+        "prior_needs_engine_capability": [
+          "xbrl_tag_assembly",
+          "prior_period_lookup"
+        ],
+        "basis": "opendata/data/providers/_engine/spec.py:285"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-InsiderTrading",
+      "provider": "sec",
+      "upstream_model": "InsiderTrading",
+      "shape": "binary_or_other",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "binary",
+      "row_extraction": "unknown",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "multi_request_fanout",
+        "xml_decoder",
+        "field_rename_map"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/spec.py:25",
+      "notes": "no XML decoder (spec.py:25) and one path only (spec.py:272); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:117",
+        "prior_needs_engine_capability": [
+          "multi_request_fanout",
+          "xml_decoder",
+          "field_rename_map"
+        ],
+        "basis": "opendata/data/providers/_engine/spec.py:25"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-InstitutionsSearch",
+      "provider": "sec",
+      "upstream_model": "InstitutionsSearch",
+      "shape": "binary_or_other",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "unknown",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "delimited_rows_without_published_header"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/decoders.py:283",
+      "notes": "a delimited body must publish its own header naming a declared column (decoders.py:283 HEADER_MISMATCH); csv plus a one-char delimiter IS declarable (spec.py:209), so the decoder name in the old needs list is stale. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor; the prior cite was specs.py prose",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "needs_engine_capability",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:101",
+        "prior_needs_engine_capability": [
+          "delimited_text_decoder"
+        ],
+        "basis": "opendata/data/providers/_engine/decoders.py:283"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-LatestFinancialReports",
+      "provider": "sec",
+      "upstream_model": "LatestFinancialReports",
+      "shape": "get_json_paged",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "per_record_nested_flatten",
+        "derived_columns",
+        "multi_request_fanout"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/http_json.py:264",
+      "notes": "resolve_rows returns the single list at a static pointer (http_json.py:264); per-hit nested lists cannot be flattened; prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:119",
+        "prior_needs_engine_capability": [
+          "per_record_nested_flatten",
+          "derived_columns",
+          "multi_request_fanout"
+        ],
+        "basis": "opendata/data/providers/_engine/http_json.py:264"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-ManagementDiscussionAnalysis",
+      "provider": "sec",
+      "upstream_model": "ManagementDiscussionAnalysis",
+      "shape": "html_scraping_or_js",
+      "http_method": "GET",
+      "endpoints": 3,
+      "paged": false,
+      "response_format": "html",
+      "row_extraction": "unknown",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "fetcher_delegation",
+        "html_to_markdown",
+        "multi_request_fanout"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/spec.py:25",
+      "notes": "no HTML body kind (spec.py:25) and no fetcher delegation across paths (spec.py:272); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:122",
+        "prior_needs_engine_capability": [
+          "fetcher_delegation",
+          "html_to_markdown",
+          "multi_request_fanout"
+        ],
+        "basis": "opendata/data/providers/_engine/spec.py:25"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-NportDisclosure",
+      "provider": "sec",
+      "upstream_model": "NportDisclosure",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 3,
+      "paged": false,
+      "response_format": "binary",
+      "row_extraction": "unknown",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "preflight_url_discovery",
+        "cross_request_join",
+        "xml_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/spec.py:25",
+      "notes": "no XML decoder (spec.py:25); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:125",
+        "prior_needs_engine_capability": [
+          "preflight_url_discovery",
+          "cross_request_join",
+          "xml_decoder"
+        ],
+        "basis": "opendata/data/providers/_engine/spec.py:25"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-RssLitigation",
+      "provider": "sec",
+      "upstream_model": "RssLitigation",
+      "shape": "binary_or_other",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "unknown",
+      "row_extraction": "unknown",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "rss_xml_decoder",
+        "field_rename_map"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/spec.py:25",
+      "notes": "RSS is XML: BodyDecoderKind has no xml kind (spec.py:25); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:127",
+        "prior_needs_engine_capability": [
+          "rss_xml_decoder",
+          "field_rename_map"
+        ],
+        "basis": "opendata/data/providers/_engine/spec.py:25"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-SchemaFiles",
+      "provider": "sec",
+      "upstream_model": "SchemaFiles",
+      "shape": "binary_or_other",
+      "http_method": "GET",
+      "endpoints": 3,
+      "paged": false,
+      "response_format": "binary",
+      "row_extraction": "unknown",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "multi_request_fanout",
+        "xml_decoder",
+        "object_graph_flatten"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/spec.py:25",
+      "notes": "no XML/HTML body kind and no object-graph flatten (spec.py:25, http_json.py:264); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:129",
+        "prior_needs_engine_capability": [
+          "multi_request_fanout",
+          "xml_decoder",
+          "object_graph_flatten"
+        ],
+        "basis": "opendata/data/providers/_engine/spec.py:25"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-SecFiling",
+      "provider": "sec",
+      "upstream_model": "SecFiling",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 3,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "cross_request_join",
+        "html_to_markdown",
+        "single_row_assembly"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/spec.py:285",
+      "notes": "no join / single-row-assembly field in ModelSpec (spec.py:266-285); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:131",
+        "prior_needs_engine_capability": [
+          "cross_request_join",
+          "html_to_markdown",
+          "single_row_assembly"
+        ],
+        "basis": "opendata/data/providers/_engine/spec.py:285"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-SicSearch",
+      "provider": "sec",
+      "upstream_model": "SicSearch",
+      "shape": "html_scraping_or_js",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "html",
+      "row_extraction": "unknown",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "html_table_decoder",
+        "client_side_filter"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/spec.py:25",
+      "notes": "no HTML decoder (spec.py:25); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:103",
+        "prior_needs_engine_capability": [
+          "html_table_decoder",
+          "client_side_filter"
+        ],
+        "basis": "opendata/data/providers/_engine/spec.py:25"
+      }
+    },
+    {
+      "task_id": "OBB2-sec-SymbolMap",
+      "provider": "sec",
+      "upstream_model": "SymbolMap",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "unknown",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "rows_from_object_keys",
+        "client_side_filter"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/http_json.py:262",
+      "notes": "dict-keyed document refused at http_json.py:262; prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "opendata/data/providers/sec/specs.py:96",
+        "prior_needs_engine_capability": [
+          "rows_from_object_keys",
+          "client_side_filter"
+        ],
+        "basis": "opendata/data/providers/_engine/http_json.py:262"
+      }
+    },
+    {
+      "task_id": "OBB2-tmx-AvailableIndices",
+      "provider": "tmx",
+      "upstream_model": "AvailableIndices",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "unknown",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "rows_from_object_keys",
+        "cross_key_join",
+        "regex_strip_html"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/available_indices.py:56",
+      "notes": "sptsx-indices.json: rows are objects keyed by symbol, joined with groups{category}; overview stripped of HTML tags"
+    },
+    {
+      "task_id": "OBB2-tmx-BondPrices",
+      "provider": "tmx",
+      "upstream_model": "BondPrices",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "client_side_filter",
+        "groupby_first_column"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/bond_prices.py:157",
+      "notes": "iiroc designatedbonds/list returns a JSON array; ISIN filter + first-row-per-group happen in pandas (helpers.py:1121)"
+    },
+    {
+      "task_id": "OBB2-tmx-CalendarEarnings",
+      "provider": "tmx",
+      "upstream_model": "CalendarEarnings",
+      "shape": "post_json",
+      "http_method": "POST",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "post_body",
+        "graphql_query_template",
+        "multi_request_fanout"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/calendar_earnings.py:105",
+      "notes": "POST app-money.tmx.com/graphql per date/market, gathered; body GraphQL query has no declarable field"
+    },
+    {
+      "task_id": "OBB2-tmx-CompanyFilings",
+      "provider": "tmx",
+      "upstream_model": "CompanyFilings",
+      "shape": "post_json",
+      "http_method": "POST",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "post_body",
+        "graphql_query_template",
+        "cross_request_join"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/company_filings.py:127",
+      "notes": "two GraphQL POSTs per symbol merged in transform; symbol validator rewrites the query value"
+    },
+    {
+      "task_id": "OBB2-tmx-CompanyNews",
+      "provider": "tmx",
+      "upstream_model": "CompanyNews",
+      "shape": "post_json",
+      "http_method": "POST",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "post_body",
+        "graphql_query_template",
+        "derived_url_columns"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/company_news.py:93",
+      "notes": "GraphQL POST then per-item money.tmx.com news URLs concatenated as a column (company_news.py:113)"
+    },
+    {
+      "task_id": "OBB2-tmx-EquityHistorical",
+      "provider": "tmx",
+      "upstream_model": "EquityHistorical",
+      "shape": "post_json",
+      "http_method": "POST",
+      "endpoints": 3,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "post_body",
+        "interval_branch",
+        "multi_request_fanout",
+        "csv_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/equity_historical.py:137",
+      "notes": "interval picks daily/weekly-monthly GraphQL or intraday m-x.ca CSV download (helpers.py:618-642); symbol fanout"
+    },
+    {
+      "task_id": "OBB2-tmx-EquityInfo",
+      "provider": "tmx",
+      "upstream_model": "EquityInfo",
+      "shape": "post_json",
+      "http_method": "POST",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "post_body",
+        "graphql_query_template",
+        "multi_request_fanout"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/equity_profile.py:99",
+      "notes": "profile+overview GraphQL POSTs gathered per symbol; rows come out of nested data keys"
+    },
+    {
+      "task_id": "OBB2-tmx-EquityQuote",
+      "provider": "tmx",
+      "upstream_model": "EquityQuote",
+      "shape": "post_json",
+      "http_method": "POST",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "post_body",
+        "graphql_query_template",
+        "cross_request_join"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/equity_quote.py:310",
+      "notes": "quote and fundamentals GraphQL POSTs joined on symbol, percent columns rescaled after the call"
+    },
+    {
+      "task_id": "OBB2-tmx-EquitySearch",
+      "provider": "tmx",
+      "upstream_model": "EquitySearch",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "unknown",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "rows_from_object_keys",
+        "client_side_filter",
+        "exchange_path_template"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/equity_search.py:52",
+      "notes": "tsx.com company-directory/{exchange}/* dict cached by helper, then substring filter over symbols/names"
+    },
+    {
+      "task_id": "OBB2-tmx-EtfSearch",
+      "provider": "tmx",
+      "upstream_model": "EtfSearch",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "client_side_filter",
+        "symbol_normalization"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/etf_search.py:218",
+      "notes": "single static cloudfront etfs.json document; filtering happens client-side in pandas (helpers.py:389)"
+    },
+    {
+      "task_id": "OBB2-tmx-EtfHoldings",
+      "provider": "tmx",
+      "upstream_model": "EtfHoldings",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "client_side_filter",
+        "nested_array_explode",
+        "field_rename_map"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/etf_holdings.py:94",
+      "notes": "etfs.json row selected by symbol, holdings_top10 array exploded and renamed; NA filled to null"
+    },
+    {
+      "task_id": "OBB2-tmx-EtfSectors",
+      "provider": "tmx",
+      "upstream_model": "EtfSectors",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "client_side_filter",
+        "nested_array_explode",
+        "field_rename_map"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/etf_sectors.py:50",
+      "notes": "symbol -> sectors nested array from etfs.json, renamed name/percent; multi-symbol loop (etf_sectors.py:99+)"
+    },
+    {
+      "task_id": "OBB2-tmx-EtfCountries",
+      "provider": "tmx",
+      "upstream_model": "EtfCountries",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "client_side_filter",
+        "nested_array_explode",
+        "field_rename_map"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/etf_countries.py:50",
+      "notes": "same etfs.json document, countries nested array exploded per symbol"
+    },
+    {
+      "task_id": "OBB2-tmx-EtfHistorical",
+      "provider": "tmx",
+      "upstream_model": "EtfHistorical",
+      "shape": "post_json",
+      "http_method": "POST",
+      "endpoints": 3,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "post_body",
+        "interval_branch",
+        "multi_request_fanout"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/_engine/http_json.py:359",
+      "notes": "the send seam is GET-only (http_json.py:359 calls get_shared_http_client().get), so the POST/GraphQL blocker holds on its own. The requested re-point to the tmx request/parse line was NOT possible: no tmx bytes exist in this repo (catalog.py:80 registers tmx through _reserved_provider only; akshare/_vendor holds no tmx module), and the old cite was the __init__.py:58 alias table | C74: csv_decoder shipped with DecoderSpec (spec.py:25 json|csv|tsv|zip_csv, spec.py:196-214, decoders.py:141-224), so it was dropped from needs",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "needs_engine_capability",
+          "notes"
+        ],
+        "prior_expressible_today": false,
+        "prior_evidence": "providers/tmx/openbb_tmx/__init__.py:58",
+        "prior_needs_engine_capability": [
+          "post_body",
+          "interval_branch",
+          "multi_request_fanout",
+          "csv_decoder"
+        ],
+        "basis": "opendata/data/providers/_engine/http_json.py:359"
+      }
+    },
+    {
+      "task_id": "OBB2-tmx-EtfInfo",
+      "provider": "tmx",
+      "upstream_model": "EtfInfo",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "client_side_filter",
+        "field_rename_map"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/etf_info.py:171",
+      "notes": "one etfs.json record per symbol, columns renamed/derived in transform_data"
+    },
+    {
+      "task_id": "OBB2-tmx-EquityGainers",
+      "provider": "tmx",
+      "upstream_model": "EquityGainers",
+      "shape": "post_json",
+      "http_method": "POST",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "post_body",
+        "graphql_query_template"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/gainers.py:141",
+      "notes": "single GraphQL POST with referer header (static_headers exists); body query is the blocker"
+    },
+    {
+      "task_id": "OBB2-tmx-HistoricalDividends",
+      "provider": "tmx",
+      "upstream_model": "HistoricalDividends",
+      "shape": "post_json",
+      "http_method": "POST",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "post_body",
+        "graphql_query_template",
+        "multi_request_fanout"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/historical_dividends.py:79",
+      "notes": "GraphQL POST per symbol behind a referer URL built from the query value"
+    },
+    {
+      "task_id": "OBB2-tmx-IndexConstituents",
+      "provider": "tmx",
+      "upstream_model": "IndexConstituents",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "parameterized_rows_pointer",
+        "client_side_filter"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/index_constituents.py:70",
+      "notes": "rows are indices[query.symbol].constituents: rows_pointer is a static dotted path, it cannot carry a param"
+    },
+    {
+      "task_id": "OBB2-tmx-IndexSectors",
+      "provider": "tmx",
+      "upstream_model": "IndexSectors",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "parameterized_rows_pointer",
+        "client_side_filter"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/index_sectors.py:59",
+      "notes": "same sptsx-indices.json document, sector rows under indices[symbol] and renamed weight fields"
+    },
+    {
+      "task_id": "OBB2-tmx-IndexSnapshots",
+      "provider": "tmx",
+      "upstream_model": "IndexSnapshots",
+      "shape": "multi_endpoint_join",
+      "http_method": "POST",
+      "endpoints": 3,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "preflight_url_discovery",
+        "post_body",
+        "multi_request_fanout"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/index_snapshots.py:171",
+      "notes": "static indices.json directory decides region, then two GraphQL POSTs supply the snapshots"
+    },
+    {
+      "task_id": "OBB2-tmx-InsiderTrading",
+      "provider": "tmx",
+      "upstream_model": "InsiderTrading",
+      "shape": "post_json",
+      "http_method": "POST",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "post_body",
+        "graphql_query_template"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/insider_trading.py:107",
+      "notes": "single GraphQL POST, referer from the symbol; period validator rewrites the request value"
+    },
+    {
+      "task_id": "OBB2-tmx-OptionsChains",
+      "provider": "tmx",
+      "upstream_model": "OptionsChains",
+      "shape": "html_scraping_or_js",
+      "http_method": "GET",
+      "endpoints": 3,
+      "paged": false,
+      "response_format": "html",
+      "row_extraction": "unknown",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "html_table_decoder",
+        "columnar_list_rows",
+        "fetcher_delegation",
+        "csv_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/options_chains.py:84",
+      "notes": "m-x.ca read_html + EOD chain download, delegates to the quote fetcher, publishes orient=list columns"
+    },
+    {
+      "task_id": "OBB2-tmx-PriceTargetConsensus",
+      "provider": "tmx",
+      "upstream_model": "PriceTargetConsensus",
+      "shape": "post_json",
+      "http_method": "POST",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "post_body",
+        "graphql_query_template",
+        "cross_request_join"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/price_target_consensus.py:117",
+      "notes": "consensus and quote GraphQL POSTs gathered per symbol, then merged and upside derived in transform"
+    },
+    {
+      "task_id": "OBB2-tmx-TreasuryPrices",
+      "provider": "tmx",
+      "upstream_model": "TreasuryPrices",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "client_side_filter",
+        "groupby_first_column"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tmx/openbb_tmx/models/treasury_prices.py:119",
+      "notes": "reuses get_all_bonds JSON array (helpers.py:1121) and filters/sorts in pandas before publishing"
+    }
+  ]
+}

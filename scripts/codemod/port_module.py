@@ -57,6 +57,11 @@ PORTED_ROOT = REPO_ROOT.joinpath(*PORTED_PACKAGE.split("."))
 LOCK_PATH = PORTED_ROOT / "upstream.lock"
 DEFAULT_UPSTREAM_REPO = REPO_ROOT.parent / "akshare"
 RESOURCE_SUFFIXES = frozenset({".js", ".json", ".dat"})
+#: Our own documents that sit inside the vendor tree without having been ported from upstream, so
+#: ``upstream.lock`` can carry neither an ``upstream_path`` nor a pristine hash for them. One set,
+#: read by ``report_port.collect_unlocked_files``, ``gen_manifest`` and the AC-5 probe face alike:
+#: a fourth file dropped into ``_vendor`` still fails closed in all three.
+UNLOCKED_METADATA = frozenset({"upstream.lock", "manifest.json", "LICENSE-AKSHARE"})
 _OS_IMPORT = "import os\n"
 _IMPORT_LINE_RE = re.compile(r"^\s*(?:import|from)\s", re.MULTILINE)
 _MODULE_PATH_STRING_RE = re.compile(r"(['\"])akshare((?:\.[A-Za-z_][A-Za-z0-9_]*)+)\1")

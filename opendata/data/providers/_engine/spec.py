@@ -20,6 +20,10 @@ from typing import Any, Literal
 #: Value domains the engine can encode, validate and normalize.
 ValueKind = Literal["str", "int", "float", "bool", "date", "enum", "str_list"]
 
+#: Body shapes the engine decodes into record rows. ``json`` reads the parsed document; the
+#: delimited kinds read the response bytes themselves, never a file name or a URL suffix.
+BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+
 #: Pagination strategies the engine can drive and bound.
 PaginationKind = Literal["none", "offset", "page", "cursor"]
 
@@ -27,6 +31,17 @@ PaginationKind = Literal["none", "offset", "page", "cursor"]
 AsyncMode = Literal["bounded_thread", "unsupported"]
 
 _IDENTIFIER_TYPES = frozenset({"str", "int", "float", "bool", "date", "enum", "str_list"})
+
+#: The decoder kinds whose body is delimited text rather than a JSON document.
+DELIMITED_DECODERS = frozenset({"csv", "tsv", "zip_csv"})
+
+#: The delimiter each decoder kind means when the declaration does not override it. ``|`` is what
+#: FINRA's download endpoints publish, which is why the delimiter is declarable at all.
+_DEFAULT_DELIMITER = {"json": "", "csv": ",", "tsv": "\t", "zip_csv": ","}
+
+#: The text encodings a delimited body is tried in, in order, when the declaration names none.
+#: ``utf-8-sig`` first because OECD writes SDMX-CSV with a byte-order mark.
+_DEFAULT_ENCODINGS = ("utf-8-sig", "cp1252")
 
 #: A path template placeholder: ``{symbol}``. Anything else between braces is a malformed
 #: declaration rather than a segment to encode.
@@ -162,6 +177,66 @@ class PaginationSpec:
 
 
 @dataclass(frozen=True)
+class DecoderSpec:
+    """How one response body becomes the record rows the engine normalizes.
+
+    The default is exactly what the engine did before decoders existed: read the parsed JSON
+    document. A delimited declaration says something the transport cannot infer -- OECD publishes
+    SDMX-CSV, FINRA publishes ``|``-separated CSV, Fama-French and the SEC ``EquityFTD`` feed ship
+    the CSV inside a zip -- and the engine then reads the response *bytes* it was given, so no
+    code ever guesses a shape from a file extension or a URL suffix.
+
+    Attributes:
+        kind: Body shape the engine is allowed to decode.
+        delimiter: Single character separating fields; defaults per ``kind``.
+        member: The archive member a ``zip_csv`` body must be read from.
+        encoding: Text encoding tried first; defaults to UTF-8 (BOM-tolerant) then CP1252.
+    """
+
+    kind: BodyDecoderKind = "json"
+    delimiter: str | None = None
+    member: str | None = None
+    encoding: str | None = None
+
+    def __post_init__(self) -> None:
+        """Reject a decoder declaration the engine cannot carry out."""
+        if self.kind not in {"json", "csv", "tsv", "zip_csv"}:
+            raise ValueError(f"unknown decoder kind {self.kind!r}")
+        if self.kind == "json":
+            if self.delimiter is not None or self.member is not None:
+                raise ValueError("a json decoder declares no delimiter and no zip member")
+            return
+        if self.delimiter is not None and (len(self.delimiter) != 1 or self.delimiter in '\r\n"'):
+            raise ValueError(f"delimiter {self.delimiter!r} must be one non-line character")
+        if self.encoding is not None and not self.encoding.strip():
+            raise ValueError("an encoding declaration cannot be blank")
+        if self.kind == "zip_csv" and not (self.member or "").strip():
+            raise ValueError("a zip_csv decoder must name the member it reads")
+        if self.kind in {"csv", "tsv"} and self.member is not None:
+            raise ValueError(f"a {self.kind} body is not an archive, so it has no member to select")
+
+    @property
+    def delimited(self) -> bool:
+        """Whether the body is read as delimited text instead of as a JSON document."""
+        return self.kind in DELIMITED_DECODERS
+
+    @property
+    def effective_delimiter(self) -> str:
+        """Return the delimiter this decoder reads, declared or kind-default."""
+        return self.delimiter if self.delimiter is not None else _DEFAULT_DELIMITER[self.kind]
+
+    @property
+    def encodings(self) -> tuple[str, ...]:
+        """Return the text encodings tried for this body, declared first when given."""
+        if self.kind == "json":
+            return _DEFAULT_ENCODINGS
+        declared = (self.encoding or "").strip()
+        if not declared:
+            return _DEFAULT_ENCODINGS
+        return (declared, *(name for name in _DEFAULT_ENCODINGS if name != declared))
+
+
+@dataclass(frozen=True)
 class ModelSpec:
     """One fixed provider×model task expressed as an executable declaration.
 
@@ -185,6 +260,7 @@ class ModelSpec:
         row_envelope: Response keys copied onto every row as source facts.
         static_headers: Request headers the endpoint requires on every page.
         notes: Anything a reviewer must not infer from the code alone.
+        decoder: Body shape read into rows; the default is the JSON document path.
     """
 
     model: str
@@ -206,6 +282,7 @@ class ModelSpec:
     row_envelope: tuple[str, ...] = ()
     static_headers: tuple[tuple[str, str], ...] = ()
     notes: str = ""
+    decoder: DecoderSpec = field(default_factory=DecoderSpec)
 
     @property
     def path_placeholders(self) -> tuple[str, ...]:
@@ -298,3 +375,11 @@ class ModelSpec:
                 raise ValueError(
                     f"{self.model}: path placeholder {placeholder!r} must be required or defaulted"
                 )
+        # A delimited body *is* the record list, one dict per line keyed by the header, so a pointer
+        # into a nested document is a declaration no decoder can honour. Refusing it here is what
+        # keeps a wrong-member or wrong-delimiter failure from being mistaken for a shape failure.
+        if self.decoder.delimited and self.rows_pointer:
+            raise ValueError(
+                f"{self.model}: a {self.decoder.kind} body has no nested record list, so "
+                f"rows_pointer {self.rows_pointer!r} cannot be followed"
+            )

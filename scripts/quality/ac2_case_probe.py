@@ -67,7 +67,6 @@ VENDOR_REL: Final = "opendata/data/providers/akshare/_vendor"
 THS_REL: Final = "opendata/data/providers/ths"
 RATCHET_REL: Final = "docs/quality/ratchet.json"
 ZERO_DEP_REL: Final = "docs/quality/zero-dep-baseline.json"
-PORT_SCOPE_REL: Final = "docs/evidence/C65/port-scope-manifest.json"
 BASELINE_SNAPSHOT_REL: Final = "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/基线快照.json"
 GATE_RECORD_GLOB: Final = "docs/evidence/*/gate*.txt"
 UPSTREAM_COMMIT: Final = "3e071fcc2cd9f891cac6040ae60296dba76dab46"
@@ -216,6 +215,27 @@ def git(args: Sequence[str]) -> str:
         text=True,
         errors="replace",
     ).stdout.strip()
+
+
+def tool_payload(argv: Sequence[str]) -> tuple[int, dict[str, Any]]:
+    """Run an instrument through ``tool`` and return ``(exit, the JSON object it printed)``.
+
+    ``tool`` hands back stdout and stderr concatenated, and an instrument's payload is the last line
+    of its stdout, so the object is found by scanning backwards for the first line that parses as a
+    mapping. No payload found returns an empty dict: the judge then reads every fact it gates on as
+    missing rather than as a zero, which is the difference between a gap and a silent pass.
+    """
+    exit_code, output = tool(argv)
+    for line in reversed(output.splitlines()):
+        if not line.startswith("{"):
+            continue
+        try:
+            loaded: object = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(loaded, dict):
+            return exit_code, cast("dict[str, Any]", loaded)
+    return exit_code, {}
 
 
 def sha256_of(path: Path) -> str:
@@ -607,7 +627,7 @@ def judge_ac2_03(facts: Facts) -> Verdict:
 # AC2-04 327 清单 / 2 本体 / 166 文件 532 旧导入 / 人工差异可追溯 / 幂等
 # --------------------------------------------------------------------------------------
 def measure_ac2_04() -> Facts:
-    """AC2-04 测量面：327清单及2本体 / 166文件/532旧导入."""
+    """AC2-04 测量面：327清单及2本体 / 166文件/532旧导入 / 逐路径函数签名保真."""
     manifest = json.loads(read(f"{VENDOR_REL}/manifest.json") or "{}")
     lock = json.loads(read(f"{VENDOR_REL}/upstream.lock") or "{}")
     vendor = REPO_ROOT / VENDOR_REL
@@ -629,12 +649,59 @@ def measure_ac2_04() -> Facts:
             if lines != row["lines"]:
                 line_mismatch.append(row)
     unflagged = [row for row in line_mismatch if not row.get("manual_edits")]
-    scope = json.loads(read(PORT_SCOPE_REL) or "{}").get("reconciliation", {})
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+    from scripts.quality import port_scope
+
+    try:
+        inventory_rel = port_scope.scope_inventory_rel(REPO_ROOT)
+    except port_scope.PortScopePathError:
+        inventory_rel = "-"
+    inventory = json.loads(read(inventory_rel) or "{}")
+    scope = inventory.get("reconciliation", {})
+    archive_rows = {str(row["path"]): row for row in inventory.get("files", [])}
     control_rows = [row for row in lock_rows if row["path"] in {"manifest.json", "upstream.lock"}]
     baseline = json.loads(read(BASELINE_SNAPSHOT_REL) or "{}").get("legacy_imports", {})
     census_rows = list(baseline.get("per_file") or [])
     census_paths = {str(row["path"]).split("/", 1)[-1] for row in census_rows}
     stale_paths = {row["path"] for row in disk_mismatch}
+    # A rewrite's durable trace is the archive's own pin pair: pristine upstream bytes and ported
+    # bytes are digested per path, so the claim survives re-freezing manifest.json. The drift set
+    # above only exists while the manifest is stale, which is a bookkeeping defect, not a record.
+    joined_paths = census_paths & set(archive_rows)
+    unjoined_paths = sorted(census_paths - set(archive_rows))
+    census_pin_gaps = sorted(
+        path
+        for path in joined_paths
+        if archive_rows[path]["sha256"]["upstream_lock"]
+        == archive_rows[path]["sha256"]["manifest_ported_snapshot"]
+    )
+    census_replay_gaps = sorted(
+        path
+        for path in joined_paths
+        if str(archive_rows[path]["port_report"]["recorded_replay_status"]) != "PASS"
+    )
+    # The census is a record of legacy *import* statements, so only ``import_rewrites`` may be
+    # compared against it; string rewrites belong to a different denominator and are counted
+    # separately rather than folded into one total.
+    import_rewrite_rows: set[str] = set()
+    string_rewrite_rows: set[str] = set()
+    for path, row in archive_rows.items():
+        report = row["port_report"]
+        if int(report["import_rewrites"]) > 0:
+            import_rewrite_rows.add(path)
+        if int(report["string_rewrites"]) > 0:
+            string_rewrite_rows.add(path)
+    # 「函数名/签名/语义保真」 is not derivable from byte equality: the archive proves the codemod
+    # replay landed, not which def moved. This is the per-path AST join -- pristine def/class
+    # signatures against the ported file on disk for every locked .py record -- with its own
+    # checkout gate, so an unavailable pristine tree cannot read back as "no signature differences".
+    signature_exit, signature = tool_payload(
+        ["python", "scripts/quality/ported_signature_fidelity.py"]
+    )
+    signature_unregistered = [
+        str(path) for path in signature.get("differing_and_not_flagged_manual", [])
+    ]
     return {
         "lock_records": str(len(lock_rows)),
         "lock_python": str(sum(1 for row in lock_rows if str(row["path"]).endswith(".py"))),
@@ -658,7 +725,6 @@ def measure_ac2_04() -> Facts:
         "census_line_sum": str(sum(len(row["statement_lines"]) for row in census_rows)),
         "census_statements": str(baseline.get("statements")),
         "census_sha_rows": str(sum(1 for row in census_rows if row.get("file_sha256"))),
-        "stale_pin_files": str(len(stale_paths)),
         "manifest_rows_with_rewrite_provenance": str(
             sum(
                 1
@@ -667,7 +733,14 @@ def measure_ac2_04() -> Facts:
             )
         ),
         "stale_pin_outside_census": str(len(stale_paths - census_paths)),
-        "census_file_without_pin_change": str(len(census_paths - stale_paths)),
+        "census_paths_without_manifest_drift": str(len(census_paths - stale_paths)),
+        "archive_rows_missing_for_census": str(len(unjoined_paths)),
+        "archive_census_pin_gap_rows": str(len(census_pin_gaps)),
+        "archive_census_pin_gap_paths": ",".join(census_pin_gaps[:3]) or "-",
+        "archive_census_replay_gap_rows": str(len(census_replay_gaps)),
+        "archive_rewrite_rows_outside_census": str(len(import_rewrite_rows - census_paths)),
+        "archive_string_rewrite_rows": str(len(string_rewrite_rows)),
+        "archive_rows_carrying_rewrite_counts": str(len(import_rewrite_rows | string_rewrite_rows)),
         "archive_port_report_rows": str(scope.get("port_report_rows")),
         "archive_import_rewrite_total": str(scope.get("port_report_import_rewrite_total")),
         "archive_string_rewrite_total": str(scope.get("port_report_string_rewrite_total")),
@@ -676,6 +749,20 @@ def measure_ac2_04() -> Facts:
             scope.get("manifest_snapshot_sha_matches_current_port_count")
         ),
         "retired_root_import_nodes": str(retired_root_nodes()),
+        "signature_fidelity_exit": str(signature_exit),
+        "signature_rows_compared": str(signature.get("rows_compared")),
+        "signature_rows_equal": str(signature.get("rows_equal")),
+        "signature_differing": str(signature.get("differing_total")),
+        "signature_differing_unregistered": str(
+            signature.get("differing_and_not_flagged_manual_total")
+        ),
+        "signature_differing_unregistered_paths": ",".join(signature_unregistered) or "-",
+        "signature_checkout_ok": str(
+            bool(signature.get("checkout_present"))
+            and bool(signature.get("checkout_commit_matches_lock"))
+        ),
+        "signature_checkout_commit": str(signature.get("checkout_commit") or "-"),
+        "signature_lock_commit": str(signature.get("lock_commit") or "-"),
     }
 
 
@@ -702,13 +789,41 @@ def judge_ac2_04(facts: Facts) -> Verdict:
         == facts["census_line_sum"]
         == "532",
         "every stale pin is one of the recorded rewrites": facts["stale_pin_outside_census"] == "0",
-        "every recorded rewrite shows in the pins": facts["census_file_without_pin_change"] == "0",
-        "the rewrites are traceable inside the manifest": facts[
-            "manifest_rows_with_rewrite_provenance"
+        "every recorded rewrite has an archive row": facts["archive_rows_missing_for_census"]
+        == "0",
+        "every recorded rewrite left a pristine→ported pin change": facts[
+            "archive_census_pin_gap_rows"
         ]
-        == facts["stale_pin_files"],
+        == "0",
+        "every recorded rewrite's replay is archived as passing": facts[
+            "archive_census_replay_gap_rows"
+        ]
+        == "0",
+        "no node-rewrite count falls outside the recorded census": facts[
+            "archive_rewrite_rows_outside_census"
+        ]
+        == "0",
+        "the rewrites are traceable in the scope archive": facts[
+            "archive_rows_carrying_rewrite_counts"
+        ]
+        != "0",
         "every vendored file whose lines changed is flagged manual": facts["line_changed_unflagged"]
         == "0",
+        "实际函数名/签名/语义保真 is AST-compared on every locked .py row, not asserted": facts[
+            "signature_rows_compared"
+        ]
+        == "325",
+        "the signature comparison joined the pristine checkout at the locked commit": facts[
+            "signature_checkout_ok"
+        ]
+        == "True",
+        "人工差异可追溯: every 函数名/签名 change sits on a lock row flagged manual_edits": facts[
+            "signature_differing_unregistered"
+        ]
+        == "0",
+        # rc is the instrument's own completeness claim (admissible checkout, every locked .py
+        # parsed on both sides); judging it keeps "the comparison ran" out of the prose-only face.
+        "签名对照面自身完整（工具 rc=0）": facts["signature_fidelity_exit"] == "0",
         "retired roots import nothing in first-party code": facts["retired_root_import_nodes"]
         == "0",
     }
@@ -871,6 +986,17 @@ def measure_ac2_07() -> Facts:
         detail = f"{type(error).__name__}:{error}"
     ratchet = json.loads(read(RATCHET_REL) or "{}")
     files = baseline.get("files", {})
+    try:
+        scan_document = json.loads(read(str(ported_security_evidence.SCAN_REL)) or "{}")
+        triage_document = json.loads(read(str(ported_security_evidence.TRIAGE_REL)) or "{}")
+    except (OSError, ValueError):
+        scan_document, triage_document = {}, {}
+    carried = scan_document.get("carried_from") or triage_document.get("carried_from") or {}
+    scanned_rows = sum(
+        int(count)
+        for count in (scan_document.get("rule_counts") or {}).values()
+        if isinstance(count, int)
+    )
     return {
         "zero_dep_exit": str(exit_code),
         "walker_count": walked.group(1) if walked else "unparsed",
@@ -895,9 +1021,18 @@ def measure_ac2_07() -> Facts:
         "ported_security_recorded_root": str(ported_security_evidence.PORT_ROOT),
         "ported_security_issue_codes": ",".join(sorted({issue.code for issue in issue_list}))
         or "-",
-        "ported_security_declares_relocation": str(
-            issues == 0 or any("relocated" in issue.code for issue in issue_list)
+        "ported_security_declares_identity": str(
+            str(scan_document.get("ported_root")) == ported_security_evidence.PORT_ROOT
+            and str(scan_document.get("archive_round")) == ported_security_evidence.EXPECTED_ROUND
+            and bool(carried.get("triage"))
+            and scanned_rows > 0
+            and str(carried.get("identities_matched")) == str(scanned_rows)
         ),
+        "ported_security_scanned_root": str(scan_document.get("ported_root", "-")),
+        "ported_security_archive_round": str(scan_document.get("archive_round", "-")),
+        "ported_security_carried_round": str(carried.get("prior_round", "-")),
+        "ported_security_scanned_rows": str(scanned_rows),
+        "ported_security_identity_rows": str(carried.get("identities_matched", "-")),
         "ported_security_detail": detail,
     }
 
@@ -917,10 +1052,15 @@ def judge_ac2_07(facts: Facts) -> Verdict:
         "the frozen scope and its buckets name the same roots": facts["declared_scope"]
         == facts["baseline_scope"],
         "no declared scope bucket walked zero files": facts["empty_scope_buckets"] == "0",
-        "the archive either certifies the tree or refuses in words": facts[
-            "ported_security_declares_relocation"
+        "the archive names the tree it scanned and the round it carried from": facts[
+            "ported_security_declares_identity"
         ]
         == "True",
+        "the carried review was matched row-for-row against this scan": facts[
+            "ported_security_identity_rows"
+        ]
+        == facts["ported_security_scanned_rows"]
+        and int(facts["ported_security_scanned_rows"] or 0) > 0,
         "toolchain preflight is not ENV_BLOCKED": facts["preflight_status"] != "ENV_BLOCKED",
         "ported security evidence validates against the shipped root": facts[
             "ported_security_issue_count"
@@ -1947,11 +2087,9 @@ def measure_ac2_22() -> Facts:
         ),
         "ported_security_issue_count": str(issues),
         "ported_security_detail": detail,
-        "scan_archive_present": str(
-            (REPO_ROOT / "docs/evidence/C65/ported-bandit-scan.json").is_file()
-        ),
+        "scan_archive_present": str((REPO_ROOT / str(ported_security_evidence.SCAN_REL)).is_file()),
         "triage_archive_present": str(
-            (REPO_ROOT / "docs/evidence/C65/ported-security-triage.json").is_file()
+            (REPO_ROOT / str(ported_security_evidence.TRIAGE_REL)).is_file()
         ),
     }
 
@@ -2306,11 +2444,7 @@ PROBES: Final = (
         "327 文件清单、锁与快照双向一致、逐节点改写与人工差异标记、重放幂等。",
         measure_ac2_04,
         judge_ac2_04,
-        {
-            "manifest_rows_with_rewrite_provenance": "166",
-            "line_changed_unflagged": "0",
-            "line_changed_paths": "-",
-        },
+        {"signature_differing_unregistered": "0"},
         (
             Break("锁记录少一条", {"lock_records": "326"}),
             Break("清单与锁路径集不同", {"path_sets_equal": "False"}),
@@ -2319,13 +2453,35 @@ PROBES: Final = (
             Break("控制文件被算进 327 本体", {"control_file_rows_in_lock": "2"}),
             Break("把新的 0 覆盖旧 532 分母", {"census_statements": "0", "census_row_sum": "0"}),
             Break("分母只能靠总 count，逐行重算对不上", {"census_row_sum": "531"}),
-            Break("manifest 里没有改写痕迹", {"manifest_rows_with_rewrite_provenance": "0"}),
+            Break("登记过的改写文件在档案里没有行", {"archive_rows_missing_for_census": "3"}),
+            Break("登记的改写没有 pristine→ported pin 变化", {"archive_census_pin_gap_rows": "1"}),
+            Break("登记的改写没有一条存档重放通过", {"archive_census_replay_gap_rows": "1"}),
+            Break("档案里有改写计数落在登记之外", {"archive_rewrite_rows_outside_census": "5"}),
+            Break("档案里再没有一条逐节点改写计数", {"archive_rows_carrying_rewrite_counts": "0"}),
             Break("有 pin 变化落在登记之外", {"stale_pin_outside_census": "5"}),
+            Break("签名 AST 对照没比满 325 条锁内 .py", {"signature_rows_compared": "324"}),
+            Break("签名对照的检出不在 locked commit", {"signature_checkout_ok": "False"}),
+            Break(
+                "函数名/签名变了但 lock 没登记人工差异",
+                {"signature_differing_unregistered": "1"},
+            ),
+            Break("签名对照工具自身没跑完（rc≠0）", {"signature_fidelity_exit": "2"}),
         ),
-        requires=((REACH_ARCHIVE, "临时重放 codemod 两次需要写入副本，本轮不触碰工作树"),),
+        requires=(
+            (
+                REACH_HUMAN,
+                "逐路径 def/class 签名对照已在 325 条锁内 .py 上跑通（唯一不等的一条已具名）："
+                "搬运根 facade 由 vendor_init_facade 重新生成、比 pristine 多出 "
+                "__getattr__/__dir__ 两个声明，而 upstream.lock 里这条记录的 manual_edits 仍是 "
+                "false，于是这一处真实存在的签名差异没有被登记成人工差异。闭环要改的是供应商 "
+                "pin 文件的元数据（本轮判为需用户确认的动作），不是再补一个对照面",
+            ),
+        ),
         repair=(
-            "重生成 manifest/upstream.lock 并登记改写行（旧→新 SHA 与 166 改写分母同源），"
-            "把聚合入口 5830→2001 行的替换标成人工差异，再在临时副本重放两次验证幂等。"
+            "档案已把 327 条的 pristine/ported 双 SHA、逐节点改写计数与重放结论逐路径落档，"
+            "manifest 与磁盘同源，逐路径 def/class 签名对照也已跑通并只指出一处差异；"
+            "把 __init__.py 这一条人工差异登记进 upstream.lock（manual_edits=true），"
+            "本用例即闭环。"
         ),
     ),
     probe(
@@ -2382,7 +2538,7 @@ PROBES: Final = (
             "preflight_issues": "0",
             "ported_security_issue_count": "0",
             "ported_security_detail": "-",
-            "ported_security_declares_relocation": "True",
+            "ported_security_declares_identity": "True",
             "ported_security_issue_codes": "-",
         },
         (
@@ -2393,15 +2549,20 @@ PROBES: Final = (
             Break("基线口径被缩小", {"baseline_scope": "opendata,opendata_client"}),
             Break("某个声明范围一格文件都没扫到", {"empty_scope_buckets": "1"}),
             Break(
-                "旧档案不声明搬迁、直接冒充认证",
-                {"ported_security_declares_relocation": "False"},
+                "档案不写明它扫的是哪棵树、处置从哪一轮结转",
+                {"ported_security_declares_identity": "False"},
+            ),
+            Break(
+                "结转的处置没有逐条对上本轮扫描",
+                {"ported_security_identity_rows": "0"},
             ),
         ),
-        requires=(
-            (REACH_ARCHIVE, "coverage 新旧文件清单逐文件对照需要 test-cov 成员（约 400s）"),
-            (REACH_WAREHOUSE, "bandit 重跑需要新的档案目录，本轮明令不运行 make security-ported"),
+        requires=((REACH_ARCHIVE, "coverage 新旧文件清单逐文件对照需要 test-cov 成员（约 400s）"),),
+        repair=(
+            "本轮已把 bandit 重扫到 docs/evidence/C74（ported_security_evidence_build，"
+            "档案带 24h 窗口，下一轮验收要重跑同一个工具而不是沿用这份）；"
+            "剩下的是在冻结干净树上跑 test-cov 成员，再逐文件对照 coverage 清单。"
         ),
-        repair="在冻结干净树上跑 test-cov 与安全档案，再逐文件对照清单。",
     ),
     probe(
         "AC2-08",
@@ -2751,14 +2912,10 @@ PROBES: Final = (
             Break("重试没有次数上界", {"attempt_bounds": "0"}),
             Break("重试判定写在请求路径之外", {"retry_gate_files": "opendata/data/config.py"}),
         ),
-        requires=(
-            (
-                REACH_ARCHIVE,
-                "重生成 ported bandit/triage 档案需要 bandit 重跑；"
-                "本轮明令不运行 make security-ported",
-            ),
+        repair=(
+            "档案面已由 scripts/quality/ported_security_evidence_build.py 重扫并逐条结转上一轮审阅"
+            "（写进本波新目录，不覆盖 A2/C65）；下一轮验收重跑同一个工具，而不是放宽窗口。"
         ),
-        repair="把安全校验器指向 vendored 身份，并把 bandit 输出写到本波新目录（不覆盖 A2）。",
     ),
     probe(
         "AC2-23",

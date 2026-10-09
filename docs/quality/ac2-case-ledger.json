@@ -1,19 +1,19 @@
 {
   "version": 1,
-  "generated_at": "2026-10-09T01:01:39+00:00",
+  "generated_at": "2026-10-09T04:48:54+00:00",
   "document": "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/验收文档.md",
   "identity": {
-    "head": "185c6a8",
+    "head": "31acd14",
     "branch": "dev",
-    "dirty_files": 1,
+    "dirty_files": 32,
     "doc_sha256": "a65a1667eb22e052edf0d0fe6afd258b708805f798e2a78cb8ad3187e4a9dbc2",
     "python": "3.11.8"
   },
   "denominator": 25,
   "counts": {
-    "holds_offline": 2,
-    "gap": 19,
-    "blocked_leg": 4
+    "holds_offline": 3,
+    "gap": 17,
+    "blocked_leg": 5
   },
   "cases": [
     {
@@ -121,47 +121,62 @@
       "summary": "327 文件清单、锁与快照双向一致、逐节点改写与人工差异标记、重放幂等。",
       "state": "gap",
       "offline_state": "holds_offline",
-      "reason": "failed: the rewrites are traceable inside the manifest; every vendored file whose lines changed is flagged manual",
+      "reason": "failed: 人工差异可追溯: every 函数名/签名 change sits on a lock row flagged manual_edits",
       "missing_legs": [
         [
-          "archive_field",
-          "临时重放 codemod 两次需要写入副本，本轮不触碰工作树"
+          "human_decision",
+          "逐路径 def/class 签名对照已在 325 条锁内 .py 上跑通（唯一不等的一条已具名）：搬运根 facade 由 vendor_init_facade 重新生成、比 pristine 多出 __getattr__/__dir__ 两个声明，而 upstream.lock 里这条记录的 manual_edits 仍是 false，于是这一处真实存在的签名差异没有被登记成人工差异。闭环要改的是供应商 pin 文件的元数据（本轮判为需用户确认的动作），不是再补一个对照面"
         ]
       ],
       "readings": [
-        "archive_import_rewrite_total=531",
+        "archive_census_pin_gap_paths=-",
+        "archive_census_pin_gap_rows=0",
+        "archive_census_replay_gap_rows=0",
+        "archive_import_rewrite_total=237",
         "archive_manual_edits_true_rows=9",
         "archive_port_report_rows=327",
+        "archive_rewrite_rows_outside_census=0",
+        "archive_rows_carrying_rewrite_counts=166",
+        "archive_rows_missing_for_census=0",
         "archive_snapshot_matches=327",
+        "archive_string_rewrite_rows=1",
         "archive_string_rewrite_total=2",
-        "census_file_without_pin_change=0",
         "census_files=166",
         "census_line_sum=532",
+        "census_paths_without_manifest_drift=166",
         "census_row_sum=532",
         "census_rows=166",
         "census_sha_rows=166",
         "census_statements=532",
         "control_file_rows_in_lock=0",
         "disk_python_files=325",
-        "line_changed_paths=__init__.py",
-        "line_changed_unflagged=1",
-        "line_count_changed_rows=1",
+        "line_changed_paths=-",
+        "line_changed_unflagged=0",
+        "line_count_changed_rows=0",
         "lock_python=325",
         "lock_records=327",
         "lock_resources=2",
         "manifest_files=325",
         "manifest_resources=2",
         "manifest_rows_with_rewrite_provenance=0",
-        "manifest_vs_disk_mismatch=166",
+        "manifest_vs_disk_mismatch=0",
         "manual_edits_true_rows=9",
         "path_sets_equal=True",
         "retired_root_import_nodes=0",
-        "same_line_rewrites=165",
-        "stale_pin_files=166",
+        "same_line_rewrites=0",
+        "signature_checkout_commit=c4f6a631c259783dbc2507b6b27d179b3e88079d",
+        "signature_checkout_ok=True",
+        "signature_differing=1",
+        "signature_differing_unregistered=1",
+        "signature_differing_unregistered_paths=__init__.py",
+        "signature_fidelity_exit=0",
+        "signature_lock_commit=c4f6a631c259783dbc2507b6b27d179b3e88079d",
+        "signature_rows_compared=325",
+        "signature_rows_equal=324",
         "stale_pin_outside_census=0"
       ],
-      "repair": "重生成 manifest/upstream.lock 并登记改写行（旧→新 SHA 与 166 改写分母同源），把聚合入口 5830→2001 行的替换标成人工差异，再在临时副本重放两次验证幂等。",
-      "counter_examples": "9/9",
+      "repair": "档案已把 327 条的 pristine/ported 双 SHA、逐节点改写计数与重放结论逐路径落档，manifest 与磁盘同源，逐路径 def/class 签名对照也已跑通并只指出一处差异；把 __init__.py 这一条人工差异登记进 upstream.lock（manual_edits=true），本用例即闭环。",
+      "counter_examples": "17/17",
       "command": "python scripts/quality/ac2_case_probe.py --item AC2-04"
     },
     {
@@ -219,43 +234,44 @@
       "doc_line": 30,
       "criterion": "前置当前gate/扫描基线齐；334.py逐文件归类不重复，资源另账；coverage旧/新文件清单保持first-party口径，_vendor显式omit且ported仍受检，THS自研仍覆盖；以1071解释复算，counterfact有效",
       "summary": "搬迁前后零依赖/coverage/安全/质量债务身份一致；版本漂移显式记为 ENV_BLOCKED。",
-      "state": "gap",
+      "state": "blocked_leg",
       "offline_state": "holds_offline",
-      "reason": "failed: toolchain preflight is not ENV_BLOCKED; ported security evidence validates against the shipped root",
+      "reason": "pre/post-move identities recompute to the same numbers",
       "missing_legs": [
         [
           "archive_field",
           "coverage 新旧文件清单逐文件对照需要 test-cov 成员（约 400s）"
-        ],
-        [
-          "warehouse",
-          "bandit 重跑需要新的档案目录，本轮明令不运行 make security-ported"
         ]
       ],
       "readings": [
         "baseline_scope=opendata,opendata/data/providers/akshare/_vendor,opendata_client",
-        "baseline_scope_sum=637",
+        "baseline_scope_sum=638",
         "census_identity_holds=True",
         "coverage_omits_vendor=True",
         "coverage_source=['opendata']",
         "declared_scope=opendata,opendata/data/providers/akshare/_vendor,opendata_client",
         "direct_http_ported_pin=1071",
         "empty_scope_buckets=0",
-        "ported_security_declares_relocation=True",
+        "ported_security_archive_round=C74",
+        "ported_security_carried_round=C65",
+        "ported_security_declares_identity=True",
         "ported_security_detail=-",
-        "ported_security_issue_codes=scan-finding-path-invalid,scan-source-current-mismatch,scan-stale,source-tree-relocated,triage-source-current-mismatch,triage-stale",
-        "ported_security_issue_count=1053",
-        "ported_security_recorded_root=opendata_http",
-        "preflight_exit=1",
-        "preflight_issues=2",
-        "preflight_status=ENV_BLOCKED",
+        "ported_security_identity_rows=1048",
+        "ported_security_issue_codes=-",
+        "ported_security_issue_count=0",
+        "ported_security_recorded_root=opendata/data/providers/akshare/_vendor",
+        "ported_security_scanned_root=opendata/data/providers/akshare/_vendor",
+        "ported_security_scanned_rows=1048",
+        "preflight_exit=0",
+        "preflight_issues=0",
+        "preflight_status=PASS",
         "vendor_file_count=325",
-        "walker_count=637",
-        "walker_detail=opendata=310, opendata/data/providers/akshare/_vendor=325, opendata_client=2",
+        "walker_count=638",
+        "walker_detail=opendata=311, opendata/data/providers/akshare/_vendor=325, opendata_client=2",
         "zero_dep_exit=0"
       ],
-      "repair": "在冻结干净树上跑 test-cov 与安全档案，再逐文件对照清单。",
-      "counter_examples": "7/7",
+      "repair": "本轮已把 bandit 重扫到 docs/evidence/C74（ported_security_evidence_build，档案带 24h 窗口，下一轮验收要重跑同一个工具而不是沿用这份）；剩下的是在冻结干净树上跑 test-cov 成员，再逐文件对照 coverage 清单。",
+      "counter_examples": "8/8",
       "command": "python scripts/quality/ac2_case_probe.py --item AC2-07"
     },
     {
@@ -336,8 +352,8 @@
         ]
       ],
       "readings": [
-        "contract_test_files=test_cboe_engine_provider.py,test_provider_engine_contract.py,test_provider_model_contracts.py",
-        "contract_test_functions=90",
+        "contract_test_files=test_cboe_engine_provider.py,test_provider_engine_contract.py,test_provider_engine_decoders.py,test_provider_model_contracts.py",
+        "contract_test_functions=129",
         "dev_done=2",
         "dev_done_label=0",
         "e2e_marker_declared=True",
@@ -693,23 +709,18 @@
       "doc_line": 45,
       "criterion": "配额/重试有界、永久错误不重试、raw响应可诊断且脱敏；关键风险处置有语义证据",
       "summary": "请求/安全债务：超时、限流与重试有界，raw 响应可诊断，TLS/解析风险有语义证据。",
-      "state": "gap",
+      "state": "holds_offline",
       "offline_state": "holds_offline",
-      "reason": "failed: current ported security evidence validates",
-      "missing_legs": [
-        [
-          "archive_field",
-          "重生成 ported bandit/triage 档案需要 bandit 重跑；本轮明令不运行 make security-ported"
-        ]
-      ],
+      "reason": "bounded requests and a re-validated security archive",
+      "missing_legs": [],
       "readings": [
         "attempt_bounds=3",
         "direct_http_ported_pin=1071",
         "engine_timeout_applied=True",
         "engine_timeout_constant=True",
         "first_party_tls_disable=0",
-        "ported_security_detail=Issue(code='scan-finding-path-invalid', message='Bandit finding is outside the current source file set'),Issue(code='scan-source-current-mismatch', message='sca",
-        "ported_security_issue_count=1053",
+        "ported_security_detail=-",
+        "ported_security_issue_count=0",
         "raw_diagnosis_codes=13",
         "retry_gate_files=opendata/data/http_client.py,opendata/data/providers/ths/transport/http_client.py",
         "retryability_gates=2",
@@ -718,7 +729,7 @@
         "triage_archive_present=True",
         "vendor_tls_disable=79"
       ],
-      "repair": "把安全校验器指向 vendored 身份，并把 bandit 输出写到本波新目录（不覆盖 A2）。",
+      "repair": "档案面已由 scripts/quality/ported_security_evidence_build.py 重扫并逐条结转上一轮审阅（写进本波新目录，不覆盖 A2/C65）；下一轮验收重跑同一个工具，而不是放宽窗口。",
       "counter_examples": "8/8",
       "command": "python scripts/quality/ac2_case_probe.py --item AC2-22"
     },
@@ -809,8 +820,8 @@
         ]
       ],
       "readings": [
-        "dirty_files=1",
-        "evidence_case_dirs=82",
+        "dirty_files=32",
+        "evidence_case_dirs=83",
         "gate_exit_line=absent",
         "gate_member_runs=0",
         "gate_members_declared=17",
@@ -818,7 +829,7 @@
         "gate_record_path=absent",
         "gate_records_same_tree=0",
         "gate_records_total=66",
-        "head=185c6a8",
+        "head=31acd14",
         "inventory_status=\"PASS\"",
         "latest_record_any_tree=docs/evidence/C73/gate-run1-failed-a2-ratchet-acceptance.txt",
         "record_non_evidence_diff=-1",

@@ -16,7 +16,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path, PurePosixPath
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 if TYPE_CHECKING:
     from types import ModuleType
@@ -24,11 +24,16 @@ if TYPE_CHECKING:
 PORT_ROOT = "opendata_http"
 PORT_MANIFEST_REL = f"{PORT_ROOT}/manifest.json"
 UPSTREAM_LOCK_REL = f"{PORT_ROOT}/upstream.lock"
-SCOPE_INVENTORY_REL = "docs/evidence/C65/port-scope-manifest.json"
+#: The per-round batch record lives with the round that re-derived it, so the audit reads the
+#: newest issue instead of a path frozen at C65: the ported bytes legitimately changed when the
+#: port root was renamed, and a record that can only ever be right about one historical snapshot
+#: would report a live, replay-reproduced tree as drifted forever.
+SCOPE_INVENTORY_NAME: Final = "port-scope-manifest.json"
+SCOPE_INVENTORY_DIR: Final = "docs/evidence"
+SCOPE_INVENTORY_GLOB: Final = "C*/port-scope-manifest.json"
 IMPLEMENTATION_PLAN_REL = "docs/迭代计划/迭代1-重构数据中台/实施计划.md"
 REQUIREMENTS_REL = "docs/迭代计划/迭代1-重构数据中台/需求文档.md"
 EXPECTED_UPSTREAM_COMMIT = "c4f6a631c259783dbc2507b6b27d179b3e88079d"
-BATCH_FIELD = f"{SCOPE_INVENTORY_REL}#files.batch"
 
 A2_1_FUNCTION_ENTRYPOINTS = (
     ("stock_zh_a_hist", "akshare/stock_feature/stock_hist_em.py"),
@@ -116,6 +121,7 @@ class PortScopeInputs:
     port_manifest: object
     implementation_plan: str
     requirements: str
+    inventory_rel: str = "-"
 
 
 @dataclass(frozen=True)
@@ -126,6 +132,7 @@ class PortScopeAudit:
     checked_paths: int
     python_paths: int
     resource_paths: int
+    inventory_rel: str = "-"
 
     @property
     def valid(self) -> bool:
@@ -135,7 +142,9 @@ class PortScopeAudit:
     @property
     def batch_field(self) -> str:
         """The field's exact source path, exposed only after a complete validation."""
-        return BATCH_FIELD if self.valid else "-"
+        if not self.valid or self.inventory_rel == "-":
+            return "-"
+        return f"{self.inventory_rel}#files.batch"
 
     @property
     def problem_summary(self) -> str:
@@ -220,6 +229,49 @@ def _current_ported_file(port_root: Path, historical_relative_path: str) -> Path
     return candidate
 
 
+def scope_inventory_rel(root: Path) -> str:
+    """Repository-relative path of the newest archived batch-scope record.
+
+    Raises:
+        PortScopePathError: When no round has archived one.
+    """
+    matches = sorted((root / SCOPE_INVENTORY_DIR).glob(SCOPE_INVENTORY_GLOB))
+    if not matches:
+        raise PortScopePathError(f"no archive matches {SCOPE_INVENTORY_DIR}/{SCOPE_INVENTORY_GLOB}")
+    newest = max(matches, key=_round_order)
+    return newest.relative_to(root).as_posix()
+
+
+def _round_order(path: Path) -> tuple[int, str]:
+    """Numeric round stem so ``C9`` sorts before ``C74``, with the stem as a tiebreaker."""
+    stem = path.parent.name
+    digits = "".join(character for character in stem if character.isdigit())
+    return (int(digits) if digits else -1, stem)
+
+
+@lru_cache(maxsize=1)
+def _port_metadata() -> frozenset[str]:
+    """The vendor-tree documents that upstream's lock cannot carry a hash for."""
+    repo_root = Path(__file__).resolve().parents[2]
+    module_path = repo_root / "scripts/codemod/port_module.py"
+    if not module_path.is_file():
+        raise PortScopePathError("scripts/codemod/port_module.py is missing")
+    spec = importlib.util.spec_from_file_location("opendata_port_scope_port_module", module_path)
+    if spec is None or spec.loader is None:
+        raise PortScopePathError("scripts/codemod/port_module.py cannot be loaded")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    try:
+        spec.loader.exec_module(module)
+    except Exception as exc:
+        sys.modules.pop(spec.name, None)
+        raise PortScopePathError(f"scripts/codemod/port_module.py failed to load: {exc}") from exc
+    value = module.__dict__.get("UNLOCKED_METADATA")
+    if not isinstance(value, frozenset) or not value:
+        raise PortScopePathError("port_module.UNLOCKED_METADATA is not a non-empty frozenset")
+    return value
+
+
 def load_port_scope_inputs(root: Path) -> PortScopeInputs:
     """Read the current evidence, upstream lock, port manifest, and scope documents."""
 
@@ -238,13 +290,15 @@ def load_port_scope_inputs(root: Path) -> PortScopeInputs:
 
     upstream_lock = read_current_source_json(UPSTREAM_LOCK_REL)
     port_manifest = read_current_source_json(PORT_MANIFEST_REL)
-    inventory = read_json(SCOPE_INVENTORY_REL)
+    inventory_rel = scope_inventory_rel(root)
+    inventory = read_json(inventory_rel)
     return PortScopeInputs(
         inventory=inventory,
         upstream_lock=upstream_lock,
         port_manifest=port_manifest,
         implementation_plan=(root / IMPLEMENTATION_PLAN_REL).read_text(encoding="utf-8"),
         requirements=(root / REQUIREMENTS_REL).read_text(encoding="utf-8"),
+        inventory_rel=inventory_rel,
     )
 
 
@@ -275,21 +329,22 @@ def validate_port_scope(root: Path, inputs: PortScopeInputs) -> PortScopeAudit:
     inventory = _as_mapping(inputs.inventory)
     lock = _as_mapping(inputs.upstream_lock)
     port_manifest = _as_mapping(inputs.port_manifest)
+    inventory_rel = inputs.inventory_rel
     if inventory is None:
-        problems.append("C65 scope inventory is not a JSON object")
+        problems.append("scope inventory is not a JSON object")
     if lock is None:
         problems.append("upstream.lock is not a JSON object")
     if port_manifest is None:
         problems.append("ported manifest is not a JSON object")
     if inventory is None or lock is None or port_manifest is None:
-        return _audit_result(problems, 0, 0, 0)
+        return _audit_result(problems, 0, 0, 0, inventory_rel)
 
     lock_rows = _rows(lock.get("files"), UPSTREAM_LOCK_REL, problems)
     port_files = _rows(port_manifest.get("files"), f"{PORT_MANIFEST_REL}#files", problems)
     port_resources = _rows(
         port_manifest.get("resources"), f"{PORT_MANIFEST_REL}#resources", problems
     )
-    evidence_rows = _rows(inventory.get("files"), f"{SCOPE_INVENTORY_REL}#files", problems)
+    evidence_rows = _rows(inventory.get("files"), f"{inventory_rel}#files", problems)
     port_rows = dict(port_files)
     for path, row in port_resources.items():
         if path in port_rows:
@@ -302,9 +357,10 @@ def validate_port_scope(root: Path, inputs: PortScopeInputs) -> PortScopeAudit:
     evidence_paths = set(evidence_rows)
     try:
         port_root = current_port_root(root)
+        vendor_metadata = _port_metadata()
     except PortScopePathError as exc:
-        return _audit_result([f"current port root mapping failed: {exc}"], 0, 0, 0)
-    disk_paths = _disk_paths(port_root)
+        return _audit_result([f"port layout inputs failed: {exc}"], 0, 0, 0, inventory_rel)
+    disk_paths = _disk_paths(port_root, vendor_metadata)
     for label, actual in (
         ("ported manifest", port_paths),
         ("scope inventory", evidence_paths),
@@ -333,11 +389,11 @@ def validate_port_scope(root: Path, inputs: PortScopeInputs) -> PortScopeAudit:
     port_commit = port_upstream.get("commit")
     evidence_commit = inventory.get("upstream_commit")
     if not (lock_commit == port_commit == evidence_commit == EXPECTED_UPSTREAM_COMMIT):
-        problems.append("upstream commit differs across lock, port manifest, and C65 inventory")
+        problems.append("upstream commit differs across lock, port manifest, and scope inventory")
     if lock.get("version") != 1 or port_manifest.get("version") != 1:
         problems.append("upstream.lock or port manifest version is not 1")
     if inventory.get("schema_version") != 1:
-        problems.append("C65 scope inventory schema_version is not 1")
+        problems.append("scope inventory schema_version is not 1")
 
     expected_batch_modules = _requirement_batch_modules(
         inputs.implementation_plan, inputs.requirements, problems
@@ -352,7 +408,11 @@ def validate_port_scope(root: Path, inputs: PortScopeInputs) -> PortScopeAudit:
         problems=problems,
     )
     return _audit_result(
-        problems, len(lock_paths & disk_paths), len(python_paths), len(resource_paths)
+        problems,
+        len(lock_paths & disk_paths),
+        len(python_paths),
+        len(resource_paths),
+        inventory_rel,
     )
 
 
@@ -399,15 +459,14 @@ def _safe_relative_path(value: object) -> str | None:
     return value
 
 
-def _disk_paths(port_root: Path) -> set[str]:
-    """List actual port payload files, excluding only the two inventory metadata files."""
+def _disk_paths(port_root: Path, vendor_metadata: frozenset[str]) -> set[str]:
+    """List actual port payload files, excluding only the declared tree metadata documents."""
     if not port_root.is_dir():
         return set()
-    ignored = {"manifest.json", "upstream.lock"}
     return {
         path.relative_to(port_root).as_posix()
         for path in port_root.rglob("*")
-        if path.is_file() and path.name not in ignored and "__pycache__" not in path.parts
+        if path.is_file() and path.name not in vendor_metadata and "__pycache__" not in path.parts
     }
 
 
@@ -701,7 +760,7 @@ def _validate_rows(
         if disk_sha != ported_sha:
             problems.append(f"disk hash differs from port manifest for {path}")
         if disk_sha != inventory_port_sha:
-            problems.append(f"disk hash differs from C65 inventory for {path}")
+            problems.append(f"disk hash differs from archived inventory for {path}")
 
 
 def _is_sha256(value: object) -> bool:
@@ -710,7 +769,11 @@ def _is_sha256(value: object) -> bool:
 
 
 def _audit_result(
-    problems: list[str], checked_paths: int, python_paths: int, resource_paths: int
+    problems: list[str],
+    checked_paths: int,
+    python_paths: int,
+    resource_paths: int,
+    inventory_rel: str = "-",
 ) -> PortScopeAudit:
     """Return a stable unique finding list and recomputed path counts."""
     return PortScopeAudit(
@@ -718,4 +781,5 @@ def _audit_result(
         checked_paths=checked_paths,
         python_paths=python_paths,
         resource_paths=resource_paths,
+        inventory_rel=inventory_rel,
     )

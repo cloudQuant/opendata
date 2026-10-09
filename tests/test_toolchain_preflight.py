@@ -337,3 +337,31 @@ def test_unresolvable_path_cli_is_rejected_before_run(tmp_path: Any, monkeypatch
         )
         is None
     )
+
+
+def test_unactivated_base_interpreter_is_verified_by_conda_info_base() -> None:
+    """A gate shell exports no CONDA_* variables; conda itself must still be able to prove base."""
+    project, ratchet, versions = _metadata()
+    runtime = _runtime(versions)
+    runtime["interpreter"]["conda_default_env"] = None
+    runtime["interpreter"]["conda_prefix"] = None
+    runtime["interpreter"]["conda_base_prefix"] = runtime["interpreter"]["prefix"]
+
+    report = evaluate_toolchain(project, ratchet, runtime)
+
+    assert report["status"] == "PASS", report["issues"]
+    assert report["interpreter"]["base_route"] == "conda-info-base"
+
+
+def test_conda_info_base_naming_another_prefix_is_environment_blocked() -> None:
+    """The fallback route has to be able to differ, or it is a rubber stamp."""
+    project, ratchet, versions = _metadata()
+    runtime = _runtime(versions)
+    runtime["interpreter"]["conda_default_env"] = None
+    runtime["interpreter"]["conda_prefix"] = None
+    runtime["interpreter"]["conda_base_prefix"] = "/opt/anaconda3/envs/other"
+
+    report = evaluate_toolchain(project, ratchet, runtime)
+
+    codes = {issue["code"] for issue in report["issues"]}
+    assert {"CONDA_ENV_MISMATCH", "BASE_PREFIX_MISMATCH"} <= codes

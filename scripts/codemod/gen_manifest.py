@@ -23,7 +23,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from scripts.codemod.port_module import PORTED_ROOT, UpstreamLock  # noqa: E402
+from scripts.codemod.port_module import PORTED_ROOT, UNLOCKED_METADATA, UpstreamLock  # noqa: E402
 
 MANIFEST_PATH = PORTED_ROOT / "manifest.json"
 
@@ -62,7 +62,7 @@ def generate_manifest(
         if not path.is_file() or "__pycache__" in path.parts:
             continue
         rel = path.relative_to(ported_root).as_posix()
-        if path.name in {"upstream.lock", "manifest.json"}:
+        if path.name in UNLOCKED_METADATA:
             continue
         digest = sha256_bytes(path.read_bytes())
         record = lock.files.get(rel)

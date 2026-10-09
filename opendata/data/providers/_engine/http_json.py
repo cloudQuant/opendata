@@ -71,10 +71,17 @@ class ProviderEngineError(RuntimeError):
 
 @dataclass(frozen=True)
 class HttpResponse:
-    """A status code and a decoded JSON document."""
+    """A status code, the document a JSON body parsed into, and the raw body a decoder reads.
+
+    ``payload`` is the additive seam for :mod:`.decoders`: a JSON declaration never looks at it,
+    and a delimited declaration never looks at ``document``. A test transport supplies whichever of
+    the two the declaration asks for, so no case has to fake an HTTP client to hand the engine a
+    CSV or a zip body.
+    """
 
     status: int
     document: Any
+    payload: bytes | str | None = None
 
 
 #: ``(url, params, *, timeout, source, headers) -> HttpResponse``; the test seam for I/O.
@@ -337,8 +344,15 @@ def _http_get_json(
     timeout: float,
     source: str,
     headers: Mapping[str, str] | None = None,
+    decoder: str = "json",
 ) -> HttpResponse:
-    """GET one JSON document through the governed client; patched in tests."""
+    """GET one response body through the governed client; patched in tests.
+
+    ``decoder`` is ``"json"`` for every declaration that predates the body decoders, and that path
+    is unchanged: the text is parsed, and a body that is not JSON is ``..._BAD_RESPONSE``. A
+    delimited decoder keeps the bytes whole on :attr:`HttpResponse.payload` for
+    :mod:`.decoders` to read, because its body was never going to parse as JSON.
+    """
     from opendata.data.http_client import HttpFetchError, get_shared_http_client
 
     try:
@@ -353,12 +367,54 @@ def _http_get_json(
         raise ProviderEngineError(
             f"{source.upper()}_HTTP_ERROR", status=exc.status, url=exc.url
         ) from exc
+    if decoder != "json":
+        return HttpResponse(response.status_code, None, payload=response.content)
     try:
         return HttpResponse(response.status_code, json.loads(response.text))
     except json.JSONDecodeError:
         raise ProviderEngineError(
             f"{source.upper()}_BAD_RESPONSE", status=response.status_code, url=url
         ) from None
+
+
+def _decode_document(spec: ModelSpec, response: HttpResponse, url: str) -> Any:  # noqa: ANN401
+    """Return the record document the declared decoder reads out of one response.
+
+    A JSON declaration gets ``response.document`` back -- the same object, from the same field, as
+    before decoders existed. Anything else is decoded from the bytes the body actually was.
+    """
+    if not spec.decoder.delimited:
+        return response.document
+    from opendata.data.providers._engine.decoders import decode_response
+
+    return decode_response(spec, response, url=url)
+
+
+def _production_transport(spec: ModelSpec) -> HttpGet:
+    """Return the send seam a declaration's body shape needs.
+
+    The wrapper resolves ``_http_get_json`` at call time, so a suite that replaces the module
+    attribute -- the engine's only I/O seam -- keeps working for a delimited declaration: the fake
+    is called with the plain ``(url, params, *, timeout, source, headers)`` signature it already
+    implements and supplies the raw body itself. Only the governed client is told which shape to
+    read, and no declaration can route a test onto a socket.
+    """
+    if not spec.decoder.delimited:
+        return _http_get_json
+
+    def _get(
+        url: str,
+        params: dict[str, str],
+        *,
+        timeout: float,
+        source: str,
+        headers: Mapping[str, str] | None = None,
+    ) -> HttpResponse:
+        return _http_get_json(
+            url, params, timeout=timeout, source=source, headers=headers, decoder=spec.decoder.kind
+        )
+
+    return _get
 
 
 def _classify_status(status: int, spec: ModelSpec, url: str) -> None:
@@ -473,7 +529,7 @@ def fetch_pages(
         base_params[spec.credential_query_key or "api_key"] = _credential_value(spec)
     url = f"{spec.base_url.rstrip('/')}{render_path(spec, query)}"
     headers = dict(spec.static_headers)
-    get: HttpGet = transport or _http_get_json
+    get: HttpGet = transport or _production_transport(spec)
     pages: list[object] = []
     collected = 0
     page_number = 1
@@ -492,7 +548,7 @@ def fetch_pages(
             headers=headers,
         )
         _classify_status(response.status, spec, url)
-        document = response.document
+        document = _decode_document(spec, response, url)
         rows = resolve_rows(document, spec.rows_pointer, spec)
         pages.append(document)
         collected += len(rows)

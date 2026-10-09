@@ -13,16 +13,16 @@ from typing import Any
 
 from scripts.quality.source_layout import VENDOR_ROOT
 
-EVIDENCE_DIR = Path("docs/evidence/C65")
+EVIDENCE_DIR = Path("docs/evidence/C74")
 SCAN_REL = EVIDENCE_DIR / "ported-bandit-scan.json"
 TRIAGE_REL = EVIDENCE_DIR / "ported-security-triage.json"
-PORT_ROOT = "opendata_http"
-#: Where ``PORT_ROOT``'s files live since C66. The evidence is read in the identity space it was
-#: written in, so this is only used to name the cause when the recorded root is gone -- a reader
-#: chasing "ported source tree is missing" would be looking for a tree that ships under another
-#: path, while the real finding is that this scan and triage predate the relocation.
-PORT_ROOT_NOW = VENDOR_ROOT
-EXPECTED_ROUND = "C65"
+#: The root the bundle is read in. C65 wrote its scan under the retired ``opendata_http`` name, and
+#: every clause below reads paths in that identity space. A relocation of the ported tree -- or a
+#: bundle older than ``MAX_EVIDENCE_AGE`` -- has to be answered by re-running
+#: ``scripts/quality/ported_security_evidence_build.py`` for the new round, never by loosening a
+#: check.
+PORT_ROOT = VENDOR_ROOT
+EXPECTED_ROUND = "C74"
 EXPECTED_SCANNER_VERSION = "1.9.4"
 EXPECTED_SOURCE_HASH_ALGORITHM = "sorted relative POSIX path UTF-8 + NUL + file bytes + NUL"
 EXPECTED_REVIEW_AUTHORIZATION = "用户直接回复：你帮我直接审阅"
@@ -176,17 +176,7 @@ def _validate_current_source(
 ) -> tuple[dict[str, str], str | None, int, int]:
     port_root = root / PORT_ROOT
     if not port_root.is_dir():
-        relocated = (root / PORT_ROOT_NOW).is_dir()
-        _add_issue(
-            issues,
-            "source-tree-relocated" if relocated else "source-tree-missing",
-            (
-                f"this evidence scans {PORT_ROOT}, which C66 moved to {PORT_ROOT_NOW}: the scan "
-                "and triage have to be re-run before they can certify the shipped tree"
-                if relocated
-                else "ported source tree is missing"
-            ),
-        )
+        _add_issue(issues, "source-tree-missing", f"ported source tree is missing: {PORT_ROOT}")
         return {}, None, 0, 0
     actual_paths = sorted(
         path.relative_to(root).as_posix()
@@ -608,7 +598,7 @@ def _validate_triage(
 
 
 def validate(root: Path, *, now: datetime | None = None) -> ValidationResult:
-    """Validate C65 scan and triage against the current ``opendata_http`` source tree."""
+    """Validate ``EXPECTED_ROUND``'s scan and triage against the tree at ``PORT_ROOT``."""
     current = _now_utc(now)
     issues: list[Issue] = []
     scan_path = root / SCAN_REL

@@ -209,6 +209,7 @@ class PortScopeAuditResult(Protocol):
     problems: tuple[str, ...]
     batch_field: str
     problem_summary: str
+    inventory_rel: str
 
 
 class ProbeError(RuntimeError):
@@ -2524,8 +2525,8 @@ PORTED_HTTP_VERBS: Final = frozenset({"get", "post", "put", "delete", "head", "p
 PORTED_PROBE_PATH: Final = f"{PORTED_ROOT}/stock/cons.py"
 
 
-def run_split(argv: Sequence[str]) -> tuple[int, str]:
-    """Run a literal command and return ``(exit, stdout)``, keeping stderr out of the payload.
+def run_split_stderr(argv: Sequence[str]) -> tuple[int, str, str]:
+    """Run a literal command and return ``(exit, stdout, stderr)``.
 
     :func:`run_argv` merges the two streams because a person reading a red tool wants both. The
     census helpers below parse ``--output-format=json``, where one progress line on stderr would
@@ -2542,7 +2543,13 @@ def run_split(argv: Sequence[str]) -> tuple[int, str]:
         )
     except FileNotFoundError:
         raise ProbeError(f"(not installed): {argv[0]}") from None
-    return proc.returncode, proc.stdout
+    return proc.returncode, proc.stdout, proc.stderr
+
+
+def run_split(argv: Sequence[str]) -> tuple[int, str]:
+    """Run a literal command and return ``(exit, stdout)``, keeping stderr out of the payload."""
+    code, out, _stderr = run_split_stderr(argv)
+    return code, out
 
 
 def py_files_under(root: str) -> list[str]:
@@ -6106,6 +6113,49 @@ QUERY_DIGEST_KEY: Final = "query_module_sha"
 #: The two packages the criterion requires to be absent.
 UPSTREAM_PACKAGES: Final = ("akshare", "openbb")
 
+#: ``AC-16|07`` runs its P0 selection in a child interpreter whose top-level ``akshare``/``openbb``
+#: are refused, so "an environment without these packages" is a property of the run rather than a
+#: property of whatever the developer happens to have installed. The hook first asks for each named
+#: package and must be turned down (positive control), then the whole selection runs with zero
+#: refused attempts and zero upstream modules left in ``sys.modules``. ``import_module`` is patched
+#: alongside ``__import__`` because it bypasses the builtin; ``find_spec`` is left alone so a
+#: package-probe that decides a skip still returns instead of raising. The child echoes one
+#: ``BLOCKFACE {json}`` line so the tally and the block face come from the same subprocess.
+AC16_BLOCKED_PYTEST: Final = (
+    "import builtins, importlib, importlib.util, json, sys\n"
+    "pkgs = sys.argv[1].split(',')\n"
+    "selector = sys.argv[2]\n"
+    "installed = [p for p in pkgs if importlib.util.find_spec(p) is not None]\n"
+    "blocked = []\n"
+    "real_import = builtins.__import__\n"
+    "def guard(name, *args, **kwargs):\n"
+    "    if name.partition('.')[0] in pkgs:\n"
+    "        blocked.append(name)\n"
+    "        raise ImportError('intentional top-level block: ' + name)\n"
+    "    return real_import(name, *args, **kwargs)\n"
+    "builtins.__import__ = guard\n"
+    "real_import_module = importlib.import_module\n"
+    "def import_module(name, package=None):\n"
+    "    if name.partition('.')[0] in pkgs:\n"
+    "        blocked.append(name)\n"
+    "        raise ImportError('intentional top-level block: ' + name)\n"
+    "    return real_import_module(name, package)\n"
+    "importlib.import_module = import_module\n"
+    "for pkg in pkgs:\n"
+    "    try:\n        __import__(pkg)\n    except ImportError:\n        pass\n"
+    "control_hits = len(blocked)\nblocked.clear()\n"
+    "import pytest\n"
+    "code = int(pytest.main(['tests', '-m', selector, '--no-header', '-q', '--no-cov',\n"
+    "                        '-p', 'no:cacheprovider']))\n"
+    "leaks = sorted(m for m in sys.modules if m.partition('.')[0] in pkgs)\n"
+    "face = {'pkgs': len(pkgs), 'control_hits': control_hits, 'attempted': len(blocked),\n"
+    "        'attempted_names': sorted(set(blocked))[:8], 'leaks': len(leaks),\n"
+    "        'installed': len(installed), 'installed_names': installed,\n"
+    "        'leak_names': leaks[:8], 'exit': code}\n"
+    "print('BLOCKFACE ' + json.dumps(face))\n"
+    "sys.exit(code)\n"
+)
+
 
 def zero_dep_snapshot() -> tuple[ModuleType, list[Any], Facts]:
     """Read the current policy, scan findings and baseline without hiding stale evidence."""
@@ -6328,29 +6378,35 @@ def newest_round_archive(basename: str) -> tuple[str, str]:
 
 
 def measure_ac16_07(ctx: Context) -> Facts:
-    """Run the P0 domain selection here, then read the newest archived clean-venv run."""
+    """Run the P0 selection where upstream top-level imports are refused, then read the archive."""
     ini = ctx.read("pytest.ini")
     units = integration_units_now()
     modules = sorted({unit.split("::")[0] for unit in units})
     text = "".join(ctx.read(rel) for rel in modules)
     domains = p0_domains_in_migration()
     missing = [domain for domain in domains if domain not in text]
-    code, out = run_argv(
+    code, out, err = run_split_stderr(
         [
             sys.executable,
-            "-m",
-            "pytest",
-            "tests",
-            "-m",
+            "-B",
+            "-c",
+            AC16_BLOCKED_PYTEST,
+            ",".join(UPSTREAM_PACKAGES),
             P0_INTEGRATION_SELECTOR,
-            "--no-header",
-            "-q",
-            "--no-cov",
-            "-p",
-            "no:cacheprovider",
         ]
     )
-    counts = tally(out)
+    face_line = next((line for line in out.splitlines() if line.startswith("BLOCKFACE ")), "")
+    if not face_line:
+        tail = [line for line in err.splitlines() if line.strip()]
+        raise ProbeError(
+            f"blocked pytest run printed no BLOCKFACE line (exit {code}): "
+            f"{tail[-1] if tail else '(no output)'}"
+        )
+    face = cast("dict[str, Any]", json.loads(face_line[len("BLOCKFACE ") :]))
+    # tally() reads pytest's own last line, so the face line the child appends after the run
+    # has to come out of the text first -- otherwise the summary counts read as zero.
+    pytest_out = "\n".join(line for line in out.splitlines() if not line.startswith("BLOCKFACE "))
+    counts = tally(pytest_out)
     archive_rel, archive_dir = newest_round_archive(CLEAN_RUN_BASENAME)
     evidence = ctx.read(archive_rel) if archive_rel != "-" else ""
     section = evidence.split(CLEAN_SECTION, 1)[1] if CLEAN_SECTION in evidence else evidence
@@ -6374,8 +6430,21 @@ def measure_ac16_07(ctx: Context) -> Facts:
         "failed": count(counts.get("failed", 0)),
         "skipped": count(counts.get("skipped", 0)),
         "deselected": count(counts.get("deselected", 0)),
-        "clean_here": flag(
-            all(importlib.util.find_spec(name) is None for name in UPSTREAM_PACKAGES)
+        "block_pkgs": count(int(face.get("pkgs", 0))),
+        "block_control_hits": count(int(face.get("control_hits", 0))),
+        "block_attempted": count(int(face.get("attempted", 0))),
+        "block_attempt_names": ", ".join(face.get("attempted_names") or []) or "-",
+        "block_leaks": count(int(face.get("leaks", 0))),
+        "block_leak_names": ", ".join(face.get("leak_names") or []) or "-",
+        "block_installed": count(int(face.get("installed", 0))),
+        "block_installed_names": ", ".join(face.get("installed_names") or []) or "-",
+        # 判定读的是「这一遍跑在没有顶层上游包的解释器里」：钩子先把两个包各拒一次（正向对照），
+        # 整套选择式跑完后既没有一次被拒的记录、sys.modules 里也没留下上游模块。
+        "blocked_here": flag(
+            int(face.get("control_hits", 0)) == len(UPSTREAM_PACKAGES)
+            and int(face.get("attempted", 0)) == 0
+            and int(face.get("leaks", 0)) == 0
+            and int(face.get("exit", -1)) == code
         ),
         "clean_archive": archive_rel,
         "archive_round": declared_round,
@@ -6404,7 +6473,8 @@ def judge_ac16_07(facts: Facts) -> Verdict:
         and number(facts["passed"]) > 0
         and facts["failed"] == "0"
         and facts["skipped"] == "0"
-        and facts["clean_here"] == "yes"
+        and facts["blocked_here"] == "yes"
+        and facts["block_pkgs"] == count(len(UPSTREAM_PACKAGES))
         and facts["archive_exit"] == "0"
         and facts["archive_blind"] == "0"
         and facts["archive_self_written"] == "yes"
@@ -6416,10 +6486,16 @@ def judge_ac16_07(facts: Facts) -> Verdict:
         f"{facts['unit_names']}",
         f"P0 域覆盖：A4.1 迁移的 {facts['domains']} 个域全部被这组用例点到，缺 = "
         f"{facts['domains_missing']}（{facts['domain_names']}）",
-        f"本机这一遍（解释器内 akshare/openbb 均不可导入 = {facts['clean_here']}）："
-        f"exit={facts['run_exit']}，{facts['passed']} passed / {facts['failed']} failed / "
-        f"{facts['skipped']} skipped；另有 {facts['deselected']} 条被选择式挡在外面"
-        "（含全部仓库 e2e）",
+        f"本机这一遍跑在顶层上游包被强制拦走的子解释器里（判定 = {facts['blocked_here']}）："
+        f"钩子先主动 import 这 {facts['block_pkgs']} 个包，"
+        f"被拒 {facts['block_control_hits']} 次（正向对照），"
+        f"随后整套选择式跑完：被尝试 {facts['block_attempted']} 次"
+        f"（{facts['block_attempt_names']}）、sys.modules 里留下 {facts['block_leaks']} 个"
+        f"（{facts['block_leak_names']}）；exit={facts['run_exit']}，"
+        f"{facts['passed']} passed / {facts['failed']} failed / {facts['skipped']} skipped；"
+        f"另有 {facts['deselected']} 条被选择式挡在外面（含全部仓库 e2e）",
+        f"本机其实装着这 {facts['block_pkgs']} 个上游包中的 {facts['block_installed']} 个"
+        f"（{facts['block_installed_names']}）—— 所以这一遍的缺席是被强制的，不是环境巧合",
         f"干净 venv 留档（读的是最新那一份：{facts['clean_archive']}，正文声明轮次 "
         f"{facts['archive_round']}，与所在目录一致 = {facts['archive_self_written']}）："
         f"CLEAN_RUN_EXIT={facts['archive_exit']}，"
@@ -6431,10 +6507,11 @@ def judge_ac16_07(facts: Facts) -> Verdict:
         ""
         if ok
         else "「P0 域集成测试」要么没有可指的名字（marker 没注册/没人用/某条 P0 域没被这组用例"
-        "点到），要么这一遍没全绿、或者跳过了（skip 不等于通过），要么当前解释器里上游包又变得可"
-        "导入，要么干净环境的留档不再覆盖现在这组标记模块（刻意的棘轮：给 P0 集成面加一个"
-        "模块，就得重跑一次那个只装声明依赖的 venv 并重留档），要么那份留档只是从上一轮"
-        "拷来的（正文声明的轮次标号对不上所在目录）"
+        "点到），要么这一遍没全绿、或者跳过了（skip 不等于通过），要么这一遍跑的解释器并没有把"
+        "顶层上游包拒掉（钩子没生效、跑的过程中又被尝试、或 sys.modules 里留下了上游模块 —— "
+        "那样这份绿分不清用的是搬运层还是真包），要么干净环境的留档不再覆盖现在这组标记模块"
+        "（刻意的棘轮：给 P0 集成面加一个模块，就得重跑一次那个只装声明依赖的 venv 并重留档），"
+        "要么那份留档只是从上一轮拷来的（正文声明的轮次标号对不上所在目录）"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
@@ -7017,16 +7094,10 @@ FIRST_PARTY_TREES: Final = ("opendata", "opendata_client", "scripts", "tests")
 SECURITY_PORTED_TARGET: Final = "security-ported"
 BANDIT_CONFIG: Final = "bandit.yaml"
 
+
 #: Imported in a child process so the callable face of the flat API is read from the same
 #: interpreter AC-16|07 proves carries no ``akshare``: an attribute the aggregator does not
 #: re-export is a function a first-party leg would fail to reach at routing time.
-PORTED_CALL_SNIPPET: Final = (
-    f"import sys, {PORTED_MODULE} as ak\n"
-    "missing = [n for n in sys.argv[1:] if not callable(getattr(ak, n, None))]\n"
-    "print('\\n'.join(f'MISSING:{n}' for n in missing))\n"
-)
-
-
 def manifest_entries(payload: dict[str, object], key: str) -> list[dict[str, object]]:
     """One of the manifest's entry lists, or a failure naming the shape that moved."""
     raw = payload.get(key)
@@ -7173,13 +7244,14 @@ def measure_ac5_01(ctx: Context) -> Facts:
         for path in base.rglob("*.py")
         if "__pycache__" not in path.parts
     )
+    unlocked = cast("frozenset[str]", script_module(PORT_MODULE_TOOL).UNLOCKED_METADATA)
     disk_other = sorted(
         path.relative_to(base).as_posix()
         for path in base.rglob("*")
         if path.is_file()
         and path.suffix != ".py"
         and "__pycache__" not in path.parts
-        and path.name not in ("manifest.json", "upstream.lock")
+        and path.name not in unlocked
     )
     listed_py = sorted(entry_path(entry) for entry in files)
     listed_res = sorted(entry_path(entry) for entry in resources)
@@ -7317,7 +7389,9 @@ def measure_ac5_02(ctx: Context) -> Facts:
         "port_scope_resources": count(int(scope_audit.resource_paths)),
         "port_scope_problems": count(len(scope_audit.problems)),
         "port_scope_problem_summary": str(scope_audit.problem_summary),
+        "scope_inventory_rel": str(scope_audit.inventory_rel),
         "tier_field": str(scope_audit.batch_field),
+        "tier_field_ok": flag(str(scope_audit.batch_field) != "-"),
     }
 
 
@@ -7329,7 +7403,7 @@ def judge_ac5_02(facts: Facts) -> Verdict:
         and facts["excluded_present"] == "0"
         and facts["scope_missing"] == "0"
         and facts["port_scope_valid"] == "yes"
-        and facts["tier_field"] != "-"
+        and facts["tier_field_ok"] == "yes"
     )
     readings = (
         f"搬运清单 {facts['manifest_files']} 个 py 文件，来自上游 {facts['package_count']} 个子包："
@@ -7345,7 +7419,8 @@ def judge_ac5_02(facts: Facts) -> Verdict:
         f"{facts['port_scope_checked']} 条：{facts['port_scope_python']} py + "
         f"{facts['port_scope_resources']} 资源；问题 {facts['port_scope_problems']}："
         f"{facts['port_scope_problem_summary']}）",
-        f"能读出 1A/1B 批次的机器字段 = {facts['tier_field']}",
+        f"能读出 1A/1B 批次的机器字段 = {facts['tier_field']}"
+        f"（核验读的是 {facts['scope_inventory_rel']} 那一份档案）",
     )
     reason = (
         ""
@@ -7353,7 +7428,7 @@ def judge_ac5_02(facts: Facts) -> Verdict:
         else (
             "AC-5|02 的搬运范围证据不完整：首方调用必须都有聚合导出；"
             "D9 点名和排除的子模块必须与清单一致，"
-            "并且 C65 批次清单要逐路径匹配当前 upstream.lock、port manifest、磁盘路径与 sha256；"
+            "并且本轮批次清单要逐路径匹配当前 upstream.lock、port manifest、磁盘路径与 sha256；"
             f"当前问题为 {facts['port_scope_problem_summary']}。"
             "批次按路径组描述实施范围，不推导或改写数据域优先级。"
         )
@@ -7437,19 +7512,21 @@ def judge_ac5_03(facts: Facts) -> Verdict:
 
 
 def measure_ac5_04(ctx: Context) -> Facts:
-    """Check the old root is gone, then reach the flat API from an interpreter without akshare."""
+    """Check the old root is gone, then reach the flat API from an interpreter without akshare.
+
+    The absence is *enforced* here rather than observed: this developer venv does have akshare
+    installed, so a face that merely asked ``find_spec`` was reporting whichever packages the
+    person running the gate happened to have, and it read the parent interpreter rather than the
+    one that imports the ported tree.
+    """
     root_dir = (REPO_ROOT / "akshare").is_dir()
     code, out = run_argv(["git", "ls-files", "akshare/"])
     tracked = sorted(line for line in out.splitlines() if line)
-    spec = importlib.util.find_spec("akshare")
-    import_code, import_out = run_argv([sys.executable, "-c", f"import {PORTED_MODULE}"])
     names = ported_call_targets()
-    call_code, call_out = run_argv([sys.executable, "-c", PORTED_CALL_SNIPPET, *names])
-    absent = sorted(
-        line.removeprefix("MISSING:")
-        for line in call_out.splitlines()
-        if line.startswith("MISSING:")
-    )
+    witness = runtime_witness("vendor_no_akshare", *names)
+    leaks = witness_list(witness, "leaks")
+    missing = witness_list(witness, "missing")
+    port_error = str(witness["port_import_error"])
     archive_rel, archive_dir = newest_round_archive(CLEAN_RUN_BASENAME)
     evidence = ctx.read(archive_rel) if archive_rel != "-" else ""
     declared = first_capture(evidence, r"^ARCHIVE_ROUND=(\S+)$")
@@ -7457,13 +7534,18 @@ def measure_ac5_04(ctx: Context) -> Facts:
         "root_dir": flag(root_dir),
         "tracked_under_root": count(len(tracked)),
         "tracked_names": ", ".join(tracked[:4]) or "-",
-        "spec": "absent" if spec is None else "present",
-        "import_exit": str(import_code),
-        "import_note": (import_out.strip().splitlines() or ["(no output)"])[-1][:100],
-        "call_targets": count(len(names)),
-        "call_probe_exit": str(call_code),
-        "callable_missing": count(len(absent)),
-        "callable_missing_names": ", ".join(absent[:4]) or "-",
+        "akshare_blocked": flag(
+            witness.get("hook_fired") is True and int(witness["control_hits"]) > 0
+        ),
+        "akshare_reached": count(int(witness["port_import_hits"])),
+        "akshare_leaks": count(len(leaks)),
+        "akshare_leak_names": ", ".join(leaks[:4]) or "-",
+        "interpreter_has_akshare": flag(witness.get("spec_present") is True),
+        "import_exit": "0" if port_error == "" else "1",
+        "import_note": port_error or "(import 成功)",
+        "call_targets": count(int(witness["targets"])),
+        "callable_missing": count(len(missing)),
+        "callable_missing_names": ", ".join(missing[:4]) or "-",
         "clean_archive": archive_rel,
         "archive_round": declared or "-",
         "archive_self_written": flag(bool(declared) and declared == archive_dir),
@@ -7474,34 +7556,40 @@ def measure_ac5_04(ctx: Context) -> Facts:
 
 
 def judge_ac5_04(facts: Facts) -> Verdict:
-    """``AC-5|04``: no ``akshare`` at the root or in the interpreter, and the legs still resolve."""
+    """``AC-5|04``: no root/index ``akshare``, and the legs resolve without top-level akshare."""
     ok = (
         facts["root_dir"] == "no"
         and facts["tracked_under_root"] == "0"
-        and facts["spec"] == "absent"
+        and facts["akshare_blocked"] == "yes"
+        and facts["akshare_reached"] == "0"
+        and facts["akshare_leaks"] == "0"
         and facts["import_exit"] == "0"
         and number(facts["call_targets"]) > 0
         and facts["callable_missing"] == "0"
-        and facts["archive_absent"] == "yes"
     )
     readings = (
         f"根目录 `akshare/` 在磁盘上 = {facts['root_dir']}，git 索引里该前缀下 "
         f"{facts['tracked_under_root']} 个文件：{facts['tracked_names']}",
-        f"本解释器 `importlib.util.find_spec('akshare')` = {facts['spec']}；"
-        f"`import {PORTED_MODULE}` exit={facts['import_exit']}（{facts['import_note']}）",
+        "执行见证：import hook 拦得住顶层 `akshare`"
+        f"（主动 import 被拒 = {facts['akshare_blocked']}），"
+        f"搬运层 `import {PORTED_MODULE}` exit={facts['import_exit']}（{facts['import_note']}），"
         f"首方代码取用的 {facts['call_targets']} 个端点函数逐个 `callable(getattr(...))`，"
-        f"取不到的 {facts['callable_missing']} 个：{facts['callable_missing_names']}"
-        f"（探针 exit {facts['call_probe_exit']}）",
+        f"取不到的 {facts['callable_missing']} 个：{facts['callable_missing_names']}",
+        f"搬运层导入期间顶层 `akshare` 被尝试 {facts['akshare_reached']} 次、"
+        f"留在 sys.modules 里 {facts['akshare_leaks']} 个：{facts['akshare_leak_names']}；"
+        f"本解释器其实装了 akshare = {facts['interpreter_has_akshare']}，"
+        "所以这份缺席是被强制的、不是环境巧合",
         f"干净 venv 侧证（{facts['clean_archive']}，ARCHIVE_ROUND={facts['archive_round']}，"
-        f"本轮自写 = {facts['archive_self_written']}）里 akshare 报 absent = "
-        f"{facts['archive_absent']}",
+        f"轮次自洽 = {facts['archive_self_written']}）里 akshare 报 absent = "
+        f"{facts['archive_absent']}；侧证只作旁证，判定读的是上面同解释器里的那条见证",
     )
     reason = (
         ""
         if ok
         else "「根目录 akshare/ 已删除；未安装 akshare 的环境中 P0 域函数可用」"
         "要的是这两句同时成立："
-        "根目录既不在磁盘也不在索引里、解释器也没有这个包，而搬运层的平面对外接口还能被腿解析到"
+        "根目录既不在磁盘也不在索引里，而一个顶层 akshare 被证明拦得住的解释器里，"
+        "搬运层能导入、首方代码取用的端点逐个可达、全程没有回落到顶层包"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
@@ -7738,13 +7826,20 @@ def measure_ac5_07(ctx: Context) -> Facts:
     if inserted_root:
         sys.path.insert(0, root_entry)
     try:
-        from scripts.quality.ported_security_evidence import SCAN_REL, validate
+        from scripts.quality.ported_security_evidence import SCAN_REL, TRIAGE_REL, validate
 
         security = validate(ctx.root)
     finally:
         if inserted_root:
             with suppress(ValueError):
                 sys.path.remove(root_entry)
+    scan_rel = str(SCAN_REL)
+    triage_rel = str(TRIAGE_REL)
+    scan_doc = json.loads(ctx.read(scan_rel)) if (ctx.root / scan_rel).is_file() else {}
+    triage_doc = json.loads(ctx.read(triage_rel)) if (ctx.root / triage_rel).is_file() else {}
+    carried = triage_doc.get("carried_from")
+    recorded_round = str(scan_doc.get("archive_round", "")) or "-"
+    archive_dir = scan_rel.split("/")[-2]
     measured = security.facts
     issue_codes = security.issues
     manifest_paths = {f"{PORTED_ROOT}/{path}" for path in listed_py}
@@ -7758,10 +7853,13 @@ def measure_ac5_07(ctx: Context) -> Facts:
     return {
         "target_ok": flag(bool(ported_recipe) and PORTED_ROOT in ported_recipe),
         "target_recipe": ported_recipe[:140] or "-",
-        "daily_excludes_ported": flag(PORTED_ROOT in exclude_dirs),
+        "daily_excludes_ported": flag(PORTED_ROOT in {d.rstrip("/") for d in exclude_dirs}),
         "bandit_exclude_dirs": ", ".join(exclude_dirs) or "-",
         "ported_files": count(len(ported_now)),
-        "archive": str(SCAN_REL),
+        "archive": scan_rel,
+        "archive_round": recorded_round,
+        "archive_round_in_dir": flag(recorded_round != "-" and recorded_round == archive_dir),
+        "carried_from_round": str((carried or {}).get("prior_round", "")) or "-",
         "security_evidence_valid": flag(security.valid),
         "security_issue_count": count(issue_count),
         "security_issue_summary": ", ".join(issue.code for issue in issue_codes[:8]) or "-",
@@ -7812,6 +7910,7 @@ def judge_ac5_07(facts: Facts) -> Verdict:
             facts["scanner_exit_consistent"] == "yes",
             facts["scan_errors"] == "0",
             facts["archive"] != "-",
+            facts["archive_round_in_dir"] == "yes",
             facts["scan_b_only"] == "yes",
             facts["scan_manifest_matches_tree"] == "yes",
             number(facts["scan_findings"]) > 0,
@@ -7835,7 +7934,9 @@ def judge_ac5_07(facts: Facts) -> Verdict:
         f"{BANDIT_CONFIG} 的 exclude_dirs（{facts['bandit_exclude_dirs']}）把搬运层排出去，"
         f"所以「含 B 层」的全量复核只能由这个专用目标承担 = {facts['daily_excludes_ported']}"
         "（质量规范 §4 的「每次同步一次」口径，不是逐提交记账）",
-        f"当前 C65 全量扫描与分组风险审阅证据 {facts['archive']} 由 validator 独立绑定 = "
+        f"本轮 {facts['archive_round']} 全量扫描与分组风险审阅证据 {facts['archive']}"
+        "（处置逐条结转自 "
+        f"{facts['carried_from_round']}）由 validator 独立绑定 = "
         f"{facts['security_evidence_valid']}（issue={facts['security_issue_count']}，"
         f"{facts['security_issue_summary']}）；Bandit {facts['archive_produced_by']}，"
         f"generated_at={facts['archive_generated_at']}，exit={facts['scanner_exit']} "
@@ -9888,9 +9989,163 @@ def judge_c64_gb_query(facts: Facts) -> Verdict:
     )
 
 
+# --------------------------------------------------------------------------- #
+# Executed runtime-binding witnesses
+# --------------------------------------------------------------------------- #
+
+#: Three binding faces used to grep a module's source for ``register_x()`` tokens. That reads how
+#: the code is *written*, not what it does: C74 made the provider facade lazy and all three greps
+#: flipped red while registration behaved identically, and a registration call that the runtime
+#: never needed could be deleted with the grep still green. Each witness instead runs the real
+#: registration in a fresh interpreter and reports what the registry ended up holding.
+_RUNTIME_WITNESSES: Final[dict[str, str]] = {
+    "registry": (
+        "import json\n"
+        "from opendata.data.providers import catalog\n"
+        "from opendata.data.registry import ProviderRegistry\n"
+        "registry = ProviderRegistry()\n"
+        "catalog.register_providers(registry)\n"
+        "caps = registry.capabilities()\n"
+        "sources = sorted({cap.source for cap in caps})\n"
+        "implemented = sorted(p.source for p in catalog.PROVIDERS if p.is_implemented)\n"
+        "order = sorted(p.source for p in catalog.registration_order())\n"
+        "print(json.dumps({"
+        "'capabilities': len(caps), 'sources': sources, 'implemented': implemented,"
+        "'uncovered': sorted(set(implemented) - set(sources)),"
+        "'phantom': sorted(set(sources) - set(implemented)),"
+        "'never_registered': sorted(set(implemented) - set(order))}))\n"
+    ),
+    "ths": (
+        "import json\n"
+        "from opendata.data.providers import catalog\n"
+        "from opendata.data.registry import ProviderRegistry\n"
+        "descriptor = catalog.get_provider('ths')\n"
+        "registry = ProviderRegistry()\n"
+        "catalog.register_provider('ths', registry)\n"
+        "caps = [cap for cap in registry.capabilities() if cap.source == 'ths']\n"
+        "routed, misses = 0, []\n"
+        "for cap in caps:\n"
+        "    try:\n"
+        "        fetcher = registry.resolve_domain(\n"
+        "            cap.domain, source='ths', period=cap.period, market=cap.market\n"
+        "        )\n"
+        "        routed += 1 if fetcher.capability == cap else 0\n"
+        "    except Exception as exc:\n"
+        "        misses.append(f'{cap.domain}:{type(exc).__name__}')\n"
+        "print(json.dumps({"
+        "'declared_bindings': len(descriptor.fetcher_bindings), 'registered': len(caps),"
+        "'verified': sum(1 for cap in caps if cap.verified), 'routed': routed,"
+        "'misses': sorted(misses)}))\n"
+    ),
+    "vendor_no_akshare": (
+        "import builtins, importlib.util, json, sys\n"
+        "blocked = []\n"
+        "real_import = builtins.__import__\n"
+        "def block_akshare(name, *args, **kwargs):\n"
+        "    if name == 'akshare' or name.startswith('akshare.'):\n"
+        "        blocked.append(name)\n"
+        "        raise ImportError('intentional top-level akshare block')\n"
+        "    return real_import(name, *args, **kwargs)\n"
+        "builtins.__import__ = block_akshare\n"
+        "hook_fired = False\n"
+        "try:\n"
+        "    import akshare\n"
+        "except ImportError:\n"
+        "    hook_fired = True\n"
+        "control_hits = len(blocked)\n"
+        "blocked.clear()\n"
+        "port_import_error = ''\n"
+        "ak = None\n"
+        "try:\n"
+        f"    import {PORTED_MODULE} as ak\n"
+        "except Exception as exc:\n"
+        "    port_import_error = f'{type(exc).__name__}: {exc}'\n"
+        "missing = [n for n in sys.argv[1:] if not callable(getattr(ak, n, None))]\n"
+        "leaks = sorted(m for m in sys.modules if m == 'akshare' or m.startswith('akshare.'))\n"
+        "print(json.dumps({"
+        "'hook_fired': hook_fired, 'control_hits': control_hits,"
+        "'port_import_hits': len(blocked), 'port_import_error': port_import_error,"
+        "'targets': len(sys.argv[1:]), 'missing': missing, 'leaks': leaks,"
+        "'spec_present': importlib.util.find_spec('akshare') is not None}))\n"
+    ),
+    "sdk": (
+        "import builtins, json\n"
+        "blocked = []\n"
+        "real_import = builtins.__import__\n"
+        "def block_sdk(name, *args, **kwargs):\n"
+        "    if name == 'yfinance' or name.startswith('yfinance.'):\n"
+        "        blocked.append(name)\n"
+        "        raise ImportError('intentional optional-SDK block')\n"
+        "    return real_import(name, *args, **kwargs)\n"
+        "builtins.__import__ = block_sdk\n"
+        "sdk_absent = False\n"
+        "try:\n"
+        "    import yfinance\n"
+        "except ImportError:\n"
+        "    sdk_absent = True\n"
+        "from opendata.data.providers import catalog\n"
+        "from opendata.data.registry import ProviderRegistry\n"
+        "registry = ProviderRegistry()\n"
+        "catalog.register_providers(registry)\n"
+        "caps = registry.capabilities()\n"
+        "implemented = sorted(p.source for p in catalog.PROVIDERS if p.is_implemented)\n"
+        "legs = [cap for cap in caps if cap.source == 'ecb']\n"
+        "routed = 0\n"
+        "for cap in legs:\n"
+        "    try:\n"
+        "        registry.resolve_domain(cap.domain, source='ecb', period=cap.period,"
+        " market=cap.market)\n"
+        "        routed += 1\n"
+        "    except Exception:\n"
+        "        pass\n"
+        "print(json.dumps({"
+        "'sdk_absent': sdk_absent, 'blocked_hits': len(blocked), 'capabilities': len(caps),"
+        "'implemented': implemented,"
+        "'uncovered': sorted(set(implemented) - {cap.source for cap in caps}),"
+        "'sdk_legs': sum(1 for cap in caps if cap.source == 'yfinance'),"
+        "'optional_declared': sorted("
+        "p.source for p in catalog.PROVIDERS if p.is_implemented and p.optional_dependencies),"
+        "'other_legs': len(legs), 'other_routed': routed}))\n"
+    ),
+}
+_RUNTIME_WITNESS_RESULTS: dict[tuple[str, tuple[str, ...]], dict[str, Any]] = {}
+
+
+def runtime_witness(name: str, *args: str) -> dict[str, Any]:
+    """Run one registration witness in a fresh interpreter, once per measurement pass.
+
+    ``args`` arrive in the child as ``sys.argv[1:]``, which is how a witness is handed the very
+    same name list the parent measured instead of re-deriving it on the other side of a process
+    boundary.
+    """
+    key = (name, args)
+    cached = _RUNTIME_WITNESS_RESULTS.get(key)
+    if cached is not None:
+        return cached
+    code, out, err = run_split_stderr([sys.executable, "-B", "-c", _RUNTIME_WITNESSES[name], *args])
+    payload = next((line for line in reversed(out.splitlines()) if line.startswith("{")), "")
+    if not payload:
+        tail = [line for line in err.splitlines() if line.strip()]
+        raise ProbeError(
+            f"witness {name} printed no JSON (exit {code}): {tail[-1] if tail else '(no output)'}"
+        )
+    parsed = cast("dict[str, Any]", json.loads(payload))
+    _RUNTIME_WITNESS_RESULTS[key] = parsed
+    return parsed
+
+
+def witness_list(witness: dict[str, Any], key: str) -> list[str]:
+    """One list field of a witness payload, named in a reading only when it is not empty."""
+    rows = cast("list[str]", witness.get(key, []))
+    return [str(row) for row in rows]
+
+
 def measure_c64_registry(ctx: Context) -> Facts:
     """Measure bundled provider registration from current named behavior and binding."""
-    source = ctx.read("opendata/data/providers/__init__.py")
+    witness = runtime_witness("registry")
+    uncovered = witness_list(witness, "uncovered")
+    phantom = witness_list(witness, "phantom")
+    never_registered = witness_list(witness, "never_registered")
     return {
         **node_plane_facts(
             "c64",
@@ -9901,20 +10156,17 @@ def measure_c64_registry(ctx: Context) -> Facts:
             ),
         ),
         "binding": flag(
-            all(
-                token in source
-                for token in (
-                    "register_akshare()",
-                    "register_ths()",
-                    "register_fred()",
-                    "register_ecb()",
-                    "register_imf()",
-                    "register_oecd()",
-                    "register_yfinance()",
-                )
-            )
+            int(witness.get("capabilities", 0)) > 0
+            and not uncovered
+            and not phantom
+            and not never_registered
         ),
-        "scope": "offline registrations; historical opendata_providers uses current providers",
+        "scope": (
+            "executed witness: "
+            f"{witness.get('capabilities')} capabilities over {witness.get('sources')}; "
+            f"自研却无能力的源={uncovered or '-'}、有能力的非自研源={phantom or '-'}、"
+            f"没进注册顺序的源={never_registered or '-'}"
+        ),
     }
 
 
@@ -10071,7 +10323,10 @@ def measure_c64_fuyao_map(ctx: Context) -> Facts:
 
 def measure_c64_ths_contract(ctx: Context) -> Facts:
     """Measure THS contract registration from current named behavior and binding."""
-    source = ctx.read("opendata/data/providers/ths/registration.py")
+    witness = runtime_witness("ths")
+    misses = witness_list(witness, "misses")
+    declared = int(witness.get("declared_bindings", 0))
+    registered = int(witness.get("registered", 0))
     return {
         **node_plane_facts(
             "c64",
@@ -10081,8 +10336,19 @@ def measure_c64_ths_contract(ctx: Context) -> Facts:
                 "tests/test_ths_provider.py::TestRegistration::test_every_verified_domain_auto_routes_to_ths",
             ),
         ),
-        "binding": flag(all(token in source for token in ("FETCHERS", "verified"))),
-        "scope": "offline registered domains and contract-backed fetcher declarations",
+        "binding": flag(
+            declared > 0
+            and registered == declared
+            and int(witness.get("verified", 0)) == registered
+            and int(witness.get("routed", 0)) == registered
+            and not misses
+        ),
+        "scope": (
+            "executed witness: ths 描述符声明 "
+            f"{declared} 条绑定，注册器装了 {registered} 条、verified "
+            f"{witness.get('verified')} 条，逐个 resolve_domain(source='ths') 命中 "
+            f"{witness.get('routed')} 条，落空={misses or '-'}"
+        ),
     }
 
 
@@ -10671,7 +10937,9 @@ def measure_c64_legacy_frontend(ctx: Context) -> Facts:
 
 def measure_c64_sdk_isolation(ctx: Context) -> Facts:
     """Measure optional SDK provider isolation."""
-    source = ctx.read("opendata/data/providers/__init__.py")
+    witness = runtime_witness("sdk")
+    uncovered = witness_list(witness, "uncovered")
+    ecb_legs = int(witness.get("other_legs", 0))
     return {
         **node_plane_facts(
             "c64",
@@ -10680,9 +10948,22 @@ def measure_c64_sdk_isolation(ctx: Context) -> Facts:
             ),
         ),
         "binding": flag(
-            all(token in source for token in ("register_yfinance()", "register_ecb()"))
+            witness.get("sdk_absent") is True
+            and int(witness.get("blocked_hits", 0)) > 0
+            and int(witness.get("capabilities", 0)) > 0
+            and not uncovered
+            and int(witness.get("sdk_legs", 0)) > 0
+            and ecb_legs > 0
+            and int(witness.get("other_routed", 0)) == ecb_legs
         ),
-        "scope": "SDK blocked in subprocess; ECB registry/routing/mock fetch still works",
+        "scope": (
+            "executed witness: 本机装着 yfinance，见证用 import hook 强制它缺席且真被拦下 "
+            f"{witness.get('blocked_hits')} 次；注册仍得 {witness.get('capabilities')} 条能力"
+            f"（可选方 yfinance 自己也有 {witness.get('sdk_legs')} 条在册、"
+            f"缺席源面={uncovered or '-'}），"
+            f"ECB {witness.get('other_routed')}/{ecb_legs} 条逐条路由成功；"
+            "offline actual transport mocks，不含真实行情请求"
+        ),
     }
 
 
@@ -10779,7 +11060,6 @@ AC6_B1_1_PLAN_GROUP_COUNTS: Final = {
 AC6_B1_1_EXTRA_GROUPS: Final = frozenset({"futures_derivative"})
 AC6_B1_1_EXPECTED_GROUPS: Final = frozenset({*AC6_B1_1_PLAN_GROUP_COUNTS, *AC6_B1_1_EXTRA_GROUPS})
 AC6_B1_1_GROUP_NAMES: Final = ", ".join(sorted(AC6_B1_1_EXPECTED_GROUPS))
-PORT_SCOPE_INVENTORY_REL = "docs/evidence/C65/port-scope-manifest.json"
 PORTED_MANIFEST_REL = "opendata_http/manifest.json"
 UPSTREAM_LOCK_REL = "opendata_http/upstream.lock"
 
@@ -11540,7 +11820,12 @@ def measure_ac6_02(ctx: Context) -> Facts:
         )
         if not port_scope_definition_valid:
             problems.append("port_scope B1.1 definitions differ from the fixed 9-group denominator")
-        inventory = json.loads(ctx.read(PORT_SCOPE_INVENTORY_REL))
+        inventory_rel = str(getattr(audit, "inventory_rel", "-"))
+        if inventory_rel == "-":
+            problems.append("no archived port scope inventory could be resolved")
+            inventory: dict[str, Any] = {}
+        else:
+            inventory = json.loads(ctx.read(inventory_rel))
         manifest = json.loads(_read_historical_source(ctx, PORTED_MANIFEST_REL))
         lock = json.loads(_read_historical_source(ctx, UPSTREAM_LOCK_REL))
         for row in inventory.get("files", []):
@@ -13844,8 +14129,9 @@ PROBES: Final[tuple[Probe, ...]] = (
     Probe(
         item="AC-16|07",
         expects="在未安装 akshare/openbb 的干净环境中 P0 域集成测试通过",
-        summary="选择式有可指的名字（marker 注册 + 9 个标记单元 + 5 个 P0 域全覆盖），"
-        "本机和留档的干净 venv 都全绿，且留档是最新一轮自己写的、覆盖当前标记集",
+        summary="选择式有可指的名字（marker 注册 + 标记单元 + P0 域全覆盖），"
+        "本机这一遍跑在顶层上游包被 import hook 强制拒掉的子解释器里并全绿，"
+        "留档的干净 venv 也全绿且是最新一轮自己写的、覆盖当前标记集",
         measure=measure_ac16_07,
         judge=judge_ac16_07,
         breaks=(
@@ -13867,7 +14153,26 @@ PROBES: Final[tuple[Probe, ...]] = (
             Break("某条 P0 域不再被这组用例点到", (("domains_missing", "1"),), GAP),
             Break("这一遍有用例变红", (("run_exit", "1"), ("failed", "1")), GAP),
             Break("有用例改成 skip（skip 不是通过）", (("skipped", "3"),), GAP),
-            Break("本机解释器又能 import 上游包（干净面没了）", (("clean_here", "no"),), GAP),
+            Break(
+                "拦截钩子根本没拒（正向对照失败，干净面是假的）",
+                (("block_control_hits", "0"), ("blocked_here", "no")),
+                GAP,
+            ),
+            Break(
+                "这一遍跑的过程中顶层上游包又被尝试了",
+                (("block_attempted", "3"), ("blocked_here", "no")),
+                GAP,
+            ),
+            Break(
+                "顶层上游包留在 sys.modules 里（这份绿分不清用的是搬运层还是真包）",
+                (("block_leaks", "1"), ("blocked_here", "no")),
+                GAP,
+            ),
+            Break(
+                "上游包清点面变小（判据要求的是这两个包）",
+                (("block_pkgs", "1"),),
+                GAP,
+            ),
             Break("干净 venv 那一遍本身是红的", (("archive_exit", "1"),), GAP),
             Break(
                 "标记集加了新模块，留档却没重跑（证据不再覆盖判据）",
@@ -13890,7 +14195,11 @@ PROBES: Final[tuple[Probe, ...]] = (
             "passed": "*passed",
             "failed": "0",
             "skipped": "0",
-            "clean_here": "yes",
+            "blocked_here": "yes",
+            "block_pkgs": "*block_pkgs",
+            "block_control_hits": "*block_pkgs",
+            "block_attempted": "0",
+            "block_leaks": "0",
             "archive_exit": "0",
             "archive_blind": "0",
             "archive_absent": "yes",
@@ -14160,7 +14469,7 @@ PROBES: Final[tuple[Probe, ...]] = (
             Break("点名移出本迭代的子包混进了清单", (("excluded_present", "1"),), GAP),
             Break("D9 点名的子包有没搬到的", (("scope_missing", "1"),), GAP),
             Break("搬运路径/批次清单未通过逐项核验", (("port_scope_valid", "no"),), GAP),
-            Break("没有任何机器字段能说 1A/1B 批次", (("tier_field", "-"),), GAP),
+            Break("没有任何机器字段能说 1A/1B 批次", (("tier_field_ok", "no"),), GAP),
         ),
         repair={
             "has_calls": "yes",
@@ -14190,7 +14499,7 @@ PROBES: Final[tuple[Probe, ...]] = (
             "port_scope_resources": "2",
             "port_scope_problems": "0",
             "port_scope_problem_summary": "-",
-            "tier_field": "docs/evidence/C65/port-scope-manifest.json#files.batch",
+            "tier_field_ok": "yes",
         },
     ),
     Probe(
@@ -14233,25 +14542,27 @@ PROBES: Final[tuple[Probe, ...]] = (
     Probe(
         item="AC-5|04",
         expects="环境中 P0 域函数可用",
-        summary="根目录与索引与解释器三面都没有 akshare，而首方代码取用的端点全部可达",
+        summary="根目录与索引都没有 akshare，顶层 akshare 被证明拦得住的解释器里搬运层与端点全可达",
         measure=measure_ac5_04,
         judge=judge_ac5_04,
         breaks=(
             Break("根目录 akshare/ 又回到磁盘上", (("root_dir", "yes"),), GAP),
             Break("git 索引里该前缀下还有文件", (("tracked_under_root", "1"),), GAP),
-            Break("解释器里装了 akshare", (("spec", "present"),), GAP),
+            Break("拦不住顶层 akshare，见证没生效", (("akshare_blocked", "no"),), GAP),
+            Break("搬运层导入期回落到顶层 akshare", (("akshare_reached", "1"),), GAP),
+            Break("顶层 akshare 留在了 sys.modules 里", (("akshare_leaks", "1"),), GAP),
             Break("搬运层 import 失败", (("import_exit", "1"),), GAP),
             Break("首方代码一处都不取用搬运层", (("call_targets", "0"),), GAP),
             Break("有一个端点函数取不到", (("callable_missing", "1"),), GAP),
-            Break("干净 venv 侧证不再报 absent", (("archive_absent", "no"),), GAP),
         ),
         repair={
             "root_dir": "no",
             "tracked_under_root": "0",
-            "spec": "absent",
+            "akshare_blocked": "yes",
+            "akshare_reached": "0",
+            "akshare_leaks": "0",
             "import_exit": "0",
             "callable_missing": "0",
-            "archive_absent": "yes",
         },
     ),
     Probe(
@@ -14336,6 +14647,7 @@ PROBES: Final[tuple[Probe, ...]] = (
                 "当前搬运 manifest 与源文件集合不一致", (("scan_manifest_matches_tree", "no"),), GAP
             ),
             Break("manifest 覆盖范围小于磁盘搬运树", (("surface_covered", "no"),), GAP),
+            Break("档案标注的轮次与档案所在目录不一致", (("archive_round_in_dir", "no"),), GAP),
         ),
         repair={
             "target_ok": "yes",
@@ -14346,6 +14658,7 @@ PROBES: Final[tuple[Probe, ...]] = (
             "scan_errors": "0",
             "scan_findings": "*scan_findings",
             "archive": "*archive",
+            "archive_round_in_dir": "yes",
             "scan_manifest_ok": "yes",
             "scan_b_only": "yes",
             "findings_untriaged": "0",

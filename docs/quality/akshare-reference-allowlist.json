@@ -765,17 +765,17 @@
       "purpose": "迭代2 验收面声明搬运层根路径常量、调用 verify_no_akshare 作为读数来源，并在未闭合 leg 文案里点名当前 conda 解释器仍带 akshare/openbb。",
       "category": "build-declaration",
       "reviewed_date": "2026-10-09",
-      "reviewer": "Qoder agent C74; per-path review of this file's three bare-word sites",
-      "sha256": "0d40c6eacce86a7cefd8d419b6819898e98e49a9d91bfe8963df9d237f059e99",
+      "reviewer": "C74 primary; AC2-04 的 closure 记成 signature_differing_unregistered=0（闭环动作是 upstream.lock 的 manual_edits 元数据，待用户确认）并把签名对照工具自身 rc 纳入判定，未新增任何品牌名加载",
+      "sha256": "2d5b1acbf1aab1aa89c1987aaf1b696f9b4397d1a794b2156277bd632ac7ca82",
       "ast_exceptions": []
     },
     {
       "path": "scripts/quality/acceptance_item_probe.py",
-      "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。",
+      "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。本轮把三条 AC 面改成子解释器里的 import hook 见证：包名只作为字符串常量出现在被交给子进程的字面 argv 与被拒计数里，没有任何一处用它去加载外部包。",
       "category": "operations-tool",
       "reviewed_date": "2026-10-09",
-      "reviewer": "Qoder agent C67; digest re-pin after this round's edits, token purpose unchanged",
-      "sha256": "d2d68235b8f9df832723ab4bd4ba64cbf648ce3bbf3bdb56ea75dda89a1f3705",
+      "reviewer": "C74 primary; AC-5|07 的档案轮次标签改成从 bundle 实测（archive_round/carried_from_round）并修正 exclude_dirs 尾斜杠成员判定，未新增任何品牌名加载",
+      "sha256": "db6b7f6c2f374db4c27df415f03daa68e2413a822433f441db328ec3b1859858",
       "ast_exceptions": []
     },
     {
@@ -800,9 +800,9 @@
       "path": "scripts/quality/port_scope.py",
       "purpose": "锁定上游akshare搬运来源、域与模块分母的结构化审计，不加载外部包。",
       "category": "operations-tool",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "bd4531d8bbd8a97be515c744f323990dd4a63f6471533d3af0a2c7bdbae3a9f5",
+      "reviewed_date": "2026-10-09",
+      "reviewer": "C74 primary; content re-reviewed against the scanner's own AST reading",
+      "sha256": "c06218aa60e8f0d651b76efcdc4a8c4b8e93e4b7a3f9617468133edc4b93ac3f",
       "ast_exceptions": []
     },
     {

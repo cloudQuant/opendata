@@ -1,0 +1,788 @@
+{
+  "provider_groups": {
+    "imf": 8,
+    "oecd": 9,
+    "famafrench": 6,
+    "deribit": 5,
+    "seeking_alpha": 3,
+    "wsj": 3,
+    "multpl": 1,
+    "stockgrid": 1
+  },
+  "rows": [
+    {
+      "task_id": "OBB2-imf-AvailableIndicators",
+      "provider": "imf",
+      "upstream_model": "AvailableIndicators",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "lookup_preflight",
+        "multi_endpoint_join",
+        "sdmx_json_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/imf/openbb_imf/models/available_indicators.py:133",
+      "notes": "Catalog built from SDMX codelist+dataflow-availability metadata, not one document"
+    },
+    {
+      "task_id": "OBB2-imf-ConsumerPriceIndex",
+      "provider": "imf",
+      "upstream_model": "ConsumerPriceIndex",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "sdmx_dotted_key_path",
+        "sdmx_json_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "ImfCpiFetcher",
+      "evidence": "providers/imf/openbb_imf/models/consumer_price_index.py:443",
+      "notes": "api.imf.org/external/sdmx/3.0/data/dataflow/{agency}/{flow}/+/{key}: dotted key built from dimensions"
+    },
+    {
+      "task_id": "OBB2-imf-DirectionOfTrade",
+      "provider": "imf",
+      "upstream_model": "DirectionOfTrade",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "lookup_preflight",
+        "sdmx_dotted_key_path",
+        "sdmx_json_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/imf/openbb_imf/models/direction_of_trade.py:154",
+      "notes": "imts_query resolves country codes via ImfMetadata dataflow parameters before the data call"
+    },
+    {
+      "task_id": "OBB2-imf-EconomicIndicators",
+      "provider": "imf",
+      "upstream_model": "EconomicIndicators",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 3,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "lookup_preflight",
+        "per_item_fanout",
+        "sdmx_dotted_key_path",
+        "sdmx_json_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "ImfIndicatorFetcher",
+      "evidence": "providers/imf/openbb_imf/models/economic_indicators.py:669",
+      "notes": "One dataflow request per symbol plus dimension validation; key params injected per dataflow branch"
+    },
+    {
+      "task_id": "OBB2-imf-MaritimeChokePointInfo",
+      "provider": "imf",
+      "upstream_model": "MaritimeChokePointInfo",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "geojson_attribute_rows",
+        "client_side_row_filter"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/imf/openbb_imf/models/maritime_chokepoint_info.py:156",
+      "notes": "f=geojson: rows are features[].properties; whole table downloaded then filtered by chokepoint"
+    },
+    {
+      "task_id": "OBB2-imf-MaritimeChokePointVolume",
+      "provider": "imf",
+      "upstream_model": "MaritimeChokePointVolume",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "per_item_fanout",
+        "lookup_preflight",
+        "geojson_attribute_rows",
+        "client_side_row_filter"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/imf/openbb_imf/models/maritime_chokepoint_volume.py:298",
+      "notes": "One FeatureServer query per chokepoint id; all-chokepoint path fans out"
+    },
+    {
+      "task_id": "OBB2-imf-PortInfo",
+      "provider": "imf",
+      "upstream_model": "PortInfo",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "geojson_attribute_rows",
+        "client_side_row_filter"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/imf/openbb_imf/models/port_info.py:235",
+      "notes": "where=1%3D1&f=json returns every port; continent/country filter applied client-side"
+    },
+    {
+      "task_id": "OBB2-imf-PortVolume",
+      "provider": "imf",
+      "upstream_model": "PortVolume",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "lookup_preflight",
+        "per_item_fanout",
+        "geojson_attribute_rows"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/imf/openbb_imf/models/port_volume.py:413",
+      "notes": "country->portID lookup first, then one daily-activity request per port"
+    },
+    {
+      "task_id": "OBB2-oecd-CompositeLeadingIndicator",
+      "provider": "oecd",
+      "upstream_model": "CompositeLeadingIndicator",
+      "shape": "get_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "sdmx_dotted_key_path",
+        "csv_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/oecd/openbb_oecd/models/composite_leading_indicator.py:180",
+      "notes": "SDMX-CSV from sdmx.oecd.org/public/rest/data/<flow>,<key>,dimension key built from query params"
+    },
+    {
+      "task_id": "OBB2-oecd-ConsumerPriceIndex",
+      "provider": "oecd",
+      "upstream_model": "ConsumerPriceIndex",
+      "shape": "get_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "sdmx_dotted_key_path",
+        "csv_decoder",
+        "client_side_row_filter"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "OecdCpiFetcher",
+      "evidence": "providers/oecd/openbb_oecd/models/consumer_price_index.py:204",
+      "notes": "SDMX-CSV from sdmx.oecd.org/public/rest/data/<flow>,<key>,dimension key path; pandas filter on codes"
+    },
+    {
+      "task_id": "OBB2-oecd-CountryInterestRates",
+      "provider": "oecd",
+      "upstream_model": "CountryInterestRates",
+      "shape": "get_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "sdmx_dotted_key_path",
+        "csv_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/oecd/openbb_oecd/models/country_interest_rates.py:133",
+      "notes": "SDMX-CSV from sdmx.oecd.org/public/rest/data/<flow>,<key>,dimension key built from query params"
+    },
+    {
+      "task_id": "OBB2-oecd-GdpNominal",
+      "provider": "oecd",
+      "upstream_model": "GdpNominal",
+      "shape": "get_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "sdmx_dotted_key_path",
+        "csv_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/oecd/openbb_oecd/models/gdp_nominal.py:154",
+      "notes": "SDMX-CSV from sdmx.oecd.org/public/rest/data/<flow>,<key>,dimension key built from query params"
+    },
+    {
+      "task_id": "OBB2-oecd-GdpReal",
+      "provider": "oecd",
+      "upstream_model": "GdpReal",
+      "shape": "get_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "sdmx_dotted_key_path",
+        "csv_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/oecd/openbb_oecd/models/gdp_real.py:130",
+      "notes": "SDMX-CSV from sdmx.oecd.org/public/rest/data/<flow>,<key>,dimension key built from query params"
+    },
+    {
+      "task_id": "OBB2-oecd-GdpForecast",
+      "provider": "oecd",
+      "upstream_model": "GdpForecast",
+      "shape": "get_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "sdmx_dotted_key_path",
+        "csv_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/oecd/openbb_oecd/models/gdp_forecast.py:202",
+      "notes": "SDMX-CSV from sdmx.oecd.org/public/rest/data/<flow>,<key>,dimension key built from query params"
+    },
+    {
+      "task_id": "OBB2-oecd-HousePriceIndex",
+      "provider": "oecd",
+      "upstream_model": "HousePriceIndex",
+      "shape": "get_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "sdmx_dotted_key_path",
+        "csv_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/oecd/openbb_oecd/models/house_price_index.py:127",
+      "notes": "SDMX-CSV from sdmx.oecd.org/public/rest/data/<flow>,<key>,dimension key built from query params"
+    },
+    {
+      "task_id": "OBB2-oecd-SharePriceIndex",
+      "provider": "oecd",
+      "upstream_model": "SharePriceIndex",
+      "shape": "get_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "sdmx_dotted_key_path",
+        "csv_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/oecd/openbb_oecd/models/share_price_index.py:125",
+      "notes": "SDMX-CSV from sdmx.oecd.org/public/rest/data/<flow>,<key>,dimension key built from query params"
+    },
+    {
+      "task_id": "OBB2-oecd-Unemployment",
+      "provider": "oecd",
+      "upstream_model": "Unemployment",
+      "shape": "get_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "sdmx_dotted_key_path",
+        "csv_decoder"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "OecdUnemploymentFetcher",
+      "evidence": "providers/oecd/openbb_oecd/models/unemployment.py:151",
+      "notes": "SDMX-CSV from sdmx.oecd.org/public/rest/data/<flow>,<key>,dimension key built from query params"
+    },
+    {
+      "task_id": "OBB2-famafrench-FamaFrenchBreakpoints",
+      "provider": "famafrench",
+      "upstream_model": "FamaFrenchBreakpoints",
+      "shape": "get_zip_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "zip",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "zip_member_decoder",
+        "csv_decoder",
+        "table_text_parser",
+        "dataset_path_lookup"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/famafrench/openbb_famafrench/models/breakpoints.py:252",
+      "notes": "GET .zip then zipfile member parsed as French-library text table; dataset picked from static maps"
+    },
+    {
+      "task_id": "OBB2-famafrench-FamaFrenchCountryPortfolioReturns",
+      "provider": "famafrench",
+      "upstream_model": "FamaFrenchCountryPortfolioReturns",
+      "shape": "get_zip_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "zip",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "zip_member_decoder",
+        "csv_decoder",
+        "table_text_parser",
+        "dataset_path_lookup"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/famafrench/openbb_famafrench/models/country_portfolio_returns.py:205",
+      "notes": "GET .zip then zipfile member parsed as French-library text table; dataset picked from static maps"
+    },
+    {
+      "task_id": "OBB2-famafrench-FamaFrenchFactors",
+      "provider": "famafrench",
+      "upstream_model": "FamaFrenchFactors",
+      "shape": "get_zip_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "zip",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "zip_member_decoder",
+        "csv_decoder",
+        "table_text_parser",
+        "dataset_path_lookup"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/famafrench/openbb_famafrench/models/factors.py:282",
+      "notes": "GET .zip then zipfile member parsed as French-library text table; dataset picked from static maps"
+    },
+    {
+      "task_id": "OBB2-famafrench-FamaFrenchInternationalIndexReturns",
+      "provider": "famafrench",
+      "upstream_model": "FamaFrenchInternationalIndexReturns",
+      "shape": "get_zip_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "zip",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "zip_member_decoder",
+        "csv_decoder",
+        "table_text_parser",
+        "dataset_path_lookup"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/famafrench/openbb_famafrench/models/international_index_returns.py:208",
+      "notes": "GET .zip then zipfile member parsed as French-library text table; dataset picked from static maps"
+    },
+    {
+      "task_id": "OBB2-famafrench-FamaFrenchRegionalPortfolioReturns",
+      "provider": "famafrench",
+      "upstream_model": "FamaFrenchRegionalPortfolioReturns",
+      "shape": "get_zip_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "zip",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "zip_member_decoder",
+        "csv_decoder",
+        "table_text_parser",
+        "dataset_path_lookup"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/famafrench/openbb_famafrench/models/regional_portfolio_returns.py:103",
+      "notes": "GET .zip then zipfile member parsed as French-library text table; dataset picked from static maps"
+    },
+    {
+      "task_id": "OBB2-famafrench-FamaFrenchUSPortfolioReturns",
+      "provider": "famafrench",
+      "upstream_model": "FamaFrenchUSPortfolioReturns",
+      "shape": "get_zip_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "zip",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "zip_member_decoder",
+        "csv_decoder",
+        "table_text_parser",
+        "dataset_path_lookup"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/famafrench/openbb_famafrench/models/us_portfolio_returns.py:102",
+      "notes": "GET .zip then zipfile member parsed as French-library text table; dataset picked from static maps"
+    },
+    {
+      "task_id": "OBB2-deribit-FuturesCurve",
+      "provider": "deribit",
+      "upstream_model": "FuturesCurve",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 3,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "jsonpath",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "lookup_preflight",
+        "per_item_fanout",
+        "multi_endpoint_join"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/deribit/openbb_deribit/models/futures_curve.py:121",
+      "notes": "symbol directory preflight, one get_ticker per contract, extra hours_ago requests appended"
+    },
+    {
+      "task_id": "OBB2-deribit-FuturesHistorical",
+      "provider": "deribit",
+      "upstream_model": "FuturesHistorical",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "jsonpath",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "per_item_fanout",
+        "columnar_to_rows",
+        "multi_endpoint_join"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/deribit/openbb_deribit/utils/helpers.py:272",
+      "notes": "date window split into N get_tradingview_chart_data URLs; result is parallel arrays, not records"
+    },
+    {
+      "task_id": "OBB2-deribit-FuturesInfo",
+      "provider": "deribit",
+      "upstream_model": "FuturesInfo",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "jsonpath",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "per_item_fanout"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/deribit/openbb_deribit/models/futures_info.py:206",
+      "notes": "Single get_ticker endpoint, but fanned out per comma-separated symbol and re-sorted"
+    },
+    {
+      "task_id": "OBB2-deribit-FuturesInstruments",
+      "provider": "deribit",
+      "upstream_model": "FuturesInstruments",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "jsonpath",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "epoch_ms_to_date_conversion",
+        "sentinel_value_nulling",
+        "vendored_upstream_source_missing"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/catalog.py:73",
+      "notes": "DOWNGRADED true->false, no line found: repo-wide search finds 'deribit' only at catalog.py:73 (_reserved_provider) and akshare/_vendor holds no deribit module, so utils/helpers.py:84 and models/futures_instruments.py:86-92 resolve outside the repo root and cannot be cited. Engine-side the shape also needs epoch-ms->date coercion and sentinel nulling, and a record value reaches the row model unchanged (http_json.py:303) with no conversion field on ModelSpec (spec.py:266-285)",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "needs_engine_capability",
+          "notes",
+          "expressible_today"
+        ],
+        "prior_expressible_today": true,
+        "prior_evidence": "providers/deribit/openbb_deribit/utils/helpers.py:84",
+        "prior_needs_engine_capability": [],
+        "basis": "opendata/data/providers/catalog.py:73"
+      }
+    },
+    {
+      "task_id": "OBB2-deribit-OptionsChains",
+      "provider": "deribit",
+      "upstream_model": "OptionsChains",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "jsonpath",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "lookup_preflight",
+        "per_item_fanout",
+        "symbol_regex_parse",
+        "columnar_to_rows"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/deribit/openbb_deribit/models/options_chains.py:136",
+      "notes": "options directory preflight, per-contract fetch, instrument_name parsed by regex"
+    },
+    {
+      "task_id": "OBB2-seeking_alpha-CalendarEarnings",
+      "provider": "seeking_alpha",
+      "upstream_model": "CalendarEarnings",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "jsonpath",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "per_item_fanout",
+        "anti_bot_retry"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/seeking_alpha/openbb_seeking_alpha/models/calendar_earnings.py:127",
+      "notes": "One request per date in the range; blockScript retry loop; HEADERS are declarable via static_headers"
+    },
+    {
+      "task_id": "OBB2-seeking_alpha-ForwardEpsEstimates",
+      "provider": "seeking_alpha",
+      "upstream_model": "ForwardEpsEstimates",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "lookup_preflight",
+        "per_item_fanout",
+        "response_dict_keying"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/seeking_alpha/openbb_seeking_alpha/models/forward_eps_estimates.py:108",
+      "notes": "searches endpoint maps ticker->id, then symbol_data/estimates joined on ids; rows keyed per id"
+    },
+    {
+      "task_id": "OBB2-seeking_alpha-ForwardSalesEstimates",
+      "provider": "seeking_alpha",
+      "upstream_model": "ForwardSalesEstimates",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "lookup_preflight",
+        "per_item_fanout",
+        "response_dict_keying"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/seeking_alpha/openbb_seeking_alpha/models/forward_sales_estimates.py:81",
+      "notes": "searches endpoint maps ticker->id, then symbol_data/estimates joined on ids; rows keyed per id"
+    },
+    {
+      "task_id": "OBB2-wsj-ETFGainers",
+      "provider": "wsj",
+      "upstream_model": "ETFGainers",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "jsonpath",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "encoded_json_query_param",
+        "client_side_sort_limit"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/wsj/openbb_wsj/models/gainers.py:88",
+      "notes": "id= query param is URL-encoded JSON blob; rows at data.instruments then sorted/limited client-side"
+    },
+    {
+      "task_id": "OBB2-wsj-ETFLosers",
+      "provider": "wsj",
+      "upstream_model": "ETFLosers",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "jsonpath",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "encoded_json_query_param",
+        "client_side_sort_limit"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/wsj/openbb_wsj/models/losers.py:87",
+      "notes": "id= query param is URL-encoded JSON blob; rows at data.instruments then sorted/limited client-side"
+    },
+    {
+      "task_id": "OBB2-wsj-ETFActive",
+      "provider": "wsj",
+      "upstream_model": "ETFActive",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "jsonpath",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "encoded_json_query_param",
+        "client_side_sort_limit"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/wsj/openbb_wsj/models/active.py:84",
+      "notes": "id= query param is URL-encoded JSON blob; rows at data.instruments then sorted/limited client-side"
+    },
+    {
+      "task_id": "OBB2-multpl-SP500Multiples",
+      "provider": "multpl",
+      "upstream_model": "SP500Multiples",
+      "shape": "html_scraping_or_js",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "html",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "html_table_decoder",
+        "per_item_fanout",
+        "client_side_date_filter"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/multpl/openbb_multpl/models/sp500_multiples.py:136",
+      "notes": "One HTML page per series, read_html table[0]; date window filtered after parse"
+    },
+    {
+      "task_id": "OBB2-stockgrid-ShortVolume",
+      "provider": "stockgrid",
+      "upstream_model": "ShortVolume",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "jsonpath",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "vendored_upstream_source_missing"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "opendata/data/providers/catalog.py:79",
+      "notes": "DOWNGRADED true->false, no line found: repo-wide search finds 'stockgrid' only at catalog.py:79 (_reserved_provider) and akshare/_vendor holds no stockgrid module, so models/short_volume.py:62 resolves outside the repo root and cannot be cited. The claimed shape is engine-declarable on its face (one path spec.py:272, static rows_pointer spec.py:275, ParamSpec.query_key spec.py:80, ColumnSpec.source_key spec.py:121) but nothing in this repo's bytes proves the upstream response is that shape, and deribit/stockgrid have no live path to read off",
+      "audited": {
+        "audited_by": "C74 census re-audit",
+        "audited_date": "2026-10-09",
+        "changed": [
+          "evidence",
+          "needs_engine_capability",
+          "notes",
+          "expressible_today"
+        ],
+        "prior_expressible_today": true,
+        "prior_evidence": "providers/stockgrid/openbb_stockgrid/models/short_volume.py:62",
+        "prior_needs_engine_capability": [],
+        "basis": "opendata/data/providers/catalog.py:79"
+      }
+    }
+  ]
+}

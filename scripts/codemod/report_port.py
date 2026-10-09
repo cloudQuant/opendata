@@ -37,6 +37,7 @@ from scripts.codemod.port_module import (  # noqa: E402
     DEFAULT_UPSTREAM_REPO,
     PORTED_PACKAGE,
     PORTED_ROOT,
+    UNLOCKED_METADATA,
     UpstreamLock,
     port_source,
     sha256_text,
@@ -46,7 +47,6 @@ from scripts.codemod.port_module import (  # noqa: E402
 REPORT_PATH = Path("docs/port-report.md")
 RESOURCE_REGISTER_HEADING = "## 内置资源不可用登记（A2.3，AC-5|06）"
 _DATASETS_MODULE = "datasets.py"
-_UNLOCKED_METADATA = frozenset({"upstream.lock", "manifest.json", "LICENSE-AKSHARE"})
 
 
 def _module_exists(ported_root: Path, module: str) -> bool:
@@ -106,7 +106,7 @@ def collect_unlocked_files(ported_root: Path, lock: UpstreamLock) -> list[str]:
         for path in ported_root.rglob("*")
         if path.is_file()
         and "__pycache__" not in path.parts
-        and path.relative_to(ported_root).as_posix() not in _UNLOCKED_METADATA
+        and path.relative_to(ported_root).as_posix() not in UNLOCKED_METADATA
     }
     return [
         f"{rel}: file exists in the vendor tree but is absent from upstream.lock"

@@ -1,0 +1,294 @@
+{
+  "recomputed": {
+    "yfinance": 29,
+    "sec": 24,
+    "tmx": 24,
+    "federal_reserve": 13,
+    "cboe": 9,
+    "oecd": 9,
+    "imf": 8,
+    "finviz": 7,
+    "famafrench": 6,
+    "government_us": 6,
+    "deribit": 5,
+    "seeking_alpha": 3,
+    "wsj": 3,
+    "finra": 2,
+    "multpl": 1,
+    "stockgrid": 1
+  },
+  "recomputed_total": 150,
+  "ledger_total": 350,
+  "per_file": {
+    "census-yfinance-cboe-finviz.json": {
+      "claimed": 45,
+      "actual": 45,
+      "extra_task_ids": [],
+      "missing_task_ids": []
+    },
+    "census-sec-tmx-fed-gov-finra.json": {
+      "claimed": 69,
+      "actual": 69,
+      "extra_task_ids": [],
+      "missing_task_ids": []
+    },
+    "census-imf-oecd-famafrench-misc.json": {
+      "claimed": 36,
+      "actual": 36,
+      "extra_task_ids": [],
+      "missing_task_ids": []
+    }
+  },
+  "uncovered_providers": {},
+  "out_of_scope_rows": {
+    "not_run_with_credential": 185,
+    "in_progress": 15
+  },
+  "upstream_root_ok": true,
+  "upstream_commit_ok": true,
+  "spot_checks": [
+    {
+      "task_id": "OBB2-yfinance-EquityScreener",
+      "file": "census-yfinance-cboe-finviz.json",
+      "verdict": "SUPPORTED",
+      "why": "Cited line 168 is only the aextract_data signature, but it delegates to utils/helpers.py:100 (_data.post(...screener, body=body)) and :117-118 (body['offset']=len(results)), which is exactly post_json + body offset pagination + structured filter body.",
+      "engine_claim": "absent"
+    },
+    {
+      "task_id": "OBB2-cboe-EquityHistorical",
+      "file": "census-yfinance-cboe-finviz.json",
+      "verdict": "SUPPORTED",
+      "why": "Line 122 awaits get_index_directory() and set_index('index_symbol') before building one URL per symbol (line 121 split, 126-133 branch) - a preflight directory lookup joined into a per-symbol multi-request shape.",
+      "engine_claim": "absent"
+    },
+    {
+      "task_id": "OBB2-federal_reserve-FederalFundsRate",
+      "file": "census-sec-tmx-fed-gov-finra.json",
+      "verdict": "NOT SUPPORTED",
+      "why": "Line 117-123 does prove GET + rows_pointer=refRates, but the same file at :67-77 divides every numeric column by 100 and :131-142 pops type/footnoteId and sorts rows client-side; ModelSpec has no scaling, column-drop or sort field, so expressible_today=true with needs_engine_capability=[] is wrong.",
+      "engine_claim": "absent",
+      "c74_disposition": "CORRECTED: row downgraded true->false; engine basis read in-session opendata/data/providers/_engine/http_json.py:303 and spec.py:266-285; upstream /100 and sort lines could not be re-read because no federal_reserve module is vendored in this repo (catalog.py:61 is _reserved_provider)"
+    },
+    {
+      "task_id": "OBB2-tmx-EquityQuote",
+      "file": "census-sec-tmx-fed-gov-finra.json",
+      "verdict": "SUPPORTED",
+      "why": "Line 310 is the GraphQL URL and 312-320 build a per-symbol POST payload from a copied gql.stock_info_template, matching post_json/post_body/graphql_query_template.",
+      "engine_claim": "absent"
+    },
+    {
+      "task_id": "OBB2-imf-AvailableIndicators",
+      "file": "census-imf-oecd-famafrench-misc.json",
+      "verdict": "SUPPORTED",
+      "why": "Line 133 imports ImfMetadata (the codelist+dataflow-availability catalog build), so multi_endpoint_join/lookup_preflight is real, though the join itself lives in utils/metadata.py and the cited line is an import - second-level evidence.",
+      "engine_claim": "absent"
+    },
+    {
+      "task_id": "OBB2-oecd-GdpNominal",
+      "file": "census-imf-oecd-famafrench-misc.json",
+      "verdict": "SUPPORTED",
+      "why": "Lines 153-157 build a dotted SDMX key into the URL path with format=csvfile, confirming get_csv plus sdmx_dotted_key_path; the B1GQ->B1GQ_POP swap at :160 is an unlisted param-value branch.",
+      "engine_claim": "absent"
+    },
+    {
+      "task_id": "OBB2-famafrench-FamaFrenchFactors",
+      "file": "census-imf-oecd-famafrench-misc.json",
+      "verdict": "SUPPORTED",
+      "why": "Line 282 only shows dataset-path string assembly (dataset_path_lookup); the zip/csv/table parsing is at utils/helpers.py:156-182/227/781-826, so the label is correct but the cited line is indirect evidence.",
+      "engine_claim": "absent"
+    },
+    {
+      "task_id": "OBB2-deribit-FuturesInstruments",
+      "file": "census-imf-oecd-famafrench-misc.json",
+      "verdict": "NOT SUPPORTED",
+      "why": "Cited utils/helpers.py:84 shows only a GET URL; models/futures_instruments.py:86-92 nulls the sentinel 32503708800000 and stores creation/expiration as millisecond epochs, which normalize_record hands to pydantic unchanged - an expressible_today=true claim that ignores an absent epoch-ms->date conversion.",
+      "engine_claim": "absent",
+      "c74_disposition": "CORRECTED: row downgraded true->false; no vendored deribit bytes exist in-repo (only catalog.py:73), so no upstream line could be cited; epoch-ms/sentinel gaps rest on http_json.py:303 + spec.py:266-285"
+    },
+    {
+      "task_id": "OBB2-stockgrid-ShortVolume",
+      "file": "census-imf-oecd-famafrench-misc.json",
+      "verdict": "SUPPORTED",
+      "why": "models/short_volume.py:62-73 is one GET with ticker={symbol}, rows at the dotted pointer individual_short_volume_table.data, and column aliases only - all of which ModelSpec rows_pointer/ParamSpec.query_key/ColumnSpec.source_key already cover.",
+      "engine_claim": "already_present",
+      "c74_disposition": "DOWNGRADED for want of a citable line: the engine claim itself is fine on its face (spec.py:272/275/80/121) but models/short_volume.py:62 resolves outside the repo root and akshare/_vendor holds no stockgrid module (catalog.py:79 registers it as reserved only), so the true claim is unsupported and was flipped to false rather than left with a dangling cite"
+    }
+  ],
+  "engine_audit": {
+    "modelspec_fields_present": [
+      "model",
+      "domain",
+      "asset_class",
+      "period",
+      "market",
+      "base_url",
+      "path",
+      "columns",
+      "params",
+      "rows_pointer",
+      "pagination",
+      "credential",
+      "credential_query_key",
+      "async_mode",
+      "scenario",
+      "error_prefix",
+      "row_envelope",
+      "static_headers",
+      "notes",
+      "decoder"
+    ],
+    "confirmed_absent": [
+      "post/request body (the only send seam is http_json.py:359 get_shared_http_client().get; no method field on ModelSpec, spec.py:266-285)",
+      "html/xml/xlsx/binary decoders (BodyDecoderKind is json|csv|tsv|zip_csv only, spec.py:25)",
+      "multi-endpoint join, per-item fanout, lookup/preflight (one base_url + one path per declaration, spec.py:271-272; no join field, spec.py:285)",
+      "client-side filter/sort/limit, derived or scaled columns (resolve_rows returns the list at the pointer unchanged, http_json.py:264; normalize_record copies the raw value, http_json.py:303)",
+      "param value mapping (all->any) and epoch-ms to date coercion (ParamSpec carries only query_key/required/default/enum, spec.py:80; ColumnSpec only a source_key, spec.py:121)"
+    ],
+    "present_and_enough": [
+      "http GET + query encoding (encode_query)",
+      "dotted rows_pointer (resolve_rows, http_json.py:243)",
+      "path templates with percent-checked single segments (render_path)",
+      "enum + query_key + default + required (ParamSpec)",
+      "column alias via ColumnSpec.source_key",
+      "csv/tsv/zip_csv body decode with declarable delimiter, member and encoding (DecoderSpec spec.py:196-214, decoders.py:141-224) -- measured 2026-10-09, this is what makes the pre-C74 'only JSON' claim and the csv_decoder/zip_member_decoder entries in stale needs lists wrong",
+      "static_headers on every page (http_json.py:531) and offset/page/cursor pagination (spec.py:28, http_json.py:441-459)"
+    ]
+  },
+  "registration_check": {
+    "deribit": "catalog.py:73 _reserved_provider('deribit') only - no Provider descriptors, no specs.py, no ModelSpec, no fetcher",
+    "stockgrid": "catalog.py:79 _reserved_provider('stockgrid') only - same",
+    "conclusion": "Both expressible_today=true claims are claims about the engine, not about working models; neither provider has any registration today, so the flags cannot be read as 'already shipped'."
+  },
+  "evidence_root_audit": {
+    "rows_resolving_against_upstream_root": 122,
+    "rows_resolving_against_repo_root": 28,
+    "note": "All 24 sec rows cite opendata/data/providers/sec/specs.py (the prior analysis artifact, lines 95-135 are prose blocker notes), i.e. second-hand evidence; specs.py:136+ carries an UPSTREAM_EVIDENCE map that can be chained to primary upstream file:line. Every one of the 150 evidence paths exists and every cited line number is within file length; no path escapes its root. | C74 re-audit 2026-10-09: that note described the prior state. All 24 sec rows have been re-pointed off opendata/data/providers/sec/specs.py (its lines 82-135 are NOT_DECLARABLE prose and 140-165 UPSTREAM_EVIDENCE paths relative to providers/sec/openbb_sec/, which resolves outside the repo root) onto verified engine/catalog lines; each changed row keeps its prior cite in its own audited object. The tmx __init__.py:58 alias-table cite is gone. No sec/tmx/finra/government_us/federal_reserve/deribit/stockgrid module is vendored in this repo (grep over opendata/data/providers/akshare/_vendor returns none), so upstream shape lines could not be written and are named as such.",
+    "weak_citations": [
+      "OBB2-tmx-EtfHistorical -> providers/tmx/openbb_tmx/__init__.py:58 (a fetcher-alias table row, not request code)",
+      "OBB2-finra-EquityShortInterest -> utils/data_storage.py:55 (defensible: the pipe-delimited CSV URL is there)",
+      "OBB2-imf-AvailableIndicators -> an import statement",
+      "OBB2-famafrench-* -> a helper call, not the zip decode"
+    ]
+  },
+  "arith_verification": "3 files: provider_groups sums to 45/69/36 and each equals len(rows); 150 unique task_ids, no duplicates, no extras, no missing vs the recomputed set; provider+upstream_model of every census row matches the ledger.",
+  "c74_reaudit": {
+    "audited_by": "C74 census re-audit",
+    "audited_date": "2026-10-09",
+    "engine_yardstick_read": [
+      "opendata/data/providers/_engine/spec.py:25",
+      "opendata/data/providers/_engine/spec.py:28",
+      "opendata/data/providers/_engine/spec.py:80",
+      "opendata/data/providers/_engine/spec.py:196-216",
+      "opendata/data/providers/_engine/spec.py:266-285",
+      "opendata/data/providers/_engine/http_json.py:243-264",
+      "opendata/data/providers/_engine/http_json.py:284-327",
+      "opendata/data/providers/_engine/http_json.py:340-403",
+      "opendata/data/providers/_engine/http_json.py:441-459",
+      "opendata/data/providers/_engine/decoders.py:141-224",
+      "opendata/data/providers/catalog.py:55-99"
+    ],
+    "no_join_field_in_modelspec": "opendata/data/providers/_engine/spec.py:285 is the last ModelSpec field (decoder); the field list spec.py:266-285 has no join/lookup/fanout member, so every join_needed=true row stays inexpressible",
+    "rows_changed_per_file": {
+      "census-sec-tmx-fed-gov-finra.json": 26,
+      "census-imf-oecd-famafrench-misc.json": 2,
+      "census-yfinance-cboe-finviz.json": 0
+    },
+    "downgraded_rows": [
+      {
+        "task_id": "OBB2-federal_reserve-FederalFundsRate",
+        "prior_expressible_today": true,
+        "now": false,
+        "missing": [
+          "published_value_rescale",
+          "client_side_column_drop",
+          "client_side_sort"
+        ]
+      },
+      {
+        "task_id": "OBB2-deribit-FuturesInstruments",
+        "prior_expressible_today": true,
+        "now": false,
+        "missing": [
+          "epoch_ms_to_date_conversion",
+          "sentinel_value_nulling",
+          "vendored_upstream_source_missing"
+        ]
+      },
+      {
+        "task_id": "OBB2-stockgrid-ShortVolume",
+        "prior_expressible_today": true,
+        "now": false,
+        "missing": [
+          "vendored_upstream_source_missing"
+        ]
+      }
+    ],
+    "kept_true_with_in_repo_proof": [],
+    "residual_true_rows_not_in_scope": [
+      {
+        "task_id": "OBB2-federal_reserve-SOFR",
+        "evidence": "providers/federal_reserve/openbb_federal_reserve/models/sofr.py:84",
+        "flag": "expressible_today=true with needs=[] and a cite that resolves outside the repo root; federal_reserve is _reserved_provider at opendata/data/providers/catalog.py:61 and no vendored module exists, so this session could neither confirm nor re-point it"
+      },
+      {
+        "task_id": "OBB2-federal_reserve-OvernightBankFundingRate",
+        "evidence": "providers/federal_reserve/openbb_federal_reserve/models/overnight_bank_funding_rate.py:97",
+        "flag": "same as SOFR: unvendored, unpointable, left untouched as out of the C74 mandate"
+      }
+    ],
+    "expressible_today_recomputed": {
+      "census-sec-tmx-fed-gov-finra.json": {
+        "true": 2,
+        "false": 67,
+        "rows": 69
+      },
+      "census-imf-oecd-famafrench-misc.json": {
+        "true": 0,
+        "false": 36,
+        "rows": 36
+      },
+      "census-yfinance-cboe-finviz.json": {
+        "true": 0,
+        "false": 45,
+        "rows": 45
+      }
+    },
+    "expressible_today_total": {
+      "true": 2,
+      "false": 148
+    },
+    "audited_rows_per_provider": {
+      "deribit": 1,
+      "federal_reserve": 1,
+      "sec": 24,
+      "stockgrid": 1,
+      "tmx": 1
+    },
+    "citation_surface_recomputed": {
+      "rows_resolving_against_repo_root": 28,
+      "rows_resolving_against_upstream_root": 122
+    },
+    "unchanged_denominators": {
+      "rows": 150,
+      "unique_task_ids": 150,
+      "recomputed_total": 150,
+      "provider_counts_match_prior_recomputed": true,
+      "ledger_total": 350
+    },
+    "how_recomputed": "All counters were regenerated in-session by a script that loads the three census files, concatenates rows, groups by provider (Counter), counts truthy expressible_today per file, counts rows carrying an audited object, and classifies each evidence string by os.path.isfile of its path prefix against the repo root; recomputed_total and per_file actual/claimed are len(rows) of the same load. Provider counts were asserted equal to the pre-existing recomputed dict (assert passed), and every census task_id was joined against the read-only ledger column 'task_id' (census ids absent from the ledger: 0). No row was deleted and no task_id/provider/upstream_model/response_format/endpoints/paged field was written.",
+    "engine_audit_corrected": "The pre-C74 engine_audit said csv/zip decoders were absent; DecoderSpec (spec.py:196-214) plus decoders.py:141-224 ship json/csv/tsv/zip_csv today, so the confirmed_absent/present_and_enough lists above were rewritten from the bytes and the two sec rows whose needs named csv/zip capabilities (EquityFTD, InstitutionsSearch) were corrected.",
+    "ledger_cross_check_recomputed": {
+      "ledger_rows": 350,
+      "census_unique_task_ids": 150,
+      "extra_task_ids": [],
+      "census_ids_covered_by_ledger": 150,
+      "note": "extra/missing were re-derived in this session by joining census task_id against the read-only ledger column 'task_id'; per_file extra_task_ids/missing_task_ids are kept empty only because every census task_id resolves in the ledger and no ledger row inside these 16 provider groups was dropped by this re-audit"
+    },
+    "stale_needs_repairs": [
+      "OBB2-tmx-EtfHistorical",
+      "OBB2-sec-EquityFTD",
+      "OBB2-sec-InstitutionsSearch"
+    ],
+    "note_stale_needs": "DecoderSpec landed in this tree (spec.py:196-214 + decoders.py:141-224), so needs entries naming csv_decoder / zip_member_decoder / csv_delimiter / delimited_text_decoder are no longer a blocker; they were removed from every C74-touched row and the prior lists kept in each row's audited object"
+  }
+}

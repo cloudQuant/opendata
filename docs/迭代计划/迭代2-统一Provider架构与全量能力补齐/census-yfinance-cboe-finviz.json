@@ -1,0 +1,914 @@
+{
+ "provider_groups": {
+  "yfinance": 29,
+  "cboe": 9,
+  "finviz": 7
+ },
+ "rows": [
+  {
+   "task_id": "OBB2-yfinance-AvailableIndices",
+   "provider": "yfinance",
+   "upstream_model": "AvailableIndices",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 0,
+   "paged": true,
+   "response_format": "unknown",
+   "row_extraction": "flat",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "static_no_http_source"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/available_indices.py:50",
+   "notes": "No HTTP at all: transposes a bundled INDICES constant; engine has no static-source field."
+  },
+  {
+   "task_id": "OBB2-yfinance-BalanceSheet",
+   "provider": "yfinance",
+   "upstream_model": "BalanceSheet",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation",
+    "derived_columns",
+    "column_truncation"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/balance_sheet.py:77",
+   "notes": "yfinance SDK Ticker.<statement> DataFrame: index transposed to rows, snake_case keys, limit slices columns."
+  },
+  {
+   "task_id": "OBB2-yfinance-CashFlowStatement",
+   "provider": "yfinance",
+   "upstream_model": "CashFlowStatement",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation",
+    "derived_columns",
+    "column_truncation"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/cash_flow.py:74",
+   "notes": "yfinance SDK Ticker.<statement> DataFrame: index transposed to rows, snake_case keys, limit slices columns."
+  },
+  {
+   "task_id": "OBB2-yfinance-IncomeStatement",
+   "provider": "yfinance",
+   "upstream_model": "IncomeStatement",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation",
+    "derived_columns",
+    "column_truncation"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/income_statement.py:77",
+   "notes": "yfinance SDK Ticker.<statement> DataFrame: index transposed to rows, snake_case keys, limit slices columns."
+  },
+  {
+   "task_id": "OBB2-yfinance-CompanyNews",
+   "provider": "yfinance",
+   "upstream_model": "CompanyNews",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation",
+    "symbol_fan_out"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/company_news.py:52",
+   "notes": "asyncio fan-out of yfinance Ticker.get_info() per comma-split symbol; no request shape to declare."
+  },
+  {
+   "task_id": "OBB2-yfinance-EquityInfo",
+   "provider": "yfinance",
+   "upstream_model": "EquityInfo",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation",
+    "symbol_fan_out"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/equity_profile.py:114",
+   "notes": "asyncio fan-out of yfinance Ticker.get_info() per comma-split symbol; no request shape to declare."
+  },
+  {
+   "task_id": "OBB2-yfinance-EquityQuote",
+   "provider": "yfinance",
+   "upstream_model": "EquityQuote",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation",
+    "symbol_fan_out"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/equity_quote.py:73",
+   "notes": "asyncio fan-out of yfinance Ticker.get_info() per comma-split symbol; no request shape to declare."
+  },
+  {
+   "task_id": "OBB2-yfinance-EtfInfo",
+   "provider": "yfinance",
+   "upstream_model": "EtfInfo",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation",
+    "symbol_fan_out"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/etf_info.py:206",
+   "notes": "asyncio fan-out of yfinance Ticker.get_info() per comma-split symbol; no request shape to declare."
+  },
+  {
+   "task_id": "OBB2-yfinance-KeyMetrics",
+   "provider": "yfinance",
+   "upstream_model": "KeyMetrics",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation",
+    "symbol_fan_out"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/key_metrics.py:238",
+   "notes": "asyncio fan-out of yfinance Ticker.get_info() per comma-split symbol; no request shape to declare."
+  },
+  {
+   "task_id": "OBB2-yfinance-ShareStatistics",
+   "provider": "yfinance",
+   "upstream_model": "ShareStatistics",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation",
+    "symbol_fan_out"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/share_statistics.py:112",
+   "notes": "asyncio fan-out of yfinance Ticker.get_info() per comma-split symbol; no request shape to declare."
+  },
+  {
+   "task_id": "OBB2-yfinance-PriceTargetConsensus",
+   "provider": "yfinance",
+   "upstream_model": "PriceTargetConsensus",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation",
+    "symbol_fan_out"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/price_target_consensus.py:90",
+   "notes": "asyncio fan-out of yfinance Ticker.get_info() per comma-split symbol; no request shape to declare."
+  },
+  {
+   "task_id": "OBB2-yfinance-KeyExecutives",
+   "provider": "yfinance",
+   "upstream_model": "KeyExecutives",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "nested_key",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/key_executives.py:54",
+   "notes": "Ticker.get_info()['companyOfficers'] list, maxAge popped; SDK call, not an engine HTTP request."
+  },
+  {
+   "task_id": "OBB2-yfinance-CryptoHistorical",
+   "provider": "yfinance",
+   "upstream_model": "CryptoHistorical",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "flat",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/crypto_historical.py:96",
+   "notes": "yfinance SDK download()/Ticker.dividends -> DataFrame; interval+period map and tz/index work precede rows."
+  },
+  {
+   "task_id": "OBB2-yfinance-CurrencyHistorical",
+   "provider": "yfinance",
+   "upstream_model": "CurrencyHistorical",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "flat",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/currency_historical.py:104",
+   "notes": "yfinance SDK download()/Ticker.dividends -> DataFrame; interval+period map and tz/index work precede rows."
+  },
+  {
+   "task_id": "OBB2-yfinance-EquityHistorical",
+   "provider": "yfinance",
+   "upstream_model": "EquityHistorical",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "flat",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/equity_historical.py:134",
+   "notes": "yfinance SDK download()/Ticker.dividends -> DataFrame; interval+period map and tz/index work precede rows."
+  },
+  {
+   "task_id": "OBB2-yfinance-EtfHistorical",
+   "provider": "yfinance",
+   "upstream_model": "EtfHistorical",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "flat",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/equity_historical.py:134",
+   "notes": "yfinance SDK download()/Ticker.dividends -> DataFrame; interval+period map and tz/index work precede rows."
+  },
+  {
+   "task_id": "OBB2-yfinance-FuturesHistorical",
+   "provider": "yfinance",
+   "upstream_model": "FuturesHistorical",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "flat",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/futures_historical.py:120",
+   "notes": "yfinance SDK download()/Ticker.dividends -> DataFrame; interval+period map and tz/index work precede rows."
+  },
+  {
+   "task_id": "OBB2-yfinance-IndexHistorical",
+   "provider": "yfinance",
+   "upstream_model": "IndexHistorical",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "flat",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/index_historical.py:134",
+   "notes": "yfinance SDK download()/Ticker.dividends -> DataFrame; interval+period map and tz/index work precede rows."
+  },
+  {
+   "task_id": "OBB2-yfinance-HistoricalDividends",
+   "provider": "yfinance",
+   "upstream_model": "HistoricalDividends",
+   "shape": "binary_or_other",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "flat",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "sdk_delegation"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/historical_dividends.py:49",
+   "notes": "yfinance SDK download()/Ticker.dividends -> DataFrame; interval+period map and tz/index work precede rows."
+  },
+  {
+   "task_id": "OBB2-yfinance-OptionsChains",
+   "provider": "yfinance",
+   "upstream_model": "OptionsChains",
+   "shape": "multi_endpoint_join",
+   "http_method": "OTHER",
+   "endpoints": 2,
+   "paged": false,
+   "response_format": "unknown",
+   "row_extraction": "unknown",
+   "join_needed": true,
+   "needs_engine_capability": [
+    "sdk_delegation",
+    "multi_request_join",
+    "columnar_output_shape"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/options_chains.py:58",
+   "notes": "Ticker.options then one option_chain call per expiry, calls+puts concat; multi-request, columnar publish."
+  },
+  {
+   "task_id": "OBB2-yfinance-FuturesCurve",
+   "provider": "yfinance",
+   "upstream_model": "FuturesCurve",
+   "shape": "multi_endpoint_join",
+   "http_method": "GET",
+   "endpoints": 2,
+   "paged": false,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": true,
+   "needs_engine_capability": [
+    "multi_request_join",
+    "derived_columns"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/utils/helpers.py:243",
+   "notes": "quoteSummary JSON for the futures chain, then a chart request per contract; two shapes joined in a DataFrame."
+  },
+  {
+   "task_id": "OBB2-yfinance-EquityActive",
+   "provider": "yfinance",
+   "upstream_model": "EquityActive",
+   "shape": "post_json",
+   "http_method": "POST",
+   "endpoints": 1,
+   "paged": true,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "post_request_body",
+    "body_offset_pagination"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/utils/helpers.py:100",
+   "notes": "get_custom_screener: YfData.post to /v1/finance/screener, body offset loop until total_results."
+  },
+  {
+   "task_id": "OBB2-yfinance-EquityAggressiveSmallCaps",
+   "provider": "yfinance",
+   "upstream_model": "EquityAggressiveSmallCaps",
+   "shape": "post_json",
+   "http_method": "POST",
+   "endpoints": 1,
+   "paged": true,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "post_request_body",
+    "body_offset_pagination"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/utils/helpers.py:100",
+   "notes": "get_custom_screener: YfData.post to /v1/finance/screener, body offset loop until total_results."
+  },
+  {
+   "task_id": "OBB2-yfinance-EquityGainers",
+   "provider": "yfinance",
+   "upstream_model": "EquityGainers",
+   "shape": "post_json",
+   "http_method": "POST",
+   "endpoints": 1,
+   "paged": true,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "post_request_body",
+    "body_offset_pagination"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/utils/helpers.py:100",
+   "notes": "get_custom_screener: YfData.post to /v1/finance/screener, body offset loop until total_results."
+  },
+  {
+   "task_id": "OBB2-yfinance-EquityLosers",
+   "provider": "yfinance",
+   "upstream_model": "EquityLosers",
+   "shape": "post_json",
+   "http_method": "POST",
+   "endpoints": 1,
+   "paged": true,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "post_request_body",
+    "body_offset_pagination"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/utils/helpers.py:100",
+   "notes": "get_custom_screener: YfData.post to /v1/finance/screener, body offset loop until total_results."
+  },
+  {
+   "task_id": "OBB2-yfinance-GrowthTechEquities",
+   "provider": "yfinance",
+   "upstream_model": "GrowthTechEquities",
+   "shape": "post_json",
+   "http_method": "POST",
+   "endpoints": 1,
+   "paged": true,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "post_request_body",
+    "body_offset_pagination"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/utils/helpers.py:100",
+   "notes": "get_custom_screener: YfData.post to /v1/finance/screener, body offset loop until total_results."
+  },
+  {
+   "task_id": "OBB2-yfinance-EquityUndervaluedLargeCaps",
+   "provider": "yfinance",
+   "upstream_model": "EquityUndervaluedLargeCaps",
+   "shape": "post_json",
+   "http_method": "POST",
+   "endpoints": 1,
+   "paged": true,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "post_request_body",
+    "body_offset_pagination"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/utils/helpers.py:100",
+   "notes": "get_custom_screener: YfData.post to /v1/finance/screener, body offset loop until total_results."
+  },
+  {
+   "task_id": "OBB2-yfinance-EquityUndervaluedGrowth",
+   "provider": "yfinance",
+   "upstream_model": "EquityUndervaluedGrowth",
+   "shape": "post_json",
+   "http_method": "POST",
+   "endpoints": 1,
+   "paged": true,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "post_request_body",
+    "body_offset_pagination"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/undervalued_growth_equities.py:84",
+   "notes": "Same POST screener (body dict with offset); YfData adds the signed crumb/cookie session itself."
+  },
+  {
+   "task_id": "OBB2-yfinance-EquityScreener",
+   "provider": "yfinance",
+   "upstream_model": "EquityScreener",
+   "shape": "post_json",
+   "http_method": "POST",
+   "endpoints": 1,
+   "paged": true,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "post_request_body",
+    "body_offset_pagination",
+    "structured_filter_body"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/yfinance/openbb_yfinance/models/equity_screener.py:168",
+   "notes": "POST screener with a caller-supplied criteria body (700+ line query translation), not a fixed query string."
+  },
+  {
+   "task_id": "OBB2-cboe-EquityHistorical",
+   "provider": "cboe",
+   "upstream_model": "EquityHistorical",
+   "shape": "multi_endpoint_join",
+   "http_method": "POST",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": true,
+   "needs_engine_capability": [
+    "preflight_directory_lookup",
+    "multi_request_join",
+    "date_window_filter"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/cboe/openbb_cboe/models/equity_historical.py:122",
+   "notes": "Index-directory preflight decides the charts/{interval}/{symbol}.json root; one request per symbol; date window filtered after download."
+  },
+  {
+   "task_id": "OBB2-cboe-EtfHistorical",
+   "provider": "cboe",
+   "upstream_model": "EtfHistorical",
+   "shape": "multi_endpoint_join",
+   "http_method": "POST",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": true,
+   "needs_engine_capability": [
+    "preflight_directory_lookup",
+    "multi_request_join",
+    "date_window_filter",
+    "alias_model"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/cboe/openbb_cboe/models/equity_historical.py:122",
+   "notes": "Alias of CboeEquityHistoricalFetcher (__init__.py:31); inherits its preflight join and client-side date filter."
+  },
+  {
+   "task_id": "OBB2-cboe-EquityQuote",
+   "provider": "cboe",
+   "upstream_model": "EquityQuote",
+   "shape": "multi_endpoint_join",
+   "http_method": "POST",
+   "endpoints": 4,
+   "paged": false,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": true,
+   "needs_engine_capability": [
+    "multi_request_join",
+    "preflight_directory_lookup",
+    "percent_column_scaling"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/cboe/openbb_cboe/models/equity_quote.py:131",
+   "notes": "Four requests joined on symbol (company+index directories, quotes, historical, IV); percent columns scaled after the call."
+  },
+  {
+   "task_id": "OBB2-cboe-EquitySearch",
+   "provider": "cboe",
+   "upstream_model": "EquitySearch",
+   "shape": "get_csv",
+   "http_method": "GET",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "csv",
+   "row_extraction": "flat",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "csv_decoder",
+    "client_side_filter"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/cboe/openbb_cboe/utils/helpers.py:125",
+   "notes": "Body is a CSV at www.cboe.com/us/options/symboldir/...?download=csv read via read_csv, then substring filtered."
+  },
+  {
+   "task_id": "OBB2-cboe-FuturesCurve",
+   "provider": "cboe",
+   "upstream_model": "FuturesCurve",
+   "shape": "multi_endpoint_join",
+   "http_method": "POST",
+   "endpoints": 4,
+   "paged": false,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": true,
+   "needs_engine_capability": [
+    "fetcher_composition",
+    "multi_request_join",
+    "hardcoded_symbol_roster"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/cboe/openbb_cboe/models/futures_curve.py:81",
+   "notes": "Calls CboeEquityQuoteFetcher for a hardcoded VX symbol roster; settlement branch reads CSV."
+  },
+  {
+   "task_id": "OBB2-cboe-IndexHistorical",
+   "provider": "cboe",
+   "upstream_model": "IndexHistorical",
+   "shape": "multi_endpoint_join",
+   "http_method": "POST",
+   "endpoints": 2,
+   "paged": false,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": true,
+   "needs_engine_capability": [
+    "branching_base_url",
+    "preflight_directory_lookup",
+    "multi_request_join",
+    "column_drop"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/cboe/openbb_cboe/models/index_historical.py:122",
+   "notes": "Interval/directory branch picks one of two URL roots, one request per symbol, volume dropped for one branch."
+  },
+  {
+   "task_id": "OBB2-cboe-IndexSearch",
+   "provider": "cboe",
+   "upstream_model": "IndexSearch",
+   "shape": "get_json_single",
+   "http_method": "GET",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "client_side_filter"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/cboe/openbb_cboe/models/index_search.py:94",
+   "notes": "Single GET of all_indices.json, then a client-side substring match over the directory; no query key is sent."
+  },
+  {
+   "task_id": "OBB2-cboe-IndexSnapshots",
+   "provider": "cboe",
+   "upstream_model": "IndexSnapshots",
+   "shape": "get_json_single",
+   "http_method": "GET",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "branching_base_url",
+    "percent_column_scaling",
+    "column_drop"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/cboe/openbb_cboe/models/index_snapshots.py:101",
+   "notes": "Region branch addresses one of two unrelated paths; percent columns scaled and drop_cols removed afterwards."
+  },
+  {
+   "task_id": "OBB2-cboe-OptionsChains",
+   "provider": "cboe",
+   "upstream_model": "OptionsChains",
+   "shape": "multi_endpoint_join",
+   "http_method": "POST",
+   "endpoints": 3,
+   "paged": false,
+   "response_format": "json",
+   "row_extraction": "nested_key",
+   "join_needed": true,
+   "needs_engine_capability": [
+    "preflight_directory_lookup",
+    "regex_column_derivation",
+    "strike_scaling",
+    "columnar_output_shape"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/cboe/openbb_cboe/models/options_chains.py:68",
+   "notes": "Two directory preflights + one options JSON; contract symbol regex-parsed, strike scaled /1000, output columnar."
+  },
+  {
+   "task_id": "OBB2-finviz-CompareGroups",
+   "provider": "finviz",
+   "upstream_model": "CompareGroups",
+   "shape": "html_scraping_or_js",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "html",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "html_scraping_sdk",
+    "metric_branch"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/finviz/openbb_finviz/models/compare_groups.py:238",
+   "notes": "finvizfinance.group Overview/Performance/Valuation.screener_view scrapes HTML tables; metric branch picks the class."
+  },
+  {
+   "task_id": "OBB2-finviz-EtfPricePerformance",
+   "provider": "finviz",
+   "upstream_model": "EtfPricePerformance",
+   "shape": "html_scraping_or_js",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "html",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "html_scraping_sdk"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/finviz/openbb_finviz/models/price_performance.py:102",
+   "notes": "finvizfinance.screener.performance with set_filter(ticker=...) per symbol; HTML table scraped, percent/abbrev parsed."
+  },
+  {
+   "task_id": "OBB2-finviz-PricePerformance",
+   "provider": "finviz",
+   "upstream_model": "PricePerformance",
+   "shape": "html_scraping_or_js",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "html",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "html_scraping_sdk"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/finviz/openbb_finviz/models/price_performance.py:102",
+   "notes": "finvizfinance.screener.performance with set_filter(ticker=...) per symbol; HTML table scraped, percent/abbrev parsed."
+  },
+  {
+   "task_id": "OBB2-finviz-EquityInfo",
+   "provider": "finviz",
+   "upstream_model": "EquityInfo",
+   "shape": "html_scraping_or_js",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "html",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "html_scraping_sdk",
+    "symbol_fan_out"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/finviz/openbb_finviz/models/equity_profile.py:101",
+   "notes": "finvizfinance.quote.finvizfinance(symbol).row per symbol; no HTTP contract, HTML key/value scrape."
+  },
+  {
+   "task_id": "OBB2-finviz-KeyMetrics",
+   "provider": "finviz",
+   "upstream_model": "KeyMetrics",
+   "shape": "html_scraping_or_js",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "html",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "html_scraping_sdk",
+    "symbol_fan_out"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/finviz/openbb_finviz/models/key_metrics.py:123",
+   "notes": "finvizfinance.quote row per symbol, then metric remap; scrape, not a declarable GET."
+  },
+  {
+   "task_id": "OBB2-finviz-PriceTarget",
+   "provider": "finviz",
+   "upstream_model": "PriceTarget",
+   "shape": "html_scraping_or_js",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "html",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "html_scraping_sdk",
+    "symbol_fan_out",
+    "derived_columns"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/finviz/openbb_finviz/models/price_target.py:66",
+   "notes": "finvizfinance.quote per symbol; analyst target rows rebuilt from the scraped row dict."
+  },
+  {
+   "task_id": "OBB2-finviz-EquityScreener",
+   "provider": "finviz",
+   "upstream_model": "EquityScreener",
+   "shape": "html_scraping_or_js",
+   "http_method": "OTHER",
+   "endpoints": 1,
+   "paged": false,
+   "response_format": "html",
+   "row_extraction": "unknown",
+   "join_needed": false,
+   "needs_engine_capability": [
+    "html_scraping_sdk",
+    "metric_branch",
+    "preset_filter_merge"
+   ],
+   "expressible_today": false,
+   "existing_fetcher_class": "",
+   "evidence": "providers/finviz/openbb_finviz/models/equity_screener.py:553",
+   "notes": "Screener class chosen by metric, filters merged from a preset ini, HTML scrape; paging is inside the SDK."
+  }
+ ]
+}

@@ -4,12 +4,18 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any
 
 import pytest
 
-from scripts.quality.ported_security_evidence import SCAN_REL, TRIAGE_REL, validate
+from scripts.quality.ported_security_evidence import (
+    EXPECTED_ROUND,
+    PORT_ROOT,
+    SCAN_REL,
+    TRIAGE_REL,
+    validate,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -60,9 +66,9 @@ def refresh_scan_binding(root: Path, scan: dict[str, Any], triage: dict[str, Any
 def valid_bundle(root: Path) -> None:
     """Create an internally consistent scan and triage without external tools."""
     source_paths = [
-        "opendata_http/serialization.py",
-        "opendata_http/remote.py",
-        "opendata_http/tls.py",
+        f"{PORT_ROOT}/serialization.py",
+        f"{PORT_ROOT}/remote.py",
+        f"{PORT_ROOT}/tls.py",
     ]
     (root / source_paths[0]).parent.mkdir(parents=True, exist_ok=True)
     (root / source_paths[1]).write_text("def remote():\n    return eval('1')\n", encoding="utf-8")
@@ -105,9 +111,9 @@ def valid_bundle(root: Path) -> None:
             }
         )
     scan: dict[str, Any] = {
-        "archive_round": "C65",
+        "archive_round": EXPECTED_ROUND,
         "generated_at": GENERATED_AT,
-        "produced_by": "bandit -r opendata_http",
+        "produced_by": f"bandit -r {PORT_ROOT}",
         "scanner_version": "1.9.4",
         "python_version": "3.11.8",
         "scanner_exit": 1,
@@ -120,7 +126,7 @@ def valid_bundle(root: Path) -> None:
         "rule_counts": counts,
     }
     triage: dict[str, Any] = {
-        "archive_round": "C65",
+        "archive_round": EXPECTED_ROUND,
         "generated_at": GENERATED_AT,
         "reviewer": {
             "name": "Codex primary",
@@ -173,7 +179,7 @@ def test_current_source_scan_and_risk_review_validate(evidence_root: Path) -> No
 
 
 def test_stale_source_bytes_and_digest_are_rejected(evidence_root: Path) -> None:
-    (evidence_root / "opendata_http/serialization.py").write_text(
+    (evidence_root / f"{PORT_ROOT}/serialization.py").write_text(
         "def load():\n    return pickle.loads(b'changed')\n", encoding="utf-8"
     )
 
@@ -261,3 +267,31 @@ def test_triage_must_bind_exact_scan_bytes(evidence_root: Path) -> None:
 
     assert result.valid is False
     assert "scan-triage-sha-mismatch" in {issue.code for issue in result.issues}
+
+
+def test_a_bundle_older_than_the_window_is_rejected(evidence_root: Path) -> None:
+    """The 24 h window is what makes every round re-scan; it has to be able to bite."""
+    stale = (NOW - timedelta(hours=25)).isoformat()
+    for relative in (SCAN_REL, TRIAGE_REL):
+        document = read_json(evidence_root / relative)
+        document["generated_at"] = stale
+        write_json(evidence_root / relative, document)
+    triage = read_json(evidence_root / TRIAGE_REL)
+    triage["scan_sha256"] = hashlib.sha256((evidence_root / SCAN_REL).read_bytes()).hexdigest()
+    write_json(evidence_root / TRIAGE_REL, triage)
+
+    result = validate(evidence_root, now=NOW)
+
+    assert result.valid is False
+    assert {"scan-stale", "triage-stale"} <= {issue.code for issue in result.issues}
+
+
+def test_a_bundle_labelled_as_another_round_is_rejected(evidence_root: Path) -> None:
+    scan = read_json(evidence_root / SCAN_REL)
+    scan["archive_round"] = "C65"
+    write_json(evidence_root / SCAN_REL, scan)
+
+    result = validate(evidence_root, now=NOW)
+
+    assert result.valid is False
+    assert "scan-round-invalid" in {issue.code for issue in result.issues}

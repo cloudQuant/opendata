@@ -1,4 +1,4 @@
-"""Offline regressions for the C65 per-path batch-scope reconciliation."""
+"""Offline regressions for the per-path vendor batch-scope reconciliation."""
 
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ def _row(payload: dict[str, object], path: str) -> dict[str, object]:
     return next(row for row in _rows(payload) if row.get("path") == path)
 
 
-def test_c65_scope_inventory_counts_current_paths_and_keeps_snapshot_gap(
+def test_current_scope_inventory_is_clean_and_names_its_own_batch_field(
     inputs: port_scope.PortScopeInputs,
 ) -> None:
     audit = port_scope.validate_port_scope(REPO_ROOT, inputs)
@@ -51,10 +51,12 @@ def test_c65_scope_inventory_counts_current_paths_and_keeps_snapshot_gap(
     assert audit.checked_paths == 327
     assert audit.python_paths == 325
     assert audit.resource_paths == 2
-    assert audit.valid is False
-    assert audit.batch_field == "-"
-    assert any("disk tree/upstream.lock path sets differ" in problem for problem in audit.problems)
-    assert any("disk hash differs from port manifest" in problem for problem in audit.problems)
+    assert audit.valid is True
+    assert audit.problems == ()
+    # The batch field has to trace to the archive this run resolved, not to a frozen round.
+    assert audit.inventory_rel == port_scope.scope_inventory_rel(REPO_ROOT)
+    assert (REPO_ROOT / str(audit.inventory_rel)).is_file()
+    assert audit.batch_field == f"{audit.inventory_rel}#files.batch"
 
 
 def test_missing_inventory_path_fails_closed(inputs: port_scope.PortScopeInputs) -> None:
@@ -122,12 +124,16 @@ def test_inventory_reconciliation_booleans_are_not_judgment_inputs(
     inventory = _inventory_copy(inputs)
     reconciliation = inventory["reconciliation"]
     assert isinstance(reconciliation, dict)
+    # Name the keys before overwriting them: a drifted key would add a field and test nothing.
+    assert "lock_manifest_path_set_equal" in reconciliation
+    assert "manifest_snapshot_sha_matches_current_port_count" in reconciliation
     reconciliation["lock_manifest_path_set_equal"] = False
     reconciliation["manifest_snapshot_sha_matches_current_port_count"] = 0
     audit = port_scope.validate_port_scope(REPO_ROOT, replace(inputs, inventory=inventory))
     baseline = port_scope.validate_port_scope(REPO_ROOT, inputs)
 
-    assert audit.valid is False
+    assert baseline.valid is True
+    assert audit.valid == baseline.valid
     assert audit.problems == baseline.problems
 
 
