@@ -1,0 +1,44 @@
+# C78 witness -- acceptance-probe counterfact self-test (gate member 11) at HEAD 5e335ab
+
+Run pinned to the committed tree: branch ``dev``, HEAD ``5e335ab14b350ac3d56335a4a76a140aa040caf4``, and the worktree was reported
+clean by the harness itself before the run started (its own header line is inside the fence below).
+
+Counterfact denominator moved with this round's judge: C77's run reported 755 breaks, C78 reports
+**758** -- the three added ones are AC-10|03's new population faces (a registered package with no
+review row, a census file the bundle never saw, a baseline set other than the pinned one).
+
+* probe source at that HEAD: ``scripts/quality/acceptance_item_probe.py``
+  sha256 ``e48ddc54d7d4adf776dc2684ba13d1a138d42fe49b08bc03f42a2e4a2b1b16ac`` (763569 bytes), read with
+  ``git show 5e335ab14b350ac3d56335a4a76a140aa040caf4:scripts/quality/acceptance_item_probe.py``
+* harness header lines (not part of the fenced body):
+
+```text
+date: Sat Oct 10 03:04:01 +08 2026
+branch: dev  HEAD: 5e335ab14b350ac3d56335a4a76a140aa040caf4
+worktree: 0 uncommitted paths
+command: python3.11 -u scripts/quality/acceptance_item_probe.py --self-test
+```
+
+The fenced body is the verbatim stdout+stderr of the command, byte for byte. Its declared digest
+covers exactly the fenced region, so it re-derives from this archive alone:
+
+* fenced body: 3 lines, 283 bytes,
+  sha256 ``01d36c3869c8f8300b3033848f51c1ee1182e459d7d421a058dcac134675310d``
+* recompute with:
+
+```bash
+python3.11 - <<'PY'
+import hashlib, pathlib
+text = pathlib.Path("docs/evidence/C78/self-test-witness.txt").read_text()
+start = text.index("```text\n", text.index("recompute with")) + len("```text\n")
+end = text.index("```", start)
+body = text[start:end]
+print(hashlib.sha256(body.encode()).hexdigest(), len(body.encode()), body.count("\n"))
+PY
+```
+
+```text
+  - 反事实面：115/115 个探针走到了判定，758 条 break 各被施加一次、每条都要求把干净读数打回 gap
+OK: 115 probe(s) measured; every judge is reachable from its declared repair, and all 758 counterfact(s) flip a clean reading back to a gap.
+GATE_EXIT=0
+```

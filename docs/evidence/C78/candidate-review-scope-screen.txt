@@ -1,0 +1,147 @@
+# C78 witness -- candidate review-scope screen over the 12-package census
+
+Run pinned to branch ``dev``, HEAD ``5e335ab14b350ac3d56335a4a76a140aa040caf4``. Two facts about the tree at run time, both of which
+the reader can check against the header line inside the fence: the screen itself was **untracked** at
+that commit (the wrapper reported ``DIRTY_PATHS=1``, and the only untracked path was
+``docs/evidence/C78/``), so its bytes exist only as the on-disk digest below rather than as a git
+blob; and the C65 artifacts it refuses to overwrite were last modified on 2026-09-30/2026-10-01, i.e.
+before this run, which is the outside check behind the claim "nothing written to the output dir =
+True".
+
+* screen source: ``docs/evidence/C78/candidate-review-scope-screen.py``
+  sha256 ``181a5baf1fd3c36d3de578d2b309a8531ba4472f1a0525468b622f8cd8829c38`` (9204 bytes),
+  last modified 2026-10-10T03:28:34+08:00 -- five seconds **before** the run started, so the bytes
+  hashed here are the bytes that executed.
+* command: ``python3.11 -u docs/evidence/C78/candidate-review-scope-screen.py``
+  (started 2026-10-10T03:28:39+08:00, stdout+stderr last written 03:32:20; the body's own
+  ``SCREEN_EXIT=0`` is the exit reading)
+
+The fenced body is the verbatim stdout+stderr of that command, byte for byte, including the wrapper
+lines it echoed itself. Its declared digest covers exactly the fenced region, so it re-derives from
+this archive alone:
+
+* fenced body: 65 lines, 4792 bytes,
+  sha256 ``9cac9850f07f43dcf67d1f97c679c1ae24fd06752c3e33fdf6489b5399cefe09``
+* recompute with:
+
+```bash
+python3.11 - <<'PY'
+import hashlib, pathlib
+text = pathlib.Path("docs/evidence/C78/candidate-review-scope-screen.txt").read_text()
+start = text.index("```text\n", text.index("recompute with")) + len("```text\n")
+end = text.index("```", start)
+body = text[start:end]
+print(hashlib.sha256(body.encode()).hexdigest(), len(body.encode()), body.count("\n"))
+PY
+```
+
+```text
+HEADER date=Sat Oct 10 03:28:39 +08 2026 branch=dev HEAD=5e335ab14b350ac3d56335a4a76a140aa040caf4
+CMD python3.11 -u docs/evidence/C78/candidate-review-scope-screen.py
+DIRTY_PATHS=1
+GUARD PROBE -- CERTIFIES NOTHING: this run refuses to write a bundle, by design.
+repo HEAD: /Users/yunjinqi/Documents/new_projects/opendata
+pinned baseline providers = ['ecb', 'fred', 'imf', 'oecd', 'yfinance']
+builder candidate thresholds = dice>=0.7 node_ratio>=0.55 ordered>=0.62
+
+=== 1. review population (builder classification, current tree) ===
+  packages = 12
+  total_py = 474
+  hand_written_py = 158
+  lock_proven_verbatim_py = 316
+  local_blocks_over_floor = 521
+  under _vendor/ but NOT lock-proven verbatim = 9 个（按上游 lock 的 manual_edits 标记进入结构对照面）
+    opendata/data/providers/akshare/_vendor/bond/bond_china_money.py
+       hand-written: upstream.lock row marks manual_edits
+    opendata/data/providers/akshare/_vendor/bond/bond_convert.py
+       hand-written: upstream.lock row marks manual_edits
+    opendata/data/providers/akshare/_vendor/datasets.py
+       hand-written: upstream.lock row marks manual_edits
+    opendata/data/providers/akshare/_vendor/futures/futures_hf_em.py
+       hand-written: upstream.lock row marks manual_edits
+    opendata/data/providers/akshare/_vendor/index/index_cons.py
+       hand-written: upstream.lock row marks manual_edits
+    opendata/data/providers/akshare/_vendor/index/index_zh_em.py
+       hand-written: upstream.lock row marks manual_edits
+    opendata/data/providers/akshare/_vendor/option/option_em.py
+       hand-written: upstream.lock row marks manual_edits
+    opendata/data/providers/akshare/_vendor/stock/cons.py
+       hand-written: upstream.lock row marks manual_edits
+    opendata/data/providers/akshare/_vendor/stock_fundamental/stock_finance_sina.py
+       hand-written: upstream.lock row marks manual_edits
+
+=== 2. candidates the shipped thresholds produce over today's tree ===
+  baseline_providers = ['ecb', 'fred', 'imf', 'oecd', 'yfinance']
+  baseline_head = 3e071fcc2cd9f891cac6040ae60296dba76dab46
+  baseline_per_provider = {'ecb': 9, 'fred': 41, 'imf': 26, 'oecd': 12, 'yfinance': 33}
+  baseline_py_files = 121
+  baseline_blocks = 1105
+  measure_baseline_seconds = 107.3
+  nearest_pairs = 520
+  candidate_count = 8
+  score=0.7435 local=opendata/data/providers/fred/models/_estr_query.py::[186, 190] <- baseline=openbb_platform/providers/imf/openbb_imf/utils/table_builder.py::[1449, 1453]
+  score=0.7404 local=opendata/data/providers/fred/models/_sonia_query.py::[60, 64] <- baseline=openbb_platform/providers/imf/openbb_imf/utils/table_builder.py::[1449, 1453]
+  score=0.7378 local=opendata/data/providers/ths/models/trading_calendar.py::[109, 127] <- baseline=openbb_platform/providers/yfinance/openbb_yfinance/models/futures_curve.py::[49, 60]
+  score=0.7122 local=opendata/data/providers/akshare/_vendor/bond/bond_china_money.py::[201, 207] <- baseline=openbb_platform/providers/imf/openbb_imf/utils/metadata.py::[1207, 1218]
+  score=0.7101 local=opendata/data/providers/ths/endpoint_map.py::[186, 190] <- baseline=openbb_platform/providers/yfinance/openbb_yfinance/models/historical_dividends.py::[52, 54]
+  score=0.7073 local=opendata/data/providers/akshare/models/index_daily.py::[61, 83] <- baseline=openbb_platform/providers/imf/openbb_imf/models/consumer_price_index.py::[468, 477]
+  score=0.7038 local=opendata/data/providers/fred/models/search.py::[68, 78] <- baseline=openbb_platform/providers/yfinance/openbb_yfinance/models/company_news.py::[124, 131]
+  score=0.7014 local=opendata/data/providers/fred/models/_paged.py::[160, 168] <- baseline=openbb_platform/providers/fred/openbb_fred/models/spot.py::[89, 99]
+
+=== 3. rebuild attempt (write refused?) ===
+  raised = BuildError
+  nothing written to the output dir = True
+  message = 8 similarity candidates crossed the review thresholds, so this round is not a zero-copy observation: [{"baseline_ast_node_count": 44, "baseline_block_kind": "If.body", "baseline_function": "ImfTableBuilder.get_table", "baseline_function_kind": "method", "baseline_path": "openbb_platform/providers/imf/openbb_imf/utils/table_builder.py", "baseline_span": [1449, 1453], "local_ast_node_count": 46, "local_block_kind": "If.body", "local_function": "FredEuroShortTermRateSeriesQuery._bind_omitted_series_id", "local_function_kind": "method", "local_path": "opendata/data/providers/fred/models/_estr_quer
+
+=== 4. control: the schema guard fires before the candidate guard ===
+  raised = BuildError
+  message = findings schema must be opendata-c65-provider-source-review-findings/v1
+
+GUARD NAMES SECTION-2 COUNT: True
+VERDICT : REBUILD IS BLOCKED BY REAL FINDINGS
+COUNTS  : candidates=8 hand_written=158 lock_proven=316 total=474 edited_vendor=9
+SCREEN_EXIT=0
+```
+
+## What this face proves, and what it deliberately does not
+
+Four readings. Every number in this section is parsed back out of the fenced body by the archive
+builder, so the prose cannot state a figure the run did not print.
+
+1. **Population.** 12 provider packages, 474 ``.py`` files,
+   classified by the builder as 158 hand-written +
+   316 lock-proven verbatim (the two sum to the total; the builder checks this
+   too), with the 9 ``_vendor`` files whose upstream lock row marks ``manual_edits``
+   named in full and pushed into the structural comparison face
+   (521 blocks over the node floor).
+2. **Candidates.** Against the pinned baseline (5 providers, HEAD ``3e071fcc2cd9f891cac6040ae60296dba76dab46``,
+   121 files, 1105 blocks, re-measured in
+   107.3 s) the shipped thresholds -- dice>=0.70, node_ratio>=0.55,
+   ordered_ratio>=0.62 over 520 prefiltered pairs -- produce
+   **8** candidates, and the body prints exactly
+   8 ``score=`` rows, one per candidate as a ``path::span`` pair.
+3. **Rebuild attempt.** ``raised = BuildError``, ``nothing written to the output dir = True``, and
+   the message opens with the candidate count that section 2 measured (``GUARD NAMES SECTION-2
+   COUNT: True``). The message is truncated at 600 characters by the screen; the full payload is
+   re-derivable by re-running.
+4. **Control arm.** A findings stub with the wrong ``schema`` raises ``BuildError`` with
+   ``findings schema must be opendata-c65-provider-source-review-findings/v1``, which is the ordering
+   proof: the schema guard fires **before** the candidate guard, so section 3's BuildError cannot be
+   an artifact of my own temp fixtures. It is the 8 candidates.
+
+This screen certifies nothing about acceptance. It writes no bundle, signs nothing, and names no
+reviewer. The line it does establish is a design one: AC-10|03 cannot be closed by re-running the
+builder, because the evidence schema has no row shape for "candidate reviewed and cleared" -- so
+closure needs a schema change first (C79), then the review act over the
+8 named pairs.
+
+## Instrument history kept in the record
+
+The first run of this screen, at the same HEAD and the same counts, printed ``raised = BuildError``
+and ``nothing written ... = True`` and then ``VERDICT : REBUILD PATH IS OPEN -- the candidate guard
+did not fire``. The contradiction was mine: the dict key was named ``files_written`` while it held
+"no files were written", and the verdict predicate tested ``not attempt["files_written"]``. The rename
+to ``nothing_written``, the inverted predicate, the requirement that the guard message carry section
+2's measured count, and the section 4 ordering control are the repair. The refuted verdict line stays
+in the record; the fenced body above is the corrected run.
+

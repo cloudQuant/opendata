@@ -1,0 +1,139 @@
+# C78 witness -- AST block census: shipped builder vs the archived method it claims to follow
+
+Run pinned to branch ``dev``, HEAD ``5e335ab14b350ac3d56335a4a76a140aa040caf4`` with two uncommitted paths, both of them this round's
+own harness files (the C77 README note and ``docs/evidence/C78/``); the builder it imports, the probe
+and the validator were at their committed bytes. The screen is read-only: it parses two trees and
+prints counts, and writes nothing anywhere.
+
+* screen source: ``docs/evidence/C78/block-census-differential.py`` sha256 ``360d4adfc1f854c5ebf04d25d005e314d1e1cc1e6e09786e0dba68c062e6be60``
+  (8274 bytes) -- linted, formatted, mypy- and bandit-clean under the same A2 leg as the
+  other C78 instruments.
+* command: ``python3.11 -u docs/evidence/C78/block-census-differential.py`` -- 0.8 s to parse
+  and enumerate all 121 files, ``DIFFERENTIAL_RC=0`` inside the body.
+
+The fenced body is the verbatim stdout+stderr. Its declared digest covers exactly the fenced region,
+so it re-derives from this archive alone:
+
+* fenced body: 53 lines, 3185 bytes,
+  sha256 ``6c9c583aea9d8cc21ce1b013ba157431a750401634245b6647a5cc9344299a62``
+* recompute with:
+
+```bash
+python3.11 - <<'PY'
+import hashlib, pathlib
+text = pathlib.Path("docs/evidence/C78/block-census-differential.txt").read_text()
+start = text.index("```text\n", text.index("recompute with")) + len("```text\n")
+end = text.index("```", start)
+body = text[start:end]
+print(hashlib.sha256(body.encode()).hexdigest(), len(body.encode()), body.count("\n"))
+PY
+```
+
+```text
+HEADER date=Sat Oct 10 03:49:29 +08 2026 branch=dev HEAD=5e335ab14b350ac3d56335a4a76a140aa040caf4
+DIRTY_PATHS=2
+CMD python3.11 -u docs/evidence/C78/block-census-differential.py
+=== 0. the baseline tree is the reviewed tree (record-vs-disk, not HEAD-vs-disk) ===
+  archived manifest entries = 121
+  digest match on disk      = 121
+  digest drift              = 0  []
+  missing on disk           = 0  []
+  checkout HEAD             = 3e071fcc2cd9f891cac6040ae60296dba76dab46 (read from .git, not shelled)
+  archived baseline_commit  = 3e071fcc2cd9f891cac6040ae60296dba76dab46
+  equal                     = True
+
+=== 1. both enumerators over the identical 121 files ===
+  shipped builder floor (MIN_BLOCK_NODES) = 41
+  shipped total   = 1105
+  reference total = 1279
+  archived count  = 1227
+  parse time      = 0.8 s
+
+=== 2. block-kind histograms, side by side ===
+  AsyncWith.body               shipped=6      reference=6     
+  ClassDef.body                shipped=0      reference=174      <-- delta +174
+  ExceptHandler.body           shipped=3      reference=3     
+  For.body                     shipped=235    reference=235   
+  If.body                      shipped=332    reference=332   
+  If.orelse                    shipped=101    reference=101   
+  Try.body                     shipped=46     reference=46    
+  Try.handlers                 shipped=3      reference=3     
+  While.body                   shipped=18     reference=18    
+  With.body                    shipped=13     reference=13    
+  function_body                shipped=348    reference=348   
+
+=== 3. files where the two disagree (first 10) ===
+  openbb_platform/providers/ecb/openbb_ecb/models/balance_of_payments.py  shipped=2 reference=3
+  openbb_platform/providers/ecb/openbb_ecb/models/currency_reference_rates.py  shipped=1 reference=2
+  openbb_platform/providers/ecb/openbb_ecb/models/yield_curve.py  shipped=4 reference=6
+  openbb_platform/providers/fred/openbb_fred/models/ameribor.py  shipped=3 reference=5
+  openbb_platform/providers/fred/openbb_fred/models/balance_of_payments.py  shipped=2 reference=5
+  openbb_platform/providers/fred/openbb_fred/models/bond_indices.py  shipped=12 reference=14
+  openbb_platform/providers/fred/openbb_fred/models/commercial_paper.py  shipped=4 reference=6
+  openbb_platform/providers/fred/openbb_fred/models/commodity_spot_prices.py  shipped=2 reference=4
+  openbb_platform/providers/fred/openbb_fred/models/consumer_price_index.py  shipped=4 reference=6
+  openbb_platform/providers/fred/openbb_fred/models/dwpcr_rates.py  shipped=1 reference=2
+  files disagreeing = 93 of 121
+
+=== 4. control: does either enumerator reproduce the archived number? ===
+  reference == archived : 1279 vs 1227  -> no
+  shipped   == archived : 1105 vs 1227  -> no
+  note: the shipped builder's own measure_baseline() reported 1105 in the candidate screen; this section counts blocks straight out of _blocks_and_imports, so a match here and a mismatch there would locate the difference in aggregation rather than enumeration
+
+VERDICT : the shipped enumerator does not reproduce the method the archived artifact documents (delta +174 blocks)
+DIFFERENTIAL_EXIT=0
+DIFFERENTIAL_RC=0
+```
+
+## The finding, stated as the arithmetic the body supports
+
+The baseline tree is **not** the thing that changed. All 121 file digests in the archived C65
+manifest match the bytes on disk today (121/121), and the OpenBB checkout is still at
+``3e071fcc2cd9…``, the same commit the artifact pins (``equal = True``). So the three
+block counts below are three readings of one identical population:
+
+| enumerator | blocks over the 41-node floor |
+| --- | --- |
+| shipped ``_blocks_and_imports`` (builder added in ``60148ce``, C75) | 1105 |
+| reference written from the archived artifact's own ``method`` text | 1279 |
+| what the archived C65 artifact recorded | 1227 |
+
+93 of 121 files disagree between the shipped enumerator and the documented method,
+and the histogram localises the whole difference to **one block kind**: ``ClassDef.body``, shipped
+0 vs reference 174. Every other kind matches exactly (``function_body``
+348 on both sides (reference 348), ``For.body``, ``If.body``,
+``If.orelse``, ``Try.body``, ``Try.handlers``, ``ExceptHandler.body``, ``With.body``,
+``AsyncWith.body``, ``While.body``), and the identity ``shipped + class_delta == reference`` is
+checked by the archive builder, not asserted here.
+
+Neither shipped code nor the documented method reproduces the archived 1227. The archived
+number sits between them, so whatever produced it in C65 emitted *some* but not all class-body blocks
+(122 of 174), and that code is not in the tree -- the builder file was
+added whole in ``60148ce``, and its docstring's claim to "follow the archived C65 method" is a claim
+about intent, which this screen falsifies on counts.
+
+## What that does and does not cost
+
+It does **not** mean the shipped screen has a copy-detection hole at member granularity: the shipped
+``walk`` descends into class bodies and emits each nested ``body``/``orelse``/``finalbody``/
+``handlers``/``cases`` list, so every statement list *inside* a class is still compared one by one.
+What is lost is the class body as a single comparison unit -- 174 blocks in the pinned
+baseline, and the same granularity gap on the local side (1105 baseline blocks and 521 local
+blocks are the shipped-arm numbers today). A whole-copied class is therefore detected only through
+its members, never as a whole.
+
+It does mean the sentence "读数面已可复算" in the AC-10|03 ledger reason was too strong. Recomputing
+with the shipped builder is self-consistent; it does not reproduce the archived artifact's census, so
+the archived ``review_candidates = 0`` and today's ``8`` are outputs of two different screeners and
+cannot be cited against each other. The honest face is: a zero recorded by code that is no longer in
+the tree, over 7 packages / 71 files, at a HEAD nine days and 400-some provider files away.
+
+## Not established
+
+- what rule the C65 builder applied to class bodies, and therefore whether the archived 0-candidate
+  reading would have been 0 under the shipped thresholds too;
+- that the 8 live candidates are the complete set under any "correct" enumeration -- under the
+  documented method the population is larger by 174 baseline blocks;
+- that any other archived artifact in ``docs/evidence/`` reproduces under its current builder. Only
+  this one pair was diffed.
+

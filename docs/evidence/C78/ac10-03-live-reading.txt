@@ -1,0 +1,124 @@
+# C78 witness -- AC-10|03 live reading and its counterfact face
+
+Run pinned to branch ``dev``, HEAD ``5e335ab14b350ac3d56335a4a76a140aa040caf4`` with two uncommitted paths (the C77 README note and
+this round's own ``docs/evidence/C78/`` directory, both harness-side; the probe, the validator and
+the builder were at their committed bytes). The worktree line inside the fence reports the same
+count.
+
+Two commands ran in one shell, and both are inside the fence:
+
+* ``python3.11 -u scripts/quality/acceptance_item_probe.py --item 'AC-10|03'`` -- the live reading.
+* ``python3.11 -u scripts/quality/acceptance_item_probe.py --self-test --item 'AC-10|03'`` -- the
+  counterfact face. **This is not a filtered self-test**: ``--item`` selects what gets *printed*, and
+  the self-test still measures the whole suite (the body's own summary reads 115 probes /
+  758 breaks). That CLI behaviour is recorded here because it is the reason the per-item break
+  count below is derived from the registry rather than read off this run.
+
+* probe source at that HEAD: ``scripts/quality/acceptance_item_probe.py`` sha256
+  ``e48ddc54d7d4adf776dc2684ba13d1a138d42fe49b08bc03f42a2e4a2b1b16ac`` (763569 bytes) -- identical to the digest declared in
+  ``self-test-witness.txt``, so this fence and that one describe the same judge code.
+* command: started 2026-10-10T03:36:39+08:00; the two exit readings are ``EXIT_A=0``
+  and ``EXIT_B=0`` inside the body.
+
+The fenced body is the verbatim stdout+stderr of both commands, byte for byte. Its declared digest
+covers exactly the fenced region, so it re-derives from this archive alone:
+
+* fenced body: 36 lines, 6573 bytes,
+  sha256 ``9c7a50aa22bb104003a23eaaaf47eb3ede49b4e81ef04ea8a2517106ff1122c3``
+* recompute with:
+
+```bash
+python3.11 - <<'PY'
+import hashlib, pathlib
+text = pathlib.Path("docs/evidence/C78/ac10-03-live-reading.txt").read_text()
+start = text.index("```text\n", text.index("recompute with")) + len("```text\n")
+end = text.index("```", start)
+body = text[start:end]
+print(hashlib.sha256(body.encode()).hexdigest(), len(body.encode()), body.count("\n"))
+PY
+```
+
+```text
+HEADER date=Sat Oct 10 03:36:39 +08 2026 branch=dev HEAD=5e335ab14b350ac3d56335a4a76a140aa040caf4
+DIRTY_PATHS=2
+CMD_A python3.11 -u scripts/quality/acceptance_item_probe.py --item 'AC-10|03'
+
+### AC-10|03  (document line 209)
+判据原文：每 provider 零 OpenBB 源码（审查记录留档）
+本探针：Current registered provider sources have a complete, user-authorized, hash-bound review against the pinned OpenBB baseline
+台账现状：state=gap，文档勾选=False
+  - 注册面（git index 普查）= akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance（474 个 py）；审阅档案发现面 = akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance（12 包 / 474 py）；两包面差 = 缺档 - / 多余 -，逐包文件数错配 = -，文件集差 = 档案外 0 / 注册外 0；包面/文件面对齐 = yes
+  - 源码/SHA 台账/审阅/相似度四份面 = 474/474/71/71，全部等于注册普查 = no；源 SHA 绑定完整 = no，源码可解析 = yes，OpenBB import = 0（零导入=yes）
+  - 基线固定 = 3e071fcc2cd9f891cac6040ae60296dba76dab46（期望 3e071fcc2cd9f891cac6040ae60296dba76dab46），基线包面 = ecb, fred, imf, oecd, yfinance（钉住 ecb, fred, imf, oecd, yfinance，对齐=yes），基线 py = 121 个；审阅授权 = yes
+  - 候选/未审候选 = 0/0，审阅完成 = no（packages=no，nearest=yes）；nearest review = 3 项，正向结论 = yes，档案 SHA 互绑 = yes；validator valid/issues = no/172（source-review-stale, similarity-stale, review-package-set-mismatch, review-package-file-count-mismatch, review-akshare-file-set-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch）
+  - 补齐到可判：current_source_hashes_bound: no -> yes; package_reviews_complete: no -> yes; provider_review_issue_codes: source-review-stale, similarity-stale, review-package-set-mismatch, review-package-file-count-mismatch, review-akshare-file-set-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch -> -; provider_review_issue_count: 172 -> 0; provider_review_valid: no -> yes; review_complete: no -> yes; reviewed_provider_names: akshare, ecb, fred, imf, oecd, ths, yfinance -> akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance; reviewed_source_file_count: 71 -> 474; similarity_source_file_count: 71 -> 474; source_faces_match_registry: no -> yes
+VERDICT AC-10|03: gap — AC-10|03 需要审阅档案覆盖当前注册 provider 的普查面（包名、逐包文件数、文件集、四份文件计数互相对齐），并与固定的 OpenBB 基线包面与提交绑定，保留零导入、候选清零与已完成的正向审阅结论；当前缺档=-，档案外文件=0，注册外文件=0，基线包面对齐=yes，问题摘要=source-review-stale, similarity-stale, review-package-set-mismatch, review-package-file-count-mismatch, review-akshare-file-set-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch。
+
+census: gap=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+EXIT_A=0
+CMD_B python3.11 -u scripts/quality/acceptance_item_probe.py --self-test --item 'AC-10|03'
+  - 反事实面：115/115 个探针走到了判定，758 条 break 各被施加一次、每条都要求把干净读数打回 gap
+OK: 115 probe(s) measured; every judge is reachable from its declared repair, and all 758 counterfact(s) flip a clean reading back to a gap.
+
+### AC-10|03  (document line 209)
+判据原文：每 provider 零 OpenBB 源码（审查记录留档）
+本探针：Current registered provider sources have a complete, user-authorized, hash-bound review against the pinned OpenBB baseline
+台账现状：state=gap，文档勾选=False
+  - 注册面（git index 普查）= akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance（474 个 py）；审阅档案发现面 = akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance（12 包 / 474 py）；两包面差 = 缺档 - / 多余 -，逐包文件数错配 = -，文件集差 = 档案外 0 / 注册外 0；包面/文件面对齐 = yes
+  - 源码/SHA 台账/审阅/相似度四份面 = 474/474/71/71，全部等于注册普查 = no；源 SHA 绑定完整 = no，源码可解析 = yes，OpenBB import = 0（零导入=yes）
+  - 基线固定 = 3e071fcc2cd9f891cac6040ae60296dba76dab46（期望 3e071fcc2cd9f891cac6040ae60296dba76dab46），基线包面 = ecb, fred, imf, oecd, yfinance（钉住 ecb, fred, imf, oecd, yfinance，对齐=yes），基线 py = 121 个；审阅授权 = yes
+  - 候选/未审候选 = 0/0，审阅完成 = no（packages=no，nearest=yes）；nearest review = 3 项，正向结论 = yes，档案 SHA 互绑 = yes；validator valid/issues = no/172（source-review-stale, similarity-stale, review-package-set-mismatch, review-package-file-count-mismatch, review-akshare-file-set-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch）
+  - 补齐到可判：current_source_hashes_bound: no -> yes; package_reviews_complete: no -> yes; provider_review_issue_codes: source-review-stale, similarity-stale, review-package-set-mismatch, review-package-file-count-mismatch, review-akshare-file-set-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch -> -; provider_review_issue_count: 172 -> 0; provider_review_valid: no -> yes; review_complete: no -> yes; reviewed_provider_names: akshare, ecb, fred, imf, oecd, ths, yfinance -> akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance; reviewed_source_file_count: 71 -> 474; similarity_source_file_count: 71 -> 474; source_faces_match_registry: no -> yes
+VERDICT AC-10|03: gap — AC-10|03 需要审阅档案覆盖当前注册 provider 的普查面（包名、逐包文件数、文件集、四份文件计数互相对齐），并与固定的 OpenBB 基线包面与提交绑定，保留零导入、候选清零与已完成的正向审阅结论；当前缺档=-，档案外文件=0，注册外文件=0，基线包面对齐=yes，问题摘要=source-review-stale, similarity-stale, review-package-set-mismatch, review-package-file-count-mismatch, review-akshare-file-set-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch。
+
+census: gap=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+EXIT_B=0
+```
+
+## The four readings this archive exists to carry
+
+1. **Verdict**: ``AC-10|03: gap``. The judge now says gap for a reason a person can act
+   on -- the review archive covers 71 provider ``.py`` files while the registry census
+   is 474 -- and not because the judge demanded a 7-package tree.
+2. **Two populations, package-for-package equal.** Registry (git index): 12 packages /
+   474 py. Bundle (validator ``rglob`` walk): 12 packages, named
+   ``akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance``. Missing-from-review packages: ``-``, extra packages: ``-``, per-package
+   file-count mismatches: ``-``, file-set diffs: ``0 / 0``,
+   ``review_population_matches_registry = yes``. So the *provider set* is no longer the gap.
+3. **The four file-count faces**: ``474/474/71/71``
+   = python_files / source-hash ledger / reviewed files / similarity-manifest files. The first two
+   agree with the registry, the last two are the archive's C65-era scope. The judge's new
+   ``source_faces_match_registry`` fact names exactly that disagreement instead of hardcoding 71.
+4. **The validator's own face**: ``provider_review_valid = no`` over
+   ``172`` issues, of which the printed head is
+   source-review-stale, similarity-stale, review-package-set-mismatch,
+   review-package-file-count-mismatch, review-akshare-file-set-mismatch and three
+   review-akshare-hash-mismatch rows.
+
+## Counterfact face
+
+The registry at this commit declares 115 probes and 758 breaks in total, which is the
+same 115/758 the run reports -- so the count below comes from the same population the
+witness certified, not from a separate list. ``AC-10|03`` declares **9** breaks, and the
+whole-suite witness (`self-test-witness.txt`, same HEAD, clean worktree, ``GATE_EXIT=0``) asserts each
+of the 758 -- these 9 included -- flips a clean reading back to a gap. The clean
+reading is reachable through the declared repair, which uses indirection rather than literals:
+``provider_names: *registry_provider_names``,
+``reviewed_source_file_count: *registry_source_file_count``,
+``openbb_baseline_commit: *openbb_baseline_expected``,
+``baseline_provider_names: *baseline_providers_pinned``. A repair that pasted today's numbers in
+would be a second way of making the judge unfalsifiable, so the values are copied from the measured
+facts.
+
+## What is not in this archive
+
+The reading's ``candidate/unreviewed = 0/0`` is the **archived artifact's** self-report, computed in
+C65 over 7 packages / 71 files. The same shipped thresholds over today's tree produce 8
+candidates (see ``candidate-review-scope-screen.txt``). Those two zeros are not the same statement,
+and the difference is not only scope: the rewritten builder counts
+1105 baseline AST blocks where the archived artifact recorded
+1227 over the identical 121 pinned files, all 121 of which still hash-match on disk. That divergence is measured in
+``block-census-differential.txt`` and is why the ledger's "读数面已可复算" needed narrowing.
+

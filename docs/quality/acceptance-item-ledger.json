@@ -867,7 +867,7 @@
     },
     "AC-10|03|72598062": {
       "state": "gap",
-      "reason": "两条实测归因：①下面 C65（2026-10-01）留档的三份审阅 JSON 受 provider_source_review_evidence.MAX_EVIDENCE_AGE=24 小时 TTL 约束，同一棵树+同一批档案在 24 小时后就会报 source-review-stale/similarity-stale/nearest-review-stale，即本条读数是「时刻面」而非仓库稳定面；②仪器原先把包面冻结成 7 个包的字面量，落后于产品；本轮已改为「钉住 5 个基线包 + 实测当前注册包面」（provider_source_review_evidence.registered_provider_packages），当前实测 12 个 provider 包（新增 bls/cboe/federal_reserve/fmp/sec），provider py 文件面从留档的 71 涨到实测 474（其中 akshare/_vendor 325 个是 upstream.lock 逐文件哈希锁定的原文搬运，149 个是本迭代自研）。读数面已可复算：provider_source_review_evidence_build.py 从当前树重测并以 --findings（审阅人撰写的结论 JSON）为唯一人工输入重建三份档案，建完即自校验；仍未闭合的是审阅行为本身——按当前 12 包面重做一次逐文件审阅并由负责人署名，审阅人/授权串/日期一律不得代填。",
+      "reason": "三条实测归因：①时刻面未变：下面 C65（2026-10-01）留档的三份审阅 JSON 受 provider_source_review_evidence.MAX_EVIDENCE_AGE=24 小时 TTL 约束，同一棵树+同一批档案在 24 小时后就会报 source-review-stale/similarity-stale/nearest-review-stale，即本条读数是「时刻面」而非仓库稳定面；②判据已修（C78，HEAD 5e335ab）：原先把包面钉成「7 包/71 py/121 py」字面量的判据已删除——那是要求把仓库改小才能变绿的假门禁——改为两个独立普查面互相对齐：git index 侧 provider_packages/provider_py_files 对照 校验器 rglob 侧 python_files/reviewed_python_files/similarity_manifest/baseline_manifest 四读数，外加基线包集合等于由档案清单路径推出的固定集合；本轮实测两面同为 12 包 / 474 py 且逐包相等（akshare 341|bls 8|cboe 9|ecb 18|federal_reserve 8|fmp 8|fred 24|imf 10|oecd 9|sec 6|ths 26|yfinance 7），判据不再要求缩小树；反事实面：本条声明 9 条 break（由 PROBES 注册表重算，非回忆），全库 self-test 115 探针/758 break 在 5e335ab 绿且 GATE_EXIT=0；③新的阻塞不是「重跑即可」：build_bundle 今日在真实树上拒绝写盘，BuildError 指名 8 个相似度候选（520 排序对，基线重测 107.3 s），而证据 schema 没有「候选已审阅并清零」的行形、unreviewed_candidates 是 builder 字面量（builder:1148 写字面量，校验器 evidence:711-712 要求它等于 0、:913 再把它读成事实面）；另发现 C75 重写的 provider_source_review_evidence_build.py 并不复现档案口径：在钉死且逐文件哈希仍与磁盘一致的 121 个基线文件上，shipped 枚举数出 1105 个 AST 块、档案记 1227、按档案自身 method 文本重算得 1279，差异全部落在 ClassDef.body（shipped 0 对 reference 174），即档案的 review_candidates=0 与今天的 8 不是同一份代码的输出。故原先「读数面已可复算」收窄为「用当前 builder 自洽可复算，但不复现 C65 档案计数」。闭合顺序：C79 先在代码与 method 文本里同时定死「块」的定义并按新口径重测普查，再改 schema（逐候选审阅行 + --candidate-findings + 让活动档案脱离 docs/evidence/C65 冻结路径与 archive_round==C65 自证），然后对 8 对具名 pair 做真实审阅并由负责人署名——审阅人/授权串/日期一律不得代填。",
       "round": "C65",
       "date": "2026-10-01",
       "command": "Anaconda base outer driver invokes fixed Python scripts/quality/acceptance_item_probe.py --all --json docs/evidence/C65/item-readings-current.json; actual argv and CHECK_EXIT in docs/evidence/C65/item-readings-current.txt",
@@ -879,9 +879,16 @@
         "docs/evidence/C65/provider-similarity-inventory.json",
         "docs/evidence/C65/provider-nearest-review.json",
         "docs/evidence/C65/provider-review-independent.txt",
-        "docs/evidence/C65/probe-wiring-independent.txt"
+        "docs/evidence/C65/probe-wiring-independent.txt",
+        "docs/evidence/C78/README.md",
+        "docs/evidence/C78/self-test-witness.txt",
+        "docs/evidence/C78/ac10-03-live-reading.txt",
+        "docs/evidence/C78/candidate-review-scope-screen.py",
+        "docs/evidence/C78/candidate-review-scope-screen.txt",
+        "docs/evidence/C78/block-census-differential.py",
+        "docs/evidence/C78/block-census-differential.txt"
       ],
-      "note": "当前7包71py逐文件SHA、固定OpenBB五包121py对照、AST候选0及最近三对源码主线程实际审阅均留档且互绑；结论限当前比较范围。用户授权AI审阅，不伪称cloudQuant亲自签认，不证明历史clean-room开发方法或全库近似源码不存在。"
+      "note": "C65 留档的「7包71py逐文件SHA、固定OpenBB五包121py对照、AST候选0、最近三对已审」是历史面，且必须带口径引用：其总体是 7 包 / 71 文件 / 109 个本地块 / 1227 个基线块，其生成代码已不在树上（builder 于 60148ce 整文件新增，同 121 文件现数出 1105 块）。今日普查 12 包 / 474 py = 158 自研 + 316 由 upstream.lock 逐文件哈希锁定的原文；旧 note 的 325/149 划分与实测差在 9 个被标 manual_edits 的 _vendor 文件（325-9=316、149+9=158）。结论限当前比较范围。用户授权AI审阅，不伪称cloudQuant亲自签认，不证明历史clean-room开发方法或全库近似源码不存在。"
     },
     "AC-10|04|4e30a2d0": {
       "state": "proven",

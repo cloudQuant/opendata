@@ -119,8 +119,11 @@ Not established:
   bars, and the per-pair findings are task #47's work;
 - that `bls`/`cboe`/`federal_reserve`/`fmp`/`sec` are clean-room. The face records that the screen
   could not see them, not that they are clear;
-- that gate 6 is green: nothing here has been through the full 17-member run, and the counterfact
-  self-test (member 11) for the four new AC-16 breaks is in flight as of this commit.
+- that gate 6 is green: nothing here has been through the full 17-member run. The counterfact
+  self-test (member 11) has since run over both C77's AC-16 breaks and C78's rewritten AC-10|03
+  breaks at HEAD `5e335ab` — 115 probes, 758 breaks, each break applied once and each one flipping a
+  clean reading back to a gap, `GATE_EXIT=0`; the verbatim archive is
+  `docs/evidence/C78/self-test-witness.txt`. That is member 11 alone, not the other sixteen.
 
 ## Next
 
@@ -128,7 +131,11 @@ Not established:
    `EXPECTED_BASELINE_PROVIDERS` to the counterparts present in the pinned checkout, carry the
    9-of-12 local-block census in the same reading, and replace `judge_ac10_03`'s hardcoded `"7"` /
    `"71"` / provider-name literal with a registry-derived expectation plus a missing-package
-   counterfact (task #47).
+   counterfact (task #47). C78 took the third clause (the literals are gone; the judge now compares
+   two independently computed populations) and measured the first two as *not* a re-run: over
+   today's tree `build_bundle` refuses to write, because the shipped thresholds cross on 8 named
+   pairs and the evidence schema has no row shape for "candidate reviewed and cleared". See
+   `docs/evidence/C78/README.md`.
 2. AC-16|01/02 need real review acts, not more instrumentation: a per-package record under
    `docs/evidence/clean-room/` (schema in that directory's README), and a commit attestation where
    the claim is true. `gap` with disclosure stands where OpenBB source was consulted — the C76
