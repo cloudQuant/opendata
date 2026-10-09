@@ -36,19 +36,21 @@ import fnmatch
 import hashlib
 import json
 import re
-import subprocess
+import subprocess  # nosec B404
 import sys
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Final
+from typing import TYPE_CHECKING, Any, Final, cast
 
 import tomllib
 import yaml
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Mapping, Sequence
+
+    from opendata.data.capability import Capability
+    from opendata.data.provider import Provider
 
 REPO_ROOT: Final = Path(__file__).resolve().parents[2]
 DOC_REL: Final = "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/验收文档.md"
@@ -205,8 +207,8 @@ def tool(argv: Sequence[str]) -> tuple[int, str]:
 
 def git(args: Sequence[str]) -> str:
     """Run git with a literal argv and return stdout stripped."""
-    return subprocess.run(  # noqa: S603  # nosec B603
-        ["git", *args],  # noqa: S607  # nosec B607
+    return subprocess.run(  # noqa: S603  # nosec B603 B607
+        ["git", *args],  # noqa: S607
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
@@ -300,25 +302,25 @@ def task_rows() -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
-def inventory_doc() -> dict[str, object]:
+def inventory_doc() -> dict[str, Any]:
     """Return the parsed capability-inventory document."""
-    return yaml.safe_load(read(INVENTORY_REL))
+    return cast("dict[str, Any]", yaml.safe_load(read(INVENTORY_REL)))
 
 
-def map_doc() -> dict[str, object]:
+def map_doc() -> dict[str, Any]:
     """Return the parsed openbb_map.yaml document."""
-    return yaml.safe_load(read(MAP_REL))
+    return cast("dict[str, Any]", yaml.safe_load(read(MAP_REL)))
 
 
-def inventory_report() -> dict[str, object]:
+def inventory_report() -> dict[str, Any]:
     """Recompute the provider-model inventory report from source."""
     exit_code, output = tool(["python", "scripts/quality/provider_model_inventory.py"])
     if exit_code != 0:
         raise RuntimeError(f"provider_model_inventory exit={exit_code}: {output[-400:]}")
-    return json.loads(output)
+    return cast("dict[str, Any]", json.loads(output))
 
 
-def live_capabilities() -> list[object]:
+def live_capabilities() -> list[Capability]:
     """The runtime registration truth, produced by the repo's own registrar."""
     if str(REPO_ROOT) not in sys.path:
         sys.path.insert(0, str(REPO_ROOT))
@@ -497,7 +499,7 @@ def measure_ac2_02() -> Facts:
     }
 
 
-def catalog_providers() -> list[object]:
+def catalog_providers() -> list[Provider]:
     """Return the live provider descriptors from the catalog."""
     if str(REPO_ROOT) not in sys.path:
         sys.path.insert(0, str(REPO_ROOT))
@@ -1428,7 +1430,9 @@ def provider_model_routes() -> list[tuple[str, str, str | None]]:
             if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
             for deco in node.decorator_list:
-                target = deco.func if isinstance(deco, ast.Call) else None
+                if not isinstance(deco, ast.Call):
+                    continue
+                target = deco.func
                 if (
                     isinstance(target, ast.Attribute)
                     and target.attr in ROUTE_VERBS
@@ -1436,12 +1440,9 @@ def provider_model_routes() -> list[tuple[str, str, str | None]]:
                     and target.value.id.endswith("router")
                 ):
                     first = deco.args[0] if deco.args else None
+                    literal = first.value if isinstance(first, ast.Constant) else None
                     found.append(
-                        (
-                            path.name,
-                            target.attr,
-                            first.value if isinstance(first, ast.Constant) else None,
-                        )
+                        (path.name, target.attr, literal if isinstance(literal, str) else None)
                     )
     return found
 
@@ -1452,7 +1453,7 @@ def measure_ac2_17() -> Facts:
     cli = read("opendata/cli.py")
     registry_src = read("opendata/data/registry.py")
     routes = provider_model_routes()
-    verbs = {}
+    verbs: dict[str, int] = {}
     for _, verb, _ in routes:
         verbs[verb] = verbs.get(verb, 0) + 1
     return {
@@ -1972,40 +1973,70 @@ def judge_ac2_24(facts: Facts) -> Verdict:
 # --------------------------------------------------------------------------------------
 # AC2-25 发布候选同源冻结
 # --------------------------------------------------------------------------------------
+EVIDENCE_PLANE: Final = ("docs/evidence/", "docs/quality/")
+
+
+def non_evidence_diff_count(sha: str) -> int:
+    """Paths differing between ``sha`` and HEAD outside the evidence plane; -1 if not resolvable.
+
+    ``同树`` cannot mean "the record names this exact commit": a record is committed *by* the
+    commit it would have to name, so that reading is unsatisfiable on any tree. It means the
+    commit the record names is reachable and the two trees agree on everything that is not
+    evidence, so the code under measurement is the code that was run.
+    """
+    if not re.fullmatch(r"[0-9a-f]{7,40}", sha):
+        return -1
+    exit_code, out = tool(["git", "diff", "--name-only", f"{sha}..HEAD"])
+    if exit_code != 0:
+        return -1
+    return sum(1 for line in out.splitlines() if line and not line.startswith(EVIDENCE_PLANE))
+
+
 def measure_ac2_25() -> Facts:
     """AC2-25 测量面：所有适用子检查真实exit=0，证据同树 / 只报gate前半绿."""
     identity = document_identity()
     head = str(identity["head"])
     makefile = read("Makefile")
     declared = re.findall(r"^\s*@\$\(MAKE\) --no-print-directory ([a-z0-9-]+)", makefile, re.M)
-    records: list[tuple[int, str, str, int]] = []
+    records: list[dict[str, Any]] = []
     for path in sorted(REPO_ROOT.glob(GATE_RECORD_GLOB)):
         text = path.read_text(encoding="utf-8", errors="replace")
         exit_match = re.search(r"GATE_EXIT=(\S+)", text)
         if not exit_match:
             continue
-        head_match = re.search(rf"HEAD=({head}\b)", text)
+        sha_match = re.search(r"HEAD=([0-9a-f]{7,40})\b", text)
+        sha = sha_match.group(1) if sha_match else ""
+        rel = str(path.relative_to(REPO_ROOT))
         records.append(
-            (
-                int(path.parent.name[1:]) if path.parent.name[1:].isdigit() else -1,
-                exit_match.group(1),
-                str(path.relative_to(REPO_ROOT)),
-                len(re.findall(r"===== gate: ", text)),
-            )
-            if head_match
-            else (-1, exit_match.group(1), str(path.relative_to(REPO_ROOT)), 0)
+            {
+                "round": int(path.parent.name[1:]) if path.parent.name[1:].isdigit() else -1,
+                "exit": exit_match.group(1),
+                "path": rel,
+                "sections": len(re.findall(r"===== gate: ", text)),
+                "sha": sha,
+                "non_evidence_diff": non_evidence_diff_count(sha),
+                "tracked": 1 if tool(["git", "ls-files", "--error-unmatch", rel])[0] == 0 else 0,
+            }
         )
-    same_tree = sorted((r for r in records if r[0] >= 0), reverse=True)
-    latest_any = sorted(records, key=lambda r: r[0])[-1] if records else None
+    same_tree = sorted(
+        (r for r in records if r["non_evidence_diff"] == 0),
+        key=lambda r: r["round"],
+        reverse=True,
+    )
+    latest_any = max(records, key=lambda r: r["round"], default=None)
+    chosen = same_tree[0] if same_tree else None
     return {
         "head": head,
         "dirty_files": str(identity["dirty_files"]),
-        "gate_records_total": str(sum(1 for r in records if r[1] == "0")),
-        "gate_records_for_head": str(len(same_tree)),
-        "gate_record_path": same_tree[0][2] if same_tree else "absent",
-        "gate_exit_line": same_tree[0][1] if same_tree else "absent",
-        "latest_record_any_tree": latest_any[2] if latest_any else "absent",
-        "gate_member_runs": str(same_tree[0][3] if same_tree else 0),
+        "gate_records_total": str(sum(1 for r in records if r["exit"] == "0")),
+        "gate_records_same_tree": str(len(same_tree)),
+        "gate_record_path": chosen["path"] if chosen else "absent",
+        "gate_record_head": chosen["sha"] if chosen else "absent",
+        "gate_exit_line": chosen["exit"] if chosen else "absent",
+        "record_tracked": str(chosen["tracked"] if chosen else 0),
+        "record_non_evidence_diff": str(chosen["non_evidence_diff"] if chosen else -1),
+        "latest_record_any_tree": latest_any["path"] if latest_any else "absent",
+        "gate_member_runs": str(chosen["sections"] if chosen else 0),
         "gate_members_declared": str(len(set(declared))),
         "inventory_status": str(json.dumps(inventory_report()["status"])),
         "evidence_case_dirs": str(
@@ -2018,8 +2049,11 @@ def judge_ac2_25(facts: Facts) -> Verdict:
     """AC2-25 判定：发布候选同源冻结：清单、适用 AC、独立回归、整 gate 与文档/包/镜像同树."""
     checks = {
         "the tree is clean": facts["dirty_files"] == "0",
-        "a gate run record is archived": int(facts["gate_records_total"]) >= 1,
-        "the archived record names this exact commit": int(facts["gate_records_for_head"]) >= 1,
+        "a green gate run record is archived": int(facts["gate_records_total"]) >= 1,
+        "a record sits on this tree's code plane": int(facts["gate_records_same_tree"]) >= 1,
+        "the record is committed, not a scratch file": facts["record_tracked"] == "1",
+        "the record's tree differs from HEAD only in evidence": facts["record_non_evidence_diff"]
+        == "0",
         "GATE_EXIT is recorded and zero": facts["gate_exit_line"] == "0",
         "the gate target declares 17 members": facts["gate_members_declared"] == "17",
         "every declared member ran in the record": facts["gate_member_runs"]
@@ -2615,9 +2649,12 @@ PROBES: Final = (
         {
             "dirty_files": "0",
             "gate_records_total": "3",
-            "gate_records_for_head": "1",
-            "gate_record_path": "docs/evidence/C73/gate.txt",
+            "gate_records_same_tree": "1",
+            "gate_record_path": "docs/evidence/C74/gate.txt",
+            "gate_record_head": "0a1b2c3",
             "gate_exit_line": "0",
+            "record_tracked": "1",
+            "record_non_evidence_diff": "0",
             "gate_member_runs": "17",
             "gate_members_declared": "17",
             "inventory_status": '"PASS"',
@@ -2627,11 +2664,16 @@ PROBES: Final = (
             Break("只报 gate 前半绿", {"gate_exit_line": "1", "gate_member_runs": "8"}),
             Break("范围被缩小", {"gate_members_declared": "16", "gate_member_runs": "16"}),
             Break("清单与树不同源", {"inventory_status": '"FAIL"'}),
-            Break("没有运行记录", {"gate_records_total": "0", "gate_records_for_head": "0"}),
+            Break("没有运行记录", {"gate_records_total": "0", "gate_records_same_tree": "0"}),
             Break(
                 "旧一轮的绿色记录冒充本轮冻结树",
-                {"gate_records_total": "3", "gate_records_for_head": "0"},
+                {"gate_records_total": "3", "gate_records_same_tree": "0"},
             ),
+            Break(
+                "记录命名的树上还有代码面差异",
+                {"record_non_evidence_diff": "4", "gate_records_same_tree": "0"},
+            ),
+            Break("记录只是工作区里的暂存文件", {"record_tracked": "0"}),
         ),
         requires=(
             (REACH_ARCHIVE, "整 gate 需要在冻结干净树上跑满 17 个成员（含 a2-check 约 1300s）"),
@@ -2729,7 +2771,7 @@ def evaluate(item: Probe, case: Case | None, with_self_test: bool) -> Result:
     return result
 
 
-def self_test(item: Probe, facts: Facts | None) -> dict[str, object]:
+def self_test(item: Probe, facts: Facts | None) -> dict[str, Any]:
     """Closure must hold; every counter-example applied to it must break."""
     notes: list[str] = []
     if not item.breaks:
@@ -2902,13 +2944,13 @@ def main(argv: list[str] | None = None) -> int:
 
     want_item = args.item is not None
     if want_item:
-        item = probes_by_case().get(args.item)
-        if item is None:
+        probe = probes_by_case().get(args.item)
+        if probe is None:
             print(f"no probe registered for {args.item}")
             return 2
         cases, _ = parse_cases(read(DOC_REL))
         case = next((entry for entry in cases if entry.id == args.item), None)
-        result = evaluate(item, case, with_self_test=True)
+        result = evaluate(probe, case, with_self_test=True)
         print(f"{result.case} state={result.state} offline={result.offline_state}")
         print(f"  summary: {result.summary}")
         print(f"  reason:  {result.reason}")

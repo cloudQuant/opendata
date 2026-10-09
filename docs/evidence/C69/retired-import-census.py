@@ -196,8 +196,8 @@ def main() -> int:
         f"files_with_string_only_hits={len(string_only)}"
         "  (mentions inside a string constant, NOT imports: those scripts run as they stand)"
     )
-    for path, group in string_only:
-        for note in group:
+    for path, notes in string_only:
+        for note in notes:
             print(f"  {path.relative_to(ROOT)} {note}")
     _retired_name_face()
     print(f"HEAD={head_commit()}")

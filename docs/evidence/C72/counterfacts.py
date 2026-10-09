@@ -18,47 +18,69 @@ import sys
 from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any
+from typing import TYPE_CHECKING, Any, ClassVar, Protocol, cast
+
+if TYPE_CHECKING:
+    from opendata.data.models import ContractModel
+    from opendata.data.protocol import Fetcher
+    from opendata.data.providers._engine.http_json import HttpGet
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from opendata.data.capability import Capability
-from opendata.data.domains import contract_model, load_domains
-from opendata.data.providers._engine import http_json
-from opendata.data.providers._engine.http_json import (
+from opendata.data.capability import Capability  # noqa: E402
+from opendata.data.domains import contract_model, load_domains  # noqa: E402
+from opendata.data.providers._engine import http_json  # noqa: E402
+from opendata.data.providers._engine.http_json import (  # noqa: E402
     HttpResponse,
     ProviderEngineError,
     build_row_model,
     make_http_json_fetcher,
 )
-from opendata.data.providers._engine.spec import ColumnSpec, ModelSpec
-from opendata.data.providers._engine.testing import (
+from opendata.data.providers._engine.spec import ColumnSpec, ModelSpec  # noqa: E402
+from opendata.data.providers._engine.testing import (  # noqa: E402
     SequencedResponseTransport,
     fixture_context,
     synthetic_page,
     synthetic_record,
     valid_query_kwargs,
 )
-from opendata.data.providers.catalog import engine_declared_models, register_providers, registration_order
-from opendata.data.registry import ProviderRegistry
-from opendata.services.provider_model_query import (
+from opendata.data.providers.catalog import (  # noqa: E402
+    engine_declared_models,
+    register_providers,
+    registration_order,
+)
+from opendata.data.registry import ProviderRegistry  # noqa: E402
+from opendata.services.provider_model_query import (  # noqa: E402
     ProviderModelQueryOutputError,
     _serialize_contract_row,
 )
-from scripts.quality.declaration_provenance import (
+from scripts.quality import openbb_inventory_plane as plane  # noqa: E402
+from scripts.quality.declaration_provenance import (  # noqa: E402
     VIOLATIONS,
     Finding,
     domain_disagree,
     registered_domains,
     run_self_test,
 )
-from scripts.quality import openbb_inventory_plane as plane
 
 #: The one provider whose declarations are engine-native in this tree, so the faces below can name a
 #: real host and a real contract instead of a fixture.
 CBOE = "cboe"
+
+
+class TransportSeam(Protocol):
+    """Typing-only view of the class ``make_http_json_fetcher`` builds.
+
+    The factory is annotated ``type[Fetcher[Any, Any]]``, and the base ``Fetcher`` does not declare
+    ``http_transport``: the offline transport seam is a ``ClassVar`` the *generated* subclass adds
+    (``opendata/data/providers/_engine/http_json.py``), so the factory's signature erases it. Naming
+    that attribute here lets ``build`` assign it without silencing the check; at runtime this class
+    is never used, and the seam it describes is the one the engine already reads.
+    """
+
+    http_transport: ClassVar[HttpGet | None]
 
 
 def spec_of(source: str, model: str) -> ModelSpec:
@@ -73,7 +95,7 @@ def build(source: str, spec: ModelSpec, *pages: HttpResponse) -> tuple[Any, Any]
     """A fetcher for ``spec`` served by ``pages`` in order, plus the transport that recorded it."""
     transport = SequencedResponseTransport(*pages)
     fetcher_type = make_http_json_fetcher(source, spec)
-    fetcher_type.http_transport = transport
+    cast("type[TransportSeam]", fetcher_type).http_transport = transport
     return fetcher_type(), transport
 
 
@@ -81,9 +103,7 @@ def rows_for(source: str, spec: ModelSpec) -> list[Any]:
     """Fetch one synthetic page through the real engine and return the published rows."""
     fetcher, _ = build(source, spec, synthetic_page(spec, 1))
     return list(
-        fetcher.fetch(  # type: ignore[attr-defined]
-            ctx=fixture_context(source, spec, sends=2), **valid_query_kwargs(spec)
-        )
+        fetcher.fetch(ctx=fixture_context(source, spec, sends=2), **valid_query_kwargs(spec))
     )
 
 
@@ -118,11 +138,12 @@ def registration_rows(lines: list[str]) -> list[tuple[int, int, str]]:
 def face_resolve_domain() -> tuple[bool, str]:
     """F1 -- an explicit source is routed by its own asset class, not by the domain's first leg.
 
-    Two sources may register one domain under different asset classes (``ths`` serves ``instrument``
-    as ``metadata``; a catalog provider serves it as ``index``). The defect asked ``resolve`` for the
-    first leg's asset class together with the asked-for source, so the second leg's own request
-    matched nothing. No two live sources collide on one domain today, so the pair is registered
-    synthetically -- the judge under test is still the real ``resolve``/``resolve_domain``.
+    Two sources may register one domain under different asset classes (``ths`` serves
+    ``instrument`` as ``metadata``; a catalog provider serves it as ``index``). The defect asked
+    ``resolve`` for the first leg's asset class together with the asked-for source, so the
+    second leg's own request matched nothing. No two live sources collide on one domain today,
+    so the pair is registered synthetically -- the judge under test is still the real
+    ``resolve``/``resolve_domain``.
     """
     registry = ProviderRegistry()
     legs = (("index", "probe_a"), ("metadata", "probe_b"))
@@ -135,14 +156,14 @@ def face_resolve_domain() -> tuple[bool, str]:
             source=source,
             verified=False,
         )
-        registry.register(SimpleNamespace(capability=capability))
+        registry.register(cast("Fetcher[Any, Any]", SimpleNamespace(capability=capability)))
 
     routed = registry.resolve_domain("probe_shared_domain", source="probe_b")
     if routed.capability.asset_class != "metadata" or routed.capability.source != "probe_b":
         return False, f"resolve_domain routed {routed.capability!r}"
 
     # The pre-fix formula: the asset class off the first leg, kept together with the asked source.
-    first_leg = next(iter(registry._fetchers.values()))  # noqa: SLF001 - reproducing the old body
+    first_leg = next(iter(registry._fetchers.values()))  # reproducing the old body
     try:
         registry.resolve(first_leg.capability.asset_class, "probe_shared_domain", source="probe_b")
     except LookupError as error:
@@ -156,9 +177,10 @@ def face_resolve_domain() -> tuple[bool, str]:
 def face_rejected_parameter_names() -> tuple[bool, str]:
     """F2 -- a refused query names every undeclared key, in a set the caller can act on.
 
-    Positive arm: a query of only declared parameters returns rows. Counterfact arm: two invented keys
-    must both appear in ``ProviderEngineError.rejected`` -- a single hardcoded name in the message
-    would let a face like this pass while telling the caller nothing about which key to fix.
+    Positive arm: a query of only declared parameters returns rows. Counterfact arm: two
+    invented keys must both appear in ``ProviderEngineError.rejected`` -- a single hardcoded
+    name in the message would let a face like this pass while telling the caller nothing about
+    which key to fix.
     """
     spec = spec_of(CBOE, "IndexConstituents")
     rows = rows_for(CBOE, spec)
@@ -167,7 +189,7 @@ def face_rejected_parameter_names() -> tuple[bool, str]:
 
     fetcher, _ = build(CBOE, spec, synthetic_page(spec, 1))
     try:
-        fetcher.fetch(  # type: ignore[attr-defined]
+        fetcher.fetch(
             ctx=fixture_context(CBOE, spec, sends=2),
             **valid_query_kwargs(spec),
             probe_absent_one="x",
@@ -186,10 +208,10 @@ def face_rejected_parameter_names() -> tuple[bool, str]:
 def face_contract_row_class() -> tuple[bool, str]:
     """F3 -- the engine publishes the domain's contract class, and only that class is served.
 
-    Positive arm: every engine-declared model's rows are ``type(row) is contract_model(domain)``, and
-    the real serializer accepts them. Counterfact arm: a subclass carrying identical field values is
-    refused by the same serializer, and a declaration whose columns differ from a reviewed domain's
-    contract cannot be built at all.
+    Positive arm: every engine-declared model's rows are ``type(row) is
+    contract_model(domain)``, and the real serializer accepts them. Counterfact arm: a subclass
+    carrying identical field values is refused by the same serializer, and a declaration whose
+    columns differ from a reviewed domain's contract cannot be built at all.
     """
     served: list[str] = []
     for source, spec in engine_declared_models():
@@ -205,7 +227,7 @@ def face_contract_row_class() -> tuple[bool, str]:
 
     spec = spec_of(CBOE, "AvailableIndices")
     contract_type = contract_model(spec.domain)
-    look_alike_type = type("LookAlike", (contract_type,), {})
+    look_alike_type: type[ContractModel] = type("LookAlike", (contract_type,), {})
     look_alike = look_alike_type.model_validate(rows_for(CBOE, spec)[0].model_dump(mode="python"))
     try:
         _serialize_contract_row(look_alike, contract_type)
@@ -228,9 +250,9 @@ def face_bool_for_numeric_on_a_contract_row() -> tuple[bool, str]:
 
     Binding the row model to the contract class moved row construction out of the synthesized
     annotations, and pydantic widens ``True`` to ``1`` for a numeric field: the guard that made
-    ``*_SHAPE_INVALID`` fire lived in the class the engine no longer built. Positive arm: a numeric
-    value normalizes to that number. Counterfact arm: the same column published as ``True`` is refused
-    by the declaration, with the offending column named.
+    ``*_SHAPE_INVALID`` fire lived in the class the engine no longer built. Positive arm: a
+    numeric value normalizes to that number. Counterfact arm: the same column published as
+    ``True`` is refused by the declaration, with the offending column named.
     """
     spec = spec_of(CBOE, "IndexConstituents")
     contract_type = contract_model(spec.domain)
@@ -276,10 +298,10 @@ def face_provenance_domain_checks() -> tuple[bool, str]:
     """F5 -- the three new audit codes fire against the live registry, and correct rows stay green.
 
     Positive arms: the audit's own self-test reports every mutating arm fired, and every live
-    declaration produces no violation code from ``domain_disagree`` over ``registered_domains()``.
-    Counterfact arms: three mutations of a real declaration -- a domain nobody registered, a domain the
-    registry has but never reviewed, and a column the contract does not publish -- each have to raise
-    their own code from the same live data.
+    declaration produces no violation code from ``domain_disagree`` over
+    ``registered_domains()``. Counterfact arms: three mutations of a real declaration -- a
+    domain nobody registered, a domain the registry has but never reviewed, and a column the
+    contract does not publish -- each have to raise their own code from the same live data.
     """
     arms, fired, notes = run_self_test()
     if arms != fired or notes:
@@ -319,12 +341,12 @@ def face_provenance_domain_checks() -> tuple[bool, str]:
 def face_capability_census() -> tuple[bool, str]:
     """F6 -- every source's bindings reach the registry one-for-one, per source.
 
-    The registry keys by capability, so a source whose two bindings collide on one key registers one
-    capability while its module still says two. Each source is therefore counted three ways -- the
-    module's ``FETCHERS`` tuple, the capabilities the call returns, and what a *fresh* registry holds
-    after it -- and the per-source numbers have to agree before the whole-tree sum is read. Counterfact
-    arm: the same capability cannot be registered twice, which is what stops a census from being
-    inflated by a re-registration.
+    The registry keys by capability, so a source whose two bindings collide on one key registers
+    one capability while its module still says two. Each source is therefore counted three ways
+    -- the module's ``FETCHERS`` tuple, the capabilities the call returns, and what a *fresh*
+    registry holds after it -- and the per-source numbers have to agree before the whole-tree
+    sum is read. Counterfact arm: the same capability cannot be registered twice, which is what
+    stops a census from being inflated by a re-registration.
     """
     from opendata.data.providers.catalog import register_provider
 
@@ -334,9 +356,7 @@ def face_capability_census() -> tuple[bool, str]:
 
     rows: list[tuple[str, int]] = []
     for provider in registration_order():
-        module = importlib.import_module(
-            f"opendata.data.providers.{provider.source}.registration"
-        )
+        module = importlib.import_module(f"opendata.data.providers.{provider.source}.registration")
         fresh = ProviderRegistry()
         returned = register_provider(provider.source, fresh)
         held = len(fresh.capabilities())
@@ -348,14 +368,17 @@ def face_capability_census() -> tuple[bool, str]:
         rows.append((provider.source, held))
 
     if sum(count for _, count in rows) != len(registered):
-        return False, f"per-source {sum(count for _, count in rows)} != registered {len(registered)}"
+        return (
+            False,
+            f"per-source {sum(count for _, count in rows)} != registered {len(registered)}",
+        )
     for source, spec in declared:
         registry.resolve_model(source, spec.model)
         domain = load_domains().get(spec.domain)
         if domain is None or not domain.semantics_declared or "query" not in domain.permissions:
             return False, f"{source}::{spec.model} declares an unservable domain {spec.domain!r}"
 
-    duplicate = next(iter(registry._fetchers.values()))  # noqa: SLF001 - the keying is the subject
+    duplicate = next(iter(registry._fetchers.values()))  # the keying is the subject
     try:
         registry.register(duplicate)
     except ValueError:
@@ -394,11 +417,17 @@ def face_rights_rows_are_load_bearing() -> tuple[bool, str]:
             declared.setdefault(link, []).append(source)
     naming = {source for sources in declared.values() for source in sources}
     if naming != set(served):
-        return False, f"serving={len(served)} but only {len(naming)} declare a row: {sorted(naming)}"
+        return (
+            False,
+            f"serving={len(served)} but only {len(naming)} declare a row: {sorted(naming)}",
+        )
 
     baseline = plane.findings(inventory_text, rights_text, served)
     if [str(finding) for finding in baseline]:
-        return False, f"the shipped record is not green before any deletion: {[str(f) for f in baseline]}"
+        return (
+            False,
+            f"the shipped record is not green before any deletion: {[str(f) for f in baseline]}",
+        )
 
     lines = rights_text.splitlines()
     indexes = registration_rows(lines)
@@ -424,12 +453,30 @@ def face_rights_rows_are_load_bearing() -> tuple[bool, str]:
 
 FACES: tuple[tuple[str, Any], ...] = (
     ("F1 resolve_domain routes by the asked-for source's own asset class", face_resolve_domain),
-    ("F2 an undeclared parameter is refused by naming every rejected key", face_rejected_parameter_names),
-    ("F3 rows are the domain's contract class, and only that class is served", face_contract_row_class),
-    ("F4 a boolean is refused for a numeric column on a contract row", face_bool_for_numeric_on_a_contract_row),
-    ("F5 the provenance audit's domain checks arm against the live registry", face_provenance_domain_checks),
-    ("F6 the capability census holds as an identity across two enumerations", face_capability_census),
-    ("F7 every declared rights row is load-bearing for its serving source", face_rights_rows_are_load_bearing),
+    (
+        "F2 an undeclared parameter is refused by naming every rejected key",
+        face_rejected_parameter_names,
+    ),
+    (
+        "F3 rows are the domain's contract class, and only that class is served",
+        face_contract_row_class,
+    ),
+    (
+        "F4 a boolean is refused for a numeric column on a contract row",
+        face_bool_for_numeric_on_a_contract_row,
+    ),
+    (
+        "F5 the provenance audit's domain checks arm against the live registry",
+        face_provenance_domain_checks,
+    ),
+    (
+        "F6 the capability census holds as an identity across two enumerations",
+        face_capability_census,
+    ),
+    (
+        "F7 every declared rights row is load-bearing for its serving source",
+        face_rights_rows_are_load_bearing,
+    ),
 )
 
 
@@ -439,7 +486,7 @@ def main() -> int:
     for label, face in FACES:
         try:
             ok, detail = face()
-        except Exception as error:  # noqa: BLE001 - a face that crashes is a face that did not land
+        except Exception as error:  # a face that crashes is a face that did not land
             ok, detail = False, f"{type(error).__name__}: {error}"
         print(f"{'PASS' if ok else 'FAIL'}  {label}")
         print(f"      {detail}")
