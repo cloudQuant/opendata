@@ -211,3 +211,15 @@ census: gap=2
 （2 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
 ```
 
+## Reproducibility after the commit (appended 02:51, not edited into the header above)
+
+The header's "not in HEAD" paragraph describes the worktree at 02:43, when the probe was dirty and the
+two new files were untracked. The batch landed as `6231349`, and re-running the harness from that
+commit printed a body **byte-identical** to the one archived above (76 lines / 3,528 bytes,
+`sha256 3e1f2ed6593d711eb043515f258ac529a2cb429a41d363cc936a1b3c5eca4719`).
+
+One thing that had to survive being tracked is the legacy contrast: `docs/evidence/clean-room/README.md`
+quotes the phrase and the word 审查, so a document about the schema could itself have been credited as
+a record. It is not, because the file lists the probe-echo markers verbatim and `record_bodies()`
+excludes any body carrying one. The measured check is the unchanged `legacy_record_pkgs: 7 /
+legacy_record_binds: 8` in the re-run above: documenting the rule did not manufacture compliance.
