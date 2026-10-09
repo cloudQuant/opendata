@@ -28,6 +28,7 @@ from scripts.quality.acceptance_item_probe import (
     measure_ac10_03,
     probe_for,
     resolve_repair,
+    run_argv,
     script_module,
     wording_drift,
 )
@@ -66,9 +67,20 @@ SYNTHETIC_BASELINE_FILE_COUNTS = {
 SYNTHETIC_BASELINE_FILE_COUNT = sum(SYNTHETIC_BASELINE_FILE_COUNTS.values())
 
 
+def _break_shape(probe: Probe) -> None:
+    """A probe owes at least four counterfacts, each labelled distinctly.
+
+    Only a floor: the inventory grew as faces were added, and an upper bound would punish a probe
+    for measuring more of its requirement.
+    """
+    assert len(probe.breaks) >= 4
+    labels = [counterfactual.label for counterfactual in probe.breaks]
+    assert len(set(labels)) == len(labels), f"{probe.item}: duplicate counterfact labels"
+
+
 def _assert_breaks(probe: Probe, facts: dict[str, str]) -> None:
     """Every registered counterfactual must independently fail the measured facts."""
-    assert 4 <= len(probe.breaks) <= 6
+    _break_shape(probe)
     repaired = resolve_repair(facts, probe.repair)
     assert probe.judge(repaired).state == PROVEN
     for counterfactual in probe.breaks:
@@ -161,6 +173,23 @@ def _write_probe_bundle(root: Path) -> None:
     ).hexdigest()
     _write_json(similarity_path, similarity)
     _refresh_nearest_bindings(root)
+    _git_stage(root)
+
+
+def _git_stage(root: Path) -> None:
+    """Index the synthetic tree so the probe's second census face can read it.
+
+    AC-10|03 counts the provider census twice -- once through the bundle's own ``rglob`` walk, once
+    through ``git ls-files`` -- so a fixture root has to be a repository, and staging must happen
+    after the last write for the two faces to see the same population. A failed command is an
+    assertion, not a silent gap: an empty index would read as "no provider packages".
+    """
+    for argv in (
+        ["git", "init", "-q", str(root)],
+        ["git", "-C", str(root), "-c", "core.excludesFile=/dev/null", "add", "-A"],
+    ):
+        code, output = run_argv(argv, cwd=root)
+        assert code == 0, f"{' '.join(argv)} failed in {root}: {output.strip()[:200]}"
 
 
 def _foreign_ac6_case_function() -> None:
@@ -210,7 +239,7 @@ def test_c65_probe_wording_and_break_contracts() -> None:
     for item in ("AC-8|04", "§5|01", "AC-10|02", "AC-10|03", "AC-6|02"):
         probe = probe_for(item)
         assert wording_drift(ctx, probe) == ""
-        assert 4 <= len(probe.breaks) <= 6
+        _break_shape(probe)
 
 
 def test_c65_benchmark_records_are_validated_and_thresholds_are_item_specific() -> None:

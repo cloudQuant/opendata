@@ -45,6 +45,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import collections
 import hashlib
 import importlib.util
 import inspect
@@ -54,7 +55,7 @@ import math
 import os
 import re
 import shutil
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # run_argv/_run_streams/secret-scan: literal list argv, no shell
 import sys
 import tempfile
 import time
@@ -64,7 +65,7 @@ from dataclasses import dataclass
 from datetime import date
 from functools import lru_cache
 from pathlib import Path, PurePosixPath
-from typing import TYPE_CHECKING, Any, Final, Protocol, cast
+from typing import TYPE_CHECKING, Any, Final, Protocol, TypedDict, cast
 from urllib.parse import urlsplit
 
 import tomllib
@@ -3917,7 +3918,7 @@ def _junit_node_outcomes(nodes: Sequence[str], report_path: Path, exit_code: int
         return dict.fromkeys(nodes, f"runner-exit={exit_code}")
     try:
         # The report is created by the local pytest process in this private temp directory.
-        root = ET.parse(report_path).getroot()  # noqa: S314  # nosec B314
+        root = ET.parse(report_path).getroot()  # noqa: S314  # nosec B314  # probe's own junit
     except (ET.ParseError, OSError):
         return dict.fromkeys(nodes, "missing-report")
 
@@ -12129,7 +12130,7 @@ def measure_ac6_02(ctx: Context) -> Facts:
     case_modules: dict[str, tuple[str, str]] = {}
     case_path_problems: list[str] = []
     # token门禁状态枚举非凭据：PASS/FAIL/PENDING 表示比较结果状态。
-    case_status_counts = {"PASS": 0, "FAIL": 0, "PENDING": 0}  # nosec B105
+    case_status_counts = {"PASS": 0, "FAIL": 0, "PENDING": 0}  # nosec B105  # gate status enum
     pass_groups: set[str] = set()
     pass_files: set[str] = set()
     fail_case_names: list[str] = []
@@ -12360,6 +12361,1312 @@ def judge_ac6_02(facts: Facts) -> Verdict:
         "虚假来源路径/批次或容忍度改动都不能通过；PENDING不计分子。"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+# --------------------------------------------------------------------------- #
+# C79 -- planes for the quality-layer cells the ledger called proven with no probe
+# --------------------------------------------------------------------------- #
+
+FRONTEND_GATE_TARGETS: Final = (
+    "frontend-lint",
+    "frontend-typecheck",
+    "frontend-collection",
+    "frontend-test",
+    "frontend-e2e",
+)
+A2_CHECK_REL: Final = "scripts/quality/a2_check.py"
+FIDELITY_TESTS_REL: Final = "tests/test_port_fidelity.py"
+RUFF_IGNORE_FLAG: Final = re.compile(r"--(?:extend-)?ignore|--per-file-ignores")
+NOQA_F821_LINE: Final = re.compile(r"#\s*noqa\b[^#\n]*F821")
+
+
+def _names_f821(names: Iterable[str]) -> bool:
+    """Whether a ruff ignore list reaches F821, including the F82 checks that hide it."""
+    return any(name == "F821" or name.startswith("F82") for name in names)
+
+
+def measure_ac17_04(ctx: Context) -> Facts:
+    """Read the three routes by which ``F821`` could be back on the ignored side."""
+    ruff = tomllib.loads(ctx.read("pyproject.toml"))["tool"]["ruff"]
+    lint = ruff.get("lint", {})
+    select = [str(name) for name in lint.get("select", [])]
+    ignore = [str(name) for name in lint.get("ignore", [])]
+    per_file = lint.get("per-file-ignores") or ruff.get("per-file-ignores") or {}
+    per_file_hits = sorted(
+        str(glob)
+        for glob, names in per_file.items()
+        if _names_f821(names if isinstance(names, list) else [names])
+    )
+    cli_lines = [
+        line.strip()
+        for line in (ctx.read(MAKEFILE_REL) + "\n" + ctx.read(A2_CHECK_REL)).splitlines()
+        if RUFF_IGNORE_FLAG.search(line) and "F821" in line
+    ]
+    tracked_py = [rel for rel in ctx.tracked() if rel.endswith(".py")]
+    noqa_sites: list[str] = []
+    unreadable = 0
+    for rel in tracked_py:
+        try:
+            body = (ctx.root / rel).read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            unreadable += 1
+            continue
+        for lineno, line in enumerate(body.splitlines(), 1):
+            if NOQA_F821_LINE.search(line):
+                noqa_sites.append(f"{rel}:{lineno}")
+    return {
+        "select": ", ".join(select) or "-",
+        "select_covers_f": flag("F" in select),
+        "ignore": ", ".join(ignore) or "-",
+        "ignore_has_f821": flag(_names_f821(ignore)),
+        "per_file_globs": count(len(per_file)),
+        "per_file_f821": count(len(per_file_hits)),
+        "per_file_f821_sample": ", ".join(per_file_hits[:3]) or "-",
+        "cli_f821_suppression": count(len(cli_lines)),
+        "cli_sample": " | ".join(cli_lines[:2]) or "-",
+        "tracked_py": count(len(tracked_py)),
+        "unreadable_py": count(unreadable),
+        "noqa_f821_sites": count(len(noqa_sites)),
+        "noqa_f821_sample": ", ".join(noqa_sites[:3]) or "-",
+        "doc_names_f821": flag("F821" in ctx.item("AC-17|04").text),
+    }
+
+
+def judge_ac17_04(facts: Facts) -> Verdict:
+    """``AC-17|04``: F821 stays named, on none of the three suppression routes."""
+    ok = (
+        facts["select_covers_f"] == "yes"
+        and facts["ignore_has_f821"] == "no"
+        and facts["per_file_f821"] == "0"
+        and facts["cli_f821_suppression"] == "0"
+        and facts["noqa_f821_sites"] == "0"
+        and facts["unreadable_py"] == "0"
+    )
+    readings = (
+        f"ruff lint.select = {facts['select']}（覆盖 F 族 = {facts['select_covers_f']}），"
+        f"lint.ignore = {facts['ignore']}（含 F821 = {facts['ignore_has_f821']}）；"
+        f"{facts['per_file_globs']} 条 per-file-ignores 里点名 F821 的 = {facts['per_file_f821']}"
+        + (f"（{facts['per_file_f821_sample']}）" if facts["per_file_f821_sample"] != "-" else ""),
+        f"命令行侧（{MAKEFILE_REL} + {A2_CHECK_REL}）用 --ignore/--per-file-ignores 重新塞进 "
+        f"F821 的行 = {facts['cli_f821_suppression']}"
+        + (f"（{facts['cli_sample']}）" if facts["cli_sample"] != "-" else ""),
+        f"逐行侧 {facts['tracked_py']} 个跟踪 .py 里行内忽略点名 F821 的 = "
+        f"{facts['noqa_f821_sites']}"
+        + (f"（{facts['noqa_f821_sample']}）" if facts["noqa_f821_sample"] != "-" else "")
+        + f"；读不动的文件 = {facts['unreadable_py']}（不为 0 时这一格是无读数而不是零违例）；"
+        f"判据原文点名 F821 = {facts['doc_names_f821']}",
+    )
+    reason = "" if ok else "F821 从三条路里某一条又回到了忽略面（配置值、命令行、逐行 noqa）"
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_ac17_09(ctx: Context) -> Facts:
+    """Read whether the five frontend members are gate members that run their own tool."""
+    text = ctx.read(MAKEFILE_REL)
+    recipes = make_recipes(text)
+    members = gate_members(text)
+    in_gate = [name for name in FRONTEND_GATE_TARGETS if name in members]
+    missing = [name for name in FRONTEND_GATE_TARGETS if name not in members]
+    empty = [name for name in FRONTEND_GATE_TARGETS if name in members and not recipes.get(name)]
+    recipe_text = {name: " ".join(recipes.get(name, [])) for name in FRONTEND_GATE_TARGETS}
+    tools = {
+        "eslint": flag("eslint" in recipe_text["frontend-lint"]),
+        "vue_tsc": flag("vue-tsc" in recipe_text["frontend-typecheck"]),
+        "vitest": flag("vitest" in recipe_text["frontend-test"]),
+        "playwright": flag("playwright" in recipe_text["frontend-e2e"]),
+        "collector": flag("frontend_test_collection" in recipe_text["frontend-collection"]),
+    }
+    doc = ctx.item("AC-17|09").text
+    named = [action for action in ("lint", "typecheck", "test") if action in doc]
+    lint_recipe = recipe_text["frontend-lint"]
+    return {
+        "members_total": count(len(members)),
+        "in_gate": count(len(in_gate)),
+        "in_gate_list": ", ".join(in_gate),
+        "missing": ", ".join(missing) or "-",
+        "empty_recipe": count(len(empty)),
+        "empty_recipe_sample": ", ".join(empty) or "-",
+        "tools": ", ".join(f"{name}={value}" for name, value in tools.items()),
+        "tools_all": flag(all(value == "yes" for value in tools.values())),
+        "doc_named": ", ".join(named),
+        "doc_named_count": count(len(named)),
+        "check_only": flag("npx eslint ." in lint_recipe and " --fix" not in lint_recipe),
+        **{f"tool_{name}": value for name, value in tools.items()},
+    }
+
+
+def judge_ac17_09(facts: Facts) -> Verdict:
+    """``AC-17|09``: the frontend is in the gate, and each member really invokes its tool."""
+    ok = (
+        facts["in_gate"] == str(len(FRONTEND_GATE_TARGETS))
+        and facts["missing"] == "-"
+        and facts["empty_recipe"] == "0"
+        and facts["tools_all"] == "yes"
+        and facts["doc_named_count"] == "3"
+        and facts["check_only"] == "yes"
+    )
+    readings = (
+        f"门禁 {facts['members_total']} 个成员里前端五项在位的 = {facts['in_gate']}"
+        f"（{facts['in_gate_list']}），缺席 = {facts['missing']}",
+        f"配方为空的成员 = {facts['empty_recipe']}"
+        + (f"（{facts['empty_recipe_sample']}）" if facts["empty_recipe_sample"] != "-" else "")
+        + f"；工具面 {facts['tools']}",
+        f"判据原文点名的三个动作 = {facts['doc_named']}；lint 只检查不改写（无 --fix）= "
+        f"{facts['check_only']}——门禁里跑格式化会把「检查」变成「改源码」",
+    )
+    reason = "" if ok else "前端五项没有全部进 gate，或某项配方不再调用它点名的工具"
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+def measure_s4_03(ctx: Context) -> Facts:
+    """Read the tolerance constant, the gate that applies it, and the tests that keep it honest."""
+    src = ctx.read(COMPARE_SCRIPT_REL)
+    tests = ctx.read(FIDELITY_TESTS_REL)
+    literal = re.search(r"^RTOL\s*=\s*([0-9eE.-]+)", src, re.MULTILINE)
+    applied = len(re.findall(r"rtol\s*=\s*RTOL", src))
+    line = next(
+        (index for index, row in enumerate(src.splitlines(), 1) if row.startswith("RTOL = ")), 0
+    )
+    case_names = re.findall(
+        r"^def (test_\w*(?:toler|object_column|value_change|non_numeric|drift_is_reported)"
+        r"\w*)\(",
+        tests,
+        re.MULTILINE,
+    )
+    return {
+        "rtol_literal": literal.group(1) if literal else "(absent)",
+        "rtol_at_line": count(line),
+        "isclose_sites": count(applied),
+        "float_guard": flag("pair is None" in src and "_float_pair(" in src),
+        "note_reports_count": flag("处文本不同而浮点在 rtol=" in src),
+        "tolerance_tests": count(len(case_names)),
+        "tolerance_test_list": ", ".join(case_names[:6]),
+        "mutation_control": flag("def test_value_change_in_object_column_still_fails" in tests),
+        "silent_drift_control": flag("def test_toleranced_drift_is_reported_not_silent" in tests),
+    }
+
+
+def judge_s4_03(facts: Facts) -> Verdict:
+    """``§4|03``: the float tolerance is configured, gated, disclosed, and mutation-controlled."""
+    ok = (
+        facts["rtol_literal"] == "1e-9"
+        and positive(facts["isclose_sites"])
+        and facts["float_guard"] == "yes"
+        and facts["note_reports_count"] == "yes"
+        and facts["tolerance_tests"] == "5"
+        and facts["mutation_control"] == "yes"
+        and facts["silent_drift_control"] == "yes"
+    )
+    readings = (
+        f"{COMPARE_SCRIPT_REL} 的 RTOL = {facts['rtol_literal']}（第 {facts['rtol_at_line']} 行），"
+        f"以 rtol=RTOL 参与判读的调用点 {facts['isclose_sites']} 处",
+        "只在两侧真是浮点时才用容忍度（``_float_pair`` 返回 None 即按不等处理） = "
+        f"{facts['float_guard']}；被放过的差异进 notes 并记条数 = {facts['note_reports_count']}",
+        f"阈值用例 {facts['tolerance_tests']} 条（{facts['tolerance_test_list']}）；"
+        f"放宽容忍度立刻红的变异控制 = {facts['mutation_control']}，"
+        f"「放过的差异必须可见」控制 = {facts['silent_drift_control']}",
+    )
+    reason = "" if ok else "容忍度不再是 1e-9，或失去浮点闸门/变异控制/用例中的一样"
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+ZERO_DEP_BASELINE_REL: Final = "docs/quality/zero-dep-baseline.json"
+DOC_NAMED_SCAN_ROOTS: Final = (
+    "opendata",
+    "opendata_http",
+    "opendata_fuyao",
+    "opendata_providers",
+    "opendata_client",
+)
+SELFTEST_COUNTS: Final = re.compile(r"\((\d+) violations detected, (\d+) compliant samples clean")
+# The criterion names three ways a dependency can enter a runtime package, so the samples the
+# self-test attacks must cover all three; one kind alone proves only that one branch.
+SELFTEST_REQUIRED_KINDS: Final = ("dynamic", "import", "string")
+
+
+def measure_ac16_05(ctx: Context) -> Facts:
+    """Re-read the pinned zero-dependency surface against today's tree and the gate recipe."""
+    scanner = script_module(ZERO_DEP_SCANNER)
+    raw = json.loads(ctx.read(ZERO_DEP_BASELINE_REL))
+    loaded = scanner.load_baseline()
+    recorded = {str(root): int(value) for root, value in dict(loaded.files).items()}
+    census = {str(root): int(value) for root, value in scanner.file_census(tuple(recorded)).items()}
+    problems = list(scanner.surface_problems(loaded, census))
+    # Execute the scanner's own self test instead of reading its source: sample text proves nothing
+    # while the detector's catch/no-false-positive claim is not being watched.
+    selftest_exit, selftest_output = run_argv(
+        [sys.executable, str(ctx.root / ZERO_DEP_SCANNER), "--self-test"], cwd=ctx.root
+    )
+    reported = SELFTEST_COUNTS.search(selftest_output)
+    violations = tuple(getattr(scanner, "_VIOLATION_SAMPLES", ()))
+    compliant = tuple(getattr(scanner, "_COMPLIANT_SAMPLES", ()))
+    kinds = tuple(sorted({str(kind) for kind, _ in violations}))
+    argv = [
+        line.strip()
+        for line in make_recipes(ctx.read(MAKEFILE_REL)).get("zero-dep-check", [])
+        if ZERO_DEP_SCANNER in line
+    ]
+    present = {root: (ctx.root / root).is_dir() for root in DOC_NAMED_SCAN_ROOTS}
+    return {
+        "scope": ", ".join(sorted(recorded)),
+        "scope_entries": count(len(recorded)),
+        "recorded_total": count(sum(recorded.values())),
+        "census_total": count(sum(census[root] for root in recorded if root in census)),
+        "census_missing_roots": count(len([root for root in recorded if root not in census])),
+        "per_scope_mismatch": count(
+            len([root for root in recorded if recorded[root] != census.get(root)])
+        ),
+        "surface_problems": count(len(problems)),
+        "surface_sample": " | ".join(str(problem)[:60] for problem in problems[:2]) or "-",
+        "loader_scope_matches": flag(
+            sorted(str(root) for root in raw.get("scope", [])) == sorted(recorded)
+        ),
+        "loader_files_match": flag(dict(raw.get("files", {})) == recorded),
+        "loader_minors_match": flag(
+            sorted(str(minor) for minor in raw.get("python_minors", []))
+            == sorted(str(minor) for minor in loaded.python_minors)
+        ),
+        "recorded_findings": count(len(raw.get("findings", []))),
+        "version_recorded": str(raw.get("scanner_version")),
+        "version_code": str(scanner.SCANNER_VERSION),
+        "version_matches": flag(str(raw.get("scanner_version")) == str(scanner.SCANNER_VERSION)),
+        "minors": ", ".join(str(minor) for minor in loaded.python_minors),
+        "running_minor_allowed": flag(
+            f"{sys.version_info.major}.{sys.version_info.minor}" in list(scanner.PYTHON_MINORS)
+        ),
+        "invocations": count(len(argv)),
+        "self_test_first": flag(bool(argv) and "--self-test" in argv[0]),
+        "full_run_after": flag(len(argv) > 1 and "--self-test" not in argv[-1]),
+        "selftest_exit": count(selftest_exit),
+        "selftest_report": selftest_output.strip().splitlines()[0][:110]
+        if selftest_output.strip()
+        else "-",
+        "violation_samples": count(len(violations)),
+        "compliant_samples": count(len(compliant)),
+        "violation_kinds": ", ".join(kinds),
+        "violation_kinds_full": flag(kinds == SELFTEST_REQUIRED_KINDS),
+        "reported_counts_match": flag(
+            reported is not None
+            and int(reported.group(1)) == len(violations)
+            and int(reported.group(2)) == len(compliant)
+        ),
+        "doc_named_present": ", ".join(
+            f"{root}={'yes' if value else 'no'}" for root, value in present.items()
+        ),
+        "doc_named_absent_roots": ", ".join(root for root, value in present.items() if not value)
+        or "-",
+    }
+
+
+def judge_ac16_05(facts: Facts) -> Verdict:
+    """``AC-16|05``: the pinned scan surface is today's surface, read twice by the gate."""
+    ok = (
+        positive(facts["scope_entries"])
+        and facts["census_missing_roots"] == "0"
+        and facts["per_scope_mismatch"] == "0"
+        and facts["surface_problems"] == "0"
+        and facts["loader_scope_matches"] == "yes"
+        and facts["loader_files_match"] == "yes"
+        and facts["loader_minors_match"] == "yes"
+        and facts["version_matches"] == "yes"
+        and facts["recorded_findings"] == "0"
+        and facts["invocations"] == "2"
+        and facts["self_test_first"] == "yes"
+        and facts["full_run_after"] == "yes"
+        and facts["selftest_exit"] == "0"
+        and positive(facts["violation_samples"])
+        and positive(facts["compliant_samples"])
+        and facts["violation_kinds_full"] == "yes"
+        and facts["reported_counts_match"] == "yes"
+    )
+    readings = (
+        f"入库扫描面 {facts['scope_entries']} 个根（{facts['scope']}），入库普查 "
+        f"{facts['recorded_total']} 个文件；今日走查 {facts['census_total']} 个，"
+        f"走查里查不到的根 = {facts['census_missing_roots']}，逐根不符 = "
+        f"{facts['per_scope_mismatch']}；工具自己的两面判定（缩水/失配/新根不入库）读出 "
+        f"{facts['surface_problems']}"
+        + (f"（{facts['surface_sample']}）" if facts["surface_sample"] != "-" else ""),
+        f"入库 JSON 与载入结果逐项相等：scope = {facts['loader_scope_matches']}、files = "
+        f"{facts['loader_files_match']}、python_minors = {facts['loader_minors_match']}"
+        f"（解释器次版本入库 {facts['minors']}，当前解释器在允许集内 = "
+        f"{facts['running_minor_allowed']}）",
+        f"入库 findings = {facts['recorded_findings']}；扫描器版本 入库 "
+        f"{facts['version_recorded']} == 代码 {facts['version_code']} = "
+        f"{facts['version_matches']}",
+        f"门禁配方调用 {facts['invocations']} 次：先 --self-test = {facts['self_test_first']}，"
+        f"之后再全量跑一次 = {facts['full_run_after']}",
+        f"自测真跑了一次（退出 {facts['selftest_exit']}）：违例样本 "
+        f"{facts['violation_samples']} 条，覆盖种类 {facts['violation_kinds']}"
+        f"（判据点名的三种齐全 = {facts['violation_kinds_full']}），"
+        f"合规样本 {facts['compliant_samples']} 条（防误报的那一面）；"
+        f"工具自己报的计数与结构逐字对上 = {facts['reported_counts_match']}。"
+        f"它打印：{facts['selftest_report']}",
+        f"判据原文点名的目录在树上的存在性：{facts['doc_named_present']}；树里已经没有的："
+        f"{facts['doc_named_absent_roots']} —— 文字陈旧，口径以入库 scope 为准，不是漏扫",
+    )
+    reason = (
+        ""
+        if ok
+        else "扫描面与树不符 / 入库 JSON 与载入结果不同源 / 版本入库与代码不一致 / "
+        "自测与全量两次调用缺一次 / 扫描器自测跑红或样本面缺一种入口形状"
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+SCANNER_REL = "scripts/quality/secret_scan_check.py"
+CONFIG_REL = ".gitleaks.toml"
+ITEM = "AC-16|09"
+PAIR_SAMPLES = 12
+MAX_FILE_BYTES = 3_000_000
+HEXDIGITS = "0123456789abcdef"
+
+#: Tokens that would turn a history scan into a narrower reading of the same tree. Counted out
+#: of the pinned ``scan_argv``, not asserted: the criterion says 全历史扫描.
+SCOPE_LIMITS = ("--no-git", "--staged", "--uncommitted", "--head", "--log-opts", "--branch")
+
+ANSI = re.compile(r"\x1b\[[0-9;]*m")
+LEAK_WORDS = re.compile(r"leaks found: (\d+)")
+COMMIT_WORDS = re.compile(r"(\d+) commits scanned")
+BYTE_WORDS = re.compile(r"scanned ~(\d+) bytes")
+
+
+def _plain(text: str) -> str:
+    """Scanner logs without colour codes, so one regex reads one number."""
+    return ANSI.sub("", text)
+
+
+def _word(text: str, pattern: re.Pattern) -> str:
+    """The tool's own word for a population, or a sentinel that cannot be read as a count."""
+    match = pattern.search(text)
+    return match.group(1) if match else "(unread)"
+
+
+def _leak_words(text: str) -> str:
+    """Findings as gitleaks states them: ``no leaks found`` is 0, ``leaks found: N`` is N."""
+    if "no leaks found" in text:
+        return "0"
+    return _word(text, LEAK_WORDS)
+
+
+def _report_items(path: Path) -> str:
+    """Length of the JSON report the tool wrote, or a sentinel when there is nothing to count."""
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return "(unread)"
+    return count(len(raw)) if isinstance(raw, list) else "(unread)"
+
+
+def _report_names(path: Path) -> list[str]:
+    """Basenames the report attributes its findings to, for the control's per-fixture counts."""
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    return [Path(str(entry.get("File", ""))).name for entry in raw if isinstance(entry, dict)]
+
+
+def _global_allowlist(config: dict) -> list[dict]:
+    """The ``[[allowlists]]`` blocks: exemptions that apply to every rule in the tree."""
+    return [block for block in config.get("allowlists", []) if isinstance(block, dict)]
+
+
+def _rule_allowlist(config: dict) -> list[dict]:
+    """The ``[rules.allowlist]`` blocks, each scoped to one rule id."""
+    return [
+        rule["allowlist"]
+        for rule in config.get("rules", [])
+        if isinstance(rule.get("allowlist"), dict)
+    ]
+
+
+def _split_pair(line: str) -> tuple[str | None, str]:
+    """The quoted ``key": "value`` pair a line opens with, or ``(None, "")``.
+
+    The key is whatever sits between the quote that the split consumed and the quote before it, so a
+    line like ``      "alembic/env.py": "95ea…",`` yields ``("alembic/env.py", "95ea…")``.
+    """
+    if '": "' not in line:
+        return None, ""
+    left, right = line.split('": "', 1)
+    parts = left.split('"')
+    if len(parts) < 2:
+        return None, ""
+    key, value = parts[-1], right.split('"')[0]
+    return (key, value) if key else (None, "")
+
+
+def _parse_pair(ctx: Context, line: str) -> tuple[str, str] | None:
+    """Read one ``"<path>": "<sha256>"`` pair out of a line WITHOUT the config's regex.
+
+    Independent, reality-based definition: the key must name a file that exists in this tree and
+    the value must be that file's own sha256, recomputed here. A hand-written shape, a stale
+    reference or a credential sitting next to such a pair all read as ``None``, which is what
+    makes the exempted population something the allowlist can be judged against rather than
+    agreed with.
+    """
+    key, value = _split_pair(line)
+    if key is None or "/" not in key or "." not in key.rsplit("/", 1)[-1]:
+        return None
+    if len(value) != 64 or any(ch not in HEXDIGITS for ch in value):
+        return None
+    target = ctx.root / key
+    if not target.is_file():
+        return None
+    try:
+        digest = hashlib.sha256(target.read_bytes()).hexdigest()
+    except OSError:
+        return None
+    return (key, value) if digest == value else None
+
+
+def _shape_variants(key: str, value: str) -> list[str]:
+    """The same line with the pair shape broken ways; none of them is a path->digest pair.
+
+    Each arm breaks exactly one condition and keeps the rest: 63 hex digits, uppercase hex, no
+    directory separator, and a key whose final component no longer ends in ``.<extension>`` (the
+    trailing ``-`` is what an ``ext`` shaped key does not have). Deliberately *shape* arms, not
+    digest-content arms: ``.gitleaks.toml`` states as a measured boundary that any 64-lowercase-hex
+    value under a quoted ``path.ext`` key is exempt, so a flipped hex character stays exempt --
+    judging that would be judging the documented design, not drift.
+    """
+    directory, sep, leaf = key.rpartition("/")
+    stem = leaf.rsplit(".", 1)[0] if "." in leaf else leaf
+    return [
+        f'"{key}": "{value[:-1]}"',  # 63 hex digits, not 64
+        f'"{key}": "{value.upper()}"',  # uppercase hex
+        f'"{leaf}": "{value}"',  # no directory separator
+        f'"{directory}{sep}{stem}-": "{value}"',  # no trailing .extension
+    ]
+
+
+class _PairCensus(TypedDict):
+    """The one-pass census: counts of the exempted population plus the verified pair sample."""
+
+    exempted: int
+    files_read: int
+    files_skipped: int
+    stale: int
+    changed: int
+    pairs: list[tuple[str, str]]
+
+
+def _pair_census(ctx: Context, patterns: list[str], limit: int) -> _PairCensus:
+    """One pass over the tracked files: the exempted population, and the verified pair sample.
+
+    ``exempted`` is counted with the shipped config's own global regexes, so the number is the
+    device's; the ``pairs`` sample is collected by :func:`_parse_pair`, which never reads the
+    config. ``stale``/``changed`` split the exempted lines by whether the path they name still
+    exists with the recorded digest -- archived manifests legitimately point at files that have
+    since moved.
+    """
+    regs = [re.compile(pattern) for pattern in patterns]
+    exempted = files_read = files_skipped = stale = changed = 0
+    pairs: list[tuple[str, str]] = []
+    for rel in ctx.tracked():
+        path = ctx.root / rel
+        if not path.is_file():
+            files_skipped += 1
+            continue
+        try:
+            text = path.read_bytes().decode("utf-8")
+        except (OSError, UnicodeDecodeError):
+            files_skipped += 1
+            continue
+        if len(text) > MAX_FILE_BYTES:
+            files_skipped += 1
+            continue
+        files_read += 1
+        for line in text.splitlines():
+            pair = None
+            if '": "' in line:
+                pair = _parse_pair(ctx, line)
+            if regs and any(reg.search(line) for reg in regs):
+                exempted += 1
+                if pair is None:
+                    key, value = _split_pair(line)
+                    if (
+                        key is None
+                        or len(value) != 64
+                        or any(ch not in HEXDIGITS for ch in value)
+                        or not (ctx.root / key).is_file()
+                    ):
+                        stale += 1
+                    else:
+                        changed += 1
+            if pair is not None and len(pairs) < limit and pair not in pairs:
+                pairs.append(pair)
+    return {
+        "exempted": exempted,
+        "files_read": files_read,
+        "files_skipped": files_skipped,
+        "stale": stale,
+        "changed": changed,
+        "pairs": pairs,
+    }
+
+
+def _control_scan(mod: ModuleType, root: Path, tmp: Path) -> Facts:
+    """Run the pinned device over a throwaway directory that holds a fabricated credential.
+
+    Two arms, one config each: the shipped ``.gitleaks.toml`` and the same file with everything from
+    its first ``[[allowlists]]`` block onward removed. The planted token must be reported under both
+    (the instrument is live and the exemption cannot swallow a credential), while the genuine
+    path->digest pair line must be reported only under the stripped one (the exemption still
+    bites on exactly the shape it claims). Everything lives under ``tempfile.TemporaryDirectory``.
+    """
+    fixtures = tmp / "fixtures"
+    fixtures.mkdir(parents=True, exist_ok=True)
+    token = "ghp_" + hashlib.sha256(b"c80-fabricated-control-token").hexdigest()[:36]
+    pair_key = "scripts/quality/secret_scan_check.py"
+    pair_digest = hashlib.sha256((root / pair_key).read_bytes()).hexdigest()
+    (fixtures / "leak_fixture.txt").write_text(f"Authorization: Bearer {token}\n", encoding="utf-8")
+    (fixtures / "pair_fixture.json").write_text(
+        json.dumps({"sha256": {pair_key: pair_digest}}, indent=2) + "\n", encoding="utf-8"
+    )
+    shipped = root / CONFIG_REL
+    text = shipped.read_text(encoding="utf-8")
+    cut = text.find("[[allowlists]]")
+    stripped = tmp / "no-allowlists.toml"
+    stripped.write_text(text if cut < 0 else text[:cut], encoding="utf-8")
+    out: dict[str, str] = {"allowlist_blocks": flag(cut >= 0)}
+    for arm, cfg in (("shipped", shipped), ("stripped", stripped)):
+        report = tmp / f"report-{arm}.json"
+        argv = [str(item) for item in mod.load_manifest().scan_argv]
+        argv += [
+            "--no-git",
+            "--source",
+            str(fixtures),
+            "--config",
+            str(cfg),
+            "--report-format",
+            "json",
+            "--report-path",
+            str(report),
+        ]
+        exit_code, _ = run_argv(argv, cwd=root)
+        names = _report_names(report)
+        out[f"control_{arm}_exit"] = count(exit_code)
+        out[f"control_{arm}_items"] = _report_items(report)
+        out[f"control_{arm}_token"] = count(sum(1 for name in names if name == "leak_fixture.txt"))
+        out[f"control_{arm}_pair"] = count(sum(1 for name in names if name == "pair_fixture.json"))
+    return out
+
+
+def measure_ac16_09(ctx: Context) -> Facts:
+    """Read the device, run the pinned full-history scan, run the control; decide nothing."""
+    mod = script_module(SCANNER_REL)
+    manifest = mod.load_manifest()
+    found = mod.local_tool_version(manifest)
+    problems = mod.check_ci_wiring(manifest)
+    argv = [str(item) for item in manifest.scan_argv]
+    config = tomllib.loads(ctx.read(CONFIG_REL))
+    globals_ = _global_allowlist(config)
+    rules = _rule_allowlist(config)
+    global_regexes = [str(rx) for block in globals_ for rx in block.get("regexes", [])]
+
+    census = _pair_census(ctx, global_regexes, PAIR_SAMPLES)
+    pairs = census["pairs"]
+    pair_lines = [f'"{key}": "{value}"' for key, value in pairs]
+    variants = [line for key, value in pairs for line in _shape_variants(key, value)]
+    matched = sum(
+        1 for line in pair_lines if all(re.compile(rx).search(line) for rx in global_regexes)
+    )
+    unjudged = sum(
+        1
+        for block in globals_
+        if not list(block.get("regexes", []))
+        or not all(
+            re.compile(str(rx)).search(line)
+            for rx in block.get("regexes", [])
+            for line in pair_lines
+        )
+    )
+    near_miss = sum(1 for rx in global_regexes for line in variants if re.compile(rx).search(line))
+
+    with tempfile.TemporaryDirectory(prefix="ac16-09-control-") as tmpname:
+        control = _control_scan(mod, ctx.root, Path(tmpname))
+    with tempfile.TemporaryDirectory(prefix="ac16-09-scan-") as tmpname:
+        report = Path(tmpname) / "report.json"
+        scan_argv = argv + ["--report-format", "json", "--report-path", str(report)]
+        scan_exit, scan_out = run_argv(scan_argv, cwd=ctx.root)
+        logs = _plain(scan_out)
+        findings = _report_items(report)
+    code_head, head_out = run_argv(["git", "rev-list", "--count", "HEAD"], cwd=ctx.root)
+    code_all, all_out = run_argv(["git", "rev-list", "--count", "--all"], cwd=ctx.root)
+    return {
+        "scanner_pin": manifest.gitleaks_version,
+        "scanner_found": found or "(absent)",
+        "scanner_matches_pin": flag(found is not None and found == manifest.gitleaks_version),
+        "device_ok": flag(not problems),
+        "ci_wiring_problems": count(len(problems)),
+        "ci_wiring_detail": "; ".join(problems)[:160] or "-",
+        "argv_scope_limits": count(sum(1 for item in argv if item in SCOPE_LIMITS)),
+        "argv_tokens": " ".join(argv)[:120],
+        "reads_scanner_root": flag(ctx.root == mod.REPO_ROOT),
+        "commits_scanned": _word(logs, COMMIT_WORDS),
+        "bytes_scanned": _word(logs, BYTE_WORDS),
+        "git_commits_head": head_out.strip().splitlines()[-1].strip()
+        if code_head == 0
+        else "(unread)",
+        "git_commits_all": all_out.strip().splitlines()[-1].strip()
+        if code_all == 0
+        else "(unread)",
+        "scan_exit": count(scan_exit),
+        "report_items": findings,
+        "stderr_leaks": _leak_words(logs),
+        "allowlist_global": count(len(globals_)),
+        "allowlist_global_regexes": count(len(global_regexes)),
+        "allowlist_global_path_scoped": count(sum(1 for block in globals_ if block.get("paths"))),
+        "allowlist_rules": count(len(rules)),
+        "allowlist_rule_regexes": count(sum(len(block.get("regexes", [])) for block in rules)),
+        "pair_samples": count(len(pairs)),
+        "pair_variants": count(len(variants)),
+        "pair_matched": count(matched),
+        "entries_unjudged": count(unjudged),
+        "near_miss_matched": count(near_miss),
+        "tree_pair_lines": count(census["exempted"]),
+        "tree_files_read": count(census["files_read"]),
+        "tree_files_skipped": count(census["files_skipped"]),
+        "tree_pair_stale": count(census["stale"]),
+        "tree_pair_changed": count(census["changed"]),
+        "doc_names_history": flag("全历史" in ctx.item(ITEM).text),
+        **control,
+    }
+
+
+def judge_ac16_09(facts: Facts) -> Verdict:
+    """AC-16|09: the pinned device walked the whole history git reports right now and came back.
+
+    with nothing outside the allowlist, the allowlist still only speaks the tree's real
+    path->digest shape, and a planted credential is still reported.
+    """
+    commits, head = number(facts["commits_scanned"]), number(facts["git_commits_head"])
+    report, words, exit_code = (
+        number(facts["report_items"]),
+        number(facts["stderr_leaks"]),
+        number(facts["scan_exit"]),
+    )
+    shipped_items = number(facts["control_shipped_items"])
+    stripped_items = number(facts["control_stripped_items"])
+    shipped_findings = number(facts["control_shipped_token"]) + number(
+        facts["control_shipped_pair"]
+    )
+    stripped_findings = number(facts["control_stripped_token"]) + number(
+        facts["control_stripped_pair"]
+    )
+    detail = facts["ci_wiring_detail"]
+    ok = (
+        facts["scanner_matches_pin"] == "yes"
+        and facts["device_ok"] == "yes"
+        and number(facts["ci_wiring_problems"]) == 0
+        and number(facts["argv_scope_limits"]) == 0
+        and commits > 0
+        and commits == head
+        and number(facts["bytes_scanned"]) > 0
+        and report == 0
+        and words == report
+        and (exit_code == 0) == (report == 0)
+        and number(facts["allowlist_global_path_scoped"]) == 0
+        and positive(facts["allowlist_global_regexes"])
+        and positive(facts["pair_samples"])
+        and number(facts["pair_matched"]) == number(facts["pair_samples"])
+        and number(facts["entries_unjudged"]) == 0
+        and number(facts["near_miss_matched"]) == 0
+        and positive(facts["tree_pair_lines"])
+        and facts["allowlist_blocks"] == "yes"
+        and number(facts["control_shipped_token"]) >= 1
+        and number(facts["control_stripped_token"]) >= 1
+        and number(facts["control_shipped_pair"]) == 0
+        and number(facts["control_stripped_pair"]) >= 1
+        and shipped_items == shipped_findings
+        and stripped_items == stripped_findings
+        and stripped_items > shipped_items
+        and facts["doc_names_history"] == "yes"
+    )
+    readings = (
+        f"设备：{SCANNER_REL} 钉住 gitleaks {facts['scanner_pin']}，"
+        f"PATH 上报 {facts['scanner_found']}"
+        f"（一致 = {facts['scanner_matches_pin']}）；CI 接线问题 {facts['ci_wiring_problems']} 条"
+        + ("-" if detail == "-" else f"（{detail}）")
+        + f"；命令 = manifest 的 scan_argv = {facts['argv_tokens']}，把扫描缩回工作树/单提交的开关 "
+        f"{facts['argv_scope_limits']} 处；scanner 模块自带的 REPO_ROOT 就是本次读的树 = "
+        f"{facts['reads_scanner_root']}（它的 main() 只读那个常量，"
+        f"探针因此按 manifest 的 argv 在 ctx.root 重跑）",
+        f"全历史群体取自 history 而非工作树：工具自报 {facts['commits_scanned']} commits scanned、"
+        f"{facts['bytes_scanned']} 字节；同一棵树此刻 git rev-list "
+        f"--count HEAD = {facts['git_commits_head']}"
+        f"（--all = {facts['git_commits_all']}）——两个数不等就是「悄悄缩小了扫描」",
+        f"未豁免的凭证：报告 {facts['report_items']} 条、"
+        f"日志口径 {facts['stderr_leaks']} 条、退出码 "
+        f"{facts['scan_exit']}；三个口径互为印证（退出码为 0 当且仅当报告为空、且与日志行数相同），"
+        f"任一口径读不出来（(unread)）都判 gap",
+        f"豁免面：全局 [[allowlists]] {facts['allowlist_global']} 块 / "
+        f"{facts['allowlist_global_regexes']} 条正则"
+        f"（其中按位置豁免 {facts['allowlist_global_path_scoped']} 条），"
+        f"规则级 allowlist {facts['allowlist_rules']} 块 / "
+        f"{facts['allowlist_rule_regexes']} 条；"
+        f"树内被全局豁免盖住的行 {facts['tree_pair_lines']} 行"
+        f"（扫过 {facts['tree_files_read']} 个跟踪文件、跳过 {facts['tree_files_skipped']}；"
+        f"其中引用路径已不在树里或形状不对 "
+        f"{facts['tree_pair_stale']} 行、"
+        f"路径仍在但档案摘要与当前文件已不符 {facts['tree_pair_changed']} 行）",
+        f"形状判读（不用配置的正则来找样本）：从树里现取现算 sha256 校验过的真 path->digest 成对行 "
+        f"{facts['pair_samples']} 条，被每一条全局豁免全部盖住的 "
+        f"{facts['pair_matched']} 条，判读不通过的豁免条目 "
+        f"{facts['entries_unjudged']} 条；"
+        f"把这 {facts['pair_samples']} 条各拆成 4 种非 path->digest 形状"
+        f"（63 位摘要 / 大写十六进制 / 无目录分隔 / 无扩展名，"
+        f"共 {facts['pair_variants']} 条变体）后仍被盖住的 "
+        f"{facts['near_miss_matched']} 条",
+        f"活体对照（tempdir 目录扫描，用完即删）：植入的合成口令 "
+        f"shipped 配置报 {facts['control_shipped_token']} 条、"
+        f"剥掉 [[allowlists]] 报 {facts['control_stripped_token']} 条；"
+        f"真实 path->digest 成对行 shipped 报 "
+        f"{facts['control_shipped_pair']} 条、剥离后报 {facts['control_stripped_pair']} 条"
+        f"（总数 {facts['control_shipped_items']}/{facts['control_stripped_items']}，退出码 "
+        f"{facts['control_shipped_exit']}/{facts['control_stripped_exit']}）——"
+        f"headline 的 0 是一支还咬得动、"
+        f"且豁免面边界量得出来的探测器给的",
+    )
+    reason = ""
+    if not ok:
+        if commits != head or commits <= 0:
+            reason = (
+                f"扫描群体与 git 此刻的 HEAD 不再相同（工具自报 {facts['commits_scanned']} 个提交，"
+                f"rev-list 说 {facts['git_commits_head']}）"
+                f"，或扫描字节数 {facts['bytes_scanned']} 读不出来"
+            )
+        elif report != 0 or words != report or (exit_code == 0) != (report == 0):
+            reason = (
+                f"全历史扫描报出凭证，或报告/日志/退出码三个口径不再互相印证"
+                f"（{facts['report_items']}/{facts['stderr_leaks']}/{facts['scan_exit']}）"
+            )
+        elif facts["scanner_matches_pin"] != "yes" or facts["device_ok"] != "yes":
+            reason = (
+                f"扫描设备不再是钉住的那一支：PATH 上报 {facts['scanner_found']}，接线问题 {detail}"
+            )
+        elif number(facts["argv_scope_limits"]) != 0:
+            reason = "scan_argv 里出现了把工作树/单提交当成全历史的开关"
+        elif number(facts["control_shipped_token"]) < 1 or facts["allowlist_blocks"] != "yes":
+            reason = "植入的合成凭证没有被报出来：这个 0 是一支哑仪器给的"
+        elif (
+            number(facts["control_stripped_pair"]) < 1 or number(facts["control_shipped_pair"]) > 0
+        ):
+            reason = "对照量不出豁免面的边界（成对行在带豁免与不带豁免两种配置下读数相同）"
+        elif (
+            shipped_items != shipped_findings
+            or stripped_items != stripped_findings
+            or stripped_items <= shipped_items
+        ):
+            reason = "对照的两臂计数不再等于各 fixture 之和，或剥掉豁免后并没有报得更多"
+        elif (
+            number(facts["entries_unjudged"])
+            or number(facts["near_miss_matched"])
+            or number(facts["allowlist_global_path_scoped"])
+            or number(facts["pair_matched"]) != number(facts["pair_samples"])
+            or not positive(facts["allowlist_global_regexes"])
+            or not positive(facts["pair_samples"])
+        ):
+            reason = (
+                "全局豁免条目与树里真实的 path->digest 形状不再一一对得上"
+                "（或它开始按位置吞发现、或不再咬住成对行）"
+            )
+        elif not positive(facts["tree_pair_lines"]):
+            reason = "被豁免的群体在树里读不到了（普查 0 行，豁免面在掩护什么无从判读）"
+        else:
+            reason = "扫描设备、历史群体、发现口径、豁免形状或活体对照之中有一项读不出来"
+    return Verdict("proven" if ok else "gap", readings, reason)
+
+
+AC16_09 = Probe(
+    item=ITEM,
+    expects="凭证不在版本库中（含全历史扫描）",
+    summary=(
+        "钉住的全历史扫描走完 git 此刻报出的全部提交、"
+        "报告/日志/退出码三个口径同为 0 条凭证；豁免面只覆盖树里"
+        "校验过的 path->digest 成对行，且植入合成凭证的对照照样报得出"
+    ),
+    measure=measure_ac16_09,
+    judge=judge_ac16_09,
+    repair={
+        "scanner_found": "*scanner_pin",
+        "scanner_matches_pin": "yes",
+        "device_ok": "yes",
+        "ci_wiring_problems": "0",
+        "ci_wiring_detail": "-",
+        "argv_scope_limits": "0",
+        "commits_scanned": "*git_commits_head",
+        "bytes_scanned": "*bytes_scanned",
+        "scan_exit": "0",
+        "report_items": "0",
+        "stderr_leaks": "0",
+        "allowlist_global_path_scoped": "0",
+        "pair_matched": "*pair_samples",
+        "entries_unjudged": "0",
+        "near_miss_matched": "0",
+        "tree_pair_lines": "*tree_pair_lines",
+        "allowlist_blocks": "yes",
+        "control_shipped_token": "1",  # nosec B105  # face name for the planted token's hit count, not a credential
+        "control_shipped_pair": "0",
+        "control_shipped_items": "1",
+        "control_stripped_token": "1",  # nosec B105  # face name for the planted token's hit count, not a credential
+        "control_stripped_pair": "1",
+        "control_stripped_items": "2",
+        "doc_names_history": "yes",
+    },
+    breaks=(
+        Break("扫描只走了 12 个提交（范围被悄悄缩小）", (("commits_scanned", "12"),), "gap"),
+        Break("工具不再自报提交数（版式换了）", (("commits_scanned", "(unread)"),), "gap"),
+        Break("git 的 HEAD 群体变成 0（浅克隆/空仓）", (("git_commits_head", "0"),), "gap"),
+        Break("扫描字节数为 0（仪器空转）", (("bytes_scanned", "0"),), "gap"),
+        Break(
+            "scan_argv 加了 --no-git（历史扫描退化成工作树）", (("argv_scope_limits", "1"),), "gap"
+        ),
+        Break(
+            "PATH 上的扫描器漂到 8.21.2",
+            (("scanner_found", "8.21.2"), ("scanner_matches_pin", "no")),
+            "gap",
+        ),
+        Break(
+            "CI 接线问题又回来一条",
+            (
+                ("ci_wiring_problems", "1"),
+                ("device_ok", "no"),
+                ("ci_wiring_detail", "fetch-depth 没了"),
+            ),
+            "gap",
+        ),
+        Break(
+            "全历史里报出一条凭证",
+            (("report_items", "1"), ("stderr_leaks", "1"), ("scan_exit", "1")),
+            "gap",
+        ),
+        Break("报告与日志口径分叉（findings 被漏读）", (("stderr_leaks", "3"),), "gap"),
+        Break(
+            "红扫描被 echo 成绿（退出码与 findings 不符）",
+            (("scan_exit", "0"), ("report_items", "2"), ("stderr_leaks", "2")),
+            "gap",
+        ),
+        Break("退出码不再读（127：gitleaks 没了）", (("scan_exit", "127"),), "gap"),
+        Break("全局豁免开始按路径位置吞发现", (("allowlist_global_path_scoped", "1"),), "gap"),
+        Break("全局豁免条目与真实成对行对不上（无人判读）", (("entries_unjudged", "1"),), "gap"),
+        Break("豁免宽到非 path->digest 形状也被盖住", (("near_miss_matched", "1"),), "gap"),
+        Break(
+            "成对行不再全被豁免盖住（条目漂走）",
+            (("pair_samples", "20"), ("pair_matched", "19")),
+            "gap",
+        ),
+        Break(
+            "全局豁免被删空", (("allowlist_global_regexes", "0"), ("allowlist_global", "0")), "gap"
+        ),
+        Break("树里的被豁免群体普查为 0", (("tree_pair_lines", "0"),), "gap"),
+        Break(
+            "植入的合成凭证没被报出（仪器是哑的）",
+            (("control_shipped_token", "0"), ("control_shipped_items", "0")),
+            "gap",
+        ),
+        Break(
+            "剥掉豁免也没有多报（豁免不再咬住成对行）",
+            (("control_stripped_pair", "0"), ("control_stripped_items", "1")),
+            "gap",
+        ),
+        Break(
+            "成对行带着豁免也被报出（豁免面失效）",
+            (("control_shipped_pair", "1"), ("control_shipped_items", "2")),
+            "gap",
+        ),
+        Break("对照两臂计数与 fixture 之和不再相等", (("control_stripped_items", "5"),), "gap"),
+        Break("配置里已经没有 [[allowlists]] 块", (("allowlist_blocks", "no"),), "gap"),
+        Break("判据原文不再点名全历史", (("doc_names_history", "no"),), "gap"),
+    ),
+)
+
+
+# --------------------------------------------------------------------------- #
+# AC-17|02 -- A2's four planes really execute, and every bandit exemption is
+# line-level, rule-named, reasoned, and shown to suppress a real finding.
+# --------------------------------------------------------------------------- #
+
+A2_REL: Final = "scripts/quality/a2_check.py"
+BANDIT_REL: Final = "bandit.yaml"
+NOSEC_PAT = re.compile(r"#\s*nosec\b(.*)$")
+
+
+def _census_roots(c: Context) -> list[str]:
+    """The roots bandit is pointed at, read from the Makefile that names them."""
+    line = next(
+        (row for row in c.read(MAKEFILE_REL).splitlines() if row.startswith("PY_BANDIT")),
+        "",
+    )
+    return line.split(":=", 1)[1].split() if ":=" in line else []
+
+
+def _yaml_block_list(text: str, key: str) -> list[str]:
+    """Read one top-level YAML list by its item lines -- bandit.yaml is YAML, not TOML."""
+    out: list[str] = []
+    inside = False
+    for line in text.splitlines():
+        if re.match(rf"^{key}\s*:", line):
+            inside = True
+            continue
+        if inside:
+            m = re.match(r"^\s*-\s*(\S.*?)\s*$", line)
+            if m:
+                out.append(m.group(1).split("#")[0].strip().strip("\"'"))
+            elif line.strip() and not line.startswith((" ", "\t", "#")):
+                inside = False
+    return out
+
+
+def _exclude_dirs(c: Context) -> list[str]:
+    """_exclude_dirs: see the AC-17|02 measurement it serves."""
+    text = (c.root / BANDIT_REL).read_text(encoding="utf-8")
+    return _yaml_block_list(text, "exclude_dirs")
+
+
+def _excluded(rel: str, excludes: list[str]) -> bool:
+    """_excluded: see the AC-17|02 measurement it serves."""
+    parts = rel.split("/")
+    for item in excludes:
+        token = item.strip("/")
+        if not token:
+            continue
+        if token in parts or token in rel:
+            return True
+    return False
+
+
+def _bandit_census(
+    c: Context, extra: tuple[str, ...]
+) -> tuple[str, str, str, collections.Counter, str]:
+    """Run the census into a report file.
+
+    ``run_argv`` merges stderr, and bandit logs a warning on stderr for every nosec comment, so
+    stdout is not a parsable document.
+    """
+    argv = [
+        sys.executable,
+        "-m",
+        "bandit",
+        "-c",
+        BANDIT_REL,
+        "-f",
+        "json",
+        "-q",
+        *extra,
+    ]
+    with tempfile.TemporaryDirectory(prefix="c81-bandit-") as tmp:
+        report = Path(tmp) / "report.json"
+        rc, _out = run_argv([*argv, "-o", str(report), "-r", *_census_roots(c)], cwd=c.root)
+        try:
+            doc = json.loads(report.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return str(rc), "no", "-", collections.Counter(), "-"
+    rows = doc.get("results", [])
+    keys: collections.Counter = collections.Counter()
+    for row in rows:
+        name = re.sub(r"^\./", "", str(row.get("filename", "")))
+        keys[(name, str(row.get("test_id", "")))] += 1
+    ids = collections.Counter(str(row.get("test_id", "")) for row in rows)
+    shape = ", ".join(f"{k}x{v}" for k, v in sorted(ids.items())) or "-"
+    totals = doc.get("metrics", {}).get("_totals", {})
+    return str(rc), "yes", shape, keys, str(totals.get("skipped_tests", "-"))
+
+
+def _nosec_rows(c: Context, roots: list[str], excludes: list[str]) -> list[tuple[str, int, str]]:
+    """_nosec_rows: see the AC-17|02 measurement it serves."""
+    rows: list[tuple[str, int, str]] = []
+    for root in roots:
+        base = c.root / root
+        if not base.is_dir():
+            continue
+        for path in sorted(base.rglob("*.py")):
+            rel = str(path.relative_to(c.root))
+            if _excluded(rel, excludes):
+                continue
+            text = path.read_text(encoding="utf-8", errors="replace")
+            for i, line in enumerate(text.splitlines(), 1):
+                m = NOSEC_PAT.search(line)
+                if m:
+                    rows.append((rel, i, m.group(1).strip()))
+    return rows
+
+
+SUPPRESSION_MARKERS = re.compile(
+    r"(?:#\s*)?(?:noqa|nosec|type\s*:)\s*:?\s*(?:[A-Z]\d+(?:[,\s]*[A-Z]\d+)*)?",
+    re.IGNORECASE,
+)
+
+
+def _has_reason(rest: str) -> bool:
+    """A reason is prose, not another suppression marker: ``# noqa: S314`` justifies nothing."""
+    body = re.sub(r"B\d+", " ", rest)
+    body = SUPPRESSION_MARKERS.sub(" ", body)
+    body = re.sub(r"^[^0-9A-Za-z一-鿿]+", "", body)
+    return len(re.sub(r"[^0-9A-Za-z一-鿿]", "", body)) >= 4
+
+
+def _reason_predicate_controls() -> int:
+    """Give the discriminator itself a two-sided control.
+
+    A bare ``# noqa`` must NOT read as a reason and real prose must; one-sided here means the
+    whole 理由 face is unproven.
+    """
+    accepts = _has_reason("B608  # the table name is a module literal")
+    rejects_noqa = not _has_reason("B314  # noqa: S314")
+    rejects_id_only = not _has_reason("B105")
+    rejects_punctuation = not _has_reason("B105  # -----")
+    return sum((accepts, rejects_noqa, rejects_id_only, rejects_punctuation))
+
+
+def _bandit_body(tree: ast.Module) -> ast.FunctionDef | None:
+    """_bandit_body: see the AC-17|02 measurement it serves."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef) and node.name == "_bandit":
+            return node
+    return None
+
+
+def _stream_concat(fn: ast.FunctionDef) -> list[str]:
+    """_stream_concat: see the AC-17|02 measurement it serves."""
+    hits: list[str] = []
+    for node in ast.walk(fn):
+        if isinstance(node, ast.BinOp) and isinstance(node.op, (ast.Add, ast.Mod)):
+            leaves = [
+                ".".join(n for n in (getattr(x, "value", ""), getattr(x, "attr", "")) if n)
+                for x in (node.left, node.right)
+            ]
+            joined = " ".join(str(item) for item in leaves)
+            if "stdout" in joined and "stderr" in joined:
+                hits.append(f"line {node.lineno}: {' + '.join(leaves)}")
+    return hits
+
+
+def measure_ac17_02(c: Context) -> Facts:
+    """measure_ac17_02: see the AC-17|02 measurement it serves."""
+    src = c.read(A2_REL)
+    tree = ast.parse(src)
+    fn = _bandit_body(tree)
+    concat = _stream_concat(fn) if fn else ["(no _bandit function)"]
+    raw_cfg = tomllib.loads((c.root / "pyproject.toml").read_text(encoding="utf-8"))
+    mypy_cfg = raw_cfg["tool"].get("mypy", {})
+    strict = {
+        "disallow_untyped_defs": bool(mypy_cfg.get("disallow_untyped_defs")),
+        "disallow_incomplete_defs": bool(mypy_cfg.get("disallow_incomplete_defs")),
+        "check_untyped_defs": bool(mypy_cfg.get("check_untyped_defs")),
+        "warn_return_any": bool(mypy_cfg.get("warn_return_any")),
+        "strict_equality": bool(mypy_cfg.get("strict_equality")),
+        "no_implicit_optional": bool(mypy_cfg.get("no_implicit_optional")),
+        "warn_unused_ignores": bool(mypy_cfg.get("warn_unused_ignores")),
+    }
+    skips = _yaml_block_list(c.read(BANDIT_REL), "skips")
+    roots = _census_roots(c)
+    excludes = _exclude_dirs(c)
+    rows = _nosec_rows(c, roots, excludes)
+    declared: collections.Counter = collections.Counter()
+    for rel, _i, rest in rows:
+        for tid in set(re.findall(r"B\d+", rest)):
+            declared[(rel, tid)] += 1
+    no_id = [f"{rel}:{i}" for rel, i, rest in rows if not re.search(r"B\d{2,3}", rest)]
+    no_reason = [f"{rel}:{i}" for rel, i, rest in rows if not _has_reason(rest)]
+
+    kept_rc, kept_json, kept_ids, kept_keys, kept_suppressed = _bandit_census(c, ())
+    raw_rc, raw_json, raw_ids, raw_keys, _raw_suppressed = _bandit_census(c, ("--ignore-nosec",))
+    kept_total = sum(kept_keys.values())
+    raw_total = sum(raw_keys.values())
+    try:
+        suppressed_witness = int(kept_suppressed)
+    except ValueError:
+        suppressed_witness = -1
+    decorative = sorted(
+        f"{name}:{tid} 声明 {n} 处 / 原始违例 {raw_keys.get((name, tid), 0)}"
+        for (name, tid), n in declared.items()
+        if n > raw_keys.get((name, tid), 0)
+    )
+    decorative_sites = sum(
+        max(0, n - raw_keys.get((name, tid), 0)) for (name, tid), n in declared.items()
+    )
+    unexempted = sum(
+        max(0, n - declared.get((name, tid), 0)) for (name, tid), n in raw_keys.items()
+    )
+    unreadable_is_fail = False
+    if fn:
+        for node in ast.walk(fn):
+            if isinstance(node, ast.Return) and isinstance(node.value, ast.Tuple):
+                elts = node.value.elts
+                if len(elts) >= 2 and isinstance(elts[0], ast.Constant) and elts[0].value is False:
+                    unreadable_is_fail = True
+    return {
+        "plane_ruff_check": flag('"ruff", "check"' in src),
+        "plane_ruff_format": flag('"ruff", "format", "--check"' in src),
+        "plane_mypy": flag('"mypy"' in src),
+        "plane_bandit": flag('"bandit"' in src),
+        "bandit_config_bound": flag('"-c", BANDIT' in src or '"-c", "bandit.yaml"' in src),
+        "bandit_json_forced": flag('"-f", "json"' in src),
+        "bandit_unreadable_is_fail": flag(unreadable_is_fail),
+        "stream_concat_sites": count(len(concat)),
+        "stream_concat_sample": " | ".join(concat[:2]) or "-",
+        "mypy_strict_flags": count(sum(strict.values())),
+        "mypy_strict_names": ", ".join(k for k, v in strict.items() if v),
+        "fileset_from_git": flag("git" in src and ("diff" in src or "ls-files" in src)),
+        "bandit_global_skips": count(len(skips)),
+        "bandit_skip_list": ", ".join(skips) or "-",
+        "census_roots": ", ".join(roots),
+        "census_root_missing": count(len([r for r in roots if not (c.root / r).is_dir()])),
+        "census_exit": kept_rc,
+        "census_json_ok": kept_json,
+        "census_findings": count(kept_total),
+        "census_finding_ids": kept_ids,
+        "raw_exit": raw_rc,
+        "raw_json_ok": raw_json,
+        "raw_findings": count(raw_total),
+        "raw_finding_ids": raw_ids,
+        "suppressed_by_nosec": kept_suppressed,
+        "suppression_gap": count(raw_total - kept_total),
+        "suppression_identity": flag(suppressed_witness == raw_total - kept_total),
+        "nosec_sites": count(len(rows)),
+        "nosec_without_rule_id": count(len(no_id)),
+        "nosec_no_id_sample": ", ".join(no_id[:3]) or "-",
+        "nosec_without_reason": count(len(no_reason)),
+        "nosec_no_reason_sample": ", ".join(no_reason[:3]) or "-",
+        "decorative_exemptions": count(decorative_sites),
+        "reason_predicate_controls": count(_reason_predicate_controls()),
+        "decorative_sample": " | ".join(decorative[:2]) or "-",
+        "unexempted_findings": count(unexempted),
+    }
+
+
+def judge_ac17_02(facts: Facts) -> Verdict:
+    """judge_ac17_02: see the AC-17|02 measurement it serves."""
+    ok = (
+        facts["plane_ruff_check"] == "yes"
+        and facts["plane_ruff_format"] == "yes"
+        and facts["plane_mypy"] == "yes"
+        and facts["plane_bandit"] == "yes"
+        and facts["bandit_config_bound"] == "yes"
+        and facts["bandit_json_forced"] == "yes"
+        and facts["bandit_unreadable_is_fail"] == "yes"
+        and facts["stream_concat_sites"] == "0"
+        and facts["mypy_strict_flags"] == "7"
+        and facts["fileset_from_git"] == "yes"
+        and facts["bandit_global_skips"] == "0"
+        and facts["census_root_missing"] == "0"
+        and facts["census_exit"] == "0"
+        and facts["census_json_ok"] == "yes"
+        and facts["census_findings"] == "0"
+        and facts["raw_exit"] == "1"
+        and facts["raw_json_ok"] == "yes"
+        and positive(facts["raw_findings"])
+        and facts["suppression_identity"] == "yes"
+        and facts["nosec_without_rule_id"] == "0"
+        and facts["nosec_without_reason"] == "0"
+        and facts["decorative_exemptions"] == "0"
+        and facts["reason_predicate_controls"] == "4"
+    )
+    readings = (
+        f"四个面真的被调用：ruff check={facts['plane_ruff_check']}、ruff format --check="
+        f"{facts['plane_ruff_format']}、mypy={facts['plane_mypy']}、bandit={facts['plane_bandit']}；"
+        f"bandit 绑 {BANDIT_REL}={facts['bandit_config_bound']}、"
+        f"强制 -f json={facts['bandit_json_forced']}",
+        f"`_bandit` 的 AST 里把 stdout 与 stderr 拼起来再 parse 的表达式 = "
+        f"{facts['stream_concat_sites']}"
+        + (f"（{facts['stream_concat_sample']}）" if facts["stream_concat_sample"] != "-" else "")
+        + f"；读不到 JSON 时返回 False 的路径 = {facts['bandit_unreadable_is_fail']}",
+        f"mypy 严格旗标 {facts['mypy_strict_flags']} 项生效（{facts['mypy_strict_names']}）；"
+        f"A2 文件集来自 git = {facts['fileset_from_git']}",
+        f"例外面：{BANDIT_REL} 的全局 skips = {facts['bandit_global_skips']}"
+        + (
+            f"（{facts['bandit_skip_list']}）—— 全局跳过与「例外行级精确」是相反的形状"
+            if facts["bandit_skip_list"] != "-"
+            else ""
+        )
+        + f"；逐行 nosec {facts['nosec_sites']} 处，未点名规则号 {facts['nosec_without_rule_id']}"
+        + (f"（{facts['nosec_no_id_sample']}）" if facts["nosec_no_id_sample"] != "-" else "")
+        + f"，点名了但没写理由 {facts['nosec_without_reason']} 处"
+        + (
+            f"（{facts['nosec_no_reason_sample']}）"
+            if facts["nosec_no_reason_sample"] != "-"
+            else ""
+        ),
+        f"真跑普查 {facts['census_roots']}：nosec 生效时 rc={facts['census_exit']}、"
+        f"JSON 可读={facts['census_json_ok']}、剩余违例 {facts['census_findings']}"
+        + (f"（{facts['census_finding_ids']}）" if facts["census_finding_ids"] != "-" else ""),
+        f"反向臂 --ignore-nosec：rc={facts['raw_exit']}、原始违例 {facts['raw_findings']} 条"
+        f"（{facts['raw_finding_ids']}）—— 这一臂为 0 就说明规则根本没在跑，"
+        "上面的 0 是空判而不是干净",
+        f"bandit 自报被 nosec 压住 {facts['suppressed_by_nosec']} 条，与两臂差额 "
+        f"{facts['suppression_gap']} 相等 = {facts['suppression_identity']}；"
+        "例外不生效时这个等式会断，而不是静悄悄变成 0",
+        f"例外与违例逐文件对齐：压住的 {facts['unexempted_findings']} 条差额、"
+        f"理由判别式自己的双侧对照 {facts['reason_predicate_controls']}/4（散文算、裸 noqa 不算）；"
+        f"什么都没压住的装饰性 nosec = {facts['decorative_exemptions']}"
+        + (f"（{facts['decorative_sample']}）" if facts["decorative_sample"] != "-" else ""),
+    )
+    reason = (
+        ""
+        if ok
+        else (
+            "A2 四面缺一个 / bandit 未绑配置或未强制 JSON / 反向臂不报违例 / "
+            "普查仍有剩余违例或命令本身跑挂 / 例外仍是全局 skips / "
+            "例外没有行级规则号或没有理由 / 有 nosec 什么都没压住"
+        )
+    )
+    return Verdict(PROVEN if ok else GAP, readings, reason)
+
+
+AC17_02 = Probe(
+    item="AC-17|02",
+    expects="bandit 全量（例外行级精确 + 理由）",
+    summary="bandit 全量真跑两臂：剩余违例为 0 而反向臂报违例，例外逐行带规则号与理由",
+    measure=measure_ac17_02,
+    judge=judge_ac17_02,
+    repair={
+        "plane_ruff_check": "yes",
+        "plane_ruff_format": "yes",
+        "plane_mypy": "yes",
+        "plane_bandit": "yes",
+        "bandit_config_bound": "yes",
+        "bandit_json_forced": "yes",
+        "bandit_unreadable_is_fail": "yes",
+        "stream_concat_sites": "0",
+        "mypy_strict_flags": "7",
+        "fileset_from_git": "yes",
+        "bandit_global_skips": "0",
+        "census_root_missing": "0",
+        "census_exit": "0",
+        "census_json_ok": "yes",
+        "census_findings": "0",
+        "raw_exit": "1",
+        "raw_json_ok": "yes",
+        "raw_findings": "160",
+        "suppression_identity": "yes",
+        "nosec_without_rule_id": "0",
+        "nosec_without_reason": "0",
+        "decorative_exemptions": "0",
+        "reason_predicate_controls": "4",
+    },
+    breaks=(
+        Break("bandit.yaml 保留一条全局 skip", (("bandit_global_skips", "1"),), GAP),
+        Break("全量普查今天真的报出违例", (("census_findings", "1"),), GAP),
+        Break(
+            "普查命令跑挂，输出被当成 0 条", (("census_exit", "2"), ("census_findings", "0")), GAP
+        ),
+        Break("反向臂空转：--ignore-nosec 也报 0 条", (("raw_findings", "0"),), GAP),
+        Break("nosec 一条都没压住（等式断掉）", (("suppression_identity", "no"),), GAP),
+        Break("复制来的 nosec 什么都没压住", (("decorative_exemptions", "1"),), GAP),
+        Break("一行例外不点名规则号", (("nosec_without_rule_id", "1"),), GAP),
+        Break("例外只写了规则号没写理由", (("nosec_without_reason", "1"),), GAP),
+        Break(
+            "理由判别式掉了一条边（裸 noqa 被当成理由）", (("reason_predicate_controls", "3"),), GAP
+        ),
+        Break("bandit 不再绑项目配置", (("bandit_config_bound", "no"),), GAP),
+        Break("mypy 严格旗标掉到 6 项", (("mypy_strict_flags", "6"),), GAP),
+        Break("_bandit 又把 stdout 和 stderr 拼起来", (("stream_concat_sites", "1"),), GAP),
+        Break("ruff check 面被摘掉", (("plane_ruff_check", "no"),), GAP),
+        Break("普查根被改名，扫到的面缩水", (("census_root_missing", "1"),), GAP),
+    ),
+)
 
 
 # --------------------------------------------------------------------------- #
@@ -15762,7 +17069,7 @@ PROBES: Final[tuple[Probe, ...]] = (
             "case_count": "18",
             "case_statuses_complete": "yes",
             # token门禁状态枚举非凭据：这是 PASS 比较结果数量。
-            "case_pass_count": "14",  # nosec B105
+            "case_pass_count": "14",  # nosec B105  # face name for a case count, not a secret
             "case_fail_count": "0",
             "case_pending_count": "4",
             "pending_excluded": "yes",
@@ -15776,7 +17083,7 @@ PROBES: Final[tuple[Probe, ...]] = (
             "required_groups": "2",
             "group_coverage_percent": "66.67",
             # token门禁状态枚举非凭据：这是通过的源路径数量。
-            "pass_files": "7",  # nosec B105
+            "pass_files": "7",  # nosec B105  # face name for a file count, not a secret
             "file_coverage_percent": "2.86",
             "pending_case_names": (
                 "stock_daily_raw, stock_daily_qfq, index_daily_em, fund_etf_daily_em"
@@ -15785,6 +17092,142 @@ PROBES: Final[tuple[Probe, ...]] = (
             "sample_scope_note": "module-group denominator; file percentage is disclosed only",
         },
     ),
+    Probe(
+        item="AC-17|04",
+        expects="不再被全局忽略",
+        summary="三条能重新忽略 F821 的路都空着：配置值、ruff 命令行、逐行 noqa",
+        measure=measure_ac17_04,
+        judge=judge_ac17_04,
+        breaks=(
+            Break("全局 lint.ignore 放回 F821", (("ignore_has_f821", "yes"),), GAP),
+            Break("某条 per-file-ignores 点名 F821", (("per_file_f821", "1"),), GAP),
+            Break("select 去掉 F 族（连 F821 都不再运行）", (("select_covers_f", "no"),), GAP),
+            Break("门禁命令行 --ignore F821", (("cli_f821_suppression", "1"),), GAP),
+            Break("源码里出现一行 noqa: F821", (("noqa_f821_sites", "1"),), GAP),
+            Break(
+                "普查里有读不动的 .py（零违例退化成无读数）",
+                (("unreadable_py", "3"), ("noqa_f821_sites", "0")),
+                GAP,
+            ),
+        ),
+        repair={
+            "select_covers_f": "yes",
+            "ignore_has_f821": "no",
+            "per_file_f821": "0",
+            "cli_f821_suppression": "0",
+            "noqa_f821_sites": "0",
+            "unreadable_py": "0",
+        },
+    ),
+    Probe(
+        item="AC-17|09",
+        expects="lint/typecheck/test 纳入门禁",
+        summary="前端五项（含采集与 e2e 两个守卫）都在 gate 配方里且各自调用点名的工具",
+        measure=measure_ac17_09,
+        judge=judge_ac17_09,
+        breaks=(
+            Break(
+                "把 frontend-e2e 从 gate 摘掉",
+                (("in_gate", "4"), ("missing", "frontend-e2e")),
+                GAP,
+            ),
+            Break("typecheck 配方被清空", (("empty_recipe", "1"),), GAP),
+            Break("vitest 换成 echo", (("tools_all", "no"), ("tool_vitest", "no")), GAP),
+            Break("lint 加上 --fix（门禁改源码）", (("check_only", "no"),), GAP),
+            Break("判据原文不再点名 test", (("doc_named_count", "2"),), GAP),
+        ),
+        repair={
+            "in_gate": "5",
+            "missing": "-",
+            "empty_recipe": "0",
+            "tools_all": "yes",
+            "doc_named_count": "3",
+            "check_only": "yes",
+        },
+    ),
+    Probe(
+        item="§4|03",
+        expects="浮点阈值用例",
+        summary="RTOL 仍是 1e-9、只作用于真浮点、放过的差异进 notes，且有放宽就红的变异控制",
+        measure=measure_s4_03,
+        judge=judge_s4_03,
+        breaks=(
+            Break("M2 变异：容忍度放宽到 1e-2", (("rtol_literal", "1e-2"),), GAP),
+            Break("RTOL 常量被删", (("rtol_literal", "(absent)"),), GAP),
+            Break("isclose 不再传 rtol（等于全局默认）", (("isclose_sites", "0"),), GAP),
+            Break("浮点闸门拆掉（文本格也走容忍度）", (("float_guard", "no"),), GAP),
+            Break("放过的差异不再记条数", (("note_reports_count", "no"),), GAP),
+            Break("删掉变异控制用例", (("mutation_control", "no"),), GAP),
+            Break("删掉「静默放过」控制用例", (("silent_drift_control", "no"),), GAP),
+            Break("阈值用例只剩 3 条", (("tolerance_tests", "3"),), GAP),
+        ),
+        repair={
+            "rtol_literal": "1e-9",
+            "isclose_sites": "2",
+            "float_guard": "yes",
+            "note_reports_count": "yes",
+            "tolerance_tests": "5",
+            "mutation_control": "yes",
+            "silent_drift_control": "yes",
+        },
+    ),
+    Probe(
+        item="AC-16|05",
+        expects="零依赖断言（分层 AST 口径）",
+        summary="入库 scope/普查/版本与今日走查逐项相等，门禁先自测再全量且两面齐全",
+        measure=measure_ac16_05,
+        judge=judge_ac16_05,
+        breaks=(
+            Break("新增一个扫描根但不入库", (("surface_problems", "1"),), GAP),
+            Break("某个根的文件数漂了", (("per_scope_mismatch", "1"),), GAP),
+            Break("扫描器升版没重发普查", (("version_matches", "no"),), GAP),
+            Break(
+                "只保留 --self-test 一次调用",
+                (("invocations", "1"), ("full_run_after", "no")),
+                GAP,
+            ),
+            Break("自测的违例样本被删空", (("violation_samples", "0"),), GAP),
+            Break("自测没有合规样本（防不了误报那一面）", (("compliant_samples", "0"),), GAP),
+            Break(
+                "违例样本只剩 import 一种入口",
+                (("violation_kinds", "import"), ("violation_kinds_full", "no")),
+                GAP,
+            ),
+            Break("扫描器自测真跑一次跑红", (("selftest_exit", "1"),), GAP),
+            Break("工具报的样本计数与结构不符", (("reported_counts_match", "no"),), GAP),
+            Break("入库 findings 变成 2", (("recorded_findings", "2"),), GAP),
+            Break("入库 scope 被清空", (("scope_entries", "0"),), GAP),
+            Break(
+                "self-test 不再是第一条",
+                (("self_test_first", "no"), ("invocations", "2"), ("full_run_after", "yes")),
+                GAP,
+            ),
+            Break("入库 JSON 的 files 与载入结果不同源", (("loader_files_match", "no"),), GAP),
+            Break("走查里少了一个根（扫描面静默缩水）", (("census_missing_roots", "1"),), GAP),
+        ),
+        repair={
+            "scope_entries": "3",
+            "census_missing_roots": "0",
+            "per_scope_mismatch": "0",
+            "surface_problems": "0",
+            "loader_scope_matches": "yes",
+            "loader_files_match": "yes",
+            "loader_minors_match": "yes",
+            "version_matches": "yes",
+            "recorded_findings": "0",
+            "invocations": "2",
+            "self_test_first": "yes",
+            "full_run_after": "yes",
+            "selftest_exit": "0",
+            "violation_samples": "13",
+            "compliant_samples": "4",
+            "violation_kinds": "dynamic, import, string",
+            "violation_kinds_full": "yes",
+            "reported_counts_match": "yes",
+        },
+    ),
+    AC16_09,
+    AC17_02,
 )
 
 
