@@ -38,10 +38,12 @@ import json
 import re
 import subprocess  # nosec B404
 import sys
+import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final, cast
+from xml.etree import ElementTree  # nosec B405
 
 import tomllib
 import yaml
@@ -1039,6 +1041,112 @@ def judge_ac2_09(facts: Facts) -> Verdict:
 
 
 # --------------------------------------------------------------------------------------
+# DEV_DONE 的见证面：台账标签是声明，跑过的契约套件才是证据
+# --------------------------------------------------------------------------------------
+CONTRACT_SUITE_REL: Final = "tests/test_provider_model_contracts.py"
+POSITIVE_FACE: Final = "test_typical_request_normalizes_the_declared_columns"
+REFUSAL_MARKS: Final = (
+    "is_refused",
+    "shape_failure",
+    "is_a_failure",
+    "are_incomplete",
+    "are_a_conflict",
+    "fails_before",
+)
+
+#: One process runs the engine discovery and the contract suite once; the four AC2 cases that
+#: count DEV_DONE read the same execution rather than four different ones.
+_ENGINE_DECLARED_RUN: list[set[str]] = []
+_CONTRACT_FACES_RUN: list[dict[str, tuple[int, int]]] = []
+
+
+def engine_declared_keys() -> set[str]:
+    """``source::Model`` for every model the runtime registration truth declares into the engine."""
+    if not _ENGINE_DECLARED_RUN:
+        if str(REPO_ROOT) not in sys.path:
+            sys.path.insert(0, str(REPO_ROOT))
+        from opendata.data.providers import catalog
+
+        _ENGINE_DECLARED_RUN.append(
+            {f"{source}::{spec.model}" for source, spec in catalog.engine_declared_models()}
+        )
+    return _ENGINE_DECLARED_RUN[0]
+
+
+def passing_contract_faces() -> dict[str, tuple[int, int]]:
+    """Per ``source::Model``: positive and refusal contract tests this process just passed.
+
+    The suite is run rather than read. A test file that names a model only proves it is named, and
+    AC2-10 refuses 空壳/固定样本/永远空 as DEV_DONE; the executed positive arm asserts the declared
+    columns come out non-empty and standardized, the refusal arms assert the same declaration turns
+    a bad upstream body into a named failure. A testcase that skipped or failed carries no witness.
+    """
+    if not _CONTRACT_FACES_RUN:
+        _CONTRACT_FACES_RUN.append(_run_contract_suite())
+    return _CONTRACT_FACES_RUN[0]
+
+
+def _run_contract_suite() -> dict[str, tuple[int, int]]:
+    """Execute the contract suite once and read its per-testcase verdicts off the junit record."""
+    with tempfile.TemporaryDirectory(prefix="ac2-contract-") as tmp:
+        xml = Path(tmp) / "junit.xml"
+        argv = [
+            sys.executable,
+            "-m",
+            "pytest",
+            CONTRACT_SUITE_REL,
+            "-q",
+            "-p",
+            "no:cacheprovider",
+            "--no-cov",
+            f"--junitxml={xml}",
+        ]
+        exit_code, output = tool(argv)
+        if not xml.is_file():
+            raise RuntimeError(f"contract suite wrote no junit (exit={exit_code}): {output[-300:]}")
+        faces: dict[str, list[int]] = {}
+        # The file is the junit record this same process asked pytest to write into a private temp
+        # directory a moment ago, so S314's untrusted-input premise does not hold here; adding
+        # defusedxml would break the zero-dependency rule the same gate enforces.
+        root = ElementTree.parse(xml).getroot()  # nosec B314  # noqa: S314
+        for case in root.iter("testcase"):
+            if list(case):  # a failure/error/skipped child means this testcase proved nothing
+                continue
+            match = re.match(r"^(?P<test>[a-zA-Z0-9_]+)\[(?P<key>[^\]]+)\]$", str(case.get("name")))
+            if not match:
+                continue
+            entry = faces.setdefault(match.group("key"), [0, 0])
+            name = match.group("test")
+            if name == POSITIVE_FACE:
+                entry[0] += 1
+            elif any(mark in name for mark in REFUSAL_MARKS):
+                entry[1] += 1
+        return {key: (positive, refusal) for key, (positive, refusal) in faces.items()}
+
+
+def witnessed_dev_done(rows: list[dict[str, str]]) -> set[str]:
+    """Task ids whose DEV_DONE rests on a declaration plus an executed positive and refusal face."""
+    declared = engine_declared_keys()
+    faces = passing_contract_faces()
+    witnessed = set()
+    for row in rows:
+        key = f"{row['provider']}::{row['upstream_model']}"
+        positive, refusal = faces.get(key, (0, 0))
+        if key in declared and positive > 0 and refusal > 0:
+            witnessed.add(row["task_id"])
+    return witnessed
+
+
+def label_only_rows(rows: list[dict[str, str]], witnessed: set[str]) -> list[str]:
+    """Rows the ledger stamps DEV_DONE while the executed faces name no witness for them."""
+    return [
+        row["task_id"]
+        for row in rows
+        if row["implementation_task_status"] == "DEV_DONE" and row["task_id"] not in witnessed
+    ]
+
+
+# --------------------------------------------------------------------------------------
 # AC2-10 350 模型实例
 # --------------------------------------------------------------------------------------
 def measure_ac2_10() -> Facts:
@@ -1049,6 +1157,8 @@ def measure_ac2_10() -> Facts:
         census[row["implementation_task_status"]] = (
             census.get(row["implementation_task_status"], 0) + 1
         )
+    witnessed = witnessed_dev_done(rows)
+    naked = label_only_rows(rows, witnessed)
     conftest = read("tests/conftest.py")
     contract_files = sorted(
         path.name
@@ -1058,7 +1168,17 @@ def measure_ac2_10() -> Facts:
     return {
         "ledger_rows": str(len(rows)),
         "obb2_task_ids": str(sum(1 for row in rows if row["task_id"].startswith("OBB2-"))),
-        "dev_done": str(census.get("DEV_DONE", 0)),
+        "dev_done": str(len(witnessed)),
+        "dev_done_label": str(census.get("DEV_DONE", 0)),
+        "label_without_witness": str(len(naked)),
+        "label_without_witness_ids": ",".join(sorted(naked)[:6]) or "-",
+        "engine_declared_rows": str(
+            sum(
+                1
+                for row in rows
+                if f"{row['provider']}::{row['upstream_model']}" in engine_declared_keys()
+            )
+        ),
         "in_progress": str(census.get("IN_PROGRESS", 0)),
         "not_run": str(census.get("NOT_RUN", 0)),
         "live_verification_run": str(
@@ -1078,7 +1198,8 @@ def judge_ac2_10(facts: Facts) -> Verdict:
     checks = {
         "350 ledger rows": facts["ledger_rows"] == "350",
         "every row carries an OBB2 task id": facts["obb2_task_ids"] == "350",
-        "all 350 reach DEV_DONE": facts["dev_done"] == "350",
+        "all 350 are DEV_DONE with an executed witness": facts["dev_done"] == "350",
+        "no DEV_DONE label sits without a witness": facts["label_without_witness"] == "0",
         "no row left at NOT_RUN": facts["not_run"] == "0",
         "a contract suite reads the specs": facts["contract_test_files"] != "-"
         and int(facts["contract_test_functions"]) > 0,
@@ -1102,6 +1223,7 @@ def measure_ac2_11() -> Facts:
     """AC2-11 测量面：既有 5 源 85 条模型与原 12 条能力."""
     rows = task_rows()
     p0 = [row for row in rows if row["batch"] == "P0"]
+    witnessed = witnessed_dev_done(p0)
     sources = sorted({row["provider"] for row in p0})
     caps = per_source_caps()
     inventory = inventory_doc()
@@ -1112,7 +1234,11 @@ def measure_ac2_11() -> Facts:
         "p0_rows": str(len(p0)),
         "p0_providers": str(len(sources)),
         "p0_provider_names": ",".join(sources),
-        "p0_dev_done": str(sum(1 for row in p0 if row["implementation_task_status"] == "DEV_DONE")),
+        "p0_dev_done": str(len(witnessed)),
+        "p0_dev_done_label": str(
+            sum(1 for row in p0 if row["implementation_task_status"] == "DEV_DONE")
+        ),
+        "p0_label_without_witness": str(len(label_only_rows(p0, witnessed))),
         "p0_registry_caps": str(sum(caps.get(source, 0) for source in sources)),
         "p0_inventory_fetchers": str(legacy_fetchers),
         "p0_live_verified": str(
@@ -1132,7 +1258,8 @@ def judge_ac2_11(facts: Facts) -> Verdict:
         "the original 12 capabilities survive": facts["p0_localized_verified_caps"] == "12",
         "the inventory counts the same 85 for these five sources": facts["p0_inventory_fetchers"]
         == facts["p0_rows"],
-        "all 85 reach DEV_DONE": facts["p0_dev_done"] == "85",
+        "all 85 are DEV_DONE with an executed witness": facts["p0_dev_done"] == "85",
+        "no P0 label sits without a witness": facts["p0_label_without_witness"] == "0",
         "the registry still serves at least the legacy 12": int(facts["p0_registry_caps"]) >= 12,
         "no semantic regression (each of the 85 live-verified)": facts["p0_live_verified"] == "85",
     }
@@ -1152,6 +1279,7 @@ def measure_ac2_12() -> Facts:
     """AC2-12 测量面：7个其他宏观33条固定模型 / EIA0模型误记."""
     rows = task_rows()
     macro = [row for row in rows if row["phase"] == "2B" and row["batch"] == "P1"]
+    macro_witnessed = witnessed_dev_done(macro)
     models = inventory_report()["reconstructed_models"]
     eia_rows = [row for row in rows if row["provider"] == "eia"]
     eia_models = [row for row in models if row.get("provider") == "eia"]
@@ -1159,9 +1287,11 @@ def measure_ac2_12() -> Facts:
         "macro_rows": str(len(macro)),
         "macro_providers": str(len({row["provider"] for row in macro})),
         "macro_provider_names": ",".join(sorted({row["provider"] for row in macro})),
-        "macro_dev_done": str(
+        "macro_dev_done": str(len(macro_witnessed)),
+        "macro_dev_done_label": str(
             sum(1 for row in macro if row["implementation_task_status"] == "DEV_DONE")
         ),
+        "macro_label_without_witness": str(len(label_only_rows(macro, macro_witnessed))),
         "macro_live_verified": str(
             sum(1 for row in macro if row["live_verification_status"] == "SOURCE_VERIFIED")
         ),
@@ -1175,7 +1305,8 @@ def judge_ac2_12(facts: Facts) -> Verdict:
     checks = {
         "33 rows across 7 macro providers": facts["macro_rows"] == "33"
         and facts["macro_providers"] == "7",
-        "all 33 reach DEV_DONE": facts["macro_dev_done"] == "33",
+        "all 33 are DEV_DONE with an executed witness": facts["macro_dev_done"] == "33",
+        "no macro label sits without a witness": facts["macro_label_without_witness"] == "0",
         "each has its applicable real comparison": facts["macro_live_verified"] == "33",
         "EIA's row count follows upstream, not a mistaken zero": facts["eia_ledger_rows"]
         == facts["eia_upstream_models"],
@@ -1194,6 +1325,7 @@ def measure_ac2_13() -> Facts:
     """AC2-13 测量面：5商业/聚合120条模型 / 15源/195凭据暴露行."""
     rows = task_rows()
     commercial = [row for row in rows if row["phase"] == "2C"]
+    commercial_witnessed = witnessed_dev_done(commercial)
     exposed = [row for row in rows if row["credential_fields"]]
     decisions: dict[str, int] = {}
     for row in rows:
@@ -1206,8 +1338,12 @@ def measure_ac2_13() -> Facts:
     return {
         "commercial_rows": str(len(commercial)),
         "commercial_providers": str(len({row["provider"] for row in commercial})),
-        "commercial_dev_done": str(
+        "commercial_dev_done": str(len(commercial_witnessed)),
+        "commercial_dev_done_label": str(
             sum(1 for row in commercial if row["implementation_task_status"] == "DEV_DONE")
+        ),
+        "commercial_label_without_witness": str(
+            len(label_only_rows(commercial, commercial_witnessed))
         ),
         "exposed_rows": str(len(exposed)),
         "exposed_providers": str(len({row["provider"] for row in exposed})),
@@ -1231,7 +1367,9 @@ def judge_ac2_13(facts: Facts) -> Verdict:
     checks = {
         "120 rows across 5 commercial providers": facts["commercial_rows"] == "120"
         and facts["commercial_providers"] == "5",
-        "all 120 reach DEV_DONE": facts["commercial_dev_done"] == "120",
+        "all 120 are DEV_DONE with an executed witness": facts["commercial_dev_done"] == "120",
+        "no commercial label sits without a witness": facts["commercial_label_without_witness"]
+        == "0",
         "195 credential-exposed rows across 15 sources": facts["exposed_rows"] == "195"
         and facts["exposed_providers"] == "15",
         "every exposure row carries an access decision": facts["exposed_rows_decided"] == "195",
@@ -1252,14 +1390,17 @@ def measure_ac2_14() -> Facts:
     """AC2-14 测量面：15个其他来源112条模型 / 请求型Quote不扩成实时服务."""
     rows = task_rows()
     other = [row for row in rows if row["phase"] == "2D"]
+    other_witnessed = witnessed_dev_done(other)
     phases = {phase for row in rows for phase in [row["phase"]]}
     return {
         "other_rows": str(len(other)),
         "other_providers": str(len({row["provider"] for row in other})),
         "other_provider_names": ",".join(sorted({row["provider"] for row in other})),
-        "other_dev_done": str(
+        "other_dev_done": str(len(other_witnessed)),
+        "other_dev_done_label": str(
             sum(1 for row in other if row["implementation_task_status"] == "DEV_DONE")
         ),
+        "other_label_without_witness": str(len(label_only_rows(other, other_witnessed))),
         "other_live_verified": str(
             sum(1 for row in other if row["live_verification_status"] == "SOURCE_VERIFIED")
         ),
@@ -1279,7 +1420,8 @@ def judge_ac2_14(facts: Facts) -> Verdict:
     checks = {
         "112 rows across 15 sources": facts["other_rows"] == "112"
         and facts["other_providers"] == "15",
-        "all 112 reach DEV_DONE": facts["other_dev_done"] == "112",
+        "all 112 are DEV_DONE with an executed witness": facts["other_dev_done"] == "112",
+        "no other-source label sits without a witness": facts["other_label_without_witness"] == "0",
         "each verified against its own contract family": facts["other_live_verified"] == "112",
         "the three phases partition the ledger": facts["phase_partition_sums_to_350"] == "True",
     }
@@ -2318,12 +2460,21 @@ PROBES: Final = (
         judge_ac2_10,
         {
             "dev_done": "350",
+            "dev_done_label": "350",
+            "label_without_witness": "0",
+            "label_without_witness_ids": "-",
+            "engine_declared_rows": "350",
             "not_run": "0",
             "in_progress": "0",
             "live_verification_run": "350",
         },
         (
             Break("空壳也算 DEV_DONE", {"dev_done": "349", "not_run": "1"}),
+            Break("DEV_DONE 只是标签：一条标签无见证", {"label_without_witness": "1"}),
+            Break(
+                "整片标签自报而执行见证为零",
+                {"dev_done": "0", "dev_done_label": "350", "label_without_witness": "350"},
+            ),
             Break(
                 "契约套件的 ModelSpec 参数化消失",
                 {"contract_test_files": "-", "contract_test_functions": "0"},
@@ -2340,9 +2491,15 @@ PROBES: Final = (
         "5 个既有来源的 85 条模型逐条完成 AC2-10，且原有 12 条能力语义无回退。",
         measure_ac2_11,
         judge_ac2_11,
-        {"p0_dev_done": "85", "p0_live_verified": "85"},
+        {
+            "p0_dev_done": "85",
+            "p0_dev_done_label": "85",
+            "p0_label_without_witness": "0",
+            "p0_live_verified": "85",
+        },
         (
             Break("85 条里有未完成", {"p0_dev_done": "80"}),
+            Break("P0 标签自报而无执行见证", {"p0_label_without_witness": "5"}),
             Break("原 12 条能力缩减", {"p0_localized_verified_caps": "11"}),
             Break("库存的 85 条与任务台账对不上", {"p0_inventory_fetchers": "80"}),
             Break("只靠 provider 目录存在充数", {"p0_registry_caps": "0"}),
@@ -2360,9 +2517,15 @@ PROBES: Final = (
         "7 个宏观来源的 33 条模型逐条完成 AC2-10 与适用真实对照，EIA 模型数按上游登记。",
         measure_ac2_12,
         judge_ac2_12,
-        {"macro_dev_done": "33", "macro_live_verified": "33"},
+        {
+            "macro_dev_done": "33",
+            "macro_dev_done_label": "33",
+            "macro_label_without_witness": "0",
+            "macro_live_verified": "33",
+        },
         (
             Break("33 条少一条", {"macro_rows": "32"}),
+            Break("宏观标签自报而无执行见证", {"macro_label_without_witness": "3"}),
             Break("EIA 记成 0 模型", {"eia_ledger_rows": "0"}),
             Break("序列单位/频率混历史值（未对照）", {"macro_live_verified": "0"}),
             Break("宏观来源不足 7", {"macro_providers": "6"}),
@@ -2378,6 +2541,8 @@ PROBES: Final = (
         judge_ac2_13,
         {
             "commercial_dev_done": "120",
+            "commercial_dev_done_label": "120",
+            "commercial_label_without_witness": "0",
             "decisions_pending": "0",
             "access_assessment_pending": "0",
             "exposed_rows_decided": "195",
@@ -2385,6 +2550,7 @@ PROBES: Final = (
         },
         (
             Break("120 条里有未完成", {"commercial_dev_done": "100"}),
+            Break("商业标签自报而无执行见证", {"commercial_label_without_witness": "20"}),
             Break("暴露行未被覆盖", {"exposed_rows": "155", "exposed_providers": "12"}),
             Break("未声明 Key 被当成无需授权", {"exposed_rows_decided": "0"}),
             Break(
@@ -2410,9 +2576,15 @@ PROBES: Final = (
         "15 个其他来源的 112 条模型按快照/报价/新闻/披露/衍生品各自契约完成。",
         measure_ac2_14,
         judge_ac2_14,
-        {"other_dev_done": "112", "other_live_verified": "112"},
+        {
+            "other_dev_done": "112",
+            "other_dev_done_label": "112",
+            "other_label_without_witness": "0",
+            "other_live_verified": "112",
+        },
         (
             Break("112 条少一条", {"other_rows": "111"}),
+            Break("其他来源标签自报而无执行见证", {"other_label_without_witness": "12"}),
             Break("分片不再覆盖 15 源", {"other_providers": "14"}),
             Break("阶段划分漏行", {"phase_partition_sums_to_350": "False"}),
             Break("文本/文档伪转数值域", {"other_live_verified": "0"}),

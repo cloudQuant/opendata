@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "generated_at": "2026-10-08T23:21:47+00:00",
+  "generated_at": "2026-10-09T01:01:39+00:00",
   "document": "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/验收文档.md",
   "identity": {
-    "head": "0be42b7",
+    "head": "185c6a8",
     "branch": "dev",
-    "dirty_files": 5,
+    "dirty_files": 1,
     "doc_sha256": "a65a1667eb22e052edf0d0fe6afd258b708805f798e2a78cb8ad3187e4a9dbc2",
     "python": "3.11.8"
   },
@@ -328,7 +328,7 @@
       "summary": "350 个模型实例各有实现、离线正反例、标准契约与服务入口，真实对照另记。",
       "state": "gap",
       "offline_state": "holds_offline",
-      "reason": "failed: all 350 reach DEV_DONE; no row left at NOT_RUN",
+      "reason": "failed: all 350 are DEV_DONE with an executed witness; no row left at NOT_RUN",
       "missing_legs": [
         [
           "live_upstream",
@@ -338,17 +338,21 @@
       "readings": [
         "contract_test_files=test_cboe_engine_provider.py,test_provider_engine_contract.py,test_provider_model_contracts.py",
         "contract_test_functions=90",
-        "dev_done=0",
+        "dev_done=2",
+        "dev_done_label=0",
         "e2e_marker_declared=True",
+        "engine_declared_rows=2",
         "gate_live_confirmation=True",
         "in_progress=15",
+        "label_without_witness=0",
+        "label_without_witness_ids=-",
         "ledger_rows=350",
         "live_verification_run=0",
         "not_run=335",
         "obb2_task_ids=350"
       ],
       "repair": "按切片把 NOT_RUN/IN_PROGRESS 推进到 DEV_DONE，并为每片留离线正反例。",
-      "counter_examples": "4/4",
+      "counter_examples": "6/6",
       "command": "python scripts/quality/ac2_case_probe.py --item AC2-10"
     },
     {
@@ -358,7 +362,7 @@
       "summary": "5 个既有来源的 85 条模型逐条完成 AC2-10，且原有 12 条能力语义无回退。",
       "state": "gap",
       "offline_state": "holds_offline",
-      "reason": "failed: all 85 reach DEV_DONE; no semantic regression (each of the 85 live-verified)",
+      "reason": "failed: all 85 are DEV_DONE with an executed witness; no semantic regression (each of the 85 live-verified)",
       "missing_legs": [
         [
           "archive_field",
@@ -371,7 +375,9 @@
       ],
       "readings": [
         "p0_dev_done=0",
+        "p0_dev_done_label=0",
         "p0_inventory_fetchers=85",
+        "p0_label_without_witness=0",
         "p0_live_verified=0",
         "p0_localized_verified_caps=12",
         "p0_provider_names=ecb,fred,imf,oecd,yfinance",
@@ -380,7 +386,7 @@
         "p0_rows=85"
       ],
       "repair": "把 5 源原能力身份登记进库存文档，再逐条推进 85 行。",
-      "counter_examples": "5/5",
+      "counter_examples": "6/6",
       "command": "python scripts/quality/ac2_case_probe.py --item AC2-11"
     },
     {
@@ -390,7 +396,7 @@
       "summary": "7 个宏观来源的 33 条模型逐条完成 AC2-10 与适用真实对照，EIA 模型数按上游登记。",
       "state": "gap",
       "offline_state": "holds_offline",
-      "reason": "failed: all 33 reach DEV_DONE; each has its applicable real comparison",
+      "reason": "failed: all 33 are DEV_DONE with an executed witness; each has its applicable real comparison",
       "missing_legs": [
         [
           "live_upstream",
@@ -401,13 +407,15 @@
         "eia_ledger_rows=2",
         "eia_upstream_models=2",
         "macro_dev_done=0",
+        "macro_dev_done_label=0",
+        "macro_label_without_witness=0",
         "macro_live_verified=0",
         "macro_provider_names=bls,econdb,eia,famafrench,federal_reserve,multpl,tradingeconomics",
         "macro_providers=7",
         "macro_rows=33"
       ],
       "repair": "逐条完成 33 行，并按上游事实校正 EIA 模型数。",
-      "counter_examples": "4/4",
+      "counter_examples": "5/5",
       "command": "python scripts/quality/ac2_case_probe.py --item AC2-12"
     },
     {
@@ -417,7 +425,7 @@
       "summary": "120 条商业/聚合模型逐条完成，跨阶段 15 源 195 行凭据暴露都有访问决定。",
       "state": "gap",
       "offline_state": "holds_offline",
-      "reason": "failed: all 120 reach DEV_DONE; every exposure row carries an access decision; no pending decision is left implicit",
+      "reason": "failed: all 120 are DEV_DONE with an executed witness; every exposure row carries an access decision; no pending decision is left implicit",
       "missing_legs": [
         [
           "human_decision",
@@ -431,6 +439,8 @@
       "readings": [
         "access_assessment_pending=155",
         "commercial_dev_done=0",
+        "commercial_dev_done_label=0",
+        "commercial_label_without_witness=0",
         "commercial_providers=5",
         "commercial_rows=120",
         "decisions_made=0",
@@ -440,7 +450,7 @@
         "exposed_rows_decided=0"
       ],
       "repair": "逐行写入访问决定，并把不申请的行显式留在台账内。",
-      "counter_examples": "4/4",
+      "counter_examples": "5/5",
       "command": "python scripts/quality/ac2_case_probe.py --item AC2-13"
     },
     {
@@ -450,7 +460,7 @@
       "summary": "15 个其他来源的 112 条模型按快照/报价/新闻/披露/衍生品各自契约完成。",
       "state": "gap",
       "offline_state": "holds_offline",
-      "reason": "failed: all 112 reach DEV_DONE; each verified against its own contract family",
+      "reason": "failed: all 112 are DEV_DONE with an executed witness; each verified against its own contract family",
       "missing_legs": [
         [
           "live_upstream",
@@ -458,7 +468,9 @@
         ]
       ],
       "readings": [
-        "other_dev_done=0",
+        "other_dev_done=2",
+        "other_dev_done_label=0",
+        "other_label_without_witness=0",
         "other_live_verified=0",
         "other_provider_names=benzinga,biztoc,cboe,cftc,congress_gov,deribit,finra,finviz,government_us,nasdaq,sec,stockgrid,tmx,tradier,wsj",
         "other_providers=15",
@@ -467,7 +479,7 @@
         "phase_partition_sums_to_350=True"
       ],
       "repair": "逐条实现并按契约族分类验证，不把请求型报价扩成实时服务。",
-      "counter_examples": "4/4",
+      "counter_examples": "5/5",
       "command": "python scripts/quality/ac2_case_probe.py --item AC2-14"
     },
     {
@@ -785,7 +797,7 @@
       "summary": "发布候选同源冻结：清单、适用 AC、独立回归、整 gate 与文档/包/镜像同树。",
       "state": "gap",
       "offline_state": "holds_offline",
-      "reason": "failed: the tree is clean; the archived record names this exact commit; GATE_EXIT is recorded and zero; every declared member ran in the record",
+      "reason": "failed: the tree is clean; a record sits on this tree's code plane; the record is committed, not a scratch file; the record's tree differs from HEAD only in evidence; GATE_EXIT is recorded and zero; every declared member ran in the record",
       "missing_legs": [
         [
           "archive_field",
@@ -797,20 +809,23 @@
         ]
       ],
       "readings": [
-        "dirty_files=5",
+        "dirty_files=1",
         "evidence_case_dirs=82",
         "gate_exit_line=absent",
         "gate_member_runs=0",
         "gate_members_declared=17",
+        "gate_record_head=absent",
         "gate_record_path=absent",
-        "gate_records_for_head=0",
+        "gate_records_same_tree=0",
         "gate_records_total=66",
-        "head=0be42b7",
+        "head=185c6a8",
         "inventory_status=\"PASS\"",
-        "latest_record_any_tree=docs/evidence/C9/gate.txt"
+        "latest_record_any_tree=docs/evidence/C73/gate-run1-failed-a2-ratchet-acceptance.txt",
+        "record_non_evidence_diff=-1",
+        "record_tracked=0"
       ],
       "repair": "在冻结树上跑完整 make gate 并留 17 条成员退出码，再补包与镜像。",
-      "counter_examples": "6/6",
+      "counter_examples": "8/8",
       "command": "python scripts/quality/ac2_case_probe.py --item AC2-25"
     }
   ]
