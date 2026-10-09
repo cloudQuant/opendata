@@ -230,9 +230,9 @@ def purge_expired_rows(
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
     # Both dynamic identifiers are rejected unless they are plain names.
     count_statement = (
-        f"SELECT COUNT(*) FROM {_identifier(table)} WHERE {_identifier(date_column)} < :cutoff"  # nosec B608
+        f"SELECT COUNT(*) FROM {_identifier(table)} WHERE {_identifier(date_column)} < :cutoff"  # nosec B608  # _identifier() raises unless the name is alnum-plus-underscore, then backticks it
     )
-    statement = f"DELETE FROM {_identifier(table)} WHERE {_identifier(date_column)} < :cutoff"  # nosec B608
+    statement = f"DELETE FROM {_identifier(table)} WHERE {_identifier(date_column)} < :cutoff"  # nosec B608  # _identifier() rejects any non-word name; cutoff goes in as the :cutoff bound param
     with engine.begin() as connection:
         candidates = int(connection.execute(text(count_statement), {"cutoff": cutoff}).scalar_one())
         if dry_run:
@@ -273,7 +273,7 @@ def export_diff_details(engine: Engine, path: Path | str) -> int:
         Number of exported rows.
     """
     columns = ", ".join(_identifier(column) for column in REPORT_COLUMNS)
-    statement = f"SELECT {columns} FROM {_identifier(DQ_DIFF_REPORT_TABLE)} ORDER BY `checked_at`"  # nosec B608
+    statement = f"SELECT {columns} FROM {_identifier(DQ_DIFF_REPORT_TABLE)} ORDER BY `checked_at`"  # nosec B608  # columns are the REPORT_COLUMNS literal tuple, each quoted through _identifier()
     destination = Path(path)
     destination.parent.mkdir(parents=True, exist_ok=True)
     with engine.connect() as connection:

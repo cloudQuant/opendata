@@ -49,7 +49,7 @@ import argparse
 import json
 import re
 import shutil
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # one run(): GIT const, literal read-only argvs
 import sys
 from dataclasses import dataclass
 from pathlib import Path

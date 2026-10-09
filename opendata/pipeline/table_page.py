@@ -69,7 +69,7 @@ def page_sql(table: str, *, columns: Sequence[str], key_columns: Sequence[str]) 
     ordering = ", ".join(f"`{column}`" for column in order_columns(columns, key_columns))
     if not ordering:
         raise ValueError(f"table {table!r} has no columns to order by")
-    return f"SELECT * FROM `{table}` ORDER BY {ordering} LIMIT :limit OFFSET :offset"
+    return f"SELECT * FROM `{table}` ORDER BY {ordering} LIMIT :limit OFFSET :offset"  # nosec B608  # _IDENTIFIER_RE.match(table); cols=inspector
 
 
 def table_shape(connection: Connection, table: str) -> tuple[list[str], list[str]]:

@@ -344,7 +344,7 @@ class AkshareProvider:
         if ignore_duplicates:
             return f"INSERT IGNORE INTO `{safe_table}` ({cols_str}) VALUES ({placeholders})"
         if on_duplicate_update and unique_keys:
-            insert_sql = f"INSERT INTO `{safe_table}` ({cols_str}) VALUES ({placeholders})"
+            insert_sql = f"INSERT INTO `{safe_table}` ({cols_str}) VALUES ({placeholders})"  # nosec B608  # cols backtick-doubled; table regex-validated
             update_clauses = []
             for col in cols:
                 if col not in unique_keys:
@@ -353,7 +353,7 @@ class AkshareProvider:
             if update_clauses:
                 insert_sql += f" ON DUPLICATE KEY UPDATE {', '.join(update_clauses)}"
             return insert_sql
-        return f"INSERT INTO `{safe_table}` ({cols_str}) VALUES ({placeholders})"
+        return f"INSERT INTO `{safe_table}` ({cols_str}) VALUES ({placeholders})"  # nosec B608  # cols backtick-doubled; table regex-validated
 
     def save_data(
         self,
@@ -458,7 +458,7 @@ class AkshareProvider:
         try:
             safe_name = self._validate_identifier(table_name)
             self.connect_db()
-            self.cursor.execute(f"SELECT COUNT(*) FROM `{safe_name}`")
+            self.cursor.execute(f"SELECT COUNT(*) FROM `{safe_name}`")  # nosec B608  # table from _validate_identifier regex
             return self.cursor.fetchone()[0] or 0
         except pymysql.Error:
             return 0
@@ -492,7 +492,7 @@ class AkshareProvider:
 
         try:
             safe_name = self._validate_identifier(table_name)
-            result = await db_session.execute(text(f"SELECT COUNT(*) FROM `{safe_name}`"))
+            result = await db_session.execute(text(f"SELECT COUNT(*) FROM `{safe_name}`"))  # nosec B608  # table from _validate_identifier regex
             return result.scalar() or 0
         except Exception as e:
             self.logger.debug(f"Could not get row count for table {table_name}: {e}")

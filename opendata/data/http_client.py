@@ -1053,7 +1053,7 @@ class GovernedHttpClient:
     def _default_jitter(self) -> float:
         """Random jitter within the configured bound (injectable seam)."""
         # Retry jitter, not cryptography: the standard PRNG is intended here.
-        return random.uniform(0.0, self._config.backoff_jitter)  # noqa: S311  # nosec B311
+        return random.uniform(0.0, self._config.backoff_jitter)  # noqa: S311  # nosec B311  # retry backoff jitter only; no security value derives from this PRNG draw
 
     def _error(
         self,

@@ -553,9 +553,9 @@ def _target_migration_heads(connection: Connection) -> tuple[str, ...]:
 def _exact_row_count(connection: Connection, table: str) -> int:
     """Return a count from one of the two fixed table identifiers."""
     if table == SOURCE_TABLE:
-        statement = text(f"SELECT COUNT(*) FROM `{SOURCE_TABLE}`")  # noqa: S608
+        statement = text(f"SELECT COUNT(*) FROM `{SOURCE_TABLE}`")  # noqa: S608  # nosec B608  # SOURCE_TABLE is a module literal
     elif table == TARGET_TABLE:
-        statement = text(f"SELECT COUNT(*) FROM `{TARGET_TABLE}`")  # noqa: S608
+        statement = text(f"SELECT COUNT(*) FROM `{TARGET_TABLE}`")  # noqa: S608  # nosec B608  # TARGET_TABLE is a module literal
     else:
         raise TransferError("row_count_table_not_allowed")
     return int(connection.execute(statement).scalar_one())
@@ -628,7 +628,7 @@ def _stream_source(
     """Stream, validate, hash, and batch-insert all source rows."""
     selected = ", ".join(f"`{column}`" for column in SOURCE_COLUMNS)
     statement = text(
-        f"SELECT {selected} FROM `{SOURCE_TABLE}` "  # noqa: S608
+        f"SELECT {selected} FROM `{SOURCE_TABLE}` "  # noqa: S608  # nosec B608  # selected from SOURCE_COLUMNS literal
         "ORDER BY `股票代码`, STR_TO_DATE(`日期`, '%Y-%m-%d')"
     )
     result = connection.execution_options(
@@ -693,7 +693,7 @@ def _stream_target_hash(
     """Read and hash every target row in key order, checking transfer metadata."""
     raw_columns = ", ".join(f"`{column}`" for column in SOURCE_COLUMNS)
     statement = text(
-        f"SELECT {raw_columns}, `_source`, `_fetched_at`, `_batch_id` "  # noqa: S608
+        f"SELECT {raw_columns}, `_source`, `_fetched_at`, `_batch_id` "  # noqa: S608  # nosec B608  # raw_columns from SOURCE_COLUMNS literal
         f"FROM `{TARGET_TABLE}` ORDER BY `股票代码`, `日期`"
     )
     result = connection.execution_options(

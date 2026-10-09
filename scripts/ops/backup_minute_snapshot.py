@@ -12,7 +12,7 @@ import os
 import re
 import shutil
 import stat
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # sole subprocess.run: absolute /bin/bash, shell=False, argv list
 import sys
 import tarfile
 import tempfile
@@ -568,7 +568,7 @@ def create_paired_snapshot(
                     capture_output=True,
                     text=True,
                     shell=False,
-                )  # nosec B603
+                )  # nosec B603  # /bin/bash absolute literal; script_path checked is_file not symlink
             except OSError as exc:
                 raise SnapshotError("database dump process could not start") from exc
             if child.returncode != 0:

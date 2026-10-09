@@ -952,7 +952,7 @@ def ods_leg_span(
     column = _source_date_column(domain, source)
     table = ods_table(domain, source)
     floor = date.today() - timedelta(days=probe_days)
-    sql = f"SELECT MIN(`{column}`), MAX(`{column}`) FROM `{table}` WHERE `{column}` >= :floor"  # noqa: S608  # nosec B608
+    sql = f"SELECT MIN(`{column}`), MAX(`{column}`) FROM `{table}` WHERE `{column}` >= :floor"  # noqa: S608  # nosec B608  # ods_table() regex-checks the source id; column is from the checked-in mappings yaml
     with engine.connect() as connection:
         oldest, newest = connection.execute(text(sql), {"floor": floor}).one()
     if oldest is None or newest is None:
@@ -1055,7 +1055,7 @@ def _load_ods_rows(
 
     field = time_column or resolve_time_field(domain)
     params: dict[str, object] = {"start": start, "end": end}
-    sql = f"SELECT * FROM `{table}` WHERE `{field}` >= :start AND `{field}` <= :end"  # noqa: S608  # nosec B608
+    sql = f"SELECT * FROM `{table}` WHERE `{field}` >= :start AND `{field}` <= :end"  # noqa: S608  # nosec B608  # table from ods_table(); field is a mappings yaml or contract model column
     keys = sorted(affected_keys)
     if keys and symbols is None:
         placeholders = []
@@ -1065,7 +1065,7 @@ def _load_ods_rows(
             placeholders.append(
                 f"(`{symbol_column}` = :symbol_{index} AND `{field}` = :day_{index})"
             )
-        sql = f"SELECT * FROM `{table}` WHERE ({' OR '.join(placeholders)})"  # noqa: S608  # nosec B608
+        sql = f"SELECT * FROM `{table}` WHERE ({' OR '.join(placeholders)})"  # noqa: S608  # nosec B608  # only mapping column names are interpolated; values go in as :symbol_/day_ params
     elif symbols is not None:
         scoped = [
             (
@@ -1122,7 +1122,7 @@ def _load_ods_rows(
                     date_conditions.append(f"`{field}` IN ({', '.join(day_params)})")
                 clauses.append(f"({symbol_match} AND ({' OR '.join(date_conditions)}))")
             scoped_sql = text(
-                f"SELECT * FROM `{table}` WHERE {' OR '.join(clauses)}"  # noqa: S608  # nosec B608
+                f"SELECT * FROM `{table}` WHERE {' OR '.join(clauses)}"  # noqa: S608  # nosec B608  # clauses name mapping columns only; symbols/dates are bound params with LIKE ESCAPE
             )
             with engine.connect() as connection:
                 result = connection.execute(scoped_sql, chunk_params)

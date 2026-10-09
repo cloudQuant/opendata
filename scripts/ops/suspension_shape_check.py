@@ -128,7 +128,7 @@ def sample_symbols(engine: Engine, source: str, domain: str, limit: int) -> list
     key_symbol = mapping.source_key[0]
     rows = _fetch(
         engine,
-        f"SELECT DISTINCT `{key_symbol}` AS s FROM `{ods_name(source, domain)}` "  # noqa: S608
+        f"SELECT DISTINCT `{key_symbol}` AS s FROM `{ods_name(source, domain)}` "  # noqa: S608  # nosec B608  # ods_table registry, key from mapping yaml
         f"ORDER BY `{key_symbol}` LIMIT :limit",
         limit=limit,
     )
@@ -174,7 +174,7 @@ def leg_rows(engine: Engine, source: str, domain: str, symbol: str) -> list[dict
     }
     placeholders = ", ".join(f":k{index}" for index in range(len(bindings)))
     sql = (
-        f"SELECT `{key_date}` AS trade_date, {selected} "  # noqa: S608
+        f"SELECT `{key_date}` AS trade_date, {selected} "  # noqa: S608  # nosec B608  # mapping-yaml cols, symbols are :binds
         f"FROM `{ods_name(source, domain)}` WHERE `{key_symbol}` IN ({placeholders})"
     )
     return _fetch(engine, sql, **bindings)
@@ -201,7 +201,7 @@ def market_days(engine: Engine, source: str, domain: str) -> set[date]:
     key_date = _mapping(source, domain).source_key[1]
     rows = _fetch(
         engine,
-        f"SELECT `{key_date}` AS d, COUNT(*) AS n FROM `{ods_name(source, domain)}` "  # noqa: S608
+        f"SELECT `{key_date}` AS d, COUNT(*) AS n FROM `{ods_name(source, domain)}` "  # noqa: S608  # nosec B608  # key_date from mapping yaml, ods_table
         f"GROUP BY `{key_date}`",
     )
     if not rows:
@@ -231,7 +231,7 @@ def declared_basis(engine: Engine, source: str, domain: str) -> list[str]:
         return ["<no column>"]
     rows = _fetch(
         engine,
-        f"SELECT DISTINCT `{BASIS_COLUMN}` AS v FROM `{table}` LIMIT 20",  # noqa: S608
+        f"SELECT DISTINCT `{BASIS_COLUMN}` AS v FROM `{table}` LIMIT 20",  # noqa: S608  # nosec B608  # BASIS_COLUMN literal, ods_table name
     )
     return sorted({str(row["v"]) for row in rows if row["v"] is not None})
 

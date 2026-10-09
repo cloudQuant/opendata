@@ -11,7 +11,7 @@ import secrets
 import shutil
 
 # subprocess is limited to the fixed, shell-free argv calls below.
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # both runs: shutil.which exe + literal argv list, shell off
 import sys
 from dataclasses import dataclass
 from datetime import date
@@ -181,7 +181,7 @@ def _inspect_owned_container() -> ContainerIdentity:
         raise VerificationError("docker_unavailable")
     try:
         # Fixed argv inspects only the owned container; shell=False is the default.
-        result = subprocess.run(  # noqa: S603  # nosec B603
+        result = subprocess.run(  # noqa: S603  # nosec B603  # docker from shutil.which; argv [inspect, APP_CONTAINER const]
             [docker, "inspect", APP_CONTAINER],
             capture_output=True,
             check=False,
@@ -440,7 +440,7 @@ def _verify_browser_login(user: dict[str, str]) -> dict[str, object]:
     try:
         # Fixed Node code and argv run with shell=False by default; only generated test credentials
         # reach stdin.
-        result = subprocess.run(  # noqa: S603  # nosec B603
+        result = subprocess.run(  # noqa: S603  # nosec B603  # node from shutil.which; _PLAYWRIGHT_PROGRAM module-level literal
             [node, "-e", _PLAYWRIGHT_PROGRAM],
             cwd=FRONTEND_ROOT,
             env=_playwright_environment(),

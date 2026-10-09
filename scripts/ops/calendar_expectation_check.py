@@ -82,7 +82,7 @@ def landed_trade_dates(engine: Engine, *, since: date, limit: int) -> set[date]:
     with engine.connect() as conn:
         rows = conn.execute(
             text(
-                f"SELECT DISTINCT `trade_date` FROM `{CHECK_DOMAIN_TABLE}` "  # noqa: S608  # constant table name
+                f"SELECT DISTINCT `trade_date` FROM `{CHECK_DOMAIN_TABLE}` "  # noqa: S608  # nosec B608  # CHECK_DOMAIN_TABLE is a module literal
                 "WHERE `trade_date` >= :since ORDER BY `trade_date` LIMIT :limit"
             ),
             {"since": since, "limit": limit},

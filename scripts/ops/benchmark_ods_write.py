@@ -18,7 +18,7 @@ import os
 import platform
 import re
 import resource
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # sole subprocess.run: ps from (/bin/ps,/usr/bin/ps) tuple; literal argv
 import sys
 import time
 from contextlib import contextmanager, suppress
@@ -281,7 +281,7 @@ def _exact_row_count(connection: Connection, table: str) -> int:
     """Return an exact table row count with a registry-derived identifier."""
     # The identifier comes from the source mapping registry and is quoted above.
     result = connection.execute(
-        text(f"SELECT COUNT(*) FROM {_quote_identifier(table)}")  # noqa: S608
+        text(f"SELECT COUNT(*) FROM {_quote_identifier(table)}")  # noqa: S608  # nosec B608  # table from registry, _quote_identifier
     )
     return int(result.scalar_one())
 
@@ -298,7 +298,7 @@ def _source_pages(
     selected = ", ".join(_quote_identifier(column) for column in columns)
     order = ", ".join(_quote_identifier(column) for column in key)
     # Table and column names come only from the validated mapping/reflection seam.
-    statement = f"SELECT {selected} FROM {_quote_identifier(table)} ORDER BY {order}"  # noqa: S608
+    statement = f"SELECT {selected} FROM {_quote_identifier(table)} ORDER BY {order}"  # noqa: S608  # nosec B608  # _quote_identifier on reflected cols/key
     parameters: dict[str, int] = {}
     if limit_rows is not None:
         statement += " LIMIT :c65_row_limit"

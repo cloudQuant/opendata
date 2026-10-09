@@ -1411,9 +1411,8 @@ def _factor_rows(
                     statements.append((" OR ".join(predicates), key_params))
             rows: list[dict] = []
             for predicate, statement_params in statements:
-                result = connection.execute(
-                    text(f"SELECT * FROM `{FACTOR_TABLE}` WHERE {predicate}"), statement_params
-                )
+                sql = f"SELECT * FROM `{FACTOR_TABLE}` WHERE {predicate}"  # nosec B608  # table = FACTOR_TABLE module literal; predicate joins only backticked column names and :name bind placeholders
+                result = connection.execute(text(sql), statement_params)
                 rows.extend(
                     {
                         field: serialize_for_json(value)
@@ -1562,11 +1561,11 @@ def _read_coverage(engine: Engine, table: str, field: str) -> dict | None:
     flagged = "SUM(`_diff_flag`)" if "_diff_flag" in columns else "NULL"
     if subjects:
         joined = ", ".join(f"`{column}`" for column in subjects)
-        symbols = f"(SELECT COUNT(*) FROM (SELECT DISTINCT {joined} FROM `{table}`) AS `subj`)"
+        symbols = f"(SELECT COUNT(*) FROM (SELECT DISTINCT {joined} FROM `{table}`) AS `subj`)"  # nosec B608  # cols from _inspect_primary_key, dwd_table
     else:
         symbols = "NULL"
     sql = (
-        f"SELECT COUNT(*) AS `rows`, MIN(`{field}`) AS `start`, MAX(`{field}`) AS `end`, "
+        f"SELECT COUNT(*) AS `rows`, MIN(`{field}`) AS `start`, MAX(`{field}`) AS `end`, "  # nosec B608  # field in _inspect_columns, table=dwd_table
         f"{flagged} AS `diff_flagged`, {symbols} AS `symbols` FROM `{table}`"
     )
     try:
@@ -1612,7 +1611,7 @@ async def _diff_report_counts(engine: Engine) -> dict[str, int] | None:
     def read() -> dict[str, int]:
         with engine.connect() as connection:
             rows = connection.execute(
-                text(f"SELECT `domain`, COUNT(*) AS `rows` FROM `{DIFF_TABLE}` GROUP BY `domain`")
+                text(f"SELECT `domain`, COUNT(*) AS `rows` FROM `{DIFF_TABLE}` GROUP BY `domain`")  # nosec B608  # only DIFF_TABLE, a module constant
             ).all()
         return {str(row[0]): int(row[1]) for row in rows}
 

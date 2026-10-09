@@ -18,7 +18,7 @@ import re
 import shutil
 
 # Used only to run the fixed local interpreter on copied sources with shell execution disabled.
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # one run(): sys.executable -I -S -c, shell=False
 import sys
 import tempfile
 import tokenize
@@ -1060,7 +1060,7 @@ def run_isolated_import_check(vendor_root: Path, repository_root: Path) -> Isola
                 "controls": CONTROL_IMPORTS,
             }
             # Fixed interpreter, child source, and JSON argv; shell execution is disabled.
-            completed = subprocess.run(  # noqa: S603  # nosec B603
+            completed = subprocess.run(  # noqa: S603  # nosec B603  # sys.executable, fixed child
                 [sys.executable, "-I", "-S", "-c", _ISOLATION_CHILD, json.dumps(payload)],
                 cwd=isolation_root,
                 env={"PATH": os.defpath},

@@ -29,8 +29,8 @@ import argparse
 import ast
 import json
 
-# subprocess is only ever called with a literal argv and shell disabled (B404).
-import subprocess  # nosec B404
+# every call is subprocess.run([sys.executable, "-m", tool, ...]), list argv, no shell.
+import subprocess  # nosec B404  # 4 runs: sys.executable -m ruff/mypy/bandit lists
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -102,7 +102,7 @@ def _run(args: list[str]) -> subprocess.CompletedProcess[str]:
     """Run a fixed argv list without a shell and capture its output."""
     # argv is always a literal list built in code (never user input) and shell is
     # disabled, so command injection is not possible here.
-    return subprocess.run(  # noqa: S603  # nosec B603
+    return subprocess.run(  # noqa: S603  # nosec B603  # sys.executable -m tool + repo file paths
         args,
         cwd=REPO_ROOT,
         capture_output=True,

@@ -153,7 +153,7 @@ class BatchNotifier:
             with self.engine.connect() as connection:
                 result = connection.execute(
                     text(
-                        f"SELECT COUNT(*) FROM `{self._table(context)}` "  # noqa: S608  # registry-derived table
+                        f"SELECT COUNT(*) FROM `{self._table(context)}` "  # noqa: S608  # nosec B608  # both _table() paths = ods_table()
                         "WHERE `_batch_id` = :id"
                     ),
                     {"id": batch_id},
@@ -178,7 +178,7 @@ class BatchNotifier:
             with self.engine.connect() as connection:
                 result = connection.execute(
                     text(
-                        f"SELECT * FROM `{self._table(context)}` "  # noqa: S608  # registry-derived table
+                        f"SELECT * FROM `{self._table(context)}` "  # noqa: S608  # nosec B608  # both _table() paths = ods_table()
                         "WHERE `_batch_id` = :id LIMIT :limit"
                     ),
                     {"id": batch_id, "limit": MAX_FULL_FETCH_ROWS},

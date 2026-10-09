@@ -79,7 +79,7 @@ def read_ods_watermarks(
         sql = text(
             f"SELECT `{symbol_column}`, MAX(`{date_column}`) AS `latest_date` "  # noqa: S608
             f"FROM `{table}` WHERE `{date_column}` <= :end_date "
-            f"AND ({' OR '.join(clauses)}) GROUP BY `{symbol_column}`"  # nosec B608
+            f"AND ({' OR '.join(clauses)}) GROUP BY `{symbol_column}`"  # nosec B608  # all three names pass _IDENTIFIER_RE.fullmatch at line 56; symbol values are bound params
         )
         with engine.connect() as connection:
             rows = connection.execute(sql, params).all()

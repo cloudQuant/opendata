@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # sole subprocess.run: literal git show argv, no shell
 import sys
 import tempfile
 from contextlib import contextmanager
@@ -108,7 +108,7 @@ def read_head_table() -> Table:
     Raises:
         ValueError: If git cannot produce the file.
     """
-    result = subprocess.run(  # fixed argv, read-only git show  # noqa: S603  # nosec B603 B607
+    result = subprocess.run(  # noqa: S603  # nosec B603 B607  # fixed argv; git PATH exec; read-only HEAD show
         ["git", "show", f"HEAD:{AUTHORITY_RELPATH}"],  # noqa: S607
         cwd=ROOT,
         capture_output=True,

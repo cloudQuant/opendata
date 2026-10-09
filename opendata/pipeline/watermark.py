@@ -107,7 +107,7 @@ def record_batch(engine: Engine, watermark: BatchWatermark) -> None:
     with engine.begin() as connection:
         connection.execute(
             text(
-                f"INSERT INTO `{WATERMARK_TABLE}` "  # noqa: S608  # module constant table
+                f"INSERT INTO `{WATERMARK_TABLE}` "  # noqa: S608  # nosec B608  # WATERMARK_TABLE literal; :binds
                 "(`batch_id`, `domain`, `source`, `layer`, `window_start`, `window_end`, "
                 "`rows_written`, `created_at`) "
                 "VALUES (:batch_id, :domain, :source, :layer, :window_start, :window_end, "
@@ -154,8 +154,8 @@ def replay_since(
     bounded = max(1, min(limit, MAX_REPLAY_LIMIT))
     rows = _fetch(
         engine,
-        "SELECT `batch_id`, `domain`, `source`, `layer`, `window_start`, `window_end`, "  # noqa: S608
-        "`rows_written`, `created_at`, `seq` FROM `" + WATERMARK_TABLE + "` "
+        "SELECT `batch_id`, `domain`, `source`, `layer`, `window_start`, `window_end`, "  # noqa: S608  # nosec B608  # WATERMARK_TABLE literal; :binds
+        "`rows_written`, `created_at`, `seq` FROM `" + WATERMARK_TABLE + "` "  # nosec B608  # WATERMARK_TABLE literal; :binds
         "WHERE `domain` = :domain AND `seq` > COALESCE("
         "(SELECT `seq` FROM `" + WATERMARK_TABLE + "` WHERE `batch_id` = :since), 0) "
         "ORDER BY `seq` ASC LIMIT :limit",
@@ -187,7 +187,7 @@ def latest_batches(
     bounded = max(1, min(limit, MAX_REPLAY_LIMIT))
     rows = _fetch(
         engine,
-        f"SELECT `batch_id`, `domain`, `source`, `layer`, `window_start`, `window_end`, "  # noqa: S608
+        f"SELECT `batch_id`, `domain`, `source`, `layer`, `window_start`, `window_end`, "  # noqa: S608  # nosec B608  # WATERMARK_TABLE literal; :binds
         f"`rows_written`, `created_at`, `seq` FROM (SELECT * FROM `{WATERMARK_TABLE}` "
         f"WHERE `domain` = :domain ORDER BY `seq` DESC LIMIT :limit) AS tail "
         f"ORDER BY `seq` ASC",

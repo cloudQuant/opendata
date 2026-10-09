@@ -149,7 +149,7 @@ def decode_token(token: str) -> dict[str, Any] | None:
 
 # "token_type" is a label of which JWT kind is expected ("access"/"refresh"),
 # not a secret; the S107/B107 name pattern match is a false positive.
-def verify_token(token: str, token_type: str = "access") -> dict[str, Any] | None:  # noqa: S107  # nosec B107
+def verify_token(token: str, token_type: str = "access") -> dict[str, Any] | None:  # noqa: S107  # nosec B107  # default is the expected JWT type label compared to payload['type'], never a secret
     """Verify and decode a JWT token of specific type.
 
     Args:

@@ -62,7 +62,7 @@ from __future__ import annotations
 import argparse
 import re
 import shutil
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # git_text(): GIT const + 3 fixed read-only argvs
 import sys
 from collections import Counter
 from dataclasses import dataclass
@@ -173,7 +173,7 @@ def git_text(*args: str) -> str:
         Trimmed stdout, or ``<unavailable>`` when git declines to answer.
     """
     try:
-        proc = subprocess.run(  # noqa: S603  # nosec B603
+        proc = subprocess.run(  # noqa: S603  # nosec B603  # GIT const; 3 fixed read-only argvs
             [GIT, *args],
             cwd=REPO_ROOT,
             capture_output=True,

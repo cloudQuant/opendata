@@ -118,7 +118,7 @@ def assess(engine: Engine) -> list[Assessment]:
         assessments: list[Assessment] = []
         for table in tables:
             count = connection.execute(
-                text(f"SELECT COUNT(*) FROM `{table}`")  # noqa: S608  # from SHOW TABLES
+                text(f"SELECT COUNT(*) FROM `{table}`")  # noqa: S608  # nosec B608  # SHOW TABLES rows, backtick-quoted
             ).scalar()
             assessments.append(
                 Assessment(table=table, rows=int(count or 0), mapping=table in MAPPINGS)
@@ -168,7 +168,7 @@ def migrate(
             select_columns.append(f"`{column}`")
     target = mapping["to"]
     sql = (
-        f"INSERT IGNORE INTO `{target}` "  # noqa: S608  # registry-derived table
+        f"INSERT IGNORE INTO `{target}` "  # noqa: S608  # nosec B608  # every name from in-file MAPPINGS
         f"({', '.join(f'`{c}`' for c in mapping['columns'])}, "
         f"`_source`, `_fetched_at`, `_batch_id`) "
         f"SELECT {', '.join(select_columns)}, "
@@ -206,23 +206,23 @@ def verify(engine: Engine, table: str) -> dict[str, object]:
     date_col = mapping["date_columns"][0]
     with engine.connect() as connection:
         migrated = connection.execute(
-            text(f"SELECT COUNT(*) FROM `{target}` WHERE `_source` = :source"),  # noqa: S608  # registry-derived table
+            text(f"SELECT COUNT(*) FROM `{target}` WHERE `_source` = :source"),  # noqa: S608  # nosec B608  # target=MAPPINGS['to'] literal
             {"source": mapping["source"]},
         ).scalar()
     with engine.connect() as connection:
         legacy = connection.execute(
-            text(f"SELECT COUNT(*) FROM `akshare_data`.`{table}`")  # noqa: S608  # literal table
+            text(f"SELECT COUNT(*) FROM `akshare_data`.`{table}`")  # noqa: S608  # nosec B608  # table is a MAPPINGS key, else raise
         ).scalar()
         sample_legacy = connection.execute(
             text(
-                f"SELECT MD5(GROUP_CONCAT(CONCAT_WS('|', `{key}`, `{date_col}`) ORDER BY `{key}`, `{date_col}`)) "  # noqa: S608, E501  # literal table
+                f"SELECT MD5(GROUP_CONCAT(CONCAT_WS('|', `{key}`, `{date_col}`) ORDER BY `{key}`, `{date_col}`)) "  # noqa: S608, E501  # nosec B608  # key/date_col are MAPPINGS literals
                 f"FROM (SELECT DISTINCT `{key}`, `{date_col}` FROM `akshare_data`.`{table}` "
                 f"ORDER BY `{key}`, `{date_col}` LIMIT 1000) t"
             )
         ).scalar()
         sample_ods = connection.execute(
             text(
-                f"SELECT MD5(GROUP_CONCAT(CONCAT_WS('|', `{key}`, `{date_col}`) ORDER BY `{key}`, `{date_col}`)) "  # noqa: S608, E501  # registry-derived table
+                f"SELECT MD5(GROUP_CONCAT(CONCAT_WS('|', `{key}`, `{date_col}`) ORDER BY `{key}`, `{date_col}`)) "  # noqa: S608, E501  # nosec B608  # key/date_col/target from MAPPINGS
                 f"FROM (SELECT DISTINCT `{key}`, `{date_col}` FROM `{target}` "
                 f"WHERE `_source` = :source ORDER BY `{key}`, `{date_col}` LIMIT 1000) t"
             ),

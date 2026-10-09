@@ -232,7 +232,7 @@ def _server_side_series(
             page += 1
 
         factor_sql = (
-            f"SELECT * FROM `{FACTOR_TABLE}` "  # noqa: S608
+            f"SELECT * FROM `{FACTOR_TABLE}` "  # noqa: S608  # nosec B608  # FACTOR_TABLE literal, symbol/date bound
             "WHERE symbol = :symbol AND trade_date BETWEEN :start AND :end"
         )
         factors = [
@@ -379,7 +379,7 @@ def _factor_ceiling(engine: Engine) -> date | None:
 
     with engine.connect() as conn:
         latest = conn.execute(
-            text(f"SELECT MAX(trade_date) FROM `{FACTOR_TABLE}`")  # noqa: S608
+            text(f"SELECT MAX(trade_date) FROM `{FACTOR_TABLE}`")  # noqa: S608  # nosec B608  # FACTOR_TABLE is a module literal
         ).scalar()
     return None if latest is None else date.fromisoformat(str(latest)[:10])
 

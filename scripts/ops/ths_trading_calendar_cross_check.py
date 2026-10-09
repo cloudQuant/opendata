@@ -110,7 +110,7 @@ def bar_dates(engine: Engine, leg: Leg) -> set[date]:
     if leg.source_filter is not None:
         where += " AND `source` = :source"
         params["source"] = leg.source_filter
-    sql = f"SELECT DISTINCT `{leg.column}` FROM `{leg.table}` {where}"  # noqa: S608  # 常量表名/列名
+    sql = f"SELECT DISTINCT `{leg.column}` FROM `{leg.table}` {where}"  # noqa: S608  # nosec B608  # LEGS tuple literal table/col, :source bind
     with engine.connect() as conn:
         rows = conn.execute(text(sql), params).all()
     return {day for row in rows if (day := _as_date(row[0])) is not None}

@@ -339,7 +339,7 @@ def landed_instruments(
             rows = (
                 conn.execute(
                     text(
-                        f"SELECT * FROM `{INSTRUMENT_TABLE}` ORDER BY `symbol` LIMIT :cap"  # noqa: S608  # nosec B608
+                        f"SELECT * FROM `{INSTRUMENT_TABLE}` ORDER BY `symbol` LIMIT :cap"  # noqa: S608  # nosec B608  # INSTRUMENT_TABLE = dwd_table('instrument') module literal; row cap is a bound param
                     ),
                     {"cap": max(limit, 1)},
                 )
@@ -481,7 +481,7 @@ def symbol_universe(
         with engine.connect() as conn:
             rows = conn.execute(
                 text(
-                    f"SELECT DISTINCT symbol FROM `{table}` ORDER BY symbol LIMIT :cap"  # noqa: S608  # nosec B608
+                    f"SELECT DISTINCT symbol FROM `{table}` ORDER BY symbol LIMIT :cap"  # noqa: S608  # nosec B608  # dwd_table(domain): domain checked against the registry; cap is a bound param
                 ),
                 {"cap": cap},
             ).all()
@@ -622,7 +622,7 @@ def _count_in_window(engine: Engine, domain: str, window: Window) -> int:
         with engine.connect() as conn:
             row = conn.execute(
                 text(
-                    f"SELECT COUNT(*) FROM `{table}` WHERE trade_date BETWEEN :s AND :e"  # noqa: S608  # nosec B608
+                    f"SELECT COUNT(*) FROM `{table}` WHERE trade_date BETWEEN :s AND :e"  # noqa: S608  # nosec B608  # dwd_table(domain) from the registered domain list; window dates are bound params
                 ),
                 {"s": window.start, "e": window.end},
             ).one()

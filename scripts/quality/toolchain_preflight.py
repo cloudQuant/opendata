@@ -10,7 +10,7 @@ import re
 import shutil
 
 # This import is used only by the fixed, validated version probes below.
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # 2 runs: which()/sys.executable lists, no shell
 import sys
 from collections.abc import Mapping, Sequence
 from pathlib import Path
@@ -412,7 +412,7 @@ def _parse_command_version(
 
     try:
         # Only validated interpreter/tool paths and fixed --version argv reach this call.
-        result = subprocess.run(  # noqa: S603  # nosec B603
+        result = subprocess.run(  # noqa: S603  # nosec B603  # sys.executable or which() argv[0]
             list(arguments),
             check=False,
             capture_output=True,

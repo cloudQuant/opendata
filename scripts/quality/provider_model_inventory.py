@@ -12,7 +12,7 @@ import re
 import shutil
 
 # This import is used only for the pinned metadata reader's validated Git argv.
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # one run(): which(git)+allowlisted argv, no shell
 import sys
 from collections import Counter
 from dataclasses import asdict, dataclass
@@ -477,7 +477,7 @@ def _run_git(upstream_path: Path, *arguments: str) -> bytes:
         raise UpstreamUnavailableError("Git executable is unavailable.")
     try:
         # The argv was restricted to four fixed, read-only pinned Git shapes above.
-        result = subprocess.run(  # noqa: S603  # nosec B603
+        result = subprocess.run(  # noqa: S603  # nosec B603  # which(git) behind argv allowlist
             [git_executable, "-C", str(upstream_path), *arguments],
             check=True,
             capture_output=True,

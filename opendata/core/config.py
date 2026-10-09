@@ -38,7 +38,7 @@ class Settings(BaseSettings):
 
     # Server Settings (0.0.0.0 intentional for Docker/cloud - listen on all interfaces)
     host: str = Field(
-        default="0.0.0.0",  # noqa: S104  # nosec B104
+        default="0.0.0.0",  # noqa: S104  # nosec B104  # container bind must cover all interfaces; env file overrides this default
         description="Server host",
     )  # B104 skipped in bandit.yaml (Docker)
     port: int = Field(default=8000, description="Server port")

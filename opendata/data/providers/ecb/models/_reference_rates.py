@@ -12,7 +12,7 @@ import math
 import re
 
 # ET supplies tree node types/building and ParseError only; all XML parsing uses defusedxml.
-import xml.etree.ElementTree as ET  # nosec B405
+import xml.etree.ElementTree as ET  # nosec B405  # ET gives TreeBuilder/ParseError only; parsing goes through defusedxml DefusedXMLParser
 from collections.abc import Callable, Mapping, Sequence
 from datetime import date
 from decimal import Decimal, InvalidOperation

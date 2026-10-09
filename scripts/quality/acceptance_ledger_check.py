@@ -40,7 +40,7 @@ import importlib.util
 import json
 import re
 import shutil
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # one run(): GIT const, ls-files + ledger paths
 import sys
 from collections import Counter
 from dataclasses import dataclass

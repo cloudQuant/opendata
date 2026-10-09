@@ -20,7 +20,7 @@ import fnmatch
 import json
 import re
 import shutil
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # one run(): which(npx) vitest list --json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -128,7 +128,7 @@ def vitest_collected(frontend: Path) -> list[str] | None:
     npx = shutil.which("npx")
     if npx is None:
         return None
-    result = subprocess.run(  # noqa: S603  # nosec B603
+    result = subprocess.run(  # noqa: S603  # nosec B603  # vitest list --json via which(npx)
         [npx, "vitest", "list", "--json"],
         cwd=frontend,
         capture_output=True,

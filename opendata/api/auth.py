@@ -36,7 +36,7 @@ from opendata.utils.constants import MAX_USERNAME_GENERATION_ATTEMPTS
 router = APIRouter()
 
 # Detection of accounts still on the shipped default; this literal is not a credential.
-DEFAULT_PASSWORD = "admin123"  # noqa: S105  # nosec B105
+DEFAULT_PASSWORD = "admin123"  # noqa: S105  # nosec B105  # detector literal: verify_password() compares it to flag accounts on the shipped default
 
 
 class ChangePasswordRequest(BaseModel):
@@ -225,7 +225,7 @@ async def refresh_token(
     Validates refresh token and returns new access token.
     """
     # token_type is a JWT kind discriminator ("access"/"refresh"), not a secret.
-    payload = verify_token(request.refresh_token, token_type="refresh")  # noqa: S106  # nosec B106
+    payload = verify_token(request.refresh_token, token_type="refresh")  # noqa: S106  # nosec B106  # token_type is a JWT kind label checked against payload['type'], not a credential
 
     if payload is None:
         raise HTTPException(

@@ -182,7 +182,7 @@ class FactorBuilder:
         where, params = _window_clause(start, end, "trade_date")
         suffix = f" AND {where}" if where else ""
         sql = (
-            "SELECT `thscode`, `trade_date`, `close_price` "  # noqa: S608  # registry-derived table
+            "SELECT `thscode`, `trade_date`, `close_price` "  # noqa: S608  # nosec B608  # tbl=ods_table(); clause col literal
             f"FROM `{self.daily_table}` WHERE `adjusted` = 'none'{suffix}"
         )
         with self.engine.connect() as connection:
@@ -210,7 +210,7 @@ class FactorBuilder:
         where, params = _window_clause(start, end, "ex_date")
         suffix = f" WHERE {where}" if where else ""
         sql = (
-            "SELECT `thscode`, `ex_date`, `dividend_per_share`, `per_share_bonus`, "  # noqa: S608  # registry-derived table
+            "SELECT `thscode`, `ex_date`, `dividend_per_share`, `per_share_bonus`, "  # noqa: S608  # nosec B608  # tbl=ods_table(); clause col literal
             "`allotment_ratio`, `allotment_price`, `event_key` "
             f"FROM `{self.action_table}`{suffix}"
         )
@@ -244,7 +244,7 @@ class FactorBuilder:
         if where:
             clauses.append(where)
         sql = (
-            f"SELECT `symbol`, `trade_date`, `qfq_factor`, `hfq_factor`, `source`, `legacy_source` "  # noqa: S608  # registry-derived table
+            f"SELECT `symbol`, `trade_date`, `qfq_factor`, `hfq_factor`, `source`, `legacy_source` "  # noqa: S608  # nosec B608  # tbl=DWD_FACTOR_TABLE default; :binds
             f"FROM `{self.target_table}` WHERE "
             f"{' AND '.join(clauses)}"
         )

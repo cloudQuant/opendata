@@ -27,7 +27,7 @@ from __future__ import annotations
 import json
 import re
 import shutil
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # 2 runs: pinned secret-scan.json argv, no shell
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -72,7 +72,7 @@ def local_tool_version(manifest: Manifest) -> str | None:
     tool = manifest.scan_argv[0]
     if shutil.which(tool) is None:
         return None
-    result = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled
+    result = subprocess.run(  # noqa: S603  # nosec B603  # which(scan_argv[0]) + literal "version"
         [tool, "version"],
         cwd=REPO_ROOT,
         capture_output=True,
@@ -134,7 +134,7 @@ def main() -> int:
         return 1
 
     print(f"device: {tool} {found}, command: {' '.join(manifest.scan_argv)}")
-    result = subprocess.run(  # noqa: S603  # nosec B603  # literal argv, shell disabled
+    result = subprocess.run(  # noqa: S603  # nosec B603  # argv = pinned manifest scan_argv
         list(manifest.scan_argv),
         cwd=REPO_ROOT,
         check=False,

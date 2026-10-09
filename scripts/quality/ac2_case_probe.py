@@ -36,14 +36,14 @@ import fnmatch
 import hashlib
 import json
 import re
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # 3 runs: list argv only, shell never enabled
 import sys
 import tempfile
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final, cast
-from xml.etree import ElementTree  # nosec B405
+from xml.etree import ElementTree  # nosec B405  # parses only the junit pytest wrote into our tmp
 
 import tomllib
 import yaml
@@ -208,7 +208,7 @@ def tool(argv: Sequence[str]) -> tuple[int, str]:
 
 def git(args: Sequence[str]) -> str:
     """Run git with a literal argv and return stdout stripped."""
-    return subprocess.run(  # noqa: S603  # nosec B603 B607
+    return subprocess.run(  # noqa: S603  # nosec B603 B607  # git via PATH, literal argv list
         ["git", *args],  # noqa: S607
         cwd=REPO_ROOT,
         capture_output=True,
@@ -1248,7 +1248,7 @@ def _run_contract_suite() -> dict[str, tuple[int, int]]:
         # The file is the junit record this same process asked pytest to write into a private temp
         # directory a moment ago, so S314's untrusted-input premise does not hold here; adding
         # defusedxml would break the zero-dependency rule the same gate enforces.
-        root = ElementTree.parse(xml).getroot()  # nosec B314  # noqa: S314
+        root = ElementTree.parse(xml).getroot()  # noqa: S314  # nosec B314  # own junit in our tmp
         for case in root.iter("testcase"):
             if list(case):  # a failure/error/skipped child means this testcase proved nothing
                 continue

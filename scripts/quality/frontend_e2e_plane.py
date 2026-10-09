@@ -29,7 +29,7 @@ from __future__ import annotations
 import argparse
 import re
 import shutil
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # one run(): which(npx) list argv, shell=False
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -377,7 +377,7 @@ def runner_totals(frontend: Path) -> tuple[int, int] | None:
     if npx is None:
         return None
     try:
-        result = subprocess.run(  # noqa: S603  # nosec B603
+        result = subprocess.run(  # noqa: S603  # nosec B603  # playwright --list via which(npx)
             [npx, "--no-install", "playwright", "test", "--list"],
             cwd=frontend,
             capture_output=True,

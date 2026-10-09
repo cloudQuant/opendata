@@ -420,7 +420,7 @@ def _compare(case: Case, params: Params) -> Verdict:
 def _provenance() -> list[str]:
     """Header lines describing where and when this reading was taken."""
     import shutil
-    import subprocess  # nosec B404
+    import subprocess  # nosec B404  # sole subprocess.run: argv=[shutil.which git,*literal args], shell off
 
     git = shutil.which("git")  # resolved once: the argv never uses a PATH lookup
 

@@ -608,7 +608,7 @@ class FuyaoHttpClient:
         """指数退避 + 抖动（第 ``attempt`` 次失败后的等待）."""
         # 2.0 ** n：mypy 对 int ** 非常量指数推断为 Any，用浮点底数保持类型明确。
         base = self._backoff_base_seconds * (2.0 ** (attempt - 1))
-        jitter: float = random.random() * self._backoff_jitter_seconds  # noqa: S311  # nosec B311
+        jitter: float = random.random() * self._backoff_jitter_seconds  # noqa: S311  # nosec B311  # jitter term of the exponential retry backoff; no security value uses this draw
         return base + jitter
 
 

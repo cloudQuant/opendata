@@ -491,7 +491,7 @@ class DataAcquisitionService:
 
         # Get current total row count from the warehouse table
         quoted_name = safe_table_name(table_name)
-        count_result = await data_db.execute(text(f"SELECT COUNT(*) FROM {quoted_name}"))
+        count_result = await data_db.execute(text(f"SELECT COUNT(*) FROM {quoted_name}"))  # nosec B608  # table from safe_table_name regex+backticks
         total_rows = count_result.scalar() or 0
 
         if table_meta:

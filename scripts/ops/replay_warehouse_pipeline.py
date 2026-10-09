@@ -336,7 +336,7 @@ def _fingerprint_source_window(
     selected = ", ".join(_benchmark._quote_identifier(name) for name in column_names)
     ordered = ", ".join(_benchmark._quote_identifier(name) for name in schema.primary_key)
     statement = text(
-        f"SELECT {selected} FROM {_benchmark._quote_identifier(table)} "  # noqa: S608
+        f"SELECT {selected} FROM {_benchmark._quote_identifier(table)} "  # noqa: S608  # nosec B608  # all idents via _quote_identifier guard
         f"WHERE {_benchmark._quote_identifier(date_column)} >= :window_start "
         f"AND {_benchmark._quote_identifier(date_column)} <= :window_end "
         f"ORDER BY {ordered}"
@@ -408,14 +408,14 @@ def _read_source_snapshot(
     quoted_date = _benchmark._quote_identifier(date_column)
     total_rows = int(
         connection.execute(
-            text(f"SELECT COUNT(*) FROM {quoted_table}")  # noqa: S608
+            text(f"SELECT COUNT(*) FROM {quoted_table}")  # noqa: S608  # nosec B608  # quoted_table = _quote_identifier(registry)
         ).scalar_one()
     )
     parameters = {"window_start": window.start, "window_end": window.end}
     symbols: Sequence[object] = (
         connection.execute(
             text(
-                f"SELECT DISTINCT {quoted_symbol} FROM {quoted_table} "  # noqa: S608
+                f"SELECT DISTINCT {quoted_symbol} FROM {quoted_table} "  # noqa: S608  # nosec B608  # quoted idents, window dates are :binds
                 f"WHERE {quoted_date} >= :window_start AND {quoted_date} <= :window_end "
                 f"ORDER BY {quoted_symbol}"
             ),
@@ -426,7 +426,7 @@ def _read_source_snapshot(
     )
     rows = connection.execute(
         text(
-            f"SELECT {quoted_symbol}, COUNT(*), MIN({quoted_date}), MAX({quoted_date}) "  # noqa: S608
+            f"SELECT {quoted_symbol}, COUNT(*), MIN({quoted_date}), MAX({quoted_date}) "  # noqa: S608  # nosec B608  # quoted idents, window dates are :binds
             f"FROM {quoted_table} WHERE {quoted_date} >= :window_start "
             f"AND {quoted_date} <= :window_end GROUP BY {quoted_symbol} "
             f"ORDER BY {quoted_symbol}"
@@ -511,7 +511,7 @@ def _fetch_symbol_rows(
     quoted_symbol = _benchmark._quote_identifier(symbol_column)
     quoted_date = _benchmark._quote_identifier(date_column)
     statement = text(
-        f"SELECT {selected} FROM {quoted_table} WHERE {quoted_symbol} = :symbol "  # noqa: S608
+        f"SELECT {selected} FROM {quoted_table} WHERE {quoted_symbol} = :symbol "  # noqa: S608  # nosec B608  # quoted idents, symbol+dates are :binds
         f"AND {quoted_date} >= :window_start AND {quoted_date} <= :window_end "
         f"ORDER BY {ordered}"
     )
@@ -549,7 +549,7 @@ def _exact_count(connection: Connection, table: str) -> int:
     """Count all rows in an existing registry-derived table."""
     return int(
         connection.execute(
-            text(f"SELECT COUNT(*) FROM {_benchmark._quote_identifier(table)}")  # noqa: S608
+            text(f"SELECT COUNT(*) FROM {_benchmark._quote_identifier(table)}")  # noqa: S608  # nosec B608  # _quote_identifier(table), registry name
         ).scalar_one()
     )
 
@@ -568,7 +568,7 @@ def _table_window_summary(
     quoted_date = _benchmark._quote_identifier(date_column)
     rows = connection.execute(
         text(
-            f"SELECT {quoted_symbol}, COUNT(*), MIN({quoted_date}), MAX({quoted_date}) "  # noqa: S608
+            f"SELECT {quoted_symbol}, COUNT(*), MIN({quoted_date}), MAX({quoted_date}) "  # noqa: S608  # nosec B608  # quoted idents, window dates are :binds
             f"FROM {quoted_table} WHERE {quoted_date} >= :window_start "
             f"AND {quoted_date} <= :window_end GROUP BY {quoted_symbol} "
             f"ORDER BY {quoted_symbol}"
@@ -674,7 +674,7 @@ def _pipeline_state(
     with metadata_engine.connect() as connection:
         shard_rows = connection.execute(
             text(
-                f"SELECT shard, status FROM "  # noqa: S608
+                f"SELECT shard, status FROM "  # noqa: S608  # nosec B608  # __tablename__ model const, id is :bind
                 f"{_benchmark._quote_identifier(PipelineProgress.__tablename__)} "
                 "WHERE pipeline_id = :pipeline_id ORDER BY shard"
             ),
@@ -682,7 +682,7 @@ def _pipeline_state(
         ).all()
         hook_rows = connection.execute(
             text(
-                f"SELECT step, status FROM "  # noqa: S608
+                f"SELECT step, status FROM "  # noqa: S608  # nosec B608  # __tablename__ model const, id is :bind
                 f"{_benchmark._quote_identifier(PipelineStepCheckpoint.__tablename__)} "
                 "WHERE pipeline_id = :pipeline_id ORDER BY step"
             ),

@@ -227,7 +227,7 @@ def check_freshness(
     try:
         with engine.connect() as connection:
             latest = connection.execute(
-                text(f"SELECT MAX(`{column}`) FROM `{table}`")  # noqa: S608  # derived column
+                text(f"SELECT MAX(`{column}`) FROM `{table}`")  # noqa: S608  # nosec B608  # col=contract/mapping field; tbl=ods_table()
             ).scalar()
     except SQLAlchemyError:  # absent table/column: report, never raise
         return FreshnessReport(

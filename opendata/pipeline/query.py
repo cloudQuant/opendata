@@ -266,7 +266,7 @@ def build_data_select(
     order = ", ".join(f"`{column}`" for column in key) or f"`{effective_time_field}`"
     select_list = ", ".join(f"`{column}`" for column in selected)
     sql = (
-        f"SELECT {select_list} FROM `{table}` "
+        f"SELECT {select_list} FROM `{table}` "  # nosec B608  # every id passes _IDENTIFIER_RE
         f"WHERE {' AND '.join(where)} "
         f"ORDER BY {order} LIMIT :limit OFFSET :offset"
     )

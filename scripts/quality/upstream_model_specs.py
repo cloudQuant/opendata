@@ -52,7 +52,7 @@ import ast
 import hashlib
 import json
 import shutil
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # one run(): which(git); -C path from --upstream
 import sys
 from pathlib import Path
 from typing import Any
@@ -899,7 +899,7 @@ def main(argv: list[str] | None = None) -> int:
     if git is None:
         print("FAIL: git is unavailable, so the upstream pin cannot be read", file=sys.stderr)
         return 2
-    head = subprocess.run(  # noqa: S603  # nosec B603 - literal argv, shell disabled
+    head = subprocess.run(  # noqa: S603  # nosec B603  # which(git), -C takes a CLI path
         [git, "-C", str(args.upstream.parent), "rev-parse", "HEAD"],
         capture_output=True,
         text=True,

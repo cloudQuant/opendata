@@ -9,7 +9,7 @@ import shlex
 import shutil
 
 # Used only for the fixed, shell-free read-only Git inventory below.
-import subprocess  # nosec B404
+import subprocess  # nosec B404  # one run(): which(git) ls-files -z, no shell
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path, PurePosixPath
@@ -234,7 +234,7 @@ def _managed_copy_paths(
             return set()
         try:
             # Fixed git ls-files argv is read-only; shell=False is the subprocess default.
-            process = subprocess.run(  # noqa: S603  # nosec B603
+            process = subprocess.run(  # noqa: S603  # nosec B603  # which(git) ls-files -z argv
                 [git, "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
                 cwd=root,
                 check=False,

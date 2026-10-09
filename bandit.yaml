@@ -17,11 +17,8 @@ exclude_dirs:
   # the first-party adapter under the same provider in the regular scan.
   - "opendata/data/providers/akshare/_vendor/"
 
-# Tests to skip with rationale
-skips:
-  # B608: Table/column names use safe_table_name() which validates against
-  # ^[A-Za-z_][A-Za-z0-9_]*$ - identifiers are never from raw user input.
-  - B608
-  # B104: Binding to 0.0.0.0 is intentional for Docker/cloud - listen on all
-  # interfaces. Production deployments use reverse proxy (nginx) and firewall.
-  - B104
+# No global `skips:` list. C81 moved every exemption onto the line that earns it
+# (`# nosec B<id>  # <reason>`): a config-wide skip silences the rule for the whole
+# tree, including code nobody has reviewed, and it makes the report's zero say less
+# than "these lines were checked and justified". a2-check's bandit leg fails on any
+# finding that is not exempted line by line.

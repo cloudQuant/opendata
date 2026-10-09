@@ -113,7 +113,7 @@ def _collect_warehouse_summaries(
             row = connection.execute(
                 text(
                     f"SELECT COUNT(*), MIN(`{date_column}`), MAX(`{date_column}`) "  # noqa: S608
-                    f"FROM `{table}`"  # nosec B608
+                    f"FROM `{table}`"  # nosec B608  # table and date_column already rejected unless _IDENTIFIER_RE.fullmatch passes (line 109)
                 )
             ).one()
             summaries.append((table, date_column, int(row[0]), _as_date(row[1]), _as_date(row[2])))

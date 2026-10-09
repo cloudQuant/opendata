@@ -1,11 +1,10 @@
-"""
-Application-wide constants.
+"""Application-wide constants.
 
 Centralizes magic numbers and string literals for maintainability.
 """
 
 # Security - default secret key (must be overridden in production)
-DEFAULT_SECRET_KEY = "your-secret-key-change-this-in-production"
+DEFAULT_SECRET_KEY = "your-secret-key-change-this-in-production"  # noqa: S105  # nosec B105  # placeholder; config.validate_secret_key raises in production
 
 # Data acquisition batch sizes
 BATCH_SIZE_LARGE = 5000  # For large datasets (> 10k rows)

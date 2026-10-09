@@ -252,7 +252,7 @@ class AffectedKeySpool(Sequence[tuple[object, ...]]):
                 return
             placeholders = ",".join("?" for _ in unique_symbols)
             cursor = connection.execute(
-                f"SELECT payload FROM affected_keys WHERE symbol IN ({placeholders}) ORDER BY seq",  # noqa: S608  # bound values; placeholder count only
+                f"SELECT payload FROM affected_keys WHERE symbol IN ({placeholders}) ORDER BY seq",  # noqa: S608  # nosec B608  # only '?' placeholders; symbols bound
                 unique_symbols,
             )
         try:
@@ -273,7 +273,7 @@ class AffectedKeySpool(Sequence[tuple[object, ...]]):
         placeholders = ",".join("?" for _ in unique_symbols)
         row = connection.execute(
             f"SELECT COALESCE(SUM(count), 0) FROM affected_key_counts "  # noqa: S608
-            f"WHERE symbol IN ({placeholders})",
+            f"WHERE symbol IN ({placeholders})",  # nosec B608  # only '?' placeholders; symbols bound
             unique_symbols,
         ).fetchone()
         return int(row[0])

@@ -161,7 +161,7 @@ def build_upsert_sql(table: str, columns: Sequence[str], key: Sequence[str]) -> 
     updates = [column for column in columns if column not in set(key)] or list(columns)
     assignments = ", ".join(f"{_quote(column)} = new.{_quote(column)}" for column in updates)
     return (
-        f"INSERT INTO {quoted_table} ({column_list}) VALUES ({placeholders}) AS new "
+        f"INSERT INTO {quoted_table} ({column_list}) VALUES ({placeholders}) AS new "  # nosec B608  # _quote(): _IDENTIFIER_RE; :binds
         f"ON DUPLICATE KEY UPDATE {assignments}"
     )
 
@@ -197,7 +197,7 @@ def build_staging_upsert_sql(
     updates = [column for column in columns if column not in set(key)] or list(columns)
     assignments = ", ".join(f"{_quote(column)} = s.{_quote(column)}" for column in updates)
     return (
-        f"INSERT INTO {_quote(table)} ({column_list}) "
+        f"INSERT INTO {_quote(table)} ({column_list}) "  # nosec B608  # _quote(): _IDENTIFIER_RE per id
         f"SELECT {selected} FROM {_quote(staging)} AS s "
         f"ON DUPLICATE KEY UPDATE {assignments}"
     )
@@ -207,12 +207,12 @@ def build_staging_insert_sql(staging: str, columns: Sequence[str]) -> str:
     """Build the plain insert that fills the staging table."""
     column_list = ", ".join(_quote(column) for column in columns)
     placeholders = ", ".join(f":{_placeholder(column)}" for column in columns)
-    return f"INSERT INTO {_quote(staging)} ({column_list}) VALUES ({placeholders})"
+    return f"INSERT INTO {_quote(staging)} ({column_list}) VALUES ({placeholders})"  # nosec B608  # _quote(): _IDENTIFIER_RE; :binds
 
 
 def build_staging_create_sql(staging: str, table: str) -> str:
     """Build the staging-table creation (structure only, no keys)."""
-    return f"CREATE TEMPORARY TABLE {_quote(staging)} AS SELECT * FROM {_quote(table)} WHERE 1=0"
+    return f"CREATE TEMPORARY TABLE {_quote(staging)} AS SELECT * FROM {_quote(table)} WHERE 1=0"  # nosec B608  # _quote(): _IDENTIFIER_RE both ids
 
 
 def build_staging_drop_sql(staging: str) -> str:

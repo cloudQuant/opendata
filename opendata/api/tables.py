@@ -68,7 +68,7 @@ async def _csv_export_stream(
     header_written = False
     while offset < limit:
         batch_limit = min(CSV_EXPORT_BATCH_SIZE, limit - offset)
-        query = text(f"SELECT * FROM {safe_name} LIMIT :limit OFFSET :offset")
+        query = text(f"SELECT * FROM {safe_name} LIMIT :limit OFFSET :offset")  # nosec B608  # caller passes _get_safe_table_name
         data_result = await data_db.execute(query, {"limit": batch_limit, "offset": offset})
         columns = get_columns_from_result(data_result)
         rows = data_result.fetchall()
@@ -488,7 +488,7 @@ async def export_table_data(
 
     if format == "xlsx":
         try:
-            query = text(f"SELECT * FROM {safe_name} LIMIT :limit")
+            query = text(f"SELECT * FROM {safe_name} LIMIT :limit")  # nosec B608  # table from _get_safe_table_name
             data_result = await data_db.execute(query, {"limit": xlsx_limit})
             columns = get_columns_from_result(data_result)
             rows = data_result.fetchall()
@@ -517,7 +517,7 @@ async def _refresh_row_count(table: DataTable, data_db: AsyncSession) -> bool:
         True when the count was refreshed.
     """
     safe_name = _get_safe_table_name(table.table_name)
-    count_query = text(f"SELECT COUNT(*) FROM {safe_name}")
+    count_query = text(f"SELECT COUNT(*) FROM {safe_name}")  # nosec B608  # table from _get_safe_table_name
     try:
         count_result = await data_db.execute(count_query)
     except SQLAlchemyError as error:

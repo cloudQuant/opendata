@@ -250,7 +250,7 @@ def warehouse_calendar(engine: Engine, *, table: str = CALENDAR_TABLE) -> Calend
 
         with engine.connect() as connection:
             rows = connection.execute(
-                text(f"SELECT * FROM `{table}` ORDER BY `date`")  # noqa: S608  # derived table
+                text(f"SELECT * FROM `{table}` ORDER BY `date`")  # noqa: S608  # nosec B608  # tbl default=CALENDAR_TABLE literal
             ).mappings()
             records = CalendarContract.from_frame(pd.DataFrame(list(rows)))
     except Exception as exc:  # an unlanded or non-contract table is a normal state

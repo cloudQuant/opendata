@@ -41,8 +41,8 @@ import json
 import os
 import shutil
 
-# subprocess is only ever called with a literal argv and shell disabled (B404).
-import subprocess  # nosec B404
+# calls use GIT(which) or sys.executable as argv[0], list argv, shell never enabled.
+import subprocess  # nosec B404  # 3 runs: GIT(which)/sys.executable lists, no shell
 import sys
 from pathlib import Path
 
@@ -75,7 +75,7 @@ def _git(*args: str) -> str:
     """Run git and return its stdout, or "" when git is unavailable or fails."""
     if GIT is None:
         return ""
-    result = subprocess.run(  # noqa: S603  # nosec B603
+    result = subprocess.run(  # noqa: S603  # nosec B603  # GIT=which(git); revs as argv items
         [GIT, *args],
         cwd=REPO_ROOT,
         capture_output=True,
@@ -205,7 +205,7 @@ def resolve_files(explicit: list[str] | None) -> list[str] | None:
 
 
 def _run(args: list[str]) -> tuple[bool, str]:
-    result = subprocess.run(  # noqa: S603  # nosec B603
+    result = subprocess.run(  # noqa: S603  # nosec B603  # sys.executable -m ruff|mypy, file argv
         args,
         cwd=REPO_ROOT,
         capture_output=True,
@@ -219,7 +219,7 @@ def _run(args: list[str]) -> tuple[bool, str]:
 
 def _run_streams(args: list[str]) -> tuple[int, str, str]:
     """Run one tool and keep its stdout and stderr apart, so a parser can use only stdout."""
-    result = subprocess.run(  # noqa: S603  # nosec B603
+    result = subprocess.run(  # noqa: S603  # nosec B603  # sys.executable -m bandit argv
         args,
         cwd=REPO_ROOT,
         capture_output=True,

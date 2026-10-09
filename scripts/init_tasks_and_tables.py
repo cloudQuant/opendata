@@ -1,5 +1,4 @@
-"""
-Initialize scheduled tasks from scripts and sync data warehouse tables.
+"""Initialize scheduled tasks from scripts and sync data warehouse tables.
 
 Usage:
     python -m scripts.init_tasks_and_tables
@@ -18,23 +17,24 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dotenv import load_dotenv
+from sqlalchemy import create_engine, select, text
 
 load_dotenv()
 
-from sqlalchemy import create_engine, select, text
+# opendata.* modules build settings/engines from os.environ at import time,
+# so these must stay below load_dotenv() and the sys.path bootstrap above.
+from opendata.core.config import settings  # noqa: E402  # load_dotenv() must run first
+from opendata.core.database import async_session_maker, engine  # noqa: E402  # load_dotenv() first
+from opendata.models.data_script import DataScript  # noqa: E402  # load_dotenv() first
+from opendata.models.data_table import DataTable  # noqa: E402  # load_dotenv() first
+from opendata.models.task import ScheduledTask, ScheduleType  # noqa: E402  # load_dotenv() first
 
-from opendata.core.config import settings
-from opendata.core.database import async_session_maker, engine
-from opendata.models.data_script import DataScript
-from opendata.models.data_table import DataTable
-from opendata.models.task import ScheduledTask, ScheduleType
 
-
-async def create_tasks_from_scripts():
+async def create_tasks_from_scripts() -> None:
     """Create a daily scheduled task for each script that doesn't have one."""
     async with async_session_maker() as db:
         # Get all scripts
-        result = await db.execute(select(DataScript).where(DataScript.is_active == True))
+        result = await db.execute(select(DataScript).where(DataScript.is_active.is_(True)))
         scripts = result.scalars().all()
         print(f"Found {len(scripts)} active scripts")
 
@@ -103,7 +103,7 @@ async def create_tasks_from_scripts():
         )
 
 
-async def sync_data_warehouse_tables():
+async def sync_data_warehouse_tables() -> None:
     """Sync data warehouse tables into data_tables metadata."""
     # Connect to data warehouse using sync engine for SHOW TABLES
     from urllib.parse import quote_plus
@@ -174,7 +174,7 @@ async def sync_data_warehouse_tables():
         print(f"Synced {created} new tables to data_tables metadata")
 
 
-async def refresh_row_counts():
+async def refresh_row_counts() -> None:
     """Refresh row_count for all data_tables from the actual data warehouse."""
     import re
     from urllib.parse import quote_plus
@@ -199,18 +199,19 @@ async def refresh_row_counts():
 
             try:
                 with sync_engine.connect() as conn:
-                    r = conn.execute(text(f"SELECT COUNT(*) FROM `{table.table_name}`"))
+                    r = conn.execute(text(f"SELECT COUNT(*) FROM `{table.table_name}`"))  # noqa: S608  # nosec B608  # regex ^[A-Za-z_][A-Za-z0-9_]*$ at line 196
                     count = r.scalar() or 0
                     if count != table.row_count:
                         table.row_count = count
                         updated += 1
-            except Exception as e:
+            except Exception:
                 # Table might not exist in warehouse
                 errors += 1
 
             if (updated + errors) % 100 == 0:
                 print(
-                    f"  Processed {updated + errors}/{len(tables)}... ({updated} updated, {errors} errors)"
+                    f"  Processed {updated + errors}/{len(tables)}... "
+                    f"({updated} updated, {errors} errors)"
                 )
 
         await db.commit()
@@ -218,7 +219,8 @@ async def refresh_row_counts():
         print(f"Updated {updated} row counts ({errors} errors/missing tables)")
 
 
-async def main():
+async def main() -> None:
+    """Run task creation, warehouse table sync, and row count refresh."""
     print("=" * 60)
     print("opendata: Initialize Tasks & Sync Data Tables")
     print("=" * 60)

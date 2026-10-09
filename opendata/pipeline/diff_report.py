@@ -118,7 +118,7 @@ def build_report_insert_sql() -> str:
     assignments = ", ".join(f"`{column}` = new.`{column}`" for column in updates)
     return (
         f"INSERT INTO `{DQ_DIFF_REPORT_TABLE}` ({columns}) VALUES ({placeholders}) AS new "
-        f"ON DUPLICATE KEY UPDATE {assignments}"
+        f"ON DUPLICATE KEY UPDATE {assignments}"  # nosec B608  # REPORT_COLUMNS const; values :binds
     )
 
 
