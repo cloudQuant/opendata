@@ -11256,7 +11256,8 @@ def _benchmark_facts(ctx: Context) -> Facts:
         "source_frozen_sha256": "-",
         "source_current_sha256": "-",
         "source_matches_frozen": "no",
-        "source_initial_status_correction": "no",
+        "source_documented_corrections": "no",
+        "source_correction_unmatched_count": "0",
         "benchmark_scale_count": "0",
         "benchmark_scales_present": "no",
         "memory_all_scales_below_2_gib": "no",
@@ -11298,8 +11299,11 @@ def _benchmark_facts(ctx: Context) -> Facts:
             source_frozen_sha256=_fact(source.get("frozen_sha256", source.get("expected_sha256"))),
             source_current_sha256=_fact(source.get("current_sha256")),
             source_matches_frozen=_fact(source.get("current_matches_frozen")),
-            source_initial_status_correction=_fact(
-                source.get("allowed_initial_state_status_correction")
+            source_documented_corrections=_fact(
+                source.get("documented_corrections_reproduce_current")
+            ),
+            source_correction_unmatched_count=str(
+                source.get("documented_corrections_unmatched_count", "-")
             ),
             benchmark_scale_count=str(raw_facts.get("scale_count", len(scales))),
             benchmark_scales_present=_fact(set(scales) == set(BENCHMARK_SCALE_NAMES)),
@@ -11421,8 +11425,9 @@ def judge_ac8_04(facts: Facts) -> Verdict:
         f"benchmark validator = {facts['benchmark_valid']}，issues = "
         f"{facts['benchmark_issue_count']} ({facts['benchmark_issue_codes']})；"
         f"冻结源码身份 = {facts['source_identity_verified']}（current SHA exact match = "
-        f"{facts['source_matches_frozen']}，已接受单行初始状态修正 = "
-        f"{facts['source_initial_status_correction']}），当前 SHA = "
+        f"{facts['source_matches_frozen']}，按登记册逐条改写冻结副本后重建出现盘 = "
+        f"{facts['source_documented_corrections']}，登记册未匹配的条目 "
+        f"{facts['source_correction_unmatched_count']} 条），当前 SHA = "
         f"{facts['source_current_sha256']}，冻结 SHA = {facts['source_frozen_sha256']}",
         f"full run: source={facts['full_source']} / {facts['full_domain']} / "
         f"{facts['full_table']}，rows requested/read/written/source = "

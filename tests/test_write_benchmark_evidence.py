@@ -330,6 +330,64 @@ def test_historical_error_status_needs_the_exact_frozen_source(tmp_path: Path) -
     assert result.facts["scales"]["100000"]["historical_progress_annotation"] is False
 
 
+def test_live_source_reconstructs_only_through_the_correction_register(tmp_path: Path) -> None:
+    """Green face of the register, and proof the tolerance is not the byte-equality face."""
+    _write_fixture(tmp_path)
+
+    result = evidence.validate(tmp_path)
+
+    assert result.valid, result.issues
+    source = result.facts["source"]
+    assert source["current_matches_frozen"] is False
+    assert source["documented_corrections_reproduce_current"] is True
+    assert source["documented_corrections_unmatched"] == "-"
+    assert source["source_identity_verified"] is True
+
+
+def test_every_registered_correction_is_load_bearing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Drop one pair at a time: the register is a whitelist of exact diffs, so each must bite."""
+    register = evidence.DOCUMENTED_SOURCE_CORRECTIONS
+    assert len(register) >= 2, register
+    for index, (label, _before, _after) in enumerate(register):
+        arm_root = tmp_path / f"arm-{index}"
+        _write_fixture(arm_root)
+        monkeypatch.setattr(
+            evidence,
+            "DOCUMENTED_SOURCE_CORRECTIONS",
+            register[:index] + register[index + 1 :],
+        )
+
+        result = evidence.validate(arm_root)
+
+        assert "source-current-drift" in _issue_codes(result), label
+        assert result.facts["source"]["documented_corrections_reproduce_current"] is False, label
+
+
+def test_registered_correction_is_byte_exact(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A registered pair whose replacement text drifted by one space no longer authorizes it."""
+    _write_fixture(tmp_path)
+    label, before, after = evidence.DOCUMENTED_SOURCE_CORRECTIONS[-1]
+    tampered = after.replace(b"# noqa: S608", b"# noqa:S608", 1)
+    assert tampered != after
+    monkeypatch.setattr(
+        evidence,
+        "DOCUMENTED_SOURCE_CORRECTIONS",
+        (*evidence.DOCUMENTED_SOURCE_CORRECTIONS[:-1], (label, before, tampered)),
+    )
+
+    result = evidence.validate(tmp_path)
+
+    assert "source-current-drift" in _issue_codes(result)
+    source = result.facts["source"]
+    assert source["documented_corrections_unmatched"] == "-"
+    assert source["documented_corrections_reproduce_current"] is False
+    assert source["source_identity_verified"] is False
+
+
 def test_error_type_on_a_progress_record_is_not_hidden_by_final_success(tmp_path: Path) -> None:
     records = _write_fixture(tmp_path)
     plan = evidence.RUN_PLANS[0]

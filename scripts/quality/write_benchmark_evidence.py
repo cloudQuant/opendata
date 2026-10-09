@@ -16,7 +16,7 @@ import re
 import shlex
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, NoReturn
+from typing import Any, Final, NoReturn
 
 EXPECTED_SOURCE_SHA256 = "4a47f4dcc746ad57d5c36ce379aa6816d337aa275e32f3b88eca932ff6107063"
 EXPECTED_SOURCE_ROWS = 10_310_289
@@ -131,6 +131,53 @@ def _load_required_json(path: Path, issues: list[Issue], code: str) -> object | 
         return None
 
 
+#: The only edits the live benchmark source is allowed to carry on top of the frozen C65 copy.
+#: Each pair is byte-exact and must match exactly once, and applying all of them in order must
+#: reproduce the live file, so this register is a whitelist of differences rather than a category
+#: of tolerance (comments included). A new legitimate edit has to be itemized here first, which
+#: makes re-basing the C65 evidence an auditable human act, not something a drifted working tree
+#: can do by itself. The records' own ``source_sha256`` still binds to the untouched frozen copy.
+DOCUMENTED_SOURCE_CORRECTIONS: Final = (
+    (
+        "C65b 初始进度记录的状态由 error 改为 running",
+        b'        "status": "error",\n',
+        b'        "status": "running",\n',
+    ),
+    (
+        "C81 bandit 例外收口成行级 nosec：subprocess 导入行补 reason",
+        b"import subprocess  # nosec B404\n",
+        b"import subprocess  # nosec B404  # sole subprocess.run: ps from (/bin/ps,/usr/bin/ps)"
+        b" tuple; literal argv\n",
+    ),
+    (
+        "C81 bandit 例外收口成行级 nosec：COUNT(*) 行",
+        b'        text(f"SELECT COUNT(*) FROM {_quote_identifier(table)}")  # noqa: S608\n',
+        b'        text(f"SELECT COUNT(*) FROM {_quote_identifier(table)}")  # noqa: S608'
+        b"  # nosec B608  # table from registry, _quote_identifier\n",
+    ),
+    (
+        "C81 bandit 例外收口成行级 nosec：取数语句行",
+        b'    statement = f"SELECT {selected} FROM {_quote_identifier(table)}'
+        b' ORDER BY {order}"  # noqa: S608\n',
+        b'    statement = f"SELECT {selected} FROM {_quote_identifier(table)}'
+        b' ORDER BY {order}"  # noqa: S608  # nosec B608'
+        b"  # _quote_identifier on reflected cols/key\n",
+    ),
+)
+
+
+def _apply_documented_corrections(frozen: bytes) -> tuple[bytes | None, list[str]]:
+    """Rewrite the frozen copy through the register; report the pairs that did not match once."""
+    repaired = frozen
+    unmatched: list[str] = []
+    for label, before, after in DOCUMENTED_SOURCE_CORRECTIONS:
+        if repaired.count(before) != 1:
+            unmatched.append(label)
+            continue
+        repaired = repaired.replace(before, after, 1)
+    return (None if unmatched else repaired), unmatched
+
+
 def _source_facts(root: Path, issues: list[Issue]) -> dict[str, Any]:
     frozen_path = root / "docs/evidence/C65/write-benchmark-source-frozen.txt"
     current_path = root / "scripts/ops/benchmark_ods_write.py"
@@ -140,6 +187,9 @@ def _source_facts(root: Path, issues: list[Issue]) -> dict[str, Any]:
         "current_sha256": None,
         "current_matches_frozen": False,
         "allowed_initial_state_status_correction": False,
+        "documented_corrections_unmatched": "-",
+        "documented_corrections_unmatched_count": 0,
+        "documented_corrections_reproduce_current": False,
         "source_identity_verified": False,
     }
     try:
@@ -161,22 +211,20 @@ def _source_facts(root: Path, issues: list[Issue]) -> dict[str, Any]:
     facts["current_sha256"] = current_sha256
     facts["current_matches_frozen"] = current == frozen
 
-    old_line = b'        "status": "error",\n        "mode": "apply" if apply else "dry-run",'
-    corrected_line = (
-        b'        "status": "running",\n        "mode": "apply" if apply else "dry-run",'
-    )
-    one_exact_correction = frozen.count(old_line) == 1 and current == frozen.replace(
-        old_line, corrected_line, 1
-    )
-    facts["allowed_initial_state_status_correction"] = one_exact_correction
+    corrected, unmatched = _apply_documented_corrections(frozen)
+    corrections_hold = corrected is not None and current == corrected
+    facts["documented_corrections_unmatched"] = ",".join(unmatched) or "-"
+    facts["documented_corrections_unmatched_count"] = len(unmatched)
+    facts["documented_corrections_reproduce_current"] = corrections_hold
+    facts["allowed_initial_state_status_correction"] = corrections_hold
     facts["source_identity_verified"] = frozen_sha256 == EXPECTED_SOURCE_SHA256 and (
-        current == frozen or one_exact_correction
+        current == frozen or corrections_hold
     )
-    if current != frozen and not one_exact_correction:
+    if current != frozen and not corrections_hold:
         _add_issue(
             issues,
             "source-current-drift",
-            "current benchmark source differs beyond the single initial status correction",
+            "current benchmark source differs beyond the documented correction register",
         )
     return facts
 
