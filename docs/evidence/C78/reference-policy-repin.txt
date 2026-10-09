@@ -1,8 +1,8 @@
 # C78 witness -- the reference-policy re-pin that let gate run 6 start
 
-Run pinned to branch ``dev``, HEAD ``2535178b273f1356a926374f6d57c7a7294062ba``, with one modified tracked path (the policy file
-re-pinned below) plus this round's own harness files under ``docs/evidence/C78/``. The screen is
-read-only: it runs git, reads the policy and the two files, and writes nothing.
+Run pinned to branch ``dev``, HEAD ``bae7200017f35ccf1ace0717aeca49dd3ba514f6``, with this worktree dirty only on ``docs/evidence/C78/reference-policy-repin.py``; the policy file re-pinned below is
+already committed at this HEAD (the fence's revision-order face says so). The screen is read-only:
+it runs git, reads the policy and the two files, and writes nothing.
 
 ## Gate run 6 refused before it reached the probe suite
 
@@ -68,8 +68,10 @@ disk (hash of 4960738 blob == disk): cad9e48444713bdad31c70fff3c7b1b3d2c3b580e29
 moved-by-rev blob == disk: True
 HEAD blob == disk: True
 policy entry now pins == disk: True
-transient(pre-commit) HEAD policy still carries the old pin: True
+HEAD policy still carries the old pin (reads True only before the re-pin commit): False
 policy revisions carrying the old pin: 7
+policy revisions carrying the new pin: 1
+newest carrier positions (0 = HEAD), new vs old: 0 / 1 -> re-pin is a committed revision newer than the stale one: True
 findings old/live: 1 / 1
   lines: old=364 live=390
   brand_lines: old=2 live=2
@@ -83,8 +85,10 @@ disk (hash of 5e335ab blob == disk): e48ddc54d7d4adf776dc2684ba13d1a138d42fe49b0
 moved-by-rev blob == disk: True
 HEAD blob == disk: True
 policy entry now pins == disk: True
-transient(pre-commit) HEAD policy still carries the old pin: True
+HEAD policy still carries the old pin (reads True only before the re-pin commit): False
 policy revisions carrying the old pin: 2
+policy revisions carrying the new pin: 1
+newest carrier positions (0 = HEAD), new vs old: 0 / 1 -> re-pin is a committed revision newer than the stale one: True
 findings old/live: 13 / 13
   lines: old=16134 live=16468
   brand_lines: old=124 live=124
@@ -110,8 +114,8 @@ CONTROL B problems: 4
 VERDICT: SUPPORTED: digest re-pin under unchanged approval content
 ```
 
-* fence A (the screen output above): 48 lines, 2597 bytes, sha256 ``f2a157ab986403e84a008cffc5d2c13c4e504eedde013190bacb6c5426e81039``
-* screen source: ``docs/evidence/C78/reference-policy-repin.py`` sha256 ``6c7e37018bb0935a8f52b9b716d51101cb5183a3ae5b9ef8a11eee33d0c0c389`` (10299 bytes) --
+* fence A (the screen output above): 52 lines, 2963 bytes, sha256 ``31774174d7e5b219988f9802d8b7032fddadf0a315e628d34b18dabb33df529b``
+* screen source: ``docs/evidence/C78/reference-policy-repin.py`` sha256 ``413d473e309476856814536a12fdaaa14eb90cf0d540d87236558029ba0e2a5e`` (11396 bytes) --
   ruff, format, mypy and bandit clean under the same A2 leg as the other C78 instruments.
 * command: ``python3.11 -u docs/evidence/C78/reference-policy-repin.py`` (~1 s; rc 0)
 * both declared digests cover exactly the fenced regions, so they re-derive from this archive
@@ -145,12 +149,18 @@ PY
 * the pin judge bites: forging one entry's digest returns exactly
   ``stale sha256: <that path>``, once per forged path, 2 of 2 arms -- the same message that stopped
   run 6, so the zero on the re-pinned policy is a measurement and not a judge that cannot fail;
+* the re-pin is a committed revision, not a working-tree edit: the new pin is carried by exactly 1
+  policy revision and it sits at position 0 while the stale pin's newest carrier sits at position 1.
+  Before the commit the new-pin tally is 0 revisions and the screen's own ``order_ok`` face reads
+  False, so this screen is designed to go green only after the re-pin lands;
+* the one printed line that tracks commit state -- ``HEAD policy still carries the old pin`` --
+  reads ['False', 'False'] here, which agrees with the revision tally above rather than with prose;
 * the content comparator bites too: one added ``import akshare`` plus one module-path string
   produces 4 problems.
 
 ## Established / not established
 
-Established: run 6's stop was a pin-staleness refusal on a clean tree at ``2535178``, not a
+Established: run 6's stop was a pin-staleness refusal on a clean tree at ``bae7200``, not a
 judgement failure; the two drifted files carry identical reference content under the repo's own
 scanner; the re-pin is therefore a re-pin and not a new approval; the members that ran (1 and 2)
 now read green on the re-pinned policy.

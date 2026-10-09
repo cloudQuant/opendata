@@ -10,7 +10,10 @@ section 1 is a measurement and not a judge that cannot fail.
 
 Inputs are two revision constants -- the revision whose blob equals the old pin, and the
 revision that moved the bytes. Every figure printed is computed from git and disk, so the screen
-re-runs unchanged both before and after the re-pin commit.
+re-runs after the re-pin commit too: the only line whose reading depends on commit state is the one
+labelled "reads True only before the re-pin commit", and the durable form of that claim is the
+printed revision order (the newest revision carrying the new pin is newer than the newest one
+carrying the old pin).
 
 Run: /usr/local/bin/python3.11 -u docs/evidence/C78/reference-policy-repin.py
 """
@@ -149,11 +152,10 @@ def main() -> int:
         disk_bytes = (ROOT / path).read_bytes()
         old_digest, disk_digest = sha256(old_bytes), sha256(disk_bytes)
         old_source, live_source = old_bytes.decode("utf-8"), disk_bytes.decode("utf-8")
-        carrier = [
-            rev
-            for rev in git("log", "--all", "--format=%H", "--", POLICY).decode().split()
-            if old_digest in git("show", f"{rev}:{POLICY}").decode("utf-8")
-        ]
+        policy_revs = git("log", "--format=%H", "--", POLICY).decode().split()
+        texts = {rev: git("show", f"{rev}:{POLICY}").decode("utf-8") for rev in policy_revs}
+        carrier = [rev for rev in policy_revs if old_digest in texts[rev]]
+        new_carrier = [rev for rev in policy_revs if disk_digest in texts[rev]]
         face_old, face_live = brand_face(old_source), brand_face(live_source)
         added, removed, added_brand, removed_brand = face_lines(old_source, live_source)
 
@@ -166,10 +168,24 @@ def main() -> int:
         print("HEAD blob == disk:", sha256(git("show", f"HEAD:{path}")) == disk_digest)
         print("policy entry now pins == disk:", str(work[path]["sha256"]) == disk_digest)
         print(
-            "transient(pre-commit) HEAD policy still carries the old pin:",
+            "HEAD policy still carries the old pin (reads True only before the re-pin commit):",
             str(head[path]["sha256"]) == old_digest,
         )
         print("policy revisions carrying the old pin:", len(carrier))
+        print("policy revisions carrying the new pin:", len(new_carrier))
+        order_ok = (
+            bool(carrier)
+            and bool(new_carrier)
+            and policy_revs.index(new_carrier[0]) < (policy_revs.index(carrier[0]))
+        )
+        print(
+            "newest carrier positions (0 = HEAD), new vs old:",
+            policy_revs.index(new_carrier[0]) if new_carrier else "none",
+            "/",
+            policy_revs.index(carrier[0]) if carrier else "none",
+            "-> re-pin is a committed revision newer than the stale one:",
+            order_ok,
+        )
         print(
             "findings old/live:",
             sum(hits(scanner, old_source, path).values()),
@@ -194,6 +210,8 @@ def main() -> int:
             real.append(f"{path}: working policy does not pin the disk digest")
         if not carrier:
             real.append(f"{path}: no policy revision carries the old pin")
+        if not order_ok:
+            real.append(f"{path}: the re-pin is not a revision newer than the stale pin")
 
     # Control A: the repository's own pin judge, on the real policy and on each forged digest.
     # The forgery targets the two paths this round re-pinned, so the printed zero in the real arm
