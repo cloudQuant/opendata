@@ -1,0 +1,136 @@
+# C77 — AC-10|03's matched scope: could the pinned 5-provider baseline even see the five newest providers?
+
+Purpose: give the screen's zeros a denominator, and calibrate the screen with a control that must
+fire. The reading decides what 「NO_COMPLEX_COPY_OBSERVED_IN_MATCHED_SCOPE」 is allowed to mean.
+
+Date produced: Sat Oct 10 02:37 +0800 2026 (the body below carries the run's own timing lines).
+
+Tree at measurement time:
+
+- `git rev-parse HEAD` = `496073801e2af1f92b2b6a6583c12ec3c2b1055c`, branch `dev`; the harness file
+  was committed by that same commit, so unlike the bandit face **this one measures a committed tree**
+  (the worktree was clean apart from `scripts/quality/acceptance_item_probe.py`, which the screen does
+  not read).
+- `sha256(docs/evidence/C77/baseline-scope-widening-screen.py)` =
+  `0d9f48a08b8d48d3c02b57b2b3c9cf974390441d83f9b32119dfe2fe74dff5f3` — the harness that printed the
+  body below. It uses only the repo's own `measure_tree`, `measure_baseline`, and `screen_blocks`;
+  nothing is reimplemented, so the two arms differ only in `EXPECTED_BASELINE_PROVIDERS`.
+- Re-run: `python3.11 -u docs/evidence/C77/baseline-scope-widening-screen.py` (672.4 s measured; the
+  `-u` is load-bearing — the first attempt looked stalled at 0 bytes because stdout was block-buffered
+  while 10 minutes of CPU had already been burned inside `measure_baseline`).
+
+## What was found
+
+`provider_source_review_evidence.py` pins `EXPECTED_BASELINE_PROVIDERS = {ecb, fred, imf, oecd,
+yfinance}`. The repo now registers **twelve** self-developed provider packages. For `bls`, `cboe`,
+`federal_reserve`, `fmp`, `sec` — five of them — the OpenBB counterpart sits unused in the same pinned
+checkout, so the screen compared our blocks against a baseline that cannot contain their counterpart
+at all. A zero over an empty matched scope is a zero without a denominator.
+
+Measured, both arms (same 521 local blocks, same pinned checkout, same `EXPECTED_OPENBB_COMMIT`):
+
+| arm | baseline providers | baseline blocks | pairs | candidates |
+| --- | --- | --- | --- | --- |
+| 5 (as shipped) | ecb, fred, imf, oecd, yfinance | 1,105 | 520 | 8 |
+| 10 (widened) | + bls, cboe, federal_reserve, fmp, sec | 2,844 | 520 | 14 |
+
+Widening does change the answer: 6 more candidate rows, and 2 of them sit **inside the five added
+packages** (`fmp/models/equity_historical.py::EquityHistoricalQuery._validate_window` at 0.7330 and
+`bls/models/_client.py::._year_windows` at 0.7185). Those two rows were invisible to the shipped
+arm by construction, not by absence.
+
+## The second scope hole, found while reading the arms
+
+`local blocks per package` printed **9** packages, not 12: `cboe`, `federal_reserve`, `sec` contribute
+zero blocks in *both* arms. `measure_tree` keeps only blocks over 40 nodes, and those three packages
+are engine-declarative (9, 8 and 6 tracked `.py` files — specs and a registration module, no function
+bodies above the floor). So for those three the screen's local side is empty regardless of the
+baseline set. This is not a defect in the screen — it is a statement about what the screen cannot be
+evidence for, and it belongs in AC-10|03's reading next to the baseline half.
+
+## Control: the screen must be able to fire
+
+The clone control injects one of our own blocks into the baseline as a fake upstream file
+(`dataclasses.replace` on the biggest block, 976 nodes, `ths/transport/http_client.py::FuyaoHttpClient
+._get_locked`, filed under `CONTROL/clone-control.py`) and demands it come back as the top pair:
+
+- `control_score: 1.0`, `control_ranked_first: true`, `control_is_candidate: true`,
+  `control_side_of_row: baseline` — the screen caught its own injected clone.
+- `contrast: best real nearest in arm10 scores 0.7435`, so the control is not a coincidence of the
+  ordering.
+
+Without this arm the 14 candidates in arm10 and the 0 in the untouched packages would be
+indistinguishable from a screen that cannot fire.
+
+The first attempt at this control **crashed** (documented in the harness docstring, not hidden): the
+control path was outside `openbb_platform/providers`, so `Block.is_baseline` — a property derived from
+the path, not a field — filed the injected block as *local*, and the shipped `_pair_sort_key` raised
+`KeyError: 'baseline_path'`. The fix is the path, not the sort key.
+
+## Decision this face supports
+
+Widen `EXPECTED_BASELINE_PROVIDERS` to the providers whose counterparts exist in the pinned checkout,
+as part of task #47's bundle rebuild over the 12-package census — and carry the 9-of-12 local-block
+census in the same reading, so "matched scope" names both denominators. Until that rebuild lands,
+AC-10|03's `NO_COMPLEX_COPY_OBSERVED_IN_MATCHED_SCOPE` covers 5 baseline providers and 9 local
+packages, and this file is the face that says so.
+
+What this face does **not** claim: that the 14 candidate rows are benign. They are below the
+「complex copy」 bar the screen states (`CANDIDATE_DICE 0.7`, `CANDIDATE_NODE_RATIO 0.55`,
+`CANDIDATE_ORDERED_RATIO 0.62`), and rows that need a per-pair review finding are task #47's work,
+not this run's.
+
+Re-run recipes:
+
+```
+python3.11 -u docs/evidence/C77/baseline-scope-widening-screen.py
+python3.11 -c "import sys; sys.path.insert(0,'.'); from scripts.quality import provider_source_review_evidence as r; print(sorted(r.EXPECTED_BASELINE_PROVIDERS))"
+```
+
+## Face (verbatim stdout of the harness, 43 lines / 4588 bytes, sha256 e58a43617611bbea64f133eace5f583042911d99e7fb2e23263105d81fd826d6)
+
+```
+local blocks screened: 521
+local blocks per package: {"akshare": 130, "bls": 31, "ecb": 87, "fmp": 14, "fred": 88, "imf": 5, "oecd": 11, "ths": 147, "yfinance": 8}
+screen cut-offs: {"CANDIDATE_DICE": 0.7, "CANDIDATE_NODE_RATIO": 0.55, "CANDIDATE_ORDERED_RATIO": 0.62, "PREFILTER_DICE": 0.3, "PREFILTER_NODE_RATIO": 0.3}
+measure_tree took 2.0s
+
+=== arm5: providers=['ecb', 'fred', 'imf', 'oecd', 'yfinance'] baseline_blocks=1105 pairs=520 candidates=8
+  score=0.7435 local=opendata/data/providers/fred/models/_estr_query.py::FredEuroShortTermRateSeriesQuery._bind_omitted_series_id <- baseline=openbb_platform/providers/imf/openbb_imf/utils/table_builder.py
+  score=0.7404 local=opendata/data/providers/fred/models/_sonia_query.py::FredSoniaQuery._bind_default_series_id <- baseline=openbb_platform/providers/imf/openbb_imf/utils/table_builder.py
+  score=0.7378 local=opendata/data/providers/ths/models/trading_calendar.py::ThsTradingCalendarFetcher.extract_data <- baseline=openbb_platform/providers/yfinance/openbb_yfinance/models/futures_curve.py
+  score=0.7122 local=opendata/data/providers/akshare/_vendor/bond/bond_china_money.py::.bond_china_close_return <- baseline=openbb_platform/providers/imf/openbb_imf/utils/metadata.py
+  score=0.7101 local=opendata/data/providers/ths/endpoint_map.py::._rows <- baseline=openbb_platform/providers/yfinance/openbb_yfinance/models/historical_dividends.py
+  score=0.7073 local=opendata/data/providers/akshare/models/index_daily.py::AkshareIndexDailyFetcher.extract_data <- baseline=openbb_platform/providers/imf/openbb_imf/models/consumer_price_index.py
+  score=0.7048 local=opendata/data/providers/ecb/models/_reference_rates.py::._parse_generic_message <- baseline=openbb_platform/providers/imf/openbb_imf/utils/table_builder.py
+  score=0.7043 local=opendata/data/providers/ths/endpoints.py::._items <- baseline=openbb_platform/providers/fred/openbb_fred/models/series.py
+
+=== arm10: providers=['bls', 'cboe', 'ecb', 'federal_reserve', 'fmp', 'fred', 'imf', 'oecd', 'sec', 'yfinance'] baseline_blocks=2844 pairs=520 candidates=14
+  score=0.7435 local=opendata/data/providers/fred/models/_estr_query.py::FredEuroShortTermRateSeriesQuery._bind_omitted_series_id <- baseline=openbb_platform/providers/imf/openbb_imf/utils/table_builder.py
+  score=0.7424 local=opendata/data/providers/fred/models/_fixed_observation_pages.py::._unique_object <- baseline=openbb_platform/providers/sec/openbb_sec/models/management_discussion_analysis.py
+  score=0.7404 local=opendata/data/providers/fred/models/_sonia_query.py::FredSoniaQuery._bind_default_series_id <- baseline=openbb_platform/providers/imf/openbb_imf/utils/table_builder.py
+  score=0.7378 local=opendata/data/providers/ths/models/trading_calendar.py::ThsTradingCalendarFetcher.extract_data <- baseline=openbb_platform/providers/yfinance/openbb_yfinance/models/futures_curve.py
+  score=0.7330 local=opendata/data/providers/fmp/models/equity_historical.py::EquityHistoricalQuery._validate_window <- baseline=openbb_platform/providers/sec/openbb_sec/models/schema_files.py
+  score=0.7185 local=opendata/data/providers/bls/models/_client.py::._year_windows <- baseline=openbb_platform/providers/fmp/openbb_fmp/models/economic_calendar.py
+  score=0.7146 local=opendata/data/providers/akshare/_vendor/bond/bond_convert.py::.bond_cb_index_jsl <- baseline=openbb_platform/providers/sec/openbb_sec/utils/form4.py
+  score=0.7122 local=opendata/data/providers/akshare/_vendor/bond/bond_china_money.py::.bond_china_close_return <- baseline=openbb_platform/providers/imf/openbb_imf/utils/metadata.py
+
+newly-matched rows inside the five added packages: 2
+  score=0.7330 local=opendata/data/providers/fmp/models/equity_historical.py::EquityHistoricalQuery._validate_window <- baseline=openbb_platform/providers/sec/openbb_sec/models/schema_files.py::SecSchemaFilesQueryParams._validate_progressive_params
+  score=0.7185 local=opendata/data/providers/bls/models/_client.py::._year_windows <- baseline=openbb_platform/providers/fmp/openbb_fmp/models/economic_calendar.py::FMPEconomicCalendarFetcher.aextract_data.date_range
+
+=== clone control (a byte-identical copy of our own block, filed as upstream) ===
+{
+  "control_is_candidate": true,
+  "control_ranked_first": true,
+  "control_score": 1.0,
+  "control_side_of_row": "baseline",
+  "n_baseline_blocks": 2845,
+  "victim_function": "FuyaoHttpClient._get_locked",
+  "victim_local": "opendata/data/providers/ths/transport/http_client.py",
+  "victim_nodes": 976
+}
+  contrast: best real nearest in arm10 scores 0.7435
+total harness time: 672.4s
+CONTROL FIRED: True
+```

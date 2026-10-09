@@ -1,0 +1,213 @@
+# C77 — AC-16|01/02's clean-room record face: does the new zero mean "no record", or "no ruler"?
+
+Purpose: record the tightening that removed a self-crediting judge from two acceptance items, and
+the arm that proves the replacement can actually credit a conforming record.
+
+Date produced: Sat Oct 10 02:43:43 +0800 2026 (the face body below is timestamped by its own run).
+
+Tree at measurement time:
+
+- `git rev-parse HEAD` = `496073801e2af1f92b2b6a6583c12ec3c2b1055c`, branch `dev`.
+- The measured leg is **not in HEAD**: `scripts/quality/acceptance_item_probe.py` was dirty
+  (+224 / -17 lines) while this face ran, and `docs/evidence/clean-room/README.md` plus this face's
+  probe were still untracked. So the body describes the worktree at 02:43, not the committed tree;
+  `HEAD` is recorded so a reader can tell the two apart.
+- `sha256(scripts/quality/acceptance_item_probe.py)` =
+  `05b6ffea9e5577ac0db0193ad2fa1d5b968133244adbec9fb494a5b420258bb0` (new canonical face)
+- `sha256(docs/evidence/C77/clean-room-record-schema-face.py)` =
+  `60baf088335b21668931217bd6ab9a5df410cadd7fe81e595f2fc7c9fe491e92` — the probe that printed the
+  body below; re-running this exact file reproduces it.
+- `sha256(docs/evidence/clean-room/README.md)` =
+  `108fec2e9947d2f51172e96485811974a79c197d179e8bcb8bdabd48916e9ce5` (the schema carrier).
+
+## What was found
+
+AC-16|01 is 「每个自研 provider 有**审查留档**」 and AC-16|02 is 「全库无 OpenBB 源码或其近似复制」.
+Both judges read the 留档 half through `record_bodies()` + `legacy_prose_record_face()`: any line
+anywhere under `docs/evidence/**` that contained the phrase 「无 OpenBB 源码参照」 and matched a
+package name by `\b<name>\b` was counted as that package's review record.
+
+Measured on this tree, that leg credits **7 packages over 8 lines**, and every one of those lines is
+one of two things:
+
+- `docs/evidence/C64/remaining-items-audit.md:205,207` — text of the form
+  「提交说明带「无 OpenBB 源码参照」的 0 个」, i.e. a sentence stating that the record **does not exist**;
+- two `docs/evidence/C65/item-readings-*.{json,txt}` dumps of this very probe's own reading.
+
+Neither carries a `PROBE_ECHO_MARKERS` string on its face, so the marker filter in `record_bodies()`
+let both through. The judge therefore green-lit an item because a round had printed the word "gap"
+near a package name. That is the finding: **the 留档 half of two items was measuring its own output**.
+
+## What the tightening does
+
+`canonical_clean_room_records()` replaces the prose grep with a schema face:
+
+- one **tracked** file per package at `docs/evidence/clean-room/<package>.md` (path-gated; the same
+  conforming text filed anywhere else is refused — arm `wrong-path`);
+- `审查日期` ISO, `审查人` non-self-referential, `方法与反证` written out;
+- `覆盖面` equal to that package's measured `.py` census, and `代码面摘要` equal to the sha256 of
+  those exact bytes (`路径\0字节\0` per file), so a record stops being credited the moment the code it
+  reviewed moves — arms `stale-census`, `digest-drift`, `bytes-moved`;
+- a conclusion line carrying 「审查结论」 + the package name + the phrase, **and no negation token**,
+  so 「无法证明 akshare 无 OpenBB 源码参照」 is read as a disclosure and refused — arm
+  `negated-conclusion`;
+- probe-echo markers still refuse the whole file, now as an explicit arm (`echo-mark`) rather than an
+  implicit hope.
+
+Every refusal is a printed reason, one line per package. The old face's second failure was silence:
+the reading said "7 packages" and nothing said what those 7 were made of.
+
+`legacy_prose_record_face()` stays in the file and is still **measured and printed** as a contrast
+(`旧口径…会记 7 个包 / 8 行`), but it is in no judge. Three new breaks ride on the new fact
+`record_refusals` for AC-16|01 and one for AC-16|02, and both repairs now have to drive it to `0`.
+
+One incidental defect the fixture caught: `provider_py_digest` was `@lru_cache`d on the file *names*.
+Within one process that hands back the digest of bytes read earlier, so the `bytes-moved` arm would
+have certified a stale review — exactly the face that must be a fresh reading of disk. The cache is
+gone; the cost is nil next to the AST walk the same item performs (AC-16|02 parses 649 runtime files
+in about 1.5 s wall, measured in the same invocation as the item reading archived below).
+
+## Scope of the claim, measured
+
+The live arm prints `recorded_pkgs: 0 / record_refusals: 12` with 12 verbatim reasons, all of shape
+「没有逐包档案（docs/evidence/clean-room/<pkg>.md 未跟踪）」. **This round wrote none of those records,
+and it is not the instrument's fault**: the honest reading of AC-16|01/02 after C77 is `gap`, and the
+retraction of the previous "proven-shaped" 7/8 is the point of this file.
+
+What this round does **not** claim:
+
+- It does not claim the 12 packages are clean-room. The affirmative arm credits a *fixture* package in
+  a temp git repo; nothing in this file is an attestation about `akshare`, `sec`, `fmp`, `bls`,
+  `cboe`, `federal_reserve`, or the rest.
+- It does not claim `AC-16|02`'s 「近似复制」 half is decided. The AST walk measures 0 `openbb` import
+  roots over 649/649 runtime files with 98 distinct import roots read (so the walk is not spinning),
+  but "no near-copy" needs the per-package manual comparison, and the item's own wording names that
+  half. The judge keeps it red for that reason.
+- The 7/8 provenance trace was read off `docs/evidence/**` by this probe; re-derive the lines with
+  `grep -rn "无 OpenBB 源码参照" docs/evidence | head -40`.
+
+Re-run recipes:
+
+```
+python3.11 -u docs/evidence/C77/clean-room-record-schema-face.py
+python3.11 scripts/quality/acceptance_item_probe.py --item "AC-16|01" --item "AC-16|02"
+python3.11 -u scripts/quality/acceptance_item_probe.py --self-test
+python3.11 scripts/quality/a2_check.py --files docs/evidence/C77/clean-room-record-schema-face.py
+```
+
+## Face (verbatim stdout of the probe, 76 lines / 3528 bytes, sha256 3e1f2ed6593d711eb043515f258ac529a2cb429a41d363cc936a1b3c5eca4719)
+
+```
+--- arm affirmative: PASS
+    expect binds=1  got 1
+    expect credited=['demo']  got ['demo']
+    expect reason=''  got ''
+    refusal reason: -
+--- arm digest-drift: PASS
+    expect credited=[]  got []
+    expect reason contains '当前字节不符'
+    refusal reason: demo: 代码面摘要与该包当前字节不符（档案审的不是现在这份代码）
+--- arm stale-census: PASS
+    expect credited=[]  got []
+    expect reason contains '覆盖面写'
+    refusal reason: demo: 覆盖面写 '3 个 py 文件'，实测该包 2 个 py 文件
+--- arm negated-conclusion: PASS
+    expect credited=[]  got []
+    expect reason contains '否定式披露不算声明'
+    refusal reason: demo: 没有一行同时含「审查结论」+ 包名 + 「无 OpenBB 源码参照」，否定式披露不算声明
+--- arm echo-mark: PASS
+    expect credited=[]  got []
+    expect reason contains '机器回声'
+    refusal reason: demo: 档案带探针读数同形标记，是机器回声不是人工留档
+--- arm no-date: PASS
+    expect credited=[]  got []
+    expect reason contains '审查日期不是 ISO 日'
+    refusal reason: demo: 审查日期不是 ISO 日（读到 ''）
+--- arm self-reviewer: PASS
+    expect credited=[]  got []
+    expect reason contains '审查人缺位或是自指'
+    refusal reason: demo: 审查人缺位或是自指（读到 '本探针'）
+--- arm thin-method: PASS
+    expect credited=[]  got []
+    expect reason contains '方法与反证一栏没写实'
+    refusal reason: demo: 方法与反证一栏没写实
+--- arm wrong-path: PASS
+    expect credited=[]  got []
+    expect reason contains '没有逐包档案'
+    refusal reason: demo: 没有逐包档案（docs/evidence/clean-room/demo.md 未跟踪）
+--- arm bytes-moved: PASS
+    expect credited=[]  got []
+    expect reason contains '当前字节不符'
+    refusal reason: demo: 代码面摘要与该包当前字节不符（档案审的不是现在这份代码）
+--- arm restore: PASS
+    expect binds=1  got 1
+    expect credited=['demo']  got ['demo']
+    expect reason=''  got ''
+    refusal reason: -
+
+=== arms ===
+arms run: 11, failing: -
+
+=== live tree (the zero the affirmative arm makes meaningful) ===
+  provider_pkgs: 12
+  recorded_pkgs: 0
+  recorded_binds: 0
+  record_refusals: 12
+  legacy_record_pkgs: 7
+  legacy_record_binds: 8
+  legacy credited: akshare, ecb, fred, imf, oecd, ths, yfinance
+  refusal detail (verbatim, one line per package):
+    - akshare: 没有逐包档案（docs/evidence/clean-room/akshare.md 未跟踪）
+    - bls: 没有逐包档案（docs/evidence/clean-room/bls.md 未跟踪）
+    - cboe: 没有逐包档案（docs/evidence/clean-room/cboe.md 未跟踪）
+    - ecb: 没有逐包档案（docs/evidence/clean-room/ecb.md 未跟踪）
+    - federal_reserve: 没有逐包档案（docs/evidence/clean-room/federal_reserve.md 未跟踪）
+    - fmp: 没有逐包档案（docs/evidence/clean-room/fmp.md 未跟踪）
+    - fred: 没有逐包档案（docs/evidence/clean-room/fred.md 未跟踪）
+    - imf: 没有逐包档案（docs/evidence/clean-room/imf.md 未跟踪）
+    - oecd: 没有逐包档案（docs/evidence/clean-room/oecd.md 未跟踪）
+    - sec: 没有逐包档案（docs/evidence/clean-room/sec.md 未跟踪）
+    - ths: 没有逐包档案（docs/evidence/clean-room/ths.md 未跟踪）
+    - yfinance: 没有逐包档案（docs/evidence/clean-room/yfinance.md 未跟踪）
+
+=== controls ===
+  AFFIRMATIVE-CAN-CREDIT: True
+  ZERO-IS-INFORMATIVE: True
+  LEGACY-IS-INFLATED: True
+```
+
+## AC-16|01/02 re-measured with the new judge (verbatim, 30 lines / 11426 bytes, sha256 51d0a4938bd75b53881cb21d4945dae52de29e610780f9258d21178befd8a9d9)
+
+```text
+
+### AC-16|01  (document line 276)
+判据原文：代码审查记录：全部自研 provider 均有"独立编写 + 无源码参照"审查留档〔C62 做成条目级判定面（measure_ac16_01 / judge_ac16_01 + 5 条反事实），**不勾**：这条缺的不是读数，是那份留档本身。现场读数——git 跟踪清单里带 `registration.py` 的自研 provider 包 **7 个**（akshare、ecb、fred、imf、oecd、ths、yfinance），提交说明带「无 OpenBB 源码参照」的 **0/7**；`docs/evidence/` 里同时写得到该句与「审查」字样、并按包名点名该包的留档 **0/7**。另有 5 个包把 `no OpenBB code was consulted` 写进自己模块的 docstring——那是代码里的自声明，按字面不认作审查记录。规则文本确实在位（`docs/proposals/openbb-migration/README.md` 的留痕要求点着该句，同文档把 AST 断言从「零 akshare」扩展到「零 openbb」），但判据要的是「全部 provider 均有」的逐包记录，不是一次性的全库断言。历史提交说明补不回来（不改写历史），要收口得由一次真实的人工逐包审查留档；探针的 `repair` 面（declared 0→7、recorded 0→7）写的是缺什么，本轮不代拟〕
+本探针：自研 provider 包逐个查「提交说明声明 + 逐包审查档案」，档案按代码字节钉死
+台账现状：state=gap，文档勾选=False
+  - 自研 provider 包 12 个（git 跟踪清单里带 registration.py 的目录数）：akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance
+  - 合规规则写在 docs/proposals/openbb-migration/README.md：留痕要求里点着「无 OpenBB 源码参照」= yes；同文档 §6 把 AST 断言从「零 akshare」扩展到「零 openbb」= yes
+  - 提交说明带这句声明的包 0 个（-），没带的 akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance
+  - 逐包档案（docs/evidence/clean-room/<包名>.md：一行同时含「审查结论」+包名+「无 OpenBB 源码参照」且不含否定式标记，另有审查日期/审查人/方法与反证三栏写实，覆盖面与代码面摘要按该包 py 文件实测重算）覆盖 0 个包、绑定行 0 行：-
+  - 被拒 12 个；拒因：akshare: 没有逐包档案（docs/evidence/clean-room/akshare.md 未跟踪） | bls: 没有逐包档案（docs/evidence/clean-room/bls.md 未跟踪） | cboe: 没有逐包档案（docs/evidence/clean-room/cboe.md 未跟踪） | ecb: 没有逐包档案（docs/evidence/clean-room/ecb.md 未跟踪） | federal_reserve: 没有逐包档案（docs/evidence/clean-room/federal_reserve.md 未跟踪） | fmp: 没有逐包档案（docs/evidence/clean-room/fmp.md 未跟踪） | fred: 没有逐包档案（docs/evidence/clean-room/fred.md 未跟踪） | imf: 没有逐包档案（docs/evidence/clean-room/imf.md 未跟踪） | oecd: 没有逐包档案（docs/evidence/clean-room/oecd.md 未跟踪） | sec: 没有逐包档案（docs/evidence/clean-room/sec.md 未跟踪） | ths: 没有逐包档案（docs/evidence/clean-room/ths.md 未跟踪） | yfinance: 没有逐包档案（docs/evidence/clean-room/yfinance.md 未跟踪）
+  - 旧口径（docs/evidence/ 散文同行匹配）会记 7 个包 / 8 行；C77 实测其来源是 C64 的缺口复述与 C65 的探针读数转储，即「把『记录不存在』那句话说成记录」，故 C77 起只作对照、不进判定
+  - 另有 5 个包把「no OpenBB code was consulted」写进了自己模块的 docstring —— 那是代码里的自声明，不是逐包审查记录，本条按字面不认
+  - 补齐到可判：declared_pkgs: 0 -> 12; record_refusals: 12 -> 0; recorded_binds: 0 -> 12; recorded_pkgs: 0 -> 12; undeclared_list: akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance -> -
+VERDICT AC-16|01: gap — 「审查留档」这一面从没成文：规则写在合规文档里（提交说明声明 + 对照表记上游事实来源），但 12 个自研 provider 里提交说明带「无 OpenBB 源码参照」的只有 0 个（缺：akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance），docs/evidence/clean-room/ 下通过同行声明与字段核对的逐包档案只有 0 个（被拒 12 个；拒因：akshare: 没有逐包档案（docs/evidence/clean-room/akshare.md 未跟踪） | bls: 没有逐包档案（docs/evidence/clean-room/bls.md 未跟踪） | cboe: 没有逐包档案（docs/evidence/clean-room/cboe.md 未跟踪） | ecb: 没有逐包档案（docs/evidence/clean-room/ecb.md 未跟踪） | federal_reserve: 没有逐包档案（docs/evidence/clean-room/federal_reserve.md 未跟踪） | fmp: 没有逐包档案（docs/evidence/clean-room/fmp.md 未跟踪） | fred: 没有逐包档案（docs/evidence/clean-room/fred.md 未跟踪） | imf: 没有逐包档案（docs/evidence/clean-room/imf.md 未跟踪） | oecd: 没有逐包档案（docs/evidence/clean-room/oecd.md 未跟踪） | sec: 没有逐包档案（docs/evidence/clean-room/sec.md 未跟踪） | ths: 没有逐包档案（docs/evidence/clean-room/ths.md 未跟踪） | yfinance: 没有逐包档案（docs/evidence/clean-room/yfinance.md 未跟踪））。旧口径读到的 7 个包 / 8 行是探针自己的读数转储与缺口复述在冒充记录，C77 已把它请出判定；模块 docstring 里的自声明（5 个包）与 THIRD_PARTY_NOTICES.md 里那句「本仓库不含任何 OpenBB 源码或其近似复制」都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录。历史提交说明补不回来（不改写历史），要收口得由一次真实的人工审查按包留档，本轮不代拟
+
+### AC-16|02  (document line 277)
+判据原文：全库无 OpenBB 源码或其近似复制（人工抽查 + 提交声明核查）〔C62 做成条目级判定面（measure_ac16_02 / judge_ac16_02 + 6 条反事实），**不勾**：判据括号的否定面这轮第一次量全，且**正向对照先行**——运行时四包（`opendata`、`opendata_http`、`opendata_fuyao`、`opendata_client`）git 跟踪的 py 文件 517 个、AST 逐个解析成功 **517 个**，共读到 **88 个**不同的顶层 import 根（走查不是空转），其中 openbb / openbb-* 的 **0 个**；`scripts/codemod/verify_no_akshare.py` 的 `FORBIDDEN_ROOTS` =（akshare, openbb）含 openbb = yes，该文件正文 openbb 出现 5 处（含 `--self-test` 的故意违规样本，即这条断言自己是会响的）。字面出现 openbb 的运行时文件 6 个：FR-7 对照表加载器（接口命名属事实性信息）+ 5 个 provider docstring 的 clean-room 自声明，都不是源码。但判据括号点名的**两项核查**现场是提交声明 0/7、人工抽查留档 0/7，而「近似复制」只能靠逐包人工比对判定 ⇒ 不以「import 为零」冒充它已被抽查过。**本轮 judge 被自己的反事实修强过一处**：`--self-test` 施加「一个运行时文件解析不了，走查面比跟踪面小」（516/517）时判定仍读 proven，因为旧口径只要求解析数 > 0，被静默跳过的文件不会让这条变红；现把「走查面 == 跟踪面」钉进判定式顶层，零读数必须建立在全量覆盖上（档案 `docs/evidence/C62/self-test.txt` 与 `README.md` 的披露段）〕
+本探针：运行时四包逐个 AST 解析找 openbb import 根（带正向对照），再核两项人工核查
+台账现状：state=gap，文档勾选=False
+  - 运行时发货面（opendata, opendata_client，搬运层自 C66 起在 opendata 之内）跟踪的 py 文件 649 个，逐个 AST 解析成功 649 个，共读到 98 个不同的顶层 import 根 —— 走查不是空转（正向对照）；其中 import 根为 openbb / openbb-* 的 0 个：-
+  - 零依赖扫描器 scripts/codemod/verify_no_akshare.py 的 FORBIDDEN_ROOTS = （akshare, openbb），含 openbb = yes；该文件正文里 openbb 出现 11 处（含 --self-test 的故意违规样本，即这条断言自己是会响的）
+  - 运行时代码里字面出现 openbb（大小写不敏感）的文件 10 个：opendata/data/openbb_map.py, opendata/data/providers/_engine/http_json.py, opendata/data/providers/ecb/models/_client.py, opendata/data/providers/federal_reserve/specs.py —— 前者是 FR-7 对照表加载器（接口命名属事实性信息），后者是 provider 模块 docstring 里的 clean-room 自声明，都不是源码
+  - 判据括号里的两项核查：提交说明带「无 OpenBB 源码参照」的 provider 包 0/12 个；docs/evidence/clean-room/ 下通过同行声明 + 字段核对（覆盖面与代码面摘要按实测重算）的逐包人工抽查留档覆盖 0/12 个（同一行绑定 0 行，被拒 12 个）
+  - 留档拒因：akshare: 没有逐包档案（docs/evidence/clean-room/akshare.md 未跟踪） | bls: 没有逐包档案（docs/evidence/clean-room/bls.md 未跟踪） | cboe: 没有逐包档案（docs/evidence/clean-room/cboe.md 未跟踪） | ecb: 没有逐包档案（docs/evidence/clean-room/ecb.md 未跟踪） | federal_reserve: 没有逐包档案（docs/evidence/clean-room/federal_reserve.md 未跟踪） | fmp: 没有逐包档案（docs/evidence/clean-room/fmp.md 未跟踪） | fred: 没有逐包档案（docs/evidence/clean-room/fred.md 未跟踪） | imf: 没有逐包档案（docs/evidence/clean-room/imf.md 未跟踪） | oecd: 没有逐包档案（docs/evidence/clean-room/oecd.md 未跟踪） | sec: 没有逐包档案（docs/evidence/clean-room/sec.md 未跟踪） | ths: 没有逐包档案（docs/evidence/clean-room/ths.md 未跟踪） | yfinance: 没有逐包档案（docs/evidence/clean-room/yfinance.md 未跟踪）
+  - 旧口径（docs/evidence/ 散文同行匹配，C77 起只作对照）会记 7/12 个包 / 8 行，其来源实为缺口复述与探针读数转储
+  - 补齐到可判：declared_pkgs: 0 -> 12; record_refusals: 12 -> 0; recorded_binds: 0 -> 12; recorded_pkgs: 0 -> 12
+VERDICT AC-16|02: gap — 「全库无 OpenBB 源码或其近似复制」的否定面成立（AST 走查 0 个 openbb import 根，扫描器禁止清单含 openbb 且自带会响的违规样本），但判据括号里点名的两项核查都没做过：提交声明核查 0/12，人工抽查留档 0/12（被拒 12 个：akshare: 没有逐包档案（docs/evidence/clean-room/akshare.md 未跟踪） | bls: 没有逐包档案（docs/evidence/clean-room/bls.md 未跟踪） | cboe: 没有逐包档案（docs/evidence/clean-room/cboe.md 未跟踪） | ecb: 没有逐包档案（docs/evidence/clean-room/ecb.md 未跟踪） | federal_reserve: 没有逐包档案（docs/evidence/clean-room/federal_reserve.md 未跟踪） | fmp: 没有逐包档案（docs/evidence/clean-room/fmp.md 未跟踪） | fred: 没有逐包档案（docs/evidence/clean-room/fred.md 未跟踪） | imf: 没有逐包档案（docs/evidence/clean-room/imf.md 未跟踪） | oecd: 没有逐包档案（docs/evidence/clean-room/oecd.md 未跟踪） | sec: 没有逐包档案（docs/evidence/clean-room/sec.md 未跟踪） | ths: 没有逐包档案（docs/evidence/clean-room/ths.md 未跟踪） | yfinance: 没有逐包档案（docs/evidence/clean-room/yfinance.md 未跟踪））。「近似复制」只能靠逐包人工比对判定，本轮不以「import 为零」冒充它已被抽查过
+
+census: gap=2
+（2 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+```
+

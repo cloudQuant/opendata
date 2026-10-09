@@ -8006,6 +8006,24 @@ CODE_CLEAN_ROOM_PHRASE: Final = "no OpenBB code was consulted"
 # record -- and an echo names every provider, so a round would credit itself for measuring itself.
 PROBE_ECHO_MARKERS: Final = ("VERDICT ", "判据原文：", "本探针：", "台账现状：")
 
+#: Where a per-provider clean-room record has to live: one tracked file per package, named for it.
+#: Path-gating is the whole point. Measured on C77's tree, the prose-grep face credited 7 packages
+#: over 8 lines from exactly three files -- ``C64/remaining-items-audit.md`` (two lines whose text
+#: is ``提交说明带「无 OpenBB 源码参照」的 0 个``, i.e. a statement that the record is *missing*)
+#: and two ``C65/item-readings-*.{json,txt}`` dumps of this probe's own readings. Neither carries
+#: ``PROBE_ECHO_MARKERS`` string on its face, so the marker filter let both through, and the item's
+#: ``recorded_pkgs`` was the probe crediting itself for having printed a gap.
+CLEAN_ROOM_RECORD_ROOT: Final = "docs/evidence/clean-room"
+
+#: The line that states the conclusion, and the fields that make the statement checkable.
+RECORD_CONCLUSION_MARK: Final = "审查结论"
+RECORD_FIELDS: Final = ("审查日期", "审查人", "覆盖面", "代码面摘要", "方法与反证")
+
+#: A conclusion line carrying one of these is a disclosure, not a declaration. The phrase survives
+#: negation by substring, so without this guard 「无法证明 akshare 无 OpenBB 源码参照」 would be
+#: read as a record of akshare having none.
+RECORD_NEGATIONS: Final = ("无法", "未能", "不能证明", "未审查", "待补", "缺口", "冒充", "不构成")
+
 #: The shipped packages -- the only surface 「全库无 OpenBB 源码」 can be measured on. C66 folded
 #: the ported akshare tree and the THS transport *inside* ``opendata``, so the two names the
 #: relocation removed are gone from this tuple rather than silently matching nothing: a root that
@@ -8153,12 +8171,122 @@ def openbb_named_in(runtime: tuple[str, ...]) -> tuple[str, ...]:
     )
 
 
-def clean_room_records(ctx: Context, names: Sequence[str]) -> tuple[list[str], int]:
-    """Providers a 留档 file binds to the declaration on one line, and the number of such lines.
+def provider_py_files(ctx: Context, name: str) -> list[str]:
+    """One package's own tracked ``.py`` paths that are present on disk."""
+    prefix = f"{SELFDEV_PROVIDER_ROOT}/{name}/"
+    return sorted(
+        rel
+        for rel in ctx.tracked()
+        if rel.startswith(prefix) and rel.endswith(".py") and (ctx.root / rel).is_file()
+    )
 
-    Whole-file matching is not enough: a text can name all seven providers in one place and quote
-    the phrase in another. A record has to bind the package to the declaration in the same line,
-    and the binding count is reported so a credited package is never a bare count.
+
+def provider_py_digest(root: Path, files: tuple[str, ...]) -> str:
+    """A digest over the exact bytes a review looked at, so a record cannot outlive its subject.
+
+    Uncached on purpose: a memo keyed on the file *names* would hand back the digest of the bytes
+    read earlier in the same process, so a package whose code moved mid-run would still certify the
+    stale review -- the one face here that has to be a fresh reading of disk.
+    """
+    hasher = hashlib.sha256()
+    for rel in files:
+        hasher.update(rel.encode("utf-8"))
+        hasher.update(b"\0")
+        hasher.update((root / rel).read_bytes())
+        hasher.update(b"\0")
+    return hasher.hexdigest()
+
+
+def record_field_value(body: str, field: str) -> str:
+    """What the record wrote after ``字段：``, from the first line carrying that field."""
+    marker = f"{field}："
+    for line in body.splitlines():
+        if marker in line:
+            return line.split(marker, 1)[1].strip().strip("`* ").rstrip("。")
+    return ""
+
+
+def canonical_clean_room_records(
+    ctx: Context, names: Sequence[str]
+) -> tuple[list[str], int, list[str]]:
+    """``(credited packages, conclusion lines, per-package refusals)``.
+
+    A record is one tracked file at ``docs/evidence/clean-room/<package>.md`` that carries an
+    ISO 审查日期, a human 审查人, a 覆盖面 count equal to that package's measured ``.py`` census, a
+    代码面摘要 equal to the digest of those bytes, a written 方法与反证, and a conclusion line
+    binding the package name to 「无 OpenBB 源码参照」 with 「审查结论」 on it and no negation
+    token.
+
+    Every one of those is a refusal with a printed reason rather than a silent skip, because the
+    old face's failure was silence: a quote of the gap was credited as the record, and nothing in
+    the reading said so. A package whose bytes move after the review stops being credited on
+    digest mismatch, which is the point of pinning them.
+    """
+    credited: list[str] = []
+    binds = 0
+    refusals: list[str] = []
+    tracked = set(ctx.tracked())
+    for name in names:
+        rel = f"{CLEAN_ROOM_RECORD_ROOT}/{name}.md"
+        if rel not in tracked:
+            refusals.append(f"{name}: 没有逐包档案（{CLEAN_ROOM_RECORD_ROOT}/{name}.md 未跟踪）")
+            continue
+        try:
+            body = (ctx.root / rel).read_text(encoding="utf-8", errors="replace")
+        except OSError as exc:
+            refusals.append(f"{name}: 档案读不到（{exc}）")
+            continue
+        if any(marker in body for marker in PROBE_ECHO_MARKERS):
+            refusals.append(f"{name}: 档案带探针读数同形标记，是机器回声不是人工留档")
+            continue
+        files = provider_py_files(ctx, name)
+        checks: list[str] = []
+        reviewed_date = record_field_value(body, "审查日期")
+        if not re.fullmatch(r"20\d\d-\d\d-\d\d", reviewed_date):
+            checks.append(f"审查日期不是 ISO 日（读到 {reviewed_date!r}）")
+        reviewer = record_field_value(body, "审查人")
+        if not reviewer or any(tok in reviewer for tok in ("探针", "probe", "自动", "无人")):
+            checks.append(f"审查人缺位或是自指（读到 {reviewer!r}）")
+        claimed = record_field_value(body, "覆盖面")
+        claimed_count = re.match(r"(\d+)", claimed)
+        if claimed_count is None or int(claimed_count.group(1)) != len(files):
+            checks.append(f"覆盖面写 {claimed!r}，实测该包 {len(files)} 个 py 文件")
+        pinned = record_field_value(body, "代码面摘要")
+        if not re.fullmatch(r"[0-9a-f]{64}", pinned):
+            checks.append(f"代码面摘要不是 64 位十六进制（读到 {pinned!r}）")
+        elif pinned != provider_py_digest(ctx.root, tuple(files)):
+            checks.append("代码面摘要与该包当前字节不符（档案审的不是现在这份代码）")
+        if len(record_field_value(body, "方法与反证")) < 12:
+            checks.append("方法与反证一栏没写实")
+        bound = [
+            line
+            for line in body.splitlines()
+            if RECORD_CONCLUSION_MARK in line
+            and CLEAN_ROOM_PHRASE in line
+            and re.search(rf"\b{re.escape(name)}\b", line)
+            and not any(token in line for token in RECORD_NEGATIONS)
+        ]
+        if not bound:
+            checks.append(
+                f"没有一行同时含「{RECORD_CONCLUSION_MARK}」+ 包名 + 「{CLEAN_ROOM_PHRASE}」，"
+                "否定式披露不算声明"
+            )
+        if checks:
+            refusals.append(f"{name}: " + "；".join(checks))
+            continue
+        credited.append(name)
+        binds += len(bound)
+    return credited, binds, refusals
+
+
+def legacy_prose_record_face(ctx: Context, names: Sequence[str]) -> tuple[list[str], int]:
+    """The pre-C77 口径, kept only as a printed contrast: any docs/evidence line that says both.
+
+    Whole-file matching was never enough, and same-line matching turned out not to be enough
+    either: a line reporting that the record is missing quotes the phrase and names every package,
+    so this face credits the gap for having been described. Measured on C77's tree it returns
+    7 packages over 8 lines from three files -- one C64 audit restatement and two dumps of this
+    probe's own readings. It is no longer in any judge.
     """
     bodies = record_bodies(tuple(ctx.tracked()))
     named: set[str] = set()
@@ -8196,7 +8324,8 @@ def measure_ac16_01(ctx: Context) -> Facts:
     """Read the rule, then ask how many providers have the record the rule demands."""
     names = provider_packages(ctx)
     declared = clean_room_commits(names)
-    records, binds = clean_room_records(ctx, names)
+    records, binds, refusals = canonical_clean_room_records(ctx, names)
+    legacy_named, legacy_binds = legacy_prose_record_face(ctx, names)
     doc = ctx.read(CLEAN_ROOM_DOC_REL)
     return {
         "provider_pkgs": count(len(names)),
@@ -8208,6 +8337,10 @@ def measure_ac16_01(ctx: Context) -> Facts:
         "recorded_pkgs": count(len(records)),
         "recorded_binds": count(binds),
         "recorded_list": ", ".join(records) or "-",
+        "record_refusals": count(len(refusals)),
+        "record_refusal_detail": " | ".join(refusals) or "-",
+        "legacy_record_pkgs": count(len(legacy_named)),
+        "legacy_record_binds": count(legacy_binds),
         "code_declared_pkgs": count(len(clean_room_in_code(names))),
         "undeclared_list": ", ".join(n for n in names if n not in declared) or "-",
     }
@@ -8223,6 +8356,7 @@ def judge_ac16_01(facts: Facts) -> Verdict:
         and number(facts["declared_pkgs"]) == want
         and number(facts["recorded_pkgs"]) == want
         and number(facts["recorded_binds"]) >= want
+        and number(facts["record_refusals"]) == 0
     )
     readings = (
         f"自研 provider 包 {facts['provider_pkgs']} 个（git 跟踪清单里带 registration.py 的"
@@ -8232,9 +8366,14 @@ def judge_ac16_01(facts: Facts) -> Verdict:
         f"{facts['rule_extends_ast']}",
         f"提交说明带这句声明的包 {facts['declared_pkgs']} 个（{facts['declared_list']}），"
         f"没带的 {facts['undeclared_list']}",
-        f"留档（docs/evidence/ 里与探针读数同形的文件先剔除，再要求同一行里既点到包名又写得到"
-        f"「{CLEAN_ROOM_PHRASE}」）覆盖 {facts['recorded_pkgs']} 个包、绑定行 "
+        f"逐包档案（{CLEAN_ROOM_RECORD_ROOT}/<包名>.md：一行同时含「{RECORD_CONCLUSION_MARK}」+"
+        f"包名+「{CLEAN_ROOM_PHRASE}」且不含否定式标记，另有审查日期/审查人/方法与反证三栏写实，"
+        f"覆盖面与代码面摘要按该包 py 文件实测重算）覆盖 {facts['recorded_pkgs']} 个包、绑定行 "
         f"{facts['recorded_binds']} 行：{facts['recorded_list']}",
+        f"被拒 {facts['record_refusals']} 个；拒因：{facts['record_refusal_detail']}",
+        f"旧口径（docs/evidence/ 散文同行匹配）会记 {facts['legacy_record_pkgs']} 个包 / "
+        f"{facts['legacy_record_binds']} 行；C77 实测其来源是 C64 的缺口复述与 C65 的探针读数转储，"
+        "即「把『记录不存在』那句话说成记录」，故 C77 起只作对照、不进判定",
         f"另有 {facts['code_declared_pkgs']} 个包把「{CODE_CLEAN_ROOM_PHRASE}」写进了自己模块的"
         " docstring —— 那是代码里的自声明，不是逐包审查记录，本条按字面不认",
     )
@@ -8244,10 +8383,12 @@ def judge_ac16_01(facts: Facts) -> Verdict:
         else "「审查留档」这一面从没成文：规则写在合规文档里（提交说明声明 + 对照表记"
         "上游事实来源），"
         f"但 {facts['provider_pkgs']} 个自研 provider 里提交说明带「{CLEAN_ROOM_PHRASE}」的只有 "
-        f"{facts['declared_pkgs']} 个（缺：{facts['undeclared_list']}），docs/evidence/ 下"
-        f"逐包点名且有"
-        f"「审查」字样的留档覆盖 {facts['recorded_pkgs']} 个（同一行绑定 "
-        f"{facts['recorded_binds']} 行；带探针读数同形的档案已先剔除）。模块 docstring 里的自声明（"
+        f"{facts['declared_pkgs']} 个（缺：{facts['undeclared_list']}），"
+        f"{CLEAN_ROOM_RECORD_ROOT}/ 下通过同行声明与字段核对的逐包档案只有 "
+        f"{facts['recorded_pkgs']} 个（被拒 {facts['record_refusals']} 个；拒因："
+        f"{facts['record_refusal_detail']}）。旧口径读到的 "
+        f"{facts['legacy_record_pkgs']} 个包 / {facts['legacy_record_binds']} 行是探针自己的读数"
+        "转储与缺口复述在冒充记录，C77 已把它请出判定；模块 docstring 里的自声明（"
         f"{facts['code_declared_pkgs']} 个包）与 THIRD_PARTY_NOTICES.md 里那句「本仓库不含"
         f"任何 OpenBB "
         "源码或其近似复制」都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录。"
@@ -8262,7 +8403,8 @@ def measure_ac16_02(ctx: Context) -> Facts:
     hits, parsed, roots = openbb_import_map(runtime)
     names = provider_packages(ctx)
     declared = clean_room_commits(names)
-    records, binds = clean_room_records(ctx, names)
+    records, binds, refusals = canonical_clean_room_records(ctx, names)
+    legacy_named, legacy_binds = legacy_prose_record_face(ctx, names)
     named_in_runtime = openbb_named_in(runtime)
     scanner_src = (REPO_ROOT / ZERO_DEP_SCANNER).read_text(encoding="utf-8", errors="replace")
     forbidden = literal_str_tuple(parse(ZERO_DEP_SCANNER), "FORBIDDEN_ROOTS")
@@ -8281,6 +8423,10 @@ def measure_ac16_02(ctx: Context) -> Facts:
         "provider_pkgs": count(len(names)),
         "recorded_pkgs": count(len(records)),
         "recorded_binds": count(binds),
+        "record_refusals": count(len(refusals)),
+        "record_refusal_detail": " | ".join(refusals) or "-",
+        "legacy_record_pkgs": count(len(legacy_named)),
+        "legacy_record_binds": count(legacy_binds),
     }
 
 
@@ -8297,6 +8443,7 @@ def judge_ac16_02(facts: Facts) -> Verdict:
         and number(facts["declared_pkgs"]) == number(facts["provider_pkgs"])
         and number(facts["recorded_pkgs"]) == number(facts["provider_pkgs"])
         and number(facts["recorded_binds"]) >= number(facts["recorded_pkgs"])
+        and number(facts["record_refusals"]) == 0
     )
     readings = (
         f"运行时发货面（{', '.join(RUNTIME_PY_ROOTS)}，搬运层自 C66 起在 opendata 之内）"
@@ -8312,9 +8459,14 @@ def judge_ac16_02(facts: Facts) -> Verdict:
         f"{facts['code_openbb_list']} —— 前者是 FR-7 对照表加载器（接口命名属事实性信息），"
         "后者是 provider 模块 docstring 里的 clean-room 自声明，都不是源码",
         f"判据括号里的两项核查：提交说明带「{CLEAN_ROOM_PHRASE}」的 provider 包 "
-        f"{facts['declared_pkgs']}/{facts['provider_pkgs']} 个；逐包人工抽查留档覆盖 "
+        f"{facts['declared_pkgs']}/{facts['provider_pkgs']} 个；{CLEAN_ROOM_RECORD_ROOT}/ 下"
+        f"通过同行声明 + 字段核对（覆盖面与代码面摘要按实测重算）的逐包人工抽查留档覆盖 "
         f"{facts['recorded_pkgs']}/{facts['provider_pkgs']} 个（同一行绑定 "
-        f"{facts['recorded_binds']} 行，带探针读数同形的档案已剔除）",
+        f"{facts['recorded_binds']} 行，被拒 {facts['record_refusals']} 个）",
+        f"留档拒因：{facts['record_refusal_detail']}",
+        f"旧口径（docs/evidence/ 散文同行匹配，C77 起只作对照）会记 "
+        f"{facts['legacy_record_pkgs']}/{facts['provider_pkgs']} 个包 / "
+        f"{facts['legacy_record_binds']} 行，其来源实为缺口复述与探针读数转储",
     )
     if ok:
         reason = ""
@@ -8335,7 +8487,9 @@ def judge_ac16_02(facts: Facts) -> Verdict:
             "「全库无 OpenBB 源码或其近似复制」的否定面成立（AST 走查 0 个 openbb import 根，"
             "扫描器禁止清单含 openbb 且自带会响的违规样本），但判据括号里点名的两项核查都没做过："
             f"提交声明核查 {facts['declared_pkgs']}/{facts['provider_pkgs']}，人工抽查留档 "
-            f"{facts['recorded_pkgs']}/{facts['provider_pkgs']}。「近似复制」只能靠逐包人工比对判定，"
+            f"{facts['recorded_pkgs']}/{facts['provider_pkgs']}（被拒 "
+            f"{facts['record_refusals']} 个：{facts['record_refusal_detail']}）。"
+            "「近似复制」只能靠逐包人工比对判定，"
             "本轮不以「import 为零」冒充它已被抽查过"
         )
     return Verdict(PROVEN if ok else GAP, readings, reason)
@@ -14686,7 +14840,7 @@ PROBES: Final[tuple[Probe, ...]] = (
     Probe(
         item="AC-16|01",
         expects="代码审查记录",
-        summary="七个自研 provider 包逐个查「提交说明声明 + 逐包审查留档」，规则文本在位不算数",
+        summary="自研 provider 包逐个查「提交说明声明 + 逐包审查档案」，档案按代码字节钉死",
         measure=measure_ac16_01,
         judge=judge_ac16_01,
         breaks=(
@@ -14716,6 +14870,45 @@ PROBES: Final[tuple[Probe, ...]] = (
                 ),
                 GAP,
             ),
+            Break(
+                "档案钉住的代码字节与当前该包不符（审的不是现在这份）",
+                (
+                    ("declared_pkgs", "*provider_pkgs"),
+                    ("recorded_pkgs", "*provider_pkgs"),
+                    ("recorded_binds", "*provider_pkgs"),
+                    ("undeclared_list", "-"),
+                    ("record_refusals", "1"),
+                    (
+                        "record_refusal_detail",
+                        "fred: 代码面摘要与该包当前字节不符（档案审的不是现在这份代码）",
+                    ),
+                ),
+                GAP,
+            ),
+            Break(
+                "档案覆盖面写的文件数与该包实测不一致",
+                (
+                    ("declared_pkgs", "*provider_pkgs"),
+                    ("recorded_pkgs", "*provider_pkgs"),
+                    ("recorded_binds", "*provider_pkgs"),
+                    ("undeclared_list", "-"),
+                    ("record_refusals", "1"),
+                    ("record_refusal_detail", "ths: 覆盖面写 '1 个 py 文件'，实测 26 个"),
+                ),
+                GAP,
+            ),
+            Break(
+                "逐包档案缺字段（无人署名、没有审查日期或没写反证）",
+                (
+                    ("declared_pkgs", "*provider_pkgs"),
+                    ("recorded_pkgs", "*provider_pkgs"),
+                    ("recorded_binds", "*provider_pkgs"),
+                    ("undeclared_list", "-"),
+                    ("record_refusals", "12"),
+                    ("record_refusal_detail", "akshare: 审查人缺位或是自指（读到 ''）"),
+                ),
+                GAP,
+            ),
             Break("适配层目录整块不在跟踪清单里（判据面为空）", (("provider_pkgs", "0"),), GAP),
         ),
         repair={
@@ -14724,6 +14917,7 @@ PROBES: Final[tuple[Probe, ...]] = (
             "declared_pkgs": "*provider_pkgs",
             "recorded_pkgs": "*provider_pkgs",
             "recorded_binds": "*provider_pkgs",
+            "record_refusals": "0",
             "undeclared_list": "-",
         },
     ),
@@ -14770,6 +14964,18 @@ PROBES: Final[tuple[Probe, ...]] = (
                 ),
                 GAP,
             ),
+            Break(
+                "逐包档案与该包当前字节脱钩（代码面摘要对不上）",
+                (
+                    ("openbb_imports", "0"),
+                    ("declared_pkgs", "*provider_pkgs"),
+                    ("recorded_pkgs", "*provider_pkgs"),
+                    ("recorded_binds", "*provider_pkgs"),
+                    ("record_refusals", "1"),
+                    ("record_refusal_detail", "sec: 代码面摘要与该包当前字节不符"),
+                ),
+                GAP,
+            ),
         ),
         repair={
             "openbb_imports": "0",
@@ -14777,6 +14983,7 @@ PROBES: Final[tuple[Probe, ...]] = (
             "declared_pkgs": "*provider_pkgs",
             "recorded_pkgs": "*provider_pkgs",
             "recorded_binds": "*provider_pkgs",
+            "record_refusals": "0",
         },
     ),
     Probe(
