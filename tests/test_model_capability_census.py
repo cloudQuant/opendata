@@ -9,8 +9,8 @@ live engine bytes.
 
 Each guard is shown reachable in both directions, so a zero is a measurement rather than a probe
 that cannot fire: the declaration count is demonstrated non-zero on a fixture that declares before
-it is asserted zero on one that does not, the row-count guard is demonstrated quiet at exactly 150
-rows, and the read-from-disk entry is shown on both sides of its token.
+it is asserted zero on one that does not, the row-count guard is demonstrated quiet at exactly the
+audited row count, and the read-from-disk entry is shown on both sides of its token.
 """
 
 from __future__ import annotations
@@ -223,20 +223,26 @@ def test_fail_closed_on_duplicates_and_on_unreadable_census(tmp_path: Path) -> N
 
 
 def test_row_count_guard_fires_when_a_row_is_dropped(tmp_path: Path) -> None:
-    """(b) The 150-row guard fires on a shortfall and stays quiet at exactly 150 rows."""
+    """(b) The guard fires on a shortfall and stays quiet at exactly the audited row count."""
     entries = _fixture_entries()
     root = _fixture_root(tmp_path, entries)
+    expected = mcc.EXPECTED_CENSUS_ROWS
     short = [
-        _row(f"OBB2-fixture-M{index}", ["post_body"], model=f"M{index}") for index in range(149)
+        _row(f"OBB2-fixture-M{index}", ["post_body"], model=f"M{index}")
+        for index in range(expected - 1)
     ]
     report = _report_of(root, short, entries)
-    assert report.row_count == 149
+    assert report.row_count == expected - 1
     assert report.row_count_guard_fired is True
-    assert any("149" in failure and "150" in failure for failure in report.failures)
+    assert any(
+        str(expected - 1) in failure and str(expected) in failure for failure in report.failures
+    )
 
     exact = short + [_row("OBB2-fixture-Last", ["post_body"], model="Last")]
     full = _report_of(root, exact, entries)
-    assert full.row_count == mcc.EXPECTED_CENSUS_ROWS == 150
+    # The population is pinned as a literal on purpose: growing the census has to move this line.
+    assert expected == 238
+    assert full.row_count == mcc.EXPECTED_CENSUS_ROWS
     assert full.row_count_guard_fired is False
     assert full.failures == ()
 
@@ -567,7 +573,13 @@ def test_json_is_byte_identical_across_runs(
     assert payload["round_id"] == "TEST"
     assert payload["census"]["row_count_measured"] == 4
     assert payload["census"]["row_count_expected"] == mcc.EXPECTED_CENSUS_ROWS
-    assert payload["census"]["carried_forward_files"] == list(mcc.CENSUS_CARRIED_FILES)
+    assert set(payload["census"]) == {
+        "files",
+        "row_count_expected",
+        "row_count_guard_fired",
+        "row_count_measured",
+        "unique_task_ids",
+    }
     order = payload["roadmap"]["greedy_build_order"]
     assert [step["capability"] for step in order] == ["request.body", "flow.preflight_lookup"]
     assert order[0]["newly_unlocked_rows"][0]["provider"] == "fixture"
@@ -671,7 +683,7 @@ def test_shipped_census_labels_all_map() -> None:
     """The census files this round audits are the contract: every label on them maps today."""
     rows = mcc.load_rows(mcc._REPO_ROOT / CENSUS_REL)
     assert len(rows) == mcc.EXPECTED_CENSUS_ROWS
-    assert len({row.task_id for row in rows}) == 150
+    assert len({row.task_id for row in rows}) == 238
     assert {label for row in rows for label in row.raw_labels} <= set(mcc.LABEL_TO_CAPABILITY)
     assert mcc.canonical_capabilities() == frozenset(mcc.LABEL_TO_CAPABILITY.values())
     assert mcc.canonical_capabilities() == frozenset(entry.capability for entry in mcc.REGISTRY)

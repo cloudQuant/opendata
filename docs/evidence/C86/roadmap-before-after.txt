@@ -1,0 +1,27 @@
+roadmap before/after C86 -- every value read from the two artifact generations, not typed
+before sha256[:16] 75f882d317f37830
+after  sha256[:16] 0ad08f7fed8655f8
+field                        before    after
+round_id                        C75      C86
+census_files                      3       17
+row_count_measured              150      238
+unique_task_ids                 150      238
+row_count_expected              150      238
+distinct_raw_labels        {'canonical_capability_count': 40, 'labels_supported': 96, 'raw_label_count': 94, 'raw_label_mention_count': 357} {'canonical_capability_count': 40, 'labels_supported': 96, 'raw_label_count': 95, 'raw_label_mention_count': 764}
+canonical                      None     None
+rows_expressible_today            3        3
+rows_pending                    147      235
+greedy_steps                     28       28
+unlocked_by_prefix              111      188
+shipped_cover                     3        6
+still_locked                     36       47
+outside_engine                   36       47
+no_engine_work                   12       12
+empty_need                        0        0
+
+top five greedy steps before: [["flow.composite_key_segment", 9, 12], ["path.explode", 4, 16], ["path.object_keys", 3, 19], ["shape.columnar", 3, 22], ["columns.rescale", 2, 24]]
+top five greedy steps after : [["flow.composite_key_segment", 9, 15], ["path.explode", 6, 21], ["flow.fan_out", 5, 26], ["flow.branch", 7, 33], ["flow.join", 5, 38]]
+capabilities in the build pool only after the merge: []
+capabilities in the build pool only before the merge: []
+registry present count before/after: 6 / 6
+registry absent count before/after: 34 / 34

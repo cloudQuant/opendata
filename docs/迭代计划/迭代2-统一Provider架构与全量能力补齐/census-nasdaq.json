@@ -1,0 +1,221 @@
+{
+  "provider_groups": [
+    "nasdaq"
+  ],
+  "rows": [
+    {
+      "task_id": "OBB2-nasdaq-CalendarDividend",
+      "provider": "nasdaq",
+      "upstream_model": "CalendarDividend",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "multi_request_fanout",
+        "field_rename_map",
+        "date_format",
+        "client_side_sort",
+        "anti_bot_retry"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/nasdaq/openbb_nasdaq/models/calendar_dividend.py:106",
+      "notes": "One GET per calendar day over date_range(start,end), asyncio.gather fan-out (:98-117); rows under data.calendar.rows (:113); %m/%d/%Y date validators (:50-54); client sort by dividend_Ex_Date (:132); rotating User-Agent/Origin/Referer headers via get_headers (utils/helpers.py:25-50). Request path fully readable from source; no shared unimplemented helper found for this row."
+    },
+    {
+      "task_id": "OBB2-nasdaq-CalendarEarnings",
+      "provider": "nasdaq",
+      "upstream_model": "CalendarEarnings",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "multi_request_fanout",
+        "derived_columns",
+        "field_rename_map",
+        "published_value_rescale",
+        "date_format",
+        "client_side_sort",
+        "anti_bot_retry"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/nasdaq/openbb_nasdaq/models/calendar_earnings.py:182",
+      "notes": "One GET per day to /api/calendar/earnings?date=; rows under data.rows (:185); asOf header date parsed and injected into every row ({**d, date:...}, :191); surprise_percent multiplied by 0.01 (:130); sorted by date client-side (:208). Request path fully readable from source."
+    },
+    {
+      "task_id": "OBB2-nasdaq-CalendarIpo",
+      "provider": "nasdaq",
+      "upstream_model": "CalendarIpo",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "multi_request_fanout",
+        "conditional_endpoint_branch",
+        "field_rename_map",
+        "date_format",
+        "client_side_sort",
+        "anti_bot_retry"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/nasdaq/openbb_nasdaq/models/calendar_ipo.py:173",
+      "notes": "Fan-out one GET per distinct YYYY-MM month (:160-188); is_spo picks a different querystring variant of the same /api/ipo/calendar path (:172-176); rows pointer branches on status: upcoming -> data.upcoming.upcomingTable.rows, else data.<status>.rows (:179-184); client sorts for priced/withdrawn/filed (:201-221). Request path fully readable from source."
+    },
+    {
+      "task_id": "OBB2-nasdaq-CompanyFilings",
+      "provider": "nasdaq",
+      "upstream_model": "CompanyFilings",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "body_offset_pagination",
+        "per_record_nested_flatten",
+        "derived_columns",
+        "field_rename_map",
+        "date_format",
+        "anti_bot_retry"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/nasdaq/openbb_nasdaq/models/company_filings.py:164",
+      "notes": "Offset pagination loop while len(rows) < totalRecords appends &offset= to the query string (:197-210); per-record view dict flattened into top-level link keys (:248-249); fallback latest[] assembly derives filing_date by rsplit on the URL (:229-245). Request path fully readable from source. UNMAPPED_SUGGESTION: query_offset_pagination —— body_offset_pagination presupposes the offset living in a POST body, but this model paginates by appending an offset query param to a GET."
+    },
+    {
+      "task_id": "OBB2-nasdaq-EconomicCalendar",
+      "provider": "nasdaq",
+      "upstream_model": "EconomicCalendar",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "multi_request_fanout",
+        "derived_columns",
+        "client_side_filter",
+        "regex_strip_html",
+        "field_rename_map",
+        "anti_bot_retry"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/nasdaq/openbb_nasdaq/models/economic_calendar.py:140",
+      "notes": "Fan-out one GET per weekday (:131-173); rows under data.rows; each row gets a synthesized date column from request date + gmt field, dropping gmt (:158-170); country filter applied client-side after all requests (:180-190); description HTML unescaped and tags stripped via regex (utils/helpers.py:6-12). Request path fully readable from source."
+    },
+    {
+      "task_id": "OBB2-nasdaq-EquitySearch",
+      "provider": "nasdaq",
+      "upstream_model": "EquitySearch",
+      "shape": "csv_file_download",
+      "http_method": "",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "delimited_rows",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "csv_decoder",
+        "csv_delimiter",
+        "client_side_filter",
+        "field_rename_map",
+        "local_cache_store"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/nasdaq/openbb_nasdaq/utils/helpers.py:70",
+      "notes": "BLANK http_method ON PURPOSE: the request is urlopen over FTP (ftp://ftp.nasdaqtrader.com/symboldirectory/nasdaqtraded.txt, helpers.py:70-74), not an HTTP verb, so no GET/POST string could be honestly read. Pipe-delimited file parsed with pandas sep='|', trailing summary row dropped via iloc[:-1] (models/equity_search.py:123), ETF/test-name/query filters client-side (:125-140); lru_cache(maxsize=1) memoizes the whole download (helpers.py:62). Shared get_nasdaq_directory helper IS implemented (helpers.py:62-78) — the 'shared unimplemented helper' premise did not survive reading the source."
+    },
+    {
+      "task_id": "OBB2-nasdaq-EquityScreener",
+      "provider": "nasdaq",
+      "upstream_model": "EquityScreener",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "field_rename_map",
+        "percent_column_scaling",
+        "client_side_sort",
+        "client_side_column_drop",
+        "param_value_mapping",
+        "anti_bot_retry"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/nasdaq/openbb_nasdaq/models/equity_screener.py:390",
+      "notes": "Single GET to /api/screener/stocks with server-side pipe-joined filter querystring built by get_querystring (:404-419); limit defaults to 10000, no next-page loop; rows under data.table.rows (:435); percent strings divided by 100 (:349-351); sorted client-side by pctchange desc then url column popped (:439-440); sector/country param values remapped before the request (:398-399, validators). Request path fully readable from source."
+    },
+    {
+      "task_id": "OBB2-nasdaq-HistoricalDividends",
+      "provider": "nasdaq",
+      "upstream_model": "HistoricalDividends",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "symbol_fan_out",
+        "conditional_endpoint_branch",
+        "client_side_date_filter",
+        "field_rename_map",
+        "date_format",
+        "sentinel_value_nulling",
+        "derived_columns",
+        "anti_bot_retry"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/nasdaq/openbb_nasdaq/models/historical_dividends.py:118",
+      "notes": "One GET per comma-split symbol, asyncio.gather fan-out (:110-142); same /api/quote/{symbol}/dividends path retried with assetclass=etf when rCode==400 (:124-128); rows under data.dividends.rows; symbol stamped onto rows when multi-symbol (:133-135); start/end date filtering client-side after fetch (:156-160); 'N/A' and '$' sentinels nulled/parsed (:68-83). Request path fully readable from source."
+    },
+    {
+      "task_id": "OBB2-nasdaq-TopRetail",
+      "provider": "nasdaq",
+      "upstream_model": "TopRetail",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "positional_array_rows",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "single_row_assembly",
+        "client_side_sort_limit",
+        "date_format"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/nasdaq/openbb_nasdaq/models/top_retail.py:55",
+      "notes": "Authed GET to data.nasdaq.com/api/v3/datatables/NDAQ/RTAT10/ with api_key query param (nasdaq_api_key, :53-56); rows are positional arrays under datatable.data, reassembled into {date,symbol,activity,sentiment} by fixed index (:61, :71-82); [: query.limit] slice client-side; %Y-%m-%d date validator. No get_headers/rotating-UA path here, so anti_bot_retry is not a blocker for this row. Request path fully readable from source."
+    }
+  ]
+}

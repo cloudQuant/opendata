@@ -398,7 +398,7 @@
       "anchor": "NOT_DECLARABLE: dict[str, str] = {",
       "anchor_found": true,
       "anchor_line": "NOT_DECLARABLE: dict[str, str] = {",
-      "anchor_line_number": 120,
+      "anchor_line_number": 126,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -685,20 +685,29 @@
     }
   },
   "census": {
-    "carried_forward_files": [
-      "census-imf-oecd-famafrench-misc.json",
-      "census-sec-tmx-fed-gov-finra.json",
-      "census-yfinance-cboe-finviz.json"
-    ],
     "files": [
+      "census-alpha_vantage.json",
+      "census-benzinga.json",
+      "census-biztoc.json",
+      "census-cftc.json",
+      "census-congress_gov.json",
+      "census-econdb.json",
+      "census-eia.json",
       "census-imf-oecd-famafrench-misc.json",
+      "census-intrinio-1of3.json",
+      "census-intrinio-2of3.json",
+      "census-intrinio-3of3.json",
+      "census-nasdaq.json",
       "census-sec-tmx-fed-gov-finra.json",
+      "census-tiingo.json",
+      "census-tradier.json",
+      "census-tradingeconomics.json",
       "census-yfinance-cboe-finviz.json"
     ],
-    "row_count_expected": 150,
+    "row_count_expected": 238,
     "row_count_guard_fired": false,
-    "row_count_measured": 150,
-    "unique_task_ids": 150
+    "row_count_measured": 238,
+    "unique_task_ids": 238
   },
   "check": {
     "drifted_capabilities": [],
@@ -790,7 +799,7 @@
     "greedy_build_order": [
       {
         "capability": "flow.composite_key_segment",
-        "cumulative_rows_unlocked": 12,
+        "cumulative_rows_unlocked": 15,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -879,8 +888,27 @@
       },
       {
         "capability": "path.explode",
-        "cumulative_rows_unlocked": 16,
+        "cumulative_rows_unlocked": 21,
         "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.rename",
+              "path.explode"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-CalendarIpo",
+            "upstream_model": "CalendarIpo"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "path.explode",
+              "rows.filter"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-InsiderTrading",
+            "upstream_model": "InsiderTrading"
+          },
           {
             "needs": [
               "columns.rename",
@@ -922,415 +950,12 @@
             "upstream_model": "EtfCountries"
           }
         ],
-        "rows_newly_unlocked": 4
-      },
-      {
-        "capability": "path.object_keys",
-        "cumulative_rows_unlocked": 19,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "path.object_keys",
-              "rows.filter"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-CikMap",
-            "upstream_model": "CikMap"
-          },
-          {
-            "needs": [
-              "path.object_keys",
-              "rows.filter"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-SymbolMap",
-            "upstream_model": "SymbolMap"
-          },
-          {
-            "needs": [
-              "flow.url_template",
-              "path.object_keys",
-              "rows.filter"
-            ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-EquitySearch",
-            "upstream_model": "EquitySearch"
-          }
-        ],
-        "rows_newly_unlocked": 3
-      },
-      {
-        "capability": "shape.columnar",
-        "cumulative_rows_unlocked": 22,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "path.object_keys",
-              "rows.filter",
-              "shape.columnar"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-EquitySearch",
-            "upstream_model": "EquitySearch"
-          },
-          {
-            "needs": [
-              "rows.filter",
-              "shape.columnar"
-            ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-BondPrices",
-            "upstream_model": "BondPrices"
-          },
-          {
-            "needs": [
-              "rows.filter",
-              "shape.columnar"
-            ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-TreasuryPrices",
-            "upstream_model": "TreasuryPrices"
-          }
-        ],
-        "rows_newly_unlocked": 3
-      },
-      {
-        "capability": "columns.rescale",
-        "cumulative_rows_unlocked": 24,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.rescale",
-              "path.explode"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-YieldCurve",
-            "upstream_model": "YieldCurve"
-          },
-          {
-            "needs": [
-              "columns.rescale",
-              "columns.select",
-              "flow.url_template"
-            ],
-            "provider": "cboe",
-            "task_id": "OBB2-cboe-IndexSnapshots",
-            "upstream_model": "IndexSnapshots"
-          }
-        ],
-        "rows_newly_unlocked": 2
-      },
-      {
-        "capability": "rows.order_limit",
-        "cumulative_rows_unlocked": 27,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.rescale",
-              "rows.order_limit"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-FederalFundsRate",
-            "upstream_model": "FederalFundsRate"
-          },
-          {
-            "needs": [
-              "columns.rescale",
-              "rows.order_limit"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-OvernightBankFundingRate",
-            "upstream_model": "OvernightBankFundingRate"
-          },
-          {
-            "needs": [
-              "columns.rescale",
-              "rows.order_limit"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-SOFR",
-            "upstream_model": "SOFR"
-          }
-        ],
-        "rows_newly_unlocked": 3
-      },
-      {
-        "capability": "request.serialised_param",
-        "cumulative_rows_unlocked": 30,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "request.serialised_param",
-              "rows.order_limit"
-            ],
-            "provider": "wsj",
-            "task_id": "OBB2-wsj-ETFGainers",
-            "upstream_model": "ETFGainers"
-          },
-          {
-            "needs": [
-              "request.serialised_param",
-              "rows.order_limit"
-            ],
-            "provider": "wsj",
-            "task_id": "OBB2-wsj-ETFLosers",
-            "upstream_model": "ETFLosers"
-          },
-          {
-            "needs": [
-              "request.serialised_param",
-              "rows.order_limit"
-            ],
-            "provider": "wsj",
-            "task_id": "OBB2-wsj-ETFActive",
-            "upstream_model": "ETFActive"
-          }
-        ],
-        "rows_newly_unlocked": 3
-      },
-      {
-        "capability": "decode.tabular_file",
-        "cumulative_rows_unlocked": 33,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "decode.tabular_file"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-InflationExpectations",
-            "upstream_model": "InflationExpectations"
-          },
-          {
-            "needs": [
-              "decode.tabular_file"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-TotalFactorProductivity",
-            "upstream_model": "TotalFactorProductivity"
-          },
-          {
-            "needs": [
-              "decode.tabular_file",
-              "request.serialised_param"
-            ],
-            "provider": "government_us",
-            "task_id": "OBB2-government_us-CommodityPsdReport",
-            "upstream_model": "CommodityPsdReport"
-          }
-        ],
-        "rows_newly_unlocked": 3
-      },
-      {
-        "capability": "columns.response_dependent_selection",
-        "cumulative_rows_unlocked": 35,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.response_dependent_selection",
-              "columns.select"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-CashFlowStatement",
-            "upstream_model": "CashFlowStatement"
-          },
-          {
-            "needs": [
-              "columns.response_dependent_selection",
-              "columns.select"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-IncomeStatement",
-            "upstream_model": "IncomeStatement"
-          }
-        ],
-        "rows_newly_unlocked": 2
-      },
-      {
-        "capability": "flow.join",
-        "cumulative_rows_unlocked": 39,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.response_dependent_selection",
-              "flow.join"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-BalanceSheet",
-            "upstream_model": "BalanceSheet"
-          },
-          {
-            "needs": [
-              "columns.response_dependent_selection",
-              "flow.join"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-BalanceSheetGrowth",
-            "upstream_model": "BalanceSheetGrowth"
-          },
-          {
-            "needs": [
-              "columns.response_dependent_selection",
-              "flow.join"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-CashFlowStatementGrowth",
-            "upstream_model": "CashFlowStatementGrowth"
-          },
-          {
-            "needs": [
-              "columns.response_dependent_selection",
-              "flow.join"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-IncomeStatementGrowth",
-            "upstream_model": "IncomeStatementGrowth"
-          }
-        ],
-        "rows_newly_unlocked": 4
-      },
-      {
-        "capability": "flow.preflight_lookup",
-        "cumulative_rows_unlocked": 43,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "flow.preflight_lookup"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-EquityFTD",
-            "upstream_model": "EquityFTD"
-          },
-          {
-            "needs": [
-              "flow.join",
-              "flow.preflight_lookup",
-              "rows.filter"
-            ],
-            "provider": "cboe",
-            "task_id": "OBB2-cboe-EquityHistorical",
-            "upstream_model": "EquityHistorical"
-          },
-          {
-            "needs": [
-              "columns.rescale",
-              "flow.join",
-              "flow.preflight_lookup"
-            ],
-            "provider": "cboe",
-            "task_id": "OBB2-cboe-EquityQuote",
-            "upstream_model": "EquityQuote"
-          },
-          {
-            "needs": [
-              "columns.select",
-              "flow.join",
-              "flow.preflight_lookup",
-              "flow.url_template"
-            ],
-            "provider": "cboe",
-            "task_id": "OBB2-cboe-IndexHistorical",
-            "upstream_model": "IndexHistorical"
-          }
-        ],
-        "rows_newly_unlocked": 4
-      },
-      {
-        "capability": "decode.text_table",
-        "cumulative_rows_unlocked": 49,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "decode.archive_member",
-              "decode.delimited",
-              "decode.text_table",
-              "flow.preflight_lookup"
-            ],
-            "provider": "famafrench",
-            "task_id": "OBB2-famafrench-FamaFrenchBreakpoints",
-            "upstream_model": "FamaFrenchBreakpoints"
-          },
-          {
-            "needs": [
-              "decode.archive_member",
-              "decode.delimited",
-              "decode.text_table",
-              "flow.preflight_lookup"
-            ],
-            "provider": "famafrench",
-            "task_id": "OBB2-famafrench-FamaFrenchCountryPortfolioReturns",
-            "upstream_model": "FamaFrenchCountryPortfolioReturns"
-          },
-          {
-            "needs": [
-              "decode.archive_member",
-              "decode.delimited",
-              "decode.text_table",
-              "flow.preflight_lookup"
-            ],
-            "provider": "famafrench",
-            "task_id": "OBB2-famafrench-FamaFrenchFactors",
-            "upstream_model": "FamaFrenchFactors"
-          },
-          {
-            "needs": [
-              "decode.archive_member",
-              "decode.delimited",
-              "decode.text_table",
-              "flow.preflight_lookup"
-            ],
-            "provider": "famafrench",
-            "task_id": "OBB2-famafrench-FamaFrenchInternationalIndexReturns",
-            "upstream_model": "FamaFrenchInternationalIndexReturns"
-          },
-          {
-            "needs": [
-              "decode.archive_member",
-              "decode.delimited",
-              "decode.text_table",
-              "flow.preflight_lookup"
-            ],
-            "provider": "famafrench",
-            "task_id": "OBB2-famafrench-FamaFrenchRegionalPortfolioReturns",
-            "upstream_model": "FamaFrenchRegionalPortfolioReturns"
-          },
-          {
-            "needs": [
-              "decode.archive_member",
-              "decode.delimited",
-              "decode.text_table",
-              "flow.preflight_lookup"
-            ],
-            "provider": "famafrench",
-            "task_id": "OBB2-famafrench-FamaFrenchUSPortfolioReturns",
-            "upstream_model": "FamaFrenchUSPortfolioReturns"
-          }
-        ],
         "rows_newly_unlocked": 6
       },
       {
         "capability": "flow.fan_out",
-        "cumulative_rows_unlocked": 54,
+        "cumulative_rows_unlocked": 26,
         "newly_unlocked_rows": [
-          {
-            "needs": [
-              "flow.fan_out",
-              "flow.join",
-              "flow.preflight_lookup"
-            ],
-            "provider": "deribit",
-            "task_id": "OBB2-deribit-FuturesCurve",
-            "upstream_model": "FuturesCurve"
-          },
-          {
-            "needs": [
-              "flow.fan_out",
-              "flow.join",
-              "shape.columnar"
-            ],
-            "provider": "deribit",
-            "task_id": "OBB2-deribit-FuturesHistorical",
-            "upstream_model": "FuturesHistorical"
-          },
           {
             "needs": [
               "flow.fan_out"
@@ -1341,247 +966,70 @@
           },
           {
             "needs": [
-              "flow.fan_out",
-              "flow.preflight_lookup",
-              "path.object_keys"
+              "columns.rename",
+              "flow.fan_out"
             ],
-            "provider": "seeking_alpha",
-            "task_id": "OBB2-seeking_alpha-ForwardEpsEstimates",
-            "upstream_model": "ForwardEpsEstimates"
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-EquityInfo",
+            "upstream_model": "EquityInfo"
           },
           {
             "needs": [
-              "flow.fan_out",
-              "flow.preflight_lookup",
-              "path.object_keys"
-            ],
-            "provider": "seeking_alpha",
-            "task_id": "OBB2-seeking_alpha-ForwardSalesEstimates",
-            "upstream_model": "ForwardSalesEstimates"
-          }
-        ],
-        "rows_newly_unlocked": 5
-      },
-      {
-        "capability": "columns.derive",
-        "cumulative_rows_unlocked": 60,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.derive",
-              "flow.fan_out",
-              "flow.preflight_lookup",
-              "shape.columnar"
-            ],
-            "provider": "deribit",
-            "task_id": "OBB2-deribit-OptionsChains",
-            "upstream_model": "OptionsChains"
-          },
-          {
-            "needs": [
-              "columns.derive",
-              "flow.fan_out",
-              "shape.columnar"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-CompanyFilings",
-            "upstream_model": "CompanyFilings"
-          },
-          {
-            "needs": [
-              "columns.derive",
-              "flow.fan_out",
-              "shape.columnar"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-Filings",
-            "upstream_model": "Filings"
-          },
-          {
-            "needs": [
-              "columns.derive",
+              "columns.rename",
               "flow.fan_out",
               "path.explode"
             ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-LatestFinancialReports",
-            "upstream_model": "LatestFinancialReports"
-          },
-          {
-            "needs": [
-              "columns.derive",
-              "flow.join"
-            ],
-            "provider": "yfinance",
-            "task_id": "OBB2-yfinance-FuturesCurve",
-            "upstream_model": "FuturesCurve"
-          },
-          {
-            "needs": [
-              "columns.derive",
-              "columns.rescale",
-              "flow.preflight_lookup",
-              "shape.columnar"
-            ],
-            "provider": "cboe",
-            "task_id": "OBB2-cboe-OptionsChains",
-            "upstream_model": "OptionsChains"
-          }
-        ],
-        "rows_newly_unlocked": 6
-      },
-      {
-        "capability": "decode.xml",
-        "cumulative_rows_unlocked": 65,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "decode.xml",
-              "flow.fan_out",
-              "flow.preflight_lookup"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-Form13FHR",
-            "upstream_model": "Form13FHR"
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-EquityQuote",
+            "upstream_model": "EquityQuote"
           },
           {
             "needs": [
               "columns.rename",
-              "decode.xml",
-              "flow.fan_out"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-InsiderTrading",
-            "upstream_model": "InsiderTrading"
-          },
-          {
-            "needs": [
-              "decode.xml",
-              "flow.join",
-              "flow.preflight_lookup"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-NportDisclosure",
-            "upstream_model": "NportDisclosure"
-          },
-          {
-            "needs": [
-              "columns.rename",
-              "decode.xml"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-RssLitigation",
-            "upstream_model": "RssLitigation"
-          },
-          {
-            "needs": [
-              "decode.xml",
               "flow.fan_out",
-              "path.object_keys"
+              "rows.filter"
             ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-SchemaFiles",
-            "upstream_model": "SchemaFiles"
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-IndexHistorical",
+            "upstream_model": "IndexHistorical"
+          },
+          {
+            "needs": [
+              "flow.fan_out",
+              "flow.url_template"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-LatestAttributes",
+            "upstream_model": "LatestAttributes"
           }
         ],
         "rows_newly_unlocked": 5
       },
       {
-        "capability": "decode.geojson",
-        "cumulative_rows_unlocked": 69,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "decode.geojson",
-              "rows.filter"
-            ],
-            "provider": "imf",
-            "task_id": "OBB2-imf-MaritimeChokePointInfo",
-            "upstream_model": "MaritimeChokePointInfo"
-          },
-          {
-            "needs": [
-              "decode.geojson",
-              "flow.fan_out",
-              "flow.preflight_lookup",
-              "rows.filter"
-            ],
-            "provider": "imf",
-            "task_id": "OBB2-imf-MaritimeChokePointVolume",
-            "upstream_model": "MaritimeChokePointVolume"
-          },
-          {
-            "needs": [
-              "decode.geojson",
-              "rows.filter"
-            ],
-            "provider": "imf",
-            "task_id": "OBB2-imf-PortInfo",
-            "upstream_model": "PortInfo"
-          },
-          {
-            "needs": [
-              "decode.geojson",
-              "flow.fan_out",
-              "flow.preflight_lookup"
-            ],
-            "provider": "imf",
-            "task_id": "OBB2-imf-PortVolume",
-            "upstream_model": "PortVolume"
-          }
-        ],
-        "rows_newly_unlocked": 4
-      },
-      {
-        "capability": "decode.html_table",
-        "cumulative_rows_unlocked": 73,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "decode.html_table",
-              "flow.fan_out",
-              "rows.filter"
-            ],
-            "provider": "multpl",
-            "task_id": "OBB2-multpl-SP500Multiples",
-            "upstream_model": "SP500Multiples"
-          },
-          {
-            "needs": [
-              "columns.derive",
-              "decode.html_table",
-              "flow.fan_out"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-FomcDocuments",
-            "upstream_model": "FomcDocuments"
-          },
-          {
-            "needs": [
-              "decode.html_table",
-              "decode.text_table",
-              "flow.fan_out"
-            ],
-            "provider": "government_us",
-            "task_id": "OBB2-government_us-WeatherBulletin",
-            "upstream_model": "WeatherBulletin"
-          },
-          {
-            "needs": [
-              "decode.html_table",
-              "rows.filter"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-SicSearch",
-            "upstream_model": "SicSearch"
-          }
-        ],
-        "rows_newly_unlocked": 4
-      },
-      {
         "capability": "flow.branch",
-        "cumulative_rows_unlocked": 77,
+        "cumulative_rows_unlocked": 33,
         "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.rename",
+              "flow.branch",
+              "flow.fan_out"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-ForwardPeEstimates",
+            "upstream_model": "ForwardPeEstimates"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "flow.branch",
+              "flow.fan_out",
+              "rows.filter"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-HistoricalMarketCap",
+            "upstream_model": "HistoricalMarketCap"
+          },
           {
             "needs": [
               "flow.branch"
@@ -1610,6 +1058,76 @@
           },
           {
             "needs": [
+              "columns.rename",
+              "flow.branch"
+            ],
+            "provider": "tradier",
+            "task_id": "OBB2-tradier-EquitySearch",
+            "upstream_model": "EquitySearch"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "flow.branch"
+            ],
+            "provider": "tradingeconomics",
+            "task_id": "OBB2-tradingeconomics-EconomicCalendar",
+            "upstream_model": "EconomicCalendar"
+          }
+        ],
+        "rows_newly_unlocked": 7
+      },
+      {
+        "capability": "flow.join",
+        "cumulative_rows_unlocked": 38,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.select",
+              "flow.fan_out",
+              "flow.join",
+              "rows.filter"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-CompanyFilings",
+            "upstream_model": "CompanyFilings"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "flow.fan_out",
+              "flow.join",
+              "rows.filter"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-EtfPricePerformance",
+            "upstream_model": "EtfPricePerformance"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "columns.select",
+              "flow.fan_out",
+              "flow.join",
+              "rows.filter"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-FinancialRatios",
+            "upstream_model": "FinancialRatios"
+          },
+          {
+            "needs": [
+              "columns.select",
+              "flow.fan_out",
+              "flow.join",
+              "rows.filter"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-IncomeStatement",
+            "upstream_model": "IncomeStatement"
+          },
+          {
+            "needs": [
               "flow.branch",
               "flow.join"
             ],
@@ -1618,11 +1136,403 @@
             "upstream_model": "CompareCompanyFacts"
           }
         ],
-        "rows_newly_unlocked": 4
+        "rows_newly_unlocked": 5
+      },
+      {
+        "capability": "rows.order_limit",
+        "cumulative_rows_unlocked": 46,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "flow.branch",
+              "flow.fan_out",
+              "rows.order_limit"
+            ],
+            "provider": "congress_gov",
+            "task_id": "OBB2-congress_gov-CongressBills",
+            "upstream_model": "CongressBills"
+          },
+          {
+            "needs": [
+              "flow.branch",
+              "flow.fan_out",
+              "flow.join",
+              "rows.order_limit"
+            ],
+            "provider": "congress_gov",
+            "task_id": "OBB2-congress_gov-CongressAmendments",
+            "upstream_model": "CongressAmendments"
+          },
+          {
+            "needs": [
+              "flow.fan_out",
+              "flow.join",
+              "path.explode",
+              "rows.order_limit"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-CompanyNews",
+            "upstream_model": "CompanyNews"
+          },
+          {
+            "needs": [
+              "flow.branch",
+              "flow.fan_out",
+              "flow.join",
+              "rows.order_limit"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-EquityHistorical",
+            "upstream_model": "EquityHistorical"
+          },
+          {
+            "needs": [
+              "flow.branch",
+              "flow.fan_out",
+              "flow.join",
+              "rows.order_limit"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-EtfHistorical",
+            "upstream_model": "EtfHistorical"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "flow.fan_out",
+              "rows.order_limit"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-EtfInfo",
+            "upstream_model": "EtfInfo"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "rows.order_limit"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-SearchAttributes",
+            "upstream_model": "SearchAttributes"
+          },
+          {
+            "needs": [
+              "flow.url_template",
+              "rows.order_limit"
+            ],
+            "provider": "tiingo",
+            "task_id": "OBB2-tiingo-TrailingDividendYield",
+            "upstream_model": "TrailingDividendYield"
+          }
+        ],
+        "rows_newly_unlocked": 8
+      },
+      {
+        "capability": "columns.cast",
+        "cumulative_rows_unlocked": 54,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.cast",
+              "columns.rename",
+              "columns.select",
+              "rows.filter"
+            ],
+            "provider": "benzinga",
+            "task_id": "OBB2-benzinga-PriceTarget",
+            "upstream_model": "PriceTarget"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "columns.rename"
+            ],
+            "provider": "government_us",
+            "task_id": "OBB2-government_us-TreasuryAuctions",
+            "upstream_model": "TreasuryAuctions"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "columns.rename",
+              "flow.branch",
+              "flow.fan_out",
+              "flow.url_template"
+            ],
+            "provider": "tiingo",
+            "task_id": "OBB2-tiingo-EquityHistorical",
+            "upstream_model": "EquityHistorical"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "columns.rename",
+              "flow.branch",
+              "flow.fan_out",
+              "flow.url_template"
+            ],
+            "provider": "tiingo",
+            "task_id": "OBB2-tiingo-EtfHistorical",
+            "upstream_model": "EtfHistorical"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "columns.rename",
+              "path.explode",
+              "rows.order_limit"
+            ],
+            "provider": "tiingo",
+            "task_id": "OBB2-tiingo-CryptoHistorical",
+            "upstream_model": "CryptoHistorical"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "columns.rename",
+              "flow.fan_out",
+              "rows.order_limit"
+            ],
+            "provider": "tiingo",
+            "task_id": "OBB2-tiingo-CurrencyHistorical",
+            "upstream_model": "CurrencyHistorical"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "flow.branch",
+              "flow.fan_out",
+              "rows.filter",
+              "rows.order_limit"
+            ],
+            "provider": "tradier",
+            "task_id": "OBB2-tradier-EquityHistorical",
+            "upstream_model": "EquityHistorical"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "flow.branch",
+              "flow.fan_out",
+              "rows.filter",
+              "rows.order_limit"
+            ],
+            "provider": "tradier",
+            "task_id": "OBB2-tradier-EtfHistorical",
+            "upstream_model": "EtfHistorical"
+          }
+        ],
+        "rows_newly_unlocked": 8
+      },
+      {
+        "capability": "columns.rescale",
+        "cumulative_rows_unlocked": 62,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.cast",
+              "columns.rescale",
+              "path.explode",
+              "rows.filter"
+            ],
+            "provider": "benzinga",
+            "task_id": "OBB2-benzinga-AnalystSearch",
+            "upstream_model": "AnalystSearch"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "columns.rescale",
+              "flow.fan_out",
+              "flow.join",
+              "rows.filter",
+              "rows.order_limit"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-EtfHoldings",
+            "upstream_model": "EtfHoldings"
+          },
+          {
+            "needs": [
+              "columns.rescale",
+              "rows.order_limit"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-FederalFundsRate",
+            "upstream_model": "FederalFundsRate"
+          },
+          {
+            "needs": [
+              "columns.rescale",
+              "rows.order_limit"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-OvernightBankFundingRate",
+            "upstream_model": "OvernightBankFundingRate"
+          },
+          {
+            "needs": [
+              "columns.rescale",
+              "rows.order_limit"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-SOFR",
+            "upstream_model": "SOFR"
+          },
+          {
+            "needs": [
+              "columns.rescale",
+              "path.explode"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-YieldCurve",
+            "upstream_model": "YieldCurve"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "columns.rename",
+              "columns.rescale",
+              "path.explode",
+              "rows.filter"
+            ],
+            "provider": "tradier",
+            "task_id": "OBB2-tradier-EquityQuote",
+            "upstream_model": "EquityQuote"
+          },
+          {
+            "needs": [
+              "columns.rescale",
+              "columns.select",
+              "flow.url_template"
+            ],
+            "provider": "cboe",
+            "task_id": "OBB2-cboe-IndexSnapshots",
+            "upstream_model": "IndexSnapshots"
+          }
+        ],
+        "rows_newly_unlocked": 8
+      },
+      {
+        "capability": "request.body_pagination",
+        "cumulative_rows_unlocked": 72,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.cast",
+              "request.body_pagination",
+              "rows.order_limit"
+            ],
+            "provider": "benzinga",
+            "task_id": "OBB2-benzinga-CompanyNews",
+            "upstream_model": "CompanyNews"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "request.body_pagination",
+              "rows.order_limit"
+            ],
+            "provider": "benzinga",
+            "task_id": "OBB2-benzinga-WorldNews",
+            "upstream_model": "WorldNews"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "flow.branch",
+              "request.body_pagination",
+              "rows.filter"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-EtfSearch",
+            "upstream_model": "EtfSearch"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "flow.fan_out",
+              "request.body_pagination",
+              "rows.filter"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-ForwardEbitdaEstimates",
+            "upstream_model": "ForwardEbitdaEstimates"
+          },
+          {
+            "needs": [
+              "columns.rescale",
+              "flow.fan_out",
+              "path.explode",
+              "request.body_pagination",
+              "rows.filter"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-ForwardEpsEstimates",
+            "upstream_model": "ForwardEpsEstimates"
+          },
+          {
+            "needs": [
+              "columns.rescale",
+              "flow.fan_out",
+              "path.explode",
+              "request.body_pagination",
+              "rows.filter"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-ForwardSalesEstimates",
+            "upstream_model": "ForwardSalesEstimates"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "request.body_pagination"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-FredSeries",
+            "upstream_model": "FredSeries"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "flow.branch",
+              "request.body_pagination",
+              "rows.filter",
+              "rows.order_limit"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-OptionsUnusual",
+            "upstream_model": "OptionsUnusual"
+          },
+          {
+            "needs": [
+              "columns.select",
+              "flow.fan_out",
+              "request.body_pagination",
+              "rows.order_limit"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-PriceTargetConsensus",
+            "upstream_model": "PriceTargetConsensus"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "path.explode",
+              "request.body_pagination",
+              "rows.filter",
+              "rows.order_limit"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-WorldNews",
+            "upstream_model": "WorldNews"
+          }
+        ],
+        "rows_newly_unlocked": 10
       },
       {
         "capability": "request.body",
-        "cumulative_rows_unlocked": 82,
+        "cumulative_rows_unlocked": 84,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1666,6 +1576,255 @@
           },
           {
             "needs": [
+              "request.body",
+              "request.body_pagination"
+            ],
+            "provider": "yfinance",
+            "task_id": "OBB2-yfinance-EquityActive",
+            "upstream_model": "EquityActive"
+          },
+          {
+            "needs": [
+              "request.body",
+              "request.body_pagination"
+            ],
+            "provider": "yfinance",
+            "task_id": "OBB2-yfinance-EquityAggressiveSmallCaps",
+            "upstream_model": "EquityAggressiveSmallCaps"
+          },
+          {
+            "needs": [
+              "request.body",
+              "request.body_pagination"
+            ],
+            "provider": "yfinance",
+            "task_id": "OBB2-yfinance-EquityGainers",
+            "upstream_model": "EquityGainers"
+          },
+          {
+            "needs": [
+              "request.body",
+              "request.body_pagination"
+            ],
+            "provider": "yfinance",
+            "task_id": "OBB2-yfinance-EquityLosers",
+            "upstream_model": "EquityLosers"
+          },
+          {
+            "needs": [
+              "request.body",
+              "request.body_pagination"
+            ],
+            "provider": "yfinance",
+            "task_id": "OBB2-yfinance-GrowthTechEquities",
+            "upstream_model": "GrowthTechEquities"
+          },
+          {
+            "needs": [
+              "request.body",
+              "request.body_pagination"
+            ],
+            "provider": "yfinance",
+            "task_id": "OBB2-yfinance-EquityUndervaluedLargeCaps",
+            "upstream_model": "EquityUndervaluedLargeCaps"
+          },
+          {
+            "needs": [
+              "request.body",
+              "request.body_pagination"
+            ],
+            "provider": "yfinance",
+            "task_id": "OBB2-yfinance-EquityUndervaluedGrowth",
+            "upstream_model": "EquityUndervaluedGrowth"
+          },
+          {
+            "needs": [
+              "request.body",
+              "request.body_pagination"
+            ],
+            "provider": "yfinance",
+            "task_id": "OBB2-yfinance-EquityScreener",
+            "upstream_model": "EquityScreener"
+          }
+        ],
+        "rows_newly_unlocked": 12
+      },
+      {
+        "capability": "columns.derive",
+        "cumulative_rows_unlocked": 94,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.derive",
+              "columns.rename",
+              "decode.delimited",
+              "flow.branch",
+              "flow.fan_out",
+              "rows.filter"
+            ],
+            "provider": "alpha_vantage",
+            "task_id": "OBB2-alpha_vantage-EquityHistorical",
+            "upstream_model": "EquityHistorical"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "columns.rescale",
+              "flow.branch",
+              "flow.fan_out",
+              "path.explode",
+              "rows.filter",
+              "rows.order_limit"
+            ],
+            "provider": "alpha_vantage",
+            "task_id": "OBB2-alpha_vantage-HistoricalEps",
+            "upstream_model": "HistoricalEps"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "columns.rename",
+              "decode.delimited",
+              "flow.branch",
+              "flow.fan_out",
+              "rows.filter"
+            ],
+            "provider": "alpha_vantage",
+            "task_id": "OBB2-alpha_vantage-EtfHistorical",
+            "upstream_model": "EtfHistorical"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "decode.delimited",
+              "rows.filter",
+              "rows.order_limit"
+            ],
+            "provider": "econdb",
+            "task_id": "OBB2-econdb-AvailableIndicators",
+            "upstream_model": "AvailableIndicators"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "columns.rescale",
+              "flow.fan_out",
+              "flow.join",
+              "path.explode"
+            ],
+            "provider": "econdb",
+            "task_id": "OBB2-econdb-CountryProfile",
+            "upstream_model": "CountryProfile"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "columns.rescale",
+              "flow.branch",
+              "flow.fan_out",
+              "flow.join",
+              "path.explode"
+            ],
+            "provider": "econdb",
+            "task_id": "OBB2-econdb-GdpNominal",
+            "upstream_model": "GdpNominal"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "columns.rescale",
+              "flow.branch",
+              "flow.fan_out",
+              "flow.join",
+              "path.explode"
+            ],
+            "provider": "econdb",
+            "task_id": "OBB2-econdb-GdpReal",
+            "upstream_model": "GdpReal"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "columns.rename",
+              "flow.fan_out",
+              "request.body_pagination"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-HistoricalAttributes",
+            "upstream_model": "HistoricalAttributes"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "flow.fan_out",
+              "path.explode"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-LatestFinancialReports",
+            "upstream_model": "LatestFinancialReports"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "flow.join"
+            ],
+            "provider": "yfinance",
+            "task_id": "OBB2-yfinance-FuturesCurve",
+            "upstream_model": "FuturesCurve"
+          }
+        ],
+        "rows_newly_unlocked": 10
+      },
+      {
+        "capability": "flow.preflight_lookup",
+        "cumulative_rows_unlocked": 104,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.cast",
+              "columns.rename",
+              "columns.select",
+              "flow.branch",
+              "flow.preflight_lookup"
+            ],
+            "provider": "biztoc",
+            "task_id": "OBB2-biztoc-WorldNews",
+            "upstream_model": "WorldNews"
+          },
+          {
+            "needs": [
+              "flow.fan_out",
+              "flow.join",
+              "flow.preflight_lookup"
+            ],
+            "provider": "deribit",
+            "task_id": "OBB2-deribit-FuturesCurve",
+            "upstream_model": "FuturesCurve"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "columns.select",
+              "decode.archive_member",
+              "decode.delimited",
+              "flow.fan_out",
+              "flow.preflight_lookup",
+              "rows.filter"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-MarketSnapshots",
+            "upstream_model": "MarketSnapshots"
+          },
+          {
+            "needs": [
+              "flow.preflight_lookup"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-EquityFTD",
+            "upstream_model": "EquityFTD"
+          },
+          {
+            "needs": [
               "flow.fan_out",
               "flow.preflight_lookup",
               "request.body"
@@ -1673,13 +1832,281 @@
             "provider": "tmx",
             "task_id": "OBB2-tmx-IndexSnapshots",
             "upstream_model": "IndexSnapshots"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "flow.fan_out",
+              "flow.preflight_lookup"
+            ],
+            "provider": "tiingo",
+            "task_id": "OBB2-tiingo-CompanyNews",
+            "upstream_model": "CompanyNews"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "flow.fan_out",
+              "flow.preflight_lookup"
+            ],
+            "provider": "tiingo",
+            "task_id": "OBB2-tiingo-WorldNews",
+            "upstream_model": "WorldNews"
+          },
+          {
+            "needs": [
+              "flow.join",
+              "flow.preflight_lookup",
+              "rows.filter"
+            ],
+            "provider": "cboe",
+            "task_id": "OBB2-cboe-EquityHistorical",
+            "upstream_model": "EquityHistorical"
+          },
+          {
+            "needs": [
+              "columns.rescale",
+              "flow.join",
+              "flow.preflight_lookup"
+            ],
+            "provider": "cboe",
+            "task_id": "OBB2-cboe-EquityQuote",
+            "upstream_model": "EquityQuote"
+          },
+          {
+            "needs": [
+              "columns.select",
+              "flow.join",
+              "flow.preflight_lookup",
+              "flow.url_template"
+            ],
+            "provider": "cboe",
+            "task_id": "OBB2-cboe-IndexHistorical",
+            "upstream_model": "IndexHistorical"
           }
         ],
-        "rows_newly_unlocked": 5
+        "rows_newly_unlocked": 10
+      },
+      {
+        "capability": "shape.columnar",
+        "cumulative_rows_unlocked": 114,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.rescale",
+              "flow.branch",
+              "flow.fan_out",
+              "flow.preflight_lookup",
+              "request.body_pagination",
+              "shape.columnar"
+            ],
+            "provider": "econdb",
+            "task_id": "OBB2-econdb-EconomicIndicators",
+            "upstream_model": "EconomicIndicators"
+          },
+          {
+            "needs": [
+              "columns.rescale",
+              "flow.fan_out",
+              "flow.preflight_lookup",
+              "path.explode",
+              "rows.filter",
+              "shape.columnar"
+            ],
+            "provider": "econdb",
+            "task_id": "OBB2-econdb-YieldCurve",
+            "upstream_model": "YieldCurve"
+          },
+          {
+            "needs": [
+              "flow.fan_out",
+              "flow.join",
+              "shape.columnar"
+            ],
+            "provider": "deribit",
+            "task_id": "OBB2-deribit-FuturesHistorical",
+            "upstream_model": "FuturesHistorical"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "flow.fan_out",
+              "flow.preflight_lookup",
+              "shape.columnar"
+            ],
+            "provider": "deribit",
+            "task_id": "OBB2-deribit-OptionsChains",
+            "upstream_model": "OptionsChains"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "columns.derive",
+              "columns.rename",
+              "columns.rescale",
+              "decode.archive_member",
+              "decode.delimited",
+              "flow.preflight_lookup",
+              "rows.filter",
+              "rows.order_limit",
+              "shape.columnar"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-OptionsSnapshots",
+            "upstream_model": "OptionsSnapshots"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "flow.fan_out",
+              "shape.columnar"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-CompanyFilings",
+            "upstream_model": "CompanyFilings"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "flow.fan_out",
+              "shape.columnar"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-Filings",
+            "upstream_model": "Filings"
+          },
+          {
+            "needs": [
+              "rows.filter",
+              "shape.columnar"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-BondPrices",
+            "upstream_model": "BondPrices"
+          },
+          {
+            "needs": [
+              "rows.filter",
+              "shape.columnar"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-TreasuryPrices",
+            "upstream_model": "TreasuryPrices"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "columns.rescale",
+              "flow.preflight_lookup",
+              "shape.columnar"
+            ],
+            "provider": "cboe",
+            "task_id": "OBB2-cboe-OptionsChains",
+            "upstream_model": "OptionsChains"
+          }
+        ],
+        "rows_newly_unlocked": 10
+      },
+      {
+        "capability": "columns.response_dependent_selection",
+        "cumulative_rows_unlocked": 123,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.derive",
+              "columns.response_dependent_selection",
+              "flow.fan_out",
+              "flow.join",
+              "rows.filter"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-BalanceSheet",
+            "upstream_model": "BalanceSheet"
+          },
+          {
+            "needs": [
+              "columns.response_dependent_selection",
+              "flow.branch",
+              "flow.fan_out",
+              "flow.join",
+              "rows.filter"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-CashFlowStatement",
+            "upstream_model": "CashFlowStatement"
+          },
+          {
+            "needs": [
+              "columns.response_dependent_selection",
+              "flow.fan_out",
+              "flow.preflight_lookup",
+              "path.explode",
+              "rows.filter"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-ReportedFinancials",
+            "upstream_model": "ReportedFinancials"
+          },
+          {
+            "needs": [
+              "columns.response_dependent_selection",
+              "flow.join"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-BalanceSheet",
+            "upstream_model": "BalanceSheet"
+          },
+          {
+            "needs": [
+              "columns.response_dependent_selection",
+              "flow.join"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-BalanceSheetGrowth",
+            "upstream_model": "BalanceSheetGrowth"
+          },
+          {
+            "needs": [
+              "columns.response_dependent_selection",
+              "columns.select"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-CashFlowStatement",
+            "upstream_model": "CashFlowStatement"
+          },
+          {
+            "needs": [
+              "columns.response_dependent_selection",
+              "flow.join"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-CashFlowStatementGrowth",
+            "upstream_model": "CashFlowStatementGrowth"
+          },
+          {
+            "needs": [
+              "columns.response_dependent_selection",
+              "columns.select"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-IncomeStatement",
+            "upstream_model": "IncomeStatement"
+          },
+          {
+            "needs": [
+              "columns.response_dependent_selection",
+              "flow.join"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-IncomeStatementGrowth",
+            "upstream_model": "IncomeStatementGrowth"
+          }
+        ],
+        "rows_newly_unlocked": 9
       },
       {
         "capability": "request.graphql",
-        "cumulative_rows_unlocked": 91,
+        "cumulative_rows_unlocked": 132,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1773,87 +2200,536 @@
         "rows_newly_unlocked": 9
       },
       {
-        "capability": "request.body_pagination",
-        "cumulative_rows_unlocked": 99,
+        "capability": "path.object_keys",
+        "cumulative_rows_unlocked": 140,
         "newly_unlocked_rows": [
           {
             "needs": [
-              "request.body",
-              "request.body_pagination"
+              "columns.rename",
+              "path.explode",
+              "path.object_keys",
+              "rows.filter"
             ],
-            "provider": "yfinance",
-            "task_id": "OBB2-yfinance-EquityActive",
-            "upstream_model": "EquityActive"
+            "provider": "econdb",
+            "task_id": "OBB2-econdb-PortVolume",
+            "upstream_model": "PortVolume"
           },
           {
             "needs": [
-              "request.body",
-              "request.body_pagination"
+              "flow.fan_out",
+              "flow.preflight_lookup",
+              "path.object_keys"
             ],
-            "provider": "yfinance",
-            "task_id": "OBB2-yfinance-EquityAggressiveSmallCaps",
-            "upstream_model": "EquityAggressiveSmallCaps"
+            "provider": "seeking_alpha",
+            "task_id": "OBB2-seeking_alpha-ForwardEpsEstimates",
+            "upstream_model": "ForwardEpsEstimates"
           },
           {
             "needs": [
-              "request.body",
-              "request.body_pagination"
+              "flow.fan_out",
+              "flow.preflight_lookup",
+              "path.object_keys"
             ],
-            "provider": "yfinance",
-            "task_id": "OBB2-yfinance-EquityGainers",
-            "upstream_model": "EquityGainers"
+            "provider": "seeking_alpha",
+            "task_id": "OBB2-seeking_alpha-ForwardSalesEstimates",
+            "upstream_model": "ForwardSalesEstimates"
           },
           {
             "needs": [
-              "request.body",
-              "request.body_pagination"
+              "columns.rename",
+              "flow.fan_out",
+              "path.object_keys"
             ],
-            "provider": "yfinance",
-            "task_id": "OBB2-yfinance-EquityLosers",
-            "upstream_model": "EquityLosers"
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-KeyMetrics",
+            "upstream_model": "KeyMetrics"
           },
           {
             "needs": [
-              "request.body",
-              "request.body_pagination"
+              "path.object_keys",
+              "rows.filter"
             ],
-            "provider": "yfinance",
-            "task_id": "OBB2-yfinance-GrowthTechEquities",
-            "upstream_model": "GrowthTechEquities"
+            "provider": "sec",
+            "task_id": "OBB2-sec-CikMap",
+            "upstream_model": "CikMap"
           },
           {
             "needs": [
-              "request.body",
-              "request.body_pagination"
+              "path.object_keys",
+              "rows.filter",
+              "shape.columnar"
             ],
-            "provider": "yfinance",
-            "task_id": "OBB2-yfinance-EquityUndervaluedLargeCaps",
-            "upstream_model": "EquityUndervaluedLargeCaps"
+            "provider": "sec",
+            "task_id": "OBB2-sec-EquitySearch",
+            "upstream_model": "EquitySearch"
           },
           {
             "needs": [
-              "request.body",
-              "request.body_pagination"
+              "path.object_keys",
+              "rows.filter"
             ],
-            "provider": "yfinance",
-            "task_id": "OBB2-yfinance-EquityUndervaluedGrowth",
-            "upstream_model": "EquityUndervaluedGrowth"
+            "provider": "sec",
+            "task_id": "OBB2-sec-SymbolMap",
+            "upstream_model": "SymbolMap"
           },
           {
             "needs": [
-              "request.body",
-              "request.body_pagination"
+              "flow.url_template",
+              "path.object_keys",
+              "rows.filter"
             ],
-            "provider": "yfinance",
-            "task_id": "OBB2-yfinance-EquityScreener",
-            "upstream_model": "EquityScreener"
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-EquitySearch",
+            "upstream_model": "EquitySearch"
           }
         ],
         "rows_newly_unlocked": 8
       },
       {
+        "capability": "decode.text_table",
+        "cumulative_rows_unlocked": 146,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "decode.archive_member",
+              "decode.delimited",
+              "decode.text_table",
+              "flow.preflight_lookup"
+            ],
+            "provider": "famafrench",
+            "task_id": "OBB2-famafrench-FamaFrenchBreakpoints",
+            "upstream_model": "FamaFrenchBreakpoints"
+          },
+          {
+            "needs": [
+              "decode.archive_member",
+              "decode.delimited",
+              "decode.text_table",
+              "flow.preflight_lookup"
+            ],
+            "provider": "famafrench",
+            "task_id": "OBB2-famafrench-FamaFrenchCountryPortfolioReturns",
+            "upstream_model": "FamaFrenchCountryPortfolioReturns"
+          },
+          {
+            "needs": [
+              "decode.archive_member",
+              "decode.delimited",
+              "decode.text_table",
+              "flow.preflight_lookup"
+            ],
+            "provider": "famafrench",
+            "task_id": "OBB2-famafrench-FamaFrenchFactors",
+            "upstream_model": "FamaFrenchFactors"
+          },
+          {
+            "needs": [
+              "decode.archive_member",
+              "decode.delimited",
+              "decode.text_table",
+              "flow.preflight_lookup"
+            ],
+            "provider": "famafrench",
+            "task_id": "OBB2-famafrench-FamaFrenchInternationalIndexReturns",
+            "upstream_model": "FamaFrenchInternationalIndexReturns"
+          },
+          {
+            "needs": [
+              "decode.archive_member",
+              "decode.delimited",
+              "decode.text_table",
+              "flow.preflight_lookup"
+            ],
+            "provider": "famafrench",
+            "task_id": "OBB2-famafrench-FamaFrenchRegionalPortfolioReturns",
+            "upstream_model": "FamaFrenchRegionalPortfolioReturns"
+          },
+          {
+            "needs": [
+              "decode.archive_member",
+              "decode.delimited",
+              "decode.text_table",
+              "flow.preflight_lookup"
+            ],
+            "provider": "famafrench",
+            "task_id": "OBB2-famafrench-FamaFrenchUSPortfolioReturns",
+            "upstream_model": "FamaFrenchUSPortfolioReturns"
+          }
+        ],
+        "rows_newly_unlocked": 6
+      },
+      {
+        "capability": "request.serialised_param",
+        "cumulative_rows_unlocked": 152,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.rename",
+              "columns.rescale",
+              "columns.select",
+              "flow.branch",
+              "flow.preflight_lookup",
+              "request.serialised_param",
+              "rows.order_limit"
+            ],
+            "provider": "cftc",
+            "task_id": "OBB2-cftc-COT",
+            "upstream_model": "COT"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "columns.rename",
+              "flow.branch",
+              "flow.preflight_lookup",
+              "request.serialised_param",
+              "rows.filter"
+            ],
+            "provider": "cftc",
+            "task_id": "OBB2-cftc-COTSearch",
+            "upstream_model": "COTSearch"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "columns.derive",
+              "columns.rename",
+              "flow.fan_out",
+              "request.body_pagination",
+              "request.serialised_param",
+              "rows.order_limit"
+            ],
+            "provider": "eia",
+            "task_id": "OBB2-eia-ShortTermEnergyOutlook",
+            "upstream_model": "ShortTermEnergyOutlook"
+          },
+          {
+            "needs": [
+              "request.serialised_param",
+              "rows.order_limit"
+            ],
+            "provider": "wsj",
+            "task_id": "OBB2-wsj-ETFGainers",
+            "upstream_model": "ETFGainers"
+          },
+          {
+            "needs": [
+              "request.serialised_param",
+              "rows.order_limit"
+            ],
+            "provider": "wsj",
+            "task_id": "OBB2-wsj-ETFLosers",
+            "upstream_model": "ETFLosers"
+          },
+          {
+            "needs": [
+              "request.serialised_param",
+              "rows.order_limit"
+            ],
+            "provider": "wsj",
+            "task_id": "OBB2-wsj-ETFActive",
+            "upstream_model": "ETFActive"
+          }
+        ],
+        "rows_newly_unlocked": 6
+      },
+      {
+        "capability": "decode.xml",
+        "cumulative_rows_unlocked": 157,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "decode.xml",
+              "flow.fan_out",
+              "flow.preflight_lookup"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-Form13FHR",
+            "upstream_model": "Form13FHR"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "decode.xml",
+              "flow.fan_out"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-InsiderTrading",
+            "upstream_model": "InsiderTrading"
+          },
+          {
+            "needs": [
+              "decode.xml",
+              "flow.join",
+              "flow.preflight_lookup"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-NportDisclosure",
+            "upstream_model": "NportDisclosure"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "decode.xml"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-RssLitigation",
+            "upstream_model": "RssLitigation"
+          },
+          {
+            "needs": [
+              "decode.xml",
+              "flow.fan_out",
+              "path.object_keys"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-SchemaFiles",
+            "upstream_model": "SchemaFiles"
+          }
+        ],
+        "rows_newly_unlocked": 5
+      },
+      {
+        "capability": "path.assemble_single_row",
+        "cumulative_rows_unlocked": 162,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "flow.join",
+              "path.assemble_single_row"
+            ],
+            "provider": "congress_gov",
+            "task_id": "OBB2-congress_gov-CongressAmendmentInfo",
+            "upstream_model": "CongressAmendmentInfo"
+          },
+          {
+            "needs": [
+              "flow.join",
+              "path.assemble_single_row"
+            ],
+            "provider": "congress_gov",
+            "task_id": "OBB2-congress_gov-CongressCommitteeInfo",
+            "upstream_model": "CongressCommitteeInfo"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "flow.fan_out",
+              "path.assemble_single_row"
+            ],
+            "provider": "econdb",
+            "task_id": "OBB2-econdb-ExportDestinations",
+            "upstream_model": "ExportDestinations"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "flow.fan_out",
+              "path.assemble_single_row",
+              "path.object_keys"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-ShareStatistics",
+            "upstream_model": "ShareStatistics"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "path.assemble_single_row",
+              "rows.order_limit"
+            ],
+            "provider": "nasdaq",
+            "task_id": "OBB2-nasdaq-TopRetail",
+            "upstream_model": "TopRetail"
+          }
+        ],
+        "rows_newly_unlocked": 5
+      },
+      {
+        "capability": "decode.geojson",
+        "cumulative_rows_unlocked": 166,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "decode.geojson",
+              "rows.filter"
+            ],
+            "provider": "imf",
+            "task_id": "OBB2-imf-MaritimeChokePointInfo",
+            "upstream_model": "MaritimeChokePointInfo"
+          },
+          {
+            "needs": [
+              "decode.geojson",
+              "flow.fan_out",
+              "flow.preflight_lookup",
+              "rows.filter"
+            ],
+            "provider": "imf",
+            "task_id": "OBB2-imf-MaritimeChokePointVolume",
+            "upstream_model": "MaritimeChokePointVolume"
+          },
+          {
+            "needs": [
+              "decode.geojson",
+              "rows.filter"
+            ],
+            "provider": "imf",
+            "task_id": "OBB2-imf-PortInfo",
+            "upstream_model": "PortInfo"
+          },
+          {
+            "needs": [
+              "decode.geojson",
+              "flow.fan_out",
+              "flow.preflight_lookup"
+            ],
+            "provider": "imf",
+            "task_id": "OBB2-imf-PortVolume",
+            "upstream_model": "PortVolume"
+          }
+        ],
+        "rows_newly_unlocked": 4
+      },
+      {
+        "capability": "decode.html_table",
+        "cumulative_rows_unlocked": 170,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "decode.html_table",
+              "flow.fan_out",
+              "rows.filter"
+            ],
+            "provider": "multpl",
+            "task_id": "OBB2-multpl-SP500Multiples",
+            "upstream_model": "SP500Multiples"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "decode.html_table",
+              "flow.fan_out"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-FomcDocuments",
+            "upstream_model": "FomcDocuments"
+          },
+          {
+            "needs": [
+              "decode.html_table",
+              "decode.text_table",
+              "flow.fan_out"
+            ],
+            "provider": "government_us",
+            "task_id": "OBB2-government_us-WeatherBulletin",
+            "upstream_model": "WeatherBulletin"
+          },
+          {
+            "needs": [
+              "decode.html_table",
+              "rows.filter"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-SicSearch",
+            "upstream_model": "SicSearch"
+          }
+        ],
+        "rows_newly_unlocked": 4
+      },
+      {
+        "capability": "decode.html_text",
+        "cumulative_rows_unlocked": 174,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "decode.html_text",
+              "flow.join",
+              "path.assemble_single_row"
+            ],
+            "provider": "congress_gov",
+            "task_id": "OBB2-congress_gov-CongressBillInfo",
+            "upstream_model": "CongressBillInfo"
+          },
+          {
+            "needs": [
+              "decode.html_text",
+              "flow.url_template"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-SecHtmFile",
+            "upstream_model": "SecHtmFile"
+          },
+          {
+            "needs": [
+              "decode.html_text",
+              "flow.join",
+              "path.assemble_single_row"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-SecFiling",
+            "upstream_model": "SecFiling"
+          },
+          {
+            "needs": [
+              "decode.html_text",
+              "flow.join",
+              "path.object_keys"
+            ],
+            "provider": "tmx",
+            "task_id": "OBB2-tmx-AvailableIndices",
+            "upstream_model": "AvailableIndices"
+          }
+        ],
+        "rows_newly_unlocked": 4
+      },
+      {
+        "capability": "decode.tabular_file",
+        "cumulative_rows_unlocked": 178,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.derive",
+              "decode.tabular_file",
+              "flow.branch",
+              "rows.filter",
+              "shape.columnar"
+            ],
+            "provider": "eia",
+            "task_id": "OBB2-eia-PetroleumStatusReport",
+            "upstream_model": "PetroleumStatusReport"
+          },
+          {
+            "needs": [
+              "decode.tabular_file"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-InflationExpectations",
+            "upstream_model": "InflationExpectations"
+          },
+          {
+            "needs": [
+              "decode.tabular_file"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-TotalFactorProductivity",
+            "upstream_model": "TotalFactorProductivity"
+          },
+          {
+            "needs": [
+              "decode.tabular_file",
+              "request.serialised_param"
+            ],
+            "provider": "government_us",
+            "task_id": "OBB2-government_us-CommodityPsdReport",
+            "upstream_model": "CommodityPsdReport"
+          }
+        ],
+        "rows_newly_unlocked": 4
+      },
+      {
         "capability": "shape.nested_data_message",
-        "cumulative_rows_unlocked": 103,
+        "cumulative_rows_unlocked": 182,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1899,34 +2775,44 @@
         "rows_newly_unlocked": 4
       },
       {
-        "capability": "decode.html_text",
-        "cumulative_rows_unlocked": 105,
+        "capability": "decode.opaque_bytes",
+        "cumulative_rows_unlocked": 185,
         "newly_unlocked_rows": [
           {
             "needs": [
-              "decode.html_text",
-              "flow.url_template"
+              "decode.opaque_bytes",
+              "flow.fan_out",
+              "flow.preflight_lookup"
             ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-SecHtmFile",
-            "upstream_model": "SecHtmFile"
+            "provider": "congress_gov",
+            "task_id": "OBB2-congress_gov-CongressBillText",
+            "upstream_model": "CongressBillText"
           },
           {
             "needs": [
-              "decode.html_text",
-              "flow.join",
-              "path.object_keys"
+              "decode.opaque_bytes",
+              "flow.fan_out",
+              "flow.preflight_lookup"
             ],
-            "provider": "tmx",
-            "task_id": "OBB2-tmx-AvailableIndices",
-            "upstream_model": "AvailableIndices"
+            "provider": "congress_gov",
+            "task_id": "OBB2-congress_gov-CongressAmendmentText",
+            "upstream_model": "CongressAmendmentText"
+          },
+          {
+            "needs": [
+              "decode.opaque_bytes",
+              "flow.preflight_lookup"
+            ],
+            "provider": "government_us",
+            "task_id": "OBB2-government_us-WeatherBulletinDownload",
+            "upstream_model": "WeatherBulletinDownload"
           }
         ],
-        "rows_newly_unlocked": 2
+        "rows_newly_unlocked": 3
       },
       {
         "capability": "path.parameterized_pointer",
-        "cumulative_rows_unlocked": 107,
+        "cumulative_rows_unlocked": 187,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1950,24 +2836,8 @@
         "rows_newly_unlocked": 2
       },
       {
-        "capability": "columns.cast",
-        "cumulative_rows_unlocked": 108,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.cast",
-              "columns.rename"
-            ],
-            "provider": "government_us",
-            "task_id": "OBB2-government_us-TreasuryAuctions",
-            "upstream_model": "TreasuryAuctions"
-          }
-        ],
-        "rows_newly_unlocked": 1
-      },
-      {
         "capability": "decode.delimited_headerless",
-        "cumulative_rows_unlocked": 109,
+        "cumulative_rows_unlocked": 188,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1979,45 +2849,27 @@
           }
         ],
         "rows_newly_unlocked": 1
-      },
-      {
-        "capability": "decode.opaque_bytes",
-        "cumulative_rows_unlocked": 110,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "decode.opaque_bytes",
-              "flow.preflight_lookup"
-            ],
-            "provider": "government_us",
-            "task_id": "OBB2-government_us-WeatherBulletinDownload",
-            "upstream_model": "WeatherBulletinDownload"
-          }
-        ],
-        "rows_newly_unlocked": 1
-      },
-      {
-        "capability": "path.assemble_single_row",
-        "cumulative_rows_unlocked": 111,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "decode.html_text",
-              "flow.join",
-              "path.assemble_single_row"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-SecFiling",
-            "upstream_model": "SecFiling"
-          }
-        ],
-        "rows_newly_unlocked": 1
       }
     ],
     "rows_expressible_today": 3,
     "rows_outside_engine": [
       {
         "needs": [
+          "columns.derive",
+          "flow.branch",
+          "flow.fan_out",
+          "flow.join",
+          "outside.anti_bot",
+          "outside.sdk",
+          "outside.stateful",
+          "rows.filter"
+        ],
+        "provider": "congress_gov",
+        "task_id": "OBB2-congress_gov-CongressCommitteeDocuments",
+        "upstream_model": "CongressCommitteeDocuments"
+      },
+      {
+        "needs": [
           "columns.cast",
           "outside.source_absent",
           "rows.filter"
@@ -2042,6 +2894,122 @@
         "provider": "stockgrid",
         "task_id": "OBB2-stockgrid-ShortVolume",
         "upstream_model": "ShortVolume"
+      },
+      {
+        "needs": [
+          "columns.rename",
+          "flow.branch",
+          "flow.fan_out",
+          "flow.join",
+          "outside.bespoke",
+          "rows.order_limit",
+          "shape.columnar"
+        ],
+        "provider": "intrinio",
+        "task_id": "OBB2-intrinio-OptionsChains",
+        "upstream_model": "OptionsChains"
+      },
+      {
+        "needs": [
+          "columns.cast",
+          "columns.rename",
+          "flow.fan_out",
+          "outside.anti_bot",
+          "rows.order_limit"
+        ],
+        "provider": "nasdaq",
+        "task_id": "OBB2-nasdaq-CalendarDividend",
+        "upstream_model": "CalendarDividend"
+      },
+      {
+        "needs": [
+          "columns.cast",
+          "columns.derive",
+          "columns.rename",
+          "columns.rescale",
+          "flow.fan_out",
+          "outside.anti_bot",
+          "rows.order_limit"
+        ],
+        "provider": "nasdaq",
+        "task_id": "OBB2-nasdaq-CalendarEarnings",
+        "upstream_model": "CalendarEarnings"
+      },
+      {
+        "needs": [
+          "columns.cast",
+          "columns.rename",
+          "flow.branch",
+          "flow.fan_out",
+          "outside.anti_bot",
+          "rows.order_limit"
+        ],
+        "provider": "nasdaq",
+        "task_id": "OBB2-nasdaq-CalendarIpo",
+        "upstream_model": "CalendarIpo"
+      },
+      {
+        "needs": [
+          "columns.cast",
+          "columns.derive",
+          "columns.rename",
+          "outside.anti_bot",
+          "path.explode",
+          "request.body_pagination"
+        ],
+        "provider": "nasdaq",
+        "task_id": "OBB2-nasdaq-CompanyFilings",
+        "upstream_model": "CompanyFilings"
+      },
+      {
+        "needs": [
+          "columns.derive",
+          "columns.rename",
+          "decode.html_text",
+          "flow.fan_out",
+          "outside.anti_bot",
+          "rows.filter"
+        ],
+        "provider": "nasdaq",
+        "task_id": "OBB2-nasdaq-EconomicCalendar",
+        "upstream_model": "EconomicCalendar"
+      },
+      {
+        "needs": [
+          "columns.rename",
+          "decode.delimited",
+          "outside.stateful",
+          "rows.filter"
+        ],
+        "provider": "nasdaq",
+        "task_id": "OBB2-nasdaq-EquitySearch",
+        "upstream_model": "EquitySearch"
+      },
+      {
+        "needs": [
+          "columns.rename",
+          "columns.rescale",
+          "columns.select",
+          "outside.anti_bot",
+          "rows.order_limit"
+        ],
+        "provider": "nasdaq",
+        "task_id": "OBB2-nasdaq-EquityScreener",
+        "upstream_model": "EquityScreener"
+      },
+      {
+        "needs": [
+          "columns.cast",
+          "columns.derive",
+          "columns.rename",
+          "flow.branch",
+          "flow.fan_out",
+          "outside.anti_bot",
+          "rows.filter"
+        ],
+        "provider": "nasdaq",
+        "task_id": "OBB2-nasdaq-HistoricalDividends",
+        "upstream_model": "HistoricalDividends"
       },
       {
         "needs": [
@@ -2081,6 +3049,24 @@
         ],
         "provider": "tmx",
         "task_id": "OBB2-tmx-OptionsChains",
+        "upstream_model": "OptionsChains"
+      },
+      {
+        "needs": [
+          "columns.cast",
+          "columns.derive",
+          "columns.rename",
+          "columns.rescale",
+          "flow.fan_out",
+          "flow.join",
+          "flow.preflight_lookup",
+          "outside.bespoke",
+          "rows.filter",
+          "rows.order_limit",
+          "shape.columnar"
+        ],
+        "provider": "tradier",
+        "task_id": "OBB2-tradier-OptionsChains",
         "upstream_model": "OptionsChains"
       },
       {
@@ -2343,10 +3329,25 @@
         "upstream_model": "EquityScreener"
       }
     ],
-    "rows_pending": 147,
+    "rows_pending": 235,
     "rows_still_locked_after_engine_pool": [
       {
         "needs": [
+          "columns.derive",
+          "flow.branch",
+          "flow.fan_out",
+          "flow.join",
+          "outside.anti_bot",
+          "outside.sdk",
+          "outside.stateful",
+          "rows.filter"
+        ],
+        "provider": "congress_gov",
+        "task_id": "OBB2-congress_gov-CongressCommitteeDocuments",
+        "upstream_model": "CongressCommitteeDocuments"
+      },
+      {
+        "needs": [
           "columns.cast",
           "outside.source_absent",
           "rows.filter"
@@ -2371,6 +3372,122 @@
         "provider": "stockgrid",
         "task_id": "OBB2-stockgrid-ShortVolume",
         "upstream_model": "ShortVolume"
+      },
+      {
+        "needs": [
+          "columns.rename",
+          "flow.branch",
+          "flow.fan_out",
+          "flow.join",
+          "outside.bespoke",
+          "rows.order_limit",
+          "shape.columnar"
+        ],
+        "provider": "intrinio",
+        "task_id": "OBB2-intrinio-OptionsChains",
+        "upstream_model": "OptionsChains"
+      },
+      {
+        "needs": [
+          "columns.cast",
+          "columns.rename",
+          "flow.fan_out",
+          "outside.anti_bot",
+          "rows.order_limit"
+        ],
+        "provider": "nasdaq",
+        "task_id": "OBB2-nasdaq-CalendarDividend",
+        "upstream_model": "CalendarDividend"
+      },
+      {
+        "needs": [
+          "columns.cast",
+          "columns.derive",
+          "columns.rename",
+          "columns.rescale",
+          "flow.fan_out",
+          "outside.anti_bot",
+          "rows.order_limit"
+        ],
+        "provider": "nasdaq",
+        "task_id": "OBB2-nasdaq-CalendarEarnings",
+        "upstream_model": "CalendarEarnings"
+      },
+      {
+        "needs": [
+          "columns.cast",
+          "columns.rename",
+          "flow.branch",
+          "flow.fan_out",
+          "outside.anti_bot",
+          "rows.order_limit"
+        ],
+        "provider": "nasdaq",
+        "task_id": "OBB2-nasdaq-CalendarIpo",
+        "upstream_model": "CalendarIpo"
+      },
+      {
+        "needs": [
+          "columns.cast",
+          "columns.derive",
+          "columns.rename",
+          "outside.anti_bot",
+          "path.explode",
+          "request.body_pagination"
+        ],
+        "provider": "nasdaq",
+        "task_id": "OBB2-nasdaq-CompanyFilings",
+        "upstream_model": "CompanyFilings"
+      },
+      {
+        "needs": [
+          "columns.derive",
+          "columns.rename",
+          "decode.html_text",
+          "flow.fan_out",
+          "outside.anti_bot",
+          "rows.filter"
+        ],
+        "provider": "nasdaq",
+        "task_id": "OBB2-nasdaq-EconomicCalendar",
+        "upstream_model": "EconomicCalendar"
+      },
+      {
+        "needs": [
+          "columns.rename",
+          "decode.delimited",
+          "outside.stateful",
+          "rows.filter"
+        ],
+        "provider": "nasdaq",
+        "task_id": "OBB2-nasdaq-EquitySearch",
+        "upstream_model": "EquitySearch"
+      },
+      {
+        "needs": [
+          "columns.rename",
+          "columns.rescale",
+          "columns.select",
+          "outside.anti_bot",
+          "rows.order_limit"
+        ],
+        "provider": "nasdaq",
+        "task_id": "OBB2-nasdaq-EquityScreener",
+        "upstream_model": "EquityScreener"
+      },
+      {
+        "needs": [
+          "columns.cast",
+          "columns.derive",
+          "columns.rename",
+          "flow.branch",
+          "flow.fan_out",
+          "outside.anti_bot",
+          "rows.filter"
+        ],
+        "provider": "nasdaq",
+        "task_id": "OBB2-nasdaq-HistoricalDividends",
+        "upstream_model": "HistoricalDividends"
       },
       {
         "needs": [
@@ -2410,6 +3527,24 @@
         ],
         "provider": "tmx",
         "task_id": "OBB2-tmx-OptionsChains",
+        "upstream_model": "OptionsChains"
+      },
+      {
+        "needs": [
+          "columns.cast",
+          "columns.derive",
+          "columns.rename",
+          "columns.rescale",
+          "flow.fan_out",
+          "flow.join",
+          "flow.preflight_lookup",
+          "outside.bespoke",
+          "rows.filter",
+          "rows.order_limit",
+          "shape.columnar"
+        ],
+        "provider": "tradier",
+        "task_id": "OBB2-tradier-OptionsChains",
         "upstream_model": "OptionsChains"
       },
       {
@@ -2672,10 +3807,35 @@
         "upstream_model": "EquityScreener"
       }
     ],
-    "rows_unlocked_by_greedy_prefix": 111,
+    "rows_unlocked_by_greedy_prefix": 188,
     "rows_with_empty_need_set": [],
     "rows_with_no_engine_work_possible": 12,
     "shipped_cover_rows": [
+      {
+        "needs": [
+          "columns.rename",
+          "rows.filter"
+        ],
+        "provider": "intrinio",
+        "task_id": "OBB2-intrinio-CurrencyPairs",
+        "upstream_model": "CurrencyPairs"
+      },
+      {
+        "needs": [
+          "columns.rename"
+        ],
+        "provider": "intrinio",
+        "task_id": "OBB2-intrinio-EquitySearch",
+        "upstream_model": "EquitySearch"
+      },
+      {
+        "needs": [
+          "columns.rename"
+        ],
+        "provider": "intrinio",
+        "task_id": "OBB2-intrinio-HistoricalDividends",
+        "upstream_model": "HistoricalDividends"
+      },
       {
         "needs": [
           "columns.rename",
@@ -2705,56 +3865,57 @@
       }
     ]
   },
-  "round_id": "C75",
+  "round_id": "C86",
   "schema_version": 1,
   "taxonomy": {
     "canonical_capability_count": 40,
     "labels_supported": 96,
     "mentions_per_capability": {
-      "columns.cast": 2,
-      "columns.derive": 12,
-      "columns.rename": 10,
-      "columns.rescale": 7,
-      "columns.response_dependent_selection": 6,
-      "columns.select": 7,
-      "decode.archive_member": 6,
-      "decode.delimited": 21,
+      "columns.cast": 27,
+      "columns.derive": 31,
+      "columns.rename": 59,
+      "columns.rescale": 23,
+      "columns.response_dependent_selection": 9,
+      "columns.select": 16,
+      "decode.archive_member": 8,
+      "decode.delimited": 27,
       "decode.delimited_headerless": 1,
       "decode.geojson": 4,
       "decode.html_table": 5,
-      "decode.html_text": 4,
-      "decode.opaque_bytes": 1,
-      "decode.tabular_file": 3,
+      "decode.html_text": 6,
+      "decode.opaque_bytes": 3,
+      "decode.tabular_file": 4,
       "decode.text_table": 7,
       "decode.xml": 5,
-      "flow.branch": 9,
+      "flow.branch": 38,
       "flow.composite_key_segment": 12,
-      "flow.fan_out": 38,
-      "flow.join": 22,
-      "flow.preflight_lookup": 25,
-      "flow.url_template": 4,
-      "outside.anti_bot": 1,
-      "outside.bespoke": 3,
+      "flow.fan_out": 93,
+      "flow.join": 42,
+      "flow.preflight_lookup": 38,
+      "flow.url_template": 8,
+      "outside.anti_bot": 9,
+      "outside.bespoke": 5,
       "outside.no_request": 1,
-      "outside.sdk": 27,
+      "outside.sdk": 28,
       "outside.source_absent": 2,
-      "outside.stateful": 2,
-      "path.assemble_single_row": 1,
-      "path.explode": 6,
-      "path.object_keys": 8,
+      "outside.stateful": 4,
+      "path.assemble_single_row": 7,
+      "path.explode": 24,
+      "path.object_keys": 11,
       "path.parameterized_pointer": 2,
       "request.body": 23,
-      "request.body_pagination": 8,
+      "request.body_pagination": 22,
       "request.graphql": 9,
-      "request.serialised_param": 4,
-      "rows.filter": 25,
-      "rows.order_limit": 6,
-      "shape.columnar": 10,
+      "request.serialised_param": 7,
+      "rows.filter": 63,
+      "rows.order_limit": 36,
+      "shape.columnar": 16,
       "shape.nested_data_message": 4
     },
-    "raw_label_count": 94,
-    "raw_label_mention_count": 357,
+    "raw_label_count": 95,
+    "raw_label_mention_count": 764,
     "rows_needing_only_this_capability": {
+      "columns.rename": 2,
       "decode.delimited_headerless": 1,
       "decode.tabular_file": 2,
       "flow.branch": 1,

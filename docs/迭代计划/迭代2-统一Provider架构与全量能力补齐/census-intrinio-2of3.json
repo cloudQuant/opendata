@@ -1,0 +1,291 @@
+{
+  "provider_groups": ["intrinio"],
+  "rows": [
+    {
+      "task_id": "OBB2-intrinio-EtfPricePerformance",
+      "provider": "intrinio",
+      "upstream_model": "EtfPricePerformance",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "per_item_fanout",
+        "multi_endpoint_join",
+        "client_side_filter",
+        "field_rename_map"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/etf_price_performance.py:164",
+      "notes": "asyncio.gather over comma-split symbols; per symbol GET /etfs/{sym}/stats then a second GET /etfs/{sym}/analytics whose keys are update()-merged into the same single row; keys containing the adjustment/return_type substrings are popped client-side; ETF_PERFORMANCE_MAP renames plus __alias_dict__; result rows re-sorted to caller symbol order."
+    },
+    {
+      "task_id": "OBB2-intrinio-EtfSearch",
+      "provider": "intrinio",
+      "upstream_model": "EtfSearch",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "conditional_endpoint_branch",
+        "body_offset_pagination",
+        "client_side_row_filter",
+        "field_rename_map"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/etf_search.py:93",
+      "notes": "URL branch: /etfs?exchange= vs /etfs/search?query= vs plain /etfs (2 distinct paths); rows under 'etfs' key; next_page while-loop in the response callback continues a server page token after the initial page_size=10000 request; transform_data applies case-insensitive regex contains filter on name. UNMAPPED_SUGGESTION: cursor_next_page_pagination —— body_offset_pagination 是 offset 语义，这里是服务端 next_page 游标续传。"
+    },
+    {
+      "task_id": "OBB2-intrinio-FinancialRatios",
+      "provider": "intrinio",
+      "upstream_model": "FinancialRatios",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "multi_request_fanout",
+        "cross_request_lookup",
+        "tag_column_selection",
+        "field_rename_map",
+        "sentinel_value_nulling"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/financial_ratios.py:201",
+      "notes": "Two-hop: GET /companies/{sym}/fundamentals?statement_code=calculations&type=... then fan out GET /fundamentals/{id}/standardized_financials for the first `limit` ids taken from hop 1; each response's tagged list is assembled into one per-period row keyed by data_tag.tag against a ~90-tag allowlist; zero/falsy values nulled; period mapping quarter->QTR/annual->FY/ttm/ytd."
+    },
+    {
+      "task_id": "OBB2-intrinio-ForwardEbitdaEstimates",
+      "provider": "intrinio",
+      "upstream_model": "ForwardEbitdaEstimates",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "per_item_fanout",
+        "body_offset_pagination",
+        "client_side_row_filter",
+        "field_rename_map"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/forward_ebitda_estimates.py:103",
+      "notes": "Same zacks-consensus family as EPS/sales but its own module and endpoint /zacks/ebitda_consensus; rows under 'ebitda_consensus'; identifier= per symbol via gather, estimate_type aliased to type; no-symbol branch loops next_page; transform drops rows lacking estimate_count/updated_date, maps fiscal_period annual->fy else fq client-side, sorts by fiscal_year+last_updated desc. UNMAPPED_SUGGESTION: cursor_next_page_pagination —— 现有键只有 offset 语义分页。"
+    },
+    {
+      "task_id": "OBB2-intrinio-ForwardEpsEstimates",
+      "provider": "intrinio",
+      "upstream_model": "ForwardEpsEstimates",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "per_item_fanout",
+        "body_offset_pagination",
+        "per_record_nested_flatten",
+        "client_side_filter",
+        "percent_column_scaling"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/forward_eps_estimates.py:134",
+      "notes": "Endpoint /zacks/eps_estimates; rows under 'estimates'; differs from sales twin only in field set (mean_1w..3m as *_days_ago aliases, single revisions_change_percent /100 validator); per-item company object popped and flattened into symbol/name; fiscal_period/calendar_period uppercase match dropped client-side; no-symbol branch paginates via next_page while-loop. UNMAPPED_SUGGESTION: cursor_next_page_pagination —— 现有键无游标分页语义。"
+    },
+    {
+      "task_id": "OBB2-intrinio-ForwardPeEstimates",
+      "provider": "intrinio",
+      "upstream_model": "ForwardPeEstimates",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "per_item_fanout",
+        "conditional_endpoint_branch",
+        "field_rename_map"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/forward_pe_estimates.py:88",
+      "notes": "Not the pagination pattern of the eps/sales/ebitda family: symbol branch fans out GET /zacks/forward_pe/{symbol} (one flat dict per symbol appended directly); no-symbol branch does a single GET /zacks/forward_pe?page_size=10000 reading 'forward_pe' key with no next_page loop; UnauthorizedError/OpenBBError re-raised per gathered symbol; ticker/company_name/forward_pe_year1-5 aliases."
+    },
+    {
+      "task_id": "OBB2-intrinio-ForwardSalesEstimates",
+      "provider": "intrinio",
+      "upstream_model": "ForwardSalesEstimates",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "per_item_fanout",
+        "body_offset_pagination",
+        "per_record_nested_flatten",
+        "client_side_filter",
+        "percent_column_scaling"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/forward_sales_estimates.py:153",
+      "notes": "Mirror of the EPS module against /zacks/sales_estimates; rows under 'estimates'; what differs per row: estimated_sales_mean alias and three revisions up/down/percent triplets (1w/1m/3m) with a three-field /100 percent validator; same company-object flatten, same client-side period drop, same no-symbol next_page loop; defaults calendar_year=now when no symbol/year. UNMAPPED_SUGGESTION: cursor_next_page_pagination —— 现有键无游标分页语义。"
+    },
+    {
+      "task_id": "OBB2-intrinio-FredSeries",
+      "provider": "intrinio",
+      "upstream_model": "FredSeries",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "body_offset_pagination",
+        "symbol_normalization",
+        "param_value_mapping"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/fred_series.py:84",
+      "notes": "Single URL /indices/economic/${symbol}/historical_data/level via amake_requests([url]); leading '$' stripped from symbol; rows under 'historical_data'; pagination is opt-in via all_pages flag with next_page re-query and asyncio.sleep rate-limit when page_size>100; transform_query defaults a 1-year start/end window; limit aliased to page_size. UNMAPPED_SUGGESTION: cursor_next_page_pagination —— 现有键无游标分页语义。"
+    },
+    {
+      "task_id": "OBB2-intrinio-HistoricalAttributes",
+      "provider": "intrinio",
+      "upstream_model": "HistoricalAttributes",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "multi_request_fanout",
+        "derived_url_columns",
+        "body_offset_pagination",
+        "param_value_mapping"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/historical_attributes.py:80",
+      "notes": "Own module, not shared with the forward-estimates family despite the sibling pattern: Cartesian fan-out of /historical_data/{symbol}/{tag} urls (symbol×tag both multi-item) through amake_requests; each row gets symbol and tag columns derived from response.url path parts; per-url next_page while-loop; aliases sort->sort_order, limit->page_size, tag_type->type; rows under 'historical_data'; error/message downgraded to warning and empty list. UNMAPPED_SUGGESTION: cursor_next_page_pagination —— 现有键无游标分页语义。"
+    },
+    {
+      "task_id": "OBB2-intrinio-HistoricalDividends",
+      "provider": "intrinio",
+      "upstream_model": "HistoricalDividends",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "field_rename_map",
+        "param_value_mapping"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/historical_dividends.py:95",
+      "notes": "Single GET /securities/{symbol}/prices/adjustments; get_data_many(url,'stock_price_adjustments') extracts the nested list; no pagination loop (limit aliased to page_size, default 100); dividends-only filter is server-side via nothing here — split rows share the feed and factor/split_ratio columns are kept alongside dividend fields; symbol column injected per row in transform_data; transform_query fills a 1-year default window."
+    },
+    {
+      "task_id": "OBB2-intrinio-HistoricalMarketCap",
+      "provider": "intrinio",
+      "upstream_model": "HistoricalMarketCap",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "symbol_fan_out",
+        "interval_branch",
+        "sentinel_value_nulling",
+        "field_rename_map"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/historical_market_cap.py:96",
+      "notes": "Per-symbol gather on GET /historical_data/{symbol}/marketcap; interval adds frequency={interval}ly only when not day (day sends no frequency param); fixed page_size=10000 with no next_page loop; rows under 'historical_data' with falsy value items dropped; unknown identifier error string 'Cannot look up this item/identifier combination' swallowed into warnings per symbol; start_date defaults to 2007-01-01; market_cap<-value alias."
+    },
+    {
+      "task_id": "OBB2-intrinio-IncomeStatement",
+      "provider": "intrinio",
+      "upstream_model": "IncomeStatement",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "multi_request_fanout",
+        "cross_request_lookup",
+        "multi_endpoint_join",
+        "tag_column_selection",
+        "sentinel_value_nulling"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/income_statement.py:468",
+      "notes": "Same two-hop fundamentals skeleton as FinancialRatios but statement_code=income_statement and a third in-callback hop: hop1 /companies/{sym}/fundamentals yields fiscal_year-fiscal_period keys, hop2 GET /fundamentals/{sym}-income_statement-{period}/standardized_financials, and inside each callback the id is rewritten to calculations to session.get_json a calculations standard-financials call whose 5 margin tags (ebit/ebitda/ebitdamargin/pretaxincomemargin/grossmargin) are appended to the same row; 3-letter data_tag unit becomes reported_currency; period id built client-side (annual->FY etc)."
+    },
+    {
+      "task_id": "OBB2-intrinio-IndexHistorical",
+      "provider": "intrinio",
+      "upstream_model": "IndexHistorical",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "per_item_fanout",
+        "symbol_normalization",
+        "sentinel_value_nulling",
+        "field_rename_map"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/index_historical.py:75",
+      "notes": "amake_requests over per-symbol GET /indices/stock_market/${symbol}/historical_data/level (symbol cleaned of $/^ then re-prefixed with $); rows under 'historical_data' with null values dropped; symbol column taken from the response's nested 'index'.symbol and only prepended when multiple symbols requested; close<-value alias, limit->page_size (default 10000, no next_page loop), sort->sort_order; 1-year default window in transform_query."
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "provider_groups": ["cftc"],
+  "rows": [
+    {
+      "task_id": "OBB2-cftc-COT",
+      "provider": "cftc",
+      "upstream_model": "COT",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 7,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "conditional_endpoint_branch",
+        "dataset_path_lookup",
+        "encoded_json_query_param",
+        "field_rename_map",
+        "published_value_rescale",
+        "client_side_column_drop",
+        "client_side_sort_limit"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/cftc/openbb_cftc/models/cot.py:1847",
+      "notes": "Read clean-room from CftcCotFetcher (cot.py:1836-2061). Body arrives as a plain JSON top-level array of record dicts from the Socrata endpoint https://publicreporting.cftc.gov/resource/<dataset_id>.json (:1901) -- not a zip member and not a delimited file. One request per call, but the dataset id is picked from reports_dict (utils/__init__.py:3-11) across 7 paths by report_type x futures_only branches (:1890-1895). No pagination loop; a single $limit=1000000 plus $order ASC (:1901-1915). The $where date-range/LIKE clause is percent-encoded (+ -> %2B, & -> %26) into the query string (:1886-1900). transform_data: pct_* columns are divided by 100 (:1968-1969); keys are lower-cased with '__'->'_' renames mapped onward by the ~260-entry __alias_dict__ (:87-359); crop-year columns identical to their _all twin are nulled (:1981-2001); the measure filter drops all columns outside the selected prefix (:2003-2055); results are sorted client-side by date and tail-truncated by limit (:2057-2059). UNMAPPED_SUGGESTION: soql_where_clause_encoding -- encoded_json_query_param names a serialised JSON payload, while here the blocker is URL-escaping a SoQL where-clause into a query string."
+    },
+    {
+      "task_id": "OBB2-cftc-COTSearch",
+      "provider": "cftc",
+      "upstream_model": "COTSearch",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 7,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "conditional_endpoint_branch",
+        "dataset_path_lookup",
+        "encoded_json_query_param",
+        "param_value_mapping",
+        "client_side_filter",
+        "derived_columns"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/cftc/openbb_cftc/models/cot_search.py:118",
+      "notes": "Read clean-room from CftcCotSearchFetcher (cot_search.py:107-259). Same Socrata body format: plain JSON top-level array of record dicts, no zip/delimited decoding. Dataset path picked from reports_dict by report_type x futures_only (:132-138, utils/__init__.py:3-11) -- 7 reachable paths, one request per call. $select/$group column list, $limit=50000, no paging loop (:139-153). The $where clause (52-week cutoff date, UPPER(...) LIKE filters) is built then percent-quoted with urllib.parse.quote before appending (:155-194). category/subcategory params are mapped to upstream literal spellings via replace('_',' ').upper() plus an 7-entry subcategory_map (:173-191). transform_data deduplicates rows by cftc_contract_market_code with a seen set (:219-224), back-fills missing commodity_group_name/subgroup by name-pattern branches (:227-254), and derives the code column as 'CFTC_'+code (:256). UNMAPPED_SUGGESTION: soql_where_clause_encoding -- same as the COT row: encoded_json_query_param names a serialised JSON payload, not an escaped SoQL where-clause."
+    }
+  ]
+}

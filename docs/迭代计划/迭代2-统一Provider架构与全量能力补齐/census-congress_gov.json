@@ -1,0 +1,178 @@
+{
+  "provider_groups": ["congress_gov"],
+  "rows": [
+    {
+      "task_id": "OBB2-congress_gov-CongressBills",
+      "provider": "congress_gov",
+      "upstream_model": "CongressBills",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 3,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "conditional_endpoint_branch",
+        "multi_request_fanout",
+        "client_side_sort"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/congress_gov/openbb_congress_gov/models/congress_bills.py:312",
+      "notes": "aextract_data picks bill / bill/{congress} / bill/{congress}/{bill_type} by param branch (:268-288); limit=0 diverts to get_all_bills_by_type (helpers.py:234-309) which reads pagination.count and builds an offset-URL list fanned out via amake_requests. Rows from response['bills'] (:312); transform_data re-sorts client-side by latestAction/updateDate (:321) and pops the nested latestAction key into two flat fields."
+    },
+    {
+      "task_id": "OBB2-congress_gov-CongressBillInfo",
+      "provider": "congress_gov",
+      "upstream_model": "CongressBillInfo",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 8,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "single_row_assembly",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "cross_request_lookup",
+        "single_row_assembly",
+        "regex_strip_html"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/congress_gov/openbb_congress_gov/models/bill_info.py:99",
+      "notes": "Base bill GET (:99); up to 7 conditional sub-resource GETs (cosponsors/subjects/summaries/committees/actions/titles/relatedBills, :111-189) whose URLs are read from the base response and merged back into one dict. transform_data assembles a single markdown_content string from that dict, regex-converting summary HTML (:204-255). Output is one Data object, not a record list."
+    },
+    {
+      "task_id": "OBB2-congress_gov-CongressBillText",
+      "provider": "congress_gov",
+      "upstream_model": "CongressBillText",
+      "shape": "per_url_download_loop",
+      "http_method": "GET",
+      "endpoints": 0,
+      "paged": false,
+      "response_format": "pdf_binary_or_plain_text",
+      "row_extraction": "one_row_per_caller_url_body_is_document",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "caller_url_list",
+        "per_item_fanout",
+        "pdf_bytes_passthrough"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/congress_gov/openbb_congress_gov/models/bill_text.py:101",
+      "notes": "Not tabular JSON: the fetcher loops caller-supplied congress.gov/govinfo.gov document URLs (:78-85) and make_request each (:101); .pdf bodies are base64-encoded bytes (:105-117), non-PDF bodies pass through as response.text (:118-127). One result dict per URL, errors captured in-row. endpoints=0 because URLs are arbitrary caller-provided download links, no enumerable path set. UNMAPPED_SUGGESTION: document_body_passthrough -- pdf_bytes_passthrough covers only the PDF branch, not the plain-text/XML body branch actually read at :121."
+    },
+    {
+      "task_id": "OBB2-congress_gov-CongressAmendments",
+      "provider": "congress_gov",
+      "upstream_model": "CongressAmendments",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 3,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "conditional_endpoint_branch",
+        "per_item_fanout",
+        "multi_request_join",
+        "multi_request_fanout",
+        "client_side_sort"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/congress_gov/openbb_congress_gov/models/congress_amendments.py:275",
+      "notes": "List from response['amendments'] (:275) on amendment / amendment/{congress} / amendment/{congress}/{type} branch paths (:239-245). Every listed item then gets a follow-up GET of its own detail url via asyncio.gather (:280-288) and selected fields merged back (:290-308). limit=0 diverts to get_all_amendments_by_type (helpers.py:685-741), an offset-URL fan-out. transform_data client-side sorts (:319) and flattens latestAction/amendedBill/sponsors."
+    },
+    {
+      "task_id": "OBB2-congress_gov-CongressAmendmentInfo",
+      "provider": "congress_gov",
+      "upstream_model": "CongressAmendmentInfo",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 4,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "single_row_assembly",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "cross_request_lookup",
+        "single_row_assembly"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/congress_gov/openbb_congress_gov/models/amendment_info.py:103",
+      "notes": "Base amendment GET (:103); conditional follow-up GETs of cosponsors/actions/textVersions URLs returned in the base payload (:114-136), merged into one dict. transform_data (:140-245) assembles a single markdown_content string plus raw_data; the body is one object, not rows (single_row_assembly is the closest existing label)."
+    },
+    {
+      "task_id": "OBB2-congress_gov-CongressAmendmentText",
+      "provider": "congress_gov",
+      "upstream_model": "CongressAmendmentText",
+      "shape": "per_url_download_loop",
+      "http_method": "GET",
+      "endpoints": 0,
+      "paged": false,
+      "response_format": "pdf_binary_or_plain_text",
+      "row_extraction": "one_row_per_caller_url_body_is_document",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "caller_url_list",
+        "per_item_fanout",
+        "pdf_bytes_passthrough"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/congress_gov/openbb_congress_gov/models/amendment_text.py:91",
+      "notes": "Not tabular JSON: loops caller-supplied congress.gov document URLs (:71-75), make_request each (:91); .pdf -> base64 bytes (:95-107), else response.text passthrough (:108-117); one dict per URL with inline error rows. endpoints=0 because paths are arbitrary caller-provided links. UNMAPPED_SUGGESTION: document_body_passthrough -- pdf_bytes_passthrough names only the PDF branch; the plain-text/XML body at :111 has no existing label."
+    },
+    {
+      "task_id": "OBB2-congress_gov-CongressCommitteeInfo",
+      "provider": "congress_gov",
+      "upstream_model": "CongressCommitteeInfo",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "single_row_assembly",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "multi_endpoint_join",
+        "single_row_assembly"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/congress_gov/openbb_congress_gov/models/congress_committee_info.py:141",
+      "notes": "Two independent sources gathered concurrently (:141-145): api.congress.gov/v3/committee/{chamber}/{code} detail plus the static unitedstates.github.io committee-membership-current.json keyed by a thomas_id derived from the system code (committees.py:16-35, :57-76). transform_data merges both into one markdown_content record; join stays false because neither request's result feeds the other's URL. Output is a single object, not rows."
+    },
+    {
+      "task_id": "OBB2-congress_gov-CongressCommitteeDocuments",
+      "provider": "congress_gov",
+      "upstream_model": "CongressCommitteeDocuments",
+      "shape": "multi_pipeline_assemble",
+      "http_method": "GET",
+      "endpoints": 10,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "per_document_assembly",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "multi_request_fanout",
+        "conditional_endpoint_branch",
+        "cross_request_lookup",
+        "derived_url_columns",
+        "client_side_filter",
+        "html_scraping_sdk",
+        "local_cache_store",
+        "anti_bot_retry"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/congress_gov/openbb_congress_gov/utils/committees.py:1097",
+      "notes": "fetch_committee_documents runs up to 5 doc_type-branched pipelines in parallel (:1149-1213): reports (:714+), hearings+details (:831+), meetings via HTML scrape of www.congress.gov/search then per-event API details (:415+, congress_search.py:16 with regex _parse_page), prints (:982+), committee bills (:159+). Each list endpoint next-URL paginates (:734,:862,:1007,:598); PDF URLs are constructed by template from citation fields (:248-251,:785-790,:941,:1075); results are congress-matched, deduped and subcommittee-filtered client-side (:1226-1250); responses cached in SQLite (:1134-1145) with OVER_RATE_LIMIT semaphore+backoff retries (:114-131). endpoints=10 counting the distinct /v3 paths listed plus the search HTML page."
+    }
+  ]
+}

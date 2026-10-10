@@ -1,10 +1,13 @@
 """Turn the model-shape census into an anchored capability roadmap.
 
-The three census files describe every remaining model slice in free text, which makes them
-unreadable as a build plan: 96 distinct ``needs_engine_capability`` label strings for 150 rows, with
-synonyms (``client_side_filter`` / ``client_side_row_filter`` / ``client_side_date_filter``) and
+The census files describe every remaining model slice in free text, which makes them unreadable as a
+build plan: the three files C74/C75 shipped carried 94 distinct ``needs_engine_capability`` label
+strings over their 150 rows, with synonyms
+(``client_side_filter`` / ``client_side_row_filter`` / ``client_side_date_filter``) and
 near-neighbours (``multi_request_join`` / ``cross_request_join`` / ``multi_endpoint_join``) counted
-apart. Worse, the labels were never checked against the engine: ``csv_decoder`` blocks rows as a
+apart. C86 merged twelve providers' fourteen files (88 rows and one further raw label), so the
+roadmap is now derived over 238 rows and 40 canonical capabilities. Worse, the labels were never
+checked against the engine: ``csv_decoder`` blocks rows as a
 missing capability while delimited bodies have been decodable since this round's
 :mod:`opendata.data.providers._engine.decoders`. A roadmap over those labels is a roadmap over
 wording, so this instrument replaces the wording with three measured faces.
@@ -36,8 +39,9 @@ a live response.
 Fail-closed, in this order: a census directory with no files, a payload whose ``rows`` is not a
 list, a row without a ``task_id``, a duplicated ``task_id``, an unmapped label, a registry whose
 keys are not exactly the canonical set, a provider module that will not parse. The row-count guard
-(150) and a drifted anchor are printed in every mode and additionally force a non-zero exit under
-``--check``, where the message names the entry that moved instead of raising a bare traceback.
+(``EXPECTED_CENSUS_ROWS``) and a drifted anchor are printed in every mode and additionally force a
+non-zero exit under ``--check``, where the message names the entry that moved instead of raising a
+bare traceback.
 
 CLI::
 
@@ -70,13 +74,11 @@ CENSUS_GLOB: Final = "census-*.json"
 #: The audit record shares the glob but carries no rows; only its exact name is set aside, so any
 #: other ``census-*.json`` without a rows list still aborts the run instead of being skipped.
 CENSUS_AUDIT_NAME: Final = "census-audit.json"
-CENSUS_CARRIED_FILES: Final = (
-    "census-imf-oecd-famafrench-misc.json",
-    "census-sec-tmx-fed-gov-finra.json",
-    "census-yfinance-cboe-finviz.json",
-)
 ROADMAP_REL: Final = f"{CENSUS_DIR_REL}/capability-roadmap.json"
-EXPECTED_CENSUS_ROWS: Final = 150
+#: The census population this round audited: the 150 rows of the three C74/C75 files plus the 88
+#: rows of twelve providers' files C86 merged. It is an identity guard, not a build plan: it fires
+#: when a file vanishes or a row is duplicated away, and the row itself is what a new file changes.
+EXPECTED_CENSUS_ROWS: Final = 238
 #: A label the tool offers, not a reading of the tree: main() says so on stdout when --round-id
 #: was not passed, because a default that trails the live roadmap is otherwise printed as fact.
 DEFAULT_ROUND_ID: Final = "C75"
@@ -434,7 +436,7 @@ class Report:
 
     @property
     def row_count_guard_fired(self) -> bool:
-        """Whether the census still has the audited 150 rows."""
+        """Whether the census holds fewer or more rows than :data:`EXPECTED_CENSUS_ROWS`."""
         return self.row_count != EXPECTED_CENSUS_ROWS
 
     @property
@@ -460,7 +462,6 @@ class Report:
                 for capability in sorted(self.readings)
             },
             "census": {
-                "carried_forward_files": list(CENSUS_CARRIED_FILES),
                 "files": list(self.census_files),
                 "row_count_expected": EXPECTED_CENSUS_ROWS,
                 "row_count_guard_fired": self.row_count_guard_fired,
@@ -702,7 +703,7 @@ def census_row_files(census_dir: Path) -> list[Path]:
 
     Only :data:`CENSUS_AUDIT_NAME` is set aside by exact name; a payload of its own shape belongs to
     the audit plane, not to the roadmap. Every other match has to provide a rows list or loading
-    fails closed, so a census file added beside these three cannot go unread.
+    fails closed, so a census file added beside the ones already read cannot go unread.
     """
     return [path for path in sorted(census_dir.glob(CENSUS_GLOB)) if path.name != CENSUS_AUDIT_NAME]
 

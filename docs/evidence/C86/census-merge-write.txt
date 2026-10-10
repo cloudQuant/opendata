@@ -1,0 +1,15 @@
+census merge audit -- C86
+denominators: ledger rows=350 census rows=238 census files=17 unique task_ids=238
+new this round: files=14 rows=88 providers=12
+join: in_census=238 out_of_scope=112 id_collisions=0 unknown_ids=0 ledger_field_mismatches=0
+out_of_scope composition: {"DEV_DONE": 2, "IN_PROGRESS": 13, "NOT_RUN": 97}
+provider_groups: shape=dict on 3 of 17 files, mismatches=0; files whose published count disagrees from len(rows): 0 {}
+provider join: ledger_providers=32 with_census_rows=28 extra_ids_within_provider=0 missing_ids_within_provider=2
+providers with ledger rows but no census rows: 4 holding 110 rows {"bls": 2, "ecb": 3, "fmp": 69, "fred": 36}
+upstream: head=3e071fcc2cd9 ok=True ledger_commits=["3e071fcc2cd9f891cac6040ae60296dba76dab46"]
+evidence root: {"repo_root": 28, "upstream_root": 210}
+expressibility (hand claim vs the registry this run read): hand_true=3 derived_true=9 disagreement=6 new_rows_in_disagreement=3
+  disagreement ids: ["OBB2-cboe-EquitySearch", "OBB2-intrinio-CurrencyPairs", "OBB2-intrinio-EquitySearch", "OBB2-intrinio-HistoricalDividends", "OBB2-tmx-EtfInfo", "OBB2-tmx-EtfSearch"]
+roadmap: {"blocking_non_engine": ["outside.anti_bot", "outside.bespoke", "outside.no_request", "outside.sdk", "outside.source_absent", "outside.stateful"], "first_five_steps": [["flow.composite_key_segment", 9, 15], ["path.explode", 6, 21], ["flow.fan_out", 5, 26], ["flow.branch", 7, 33], ["flow.join", 5, 38]], "greedy_steps": 28, "rows_expressible_today_hand": 3, "rows_outside_engine": 47, "rows_pending": 235, "rows_still_locked_after_engine_pool": 47, "rows_unlocked_by_greedy_prefix": 188, "rows_with_no_engine_work_possible": 12, "shipped_cover_rows": 6}
+guard: measured=238 EXPECTED_CENSUS_ROWS=238 fired=False
+WROTE census-audit.json sha256[:16] 945fdab35933af5e -> 0fe43ab5f74c5da2 (archived_before_c86_keys=['arith_verification', 'evidence_root_audit', 'ledger_total', 'out_of_scope_rows', 'per_file', 'recomputed', 'recomputed_total', 'uncovered_providers', 'upstream_commit_ok', 'upstream_root_ok'])

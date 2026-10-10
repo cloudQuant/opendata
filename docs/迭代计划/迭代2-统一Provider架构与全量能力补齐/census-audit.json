@@ -1,49 +1,192 @@
 {
   "recomputed": {
-    "yfinance": 29,
-    "sec": 24,
-    "tmx": 24,
-    "federal_reserve": 13,
+    "alpha_vantage": 3,
+    "benzinga": 4,
+    "biztoc": 1,
     "cboe": 9,
-    "oecd": 9,
-    "imf": 8,
-    "finviz": 7,
-    "famafrench": 6,
-    "government_us": 6,
+    "cftc": 2,
+    "congress_gov": 8,
     "deribit": 5,
-    "seeking_alpha": 3,
-    "wsj": 3,
+    "econdb": 8,
+    "eia": 2,
+    "famafrench": 6,
+    "federal_reserve": 13,
     "finra": 2,
+    "finviz": 7,
+    "government_us": 6,
+    "imf": 8,
+    "intrinio": 38,
     "multpl": 1,
-    "stockgrid": 1
+    "nasdaq": 9,
+    "oecd": 9,
+    "sec": 24,
+    "seeking_alpha": 3,
+    "stockgrid": 1,
+    "tiingo": 7,
+    "tmx": 24,
+    "tradier": 5,
+    "tradingeconomics": 1,
+    "wsj": 3,
+    "yfinance": 29
   },
-  "recomputed_total": 150,
+  "recomputed_total": 238,
   "ledger_total": 350,
   "per_file": {
-    "census-yfinance-cboe-finviz.json": {
-      "claimed": 45,
-      "actual": 45,
-      "extra_task_ids": [],
-      "missing_task_ids": []
+    "census-alpha_vantage.json": {
+      "claim_shape": "list",
+      "claimed": null,
+      "actual": 3,
+      "providers": [
+        "alpha_vantage"
+      ]
     },
-    "census-sec-tmx-fed-gov-finra.json": {
-      "claimed": 69,
-      "actual": 69,
-      "extra_task_ids": [],
-      "missing_task_ids": []
+    "census-benzinga.json": {
+      "claim_shape": "list",
+      "claimed": null,
+      "actual": 4,
+      "providers": [
+        "benzinga"
+      ]
+    },
+    "census-biztoc.json": {
+      "claim_shape": "list",
+      "claimed": null,
+      "actual": 1,
+      "providers": [
+        "biztoc"
+      ]
+    },
+    "census-cftc.json": {
+      "claim_shape": "list",
+      "claimed": null,
+      "actual": 2,
+      "providers": [
+        "cftc"
+      ]
+    },
+    "census-congress_gov.json": {
+      "claim_shape": "list",
+      "claimed": null,
+      "actual": 8,
+      "providers": [
+        "congress_gov"
+      ]
+    },
+    "census-econdb.json": {
+      "claim_shape": "list",
+      "claimed": null,
+      "actual": 8,
+      "providers": [
+        "econdb"
+      ]
+    },
+    "census-eia.json": {
+      "claim_shape": "list",
+      "claimed": null,
+      "actual": 2,
+      "providers": [
+        "eia"
+      ]
     },
     "census-imf-oecd-famafrench-misc.json": {
+      "claim_shape": "dict",
       "claimed": 36,
       "actual": 36,
-      "extra_task_ids": [],
-      "missing_task_ids": []
+      "providers": [
+        "deribit",
+        "famafrench",
+        "imf",
+        "multpl",
+        "oecd",
+        "seeking_alpha",
+        "stockgrid",
+        "wsj"
+      ]
+    },
+    "census-intrinio-1of3.json": {
+      "claim_shape": "list",
+      "claimed": null,
+      "actual": 13,
+      "providers": [
+        "intrinio"
+      ]
+    },
+    "census-intrinio-2of3.json": {
+      "claim_shape": "list",
+      "claimed": null,
+      "actual": 13,
+      "providers": [
+        "intrinio"
+      ]
+    },
+    "census-intrinio-3of3.json": {
+      "claim_shape": "list",
+      "claimed": null,
+      "actual": 12,
+      "providers": [
+        "intrinio"
+      ]
+    },
+    "census-nasdaq.json": {
+      "claim_shape": "list",
+      "claimed": null,
+      "actual": 9,
+      "providers": [
+        "nasdaq"
+      ]
+    },
+    "census-sec-tmx-fed-gov-finra.json": {
+      "claim_shape": "dict",
+      "claimed": 69,
+      "actual": 69,
+      "providers": [
+        "federal_reserve",
+        "finra",
+        "government_us",
+        "sec",
+        "tmx"
+      ]
+    },
+    "census-tiingo.json": {
+      "claim_shape": "list",
+      "claimed": null,
+      "actual": 7,
+      "providers": [
+        "tiingo"
+      ]
+    },
+    "census-tradier.json": {
+      "claim_shape": "list",
+      "claimed": null,
+      "actual": 5,
+      "providers": [
+        "tradier"
+      ]
+    },
+    "census-tradingeconomics.json": {
+      "claim_shape": "list",
+      "claimed": null,
+      "actual": 1,
+      "providers": [
+        "tradingeconomics"
+      ]
+    },
+    "census-yfinance-cboe-finviz.json": {
+      "claim_shape": "dict",
+      "claimed": 45,
+      "actual": 45,
+      "providers": [
+        "cboe",
+        "finviz",
+        "yfinance"
+      ]
     }
   },
   "uncovered_providers": {},
   "out_of_scope_rows": {
-    "not_run_not_in_census": 185,
-    "in_progress_not_in_census": 13,
-    "dev_done_not_in_census": 2
+    "DEV_DONE": 2,
+    "IN_PROGRESS": 13,
+    "NOT_RUN": 97
   },
   "out_of_scope_rows_before_c75": {
     "not_run_with_credential": 185,
@@ -166,17 +309,10 @@
     "conclusion": "Both expressible_today=true claims are claims about the engine, not about working models; neither provider has any registration today, so the flags cannot be read as 'already shipped'."
   },
   "evidence_root_audit": {
-    "rows_resolving_against_upstream_root": 122,
-    "rows_resolving_against_repo_root": 28,
-    "note": "All 24 sec rows cite opendata/data/providers/sec/specs.py (the prior analysis artifact, lines 95-135 are prose blocker notes), i.e. second-hand evidence; specs.py:136+ carries an UPSTREAM_EVIDENCE map that can be chained to primary upstream file:line. Every one of the 150 evidence paths exists and every cited line number is within file length; no path escapes its root. | C74 re-audit 2026-10-09: that note described the prior state. All 24 sec rows have been re-pointed off opendata/data/providers/sec/specs.py (its lines 82-135 are NOT_DECLARABLE prose and 140-165 UPSTREAM_EVIDENCE paths relative to providers/sec/openbb_sec/, which resolves outside the repo root) onto verified engine/catalog lines; each changed row keeps its prior cite in its own audited object. The tmx __init__.py:58 alias-table cite is gone. No sec/tmx/finra/government_us/federal_reserve/deribit/stockgrid module is vendored in this repo (grep over opendata/data/providers/akshare/_vendor returns none), so upstream shape lines could not be written and are named as such.",
-    "weak_citations": [
-      "OBB2-tmx-EtfHistorical -> providers/tmx/openbb_tmx/__init__.py:58 (a fetcher-alias table row, not request code)",
-      "OBB2-finra-EquityShortInterest -> utils/data_storage.py:55 (defensible: the pipe-delimited CSV URL is there)",
-      "OBB2-imf-AvailableIndicators -> an import statement",
-      "OBB2-famafrench-* -> a helper call, not the zip decode"
-    ]
+    "repo_root": 28,
+    "upstream_root": 210
   },
-  "arith_verification": "3 files: provider_groups sums to 45/69/36 and each equals len(rows); 150 unique task_ids, no duplicates, no extras, no missing vs the recomputed set; provider+upstream_model of every census row matches the ledger.",
+  "arith_verification": "17 files carrying 238 rows (14 new files / 88 new rows this round on top of the C74/C75 inventory ['census-imf-oecd-famafrench-misc.json', 'census-sec-tmx-fed-gov-finra.json', 'census-yfinance-cboe-finviz.json']); unique task_ids=238; id collisions=0; task_ids absent from the ledger=0; provider/model mismatches against the ledger=0; provider_groups mismatches=0",
   "c74_reaudit": {
     "audited_by": "C74 census re-audit",
     "audited_date": "2026-10-09",
@@ -296,5 +432,627 @@
       "OBB2-sec-InstitutionsSearch"
     ],
     "note_stale_needs": "DecoderSpec landed in this tree (spec.py:196-214 + decoders.py:141-224), so needs entries naming csv_decoder / zip_member_decoder / csv_delimiter / delimited_text_decoder are no longer a blocker; they were removed from every C74-touched row and the prior lists kept in each row's audited object"
+  },
+  "c86_reaudit": {
+    "audited_by": "C86 census merge audit",
+    "instrument": "docs/evidence/C86/census-merge-audit.py",
+    "scope": "Re-measured at C86 over 17 census files carrying 238 rows and the 350-row 模型级任务清单.csv. Refreshed by this run: recomputed, recomputed_total, per_file, ledger_total, arith_verification, out_of_scope_rows, evidence_root_audit, upstream_root_ok, upstream_commit_ok. Carried unread from C74/C75 and NOT re-measured here: engine_audit, registration_check, spot_checks, c74_reaudit, uncovered_providers. The 88 new rows therefore rest on the label-map guard plus this ledger join, not on a per-row oracle re-read -- that re-read is the next round's job and is what AC-10|03-style provider review would certify.",
+    "previous_values_before_c86": {
+      "recomputed": {
+        "yfinance": 29,
+        "sec": 24,
+        "tmx": 24,
+        "federal_reserve": 13,
+        "cboe": 9,
+        "oecd": 9,
+        "imf": 8,
+        "finviz": 7,
+        "famafrench": 6,
+        "government_us": 6,
+        "deribit": 5,
+        "seeking_alpha": 3,
+        "wsj": 3,
+        "finra": 2,
+        "multpl": 1,
+        "stockgrid": 1
+      },
+      "recomputed_total": 150,
+      "per_file": {
+        "census-yfinance-cboe-finviz.json": {
+          "claimed": 45,
+          "actual": 45,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "census-sec-tmx-fed-gov-finra.json": {
+          "claimed": 69,
+          "actual": 69,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "census-imf-oecd-famafrench-misc.json": {
+          "claimed": 36,
+          "actual": 36,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        }
+      },
+      "ledger_total": 350,
+      "arith_verification": "3 files: provider_groups sums to 45/69/36 and each equals len(rows); 150 unique task_ids, no duplicates, no extras, no missing vs the recomputed set; provider+upstream_model of every census row matches the ledger.",
+      "out_of_scope_rows": {
+        "not_run_not_in_census": 185,
+        "in_progress_not_in_census": 13,
+        "dev_done_not_in_census": 2
+      },
+      "uncovered_providers": {},
+      "evidence_root_audit": {
+        "rows_resolving_against_upstream_root": 122,
+        "rows_resolving_against_repo_root": 28,
+        "note": "All 24 sec rows cite opendata/data/providers/sec/specs.py (the prior analysis artifact, lines 95-135 are prose blocker notes), i.e. second-hand evidence; specs.py:136+ carries an UPSTREAM_EVIDENCE map that can be chained to primary upstream file:line. Every one of the 150 evidence paths exists and every cited line number is within file length; no path escapes its root. | C74 re-audit 2026-10-09: that note described the prior state. All 24 sec rows have been re-pointed off opendata/data/providers/sec/specs.py (its lines 82-135 are NOT_DECLARABLE prose and 140-165 UPSTREAM_EVIDENCE paths relative to providers/sec/openbb_sec/, which resolves outside the repo root) onto verified engine/catalog lines; each changed row keeps its prior cite in its own audited object. The tmx __init__.py:58 alias-table cite is gone. No sec/tmx/finra/government_us/federal_reserve/deribit/stockgrid module is vendored in this repo (grep over opendata/data/providers/akshare/_vendor returns none), so upstream shape lines could not be written and are named as such.",
+        "weak_citations": [
+          "OBB2-tmx-EtfHistorical -> providers/tmx/openbb_tmx/__init__.py:58 (a fetcher-alias table row, not request code)",
+          "OBB2-finra-EquityShortInterest -> utils/data_storage.py:55 (defensible: the pipe-delimited CSV URL is there)",
+          "OBB2-imf-AvailableIndicators -> an import statement",
+          "OBB2-famafrench-* -> a helper call, not the zip decode"
+        ]
+      },
+      "upstream_root_ok": true,
+      "upstream_commit_ok": true
+    },
+    "face": {
+      "census_files": 17,
+      "census_file_names": [
+        "census-alpha_vantage.json",
+        "census-benzinga.json",
+        "census-biztoc.json",
+        "census-cftc.json",
+        "census-congress_gov.json",
+        "census-econdb.json",
+        "census-eia.json",
+        "census-imf-oecd-famafrench-misc.json",
+        "census-intrinio-1of3.json",
+        "census-intrinio-2of3.json",
+        "census-intrinio-3of3.json",
+        "census-nasdaq.json",
+        "census-sec-tmx-fed-gov-finra.json",
+        "census-tiingo.json",
+        "census-tradier.json",
+        "census-tradingeconomics.json",
+        "census-yfinance-cboe-finviz.json"
+      ],
+      "new_files_this_round": 14,
+      "new_file_names": [
+        "census-alpha_vantage.json",
+        "census-benzinga.json",
+        "census-biztoc.json",
+        "census-cftc.json",
+        "census-congress_gov.json",
+        "census-econdb.json",
+        "census-eia.json",
+        "census-intrinio-1of3.json",
+        "census-intrinio-2of3.json",
+        "census-intrinio-3of3.json",
+        "census-nasdaq.json",
+        "census-tiingo.json",
+        "census-tradier.json",
+        "census-tradingeconomics.json"
+      ],
+      "new_rows_this_round": 88,
+      "new_row_providers": {
+        "alpha_vantage": 3,
+        "benzinga": 4,
+        "biztoc": 1,
+        "cftc": 2,
+        "congress_gov": 8,
+        "econdb": 8,
+        "eia": 2,
+        "intrinio": 38,
+        "nasdaq": 9,
+        "tiingo": 7,
+        "tradier": 5,
+        "tradingeconomics": 1
+      },
+      "census_rows": 238,
+      "unique_task_ids": 238,
+      "ledger_rows": 350,
+      "ledger_upstream_commits": [
+        "3e071fcc2cd9f891cac6040ae60296dba76dab46"
+      ],
+      "upstream_head": "3e071fcc2cd9f891cac6040ae60296dba76dab46",
+      "upstream_head_ok": true,
+      "in_census": 238,
+      "out_of_scope_rows": 112,
+      "out_of_scope_composition": {
+        "DEV_DONE": 2,
+        "IN_PROGRESS": 13,
+        "NOT_RUN": 97
+      },
+      "per_provider_row_counts": {
+        "alpha_vantage": 3,
+        "benzinga": 4,
+        "biztoc": 1,
+        "cboe": 9,
+        "cftc": 2,
+        "congress_gov": 8,
+        "deribit": 5,
+        "econdb": 8,
+        "eia": 2,
+        "famafrench": 6,
+        "federal_reserve": 13,
+        "finra": 2,
+        "finviz": 7,
+        "government_us": 6,
+        "imf": 8,
+        "intrinio": 38,
+        "multpl": 1,
+        "nasdaq": 9,
+        "oecd": 9,
+        "sec": 24,
+        "seeking_alpha": 3,
+        "stockgrid": 1,
+        "tiingo": 7,
+        "tmx": 24,
+        "tradier": 5,
+        "tradingeconomics": 1,
+        "wsj": 3,
+        "yfinance": 29
+      },
+      "providers_in_ledger": 32,
+      "providers_with_census_rows": 28,
+      "per_file_face": {
+        "census-alpha_vantage.json": {
+          "claim_shape": "list",
+          "claimed": null,
+          "actual": 3,
+          "providers": [
+            "alpha_vantage"
+          ]
+        },
+        "census-benzinga.json": {
+          "claim_shape": "list",
+          "claimed": null,
+          "actual": 4,
+          "providers": [
+            "benzinga"
+          ]
+        },
+        "census-biztoc.json": {
+          "claim_shape": "list",
+          "claimed": null,
+          "actual": 1,
+          "providers": [
+            "biztoc"
+          ]
+        },
+        "census-cftc.json": {
+          "claim_shape": "list",
+          "claimed": null,
+          "actual": 2,
+          "providers": [
+            "cftc"
+          ]
+        },
+        "census-congress_gov.json": {
+          "claim_shape": "list",
+          "claimed": null,
+          "actual": 8,
+          "providers": [
+            "congress_gov"
+          ]
+        },
+        "census-econdb.json": {
+          "claim_shape": "list",
+          "claimed": null,
+          "actual": 8,
+          "providers": [
+            "econdb"
+          ]
+        },
+        "census-eia.json": {
+          "claim_shape": "list",
+          "claimed": null,
+          "actual": 2,
+          "providers": [
+            "eia"
+          ]
+        },
+        "census-imf-oecd-famafrench-misc.json": {
+          "claim_shape": "dict",
+          "claimed": 36,
+          "actual": 36,
+          "providers": [
+            "deribit",
+            "famafrench",
+            "imf",
+            "multpl",
+            "oecd",
+            "seeking_alpha",
+            "stockgrid",
+            "wsj"
+          ]
+        },
+        "census-intrinio-1of3.json": {
+          "claim_shape": "list",
+          "claimed": null,
+          "actual": 13,
+          "providers": [
+            "intrinio"
+          ]
+        },
+        "census-intrinio-2of3.json": {
+          "claim_shape": "list",
+          "claimed": null,
+          "actual": 13,
+          "providers": [
+            "intrinio"
+          ]
+        },
+        "census-intrinio-3of3.json": {
+          "claim_shape": "list",
+          "claimed": null,
+          "actual": 12,
+          "providers": [
+            "intrinio"
+          ]
+        },
+        "census-nasdaq.json": {
+          "claim_shape": "list",
+          "claimed": null,
+          "actual": 9,
+          "providers": [
+            "nasdaq"
+          ]
+        },
+        "census-sec-tmx-fed-gov-finra.json": {
+          "claim_shape": "dict",
+          "claimed": 69,
+          "actual": 69,
+          "providers": [
+            "federal_reserve",
+            "finra",
+            "government_us",
+            "sec",
+            "tmx"
+          ]
+        },
+        "census-tiingo.json": {
+          "claim_shape": "list",
+          "claimed": null,
+          "actual": 7,
+          "providers": [
+            "tiingo"
+          ]
+        },
+        "census-tradier.json": {
+          "claim_shape": "list",
+          "claimed": null,
+          "actual": 5,
+          "providers": [
+            "tradier"
+          ]
+        },
+        "census-tradingeconomics.json": {
+          "claim_shape": "list",
+          "claimed": null,
+          "actual": 1,
+          "providers": [
+            "tradingeconomics"
+          ]
+        },
+        "census-yfinance-cboe-finviz.json": {
+          "claim_shape": "dict",
+          "claimed": 45,
+          "actual": 45,
+          "providers": [
+            "cboe",
+            "finviz",
+            "yfinance"
+          ]
+        }
+      },
+      "per_provider_join": {
+        "alpha_vantage": {
+          "ledger": 3,
+          "census": 3,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "benzinga": {
+          "ledger": 4,
+          "census": 4,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "biztoc": {
+          "ledger": 1,
+          "census": 1,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "cboe": {
+          "ledger": 11,
+          "census": 9,
+          "extra_task_ids": [],
+          "missing_task_ids": [
+            "OBB2-cboe-AvailableIndices",
+            "OBB2-cboe-IndexConstituents"
+          ]
+        },
+        "cftc": {
+          "ledger": 2,
+          "census": 2,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "congress_gov": {
+          "ledger": 8,
+          "census": 8,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "deribit": {
+          "ledger": 5,
+          "census": 5,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "econdb": {
+          "ledger": 8,
+          "census": 8,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "eia": {
+          "ledger": 2,
+          "census": 2,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "famafrench": {
+          "ledger": 6,
+          "census": 6,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "federal_reserve": {
+          "ledger": 13,
+          "census": 13,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "finra": {
+          "ledger": 2,
+          "census": 2,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "finviz": {
+          "ledger": 7,
+          "census": 7,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "government_us": {
+          "ledger": 6,
+          "census": 6,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "imf": {
+          "ledger": 8,
+          "census": 8,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "intrinio": {
+          "ledger": 38,
+          "census": 38,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "multpl": {
+          "ledger": 1,
+          "census": 1,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "nasdaq": {
+          "ledger": 9,
+          "census": 9,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "oecd": {
+          "ledger": 9,
+          "census": 9,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "sec": {
+          "ledger": 24,
+          "census": 24,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "seeking_alpha": {
+          "ledger": 3,
+          "census": 3,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "stockgrid": {
+          "ledger": 1,
+          "census": 1,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "tiingo": {
+          "ledger": 7,
+          "census": 7,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "tmx": {
+          "ledger": 24,
+          "census": 24,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "tradier": {
+          "ledger": 5,
+          "census": 5,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "tradingeconomics": {
+          "ledger": 1,
+          "census": 1,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "wsj": {
+          "ledger": 3,
+          "census": 3,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        },
+        "yfinance": {
+          "ledger": 29,
+          "census": 29,
+          "extra_task_ids": [],
+          "missing_task_ids": []
+        }
+      },
+      "providers_absent_from_census": {
+        "bls": 2,
+        "ecb": 3,
+        "fmp": 69,
+        "fred": 36
+      },
+      "absent_provider_row_total": 110,
+      "id_collisions": {},
+      "unknown_task_ids": [],
+      "ledger_field_mismatches": [],
+      "provider_groups_shape_per_file": {
+        "census-alpha_vantage.json": "list",
+        "census-benzinga.json": "list",
+        "census-biztoc.json": "list",
+        "census-cftc.json": "list",
+        "census-congress_gov.json": "list",
+        "census-econdb.json": "list",
+        "census-eia.json": "list",
+        "census-imf-oecd-famafrench-misc.json": "dict",
+        "census-intrinio-1of3.json": "list",
+        "census-intrinio-2of3.json": "list",
+        "census-intrinio-3of3.json": "list",
+        "census-nasdaq.json": "list",
+        "census-sec-tmx-fed-gov-finra.json": "dict",
+        "census-tiingo.json": "list",
+        "census-tradier.json": "list",
+        "census-tradingeconomics.json": "list",
+        "census-yfinance-cboe-finviz.json": "dict"
+      },
+      "files_publishing_counts": 3,
+      "provider_groups_mismatches": {},
+      "expressible_hand_true": [
+        "OBB2-cboe-IndexSearch",
+        "OBB2-federal_reserve-MoneyMeasures",
+        "OBB2-federal_reserve-TreasuryRates"
+      ],
+      "expressible_derived_true": [
+        "OBB2-cboe-EquitySearch",
+        "OBB2-cboe-IndexSearch",
+        "OBB2-federal_reserve-MoneyMeasures",
+        "OBB2-federal_reserve-TreasuryRates",
+        "OBB2-intrinio-CurrencyPairs",
+        "OBB2-intrinio-EquitySearch",
+        "OBB2-intrinio-HistoricalDividends",
+        "OBB2-tmx-EtfInfo",
+        "OBB2-tmx-EtfSearch"
+      ],
+      "expressible_disagreement": [
+        "OBB2-cboe-EquitySearch",
+        "OBB2-intrinio-CurrencyPairs",
+        "OBB2-intrinio-EquitySearch",
+        "OBB2-intrinio-HistoricalDividends",
+        "OBB2-tmx-EtfInfo",
+        "OBB2-tmx-EtfSearch"
+      ],
+      "expressible_disagreement_new_rows": [
+        "OBB2-intrinio-CurrencyPairs",
+        "OBB2-intrinio-EquitySearch",
+        "OBB2-intrinio-HistoricalDividends"
+      ],
+      "evidence_root": {
+        "repo_root": 28,
+        "upstream_root": 210
+      },
+      "roadmap": {
+        "rows_pending": 235,
+        "rows_expressible_today_hand": 3,
+        "shipped_cover_rows": 6,
+        "greedy_steps": 28,
+        "rows_unlocked_by_greedy_prefix": 188,
+        "rows_still_locked_after_engine_pool": 47,
+        "rows_outside_engine": 47,
+        "rows_with_no_engine_work_possible": 12,
+        "blocking_non_engine": [
+          "outside.anti_bot",
+          "outside.bespoke",
+          "outside.no_request",
+          "outside.sdk",
+          "outside.source_absent",
+          "outside.stateful"
+        ],
+        "first_five_steps": [
+          [
+            "flow.composite_key_segment",
+            9,
+            15
+          ],
+          [
+            "path.explode",
+            6,
+            21
+          ],
+          [
+            "flow.fan_out",
+            5,
+            26
+          ],
+          [
+            "flow.branch",
+            7,
+            33
+          ],
+          [
+            "flow.join",
+            5,
+            38
+          ]
+        ]
+      },
+      "instrument_expected_rows": 238,
+      "guard_fired": false,
+      "census_files_digest": {
+        "census-alpha_vantage.json": "3da8b14295efc877",
+        "census-benzinga.json": "04341d735293336f",
+        "census-biztoc.json": "ea894045a88e2a18",
+        "census-cftc.json": "f69ae8f130127eae",
+        "census-congress_gov.json": "f645b4536303a593",
+        "census-econdb.json": "2c6f918da45ee392",
+        "census-eia.json": "b43c02c6a4d1540c",
+        "census-imf-oecd-famafrench-misc.json": "16c5e4b742782e6b",
+        "census-intrinio-1of3.json": "d30456ec51d84198",
+        "census-intrinio-2of3.json": "0bd746bbc07a1682",
+        "census-intrinio-3of3.json": "f998f3c8555daa13",
+        "census-nasdaq.json": "dcca3ccda7544cfc",
+        "census-sec-tmx-fed-gov-finra.json": "9887f42331f773b3",
+        "census-tiingo.json": "7d25449b25694745",
+        "census-tradier.json": "b7c6fe50648c1721",
+        "census-tradingeconomics.json": "6a5e3f6ce7d6d85b",
+        "census-yfinance-cboe-finviz.json": "f0db85fde27a7386"
+      }
+    }
   }
 }

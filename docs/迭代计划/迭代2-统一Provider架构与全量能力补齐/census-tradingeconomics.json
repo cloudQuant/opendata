@@ -1,0 +1,25 @@
+{
+  "provider_groups": ["tradingeconomics"],
+  "rows": [
+    {
+      "task_id": "OBB2-tradingeconomics-EconomicCalendar",
+      "provider": "tradingeconomics",
+      "upstream_model": "EconomicCalendar",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "top_level_array",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "conditional_endpoint_branch",
+        "param_value_mapping"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tradingeconomics/openbb_tradingeconomics/models/economic_calendar.py:250",
+      "notes": "aextract_data issues exactly ONE GET to a URL built by utils/url_generator.py generate_url (lines 19-96): country/date selection is NOT a second request, it is encoded as PATH SEGMENTS of the single request, e.g. /calendar/country/{country}/{start_date}/{end_date}?c= (line 55) and /calendar/country/{country}/group/{group}/{start}/{end} (line 66); bare /calendar?c= is the no-filter snapshot (line 30). generate_url branches over ~12 mutually exclusive parameter combinations via check_args (lines 49-94); missing half of a date pair is auto-filled (lines 33-36); unmatched combos return '' and the fetcher raises OpenBBError (model lines 252-255). api_key is appended to a literal ?c= suffix carried in the generated path. importance low/medium/high is mapped to 1/2/3 query numbers (model lines 121-126) and response Importance 1/2/3 back to strings (lines 180-185); payload keys arrive Capitalized and are remapped per __alias_dict__ (lines 132-155). Response is a top-level JSON array of event dicts (response_callback in utils/helpers.py lines 19-24), each dict one row; no pagination loop. endpoints=1 because one call hits exactly one path template though the template set spans ~12 paths."
+    }
+  ]
+}

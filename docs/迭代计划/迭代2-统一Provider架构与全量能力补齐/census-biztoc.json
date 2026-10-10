@@ -1,0 +1,28 @@
+{
+  "provider_groups": ["biztoc"],
+  "rows": [
+    {
+      "task_id": "OBB2-biztoc-WorldNews",
+      "provider": "biztoc",
+      "upstream_model": "WorldNews",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 4,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "top_level_array",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "conditional_endpoint_branch",
+        "preflight_directory_lookup",
+        "field_rename_map",
+        "client_side_column_drop",
+        "date_format"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/biztoc/openbb_biztoc/models/world_news.py:117",
+      "notes": "Read lines 114-138: query branches pick one of search?q= / news/source/{s} / news/latest (3 paths); source branch first GETs /sources directory (121-125) and only raises/continues from its result - second request is gated by first, no row merge, join_needed=true per cboe preflight convention. Rows come out of the body as a flat top-level JSON array, one item per row, no paging. Client-side filtering check: transform_data (148-157) drops NO rows after the source returns its list - term/source filtering is server-side via URL; what happens client-side is column drop (id/uid/body_preview/site/domain, 149-153), __alias_dict__ rename published->date/body->text/img->images (34-38), scalar img wrapped to list (154-156), and date re-format to America/New_York via pandas to_datetime/tz_convert/strftime (48-59). response_callback (93-102) turns a dict-with-message body into UnauthorizedError/OpenBBError."
+    }
+  ]
+}

@@ -1,0 +1,157 @@
+{
+  "provider_groups": ["tiingo"],
+  "rows": [
+    {
+      "task_id": "OBB2-tiingo-EquityHistorical",
+      "provider": "tiingo",
+      "upstream_model": "EquityHistorical",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "branching_base_url",
+        "interval_branch",
+        "symbol_fan_out",
+        "param_value_mapping",
+        "date_format"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tiingo/openbb_tiingo/models/equity_historical.py:144",
+      "notes": "Shared historical/news request helper is utils/helpers.py:4 get_data (plain GET + JSON decode + detail->auth error); it is identical for all rows here - what differs per row is only URL construction and request multiplicity. This row: base_url branches /tiingo/daily vs /iex by interval (:144-148), one request per comma-split symbol via asyncio.gather (:199-200), interval remapped to resampleFreq (1m->1min, h->1hour, :165-170), symbol column derived onto rows only for multi-symbol (:193-196), date cast differs daily-vs-intraday with tz_convert America/New_York (:228-233). No paging."
+    },
+    {
+      "task_id": "OBB2-tiingo-EtfHistorical",
+      "provider": "tiingo",
+      "upstream_model": "EtfHistorical",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "branching_base_url",
+        "interval_branch",
+        "symbol_fan_out",
+        "param_value_mapping",
+        "date_format"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tiingo/openbb_tiingo/__init__.py:19",
+      "notes": "No dedicated upstream ETF model exists: provider registers EtfHistorical -> TiingoEquityHistoricalFetcher (__init__.py:19, no etf_historical.py in models/). Relative to the EquityHistorical row and the shared get_data helper (utils/helpers.py:4), nothing differs on the request surface - same daily-vs-iex branch, same per-symbol fan-out, same returned fields, same paging (none); only the model identity and query param names differ. Capability set copied from the actual fetcher code in equity_historical.py:144-200."
+    },
+    {
+      "task_id": "OBB2-tiingo-CompanyNews",
+      "provider": "tiingo",
+      "upstream_model": "CompanyNews",
+      "shape": "get_json_paged",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "caller_url_list",
+        "multi_request_concat",
+        "date_format"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tiingo/openbb_tiingo/models/company_news.py:107",
+      "notes": "Single path /tiingo/news (:100). Differs from the shared get_data helper usage in equity rows: it builds a whole URL list up front - limit>1000 becomes ceil(limit/1000) precomputed offset pages (offset=page*1000, :110-113), gathered in parallel (:127) and concat-extended, with no next-page cursor. Ticker filter is server-side via symbol->tickers alias (:25). crawl_date parsed via dateutil (:65-69); tags/tickers list->comma-string validators (:59-63)."
+    },
+    {
+      "task_id": "OBB2-tiingo-WorldNews",
+      "provider": "tiingo",
+      "upstream_model": "WorldNews",
+      "shape": "get_json_paged",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "caller_url_list",
+        "multi_request_concat",
+        "date_format"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tiingo/openbb_tiingo/models/world_news.py:110",
+      "notes": "Same /tiingo/news path and same precomputed offset-page fan-out over the shared get_data helper (utils/helpers.py:4) as CompanyNews. What actually differs from the CompanyNews row: no tickers symbol filter at all (world-wide list, only optional source-domain filter, :28), data-side renames add site<-source (:46), and transform slices results[:limit or len] (:142-145). Returned fields otherwise identical contract."
+    },
+    {
+      "task_id": "OBB2-tiingo-CryptoHistorical",
+      "provider": "tiingo",
+      "upstream_model": "CryptoHistorical",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "nested_array_explode",
+        "client_side_sort",
+        "param_value_mapping",
+        "date_format"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tiingo/openbb_tiingo/models/crypto_historical.py:138",
+      "notes": "Differs from equity/currency rows on the shared get_data path in three real ways: ONE request for all symbols (tickers comma query param, :126 alias), path /tiingo/crypto/prices (:125), and response is an array of ticker objects each with nested priceData rows that must be exploded (:165-181). interval->resampleFreq remap adds a day arm (7d->7day, :128-135); results sorted client-side by date (:183); no paging."
+    },
+    {
+      "task_id": "OBB2-tiingo-CurrencyHistorical",
+      "provider": "tiingo",
+      "upstream_model": "CurrencyHistorical",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "symbol_fan_out",
+        "client_side_sort",
+        "param_value_mapping",
+        "date_format"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tiingo/openbb_tiingo/models/currency_historical.py:124",
+      "notes": "Path /tiingo/fx/{symbol}/prices (:100,124) - unlike crypto, back to per-symbol fan-out over the shared get_data helper (:153), but only ONE base URL (no daily/iex branch like equity). Rows come flat; ticker popped/re-uppercased per symbol when multi (:142-144); interval->resampleFreq with day arm (:109-116); union sorted client-side by date (:174-177); no paging."
+    },
+    {
+      "task_id": "OBB2-tiingo-TrailingDividendYield",
+      "provider": "tiingo",
+      "upstream_model": "TrailingDividendYield",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "caller_url_template",
+        "client_side_sort_limit"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/tiingo/openbb_tiingo/models/trailing_dividend_yield.py:52",
+      "notes": "Single symbol embedded in the path /tiingo/corporate-actions/{symbol}/distribution-yield (:52) - the shared get_data helper is called with no querystring building at all. Returned fields are one flat date+yield record set with trailingDiv1Y rename (:24); limit applied client-side as a tail slice data[-limit:] (:63), no server paging loop."
+    }
+  ]
+}

@@ -1,0 +1,289 @@
+{
+  "provider_groups": ["intrinio"],
+  "rows": [
+    {
+      "task_id": "OBB2-intrinio-BalanceSheet",
+      "provider": "intrinio",
+      "upstream_model": "BalanceSheet",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "multi_request_fanout",
+        "cross_request_lookup",
+        "xbrl_tag_assembly",
+        "sentinel_value_nulling",
+        "derived_columns"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/balance_sheet.py:441",
+      "notes": "Two endpoints: /companies/{symbol}/fundamentals?statement_code=balance_sheet_statement&type=FY|QTR (rows under 'fundamentals'), then per fiscal period fan-out via amake_requests to /fundamentals/{symbol}-{code}-{FY}-{p}/standardized_financials (:460-465). Each row is assembled from the response's data_tag.tag keys (alias map :51-140); reported_currency derived from collected 3-letter units (:492); zero values nulled (:395-403); QTR branch remaps fiscal_period FY to Q4 (:495-496). Symbol dashes normalized to dots at :41-45."
+    },
+    {
+      "task_id": "OBB2-intrinio-CalendarIpo",
+      "provider": "intrinio",
+      "upstream_model": "CalendarIpo",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "per_record_nested_flatten",
+        "param_value_mapping"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/calendar_ipo.py:183",
+      "notes": "Single GET /companies/ipos; rows under initial_public_offerings. Each item carries nested company and security objects (IntrinioCompany/IntrinioSecurity, :149-155). Query aliases symbol->ticker, limit->page_size, min_value->offer_amount_greater_than, max_value->offer_amount_less_than (:25-30); no next-page loop, page_size only caps size."
+    },
+    {
+      "task_id": "OBB2-intrinio-CashFlowStatement",
+      "provider": "intrinio",
+      "upstream_model": "CashFlowStatement",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "multi_request_fanout",
+        "cross_request_lookup",
+        "xbrl_tag_assembly",
+        "sentinel_value_nulling",
+        "metric_branch"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/cash_flow.py:306",
+      "notes": "Same two-endpoint fundamentals pattern as BalanceSheet with statement_code=cash_flow_statement; period branch annual/quarter/ttm/ytd picks the type param and raises for anything else (:262-268). Second URLs are built from fiscal_year-fiscal_period of the first response and fanned out via amake_requests (:284-306); rows keyed by data_tag.tag, zeros nulled, reported_currency derived from units (:308-336)."
+    },
+    {
+      "task_id": "OBB2-intrinio-CompanyFilings",
+      "provider": "intrinio",
+      "upstream_model": "CompanyFilings",
+      "shape": "get_json_paged",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "cross_request_lookup",
+        "multi_request_concat",
+        "client_side_column_drop",
+        "date_window_filter"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/company_filings.py:140",
+      "notes": "GET /companies/{symbol}/filings; next_page cursor token in the response is appended as a query param in a while loop (:140-149), rows under 'filings' concatenated, metadata taken from the 'company' key (:138). transform_query sets a 1-year default window only when form_type is absent (:96-100). Rows drop thea_enabled/earnings_release keys (:163-168). Query aliases form_type->report_type, limit->page_size (:28)."
+    },
+    {
+      "task_id": "OBB2-intrinio-CompanyNews",
+      "provider": "intrinio",
+      "upstream_model": "CompanyNews",
+      "shape": "get_json_paged",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "symbol_fan_out",
+        "cross_request_lookup",
+        "multi_request_concat",
+        "client_side_sort_limit",
+        "per_record_nested_flatten"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/company_news.py:238",
+      "notes": "GET /companies/{symbol}/news, one task per comma-separated symbol via asyncio.gather (:253-269); inside each symbol a next_page cursor loop concatenates pages under 'news' until the limit (:238-248); cross-symbol url dedupe + sort by publication_date + truncation to limit (:260-265). Rows flattened from body/summary into text (:286-294) and topics array-of-dicts joined to a string (:160-167). Aliases limit->page_size, source->specific_source (:29-32)."
+    },
+    {
+      "task_id": "OBB2-intrinio-CurrencyPairs",
+      "provider": "intrinio",
+      "upstream_model": "CurrencyPairs",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "client_side_filter",
+        "field_rename_map"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/currency_pairs.py:63",
+      "notes": "Single GET /forex/pairs, rows under 'pairs' via get_data_many sub_dict (:63). Free-text query filtered client-side on code/base_currency/quote_currency substrings with a DataFrame (:76-81); output symbol renamed from upstream code (:26)."
+    },
+    {
+      "task_id": "OBB2-intrinio-EquityHistorical",
+      "provider": "intrinio",
+      "upstream_model": "EquityHistorical",
+      "shape": "get_json_paged",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "interval_branch",
+        "conditional_endpoint_branch",
+        "cross_request_lookup",
+        "multi_request_concat",
+        "client_side_sort"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/equity_historical.py:227",
+      "notes": "Intraday intervals hit /securities/{symbol}/prices/intervals?interval_size= with rows under 'intervals'; daily+ hit /securities/{symbol}/prices?frequency= with rows under 'stock_prices' (:226-231) - branch set by query validator at :83-100. next_page cursor loop extends the same list (:243-250). Rows sorted client-side by 'time' vs 'date' depending on the branch (:266-274). Aliases date->time, change_percent->percent_change, intra_period->intraperiod (:106-111)."
+    },
+    {
+      "task_id": "OBB2-intrinio-EquityInfo",
+      "provider": "intrinio",
+      "upstream_model": "EquityInfo",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "symbol_fan_out",
+        "field_rename_map"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/equity_info.py:68",
+      "notes": "GET /companies/{symbol}, one URL per comma-separated symbol fanned out with amake_requests (:63-68); each response is one flat company dict. Output symbol renamed from upstream ticker (:29-31). No pagination or join."
+    },
+    {
+      "task_id": "OBB2-intrinio-EquityQuote",
+      "provider": "intrinio",
+      "upstream_model": "EquityQuote",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "symbol_fan_out",
+        "per_record_nested_flatten",
+        "param_value_mapping",
+        "field_rename_map"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/equity_quote.py:133",
+      "notes": "GET /securities/{symbol}/prices/realtime?source=, one URL per comma-separated symbol via amake_requests (:128-133); the callback lifts symbol out of the nested security object and warns on 'messages' (:117-127). exchange/market_center codes mapped through the VENUES dict (references.py:20-40, validator at equity_quote.py:84-90); 10 output names aliased to upstream price fields (:41-52)."
+    },
+    {
+      "task_id": "OBB2-intrinio-EquitySearch",
+      "provider": "intrinio",
+      "upstream_model": "EquitySearch",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "field_rename_map",
+        "param_value_mapping"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/equity_search.py:82",
+      "notes": "Single GET /companies/search, rows under 'companies' (:82, :90). Output renames id->intrinio_id and ticker->symbol (:43-46); query limit aliased to page_size with default 10000 (:26-36); is_symbol excluded from the querystring (:79). No paged loop - one shot."
+    },
+    {
+      "task_id": "OBB2-intrinio-EtfHistorical",
+      "provider": "intrinio",
+      "upstream_model": "EtfHistorical",
+      "shape": "get_json_paged",
+      "http_method": "GET",
+      "endpoints": 2,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "interval_branch",
+        "conditional_endpoint_branch",
+        "cross_request_lookup",
+        "multi_request_concat",
+        "client_side_sort"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/equity_historical.py:245",
+      "notes": "No dedicated upstream ETF model: provider registers EtfHistorical -> IntrinioEquityHistoricalFetcher (openbb_intrinio/__init__.py:83), so the row's needs are the equity prices behavior read above - intervals/frequency branch (:226-231), next_page cursor concat loop (:243-250), client-side date sort (:266-274)."
+    },
+    {
+      "task_id": "OBB2-intrinio-EtfHoldings",
+      "provider": "intrinio",
+      "upstream_model": "EtfHoldings",
+      "shape": "get_json_paged",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": true,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "cross_request_lookup",
+        "multi_request_concat",
+        "client_side_sort",
+        "percent_column_scaling",
+        "sentinel_value_nulling",
+        "symbol_normalization"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/etf_holdings.py:177",
+      "notes": "GET /etfs/{symbol}:US/holdings?page_size=10000, next_page cursor appended and looped until exhausted (:162-185), rows under 'holdings'. Rows sorted client-side by weighting desc (:204); coupon divided by 100 (:207-208); zero values nulled per row (:133-141); deprecated composite_figi popped (:206); 12 output names aliased (:40-53); as_of_date query alias (:30)."
+    },
+    {
+      "task_id": "OBB2-intrinio-EtfInfo",
+      "provider": "intrinio",
+      "upstream_model": "EtfInfo",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "flat",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "symbol_fan_out",
+        "symbol_normalization",
+        "client_side_sort"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/intrinio/openbb_intrinio/models/etf_info.py:625",
+      "notes": "GET /etfs/{symbol}, one URL per comma-separated symbol after appending ':US' when no exchange suffix (:621-625) via amake_requests; each response is one flat fund-profile dict (~550-line data model). Results re-sorted client-side back into the caller's requested symbol order (:643-646); per-symbol errors warned away (:629-634)."
+    }
+  ]
+}
