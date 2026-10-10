@@ -1,0 +1,80 @@
+# C86 —— 本轮仪器的 nosec 例外是否真压住违例：逐文件对 bandit 自己的 skipped_tests 记账（三条反例臂）
+# 采集时间: 2026-10-10T17:16:31+0800
+# 分支: dev  HEAD: b190b5f
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 仪器 sha256[:16]: b240ae4a9bc7d703
+# command: python docs/evidence/C86/nosec-audit.py
+# 副作用: 反例臂在 docs/evidence/C86/.scratch_nosec/ 写被篡改的临时副本，出判定前删除（scratch_cleared 面实测）
+# git status --porcelain（跑时，含本仪器自己的未提交项）:
+M docs/evidence/C74/ported-bandit-scan.json
+ M docs/evidence/C74/ported-security-triage.json
+ M docs/evidence/C86/probe-seven-carrier.py
+?? docs/evidence/C86/ac1-05-manifest-face.py
+?? docs/evidence/C86/ac1-05-manifest-face.txt
+?? docs/evidence/C86/ac17-02-nosec-census-rerun.json
+?? docs/evidence/C86/ac17-02-nosec-census-rerun.txt
+?? docs/evidence/C86/ac5-07-bundle-freshness.py
+?? docs/evidence/C86/ac5-07-bundle-freshness.txt
+?? docs/evidence/C86/ac5-07-probe-rerun.json
+?? docs/evidence/C86/ac5-07-probe-rerun.txt
+?? docs/evidence/C86/gap-reason-staleness-pass2.txt
+?? docs/evidence/C86/gap-reason-staleness.txt
+?? docs/evidence/C86/nosec-audit.py
+?? docs/evidence/C86/nosec-audit.txt
+#
+[1] files=11 (enumerated, not typed) files_with_exemptions=8 exemption_sites=28 config=bandit.yaml
+    docs/evidence/C86/ac1-05-manifest-face.py nosec_sites=3
+    docs/evidence/C86/ac5-07-bundle-freshness.py nosec_sites=4
+    docs/evidence/C86/gap-reason-staleness.py nosec_sites=4
+    docs/evidence/C86/ledger-seven-patch.py nosec_sites=0
+    docs/evidence/C86/nosec-audit.py nosec_sites=4
+    docs/evidence/C86/nosec-census-compare.py nosec_sites=0
+    docs/evidence/C86/probe-arm-census.py nosec_sites=3
+    docs/evidence/C86/probe-seven-carrier.py nosec_sites=3
+    docs/evidence/C86/roster-census-coverage.py nosec_sites=0
+    docs/evidence/C86/staleness-carrier.py nosec_sites=3
+    docs/evidence/C29/real-tree-probe.py nosec_sites=4
+    bandit --ignore-nosec rc=1 fired={'B404': 8, 'B603': 15, 'B607': 5}
+[2] declared={'B404': 8, 'B603': 15, 'B607': 5} surviving_after_nosec={}
+[3] pooled per-id presence census: decorative=[] undeemed=[]  <- blind across files: an extra id hides behind the same id firing in another file
+[3b] per-file frame (sites charged against that file's own skipped_tests)
+    docs/evidence/C86/ac1-05-manifest-face.py sites=3 skipped=3 surplus=0 surviving_rows=0 fired={'B404': 1, 'B603': 1, 'B607': 1} surviving={} dead_ids={} undeemed_ids={} additive=True rc=0 line_dead=0
+    docs/evidence/C86/ac5-07-bundle-freshness.py sites=4 skipped=4 surplus=0 surviving_rows=0 fired={'B404': 1, 'B603': 2, 'B607': 1} surviving={} dead_ids={} undeemed_ids={} additive=True rc=0 line_dead=0
+    docs/evidence/C86/gap-reason-staleness.py sites=4 skipped=4 surplus=0 surviving_rows=0 fired={'B404': 1, 'B603': 2, 'B607': 1} surviving={} dead_ids={} undeemed_ids={} additive=True rc=0 line_dead=0
+    docs/evidence/C86/ledger-seven-patch.py sites=0 skipped=0 surplus=0 surviving_rows=0 fired={} surviving={} dead_ids={} undeemed_ids={} additive=True rc=0 line_dead=0
+    docs/evidence/C86/nosec-audit.py sites=4 skipped=4 surplus=0 surviving_rows=0 fired={'B404': 1, 'B603': 2, 'B607': 1} surviving={} dead_ids={} undeemed_ids={} additive=True rc=0 line_dead=0
+    docs/evidence/C86/nosec-census-compare.py sites=0 skipped=0 surplus=0 surviving_rows=0 fired={} surviving={} dead_ids={} undeemed_ids={} additive=True rc=0 line_dead=0
+    docs/evidence/C86/probe-arm-census.py sites=3 skipped=3 surplus=0 surviving_rows=0 fired={'B404': 1, 'B603': 1, 'B607': 1} surviving={} dead_ids={} undeemed_ids={} additive=True rc=0 line_dead=0
+    docs/evidence/C86/probe-seven-carrier.py sites=3 skipped=3 surplus=0 surviving_rows=0 fired={'B404': 1, 'B603': 2} surviving={} dead_ids={} undeemed_ids={} additive=True rc=0 line_dead=0
+    docs/evidence/C86/roster-census-coverage.py sites=0 skipped=0 surplus=0 surviving_rows=0 fired={} surviving={} dead_ids={} undeemed_ids={} additive=True rc=0 line_dead=0
+    docs/evidence/C86/staleness-carrier.py sites=3 skipped=3 surplus=0 surviving_rows=0 fired={'B404': 1, 'B603': 2} surviving={} dead_ids={} undeemed_ids={} additive=True rc=0 line_dead=0
+    docs/evidence/C29/real-tree-probe.py sites=4 skipped=4 surplus=0 surviving_rows=0 fired={'B404': 1, 'B603': 3} surviving={} dead_ids={} undeemed_ids={} additive=True rc=0 line_dead=3
+[3c] parts tie to the whole: sum(per-file skipped)=28 pool=28 | sum(per-file sites)=28 pool=28 | sum(per-file surplus)=0 pool=0
+[3d] required disagreement docs/evidence/C29/real-tree-probe.py: line_dead=3 surplus=0 surviving_rows=0 skipped=4 fired={'B404': 1, 'B603': 3}
+     the line frame calls these exemptions dead while the scanner consumed every one; if the two frames ever agree here the frame swap is unproven
+    LINE-DEAD(bias, not in gate) docs/evidence/C29/real-tree-probe.py:51 dead=B603 declared=B603
+    LINE-DEAD(bias, not in gate) docs/evidence/C29/real-tree-probe.py:79 dead=B603 declared=B603
+    LINE-DEAD(bias, not in gate) docs/evidence/C29/real-tree-probe.py:130 dead=B603 declared=B603
+[3e] bandit's own arithmetic: fired=28 skipped=28 surviving=0 -> additivity=True; declared_sites=28 consumed=28 surplus=0
+[4] two-id exemption lines in docs/evidence/C86/gap-reason-staleness.py=1
+    shipped pattern ids=[['B603', 'B607']]
+    retired pattern ids=[['B603']]  <- the parse that fabricated 'undeemed B607'
+[4b] comment-token sites vs raw-line sites: docs/evidence/C86/nosec-audit.py=(3, 13) (prose/literals only the grep shape sees), docs/evidence/C86/staleness-carrier.py=(3, 3)
+    expected: self_wider=True control_file_equal=True
+[5] controls
+  CONTROL-DECORATIVE file=docs/evidence/C86/gap-reason-staleness.py +1 id the scanner never fires on this file
+    clean     sites=4 skipped=4 surplus=0 fired={'B404': 1, 'B603': 2, 'B607': 1} surviving={} dead_ids={} line_dead=0
+    tampered  sites=5 skipped=4 surplus=1 fired={'B404': 1, 'B603': 2, 'B607': 1} surviving={} dead_ids={'B608': 1} line_dead=1
+    expected: surplus 0 -> 1, dead_ids gains {'B608': 1}, nothing new fires
+  CONTROL-UNDEEMED file=docs/evidence/C86/gap-reason-staleness.py line=174 dropped=B607
+    clean     sites=4 skipped=4 surplus=0 fired={'B404': 1, 'B603': 2, 'B607': 1} surviving={} rc=0
+    tampered  sites=3 skipped=3 surplus=0 fired={'B404': 1, 'B603': 2, 'B607': 1} surviving={'B607': 1} rc=1
+    expected: B607 back as a surviving finding, rc red, one fewer consumption
+  CONTROL-BLIND victim=docs/evidence/C86/probe-seven-carrier.py re-forged the id this round removed
+    per-file clean     sites=3 skipped=3 surplus=0 dead_ids={}
+    per-file tampered  sites=4 skipped=3 surplus=1 dead_ids={'B607': 1}
+    pooled on the forged population: decorative=[] undeemed=[] | B607: declared=6 fired=5 | pooled_surplus=1
+    expected: pooled presence census stays silent, per-file frame names the extra id
+[6] clean=True parse_differs=True shapes_agree_with_scanner=True line_frame_over_reports=True decorative_detected=True undeemed_detected=True pooled_blindness_shown=True scratch_cleared=True
+NOSEC_AUDIT_CHECK PASS
+INSTRUMENT_RC=0

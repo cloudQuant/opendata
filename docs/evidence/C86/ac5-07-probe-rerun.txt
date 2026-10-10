@@ -1,0 +1,41 @@
+# C86 —— AC-5|07 在 bundle 本轮重建后的定向探针读数（判定面 + 逐面列表）
+# 采集时间（跑前）: 2026-10-10T17:18:12+0800
+# 分支: dev  HEAD: b190b5f
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 探针模块 sha256[:16]: 521d23093b7b8416
+# command: python scripts/quality/acceptance_item_probe.py --item 'AC-5|07' --json /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C86/ac5-07-probe-rerun.json
+# git status --porcelain（跑前）:
+M docs/evidence/C74/ported-bandit-scan.json
+ M docs/evidence/C74/ported-security-triage.json
+ M docs/evidence/C86/probe-seven-carrier.py
+?? docs/evidence/C86/ac1-05-manifest-face.py
+?? docs/evidence/C86/ac1-05-manifest-face.txt
+?? docs/evidence/C86/ac17-02-nosec-census-rerun.json
+?? docs/evidence/C86/ac17-02-nosec-census-rerun.txt
+?? docs/evidence/C86/ac5-07-bundle-freshness.py
+?? docs/evidence/C86/ac5-07-bundle-freshness.txt
+?? docs/evidence/C86/ac5-07-probe-rerun.json
+?? docs/evidence/C86/ac5-07-probe-rerun.txt
+?? docs/evidence/C86/gap-reason-staleness-pass2.txt
+?? docs/evidence/C86/gap-reason-staleness.txt
+?? docs/evidence/C86/nosec-audit.py
+?? docs/evidence/C86/nosec-audit.txt
+#
+
+### AC-5|07  (document line 165)
+判据原文：**搬运层安全扫描**（bandit 含 B 层）完成并人工 triage 留档
+本探针：搬运层专用 Bandit 全量扫描绑定当前源码，逐 finding 审阅并保留已知风险
+台账现状：state=proven，文档勾选=True
+  - 搬运层专用扫描目标 `Makefile:security-ported` 在位且打的是 opendata/data/providers/akshare/_vendor/ = yes（recipe：-bandit -r opendata/data/providers/akshare/_vendor -f json -o docs/evidence/A2/bandit-ported.json @python -c "import json;d=json.load(open('）；日常 `make security` 按 bandit.yaml 的 exclude_dirs（.git, __pycache__, node_modules, opendata/data/providers/akshare/_vendor/）把搬运层排出去，所以「含 B 层」的全量复核只能由这个专用目标承担 = yes（质量规范 §4 的「每次同步一次」口径，不是逐提交记账）
+  - 本轮 C74 全量扫描与分组风险审阅证据 docs/evidence/C74/ported-bandit-scan.json（处置逐条结转自 C65）由 validator 独立绑定 = yes（issue=0，-）；Bandit 1.9.4，generated_at=2026-10-10T08:35:53.835377+00:00，exit=1 且与 findings 一致 = yes，errors=0，记录 1048 项 / 241 个有 finding 的文件 / 15 条 B 规则（B105, B107, B110, B112, B113, B301, B307, B311, B314, B324, B403, B404, B405, B501, B603），错误流为空且结果形状有效 = yes；退出码 1 表示本轮发现了 finding，不等同于扫描执行失败
+  - 扫描源绑定当前搬运树：清单每文件 hash 已验证 325/325 个，保存条目 325 个，path/NUL/content/NUL SHA256=0499005a027b710585d2ffe02f816ec49fbe78ef49516fca118f39b53a829def，source tree valid = yes，搬运 manifest 与磁盘路径集合相同 = yes，当前 findings 与 triage identity 完整覆盖 = yes（未处置 0 项，其中未处置 HIGH 0 项）
+  - 当前分组 triage 完成 1048 项 / 15 条规则，规则 disposition、basis、follow_up 与 finding 一致 = yes；实际 HIGH finding 31 项，未处置 HIGH 0 项，HIGH 审阅覆盖 = yes，AI 审阅的直接用户授权 = yes，审阅完成 = yes
+  - 反序列化风险组 B301/B403 有明确审阅 = yes；B301/B307 RCE finding 均保留为风险 = yes；security_fixed=no、unresolved_risks=yes，不将审阅表述为修复或零风险
+  - 搬运 manifest 源文件与磁盘 py 文件覆盖一致 = yes （磁盘 325 个 py 文件）
+VERDICT AC-5|07: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+wrote /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C86/ac5-07-probe-rerun.json
+
+PROBE_EXIT=0

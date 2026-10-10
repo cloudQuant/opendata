@@ -1,0 +1,70 @@
+{
+  "env": {
+    "python": "3.11.8"
+  },
+  "items": [
+    {
+      "item": "AC-5|07",
+      "key": "AC-5|07|68f3347f",
+      "state": "proven",
+      "summary": "搬运层专用 Bandit 全量扫描绑定当前源码，逐 finding 审阅并保留已知风险",
+      "readings": [
+        "搬运层专用扫描目标 `Makefile:security-ported` 在位且打的是 opendata/data/providers/akshare/_vendor/ = yes（recipe：-bandit -r opendata/data/providers/akshare/_vendor -f json -o docs/evidence/A2/bandit-ported.json @python -c \"import json;d=json.load(open('）；日常 `make security` 按 bandit.yaml 的 exclude_dirs（.git, __pycache__, node_modules, opendata/data/providers/akshare/_vendor/）把搬运层排出去，所以「含 B 层」的全量复核只能由这个专用目标承担 = yes（质量规范 §4 的「每次同步一次」口径，不是逐提交记账）",
+        "本轮 C74 全量扫描与分组风险审阅证据 docs/evidence/C74/ported-bandit-scan.json（处置逐条结转自 C65）由 validator 独立绑定 = yes（issue=0，-）；Bandit 1.9.4，generated_at=2026-10-10T08:35:53.835377+00:00，exit=1 且与 findings 一致 = yes，errors=0，记录 1048 项 / 241 个有 finding 的文件 / 15 条 B 规则（B105, B107, B110, B112, B113, B301, B307, B311, B314, B324, B403, B404, B405, B501, B603），错误流为空且结果形状有效 = yes；退出码 1 表示本轮发现了 finding，不等同于扫描执行失败",
+        "扫描源绑定当前搬运树：清单每文件 hash 已验证 325/325 个，保存条目 325 个，path/NUL/content/NUL SHA256=0499005a027b710585d2ffe02f816ec49fbe78ef49516fca118f39b53a829def，source tree valid = yes，搬运 manifest 与磁盘路径集合相同 = yes，当前 findings 与 triage identity 完整覆盖 = yes（未处置 0 项，其中未处置 HIGH 0 项）",
+        "当前分组 triage 完成 1048 项 / 15 条规则，规则 disposition、basis、follow_up 与 finding 一致 = yes；实际 HIGH finding 31 项，未处置 HIGH 0 项，HIGH 审阅覆盖 = yes，AI 审阅的直接用户授权 = yes，审阅完成 = yes",
+        "反序列化风险组 B301/B403 有明确审阅 = yes；B301/B307 RCE finding 均保留为风险 = yes；security_fixed=no、unresolved_risks=yes，不将审阅表述为修复或零风险",
+        "搬运 manifest 源文件与磁盘 py 文件覆盖一致 = yes （磁盘 325 个 py 文件）"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "target_ok": "yes",
+        "target_recipe": "-bandit -r opendata/data/providers/akshare/_vendor -f json -o docs/evidence/A2/bandit-ported.json @python -c \"import json;d=json.load(open('",
+        "daily_excludes_ported": "yes",
+        "bandit_exclude_dirs": ".git, __pycache__, node_modules, opendata/data/providers/akshare/_vendor/",
+        "ported_files": "325",
+        "archive": "docs/evidence/C74/ported-bandit-scan.json",
+        "archive_round": "C74",
+        "archive_round_in_dir": "yes",
+        "carried_from_round": "C65",
+        "security_evidence_valid": "yes",
+        "security_issue_count": "0",
+        "security_issue_summary": "-",
+        "scan_source_tree_valid": "yes",
+        "scan_manifest_ok": "yes",
+        "scan_python_files": "325",
+        "scan_source_files_verified": "325",
+        "scan_source_hash": "0499005a027b710585d2ffe02f816ec49fbe78ef49516fca118f39b53a829def",
+        "scan_source_files_saved": "325",
+        "archive_produced_by": "1.9.4",
+        "archive_generated_at": "2026-10-10T08:35:53.835377+00:00",
+        "scan_errors": "0",
+        "scanner_exit": "1",
+        "scanner_exit_consistent": "yes",
+        "scan_findings": "1048",
+        "scan_high_findings": "31",
+        "scan_files": "241",
+        "scan_rules": "15",
+        "scan_rule_names": "B105, B107, B110, B112, B113, B301, B307, B311, B314, B324, B403, B404, B405, B501, B603",
+        "scan_b_only": "yes",
+        "scan_manifest_matches_tree": "yes",
+        "scan_findings_covered": "yes",
+        "scan_stray_names": "-",
+        "triage_rules": "15",
+        "triage_findings": "1048",
+        "findings_untriaged": "0",
+        "untriaged_high": "0",
+        "triage_rule_review_valid": "yes",
+        "triage_high_reviewed": "yes",
+        "triage_deser_reviewed": "yes",
+        "triage_rce_retained": "yes",
+        "triage_reviewer_authorized": "yes",
+        "triage_review_complete": "yes",
+        "triage_security_fixed": "no",
+        "triage_unresolved_risks": "yes",
+        "surface_covered": "yes"
+      }
+    }
+  ]
+}

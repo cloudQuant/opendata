@@ -1,9 +1,11 @@
-# C86 —— 七个原本无探针的 gap 格子改由判定探针实测，AC-17|02 的例外普查改成与 bandit 同语义
+# C86 —— 七个原本无探针的 gap 格子改由判定探针实测，AC-17|02 的例外普查改成与 bandit 同语义，AC-5|07 的过期 bundle 重扫
 
-本轮两件事：把登记表里 7 个「无人测量的 gap」接上真判定（`scripts/quality/acceptance_item_probe.py` 新增 7 员探针），
-以及修掉一处仪器缺陷——AC-17|02 的 `# nosec` 普查按整行 grep 计数，而 bandit 按注释令牌计数，两者对不上时
-探针会声称一个扫描器从未读过的例外。两处都不改判据方向：新探针一律先落在 gap，例外普查是**增加**一条检查
-（切分失败的文件必须为 0），不是放宽任何一条。
+本轮三件事：把登记表里 7 个「无人测量的 gap」接上真判定（`scripts/quality/acceptance_item_probe.py` 新增 7 员探针），
+修掉一处仪器缺陷——AC-17|02 的 `# nosec` 普查按整行 grep 计数，而 bandit 按注释令牌计数，两者对不上时
+探针会声称一个扫描器从未读过的例外；以及清掉本轮门禁停在 member 11 的 stale-proof 红格 AC-5|07（bundle 过期，
+重扫而非刷时间戳）。顺带把「本目录的例外到底压住了什么」做成一台逐文件对 bandit 自身记账的仪器，因为它在自己的
+普查根之外。三处都不改判据方向：新探针一律先落在 gap，例外普查是**增加**一条检查（切分失败的文件必须为 0），
+bundle 的 24h 新鲜度一条也没放宽。
 
 ## 目录内容与各自的来源
 
@@ -24,6 +26,13 @@
 | `gate-run2.txt` | 第 2 遍全门禁日志（`/tmp` 采集后逐字节入档）：member 1—10 绿、member 11 红在既有 stale-proof 两格，`反事实面 130/130、939 条 break` 逐字在档 | `make gate`（日志 `> /tmp/c86_gate_run2.log`，跑完 `cp` 入档） |
 | `gap-reason-staleness.py` | gap 格子的台账 `reason` 与探针现读数对账：A state、B reason×`round` 标签交叉、C 借用键对、D 数字残差披露（带 `cited` 分母）、E 两处被现读数改写的阻塞原因逐字并排，另加两条控制臂 | `python docs/evidence/C86/gap-reason-staleness.py` |
 | `staleness-carrier.py` | 上一员的载体生成器：stdout 逐字节入档，头部钉 HEAD/解释器/**仪器与探针两份**摘要 | `python docs/evidence/C86/staleness-carrier.py` |
+| `gap-reason-staleness.txt` | 上面那台普查的 **live 载体**：16:04:50、HEAD `b190b5f`、仪器 `301061ae…`，14587 字节，含 F 面（按仓库自己的运行面校验器复算 issue 类别） | `python docs/evidence/C86/staleness-carrier.py`（内跑 `gap-reason-staleness.py`，头部记 inner command） |
+| `gap-reason-staleness-pass2.txt` | **同一普查在归档门禁第 2 遍时刻的读数**（15:26:39、HEAD `c7bad6e`、仪器 `b35de44a…`，12815 字节；文件名里的「第 2 遍」指门禁遍次，不指时间先后——它比上面那份早 38 分钟，两份都留档是因为 F 面在那之后才加） | 同上 |
+| `ac1-05-manifest-face.py` / `.txt` | AC-1\|05 的 manifest 面：686 条目 = 232 clean + 454 flagged 的记账恒等式、461 条 issue 的分类、两个缺失顶层目录今天是否还存在，并配 present/absent 两条方向臂 | `python docs/evidence/C86/ac1-05-manifest-face.py` |
+| `ac5-07-bundle-freshness.py` / `.txt` | AC-5\|07 的安全 bundle：本轮真重建（`--force`）+ 走 validator 自己的 `now` 缝做三条时钟臂，证明新鲜度判据仍然咬人 | `python docs/evidence/C86/ac5-07-bundle-freshness.py`（副作用：重写 bundle） |
+| `ac5-07-probe-rerun.txt` / `.json` | 重建之后 AC-5\|07 的定向探针读数（`proven`，`issue=0`） | `python docs/evidence/C86/probe-seven-carrier.py --item 'AC-5|07' --out docs/evidence/C86/ac5-07-probe-rerun.txt --json docs/evidence/C86/ac5-07-probe-rerun.json --title '…'` |
+| `ac17-02-nosec-census-rerun.txt` / `.json` | 新增仪器后 AC-17\|02 的重读：逐行 nosec 仍 157 处（普查根不含 `docs/evidence`，见下节的范围面） | 同上（`--item 'AC-17|02'`） |
+| `nosec-audit.py` / `.txt` | 本目录 28 处例外**逐文件**对 bandit 自己的 `skipped_tests` 记账，外加三条反例臂（多点名 / 少点名 / 将本轮真实的那处过度点名放回） | `python docs/evidence/C86/nosec-audit.py`（临时副本写 `docs/evidence/C86/.scratch_nosec/`，出判定前删除并实测 `scratch_cleared=True`） |
 
 ## AC-17|02：例外普查的语义要与扫描器一致
 
@@ -127,6 +136,94 @@ HEAD 快照在临时树里复算（`git show` 进 `docs/evidence/C86/.scratch_he
 `primary`），两侧都必须成立才 PASS（`repin-label-check.txt`，正臂 rc=0、`--label-check-tamper` 臂 rc=1）。
 同一条款此前还有一个更隐蔽的错：`signer` 之前是字面量 `C85`，于是 C86 的 `fb904f2` 移动字节后，
 批准链里出现一条署名 C85 的重钉条款——轮次标签没有测量支撑，现在改为从提交标题取。
+
+## AC-5|07 的红是 bundle 过期：修法是重扫，不是改时间戳
+
+`docs/quality/acceptance-criteria.md:165` 要求「搬运层安全扫描（bandit 含 B 层）完成并人工 triage 留档」，
+而 `scripts/quality/ported_security_evidence.py` 对 bundle 有 `MAX_EVIDENCE_AGE = 24h`。C74 那两份的
+`generated_at` 停在 `2026-10-09T03:47:11+00:00`，本轮跑到 10-10 就过期，于是探针读出 gap、台账却记 proven
+（`stale-proof` 红格）。两条诱惑都不许走：把 `generated_at` 改新是伪造新鲜，放宽 `MAX_EVIDENCE_AGE` 是改判据。
+走的是仓库自己的构建器真重扫：`ported_security_evidence_build.py --force` 对 `opendata/data/providers/akshare/_vendor`
+的 325 个 py 文件重跑 bandit 1.9.4。
+
+```
+[1] builder … --force rc=0 built=True   finding_count=1048 high_count=31 identities_matched=1048
+    python_files=325 rule_count=15 scanner_exit=1 carried_from_round=C65 source_sha256=0499005a…
+[3] recorded generated_at=2026-10-10 08:35:53+00:00 -- three clock readings of the same bytes
+    live(now=None)                          valid=True  issues=0
+    aged(now=generated+1 day, 1:00:00)      valid=False codes=scan-stale,triage-stale
+    future-dated(now=generated-1:00:00)     valid=False codes=scan-generated-at-invalid,triage-generated-at-invalid
+[5] arms live_clear=True aged_names_stale=True future_dated_names_invalid=True arms=3 -> PASS
+```
+
+- 重建的证据强度落在 diff 上：`git diff --numstat` = `1/1` 与 `2/2`，`-U0` 展开只有三行
+  `+`/`-`——两份的 `generated_at`（`03:47:11 → 08:35:53`）与 triage 里那条 `scan_sha256`
+  钉（`90947021… → 456cddf9…`）。**findings 本体逐字节未变**，所以这是「同内容重扫 + 新时钟」而不是给旧档案刷时间；
+  `source_sha256` 与上一轮相同（`0499005a…`）说明搬运树确实没动，`identities_matched=1048` 说明逐条结转 C65 处置
+  靠的是 finding identity 集合相等。
+- 三条时钟臂都走 validator 暴露的 `now` 缝，没有为了「回到未来」编辑任何文件。中间那条臂是必须的：一个只有
+  `issues=0` 的读数是空判，新鲜度规则可能早已是装饰；`aged` 臂必须真报 `*-stale`、`future-dated` 臂必须真报
+  `*-generated-at-invalid`，两侧都不咬才算这台仪器没测到东西。
+- 重扫之后定向探针重读 `VERDICT AC-5|07: proven`（`census: proven=1`），面里逐字带
+  `issue=0`、`记录 1048 项 / 241 个有 finding 的文件 / 15 条 B 规则`。顺带清掉一个歧义：`scan_files=241`
+  不是覆盖率缺口，validator 数的是「带 ≥1 finding 的文件」，325 才是扫描文件数，两者不同名。
+- 一条自己的仪器缺陷入档：首跑在 `[3]` 面中途抛 `AttributeError: 'ValidationResult' object has no attribute 'state'`
+  ——`state` 是我猜的，该类只暴露 `facts/issues/valid`。崩在面中途的代价不只是半截 stdout：**档案是一份都没写出**
+  （写档在 `main()` 末尾），所以「仪器跑过」与「载体存在」是两件事，属性名要先读 dataclass 再用。
+
+## 本目录的 28 处例外逐文件对 bandit 自己的 `skipped_tests` 记账
+
+先量范围，因为它决定了这一台为什么必须存在：AC-17|02 的例外普查根来自 Makefile 的 `PY_BANDIT`
+（`opendata, scripts, alembic, alembic_data`），**不含 `docs/evidence`**；而 A2 的文件集
+（`resolve_files(None)` = 750 个，其中 106 个在 `docs/evidence/**`）**含**。两侧都不是装饰性例外的判据：
+目录内「该点而没点」的违例会被 member 8 打红，但「点了却没东西可压」在这一带打不红任何东西，AC-17|02 也看不见——
+本轮新增仪器带来的例外改动之后重读 AC-17|02，逐行 nosec 仍 **157 处**、反向臂仍 161 条，就是这个范围面的实证。
+
+判据形式取逐文件：`surplus = 声明站点数 - bandit 自己的 metrics._totals.skipped_tests`。bandit 1.9.4 在 `-q`
+下对装饰性 nosec 不打印任何东西（连 `nosec encountered, but no failed test` 都没有），所以警告字符串不是可量的面。
+
+```
+[1] files=11 (enumerated, not typed) files_with_exemptions=8 exemption_sites=28
+[2] declared={'B404': 8, 'B603': 15, 'B607': 5} surviving_after_nosec={}
+[3] pooled per-id presence census: decorative=[] undeemed=[]
+[3c] parts tie to the whole: sum(per-file skipped)=28 pool=28 | sum(per-file sites)=28 pool=28 | sum(surplus)=0
+[3d] required disagreement docs/evidence/C29/real-tree-probe.py: line_dead=3 surplus=0 skipped=4
+[3e] fired=28 skipped=28 surviving=0 -> additivity=True; declared_sites=28 surplus=0
+[6] clean=True … -> NOSEC_AUDIT_CHECK PASS
+```
+
+这台仪器抓到两处真的过度点名，都不是靠人眼：
+
+1. `probe-seven-carrier.py:33` 带 `# nosec B603 B607`，而那个调用的 argv 是元组、没有字面量路径，
+   bandit 在此只 fire `B404@18 / B603@33 / B603@65` ⇒ B607 从未被消费（`surplus=1`）。处理是把 B607 从**载体**上删掉。
+2. 本仪器自己：`nosec-audit.py:72` 的**散文注释**里写了「`# nosec B603`」。注释令牌正是 bandit 读例外的地方，
+   于是一行解释例外的话自身成了装饰性例外，`surplus=1`、`dead_ids={'B603': 1}`，门禁因此拒绝 PASS。
+   改写这段散文后站点数 29→28、surplus 归 0——与 AC-17|02 那条 `acceptance_item_probe.py:13668`
+   （修复自身的 docstring 被旧普查数成例外）同族，本轮复发在自己身上。
+
+三个被推翻的判定形状都留在档里，而不是下次重猜：
+
+- 头部 `git rev-parse --abbrev-ref HEAD --short HEAD` 一次 argv 只把分支名打印两遍、一个提交都不给，
+  也就是说溯源面本身就是 bug；现在是两次调用并分别打印。
+- 复刻的 `# nosec` 正则 `B[\d.\s,]+` 会在第二个 id 的 `B` 处停住，于是 `# nosec B603 B607` 被读成一个 id，
+  而 bandit 真 fire 的 B607 被报成 `undeemed`——一条对我自己工具的假指控。改用 shipped 的 `NOSEC_PAT`
+  取整段、`RULE_ID` 取号，并把退役形状在 `[4]` 旁并排打印（`shipped=[['B603','B607']]` vs `retired=[['B603']]`）。
+- **按行键**的普查：bandit 的抑制覆盖整条语句，`# nosec` 写在多行调用的起始行是真例外，而
+  `results[].line_number` 指向语句内部更靠后的行。按行键我曾把 14 处老档案的例外判成死例外，扫描器其实全消费了。
+  因此 `docs/evidence/C29/real-tree-probe.py` 进总体做成「必须不一致」面：注释在 24/51/79/130、findings 在
+  24/56/84/135、`skipped_tests=4`、`surviving=[]` ⇒ `line_dead=3` 而 `surplus=0`。哪天这两个数相等，
+  换帧就没被证明，`line_frame_over_reports` 转红。按 id 汇算是**跨文件看不见**，按行键是**同文件假阳**，
+  方向相反的两种错，门禁取逐文件。
+
+三条反例臂都必须能翻面：`CONTROL-DECORATIVE` 给干净文件加一条永不 fire 的 B608 ⇒ `surplus 0→1` 且
+`dead_ids={'B608': 1}`、无新违例；`CONTROL-UNDEEMED` 从双 id 那一行删掉一个 id ⇒ 该违例带红 rc 回来
+（`surviving={'B607': 1}`、`skipped 4→3`、`rc=1`），这是「例外是承重的」而非装饰的证明；
+`CONTROL-BLIND` 把本轮真实那处过度点名放回临时副本 ⇒ 逐文件帧点名（`surplus=1`、`dead_ids={'B607': 1}`）而
+**汇算帧仍然沉默**（`decorative=[]`，`B607: declared=6 fired=5`）。第三条臂的期望值就是「汇算侧看不见」，
+它证明的是这台仪器存在的理由本身，而不是某个格子干净。
+
+副作用也实测而不是声称：临时副本写在 `docs/evidence/C86/.scratch_nosec/`，跑前先 `rmtree`（上一轮崩在这里的话，
+伪造的违例会被 member 5 记成 untracked、被仓内普查计数），出判定前再删并打印 `scratch_cleared=True`。
 
 ## 门禁
 

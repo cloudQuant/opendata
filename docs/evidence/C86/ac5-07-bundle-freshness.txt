@@ -1,0 +1,75 @@
+# C86 —— AC-5|07 安全证据 bundle：本轮重建 + 三条时钟臂证明新鲜度判据仍活
+# 采集时间: 2026-10-10T16:35:57+0800
+# 分支: dev  HEAD: b190b5f
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 仪器 sha256[:16]: 361eae1d981e5014
+# command: python docs/evidence/C86/ac5-07-bundle-freshness.py
+# 副作用: 本仪器跑 `python scripts/quality/ported_security_evidence_build.py --force`，它会重写 AC-5|07 的 bundle
+#
+[1] builder scripts/quality/ported_security_evidence_build.py --force rc=0 built=True
+    built=True
+    carried_from_round=C65
+    carried_prior_rows=1048
+    finding_count=1048
+    high_count=31
+    identities_matched=1048
+    javascript_citations_verified=4
+    python_files=325
+    round=C74
+    rule_citations_verified=4
+    rule_count=15
+    rules=B105, B107, B110, B112, B113, B301, B307, B311, B314, B324, B403, B404, B405, B501, B603
+    scan=docs/evidence/C74/ported-bandit-scan.json
+    scan_sha256=456cddf9600a4db919f0f458a8769395556978f427f29f7e8e936acd925b3612
+    scanner_exit=1
+    scanner_version=1.9.4
+    source_sha256=0499005a027b710585d2ffe02f816ec49fbe78ef49516fca118f39b53a829def
+    triage=docs/evidence/C74/ported-security-triage.json
+[2] bundle bytes as rewritten by this run
+  scan docs/evidence/C74/ported-bandit-scan.json bytes=396695 sha256[:16]=456cddf9600a4db9 mtime=2026-10-10T16:35:57+0800
+  triage docs/evidence/C74/ported-security-triage.json bytes=277375 sha256[:16]=4e7f1391effcfa58 mtime=2026-10-10T16:35:57+0800
+  evidence_dir=docs/evidence/C74
+[3] recorded generated_at=2026-10-10 08:35:53.835377+00:00 -- three clock readings of the same bytes
+  live(now=None)                                 valid=True issues=0 codes=none
+  aged(now=generated+1 day, 1:00:00)             valid=False issues=2 codes=scan-stale,triage-stale
+  future-dated(now=generated-1:00:00)            valid=False issues=2 codes=scan-generated-at-invalid,triage-generated-at-invalid
+[4] every fact the validator reports on the live arm
+    FACT all_rules_bandit=True
+    FACT deser_reviewed=True
+    FACT finding_count=1048
+    FACT finding_coverage=True
+    FACT generated_at=2026-10-10T08:35:53.835377+00:00
+    FACT high_count=31
+    FACT high_reviewed=True
+    FACT issue_codes=[]
+    FACT issue_count=0
+    FACT python_files=325
+    FACT rce_findings_retained=True
+    FACT review_complete=True
+    FACT reviewer_authorized=True
+    FACT rule_count=15
+    FACT rule_counts_match=True
+    FACT rule_names=B105, B107, B110, B112, B113, B301, B307, B311, B314, B324, B403, B404, B405, B501, B603
+    FACT rule_review_valid=True
+    FACT scan_errors=0
+    FACT scan_files=241
+    FACT scan_sha256=456cddf9600a4db919f0f458a8769395556978f427f29f7e8e936acd925b3612
+    FACT scanner_exit=1
+    FACT scanner_exit_consistent=True
+    FACT scanner_version=1.9.4
+    FACT security_fixed=False
+    FACT source_files_saved=325
+    FACT source_files_verified=325
+    FACT source_sha256=0499005a027b710585d2ffe02f816ec49fbe78ef49516fca118f39b53a829def
+    FACT source_tree_valid=True
+    FACT triage_findings=1048
+    FACT triage_generated_at=2026-10-10T08:35:53.835377+00:00
+    FACT triaged_findings=1048
+    FACT unresolved_risks=True
+    FACT untriaged_findings=0
+    FACT untriaged_high=0
+    FACT valid=True
+[5] arms live_clear=True aged_names_stale=True future_dated_names_invalid=True arms=3
+BUNDLE_FRESHNESS_CHECK PASS
+BUILDER_RC=0
+INSTRUMENT_RC=0

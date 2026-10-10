@@ -1,0 +1,20 @@
+# C86 —— AC-1|05 运行面 blocker 的 manifest 面（秒级可复算，不需整轮实测）
+# 采集时间: 2026-10-10T16:37:26+0800
+# 分支: dev  HEAD: b190b5f
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 仪器 sha256[:16]: 653588f7d9ae7e44
+# 校验器 sha256[:16]: 8cf63790b4a159ec
+# command: python docs/evidence/C86/ac1-05-manifest-face.py
+#
+manifest docs/evidence/C65/runtime-build-source.json
+  entries=686 date=2026-09-30T21:50:03.930873+00:00
+  source_identity=c6bd1179740a703c79fdad95dba52a81206bc5a22159ba4a1f60798b26f1c50b
+  projection=current Docker COPY files from managed/nonignored set, excluding credential and cache paths
+  validator issues=461 missing=340 changed=114
+  flagged=454 distinct_flagged_paths=454 additive=True
+  class_tamper(forged_dup_still_additive)=False expected=False
+  stray_flagged_paths_not_in_manifest=0 control_injected_stray=True
+  clean_entries=232 accounting identity=True (686==232+454)
+  missing_top_dirs={'opendata_fuyao': 11, 'opendata_http': 329} exist_today={'opendata_fuyao': False, 'opendata_http': False}
+  control(present_dir=True, absent_dir=False, dir_tally_covers_missing=True)
+MANIFEST_FACE_CHECK PASS

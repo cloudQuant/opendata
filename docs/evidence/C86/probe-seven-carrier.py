@@ -30,7 +30,7 @@ DEFAULT_TITLE: Final = (
 
 def argv(*args: str) -> str:
     """Run one command from a literal argv list and return its stripped stdout."""
-    done = subprocess.run(  # noqa: S603  # nosec B603 B607  # literal argv, git only, no shell string
+    done = subprocess.run(  # noqa: S603  # nosec B603  # argv is a tuple, no literal path
         args, cwd=REPO, capture_output=True, text=True, check=False
     )
     return done.stdout.strip()
