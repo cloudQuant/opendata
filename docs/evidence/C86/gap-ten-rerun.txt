@@ -1,0 +1,147 @@
+# C86 —— 十格落后 gap 的探针现读数（台账 reason 重发布的载体）
+# 采集时间（跑前）: 2026-10-10T18:51:26+0800
+# 分支: dev  HEAD: 0dd453d
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 探针模块 sha256[:16]: 1ae6416a21c32a00
+# command: python scripts/quality/acceptance_item_probe.py --item 'AC-10|01' --item 'AC-10|03' --item 'AC-11|02' --item 'AC-16|01' --item 'AC-16|02' --item 'AC-19|01' --item 'AC-19|04' --item 'AC-1|05' --item 'AC-8|05' --item 'AC-8|06' --json /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C86/gap-ten-readings.json
+# git status --porcelain（跑前）:
+M scripts/quality/acceptance_item_probe.py
+?? docs/evidence/C86/ac1-05-census-face.py
+?? docs/evidence/C86/ac1-05-census-face.txt
+?? docs/evidence/C86/gap-ten-readings.json
+?? docs/evidence/C86/gap-ten-rerun.txt
+#
+
+### AC-10|01  (document line 207)
+判据原文：**已启用** provider 全部注册且对照通过（**不设"32 个全部完成"作为门槛**；未启用者标注 `notes="on-demand"`）
+本探针：Enabled-provider registration closure plus a per-leg cross-source comparison, judged against the live registry and the C33 inventory plane
+台账现状：state=gap，文档勾选=False
+  - 目录身份 = 34 个（已启用 11：akshare,bls,cboe,ecb,federal_reserve,fmp,fred,imf,oecd,ths,yfinance；未启用 23）；inventory 行 = 32 providers + 2 local_providers，门槛作用域 = enabled-only（判据明写不设 32 个全部完成）
+  - 注册面：registry 49 legs / 49 唯一路由键，声明未注册 = 0，重复键 = 0，authority 反向不一致 = 0
+  - 对照面（C33 面自己的口径：全部 leg auto-routable 才算 已对照转正）：auto-routable 23/49 legs；已转正 provider 4/11，未转正 7（akshare,bls,cboe,ecb,federal_reserve,fmp,fred）
+  - 「未启用者标注 notes="on-demand"」的字面子句载体读数：capability notes=on-demand 0 条，inventory on-demand 标注 0 行；未启用身份目前只由 status: 待实现 表达
+  - 补齐到可判：auto_routable_leg_count: 23 -> 49; enabled_source_names: akshare,bls,cboe,ecb,federal_reserve,fmp,fred,imf,oecd,ths,yfinance -> akshare,bls,cboe,ecb,federal_reserve; enabled_sources_fully_compared: 4 -> 11; enabled_sources_not_compared: 7 -> 0; uncompared_source_names: akshare,bls,cboe,ecb,federal_reserve,fmp,fred -> -; unmarked_unverified_legs: 26 -> 0; unverified_leg_count: 26 -> 0
+VERDICT AC-10|01: gap — AC-10|01 要求已启用 provider 逐个注册齐全且对照通过；未满足：26 条 leg 没有跨源对照（已启用集合里 7 个 provider 未转正：akshare,bls,cboe,ecb,federal_reserve,fmp,fred）；未对照的 leg 里 26 条连 §4.3 的保留标注都没有
+
+### AC-10|03  (document line 209)
+判据原文：每 provider 零 OpenBB 源码（审查记录留档）
+本探针：Current registered provider sources have a complete, user-authorized, hash-bound review against the pinned OpenBB baseline
+台账现状：state=gap，文档勾选=False
+  - 注册面（git index 普查）= akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance（474 个 py）；审阅档案发现面 = akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance（12 包 / 474 py）；两包面差 = 缺档 - / 多余 -，逐包文件数错配 = -，文件集差 = 档案外 0 / 注册外 0；包面/文件面对齐 = yes
+  - 源码/SHA 台账/审阅/相似度四份面 = 474/474/71/71，全部等于注册普查 = no；源 SHA 绑定完整 = no，源码可解析 = yes，OpenBB import = 0（零导入=yes）
+  - 基线固定 = 3e071fcc2cd9f891cac6040ae60296dba76dab46（期望 3e071fcc2cd9f891cac6040ae60296dba76dab46），基线包面 = ecb, fred, imf, oecd, yfinance（钉住 ecb, fred, imf, oecd, yfinance，对齐=yes），基线 py = 121 个；审阅授权 = yes
+  - 候选/未审候选 = 0/0，审阅完成 = no（packages=no，nearest=yes）；nearest review = 3 项，正向结论 = yes，档案 SHA 互绑 = yes；validator valid/issues = no/172（source-review-stale, similarity-stale, review-package-set-mismatch, review-package-file-count-mismatch, review-akshare-file-set-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch）
+  - 补齐到可判：current_source_hashes_bound: no -> yes; package_reviews_complete: no -> yes; provider_review_issue_codes: source-review-stale, similarity-stale, review-package-set-mismatch, review-package-file-count-mismatch, review-akshare-file-set-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch -> -; provider_review_issue_count: 172 -> 0; provider_review_valid: no -> yes; review_complete: no -> yes; reviewed_provider_names: akshare, ecb, fred, imf, oecd, ths, yfinance -> akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance; reviewed_source_file_count: 71 -> 474; similarity_source_file_count: 71 -> 474; source_faces_match_registry: no -> yes
+VERDICT AC-10|03: gap — AC-10|03 需要审阅档案覆盖当前注册 provider 的普查面（包名、逐包文件数、文件集、四份文件计数互相对齐），并与固定的 OpenBB 基线包面与提交绑定，保留零导入、候选清零与已完成的正向审阅结论；本轮 providers_missing_from_review 没有产出读数（不替它编一个原因），档案外文件=0，注册外文件=0，基线包面对齐=yes，问题摘要=source-review-stale, similarity-stale, review-package-set-mismatch, review-package-file-count-mismatch, review-akshare-file-set-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch, review-akshare-hash-mismatch。
+
+### AC-11|02  (document line 216)
+判据原文：**`adjust=qfq|hfq` 服务端计算**：同一标的 qfq 序列与 akshare 官方 qfq 对照一致（容忍度内）
+本探针：qfq/hfq 由服务端按因子表合成（缺因子 400、缺表 501）；官方对照腿是分派表条目，默认 akshare 并解析到搬运模块，留档一次真机 run 的腿与 module:function 都要与现值一致
+台账现状：state=gap，文档勾选=False
+  - 复权面（HTTP 五条 + 因子算术两条 + 判定与对照腿十五条）: 23/23 nodes passed
+  - 服务端合成 = yes（``_adjusted_rows`` 真的调 ``apply_adjust_to_rows``，不是把参数读一遍就丢掉）
+  - 官方对照腿：``scripts/ops/qfq_official_check.py`` 的 ``DEFAULT_OFFICIAL_LEG`` = akshare，分派表 akshare 条目 target = opendata.data.providers.akshare._vendor.stock_feature.stock_hist_em:stock_zh_a_hist，该模块头部声明 akshare 出身 = yes（判据点名的就是 ``opendata.data.providers.akshare._vendor.stock_feature.stock_hist_em``）
+  - 留档真机 run（docs/evidence/C65/qfq-official-akshare-current.txt）：头部记的腿 = akshare，module:function = opendata.data.providers.akshare._vendor.stock_feature.stock_hist_em:stock_zh_a_hist；PASS 0 行 / FAIL 0 行 / ERROR 10 行
+  - 补齐到可判：run_error_rows: 10 -> 0; run_ok_rows: 0 -> 10
+VERDICT AC-11|02: gap — 留档那次 run 有 10 行 ERROR —— 官方端点没答上来等于没对照；真机对照未过：FAIL 0 行 / PASS 0 行（容差 2e-3 不放宽，见档案里的 over_tolerance 与 ratio 平台分布） —— 合成与对照的判定口径不变（逐日 shape dev 对 2e-3），要改的是证据不是判据
+
+### AC-16|01  (document line 276)
+判据原文：代码审查记录：全部自研 provider 均有"独立编写 + 无源码参照"审查留档〔C62 做成条目级判定面（measure_ac16_01 / judge_ac16_01 + 5 条反事实），**不勾**：这条缺的不是读数，是那份留档本身。现场读数——git 跟踪清单里带 `registration.py` 的自研 provider 包 **7 个**（akshare、ecb、fred、imf、oecd、ths、yfinance），提交说明带「无 OpenBB 源码参照」的 **0/7**；`docs/evidence/` 里同时写得到该句与「审查」字样、并按包名点名该包的留档 **0/7**。另有 5 个包把 `no OpenBB code was consulted` 写进自己模块的 docstring——那是代码里的自声明，按字面不认作审查记录。规则文本确实在位（`docs/proposals/openbb-migration/README.md` 的留痕要求点着该句，同文档把 AST 断言从「零 akshare」扩展到「零 openbb」），但判据要的是「全部 provider 均有」的逐包记录，不是一次性的全库断言。历史提交说明补不回来（不改写历史），要收口得由一次真实的人工逐包审查留档；探针的 `repair` 面（declared 0→7、recorded 0→7）写的是缺什么，本轮不代拟〕
+本探针：自研 provider 包逐个查「提交说明声明 + 逐包审查档案」，档案按代码字节钉死
+台账现状：state=gap，文档勾选=False
+  - 自研 provider 包 12 个（git 跟踪清单里带 registration.py 的目录数）：akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance
+  - 合规规则写在 docs/proposals/openbb-migration/README.md：留痕要求里点着「无 OpenBB 源码参照」= yes；同文档 §6 把 AST 断言从「零 akshare」扩展到「零 openbb」= yes
+  - 提交说明带这句声明的包 0 个（-），没带的 akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance
+  - 逐包档案（docs/evidence/clean-room/<包名>.md：一行同时含「审查结论」+包名+「无 OpenBB 源码参照」且不含否定式标记，另有审查日期/审查人/方法与反证三栏写实，覆盖面与代码面摘要按该包 py 文件实测重算）覆盖 0 个包、绑定行 0 行：-
+  - 被拒 12 个；拒因：akshare: 没有逐包档案（docs/evidence/clean-room/akshare.md 未跟踪） | bls: 没有逐包档案（docs/evidence/clean-room/bls.md 未跟踪） | cboe: 没有逐包档案（docs/evidence/clean-room/cboe.md 未跟踪） | ecb: 没有逐包档案（docs/evidence/clean-room/ecb.md 未跟踪） | federal_reserve: 没有逐包档案（docs/evidence/clean-room/federal_reserve.md 未跟踪） | fmp: 没有逐包档案（docs/evidence/clean-room/fmp.md 未跟踪） | fred: 没有逐包档案（docs/evidence/clean-room/fred.md 未跟踪） | imf: 没有逐包档案（docs/evidence/clean-room/imf.md 未跟踪） | oecd: 没有逐包档案（docs/evidence/clean-room/oecd.md 未跟踪） | sec: 没有逐包档案（docs/evidence/clean-room/sec.md 未跟踪） | ths: 没有逐包档案（docs/evidence/clean-room/ths.md 未跟踪） | yfinance: 没有逐包档案（docs/evidence/clean-room/yfinance.md 未跟踪）
+  - 旧口径（docs/evidence/ 散文同行匹配）会记 12 个包 / 10 行；C77 实测其来源是 C64 的缺口复述与 C65 的探针读数转储，即「把『记录不存在』那句话说成记录」，故 C77 起只作对照、不进判定
+  - 另有 5 个包把「no OpenBB code was consulted」写进了自己模块的 docstring —— 那是代码里的自声明，不是逐包审查记录，本条按字面不认
+  - 补齐到可判：declared_pkgs: 0 -> 12; record_refusals: 12 -> 0; recorded_binds: 0 -> 12; recorded_pkgs: 0 -> 12; undeclared_list: akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance -> -
+VERDICT AC-16|01: gap — 「审查留档」这一面从没成文：规则写在合规文档里（提交说明声明 + 对照表记上游事实来源），但 12 个自研 provider 里提交说明带「无 OpenBB 源码参照」的只有 0 个（缺：akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance），docs/evidence/clean-room/ 下通过同行声明与字段核对的逐包档案只有 0 个（被拒 12 个；拒因：akshare: 没有逐包档案（docs/evidence/clean-room/akshare.md 未跟踪） | bls: 没有逐包档案（docs/evidence/clean-room/bls.md 未跟踪） | cboe: 没有逐包档案（docs/evidence/clean-room/cboe.md 未跟踪） | ecb: 没有逐包档案（docs/evidence/clean-room/ecb.md 未跟踪） | federal_reserve: 没有逐包档案（docs/evidence/clean-room/federal_reserve.md 未跟踪） | fmp: 没有逐包档案（docs/evidence/clean-room/fmp.md 未跟踪） | fred: 没有逐包档案（docs/evidence/clean-room/fred.md 未跟踪） | imf: 没有逐包档案（docs/evidence/clean-room/imf.md 未跟踪） | oecd: 没有逐包档案（docs/evidence/clean-room/oecd.md 未跟踪） | sec: 没有逐包档案（docs/evidence/clean-room/sec.md 未跟踪） | ths: 没有逐包档案（docs/evidence/clean-room/ths.md 未跟踪） | yfinance: 没有逐包档案（docs/evidence/clean-room/yfinance.md 未跟踪））。旧口径读到的 12 个包 / 10 行是探针自己的读数转储与缺口复述在冒充记录，C77 已把它请出判定；模块 docstring 里的自声明（5 个包）与 THIRD_PARTY_NOTICES.md 里那句「本仓库不含任何 OpenBB 源码或其近似复制」都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录。历史提交说明补不回来（不改写历史），要收口得由一次真实的人工审查按包留档，本轮不代拟
+
+### AC-16|02  (document line 277)
+判据原文：全库无 OpenBB 源码或其近似复制（人工抽查 + 提交声明核查）〔C62 做成条目级判定面（measure_ac16_02 / judge_ac16_02 + 6 条反事实），**不勾**：判据括号的否定面这轮第一次量全，且**正向对照先行**——运行时四包（`opendata`、`opendata_http`、`opendata_fuyao`、`opendata_client`）git 跟踪的 py 文件 517 个、AST 逐个解析成功 **517 个**，共读到 **88 个**不同的顶层 import 根（走查不是空转），其中 openbb / openbb-* 的 **0 个**；`scripts/codemod/verify_no_akshare.py` 的 `FORBIDDEN_ROOTS` =（akshare, openbb）含 openbb = yes，该文件正文 openbb 出现 5 处（含 `--self-test` 的故意违规样本，即这条断言自己是会响的）。字面出现 openbb 的运行时文件 6 个：FR-7 对照表加载器（接口命名属事实性信息）+ 5 个 provider docstring 的 clean-room 自声明，都不是源码。但判据括号点名的**两项核查**现场是提交声明 0/7、人工抽查留档 0/7，而「近似复制」只能靠逐包人工比对判定 ⇒ 不以「import 为零」冒充它已被抽查过。**本轮 judge 被自己的反事实修强过一处**：`--self-test` 施加「一个运行时文件解析不了，走查面比跟踪面小」（516/517）时判定仍读 proven，因为旧口径只要求解析数 > 0，被静默跳过的文件不会让这条变红；现把「走查面 == 跟踪面」钉进判定式顶层，零读数必须建立在全量覆盖上（档案 `docs/evidence/C62/self-test.txt` 与 `README.md` 的披露段）〕
+本探针：运行时四包逐个 AST 解析找 openbb import 根（带正向对照），再核两项人工核查
+台账现状：state=gap，文档勾选=False
+  - 运行时发货面（opendata, opendata_client，搬运层自 C66 起在 opendata 之内）跟踪的 py 文件 649 个，逐个 AST 解析成功 649 个，共读到 98 个不同的顶层 import 根 —— 走查不是空转（正向对照）；其中 import 根为 openbb / openbb-* 的 0 个：-
+  - 零依赖扫描器 scripts/codemod/verify_no_akshare.py 的 FORBIDDEN_ROOTS = （akshare, openbb），含 openbb = yes；该文件正文里 openbb 出现 11 处（含 --self-test 的故意违规样本，即这条断言自己是会响的）
+  - 运行时代码里字面出现 openbb（大小写不敏感）的文件 10 个：opendata/data/openbb_map.py, opendata/data/providers/_engine/http_json.py, opendata/data/providers/ecb/models/_client.py, opendata/data/providers/federal_reserve/specs.py —— 前者是 FR-7 对照表加载器（接口命名属事实性信息），后者是 provider 模块 docstring 里的 clean-room 自声明，都不是源码
+  - 判据括号里的两项核查：提交说明带「无 OpenBB 源码参照」的 provider 包 0/12 个；docs/evidence/clean-room/ 下通过同行声明 + 字段核对（覆盖面与代码面摘要按实测重算）的逐包人工抽查留档覆盖 0/12 个（同一行绑定 0 行，被拒 12 个）
+  - 留档拒因：akshare: 没有逐包档案（docs/evidence/clean-room/akshare.md 未跟踪） | bls: 没有逐包档案（docs/evidence/clean-room/bls.md 未跟踪） | cboe: 没有逐包档案（docs/evidence/clean-room/cboe.md 未跟踪） | ecb: 没有逐包档案（docs/evidence/clean-room/ecb.md 未跟踪） | federal_reserve: 没有逐包档案（docs/evidence/clean-room/federal_reserve.md 未跟踪） | fmp: 没有逐包档案（docs/evidence/clean-room/fmp.md 未跟踪） | fred: 没有逐包档案（docs/evidence/clean-room/fred.md 未跟踪） | imf: 没有逐包档案（docs/evidence/clean-room/imf.md 未跟踪） | oecd: 没有逐包档案（docs/evidence/clean-room/oecd.md 未跟踪） | sec: 没有逐包档案（docs/evidence/clean-room/sec.md 未跟踪） | ths: 没有逐包档案（docs/evidence/clean-room/ths.md 未跟踪） | yfinance: 没有逐包档案（docs/evidence/clean-room/yfinance.md 未跟踪）
+  - 旧口径（docs/evidence/ 散文同行匹配，C77 起只作对照）会记 12/12 个包 / 10 行，其来源实为缺口复述与探针读数转储
+  - 补齐到可判：declared_pkgs: 0 -> 12; record_refusals: 12 -> 0; recorded_binds: 0 -> 12; recorded_pkgs: 0 -> 12
+VERDICT AC-16|02: gap — 「全库无 OpenBB 源码或其近似复制」的否定面成立（AST 走查 0 个 openbb import 根，扫描器禁止清单含 openbb 且自带会响的违规样本），但判据括号里点名的两项核查都没做过：提交声明核查 0/12，人工抽查留档 0/12（被拒 12 个：akshare: 没有逐包档案（docs/evidence/clean-room/akshare.md 未跟踪） | bls: 没有逐包档案（docs/evidence/clean-room/bls.md 未跟踪） | cboe: 没有逐包档案（docs/evidence/clean-room/cboe.md 未跟踪） | ecb: 没有逐包档案（docs/evidence/clean-room/ecb.md 未跟踪） | federal_reserve: 没有逐包档案（docs/evidence/clean-room/federal_reserve.md 未跟踪） | fmp: 没有逐包档案（docs/evidence/clean-room/fmp.md 未跟踪） | fred: 没有逐包档案（docs/evidence/clean-room/fred.md 未跟踪） | imf: 没有逐包档案（docs/evidence/clean-room/imf.md 未跟踪） | oecd: 没有逐包档案（docs/evidence/clean-room/oecd.md 未跟踪） | sec: 没有逐包档案（docs/evidence/clean-room/sec.md 未跟踪） | ths: 没有逐包档案（docs/evidence/clean-room/ths.md 未跟踪） | yfinance: 没有逐包档案（docs/evidence/clean-room/yfinance.md 未跟踪））。「近似复制」只能靠逐包人工比对判定，本轮不以「import 为零」冒充它已被抽查过
+
+### AC-19|01  (document line 264)
+判据原文：**备份策略落地**：每日备份 + binlog，RPO ≤24h〔C63 做成条目级判定面（measure_ac19_01 / judge_ac19_01 + 6 条反事实），**不勾**：判据要的是「每日备份」，而现场唯一缺的就是那个「每日」。读数五面分开——脚本面：`scripts/ops/backup_mysql.sh` 在跟踪清单 = yes，`dump_one` 调用 2 次（元数据库 + 仓库库各一次全量）、`mysqldump` 真实调用 1 处（前置检查那行不计，判定式按语句而不是按字面出现次数）；调度面：**每日触发点 0 处**，扫描人口 1625 个跟踪文件（`tests/`、`docs/`、`web/`、脚本自身与探针自身已排除），仓库里没有任何调度定义或 make 目标去跑它，只有脚本头部注释里那行 `0 2 * * *` 与手册里同一行——被调方不能当自己的证据（C62 的机读回声教训，本轮把它固化成 `PROBE_SELF_REL` 排除面，并把扫描人口打进读数，「0 处」从此说得清是在多大的人口里读到 0）；声明面：`docs/operations-backup-restore.md` 里 RPO ≤24h = yes、binlog = yes，但手册把它列为**可选附录**；实测面：仓库里带一次实测 `log_bin` 取值（只认 ON/OFF 的实取形状，格式串里的 `ON|OFF` 备选不算）的档案 **0 份**——语料再剔掉档案面与结论面（`docs/evidence/`、`docs/quality/`、`docs/迭代计划/`：档案是每轮的过程留痕，任何一轮写过一次取值形状都会被后面每一轮当成实测；台账与验收文档写的正是本轮的结论。这是 C62 机读回声的第二处），探针离线不连库，配置片段不算读数 ⇒ RPO ≤24h 今天是靠每日全量兜底、不是靠 binlog。`repair` 面写的是缺什么：一个真调度点 + 一次真取值，档案第 10 行逐字给的是 `binlog_attested_list: - -> docs/operations-backup-restore.md` —— 取值要落在运维手册这类**长期事实面**里，写进 `docs/evidence/` 的任何一档或台账里的那一份正好被自己的判据剔掉；起 crontab 属部署动作、连库取值需现场确认，本轮不代拟〕
+本探针：备份脚本 + 两库 dump + 仓库内的每日触发点 + RPO/binlog 声明与一次实测取值
+台账现状：state=gap，文档勾选=False
+  - 备份脚本在跟踪清单 = yes；dump_one 调用 2 次（metadata, warehouse），mysqldump 真实调用 1 处（前置检查那行不计）
+  - 扫描人口 2515 个跟踪文件（tests/docs/web、脚本自身与探针自身已排除，且读 `git ls-files -z`：默认输出会把中文文件名八进制转义）；每日触发点 1 处（scripts/ops/backup_runner.sh）；脚本头部注释里那行 `0 2 * * *` 不算触发点（被调方不能当自己的证据）
+  - Compose `backup` profile = yes（按需启动）；镜像链 = yes；runner 每日 02:00 UTC 循环 = yes；完整接线 = yes（源码配置不证明当前部署已启动）
+  - RPO ≤24h 的声明面 = yes；binlog 写进手册 = yes，手册把它列为可选附录 = yes
+  - 实测过的 `log_bin` 取值（只认 ON/OFF，格式串里的 `ON|OFF` 备选不算）0 份档案（-）；语料剔除面 docs/evidence/, docs/quality/, docs/迭代计划/ —— 档案面与结论面都不算实测，探针离线不连库，配置片段不算读数
+  - C64 isolated MySQL ROW binlog measured=yes; actual scheduled deployment and backup freshness=no; isolated restoration does not establish production RPO
+  - 补齐到可判：binlog_attested: 0 -> 1; binlog_attested_list: - -> docs/operations-backup-restore.md; binlog_optional: yes -> no; deployment_observed: no -> yes
+VERDICT AC-19|01: gap — 每日触发源码和隔离双库恢复已验证，隔离 ROW binlog 取值=yes；正式部署中每日任务运行、备份新鲜度及 binlog 实际生效证据=no，生产 RPO ≤24h 尚未验收
+
+### AC-19|04  (document line 267)
+判据原文：权威源 Key 配额/到期/封禁监控告警生效〔C63 做成条目级判定面（measure_ac19_04 / judge_ac19_04 + 7 条反事实），**不勾**：判据的动词是「生效」，现场是分类在位而信号与通道缺。四类健康类别 4/4（key-validity / key-expiry / revocation-or-ban / quota-left），线上可触发的被动归类两条都在（401/403→credential-rejected = yes、429→quota-exhausted = yes；判定按 if/elif/return 语句里的成对规则，不按注释里的字符串）；**到期这一类没有任何可触发的信号 = no**——本平台自签 Key 的 `is_expired` 与 `token_blacklist` 不算，判据点名的是**权威源** Key；分级落点 1 处运行时模块调用 `credential_health`（`opendata/api/pipeline.py`，定义处 `patrol.py` 已排除，不能当自己的告警落点），而**带外告警通道 0 处** ⇒ 只有 `/health` 可拉取 ≠ 告警生效：配额只到 warn、封禁只到 alert，无人被通知。模块自己那句「不发布权威源 Key 的到期/剩余额度/吊销状态」的边界声明仍要求在位（这句被删而探测仍未做 ⇒ 判 gap），未观测继续只报 `presence-only`〕
+本探针：四类 Key 健康的分类规则 + 到期信号 + 分级落点与带外告警通道
+台账现状：state=gap，文档勾选=False
+  - 四类健康类别在位 4/4（key-validity / key-expiry / revocation-or-ban / quota-left）
+  - 线上可触发的分类：401/403→credential-rejected = yes，429→quota-exhausted = yes；到期分类或主动探测 = yes（本平台自签 Key 的 is_expired 不算，判据点名的是权威源）
+  - 分级落点 2 处运行时模块调用 credential_health（opendata/api/pipeline.py, opendata/pipeline/key_health_notifications.py，定义处 patrol.py 已排除）；带外告警通道 1 处（opendata/pipeline/key_health_notifications.py）—— 只有 /health 可拉取 ≠ 告警生效
+  - operator-supplied expiry metadata supported = yes；独立 observation TTL 与通知测试 3/3 通过 (-)：过期只报告 observation-expired、不会被当作恢复；余量未知时保持 None，不补造配额
+  - independent live evidence: issuer expiry=no, remaining quota=no, notification delivery=no; metadata and mocks do not prove these
+  - 模块自己的边界声明在位 = yes，未观测只报 yes（这句被删而探测仍未做 ⇒ 判 gap）
+  - 补齐到可判：delivery_observed: no -> yes; issuer_expiry_observed: no -> yes; quota_remaining_observed: no -> yes
+VERDICT AC-19|04: gap — 判据要类别、可触发信号、分级落点、通知通道与观察状态测试共同成立；当前读到 4/4 类，operator expiry support=yes，分级落点=2、通知通道=1，observation tests=3/3。观察 TTL 过期不能替代 key 恢复，quota 余量未知时也不能填入数值；还缺供应商到期/余量和实际通知送达的独立现场证据
+
+### AC-1|05  (document line 128)
+判据原文：MySQL 双库名为 opendata / opendata_data，**四处配置面一致**（`config.py` 默认值、`.env.example`、`docker-compose.yml`、`init.sql`）；后端启动、前端登录、/health 均正常
+本探针：双库名四处一致（可静态量）+ 后端/前端/health 运行时（要真机）
+台账现状：state=gap，文档勾选=False
+  - config.py defaults, .env.example, docker-compose.yml, init.sql all read opendata / opendata_data = yes
+  -   config.py = opendata / opendata_data
+  -   .env.example = opendata / opendata_data
+  -   docker-compose.yml = opendata / opendata_data
+  -   init.sql = opendata / opendata_data
+  - backend start / frontend login / GET /health = failed (evidence issues 461: build-source-stale,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch)
+  -   证据问题分类：9 类，最多的三类 = build-source-file-missing=340, build-source-file-hash-mismatch=114, build-log-stale=1（上面那串只取前 8 条）
+  -   分类记账恒等式：各类条数合计 461 = 总条数 461（成立）
+  -   isolated endpoint = http://127.0.0.1:33566; image/source = sha256:3c8f9415734277069d65ba22f4594d189760cfe07dbd753fa9744f30afd60afc / c6bd1179740a703c79fdad95dba52a81206bc5a22159ba4a1f60798b26f1c50b
+  -   database = connected; static assets = 2; frontend identity = verified
+  - 补齐到可判：runtime: failed -> validated; runtime_issue_class_count: 9 -> 0; runtime_issue_class_sum: 461 -> 0; runtime_issue_count: 461 -> 0; runtime_issue_summary: build-source-stale,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch -> none; runtime_issue_top_classes: build-source-file-missing=340, build-source-file-hash-mismatch=114, build-log-stale=1 -> none; runtime_valid: no -> yes
+VERDICT AC-1|05: gap — 这条判据有两半：四处库名一致是静态可量的那一半，后端启动/前端登录/health 是当前运行读数的那一半（它有时效门槛，离线档案到期就不算数）。本轮红在：运行面读到 runtime=failed、valid=no，证据问题 461 条分 9 类，最多的三类是 build-source-file-missing=340, build-source-file-hash-mismatch=114, build-log-stale=1 —— 红在哪一半就用哪一半的修法，不拿配置面全绿去替运行面签收
+
+### AC-8|05  (document line 188)
+判据原文：**分区**：大表按 `RANGE COLUMNS(trade_date)` 年分区 + MAXVALUE 兜底；**分区维护任务**可运行
+本探针：接线四读（yaml 行 / kind 可执行 / 派发到本体 / 本体真的调 ensure）+ DDL 渲染面 + 真仓库年度上界只读档案；apply 半是生产 DDL，等一次经确认的执行才翻正
+台账现状：state=gap，文档勾选=False
+  - ``schedules.yaml`` 的 ``partition-maintenance`` 行 = yes；kind 在 ``EXECUTABLE_KINDS`` 里 = yes（不在则注册时被跳过，cron 行只剩外观），``_execute_template`` 派发到本体 = yes
+  - 本体做 apply 半 = yes（调 ``ensure`` 而不是只出 plan —— C48 的量法在告警矩阵里，那一面按设计不动 DDL）
+  - ``ddl.py`` 渲染 ``RANGE COLUMNS`` 年分区 + ``MAXVALUE`` 兜底 = yes
+  - 历史分区面（docs/evidence/C57/partition-horizon.txt）：注册表 20 张 / 已分区 6 张 / 当时年度上界缺 5 张；档案里有分区列读数 = yes
+  - C57 historical subset (2026-09-28 13:01 +0200): tables=20 / partitioned=6 / gap_tables=5; later full census C58 (2026-09-28 13:40 +0200): registered=53 / partitioned=9 / gap_tables=8; both are archived reads, not a fresh production census
+  - 经确认的 apply 留档（docs/evidence/C57/partition-apply.txt）存在 = no
+  - 补齐到可判：applied_face: no -> yes; live_gap_tables: 5 -> 0
+VERDICT AC-8|05: gap — 分区面两头都要有：接线（yaml 行 + kind 可执行 + 派发到真的 ``ensure``）与仓库现状（分区列点名、上界不再落后、apply 后复跑留档）。C57/C58 是历史档案，不是本轮新做的生产读数；``REORGANIZE`` 是生产仓库的 DDL，仍缺经确认的 apply 与新读数
+
+### AC-8|06  (document line 189)
+判据原文：**跨年写入用例**：模拟新年度数据写入成功（无"no partition for value"错误）
+本探针：用例三读（自建 probe 表 / 新年度插入被断言 / 落点分区名被断言）+ 它是 e2e 面所以门禁不跑 + 真仓库那年还缺一张分区；「写成功」要有跑过的留档
+台账现状：state=gap，文档勾选=False
+  - 用例在 tests/test_partition_maintenance.py：自建 ``_probe_*`` 表 = yes，插入新年度那一行（2027-03-01 进 probe 表）= yes，精确 placement 断言 = p2027,pmax (2 条；p2027=1、pmax=0)
+  - 标记 = e2e（``make gate`` 不跑 e2e，所以这一面必须另留档才算跑过）
+  - C57 历史面当时还缺年度分区的表 = 5 张 —— 缺的那一年会落进 ``pmax``：写入不报错，但年分区形同不存在，所以「写成功」必须有落点断言
+  - C57 historical subset (2026-09-28 13:01 +0200): tables=20 / partitioned=6 / gap_tables=5; later full census C58 (2026-09-28 13:40 +0200): registered=53 / partitioned=9 / gap_tables=8; both are archived reads, not a fresh production census
+  - 本轮留档里有一次真跑 = no
+  - 补齐到可判：fallback_gap: 5 -> 0; ran_live: no -> yes
+VERDICT AC-8|06: gap — 跨年写入这条判据要有「跑过」的证据而不是「有用例」：用例是 e2e 面（门禁不跑），且需要 fresh scoped production evidence。C57 是较早子集、C58 是较晚完整档案；两份都不是本轮 fresh production read，也没有本轮获准的用例运行留档
+
+census: gap=10
+（10 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+wrote /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C86/gap-ten-readings.json
+
+PROBE_EXIT=0

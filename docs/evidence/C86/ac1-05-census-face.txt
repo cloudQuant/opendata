@@ -1,0 +1,55 @@
+# C86 —— AC-1|05 的分类普查面：探针引用的每个数字都要能追到读数（含恒等式的两边臂）
+# 采集时间（跑前）: 2026-10-10T18:51:20+0800
+# 分支: dev  HEAD: 0dd453d
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 仪器 sha256[:16]: 2b5bb9dde5ec8285
+# 探针模块 sha256[:16]: 1ae6416a21c32a00
+# command: python docs/evidence/C86/ac1-05-census-face.py
+# git status --porcelain（跑前）:
+M scripts/quality/acceptance_item_probe.py
+?? docs/evidence/C86/ac1-05-census-face.py
+?? docs/evidence/C86/gap-ten-readings.json
+?? docs/evidence/C86/gap-ten-rerun.txt
+#
+[1] census facts as the shipped probe measured them, denominator=4
+    runtime_issue_count = '461'
+    runtime_issue_class_count = '9'
+    runtime_issue_class_sum = '461'
+    runtime_issue_top_classes = 'build-source-file-missing=340, build-source-file-hash-mismatch=114, build-log-stale=1'
+[2] hand recount: 9 codes, 461 issues
+    build-source-file-missing = 340
+    build-source-file-hash-mismatch = 114
+    build-log-stale = 1
+    build-source-projection-set-mismatch = 1
+    build-source-stale = 1
+    runtime-driver-stale = 1
+    runtime-driver-verifier-hash-mismatch = 1
+    runtime-stack-date-stale = 1
+    runtime-start-stale = 1
+[3] top-3 under (-count, code): build-source-file-missing=340, build-source-file-hash-mismatch=114, build-log-stale=1
+    probe published:            build-source-file-missing=340, build-source-file-hash-mismatch=114, build-log-stale=1
+[4] the identity face, two-sided
+    as measured: |   分类记账恒等式：各类条数合计 461 = 总条数 461（成立）
+    forged +1:   |   分类记账恒等式：各类条数合计 462 = 总条数 461（不成立）
+[5] reachability: repaired reading -> proven (needs proven)
+    breaks: 4/4 flip the repaired reading back to gap
+    [proven] repaired: identity prints 成立; no census
+    [  gap] 运行时正常但仓库名漂移: identity prints 成立; no census
+    [  gap] 四处一致但当前运行证据失败: identity prints 成立; reason cites 0 条/0 类
+    [  gap] 四处一致但栈没有启动: identity prints 成立; reason cites 0 条/0 类
+    [  gap] 运行状态声称validated但仍有证据问题: identity prints 成立; reason cites 1 条/1 类
+[6] published prose, state=gap (reason length=247)
+    | config.py defaults, .env.example, docker-compose.yml, init.sql all read opendata / opendata_data = yes
+    |   config.py = opendata / opendata_data
+    |   .env.example = opendata / opendata_data
+    |   docker-compose.yml = opendata / opendata_data
+    |   init.sql = opendata / opendata_data
+    | backend start / frontend login / GET /health = failed (evidence issues 461: build-source-stale,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch)
+    |   证据问题分类：9 类，最多的三类 = build-source-file-missing=340, build-source-file-hash-mismatch=114, build-log-stale=1（上面那串只取前 8 条）
+    |   分类记账恒等式：各类条数合计 461 = 总条数 461（成立）
+    |   isolated endpoint = http://127.0.0.1:33566; image/source = sha256:3c8f9415734277069d65ba22f4594d189760cfe07dbd753fa9744f30afd60afc / c6bd1179740a703c79fdad95dba52a81206bc5a22159ba4a1f60798b26f1c50b
+    |   database = connected; static assets = 2; frontend identity = verified
+    | 这条判据有两半：四处库名一致是静态可量的那一半，后端启动/前端登录/health 是当前运行读数的那一半（它有时效门槛，离线档案到期就不算数）。本轮红在：运行面读到 runtime=failed、valid=no，证据问题 461 条分 9 类，最多的三类是 build-source-file-missing=340, build-source-file-hash-mismatch=114, build-log-stale=1 —— 红在哪一半就用哪一半的修法，不拿配置面全绿去替运行面签收
+codes=9 issues=461 top3_match=True arms=4/4 reason_digits=5
+AC1_05_CENSUS_CHECK PASS
+INSTRUMENT_RC=0

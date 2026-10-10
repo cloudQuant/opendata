@@ -1,0 +1,129 @@
+# C86 —— gap 台账 reason 与探针现读数是否仍一致
+# 采集时间（跑前）: 2026-10-10T22:42:01+0800
+# 分支: dev  HEAD: 0dd453d
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 仪器 sha256[:16]: 301061ae1cd80e72
+# 探针模块 sha256[:16]: 51b2266dd60bce24
+# command: python docs/evidence/C86/gap-reason-staleness.py
+# git status --porcelain（跑前）:
+M docs/evidence/C86/README.md
+ M docs/quality/acceptance-item-ledger.json
+ M scripts/quality/acceptance_item_probe.py
+?? LICENSE-REVIEW.md
+?? LICENSE-SCOPE-DRAFT.md
+?? LICENSE-SOURCE-AVAILABLE-DRAFT.md
+?? docs/evidence/C86/ac1-05-census-face.py
+?? docs/evidence/C86/ac1-05-census-face.txt
+?? docs/evidence/C86/gap-reason-staleness-pass3.txt
+?? docs/evidence/C86/gap-ten-readings.json
+?? docs/evidence/C86/gap-ten-refresh.txt
+?? docs/evidence/C86/gap-ten-rerun.txt
+?? docs/evidence/C86/reason-before-after.py
+?? docs/evidence/C86/reason-before-after.txt
+?? "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/census-alpha_vantage.json"
+?? "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/census-benzinga.json"
+?? "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/census-biztoc.json"
+?? "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/census-cftc.json"
+?? "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/census-congress_gov.json"
+?? "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/census-econdb.json"
+?? "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/census-eia.json"
+?? "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/census-intrinio-1of3.json"
+?? "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/census-intrinio-2of3.json"
+?? "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/census-intrinio-3of3.json"
+?? "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/census-nasdaq.json"
+?? "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/census-tiingo.json"
+?? "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/census-tradier.json"
+?? "docs/\350\277\255\344\273\243\350\256\241\345\210\222/\350\277\255\344\273\2432-\347\273\237\344\270\200Provider\346\236\266\346\236\204\344\270\216\345\205\250\351\207\217\350\203\275\345\212\233\350\241\245\351\275\220/census-tradingeconomics.json"
+#
+gap cells=18 probes=130 ledger rows=130
+[A] state_mismatch=0 []
+[B] reason_same=18 reason_diff=0
+      same: AC-10|01, AC-10|03, AC-11|02, AC-13|08, AC-15|01, AC-15|02, AC-16|01, AC-16|02, AC-19|01, AC-19|04, AC-1|05, AC-8|05, AC-8|06, AC-8|08, AC-9|08, §4|02, §4|04, §5|02
+      diff: -
+[B] 'reason_same <=> round==C86' holds for 18/18 cells
+[C] borrowed pair face holds=True  donor §4|02 measures {'key_dup_groups': '3', 'key_conflict_groups': '2'} equals ['3', '2'] = True; borrower AC-9|08 names no dup/conflict fact key = True (none); those values absent from the borrower's own fact values = True
+[D] cited=53 unmatched=20 number tokens over gap reasons
+      (disclosure, no gate -- the residue is the finding)
+      UNMATCHED AC-10|01: '10' ...AC-10|01 要求已启用...
+      UNMATCHED AC-10|01: '01' ...AC-10|01 要求已启用 pr...
+      UNMATCHED AC-10|01: '4.3' ...里 26 条连 §4.3 的保留标注都没有...
+      UNMATCHED AC-10|03: '10' ...AC-10|03 需要审阅档...
+      UNMATCHED AC-10|03: '03' ...AC-10|03 需要审阅档案覆盖...
+      UNMATCHED AC-11|02: '2' ...S 0 行（容差 2e-3 不放宽，见...
+      UNMATCHED AC-11|02: '3' ... 行（容差 2e-3 不放宽，见档案里...
+      UNMATCHED AC-11|02: '2' ...pe dev 对 2e-3），要改的是...
+      UNMATCHED AC-11|02: '3' ...dev 对 2e-3），要改的是证据不...
+      UNMATCHED AC-16|01: '77' ...复述在冒充记录，C77 已把它请出判定；...
+      UNMATCHED AC-19|01: '24' ...，生产 RPO ≤24h 尚未验收...
+      UNMATCHED AC-1|05: '340,' ...-missing=340, build-so...
+      UNMATCHED AC-1|05: '114,' ...mismatch=114, build-lo...
+      UNMATCHED AC-1|05: '1' ...og-stale=1 —— 红在哪一半...
+      UNMATCHED AC-8|05: '57' ... 后复跑留档）。C57/C58 是历史档...
+      UNMATCHED AC-8|05: '58' ...留档）。C57/C58 是历史档案，不是...
+      UNMATCHED AC-8|06: '57' ...vidence。C57 是较早子集、C5...
+      UNMATCHED AC-8|06: '58' ...7 是较早子集、C58 是较晚完整档案；...
+      UNMATCHED AC-9|08: '49' ...vidence/C49/census-p...
+      UNMATCHED §4|04: '10' ...键、模型键唯一、D10 复权链逐腿判读、...
+[E] re-attributed blockers over 2 cells (disclosure, no gate)
+  AC-1|05 round=C86 in_diff=False
+    LEDGER reason: 这条判据有两半：四处库名一致是静态可量的那一半，后端启动/前端登录/health 是当前运行读数的那一半（它有时效门槛，离线档案到期就不算数）。本轮红在：运行面读到 runtime=failed、valid=no，证据问题 461 条分 9 类，最多的三类是 build-source-file-missing=340, build-source-file-hash-mismatch=114, build-log-stale=1 —— 红在哪一半就用哪一半的修法，不拿配置面全绿去替运行面签收
+    PROBE  reason: 这条判据有两半：四处库名一致是静态可量的那一半，后端启动/前端登录/health 是当前运行读数的那一半（它有时效门槛，离线档案到期就不算数）。本轮红在：运行面读到 runtime=failed、valid=no，证据问题 461 条分 9 类，最多的三类是 build-source-file-missing=340, build-source-file-hash-mismatch=114, build-log-stale=1 —— 红在哪一半就用哪一半的修法，不拿配置面全绿去替运行面签收
+    FACT compose=opendata / opendata_data
+    FACT config=opendata / opendata_data
+    FACT consistent=yes
+    FACT env_example=opendata / opendata_data
+    FACT init_sql=opendata / opendata_data
+    FACT runtime=failed
+    FACT runtime_endpoint=http://127.0.0.1:33566
+    FACT runtime_frontend_identity=verified
+    FACT runtime_health_database=connected
+    FACT runtime_image=sha256:3c8f9415734277069d65ba22f4594d189760cfe07dbd753fa9744f30afd60afc
+    FACT runtime_issue_class_count=9
+    FACT runtime_issue_class_sum=461
+    FACT runtime_issue_count=461
+    FACT runtime_issue_summary=build-source-stale,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch,build-source-file-hash-mismatch
+    FACT runtime_issue_top_classes=build-source-file-missing=340, build-source-file-hash-mismatch=114, build-log-stale=1
+    FACT runtime_source=c6bd1179740a703c79fdad95dba52a81206bc5a22159ba4a1f60798b26f1c50b
+    FACT runtime_static_asset_count=2
+    FACT runtime_valid=no
+  AC-16|01 round=C86 in_diff=False
+    LEDGER reason: 「审查留档」这一面从没成文：规则写在合规文档里（提交说明声明 + 对照表记上游事实来源），但 12 个自研 provider 里提交说明带「无 OpenBB 源码参照」的只有 0 个（缺：akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance），docs/evidence/clean-room/ 下通过同行声明与字段核对的逐包档案只有 0 个（被拒 12 个；拒因：akshare: 没有逐包档案（docs/evidence/clean-room/akshare.md 未跟踪） | bls: 没有逐包档案（docs/evidence/clean-room/bls.md 未跟踪） | cboe: 没有逐包档案（docs/evidence/clean-room/cboe.md 未跟踪） | ecb: 没有逐包档案（docs/evidence/clean-room/ecb.md 未跟踪） | federal_reserve: 没有逐包档案（docs/evidence/clean-room/federal_reserve.md 未跟踪） | fmp: 没有逐包档案（docs/evidence/clean-room/fmp.md 未跟踪） | fred: 没有逐包档案（docs/evidence/clean-room/fred.md 未跟踪） | imf: 没有逐包档案（docs/evidence/clean-room/imf.md 未跟踪） | oecd: 没有逐包档案（docs/evidence/clean-room/oecd.md 未跟踪） | sec: 没有逐包档案（docs/evidence/clean-room/sec.md 未跟踪） | ths: 没有逐包档案（docs/evidence/clean-room/ths.md 未跟踪） | yfinance: 没有逐包档案（docs/evidence/clean-room/yfinance.md 未跟踪））。旧口径读到的 12 个包 / 10 行是探针自己的读数转储与缺口复述在冒充记录，C77 已把它请出判定；模块 docstring 里的自声明（5 个包）与 THIRD_PARTY_NOTICES.md 里那句「本仓库不含任何 OpenBB 源码或其近似复制」都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录。历史提交说明补不回来（不改写历史），要收口得由一次真实的人工审查按包留档，本轮不代拟
+    PROBE  reason: 「审查留档」这一面从没成文：规则写在合规文档里（提交说明声明 + 对照表记上游事实来源），但 12 个自研 provider 里提交说明带「无 OpenBB 源码参照」的只有 0 个（缺：akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance），docs/evidence/clean-room/ 下通过同行声明与字段核对的逐包档案只有 0 个（被拒 12 个；拒因：akshare: 没有逐包档案（docs/evidence/clean-room/akshare.md 未跟踪） | bls: 没有逐包档案（docs/evidence/clean-room/bls.md 未跟踪） | cboe: 没有逐包档案（docs/evidence/clean-room/cboe.md 未跟踪） | ecb: 没有逐包档案（docs/evidence/clean-room/ecb.md 未跟踪） | federal_reserve: 没有逐包档案（docs/evidence/clean-room/federal_reserve.md 未跟踪） | fmp: 没有逐包档案（docs/evidence/clean-room/fmp.md 未跟踪） | fred: 没有逐包档案（docs/evidence/clean-room/fred.md 未跟踪） | imf: 没有逐包档案（docs/evidence/clean-room/imf.md 未跟踪） | oecd: 没有逐包档案（docs/evidence/clean-room/oecd.md 未跟踪） | sec: 没有逐包档案（docs/evidence/clean-room/sec.md 未跟踪） | ths: 没有逐包档案（docs/evidence/clean-room/ths.md 未跟踪） | yfinance: 没有逐包档案（docs/evidence/clean-room/yfinance.md 未跟踪））。旧口径读到的 12 个包 / 10 行是探针自己的读数转储与缺口复述在冒充记录，C77 已把它请出判定；模块 docstring 里的自声明（5 个包）与 THIRD_PARTY_NOTICES.md 里那句「本仓库不含任何 OpenBB 源码或其近似复制」都是**一次性全库断言**，不是「全部 provider 均有」的逐包记录。历史提交说明补不回来（不改写历史），要收口得由一次真实的人工审查按包留档，本轮不代拟
+    FACT code_declared_pkgs=5
+    FACT declared_list=-
+    FACT declared_pkgs=0
+    FACT legacy_record_binds=10
+    FACT legacy_record_pkgs=12
+    FACT provider_list=akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance
+    FACT provider_pkgs=12
+    FACT record_refusal_detail=akshare: 没有逐包档案（docs/evidence/clean-room/akshare.md 未跟踪） | bls: 没有逐包档案（docs/evidence/clean-room/bls.md 未跟踪） | cboe: 没有逐包档案（docs/evidence/clean-room/cboe.md 未跟踪） | ecb: 没有逐包档案（docs/evidence/clean-room/ecb.md 未跟踪） | federal_reserve: 没有逐包档案（docs/evidence/clean-room/federal_reserve.md 未跟踪） | fmp: 没有逐包档案（docs/evidence/clean-room/fmp.md 未跟踪） | fred: 没有逐包档案（docs/evidence/clean-room/fred.md 未跟踪） | imf: 没有逐包档案（docs/evidence/clean-room/imf.md 未跟踪） | oecd: 没有逐包档案（docs/evidence/clean-room/oecd.md 未跟踪） | sec: 没有逐包档案（docs/evidence/clean-room/sec.md 未跟踪） | ths: 没有逐包档案（docs/evidence/clean-room/ths.md 未跟踪） | yfinance: 没有逐包档案（docs/evidence/clean-room/yfinance.md 未跟踪）
+    FACT record_refusals=12
+    FACT recorded_binds=0
+    FACT recorded_list=-
+    FACT recorded_pkgs=0
+    FACT rule_extends_ast=yes
+    FACT rule_written=yes
+    FACT undeclared_list=akshare, bls, cboe, ecb, federal_reserve, fmp, fred, imf, oecd, sec, ths, yfinance
+[F] runtime issue-class census behind AC-1|05 (gated on its identities)
+  validator issues=461 census_total=461 probe_fact_runtime_issue_count=461 identity=True
+  (the probe's ``runtime_issue_summary`` prints ``issues[:8]``, so the truncated head
+   cannot show which class predominates -- the census is printed to disagree with it)
+    340  build-source-file-missing                  named_in_ledger_text=True
+    114  build-source-file-hash-mismatch            named_in_ledger_text=True
+      1  build-log-stale                            named_in_ledger_text=True
+      1  build-source-projection-set-mismatch       named_in_ledger_text=False
+      1  build-source-stale                         named_in_ledger_text=False
+      1  runtime-driver-stale                       named_in_ledger_text=False
+      1  runtime-driver-verifier-hash-mismatch      named_in_ledger_text=False
+      1  runtime-stack-date-stale                   named_in_ledger_text=False
+      1  runtime-start-stale                        named_in_ledger_text=False
+  majority_class=build-source-file-missing retired_roots_exist_today={'opendata_fuyao': False, 'opendata_http': False} control(present=True,absent=False)
+  relocated opendata_fuyao/credentials.py -> opendata/data/providers/ths/transport/credentials.py
+  relocated opendata_fuyao/dumps.py -> opendata/data/providers/ths/dumps.py
+  relocated opendata_fuyao/endpoint_map.py -> opendata/data/providers/ths/endpoint_map.py
+  missing_with_tracked_namesake=325/325 (trivial names excluded) control_fabricated_name=0
+CONTROL-REASON victim=AC-10|01 same 18 -> 17 expected=17 agree 18 -> 17
+CONTROL-BORROW live=True donor-stripped=False expected live=True stripped=False
+CONTROL-CENSUS live=True dropped-one-issue=False expected live=True stripped=False
+STALENESS_CHECK PASS
+INSTRUMENT_RC=0

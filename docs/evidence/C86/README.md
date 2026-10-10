@@ -41,6 +41,12 @@ bundle 的 24h 新鲜度一条也没放宽。
 | `repin2-audit.txt` | 探针字节被 `8b6b555` 移动后的**只读审计**面：`drifted entries audited: 1`、`521d2309… -> 2be4c398…`、`REAL problems: 0`（写入前一遍，证明红的是摘要不是批准内容） | `python docs/evidence/C85/reference-policy-repin.py` |
 | `repin2-write-capture.txt` | 同一台仪器的 `--write` 回执：`entries re-pinned: 1`、`checker exit code: 0`，并逐字带上条款里实测的 `增10 删6`（与这笔提交的 `git diff --stat` 同形）与 `akshare 144->144 / openbb 95->95`（未移动） | `python docs/evidence/C85/reference-policy-repin.py --write` |
 | `repin2-label-check.txt` | 重钉条款的署名普查：`live HEAD 8b6b555 -> signer() reads C86 primary`、`repeat detector shaped both ways (live 0, control names the word): True` | `python docs/evidence/C85/reference-policy-repin.py --label-check` |
+| `ac1-05-census-face.py` / `.txt` | AC-1\|05 阻塞文案的分类面：台账那一句里的每个数字都要在探针 facts 里数得到（`reason_digits=5`）、issue 类别按仓库自己的运行面校验器手算第二遍并与探针读数对钉（`codes=9 issues=461 top3_match=True`）、分类记账恒等式带一条 forged +1 臂要判「不成立」、四条臂（3 break + 1 repair）各自打印的 reason 逐条检查它有没有自称一个本臂没有量到的数字 | `python docs/evidence/C86/ac1-05-census-face.py` |
+| `gap-ten-rerun.txt` / `gap-ten-readings.json` | 十格落后 gap 的探针现读数（`PROBE_EXIT=0`，探针 `1ae6416a…`），是 `gap-ten-refresh.txt` 的载体、也是 `reason-before-after.py` 的对照输入 | `python docs/evidence/C86/probe-seven-carrier.py --item 'AC-10\|01' … --item 'AC-8\|06' --json …`（十格一次跑） |
+| `reason-before-after.py` / `.txt` | 写入**之前**跑的并排普查：十格旧文案逐字入档（三格 pre-image 长于新文案，全文打印）、数字残差 census（旧文案引用过的数字有几个在自己那一格的载体块里从没打印过：`residual=46/73`）、AC-1\|05 旧文案点名的类别与今天 top-3 的归属差、`is_stale`/`residual` 两个谓词各自都过 real 与 forged 两侧（`10/10` 对 `0`、`6` 对 `0`）、外加空population 分母守卫自己那条命中臂 | `python docs/evidence/C86/reason-before-after.py` |
+| `gap-ten-refresh.txt` | 十格 `reason` 重发布的三遍逐字入档（两个载体一起）：写前 RED `stale=10` rc=1 → `--write` `written=10 evidence_appended=10 command_written=4` rc=0（`AC-9\|08` 在同一批里读作 `EQUAL`，是不变量的见证）→ 写后 GREEN `equal=11 stale=0` rc=0；`# 三遍 rc 序列: [1, 0, 0] 期望 [1, 0, 0]` | `python docs/evidence/C86/ledger-reason-refresh.py --carrier docs/evidence/C86/gap-ten-rerun.txt --carrier docs/evidence/C86/ac9-08-reason-rerun.txt [--verify-only\|--write]`（三遍） |
+| `gap-reason-staleness-postformat.txt` | 落后普查的第 4 遍（`ruff format` 之后的探针字节上重跑）：`探针模块 sha256[:16]: 51b2266dd60bce24`、`INSTRUMENT_RC=0`，正文 91 行与第 3 遍逐行相同（只有头部不同）——格式改动对读数是中性的，这条就是它中性的那一面 | `python docs/evidence/C86/staleness-carrier.py`（内跑 `gap-reason-staleness.py`，约 13 分钟；产物移到本名，`gap-reason-staleness.txt` 从 index 还原） |
+| `gap-reason-staleness-pass3.txt` | 落后普查的第 3 遍（写入之后重跑）：`gap cells=18`、`state_mismatch=0`、`reason_same=18 reason_diff=0`，且「reason 与探针一致 ⟺ `round==C86`」在 18/18 上成立，`STALENESS_CHECK PASS` | `python docs/evidence/C86/staleness-carrier.py`（内跑 `gap-reason-staleness.py`；`--all` 一次约 13 分钟） |
 
 ## AC-17|02：例外普查的语义要与扫描器一致
 
@@ -395,7 +401,111 @@ write 会动，两半用的是**同一条**读数，所以「dry 什么都没改
 census 不变是预期而不是巧合。`evidence_traceability` 此刻读 `untracked gaps = 8` 且 `exit gaps = 0`，
 八条正是这 4 台仪器与它们的 4 份档案，提交后清除：与 `gate-run1.txt` 记的是同一条记账顺序教训。
 
-**没做完的要写清。** 另外 10 格 C65 文案尚未刷新（`AC-10|01`、`AC-10|03`、`AC-11|02`、`AC-16|01`、
-`AC-16|02`、`AC-19|01`、`AC-19|04`、`AC-1|05`、`AC-8|05`、`AC-8|06`），这台仪器已能为它们服务，
-前提是每格先有**本轮**的载体而不是复用旧轮的字面量；`AC-9|08` 本身仍停在 `gap`，
-因为 `landed_rows` 只能由一次经确认的 warehouse 写入补齐，那不是文案能修的形状。
+**先问「这十格能不能刷」，再刷。** 被刷的文案一旦写下就很难自证它没有替本轮编原因，所以写入之前先做了三遍普查
+（`reason-before-after.py`，仪器 `8d3fd7721cf741dd`，探针 `1ae6416a21c32a00`，档案 `reason-before-after.txt`
+`cb9496cddf73c4a8`）。能不能刷取决于每格有没有**本轮**载体上的 `VERDICT` 行可取，不取决于文案像不像：
+`[1] 10 cells over 10 carrier blocks, carrier=docs/evidence/C86/gap-ten-rerun.txt` —— 十格十块，无一落空；
+逐格字符数 `AC-10|01 1137→157`、`AC-10|03 1388→415`、`AC-11|02 87→160`、`AC-16|01 72→1107`、
+`AC-16|02 81→833`、`AC-19|01 53→90`、`AC-19|04 85→172`、`AC-1|05 527→247`、`AC-8|05 54→150`、`AC-8|06 42→145`。
+
+**我原本打算用「带数字就不能信」当闸门，普查把它驳了。** `[2] residual census: 46 of 73 number tokens untraceable`
+—— 按这条启发式，七成预图像都要打回，其中包括**本轮刚写对**的那几格；所以残差改成披露项而不是过滤器，
+并且逐格看它为什么量不到。`AC-10|03` 的预图像引的是 C65 档案面（121 个基线文件上 shipped 数出 1105 个 AST 块、
+档案记 1227、按档案自身 method 文本重算 1279），那些数字属于当时的档案，本轮没有重跑 builder，
+「untraceable」的准确含义是**这台仪器此刻量不到**，不是「说错了」。同一条残差在刷完之后又量了一遍（见下文 `[D]`）。
+
+**三格的刷新是删信息，不是换信息。** `[3] at-risk pre-images (longer than the line replacing them): 3
+-- ['AC-10|01', 'AC-10|03', 'AC-1|05']`，即新行比旧短，所以这三格的旧文案逐字留在档案里再写。
+
+**最要紧的一条发现是：`AC-1|05` 的旧文案不是过期，是错的。** `[4]` 面把预图像点名的类与本轮载体 top-3 并排：
+预图像点名 `['build-source-stale', 'build-source-file-hash-mismatch']`，本轮 top-3 是
+`['build-log-stale', 'build-source-file-hash-mismatch', 'build-source-file-missing']`，
+`added=2`（`build-log-stale`、`build-source-file-missing`）/ `dropped=1`（`build-source-stale`）——
+旧文案把一个不在前三的类当主因，又完全没提 340 条的最大类。这条因此从「落后」改判为「已驳」，**改判发生在写入之前**。
+
+**每个谓词两侧都能翻。** `[5] both sides of each predicate: staleness over the real pair=10/10 (needs all),
+forged pair=0 (needs 0)`；`residual over AC-1|05: real=6 forged=0`；空总体臂 `0 verdicts over 0 blocks,
+denominator guard fires=yes`。**被驳的是这台仪器自己**：`reason-before-after.py` 第一次跑在 `cells=0` 上打了
+`PASS`，因为 `VERDICT_RE` 少了 `re.MULTILINE`——修的不只是标志位，还加了空总体分母守卫，并让守卫自己有一臂会触发，
+被驳的第一遍读数留在仪器 docstring 里。
+
+## 十格写入的三遍与探针自己的两处文案缺陷
+
+三遍 rc 序列 `[1, 0, 0]`（期望 `[1, 0, 0]`，`REFRESH_ARMS_RC=PASS`），两个载体
+`gap-ten-rerun.txt` + `ac9-08-reason-rerun.txt` 各点齐 11 条 `VERDICT`（`verdicts=11 gap=11 matched=11`）：
+写前 RED `equal=1 stale=10` rc=1（`LEDGER_REASON_REFRESH FAIL problems=10`）；`--write` 打印
+`written=10 equal=1 stale=0 evidence_appended=10 command_written=4` rc=0，逐格 `WRITE` 行给出
+`round C65 -> C86` 与字符数变化；写后 GREEN `equal=11 stale=0` rc=0。
+`AC-9|08` 就是那个 `equal=1`：它在本目录前一节已刷成 C86，三遍里始终相等 —— **这台仪器没有把已经对的格子重写一遍**，
+这条不变量见证由它自己那一格承担。台账字节 `6263ad9e9bb85db9 → 32b66437cb2fe2b0`，
+逐字段记账 `reason=10 round=10 date=9 evidence=10 command=4`、`state=0`、`note=0`，`items_total=130` 与其余顶层键不变
+（`date=9` 而不是 10 也是实测：`AC-10|01` 原本已是 `round=C85 date=2026-10-10`，日期本来就是今天）。
+**十格 `state` 全部没动**，这正是这次刷新的边界——文案不是判定。
+
+**`AC-1|05` 那半边的红由分类 census 生成，不是手写。** 探针新增三个事实
+`runtime_issue_class_count` / `runtime_issue_class_sum` / `runtime_issue_top_classes`，reason 改由 `blockers`
+列表拼装，并加一条记账恒等式面，双面都留了档：实测 `461 = 461（成立）`，伪造 +1 → `462 = 461（不成立）`
+（`ac1-05-census-face.txt` `[4]`）。`[2]` 手算第二遍独立对上（`9 codes, 461 issues`），
+`[3]` top-3 按 `(-count, code)` 排序 `build-source-file-missing=340, build-source-file-hash-mismatch=114,
+build-log-stale=1`，`[6]` 把发布出去的 prose 与它的长度一起回读（`state=gap (reason length=247)`）。
+总结 `codes=9 issues=461 top3_match=True arms=4/4 reason_digits=5` —— 新文案带 5 个数字 token，
+而零数字的 reason 就是模板，这条正是用来区分两者的。
+
+**四条臂逐条打印判定，其中一条原本自己打自己。** 修之前 break 4 的句子与它自己的数字互相矛盾（reason 说
+`1 条/1 类`，同一段却打印恒等式成立）。现在 PROBES 注册表里 `repair` 与每条 break 都同时设这四个键，
+`[5]` 面 `repaired reading -> proven`（说明这条红不是永久红灯）加三条 gap 臂 + 一条 `1 条/1 类` 臂，`arms=4/4`。
+
+**`AC-10|03` 不再替空读数编原因。** `providers_missing_from_review` 无读数时走
+`本轮 providers_missing_from_review 没有产出读数（不替它编一个原因）` 分支，有读数时才打
+`当前缺档={...}`。上一轮那句「缺档」是把仪器的空默认当成事实面在说。
+
+**刷完再量全 18 格**（`gap-reason-staleness-pass3.txt`，仪器 `301061ae1cd80e72`，`STALENESS_CHECK PASS`）：
+`gap cells=18 probes=130 ledger rows=130`，`[A] state_mismatch=0 []`，`[B] reason_same=18 reason_diff=0`，
+双条件「reason 一致 ⟺ `round==C86`」`18/18` 成立。这 18 格里 `§4|02`、`§4|04`、`§5|02`、`AC-13|08`、`AC-15|01`、
+`AC-15|02`、`AC-8|08` 本来就与本轮探针文本相等，不是本轮改的，档案把 18 个 key 逐名列出以便分得开。
+`[C]` 面继续盯着上一轮抓到的「借来的键计数」形状（donor `§4|02` 的 `3`/`2` 出现在 borrower `AC-9|08` 的
+自己的事实值里为否），`[E]` 面把 `AC-1|05` 与 `AC-16|01` 的 ledger 行与 probe 行逐字并排（两边完全相同，
+且 `in_diff=False`），`[F]` 面把 `runtime_issue` 三处来源并排（validator `461` / census `461` / 探针事实 `461`，
+`identity=True`）。
+
+**还没消掉的残差要写清，而且分两类。** `[D] cited=53 unmatched=20` —— 刷完之后仍有 20 个数字 token 落在判定面之外：
+`AC-10|01` 的 `4.3`、`AC-11|02` 的 `2e-3`、`AC-16|01` 的 `C77`、`AC-19|01` 的 `24h`、`AC-8|05/06` 的 `C57/C58`、
+`AC-9|08` 的 `C49`、`§4|04` 的 `D10` 属**历史档案引用**，本轮不该重算；`AC-1|05` 的 `340,` / `114,` / `1` 属
+**仪器自己的 token 切分缺陷**（正则把逗号吞进 token）。`[D]` 是无门禁的披露面（逐字
+`(disclosure, no gate -- the residue is the finding)`），我没把它改成判定：改成的话第一臂就会因 `4.3` 这种
+档案引用而红，那是假灯。
+
+**`command` 字段这半本轮没做到，而且没有门禁在比。** 十格里 4 格由这台仪器补上命令（`AC-11|02`、`AC-19|04`、
+`AC-8|05`、`AC-8|06`，各指向 `docs/evidence/C86/gap-ten-rerun.txt`）；3 格**保留**了旧命令且指向旧轮档案
+（`AC-10|01` 两条 C85 路径，`AC-10|03`、`AC-1|05` 各两条 `docs/evidence/C65/item-readings-current.*`）；
+3 格保留的命令**不含任何 `docs/evidence/` 路径**（`AC-16|01`、`AC-16|02`、`AC-19|01`）。
+10 条被引路径在盘上全部存在，所以「命令还能解析」成立，但「命令指向本轮载体」在 6 格上不成立 ——
+`round` 已写 C86 而 `command` 仍写 C65，是一格之内的自相矛盾。`read_back()` 回读校验的是 reason/round 按写入值相等、
+被引路径 repo-relative 且在盘上，**不比较 command 的轮次**，所以这台仪器不会自己抓到这条；本轮按实测入档，
+不改判定也不改台账，留作下一步。
+
+**提交前 `ruff format` 动了探针字节，「读数没跟着动」要量而不是假设。** a2-check 会拒未格式化的字节，
+而第 3 遍档案头部记的 `探针模块 sha256[:16]: 1ae6416a…` 从此不再等于 HEAD 字节：
+`1ae6416a21c32a00 → 51b2266dd60bce24`、`20028 → 20026` 行、`930720 → 930704` 字节（−16 字节，
+格式化器只报出一处 hunk，就在 `judge_ac1_05` 那个三元表达式的换行上）。
+写周期那两份档案（`gap-ten-rerun.txt`、`gap-ten-refresh.txt`）**按原样保留、不重跑**：RED→写→GREEN 三遍是一个
+不可重演的序列，在新字节上重跑只会一上来就得到 `stale=0` 的 GREEN，把见证本身弄丢。
+中性面因此改由第 4 遍承担 —— 同一台 `gap-reason-staleness.py` 在新字节上重跑
+（`gap-reason-staleness-postformat.txt`，`684fde013de7f2a3`，15877 字节），头部读到 `51b2266dd60bce24`、
+`INSTRUMENT_RC=0`，去掉头部与 `INSTRUMENT_RC` 行之后的 **91 行正文与第 3 遍逐行相同**，
+而这 91 行里就含 `[E]` 面打印的 `AC-1|05` 探针生成文本与 `[F]` 的三个 `461`。
+据此，本轮所有写着 `1ae6416a…` 的档案都按**历史字节**读，不是对 HEAD 字节的陈述——两者的分工在表格行与正文里分开写明。
+
+**载体那台仪器的「跑前」标注仍然有问题，本轮不修。** `docs/evidence/C86/staleness-carrier.py` 第 42 行拼命令、
+第 44 行跑内层，而第 54–61 行的分支/HEAD/摘要/`git status --porcelain` 是在内层**之后**采集的，头部却写「跑前」。
+第 3 遍这份头部之所以仍然为真，只是因为 `gap-reason-staleness.py` 只在 `tempfile.TemporaryDirectory()`
+（第 307 行）里写，内层运行期间工作树没动 —— 是巧合为真，不是构造为真。`/tmp/arm_carrier.py` 在更早的循环里
+已按采集顺序修正，仓内这台仍列为**已知缺陷**：改它会让这台载体的头部字节变化，牵扯 member 2 的重钉，
+放到与门禁同一批处理里做更稳。
+
+**没做完的要写清。** 这 10 格与 `AC-9|08` 一起构成 18 格 gap 的文案面，全部与本轮探针读数一致；
+`state` 一格也没动，因为 18 格里真正卡住的是**动作**而不是字：`AC-11|04` 要重取一次连仓的 EXPLAIN、
+`AC-1|05` 后半要授权启动 Docker 栈并重建镜像、`AC-16|01` 要 12 个包（新增 provider 后是 34 个）逐个 clean-room
+留档（现 `0/12`）、`AC-19|01`/`AC-19|04` 要 RPO 窗口、`AC-8|08`/`AC-15|02` 要落库、`AC-15|01` 要只读账号变更、
+`AC-13|08` 要 17:30 真机窗口、`AC-9|08` 的 `landed_rows` 只能由一次经确认的 warehouse 写入补齐。
+`AC-9|08` 本身仍停在 `gap`，那不是文案能修的形状。

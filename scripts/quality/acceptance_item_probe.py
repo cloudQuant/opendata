@@ -1316,6 +1316,8 @@ def measure_ac1_05(ctx: Context) -> Facts:
         if inserted_root:
             with suppress(ValueError):
                 sys.path.remove(root_entry)
+    issue_classes = collections.Counter(issue.code for issue in runtime_result.issues)
+    top_classes = sorted(issue_classes.items(), key=lambda pair: (-pair[1], pair[0]))[:3]
     return {
         **surfaces,
         "consistent": consistent,
@@ -1324,6 +1326,9 @@ def measure_ac1_05(ctx: Context) -> Facts:
         "runtime_issue_count": count(len(runtime_result.issues)),
         "runtime_issue_summary": ",".join(issue.code for issue in runtime_result.issues[:8])
         or "none",
+        "runtime_issue_class_count": count(len(issue_classes)),
+        "runtime_issue_class_sum": count(sum(issue_classes.values())),
+        "runtime_issue_top_classes": ", ".join(f"{code}={n}" for code, n in top_classes) or "none",
         "runtime_endpoint": runtime_result.facts.get("endpoint", ""),
         "runtime_image": runtime_result.facts.get("image_id", ""),
         "runtime_source": runtime_result.facts.get("source_identity", ""),
@@ -1343,6 +1348,9 @@ def judge_ac1_05(facts: Facts) -> Verdict:
     )
     ok = static_ok and runtime_ok
     expected = f"{MAIN_DB} / {WAREHOUSE_DB}"
+    identity = (
+        "成立" if facts["runtime_issue_class_sum"] == facts["runtime_issue_count"] else "不成立"
+    )
     readings = (
         f"config.py defaults, .env.example, docker-compose.yml, init.sql all read {expected} = "
         f"{facts['consistent']}",
@@ -1352,19 +1360,34 @@ def judge_ac1_05(facts: Facts) -> Verdict:
         f"  init.sql = {facts['init_sql']}",
         f"backend start / frontend login / GET /health = {facts['runtime']} "
         f"(evidence issues {facts['runtime_issue_count']}: {facts['runtime_issue_summary']})",
+        f"  证据问题分类：{facts['runtime_issue_class_count']} 类，最多的三类 = "
+        f"{facts['runtime_issue_top_classes']}（上面那串只取前 8 条）",
+        f"  分类记账恒等式：各类条数合计 {facts['runtime_issue_class_sum']} = 总条数 "
+        f"{facts['runtime_issue_count']}（{identity}）",
         f"  isolated endpoint = {facts['runtime_endpoint']}; image/source = "
         f"{facts['runtime_image']} / {facts['runtime_source']}",
         f"  database = {facts['runtime_health_database']}; static assets = "
         f"{facts['runtime_static_asset_count']}; frontend identity = "
         f"{facts['runtime_frontend_identity']}",
     )
+    blockers: list[str] = []
+    if not static_ok:
+        blockers.append(f"四处库名配置面读到 consistent={facts['consistent']}")
+    if not runtime_ok:
+        blockers.append(
+            f"运行面读到 runtime={facts['runtime']}、valid={facts['runtime_valid']}，"
+            f"证据问题 {facts['runtime_issue_count']} 条分 "
+            f"{facts['runtime_issue_class_count']} 类，最多的三类是 "
+            f"{facts['runtime_issue_top_classes']}"
+        )
     reason = (
         ""
         if ok
-        else "the four configuration surfaces are half the item; the other half requires current "
-        "apply evidence for the isolated stack, a healthy connected database, validated static "
-        "assets, and authenticated dashboard/catalog pages. The runtime reading names any failed "
-        "or missing evidence"
+        else "这条判据有两半：四处库名一致是静态可量的那一半，"
+        "后端启动/前端登录/health 是当前运行读数的那一半（它有时效门槛，离线档案到期就不算数）。"
+        "本轮红在："
+        + "；".join(blockers)
+        + " —— 红在哪一半就用哪一半的修法，不拿配置面全绿去替运行面签收"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 
@@ -12252,13 +12275,19 @@ def judge_ac10_03(facts: Facts) -> Verdict:
         f"validator valid/issues = {facts['provider_review_valid']}/"
         f"{facts['provider_review_issue_count']}（{facts['provider_review_issue_codes']}）",
     )
+    missing_face = facts["providers_missing_from_review"]
     reason = (
         ""
         if ok
         else "AC-10|03 需要审阅档案覆盖当前注册 provider 的普查面（包名、逐包文件数、文件集、四份"
         "文件计数互相对齐），并与固定的 OpenBB 基线包面与提交绑定，保留零导入、候选清零与已完成的"
         "正向审阅结论；"
-        f"当前缺档={facts['providers_missing_from_review']}，档案外文件="
+        + (
+            f"当前缺档={missing_face}，"
+            if missing_face != "-"
+            else "本轮 providers_missing_from_review 没有产出读数（不替它编一个原因），"
+        )
+        + f"档案外文件="
         f"{facts['registry_files_outside_review']}，注册外文件="
         f"{facts['review_files_outside_registry']}，基线包面对齐="
         f"{facts['baseline_scope_matches_pinned']}，问题摘要={facts['provider_review_issue_codes']}。"
@@ -16117,7 +16146,14 @@ PROBES: Final[tuple[Probe, ...]] = (
             Break("四处一致但栈没有启动", (("runtime", "not-started"), ("consistent", "yes")), GAP),
             Break(
                 "运行状态声称validated但仍有证据问题",
-                (("runtime", "validated"), ("runtime_issue_count", "1"), ("consistent", "yes")),
+                (
+                    ("runtime", "validated"),
+                    ("runtime_issue_count", "1"),
+                    ("runtime_issue_class_count", "1"),
+                    ("runtime_issue_class_sum", "1"),
+                    ("runtime_issue_top_classes", "sample-issue=1"),
+                    ("consistent", "yes"),
+                ),
                 GAP,
             ),
         ),
@@ -16127,6 +16163,9 @@ PROBES: Final[tuple[Probe, ...]] = (
             "runtime_valid": "yes",
             "runtime_issue_count": "0",
             "runtime_issue_summary": "none",
+            "runtime_issue_class_count": "0",
+            "runtime_issue_class_sum": "0",
+            "runtime_issue_top_classes": "none",
         },
     ),
     Probe(

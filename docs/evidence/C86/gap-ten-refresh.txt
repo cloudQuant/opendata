@@ -1,0 +1,61 @@
+# C86 —— 十格落后 reason 的重发布：写前 RED(stale=10) / 写入 / 写后 GREEN(stale=0) 三遍逐字入档
+# 采集时间（跑前）: 2026-10-10T18:57:44+0800
+# 分支: dev  HEAD: 0dd453d
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 仪器 sha256[:16]: f9edb9e1e99e3af2
+# 探针模块 sha256[:16]: 1ae6416a21c32a00
+# 载体 sha256[:16] docs/evidence/C86/gap-ten-rerun.txt: 69d77aa039c7a190
+# 载体 sha256[:16] docs/evidence/C86/ac9-08-reason-rerun.txt: c14b9457f26a6613
+# command: python docs/evidence/C86/ledger-reason-refresh.py --carrier docs/evidence/C86/gap-ten-rerun.txt --carrier docs/evidence/C86/ac9-08-reason-rerun.txt [--verify-only|--write]（三遍）
+# 台账 sha256[:16]（跑前）: 6263ad9e9bb85db9
+# git status --porcelain（跑前）:
+M scripts/quality/acceptance_item_probe.py
+?? docs/evidence/C86/ac1-05-census-face.py
+?? docs/evidence/C86/ac1-05-census-face.txt
+?? docs/evidence/C86/gap-ten-readings.json
+?? docs/evidence/C86/gap-ten-refresh.txt
+?? docs/evidence/C86/gap-ten-rerun.txt
+?? docs/evidence/C86/reason-before-after.py
+?? docs/evidence/C86/reason-before-after.txt
+#
+
+[A] --verify-only 在写入之前（应为 RED：落后格各报一条 stale）
+# 期望 rc=1 实得 rc=1 OK
+PROBLEM AC-10|01: ledger reason (1137) is not the carrier's text (157)
+PROBLEM AC-10|03: ledger reason (1388) is not the carrier's text (415)
+PROBLEM AC-11|02: ledger reason (87) is not the carrier's text (160)
+PROBLEM AC-16|01: ledger reason (72) is not the carrier's text (1107)
+PROBLEM AC-16|02: ledger reason (81) is not the carrier's text (833)
+PROBLEM AC-19|01: ledger reason (53) is not the carrier's text (90)
+PROBLEM AC-19|04: ledger reason (85) is not the carrier's text (172)
+PROBLEM AC-1|05: ledger reason (527) is not the carrier's text (247)
+PROBLEM AC-8|05: ledger reason (54) is not the carrier's text (150)
+PROBLEM AC-8|06: ledger reason (42) is not the carrier's text (145)
+mode=verify carriers=2 verdicts=11 gap=11 matched=11 written=0 equal=1 stale=10 declined=0 evidence_appended=0 command_written=0
+LEDGER_REASON_REFRESH FAIL problems=10
+
+[B] --write（应为 written=落后格数，命令与载体各自补上，读完再回读）
+# 期望 rc=0 实得 rc=0 OK
+    WRITE    AC-10|01|a6c002e5: round C85 -> C86, reason 1137 -> 157 chars, evidence_appended=True, command_written=False
+    WRITE    AC-10|03|72598062: round C65 -> C86, reason 1388 -> 415 chars, evidence_appended=True, command_written=False
+    WRITE    AC-11|02|47ebc0df: round C65 -> C86, reason 87 -> 160 chars, evidence_appended=True, command_written=True
+    WRITE    AC-16|01|8d062d86: round C65 -> C86, reason 72 -> 1107 chars, evidence_appended=True, command_written=False
+    WRITE    AC-16|02|ee0d6156: round C65 -> C86, reason 81 -> 833 chars, evidence_appended=True, command_written=False
+    WRITE    AC-19|01|de4c675d: round C65 -> C86, reason 53 -> 90 chars, evidence_appended=True, command_written=False
+    WRITE    AC-19|04|7e6332ef: round C65 -> C86, reason 85 -> 172 chars, evidence_appended=True, command_written=True
+    WRITE    AC-1|05|db9002ff: round C65 -> C86, reason 527 -> 247 chars, evidence_appended=True, command_written=False
+    WRITE    AC-8|05|3dd663e5: round C65 -> C86, reason 54 -> 150 chars, evidence_appended=True, command_written=True
+    WRITE    AC-8|06|0bd99b7d: round C65 -> C86, reason 42 -> 145 chars, evidence_appended=True, command_written=True
+    EQUAL    AC-9|08|a87bfe6f: reason already this carrier's text
+mode=write carriers=2 verdicts=11 gap=11 matched=11 written=10 equal=1 stale=0 declined=0 evidence_appended=10 command_written=4
+wrote docs/quality/acceptance-item-ledger.json readback_cells=10 readback_problems=0
+LEDGER_REASON_REFRESH PASS
+
+[C] --verify-only 在写入之后（应为 GREEN，stale=0）
+# 期望 rc=0 实得 rc=0 OK
+mode=verify carriers=2 verdicts=11 gap=11 matched=11 written=0 equal=11 stale=0 declined=0 evidence_appended=0 command_written=0
+nothing to write
+LEDGER_REASON_REFRESH PASS
+
+# 三遍 rc 序列: [1, 0, 0] 期望 [1, 0, 0]
+REFRESH_ARMS_RC=PASS
