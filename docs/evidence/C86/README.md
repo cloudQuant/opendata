@@ -24,6 +24,7 @@ bundle 的 24h 新鲜度一条也没放宽。
 | `ledger-seven-patch.py` | 把七格的 `state/round/date/command/reason/evidence/note` 改写为探针读数 | `python docs/evidence/C86/ledger-seven-patch.py` |
 | `gate-run1.txt` | 第 1 遍全门禁日志：member 1—4 绿、member 5 红在本日志自身的 2 条面上 | `make gate`（第 1 遍日志写在仓内，第 2 遍改写到仓外再入档） |
 | `gate-run2.txt` | 第 2 遍全门禁日志（`/tmp` 采集后逐字节入档）：member 1—10 绿、member 11 红在既有 stale-proof 两格，`反事实面 130/130、939 条 break` 逐字在档 | `make gate`（日志 `> /tmp/c86_gate_run2.log`，跑完 `cp` 入档） |
+| `gate-run3.txt` | 第 3 遍全门禁日志（HEAD `a2443e6`，**干净工作树起跑**）：member 1—10 绿（`A2 files: 750`）、member 11 的 `deferred` 归 0、`stale-proof` 只剩 `AC-11\|04` 一格，`GATE_EXIT=2`；门禁 fail-closed，member 12—17 本轮没有面 | `make gate`（日志 `> /tmp/c86_gate_run3.log`，跑完逐字节入档；墙钟与退出面取自包装器自己的输出） |
 | `gap-reason-staleness.py` | gap 格子的台账 `reason` 与探针现读数对账：A state、B reason×`round` 标签交叉、C 借用键对、D 数字残差披露（带 `cited` 分母）、E 两处被现读数改写的阻塞原因逐字并排，另加两条控制臂 | `python docs/evidence/C86/gap-reason-staleness.py` |
 | `staleness-carrier.py` | 上一员的载体生成器：stdout 逐字节入档，头部钉 HEAD/解释器/**仪器与探针两份**摘要 | `python docs/evidence/C86/staleness-carrier.py` |
 | `gap-reason-staleness.txt` | 上面那台普查的 **live 载体**：16:04:50、HEAD `b190b5f`、仪器 `301061ae…`，14587 字节，含 F 面（按仓库自己的运行面校验器复算 issue 类别） | `python docs/evidence/C86/staleness-carrier.py`（内跑 `gap-reason-staleness.py`，头部记 inner command） |
@@ -32,7 +33,7 @@ bundle 的 24h 新鲜度一条也没放宽。
 | `ac5-07-bundle-freshness.py` / `.txt` | AC-5\|07 的安全 bundle：本轮真重建（`--force`）+ 走 validator 自己的 `now` 缝做三条时钟臂，证明新鲜度判据仍然咬人 | `python docs/evidence/C86/ac5-07-bundle-freshness.py`（副作用：重写 bundle） |
 | `ac5-07-probe-rerun.txt` / `.json` | 重建之后 AC-5\|07 的定向探针读数（`proven`，`issue=0`） | `python docs/evidence/C86/probe-seven-carrier.py --item 'AC-5|07' --out docs/evidence/C86/ac5-07-probe-rerun.txt --json docs/evidence/C86/ac5-07-probe-rerun.json --title '…'` |
 | `ac17-02-nosec-census-rerun.txt` / `.json` | 新增仪器后 AC-17\|02 的重读：逐行 nosec 仍 157 处（普查根不含 `docs/evidence`，见下节的范围面） | 同上（`--item 'AC-17|02'`） |
-| `nosec-audit.py` / `.txt` | 本目录 28 处例外**逐文件**对 bandit 自己的 `skipped_tests` 记账，外加三条反例臂（多点名 / 少点名 / 将本轮真实的那处过度点名放回） | `python docs/evidence/C86/nosec-audit.py`（临时副本写 `docs/evidence/C86/.scratch_nosec/`，出判定前删除并实测 `scratch_cleared=True`） |
+| `nosec-audit.py` / `.txt` | 本目录 28 处例外**逐文件**对 bandit 自己的 `skipped_tests` 记账，另加 `[0]` 范围面（普查根从 `Makefile` 实测读出、A2 文件集从 `resolve_files(None)` 实测数得）与三条反例臂（多点名 / 少点名 / 将本轮真实的那处过度点名放回） | `python docs/evidence/C86/nosec-audit.py`（临时副本写 `docs/evidence/C86/.scratch_nosec/`，出判定前删除并实测 `scratch_cleared=True`） |
 
 ## AC-17|02：例外普查的语义要与扫描器一致
 
@@ -179,6 +180,21 @@ HEAD 快照在临时树里复算（`git show` 进 `docs/evidence/C86/.scratch_he
 目录内「该点而没点」的违例会被 member 8 打红，但「点了却没东西可压」在这一带打不红任何东西，AC-17|02 也看不见——
 本轮新增仪器带来的例外改动之后重读 AC-17|02，逐行 nosec 仍 **157 处**、反向臂仍 161 条，就是这个范围面的实证。
 
+这一段早先的两个数（普查根那四个、A2 的 `750 / 106`）是拿一次性只读命令量出来写进散文的，也就是说它们当时是
+**没有载体的数**。现在两个测量进了仪器自己：`[0]` 面把普查根从 `Makefile` 里那行 `PY_BANDIT :=` 实测解析出来
+（读不到该行就中止并打印 FAIL，而不是默认一组根），把 A2 的文件集从 `scripts/quality/a2_check.py` 的
+`resolve_files(None)` 实测数出来，并把两条都做成**方向可翻**的面——把 `docs/evidence` 并进去时范围谓词必须变
+True，同一个计数器对着一个不存在的目录必须返回 0：
+
+```
+[0] scope: Makefile line `PY_BANDIT := opendata scripts alembic alembic_data` -> census roots ['opendata', 'scripts', 'alembic', 'alembic_data']
+    is docs/evidence a census root = False; widening to [...] would read True, which is the direction that makes this face bite
+    the gate's A2 member (resolve_files(None) of scripts/quality/a2_check.py) walks 750 files, 106 of them under docs/evidence; the same counter on docs/evidence/C99_no_such_round -> 0
+    so an unexempted violation in these instruments fails member 8, while a decorative exemption fails no gate member at all -- that middle is what this file judges
+```
+
+`scope_ok` 因此进了末条合取式，不再只是一段说明。
+
 判据形式取逐文件：`surplus = 声明站点数 - bandit 自己的 metrics._totals.skipped_tests`。bandit 1.9.4 在 `-q`
 下对装饰性 nosec 不打印任何东西（连 `nosec encountered, but no failed test` 都没有），所以警告字符串不是可量的面。
 
@@ -189,7 +205,7 @@ HEAD 快照在临时树里复算（`git show` 进 `docs/evidence/C86/.scratch_he
 [3c] parts tie to the whole: sum(per-file skipped)=28 pool=28 | sum(per-file sites)=28 pool=28 | sum(surplus)=0
 [3d] required disagreement docs/evidence/C29/real-tree-probe.py: line_dead=3 surplus=0 skipped=4
 [3e] fired=28 skipped=28 surviving=0 -> additivity=True; declared_sites=28 surplus=0
-[6] clean=True … -> NOSEC_AUDIT_CHECK PASS
+[6] clean=True scope=True … -> NOSEC_AUDIT_CHECK PASS
 ```
 
 这台仪器抓到两处真的过度点名，都不是靠人眼：
@@ -283,3 +299,40 @@ mypy + bandit)`，member 10 `docstring coverage 100.0% (1397/1397)`）。这一�
 它与「日志写到仓外」是同一类教训的两面：前者防的是 member 5 把正在写的日志算成自己的 violation，
 后者防的是**任何**未提交编辑让时刻面当轮不判——所以入档顺序必须是「先提交档案，再跑门禁」，
 而不是边跑边改仓内文件。
+
+第 3 遍（`gate-run3.txt`，HEAD `a2443e6`，`17:22:53` 起、`17:38:15` 止，46915 字节、`sha256[:16]=7534decc3022fd5a`、
+`wc -l` 1011 行 = 408 字节头部 + 仓外日志的逐字主体）就是按上面那条结论改的入档顺序：**先把档案全部提交，再跑门禁，
+跑期间不动仓内文件**，日志落 `/tmp/c86_gate_run3.log` 跑完再逐字节入档。头部因此 `git status --porcelain` 为 0 行，
+member 11 同轮读到 `工作树：干净`：
+
+```
+  - 本遍墙钟 = 756.7 s，读到事实的探针 130/130，测不出来的：无
+  - 工作树：干净 —— worktree/index/history 面只在干净时判，否则记为 deferred 并点名
+  - 反事实面：130/130 个探针走到了判定，939 条 break 各被施加一次、每条都要求把干净读数打回 gap
+  - 台账↔读数：agrees=129, unflipped=0, open=0, deferred=0, stale-proof=1（共 130 格有读数）
+    —— 只有 stale-proof 是红灯：台账记 proven 而探针现在读出 gap，且读的那一面与这一刻无关；红格子 AC-11|04
+  - 面基线：130 个探针里 25 个在读 moment 面；proven 而无探针 0 个，基线 0 个（只降不升）
+```
+
+member 1—10 同轮全绿，逐面在档：零依赖自测 `13 violations detected, 4 compliant samples clean`、扫描面 649 文件、
+gitleaks `335 commits scanned / no leaks found`（第 2 遍读的是 332，差的 3 笔正是 `f14a616..a2443e6` 那三笔提交，
+`git rev-list --count` 两侧同值可复核）、登记表仍
+`items=130 proven=112 gap=18 unreviewed=0 ticked=112`、member 5 六面 `gaps = 0` 且 `files census = 1153 (gate logs: 135)`、
+member 8 `A2 files: 750`（745→750 是本轮五份新仪器，`removed 0`）、member 9 `quality debt did not increase`、
+member 10 `docstring coverage 100.0% (1397/1397)`。
+
+`deferred` 从 2 归 0、`agrees` 从 126 到 129，涨的 3 格是**两件事**而不是三件事，且这个算术两侧都有面：
+AC-17|10 与 AC-1|10 因工作树干净被真正判定且一致（+2），AC-5|07 因本轮真重扫 bundle 而翻回 `proven`
+（同一份日志逐字有 `VERDICT AC-5|07: proven`，+1）；`stale-proof` 相应地从 2 降到 1。
+
+剩下的那一格本轮**不离线修**，因为它的红不是文案：AC-11|04 的判据要求留档 EXPLAIN 正文里的 `query_module_sha`
+与当下 `opendata/pipeline/query.py` 的字节摘要相等，等式要成立只能重取一次 EXPLAIN，而那是要连仓的动作。
+门禁把这一格的形状自己说了一遍：`台账把 AC-11|04 记成 proven，探针现在读出 gap（被读的面：文件内容，与这一刻无关）
+—— 台账翻上去之后没有任何东西再量它，这一遍就是那个东西`。这一格正是判据设计要抓的那个形状，
+不是要绕过去的那一个。
+
+门禁 fail-closed，所以第 3 遍的边界要写清：member 11 红 ⇒ `make[1]: *** [acceptance-probe-check] Error 1`、
+`make: *** [gate] Error 2`、`GATE_EXIT=2`，**member 12—17（`test-cov` 与四员 frontend）这一遍没有跑到**，
+因此本轮不声明「全门禁绿」，只声明日志里那 11 员的逐面可查。两处分寸同样入账：墙钟与退出码不是手打，
+取自包装器自己的 status 文件与 stdout 日志（头部把这两条载体点名了）；`staleness-carrier.py` 自身的退出码
+本轮没有任何仓内 face（它只把内层 rc 写成 `INSTRUMENT_RC=`），所以也不声明它。

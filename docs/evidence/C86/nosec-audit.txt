@@ -1,27 +1,18 @@
 # C86 —— 本轮仪器的 nosec 例外是否真压住违例：逐文件对 bandit 自己的 skipped_tests 记账（三条反例臂）
-# 采集时间: 2026-10-10T17:16:31+0800
-# 分支: dev  HEAD: b190b5f
+# 采集时间: 2026-10-10T17:45:18+0800
+# 分支: dev  HEAD: a2443e6
 # python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
-# 仪器 sha256[:16]: b240ae4a9bc7d703
+# 仪器 sha256[:16]: e20359130e3e4de9
 # command: python docs/evidence/C86/nosec-audit.py
 # 副作用: 反例臂在 docs/evidence/C86/.scratch_nosec/ 写被篡改的临时副本，出判定前删除（scratch_cleared 面实测）
 # git status --porcelain（跑时，含本仪器自己的未提交项）:
-M docs/evidence/C74/ported-bandit-scan.json
- M docs/evidence/C74/ported-security-triage.json
- M docs/evidence/C86/probe-seven-carrier.py
-?? docs/evidence/C86/ac1-05-manifest-face.py
-?? docs/evidence/C86/ac1-05-manifest-face.txt
-?? docs/evidence/C86/ac17-02-nosec-census-rerun.json
-?? docs/evidence/C86/ac17-02-nosec-census-rerun.txt
-?? docs/evidence/C86/ac5-07-bundle-freshness.py
-?? docs/evidence/C86/ac5-07-bundle-freshness.txt
-?? docs/evidence/C86/ac5-07-probe-rerun.json
-?? docs/evidence/C86/ac5-07-probe-rerun.txt
-?? docs/evidence/C86/gap-reason-staleness-pass2.txt
-?? docs/evidence/C86/gap-reason-staleness.txt
-?? docs/evidence/C86/nosec-audit.py
-?? docs/evidence/C86/nosec-audit.txt
+M docs/evidence/C86/nosec-audit.py
+?? docs/evidence/C86/gate-run3.txt
 #
+[0] scope: Makefile line `PY_BANDIT := opendata scripts alembic alembic_data` -> census roots ['opendata', 'scripts', 'alembic', 'alembic_data']
+    is docs/evidence a census root = False; widening to ['opendata', 'scripts', 'alembic', 'alembic_data', 'docs/evidence'] would read True, which is the direction that makes this face bite
+    the gate's A2 member (resolve_files(None) of scripts/quality/a2_check.py) walks 750 files, 106 of them under docs/evidence; the same counter on docs/evidence/C99_no_such_round -> 0
+    so an unexempted violation in these instruments fails member 8, while a decorative exemption fails no gate member at all -- that middle is what this file judges
 [1] files=11 (enumerated, not typed) files_with_exemptions=8 exemption_sites=28 config=bandit.yaml
     docs/evidence/C86/ac1-05-manifest-face.py nosec_sites=3
     docs/evidence/C86/ac5-07-bundle-freshness.py nosec_sites=4
@@ -75,6 +66,6 @@ M docs/evidence/C74/ported-bandit-scan.json
     per-file tampered  sites=4 skipped=3 surplus=1 dead_ids={'B607': 1}
     pooled on the forged population: decorative=[] undeemed=[] | B607: declared=6 fired=5 | pooled_surplus=1
     expected: pooled presence census stays silent, per-file frame names the extra id
-[6] clean=True parse_differs=True shapes_agree_with_scanner=True line_frame_over_reports=True decorative_detected=True undeemed_detected=True pooled_blindness_shown=True scratch_cleared=True
+[6] clean=True scope=True parse_differs=True shapes_agree_with_scanner=True line_frame_over_reports=True decorative_detected=True undeemed_detected=True pooled_blindness_shown=True scratch_cleared=True
 NOSEC_AUDIT_CHECK PASS
 INSTRUMENT_RC=0

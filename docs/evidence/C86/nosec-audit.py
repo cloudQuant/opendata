@@ -31,6 +31,10 @@ Faces and three controls, all printed:
 * the firing multiset with ``--ignore-nosec``, the declared multiset, and what survives nosec, tied
   to bandit's arithmetic (``fired == skipped + surviving``, per file and for the pool, and the parts
   summing to the whole);
+* the scope this file exists for: AC-17|02's census roots, read from the Makefile line that defines
+  them, printed next to the file set the gate's A2 member walks. The two differ exactly on
+  ``docs/evidence``, which is the gap: an unexempted violation here fails member 8, while a
+  decorative exemption fails no gate member at all;
 * per-file table of ``sites / skipped / surplus / surviving_rows / dead_ids``;
 * the census shape itself: comment-token sites next to raw-line sites, since this file's own prose
   and control literals are exactly what a grep-shaped census would over-count;
@@ -46,6 +50,7 @@ from __future__ import annotations
 import collections
 import datetime as dt
 import hashlib
+import importlib.util
 import json
 import pathlib
 import platform
@@ -79,6 +84,13 @@ BLIND_FORGE: Final = "# nosec B603 B607  # argv is a tuple, no literal path"
 # An older archive whose exemptions sit on the line the call *opens*, while bandit reports the
 # finding further down the same statement. It is the witness that a line-keyed census over-reports.
 SHAPE_CONTROL: Final = "docs/evidence/C29/real-tree-probe.py"
+# Scope faces: which population AC-17|02's exemption census actually walks, and which one the gate's
+# A2 member walks. Measured from the two shipped sources, never typed here.
+MAKEFILE: Final = "Makefile"
+BANDIT_VAR: Final = "PY_BANDIT"
+CENSUS_GAP: Final = "docs/evidence"
+A2_CHECKER: Final = "scripts/quality/a2_check.py"
+A2_ABSENT_DIR: Final = "docs/evidence/C99_no_such_round"
 
 
 def population() -> list[str]:
@@ -101,6 +113,27 @@ def population() -> list[str]:
 # The shape this file first shipped with: a character class that cannot cross the second id's ``B``.
 RETIRED_SHAPE: Final = re.compile(r"#\s*.*?nosec(?:\s+(B[\d.\s,]+))?")
 OUT: list[str] = []
+
+
+def bandit_roots() -> tuple[list[str], str]:
+    """The census roots AC-17|02 binds to, read out of the Makefile line that defines them."""
+    for line in (REPO / MAKEFILE).read_text(encoding="utf-8").splitlines():
+        if line.startswith(f"{BANDIT_VAR} :="):
+            return line.split(":=", 1)[1].split(), line.strip()
+    raise SystemExit(f"NOSEC_AUDIT_CHECK FAIL: {MAKEFILE} prints no {BANDIT_VAR} := line")
+
+
+def a2_files() -> list[str]:
+    """The file set the gate's A2 member walks, taken from the checker's own resolver."""
+    spec = importlib.util.spec_from_file_location("a2_scope", str(REPO / A2_CHECKER))
+    if spec is None or spec.loader is None:
+        raise SystemExit(f"NOSEC_AUDIT_CHECK FAIL: cannot load {A2_CHECKER}")
+    module: Any = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    rows = module.resolve_files(None)
+    if not isinstance(rows, list):
+        raise SystemExit(f"NOSEC_AUDIT_CHECK FAIL: {A2_CHECKER} resolve_files(None) is not a list")
+    return [str(row) for row in rows]
 
 
 def emit(line: str = "") -> None:
@@ -481,6 +514,27 @@ def main() -> int:
     parts_sites = sum(per[rel]["sites"] for rel in files)
     parts_surplus = sum(per[rel]["surplus"] for rel in files)
     with_sites = [rel for rel in files if per[rel]["sites"]]
+    roots, make_line = bandit_roots()
+    rows = a2_files()
+    a2_total = len(rows)
+    a2_gap = sum(1 for row in rows if CENSUS_GAP in row)
+    a2_absent = sum(1 for row in rows if A2_ABSENT_DIR in row)
+    widened = [*roots, CENSUS_GAP]
+    scope_ok = CENSUS_GAP not in roots and a2_gap > 0
+    emit(f"[0] scope: {MAKEFILE} line `{make_line}` -> census roots {roots}")
+    emit(
+        f"    is {CENSUS_GAP} a census root = {CENSUS_GAP in roots};"
+        f" widening to {widened} would read {CENSUS_GAP in widened},"
+        " which is the direction that makes this face bite"
+    )
+    emit(
+        f"    the gate's A2 member (resolve_files(None) of {A2_CHECKER}) walks {a2_total} files,"
+        f" {a2_gap} of them under {CENSUS_GAP}; the same counter on {A2_ABSENT_DIR} -> {a2_absent}"
+    )
+    emit(
+        "    so an unexempted violation in these instruments fails member 8, while a decorative"
+        " exemption fails no gate member at all -- that middle is what this file judges"
+    )
     emit(
         f"[1] files={len(files)} (enumerated, not typed) files_with_exemptions={len(with_sites)}"
         f" exemption_sites={sites_total} config={CONFIG}"
@@ -576,6 +630,7 @@ def main() -> int:
     disagree_ok = shape["surplus"] == 0 and len(shape["line_dead"]) > 0
     ok = (
         clean_ok
+        and scope_ok
         and parse_ok
         and shape_ok
         and disagree_ok
@@ -585,7 +640,8 @@ def main() -> int:
         and scratch_gone
     )
     emit(
-        f"[6] clean={clean_ok} parse_differs={parse_ok} shapes_agree_with_scanner={shape_ok}"
+        f"[6] clean={clean_ok} scope={scope_ok} parse_differs={parse_ok}"
+        f" shapes_agree_with_scanner={shape_ok}"
         f" line_frame_over_reports={disagree_ok} decorative_detected={deco_ok}"
         f" undeemed_detected={und_ok} pooled_blindness_shown={blind_ok}"
         f" scratch_cleared={scratch_gone}"
