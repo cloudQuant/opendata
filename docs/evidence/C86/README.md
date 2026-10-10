@@ -21,6 +21,9 @@
 | `repin-controls.txt` | 重钉仪器的三条对照臂（翻 hex / 偷渡 import / 品牌名注释）与巡回后清单字节未变面 | `python docs/evidence/C85/reference-policy-repin.py --tamper-policy`（另两条同形） |
 | `ledger-seven-patch.py` | 把七格的 `state/round/date/command/reason/evidence/note` 改写为探针读数 | `python docs/evidence/C86/ledger-seven-patch.py` |
 | `gate-run1.txt` | 第 1 遍全门禁日志：member 1—4 绿、member 5 红在本日志自身的 2 条面上 | `make gate`（第 1 遍日志写在仓内，第 2 遍改写到仓外再入档） |
+| `gate-run2.txt` | 第 2 遍全门禁日志（`/tmp` 采集后逐字节入档）：member 1—10 绿、member 11 红在既有 stale-proof 两格，`反事实面 130/130、939 条 break` 逐字在档 | `make gate`（日志 `> /tmp/c86_gate_run2.log`，跑完 `cp` 入档） |
+| `gap-reason-staleness.py` | gap 格子的台账 `reason` 与探针现读数对账：A state、B reason×`round` 标签交叉、C 借用键对、D 数字残差披露（带 `cited` 分母）、E 两处被现读数改写的阻塞原因逐字并排，另加两条控制臂 | `python docs/evidence/C86/gap-reason-staleness.py` |
+| `staleness-carrier.py` | 上一员的载体生成器：stdout 逐字节入档，头部钉 HEAD/解释器/**仪器与探针两份**摘要 | `python docs/evidence/C86/staleness-carrier.py` |
 
 ## AC-17|02：例外普查的语义要与扫描器一致
 
@@ -147,3 +150,39 @@ member 5 停：1 brand、2 zero-dep、3 secret、4 ledger 全绿并逐面留字�
 还修了一处判据的「意外通过」：入档前查了是哪一行让 `command` 面变绿，用 shipped 的 `COMMAND` 正则逐行量得
 `# python: Python 3.11.8 @ …`（解释器行）单独就返回 True，也就是说这一面是被一行**没有点名任何命令**的字节
 偶然满足的；因此头部补了一行 `# command: make gate`，让命令面由它声称的那条命令来承载。
+
+第 2 遍（`gate-run2.txt`，HEAD `f14a616`，日志写到 `/tmp/c86_gate_run2.log` 跑完再逐字节入档，
+`47533` 字节、`sha256[:16]=b67391fe7941c8d9`，入档前后字节 `相等=True`）过了 member 5：
+
+```
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 0
+  untracked  gaps = 0
+
+OK: evidence archive matches the frozen baseline (0 legacy entr(ies)).
+```
+
+member 6—10 同轮转绿（member 8 `A2 files: 745` 且 `OK: A2 files meet the full A2 standard (ruff + format +
+mypy + bandit)`，member 10 `docstring coverage 100.0% (1397/1397)`）。这一遍停在 member 11，
+`GATE_EXIT=2`，红因是既有的 stale-proof 两格而不是本轮新档案：
+
+```
+  - 反事实面：130/130 个探针走到了判定，939 条 break 各被施加一次、每条都要求把干净读数打回 gap
+  - 台账↔读数：agrees=126, unflipped=0, open=0, deferred=2, stale-proof=2（共 130 格有读数） —— 只有 stale-proof
+    是红灯：台账记 proven 而探针现在读出 gap，且读的那一面与这一刻无关；红格子 AC-11|04、AC-5|07
+  - deferred（时刻面，等工作树干净再判）：AC-17|10、AC-1|10
+```
+
+`反事实面：… 939 条 break` 正是臂普查那一面要用来自钉的分母：`probe-arm-census.txt` 独立数得
+`declared_arms=939` 并与 `--self-test` 的总数 `MATCH`，两把尺子（一个逐格 import 普查、一个门禁内部施加）
+在同一轮各自读出 939，`applied` 没有小于声明数，所以本轮不存在「臂声明了却没施加」的仪器缺口。
+
+`deferred=2` 这一条是本轮自己造出来的：member 11 跑到的时刻，工作树里有 3 项未提交
+（日志同轮打印 `工作树：3 entry(ies), first:  M docs/evidence/C86/README.md —— worktree/index/history 面只在
+干净时判，否则记为 deferred 并点名`），于是 AC-17|10 与 AC-1|10 这两员读 moment 面的探针被推迟而不是判定。
+它与「日志写到仓外」是同一类教训的两面：前者防的是 member 5 把正在写的日志算成自己的 violation，
+后者防的是**任何**未提交编辑让时刻面当轮不判——所以入档顺序必须是「先提交档案，再跑门禁」，
+而不是边跑边改仓内文件。
