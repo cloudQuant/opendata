@@ -51,9 +51,9 @@
       "path": "bandit.yaml",
       "purpose": "搬运层与自研层的分层检查说明；不豁免自研来源适配器。",
       "category": "build-declaration",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "9699cd44c25443177b453500f96843e130502be0ac7436ad82d39409fc31c596",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=3==live=3、出现次数 pinned=4==live=4；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增5 删8，其中 0/5 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；AST 臂不适用（该注册不是可解析的 Python 模块）：命中面按品牌行与加载形态行度量；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "fe4cb19441f825faf62eb01c31acf196b8bb65163991546a4454fb3c8805ed5c",
       "ast_exceptions": []
     },
     {
@@ -168,9 +168,9 @@
       "path": "opendata/core/config.py",
       "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
       "category": "runtime-integration",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "c101456d4c37ab13bbb2afd78e5ec77e0a92cdc031ec4d821a590a21518c56e9",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=5==live=5、出现次数 pinned=8==live=8；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 0/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "daad07d8ebef03abbfa8ad9048e165b9ab896bafe6e5284448b41c340cf6a2e7",
       "ast_exceptions": []
     },
     {
@@ -204,9 +204,9 @@
       "path": "opendata/data/http_client.py",
       "purpose": "请求日志/治理中的数据源标识及首方搬运HTTP通道说明。",
       "category": "runtime-integration",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "57a2a4dd3096bf5648411d712b2f753794a44bb340ba13bfd925c889dca9831e",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=1==live=1、出现次数 pinned=1==live=1；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 0/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "f02de03fbed815c0c8617dd2e07c9d6a161f3292630109a1029ff7ea4fce8613",
       "ast_exceptions": []
     },
     {
@@ -478,9 +478,9 @@
       "path": "opendata/data_fetch/providers/akshare_provider.py",
       "purpose": "兼容层适配器以 `opendata.data.providers.akshare._vendor` 的名字对外声明来源，取用的是搬运包自身，不是上游 `akshare` 根。",
       "category": "source-adapter",
-      "reviewed_date": "2026-10-08",
-      "reviewer": "Qoder agent C66; post-migration per-path review of the bare-word hits",
-      "sha256": "bfb1e8cfd91fe687039940cdd20b0ad91c6c930ba38a91b020a3300e94145c25",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "Qoder agent C66; post-migration per-path review of the bare-word hits；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=11==live=11、出现次数 pinned=11==live=11；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增4 删4，其中 4/4 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "38679389de529cb2c1bc02f6fd34f7a9f71b7972bbe0f332c6bdcf35fbeeab32",
       "ast_exceptions": []
     },
     {
@@ -549,9 +549,9 @@
       "path": "opendata/pipeline/jobs.py",
       "purpose": "根据注册来源身份解析首方fetcher及调度任务，不导入外部来源包。",
       "category": "runtime-integration",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "3e397c0f1947c17034cb02a5d98ae0e527a1adef1939d26697ef73121b103246",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=1==live=1、出现次数 pinned=1==live=1；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增3 删3，其中 0/3 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "8e6bb28e75b3106a06050200f2b19aec73d341ea46ab5ad3fcb3d81ecd2abb8e",
       "ast_exceptions": []
     },
     {
@@ -584,18 +584,18 @@
       "path": "opendata/pipeline/templates.py",
       "purpose": "ths+akshare双源流水线模板与首方注册表分派。",
       "category": "runtime-integration",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "3db19b5bdf89b10cd94b0b14bed3c8753ba3e9fc80adfc1867946857fa6d838f",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=2==live=2、出现次数 pinned=2==live=2；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增4 删4，其中 0/4 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "a08ed13c5e7d1a286db464d47b503965c5a1363a61150a2df7ddbca1fa9a512a",
       "ast_exceptions": []
     },
     {
       "path": "opendata/services/data_acquisition.py",
       "purpose": "首方集成中的来源标识、接口兼容、配置或搬运沿革说明；外部包依赖仍受零依赖AST断言。",
       "category": "runtime-integration",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "82b13251aac025098796e60bef58233b3badb07142c7a6a1025722821fc50440",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=11==live=11、出现次数 pinned=11==live=11；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 1/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "8ee7aa471aeaeb889e8fb48453f9b1f61f791bd03779183949533d90d6d7840c",
       "ast_exceptions": []
     },
     {
@@ -629,45 +629,45 @@
       "path": "scripts/ops/akshare_fallback_cross_check.py",
       "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
       "category": "cross-check",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "750546bb417a32dd77b6733f4217184eda2695577473e54d0471f375d2155ee3",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev da327c0，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=14==live=14、出现次数 pinned=14==live=14；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 0/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "771c62ec456f32438bc686e2ff1ed81bc00d721ec5e1ec7d0e1ecac7e404ba33",
       "ast_exceptions": []
     },
     {
       "path": "scripts/ops/benchmark_ods_write.py",
       "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
       "category": "cross-check",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "5c6a8b3b7048284c8b0ddc81219518eb48aff95b1ddb19772ed958985ca2fc47",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=1==live=1、出现次数 pinned=1==live=1；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增3 删3，其中 2/3 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "149e376086a1e83fc8dd6d5e669278b4e500fc2bf0617e8033d943131da1e046",
       "ast_exceptions": []
     },
     {
       "path": "scripts/ops/migrate_legacy_stock_daily.py",
       "purpose": "用户授权旧库逐表审查及隔离迁移中的实际旧库名称；仅作为被审数据库标识，不加载外部包。",
       "category": "operations-tool",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "a89c27039f4899021720e1676200545d9650975e7ba7de5bb3d57ee2fd1dfa13",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=5==live=5、出现次数 pinned=5==live=5；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增4 删4，其中 4/4 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "53587edf27d49373068ed8cba072b7f353ef69c68839399289ccfe535e475a3b",
       "ast_exceptions": []
     },
     {
       "path": "scripts/ops/qfq_official_check.py",
       "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
       "category": "cross-check",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "194d4d04aaa818f6b67ce71e101adf0e69e546dff71719a2f5547be4dcb805a3",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=7==live=7、出现次数 pinned=7==live=7；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增2 删2，其中 2/2 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=2 live=2、策略过滤后 pinned=2 live=2，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "b8f011fb060ca64af8702fe48d1003d355d094a41c1a9ad53befe5a7d23e8d55",
       "ast_exceptions": []
     },
     {
       "path": "scripts/ops/suspension_shape_check.py",
       "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
       "category": "cross-check",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "a7ad4a39ce4d13a5719e7cc83af552e54ce6753b6dd4533911ad2c55204063e9",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 8759285，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=3==live=3、出现次数 pinned=3==live=3；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增4 删4，其中 4/4 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "1dd8076e3b7ca03b9e051dcc1e2c818a6e2f89844a6a148bf7360d56ba1e5d4d",
       "ast_exceptions": []
     },
     {
@@ -737,9 +737,9 @@
       "path": "scripts/ops/ths_trading_calendar_cross_check.py",
       "purpose": "明确的来源取数、全量ODS基准或官方跨源对照工具，引用首方akshare来源标签/搬运接口。",
       "category": "cross-check",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "b76a8222fb282bb68e8f99454ec5477135fae10221be1b14341f4a99de9f85ef",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=5==live=5、出现次数 pinned=8==live=8；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 0/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "dce0911829ca471abec9ed320c602b5c17a5f4a6a63ee1cb944ec6b8dfa86709",
       "ast_exceptions": []
     },
     {
@@ -755,27 +755,27 @@
       "path": "scripts/quality/a2_check.py",
       "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。",
       "category": "operations-tool",
-      "reviewed_date": "2026-10-09",
-      "reviewer": "Codex primary; authorized C65 criterion migration；C78 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 4960738 改动（bandit 腿改成读 findings 判定并加同字节双体对照臂），akshare 出现行 pinned=2 live=2 且逐行集合完全相同，扫描器 (module, kind) 命中多重集 pinned=live=1，新增 0 条 import/import_module/__import__ 形态行，没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
-      "sha256": "cad9e48444713bdad31c70fff3c7b1b3d2c3b580e2941f4d801d1e35c0bc9cab",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "Codex primary; authorized C65 criterion migration；C78 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 4960738 改动（bandit 腿改成读 findings 判定并加同字节双体对照臂），akshare 出现行 pinned=2 live=2 且逐行集合完全相同，扫描器 (module, kind) 命中多重集 pinned=live=1，新增 0 条 import/import_module/__import__ 形态行，没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准；C85 primary 复核 sha 漂移：pin 字节属 rev 4960738，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=2==live=2、出现次数 pinned=2==live=2；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增5 删5，其中 0/5 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "28f2b585ae2b0ebb575724b95c208f312d2c174456fa1f9c911883695dec3e3a",
       "ast_exceptions": []
     },
     {
       "path": "scripts/quality/ac2_case_probe.py",
       "purpose": "迭代2 验收面声明搬运层根路径常量、调用 verify_no_akshare 作为读数来源，并在未闭合 leg 文案里点名当前 conda 解释器仍带 akshare/openbb。",
       "category": "build-declaration",
-      "reviewed_date": "2026-10-09",
-      "reviewer": "C74 primary; AC2-04 的 closure 记成 signature_differing_unregistered=0（闭环动作是 upstream.lock 的 manual_edits 元数据，待用户确认）并把签名对照工具自身 rc 纳入判定，未新增任何品牌名加载",
-      "sha256": "2d5b1acbf1aab1aa89c1987aaf1b696f9b4397d1a794b2156277bd632ac7ca82",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "C74 primary; AC2-04 的 closure 记成 signature_differing_unregistered=0（闭环动作是 upstream.lock 的 manual_edits 元数据，待用户确认）并把签名对照工具自身 rc 纳入判定，未新增任何品牌名加载；C85 primary 复核 sha 漂移：pin 字节属 rev 8a35e9a，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=7==live=7、出现次数 pinned=7==live=7；openbb 出现行 pinned=15==live=15、出现次数 pinned=17==live=17；加载形态行 pinned=0==live=0；变动行 增4 删4，其中 0/4 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "9a71e092c4b2c4f8551868f0a26ba50126d12241126e61b3218678afbb5a909b",
       "ast_exceptions": []
     },
     {
       "path": "scripts/quality/acceptance_item_probe.py",
       "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。本轮把三条 AC 面改成子解释器里的 import hook 见证：包名只作为字符串常量出现在被交给子进程的字面 argv 与被拒计数里，没有任何一处用它去加载外部包。",
       "category": "operations-tool",
-      "reviewed_date": "2026-10-09",
-      "reviewer": "C74 primary; AC-5|07 的档案轮次标签改成从 bundle 实测（archive_round/carried_from_round）并修正 exclude_dirs 尾斜杠成员判定，未新增任何品牌名加载；C75 primary 复核 sha 漂移：pin 命中 HEAD 8a35e9a，akshare 出现行 pinned=124 live=124 且逐行多重集完全相同，相对 pin 只多 3 行（2 行注释 + 1 行字面正则 ^rows_pointer=refRates$，把 .gitleaks.toml 的允许面逐字镜像到判定探针里），没有任何一处用它去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准；C75 secondary 复核第二次 sha 漂移：pin == INDEX(staged)（上一次重钉的字节还没提交，所以它不在任何 revision 里，审计为此新增了 index 载体臂），akshare 出现行 pinned=124 live=124 identical=True，相对 pin 只多 4 行（注释 3 行 + 字面正则 ^RIFLGFC(M01|M03|M06|Y01|Y02|Y03|Y05|Y07|Y10|Y20|Y30)_N\\.B$ 一行），仍无品牌名加载，所以仍是同一批准内容下的摘要重钉；C78 primary 复核第三次 sha 漂移：pin 字节属 rev 60148ce，字节被 5e335ab 改动（AC-10|03 判据去字面量：删掉 3 行 \"akshare, ecb, fred, imf, oecd, ths, yfinance\" 字面包名串，改成从注册表实测的两个人普查面对齐），akshare 出现行 pinned=124 live=124、出现次数 pinned=147 live=147、净变动 0（增 3 行删 3 行，删的正是上述 3 条字面量），扫描器 (module, kind) 命中多重集 pinned=live=13 完全相同，加载形态行 pinned=4 live=4 且新增 0 条，所以仍是同一批准内容下的摘要重钉，不是新的批准",
-      "sha256": "e48ddc54d7d4adf776dc2684ba13d1a138d42fe49b08bc03f42a2e4a2b1b16ac",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "C74 primary; AC-5|07 的档案轮次标签改成从 bundle 实测（archive_round/carried_from_round）并修正 exclude_dirs 尾斜杠成员判定，未新增任何品牌名加载；C75 primary 复核 sha 漂移：pin 命中 HEAD 8a35e9a，akshare 出现行 pinned=124 live=124 且逐行多重集完全相同，相对 pin 只多 3 行（2 行注释 + 1 行字面正则 ^rows_pointer=refRates$，把 .gitleaks.toml 的允许面逐字镜像到判定探针里），没有任何一处用它去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准；C75 secondary 复核第二次 sha 漂移：pin == INDEX(staged)（上一次重钉的字节还没提交，所以它不在任何 revision 里，审计为此新增了 index 载体臂），akshare 出现行 pinned=124 live=124 identical=True，相对 pin 只多 4 行（注释 3 行 + 字面正则 ^RIFLGFC(M01|M03|M06|Y01|Y02|Y03|Y05|Y07|Y10|Y20|Y30)_N\\.B$ 一行），仍无品牌名加载，所以仍是同一批准内容下的摘要重钉；C78 primary 复核第三次 sha 漂移：pin 字节属 rev 60148ce，字节被 5e335ab 改动（AC-10|03 判据去字面量：删掉 3 行 \"akshare, ecb, fred, imf, oecd, ths, yfinance\" 字面包名串，改成从注册表实测的两个人普查面对齐），akshare 出现行 pinned=124 live=124、出现次数 pinned=147 live=147、净变动 0（增 3 行删 3 行，删的正是上述 3 条字面量），扫描器 (module, kind) 命中多重集 pinned=live=13 完全相同，加载形态行 pinned=4 live=4 且新增 0 条，所以仍是同一批准内容下的摘要重钉，不是新的批准；C85 primary 复核 sha 漂移：pin 字节属 rev 5e335ab，字节被 4b8df39 改动（pin 之后该路径共 3 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=124==live=124、出现次数 pinned=147==live=147；openbb 出现行 pinned=94==live=94、出现次数 pinned=116==live=116；加载形态行 pinned=4==live=4；变动行 增1595 删11，其中 0/1595 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准；C85 primary 复核 sha 漂移（被 af4c90f 改动）：pin 字节属 rev 4b8df39，pin 之后该路径共 1 个 revision；akshare 出现行 124->126、出现次数 147->149（移动）；openbb 出现行 94->95、出现次数 116->117（移动）；加载形态行 pinned=4==live=4；变动行 diff 口径（difflib autojunk=False，本轮与 git numstat 同形）增401 删0，按文本去重口径 增260 删0，两口径差 141 条（新增行与 pin 里的既有行同文，去重口径不计）；去重口径新增行里没有一条是被删行的同文加 # nosec 尾注释（0/260）；带品牌新增 3 条 / 删 0 条，逐行按加载形态正则分类后命中 0 条；原文：from scripts.quality.openbb_inventory_plane import ( | \"akshare,bls,cboe,ecb,federal_reserve,fmp,fred\", | \"enabled_source_names\": \"akshare,bls,cboe,ecb,federal_reserve\",；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "4a6b101ffbdd623d8a4539b0dc9dbeb678410ccb1620214094f01a68f3e207b2",
       "ast_exceptions": []
     },
     {
@@ -791,9 +791,9 @@
       "path": "scripts/quality/openbb_inventory_plane.py",
       "purpose": "品牌、分层质量、来源依赖或验收判据的测量工具；被测来源名不用于加载外部包。",
       "category": "operations-tool",
-      "reviewed_date": "2026-10-01",
-      "reviewer": "Codex primary; authorized C65 criterion migration",
-      "sha256": "a2c6b4e5d8e4dd2729c2534ef2fd4b7b2cfcb9801d0ed689ef48e79a24d1062a",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "Codex primary; authorized C65 criterion migration；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=2==live=2、出现次数 pinned=2==live=2；openbb 出现行 pinned=10==live=10、出现次数 pinned=11==live=11；加载形态行 pinned=0==live=0；变动行 增2 删2，其中 0/2 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "69a40497dec6a0bda4b671778ce85d29bd01cea50f52e885faff4870cfc72545",
       "ast_exceptions": []
     },
     {
@@ -827,9 +827,9 @@
       "path": "scripts/quality/vendor_independence.py",
       "purpose": "搬运层独立性检查声明 vendor 相对路径、点分前缀与历史根名，用来判定独立性是否还在。",
       "category": "build-declaration",
-      "reviewed_date": "2026-10-08",
-      "reviewer": "Qoder agent C66; post-migration per-path review of the bare-word hits",
-      "sha256": "4c8201849997a423ee58f2a3127439c5cbad013fb8f65b9e9b2dbee69029b5a7",
+      "reviewed_date": "2026-10-10",
+      "reviewer": "Qoder agent C66; post-migration per-path review of the bare-word hits；C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=5==live=5、出现次数 pinned=5==live=5；openbb 出现行 pinned=2==live=2、出现次数 pinned=4==live=4；加载形态行 pinned=0==live=0；变动行 增2 删2，其中 0/2 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=2 live=2、策略过滤后 pinned=2 live=2，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准",
+      "sha256": "ae88e43b2c3316a1b2edc705284d3c270429a1b6fc44cdfd7847089adaa31575",
       "ast_exceptions": []
     }
   ]

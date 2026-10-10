@@ -1,0 +1,317 @@
+C85 reference-policy re-pin: the audit table and the two-sided controls.
+
+Every table line below is the verbatim stdout of
+    python docs/evidence/C85/reference-policy-repin.py [--write | --tamper-policy | --tamper-source]
+run in this repository on branch dev at HEAD 7d23311: the instrument composes each sentence from
+git, the policy file and the repository's own scanner (scan_source + filter_metadata_findings),
+so nothing in the table was typed. Sections 1 and 2 were captured with the pre-re-pin policy in
+place; re-running section 2 from the committed policy reproduces section 1 and the re-pinned file
+byte for byte.
+
+Situation measured before the re-pin: python scripts/codemod/verify_no_akshare.py exited 1 with
+"FAIL: reference policy is unusable: stale sha256: ..." naming the 18 paths audited below, out of
+the 87 registered policy entries.
+
+SECTION 1 -- audit face, writes nothing
+$ python docs/evidence/C85/reference-policy-repin.py
+policy entries registered: 87
+drifted entries audited: 18
+==============================================================================
+path: bandit.yaml
+old sha256: 9699cd44c25443177b453500f96843e130502be0ac7436ad82d39409fc31c596
+new sha256: fe4cb19441f825faf62eb01c31acf196b8bb65163991546a4454fb3c8805ed5c
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=3==live=3、出现次数 pinned=4==live=4；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增5 删8，其中 0/5 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；AST 臂不适用（该注册不是可解析的 Python 模块）：命中面按品牌行与加载形态行度量；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: opendata/core/config.py
+old sha256: c101456d4c37ab13bbb2afd78e5ec77e0a92cdc031ec4d821a590a21518c56e9
+new sha256: daad07d8ebef03abbfa8ad9048e165b9ab896bafe6e5284448b41c340cf6a2e7
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=5==live=5、出现次数 pinned=8==live=8；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 0/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: opendata/data/http_client.py
+old sha256: 57a2a4dd3096bf5648411d712b2f753794a44bb340ba13bfd925c889dca9831e
+new sha256: f02de03fbed815c0c8617dd2e07c9d6a161f3292630109a1029ff7ea4fce8613
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=1==live=1、出现次数 pinned=1==live=1；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 0/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: opendata/data_fetch/providers/akshare_provider.py
+old sha256: bfb1e8cfd91fe687039940cdd20b0ad91c6c930ba38a91b020a3300e94145c25
+new sha256: 38679389de529cb2c1bc02f6fd34f7a9f71b7972bbe0f332c6bdcf35fbeeab32
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=11==live=11、出现次数 pinned=11==live=11；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增4 删4，其中 4/4 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: opendata/pipeline/jobs.py
+old sha256: 3e397c0f1947c17034cb02a5d98ae0e527a1adef1939d26697ef73121b103246
+new sha256: 8e6bb28e75b3106a06050200f2b19aec73d341ea46ab5ad3fcb3d81ecd2abb8e
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=1==live=1、出现次数 pinned=1==live=1；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增3 删3，其中 0/3 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: opendata/pipeline/templates.py
+old sha256: 3db19b5bdf89b10cd94b0b14bed3c8753ba3e9fc80adfc1867946857fa6d838f
+new sha256: a08ed13c5e7d1a286db464d47b503965c5a1363a61150a2df7ddbca1fa9a512a
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=2==live=2、出现次数 pinned=2==live=2；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增4 删4，其中 0/4 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: opendata/services/data_acquisition.py
+old sha256: 82b13251aac025098796e60bef58233b3badb07142c7a6a1025722821fc50440
+new sha256: 8ee7aa471aeaeb889e8fb48453f9b1f61f791bd03779183949533d90d6d7840c
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=11==live=11、出现次数 pinned=11==live=11；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 1/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/ops/akshare_fallback_cross_check.py
+old sha256: 750546bb417a32dd77b6733f4217184eda2695577473e54d0471f375d2155ee3
+new sha256: 771c62ec456f32438bc686e2ff1ed81bc00d721ec5e1ec7d0e1ecac7e404ba33
+pin revision: da327c07997efc1428b09ae7d755fb00b68a3d08 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev da327c0，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=14==live=14、出现次数 pinned=14==live=14；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 0/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/ops/benchmark_ods_write.py
+old sha256: 5c6a8b3b7048284c8b0ddc81219518eb48aff95b1ddb19772ed958985ca2fc47
+new sha256: 149e376086a1e83fc8dd6d5e669278b4e500fc2bf0617e8033d943131da1e046
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=1==live=1、出现次数 pinned=1==live=1；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增3 删3，其中 2/3 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/ops/migrate_legacy_stock_daily.py
+old sha256: a89c27039f4899021720e1676200545d9650975e7ba7de5bb3d57ee2fd1dfa13
+new sha256: 53587edf27d49373068ed8cba072b7f353ef69c68839399289ccfe535e475a3b
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=5==live=5、出现次数 pinned=5==live=5；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增4 删4，其中 4/4 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/ops/qfq_official_check.py
+old sha256: 194d4d04aaa818f6b67ce71e101adf0e69e546dff71719a2f5547be4dcb805a3
+new sha256: b8f011fb060ca64af8702fe48d1003d355d094a41c1a9ad53befe5a7d23e8d55
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=7==live=7、出现次数 pinned=7==live=7；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增2 删2，其中 2/2 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=2 live=2、策略过滤后 pinned=2 live=2，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/ops/suspension_shape_check.py
+old sha256: a7ad4a39ce4d13a5719e7cc83af552e54ce6753b6dd4533911ad2c55204063e9
+new sha256: 1dd8076e3b7ca03b9e051dcc1e2c818a6e2f89844a6a148bf7360d56ba1e5d4d
+pin revision: 8759285b6d3c0d0fa2e57b668497a97664562dde | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 8759285，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=3==live=3、出现次数 pinned=3==live=3；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增4 删4，其中 4/4 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/ops/ths_trading_calendar_cross_check.py
+old sha256: b76a8222fb282bb68e8f99454ec5477135fae10221be1b14341f4a99de9f85ef
+new sha256: dce0911829ca471abec9ed320c602b5c17a5f4a6a63ee1cb944ec6b8dfa86709
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=5==live=5、出现次数 pinned=8==live=8；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 0/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/quality/a2_check.py
+old sha256: cad9e48444713bdad31c70fff3c7b1b3d2c3b580e2941f4d801d1e35c0bc9cab
+new sha256: 28f2b585ae2b0ebb575724b95c208f312d2c174456fa1f9c911883695dec3e3a
+pin revision: 496073801e2af1f92b2b6a6583c12ec3c2b1055c | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 4960738，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=2==live=2、出现次数 pinned=2==live=2；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增5 删5，其中 0/5 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/quality/ac2_case_probe.py
+old sha256: 2d5b1acbf1aab1aa89c1987aaf1b696f9b4397d1a794b2156277bd632ac7ca82
+new sha256: 9a71e092c4b2c4f8551868f0a26ba50126d12241126e61b3218678afbb5a909b
+pin revision: 8a35e9aca5ce43d5e734a2a6b97915e711739778 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 8a35e9a，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=7==live=7、出现次数 pinned=7==live=7；openbb 出现行 pinned=15==live=15、出现次数 pinned=17==live=17；加载形态行 pinned=0==live=0；变动行 增4 删4，其中 0/4 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/quality/acceptance_item_probe.py
+old sha256: e48ddc54d7d4adf776dc2684ba13d1a138d42fe49b08bc03f42a2e4a2b1b16ac
+new sha256: 0b8fd8e89ede856488f2ee279871556004db24585b2a739819d2f5f39dd384c7
+pin revision: 5e335ab14b350ac3d56335a4a76a140aa040caf4 | moved by: 4b8df39952be06b500075015cdc27bb211ef24f4 | newer revisions: 3 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 5e335ab，字节被 4b8df39 改动（pin 之后该路径共 3 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=124==live=124、出现次数 pinned=147==live=147；openbb 出现行 pinned=94==live=94、出现次数 pinned=116==live=116；加载形态行 pinned=4==live=4；变动行 增1595 删11，其中 0/1595 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/quality/openbb_inventory_plane.py
+old sha256: a2c6b4e5d8e4dd2729c2534ef2fd4b7b2cfcb9801d0ed689ef48e79a24d1062a
+new sha256: 69a40497dec6a0bda4b671778ce85d29bd01cea50f52e885faff4870cfc72545
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=2==live=2、出现次数 pinned=2==live=2；openbb 出现行 pinned=10==live=10、出现次数 pinned=11==live=11；加载形态行 pinned=0==live=0；变动行 增2 删2，其中 0/2 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/quality/vendor_independence.py
+old sha256: 4c8201849997a423ee58f2a3127439c5cbad013fb8f65b9e9b2dbee69029b5a7
+new sha256: ae88e43b2c3316a1b2edc705284d3c270429a1b6fc44cdfd7847089adaa31575
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=5==live=5、出现次数 pinned=5==live=5；openbb 出现行 pinned=2==live=2、出现次数 pinned=4==live=4；加载形态行 pinned=0==live=0；变动行 增2 删2，其中 0/2 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=2 live=2、策略过滤后 pinned=2 live=2，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+REAL problems: 0
+
+
+SECTION 2 -- re-pin face: 18 entries re-pinned, then the real checker on the new policy
+$ python docs/evidence/C85/reference-policy-repin.py --write
+policy entries registered: 87
+drifted entries audited: 18
+==============================================================================
+path: bandit.yaml
+old sha256: 9699cd44c25443177b453500f96843e130502be0ac7436ad82d39409fc31c596
+new sha256: fe4cb19441f825faf62eb01c31acf196b8bb65163991546a4454fb3c8805ed5c
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=3==live=3、出现次数 pinned=4==live=4；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增5 删8，其中 0/5 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；AST 臂不适用（该注册不是可解析的 Python 模块）：命中面按品牌行与加载形态行度量；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: opendata/core/config.py
+old sha256: c101456d4c37ab13bbb2afd78e5ec77e0a92cdc031ec4d821a590a21518c56e9
+new sha256: daad07d8ebef03abbfa8ad9048e165b9ab896bafe6e5284448b41c340cf6a2e7
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=5==live=5、出现次数 pinned=8==live=8；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 0/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: opendata/data/http_client.py
+old sha256: 57a2a4dd3096bf5648411d712b2f753794a44bb340ba13bfd925c889dca9831e
+new sha256: f02de03fbed815c0c8617dd2e07c9d6a161f3292630109a1029ff7ea4fce8613
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=1==live=1、出现次数 pinned=1==live=1；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 0/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: opendata/data_fetch/providers/akshare_provider.py
+old sha256: bfb1e8cfd91fe687039940cdd20b0ad91c6c930ba38a91b020a3300e94145c25
+new sha256: 38679389de529cb2c1bc02f6fd34f7a9f71b7972bbe0f332c6bdcf35fbeeab32
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=11==live=11、出现次数 pinned=11==live=11；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增4 删4，其中 4/4 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: opendata/pipeline/jobs.py
+old sha256: 3e397c0f1947c17034cb02a5d98ae0e527a1adef1939d26697ef73121b103246
+new sha256: 8e6bb28e75b3106a06050200f2b19aec73d341ea46ab5ad3fcb3d81ecd2abb8e
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=1==live=1、出现次数 pinned=1==live=1；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增3 删3，其中 0/3 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: opendata/pipeline/templates.py
+old sha256: 3db19b5bdf89b10cd94b0b14bed3c8753ba3e9fc80adfc1867946857fa6d838f
+new sha256: a08ed13c5e7d1a286db464d47b503965c5a1363a61150a2df7ddbca1fa9a512a
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=2==live=2、出现次数 pinned=2==live=2；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增4 删4，其中 0/4 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: opendata/services/data_acquisition.py
+old sha256: 82b13251aac025098796e60bef58233b3badb07142c7a6a1025722821fc50440
+new sha256: 8ee7aa471aeaeb889e8fb48453f9b1f61f791bd03779183949533d90d6d7840c
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=11==live=11、出现次数 pinned=11==live=11；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 1/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/ops/akshare_fallback_cross_check.py
+old sha256: 750546bb417a32dd77b6733f4217184eda2695577473e54d0471f375d2155ee3
+new sha256: 771c62ec456f32438bc686e2ff1ed81bc00d721ec5e1ec7d0e1ecac7e404ba33
+pin revision: da327c07997efc1428b09ae7d755fb00b68a3d08 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev da327c0，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=14==live=14、出现次数 pinned=14==live=14；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 0/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/ops/benchmark_ods_write.py
+old sha256: 5c6a8b3b7048284c8b0ddc81219518eb48aff95b1ddb19772ed958985ca2fc47
+new sha256: 149e376086a1e83fc8dd6d5e669278b4e500fc2bf0617e8033d943131da1e046
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=1==live=1、出现次数 pinned=1==live=1；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增3 删3，其中 2/3 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/ops/migrate_legacy_stock_daily.py
+old sha256: a89c27039f4899021720e1676200545d9650975e7ba7de5bb3d57ee2fd1dfa13
+new sha256: 53587edf27d49373068ed8cba072b7f353ef69c68839399289ccfe535e475a3b
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=5==live=5、出现次数 pinned=5==live=5；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增4 删4，其中 4/4 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/ops/qfq_official_check.py
+old sha256: 194d4d04aaa818f6b67ce71e101adf0e69e546dff71719a2f5547be4dcb805a3
+new sha256: b8f011fb060ca64af8702fe48d1003d355d094a41c1a9ad53befe5a7d23e8d55
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=7==live=7、出现次数 pinned=7==live=7；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增2 删2，其中 2/2 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=2 live=2、策略过滤后 pinned=2 live=2，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/ops/suspension_shape_check.py
+old sha256: a7ad4a39ce4d13a5719e7cc83af552e54ce6753b6dd4533911ad2c55204063e9
+new sha256: 1dd8076e3b7ca03b9e051dcc1e2c818a6e2f89844a6a148bf7360d56ba1e5d4d
+pin revision: 8759285b6d3c0d0fa2e57b668497a97664562dde | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 8759285，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=3==live=3、出现次数 pinned=3==live=3；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增4 删4，其中 4/4 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/ops/ths_trading_calendar_cross_check.py
+old sha256: b76a8222fb282bb68e8f99454ec5477135fae10221be1b14341f4a99de9f85ef
+new sha256: dce0911829ca471abec9ed320c602b5c17a5f4a6a63ee1cb944ec6b8dfa86709
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=5==live=5、出现次数 pinned=8==live=8；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增1 删1，其中 0/1 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/quality/a2_check.py
+old sha256: cad9e48444713bdad31c70fff3c7b1b3d2c3b580e2941f4d801d1e35c0bc9cab
+new sha256: 28f2b585ae2b0ebb575724b95c208f312d2c174456fa1f9c911883695dec3e3a
+pin revision: 496073801e2af1f92b2b6a6583c12ec3c2b1055c | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 4960738，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=2==live=2、出现次数 pinned=2==live=2；openbb 出现行 pinned=0==live=0、出现次数 pinned=0==live=0；加载形态行 pinned=0==live=0；变动行 增5 删5，其中 0/5 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/quality/ac2_case_probe.py
+old sha256: 2d5b1acbf1aab1aa89c1987aaf1b696f9b4397d1a794b2156277bd632ac7ca82
+new sha256: 9a71e092c4b2c4f8551868f0a26ba50126d12241126e61b3218678afbb5a909b
+pin revision: 8a35e9aca5ce43d5e734a2a6b97915e711739778 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 8a35e9a，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=7==live=7、出现次数 pinned=7==live=7；openbb 出现行 pinned=15==live=15、出现次数 pinned=17==live=17；加载形态行 pinned=0==live=0；变动行 增4 删4，其中 0/4 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=1 live=1、策略过滤后 pinned=1 live=1，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/quality/acceptance_item_probe.py
+old sha256: e48ddc54d7d4adf776dc2684ba13d1a138d42fe49b08bc03f42a2e4a2b1b16ac
+new sha256: 0b8fd8e89ede856488f2ee279871556004db24585b2a739819d2f5f39dd384c7
+pin revision: 5e335ab14b350ac3d56335a4a76a140aa040caf4 | moved by: 4b8df39952be06b500075015cdc27bb211ef24f4 | newer revisions: 3 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 5e335ab，字节被 4b8df39 改动（pin 之后该路径共 3 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=124==live=124、出现次数 pinned=147==live=147；openbb 出现行 pinned=94==live=94、出现次数 pinned=116==live=116；加载形态行 pinned=4==live=4；变动行 增1595 删11，其中 0/1595 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/quality/openbb_inventory_plane.py
+old sha256: a2c6b4e5d8e4dd2729c2534ef2fd4b7b2cfcb9801d0ed689ef48e79a24d1062a
+new sha256: 69a40497dec6a0bda4b671778ce85d29bd01cea50f52e885faff4870cfc72545
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=2==live=2、出现次数 pinned=2==live=2；openbb 出现行 pinned=10==live=10、出现次数 pinned=11==live=11；加载形态行 pinned=0==live=0；变动行 增2 删2，其中 0/2 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=0 live=0、策略过滤后 pinned=0 live=0，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+path: scripts/quality/vendor_independence.py
+old sha256: 4c8201849997a423ee58f2a3127439c5cbad013fb8f65b9e9b2dbee69029b5a7
+new sha256: ae88e43b2c3316a1b2edc705284d3c270429a1b6fc44cdfd7847089adaa31575
+pin revision: 3f05f636cec900c0358c2a45f1c9cf8aaebce7a7 | moved by: 80da631ebd0f5ce2e175890cede17725fdb1915e | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移：pin 字节属 rev 3f05f63，字节被 80da631 改动（pin 之后该路径共 1 个 revision，HEAD 与工作树字节一致）；akshare 出现行 pinned=5==live=5、出现次数 pinned=5==live=5；openbb 出现行 pinned=2==live=2、出现次数 pinned=4==live=4；加载形态行 pinned=0==live=0；变动行 增2 删2，其中 0/2 条新增行是某条被删行的同文加 # nosec 尾注释（C81 把 bandit 例外从全局 skips 收到行级），带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=2 live=2、策略过滤后 pinned=2 live=2，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+REAL problems: 0
+entries re-pinned: 18
+checker exit code: 0
+  OUT| OK: 649 file(s) walked (opendata=322, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+
+
+SECTION 3 -- re-audit after the write: no registered entry drifts any more
+$ python docs/evidence/C85/reference-policy-repin.py
+policy entries registered: 87
+drifted entries audited: 0
+==============================================================================
+REAL problems: 0
+
+
+SECTION 4 -- control: one hex digit of a re-pinned sha256 flipped; the checker must name exactly that path, then the bytes are restored and the checker goes green again
+$ python docs/evidence/C85/reference-policy-repin.py --tamper-policy
+policy entries registered: 87
+entries carrying a C85 re-pin that matches the bytes on disk: 18
+TAMPER CONTROL -- scripts/quality/vendor_independence.py: sha256 last hex digit 5 -> 0
+  checker exit code: 1
+  ERR| FAIL: reference policy is unusable: stale sha256: scripts/quality/vendor_independence.py
+  policy bytes restored: True
+  stale paths reported by the checker: ['scripts/quality/vendor_independence.py']
+  restored policy: checker exit code 0
+  OUT| OK: 649 file(s) walked (opendata=322, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+  control bit (the checker names exactly scripts/quality/vendor_independence.py as stale, and nothing else): True
+
+
+SECTION 5 -- control: the pinned bytes plus one smuggled 'import akshare'; the content comparison used by section 1/2 must report the moved multiset
+$ python docs/evidence/C85/reference-policy-repin.py --tamper-source
+policy entries registered: 87
+SOURCE TAMPER CONTROL -- pinned bytes of opendata/core/config.py (rev 80da631) + one 'import akshare':
+  problems reported: 5
+   - opendata/core/config.py: finding multiset {} -> {('akshare', 'import'): 1}
+   - opendata/core/config.py: face akshare_lines 5 -> 6
+   - opendata/core/config.py: face akshare_occurrences 8 -> 9
+   - opendata/core/config.py: face load_shape_lines 0 -> 1
+   - opendata/core/config.py: brand-carrying lines moved +1/-0

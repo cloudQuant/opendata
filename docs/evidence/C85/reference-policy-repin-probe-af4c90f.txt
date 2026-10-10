@@ -1,0 +1,213 @@
+C85 reference-policy re-pin of the acceptance probe module (af4c90f), with its controls.
+
+Each body between the BEGIN/END markers is verbatim captured stdout of the command printed
+above it, run in this repository on branch dev at HEAD af4c90f by /tmp-sequenced calls; the
+instrument composes every sentence from git, the policy file and the repository's own scanner
+(scan_source + filter_metadata_findings), so no figure inside the bodies was typed. Each body
+ends with the exit code line its harness appended for that command.
+
+Digest convention: a fenced region holds the captured bytes exactly, including its final
+newline, so sha256(region) equals sha256(captured file). It attests that this archive was not
+edited after the digests were computed; it does not attest that the commands ran -- those are
+re-runnable against the named revision, which is the stronger claim and is why the argv is
+printed above every body.
+
+Files this run read or wrote, with the bytes as they stood at capture time:
+  instrument      docs/evidence/C85/reference-policy-repin.py  26559 B  sha256 5153d1c68c1720a0c4efcf16c565a9b13938556d268539d5fcc907f4d9c4f528
+  pinned module   scripts/quality/acceptance_item_probe.py  878194 B  sha256 4a6b101ffbdd623d8a4539b0dc9dbeb678410ccb1620214094f01a68f3e207b2
+  policy          docs/quality/akshare-reference-allowlist.json  58489 B  sha256 937e199463f5551174706466454365d8a79f2e570775ace1c501f8c76c42c309
+  The instrument and the policy are working-tree bytes at this HEAD (they enter git with this
+  archive's commit); the pinned module is committed: git show af4c90f:scripts/quality/acceptance_item_probe.py hashes to
+  the third value above.
+
+What had to be fixed before a re-pin could be honest
+
+  af4c90f added the AC-10|01 probe to a pinned registration (scripts/quality/acceptance_item_probe.py), one of 87
+  entries, so the walker aborted on "stale sha256" before printing its walked line -- which is
+  what made AC2-07 read walker_count=unparsed. The audit had to pass first.
+
+  The audit as inherited refused with 5 findings, every one of them a brand-face delta, on the
+  judgement "registered hits unchanged: NO". That gate was unsatisfiable: the only remedy it
+  permitted was deleting the prose that named the sources, and deleting prose is not what the
+  policy forbids -- loading the upstream package is. The prohibition is now carried by the two
+  faces that encode it (the scanner (module, kind) multiset, hard-gated; load_shape_lines,
+  hard-gated in every case), and a moved brand face must additionally come with every
+  brand-carrying added line classified against the load-shape regex. arm5 is the arm that bites;
+  arm6 is the arm that must stay silent, otherwise the loosening is a hole rather than a
+  measurement change.
+
+The face this run's first draft published wrong, and its correction
+
+  The reason string read "变动行 增260 删0" while git reported the same drift as
+  +401/-0. changed_lines() counts a text-deduplicated population: an added line
+  whose exact text already occurred anywhere in the pinned bytes counts as zero. So the
+  401 git-added lines collapse to 260 here -- the other 141 are lines identical to one already
+  in the file (closing braces, blank lines, repeated dict rows). The number was never a diff
+  count, but the label said 变动行, and a reader holding git numstat would have called it false.
+  The same ambiguity sits in the 17 clauses the earlier C85 pass wrote: for the
+  5e335ab -> 4b8df39 drift of this same file they published "变动行 增1595 删11" where git
+  says +2068/-11. Those clauses are left exactly as written -- each is a measurement
+  of a real population, and rewriting a record to make it read better is not on the table; the
+  retained wrong number is what tells a future reader the label was ambiguous. The instrument now
+  prints both counts in one sentence, read back verbatim from the clause above ("
+ diff 口径（difflib autojunk=False，本轮与 git numstat 同形）增401 删0，按文本去重口径 增260 删0，两口径差 141 条（新增行与 pin 里的既有行同文，去重口径不计）
+  "), which is what disambiguates the earlier ones retroactively. No gate rides on these
+  counts: the multiset and load_shape_lines total every occurrence over the whole file, so a
+  duplicated brand-carrying load could not hide in the deduplicated population.
+
+The clause this run wrote into the policy (reviewer field of the scripts/quality/acceptance_item_probe.py entry,
+sha256 4a6b101ffbdd623d8a4539b0dc9dbeb678410ccb1620214094f01a68f3e207b2, reviewed_date 2026-10-10):
+
+<<<BEGIN appended-clause
+；C85 primary 复核 sha 漂移（被 af4c90f 改动）：pin 字节属 rev 4b8df39，pin 之后该路径共 1 个 revision；akshare 出现行 124->126、出现次数 147->149（移动）；openbb 出现行 94->95、出现次数 116->117（移动）；加载形态行 pinned=4==live=4；变动行 diff 口径（difflib autojunk=False，本轮与 git numstat 同形）增401 删0，按文本去重口径 增260 删0，两口径差 141 条（新增行与 pin 里的既有行同文，去重口径不计）；去重口径新增行里没有一条是被删行的同文加 # nosec 尾注释（0/260）；带品牌新增 3 条 / 删 0 条，逐行按加载形态正则分类后命中 0 条；原文：from scripts.quality.openbb_inventory_plane import ( | "akshare,bls,cboe,ecb,federal_reserve,fmp,fred", | "enabled_source_names": "akshare,bls,cboe,ecb,federal_reserve",；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+<<<END appended-clause
+appended-clause: 1 line, 1102 bytes, sha256 a7ce3f4c4a75fa69eab2b58cc429e4847962002bb6e63c10cea2fe637a65b4b7
+
+Captured arms
+
+arm1-audit-before-write -- audit only, policy still at the old digest
+  $ python docs/evidence/C85/reference-policy-repin.py
+
+<<<BEGIN arm1-audit-before-write
+policy entries registered: 87
+drifted entries audited: 1
+==============================================================================
+path: scripts/quality/acceptance_item_probe.py
+old sha256: 0b8fd8e89ede856488f2ee279871556004db24585b2a739819d2f5f39dd384c7
+new sha256: 4a6b101ffbdd623d8a4539b0dc9dbeb678410ccb1620214094f01a68f3e207b2
+pin revision: 4b8df39952be06b500075015cdc27bb211ef24f4 | moved by: af4c90f79866e111dd93070fed070c8c83c52e05 | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移（被 af4c90f 改动）：pin 字节属 rev 4b8df39，pin 之后该路径共 1 个 revision；akshare 出现行 124->126、出现次数 147->149（移动）；openbb 出现行 94->95、出现次数 116->117（移动）；加载形态行 pinned=4==live=4；变动行 diff 口径（difflib autojunk=False，本轮与 git numstat 同形）增401 删0，按文本去重口径 增260 删0，两口径差 141 条（新增行与 pin 里的既有行同文，去重口径不计）；去重口径新增行里没有一条是被删行的同文加 # nosec 尾注释（0/260）；带品牌新增 3 条 / 删 0 条，逐行按加载形态正则分类后命中 0 条；原文：from scripts.quality.openbb_inventory_plane import ( | "akshare,bls,cboe,ecb,federal_reserve,fmp,fred", | "enabled_source_names": "akshare,bls,cboe,ecb,federal_reserve",；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+REAL problems: 0
+AUDIT_EXIT=0
+<<<END arm1-audit-before-write
+arm1-audit-before-write: 12 lines, 1745 bytes, sha256 98ee9a535c62d2424a9889982a2368f0b7ae81c7c850bb1ddf754a4fc0ec3867
+
+arm2-write -- --write: the re-pin itself
+  $ python docs/evidence/C85/reference-policy-repin.py --write
+
+<<<BEGIN arm2-write
+policy entries registered: 87
+drifted entries audited: 1
+==============================================================================
+path: scripts/quality/acceptance_item_probe.py
+old sha256: 0b8fd8e89ede856488f2ee279871556004db24585b2a739819d2f5f39dd384c7
+new sha256: 4a6b101ffbdd623d8a4539b0dc9dbeb678410ccb1620214094f01a68f3e207b2
+pin revision: 4b8df39952be06b500075015cdc27bb211ef24f4 | moved by: af4c90f79866e111dd93070fed070c8c83c52e05 | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移（被 af4c90f 改动）：pin 字节属 rev 4b8df39，pin 之后该路径共 1 个 revision；akshare 出现行 124->126、出现次数 147->149（移动）；openbb 出现行 94->95、出现次数 116->117（移动）；加载形态行 pinned=4==live=4；变动行 diff 口径（difflib autojunk=False，本轮与 git numstat 同形）增401 删0，按文本去重口径 增260 删0，两口径差 141 条（新增行与 pin 里的既有行同文，去重口径不计）；去重口径新增行里没有一条是被删行的同文加 # nosec 尾注释（0/260）；带品牌新增 3 条 / 删 0 条，逐行按加载形态正则分类后命中 0 条；原文：from scripts.quality.openbb_inventory_plane import ( | "akshare,bls,cboe,ecb,federal_reserve,fmp,fred", | "enabled_source_names": "akshare,bls,cboe,ecb,federal_reserve",；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+REAL problems: 0
+entries re-pinned: 1
+checker exit code: 0
+  OUT| OK: 649 file(s) walked (opendata=322, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+WRITE_EXIT=0
+<<<END arm2-write
+arm2-write: 15 lines, 1970 bytes, sha256 09e76afceb2323ae362147fb5dd7a13202d926f38a49bdce71c14a8716830354
+
+arm3-checker -- the real judge, scripts/codemod/verify_no_akshare.py
+  $ python scripts/codemod/verify_no_akshare.py
+
+<<<BEGIN arm3-checker
+OK: 649 file(s) walked (opendata=322, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+CHECKER_EXIT=0
+<<<END arm3-checker
+arm3-checker: 2 lines, 191 bytes, sha256 1631deb981a7899142bb7dd2341be914a891ed19c9971f78d471c991d8671a4d
+
+arm4-tamper-policy -- --tamper-policy: flip one hex digit
+  $ python docs/evidence/C85/reference-policy-repin.py --tamper-policy
+
+<<<BEGIN arm4-tamper-policy
+policy entries registered: 87
+entries carrying a C85 re-pin that matches the bytes on disk: 18
+TAMPER CONTROL -- scripts/quality/vendor_independence.py: sha256 last hex digit 5 -> 0
+  checker exit code: 1
+  ERR| FAIL: reference policy is unusable: stale sha256: scripts/quality/vendor_independence.py
+  policy bytes restored: True
+  stale paths reported by the checker: ['scripts/quality/vendor_independence.py']
+  restored policy: checker exit code 0
+  OUT| OK: 649 file(s) walked (opendata=322, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+  control bit (the checker names exactly scripts/quality/vendor_independence.py as stale, and nothing else): True
+TAMPER_POLICY_EXIT=0
+<<<END arm4-tamper-policy
+arm4-tamper-policy: 11 lines, 770 bytes, sha256 666c6b120302853c8dd21b5fa7accbed6d81bd26130b1768717309314070b215
+
+arm5-tamper-source -- --tamper-source: a smuggled 'import akshare'
+  $ python docs/evidence/C85/reference-policy-repin.py --tamper-source
+
+<<<BEGIN arm5-tamper-source
+policy entries registered: 87
+SOURCE TAMPER CONTROL -- pinned bytes of opendata/core/config.py (rev 80da631) + one 'import akshare':
+  problems reported: 3
+   - opendata/core/config.py: finding multiset {} -> {('akshare', 'import'): 1}
+   - opendata/core/config.py: face load_shape_lines 0 -> 1
+   - opendata/core/config.py: 1 brand-carrying added line(s) are themselves load shapes: import akshare
+TAMPER_SOURCE_EXIT=0
+<<<END arm5-tamper-source
+arm5-tamper-source: 7 lines, 420 bytes, sha256 00f803889505e3133aed6df4764299d2d16af03e235370268ce773e4696d5293
+
+arm6-tamper-prose -- --tamper-prose: a brand-naming comment only
+  $ python docs/evidence/C85/reference-policy-repin.py --tamper-prose
+
+<<<BEGIN arm6-tamper-prose
+policy entries registered: 87
+PROSE CONTROL -- pinned bytes of opendata/core/config.py (rev 80da631) + one comment naming akshare:
+  problems reported: 0
+  brand faces moved: {'akshare_lines': (5, 6), 'akshare_occurrences': (8, 9)} | added brand lines: 1 | of which load shapes: 0 | AST arm applies: True
+TAMPER_PROSE_EXIT=0
+<<<END arm6-tamper-prose
+arm6-tamper-prose: 5 lines, 325 bytes, sha256 b7f80042568a0eb7ef816e0d2543b031eccf14a9fb3666e84254d0d3a86ed183
+
+arm7-audit-after-write -- audit again: nothing left drifted
+  $ python docs/evidence/C85/reference-policy-repin.py
+
+<<<BEGIN arm7-audit-after-write
+policy entries registered: 87
+drifted entries audited: 0
+==============================================================================
+REAL problems: 0
+AUDIT_AFTER_EXIT=0
+<<<END arm7-audit-after-write
+arm7-audit-after-write: 5 lines, 172 bytes, sha256 9606bd9f68e2d39c33199e565c325dec12279789ea93e4d3e402812c50fbb157
+
+arm8-git-numstat -- git's own line counts for the two probe drifts
+  $ git diff --numstat 4b8df39 af4c90f -- scripts/quality/acceptance_item_probe.py
+    git diff --numstat 5e335ab 4b8df39 -- scripts/quality/acceptance_item_probe.py
+
+<<<BEGIN arm8-git-numstat
+401	0	scripts/quality/acceptance_item_probe.py
+2068	11	scripts/quality/acceptance_item_probe.py
+<<<END arm8-git-numstat
+arm8-git-numstat: 2 lines, 96 bytes, sha256 2a639f660d1617071eff0f909d8ca6b1c39045c0231f6127049f4e6bb7b6cffc
+
+Recompute every body digest from this file alone:
+
+  python3 - <<'PY'
+  import hashlib, re
+  text = open('docs/evidence/C85/reference-policy-repin-probe-af4c90f.txt', encoding='utf-8').read()
+  for name, body in re.findall(r'<<<BEGIN ([-a-z0-9]+)\n(.*?)\n<<<END \1', text, re.S):
+      digest = hashlib.sha256((body + chr(10)).encode()).hexdigest()
+      print(f'{name:26s} {digest[:16]}')
+  PY
+
+What the run establishes
+
+  The walker walks 649 files and exits 0 with the re-pinned policy (arm3), and exits 1
+  naming exactly the one path whose digest was flipped (arm4) -- so the pin is load-bearing.
+  Nothing drifted after the write (arm7) out of 87 registered entries; 18 entries
+  now carry a C85 re-pin clause.
+  A smuggled load is seen three ways at once (arm5: multiset, load-shape face, and the new
+  line-by-line classification) while a brand-naming comment is accepted with 0 problems, with the
+  moved faces and the applied classification still printed (arm6).
+
+What this archive does not claim
+
+  It does not re-approve the probe module. The approval content is asserted unchanged by the
+  measured faces above; a re-pin is digest bookkeeping. If a future round changes what the module
+  does with a brand name, the multiset and load-shape faces move and the audit refuses with
+  clean=NO -- that arm is what keeps these clauses from being a rubber stamp.
+  It does not re-audit the other 86 entries. arm1 audited the one path that had
+  drifted since the earlier pass (17 entries); arm7 re-audited all 87 to show none is left.
+  It says nothing about whether the AC-10|01 probe reading is right; that is
+  docs/evidence/C85/ac10-01-live-reading.txt and the ledger cell AC-10|01|a6c002e5.
