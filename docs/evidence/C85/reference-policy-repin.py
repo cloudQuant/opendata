@@ -153,7 +153,7 @@ def faces(source: str) -> dict[str, int]:
     return measured
 
 
-def diff_counts(old_source: str, live_source: str) -> tuple[int, int]:
+def diff_counts(old_source: str, live_source: str) -> tuple[int, int, int]:
     """Count added and removed lines the way a diff counts them, not the way a set does.
 
     ``autojunk=False`` is set explicitly rather than left to the default. difflib's junk heuristic
@@ -161,17 +161,26 @@ def diff_counts(old_source: str, live_source: str) -> tuple[int, int]:
     inputs, which can turn a pure append into a chain of replaces. On this round's drift the flag
     changes nothing (both arms measured 401 added / 0 removed, equal to ``git diff --numstat``), so
     it is recorded here as a guard against a heuristic, not as the cause of a difference.
+
+    The third figure is how many of the diff-added lines carry text that already occurs somewhere
+    in the pinned bytes. That is the population which explains the gap between this count and the
+    deduplicated one in :func:`changed_lines`, so :func:`reason` can measure the cause instead of
+    asserting it: a gap equal to it is fully explained by de-duplication, and a gap larger than it
+    is published as unexplained rather than attributed to a mechanism that did not run.
     """
-    matcher = difflib.SequenceMatcher(
-        None, old_source.splitlines(), live_source.splitlines(), autojunk=False
-    )
-    added = removed = 0
+    old_lines = old_source.splitlines()
+    live_lines = live_source.splitlines()
+    matcher = difflib.SequenceMatcher(None, old_lines, live_lines, autojunk=False)
+    old_set = set(old_lines)
+    added = removed = dup_added = 0
     for tag, i1, i2, j1, j2 in matcher.get_opcodes():
         if tag in ("insert", "replace"):
-            added += j2 - j1
+            block = live_lines[j1:j2]
+            added += len(block)
+            dup_added += sum(1 for line in block if line in old_set)
         if tag in ("delete", "replace"):
             removed += i2 - i1
-    return added, removed
+    return added, removed, dup_added
 
 
 def changed_lines(old_source: str, live_source: str) -> tuple[int, int, int, int, int, list[str]]:
@@ -245,7 +254,7 @@ def compare(
     added, removed, added_brand, removed_brand, nosec_tails, brand_added = changed_lines(
         old_source, live_source
     )
-    diff_added, diff_removed = diff_counts(old_source, live_source)
+    diff_added, diff_removed, dup_added = diff_counts(old_source, live_source)
     ast_applies = old_raw is not None and live_raw is not None
     loaded_added = [line for line in brand_added if LOAD_SHAPE.search(line)]
     if loaded_added:
@@ -275,6 +284,7 @@ def compare(
         "removed": removed,
         "diff_added": diff_added,
         "diff_removed": diff_removed,
+        "diff_dup_in_pin": dup_added,
         "added_brand": added_brand,
         "removed_brand": removed_brand,
         "nosec_tails": nosec_tails,
@@ -322,6 +332,7 @@ def reason(
     diff_added = int(str(measured["diff_added"]))
     diff_removed = int(str(measured["diff_removed"]))
     dedup_added = int(str(measured["added"]))
+    dup = int(str(measured["diff_dup_in_pin"]))
     brand_lines = cast("list[str]", measured["brand_added_lines"])
     brand_face = "；".join(
         f"{root} 出现行 {pinned_faces[f'{root}_lines']}->"
@@ -348,14 +359,20 @@ def reason(
         if not problems
         else f"但本条已记 {len(problems)} 项问题，因此不据此重钉（clean=NO）"
     )
+    gap = diff_added - dedup_added
+    dedup_clause = (
+        f"两口径差 {gap} 条，de-dupe 命中 {dup} 条（新增行的文本在 pin 字节里已出现），"
+        f"余 {gap - dup} 条未被该机制解释"
+        if gap
+        else f"两口径相同（差 0 条，de-dupe 命中 {dup} 条）"
+    )
     return (
         f"C85 primary 复核 sha 漂移（被 {mover[:7]} 改动）：pin 字节属 rev {pin_rev[:7]}，"
         f"pin 之后该路径共 {newer} 个 revision；{brand_face}；"
         f"加载形态行 pinned={pinned_faces['load_shape_lines']}=="
-        f"live={live_faces['load_shape_lines']}；变动行 diff 口径（difflib autojunk=False，"
-        f"本轮与 git numstat 同形）增{diff_added} 删{diff_removed}，按文本去重口径 "
-        f"增{dedup_added} 删{measured['removed']}，两口径差 {diff_added - dedup_added} 条"
-        f"（新增行与 pin 里的既有行同文，去重口径不计）；{nosec_clause}；{brand_class}；"
+        f"live={live_faces['load_shape_lines']}；变动行 diff 口径（difflib autojunk=False）"
+        f"增{diff_added} 删{diff_removed}，按文本去重口径 增{dedup_added} 删{measured['removed']}，"
+        f"{dedup_clause}；{nosec_clause}；{brand_class}；"
         f"{measured['ast_note']}；{verdict}"
     )
 

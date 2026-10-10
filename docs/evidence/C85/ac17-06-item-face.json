@@ -1,0 +1,73 @@
+{
+  "env": {
+    "python": "3.11.8"
+  },
+  "items": [
+    {
+      "item": "AC-17|06",
+      "key": "AC-17|06|5fc2e9f4",
+      "state": "proven",
+      "summary": "覆盖率判定挂在带戳记的归档报告上：总体逐一对账，公式与报告自证同值，点名根各自解析",
+      "readings": [
+        "判定总体=A2 新代码里被覆盖率工具计量的那部分：A2 740 个文件，Python 740，在 coverage source（opendata）内 291，配置显式排除 1，进了报告 290，源内却没进报告 0，源外 449；对账等式=yes",
+        "联接键必须过 <source>：解析后命中 290，拿 Cobertura 原始名直接对只命中 0；解析起作用=yes——不对这一层，总体会静悄悄地变成空集然后 0/0",
+        "公式四臂自证 4/4（一条臂专门否掉「分母把弧算两遍」）；归档报告逐行重算 vs coverage.py 自报计数与比率 = 6/6（报告里 320 个文件）",
+        "A2 新代码 statement+branch = 89.85%（门 85%），290 个文件，单位 覆盖 23227+6524 / 总量 25427+7684（语句+分支弧）",
+        "三个点名根 opendata/data=90.17, pipeline=96.31, opendata_fuyao=93.79（门 90%），空总体 0；解析方式 opendata/data=191（目录前缀） | pipeline=39（路径成分（opendata/pipeline/）） | opendata_fuyao=9（历史身份映射（opendata_fuyao 由 3f05f636c 删除，11 个历史文件））",
+        "opendata_fuyao 是退役目录：历史映射解析失败 0，映射到了但没有覆盖数据 0——名字对不上就判不成立，而不是当成空集通过",
+        "报告归档：docs/evidence/C85/coverage-final.xml 1209708 字节、git 跟踪=yes；html zip 2913047 字节 / 400 页 / index=yes",
+        "戳记 commit=f19906942，在 HEAD 历史上=yes，被测源码树与 HEAD 同树=yes（opendata 6f22c5c67b7d == 6f22c5c67b7d）；戳记自合 5/5、分总体 8/8",
+        "现盘 coverage.xml 存在=yes（1209708 字节，A2 命中 290），与归档最大漂移 0.00 个百分点，在 ±0.5 内=yes"
+      ],
+      "reason": "",
+      "closure": "",
+      "facts": {
+        "formula_controls": "4",
+        "archive_xml_exists": "yes",
+        "archive_xml_bytes": "1209708",
+        "live_xml_exists": "yes",
+        "live_xml_bytes": "1209708",
+        "stamp_exists": "yes",
+        "stamp_tool": "yes",
+        "coverage_sources": "opendata",
+        "archive_tracked": "yes",
+        "archive_html_pages": "400",
+        "archive_html_bytes": "2913047",
+        "archive_html_index": "yes",
+        "archive_identity": "6",
+        "archive_reported_files": "320",
+        "a2_total": "740",
+        "a2_python": "740",
+        "a2_under_source": "291",
+        "a2_config_omitted": "1",
+        "a2_in_report": "290",
+        "a2_unreported": "0",
+        "a2_unreported_sample": "-",
+        "a2_outside_source": "449",
+        "a2_accounting": "yes",
+        "join_resolved": "290",
+        "join_naive_basename": "0",
+        "join_resolution_matters": "yes",
+        "stamp_aggregates": "5",
+        "stamp_populations": "8",
+        "stamp_commit": "f19906942",
+        "stamp_ancestor": "yes",
+        "tree_identity": "yes",
+        "tree_identity_sample": "opendata 6f22c5c67b7d == 6f22c5c67b7d",
+        "new_code_pct": "89.85",
+        "new_code_files": "290",
+        "new_code_units": "覆盖 23227+6524 / 总量 25427+7684（语句+分支弧）",
+        "root_pct": "opendata/data=90.17, pipeline=96.31, opendata_fuyao=93.79",
+        "root_empty_pop": "0",
+        "root_resolution": "opendata/data=191（目录前缀） | pipeline=39（路径成分（opendata/pipeline/）） | opendata_fuyao=9（历史身份映射（opendata_fuyao 由 3f05f636c 删除，11 个历史文件））",
+        "root_unmapped": "0",
+        "root_unmapped_sample": "-",
+        "root_absent": "0",
+        "root_absent_sample": "-",
+        "live_a2_in_report": "290",
+        "drift_max": "0.00",
+        "drift_within": "yes"
+      }
+    }
+  ]
+}

@@ -1,0 +1,299 @@
+C85 re-pin of the acceptance probe module after one counterfact label was renamed, with
+its controls.  branch=dev  HEAD=b3631caa7dc34aad06e102f34c218f604e9d98c3
+
+Each body between the BEGIN/END markers is verbatim captured stdout+stderr of the command printed
+above it. The body marked "embedded capture" ran once, in the state that write consumed, and is
+transcribed from the tracked carrier docs/evidence/C85/ac17-06-repin-write-capture.txt, which holds 1731 B at sha256
+5b504b25ed4895211189988c7f12a4c2fa210d9347bb998ec133d983e14cbccf, so the transcription can be diffed against its carrier as well as read here. That
+write is one-shot: its body comes back only by rolling the pin forward again, which is a command in
+this file, not a sentence about it. Everything else was re-run by
+docs/evidence/C85/build_ac17_06_label_archive.py at the HEAD named above, and no figure here was
+typed -- each one is read out of a body below or out of git. The two revision names this file hands
+to git are checked against the write body's own "pin revision"/"moved by" faces before anything is
+written, so a stale constant here cannot silently retitle the population.
+
+Digest convention: a region holds the captured bytes exactly, including its final newline, so
+sha256(region) equals sha256(captured file). It attests that this archive was not edited after the
+digests were computed; it does not attest that the commands ran -- those are re-runnable against the
+named revision, which is the stronger claim and is why the argv is printed above every body.
+
+Files this run read or wrote, with the bytes as they stood at capture time:
+  scripts/quality/acceptance_item_probe.py  878398 B  sha256 c45211875dbf745a6166a466d7bb1e7511a85aa52a643d7f8d78544e58d7e803
+  docs/quality/akshare-reference-allowlist.json  59351 B  sha256 56b6d046f5876fc9075f350256121c210133f249e88b5778d523d98fecc29966
+  docs/evidence/C85/ac17-06-counterfact-arms.py  8088 B  sha256 95f0f43455b9d8ff52d9ae4fe7a64df2c0881ac886c6225b42b3aa695e19e851
+  docs/evidence/C85/reference-policy-repin.py  27525 B  sha256 e7e833cb7b74df400ff1edbc2c85f5b32e0f5f3912e8429581b70964f5067f12
+  docs/quality/acceptance-probe-faces.json  7749 B  sha256 a152aebde215c80be4bbf393750e21212bb79b75e84b3071706138f293f25f59
+  docs/evidence/C85/ac17-06-item-face.json  3998 B  sha256 12b4969b8488e241b0e9993a71a7ff3aae0926fff018ab2f98a4b513a45d24a4  (written by the item arm, read
+      by the arms arm; it holds the measured faces both of them judge against)
+
+Why this run existed
+
+  An arm of AC-17|06 carried the label
+
+      「pipeline 实测 88.84，未到 90」
+
+  The figure inside it is the value the judge has to reject, not a report reading, and reading
+  「实测」 literally sends a reviewer to close a gap that does not exist -- which is what happened
+  this round. Two measurements say which of the two readings is live. The forged side:
+  1 of the item's 2 root_pct arms forge 88.84 as the pipeline
+  component of the opendata/data, pipeline, opendata_fuyao composite, which is under the 90% floor the
+  criterion names:
+
+      forges [root_pct=opendata/data=90.16, pipeline=88.84, opendata_fuyao=93.79]
+
+  The live side, recomputed by the same pass out of the archived report:
+
+      root_pct=opendata/data=90.17, pipeline=96.31, opendata_fuyao=93.79
+
+  whose pipeline component reads 96.31, at or over that floor. The census below measures
+  the shape (the word 实测 next to a digit) over the whole arm table at this tree and at
+  af4c90f, so the published zero comes with an arm that returns one.
+
+  Renaming a label moves the bytes of a path the reference policy registers (docs/quality/akshare-reference-allowlist.json), so the pin
+  had to move.
+  The drift is 4 added / 2 removed lines by the instrument, and git reports
+  the same pair as 4/2 for af4c90f..0ee5839 -- 1
+  revision(s) of the path, which equals the audit's "newer revisions: 1". No content face
+  moved: akshare 出现行 126->126、出现次数 149->149（未移动）; openbb 出现行 95->95、出现次数 117->117（未移动）;
+  加载形态行 pinned=4==live=4; scanner (module, kind) multiset pinned=13 live=13,
+  identical=True; registered hits unchanged: yes. So this is a digest re-pin of
+  the same approved content, not a new approval.
+
+The clause the write put into the policy, and the face that it is still the one on disk
+
+  pinned sha256 = c45211875dbf745a6166a466d7bb1e7511a85aa52a643d7f8d78544e58d7e803; sha256 of the bytes on disk = c45211875dbf745a6166a466d7bb1e7511a85aa52a643d7f8d78544e58d7e803; reviewed_date = 2026-10-10.
+  The pin this write replaced read 4a6b101ffbdd623d8a4539b0dc9dbeb678410ccb1620214094f01a68f3e207b2, which is the sha256 of git's bytes at
+  af4c90f -- so the replaced value was the pre-rename module, not an unrelated drift.
+  The clause below is read back off the policy file (the text after the last 「C85 primary 复核 sha 漂移」 in that
+  entry's reviewer chain), and it is byte-equal to the reason line the write arm printed.
+
+<<<BEGIN appended-clause
+C85 primary 复核 sha 漂移（被 0ee5839 改动）：pin 字节属 rev af4c90f，pin 之后该路径共 1 个 revision；akshare 出现行 126->126、出现次数 149->149（未移动）；openbb 出现行 95->95、出现次数 117->117（未移动）；加载形态行 pinned=4==live=4；变动行 diff 口径（difflib autojunk=False，本轮与 git numstat 同形）增4 删2，按文本去重口径 增4 删2，两口径差 0 条（新增行与 pin 里的既有行同文，去重口径不计）；去重口径新增行里没有一条是被删行的同文加 # nosec 尾注释（0/4）；带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+<<<END appended-clause
+appended-clause: 1 line(s), 860 bytes, sha256 9363b43dab6052c3f386c1f134ad28456e5e249184313d75159432e16ca08578
+
+Captured arms
+
+write -- embedded capture
+  $ python docs/evidence/C85/reference-policy-repin.py --write
+
+<<<BEGIN write
+policy entries registered: 87
+drifted entries audited: 1
+==============================================================================
+path: scripts/quality/acceptance_item_probe.py
+old sha256: 4a6b101ffbdd623d8a4539b0dc9dbeb678410ccb1620214094f01a68f3e207b2
+new sha256: c45211875dbf745a6166a466d7bb1e7511a85aa52a643d7f8d78544e58d7e803
+pin revision: af4c90f79866e111dd93070fed070c8c83c52e05 | moved by: 0ee5839a05e8ca58ba69c3dd9de5f23a50b5caef | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移（被 0ee5839 改动）：pin 字节属 rev af4c90f，pin 之后该路径共 1 个 revision；akshare 出现行 126->126、出现次数 149->149（未移动）；openbb 出现行 95->95、出现次数 117->117（未移动）；加载形态行 pinned=4==live=4；变动行 diff 口径（difflib autojunk=False，本轮与 git numstat 同形）增4 删2，按文本去重口径 增4 删2，两口径差 0 条（新增行与 pin 里的既有行同文，去重口径不计）；去重口径新增行里没有一条是被删行的同文加 # nosec 尾注释（0/4）；带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+REAL problems: 0
+entries re-pinned: 1
+checker exit code: 0
+  OUT| OK: 649 file(s) walked (opendata=322, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+WRITE_EXIT=0
+<<<END write
+write: 15 line(s), 1731 bytes, sha256 5b504b25ed4895211189988c7f12a4c2fa210d9347bb998ec133d983e14cbccf
+
+audit -- re-run here
+  $ python docs/evidence/C85/reference-policy-repin.py
+
+<<<BEGIN audit
+policy entries registered: 87
+drifted entries audited: 0
+==============================================================================
+REAL problems: 0
+AUDIT_EXIT=0
+<<<END audit
+audit: 5 line(s), 166 bytes, sha256 1eadb7026fd51057adf7edff2d4243b810064b0f80ba977edfc8b63effbf7c7e
+
+tamper-source -- re-run here
+  $ python docs/evidence/C85/reference-policy-repin.py --tamper-source
+
+<<<BEGIN tamper-source
+policy entries registered: 87
+SOURCE TAMPER CONTROL -- pinned bytes of opendata/core/config.py (rev 80da631) + one 'import akshare':
+  problems reported: 3
+   - opendata/core/config.py: finding multiset {} -> {('akshare', 'import'): 1}
+   - opendata/core/config.py: face load_shape_lines 0 -> 1
+   - opendata/core/config.py: 1 brand-carrying added line(s) are themselves load shapes: import akshare
+TAMPER_SOURCE_EXIT=0
+<<<END tamper-source
+tamper-source: 7 line(s), 420 bytes, sha256 00f803889505e3133aed6df4764299d2d16af03e235370268ce773e4696d5293
+
+tamper-prose -- re-run here
+  $ python docs/evidence/C85/reference-policy-repin.py --tamper-prose
+
+<<<BEGIN tamper-prose
+policy entries registered: 87
+PROSE CONTROL -- pinned bytes of opendata/core/config.py (rev 80da631) + one comment naming akshare:
+  problems reported: 0
+  brand faces moved: {'akshare_lines': (5, 6), 'akshare_occurrences': (8, 9)} | added brand lines: 1 | of which load shapes: 0 | AST arm applies: True
+TAMPER_PROSE_EXIT=0
+<<<END tamper-prose
+tamper-prose: 5 line(s), 325 bytes, sha256 b7f80042568a0eb7ef816e0d2543b031eccf14a9fb3666e84254d0d3a86ed183
+
+tamper-policy -- re-run here
+  $ python docs/evidence/C85/reference-policy-repin.py --tamper-policy
+
+<<<BEGIN tamper-policy
+policy entries registered: 87
+entries carrying a C85 re-pin that matches the bytes on disk: 18
+TAMPER CONTROL -- scripts/quality/vendor_independence.py: sha256 last hex digit 5 -> 0
+  checker exit code: 1
+  ERR| FAIL: reference policy is unusable: stale sha256: scripts/quality/vendor_independence.py
+  policy bytes restored: True
+  stale paths reported by the checker: ['scripts/quality/vendor_independence.py']
+  restored policy: checker exit code 0
+  OUT| OK: 649 file(s) walked (opendata=322, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+  control bit (the checker names exactly scripts/quality/vendor_independence.py as stale, and nothing else): True
+TAMPER_POLICY_EXIT=0
+<<<END tamper-policy
+tamper-policy: 11 line(s), 770 bytes, sha256 666c6b120302853c8dd21b5fa7accbed6d81bd26130b1768717309314070b215
+
+sync-faces -- re-run here
+  $ python scripts/quality/acceptance_item_probe.py --sync-faces
+
+<<<BEGIN sync-faces
+wrote docs/quality/acceptance-probe-faces.json：123 个探针，25 个在读 moment 面，proven 而无探针 0 个
+SYNC_FACES_EXIT=0
+<<<END sync-faces
+sync-faces: 2 line(s), 135 bytes, sha256 4ea68167f6f2bc95208c91dc9f3fa4d0438d1289cec0775a4cf112f48ecaeb63
+
+item -- re-run here
+  $ python scripts/quality/acceptance_item_probe.py --item AC-17|06 --json docs/evidence/C85/ac17-06-item-face.json
+
+<<<BEGIN item
+
+### AC-17|06  (document line 293)
+判据原文：覆盖率：**A2 新代码** statement+branch ≥85%（`opendata/data`、`pipeline`、`opendata_fuyao` ≥90%），报告（xml+html）非空归档
+本探针：覆盖率判定挂在带戳记的归档报告上：总体逐一对账，公式与报告自证同值，点名根各自解析
+台账现状：state=proven，文档勾选=True
+  - 判定总体=A2 新代码里被覆盖率工具计量的那部分：A2 740 个文件，Python 740，在 coverage source（opendata）内 291，配置显式排除 1，进了报告 290，源内却没进报告 0，源外 449；对账等式=yes
+  - 联接键必须过 <source>：解析后命中 290，拿 Cobertura 原始名直接对只命中 0；解析起作用=yes——不对这一层，总体会静悄悄地变成空集然后 0/0
+  - 公式四臂自证 4/4（一条臂专门否掉「分母把弧算两遍」）；归档报告逐行重算 vs coverage.py 自报计数与比率 = 6/6（报告里 320 个文件）
+  - A2 新代码 statement+branch = 89.85%（门 85%），290 个文件，单位 覆盖 23227+6524 / 总量 25427+7684（语句+分支弧）
+  - 三个点名根 opendata/data=90.17, pipeline=96.31, opendata_fuyao=93.79（门 90%），空总体 0；解析方式 opendata/data=191（目录前缀） | pipeline=39（路径成分（opendata/pipeline/）） | opendata_fuyao=9（历史身份映射（opendata_fuyao 由 3f05f636c 删除，11 个历史文件））
+  - opendata_fuyao 是退役目录：历史映射解析失败 0，映射到了但没有覆盖数据 0——名字对不上就判不成立，而不是当成空集通过
+  - 报告归档：docs/evidence/C85/coverage-final.xml 1209708 字节、git 跟踪=yes；html zip 2913047 字节 / 400 页 / index=yes
+  - 戳记 commit=f19906942，在 HEAD 历史上=yes，被测源码树与 HEAD 同树=yes（opendata 6f22c5c67b7d == 6f22c5c67b7d）；戳记自合 5/5、分总体 8/8
+  - 现盘 coverage.xml 存在=yes（1209708 字节，A2 命中 290），与归档最大漂移 0.00 个百分点，在 ±0.5 内=yes
+VERDICT AC-17|06: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+wrote docs/evidence/C85/ac17-06-item-face.json
+ITEM_EXIT=0
+<<<END item
+item: 20 line(s), 2236 bytes, sha256 c5e542b7cb009b50e19cd4439c868e4c3e5f672200000ccad41f12e2e1c79911
+
+arms -- re-run here
+  $ python docs/evidence/C85/ac17-06-counterfact-arms.py docs/evidence/C85/ac17-06-item-face.json
+
+<<<BEGIN arms
+live table: probes=123 arms=859
+  labels containing '实测': 2
+     - 档案覆盖面写的文件数与该包实测不一致
+     - binlog 只有「可选」附录、没有一次实测取值
+  labels containing '实测' AND a digit: 0
+table at af4c90f (imported copy): probes=123 arms=859
+  labels containing '实测': 3
+     - 档案覆盖面写的文件数与该包实测不一致
+     - binlog 只有「可选」附录、没有一次实测取值
+     - pipeline 实测 88.84，未到 90
+  labels containing '实测' AND a digit: 1
+     - pipeline 实测 88.84，未到 90
+  label no arm carries now: pipeline 实测 88.84，未到 90
+same table size across the rename: True
+COUNTER_CENSUS_DIFFERS=yes (live=0, af4c90f=1)
+digit-bearing labels retired: 1
+byte copies left in scripts/quality: 0 []
+item under test: AC-17|06 | arms on this item: 18
+live root_pct on this pass = opendata/data=90.17, pipeline=96.31, opendata_fuyao=93.79
+declared repair -> judge state = proven (reachable: True)
+BITE  | A2 新代码掉到 84.9% | forges [new_code_pct=84.90] | -> gap
+BITE  | 反例：pipeline=88.84 低于 90（非现盘） | forges [root_pct=opendata/data=90.16, pipeline=88.84, opendata_fuyao=93.79] | -> gap
+BITE  | opendata/data 只差 0.01 个点 | forges [root_pct=opendata/data=89.99, pipeline=90.02, opendata_fuyao=93.79] | -> gap
+BITE  | 一个点名根解析成空总体 | forges [root_empty_pop=1] | -> gap
+BITE  | 退役目录少一条历史身份映射 | forges [root_unmapped=1] | -> gap
+BITE  | 映射到的文件在报告里没有行 | forges [root_absent=1] | -> gap
+BITE  | 源内有个 A2 文件没进报告 | forges [a2_unreported=1] | -> gap
+BITE  | A2 总体对账等式断裂 | forges [a2_accounting=no] | -> gap
+BITE  | 联接不过 <source>，总体与报告脱钩 | forges [join_resolution_matters=no] | -> gap
+BITE  | 重算与 coverage.py 自报计数不一致 | forges [archive_identity=4] | -> gap
+BITE  | 公式四臂断一条（弧被算两遍） | forges [formula_controls=3] | -> gap
+BITE  | 戳记与归档文件不再一致 | forges [stamp_aggregates=4] | -> gap
+BITE  | 分总体戳记少对一项 | forges [stamp_populations=7] | -> gap
+BITE  | 测量之后 opendata 源码树又动了 | forges [tree_identity=no] | -> gap
+BITE  | 戳记 commit 不在 HEAD 的历史上 | forges [stamp_ancestor=no] | -> gap
+BITE  | html 归档是空的 | forges [archive_html_pages=0] | -> gap
+BITE  | 归档没被 git 跟踪 | forges [archive_tracked=no] | -> gap
+BITE  | 现盘报告与归档漂移超限 | forges [drift_within=no] | -> gap
+arms applied = 18 | biting = 18
+every arm promises a gap: True
+arms naming a face no measure produces: []
+repair keys no measure produces: []
+ALL_ARMS_BITE=yes
+REPAIR_REACHES_PROVEN=yes
+ARMS_EXIT=0
+<<<END arms
+arms: 45 line(s), 2762 bytes, sha256 eb4ddb3644b9860928b20c6877bfbedf53bdbe089e9e3f2a1d2f8d2fd77a0bdb
+
+What the arms establish
+
+  1. The pin is satisfiable and the checker passes on it: the write arm read REAL problems=
+     0, entries re-pinned=1, checker exit 0; the audit
+     that followed reads drifted entries=0, REAL problems=0. The walker's
+     own line, which is what the gate needs: OUT| OK: 649 file(s) walked (opendata=322, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+  2. The brand gate bites where it must and stays quiet where it must: a smuggled load produces
+     3 problem(s), while a comment naming the brand produces 0 and is
+     classified rather than trusted (1 added brand line(s), 0 of them load
+     shapes).
+  3. The digest is a measurement, not a claim: flipping one hex digit of scripts/quality/vendor_independence.py -- the last
+     of the entries whose pin already equals the bytes on disk, counted 18 by the
+     instrument and 18 when this file recomputes that set -- makes the checker
+     name exactly that path (control bit True) and the bytes come back (restored
+     True). scripts/quality/acceptance_item_probe.py is inside that same set, so the pin this archive is about is one of the
+     pins the flip test can reach, and the walker's exit code 0 above is the checker accepting it.
+  4. The label census can differ: 123 probes / 859 arms here and 123
+     probes / 859 arms at af4c90f -- the same population -- while the
+     digit-bearing-实测 count is 0 now and 1 then. The
+     2 labels that still contain 实测 carry no figure ("该包实测不一致",
+     "没有一次实测取值"), which is what the digit predicate separates them on.
+  5. Nothing about the judgement changed: AC-17|06 still reads proven, 18 of its 18
+     arms flip a clean reading back to a gap, its declared repair still reaches proven (yes),
+     and the copy the census imported from af4c90f left 0 byte copies in
+     scripts/quality.
+  6. The faces book did not move: docs/quality/acceptance-probe-faces.json hashed a152aebde215… before --sync-faces and
+     a152aebde215… after, and git reports it clean.
+  7. The figure the label was named for is a forged input, not a reading: 1 of
+     the 2 arms that forge root_pct forge this value (forges [root_pct=opendata/data=90.16, pipeline=88.84, opendata_fuyao=93.79]), under the
+     90% floor, while the composite the same pass recomputes reads root_pct=opendata/data=90.17, pipeline=96.31, opendata_fuyao=93.79 --
+     pipeline=96.31, and that composite is the one the item arm above prints.
+  Every arm above exited 0: {'audit': 0, 'tamper_source': 0, 'tamper_prose': 0, 'tamper_policy': 0, 'sync_faces': 0, 'item': 0, 'arms': 0}.
+
+What this archive does not claim
+
+  It does not claim the renamed label was the only misleading one -- only that no arm label now
+  pairs 实测 with a digit, measured over 859 arms. It does not restate the coverage faces:
+  those live in docs/evidence/C85/coverage-final-stamp.json at commit f19906942aa696737d908bc0fa92c24012163ac2 and are read by the probe itself. And it does not
+  claim the pin is permanent -- any later commit that touches scripts/quality/acceptance_item_probe.py moves this digest again, which
+  is why the audit appears here as a command rather than as a sentence.
+
+Recompute recipe
+
+  python3 - <<'PY'
+import hashlib, pathlib, re
+text = pathlib.Path("docs/evidence/C85/ac17-06-counterfact-label-arms.txt").read_text("utf-8")
+pat = (r"<<<BEGIN (\S+)\n(.*?)<<<END \1\n\1: (\d+) line\(s\), (\d+) bytes, "
+       r"sha256 (\w{64})")
+rows = re.findall(pat, text, re.S)
+print("regions:", len(rows))
+print("every region matches its own claim:", all(
+    len(body.splitlines()) == int(lines)
+    and len(body.encode("utf-8")) == int(nbytes)
+    and hashlib.sha256(body.encode("utf-8")).hexdigest() == sha
+    for _label, body, lines, nbytes, sha in rows
+))
+PY

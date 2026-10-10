@@ -1,0 +1,15 @@
+policy entries registered: 87
+drifted entries audited: 1
+==============================================================================
+path: scripts/quality/acceptance_item_probe.py
+old sha256: 4a6b101ffbdd623d8a4539b0dc9dbeb678410ccb1620214094f01a68f3e207b2
+new sha256: c45211875dbf745a6166a466d7bb1e7511a85aa52a643d7f8d78544e58d7e803
+pin revision: af4c90f79866e111dd93070fed070c8c83c52e05 | moved by: 0ee5839a05e8ca58ba69c3dd9de5f23a50b5caef | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C85 primary 复核 sha 漂移（被 0ee5839 改动）：pin 字节属 rev af4c90f，pin 之后该路径共 1 个 revision；akshare 出现行 126->126、出现次数 149->149（未移动）；openbb 出现行 95->95、出现次数 117->117（未移动）；加载形态行 pinned=4==live=4；变动行 diff 口径（difflib autojunk=False，本轮与 git numstat 同形）增4 删2，按文本去重口径 增4 删2，两口径差 0 条（新增行与 pin 里的既有行同文，去重口径不计）；去重口径新增行里没有一条是被删行的同文加 # nosec 尾注释（0/4）；带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+REAL problems: 0
+entries re-pinned: 1
+checker exit code: 0
+  OUT| OK: 649 file(s) walked (opendata=322, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+WRITE_EXIT=0
