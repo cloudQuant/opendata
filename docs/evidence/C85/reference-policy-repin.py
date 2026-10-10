@@ -78,9 +78,11 @@ BRAND_FACES = tuple(f"{root}_{field}" for root in ROUNDS for field in ("lines", 
 #: forbids, and no amount of prose editing can restore this face the way it can restore a count.
 LOAD_FACE = "load_shape_lines"
 MULTISET = Counter[tuple[str, str]]
-#: The clause appended to every entry this file re-pins. It is matched by :func:`tamper_policy` to
-#: find the entries this instrument owns, so it is a constant rather than a literal in two places.
-REPIN_MARKER = "primary 复核 sha 漂移"
+#: The clause appended to every entry this file re-pins, after the signer name it is prefixed with.
+#: It is matched by :func:`tamper_policy` to find the entries this instrument owns, so it is a
+#: constant rather than a literal in two places, and it deliberately excludes the signer itself --
+#: the historical ``C75/C78`` clauses carry the same tail.
+REPIN_MARKER = "复核 sha 漂移"
 #: The round token as it appears in a commit subject (``C86``), never inside a longer word.
 ROUND_TOKEN = re.compile(r"\bC(\d{1,3})\b")
 
@@ -105,12 +107,33 @@ def signer(mover: str) -> str:
     return f"C{token} primary" if token else f"rev {mover[:7]} primary（标题无轮次标签）"
 
 
+def repeated_tokens(clause: str) -> list[str]:
+    """Return the tokens a clause repeats back to back -- the signature of a duplicated fragment.
+
+    Splitting on separators and comparing neighbours is enough here because the clause is composed
+    from two constants, and the failure this catches was exactly one of them carrying a word the
+    other already ends with.
+    """
+    tokens = [token for token in re.split(r"[，、：:（）\s]+", clause) if token]
+    return [first for first, second in zip(tokens, tokens[1:], strict=False) if first == second]
+
+
 def label_check(tamper: bool = False) -> int:
     """Require the derived label to be able to differ, and print the live mover's label.
 
     ``tamper=True`` asserts a wrong expected token for the first subject; the judge is then required
     to fail, which is the arm showing ``LABEL_CHECK PASS`` is a measurement rather than a tautology.
     """
+    head = git("log", "-1", "--format=%H").decode().strip()
+    tail = f"（被 {head[:7]} 改动）"
+    sample = f"{signer(head)} {REPIN_MARKER}{tail}"
+    control = f"{signer(head)} primary {REPIN_MARKER}{tail}"
+    live_repeats = repeated_tokens(sample)
+    control_repeats = repeated_tokens(control)
+    print(f"  composed clause reads: {sample}")
+    print(f"  repeated tokens (live): {len(live_repeats)} {live_repeats or '-'}")
+    print(f"  duplicated-signer control reads: {control}")
+    print(f"  repeated tokens (control): {len(control_repeats)} {control_repeats or '-'}")
     forged: list[tuple[str, str | None]] = [
         ("feat(acceptance): C86 给七个从无探针的 gap 格子接上实测判定", "86"),
         ("docs(evidence): C85 落 AC-17|06 的标签面归档", "85"),
@@ -127,9 +150,10 @@ def label_check(tamper: bool = False) -> int:
         print(f"  subject {subject[:34]}… -> token {round_token(subject)!r} expected {expected!r}")
     distinct = len({round_token(subject) for subject, _ in forged}) == 3
     print(f"  three subjects, three distinct tokens: {distinct}")
-    head = git("log", "-1", "--format=%H").decode().strip()
     print(f"  live HEAD {head[:7]} -> signer() reads {signer(head)}")
-    ok = not mismatched and distinct
+    shaped = not live_repeats and control_repeats == ["primary"]
+    print(f"  repeat detector shaped both ways (live 0, control names the word): {shaped}")
+    ok = not mismatched and distinct and shaped
     for line in mismatched:
         print(line)
     print(f"LABEL_CHECK {'PASS' if ok else 'FAIL'}")

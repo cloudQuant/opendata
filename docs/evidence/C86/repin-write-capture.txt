@@ -1,0 +1,42 @@
+# C86 —— 重钉 scripts/quality/acceptance_item_probe.py 的批准摘要（审计 + --write 回执，逐字）
+# 采集时间: 2026-10-10T14:18:37+0800  分支: dev  HEAD: 3185ddf
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 仪器 sha256[:16]: af78dba2a964817d
+# policy sha256[:16]（跑前）: e697b94f4d492d65
+# command: python docs/evidence/C85/reference-policy-repin.py  然后  python docs/evidence/C85/reference-policy-repin.py --write
+# git status --porcelain（跑前）:
+M docs/evidence/C85/reference-policy-repin.py
+ M docs/evidence/C86/repin-label-check.txt
+ M docs/quality/akshare-reference-allowlist.json
+?? docs/evidence/C86/repin-controls.txt
+?? docs/evidence/C86/repin-write-capture.txt
+#
+===== 审计（只读，不写）
+policy entries registered: 87
+drifted entries audited: 1
+==============================================================================
+path: scripts/quality/acceptance_item_probe.py
+old sha256: c45211875dbf745a6166a466d7bb1e7511a85aa52a643d7f8d78544e58d7e803
+new sha256: 521d23093b7b84167d52eb8d757d9002220967e0883ad5221691ecdf29fc0e7a
+pin revision: 0ee5839a05e8ca58ba69c3dd9de5f23a50b5caef | moved by: fb904f265fcd202f6221ee92dbfbf26409383c43 | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C86 primary 复核 sha 漂移（被 fb904f2 改动）：pin 字节属 rev 0ee5839，pin 之后该路径共 1 个 revision；akshare 出现行 126->144、出现次数 149->172（移动）；openbb 出现行 95->95、出现次数 117->117（未移动）；加载形态行 pinned=4==live=4；变动行 diff 口径（difflib autojunk=False）增1064 删9，按文本去重口径 增818 删7，两口径差 246 条，de-dupe 命中 246 条（新增行的文本在 pin 字节里已出现），余 0 条未被该机制解释；去重口径新增行里没有一条是被删行的同文加 # nosec 尾注释（0/818）；带品牌新增 18 条 / 删 0 条，逐行按加载形态正则分类后命中 0 条；原文：C86_B1_SCALE_LINE = re.compile(r"ods_(\w+)_(ths|akshare): (\S+)\.\.(\S+) rows=(\d+) symbols=(\d+)") | C86_SOURCE_TABLE_SUFFIXES: Final = ("_ths", "_akshare") | ak_rows = listed.get("ods_stock_daily_akshare", 0) | b1_ak_rows = int(scale.get("stock_daily_akshare_rows", "-1")) | "daily_akshare_rows": count(ak_rows), | "akshare_rows_across_carriers": rows_faces, | "akshare_rows_delta": rows_delta, | "akshare_window_b1": scale.get("stock_daily_akshare_window", "(absent)"), | "akshare_origin": "legacy_migration" if "旧库迁移" in b1 else "vendor_fetch", | ("两源行数一致", f["akshare_rows_delta"] == "0"), | ("两源窗口同跨十年", f["ths_window_b1"] == f["akshare_window_b1"]), | ("akshare 侧来自本轮取数", f["akshare_origin"] == "vendor_fetch"), | "akshare_rows_delta": "0", | "akshare_window_b1": "*ths_window_b1", | "akshare_origin": "vendor_fetch", | Break("两份载体的 akshare 行数不一致", (("akshare_rows_delta", "1"),), GAP), | Break("akshare 窗口短于 ths", (("akshare_window_b1", "2026-01-05..2026-07-21"),), GAP), | Break("akshare 侧仍是旧库迁移数据", (("akshare_origin", "legacy_migration"),), GAP),；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+REAL problems: 0
+AUDIT_RC=0
+===== --write（唯一写面：把 drifted 条目的 sha256 重钉到磁盘字节）
+policy entries registered: 87
+drifted entries audited: 1
+==============================================================================
+path: scripts/quality/acceptance_item_probe.py
+old sha256: c45211875dbf745a6166a466d7bb1e7511a85aa52a643d7f8d78544e58d7e803
+new sha256: 521d23093b7b84167d52eb8d757d9002220967e0883ad5221691ecdf29fc0e7a
+pin revision: 0ee5839a05e8ca58ba69c3dd9de5f23a50b5caef | moved by: fb904f265fcd202f6221ee92dbfbf26409383c43 | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C86 primary 复核 sha 漂移（被 fb904f2 改动）：pin 字节属 rev 0ee5839，pin 之后该路径共 1 个 revision；akshare 出现行 126->144、出现次数 149->172（移动）；openbb 出现行 95->95、出现次数 117->117（未移动）；加载形态行 pinned=4==live=4；变动行 diff 口径（difflib autojunk=False）增1064 删9，按文本去重口径 增818 删7，两口径差 246 条，de-dupe 命中 246 条（新增行的文本在 pin 字节里已出现），余 0 条未被该机制解释；去重口径新增行里没有一条是被删行的同文加 # nosec 尾注释（0/818）；带品牌新增 18 条 / 删 0 条，逐行按加载形态正则分类后命中 0 条；原文：C86_B1_SCALE_LINE = re.compile(r"ods_(\w+)_(ths|akshare): (\S+)\.\.(\S+) rows=(\d+) symbols=(\d+)") | C86_SOURCE_TABLE_SUFFIXES: Final = ("_ths", "_akshare") | ak_rows = listed.get("ods_stock_daily_akshare", 0) | b1_ak_rows = int(scale.get("stock_daily_akshare_rows", "-1")) | "daily_akshare_rows": count(ak_rows), | "akshare_rows_across_carriers": rows_faces, | "akshare_rows_delta": rows_delta, | "akshare_window_b1": scale.get("stock_daily_akshare_window", "(absent)"), | "akshare_origin": "legacy_migration" if "旧库迁移" in b1 else "vendor_fetch", | ("两源行数一致", f["akshare_rows_delta"] == "0"), | ("两源窗口同跨十年", f["ths_window_b1"] == f["akshare_window_b1"]), | ("akshare 侧来自本轮取数", f["akshare_origin"] == "vendor_fetch"), | "akshare_rows_delta": "0", | "akshare_window_b1": "*ths_window_b1", | "akshare_origin": "vendor_fetch", | Break("两份载体的 akshare 行数不一致", (("akshare_rows_delta", "1"),), GAP), | Break("akshare 窗口短于 ths", (("akshare_window_b1", "2026-01-05..2026-07-21"),), GAP), | Break("akshare 侧仍是旧库迁移数据", (("akshare_origin", "legacy_migration"),), GAP),；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+REAL problems: 0
+entries re-pinned: 1
+checker exit code: 0
+  OUT| OK: 649 file(s) walked (opendata=322, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+WRITE_RC=0

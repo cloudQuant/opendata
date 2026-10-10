@@ -1,0 +1,40 @@
+# C86 —— 重钉仪器的三条对照臂（每条都必须能与正臂取不同值）
+# 采集时间: 2026-10-10T14:18:40+0800  分支: dev  HEAD: 3185ddf
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 仪器 sha256[:16]: af78dba2a964817d
+# policy sha256[:16]（跑前）: e697b94f4d492d65
+# command: python docs/evidence/C85/reference-policy-repin.py --tamper-policy; python docs/evidence/C85/reference-policy-repin.py --tamper-source; python docs/evidence/C85/reference-policy-repin.py --tamper-prose
+# git status --porcelain（跑前）:
+M docs/evidence/C85/reference-policy-repin.py
+ M docs/evidence/C86/repin-label-check.txt
+ M docs/quality/akshare-reference-allowlist.json
+?? docs/evidence/C86/repin-controls.txt
+?? docs/evidence/C86/repin-write-capture.txt
+#
+===== --tamper-policy
+policy entries registered: 87
+entries carrying a 复核 sha 漂移 clause that matches the bytes on disk: 18
+TAMPER CONTROL -- scripts/quality/vendor_independence.py: sha256 last hex digit 5 -> 0
+  checker exit code: 1
+  ERR| FAIL: reference policy is unusable: stale sha256: scripts/quality/vendor_independence.py
+  policy bytes restored: True
+  stale paths reported by the checker: ['scripts/quality/vendor_independence.py']
+  restored policy: checker exit code 0
+  OUT| OK: 649 file(s) walked (opendata=322, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+  control bit (the checker names exactly scripts/quality/vendor_independence.py as stale, and nothing else): True
+TAMPER-POLICY_RC=0
+  ===== --tamper-source
+policy entries registered: 87
+SOURCE TAMPER CONTROL -- pinned bytes of opendata/core/config.py (rev 80da631) + one 'import akshare':
+  problems reported: 3
+   - opendata/core/config.py: finding multiset {} -> {('akshare', 'import'): 1}
+   - opendata/core/config.py: face load_shape_lines 0 -> 1
+   - opendata/core/config.py: 1 brand-carrying added line(s) are themselves load shapes: import akshare
+TAMPER-SOURCE_RC=0
+  ===== --tamper-prose
+policy entries registered: 87
+PROSE CONTROL -- pinned bytes of opendata/core/config.py (rev 80da631) + one comment naming akshare:
+  problems reported: 0
+  brand faces moved: {'akshare_lines': (5, 6), 'akshare_occurrences': (8, 9)} | added brand lines: 1 | of which load shapes: 0 | AST arm applies: True
+TAMPER-PROSE_RC=0
+policy sha256[:16] 控制巡回前=e697b94f4d492d65 巡回后=e697b94f4d492d65 相等=True
