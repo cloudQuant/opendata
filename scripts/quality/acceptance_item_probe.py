@@ -46,6 +46,7 @@ from __future__ import annotations
 import argparse
 import ast
 import collections
+import csv
 import fnmatch
 import hashlib
 import importlib.util
@@ -60,6 +61,7 @@ import subprocess  # nosec B404  # run_argv/_run_streams/secret-scan: literal li
 import sys
 import tempfile
 import time
+import tokenize
 import xml.etree.ElementTree as ET  # nosec B405  # pytest-generated private temp report
 import zipfile
 from contextlib import redirect_stdout, suppress
@@ -13660,9 +13662,27 @@ def _bandit_census(
     return str(rc), "yes", shape, keys, str(totals.get("skipped_tests", "-"))
 
 
-def _nosec_rows(c: Context, roots: list[str], excludes: list[str]) -> list[tuple[str, int, str]]:
-    """_nosec_rows: see the AC-17|02 measurement it serves."""
+def _comment_lines(text: str) -> tuple[set[int], bool]:
+    """Line numbers holding a COMMENT token, mirroring how bandit itself finds exemptions.
+
+    bandit keys ``# nosec`` on ``tokenize.COMMENT`` tokens and, when a file will not tokenize,
+    honors no exemption in it at all (``bandit/core/manager.py::_parse_file``). Grepping the raw
+    lines instead counts every ``nosec`` written *inside a string literal* as an exemption the
+    scanner never saw, which is what made this census report decorative nosec that no tool read.
+    """
+    try:
+        tokens = list(tokenize.generate_tokens(io.StringIO(text).readline))
+    except (tokenize.TokenError, IndentationError, SyntaxError):
+        return set(), False
+    return {tok.start[0] for tok in tokens if tok.type == tokenize.COMMENT}, True
+
+
+def _nosec_rows(
+    c: Context, roots: list[str], excludes: list[str]
+) -> tuple[list[tuple[str, int, str]], int]:
+    """_nosec_rows: see the AC-17|02 measurement it serves; also counts untokenizable files."""
     rows: list[tuple[str, int, str]] = []
+    unreadable = 0
     for root in roots:
         base = c.root / root
         if not base.is_dir():
@@ -13672,11 +13692,16 @@ def _nosec_rows(c: Context, roots: list[str], excludes: list[str]) -> list[tuple
             if _excluded(rel, excludes):
                 continue
             text = path.read_text(encoding="utf-8", errors="replace")
-            for i, line in enumerate(text.splitlines(), 1):
-                m = NOSEC_PAT.search(line)
+            lines = text.splitlines()
+            clines, readable = _comment_lines(text)
+            if not readable:
+                unreadable += 1
+                continue
+            for i in sorted(clines):
+                m = NOSEC_PAT.search(lines[i - 1])
                 if m:
                     rows.append((rel, i, m.group(1).strip()))
-    return rows
+    return rows, unreadable
 
 
 SUPPRESSION_MARKERS = re.compile(
@@ -13749,7 +13774,7 @@ def measure_ac17_02(c: Context) -> Facts:
     skips = _yaml_block_list(c.read(BANDIT_REL), "skips")
     roots = _census_roots(c)
     excludes = _exclude_dirs(c)
-    rows = _nosec_rows(c, roots, excludes)
+    rows, nosec_unreadable = _nosec_rows(c, roots, excludes)
     declared: collections.Counter = collections.Counter()
     for rel, _i, rest in rows:
         for tid in set(re.findall(r"B\d+", rest)):
@@ -13812,6 +13837,7 @@ def measure_ac17_02(c: Context) -> Facts:
         "suppression_gap": count(raw_total - kept_total),
         "suppression_identity": flag(suppressed_witness == raw_total - kept_total),
         "nosec_sites": count(len(rows)),
+        "nosec_unreadable_files": count(nosec_unreadable),
         "nosec_without_rule_id": count(len(no_id)),
         "nosec_no_id_sample": ", ".join(no_id[:3]) or "-",
         "nosec_without_reason": count(len(no_reason)),
@@ -13845,6 +13871,7 @@ def judge_ac17_02(facts: Facts) -> Verdict:
         and facts["raw_json_ok"] == "yes"
         and positive(facts["raw_findings"])
         and facts["suppression_identity"] == "yes"
+        and facts["nosec_unreadable_files"] == "0"
         and facts["nosec_without_rule_id"] == "0"
         and facts["nosec_without_reason"] == "0"
         and facts["decorative_exemptions"] == "0"
@@ -13874,7 +13901,9 @@ def judge_ac17_02(facts: Facts) -> Verdict:
             f"（{facts['nosec_no_reason_sample']}）"
             if facts["nosec_no_reason_sample"] != "-"
             else ""
-        ),
+        )
+        + "；例外按注释令牌认（与 bandit 同语义），普查中切分失败的文件 "
+        + f"{facts['nosec_unreadable_files']} 个（bandit 对这类文件一条例外都不认）",
         f"真跑普查 {facts['census_roots']}：nosec 生效时 rc={facts['census_exit']}、"
         f"JSON 可读={facts['census_json_ok']}、剩余违例 {facts['census_findings']}"
         + (f"（{facts['census_finding_ids']}）" if facts["census_finding_ids"] != "-" else ""),
@@ -13895,7 +13924,7 @@ def judge_ac17_02(facts: Facts) -> Verdict:
         else (
             "A2 四面缺一个 / bandit 未绑配置或未强制 JSON / 反向臂不报违例 / "
             "普查仍有剩余违例或命令本身跑挂 / 例外仍是全局 skips / "
-            "例外没有行级规则号或没有理由 / 有 nosec 什么都没压住"
+            "例外没有行级规则号或没有理由 / 有 nosec 什么都没压住 / 普查文件切分失败"
         )
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
@@ -13925,7 +13954,6 @@ AC17_02 = Probe(
         "census_findings": "0",
         "raw_exit": "1",
         "raw_json_ok": "yes",
-        "raw_findings": "160",
         "suppression_identity": "yes",
         "nosec_without_rule_id": "0",
         "nosec_without_reason": "0",
@@ -13943,6 +13971,11 @@ AC17_02 = Probe(
         Break("复制来的 nosec 什么都没压住", (("decorative_exemptions", "1"),), GAP),
         Break("一行例外不点名规则号", (("nosec_without_rule_id", "1"),), GAP),
         Break("例外只写了规则号没写理由", (("nosec_without_reason", "1"),), GAP),
+        Break(
+            "普查里有文件切分失败，例外计数不可信",
+            (("nosec_unreadable_files", "*nosec_unreadable_files+1"),),
+            GAP,
+        ),
         Break(
             "理由判别式掉了一条边（裸 noqa 被当成理由）", (("reason_predicate_controls", "3"),), GAP
         ),
@@ -14559,6 +14592,1021 @@ AC17_06 = Probe(
         Break("html 归档是空的", (("archive_html_pages", "0"),), GAP),
         Break("归档没被 git 跟踪", (("archive_tracked", "no"),), GAP),
         Break("现盘报告与归档漂移超限", (("drift_within", "no"),), GAP),
+    ),
+)
+
+
+# --------------------------------------------------------------------------- #
+# C86: the seven gap cells that had no measuring plane
+#
+# Before this pass these seven cells carried a ledger reason and nothing else: no measure, no
+# judge, no counterfact, so "gap" was a sentence rather than a reading. Each one here reads only
+# committed evidence carriers (no ``git``), so none is a moment face, and each declares a repair
+# a real act can reach -- the authorization-blocked faces (an authorized 取数, a warehouse DROP,
+# a live cross-source compare) stay red and are named in the gap reason instead of being relaxed
+# away. An unsatisfiable judge is the AC-17|03/AC-17|05 bug class and fails ``--self-test``.
+# --------------------------------------------------------------------------- #
+
+C86_MAPPING_REL: Final = "docs/evidence/C65/mapping-review-results.json"
+C86_PARQUET_REL: Final = "docs/evidence/C65/official-parquet-comparison.json"
+C86_FIDELITY_REL: Final = "docs/evidence/C65/port-fidelity-current-report.md"
+C86_MANIFEST_REL: Final = "docs/evidence/C65/replay-full-manifest.json"
+C86_SQL_REL: Final = "docs/evidence/C65/replay-full-independent-sql.json"
+C86_INTERRUPT_REL: Final = "docs/evidence/C65/replay-full-interrupt.txt"
+C86_RESUME_REL: Final = "docs/evidence/C65/replay-full-resume.txt"
+C86_INVENTORY_REL: Final = "docs/evidence/C65/legacy-current-inventory.json"
+C86_REVIEW_CSV_REL: Final = "docs/evidence/C65/legacy-per-table-review.csv"
+C86_CENSUS_REL: Final = "docs/evidence/C65/legacy-field-quality-census.json"
+C86_TRANSFER_REL: Final = "docs/evidence/C65/legacy-transfer-current.json"
+C86_PREFLIGHT_REL: Final = "docs/evidence/C65/source-preflight.json"
+C86_WAREHOUSE_REL: Final = "docs/evidence/C64/warehouse-readonly-inventory.txt"
+C86_B1_CROSS_REL: Final = "docs/evidence/B1/dual-source-cross-check.txt"
+C86_CALIB_REL: Final = "docs/evidence/B3/schedule-calibration.txt"
+C86_SCHED_REL: Final = "docs/evidence/B4/scheduler_startup.log"
+C86_REQ_REL: Final = "docs/迭代计划/迭代1-重构数据中台/需求文档.md"
+
+#: The decision that closes §4|02 on its own terms: a confirmed field mapping per leg.
+C86_CONFIRMED: Final = frozenset({"CONFIRMED_MAPPING"})
+
+#: The requirement line naming the 四件套 domains AC-8|08 has to land from both sources.
+C86_FOUR_PIECE_LINE = re.compile(r"^\| P0 \| A 股核心四件套（([^）]*)）", re.MULTILINE)
+
+#: 四件套 wording -> registry domain names, so the denominator comes from the document.
+C86_FOUR_PIECE_DOMAINS: Final = {
+    "日线": ("stock_daily",),
+    "复权": ("stock_adjust",),
+    "财务": ("financial_statement", "financial_indicator"),
+    "指数成分": ("index_constituent",),
+}
+
+C86_WAREHOUSE_TABLE = re.compile(r"^\('(\w+)', (\d+),", re.MULTILINE)
+C86_B1_SCALE_LINE = re.compile(r"ods_(\w+)_(ths|akshare): (\S+)\.\.(\S+) rows=(\d+) symbols=(\d+)")
+
+#: The two ODS sides each 四件套 domain has to be landed from, spelled as table-name suffixes.
+C86_SOURCE_TABLE_SUFFIXES: Final = ("_ths", "_akshare")
+C86_SHA256 = re.compile(r"[0-9a-f]{64}")
+
+
+def _c86_verdict(f: Facts, checks: tuple[tuple[str, bool], ...]) -> Verdict:
+    """_c86_verdict: proven when every check holds, else a gap naming each unmet one.
+
+    Args:
+        f: The facts as measured, repaired, or broken -- every face is printed either way.
+        checks: Each requirement's own wording paired with whether these facts satisfy it.
+
+    Returns:
+        A verdict whose readings are the faces themselves, so a reviewer recomputes the
+        judgement instead of trusting the sentence.
+    """
+    unmet = [name for name, satisfied in checks if not satisfied]
+    readings = tuple(f"{key}={value}" for key, value in sorted(f.items()))
+    if unmet:
+        return Verdict(GAP, readings, "未满足：" + "、".join(unmet))
+    return Verdict(PROVEN, readings, "")
+
+
+def _c86_json(ctx: Context, rel: str) -> dict[str, Any]:
+    """One of the C65/C64 JSON evidence carriers, or a finding that it is not there."""
+    payload = json.loads(ctx.read(rel))
+    if not isinstance(payload, dict):
+        raise ProbeError(f"{rel} is not a JSON object")
+    return payload
+
+
+def _c86_rows(ctx: Context) -> list[dict[str, str]]:
+    """The legacy per-table review sheet, keyed by its own header names."""
+    with (ctx.root / C86_REVIEW_CSV_REL).open(encoding="utf-8", newline="") as handle:
+        return list(csv.DictReader(handle))
+
+
+def _c86_final_record(ctx: Context, rel: str) -> dict[str, Any]:
+    """The last ``record=final`` line of a replay log, which is what the run ended on."""
+    final: dict[str, Any] | None = None
+    for line in ctx.read(rel).splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("{"):
+            continue
+        payload = json.loads(stripped)
+        if isinstance(payload, dict) and payload.get("record") == "final":
+            final = payload
+    if final is None:
+        raise ProbeError(f"{rel} has no final record")
+    return final
+
+
+def _c86_exit_face(ctx: Context, rel: str) -> str:
+    """The ``EXIT=`` line a replay log ends with, or the marker saying it does not carry one."""
+    return first_capture(ctx.read(rel), r"^EXIT=(-?\d+)$")
+
+
+def _c86_cross_face(anchor: str, values: Mapping[str, int]) -> tuple[str, str]:
+    """Render one quantity read from several carriers, plus the largest disagreement.
+
+    A count that only ever appears once is a claim; the same number pulled out of each file that
+    states it is a measurement. ``anchor`` names the carrier whose value the others have to reach,
+    so the delta face is what a counterfact mutates.
+
+    Args:
+        anchor: The key treated as the reference value.
+        values: Each carrier's name and the count it states.
+
+    Returns:
+        ``(joined, delta)``: the ``name:count`` face list and the largest absolute disagreement.
+    """
+    joined = "/".join(f"{name}:{values[name]}" for name in sorted(values))
+    return joined, count(max(abs(value - values[anchor]) for value in values.values()))
+
+
+def measure_c86_mapping_review(ctx: Context) -> Facts:
+    """Measure the 口径映射复核 artifact: denominators, sign-off, samples, unit and key faces."""
+    doc = _c86_json(ctx, C86_MAPPING_REL)
+    legs = doc["legs"]
+    inventory = doc["inventory_summary"]
+    review = doc["primary_review"]
+    groups = doc["evidence_refs"]["ths_action_parquet"]["duplicate_groups"]
+    decisions = collections.Counter(str(leg["primary_review"]["decision"]) for leg in legs)
+    confirmed = sum(n for decision, n in decisions.items() if decision in C86_CONFIRMED)
+    not_confirmed = sum(n for decision, n in decisions.items() if decision not in C86_CONFIRMED)
+    sample_backed = sum(1 for leg in legs if leg.get("raw_proof"))
+    unit_open = sum(
+        1
+        for leg in legs
+        if any(re.search(r"\b(?:scale|unit)\b", str(risk)) for risk in leg.get("risks", []))
+    )
+    conflict_groups = sum(
+        1 for group in groups if str(group.get("classification", "")).startswith("conflicting")
+    )
+    reviewer = str(review["reviewer"])
+    return {
+        "legs_measured": count(len(legs)),
+        "legs_inventory": count(int(inventory["active_non_pending_legs"])),
+        "denom_delta": count(len(legs) - int(inventory["active_non_pending_legs"])),
+        "dup_pairs": count(int(inventory["duplicate_provider_domain_pairs"])),
+        "reviewed": flag(all(leg["primary_review"]["review_complete"] for leg in legs)),
+        "confirmed": count(confirmed),
+        "confirmed_missing": count(len(legs) - confirmed),
+        "gap_decisions": count(not_confirmed),
+        "tally_delta": count(abs((len(legs) - confirmed) - not_confirmed)),
+        "fail_conflict": count(decisions.get("FAIL_CONFLICTING_BUSINESS_KEY", 0)),
+        "sample_backed": count(sample_backed),
+        "sample_missing": count(len(legs) - sample_backed),
+        "unit_open": count(unit_open),
+        "key_dup_groups": count(len(groups)),
+        "key_conflict_groups": count(conflict_groups),
+        "confirmed_by": "AI" if re.search(r"AI|Codex", reviewer) else "human",
+        "acceptance": str(review["field_mapping_acceptance"]),
+        "full_scope": flag(bool(review["full_scope_approved"])),
+    }
+
+
+def judge_c86_mapping_review(f: Facts) -> Verdict:
+    """Decide §4|02 from the review artifact's own counters."""
+    return _c86_verdict(
+        f,
+        (
+            ("复核分母与启用腿一致", f["denom_delta"] == "0" and f["dup_pairs"] == "0"),
+            ("结论计数内部自洽", f["tally_delta"] == "0"),
+            ("每条腿都有审阅结论", f["reviewed"] == "yes"),
+            ("无腿的业务键结论为冲突", f["fail_conflict"] == "0"),
+            ("每条腿经人工逐条确认", f["confirmed_missing"] == "0"),
+            ("每条腿有原始响应抽样", f["sample_missing"] == "0"),
+            ("单位换算经样本验证", f["unit_open"] == "0"),
+            ("key 规范化无业务键值冲突", f["key_conflict_groups"] == "0"),
+            ("确认者是人工而非 AI", f["confirmed_by"] == "human"),
+            ("整体映射批准", f["acceptance"] == "APPROVED" and f["full_scope"] == "yes"),
+        ),
+    )
+
+
+def measure_c86_port_fidelity(ctx: Context) -> Facts:
+    """Measure the porting-fidelity table and the official Parquet comparison archive."""
+    report = ctx.read(C86_FIDELITY_REL)
+    recorded: list[dict[str, str]] = []
+    pending: list[str] = []
+    section = "recorded"
+    for line in report.splitlines():
+        if line.startswith("## "):
+            section = "pending" if "Pending" in line else "other"
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) < 2 or cells[0] in ("case", "") or set(cells[1]) <= {"-"}:
+            continue
+        if section == "recorded" and len(cells) == 6:
+            recorded.append({"result": cells[4], "float_only_diff": cells[5]})
+        elif section == "pending":
+            pending.append(cells[0])
+    block = report.split("## D10", 1)[1] if "## D10" in report else ""
+    overlap = re.search(r"不相等\s+(\d+)/(\d+)\s+天", block)
+    legs = re.findall(r"^- ([^:\n]+):(.+)$", block, re.MULTILINE)
+    legs_unjudged = sum(1 for _name, verdict in legs if "未判读" in verdict)
+    results = collections.Counter(record["result"] for record in recorded)
+    parquet = _c86_json(ctx, C86_PARQUET_REL)
+    files = parquet["files"]
+    statuses = collections.Counter(str(file["status"]) for file in files)
+    examples = collections.Counter(
+        str(file.get("official_api_example_comparison", {}).get("status", "ABSENT"))
+        for file in files
+    )
+    parsed = sum(int(file["comparison"]["parsed_rows"]) for file in files)
+    unique = sum(int(file["comparison"]["raw_rows_with_unique_model_key"]) for file in files)
+    return {
+        "report_cases": count(len(recorded) + len(pending)),
+        "fidelity_legs_ok": count(results.get("PASS", 0)),
+        "fidelity_nonpass": count(len(recorded) - results.get("PASS", 0) + len(pending)),
+        "pending_cases": count(len(pending)),
+        "float_only_diff_rows": count(
+            sum(1 for record in recorded if record["float_only_diff"] not in ("0", ""))
+        ),
+        "rtol": first_capture(report, r"rtol=([0-9e.-]+)"),
+        "parquet_files": count(len(files)),
+        "parquet_files_ok": count(statuses.get("PASS", 0)),
+        "parquet_fail": count(statuses.get("FAIL", 0)),
+        "parquet_other": count(len(files) - statuses.get("PASS", 0) - statuses.get("FAIL", 0)),
+        "parquet_issue_codes": ",".join(
+            sorted(issue["code"] for file in files for issue in file["issues"])
+        )
+        or "-",
+        "parquet_dup_groups": count(
+            sum(int(file["raw"].get("duplicate_key_group_count", 0)) for file in files)
+        ),
+        "parsed_rows_total": count(parsed),
+        "unique_key_rows_total": count(unique),
+        "key_uniqueness_diff": count(parsed - unique),
+        "value_diff_total": count(
+            sum(int(file["comparison"]["value_diff_count"]) for file in files)
+        ),
+        "example_recorded": count(len(files) - examples.get("ABSENT", 0)),
+        "example_missing": count(examples.get("ABSENT", 0)),
+        "archive_status": str(parquet["status"]),
+        "d10_leg_count": count(len(legs)),
+        "d10_legs_unjudged": count(legs_unjudged),
+        "d10_overlap_mismatch": overlap.group(1) if overlap else "(absent)",
+        "d10_overlap_days": overlap.group(2) if overlap else "(absent)",
+    }
+
+
+def judge_c86_port_fidelity(f: Facts) -> Verdict:
+    """Decide §4|04: every porting leg and every official compare file has to be a PASS."""
+    return _c86_verdict(
+        f,
+        (
+            (
+                "搬运对照逐腿 PASS",
+                f["fidelity_nonpass"] == "0" and f["fidelity_legs_ok"] == f["report_cases"],
+            ),
+            ("逐案文本差异皆浮点一致", f["float_only_diff_rows"] == "0"),
+            (
+                "官方 Parquet 对照逐文件 PASS",
+                f["parquet_fail"] == "0" and f["parquet_other"] == "0",
+            ),
+            ("官方样本无重复业务键", f["parquet_dup_groups"] == "0"),
+            ("模型键唯一", f["key_uniqueness_diff"] == "0"),
+            ("逐值对照无差异", f["value_diff_total"] == "0"),
+            (
+                "文档示例对照齐备",
+                f["example_missing"] == "0" and f["example_recorded"] == f["parquet_files"],
+            ),
+            (
+                "D10 复权链逐腿判读",
+                f["d10_leg_count"] != "0" and f["d10_legs_unjudged"] == "0",
+            ),
+            (
+                "D10 重叠窗口无不相等天",
+                f["d10_overlap_mismatch"] == "0" and f["d10_overlap_days"] != "(absent)",
+            ),
+            ("归档判定为 PASS", f["archive_status"] == "PASS"),
+        ),
+    )
+
+
+def measure_c86_ten_year_backfill(ctx: Context) -> Facts:
+    """Measure the ten-year replay: shard arithmetic, interrupt/resume identity, progress table."""
+    manifest = _c86_json(ctx, C86_MANIFEST_REL)
+    sql = _c86_json(ctx, C86_SQL_REL)
+    interrupted = _c86_final_record(ctx, C86_INTERRUPT_REL)
+    resumed = _c86_final_record(ctx, C86_RESUME_REL)
+    symbols = len(manifest["symbols"])
+    shard_size = int(manifest["shard_size"])
+    expected = math.ceil(symbols / shard_size)
+    window_rows = int(manifest["window_rows_exact"])
+    interrupt_done = int(interrupted["shards_done"])
+    resume_done = int(resumed["shards_done"])
+    skipped = int(resumed["shards_resumed"])
+    partial = int(interrupted["target_ods_window_rows_exact"])
+    resumed_rows = int(resumed["rows_written_this_run"])
+    identities = {
+        "manifest": window_rows,
+        "ods": int(sql["ods_rows"]),
+        "dwd": int(sql["dwd_rows"]),
+        "joined": int(sql["joined_source_rows"]),
+        "progress": int(sql["progress_rows_written"]),
+        "ods_target": int(resumed["target_ods_window_rows_exact"]),
+        "dwd_target": int(resumed["target_dwd_window_rows_exact"]),
+    }
+    identity_faces, identity_delta = _c86_cross_face("manifest", identities)
+    by_status = {str(key): int(value) for key, value in sql["shards_by_status"].items()}
+    window = f"{manifest['window']['start']}..{manifest['window']['end']}"
+    years = round(
+        (
+            date.fromisoformat(str(manifest["window"]["end"]))
+            - date.fromisoformat(str(manifest["window"]["start"]))
+        ).days
+        / 365.25,
+        1,
+    )
+    return {
+        "manifest_status": str(manifest["status"]),
+        "window": window,
+        "window_years": str(years),
+        "symbols": count(symbols),
+        "shard_size": count(shard_size),
+        "shards_expected": count(expected),
+        "shards_total_log": count(int(resumed["shards_total"])),
+        "shards_done_list": count(len(manifest["done_shards"])),
+        "shards_run_delta": count(expected - (interrupt_done + resume_done)),
+        "skip_delta": count(skipped - interrupt_done),
+        "interrupt_exit": _c86_exit_face(ctx, C86_INTERRUPT_REL),
+        "interrupt_status": str(interrupted["status"]),
+        "interrupt_shards_done": count(interrupt_done),
+        "interrupt_rows": count(partial),
+        "resume_exit": _c86_exit_face(ctx, C86_RESUME_REL),
+        "resume_status": str(resumed["status"]),
+        "resume_shards_done": count(resume_done),
+        "resume_shards_resumed": count(skipped),
+        "resume_rows_written": count(resumed_rows),
+        "window_rows": count(window_rows),
+        "row_delta": count(window_rows - (partial + resumed_rows)),
+        "row_identity_terms": identity_faces,
+        "row_identity_delta_max": identity_delta,
+        "progress_done_shards": count(by_status.get("DONE", 0)),
+        "progress_other_shards": count(sum(v for k, v in by_status.items() if k != "DONE")),
+        "progress_shard_delta": count(expected - by_status.get("DONE", 0)),
+        "progress_error_rows": count(int(sql["progress_error_rows"])),
+        "progress_table_seen": flag("pipeline_progress" in ctx.read(C86_SQL_REL)),
+        "hooks_done": count(len(sql["hooks_by_status"])),
+        "key_mismatch": count(int(sql["missing_ods_keys"]) + int(sql["missing_dwd_keys"])),
+        "value_mismatch": count(
+            int(sql["ods_raw_value_mismatch_rows"])
+            + int(sql["dwd_normalized_value_mismatch_rows"])
+            + int(sql["ods_source_mismatch_rows"])
+            + int(sql["dwd_source_mismatch_rows"])
+        ),
+        "independent_compare_ok": flag(bool(sql["pass"])),
+        "source_observation": str(manifest["source_observation"]),
+        "coverage_scope": str(resumed["coverage_scope"]),
+    }
+
+
+def judge_c86_ten_year_backfill(f: Facts) -> Verdict:
+    """Decide §5|02 from the replay logs and the independent SELECT report."""
+    return _c86_verdict(
+        f,
+        (
+            ("十年窗口", f["window_years"] == "10.0"),
+            ("分片总数与符号数自洽", f["shards_expected"] == f["shards_total_log"]),
+            (
+                "断点中断可见证",
+                f["interrupt_status"] == "interrupted" and f["interrupt_shards_done"] != "0",
+            ),
+            ("续跑跳过已完成分片", f["skip_delta"] == "0"),
+            ("两轮分片计数不重不漏", f["shards_run_delta"] == "0"),
+            (
+                "manifest 完成且分片齐",
+                f["manifest_status"] == "complete"
+                and f["shards_done_list"] == f["shards_expected"],
+            ),
+            ("续跑行数无重无漏", f["row_delta"] == "0"),
+            ("进度表与两目标及 manifest 行数同一", f["row_identity_delta_max"] == "0"),
+            (
+                "进度表可观测",
+                f["progress_table_seen"] == "yes" and f["progress_error_rows"] == "0",
+            ),
+            (
+                "分片状态全部 DONE",
+                f["progress_shard_delta"] == "0" and f["progress_other_shards"] == "0",
+            ),
+            ("钩子三步完成", f["hooks_done"] == "3"),
+            (
+                "恢复运行完成且退出码为 0",
+                f["resume_status"] == "complete"
+                and f["resume_exit"] == "0"
+                and f["interrupt_exit"] != "(absent)",
+            ),
+            (
+                "独立核对无缺键无值差",
+                f["key_mismatch"] == "0"
+                and f["value_mismatch"] == "0"
+                and f["independent_compare_ok"] == "yes",
+            ),
+            ("本轮取数来自供应商", f["source_observation"] == "vendor_fetch"),
+            ("当前全市场范围自证", f["coverage_scope"] == "current_market_universe"),
+        ),
+    )
+
+
+def measure_c86_legacy_preserved(ctx: Context) -> Facts:
+    """Measure legacy retention, the read-only ACL, write counts, and cross-carrier row faces."""
+    inventory = _c86_json(ctx, C86_INVENTORY_REL)
+    census = _c86_json(ctx, C86_CENSUS_REL)
+    transfer = _c86_json(ctx, C86_TRANSFER_REL)
+    rows = _c86_rows(ctx)
+    kept = sum(1 for row in rows if row["retention_decision"] == "Keep source table")
+    drops = sum(1 for row in rows if row["drop_authorized"].lower() == "true")
+    signed = sum(1 for row in rows if C86_SHA256.fullmatch(row["column_signature_sha256"] or ""))
+    columns_csv = sum(int(row["columns"] or 0) for row in rows)
+    row_counts = {
+        "inventory": int(inventory["mapped_stock_daily"]["row_count"]),
+        "census": int(census["rows"]),
+        "transfer_expected": int(transfer["source_rows_expected"]),
+        "transfer_read": int(transfer["source_rows"]),
+    }
+    source_faces, source_delta = _c86_cross_face("inventory", row_counts)
+    return {
+        "inv_tables": count(int(inventory["table_count"])),
+        "csv_rows": count(len(rows)),
+        "roster_delta": count(int(inventory["table_count"]) - len(rows)),
+        "inv_columns": count(int(inventory["column_count"])),
+        "csv_columns": count(columns_csv),
+        "columns_delta": count(int(inventory["column_count"]) - columns_csv),
+        "signature_signed": count(signed),
+        "signature_missing": count(len(rows) - signed),
+        "retained": count(kept),
+        "retained_missing": count(len(rows) - kept),
+        "drops_authorized": count(drops),
+        "connection_read_only": flag(bool(inventory["current_connection_database_acl_read_only"])),
+        "credential_text_in_archive": flag(bool(inventory["acl_secret_text_retained"])),
+        "inventory_writes": count(int(inventory["native_writes"])),
+        "census_writes": count(int(census["native_3306_writes"])),
+        "source_row_faces": source_faces,
+        "source_row_delta_max": source_delta,
+        "user_decision": str(inventory["user_decision"]),
+    }
+
+
+def judge_c86_legacy_preserved(f: Facts) -> Verdict:
+    """Decide AC-15|01: nothing about the legacy tables may change before the evaluation ends."""
+    return _c86_verdict(
+        f,
+        (
+            (
+                "盘点与逐表审查同集合",
+                f["roster_delta"] == "0" and f["retained_missing"] == "0",
+            ),
+            (
+                "结构基线可复算",
+                f["columns_delta"] == "0" and f["signature_missing"] == "0",
+            ),
+            ("评估前无一表被删", f["drops_authorized"] == "0"),
+            ("旧库访问只读", f["connection_read_only"] == "yes"),
+            (
+                "三个读取轮零写入",
+                f["inventory_writes"] == "0" and f["census_writes"] == "0",
+            ),
+            ("旧表行数未被改动", f["source_row_delta_max"] == "0"),
+            ("留档不含凭据", f["credential_text_in_archive"] == "no"),
+        ),
+    )
+
+
+def measure_c86_transfer_evaluation(ctx: Context) -> Facts:
+    """Measure mapping coverage, the isolated transfer result, the NULL census, and disposal."""
+    inventory = _c86_json(ctx, C86_INVENTORY_REL)
+    census = _c86_json(ctx, C86_CENSUS_REL)
+    transfer = _c86_json(ctx, C86_TRANSFER_REL)
+    rows = _c86_rows(ctx)
+    mapped = sum(1 for row in rows if row["current_target"])
+    placeholder = sum(
+        1 for row in rows if row["migration_value_review"].startswith("Not applicable")
+    )
+    blank = sum(1 for row in rows if not row["migration_value_review"])
+    decided = len(rows) - placeholder - blank
+    value_failed = sum(1 for row in rows if row["migration_value_review"].startswith("FAIL"))
+    archived = sum(1 for row in rows if row["retention_decision"].startswith("Archiv"))
+    dropped = sum(1 for row in rows if row["retention_decision"].startswith("Drop"))
+    drops = sum(1 for row in rows if row["drop_authorized"].lower() == "true")
+    nulls = {str(key): int(value) for key, value in census["null_counts"].items()}
+    return {
+        "csv_rows": count(len(rows)),
+        "inv_tables": count(int(inventory["table_count"])),
+        "roster_delta": count(int(inventory["table_count"]) - len(rows)),
+        "mapped_targets": count(mapped),
+        "unmapped": count(len(rows) - mapped),
+        "value_decided": count(decided),
+        "value_placeholder": count(placeholder),
+        "value_blank": count(blank),
+        "value_missing": count(len(rows) - decided),
+        "value_failed": count(value_failed),
+        "transfer_status": str(transfer["status"]),
+        "rows_read": count(int(transfer["rows_read"])),
+        "rows_inserted": count(int(transfer["rows_inserted"])),
+        "source_rows": count(int(transfer["source_rows_expected"])),
+        "insert_delta": count(
+            int(transfer["source_rows_expected"]) - int(transfer["rows_inserted"])
+        ),
+        "rows_hashed": count(int(transfer["target_rows_hashed"])),
+        "stream_hash_match": flag(bool(transfer["full_stream_hash_match"])),
+        "transfer_verified": flag(bool(transfer["full_source_transfer_verified"])),
+        "error_class": str(transfer["error_classification"]),
+        "null_fields": ",".join(sorted(key for key, value in nulls.items() if value > 0)),
+        "null_field_count": count(sum(1 for value in nulls.values() if value > 0)),
+        "amount_null": count(nulls.get("成交额", -1)),
+        "census_rows": count(int(census["rows"])),
+        "archived": count(archived),
+        "dropped": count(dropped),
+        "disposition_open": count(len(rows) - archived - dropped),
+        "drops_authorized": count(drops),
+        "inv_drop_authorized": flag(bool(inventory["drop_authorized"])),
+        "user_decision": str(inventory["user_decision"]),
+    }
+
+
+def judge_c86_transfer_evaluation(f: Facts) -> Verdict:
+    """Decide AC-15|02: value goes through ods by row count, no-value gets archived, then DROP."""
+    return _c86_verdict(
+        f,
+        (
+            ("审查表集合与盘点同集合且非空", f["roster_delta"] == "0" and f["csv_rows"] != "0"),
+            (
+                "每张旧表都有迁移价值结论",
+                f["value_missing"] == "0" and f["value_decided"] == f["csv_rows"],
+            ),
+            (
+                "每张旧表都建立业务映射",
+                f["unmapped"] == "0" and f["mapped_targets"] == f["csv_rows"],
+            ),
+            ("迁移价值结论无一为 FAIL", f["value_failed"] == "0"),
+            ("迁移逐行落库无缺口", f["insert_delta"] == "0" and f["transfer_status"] == "PASS"),
+            (
+                "全量迁移经行数与抽样双重留档验证",
+                f["stream_hash_match"] == "yes"
+                and f["transfer_verified"] == "yes"
+                and f["rows_hashed"] == f["source_rows"],
+            ),
+            ("必填字段无 NULL 冲突", f["null_field_count"] == "0"),
+            ("评估完成后每张表都有处置", f["disposition_open"] == "0"),
+            ("DROP 经逐表授权", f["drops_authorized"] == f["csv_rows"]),
+        ),
+    )
+
+
+def _c86_observation_rows(text: str) -> list[tuple[str, str, str]]:
+    """Parse B3's table row by row; a global last-bar read would hide later captures."""
+    rows: list[tuple[str, str, str]] = []
+    for line in text.splitlines():
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) < 3 or not re.fullmatch(r"\d{2}:\d{2}", cells[0]):
+            continue
+        queried = re.findall(r"\d{4}-\d{2}-\d{2}", cells[1])
+        returned = re.match(r"\*\*(\d{4}-\d{2}-\d{2})\*\*", cells[2])
+        if queried and returned:
+            rows.append((cells[0], queried[-1], returned.group(1)))
+    return rows
+
+
+def measure_c86_schedule_calibration(ctx: Context) -> Facts:
+    """Measure the registered schedule window against what the real machine actually observed."""
+    calibration = ctx.read(C86_CALIB_REL)
+    log = ctx.read(C86_SCHED_REL)
+    rows = _c86_observation_rows(calibration)
+    observed = [time for time, _queried, _returned in rows]
+    todo = calibration.split("## 待办", 1)[1] if "## 待办" in calibration else ""
+    required = sorted(set(re.findall(r"\d{2}:\d{2}", todo)))
+    p0_line = next(
+        (line for line in log.splitlines() if "job id=pipeline_p0-stock-daily-incremental" in line),
+        "",
+    )
+    hour = first_capture(p0_line, r"hour='(\d+)'")
+    minute = first_capture(p0_line, r"minute='(\d+)'")
+    window = f"{hour}:{minute}" if p0_line else "(absent)"
+    in_window = [row for row in rows if window != "(absent)" and row[0] >= window]
+    day_bars = [row for row in in_window if row[1] == row[2]]
+    return {
+        "observed_points": count(len(observed)),
+        "observed_times": ",".join(observed) or "-",
+        "required_times": ",".join(required),
+        "required_point_count": count(len(required)),
+        "points_missing": count(len(set(required) - set(observed))),
+        "jobs_total": first_capture(log, r"^total jobs: (\d+)"),
+        "p0_registered": flag("pipeline_p0-stock-daily-incremental" in log),
+        "p0_window": window,
+        "p0_weekdays": first_capture(
+            log, r"job id=pipeline_p0-stock-daily-incremental.*?day_of_week='([^']*)'"
+        ),
+        "p0_next_run": first_capture(p0_line, r"next_run=(20[\d\- :+]+)"),
+        "window_observed_rows": count(len(in_window)),
+        "day_bar_in_window": count(len(day_bars)),
+        "scheduler_started": flag("Task scheduler started successfully" in log),
+        "job_store": "in-memory" if "in-memory job store" in log else "persistent",
+        "builtin_jobs": first_capture(log, r"Built-in pipeline jobs registered: \[([^\]]*)\]"),
+        "calib_date": first_capture(calibration, r"(20\d\d-\d\d-\d\d) 真机"),
+    }
+
+
+def judge_c86_schedule_calibration(f: Facts) -> Verdict:
+    """Decide AC-13|08: a registered cron is not the same face as a window that was measured."""
+    return _c86_verdict(
+        f,
+        (
+            (
+                "调度任务已注册并启动",
+                f["scheduler_started"] == "yes" and f["p0_registered"] == "yes",
+            ),
+            ("增量窗口限定交易日", f["p0_weekdays"] == "1-5" and f["p0_next_run"] != "(absent)"),
+            ("交易日内多时点复测齐备", f["points_missing"] == "0"),
+            (
+                "注册窗口内实测拿到当日K",
+                f["day_bar_in_window"] == f["window_observed_rows"]
+                and f["day_bar_in_window"] != "0",
+            ),
+        ),
+    )
+
+
+def measure_c86_dual_source_landing(ctx: Context) -> Facts:
+    """Measure the ods roster, the dual-source report, and the 四件套 coverage against the doc."""
+    roster_text = ctx.read(C86_WAREHOUSE_REL)
+    listed = {m.group(1): int(m.group(2)) for m in C86_WAREHOUSE_TABLE.finditer(roster_text)}
+    declared_tables = int(first_capture(roster_text, r"^tables (\d+) "))
+    declared_rows = int(first_capture(roster_text, r"estimated rows (\d+)"))
+    preflight = _c86_json(ctx, C86_PREFLIGHT_REL)
+    domains: list[str] = []
+    requirement = ctx.read(C86_REQ_REL)
+    matched = C86_FOUR_PIECE_LINE.search(requirement)
+    if matched is None:
+        raise ProbeError(f"{C86_REQ_REL} no longer states the 四件套 P0 row")
+    for label in matched.group(1).split("/"):
+        domains.extend(C86_FOUR_PIECE_DOMAINS.get(label.strip(), ()))
+    expected = [
+        f"ods_{domain}{suffix}"
+        for domain in sorted(set(domains))
+        for suffix in C86_SOURCE_TABLE_SUFFIXES
+    ]
+    present = [table for table in expected if listed.get(table, 0) > 0]
+    b1 = ctx.read(C86_B1_CROSS_REL)
+    scale: dict[str, str] = {}
+    for match in C86_B1_SCALE_LINE.finditer(b1):
+        domain, source, start, end, rows, symbols = match.groups()
+        scale[f"{domain}_{source}_rows"] = rows
+        scale[f"{domain}_{source}_symbols"] = symbols
+        scale[f"{domain}_{source}_window"] = f"{start}..{end}"
+    compared_keys = first_capture(b1, r"compared_keys=(\d+)")
+    missing_count = first_capture(b1, r"missing_count=(\d+)")
+    ths_symbols = count(int(preflight["stock_daily_ths"]["symbols_exact"]))
+    ak_rows = listed.get("ods_stock_daily_akshare", 0)
+    b1_ak_rows = int(scale.get("stock_daily_akshare_rows", "-1"))
+    rows_faces, rows_delta = _c86_cross_face(
+        "inventory", {"inventory": ak_rows, "b1_report": b1_ak_rows}
+    )
+    return {
+        "four_piece_domains": ",".join(sorted(set(domains))),
+        "expected_tables": count(len(expected)),
+        "present_tables": count(len(present)),
+        "present_names": ",".join(present) or "-",
+        "missing_tables": count(len(expected) - len(present)),
+        "missing_names": ",".join(table for table in expected if table not in present) or "-",
+        "roster_declared_tables": count(declared_tables),
+        "roster_listed_tables": count(len(listed)),
+        "roster_table_delta": count(declared_tables - len(listed)),
+        "roster_declared_rows": count(declared_rows),
+        "roster_listed_rows": count(sum(listed.values())),
+        "roster_rows_delta": count(declared_rows - sum(listed.values())),
+        "daily_two_tables": flag(listed.get("ods_stock_daily_ths", 0) > 0 and ak_rows > 0),
+        "daily_ths_rows": count(listed.get("ods_stock_daily_ths", 0)),
+        "daily_akshare_rows": count(ak_rows),
+        "akshare_rows_across_carriers": rows_faces,
+        "akshare_rows_delta": rows_delta,
+        "ths_symbols_inventory": ths_symbols,
+        "ths_symbols_b1": scale.get("stock_daily_ths_symbols", "(absent)"),
+        "ths_symbols_delta": count(
+            abs(int(ths_symbols) - int(scale.get("stock_daily_ths_symbols", "0")))
+        ),
+        "ths_window_b1": scale.get("stock_daily_ths_window", "(absent)"),
+        "akshare_window_b1": scale.get("stock_daily_akshare_window", "(absent)"),
+        "compared_keys": compared_keys,
+        "missing_count": missing_count,
+        "akshare_origin": "legacy_migration" if "旧库迁移" in b1 else "vendor_fetch",
+        "dwd_empty": count(
+            sum(1 for table, rows in listed.items() if table.startswith("dwd_") and rows == 0)
+        ),
+    }
+
+
+def judge_c86_dual_source_landing(f: Facts) -> Verdict:
+    """Decide AC-8|08: both sources, whole market, and the four P0 domains landed in ods."""
+    return _c86_verdict(
+        f,
+        (
+            (
+                "仓表盘点完整",
+                f["roster_table_delta"] == "0" and f["roster_rows_delta"] == "0",
+            ),
+            ("日线双源两表齐", f["daily_two_tables"] == "yes"),
+            ("两源行数一致", f["akshare_rows_delta"] == "0"),
+            ("两源窗口同跨十年", f["ths_window_b1"] == f["akshare_window_b1"]),
+            ("ths 标的数跨载体一致", f["ths_symbols_delta"] == "0"),
+            (
+                "四件套双源全部落库",
+                f["missing_tables"] == "0" and f["present_tables"] == f["expected_tables"],
+            ),
+            ("akshare 侧来自本轮取数", f["akshare_origin"] == "vendor_fetch"),
+            ("双源键全量对齐", f["missing_count"] == "0"),
+            ("DWD 无空表", f["dwd_empty"] == "0"),
+        ),
+    )
+
+
+SEC4_02 = Probe(
+    item="§4|02",
+    expects="口径映射表复核",
+    summary=(
+        "Mapping review measured from its own artifact: leg denominator, per-leg confirmation, "
+        "raw-response sample coverage, unit-scale risks, business-key value conflicts, sign-off"
+    ),
+    measure=measure_c86_mapping_review,
+    judge=judge_c86_mapping_review,
+    repair={
+        "legs_inventory": "*legs_measured",
+        "denom_delta": "0",
+        "dup_pairs": "0",
+        "reviewed": "yes",
+        "confirmed": "*legs_measured",
+        "confirmed_missing": "0",
+        "gap_decisions": "0",
+        "tally_delta": "0",
+        "fail_conflict": "0",
+        "sample_backed": "*legs_measured",
+        "sample_missing": "0",
+        "unit_open": "0",
+        "key_dup_groups": "0",
+        "key_conflict_groups": "0",
+        "confirmed_by": "human",
+        "acceptance": "APPROVED",
+        "full_scope": "yes",
+    },
+    breaks=(
+        Break("复核分母与启用腿漂移", (("denom_delta", "1"),), GAP),
+        Break("crosswalk 出现重复 provider/domain 对", (("dup_pairs", "1"),), GAP),
+        Break("决策计数内部不自洽", (("tally_delta", "1"),), GAP),
+        Break("一条腿没有审阅结论", (("reviewed", "no"),), GAP),
+        Break("一条腿的业务键结论为冲突", (("fail_conflict", "1"),), GAP),
+        Break("一条腿未经确认", (("confirmed_missing", "1"),), GAP),
+        Break("一条腿缺原始响应抽样", (("sample_missing", "1"),), GAP),
+        Break("一条腿的单位换算未经样本验证", (("unit_open", "1"),), GAP),
+        Break("官方样本出现业务键值冲突组", (("key_conflict_groups", "1"),), GAP),
+        Break("确认者是 AI 而非人工", (("confirmed_by", "AI"),), GAP),
+        Break("整体映射未批准", (("acceptance", "INCOMPLETE"),), GAP),
+        Break("范围未整体批准", (("full_scope", "no"),), GAP),
+    ),
+)
+
+SEC4_04 = Probe(
+    item="§4|04",
+    expects="搬运保真对照报告",
+    summary=(
+        "Porting fidelity table plus the official Parquet/document-example archive: per-leg PASS, "
+        "float-only text diffs, model-key uniqueness, per-value diff, D10 factor-chain legs"
+    ),
+    measure=measure_c86_port_fidelity,
+    judge=judge_c86_port_fidelity,
+    repair={
+        "fidelity_legs_ok": "*report_cases",
+        "fidelity_nonpass": "0",
+        "pending_cases": "0",
+        "float_only_diff_rows": "0",
+        "parquet_files_ok": "*parquet_files",
+        "parquet_fail": "0",
+        "parquet_other": "0",
+        "parquet_dup_groups": "0",
+        "key_uniqueness_diff": "0",
+        "value_diff_total": "0",
+        "example_recorded": "*parquet_files",
+        "example_missing": "0",
+        "d10_legs_unjudged": "0",
+        "d10_overlap_mismatch": "0",
+        "archive_status": "PASS",
+    },
+    breaks=(
+        Break("一条搬运腿仍非 PASS", (("fidelity_nonpass", "1"),), GAP),
+        Break("D10 复权链有一条腿未判读", (("d10_legs_unjudged", "1"),), GAP),
+        Break("D10 段整段读不到腿", (("d10_leg_count", "0"),), GAP),
+        Break("D10 重叠窗口出现不相等天", (("d10_overlap_mismatch", "1"),), GAP),
+        Break("D10 重叠窗口总天数读不到", (("d10_overlap_days", "(absent)"),), GAP),
+        Break("一案存在浮点不一致的行", (("float_only_diff_rows", "1"),), GAP),
+        Break("官方对照有一文件 FAIL", (("parquet_fail", "1"),), GAP),
+        Break("官方对照有一文件状态非 PASS/FAIL", (("parquet_other", "1"),), GAP),
+        Break("官方样本出现重复业务键", (("parquet_dup_groups", "1"),), GAP),
+        Break("模型键不唯一", (("key_uniqueness_diff", "1"),), GAP),
+        Break("逐值对照出现差异", (("value_diff_total", "1"),), GAP),
+        Break("一份文件缺文档示例对照", (("example_missing", "1"),), GAP),
+        Break("归档整体判定 FAIL", (("archive_status", "FAIL"),), GAP),
+    ),
+)
+
+SEC5_02 = Probe(
+    item="§5|02",
+    expects="全市场 10 年日线回补任务",
+    summary=(
+        "Ten-year replay: shard arithmetic across interrupt/resume, row identity across the "
+        "progress table and both targets, independent key/value compare, current-market scope"
+    ),
+    measure=measure_c86_ten_year_backfill,
+    judge=judge_c86_ten_year_backfill,
+    repair={
+        "manifest_status": "complete",
+        "window_years": "10.0",
+        "shards_expected": "*shards_total_log",
+        "shards_done_list": "*shards_total_log",
+        "shards_run_delta": "0",
+        "skip_delta": "0",
+        "interrupt_status": "interrupted",
+        "resume_status": "complete",
+        "row_delta": "0",
+        "row_identity_delta_max": "0",
+        "progress_done_shards": "*shards_total_log",
+        "progress_other_shards": "0",
+        "progress_shard_delta": "0",
+        "progress_error_rows": "0",
+        "progress_table_seen": "yes",
+        "hooks_done": "3",
+        "key_mismatch": "0",
+        "value_mismatch": "0",
+        "independent_compare_ok": "yes",
+        "source_observation": "vendor_fetch",
+        "coverage_scope": "current_market_universe",
+    },
+    breaks=(
+        Break("窗口不足十年", (("window_years", "9.0"),), GAP),
+        Break("日志分片总数与符号数不符", (("shards_total_log", "*shards_expected+1"),), GAP),
+        Break("中断未记录已完成分片", (("interrupt_status", "running"),), GAP),
+        Break("续跑未跳过已完成分片", (("skip_delta", "1"),), GAP),
+        Break("两轮分片计数缺一", (("shards_run_delta", "1"),), GAP),
+        Break("manifest 分片列表多于日志", (("shards_done_list", "*shards_expected+1"),), GAP),
+        Break("续跑行数重叠", (("row_delta", "-1"),), GAP),
+        Break("进度表与目标表行数不等", (("row_identity_delta_max", "1"),), GAP),
+        Break("进度表出现错误行", (("progress_error_rows", "1"),), GAP),
+        Break("进度表有未完成分片", (("progress_other_shards", "1"),), GAP),
+        Break("钩子步骤未全部完成", (("hooks_done", "2"),), GAP),
+        Break("独立核对出现缺键", (("key_mismatch", "1"),), GAP),
+        Break("独立核对出现值差", (("value_mismatch", "1"),), GAP),
+        Break("恢复运行未留退出码", (("resume_exit", "(absent)"),), GAP),
+        Break(
+            "范围仍是既有快照而非当前全市场",
+            (("coverage_scope", "source_ods_window_only"),),
+            GAP,
+        ),
+        Break(
+            "取数仍来自既有 ODS 快照",
+            (("source_observation", "existing_ods_snapshot_only"),),
+            GAP,
+        ),
+    ),
+)
+
+AC15_01 = Probe(
+    item="AC-15|01",
+    expects="转移评估前旧表保留只读未破坏",
+    summary=(
+        "Legacy preservation before the evaluation: 1026-table roster parity, structural "
+        "signature baseline, zero writes per read round, cross-carrier row invariance, ACL face"
+    ),
+    measure=measure_c86_legacy_preserved,
+    judge=judge_c86_legacy_preserved,
+    repair={
+        "csv_rows": "*inv_tables",
+        "roster_delta": "0",
+        "csv_columns": "*inv_columns",
+        "columns_delta": "0",
+        "signature_signed": "*csv_rows",
+        "signature_missing": "0",
+        "retained": "*csv_rows",
+        "retained_missing": "0",
+        "drops_authorized": "0",
+        "connection_read_only": "yes",
+        "credential_text_in_archive": "no",
+        "inventory_writes": "0",
+        "census_writes": "0",
+        "source_row_delta_max": "0",
+    },
+    breaks=(
+        Break("逐表审查漏表", (("roster_delta", "1"),), GAP),
+        Break("一张表未声明保留", (("retained_missing", "1"),), GAP),
+        Break("列数基线漂移", (("columns_delta", "1"),), GAP),
+        Break("一张表无结构签名", (("signature_missing", "1"),), GAP),
+        Break("有表被授权 DROP", (("drops_authorized", "1"),), GAP),
+        Break("旧库账户仍有写权限", (("connection_read_only", "no"),), GAP),
+        Break("某轮读取写了旧库", (("inventory_writes", "1"),), GAP),
+        Break("旧表行数在三份读数间变化", (("source_row_delta_max", "1"),), GAP),
+        Break("留档含明文凭据", (("credential_text_in_archive", "yes"),), GAP),
+    ),
+)
+
+AC15_02 = Probe(
+    item="AC-15|02",
+    expects="完成转移评估",
+    summary=(
+        "Transfer evaluation closure: per-table value decision, business mapping coverage, "
+        "row-by-row ods landing, required-field NULL census, archive/DROP disposal and authority"
+    ),
+    measure=measure_c86_transfer_evaluation,
+    judge=judge_c86_transfer_evaluation,
+    repair={
+        "roster_delta": "0",
+        "value_decided": "*csv_rows",
+        "value_placeholder": "0",
+        "value_blank": "0",
+        "value_missing": "0",
+        "value_failed": "0",
+        "mapped_targets": "*csv_rows",
+        "unmapped": "0",
+        "transfer_status": "PASS",
+        "insert_delta": "0",
+        "rows_inserted": "*source_rows",
+        "rows_hashed": "*source_rows",
+        "stream_hash_match": "yes",
+        "transfer_verified": "yes",
+        "null_field_count": "0",
+        "dropped": "*csv_rows",
+        "disposition_open": "0",
+        "drops_authorized": "*csv_rows",
+    },
+    breaks=(
+        Break("审查表数与盘点表数漂移", (("roster_delta", "1"),), GAP),
+        Break("审查清单为空", (("csv_rows", "0"),), GAP),
+        Break("一张表没有迁移价值结论", (("value_missing", "1"),), GAP),
+        Break("一张表未建立业务映射", (("unmapped", "1"),), GAP),
+        Break("一张表的迁移价值结论为 FAIL", (("value_failed", "1"),), GAP),
+        Break("迁移落库仍有缺口", (("insert_delta", "1"),), GAP),
+        Break("迁移仍失败", (("transfer_status", "FAIL"),), GAP),
+        Break("抽样比对未留档", (("stream_hash_match", "no"),), GAP),
+        Break("全量迁移未经双重验证", (("transfer_verified", "no"),), GAP),
+        Break("落库行数与抽样哈希行数不一致", (("rows_hashed", "0"),), GAP),
+        Break("必填字段仍有 NULL 冲突", (("null_field_count", "1"),), GAP),
+        Break("评估后旧表既未归档也未删除", (("disposition_open", "1"),), GAP),
+        Break("DROP 未逐表授权", (("drops_authorized", "0"),), GAP),
+    ),
+)
+
+AC13_08 = Probe(
+    item="AC-13|08",
+    expects="调度时间业务校准",
+    summary=(
+        "Schedule calibration: registration and startup are read from the scheduler log, while "
+        "the multi-timepoint in-trading-day re-check and a real same-day bar come from B3"
+    ),
+    measure=measure_c86_schedule_calibration,
+    judge=judge_c86_schedule_calibration,
+    repair={
+        "scheduler_started": "yes",
+        "p0_registered": "yes",
+        "p0_weekdays": "1-5",
+        "p0_next_run": "*p0_next_run",
+        "points_missing": "0",
+        "window_observed_rows": "1",
+        "day_bar_in_window": "1",
+    },
+    breaks=(
+        Break("调度器未成功启动", (("scheduler_started", "no"),), GAP),
+        Break("P0 增量任务未注册", (("p0_registered", "no"),), GAP),
+        Break("增量窗口未限定交易日（每天触发）", (("p0_weekdays", "every-day"),), GAP),
+        Break("交易日多时点复测缺一点", (("points_missing", "1"),), GAP),
+        Break("注册窗口内没有实测行", (("window_observed_rows", "0"),), GAP),
+        Break("注册窗口内的实测没拿到当日K", (("day_bar_in_window", "0"),), GAP),
+    ),
+)
+
+AC8_08 = Probe(
+    item="AC-8|08",
+    expects="全市场落 ods 两表",
+    summary=(
+        "Dual-source landing: read-only warehouse roster completeness, both daily tables, the "
+        "four P0 domains from the requirement wording, and the B1 cross-source scale faces"
+    ),
+    measure=measure_c86_dual_source_landing,
+    judge=judge_c86_dual_source_landing,
+    repair={
+        "roster_table_delta": "0",
+        "roster_rows_delta": "0",
+        "daily_two_tables": "yes",
+        "akshare_rows_delta": "0",
+        "akshare_window_b1": "*ths_window_b1",
+        "ths_symbols_delta": "0",
+        "missing_tables": "0",
+        "present_tables": "*expected_tables",
+        "akshare_origin": "vendor_fetch",
+        "missing_count": "0",
+        "dwd_empty": "0",
+    },
+    breaks=(
+        Break("盘点未列全声明的表", (("roster_table_delta", "1"),), GAP),
+        Break("盘点未列全声明的行数", (("roster_rows_delta", "1"),), GAP),
+        Break("日线缺一个源表", (("daily_two_tables", "no"),), GAP),
+        Break("两份载体的 akshare 行数不一致", (("akshare_rows_delta", "1"),), GAP),
+        Break("akshare 窗口短于 ths", (("akshare_window_b1", "2026-01-05..2026-07-21"),), GAP),
+        Break("四件套有一域未双源落库", (("missing_tables", "1"),), GAP),
+        Break("akshare 侧仍是旧库迁移数据", (("akshare_origin", "legacy_migration"),), GAP),
+        Break("双源校对缺键非零", (("missing_count", "1"),), GAP),
+        Break("DWD 仍有一张空表", (("dwd_empty", "1"),), GAP),
+        Break("ths 标的数在两份载体间漂移", (("ths_symbols_delta", "1"),), GAP),
     ),
 )
 
@@ -18245,6 +19293,13 @@ PROBES: Final[tuple[Probe, ...]] = (
     AC16_09,
     AC17_02,
     AC17_06,
+    SEC4_02,
+    SEC4_04,
+    SEC5_02,
+    AC8_08,
+    AC13_08,
+    AC15_01,
+    AC15_02,
 )
 
 

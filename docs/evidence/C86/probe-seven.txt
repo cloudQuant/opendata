@@ -1,0 +1,231 @@
+# C86 acceptance_item_probe —— 七个原本无探针的 gap 格子首次被判定（判定面为实测读数）
+# 采集时间（跑前）: 2026-10-10T11:02:01+0800
+# 分支: dev  HEAD: 00dd736
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 探针模块 sha256[:16]: 521d23093b7b8416
+# command: python scripts/quality/acceptance_item_probe.py --item '§4|02' --item '§4|04' --item '§5|02' --item 'AC-8|08' --item 'AC-13|08' --item 'AC-15|01' --item 'AC-15|02' --json /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C86/probe-seven-readings.json
+# git status --porcelain（跑前）:
+M docs/quality/acceptance-item-ledger.json
+ M docs/quality/acceptance-probe-faces.json
+ M scripts/quality/acceptance_item_probe.py
+?? docs/evidence/C86/
+#
+
+### §4|02  (document line 304)
+判据原文：**口径映射表复核**：字段映射/单位换算/key 规范化经人工确认（抽样比对原始响应）
+本探针：Mapping review measured from its own artifact: leg denominator, per-leg confirmation, raw-response sample coverage, unit-scale risks, business-key value conflicts, sign-off
+台账现状：state=gap，文档勾选=False
+  - acceptance=INCOMPLETE
+  - confirmed=0
+  - confirmed_by=AI
+  - confirmed_missing=33
+  - denom_delta=0
+  - dup_pairs=0
+  - fail_conflict=1
+  - full_scope=no
+  - gap_decisions=33
+  - key_conflict_groups=2
+  - key_dup_groups=3
+  - legs_inventory=33
+  - legs_measured=33
+  - reviewed=yes
+  - sample_backed=20
+  - sample_missing=13
+  - tally_delta=0
+  - unit_open=14
+  - 补齐到可判：acceptance: INCOMPLETE -> APPROVED; confirmed: 0 -> 33; confirmed_by: AI -> human; confirmed_missing: 33 -> 0; fail_conflict: 1 -> 0; full_scope: no -> yes; gap_decisions: 33 -> 0; key_conflict_groups: 2 -> 0; key_dup_groups: 3 -> 0; sample_backed: 20 -> 33; sample_missing: 13 -> 0; unit_open: 14 -> 0
+VERDICT §4|02: gap — 未满足：无腿的业务键结论为冲突、每条腿经人工逐条确认、每条腿有原始响应抽样、单位换算经样本验证、key 规范化无业务键值冲突、确认者是人工而非 AI、整体映射批准
+
+### §4|04  (document line 306)
+判据原文：搬运保真对照报告（AC-6）与 fuyao 对照（与官方 Parquet/文档示例）归档
+本探针：Porting fidelity table plus the official Parquet/document-example archive: per-leg PASS, float-only text diffs, model-key uniqueness, per-value diff, D10 factor-chain legs
+台账现状：state=gap，文档勾选=False
+  - archive_status=FAIL
+  - d10_leg_count=2
+  - d10_legs_unjudged=1
+  - d10_overlap_days=22
+  - d10_overlap_mismatch=0
+  - example_missing=0
+  - example_recorded=2
+  - fidelity_legs_ok=14
+  - fidelity_nonpass=4
+  - float_only_diff_rows=0
+  - key_uniqueness_diff=3
+  - parquet_dup_groups=3
+  - parquet_fail=1
+  - parquet_files=2
+  - parquet_files_ok=1
+  - parquet_issue_codes=duplicate_parsed_keys,duplicate_raw_keys
+  - parquet_other=0
+  - parsed_rows_total=113082
+  - pending_cases=4
+  - report_cases=18
+  - rtol=1e-09
+  - unique_key_rows_total=113079
+  - value_diff_total=0
+  - 补齐到可判：archive_status: FAIL -> PASS; d10_legs_unjudged: 1 -> 0; fidelity_legs_ok: 14 -> 18; fidelity_nonpass: 4 -> 0; key_uniqueness_diff: 3 -> 0; parquet_dup_groups: 3 -> 0; parquet_fail: 1 -> 0; parquet_files_ok: 1 -> 2; pending_cases: 4 -> 0
+VERDICT §4|04: gap — 未满足：搬运对照逐腿 PASS、官方 Parquet 对照逐文件 PASS、官方样本无重复业务键、模型键唯一、D10 复权链逐腿判读、归档判定为 PASS
+
+### §5|02  (document line 314)
+判据原文：全市场 10 年日线回补任务：断点续跑完成，进度表可观测（不设硬性时长）
+本探针：Ten-year replay: shard arithmetic across interrupt/resume, row identity across the progress table and both targets, independent key/value compare, current-market scope
+台账现状：state=gap，文档勾选=False
+  - coverage_scope=source_ods_window_only_not_current_market
+  - hooks_done=3
+  - independent_compare_ok=yes
+  - interrupt_exit=75
+  - interrupt_rows=118094
+  - interrupt_shards_done=2
+  - interrupt_status=interrupted
+  - key_mismatch=0
+  - manifest_status=complete
+  - progress_done_shards=223
+  - progress_error_rows=0
+  - progress_other_shards=0
+  - progress_shard_delta=0
+  - progress_table_seen=yes
+  - resume_exit=0
+  - resume_rows_written=10189718
+  - resume_shards_done=221
+  - resume_shards_resumed=2
+  - resume_status=complete
+  - row_delta=0
+  - row_identity_delta_max=0
+  - row_identity_terms=dwd:10307812/dwd_target:10307812/joined:10307812/manifest:10307812/ods:10307812/ods_target:10307812/progress:10307812
+  - shard_size=25
+  - shards_done_list=223
+  - shards_expected=223
+  - shards_run_delta=0
+  - shards_total_log=223
+  - skip_delta=0
+  - source_observation=existing_ods_snapshot_only
+  - symbols=5568
+  - value_mismatch=0
+  - window=2016-09-24..2026-09-24
+  - window_rows=10307812
+  - window_years=10.0
+  - 补齐到可判：coverage_scope: source_ods_window_only_not_current_market -> current_market_universe; source_observation: existing_ods_snapshot_only -> vendor_fetch
+VERDICT §5|02: gap — 未满足：本轮取数来自供应商、当前全市场范围自证
+
+### AC-8|08  (document line 191)
+判据原文：真机：**A 股日线**双源（ths + akshare）全市场落 ods 两表（迭代 1A）；**四件套**双源（迭代 1B）
+本探针：Dual-source landing: read-only warehouse roster completeness, both daily tables, the four P0 domains from the requirement wording, and the B1 cross-source scale faces
+台账现状：state=gap，文档勾选=False
+  - akshare_origin=legacy_migration
+  - akshare_rows_across_carriers=b1_report:617371/inventory:446572
+  - akshare_rows_delta=170799
+  - akshare_window_b1=2026-01-05..2026-07-21
+  - compared_keys=719314
+  - daily_akshare_rows=446572
+  - daily_ths_rows=10212910
+  - daily_two_tables=yes
+  - dwd_empty=4
+  - expected_tables=10
+  - four_piece_domains=financial_indicator,financial_statement,index_constituent,stock_adjust,stock_daily
+  - missing_count=103555
+  - missing_names=ods_financial_indicator_ths,ods_financial_indicator_akshare,ods_financial_statement_ths,ods_financial_statement_akshare,ods_index_constituent_ths,ods_index_constituent_akshare,ods_stock_adjust_ths,ods_stock_adjust_akshare
+  - missing_tables=8
+  - present_names=ods_stock_daily_ths,ods_stock_daily_akshare
+  - present_tables=2
+  - roster_declared_rows=12461018
+  - roster_declared_tables=12
+  - roster_listed_rows=12460917
+  - roster_listed_tables=9
+  - roster_rows_delta=101
+  - roster_table_delta=3
+  - ths_symbols_b1=5568
+  - ths_symbols_delta=0
+  - ths_symbols_inventory=5568
+  - ths_window_b1=2016-09-23..2026-09-23
+  - 补齐到可判：akshare_origin: legacy_migration -> vendor_fetch; akshare_rows_delta: 170799 -> 0; akshare_window_b1: 2026-01-05..2026-07-21 -> 2016-09-23..2026-09-23; dwd_empty: 4 -> 0; missing_count: 103555 -> 0; missing_tables: 8 -> 0; present_tables: 2 -> 10; roster_rows_delta: 101 -> 0; roster_table_delta: 3 -> 0
+VERDICT AC-8|08: gap — 未满足：仓表盘点完整、两源行数一致、两源窗口同跨十年、四件套双源全部落库、akshare 侧来自本轮取数、双源键全量对齐、DWD 无空表
+
+### AC-13|08  (document line 243)
+判据原文：**调度时间业务校准**完成（真机实测调窗，避免"成功执行但没拿到当日数"）
+本探针：Schedule calibration: registration and startup are read from the scheduler log, while the multi-timepoint in-trading-day re-check and a real same-day bar come from B3
+台账现状：state=gap，文档勾选=False
+  - builtin_jobs='pipeline_p0-stock-daily-incremental'
+  - calib_date=2026-09-24
+  - day_bar_in_window=0
+  - job_store=in-memory
+  - jobs_total=5
+  - observed_points=1
+  - observed_times=15:01
+  - p0_next_run=2026-09-25 17:30:00+08:00
+  - p0_registered=yes
+  - p0_weekdays=1-5
+  - p0_window=17:30
+  - points_missing=4
+  - required_point_count=4
+  - required_times=15:30,16:00,17:00,17:30
+  - scheduler_started=yes
+  - window_observed_rows=0
+  - 补齐到可判：day_bar_in_window: 0 -> 1; points_missing: 4 -> 0; window_observed_rows: 0 -> 1
+VERDICT AC-13|08: gap — 未满足：交易日内多时点复测齐备、注册窗口内实测拿到当日K
+
+### AC-15|01  (document line 253)
+判据原文：转移评估前旧表保留只读未破坏
+本探针：Legacy preservation before the evaluation: 1026-table roster parity, structural signature baseline, zero writes per read round, cross-carrier row invariance, ACL face
+台账现状：state=gap，文档勾选=False
+  - census_writes=0
+  - columns_delta=0
+  - connection_read_only=no
+  - credential_text_in_archive=no
+  - csv_columns=18689
+  - csv_rows=1026
+  - drops_authorized=0
+  - inv_columns=18689
+  - inv_tables=1026
+  - inventory_writes=0
+  - retained=1026
+  - retained_missing=0
+  - roster_delta=0
+  - signature_missing=0
+  - signature_signed=1026
+  - source_row_delta_max=0
+  - source_row_faces=census:617371/inventory:617371/transfer_expected:617371/transfer_read:617371
+  - user_decision=完成逐表迁移审查后再决定删除
+  - 补齐到可判：connection_read_only: no -> yes
+VERDICT AC-15|01: gap — 未满足：旧库访问只读
+
+### AC-15|02  (document line 254)
+判据原文：完成转移评估：有增量价值的数据经迁移脚本 upsert 进 ods（key 冲突以新抓为准），行数与抽样比对一致后 DROP 旧表；无增量价值则归档后 DROP
+本探针：Transfer evaluation closure: per-table value decision, business mapping coverage, row-by-row ods landing, required-field NULL census, archive/DROP disposal and authority
+台账现状：state=gap，文档勾选=False
+  - amount_null=616694
+  - archived=0
+  - census_rows=617371
+  - csv_rows=1026
+  - disposition_open=1026
+  - dropped=0
+  - drops_authorized=0
+  - error_class=invalid_numeric_field_成交额
+  - insert_delta=617371
+  - inv_drop_authorized=no
+  - inv_tables=1026
+  - mapped_targets=1
+  - null_field_count=5
+  - null_fields=成交额,振幅,换手率,涨跌幅,涨跌额
+  - roster_delta=0
+  - rows_hashed=0
+  - rows_inserted=0
+  - rows_read=0
+  - source_rows=617371
+  - stream_hash_match=no
+  - transfer_status=FAIL
+  - transfer_verified=no
+  - unmapped=1025
+  - user_decision=完成逐表迁移审查后再决定删除
+  - value_blank=0
+  - value_decided=1
+  - value_failed=1
+  - value_missing=1025
+  - value_placeholder=1025
+  - 补齐到可判：disposition_open: 1026 -> 0; dropped: 0 -> 1026; drops_authorized: 0 -> 1026; insert_delta: 617371 -> 0; mapped_targets: 1 -> 1026; null_field_count: 5 -> 0; rows_hashed: 0 -> 617371; rows_inserted: 0 -> 617371; stream_hash_match: no -> yes; transfer_status: FAIL -> PASS; transfer_verified: no -> yes; unmapped: 1025 -> 0; value_decided: 1 -> 1026; value_failed: 1 -> 0; value_missing: 1025 -> 0; value_placeholder: 1025 -> 0
+VERDICT AC-15|02: gap — 未满足：每张旧表都有迁移价值结论、每张旧表都建立业务映射、迁移价值结论无一为 FAIL、迁移逐行落库无缺口、全量迁移经行数与抽样双重留档验证、必填字段无 NULL 冲突、评估完成后每张表都有处置、DROP 经逐表授权
+
+census: gap=7
+（7 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+wrote /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C86/probe-seven-readings.json
+
+PROBE_EXIT=0

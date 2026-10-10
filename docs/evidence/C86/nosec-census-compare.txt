@@ -1,0 +1,18 @@
+roots=opendata, scripts, alembic, alembic_data
+grep_census_sites=162 comment_census_sites=157
+untokenizable_files=0
+grep_only_sites=5
+  GREP-ONLY scripts/quality/acceptance_item_probe.py:13668  bandit keys ``# nosec`` on ``tokenize.COMMENT`` tokens and, when a file will not tokenize,
+  GREP-ONLY scripts/quality/write_benchmark_evidence.py:148  b"import subprocess  # nosec B404\n",
+  GREP-ONLY scripts/quality/write_benchmark_evidence.py:149  b"import subprocess  # nosec B404  # sole subprocess.run: ps from (/bin/ps,/usr/bin/ps)"
+  GREP-ONLY scripts/quality/write_benchmark_evidence.py:156  b"  # nosec B608  # table from registry, _quote_identifier\n",
+  GREP-ONLY scripts/quality/write_benchmark_evidence.py:163  b' ORDER BY {order}"  # noqa: S608  # nosec B608'
+decorative grep=4 comment=0
+  DECORATIVE-grep scripts/quality/write_benchmark_evidence.py:B404 declared 2 / raw 0
+  DECORATIVE-grep scripts/quality/write_benchmark_evidence.py:B608 declared 2 / raw 0
+without_rule_id grep=1 comment=0
+  NO-RULE-ID-grep scripts/quality/acceptance_item_probe.py:13668
+without_reason grep=2 comment=0
+  NO-REASON-grep scripts/quality/write_benchmark_evidence.py:148
+  NO-REASON-grep scripts/quality/write_benchmark_evidence.py:163
+bandit remaining=0 raw=161 skipped_self_report=161

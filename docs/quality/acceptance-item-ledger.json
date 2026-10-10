@@ -634,15 +634,18 @@
     },
     "AC-8|08|169daf79": {
       "state": "gap",
-      "round": "C65",
-      "date": "2026-10-01",
-      "reason": "全量恢复来自既有THS ODS快照，source API calls=0；AkShare十条启用腿尚未对照通过，旧库迁移也因NULL拒绝。尚无双源全市场及四域真实抓取/落库本轮证据。",
+      "round": "C86",
+      "date": "2026-10-10",
+      "reason": "未满足：仓表盘点完整、两源行数一致、两源窗口同跨十年、四件套双源全部落库、akshare 侧来自本轮取数、双源键全量对齐、DWD 无空表",
       "evidence": [
         "docs/evidence/C65/acceptance-review-current.md",
         "docs/evidence/C65/replay-full-independent-sql.json",
         "docs/evidence/C65/provider-source-review.json",
-        "docs/evidence/C65/legacy-transfer-current.json"
-      ]
+        "docs/evidence/C65/legacy-transfer-current.json",
+        "docs/evidence/C86/probe-seven.txt"
+      ],
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-8|08'（判定面为实测读数，逐面见 docs/evidence/C86/probe-seven.txt）",
+      "note": "C86 起由探针实测仓表盘点、日线双源两表、四件套双源覆盖与两源行数/窗口/键对齐面。本轮另记两处缺陷：C64 盘点载体的表头声明与正文列出对不上（roster_table_delta、roster_rows_delta 均非 0；差额归因于载体自身而非判定普查，见 docs/evidence/C86/roster-census-coverage.txt 的 census 覆盖面），akshare 行数在两份载体间不一致（见 docs/evidence/C86/probe-seven.txt 的 akshare_rows_across_carriers 面）。"
     },
     "AC-9|01|e67169e2": {
       "state": "proven",
@@ -1238,14 +1241,19 @@
     },
     "AC-13|08|22db1473": {
       "state": "gap",
-      "round": "C65",
-      "date": "2026-10-01",
-      "reason": "隔离scheduler正常启动与任务注册通过；没有交易日真实定时获取当日K并推进正式ODS新鲜度的本轮证据。",
+      "round": "C86",
+      "date": "2026-10-10",
+      "reason": "未满足：交易日内多时点复测齐备、注册窗口内实测拿到当日K",
       "evidence": [
         "docs/evidence/C65/acceptance-review-current.md",
         "docs/evidence/C65/runtime-stack-current.json",
-        "docs/evidence/C65/source-preflight.json"
-      ]
+        "docs/evidence/C65/source-preflight.json",
+        "docs/evidence/C86/probe-seven.txt",
+        "docs/evidence/B3/schedule-calibration.txt",
+        "docs/evidence/B4/scheduler_startup.log"
+      ],
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-13|08'（判定面为实测读数，逐面见 docs/evidence/C86/probe-seven.txt）",
+      "note": "C86 起由探针按 B3 观测表逐行读数（时刻/查询截止日/返回K日）并用 B4 的注册窗口筛选，不再以「文件里有没有待办字样」判定；证据面补进 B3/B4，原 runtime-stack 读数撑不起本格。转绿需在注册窗口内的交易日做多时点实测并真拿到当日 K。"
     },
     "AC-14|01|29b3754f": {
       "state": "proven",
@@ -1288,28 +1296,34 @@
     },
     "AC-15|01|fb5944d3": {
       "state": "gap",
-      "round": "C65",
-      "date": "2026-10-01",
-      "reason": "只读盘点完整1026表、结构/权限基线与本轮native writes=0已留档；实际旧库访问账户仍有写权限，不能声明旧库ACL已只读。",
+      "round": "C86",
+      "date": "2026-10-10",
+      "reason": "未满足：旧库访问只读",
       "evidence": [
         "docs/evidence/C65/acceptance-review-current.md",
         "docs/evidence/C65/legacy-current-inventory.json",
         "docs/evidence/C65/legacy-per-table-review.csv",
-        "docs/evidence/C65/legacy-migration-review.md"
-      ]
+        "docs/evidence/C65/legacy-migration-review.md",
+        "docs/evidence/C86/probe-seven.txt"
+      ],
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-15|01'（判定面为实测读数，逐面见 docs/evidence/C86/probe-seven.txt）",
+      "note": "C86 起由探针实测保留声明、结构签名基线、跨轮行数同一与留档不含凭据。唯一未达标面是旧库账户仍具写权限（connection_read_only），只读改造属需授权的库侧动作。"
     },
     "AC-15|02|45433a89": {
       "state": "gap",
-      "round": "C65",
-      "date": "2026-10-01",
-      "reason": "用户决定逐表迁移审查完成后再决定删除，DROP仍未授权。已盘点1026表：1映射、1025未建立业务迁移映射并保留；唯一映射表617371行中616694行必填成交额NULL，真实隔离迁移拒绝、目标写入0，不能补0或删除。",
+      "round": "C86",
+      "date": "2026-10-10",
+      "reason": "未满足：每张旧表都有迁移价值结论、每张旧表都建立业务映射、迁移价值结论无一为 FAIL、迁移逐行落库无缺口、全量迁移经行数与抽样双重留档验证、必填字段无 NULL 冲突、评估完成后每张表都有处置、DROP 经逐表授权",
       "evidence": [
         "docs/evidence/C65/acceptance-review-current.md",
         "docs/evidence/C65/legacy-per-table-review.csv",
         "docs/evidence/C65/legacy-field-quality-census.json",
         "docs/evidence/C65/legacy-transfer-current.json",
-        "docs/evidence/C65/legacy-migration-review.md"
-      ]
+        "docs/evidence/C65/legacy-migration-review.md",
+        "docs/evidence/C86/probe-seven.txt"
+      ],
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-15|02'（判定面为实测读数，逐面见 docs/evidence/C86/probe-seven.txt）",
+      "note": "C86 起由探针实测；「无业务映射则不适用」的占位文本不再被当作迁移价值结论，处置面改成每张表都要落到归档或删除，并新增迁移留档自己的行数哈希与全量校验两面。转绿需业务映射与授权后的迁移/DROP 动作。"
     },
     "AC-18|01|2524a54e": {
       "state": "proven",
@@ -1717,15 +1731,18 @@
     },
     "§4|02|f9317f21": {
       "state": "gap",
-      "round": "C65",
-      "date": "2026-10-01",
-      "reason": "用户授权字段/单位/key审阅已实际执行33条启用能力；公司行动重复键和值冲突、财报公告/修订时点、部分单位语义及未verified腿原始样本仍缺，整体INCOMPLETE。已不是泛称等待人工确认。",
+      "round": "C86",
+      "date": "2026-10-10",
+      "reason": "未满足：无腿的业务键结论为冲突、每条腿经人工逐条确认、每条腿有原始响应抽样、单位换算经样本验证、key 规范化无业务键值冲突、确认者是人工而非 AI、整体映射批准",
       "evidence": [
         "docs/evidence/C65/acceptance-review-current.md",
         "docs/evidence/C65/mapping-review-results.json",
         "docs/evidence/C65/mapping-review-package.md",
-        "docs/evidence/C65/official-parquet-comparison.json"
-      ]
+        "docs/evidence/C65/official-parquet-comparison.json",
+        "docs/evidence/C86/probe-seven.txt"
+      ],
+      "command": "python scripts/quality/acceptance_item_probe.py --item '§4|02'（判定面为实测读数，逐面见 docs/evidence/C86/probe-seven.txt）",
+      "note": "C86 起本格由 acceptance_item_probe 逐面实测（腿分母、逐腿人工确认、原始响应抽样覆盖、单位/刻度风险、业务键值冲突组、确认者身份、整体批准）。转绿还差人工逐腿签署与冲突样本修数据，属用户授权动作。"
     },
     "§4|03|b0da1909": {
       "state": "proven",
@@ -1741,14 +1758,17 @@
     },
     "§4|04|2cea237f": {
       "state": "gap",
-      "round": "C65",
-      "date": "2026-10-01",
-      "reason": "本轮搬运录制回放14PASS、4PENDING；官方Parquet股票日线样本通过而公司行动原始key冲突拒绝。局部通过不能替代本条整体归档对照面闭合。",
+      "round": "C86",
+      "date": "2026-10-10",
+      "reason": "未满足：搬运对照逐腿 PASS、官方 Parquet 对照逐文件 PASS、官方样本无重复业务键、模型键唯一、D10 复权链逐腿判读、归档判定为 PASS",
       "evidence": [
         "docs/evidence/C65/acceptance-review-current.md",
         "docs/evidence/C65/port-fidelity-current-report.md",
-        "docs/evidence/C65/official-parquet-comparison.json"
-      ]
+        "docs/evidence/C65/official-parquet-comparison.json",
+        "docs/evidence/C86/probe-seven.txt"
+      ],
+      "command": "python scripts/quality/acceptance_item_probe.py --item '§4|04'（判定面为实测读数，逐面见 docs/evidence/C86/probe-seven.txt）",
+      "note": "C86 起由探针实测搬运对照报告的逐腿判读（腿数为分母，未判读腿逐面点名）与官方 Parquet/文档示例对照；不再用整体 PASS 代替逐腿读数。待录案腿与官方对照缺口仍在本轮之外。"
     },
     "§4|05|0bb21c83": {
       "state": "proven",
@@ -1781,9 +1801,9 @@
     },
     "§5|02|74658e59": {
       "state": "gap",
-      "round": "C65",
-      "date": "2026-10-01",
-      "reason": "真实隔离十年快照中断75→恢复0已完成5568标的/10,307,812行/223DONE，跳过完成2shards；独立全键及10raw+6DWD值比较缺键/差异均0。来源截至9/24的既有ODS，当前全市场Universe及最新供应商取数未独立证明，保留此范围缺口。",
+      "round": "C86",
+      "date": "2026-10-10",
+      "reason": "未满足：本轮取数来自供应商、当前全市场范围自证",
       "evidence": [
         "docs/evidence/C65/acceptance-review-current.md",
         "docs/evidence/C65/replay-full-manifest.json",
@@ -1791,8 +1811,11 @@
         "docs/evidence/C65/replay-full-resume.txt",
         "docs/evidence/C65/replay-full-independent-sql.json",
         "docs/evidence/C65/replay-full-independent-sql.txt",
-        "docs/evidence/C65/replay-full-independent-review.json"
-      ]
+        "docs/evidence/C65/replay-full-independent-review.json",
+        "docs/evidence/C86/probe-seven.txt"
+      ],
+      "command": "python scripts/quality/acceptance_item_probe.py --item '§5|02'（判定面为实测读数，逐面见 docs/evidence/C86/probe-seven.txt）",
+      "note": "C86 起由探针实测十年回补的中断/续跑与进度表同一性（分片算术、跳过数、两轮行数、独立核对的缺键与值差）。剩余两面——本轮取数来自供应商、当前全市场范围自证——需授权的取数动作。"
     },
     "§5|03|1c964297": {
       "state": "proven",

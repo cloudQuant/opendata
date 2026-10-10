@@ -1,0 +1,46 @@
+# C86 —— shipped 判定探针自己的反例臂普查（与 --self-test 的总数对钉，并与 HEAD 做闭合）
+# 采集时间: 2026-10-10T11:34:40+0800  HEAD: 00dd736
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 探针模块字节摘要：HEAD=c45211875dbf745a 磁盘(未提交)=521d23093b7b8416 相等=False
+# 注：module= 行的 sha256[:16] 是磁盘字节；闭合作用在 HEAD 快照上复算，摘要在此留痕以便复核
+# command: python docs/evidence/C86/probe-arm-census.py --against 00dd736 --expect-arms 939
+# git status --porcelain（跑前）:
+M docs/quality/acceptance-item-ledger.json
+ M docs/quality/acceptance-probe-faces.json
+ M scripts/quality/acceptance_item_probe.py
+?? docs/evidence/C86/
+#
+module=scripts/quality/acceptance_item_probe.py sha256[:16]=521d23093b7b8416
+probes=130 declared_arms=939 min_arms_per_probe=2
+probes_without_arms=0
+per-item declared arms for the cells this round touched:
+  AC-17|02: 15
+  §4|02: 12
+  §4|04: 13
+  §5|02: 16
+  AC-8|08: 10
+  AC-13|08: 6
+  AC-15|01: 9
+  AC-15|02: 13
+against=00dd736 head_probes=123 head_arms=859
+delta probes=+7 arms=+80
+items with a probe only on disk: 7 -> AC-13|08,AC-15|01,AC-15|02,AC-8|08,§4|02,§4|04,§5|02
+new_item_arms=79 existing_item_arms={'AC-17|02': 1}
+closure 79+1=80 vs 939-859=80 -> HOLDS
+TIE total=939 self_test=939 -> MATCH
+# 对照臂：把钉住的总数改成 938（本轮早前一次自测读数，已被 shipped 的 939 取代），判据应当翻红
+# command: python docs/evidence/C86/probe-arm-census.py --expect-arms 938
+module=scripts/quality/acceptance_item_probe.py sha256[:16]=521d23093b7b8416
+probes=130 declared_arms=939 min_arms_per_probe=2
+probes_without_arms=0
+per-item declared arms for the cells this round touched:
+  AC-17|02: 15
+  §4|02: 12
+  §4|04: 13
+  §5|02: 16
+  AC-8|08: 10
+  AC-13|08: 6
+  AC-15|01: 9
+  AC-15|02: 13
+TIE total=939 self_test=938 -> MISMATCH
+CONTROL_RC=1

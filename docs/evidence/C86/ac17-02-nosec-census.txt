@@ -1,0 +1,32 @@
+# C86 AC-17|02 —— 例外普查改成与 bandit 同语义（注释令牌）后的实测读数
+# 采集时间（跑前）: 2026-10-10T11:02:02+0800
+# 分支: dev  HEAD: 00dd736
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 探针模块 sha256[:16]: 521d23093b7b8416
+# command: python scripts/quality/acceptance_item_probe.py --item 'AC-17|02' --json /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C86/ac17-02-readings.json
+# git status --porcelain（跑前）:
+M docs/quality/acceptance-item-ledger.json
+ M docs/quality/acceptance-probe-faces.json
+ M scripts/quality/acceptance_item_probe.py
+?? docs/evidence/C86/
+#
+
+### AC-17|02  (document line 289)
+判据原文：**A2 层（新增/触碰文件）**：ruff 全规则集零违例、mypy 严格模式 0 errors、bandit 全量（例外行级精确 + 理由）
+本探针：bandit 全量真跑两臂：剩余违例为 0 而反向臂报违例，例外逐行带规则号与理由
+台账现状：state=proven，文档勾选=True
+  - 四个面真的被调用：ruff check=yes、ruff format --check=yes、mypy=yes、bandit=yes；bandit 绑 bandit.yaml=yes、强制 -f json=yes
+  - `_bandit` 的 AST 里把 stdout 与 stderr 拼起来再 parse 的表达式 = 0；读不到 JSON 时返回 False 的路径 = yes
+  - mypy 严格旗标 7 项生效（disallow_untyped_defs, disallow_incomplete_defs, check_untyped_defs, warn_return_any, strict_equality, no_implicit_optional, warn_unused_ignores）；A2 文件集来自 git = yes
+  - 例外面：bandit.yaml 的全局 skips = 0；逐行 nosec 157 处，未点名规则号 0，点名了但没写理由 0 处；例外按注释令牌认（与 bandit 同语义），普查中切分失败的文件 0 个（bandit 对这类文件一条例外都不认）
+  - 真跑普查 opendata, scripts, alembic, alembic_data：nosec 生效时 rc=0、JSON 可读=yes、剩余违例 0
+  - 反向臂 --ignore-nosec：rc=1、原始违例 161 条（B104x1, B105x7, B106x4, B107x1, B311x2, B314x3, B404x25, B405x3, B603x36, B607x4, B608x75）—— 这一臂为 0 就说明规则根本没在跑，上面的 0 是空判而不是干净
+  - bandit 自报被 nosec 压住 161 条，与两臂差额 161 相等 = yes；例外不生效时这个等式会断，而不是静悄悄变成 0
+  - 例外与违例逐文件对齐：压住的 0 条差额、理由判别式自己的双侧对照 4/4（散文算、裸 noqa 不算）；什么都没压住的装饰性 nosec = 0
+VERDICT AC-17|02: proven
+
+census: proven=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+wrote /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C86/ac17-02-readings.json
+
+PROBE_EXIT=0

@@ -1,0 +1,20 @@
+# C86 —— C64 仓表盘点的 census 覆盖面：声明/列出差额是载体自身的截断，还是判定正则漏读
+# 采集时间: 2026-10-10T11:08:25+0800  HEAD: 00dd736
+# 探针模块 sha256[:16]: 521d23093b7b8416
+# command: python docs/evidence/C86/roster-census-coverage.py && python docs/evidence/C86/roster-census-coverage.py --self-check
+[live] carrier=docs/evidence/C64/warehouse-readonly-inventory.txt
+[live] body_tuple_lines=9 census_matched=9 unmatched=0
+[live] declared_tables=12 matched_names=9 distinct_names=9 table_delta=3
+[live] declared_rows=12461018 listed_rows=12460917 rows_delta=101
+LIVE_RC=0
+[clean] carrier=docs/evidence/C64/warehouse-readonly-inventory.txt
+[clean] body_tuple_lines=9 census_matched=9 unmatched=0
+[clean] declared_tables=12 matched_names=9 distinct_names=9 table_delta=3
+[clean] declared_rows=12461018 listed_rows=12460917 rows_delta=101
+[tampered] carrier=docs/evidence/C64/warehouse-readonly-inventory.txt
+[tampered] body_tuple_lines=10 census_matched=9 unmatched=1
+[tampered]   UNMATCHED ('ods_hyphen-name', 7, 8, 0)
+[tampered] declared_tables=12 matched_names=9 distinct_names=9 table_delta=3
+[tampered] declared_rows=12461018 listed_rows=12460917 rows_delta=101
+CONTROL unmatched clean=0 tampered=1 -> PASS
+CONTROL_RC=0
