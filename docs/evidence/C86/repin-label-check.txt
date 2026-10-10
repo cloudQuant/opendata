@@ -1,0 +1,28 @@
+# C86 —— 重钉仪器的轮次标签改为从 mover 提交标题实测（两臂对跑）
+# 采集时间: 2026-10-10T14:14:47+0800  HEAD: fb904f2
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 仪器 sha256[:16]: 910c65130183c889
+# command A: python docs/evidence/C85/reference-policy-repin.py --label-check
+# command B: python docs/evidence/C85/reference-policy-repin.py --label-check --label-check-tamper
+# git status --porcelain（跑前）:
+M docs/evidence/C85/reference-policy-repin.py
+#
+===== A 正臂
+policy entries registered: 87
+  subject feat(acceptance): C86 给七个从无探针的 gap… -> token '86' expected '86'
+  subject docs(evidence): C85 落 AC-17|06 的标签… -> token '85' expected '85'
+  subject chore: 提交标题里没有轮次标签… -> token None expected None
+  three subjects, three distinct tokens: True
+  live HEAD fb904f2 -> signer() reads C86 primary
+LABEL_CHECK PASS
+LABEL_OK_RC=0
+===== B 对照臂（把第一条期望改成 99，判据必须翻红）
+policy entries registered: 87
+  subject feat(acceptance): C86 给七个从无探针的 gap… -> token '86' expected '99'
+  subject docs(evidence): C85 落 AC-17|06 的标签… -> token '85' expected '85'
+  subject chore: 提交标题里没有轮次标签… -> token None expected None
+  three subjects, three distinct tokens: True
+  live HEAD fb904f2 -> signer() reads C86 primary
+  SUBJECT feat(acceptance): C86 给七个从无探… -> 86 (expected 99)
+LABEL_CHECK FAIL
+LABEL_TAMPER_RC=1

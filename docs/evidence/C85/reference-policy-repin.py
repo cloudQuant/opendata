@@ -1,4 +1,4 @@
-"""Re-audit every drifted C85 reference-policy pin, then re-pin it with recorded evidence.
+"""Re-audit every drifted reference-policy pin, then re-pin it with recorded evidence.
 
 The ``zero-dep-check`` member refused to start: 18 of the 87 registered entries no longer hash
 to the bytes on disk, so the walker aborted on an unusable policy and never printed its walked
@@ -38,6 +38,8 @@ arm that says the brand-face loosening is a measurement change rather than a hol
 
 Run: python3 docs/evidence/C85/reference-policy-repin.py             (audit only, writes nothing)
      python3 docs/evidence/C85/reference-policy-repin.py --write     (re-pin the drifted entries)
+     python3 docs/evidence/C85/reference-policy-repin.py --label-check
+     python3 docs/evidence/C85/reference-policy-repin.py --label-check --label-check-tamper
      python3 docs/evidence/C85/reference-policy-repin.py --tamper-policy
      python3 docs/evidence/C85/reference-policy-repin.py --tamper-source
      python3 docs/evidence/C85/reference-policy-repin.py --tamper-prose
@@ -76,6 +78,62 @@ BRAND_FACES = tuple(f"{root}_{field}" for root in ROUNDS for field in ("lines", 
 #: forbids, and no amount of prose editing can restore this face the way it can restore a count.
 LOAD_FACE = "load_shape_lines"
 MULTISET = Counter[tuple[str, str]]
+#: The clause appended to every entry this file re-pins. It is matched by :func:`tamper_policy` to
+#: find the entries this instrument owns, so it is a constant rather than a literal in two places.
+REPIN_MARKER = "primary 复核 sha 漂移"
+#: The round token as it appears in a commit subject (``C86``), never inside a longer word.
+ROUND_TOKEN = re.compile(r"\bC(\d{1,3})\b")
+
+
+def round_token(subject: str) -> str | None:
+    """Return the round number a commit subject claims, or None when it claims none."""
+    hit = ROUND_TOKEN.search(subject)
+    return hit.group(1) if hit else None
+
+
+def signer(mover: str) -> str:
+    """Name the round that signed this re-pin, read off the commit that moved the bytes.
+
+    The string lands in the policy's ``reviewer`` field, where a reader uses it to tell which round
+    approved a digest. This file first shipped in C85 and its generator carried ``C85`` as a
+    literal, so a later round's re-pin was recorded under the wrong round's name -- an attribution
+    claim with no measurement behind it. Deriving it from the mover subject keeps the label honest,
+    and a subject without a round token says so instead of borrowing one.
+    """
+    subject = git("log", "-1", "--format=%s", mover).decode("utf-8", "replace").strip()
+    token = round_token(subject)
+    return f"C{token} primary" if token else f"rev {mover[:7]} primary（标题无轮次标签）"
+
+
+def label_check(tamper: bool = False) -> int:
+    """Require the derived label to be able to differ, and print the live mover's label.
+
+    ``tamper=True`` asserts a wrong expected token for the first subject; the judge is then required
+    to fail, which is the arm showing ``LABEL_CHECK PASS`` is a measurement rather than a tautology.
+    """
+    forged: list[tuple[str, str | None]] = [
+        ("feat(acceptance): C86 给七个从无探针的 gap 格子接上实测判定", "86"),
+        ("docs(evidence): C85 落 AC-17|06 的标签面归档", "85"),
+        ("chore: 提交标题里没有轮次标签", None),
+    ]
+    if tamper:
+        forged[0] = (forged[0][0], "99")
+    mismatched = [
+        f"  SUBJECT {subject[:28]}… -> {round_token(subject)} (expected {expected})"
+        for subject, expected in forged
+        if round_token(subject) != expected
+    ]
+    for subject, expected in forged:
+        print(f"  subject {subject[:34]}… -> token {round_token(subject)!r} expected {expected!r}")
+    distinct = len({round_token(subject) for subject, _ in forged}) == 3
+    print(f"  three subjects, three distinct tokens: {distinct}")
+    head = git("log", "-1", "--format=%H").decode().strip()
+    print(f"  live HEAD {head[:7]} -> signer() reads {signer(head)}")
+    ok = not mismatched and distinct
+    for line in mismatched:
+        print(line)
+    print(f"LABEL_CHECK {'PASS' if ok else 'FAIL'}")
+    return 0 if ok else 1
 
 
 def git(*args: str) -> bytes:
@@ -367,7 +425,7 @@ def reason(
         else f"两口径相同（差 0 条，de-dupe 命中 {dup} 条）"
     )
     return (
-        f"C85 primary 复核 sha 漂移（被 {mover[:7]} 改动）：pin 字节属 rev {pin_rev[:7]}，"
+        f"{signer(mover)} {REPIN_MARKER}（被 {mover[:7]} 改动）：pin 字节属 rev {pin_rev[:7]}，"
         f"pin 之后该路径共 {newer} 个 revision；{brand_face}；"
         f"加载形态行 pinned={pinned_faces['load_shape_lines']}=="
         f"live={live_faces['load_shape_lines']}；变动行 diff 口径（difflib autojunk=False）"
@@ -482,10 +540,12 @@ def tamper_policy(scanner: types.ModuleType) -> int:
     re_pinned = sorted(
         path
         for path, entry in entries.items()
-        if "C85 primary 复核 sha 漂移" in str(entry["reviewer"])
+        if REPIN_MARKER in str(entry["reviewer"])
         and str(entry["sha256"]) == sha256((ROOT / path).read_bytes())
     )
-    print(f"entries carrying a C85 re-pin that matches the bytes on disk: {len(re_pinned)}")
+    print(
+        f"entries carrying a {REPIN_MARKER} clause that matches the bytes on disk: {len(re_pinned)}"
+    )
     if not re_pinned:
         print("  nothing re-pinned to tamper with -- run --write first")
         return 1
@@ -573,6 +633,8 @@ def main(argv: list[str]) -> int:
     scanner = load_scanner()
     raw = policy_document(policy_text())
     print("policy entries registered:", len(entry_map(raw)))
+    if "--label-check" in argv:
+        return label_check("--label-check-tamper" in argv)
     if "--tamper-policy" in argv:
         return tamper_policy(scanner)
     if "--tamper-source" in argv:
