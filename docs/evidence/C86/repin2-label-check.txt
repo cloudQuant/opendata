@@ -1,0 +1,25 @@
+# C86（第 2 次重钉）—— 署名条款普查：实拼 0 处相邻重复、forged 形式恰 1 处并点名
+# 采集时间（跑前）: 2026-10-10T18:35:16+0800
+# 分支: dev  HEAD: 8b6b555
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 仪器 sha256[:16]: af78dba2a964817d
+# 探针模块 sha256[:16]: 2be4c398d887f1fa
+# command: python docs/evidence/C85/reference-policy-repin.py '--label-check'
+# git status --porcelain（跑前）:
+M docs/quality/akshare-reference-allowlist.json
+?? docs/evidence/C86/repin2-audit.txt
+?? docs/evidence/C86/repin2-write-capture.txt
+#
+policy entries registered: 87
+  composed clause reads: C86 primary 复核 sha 漂移（被 8b6b555 改动）
+  repeated tokens (live): 0 -
+  duplicated-signer control reads: C86 primary primary 复核 sha 漂移（被 8b6b555 改动）
+  repeated tokens (control): 1 ['primary']
+  subject feat(acceptance): C86 给七个从无探针的 gap… -> token '86' expected '86'
+  subject docs(evidence): C85 落 AC-17|06 的标签… -> token '85' expected '85'
+  subject chore: 提交标题里没有轮次标签… -> token None expected None
+  three subjects, three distinct tokens: True
+  live HEAD 8b6b555 -> signer() reads C86 primary
+  repeat detector shaped both ways (live 0, control names the word): True
+LABEL_CHECK PASS
+INSTRUMENT_RC=0

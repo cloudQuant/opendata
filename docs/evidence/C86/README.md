@@ -38,6 +38,9 @@ bundle 的 24h 新鲜度一条也没放宽。
 | `ac9-08-reason-rerun.txt` / `.json` | 文案改完之后的单格探针读数（`PROBE_EXIT=0`，`VERDICT AC-9\|08: gap — …`），台账那一格的 `reason` 逐字取自这一行 | `python docs/evidence/C86/probe-seven-carrier.py --item 'AC-9\|08' --out … --json … --title '…'` |
 | `ledger-reason-refresh.py` / `.txt` | 台账 `reason` 重发布：文案取载体自己的 `VERDICT` 行，`round`/`date` 从载体目录名与载体的采集时间行实测（不在仪器里手写轮次），写前 RED / 写入 / 写后 GREEN 三遍逐字入档；`--write` 末尾把刚写的文件**重新解析**一遍，要求 reason、round 与每条 `evidence` 路径都 repo-relative 且在盘上 | `python docs/evidence/C86/ledger-reason-refresh.py --carrier docs/evidence/C86/ac9-08-reason-rerun.txt [--verify-only\|--write]`（三遍） |
 | `ledger-reason-refresh-controls.py` / `.txt` | 上面那台仪器的五条控制臂 + 回滚面：台账没有的格子要 rc=1、载体 `proven` 而台账 `gap` 要 DECLINED 且字节不动、指向一份**没有 `VERDICT` 行的真档案**要 rc=1、对已写台账 `--verify-only` 要 rc=0、同一条读数 dry 不动 sha 而 write 会动，控制臂自己那次写回滚后与保存字节逐字节相等；头部与 tally 都钉住被测仪器的摘要 | `python docs/evidence/C86/ledger-reason-refresh-controls.py` |
+| `repin2-audit.txt` | 探针字节被 `8b6b555` 移动后的**只读审计**面：`drifted entries audited: 1`、`521d2309… -> 2be4c398…`、`REAL problems: 0`（写入前一遍，证明红的是摘要不是批准内容） | `python docs/evidence/C85/reference-policy-repin.py` |
+| `repin2-write-capture.txt` | 同一台仪器的 `--write` 回执：`entries re-pinned: 1`、`checker exit code: 0`，并逐字带上条款里实测的 `增10 删6`（与这笔提交的 `git diff --stat` 同形）与 `akshare 144->144 / openbb 95->95`（未移动） | `python docs/evidence/C85/reference-policy-repin.py --write` |
+| `repin2-label-check.txt` | 重钉条款的署名普查：`live HEAD 8b6b555 -> signer() reads C86 primary`、`repeat detector shaped both ways (live 0, control names the word): True` | `python docs/evidence/C85/reference-policy-repin.py --label-check` |
 
 ## AC-17|02：例外普查的语义要与扫描器一致
 
