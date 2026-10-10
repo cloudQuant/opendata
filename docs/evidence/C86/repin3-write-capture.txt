@@ -1,0 +1,29 @@
+# C86（第 3 次重钉）—— --write 回执逐字入档（同一批准内容下的摘要重钉）
+# command: python docs/evidence/C85/reference-policy-repin.py --write
+# 采集时间（跑前）: 2026-10-10T22:59:41+0800
+# 分支: dev  HEAD: dc9e764
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 仪器 sha256[:16]: af78dba2a964817d
+# policy sha256[:16]（跑前）: ae6fd527a3762dc4
+# git status --porcelain（跑前）:
+?? LICENSE-REVIEW.md
+?? LICENSE-SCOPE-DRAFT.md
+?? LICENSE-SOURCE-AVAILABLE-DRAFT.md
+?? docs/evidence/C86/repin3-audit.txt
+# policy sha256[:16]（跑后）: 9e63f3bcb3b216fc
+#
+policy entries registered: 87
+drifted entries audited: 1
+==============================================================================
+path: scripts/quality/acceptance_item_probe.py
+old sha256: 2be4c398d887f1fa459019b0a762af85981bc9d9216817620d69393185eeca45
+new sha256: 51b2266dd60bce24f0580f3644c4cb7ef8b268061f088e09d8cae44a963188bb
+pin revision: 8b6b555fe76167f03aff017116ade9ee0c3f158e | moved by: dc9e764050e3da2c344ea41b9bffaeb44ff32b93 | newer revisions: 1 | revisions matching the pin: 1
+registered hits unchanged: yes
+reason: C86 primary 复核 sha 漂移（被 dc9e764 改动）：pin 字节属 rev 8b6b555，pin 之后该路径共 1 个 revision；akshare 出现行 144->144、出现次数 172->172（未移动）；openbb 出现行 95->95、出现次数 117->117（未移动）；加载形态行 pinned=4==live=4；变动行 diff 口径（difflib autojunk=False）增45 删6，按文本去重口径 增39 删6，两口径差 6 条，de-dupe 命中 6 条（新增行的文本在 pin 字节里已出现），余 0 条未被该机制解释；去重口径新增行里没有一条是被删行的同文加 # nosec 尾注释（0/39）；带品牌的增删行为 0/0；扫描器 (module, kind) 命中多重集 pinned=13 live=13、策略过滤后 pinned=13 live=13，identical=True；没有任何一处用品牌名去加载外部包，所以这是同一批准内容下的摘要重钉，不是新的批准
+==============================================================================
+REAL problems: 0
+entries re-pinned: 1
+checker exit code: 0
+  OUT| OK: 649 file(s) walked (opendata=322, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+ARM_RC=0

@@ -40,6 +40,9 @@ bundle 的 24h 新鲜度一条也没放宽。
 | `ledger-reason-refresh-controls.py` / `.txt` | 上面那台仪器的五条控制臂 + 回滚面：台账没有的格子要 rc=1、载体 `proven` 而台账 `gap` 要 DECLINED 且字节不动、指向一份**没有 `VERDICT` 行的真档案**要 rc=1、对已写台账 `--verify-only` 要 rc=0、同一条读数 dry 不动 sha 而 write 会动，控制臂自己那次写回滚后与保存字节逐字节相等；头部与 tally 都钉住被测仪器的摘要 | `python docs/evidence/C86/ledger-reason-refresh-controls.py` |
 | `repin2-audit.txt` | 探针字节被 `8b6b555` 移动后的**只读审计**面：`drifted entries audited: 1`、`521d2309… -> 2be4c398…`、`REAL problems: 0`（写入前一遍，证明红的是摘要不是批准内容） | `python docs/evidence/C85/reference-policy-repin.py` |
 | `repin2-write-capture.txt` | 同一台仪器的 `--write` 回执：`entries re-pinned: 1`、`checker exit code: 0`，并逐字带上条款里实测的 `增10 删6`（与这笔提交的 `git diff --stat` 同形）与 `akshare 144->144 / openbb 95->95`（未移动） | `python docs/evidence/C85/reference-policy-repin.py --write` |
+| `repin3-audit.txt` | 第 3 次重钉的**只读**审计面：`policy entries registered: 87`、`drifted entries audited: 1`、`2be4c398… -> 51b2266d…`、`registered hits unchanged: yes`、`REAL problems: 0`；头部两个 policy 摘要相同（跑前=跑后=`ae6fd527…`），所以红的是摘要而不是批准内容 | `python docs/evidence/C85/reference-policy-repin.py`（三臂由仓外载体 `/tmp/c86_repin3_carrier.py` 依序发起；该载体不入档，重放需按同一顺序手跑三臂） |
+| `repin3-write-capture.txt` | `--write` 回执：`entries re-pinned: 1`、`checker exit code: 0`、`REAL problems: 0`，条款里逐字带上实测的 `diff 口径增45 删6 / 文本去重口径增39 删6 / de-dupe 命中 6 / 余 0 条未被解释` 与 `akshare 出现行 144->144、openbb 95->95（未移动）`；policy 摘要 `ae6fd527… -> 9e63f3bc…`。**头部确实取在跑之前**：`跑前` 的 porcelain 里没有 `M docs/quality/akshare-reference-allowlist.json`，与第 1/2 次那两份「跑前已带 M」的档案形成对照 | `python docs/evidence/C85/reference-policy-repin.py --write` |
+| `repin3-label-check.txt` | 重钉条款的署名普查：`live HEAD dc9e764 -> signer() reads C86 primary`、`repeat detector shaped both ways (live 0, control names the word): True`、三个 subject 读出三种 token、`LABEL_CHECK PASS`；跑前=跑后=`9e63f3bc…`（普查不写字节） | `python docs/evidence/C85/reference-policy-repin.py --label-check` |
 | `repin2-label-check.txt` | 重钉条款的署名普查：`live HEAD 8b6b555 -> signer() reads C86 primary`、`repeat detector shaped both ways (live 0, control names the word): True` | `python docs/evidence/C85/reference-policy-repin.py --label-check` |
 | `ac1-05-census-face.py` / `.txt` | AC-1\|05 阻塞文案的分类面：台账那一句里的每个数字都要在探针 facts 里数得到（`reason_digits=5`）、issue 类别按仓库自己的运行面校验器手算第二遍并与探针读数对钉（`codes=9 issues=461 top3_match=True`）、分类记账恒等式带一条 forged +1 臂要判「不成立」、四条臂（3 break + 1 repair）各自打印的 reason 逐条检查它有没有自称一个本臂没有量到的数字 | `python docs/evidence/C86/ac1-05-census-face.py` |
 | `gap-ten-rerun.txt` / `gap-ten-readings.json` | 十格落后 gap 的探针现读数（`PROBE_EXIT=0`，探针 `1ae6416a…`），是 `gap-ten-refresh.txt` 的载体、也是 `reason-before-after.py` 的对照输入 | `python docs/evidence/C86/probe-seven-carrier.py --item 'AC-10\|01' … --item 'AC-8\|06' --json …`（十格一次跑） |
@@ -502,6 +505,22 @@ build-log-stale=1`，`[6]` 把发布出去的 prose 与它的长度一起回读�
 （第 307 行）里写，内层运行期间工作树没动 —— 是巧合为真，不是构造为真。`/tmp/arm_carrier.py` 在更早的循环里
 已按采集顺序修正，仓内这台仍列为**已知缺陷**：改它会让这台载体的头部字节变化，牵扯 member 2 的重钉，
 放到与门禁同一批处理里做更稳。
+
+**第 3 次重钉是同一批准内容下的摘要重钉，而「跑前」这一回真的取在跑之前。** 三臂 rc 全 0：审计臂
+`drifted entries audited: 1` 而 policy 跑前=跑后=`ae6fd527…`（红的是摘要不是批准内容），`--write` 臂把 policy 移到
+`9e63f3bc…` 并给出 `entries re-pinned: 1`、`checker exit code: 0`，署名普查臂在移动之后读、自己不动字节
+（跑前=跑后=`9e63f3bc…`）。「哪一臂动过字节」以前**无法从档案自身证明**——第 1/2 次的载体先跑内层再拼头部，
+于是 `repin2-write-capture.txt` 的「跑前」porcelain 里已经写着 `M …akshare-reference-allowlist.json`。
+这次把每次运行的前后摘要都写进同一份档案，移动与否由档案内部两个读数比出来，不再靠标签。
+载体是仓外的 `/tmp/c86_repin3_carrier.py`（不入档），所以重放要按 `审计 → --write → --label-check`
+这个顺序手跑三臂，这一点在表格行的 command 列里一并写明。
+
+**还有一件与本轮无关、但会读进门禁的事。** 第 4 遍与三臂的 porcelain 里都有仓根三份未跟踪文件
+`LICENSE-REVIEW.md`、`LICENSE-SCOPE-DRAFT.md`、`LICENSE-SOURCE-AVAILABLE-DRAFT.md`，而第 3 遍（18:58）还没有——
+也就是说它们是在本轮载体之间落进工作树的，内容是一桩许可改版的审阅草案（自述「草案、未生效、未签署」、
+基线写 `dev` / `0dd453d`），与迭代2 的验收面无关。`git ls-files 'LICENSE*'` 只跟踪 `LICENSE` 与 `LICENSE-AKSHARE`，
+`git add -A` 会把这三份一并卷进提交，所以本轮两次提交全部按显式路径暂存；
+**本轮不写、不清、不提交它们**，留给用户处置。它们仍在树里这一点会影响任何读工作树干净度的门禁成员。
 
 **没做完的要写清。** 这 10 格与 `AC-9|08` 一起构成 18 格 gap 的文案面，全部与本轮探针读数一致；
 `state` 一格也没动，因为 18 格里真正卡住的是**动作**而不是字：`AC-11|04` 要重取一次连仓的 EXPLAIN、

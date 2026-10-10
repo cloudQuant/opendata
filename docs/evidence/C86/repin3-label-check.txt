@@ -1,0 +1,29 @@
+# C86（第 3 次重钉）—— 重钉条款的署名普查（写入之后读，条款必须与盘上字节相符）
+# command: python docs/evidence/C85/reference-policy-repin.py --label-check
+# 采集时间（跑前）: 2026-10-10T22:59:46+0800
+# 分支: dev  HEAD: dc9e764
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 仪器 sha256[:16]: af78dba2a964817d
+# policy sha256[:16]（跑前）: 9e63f3bcb3b216fc
+# git status --porcelain（跑前）:
+M docs/quality/akshare-reference-allowlist.json
+?? LICENSE-REVIEW.md
+?? LICENSE-SCOPE-DRAFT.md
+?? LICENSE-SOURCE-AVAILABLE-DRAFT.md
+?? docs/evidence/C86/repin3-audit.txt
+?? docs/evidence/C86/repin3-write-capture.txt
+# policy sha256[:16]（跑后）: 9e63f3bcb3b216fc
+#
+policy entries registered: 87
+  composed clause reads: C86 primary 复核 sha 漂移（被 dc9e764 改动）
+  repeated tokens (live): 0 -
+  duplicated-signer control reads: C86 primary primary 复核 sha 漂移（被 dc9e764 改动）
+  repeated tokens (control): 1 ['primary']
+  subject feat(acceptance): C86 给七个从无探针的 gap… -> token '86' expected '86'
+  subject docs(evidence): C85 落 AC-17|06 的标签… -> token '85' expected '85'
+  subject chore: 提交标题里没有轮次标签… -> token None expected None
+  three subjects, three distinct tokens: True
+  live HEAD dc9e764 -> signer() reads C86 primary
+  repeat detector shaped both ways (live 0, control names the word): True
+LABEL_CHECK PASS
+ARM_RC=0
