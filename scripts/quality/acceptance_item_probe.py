@@ -13976,7 +13976,9 @@ COV_XML_IDENTITY_FACES: Final = 6
 COV_STAMP_AGGREGATE_FACES: Final = 5
 COV_STAMP_POPULATION_FACES: Final = 8
 COV_FORMULA_CONTROL_FACES: Final = 4
-#: Two readings of the same face, one over the floor and one a hundredth short of it.
+#: Three readings of one face used by the counterfacts: ``OK`` clears the 90 floor, ``EDGE`` sits a
+#: hundredth below it, ``BELOW`` is 1.16 points under. None of the three is a live reading -- the
+#: live ``root_pct`` fact is recomputed every pass from the archived report.
 COV_ROOT_PCT_OK: Final = "opendata/data=90.16, pipeline=90.02, opendata_fuyao=93.79"
 COV_ROOT_PCT_BELOW: Final = "opendata/data=90.16, pipeline=88.84, opendata_fuyao=93.79"
 COV_ROOT_PCT_EDGE: Final = "opendata/data=89.99, pipeline=90.02, opendata_fuyao=93.79"
@@ -14540,7 +14542,7 @@ AC17_06 = Probe(
     },
     breaks=(
         Break("A2 新代码掉到 84.9%", (("new_code_pct", "84.90"),), GAP),
-        Break("pipeline 实测 88.84，未到 90", (("root_pct", COV_ROOT_PCT_BELOW),), GAP),
+        Break("反例：pipeline=88.84 低于 90（非现盘）", (("root_pct", COV_ROOT_PCT_BELOW),), GAP),
         Break("opendata/data 只差 0.01 个点", (("root_pct", COV_ROOT_PCT_EDGE),), GAP),
         Break("一个点名根解析成空总体", (("root_empty_pop", "1"),), GAP),
         Break("退役目录少一条历史身份映射", (("root_unmapped", "1"),), GAP),
