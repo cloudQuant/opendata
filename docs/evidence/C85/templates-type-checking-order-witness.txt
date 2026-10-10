@@ -1,0 +1,210 @@
+C85 witness: the templates TYPE_CHECKING probe's verdict was a function of test order.
+
+Five pytest legs, each the verbatim stdout+stderr of the command printed above it, run on
+branch dev at HEAD 1fe5f2d. Every arm pins the order with
+-p no:randomly and drops the coverage addopts, so nothing but collection order varies.
+The two mechanisms are the same test name in two versions of tests/test_c85_templates.py:
+
+  HEAD bytes    (git show HEAD:tests/test_c85_templates.py)  14100 B  sha256 60cba1e2f79b89f382add4b50eacb00018e6ca6882a21a8b9983f4bdb82b76bf
+  worktree bytes (uncommitted until this archive's commit)   24486 B  sha256 4d0448a0762a47c66ba353e06f4c51bae8a1a768ea36cf727f31ea1e73443fe2
+  module under test  opendata/pipeline/templates.py          47006 B  sha256 a08ed13c5e7d1a286db464d47b503965c5a1363a61150a2df7ddbca1fa9a512a
+
+The mechanism difference, stated from the two files rather than from memory
+
+  HEAD: re-executes templates.py's source in a throwaway module with typing.TYPE_CHECKING
+  forced True, then reads the bound names off that namespace. The exec runs *every* guarded
+  block the source reaches, including the one in the module it imports, and a name materializes
+  only if the imported module happens to carry it.
+  worktree: resolves each guarded name through the real import machinery (attribute of the
+  target module, or bound inside that module's own TYPE_CHECKING block) and then checks head-on
+  that no guarded name is evaluated when templates.py loads. Nothing is re-executed, so nothing
+  depends on what is cached in sys.modules.
+
+Readings
+
+  arms a and b exit 1 and 1: the HEAD mechanism raises
+  ImportError: cannot import name 'Notifier' from 'opendata.pipeline.alerts' at
+  opendata/pipeline/templates.py:49, inside the re-executed block. arm e exits
+  0: the same file passes when nothing imported alerts first. So the verdict
+  flipped on collection order, which is what an xdist worker sees differently from another
+  worker, and what a full-suite leg sees differently from a targeted leg.
+  arms c and d both exit 0/0: the working-tree version is
+  order-independent in both directions.
+
+What this does NOT claim
+
+  It does not show the HEAD version failing in the committed suite as it happens to be
+  ordered today -- arm e is exactly that passing leg. It shows the guard is only as strong as
+  the order, which is enough to make a passing reading of it non-evidence.
+  It does not price the change in coverage terms: the archived coverage report counted 4 of the
+  8 TYPE_CHECKING import lines of templates.py as covered because the exec ran them under the
+  real file path; the re-exec being gone, those lines read missing again. That movement is
+  recorded in the AC-17|06 ledger cell and the coverage stamp archive, not here.
+
+Captured arms
+
+arm-a -- HEAD mechanism, collected after tests/test_cross_check_service.py
+  $ python -m pytest tests/test_cross_check_service.py tests/_c85_head_probe_witness_tmp.py -o addopts='' -q -p no:randomly
+
+<<<BEGIN arm-a
+ARM A -- HEAD mechanism (exec with TYPE_CHECKING forced true), collected after tests/test_cross_check_service.py
+..........................F                                              [100%]
+=================================== FAILURES ===================================
+___________________ test_type_checking_only_imports_resolve ____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x14e693f50>
+
+    def test_type_checking_only_imports_resolve(monkeypatch: pytest.MonkeyPatch) -> None:
+        """Execute the annotation-only block with the flag forced true.
+    
+        ``typing.TYPE_CHECKING`` is ``False`` at runtime, so the guarded
+        imports never run; re-executing the source with the flag on proves
+        every name the module's annotations reference is importable. One of
+        them (``runner.Hook``) is itself a typing-only alias with no runtime
+        value, so the probe materializes it for the duration of the exec and
+        hands the module back afterwards.
+        """
+        monkeypatch.setattr(runner, "Hook", Callable[[object], object], raising=False)
+    
+>       namespace = _exec_with_type_checking(templates)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/_c85_head_probe_witness_tmp.py:364: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/_c85_head_probe_witness_tmp.py:393: in _exec_with_type_checking
+    exec(compile(source, str(path), "exec"), probe.__dict__)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    """P0 pipeline templates (design §9.3, milestone A4.7).
+    
+    Wires the built-for-purpose pieces into one runnable template:
+    
+    * :func:`build_stock_daily_pipeline` - the stock-daily pipeline of the
+      P0 daily chain: the registry-routed fetcher per symbol, the A4.2 ods
+      writer, the A4.5 cross-check (only when a second source exists - it
+      needs the A3 THS feed), the A4.6 dwd merge and the schedule window;
+    * :func:`incremental_window` - the daily incremental window; it ends on
+      the trading day the calendar view names when one is given (A4.7), and
+      on ``as_of`` itself when the caller is not calendar-aware yet; the
+      17:00/18:00 staggering stays pending the real-network calibration;
+    * :func:`refresh_metadata_backbone` - the step zero design §4.1 gives a
+      full-market backfill: put ``Instrument`` and ``TradingCalendar`` rows
+      through their own contract and land them, which is what gives the
+      window and universe reads a producer behind them;
+    * :data:`PIPELINE_TEMPLATES` - the built-in jobs of §9.3: the P0
+      incremental, the weekly full cross-check, partition maintenance and
+      the freshness check;
+    * :func:`normalize_ods_rows` / :func:`ods_frame_reader` - the bridge
+      from ods rows (source naming) to the contract shape, so the merge
+      and cross-check layers can read ods directly.
+    """
+    
+    from __future__ import annotations
+    
+    import enum
+    from dataclasses import dataclass
+    from datetime import date, datetime, timedelta, timezone
+    from pathlib import Path
+    from typing import TYPE_CHECKING, TypeVar, cast
+    from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+    
+    import pandas as pd
+    from pydantic import BaseModel, ValidationError
+    
+    from opendata.data.mapping import normalize_frame, require_domain_mapping
+    from opendata.data.models import Instrument, TradingCalendar
+    from opendata.data.models.base import ContractModel
+    from opendata.pipeline.affected_keys import SymbolPartitioning
+    from opendata.pipeline.runner import DataPipeline, PipelineSpec, Window
+    
+    if TYPE_CHECKING:
+        from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
+    
+        from sqlalchemy import Engine
+        from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+    
+>       from opendata.pipeline.alerts import AlertPolicy, Notifier
+E       ImportError: cannot import name 'Notifier' from 'opendata.pipeline.alerts' (/Users/yunjinqi/Documents/new_projects/opendata/opendata/pipeline/alerts.py)
+
+opendata/pipeline/templates.py:49: ImportError
+=========================== short test summary info ============================
+FAILED tests/_c85_head_probe_witness_tmp.py::test_type_checking_only_imports_resolve
+1 failed, 26 passed in 0.44s
+ARM_A_EXIT=1
+<<<END arm-a
+arm-a: 84 lines, 4409 bytes, sha256 961206f76ea3f491347dc620100aef510b20d7cd5e16cf019bfa3e7d19893d29
+
+arm-b -- HEAD mechanism, collected after tests/test_diff_alerts.py
+  $ python -m pytest tests/_c85_head_probe_witness_tmp.py tests/test_diff_alerts.py -o addopts='' -q -p no:randomly
+
+<<<BEGIN arm-b
+ARM B -- HEAD mechanism, collected after tests/test_diff_alerts.py
+    
+    from opendata.data.mapping import normalize_frame, require_domain_mapping
+    from opendata.data.models import Instrument, TradingCalendar
+    from opendata.data.models.base import ContractModel
+    from opendata.pipeline.affected_keys import SymbolPartitioning
+    from opendata.pipeline.runner import DataPipeline, PipelineSpec, Window
+    
+    if TYPE_CHECKING:
+        from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
+    
+        from sqlalchemy import Engine
+        from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+    
+>       from opendata.pipeline.alerts import AlertPolicy, Notifier
+E       ImportError: cannot import name 'Notifier' from 'opendata.pipeline.alerts' (/Users/yunjinqi/Documents/new_projects/opendata/opendata/pipeline/alerts.py)
+
+opendata/pipeline/templates.py:49: ImportError
+=========================== short test summary info ============================
+FAILED tests/_c85_head_probe_witness_tmp.py::test_type_checking_only_imports_resolve
+1 failed, 49 passed in 0.43s
+ARM_B_EXIT=1
+<<<END arm-b
+arm-b: 22 lines, 1134 bytes, sha256 b85ddd4cd914bacf0324189b283dc210a98ce3c283ab886c80166a34e5607ee7
+
+arm-c -- working-tree mechanism, same order as arm-a
+  $ python -m pytest tests/test_cross_check_service.py tests/test_c85_templates.py -o addopts='' -q -p no:randomly
+
+<<<BEGIN arm-c
+ARM C -- working-tree mechanism (AST resolution), same order as A
+...........................                                              [100%]
+27 passed in 0.37s
+ARM_C_EXIT=0
+<<<END arm-c
+arm-c: 4 lines, 178 bytes, sha256 5e0ca283b04c12ddd23acc5fa73980191e8e5e6b4b681d19b80e4ecebc969b03
+
+arm-d -- working-tree mechanism, reverse order
+  $ python -m pytest tests/test_c85_templates.py tests/test_cross_check_service.py -o addopts='' -q -p no:randomly
+
+<<<BEGIN arm-d
+ARM D -- working-tree mechanism, reverse order
+...........................                                              [100%]
+27 passed in 0.37s
+ARM_D_EXIT=0
+<<<END arm-d
+arm-d: 4 lines, 159 bytes, sha256 cb42888fdd037d4942aa24258805693771431b874f35cf1fa8fb914a0178c5c1
+
+arm-e -- HEAD mechanism alone, no prior alerts import
+  $ python -m pytest tests/_c85_head_probe_witness_tmp.py -o addopts='' -q -p no:randomly
+
+<<<BEGIN arm-e
+ARM E -- HEAD mechanism alone (the order that used to be the only one exercised)
+..............                                                           [100%]
+14 passed in 0.25s
+ARM_E_EXIT=0
+<<<END arm-e
+arm-e: 4 lines, 193 bytes, sha256 f3cd73014e9af230e2972cc43e25c3b5975871c1814a238f04726cbf1f8e3da9
+
+The temporary carrier for the HEAD bytes was tests/_c85_head_probe_witness_tmp.py, created
+from git show HEAD:tests/test_c85_templates.py before arms a/b/e and deleted after them; it is
+not part of the repository and re-running those three arms needs it re-created under that name.
+
+Recompute every body digest from this file alone:
+
+  python3 - <<'PY'
+  import hashlib, re
+  text = open('docs/evidence/C85/templates-type-checking-order-witness.txt', encoding='utf-8').read()
+  for name, body in re.findall(r'<<<BEGIN ([-a-z0-9]+)\n(.*?)\n<<<END \1', text, re.S):
+      print(f'{name:8s} ' + hashlib.sha256((body + chr(10)).encode()).hexdigest())
+  PY

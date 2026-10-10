@@ -6,11 +6,10 @@ engine shows exactly which scoped statement the templates would run.
 No connection, no DDL.
 """
 
+import ast
+import importlib
 import pathlib
-import sys
-import types
-import typing
-from collections.abc import Awaitable, Callable, Sequence
+from collections.abc import Awaitable, Sequence
 from datetime import date
 from typing import Any
 
@@ -19,7 +18,7 @@ import sqlalchemy
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from opendata.data.mapping import DomainMapping, FieldMapping, load_mapping, mapping_sources
-from opendata.pipeline import runner, templates
+from opendata.pipeline import templates
 from opendata.pipeline.runner import PipelineContext, Window
 from opendata.pipeline.templates import (
     _load_ods_rows,
@@ -349,49 +348,296 @@ def test_a_key_without_a_date_column_never_widens_the_read_window(
     assert "`trade_date` >= :start AND `trade_date` <= :end" in engine.statement
 
 
-def test_type_checking_only_imports_resolve(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Execute the annotation-only block with the flag forced true.
+def test_type_checking_only_imports_resolve() -> None:
+    """Every name behind ``if TYPE_CHECKING:`` resolves where it points.
 
-    ``typing.TYPE_CHECKING`` is ``False`` at runtime, so the guarded
-    imports never run; re-executing the source with the flag on proves
-    every name the module's annotations reference is importable. One of
-    them (``runner.Hook``) is itself a typing-only alias with no runtime
-    value, so the probe materializes it for the duration of the exec and
-    hands the module back afterwards.
+    ``templates`` hides its annotation imports behind the flag, and two of
+    the names they bind - ``alerts.Notifier`` and ``runner.Hook`` - are
+    typing aliases with no runtime value; ``from __future__ import
+    annotations`` is the only thing that makes the module importable anyway.
+
+    The probe this test began as re-executed the source with
+    ``typing.TYPE_CHECKING`` forced true. That passed only while
+    ``opendata.pipeline.alerts`` had not been imported yet: the exec then ran
+    *that module's* guarded block too, and ``Notifier`` materialized by
+    accident. Once another test module had imported it the normal way (
+    ``tests/test_cross_check_service.py`` and ``tests/test_diff_alerts.py`` do
+    so at import, as does every xdist worker's collection pass), the cached
+    module carried no ``Notifier`` and line 49 raised ImportError. The verdict
+    was a function of test order, not of the code under test.
+
+    Resolution therefore goes through the real import machinery: a guarded
+    name must be an attribute of the module it is imported from, or be bound
+    inside that module's own ``if TYPE_CHECKING:`` block - exactly what a type
+    checker sees, and independent of what is cached. Then the hazard this test
+    is really a guard against gets checked head-on: a name behind the flag
+    must never be evaluated when the module loads.
     """
-    monkeypatch.setattr(runner, "Hook", Callable[[object], object], raising=False)
+    source = _module_source(templates)
+    assert "from __future__ import annotations" in source, (
+        "templates.py only gets away with annotation-only imports because "
+        "PEP 563 keeps those annotations unevaluated at runtime"
+    )
 
-    namespace = _exec_with_type_checking(templates)
+    guarded = _type_checking_imports(templates)
+    assert len(guarded) >= 12, f"the guarded block shrank, so this probe is stale: {guarded}"
 
-    assert namespace["Sequence"] is Sequence
-    assert namespace["Awaitable"] is Awaitable
-    assert namespace["Engine"] is sqlalchemy.engine.Engine
-    assert namespace["AsyncSession"].__name__ == "AsyncSession"
-    assert namespace["async_sessionmaker"] is async_sessionmaker
-    assert namespace["CrossCheckService"].__name__ == "CrossCheckService"
-    assert namespace["DwdMergeService"].__name__ == "DwdMergeService"
-    assert namespace["PipelineContext"] is PipelineContext
-    assert namespace["CalendarView"] is CalendarView
+    resolved: dict[str, object] = {}
+    typing_only: set[str] = set()
+    for target, name, bound_as in guarded:
+        value, is_alias = _resolve_guarded_name(target, name)
+        resolved[bound_as] = value
+        if is_alias:
+            typing_only.add(bound_as)
+
+    assert resolved["Sequence"] is Sequence
+    assert resolved["Awaitable"] is Awaitable
+    assert resolved["Engine"] is sqlalchemy.engine.Engine
+    assert resolved["AsyncSession"].__name__ == "AsyncSession"
+    assert resolved["async_sessionmaker"] is async_sessionmaker
+    assert resolved["CrossCheckService"].__name__ == "CrossCheckService"
+    assert resolved["DwdMergeService"].__name__ == "DwdMergeService"
+    assert resolved["PipelineContext"] is PipelineContext
+    assert resolved["CalendarView"] is CalendarView
+
+    # Spelled out rather than papered over: these two have no runtime value,
+    # so templates.py must never need them for anything but an annotation.
+    assert sorted(typing_only) == ["Hook", "Notifier"]
+    assert resolved["Notifier"] is None and resolved["Hook"] is None
+
+    eager = _names_evaluated_at_runtime(templates, set(resolved))
+    assert not eager, (
+        f"{sorted(eager)} is referenced outside a lazy annotation, so it has "
+        "to be a runtime import - templates.py would NameError on load"
+    )
 
 
-def _exec_with_type_checking(module: object) -> dict[str, object]:
-    """Re-execute ``module``'s source with ``TYPE_CHECKING`` true.
+def _module_source(module: object) -> str:
+    """The source ``module`` was compiled from."""
+    return pathlib.Path(module.__file__).read_text(encoding="utf-8")  # type: ignore[attr-defined]
 
-    The probe runs under its own throwaway name: ``dataclass`` resolution
-    looks the defining module up in ``sys.modules``, so the namespace has
-    to be registered while the source executes (and removed after).
+
+def _is_type_checking(node: ast.expr) -> bool:
+    """``TYPE_CHECKING`` / ``typing.TYPE_CHECKING``, however it is spelled."""
+    return (isinstance(node, ast.Name) and node.id == "TYPE_CHECKING") or (
+        isinstance(node, ast.Attribute) and node.attr == "TYPE_CHECKING"
+    )
+
+
+def _guarded_imports(tree: ast.AST, package: str) -> list[tuple[str, str, str]]:
+    """``(target module, imported name, bound as)`` for every import behind the flag.
+
+    An empty imported name means the bare ``import a.b`` form, where the
+    binding *is* the module.
     """
-    path = pathlib.Path(module.__file__)
-    source = path.read_text(encoding="utf-8")
-    name = f"opendata_c85_probe_{path.stem}"
-    probe = types.ModuleType(name)
-    probe.__dict__["__file__"] = str(path)
-    original = typing.TYPE_CHECKING
-    typing.TYPE_CHECKING = True
-    sys.modules[name] = probe
+    found: list[tuple[str, str, str]] = []
+    for node in ast.walk(tree):
+        if not (isinstance(node, ast.If) and _is_type_checking(node.test)):
+            continue
+        for stmt in ast.walk(node):
+            if isinstance(stmt, ast.ImportFrom):
+                target = stmt.module or ""
+                if stmt.level:
+                    target = f"{package}.{target}" if target else package
+                if not target:
+                    continue
+                found.extend(
+                    (target, alias.name, alias.asname or alias.name) for alias in stmt.names
+                )
+            elif isinstance(stmt, ast.Import):
+                found.extend(
+                    (alias.name, "", alias.asname or alias.name.split(".")[0])
+                    for alias in stmt.names
+                )
+    return found
+
+
+def _type_checking_imports(module: object) -> list[tuple[str, str, str]]:
+    package = getattr(module, "__package__", "") or ""
+    return _guarded_imports(ast.parse(_module_source(module)), package)
+
+
+def _typing_alias_site(module: object, name: str) -> str | None:
+    """``file:line`` where ``module`` binds ``name`` under its own flag block."""
+    path = pathlib.Path(module.__file__)  # type: ignore[attr-defined]
+    for _target, bound, stmt in _guarded_bindings(_module_source(module)):
+        if bound == name:
+            return f"{path}:{stmt.lineno}"
+    return None
+
+
+def _guarded_bindings(source: str) -> list[tuple[str, str, ast.stmt]]:
+    """Every name the flag block of ``source`` binds, imported or assigned."""
+    out: list[tuple[str, str, ast.stmt]] = []
+    for node in ast.walk(ast.parse(source)):
+        if not (isinstance(node, ast.If) and _is_type_checking(node.test)):
+            continue
+        for stmt in ast.walk(node):
+            if isinstance(stmt, (ast.Import, ast.ImportFrom)):
+                module = getattr(stmt, "module", None) or ""
+                out.extend((module, alias.asname or alias.name, stmt) for alias in stmt.names)
+            elif isinstance(stmt, ast.Assign):
+                out.extend(
+                    ("", target.id, stmt) for target in stmt.targets if isinstance(target, ast.Name)
+                )
+            elif isinstance(stmt, (ast.AnnAssign, ast.AugAssign)):
+                if isinstance(stmt.target, ast.Name):
+                    out.append(("", stmt.target.id, stmt))
+            elif isinstance(stmt, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+                out.append(("", stmt.name, stmt))
+    return out
+
+
+def _resolve_guarded_name(target: str, name: str) -> tuple[object | None, bool]:
+    """Look ``name`` up in ``target`` the way the interpreter and mypy both do.
+
+    Returns ``(value, is_typing_only_alias)``. The target has to import; the
+    name has to be either a runtime attribute or a binding the target makes
+    inside its own ``if TYPE_CHECKING:`` block. Anything else is a name
+    templates.py annotates with but nobody declares.
+    """
+    module = importlib.import_module(target)
+    if not name:
+        return module, False
     try:
-        exec(compile(source, str(path), "exec"), probe.__dict__)
-    finally:
-        typing.TYPE_CHECKING = original
-        sys.modules.pop(name, None)
-    return dict(probe.__dict__)
+        return getattr(module, name), False
+    except AttributeError:
+        pass
+    site = _typing_alias_site(module, name)
+    if site is None:
+        raise AssertionError(
+            f"{target} binds no {name!r} at runtime and no TYPE_CHECKING {name!r} "
+            f"either ({pathlib.Path(module.__file__)} is where it would live)"  # type: ignore[attr-defined]
+        )
+    return None, True
+
+
+def _lazy_annotation_ids(tree: ast.AST) -> set[int]:
+    """Node ids PEP 563 leaves as strings, so the interpreter never evaluates them.
+
+    Class-body annotations count as eager unless the class is a ``dataclass``
+    (which stores them) - a pydantic or attrs model would resolve them at
+    class creation and need the real object.
+    """
+    eager_fields = {
+        id(stmt)
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ClassDef) and not _is_dataclass(node)
+        for stmt in node.body
+        if isinstance(stmt, ast.AnnAssign)
+    }
+    lazy: set[int] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.AnnAssign) and id(node) in eager_fields:
+            continue
+        if not isinstance(node, (ast.arg, ast.AnnAssign, ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        for field in ("annotation", "returns"):
+            child = getattr(node, field, None)
+            if child is not None:
+                lazy.update(id(sub) for sub in ast.walk(child))
+    return lazy
+
+
+def _is_dataclass(node: ast.ClassDef) -> bool:
+    for decorator in node.decorator_list:
+        call = decorator.func if isinstance(decorator, ast.Call) else decorator
+        if isinstance(call, ast.Name) and call.id == "dataclass":
+            return True
+        if isinstance(call, ast.Attribute) and call.attr == "dataclass":
+            return True
+    return False
+
+
+def _names_evaluated_at_runtime(module: object, names: set[str]) -> set[str]:
+    """Which of ``names`` the module reads where the interpreter must resolve it.
+
+    A read is legal when an enclosing scope binds the name at runtime - the
+    deferred ``import`` inside the function is how templates.py reaches its
+    services. It is a NameError when the only binding is the flag block,
+    because that block never runs.
+    """
+    tree = ast.parse(_module_source(module))
+    _link_parents(tree)
+    lazy = _lazy_annotation_ids(tree)
+    bound = _runtime_bindings(tree)
+    eager: set[str] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Name) or node.id not in names or id(node) in lazy:
+            continue
+        if _inside_flag_block(node) or _binds(node, bound):
+            continue
+        eager.add(node.id)
+    return eager
+
+
+def _link_parents(tree: ast.AST) -> None:
+    """Give every node a ``_parent`` so scope chains are walkable."""
+    for node in ast.walk(tree):
+        for child in ast.iter_child_nodes(node):
+            child._parent = node  # type: ignore[attr-defined]
+
+
+def _scope_chain(node: ast.AST) -> list[ast.AST]:
+    """``node``'s enclosing scopes, innermost first, up to the module.
+
+    A class body sees its own scope and the module; a method does not see the
+    class scope, so class scopes are only kept when they bound ``node``
+    directly.
+    """
+    chain: list[ast.AST] = []
+    current = getattr(node, "_parent", None)
+    direct = True
+    while current is not None:
+        is_scope = isinstance(
+            current, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda, ast.Module, ast.ClassDef)
+        )
+        if is_scope and (direct or not isinstance(current, ast.ClassDef)):
+            chain.append(current)
+        if isinstance(current, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            direct = False
+        current = getattr(current, "_parent", None)
+    return chain
+
+
+def _binds(node: ast.Name, bound: dict[int, set[str]]) -> bool:
+    return any(node.id in bound.get(id(scope), ()) for scope in _scope_chain(node))
+
+
+def _inside_flag_block(node: ast.AST) -> bool:
+    current = getattr(node, "_parent", None)
+    while current is not None:
+        if isinstance(current, ast.If) and _is_type_checking(current.test):
+            return True
+        current = getattr(current, "_parent", None)
+    return False
+
+
+def _runtime_bindings(tree: ast.AST) -> dict[int, set[str]]:
+    """Names each scope binds when the module actually executes, by scope id."""
+    bound: dict[int, set[str]] = {}
+
+    def record(scope_key: int, name: str) -> None:
+        bound.setdefault(scope_key, set()).add(name)
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)):
+            if _inside_flag_block(node):
+                continue
+            scope = _scope_chain(node)
+            if scope:
+                record(id(scope[0]), node.id)
+        elif isinstance(node, (ast.Import, ast.ImportFrom)):
+            if _inside_flag_block(node):
+                continue
+            scope = _scope_chain(node)
+            key = id(scope[0]) if scope else id(tree)
+            for alias in node.names:
+                record(key, alias.asname or alias.name.split(".")[0])
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            if _inside_flag_block(node):
+                continue
+            scope = _scope_chain(node)
+            if scope:
+                record(id(scope[0]), node.name)
+    return bound
