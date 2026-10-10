@@ -1,24 +1,24 @@
 # C85 覆盖率报告归档（AC-17|06 的判定对象）
 
 - 生成命令：`make test-cov`，随后由 `scripts/quality/coverage_archive_stamp.py` 归档
-- 归档时间：2026-10-10T07:06:54+0800
-- 测量时的 HEAD：`f6c3ec475ea32c925622191441308d272378e3bb`
+- 归档时间：2026-10-10T08:22:59+0800
+- 测量时的 HEAD：`f19906942aa696737d908bc0fa92c24012163ac2`
 - `xml`：`docs/evidence/C85/coverage-final.xml`（现盘 `coverage.xml` 的逐字节副本）
 - `html`：`docs/evidence/C85/coverage-final-html.zip`，400 个页面
 
 ## 戳记里记录的聚合数（由归档副本重算，不是现盘文件的重述）
 
-- 语句：23232 / 25427
-- 分支弧：6525 / 7684
-- statement+branch 合并覆盖率：89.87%
+- 语句：23227 / 25427
+- 分支弧：6524 / 7684
+- statement+branch 合并覆盖率：89.85%
 
 ## 各判定总体
 
 | 总体 | 文件数 | 合并覆盖率 | 解析方式 |
 | --- | --- | --- | --- |
-| `new_code` | 290 | 89.87% | A2 新代码与 coverage source 的交集 |
+| `new_code` | 290 | 89.85% | A2 新代码与 coverage source 的交集 |
 | `opendata/data` | 191 | 90.17% | 目录前缀 |
-| `pipeline` | 39 | 96.38% | 路径成分（opendata/pipeline/） |
+| `pipeline` | 39 | 96.31% | 路径成分（opendata/pipeline/） |
 | `opendata_fuyao` | 9 | 93.79% | 历史身份映射（opendata_fuyao 由 3f05f636c 删除，11 个历史文件） |
 
 ## 探针怎么用这份归档
