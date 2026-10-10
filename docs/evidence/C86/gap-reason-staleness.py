@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Do the gap cells' ledger reasons still describe what their probes read today?
 
-Five measured faces, and no judgement relaxed anywhere:
+Six measured faces, and no judgement relaxed anywhere:
 
 * A -- ``state`` agreement: probe verdict vs ledger state, per gap cell. Zero would mean the
   ledger is not lying about any cell's state.
@@ -15,10 +15,17 @@ Five measured faces, and no judgement relaxed anywhere:
   readings -- that is the finding, so printing the residue is the point.
 * E -- the two C65 blockers that today's readings re-attribute: both texts printed side by side, so
   a rewrite of the record has a carrier for every number it quotes. Disclosure, not a gate.
+* F -- the issue-class census behind one of those blockers, recomputed by importing the repo's own
+  runtime validator (the same call the probe makes, never a rebuilt judge). The probe's fact list
+  prints only the first eight issue codes, which is why an archived text can say "so-and-so class
+  predominates" and be contradicted by the 340-count class that the truncation hides. Gated on the
+  identities that make it readable: the census total has to equal the probe's own recorded count,
+  and every predicate it leans on has to be able to answer both ways.
 """
 
 from __future__ import annotations
 
+import collections
 import copy
 import json
 import re
@@ -41,6 +48,14 @@ BORROW_VALUES: Final = ("3", "2")
 CONTEXT_WINDOW: Final = 9
 # The two C65 blockers that today's readings re-attribute (face E).
 REATTRIBUTED: Final = ("AC-1|05", "AC-16|01")
+# Face F recomputes this cell's runtime issue classes through the repo's own validator.
+RUNTIME_ITEM: Final = "AC-1|05"
+# ``__init__.py`` matches any package, so a basename matcher has to exclude it to say anything.
+TRIVIAL_NAMES: Final = ("__init__.py", "__main__.py")
+ABSENT_DIR_PROBE: Final = "opendata_qoder_instrument_absence_probe"
+PRESENT_DIR_PROBE: Final = "opendata"
+ABSENT_NAME_PROBE: Final = "qoder_instrument_absence_probe.py"
+RELOCATION_SAMPLES: Final = 3
 
 
 def run_probe_all(scratch: Path) -> dict[str, dict[str, Any]]:
@@ -154,6 +169,108 @@ def reattributed_lines(
     return lines
 
 
+def tracked_names() -> dict[str, list[str]]:
+    """Every path git tracks today, indexed by basename -- face F's relocation corpus."""
+    done = subprocess.run(  # nosec B603 B607  # literal argv: read-only git ls-files, exec on PATH
+        ["git", "ls-files"],  # noqa: S607
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if done.returncode != 0:
+        raise SystemExit(f"git ls-files failed rc={done.returncode}")
+    index: dict[str, list[str]] = collections.defaultdict(list)
+    for line in done.stdout.splitlines():
+        index[Path(line).name].append(line)
+    return dict(index)
+
+
+def runtime_issue_census() -> tuple[str, dict[str, int], list[tuple[str, str]]]:
+    """Recount the runtime issue classes with *the repo's own* validator, never a rebuilt judge."""
+    sys.path.insert(0, str(REPO))
+    from scripts.quality.runtime_stack_evidence import validate
+
+    pairs = [
+        (issue.code, issue.message.split(": ", 1)[-1].strip()) for issue in validate(REPO).issues
+    ]
+    census = dict(collections.Counter(code for code, _ in pairs))
+    majority = max(sorted(census), key=lambda code: census[code])
+    return majority, census, pairs
+
+
+def runtime_declared_count(recs: dict[str, dict[str, Any]]) -> str:
+    """The issue count the probe itself recorded for AC-1|05 -- face F's other half."""
+    return str((recs[RUNTIME_ITEM].get("facts") or {}).get("runtime_issue_count", ""))
+
+
+def census_lines(
+    rows: dict[str, dict[str, Any]],
+    recs: dict[str, dict[str, Any]],
+    majority: str,
+    census: dict[str, int],
+    pairs: list[tuple[str, str]],
+) -> tuple[bool, list[str]]:
+    """Face F: what the 461 issues actually are, and the two-sided predicates that say so."""
+    declared = runtime_declared_count(recs)
+    ledger = str(rows[RUNTIME_ITEM].get("reason", ""))
+    total = sum(census.values())
+    identity = total == len(pairs) and str(total) == declared
+    lines = [
+        f"  validator issues={len(pairs)} census_total={total}"
+        f" probe_fact_runtime_issue_count={declared} identity={identity}",
+        "  (the probe's ``runtime_issue_summary`` prints ``issues[:8]``, so the truncated head",
+        "   cannot show which class predominates -- the census is printed to disagree with it)",
+    ]
+    for code, hits in sorted(census.items(), key=lambda kv: (-kv[1], kv[0])):
+        lines.append(f"  {hits:>5}  {code:<42} named_in_ledger_text={code in ledger}")
+    retired = sorted({p.split("/")[0] for code, p in pairs if code == majority and "/" in p})
+    dir_readings = {name: (REPO / name).is_dir() for name in retired}
+    control_present = (REPO / PRESENT_DIR_PROBE).is_dir()
+    control_absent = (REPO / ABSENT_DIR_PROBE).is_dir()
+    lines.append(
+        f"  majority_class={majority} retired_roots_exist_today={dir_readings or '{}'}"
+        f" control(present={control_present},absent={control_absent})"
+    )
+    index = tracked_names()
+    pool = [
+        p
+        for code, p in pairs
+        if code == majority and Path(p).name not in TRIVIAL_NAMES and "/" in p
+    ]
+    relocated = [p for p in pool if any(c != p for c in index.get(Path(p).name, []))]
+    for sample in pool[:RELOCATION_SAMPLES]:
+        namesakes = [c for c in index.get(Path(sample).name, []) if c != sample]
+        lines.append(f"  relocated {sample} -> {namesakes[0] if namesakes else '(no namesake)'}")
+    fabricated = len(index.get(ABSENT_NAME_PROBE, []))
+    lines.append(
+        f"  missing_with_tracked_namesake={len(relocated)}/{len(pool)}"
+        f" (trivial names excluded) control_fabricated_name={fabricated}"
+    )
+    ok = (
+        identity
+        and bool(retired)
+        and bool(dir_readings)
+        and not any(dir_readings.values())
+        and control_present
+        and not control_absent
+        and bool(pool)
+        and len(relocated) == len(pool)
+        and fabricated == 0
+    )
+    return ok, lines
+
+
+def control_census(pairs: list[tuple[str, str]], declared: str) -> bool:
+    """Drop one issue: the identity with the probe's own recorded count has to break."""
+    live = str(len(pairs)) == declared
+    stripped = str(len(pairs[:-1])) == declared
+    print(
+        f"CONTROL-CENSUS live={live} dropped-one-issue={stripped} expected live=True stripped=False"
+    )
+    return live and not stripped and bool(pairs)
+
+
 def control_reason(rows: dict[str, dict[str, Any]], recs: dict[str, dict[str, Any]]) -> bool:
     """Mangle one reason that currently matches: the tally has to move by exactly one."""
     before = reason_tally(rows, recs)
@@ -185,7 +302,7 @@ def control_borrow(recs: dict[str, dict[str, Any]]) -> bool:
 
 
 def main() -> int:
-    """Print faces A-E, then the two controls, and exit on the conjunction."""
+    """Print faces A-F, then the three controls, and exit on the conjunction."""
     rows = ledger_rows()
     with tempfile.TemporaryDirectory() as tmp:
         recs = run_probe_all(Path(tmp))
@@ -209,12 +326,19 @@ def main() -> int:
     print(f"[E] re-attributed blockers over {len(REATTRIBUTED)} cells (disclosure, no gate)")
     for line in reattributed_lines(rows, recs, tally["diff"]):
         print(line)
+    print("[F] runtime issue-class census behind AC-1|05 (gated on its identities)")
+    majority, census, pairs = runtime_issue_census()
+    f_ok, lines_f = census_lines(rows, recs, majority, census, pairs)
+    for line in lines_f:
+        print(line)
     ok = (
         found
         and not tally["state_bad"]
         and len(tally["agree"]) == len(tally["ids"])
         and control_reason(rows, recs)
         and control_borrow(recs)
+        and f_ok
+        and control_census(pairs, runtime_declared_count(recs))
     )
     print(f"STALENESS_CHECK {'PASS' if ok else 'FAIL'}")
     return 0 if ok else 1
