@@ -34,6 +34,10 @@ bundle 的 24h 新鲜度一条也没放宽。
 | `ac5-07-probe-rerun.txt` / `.json` | 重建之后 AC-5\|07 的定向探针读数（`proven`，`issue=0`） | `python docs/evidence/C86/probe-seven-carrier.py --item 'AC-5|07' --out docs/evidence/C86/ac5-07-probe-rerun.txt --json docs/evidence/C86/ac5-07-probe-rerun.json --title '…'` |
 | `ac17-02-nosec-census-rerun.txt` / `.json` | 新增仪器后 AC-17\|02 的重读：逐行 nosec 仍 157 处（普查根不含 `docs/evidence`，见下节的范围面） | 同上（`--item 'AC-17|02'`） |
 | `nosec-audit.py` / `.txt` | 本目录 28 处例外**逐文件**对 bandit 自己的 `skipped_tests` 记账，另加 `[0]` 范围面（普查根从 `Makefile` 实测读出、A2 文件集从 `resolve_files(None)` 实测数得）与三条反例臂（多点名 / 少点名 / 将本轮真实的那处过度点名放回） | `python docs/evidence/C86/nosec-audit.py`（临时副本写 `docs/evidence/C86/.scratch_nosec/`，出判定前删除并实测 `scratch_cleared=True`） |
+| `ac9-08-arm-check.py` / `.txt` | AC-9\|08 这一格的**文案面**复校：3 个 census 标记各自命中的行号与数字、`repair` 后读得到 `proven`、声明的 8 条反例臂逐条把它打回 `gap`、2 条 null 臂（篡改没有臂认领的 `passthrough_rows`/`reader_rows`）读数不动、最后量「本轮驳掉的旧文案」在 shipped 源里还剩几处 | `python docs/evidence/C86/ac9-08-arm-check.py` |
+| `ac9-08-reason-rerun.txt` / `.json` | 文案改完之后的单格探针读数（`PROBE_EXIT=0`，`VERDICT AC-9\|08: gap — …`），台账那一格的 `reason` 逐字取自这一行 | `python docs/evidence/C86/probe-seven-carrier.py --item 'AC-9\|08' --out … --json … --title '…'` |
+| `ledger-reason-refresh.py` / `.txt` | 台账 `reason` 重发布：文案取载体自己的 `VERDICT` 行，`round`/`date` 从载体目录名与载体的采集时间行实测（不在仪器里手写轮次），写前 RED / 写入 / 写后 GREEN 三遍逐字入档；`--write` 末尾把刚写的文件**重新解析**一遍，要求 reason、round 与每条 `evidence` 路径都 repo-relative 且在盘上 | `python docs/evidence/C86/ledger-reason-refresh.py --carrier docs/evidence/C86/ac9-08-reason-rerun.txt [--verify-only\|--write]`（三遍） |
+| `ledger-reason-refresh-controls.py` / `.txt` | 上面那台仪器的五条控制臂 + 回滚面：台账没有的格子要 rc=1、载体 `proven` 而台账 `gap` 要 DECLINED 且字节不动、指向一份**没有 `VERDICT` 行的真档案**要 rc=1、对已写台账 `--verify-only` 要 rc=0、同一条读数 dry 不动 sha 而 write 会动，控制臂自己那次写回滚后与保存字节逐字节相等；头部与 tally 都钉住被测仪器的摘要 | `python docs/evidence/C86/ledger-reason-refresh-controls.py` |
 
 ## AC-17|02：例外普查的语义要与扫描器一致
 
@@ -336,3 +340,59 @@ AC-17|10 与 AC-1|10 因工作树干净被真正判定且一致（+2），AC-5|0
 因此本轮不声明「全门禁绿」，只声明日志里那 11 员的逐面可查。两处分寸同样入账：墙钟与退出码不是手打，
 取自包装器自己的 status 文件与 stdout 日志（头部把这两条载体点名了）；`staleness-carrier.py` 自身的退出码
 本轮没有任何仓内 face（它只把内层 rc 写成 `INSTRUMENT_RC=`），所以也不声明它。
+
+## AC-9|08：reason 里那句键数不是这台探针量到的，顺手补一台「从载体重发布」的仪器
+
+**被驳的是探针自己的文案。** HEAD 的 `scripts/quality/acceptance_item_probe.py` 里
+`55,073 行里 1 个键两义` 出现 **1** 次，今天 **0** 次（`ac9-08-arm-check.txt` 的 `[5] source scan:
+refuted=0 present=1`——`present` 锚的是新短语 `dwd_stock_action 实测` 确实在源里 1 处，它不是判定面）。
+这台探针的读数里没有任何键计数：`measure_ac9_08` 从 C49 census 取的三个事实键是 `landed_rows` /
+`passthrough_rows` / `reader_rows`，`[1]` 面逐条给出它们命中的行号与数字——`landed_rows='0'`（第 217 行）、
+`passthrough_rows='55071'`（214）、`reader_rows='55073'`（212），并额外要求**数字必须出现在它所引的那一行上**，
+否则算 marker 认错。同一段旧 readings 还替 55073→55071 那 2 行的差额断言了原因
+（「差的那一段是一次未确认的落库写入」），这一条本轮也没量过，改成明说「若有差额，本轮没有量到它的原因，
+不替它编一个」。文案改完之后，判定面没有因此变松：`[2]` 面 `repaired reading -> proven` 仍要
+`landed_rows: 0 -> 55071`，`[3]` 面声明的 8 条臂逐条把干净读数打回 `gap`（`arms=8/8`），
+`[4]` 面两条 null 臂篡改 `passthrough_rows`/`reader_rows` 之后读数仍 `proven`——
+**这两个键只承载文案、不承载判定**，所以「reason 引了它们」不等于「判定依赖了它们」，这一点单独入档。
+
+**台账那一格更旧。** `AC-9|08|a87bfe6f` 的 `reason` 是 C65 时代的 71 字
+（`官方事件原始业务键3组重复、2组冲突`，同样是键计数），`command` 字段为空、`round=C65`、`date=2026-10-01`。
+台账文案与探针文案之间**没有任何门禁在比较**：`wording_drift` 只要求判据原文出现在验收文档里，
+于是 11 格 gap 文案能各自落后到 C65 而门禁全绿——这一条是本目录 `gap-reason-staleness.txt` 普查出来的成因。
+
+**修法不是手抄。** `ledger-reason-refresh.py` 的 `reason` 逐字取载体那行 `VERDICT`，
+`round`/`date` 从载体目录名与载体自己的采集时间行推导，仪器里没有一处手写轮次标签。三遍 rc 序列
+`[1, 0, 0]`（`REFRESH_ARMS_RC=PASS`）：写前 `--verify-only` 读 `stale=1` 并点名
+`ledger reason (71) is not the carrier's text (205)`；`--write` 打印
+`WRITE AC-9|08|a87bfe6f: round C65 -> C86, reason 71 -> 205 chars, evidence_appended=True,
+command_written=True` 与 `wrote docs/quality/acceptance-item-ledger.json readback_cells=1
+readback_problems=0`；写后 GREEN 读 `equal=1 stale=0`。
+
+**第一次 `--write` 的产物里抓到我自己的缺陷。** `Reading.carrier` 当时用 `path.as_posix()`，于是台账的
+`evidence` 与 `command` 落进的是 `/Users/yunjinqi/…` 绝对路径——它在本机读得到、在任何别人的 checkout 里
+都读不到。加 `relative()` 之后又把台账 revert 回 HEAD（`9c704e0eeba8ad18`）**重放**三遍：
+重放后的 ledger diff 与重放前逐字节相同（`REPLAY_IDENTICAL=yes`），台账 sha 现为 `6263ad9e9bb85db9`，
+所以入档那份是修正后的写，不是修正前写的补丁说明。写后新增的 `read_back()` 面就是把这条做成机判：
+reason/round 必须按写入值读回、每条被引路径必须 repo-relative 且在盘上，否则 rc=1。
+
+**控制臂每一条都能动。** `ledger-reason-refresh-controls.txt` 的 tally 逐字
+`absent_rc=1 decline_rc=0 empty_rc=1 verify_rc=0 dry_rc=0 write_rc=0
+refresh_sha=f9edb9e1e99e3af2 saved_sha=6263ad9e9bb85db9`，
+`[5] sha saved=6263ad9e9bb85db9 after_dry=6263ad9e9bb85db9 after_write=94b14fc9a1ffebdd`（dry 不动字节、
+write 会动，两半用的是**同一条**读数，所以「dry 什么都没改」不能由一台根本没走到写分支的仪器冒充），
+`[6] rollback sha=6263ad9e9bb85db9 byte-identical=True`。`[3]` 那条负臂用的是本轮真实写过的
+`ac9-08-arm-check.txt`（它确实不含 `VERDICT` 行），不是为失败造的假文件；`refresh_sha` 与被测仪器的
+`[1]`—`[6]` 逐臂一起入档，因为这台控制仪是 import 那份代码跑的，档案得说自己测的是哪一版字节。
+
+**同轮的其余三面。** `python scripts/quality/a2_check.py --files` 对这四台新仪器 + `acceptance_item_probe.py`
+读 `A2 files: 4` 并 ruff/format/mypy/bandit 四项 `ok`（rc=0）；新仪器一律用 `importlib` 而不是 `subprocess`，
+所以本目录的 28 处例外与全树 157 处逐行 `nosec` 计数都不受影响。`make ledger-check` 仍
+`items=130 proven=112 gap=18 unreviewed=0 ticked=112`（22 组 + 19 条 §10 行）——文案改写不动 `state`，
+census 不变是预期而不是巧合。`evidence_traceability` 此刻读 `untracked gaps = 8` 且 `exit gaps = 0`，
+八条正是这 4 台仪器与它们的 4 份档案，提交后清除：与 `gate-run1.txt` 记的是同一条记账顺序教训。
+
+**没做完的要写清。** 另外 10 格 C65 文案尚未刷新（`AC-10|01`、`AC-10|03`、`AC-11|02`、`AC-16|01`、
+`AC-16|02`、`AC-19|01`、`AC-19|04`、`AC-1|05`、`AC-8|05`、`AC-8|06`），这台仪器已能为它们服务，
+前提是每格先有**本轮**的载体而不是复用旧轮的字面量；`AC-9|08` 本身仍停在 `gap`，
+因为 `landed_rows` 只能由一次经确认的 warehouse 写入补齐，那不是文案能修的形状。

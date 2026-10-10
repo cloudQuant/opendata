@@ -1,0 +1,34 @@
+{
+  "env": {
+    "python": "3.11.8"
+  },
+  "items": [
+    {
+      "item": "AC-9|08",
+      "key": "AC-9|08|a87bfe6f",
+      "state": "gap",
+      "summary": "歧义键逐键拒绝（不再整窗不交）+ layer=dwd 走生产查询面 + 表里真的有行",
+      "readings": [
+        "直通节点: 6/6 passed",
+        "歧义键处理: 逐键拒绝（不再整窗 raise）= yes，旧的一 raise 就什么都不交的形状已移除 = yes，拒绝的键要报得出来 = yes，列缺失仍然 fail closed = yes",
+        "查询面: layer=dwd 走生产 _key/build_data_select 建得出 SQL = yes，且直通输出列 == dwd 表声明列（落得了这张表）",
+        "docs/evidence/C49/census-post-fix.txt 的真库读数：stock_action/ths reader 交出 55073 行、直通 merge 交出 55071 行，而 dwd_stock_action 实际 0 行 —— reader 与 merge 之间若有差额，本轮没有量到它的原因，不替它编一个"
+      ],
+      "reason": "「直通模式可用」判的是这张单源域的表里真的有行、并能按 layer=dwd 读回去：整窗 raise 已换成逐键拒绝（docs/evidence/C49/census-post-fix.txt 里 reader 55073 行、直通 merge 55071 行），代码面已经通了；挡着的是 dwd_stock_action 实测 0 行，需要一次经确认的 warehouse 写入（重算落库），不是再改判定口径",
+      "closure": "landed_rows: 0 -> 55071",
+      "facts": {
+        "p_runs": "6",
+        "p_passed": "6",
+        "p_bad": "-",
+        "refuses_per_key": "yes",
+        "reported": "yes",
+        "whole_window_raise_gone": "yes",
+        "raises_on_missing_column": "yes",
+        "query_face": "yes",
+        "landed_rows": "0",
+        "passthrough_rows": "55071",
+        "reader_rows": "55073"
+      }
+    }
+  ]
+}

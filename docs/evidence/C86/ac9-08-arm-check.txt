@@ -1,0 +1,38 @@
+# C86 —— AC-9|08 的 8 条反事实臂在文案改成实测事实后仍逐条打得回
+# 采集时间（跑前）: 2026-10-10T18:13:48+0800
+# 分支: dev  HEAD: c76ab47
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 仪器 sha256[:16]: 2d9c76d0c4903471
+# 探针模块 sha256[:16]: 2be4c398d887f1fa
+# command: python docs/evidence/C86/ac9-08-arm-check.py
+# git status --porcelain（跑前）:
+M scripts/quality/acceptance_item_probe.py
+?? docs/evidence/C86/ac9-08-arm-check.py
+#
+[1] census docs/evidence/C49/census-post-fix.txt markers, denominator=3
+    landed_rows = '0' from marker 'dwd 表 dwd_stock_action 实际行数' at line 217
+    passthrough_rows = '55071' from marker '直通 merge：rows' at line 214
+    reader_rows = '55073' from marker '生产 reader 产出：' at line 212
+[2] reachability: repaired reading -> proven (needs proven)
+[3] declared breaks: 8 arms, each applied to the repaired reading
+     GAP  一条直通节点变红  [p_passed=5, p_bad=test_x=exit=1]
+     GAP  直通节点被改名，判据条数跑不满  [p_runs=5]
+     GAP  歧义键退回整窗拒绝  [refuses_per_key=no]
+     GAP  旧的整窗 raise 文案又出现  [whole_window_raise_gone=no]
+     GAP  拒绝掉的键不再报得出来  [reported=no]
+     GAP  键列缺失不再 fail closed  [raises_on_missing_column=no]
+     GAP  查询面不走生产 _key/build_data_select  [query_face=no]
+     GAP  代码面全通，但 dwd_stock_action 还是 0 行（缺一次经确认的落库写入）  [landed_rows=0]
+[4] null arms: 2 facts no break or repair names, on the repaired reading
+    proven  tamper passthrough_rows -> '999999'
+    proven  tamper reader_rows -> '999999'
+[5] source scan: refuted=0 present=1
+[6] published prose, state=gap (reason length=205)
+    | 直通节点: 6/6 passed
+    | 歧义键处理: 逐键拒绝（不再整窗 raise）= yes，旧的一 raise 就什么都不交的形状已移除 = yes，拒绝的键要报得出来 = yes，列缺失仍然 fail closed = yes
+    | 查询面: layer=dwd 走生产 _key/build_data_select 建得出 SQL = yes，且直通输出列 == dwd 表声明列（落得了这张表）
+    | docs/evidence/C49/census-post-fix.txt 的真库读数：stock_action/ths reader 交出 55073 行、直通 merge 交出 55071 行，而 dwd_stock_action 实际 0 行 —— reader 与 merge 之间若有差额，本轮没有量到它的原因，不替它编一个
+    | 「直通模式可用」判的是这张单源域的表里真的有行、并能按 layer=dwd 读回去：整窗 raise 已换成逐键拒绝（docs/evidence/C49/census-post-fix.txt 里 reader 55073 行、直通 merge 55071 行），代码面已经通了；挡着的是 dwd_stock_action 实测 0 行，需要一次经确认的 warehouse 写入（重算落库），不是再改判定口径
+markers=3/3 repaired->proven arms=8/8 null=2 source(refuted=0,present=1)
+AC9_08_ARMS_CHECK PASS
+INSTRUMENT_RC=0

@@ -4956,6 +4956,7 @@ def measure_ac9_08(ctx: Context) -> Facts:
         "query_face": flag("_key(" in query_witness and "build_data_select" in query_witness),
         "landed_rows": _reading_after(census, "dwd 表 dwd_stock_action 实际行数"),
         "passthrough_rows": _reading_after(census, "直通 merge：rows"),
+        "reader_rows": _reading_after(census, "生产 reader 产出："),
     }
 
 
@@ -4990,16 +4991,19 @@ def judge_ac9_08(facts: Facts) -> Verdict:
         f"{facts['reported']}，列缺失仍然 fail closed = {facts['raises_on_missing_column']}",
         f"查询面: layer=dwd 走生产 _key/build_data_select 建得出 SQL = {facts['query_face']}，"
         "且直通输出列 == dwd 表声明列（落得了这张表）",
-        f"{C49_CENSUS_REL} 的真库读数：stock_action/ths 直通交出 {facts['passthrough_rows']} 行，"
-        f"而 dwd_stock_action 实际 {facts['landed_rows']} 行 —— 差的那一段是一次未确认的落库写入",
+        f"{C49_CENSUS_REL} 的真库读数：stock_action/ths reader 交出 {facts['reader_rows']} 行、"
+        f"直通 merge 交出 {facts['passthrough_rows']} 行，"
+        f"而 dwd_stock_action 实际 {facts['landed_rows']} 行"
+        " —— reader 与 merge 之间若有差额，本轮没有量到它的原因，不替它编一个",
     )
     reason = (
         ""
         if ok
-        else "「直通模式可用」判的是这张单源域的表里真的有行、并能按 layer=dwd 读回去：本轮把"
-        "整窗 raise 换成逐键拒绝（C49 量到 55,073 行里 1 个键两义，dwd_stock_action 因此一直是"
-        "空的），代码面已经通了；剩下的 0 行需要一次经确认的 warehouse 写入（重算落库），"
-        "不是再改判定口径"
+        else "「直通模式可用」判的是这张单源域的表里真的有行、并能按 layer=dwd 读回去："
+        "整窗 raise 已换成"
+        f"逐键拒绝（{C49_CENSUS_REL} 里 reader {facts['reader_rows']} 行、直通 merge "
+        f"{facts['passthrough_rows']} 行），代码面已经通了；挡着的是 dwd_stock_action 实测 "
+        f"{facts['landed_rows']} 行，需要一次经确认的 warehouse 写入（重算落库），不是再改判定口径"
     )
     return Verdict(PROVEN if ok else GAP, readings, reason)
 

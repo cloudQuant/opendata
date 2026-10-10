@@ -1,0 +1,41 @@
+# C86 —— 台账 reason 重发布：写前 RED / 写入 / 写后 GREEN 三遍逐字入档
+# 采集时间（跑前）: 2026-10-10T18:28:27+0800
+# 分支: dev  HEAD: c76ab47
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 仪器 sha256[:16]: f9edb9e1e99e3af2
+# 探针模块 sha256[:16]: 2be4c398d887f1fa
+# 载体 sha256[:16]: c14b9457f26a6613
+# command: python docs/evidence/C86/ledger-reason-refresh.py --carrier docs/evidence/C86/ac9-08-reason-rerun.txt [--verify-only|--write]（三遍）
+# git status --porcelain（跑前）:
+M scripts/quality/acceptance_item_probe.py
+?? docs/evidence/C86/ac9-08-arm-check.py
+?? docs/evidence/C86/ac9-08-arm-check.txt
+?? docs/evidence/C86/ac9-08-readings.json
+?? docs/evidence/C86/ac9-08-reason-rerun.txt
+?? docs/evidence/C86/ledger-reason-refresh-controls.py
+?? docs/evidence/C86/ledger-reason-refresh-controls.txt
+?? docs/evidence/C86/ledger-reason-refresh.py
+?? docs/evidence/C86/ledger-reason-refresh.txt
+#
+
+[A] --verify-only 在写入之前（应为 RED，stale=1）
+# 期望 rc=1 实得 rc=1 OK
+PROBLEM AC-9|08: ledger reason (71) is not the carrier's text (205)
+mode=verify carriers=1 verdicts=1 gap=1 matched=1 written=0 equal=0 stale=1 declined=0 evidence_appended=0 command_written=0
+LEDGER_REASON_REFRESH FAIL problems=1
+
+[B] --write（应为 written=1，命令与载体各自补上）
+# 期望 rc=0 实得 rc=0 OK
+    WRITE    AC-9|08|a87bfe6f: round C65 -> C86, reason 71 -> 205 chars, evidence_appended=True, command_written=True
+mode=write carriers=1 verdicts=1 gap=1 matched=1 written=1 equal=0 stale=0 declined=0 evidence_appended=1 command_written=1
+wrote docs/quality/acceptance-item-ledger.json readback_cells=1 readback_problems=0
+LEDGER_REASON_REFRESH PASS
+
+[C] --verify-only 在写入之后（应为 GREEN，equal=1 stale=0）
+# 期望 rc=0 实得 rc=0 OK
+mode=verify carriers=1 verdicts=1 gap=1 matched=1 written=0 equal=1 stale=0 declined=0 evidence_appended=0 command_written=0
+nothing to write
+LEDGER_REASON_REFRESH PASS
+
+# 三遍 rc 序列: [1, 0, 0] 期望 [1, 0, 0]
+REFRESH_ARMS_RC=PASS

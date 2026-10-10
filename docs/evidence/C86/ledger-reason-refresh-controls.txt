@@ -1,0 +1,49 @@
+# C86 —— ledger-reason-refresh 的五条控制臂（含 dry 不动字节 / write 会动字节）
+# 采集时间（跑前）: 2026-10-10T18:30:32+0800
+# 分支: dev  HEAD: c76ab47
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 仪器 sha256[:16]: 9eff2e132917eb8f
+# 探针模块 sha256[:16]: 2be4c398d887f1fa
+# command: python docs/evidence/C86/ledger-reason-refresh-controls.py
+# git status --porcelain（跑前）:
+M docs/quality/acceptance-item-ledger.json
+ M scripts/quality/acceptance_item_probe.py
+?? docs/evidence/C86/ac9-08-arm-check.py
+?? docs/evidence/C86/ac9-08-arm-check.txt
+?? docs/evidence/C86/ac9-08-readings.json
+?? docs/evidence/C86/ac9-08-reason-rerun.txt
+?? docs/evidence/C86/ledger-reason-refresh-controls.py
+?? docs/evidence/C86/ledger-reason-refresh-controls.txt
+?? docs/evidence/C86/ledger-reason-refresh.py
+?? docs/evidence/C86/ledger-reason-refresh.txt
+#
+tested instrument docs/evidence/C86/ledger-reason-refresh.py sha256[:16]=f9edb9e1e99e3af2
+[1] a gap reading for an item the ledger does not have (needs rc=1, matched=0)
+PROBLEM AC-99|77: carrier cell is not in the ledger
+mode=dry carriers=1 verdicts=1 gap=1 matched=0 written=0 equal=0 stale=0 declined=0 evidence_appended=0 command_written=0
+LEDGER_REASON_REFRESH FAIL problems=1
+[2] carrier reads proven while the cell reads gap (needs DECLINED, rc=0, no write)
+    DECLINED AC-9|08|a87bfe6f: carrier=proven ledger=gap, a flip is not prose
+mode=dry carriers=1 verdicts=1 gap=0 matched=0 written=0 equal=0 stale=0 declined=1 evidence_appended=0 command_written=0
+nothing to write
+LEDGER_REASON_REFRESH PASS
+[3] a carrier with no VERDICT line at all (needs rc=1, names docs/evidence/C86/ac9-08-arm-check.txt)
+PROBLEM carrier docs/evidence/C86/ac9-08-arm-check.txt prints no VERDICT line, so it would refresh nothing
+[4] the instrument's own --verify-only over the ledger as written (needs rc=0)
+mode=verify carriers=1 verdicts=1 gap=1 matched=1 written=0 equal=1 stale=0 declined=0 evidence_appended=0 command_written=0
+nothing to write
+LEDGER_REASON_REFRESH PASS
+[5] one reading with a different reason: dry must not move the bytes, write must
+    WRITE    AC-9|08|a87bfe6f: round C86 -> C86, reason 205 -> 220 chars, evidence_appended=False, command_written=False
+mode=dry carriers=1 verdicts=1 gap=1 matched=1 written=1 equal=0 stale=0 declined=0 evidence_appended=0 command_written=0
+dry run: pass --write to apply
+LEDGER_REASON_REFRESH PASS
+    WRITE    AC-9|08|a87bfe6f: round C86 -> C86, reason 205 -> 220 chars, evidence_appended=False, command_written=False
+mode=write carriers=1 verdicts=1 gap=1 matched=1 written=1 equal=0 stale=0 declined=0 evidence_appended=0 command_written=0
+wrote docs/quality/acceptance-item-ledger.json readback_cells=1 readback_problems=0
+LEDGER_REASON_REFRESH PASS
+    sha saved=6263ad9e9bb85db9 after_dry=6263ad9e9bb85db9 after_write=94b14fc9a1ffebdd
+[6] rollback sha=6263ad9e9bb85db9 byte-identical=True
+absent_rc=1 decline_rc=0 empty_rc=1 verify_rc=0 dry_rc=0 write_rc=0 refresh_sha=f9edb9e1e99e3af2 saved_sha=6263ad9e9bb85db9
+LEDGER_REFRESH_CONTROLS_CHECK PASS
+INSTRUMENT_RC=0

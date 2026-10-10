@@ -1,0 +1,29 @@
+# C86 —— AC-9|08 的 reason 改由实测事实生成：旧文案里的键数不是这台探针量到的
+# 采集时间（跑前）: 2026-10-10T18:14:05+0800
+# 分支: dev  HEAD: c76ab47
+# python: 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# 探针模块 sha256[:16]: 2be4c398d887f1fa
+# command: python scripts/quality/acceptance_item_probe.py --item 'AC-9|08' --json /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C86/ac9-08-readings.json
+# git status --porcelain（跑前）:
+M scripts/quality/acceptance_item_probe.py
+?? docs/evidence/C86/ac9-08-arm-check.py
+?? docs/evidence/C86/ac9-08-arm-check.txt
+?? docs/evidence/C86/ac9-08-readings.json
+#
+
+### AC-9|08  (document line 202)
+判据原文：**单源域 dwd 直通模式可用**（`layer=dwd` 查询不报错）
+本探针：歧义键逐键拒绝（不再整窗不交）+ layer=dwd 走生产查询面 + 表里真的有行
+台账现状：state=gap，文档勾选=False
+  - 直通节点: 6/6 passed
+  - 歧义键处理: 逐键拒绝（不再整窗 raise）= yes，旧的一 raise 就什么都不交的形状已移除 = yes，拒绝的键要报得出来 = yes，列缺失仍然 fail closed = yes
+  - 查询面: layer=dwd 走生产 _key/build_data_select 建得出 SQL = yes，且直通输出列 == dwd 表声明列（落得了这张表）
+  - docs/evidence/C49/census-post-fix.txt 的真库读数：stock_action/ths reader 交出 55073 行、直通 merge 交出 55071 行，而 dwd_stock_action 实际 0 行 —— reader 与 merge 之间若有差额，本轮没有量到它的原因，不替它编一个
+  - 补齐到可判：landed_rows: 0 -> 55071
+VERDICT AC-9|08: gap — 「直通模式可用」判的是这张单源域的表里真的有行、并能按 layer=dwd 读回去：整窗 raise 已换成逐键拒绝（docs/evidence/C49/census-post-fix.txt 里 reader 55073 行、直通 merge 55071 行），代码面已经通了；挡着的是 dwd_stock_action 实测 0 行，需要一次经确认的 warehouse 写入（重算落库），不是再改判定口径
+
+census: gap=1
+（1 item(s) recomputed against docs/quality/acceptance-item-ledger.json）
+wrote /Users/yunjinqi/Documents/new_projects/opendata/docs/evidence/C86/ac9-08-readings.json
+
+PROBE_EXIT=0

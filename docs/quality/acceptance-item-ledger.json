@@ -813,14 +813,16 @@
     },
     "AC-9|08|a87bfe6f": {
       "state": "gap",
-      "round": "C65",
-      "date": "2026-10-01",
-      "reason": "隔离单源DWD查询/回填已测试；现有正式仓库对应公司行动DWD未回填，官方事件原始业务键3组重复、2组冲突，gold样本与正式落地面仍未闭合。",
+      "round": "C86",
+      "date": "2026-10-10",
+      "reason": "「直通模式可用」判的是这张单源域的表里真的有行、并能按 layer=dwd 读回去：整窗 raise 已换成逐键拒绝（docs/evidence/C49/census-post-fix.txt 里 reader 55073 行、直通 merge 55071 行），代码面已经通了；挡着的是 dwd_stock_action 实测 0 行，需要一次经确认的 warehouse 写入（重算落库），不是再改判定口径",
       "evidence": [
         "docs/evidence/C65/acceptance-review-current.md",
         "docs/evidence/C65/mapping-review-results.json",
-        "docs/evidence/C65/official-parquet-comparison.json"
-      ]
+        "docs/evidence/C65/official-parquet-comparison.json",
+        "docs/evidence/C86/ac9-08-reason-rerun.txt"
+      ],
+      "command": "python scripts/quality/acceptance_item_probe.py --item 'AC-9|08'（判定面为实测读数，逐面见 docs/evidence/C86/ac9-08-reason-rerun.txt）"
     },
     "AC-9|09|ca69bd21": {
       "state": "proven",
