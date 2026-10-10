@@ -16,7 +16,11 @@
 | `nosec-census-compare.py` / `.txt` | 退役 grep 普查与 shipped 注释令牌普查并排对照，两侧都打印 | `python docs/evidence/C86/nosec-census-compare.py` |
 | `roster-census-coverage.py` / `.txt` | C64 仓表盘点的 census 覆盖面：差额是载体截断还是正则漏读 | `python docs/evidence/C86/roster-census-coverage.py --self-check` |
 | `probe-arm-census.py` / `.txt` | 探针模块自己的反例臂普查：逐格臂数、与 `--self-test` 总数的对钉、与 HEAD 的闭合算术 | `python docs/evidence/C86/probe-arm-census.py --against 00dd736 --expect-arms 939` |
+| `repin-label-check.txt` | 重钉条款的署名普查：实拼 0 处相邻重复词、forged 形式恰 1 处并点名 | `python docs/evidence/C85/reference-policy-repin.py --label-check`（对照臂加 `--label-check-tamper`） |
+| `repin-write-capture.txt` | 审计 + `--write` 回执逐字存档（摘要 `c4521187… -> 521d2309…`、`REAL problems: 0`、checker exit 0） | `python docs/evidence/C85/reference-policy-repin.py` 然后 `… --write` |
+| `repin-controls.txt` | 重钉仪器的三条对照臂（翻 hex / 偷渡 import / 品牌名注释）与巡回后清单字节未变面 | `python docs/evidence/C85/reference-policy-repin.py --tamper-policy`（另两条同形） |
 | `ledger-seven-patch.py` | 把七格的 `state/round/date/command/reason/evidence/note` 改写为探针读数 | `python docs/evidence/C86/ledger-seven-patch.py` |
+| `gate-run1.txt` | 第 1 遍全门禁日志：member 1—4 绿、member 5 红在本日志自身的 2 条面上 | `make gate`（第 1 遍日志写在仓内，第 2 遍改写到仓外再入档） |
 
 ## AC-17|02：例外普查的语义要与扫描器一致
 
@@ -100,6 +104,46 @@ HEAD 快照在临时树里复算（`git show` 进 `docs/evidence/C86/.scratch_he
 这里也要留一个我自己错过的数：本轮早先一次自测读的是 **938**（在 AC-17|02 那条新臂落盘之前），它已经没有仓内载体，
 只在这段散文里留名；shipped 的读数是 939，且 938 与 939 的差被上面的闭合式逐成分解释了。
 
-## 摘要重钉与门禁
+## 摘要重钉：批准链条款的署名也要实测
 
-（本节在门禁跑完后补写：探针模块摘要、reference-policy `--write` 的面、`--gate-check` 与 `make gate` 的 `GATE_EXIT`。）
+`scripts/quality/acceptance_item_probe.py` 是批准清单（`docs/quality/akshare-reference-allowlist.json`，87 条）里
+被钉摘要的一条，本轮改动必然移动它。重钉走 `docs/evidence/C85/reference-policy-repin.py`（回执见
+`repin-write-capture.txt`）：`c4521187… -> 521d2309…`、`entries re-pinned: 1`、`REAL problems: 0`、
+`checker exit code: 0`，扫描器 `(module, kind)` 命中多重集 pinned=13 live=13、策略过滤后仍 13->13、加载形态行 4==4，
+所以这是同一批准内容下的摘要重钉，不是新的批准。三条对照臂在 `repin-controls.txt`：翻一位 hex → checker exit 1
+且点名恰那一个路径、还原后 exit 0；偷渡 `import akshare` → problems 3（多重集、`load_shape_lines`、加载形态行各一条）；
+只写一条品牌名注释 → problems 0 但把 `added brand lines: 1 / of which load shapes: 0` 分类打印出来。
+控制巡回前后清单字节 `相等=True`。
+
+这里也有一条本轮自己的错判入档：条款由 `signer(mover)`（读 mover 提交标题里的 `C\d+`）与标记常量拼接，
+而标记常量原来收进了 `primary` 一词，于是第一次 `--write` 落进批准链的是
+`C86 primary primary 复核 sha 漂移…`（重复词）。该仪器不在 87 条注册项里、也不在扫描器 walks 的树内，
+所以这次编辑不移动任何被钉摘要；处理方式是把带错条款的清单 `git restore` 掉、把标记收成
+`复核 sha 漂移`、整批重跑（`--write` 与三条对照臂都重跑了一次），并把这一失效形状做成可判面：
+`--label-check` 打印实拼条款的相邻重复词数（live=0）与一个刻意重复的 forged 条款（control=1 且点名
+`primary`），两侧都必须成立才 PASS（`repin-label-check.txt`，正臂 rc=0、`--label-check-tamper` 臂 rc=1）。
+同一条款此前还有一个更隐蔽的错：`signer` 之前是字面量 `C85`，于是 C86 的 `fb904f2` 移动字节后，
+批准链里出现一条署名 C85 的重钉条款——轮次标签没有测量支撑，现在改为从提交标题取。
+
+## 门禁
+
+第 1 遍（`gate-run1.txt`，HEAD `30cd9cf`，跑前 porcelain 只有 1 行且就是这一份日志本身）按 Makefile 顺序跑到
+member 5 停：1 brand、2 zero-dep、3 secret、4 ledger 全绿并逐面留字——零依赖自测 `13 violations detected,
+4 compliant samples clean`、扫描面 649 文件（opendata=322 / _vendor=325 / opendata_client=2）、gitleaks
+`331 commits scanned / 150.68 MB / no leaks found`、登记表 `items=130 proven=112 gap=18 unreviewed=0 ticked=112`
+（22 组 + 19 条 §10 行）。member 5 报出 2 条新的 traceability violation，两条都指向**正在被写入的那份日志自己**：
+
+```
+    exit: docs/evidence/C86/gate-run1.txt
+    untracked: docs/evidence/C86/gate-run1.txt
+```
+
+这两条性质不同，且都做了两侧实测而不是推断。`#exit` 是自指读数：member 5 读文件的时刻，`GATE_EXIT=` 行还不存在，
+跑完之后再对同一份字节复跑判据读得 `exit gaps = 0`（上面打印的 census 行 `dates in gate logs = header 125/134`、
+`exit gaps = 0` 即复跑结果），所以这条红不是产品的退出面缺失，而是「门禁日志写进被门禁普查的目录」这一做法的产物。
+`#untracked` 则是真实的记账顺序，必须靠提交清除。据此第 2 遍改为把日志写到仓外（`/tmp`），跑完再入档提交，
+与 `docs/evidence/C76/gate-run5-traceability-red.txt` 记下的同一缺陷同做法。
+
+还修了一处判据的「意外通过」：入档前查了是哪一行让 `command` 面变绿，用 shipped 的 `COMMAND` 正则逐行量得
+`# python: Python 3.11.8 @ …`（解释器行）单独就返回 True，也就是说这一面是被一行**没有点名任何命令**的字节
+偶然满足的；因此头部补了一行 `# command: make gate`，让命令面由它声称的那条命令来承载。

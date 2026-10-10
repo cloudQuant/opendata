@@ -1,0 +1,77 @@
+# make gate —— C86 全门禁第 1 遍
+# started: 2026-10-10T14:19:38+0800  HEAD: 30cd9cf  branch: dev
+# python: Python 3.11.8 @ /Users/yunjinqi/opt/anaconda3/bin/python
+# command: make gate
+# git status --porcelain（跑前）:
+?? docs/evidence/C86/gate-run1.txt
+#
+===== gate: brand-check =====
+python scripts/quality/check_brand.py
+== brand tokens ==
+ok   akshare_web
+ok   akshare-web
+ok   akshare_user
+ok   akshare_data
+ok   akshare_mysql
+ok   akshare_warehouse
+ok   akshare_redis
+ok   akshare_backend
+ok   akshare_frontend
+ok   akshare_certbot
+ok   akshare_network
+ok   akshare_root_pass
+ok   akshare_pass
+== app package references ==
+ok   no 'from app.' / 'import app.' leftovers
+== context: upstream 'akshare' occurrences (not a failure) ==
+  .env.example:150
+  .env.example:151
+  .env.example:152
+  .env.example:153
+  .pre-commit-config.yaml:5
+OK: no brand residue and no rename leftovers.
+===== gate: zero-dep-check =====
+python scripts/codemod/verify_no_akshare.py --self-test
+OK: scanner self-test passed (13 violations detected, 4 compliant samples clean, scan-surface guards bite in both directions).
+python scripts/codemod/verify_no_akshare.py
+OK: 649 file(s) walked (opendata=322, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0).
+===== gate: secret-check =====
+python scripts/quality/secret_scan_check.py
+
+    ○
+    │╲
+    │ ○
+    ○ ░
+    ░    gitleaks
+
+[90m2:23PM[0m [32mINF[0m [1m331 commits scanned.[0m
+[90m2:23PM[0m [32mINF[0m [1mscanned ~150678858 bytes (150.68 MB) in 3m19s[0m
+[90m2:23PM[0m [32mINF[0m [1mno leaks found[0m
+device: gitleaks 8.30.1, command: gitleaks detect --source . --config .gitleaks.toml --redact
+===== gate: ledger-check =====
+python scripts/quality/acceptance_ledger_check.py
+census: items=130 proven=112 gap=18 unreviewed=0 ticked=112
+OK: items=130 proven=112 gap=18 unreviewed=0 ticked=112 across 22 group(s) and 19 §10 row(s) reconcile.
+===== gate: evidence-traceability =====
+python scripts/quality/evidence_traceability.py
+# evidence traceability over docs/evidence/
+  rounds        = 90
+  files census  = 1138 (gate logs: 134)
+  dates in gate logs = header 125/134, printed by the run 9/134
+  branch named in header = 109/134 (informational; a commit pins the tree, a branch does not)
+  narrative  gaps = 0
+  date       gaps = 0
+  identity   gaps = 0
+  command    gaps = 0
+  exit       gaps = 1
+  untracked  gaps = 1
+    exit: docs/evidence/C86/gate-run1.txt
+    untracked: docs/evidence/C86/gate-run1.txt
+NEW VIOLATION: docs/evidence/C86/gate-run1.txt#exit
+NEW VIOLATION: docs/evidence/C86/gate-run1.txt#untracked
+
+FAIL: 2 new traceability violation(s) against a 0-entry baseline.
+make[1]: *** [evidence-traceability] Error 1
+make: *** [gate] Error 2
+GATE_EXIT=2
+# ended: 2026-10-10T14:23:22+0800
