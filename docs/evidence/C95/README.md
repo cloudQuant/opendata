@@ -20,7 +20,7 @@ canonical，全部 anchored-absent；3 条 spelling 从 `rows.filter`（present�
 等值/包含这一类比较，日期窗口那种「两边界 + 有序比较」在声明面里没有对应物 —— 这就是
 映射债（任务 #87）：label 盖住了两种机制，present 的能力替不存在的能力作保。
 
-折叠改判的面（`F4b`，HEAD 的 credit 列表一个字不动，只换折叠表）：
+折叠改判的面（`F4b`，`78710d0` 的 credit 列表一个字不动，只换折叠表）：
 
 ```
 F4b fold-only: same=265 grew=14 shrank=0 total=279
@@ -111,19 +111,34 @@ step 7  flow.preflight_lookup(11)     ->  flow.branch(14)
 
 ## 5. 仪器（`vocabulary-repair-face.py`，`VERDICT: PASS` / `FACE_EXIT=0`）
 
-判定用的是**仓内那台 judge**（`import model_capability_census`，HEAD 侧用 `git show` 取字节
-再 `exec_module` 载入，不是第二台我手写的判据），before 侧一律来自 `git show HEAD:`。
+判定用的是**仓内那台 judge**（`import model_capability_census`，before 侧用 `git show <rev>:` 取字节
+再 `exec_module` 载入，不是第二台我手写的判据）。before 侧的 rev 是**写死的 `BASE_REV = "78710d0"`**
+而不是 `HEAD`：这一版仪器原本读的正是 `git show HEAD:`，而 `57abd20` 把修复合进去之后 HEAD 就变成
+了修复后的树 —— 于是 before/after 两侧成了同一棵树，`F4 monotonicity` 打成 `same=279 grew=0 shrank=0`、
+`F4b` 打成 `same=279 grew=0`、`F5` 打成 `delta=0 rows_changed=0`（看着全绿，其实是空比较），
+`C5` 直接 `IndexError` 崩在打印 verdict 之前。改成钉死 rev 之后这三面恢复到修复当轮的实际读数。
 
 ```
 F2 census: rows=279 expected=279 unique_labels=117 judge_accepted=True
 F2b fold labels no row cites: work=1 head=1 new=[]        # 唯一死条目 csv_header_offset，是既有的，本轮没新增
 F3 cite carriers: checked=19 missing=0
-F4 present-set: head=13 work=13 identical=True newly_present=[]   # 没有任何能力被翻成 present
+F4 present-set: head=13 work=13 identical=True newly_present=[] baseline=78710d0   # 没有任何能力被翻成 present
 F4 monotonicity: same=255 grew=23 shrank=1 unexpected=0
+F4b fold-only: same=265 grew=14 shrank=0 total=279
 F5 arithmetic: sum(per-row delta)=15 artifact mention delta=15 rows_changed=12
+F6 ladder: 189+7+83=279 census=279
 F7 ladder recompute: steps=38 reproducible=True first_divergence=None
 F7b dispatch brief: clusters=4 front_matches=True rows_match=True round=True present_match=True
+F8 projection target: param.relative_default credit rows=3
+   AS-IS               prefix=189 expressible=7 locked=83 sum=279 front=param.relative_default
+   register-only       prefix=189 expressible=7 locked=83 sum=279 front=columns.null_sentinel
+   register+re-derive  prefix=186 expressible=10 locked=83 sum=279 front=columns.null_sentinel
 ```
+
+`F8` 是这一轮补的**预测面**：它不改盘上一个字节，只把「注册 present」和「把行重 derive」两种动作
+各喂一遍仓内 `greedy_cover`，把三个 bucket 读数取回来。`expressible_today` 是 census 里的**存储字段**
+（`rows_expressible_today = len(rows) - len(pending)`），所以只注册不动行的话，bucket 一格都不会动，
+只有 ladder 前缀换位；§6 原来那段预测把两件事混在一起了，这一面就是把它拆开 measurable。
 
 `F7` 是本轮新加的一面：把 judge 在**当前盘上的 census + registry** 上重跑一遍，拿它产出的 greedy
 ladder 和 artifact 里存的那份逐步比对（38 步全等），再拿 `ladder-front-steps0-3.json` 这份**派包
@@ -141,29 +156,92 @@ C4 forged credit-list on OBB2-intrinio-HistoricalDividends (dropped param.relati
    front_moved=True step0=('param.relative_default', 3)->('request.body_pagination', 3)
 C5 fold reverted on OBB2-alpha_vantage-EquityHistorical: blockers
    ['flow.branch','flow.fan_out','rows.filter_comparison'] -> ['flow.branch','flow.fan_out'] shrank=True
+C6 re-derive one row (OBB2-federal_reserve-OvernightBankFundingRate) instead of all 3:
+   prefix 189->188 expressible 7->8 differs_from_full_arm=True
 ```
 
-`C5` 专门对着 `F4b`：把那 14 行里第一行的折叠**逐条还原成 HEAD 的折叠表**，它的 blocker 集合必须
+`C5` 专门对着 `F4b`：把那 14 行里第一行的折叠**逐条还原成 78710d0 的折叠表**，它的 blocker 集合必须
 缩回去。不缩就说明 `grew=14` 不是折叠造成的，`F4b` 那面也就不能用来给「只变严」作证。
 
-## 6. 下一轮的预测（可证伪形式）
+`C6` 对着 `F8`：只翻 step 0 credit 名单里的**一行**而不是三行，读数必须按 1 的步长移动
+（`189→188`、`7→8`），而不是把三行的结果照抄一遍。不动就说明 `F8` 那一面打印的是常量。
 
-按修好的阶梯，`param.relative_default` 建核并注册 present 之后：
+## 5b. 注册表 roster 面：本轮的 4 个新 canonical 撞红在 member 12
 
-- **谓词**：`greedy_build_order[0].capability == "param.relative_default"` 且该行集
-  `{OBB2-intrinio-HistoricalDividends, …}`（快照 step 0 的 3 行）从 pending 移入
-  `rows_unlocked_by_greedy_prefix`，prefix 189 → 189（这一步本身不解锁，因为它解锁的是 3 行
-  pending 里的 3 行 → 189 是「已解锁前缀」，实际读数应为 `rows_unlocked_by_greedy_prefix` 不变、
-  `rows_expressible_today` 7 → 7 不变、locked 83 → 80）。
-- **失效条件**：若 `param.relative_default` 注册后 locked 只降到 81 或 82，说明这 3 行里还有行
-  带着第二条未命名的 blocker —— 那就不是 kernel 的问题，是词汇表又欠了一轮。
-- **反例臂**：注册前先跑一次「把 3 行里任意一行的 `relative_date_default` 摘掉」的 derive，
-  prefix/locked 必须按 1 的步长移动；不动就是 `param.relative_default` 的 anchor 或 need 集有问题。
+`make test-cov` 第一跑 `MEMBER[test-cov]_EXIT=2`，红的**不是**覆盖率闸门（`Total coverage: 89.92%`，
+闸门 `--cov-fail-under=84`），而是一条硬编码结论：
+
+```
+1 failed, 22493 passed, 148 skipped in 498.19s
+FAILED tests/test_model_capability_census.py::test_registry_shape_is_anchored_or_declared_unproven
+  At index 1 diff: 'columns.many_to_one_rename' != 'columns.null_sentinel'
+  Left contains 4 more items, first extra item: 'rows.filter_comparison'
+```
+
+那条断言钉的是「引擎侧还没有声明面（probe）的能力清单」，清单在 78710d0 上是 11 条；本轮注册的
+4 条正是清单该长的那 4 条 —— 每一条都由一行被重审的 census 行点名，不是我推出来的能力：
+
+| capability | 点名它的行 | 为什么写不出 probe |
+| --- | --- | --- |
+| `rows.needle_transform` | 6 行 pending（sec CikMap/SymbolMap + tmx EtfSearch/EtfSectors/EtfCountries/EtfInfo） | 过滤的比较数**原样**取自 query，上游在比较前先改写它（tmx 剥 `.TO`、把 `-` 换成 `.`），`RowFilterSpec` 没有承载改写的字段 |
+| `rows.order_by_parameter` | `OBB2-tmx-EtfSearch` | 排序面能声明 limit 的来源（`limit_param`），`RowOrderSpec.column` 却是静态串，**排序键本身**来自调用方就声明不了 |
+| `shape.long_to_wide_pivot` | `OBB2-econdb-PortVolume` | 两个在册 pivot 都读静态 `series_keys` 且方向是 wide→long（`row_expansion.py:313`），这行是 long→wide |
+| `columns.many_to_one_rename` | `OBB2-tmx-EtfHoldings` | 一个输出列只能命名一个 `source_key`，上游两种拼写（`sharechange` / `shareChange`）收敛到同一列时第二条被静默丢掉 |
+
+我**没有**放宽那条断言（它仍然要求清单逐字相等），改的是清单本身和它的原因注释，并给它补了
+一台反例机 `roster-tripwire-counterfact.py`：四臂都是驱动**仓内那个 test 函数本身**
+（`import test_model_capability_census` + `mock.patch.object(mcc, "REGISTRY", …)`，不是我重打一遍
+断言），判决必须随篡改移动：
+
+```
+C0 as-is registry: roster=15 of which new=4 -> passed
+C1 drop rows.needle_transform from roster: -> AssertionError added=[] dropped=['rows.needle_transform'] bare_claims=[]
+C2 append a probe-less engine-work entry: -> AssertionError added=['shape.forged_unrostered'] dropped=[] bare_claims=[]
+C3 promote probe-less rows.needle_transform to claim=True: -> AssertionError added=[] dropped=[] bare_claims=['rows.needle_transform'] named_by_helper=['rows.needle_transform']
+
+VERDICT: PASS   ROSTER_EXIT=0
+```
+
+`C1`/`C2` 打的是 roster 面（一条能力悄悄消失 / 一条新能力没上名册），`C3` 打的是**另一条**断言
+（没有 probe 却声明 present），所以它的 roster delta 是空、红色归因写在 `bare_claims=` 里 ——
+一行 `AssertionError added=[] dropped=[]` 如果不带这个字段，读起来就是一次空的红，那是仪器的问题
+不是判决。复算：`python docs/evidence/C95/roster-tripwire-counterfact.py`。
+
+## 6. 下一轮的预测（可证伪形式，读数由 `F8` 算出）
+
+**先记一条被自己证伪的预测**：本节上一版写的是「注册 present 之后
+`rows_expressible_today` **7 → 10**、`rows_unlocked_by_greedy_prefix` **189 不变**」。这两句放在一起
+是**不可能的**：`F6` 那面要求 `prefix + expressible + locked = 279`，而 `locked` 是 83，
+`189 + 10 + 83 = 282 ≠ 279`。上一版没有跑过投影，是手推的。`F8` 补上之后，两臂的实际读数是：
+
+| 动作 | prefix | expressible | locked | 三者和 | ladder step 0 |
+|---|---|---|---|---|---|
+| AS-IS（盘上现状） | 189 | 7 | 83 | 279 | `param.relative_default` |
+| 只把 `param.relative_default` 注册成 present | **189** | **7** | 83 | 279 | → `columns.null_sentinel` |
+| 注册 **并且**把 step 0 那 3 行的 `expressible_today` 翻成 `true` | **186** | **10** | 83 | 279 | → `columns.null_sentinel` |
+
+那 3 行是 `OBB2-federal_reserve-OvernightBankFundingRate`、`OBB2-intrinio-HistoricalDividends`、
+`OBB2-tiingo-CryptoHistorical`（`F8` 从 artifact 自己的 credit 名单里取，不是我抄的）。
+
+下一轮 `param.relative_default` 建核之后，**必须**看到：
+
+- `taxonomy.canonical_capability_count` 58 不变，`capability_registry["param.relative_default"].status`
+  `absent → present`，registry 里 `present` 数 13 → 14（`F4 present-set` 的 `newly_present` 会点名，
+  只应该出现这一个）；
+- 只注册不重 derive 的话是**第一行**：bucket 一格都不动、只有前缀换位 —— 因为
+  `expressible_today` 是存储字段，judge 不从 need 集推导它；
+- 要把 `rows_expressible_today` 推到 10，`rows_unlocked_by_greedy_prefix` 必须同时掉到 **186**；
+  打印出 `expressible=10` 而 `prefix=189` 就说明有人在 artifact 里手打了数字。
+- **失效条件**：若重 derive 之后 `expressible` 不是 `7 + 3`，说明还有第 4 行的 need 集折到
+  `param.relative_default` 而它的 `expressible_today` 与 need 集不一致（词汇表又欠一轮），
+  `F5` 的行集合会先一步变红；若 `locked` 从 83 动了，说明注册动作顺带翻了别的能力。
+- **反例臂**：`C6` 已经在仪器里 —— 只翻 1 行必须读出 `188 / 8`；`C4` 必须让前缀离开
+  `param.relative_default`。两条都不动就是 `F8` 装饰。
 
 复算命令：
 
 ```
 export PATH="$HOME/opt/anaconda3/bin:$PATH"; export PYTHONPATH=.
-python docs/evidence/C95/vocabulary-repair-face.py
+python docs/evidence/C95/vocabulary-repair-face.py     # F8 的两臂 + C6，VERDICT: PASS / FACE_EXIT=0
 python scripts/quality/model_capability_census.py --round-id C96 --check
 ```

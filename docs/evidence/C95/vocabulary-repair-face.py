@@ -15,8 +15,8 @@ Faces:
     F3b refutation   the one credit DELETED is refuted by a line, not by an argument.
     F4 monotonicity  per row, the absent-blocker set under the shipped judgment vs the repaired one.
                     A repair may only make rows HARDER to ship.
-    F4b fold-only    the same face with HEAD's credit lists held fixed, so the fold-table edit is
-                    measured on its own instead of cancelling against a row edit inside F4.
+    F4b fold-only    the same face with 78710d0's credit lists held fixed, so the fold-table edit
+                    is measured on its own instead of cancelling against a row edit inside F4.
     F5 arithmetic    the roadmap's mention delta equals the sum of the per-row label deltas, and the
                     changed-row set equals this round's declared scope.
     F6 ladder        prefix + expressible-today + still-locked partitions the census.
@@ -25,6 +25,11 @@ Faces:
                     compared with the shipped artifact's, then the dispatch brief snapshot is
                     compared with that same ladder (a pre-repair brief would send builders at a
                     capability the repaired front no longer contains).
+    F8 projection   the two moves a kernel round makes, measured through the repo's own greedy
+                    cover: registering the capability present moves the ladder FRONT only, because
+                    ``expressible_today`` is a STORED census field; the row buckets move when the
+                    rows are re-derived. Both arms must keep partitioning the census, which is what
+                    refutes a prose prediction that raises expressible-today and holds the prefix.
 
 Counterfacts, each of which must move a verdict or the face it targets is decorative:
     C1 forge a row losing a blocker      -> F4 machinery must report the shrink.
@@ -33,6 +38,8 @@ Counterfacts, each of which must move a verdict or the face it targets is decora
     C4 forge a row losing its only ladder blocker -> the recomputed greedy front must move.
     C5 revert one grown row's folds to the shipped table -> its blocker set must shrink back,
        which is what makes F4b's ``grew`` attributable to the fold edit rather than to noise.
+    C6 re-derive ONE of the step-0 rows instead of all three -> F8's bucket move must shrink with
+       it, so the +3 is attributable to the flipped rows rather than to a constant.
 """
 
 from __future__ import annotations
@@ -54,6 +61,11 @@ CENSUS_DIR = REPO_ROOT / "docs/迭代计划/迭代2-统一Provider架构与全�
 ARTIFACT = CENSUS_DIR / "capability-roadmap.json"
 FRONT = pathlib.Path(__file__).resolve().parent / "ladder-front-steps0-3.json"
 UPSTREAM = pathlib.Path("/Users/yunjinqi/Documents/new_projects/openbb/openbb_platform")
+
+#: The PRE-REPAIR tree every delta face is measured against, pinned by rev instead of read off HEAD.
+#: Once the repair lands the two sides become the same tree: F4/F4b/F5 would each read a green-
+#: looking zero of a vacuous comparison, and C5 would lose the row its arm is built from.
+BASE_REV = "78710d0"
 
 sys.path.insert(0, str(REPO_ROOT / "scripts" / "quality"))
 import model_capability_census as work_judge  # noqa: E402
@@ -253,9 +265,9 @@ EDITED_ROWS = frozenset(
 
 
 def git_show(rev_path: str) -> str:
-    """Read one path as it stood at HEAD, for the before-side of every delta face."""
+    """Read one path at the pinned pre-repair rev: the before-side of every delta face."""
     proc = subprocess.run(  # nosec B603, B607  # noqa: S603
-        ["git", "show", f"HEAD:{rev_path}"],  # noqa: S607  # fixed argv, git resolved on PATH
+        ["git", "show", f"{BASE_REV}:{rev_path}"],  # noqa: S607  # fixed argv, git resolved on PATH
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
@@ -332,6 +344,23 @@ def carrier_lines(root: str, rel: str) -> list[str] | None:
 def ladder_shape(roadmap: work_judge.Roadmap) -> list[tuple[str, int]]:
     """The ``(capability, rows unlocked)`` pairs the greedy cover produced, in step order."""
     return [(step.capability, step.rows_newly_unlocked) for step in roadmap.build_order]
+
+
+def projection(
+    rows: list[work_judge.CensusRow], readings: dict[str, work_judge.EntryReading]
+) -> tuple[int, int, int, str]:
+    """Run the repo's greedy cover over a SYNTHETIC tree and read its buckets back.
+
+    Nothing is written: the rows and readings passed in are copies, so this measures what a next
+    round's edit would produce without touching the census or the registry.
+    """
+    rm = work_judge.greedy_cover(rows, readings)
+    return (
+        int(rm.rows_unlocked_by_greedy_prefix),
+        int(rm.rows_expressible_today),
+        len(rm.rows_still_locked_after_engine_pool),
+        str(rm.build_order[0].capability),
+    )
 
 
 def main() -> int:
@@ -423,7 +452,7 @@ def main() -> int:
     hp, wp = present_of(head_artifact), present_of(artifact)
     print(
         f"F4 present-set: head={len(hp)} work={len(wp)} identical={hp == wp} "
-        f"newly_present={sorted(wp - hp)}"
+        f"newly_present={sorted(wp - hp)} baseline={BASE_REV}"
     )
     if hp != wp:
         failures.append(f"F4 the repair flipped capabilities to present: {sorted(wp - hp)}")
@@ -509,6 +538,11 @@ def main() -> int:
         failures.append(f"F5 identity broken: per-row={per_row_delta} artifact={mention_delta}")
     if set(changed) != EDITED_ROWS:
         failures.append(f"F5 edited-row set is not this round's scope: {changed}")
+    if not changed:
+        failures.append(
+            f"F5 nothing differs from baseline {BASE_REV}: the pin points at the repaired tree, "
+            "so F4/F4b/F5 are comparing a face with itself"
+        )
 
     # ---- F6 ladder ---------------------------------------------------------
     rm = artifact["roadmap"]
@@ -582,6 +616,54 @@ def main() -> int:
             f"(step {f_at}, rows_match={f_rows}, round={f_round}, present={f_present})"
         )
 
+    # ---- F8 next-round projection ------------------------------------------
+    # A kernel round makes two distinct moves, and they have different faces. Registering the
+    # capability present leaves the row buckets alone -- ``expressible_today`` is a STORED census
+    # field, so only the ladder front re-lights -- and the buckets move when the rows themselves are
+    # re-derived. Both arms run through the repo's own greedy cover, so §6 cannot publish a triple
+    # the F6 partition forbids.
+    p_rows = work_judge.load_rows(CENSUS_DIR)
+    p_step = report.roadmap.build_order[0]
+    p_cap = str(p_step.capability)
+    p_ids = {str(r.task_id) for r in p_step.newly_unlocked_rows}
+    p_readings = {
+        cap: (replace(rd, present=True) if cap == p_cap else rd)
+        for cap, rd in report.readings.items()
+    }
+    as_is = projection(p_rows, report.readings)
+    arm_reg = projection(p_rows, p_readings)
+    arm_re = projection(
+        [replace(r, expressible_today=True) if r.task_id in p_ids else r for r in p_rows],
+        p_readings,
+    )
+    row_total = int(artifact["census"]["row_count_measured"])
+    print(f"F8 projection target: {p_cap} credit rows={len(p_ids)} {sorted(p_ids)[:3]}")
+    for name, arm in (("AS-IS", as_is), ("register-only", arm_reg), ("register+re-derive", arm_re)):
+        print(
+            f"   {name:<19} prefix={arm[0]} expressible={arm[1]} locked={arm[2]} "
+            f"sum={arm[0] + arm[1] + arm[2]} front={arm[3]}"
+        )
+    if as_is != (
+        rm["rows_unlocked_by_greedy_prefix"],
+        rm["rows_expressible_today"],
+        len(rm["rows_still_locked_after_engine_pool"]),
+        art[0][0],
+    ):
+        failures.append(f"F8 the synthetic baseline is not the shipped tree: {as_is}")
+    if arm_reg[1] != as_is[1] or arm_reg[3] == as_is[3]:
+        failures.append(
+            f"F8 registering {p_cap} present must move the FRONT only, not the stored bucket: "
+            f"{as_is} -> {arm_reg}"
+        )
+    if arm_re[1] != as_is[1] + len(p_ids) or arm_re[0] != as_is[0] - len(p_ids):
+        failures.append(
+            f"F8 the +{len(p_ids)} expressible must come out of the prefix: "
+            f"prefix {as_is[0]}->{arm_re[0]}, expressible {as_is[1]}->{arm_re[1]}"
+        )
+    for name, arm in (("register-only", arm_reg), ("register+re-derive", arm_re)):
+        if arm[0] + arm[1] + arm[2] != row_total:
+            failures.append(f"F8 {name} breaks the {row_total}-row partition: {arm}")
+
     # ---- counterfacts ------------------------------------------------------
     print("--- counterfacts ---")
     forge_tid = "OBB2-tmx-EtfSectors"
@@ -629,18 +711,45 @@ def main() -> int:
     if not c4:
         failures.append("C4 F7 cannot see a row losing its only blocker -- it is decorative")
 
-    c5_tid = f_grew_ids[0]
-    c5_labels = head[c5_tid]["needs_engine_capability"]
-    reverted = dict(work_judge.LABEL_TO_CAPABILITY)
-    for lbl in c5_labels:
-        if lbl in reverted:
-            reverted[lbl] = head_mod.LABEL_TO_CAPABILITY.get(lbl, reverted[lbl])
-    c5_set = blockers(c5_labels, reverted, hp)
-    w_set = blockers(c5_labels, work_judge.LABEL_TO_CAPABILITY, hp)
-    c5 = c5_set < w_set
-    print(f"C5 fold reverted on {c5_tid}: blockers {sorted(w_set)} -> {sorted(c5_set)} shrank={c5}")
-    if not c5:
-        failures.append("C5 F4b's grew count is not caused by the fold table -- it is decorative")
+    if not f_grew_ids:
+        print(f"C5 SKIPPED: no fold-grown row at baseline {BASE_REV}, so F4b has no arm to build")
+        failures.append(
+            f"C5 has no grown row against {BASE_REV}: F4b's grew count is unattributable here"
+        )
+    else:
+        c5_tid = f_grew_ids[0]
+        c5_labels = head[c5_tid]["needs_engine_capability"]
+        reverted = dict(work_judge.LABEL_TO_CAPABILITY)
+        for lbl in c5_labels:
+            if lbl in reverted:
+                reverted[lbl] = head_mod.LABEL_TO_CAPABILITY.get(lbl, reverted[lbl])
+        c5_set = blockers(c5_labels, reverted, hp)
+        w_set = blockers(c5_labels, work_judge.LABEL_TO_CAPABILITY, hp)
+        c5 = c5_set < w_set
+        print(
+            f"C5 fold reverted on {c5_tid}: blockers {sorted(w_set)} -> {sorted(c5_set)} "
+            f"shrank={c5}"
+        )
+        if not c5:
+            failures.append(
+                "C5 F4b's grew count is not caused by the fold table -- it is decorative"
+            )
+
+    c6_tid = sorted(p_ids)[0]
+    c6_arm = projection(
+        [replace(r, expressible_today=True) if r.task_id == c6_tid else r for r in p_rows],
+        p_readings,
+    )
+    c6 = c6_arm != arm_re and c6_arm[1] == as_is[1] + 1 and c6_arm[0] == as_is[0] - 1
+    print(
+        f"C6 re-derive one row ({c6_tid}) instead of all {len(p_ids)}: "
+        f"prefix {as_is[0]}->{c6_arm[0]} expressible {as_is[1]}->{c6_arm[1]} "
+        f"differs_from_full_arm={c6}"
+    )
+    if not c6:
+        failures.append(
+            "C6 F8's bucket move is not caused by the rows it flips -- the projection is a constant"
+        )
 
     print("\nVERDICT:", "PASS" if not failures else "FAIL")
     for f in failures:

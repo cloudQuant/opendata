@@ -571,11 +571,21 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
     # C91 adds one more, making ten: intrinio's one-year window, which upstream computes from today
     # at request time while ParamSpec.default holds a literal. C92 adds the eleventh: a cap over the
     # source's own published sequence, which the new ordering facet cannot declare because the key
-    # it sorts on is mandatory and that search publishes no rank column.
+    # it sorts on is mandatory and that search publishes no rank column. C95 grows it by four more,
+    # each named by a row the vocabulary repair re-audited rather than by a capability I inferred:
+    # ``rows.needle_transform`` (6 pending rows -- sec CikMap/SymbolMap and the four tmx Etf* rows
+    # rewrite the query operand before comparing, tmx strips ``.TO`` and turns ``-`` into ``.``),
+    # ``rows.order_by_parameter`` (tmx EtfSearch's sort KEY comes from the caller, while
+    # RowOrderSpec.column is a static string), ``shape.long_to_wide_pivot`` (econdb PortVolume melts
+    # long observations wide, but WideTablePivotPlan only reads a static series_keys tuple going the
+    # other way) and ``columns.many_to_one_rename`` (tmx EtfHoldings publishes both ``sharechange``
+    # and ``shareChange`` onto one output, which one-source-key-per-column cannot declare). None of
+    # the four has a field to carry it, so none of them can have a declaration probe written yet.
     assert sorted(
         entry.capability for entry in mcc.REGISTRY if entry.probe is None and entry.engine_work
     ) == [
         "columns.compose",
+        "columns.many_to_one_rename",
         "columns.null_sentinel",
         "columns.period_cast",
         "derive.conditional",
@@ -586,6 +596,9 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
         "request.caller_url",
         "rows.cap_source_order",
         "rows.filter_comparison",
+        "rows.needle_transform",
+        "rows.order_by_parameter",
+        "shape.long_to_wide_pivot",
     ]
 
 
