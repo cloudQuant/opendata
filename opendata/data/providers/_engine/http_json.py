@@ -550,6 +550,31 @@ def _stamped_value(plan: DerivePlan, query: object, spec: ModelSpec) -> object:
     return apply_derive(plan, raw)
 
 
+def _is_null_sentinel(column: ColumnSpec, value: object) -> bool:
+    """Whether one raw published value is a spelling this column declares as no value.
+
+    The comparison is exact, case-sensitive and only ever made against text: ``null_sentinel`` is
+    admitted as a ``tuple[str, ...]`` by :class:`ColumnSpec`, so a published ``0`` or ``False`` is
+    never caught by a spelling that meant the string ``"0"``. The position is the engine's copy of
+    the upstream ``mode="before"`` validators that own these rules -- benzinga's empty-string
+    rewrite (``price_target.py:259-261``), intrinio's (``insider_trading.py:110-118``), the Fed
+    releases' ``ND``/``NA``/``N/A`` maps (``money_measures.py:85``, ``sofr.py:46-50``,
+    ``svensson_yield_curve.py:1062-1082``) -- each of which returns the null *before* coercing,
+    which is why :func:`normalize_record` skips the column's declared stages when it fires.
+
+    Args:
+        column: The declared column, whose ``null_sentinel`` may be empty.
+        value: The value the record (or the response envelope) published under the key the column
+            reads.
+
+    Returns:
+        ``True`` only when the column declares sentinels and this value is one of them.
+    """
+    if not column.null_sentinel:
+        return False
+    return isinstance(value, str) and value in column.null_sentinel
+
+
 def normalize_record(
     record: object,
     document: object,
@@ -565,6 +590,12 @@ def normalize_record(
     by :mod:`.value_transform`. Every other column -- and every declaration written before
     ``column_derives`` existed, whose default is empty -- takes ``record[source_key or name]``
     verbatim through the same two shape guards as before.
+
+    A column that declares ``null_sentinel`` is the one read value that is not copied: text the
+    declaration spells as "no value" becomes the same ``None`` an absent key becomes, and the
+    column's own cast and rescale stages are skipped, because the upstream rule that nulls the
+    spelling returns before it coerces. A declaration written before the field exists declares no
+    sentinel and is therefore unchanged, cell for cell.
 
     Raises:
         ProviderEngineError: ``*_SHAPE_INVALID`` for a non-mapping record, a non-finite published
@@ -594,6 +625,9 @@ def normalize_record(
             absent.append(column)
             continue
         value = record[key]
+        if _is_null_sentinel(column, value):
+            values[column.name] = None
+            continue
         _reject_non_finite(value, spec)
         _reject_bool_for_numeric(column, value, spec)
         if plan is not None:
@@ -609,9 +643,12 @@ def normalize_record(
             and isinstance(document, dict)
             and envelope_key in document
         ):
-            _reject_non_finite(document[envelope_key], spec)
-            _reject_bool_for_numeric(column, document[envelope_key], spec)
-            values[column.name] = document[envelope_key]
+            envelope_value = document[envelope_key]
+            _reject_non_finite(envelope_value, spec)
+            _reject_bool_for_numeric(column, envelope_value, spec)
+            values[column.name] = (
+                None if _is_null_sentinel(column, envelope_value) else envelope_value
+            )
             continue
         if column.required:
             raise ProviderEngineError(f"{spec.error_prefix}_SHAPE_INVALID", missing=(column.name,))

@@ -336,6 +336,16 @@ class ColumnSpec:
         required: A raw record missing this key is a shape failure, not a null.
         nullable: Whether the upstream publishes an explicit null for it.
         units: Source unit of measure kept verbatim in the review record.
+        null_sentinel: The exact published texts that mean "no value" for this column -- ``""`` for
+            the before-validators that rewrite empty strings (benzinga ``price_target.py:259-261``,
+            intrinio ``insider_trading.py:110-118``) and ``"ND"``/``"NA"``/``"N/A"`` for the Fed
+            releases (``money_measures.py:85``, ``sofr.py:48``). Matched on the record's own text,
+            exactly and
+            before any cast or rescale stage, because the upstream validator that nulls the spelling
+            returns before it coerces. A published number or boolean is never a sentinel: the
+            declaration spells text, so ``0`` and ``False`` stay real values. Declared last for the
+            house reason: a positional ``ColumnSpec(...)`` written before sentinels existed keeps
+            binding to the same fields.
     """
 
     name: str
@@ -344,6 +354,7 @@ class ColumnSpec:
     required: bool = False
     nullable: bool = True
     units: str = ""
+    null_sentinel: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         """Reject malformed column declarations at construction time."""
@@ -354,6 +365,36 @@ class ColumnSpec:
             raise ValueError(f"column {self.name!r} has a blank source key")
         if not self.required and not self.nullable:
             raise ValueError(f"column {self.name!r} is optional but declared non-nullable")
+        self._check_null_sentinel()
+
+    def _check_null_sentinel(self) -> None:
+        """Resolve a sentinel set against this column's own declaration.
+
+        The fail-closed half is the same shape :meth:`ParamSpec._check_relative_default` keeps: a
+        declaration that the column's other fields make impossible is refused when the record is
+        written, not left to produce a reading no reviewer can tell apart from a working one. Three
+        refusals: a non-``str`` spelling could never match the record text the engine reads (and a
+        numeric one would compare equal to a published ``0`` or ``False``, nulling a real value);
+        a repeated spelling says one rule twice; and a sentinel on a non-nullable column contradicts
+        itself, because rewriting a published value into ``None`` is exactly the null the row model
+        has been declared to never accept.
+        """
+        if not self.null_sentinel:
+            return
+        if not isinstance(self.null_sentinel, tuple) or any(
+            not isinstance(text, str) for text in self.null_sentinel
+        ):
+            raise ValueError(
+                f"column {self.name!r} null_sentinel must be a tuple of the published text, got "
+                f"{self.null_sentinel!r}"
+            )
+        if len(self.null_sentinel) != len(set(self.null_sentinel)):
+            raise ValueError(f"column {self.name!r} names the same null sentinel twice")
+        if not self.nullable:
+            raise ValueError(
+                f"column {self.name!r} declares null sentinels {self.null_sentinel} but is "
+                "non-nullable: the rewrite produces exactly the null the row model refuses"
+            )
 
 
 @dataclass(frozen=True)
@@ -935,6 +976,20 @@ class ModelSpec:
                 raise ValueError(
                     f"{label} reads parameter {plan.source!r}, which {self.model} does not "
                     "declare as a parameter"
+                )
+        # A null sentinel is read off the record value the engine copies into the column, so a
+        # column whose value is *stamped* -- out of a query parameter or out of the declaration
+        # itself, the two ``source_kind`` values that never look at the record -- has no published
+        # text for the sentinel to match. The declaration would then be dead text the roadmap
+        # credits as a behaviour while the runtime reads the stamped value verbatim: the no-op
+        # this round's counterfact arm measures, so it is refused when the record is written.
+        stamped = {plan.column for plan in self.column_derives if plan.source_kind != "record"}
+        for column in self.columns:
+            if column.null_sentinel and column.name in stamped:
+                raise ValueError(
+                    f"{self.model}: column {column.name!r} declares null_sentinel "
+                    f"{column.null_sentinel} but its value is stamped by a derive plan, so no "
+                    "record value is ever read for it and the sentinel cannot fire"
                 )
         # An ordering is judged on the decoded record, whose keys the engine cannot see, so the only
         # vocabulary it can be checked against is this record's own: a declared column name or the

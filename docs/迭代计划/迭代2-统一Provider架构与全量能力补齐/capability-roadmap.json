@@ -45,7 +45,7 @@
       "anchor": "column_derives: tuple[DerivePlan, ...] = ()",
       "anchor_found": true,
       "anchor_line": "column_derives: tuple[DerivePlan, ...] = ()",
-      "anchor_line_number": 686,
+      "anchor_line_number": 727,
       "claim": false,
       "cross_anchor": "def _stamped_value",
       "cross_anchor_found": true,
@@ -62,7 +62,7 @@
       "anchor": "source_key: str | None = None",
       "anchor_found": true,
       "anchor_line": "source_key: str | None = None",
-      "anchor_line_number": 343,
+      "anchor_line_number": 353,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -76,21 +76,21 @@
       "why": "One output column names one source key, so two upstream spellings that collapse onto one output silently drop the second: tmx EtfHoldings publishes both ``sharechange`` and ``shareChange`` and maps each to ``share_change`` (etf_holdings.py:126-127). A declaration can carry one of the two, which is the difference between a rename that returns the column and one that returns it sometimes."
     },
     "columns.null_sentinel": {
-      "anchor": "nullable: bool = True",
+      "anchor": "null_sentinel: tuple[str, ...] = ()",
       "anchor_found": true,
-      "anchor_line": "nullable: bool = True",
-      "anchor_line_number": 345,
+      "anchor_line": "null_sentinel: tuple[str, ...] = ()",
+      "anchor_line_number": 357,
       "claim": false,
-      "cross_anchor": "",
+      "cross_anchor": "def _is_null_sentinel(",
       "cross_anchor_found": true,
-      "cross_file": "",
+      "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
-      "present": false,
-      "production_declarations": 0,
+      "present": true,
+      "production_declarations": 19,
       "proof_file": "opendata/data/providers/_engine/spec.py",
-      "read_from_disk": false,
-      "status": "absent",
-      "why": "A column can declare that it may be null but not which raw spellings -- the strings 'None', '0' or empty -- become null, so per-row sentinel nulling is a fetcher behaviour the engine cannot express."
+      "read_from_disk": true,
+      "status": "present",
+      "why": "Presence is read off both planes: ColumnSpec carries a ``null_sentinel`` tuple beside ``nullable`` -- whose docstring still says only that a column *may* be null -- and :func:`_is_null_sentinel` is what :func:`normalize_record` consults on the value it just read, before the shape guards and before the column's cast or rescale stages, so the C97 kernel reproduces the position of the upstream rules that own the act (a whole-record empty-string rewrite in a before-validator, benzinga price_target.py:259-261 and intrinio insider_trading.py:110-118; a named-field-set map whose null returns before the division, sofr.py:46-50 and federal_funds_rate.py:57-61; a frame-wide ``ND`` map, money_measures.py:85 and svensson_yield_curve.py:1062-1082). Sentinels are admitted as a ``tuple[str, ...]`` of the published text, and a column whose value is stamped from a parameter or a constant rather than read from the record is refused at construction, so a declaration cannot name a spelling the runtime never consults."
     },
     "columns.period_cast": {
       "anchor": "input_format: str = \"\"",
@@ -113,7 +113,7 @@
       "anchor": "key = column.source_key or column.name",
       "anchor_found": true,
       "anchor_line": "key = column.source_key or column.name",
-      "anchor_line_number": 588,
+      "anchor_line_number": 619,
       "claim": true,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -147,7 +147,7 @@
       "anchor": "key = column.source_key or column.name",
       "anchor_found": true,
       "anchor_line": "key = column.source_key or column.name",
-      "anchor_line_number": 588,
+      "anchor_line_number": 619,
       "claim": false,
       "cross_anchor": "columns: tuple[ColumnSpec, ...]",
       "cross_anchor_found": true,
@@ -368,7 +368,7 @@
       "anchor": "base_url: str",
       "anchor_found": true,
       "anchor_line": "base_url: str",
-      "anchor_line_number": 660,
+      "anchor_line_number": 701,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -385,7 +385,7 @@
       "anchor": "composite_keys: tuple[CompositeKeySpec, ...] = ()",
       "anchor_found": true,
       "anchor_line": "composite_keys: tuple[CompositeKeySpec, ...] = ()",
-      "anchor_line_number": 680,
+      "anchor_line_number": 721,
       "claim": false,
       "cross_anchor": "def _render_composite(",
       "cross_anchor_found": true,
@@ -402,7 +402,7 @@
       "anchor": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
       "anchor_found": true,
       "anchor_line": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
-      "anchor_line_number": 839,
+      "anchor_line_number": 876,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -419,7 +419,7 @@
       "anchor": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
       "anchor_found": true,
       "anchor_line": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
-      "anchor_line_number": 839,
+      "anchor_line_number": 876,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -436,7 +436,7 @@
       "anchor": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
       "anchor_found": true,
       "anchor_line": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
-      "anchor_line_number": 839,
+      "anchor_line_number": 876,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -453,7 +453,7 @@
       "anchor": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
       "anchor_found": true,
       "anchor_line": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
-      "anchor_line_number": 839,
+      "anchor_line_number": 876,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -487,7 +487,7 @@
       "anchor": "429: \"RATE_LIMITED\"",
       "anchor_found": true,
       "anchor_line": "429: \"RATE_LIMITED\",",
-      "anchor_line_number": 728,
+      "anchor_line_number": 765,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -521,7 +521,7 @@
       "anchor": "if not self.base_url.startswith(\"https://\"):",
       "anchor_found": true,
       "anchor_line": "if not self.base_url.startswith(\"https://\"):",
-      "anchor_line_number": 732,
+      "anchor_line_number": 773,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -572,7 +572,7 @@
       "anchor": "static_headers: tuple[tuple[str, str], ...] = ()",
       "anchor_found": true,
       "anchor_line": "static_headers: tuple[tuple[str, str], ...] = ()",
-      "anchor_line_number": 672,
+      "anchor_line_number": 713,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -589,7 +589,7 @@
       "anchor": "params: tuple[ParamSpec, ...] = ()",
       "anchor_found": true,
       "anchor_line": "params: tuple[ParamSpec, ...] = ()",
-      "anchor_line_number": 663,
+      "anchor_line_number": 704,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -657,7 +657,7 @@
       "anchor": "def normalize_record",
       "anchor_found": true,
       "anchor_line": "def normalize_record(",
-      "anchor_line_number": 553,
+      "anchor_line_number": 578,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -674,7 +674,7 @@
       "anchor": "row_expansion: tuple[RowExpansionPlan, ...] = ()",
       "anchor_found": true,
       "anchor_line": "row_expansion: tuple[RowExpansionPlan, ...] = ()",
-      "anchor_line_number": 683,
+      "anchor_line_number": 724,
       "claim": false,
       "cross_anchor": "def _expand_rows(",
       "cross_anchor_found": true,
@@ -725,7 +725,7 @@
       "anchor": "rows = resolve_rows(document, spec.rows_pointer, spec)",
       "anchor_found": true,
       "anchor_line": "rows = resolve_rows(document, spec.rows_pointer, spec)",
-      "anchor_line_number": 861,
+      "anchor_line_number": 898,
       "claim": false,
       "cross_anchor": "rows_pointer: str = \"\"",
       "cross_anchor_found": true,
@@ -742,7 +742,7 @@
       "anchor": "get_shared_http_client",
       "anchor_found": true,
       "anchor_line": "from opendata.data.http_client import HttpFetchError, get_shared_http_client",
-      "anchor_line_number": 654,
+      "anchor_line_number": 691,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -759,7 +759,7 @@
       "anchor": "params[paging.offset_key] = str(collected)",
       "anchor_found": true,
       "anchor_line": "params[paging.offset_key] = str(collected)",
-      "anchor_line_number": 755,
+      "anchor_line_number": 792,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -776,7 +776,7 @@
       "anchor": "path: str",
       "anchor_found": true,
       "anchor_line": "path: str",
-      "anchor_line_number": 661,
+      "anchor_line_number": 702,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -793,7 +793,7 @@
       "anchor": "get_shared_http_client",
       "anchor_found": true,
       "anchor_line": "from opendata.data.http_client import HttpFetchError, get_shared_http_client",
-      "anchor_line_number": 654,
+      "anchor_line_number": 691,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -827,7 +827,7 @@
       "anchor": "column: str",
       "anchor_found": true,
       "anchor_line": "column: str",
-      "anchor_line_number": 567,
+      "anchor_line_number": 608,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -844,7 +844,7 @@
       "anchor": "row_filters: tuple[RowFilterSpec, ...] = ()",
       "anchor_found": true,
       "anchor_line": "row_filters: tuple[RowFilterSpec, ...] = ()",
-      "anchor_line_number": 678,
+      "anchor_line_number": 719,
       "claim": false,
       "cross_anchor": "def apply_row_filters(",
       "cross_anchor_found": true,
@@ -878,7 +878,7 @@
       "anchor": "def _needle(row_filter: RowFilterSpec, query: object) -> str:",
       "anchor_found": true,
       "anchor_line": "def _needle(row_filter: RowFilterSpec, query: object) -> str:",
-      "anchor_line_number": 939,
+      "anchor_line_number": 976,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -895,7 +895,7 @@
       "anchor": "direction: RowOrderDirection = \"asc\"",
       "anchor_found": true,
       "anchor_line": "direction: RowOrderDirection = \"asc\"",
-      "anchor_line_number": 568,
+      "anchor_line_number": 609,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -912,7 +912,7 @@
       "anchor": "order_by: RowOrderSpec | None = None",
       "anchor_found": true,
       "anchor_line": "order_by: RowOrderSpec | None = None",
-      "anchor_line_number": 689,
+      "anchor_line_number": 730,
       "claim": false,
       "cross_anchor": "def apply_row_order(",
       "cross_anchor_found": true,
@@ -1039,6 +1039,9 @@
       "columns.derive": {
         "opendata/data/providers/intrinio/specs.py": 1
       },
+      "columns.null_sentinel": {
+        "opendata/data/providers/federal_reserve/specs.py": 19
+      },
       "columns.rename": {
         "opendata/data/providers/cboe/specs.py": 19,
         "opendata/data/providers/federal_reserve/specs.py": 21,
@@ -1077,7 +1080,7 @@
       "columns.compose": 0,
       "columns.derive": 1,
       "columns.many_to_one_rename": 0,
-      "columns.null_sentinel": 0,
+      "columns.null_sentinel": 19,
       "columns.period_cast": 0,
       "columns.rename": 46,
       "columns.rescale": 0,
@@ -1145,69 +1148,6 @@
       "outside.stateful"
     ],
     "greedy_build_order": [
-      {
-        "capability": "columns.null_sentinel",
-        "cumulative_rows_unlocked": 7,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.cast",
-              "columns.null_sentinel",
-              "columns.select",
-              "param.value_mapping"
-            ],
-            "provider": "benzinga",
-            "task_id": "OBB2-benzinga-PriceTarget",
-            "upstream_model": "PriceTarget"
-          },
-          {
-            "needs": [
-              "columns.derive",
-              "columns.null_sentinel",
-              "decode.delimited",
-              "rows.filter",
-              "rows.order_limit"
-            ],
-            "provider": "econdb",
-            "task_id": "OBB2-econdb-AvailableIndicators",
-            "upstream_model": "AvailableIndicators"
-          },
-          {
-            "needs": [
-              "columns.null_sentinel",
-              "columns.rename",
-              "param.relative_default",
-              "path.explode"
-            ],
-            "provider": "intrinio",
-            "task_id": "OBB2-intrinio-InsiderTrading",
-            "upstream_model": "InsiderTrading"
-          },
-          {
-            "needs": [
-              "columns.null_sentinel",
-              "columns.rescale",
-              "param.relative_default",
-              "rows.order_limit"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-FederalFundsRate",
-            "upstream_model": "FederalFundsRate"
-          },
-          {
-            "needs": [
-              "columns.null_sentinel",
-              "columns.rescale",
-              "param.relative_default",
-              "rows.order_limit"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-SOFR",
-            "upstream_model": "SOFR"
-          }
-        ],
-        "rows_newly_unlocked": 5
-      },
       {
         "capability": "request.serialised_param",
         "cumulative_rows_unlocked": 11,
@@ -5408,6 +5348,51 @@
     "shipped_cover_rows": [
       {
         "needs": [
+          "columns.cast",
+          "columns.null_sentinel",
+          "columns.select",
+          "param.value_mapping"
+        ],
+        "provider": "benzinga",
+        "task_id": "OBB2-benzinga-PriceTarget",
+        "upstream_model": "PriceTarget"
+      },
+      {
+        "needs": [
+          "columns.derive",
+          "columns.null_sentinel",
+          "decode.delimited",
+          "rows.filter",
+          "rows.order_limit"
+        ],
+        "provider": "econdb",
+        "task_id": "OBB2-econdb-AvailableIndicators",
+        "upstream_model": "AvailableIndicators"
+      },
+      {
+        "needs": [
+          "columns.null_sentinel",
+          "columns.rename",
+          "param.relative_default",
+          "path.explode"
+        ],
+        "provider": "intrinio",
+        "task_id": "OBB2-intrinio-InsiderTrading",
+        "upstream_model": "InsiderTrading"
+      },
+      {
+        "needs": [
+          "columns.null_sentinel",
+          "columns.rescale",
+          "param.relative_default",
+          "rows.order_limit"
+        ],
+        "provider": "federal_reserve",
+        "task_id": "OBB2-federal_reserve-FederalFundsRate",
+        "upstream_model": "FederalFundsRate"
+      },
+      {
+        "needs": [
           "columns.rescale",
           "param.relative_default",
           "rows.order_limit"
@@ -5415,6 +5400,17 @@
         "provider": "federal_reserve",
         "task_id": "OBB2-federal_reserve-OvernightBankFundingRate",
         "upstream_model": "OvernightBankFundingRate"
+      },
+      {
+        "needs": [
+          "columns.null_sentinel",
+          "columns.rescale",
+          "param.relative_default",
+          "rows.order_limit"
+        ],
+        "provider": "federal_reserve",
+        "task_id": "OBB2-federal_reserve-SOFR",
+        "upstream_model": "SOFR"
       },
       {
         "needs": [
@@ -5430,7 +5426,7 @@
       }
     ]
   },
-  "round_id": "C96",
+  "round_id": "C97",
   "schema_version": 1,
   "taxonomy": {
     "canonical_capability_count": 58,
@@ -5506,7 +5502,6 @@
       "absent": [
         "columns.compose",
         "columns.many_to_one_rename",
-        "columns.null_sentinel",
         "columns.period_cast",
         "columns.response_dependent_selection",
         "decode.delimited_headerless",
@@ -5552,6 +5547,7 @@
       "present": [
         "columns.cast",
         "columns.derive",
+        "columns.null_sentinel",
         "columns.rename",
         "columns.rescale",
         "columns.select",

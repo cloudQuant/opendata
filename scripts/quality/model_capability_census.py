@@ -1670,10 +1670,24 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         claim=False,
         engine_work=True,
         proof_file=SPEC_REL,
-        anchor="nullable: bool = True",
-        why="A column can declare that it may be null but not which raw spellings -- the strings "
-        "'None', '0' or empty -- become null, so per-row sentinel nulling is a fetcher behaviour "
-        "the engine cannot express.",
+        anchor="null_sentinel: tuple[str, ...] = ()",
+        read_from_disk=True,
+        cross_file=HTTP_JSON_REL,
+        cross_anchor="def _is_null_sentinel(",
+        why="Presence is read off both planes: ColumnSpec carries a ``null_sentinel`` tuple beside "
+        "``nullable`` -- whose docstring still says only that a column *may* be null -- and "
+        ":func:`_is_null_sentinel` is what :func:`normalize_record` consults on the value it just "
+        "read, before the shape guards and before the column's cast or rescale stages, so the C97 "
+        "kernel reproduces the position of the upstream rules that own the act (a whole-record "
+        "empty-string rewrite in a before-validator, benzinga price_target.py:259-261 and intrinio "
+        "insider_trading.py:110-118; a named-field-set map whose null returns before the division, "
+        "sofr.py:46-50 and federal_funds_rate.py:57-61; a frame-wide ``ND`` map, "
+        "money_measures.py:85 and svensson_yield_curve.py:1062-1082). Sentinels are admitted as a "
+        "``tuple[str, ...]`` of the published text, and a column whose value is stamped from a "
+        "parameter or a constant rather than read "
+        "from the record is refused at construction, so a declaration cannot name a spelling the "
+        "runtime never consults.",
+        probe=DeclarationProbe(call="ColumnSpec", keyword="null_sentinel", non_empty=True),
     ),
     CapabilityEntry(
         capability="param.preset_merge",

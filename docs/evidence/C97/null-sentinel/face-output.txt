@@ -1,0 +1,55 @@
+F1 presence is read off the engine, not asserted (HEAD 5917f40)
+  status/present: present/True
+  anchor: opendata/data/providers/_engine/spec.py:357 'null_sentinel: tuple[str, ...] = ()'
+  cross-anchor: opendata/data/providers/_engine/http_json.py 'def _is_null_sentinel(' found=True
+  declaration scan: 19 sites
+  the same entry on the pinned rev: absent
+
+F2 the wired sentinels are the declarations' own values, and the runtime reads them
+  sentinel-bearing columns: 117 over ['MoneyMeasures', 'SvenssonYieldCurve', 'TreasuryRates']
+  spellings per model: [('MoneyMeasures', ('ND',)), ('SvenssonYieldCurve', ('', 'NA', 'ND', 'N/A')), ('TreasuryRates', ('ND',))]
+  runtime predicate on 'ND': True
+  ...and on the published value '3.70': False
+
+F3 the artifact is what the tree produces
+  two runs identical: True
+  recomputed == committed: True
+  bytes: 180060 recomputed vs 180060 on disk
+  built_but_unused: ['columns.cast', 'columns.rescale', 'decode.archive_member', 'flow.composite_key_segment', 'param.value_mapping']
+
+F4 the ladder face, beside the pinned-rev baseline
+  after face (expr, prefix, locked, outside, cover): (8, 188, 83, 83, 7)
+  before face at the pinned rev: (8, 188, 83, 83, 2)
+  after step-0 front: request.serialised_param +4
+  before step-0 front: columns.null_sentinel +5
+  declaration sites before / after: 0 / 19
+  after shipped-cover: ['OBB2-benzinga-PriceTarget', 'OBB2-econdb-AvailableIndicators', 'OBB2-federal_reserve-FederalFundsRate', 'OBB2-federal_reserve-OvernightBankFundingRate', 'OBB2-federal_reserve-SOFR', 'OBB2-intrinio-InsiderTrading', 'OBB2-tiingo-CryptoHistorical']
+  before shipped-cover: ['OBB2-federal_reserve-OvernightBankFundingRate', 'OBB2-tiingo-CryptoHistorical']
+  identity (expressible+prefix+locked == 279): (279, True)
+  credited rows newly covered: ['OBB2-benzinga-PriceTarget', 'OBB2-econdb-AvailableIndicators', 'OBB2-federal_reserve-FederalFundsRate', 'OBB2-federal_reserve-SOFR', 'OBB2-intrinio-InsiderTrading']
+
+F5 monotonicity: no blocker set shrank except on this capability
+  rows whose blocker set shrank: ['OBB2-alpha_vantage-HistoricalEps', 'OBB2-benzinga-AnalystSearch', 'OBB2-benzinga-PriceTarget', 'OBB2-cboe-IndexSnapshots', 'OBB2-deribit-FuturesInstruments', 'OBB2-econdb-AvailableIndicators', 'OBB2-federal_reserve-CentralBankHoldings', 'OBB2-federal_reserve-FederalFundsRate', 'OBB2-federal_reserve-SOFR', 'OBB2-federal_reserve-YieldCurve', 'OBB2-fred-Ameribor', 'OBB2-fred-BalanceOfPayments', 'OBB2-fred-BondIndices', 'OBB2-fred-CommoditySpotPrices', 'OBB2-fred-EuroShortTermRate', 'OBB2-fred-FederalFundsRate', 'OBB2-fred-FredSeries', 'OBB2-fred-ManufacturingOutlookNY', 'OBB2-fred-ManufacturingOutlookTexas', 'OBB2-fred-OvernightBankFundingRate', 'OBB2-fred-PROJECTIONS', 'OBB2-fred-SOFR', 'OBB2-government_us-TreasuryAuctions', 'OBB2-intrinio-BalanceSheet', 'OBB2-intrinio-CashFlowStatement', 'OBB2-intrinio-EquityQuote', 'OBB2-intrinio-EtfHoldings', 'OBB2-intrinio-FinancialRatios', 'OBB2-intrinio-HistoricalMarketCap', 'OBB2-intrinio-IncomeStatement', 'OBB2-intrinio-IndexHistorical', 'OBB2-intrinio-InsiderTrading', 'OBB2-intrinio-MarketSnapshots', 'OBB2-intrinio-OptionsUnusual', 'OBB2-nasdaq-HistoricalDividends', 'OBB2-sec-LatestFinancialReports', 'OBB2-tmx-EtfCountries', 'OBB2-tmx-EtfHoldings', 'OBB2-tmx-EtfInfo', 'OBB2-tmx-EtfSearch', 'OBB2-tmx-EtfSectors', 'OBB2-tradier-EquityQuote', 'OBB2-tradier-OptionsChains', 'OBB2-tradingeconomics-EconomicCalendar']
+  blockers dropped: ['columns.null_sentinel']
+  rows whose blocker set grew: []
+  shrink / total rows: 44 / 279
+
+F6 the refusal face: a sentinel the runtime cannot consult is rejected
+  a derive plan stamps the column: refused: C97Face: column 'value' declares null_sentinel ('ND',) but its value is stamped by a derive 
+  a non-nullable column claims a null: refused: column 'closed' declares null sentinels ('ND',) but is non-nullable: the rewrite produces ex
+  a non-str sentinel spelling: refused: column 'number' null_sentinel must be a tuple of the published text, got (0,)
+  the same sentinel named twice: refused: column 'twice' names the same null sentinel twice
+  positive control, same column un-stamped: [('ND',)]
+
+Counterfact arms -- each one must move the verdict
+  C1 anchor retargeted: status=absent
+  C2 cross-anchor retargeted: status=absent present=False
+  C3 declaration sites: this checkout 19 -> pinned rev 0
+  C4 entry rolled back to the C96 anchor: present=False face=(8, 188, 83, 83, 2) step0=columns.null_sentinel
+  C5 keyword stripped: 'ND' nulled: declared=True stripped=False
+  C7 the five credited rows flagged with nothing declared: (13, 183, 83) vs §52.8 P4 (13, 183, 83) vs measured (8, 188, 83)
+  C7 why each credited row stays pending: ['benzinga: no package in the tree, so nothing declares PriceTarget', 'econdb: no package in the tree, so nothing declares AvailableIndicators', 'federal_reserve records FederalFundsRate as undeclared: no ModelSpec names it', 'federal_reserve records SOFR as undeclared: no ModelSpec names it', 'intrinio records InsiderTrading as undeclared: no ModelSpec names it']
+  C7 verdict: REFUTED as a shipping prediction: the (13, 183, 83) face is reachable only by flipping five census flags while no package puts forward one of the five ModelSpecs
+  C8 rolled-back artifact differs from the committed bytes: True
+
+VERDICT: PASS

@@ -138,6 +138,19 @@ def _download_params() -> tuple[ParamSpec, ...]:
     )
 
 
+#: The missing-data token the two release bodies print for a series the Fed does not publish for
+#: that date, and the four tokens the Svensson file prints. These are published spellings read off
+#: the pinned upstream models, not this declaration's invention: money_measures.py:85 does
+#: ``df.replace("ND", None)`` over the seven _N.M columns, treasury_rates.py:97 does
+#: ``.replace("ND", nan)`` over the eleven maturity columns before dividing them by 100 at :115, and
+#: SvenssonYieldCurve's own validator (:1062-1082) nulls ``""``, ``NA``, ``ND`` and ``N/A`` before
+#: any float coercion. The numeric ``-999.99`` that validator also recognises is deliberately not
+#: carried here: these columns are declared ``str`` because the body prints the text tokens, and a
+#: sentinel is matched on the text the source publishes before coercion.
+H6_NULL_SENTINEL: Final[tuple[str, ...]] = ("ND",)
+H15_NULL_SENTINEL: Final[tuple[str, ...]] = ("ND",)
+SVENSSON_NULL_SENTINEL: Final[tuple[str, ...]] = ("", "NA", "ND", "N/A")
+
 #: H.6 monthly money stock measures, declared from the table the download publishes after its
 #: five metadata rows.
 MONEY_MEASURES = ModelSpec(
@@ -160,29 +173,53 @@ MONEY_MEASURES = ModelSpec(
             nullable=False,
             units="source format %Y-%m",
         ),
-        ColumnSpec("m1", "float", source_key="M1_N.M", units="currency, multiplier 1e+09"),
-        ColumnSpec("m2", "float", source_key="M2_N.M", units="currency, multiplier 1e+09"),
-        ColumnSpec("currency", "float", source_key="MCU_N.M", units="currency, multiplier 1e+09"),
         ColumnSpec(
-            "demand_deposits", "float", source_key="MDD_N.M", units="currency, multiplier 1e+09"
+            "m1",
+            "float",
+            source_key="M1_N.M",
+            units="currency, multiplier 1e+09",
+            null_sentinel=H6_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "m2",
+            "float",
+            source_key="M2_N.M",
+            units="currency, multiplier 1e+09",
+            null_sentinel=H6_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "currency",
+            "float",
+            source_key="MCU_N.M",
+            units="currency, multiplier 1e+09",
+            null_sentinel=H6_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "demand_deposits",
+            "float",
+            source_key="MDD_N.M",
+            null_sentinel=H6_NULL_SENTINEL,
         ),
         ColumnSpec(
             "other_liquid_deposits",
             "float",
             source_key="MDL_N.M",
             units="currency, multiplier 1e+09",
+            null_sentinel=H6_NULL_SENTINEL,
         ),
         ColumnSpec(
             "small_denomination_time_deposits",
             "float",
             source_key="MDTS_N.M",
             units="currency, multiplier 1e+09",
+            null_sentinel=H6_NULL_SENTINEL,
         ),
         ColumnSpec(
             "retail_money_market_funds",
             "float",
             source_key="MMFGB_N.M",
             units="currency, multiplier 1e+09",
+            null_sentinel=H6_NULL_SENTINEL,
         ),
     ),
     scenario="货币供应量月表：取出 H.6 发布表在五行元数据之后的七个货币总量序列",
@@ -224,17 +261,83 @@ TREASURY_RATES = ModelSpec(
     static_query=_download_constants("H15", "bf17364827e38702b42a58cf8eaa3f78"),
     columns=(
         ColumnSpec("date", "date", source_key="Time Period", required=True, nullable=False),
-        ColumnSpec("month_1", "str", source_key="RIFLGFCM01_N.B", units="percent per year"),
-        ColumnSpec("month_3", "str", source_key="RIFLGFCM03_N.B", units="percent per year"),
-        ColumnSpec("month_6", "str", source_key="RIFLGFCM06_N.B", units="percent per year"),
-        ColumnSpec("year_1", "str", source_key="RIFLGFCY01_N.B", units="percent per year"),
-        ColumnSpec("year_2", "str", source_key="RIFLGFCY02_N.B", units="percent per year"),
-        ColumnSpec("year_3", "str", source_key="RIFLGFCY03_N.B", units="percent per year"),
-        ColumnSpec("year_5", "str", source_key="RIFLGFCY05_N.B", units="percent per year"),
-        ColumnSpec("year_7", "str", source_key="RIFLGFCY07_N.B", units="percent per year"),
-        ColumnSpec("year_10", "str", source_key="RIFLGFCY10_N.B", units="percent per year"),
-        ColumnSpec("year_20", "str", source_key="RIFLGFCY20_N.B", units="percent per year"),
-        ColumnSpec("year_30", "str", source_key="RIFLGFCY30_N.B", units="percent per year"),
+        ColumnSpec(
+            "month_1",
+            "str",
+            source_key="RIFLGFCM01_N.B",
+            units="percent per year",
+            null_sentinel=H15_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "month_3",
+            "str",
+            source_key="RIFLGFCM03_N.B",
+            units="percent per year",
+            null_sentinel=H15_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "month_6",
+            "str",
+            source_key="RIFLGFCM06_N.B",
+            units="percent per year",
+            null_sentinel=H15_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "year_1",
+            "str",
+            source_key="RIFLGFCY01_N.B",
+            units="percent per year",
+            null_sentinel=H15_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "year_2",
+            "str",
+            source_key="RIFLGFCY02_N.B",
+            units="percent per year",
+            null_sentinel=H15_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "year_3",
+            "str",
+            source_key="RIFLGFCY03_N.B",
+            units="percent per year",
+            null_sentinel=H15_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "year_5",
+            "str",
+            source_key="RIFLGFCY05_N.B",
+            units="percent per year",
+            null_sentinel=H15_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "year_7",
+            "str",
+            source_key="RIFLGFCY07_N.B",
+            units="percent per year",
+            null_sentinel=H15_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "year_10",
+            "str",
+            source_key="RIFLGFCY10_N.B",
+            units="percent per year",
+            null_sentinel=H15_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "year_20",
+            "str",
+            source_key="RIFLGFCY20_N.B",
+            units="percent per year",
+            null_sentinel=H15_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "year_30",
+            "str",
+            source_key="RIFLGFCY30_N.B",
+            units="percent per year",
+            null_sentinel=H15_NULL_SENTINEL,
+        ),
     ),
     scenario="国债收益率日表：取出 H.15 发布表在五行元数据之后的十一个期限档",
     error_prefix="FEDERAL_RESERVE",
@@ -251,8 +354,10 @@ TREASURY_RATES = ModelSpec(
         "normalized percent, drops rows that are entirely empty (treasury_rates.py:99), renames "
         "the 12 columns positionally rather than by name (treasury_rates.py:96), and applies its "
         "one-year default window in pandas after the whole download. The engine keeps the "
-        "published percent scale, keeps all-empty rows as rows of nulls, and reads blank cells as "
-        "null."
+        "published percent scale, keeps all-empty rows as null rows, and reads both blank "
+        "and the ND token as null -- the token half is declared, not assumed: "
+        "null_sentinel=H15_NULL_SENTINEL on each of the eleven columns is this round's C97 kernel "
+        "in production use, and it is the same replace upstream does at treasury_rates.py:97."
     ),
 )
 
@@ -296,7 +401,10 @@ SVENSSON_YIELD_CURVE = ModelSpec(
     rows_pointer="",
     columns=(
         ColumnSpec("date", "date", required=True, nullable=False),
-        *(ColumnSpec(field, "str", source_key=header) for field, header in SVENSSON_SERIES_COLUMNS),
+        *(
+            ColumnSpec(field, "str", source_key=header, null_sentinel=SVENSSON_NULL_SENTINEL)
+            for field, header in SVENSSON_SERIES_COLUMNS
+        ),
     ),
     row_expansion=(
         WideTablePivotPlan(
@@ -350,13 +458,14 @@ SVENSSON_YIELD_CURVE = ModelSpec(
         "(:1062-1082) maps '', 'NA', 'ND' and 'N/A' to null and treats -999.99 as a missing TAU2. "
         "That is why the 99 columns are str and not float. The engine can cast a cell now -- "
         "columns.derive is present since this engine "
-        "grew ModelSpec.column_derives -- but it has no "
-        "sentinel-to-null map, so a cast stage would "
-        "refuse the very cells the contract was written "
-        "to absorb, and the H.15 body in this same package carries ND in 8003 cells. Declaring the "
-        "source token is the honest face; the cast is "
-        "one capability step behind a sentinel map, and "
-        "DECLARED_GAPS prices it there. Units are omitted "
+        "grew ModelSpec.column_derives -- and since C97 it has a sentinel-to-null map: "
+        "null_sentinel=SVENSSON_NULL_SENTINEL declares the four text tokens on every one of the 99 "
+        "series columns, so a cast stage no longer refuses the cells the contract was written to "
+        "absorb and the H.15 body's 8003 ND cells read as nulls. What the field still cannot spell "
+        "is -999.99: a sentinel is matched on the published text before coercion and these columns "
+        "are str, so that one missing-value number stays priced in DECLARED_GAPS. Declaring the "
+        "source tokens is the honest face; the cast is one step behind them and is not declared "
+        "here. Units are omitted "
         "for the matching reason: these bodies ship "
         "no metadata rows quoting a unit, unlike the H.6 and H.15 downloads whose Unit: rows this "
         "file does quote.\n"
@@ -389,12 +498,20 @@ SVENSSON_YIELD_CURVE = ModelSpec(
 #: capability: these are the post-processing steps the oracle performs and the engine has no field
 #: to express, so a roadmap can price them without re-reading the upstream tree.
 DECLARED_GAPS: dict[str, str] = {
-    "MoneyMeasures": "ND/- to null sentinel map; float coercion of cells; client-side date window "
-    "and month sort; adjusted picks between the _N.M and .M column families",
-    "TreasuryRates": "ND to null; divide every maturity by 100; drop all-empty rows; positional "
-    "(not named) column rename; client-side date window",
-    "SvenssonYieldCurve": "a sentinel map ('', NA, ND, N/A and -999.99 per the pinned validator "
-    ":1062-1082) before any float coercion, so the 99 series columns stay str; the header row is "
+    "MoneyMeasures": "the '-' cell is NOT a declared sentinel and this model keeps it as text, "
+    "which is what the oracle does too (money_measures.py:93 floats every cell except '-'), but a "
+    "float column here refuses it rather than passing it through; float coercion of cells; "
+    "client-side date window and month sort; adjusted picks between the _N.M and .M column "
+    "families. The ND half of the old 'ND/- to null sentinel map' text is declared since C97: "
+    "null_sentinel=H6_NULL_SENTINEL on the seven _N.M columns.",
+    "TreasuryRates": "divide every maturity by 100 (the columns are declared str, so no rescale "
+    "stage runs on them); drop all-empty rows; positional (not named) column rename; client-side "
+    "date window. ND to null is declared since C97: null_sentinel=H15_NULL_SENTINEL on the eleven "
+    "RIFLGFC* columns, matching treasury_rates.py:97.",
+    "SvenssonYieldCurve": "the numeric -999.99 that the pinned validator (:1062-1082) treats as a "
+    "missing TAU2 is NOT declared: a sentinel is matched on the published text before coercion and "
+    "this model's columns are str, so carrying it would mean casting the cell first. The four text "
+    "tokens ('', NA, ND, N/A) are declared since C97 on all 99 series columns. The header row is "
     "found by searching for 'Date,' while preamble_rows counts; series_type selects which columns "
     "the answer carries and start_date/end_date window the rows, all client-side; a row with an "
     "unparseable date is skipped upstream and refused here. The zero-coupon and par-yield series "

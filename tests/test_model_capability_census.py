@@ -543,15 +543,16 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
     ]
     # Presence is re-measured from the shipped engine source for the capabilities whose declaration
     # carrier exists there: one spec field each (row_filters, composite_keys, row_expansion,
-    # column_derives, ParamSpec.value_map, ParamSpec.relative_default, ModelSpec.order_by), plus
-    # the two C90 entries whose carrier is a derive stage on ModelSpec.column_derives (columns.cast
-    # and columns.rescale read apply_cast/apply_scale in _engine/value_transform.py). So a field
-    # that has not landed yet is reported absent without the census author saying so. Every other
-    # entry is asserted by the census author and only cross-checked against the provider
-    # declarations that use it.
+    # column_derives, ParamSpec.value_map, ParamSpec.relative_default, ModelSpec.order_by,
+    # ColumnSpec.null_sentinel), plus the two C90 entries whose carrier is a derive stage on
+    # ModelSpec.column_derives (columns.cast and columns.rescale read apply_cast/apply_scale in
+    # _engine/value_transform.py). So a field that has not landed yet is reported absent without the
+    # census author saying so. Every other entry is asserted by the census author and only
+    # cross-checked against the provider declarations that use it.
     assert sorted(entry.capability for entry in mcc.REGISTRY if entry.read_from_disk) == [
         "columns.cast",
         "columns.derive",
+        "columns.null_sentinel",
         "columns.rescale",
         "flow.composite_key_segment",
         "param.relative_default",
@@ -588,13 +589,15 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
     # refused by ``ModelSpec`` wherever a row-side facet would read the omission instead of the
     # bound -- and a declaration probe counting the production
     # ``ParamSpec(..., relative_default=)`` keyword, so it leaves the roster for the read-from-disk
-    # list above.
+    # list above. C97 takes the twelfth off for the same reason: ``columns.null_sentinel`` now
+    # has a carrier -- ``ColumnSpec.null_sentinel``, refused wherever a derive plan stamps
+    # the column or the column is non-nullable -- read-from-disk anchors on both planes, and a
+    # declaration probe counting the production ``ColumnSpec(..., null_sentinel=)`` keyword.
     assert sorted(
         entry.capability for entry in mcc.REGISTRY if entry.probe is None and entry.engine_work
     ) == [
         "columns.compose",
         "columns.many_to_one_rename",
-        "columns.null_sentinel",
         "columns.period_cast",
         "derive.conditional",
         "param.preset_merge",

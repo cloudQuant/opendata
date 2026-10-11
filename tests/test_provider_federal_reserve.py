@@ -127,19 +127,22 @@ H15_1962 = {
     "year_20": "4.07",
     "year_30": None,
 }
-#: The same table one row later, with ND kept verbatim because the columns are declared str.
+#: The same table one row later. Every maturity it prints is the source's own missing-data token or
+#: a blank cell, and the declaration spells both as no value: its ``null_sentinel=("ND",)`` on the
+#: eleven str columns rewrites the token to the same ``None`` a blank becomes, which is what
+#: upstream's ``.replace("ND", nan)`` (treasury_rates.py:97) produces before it divides by 100.
 H15_ND = {
     "date": date(1962, 2, 12),
     "month_1": None,
     "month_3": None,
     "month_6": None,
-    "year_1": "ND",
+    "year_1": None,
     "year_2": None,
-    "year_3": "ND",
-    "year_5": "ND",
+    "year_3": None,
+    "year_5": None,
     "year_7": None,
-    "year_10": "ND",
-    "year_20": "ND",
+    "year_10": None,
+    "year_20": None,
     "year_30": None,
 }
 H15_2024 = {
@@ -504,15 +507,23 @@ class TestRowsByValue:
         assert first.model_dump() == MONEY_MEASURES_1959
         assert second.model_dump() == MONEY_MEASURES_2024
 
-    def test_blank_cells_are_nulls_and_nd_is_a_value(self) -> None:
-        """Empty cells are the engine's nulls; the source's sentinel survives as text."""
+    def test_blank_cells_and_the_nd_token_are_both_nulls(self) -> None:
+        """Empty cells and the published ``ND`` both become the engine's null.
+
+        The sentinel is declared, not assumed: ``null_sentinel=("ND",)`` on the eleven maturity
+        columns is the declaration that makes the token read as no value, which is what upstream's
+        ``.replace("ND", nan)`` (treasury_rates.py:97) does before dividing by 100 at :115. A cell
+        that is neither blank nor the token is still copied verbatim, so the ``str`` columns keep
+        the published percent text.
+        """
         treasury_rates = CASES[1]
         fetcher, _ = served(treasury_rates, treasury_rates.shipped_package)
         emitted = rows_of(fetcher, TREASURY_RATES)
         assert emitted[0].model_dump() == H15_1962
         assert emitted[1].model_dump() == H15_ND
-        assert emitted[1].year_1 == "ND"
+        assert emitted[1].year_1 is None
         assert emitted[1].month_1 is None
+        assert emitted[2].year_10 == H15_2024["year_10"]
 
     def test_the_h15_download_is_read_once_and_stays_wide(self) -> None:
         """One GET, one row per published row: the long triple is not something we re-emit.
