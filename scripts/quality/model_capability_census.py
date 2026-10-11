@@ -233,6 +233,17 @@ LABEL_TO_CAPABILITY: Final[dict[str, str]] = {
     # mandatory -- so the row was recorded against a capability whose required argument it cannot
     # supply. A cap over the published sequence is a different seam and gets its own spelling.
     "source_order_cap": "rows.cap_source_order",
+    # C93 audited the five rows that ``flow.branch`` was predicted to unlock, line by line against
+    # the pinned upstream models, and found two mechanisms that no spelling names -- one per row.
+    # tradier's lookup returns a *single* security dict and wraps it as ``[data]``
+    # (equity_search.py:109), which is a cardinality rule rather than a row source, so
+    # ``rows_from_object_keys`` (path.object_keys) and ``single_row_assembly``
+    # (path.assemble_single_row) both describe a different seam. NY Fed's ``as_of`` is replaced by
+    # the closest date in a roster fetched first (ny_fed_api.py:311-319 called at :454-458):
+    # ``flow.preflight_lookup`` only says the address is not known beforehand, and knowing it is
+    # the easy half here -- the value actually sent is chosen *out of* the response.
+    "single_object_array_wrap": "shape.single_record_wrap",
+    "nearest_published_date_snap": "flow.nearest_published_value",
     # ---- not an engine capability at all -----------------------------------
     "sdk_delegation": "outside.sdk",
     "html_scraping_sdk": "outside.sdk",
@@ -1261,6 +1272,22 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         probe=DeclarationProbe(call="ModelSpec", keyword="field_header"),
     ),
     CapabilityEntry(
+        capability="shape.single_record_wrap",
+        claim=False,
+        engine_work=True,
+        proof_file=HTTP_JSON_REL,
+        anchor="if not isinstance(current, list):",
+        why="The same refusal is the proof, from the other side: tradier's symbol lookup answers "
+        'with one "security" object when exactly one instrument matched, and the upstream fetcher '
+        "wraps it in a one-element list itself (equity_search.py:109 ``data if isinstance(data, "
+        "list) else [data]``). resolve_rows has no way to say 'this response is one record, not a "
+        "list of them', so the row cannot be declared even though the shape is otherwise a plain "
+        "list of dicts after wrapping. path.object_keys names where records come from when the "
+        "document is an object; this names the cardinality of the answer, which is a different "
+        "seam and was recorded against neither until C93's line-by-line audit.",
+        probe=DeclarationProbe(call="ModelSpec", keyword="wrap_single_record"),
+    ),
+    CapabilityEntry(
         capability="request.body",
         claim=False,
         engine_work=True,
@@ -1328,6 +1355,24 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         why="The URL is known from the declaration before any request, so a directory lookup that "
         "decides the URL afterwards cannot be declared.",
         probe=DeclarationProbe(call="ModelSpec", keyword="preflight"),
+    ),
+    CapabilityEntry(
+        capability="flow.nearest_published_value",
+        claim=False,
+        engine_work=True,
+        proof_file=HTTP_JSON_REL,
+        anchor="url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
+        why="flow.preflight_lookup stops at the address, and the address is only the easy half of "
+        "what the NY Fed holdings fetcher does: it fetches the roster of valid as-of dates first "
+        "(ny_fed_api.py:358-365), then replaces the caller's ``as_of`` with the closest entry in "
+        "that roster -- abs-difference argmin over the parsed dates at :311-319, called at "
+        ":454-456 -- or with ``dates[0]`` when the caller passed nothing (:457-458). The value "
+        "that finally goes into the URL is therefore selected *out of* a response, and no "
+        "declaration surface can say 'snap this parameter to the nearest published one'. "
+        "param.relative_default is the nearest shipped spelling and it is not this: that "
+        "entry's carrier is a literal default refused at declaration time, while this rule needs "
+        "the response in hand.",
+        probe=DeclarationProbe(call="ModelSpec", keyword="nearest_from_response"),
     ),
     CapabilityEntry(
         capability="flow.url_template",

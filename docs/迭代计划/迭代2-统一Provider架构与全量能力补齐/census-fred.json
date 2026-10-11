@@ -320,12 +320,15 @@
       "needs_engine_capability": [
         "conditional_endpoint_branch",
         "branching_base_url",
-        "param_value_mapping"
+        "param_value_mapping",
+        "rows_from_object_keys",
+        "derived_columns",
+        "comparison_row_filter"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/fred/openbb_fred/__init__.py:91",
-      "notes": "Base path branches between the geofred regional-data and series-data endpoints on the series-group flag (:228,:238) with the season value mapped into the query string (:229-235); the payload key path past :239 was not opened, so no row-extraction claim beyond a nested key is made."
+      "notes": "Base path branches between the geofred regional-data and series-data endpoints on the series-group flag (:228,:238) with the season value mapped into the query string (:229-235); the payload key path past :239 was not opened, so no row-extraction claim beyond a nested key is made. C93 opened it and the row-extraction face is the bigger blocker: the records are not a list at all -- _data = data['meta']['data'] is an OBJECT keyed by date (:268-269), iterated as keys = list(_data.keys()) then _row = _data[key] (:271-272), so each published date is an object member whose value is one row's list. That is rows_from_object_keys (path.object_keys), which resolve_rows refuses with 'if not isinstance(current, list)'. Two more mechanisms sit inside that same loop: the member key is stamped into each record as item['date'] and units is stamped as item['units'] (:272-275, derived_columns), and the end_date cut is an ORDERED comparison against the parsed key -- datetime.strptime(key, '%Y-%m-%d').date() <= query.end_date (:276-279) -- which is comparison_row_filter, not rows.filter, because RowFilterOp has no comparison operator (#87). One face has no canonical and is recorded here rather than folded: the model returns AnnotatedResult(result=results, metadata=meta) (:267,:282), so the response's meta dict minus 'data' is part of the output contract, and no label in the vocabulary names a metadata channel."
     },
     {
       "task_id": "OBB2-fred-FredReleaseTable",

@@ -19,12 +19,16 @@
       "row_extraction": "nested_key",
       "join_needed": false,
       "needs_engine_capability": [
-        "conditional_endpoint_branch"
+        "conditional_endpoint_branch",
+        "preflight_directory_lookup",
+        "nearest_published_date_snap",
+        "sentinel_value_nulling",
+        "published_value_rescale"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/federal_reserve/openbb_federal_reserve/models/central_bank_holdings.py:317",
-      "notes": "SomaHoldings util: holding_type/cusip/summary/monthly/wam branch picks 6+ different /api JSON paths"
+      "notes": "SomaHoldings util: holding_type/cusip/summary/monthly/wam branch picks 6+ different /api JSON paths (six returns at central_bank_holdings.py:332-359 keyed on cusip/summary/monthly/wam x security_type). The branch is the smallest of its blockers: every call first fetches the roster of valid as-of dates (ny_fed_api.py:358-365 hits list_as_of) and builds the URL from the resolved date (_get_endpoints(date=as_of) at :467), which flow.preflight_lookup names; then it REPLACES the caller's as_of with the nearest published date -- get_nearest_date does an abs-difference argmin over the parsed roster at :311-319 and is called at :454-456, with dates[0] at :457-458 when nothing was passed. That selection rule is what nearest_published_date_snap names; flow.preflight_lookup only says the address is not known beforehand. Response-side it also nulls sentinels (Data model empty_strings validator at :283-291 maps three published spellings to None: two literal single quotes, the empty string and the digit 0) and rescales published percents (normalize_percent at :277-281 divides by 100); both validators sit on FederalReserveCentralBankHoldingsData (class at :92, the Fetcher only starts at :294), so these are response rewrites and not query handling. One further mechanism has no canonical at all: query.cusip is comma-joined into a single value at :332-335, which is a list-valued QUERY parameter, whereas path.list_segment names a '+'-joined path segment -- recorded here, folded under the #86 vocabulary debt."
     },
     {
       "task_id": "OBB2-federal_reserve-FederalFundsRate",
