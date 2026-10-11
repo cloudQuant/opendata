@@ -13,16 +13,20 @@ from typing import Any
 
 from scripts.quality.source_layout import VENDOR_ROOT
 
-EVIDENCE_DIR = Path("docs/evidence/C74")
+EVIDENCE_DIR = Path("docs/evidence/C89")
 SCAN_REL = EVIDENCE_DIR / "ported-bandit-scan.json"
 TRIAGE_REL = EVIDENCE_DIR / "ported-security-triage.json"
 #: The root the bundle is read in. C65 wrote its scan under the retired ``opendata_http`` name, and
 #: every clause below reads paths in that identity space. A relocation of the ported tree -- or a
 #: bundle older than ``MAX_EVIDENCE_AGE`` -- has to be answered by re-running
 #: ``scripts/quality/ported_security_evidence_build.py`` for the new round, never by loosening a
-#: check.
+#: check. C89 is such a re-run, not a re-ageing: the source hash the C74 bundle bound
+#: (0499005a027b7105...29def) is the hash this round's scan binds too, so the tree is unchanged and
+#: only the 24-hour window moved; the two constants below therefore change together with the
+#: bundle's ``archive_round``, and ``archive_round_in_dir`` is what refuses a bundle written under
+#: one round and read from another.
 PORT_ROOT = VENDOR_ROOT
-EXPECTED_ROUND = "C74"
+EXPECTED_ROUND = "C89"
 EXPECTED_SCANNER_VERSION = "1.9.4"
 EXPECTED_SOURCE_HASH_ALGORITHM = "sorted relative POSIX path UTF-8 + NUL + file bytes + NUL"
 EXPECTED_REVIEW_AUTHORIZATION = "用户直接回复：你帮我直接审阅"

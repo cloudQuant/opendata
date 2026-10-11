@@ -1,4 +1,27 @@
-command: PYTHONPATH=. python docs/evidence/C89/gitleaks-counterfactual.py | rc=0 | NOT TOUCHED: no network request, no database/DDL, no engine execution, no `make gate`, no census/registry/ledger edits (the only external process is the pinned docs/quality/secret-scan.json argv reading this repo's own git history). Arm MOVED: every one of the 10 arms disagrees with its no-regex twin; the tally reader was also broken by its own two-sided control, twice -- see the instrument-fault log below the face.
+command: PYTHONPATH=. python docs/evidence/C89/gitleaks-counterfactual.py
+rc=0 | git HEAD at run time = bddbb06 (fix(evidence): C89 清门禁 member 2/3/5/8 的实测债，泄漏计数改成从扫描器输出面读) | captured 2026-10-11T12:55:37+00:00
+NOT TOUCHED: no network request, no database or DDL, no engine execution, no `make gate`, no
+  census/registry/ledger edits. The only external processes are the pinned
+  docs/quality/secret-scan.json argv, which reads this repo's own git history, and `git` committing
+  fixtures inside throwaway `mktemp -d` repositories that the instrument deletes at the end of each
+  arm; this repo's history is read, never written.
+Arm MOVED: 10/10 arms agreed with the rule-id set each one declares, and all
+  4 of the instrument's shipped/no-regex fixture twins disagree with each other
+  ([] vs ['generic-api-key']; [] vs ['generic-api-key']; ['github-pat'] vs ['generic-api-key', 'github-pat']; [] vs ['generic-api-key']), so a silent arm here is measured by a loud one rather than assumed. The tally
+  reader's own control printed 5 faces (a zero, three non-zeros and one refusal), so no
+  reading here is a silence dressed as green.
+gate pair, both faces read from logs rather than retyped: gate pass 4 ran member 3 at
+  rc=2 and printed '5:59PM WRN leaks found: 1' over 349 commits scanned; this run's
+  gate arm, after this round replaced its own unpushed tip commit, prints
+  '7:24PM INF no leaks found' over the same 349 commits scanned. The history that member 3 reads therefore no
+  longer contains the flagged print at all, and no exemption was added for it: .gitleaks.toml carries
+  5 generic-api-key regexes at this tip, and its bytes here against the commit this round
+  replaced (byte-identical) -- the exemption that closes the intrinio kwarg shape is
+  the pre-existing one, and the census print is closed by changing the print.
+durable carrier for the old bytes: they are rebuilt at measurement time from
+  docs/evidence/C89/census-staged-112.json by docs/evidence/C89/member3-secret-triage.py, so the
+  reading does not depend on a commit that this round made unreachable.
+
 == the finding this round is triaging (read back out of git, not retyped) ==
   committed path:line   opendata/data/providers/intrinio/provider.py as of 083b7e4
   fixture bytes       91 chars, credentials=(CredentialSpec(name="api_key", environment_variable...
@@ -34,11 +57,24 @@ command: PYTHONPATH=. python docs/evidence/C89/gitleaks-counterfactual.py | rc=0
   OK  '5:20PM INF no leaks found'              parsed=0 declared=0 
   OK  '5:20PM WRN 11 leaks found'              parsed=11 declared=11 
   OK  '5:20PM WRN leaks found: 13'             parsed=13 declared=13 
+  OK  '\x1b[90m5:24PM\x1b[0m \x1b[33mWRN\x1b[0m \x1b[1mleaks found: 1\x1b[0m' parsed=1 declared=1 
   OK  '░    gitleaks'                          parsed=None declared=None no `leaks found` / `no leaks found` line appears in the scan output
-  argv[0]=gitleaks rc=0 leaks_found=0 :: [90m5:24PM[0m [32mINF[0m [1mno leaks found[0m
+  argv[0]=gitleaks rc=0 leaks_found=0 :: 7:30PM INF no leaks found
 COUNTERFACT PASS: 10 arms agreed with their declared rule sets; the gate's own scan returns rc=0
 
-== instrument-fault log for this face (two wrong readers this file shipped, both caught by a control that could disagree) ==
-  draft 1 selected candidate lines with `"leaks" in line`, so gitleaks' startup banner (`░    gitleaks`) won the match, no tally regex hit, and the count came from a defaulted 0. The printed face was `leaks_found=0 :: -` -- a silence dressed as a green reading.
-  draft 2 required the word `found` too, then took the FIRST digit run of the line, which for `5:20PM WRN 11 leaks found` is the clock (`5`), not the count. Its own control arm declared 11 and read 5, so the harness exited 1 before archiving.
-  shipped reader: a candidate line must contain the words `leaks found`, and the count is anchored to the digits adjacent to them (`N leaks found` or `leaks found: N`); a scan with no such line raises instead of defaulting. The four control faces above are 0 / 11 / 13 / LookupError, and the live line this run parsed is quoted verbatim below.
+== instrument-fault log for this face (three wrong readers this file shipped, each caught by a control that could disagree) ==
+  draft 1 selected candidate lines with `"leaks" in line`, so gitleaks' startup banner
+  (`░    gitleaks`) won the match, no tally regex hit, and the count came from a defaulted 0.
+  The printed face was `leaks_found=0 :: -` -- a silence dressed as a green reading.
+  draft 2 required the word `found` too, then took the FIRST digit run of the line, which for
+  `5:20PM WRN 11 leaks found` is the clock (`5`), not the count. Its own control arm declared 11 and
+  read 5, so the harness exited 1 before archiving.
+  draft 3 shipped the anchored reader but still selected nothing against the live scanner: gitleaks
+  colourises its log runs even through a pipe, and in `\x1b[1mleaks found: 1` the escape that opens
+  the bold run sits directly against the `l`, so `\bleaks` never matches and the reader raised
+  `SCAN FAIL: the live scanner printed no tally`. It failed loudly rather than defaulting, which is
+  why it is in this log and not in a green face. The fix strips ANSI colour before selection, and the
+  coloured line is now itself one of the control faces above (declared 1, parsed 1).
+  Member 3's own judge never met any of the three because it reads only the exit code
+  (scripts/quality/secret_scan_check.py); the count is this instrument's claim, so the control that
+  catches it belongs here.

@@ -407,19 +407,16 @@
     },
     "AC-5|07|68f3347f": {
       "state": "proven",
-      "round": "C65",
-      "date": "2026-10-01",
-      "command": "Anaconda base outer driver invokes fixed Python scripts/quality/acceptance_item_probe.py --all --json docs/evidence/C65/item-readings-current.json; actual argv and CHECK_EXIT in docs/evidence/C65/item-readings-current.txt",
+      "round": "C89",
+      "date": "2026-10-11",
+      "command": "python scripts/quality/ported_security_evidence_build.py（现扫搬运树 + 写两份档案到 docs/evidence/C89/）→ python scripts/quality/acceptance_item_probe.py --item 'AC-5|07'（判据 scripts/quality/ported_security_evidence.py 现读现判，档案不在 24h 窗口内即报 stale）",
       "evidence": [
-        "docs/evidence/C65/item-readings-current.json",
-        "docs/evidence/C65/item-readings-current.txt",
-        "docs/evidence/C65/acceptance-review-current.md",
-        "docs/evidence/C65/ported-bandit-scan.json",
-        "docs/evidence/C65/ported-security-triage.json",
-        "docs/evidence/C65/ported-security-review.md",
-        "docs/evidence/C65/security-brand-independent.txt"
+        "docs/evidence/C89/ported-bandit-scan.json",
+        "docs/evidence/C89/ported-security-triage.json",
+        "scripts/quality/ported_security_evidence_build.py",
+        "scripts/quality/ported_security_evidence.py"
       ],
-      "note": "固定Bandit1.9.4扫描325py：1048finding、15规则、31HIGH、0错误；用户授权当前AI主线程逐规则triage全部finding身份留档。此项只证明扫描及审阅，31HIGH/TLS/eval/pickle等仍未修复，不宣称安全就绪。"
+      "note": "本轮是**重跑而不是续期**：判据把档案绑在 24 小时窗口（`MAX_EVIDENCE_AGE`）上，C65/C74 的档案过期后 AC-5|07 由 stale-proof 翻红，唯一合法修法就是重扫重审。扫描器 bandit 1.9.4（python 3.11.8）对搬运树 `opendata/data/providers/akshare/_vendor` 现扫 325 个 py：1048 条 finding / 15 条规则 / 31 条 HIGH，`scanner_exit=1`（bandit 有 finding 时按设计退 1，不是扫描器故障；finding 里最大一类是 929 条 B113 verify=False 的 HTTP 调用）。两本档案的 `source_sha256` 与 C74 那本逐字相等（都是 0499005a027b7105…），说明搬运树这轮没动、动的只有窗口；因此逐规则处置按 `carried_from` 从 C74 结转，结转的前提是身份逐条比对 1048/1048 全等（相对路径+规则+行号，增减均为 0），规则与 JS 引用各核 4 条，扫描字节另算 `scan_sha256`（da976114eed81379…）。判据常量随档案一起从 C74 移到 C89（`EVIDENCE_DIR`/`EXPECTED_ROUND` 同改），`archive_round_in_dir` 会拒绝在别轮次目录下读到本轮轮次名的档案，所以「把旧档案改个日期」在这里过不去。此项只证明扫描与逐规则审阅完成并留档：31 条 HIGH 与 TLS 校验关闭、eval、pickle、929 条 B113 **均未修复**（`security_fixed=false`、`unresolved_risks=true`），不构成安全就绪或发布准入。逐规则处置文本本轮未重写，授权面仍为用户直接回复「你帮我直接审阅」。"
     },
     "AC-6|01|4f5b0f7b": {
       "state": "proven",
