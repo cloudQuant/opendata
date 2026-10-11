@@ -34,6 +34,10 @@ CANONICAL_SCENARIOS = {
     ("cboe", "IndexConstituents"): "成分股快照：取出一只欧洲指数在源端发布的全部成分及其盘中报价",
     ("cboe", "IndexSearch"): "指数检索：在 cboe 美国指数目录中按代码或名称与描述筛选指数",
     (
+        "cboe",
+        "EquitySearch",
+    ): "股票目录检索：下载 cboe 期权公司目录 CSV 并按代码或公司名筛选上市公司",
+    (
         "federal_reserve",
         "MoneyMeasures",
     ): "货币供应量月表：取出 H.6 发布表在五行元数据之后的七个货币总量序列",

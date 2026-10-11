@@ -67,7 +67,7 @@
       "cross_file": "",
       "engine_work": true,
       "present": true,
-      "production_declarations": 35,
+      "production_declarations": 39,
       "proof_file": "opendata/data/providers/_engine/http_json.py",
       "read_from_disk": false,
       "status": "present",
@@ -118,7 +118,7 @@
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 5,
+      "production_declarations": 6,
       "proof_file": "opendata/data/providers/_engine/http_json.py",
       "read_from_disk": false,
       "status": "present",
@@ -152,7 +152,7 @@
       "cross_file": "opendata/data/providers/_engine/spec.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 2,
+      "production_declarations": 3,
       "proof_file": "opendata/data/providers/_engine/decoders.py",
       "read_from_disk": false,
       "status": "present",
@@ -713,7 +713,7 @@
       "cross_file": "",
       "engine_work": true,
       "present": true,
-      "production_declarations": 1,
+      "production_declarations": 2,
       "proof_file": "opendata/data/providers/_engine/spec.py",
       "read_from_disk": true,
       "status": "present",
@@ -809,36 +809,37 @@
       "_vendor",
       "__pycache__"
     ],
-    "modules_scanned": 151,
+    "modules_scanned": 152,
     "production_declarations_by_file": {
       "columns.rename": {
-        "opendata/data/providers/cboe/specs.py": 15,
+        "opendata/data/providers/cboe/specs.py": 19,
         "opendata/data/providers/federal_reserve/specs.py": 20
       },
       "columns.select": {
-        "opendata/data/providers/cboe/specs.py": 3,
+        "opendata/data/providers/cboe/specs.py": 4,
         "opendata/data/providers/federal_reserve/specs.py": 2
       },
       "decode.delimited": {
+        "opendata/data/providers/cboe/specs.py": 1,
         "opendata/data/providers/federal_reserve/specs.py": 2
       },
       "flow.url_template": {
         "opendata/data/providers/cboe/specs.py": 1
       },
       "rows.filter": {
-        "opendata/data/providers/cboe/specs.py": 1
+        "opendata/data/providers/cboe/specs.py": 2
       }
     },
     "production_declarations_per_capability": {
       "columns.cast": 0,
       "columns.derive": 0,
       "columns.null_sentinel": 0,
-      "columns.rename": 35,
+      "columns.rename": 39,
       "columns.rescale": 0,
       "columns.response_dependent_selection": 0,
-      "columns.select": 5,
+      "columns.select": 6,
       "decode.archive_member": 0,
-      "decode.delimited": 2,
+      "decode.delimited": 3,
       "decode.delimited_headerless": 0,
       "decode.geojson": 0,
       "decode.html_table": 0,
@@ -871,7 +872,7 @@
       "request.caller_url": 0,
       "request.graphql": 0,
       "request.serialised_param": 0,
-      "rows.filter": 1,
+      "rows.filter": 2,
       "rows.order_limit": 0,
       "shape.columnar": 0,
       "shape.nested_data_message": 0
@@ -3981,7 +3982,7 @@
       }
     ]
   },
-  "round_id": "C87",
+  "round_id": "C88",
   "schema_version": 1,
   "taxonomy": {
     "canonical_capability_count": 45,

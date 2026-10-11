@@ -29,6 +29,7 @@ NATIVE_MODEL_DOMAINS = (
     "bls_search",
     "bls_series",
     "cboe_available_indices",
+    "cboe_equity_search",
     "cboe_index_constituent_quotes",
     "cboe_index_search",
     "currency_reference_rates",
@@ -117,14 +118,14 @@ def test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tab
         reports, scope = alert_matrix.collect_freshness(engine, expected=EXPECTED)
         tables = alert_matrix.warehouse_tables()
 
-        assert len(legs) == 36
-        assert sum(len(sources) for sources in legs.values()) == 49
+        assert len(legs) == 37
+        assert sum(len(sources) for sources in legs.values()) == 50
         assert scope.domains == 20
         assert scope.deferred_domains == NATIVE_MODEL_DOMAINS
-        assert scope.deferred_legs == 16
+        assert scope.deferred_legs == 17
         assert scope.source_legs + scope.unmapped_legs == 33
-        assert scope.domains + len(scope.deferred_domains) == 36
-        assert scope.source_legs + scope.unmapped_legs + scope.deferred_legs == 49
+        assert scope.domains + len(scope.deferred_domains) == 37
+        assert scope.source_legs + scope.unmapped_legs + scope.deferred_legs == 50
         assert len(reports) == scope.domains + scope.source_legs
         assert len(statements) == len(reports) == 30
         assert all(
@@ -140,7 +141,7 @@ def test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tab
         )
         scope_dict = scope.as_dict()
         assert scope_dict["deferred_domains"] == list(NATIVE_MODEL_DOMAINS)
-        assert scope_dict["deferred_legs"] == 16
+        assert scope_dict["deferred_legs"] == 17
     finally:
         engine.dispose()
 

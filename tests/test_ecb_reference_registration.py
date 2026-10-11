@@ -202,13 +202,15 @@ def test_real_ecb_bindings_register_three_canonical_models_without_auto_promotio
     assert len(list_providers()) == 34
     # 46 capabilities and 13 descriptors held while federal_reserve registered nothing and cboe
     # declared two models; the engine wave added cboe::IndexSearch plus the two Fed release-table
-    # models, so both counts grew by the declarations themselves. Auto routing stayed at 23.
-    assert len(registry.capabilities()) == 49
-    assert len(descriptors) == 16
+    # models, and the C88 row added cboe::EquitySearch, so both counts grew by the declarations
+    # themselves. Auto routing stayed at 23.
+    assert len(registry.capabilities()) == 50
+    assert len(descriptors) == 17
     assert {item.model for item in descriptors if item.source == "cboe"} == {
         "AvailableIndices",
         "IndexConstituents",
         "IndexSearch",
+        "EquitySearch",
     }
     assert all(item.verified is False for item in descriptors if item.source == "cboe"), (
         "cboe stays outside auto routing"

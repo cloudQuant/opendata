@@ -264,11 +264,12 @@ class TestProviderDescriptor:
             assert domain not in domains
             with pytest.raises(LookupError):
                 require_domain(domain)
-        # The retraction removed oecd's two entries and nothing else; the table keeps its 36
-        # after the two federal_reserve engine domains joined the 34.
-        assert len(domains) == 36
+        # The retraction removed oecd's two entries and nothing else; the table keeps its 37 after
+        # the two federal_reserve engine domains joined the 34 and cboe's equity-search domain did.
+        assert len(domains) == 37
         assert sorted(d for d in domains if d.startswith("cboe_")) == [
             "cboe_available_indices",
+            "cboe_equity_search",
             "cboe_index_constituent_quotes",
             "cboe_index_search",
         ]

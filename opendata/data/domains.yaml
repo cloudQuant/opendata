@@ -288,6 +288,16 @@ domains:
     filter_dims: [symbol]
     storage_mode: transient
     permissions: [query]
+  cboe_equity_search:
+    display_name: CBOE 美国期权公司目录检索
+    rest_path: equity/cboe-equity-search
+    contract: CboeEquitySearchListing
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [symbol]
+    filter_dims: [symbol]
+    storage_mode: transient
+    permissions: [query]
   federal_reserve_money_measures:
     display_name: 美联储货币供应量月表
     rest_path: macro/federal-reserve-money-measures

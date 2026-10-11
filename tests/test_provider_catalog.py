@@ -82,7 +82,7 @@ class _CapabilityOnlyFetcher:
         self.capability = capability
 
 
-def test_catalog_contains_34_sources_and_only_49_fetcher_bindings() -> None:
+def test_catalog_contains_34_sources_and_only_50_fetcher_bindings() -> None:
     """The frozen catalog denominator, split into the two populations that make it up.
 
     49 bindings are 44 hand-written fetchers plus 5 declarative engine models. The split is counted
@@ -93,7 +93,7 @@ def test_catalog_contains_34_sources_and_only_49_fetcher_bindings() -> None:
     engine-driven is read the way the runtime reads it -- a fetcher carrying ``model_spec`` -- not
     from a hand-maintained id list, so the count cannot be kept green by editing a list.
 
-    How the 49 is built, since a frozen sum hides a retraction: 46 at the wave-1 baseline, +3 from
+    How the 50 is built, since a frozen sum hides a retraction: 46 at the wave-1 baseline, +4 from
     the cboe declarations, -2 for the oecd rows that shipped as hand-written fetchers first and had
     their declarations withdrawn, +2 for the federal_reserve CSV rows. A withdrawn declaration is
     counted out rather than left to register, so the population this assert freezes is the one the
@@ -132,8 +132,8 @@ def test_catalog_contains_34_sources_and_only_49_fetcher_bindings() -> None:
         f"{source}::{binding.canonical_model_ids[0]}" for source, binding in engine_bindings
     }
     assert engine_ids == declared_ids, "an engine binding's canonical id is the model it generates"
-    assert len(bindings) == 49
-    assert len(engine_bindings) == 5
+    assert len(bindings) == 50
+    assert len(engine_bindings) == 6
     assert len(bindings) - len(engine_bindings) == 44
     print(
         f"\ncatalog bindings: total={len(bindings)} engine={len(engine_bindings)} "

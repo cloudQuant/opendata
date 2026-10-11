@@ -58,6 +58,9 @@ class TestShippedMap:
         # IndexSearch 与两条 federal_reserve 名称没有上游 fetcher_dict 行可抄：它们由
         # registry 投影（list_model_descriptors）带进 map，出处是本地 provider.py/specs.py
         # 的 scenario 声明，同样 verified=False。
+        # EquitySearch 走的是 IndexSearch 同一条投影路：`provider-inventory.yaml` 的 cboe 行
+        # 确有 `EquitySearch` 这个模型名（`models: […, EquitySearch, …]`），但它进本表的
+        # 出处仍是本地 binding 的 scenario，不是抄来的上游行。
         assert confirmed == {
             "EquityHistorical",
             "ConsumerPriceIndex",
@@ -76,6 +79,7 @@ class TestShippedMap:
             "AvailableIndices",
             "IndexConstituents",
             "IndexSearch",
+            "EquitySearch",
             "MoneyMeasures",
             "TreasuryRates",
         }

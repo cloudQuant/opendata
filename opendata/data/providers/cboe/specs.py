@@ -1,11 +1,13 @@
 """Declarable cboe provider models.
 
-Three of cboe's eleven upstream models are single-GET, JSON, path-addressed endpoints and are
-declared here as data (:class:`~opendata.data.providers._engine.spec.ModelSpec`). The other eight
-need composition the declaration format cannot express -- a pre-flight directory lookup, a
-four-request join, CSV rather than JSON, delegation to another fetcher, or regex parsing of an
-option contract symbol -- and are recorded in ``NOT_DECLARABLE`` below rather than silently
-dropped from the task count.
+Four of cboe's eleven upstream models are single-GET, path-addressed endpoints and are declared
+here as data (:class:`~opendata.data.providers._engine.spec.ModelSpec`). Three of them read a JSON
+document; ``EquitySearch`` downloads a CSV, which the engine's delimited body decoder
+(:class:`~opendata.data.providers._engine.spec.DecoderSpec`, capability ``decode.delimited``) now
+reads. The other seven need composition the declaration format cannot express -- a pre-flight
+directory lookup whose answer decides a second request, a four-request join, delegation to another
+fetcher, or regex parsing of an option contract symbol -- and are recorded in
+``NOT_DECLARABLE`` below rather than silently dropped from the task count.
 
 The third one is a *search*: it reads the same directory document ``AvailableIndices`` reads and
 keeps the rows whose symbol, name or description contains the caller's needle. That selection is
@@ -17,6 +19,7 @@ from __future__ import annotations
 
 from opendata.data.providers._engine.spec import (
     ColumnSpec,
+    DecoderSpec,
     ModelSpec,
     ParamSpec,
     RowFilterSpec,
@@ -24,6 +27,10 @@ from opendata.data.providers._engine.spec import (
 
 #: Upstream base for the public ``cdn.cboe.com`` JSON API. No model sends a credential.
 CBOE_BASE_URL = "https://cdn.cboe.com"
+
+#: Upstream base for the ``www.cboe.com`` downloads. ``EquitySearch`` reads a CSV off this origin,
+#: and no model sends a credential.
+CBOE_WEBSITE_BASE_URL = "https://www.cboe.com"
 
 #: The index directory, which is also the pre-flight other cboe models consult.
 AVAILABLE_INDICES = ModelSpec(
@@ -203,13 +210,88 @@ INDEX_SEARCH = ModelSpec(
     ),
 )
 
-#: Every upstream cboe model, and why the remaining eight are not declared here.
+#: The US options company directory, published as a CSV download and searched client-side.
+EQUITY_SEARCH = ModelSpec(
+    model="EquitySearch",
+    domain="cboe_equity_search",
+    asset_class="equity",
+    period="snapshot",
+    market="us",
+    base_url=CBOE_WEBSITE_BASE_URL,
+    path="/us/options/symboldir/equity_index_options/",
+    rows_pointer="",
+    params=(
+        ParamSpec(
+            "query",
+            "str",
+            note="Search needle. Declared without a default so a query that omits it sends no "
+            "needle at all; the declared filters then have nothing to select on, which is what "
+            "upstream's empty default publishes -- the whole directory.",
+        ),
+        ParamSpec(
+            "is_symbol",
+            "bool",
+            default=False,
+            note="Which leg to take: True searches the listed symbols, False -- upstream's "
+            "default -- searches the company names.",
+        ),
+    ),
+    columns=(
+        ColumnSpec("symbol", "str", source_key="Stock Symbol", required=True, units=""),
+        ColumnSpec("name", "str", source_key="Company Name"),
+        ColumnSpec("dpm_name", "str", source_key="DPM Name"),
+        ColumnSpec("post_station", "str", source_key="Post/Station"),
+    ),
+    scenario="股票目录检索：下载 cboe 期权公司目录 CSV 并按代码或公司名筛选上市公司",
+    error_prefix="CBOE",
+    static_query=(("download", "csv"),),
+    decoder=DecoderSpec(kind="csv"),
+    row_filters=(
+        RowFilterSpec(
+            op="contains",
+            columns=("symbol", "Stock Symbol"),
+            value_param="query",
+            when_param="is_symbol",
+            when_value="True",
+            ignore_case=True,
+        ),
+        RowFilterSpec(
+            op="contains",
+            columns=("name", "Company Name"),
+            value_param="query",
+            when_param="is_symbol",
+            when_value="False",
+            ignore_case=True,
+        ),
+    ),
+    notes=(
+        "The CSV body *is* the record list, so rows_pointer is empty and the declared decoder kind "
+        "is csv. The path carries no query string: upstream's ``?download=csv`` is the payload "
+        "format the page itself asks for, so it is declared as ``static_query`` -- a constant of "
+        "the upstream code rather than part of its accepted query model -- and a caller cannot "
+        "re-point this reviewed model at the HTML page by passing one. The two record keys each "
+        "filter leg tests are published in BOTH spellings because the filter reads the record the "
+        "decoder hands back while the normalized name is what this package publishes; a record "
+        "that carries neither is a non-match, never a shape failure. ``symbol`` is required "
+        "because upstream keys the whole directory on it, and the other three are its optional "
+        "published columns. Three upstream facts are deliberately not declared: the "
+        "``astype(str)`` cast and the NaN-to-null cleanup applied after the read -- the engine "
+        "publishes the text the body carries -- and ``use_cache``, which no declaration can "
+        "express. The declared source keys are the TRIMMED header spellings, not upstream's rename "
+        "keys: ``_header_names`` strips every header cell and ``_row`` strips every cell, so "
+        "upstream's leading-space keys -- ``' Stock Symbol'``, ``' DPM Name'``, "
+        "``' Post/Station'`` -- are what pandas sees while the trimmed forms are what this engine "
+        "sees, and a declaration copying upstream's spelling matches no column at all. Neither "
+        "spelling is yet SOURCE_VERIFIED against a live body."
+    ),
+)
+
+#: Every upstream cboe model, and why the remaining seven are not declared here.
 NOT_DECLARABLE: dict[str, str] = {
     "EquityHistorical": "pre-flight index directory decides the URL; date window filtered "
     "client-side after a full download",
     "EtfHistorical": "alias of EquityHistorical in the upstream package",
     "EquityQuote": "four requests joined on symbol; percent columns scaled after the call",
-    "EquitySearch": "CSV download, not JSON",
     "FuturesCurve": "delegates to the historical and quote fetchers for a VX symbol list",
     "IndexHistorical": "interval branch selects between two URL roots and drops volume",
     "IndexSnapshots": "region branch addresses two unrelated paths and drops different columns",

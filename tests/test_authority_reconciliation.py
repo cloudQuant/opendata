@@ -67,6 +67,7 @@ NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
         "bls_search",
         "bls_series",
         "cboe_available_indices",
+        "cboe_equity_search",
         "cboe_index_constituent_quotes",
         "cboe_index_search",
         "currency_reference_rates",

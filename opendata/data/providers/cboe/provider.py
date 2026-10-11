@@ -29,6 +29,12 @@ PROVIDER = Provider(
             canonical_model_ids=("IndexConstituents",),
             scenario="成分股快照：取出一只欧洲指数在源端发布的全部成分及其盘中报价",
         ),
+        LazyFetcherBinding(
+            "opendata.data.providers.cboe.models.equity_search",
+            "CboeEquitySearchFetcher",
+            canonical_model_ids=("EquitySearch",),
+            scenario="股票目录检索：下载 cboe 期权公司目录 CSV 并按代码或公司名筛选上市公司",
+        ),
     ),
     credentials=(),
 )

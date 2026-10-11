@@ -85,7 +85,7 @@ class TestProviderRegistration:
         provider = get_provider("cboe")
         assert "reserved" not in provider.description.lower()
         assert provider.credentials == ()
-        assert len(provider.fetcher_bindings) == 3
+        assert len(provider.fetcher_bindings) == 4
 
     def test_registry_publishes_every_declared_model(self) -> None:
         registry = ProviderRegistry()
@@ -93,6 +93,7 @@ class TestProviderRegistration:
         domains = {c.domain for c in capabilities}
         assert domains == {
             "cboe_available_indices",
+            "cboe_equity_search",
             "cboe_index_constituent_quotes",
             "cboe_index_search",
         }
@@ -208,10 +209,11 @@ class TestDeclarationRejectsMalformedTemplate:
 
 
 def test_pilot_records_the_non_declarable_remainder_by_name() -> None:
-    """The honest denominator: eight of eleven still need composition a declaration cannot express.
+    """The honest denominator: seven of eleven still need composition a declaration cannot express.
 
-    ``IndexSearch`` left this set when the engine grew ``row_filters``. Every cboe upstream model
-    is named exactly once across the declared three and the remaining eight, so a model cannot
+    ``IndexSearch`` left this set when the engine grew ``row_filters`` and ``EquitySearch`` left it
+    when the engine grew ``decode.delimited``, the CSV body decoder. Every cboe upstream model is
+    named exactly once across the declared four and the remaining seven, so a model cannot
     leave the remainder without arriving in the declared column -- the two sets are checked
     against each other, not just against their own literals.
     """
@@ -219,14 +221,18 @@ def test_pilot_records_the_non_declarable_remainder_by_name() -> None:
         "EquityHistorical",
         "EtfHistorical",
         "EquityQuote",
-        "EquitySearch",
         "FuturesCurve",
         "IndexHistorical",
         "IndexSnapshots",
         "OptionsChains",
     }
-    assert len(specs.NOT_DECLARABLE) == 8
-    declared = {AVAILABLE_INDICES.model, INDEX_CONSTITUENTS.model, specs.INDEX_SEARCH.model}
-    assert len(declared) == 3
+    assert len(specs.NOT_DECLARABLE) == 7
+    declared = {
+        AVAILABLE_INDICES.model,
+        INDEX_CONSTITUENTS.model,
+        specs.INDEX_SEARCH.model,
+        specs.EQUITY_SEARCH.model,
+    }
+    assert len(declared) == 4
     assert declared.isdisjoint(specs.NOT_DECLARABLE)
     assert len(declared | set(specs.NOT_DECLARABLE)) == 11

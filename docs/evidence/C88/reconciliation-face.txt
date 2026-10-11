@@ -1,0 +1,34 @@
+roadmap generation        : C88
+census rows               : 238
+present capabilities      : 8 -> ['columns.rename', 'columns.select', 'decode.archive_member', 'decode.delimited', 'flow.composite_key_segment', 'flow.url_template', 'param.value_mapping', 'rows.filter']
+rows needing only present : 14
+partition check           : 14 == 14 -> True
+
+SHIPPED     OBB2-cboe-EquitySearch             needs=['decode.delimited', 'rows.filter']
+NO_PACKAGE  OBB2-intrinio-CurrencyPairs        needs=['columns.rename', 'rows.filter']
+NO_PACKAGE  OBB2-intrinio-EquitySearch         needs=['columns.rename', 'param.value_mapping']
+NO_PACKAGE  OBB2-intrinio-HistoricalDividends  needs=['columns.rename', 'param.value_mapping']
+BLOCKED     OBB2-oecd-CompositeLeadingIndicator needs=['decode.delimited', 'flow.composite_key_segment']
+            refusal: params.value_map and path.list_segment: every country is looked up in COUNTRIES and joined with '+' (composite_leading_indicator.py:176) into one dotted key with empty positions (:181); fixed query keys (:183); renamed (:202) and divided by 100 (:214) = columns.compose
+BLOCKED     OBB2-oecd-ConsumerPriceIndex       needs=['decode.delimited', 'flow.composite_key_segment', 'rows.filter']
+            refusal: params.value_map: harmonized->methodology (consumer_price_index.py:172), frequency[0].upper() (:179), units dict (:180-184), '' for all expenditure (:185-187) and '+'-joined codes (:189-193) in one segment (:203-205); columns.compose names/dates/scale (:242-244, :249-250); row_filter.comparison window (:246-248)
+BLOCKED     OBB2-oecd-CountryInterestRates     needs=['decode.delimited', 'flow.composite_key_segment']
+            refusal: params.value_map and path.list_segment: COUNTRY_TO_CODE_IR codes joined with '+' (country_interest_rates.py:126) into the key, whose duration position is a DURATION_DICT lookup (:134); fixed query keys (:136); renamed (:147), /100 (:152) and set-indexed before to_dict (:155-160) = columns.compose
+BLOCKED     OBB2-oecd-GdpForecast              needs=['decode.delimited', 'flow.composite_key_segment']
+            refusal: params.value_map: measure_dict[query.units] (gdp_forecast.py:171-178) and '+'-joined codes (:192) compose the key (:203); fixed query keys (:205); columns.compose: renamed (:222), int cast or /100 on a units-dependent branch (:236-240); rows dropped by value comparisons (:233, :242) = row_filter.comparison
+BLOCKED     OBB2-oecd-GdpNominal               needs=['decode.delimited', 'flow.composite_key_segment']
+            refusal: params.value_map/path.list_segment: '+'-joined COUNTRY_TO_CODE_GDP codes (gdp_nominal.py:149) into a key with empty positions (:155), its dataflow literal rewritten per unit (:153-154, :160); columns.compose: apply_map (:183), date conversion (:184), x1e6 (:187); row_filter.comparison for the date window (:185)
+BLOCKED     OBB2-oecd-GdpReal                  needs=['decode.delimited', 'flow.composite_key_segment']
+            refusal: same composition as GdpNominal: '+'-joined code map (gdp_real.py:125) into the key (:131); fixed query keys (:133); columns.compose: apply_map/str.replace (:157), date conversion (:158), x1e6 scaling (:160); row_filter.comparison for the date window (:159)
+BLOCKED     OBB2-oecd-HousePriceIndex          needs=['decode.delimited', 'flow.composite_key_segment']
+            refusal: params.value_map/path.list_segment: frequency_dict and transform_dict lookups (house_price_index.py:114-115) and '+'-joined codes (:121) in the key (:128); fixed query keys (:130); more than one request: a 404 is retried on a rewritten url (:132-137), beyond one path template per page; country code map back (:151)
+BLOCKED     OBB2-oecd-SharePriceIndex          needs=['decode.delimited', 'flow.composite_key_segment']
+            refusal: params.value_map: frequency_dict lookup (share_price_index.py:113) and '+'-joined COUNTRY_TO_CODE_RGDP codes (:119) compose the key (:126); fixed query keys (:128); renamed (:139) then the codes mapped back to country names (:148) = columns.compose
+BLOCKED     OBB2-oecd-Unemployment             needs=['decode.delimited', 'flow.composite_key_segment']
+            refusal: params.value_map/path.list_segment: '+'-joined COUNTRY_TO_CODE_UNEMPLOYMENT codes (unemployment.py:139-143) and dict-mapped sex/age/seasonal positions in one segment (:150-152); fixed query keys (:154); columns.compose: renamed (:165), /100 (:168), codes back to country names (:169), date conversion (:170)
+NO_PACKAGE  OBB2-tmx-EtfInfo                   needs=['columns.rename', 'rows.filter']
+
+SHIPPED       1  ['OBB2-cboe-EquitySearch']
+BLOCKED       9  ['OBB2-oecd-CompositeLeadingIndicator', 'OBB2-oecd-ConsumerPriceIndex', 'OBB2-oecd-CountryInterestRates', 'OBB2-oecd-GdpForecast', 'OBB2-oecd-GdpNominal', 'OBB2-oecd-GdpReal', 'OBB2-oecd-HousePriceIndex', 'OBB2-oecd-SharePriceIndex', 'OBB2-oecd-Unemployment']
+NO_PACKAGE    4  ['OBB2-intrinio-CurrencyPairs', 'OBB2-intrinio-EquitySearch', 'OBB2-intrinio-HistoricalDividends', 'OBB2-tmx-EtfInfo']
+UNREFUSED     0  []

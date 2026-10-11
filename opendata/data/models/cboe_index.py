@@ -48,6 +48,15 @@ class CboeSearchedIndex(ContractModel):
     tick_period: str | None = None
 
 
+class CboeEquitySearchListing(ContractModel):
+    """One company in cboe's US options directory, as its CSV download publishes it."""
+
+    symbol: str | None
+    name: str | None = None
+    dpm_name: str | None = None
+    post_station: str | None = None
+
+
 class CboeIndexConstituentQuote(ContractModel):
     """One constituent of a cboe European index with its intraday quote."""
 

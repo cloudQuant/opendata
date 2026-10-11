@@ -10,6 +10,7 @@ from opendata.data.models.adjustment import AdjustFactor, CorporateAction
 from opendata.data.models.base import ContractModel
 from opendata.data.models.cboe_index import (
     CboeAvailableIndex,
+    CboeEquitySearchListing,
     CboeIndexConstituentQuote,
     CboeSearchedIndex,
 )
@@ -52,6 +53,7 @@ __all__ = [
     "BlsFootnote",
     "BlsObservation",
     "CboeAvailableIndex",
+    "CboeEquitySearchListing",
     "CboeIndexConstituentQuote",
     "CboeSearchedIndex",
     "MacroSeries",
