@@ -96,6 +96,7 @@ DECLARATION_EXCLUDED_PARTS: Final = ("_engine", "_vendor", "__pycache__")
 DECODERS_REL: Final = f"{PROVIDER_ROOT_REL}/_engine/decoders.py"
 HTTP_JSON_REL: Final = f"{PROVIDER_ROOT_REL}/_engine/http_json.py"
 KEY_COMPOSITION_REL: Final = f"{PROVIDER_ROOT_REL}/_engine/key_composition.py"
+ROW_EXPANSION_REL: Final = f"{PROVIDER_ROOT_REL}/_engine/row_expansion.py"
 SPEC_REL: Final = f"{PROVIDER_ROOT_REL}/_engine/spec.py"
 SEC_SPECS_REL: Final = f"{PROVIDER_ROOT_REL}/sec/specs.py"
 VALUE_TRANSFORM_REL: Final = f"{PROVIDER_ROOT_REL}/_engine/value_transform.py"
@@ -179,8 +180,17 @@ LABEL_TO_CAPABILITY: Final[dict[str, str]] = {
     # ---- post-request row surgery ------------------------------------------
     "client_side_filter": "rows.filter",
     "client_side_row_filter": "rows.filter",
-    "client_side_date_filter": "rows.filter",
-    "date_window_filter": "rows.filter",
+    # C95 discharged the standing mapping debt by re-folding these two onto the canonical that
+    # already names their predicate: RowFilterOp (spec.py:40) is
+    # contains/equals/not_equals/in/prefix only, so `df.date >= query.start_date`
+    # (econdb port_volume.py:166-170) is not a text or
+    # membership test. Leaving them on ``rows.filter`` -- a capability the engine CLAIMS present --
+    # is what made 14 rows carry their worst blocker under a shipped label.
+    "client_side_date_filter": "rows.filter_comparison",
+    "date_window_filter": "rows.filter_comparison",
+    # An all-null record drop is the same missing predicate, from the null side (C95: tmx
+    # etf_search.py:261 ``data.dropna(how="all")``), so it folds onto rows.filter_comparison too.
+    "all_null_row_drop": "rows.filter_comparison",
     # Neither of these selects rows: a preset merged into the outbound parameters is request-side,
     # and mapping the raw spellings 'None'/'0'/'' to null rewrites a value inside a kept row.
     "preset_filter_merge": "param.preset_merge",
@@ -192,6 +202,12 @@ LABEL_TO_CAPABILITY: Final[dict[str, str]] = {
     "regex_column_derivation": "columns.derive",
     "symbol_regex_parse": "columns.derive",
     "epoch_ms_to_date_conversion": "columns.cast",
+    # C95 unit correction: benzinga's ``last_updated`` goes through safe_fromtimestamp
+    # (core/openbb_core/provider/utils/helpers.py:628-632 -> datetime.fromtimestamp(ts, tz)), which
+    # reads SECONDS, and the engine ships both kinds -- ``epoch_s_to_date`` is in _EPOCH_KINDS
+    # (value_transform.py:40-42). Spellings are per unit because declaring the wrong one asks the
+    # cast to divide a value that is already seconds.
+    "epoch_s_to_date_conversion": "columns.cast",
     "date_format": "columns.cast",
     "percent_column_scaling": "columns.rescale",
     "published_value_rescale": "columns.rescale",
@@ -261,6 +277,32 @@ LABEL_TO_CAPABILITY: Final[dict[str, str]] = {
     # and concatenates does not -- and recording it beside the capability that must honour it is
     # what keeps that promise checkable rather than in a comment nobody re-runs.
     "input_order_restoration": "flow.fan_out",
+    # C95 audited the four ladder front steps (columns.null_sentinel, param.relative_default,
+    # param.value_transform, path.object_keys -- 18 credited rows) line by line against the pinned
+    # upstream models. Four mechanisms the audits found have no home in the vocabulary above, and
+    # all four fold onto a canonical this run reads as ABSENT, so none can inflate shipability.
+    # tmx rewrites the symbol it then compares against AT MATCH TIME (etf_sectors.py:68 vs the
+    # test at :70, etf_info.py:222-225 vs :225, etf_countries.py:70-73 vs :73; etf_search.py:243
+    # title-cases a param needle) and sec does the same to the
+    # needle (helpers.py:137 ``symbol.upper().replace(".", "-")``, :167 ``cik.lstrip("0")``), while
+    # the engine renders it verbatim at http_json.py:864-868. etf_holdings.py:89-91 is NOT one of
+    # these: it sits in transform_query, so its rewrite reaches the wire under
+    # param.value_transform.
+    "filter_needle_normalization": "rows.needle_transform",
+    # tmx EtfSearch sorts by a column the CALLER names (etf_search.py:246
+    # ``sort_values(by=query.sort_by)``); RowOrderSpec.column is a static string (spec.py:439) and
+    # only the cap has a *_param escape hatch.
+    "parameter_selected_sort_column": "rows.order_by_parameter",
+    # econdb's port volume melts long records INTO one column per port, keyed by keys the document
+    # itself publishes (port_volume.py:146 ``df.pivot_table(columns="measure", values="value")``).
+    # The shipped pivots transpose a STATIC ``series_keys`` tuple wide->long (row_expansion.py:313,
+    # :552), so folding this onto ``series_pivot`` -> ``path.explode`` credited a
+    # present capability.
+    "long_to_wide_group_pivot": "shape.long_to_wide_pivot",
+    # tmx EtfHoldings maps two upstream spellings to one output column (etf_holdings.py:126-127
+    # ``"sharechange"`` and ``"shareChange"`` -> ``share_change``); ColumnSpec.source_key names one
+    # key (spec.py:215), so the second spelling silently drops.
+    "dual_source_spelling_rename": "columns.many_to_one_rename",
     # ---- not an engine capability at all -----------------------------------
     "sdk_delegation": "outside.sdk",
     "html_scraping_sdk": "outside.sdk",
@@ -1769,6 +1811,67 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         "being null, positive, or inside a date window. Six OECD rows filter on not-null and "
         "three window converted dates with >=/<=, and none of those five predicates has a spelling "
         "in this literal.",
+    ),
+    CapabilityEntry(
+        capability="rows.needle_transform",
+        claim=False,
+        engine_work=True,
+        proof_file=HTTP_JSON_REL,
+        anchor="def _needle(row_filter: RowFilterSpec, query: object) -> str:",
+        why="The comparison operand a filter takes from the query is rendered verbatim, so a row "
+        "whose upstream rewrites that operand before comparing cannot be declared: tmx strips "
+        "``.TO``/``.TSX`` and turns ``-`` into ``.`` at match time (etf_sectors.py:68 vs :70, "
+        "etf_info.py:222-225 vs :225, etf_countries.py:70-73 vs :73) and title-cases the needle "
+        "before an equality test (etf_search.py:243 ``query.div_freq.capitalize()``), while sec "
+        "upper-cases and swaps ``.`` for "
+        "``-`` (helpers.py:137) or left-strips CIK zeros (:167), then compares with a plain "
+        "equals. ``ignore_case`` folds case only; no rule rewrites the needle. C95 first read "
+        "etf_holdings.py:89-91 as a fourth needle site and was refuted: those lines are "
+        "``transform_query``, so that rewrite reaches the wire and belongs to "
+        "``param.value_transform``, which this row already carries. Recorded against "
+        "the seam that would have to carry it, found by C95's audit of the "
+        "``param.value_transform`` and "
+        "``path.object_keys`` credit lists -- these rewrites never reach the wire, "
+        "they select rows.",
+    ),
+    CapabilityEntry(
+        capability="rows.order_by_parameter",
+        claim=False,
+        engine_work=True,
+        proof_file=SPEC_REL,
+        anchor='direction: RowOrderDirection = "asc"',
+        why="The ordering facet's limit may be named by a parameter (``limit_param``) but its "
+        "``column`` is a static string, so an ordering whose KEY comes from the caller is "
+        "undeclarable -- tmx EtfSearch sorts the directory by whichever column "
+        "``query.sort_by`` names (etf_search.py:246). Found by C95 while auditing the "
+        "``symbol_normalization`` fold on that same row.",
+    ),
+    CapabilityEntry(
+        capability="shape.long_to_wide_pivot",
+        claim=False,
+        engine_work=True,
+        proof_file=ROW_EXPANSION_REL,
+        anchor="def transpose_wide_table(document: object, plan: WideTablePivotPlan) "
+        "-> list[dict[str, Any]]:",
+        why="Both shipped pivots read a STATIC ``series_keys`` tuple and go wide->long "
+        "(WideTablePivotPlan.series_keys, row_expansion.py:313). econdb's port volume goes the "
+        "other way -- it melts long observation records into one column per port, keyed by the "
+        "measure labels the document itself publishes (port_volume.py:146 "
+        "``df.pivot_table(columns='measure', values='value')``) -- so it is neither an explode nor "
+        "a transpose. C95 split it out of ``series_pivot``, which folds onto the present "
+        "``path.explode``.",
+    ),
+    CapabilityEntry(
+        capability="columns.many_to_one_rename",
+        claim=False,
+        engine_work=True,
+        proof_file=SPEC_REL,
+        anchor="source_key: str | None = None",
+        why="One output column names one source key, so two upstream spellings that collapse onto "
+        "one output silently drop the second: tmx EtfHoldings publishes both ``sharechange`` and "
+        "``shareChange`` and maps each to ``share_change`` (etf_holdings.py:126-127). A "
+        "declaration can carry one of the two, which is the difference between a rename that "
+        "returns the column and one that returns it sometimes.",
     ),
     CapabilityEntry(
         capability="path.list_segment",

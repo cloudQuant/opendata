@@ -12,11 +12,26 @@
       "response_format": "json",
       "row_extraction": "nested_key",
       "join_needed": false,
-      "needs_engine_capability": ["nested_array_explode", "sentinel_value_nulling", "field_rename_map"],
+      "needs_engine_capability": ["nested_array_explode", "sentinel_value_nulling", "field_rename_map", "relative_date_default"],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/intrinio/openbb_intrinio/models/insider_trading.py:155",
-      "notes": "Single GET /companies/{symbol}/insider_transaction_filings; rows under key transaction_filings, then each filing's transactions[] array is exploded into one row per transaction with filing-level fields (filing_date/filing_url/issuer_ticker/issuer_cik/owner.*) copied onto every sub-row (transform_data lines 162-179). model_validator maps empty strings to None (line 111). limit aliased to page_size; no pagination loop despite page_size param; start_date defaults to now-5y."
+      "notes": "Single GET /companies/{symbol}/insider_transaction_filings; rows under key transaction_filings, then each filing's transactions[] array is exploded into one row per transaction with filing-level fields (filing_date/filing_url/issuer_ticker/issuer_cik/owner.*) copied onto every sub-row (transform_data lines 162-179). model_validator maps empty strings to None (line 111). limit aliased to page_size; no pagination loop despite page_size param; start_date defaults to now-5y. | C95: :133-137 defaults start_date to now - relativedelta(years=5) and end_date to now.",
+      "audited": {
+        "audited_by": "C95 ladder-front vocabulary repair (upstream openbb monorepo + in-repo engine, read-only)",
+        "audited_date": "2026-10-11",
+        "changed": [
+          "needs_engine_capability"
+        ],
+        "prior_expressible_today": false,
+        "prior_needs_engine_capability": [
+          "nested_array_explode",
+          "sentinel_value_nulling",
+          "field_rename_map"
+        ],
+        "basis": "param.relative_default reads absent this round",
+        "prior_notes": "Single GET /companies/{symbol}/insider_transaction_filings; rows under key transaction_filings, then each filing's transactions[] array is exploded into one row per transaction with filing-level fields (filing_date/filing_url/issuer_ticker/issuer_cik/owner.*) copied onto every sub-row (transform_data lines 162-179). model_validator maps empty strings to None (line 111). limit aliased to page_size; no pagination loop despite page_size param; start_date defaults to now-5y."
+      }
     },
     {
       "task_id": "OBB2-intrinio-KeyMetrics",

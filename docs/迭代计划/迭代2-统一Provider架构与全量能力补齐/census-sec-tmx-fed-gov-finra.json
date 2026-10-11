@@ -618,26 +618,28 @@
       "join_needed": false,
       "needs_engine_capability": [
         "rows_from_object_keys",
-        "client_side_filter"
+        "client_side_filter",
+        "filter_needle_normalization",
+        "source_order_cap"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
-      "evidence": "opendata/data/providers/_engine/http_json.py:262",
-      "notes": "resolve_rows refuses a document node that is not a list (http_json.py:262); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "evidence": "opendata/data/providers/_engine/http_json.py:434",
+      "notes": "resolve_rows refuses a document node that is not a list (http_json.py:262); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor | C95 cite fix: resolve_rows is at :410 and refuses a non-list document at :434-435 -- :262 is docstring prose of a different function. Also helpers.py:167 lstrip('0') on the needle and :171 .iloc[0] takes the first match with no ordering guarantee.",
       "audited": {
-        "audited_by": "C74 census re-audit",
-        "audited_date": "2026-10-09",
+        "audited_by": "C95 ladder-front vocabulary repair (upstream openbb monorepo + in-repo engine, read-only)",
+        "audited_date": "2026-10-11",
         "changed": [
-          "evidence",
-          "notes"
+          "needs_engine_capability"
         ],
         "prior_expressible_today": false,
-        "prior_evidence": "opendata/data/providers/sec/specs.py:94",
         "prior_needs_engine_capability": [
           "rows_from_object_keys",
           "client_side_filter"
         ],
-        "basis": "opendata/data/providers/_engine/http_json.py:262"
+        "basis": "rows.needle_transform and rows.cap_source_order read absent this round",
+        "prior_evidence": "opendata/data/providers/_engine/http_json.py:262",
+        "prior_notes": "resolve_rows refuses a document node that is not a list (http_json.py:262); prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor"
       }
     },
     {
@@ -1305,26 +1307,28 @@
       "join_needed": false,
       "needs_engine_capability": [
         "rows_from_object_keys",
-        "client_side_filter"
+        "client_side_filter",
+        "filter_needle_normalization",
+        "source_order_cap"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
-      "evidence": "opendata/data/providers/_engine/http_json.py:262",
-      "notes": "dict-keyed document refused at http_json.py:262; prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "evidence": "opendata/data/providers/_engine/http_json.py:434",
+      "notes": "dict-keyed document refused at http_json.py:262; prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor | C95 cite fix: the refusal is http_json.py:434, not :262 (docstring prose). Plus helpers.py:137 upper/swap before the test at :140/:144 and :144 .iloc[0] first-match cap.",
       "audited": {
-        "audited_by": "C74 census re-audit",
-        "audited_date": "2026-10-09",
+        "audited_by": "C95 ladder-front vocabulary repair (upstream openbb monorepo + in-repo engine, read-only)",
+        "audited_date": "2026-10-11",
         "changed": [
-          "evidence",
-          "notes"
+          "needs_engine_capability"
         ],
         "prior_expressible_today": false,
-        "prior_evidence": "opendata/data/providers/sec/specs.py:96",
         "prior_needs_engine_capability": [
           "rows_from_object_keys",
           "client_side_filter"
         ],
-        "basis": "opendata/data/providers/_engine/http_json.py:262"
+        "basis": "rows.needle_transform and rows.cap_source_order read absent this round",
+        "prior_evidence": "opendata/data/providers/_engine/http_json.py:262",
+        "prior_notes": "dict-keyed document refused at http_json.py:262; prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor"
       }
     },
     {
@@ -1509,12 +1513,28 @@
       "needs_engine_capability": [
         "rows_from_object_keys",
         "client_side_filter",
-        "exchange_path_template"
+        "exchange_path_template",
+        "multi_request_concat"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/tmx/openbb_tmx/models/equity_search.py:52",
-      "notes": "tsx.com company-directory/{exchange}/* dict cached by helper, then substring filter over symbols/names"
+      "notes": "tsx.com company-directory/{exchange}/* dict cached by helper, then substring filter over symbols/names | C95 CONFIRMS rows_from_object_keys (:56 DataFrame(index=companies, data=companies.values())) -- a pre-compaction receipt calling it refuted was wrong and removing it would have SHRUNK this row's blocker set. Added instead: utils/helpers.py:451-458 issues TWO requests (tsx + tsxv) and merges by dict.update.",
+      "audited": {
+        "audited_by": "C95 ladder-front vocabulary repair (upstream openbb monorepo + in-repo engine, read-only)",
+        "audited_date": "2026-10-11",
+        "changed": [
+          "needs_engine_capability"
+        ],
+        "prior_expressible_today": false,
+        "prior_needs_engine_capability": [
+          "rows_from_object_keys",
+          "client_side_filter",
+          "exchange_path_template"
+        ],
+        "basis": "flow.fan_out reads absent this round and the row already carried its blocker unlabeled",
+        "prior_notes": "tsx.com company-directory/{exchange}/* dict cached by helper, then substring filter over symbols/names"
+      }
     },
     {
       "task_id": "OBB2-tmx-EtfSearch",
@@ -1529,12 +1549,30 @@
       "join_needed": false,
       "needs_engine_capability": [
         "client_side_filter",
-        "symbol_normalization"
+        "filter_needle_normalization",
+        "parameter_selected_sort_column",
+        "all_null_row_drop",
+        "sentinel_value_nulling"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
-      "evidence": "providers/tmx/openbb_tmx/models/etf_search.py:218",
-      "notes": "single static cloudfront etfs.json document; filtering happens client-side in pandas (helpers.py:389)"
+      "evidence": "providers/tmx/openbb_tmx/models/etf_search.py:214-216, :236-246, :261-262",
+      "notes": "single static cloudfront etfs.json document; filtering happens client-side in pandas (helpers.py:389) | C95: transform_query (:214-216) is a bare passthrough so no symbol reaches a rewrite -- the symbol_normalization credit was refuted. What is real: div_freq capitalized into an equality test (:243), a sort column NAMED BY THE CALLER (:245-246), dropna(how='all') on the ROW axis (:261) and fillna('N/A')->None nulling (:262).",
+      "audited": {
+        "audited_by": "C95 ladder-front vocabulary repair (upstream openbb monorepo + in-repo engine, read-only)",
+        "audited_date": "2026-10-11",
+        "changed": [
+          "needs_engine_capability"
+        ],
+        "prior_expressible_today": false,
+        "prior_needs_engine_capability": [
+          "client_side_filter",
+          "symbol_normalization"
+        ],
+        "basis": "capabilities the engine does not declare: rows.filter, rows.needle_transform, rows.order_by_parameter, rows.filter_comparison, columns.null_sentinel -- each read absent by verify_registry this round",
+        "prior_evidence": "providers/tmx/openbb_tmx/models/etf_search.py:218",
+        "prior_notes": "single static cloudfront etfs.json document; filtering happens client-side in pandas (helpers.py:389)"
+      }
     },
     {
       "task_id": "OBB2-tmx-EtfHoldings",
@@ -1553,28 +1591,30 @@
         "field_rename_map",
         "symbol_normalization",
         "sentinel_value_nulling",
-        "percent_column_scaling"
+        "percent_column_scaling",
+        "dual_source_spelling_rename"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/tmx/openbb_tmx/models/etf_holdings.py:94",
-      "notes": "etfs.json row selected by symbol, holdings_top10 array exploded and renamed; NA filled to null | C89 re-audit against the upstream openbb monorepo (read-only) adds symbol_normalization [etf_holdings.py:89-91 transform_query, etf_holdings.py:105 symbol.upper()]; sentinel_value_nulling [etf_holdings.py:131-133 fillna N/A + replace NA, helpers.py:398 to :342-345]; percent_column_scaling [etf_holdings.py:71-75 normalize_percent = float(v)/100]. NO LABEL FOR dropping columns that are entirely empty (etf_holdings.py:113 dropna axis=1 how=all); client_side_column_drop would collapse that onto a declared columns.select, which it is not",
+      "notes": "etfs.json row selected by symbol, holdings_top10 array exploded and renamed; NA filled to null | C89 re-audit against the upstream openbb monorepo (read-only) adds symbol_normalization [etf_holdings.py:89-91 transform_query, etf_holdings.py:105 symbol.upper()]; sentinel_value_nulling [etf_holdings.py:131-133 fillna N/A + replace NA, helpers.py:398 to :342-345]; percent_column_scaling [etf_holdings.py:71-75 normalize_percent = float(v)/100]. NO LABEL FOR dropping columns that are entirely empty (etf_holdings.py:113 dropna axis=1 how=all); client_side_column_drop would collapse that onto a declared columns.select, which it is not | C95: _columns maps BOTH 'sharechange' (:126) and 'shareChange' (:127) onto share_change; ColumnSpec.source_key names one key so the second spelling silently drops. etf_holdings.py:89-91 stays symbol_normalization -- it is transform_query, request-side.",
       "audited": {
-        "audited_by": "C89 TMX shipped-cover re-audit (upstream openbb monorepo, read-only)",
+        "audited_by": "C95 ladder-front vocabulary repair (upstream openbb monorepo + in-repo engine, read-only)",
         "audited_date": "2026-10-11",
         "changed": [
-          "needs_engine_capability",
-          "notes"
+          "needs_engine_capability"
         ],
         "prior_expressible_today": false,
-        "prior_evidence": "providers/tmx/openbb_tmx/models/etf_holdings.py:94",
         "prior_needs_engine_capability": [
           "client_side_filter",
           "nested_array_explode",
-          "field_rename_map"
+          "field_rename_map",
+          "symbol_normalization",
+          "sentinel_value_nulling",
+          "percent_column_scaling"
         ],
-        "prior_notes": "etfs.json row selected by symbol, holdings_top10 array exploded and renamed; NA filled to null",
-        "basis": "capabilities the engine does not declare: param.value_transform, columns.null_sentinel, columns.rescale -- each read absent by verify_registry this round"
+        "basis": "columns.many_to_one_rename reads absent this round (spec.py:215 names one key)",
+        "prior_notes": "etfs.json row selected by symbol, holdings_top10 array exploded and renamed; NA filled to null | C89 re-audit against the upstream openbb monorepo (read-only) adds symbol_normalization [etf_holdings.py:89-91 transform_query, etf_holdings.py:105 symbol.upper()]; sentinel_value_nulling [etf_holdings.py:131-133 fillna N/A + replace NA, helpers.py:398 to :342-345]; percent_column_scaling [etf_holdings.py:71-75 normalize_percent = float(v)/100]. NO LABEL FOR dropping columns that are entirely empty (etf_holdings.py:113 dropna axis=1 how=all); client_side_column_drop would collapse that onto a declared columns.select, which it is not"
       }
     },
     {
@@ -1594,29 +1634,30 @@
         "field_rename_map",
         "symbol_normalization",
         "sentinel_value_nulling",
-        "percent_column_scaling"
+        "percent_column_scaling",
+        "filter_needle_normalization"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/tmx/openbb_tmx/models/etf_sectors.py:50",
-      "notes": "symbol -> sectors nested array from etfs.json, renamed name/percent; multi-symbol loop (etf_sectors.py:67-68) | C89 re-audit against the upstream openbb monorepo (read-only) adds symbol_normalization [etf_sectors.py:68 upper + dash/dot + .TO/.TSX strip]; sentinel_value_nulling [etf_sectors.py:79 replace nan with None, helpers.py:398 to :342-345]; percent_column_scaling [etf_sectors.py:30-34 _normalize_percent = v/100]. NO LABEL FOR the per-loop-variable binding: the filter key (etf_sectors.py:68) and the stamped symbol column (:76) are different readings of one iteration variable; symbol_fan_out would mislabel it, this row issues exactly one request",
+      "notes": "symbol -> sectors nested array from etfs.json, renamed name/percent; multi-symbol loop (etf_sectors.py:67-68) | C89 re-audit against the upstream openbb monorepo (read-only) adds symbol_normalization [etf_sectors.py:68 upper + dash/dot + .TO/.TSX strip]; sentinel_value_nulling [etf_sectors.py:79 replace nan with None, helpers.py:398 to :342-345]; percent_column_scaling [etf_sectors.py:30-34 _normalize_percent = v/100]. NO LABEL FOR the per-loop-variable binding: the filter key (etf_sectors.py:68) and the stamped symbol column (:76) are different readings of one iteration variable; symbol_fan_out would mislabel it, this row issues exactly one request | C95: :68 rewrites the symbol (:243-style upper/./TO/TSX strip) and :70 compares it -- the needle rewrite is at filter time here, not in transform_query.",
       "audited": {
-        "audited_by": "C89 TMX shipped-cover re-audit (upstream openbb monorepo, read-only)",
+        "audited_by": "C95 ladder-front vocabulary repair (upstream openbb monorepo + in-repo engine, read-only)",
         "audited_date": "2026-10-11",
         "changed": [
-          "needs_engine_capability",
-          "notes"
+          "needs_engine_capability"
         ],
         "prior_expressible_today": false,
-        "prior_evidence": "providers/tmx/openbb_tmx/models/etf_sectors.py:50",
         "prior_needs_engine_capability": [
           "client_side_filter",
           "nested_array_explode",
-          "field_rename_map"
+          "field_rename_map",
+          "symbol_normalization",
+          "sentinel_value_nulling",
+          "percent_column_scaling"
         ],
-        "prior_notes": "symbol -> sectors nested array from etfs.json, renamed name/percent; multi-symbol loop (etf_sectors.py:99+)",
-        "basis": "capabilities the engine does not declare: param.value_transform, columns.null_sentinel, columns.rescale -- each read absent by verify_registry this round",
-        "notes_correction": "the cite 'multi-symbol loop (etf_sectors.py:99+)' above points at transform_data, which occupies :92-99; the loop is at :67-68 and the notes line now reads :67-68"
+        "basis": "rows.needle_transform reads absent this round (http_json.py:864-868 renders verbatim)",
+        "prior_notes": "symbol -> sectors nested array from etfs.json, renamed name/percent; multi-symbol loop (etf_sectors.py:67-68) | C89 re-audit against the upstream openbb monorepo (read-only) adds symbol_normalization [etf_sectors.py:68 upper + dash/dot + .TO/.TSX strip]; sentinel_value_nulling [etf_sectors.py:79 replace nan with None, helpers.py:398 to :342-345]; percent_column_scaling [etf_sectors.py:30-34 _normalize_percent = v/100]. NO LABEL FOR the per-loop-variable binding: the filter key (etf_sectors.py:68) and the stamped symbol column (:76) are different readings of one iteration variable; symbol_fan_out would mislabel it, this row issues exactly one request"
       }
     },
     {
@@ -1636,28 +1677,30 @@
         "field_rename_map",
         "symbol_normalization",
         "sentinel_value_nulling",
-        "percent_column_scaling"
+        "percent_column_scaling",
+        "filter_needle_normalization"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/tmx/openbb_tmx/models/etf_countries.py:50",
-      "notes": "same etfs.json document, countries nested array exploded per symbol | C89 re-audit against the upstream openbb monorepo (read-only) adds symbol_normalization [etf_countries.py:63-65 split or upper, etf_countries.py:70-71 conditional .TO strip]; sentinel_value_nulling [helpers.py:398 to :342-345 (the only nulling site this row has)]; percent_column_scaling [etf_countries.py:30-34 _normalize_percent = v/100]. NO LABEL FOR the per-loop-variable binding: filter key (etf_countries.py:70-73) vs the stamped symbol (:81); symbol_fan_out would mislabel it, one request is issued",
+      "notes": "same etfs.json document, countries nested array exploded per symbol | C89 re-audit against the upstream openbb monorepo (read-only) adds symbol_normalization [etf_countries.py:63-65 split or upper, etf_countries.py:70-71 conditional .TO strip]; sentinel_value_nulling [helpers.py:398 to :342-345 (the only nulling site this row has)]; percent_column_scaling [etf_countries.py:30-34 _normalize_percent = v/100]. NO LABEL FOR the per-loop-variable binding: filter key (etf_countries.py:70-73) vs the stamped symbol (:81); symbol_fan_out would mislabel it, one request is issued | C95: :70-72 strips '.TO' conditionally before the equality test at :73; no .TSX/dash rule, so even the needle rewrite is partial.",
       "audited": {
-        "audited_by": "C89 TMX shipped-cover re-audit (upstream openbb monorepo, read-only)",
+        "audited_by": "C95 ladder-front vocabulary repair (upstream openbb monorepo + in-repo engine, read-only)",
         "audited_date": "2026-10-11",
         "changed": [
-          "needs_engine_capability",
-          "notes"
+          "needs_engine_capability"
         ],
         "prior_expressible_today": false,
-        "prior_evidence": "providers/tmx/openbb_tmx/models/etf_countries.py:50",
         "prior_needs_engine_capability": [
           "client_side_filter",
           "nested_array_explode",
-          "field_rename_map"
+          "field_rename_map",
+          "symbol_normalization",
+          "sentinel_value_nulling",
+          "percent_column_scaling"
         ],
-        "prior_notes": "same etfs.json document, countries nested array exploded per symbol",
-        "basis": "capabilities the engine does not declare: param.value_transform, columns.null_sentinel, columns.rescale -- each read absent by verify_registry this round"
+        "basis": "rows.needle_transform reads absent this round (http_json.py:864-868 renders verbatim)",
+        "prior_notes": "same etfs.json document, countries nested array exploded per symbol | C89 re-audit against the upstream openbb monorepo (read-only) adds symbol_normalization [etf_countries.py:63-65 split or upper, etf_countries.py:70-71 conditional .TO strip]; sentinel_value_nulling [helpers.py:398 to :342-345 (the only nulling site this row has)]; percent_column_scaling [etf_countries.py:30-34 _normalize_percent = v/100]. NO LABEL FOR the per-loop-variable binding: filter key (etf_countries.py:70-73) vs the stamped symbol (:81); symbol_fan_out would mislabel it, one request is issued"
       }
     },
     {
@@ -1715,27 +1758,29 @@
         "field_rename_map",
         "symbol_normalization",
         "sentinel_value_nulling",
-        "percent_column_scaling"
+        "percent_column_scaling",
+        "filter_needle_normalization"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/tmx/openbb_tmx/models/etf_info.py:171",
-      "notes": "one etfs.json record per symbol, columns renamed/derived in transform_data | C89 re-audit against the upstream openbb monorepo (read-only) adds symbol_normalization [etf_info.py:183-185 split or upper, etf_info.py:222-224 dash/dot + .TO/.TSX strip]; sentinel_value_nulling [etf_info.py:226 fillna N/A + replace N/A, helpers.py:398 to :342-345]; percent_column_scaling [etf_info.py:152-155 normalize_percent = float(v)/100]. NO LABEL FOR the per-loop-variable binding: filter key (etf_info.py:222-224) vs the symbol carried into the record; symbol_fan_out would mislabel it, one request is issued",
+      "notes": "one etfs.json record per symbol, columns renamed/derived in transform_data | C89 re-audit against the upstream openbb monorepo (read-only) adds symbol_normalization [etf_info.py:183-185 split or upper, etf_info.py:222-224 dash/dot + .TO/.TSX strip]; sentinel_value_nulling [etf_info.py:226 fillna N/A + replace N/A, helpers.py:398 to :342-345]; percent_column_scaling [etf_info.py:152-155 normalize_percent = float(v)/100]. NO LABEL FOR the per-loop-variable binding: filter key (etf_info.py:222-224) vs the symbol carried into the record; symbol_fan_out would mislabel it, one request is issued | C95: :222-224 build the needle and :225 compares it; the transpose at :228 turns one row into column/value pairs.",
       "audited": {
-        "audited_by": "C89 TMX shipped-cover re-audit (upstream openbb monorepo, read-only)",
+        "audited_by": "C95 ladder-front vocabulary repair (upstream openbb monorepo + in-repo engine, read-only)",
         "audited_date": "2026-10-11",
         "changed": [
-          "needs_engine_capability",
-          "notes"
+          "needs_engine_capability"
         ],
         "prior_expressible_today": false,
-        "prior_evidence": "providers/tmx/openbb_tmx/models/etf_info.py:171",
         "prior_needs_engine_capability": [
           "client_side_filter",
-          "field_rename_map"
+          "field_rename_map",
+          "symbol_normalization",
+          "sentinel_value_nulling",
+          "percent_column_scaling"
         ],
-        "prior_notes": "one etfs.json record per symbol, columns renamed/derived in transform_data",
-        "basis": "capabilities the engine does not declare: param.value_transform, columns.null_sentinel, columns.rescale -- each read absent by verify_registry this round"
+        "basis": "rows.needle_transform reads absent this round (http_json.py:864-868 renders verbatim)",
+        "prior_notes": "one etfs.json record per symbol, columns renamed/derived in transform_data | C89 re-audit against the upstream openbb monorepo (read-only) adds symbol_normalization [etf_info.py:183-185 split or upper, etf_info.py:222-224 dash/dot + .TO/.TSX strip]; sentinel_value_nulling [etf_info.py:226 fillna N/A + replace N/A, helpers.py:398 to :342-345]; percent_column_scaling [etf_info.py:152-155 normalize_percent = float(v)/100]. NO LABEL FOR the per-loop-variable binding: filter key (etf_info.py:222-224) vs the symbol carried into the record; symbol_fan_out would mislabel it, one request is issued"
       }
     },
     {

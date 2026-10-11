@@ -1,0 +1,734 @@
+{
+  "artifact": "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/capability-roadmap.json",
+  "census_row_total": 279,
+  "clusters": [
+    {
+      "capability": "param.relative_default",
+      "credit_list_length": 3,
+      "registry_entry": {
+        "anchor": "default: Any = None",
+        "anchor_found": true,
+        "anchor_line": "default: Any = None",
+        "anchor_line_number": 133,
+        "claim": false,
+        "cross_anchor": "",
+        "cross_anchor_found": true,
+        "cross_file": "",
+        "engine_work": true,
+        "present": false,
+        "production_declarations": 0,
+        "proof_file": "opendata/data/providers/_engine/spec.py",
+        "read_from_disk": false,
+        "status": "absent",
+        "why": "``default`` is a literal applied when the caller omits the parameter, so a bound whose value depends on today -- intrinio's one-year window, filled in transform_query when the caller names no dates (historical_dividends.py:74-78) -- has no field to be written in. The declaration sends no bound instead, which is a wider answer than the upstream one."
+      },
+      "rows": [
+        {
+          "canonical_still_absent": [
+            "param.relative_default"
+          ],
+          "census_file": "census-intrinio-2of3.json",
+          "endpoints": 1,
+          "evidence": "providers/intrinio/openbb_intrinio/models/historical_dividends.py:95",
+          "existing_fetcher_class": "",
+          "expressible_today": false,
+          "folded": {
+            "derived_columns": "columns.derive",
+            "field_rename_map": "columns.rename",
+            "param_value_mapping": "param.value_mapping",
+            "relative_date_default": "param.relative_default"
+          },
+          "http_method": "GET",
+          "join_needed": false,
+          "needs_engine_capability": [
+            "field_rename_map",
+            "param_value_mapping",
+            "derived_columns",
+            "relative_date_default"
+          ],
+          "notes": "Single GET /securities/{symbol}/prices/adjustments, rows under 'stock_price_adjustments' (:95); no pagination loop. field_rename_map comes from the alias dict at :36-40 (date->ex_dividend_date, dividend->amount, dividend_currency->currency) restated as ColumnSpec.source_key; param_value_mapping from limit->page_size with default 100 at :25-30 as ParamSpec.query_key; derived_columns from the per-row stamping of the queried symbol at :102-104, now carried by ModelSpec.column_derives (DerivePlan source_kind=parameter). transform_query's 1-year relative default window (historical_dividends.py:74-78) fills a bound from today when the caller names none, while ParamSpec.default holds a literal, so the row needs relative_date_default (param.relative_default, absent): with an omitted bound this declaration sends no window and answers wider than upstream. That is the blocker and why the flag is false; the other three labels are each carried in specs.py and proven offline, so the row is one capability from ready, not three. tests/test_intrinio_engine_provider.py::TestHistoricalDividends proves symbol-stamped, renamed rows come out offline.",
+          "paged": false,
+          "provider": "intrinio",
+          "raw_needs": [
+            "field_rename_map",
+            "param_value_mapping",
+            "derived_columns",
+            "relative_date_default"
+          ],
+          "response_format": "json",
+          "row_extraction": "nested_key",
+          "shape": "get_json_single",
+          "task_id": "OBB2-intrinio-HistoricalDividends",
+          "upstream_model": "HistoricalDividends"
+        },
+        {
+          "audited": {
+            "audited_by": "C75 federal percent recheck",
+            "audited_date": "2026-10-09",
+            "basis": "opendata/data/providers/federal_reserve/specs.py -- NOT_DECLARED and the model= declarations",
+            "changed": [
+              "expressible_today",
+              "needs_engine_capability",
+              "notes"
+            ],
+            "prior_expressible_today": true,
+            "prior_needs_engine_capability": []
+          },
+          "canonical_still_absent": [
+            "param.relative_default"
+          ],
+          "census_file": "census-sec-tmx-fed-gov-finra.json",
+          "endpoints": 1,
+          "evidence": "providers/federal_reserve/openbb_federal_reserve/models/overnight_bank_funding_rate.py:97",
+          "existing_fetcher_class": "",
+          "expressible_today": false,
+          "folded": {
+            "client_side_sort": "rows.order_limit",
+            "published_value_rescale": "columns.rescale",
+            "relative_date_default": "param.relative_default"
+          },
+          "http_method": "GET",
+          "join_needed": false,
+          "needs_engine_capability": [
+            "published_value_rescale",
+            "client_side_sort",
+            "relative_date_default"
+          ],
+          "notes": "DOWNGRADED true->false (C75): the retracted note already said 'same shape as EFFR', and the EFFR row reads false. The same two blockers, measured on the same lines of the same oracle: openbb_federal_reserve 1.6.2 overnight_bank_funding_rate.py:47-61 rescales 5 published percents by /100 (division :60) and :122 sorts by date. Column-drop is excluded for the same reason as SOFR: normalize_record (http_json.py:303-346) builds each row from declared columns, so an undeclared key never reaches the row model. The pops in question are overnight_bank_funding_rate.py:117-119. C92 upstream read: end_date defaults to datetime.now() (overnight_bank_funding_rate.py:95-100); sorted by date, no cap (:125). A C92 audit also claimed a string sentinel here, which this read refutes: normalize_percent guards only None (:56-61), so no columns.null_sentinel need is recorded.",
+          "paged": false,
+          "provider": "federal_reserve",
+          "raw_needs": [
+            "published_value_rescale",
+            "client_side_sort",
+            "relative_date_default"
+          ],
+          "response_format": "json",
+          "row_extraction": "nested_key",
+          "shape": "get_json_single",
+          "task_id": "OBB2-federal_reserve-OvernightBankFundingRate",
+          "upstream_model": "OvernightBankFundingRate"
+        },
+        {
+          "canonical_still_absent": [
+            "param.relative_default"
+          ],
+          "census_file": "census-tiingo.json",
+          "endpoints": 1,
+          "evidence": "providers/tiingo/openbb_tiingo/models/crypto_historical.py:138",
+          "existing_fetcher_class": "",
+          "expressible_today": false,
+          "folded": {
+            "client_side_sort": "rows.order_limit",
+            "date_format": "columns.cast",
+            "nested_array_explode": "path.explode",
+            "param_value_mapping": "param.value_mapping",
+            "relative_date_default": "param.relative_default"
+          },
+          "http_method": "GET",
+          "join_needed": false,
+          "needs_engine_capability": [
+            "nested_array_explode",
+            "client_side_sort",
+            "param_value_mapping",
+            "date_format",
+            "relative_date_default"
+          ],
+          "notes": "Differs from equity/currency rows on the shared get_data path in three real ways: ONE request for all symbols (tickers comma query param, :126 alias), path /tiingo/crypto/prices (:125), and response is an array of ticker objects each with nested priceData rows that must be exploded (:165-181). interval->resampleFreq remap adds a day arm (7d->7day, :128-135); results sorted client-side by date (:183); no paging. C92 upstream read: start_date/end_date default from datetime.now().date() (crypto_historical.py:103-108); one request, no paging, sorted date ascending with no cap (:183).",
+          "paged": false,
+          "provider": "tiingo",
+          "raw_needs": [
+            "nested_array_explode",
+            "client_side_sort",
+            "param_value_mapping",
+            "date_format",
+            "relative_date_default"
+          ],
+          "response_format": "json",
+          "row_extraction": "nested_key",
+          "shape": "get_json_single",
+          "task_id": "OBB2-tiingo-CryptoHistorical",
+          "upstream_model": "CryptoHistorical"
+        }
+      ],
+      "rows_newly_unlocked": 3,
+      "step": 0
+    },
+    {
+      "capability": "columns.null_sentinel",
+      "credit_list_length": 5,
+      "registry_entry": {
+        "anchor": "nullable: bool = True",
+        "anchor_found": true,
+        "anchor_line": "nullable: bool = True",
+        "anchor_line_number": 217,
+        "claim": false,
+        "cross_anchor": "",
+        "cross_anchor_found": true,
+        "cross_file": "",
+        "engine_work": true,
+        "present": false,
+        "production_declarations": 0,
+        "proof_file": "opendata/data/providers/_engine/spec.py",
+        "read_from_disk": false,
+        "status": "absent",
+        "why": "A column can declare that it may be null but not which raw spellings -- the strings 'None', '0' or empty -- become null, so per-row sentinel nulling is a fetcher behaviour the engine cannot express."
+      },
+      "rows": [
+        {
+          "audited": {
+            "audited_by": "C95 ladder-front vocabulary repair (upstream openbb monorepo + in-repo engine, read-only)",
+            "audited_date": "2026-10-11",
+            "basis": "folds onto columns.cast, present; the correction is about which spelling the row names, not about shipability",
+            "changed": [
+              "needs_engine_capability"
+            ],
+            "prior_expressible_today": false,
+            "prior_needs_engine_capability": [
+              "param_value_mapping",
+              "epoch_ms_to_date_conversion",
+              "sentinel_value_nulling",
+              "client_side_column_drop"
+            ],
+            "prior_notes": "Single GET to /api/v2.1/calendar/ratings; a page offset param exists (line 79) but the fetcher issues exactly one request, no paging loop. Rows from data['ratings'] (line 307). Query 'action' value is mapped through COVERAGE_DICT (lines 143-147); bracketed alias keys like parameters[tickers] (lines 44-55). last_updated Unix ts converted with safe_fromtimestamp (lines 250-254); empty strings nulled per row (lines 257-261); transform_data pops the url_calendar column (line 319). No preflight lookup: symbol is sent directly as parameters[tickers], join_needed=false."
+          },
+          "canonical_still_absent": [
+            "columns.null_sentinel"
+          ],
+          "census_file": "census-benzinga.json",
+          "endpoints": 1,
+          "evidence": "providers/benzinga/openbb_benzinga/models/price_target.py:289",
+          "existing_fetcher_class": "",
+          "expressible_today": false,
+          "folded": {
+            "client_side_column_drop": "columns.select",
+            "epoch_s_to_date_conversion": "columns.cast",
+            "param_value_mapping": "param.value_mapping",
+            "sentinel_value_nulling": "columns.null_sentinel"
+          },
+          "http_method": "GET",
+          "join_needed": false,
+          "needs_engine_capability": [
+            "param_value_mapping",
+            "sentinel_value_nulling",
+            "client_side_column_drop",
+            "epoch_s_to_date_conversion"
+          ],
+          "notes": "Single GET to /api/v2.1/calendar/ratings; a page offset param exists (line 79) but the fetcher issues exactly one request, no paging loop. Rows from data['ratings'] (line 307). Query 'action' value is mapped through COVERAGE_DICT (lines 143-147); bracketed alias keys like parameters[tickers] (lines 44-55). last_updated Unix ts converted with safe_fromtimestamp (lines 250-254); empty strings nulled per row (lines 257-261); transform_data pops the url_calendar column (line 319). No preflight lookup: symbol is sent directly as parameters[tickers], join_needed=false. | C95 unit correction: :155/:158 emit int(v.timestamp()) -- SECONDS -- and :253 reads back with safe_fromtimestamp(v) with no /1000 anywhere in the module.",
+          "paged": false,
+          "provider": "benzinga",
+          "raw_needs": [
+            "param_value_mapping",
+            "sentinel_value_nulling",
+            "client_side_column_drop",
+            "epoch_s_to_date_conversion"
+          ],
+          "response_format": "json",
+          "row_extraction": "nested_key",
+          "shape": "get_json_single",
+          "task_id": "OBB2-benzinga-PriceTarget",
+          "upstream_model": "PriceTarget"
+        },
+        {
+          "canonical_still_absent": [
+            "columns.null_sentinel"
+          ],
+          "census_file": "census-econdb.json",
+          "endpoints": 1,
+          "evidence": "providers/econdb/openbb_econdb/utils/helpers.py:449",
+          "existing_fetcher_class": "",
+          "expressible_today": false,
+          "folded": {
+            "client_side_row_filter": "rows.filter",
+            "client_side_sort": "rows.order_limit",
+            "csv_decoder": "decode.delimited",
+            "derived_columns": "columns.derive",
+            "sentinel_value_nulling": "columns.null_sentinel"
+          },
+          "http_method": "GET",
+          "join_needed": false,
+          "needs_engine_capability": [
+            "csv_decoder",
+            "derived_columns",
+            "client_side_row_filter",
+            "client_side_sort",
+            "sentinel_value_nulling"
+          ],
+          "notes": "aextract_data (models/available_indicators.py:91) delegates wholly to helpers.download_indicators; rows are the ticker roster, not an indicator-data message. Derives symbol_root by string surgery (helpers.py:456-463), drops obsolete OECD/underscore tickers (helpers.py:451-454), fixes bad multipliers (478-479), sorts by last_date desc (available_indicators.py:94). Unlike OECD siblings this roster is a static CSV file, no SDMX. C92 upstream read: fillna(\"N/A\").replace(\"N/A\", None).replace(\"nan\", None) runs before sort_values(by=last_date, ascending=False) (helpers.py:481-482; available_indicators.py:94), so a sort over raw text would rank the sentinels. No cap.",
+          "paged": false,
+          "provider": "econdb",
+          "raw_needs": [
+            "csv_decoder",
+            "derived_columns",
+            "client_side_row_filter",
+            "client_side_sort",
+            "sentinel_value_nulling"
+          ],
+          "response_format": "csv",
+          "row_extraction": "single CSV (econdb.com/static/help/main_tickers.csv, helpers.py:431) read via pandas read_csv, filtered/sorted then DataFrame.to_dict(records)",
+          "shape": "get_csv",
+          "task_id": "OBB2-econdb-AvailableIndicators",
+          "upstream_model": "AvailableIndicators"
+        },
+        {
+          "audited": {
+            "audited_by": "C95 ladder-front vocabulary repair (upstream openbb monorepo + in-repo engine, read-only)",
+            "audited_date": "2026-10-11",
+            "basis": "param.relative_default reads absent this round",
+            "changed": [
+              "needs_engine_capability"
+            ],
+            "prior_expressible_today": false,
+            "prior_needs_engine_capability": [
+              "nested_array_explode",
+              "sentinel_value_nulling",
+              "field_rename_map"
+            ],
+            "prior_notes": "Single GET /companies/{symbol}/insider_transaction_filings; rows under key transaction_filings, then each filing's transactions[] array is exploded into one row per transaction with filing-level fields (filing_date/filing_url/issuer_ticker/issuer_cik/owner.*) copied onto every sub-row (transform_data lines 162-179). model_validator maps empty strings to None (line 111). limit aliased to page_size; no pagination loop despite page_size param; start_date defaults to now-5y."
+          },
+          "canonical_still_absent": [
+            "columns.null_sentinel",
+            "param.relative_default"
+          ],
+          "census_file": "census-intrinio-3of3.json",
+          "endpoints": 1,
+          "evidence": "providers/intrinio/openbb_intrinio/models/insider_trading.py:155",
+          "existing_fetcher_class": "",
+          "expressible_today": false,
+          "folded": {
+            "field_rename_map": "columns.rename",
+            "nested_array_explode": "path.explode",
+            "relative_date_default": "param.relative_default",
+            "sentinel_value_nulling": "columns.null_sentinel"
+          },
+          "http_method": "GET",
+          "join_needed": false,
+          "needs_engine_capability": [
+            "nested_array_explode",
+            "sentinel_value_nulling",
+            "field_rename_map",
+            "relative_date_default"
+          ],
+          "notes": "Single GET /companies/{symbol}/insider_transaction_filings; rows under key transaction_filings, then each filing's transactions[] array is exploded into one row per transaction with filing-level fields (filing_date/filing_url/issuer_ticker/issuer_cik/owner.*) copied onto every sub-row (transform_data lines 162-179). model_validator maps empty strings to None (line 111). limit aliased to page_size; no pagination loop despite page_size param; start_date defaults to now-5y. | C95: :133-137 defaults start_date to now - relativedelta(years=5) and end_date to now.",
+          "paged": false,
+          "provider": "intrinio",
+          "raw_needs": [
+            "nested_array_explode",
+            "sentinel_value_nulling",
+            "field_rename_map",
+            "relative_date_default"
+          ],
+          "response_format": "json",
+          "row_extraction": "nested_key",
+          "shape": "get_json_single",
+          "task_id": "OBB2-intrinio-InsiderTrading",
+          "upstream_model": "InsiderTrading"
+        },
+        {
+          "audited": {
+            "audited_by": "C74 census re-audit",
+            "audited_date": "2026-10-09",
+            "basis": "opendata/data/providers/_engine/http_json.py:303",
+            "changed": [
+              "evidence",
+              "needs_engine_capability",
+              "notes",
+              "expressible_today"
+            ],
+            "prior_evidence": "providers/federal_reserve/openbb_federal_reserve/models/federal_funds_rate.py:117",
+            "prior_expressible_today": true,
+            "prior_needs_engine_capability": []
+          },
+          "canonical_still_absent": [
+            "columns.null_sentinel",
+            "param.relative_default"
+          ],
+          "census_file": "census-sec-tmx-fed-gov-finra.json",
+          "endpoints": 1,
+          "evidence": "opendata/data/providers/_engine/http_json.py:303",
+          "existing_fetcher_class": "",
+          "expressible_today": false,
+          "folded": {
+            "client_side_sort": "rows.order_limit",
+            "published_value_rescale": "columns.rescale",
+            "relative_date_default": "param.relative_default",
+            "sentinel_value_nulling": "columns.null_sentinel"
+          },
+          "http_method": "GET",
+          "join_needed": false,
+          "needs_engine_capability": [
+            "published_value_rescale",
+            "client_side_sort",
+            "sentinel_value_nulling",
+            "relative_date_default"
+          ],
+          "notes": "NEEDS LIST CORRECTED (C75): expressible_today stays false on the same two blockers -- openbb_federal_reserve 1.6.2 federal_funds_rate.py:63-81 rescales 9 published percents (division :80) and :141 sorts by date, while neither ColumnSpec (spec.py:144-149) nor ModelSpec (spec.py:376-399) declares a scale or a sort. Two removals: client_side_column_drop is not a blocker because normalize_record (http_json.py:303-346) builds each row from declared columns, so an undeclared key never reaches the row model, and the pops at federal_funds_rate.py:137-138 are therefore a no-op for us; and the C74 note blamed ModelSpec at spec.py:266-285, which is DecoderSpec.effective_delimiter and RowFilterSpec's docstring, not ModelSpec. C92 upstream read: end_date defaults to datetime.now() (federal_funds_rate.py:98-102) and revision_indicator nulls \"\"/\"''\" (federal_funds_rate.py:57-61); sorted by date, no cap (:141). The package's NOT_DECLARED reason naming a revisionIndicator pop is mis-cited here -- that pop is SOFR/OBFR's (:137-138).",
+          "paged": false,
+          "provider": "federal_reserve",
+          "raw_needs": [
+            "published_value_rescale",
+            "client_side_sort",
+            "sentinel_value_nulling",
+            "relative_date_default"
+          ],
+          "response_format": "json",
+          "row_extraction": "nested_key",
+          "shape": "get_json_single",
+          "task_id": "OBB2-federal_reserve-FederalFundsRate",
+          "upstream_model": "FederalFundsRate"
+        },
+        {
+          "audited": {
+            "audited_by": "C75 federal percent recheck",
+            "audited_date": "2026-10-09",
+            "basis": "opendata/data/providers/federal_reserve/specs.py -- NOT_DECLARED and the model= declarations",
+            "changed": [
+              "expressible_today",
+              "needs_engine_capability",
+              "notes"
+            ],
+            "prior_expressible_today": true,
+            "prior_needs_engine_capability": []
+          },
+          "canonical_still_absent": [
+            "columns.null_sentinel",
+            "param.relative_default"
+          ],
+          "census_file": "census-sec-tmx-fed-gov-finra.json",
+          "endpoints": 1,
+          "evidence": "providers/federal_reserve/openbb_federal_reserve/models/sofr.py:84",
+          "existing_fetcher_class": "",
+          "expressible_today": false,
+          "folded": {
+            "client_side_sort": "rows.order_limit",
+            "published_value_rescale": "columns.rescale",
+            "relative_date_default": "param.relative_default",
+            "sentinel_value_nulling": "columns.null_sentinel"
+          },
+          "http_method": "GET",
+          "join_needed": false,
+          "needs_engine_capability": [
+            "published_value_rescale",
+            "client_side_sort",
+            "sentinel_value_nulling",
+            "relative_date_default"
+          ],
+          "notes": "DOWNGRADED true->false (C75): openbb_federal_reserve 1.6.2 sofr.py:34-50 divides 7 published percent fields by 100 in a before-validator (the division is sofr.py:49) and sofr.py:108 sorts the rows by date, while neither ColumnSpec (spec.py:144-149) nor ModelSpec (spec.py:376-399) declares a scale or a sort. The retracted note said 'params+rows_pointer cover it': that covers the request shape, not the published values. The pops at sofr.py:103-105 are NOT a blocker, because normalize_record (http_json.py:303-346) builds each row from declared columns, so an undeclared key never reaches the row model. C92 upstream read: transform_query defaults end_date to datetime.now() (sofr.py:65-69) and normalize_percent nulls None/\"\"/\"''\"/\"NA\" before dividing by 100 (sofr.py:46-50); sorted by date with no cap (sofr.py:110).",
+          "paged": false,
+          "provider": "federal_reserve",
+          "raw_needs": [
+            "published_value_rescale",
+            "client_side_sort",
+            "sentinel_value_nulling",
+            "relative_date_default"
+          ],
+          "response_format": "json",
+          "row_extraction": "nested_key",
+          "shape": "get_json_single",
+          "task_id": "OBB2-federal_reserve-SOFR",
+          "upstream_model": "SOFR"
+        }
+      ],
+      "rows_newly_unlocked": 5,
+      "step": 1
+    },
+    {
+      "capability": "request.serialised_param",
+      "credit_list_length": 4,
+      "registry_entry": {
+        "anchor": "\",\".join(str(item) for item in value)",
+        "anchor_found": true,
+        "anchor_line": "return \",\".join(str(item) for item in value)",
+        "anchor_line_number": 344,
+        "claim": false,
+        "cross_anchor": "",
+        "cross_anchor_found": true,
+        "cross_file": "",
+        "engine_work": true,
+        "present": false,
+        "production_declarations": 0,
+        "proof_file": "opendata/data/providers/_engine/http_json.py",
+        "read_from_disk": false,
+        "status": "absent",
+        "why": "_encode_value renders a list parameter by comma-joining it; nothing serialises a JSON object or a key/date mapping into one query value."
+      },
+      "rows": [
+        {
+          "canonical_still_absent": [
+            "request.serialised_param"
+          ],
+          "census_file": "census-imf-oecd-famafrench-misc.json",
+          "endpoints": 1,
+          "evidence": "providers/wsj/openbb_wsj/models/gainers.py:88",
+          "existing_fetcher_class": "",
+          "expressible_today": false,
+          "folded": {
+            "client_side_sort_limit": "rows.order_limit",
+            "encoded_json_query_param": "request.serialised_param"
+          },
+          "http_method": "GET",
+          "join_needed": false,
+          "needs_engine_capability": [
+            "encoded_json_query_param",
+            "client_side_sort_limit"
+          ],
+          "notes": "id= query param is URL-encoded JSON blob; rows at data.instruments then sorted/limited client-side",
+          "paged": false,
+          "provider": "wsj",
+          "raw_needs": [
+            "encoded_json_query_param",
+            "client_side_sort_limit"
+          ],
+          "response_format": "json",
+          "row_extraction": "jsonpath",
+          "shape": "get_json_single",
+          "task_id": "OBB2-wsj-ETFGainers",
+          "upstream_model": "ETFGainers"
+        },
+        {
+          "canonical_still_absent": [
+            "request.serialised_param"
+          ],
+          "census_file": "census-imf-oecd-famafrench-misc.json",
+          "endpoints": 1,
+          "evidence": "providers/wsj/openbb_wsj/models/losers.py:87",
+          "existing_fetcher_class": "",
+          "expressible_today": false,
+          "folded": {
+            "client_side_sort_limit": "rows.order_limit",
+            "encoded_json_query_param": "request.serialised_param"
+          },
+          "http_method": "GET",
+          "join_needed": false,
+          "needs_engine_capability": [
+            "encoded_json_query_param",
+            "client_side_sort_limit"
+          ],
+          "notes": "id= query param is URL-encoded JSON blob; rows at data.instruments then sorted/limited client-side",
+          "paged": false,
+          "provider": "wsj",
+          "raw_needs": [
+            "encoded_json_query_param",
+            "client_side_sort_limit"
+          ],
+          "response_format": "json",
+          "row_extraction": "jsonpath",
+          "shape": "get_json_single",
+          "task_id": "OBB2-wsj-ETFLosers",
+          "upstream_model": "ETFLosers"
+        },
+        {
+          "canonical_still_absent": [
+            "request.serialised_param"
+          ],
+          "census_file": "census-imf-oecd-famafrench-misc.json",
+          "endpoints": 1,
+          "evidence": "providers/wsj/openbb_wsj/models/active.py:84",
+          "existing_fetcher_class": "",
+          "expressible_today": false,
+          "folded": {
+            "client_side_sort_limit": "rows.order_limit",
+            "encoded_json_query_param": "request.serialised_param"
+          },
+          "http_method": "GET",
+          "join_needed": false,
+          "needs_engine_capability": [
+            "encoded_json_query_param",
+            "client_side_sort_limit"
+          ],
+          "notes": "id= query param is URL-encoded JSON blob; rows at data.instruments then sorted/limited client-side",
+          "paged": false,
+          "provider": "wsj",
+          "raw_needs": [
+            "encoded_json_query_param",
+            "client_side_sort_limit"
+          ],
+          "response_format": "json",
+          "row_extraction": "jsonpath",
+          "shape": "get_json_single",
+          "task_id": "OBB2-wsj-ETFActive",
+          "upstream_model": "ETFActive"
+        },
+        {
+          "canonical_still_absent": [
+            "columns.null_sentinel",
+            "request.serialised_param"
+          ],
+          "census_file": "census-sec-tmx-fed-gov-finra.json",
+          "endpoints": 1,
+          "evidence": "providers/government_us/openbb_government_us/models/treasury_auctions.py:196",
+          "existing_fetcher_class": "",
+          "expressible_today": false,
+          "folded": {
+            "param_value_mapping": "param.value_mapping",
+            "published_value_rescale": "columns.rescale",
+            "query_key_date_mapping": "request.serialised_param",
+            "sentinel_value_nulling": "columns.null_sentinel"
+          },
+          "http_method": "GET",
+          "join_needed": false,
+          "needs_engine_capability": [
+            "param_value_mapping",
+            "query_key_date_mapping",
+            "published_value_rescale",
+            "sentinel_value_nulling"
+          ],
+          "notes": "GET TA_WS/securities/search&format=json: type map (bill->Bill) + %m/%d/%Y dates; ParamSpec has no format/value_map. C89 re-pinned this row against the fetcher body: the %m/%d/%Y work is REQUEST-side param rendering (treasury_auctions.py:209 and :212 build _query['startDate']/_query['endDate'] before get_querystring) and the row performs no output-side date conversion at all (the same strftime/strptime needle reads 0 output-side in this file), so the label is query_key_date_mapping -> request.serialised_param, not date_format -> columns.cast; the fold itself stays as it is because 23 other rows still carry date_format and none of them was read site-by-site this round. Two OUTPUT-side mechanisms the row did not carry are added with their sites: _normalize_percent divides the *Rate/*Yield/*Margin/*Percentage/spread columns by 100 (:161, published_value_rescale -> columns.rescale) and fillna('N/A').replace('', None).replace('N/A', None) rewrites published sentinel spellings inside kept rows (:223, sentinel_value_nulling -> columns.null_sentinel).",
+          "paged": false,
+          "provider": "government_us",
+          "raw_needs": [
+            "param_value_mapping",
+            "query_key_date_mapping",
+            "published_value_rescale",
+            "sentinel_value_nulling"
+          ],
+          "response_format": "json",
+          "row_extraction": "flat",
+          "shape": "get_json_single",
+          "task_id": "OBB2-government_us-TreasuryAuctions",
+          "upstream_model": "TreasuryAuctions"
+        }
+      ],
+      "rows_newly_unlocked": 4,
+      "step": 2
+    },
+    {
+      "capability": "decode.tabular_file",
+      "credit_list_length": 3,
+      "registry_entry": {
+        "anchor": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
+        "anchor_found": true,
+        "anchor_line": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
+        "anchor_line_number": 34,
+        "claim": false,
+        "cross_anchor": "",
+        "cross_anchor_found": true,
+        "cross_file": "",
+        "engine_work": true,
+        "present": false,
+        "production_declarations": 0,
+        "proof_file": "opendata/data/providers/_engine/spec.py",
+        "read_from_disk": false,
+        "status": "absent",
+        "why": "No workbook kind exists in the decoder vocabulary and nothing reads a sheet region."
+      },
+      "rows": [
+        {
+          "canonical_still_absent": [
+            "decode.tabular_file"
+          ],
+          "census_file": "census-sec-tmx-fed-gov-finra.json",
+          "endpoints": 1,
+          "evidence": "providers/federal_reserve/openbb_federal_reserve/models/inflation_expectations.py:149",
+          "existing_fetcher_class": "",
+          "expressible_today": false,
+          "folded": {
+            "sheet_region_parse": "decode.tabular_file",
+            "xlsx_decoder": "decode.tabular_file"
+          },
+          "http_method": "GET",
+          "join_needed": false,
+          "needs_engine_capability": [
+            "xlsx_decoder",
+            "sheet_region_parse"
+          ],
+          "notes": "Philadelphia Fed media .xlsx read through BytesIO; engine does json.loads only (http_json.py:333)",
+          "paged": false,
+          "provider": "federal_reserve",
+          "raw_needs": [
+            "xlsx_decoder",
+            "sheet_region_parse"
+          ],
+          "response_format": "binary",
+          "row_extraction": "unknown",
+          "shape": "binary_or_other",
+          "task_id": "OBB2-federal_reserve-InflationExpectations",
+          "upstream_model": "InflationExpectations"
+        },
+        {
+          "canonical_still_absent": [
+            "decode.tabular_file"
+          ],
+          "census_file": "census-sec-tmx-fed-gov-finra.json",
+          "endpoints": 1,
+          "evidence": "providers/federal_reserve/openbb_federal_reserve/models/total_factor_productivity.py:19",
+          "existing_fetcher_class": "",
+          "expressible_today": false,
+          "folded": {
+            "sheet_region_parse": "decode.tabular_file",
+            "xlsx_decoder": "decode.tabular_file"
+          },
+          "http_method": "GET",
+          "join_needed": false,
+          "needs_engine_capability": [
+            "xlsx_decoder",
+            "sheet_region_parse"
+          ],
+          "notes": "frbsf quarterly_tfp.xlsx via pd.ExcelFile(BytesIO); http is http:// origin too",
+          "paged": false,
+          "provider": "federal_reserve",
+          "raw_needs": [
+            "xlsx_decoder",
+            "sheet_region_parse"
+          ],
+          "response_format": "binary",
+          "row_extraction": "unknown",
+          "shape": "binary_or_other",
+          "task_id": "OBB2-federal_reserve-TotalFactorProductivity",
+          "upstream_model": "TotalFactorProductivity"
+        },
+        {
+          "canonical_still_absent": [
+            "decode.tabular_file",
+            "request.serialised_param"
+          ],
+          "census_file": "census-sec-tmx-fed-gov-finra.json",
+          "endpoints": 1,
+          "evidence": "providers/government_us/openbb_government_us/models/commodity_psd_report.py:147",
+          "existing_fetcher_class": "",
+          "expressible_today": false,
+          "folded": {
+            "query_key_date_mapping": "request.serialised_param",
+            "xlsx_decoder": "decode.tabular_file"
+          },
+          "http_method": "GET",
+          "join_needed": false,
+          "needs_engine_capability": [
+            "xlsx_decoder",
+            "query_key_date_mapping"
+          ],
+          "notes": "CircularDownloader.ashx?year&month&commodity returns a spreadsheet file, not JSON",
+          "paged": false,
+          "provider": "government_us",
+          "raw_needs": [
+            "xlsx_decoder",
+            "query_key_date_mapping"
+          ],
+          "response_format": "binary",
+          "row_extraction": "unknown",
+          "shape": "binary_or_other",
+          "task_id": "OBB2-government_us-CommodityPsdReport",
+          "upstream_model": "CommodityPsdReport"
+        }
+      ],
+      "rows_newly_unlocked": 3,
+      "step": 3
+    }
+  ],
+  "generated_by": "make_ladder_front.py: verbatim read of the committed roadmap artifact plus LABEL_TO_CAPABILITY from scripts/quality/model_capability_census.py; no number in this file is typed by hand",
+  "present_capabilities": [
+    "columns.cast",
+    "columns.derive",
+    "columns.rename",
+    "columns.rescale",
+    "columns.select",
+    "decode.archive_member",
+    "decode.delimited",
+    "flow.composite_key_segment",
+    "flow.url_template",
+    "param.value_mapping",
+    "path.explode",
+    "rows.filter",
+    "rows.order_limit"
+  ],
+  "round": "C95"
+}

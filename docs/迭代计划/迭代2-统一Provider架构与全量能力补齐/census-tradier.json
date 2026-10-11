@@ -63,12 +63,31 @@
         "percent_column_scaling",
         "epoch_ms_to_date_conversion",
         "sentinel_value_nulling",
-        "field_rename_map"
+        "field_rename_map",
+        "code_table_forward_lookup",
+        "single_object_array_wrap"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/tradier/openbb_tradier/models/equity_quote.py:241",
-      "notes": "One GET /v1/markets/quotes?symbols=...&greeks=true (:236-238): unlike EquityHistorical there is no per-symbol fanout, all symbols ride one request, but rows still arrive under a data-carrying key, response['quotes']['quote'], which may be a bare single object for one symbol and is wrapped as [data] (:240-243). transform_data flattens the nested greeks dict per record (:273-277), rescales change_percent by /100 (:175-179), casts epoch-ms timestamps to NY datetimes (:146-173), nulls sentinel zeros (:181-189), and translates exchange codes via STOCK_EXCHANGES/OPTIONS_EXCHANGES (:257-271). UNMAPPED_SUGGESTION: column_value_translation —— the exchange-code-to-name map rewrites values inside a column; field_rename_map (columns.rename) is the closest existing key but names key renaming, not value-domain translation."
+      "notes": "One GET /v1/markets/quotes?symbols=...&greeks=true (:236-238): unlike EquityHistorical there is no per-symbol fanout, all symbols ride one request, but rows still arrive under a data-carrying key, response['quotes']['quote'], which may be a bare single object for one symbol and is wrapped as [data] (:240-243). transform_data flattens the nested greeks dict per record (:273-277), rescales change_percent by /100 (:175-179), casts epoch-ms timestamps to NY datetimes (:146-173), nulls sentinel zeros (:181-189), and translates exchange codes via STOCK_EXCHANGES/OPTIONS_EXCHANGES (:257-271). UNMAPPED_SUGGESTION: column_value_translation —— the exchange-code-to-name map rewrites values inside a column; field_rename_map (columns.rename) is the closest existing key but names key renaming, not value-domain translation. | C95: :258-270 pick between TWO code tables by a row field (OPTIONS_EXCHANGES.get vs STOCK_EXCHANGES.get, switched on d['type'] in ['option','index']) for exch/askexch/bidexch; :243 wraps a single dict into a one-element list. NOTE the wrap folds onto shape.single_record_wrap, which is PRESENT -- it is recorded for completeness and adds no blocker.",
+      "audited": {
+        "audited_by": "C95 ladder-front vocabulary repair (upstream openbb monorepo + in-repo engine, read-only)",
+        "audited_date": "2026-10-11",
+        "changed": [
+          "needs_engine_capability"
+        ],
+        "prior_expressible_today": false,
+        "prior_needs_engine_capability": [
+          "per_record_nested_flatten",
+          "percent_column_scaling",
+          "epoch_ms_to_date_conversion",
+          "sentinel_value_nulling",
+          "field_rename_map"
+        ],
+        "basis": "columns.compose reads absent this round; the conditional table choice is a second mechanism beyond a flat forward lookup",
+        "prior_notes": "One GET /v1/markets/quotes?symbols=...&greeks=true (:236-238): unlike EquityHistorical there is no per-symbol fanout, all symbols ride one request, but rows still arrive under a data-carrying key, response['quotes']['quote'], which may be a bare single object for one symbol and is wrapped as [data] (:240-243). transform_data flattens the nested greeks dict per record (:273-277), rescales change_percent by /100 (:175-179), casts epoch-ms timestamps to NY datetimes (:146-173), nulls sentinel zeros (:181-189), and translates exchange codes via STOCK_EXCHANGES/OPTIONS_EXCHANGES (:257-271). UNMAPPED_SUGGESTION: column_value_translation —— the exchange-code-to-name map rewrites values inside a column; field_rename_map (columns.rename) is the closest existing key but names key renaming, not value-domain translation."
+      }
     },
     {
       "task_id": "OBB2-tradier-EquitySearch",
