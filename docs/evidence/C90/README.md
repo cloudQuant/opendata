@@ -141,6 +141,25 @@ carrier：`roadmap-face-diff.py`（422 行）→ `roadmap-face-diff.txt`（157 �
 5. **伪造双记功**：注入一份把 `R-1` 记给两个 capability 的 ladder ⇒ `DoubleCreditError: R-1 is
    credited twice: a.first and a.second`；真实 artifact 走同一条检查、通过。
 
+### 4.1 提交后再跑一遍：档案里哪一行**应该**动
+
+仪器打印生成时刻的 `HEAD`，所以提交本身会让一份档案动一行——这是定义，不是漂移，但要说清是哪一行：
+
+```
+diff cast-rescale-anchor-honesty.txt  <post-bac9ae7 rerun>   -> 仅 1 行：HEAD e05d1da -> HEAD bac9ae7
+                                                              （H_DIFF_LINES 2，即 1 行的 < 与 >）
+cmp roadmap-face-diff.txt            <post-bac9ae7 rerun>   -> FD_IDENTICAL_POST_COMMIT yes（0 行不同）
+```
+
+face-diff 之所以完全不动，是因为它的前态取自 `git show e05d1da`、后态取自工作树字节，
+两者都不随 HEAD 变化；honesty 只有那一个 HEAD 戳会变，其余 55 行在提交后逐字重放。
+
+**这个 HEAD 戳的语义要说清，否则它会被读成「这份档案描述 `e05d1da` 的字节」**：它只是
+「进程何时起跑」的记号，而它审计的字节全部来自**当时的工作树**（也就是改过 registry 之后、
+`bac9ae7` 随后发布的那份）。所以我**不**把提交后的重跑装回去——那会把这次运行的日期伪造成
+提交之后；相反把「重跑会动哪一行」当作第二层面公布（上面的 `H_DIFF_LINES`）。第三份档案
+`roadmap-check-c90.txt` 与 HEAD 无关（工具不打印 HEAD），它移动的那 3 行是**轮次标签**，见 §5。
+
 ## 5. 我自己写错的话，原句留着
 
 - §45 line 744：「**仍未量的是两件与标签无关的事：`read_from_disk` 是否真的会走 cast/rescale 字段**」。
@@ -160,14 +179,28 @@ carrier：`roadmap-face-diff.py`（422 行）→ `roadmap-face-diff.txt`（157 �
   honesty 在 `{0,1,4242}` 三次同为 `18b94aa7…`。原先那份 14458 字节的档案因此作废并被替换。
 - **我自己引入的门禁红**：改完共享脚本没跑 pre-flight，`make a2-check` rc 2 ——
   `E501 Line too long (101 > 100) scripts/quality/model_capability_census.py:1466`（重 wrap `why`
-  文本时留的）。修完 rc 0。两台新仪器因此也当场跑齐四条腿，bandit 不是无输出而是确实读了这份字节。
+  文本时留的）。修完 rc 0。两台新仪器因此也当场跑齐四条腿，bandit 不是无输出而是确实读了这份字节
+  （`Total lines of code: 745`；同一装置在补面之前读 740，这两串都是读数，不是两个口径）。
+- **`roadmap-check-c90.txt` 的档案头写着别的轮次**：`bac9ae7` 里那份的头两行逐字是
+  `NOTE: round label C75 is the tool default, not read from the tree` +
+  `capability roadmap -- round C75`，而文件名与它记录的轮次都是 C90。我在 §46 草稿里据此写了
+  「档案里 `round_id=C90`」——那是把 **JSON artifact** 的 `round_id`（盘上第 5174 行，实测为 `C90`）
+  当成 check 档案的读数，两个载体被我混成一个。工具其实打印了 NOTE 来披露「这是默认值不是树里的读数」，
+  所以先红的是我的引文而不是仪器。修法是让标签进命令行：`--check --round-id C90` 重跑，
+  档案换成 **574 行 / 63865 字节**（`md5[:8]=908954f9`），与旧档 `diff` 只有 3 行不同
+  （删那 2 行、加 `capability roadmap -- round C90`），其后 573 行逐字相同（`old[2:] == new[1:]` 实测 True）
+  且第二次重跑字节相同；
+  §6 的命令面同步补 `--round-id C90`。这与 §45 line 752 记的 `core.quotepath` 静默丢载荷是同一形状；
+  而「标签来自默认值」本仓早已写明——`2e37ab9e`（C75，同一提交把 `--check` 改成只读）在 `main()` 里留了
+  「Measured: a `--check --json` run relabelled a C75 roadmap as C74 while printing PASS」这条注释，
+  本轮的失处是我没有先读那段已经写明默认值语义的代码。
 
 ## 6. 命令 → 读数（任何人可重跑对表）
 
 ```bash
 PYTHONPATH=. python docs/evidence/C90/cast-rescale-anchor-honesty.py     # rc 0，56 行面
 PYTHONPATH=. python docs/evidence/C90/roadmap-face-diff.py               # rc 0，49 PASS / 0 FAIL
-PYTHONPATH=. python scripts/quality/model_capability_census.py --check   # --check verdict: PASS
+PYTHONPATH=. python scripts/quality/model_capability_census.py --check --round-id C90   # verdict: PASS，档案头行 `round C90`
 PYTHONPATH=. python -m pytest tests/test_model_capability_census.py -q --no-cov   # 21 passed
 make a2-check / ledger-check / zero-dep-check / quality-ratchet / test-cov
 ```
@@ -175,21 +208,75 @@ make a2-check / ledger-check / zero-dep-check / quality-ratchet / test-cov
 | 腿 | rc | 读数 |
 | --- | --- | --- |
 | `a2-check` | 0 | `ok ruff check / ok ruff format --check / ok mypy / ok bandit`（本轮先红后绿，见 §5） |
-| bandit（两台仪器） | 0 | `Code scanned: Total lines of code: 740`、`Total lines skipped (#nosec): 0`、`No issues identified` |
-| `ledger-check` | 0 | `130 items / proven 112 / gap 18`，状态字段名 `items[*].state`（档案里没有 `status` 键） |
-| `zero-dep-check` | 0 | `666 file(s) walked (opendata=339, _vendor=325, opendata_client=2)` |
+| bandit（两台仪器） | 0 | `Code scanned: Total lines of code: 745`、`Total lines skipped (#nosec): 0`、`Total potential issues skipped … : 5`、`No issues identified`；4 条 nosec 注释行都是 C81 的**行级**形式（两处 `import subprocess  # nosec B404`、两处 `subprocess.run(  # nosec B603, B607  # noqa: S603`），bandit 自己还报了一条陈旧标记：`WARNING nosec encountered (B607), but no failed test on file …cast-rescale-anchor-honesty.py:96` |
+| `ledger-check` | 0 | `census: items=130 proven=112 gap=18 unreviewed=0 ticked=112`，跨 22 组 / 19 条 §10 行对账通过；状态字段名 `items[*].state`（档案里没有 `status` 键） |
+| `secret-check` | 0 | 钉版装置 `gitleaks 8.30.1, command: gitleaks detect --source . --config .gitleaks.toml --redact`，`scanned ~153589866 bytes (153.59 MB) in 1m18.8s`、`no leaks found` |
+| `zero-dep-check` | 0 | `666 file(s) walked (opendata=339, opendata/data/providers/akshare/_vendor=325, opendata_client=2), python 3.11, scanner 4; no new upstream references (frozen baseline: 0)` |
 | `quality-ratchet` | 0 | `OK: quality debt did not increase`（ruff_selfdev 129/148、mypy_selfdev 0/0、bandit_selfdev 0/1、ruff_ported 1867/2188、direct_http_ported 1071/1071；带 `NOTE: run --update to freeze the new low`） |
 | `test-cov`（member 12） | 0 | `22459 passed, 148 skipped in 452.40s (0:07:32)`，`Total coverage: 89.88%` |
-| census `--check` | 0 | `check={'drifted_capabilities': [], 'failures': [], 'unanchored_capabilities': ['outside.source_absent']}`，`row_count_measured=279 / expected=279 / guard_fired=false / unique_task_ids=279` |
+| census `--check` | 0 | `check={'drifted_capabilities': [], 'failures': [], 'unanchored_capabilities': ['outside.source_absent']}`，`row_count_measured=279 / expected=279 / guard_fired=false / unique_task_ids=279`；档案头行现为 `capability roadmap -- round C90`（574 行 / 63865 字节，`md5[:8]=908954f9`，重跑逐字节相同）——**`bac9ae7` 里那份的头是 `round C75`，见 §5** |
 
 与 §45 发表的门禁第 8/9 遍相比，测试数与覆盖率**逐字相同**（`22459 passed, 148 skipped`、`89.88%`，
 只有墙钟从 450.46s 到 452.40s）。这不是巧合而是本轮写入的定义面：本轮只改 registry 的两条 entry
 文字/锚点/probe 与 roadmap 的 derive 结果，没动 `opendata/` 或 `tests/` 的任何行为字节，
 唯一被改的测试文件是那条 `read_from_disk` 名单 pin（5 → 7 个名字）。
 
-`make evidence-traceability` 本轮读 rc 2：`NEW VIOLATION: docs/evidence/C90/#narrative` 加 5 条
-untracked。这条腿的判据是「每个 `docs/evidence/<round>/` 至少一份 `.md` 叙述，且不留 untracked」，
-所以它只能在本文与 C90 全部字节入提交**之后**闭合——本轮不假装它绿。
+`make evidence-traceability` 在同一轮里读到**两个值**，两个都登记：
+提交前 rc 2，`NEW VIOLATION: docs/evidence/C90/#narrative` 加 5 条 untracked；
+提交 `bac9ae7` 之后 rc 0，`untracked  gaps = 0` 与
+`OK: evidence archive matches the frozen baseline (0 legacy entr(ies)).`。
+这条腿的判据是「每个 `docs/evidence/<round>/` 至少一份 `.md` 叙述，且不留 untracked」，
+所以它本来就只能在本文与 C90 全部字节入提交之后闭合——**先红的这一次是真读数，不是仪器故障**。
+
+`make a2-check` 因此跑了三遍：改共享脚本后第一遍 rc 2（E501，见 §5），修好后 rc 0，
+两台仪器补面/加 `show()` 之后再复跑仍 rc 0（`ok ruff check / ok ruff format --check /
+ok mypy / ok bandit`），最后一次是在 `bac9ae7` 的字节上取的。
+
+### 6.1 入提交前的凭据扫描：扫的是 staged blob，两侧都配了对照
+
+装置沿用本仓钉版的 gitleaks（`docs/quality/secret-scan.json`：`gitleaks 8.30.1`、
+`gitleaks detect --source … --config .gitleaks.toml --redact`），只是把 `--source` 指向
+`git show :<path>` 逐份取出的 staged 字节，并先校字节恒等：
+
+```
+STAGED_PATHS n=9
+INVARIANT scanned_bytes=421701 written_bytes=421701 equal=True
+gitleaks: scanned ~421701 bytes / no leaks found / rc 0        (report json: FINDINGS_REAL 0)
+```
+
+一个 0 必须配一条能非 0 的臂，而这里我第一次配的对照臂是错的：往里塞
+`AKIAIOSFODNN7EXAMPLE` + `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY`，扫描器读 0 ——
+**那是对照臂失效，不是判定失效**（这两个是 AWS 文档示例值，被规则集当作示例放过）。
+换成非示例的合成值后两臂都翻面：
+
+```
+单独植入 /tmp 探针文件            -> WRN leaks found: 2 / rc 1        （证明装置是活的）
+同一份 staged 目录 + 植入 1 个文件 -> WRN leaks found: 1 / rc 1        （与 REAL 的 0 差在植入处）
+```
+
+第二笔提交（台账 §46 + 本文 + 换标签的 `roadmap-check-c90.txt`，共 3 份 blob）**重扫自己的载荷，
+不复用上面那组数**，并加了一条第三臂：
+
+```
+STAGED_PATHS n=3
+INVARIANT scanned_bytes=<N> written_bytes=<N> equal=True      （N 由装置打印，本文不抄）
+GITLEAKS_RC 0 / FINDINGS_REAL 0                               (真值臂)
+/tmp 单独探针目录 + 合成值        -> rc=1 leaks_found=2                 （装置是活的）
+3 份 staged blob + 同一份植入     -> rc=1 leaks_found=2                 （能翻面）
+删掉植入后同一目录再扫            -> rc=0 leaks_found=0                 （0 来自干净集合，不是残留被 --redact 藏住）
+```
+
+`<N>` 不抄的理由：这三份 blob 里就含本文与台账自己，我每改一个字总数就变，把总数写在这里等于
+亲手造一条注定失配的逐字引文；判据是装置打印的 `equal=True` 与三臂各朝两端读一次。
+上面 421701 那组仍可复算，因为 `bac9ae7` 的 9 份 blob 已被 git 冻结（`git show bac9ae7:<path>` 逐份取回，
+本轮已逐份取回并核过 `16611+19610+12341+63931+17906+14434+163742+80238+32888 = 421701`）。
+第三臂是本轮新增口径：前两臂只证明「植入会让它非 0」，还不能证明那个 0 是**这一份集合**的读数；
+删掉植入再扫仍读 0，才把「干净集合」与「植入残留被 `--redact` 脱敏」两种成因分开。
+植入只写进 `/tmp` 的 blob 副本，仓库字节里从未出现过凭据样式的内容。
+
+`make secret-check` 在提交后另跑整仓历史扫描：`scanned ~153589866 bytes (153.59 MB) in 1m18.8s`、
+`no leaks found`、rc 0。工作树在 `bac9ae7` 之后只剩用户自己的 `README.md` 与四份
+LICENSE/DISCLAIMER 草案未纳入（`M README.md` + 4 条 `??`），这是有意排除，不是遗漏。
 
 ## 7. 本轮结束时仍然打开的面
 
@@ -203,5 +290,10 @@ untracked。这条腿的判据是「每个 `docs/evidence/<round>/` 至少一份
 4. **`rescale` 的诚实性边界**（§45 已记，本轮未推翻）：`value_transform.py` 拒收 float 输入，
    而上游把百分比字段先过 `float()`，所以把 rescale 钉成 present 只对小数串/整数发布值诚实。
 5. `UNPROVEN: ['outside.source_absent']` —— 设计如此（文件系统事实，故意不锚定）。
-6. 50 个 canonical 能力未收敛；146 行 / 22 包的实现波、350 行 live 轴（在授权闸门外）、
+6. **一条我自己仪器上的陈旧豁免**：bandit 报
+   `nosec encountered (B607), but no failed test on file …cast-rescale-anchor-honesty.py:96` ——
+   那个 `# nosec B603, B607` 里 B607 在该行无对象可抑制（argv 的 `git` 字面量在调用点而不是这行）。
+   门禁 rc 0 不受影响，但 C81 的口径是「豁免必须指着真实的 finding」，下轮该按
+   `docs/evidence/C86/nosec-audit.py` 的形状清掉，而不是留着。
+7. 50 个 canonical 能力未收敛；146 行 / 22 包的实现波、350 行 live 轴（在授权闸门外）、
    member 1 `brand-check`、member 11 `acceptance-probe-check`（约 1300s，本轮未跑）仍未开始/未跑。
