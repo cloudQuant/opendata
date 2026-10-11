@@ -293,12 +293,15 @@
       "join_needed": false,
       "needs_engine_capability": [
         "series_pivot",
+        "comparison_row_filter",
+        "client_side_sort",
+        "sentinel_value_nulling",
         "published_value_rescale"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/federal_reserve/openbb_federal_reserve/models/yield_curve.py:68",
-      "notes": "Reads the same H.15 download as TreasuryRates, so the CSV decode and the five-row preamble are NOT its blockers. What is not declarable is the post-request composition: transform_data melts the eleven maturity columns into long (date, maturity, rate) rows, orders maturity by a Categorical, selects each requested date with DatetimeIndex.asof (nearest published date, not a window predicate) and divides rate by 100 (yield_curve.py:88-115). A wide declaration of it would be a second model id over rows TreasuryRates already publishes and would not be the oracle's model, so the declaration was retracted this round and the row is recorded NOT_DECLARED with these two mechanism labels (path.explode, columns.rescale, both measured absent)."
+      "notes": "Reads the same H.15 download as TreasuryRates, so the CSV decode and the five-row preamble are NOT its blockers. What is not declarable is the post-request composition: transform_data melts the eleven maturity columns into long (date, maturity, rate) rows (:103), selects each requested date with DatetimeIndex.asof -- nearest published date, not a window or text predicate (:95) -- orders maturity by a Categorical built from a declared roster (:107), rewrites the published 'ND'/'N/A' spellings to null (:100) and divides rate by 100 (:110). A wide declaration of it would be a second model id over rows TreasuryRates already publishes and would not be the oracle's model, so the declaration was retracted this round and the row is recorded NOT_DECLARED. C89 makes the label set carry all five mechanisms the sentence above already named: path.explode (measured present), rows.filter_comparison, rows.order_limit and columns.null_sentinel (all three claim=False in the registry) and columns.rescale (measured absent). Anchoring rescale therefore cannot move this row into shipped cover: three of its five needs stay unclaimed either way."
     },
     {
       "task_id": "OBB2-finra-OTCAggregate",
@@ -396,12 +399,14 @@
       "join_needed": false,
       "needs_engine_capability": [
         "param_value_mapping",
-        "date_format"
+        "query_key_date_mapping",
+        "published_value_rescale",
+        "sentinel_value_nulling"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/government_us/openbb_government_us/models/treasury_auctions.py:196",
-      "notes": "GET TA_WS/securities/search&format=json: type map (bill->Bill) + %m/%d/%Y dates; ParamSpec has no format/value_map"
+      "notes": "GET TA_WS/securities/search&format=json: type map (bill->Bill) + %m/%d/%Y dates; ParamSpec has no format/value_map. C89 re-pinned this row against the fetcher body: the %m/%d/%Y work is REQUEST-side param rendering (treasury_auctions.py:209 and :212 build _query['startDate']/_query['endDate'] before get_querystring) and the row performs no output-side date conversion at all (the same strftime/strptime needle reads 0 output-side in this file), so the label is query_key_date_mapping -> request.serialised_param, not date_format -> columns.cast; the fold itself stays as it is because 23 other rows still carry date_format and none of them was read site-by-site this round. Two OUTPUT-side mechanisms the row did not carry are added with their sites: _normalize_percent divides the *Rate/*Yield/*Margin/*Percentage/spread columns by 100 (:161, published_value_rescale -> columns.rescale) and fillna('N/A').replace('', None).replace('N/A', None) rewrites published sentinel spellings inside kept rows (:223, sentinel_value_nulling -> columns.null_sentinel)."
     },
     {
       "task_id": "OBB2-government_us-TreasuryPrices",

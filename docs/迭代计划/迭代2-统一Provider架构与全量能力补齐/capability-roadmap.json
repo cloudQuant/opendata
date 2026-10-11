@@ -1275,7 +1275,7 @@
       },
       {
         "capability": "columns.rescale",
-        "cumulative_rows_unlocked": 37,
+        "cumulative_rows_unlocked": 36,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1345,15 +1345,6 @@
           {
             "needs": [
               "columns.rescale",
-              "path.explode"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-YieldCurve",
-            "upstream_model": "YieldCurve"
-          },
-          {
-            "needs": [
-              "columns.rescale",
               "columns.select",
               "flow.branch"
             ],
@@ -1362,32 +1353,12 @@
             "upstream_model": "IndexSnapshots"
           }
         ],
-        "rows_newly_unlocked": 8
+        "rows_newly_unlocked": 7
       },
       {
         "capability": "columns.cast",
-        "cumulative_rows_unlocked": 45,
+        "cumulative_rows_unlocked": 42,
         "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.cast",
-              "columns.rescale",
-              "path.explode",
-              "rows.filter"
-            ],
-            "provider": "benzinga",
-            "task_id": "OBB2-benzinga-AnalystSearch",
-            "upstream_model": "AnalystSearch"
-          },
-          {
-            "needs": [
-              "columns.cast",
-              "param.value_mapping"
-            ],
-            "provider": "government_us",
-            "task_id": "OBB2-government_us-TreasuryAuctions",
-            "upstream_model": "TreasuryAuctions"
-          },
           {
             "needs": [
               "columns.cast",
@@ -1457,11 +1428,11 @@
             "upstream_model": "EtfHistorical"
           }
         ],
-        "rows_newly_unlocked": 8
+        "rows_newly_unlocked": 6
       },
       {
         "capability": "request.body_pagination",
-        "cumulative_rows_unlocked": 54,
+        "cumulative_rows_unlocked": 51,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1568,7 +1539,7 @@
       },
       {
         "capability": "request.body",
-        "cumulative_rows_unlocked": 67,
+        "cumulative_rows_unlocked": 64,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1700,7 +1671,7 @@
       },
       {
         "capability": "flow.preflight_lookup",
-        "cumulative_rows_unlocked": 76,
+        "cumulative_rows_unlocked": 73,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1798,7 +1769,7 @@
       },
       {
         "capability": "shape.columnar",
-        "cumulative_rows_unlocked": 86,
+        "cumulative_rows_unlocked": 83,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1918,7 +1889,7 @@
       },
       {
         "capability": "columns.null_sentinel",
-        "cumulative_rows_unlocked": 95,
+        "cumulative_rows_unlocked": 92,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2032,7 +2003,7 @@
       },
       {
         "capability": "columns.response_dependent_selection",
-        "cumulative_rows_unlocked": 104,
+        "cumulative_rows_unlocked": 101,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2129,7 +2100,7 @@
       },
       {
         "capability": "param.value_transform",
-        "cumulative_rows_unlocked": 113,
+        "cumulative_rows_unlocked": 110,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2240,7 +2211,7 @@
       },
       {
         "capability": "request.graphql",
-        "cumulative_rows_unlocked": 122,
+        "cumulative_rows_unlocked": 119,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2335,7 +2306,7 @@
       },
       {
         "capability": "path.object_keys",
-        "cumulative_rows_unlocked": 130,
+        "cumulative_rows_unlocked": 127,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2420,8 +2391,94 @@
         "rows_newly_unlocked": 8
       },
       {
+        "capability": "request.serialised_param",
+        "cumulative_rows_unlocked": 134,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.rename",
+              "columns.rescale",
+              "columns.select",
+              "flow.branch",
+              "flow.preflight_lookup",
+              "request.serialised_param",
+              "rows.order_limit"
+            ],
+            "provider": "cftc",
+            "task_id": "OBB2-cftc-COT",
+            "upstream_model": "COT"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "flow.branch",
+              "flow.preflight_lookup",
+              "param.value_mapping",
+              "request.serialised_param",
+              "rows.filter"
+            ],
+            "provider": "cftc",
+            "task_id": "OBB2-cftc-COTSearch",
+            "upstream_model": "COTSearch"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "columns.derive",
+              "columns.rename",
+              "flow.fan_out",
+              "request.body_pagination",
+              "request.serialised_param",
+              "rows.order_limit"
+            ],
+            "provider": "eia",
+            "task_id": "OBB2-eia-ShortTermEnergyOutlook",
+            "upstream_model": "ShortTermEnergyOutlook"
+          },
+          {
+            "needs": [
+              "request.serialised_param",
+              "rows.order_limit"
+            ],
+            "provider": "wsj",
+            "task_id": "OBB2-wsj-ETFGainers",
+            "upstream_model": "ETFGainers"
+          },
+          {
+            "needs": [
+              "request.serialised_param",
+              "rows.order_limit"
+            ],
+            "provider": "wsj",
+            "task_id": "OBB2-wsj-ETFLosers",
+            "upstream_model": "ETFLosers"
+          },
+          {
+            "needs": [
+              "request.serialised_param",
+              "rows.order_limit"
+            ],
+            "provider": "wsj",
+            "task_id": "OBB2-wsj-ETFActive",
+            "upstream_model": "ETFActive"
+          },
+          {
+            "needs": [
+              "columns.null_sentinel",
+              "columns.rescale",
+              "param.value_mapping",
+              "request.serialised_param"
+            ],
+            "provider": "government_us",
+            "task_id": "OBB2-government_us-TreasuryAuctions",
+            "upstream_model": "TreasuryAuctions"
+          }
+        ],
+        "rows_newly_unlocked": 7
+      },
+      {
         "capability": "decode.text_table",
-        "cumulative_rows_unlocked": 136,
+        "cumulative_rows_unlocked": 140,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2493,83 +2550,8 @@
         "rows_newly_unlocked": 6
       },
       {
-        "capability": "request.serialised_param",
-        "cumulative_rows_unlocked": 142,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.rename",
-              "columns.rescale",
-              "columns.select",
-              "flow.branch",
-              "flow.preflight_lookup",
-              "request.serialised_param",
-              "rows.order_limit"
-            ],
-            "provider": "cftc",
-            "task_id": "OBB2-cftc-COT",
-            "upstream_model": "COT"
-          },
-          {
-            "needs": [
-              "columns.derive",
-              "flow.branch",
-              "flow.preflight_lookup",
-              "param.value_mapping",
-              "request.serialised_param",
-              "rows.filter"
-            ],
-            "provider": "cftc",
-            "task_id": "OBB2-cftc-COTSearch",
-            "upstream_model": "COTSearch"
-          },
-          {
-            "needs": [
-              "columns.cast",
-              "columns.derive",
-              "columns.rename",
-              "flow.fan_out",
-              "request.body_pagination",
-              "request.serialised_param",
-              "rows.order_limit"
-            ],
-            "provider": "eia",
-            "task_id": "OBB2-eia-ShortTermEnergyOutlook",
-            "upstream_model": "ShortTermEnergyOutlook"
-          },
-          {
-            "needs": [
-              "request.serialised_param",
-              "rows.order_limit"
-            ],
-            "provider": "wsj",
-            "task_id": "OBB2-wsj-ETFGainers",
-            "upstream_model": "ETFGainers"
-          },
-          {
-            "needs": [
-              "request.serialised_param",
-              "rows.order_limit"
-            ],
-            "provider": "wsj",
-            "task_id": "OBB2-wsj-ETFLosers",
-            "upstream_model": "ETFLosers"
-          },
-          {
-            "needs": [
-              "request.serialised_param",
-              "rows.order_limit"
-            ],
-            "provider": "wsj",
-            "task_id": "OBB2-wsj-ETFActive",
-            "upstream_model": "ETFActive"
-          }
-        ],
-        "rows_newly_unlocked": 6
-      },
-      {
         "capability": "decode.xml",
-        "cumulative_rows_unlocked": 147,
+        "cumulative_rows_unlocked": 145,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2625,7 +2607,7 @@
       },
       {
         "capability": "path.assemble_single_row",
-        "cumulative_rows_unlocked": 153,
+        "cumulative_rows_unlocked": 151,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2693,7 +2675,7 @@
       },
       {
         "capability": "shape.nested_data_message",
-        "cumulative_rows_unlocked": 158,
+        "cumulative_rows_unlocked": 156,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2755,7 +2737,7 @@
       },
       {
         "capability": "decode.geojson",
-        "cumulative_rows_unlocked": 162,
+        "cumulative_rows_unlocked": 160,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2801,7 +2783,7 @@
       },
       {
         "capability": "decode.html_table",
-        "cumulative_rows_unlocked": 166,
+        "cumulative_rows_unlocked": 164,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2847,7 +2829,7 @@
       },
       {
         "capability": "decode.tabular_file",
-        "cumulative_rows_unlocked": 170,
+        "cumulative_rows_unlocked": 168,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2891,7 +2873,7 @@
       },
       {
         "capability": "decode.html_text",
-        "cumulative_rows_unlocked": 173,
+        "cumulative_rows_unlocked": 171,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2928,7 +2910,7 @@
       },
       {
         "capability": "request.caller_url",
-        "cumulative_rows_unlocked": 177,
+        "cumulative_rows_unlocked": 175,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2974,7 +2956,7 @@
       },
       {
         "capability": "decode.opaque_bytes",
-        "cumulative_rows_unlocked": 180,
+        "cumulative_rows_unlocked": 178,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3010,7 +2992,7 @@
       },
       {
         "capability": "path.parameterized_pointer",
-        "cumulative_rows_unlocked": 182,
+        "cumulative_rows_unlocked": 180,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3029,6 +3011,38 @@
             "provider": "tmx",
             "task_id": "OBB2-tmx-IndexSectors",
             "upstream_model": "IndexSectors"
+          }
+        ],
+        "rows_newly_unlocked": 2
+      },
+      {
+        "capability": "rows.filter_comparison",
+        "cumulative_rows_unlocked": 182,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.cast",
+              "columns.null_sentinel",
+              "columns.rescale",
+              "path.explode",
+              "rows.filter",
+              "rows.filter_comparison"
+            ],
+            "provider": "benzinga",
+            "task_id": "OBB2-benzinga-AnalystSearch",
+            "upstream_model": "AnalystSearch"
+          },
+          {
+            "needs": [
+              "columns.null_sentinel",
+              "columns.rescale",
+              "path.explode",
+              "rows.filter_comparison",
+              "rows.order_limit"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-YieldCurve",
+            "upstream_model": "YieldCurve"
           }
         ],
         "rows_newly_unlocked": 2
@@ -5175,13 +5189,13 @@
     "canonical_capability_count": 50,
     "labels_supported": 102,
     "mentions_per_capability": {
-      "columns.cast": 33,
+      "columns.cast": 32,
       "columns.compose": 9,
       "columns.derive": 39,
-      "columns.null_sentinel": 32,
+      "columns.null_sentinel": 35,
       "columns.period_cast": 8,
       "columns.rename": 49,
-      "columns.rescale": 29,
+      "columns.rescale": 30,
       "columns.response_dependent_selection": 9,
       "columns.select": 25,
       "decode.archive_member": 8,
@@ -5219,15 +5233,15 @@
       "request.body_pagination": 22,
       "request.caller_url": 7,
       "request.graphql": 9,
-      "request.serialised_param": 7,
+      "request.serialised_param": 8,
       "rows.filter": 57,
-      "rows.filter_comparison": 9,
-      "rows.order_limit": 38,
+      "rows.filter_comparison": 11,
+      "rows.order_limit": 39,
       "shape.columnar": 21,
       "shape.nested_data_message": 6
     },
     "raw_label_count": 101,
-    "raw_label_mention_count": 1162,
+    "raw_label_mention_count": 1169,
     "rows_needing_only_this_capability": {
       "decode.delimited_headerless": 1,
       "decode.tabular_file": 2,

@@ -1,0 +1,43 @@
+census label repair witness -- every count below is read off disk or out of git
+census rows read: 279; expressible_today: 5; pending: 274
+status groups: present=10 absent=39 drifted=0 unanchored=1 (control: the same counter reads those four numbers for four distinct statuses)
+anchor columns.cast: status=absent (arm A assumes present)
+anchor columns.rescale: status=absent (arm A assumes present)
+
+== OBB2-benzinga-AnalystSearch == census census-benzinga.json
+  labels at aa62daa: ['per_record_nested_flatten', 'client_side_row_filter', 'published_value_rescale', 'epoch_ms_to_date_conversion']
+  labels on disk now   : ['per_record_nested_flatten', 'client_side_row_filter', 'comparison_row_filter', 'sentinel_value_nulling', 'published_value_rescale', 'epoch_ms_to_date_conversion']
+  added: ['comparison_row_filter', 'sentinel_value_nulling'] removed: ['-']
+  needs then: ['columns.cast', 'columns.rescale', 'path.explode', 'rows.filter']
+  needs now : ['columns.cast', 'columns.null_sentinel', 'columns.rescale', 'path.explode', 'rows.filter', 'rows.filter_comparison']
+  arm B: unmet now=['columns.cast', 'columns.rescale'] unmet if cast+rescale present=[]
+  arm A: unmet now=['columns.cast', 'columns.null_sentinel', 'columns.rescale', 'rows.filter_comparison'] unmet if cast+rescale present=['columns.null_sentinel', 'rows.filter_comparison']
+
+== OBB2-federal_reserve-YieldCurve == census census-sec-tmx-fed-gov-finra.json
+  labels at aa62daa: ['series_pivot', 'published_value_rescale']
+  labels on disk now   : ['series_pivot', 'comparison_row_filter', 'client_side_sort', 'sentinel_value_nulling', 'published_value_rescale']
+  added: ['client_side_sort', 'comparison_row_filter', 'sentinel_value_nulling'] removed: ['-']
+  needs then: ['columns.rescale', 'path.explode']
+  needs now : ['columns.null_sentinel', 'columns.rescale', 'path.explode', 'rows.filter_comparison', 'rows.order_limit']
+  arm B: unmet now=['columns.rescale'] unmet if cast+rescale present=[]
+  arm A: unmet now=['columns.null_sentinel', 'columns.rescale', 'rows.filter_comparison', 'rows.order_limit'] unmet if cast+rescale present=['columns.null_sentinel', 'rows.filter_comparison', 'rows.order_limit']
+
+== OBB2-government_us-TreasuryAuctions == census census-sec-tmx-fed-gov-finra.json
+  labels at aa62daa: ['param_value_mapping', 'date_format']
+  labels on disk now   : ['param_value_mapping', 'query_key_date_mapping', 'published_value_rescale', 'sentinel_value_nulling']
+  added: ['published_value_rescale', 'query_key_date_mapping', 'sentinel_value_nulling'] removed: ['date_format']
+  needs then: ['columns.cast', 'param.value_mapping']
+  needs now : ['columns.null_sentinel', 'columns.rescale', 'param.value_mapping', 'request.serialised_param']
+  arm B: unmet now=['columns.cast'] unmet if cast+rescale present=[]
+  arm A: unmet now=['columns.null_sentinel', 'columns.rescale', 'request.serialised_param'] unmet if cast+rescale present=['columns.null_sentinel', 'request.serialised_param']
+
+arm A rows flipping if cast+rescale anchored present (labels on disk): []
+arm B rows flipping with the aa62daa label lists restored: 3 -> ['OBB2-benzinga-AnalystSearch', 'OBB2-federal_reserve-YieldCurve', 'OBB2-government_us-TreasuryAuctions']
+    so the 0 in arm A is a reading: the same counter returns 3 the moment the added labels are taken away
+
+date_format fold face:
+  LABEL_TO_CAPABILITY['date_format'] = columns.cast
+  LABEL_TO_CAPABILITY['query_key_date_mapping'] = request.serialised_param
+  rows carrying label date_format: at aa62daa=24 on disk now=23 (delta -1) -- the fold stays because 23 rows still carry the label and none of them was audited site-by-site this round
+
+NOT TOUCHED: no network, no database, no engine execution, no make gate
