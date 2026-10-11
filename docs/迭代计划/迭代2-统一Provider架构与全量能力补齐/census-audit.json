@@ -965,23 +965,15 @@
         "OBB2-federal_reserve-MoneyMeasures",
         "OBB2-federal_reserve-TreasuryRates",
         "OBB2-intrinio-CurrencyPairs",
-        "OBB2-intrinio-EquitySearch",
-        "OBB2-intrinio-HistoricalDividends",
-        "OBB2-tmx-EtfInfo",
-        "OBB2-tmx-EtfSearch"
+        "OBB2-tmx-EtfInfo"
       ],
       "expressible_disagreement": [
         "OBB2-cboe-EquitySearch",
         "OBB2-intrinio-CurrencyPairs",
-        "OBB2-intrinio-EquitySearch",
-        "OBB2-intrinio-HistoricalDividends",
-        "OBB2-tmx-EtfInfo",
-        "OBB2-tmx-EtfSearch"
+        "OBB2-tmx-EtfInfo"
       ],
       "expressible_disagreement_new_rows": [
-        "OBB2-intrinio-CurrencyPairs",
-        "OBB2-intrinio-EquitySearch",
-        "OBB2-intrinio-HistoricalDividends"
+        "OBB2-intrinio-CurrencyPairs"
       ],
       "evidence_root": {
         "repo_root": 28,
@@ -990,8 +982,8 @@
       "roadmap": {
         "rows_pending": 235,
         "rows_expressible_today_hand": 3,
-        "shipped_cover_rows": 6,
-        "greedy_steps": 28,
+        "shipped_cover_rows": 3,
+        "greedy_steps": 32,
         "rows_unlocked_by_greedy_prefix": 188,
         "rows_still_locked_after_engine_pool": 47,
         "rows_outside_engine": 47,
@@ -1008,27 +1000,27 @@
           [
             "flow.composite_key_segment",
             9,
-            15
+            12
           ],
           [
             "path.explode",
-            6,
-            21
+            3,
+            15
+          ],
+          [
+            "param.value_mapping",
+            4,
+            19
+          ],
+          [
+            "path.object_keys",
+            4,
+            23
           ],
           [
             "flow.fan_out",
-            5,
-            26
-          ],
-          [
-            "flow.branch",
-            7,
-            33
-          ],
-          [
-            "flow.join",
-            5,
-            38
+            4,
+            27
           ]
         ]
       },

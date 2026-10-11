@@ -6,7 +6,10 @@ strings over their 150 rows, with synonyms
 (``client_side_filter`` / ``client_side_row_filter`` / ``client_side_date_filter``) and
 near-neighbours (``multi_request_join`` / ``cross_request_join`` / ``multi_endpoint_join``) counted
 apart. C86 merged twelve providers' fourteen files (88 rows and one further raw label), so the
-roadmap is now derived over 238 rows and 40 canonical capabilities. Worse, the labels were never
+roadmap is now derived over 238 rows, onto whatever canonical set the label map folds them onto --
+a count this run prints rather than one this file claims, because C86 found five labels folded onto
+capabilities they do not describe and splitting them out moved that number without moving a row.
+Worse, the labels were never
 checked against the engine: ``csv_decoder`` blocks rows as a
 missing capability while delimited bodies have been decodable since this round's
 :mod:`opendata.data.providers._engine.decoders`. A roadmap over those labels is a roadmap over
@@ -160,8 +163,11 @@ LABEL_TO_CAPABILITY: Final[dict[str, str]] = {
     "preflight_url_discovery": "flow.preflight_lookup",
     "dataset_path_lookup": "flow.preflight_lookup",
     "caller_url_list": "flow.preflight_lookup",
-    "caller_url_template": "flow.url_template",
-    "branching_base_url": "flow.url_template",
+    # A caller-supplied URL is not a filled placeholder: ``render_path`` refuses any substituted
+    # value that is not exactly one segment, so these rows need a field ModelSpec does not have.
+    "caller_url_template": "request.caller_url",
+    # This is the endpoint branch ``flow.branch`` already describes as undeclarable, not a template.
+    "branching_base_url": "flow.branch",
     "exchange_path_template": "flow.url_template",
     "conditional_endpoint_branch": "flow.branch",
     "interval_branch": "flow.branch",
@@ -171,8 +177,10 @@ LABEL_TO_CAPABILITY: Final[dict[str, str]] = {
     "client_side_row_filter": "rows.filter",
     "client_side_date_filter": "rows.filter",
     "date_window_filter": "rows.filter",
-    "preset_filter_merge": "rows.filter",
-    "sentinel_value_nulling": "rows.filter",
+    # Neither of these selects rows: a preset merged into the outbound parameters is request-side,
+    # and mapping the raw spellings 'None'/'0'/'' to null rewrites a value inside a kept row.
+    "preset_filter_merge": "param.preset_merge",
+    "sentinel_value_nulling": "columns.null_sentinel",
     "client_side_sort": "rows.order_limit",
     "client_side_sort_limit": "rows.order_limit",
     "derived_columns": "columns.derive",
@@ -187,9 +195,13 @@ LABEL_TO_CAPABILITY: Final[dict[str, str]] = {
     "tag_column_selection": "columns.select",
     "xbrl_tag_assembly": "columns.response_dependent_selection",
     "field_rename_map": "columns.rename",
-    "param_value_mapping": "columns.rename",
-    "symbol_normalization": "columns.rename",
-    "hardcoded_symbol_roster": "columns.rename",
+    # ``columns.rename`` renames an OUTPUT key. These three rewrite an INPUT: a dict lookup on the
+    # value a caller passed, a rule that strips a leading '$' or appends ':US', and a roster that
+    # has to become one request per item. Counting them as a shipped rename made 23 rows read as
+    # declarable today, so they get their own canonicals instead.
+    "param_value_mapping": "param.value_mapping",
+    "symbol_normalization": "param.value_transform",
+    "hardcoded_symbol_roster": "flow.fan_out",
     "column_drop": "columns.select",
     "column_truncation": "columns.select",
     "client_side_column_drop": "columns.select",
@@ -1435,6 +1447,59 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         anchor="key = column.source_key or column.name",
         why="Every column declares the raw key it reads and publishes it under its own name.",
         probe=DeclarationProbe(call="ColumnSpec", keyword="source_key", non_empty=True),
+    ),
+    # ---- C86: five more labels that were folded onto a capability already shipped -------------
+    # Each entry anchors the seam that proves the limitation, so shipping the capability flips the
+    # face by changing that line rather than by an edit to ``claim`` alone.
+    CapabilityEntry(
+        capability="param.value_mapping",
+        claim=False,
+        engine_work=True,
+        proof_file=SPEC_REL,
+        anchor="enum: tuple[str, ...] = ()",
+        why="A parameter can declare the set of values it accepts and alias its query key, but has "
+        "nowhere to say which upstream token an accepted value is sent as, so a fetcher's "
+        "``COVERAGE_DICT[value]`` round-trip has no declaration surface.",
+    ),
+    CapabilityEntry(
+        capability="param.value_transform",
+        claim=False,
+        engine_work=True,
+        proof_file=SPEC_REL,
+        anchor="query_key: str | None = None",
+        why="The key may be renamed while the value is substituted verbatim once validated, so a "
+        "rule that strips a leading '$' or appends ':US' when no exchange suffix is present cannot "
+        "be declared -- only hardcoded in a fetcher.",
+    ),
+    CapabilityEntry(
+        capability="columns.null_sentinel",
+        claim=False,
+        engine_work=True,
+        proof_file=SPEC_REL,
+        anchor="nullable: bool = True",
+        why="A column can declare that it may be null but not which raw spellings -- the strings "
+        "'None', '0' or empty -- become null, so per-row sentinel nulling is a fetcher behaviour "
+        "the engine cannot express.",
+    ),
+    CapabilityEntry(
+        capability="param.preset_merge",
+        claim=False,
+        engine_work=True,
+        proof_file=SPEC_REL,
+        anchor="params: tuple[ParamSpec, ...] = ()",
+        why="``params`` is a fixed declared tuple with no field that merges a preset filter set "
+        "into the caller's parameters, which is what a screener built from a preset ini needs.",
+    ),
+    CapabilityEntry(
+        capability="request.caller_url",
+        claim=False,
+        engine_work=True,
+        proof_file=SPEC_REL,
+        anchor="path: str",
+        why="One declared path string filled by placeholders: no field accepts a caller-supplied "
+        "URL, and ``render_path`` refuses any substituted value that is not exactly one segment, "
+        "so a model addressed by a URL the caller brings cannot be declared -- and would be an "
+        "SSRF seam if it could.",
     ),
     CapabilityEntry(
         capability="outside.sdk",

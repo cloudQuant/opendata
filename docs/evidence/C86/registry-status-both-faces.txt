@@ -1,0 +1,5 @@
+pre-split bytes: /tmp/c86_pre_split.py sha256[:16]=fe5a3a55ef600b7f vs pin fe5a3a55ef600b7f MATCH
+pre_split: canonical=40 registry_entries=40 statuses={"absent": 33, "drifted": 0, "present": 6, "unanchored": 1}
+split: canonical=45 registry_entries=45 statuses={"absent": 38, "drifted": 0, "present": 6, "unanchored": 1}
+delta across the split: canonical 40->45 registry 40->45 statuses={"absent": 5, "drifted": 0, "present": 0, "unanchored": 0}
+closure (status groups sum == registry entries == canonical ids): {"pre_split": true, "split": true} digest_pin=MATCH

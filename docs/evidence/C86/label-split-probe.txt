@@ -1,0 +1,26 @@
+carrier: commit=912f59b blob=scripts/quality/model_capability_census.py sha256[:16]=fe5a3a55ef600b7f pre_split_labels=96 live_labels=96 label_spelling_differences=0
+live face: {"canonical_capabilities": 45, "greedy_steps": 32, "rows_expressible_today": 3, "shipped_cover_rows": 3}
+live shipped_cover rows: ["cboe-EquitySearch", "intrinio-CurrencyPairs", "tmx-EtfInfo"]
+folds derived from the carrier, not typed here: 7 {"branching_base_url": "flow.url_template", "caller_url_template": "flow.url_template", "hardcoded_symbol_roster": "columns.rename", "param_value_mapping": "columns.rename", "preset_filter_merge": "rows.filter", "sentinel_value_nulling": "rows.filter", "symbol_normalization": "columns.rename"}
+registry entries the split added, derived from the folds: 5 ["columns.null_sentinel", "param.preset_merge", "param.value_mapping", "param.value_transform", "request.caller_url"]
+GUARD ARM (a fold that leaves its registry entry unnameable must be refused)
+  [PASS] fold caller_url_template -> flow.url_template with the request.caller_url entry kept: RoadmapError: registry names capabilities no census label maps to: ['request.caller_url']
+  [PASS] same fold with request.caller_url dropped: runs, canonical_capabilities 45->44
+SINGLE-FOLD ARMS (each must move a ladder counter or rewrite at least one need set)
+  [PASS] fold branching_base_url -> flow.url_template drop=[]: rows_need_set_rewritten 4
+  [PASS] fold caller_url_template -> flow.url_template drop=["request.caller_url"]: canonical_capabilities 45->44, greedy_steps 32->31, rows_need_set_rewritten 3
+  [PASS] fold hardcoded_symbol_roster -> columns.rename drop=[]: rows_need_set_rewritten 1
+  [PASS] fold param_value_mapping -> columns.rename drop=["param.value_mapping"]: canonical_capabilities 45->44, shipped_cover_rows 3->5, greedy_steps 32->31, rows_need_set_rewritten 17
+  [PASS] fold preset_filter_merge -> rows.filter drop=["param.preset_merge"]: canonical_capabilities 45->44, rows_need_set_rewritten 1
+  [PASS] fold sentinel_value_nulling -> rows.filter drop=["columns.null_sentinel"]: canonical_capabilities 45->44, greedy_steps 32->31, rows_need_set_rewritten 16
+  [PASS] fold symbol_normalization -> columns.rename drop=["param.value_transform"]: canonical_capabilities 45->44, shipped_cover_rows 3->4, greedy_steps 32->31, rows_need_set_rewritten 6
+  [PASS] canonical-reducing folds measured=5 ["caller_url_template", "param_value_mapping", "preset_filter_merge", "sentinel_value_nulling", "symbol_normalization"] derived=5 ["caller_url_template", "param_value_mapping", "preset_filter_merge", "sentinel_value_nulling", "symbol_normalization"]
+  attribution-only folds (need set moves, every ladder counter holds): 2 ["branching_base_url", "hardcoded_symbol_roster"]
+CONTROL ARM (a fold onto the value the label already holds must move nothing)
+  [PASS] fold alias_model -> itself: rows_need_set_rewritten 0
+ALL-FOLD ARM (the pre-split map with the split's registry entries removed)
+  [PASS] canonical_capabilities 45->40, shipped_cover_rows 3->6, greedy_steps 32->28, rows_need_set_rewritten 42
+  refuted face: {"canonical_capabilities": 40, "greedy_steps": 28, "rows_expressible_today": 3, "shipped_cover_rows": 6}
+  refuted shipped_cover rows: ["cboe-EquitySearch", "intrinio-CurrencyPairs", "intrinio-EquitySearch", "intrinio-HistoricalDividends", "tmx-EtfInfo", "tmx-EtfSearch"]
+  rows the pre-split map called declarable today and the split map does not: 3 ["intrinio-EquitySearch", "intrinio-HistoricalDividends", "tmx-EtfSearch"]
+SPLIT_PROBE folds=7 unique_holder_labels=5 counters=5 failures=0
