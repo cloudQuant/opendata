@@ -331,14 +331,25 @@ VERDICT invariant=True real_zero=True plant=True allow=True allow_two_sided=True
 22 group、19 §10 row 全部对齐）。`make evidence-traceability` 在提交前读 `TRACE_RC=2`
 （`untracked gaps = 2`：本档与 `fan-out-credit-face.py`），这笔按预期在两笔提交之后重取。
 
-## 13. 本轮第 9 条自错：同一个 B404 在一轮里犯了两次
+## 13. 这台扫描装置自己的第一条红：提交后重跑抛 ValueError，而不是打印拒绝面
 
-`fan-out-credit-face.py` 因为漏 `# nosec B404` 让 `make a2-check` 读 `A2_RC=2 / FAIL bandit`（§10 第 8 条），
-补完后我**新写的第二台仪器 `staged-blob-secret-scan.py` 又漏了同一条**，a2 再读 `A2_RC=2`、
-bandit 指到 `./docs/evidence/C94/staged-blob-secret-scan.py line 31 B404`。
-所以「跑全 a2 四项」这条债本轮第一次补的时候并没有真的学会：**ruff 与 mypy 会过，bandit 不会**，
-任何 `import subprocess` 的新文件都要在写完的那一步就带上 marker。
-中途还有一次 `ruff check` 读 `2 fixable`（我用 python 打补丁时插进一个尾随空格），
-是 `ruff format` 写回把它清掉的 —— 也就是说那一刻 `RUFF_RC=1` 与 `A2_RC=0` 同时成立，
-原因是 a2 的 ruff 面跑在 `ruff format` 之后；这笔不矛盾，但只有把两个 rc 都打出来才看得见。
+两笔提交落盘后我把同一台装置在**干净工作树**上重跑了一次（此时 index 是空的），读到的是
+`SCAN_RC=1` + `ValueError: min() arg is an empty sequence`（`main()` 里 `min(rows, …)` 对空表），
+**一条 face 都没打印**。这是我自己仪器的缺陷，不是 census 的：一台会在「调用不满足前提」时崩掉的装置，
+分不清「面判红了」和「这次根本不该跑」。
+
+补了前提守卫并**双向验**：空 index 打印 `REFUSED empty index: this device runs BEFORE a commit,
+against staged blobs` 并回 `rc=2`（把 2 专门留给前提不成立，与 1=面判红分开）；
+再 `git add` 一个文件制造非空 index，装置回到 `SCAN_RC=0 / all=True`。
+所以本装置的复算前提是 **index 非空**，即它必须在提交之前跑；提交后想复算就先把待验文件重新 stage。
+
+## 14. 本轮第 10 条自错登记（承 §10 与 §13 的两族）
+
+`fan-out-credit-face.py` 与 `staged-blob-secret-scan.py` 在同一轮里各漏了一次
+`import subprocess  # nosec B404`，两次都由 `make a2-check` 才抓到（`A2_RC=2 / FAIL bandit`，
+第二次 bandit 指到 `staged-blob-secret-scan.py line 31`）。结论不是「记得加 marker」，
+而是：**ruff 与 mypy 过不了的错我会立刻看见，bandit 过的错我不会** —— 新文件的 marker 检查必须并进
+「写完就跑 a2 四项」这一步，而不是留给门禁。扫描装置的第一版还把「总数」写进自指集合（§12 已披露），
+以及 §13 的崩掉代替拒绝面，都是同一族：**装置的失败模式没有当成 face 来设计**。
+
 

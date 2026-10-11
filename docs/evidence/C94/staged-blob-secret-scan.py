@@ -98,6 +98,12 @@ def hits_in(blob: bytes) -> list[tuple[str, int, bytes]]:
 def main() -> int:
     """Print the three faces and exit non-zero unless all of them hold."""
     paths = staged_paths()
+    if not paths:
+        # A device that throws on an empty index cannot tell a failed face from an
+        # out-of-contract call, so the precondition is named and exit 2 is reserved for it.
+        print("REFUSED empty index: this device runs BEFORE a commit, against staged blobs")
+        print("VERDICT not_run=all False (rc 2 = precondition, not a failed face)")
+        return 2
     rows: list[tuple[str, int, int, str]] = []
     for p in paths:
         blob = git("show", f":{p}")
