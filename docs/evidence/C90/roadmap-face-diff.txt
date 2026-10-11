@@ -1,0 +1,157 @@
+ARTIFACT before=e05d1da round_id=C89 path=docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/capability-roadmap.json
+ARTIFACT after=disk round_id=C90 bytes=163742
+STALENESS guard live: rounds differ (C89 != C90)
+REFUSE same-round diff refused                      -> StaleRevisionError: the pre-anchor revision already carries round C90; point PRE_ANCHOR_REV at the commit whose tree holds the roadmap written before the re-anchor
+PASS CENSUS.row_count_measured=279 want=279
+PASS CENSUS.row_count_expected=279 want=279
+PASS CENSUS.unique_task_ids=279 want=279
+PASS CENSUS.row_count_guard_fired=False want=False
+PASS CENSUS.files=['census-alpha_vantage.json', 'census-benzinga.json', 'census-biztoc.json', 'census-bls-ecb.json', 'census-cftc.json', 'census-congress_gov.json', 'census-econdb.json', 'census-eia.json', 'census-fred.json', 'census-imf-oecd-famafrench-misc.json', 'census-intrinio-1of3.json', 'census-intrinio-2of3.json', 'census-intrinio-3of3.json', 'census-nasdaq.json', 'census-sec-tmx-fed-gov-finra.json', 'census-tiingo.json', 'census-tradier.json', 'census-tradingeconomics.json', 'census-yfinance-cboe-finviz.json'] want=['census-alpha_vantage.json', 'census-benzinga.json', 'census-biztoc.json', 'census-bls-ecb.json', 'census-cftc.json', 'census-congress_gov.json', 'census-econdb.json', 'census-eia.json', 'census-fred.json', 'census-imf-oecd-famafrench-misc.json', 'census-intrinio-1of3.json', 'census-intrinio-2of3.json', 'census-intrinio-3of3.json', 'census-nasdaq.json', 'census-sec-tmx-fed-gov-finra.json', 'census-tiingo.json', 'census-tradier.json', 'census-tradingeconomics.json', 'census-yfinance-cboe-finviz.json']
+PASS TAXONOMY.canonical_capability_count=50 want=50
+PASS TAXONOMY.raw_label_count=101 want=101
+PASS TAXONOMY.raw_label_mention_count=1169 want=1169
+PASS MENTIONS.columns.cast=32 want=32
+MENTION columns.cast n=32 (label population unchanged by the re-anchor)
+PASS MENTIONS.columns.rescale=30 want=30
+MENTION columns.rescale n=30 (label population unchanged by the re-anchor)
+PASS TAXONOMY.rows_needing_only_this_capability={'decode.delimited_headerless': 1, 'decode.tabular_file': 2, 'flow.branch': 1, 'flow.fan_out': 1, 'flow.preflight_lookup': 1} want={'decode.delimited_headerless': 1, 'decode.tabular_file': 2, 'flow.branch': 1, 'flow.fan_out': 1, 'flow.preflight_lookup': 1}
+STATUS present n=10->12 added=['columns.cast', 'columns.rescale'] removed=[]
+STATUS absent n=39->37 added=[] removed=['columns.cast', 'columns.rescale']
+STATUS drifted n=0->0 added=[] removed=[]
+STATUS unanchored n=1->1 added=[] removed=[]
+PASS PRESENT_ADDED={'columns.cast', 'columns.rescale'} want={'columns.cast', 'columns.rescale'}
+PASS PRESENT_REMOVED={} want={}
+PASS ABSENT_REMOVED={'columns.cast', 'columns.rescale'} want={'columns.cast', 'columns.rescale'}
+PASS DRIFTED_EMPTY={} want={}
+PASS STATUS_TOTAL=50 want=50
+READING columns.cast.status 'absent' -> 'present'
+READING columns.cast.present False -> True
+READING columns.cast.claim False -> False
+READING columns.cast.read_from_disk False -> True
+READING columns.cast.engine_work True -> True
+READING columns.cast.proof_file 'opendata/data/providers/_engine/http_json.py' -> 'opendata/data/providers/_engine/value_transform.py'
+READING columns.cast.anchor 'def _column_type' -> 'def apply_cast(cast: CastSpec, value: object) -> object:'
+READING columns.cast.anchor_found True -> True
+READING columns.cast.anchor_line_number 131 -> 250
+READING columns.cast.cross_file '' -> 'opendata/data/providers/_engine/http_json.py'
+READING columns.cast.cross_anchor '' -> 'value = apply_derive(plan, value)'
+READING columns.cast.cross_anchor_found True -> True
+READING columns.cast.production_declarations 0 -> 0
+READING columns.cast.anchor_line_before='def _column_type(column: ColumnSpec) -> Any:  # noqa: ANN401 - dynamic pydantic field type'
+READING columns.cast.anchor_line_after='def apply_cast(cast: CastSpec, value: object) -> object:'
+READING columns.cast.why_before="_column_type maps a declared kind onto one pydantic domain, so the engine enforces a value's type but never converts epoch milliseconds or reformats a published date."
+READING columns.cast.why_after="Presence is read off the disk: apply_cast turns an epoch integer into a dated instant in a declared IANA zone and reparses published text against one declared format, and normalize_record runs it as a derive stage, so a column's cast is declarable. The old text named the wrong carrier -- ColumnSpec has no format field, so the cast is declared as a stage on a plan and no provider row declares one yet."
+PASS STATUS.columns.cast='present' want='present'
+PASS DECLARATIONS.columns.cast=0 want=0
+READING columns.rescale.status 'absent' -> 'present'
+READING columns.rescale.present False -> True
+READING columns.rescale.claim False -> False
+READING columns.rescale.read_from_disk False -> True
+READING columns.rescale.engine_work True -> True
+READING columns.rescale.proof_file 'opendata/data/providers/_engine/spec.py' -> 'opendata/data/providers/_engine/value_transform.py'
+READING columns.rescale.anchor 'units: str = ""' -> 'def apply_scale(scale: ScaleSpec, value: object) -> Decimal:'
+READING columns.rescale.anchor_found True -> True
+READING columns.rescale.anchor_line_number 210 -> 399
+READING columns.rescale.cross_file '' -> 'opendata/data/providers/_engine/http_json.py'
+READING columns.rescale.cross_anchor '' -> 'value = apply_derive(plan, value)'
+READING columns.rescale.cross_anchor_found True -> True
+READING columns.rescale.production_declarations 0 -> 0
+READING columns.rescale.anchor_line_before='units: str = ""'
+READING columns.rescale.anchor_line_after='def apply_scale(scale: ScaleSpec, value: object) -> Decimal:'
+READING columns.rescale.why_before='ColumnSpec keeps units verbatim for the review record and applies nothing, so a published percent or a 1/1000 strike scale cannot be declared.'
+READING columns.rescale.why_after='Presence is read off the disk: apply_scale divides or multiplies in the Decimal domain by a declared factor, refuses a float input and an undeclared output unit, and resolve_output_units moves that unit onto the column, so a published percent or a 1/1000 strike is declarable as a scale stage. ColumnSpec keeping its units verbatim is only the no-scale case.'
+PASS STATUS.columns.rescale='present' want='present'
+PASS DECLARATIONS.columns.rescale=0 want=0
+PASS BUILT_BUT_UNUSED.gained=True want=True
+BUTU C89=['decode.archive_member', 'flow.composite_key_segment', 'param.value_mapping']
+BUTU C90=['columns.cast', 'columns.rescale', 'decode.archive_member', 'flow.composite_key_segment', 'param.value_mapping']
+PASS CHECK.failures=[] want=[]
+PASS CHECK.drifted_capabilities=[] want=[]
+PASS DECLSCAN.modules_scanned=162 want=162
+PASS DECLSCAN.production_declarations_by_file={'columns.derive': {'opendata/data/providers/intrinio/specs.py': 1}, 'columns.rename': {'opendata/data/providers/cboe/specs.py': 19, 'opendata/data/providers/federal_reserve/specs.py': 21, 'opendata/data/providers/intrinio/specs.py': 6}, 'columns.select': {'opendata/data/providers/cboe/specs.py': 4, 'opendata/data/providers/federal_reserve/specs.py': 3, 'opendata/data/providers/intrinio/specs.py': 4}, 'decode.delimited': {'opendata/data/providers/cboe/specs.py': 1, 'opendata/data/providers/federal_reserve/specs.py': 3}, 'flow.url_template': {'opendata/data/providers/cboe/specs.py': 1, 'opendata/data/providers/intrinio/specs.py': 1}, 'path.explode': {'opendata/data/providers/federal_reserve/specs.py': 1, 'opendata/data/providers/intrinio/specs.py': 1}, 'rows.filter': {'opendata/data/providers/cboe/specs.py': 2, 'opendata/data/providers/intrinio/specs.py': 1}} want={'columns.derive': {'opendata/data/providers/intrinio/specs.py': 1}, 'columns.rename': {'opendata/data/providers/cboe/specs.py': 19, 'opendata/data/providers/federal_reserve/specs.py': 21, 'opendata/data/providers/intrinio/specs.py': 6}, 'columns.select': {'opendata/data/providers/cboe/specs.py': 4, 'opendata/data/providers/federal_reserve/specs.py': 3, 'opendata/data/providers/intrinio/specs.py': 4}, 'decode.delimited': {'opendata/data/providers/cboe/specs.py': 1, 'opendata/data/providers/federal_reserve/specs.py': 3}, 'flow.url_template': {'opendata/data/providers/cboe/specs.py': 1, 'opendata/data/providers/intrinio/specs.py': 1}, 'path.explode': {'opendata/data/providers/federal_reserve/specs.py': 1, 'opendata/data/providers/intrinio/specs.py': 1}, 'rows.filter': {'opendata/data/providers/cboe/specs.py': 2, 'opendata/data/providers/intrinio/specs.py': 1}}
+PASS TOTAL.rows_pending=274 want=274
+PASS TOTAL.rows_expressible_today=5 want=5
+PASS TOTAL.rows_unlocked_by_greedy_prefix=183 want=183
+PASS TOTAL.rows_with_no_engine_work_possible=12 want=12
+ROWSET shipped_cover_rows n=4->4 added=[] removed=[]
+PASS ROWSET.shipped_cover_rows.identical=True want=True
+ROWSET rows_outside_engine n=82->82 added=[] removed=[]
+PASS ROWSET.rows_outside_engine.identical=True want=True
+ROWSET rows_still_locked_after_engine_pool n=91->91 added=[] removed=[]
+PASS ROWSET.rows_still_locked_after_engine_pool.identical=True want=True
+ROWSET rows_with_empty_need_set n=0->0 added=[] removed=[]
+PASS ROWSET.rows_with_empty_need_set.identical=True want=True
+REFUSE forged ladder crediting one row twice        -> DoubleCreditError: R-1 is credited twice: a.first and a.second
+PASS POOL_SIZE=179 want=179
+PASS POOL_ID_SET_EQUAL=True want=True
+PASS POOL_ONLY_BEFORE=[] want=[]
+PASS POOL_ONLY_AFTER=[] want=[]
+POOL rows=179 reattributed=18
+REATTRIBUTED OBB2-cboe-IndexSnapshots columns.rescale -> flow.branch
+REATTRIBUTED OBB2-congress_gov-CongressAmendments rows.order_limit -> flow.join
+REATTRIBUTED OBB2-congress_gov-CongressBills rows.order_limit -> flow.fan_out
+REATTRIBUTED OBB2-econdb-CountryProfile columns.rescale -> flow.join
+REATTRIBUTED OBB2-econdb-GdpNominal columns.rescale -> flow.join
+REATTRIBUTED OBB2-econdb-GdpReal columns.rescale -> flow.join
+REATTRIBUTED OBB2-federal_reserve-FederalFundsRate columns.rescale -> rows.order_limit
+REATTRIBUTED OBB2-federal_reserve-OvernightBankFundingRate columns.rescale -> rows.order_limit
+REATTRIBUTED OBB2-federal_reserve-SOFR columns.rescale -> rows.order_limit
+REATTRIBUTED OBB2-intrinio-CompanyNews rows.order_limit -> flow.join
+REATTRIBUTED OBB2-intrinio-EquityHistorical rows.order_limit -> flow.join
+REATTRIBUTED OBB2-intrinio-EtfHistorical rows.order_limit -> flow.join
+REATTRIBUTED OBB2-tiingo-CryptoHistorical columns.cast -> rows.order_limit
+REATTRIBUTED OBB2-tiingo-CurrencyHistorical columns.cast -> flow.fan_out
+REATTRIBUTED OBB2-tiingo-EquityHistorical columns.cast -> flow.fan_out
+REATTRIBUTED OBB2-tiingo-EtfHistorical columns.cast -> flow.fan_out
+REATTRIBUTED OBB2-tradier-EquityHistorical columns.cast -> flow.fan_out
+REATTRIBUTED OBB2-tradier-EtfHistorical columns.cast -> flow.fan_out
+LADDER steps 29->27
+LADDER_DROPPED=['columns.cast', 'columns.rescale']
+LADDER_ADDED=[]
+PASS LADDER_DROPPED={'columns.cast', 'columns.rescale'} want={'columns.cast', 'columns.rescale'}
+PASS LADDER_ADDED={} want={}
+LADDER_STEP columns.null_sentinel newly=9->9 cum=92->92 moved=False
+LADDER_STEP columns.response_dependent_selection newly=9->9 cum=101->101 moved=False
+LADDER_STEP decode.delimited_headerless newly=1->1 cum=183->183 moved=False
+LADDER_STEP decode.geojson newly=4->4 cum=160->160 moved=False
+LADDER_STEP decode.html_table newly=4->4 cum=164->164 moved=False
+LADDER_STEP decode.html_text newly=3->3 cum=171->171 moved=False
+LADDER_STEP decode.opaque_bytes newly=3->3 cum=178->178 moved=False
+LADDER_STEP decode.tabular_file newly=4->4 cum=168->168 moved=False
+LADDER_STEP decode.text_table newly=6->6 cum=140->140 moved=False
+LADDER_STEP decode.xml newly=5->5 cum=145->145 moved=False
+LADDER_STEP flow.branch newly=4->5 cum=8->15 moved=True
+LADDER_STEP flow.fan_out newly=9->15 cum=17->30 moved=True
+LADDER_STEP flow.join newly=5->12 cum=22->42 moved=True
+LADDER_STEP flow.preflight_lookup newly=9->9 cum=73->73 moved=False
+LADDER_STEP param.value_transform newly=9->9 cum=110->110 moved=False
+LADDER_STEP path.assemble_single_row newly=6->6 cum=151->151 moved=False
+LADDER_STEP path.object_keys newly=8->8 cum=127->127 moved=False
+LADDER_STEP path.parameterized_pointer newly=2->2 cum=180->180 moved=False
+LADDER_STEP request.body newly=13->13 cum=64->64 moved=False
+LADDER_STEP request.body_pagination newly=9->9 cum=51->51 moved=False
+LADDER_STEP request.caller_url newly=4->4 cum=175->175 moved=False
+LADDER_STEP request.graphql newly=9->9 cum=119->119 moved=False
+LADDER_STEP request.serialised_param newly=7->7 cum=134->134 moved=False
+LADDER_STEP rows.filter_comparison newly=2->2 cum=182->182 moved=False
+LADDER_STEP rows.order_limit newly=7->6 cum=29->10 moved=True
+LADDER_STEP shape.columnar newly=10->10 cum=83->83 moved=False
+LADDER_STEP shape.nested_data_message newly=5->5 cum=156->156 moved=False
+CREDITED_BEFORE columns.cast n=6 ids=['OBB2-tiingo-CryptoHistorical', 'OBB2-tiingo-CurrencyHistorical', 'OBB2-tiingo-EquityHistorical', 'OBB2-tiingo-EtfHistorical', 'OBB2-tradier-EquityHistorical', 'OBB2-tradier-EtfHistorical']
+CREDITED_AFTER columns.cast rows now credited to ['flow.fan_out', 'rows.order_limit']
+CREDITED_BEFORE columns.rescale n=7 ids=['OBB2-cboe-IndexSnapshots', 'OBB2-econdb-CountryProfile', 'OBB2-econdb-GdpNominal', 'OBB2-econdb-GdpReal', 'OBB2-federal_reserve-FederalFundsRate', 'OBB2-federal_reserve-OvernightBankFundingRate', 'OBB2-federal_reserve-SOFR']
+CREDITED_AFTER columns.rescale rows now credited to ['flow.branch', 'flow.join', 'rows.order_limit']
+PASS SUM_NEWLY.equal=179 want=179
+PASS SUM_NEWLY.equals_pool=179 want=179
+PASS CUM_LAST.equals_pool_plus_shipped=183 want=183
+ARITHMETIC pool=179 + shipped_cover=4 = cumulative=183 (both rounds: newly sum 179/179)
+PASS CONTROL.self_diff_pools_equal=True want=True
+PASS CONTROL.self_diff_reattributes_nothing={} want={}
+PASS CONTROL.dropping_a_row_breaks_the_identity=False want=False
+PASS CONTROL.dropping_a_row_changes_the_size=178 want=178
+PASS CONTROL.renaming_a_credit_adds_only_the_tampered_row=['OBB2-alpha_vantage-EquityHistorical'] want=['OBB2-alpha_vantage-EquityHistorical']
+PASS CONTROL.renaming_a_credit_keeps_every_real_reattribution=[] want=[]
+CONTROL_TARGET self_pool=179 tamper_row=OBB2-alpha_vantage-EquityHistorical real_reattributed=18 tampered=19
+METHOD_NOTE_UNCHANGED=True
+PASS SCHEMA_VERSION=1 want=1
+VERDICT rounds=C89->C90 pool_identity_holds=True reattributed=18 headroom_rows=0

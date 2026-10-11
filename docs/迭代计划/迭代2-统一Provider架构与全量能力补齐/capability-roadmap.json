@@ -1,26 +1,28 @@
 {
   "built_but_unused": [
+    "columns.cast",
+    "columns.rescale",
     "decode.archive_member",
     "flow.composite_key_segment",
     "param.value_mapping"
   ],
   "capability_registry": {
     "columns.cast": {
-      "anchor": "def _column_type",
+      "anchor": "def apply_cast(cast: CastSpec, value: object) -> object:",
       "anchor_found": true,
-      "anchor_line": "def _column_type(column: ColumnSpec) -> Any:  # noqa: ANN401 - dynamic pydantic field type",
-      "anchor_line_number": 131,
+      "anchor_line": "def apply_cast(cast: CastSpec, value: object) -> object:",
+      "anchor_line_number": 250,
       "claim": false,
-      "cross_anchor": "",
+      "cross_anchor": "value = apply_derive(plan, value)",
       "cross_anchor_found": true,
-      "cross_file": "",
+      "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
-      "present": false,
+      "present": true,
       "production_declarations": 0,
-      "proof_file": "opendata/data/providers/_engine/http_json.py",
-      "read_from_disk": false,
-      "status": "absent",
-      "why": "_column_type maps a declared kind onto one pydantic domain, so the engine enforces a value's type but never converts epoch milliseconds or reformats a published date."
+      "proof_file": "opendata/data/providers/_engine/value_transform.py",
+      "read_from_disk": true,
+      "status": "present",
+      "why": "Presence is read off the disk: apply_cast turns an epoch integer into a dated instant in a declared IANA zone and reparses published text against one declared format, and normalize_record runs it as a derive stage, so a column's cast is declarable. The old text named the wrong carrier -- ColumnSpec has no format field, so the cast is declared as a stage on a plan and no provider row declares one yet."
     },
     "columns.compose": {
       "anchor": "STAGE_SEQUENCE: tuple[DeriveStageKind, ...] = (\"cast\", \"scale\")",
@@ -108,21 +110,21 @@
       "why": "Every column declares the raw key it reads and publishes it under its own name."
     },
     "columns.rescale": {
-      "anchor": "units: str = \"\"",
+      "anchor": "def apply_scale(scale: ScaleSpec, value: object) -> Decimal:",
       "anchor_found": true,
-      "anchor_line": "units: str = \"\"",
-      "anchor_line_number": 210,
+      "anchor_line": "def apply_scale(scale: ScaleSpec, value: object) -> Decimal:",
+      "anchor_line_number": 399,
       "claim": false,
-      "cross_anchor": "",
+      "cross_anchor": "value = apply_derive(plan, value)",
       "cross_anchor_found": true,
-      "cross_file": "",
+      "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
-      "present": false,
+      "present": true,
       "production_declarations": 0,
-      "proof_file": "opendata/data/providers/_engine/spec.py",
-      "read_from_disk": false,
-      "status": "absent",
-      "why": "ColumnSpec keeps units verbatim for the review record and applies nothing, so a published percent or a 1/1000 strike scale cannot be declared."
+      "proof_file": "opendata/data/providers/_engine/value_transform.py",
+      "read_from_disk": true,
+      "status": "present",
+      "why": "Presence is read off the disk: apply_scale divides or multiplies in the Decimal domain by a declared factor, refuses a float input and an undeclared output unit, and resolve_output_units moves that unit onto the column, so a published percent or a 1/1000 strike is declarable as a scale stage. ColumnSpec keeping its units verbatim is only the no-scale case."
     },
     "columns.response_dependent_selection": {
       "anchor": "key = column.source_key or column.name",
@@ -994,8 +996,73 @@
     ],
     "greedy_build_order": [
       {
+        "capability": "rows.order_limit",
+        "cumulative_rows_unlocked": 10,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.derive",
+              "decode.delimited",
+              "rows.filter",
+              "rows.order_limit"
+            ],
+            "provider": "econdb",
+            "task_id": "OBB2-econdb-AvailableIndicators",
+            "upstream_model": "AvailableIndicators"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "rows.order_limit"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-SearchAttributes",
+            "upstream_model": "SearchAttributes"
+          },
+          {
+            "needs": [
+              "columns.rescale",
+              "rows.order_limit"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-FederalFundsRate",
+            "upstream_model": "FederalFundsRate"
+          },
+          {
+            "needs": [
+              "columns.rescale",
+              "rows.order_limit"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-OvernightBankFundingRate",
+            "upstream_model": "OvernightBankFundingRate"
+          },
+          {
+            "needs": [
+              "columns.rescale",
+              "rows.order_limit"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-SOFR",
+            "upstream_model": "SOFR"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "param.value_mapping",
+              "path.explode",
+              "rows.order_limit"
+            ],
+            "provider": "tiingo",
+            "task_id": "OBB2-tiingo-CryptoHistorical",
+            "upstream_model": "CryptoHistorical"
+          }
+        ],
+        "rows_newly_unlocked": 6
+      },
+      {
         "capability": "flow.branch",
-        "cumulative_rows_unlocked": 8,
+        "cumulative_rows_unlocked": 15,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1031,13 +1098,23 @@
             "provider": "tradingeconomics",
             "task_id": "OBB2-tradingeconomics-EconomicCalendar",
             "upstream_model": "EconomicCalendar"
+          },
+          {
+            "needs": [
+              "columns.rescale",
+              "columns.select",
+              "flow.branch"
+            ],
+            "provider": "cboe",
+            "task_id": "OBB2-cboe-IndexSnapshots",
+            "upstream_model": "IndexSnapshots"
           }
         ],
-        "rows_newly_unlocked": 4
+        "rows_newly_unlocked": 5
       },
       {
         "capability": "flow.fan_out",
-        "cumulative_rows_unlocked": 17,
+        "cumulative_rows_unlocked": 30,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1064,6 +1141,16 @@
             "provider": "alpha_vantage",
             "task_id": "OBB2-alpha_vantage-EtfHistorical",
             "upstream_model": "EtfHistorical"
+          },
+          {
+            "needs": [
+              "flow.branch",
+              "flow.fan_out",
+              "rows.order_limit"
+            ],
+            "provider": "congress_gov",
+            "task_id": "OBB2-congress_gov-CongressBills",
+            "upstream_model": "CongressBills"
           },
           {
             "needs": [
@@ -1130,13 +1217,70 @@
             "provider": "sec",
             "task_id": "OBB2-sec-LatestFinancialReports",
             "upstream_model": "LatestFinancialReports"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "flow.branch",
+              "flow.fan_out",
+              "param.value_mapping"
+            ],
+            "provider": "tiingo",
+            "task_id": "OBB2-tiingo-EquityHistorical",
+            "upstream_model": "EquityHistorical"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "flow.branch",
+              "flow.fan_out",
+              "param.value_mapping"
+            ],
+            "provider": "tiingo",
+            "task_id": "OBB2-tiingo-EtfHistorical",
+            "upstream_model": "EtfHistorical"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "flow.fan_out",
+              "param.value_mapping",
+              "rows.order_limit"
+            ],
+            "provider": "tiingo",
+            "task_id": "OBB2-tiingo-CurrencyHistorical",
+            "upstream_model": "CurrencyHistorical"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "flow.branch",
+              "flow.fan_out",
+              "rows.filter",
+              "rows.order_limit"
+            ],
+            "provider": "tradier",
+            "task_id": "OBB2-tradier-EquityHistorical",
+            "upstream_model": "EquityHistorical"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "flow.branch",
+              "flow.fan_out",
+              "rows.filter",
+              "rows.order_limit"
+            ],
+            "provider": "tradier",
+            "task_id": "OBB2-tradier-EtfHistorical",
+            "upstream_model": "EtfHistorical"
           }
         ],
-        "rows_newly_unlocked": 9
+        "rows_newly_unlocked": 15
       },
       {
         "capability": "flow.join",
-        "cumulative_rows_unlocked": 22,
+        "cumulative_rows_unlocked": 42,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1151,63 +1295,6 @@
           },
           {
             "needs": [
-              "columns.select",
-              "flow.fan_out",
-              "flow.join",
-              "rows.filter"
-            ],
-            "provider": "intrinio",
-            "task_id": "OBB2-intrinio-CompanyFilings",
-            "upstream_model": "CompanyFilings"
-          },
-          {
-            "needs": [
-              "columns.rename",
-              "flow.fan_out",
-              "flow.join",
-              "rows.filter"
-            ],
-            "provider": "intrinio",
-            "task_id": "OBB2-intrinio-EtfPricePerformance",
-            "upstream_model": "EtfPricePerformance"
-          },
-          {
-            "needs": [
-              "flow.branch",
-              "flow.join"
-            ],
-            "provider": "sec",
-            "task_id": "OBB2-sec-CompareCompanyFacts",
-            "upstream_model": "CompareCompanyFacts"
-          },
-          {
-            "needs": [
-              "columns.derive",
-              "flow.join"
-            ],
-            "provider": "yfinance",
-            "task_id": "OBB2-yfinance-FuturesCurve",
-            "upstream_model": "FuturesCurve"
-          }
-        ],
-        "rows_newly_unlocked": 5
-      },
-      {
-        "capability": "rows.order_limit",
-        "cumulative_rows_unlocked": 29,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "flow.branch",
-              "flow.fan_out",
-              "rows.order_limit"
-            ],
-            "provider": "congress_gov",
-            "task_id": "OBB2-congress_gov-CongressBills",
-            "upstream_model": "CongressBills"
-          },
-          {
-            "needs": [
               "flow.branch",
               "flow.fan_out",
               "flow.join",
@@ -1217,66 +1304,6 @@
             "task_id": "OBB2-congress_gov-CongressAmendments",
             "upstream_model": "CongressAmendments"
           },
-          {
-            "needs": [
-              "columns.derive",
-              "decode.delimited",
-              "rows.filter",
-              "rows.order_limit"
-            ],
-            "provider": "econdb",
-            "task_id": "OBB2-econdb-AvailableIndicators",
-            "upstream_model": "AvailableIndicators"
-          },
-          {
-            "needs": [
-              "flow.fan_out",
-              "flow.join",
-              "path.explode",
-              "rows.order_limit"
-            ],
-            "provider": "intrinio",
-            "task_id": "OBB2-intrinio-CompanyNews",
-            "upstream_model": "CompanyNews"
-          },
-          {
-            "needs": [
-              "flow.branch",
-              "flow.fan_out",
-              "flow.join",
-              "rows.order_limit"
-            ],
-            "provider": "intrinio",
-            "task_id": "OBB2-intrinio-EquityHistorical",
-            "upstream_model": "EquityHistorical"
-          },
-          {
-            "needs": [
-              "flow.branch",
-              "flow.fan_out",
-              "flow.join",
-              "rows.order_limit"
-            ],
-            "provider": "intrinio",
-            "task_id": "OBB2-intrinio-EtfHistorical",
-            "upstream_model": "EtfHistorical"
-          },
-          {
-            "needs": [
-              "columns.rename",
-              "rows.order_limit"
-            ],
-            "provider": "intrinio",
-            "task_id": "OBB2-intrinio-SearchAttributes",
-            "upstream_model": "SearchAttributes"
-          }
-        ],
-        "rows_newly_unlocked": 7
-      },
-      {
-        "capability": "columns.rescale",
-        "cumulative_rows_unlocked": 36,
-        "newly_unlocked_rows": [
           {
             "needs": [
               "columns.derive",
@@ -1317,118 +1344,79 @@
           },
           {
             "needs": [
-              "columns.rescale",
-              "rows.order_limit"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-FederalFundsRate",
-            "upstream_model": "FederalFundsRate"
-          },
-          {
-            "needs": [
-              "columns.rescale",
-              "rows.order_limit"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-OvernightBankFundingRate",
-            "upstream_model": "OvernightBankFundingRate"
-          },
-          {
-            "needs": [
-              "columns.rescale",
-              "rows.order_limit"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-SOFR",
-            "upstream_model": "SOFR"
-          },
-          {
-            "needs": [
-              "columns.rescale",
               "columns.select",
-              "flow.branch"
-            ],
-            "provider": "cboe",
-            "task_id": "OBB2-cboe-IndexSnapshots",
-            "upstream_model": "IndexSnapshots"
-          }
-        ],
-        "rows_newly_unlocked": 7
-      },
-      {
-        "capability": "columns.cast",
-        "cumulative_rows_unlocked": 42,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.cast",
-              "flow.branch",
               "flow.fan_out",
-              "param.value_mapping"
+              "flow.join",
+              "rows.filter"
             ],
-            "provider": "tiingo",
-            "task_id": "OBB2-tiingo-EquityHistorical",
-            "upstream_model": "EquityHistorical"
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-CompanyFilings",
+            "upstream_model": "CompanyFilings"
           },
           {
             "needs": [
-              "columns.cast",
-              "flow.branch",
               "flow.fan_out",
-              "param.value_mapping"
-            ],
-            "provider": "tiingo",
-            "task_id": "OBB2-tiingo-EtfHistorical",
-            "upstream_model": "EtfHistorical"
-          },
-          {
-            "needs": [
-              "columns.cast",
-              "param.value_mapping",
+              "flow.join",
               "path.explode",
               "rows.order_limit"
             ],
-            "provider": "tiingo",
-            "task_id": "OBB2-tiingo-CryptoHistorical",
-            "upstream_model": "CryptoHistorical"
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-CompanyNews",
+            "upstream_model": "CompanyNews"
           },
           {
             "needs": [
-              "columns.cast",
-              "flow.fan_out",
-              "param.value_mapping",
-              "rows.order_limit"
-            ],
-            "provider": "tiingo",
-            "task_id": "OBB2-tiingo-CurrencyHistorical",
-            "upstream_model": "CurrencyHistorical"
-          },
-          {
-            "needs": [
-              "columns.cast",
               "flow.branch",
               "flow.fan_out",
-              "rows.filter",
+              "flow.join",
               "rows.order_limit"
             ],
-            "provider": "tradier",
-            "task_id": "OBB2-tradier-EquityHistorical",
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-EquityHistorical",
             "upstream_model": "EquityHistorical"
           },
           {
             "needs": [
-              "columns.cast",
               "flow.branch",
               "flow.fan_out",
-              "rows.filter",
+              "flow.join",
               "rows.order_limit"
             ],
-            "provider": "tradier",
-            "task_id": "OBB2-tradier-EtfHistorical",
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-EtfHistorical",
             "upstream_model": "EtfHistorical"
+          },
+          {
+            "needs": [
+              "columns.rename",
+              "flow.fan_out",
+              "flow.join",
+              "rows.filter"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-EtfPricePerformance",
+            "upstream_model": "EtfPricePerformance"
+          },
+          {
+            "needs": [
+              "flow.branch",
+              "flow.join"
+            ],
+            "provider": "sec",
+            "task_id": "OBB2-sec-CompareCompanyFacts",
+            "upstream_model": "CompareCompanyFacts"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "flow.join"
+            ],
+            "provider": "yfinance",
+            "task_id": "OBB2-yfinance-FuturesCurve",
+            "upstream_model": "FuturesCurve"
           }
         ],
-        "rows_newly_unlocked": 6
+        "rows_newly_unlocked": 12
       },
       {
         "capability": "request.body_pagination",
@@ -5183,7 +5171,7 @@
       }
     ]
   },
-  "round_id": "C89",
+  "round_id": "C90",
   "schema_version": 1,
   "taxonomy": {
     "canonical_capability_count": 50,
@@ -5251,11 +5239,9 @@
     },
     "statuses": {
       "absent": [
-        "columns.cast",
         "columns.compose",
         "columns.null_sentinel",
         "columns.period_cast",
-        "columns.rescale",
         "columns.response_dependent_selection",
         "decode.delimited_headerless",
         "decode.geojson",
@@ -5293,8 +5279,10 @@
       ],
       "drifted": [],
       "present": [
+        "columns.cast",
         "columns.derive",
         "columns.rename",
+        "columns.rescale",
         "columns.select",
         "decode.archive_member",
         "decode.delimited",

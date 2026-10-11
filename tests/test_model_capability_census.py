@@ -541,13 +541,17 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
     assert [entry.capability for entry in mcc.REGISTRY if not entry.anchor] == [
         "outside.source_absent"
     ]
-    # Presence is re-measured from the shipped engine source for exactly the capabilities whose
-    # declaration field exists there -- one spec field each (row_filters, composite_keys,
-    # row_expansion, column_derives, ParamSpec.value_map) -- so a field that has not landed yet is
-    # reported absent without the census author saying so. Every other entry is asserted by the
-    # census author and only cross-checked against the provider declarations that use it.
+    # Presence is re-measured from the shipped engine source for the capabilities whose declaration
+    # carrier exists there: one spec field each (row_filters, composite_keys, row_expansion,
+    # column_derives, ParamSpec.value_map), plus the two C90 entries whose carrier is a derive stage
+    # on ModelSpec.column_derives (columns.cast and columns.rescale read apply_cast/apply_scale in
+    # _engine/value_transform.py). So a field that has not landed yet is reported absent without the
+    # census author saying so. Every other entry is asserted by the census author and only
+    # cross-checked against the provider declarations that use it.
     assert sorted(entry.capability for entry in mcc.REGISTRY if entry.read_from_disk) == [
+        "columns.cast",
         "columns.derive",
+        "columns.rescale",
         "flow.composite_key_segment",
         "param.value_mapping",
         "path.explode",

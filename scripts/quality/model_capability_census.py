@@ -1445,21 +1445,33 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         capability="columns.cast",
         claim=False,
         engine_work=True,
-        proof_file=HTTP_JSON_REL,
-        anchor="def _column_type",
-        why="_column_type maps a declared kind onto one pydantic domain, so the engine enforces a "
-        "value's type but never converts epoch milliseconds or reformats a published date.",
-        probe=DeclarationProbe(call="ColumnSpec", keyword="format"),
+        proof_file=VALUE_TRANSFORM_REL,
+        anchor="def apply_cast(cast: CastSpec, value: object) -> object:",
+        why="Presence is read off the disk: apply_cast turns an epoch integer into a dated instant "
+        "in a declared IANA zone and reparses published text against one declared format, and "
+        "normalize_record runs it as a derive stage, so a column's cast is declarable. The old "
+        "text named the wrong carrier -- ColumnSpec has no format field, so the cast is declared "
+        "as a stage on a plan and no provider row declares one yet.",
+        read_from_disk=True,
+        cross_file=HTTP_JSON_REL,
+        cross_anchor="value = apply_derive(plan, value)",
+        probe=DeclarationProbe(call="DeriveStage", keyword="kind", value_contains='"cast"'),
     ),
     CapabilityEntry(
         capability="columns.rescale",
         claim=False,
         engine_work=True,
-        proof_file=SPEC_REL,
-        anchor='units: str = ""',
-        why="ColumnSpec keeps units verbatim for the review record and applies nothing, so a "
-        "published percent or a 1/1000 strike scale cannot be declared.",
-        probe=DeclarationProbe(call="ColumnSpec", keyword="scale"),
+        proof_file=VALUE_TRANSFORM_REL,
+        anchor="def apply_scale(scale: ScaleSpec, value: object) -> Decimal:",
+        why="Presence is read off the disk: apply_scale divides or multiplies in the Decimal "
+        "domain by a declared factor, refuses a float input and an undeclared output unit, and "
+        "resolve_output_units moves that unit onto the column, so a published percent or a 1/1000 "
+        "strike is declarable as a scale stage. ColumnSpec keeping its units verbatim is only the "
+        "no-scale case.",
+        read_from_disk=True,
+        cross_file=HTTP_JSON_REL,
+        cross_anchor="value = apply_derive(plan, value)",
+        probe=DeclarationProbe(call="DeriveStage", keyword="kind", value_contains='"scale"'),
     ),
     CapabilityEntry(
         capability="columns.select",
