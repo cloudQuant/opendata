@@ -1,0 +1,58 @@
+== rev HEAD (committed bytes at this rev) ==
+R1 denominator: providers=32 roster_models=350 censused_rows=279 gap=71 named_gap_providers={'cboe': 2, 'fmp': 69} identity=True
+R2 ceiling: engine_reachable=196 outside_engine=83 artifact_rows_outside_engine=83 expressible_today=7 agree=True
+   outside split by provider: {'fred': 34, 'yfinance': 20, 'nasdaq': 8, 'finviz': 7, 'deribit': 2, 'finra': 2, 'cboe': 2, 'ecb': 1, 'congress_gov': 1, 'seeking_alpha': 1, 'stockgrid': 1, 'intrinio': 1, 'sec': 1, 'tmx': 1, 'tradier': 1}
+R3 packaging: packaged=11/32 ['bls', 'cboe', 'ecb', 'federal_reserve', 'fmp', 'fred', 'imf', 'intrinio', 'oecd', 'sec', 'yfinance'] unpackaged=21
+R3b work-bucket: providers_without_package=21 rows_in_unpackaged=108 engine_reachable_in_unpackaged=84 rows_in_packaged=171 roster_missing_census_providers=[] partition_of_census=True
+R4 rights: stale_status_rows=1 {'intrinio': 'RIGHTS2=NOT_REGISTERED registry_dir_row=yes'} consistent=False
+R4b connect-before-register: packaged_while_NOT_REGISTERED=2 ['intrinio', 'sec'] clean=False -- 前置条件与决策清单 §1 requires 接入前逐产品三项结论
+R5 dispatch table (rows/expr/reachable -> gate):
+  intrinio            rows= 38 expr= 3 reach= 37 pkg=Y rights=NO-ROW      
+  fred                rows= 36 expr= 0 reach=  2 pkg=Y rights=v1.2        
+  yfinance            rows= 29 expr= 0 reach=  9 pkg=Y rights=v1.2        
+  sec                 rows= 24 expr= 0 reach= 23 pkg=Y rights=NO-ROW      
+  tmx                 rows= 24 expr= 0 reach= 23 pkg=. rights=NO-ROW      
+  federal_reserve     rows= 13 expr= 2 reach= 13 pkg=Y rights=v1.5        
+  cboe                rows=  9 expr= 2 reach=  7 pkg=Y rights=v1.5        
+  nasdaq              rows=  9 expr= 0 reach=  1 pkg=. rights=NO-ROW      
+  oecd                rows=  9 expr= 0 reach=  9 pkg=Y rights=v1.2        
+  congress_gov        rows=  8 expr= 0 reach=  7 pkg=. rights=NO-ROW      
+  econdb              rows=  8 expr= 0 reach=  8 pkg=. rights=NO-ROW      
+  imf                 rows=  8 expr= 0 reach=  8 pkg=Y rights=v1.2        
+  finviz              rows=  7 expr= 0 reach=  0 pkg=. rights=NO-ROW      
+  tiingo              rows=  7 expr= 0 reach=  7 pkg=. rights=NO-ROW      
+  famafrench          rows=  6 expr= 0 reach=  6 pkg=. rights=NO-ROW      
+  government_us       rows=  6 expr= 0 reach=  6 pkg=. rights=NO-ROW      
+  deribit             rows=  5 expr= 0 reach=  3 pkg=. rights=NO-ROW      
+  tradier             rows=  5 expr= 0 reach=  4 pkg=. rights=NO-ROW      
+  benzinga            rows=  4 expr= 0 reach=  4 pkg=. rights=NO-ROW      
+  alpha_vantage       rows=  3 expr= 0 reach=  3 pkg=. rights=NO-ROW      
+  ecb                 rows=  3 expr= 0 reach=  2 pkg=Y rights=v1.2        
+  seeking_alpha       rows=  3 expr= 0 reach=  2 pkg=. rights=NO-ROW      
+  wsj                 rows=  3 expr= 0 reach=  3 pkg=. rights=NO-ROW      
+  bls                 rows=  2 expr= 0 reach=  2 pkg=Y rights=v1.5        
+  cftc                rows=  2 expr= 0 reach=  2 pkg=. rights=NO-ROW      
+  eia                 rows=  2 expr= 0 reach=  2 pkg=. rights=NO-ROW      
+  finra               rows=  2 expr= 0 reach=  0 pkg=. rights=NO-ROW      
+  biztoc              rows=  1 expr= 0 reach=  1 pkg=. rights=NO-ROW      
+  multpl              rows=  1 expr= 0 reach=  1 pkg=. rights=NO-ROW      
+  stockgrid           rows=  1 expr= 0 reach=  0 pkg=. rights=NO-ROW      
+  tradingeconomics    rows=  1 expr= 0 reach=  1 pkg=. rights=NO-ROW      
+
+-- counterfact arms (each tampers one input) --
+A1 strip the only outside label off OBB2-fred-DiscountWindowPrimaryCreditRate: outside_rows 83 -> 82 (delta -1, required -1) -> MOVED
+A2 forge outside.sdk onto OBB2-intrinio-BalanceSheet: outside_rows 83 -> 84 (delta +1, required +1) -> MOVED
+A2 engine_reachable 196 -> 195 (required -1) -> MOVED
+A3 drop fmp from the roster table: roster_models 350 -> 281 (delta -69, required -69) -> MOVED
+A4 pretend bls has no package directory: packaged 11 -> 10 (delta -1, required -1) -> MOVED
+A4b bls's 2 census rows move into the no-package bucket: rows_in_unpackaged 108 -> 110 (delta +2, required +2) -> MOVED
+A5 forge a numbered registry row for sec while RIGHTS2 still says NOT_REGISTERED: stale_rights 1 -> 2 (delta +1, required +1) -> MOVED
+A5n delete intrinio's numbered registry row: stale_rights 1 -> 0 (delta -1, required -1) -> MOVED
+A7 remove sec's package directory (R4b reads the package+status pair, not either alone): connect_before_register 2 -> 1 (delta -1, required -1) -> MOVED
+A6 artifact stores one row fewer: recomputed=83 tampered_artifact=82 cross_check_agrees=False -> MOVED
+
+FINDINGS (rules this tree violates): 2
+  - R4 stale rights status: {'intrinio': 'RIGHTS2=NOT_REGISTERED registry_dir_row=yes'} -- the decision list and the registry disagree about a source that now has a numbered in-tree row
+  - R4b connected while NOT_REGISTERED: ['intrinio', 'sec'] -- each has a package directory in this repo but no source-specific row in docs/data-rights-registry.md; closing it needs that row quoted from the source's own terms, which cannot be written offline
+INSTRUMENT FAILURES (an arm could not move its reading): 0
+VERDICT: RED WITH NAMED BLOCKERS
