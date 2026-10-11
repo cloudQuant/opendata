@@ -12,7 +12,9 @@
 ## 1. 本轮改了什么（一句话）
 
 `flow.branch` 在册阶梯上被记成「step 0，一次 ship 5 行」的接缝。本轮把这 5 行逐行对上游复核了一遍，
-给它们补了 **14 条**此前未记的 need spelling（3/4/2/4/1），其中两条没有在册 canonical 可归，
+给它们补了 **14 条**此前未记的 need spelling（3/4/2/4/1；这 14 次提及涉及 12 个 distinct 拼写，
+其中 10 个词汇表里本来就有、只是这五行没记，2 个是新拼写，且 `pre_vocab − post_vocab` 实测为空——
+本轮一条拼写都没删），其中两条没有在册 canonical 可归，
 于是注册了两个新的 gap 条目 `shape.single_record_wrap`（锚 `http_json.py:434`）与
 `flow.nearest_published_value`（锚 `http_json.py:764`），两条都是 `claim=False /
 read_from_disk=False / declarations=0`。判定的结论不是把 flag 翻一下，而是：**建 `flow.branch`
@@ -146,6 +148,38 @@ TAMPER SUMMARY baseline_rc=0 cases=4 unexpected=0
 回流、prefix 移动不止一行、阶梯多收了 `rows.cap_source_order`。这条是「钉锚」的正面对照——
 锚错了，本轮的主张就不成立，仪器自己会拒绝点头。
 
+### 4.1 提交后复跑：`T-HEAD` 按 §7.4 的预测翻红了
+
+`e14c4bd` 把 `HEAD` 从 `dd11d42` 挪走之后，同一台仪器与同一套四例反例在新树上各重跑一次。
+**判定仪器仍绿，且与提交前那次的输出只差第 1 行的 `HEAD` 标签**（`diff` 只报 `1c1`：
+`(HEAD=dd11d42)` → `(HEAD=e14c4bd)`，其余 22 行（全文共 23 行）逐字相同）——这正是钉 rev 的作用：测量面不随 HEAD 漂移。
+
+```
+$ python docs/evidence/C93/flow-branch-need-face.py      # FACE_RC=0（提交后复跑）
+$ python /tmp/c93_tamper_harness.py                      # TAMPER_RC=1，unexpected=1
+T-HEAD expected=green rc=1 went_red=True as_expected=False
+  patch=PRE_REPAIR_REV: Final = "HEAD"
+  fail_lines=3
+  || FAIL the pre-repair bytes no longer credit flow.branch with exactly the audited five, they read ['OBB2-alpha_vantage-EquityHistorical', …]
+  || FAIL the prefix movement is not the single row: left=[] entered=[]
+  || FAIL expected +2 canonicals against the pinned artifact and +2 distinct spellings between the census arms, read 0/0
+T-C91 expected=red rc=1 went_red=True as_expected=True
+  fail_lines=5
+T-FORGE expected=red rc=1 went_red=True as_expected=True
+  fail_lines=1
+T-DTAU expected=red rc=1 went_red=True as_expected=True
+  fail_lines=1
+TAMPER SUMMARY baseline_rc=0 cases=4 unexpected=1
+PROBLEM T-HEAD expected green, read rc=1
+```
+
+`unexpected=1` 是**反例装置自己的期望过期**，不是判据变红：`T-HEAD` 那一例的 `expected=green` 写在
+`HEAD` 仍等于 `dd11d42` 的树上，`HEAD` 一漂移，pre 臂就读成了 post 臂（三条 FAIL 全是「两臂塌成同一批字节」
+的面目），于是它翻成本轮真正应有的颜色。这条读数就是 §7.4 那条自指的实测兑现：**下一轮如果再用这台仪器，
+`PRE_REPAIR_REV` 必须换成新的 rev，`T-HEAD` 一例会从「绿色的证人」变成「红色的反例」**——两种颜色都在替
+「不许用 `HEAD~1` 当锚」这条规则作证。上面 §4 那批 `cases=4 unexpected=0` 的读数描述 `dd11d42` 的树，
+这批描述 `e14c4bd` 的树，两个值都在册、不互相替换。
+
 ## 5. 逐行 before → after（need 集与上游 cite）
 
 cite 全部落在 `providers/<pkg>/openbb_<pkg>/…`（上游对照树，只读，不抄代码）。
@@ -229,6 +263,9 @@ fred 的 `AnnotatedResult` metadata 通道）。
 4. **`T-HEAD` 不是一条反例。** 我本以为把锚换成 `HEAD` 会让两臂塌成同一批字节从而翻红，实测绿色——
    因为此刻 `HEAD` 就是 `dd11d42`，两个名字指同一批字节。这条读数留在这里：它是钉锚理由的证人
    （C93 入提交后 `HEAD` 漂移，pre 臂会读成 post 臂），也是「对照臂必须有可能不同」的一次违反自检。
+   **括号里那条预测已经在 §4.1 量到**：`e14c4bd` 之后重跑四例，`T-HEAD` 翻红 3 条、汇总读
+   `unexpected=1 / TAMPER_RC=1`（过期的是反例装置里那句 `expected=green`，不是判据），
+   同一时刻判定仪器仍 `FACE_RC=0` 且 23 行输出里只有第 1 行的 `HEAD` 标签变了。
 5. **ruff 又跑在写完之后**（连续第三轮的同类流程债）。这轮把顺序摆正：写完先 `ruff check` +
    `format --check`，再 mypy / bandit / a2-check，最后才跑仪器与测试。首次 `ruff check` 报出 37 条
    （32 个 E501、2 个未用 noqa、1 个 import 排序、1 个未用变量、1 个 PERF401；计数是从
@@ -257,7 +294,7 @@ Required test coverage of 84% reached. Total coverage: 89.92%
 
 - 本轮往 `model_capability_census.py` 加了 2 条 spelling 映射与 2 个 gap 条目，动的是 **member 12
   会跑的那份判据**，所以全套必须重跑而不是只跑子集。
-- member 12 的目录算术族（C89 那轮红过 11 条）本轮**一条都没红**：全套 `22494 passed`，
+- member 12 的目录算术族（台账 §44 / C89 那轮红过 11 条）本轮**一条都没红**：全套 `22494 passed`，
   无失败、无 error，因此本轮没有「把目录计数当再测量清掉」的动作，也不需要
   `ratchet.py --update`（门槛 84%，读数 89.92%，方向是绿的）。
 - `148 skipped` 是 e2e 腿（`-m "not e2e"` 加 `OPENDATA_ALLOW_LIVE_E2E` 未设），与 350 行 live 轴
@@ -280,3 +317,18 @@ python -m mypy scripts/quality/model_capability_census.py docs/evidence/C93/flow
 
 C92 的两台仪器在 C93 树上重跑都是绿的，且自动跟随轮次标签（`ARTIFACT round=C93 … canonical=54`），
 所以本轮没有新增轮内 pin 债。
+
+**上面每一条在 `e14c4bd`（本档入提交的那一笔）之后逐条重取过**，读数与 §2/§3 描述的是同一批字节：
+
+```
+FACE_RC=0                       # flow-branch-need-face.py；与提交前那次 diff 只差第 1 行的 HEAD 标签（§4.1）
+CTRL_RC=0                       # C92/census-repair-control.py：VERDICT arm-pre=6 arm-post=0 movement=6 failures=0
+row-order-face rc=0             # C92/row-order-face.py：ARTIFACT round=C93 status=present declarations=1
+                                #   shipped_cover=0 canonical=54 / VERDICT failures=0
+GEN_RC=0 / CMP_RC=0             # 重derive 170978 字节，与在册那份 cmp 返回 0
+CHECK_RC=0                      # --check verdict: PASS
+A2_RC=0                         # ok ruff check / ok ruff format --check / ok mypy / ok bandit
+```
+
+这些命令不依赖任何未提交的临时状态，也不依赖 `/tmp`：只有 §4 的反例装置 `c93_tamper_harness.py` 是
+刻意不入库的一次性脚本（它改的是 /tmp 副本、在册字节不动），它需要的四条单行补丁已逐字贴在 §4 的块里。
