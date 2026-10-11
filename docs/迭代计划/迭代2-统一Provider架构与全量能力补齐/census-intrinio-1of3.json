@@ -190,14 +190,17 @@
       "join_needed": false,
       "needs_engine_capability": [
         "symbol_fan_out",
-        "per_record_nested_flatten",
-        "param_value_mapping",
+        "nested_object_as_column_value",
+        "code_table_forward_lookup",
+        "sentinel_value_nulling",
+        "regex_column_derivation",
+        "status_code_fallback_request",
         "field_rename_map"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/intrinio/openbb_intrinio/models/equity_quote.py:133",
-      "notes": "GET /securities/{symbol}/prices/realtime?source=, one URL per comma-separated symbol via amake_requests (:128-133); the callback lifts symbol out of the nested security object and warns on 'messages' (:117-127). exchange/market_center codes mapped through the VENUES dict (references.py:20-40, validator at equity_quote.py:84-90); 10 output names aliased to upstream price fields (:41-52)."
+      "notes": "C94 line re-audit: two of the four prior needs pointed at capabilities the engine already claims while describing work it does not do. per_record_nested_flatten folded to path.explode, but NOTHING explodes here -- the nested 'security' sub-model is kept as one column (equity_quote.py:60-62) and symbol is lifted out of it (callback :123), so the row needed a column-composition label, not a row-expansion one. param_value_mapping folded to param.value_mapping, but VENUES.get(v, v) at :84-90 maps an OUTPUT column value with a raw fallthrough; no query parameter is rewritten (source reaches the URL verbatim at :130). Additions the old set omitted: sales_conditions strips control chars by regex then maps '' to None (:74-82), and the callback returns {} for any non-200 (:119-120) so a failed symbol silently loses its row rather than raising. Fan-out itself holds: one /securities/{s}/prices/realtime URL per comma-split symbol (:129-133), no paging; 9 output names aliased to upstream price fields (:41-52); 'messages' popped and re-issued as a warning (:124-126)."
     },
     {
       "task_id": "OBB2-intrinio-EquitySearch",

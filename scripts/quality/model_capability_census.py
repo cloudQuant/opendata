@@ -244,6 +244,23 @@ LABEL_TO_CAPABILITY: Final[dict[str, str]] = {
     # the easy half here -- the value actually sent is chosen *out of* the response.
     "single_object_array_wrap": "shape.single_record_wrap",
     "nearest_published_date_snap": "flow.nearest_published_value",
+    # C94 audited the five rows ``flow.fan_out`` was credited with unlocking and found four
+    # mechanisms no spelling named. Each folds onto an ALREADY ABSENT canonical, so none of them
+    # can inflate shipability -- the direction that matters: the old folds put a nested object kept
+    # as one column (intrinio equity_quote.py:60-62) and a column-side code table (``VENUES.get`` at
+    # :89) onto ``path.explode`` and ``param.value_mapping``, both of which read as *present*, so
+    # two rows carried their worst blocker under a label the engine already claims to satisfy.
+    "list_column_comma_join": "columns.compose",
+    "code_table_forward_lookup": "columns.compose",
+    "nested_object_as_column_value": "columns.compose",
+    "param_rename_and_drop": "param.value_transform",
+    # ``input_order_restoration`` folds onto flow.fan_out deliberately: deribit re-sorts completed
+    # tasks back into the caller's sequence (futures_info.py:215 ``symbols.index(...)``) only
+    # because it consumes them with ``as_completed`` (:207). It is a requirement ON the seam -- a
+    # fan-out kernel that iterates the roster in order carries it, one that gathers concurrently
+    # and concatenates does not -- and recording it beside the capability that must honour it is
+    # what keeps that promise checkable rather than in a comment nobody re-runs.
+    "input_order_restoration": "flow.fan_out",
     # ---- not an engine capability at all -----------------------------------
     "sdk_delegation": "outside.sdk",
     "html_scraping_sdk": "outside.sdk",

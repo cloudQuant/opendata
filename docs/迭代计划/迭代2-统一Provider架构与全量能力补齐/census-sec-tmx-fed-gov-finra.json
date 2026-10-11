@@ -1049,12 +1049,14 @@
       "needs_engine_capability": [
         "per_record_nested_flatten",
         "derived_columns",
-        "multi_request_fanout"
+        "list_column_comma_join",
+        "conditional_value_derive",
+        "sentinel_value_nulling"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "opendata/data/providers/_engine/http_json.py:264",
-      "notes": "resolve_rows returns the single list at a static pointer (http_json.py:264); per-hit nested lists cannot be flattened; prior cite was specs.py prose. Upstream sec module is not vendored in-repo: no sec bytes under opendata/data/providers/akshare/_vendor",
+      "notes": "C94 line re-audit REFUTED multi_request_fanout: this model makes no per-symbol request at all. It repeats ONE URL template with an offset (get_url(date, offset) at latest_financial_reports.py:134-138, count=100&from=offset) and loops while n_hits < total_hits (:161), where total_hits comes from the first response's hits.total.value (:153-154); tickers and CIKs arrive INSIDE each hit (:200-210), they do not select a request. The row is paged (shape get_json_paged, paged=true) and the page count is response-derived, which no spelling names either -- request.body_pagination is about POST bodies. Response-side: lists are COLLAPSED into comma strings (ciks/sics/items joined at :201/:205/:230, symbol/name joined at :215-216) -- the opposite cardinality of path.explode, and display_names is string-split into ticker+name (:207-210); metadata/financial_report are emitted only when the form passes a startswith/in test (:236-248, a conditional derive, and it dereferences report_type without a None guard at :238); items becomes None when empty (:230); rows are deduplicated on the derived url via a seen set (:252-256), which is a distinct-row operation that rows.filter's op set (contains/equals/not_equals/in/prefix) cannot express -- recorded here and under #87 rather than folded onto a present capability. resolve_rows returns the single list at a static pointer (http_json.py:264). Upstream sec module is not vendored in-repo.",
       "audited": {
         "audited_by": "C74 census re-audit",
         "audited_date": "2026-10-09",
