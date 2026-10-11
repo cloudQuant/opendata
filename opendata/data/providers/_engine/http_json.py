@@ -32,6 +32,7 @@ import sys
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date
+from types import SimpleNamespace
 from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Literal, cast
 
 from pydantic import BeforeValidator, ConfigDict, ValidationError, create_model
@@ -220,7 +221,52 @@ def build_row_model(spec: ModelSpec) -> type[ContractModel]:
     return cast("type[ContractModel]", row_type)
 
 
-def encode_query(query: object, spec: ModelSpec) -> dict[str, str]:
+def resolve_bound(query: object, parameter: ParamSpec, *, now: date | None = None) -> object:
+    """Return the value this parameter contributes to the request.
+
+    The caller's own value always wins: a relative bound fills an *omission*, which is the exact
+    place upstream fills it (``historical_dividends.py:75-78`` assigns ``start_date`` and
+    ``end_date`` only ``if params.get(...) is None``). With nothing on the query and a
+    :class:`~opendata.data.providers._engine.spec.RelativeDefault` on the declaration, the bound is
+    resolved against ``now``; with neither, the parameter is simply not sent, as before.
+
+    ``now`` is the request date, read once per fetch by :func:`fetch_pages` and threaded down, so
+    the two bounds of one window cannot straddle midnight and disagree with each other. A caller
+    who passes no clock gets ``date.today()`` at the moment of the read -- the same clock the
+    reviewed upstream reads -- and never a literal substituted for a bound it cannot resolve.
+
+    Raises:
+        ValueError: Propagated from :meth:`RelativeDefault.resolve` for a clock that is not a bare
+            calendar date. A declaration that resolved to nothing would send a narrower request
+            than it claims to make.
+    """
+    value = getattr(query, parameter.name, None)
+    if value is not None or parameter.relative_default is None:
+        return value
+    return parameter.relative_default.resolve(date.today() if now is None else now)
+
+
+def bound_request(query: object, spec: ModelSpec, *, now: date | None = None) -> object:
+    """Return the request-side view of a validated query, with every relative bound filled in.
+
+    The view carries one attribute per declared parameter: the caller's own value where there is
+    one, the bound resolved from the declaration where there is not, and ``None`` where the
+    declaration says nothing either. Fetching reads both the query string and the path template out
+    of this one object, so a window whose two bounds are both relative is measured against one
+    clock rather than two, and the two halves of one request cannot disagree about what day it was.
+
+    The view is the request's, not the row's: the row-side stages run on the caller's own object,
+    and :class:`~opendata.data.providers._engine.spec.ModelSpec` refuses a filter, a cap or a stamp
+    aimed at a relatively bound parameter rather than letting it read the omission the request no
+    longer carries.
+    """
+    clock = date.today() if now is None else now
+    return SimpleNamespace(
+        **{parameter.name: resolve_bound(query, parameter, now=clock) for parameter in spec.params}
+    )
+
+
+def encode_query(query: object, spec: ModelSpec, *, now: date | None = None) -> dict[str, str]:
     """Project a validated query onto the endpoint's query-string parameters.
 
     A parameter the path template consumes is deliberately left out of the query string: an
@@ -233,13 +279,17 @@ def encode_query(query: object, spec: ModelSpec) -> dict[str, str]:
     the query: they are the upstream's own URL literals (which release, which series, which payload
     format), and ``ModelSpec`` refuses one whose key a parameter, a credential or a paging key also
     claims, so no caller-set value can overwrite the addressing the model was reviewed against.
+
+    An omitted parameter is read through :func:`resolve_bound`, so a declaration carrying a
+    :class:`~opendata.data.providers._engine.spec.RelativeDefault` sends the resolved date where an
+    older declaration sent nothing.
     """
     encoded: dict[str, str] = dict(spec.static_query)
     consumed_by_path = spec.path_consumed_params
     for parameter in spec.params:
         if parameter.name in consumed_by_path:
             continue
-        value = getattr(query, parameter.name, None)
+        value = resolve_bound(query, parameter, now=now)
         if value is None:
             continue
         encoded[parameter.encoded_key] = _apply_value_map(
@@ -248,11 +298,13 @@ def encode_query(query: object, spec: ModelSpec) -> dict[str, str]:
     return encoded
 
 
-def render_path(spec: ModelSpec, query: object) -> str:
+def render_path(spec: ModelSpec, query: object, *, now: date | None = None) -> str:
     """Substitute the declared path template with single-segment values from the validated query.
 
     A placeholder that names a :attr:`~ModelSpec.composite_keys` entry is composed from the
-    parameters its positions name; every other placeholder is one attribute of the query.
+    parameters its positions name; every other placeholder is one attribute of the query, read
+    through :func:`resolve_bound` so a relatively defaulted bound addresses the resource it is
+    reviewed against instead of refusing as missing.
 
     Raises:
         ProviderEngineError: A placeholder has no value, a composition refused one of its
@@ -266,9 +318,16 @@ def render_path(spec: ModelSpec, query: object) -> str:
     by_name = {parameter.name: parameter for parameter in spec.params}
     for name in spec.path_placeholders:
         if name in composite:
-            path = path.replace(f"{{{name}}}", _render_composite(composite[name], query, spec))
+            path = path.replace(
+                f"{{{name}}}", _render_composite(composite[name], query, spec, now=now)
+            )
             continue
-        value = getattr(query, name, None)
+        parameter = by_name.get(name)
+        value = (
+            getattr(query, name, None)
+            if parameter is None
+            else resolve_bound(query, parameter, now=now)
+        )
         if value is None:
             raise ProviderEngineError(f"{spec.error_prefix}_QUERY_INVALID", url=path)
         text = value.isoformat() if isinstance(value, date) else str(value)
@@ -276,7 +335,6 @@ def render_path(spec: ModelSpec, query: object) -> str:
         # mapped placeholder segment carries the upstream spelling too -- and an unmapped one is
         # refused here rather than sent as the caller's own text, which would address a resource no
         # review covered.
-        parameter = by_name.get(name)
         if parameter is not None and parameter.value_map:
             text = _apply_value_map(parameter, text, spec)
         if not _PATH_SEGMENT.match(text):
@@ -291,7 +349,9 @@ def render_path(spec: ModelSpec, query: object) -> str:
 _SEGMENT_BREAKING = "/?#\\&"
 
 
-def _render_composite(key: CompositeKeySpec, query: object, spec: ModelSpec) -> str:
+def _render_composite(
+    key: CompositeKeySpec, query: object, spec: ModelSpec, *, now: date | None = None
+) -> str:
     """Compose one path segment from the query values its declaration names.
 
     The kernel owns the per-position rules -- charset, missing policy, separator safety -- so this
@@ -310,8 +370,12 @@ def _render_composite(key: CompositeKeySpec, query: object, spec: ModelSpec) -> 
     for component in key.components:
         if component.kind != "param" or not component.source:
             continue
-        value = getattr(query, component.source, None)
         parameter = by_name.get(component.source)
+        value = (
+            getattr(query, component.source, None)
+            if parameter is None
+            else resolve_bound(query, parameter, now=now)
+        )
         if parameter is not None and parameter.value_map and value is not None:
             value = _apply_value_map(parameter, str(value), spec)
         values[component.source] = value
@@ -749,15 +813,26 @@ def fetch_pages(
     *,
     transport: HttpGet | None = None,
     source: str = "",
+    now: date | None = None,
 ) -> tuple[Any, ...]:
     """Fetch every page of a request, refusing to report a partial result as whole.
+
+    ``now`` is the date a relative bound is measured against, read once for the whole fetch; it
+    defaults to today, the way every reviewed upstream reads it. Both the query string and the path
+    template are rendered from that one reading.
 
     Raises:
         ProviderEngineError: Missing credential, rejected parameters, an
             upstream status, a body that is not the declared shape, or a page
             bound reached before the result was complete.
+        ValueError: A relative bound reached :func:`bound_request` with a clock that is not a bare
+            calendar date.
     """
     timeout = ctx.timeout if ctx is not None and ctx.timeout is not None else DEFAULT_TIMEOUT
+    # ``query`` is re-bound to its request-side view here, before either read: one clock fills every
+    # relative bound the declaration carries, so a window cannot be addressed on one day and asked
+    # for on the next. The row-side stages run outside this function on the caller's own object.
+    query = bound_request(query, spec, now=now)
     base_params = encode_query(query, spec)
     if spec.credential:
         base_params[spec.credential_query_key or "api_key"] = _credential_value(spec)

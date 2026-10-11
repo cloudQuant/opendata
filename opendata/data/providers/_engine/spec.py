@@ -12,9 +12,11 @@ Nothing in this package performs I/O or imports an upstream SDK.
 
 from __future__ import annotations
 
+import calendar
 import keyword
 import re
 from dataclasses import dataclass, field
+from datetime import date, datetime, timedelta
 from typing import Any, Literal
 
 from opendata.data.providers._engine.key_composition import CompositeKeySpec
@@ -108,6 +110,90 @@ def _check_identifier(value: str, label: str) -> str:
     return value
 
 
+_RELATIVE_OFFSET_FIELDS = ("years", "months", "days")
+
+
+@dataclass(frozen=True)
+class RelativeDefault:
+    """One request bound written as an offset back from the date the request is made.
+
+    :attr:`ParamSpec.default` holds a literal: the same value every day the model runs. Three of
+    the reviewed upstreams fill a bound from *today* instead, inside ``transform_query`` and only
+    when the caller named none, so no literal can record what they send:
+    ``historical_dividends.py:74-78`` sets the start bound to ``now - relativedelta(year=1)`` and
+    the end bound to ``now``; ``overnight_bank_funding_rate.py:78-82`` sets its end bound to
+    ``now`` beside an absolute start literal; ``crypto_historical.py:103-108`` does the intrinio
+    pair again. Before this record those declarations sent no bound at all, which is a wider answer
+    than the one upstream gives.
+
+    The offset is whole calendar units, backwards only, and it resolves against one date: the
+    request date the fetch reads once, so the two bounds of a window cannot straddle midnight.
+
+    Attributes:
+        years: Whole years back from the request date; ``0`` when the bound is nearer.
+        months: Whole months back, in addition to ``years``.
+        days: Whole days back, in addition to the months. A day-overflow of one month's length is
+            clamped to that month's last day, the way ``relativedelta`` clamps it upstream.
+
+    An all-zero bound is not an empty declaration: it means "the request date itself", which is
+    exactly the Fed's ``end_date = now`` and intrinio's ``end_date = now``.
+    """
+
+    years: int = 0
+    months: int = 0
+    days: int = 0
+
+    def __post_init__(self) -> None:
+        """Reject an offset that cannot resolve to one calendar day."""
+        for name in _RELATIVE_OFFSET_FIELDS:
+            value = getattr(self, name)
+            if isinstance(value, bool) or not isinstance(value, int):
+                raise ValueError(
+                    f"relative default {name} must be a whole number of {name}, got {value!r}"
+                )
+            if value > 0:
+                raise ValueError(
+                    f"relative default {name}={value} points forward from the request date: every "
+                    "reviewed upstream window is filled backwards from it, so a forward bound has "
+                    "no mechanism this round to be checked against"
+                )
+
+    def resolve(self, request_date: date) -> date:
+        """Return the bound this offset carries for ``request_date``.
+
+        Months (and therefore years) are applied first, on the calendar, with a day the target
+        month does not have clamped to its last day; days are applied after, arithmetically. The
+        order is what makes ``months`` mean calendar months: ``31 May - 1 month`` is ``30 April``,
+        not ``1 May``.
+
+        Raises:
+            ValueError: ``request_date`` is not a bare calendar date. A timestamp reaching here
+                would resolve to a day read off a clock the declaration never named, and a
+                non-date would resolve to nothing while the request went out.
+        """
+        if not isinstance(request_date, date) or isinstance(request_date, datetime):
+            raise ValueError(
+                f"a relative default resolves against a datetime.date, got "
+                f"{type(request_date).__name__}"
+            )
+        months_back = self.years * 12 + self.months
+        zero_based = (request_date.year * 12 + request_date.month - 1) + months_back
+        year, month_index = divmod(zero_based, 12)
+        if year < date.min.year:
+            raise ValueError(
+                f"a relative default {months_back} months back leaves the calendar at year "
+                f"{year}, which no date can hold"
+            )
+        day = min(request_date.day, calendar.monthrange(year, month_index + 1)[1])
+        try:
+            return date(year, month_index + 1, day) + timedelta(days=self.days)
+        except OverflowError as error:
+            raise ValueError(
+                f"a relative default {self.days} days back from {year}-{month_index + 1:02d}-{day} "
+                "leaves the calendar range"
+            ) from error
+
+
 @dataclass(frozen=True)
 class ParamSpec:
     """One accepted request parameter: its type, upstream key and bound.
@@ -124,6 +210,10 @@ class ParamSpec:
             total for an ``enum`` (every declared value is spelled) and an unmatched value is a
             refusal at encode time, never a silent passthrough of the caller's own text.
         note: Why the bound exists, for the review record.
+        relative_default: A :class:`RelativeDefault` bound, applied when the caller omits this
+            parameter, in place of a literal :attr:`default`. Declared last for the house reason:
+            a positional ``ParamSpec(...)`` written before relative bounds existed keeps binding to
+            the same fields.
     """
 
     name: str
@@ -134,6 +224,7 @@ class ParamSpec:
     enum: tuple[str, ...] = ()
     value_map: tuple[tuple[str, str], ...] = ()
     note: str = ""
+    relative_default: RelativeDefault | None = None
 
     def __post_init__(self) -> None:
         """Reject malformed parameter declarations at construction time."""
@@ -149,6 +240,7 @@ class ParamSpec:
         if self.default is not None and self.required:
             raise ValueError(f"parameter {self.name!r} cannot be required and defaulted")
         self._check_value_map()
+        self._check_relative_default()
 
     def _check_value_map(self) -> None:
         """Resolve a value mapping against this parameter's own value domain.
@@ -184,6 +276,42 @@ class ParamSpec:
         if self.kind == "enum" and unmapped:
             raise ValueError(
                 f"parameter {self.name!r} enum values {unmapped} declare no upstream spelling"
+            )
+
+    def _check_relative_default(self) -> None:
+        """Resolve a relative bound against this parameter's own declaration.
+
+        A relative bound answers one question -- what to send when the caller named no date -- so
+        it is refused wherever the declaration already answers that question another way, and
+        wherever the answer it would give is not a date. Each refusal is the fail-closed half of a
+        combination that would otherwise reach the wire: a literal ``default`` and a relative bound
+        disagree about the same omission and the encoder would have to pick one silently; a required
+        parameter has no omission to fill, so the bound would be dead text the record still claims
+        is a behaviour. A value-mapped or enumerated parameter is refused too, upstream of here:
+        :meth:`_check_value_map` admits only ``str`` and ``enum`` kinds, and ``enum`` values are
+        admitted only by the ``enum`` kind, so a date bound has no caller-text origin to match.
+        """
+        if self.relative_default is None:
+            return
+        if not isinstance(self.relative_default, RelativeDefault):
+            raise ValueError(
+                f"parameter {self.name!r} relative_default must be a RelativeDefault, got "
+                f"{type(self.relative_default).__name__}"
+            )
+        if self.kind != "date":
+            raise ValueError(
+                f"parameter {self.name!r} carries a relative date bound but its kind is "
+                f"{self.kind!r}; the offset resolves to one calendar day and nothing else"
+            )
+        if self.default is not None:
+            raise ValueError(
+                f"parameter {self.name!r} declares a literal default {self.default!r} and a "
+                "relative bound: one parameter cannot give two answers to the same omission"
+            )
+        if self.required:
+            raise ValueError(
+                f"parameter {self.name!r} cannot be required and relatively defaulted: a required "
+                "parameter has no omission for the bound to fill"
             )
 
     @property
@@ -698,12 +826,18 @@ class ModelSpec:
         # that is optional and has no default is a declaration that cannot address a resource on its
         # own, so the task author is told when the record is written rather than on first query.
         # A composite placeholder is exempt: each of its positions carries its own missing policy.
+        # A relative bound counts as a bound for the same reason a literal one does: the placeholder
+        # is filled from the request date on every fetch, so the resource is addressable.
         by_name = {parameter.name: parameter for parameter in self.params}
         for placeholder in self.path_placeholders:
             if placeholder in composite_names:
                 continue
             parameter = by_name[placeholder]
-            if not parameter.required and parameter.default is None:
+            if (
+                not parameter.required
+                and parameter.default is None
+                and parameter.relative_default is None
+            ):
                 raise ValueError(
                     f"{self.model}: path placeholder {placeholder!r} must be required or defaulted"
                 )
@@ -830,4 +964,33 @@ class ModelSpec:
                 raise ValueError(
                     f"{label} cannot be honoured across a {self.pagination.kind} answer: the stage "
                     "orders the records of one response, so the cap would be per page"
+                )
+        # A relative bound lives in the request, not in the query object: it is resolved where the
+        # parameters are encoded and rendered into the URL, and the validated query the row-side
+        # stages read keeps holding ``None`` for a caller who named no date. A row-side facet aimed
+        # at such a parameter would therefore select on nothing, cap on nothing or stamp nothing
+        # while the request itself carried a date -- the silent-empty reading every other name
+        # resolution in this method refuses. The bound stays in the request vocabulary.
+        relative = {
+            parameter.name for parameter in self.params if parameter.relative_default is not None
+        }
+        for name in sorted(relative):
+            for index, row_filter in enumerate(self.row_filters):
+                if name in (row_filter.value_param, row_filter.when_param):
+                    raise ValueError(
+                        f"{self.model}: row filter {index} ({row_filter.op}) reads parameter "
+                        f"{name!r}, whose bound is relative: the filter runs on the validated "
+                        "query, which holds no value for an omitted parameter"
+                    )
+            for plan in self.column_derives:
+                if plan.source_kind == "parameter" and plan.source == name:
+                    raise ValueError(
+                        f"{self.model}: the derive plan for {plan.column!r} stamps parameter "
+                        f"{name!r}, whose bound is relative: the row would publish nothing while "
+                        "the request carried the resolved date"
+                    )
+            if self.order_by is not None and self.order_by.limit_param == name:
+                raise ValueError(
+                    f"{self.model}: order_by takes its cap from limit_param {name!r}, whose bound "
+                    "is relative: a resolved calendar date is not a row count"
                 )

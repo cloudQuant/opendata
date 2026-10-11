@@ -111,6 +111,15 @@ def _download_constants(rel: str, series: str) -> tuple[tuple[str, str], ...]:
 # window in pandas instead (money_measures.py:87-90, treasury_rates.py:111-112), so the engine
 # sends a key only when the caller names that bound. Whether a blank key and an absent one are the
 # same request to this endpoint was not measured here -- no live call was made.
+#
+# This is also why none of the three bound models below takes the ``RelativeDefault`` carrier the
+# engine grew in C96, even though the same upstream modules fill a window from today at query time
+# (money_measures.py:51-56, treasury_rates.py:65-70): the filled bounds never reach the wire.
+# ``extract_data`` spells the URL with ``&from=&to=`` blank as a literal (money_measures.py:72-75)
+# and applies the window afterwards, in pandas, against those query values
+# (money_measures.py:87-90, treasury_rates.py:111-112). Declaring a request-side bound here would
+# send a window the oracle never sends. The client-side window itself is a row-range selection this
+# engine cannot declare yet, and DECLARED_GAPS prices it there.
 def _download_params() -> tuple[ParamSpec, ...]:
     """Declare the caller-set window keys of an ``Output.aspx`` download."""
     return (
@@ -405,8 +414,16 @@ NOT_DECLARED: dict[str, str] = {
     "and not judged by this task",
     "FederalFundsRate": "newyorkfed.org JSON with a composed window and a per-record pop of "
     "type/footnoteId/revisionIndicator (federal_funds_rate.py:116-127)",
-    "OvernightBankFundingRate": "newyorkfed.org JSON with a composed window "
-    "(overnight_bank_funding_rate.py:96-102)",
+    "OvernightBankFundingRate": "newyorkfed.org JSON whose window this package does not declare "
+    "yet. The composed window is declarable now that ``ParamSpec.relative_default`` exists: the "
+    "two keys are ordinary query parameters (``startDate``/``endDate``, "
+    "overnight_bank_funding_rate.py:96-98), the absolute start literal is a plain ``default`` and "
+    "the request-date end bound is an all-zero ``RelativeDefault`` (both filled only when the "
+    "caller named none, :78-82). What still blocks the record is not the vocabulary: the package "
+    "holds no ModelSpec for it because ``overnight_bank_funding_rate`` is not a registered domain "
+    "in domains.yaml, and a declaration whose domain is unregistered publishes rows no query or "
+    "ingest service accepts (http_json.build_row_model). Registering the domain and binding the "
+    "model is the package's act, not an engine capability.",
     "PrimaryDealerFails": "two or three requests concatenated by a condition on the requested date "
     "(primary_dealer_fails.py:83-105)",
     "PrimaryDealerPositioning": "one request per symbol in a category branch, gathered, then "

@@ -9,10 +9,28 @@ capability needs are exactly the shipped vocabulary: ``columns.rename`` (a
 (``limit`` sent as ``page_size``, a ``ParamSpec.query_key``), ``flow.url_template`` (the adjustment
 feed's ``{symbol}`` path segment), ``columns.derive`` for the one column whose value no record
 publishes (:data:`HISTORICAL_DIVIDENDS` stamps the queried symbol with a
-:class:`~opendata.data.providers._engine.value_transform.DerivePlan`), and ``path.explode`` for
+:class:`~opendata.data.providers._engine.value_transform.DerivePlan`), ``path.explode`` for
 :data:`CALENDAR_IPO`, whose published scalars sit inside per-record ``company`` and ``security``
 objects and are projected out by a
-:class:`~opendata.data.providers._engine.row_expansion.RecordRepointPlan`.
+:class:`~opendata.data.providers._engine.row_expansion.RecordRepointPlan`, and
+``param.relative_default`` for the window :data:`HISTORICAL_DIVIDENDS` fills from the request date
+when the caller names no bound (``RelativeDefault``, since C96).
+
+The remaining 34 rows were read upstream, endpoint by endpoint, and re-measured against the same
+two planes -- the ``ModelSpec`` field list and what ``http_json`` performs at query time. None of
+them is declarable today, so this round adds no module and no binding; :data:`NOT_DECLARABLE`
+carries each refusal with the canonical capability that blocks it, the mechanism and the line that
+shows it. Counted by the capability a refusal names first: ``flow.fan_out`` 14 (a request per
+comma-split symbol, per tag, or per id read off an earlier response), ``flow.branch`` 8 (a path,
+rows key or sort column chosen by an optional parameter), ``param.value_transform`` 3,
+``flow.preflight_lookup`` 3 (a response publishes the URL the rows live at), ``flow.join`` 2,
+``derive.conditional`` 1, ``columns.null_sentinel`` 1, ``rows.cap_source_order`` 1 and 1 row whose
+need -- de-duplicating across pages, then ordering and capping the assembled set -- no canonical
+names.
+Counted by every capability a refusal mentions, ``flow.fan_out`` appears 23 times and
+``columns.null_sentinel`` and ``flow.branch`` 8 times each. The two kernels that would clear most
+of it, ``_engine/multi_request.py`` and ``_engine/request_body.py``, exist as pure modules with no
+``ModelSpec`` field pointing at them, so a declaration cannot reach them from here.
 
 ``HistoricalDividends`` was withheld for one round for exactly that last reason. Upstream builds
 every row as ``{"symbol": query.symbol, **item}`` (historical_dividends.py:102-104), so the value a
@@ -37,6 +55,7 @@ from opendata.data.providers._engine.spec import (
     ColumnSpec,
     ModelSpec,
     ParamSpec,
+    RelativeDefault,
     RowFilterSpec,
     ValueKind,
 )
@@ -190,14 +209,21 @@ HISTORICAL_DIVIDENDS = ModelSpec(
         ParamSpec(
             "start_date",
             "date",
-            note="Window start, sent when the caller names it. Upstream fills a one-year default "
-            "window in transform_query (historical_dividends.py:74-78) with a relative date this "
-            "declaration vocabulary has no carrier for, so an omitted bound is simply not sent.",
+            relative_default=RelativeDefault(years=-1),
+            note="Window start, sent when the caller names it and filled with a one-year lookback "
+            "when they do not: upstream computes ``now - relativedelta(year=1)`` in "
+            "transform_query (historical_dividends.py:74-76), and RelativeDefault(years=-1) is the "
+            "carrier for that bound. Before this field existed the omission sent no window at "
+            "all, which answered wider than upstream.",
         ),
         ParamSpec(
             "end_date",
             "date",
-            note="Window end; same relative-default divergence as start_date.",
+            relative_default=RelativeDefault(),
+            note="Window end: upstream's bound is the request date itself (historical_dividends.py"
+            ":77-78), which is the all-zero RelativeDefault -- a bound of zero offset, not an "
+            "absent one. Both bounds are resolved against one clock reading per fetch, so the "
+            "window cannot straddle midnight and disagree with itself.",
         ),
         ParamSpec(
             "limit",
@@ -256,7 +282,10 @@ HISTORICAL_DIVIDENDS = ModelSpec(
         "caller who passes 'aapl' addresses a lowercase "
         "path where upstream addresses 'AAPL'. That is "
         "param.value_transform work, not a rename; the "
-        "column value it stamps is the caller's own spelling either way."
+        "column value it stamps is the caller's own spelling either way. The window half of the "
+        "row's needs is closed: both bounds carry a RelativeDefault now, so an omitted start_date "
+        "sends the request date minus a year and an omitted end_date sends the request date, which "
+        "is what the cited transform_query sends."
     ),
 )
 
@@ -391,9 +420,207 @@ CALENDAR_IPO = ModelSpec(
 )
 
 
+#: The 38 intrinio model identities the iteration-2 census records (ledger ids
+#: ``OBB2-intrinio-<model>``, ``docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/
+#: census-intrinio-{1,2,3}of3.json``), in dictionary order. ``EtfHistorical`` is a second key on
+#: ``IntrinioEquityHistoricalFetcher`` (openbb_intrinio/__init__.py:83), so it counts as its own row
+#: and inherits that fetcher's blockers.
+UPSTREAM_ROWS: Final[tuple[str, ...]] = (
+    "BalanceSheet",
+    "CalendarIpo",
+    "CashFlowStatement",
+    "CompanyFilings",
+    "CompanyNews",
+    "CurrencyPairs",
+    "EquityHistorical",
+    "EquityInfo",
+    "EquityQuote",
+    "EquitySearch",
+    "EtfHistorical",
+    "EtfHoldings",
+    "EtfInfo",
+    "EtfPricePerformance",
+    "EtfSearch",
+    "FinancialRatios",
+    "ForwardEbitdaEstimates",
+    "ForwardEpsEstimates",
+    "ForwardPeEstimates",
+    "ForwardSalesEstimates",
+    "FredSeries",
+    "HistoricalAttributes",
+    "HistoricalDividends",
+    "HistoricalMarketCap",
+    "IncomeStatement",
+    "IndexHistorical",
+    "InsiderTrading",
+    "KeyMetrics",
+    "LatestAttributes",
+    "MarketSnapshots",
+    "OptionsChains",
+    "OptionsSnapshots",
+    "OptionsUnusual",
+    "PriceTargetConsensus",
+    "ReportedFinancials",
+    "SearchAttributes",
+    "ShareStatistics",
+    "WorldNews",
+)
+
+#: The four rows this package declares, i.e. :data:`UPSTREAM_ROWS` minus :data:`NOT_DECLARABLE`.
+#: Read the model id off the declarations themselves so the tuple cannot drift from them.
+DECLARED_MODELS: Final[tuple[str, ...]] = tuple(
+    sorted(
+        {spec.model for spec in (CURRENCY_PAIRS, EQUITY_SEARCH, HISTORICAL_DIVIDENDS, CALENDAR_IPO)}
+    )
+)
+
 #: The census rows intrinio's own package puts forward and the declaration plane refuses, each with
-#: the capability that blocks it. Empty this round: the one row it carried, ``HistoricalDividends``,
-#: was blocked on ``columns.derive``, that capability landed with ``ModelSpec.column_derives``, and
-#: the model is now declared above. Kept as a ledger rather than deleted so a future refusal has a
-#: documented home and the row count of withheld models stays measurable.
-NOT_DECLARABLE: dict[str, str] = {}
+#: the canonical capability that blocks it, the mechanism that needs it and the upstream line read
+#: this round. Re-measured row by row against :mod:`opendata.data.providers._engine.spec` (the only
+#: spec-plane vocabulary) and :mod:`opendata.data.providers._engine.http_json` (what it performs at
+#: query time), not against the census' label mapping: every one of these 34 rows needs at least one
+#: capability that ``ModelSpec`` has no field for. Two kernels for two of them --
+#: ``_engine/multi_request.py`` (fan-out + join) and ``_engine/request_body.py`` (POST body + body
+#: paging) -- exist as pure modules today and are reachable by no declaration, because adding the
+#: fields that would wire them is the engine owner's call, not this package's.
+#:
+#: ``param.relative_default`` is deliberately absent from the refusals below. ``RelativeDefault``
+#: (spec.py:117-195) landed mid-round and ``http_json`` does perform it at query time
+#: (:229-245), so the two rows that were withheld on it a round ago are now recorded on the
+#: blocker that survives the new field: ``CompanyFilings`` on ``derive.conditional`` -- a
+#: conditional default gates on another parameter and this one cannot -- and ``InsiderTrading``
+#: on ``columns.null_sentinel``.
+#:
+#: The census mis-maps one need and this ledger does not repeat it. Its instrument has no key
+#: for "the pages come from a cursor the response publishes", so it folds that need onto
+#: ``request.body_pagination`` for nine intrinio rows (EtfSearch, OptionsUnusual, FredSeries,
+#: HistoricalAttributes, PriceTargetConsensus, WorldNews and the Ebitda/Eps/Sales estimates),
+#: yet the engine DOES read a cursor out of a response -- ``PaginationSpec.cursor_field``
+#: (spec.py:240,263-264) -- and a plain ``next_page`` loop is declarable
+#: (etf_holdings.py:177-182, company_filings.py:140-141). Those nine are recorded below on
+#: their real blockers -- a URL branch, a caller-gated page count, a cross-page dedupe/order or
+#: a per-symbol fan-out -- never on paging.
+#:
+#: Reasons name the mechanism, never the effort: "not written yet" is not a blocker.
+NOT_DECLARABLE: dict[str, str] = {
+    "BalanceSheet": "flow.fan_out + columns.response_dependent_selection + columns.null_sentinel: "
+    "one fundamentals GET lists fiscal periods, then one standardized_financials URL per period is "
+    "fanned out (balance_sheet.py:444-465); each row is assembled from a variable tag/value list, "
+    "not fixed keys (:471-492), 0 is nulled (:395-403).",
+    "CashFlowStatement": "flow.branch + flow.fan_out + columns.null_sentinel: ``period`` maps to "
+    "FY/QTR/TTM/YTD and anything else raises (cash_flow.py:262-267); a second URL per fiscal "
+    "period is fanned out from the first response (:280-306) and zeros are nulled per row "
+    "(:231-236, :325).",
+    "CompanyFilings": "derive.conditional: the ``today-1y``/``today`` window is filled only when "
+    "``form_type`` is absent (company_filings.py:96-100), and a ``RelativeDefault`` "
+    "(spec.py:117-195) has no gate conditioning a bound on another parameter; the ``company`` "
+    "object upstream attaches also has no carrier (:138, :161-173).",
+    "CompanyNews": "flow.fan_out + post-assembly order/cap: one task per comma-split symbol "
+    "(company_news.py:253-269), each with its own ``next_page`` loop (:238-248); rows are de-duped "
+    "by ``url`` and sorted across pages before the cap (:260-265), and ``topics`` is an array of "
+    "objects folded into a string (:160-167).",
+    "EquityHistorical": "flow.branch: ``_interval_size`` versus ``_frequency`` picks a different "
+    "path, a different rows key and a different sort column (equity_historical.py:226-231, "
+    ":266-273); the ``next_page`` loop (:243-249) is declarable, the branch that chooses the shape "
+    "it pages is not.",
+    "EquityInfo": "flow.fan_out: one ``/companies/{symbol}/profile`` request per comma-split "
+    "symbol is gathered together (equity_info.py:63-68), and a declaration renders one path "
+    "template per request.",
+    "EquityQuote": "flow.fan_out + columns.compose + columns.null_sentinel: one realtime URL per "
+    "symbol (equity_quote.py:129-133); ``symbol`` is lifted out of the nested ``security`` object "
+    "(:123), ``sales_conditions`` is regex-stripped then '' nulled (:74-82) and a non-200 answers "
+    "``{}`` so the row silently vanishes (:119-120).",
+    "EtfHistorical": "flow.branch: ``__init__.py:83`` binds this row to "
+    "IntrinioEquityHistoricalFetcher, so it inherits that fetcher's interval-versus-frequency "
+    "branch over path, rows key and sort column (equity_historical.py:226-231, :266-273).",
+    "EtfHoldings": "param.value_transform + columns.null_sentinel: ``:US`` is appended when the "
+    "symbol has no venue (etf_holdings.py:162) and every 0 becomes None (:133-141). The cursor "
+    "loop (:177-182) and the weighting sort (:204) look declarable, but that sort runs over the "
+    "whole assembled list while the engine orders per page.",
+    "EtfInfo": "flow.fan_out + param.value_transform + rows.cap_source_order: per-symbol fan-out "
+    "with a ``:US`` suffix (etf_info.py:621-638), then the rows are re-sorted back into the "
+    "caller's own symbol order after the gather (:643-646).",
+    "EtfPricePerformance": "flow.join + flow.fan_out: per symbol a ``stats`` row is fetched and an "
+    "``analytics`` response is merged into that same row (etf_price_performance.py:161-200), while "
+    "columns are dropped by substring tests against two parameter-derived needles (:177-181).",
+    "EtfSearch": "flow.branch: three mutually exclusive URL shapes -- index search, issuer-less "
+    "search and the full list -- chosen by which optional parameters arrived "
+    "(etf_search.py:92-97); one ``path`` template cannot answer for all three.",
+    "FinancialRatios": "flow.fan_out + columns.response_dependent_selection: ids from a first "
+    "fundamentals call fan out one standardized_financials request each "
+    "(financial_ratios.py:190-205), and each row names its columns by XBRL tag and nulls its zeros "
+    "(:214-235, :312).",
+    "ForwardEbitdaEstimates": "flow.fan_out: one ``identifier={symbol}`` request per comma-split "
+    "symbol is gathered (forward_ebitda_estimates.py:110-128); the ``next_page`` cursor loop "
+    "inside it (:148-150) is the declarable part.",
+    "ForwardEpsEstimates": "flow.fan_out: ``get_one`` builds one zacks/eps_estimates URL per "
+    "symbol and gathers them (forward_eps_estimates.py:145-161); the ``next_page`` loop over the "
+    "merged list (:177-180) is declarable, the fan-out is not.",
+    "ForwardPeEstimates": "flow.branch + flow.fan_out: with symbols it gathers one "
+    "``/zacks/forward_pe/{symbol}`` request each (forward_pe_estimates.py:86-115), without them "
+    "one ``?page_size=10000`` request (:141-142) -- two request shapes from one parameter -- then "
+    "re-sorts rows into caller order (:156-162).",
+    "ForwardSalesEstimates": "flow.fan_out: one ``zacks/sales_estimates`` URL per comma-split "
+    "symbol is gathered into one list (forward_sales_estimates.py:164-175).",
+    "FredSeries": "param.value_transform + a parameter-gated page count: ``$`` is stripped from "
+    "the series id before it addresses the path (fred_series.py:85) and the loop keeps fetching "
+    "only while the caller's ``all_pages`` flag is set (:98-108), a bound no ``PaginationSpec`` "
+    "field expresses.",
+    "HistoricalAttributes": "flow.fan_out + request.caller_url: the Cartesian product of symbol x "
+    "tag URLs goes through amake_requests (historical_attributes.py:77-81) and each row's "
+    "``symbol``/``tag`` are read back off that request's URL path parts (:97-101), a value no "
+    "derive stage can see.",
+    "HistoricalMarketCap": "flow.branch + flow.fan_out + columns.null_sentinel: ``interval`` "
+    "chooses the frequency path (historical_market_cap.py:86), one request per symbol is gathered "
+    "(:91-102) and published zeros are nulled.",
+    "IncomeStatement": "flow.join + flow.fan_out + columns.response_dependent_selection: a second "
+    "calculations response is concatenated into the same row's financials list "
+    "(income_statement.py:455-464) and one URL per fiscal period is fanned out (:466-472); columns "
+    "are named by XBRL tag and 0 becomes None (:484-498).",
+    "IndexHistorical": "param.value_transform + flow.fan_out: ``$``/``^`` are stripped from the "
+    "symbol before it addresses the path (index_historical.py:71) and one URL per symbol is "
+    "gathered (:74-77), with null-valued rows dropped (:84).",
+    "InsiderTrading": "columns.null_sentinel: a record whose transaction keys are all ``''`` is "
+    "nulled (insider_trading.py:109-117), which no column facet does; its five-year default window "
+    "(:133-137) is declarable now that a ``RelativeDefault`` resolves one, as are the per-record "
+    "explode (:164-179) and the ``{symbol}`` path (:153-155).",
+    "KeyMetrics": "flow.fan_out + path.object_keys: 39 hardcoded data-point tags become 39 URLs "
+    "per symbol (key_metrics.py:259-318) and one row is assembled by keying each response on the "
+    "last path segment of the URL that produced it (:313-315).",
+    "LatestAttributes": "flow.fan_out + request.caller_url: the symbol x tag Cartesian product is "
+    "fetched through amake_requests (latest_attributes.py:84-90) and each row's ``symbol``/``tag`` "
+    "come from the response's request URL parts (:79-82), never from the document.",
+    "MarketSnapshots": "flow.preflight_lookup + flow.fan_out + columns.null_sentinel: a JSON "
+    "directory response publishes gzip file URLs (market_snapshots.py:168-177), each a second "
+    "request decoded as gzipped CSV (:185-196), and ``Max``/``Min``/0/NaN are nulled after the "
+    "frame lands (:241-247).",
+    "OptionsChains": "flow.branch + flow.fan_out + flow.join: ``delay`` picks the eod versus "
+    "realtime path (options_chains.py:230-235), one chain URL fans out per expiration read from "
+    "that response (:236-245), each row merges four sub-objects (:340, :352-357) and the "
+    "underlying price is delegated to two other fetchers (:299-313).",
+    "OptionsSnapshots": "flow.preflight_lookup + shape.columnar: the JSON response publishes a "
+    "file URL whose gzip bytes are parsed as CSV (options_snapshots.py:196-217), four columns are "
+    "sliced out of ``contract_symbol`` by regex (:272-291) and the answer is validated as columnar "
+    "``orient=list`` rows (:337).",
+    "OptionsUnusual": "flow.branch + columns.null_sentinel: symbol presence chooses between "
+    "``/{symbol}/intraday`` and ``/intraday`` (options_unusual.py:237-242), dates are snapped to a "
+    "trading day in a validator (:88-136), several columns are rewritten and 0 nulled (:177-208) "
+    "and the cap is applied to the sorted whole list (:246-289).",
+    "PriceTargetConsensus": "flow.fan_out: one ``get_one`` consensus request per comma-split "
+    "symbol is gathered (price_target_consensus.py:103-111).",
+    "ReportedFinancials": "flow.preflight_lookup + flow.fan_out + "
+    "columns.response_dependent_selection: ``statement_type`` picks a statement_code "
+    "(reported_financials.py:81-84), the ids are filtered and capped client-side in a frame "
+    "(:93-101), then one URL per id is fanned out (:116-121) and its tag/value pairs become "
+    "dynamic columns (:131-145).",
+    "SearchAttributes": "rows.cap_source_order: the cap is ``matched_attributes[: query.limit]`` "
+    "over the source's own order, with no comparison and no key column (search_attributes.py:59, "
+    ":64); ``RowOrderSpec.column`` is mandatory, so a pure source-order truncation has no carrier.",
+    "ShareStatistics": "flow.fan_out + path.assemble_single_row: three tag URLs are fetched in one "
+    "fan-out (share_statistics.py:76-79), each scalar is keyed by a URL path part (:81-86) and all "
+    "three, plus ``symbol`` and today's date, become ONE row (:68, :88).",
+    "WorldNews": "no canonical names it (nearest: rows.order_limit): rows are de-duped by ``url`` "
+    "while pages are still arriving and the loop stops on the deduped count versus the limit "
+    "(world_news.py:216-230), then the assembled set is sorted and truncated; the engine orders "
+    "per page and has no dedupe facet.",
+}

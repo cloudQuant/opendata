@@ -13,6 +13,7 @@ from opendata.data.provider import CredentialSpec, Provider, ProviderHealth
 from opendata.data.providers.akshare.provider import PROVIDER as AKSHARE_PROVIDER
 from opendata.data.providers.bls.provider import PROVIDER as BLS_PROVIDER
 from opendata.data.providers.cboe.provider import PROVIDER as CBOE_PROVIDER
+from opendata.data.providers.congress_gov.provider import PROVIDER as CONGRESS_GOV_PROVIDER
 from opendata.data.providers.ecb.provider import PROVIDER as ECB_PROVIDER
 from opendata.data.providers.federal_reserve.provider import PROVIDER as FEDERAL_RESERVE_PROVIDER
 from opendata.data.providers.fmp.provider import PROVIDER as FMP_PROVIDER
@@ -71,7 +72,7 @@ _UPSTREAM_PROVIDERS: tuple[Provider, ...] = (
     _reserved_provider("biztoc", "api_key"),
     CBOE_PROVIDER,
     _reserved_provider("cftc", "app_token"),
-    _reserved_provider("congress_gov", "api_key"),
+    CONGRESS_GOV_PROVIDER,
     _reserved_provider("deribit"),
     _reserved_provider("finra"),
     _reserved_provider("finviz"),

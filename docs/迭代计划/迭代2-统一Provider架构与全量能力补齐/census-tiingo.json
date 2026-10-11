@@ -1,5 +1,7 @@
 {
-  "provider_groups": ["tiingo"],
+  "provider_groups": [
+    "tiingo"
+  ],
   "rows": [
     {
       "task_id": "OBB2-tiingo-EquityHistorical",
@@ -100,11 +102,17 @@
       "response_format": "json",
       "row_extraction": "nested_key",
       "join_needed": false,
-      "needs_engine_capability": ["nested_array_explode", "client_side_sort", "param_value_mapping", "date_format", "relative_date_default"],
+      "needs_engine_capability": [
+        "nested_array_explode",
+        "client_side_sort",
+        "param_value_mapping",
+        "date_format",
+        "relative_date_default"
+      ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/tiingo/openbb_tiingo/models/crypto_historical.py:138",
-      "notes": "Differs from equity/currency rows on the shared get_data path in three real ways: ONE request for all symbols (tickers comma query param, :126 alias), path /tiingo/crypto/prices (:125), and response is an array of ticker objects each with nested priceData rows that must be exploded (:165-181). interval->resampleFreq remap adds a day arm (7d->7day, :128-135); results sorted client-side by date (:183); no paging. C92 upstream read: start_date/end_date default from datetime.now().date() (crypto_historical.py:103-108); one request, no paging, sorted date ascending with no cap (:183)."
+      "notes": "Differs from equity/currency rows on the shared get_data path in three real ways: ONE request for all symbols (tickers comma query param, :126 alias), path /tiingo/crypto/prices (:125), and response is an array of ticker objects each with nested priceData rows that must be exploded (:165-181). interval->resampleFreq remap adds a day arm (7d->7day, :128-135); results sorted client-side by date (:183); no paging. C92 upstream read: start_date/end_date default from datetime.now().date() (crypto_historical.py:103-108); one request, no paging, sorted date ascending with no cap (:183). | C96: relative_date_default is off this row's blocker list -- crypto_historical.py:103-108 fills both bounds from datetime.now().date() and the start bound is now - relativedelta(years=1) (:105), so the carrier is RelativeDefault(years=-1) beside an all-zero RelativeDefault for the end bound (:108) -- NOT the days=-90 offset an earlier draft of this note claimed; the line was re-read and the 90-day figure is refuted. Nothing is wired: opendata/data/providers/tiingo/ does not exist, so there is no spec module to carry the declaration, and the row's other needs (the :165-181 nested priceData explode and the :128-135 resampleFreq remap) are carried by facets the engine already ships. The row therefore lands in the census shipped_cover set, not in expressible_today: what is left is a package, not a capability."
     },
     {
       "task_id": "OBB2-tiingo-CurrencyHistorical",

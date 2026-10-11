@@ -543,16 +543,18 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
     ]
     # Presence is re-measured from the shipped engine source for the capabilities whose declaration
     # carrier exists there: one spec field each (row_filters, composite_keys, row_expansion,
-    # column_derives, ParamSpec.value_map, ModelSpec.order_by), plus the two C90 entries whose
-    # carrier is a derive stage on ModelSpec.column_derives (columns.cast and columns.rescale read
-    # apply_cast/apply_scale in _engine/value_transform.py). So a field that has not landed yet is
-    # reported absent without the census author saying so. Every other entry is asserted by the
-    # census author and only cross-checked against the provider declarations that use it.
+    # column_derives, ParamSpec.value_map, ParamSpec.relative_default, ModelSpec.order_by), plus
+    # the two C90 entries whose carrier is a derive stage on ModelSpec.column_derives (columns.cast
+    # and columns.rescale read apply_cast/apply_scale in _engine/value_transform.py). So a field
+    # that has not landed yet is reported absent without the census author saying so. Every other
+    # entry is asserted by the census author and only cross-checked against the provider
+    # declarations that use it.
     assert sorted(entry.capability for entry in mcc.REGISTRY if entry.read_from_disk) == [
         "columns.cast",
         "columns.derive",
         "columns.rescale",
         "flow.composite_key_segment",
+        "param.relative_default",
         "param.value_mapping",
         "path.explode",
         ROW_FILTER_CAPABILITY,
@@ -581,6 +583,12 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
     # other way) and ``columns.many_to_one_rename`` (tmx EtfHoldings publishes both ``sharechange``
     # and ``shareChange`` onto one output, which one-source-key-per-column cannot declare). None of
     # the four has a field to carry it, so none of them can have a declaration probe written yet.
+    # C96 takes one back off: ``param.relative_default`` (the eleventh, C91's intrinio one-year
+    # window) now has both a carrier -- ``ParamSpec.relative_default`` typed to ``RelativeDefault``,
+    # refused by ``ModelSpec`` wherever a row-side facet would read the omission instead of the
+    # bound -- and a declaration probe counting the production
+    # ``ParamSpec(..., relative_default=)`` keyword, so it leaves the roster for the read-from-disk
+    # list above.
     assert sorted(
         entry.capability for entry in mcc.REGISTRY if entry.probe is None and entry.engine_work
     ) == [
@@ -590,7 +598,6 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
         "columns.period_cast",
         "derive.conditional",
         "param.preset_merge",
-        "param.relative_default",
         "param.value_transform",
         "path.list_segment",
         "request.caller_url",

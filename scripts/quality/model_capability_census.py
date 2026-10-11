@@ -1689,12 +1689,18 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         claim=False,
         engine_work=True,
         proof_file=SPEC_REL,
-        anchor="default: Any = None",
-        why="``default`` is a literal applied when the caller omits the parameter, so a "
-        "bound whose value depends on today -- intrinio's one-year window, filled in "
-        "transform_query when the caller names no dates (historical_dividends.py:74-78) "
-        "-- has no field to be written in. The declaration sends no bound instead, which "
-        "is a wider answer than the upstream one.",
+        anchor="relative_default: RelativeDefault | None = None",
+        why="Presence is read off the disk: ParamSpec carries a ``relative_default`` field beside "
+        "the literal ``default``, typed to a RelativeDefault whose own ``__post_init__`` refuses a "
+        "forward offset, a non-integer component, a non-date kind, a required parameter and a "
+        "parameter that also has a literal -- so the bound intrinio fills from today "
+        "(historical_dividends.py:74-78), the Fed's ``end_date = now`` "
+        "(overnight_bank_funding_rate.py:78-82) and tiingo's one-year window "
+        "(crypto_historical.py:103-108) each have a field to be written in.",
+        read_from_disk=True,
+        cross_file=HTTP_JSON_REL,
+        cross_anchor="def resolve_bound(",
+        probe=DeclarationProbe(call="ParamSpec", keyword="relative_default", non_empty=True),
     ),
     CapabilityEntry(
         capability="request.caller_url",
