@@ -318,6 +318,35 @@ python -m mypy scripts/quality/model_capability_census.py docs/evidence/C93/flow
 C92 的两台仪器在 C93 树上重跑都是绿的，且自动跟随轮次标签（`ARTIFACT round=C93 … canonical=54`），
 所以本轮没有新增轮内 pin 债。
 
+> **【C94 补记，2026-10-12】上面第 1 行的 `FACE_RC=0` 只对 C93 那一代成立。** C94 把
+> `flow.fan_out` 的 credit 从 step 0 移到 step 4（逐行重审了它 predicted 的 5 行，4 行 need 集被证伪/补全，
+> 幸存者 1 行），并新增 5 条 spelling、+15 mention，于是本装置在 C94 树上重跑读到的是
+> `C93_FACE_RC=1 failures=8`，**这是预期读数，不是 census 回归**。8 条的实质分两类：
+>
+> ```
+> ARM-POST tradier: in_locked_pool=False needs=[] absent_needs=[] n_absent=0 (pre arm in_locked_pool=False)
+> FAIL tradier is one ladder step away although its locked need set reads 0 absent kernels
+> FAIL tradier's locked need set reads 0 absent kernel(s), so a single step could unlock it and the LOCKED attribution is wrong
+> FAIL the two kernels this round added to tradier are not both absent blockers: []
+> FAIL flow.branch still unlocks audited rows after the repair: ['OBB2-cboe-IndexSnapshots']
+> FAIL the prefix movement is not the single row: left=['OBB2-deribit-FuturesInfo'] entered=[9 个 oecd 行]
+> FAIL added spellings 14 != judge mention delta 29
+> FAIL expected +2 canonicals against the pinned artifact and +2 distinct spellings between the census arms, read 2/7
+> ```
+>
+> 前 3 条是**本装置自己的静默默认**：`:290` 的 `post["locked_needs"].get(TRADIER, [])`，而 `:136-137` 的
+> `locked_needs` 只从 `rows_still_locked_after_engine_pool` 取行；tradier 现在被 step 上的
+> `shape.single_record_wrap` credit、离开了那个池，于是 `.get` 交出空表 —— 盘上
+> `OBB2-tradier-EquitySearch` 的 needs 是 4 条（`conditional_endpoint_branch`、`field_rename_map`、
+> `single_object_array_wrap`、`conditional_value_derive`），且全表扫描「needs 为空且
+> `expressible_today=false`」= **0 行**，所以 census 侧没有无原因的 pending。
+> 其余 5 条是生成期 pin（mention/spelling/canonical 增量、前缀成员集合）随 C94 位移的老化。
+> 判据与两类的完整展开在 `docs/evidence/C94/README.md` §9。
+>
+> 因此复算本档时的正确期望是：**C94 之后的树 → `RC=1 failures=8`**；要拿回 C93 那笔绿，必须把
+> `PRE_REPAIR_REV` 与在册 census/roadmap 一起回退到 C93 那一代字节（本档刻意不回退，也不把今天的数改写成 0）。
+> C92 的两台（`census-repair-control.py` / `row-order-face.py`）在 C94 树上仍读 `RC=0`，已重取。
+
 **上面每一条在 `e14c4bd`（本档入提交的那一笔）之后逐条重取过**，读数与 §2/§3 描述的是同一批字节：
 
 ```
