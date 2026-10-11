@@ -55,23 +55,26 @@ def top_level_dicts(path: Path) -> dict[str, dict[str, str]]:
     tree = ast.parse(path.read_text(encoding="utf-8"))
     out: dict[str, dict[str, str]] = {}
     for node in tree.body:
-        targets: list[str] = []
         if isinstance(node, ast.Assign):
             targets = [t.id for t in node.targets if isinstance(t, ast.Name)]
+            assigned: ast.expr | None = node.value
         elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
             targets = [node.target.id]
-        for name in targets:
-            if isinstance(node.value, ast.Dict):
-                pairs: dict[str, str] = {}
-                for key, value in zip(node.value.keys, node.value.values, strict=True):
-                    if (
-                        isinstance(key, ast.Constant)
-                        and isinstance(value, ast.Constant)
-                        and isinstance(key.value, str)
-                        and isinstance(value.value, str)
-                    ):
-                        pairs[key.value] = value.value
-                if pairs:
+            assigned = node.value
+        else:
+            continue
+        if isinstance(assigned, ast.Dict):
+            pairs: dict[str, str] = {}
+            for key, value in zip(assigned.keys, assigned.values, strict=True):
+                if (
+                    isinstance(key, ast.Constant)
+                    and isinstance(value, ast.Constant)
+                    and isinstance(key.value, str)
+                    and isinstance(value.value, str)
+                ):
+                    pairs[key.value] = value.value
+            if pairs:
+                for name in targets:
                     out[name] = pairs
     return out
 

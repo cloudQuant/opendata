@@ -1,0 +1,303 @@
+round: C88 | registry ids read: 45
+upstream root verified via /Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform/providers/oecd/openbb_oecd/models/unemployment.py: True
+
+===== OBB2-cboe-EquitySearch =====
+shape: get_csv
+row_extraction: flat
+paged: False
+needs_engine_capability: ["csv_decoder", "client_side_filter"]
+notes: Body is a CSV at www.cboe.com/us/options/symboldir/...?download=csv read via read_csv, then substring filtered.
+cited upstream file: /Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform/providers/cboe/openbb_cboe/utils/helpers.py  (cite line :125)
+method bodies located in: /Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform/providers/cboe/openbb_cboe/models/equity_search.py
+-- aextract_data --
+  :57     async def aextract_data(
+  :58         query: CboeEquitySearchQueryParams,
+  :59         credentials: dict[str, str] | None,
+  :60         **kwargs: Any,
+  :61     ) -> dict:
+  :62         """Return the raw data from the CBOE endpoint."""
+  :63         # pylint: disable=import-outside-toplevel
+  :64         from openbb_cboe.utils.helpers import get_company_directory
+  :65 
+  :66         data = {}
+  :67         symbols = await get_company_directory(query.use_cache, **kwargs)
+  :68         symbols = symbols.reset_index()
+  :69         target = "name" if query.is_symbol is False else "symbol"
+  :70         idx = symbols[target].str.contains(query.query, case=False)
+  :71         result = symbols[idx].to_dict("records")
+  :72         data.update({"results": result})
+  :73 
+  :74         return data
+  :75 
+-- transform_data --
+  :77     def transform_data(
+  :78         query: CboeEquitySearchQueryParams, data: dict, **kwargs: Any
+  :79     ) -> list[CboeEquitySearchData]:
+  :80         """Transform the data to the standard format."""
+  :81         from math import isnan  # pylint: disable=import-outside-toplevel
+  :82 
+  :83         def clean_nan(d: dict) -> dict:
+  :84             """Replace nan values with None for Pydantic validation."""
+  :85             return {
+  :86                 k: None if isinstance(v, float) and isnan(v) else v
+  :87                 for k, v in d.items()
+  :88             }
+  :89 
+  :90         return [
+  :91             CboeEquitySearchData.model_validate(clean_nan(d)) for d in data["results"]
+  :92         ]
+fired predicates (predicate -> canonical id, line that fired it):
+  client_side_row_filter -> rows.filter (present=True) fired at :70  idx = symbols[target].str.contains(query.query, case=False)
+  capability decode.delimited: present=True
+  capability rows.filter: present=True
+
+OBB2-cboe-EquitySearch  CONSISTENT  censused=['decode.delimited', 'rows.filter']  observed=['rows.filter']  missing=[]
+  fired predicate count: 1
+
+===== OBB2-intrinio-CurrencyPairs =====
+shape: get_json_single
+row_extraction: nested_key
+paged: False
+needs_engine_capability: ["client_side_filter", "field_rename_map"]
+notes: Single GET /forex/pairs, rows under 'pairs' via get_data_many sub_dict (:63). Free-text query filtered client-side on code/base_currency/quote_currency substrings with a DataFrame (:76-81); output symbol renamed from upstream code (:26).
+cited upstream file: /Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform/providers/intrinio/openbb_intrinio/models/currency_pairs.py  (cite line :63)
+method bodies located in: /Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform/providers/intrinio/openbb_intrinio/models/currency_pairs.py
+-- aextract_data --
+  :50     async def aextract_data(
+  :51         query: IntrinioCurrencyPairsQueryParams,
+  :52         credentials: dict[str, str] | None,
+  :53         **kwargs: Any,
+  :54     ) -> list[dict]:
+  :55         """Return the raw data from the Intrinio endpoint."""
+  :56         # pylint: disable=import-outside-toplevel
+  :57         from openbb_intrinio.utils.helpers import get_data_many
+  :58 
+  :59         api_key = credentials.get("intrinio_api_key") if credentials else ""
+  :60 
+  :61         base_url = "https://api-v2.intrinio.com"
+  :62         url = f"{base_url}/forex/pairs?api_key={api_key}"
+  :63         return await get_data_many(url, "pairs", **kwargs)
+  :64 
+-- transform_data --
+  :66     def transform_data(
+  :67         query: IntrinioCurrencyPairsQueryParams, data: list[dict], **kwargs: Any
+  :68     ) -> list[IntrinioCurrencyPairsData]:
+  :69         """Return the transformed data."""
+  :70         # pylint: disable=import-outside-toplevel
+  :71         from pandas import DataFrame
+  :72 
+  :73         if not data:
+  :74             raise EmptyDataError("The request was returned empty.")
+  :75         df = DataFrame(data)
+  :76         if query.query:
+  :77             df = df[
+  :78                 df["code"].str.contains(query.query, case=False)
+  :79                 | df["base_currency"].str.contains(query.query, case=False)
+  :80                 | df["quote_currency"].str.contains(query.query, case=False)
+  :81             ]
+  :82         if len(df) == 0:
+  :83             raise EmptyDataError(
+  :84                 f"No results were found with the query supplied. -> {query.query}"
+  :85                 + " Hint: Names and descriptions are not searchable from Intrinio, try 3-letter symbols."
+  :86             )
+  :87         return [
+  :88             IntrinioCurrencyPairsData.model_validate(d)
+  :89             for d in df.to_dict(orient="records")
+  :90         ]
+fired predicates (predicate -> canonical id, line that fired it):
+  client_side_row_filter -> rows.filter (present=True) fired at :78  df["code"].str.contains(query.query, case=False)
+      also :79  | df["base_currency"].str.contains(query.query, case=False)
+      also :80  | df["quote_currency"].str.contains(query.query, case=False)
+  capability columns.rename: present=True
+  capability rows.filter: present=True
+
+OBB2-intrinio-CurrencyPairs  CONSISTENT  censused=['columns.rename', 'rows.filter']  observed=['rows.filter']  missing=[]
+  fired predicate count: 1
+
+===== OBB2-intrinio-EquitySearch =====
+shape: get_json_single
+row_extraction: nested_key
+paged: False
+needs_engine_capability: ["field_rename_map", "param_value_mapping"]
+notes: Single GET /companies/search, rows under 'companies' (:82, :90). Output renames id->intrinio_id and ticker->symbol (:43-46); query limit aliased to page_size with default 10000 (:26-36); is_symbol excluded from the querystring (:79). No paged loop - one shot.
+cited upstream file: /Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform/providers/intrinio/openbb_intrinio/models/equity_search.py  (cite line :82)
+method bodies located in: /Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform/providers/intrinio/openbb_intrinio/models/equity_search.py
+-- aextract_data --
+  :71     async def aextract_data(
+  :72         query: IntrinioEquitySearchQueryParams,
+  :73         credentials: dict[str, str] | None,
+  :74         **kwargs: Any,
+  :75     ) -> list[dict]:
+  :76         """Return the raw data from the Intrinio endpoint."""
+  :77 
+  :78         api_key = credentials.get("intrinio_api_key") if credentials else ""
+  :79         query_str = get_querystring(query.model_dump(by_alias=True), ["is_symbol"])
+  :80         base_url = "https://api-v2.intrinio.com/companies/search?"
+  :81         url = f"{base_url}{query_str}&api_key={api_key}"
+  :82         data = await get_data_one(url, **kwargs)
+  :83         return data  # type: ignore
+  :84 
+-- transform_data --
+  :86     def transform_data(
+  :87         query: IntrinioEquitySearchQueryParams, data: dict, **kwargs: Any
+  :88     ) -> list[IntrinioEquitySearchData]:
+  :89         """Transform the data to the standard format."""
+  :90         return [IntrinioEquitySearchData.model_validate(d) for d in data["companies"]]
+fired predicates (predicate -> canonical id, line that fired it):
+  key_rename -> columns.rename (present=True) fired at :79  query_str = get_querystring(query.model_dump(by_alias=True), ["is_symbol"])
+  capability columns.rename: present=True
+  capability param.value_mapping: present=True
+
+OBB2-intrinio-EquitySearch  CONSISTENT  censused=['columns.rename', 'param.value_mapping']  observed=['columns.rename']  missing=[]
+  fired predicate count: 1
+
+===== OBB2-intrinio-HistoricalDividends =====
+shape: get_json_single
+row_extraction: nested_key
+paged: False
+needs_engine_capability: ["field_rename_map", "param_value_mapping"]
+notes: Single GET /securities/{symbol}/prices/adjustments; get_data_many(url,'stock_price_adjustments') extracts the nested list; no pagination loop (limit aliased to page_size, default 100); dividends-only filter is server-side via nothing here — split rows share the feed and factor/split_ratio columns are kept alongside dividend fields; symbol column injected per row in transform_data; transform_query fills a 1-year default window.
+cited upstream file: /Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform/providers/intrinio/openbb_intrinio/models/historical_dividends.py  (cite line :95)
+method bodies located in: /Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform/providers/intrinio/openbb_intrinio/models/historical_dividends.py
+-- aextract_data --
+  :83     async def aextract_data(
+  :84         query: IntrinioHistoricalDividendsQueryParams,
+  :85         credentials: dict[str, str] | None,
+  :86         **kwargs: Any,
+  :87     ) -> list[dict]:
+  :88         """Return the raw data from the Intrinio endpoint."""
+  :89         api_key = credentials.get("intrinio_api_key") if credentials else ""
+  :90 
+  :91         base_url = "https://api-v2.intrinio.com/securities"
+  :92         query_str = get_querystring(query.model_dump(), ["symbol"])
+  :93         url = f"{base_url}/{query.symbol}/prices/adjustments?{query_str}&api_key={api_key}"
+  :94 
+  :95         return await get_data_many(url, "stock_price_adjustments", **kwargs)
+  :96 
+-- transform_data --
+  :98     def transform_data(
+  :99         query: IntrinioHistoricalDividendsQueryParams, data: list[dict], **kwargs: Any
+  :100     ) -> list[IntrinioHistoricalDividendsData]:
+  :101         """Return the transformed data."""
+  :102         transformed_data: list[dict] = [
+  :103             {"symbol": query.symbol, **item} for item in data
+  :104         ]
+  :105         return [
+  :106             IntrinioHistoricalDividendsData.model_validate(d) for d in transformed_data
+  :107         ]
+fired predicates (predicate -> canonical id, line that fired it):
+  per_row_value_injection -> columns.derive (present=False) fired at :103  {"symbol": query.symbol, **item} for item in data
+  capability columns.derive: present=False
+  capability columns.rename: present=True
+  capability param.value_mapping: present=True
+
+OBB2-intrinio-HistoricalDividends  NOT-SHIPPABLE  censused=['columns.rename', 'param.value_mapping']  observed=['columns.derive']  missing=['columns.derive']
+  fired predicate count: 1
+
+===== OBB2-tmx-EtfInfo =====
+shape: get_json_single
+row_extraction: flat
+paged: False
+needs_engine_capability: ["client_side_filter", "field_rename_map"]
+notes: one etfs.json record per symbol, columns renamed/derived in transform_data
+cited upstream file: /Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform/providers/tmx/openbb_tmx/models/etf_info.py  (cite line :171)
+method bodies located in: /Users/yunjinqi/Documents/new_projects/OpenBB/openbb_platform/providers/tmx/openbb_tmx/models/etf_info.py
+-- aextract_data --
+  :172     async def aextract_data(
+  :173         query: TmxEtfInfoQueryParams,
+  :174         credentials: dict[str, str] | None,
+  :175         **kwargs: Any,
+  :176     ) -> list[dict]:
+  :177         """Return the raw data from the TMX endpoint."""
+  :178         # pylint: disable=import-outside-toplevel
+  :179         from openbb_tmx.utils.helpers import get_all_etfs
+  :180         from pandas import DataFrame
+  :181 
+  :182         results = []
+  :183         symbols = (
+  :184             query.symbol.split(",") if "," in query.symbol else [query.symbol.upper()]
+  :185         )
+  :186         _data = DataFrame(await get_all_etfs(use_cache=query.use_cache))
+  :187         COLUMNS = [
+  :188             "symbol",
+  :189             "inception_date",
+  :190             "name",
+  :191             "fund_family",
+  :192             "investment_style",
+  :193             "esg",
+  :194             "currency",
+  :195             "unit_price",
+  :196             "close",
+  :197             "prev_close",
+  :198             "return_1m",
+  :199             "return_3m",
+  :200             "return_6m",
+  :201             "return_ytd",
+  :202             "return_1y",
+  :203             "return_3y",
+  :204             "return_5y",
+  :205             "return_from_inception",
+  :206             "volume_avg_daily",
+  :207             "volume_avg_30d",
+  :208             "aum",
+  :209             "pe_ratio",
+  :210             "pb_ratio",
+  :211             "management_fee",
+  :212             "mer",
+  :213             "distribution_yield",
+  :214             "dividend_frequency",
+  :215             "website",
+  :216             "investment_objectives",
+  :217         ]
+  :218 
+  :219         for symbol in symbols:
+  :220             result = {}
+  :221             target = DataFrame()
+  :222             s = (
+  :223                 symbol.replace(".TO", "").replace(".TSX", "").replace("-", ".")
+  :224             )  # noqa: PLW2901
+  :225             target = _data[_data["symbol"] == s][COLUMNS]
+  :226             target = target.fillna("N/A").replace("N/A", None)
+  :227             if len(target) > 0:
+  :228                 result = target.reset_index(drop=True).transpose().to_dict()[0]
+  :229                 results.append(result)
+  :230         return results
+  :231 
+-- transform_data --
+  :233     def transform_data(
+  :234         query: TmxEtfInfoQueryParams,
+  :235         data: list[dict],
+  :236         **kwargs: Any,
+  :237     ) -> list[TmxEtfInfoData]:
+  :238         """Return the transformed data."""
+  :239         return [TmxEtfInfoData.model_validate(d) for d in data]
+fired predicates (predicate -> canonical id, line that fired it):
+  list_param_split -> flow.fan_out (present=False) fired at :184  query.symbol.split(",") if "," in query.symbol else [query.symbol.upper()]
+  transpose_reshape -> shape.columnar (present=False) fired at :228  result = target.reset_index(drop=True).transpose().to_dict()[0]
+  null_sentinel_rewrite -> columns.null_sentinel (present=False) fired at :226  target = target.fillna("N/A").replace("N/A", None)
+  fixed_column_selection -> columns.select (present=True) fired at :225  target = _data[_data["symbol"] == s][COLUMNS]
+  param_string_transform -> param.value_transform (present=False) fired at :223  symbol.replace(".TO", "").replace(".TSX", "").replace("-", ".")
+  client_side_row_filter -> rows.filter (present=True) fired at :225  target = _data[_data["symbol"] == s][COLUMNS]
+  capability columns.null_sentinel: present=False
+  capability columns.rename: present=True
+  capability columns.select: present=True
+  capability flow.fan_out: present=False
+  capability param.value_transform: present=False
+  capability rows.filter: present=True
+  capability shape.columnar: present=False
+
+OBB2-tmx-EtfInfo  NOT-SHIPPABLE  censused=['columns.rename', 'rows.filter']  observed=['columns.null_sentinel', 'columns.select', 'flow.fan_out', 'param.value_transform', 'rows.filter', 'shape.columnar']  missing=['columns.null_sentinel', 'flow.fan_out', 'param.value_transform', 'shape.columnar']
+  fired predicate count: 6
+
+================ COUNTERFACT ARM ================
+Arm A (CONTROL) = real run above against the pinned, untouched
+upstream tree. Arm B = OBB2-tmx-EtfInfo re-scanned on a /tmp copy
+with the transpose() call deleted; only the transpose predicate
+may change. Any other diff means the instrument is unstable.
+temp copy written (NOT in repo): /tmp/c89_etf_info_no_transpose.py
+observed BEFORE (control): ['columns.null_sentinel', 'columns.select', 'flow.fan_out', 'param.value_transform', 'rows.filter', 'shape.columnar']
+observed AFTER  (variant): ['columns.null_sentinel', 'columns.select', 'flow.fan_out', 'param.value_transform', 'rows.filter']
+delta lost=['shape.columnar'] gained=[]
+OK: exactly the transpose predicate differs; the instrument is predicate-live, not inert
+
+rows audited: 5 of 5 | unresolved: 0 | exit: 0

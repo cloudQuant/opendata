@@ -1,0 +1,54 @@
+# C89 tmx-needs-witness -- executed 2026-10-11 (rc=0)
+# cmd: cd /Users/yunjinqi/Documents/new_projects/opendata && PYTHONPATH=. python docs/evidence/C89/tmx-needs-witness.py
+# also run from /tmp: rc=0, output identical (diff below shows nothing)
+# no network, no DB, no DDL, no OPENDATA_ALLOW_LIVE_E2E, no config/ignore/coverage file touched
+# upstream arm reads /Users/yunjinqi/Documents/new_projects/openbb (outside the workspace, read-only)
+
+G0 all four rows located         ids=['OBB2-tmx-EtfHoldings', 'OBB2-tmx-EtfSectors', 'OBB2-tmx-EtfCountries', 'OBB2-tmx-EtfInfo']
+G1 HEAD cover holds the four     cover(HEAD rows)=8 tmx-in-cover=['OBB2-tmx-EtfCountries', 'OBB2-tmx-EtfHoldings', 'OBB2-tmx-EtfInfo', 'OBB2-tmx-EtfSectors']
+G2 working cover holds none      cover(work)=4 tmx-in-cover=none
+H1 EtfHoldings  note names adds  named=['percent_column_scaling', 'sentinel_value_nulling', 'symbol_normalization'] needs=6
+H2 EtfHoldings  adds are cited   added in needs=3 of them named in the note=3
+H3 EtfHoldings  mislabels refused fan_out/column_drop present in needs=none
+H1 EtfSectors   note names adds  named=['percent_column_scaling', 'sentinel_value_nulling', 'symbol_normalization'] needs=6
+H2 EtfSectors   adds are cited   added in needs=3 of them named in the note=3
+H3 EtfSectors   mislabels refused fan_out/column_drop present in needs=none
+H1 EtfCountries note names adds  named=['percent_column_scaling', 'sentinel_value_nulling', 'symbol_normalization'] needs=6
+H2 EtfCountries adds are cited   added in needs=3 of them named in the note=3
+H3 EtfCountries mislabels refused fan_out/column_drop present in needs=none
+H1 EtfInfo      note names adds  named=['percent_column_scaling', 'sentinel_value_nulling', 'symbol_normalization'] needs=5
+H2 EtfInfo      adds are cited   added in needs=3 of them named in the note=3
+H3 EtfInfo      mislabels refused fan_out/column_drop present in needs=none
+I1 EtfHoldings  strip returns it needs minus the 3 added caps -> back in cover=True
+I2 EtfHoldings  one cap suffices needs minus only param.value_transform -> still locked=True
+I1 EtfSectors   strip returns it needs minus the 3 added caps -> back in cover=True
+I2 EtfSectors   one cap suffices needs minus only param.value_transform -> still locked=True
+I1 EtfCountries strip returns it needs minus the 3 added caps -> back in cover=True
+I2 EtfCountries one cap suffices needs minus only param.value_transform -> still locked=True
+I1 EtfInfo      strip returns it needs minus the 3 added caps -> back in cover=True
+I2 EtfInfo      one cap suffices needs minus only param.value_transform -> still locked=True
+J1 EtfHoldings  prior_* == HEAD  prior needs=3 notes verbatim=True
+J2 EtfHoldings  expressible_today unmoved HEAD=False now=False
+J1 EtfSectors   prior_* == HEAD  prior needs=3 notes verbatim=True
+J2 EtfSectors   expressible_today unmoved HEAD=False now=False
+J1 EtfCountries prior_* == HEAD  prior needs=3 notes verbatim=True
+J2 EtfCountries expressible_today unmoved HEAD=False now=False
+J1 EtfInfo      prior_* == HEAD  prior needs=2 notes verbatim=True
+J2 EtfInfo      expressible_today unmoved HEAD=False now=False
+K1 exactly the four moved        moved={'OBB2-tmx-EtfCountries': ['audited', 'needs_engine_capability', 'notes'], 'OBB2-tmx-EtfHoldings': ['audited', 'needs_engine_capability', 'notes'], 'OBB2-tmx-EtfInfo': ['audited', 'needs_engine_capability', 'notes'], 'OBB2-tmx-EtfSectors': ['audited', 'needs_engine_capability', 'notes']}
+K2 no other key touched          offenders=none
+U EtfHoldings  symbol_normalizat windows=2 in_range=True token_in_window=True docstring=True
+U EtfHoldings  sentinel_value_nu windows=3 in_range=True token_in_window=True docstring=True
+U EtfHoldings  percent_column_sc windows=1 in_range=True token_in_window=True docstring=True
+U EtfSectors   symbol_normalizat windows=1 in_range=True token_in_window=True docstring=True
+U EtfSectors   sentinel_value_nu windows=3 in_range=True token_in_window=True docstring=True
+U EtfSectors   percent_column_sc windows=1 in_range=True token_in_window=True docstring=True
+U EtfCountries symbol_normalizat windows=2 in_range=True token_in_window=True docstring=True
+U EtfCountries sentinel_value_nu windows=2 in_range=True token_in_window=True docstring=True
+U EtfCountries percent_column_sc windows=1 in_range=True token_in_window=True docstring=True
+U EtfInfo      symbol_normalizat windows=2 in_range=True token_in_window=True docstring=True
+U EtfInfo      sentinel_value_nu windows=3 in_range=True token_in_window=True docstring=True
+U EtfInfo      percent_column_sc windows=1 in_range=True token_in_window=True docstring=True
+U-ARMS judged: 12 (every add has a window carrying its token)
+
+ALL ARMS: every face has one pass reading and one differing damage reading

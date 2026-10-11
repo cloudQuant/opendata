@@ -1,0 +1,28 @@
+D1 pin == measured                 pin=9 measured=9 ['columns.compose', 'columns.null_sentinel', 'columns.period_cast', 'derive.conditional', 'param.preset_merge', 'param.value_transform', 'path.list_segment', 'request.caller_url', 'rows.filter_comparison']
+D2 arm entry with a probe          param.value_transform gained a surface -> set=8, pin fires=yes
+D3 drop one pin name               pin[:-1]=8 vs measured=9 -> fires=yes
+E1 columns.compose pinned absent   status=absent line=513 file=opendata/data/providers/_engine/value_transform.py
+E0 columns.compose copy fidelity   untouched copy diverges on: none
+E2 columns.compose anchor cut      status absent -> drifted (moved=True)
+E3 columns.compose damage stays local other new entries also moved: none
+E1 columns.period_cast pinned absent status=absent line=119 file=opendata/data/providers/_engine/value_transform.py
+E0 columns.period_cast copy fidelity untouched copy diverges on: none
+E2 columns.period_cast anchor cut  status absent -> drifted (moved=True)
+E3 columns.period_cast damage stays local other new entries also moved: none
+E1 derive.conditional pinned absent status=absent line=596 file=opendata/data/providers/_engine/value_transform.py
+E0 derive.conditional copy fidelity untouched copy diverges on: none
+E2 derive.conditional anchor cut   status absent -> drifted (moved=True)
+E3 derive.conditional damage stays local other new entries also moved: none
+E1 rows.filter_comparison pinned absent status=absent line=40 file=opendata/data/providers/_engine/spec.py
+E0 rows.filter_comparison copy fidelity untouched copy diverges on: none
+E2 rows.filter_comparison anchor cut status absent -> drifted (moved=True)
+E3 rows.filter_comparison damage stays local other new entries also moved: none
+E1 path.list_segment pinned absent status=absent line=62 file=opendata/data/providers/_engine/key_composition.py
+E0 path.list_segment copy fidelity untouched copy diverges on: none
+E2 path.list_segment anchor cut    status absent -> drifted (moved=True)
+E3 path.list_segment damage stays local other new entries also moved: none
+F1 census covers the notes         models=9 without_a_row=[] gaps=none
+F2 folds reach only new caps       labels folding onto the six C89 capabilities: ['columns.compose', 'columns.period_cast', 'derive.conditional', 'flow.branch', 'path.list_segment', 'rows.filter_comparison']
+F3 no oecd row reads ready         rows whose needs are all shipped: none (must be none)
+
+ALL ARMS: every face has one pass reading and one differing damage reading
