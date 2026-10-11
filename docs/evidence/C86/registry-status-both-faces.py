@@ -78,15 +78,19 @@ def main(argv: list[str] | None = None) -> int:
         )
     every = set(pre[3]) | set(post[3])
     delta = {status: post[3].get(status, 0) - pre[3].get(status, 0) for status in sorted(every)}
-    print(f"delta across the split: canonical {pre[1]}->{post[1]} registry {pre[2]}->{post[2]} "
-          f"statuses={json.dumps(delta, sort_keys=True)}")
+    print(
+        f"delta across the split: canonical {pre[1]}->{post[1]} registry {pre[2]}->{post[2]} "
+        f"statuses={json.dumps(delta, sort_keys=True)}"
+    )
     closure = {
         label: sum(groups.values()) == entries == canonical
         for label, canonical, entries, groups in (pre, post)
     }
     closes = all(closure.values()) and pinned == "MATCH"
-    print("closure (status groups sum == registry entries == canonical ids): "
-          f"{json.dumps(closure, sort_keys=True)} digest_pin={pinned}")
+    print(
+        "closure (status groups sum == registry entries == canonical ids): "
+        f"{json.dumps(closure, sort_keys=True)} digest_pin={pinned}"
+    )
     return 0 if closes else 1
 
 

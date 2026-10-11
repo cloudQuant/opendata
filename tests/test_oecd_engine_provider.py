@@ -33,7 +33,7 @@ import importlib.util
 import json
 import re
 from pathlib import Path
-from typing import Any, get_args
+from typing import Any, Final, get_args
 
 import pytest
 
@@ -43,9 +43,11 @@ from opendata.data.providers._engine import http_json
 from opendata.data.providers._engine.http_json import (
     ProviderEngineError,
     build_row_model,
+    encode_query,
     normalize_record,
     render_path,
 )
+from opendata.data.providers._engine.key_composition import CompositeKeySpec, KeyComponent
 from opendata.data.providers._engine.spec import (
     DELIMITED_DECODERS,
     ColumnSpec,
@@ -62,6 +64,7 @@ from opendata.data.providers.catalog import (
 )
 from opendata.data.providers.oecd import specs
 from opendata.data.registry import ProviderRegistry
+from scripts.quality import model_capability_census as mcc
 from scripts.quality.provider_model_inventory import LEDGER_RELATIVE_PATH, load_task_ledger
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -134,6 +137,13 @@ def _key_spec(**overrides: Any) -> ModelSpec:
 def _query(**values: Any) -> Any:
     """A validated query object: ``render_path`` reads attributes, not dictionaries."""
     return type("Query", (), values)()
+
+
+#: The CPI code table pinned upstream (consumer_price_index.py:203) as one parameter's map, so the
+#: probe below can show the same key rendering with and without the field.
+_SERIES_KEY_WITH_CODE_TABLE: Final = ParamSpec(
+    "series_key", "str", required=True, value_map=(("united_states.M.HICP", "USA.M.HICP"),)
+)
 
 
 class TestTheNineRowAccounting:
@@ -264,13 +274,17 @@ class TestProviderDescriptor:
         ]
 
 
-class TestTheComposedKeyIsNotDeclarable:
+class TestTheComposedKeyBlockersReMeasured:
     """Each capability a blocker names, re-measured by declaring the request the upstream builds.
 
     These are the probes that make a refusal a finding rather than a claim: the pinned CPI model's
     key is ``{country}.{frequency}.{methodology}.CPI.{units}.{expenditure}.N.`` with every part read
     out of a code table (consumer_price_index.py:203-205), so the questions are whether the engine
-    can map a value, carry a ``+``, send a key whose positions are empty, or derive a column.
+    can map a value, join the mapped positions into one segment, carry a ``+``, send a key whose
+    positions are empty, or derive a column. Two of those six answers changed when
+    :attr:`~ModelSpec.composite_keys` and :attr:`~ParamSpec.value_map` shipped: the probes below run
+    the same declaration against the live engine either way, so what they report is the engine of
+    this checkout rather than a remembered verdict.
     """
 
     def test_positive_control_a_single_segment_value_is_carried_verbatim(self) -> None:
@@ -281,14 +295,52 @@ class TestTheComposedKeyIsNotDeclarable:
             f"/data/{UPSTREAM_DATAFLOW}/USA.M.HICP.CPI.PC..N."
         )
 
-    def test_params_cannot_be_mapped_through_a_code_table(self) -> None:
-        spec = _key_spec()
-        rendered = render_path(spec, _query(series_key="united_states.M.HICP"))
-        # Upstream would send USA.M.HICP here; the engine has no field to say so and passes the
-        # caller's text through, which addresses the wrong resource rather than raising an error.
-        assert rendered.endswith("/united_states.M.HICP")
-        assert "USA" not in rendered
-        assert "value_map" not in {field.name for field in dataclasses.fields(ParamSpec)}
+    def test_a_code_table_and_a_joined_key_are_both_declareable(self) -> None:
+        """The two halves compose: a mapped value lands in the position that names its parameter."""
+        spec = _key_spec(
+            params=(
+                ParamSpec("area", "str", required=True, value_map=(("united_states", "USA"),)),
+                ParamSpec("freq", "str", required=True, value_map=(("monthly", "M"),)),
+            ),
+            composite_keys=(
+                CompositeKeySpec(
+                    name="series_key",
+                    separator=".",
+                    components=(
+                        KeyComponent("area", source="area"),
+                        KeyComponent("freq", source="freq"),
+                        KeyComponent("measure", kind="literal", source="CPI"),
+                    ),
+                ),
+            ),
+        )
+        # Upstream is addressed by ``USA.M.CPI``: the caller-facing spellings are what the record
+        # accepts, and the code-table tokens are what the wire carries.
+        assert render_path(spec, _query(area="united_states", freq="monthly")) == (
+            f"/data/{UPSTREAM_DATAFLOW}/USA.M.CPI"
+        )
+        # A position is not also sent in the query string, and the arm that can differ: a value with
+        # no declared upstream spelling is refused rather than passed through as the caller's text.
+        assert encode_query(_query(area="united_states", freq="monthly"), spec) == {}
+        with pytest.raises(ProviderEngineError) as caught:
+            render_path(spec, _query(area="mexico", freq="monthly"))
+        assert caught.value.code == "OECD_PARAM_VALUE_UNMAPPED"
+        assert caught.value.rejected == ("area",)
+
+    def test_the_mapped_value_is_what_ships_not_the_callers_text(self) -> None:
+        # The probe as it read before the seam shipped: a parameter carried no field for the token
+        # the endpoint expects, so ``united_states`` addressed the wrong resource silently. Both
+        # sides run here, because the unmapped passthrough is the arm the new field has to differ
+        # from -- a probe that only ever maps proves nothing about the map.
+        assert "value_map" in {field.name for field in dataclasses.fields(ParamSpec)}
+        unmapped = _key_spec(params=(ParamSpec("series_key", "str", required=True),))
+        assert render_path(unmapped, _query(series_key="united_states.M.HICP")).endswith(
+            "/united_states.M.HICP"
+        )
+        mapped = _key_spec(params=(_SERIES_KEY_WITH_CODE_TABLE,))
+        assert render_path(mapped, _query(series_key="united_states.M.HICP")).endswith(
+            "/USA.M.HICP"
+        )
 
     def test_a_joined_multi_country_key_is_refused_before_any_send(self) -> None:
         spec = _key_spec()
@@ -307,13 +359,19 @@ class TestTheComposedKeyIsNotDeclarable:
         spec = _key_spec()
         assert render_path(spec, _query(series_key="G")) == f"/data/{UPSTREAM_DATAFLOW}/G"
 
-    def test_the_fixed_query_keys_cannot_ride_in_the_path(self) -> None:
+    def test_the_fixed_query_keys_cannot_ride_in_the_path_but_do_have_a_field(self) -> None:
         # Upstream appends `dimensionAtObservation=...&detail=dataonly` after a `?` in the literal.
         with pytest.raises(ValueError) as caught:
             _key_spec(path="/data/G?dimensionAtObservation=TIME_PERIOD&detail=dataonly")
         assert "bare absolute path" in str(caught.value)
-        # And a declaration has no field for a key no upstream parameter backs:
-        assert "static_params" not in {field.name for field in dataclasses.fields(ModelSpec)}
+        # And a key no upstream parameter backs does have a field: a constant on every request.
+        spec = _key_spec(
+            static_query=(("dimensionAtObservation", "TIME_PERIOD"), ("detail", "dataonly"))
+        )
+        sent = encode_query(_query(series_key="USA.M"), spec)
+        assert sent == {"dimensionAtObservation": "TIME_PERIOD", "detail": "dataonly"}
+        # A caller may not overwrite the addressing the model was reviewed against.
+        assert encode_query(_query(series_key="USA.M", detail="everything"), spec) == sent
 
     def test_a_comparison_row_filter_cannot_window_the_dates(self) -> None:
         # consumer_price_index.py:246-248 keeps rows by `date >= start_date and date <= end_date`.
@@ -334,15 +392,36 @@ class TestTheComposedKeyIsNotDeclarable:
             {field.name for field in dataclasses.fields(ColumnSpec)}
         )
 
-    def test_the_census_needs_that_do_ship_are_not_what_blocks_these_rows(self) -> None:
-        # Two of the needs the census names are shipped capabilities, so a refusal that rested on
-        # them would be stale: the delimited decoder and the client-side filter both exist now.
+    def test_nothing_the_census_asks_for_is_still_a_missing_capability(self) -> None:
+        """The nine rows' blockers are now facts, not engine fields -- measured, not asserted.
+
+        Last round this probe read the other way: it subtracted two shipped labels and reported the
+        key composition as what was left. The present set is re-read from the census instrument on
+        each run, so the verdict is this checkout's engine rather than a remembered one.
+        """
         assert "csv" in DELIMITED_DECODERS
         assert _key_spec(decoder=DecoderSpec(kind="csv")).decoder.delimited
         assert RowFilterSpec(op="contains", columns=["REF_AREA"], value="USA").op == "contains"
-        shipped = {"csv_decoder", "client_side_row_filter"}
+        present = set(
+            mcc.run(
+                round_id="OECD-PROBE",
+                root=REPO_ROOT,
+                census_dir=REPO_ROOT / mcc.CENSUS_DIR_REL,
+            ).statuses["present"]
+        )
         for record in census_oecd_rows():
-            remaining = set(record["needs_engine_capability"]) - shipped
-            assert remaining, f"{record['upstream_model']}: nothing is left to block it"
-            # What is left is the key composition every blocker names, row after row.
-            assert remaining == {"sdmx_dotted_key_path"}, record["upstream_model"]
+            capabilities = {
+                mcc.LABEL_TO_CAPABILITY[label] for label in record["needs_engine_capability"]
+            }
+            missing = sorted(capabilities - present)
+            assert missing == [], f"{record['upstream_model']}: {missing} still absent"
+        # The arm that can differ: take back the capability wired this round and every row is
+        # blocked again, which is what the pre-split reading reported.
+        unwired = present - {"flow.composite_key_segment"}
+        relapsed = [
+            record["upstream_model"]
+            for record in census_oecd_rows()
+            if {mcc.LABEL_TO_CAPABILITY[label] for label in record["needs_engine_capability"]}
+            - unwired
+        ]
+        assert len(relapsed) == 9, relapsed

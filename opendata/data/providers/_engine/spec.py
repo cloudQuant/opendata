@@ -17,6 +17,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
+from opendata.data.providers._engine.key_composition import CompositeKeySpec
+
 #: Value domains the engine can encode, validate and normalize.
 ValueKind = Literal["str", "int", "float", "bool", "date", "enum", "str_list"]
 
@@ -97,6 +99,10 @@ class ParamSpec:
         required: Whether omitting the parameter fails before any I/O.
         default: Value applied when the caller omits an optional parameter.
         enum: Allowed values when ``kind`` is ``"enum"``.
+        value_map: ``(caller text, upstream text)`` pairs for a parameter whose published spelling
+            differs from the one the model exposes -- ``"annual"`` sent as ``"A"``. The map is
+            total for an ``enum`` (every declared value is spelled) and an unmatched value is a
+            refusal at encode time, never a silent passthrough of the caller's own text.
         note: Why the bound exists, for the review record.
     """
 
@@ -106,6 +112,7 @@ class ParamSpec:
     required: bool = False
     default: Any = None
     enum: tuple[str, ...] = ()
+    value_map: tuple[tuple[str, str], ...] = ()
     note: str = ""
 
     def __post_init__(self) -> None:
@@ -121,6 +128,48 @@ class ParamSpec:
             raise ValueError(f"parameter {self.name!r} has a blank query key")
         if self.default is not None and self.required:
             raise ValueError(f"parameter {self.name!r} cannot be required and defaulted")
+        self._check_value_map()
+
+    def _check_value_map(self) -> None:
+        """Resolve a value mapping against this parameter's own value domain.
+
+        One origin spelling per line and no empty text on either side: a duplicate origin would
+        make the encoded request depend on iteration order, and an empty upstream text would send
+        the key with nothing after the ``=`` while the record still describes a real value.
+        """
+        if not self.value_map:
+            return
+        if self.kind not in ("str", "enum"):
+            raise ValueError(
+                f"parameter {self.name!r} may map values only when its kind is str or enum"
+            )
+        origins: list[str] = []
+        for entry in self.value_map:
+            if (
+                not isinstance(entry, tuple)
+                or len(entry) != 2
+                or not all(isinstance(text, str) and text for text in entry)
+            ):
+                raise ValueError(
+                    f"parameter {self.name!r} value_map entries are (caller, upstream) "
+                    "pairs of non-blank text"
+                )
+            origins.append(entry[0])
+        if len(origins) != len(set(origins)):
+            raise ValueError(f"parameter {self.name!r} maps the same caller value twice")
+        # An enum is the parameter's whole published domain, so a partial map would leave values
+        # that reach the wire unmapped. A free-text parameter has no enumerable domain, and there
+        # the encoder refuses an unlisted value instead of sending the caller's spelling.
+        unmapped = [value for value in self.enum if value not in set(origins)]
+        if self.kind == "enum" and unmapped:
+            raise ValueError(
+                f"parameter {self.name!r} enum values {unmapped} declare no upstream spelling"
+            )
+
+    @property
+    def mapped_values(self) -> dict[str, str]:
+        """Caller text to upstream text, in declaration order."""
+        return dict(self.value_map)
 
     @property
     def encoded_key(self) -> str:
@@ -371,6 +420,9 @@ class ModelSpec:
         decoder: Body shape read into rows; the default is the JSON document path.
         row_filters: Client-side selections applied after the source's own completeness was judged;
             the default applies none, so every declaration written before row filters is unchanged.
+        composite_keys: Path placeholders this model composes out of several parameters rather than
+            reading one attribute for (an SDMX data key is ``{freq}.{area}.{measure}``); the default
+            composes none, so every declaration written before this is addressed exactly as before.
     """
 
     model: str
@@ -397,6 +449,8 @@ class ModelSpec:
     # Declared last so a positional ``ModelSpec(...)`` built before row filters existed keeps
     # binding to the same fields.
     row_filters: tuple[RowFilterSpec, ...] = ()
+    # Declared after row filters for the same reason: a positional construction cannot reach it.
+    composite_keys: tuple[CompositeKeySpec, ...] = ()
 
     @property
     def path_placeholders(self) -> tuple[str, ...]:
@@ -410,6 +464,26 @@ class ModelSpec:
         second path segment or reach the query string.
         """
         return tuple(_PATH_PLACEHOLDER.findall(self.path))
+
+    @property
+    def composite_key_names(self) -> tuple[str, ...]:
+        """Placeholders this model builds by composition instead of by one attribute."""
+        return tuple(key.name for key in self.composite_keys)
+
+    @property
+    def path_consumed_params(self) -> frozenset[str]:
+        """Parameter names the URL path itself accounts for, so the query string must not repeat.
+
+        A scalar placeholder consumes the parameter it is named after. A composite placeholder
+        consumes every parameter its components read, which is why an SDMX model's ``freq`` and
+        ``area`` are addressed inside ``{dimension_key}`` and are not also sent as query keys.
+        """
+        names = set(self.path_placeholders)
+        for key in self.composite_keys:
+            for component in key.components:
+                if component.kind == "param" and component.source:
+                    names.add(component.source)
+        return frozenset(names)
 
     def __post_init__(self) -> None:
         """Reject declarations that cannot produce a reviewable fetcher."""
@@ -474,7 +548,40 @@ class ModelSpec:
         ):
             raise ValueError(f"{self.model}: path has a malformed {{placeholder}}")
         declared = {parameter.name for parameter in self.params}
+        composite_names = self.composite_key_names
+        # A composite placeholder is resolved from its own record, not from a parameter of that
+        # name: ``{dimension_key}`` names a composition, and the parameters it reads are named by
+        # its components. Both are checked here because a composition that spells no placeholder
+        # would never run, and one whose component names a parameter this model does not declare
+        # would render a wildcard position out of a typo -- the ``on_missing`` policy would fire
+        # on an attribute that does not exist instead of on a caller who omitted it.
+        for composition in self.composite_keys:
+            if not isinstance(composition, CompositeKeySpec):
+                raise ValueError(f"{self.model}: composite_keys entries must be CompositeKeySpec")
+            if composition.name not in self.path_placeholders:
+                raise ValueError(
+                    f"{self.model}: composite key {composition.name!r} spells no path placeholder"
+                )
+            if composition.name in declared:
+                raise ValueError(
+                    f"{self.model}: composite key {composition.name!r} collides "
+                    "with a parameter name"
+                )
+            unbound = [
+                position.source
+                for position in composition.components
+                if position.kind == "param" and position.source and position.source not in declared
+            ]
+            if unbound:
+                raise ValueError(
+                    f"{self.model}: composite key {composition.name!r} reads source "
+                    f"{unbound[0]!r}, which {self.model} does not declare as a parameter"
+                )
+        if len(composite_names) != len(set(composite_names)):
+            raise ValueError(f"{self.model}: duplicate composite key names")
         for placeholder in self.path_placeholders:
+            if placeholder in composite_names:
+                continue
             if placeholder not in declared:
                 raise ValueError(
                     f"{self.model}: path placeholder {placeholder!r} is not a declared parameter"
@@ -482,8 +589,11 @@ class ModelSpec:
         # ``render_path`` refuses a placeholder with no value, but only at fetch time; a placeholder
         # that is optional and has no default is a declaration that cannot address a resource on its
         # own, so the task author is told when the record is written rather than on first query.
+        # A composite placeholder is exempt: each of its positions carries its own missing policy.
         by_name = {parameter.name: parameter for parameter in self.params}
         for placeholder in self.path_placeholders:
+            if placeholder in composite_names:
+                continue
             parameter = by_name[placeholder]
             if not parameter.required and parameter.default is None:
                 raise ValueError(
@@ -498,7 +608,7 @@ class ModelSpec:
         claimed_keys = {
             parameter.encoded_key
             for parameter in self.params
-            if parameter.name not in self.path_placeholders
+            if parameter.name not in self.path_consumed_params
         }
         for key in (
             self.credential_query_key,

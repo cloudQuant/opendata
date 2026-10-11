@@ -1325,15 +1325,17 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         capability="flow.composite_key_segment",
         claim=False,
         engine_work=True,
-        proof_file=HTTP_JSON_REL,
-        anchor=r'_PATH_SEGMENT = re.compile(r"^[A-Za-z0-9._~\-]+$")',
-        cross_file=SPEC_REL,
-        cross_anchor="path_placeholders",
-        why="render_path fills one placeholder from one validated query field, and ParamSpec has "
-        "no join or derive field, so an SDMX data key built from several dimensions has nowhere to "
-        "say how it is composed. The dot itself is legal in a segment; the OECD key form "
-        "<flow>,<key> is not, because _PATH_SEGMENT omits the comma the way it omits the slash.",
-        probe=DeclarationProbe(call="ModelSpec", keyword="path_key_joins"),
+        proof_file=SPEC_REL,
+        anchor="composite_keys: tuple[CompositeKeySpec, ...] = ()",
+        read_from_disk=True,
+        cross_file=HTTP_JSON_REL,
+        cross_anchor="def _render_composite(",
+        why="ModelSpec.composite_keys holds one CompositeKeySpec per composed placeholder and "
+        "render_path routes that placeholder through ``_render_composite``, which joins the "
+        "declared positions and refuses any result that could break out of one segment. The scalar "
+        "branch still gates on _PATH_SEGMENT, which omits the comma, so a comma-joined key is "
+        "legal only through a composition whose separator the kernel checked.",
+        probe=DeclarationProbe(call="ModelSpec", keyword="composite_keys"),
     ),
     CapabilityEntry(
         capability="decode.delimited_headerless",
@@ -1456,10 +1458,14 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         claim=False,
         engine_work=True,
         proof_file=SPEC_REL,
-        anchor="enum: tuple[str, ...] = ()",
-        why="A parameter can declare the set of values it accepts and alias its query key, but has "
-        "nowhere to say which upstream token an accepted value is sent as, so a fetcher's "
-        "``COVERAGE_DICT[value]`` round-trip has no declaration surface.",
+        anchor="value_map: tuple[tuple[str, str], ...] = ()",
+        read_from_disk=True,
+        cross_file=HTTP_JSON_REL,
+        cross_anchor="def _apply_value_map(",
+        why="ParamSpec.value_map declares the (caller, upstream) pairs and ``_apply_value_map`` "
+        "runs them at encode time, refusing a value the map does not spell rather than sending the "
+        "caller's own text. Presence is measured from both lines, so the face moves with the code.",
+        probe=DeclarationProbe(call="ParamSpec", keyword="value_map"),
     ),
     CapabilityEntry(
         capability="param.value_transform",

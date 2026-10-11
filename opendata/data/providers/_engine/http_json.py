@@ -37,9 +37,14 @@ from opendata.data.capability import Capability
 from opendata.data.domains import contract_model, load_domains
 from opendata.data.models.base import ContractModel
 from opendata.data.protocol import FetchContext, Fetcher
+from opendata.data.providers._engine.key_composition import (
+    KeyCompositionError,
+    render_composite_key,
+)
 from opendata.data.providers._engine.spec import ROW_FILTER_VALUE_SEPARATOR
 
 if TYPE_CHECKING:
+    from opendata.data.providers._engine.key_composition import CompositeKeySpec
     from opendata.data.providers._engine.spec import (
         ColumnSpec,
         ModelSpec,
@@ -202,7 +207,9 @@ def encode_query(query: object, spec: ModelSpec) -> dict[str, str]:
 
     A parameter the path template consumes is deliberately left out of the query string: an
     upstream that encodes the resource in the URL (``/quotes/{symbol}.json``) does not accept it
-    twice, and sending it twice would make the logged request differ from the declared one.
+    twice, and sending it twice would make the logged request differ from the declared one. A
+    composite placeholder consumes every parameter its positions read, so an SDMX model's ``freq``
+    lives only inside ``{dimension_key}``.
 
     The declaration's :attr:`~ModelSpec.static_query` constants go in first and are not read from
     the query: they are the upstream's own URL literals (which release, which series, which payload
@@ -210,35 +217,101 @@ def encode_query(query: object, spec: ModelSpec) -> dict[str, str]:
     claims, so no caller-set value can overwrite the addressing the model was reviewed against.
     """
     encoded: dict[str, str] = dict(spec.static_query)
-    consumed_by_path = set(spec.path_placeholders)
+    consumed_by_path = spec.path_consumed_params
     for parameter in spec.params:
         if parameter.name in consumed_by_path:
             continue
         value = getattr(query, parameter.name, None)
         if value is None:
             continue
-        encoded[parameter.encoded_key] = _encode_value(parameter, value, spec)
+        encoded[parameter.encoded_key] = _apply_value_map(
+            parameter, _encode_value(parameter, value, spec), spec
+        )
     return encoded
 
 
 def render_path(spec: ModelSpec, query: object) -> str:
     """Substitute the declared path template with single-segment values from the validated query.
 
+    A placeholder that names a :attr:`~ModelSpec.composite_keys` entry is composed from the
+    parameters its positions name; every other placeholder is one attribute of the query.
+
     Raises:
-        ProviderEngineError: A placeholder has no value, or a value that is not provably one URL
-            path segment. Both are refused before any socket opens: a value carrying ``/`` or
-            ``?`` would silently address a different resource than the declaration describes.
+        ProviderEngineError: A placeholder has no value, a composition refused one of its
+            positions, a declared code table has no spelling for the value, or a value that is not
+            provably one URL path segment. All are refused before any socket opens: a value carrying
+            ``/`` or ``?`` would silently address a different resource than the declaration
+            describes.
     """
     path = spec.path
+    composite = {key.name: key for key in spec.composite_keys}
+    by_name = {parameter.name: parameter for parameter in spec.params}
     for name in spec.path_placeholders:
+        if name in composite:
+            path = path.replace(f"{{{name}}}", _render_composite(composite[name], query, spec))
+            continue
         value = getattr(query, name, None)
         if value is None:
             raise ProviderEngineError(f"{spec.error_prefix}_QUERY_INVALID", url=path)
         text = value.isoformat() if isinstance(value, date) else str(value)
+        # A declared code table belongs to the parameter, not to the place its value is used, so a
+        # mapped placeholder segment carries the upstream spelling too -- and an unmapped one is
+        # refused here rather than sent as the caller's own text, which would address a resource no
+        # review covered.
+        parameter = by_name.get(name)
+        if parameter is not None and parameter.value_map:
+            text = _apply_value_map(parameter, text, spec)
         if not _PATH_SEGMENT.match(text):
             raise ProviderEngineError(f"{spec.error_prefix}_PARAM_UNENCODABLE", url=path)
         path = path.replace(f"{{{name}}}", text)
     return path
+
+
+#: What joined text may not contain to still be one path segment. The comma is allowed because a
+#: composite separator is a legal segment character (an SDMX resource key is ``agency,agency``, and
+#: the composition kernel already refused any separator that is URL structure).
+_SEGMENT_BREAKING = "/?#\\&"
+
+
+def _render_composite(key: CompositeKeySpec, query: object, spec: ModelSpec) -> str:
+    """Compose one path segment from the query values its declaration names.
+
+    The kernel owns the per-position rules -- charset, missing policy, separator safety -- so this
+    seam only resolves the attributes, translates the kernel's attributable refusal into the
+    model's own error prefix, and re-checks that the *joined* result cannot break out of one
+    segment or start a query string.
+
+    A position that reads a parameter declaring a :attr:`~ParamSpec.value_map` is mapped before the
+    kernel sees it: the map belongs to the parameter, and a model whose callers say ``monthly`` and
+    whose key carries ``M`` would otherwise compose the caller's own text into the resource address.
+    An absent value is left for the kernel's own missing policy, so a wildcard position still
+    defaults rather than being reported as unmapped.
+    """
+    by_name = {parameter.name: parameter for parameter in spec.params}
+    values: dict[str, object] = {}
+    for component in key.components:
+        if component.kind != "param" or not component.source:
+            continue
+        value = getattr(query, component.source, None)
+        parameter = by_name.get(component.source)
+        if parameter is not None and parameter.value_map and value is not None:
+            value = _apply_value_map(parameter, str(value), spec)
+        values[component.source] = value
+    try:
+        text = render_composite_key(key, values)
+    except KeyCompositionError as error:
+        raise ProviderEngineError(
+            f"{spec.error_prefix}_{error.code}",
+            rejected=(error.reason, error.component),
+            url=spec.path,
+        ) from None
+    if any(character in text for character in _SEGMENT_BREAKING):
+        raise ProviderEngineError(
+            f"{spec.error_prefix}_KEY_COMPOSITION_INVALID",
+            rejected=("path_structure", key.name),
+            url=spec.path,
+        )
+    return text
 
 
 def _encode_value(parameter: ParamSpec, value: object, spec: ModelSpec) -> str:
@@ -257,6 +330,26 @@ def _encode_value(parameter: ParamSpec, value: object, spec: ModelSpec) -> str:
     if not _SAFE_VALUE.match(text):
         raise ProviderEngineError(f"{spec.error_prefix}_PARAM_UNENCODABLE")
     return text
+
+
+def _apply_value_map(parameter: ParamSpec, text: str, spec: ModelSpec) -> str:
+    """Translate one caller-facing parameter value into the spelling the endpoint expects.
+
+    A model whose callers say ``annual`` and whose upstream says ``A`` declares the pair once here
+    instead of letting every provider package translate it. An unmapped value is a refusal, not a
+    passthrough: sending the caller's own text under a declaration that reviewed a different
+    spelling would ask the upstream a question the record does not describe answering.
+    """
+    if not parameter.value_map:
+        return text
+    mapped = parameter.mapped_values.get(text)
+    if mapped is None:
+        raise ProviderEngineError(
+            f"{spec.error_prefix}_PARAM_VALUE_UNMAPPED",
+            rejected=(parameter.name,),
+            url=spec.path,
+        )
+    return mapped
 
 
 def resolve_rows(document: object, pointer: str, spec: ModelSpec) -> list[Any]:

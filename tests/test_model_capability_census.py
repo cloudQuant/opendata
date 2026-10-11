@@ -524,6 +524,11 @@ def test_registry_must_equal_the_taxonomy_exactly() -> None:
     mcc._check_registry(mcc.REGISTRY)
 
 
+def _claims_without_a_probe(entries: tuple[mcc.CapabilityEntry, ...]) -> list[str]:
+    """Names of entries that claim presence while the instrument has nothing to count."""
+    return [entry.capability for entry in entries if entry.probe is None and entry.claim]
+
+
 def test_registry_shape_is_anchored_or_declared_unproven() -> None:
     """Every claimed-present entry names a token; the one filesystem-only claim is unanchored."""
     for entry in mcc.REGISTRY:
@@ -534,14 +539,29 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
     assert [entry.capability for entry in mcc.REGISTRY if not entry.anchor] == [
         "outside.source_absent"
     ]
-    assert [entry.capability for entry in mcc.REGISTRY if entry.read_from_disk] == [
-        ROW_FILTER_CAPABILITY
+    # Presence is re-measured from the shipped engine source for exactly the capabilities whose
+    # declaration field exists there; every other entry is asserted by the census author and only
+    # cross-checked against the provider declarations that use it.
+    assert sorted(entry.capability for entry in mcc.REGISTRY if entry.read_from_disk) == [
+        "flow.composite_key_segment",
+        "param.value_mapping",
+        ROW_FILTER_CAPABILITY,
     ]
-    assert [entry.capability for entry in mcc.REGISTRY if entry.probe is None] == [
-        capability
-        for capability in mcc.canonical_capabilities()
-        if capability.startswith(NON_ENGINE_PREFIX)
-    ] or True
+    # A probe is a capability's declaration surface: it is how the instrument counts the production
+    # declarations that exercise the feature, so an entry with no surface may not claim presence.
+    assert _claims_without_a_probe(mcc.REGISTRY) == []
+    # ...and the judge can fire: a probe-less entry promoted to a presence claim is named.
+    forged = replace(next(e for e in mcc.REGISTRY if e.probe is None), claim=True)
+    assert _claims_without_a_probe((forged,)) == [forged.capability]
+    # The engine-side capabilities still without a declaration surface -- the ladder's next steps.
+    assert sorted(
+        entry.capability for entry in mcc.REGISTRY if entry.probe is None and entry.engine_work
+    ) == [
+        "columns.null_sentinel",
+        "param.preset_merge",
+        "param.value_transform",
+        "request.caller_url",
+    ]
 
 
 def test_json_is_byte_identical_across_runs(

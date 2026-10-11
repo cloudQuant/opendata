@@ -195,9 +195,12 @@ def measure(census_dir: Path, ledger: list[dict[str, str]], carried: set[str]) -
                 group_mismatch[name] = {"declared": declared, "derived": dict(derived)}
         elif isinstance(groups, list):
             shapes[name] = "list"
-            declared = sorted(str(g) for g in groups)
-            if declared != sorted(derived):
-                group_mismatch[name] = {"declared": declared, "derived": sorted(derived)}
+            declared_names = sorted(str(g) for g in groups)
+            if declared_names != sorted(derived):
+                group_mismatch[name] = {
+                    "declared": declared_names,
+                    "derived": sorted(derived),
+                }
         else:
             shapes[name] = type(groups).__name__
             group_mismatch[name] = "provider_groups is neither a dict of counts nor a name list"
@@ -336,7 +339,7 @@ def _rewrite(target: Path, name: str, mutate: Callable[[dict[str, Any]], None]) 
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
 
 
-def self_test(face: dict[str, object], ledger: list[dict[str, str]], carried: set[str]) -> int:
+def self_test(face: dict[str, Any], ledger: list[dict[str, str]], carried: set[str]) -> int:
     """Show each counter away from its live reading; a counter no input can move proves nothing."""
     print("SELF-TEST (five tampers against copied trees; the live census is never written)")
     made: list[Path] = []
@@ -408,7 +411,7 @@ def _as_dict(value: object) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
-def render(face: dict[str, object], json_mode: bool) -> str:
+def render(face: dict[str, Any], json_mode: bool) -> str:
     """Print each face with its denominator, or dump the raw face when asked for JSON."""
     if json_mode:
         return json.dumps(face, ensure_ascii=False, indent=2, sort_keys=True, default=str)
@@ -484,7 +487,7 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
-def _apply(face: dict[str, object], ledger: list[dict[str, str]], carried: set[str]) -> None:
+def _apply(face: dict[str, Any], ledger: list[dict[str, str]], carried: set[str]) -> None:
     before = json.loads(AUDIT_FILE.read_text(encoding="utf-8"))
     archived = {key: before[key] for key in ARCHIVED_KEYS if key in before}
     digest_before = _digest(AUDIT_FILE)[:16]

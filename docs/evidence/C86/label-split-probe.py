@@ -144,7 +144,16 @@ def _refusal(mcc: ModuleType, folds: Mapping[str, str]) -> str:
 
 def _int(value: object) -> int:
     """Read a pinned counter back as an int; the faces are ints, this file just stores objects."""
-    return int(value)  # type: ignore[arg-type]
+    if isinstance(value, (int, float)):
+        return int(value)
+    return int(str(value))
+
+
+def _seq(value: object) -> list[str]:
+    """Read a pinned id-list face back as a list, refusing a face of the wrong shape."""
+    if not isinstance(value, list):
+        raise TypeError(f"expected a list face, saw {type(value).__name__}")
+    return [str(item) for item in value]
 
 
 def _moved(before: Mapping[str, object], after: Mapping[str, object]) -> list[str]:
@@ -177,9 +186,11 @@ def probe() -> int:
     mcc = _load_census_module()
     live_map = {str(k): str(v) for k, v in mcc.LABEL_TO_CAPABILITY.items()}
     divergent = sorted(set(pre) ^ set(live_map))
-    print(f"carrier: commit={carrier['commit']} blob={carrier['blob']} "
-          f"sha256[:16]={carrier['pre_split_sha256_16']} pre_split_labels={len(pre)} "
-          f"live_labels={len(live_map)} label_spelling_differences={len(divergent)}")
+    print(
+        f"carrier: commit={carrier['commit']} blob={carrier['blob']} "
+        f"sha256[:16]={carrier['pre_split_sha256_16']} pre_split_labels={len(pre)} "
+        f"live_labels={len(live_map)} label_spelling_differences={len(divergent)}"
+    )
     if divergent:
         return _fail(
             f"the label spellings themselves moved ({divergent}); the carrier no longer "
@@ -198,10 +209,14 @@ def probe() -> int:
     live = _face(mcc, {}, ())
     print(f"live face: {json.dumps({k: live[k] for k in LADDER_COUNTERS}, sort_keys=True)}")
     print(f"live shipped_cover rows: {json.dumps(live['shipped_cover_ids'])}")
-    print(f"folds derived from the carrier, not typed here: {len(folds)} "
-          f"{json.dumps(folds, sort_keys=True)}")
-    print(f"registry entries the split added, derived from the folds: {len(drop_all)} "
-          f"{json.dumps(drop_all)}")
+    print(
+        f"folds derived from the carrier, not typed here: {len(folds)} "
+        f"{json.dumps(folds, sort_keys=True)}"
+    )
+    print(
+        f"registry entries the split added, derived from the folds: {len(drop_all)} "
+        f"{json.dumps(drop_all)}"
+    )
 
     failures = 0
     print("GUARD ARM (a fold that leaves its registry entry unnameable must be refused)")
@@ -213,15 +228,17 @@ def probe() -> int:
         refused = _refusal(mcc, {label: old})
         kept_refuses = new in refused and refused.startswith("RoadmapError")
         dropped = _face(mcc, {label: old}, [new])
-        accepted_moves = _int(dropped["canonical_capabilities"]) == _int(
-            live["canonical_capabilities"]
-        ) - 1
+        accepted_moves = (
+            _int(dropped["canonical_capabilities"]) == _int(live["canonical_capabilities"]) - 1
+        )
         verdict = "PASS" if kept_refuses and accepted_moves else "FAIL"
         failures += verdict == "FAIL"
         print(f"  [{verdict}] fold {label} -> {old} with the {new} entry kept: {refused}")
-        print(f"  [{verdict}] same fold with {new} dropped: runs, "
-              f"canonical_capabilities {live['canonical_capabilities']}->"
-              f"{dropped['canonical_capabilities']}")
+        print(
+            f"  [{verdict}] same fold with {new} dropped: runs, "
+            f"canonical_capabilities {live['canonical_capabilities']}->"
+            f"{dropped['canonical_capabilities']}"
+        )
 
     print("SINGLE-FOLD ARMS (each must move a ladder counter or rewrite at least one need set)")
     reducing: list[str] = []
@@ -242,10 +259,14 @@ def probe() -> int:
         print(f"  [{verdict}] fold {label} -> {old} drop={json.dumps(drop)}: {reading}")
     identity = "PASS" if reducing == unique_labels else "FAIL"
     failures += identity == "FAIL"
-    print(f"  [{identity}] canonical-reducing folds measured={len(reducing)} "
-          f"{json.dumps(reducing)} derived={len(unique_labels)} {json.dumps(unique_labels)}")
-    print(f"  attribution-only folds (need set moves, every ladder counter holds): "
-          f"{len(attribution_only)} {json.dumps(attribution_only)}")
+    print(
+        f"  [{identity}] canonical-reducing folds measured={len(reducing)} "
+        f"{json.dumps(reducing)} derived={len(unique_labels)} {json.dumps(unique_labels)}"
+    )
+    print(
+        f"  attribution-only folds (need set moves, every ladder counter holds): "
+        f"{len(attribution_only)} {json.dumps(attribution_only)}"
+    )
 
     print("CONTROL ARM (a fold onto the value the label already holds must move nothing)")
     control = next(label for label in sorted(live_map) if label not in folds)
@@ -264,12 +285,18 @@ def probe() -> int:
     print(f"  [{verdict}] {', '.join(moved)}")
     refuted = {k: reverted[k] for k in LADDER_COUNTERS}
     print(f"  refuted face: {json.dumps(refuted, sort_keys=True)}")
-    print(f"  refuted shipped_cover rows: {json.dumps(reverted['shipped_cover_ids'])}")
-    only_old = sorted(set(reverted["shipped_cover_ids"]) - set(live["shipped_cover_ids"]))
-    print(f"  rows the pre-split map called declarable today and the split map does not: "
-          f"{len(only_old)} {json.dumps(only_old)}")
-    print(f"SPLIT_PROBE folds={len(folds)} unique_holder_labels={len(unique_labels)} "
-          f"counters={len(COUNTERS)} failures={failures}")
+    print(f"  refuted shipped_cover rows: {json.dumps(_seq(reverted['shipped_cover_ids']))}")
+    only_old = sorted(
+        set(_seq(reverted["shipped_cover_ids"])) - set(_seq(live["shipped_cover_ids"]))
+    )
+    print(
+        f"  rows the pre-split map called declarable today and the split map does not: "
+        f"{len(only_old)} {json.dumps(only_old)}"
+    )
+    print(
+        f"SPLIT_PROBE folds={len(folds)} unique_holder_labels={len(unique_labels)} "
+        f"counters={len(COUNTERS)} failures={failures}"
+    )
     return 1 if failures else 0
 
 

@@ -1,13 +1,15 @@
 {
   "built_but_unused": [
-    "decode.archive_member"
+    "decode.archive_member",
+    "flow.composite_key_segment",
+    "param.value_mapping"
   ],
   "capability_registry": {
     "columns.cast": {
       "anchor": "def _column_type",
       "anchor_found": true,
       "anchor_line": "def _column_type(column: ColumnSpec) -> Any:  # noqa: ANN401 - dynamic pydantic field type",
-      "anchor_line_number": 112,
+      "anchor_line_number": 117,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -24,7 +26,7 @@
       "anchor": "values[column.name] = value",
       "anchor_found": true,
       "anchor_line": "values[column.name] = value",
-      "anchor_line_number": 322,
+      "anchor_line_number": 415,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -41,7 +43,7 @@
       "anchor": "nullable: bool = True",
       "anchor_found": true,
       "anchor_line": "nullable: bool = True",
-      "anchor_line_number": 148,
+      "anchor_line_number": 197,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -58,7 +60,7 @@
       "anchor": "key = column.source_key or column.name",
       "anchor_found": true,
       "anchor_line": "key = column.source_key or column.name",
-      "anchor_line_number": 315,
+      "anchor_line_number": 408,
       "claim": true,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -75,7 +77,7 @@
       "anchor": "units: str = \"\"",
       "anchor_found": true,
       "anchor_line": "units: str = \"\"",
-      "anchor_line_number": 149,
+      "anchor_line_number": 198,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -92,7 +94,7 @@
       "anchor": "key = column.source_key or column.name",
       "anchor_found": true,
       "anchor_line": "key = column.source_key or column.name",
-      "anchor_line_number": 315,
+      "anchor_line_number": 408,
       "claim": false,
       "cross_anchor": "columns: tuple[ColumnSpec, ...]",
       "cross_anchor_found": true,
@@ -109,7 +111,7 @@
       "anchor": "for column in spec.columns:",
       "anchor_found": true,
       "anchor_line": "for column in spec.columns:",
-      "anchor_line_number": 183,
+      "anchor_line_number": 188,
       "claim": true,
       "cross_anchor": "extra=\"forbid\"",
       "cross_anchor_found": true,
@@ -177,7 +179,7 @@
       "anchor": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
       "anchor_found": true,
       "anchor_line": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
-      "anchor_line_number": 25,
+      "anchor_line_number": 27,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -194,7 +196,7 @@
       "anchor": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
       "anchor_found": true,
       "anchor_line": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
-      "anchor_line_number": 25,
+      "anchor_line_number": 27,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -211,7 +213,7 @@
       "anchor": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
       "anchor_found": true,
       "anchor_line": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
-      "anchor_line_number": 25,
+      "anchor_line_number": 27,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -228,7 +230,7 @@
       "anchor": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
       "anchor_found": true,
       "anchor_line": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
-      "anchor_line_number": 25,
+      "anchor_line_number": 27,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -245,7 +247,7 @@
       "anchor": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
       "anchor_found": true,
       "anchor_line": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
-      "anchor_line_number": 25,
+      "anchor_line_number": 27,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -262,7 +264,7 @@
       "anchor": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
       "anchor_found": true,
       "anchor_line": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
-      "anchor_line_number": 25,
+      "anchor_line_number": 27,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -279,7 +281,7 @@
       "anchor": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
       "anchor_found": true,
       "anchor_line": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
-      "anchor_line_number": 25,
+      "anchor_line_number": 27,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -296,7 +298,7 @@
       "anchor": "base_url: str",
       "anchor_found": true,
       "anchor_line": "base_url: str",
-      "anchor_line_number": 381,
+      "anchor_line_number": 433,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -310,27 +312,27 @@
       "why": "One base_url and one path string per declaration: an interval/metric/region branch that addresses different endpoints has no declaration surface."
     },
     "flow.composite_key_segment": {
-      "anchor": "_PATH_SEGMENT = re.compile(r\"^[A-Za-z0-9._~\\-]+$\")",
+      "anchor": "composite_keys: tuple[CompositeKeySpec, ...] = ()",
       "anchor_found": true,
-      "anchor_line": "_PATH_SEGMENT = re.compile(r\"^[A-Za-z0-9._~\\-]+$\")",
-      "anchor_line_number": 58,
+      "anchor_line": "composite_keys: tuple[CompositeKeySpec, ...] = ()",
+      "anchor_line_number": 453,
       "claim": false,
-      "cross_anchor": "path_placeholders",
+      "cross_anchor": "def _render_composite(",
       "cross_anchor_found": true,
-      "cross_file": "opendata/data/providers/_engine/spec.py",
+      "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
-      "present": false,
+      "present": true,
       "production_declarations": 0,
-      "proof_file": "opendata/data/providers/_engine/http_json.py",
-      "read_from_disk": false,
-      "status": "absent",
-      "why": "render_path fills one placeholder from one validated query field, and ParamSpec has no join or derive field, so an SDMX data key built from several dimensions has nowhere to say how it is composed. The dot itself is legal in a segment; the OECD key form <flow>,<key> is not, because _PATH_SEGMENT omits the comma the way it omits the slash."
+      "proof_file": "opendata/data/providers/_engine/spec.py",
+      "read_from_disk": true,
+      "status": "present",
+      "why": "ModelSpec.composite_keys holds one CompositeKeySpec per composed placeholder and render_path routes that placeholder through ``_render_composite``, which joins the declared positions and refuses any result that could break out of one segment. The scalar branch still gates on _PATH_SEGMENT, which omits the comma, so a comma-joined key is legal only through a composition whose separator the kernel checked."
     },
     "flow.fan_out": {
       "anchor": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
       "anchor_found": true,
       "anchor_line": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
-      "anchor_line_number": 549,
+      "anchor_line_number": 642,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -347,7 +349,7 @@
       "anchor": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
       "anchor_found": true,
       "anchor_line": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
-      "anchor_line_number": 549,
+      "anchor_line_number": 642,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -364,7 +366,7 @@
       "anchor": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
       "anchor_found": true,
       "anchor_line": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
-      "anchor_line_number": 549,
+      "anchor_line_number": 642,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -381,7 +383,7 @@
       "anchor": "path.replace(f\"{{{name}}}\", text)",
       "anchor_found": true,
       "anchor_line": "path = path.replace(f\"{{{name}}}\", text)",
-      "anchor_line_number": 240,
+      "anchor_line_number": 266,
       "claim": true,
       "cross_anchor": "path_placeholders",
       "cross_anchor_found": true,
@@ -398,7 +400,7 @@
       "anchor": "429: \"RATE_LIMITED\"",
       "anchor_found": true,
       "anchor_line": "429: \"RATE_LIMITED\",",
-      "anchor_line_number": 449,
+      "anchor_line_number": 542,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -432,7 +434,7 @@
       "anchor": "if not self.base_url.startswith(\"https://\"):",
       "anchor_found": true,
       "anchor_line": "if not self.base_url.startswith(\"https://\"):",
-      "anchor_line_number": 422,
+      "anchor_line_number": 496,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -483,7 +485,7 @@
       "anchor": "static_headers: tuple[tuple[str, str], ...] = ()",
       "anchor_found": true,
       "anchor_line": "static_headers: tuple[tuple[str, str], ...] = ()",
-      "anchor_line_number": 393,
+      "anchor_line_number": 445,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -500,7 +502,7 @@
       "anchor": "params: tuple[ParamSpec, ...] = ()",
       "anchor_found": true,
       "anchor_line": "params: tuple[ParamSpec, ...] = ()",
-      "anchor_line_number": 384,
+      "anchor_line_number": 436,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -514,27 +516,27 @@
       "why": "``params`` is a fixed declared tuple with no field that merges a preset filter set into the caller's parameters, which is what a screener built from a preset ini needs."
     },
     "param.value_mapping": {
-      "anchor": "enum: tuple[str, ...] = ()",
+      "anchor": "value_map: tuple[tuple[str, str], ...] = ()",
       "anchor_found": true,
-      "anchor_line": "enum: tuple[str, ...] = ()",
-      "anchor_line_number": 108,
+      "anchor_line": "value_map: tuple[tuple[str, str], ...] = ()",
+      "anchor_line_number": 115,
       "claim": false,
-      "cross_anchor": "",
+      "cross_anchor": "def _apply_value_map(",
       "cross_anchor_found": true,
-      "cross_file": "",
+      "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
-      "present": false,
+      "present": true,
       "production_declarations": 0,
       "proof_file": "opendata/data/providers/_engine/spec.py",
-      "read_from_disk": false,
-      "status": "absent",
-      "why": "A parameter can declare the set of values it accepts and alias its query key, but has nowhere to say which upstream token an accepted value is sent as, so a fetcher's ``COVERAGE_DICT[value]`` round-trip has no declaration surface."
+      "read_from_disk": true,
+      "status": "present",
+      "why": "ParamSpec.value_map declares the (caller, upstream) pairs and ``_apply_value_map`` runs them at encode time, refusing a value the map does not spell rather than sending the caller's own text. Presence is measured from both lines, so the face moves with the code."
     },
     "param.value_transform": {
       "anchor": "query_key: str | None = None",
       "anchor_found": true,
       "anchor_line": "query_key: str | None = None",
-      "anchor_line_number": 105,
+      "anchor_line_number": 111,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -551,7 +553,7 @@
       "anchor": "def normalize_record",
       "anchor_found": true,
       "anchor_line": "def normalize_record(",
-      "anchor_line_number": 303,
+      "anchor_line_number": 396,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -568,7 +570,7 @@
       "anchor": "def resolve_rows",
       "anchor_found": true,
       "anchor_line": "def resolve_rows(document: object, pointer: str, spec: ModelSpec) -> list[Any]:",
-      "anchor_line_number": 262,
+      "anchor_line_number": 355,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -585,7 +587,7 @@
       "anchor": "if not isinstance(current, list):",
       "anchor_found": true,
       "anchor_line": "if not isinstance(current, list):",
-      "anchor_line_number": 281,
+      "anchor_line_number": 374,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -602,7 +604,7 @@
       "anchor": "rows = resolve_rows(document, spec.rows_pointer, spec)",
       "anchor_found": true,
       "anchor_line": "rows = resolve_rows(document, spec.rows_pointer, spec)",
-      "anchor_line_number": 571,
+      "anchor_line_number": 664,
       "claim": false,
       "cross_anchor": "rows_pointer: str = \"\"",
       "cross_anchor_found": true,
@@ -619,7 +621,7 @@
       "anchor": "get_shared_http_client",
       "anchor_found": true,
       "anchor_line": "from opendata.data.http_client import HttpFetchError, get_shared_http_client",
-      "anchor_line_number": 375,
+      "anchor_line_number": 468,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -636,7 +638,7 @@
       "anchor": "params[paging.offset_key] = str(collected)",
       "anchor_found": true,
       "anchor_line": "params[paging.offset_key] = str(collected)",
-      "anchor_line_number": 476,
+      "anchor_line_number": 569,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -653,7 +655,7 @@
       "anchor": "path: str",
       "anchor_found": true,
       "anchor_line": "path: str",
-      "anchor_line_number": 382,
+      "anchor_line_number": 434,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -670,7 +672,7 @@
       "anchor": "get_shared_http_client",
       "anchor_found": true,
       "anchor_line": "from opendata.data.http_client import HttpFetchError, get_shared_http_client",
-      "anchor_line_number": 375,
+      "anchor_line_number": 468,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -687,7 +689,7 @@
       "anchor": "\",\".join(str(item) for item in value)",
       "anchor_found": true,
       "anchor_line": "return \",\".join(str(item) for item in value)",
-      "anchor_line_number": 253,
+      "anchor_line_number": 326,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -704,7 +706,7 @@
       "anchor": "row_filters",
       "anchor_found": true,
       "anchor_line": "row_filters: Client-side selections applied after the source's own completeness was judged;",
-      "anchor_line_number": 372,
+      "anchor_line_number": 421,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -721,7 +723,7 @@
       "anchor": "def _page_request",
       "anchor_found": true,
       "anchor_line": "def _page_request(",
-      "anchor_line_number": 460,
+      "anchor_line_number": 553,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -738,7 +740,7 @@
       "anchor": "if not isinstance(current, list):",
       "anchor_found": true,
       "anchor_line": "if not isinstance(current, list):",
-      "anchor_line_number": 281,
+      "anchor_line_number": 374,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -755,7 +757,7 @@
       "anchor": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
       "anchor_found": true,
       "anchor_line": "BodyDecoderKind = Literal[\"json\", \"csv\", \"tsv\", \"zip_csv\"]",
-      "anchor_line_number": 25,
+      "anchor_line_number": 27,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -888,98 +890,28 @@
     ],
     "greedy_build_order": [
       {
-        "capability": "flow.composite_key_segment",
-        "cumulative_rows_unlocked": 12,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "decode.delimited",
-              "flow.composite_key_segment"
-            ],
-            "provider": "oecd",
-            "task_id": "OBB2-oecd-CompositeLeadingIndicator",
-            "upstream_model": "CompositeLeadingIndicator"
-          },
-          {
-            "needs": [
-              "decode.delimited",
-              "flow.composite_key_segment",
-              "rows.filter"
-            ],
-            "provider": "oecd",
-            "task_id": "OBB2-oecd-ConsumerPriceIndex",
-            "upstream_model": "ConsumerPriceIndex"
-          },
-          {
-            "needs": [
-              "decode.delimited",
-              "flow.composite_key_segment"
-            ],
-            "provider": "oecd",
-            "task_id": "OBB2-oecd-CountryInterestRates",
-            "upstream_model": "CountryInterestRates"
-          },
-          {
-            "needs": [
-              "decode.delimited",
-              "flow.composite_key_segment"
-            ],
-            "provider": "oecd",
-            "task_id": "OBB2-oecd-GdpNominal",
-            "upstream_model": "GdpNominal"
-          },
-          {
-            "needs": [
-              "decode.delimited",
-              "flow.composite_key_segment"
-            ],
-            "provider": "oecd",
-            "task_id": "OBB2-oecd-GdpReal",
-            "upstream_model": "GdpReal"
-          },
-          {
-            "needs": [
-              "decode.delimited",
-              "flow.composite_key_segment"
-            ],
-            "provider": "oecd",
-            "task_id": "OBB2-oecd-GdpForecast",
-            "upstream_model": "GdpForecast"
-          },
-          {
-            "needs": [
-              "decode.delimited",
-              "flow.composite_key_segment"
-            ],
-            "provider": "oecd",
-            "task_id": "OBB2-oecd-HousePriceIndex",
-            "upstream_model": "HousePriceIndex"
-          },
-          {
-            "needs": [
-              "decode.delimited",
-              "flow.composite_key_segment"
-            ],
-            "provider": "oecd",
-            "task_id": "OBB2-oecd-SharePriceIndex",
-            "upstream_model": "SharePriceIndex"
-          },
-          {
-            "needs": [
-              "decode.delimited",
-              "flow.composite_key_segment"
-            ],
-            "provider": "oecd",
-            "task_id": "OBB2-oecd-Unemployment",
-            "upstream_model": "Unemployment"
-          }
-        ],
-        "rows_newly_unlocked": 9
-      },
-      {
         "capability": "path.explode",
-        "cumulative_rows_unlocked": 15,
+        "cumulative_rows_unlocked": 19,
         "newly_unlocked_rows": [
+          {
+            "needs": [
+              "param.value_mapping",
+              "path.explode"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-CalendarIpo",
+            "upstream_model": "CalendarIpo"
+          },
+          {
+            "needs": [
+              "decode.delimited",
+              "param.value_mapping",
+              "path.explode"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-SvenssonYieldCurve",
+            "upstream_model": "SvenssonYieldCurve"
+          },
           {
             "needs": [
               "columns.rename",
@@ -1011,51 +943,7 @@
             "upstream_model": "EtfCountries"
           }
         ],
-        "rows_newly_unlocked": 3
-      },
-      {
-        "capability": "param.value_mapping",
-        "cumulative_rows_unlocked": 19,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "param.value_mapping",
-              "path.explode"
-            ],
-            "provider": "intrinio",
-            "task_id": "OBB2-intrinio-CalendarIpo",
-            "upstream_model": "CalendarIpo"
-          },
-          {
-            "needs": [
-              "columns.rename",
-              "param.value_mapping"
-            ],
-            "provider": "intrinio",
-            "task_id": "OBB2-intrinio-EquitySearch",
-            "upstream_model": "EquitySearch"
-          },
-          {
-            "needs": [
-              "columns.rename",
-              "param.value_mapping"
-            ],
-            "provider": "intrinio",
-            "task_id": "OBB2-intrinio-HistoricalDividends",
-            "upstream_model": "HistoricalDividends"
-          },
-          {
-            "needs": [
-              "decode.delimited",
-              "param.value_mapping",
-              "path.explode"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-SvenssonYieldCurve",
-            "upstream_model": "SvenssonYieldCurve"
-          }
-        ],
-        "rows_newly_unlocked": 4
+        "rows_newly_unlocked": 5
       },
       {
         "capability": "path.object_keys",
@@ -3966,12 +3854,112 @@
     "shipped_cover_rows": [
       {
         "needs": [
+          "decode.delimited",
+          "flow.composite_key_segment"
+        ],
+        "provider": "oecd",
+        "task_id": "OBB2-oecd-CompositeLeadingIndicator",
+        "upstream_model": "CompositeLeadingIndicator"
+      },
+      {
+        "needs": [
+          "decode.delimited",
+          "flow.composite_key_segment",
+          "rows.filter"
+        ],
+        "provider": "oecd",
+        "task_id": "OBB2-oecd-ConsumerPriceIndex",
+        "upstream_model": "ConsumerPriceIndex"
+      },
+      {
+        "needs": [
+          "decode.delimited",
+          "flow.composite_key_segment"
+        ],
+        "provider": "oecd",
+        "task_id": "OBB2-oecd-CountryInterestRates",
+        "upstream_model": "CountryInterestRates"
+      },
+      {
+        "needs": [
+          "decode.delimited",
+          "flow.composite_key_segment"
+        ],
+        "provider": "oecd",
+        "task_id": "OBB2-oecd-GdpNominal",
+        "upstream_model": "GdpNominal"
+      },
+      {
+        "needs": [
+          "decode.delimited",
+          "flow.composite_key_segment"
+        ],
+        "provider": "oecd",
+        "task_id": "OBB2-oecd-GdpReal",
+        "upstream_model": "GdpReal"
+      },
+      {
+        "needs": [
+          "decode.delimited",
+          "flow.composite_key_segment"
+        ],
+        "provider": "oecd",
+        "task_id": "OBB2-oecd-GdpForecast",
+        "upstream_model": "GdpForecast"
+      },
+      {
+        "needs": [
+          "decode.delimited",
+          "flow.composite_key_segment"
+        ],
+        "provider": "oecd",
+        "task_id": "OBB2-oecd-HousePriceIndex",
+        "upstream_model": "HousePriceIndex"
+      },
+      {
+        "needs": [
+          "decode.delimited",
+          "flow.composite_key_segment"
+        ],
+        "provider": "oecd",
+        "task_id": "OBB2-oecd-SharePriceIndex",
+        "upstream_model": "SharePriceIndex"
+      },
+      {
+        "needs": [
+          "decode.delimited",
+          "flow.composite_key_segment"
+        ],
+        "provider": "oecd",
+        "task_id": "OBB2-oecd-Unemployment",
+        "upstream_model": "Unemployment"
+      },
+      {
+        "needs": [
           "columns.rename",
           "rows.filter"
         ],
         "provider": "intrinio",
         "task_id": "OBB2-intrinio-CurrencyPairs",
         "upstream_model": "CurrencyPairs"
+      },
+      {
+        "needs": [
+          "columns.rename",
+          "param.value_mapping"
+        ],
+        "provider": "intrinio",
+        "task_id": "OBB2-intrinio-EquitySearch",
+        "upstream_model": "EquitySearch"
+      },
+      {
+        "needs": [
+          "columns.rename",
+          "param.value_mapping"
+        ],
+        "provider": "intrinio",
+        "task_id": "OBB2-intrinio-HistoricalDividends",
+        "upstream_model": "HistoricalDividends"
       },
       {
         "needs": [
@@ -3993,7 +3981,7 @@
       }
     ]
   },
-  "round_id": "C86",
+  "round_id": "C87",
   "schema_version": 1,
   "taxonomy": {
     "canonical_capability_count": 45,
@@ -4070,7 +4058,6 @@
         "decode.text_table",
         "decode.xml",
         "flow.branch",
-        "flow.composite_key_segment",
         "flow.fan_out",
         "flow.join",
         "flow.preflight_lookup",
@@ -4080,7 +4067,6 @@
         "outside.sdk",
         "outside.stateful",
         "param.preset_merge",
-        "param.value_mapping",
         "param.value_transform",
         "path.assemble_single_row",
         "path.explode",
@@ -4101,7 +4087,9 @@
         "columns.select",
         "decode.archive_member",
         "decode.delimited",
+        "flow.composite_key_segment",
         "flow.url_template",
+        "param.value_mapping",
         "rows.filter"
       ],
       "unanchored": [

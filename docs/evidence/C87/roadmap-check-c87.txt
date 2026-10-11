@@ -1,0 +1,481 @@
+capability roadmap -- round C87
+census: 238 rows / 238 unique task_ids from 17 files (expected 238)
+taxonomy: 95 distinct raw labels, 764 mentions -> 45 canonical capabilities (96 label spellings accepted)
+rows: expressible today 3, pending 235; pending rows whose whole need set is already shipped: 14
+
+capability registry (presence read from the proof file this run)
+  present (8):
+    - columns.rename: opendata/data/providers/_engine/http_json.py:408 anchor 'key = column.source_key or column.name'
+        anchor line: key = column.source_key or column.name
+        why: Every column declares the raw key it reads and publishes it under its own name.
+    - columns.select: opendata/data/providers/_engine/http_json.py:188 anchor 'for column in spec.columns:'
+        cross-check: opendata/data/providers/_engine/http_json.py 'extra="forbid"' -> found
+        anchor line: for column in spec.columns:
+        why: normalize_record walks only the declared columns and the generated row model forbids extras, so an undeclared raw key cannot reach a row.
+    - decode.archive_member: opendata/data/providers/_engine/decoders.py:187 anchor 'zipfile.ZipFile'
+        anchor line: archive = zipfile.ZipFile(io.BytesIO(body))
+        why: One named member is selected from the archive (exact, then basename, then glob) and its bytes handed to the delimited reader -- only for a zip_csv body; an archive of XML or XLSX has no decoder kind.
+    - decode.delimited: opendata/data/providers/_engine/decoders.py:274 anchor 'csv.reader'
+        cross-check: opendata/data/providers/_engine/spec.py 'zip_csv' -> found
+        anchor line: for row in csv.reader(io.StringIO(text, newline=""), delimiter=delimiter)
+        why: decode_body reads csv/tsv/zip_csv bytes into header-keyed rows with a declarable delimiter, member and encoding.
+    - flow.composite_key_segment: opendata/data/providers/_engine/spec.py:453 anchor 'composite_keys: tuple[CompositeKeySpec, ...] = ()'  [read from disk]
+        cross-check: opendata/data/providers/_engine/http_json.py 'def _render_composite(' -> found
+        anchor line: composite_keys: tuple[CompositeKeySpec, ...] = ()
+        why: ModelSpec.composite_keys holds one CompositeKeySpec per composed placeholder and render_path routes that placeholder through ``_render_composite``, which joins the declared positions and refuses any result that could break out of one segment. The scalar branch still gates on _PATH_SEGMENT, which omits the comma, so a comma-joined key is legal only through a composition whose separator the kernel checked.
+    - flow.url_template: opendata/data/providers/_engine/http_json.py:266 anchor 'path.replace(f"{{{name}}}", text)'
+        cross-check: opendata/data/providers/_engine/spec.py 'path_placeholders' -> found
+        anchor line: path = path.replace(f"{{{name}}}", text)
+        why: render_path substitutes each declared {placeholder} from the validated query, after _PATH_SEGMENT proves the value is exactly one URL segment.
+    - param.value_mapping: opendata/data/providers/_engine/spec.py:115 anchor 'value_map: tuple[tuple[str, str], ...] = ()'  [read from disk]
+        cross-check: opendata/data/providers/_engine/http_json.py 'def _apply_value_map(' -> found
+        anchor line: value_map: tuple[tuple[str, str], ...] = ()
+        why: ParamSpec.value_map declares the (caller, upstream) pairs and ``_apply_value_map`` runs them at encode time, refusing a value the map does not spell rather than sending the caller's own text. Presence is measured from both lines, so the face moves with the code.
+    - rows.filter: opendata/data/providers/_engine/spec.py:421 anchor 'row_filters'  [read from disk]
+        anchor line: row_filters: Client-side selections applied after the source's own completeness was judged;
+        why: Presence is read off the disk rather than asserted: row_filters is the field only a finished client-side row filter can add to ModelSpec, so this entry reports absent until it lands and present from the first run after it does.
+  absent (36):
+    - columns.cast: opendata/data/providers/_engine/http_json.py:117 anchor 'def _column_type'
+        anchor line: def _column_type(column: ColumnSpec) -> Any:  # noqa: ANN401 - dynamic pydantic field type
+        why: _column_type maps a declared kind onto one pydantic domain, so the engine enforces a value's type but never converts epoch milliseconds or reformats a published date.
+    - columns.derive: opendata/data/providers/_engine/http_json.py:415 anchor 'values[column.name] = value'
+        anchor line: values[column.name] = value
+        why: A column's value is copied out of the record verbatim; no column is computed from other columns, concatenated, or parsed out of a symbol.
+    - columns.null_sentinel: opendata/data/providers/_engine/spec.py:197 anchor 'nullable: bool = True'
+        anchor line: nullable: bool = True
+        why: A column can declare that it may be null but not which raw spellings -- the strings 'None', '0' or empty -- become null, so per-row sentinel nulling is a fetcher behaviour the engine cannot express.
+    - columns.rescale: opendata/data/providers/_engine/spec.py:198 anchor 'units: str = ""'
+        anchor line: units: str = ""
+        why: ColumnSpec keeps units verbatim for the review record and applies nothing, so a published percent or a 1/1000 strike scale cannot be declared.
+    - columns.response_dependent_selection: opendata/data/providers/_engine/http_json.py:408 anchor 'key = column.source_key or column.name'
+        cross-check: opendata/data/providers/_engine/spec.py 'columns: tuple[ColumnSpec, ...]' -> found
+        anchor line: key = column.source_key or column.name
+        why: Each column reads exactly one declared source key, and the columns it may read are a fixed tuple written before the request. A row whose columns are whichever XBRL tags this issuer happened to publish cannot be declared; columns.select covers a static selection, which is why the SEC statement rows carry both labels.
+    - decode.delimited_headerless: opendata/data/providers/_engine/decoders.py:295 anchor 'names = _header_names(spec, table[0], delimiter, member, url)'
+        anchor line: names = _header_names(spec, table[0], delimiter, member, url)
+        why: preamble_rows lets a body put non-blank rows before its header, but what follows is still read as the header and HEADER_MISMATCH fires when it names none of the declared columns. A body that publishes no header at all, whose columns are positional, has no declaration surface -- decode.delimited names a present decoder kind, not this.
+    - decode.geojson: opendata/data/providers/_engine/spec.py:27 anchor 'BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]'
+        anchor line: BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+        why: A feature collection publishes its attributes under geometry members; no kind walks them into rows.
+    - decode.html_table: opendata/data/providers/_engine/spec.py:27 anchor 'BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]'
+        anchor line: BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+        why: No html kind exists, so an HTML table cannot be declared as a body shape.
+    - decode.html_text: opendata/data/providers/_engine/spec.py:27 anchor 'BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]'
+        anchor line: BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+        why: No html kind exists, and the engine never strips markup or rewrites a body as markdown.
+    - decode.opaque_bytes: opendata/data/providers/_engine/spec.py:27 anchor 'BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]'
+        anchor line: BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+        why: A body becomes a document or it becomes rows; no kind publishes the bytes themselves as the result, which is what a PDF download needs.
+    - decode.tabular_file: opendata/data/providers/_engine/spec.py:27 anchor 'BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]'
+        anchor line: BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+        why: No workbook kind exists in the decoder vocabulary and nothing reads a sheet region.
+    - decode.text_table: opendata/data/providers/_engine/spec.py:27 anchor 'BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]'
+        anchor line: BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+        why: Only a delimited reader splits a body; a colon-delimited file or a regex-parsed line has no decoder kind.
+    - decode.xml: opendata/data/providers/_engine/spec.py:27 anchor 'BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]'
+        anchor line: BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+        why: The decoder vocabulary is a closed Literal and DecoderSpec.__post_init__ rejects anything outside it, so no declaration can ask for an XML or RSS body.
+    - flow.branch: opendata/data/providers/_engine/spec.py:433 anchor 'base_url: str'
+        anchor line: base_url: str
+        why: One base_url and one path string per declaration: an interval/metric/region branch that addresses different endpoints has no declaration surface.
+    - flow.fan_out: opendata/data/providers/_engine/http_json.py:642 anchor 'url = f"{spec.base_url.rstrip(\'/\')}{render_path(spec, query)}"'
+        anchor line: url = f"{spec.base_url.rstrip('/')}{render_path(spec, query)}"
+        why: fetch_pages builds one URL per declaration and pages it; there is no per-symbol or per-item request set to enumerate and concatenate.
+    - flow.join: opendata/data/providers/_engine/http_json.py:642 anchor 'url = f"{spec.base_url.rstrip(\'/\')}{render_path(spec, query)}"'
+        anchor line: url = f"{spec.base_url.rstrip('/')}{render_path(spec, query)}"
+        why: The same single-URL loop is the proof no second response is fetched and joined onto the first model's rows.
+    - flow.preflight_lookup: opendata/data/providers/_engine/http_json.py:642 anchor 'url = f"{spec.base_url.rstrip(\'/\')}{render_path(spec, query)}"'
+        anchor line: url = f"{spec.base_url.rstrip('/')}{render_path(spec, query)}"
+        why: The URL is known from the declaration before any request, so a directory lookup that decides the URL afterwards cannot be declared.
+    - outside.anti_bot: opendata/data/providers/_engine/http_json.py:542 anchor '429: "RATE_LIMITED"'
+        anchor line: 429: "RATE_LIMITED",
+        why: _classify_status maps a throttled status onto a stable failure code and raises it; a retry-and-warm-up loop is not the engine's semantics.
+    - outside.bespoke: opendata/data/providers/sec/specs.py:126 anchor 'NOT_DECLARABLE: dict[str, str] = {'
+        anchor line: NOT_DECLARABLE: dict[str, str] = {
+        why: Delegation to or composition of a hand-written fetcher is recorded in each provider's NOT_DECLARABLE ledger instead of being built into the engine.
+    - outside.no_request: opendata/data/providers/_engine/spec.py:496 anchor 'if not self.base_url.startswith("https://"):'
+        anchor line: if not self.base_url.startswith("https://"):
+        why: A declaration must name an https origin, so a model that only transposes a bundled constant has no static-source field to use.
+    - outside.sdk: opendata/data/providers/_engine/spec.py:10 anchor 'Nothing in this package performs I/O or imports an upstream SDK.'
+        anchor line: Nothing in this package performs I/O or imports an upstream SDK.
+        why: A model whose answer is an SDK call cannot be expressed as a declaration at all; the engine forbids SDK imports by design, so this is delegation rather than engine work.
+    - outside.stateful: opendata/data/providers/_engine/spec.py:445 anchor 'static_headers: tuple[tuple[str, str], ...] = ()'
+        anchor line: static_headers: tuple[tuple[str, str], ...] = ()
+        why: Headers a declaration sends are static pairs replayed on every page, so a cookie warmed by a prior response or a local cache store has nowhere to live.
+    - param.preset_merge: opendata/data/providers/_engine/spec.py:436 anchor 'params: tuple[ParamSpec, ...] = ()'
+        anchor line: params: tuple[ParamSpec, ...] = ()
+        why: ``params`` is a fixed declared tuple with no field that merges a preset filter set into the caller's parameters, which is what a screener built from a preset ini needs.
+    - param.value_transform: opendata/data/providers/_engine/spec.py:111 anchor 'query_key: str | None = None'
+        anchor line: query_key: str | None = None
+        why: The key may be renamed while the value is substituted verbatim once validated, so a rule that strips a leading '$' or appends ':US' when no exchange suffix is present cannot be declared -- only hardcoded in a fetcher.
+    - path.assemble_single_row: opendata/data/providers/_engine/http_json.py:396 anchor 'def normalize_record'
+        anchor line: def normalize_record(
+        why: normalize_record builds exactly one row out of exactly one record, so a model whose single row is assembled from many values has nowhere to say so.
+    - path.explode: opendata/data/providers/_engine/http_json.py:355 anchor 'def resolve_rows'
+        anchor line: def resolve_rows(document: object, pointer: str, spec: ModelSpec) -> list[Any]:
+        why: One pointer returns one record list; nothing re-reads the document per record, expands a nested array into rows, or pivots a series.
+    - path.object_keys: opendata/data/providers/_engine/http_json.py:374 anchor 'if not isinstance(current, list):'
+        anchor line: if not isinstance(current, list):
+        why: A document that is not a JSON array is refused, so records keyed by object member or flattened out of a graph cannot be located.
+    - path.parameterized_pointer: opendata/data/providers/_engine/http_json.py:664 anchor 'rows = resolve_rows(document, spec.rows_pointer, spec)'
+        cross-check: opendata/data/providers/_engine/spec.py 'rows_pointer: str = ""' -> found
+        anchor line: rows = resolve_rows(document, spec.rows_pointer, spec)
+        why: Both read sites hand resolve_rows one declaration-time string, spec.rows_pointer, so the pointer cannot depend on the response or on a query field. TMX keeps its rows under indices[query.symbol], which is a pointer built per request rather than a fixed dotted path; the dotted walker itself runs fine, it just has nothing to be handed here.
+    - request.body: opendata/data/providers/_engine/http_json.py:468 anchor 'get_shared_http_client'
+        anchor line: from opendata.data.http_client import HttpFetchError, get_shared_http_client
+        why: Names the engine's only send seam: _http_get_json calls the governed client's GET. The GET-only call is the proof that no request body can be declared.
+    - request.body_pagination: opendata/data/providers/_engine/http_json.py:569 anchor 'params[paging.offset_key] = str(collected)'
+        anchor line: params[paging.offset_key] = str(collected)
+        why: An offset is written into the query keys and never into a body, so body-driven offset paging is not expressible.
+    - request.caller_url: opendata/data/providers/_engine/spec.py:434 anchor 'path: str'
+        anchor line: path: str
+        why: One declared path string filled by placeholders: no field accepts a caller-supplied URL, and ``render_path`` refuses any substituted value that is not exactly one segment, so a model addressed by a URL the caller brings cannot be declared -- and would be an SSRF seam if it could.
+    - request.graphql: opendata/data/providers/_engine/http_json.py:468 anchor 'get_shared_http_client'
+        anchor line: from opendata.data.http_client import HttpFetchError, get_shared_http_client
+        why: The same GET-only send seam is the proof there is no query-template request shape.
+    - request.serialised_param: opendata/data/providers/_engine/http_json.py:326 anchor '",".join(str(item) for item in value)'
+        anchor line: return ",".join(str(item) for item in value)
+        why: _encode_value renders a list parameter by comma-joining it; nothing serialises a JSON object or a key/date mapping into one query value.
+    - rows.order_limit: opendata/data/providers/_engine/http_json.py:553 anchor 'def _page_request'
+        anchor line: def _page_request(
+        why: _page_request adds paging keys and nothing else: rows stay in upstream order, with no sort and no top-n applied.
+    - shape.columnar: opendata/data/providers/_engine/http_json.py:374 anchor 'if not isinstance(current, list):'
+        anchor line: if not isinstance(current, list):
+        why: Parallel arrays under named keys are a dict, and resolve_rows only accepts a list.
+    - shape.nested_data_message: opendata/data/providers/_engine/spec.py:27 anchor 'BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]'
+        anchor line: BodyDecoderKind = Literal["json", "csv", "tsv", "zip_csv"]
+        why: SDMX-JSON needs message shaping (dimension series, observation keys, sectioned structure); the engine reads a JSON document or a delimited table and nothing else.
+  drifted (0):
+  unanchored (1):
+    - outside.source_absent: UNPROVEN - no anchor registered
+        why: A vendored upstream tree that is not in the repo is a filesystem fact this instrument does not read; recorded unanchored rather than anchored to a token whose absence would be indistinguishable from a typo.
+
+built_but_unused (present and anchored, zero production declarations exercise it)
+  - decode.archive_member
+  - flow.composite_key_segment
+  - param.value_mapping
+declaration scan: 151 modules under opendata/data/providers minus _engine/_vendor/__pycache__; non-zero counts: {"columns.rename": 35, "columns.select": 5, "decode.delimited": 2, "flow.url_template": 1, "rows.filter": 1}
+
+roadmap (greedy subset cover over present=false engine capabilities)
+  step 0  shipped already, covers 14 pending rows
+      - oecd/CompositeLeadingIndicator needs decode.delimited, flow.composite_key_segment
+      - oecd/ConsumerPriceIndex needs decode.delimited, flow.composite_key_segment, rows.filter
+      - oecd/CountryInterestRates needs decode.delimited, flow.composite_key_segment
+      - oecd/GdpNominal needs decode.delimited, flow.composite_key_segment
+      - oecd/GdpReal needs decode.delimited, flow.composite_key_segment
+      - oecd/GdpForecast needs decode.delimited, flow.composite_key_segment
+      - oecd/HousePriceIndex needs decode.delimited, flow.composite_key_segment
+      - oecd/SharePriceIndex needs decode.delimited, flow.composite_key_segment
+      - oecd/Unemployment needs decode.delimited, flow.composite_key_segment
+      - intrinio/CurrencyPairs needs columns.rename, rows.filter
+      - intrinio/EquitySearch needs columns.rename, param.value_mapping
+      - intrinio/HistoricalDividends needs columns.rename, param.value_mapping
+      - tmx/EtfInfo needs columns.rename, rows.filter
+      - cboe/EquitySearch needs decode.delimited, rows.filter
+  step 1  path.explode -> +5 newly unlocked, cumulative 19
+      - intrinio/CalendarIpo [param.value_mapping, path.explode]
+      - federal_reserve/SvenssonYieldCurve [decode.delimited, param.value_mapping, path.explode]
+      - tmx/EtfHoldings [columns.rename, path.explode, rows.filter]
+      - tmx/EtfSectors [columns.rename, path.explode, rows.filter]
+      - tmx/EtfCountries [columns.rename, path.explode, rows.filter]
+  step 2  path.object_keys -> +4 newly unlocked, cumulative 23
+      - econdb/PortVolume [columns.rename, path.explode, path.object_keys, rows.filter]
+      - sec/CikMap [path.object_keys, rows.filter]
+      - sec/SymbolMap [path.object_keys, rows.filter]
+      - tmx/EquitySearch [flow.url_template, path.object_keys, rows.filter]
+  step 3  flow.fan_out -> +4 newly unlocked, cumulative 27
+      - deribit/FuturesInfo [flow.fan_out]
+      - intrinio/EquityInfo [columns.rename, flow.fan_out]
+      - intrinio/EquityQuote [columns.rename, flow.fan_out, param.value_mapping, path.explode]
+      - intrinio/KeyMetrics [columns.rename, flow.fan_out, path.object_keys]
+  step 4  flow.branch -> +6 newly unlocked, cumulative 33
+      - intrinio/ForwardPeEstimates [columns.rename, flow.branch, flow.fan_out]
+      - federal_reserve/CentralBankHoldings [flow.branch]
+      - federal_reserve/PrimaryDealerFails [flow.branch, flow.fan_out]
+      - federal_reserve/PrimaryDealerPositioning [flow.branch, flow.fan_out]
+      - tradier/EquitySearch [columns.rename, flow.branch]
+      - tradingeconomics/EconomicCalendar [flow.branch, param.value_mapping]
+  step 5  request.body -> +4 newly unlocked, cumulative 37
+      - government_us/CommodityPsdData [flow.branch, request.body, rows.filter]
+      - government_us/TreasuryPrices [decode.delimited, request.body]
+      - tmx/EquityHistorical [decode.delimited, flow.branch, flow.fan_out, request.body]
+      - tmx/EtfHistorical [flow.branch, flow.fan_out, request.body]
+  step 6  request.body_pagination -> +10 newly unlocked, cumulative 47
+      - intrinio/EtfSearch [columns.rename, flow.branch, request.body_pagination, rows.filter]
+      - intrinio/ForwardEbitdaEstimates [columns.rename, flow.fan_out, request.body_pagination, rows.filter]
+      - yfinance/EquityActive [request.body, request.body_pagination]
+      - yfinance/EquityAggressiveSmallCaps [request.body, request.body_pagination]
+      - yfinance/EquityGainers [request.body, request.body_pagination]
+      - yfinance/EquityLosers [request.body, request.body_pagination]
+      - yfinance/GrowthTechEquities [request.body, request.body_pagination]
+      - yfinance/EquityUndervaluedLargeCaps [request.body, request.body_pagination]
+      - yfinance/EquityUndervaluedGrowth [request.body, request.body_pagination]
+      - yfinance/EquityScreener [request.body, request.body_pagination]
+  step 7  request.graphql -> +5 newly unlocked, cumulative 52
+      - tmx/CalendarEarnings [flow.fan_out, request.body, request.graphql]
+      - tmx/EquityInfo [flow.fan_out, request.body, request.graphql]
+      - tmx/EquityGainers [request.body, request.graphql]
+      - tmx/HistoricalDividends [flow.fan_out, request.body, request.graphql]
+      - tmx/InsiderTrading [request.body, request.graphql]
+  step 8  flow.join -> +6 newly unlocked, cumulative 58
+      - intrinio/CompanyFilings [columns.select, flow.fan_out, flow.join, rows.filter]
+      - intrinio/EtfPricePerformance [columns.rename, flow.fan_out, flow.join, rows.filter]
+      - sec/CompareCompanyFacts [flow.branch, flow.join]
+      - tmx/CompanyFilings [flow.join, request.body, request.graphql]
+      - tmx/EquityQuote [flow.join, request.body, request.graphql]
+      - tmx/PriceTargetConsensus [flow.join, request.body, request.graphql]
+  step 9  flow.preflight_lookup -> +7 newly unlocked, cumulative 65
+      - deribit/FuturesCurve [flow.fan_out, flow.join, flow.preflight_lookup]
+      - seeking_alpha/ForwardEpsEstimates [flow.fan_out, flow.preflight_lookup, path.object_keys]
+      - seeking_alpha/ForwardSalesEstimates [flow.fan_out, flow.preflight_lookup, path.object_keys]
+      - sec/EquityFTD [flow.preflight_lookup]
+      - tmx/IndexSnapshots [flow.fan_out, flow.preflight_lookup, request.body]
+      - cboe/EquityHistorical [flow.join, flow.preflight_lookup, rows.filter]
+      - cboe/IndexHistorical [columns.select, flow.branch, flow.join, flow.preflight_lookup]
+  step 10  columns.response_dependent_selection -> +7 newly unlocked, cumulative 72
+      - intrinio/ReportedFinancials [columns.response_dependent_selection, flow.fan_out, flow.preflight_lookup, path.explode, rows.filter]
+      - sec/BalanceSheet [columns.response_dependent_selection, flow.join]
+      - sec/BalanceSheetGrowth [columns.response_dependent_selection, flow.join]
+      - sec/CashFlowStatement [columns.response_dependent_selection, columns.select]
+      - sec/CashFlowStatementGrowth [columns.response_dependent_selection, flow.join]
+      - sec/IncomeStatement [columns.response_dependent_selection, columns.select]
+      - sec/IncomeStatementGrowth [columns.response_dependent_selection, flow.join]
+  step 11  rows.order_limit -> +7 newly unlocked, cumulative 79
+      - congress_gov/CongressBills [flow.branch, flow.fan_out, rows.order_limit]
+      - congress_gov/CongressAmendments [flow.branch, flow.fan_out, flow.join, rows.order_limit]
+      - intrinio/CompanyNews [flow.fan_out, flow.join, path.explode, rows.order_limit]
+      - intrinio/EquityHistorical [flow.branch, flow.fan_out, flow.join, rows.order_limit]
+      - intrinio/EtfHistorical [flow.branch, flow.fan_out, flow.join, rows.order_limit]
+      - intrinio/PriceTargetConsensus [columns.select, flow.fan_out, request.body_pagination, rows.order_limit]
+      - intrinio/SearchAttributes [columns.rename, rows.order_limit]
+  step 12  columns.cast -> +13 newly unlocked, cumulative 92
+      - benzinga/CompanyNews [columns.cast, request.body_pagination, rows.order_limit]
+      - benzinga/WorldNews [columns.cast, request.body_pagination, rows.order_limit]
+      - biztoc/WorldNews [columns.cast, columns.rename, columns.select, flow.branch, flow.preflight_lookup]
+      - intrinio/WorldNews [columns.cast, path.explode, request.body_pagination, rows.filter, rows.order_limit]
+      - government_us/TreasuryAuctions [columns.cast, param.value_mapping]
+      - tiingo/EquityHistorical [columns.cast, flow.branch, flow.fan_out, param.value_mapping]
+      - tiingo/EtfHistorical [columns.cast, flow.branch, flow.fan_out, param.value_mapping]
+      - tiingo/CompanyNews [columns.cast, flow.fan_out, flow.preflight_lookup]
+      - tiingo/WorldNews [columns.cast, flow.fan_out, flow.preflight_lookup]
+      - tiingo/CryptoHistorical [columns.cast, param.value_mapping, path.explode, rows.order_limit]
+      - tiingo/CurrencyHistorical [columns.cast, flow.fan_out, param.value_mapping, rows.order_limit]
+      - tradier/EquityHistorical [columns.cast, flow.branch, flow.fan_out, rows.filter, rows.order_limit]
+      - tradier/EtfHistorical [columns.cast, flow.branch, flow.fan_out, rows.filter, rows.order_limit]
+  step 13  columns.rescale -> +9 newly unlocked, cumulative 101
+      - benzinga/AnalystSearch [columns.cast, columns.rescale, path.explode, rows.filter]
+      - intrinio/ForwardEpsEstimates [columns.rescale, flow.fan_out, path.explode, request.body_pagination, rows.filter]
+      - intrinio/ForwardSalesEstimates [columns.rescale, flow.fan_out, path.explode, request.body_pagination, rows.filter]
+      - federal_reserve/FederalFundsRate [columns.rescale, rows.order_limit]
+      - federal_reserve/OvernightBankFundingRate [columns.rescale, rows.order_limit]
+      - federal_reserve/SOFR [columns.rescale, rows.order_limit]
+      - federal_reserve/YieldCurve [columns.rescale, path.explode]
+      - cboe/EquityQuote [columns.rescale, flow.join, flow.preflight_lookup]
+      - cboe/IndexSnapshots [columns.rescale, columns.select, flow.branch]
+  step 14  columns.derive -> +10 newly unlocked, cumulative 111
+      - alpha_vantage/EquityHistorical [columns.derive, columns.rename, decode.delimited, flow.branch, flow.fan_out, rows.filter]
+      - alpha_vantage/EtfHistorical [columns.derive, columns.rename, decode.delimited, flow.branch, flow.fan_out, rows.filter]
+      - econdb/AvailableIndicators [columns.derive, decode.delimited, rows.filter, rows.order_limit]
+      - econdb/CountryProfile [columns.derive, columns.rescale, flow.fan_out, flow.join, path.explode]
+      - econdb/GdpNominal [columns.derive, columns.rescale, flow.branch, flow.fan_out, flow.join, path.explode]
+      - econdb/GdpReal [columns.derive, columns.rescale, flow.branch, flow.fan_out, flow.join, path.explode]
+      - intrinio/HistoricalAttributes [columns.derive, flow.fan_out, param.value_mapping, request.body_pagination]
+      - sec/LatestFinancialReports [columns.derive, flow.fan_out, path.explode]
+      - tmx/CompanyNews [columns.derive, request.body, request.graphql]
+      - yfinance/FuturesCurve [columns.derive, flow.join]
+  step 15  columns.null_sentinel -> +11 newly unlocked, cumulative 122
+      - alpha_vantage/HistoricalEps [columns.derive, columns.null_sentinel, columns.rescale, flow.branch, flow.fan_out, path.explode, rows.order_limit]
+      - benzinga/PriceTarget [columns.cast, columns.null_sentinel, columns.select, param.value_mapping]
+      - intrinio/BalanceSheet [columns.derive, columns.null_sentinel, columns.response_dependent_selection, flow.fan_out, flow.join]
+      - intrinio/CashFlowStatement [columns.null_sentinel, columns.response_dependent_selection, flow.branch, flow.fan_out, flow.join]
+      - intrinio/FinancialRatios [columns.null_sentinel, columns.rename, columns.select, flow.fan_out, flow.join]
+      - intrinio/HistoricalMarketCap [columns.null_sentinel, columns.rename, flow.branch, flow.fan_out]
+      - intrinio/IncomeStatement [columns.null_sentinel, columns.select, flow.fan_out, flow.join]
+      - intrinio/InsiderTrading [columns.null_sentinel, columns.rename, path.explode]
+      - intrinio/MarketSnapshots [columns.cast, columns.null_sentinel, columns.select, decode.archive_member, decode.delimited, flow.fan_out, flow.preflight_lookup]
+      - intrinio/OptionsUnusual [columns.null_sentinel, columns.rename, flow.branch, request.body_pagination, rows.order_limit]
+      - tradier/EquityQuote [columns.cast, columns.null_sentinel, columns.rename, columns.rescale, path.explode]
+  step 16  shape.columnar -> +11 newly unlocked, cumulative 133
+      - econdb/EconomicIndicators [columns.rescale, flow.branch, flow.fan_out, flow.preflight_lookup, request.body_pagination, shape.columnar]
+      - econdb/YieldCurve [columns.rescale, flow.fan_out, flow.preflight_lookup, path.explode, rows.filter, shape.columnar]
+      - deribit/FuturesHistorical [flow.fan_out, flow.join, shape.columnar]
+      - deribit/OptionsChains [columns.derive, flow.fan_out, flow.preflight_lookup, shape.columnar]
+      - intrinio/OptionsSnapshots [columns.cast, columns.derive, columns.rename, columns.rescale, decode.archive_member, decode.delimited, flow.preflight_lookup, rows.filter, rows.order_limit, shape.columnar]
+      - sec/CompanyFilings [columns.derive, flow.fan_out, shape.columnar]
+      - sec/EquitySearch [path.object_keys, rows.filter, shape.columnar]
+      - sec/Filings [columns.derive, flow.fan_out, shape.columnar]
+      - tmx/BondPrices [rows.filter, shape.columnar]
+      - tmx/TreasuryPrices [rows.filter, shape.columnar]
+      - cboe/OptionsChains [columns.derive, columns.rescale, flow.preflight_lookup, shape.columnar]
+  step 17  decode.text_table -> +6 newly unlocked, cumulative 139
+      - famafrench/FamaFrenchBreakpoints [decode.archive_member, decode.delimited, decode.text_table, flow.preflight_lookup]
+      - famafrench/FamaFrenchCountryPortfolioReturns [decode.archive_member, decode.delimited, decode.text_table, flow.preflight_lookup]
+      - famafrench/FamaFrenchFactors [decode.archive_member, decode.delimited, decode.text_table, flow.preflight_lookup]
+      - famafrench/FamaFrenchInternationalIndexReturns [decode.archive_member, decode.delimited, decode.text_table, flow.preflight_lookup]
+      - famafrench/FamaFrenchRegionalPortfolioReturns [decode.archive_member, decode.delimited, decode.text_table, flow.preflight_lookup]
+      - famafrench/FamaFrenchUSPortfolioReturns [decode.archive_member, decode.delimited, decode.text_table, flow.preflight_lookup]
+  step 18  request.serialised_param -> +6 newly unlocked, cumulative 145
+      - cftc/COT [columns.rename, columns.rescale, columns.select, flow.branch, flow.preflight_lookup, request.serialised_param, rows.order_limit]
+      - cftc/COTSearch [columns.derive, flow.branch, flow.preflight_lookup, param.value_mapping, request.serialised_param, rows.filter]
+      - eia/ShortTermEnergyOutlook [columns.cast, columns.derive, columns.rename, flow.fan_out, request.body_pagination, request.serialised_param, rows.order_limit]
+      - wsj/ETFGainers [request.serialised_param, rows.order_limit]
+      - wsj/ETFLosers [request.serialised_param, rows.order_limit]
+      - wsj/ETFActive [request.serialised_param, rows.order_limit]
+  step 19  decode.xml -> +5 newly unlocked, cumulative 150
+      - sec/Form13FHR [decode.xml, flow.fan_out, flow.preflight_lookup]
+      - sec/InsiderTrading [columns.rename, decode.xml, flow.fan_out]
+      - sec/NportDisclosure [decode.xml, flow.join, flow.preflight_lookup]
+      - sec/RssLitigation [columns.rename, decode.xml]
+      - sec/SchemaFiles [decode.xml, flow.fan_out, path.object_keys]
+  step 20  param.value_transform -> +5 newly unlocked, cumulative 155
+      - intrinio/EtfHoldings [columns.null_sentinel, columns.rescale, flow.fan_out, flow.join, param.value_transform, rows.order_limit]
+      - intrinio/EtfInfo [flow.fan_out, param.value_transform, rows.order_limit]
+      - intrinio/FredSeries [param.value_mapping, param.value_transform, request.body_pagination]
+      - intrinio/IndexHistorical [columns.null_sentinel, columns.rename, flow.fan_out, param.value_transform]
+      - tmx/EtfSearch [param.value_transform, rows.filter]
+  step 21  path.assemble_single_row -> +5 newly unlocked, cumulative 160
+      - congress_gov/CongressAmendmentInfo [flow.join, path.assemble_single_row]
+      - congress_gov/CongressCommitteeInfo [flow.join, path.assemble_single_row]
+      - econdb/ExportDestinations [columns.rename, flow.fan_out, param.value_mapping, path.assemble_single_row]
+      - intrinio/ShareStatistics [columns.rename, flow.fan_out, path.assemble_single_row, path.object_keys]
+      - nasdaq/TopRetail [columns.cast, path.assemble_single_row, rows.order_limit]
+  step 22  decode.geojson -> +4 newly unlocked, cumulative 164
+      - imf/MaritimeChokePointInfo [decode.geojson, rows.filter]
+      - imf/MaritimeChokePointVolume [decode.geojson, flow.fan_out, flow.preflight_lookup, rows.filter]
+      - imf/PortInfo [decode.geojson, rows.filter]
+      - imf/PortVolume [decode.geojson, flow.fan_out, flow.preflight_lookup]
+  step 23  decode.html_table -> +4 newly unlocked, cumulative 168
+      - multpl/SP500Multiples [decode.html_table, flow.fan_out, rows.filter]
+      - federal_reserve/FomcDocuments [columns.derive, decode.html_table, flow.fan_out]
+      - government_us/WeatherBulletin [decode.html_table, decode.text_table, flow.fan_out]
+      - sec/SicSearch [decode.html_table, rows.filter]
+  step 24  decode.tabular_file -> +4 newly unlocked, cumulative 172
+      - eia/PetroleumStatusReport [columns.derive, decode.tabular_file, flow.branch, rows.filter, shape.columnar]
+      - federal_reserve/InflationExpectations [decode.tabular_file]
+      - federal_reserve/TotalFactorProductivity [decode.tabular_file]
+      - government_us/CommodityPsdReport [decode.tabular_file, request.serialised_param]
+  step 25  shape.nested_data_message -> +4 newly unlocked, cumulative 176
+      - imf/AvailableIndicators [flow.join, flow.preflight_lookup, shape.nested_data_message]
+      - imf/ConsumerPriceIndex [flow.composite_key_segment, shape.nested_data_message]
+      - imf/DirectionOfTrade [flow.composite_key_segment, flow.preflight_lookup, shape.nested_data_message]
+      - imf/EconomicIndicators [flow.composite_key_segment, flow.fan_out, flow.preflight_lookup, shape.nested_data_message]
+  step 26  decode.html_text -> +3 newly unlocked, cumulative 179
+      - congress_gov/CongressBillInfo [decode.html_text, flow.join, path.assemble_single_row]
+      - sec/SecFiling [decode.html_text, flow.join, path.assemble_single_row]
+      - tmx/AvailableIndices [decode.html_text, flow.join, path.object_keys]
+  step 27  decode.opaque_bytes -> +3 newly unlocked, cumulative 182
+      - congress_gov/CongressBillText [decode.opaque_bytes, flow.fan_out, flow.preflight_lookup]
+      - congress_gov/CongressAmendmentText [decode.opaque_bytes, flow.fan_out, flow.preflight_lookup]
+      - government_us/WeatherBulletinDownload [decode.opaque_bytes, flow.preflight_lookup]
+  step 28  request.caller_url -> +3 newly unlocked, cumulative 185
+      - intrinio/LatestAttributes [flow.fan_out, request.caller_url]
+      - sec/SecHtmFile [decode.html_text, request.caller_url]
+      - tiingo/TrailingDividendYield [request.caller_url, rows.order_limit]
+  step 29  path.parameterized_pointer -> +2 newly unlocked, cumulative 187
+      - tmx/IndexConstituents [path.parameterized_pointer, rows.filter]
+      - tmx/IndexSectors [path.parameterized_pointer, rows.filter]
+  step 30  decode.delimited_headerless -> +1 newly unlocked, cumulative 188
+      - sec/InstitutionsSearch [decode.delimited_headerless]
+  rows unlocked once the pool is exhausted: 188 of 235 pending
+
+over-claim guard 1 -- pending rows whose needs include a non-engine capability (47):
+  - congress_gov/CongressCommitteeDocuments [columns.derive, flow.branch, flow.fan_out, flow.join, outside.anti_bot, outside.sdk, outside.stateful, rows.filter] (task_id OBB2-congress_gov-CongressCommitteeDocuments)
+  - deribit/FuturesInstruments [columns.cast, columns.null_sentinel, outside.source_absent] (task_id OBB2-deribit-FuturesInstruments)
+  - seeking_alpha/CalendarEarnings [flow.fan_out, outside.anti_bot] (task_id OBB2-seeking_alpha-CalendarEarnings)
+  - stockgrid/ShortVolume [outside.source_absent] (task_id OBB2-stockgrid-ShortVolume)
+  - intrinio/OptionsChains [flow.branch, flow.fan_out, flow.join, outside.bespoke, param.value_transform, rows.order_limit, shape.columnar] (task_id OBB2-intrinio-OptionsChains)
+  - nasdaq/CalendarDividend [columns.cast, columns.rename, flow.fan_out, outside.anti_bot, rows.order_limit] (task_id OBB2-nasdaq-CalendarDividend)
+  - nasdaq/CalendarEarnings [columns.cast, columns.derive, columns.rename, columns.rescale, flow.fan_out, outside.anti_bot, rows.order_limit] (task_id OBB2-nasdaq-CalendarEarnings)
+  - nasdaq/CalendarIpo [columns.cast, columns.rename, flow.branch, flow.fan_out, outside.anti_bot, rows.order_limit] (task_id OBB2-nasdaq-CalendarIpo)
+  - nasdaq/CompanyFilings [columns.cast, columns.derive, columns.rename, outside.anti_bot, path.explode, request.body_pagination] (task_id OBB2-nasdaq-CompanyFilings)
+  - nasdaq/EconomicCalendar [columns.derive, columns.rename, decode.html_text, flow.fan_out, outside.anti_bot, rows.filter] (task_id OBB2-nasdaq-EconomicCalendar)
+  - nasdaq/EquitySearch [columns.rename, decode.delimited, outside.stateful, rows.filter] (task_id OBB2-nasdaq-EquitySearch)
+  - nasdaq/EquityScreener [columns.rename, columns.rescale, columns.select, outside.anti_bot, param.value_mapping, rows.order_limit] (task_id OBB2-nasdaq-EquityScreener)
+  - nasdaq/HistoricalDividends [columns.cast, columns.derive, columns.null_sentinel, columns.rename, flow.branch, flow.fan_out, outside.anti_bot, rows.filter] (task_id OBB2-nasdaq-HistoricalDividends)
+  - finra/OTCAggregate [flow.join, outside.stateful, request.body] (task_id OBB2-finra-OTCAggregate)
+  - finra/EquityShortInterest [decode.delimited, outside.stateful] (task_id OBB2-finra-EquityShortInterest)
+  - sec/ManagementDiscussionAnalysis [decode.html_text, flow.fan_out, outside.bespoke] (task_id OBB2-sec-ManagementDiscussionAnalysis)
+  - tmx/OptionsChains [decode.delimited, decode.html_table, outside.bespoke, shape.columnar] (task_id OBB2-tmx-OptionsChains)
+  - tradier/OptionsChains [columns.cast, columns.derive, columns.null_sentinel, columns.rename, columns.rescale, flow.fan_out, flow.join, flow.preflight_lookup, outside.bespoke, rows.filter, rows.order_limit, shape.columnar] (task_id OBB2-tradier-OptionsChains)
+  - yfinance/AvailableIndices [outside.no_request] (task_id OBB2-yfinance-AvailableIndices)
+  - yfinance/BalanceSheet [columns.derive, columns.select, outside.sdk] (task_id OBB2-yfinance-BalanceSheet)
+  - yfinance/CashFlowStatement [columns.derive, columns.select, outside.sdk] (task_id OBB2-yfinance-CashFlowStatement)
+  - yfinance/IncomeStatement [columns.derive, columns.select, outside.sdk] (task_id OBB2-yfinance-IncomeStatement)
+  - yfinance/CompanyNews [flow.fan_out, outside.sdk] (task_id OBB2-yfinance-CompanyNews)
+  - yfinance/EquityInfo [flow.fan_out, outside.sdk] (task_id OBB2-yfinance-EquityInfo)
+  - yfinance/EquityQuote [flow.fan_out, outside.sdk] (task_id OBB2-yfinance-EquityQuote)
+  - yfinance/EtfInfo [flow.fan_out, outside.sdk] (task_id OBB2-yfinance-EtfInfo)
+  - yfinance/KeyMetrics [flow.fan_out, outside.sdk] (task_id OBB2-yfinance-KeyMetrics)
+  - yfinance/ShareStatistics [flow.fan_out, outside.sdk] (task_id OBB2-yfinance-ShareStatistics)
+  - yfinance/PriceTargetConsensus [flow.fan_out, outside.sdk] (task_id OBB2-yfinance-PriceTargetConsensus)
+  - yfinance/KeyExecutives [outside.sdk] (task_id OBB2-yfinance-KeyExecutives)
+  - yfinance/CryptoHistorical [outside.sdk] (task_id OBB2-yfinance-CryptoHistorical)
+  - yfinance/CurrencyHistorical [outside.sdk] (task_id OBB2-yfinance-CurrencyHistorical)
+  - yfinance/EquityHistorical [outside.sdk] (task_id OBB2-yfinance-EquityHistorical)
+  - yfinance/EtfHistorical [outside.sdk] (task_id OBB2-yfinance-EtfHistorical)
+  - yfinance/FuturesHistorical [outside.sdk] (task_id OBB2-yfinance-FuturesHistorical)
+  - yfinance/IndexHistorical [outside.sdk] (task_id OBB2-yfinance-IndexHistorical)
+  - yfinance/HistoricalDividends [outside.sdk] (task_id OBB2-yfinance-HistoricalDividends)
+  - yfinance/OptionsChains [flow.join, outside.sdk, shape.columnar] (task_id OBB2-yfinance-OptionsChains)
+  - cboe/EtfHistorical [flow.join, flow.preflight_lookup, outside.sdk, rows.filter] (task_id OBB2-cboe-EtfHistorical)
+  - cboe/FuturesCurve [flow.fan_out, flow.join, outside.bespoke] (task_id OBB2-cboe-FuturesCurve)
+  - finviz/CompareGroups [flow.branch, outside.sdk] (task_id OBB2-finviz-CompareGroups)
+  - finviz/EtfPricePerformance [outside.sdk] (task_id OBB2-finviz-EtfPricePerformance)
+  - finviz/PricePerformance [outside.sdk] (task_id OBB2-finviz-PricePerformance)
+  - finviz/EquityInfo [flow.fan_out, outside.sdk] (task_id OBB2-finviz-EquityInfo)
+  - finviz/KeyMetrics [flow.fan_out, outside.sdk] (task_id OBB2-finviz-KeyMetrics)
+  - finviz/PriceTarget [columns.derive, flow.fan_out, outside.sdk] (task_id OBB2-finviz-PriceTarget)
+  - finviz/EquityScreener [flow.branch, outside.sdk, param.preset_merge] (task_id OBB2-finviz-EquityScreener)
+  of those, rows with no engine work possible at all: 12
+over-claim guard 2 -- rows still locked after the whole engine pool (47):
+  - congress_gov/CongressCommitteeDocuments [columns.derive, flow.branch, flow.fan_out, flow.join, outside.anti_bot, outside.sdk, outside.stateful, rows.filter]
+  - deribit/FuturesInstruments [columns.cast, columns.null_sentinel, outside.source_absent]
+  - seeking_alpha/CalendarEarnings [flow.fan_out, outside.anti_bot]
+  - stockgrid/ShortVolume [outside.source_absent]
+  - intrinio/OptionsChains [flow.branch, flow.fan_out, flow.join, outside.bespoke, param.value_transform, rows.order_limit, shape.columnar]
+  - nasdaq/CalendarDividend [columns.cast, columns.rename, flow.fan_out, outside.anti_bot, rows.order_limit]
+  - nasdaq/CalendarEarnings [columns.cast, columns.derive, columns.rename, columns.rescale, flow.fan_out, outside.anti_bot, rows.order_limit]
+  - nasdaq/CalendarIpo [columns.cast, columns.rename, flow.branch, flow.fan_out, outside.anti_bot, rows.order_limit]
+  - nasdaq/CompanyFilings [columns.cast, columns.derive, columns.rename, outside.anti_bot, path.explode, request.body_pagination]
+  - nasdaq/EconomicCalendar [columns.derive, columns.rename, decode.html_text, flow.fan_out, outside.anti_bot, rows.filter]
+  - nasdaq/EquitySearch [columns.rename, decode.delimited, outside.stateful, rows.filter]
+  - nasdaq/EquityScreener [columns.rename, columns.rescale, columns.select, outside.anti_bot, param.value_mapping, rows.order_limit]
+  - nasdaq/HistoricalDividends [columns.cast, columns.derive, columns.null_sentinel, columns.rename, flow.branch, flow.fan_out, outside.anti_bot, rows.filter]
+  - finra/OTCAggregate [flow.join, outside.stateful, request.body]
+  - finra/EquityShortInterest [decode.delimited, outside.stateful]
+  - sec/ManagementDiscussionAnalysis [decode.html_text, flow.fan_out, outside.bespoke]
+  - tmx/OptionsChains [decode.delimited, decode.html_table, outside.bespoke, shape.columnar]
+  - tradier/OptionsChains [columns.cast, columns.derive, columns.null_sentinel, columns.rename, columns.rescale, flow.fan_out, flow.join, flow.preflight_lookup, outside.bespoke, rows.filter, rows.order_limit, shape.columnar]
+  - yfinance/AvailableIndices [outside.no_request]
+  - yfinance/BalanceSheet [columns.derive, columns.select, outside.sdk]
+  - yfinance/CashFlowStatement [columns.derive, columns.select, outside.sdk]
+  - yfinance/IncomeStatement [columns.derive, columns.select, outside.sdk]
+  - yfinance/CompanyNews [flow.fan_out, outside.sdk]
+  - yfinance/EquityInfo [flow.fan_out, outside.sdk]
+  - yfinance/EquityQuote [flow.fan_out, outside.sdk]
+  - yfinance/EtfInfo [flow.fan_out, outside.sdk]
+  - yfinance/KeyMetrics [flow.fan_out, outside.sdk]
+  - yfinance/ShareStatistics [flow.fan_out, outside.sdk]
+  - yfinance/PriceTargetConsensus [flow.fan_out, outside.sdk]
+  - yfinance/KeyExecutives [outside.sdk]
+  - yfinance/CryptoHistorical [outside.sdk]
+  - yfinance/CurrencyHistorical [outside.sdk]
+  - yfinance/EquityHistorical [outside.sdk]
+  - yfinance/EtfHistorical [outside.sdk]
+  - yfinance/FuturesHistorical [outside.sdk]
+  - yfinance/IndexHistorical [outside.sdk]
+  - yfinance/HistoricalDividends [outside.sdk]
+  - yfinance/OptionsChains [flow.join, outside.sdk, shape.columnar]
+  - cboe/EtfHistorical [flow.join, flow.preflight_lookup, outside.sdk, rows.filter]
+  - cboe/FuturesCurve [flow.fan_out, flow.join, outside.bespoke]
+  - finviz/CompareGroups [flow.branch, outside.sdk]
+  - finviz/EtfPricePerformance [outside.sdk]
+  - finviz/PricePerformance [outside.sdk]
+  - finviz/EquityInfo [flow.fan_out, outside.sdk]
+  - finviz/KeyMetrics [flow.fan_out, outside.sdk]
+  - finviz/PriceTarget [columns.derive, flow.fan_out, outside.sdk]
+  - finviz/EquityScreener [flow.branch, outside.sdk, param.preset_merge]
+  blocking non-engine capabilities: ['outside.anti_bot', 'outside.bespoke', 'outside.no_request', 'outside.sdk', 'outside.source_absent', 'outside.stateful']
+
+UNPROVEN: 1 entries carry no anchor: ['outside.source_absent']
+--check verdict: PASS
