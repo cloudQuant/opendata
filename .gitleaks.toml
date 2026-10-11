@@ -84,6 +84,42 @@ paths = [
 # opendata/data/providers/*/specs.py (35 `source_key` values, 29 distinct) the number matched by
 # this regex that is NOT one of those Fed identifiers is 0.
 #
+# C89, fifth entry: gate run 7 member 3 reported exactly one finding, and it is this round's own
+# new declaration -- `credentials=(CredentialSpec(name="api_key", environment_variable="INTRINIO_API_KEY"),)`
+# at opendata/data/providers/intrinio/provider.py:41 as committed at 083b7e4 (rule generic-api-key,
+# secret `environment_variable=`, entropy 3.5585186). `generic-api-key` reads the field NAME
+# `api_key` as the key name and then swallows the next bare token as the value, so the value it
+# reports is the *following kwarg's name*. Neither `api_key` nor `environment_variable` is a
+# credential: the first is this repo's own credential-slot label and the second is the name of the
+# environment variable to read, which the provider must know in order to look. The declaration
+# carries no value at all.
+#
+# Measured before writing this entry, because it decides what the exemption can claim: for that
+# one-line kwarg shape the captured secret is `environment_variable=` for EVERY value spelling. The
+# three counterfactual fixtures -- the real line, the line with one extra character in the quoted
+# value, and the line whose quoted value is a fabricated `ghp_` token or a fabricated 20-character
+# generic secret -- all four capture the same secret string. So this literal is a SHAPE rule in
+# effect even though it is written as a literal, and the honest boundary is: a value-bearing
+# one-liner of exactly that kwarg shape is exempt from `generic-api-key` only. Specific rules are
+# untouched -- the same slot holding the fabricated `ghp_` token is still reported by github-pat
+# with this entry in place, which arms [4]/[5] of docs/evidence/C89/gitleaks-counterfactual.py
+# measure on the real bytes.
+#
+# The live-tree exposure of that boundary is 0 lines, measured three ways by
+# docs/evidence/C89/gitleaks-counterfactual.py rather than asserted: 14 files carry a CredentialSpec
+# carrier (13 opendata/data/providers/*/provider.py plus providers/catalog.py), 5 of them declare
+# credentials (bls, fmp, fred, intrinio, ths) through 6 call sites counting catalog's helper, every
+# one of them in the multi-line form, and scanning those 14 files' whole bytes in history mode under
+# the DEFAULT ruleset with every allowlist removed reports 0 findings -- so no live line is covered
+# by this entry, and the same 14 files report 0 under the shipped config too (the pair is what says
+# the silence is the code's shape, not the exemption's). Across opendata/**/*.py the number of lines
+# carrying both a credential-shaped keyword and `environment_variable="` is likewise 0.
+#
+# This round reformatted its own one-liner into the convention the other four already used, so the
+# exemption exists only for bytes that are in history and no longer in the tree. It is still a shape
+# rule for anything written that way in future: generic-api-key will stay quiet about the kwarg name
+# while every specific rule (github-pat, aws-access-key, ...) keeps reading the value.
+#
 # The other 2 of those 13 were this round's own differential fixture, and they are the reason the
 # instrument no longer encodes anything: docs/evidence/C75/gitleaks-counterfactual.py line 82 held
 # a fabricated token behind base64, and the history scan reported that one line TWICE --
@@ -96,13 +132,14 @@ paths = [
 [[rules]]
 id = "generic-api-key"
 [rules.allowlist]
-description = "SDMX dataflow keys are public identifiers; API_KEY_FAILURE_DELAY_SECONDS=0.05 is the non-secret delay setting after an empty template value; rows_pointer=refRates is an engine field assignment naming a public release-table section; RIFLGFC*_N.B are the Federal Reserve H.15 maturity series identifiers declared as ColumnSpec.source_key."
+description = "SDMX dataflow keys are public identifiers; API_KEY_FAILURE_DELAY_SECONDS=0.05 is the non-secret delay setting after an empty template value; rows_pointer=refRates is an engine field assignment naming a public release-table section; RIFLGFC*_N.B are the Federal Reserve H.15 maturity series identifiers declared as ColumnSpec.source_key; environment_variable= is the next kwarg's NAME swallowed as the value of a one-line CredentialSpec whose credential is read from the environment."
 regexTarget = "secret"
 regexes = [
   '''^[A-Z0-9]{1,12}(\.[A-Z0-9_]{1,14}){3,}$''',
   '''^API_KEY_FAILURE_DELAY_SECONDS=0\.05$''',
   '''^rows_pointer=refRates$''',
   '''^RIFLGFC(M01|M03|M06|Y01|Y02|Y03|Y05|Y07|Y10|Y20|Y30)_N\.B$''',
+  '''^environment_variable=$''',
 ]
 
 # C73: the archived gate/run manifests under docs/evidence/ record, for every tracked

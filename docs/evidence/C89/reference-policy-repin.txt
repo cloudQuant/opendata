@@ -1,0 +1,46 @@
+command: PYTHONPATH=. python docs/evidence/C89/reference-policy-repin.py | rc=0 | read-only: git show + file reads + the repo scanner (scripts/codemod/verify_no_akshare.scan_source); no network, no database, no engine execution, no make gate; the script writes nothing. Denominator: PRIOR_PIN is a literal so the audit stays runnable AFTER the re-pin it authorises (reading only the policy's current value made it self-referential -- post-pin it reported 'pinned bytes exist in no revision', which was an instrument fault, not a repo fault). Damage arm declares its deltas (+1 akshare line, +1 brand-load line, +1 scanner member akshare|import) rather than 'something moved'.
+== pin identity ==
+  target        scripts/quality/acceptance_item_probe.py
+  prior pin (this audit's denominator) 51b2266dd60bce24f0580f3644c4cb7ef8b268061f088e09d8cae44a963188bb
+  live sha256                          a33e906a8acb24914d89f65cd184e7969b2a7f6ed34a64693c4731a7d09c05ed   <-- the value the re-pin carries
+  policy sha256 on disk right now      a33e906a8acb24914d89f65cd184e7969b2a7f6ed34a64693c4731a7d09c05ed
+  post-condition -- policy now pins the live bytes: True (False here means the re-pin has not been applied yet, which is the pre-pin reading)
+  owner revision of the prior pin: dc9e764
+  revisions of this path after that owner: 0 []
+  working tree == HEAD for this path: False
+== content faces (pinned bytes vs live bytes) ==
+  pinned   akshare_lines=138 akshare_uses=163 akshare_lines_ci=144 akshare_uses_ci=172 openbb_lines=78 openbb_uses=96 openbb_lines_ci=95 openbb_uses_ci=117 load_shape_lines=44 brand_load_lines=1
+         shape=218 scanner=13 members=['akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'openbb|string', 'openbb|string', 'openbb|string', 'openbb|string', 'openbb|string']
+  live     akshare_lines=138 akshare_uses=163 akshare_lines_ci=144 akshare_uses_ci=172 openbb_lines=78 openbb_uses=96 openbb_lines_ci=95 openbb_uses_ci=117 load_shape_lines=44 brand_load_lines=1
+         shape=218 scanner=13 members=['akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'openbb|string', 'openbb|string', 'openbb|string', 'openbb|string', 'openbb|string']
+  scanner (module,kind) multiset identical: True
+  brand-load carriers (verbatim, live bytes, 1): ['            from scripts.quality.openbb_inventory_plane import (']
+== changed-line accounting ==
+  diff口径 +8 / -0; text-dedupe口径 +8; gap explained by same-text-already-in-pin: 0
+  brand-name-bearing added / deleted lines: 0/0
+  added lines that are a deleted line plus a nosec tail comment: 0/8
+  brand lines located (verbatim, up to 12): []
+  added lines that are BOTH a load shape and brand-bearing: 0 []
+== damage arm: the counters must move the way they claim they can ==
+  live     akshare_lines=138 akshare_uses=163 akshare_lines_ci=144 akshare_uses_ci=172 openbb_lines=78 openbb_uses=96 openbb_lines_ci=95 openbb_uses_ci=117 load_shape_lines=44 brand_load_lines=1
+         shape=218 scanner=13 members=['akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'openbb|string', 'openbb|string', 'openbb|string', 'openbb|string', 'openbb|string']
+  damaged  akshare_lines=139 akshare_uses=164 akshare_lines_ci=145 akshare_uses_ci=173 openbb_lines=78 openbb_uses=96 openbb_lines_ci=95 openbb_uses_ci=117 load_shape_lines=45 brand_load_lines=2
+         shape=219 scanner=14 members=['akshare|import', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'akshare|string', 'openbb|string', 'openbb|string', 'openbb|string', 'openbb|string', 'openbb|string']
+  arm MOVED as declared: +1 akshare line, +1 brand-load line, +1 scanner member ['akshare|import']
+VERDICT: re-pin under the same approval. scanner=13 identical, any-import-line 44 -> 44, brand-load-line 1 -> 1 (damage arm: 1 -> 2), brand added=0 deleted=0, brand load-shape added=0
+
+== this instrument's own A2 debt, and the repair that had to leave every face alone ==
+docs/evidence/**/*.py is inside the A2 plane (python scripts/quality/a2_check.py covers 793 files), so
+this audit's own bytes were gate member 8 debt: 5 mypy errors (the face was a dict[str, object], so
+int(damaged[key]) needed a type: ignore that mypy then also reported as unused) and 2 bandit findings
+(B404 import subprocess, B607 'git' resolved from PATH).
+Repair: the face became a frozen dataclass Face with a numeric() reader, the two ignores were deleted,
+and the exemptions moved onto the lines that earn them ('import subprocess  # nosec B404  # read-only git
+argv, shell disabled' and '# nosec B603, B607' on the subprocess.run line, the repo's C81 line-level form).
+The re-pinned source is face-preserving, which is the only way this section can be true:
+  command: diff /tmp/c89_repin4.txt /tmp/c89_repin5.txt -> no output; PYTHONPATH=. python
+           docs/evidence/C89/reference-policy-repin.py | rc=0 | stdout byte-identical to the pre-refactor run
+  per-leg rc on the repaired file, captured directly (python -m ruff check / ruff format --check /
+  python -m mypy / python -m bandit -q -c bandit.yaml -r): 0 0 0 0 (was 0 0 1 1)
+No judge was relaxed and no counter changed: the 138/163 vs 144/172 pair, load_shape 44, brand_load 1,
+scanner 13 and the damage arm's declared deltas are printed by the same commands on the same bytes.

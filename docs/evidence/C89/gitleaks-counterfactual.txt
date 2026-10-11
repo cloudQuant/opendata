@@ -1,0 +1,44 @@
+command: PYTHONPATH=. python docs/evidence/C89/gitleaks-counterfactual.py | rc=0 | NOT TOUCHED: no network request, no database/DDL, no engine execution, no `make gate`, no census/registry/ledger edits (the only external process is the pinned docs/quality/secret-scan.json argv reading this repo's own git history). Arm MOVED: every one of the 10 arms disagrees with its no-regex twin; the tally reader was also broken by its own two-sided control, twice -- see the instrument-fault log below the face.
+== the finding this round is triaging (read back out of git, not retyped) ==
+  committed path:line   opendata/data/providers/intrinio/provider.py as of 083b7e4
+  fixture bytes       91 chars, credentials=(CredentialSpec(name="api_key", environment_variable...
+  live bytes now      9 lines, multi-line CredentialSpec
+== live-tree surface (why the exemption covers nothing that is in the tree now) ==
+  files carrying a CredentialSpec token: 14
+  of them declaring credentials: 6, through 6 call sites
+  opendata/**/*.py lines carrying a credential keyword AND environment_variable=": 0
+  those 14 files, DEFAULT ruleset, allowlists removed: rules=[]
+  those 14 files, shipped config: rules=[]
+== baseline: default ruleset, no allowlists (the denominator every silent arm needs) ==
+     baseline     credentials=(CredentialSpec(name="api_ke   rules=['generic-api-key']
+     baseline     credentials=(CredentialSpec(name="api_ke   rules=['generic-api-key']
+     baseline     credentials=(CredentialSpec(name="api_ke   rules=['generic-api-key', 'github-pat']
+     baseline     credentials=(CredentialSpec(name="api_ke   rules=['generic-api-key']
+     baseline     credentials=(CredentialSpec(name="api_ke   rules=['generic-api-key']
+     baseline     credentials=(CredentialSpec(name="api_ke   rules=['generic-api-key']
+
+== arms: shipped variants against declared rule-id sets ==
+[ 1] OK  shipped        p.py     expect=[] got=[] :: exemption bites on the committed bytes
+[ 2] OK  no-c89-regex   p.py     expect=['generic-api-key'] got=['generic-api-key'] :: control: same bytes, regex removed
+[ 3] OK  shipped        p.py     expect=[] got=[] :: BOUNDARY: a shape rule, not this line
+[ 4] OK  no-c89-regex   p.py     expect=['generic-api-key'] got=['generic-api-key'] :: BOUNDARY control
+[ 5] OK  shipped        p.py     expect=['github-pat'] got=['github-pat'] :: token in the slot still reported
+[ 6] OK  no-c89-regex   p.py     expect=['generic-api-key', 'github-pat'] got=['generic-api-key', 'github-pat'] :: what it removes
+[ 7] OK  shipped        p.py     expect=[] got=[] :: generic secret in the slot is the exposure
+[ 8] OK  no-c89-regex   p.py     expect=['generic-api-key'] got=['generic-api-key'] :: forward exposure, other name
+[ 9] OK  shipped        x.txt    expect=[] got=[] :: this round's own printed face
+[10] OK  no-c89-regex   x.txt    expect=['generic-api-key'] got=['generic-api-key'] :: printed-face control
+
+== the pinned gate command over the real repo (the face member 3 actually prints) ==
+== the tally parser's own two-sided control (a zero needs a non-zero reading) ==
+  OK  '5:20PM INF no leaks found'              parsed=0 declared=0 
+  OK  '5:20PM WRN 11 leaks found'              parsed=11 declared=11 
+  OK  '5:20PM WRN leaks found: 13'             parsed=13 declared=13 
+  OK  '░    gitleaks'                          parsed=None declared=None no `leaks found` / `no leaks found` line appears in the scan output
+  argv[0]=gitleaks rc=0 leaks_found=0 :: [90m5:24PM[0m [32mINF[0m [1mno leaks found[0m
+COUNTERFACT PASS: 10 arms agreed with their declared rule sets; the gate's own scan returns rc=0
+
+== instrument-fault log for this face (two wrong readers this file shipped, both caught by a control that could disagree) ==
+  draft 1 selected candidate lines with `"leaks" in line`, so gitleaks' startup banner (`░    gitleaks`) won the match, no tally regex hit, and the count came from a defaulted 0. The printed face was `leaks_found=0 :: -` -- a silence dressed as a green reading.
+  draft 2 required the word `found` too, then took the FIRST digit run of the line, which for `5:20PM WRN 11 leaks found` is the clock (`5`), not the count. Its own control arm declared 11 and read 5, so the harness exited 1 before archiving.
+  shipped reader: a candidate line must contain the words `leaks found`, and the count is anchored to the digits adjacent to them (`N leaks found` or `leaks found: N`); a scan with no such line raises instead of defaulting. The four control faces above are 0 / 11 / 13 / LookupError, and the live line this run parsed is quoted verbatim below.

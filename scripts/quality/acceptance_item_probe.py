@@ -1817,6 +1817,14 @@ GENERIC_API_KEY_ALLOWED_REGEXES: Final = (
     # The alternation enumerates those eleven ids one by one, so `source_key="<a real key>"` stays
     # reported; docs/evidence/C75/gitleaks-counterfactual.py measures that boundary both ways.
     r"^RIFLGFC(M01|M03|M06|Y01|Y02|Y03|Y05|Y07|Y10|Y20|Y30)_N\.B$",
+    # C89: the value generic-api-key captures for a ONE-LINE `CredentialSpec(name="api_key",
+    # environment_variable="...")` is the next kwarg's NAME, whatever the slot holds -- measured on
+    # the real committed line and on three value mutations, all four capture
+    # `environment_variable=`.
+    # The live tree writes no such line (14 carrier files, 0 findings even with every allowlist
+    # removed), so this mirrors an exemption that only covers bytes already in history; specific
+    # rules keep reading the value. docs/evidence/C89/gitleaks-counterfactual.py scores both faces.
+    r"^environment_variable=$",
 )
 
 

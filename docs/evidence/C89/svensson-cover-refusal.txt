@@ -1,0 +1,78 @@
+svensson-cover-refusal evidence
+command            : PYTHONPATH=. python docs/evidence/C89/svensson-cover-refusal.py
+rc                 : 0 (every one of the 8 arms printed pass and damage readings that differed, and every pass claim held)
+date/round         : C89, branch dev, roadmap generation C89, census 279 rows
+untouched surface  : opendata/** (incl. federal_reserve/specs.py and _engine/spec.py, http_json.py, value_transform.py), tests/**, scripts/** (incl. model_capability_census.py), docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/census-*.json and capability-roadmap.json, docs/evidence/C88/reconcile-ready-rows.py -- all read-only this run; no DDL, no network, no engine execution, no git commit. The only writes outside this directory's final artifacts were a scratch copy of specs.py under docs/evidence/C89/ that the control arm deleted, and a /tmp stdout capture that was removed after composing this file.
+verdict face       : generated from measured values, see VERDICT line below
+
+--- verbatim stdout ---
+
+upstream comparator present : True -> /Users/yunjinqi/Documents/new_projects/openbb/openbb_platform/providers/federal_reserve/openbb_federal_reserve/models/svensson_yield_curve.py
+
+live reconcile run (rc=0)
+    SHIPPED=5 'OBB2-cboe-EquitySearch', 'OBB2-intrinio-CalendarIpo', 'OBB2-intrinio-CurrencyPairs', 'OBB2-intrinio-EquitySearch', 'OBB2-intrinio-HistoricalDividends'
+    BLOCKED=1 'OBB2-federal_reserve-SvenssonYieldCurve'
+    NO_PACKAGE=(0, '') UNREFUSED=(0, '')
+
+ARM 1a blocked row is the Svensson row
+    pass    : True
+    damage  : False
+    differed: True  claimed: True  -> True
+ARM 1b damage edit applied to the copy only (disk untouched)
+    pass    : ('damaged-key-present', True)
+    damage  : ('original-key-present', False)
+    differed: True  claimed: True  -> True
+ARM 1c partition counts move when the refusal key is renamed (in-process replica)
+    pass    : (1, 0)
+    damage  : (0, 1)
+    differed: True  claimed: True  -> True
+refusal table        : DECLARED_GAPS (specs.py)
+phrase 'sentinel map'             found=True label=sentinel_value_nulling -> columns.null_sentinel status=absent in-bucket=True
+    registry anchor: opendata/data/providers/_engine/spec.py:209 anchor='nullable: bool = True'
+    upstream cite  : svensson_yield_curve.py:1066-1082 validate_float_fields nulls '', NA, ND, N/A and -999.99
+phrase 'window the rows'          found=True label=comparison_row_filter -> rows.filter_comparison status=absent in-bucket=True
+    registry anchor: opendata/data/providers/_engine/spec.py:40 anchor='RowFilterOp = Literal["contains", "equals", "not_equals", "in", "prefix"]'
+    upstream cite  : svensson_yield_curve.py:1170,1173 row_date < start_date / row_date > end_date are comparisons
+phrase 'series_type selects'      found=True label=xbrl_tag_assembly -> columns.response_dependent_selection status=absent in-bucket=True
+    registry anchor: opendata/data/providers/_engine/http_json.py:520 anchor='key = column.source_key or column.name'
+    upstream cite  : svensson_yield_curve.py:1120-1135,1180-1186 transform_data allow-lists columns per series_type
+ARM 2 refusal-cited canonical set vs the same probe on a redacted copy
+    pass    : ('columns.null_sentinel', 'columns.response_dependent_selection', 'rows.filter_comparison')
+    damage  : ('columns.response_dependent_selection', 'rows.filter_comparison')
+    differed: True  claimed: True  -> True
+row raw_labels       : ['csv_decoder', 'param_value_mapping', 'series_pivot']  (census JSON docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/census-sec-tmx-fed-gov-finra.json)
+row canonical needs  : ['decode.delimited', 'param.value_mapping', 'path.explode']
+present capabilities : ['columns.derive', 'columns.rename', 'columns.select', 'decode.archive_member', 'decode.delimited', 'flow.composite_key_segment', 'flow.url_template', 'param.value_mapping', 'path.explode', 'rows.filter']
+ARM 3 declared-need-set is covered, declared-union-refusal is not
+    pass    : True
+    damage  : False
+    differed: True  claimed: True  -> True
+ARM 4 Svensson in fresh shipped_cover vs after patched (in-memory) need set
+    pass    : True
+    damage  : False
+    differed: True  claimed: True  -> True
+published roadmap JSON carries the row in shipped_cover_rows: True
+STAGE_SEQUENCE (value_transform.py)      : ('cast', 'scale')
+RowFilterOp    (spec.py)                 : Literal['contains', 'equals', 'not_equals', 'in', 'prefix']
+normalize_record keeps nulls as nulls; apply_cast raises ValueTransformError on a value outside its declared shape, so neither nulls a sentinel nor skips a row
+ARM 5 'sentinel' token count: engine declaration files vs the refusal text
+    pass    : 0
+    damage  : 1
+    differed: True  claimed: True  -> True
+cited   sentinel spellings (:1062-1082)                  -> [1072]
+cited   -999.99 (:1062-1082)                             -> [1076, 1077]
+cited   header found by searching 'Date,' (:1144-1152)   -> [1149]
+cited   client-side date window (:1160-1180)             -> [1170, 1173]
+cited   series_type column allow-list (:1107-1200)       -> [1121, 1124, 1127, 1131, 1133, 1135, 1137, 1139, 1144, 1183]
+ARM 6 upstream cites hit inside their cited ranges vs the same tokens in :100-130
+    pass    : True
+    damage  : False
+    differed: True  claimed: True  -> True
+verdict input blocked_is_svensson        = True
+verdict input cited_absent_canonicals    = ['columns.null_sentinel', 'columns.response_dependent_selection', 'rows.filter_comparison']
+verdict input declared_covered           = True
+verdict input union_covered              = False
+verdict input in_shipped_cover           = True
+verdict input left_cover_when_fixed      = True
+verdict input engine_sentinel_seam       = False
+VERDICT: confirmed -- the BLOCKED row is OBB2-federal_reserve-SvenssonYieldCurve; the roadmap's shipped_cover is the WRONG FACE because the census row at docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/census-sec-tmx-fed-gov-finra.json is UNDER-DECLARED: its needs ['decode.delimited', 'param.value_mapping', 'path.explode'] are all present, while the refusal in opendata/data/providers/federal_reserve/specs.py:DECLARED_GAPS names ['columns.null_sentinel', 'columns.response_dependent_selection', 'rows.filter_comparison'], all read absent in mcc.REGISTRY. Minimal honest correction: add the labels ['sentinel_value_nulling', 'comparison_row_filter', 'xbrl_tag_assembly'] to that row's needs_engine_capability (folding onto the named canonicals, with the upstream file:line cites measured in face 6), then re-derive the roadmap; neither retract SVENSSON_YIELD_CURVE (opendata/data/providers/federal_reserve/specs.py:275) nor extend the engine this round. rc=0 only because every arm differed: 8/8.

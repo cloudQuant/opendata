@@ -38,5 +38,10 @@ PROVIDER = Provider(
             scenario="IPO日历：按状态与发行规模取回新股发行日历并展平嵌套公司证券字段",
         ),
     ),
-    credentials=(CredentialSpec(name="api_key", environment_variable="INTRINIO_API_KEY"),),
+    credentials=(
+        CredentialSpec(
+            name="api_key",
+            environment_variable="INTRINIO_API_KEY",
+        ),
+    ),
 )

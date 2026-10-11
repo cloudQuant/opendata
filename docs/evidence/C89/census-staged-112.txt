@@ -1,0 +1,284 @@
+# C89 staged-census witness -- evidence capture
+# command (verbatim):  cd /Users/yunjinqi/Documents/new_projects/opendata && python docs/evidence/C89/census-staged-112.py
+# interpreter:        Python 3.11.8
+# timestamp:          2026-10-11 18:29:24 +0800  (second capture; 17:24:19 bytes superseded)
+# rc:                 0
+#
+# untouched surface, checked at capture time (`git status --porcelain -- <path>` printed nothing):
+#   docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/                 0 modified -- every shipped census JSON and
+#                                                                     census-audit.json left exactly as found; the
+#                                                                     merged population the witness reads is still
+#                                                                     279 rows over 19 files
+#   scripts/quality/model_capability_census.py                        0 modified -- EXPECTED_CENSUS_ROWS=279 as-is
+#   opendata/**                                                       0 written by this round; the one dirty file
+#                                                                     under it, .../providers/intrinio/provider.py,
+#                                                                     belongs to another process
+# no network, no database, no DDL, no `make gate`, no pytest run by this witness.
+# commits: the first capture ran before any commit; this round commits this file
+#   (the archive must be tracked for gate member 5), so the claim is dated.
+# files written by this round, all inside docs/evidence/C89/ and merged nowhere:
+#   docs/evidence/C89/census-staged-112.json   69 staged census rows, one bare JSON array
+#   docs/evidence/C89/census-staged-112.py     this witness, read-only
+#   docs/evidence/C89/census-staged-112.txt    this file
+# every number below is derived at run time from disk; none is transcribed by hand.
+# everything below the separator is the verbatim stdout of that command (unmodified).
+# REGENERATION (C89, second capture) -- why these bytes moved, and what was NOT done:
+#   gate pass 4 member 3 reported exactly 1 finding over history, and it was this archive's own
+#   first capture: rule generic-api-key, entropy 3.7841837, captured secret = the 20-character
+#   census row id naming the FMP risk-premium model. The line was an identifier-list repr: three
+#   row ids on one line, the second of them carrying `Key` in its name, and gitleaks read that as
+#   a key name with the next entry as its value. It is not quoted here on purpose -- committing
+#   the pair again would re-open the finding this capture exists to close, and the three ids are
+#   in the body below one per line anyway.
+#   That first capture was committed as this round's local tip. This capture replaces the commit
+#   instead of exempting its bytes: the old commit is unreachable (the reflog is the only anchor
+#   left for it, and no tag or branch was created, since a ref would keep it reachable and the
+#   finding reported), so the shape never enters the scanned history at all. The old bytes are
+#   still reproducible on demand -- they are rebuilt from docs/evidence/C89/census-staged-112.json
+#   by the triage instrument below, which is their carrier, not a dead sha.
+#   Fixed at the source instead: the witness now prints identifier lists one per line
+#   (print_ids), so no two long identifiers share a line. No .gitleaks.toml regex was added --
+#   the whole tracked tree carries this shape on exactly 1 line, and it is this file's, so an
+#   exemption would widen the judge for a shape that need not exist.
+#   Both sides measured, not asserted: those old bytes report 1 finding under the shipped
+#   config AND 1 under the default ruleset with every allowlist removed; these bytes report 0
+#   under both -- the silence is the format change, not an exemption. The old line is
+#   recomputed from the staged JSON at measurement time (never transcribed) by
+#   docs/evidence/C89/member3-secret-triage.py, which is also where the fabricated-credential
+#   arm proves one-id-per-line still reports a real token.
+#   Face preservation: every retained count below is re-printed identically by this run; the
+#   only layout change is 8 identifier lists moving from a repr to one-per-line.
+#   untouched surface, re-measured at regeneration time (`git status --porcelain -- <path>`):
+#     docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/                               dirty lines=0
+#     scripts/quality/model_capability_census.py                       dirty lines=0
+#     opendata/                                                        dirty lines=0
+#     docs/quality/akshare-reference-allowlist.json                    dirty lines=0
+#     docs/quality/zero-dep-baseline.json                              dirty lines=0
+#     docs/data-rights-registry.md                                     dirty lines=0
+#     provider-inventory.yaml                                          dirty lines=0
+# ------------------------------------------------------------- verbatim stdout ---
+staged census witness -- docs/evidence/C89/census-staged-112.json
+staged file rows: 69
+merged census population this run reads: 279 rows from 19 files (EXPECTED_CENSUS_ROWS=279)
+staged task_id duplicates: 0
+
+merge contract (measured from disk; this witness writes nothing)
+  staged top level: list -- a bare JSON array, exactly as staged
+  shipped census file top-level shapes: {'dict-with-rows': 19}
+  mcc.load_rows fails a bare array closed (it requires a payload object with a rows list), so the merge round must wrap these 69 rows or splice them into an existing file's rows list
+  staged rows with a non-empty task_id string: 69/69
+  staged rows whose labels all fold under LABEL_TO_CAPABILITY: 69/69
+  staged task_ids already used by a merged census row: 0
+
+provider -> staged rows
+  cboe             2
+  fmp              67
+
+raw labels -> canonical fold
+  client_side_date_filter            -> rows.filter
+  client_side_filter                 -> rows.filter
+  client_side_sort                   -> rows.order_limit
+  client_side_sort_limit             -> rows.order_limit
+  conditional_endpoint_branch        -> flow.branch
+  date_format                        -> columns.cast
+  date_window_filter                 -> rows.filter
+  derived_columns                    -> columns.derive
+  epoch_ms_to_date_conversion        -> columns.cast
+  fetcher_delegation                 -> outside.bespoke
+  field_rename_map                   -> columns.rename
+  local_cache_store                  -> outside.stateful
+  lookup_preflight                   -> flow.preflight_lookup
+  multi_request_concat               -> flow.fan_out
+  multi_request_fanout               -> flow.fan_out
+  multi_request_join                 -> flow.join
+  nested_array_explode               -> path.explode
+  param_value_mapping                -> param.value_mapping
+  per_record_nested_flatten          -> path.explode
+  preset_filter_merge                -> param.preset_merge
+  published_value_rescale            -> columns.rescale
+  query_key_date_mapping             -> request.serialised_param
+  rows_from_object_keys              -> path.object_keys
+  sentinel_value_nulling             -> columns.null_sentinel
+  series_pivot                       -> path.explode
+  symbol_fan_out                     -> flow.fan_out
+  symbol_normalization               -> param.value_transform
+distinct raw labels: 27
+  NO FOLD labels: 0
+rows carrying at least one NO FOLD label: 0
+
+present canonicals this run: 10
+staged rows whose every need is already present (join shipped cover on merge): 9
+  - OBB2-fmp-BalanceSheet needs columns.rename
+  - OBB2-fmp-BalanceSheetGrowth needs columns.rename
+  - OBB2-fmp-CashFlowStatement needs columns.rename
+  - OBB2-fmp-CashFlowStatementGrowth needs columns.rename
+  - OBB2-fmp-CurrencyPairs needs rows.filter
+  - OBB2-fmp-EquityPeers needs columns.rename
+  - OBB2-fmp-HistoricalEmployees needs columns.rename
+  - OBB2-fmp-IncomeStatement needs columns.rename
+  - OBB2-fmp-IncomeStatementGrowth needs columns.rename
+staged rows with an empty need set: 3
+    - OBB2-fmp-AvailableIndices
+    - OBB2-fmp-KeyExecutives
+    - OBB2-fmp-RiskPremium
+
+staged rows citing no upstream file:line: 0
+control arm (one fixture row with its citation stripped): 1 -- counter can go non-zero: True
+
+denominator -- upstream model ids vs staged rows (per provider package in this repo)
+  cboe             upstream= 10 already_censused=  9 staged=  2 still_short=  0
+  cboe             still_short ids: 0
+  cboe             staged ids naming no upstream module (aliased, measured here): 0
+  fmp              upstream= 67 already_censused=  0 staged= 67 still_short=  4
+  fmp              still_short ids: 4
+    - CashFlow
+    - CashFlowGrowth
+    - EquityMostActive
+    - EquityProfile
+  fmp              staged ids naming no upstream module (aliased, measured here): 4
+    - CashFlowStatement
+    - CashFlowStatementGrowth
+    - EquityActive
+    - EquityInfo
+  TOTAL upstream ids scanned=77 still_short=4
+  NOTE: an upstream id here is the CamelCase of one openbb_<p>/models/<stem>.py module. Where OpenBB's model id differs from its module stem (the aliased lists above), this denominator can only pair them by name, so still_short over-reports by the alias count and a provider printed as covered is not proof that every upstream model has a row. still_short is a denominator face meant to stop a short stage reading as complete, not a claim of completeness.
+
+denominator, every upstream provider package (merged rows + staged rows vs upstream ids)
+  alpha_vantage    upstream=  2 merged_ids=  3 staged_ids=  0 uncovered=  0
+  benzinga         upstream=  4 merged_ids=  4 staged_ids=  0 uncovered=  0
+  biztoc           upstream=  1 merged_ids=  1 staged_ids=  0 uncovered=  0
+  bls              upstream=  2 merged_ids=  2 staged_ids=  0 uncovered=  2
+                   uncovered: 2
+    - Search
+    - Series
+  cboe             upstream= 10 merged_ids=  9 staged_ids=  2 uncovered=  0   <-- this stage adds rows here
+  cftc             upstream=  2 merged_ids=  2 staged_ids=  0 uncovered=  2
+                   uncovered: 2
+    - Cot
+    - CotSearch
+  congress_gov     upstream=  8 merged_ids=  8 staged_ids=  0 uncovered=  4
+                   uncovered: 4
+    - AmendmentInfo
+    - AmendmentText
+    - BillInfo
+    - BillText
+  deribit          upstream=  5 merged_ids=  5 staged_ids=  0 uncovered=  0
+  ecb              upstream=  3 merged_ids=  3 staged_ids=  0 uncovered=  0
+  econdb           upstream=  8 merged_ids=  8 staged_ids=  0 uncovered=  0
+  famafrench       upstream=  6 merged_ids=  6 staged_ids=  0 uncovered=  6
+                   uncovered: 6
+    - Breakpoints
+    - CountryPortfolioReturns
+    - Factors
+    - InternationalIndexReturns
+    - RegionalPortfolioReturns
+    - UsPortfolioReturns
+  federal_reserve  upstream= 13 merged_ids= 13 staged_ids=  0 uncovered=  1
+                   uncovered: 1
+    - Sofr
+  finra            upstream=  2 merged_ids=  2 staged_ids=  0 uncovered=  1
+                   uncovered: 1
+    - OtcAggregate
+  finviz           upstream=  6 merged_ids=  7 staged_ids=  0 uncovered=  1
+                   uncovered: 1
+    - EquityProfile
+  fmp              upstream= 67 merged_ids=  0 staged_ids= 67 uncovered=  4   <-- this stage adds rows here
+                   uncovered: 4
+    - CashFlow
+    - CashFlowGrowth
+    - EquityMostActive
+    - EquityProfile
+  fred             upstream= 36 merged_ids= 36 staged_ids=  0 uncovered= 16
+                   uncovered: 16
+    - DwpcrRates
+    - EcbInterestRates
+    - FedProjections
+    - Ffrmc
+    - HighQualityMarket
+    - IorbRates
+    - ManufacturingOutlookNy
+    - Regional
+    - ReleaseTable
+    - Search
+    - Series
+    - Sofr
+    - SoniaRates
+    - Spot
+    - Tbffr
+    - Tmc
+  government_us    upstream=  6 merged_ids=  6 staged_ids=  0 uncovered=  0
+  imf              upstream=  9 merged_ids=  8 staged_ids=  0 uncovered=  3
+                   uncovered: 3
+    - IndicatorMetadata
+    - MaritimeChokepointInfo
+    - MaritimeChokepointVolume
+  intrinio         upstream= 39 merged_ids= 38 staged_ids=  0 uncovered=  3
+                   uncovered: 3
+    - CashFlow
+    - FinancialAttributes
+    - InstitutionalOwnership
+  multpl           upstream=  1 merged_ids=  1 staged_ids=  0 uncovered=  1
+                   uncovered: 1
+    - Sp500Multiples
+  nasdaq           upstream=  9 merged_ids=  9 staged_ids=  0 uncovered=  0
+  oecd             upstream=  9 merged_ids=  9 staged_ids=  0 uncovered=  0
+  sec              upstream= 23 merged_ids= 24 staged_ids=  0 uncovered=  4
+                   uncovered: 4
+    - CashFlow
+    - CashFlowGrowth
+    - EquityFtd
+    - HtmFile
+  seeking_alpha    upstream=  3 merged_ids=  3 staged_ids=  0 uncovered=  0
+  stockgrid        upstream=  1 merged_ids=  1 staged_ids=  0 uncovered=  0
+  tiingo           upstream=  6 merged_ids=  7 staged_ids=  0 uncovered=  0
+  tmx              upstream= 23 merged_ids= 24 staged_ids=  0 uncovered=  2
+                   uncovered: 2
+    - EquityProfile
+    - Gainers
+  tradier          upstream=  4 merged_ids=  5 staged_ids=  0 uncovered=  0
+  tradingeconomics upstream=  1 merged_ids=  1 staged_ids=  0 uncovered=  0
+  wsj              upstream=  3 merged_ids=  3 staged_ids=  0 uncovered=  3
+                   uncovered: 3
+    - Active
+    - Gainers
+    - Losers
+  yfinance         upstream= 28 merged_ids= 29 staged_ids=  0 uncovered=  8
+                   uncovered: 8
+    - Active
+    - AggressiveSmallCaps
+    - CashFlow
+    - EquityProfile
+    - Gainers
+    - Losers
+    - UndervaluedGrowthEquities
+    - UndervaluedLargeCaps
+  packages scanned=31 total uncovered (name-paired, over-reports by aliasing)= 61
+  name-pairing loss, measured: merged ids in these packages that match no module stem = 63 (the census spells some models by their registered id, not the stem)
+  repo provider dirs with no upstream package to census against: 2
+    - akshare
+    - ths
+  repo providers with NO census rows anywhere (merged or staged): 2
+    - akshare
+    - ths
+  upstream packages with zero census rows anywhere (merged or staged): 0
+
+staged rows by fold-target status
+  absent-or-other  120
+  present          76
+  distinct blocking canonicals named by staged rows: 14
+    - flow.fan_out: 26
+    - columns.rescale: 26
+    - columns.cast: 21
+    - rows.order_limit: 17
+    - flow.branch: 9
+    - columns.null_sentinel: 6
+    - param.value_transform: 4
+    - outside.bespoke: 3
+    - request.serialised_param: 2
+    - flow.join: 2
+    - flow.preflight_lookup: 1
+    - param.preset_merge: 1
+    - path.object_keys: 1
+    - outside.stateful: 1
+
+verdict: PASS (cites=0, control=1, duplicate_task_ids=0, task_id_collisions=0)

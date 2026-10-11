@@ -1,0 +1,96 @@
+command: PYTHONPATH=. python docs/evidence/C89/cast-rescale-flip-audit.py | rc=0 | NOT TOUCHED: no network, no database, no engine execution, no make gate, no census/registry edits (read-only: this repo census/engine/ledger sources + read-only OpenBB comparator tree). Arms MOVED: flip+fixture-coverage per row, plus fed-ledger damage arm; every printed line number/count located on disk at run time.
+cast/rescale flip audit -- every line number and count below was read off disk
+census rows read: 279; expressible_today: 5; pending: 274
+status groups: present=10 absent=39 drifted=0 unanchored=1
+    control for the zero in drifted: the same group counter reads 10 / 39 / 1 for the other three statuses
+anchor columns.cast: status=absent proof=opendata/data/providers/_engine/http_json.py:131 anchor='def _column_type' line='def _column_type(column: ColumnSpec) -> Any:  # noqa: ANN401 - dynamic pydantic field type'
+anchor columns.rescale: status=absent proof=opendata/data/providers/_engine/spec.py:210 anchor='units: str = ""' line='units: str = ""'
+rows flipping to (needs subset of present) if cast+rescale were anchored present: 3 -> ['OBB2-benzinga-AnalystSearch', 'OBB2-federal_reserve-YieldCurve', 'OBB2-government_us-TreasuryAuctions']
+
+== OBB2-benzinga-AnalystSearch == census census-benzinga.json:5 provider=benzinga model=AnalystSearch
+  raw labels (census-benzinga.json lines 15..20): ['per_record_nested_flatten', 'client_side_row_filter', 'published_value_rescale', 'epoch_ms_to_date_conversion'] [per_record_nested_flatten@16; client_side_row_filter@17; published_value_rescale@18; epoch_ms_to_date_conversion@19]
+  canonical needs: ['columns.cast', 'columns.rescale', 'path.explode', 'rows.filter']
+  needs minus present, arm P: ['columns.cast', 'columns.rescale']
+  needs minus present-with-flip, arm D: [] (control: the same set-difference counter just read 2 on this row)
+    arm[flip] MOVED
+      P (current anchors): 2
+      D (damaged reading): 0
+  behavior bz-epoch-cast: benzinga/openbb_benzinga/models/analyst_search.py:370 => epoch_ms_to_date_conversion -> columns.cast declared=Y measured-present=N
+      face: epoch->date cast of last_updated, UTC declared
+  behavior bz-percent-rescale: benzinga/openbb_benzinga/models/analyst_search.py:392 => published_value_rescale -> columns.rescale declared=Y measured-present=N
+      face: return/percentile/stdev/rate columns divided by 100
+  behavior bz-firm-exists: benzinga/openbb_benzinga/models/analyst_search.py:451 => comparison_row_filter -> rows.filter_comparison declared=N measured-present=N
+      face: row dropped for a missing/empty key -- no text op spells this
+  behavior bz-sentinel-nulling: benzinga/openbb_benzinga/models/analyst_search.py:376 => sentinel_value_nulling -> columns.null_sentinel declared=N measured-present=N
+      face: every "" value rewritten to null -- columns.null_sentinel
+  behavior bz-subdict-merge: benzinga/openbb_benzinga/models/analyst_search.py:460 => per_record_nested_flatten -> path.explode declared=Y measured-present=Y
+      face: sub-dict keys republished on the SAME row (repoint-able)
+  cited behaviours NOT declared by this row, arm P: 2 -> ['bz-firm-exists->rows.filter_comparison', 'bz-sentinel-nulling->columns.null_sentinel']
+  arm D (citation for 'bz-sentinel-nulling' deleted from the fixture): undeclared -> ['rows.filter_comparison']
+    arm[fixture-coverage] MOVED
+      P (current anchors): 2
+      D (damaged reading): 1
+  rescale-shape caveat: the kernel refuses float INPUTS (opendata/data/providers/_engine/value_transform.py:206); upstream funnels the percent fields through float() at benzinga/openbb_benzinga/models/analyst_search.py:392, so a JSON-float published number cannot reach apply_scale unchanged -- anchoring rescale present is honest here only for decimal-string/int published values
+  rows.filter op surface (opendata/data/providers/_engine/spec.py:40): RowFilterOp = Literal["contains", "equals", "not_equals", "in", "prefix"] -- none of these is exists/not-null, so the firm_id drop (benzinga/openbb_benzinga/models/analyst_search.py:451) is covered by rows.filter only on paper
+  VERDICT benzinga: UNDER-DECLARED -- the flip (arm D needs-minus-flipped-present=[]) would move this row into shipped cover while its own body still needs rows.filter_comparison (bz-firm-exists) and columns.null_sentinel (bz-sentinel-nulling); cast/rescale presence is honest only for bz-epoch-cast, bz-percent-rescale and bz-subdict-merge
+
+== OBB2-federal_reserve-YieldCurve == census census-sec-tmx-fed-gov-finra.json:284 provider=federal_reserve model=YieldCurve
+  raw labels (census-sec-tmx-fed-gov-finra.json lines 294..297): ['series_pivot', 'published_value_rescale'] [series_pivot@295; published_value_rescale@296]
+  canonical needs: ['columns.rescale', 'path.explode']
+  needs minus present, arm P: ['columns.rescale']
+  needs minus present-with-flip, arm D: [] (control: the same set-difference counter just read 1 on this row)
+    arm[flip] MOVED
+      P (current anchors): 1
+      D (damaged reading): 0
+  behavior yc-melt: federal_reserve/openbb_federal_reserve/models/yield_curve.py:103 => series_pivot -> path.explode declared=Y measured-present=Y
+      face: eleven maturity columns melted into long (date, maturity, rate) rows
+  behavior yc-rescale: federal_reserve/openbb_federal_reserve/models/yield_curve.py:110 => published_value_rescale -> columns.rescale declared=Y measured-present=N
+      face: rate divided by 100
+  behavior yc-asof: federal_reserve/openbb_federal_reserve/models/yield_curve.py:95 => comparison_row_filter -> rows.filter_comparison declared=N measured-present=N
+      face: nearest-published-date selection, not a window or text predicate
+  behavior yc-categorical: federal_reserve/openbb_federal_reserve/models/yield_curve.py:107 => client_side_sort -> rows.order_limit declared=N measured-present=N
+      face: maturity ordered by a declared roster -- rows.order_limit
+  behavior yc-nd-sentinel: federal_reserve/openbb_federal_reserve/models/yield_curve.py:100 => sentinel_value_nulling -> columns.null_sentinel declared=N measured-present=N
+      face: published "ND"/"N/A" spellings become null
+  cited behaviours NOT declared by this row, arm P: 3 -> ['yc-asof->rows.filter_comparison', 'yc-categorical->rows.order_limit', 'yc-nd-sentinel->columns.null_sentinel']
+  arm D (citation for 'yc-categorical' deleted from the fixture): undeclared -> ['columns.null_sentinel', 'rows.filter_comparison']
+    arm[fixture-coverage] MOVED
+      P (current anchors): 3
+      D (damaged reading): 2
+  ledger face: opendata/data/providers/federal_reserve/specs.py:393 opens NOT_DECLARED and :394 records YieldCurve as not declared (arm P: the ledger DOES refuse this row)
+  census face: notes re-read from census-sec-tmx-fed-gov-finra.json this run claim retraction=Y, yet the canonical need set carries no outside.* label (0 of them) -- control: the roadmap's over-claim guard lists 82 rows that DO declare an outside.* need
+  arm D (damaged ledger: the NOT_DECLARED entry's key text replaced): hits -> 0 (control: the same counter read 1 un-damaged)
+    arm[fed-ledger] MOVED
+      P (current anchors): 1
+      D (damaged reading): 0
+  CONTRADICTION: census OBB2-federal_reserve-YieldCurve lists only ['columns.rescale', 'path.explode'], so the row flips into shipped cover when rescale anchors present, while opendata/data/providers/federal_reserve/specs.py:394 records the same id as NOT_DECLARED
+  engine-vs-ledger staleness: opendata/data/providers/federal_reserve/specs.py:21 still says 'Melting is not declarable', yet opendata/data/providers/_engine/row_expansion.py:552 defines transpose_wide_table and path.explode measures present -- the retraction's live reason is curation (a second model id over rows TreasuryRates publishes), not an engine gap
+  VERDICT federal_reserve-YieldCurve: CONTRADICTED and UNDER-DECLARED -- ledger vs census disagree about the same row, and its body needs rows.filter_comparison (yc-asof), rows.order_limit (yc-categorical) and columns.null_sentinel (yc-nd-sentinel), none of which the row declares
+
+== OBB2-government_us-TreasuryAuctions == census census-sec-tmx-fed-gov-finra.json:387 provider=government_us model=TreasuryAuctions
+  raw labels (census-sec-tmx-fed-gov-finra.json lines 397..400): ['param_value_mapping', 'date_format'] [param_value_mapping@398; date_format@399]
+  canonical needs: ['columns.cast', 'param.value_mapping']
+  needs minus present, arm P: ['columns.cast']
+  needs minus present-with-flip, arm D: [] (control: the same set-difference counter just read 1 on this row)
+    arm[flip] MOVED
+      P (current anchors): 1
+      D (damaged reading): 0
+  behavior gu-type-map: government_us/openbb_government_us/models/treasury_auctions.py:214 => param_value_mapping -> param.value_mapping declared=Y measured-present=Y
+      face: REQUEST-side bill->Bill, with a passthrough default for unmapped caller text
+  behavior gu-date-format: government_us/openbb_government_us/models/treasury_auctions.py:209 => date_format -> columns.cast declared=Y measured-present=N
+      face: REQUEST-side rendering of the startDate/endDate params (two sites)
+  behavior gu-percent-rescale: government_us/openbb_government_us/models/treasury_auctions.py:161 => published_value_rescale -> columns.rescale declared=N measured-present=N
+      face: *Rate/*Yield/*Margin/*Percentage/spread OUTPUT columns divided by 100 -- undeclared
+  behavior gu-sentinel-nulling: government_us/openbb_government_us/models/treasury_auctions.py:223 => sentinel_value_nulling -> columns.null_sentinel declared=N measured-present=N
+      face: N/A/"" nulling via DataFrame -- columns.null_sentinel, undeclared
+  cited behaviours NOT declared by this row, arm P: 2 -> ['gu-percent-rescale->columns.rescale', 'gu-sentinel-nulling->columns.null_sentinel']
+  arm D (citation for 'gu-sentinel-nulling' deleted from the fixture): undeclared -> ['columns.rescale']
+    arm[fixture-coverage] MOVED
+      P (current anchors): 2
+      D (damaged reading): 1
+  date_format face: REQUEST-side strftime lines [209, 212]; OUTPUT-side strptime lines: 0 -- control: the identical needle finds 2 in opendata/data/providers/_engine/value_transform.py (the cast kernel's date_string_to_iso reads published INPUTs, it renders nothing
+  the only %m/%d/%Y work the pinned fetcher does is param rendering (government_us/openbb_government_us/models/treasury_auctions.py:209, :212); the response-side conversion this row would actually need is the OUTPUT rescale at government_us/openbb_government_us/models/treasury_auctions.py:161, which the need set omits
+  value_map fidelity: opendata/data/providers/_engine/spec.py (why: 'refusing a value the map does not spell') vs the passthrough default at government_us/openbb_government_us/models/treasury_auctions.py:214 -- the fold is honest only while every allowed security type is spelled in the map
+  VERDICT government_us-TreasuryAuctions: UNDER-DECLARED and MIS-ANCHORED FOR THIS ROW -- anchoring columns.cast present flips it (arm D=[]) on the strength of a date_format need that names a REQUEST-side format the cast kernel never performs, while its own *Rate rescale (government_us/openbb_government_us/models/treasury_auctions.py:161) and N/A nulling stay undeclared; param.value_mapping presence is honestly exercised by gu-type-map
+END: rc 0 means every citation resolved on disk and every arm moved
+NOT TOUCHED: no network, no database, no engine execution, no make gate
