@@ -1,0 +1,131 @@
+{
+  "provider_groups": [
+    "bls",
+    "ecb"
+  ],
+  "rows": [
+    {
+      "task_id": "OBB2-bls-BlsSearch",
+      "provider": "bls",
+      "upstream_model": "BlsSearch",
+      "shape": "get_csv",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "csv",
+      "row_extraction": "flat",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "csv_decoder",
+        "csv_delimiter",
+        "client_side_filter",
+        "client_side_row_filter",
+        "column_drop",
+        "cross_request_lookup"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "opendata.data.providers.bls.models.search.BlsSearchFetcher",
+      "evidence": "providers/bls/openbb_bls/__init__.py:16",
+      "notes": "The catalog is addressed by category-suffixed asset name (:93), filtered by a whole-frame regex match (:108-118) and reduced to three columns unless extras are requested (:100-105,:122-128), with an optional codes asset attached as result metadata (:140-146); the sibling asset loader parses tab-delimited text (utils/helpers.py:231-237) but open_asset itself sits past the lines read, so local-versus-FTP transport is unconfirmed - the fetcher declares no credentials (:74)."
+    },
+    {
+      "task_id": "OBB2-bls-BlsSeries",
+      "provider": "bls",
+      "upstream_model": "BlsSeries",
+      "shape": "post_json_single",
+      "http_method": "POST",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "post_request_body",
+        "multi_request_fanout",
+        "per_item_fanout",
+        "date_format",
+        "derived_columns",
+        "field_rename_map",
+        "param_value_mapping"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "opendata.data.providers.bls.models.series.BlsSeriesFetcher",
+      "evidence": "providers/bls/openbb_bls/__init__.py:17",
+      "notes": "One POST to the v2 timeseries endpoint with a JSON body carrying the series list plus startyear and endyear (utils/helpers.py:63-81), fanned out per symbol chunk and per year window (models/series.py:111-131) and gathered (:106); the latest flag is converted from string to boolean and observations re-keyed (utils/helpers.py:139). NO LABEL FOR: request chunking against the 50-series and 20-year API caps (providers/bls/openbb_bls/models/series.py:124-130)."
+    },
+    {
+      "task_id": "OBB2-ecb-BalanceOfPayments",
+      "provider": "ecb",
+      "upstream_model": "BalanceOfPayments",
+      "shape": "multi_endpoint_join",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": true,
+      "needs_engine_capability": [
+        "sdmx_json_decoder",
+        "sdmx_dotted_key_path",
+        "per_item_fanout",
+        "multi_request_fanout",
+        "response_dict_keying",
+        "series_pivot",
+        "columnar_to_rows",
+        "dataset_path_lookup",
+        "hardcoded_symbol_roster",
+        "param_value_mapping"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "opendata.data.providers.ecb.models.balance_of_payments.EcbBalanceOfPaymentsFetcher",
+      "evidence": "providers/ecb/openbb_ecb/__init__.py:15",
+      "notes": "Report, frequency and country generate the flow-id map (:83-87) and every id is fetched concurrently (:90-98); each response is reduced to a period-to-observation dict keyed by the report column name (:93) and the per-series dicts are assembled into rows in the tail (:100). The transport of get_series_data (utils/ecb_helpers.py) was not opened, so the endpoint count reflects the per-series fan-out rather than distinct URLs."
+    },
+    {
+      "task_id": "OBB2-ecb-CurrencyReferenceRates",
+      "provider": "ecb",
+      "upstream_model": "CurrencyReferenceRates",
+      "shape": "get_xml_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "xml",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "xml_decoder",
+        "nested_array_explode",
+        "response_dict_keying",
+        "single_row_assembly"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "opendata.data.providers.ecb.models.reference_rates.EcbCurrencyReferenceRatesFetcher",
+      "evidence": "providers/ecb/openbb_ecb/__init__.py:16",
+      "notes": "Single GET of the daily euro fx reference XML (:49-50) parsed with xmltodict (:56) and read down the envelope/Cube/Cube/Cube path (:57); the Cube list is exploded into a currency-to-rate dict and assembled as one row with the base currency pinned (:58-61). NO LABEL FOR: xml attribute extraction on at-prefixed keys (providers/ecb/openbb_ecb/models/currency_reference_rates.py:58)."
+    },
+    {
+      "task_id": "OBB2-ecb-YieldCurve",
+      "provider": "ecb",
+      "upstream_model": "YieldCurve",
+      "shape": "get_json_single",
+      "http_method": "GET",
+      "endpoints": 1,
+      "paged": false,
+      "response_format": "json",
+      "row_extraction": "nested_key",
+      "join_needed": false,
+      "needs_engine_capability": [
+        "local_cache_store",
+        "per_item_fanout",
+        "multi_request_fanout",
+        "hardcoded_symbol_roster",
+        "sdmx_json_decoder",
+        "sdmx_dotted_key_path"
+      ],
+      "expressible_today": false,
+      "existing_fetcher_class": "",
+      "evidence": "providers/ecb/openbb_ecb/__init__.py:17",
+      "notes": "Rating and curve type select a vendored id roster (:76-80) and one GET per maturity is issued against the data-detail-api base (:82-84) through an aiohttp SQLiteBackend cache in the user cache directory (:65-68); the observation key path past :84 was not opened, so the SDMX labels rest on the endpoint family rather than a payload I read, and no local fetcher class name is confirmed for this model."
+    }
+  ]
+}

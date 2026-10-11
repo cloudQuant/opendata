@@ -45,6 +45,26 @@ CANONICAL_SCENARIOS = {
         "federal_reserve",
         "TreasuryRates",
     ): "国债收益率日表：取出 H.15 发布表在五行元数据之后的十一个期限档",
+    (
+        "federal_reserve",
+        "SvenssonYieldCurve",
+    ): "Svensson 拟合因子收益率曲线：宽表按序列读出并转置成一行一个日期",
+    (
+        "intrinio",
+        "CurrencyPairs",
+    ): "外汇对目录：列出 intrinio 发布的全部可交易货币对并按币种代码子串筛选",
+    (
+        "intrinio",
+        "EquitySearch",
+    ): "公司检索：在 intrinio 美股公司库中检索并返回改名后的 symbol 与 intrinio_id",
+    (
+        "intrinio",
+        "HistoricalDividends",
+    ): "分红拆股：按证券代码取回该证券的除息日分红与拆股调整序列",
+    (
+        "intrinio",
+        "CalendarIpo",
+    ): "IPO日历：按状态与发行规模取回新股发行日历并展平嵌套公司证券字段",
 }
 
 

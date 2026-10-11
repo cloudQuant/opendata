@@ -1,0 +1,19 @@
+fred rows: 36 of 36
+bls rows: 2 of 2
+ecb rows: 3 of 3
+re-read from JSON: fred 36, bls 2, ecb 3 - equal to CSV: True
+labels outside vocabulary: 0
+pins matched: 41 of 41
+MISSING CARRIER rows: 0
+NO LABEL FOR occurrences: 6
+  OBB2-fred-EconomicCalendar | NO LABEL FOR: timezone localization of observation dates (providers/fred/openbb_fred/models/economic_calendar.py:122)
+  OBB2-fred-FredSeries | NO LABEL FOR: single-flight de-duplication of concurrent identical URLs (providers/fred/openbb_fred/utils/rate_limiter.py:233-254)
+  OBB2-fred-FredSeries | NO LABEL FOR: in-payload throttle detection on error_code 429 (providers/fred/openbb_fred/utils/rate_limiter.py:150-156)
+  OBB2-fred-YieldCurve | NO LABEL FOR: nearest-observation date alignment (providers/fred/openbb_fred/models/yield_curve.py:98)
+  OBB2-bls-BlsSeries | NO LABEL FOR: request chunking against the 50-series and 20-year API caps (providers/bls/openbb_bls/models/series.py:124-130)
+  OBB2-ecb-CurrencyReferenceRates | NO LABEL FOR: xml attribute extraction on at-prefixed keys (providers/ecb/openbb_ecb/models/currency_reference_rates.py:58)
+expressible_today true rows: 0
+rows needing a decoder this repo does not ship: 2 (OBB2-fred-EconomicCalendar, OBB2-ecb-CurrencyReferenceRates)
+vocabulary labels checked against: 95
+provider label totals: fred 312, bls 13, ecb 20
+RESULT: PASS

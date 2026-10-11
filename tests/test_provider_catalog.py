@@ -82,10 +82,10 @@ class _CapabilityOnlyFetcher:
         self.capability = capability
 
 
-def test_catalog_contains_34_sources_and_only_50_fetcher_bindings() -> None:
+def test_catalog_contains_34_sources_and_only_55_fetcher_bindings() -> None:
     """The frozen catalog denominator, split into the two populations that make it up.
 
-    49 bindings are 44 hand-written fetchers plus 5 declarative engine models. The split is counted
+    55 bindings are 44 hand-written fetchers plus 11 declarative engine models. The split is counted
     apart and the sum is still frozen, because the two kinds of source work grow for different
     reasons: a new hand-written fetcher is one provider's own module, while a declaration adds a
     binding *and* a generated fetcher, and an engine model that registered without a binding
@@ -93,11 +93,17 @@ def test_catalog_contains_34_sources_and_only_50_fetcher_bindings() -> None:
     engine-driven is read the way the runtime reads it -- a fetcher carrying ``model_spec`` -- not
     from a hand-maintained id list, so the count cannot be kept green by editing a list.
 
-    How the 50 is built, since a frozen sum hides a retraction: 46 at the wave-1 baseline, +4 from
+    How the 55 is built, since a frozen sum hides a retraction: 46 at the wave-1 baseline, +4 from
     the cboe declarations, -2 for the oecd rows that shipped as hand-written fetchers first and had
-    their declarations withdrawn, +2 for the federal_reserve CSV rows. A withdrawn declaration is
-    counted out rather than left to register, so the population this assert freezes is the one the
-    runtime can actually route.
+    their declarations withdrawn, +2 for the federal_reserve CSV rows, +1 for the third
+    federal_reserve row declared through ``ModelSpec.row_expansion``, +3 for the three intrinio
+    declarations, and +1 for intrinio's fourth row (``CalendarIpo``), also declared through
+    ``ModelSpec.row_expansion``. A withdrawn declaration is counted out rather than left to
+    register, so the population this assert freezes is the one the runtime can actually route. The
+    hand-written leg stayed 44 while the declared leg went 9 -> 10 -> 11: intrinio's third
+    candidate row (``HistoricalDividends``) is no longer withheld -- its spec keeps it in
+    ``providers/intrinio/specs.py`` as ``HISTORICAL_DIVIDENDS`` with an empty ``NOT_DECLARABLE`` --
+    and its fourth row adds the binding plus the fetcher the engine generates for each of them.
     """
     providers = list_providers()
     bindings = [
@@ -117,6 +123,7 @@ def test_catalog_contains_34_sources_and_only_50_fetcher_bindings() -> None:
         "fmp",
         "fred",
         "imf",
+        "intrinio",
         "oecd",
         "ths",
         "yfinance",
@@ -132,8 +139,8 @@ def test_catalog_contains_34_sources_and_only_50_fetcher_bindings() -> None:
         f"{source}::{binding.canonical_model_ids[0]}" for source, binding in engine_bindings
     }
     assert engine_ids == declared_ids, "an engine binding's canonical id is the model it generates"
-    assert len(bindings) == 50
-    assert len(engine_bindings) == 6
+    assert len(bindings) == 55
+    assert len(engine_bindings) == 11
     assert len(bindings) - len(engine_bindings) == 44
     print(
         f"\ncatalog bindings: total={len(bindings)} engine={len(engine_bindings)} "
@@ -145,7 +152,7 @@ def test_catalog_contains_34_sources_and_only_50_fetcher_bindings() -> None:
     )
 
     reserved = [provider for provider in providers if not provider.is_implemented]
-    assert len(reserved) == 23
+    assert len(reserved) == 22
     assert all(provider.health_check().status == "not_implemented" for provider in reserved)
     assert all(not provider.fetcher_bindings for provider in reserved)
 
@@ -218,7 +225,7 @@ def test_registration_and_legacy_fetchers_project_the_same_capabilities() -> Non
     kinds, so the two are split on the same marker the runtime uses (a fetcher carrying
     ``model_spec``) before either count is read, and the split sources are printed as a census. That
     census measures empty today: oecd's two retracted ledger rows left its facade hand-written only,
-    and the six registered declarations sit in sources with no hand-written fetcher at all. Folding
+    and the ten registered declarations sit in sources with no hand-written fetcher at all. Folding
     the kinds together would double-count a declaration's identity and turn the disjointness assert
     below into a tautology: an identity shared between the hand-written leg and the declared leg is
     the sign that a declaration replaced a fetcher, which is a different claim from the one this

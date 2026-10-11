@@ -241,7 +241,9 @@ def test_row_count_guard_fires_when_a_row_is_dropped(tmp_path: Path) -> None:
     exact = short + [_row("OBB2-fixture-Last", ["post_body"], model="Last")]
     full = _report_of(root, exact, entries)
     # The population is pinned as a literal on purpose: growing the census has to move this line.
-    assert expected == 238
+    # C89's denominator is 150 C74/C75 rows + 88 merged by C86 + 41 merged this round (fred 36 and
+    # bls-ecb 5).
+    assert expected == 279
     assert full.row_count == mcc.EXPECTED_CENSUS_ROWS
     assert full.row_count_guard_fired is False
     assert full.failures == ()
@@ -540,11 +542,15 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
         "outside.source_absent"
     ]
     # Presence is re-measured from the shipped engine source for exactly the capabilities whose
-    # declaration field exists there; every other entry is asserted by the census author and only
-    # cross-checked against the provider declarations that use it.
+    # declaration field exists there -- one spec field each (row_filters, composite_keys,
+    # row_expansion, column_derives, ParamSpec.value_map) -- so a field that has not landed yet is
+    # reported absent without the census author saying so. Every other entry is asserted by the
+    # census author and only cross-checked against the provider declarations that use it.
     assert sorted(entry.capability for entry in mcc.REGISTRY if entry.read_from_disk) == [
+        "columns.derive",
         "flow.composite_key_segment",
         "param.value_mapping",
+        "path.explode",
         ROW_FILTER_CAPABILITY,
     ]
     # A probe is a capability's declaration surface: it is how the instrument counts the production
@@ -554,13 +560,21 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
     forged = replace(next(e for e in mcc.REGISTRY if e.probe is None), claim=True)
     assert _claims_without_a_probe((forged,)) == [forged.capability]
     # The engine-side capabilities still without a declaration surface -- the ladder's next steps.
+    # C89 grew this list by five: the oecd rows' re-audit named a code-table lookup, a period-width
+    # branch, a conditional derive, a value comparison and a multi-code key position, and none of
+    # the five has a field to carry it yet, which is exactly why a probe cannot be written for them.
     assert sorted(
         entry.capability for entry in mcc.REGISTRY if entry.probe is None and entry.engine_work
     ) == [
+        "columns.compose",
         "columns.null_sentinel",
+        "columns.period_cast",
+        "derive.conditional",
         "param.preset_merge",
         "param.value_transform",
+        "path.list_segment",
         "request.caller_url",
+        "rows.filter_comparison",
     ]
 
 
@@ -703,7 +717,9 @@ def test_shipped_census_labels_all_map() -> None:
     """The census files this round audits are the contract: every label on them maps today."""
     rows = mcc.load_rows(mcc._REPO_ROOT / CENSUS_REL)
     assert len(rows) == mcc.EXPECTED_CENSUS_ROWS
-    assert len({row.task_id for row in rows}) == 238
+    # Distinctness recomputed here rather than copied from the instrument's census face: a
+    # duplicated task_id would shrink this set below the row count the loader just returned.
+    assert len({row.task_id for row in rows}) == len(rows)
     assert {label for row in rows for label in row.raw_labels} <= set(mcc.LABEL_TO_CAPABILITY)
     assert mcc.canonical_capabilities() == frozenset(mcc.LABEL_TO_CAPABILITY.values())
     assert mcc.canonical_capabilities() == frozenset(entry.capability for entry in mcc.REGISTRY)

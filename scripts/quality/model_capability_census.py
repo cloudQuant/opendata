@@ -78,10 +78,12 @@ CENSUS_GLOB: Final = "census-*.json"
 #: other ``census-*.json`` without a rows list still aborts the run instead of being skipped.
 CENSUS_AUDIT_NAME: Final = "census-audit.json"
 ROADMAP_REL: Final = f"{CENSUS_DIR_REL}/capability-roadmap.json"
-#: The census population this round audited: the 150 rows of the three C74/C75 files plus the 88
-#: rows of twelve providers' files C86 merged. It is an identity guard, not a build plan: it fires
-#: when a file vanishes or a row is duplicated away, and the row itself is what a new file changes.
-EXPECTED_CENSUS_ROWS: Final = 238
+#: The census population this round audited: the 150 rows of the three C74/C75 files, the 88 rows
+#: of twelve providers' files C86 merged, and the 41 rows of the fred (36) and bls-ecb (5) files
+#: merged this round -- 150 + 88 + 41 = 279, the sum the loader prints per file. It is an identity
+#: guard, not a build plan: it fires when a file vanishes or a row is duplicated away, and the row
+#: itself is what a new file changes.
+EXPECTED_CENSUS_ROWS: Final = 279
 #: A label the tool offers, not a reading of the tree: main() says so on stdout when --round-id
 #: was not passed, because a default that trails the live roadmap is otherwise printed as fact.
 DEFAULT_ROUND_ID: Final = "C75"
@@ -93,8 +95,10 @@ DECLARATION_EXCLUDED_PARTS: Final = ("_engine", "_vendor", "__pycache__")
 
 DECODERS_REL: Final = f"{PROVIDER_ROOT_REL}/_engine/decoders.py"
 HTTP_JSON_REL: Final = f"{PROVIDER_ROOT_REL}/_engine/http_json.py"
+KEY_COMPOSITION_REL: Final = f"{PROVIDER_ROOT_REL}/_engine/key_composition.py"
 SPEC_REL: Final = f"{PROVIDER_ROOT_REL}/_engine/spec.py"
 SEC_SPECS_REL: Final = f"{PROVIDER_ROOT_REL}/sec/specs.py"
+VALUE_TRANSFORM_REL: Final = f"{PROVIDER_ROOT_REL}/_engine/value_transform.py"
 
 Status = Literal["present", "absent", "drifted", "unanchored"]
 _STATUSES: Final[tuple[Status, ...]] = ("present", "absent", "drifted", "unanchored")
@@ -205,6 +209,18 @@ LABEL_TO_CAPABILITY: Final[dict[str, str]] = {
     "column_drop": "columns.select",
     "column_truncation": "columns.select",
     "client_side_column_drop": "columns.select",
+    # C89 added these six folds after the oecd package's nine rows were re-audited line by line
+    # (docs/evidence/C89/oecd-blocker-recheck.md). Each names a rewrite the pinned upstream models
+    # do and no shipped field spells, so counting them under a shipped canonical -- which is what
+    # ``sdmx_dotted_key_path`` -> ``flow.composite_key_segment`` did -- made nine unimplementable
+    # rows read as ready. ``status_code_fallback_request`` folds onto the already-named
+    # ``flow.branch``, whose own claim is that one path template cannot branch on a status.
+    "code_table_reverse_lookup": "columns.compose",
+    "period_key_parse": "columns.period_cast",
+    "conditional_value_derive": "derive.conditional",
+    "comparison_row_filter": "rows.filter_comparison",
+    "plus_joined_key_segment": "path.list_segment",
+    "status_code_fallback_request": "flow.branch",
     # ---- not an engine capability at all -----------------------------------
     "sdk_delegation": "outside.sdk",
     "html_scraping_sdk": "outside.sdk",
@@ -1199,11 +1215,19 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         capability="path.explode",
         claim=False,
         engine_work=True,
-        proof_file=HTTP_JSON_REL,
-        anchor="def resolve_rows",
-        why="One pointer returns one record list; nothing re-reads the document per record, "
-        "expands a nested array into rows, or pivots a series.",
-        probe=DeclarationProbe(call="ModelSpec", keyword="per_record_path"),
+        proof_file=SPEC_REL,
+        anchor="row_expansion: tuple[RowExpansionPlan, ...] = ()",
+        read_from_disk=True,
+        cross_file=HTTP_JSON_REL,
+        cross_anchor="def _expand_rows(",
+        why="Presence is measured from the disk: row_expansion is the ModelSpec field only a "
+        "honored row expansion can add, and resolve_rows now ends in _expand_rows, which "
+        "applies the frozen plans (expand_nested_array, transpose_wide_table, pivot_series, "
+        "repoint_records) in declaration order to the record list it resolved, and lets "
+        "RowExpansionError propagate with its pointer and record position -- so one pointer no "
+        "longer has to return one flat record list, which is what the federal_reserve "
+        "Svensson declaration exercises.",
+        probe=DeclarationProbe(call="ModelSpec", keyword="row_expansion"),
     ),
     CapabilityEntry(
         capability="path.assemble_single_row",
@@ -1382,11 +1406,14 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         claim=False,
         engine_work=True,
         proof_file=SPEC_REL,
-        anchor="row_filters",
+        anchor="row_filters: tuple[RowFilterSpec, ...] = ()",
         why="Presence is read off the disk rather than asserted: row_filters is the field only a "
         "finished client-side row filter can add to ModelSpec, so this entry reports absent "
-        "until it lands and present from the first run after it does.",
+        "until it lands and present from the first run after it does. The anchor spells the whole "
+        "declaration because the bare field name also appears in ModelSpec's docstrings.",
         read_from_disk=True,
+        cross_file=HTTP_JSON_REL,
+        cross_anchor="def apply_row_filters(",
         probe=DeclarationProbe(call="ModelSpec", keyword="row_filters"),
     ),
     CapabilityEntry(
@@ -1403,11 +1430,16 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         capability="columns.derive",
         claim=False,
         engine_work=True,
-        proof_file=HTTP_JSON_REL,
-        anchor="values[column.name] = value",
-        why="A column's value is copied out of the record verbatim; no column is computed from "
-        "other columns, concatenated, or parsed out of a symbol.",
-        probe=DeclarationProbe(call="ModelSpec", keyword="derived_columns"),
+        proof_file=SPEC_REL,
+        anchor="column_derives: tuple[DerivePlan, ...] = ()",
+        why="Presence is read off the disk rather than asserted: column_derives is the field only "
+        "a declaration that computes a column can add to ModelSpec, and its plans carry the "
+        "kernel's own cast and rescale stages, so this entry reports absent until the field lands "
+        "and present from the first run after it does.",
+        read_from_disk=True,
+        cross_file=HTTP_JSON_REL,
+        cross_anchor="def _stamped_value",
+        probe=DeclarationProbe(call="ModelSpec", keyword="column_derives"),
     ),
     CapabilityEntry(
         capability="columns.cast",
@@ -1561,6 +1593,68 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         anchor='429: "RATE_LIMITED"',
         why="_classify_status maps a throttled status onto a stable failure code and raises it; a "
         "retry-and-warm-up loop is not the engine's semantics.",
+    ),
+    # ---- C89: the five blockers the oecd re-audit named, none of which a shipped field spells --
+    # Each anchor is the line that CLOSES the surface, and the reading is pinned absent rather than
+    # read off the disk: unlike the read_from_disk entries these cannot flip themselves when the
+    # work lands, because claim=False with a found anchor has no route to present. Landing a
+    # capability means re-pointing its entry at the new surface, and the anchor's line number is
+    # what a reviewer checks to see that the old limit really moved.
+    CapabilityEntry(
+        capability="columns.compose",
+        claim=False,
+        engine_work=True,
+        proof_file=VALUE_TRANSFORM_REL,
+        anchor='STAGE_SEQUENCE: tuple[DeriveStageKind, ...] = ("cast", "scale")',
+        why="A derive plan runs the kernel's stages and STAGE_SEQUENCE names exactly two of them, "
+        "so nothing in a declaration can look a published code up in a table and republish the "
+        "name it maps to. OECD's country column is that lookup followed by two rewrites, and the "
+        "lookup is the part with no surface here.",
+    ),
+    CapabilityEntry(
+        capability="columns.period_cast",
+        claim=False,
+        engine_work=True,
+        proof_file=VALUE_TRANSFORM_REL,
+        anchor='input_format: str = ""',
+        why="CastSpec carries ONE input_format and refuses a value that does not match it, so a "
+        "date read is declared against one known width. A period whose width depends on the "
+        "frequency the caller chose -- YYYY, YYYY-MM, YYYY-Qn from the same column -- branches on "
+        "the published text, and no single format can spell that branch.",
+    ),
+    CapabilityEntry(
+        capability="derive.conditional",
+        claim=False,
+        engine_work=True,
+        proof_file=VALUE_TRANSFORM_REL,
+        anchor="stages: tuple[DeriveStage, ...] = ()",
+        why="DerivePlan binds a column, a source and its stages; it carries no field gating the "
+        "plan on another parameter's value. OECD rescales by 100 only for percent transforms and "
+        "casts to int only for levels, so the stage sequence itself varies with the query, which "
+        "an unconditional plan cannot express.",
+    ),
+    CapabilityEntry(
+        capability="rows.filter_comparison",
+        claim=False,
+        engine_work=True,
+        proof_file=SPEC_REL,
+        anchor='RowFilterOp = Literal["contains", "equals", "not_equals", "in", "prefix"]',
+        why="RowFilterOp is text and membership only, so a row cannot be dropped for its value "
+        "being null, positive, or inside a date window. Six OECD rows filter on not-null and "
+        "three window converted dates with >=/<=, and none of those five predicates has a spelling "
+        "in this literal.",
+    ),
+    CapabilityEntry(
+        capability="path.list_segment",
+        claim=False,
+        engine_work=True,
+        proof_file=KEY_COMPOSITION_REL,
+        anchor="SEGMENT_CHARSETS: dict[str, re.Pattern[str]] = {",
+        why="SEGMENT_CHARSETS matches one component's whole text, and sdmx_code admits no '+' and "
+        "no list, so a single key position holding several country codes is refused as "
+        "charset_invalid. A composite joining on '+' as its SEPARATOR does render -- measured, not "
+        "assumed -- but that changes the key's position count, and SDMX spells a multi-area key as "
+        "one position with several codes.",
     ),
 )
 

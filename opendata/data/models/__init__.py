@@ -28,6 +28,7 @@ from opendata.data.models.economic_series import (
 from opendata.data.models.equity_price import EquityHistorical, EquityQuote
 from opendata.data.models.federal_reserve_macro import (
     FederalReserveMoneyMeasure,
+    FederalReserveSvenssonYieldCurve,
     FederalReserveTreasuryRate,
 )
 from opendata.data.models.financial import FinancialIndicator, FinancialStatement
@@ -35,6 +36,12 @@ from opendata.data.models.fred_sofr import FredSofrObservation
 from opendata.data.models.fred_sonia import FredSoniaObservation
 from opendata.data.models.futures import FuturesFundamentals
 from opendata.data.models.index import IndexConstituent
+from opendata.data.models.intrinio import (
+    IntrinioCurrencyPair,
+    IntrinioDividendAdjustment,
+    IntrinioPublicOffering,
+    IntrinioSearchedCompany,
+)
 from opendata.data.models.macro import MacroSeries
 from opendata.data.models.market import Bar, OverseasBar
 from opendata.data.models.metadata import Instrument, TradingCalendar
@@ -56,6 +63,10 @@ __all__ = [
     "CboeEquitySearchListing",
     "CboeIndexConstituentQuote",
     "CboeSearchedIndex",
+    "IntrinioCurrencyPair",
+    "IntrinioDividendAdjustment",
+    "IntrinioPublicOffering",
+    "IntrinioSearchedCompany",
     "MacroSeries",
     "OverseasBar",
     "ContractModel",
@@ -66,6 +77,7 @@ __all__ = [
     "EquityHistorical",
     "EquityQuote",
     "FederalReserveMoneyMeasure",
+    "FederalReserveSvenssonYieldCurve",
     "FederalReserveTreasuryRate",
     "FinancialIndicator",
     "FinancialStatement",

@@ -18,6 +18,7 @@ from opendata.data.providers.federal_reserve.provider import PROVIDER as FEDERAL
 from opendata.data.providers.fmp.provider import PROVIDER as FMP_PROVIDER
 from opendata.data.providers.fred.provider import PROVIDER as FRED_PROVIDER
 from opendata.data.providers.imf.provider import PROVIDER as IMF_PROVIDER
+from opendata.data.providers.intrinio.provider import PROVIDER as INTRINIO_PROVIDER
 from opendata.data.providers.oecd.provider import PROVIDER as OECD_PROVIDER
 from opendata.data.providers.sec.provider import PROVIDER as SEC_PROVIDER
 from opendata.data.providers.ths.provider import PROVIDER as THS_PROVIDER
@@ -61,7 +62,7 @@ _UPSTREAM_PROVIDERS: tuple[Provider, ...] = (
     _reserved_provider("famafrench"),
     FEDERAL_RESERVE_PROVIDER,
     FMP_PROVIDER,
-    _reserved_provider("intrinio", "api_key"),
+    INTRINIO_PROVIDER,
     _reserved_provider("multpl"),
     _reserved_provider("seeking_alpha"),
     _reserved_provider("tiingo", "token"),

@@ -298,6 +298,46 @@ domains:
     filter_dims: [symbol]
     storage_mode: transient
     permissions: [query]
+  intrinio_currency_pairs:
+    display_name: Intrinio 外汇货币对目录
+    rest_path: forex/intrinio-currency-pairs
+    contract: IntrinioCurrencyPair
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [symbol]
+    filter_dims: [symbol]
+    storage_mode: transient
+    permissions: [query]
+  intrinio_equity_search:
+    display_name: Intrinio 美股公司检索
+    rest_path: equity/intrinio-equity-search
+    contract: IntrinioSearchedCompany
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [symbol]
+    filter_dims: [symbol]
+    storage_mode: transient
+    permissions: [query]
+  intrinio_historical_dividends:
+    display_name: Intrinio 分红与拆股调整事件
+    rest_path: equity/intrinio-historical-dividends
+    contract: IntrinioDividendAdjustment
+    temporal_kind: event
+    time_field: ex_dividend_date
+    natural_key: [symbol, ex_dividend_date]
+    filter_dims: [symbol]
+    storage_mode: transient
+    permissions: [query]
+  intrinio_calendar_ipo:
+    display_name: Intrinio 新股发行日历
+    rest_path: equity/intrinio-calendar-ipo
+    contract: IntrinioPublicOffering
+    temporal_kind: event
+    time_field: ipo_date
+    natural_key: [symbol, ipo_date]
+    filter_dims: [symbol, ipo_date, status]
+    storage_mode: transient
+    permissions: [query]
   federal_reserve_money_measures:
     display_name: 美联储货币供应量月表
     rest_path: macro/federal-reserve-money-measures
@@ -312,6 +352,16 @@ domains:
     display_name: 美国国债收益率日表
     rest_path: macro/federal-reserve-treasury-rates
     contract: FederalReserveTreasuryRate
+    temporal_kind: series
+    time_field: date
+    natural_key: [date]
+    filter_dims: [date]
+    storage_mode: transient
+    permissions: [query]
+  federal_reserve_svensson_yield_curve:
+    display_name: 美联储 Svensson 拟合因子收益率曲线
+    rest_path: macro/federal-reserve-svensson-yield-curve
+    contract: FederalReserveSvenssonYieldCurve
     temporal_kind: series
     time_field: date
     natural_key: [date]

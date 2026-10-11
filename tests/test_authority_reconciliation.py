@@ -59,9 +59,10 @@ SINGLE_SOURCE_EXEMPTIONS: frozenset[str] = frozenset(
 # Query-native domains are absent from the authority table while their model
 # bindings remain unverified and outside the legacy warehouse table plan.
 # The two cboe snapshots joined when their domains entered ``domains.yaml``, followed by
-# ``cboe_index_search`` and the two ``federal_reserve_*`` engine domains: each is
-# ``verified=False``, single-source and ``storage_mode: transient``, so there is still
-# nothing to rank and no legacy table to watch.
+# ``cboe_index_search``, the three ``federal_reserve_*`` engine domains (the last one
+# ``row_expansion``) and the four ``intrinio_*`` ones (the last one ``intrinio_calendar_ipo``,
+# also ``row_expansion``): each is ``verified=False``, single-source and
+# ``storage_mode: transient``, so there is still nothing to rank and no legacy table to watch.
 NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
     {
         "bls_search",
@@ -74,9 +75,14 @@ NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
         "equity_historical",
         "equity_quote",
         "federal_reserve_money_measures",
+        "federal_reserve_svensson_yield_curve",
         "federal_reserve_treasury_rates",
         "fred_search",
         "fred_series",
+        "intrinio_calendar_ipo",
+        "intrinio_currency_pairs",
+        "intrinio_equity_search",
+        "intrinio_historical_dividends",
         "sofr",
         "sonia",
         "balance_of_payments",

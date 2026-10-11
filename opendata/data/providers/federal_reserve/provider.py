@@ -6,8 +6,8 @@ PROVIDER = Provider(
     source="federal_reserve",
     name="Federal Reserve",
     description=(
-        "Public Federal Reserve datadownload CSV adapter for the H.6 money stock measures and the "
-        "H.15 daily Treasury yields."
+        "Public Federal Reserve datadownload CSV adapter for the H.6 money stock measures, the "
+        "H.15 daily Treasury yields and the Svensson fitted-factor yield curve."
     ),
     website="https://www.federalreserve.gov/",
     fetcher_bindings=(
@@ -22,6 +22,12 @@ PROVIDER = Provider(
             "FederalReserveTreasuryRatesFetcher",
             canonical_model_ids=("TreasuryRates",),
             scenario="国债收益率日表：取出 H.15 发布表在五行元数据之后的十一个期限档",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.federal_reserve.models.svensson_yield_curve",
+            "FederalReserveSvenssonYieldCurveFetcher",
+            canonical_model_ids=("SvenssonYieldCurve",),
+            scenario="Svensson 拟合因子收益率曲线：宽表按序列读出并转置成一行一个日期",
         ),
     ),
     credentials=(),

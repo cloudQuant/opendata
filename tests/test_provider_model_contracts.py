@@ -9,6 +9,17 @@ synthesized from the declaration itself -- its kinds, its pointers and the respo
 model cannot pass by having thought to write a favourable test, and it cannot hide a facet that its
 own declaration asks for.
 
+A damage only falsifies when it lands where the engine reads. For a declaration that expands its
+rows -- a nested array exploded, a wide table pivoted, a record list projected through per-record
+pointers -- ``resolve_rows`` returns the rows its stages *built*, and those rows are copies:
+measured on ``intrinio::CalendarIpo``, editing a key of the returned row left the value the next
+fetch read unchanged, while editing the document's own record moved it. So
+:func:`amend_first_record` damages the published record (:func:`published_records`), at the key
+:func:`raw_key` names in the declaration's own vocabulary (a nested pointer for a column a repoint
+plan projects), and then compares the rows built from the damaged body against the rows built from
+an undamaged copy of the same page -- an edit that changed nothing raises instead of handing a case
+a silent pass.
+
 Nothing here reaches a network. ``_no_real_transport`` replaces the engine's only send seam with a
 failure, and each case injects a synthetic transport on the generated class, so a declaration that
 somehow bypasses both fails loudly instead of sending a request.
@@ -26,6 +37,8 @@ different claims and only the second one is source work.
 
 from __future__ import annotations
 
+import copy
+import json
 from datetime import date
 
 import pytest
@@ -46,6 +59,11 @@ from opendata.data.providers._engine.http_json import (
     make_http_json_fetcher,
     paging_page_size,
 )
+from opendata.data.providers._engine.row_expansion import (
+    EMPTY_RESULT,
+    MISSING_POINTER,
+    RowExpansionError,
+)
 from opendata.data.providers._engine.spec import (
     ColumnSpec,
     DecoderSpec,
@@ -55,13 +73,18 @@ from opendata.data.providers._engine.spec import (
 )
 from opendata.data.providers._engine.testing import (
     SequencedResponseTransport,
+    absent_key_reads_as_null,
     body_from_records,
+    damage_record_field,
+    expected_row_value,
     fixture_context,
-    sample_value,
+    published_records,
+    raw_key,
     synthetic_body,
     synthetic_page,
     synthetic_raw_page,
     valid_query_kwargs,
+    wide_table_expansion,
 )
 from opendata.data.providers.catalog import PROVIDERS, engine_declared_models
 
@@ -281,6 +304,39 @@ def _amend_delimited_page(
     return HttpResponse(page.status, None, payload=body_from_records(spec, records, keys=header))
 
 
+def _refusal_attribution(refused: Exception) -> object:
+    """What the engine blamed, as data, so two refusals compare by their attribution.
+
+    ``repr`` of either carrier names the code alone, and the same code can be attributed to
+    different columns or pointers; comparing the attribution is what keeps "the damage changed
+    nothing" apart from "the damage changed which column it refused".
+    """
+    if isinstance(refused, RowExpansionError):
+        return [refused.reason, refused.pointer, refused.record_index, refused.saw]
+    if isinstance(refused, ProviderEngineError):
+        return [
+            str(refused.code),
+            sorted(refused.missing),
+            sorted(refused.rejected),
+            sorted(refused.invalid),
+        ]
+    return repr(refused)
+
+
+def _rows_view(document: object, spec: ModelSpec) -> str:
+    """One page's rows as the engine builds them, rendered to bytes -- a refusal is a row too.
+
+    JSON rendering is the comparison that can be trusted here: ``True == 1`` in Python, so a dict
+    comparison would read publishing a boolean for an ``int`` column as no change at all, which is
+    precisely the damage the falsifier is claiming. ``json.dumps`` spells them ``true`` and ``1``.
+    """
+    try:
+        rows = http_json.resolve_rows(document, spec.rows_pointer, spec)
+    except (RowExpansionError, ProviderEngineError) as refused:
+        return json.dumps(_refusal_attribution(refused), sort_keys=True, default=repr)
+    return json.dumps(rows, sort_keys=True, default=repr)
+
+
 def amend_first_record(
     spec: ModelSpec,
     pages: list[HttpResponse],
@@ -295,8 +351,21 @@ def amend_first_record(
     key on each page it scripted; amending one page alone would let a later page normalize cleanly,
     and the case would judge the fixture rather than the engine.
 
-    A JSON page is amended in place, because the list the pointer resolves to is the live object
-    inside the document. A delimited page holds no dict to edit -- only bytes -- so it goes through
+    The edit lands on the record the fetch itself reads, which is *not* what
+    :func:`http_json.resolve_rows` returns for a declaration with a row expansion: that call hands
+    back the rows the expansion stages built, and the stages copy every record
+    (``resolved[0] is published[0]`` measured False on ``intrinio::CalendarIpo``, where editing a
+    key of the returned row left the next fetch's answer at ``0.5`` while editing the document's own
+    record moved it). :func:`published_records` therefore reaches the document's live list and
+    :func:`damage_record_field` cuts or publishes at ``key`` in the declaration's own vocabulary --
+    a nested pointer for a column a repoint plan projects, one flat cell otherwise.
+
+    Every edit is then checked against an undamaged copy of the same page: if the rows the engine
+    builds from the damaged body come out byte-identical to the rows it builds from the pristine
+    one, the damage landed on something no read path revisits and this raises rather than handing
+    the case a silent pass. A falsifier that cannot bite has to say so.
+
+    A delimited page holds no dict to edit -- only bytes -- so it goes through
     :func:`_amend_delimited_page`, where ``drop`` removes the column from the *header row* and so
     from every row on the page. That is what a text table's "this key is not published" means, and
     it is the form the engine reports under ``missing``; blanking one cell instead would script a
@@ -308,14 +377,37 @@ def amend_first_record(
         if spec.decoder.delimited:
             amended.append(_amend_delimited_page(spec, page, key, value=value, drop=drop))
             continue
-        records = http_json.resolve_rows(page.document, spec.rows_pointer, spec)
+        records = published_records(page.document, spec)
         if records:
-            if drop:
-                records[0].pop(key, None)
-            else:
-                records[0][key] = value
+            pristine = copy.deepcopy(page.document)
+            damage_record_field(spec, records[0], key, value=value, drop=drop)
+            if _rows_view(page.document, spec) == _rows_view(pristine, spec):
+                raise AssertionError(
+                    f"{spec.model}: editing {key!r} changed no row the engine builds, so the "
+                    f"damage landed on a byte the fetch path never reads"
+                )
         amended.append(page)
     return amended
+
+
+def published_key(spec: ModelSpec, column: ColumnSpec) -> str:
+    """The record bytes that decide what ``column`` carries, which a falsifier must edit.
+
+    ``raw_key`` reads it off the declaration: the flat ``source_key`` for an ordinary column, the
+    nested pointer for one a repoint plan projects, and None for a column no record publishes. A
+    case that edits the declared *name* instead edits a key the engine never reads -- for a repoint
+    model that key does not exist in the body at all, so the refusal it then reports would be an
+    accident of the fixture. A stamped column is refused by name here rather than being quietly
+    scripted against, because the answer to "publish a boolean where a number is declared" is not
+    something its body can be made to say.
+    """
+    key = raw_key(spec, column)
+    if key is None:
+        raise AssertionError(
+            f"{spec.model}: {column.name} is not published by its record, so no body edit can say "
+            f"what the engine reads for it"
+        )
+    return key
 
 
 def unmeasured_transport(url: str, params: dict[str, str], **_: object) -> HttpResponse:
@@ -363,20 +455,55 @@ def fetch(
     return len(transport.calls), rows
 
 
-def code_raised(spec: ModelSpec, source: str, *pages: HttpResponse, **kwargs: object) -> str:
-    """Return the stable code a failing fetch reported."""
+def refusal(
+    spec: ModelSpec, source: str, *pages: HttpResponse, **kwargs: object
+) -> tuple[str, tuple[str, ...]]:
+    """Fetch an answer the declaration must refuse and return ``(code, the names it gave)``.
+
+    Two carriers attribute a refusal in this engine. The model's own :class:`ProviderEngineError`
+    carries the source-prefixed code and the columns under ``missing``/``rejected``/``invalid``; a
+    document the expansion cannot read arrives as the kernel's :class:`RowExpansionError`, naming
+    the pointer and the record position. The engine keeps the kernel's error untouched at fetch time
+    -- an accepted contract, witnessed by test_engine_value_transform.py:533 -- so this helper
+    normalizes the *carrier* only. Every case still asserts one exact code, and a refusal from any
+    other type or no refusal at all raises here rather than passing as a judgement.
+    """
     fetcher, _ = build(source, spec, *pages)
-    with pytest.raises(ProviderEngineError) as raised:
+    with pytest.raises((ProviderEngineError, RowExpansionError)) as raised:
         fetcher.fetch(  # type: ignore[attr-defined]
             ctx=fixture_context(source, spec, sends=len(pages) + 2), **kwargs
         )
-    return str(raised.value.code)
+    error = raised.value
+    if isinstance(error, RowExpansionError):
+        return str(RowExpansionError(error.reason)), (error.pointer,)
+    if not isinstance(error, ProviderEngineError):
+        raise AssertionError(
+            f"{spec.model}: refused with {type(error).__name__}, which carries no code or column "
+            "names, so this helper cannot attribute the refusal it was asked about"
+        )
+    return (
+        str(error.code),
+        (*error.missing, *error.rejected, *error.invalid),
+    )
 
 
-def expected_row_value(column_kind: str, index: int = 0) -> object:
-    """The normalized value a declared kind must produce from the fixture's own sample."""
-    sample = sample_value(column_kind, index)
-    return date.fromisoformat(sample) if column_kind == "date" else sample
+def code_raised(spec: ModelSpec, source: str, *pages: HttpResponse, **kwargs: object) -> str:
+    """Return the stable code a failing fetch reported."""
+    return refusal(spec, source, *pages, **kwargs)[0]
+
+
+def shape_refusal_code(spec: ModelSpec) -> str:
+    """The code a body that does not publish a declared column is refused with.
+
+    A column the row normalizer reads is refused as ``{PREFIX}_SHAPE_INVALID``. A column whose key
+    the expansion consumes before the normalizer is ever reached -- the pivot's timestamp header,
+    one series header -- is refused by that kernel, with the header it could not find. Both name the
+    column the case dropped; only the carrier differs, and it follows from the declaration rather
+    than from which test happened to be written.
+    """
+    if wide_table_expansion(spec) is None:
+        return f"{spec.error_prefix}_SHAPE_INVALID"
+    return str(RowExpansionError(MISSING_POINTER))
 
 
 @every_model
@@ -406,13 +533,14 @@ class TestDeclarationIsTheContract:
     def test_rows_use_the_class_the_serving_services_accept(
         self, source: str, spec: ModelSpec
     ) -> None:
-        """A semantics-declared domain publishes its contract class, and only that class is
-        served.
+        """Only the contract class a domain declares is served.
+
+        A semantics-declared domain publishes its contract class, and only that class is served.
         ``provider_model_query._serialize_contract_row`` and the ingest path accept a row only when
         ``type(row)`` is exactly the domain's contract model, so a synthesized look-alike is not
-        servable however well its columns match. A domain without declared semantics has no reviewed
-        contract to publish, so the synthesized class is the honest answer there -- and this face
-        says which of the two a declaration got.
+        servable however well its columns match. A domain without declared semantics has no
+        reviewed contract to publish, so the synthesized class is the honest answer there -- and
+        this face says which of the two a declaration got.
         """
         fetcher, _ = build(source, spec)
         domain = load_domains().get(spec.domain)
@@ -487,14 +615,22 @@ class TestDeclarationIsTheContract:
     def test_typical_request_normalizes_the_declared_columns(
         self, source: str, spec: ModelSpec
     ) -> None:
-        """The positive arm: a page publishing every declared key becomes one row per record."""
-        _, rows = fetch(source, spec, *pages_for(spec, 2), **valid_query_kwargs(spec))
+        """The positive arm: a page publishing every key the record carries becomes one row apiece.
+
+        Where a value comes from is read off the declaration, not remembered per model: a stamped
+        column takes the query parameter (its record publishes nothing for it), a wide table's
+        timestamp column takes the header its pivot reads, and every other column takes the sample
+        of its own declared kind. The fixture that scripts the body answers for all three, so this
+        case cannot be satisfied by an edit that changes one side and not the other.
+        """
+        kwargs = valid_query_kwargs(spec)
+        _, rows = fetch(source, spec, *pages_for(spec, 2), **kwargs)
         assert len(rows) == 2  # type: ignore[arg-type]
         for index, row in enumerate(rows):
             for column in spec.columns:
-                assert getattr(row, column.name) == expected_row_value(column.kind, index), (
-                    column.name
-                )
+                assert getattr(row, column.name) == expected_row_value(
+                    spec, column, index, kwargs
+                ), column.name
 
     def test_a_document_carrying_no_record_list_is_a_shape_failure(
         self, source: str, spec: ModelSpec
@@ -557,13 +693,39 @@ class TestDeclarationIsTheContract:
     def test_empty_record_list_is_zero_rows_not_an_error(
         self, source: str, spec: ModelSpec
     ) -> None:
-        """An envelope that says "understood, nothing in the window" is an empty answer."""
+        """An envelope that says "understood, nothing in the window" gets the answer its own
+        declaration promises -- and this case judges which one that is.
+
+        Two arms, taken by the declaration rather than skipped around. A document the engine reads
+        straight through yields zero rows: ``resolve_rows`` deliberately keeps "the path is absent"
+        (a shape failure) apart from "the path published nothing" (http_json.py:406-428), and that
+        separation is AC2-10's claim about an unpaged body. A document whose rows are rebuilt by an
+        expansion stage is refused with ``ROW_EXPANSION_EMPTY_RESULT``, because the kernels that
+        project rows treat "every published record produced no row" as the silent zero they exist to
+        refuse -- row_expansion.py:651-655 for a repoint, :437-440 for an exploded array, :570-571
+        for a wide table and :485-486 for a series join.
+
+        The refusal is the reading the pinned upstream contract gives, not an engine overreach: the
+        IPO calendar's own ``transform_data`` raises ``EmptyDataError("The request was returned
+        empty.")`` on exactly this answer (openbb_intrinio/models/calendar_ipo.py:190-191), and
+        :data:`opendata.data.providers.intrinio.specs.CALENDAR_IPO` records the divergence from the
+        currency-pairs declaration, which publishes the empty list the flat path allows
+        (intrinio/specs.py:384-388). So the true-for-every-spec claim is the split itself, and the
+        expansion arm additionally proves the refusal is about emptiness rather than about shape:
+        the same document carrying one record is read by the same stages into one row.
+        """
         if spec.decoder.delimited:
             pytest.skip(
                 f"{spec.model} reads a {spec.decoder.kind} body, which carries no such answer; "
                 "a header with no data rows is refused by "
                 "test_a_delimited_header_publishing_no_rows_is_a_refusal"
             )
+        if spec.row_expansion:
+            code, named = refusal(spec, source, *pages_for(spec, 0), **valid_query_kwargs(spec))
+            assert code == str(RowExpansionError(EMPTY_RESULT)), named
+            _, rows = fetch(source, spec, *pages_for(spec, 1), **valid_query_kwargs(spec))
+            assert len(rows) == 1, "the stages refused a body that published a record"
+            return
         _, rows = fetch(source, spec, *pages_for(spec, 0), **valid_query_kwargs(spec))
         assert rows == ()
 
@@ -590,15 +752,25 @@ class TestDeclarationIsTheContract:
     def test_missing_required_source_key_is_a_shape_failure(
         self, source: str, spec: ModelSpec
     ) -> None:
-        required = [column for column in spec.columns if column.required]
-        if not required:
-            pytest.skip(f"{spec.model} declares no required column")
-        for column in required:
-            pages = amend_first_record(
-                spec, pages_for(spec, 1), column.source_key or column.name, drop=True
-            )
+        """A body that does not publish a required column's key is refused, not read as a null.
+
+        Columns whose key the record does not carry are out of this loop's population by
+        construction: a stamped column is produced from the query, and a wide table's timestamp
+        column is published under the pivot's header (the Fed's ``Date``) rather than under its
+        declared name (``date``). Dropping what the source actually prints is the falsifier;
+        dropping the declared name would edit a key that never existed and prove nothing.
+        """
+        published = [
+            (column, key)
+            for column in spec.columns
+            if column.required and (key := raw_key(spec, column)) is not None
+        ]
+        if not published:
+            pytest.skip(f"{spec.model} has no required column its record publishes")
+        for column, key in published:
+            pages = amend_first_record(spec, pages_for(spec, 1), key, drop=True)
             code = code_raised(spec, source, *pages, **valid_query_kwargs(spec))
-            assert code == f"{spec.error_prefix}_SHAPE_INVALID", column.name
+            assert code == shape_refusal_code(spec), column.name
 
     def test_optional_column_absent_reads_as_null(self, source: str, spec: ModelSpec) -> None:
         """The counterpart: an absent optional key is a null, not a shape failure.
@@ -607,14 +779,28 @@ class TestDeclarationIsTheContract:
         the endpoint publishes -- for a model with a single required column it is a one-column
         header, which the decoder reads as the wrong delimiter -- while a body that omits exactly
         one key is what a source that does not publish that column actually looks like.
+
+        Only columns the record publishes are eligible. A stamped column has no record key to omit,
+        and a wide-table declaration has no optional column whose absence is a null at all: its
+        transpose refuses a body missing any series header (test_engine_row_expansion.py:628), so
+        the answer for that facet is the refusal the arm above judges, not a skip of the fact.
         """
-        optional = [column for column in spec.columns if not column.required]
+        optional = [
+            (column, key)
+            for column in spec.columns
+            if not column.required and (key := absent_key_reads_as_null(spec, column)) is not None
+        ]
         if not optional:
-            pytest.skip(f"{spec.model} declares no optional column")
-        for column in optional:
-            pages = amend_first_record(
-                spec, pages_for(spec, 1), column.source_key or column.name, drop=True
-            )
+            if wide_table_expansion(spec) is not None:
+                pytest.skip(
+                    f"{spec.model} expands a wide table, whose "
+                    "transpose refuses any missing series "
+                    "header (test_engine_row_expansion.py:628), so no column of its record list is "
+                    "absent-as-null"
+                )
+            pytest.skip(f"{spec.model} declares no optional column its record publishes")
+        for column, key in optional:
+            pages = amend_first_record(spec, pages_for(spec, 1), key, drop=True)
             _, rows = fetch(source, spec, *pages, **valid_query_kwargs(spec))
             assert getattr(rows[0], column.name) is None, column.name
 
@@ -626,7 +812,7 @@ class TestDeclarationIsTheContract:
             pytest.skip(f"{spec.model} declares no numeric column")
         for column in numeric:
             pages = amend_first_record(
-                spec, pages_for(spec, 1), column.source_key or column.name, value=True
+                spec, pages_for(spec, 1), published_key(spec, column), value=True
             )
             code = code_raised(spec, source, *pages, **valid_query_kwargs(spec))
             assert code == f"{spec.error_prefix}_SHAPE_INVALID", column.name
@@ -645,7 +831,7 @@ class TestDeclarationIsTheContract:
             pytest.skip(f"{spec.model} declares no numeric column")
         column = numeric[0]
         pages = amend_first_record(
-            spec, pages_for(spec, 1), column.source_key or column.name, value=True
+            spec, pages_for(spec, 1), published_key(spec, column), value=True
         )
         fetcher, _ = build(source, spec, *pages)
         with pytest.raises(ProviderEngineError) as raised:
@@ -661,32 +847,32 @@ class TestDeclarationIsTheContract:
 
         ``row_envelope`` columns are excluded because an envelope value is the declared fallback
         for a record that omits them, so dropping one is a valid response rather than a shape
-        failure.
+        failure. A column the query stamps is excluded for the opposite reason: no record key of
+        its own exists to leave out. For a wide-table declaration the named face is the header the
+        body was missing, which is the same claim read at the layer that refused it.
         """
-        column_by_record = [
-            column
+        published = [
+            (column, key)
             for column in spec.columns
-            if column.required and column.name not in spec.row_envelope
+            if column.required
+            and column.name not in spec.row_envelope
+            and (key := raw_key(spec, column)) is not None
         ]
-        if not column_by_record:
+        if not published:
             pytest.skip(f"{spec.model} has no required column the record alone must publish")
-        column = column_by_record[0]
-        pages = amend_first_record(
-            spec, pages_for(spec, 1), column.source_key or column.name, drop=True
-        )
-        fetcher, _ = build(source, spec, *pages)
-        with pytest.raises(ProviderEngineError) as raised:
-            fetcher.fetch(  # type: ignore[attr-defined]
-                ctx=fixture_context(source, spec, sends=3), **valid_query_kwargs(spec)
-            )
-        assert column.name in list(raised.value.missing)
+        column, key = published[0]
+        pages = amend_first_record(spec, pages_for(spec, 1), key, drop=True)
+        code, named = refusal(spec, source, *pages, **valid_query_kwargs(spec))
+        assert code == shape_refusal_code(spec)
+        refused = key if wide_table_expansion(spec) is not None else column.name
+        assert named == (refused,)
 
     def test_non_finite_float_is_refused(self, source: str, spec: ModelSpec) -> None:
         floats = [column for column in spec.columns if column.kind == "float"]
         if not floats:
             pytest.skip(f"{spec.model} declares no float column")
         pages = amend_first_record(
-            spec, pages_for(spec, 1), floats[0].source_key or floats[0].name, value=float("nan")
+            spec, pages_for(spec, 1), published_key(spec, floats[0]), value=float("nan")
         )
         code = code_raised(spec, source, *pages, **valid_query_kwargs(spec))
         assert code == f"{spec.error_prefix}_SHAPE_INVALID"
@@ -908,6 +1094,8 @@ class TestApplicabilityCensus:
             ("row_envelope", lambda spec: bool(spec.row_envelope)),
             ("static_headers", lambda spec: bool(spec.static_headers)),
             ("static_query", lambda spec: bool(spec.static_query)),
+            ("row_expansion", lambda spec: bool(spec.row_expansion)),
+            ("column_derives", lambda spec: bool(spec.column_derives)),
         ],
     )
     def test_face_applicability_is_measured_not_assumed(self, face) -> None:

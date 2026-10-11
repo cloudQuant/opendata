@@ -203,9 +203,13 @@ def test_real_ecb_bindings_register_three_canonical_models_without_auto_promotio
     # 46 capabilities and 13 descriptors held while federal_reserve registered nothing and cboe
     # declared two models; the engine wave added cboe::IndexSearch plus the two Fed release-table
     # models, and the C88 row added cboe::EquitySearch, so both counts grew by the declarations
-    # themselves. Auto routing stayed at 23.
-    assert len(registry.capabilities()) == 50
-    assert len(descriptors) == 17
+    # themselves. C89 adds four more of the same kind and nothing else moves them:
+    # federal_reserve::SvenssonYieldCurve (ModelSpec.row_expansion) and intrinio::CurrencyPairs /
+    # intrinio::EquitySearch / intrinio::HistoricalDividends (ModelSpec.column_derives), so
+    # 50 -> 54 capabilities and 17 -> 21 descriptors. Auto routing stayed at 23 because all four
+    # register verified=False.
+    assert len(registry.capabilities()) == 54
+    assert len(descriptors) == 21
     assert {item.model for item in descriptors if item.source == "cboe"} == {
         "AvailableIndices",
         "IndexConstituents",

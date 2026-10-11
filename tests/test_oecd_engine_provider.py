@@ -32,8 +32,9 @@ import dataclasses
 import importlib.util
 import json
 import re
+from datetime import date
 from pathlib import Path
-from typing import Any, Final, get_args
+from typing import Any, Final, cast, get_args
 
 import pytest
 
@@ -47,7 +48,12 @@ from opendata.data.providers._engine.http_json import (
     normalize_record,
     render_path,
 )
-from opendata.data.providers._engine.key_composition import CompositeKeySpec, KeyComponent
+from opendata.data.providers._engine.key_composition import (
+    CompositeKeySpec,
+    KeyComponent,
+    KeyCompositionError,
+    render_composite_key,
+)
 from opendata.data.providers._engine.spec import (
     DELIMITED_DECODERS,
     ColumnSpec,
@@ -56,8 +62,20 @@ from opendata.data.providers._engine.spec import (
     ParamSpec,
     RowFilterOp,
     RowFilterSpec,
+    ValueKind,
+)
+from opendata.data.providers._engine.value_transform import (
+    STAGE_SEQUENCE,
+    CastSpec,
+    DerivePlan,
+    DeriveStage,
+    DeriveStageKind,
+    ScaleSpec,
+    ValueTransformError,
+    apply_cast,
 )
 from opendata.data.providers.catalog import (
+    PROVIDERS,
     engine_declared_models,
     get_provider,
     register_provider,
@@ -77,12 +95,19 @@ CENSUS_RELATIVE_PATH = Path(
 #: The capability names the blockers may use, each one defined -- with the engine line that shows it
 #: missing -- in the specs module's docstring. A blocker naming an undefined capability would be an
 #: assertion rather than a measurement.
+#:
+#: C89 re-read this list against the current engine. ``params.value_map`` and ``fixed query keys``
+#: are gone from it because both shipped (:attr:`ParamSpec.value_map`,
+#: :attr:`ModelSpec.static_query`) and a probe below runs each one's accepting arm, so leaving them
+#: in the blockers would have been a false refusal; ``columns.period_cast``, ``derive.conditional``
+#: and the lookup half of ``columns.compose`` joined it as the capability the derived-column seam
+#: (``ModelSpec.column_derives``) still does not cover.
 CAPABILITY_VOCABULARY = (
-    "params.value_map",
     "path.list_segment",
     "columns.compose",
+    "columns.period_cast",
+    "derive.conditional",
     "row_filter.comparison",
-    "fixed query keys",
     "more than one request",
 )
 
@@ -264,9 +289,20 @@ class TestProviderDescriptor:
             assert domain not in domains
             with pytest.raises(LookupError):
                 require_domain(domain)
-        # The retraction removed oecd's two entries and nothing else; the table keeps its 37 after
-        # the two federal_reserve engine domains joined the 34 and cboe's equity-search domain did.
-        assert len(domains) == 37
+        # The retraction's own scope, recomputed rather than remembered: oecd names no domain in the
+        # table, and every domain a registered provider still names is in it -- so nothing else left
+        # the table when oecd's two entries did. What stood here was a typed whole-table count that
+        # read 41 while the registry carried 37 (42 since four intrinio legs and the Svensson leg
+        # joined), so it could not have failed for a vanished or duplicated domain; the table is
+        # guarded by name in tests/test_authority_reconciliation.py, which partitions it against the
+        # served set.
+        assert [domain for domain in domains if domain.startswith("oecd")] == []
+        named_by_provider = {
+            capability.domain
+            for provider in PROVIDERS
+            for capability in register_provider(provider.source, ProviderRegistry())
+        }
+        assert named_by_provider <= set(domains), sorted(named_by_provider - set(domains))
         assert sorted(d for d in domains if d.startswith("cboe_")) == [
             "cboe_available_indices",
             "cboe_equity_search",
@@ -377,52 +413,209 @@ class TestTheComposedKeyBlockersReMeasured:
     def test_a_comparison_row_filter_cannot_window_the_dates(self) -> None:
         # consumer_price_index.py:246-248 keeps rows by `date >= start_date and date <= end_date`.
         with pytest.raises(ValueError) as caught:
-            RowFilterSpec(op="gte", columns=["date"], value="2020")
+            RowFilterSpec(op=cast("RowFilterOp", "gte"), columns=("date",), value="2020")
         assert "not one of" in str(caught.value)
-        assert RowFilterSpec(op="equals", columns=["date"], value="2020").op == "equals"
+        assert RowFilterSpec(op="equals", columns=("date",), value="2020").op == "equals"
         assert {"gte", "lte", "between"}.isdisjoint(set(get_args(RowFilterOp)))
 
-    def test_a_column_can_be_renamed_and_cast_but_never_derived(self) -> None:
+    def test_a_column_can_be_renamed_rescaled_or_cast_but_never_looked_up(self) -> None:
+        # The rename arm: a published dimension key read out under the ledger's column name.
         spec = _key_spec(columns=(ColumnSpec("country", "str", source_key="REF_AREA"),))
         row = normalize_record({"REF_AREA": "USA"}, None, spec, build_row_model(spec))
-        # The one thing a column can do -- read under another key -- works (that is the control)...
-        assert row.country == "USA"
-        # ...and it is all it can do: upstream maps that code back to a country name and divides the
-        # value by 100 (consumer_price_index.py:242-250), which has no field to declare.
-        assert {"map", "scale", "derive", "formula"}.isdisjoint(
+        assert row.model_dump()["country"] == "USA"
+        # The two derive arms that shipped since C75, run as positive controls rather than recalled:
+        # a percent-valued OBS_VALUE divided by 100 is a declaration, not a missing capability.
+        scaled = _key_spec(
+            columns=(ColumnSpec("value", "float", source_key="OBS_VALUE"),),
+            column_derives=(
+                DerivePlan(
+                    column="value",
+                    stages=(DeriveStage(kind="scale", scale=ScaleSpec.percent_to_fraction()),),
+                ),
+            ),
+        )
+        scaled_row = normalize_record({"OBS_VALUE": "4.33"}, None, scaled, build_row_model(scaled))
+        assert scaled_row.model_dump()["value"] == pytest.approx(0.0433)
+        # And the arm the nine still need: upstream maps that code back to a country name and
+        # rewrites it (unemployment.py:169, composite_leading_indicator.py:203-210). The kernel runs
+        # a cast and a rescale and nothing else, so a code table has no stage to be declared with.
+        with pytest.raises(ValueError, match="the kernel runs a cast and a rescale"):
+            DeriveStage(kind=cast("DeriveStageKind", "map"))
+        assert set(STAGE_SEQUENCE) == {"cast", "scale"}
+        assert {"map", "scale", "derive", "formula", "value_map"}.isdisjoint(
             {field.name for field in dataclasses.fields(ColumnSpec)}
         )
 
-    def test_nothing_the_census_asks_for_is_still_a_missing_capability(self) -> None:
-        """The nine rows' blockers are now facts, not engine fields -- measured, not asserted.
+    def test_the_census_asks_for_six_capabilities_the_engine_lacks(self) -> None:
+        """Publish the nine rows' blockers as six absent engine fields, re-read on every run.
 
-        Last round this probe read the other way: it subtracted two shipped labels and reported the
-        key composition as what was left. The present set is re-read from the census instrument on
-        each run, so the verdict is this checkout's engine rather than a remembered one.
+        Before C89 re-audited them line by line (docs/evidence/C89/oecd-blocker-recheck.md) this
+        probe read the other way -- it subtracted the two capabilities that had just shipped and
+        reported nothing missing, which is how nine undeclarable rows came to look ready. Both arms
+        below move that reading, so what passes is the instrument's verdict on this checkout.
         """
         assert "csv" in DELIMITED_DECODERS
         assert _key_spec(decoder=DecoderSpec(kind="csv")).decoder.delimited
-        assert RowFilterSpec(op="contains", columns=["REF_AREA"], value="USA").op == "contains"
-        present = set(
-            mcc.run(
-                round_id="OECD-PROBE",
-                root=REPO_ROOT,
-                census_dir=REPO_ROOT / mcc.CENSUS_DIR_REL,
-            ).statuses["present"]
+        assert RowFilterSpec(op="contains", columns=("REF_AREA",), value="USA").op == "contains"
+        report = mcc.run(
+            round_id="OECD-PROBE", root=REPO_ROOT, census_dir=REPO_ROOT / mcc.CENSUS_DIR_REL
         )
-        for record in census_oecd_rows():
-            capabilities = {
+        present = set(report.statuses["present"])
+        asked_by_row = {
+            record["upstream_model"]: {
                 mcc.LABEL_TO_CAPABILITY[label] for label in record["needs_engine_capability"]
             }
-            missing = sorted(capabilities - present)
-            assert missing == [], f"{record['upstream_model']}: {missing} still absent"
-        # The arm that can differ: take back the capability wired this round and every row is
-        # blocked again, which is what the pre-split reading reported.
-        unwired = present - {"flow.composite_key_segment"}
-        relapsed = [
-            record["upstream_model"]
             for record in census_oecd_rows()
-            if {mcc.LABEL_TO_CAPABILITY[label] for label in record["needs_engine_capability"]}
-            - unwired
+        }
+        blocked = {model: caps - present for model, caps in asked_by_row.items()}
+        missing = sorted({cap for caps in blocked.values() for cap in caps})
+        assert missing == [
+            "columns.compose",
+            "columns.period_cast",
+            "derive.conditional",
+            "flow.branch",
+            "path.list_segment",
+            "rows.filter_comparison",
+        ], blocked
+        # Every one of the six reads ``absent``, not ``drifted`` or ``unanchored``: the registry's
+        # own proof line is what refuses it, so the blocker names a capability and not a spelling.
+        assert set(missing) <= set(report.statuses["absent"])
+        # The part of the need set already satisfied, counted rather than assumed: all nine want a
+        # delimited decoder and a composed key segment, and one -- CPI, the only leg with a date
+        # window -- also a row filter.
+        assert {cap for caps in asked_by_row.values() for cap in caps & present} == {
+            "decode.delimited",
+            "flow.composite_key_segment",
+            "rows.filter",
+        }
+        assert [m for m, caps in asked_by_row.items() if "rows.filter" in caps] == [
+            "ConsumerPriceIndex"
         ]
-        assert len(relapsed) == 9, relapsed
+        # C89's split is visible in the same reading: eight legs cannot survive one date format, and
+        # the one that can is the leg whose key pins ``M`` (the sibling probe shows both arms).
+        assert sorted(m for m, caps in blocked.items() if "columns.period_cast" in caps) == [
+            "ConsumerPriceIndex",
+            "CountryInterestRates",
+            "GdpForecast",
+            "GdpNominal",
+            "GdpReal",
+            "HousePriceIndex",
+            "SharePriceIndex",
+            "Unemployment",
+        ]
+        assert [m for m, caps in blocked.items() if "columns.period_cast" not in caps] == [
+            "CompositeLeadingIndicator"
+        ]
+        assert [m for m, caps in blocked.items() if "flow.branch" in caps] == ["HousePriceIndex"]
+        # None of the nine is in the roadmap's ready set -- the face the false reading published.
+        assert not [row for row in report.roadmap.shipped_cover if row.provider == "oecd"]
+        # Arm one, the false-ready face itself: count the six as shipped and all nine ask nothing.
+        collapsed = present | set(missing)
+        assert all(not (caps - collapsed) for caps in asked_by_row.values())
+        # Arm two, the reverse damage: take back the key-segment capability C88 wired and a seventh
+        # name joins the blockers on all nine legs, so the pass reading is not a standing zero.
+        unwired = present - {"flow.composite_key_segment"}
+        relapsed = {model: caps - unwired for model, caps in asked_by_row.items()}
+        assert {cap for caps in relapsed.values() for cap in caps} == set(missing) | {
+            "flow.composite_key_segment"
+        }
+        assert len([m for m, caps in relapsed.items() if caps]) == 9
+
+
+class TestTheC89BlockersReMeasured:
+    """The four capability names C89 added to the blockers, each measured off the kernel.
+
+    The probes above answer whether a mapped, composed, constant-keyed SDMX request can be declared
+    -- it can, and three of C75's six blockers were wrong about that. What the nine rows still ask
+    for is a value that is *restated* rather than copied: a code looked up in a table, a published
+    period read under whichever width its frequency gives it, an arithmetic step one other parameter
+    decides, and (for the house-price leg) a second request. Each probe below ships the accepting
+    arm first, so what it reports is the boundary and not a typo.
+    """
+
+    def test_one_declared_date_format_widens_no_sdmx_period(self) -> None:
+        # The accepting arm, which is the CLI case: its key pins frequency to ``M``
+        # (composite_leading_indicator.py:181), so every observation is ``YYYY-MM``.
+        monthly = CastSpec.date_string("%Y-%m")
+        assert apply_cast(monthly, "2024-03") == date(2024, 3, 1)
+        # The refusing arms, which are the other eight: oecd_date_to_python_date branches on the
+        # published text's width -- ``YYYY``, ``YYYY-MM``, ``YYYY-Qn`` (utils/helpers.py:253-261) --
+        # and a CastSpec carries exactly one format string, not a set.
+        assert [field.name for field in dataclasses.fields(CastSpec)].count("input_format") == 1
+        for published in ("2024", "2024-Q1", "2024-03-01"):
+            with pytest.raises(ValueTransformError, match="does not match declared format"):
+                apply_cast(monthly, published)
+
+    def test_a_derive_plan_can_be_gated_on_nothing_but_a_row_filter_can(self) -> None:
+        # Gating exists in the format -- for row filters, which is the control that keeps the next
+        # assertion from reading as a blanket "no conditional anywhere".
+        assert (
+            RowFilterSpec(op="equals", columns=("REF_AREA",), value_param="area").value_param
+            == "area"
+        )
+        plan = DerivePlan(
+            column="value",
+            stages=(DeriveStage(kind="scale", scale=ScaleSpec.percent_to_fraction()),),
+        )
+        assert {field.name for field in dataclasses.fields(plan)} == {
+            "column",
+            "note",
+            "source",
+            "source_kind",
+            "stages",
+        }
+        # Six rows stage on a parameter: ``/100`` only for a percent transform
+        # (consumer_price_index.py:249-250), an ``int`` cast only for levels
+        # (gdp_nominal.py:186-187), one or the other by units (gdp_forecast.py:235-240). The plan
+        # binds a column, a source and stages, and nothing decides between two of them.
+        assert {"when", "when_param", "gate", "unless", "branches"}.isdisjoint(
+            {field.name for field in dataclasses.fields(DerivePlan)}
+        )
+
+    def test_a_record_drives_one_path_template_and_no_rewritten_second_request(self) -> None:
+        # The control: the template itself is declarable and composes, so the blocker is the retry.
+        spec = _key_spec(
+            params=(
+                ParamSpec("area", "str", required=True, value_map=(("united_states", "USA"),)),
+            ),
+            composite_keys=(
+                CompositeKeySpec(
+                    name="series_key",
+                    components=(KeyComponent("area", source="area"),),
+                ),
+            ),
+        )
+        assert render_path(spec, _query(area="united_states")).endswith("/USA")
+        # house_price_index.py:134-138 re-issues the same url with ``.M.`` replaced by ``.Q.`` after
+        # a 404. ``path`` is one template, ``pagination`` repeats it with new page keys, and the
+        # record has no field for a second addressing or a status to branch on.
+        names = {field.name for field in dataclasses.fields(ModelSpec)}
+        assert {"path", "pagination", "static_query"} <= names
+        assert {"fallback_path", "retry_path", "alternative_path", "requests"}.isdisjoint(names)
+
+    def test_the_joined_country_list_and_its_empty_sentinel_are_both_refused(self) -> None:
+        # The control: one mapped code in one position composes, which is what C75 got wrong.
+        key = CompositeKeySpec(
+            name="dimension_key",
+            error_code="OECD_KEY_COMPOSITION_INVALID",
+            components=(
+                KeyComponent("area", source="area", on_missing="default", default=""),
+                KeyComponent("freq", kind="literal", source="M"),
+            ),
+        )
+        assert render_composite_key(key, {"area": "USA"}) == "USA.M"
+        # The omitted leg renders upstream's ``all`` wildcard, which is why the sentinel needs no
+        # map entry -- but a caller who *says* ``all`` (unemployment.py:140-141) cannot be mapped to
+        # it, and a bool flag cannot be mapped to ``Y``/``N`` at all (unemployment.py:137).
+        assert render_composite_key(key, {}) == ".M"
+        assert KeyComponent("wild", on_missing="default", default="").default == ""
+        for entry, kind in ((("all", ""), "str"), (("true", "Y"), "bool")):
+            with pytest.raises(ValueError):
+                ParamSpec("area", cast("ValueKind", kind), value_map=(entry,))
+        # And the joined list every multi-country query builds ("+".join, six of nine files): a
+        # position is one value on one separator, and the charset refuses both spellings of a list.
+        for joined in ("USA+CAN", ["USA", "CAN"]):
+            with pytest.raises(KeyCompositionError) as caught:
+                render_composite_key(key, {"area": joined})
+            assert caught.value.reason == "charset_invalid"
+            assert caught.value.component == "area"

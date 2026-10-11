@@ -61,6 +61,23 @@ class TestShippedMap:
         # EquitySearch 走的是 IndexSearch 同一条投影路：`provider-inventory.yaml` 的 cboe 行
         # 确有 `EquitySearch` 这个模型名（`models: […, EquitySearch, …]`），但它进本表的
         # 出处仍是本地 binding 的 scenario，不是抄来的上游行。
+        # CurrencyPairs 是本轮 intrinio 接入带进来的名字，inventory 的 intrinio 行确有该模型名
+        # （`models: […, CurrencyPairs, …]`，38 个 fetchers 之一）；intrinio 的 EquitySearch 与
+        # cboe 同名，同一个格子不重复计。两条能力同样 verified=False。
+        # SvenssonYieldCurve 出自 inventory 的 federal_reserve 行（`models: […, SvenssonYieldCurve,
+        # …]`，13 个 fetchers 之一），本轮由 ModelSpec.row_expansion 做成声明式宽表转置；其
+        # 上游列名 token 未经抓取核对，出处缺口记在 specs.SVENSSON_YIELD_CURVE.notes 里。
+        # HistoricalDividends 出自 inventory 的 intrinio 行（`models: […, HistoricalDividends, …]`，
+        # 38 个 fetchers 之一）：上游把查询参数 symbol 逐行盖进输出
+        # （historical_dividends.py:102-104），
+        # 本轮由 ModelSpec.column_derives 提供该载体，
+        # specs.py 的 NOT_DECLARABLE 已清空、声明不再扣留。
+        # 该 binding 同样经 registry 投影进本表，能力 verified=False。
+        # CalendarIpo 出自 inventory 的 intrinio 行（`models: [BalanceSheet, CalendarIpo, …]`），
+        # 本轮由 ModelSpec.row_expansion 声明，并把 intrinio_calendar_ipo 写进 domains.yaml：
+        # 上游 CalendarIpoData 的每一列都是 Optional（standard_models/calendar_ipo.py:34-39），
+        # 所以 symbol/ipo_date 这两个 natural_key 列在契约里仍可空。
+        # 该 binding 也只经 registry 投影进本表，能力 verified=False。
         assert confirmed == {
             "EquityHistorical",
             "ConsumerPriceIndex",
@@ -82,6 +99,10 @@ class TestShippedMap:
             "EquitySearch",
             "MoneyMeasures",
             "TreasuryRates",
+            "CurrencyPairs",
+            "SvenssonYieldCurve",
+            "HistoricalDividends",
+            "CalendarIpo",
         }
 
     def test_enabled_capabilities_are_covered(self):

@@ -10,17 +10,29 @@ were recorded as needing.
 No case touches I/O: values are the shapes the census rows record (Tiingo/Tradier epoch
 milliseconds, the Fed's published percents, TreasuryAuctions' ``%m/%d/%Y`` dates,
 Deribit/Tradier strike scaling) handed to the kernel directly.
+
+The last three classes are the wiring, not the kernel: the same casts and scales declared as
+``ModelSpec.column_derives`` plans and run by ``normalize_record`` where records become rows.
 """
 
 from __future__ import annotations
 
 from datetime import date, datetime
 from decimal import Decimal
+from typing import Any
 
 import pytest
 
+from opendata.data.providers._engine.http_json import (
+    build_query_model,
+    build_row_model,
+    normalize_record,
+)
+from opendata.data.providers._engine.spec import ColumnSpec, ModelSpec, ParamSpec
 from opendata.data.providers._engine.value_transform import (
     CastSpec,
+    DerivePlan,
+    DeriveStage,
     ScaleSpec,
     ValueTransformError,
     apply_cast,
@@ -28,6 +40,11 @@ from opendata.data.providers._engine.value_transform import (
     project_column,
     resolve_output_units,
     transform_value,
+)
+from opendata.data.providers.federal_reserve.specs import (
+    MONEY_MEASURES,
+    SVENSSON_YIELD_CURVE,
+    TREASURY_RATES,
 )
 
 #: 2024-07-04T00:00:00Z -- 2024-07-03 20:00 America/New_York: the day itself moves by zone.
@@ -289,3 +306,275 @@ def test_transform_value_cast_failure_raises_before_the_scale_runs() -> None:
     percent = ScaleSpec.percent_to_fraction()
     with pytest.raises(ValueError, match="float"):
         transform_value(4.33, scale=percent)
+
+
+# ---------------------------------------------------------------- the plan at the spec plane
+#
+# Everything above judges the kernel alone. These cases are the wiring: a declared
+# ``ModelSpec.column_derives`` plan names the column it produces, the source its raw value comes
+# from and the stages run on it, and ``normalize_record`` is the seam where records become rows.
+# Both reachable refusals are shown -- the declaration-time one (a plan spelling a name this model
+# does not declare) and the fetch-time one (a published cell the declared cast refuses).
+
+
+def _spec(
+    columns: tuple[ColumnSpec, ...],
+    *,
+    derives: tuple[DerivePlan, ...] = (),
+    params: tuple[ParamSpec, ...] = (),
+) -> ModelSpec:
+    """Build a minimal declaration whose domain is unregistered, so rows are declared columns."""
+    return ModelSpec(
+        model="derive_probe",
+        domain="engine_value_transform_probe",
+        asset_class="equity",
+        period="d",
+        market="us",
+        base_url="https://example.invalid",
+        path="/probe",
+        columns=columns,
+        params=params,
+        scenario="离线探针：声明面派生列的接线与拒绝",
+        error_prefix="PROBE",
+        column_derives=derives,
+    )
+
+
+def _row(spec: ModelSpec, record: dict[str, object], query: object = None) -> Any:
+    """Normalize one record through the seam the declaration generates."""
+    return normalize_record(record, None, spec, build_row_model(spec), query)
+
+
+class TestDeclaredDeriveStages:
+    """POSITIVE: each stage kind and each source kind the plan binds."""
+
+    def test_a_cast_stage_computes_a_date_from_a_published_period_cell(self) -> None:
+        """The ``2024-03`` blocker: the column is a date no declared kind could read verbatim."""
+        spec = _spec(
+            (ColumnSpec("month", "date", source_key="Period", required=True, nullable=False),),
+            derives=(
+                DerivePlan(
+                    column="month",
+                    stages=(DeriveStage(kind="cast", cast=CastSpec.date_string("%Y-%m")),),
+                ),
+            ),
+        )
+        assert _row(spec, {"Period": "2024-03"}).month == date(2024, 3, 1)
+
+    def test_a_scale_stage_restates_a_published_percent_as_a_fraction(self) -> None:
+        """The published figure is rescaled in the Decimal domain before the row is built."""
+        spec = _spec(
+            (ColumnSpec("yield_rate", "float", source_key="Yield", units="percent"),),
+            derives=(
+                DerivePlan(
+                    column="yield_rate",
+                    stages=(DeriveStage(kind="scale", scale=ScaleSpec.percent_to_fraction()),),
+                ),
+            ),
+        )
+        assert _row(spec, {"Yield": "4.33"}).yield_rate == pytest.approx(0.0433)
+
+    def test_a_plan_runs_cast_then_scale_in_the_kernels_own_order(self) -> None:
+        """Both stages on one column: "0.29" -> Decimal -> fraction, the SOFR-shaped row."""
+        spec = _spec(
+            (ColumnSpec("rate", "float", source_key="RAW"),),
+            derives=(
+                DerivePlan(
+                    column="rate",
+                    stages=(
+                        DeriveStage(kind="cast", cast=CastSpec(kind="numeric_to_decimal")),
+                        DeriveStage(kind="scale", scale=ScaleSpec.percent_to_fraction()),
+                    ),
+                ),
+            ),
+        )
+        assert _row(spec, {"RAW": "0.29"}).rate == pytest.approx(0.0029)
+
+    def test_a_plan_can_read_a_key_the_model_publishes_no_column_for(self) -> None:
+        """The source override is a record key, not a second column."""
+        spec = _spec(
+            (ColumnSpec("settled_on", "date"),),
+            derives=(
+                DerivePlan(
+                    column="settled_on",
+                    source="settle_date",
+                    stages=(DeriveStage(kind="cast", cast=CastSpec.date_string("%m/%d/%Y")),),
+                ),
+            ),
+        )
+        row = _row(spec, {"settle_date": "07/04/2024", "issue_date": "07/02/2024"})
+        assert row.settled_on == date(2024, 7, 4)
+        assert set(row.model_fields) == {"settled_on"}
+
+    def test_a_parameter_source_stamps_the_query_onto_every_row(self) -> None:
+        """The intrinio shape: ``symbol`` is not in the record, so the declaration supplies it."""
+        spec = _spec(
+            (
+                ColumnSpec("symbol", "str", required=True, nullable=False),
+                ColumnSpec("amount", "float"),
+            ),
+            derives=(DerivePlan(column="symbol", source_kind="parameter", source="symbol"),),
+            params=(ParamSpec("symbol", "str", required=True),),
+        )
+        query = build_query_model(spec).model_validate({"symbol": "AAPL"})
+        rows = [
+            _row(spec, {"amount": 1.5}, query),
+            _row(spec, {"amount": 2.0}, query),
+        ]
+        assert [row.symbol for row in rows] == ["AAPL", "AAPL"]
+
+    def test_a_constant_source_publishes_what_no_record_carries(self) -> None:
+        """A fact the endpoint never states becomes a declared column."""
+        spec = _spec(
+            (ColumnSpec("country", "str", required=True, nullable=False),),
+            derives=(DerivePlan(column="country", source_kind="constant", source="US"),),
+        )
+        assert _row(spec, {}).country == "US"
+
+    def test_a_constant_can_be_a_declared_date(self) -> None:
+        """Stamped text still runs the declared stages."""
+        spec = _spec(
+            (ColumnSpec("vintage", "date"),),
+            derives=(
+                DerivePlan(
+                    column="vintage",
+                    source_kind="constant",
+                    source="2024-03",
+                    stages=(DeriveStage(kind="cast", cast=CastSpec.date_string("%Y-%m")),),
+                ),
+            ),
+        )
+        assert _row(spec, {}).vintage == date(2024, 3, 1)
+
+
+class TestDeriveDeclarationRefusals:
+    """REFUSAL: a plan the record cannot carry out is refused when it is written."""
+
+    def test_a_plan_naming_an_undeclared_column_refuses_at_declaration(self) -> None:
+        """The reachable spec-plane arm: the row model has no field to write."""
+        stage = DeriveStage(kind="cast", cast=CastSpec.date_string("%Y-%m"))
+        with pytest.raises(ValueError, match="does not declare"):
+            _spec(
+                (ColumnSpec("month", "date"),),
+                derives=(DerivePlan(column="mnth", stages=(stage,)),),
+            )
+
+    def test_a_plan_reading_an_undeclared_parameter_refuses_at_declaration(self) -> None:
+        """A stamp whose parameter does not exist would write None onto every row forever."""
+        with pytest.raises(ValueError, match="does not"):
+            _spec(
+                (ColumnSpec("symbol", "str"),),
+                derives=(DerivePlan(column="symbol", source_kind="parameter", source="ticker"),),
+            )
+
+    def test_an_unknown_stage_kind_refuses_at_declaration(self) -> None:
+        """The kernel runs a cast and a rescale; a plan claiming more never reaches a fetch."""
+        with pytest.raises(ValueError, match="stage kind"):
+            DeriveStage(kind="pivot")
+
+    def test_an_unknown_source_kind_refuses_at_declaration(self) -> None:
+        """Only record, parameter and constant sources are routed."""
+        with pytest.raises(ValueError, match="source kind"):
+            DerivePlan(column="month", source_kind="envelope", source="Time Period")
+
+    def test_a_stage_payload_that_is_not_its_kind_refuses_at_declaration(self) -> None:
+        """A "cast" stage handing over a ScaleSpec is the typo the kind spelling exists to catch."""
+        with pytest.raises(ValueError, match="CastSpec"):
+            DeriveStage(kind="cast", scale=ScaleSpec.percent_to_fraction())
+
+    def test_stages_outside_the_kernels_composition_order_refuse(self) -> None:
+        """cast-then-scale is the only order transform_value documents, and it is enforced."""
+        cast = DeriveStage(kind="cast", cast=CastSpec(kind="numeric_to_decimal"))
+        scale = DeriveStage(kind="scale", scale=ScaleSpec.percent_to_fraction())
+        with pytest.raises(ValueError, match="composition order"):
+            DerivePlan(column="rate", stages=(scale, cast))
+        with pytest.raises(ValueError, match="twice"):
+            DerivePlan(column="rate", stages=(scale, scale))
+
+    def test_a_plan_that_computes_nothing_refuses_at_declaration(self) -> None:
+        """No stages and no source override is a rename wearing a derive plan's clothes."""
+        with pytest.raises(ValueError, match="computes nothing"):
+            DerivePlan(column="month")
+
+    def test_two_plans_for_one_column_refuse_at_declaration(self) -> None:
+        """One column has one producing plan, or the row depends on iteration order."""
+        stage = DeriveStage(kind="cast", cast=CastSpec.date_string("%Y-%m"))
+        with pytest.raises(ValueError, match="two plans"):
+            _spec(
+                (ColumnSpec("month", "date"),),
+                derives=(
+                    DerivePlan(column="month", stages=(stage,)),
+                    DerivePlan(column="month", source="other", stages=(stage,)),
+                ),
+            )
+
+    def test_a_derived_column_cannot_also_be_an_envelope_copy(self) -> None:
+        """The value would be written by the plan and then by the response, and only one is true."""
+        stage = DeriveStage(kind="cast", cast=CastSpec.date_string("%Y-%m"))
+        with pytest.raises(ValueError, match="envelope"):
+            ModelSpec(
+                model="derive_probe",
+                domain="engine_value_transform_probe",
+                asset_class="equity",
+                period="d",
+                market="us",
+                base_url="https://example.invalid",
+                path="/probe",
+                columns=(ColumnSpec("month", "date", source_key="Time Period"),),
+                row_envelope=("month",),
+                scenario="离线探针：派生列与信封复制互斥",
+                error_prefix="PROBE",
+                column_derives=(DerivePlan(column="month", stages=(stage,)),),
+            )
+
+    def test_a_published_cell_the_cast_does_not_describe_raises_the_kernels_error(
+        self,
+    ) -> None:
+        """Fetch-time refusal keeps ValueTransformError, as _expand_rows keeps RowExpansionError."""
+        spec = _spec(
+            (ColumnSpec("month", "date", source_key="Period"),),
+            derives=(
+                DerivePlan(
+                    column="month",
+                    stages=(DeriveStage(kind="cast", cast=CastSpec.date_string("%Y-%m")),),
+                ),
+            ),
+        )
+        with pytest.raises(ValueTransformError, match="does not match declared format"):
+            _row(spec, {"Period": "ND"})
+
+
+class TestEmptyDeriveLeavesRowsByteIdentical:
+    """The default arm: a declaration naming no derive behaves exactly as the engine did."""
+
+    def test_the_new_field_defaults_empty_for_every_declaration_on_disk(self) -> None:
+        """No production declaration is reinterpreted by the field landing."""
+        assert MONEY_MEASURES.column_derives == ()
+        assert TREASURY_RATES.column_derives == ()
+        assert SVENSSON_YIELD_CURVE.column_derives == ()
+
+    def test_an_undated_column_is_copied_verbatim_including_the_missing_token(self) -> None:
+        """The Fed's "ND" still reaches the row untouched -- no cast, no null, no refusal."""
+        row = _row(
+            _spec((ColumnSpec("month", "str", source_key="Time Period"),)),
+            {"Time Period": "ND"},
+        )
+        assert row.month == "ND"
+
+    def test_a_record_source_plan_with_the_columns_own_key_is_the_only_change(self) -> None:
+        """One staged column differs; every other column of the same row is copied as before."""
+        staged = _spec(
+            (
+                ColumnSpec("period", "date", source_key="Time Period"),
+                ColumnSpec("m1", "str", source_key="M1_N.M"),
+            ),
+            derives=(
+                DerivePlan(
+                    column="period",
+                    stages=(DeriveStage(kind="cast", cast=CastSpec.date_string("%Y-%m")),),
+                ),
+            ),
+        )
+        record = {"Time Period": "1959-01", "M1_N.M": "ND"}
+        assert _row(staged, record).m1 == "ND"
+        assert _row(staged, record).period == date(1959, 1, 1)

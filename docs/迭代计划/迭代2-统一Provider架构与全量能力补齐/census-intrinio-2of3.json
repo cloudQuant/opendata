@@ -1,5 +1,7 @@
 {
-  "provider_groups": ["intrinio"],
+  "provider_groups": [
+    "intrinio"
+  ],
   "rows": [
     {
       "task_id": "OBB2-intrinio-EtfPricePerformance",
@@ -213,12 +215,13 @@
       "join_needed": false,
       "needs_engine_capability": [
         "field_rename_map",
-        "param_value_mapping"
+        "param_value_mapping",
+        "derived_columns"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/intrinio/openbb_intrinio/models/historical_dividends.py:95",
-      "notes": "Single GET /securities/{symbol}/prices/adjustments; get_data_many(url,'stock_price_adjustments') extracts the nested list; no pagination loop (limit aliased to page_size, default 100); dividends-only filter is server-side via nothing here — split rows share the feed and factor/split_ratio columns are kept alongside dividend fields; symbol column injected per row in transform_data; transform_query fills a 1-year default window."
+      "notes": "Single GET /securities/{symbol}/prices/adjustments; get_data_many(url,'stock_price_adjustments') extracts the nested list; no pagination loop (limit aliased to page_size, default 100); dividends-only filter is server-side via nothing here — split rows share the feed and factor/split_ratio columns are kept alongside dividend fields; symbol column injected per row in transform_data; transform_query fills a 1-year default window. columns.derive: upstream stamps the queried symbol onto every row (historical_dividends.py:102-104) and the engine has no carrier for a parameter-valued column, so the model is withheld in specs.NOT_DECLARABLE rather than published with a null symbol."
     },
     {
       "task_id": "OBB2-intrinio-HistoricalMarketCap",

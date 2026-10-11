@@ -376,7 +376,7 @@ class TestDeclarationIsTheContract:
         assert sent["to"] == "2024-06-25"
         assert encode_query(build_query_model(case.spec)(), case.spec).get("from") is None
 
-    def test_the_provider_descriptor_binds_two_generated_fetchers(self) -> None:
+    def test_the_provider_descriptor_binds_three_generated_fetchers(self) -> None:
         """Registration-ready: the descriptor loads each model out of its own module."""
         assert PROVIDER.source == SOURCE == "federal_reserve"
         assert PROVIDER.credentials == ()
@@ -384,17 +384,21 @@ class TestDeclarationIsTheContract:
         assert [binding.canonical_model_ids for binding in PROVIDER.fetcher_bindings] == [
             ("MoneyMeasures",),
             ("TreasuryRates",),
+            ("SvenssonYieldCurve",),
         ]
         assert [type(fetcher).__name__ for fetcher in PROVIDER.fetchers] == [
             "FederalReserveMoneyMeasuresFetcher",
             "FederalReserveTreasuryRatesFetcher",
+            "FederalReserveSvenssonYieldCurveFetcher",
         ]
         assert [fetcher.canonical_model for fetcher in PROVIDER.fetchers] == [
             "MoneyMeasures",
             "TreasuryRates",
+            "SvenssonYieldCurve",
         ]
         assert {capability.domain for capability in PROVIDER.capabilities} == {
             "federal_reserve_money_measures",
+            "federal_reserve_svensson_yield_curve",
             "federal_reserve_treasury_rates",
         }
         assert all(capability.source == SOURCE for capability in PROVIDER.capabilities)
@@ -419,10 +423,12 @@ class TestDeclarationIsTheContract:
         assert sorted(path.name for path in declared.glob("*.py")) == [
             "__init__.py",
             "money_measures.py",
+            "svensson_yield_curve.py",
             "treasury_rates.py",
         ]
         assert {fetcher.canonical_model for fetcher in PROVIDER.fetchers} == {
             "MoneyMeasures",
+            "SvenssonYieldCurve",
             "TreasuryRates",
         }
         assert not hasattr(specs, "YIELD_CURVE"), "the spec object must be gone, not renamed"
@@ -432,18 +438,33 @@ class TestDeclarationIsTheContract:
         assert PROVIDER.source == SOURCE
 
     def test_each_declared_model_records_what_it_cannot_do(self) -> None:
-        """A declaration is not a finished capability: the gaps are named in two places."""
+        """A declaration is not a finished capability: the gaps are named in two places.
+
+        The population is what the descriptor binds, not what this file holds a capture for -- a
+        declared model with no pinned body still owes a gap row, which is the face that kept
+        ``SvenssonYieldCurve`` honest when its 100 columns landed without a capture root.
+        """
+        declared = {fetcher.canonical_model for fetcher in PROVIDER.fetchers}
         models = {case.name for case in CASES}
-        assert models == set(DECLARED_GAPS) == {"MoneyMeasures", "TreasuryRates"}
+        assert (
+            declared
+            == set(DECLARED_GAPS)
+            == {
+                "MoneyMeasures",
+                "SvenssonYieldCurve",
+                "TreasuryRates",
+            }
+        )
+        assert models <= declared, "a capture case with no declaration behind it"
         assert all(gap.strip() for gap in DECLARED_GAPS.values())
         for spec in (MONEY_MEASURES, TREASURY_RATES):
             assert "header=5" in spec.notes, spec.model
             assert "preamble_rows=5" in spec.notes, spec.model
         # The gap closed this round must not still be listed as open.
         assert all("metadata rows" not in gap for gap in DECLARED_GAPS.values())
-        assert len(NOT_DECLARED) == 11
-        assert set(NOT_DECLARED).isdisjoint(models)
-        assert len(NOT_DECLARED) + len(models) == 13
+        assert len(NOT_DECLARED) == 10
+        assert set(NOT_DECLARED).isdisjoint(declared)
+        assert len(NOT_DECLARED) + len(declared) == 13
 
 
 class TestRowsByValue:

@@ -485,3 +485,173 @@ def project_column(
 ) -> tuple[object, str]:
     """Return the ``(value, units)`` pair one fully declared column projects to."""
     return transform_value(value, cast=cast, scale=scale), resolve_output_units(column_units, scale)
+
+
+# --------------------------------------------------------------------------- derive plans
+#
+# Everything above is a rule for one value; this section is the declaration the engine binds those
+# rules to. ``columns.derive`` was recorded absent because a declared column could only *name a key
+# *: ``normalize_record`` copies one source key per column and enforces its declared type, so a
+# column whose value is restated (a published ``2024-03`` read as a date), rescaled (a published
+# percent turned into a fraction), or taken from something that is not a record field at all (a
+# query parameter stamped onto every row) had no way to say so. A plan below says exactly that, and
+# it runs on nothing but the two entry points this module already publishes -- :func:`apply_cast`
+# and :func:`apply_scale` -- in the order :func:`transform_value` documents. Anything the kernel
+# cannot execute is not a stage kind here, which is what keeps the declaration honest rather than
+# aspirational.
+
+#: The stage kinds a derive plan may declare: the kernel's column-seam operations, no others.
+DeriveStageKind = Literal["cast", "scale"]
+
+#: Where a plan reads the value it computes from: a record key, one validated query parameter, or
+#: text the declaration itself publishes for every row.
+DeriveSourceKind = Literal["record", "parameter", "constant"]
+
+#: The order the kernel composes stages in, taken verbatim from :func:`transform_value`'s rule: a
+#: cast turns the published shape into a quantity and the rescale acts on that quantity. A plan
+#: written the other way round would describe arithmetic this module does not perform.
+STAGE_SEQUENCE: tuple[DeriveStageKind, ...] = ("cast", "scale")
+
+
+@dataclass(frozen=True)
+class DeriveStage:
+    """One executed step of a derive plan: a kind the kernel runs plus the rule it runs.
+
+    The kind is spelled out even though the carried declaration already implies it, because the
+    census reads presence off declared *stages* and because a plan whose payload does not match its
+    kind (a ``"cast"`` stage handing over a :class:`ScaleSpec`) is the same typo class every other
+    declaration in this package refuses when the record is written.
+
+    Attributes:
+        kind: Which kernel entry point this stage is: ``"cast"`` or ``"scale"``.
+        cast: The declared conversion; required by ``kind="cast"`` and refused by any other kind.
+        scale: The declared rescale; required by ``kind="scale"`` and refused by any other kind.
+    """
+
+    kind: DeriveStageKind
+    cast: CastSpec | None = None
+    scale: ScaleSpec | None = None
+
+    def __post_init__(self) -> None:
+        """Reject a stage the kernel has no entry point for, or one carrying the wrong rule."""
+        if self.kind not in STAGE_SEQUENCE:
+            raise ValueError(
+                f"derive stage kind {self.kind!r} is not one of {list(STAGE_SEQUENCE)}; "
+                "the kernel runs a cast and a rescale and nothing else"
+            )
+        if self.kind == "cast":
+            if not isinstance(self.cast, CastSpec):
+                raise ValueError(f'a "cast" derive stage must carry a CastSpec, got {self.cast!r}')
+            if self.scale is not None:
+                raise ValueError('a "cast" derive stage carries no ScaleSpec')
+            return
+        if not isinstance(self.scale, ScaleSpec):
+            raise ValueError(f'a "scale" derive stage must carry a ScaleSpec, got {self.scale!r}')
+        if self.cast is not None:
+            raise ValueError('a "scale" derive stage carries no CastSpec')
+
+    def apply(self, value: object) -> object:
+        """Run this stage's kernel entry point on one value.
+
+        Raises:
+            ValueTransformError: The value does not match the stage's declaration.
+        """
+        if self.kind == "cast" and self.cast is not None:
+            return apply_cast(self.cast, value)
+        if self.kind == "scale" and self.scale is not None:
+            return apply_scale(self.scale, value)
+        # Unreachable through __post_init__, and kept as a refusal rather than a passthrough: a
+        # stage that arrives here would silently hand back the input and read as a derivation.
+        raise ValueTransformError(f"derive stage {self.kind!r} carries no runnable declaration")
+
+
+@dataclass(frozen=True)
+class DerivePlan:
+    """One declared column whose value is produced rather than copied out of the record.
+
+    The plan is the whole declaration of the computation: a source, and the kernel stages run on
+    whatever that source supplies. ``source_kind="record"`` reads a key of the record the row is
+    built from (its own ``source_key`` when ``source`` is blank, or another published key, which is
+    how one column can be computed from a second key without that key becoming a column of its
+    own); ``"parameter"`` stamps one validated query parameter onto every row -- the shape an
+    endpoint that answers with bare observations leaves the caller's own symbol unrecorded -- and
+    ``"constant"`` publishes text the declaration itself carries.
+
+    A plan that stages nothing and reads the column's own record key computes nothing, so it is
+    refused here rather than accepted as a no-op: ``columns.rename`` is a different capability and
+    an empty plan would let a declaration look like a derivation while changing no value.
+
+    Attributes:
+        column: The declared output column this plan produces.
+        source_kind: Which face of the request or response supplies the raw value.
+        source: The record key, the parameter name, or the constant text; blank means the column's
+            own source key and is only allowed for ``"record"``.
+        stages: The kernel stages, at most one per kind and in :data:`STAGE_SEQUENCE` order.
+        note: Why the column is computed, for the review record.
+    """
+
+    column: str
+    source_kind: DeriveSourceKind = "record"
+    source: str = ""
+    stages: tuple[DeriveStage, ...] = ()
+    note: str = ""
+
+    def __post_init__(self) -> None:
+        """Reject a plan the engine could not carry out, or could not attribute to a column."""
+        if not isinstance(self.column, str) or not self.column.strip():
+            raise ValueError(f"a derive plan must name the column it produces, got {self.column!r}")
+        if self.source_kind not in {"record", "parameter", "constant"}:
+            raise ValueError(
+                f"derive source kind {self.source_kind!r} is not one of "
+                "'record', 'parameter', 'constant'"
+            )
+        if self.source_kind != "record" and not self.source.strip():
+            raise ValueError(
+                f"a {self.source_kind} derive plan for {self.column!r} must name the "
+                f"{self.source_kind} it reads"
+            )
+        if self.source_kind == "record" and not self.stages:
+            raise ValueError(
+                f"the derive plan for {self.column!r} stages nothing and overrides no source, "
+                "so it computes nothing"
+            )
+        for stage in self.stages:
+            if not isinstance(stage, DeriveStage):
+                raise ValueError(
+                    f"the derive plan for {self.column!r} stages must be DeriveStage, "
+                    f"got {type(stage).__name__}"
+                )
+        kinds = [stage.kind for stage in self.stages]
+        if len(kinds) != len(set(kinds)):
+            raise ValueError(
+                f"the derive plan for {self.column!r} runs one stage kind twice: {kinds}"
+            )
+        expected = [kind for kind in STAGE_SEQUENCE if kind in set(kinds)]
+        if kinds != expected:
+            raise ValueError(
+                f"the derive plan for {self.column!r} declares stages {kinds}, which are not the "
+                f"kernel's composition order {expected}"
+            )
+
+
+def apply_derive(plan: DerivePlan, value: object) -> object:
+    """Run one declared plan over the value its source supplies.
+
+    Args:
+        plan: The column's declared stages.
+        value: The raw value the plan's source resolved to.
+
+    Returns:
+        The value the plan produces -- a ``date``, ``Decimal``, ``float``, ``bool`` or the source
+        itself when the plan declares no stage and only restates where the value comes from.
+
+    Raises:
+        ValueTransformError: A stage's input does not match its declaration. This is the kernel's
+            own code-stable refusal and the engine seam propagates it untouched, so a row the
+            published shape cannot produce is attributed to the cast that refused it rather than
+            answered with the silent null this repo tracks.
+    """
+    current: object = value
+    for stage in plan.stages:
+        current = stage.apply(current)
+    return current

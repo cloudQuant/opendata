@@ -1717,7 +1717,7 @@ class TestPartitionMaintenanceJob:
         """A fake ``warehouse_tables`` hid the real trap (C58).
 
         The registry fills lazily, so in a process that has not resolved a
-        fetcher yet it knows zero capabilities and the census is the 20
+        fetcher yet it knows zero capabilities and the census is the 41
         ``dwd_*`` names alone -- every ``ods_*`` leg, which is the layer the
         patrol writes into, would fall outside the pass in silence.
         """
@@ -1744,6 +1744,9 @@ class TestPartitionMaintenanceJob:
         from opendata.data.providers import register_providers
         from opendata.pipeline.alert_matrix import registered_legs, warehouse_tables
 
+        # 每条 ModelSpec 声明都带一个 native model domain，legacy 存储按 _deferred_model_domains
+        # 把这些域从 warehouse 普查里摘出去；这个名字面必须与注册表实测面逐一对应，
+        # 否则下面的 set(ods) == expected_ods 会失配。
         deferred_domains = {
             "bls_search",
             "bls_series",
@@ -1755,9 +1758,13 @@ class TestPartitionMaintenanceJob:
             "equity_historical",
             "equity_quote",
             "federal_reserve_money_measures",
+            "federal_reserve_svensson_yield_curve",
             "federal_reserve_treasury_rates",
             "fred_search",
             "fred_series",
+            "intrinio_currency_pairs",
+            "intrinio_equity_search",
+            "intrinio_historical_dividends",
             "sofr",
             "sonia",
             "balance_of_payments",
@@ -1777,17 +1784,17 @@ class TestPartitionMaintenanceJob:
         deferred_legs = sum(len(legs[domain]) for domain in deferred_domains)
 
         assert ods, "census 里没有 ods 表：注册表读空了，维护面覆盖不到落库层"
-        assert len(known) == 37
+        assert len(known) == 41
         assert deferred_domains <= known
         assert set(legs) == known
-        assert sum(len(sources) for sources in legs.values()) == 50
+        assert sum(len(sources) for sources in legs.values()) == 54
         assert len(measured_domains) == 20
-        assert len(deferred_domains) == 17
+        assert len(deferred_domains) == 21
         assert len(measured_domains) + len(deferred_domains) == len(known)
         assert len(expected_ods) == 33
         assert len(expected_dwd) == 20
-        assert deferred_legs == 17
-        assert len(expected_ods) + deferred_legs == 50
+        assert deferred_legs == 21
+        assert len(expected_ods) + deferred_legs == 54
         assert set(ods) == expected_ods
         for table in ods:
             tail = table[len("ods_") :].rsplit("_", 1)

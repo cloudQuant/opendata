@@ -41,7 +41,18 @@ from opendata.data.providers._engine.key_composition import (
     KeyCompositionError,
     render_composite_key,
 )
+from opendata.data.providers._engine.row_expansion import (
+    NestedArrayExpansion,
+    RecordRepointPlan,
+    SeriesPivotPlan,
+    WideTablePivotPlan,
+    expand_nested_array,
+    pivot_series,
+    repoint_records,
+    transpose_wide_table,
+)
 from opendata.data.providers._engine.spec import ROW_FILTER_VALUE_SEPARATOR
+from opendata.data.providers._engine.value_transform import DerivePlan, apply_derive
 
 if TYPE_CHECKING:
     from opendata.data.providers._engine.key_composition import CompositeKeySpec
@@ -74,6 +85,7 @@ class ProviderEngineError(RuntimeError):
         url: str | None = None,
         rejected: Sequence[str] = (),
         missing: Sequence[str] = (),
+        invalid: Sequence[str] = (),
     ) -> None:
         """Store the code and the request that produced it."""
         self.code = code
@@ -81,10 +93,12 @@ class ProviderEngineError(RuntimeError):
         self.url = url
         self.rejected = tuple(rejected)
         self.missing = tuple(missing)
+        self.invalid = tuple(invalid)
         detail = "" if status is None else f" status={status}"
         detail += "" if url is None else f" url={url}"
         detail += "" if not self.rejected else f" rejected={list(self.rejected)}"
         detail += "" if not self.missing else f" missing={list(self.missing)}"
+        detail += "" if not self.invalid else f" invalid={list(self.invalid)}"
         super().__init__(code + detail)
 
 
@@ -352,12 +366,54 @@ def _apply_value_map(parameter: ParamSpec, text: str, spec: ModelSpec) -> str:
     return mapped
 
 
+def _expand_rows(records: list[Any], spec: ModelSpec) -> list[Any]:
+    """Route the resolved record list through the stages the declaration named.
+
+    ``ModelSpec.row_expansion`` is the spec-plane half of ``path.explode``: one pointer
+    reaches one record list, and each stage here turns that list into the rows the model
+    publishes -- a nested array exploded per parent, a wide table read per series and
+    pivoted into one row per timestamp, a record list projected through per-record
+    sub-pointers. The plans are the frozen ones from :mod:`.row_expansion` and they are
+    applied to the list this function already resolved: the kernel re-reads pointers
+    *inside* the document it is given and never fetches a second one.
+
+    Raises:
+        RowExpansionError: Propagated from the kernel untouched, with the pointer and the
+            record position that made it a shape failure. A row set the stages could not produce
+            is attributed, never answered with the empty frame that would pass as a published
+            zero.
+    """
+    if not spec.row_expansion:
+        return records
+    expanded: list[Any] = records
+    for index, stage in enumerate(spec.row_expansion):
+        if isinstance(stage, NestedArrayExpansion):
+            expanded = expand_nested_array(expanded, stage)
+        elif isinstance(stage, WideTablePivotPlan):
+            expanded = transpose_wide_table(expanded, stage)
+        elif isinstance(stage, SeriesPivotPlan):
+            expanded = pivot_series(expanded, stage)
+        elif isinstance(stage, RecordRepointPlan):
+            expanded = repoint_records(expanded, stage)
+        else:
+            raise ProviderEngineError(
+                f"{spec.error_prefix}_SHAPE_INVALID",
+                rejected=(f"row expansion stage {index} is {type(stage).__name__}",),
+            )
+    return expanded
+
+
 def resolve_rows(document: object, pointer: str, spec: ModelSpec) -> list[Any]:
     """Follow ``pointer`` into ``document`` and return the record list.
 
     An absent path is a shape failure; an empty list is a legitimate empty
     result. The two are never conflated, which is the distinction AC2-10 asks
     each model to make.
+
+    A declaration that names ``row_expansion`` does not stop at the record list: what
+    comes back is the list the declared stages produce from it, so the rows normalized
+    downstream are the exploded/pivoted ones. A declaration that names none -- every
+    declaration written before the field existed -- returns the resolved list itself.
     """
     current = document
     if pointer:
@@ -373,7 +429,7 @@ def resolve_rows(document: object, pointer: str, spec: ModelSpec) -> list[Any]:
         raise ProviderEngineError(f"{spec.error_prefix}_SHAPE_INVALID")
     if not isinstance(current, list):
         raise ProviderEngineError(f"{spec.error_prefix}_SHAPE_INVALID")
-    return current
+    return _expand_rows(current, spec)
 
 
 def _reject_non_finite(value: object, spec: ModelSpec) -> None:
@@ -393,25 +449,87 @@ def _reject_bool_for_numeric(column: ColumnSpec, value: object, spec: ModelSpec)
         raise ProviderEngineError(f"{spec.error_prefix}_SHAPE_INVALID", rejected=(column.name,))
 
 
+def _stamped_value(plan: DerivePlan, query: object, spec: ModelSpec) -> object:
+    """Produce one column's value from something that is not a field of the record.
+
+    ``source_kind="parameter"`` stamps a validated query parameter onto every row, which is the
+    shape of the hand-written ``{"symbol": query.symbol, **item}`` an endpoint that answers with
+    bare observations needs in order to record what it was asked for; ``"constant"`` publishes the
+    text the declaration itself carries. Either way the plan's stages run on the stamped value
+    exactly as they run on a published one, so a stamped ``"2024-03"`` is the same declared date
+    cast as a published ``2024-03`` would be. The parameter is read as the validated attribute, not
+    as its encoded upstream spelling: the column documents what the caller asked for.
+
+    Raises:
+        ValueTransformError: Propagated untouched from a stage the kernel refuses.
+        ProviderEngineError: ``*_SHAPE_INVALID`` for a source kind this seam does not route, the
+            same guard :func:`_expand_rows` keeps for a stage it cannot apply.
+    """
+    if plan.source_kind == "parameter":
+        raw: object = getattr(query, plan.source, None)
+    elif plan.source_kind == "constant":
+        raw = plan.source
+    else:
+        raise ProviderEngineError(
+            f"{spec.error_prefix}_SHAPE_INVALID",
+            rejected=(f"derive source kind {plan.source_kind} is not routed",),
+        )
+    if raw is None:
+        # An omitted parameter stamps nothing. ``None`` keeps the engine's absent-versus-empty
+        # discipline: the row says the caller did not say, and a non-nullable required column
+        # refuses at the row model rather than inventing a value.
+        return None
+    return apply_derive(plan, raw)
+
+
 def normalize_record(
     record: object,
     document: object,
     spec: ModelSpec,
     row_model: type[ContractModel],
+    query: object = None,
 ) -> ContractModel:
-    """Build one contract row from a raw record, keeping nulls as nulls."""
+    """Build one contract row from a raw record, keeping nulls as nulls.
+
+    A column the declaration derives is the only column whose value is not a copy: its raw value
+    comes from the key its plan names (which may be a key the model publishes no column for), from
+    a query parameter, or from the declaration itself, and it is then run through the plan's stages
+    by :mod:`.value_transform`. Every other column -- and every declaration written before
+    ``column_derives`` existed, whose default is empty -- takes ``record[source_key or name]``
+    verbatim through the same two shape guards as before.
+
+    Raises:
+        ProviderEngineError: ``*_SHAPE_INVALID`` for a non-mapping record, a non-finite published
+            float, a boolean in a numeric column, a missing required key or a row the declared
+            types refuse.
+        ValueTransformError: Propagated untouched from a declared derive stage whose input is not
+            the shape the cast or rescale declares -- as :func:`_expand_rows` propagates
+            :class:`RowExpansionError`, so a value the source did not publish stays attributed to
+            the rule that refused it instead of becoming a silent null.
+    """
     if not isinstance(record, dict):
         raise ProviderEngineError(f"{spec.error_prefix}_SHAPE_INVALID")
+    derives = {plan.column: plan for plan in spec.column_derives}
     values: dict[str, Any] = {}
     absent: list[ColumnSpec] = []
     for column in spec.columns:
+        plan = derives.get(column.name)
+        if plan is not None and plan.source_kind != "record":
+            values[column.name] = _stamped_value(plan, query, spec)
+            continue
         key = column.source_key or column.name
+        if plan is not None and plan.source.strip():
+            # A record-source plan may read a key the model publishes no column for; the column it
+            # writes is still the declared one, so nothing undeclared reaches the row model.
+            key = plan.source
         if key not in record:
             absent.append(column)
             continue
         value = record[key]
         _reject_non_finite(value, spec)
         _reject_bool_for_numeric(column, value, spec)
+        if plan is not None:
+            value = apply_derive(plan, value)
         values[column.name] = value
     # A record value always wins: an envelope fact is a fallback for what the record does not
     # publish, not a replacement for what it does. ``row_envelope`` keys are declared columns, so
@@ -868,15 +986,27 @@ def make_http_json_fetcher(source: str, spec: ModelSpec) -> type[Fetcher[Any, An
                 return declared_query_model.model_validate(kwargs)
             except ValidationError as exc:
                 # The declaration and the caller are written by different people, and a code alone
-                # cannot tell a typo in a parameter name from a missing one -- so the refusal says
-                # which keys upstream does not accept. Names only; values are never echoed.
+                # cannot tell a typo in a parameter name from a missing one -- so the refusal splits
+                # the validation errors into the three faces they came from: keys upstream does not
+                # accept, required keys the caller left out, and keys whose value is the wrong
+                # shape. Names only; values are never echoed.
+                faces: dict[str, set[str]] = {"rejected": set(), "missing": set(), "invalid": set()}
+                for error in exc.errors():
+                    if not error["loc"]:
+                        continue
+                    kind = error["type"]
+                    if kind == "missing":
+                        face = "missing"
+                    elif kind == "extra_forbidden":
+                        face = "rejected"
+                    else:
+                        face = "invalid"
+                    faces[face].add(str(error["loc"][0]))
                 raise ProviderEngineError(
                     f"{spec.error_prefix}_QUERY_INVALID",
-                    rejected=sorted(
-                        str(error["loc"][0])
-                        for error in exc.errors()
-                        if error["loc"] and error["type"] == "extra_forbidden"
-                    ),
+                    rejected=sorted(faces["rejected"]),
+                    missing=sorted(faces["missing"]),
+                    invalid=sorted(faces["invalid"]),
                 ) from None
 
         def extract_data(self, params: object, ctx: FetchContext) -> tuple[object, ...]:
@@ -919,7 +1049,7 @@ def make_http_json_fetcher(source: str, spec: ModelSpec) -> type[Fetcher[Any, An
                 if published > expected:
                     raise ProviderEngineError(f"{spec.error_prefix}_TOTAL_CONFLICT")
             return tuple(
-                normalize_record(record, page, spec, declared_row_model)
+                normalize_record(record, page, spec, declared_row_model, params)
                 for page, records in pages
                 for record in apply_row_filters(records, params, spec)
             )

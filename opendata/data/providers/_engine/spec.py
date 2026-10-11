@@ -18,6 +18,13 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 
 from opendata.data.providers._engine.key_composition import CompositeKeySpec
+from opendata.data.providers._engine.row_expansion import (
+    NestedArrayExpansion,
+    RecordRepointPlan,
+    SeriesPivotPlan,
+    WideTablePivotPlan,
+)
+from opendata.data.providers._engine.value_transform import DerivePlan
 
 #: Value domains the engine can encode, validate and normalize.
 ValueKind = Literal["str", "int", "float", "bool", "date", "enum", "str_list"]
@@ -34,6 +41,11 @@ RowFilterOp = Literal["contains", "equals", "not_equals", "in", "prefix"]
 
 #: Async applicability, mirroring design §6.16 and AC2-16.
 AsyncMode = Literal["bounded_thread", "unsupported"]
+
+#: One stage of a row expansion, taken verbatim from the frozen plans
+#: :mod:`opendata.data.providers._engine.row_expansion` publishes: the plan is the declaration,
+#: and the engine only decides where the document it is applied to comes from.
+RowExpansionPlan = NestedArrayExpansion | SeriesPivotPlan | WideTablePivotPlan | RecordRepointPlan
 
 _IDENTIFIER_TYPES = frozenset({"str", "int", "float", "bool", "date", "enum", "str_list"})
 
@@ -423,6 +435,24 @@ class ModelSpec:
         composite_keys: Path placeholders this model composes out of several parameters rather than
             reading one attribute for (an SDMX data key is ``{freq}.{area}.{measure}``); the default
             composes none, so every declaration written before this is addressed exactly as before.
+        row_expansion: The stages this model's rows are expanded through before normalization sees
+            them, for a document whose rows are not one flat record list (a nested array exploded
+            into child rows, a wide table read per series and pivoted so one row is one
+            timestamp with one column per series). The stages are the frozen plans of
+            :mod:`opendata.data.providers._engine.row_expansion`, applied in declaration order,
+            and each re-resolves its pointers inside the document it is handed rather than
+            fetching a second one. The default expands nothing, so every declaration written
+            before row expansion resolves its pointer exactly as before.
+        column_derives: The plans that *produce* a column's value instead of copying one record
+            key into it, each keyed by the declared column it writes. A plan names where its raw
+            value comes from -- another record key, one validated query parameter stamped onto
+            every row, or text the declaration itself publishes -- and the stages run on it, which
+            are the frozen cast and rescale declarations of
+            :mod:`opendata.data.providers._engine.value_transform`. A plan aimed at a column this
+            model does not declare, one reading a parameter it does not declare, and one whose
+            stages are not the kernel's are all refused here rather than at fetch time. The
+            default derives nothing, so every declaration written before this copies each column
+            out of exactly one key exactly as before.
     """
 
     model: str
@@ -451,6 +481,12 @@ class ModelSpec:
     row_filters: tuple[RowFilterSpec, ...] = ()
     # Declared after row filters for the same reason: a positional construction cannot reach it.
     composite_keys: tuple[CompositeKeySpec, ...] = ()
+    # Declared last for the same reason again: a positional construction cannot reach it, so
+    # every declaration already on disk keeps binding to the same fields.
+    row_expansion: tuple[RowExpansionPlan, ...] = ()
+    # Declared last for the same reason once more: a positional construction cannot reach it, so
+    # every declaration already on disk keeps binding to the same fields.
+    column_derives: tuple[DerivePlan, ...] = ()
 
     @property
     def path_placeholders(self) -> tuple[str, ...]:
@@ -664,4 +700,33 @@ class ModelSpec:
                 raise ValueError(
                     f"{label} tests no record keys and gates on no parameter, so it is not a "
                     f"selection {self.model} can carry out"
+                )
+        # A derive plan is the only way a column's value stops being a copy of one record key, so
+        # every name it spells is resolved against this record here. A plan aimed at a column the
+        # model does not declare would make the engine write a row field the generated contract has
+        # no place for, and one reading a parameter that does not exist would stamp ``None`` onto
+        # every row and read back as a published answer -- the same silent-empty failure a
+        # ``row_filters`` entry with an undeclared ``value_param`` is refused for above. The stage
+        # kinds themselves are the kernel's, checked when the plan is constructed.
+        derived_columns: list[str] = []
+        for plan in self.column_derives:
+            if not isinstance(plan, DerivePlan):
+                raise ValueError(f"{self.model}: column_derives entries must be DerivePlan")
+            label = f"{self.model}: derive for {plan.column!r}"
+            if plan.column not in names:
+                raise ValueError(
+                    f"{label} names a column {self.model} does not declare: {sorted(names)}"
+                )
+            if plan.column in derived_columns:
+                raise ValueError(f"{label} is produced by two plans")
+            derived_columns.append(plan.column)
+            if plan.column in self.row_envelope:
+                raise ValueError(
+                    f"{label} is also copied from the response envelope, so the row would be "
+                    "written twice over"
+                )
+            if plan.source_kind == "parameter" and plan.source not in declared:
+                raise ValueError(
+                    f"{label} reads parameter {plan.source!r}, which {self.model} does not "
+                    "declare as a parameter"
                 )

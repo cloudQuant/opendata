@@ -5,8 +5,12 @@ the pinned OpenBB commit ``3e071fcc2cd9f891cac6040ae60296dba76dab46``. Two of th
 iteration-2 census blocked on ``csv_decoder`` and ``csv_header_offset`` -- are single-GET CSV
 downloads of the Fed's ``datadownload/Output.aspx`` package endpoint and are declared here as data
 (:class:`~opendata.data.providers._engine.spec.ModelSpec`) with
-``decoder=DecoderSpec(kind="csv", preamble_rows=5)``.
-The other eleven need composition the declaration format cannot express and are recorded in
+``decoder=DecoderSpec(kind="csv", preamble_rows=5)``. A third, :data:`SVENSSON_YIELD_CURVE`,
+became declarable the round the engine grew ``ModelSpec.row_expansion``: its census need was
+``series_pivot``, which is the wide body read once per declared series column and pivoted so one
+row is one timestamp with one column per series, and the declaration states those two stages as
+data instead of hand-writing the composition.
+The other ten need composition the declaration format cannot express and are recorded in
 :data:`NOT_DECLARED` rather than silently dropped from the count.
 
 One of those eleven was declared here and retracted. ``YieldCurve`` reads the same H.15 download as
@@ -62,6 +66,12 @@ table read one row short. :data:`DECLARED_GAPS` records what these declarations 
 
 from __future__ import annotations
 
+from typing import Final
+
+from opendata.data.providers._engine.row_expansion import (
+    SeriesPivotPlan,
+    WideTablePivotPlan,
+)
 from opendata.data.providers._engine.spec import (
     ColumnSpec,
     DecoderSpec,
@@ -233,6 +243,135 @@ TREASURY_RATES = ModelSpec(
     ),
 )
 
+
+#: The 99 series columns the release publishes behind its ``Date`` header, as ``(contract field,
+#: published header token)`` pairs.
+#:
+#: The tokens are read off the pinned upstream model's own ``__alias_dict__``
+#: (svensson_yield_curve.py:217-291 at commit ``3e071fcc2cd9``), which is the same face
+#: :mod:`scripts.quality.declaration_provenance` compares a declaration against, so this table is
+#: the published output contract rather than a guess at it. Two parameter columns groups and three
+#: maturity families: ``BETA0``-``BETA3`` and ``TAU1``/``TAU2`` are the fitted Svensson
+#: coefficients, ``SVENF01``-30 the instantaneous forward rates, ``SVENPY01``-30 the par yields,
+#: ``SVENY01``-30 the zero-coupon yields and ``SVEN1F01``/``04``/``09`` the one-year forwards --
+#: 4+2+3+30+30+30 = 99 columns, one per tenor in each of the three one-to-thirty-year families.
+SVENSSON_SERIES_COLUMNS: Final[tuple[tuple[str, str], ...]] = (
+    *(("beta0", "BETA0"), ("beta1", "BETA1"), ("beta2", "BETA2"), ("beta3", "BETA3")),
+    *(("tau1", "TAU1"), ("tau2", "TAU2")),
+    *((f"sven1f{suffix}", f"SVEN1F{suffix}") for suffix in ("01", "04", "09")),
+    *((f"svenf{tenor:02d}", f"SVENF{tenor:02d}") for tenor in range(1, 31)),
+    *((f"svenpy{tenor:02d}", f"SVENPY{tenor:02d}") for tenor in range(1, 31)),
+    *((f"sveny{tenor:02d}", f"SVENY{tenor:02d}") for tenor in range(1, 31)),
+)
+
+#: The timestamp header the release prints. The alias dictionary pairs ``date`` with ``Date`` and
+#: the upstream reader looks for the line that starts with ``Date,``, so this is the published token
+#: and not this declaration's invention.
+SVENSSON_TIMESTAMP_HEADER: Final = "Date"
+
+
+#: The Fed's Svensson fitted-factor daily yield-curve release: the census row whose body is a wide
+#: CSV read per series and pivoted, declared as the two kernel stages that do exactly that.
+SVENSSON_YIELD_CURVE = ModelSpec(
+    model="SvenssonYieldCurve",
+    domain="federal_reserve_svensson_yield_curve",
+    asset_class="macro",
+    period="d",
+    market="us",
+    base_url=FEDERAL_RESERVE_BASE_URL,
+    path="/data/yield-curve-tables/feds200628.csv",
+    rows_pointer="",
+    columns=(
+        ColumnSpec("date", "date", required=True, nullable=False),
+        *(ColumnSpec(field, "str", source_key=header) for field, header in SVENSSON_SERIES_COLUMNS),
+    ),
+    row_expansion=(
+        WideTablePivotPlan(
+            records_pointer="",
+            timestamp_key=SVENSSON_TIMESTAMP_HEADER,
+            series_keys=tuple(header for _, header in SVENSSON_SERIES_COLUMNS),
+        ),
+        SeriesPivotPlan(),
+    ),
+    scenario="Svensson 拟合因子收益率曲线：宽表按序列读出并转置成一行一个日期",
+    error_prefix="FEDERAL_RESERVE",
+    decoder=DecoderSpec(kind="csv"),
+    notes=(
+        "Census carrier OBB2-federal_reserve-SvenssonYieldCurve: its notes read static "
+        "feds200628.csv, rows are a per-series pivot of a wide CSV, not records, its evidence is "
+        "providers/federal_reserve/openbb_federal_reserve/models/svensson_yield_curve.py:143, and "
+        "its needs are csv_decoder + series_pivot + param_value_mapping. The first and the third "
+        "were already present capabilities (decode.delimited, which this package declares twice "
+        "above, and param.value_mapping), so series_pivot was the whole blocker and is what "
+        "ModelSpec.row_expansion carries now: a WideTablePivotPlan that reads the decoded wide "
+        "records once per declared series column into parallel-array series objects, then a "
+        "SeriesPivotPlan that joins them on the timestamp, so one row is one date with one column "
+        "per series. Nothing here fetches -- both stages re-resolve their pointers inside the "
+        "record list resolve_rows already reached, which is the kernel's own discipline.\n"
+        "The release vocabulary is now carried, which "
+        "it was not when this declaration first shipped "
+        "with four columns and a note saying the tokens "
+        "could not be measured here. Every field name "
+        "and every source key above is a pair out of the pinned contract's __alias_dict__ "
+        "(svensson_yield_curve.py:217-291) -- the same output-contract face "
+        "scripts/quality/declaration_provenance.py "
+        "compares a declaration against -- and the URL is "
+        "the string that file's download_csv hands to make_request (:134-147). Three things this "
+        "round read off it are corrections, and they are the reason the earlier note was wrong to "
+        "call them unknowable. The timestamp header is "
+        "Date, not the DATE guessed here. The 99 series "
+        "columns are the whole published set, so the "
+        "four-column declaration was a narrowed contract "
+        "-- which is exactly what this round's plane "
+        "run reported, COLUMN_MISSING over 99 names and "
+        "COLUMN_EXTRA over the four beta_0-style ones. And the download is "
+        "/data/yield-curve-tables/feds200628.csv: /datadownload/ is where the H.6 and H.15 package "
+        "endpoint lives, and this release does not sit beside it, so the path first declared here "
+        "would have answered a live run with a 404.\n"
+        "What is still not carried is the body. There is no capture root and no fixture for "
+        "feds200628.csv -- the same absence this module's docstring records for the H.6 and H.15 "
+        "bodies -- so which cells are actually blank, "
+        "and how many rows the file has, stay unverified "
+        "here. The tokens are no longer among the unknowns: "
+        "the pinned contract's own field validator "
+        "(:1062-1082) maps '', 'NA', 'ND' and 'N/A' to null and treats -999.99 as a missing TAU2. "
+        "That is why the 99 columns are str and not float. The engine can cast a cell now -- "
+        "columns.derive is present since this engine "
+        "grew ModelSpec.column_derives -- but it has no "
+        "sentinel-to-null map, so a cast stage would "
+        "refuse the very cells the contract was written "
+        "to absorb, and the H.15 body in this same package carries ND in 8003 cells. Declaring the "
+        "source token is the honest face; the cast is "
+        "one capability step behind a sentinel map, and "
+        "DECLARED_GAPS prices it there. Units are omitted "
+        "for the matching reason: these bodies ship "
+        "no metadata rows quoting a unit, unlike the H.6 and H.15 downloads whose Unit: rows this "
+        "file does quote.\n"
+        "Three upstream behaviours stay outside the declaration, and none of them is a naming "
+        "problem. The reader searches for the line starting with 'Date,' rather than counting a "
+        "preamble, and DecoderSpec.preamble_rows is a "
+        "count, so a body that leads with title rows is "
+        "a refusal here instead of a recovered table. The series_type parameter picks which of the "
+        "100 columns the answer carries -- zero_coupon, "
+        "par_yield, forward_instantaneous, forward_1y, "
+        "parameters, or bare column names -- and "
+        "start_date/end_date window the rows, all three after "
+        "the response arrives; selecting output columns "
+        "by a parameter is not a field ModelSpec has, "
+        "and the row filter this engine ships compares a declared value against a literal, not "
+        "against a requested range. A row whose date is blank or unparseable is skipped there and "
+        "refused here. What is not a gap, and was recorded as one: the zero-coupon and par-yield "
+        "series are read out of the CSV, not computed from the fitted factors -- transform_data "
+        "(svensson_yield_curve.py:1107-1196) only names a column allow-list per series_type and "
+        "copies the cells through, so the earlier claim "
+        "that this model needs a computed column was a "
+        "misreading of that branch. The domain "
+        "federal_reserve_svensson_yield_curve is registered in "
+        "domains.yaml, so build_row_model publishes FederalReserveSvenssonYieldCurve and not a "
+        "synthesized class."
+    ),
+)
+
 #: What each declared model still cannot do, per measurement. A declaration is not a finished
 #: capability: these are the post-processing steps the oracle performs and the engine has no field
 #: to express, so a roadmap can price them without re-reading the upstream tree.
@@ -241,9 +380,16 @@ DECLARED_GAPS: dict[str, str] = {
     "and month sort; adjusted picks between the _N.M and .M column families",
     "TreasuryRates": "ND to null; divide every maturity by 100; drop all-empty rows; positional "
     "(not named) column rename; client-side date window",
+    "SvenssonYieldCurve": "a sentinel map ('', NA, ND, N/A and -999.99 per the pinned validator "
+    ":1062-1082) before any float coercion, so the 99 series columns stay str; the header row is "
+    "found by searching for 'Date,' while preamble_rows counts; series_type selects which columns "
+    "the answer carries and start_date/end_date window the rows, all client-side; a row with an "
+    "unparseable date is skipped upstream and refused here. The zero-coupon and par-yield series "
+    "are READ, not computed from the fitted factors -- the earlier gap text said they were, and "
+    "transform_data (svensson_yield_curve.py:1107-1196) shows a column allow-list and a copy.",
 }
 
-#: The eleven upstream models this package does not declare, and the capability each one needs.
+#: The ten upstream models this package does not declare, and the capability each one needs.
 NOT_DECLARED: dict[str, str] = {
     "YieldCurve": "reads the same H.15 download as TreasuryRates, then melts its eleven maturity "
     "columns into long (date, maturity, rate) rows ordered by a Categorical, selects the requested "
@@ -263,9 +409,6 @@ NOT_DECLARED: dict[str, str] = {
     "columns mapped from two dictionaries (primary_dealer_positioning.py:108-122)",
     "CentralBankHoldings": "delegates to a SomaHoldings helper that resolves the endpoint per data "
     "type (central_bank_holdings.py:317)",
-    "SvenssonYieldCurve": "plain CSV, but a series_type branch picks different columns and the "
-    "zero-coupon/par-yield series are computed from the fitted parameters "
-    "(svensson_yield_curve.py:1116-1157)",
     "InflationExpectations": "an Excel workbook read from a zipped download "
     "(inflation_expectations.py:149-154)",
     "TotalFactorProductivity": "an Excel workbook with per-sheet skiprows "

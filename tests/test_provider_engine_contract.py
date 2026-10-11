@@ -440,6 +440,41 @@ class TestRejectionsBeforeAnySend:
         assert code == "ENGINE_QUERY_INVALID"
         assert transport.calls == []
 
+    def test_the_query_refusal_names_which_face_of_its_own_failure_it_is(
+        self, send_through
+    ) -> None:
+        """One code, three attributions -- and each of the three can be the only one that fires.
+
+        ``transform_query`` promises that a caller can tell a typo from an omission, and a bare code
+        delivers neither. The intrinio HistoricalDividends witness found the second face unfilled: a
+        required parameter left out raised with an empty ``rejected`` and no name at all. So each
+        face is shown alone here, and the arms are written so that a refusal which fills the wrong
+        bucket -- or none -- fails rather than agreeing.
+        """
+        send_through(FixedResponseTransport(paged([record(0)])))
+        spec = demo_spec(pagination=UNPAGED)
+        fetcher = demo_fetcher(spec)
+
+        with pytest.raises(ProviderEngineError) as omitted:
+            fetcher.fetch(ctx=fixture_context(SOURCE, spec), end_date=date(2026, 1, 2))
+        assert omitted.value.missing == ("start_date",)
+        assert (omitted.value.rejected, omitted.value.invalid) == ((), ())
+        assert "missing=['start_date']" in str(omitted.value)
+
+        with pytest.raises(ProviderEngineError) as foreign:
+            fetcher.fetch(
+                ctx=fixture_context(SOURCE, spec),
+                start_date=date(2026, 1, 1),
+                undeclared=1,
+            )
+        assert foreign.value.rejected == ("undeclared",)
+        assert (foreign.value.missing, foreign.value.invalid) == ((), ())
+
+        with pytest.raises(ProviderEngineError) as mistyped:
+            fetcher.fetch(ctx=fixture_context(SOURCE, spec), start_date="not-a-date")
+        assert mistyped.value.invalid == ("start_date",)
+        assert (mistyped.value.missing, mistyped.value.rejected) == ((), ())
+
     def test_foreign_query_object_sends_nothing(self, send_through) -> None:
         transport = send_through(FixedResponseTransport(paged([record(0)])))
         spec = demo_spec(pagination=UNPAGED)

@@ -1,5 +1,7 @@
 {
-  "provider_groups": ["intrinio"],
+  "provider_groups": [
+    "intrinio"
+  ],
   "rows": [
     {
       "task_id": "OBB2-intrinio-BalanceSheet",
@@ -127,7 +129,7 @@
         "client_side_filter",
         "field_rename_map"
       ],
-      "expressible_today": false,
+      "expressible_today": true,
       "existing_fetcher_class": "",
       "evidence": "providers/intrinio/openbb_intrinio/models/currency_pairs.py:63",
       "notes": "Single GET /forex/pairs, rows under 'pairs' via get_data_many sub_dict (:63). Free-text query filtered client-side on code/base_currency/quote_currency substrings with a DataFrame (:76-81); output symbol renamed from upstream code (:26)."
@@ -212,7 +214,7 @@
         "field_rename_map",
         "param_value_mapping"
       ],
-      "expressible_today": false,
+      "expressible_today": true,
       "existing_fetcher_class": "",
       "evidence": "providers/intrinio/openbb_intrinio/models/equity_search.py:82",
       "notes": "Single GET /companies/search, rows under 'companies' (:82, :90). Output renames id->intrinio_id and ticker->symbol (:43-46); query limit aliased to page_size with default 10000 (:26-36); is_symbol excluded from the querystring (:79). No paged loop - one shot."
