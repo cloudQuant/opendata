@@ -12,11 +12,11 @@
       "response_format": "csv",
       "row_extraction": "single CSV (econdb.com/static/help/main_tickers.csv, helpers.py:431) read via pandas read_csv, filtered/sorted then DataFrame.to_dict(records)",
       "join_needed": false,
-      "needs_engine_capability": ["csv_decoder", "derived_columns", "client_side_row_filter", "client_side_sort"],
+      "needs_engine_capability": ["csv_decoder", "derived_columns", "client_side_row_filter", "client_side_sort", "sentinel_value_nulling"],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/econdb/openbb_econdb/utils/helpers.py:449",
-      "notes": "aextract_data (models/available_indicators.py:91) delegates wholly to helpers.download_indicators; rows are the ticker roster, not an indicator-data message. Derives symbol_root by string surgery (helpers.py:456-463), drops obsolete OECD/underscore tickers (helpers.py:451-454), fixes bad multipliers (478-479), sorts by last_date desc (available_indicators.py:94). Unlike OECD siblings this roster is a static CSV file, no SDMX."
+      "notes": "aextract_data (models/available_indicators.py:91) delegates wholly to helpers.download_indicators; rows are the ticker roster, not an indicator-data message. Derives symbol_root by string surgery (helpers.py:456-463), drops obsolete OECD/underscore tickers (helpers.py:451-454), fixes bad multipliers (478-479), sorts by last_date desc (available_indicators.py:94). Unlike OECD siblings this roster is a static CSV file, no SDMX. C92 upstream read: fillna(\"N/A\").replace(\"N/A\", None).replace(\"nan\", None) runs before sort_values(by=last_date, ascending=False) (helpers.py:481-482; available_indicators.py:94), so a sort over raw text would rank the sentinels. No cap."
     },
     {
       "task_id": "OBB2-econdb-CountryProfile",

@@ -479,6 +479,22 @@ class TestRowsByValue:
         assert emitted[0].model_dump() == case.first_row
         assert emitted[-1].model_dump() == case.last_row
 
+    def test_the_declared_sort_beats_a_body_published_out_of_order(self) -> None:
+        """Upstream sorts ascending by month (money_measures.py:112); the stage must too.
+
+        The shipped fixture is already ascending, so it cannot tell a sort from its absence; this
+        body publishes the same two rows newest-first. Skipping :func:`apply_row_order` would
+        therefore return them in published order and fail here, while ``limit=None`` means the
+        sort must keep every row.
+        """
+        case = CASES[0]
+        published = tuple(reversed(case.lines))
+        assert [line.split(",", 1)[0] for line in published] == ["2024-05", "1959-01"]
+        fetcher, _ = served(case, case.packaged(case.header, *published))
+        emitted = rows_of(fetcher, MONEY_MEASURES)
+        assert [row.month for row in emitted] == ["1959-01", "2024-05"]
+        assert len(emitted) == len(published)
+
     def test_the_declared_eight_columns_come_out_of_a_thirty_column_row(self) -> None:
         """H.6 keeps 8 of the 30 columns it is handed, and the rest never reach a row."""
         money_measures = CASES[0]

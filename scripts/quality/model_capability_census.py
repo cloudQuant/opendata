@@ -227,6 +227,12 @@ LABEL_TO_CAPABILITY: Final[dict[str, str]] = {
     # set chosen by the value of ``series_type``. Without a spelling of their own each row read as
     # covered, and the audit wave flipped two flags it should not have.
     "relative_date_default": "param.relative_default",
+    # C92's own kernel boundary named this one. ``rows.order_limit`` sorts *and* caps, but
+    # intrinio's attribute search caps the source's own relevance sequence and never sorts it
+    # (search_attributes.py:64 ``data['tags'][:query.limit]``), and ``RowOrderSpec.column`` is
+    # mandatory -- so the row was recorded against a capability whose required argument it cannot
+    # supply. A cap over the published sequence is a different seam and gets its own spelling.
+    "source_order_cap": "rows.cap_source_order",
     # ---- not an engine capability at all -----------------------------------
     "sdk_delegation": "outside.sdk",
     "html_scraping_sdk": "outside.sdk",
@@ -1429,11 +1435,36 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         capability="rows.order_limit",
         claim=False,
         engine_work=True,
-        proof_file=HTTP_JSON_REL,
-        anchor="def _page_request",
-        why="_page_request adds paging keys and nothing else: rows stay in upstream order, with no "
-        "sort and no top-n applied.",
+        proof_file=SPEC_REL,
+        anchor="order_by: RowOrderSpec | None = None",
+        why="Read off the disk: ``order_by`` is a field only a declaration that sorts and caps the "
+        "finished row set can add to ModelSpec, and its cross anchor is the stage that applies it, "
+        "so this entry reports absent until the field lands and present from the first run after "
+        "it does. C92 shipped both halves -- ``RowOrderSpec`` plus ``apply_row_order``, wired "
+        "between the row filters and normalization -- and the entry is re-anchored off ``def "
+        "_page_request``, which was never this capability's carrier: paging adds request keys and "
+        "leaves rows in upstream order. The declaration probe counts ``order_by=`` sites, so a "
+        "capability whose code exists but whose models have not yet declared it reads "
+        "``built_but_unused`` rather than pretending a row is covered.",
+        read_from_disk=True,
+        cross_file=HTTP_JSON_REL,
+        cross_anchor="def apply_row_order(",
         probe=DeclarationProbe(call="ModelSpec", keyword="order_by"),
+    ),
+    CapabilityEntry(
+        capability="rows.cap_source_order",
+        claim=False,
+        engine_work=True,
+        proof_file=SPEC_REL,
+        anchor="column: str",
+        why="The row this replaces never sorts: intrinio's attribute search cuts the source's own "
+        "relevance sequence with ``data['tags'][:query.limit]`` (search_attributes.py:64), and no "
+        "published column carries that rank, so a sort would have nothing to sort on. The engine's "
+        "ordering facet requires the key it sorts by -- ``column`` is the mandatory first field of "
+        "RowOrderSpec and a blank one is refused -- so the declaration cannot express ``keep the "
+        "first N as published`` and this entry stays absent. Recording the row against "
+        "``rows.order_limit`` instead would have credited the row to a capability whose required "
+        "argument it cannot supply, which is the same over-claim the shipped-cover bucket is for.",
     ),
     CapabilityEntry(
         capability="columns.derive",

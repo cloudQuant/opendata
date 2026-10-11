@@ -77,6 +77,7 @@ from opendata.data.providers._engine.spec import (
     DecoderSpec,
     ModelSpec,
     ParamSpec,
+    RowOrderSpec,
 )
 
 #: Upstream base for the Fed's ``datadownload`` package endpoint. No model sends a credential.
@@ -178,6 +179,7 @@ MONEY_MEASURES = ModelSpec(
     scenario="货币供应量月表：取出 H.6 发布表在五行元数据之后的七个货币总量序列",
     error_prefix="FEDERAL_RESERVE",
     decoder=DecoderSpec(kind="csv", preamble_rows=5),
+    order_by=RowOrderSpec(column="Time Period", direction="asc", limit=None),
     notes=(
         "The preamble is declared, not assumed: five metadata rows precede the header in the "
         "shipped body and preamble_rows=5 skips them by the same count upstream's read_csv "
@@ -191,8 +193,10 @@ MONEY_MEASURES = ModelSpec(
         "str because the source publishes 1959-01, which no declared date kind can parse -- "
         "upstream converts it with to_datetime. Upstream also maps ND and - to null, coerces each "
         "cell with float(), filters the window in pandas after the whole download (default ten "
-        "years, money_measures.py:87-90) and sorts by month; the engine emits every published row "
-        "in published order and reads a blank cell -- the sentinel this capture actually uses -- "
+        "years, money_measures.py:87-90) and sorts the transformed data ascending by month "
+        "(money_measures.py:112); order_by declares that sort on the record key the download "
+        "publishes (Time Period, the source_key of month), with limit=None so every kept row is "
+        "returned, and the engine reads a blank cell -- the sentinel this capture actually uses -- "
         "as null."
     ),
 )

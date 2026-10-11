@@ -13,7 +13,10 @@ records are, :class:`~opendata.data.providers._engine.spec.RowFilterSpec` says w
 published records the model is about, and :class:`~opendata.data.providers._engine.spec.ColumnSpec`
 says what to take out of each selected record. The middle facet is a client-side *selection*, and
 :func:`apply_row_filters` runs it between the declared-total agreement check and normalization for
-that reason.
+that reason. A fourth facet, :class:`~opendata.data.providers._engine.spec.RowOrderSpec`, says which
+of the selected records come first and how many of them the model keeps; :func:`apply_row_order`
+runs it immediately after the selection, on the same side of normalization, so it orders what
+survived filtering and nothing about the completeness judgement changes.
 
 The module performs I/O only through :func:`_http_get_json`, which the contract
 suite replaces with a synthetic recorder, so no test can reach a live endpoint.
@@ -62,6 +65,7 @@ if TYPE_CHECKING:
         ParamSpec,
         RowFilterOp,
         RowFilterSpec,
+        RowOrderSpec,
     )
 
 DEFAULT_TIMEOUT = 30.0
@@ -952,6 +956,125 @@ def apply_row_filters(records: list[Any], query: object, spec: ModelSpec) -> lis
     return kept
 
 
+def _order_cell_class(value: object) -> str:
+    """Which comparison class one published sort cell belongs to.
+
+    ``bool`` is not a number here even though python makes it an ``int`` subclass: the engine
+    already refuses a published boolean in a numeric column (:func:`_reject_bool_for_numeric`), so
+    letting ``True`` order a weight column would rank a flag against quantities. A list or dict --
+    what a nested value decodes to -- carries no order the engine could defend either.
+    """
+    if isinstance(value, bool):
+        return "unrankable"
+    if isinstance(value, (int, float)):
+        return "number"
+    if isinstance(value, str):
+        return "text"
+    return "unrankable"
+
+
+def _order_limit(order: RowOrderSpec, query: object) -> int | None:
+    """The row count this query caps the ordered records at, or ``None`` for no cap.
+
+    A literal ``limit`` is the declaration's own number. ``limit_param`` mirrors how
+    :class:`~opendata.data.providers._engine.spec.RowFilterSpec` takes its needle: the value is read
+    off the *validated* query, so the parameter's declared type was already enforced and nothing is
+    re-validated here.
+
+    A cap that cannot be read caps nothing. An omitted parameter is "the caller did not say", the
+    same reading an empty needle gets in :func:`apply_row_filters`; a non-positive or unparseable
+    value is the caller's input rather than a bound the declaration was written against, and turning
+    a published answer into an empty frame on the strength of it is the silent-empty failure class
+    this engine refuses elsewhere.
+    """
+    if not order.limit_param:
+        return order.limit
+    raw: object = getattr(query, order.limit_param, None)
+    if raw is None or isinstance(raw, bool):
+        return None
+    if isinstance(raw, int):
+        return raw if raw > 0 else None
+    try:
+        parsed = int(_rendered(raw).strip())
+    except ValueError:
+        return None
+    return parsed if parsed > 0 else None
+
+
+def apply_row_order(records: list[Any], query: object, spec: ModelSpec) -> list[Any]:
+    """Return the records the declaration's ``order_by`` wants, in the declared order.
+
+    The stage runs on what :func:`apply_row_filters` kept and before :func:`normalize_record` builds
+    a row from it. Both ends of that placement are load-bearing. Ordering the *published* list would
+    let a top-n decide how many rows the source "published", and completeness is judged on the
+    published records -- so, exactly as with filtering, a short answer stays short no matter how few
+    rows the cap keeps. Ordering after normalization would mean sorting rows by the names the
+    declaration gave them, which is a different vocabulary: ``column`` names the raw record key.
+
+    Earlier stages that already produced a sequence are reordered by nothing but this declaration:
+    paging ran in :func:`fetch_pages`, and ``path.explode`` ran in :func:`_expand_rows` inside
+    :func:`resolve_rows`, so an ordering sees the exploded child rows and overrides their published
+    sequence on purpose. A model whose rows must stay in the source's own order -- a pivot's
+    ascending timestamps -- declares no ``order_by``, and a declaration that both pages and caps is
+    refused by :class:`ModelSpec` because the cap would only ever see one page.
+
+    Ties keep published order. :func:`sorted` is stable and ``reverse=True`` preserves that
+    stability, so a descending sort does not mirror the tied rows the way reversing the result list
+    would: two records with the same cell come out in the order the source put them, whichever way
+    the column is read.
+
+    A record whose sort cell cannot be compared is placed **last**, never dropped and never a shape
+    failure. "Refuse the record" would make an ordering facet a second selector -- the one thing a
+    facet whose whole job is sequence must not become, since a row discarded over the shape of a key
+    it did not publish is indistinguishable from a row a filter discarded -- while a record that
+    publishes no such key, or one this column cannot order, says something about the source rather
+    than about this query. The comparison class is the first rankable cell in published order: a
+    column that starts with numbers and then yields text is not comparable across those cells, so
+    the text ones join the trailing unrankable run. That run keeps published order, and the cap may
+    cut it off -- an unrankable row is last, so a top-n of rankable rows never has one smuggled in
+    ahead of a rankable row.
+
+    A cap larger than the record count keeps every record: the count is applied by slicing, never by
+    demanding that the source have published that many rows.
+
+    Raises:
+        ProviderEngineError: ``*_SHAPE_INVALID`` for a record that is not a mapping at all, the same
+            guard :func:`apply_row_filters` keeps -- a record that is not a row is refused by
+            normalization anyway, and discarding or repositioning it here would present a malformed
+            document as an ordering outcome.
+    """
+    order = spec.order_by
+    if order is None:
+        return list(records)
+    cap = _order_limit(order, query)
+    rankable_class: str | None = None
+    ranked: list[dict[str, Any]] = []
+    unranked: list[Any] = []
+    for record in records:
+        if not isinstance(record, dict):
+            raise ProviderEngineError(f"{spec.error_prefix}_SHAPE_INVALID")
+        cell = record.get(order.column)
+        kind = "unrankable" if cell is None else _order_cell_class(cell)
+        if kind == "unrankable":
+            unranked.append(record)
+            continue
+        if rankable_class is None:
+            rankable_class = kind
+        if kind != rankable_class:
+            unranked.append(record)
+            continue
+        ranked.append(record)
+    # Every cell in ``ranked`` shares one comparison class, so the comparison below cannot raise:
+    # the mixed-type case was routed to the unrankable run instead of coerced or guessed at.
+    ordered = sorted(
+        ranked,
+        key=lambda record: record[order.column],
+        reverse=order.direction == "desc",
+    )
+    kept = ordered + unranked
+    return kept[:cap] if cap is not None else kept
+
+
 def make_http_json_fetcher(source: str, spec: ModelSpec) -> type[Fetcher[Any, Any]]:
     """Build one provider model's fetcher class from its declaration."""
     declared_query_model = build_query_model(spec)
@@ -1051,7 +1174,13 @@ def make_http_json_fetcher(source: str, spec: ModelSpec) -> type[Fetcher[Any, An
             return tuple(
                 normalize_record(record, page, spec, declared_row_model, params)
                 for page, records in pages
-                for record in apply_row_filters(records, params, spec)
+                # The ordering stage reads what the selection kept, never the published list, so a
+                # top-n cannot decide how many rows the source is credited with publishing.
+                for record in apply_row_order(
+                    apply_row_filters(records, params, spec),
+                    params,
+                    spec,
+                )
             )
 
     published_name = f"{source.replace('_', ' ').title().replace(' ', '')}{spec.model}Fetcher"

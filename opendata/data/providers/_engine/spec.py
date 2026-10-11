@@ -39,6 +39,9 @@ PaginationKind = Literal["none", "offset", "page", "cursor"]
 #: Row predicates the engine evaluates client-side over the records a source published.
 RowFilterOp = Literal["contains", "equals", "not_equals", "in", "prefix"]
 
+#: How a declared ordering reads one record's sort cell against another's.
+RowOrderDirection = Literal["asc", "desc"]
+
 #: Async applicability, mirroring design §6.16 and AC2-16.
 AsyncMode = Literal["bounded_thread", "unsupported"]
 
@@ -56,6 +59,11 @@ _ROW_FILTER_OPS = frozenset({"contains", "equals", "not_equals", "in", "prefix"}
 
 #: How a filter combines its columns: one hit selects the row (``any``) or every column must hit.
 _ROW_FILTER_MATCHES = frozenset({"any", "all"})
+
+#: The directions :class:`RowOrderSpec` can sort in, checked against the literal for the same reason
+#: the ops above are: a declaration that reached the fetch stage with an unknown direction would
+#: sort ascending and come back as a legitimately ordered answer rather than as the typo it is.
+_ORDER_DIRECTIONS = frozenset({"asc", "desc"})
 
 #: The separator ``op="in"`` publishes its alternatives with. ``|`` is already this format's list
 #: separator -- the character the FINRA ``zip_csv`` bodies delimit their fields with -- so a needle
@@ -401,6 +409,61 @@ class RowFilterSpec:
 
 
 @dataclass(frozen=True)
+class RowOrderSpec:
+    """A declared "order the published records by one key, then keep the first N of them".
+
+    :class:`RowFilterSpec` can say which records a model is about, and nothing in the declaration
+    can say which of them come *first*. That is not a cosmetic gap: a search ranked by relevance,
+    or a holdings list cut to its largest weights, answers with a selection whose sequence *is* the
+    answer, and without an ordering facet the engine returned the source's own order and the model
+    was recorded as needing ``rows.order_limit`` engine work.
+
+    The key is judged on the decoded record, before per-row normalization, exactly as a filter's
+    ``columns`` are -- which is why ``column`` names a record key here and is checked against the
+    record keys this declaration's own columns publish, rather than against a vocabulary the engine
+    cannot see. A filter that names a key nothing publishes drops rows; an ordering that names one
+    compares nothing, keeps the published order and reads back as a legitimately sorted answer -- so
+    the typo is invisible at run time and is refused at construction instead.
+
+    Attributes:
+        column: Record key the order is taken on.
+        direction: ``asc`` or ``desc``, judged on the values the source published.
+        limit: Literal row count to keep, or ``None`` to keep every record in the declared order.
+            A cap larger than the record count keeps all of them; a cap of ``0`` is refused because
+            a model that returns nothing is not a top-n.
+        limit_param: Name of a declared parameter whose validated value is the cap instead,
+            mirroring how a filter takes its needle from ``value_param``. A caller who omits it
+            caps nothing.
+    """
+
+    column: str
+    direction: RowOrderDirection = "asc"
+    limit: int | None = None
+    limit_param: str = ""
+
+    def __post_init__(self) -> None:
+        """Reject an ordering the engine cannot carry out, or cannot carry out unambiguously."""
+        if not isinstance(self.column, str) or not self.column.strip():
+            raise ValueError(f"an order stage must name one record key, got {self.column!r}")
+        if self.direction not in _ORDER_DIRECTIONS:
+            raise ValueError(
+                f"order direction {self.direction!r} is not one of {sorted(_ORDER_DIRECTIONS)}"
+            )
+        if self.limit is not None:
+            # ``bool`` is an ``int`` subclass in python, and a declared ``limit=True`` would cap the
+            # answer at one row while saying nothing of the sort -- the same widening the engine
+            # refuses for a published boolean in a numeric column.
+            if isinstance(self.limit, bool) or not isinstance(self.limit, int):
+                raise ValueError(f"an order limit must be an integer row count, got {self.limit!r}")
+            if self.limit <= 0:
+                raise ValueError(
+                    f"an order limit of {self.limit} keeps no rows, which is not a top-n"
+                )
+        if self.limit is not None and self.limit_param:
+            raise ValueError("an order stage takes its cap from limit or limit_param, not both")
+
+
+@dataclass(frozen=True)
 class ModelSpec:
     """One fixed provider×model task expressed as an executable declaration.
 
@@ -453,6 +516,12 @@ class ModelSpec:
             stages are not the kernel's are all refused here rather than at fetch time. The
             default derives nothing, so every declaration written before this copies each column
             out of exactly one key exactly as before.
+        order_by: The one record key the surviving rows are ordered by, and how many of the ordered
+            rows the model returns (:class:`RowOrderSpec`). It runs after ``row_filters`` and before
+            normalization, so the sequence is decided on what the selection kept and a top-n can
+            never reach the declared-total reconciliation -- completeness is judged on the published
+            records, the same discipline that keeps ``row_filters`` from weakening it. The default
+            orders nothing, so every declaration written before this returns the source's own order.
     """
 
     model: str
@@ -487,6 +556,9 @@ class ModelSpec:
     # Declared last for the same reason once more: a positional construction cannot reach it, so
     # every declaration already on disk keeps binding to the same fields.
     column_derives: tuple[DerivePlan, ...] = ()
+    # Declared last for the same reason again: a positional construction cannot reach it, so
+    # every declaration already on disk keeps binding to the same fields.
+    order_by: RowOrderSpec | None = None
 
     @property
     def path_placeholders(self) -> tuple[str, ...]:
@@ -729,4 +801,33 @@ class ModelSpec:
                 raise ValueError(
                     f"{label} reads parameter {plan.source!r}, which {self.model} does not "
                     "declare as a parameter"
+                )
+        # An ordering is judged on the decoded record, whose keys the engine cannot see, so the only
+        # vocabulary it can be checked against is this record's own: a declared column name or the
+        # record key that column reads. A key outside it is a declaration whose sort cell is absent
+        # from every record, and absent cells compare equal -- so the stage would keep the published
+        # order and the answer would read as a legitimately sorted one rather than as the typo.
+        if self.order_by is not None:
+            if not isinstance(self.order_by, RowOrderSpec):
+                raise ValueError(f"{self.model}: order_by must be a RowOrderSpec")
+            label = f"{self.model}: order_by {self.order_by.column!r}"
+            record_keys = set(names) | {column.source_key or column.name for column in self.columns}
+            if self.order_by.column not in record_keys:
+                raise ValueError(
+                    f"{label} names a record key no column of {self.model} publishes: "
+                    f"{sorted(record_keys)}"
+                )
+            if self.order_by.limit_param and self.order_by.limit_param not in declared:
+                raise ValueError(
+                    f"{label} takes its cap from limit_param {self.order_by.limit_param!r}, "
+                    f"which {self.model} does not declare as a parameter"
+                )
+            # Paging hands the transform one document at a time, so an ordering declared across
+            # pages would cap each page separately while its words describe one global top-n.
+            # Refusing it here keeps the declaration meaning what it says; the cross-page sort is
+            # engine work the roadmap has not bought yet.
+            if self.pagination.kind != "none":
+                raise ValueError(
+                    f"{label} cannot be honoured across a {self.pagination.kind} answer: the stage "
+                    "orders the records of one response, so the cap would be per page"
                 )

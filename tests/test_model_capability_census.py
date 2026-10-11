@@ -543,11 +543,11 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
     ]
     # Presence is re-measured from the shipped engine source for the capabilities whose declaration
     # carrier exists there: one spec field each (row_filters, composite_keys, row_expansion,
-    # column_derives, ParamSpec.value_map), plus the two C90 entries whose carrier is a derive stage
-    # on ModelSpec.column_derives (columns.cast and columns.rescale read apply_cast/apply_scale in
-    # _engine/value_transform.py). So a field that has not landed yet is reported absent without the
-    # census author saying so. Every other entry is asserted by the census author and only
-    # cross-checked against the provider declarations that use it.
+    # column_derives, ParamSpec.value_map, ModelSpec.order_by), plus the two C90 entries whose
+    # carrier is a derive stage on ModelSpec.column_derives (columns.cast and columns.rescale read
+    # apply_cast/apply_scale in _engine/value_transform.py). So a field that has not landed yet is
+    # reported absent without the census author saying so. Every other entry is asserted by the
+    # census author and only cross-checked against the provider declarations that use it.
     assert sorted(entry.capability for entry in mcc.REGISTRY if entry.read_from_disk) == [
         "columns.cast",
         "columns.derive",
@@ -556,6 +556,7 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
         "param.value_mapping",
         "path.explode",
         ROW_FILTER_CAPABILITY,
+        "rows.order_limit",
     ]
     # A probe is a capability's declaration surface: it is how the instrument counts the production
     # declarations that exercise the feature, so an entry with no surface may not claim presence.
@@ -568,7 +569,9 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
     # branch, a conditional derive, a value comparison and a multi-code key position, and none of
     # the five has a field to carry it yet, which is exactly why a probe cannot be written for them.
     # C91 adds one more, making ten: intrinio's one-year window, which upstream computes from today
-    # at request time while ParamSpec.default holds a literal.
+    # at request time while ParamSpec.default holds a literal. C92 adds the eleventh: a cap over the
+    # source's own published sequence, which the new ordering facet cannot declare because the key
+    # it sorts on is mandatory and that search publishes no rank column.
     assert sorted(
         entry.capability for entry in mcc.REGISTRY if entry.probe is None and entry.engine_work
     ) == [
@@ -581,6 +584,7 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
         "param.value_transform",
         "path.list_segment",
         "request.caller_url",
+        "rows.cap_source_order",
         "rows.filter_comparison",
     ]
 

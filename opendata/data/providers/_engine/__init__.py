@@ -4,9 +4,10 @@ Provider packages declare models with :mod:`.spec` and build fetchers with
 :mod:`.http_json`; :mod:`.decoders` is the body-shape face the declaration selects --
 a JSON document, delimited text, or one member of a zip archive. A declaration may also
 select rows out of what the source published, with the :class:`~.spec.RowFilterSpec`
-predicates :func:`.http_json.apply_row_filters` evaluates. No module here
-imports an upstream SDK or performs I/O at import time, so a provider's cold import
-stays as light as its own package.
+predicates :func:`.http_json.apply_row_filters` evaluates, and then order and cap what the
+selection kept with the :class:`~.spec.RowOrderSpec` :func:`.http_json.apply_row_order`
+evaluates. No module here imports an upstream SDK or performs I/O at import time, so a
+provider's cold import stays as light as its own package.
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ from opendata.data.providers._engine.decoders import ResponseDecodeError, decode
 from opendata.data.providers._engine.http_json import (
     ProviderEngineError,
     apply_row_filters,
+    apply_row_order,
     build_query_model,
     build_row_model,
     fetch_pages,
@@ -28,6 +30,7 @@ from opendata.data.providers._engine.spec import (
     PaginationSpec,
     ParamSpec,
     RowFilterSpec,
+    RowOrderSpec,
 )
 
 __all__ = [
@@ -38,8 +41,10 @@ __all__ = [
     "ParamSpec",
     "ProviderEngineError",
     "RowFilterSpec",
+    "RowOrderSpec",
     "ResponseDecodeError",
     "apply_row_filters",
+    "apply_row_order",
     "build_query_model",
     "build_row_model",
     "decode_body",
