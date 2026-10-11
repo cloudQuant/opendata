@@ -93,7 +93,7 @@ def die(msg: str) -> NoReturn:
 
 def git(argv: list[str]) -> str:
     """Run a read-only git command and return its stdout, failing loudly."""
-    proc = subprocess.run(  # nosec B603, B607  # noqa: S603
+    proc = subprocess.run(  # nosec B603  # noqa: S603
         argv,
         cwd=REPO,
         capture_output=True,

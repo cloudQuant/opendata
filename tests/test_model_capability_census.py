@@ -567,6 +567,8 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
     # C89 grew this list by five: the oecd rows' re-audit named a code-table lookup, a period-width
     # branch, a conditional derive, a value comparison and a multi-code key position, and none of
     # the five has a field to carry it yet, which is exactly why a probe cannot be written for them.
+    # C91 adds one more, making ten: intrinio's one-year window, which upstream computes from today
+    # at request time while ParamSpec.default holds a literal.
     assert sorted(
         entry.capability for entry in mcc.REGISTRY if entry.probe is None and entry.engine_work
     ) == [
@@ -575,6 +577,7 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
         "columns.period_cast",
         "derive.conditional",
         "param.preset_merge",
+        "param.relative_default",
         "param.value_transform",
         "path.list_segment",
         "request.caller_url",

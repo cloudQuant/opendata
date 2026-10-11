@@ -660,10 +660,10 @@
     "csv_decoder",
     "client_side_filter"
    ],
-   "expressible_today": false,
+   "expressible_today": true,
    "existing_fetcher_class": "",
-   "evidence": "providers/cboe/openbb_cboe/utils/helpers.py:125",
-   "notes": "Body is a CSV at www.cboe.com/us/options/symboldir/...?download=csv read via read_csv, then substring filtered."
+   "evidence": "providers/cboe/openbb_cboe/models/equity_search.py:70",
+   "notes": "csv_decoder comes from helpers.py:131 (read_csv over the ?download=csv body pinned at helpers.py:125); client_side_filter comes from equity_search.py:70 (str.contains leg gated on is_symbol at :69)."
   },
   {
    "task_id": "OBB2-cboe-FuturesCurve",

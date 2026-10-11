@@ -141,7 +141,7 @@
       "proof_file": "opendata/data/providers/_engine/http_json.py",
       "read_from_disk": false,
       "status": "absent",
-      "why": "Each column reads exactly one declared source key, and the columns it may read are a fixed tuple written before the request. A row whose columns are whichever XBRL tags this issuer happened to publish cannot be declared; columns.select covers a static selection, which is why the SEC statement rows carry both labels."
+      "why": "Each column reads exactly one declared source key, and the columns it may read are a fixed tuple written before the request. A row whose columns are whichever XBRL tags this issuer happened to publish cannot be declared; columns.select covers a static selection, which is why the SEC statement rows carry both labels. The same fixed-tuple rule is what the federal_reserve Svensson feed breaks from the other direction: its columns are whichever group the caller's ``series_type`` names (svensson_yield_curve.py:1123-1145), so the selection depends on a request value rather than on the response."
     },
     "columns.select": {
       "anchor": "for column in spec.columns:",
@@ -568,6 +568,23 @@
       "status": "absent",
       "why": "``params`` is a fixed declared tuple with no field that merges a preset filter set into the caller's parameters, which is what a screener built from a preset ini needs."
     },
+    "param.relative_default": {
+      "anchor": "default: Any = None",
+      "anchor_found": true,
+      "anchor_line": "default: Any = None",
+      "anchor_line_number": 125,
+      "claim": false,
+      "cross_anchor": "",
+      "cross_anchor_found": true,
+      "cross_file": "",
+      "engine_work": true,
+      "present": false,
+      "production_declarations": 0,
+      "proof_file": "opendata/data/providers/_engine/spec.py",
+      "read_from_disk": false,
+      "status": "absent",
+      "why": "``default`` is a literal applied when the caller omits the parameter, so a bound whose value depends on today -- intrinio's one-year window, filled in transform_query when the caller names no dates (historical_dividends.py:74-78) -- has no field to be written in. The declaration sends no bound instead, which is a wider answer than the upstream one."
+    },
     "param.value_mapping": {
       "anchor": "value_map: tuple[tuple[str, str], ...] = ()",
       "anchor_found": true,
@@ -964,6 +981,7 @@
       "outside.source_absent": 0,
       "outside.stateful": 0,
       "param.preset_merge": 0,
+      "param.relative_default": 0,
       "param.value_mapping": 0,
       "param.value_transform": 0,
       "path.assemble_single_row": 0,
@@ -997,7 +1015,7 @@
     "greedy_build_order": [
       {
         "capability": "rows.order_limit",
-        "cumulative_rows_unlocked": 10,
+        "cumulative_rows_unlocked": 6,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1062,7 +1080,7 @@
       },
       {
         "capability": "flow.branch",
-        "cumulative_rows_unlocked": 15,
+        "cumulative_rows_unlocked": 11,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1114,7 +1132,7 @@
       },
       {
         "capability": "flow.fan_out",
-        "cumulative_rows_unlocked": 30,
+        "cumulative_rows_unlocked": 26,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1280,7 +1298,7 @@
       },
       {
         "capability": "flow.join",
-        "cumulative_rows_unlocked": 42,
+        "cumulative_rows_unlocked": 38,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1420,7 +1438,7 @@
       },
       {
         "capability": "request.body_pagination",
-        "cumulative_rows_unlocked": 51,
+        "cumulative_rows_unlocked": 47,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1527,7 +1545,7 @@
       },
       {
         "capability": "request.body",
-        "cumulative_rows_unlocked": 64,
+        "cumulative_rows_unlocked": 60,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1659,7 +1677,7 @@
       },
       {
         "capability": "flow.preflight_lookup",
-        "cumulative_rows_unlocked": 73,
+        "cumulative_rows_unlocked": 69,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1757,7 +1775,7 @@
       },
       {
         "capability": "shape.columnar",
-        "cumulative_rows_unlocked": 83,
+        "cumulative_rows_unlocked": 79,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1877,7 +1895,7 @@
       },
       {
         "capability": "columns.null_sentinel",
-        "cumulative_rows_unlocked": 92,
+        "cumulative_rows_unlocked": 88,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1991,7 +2009,7 @@
       },
       {
         "capability": "columns.response_dependent_selection",
-        "cumulative_rows_unlocked": 101,
+        "cumulative_rows_unlocked": 97,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2088,7 +2106,7 @@
       },
       {
         "capability": "param.value_transform",
-        "cumulative_rows_unlocked": 110,
+        "cumulative_rows_unlocked": 106,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2199,7 +2217,7 @@
       },
       {
         "capability": "request.graphql",
-        "cumulative_rows_unlocked": 119,
+        "cumulative_rows_unlocked": 115,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2294,7 +2312,7 @@
       },
       {
         "capability": "path.object_keys",
-        "cumulative_rows_unlocked": 127,
+        "cumulative_rows_unlocked": 123,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2380,7 +2398,7 @@
       },
       {
         "capability": "request.serialised_param",
-        "cumulative_rows_unlocked": 134,
+        "cumulative_rows_unlocked": 130,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2466,7 +2484,7 @@
       },
       {
         "capability": "decode.text_table",
-        "cumulative_rows_unlocked": 140,
+        "cumulative_rows_unlocked": 136,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2539,7 +2557,7 @@
       },
       {
         "capability": "decode.xml",
-        "cumulative_rows_unlocked": 145,
+        "cumulative_rows_unlocked": 141,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2595,7 +2613,7 @@
       },
       {
         "capability": "path.assemble_single_row",
-        "cumulative_rows_unlocked": 151,
+        "cumulative_rows_unlocked": 147,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2663,7 +2681,7 @@
       },
       {
         "capability": "shape.nested_data_message",
-        "cumulative_rows_unlocked": 156,
+        "cumulative_rows_unlocked": 152,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2725,7 +2743,7 @@
       },
       {
         "capability": "decode.geojson",
-        "cumulative_rows_unlocked": 160,
+        "cumulative_rows_unlocked": 156,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2771,7 +2789,7 @@
       },
       {
         "capability": "decode.html_table",
-        "cumulative_rows_unlocked": 164,
+        "cumulative_rows_unlocked": 160,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2817,7 +2835,7 @@
       },
       {
         "capability": "decode.tabular_file",
-        "cumulative_rows_unlocked": 168,
+        "cumulative_rows_unlocked": 164,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2861,7 +2879,7 @@
       },
       {
         "capability": "decode.html_text",
-        "cumulative_rows_unlocked": 171,
+        "cumulative_rows_unlocked": 167,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2898,7 +2916,7 @@
       },
       {
         "capability": "request.caller_url",
-        "cumulative_rows_unlocked": 175,
+        "cumulative_rows_unlocked": 171,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2944,7 +2962,7 @@
       },
       {
         "capability": "decode.opaque_bytes",
-        "cumulative_rows_unlocked": 178,
+        "cumulative_rows_unlocked": 174,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2979,8 +2997,51 @@
         "rows_newly_unlocked": 3
       },
       {
+        "capability": "rows.filter_comparison",
+        "cumulative_rows_unlocked": 177,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.cast",
+              "columns.null_sentinel",
+              "columns.rescale",
+              "path.explode",
+              "rows.filter",
+              "rows.filter_comparison"
+            ],
+            "provider": "benzinga",
+            "task_id": "OBB2-benzinga-AnalystSearch",
+            "upstream_model": "AnalystSearch"
+          },
+          {
+            "needs": [
+              "columns.response_dependent_selection",
+              "decode.delimited",
+              "path.explode",
+              "rows.filter_comparison"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-SvenssonYieldCurve",
+            "upstream_model": "SvenssonYieldCurve"
+          },
+          {
+            "needs": [
+              "columns.null_sentinel",
+              "columns.rescale",
+              "path.explode",
+              "rows.filter_comparison",
+              "rows.order_limit"
+            ],
+            "provider": "federal_reserve",
+            "task_id": "OBB2-federal_reserve-YieldCurve",
+            "upstream_model": "YieldCurve"
+          }
+        ],
+        "rows_newly_unlocked": 3
+      },
+      {
         "capability": "path.parameterized_pointer",
-        "cumulative_rows_unlocked": 180,
+        "cumulative_rows_unlocked": 179,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3004,40 +3065,8 @@
         "rows_newly_unlocked": 2
       },
       {
-        "capability": "rows.filter_comparison",
-        "cumulative_rows_unlocked": 182,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.cast",
-              "columns.null_sentinel",
-              "columns.rescale",
-              "path.explode",
-              "rows.filter",
-              "rows.filter_comparison"
-            ],
-            "provider": "benzinga",
-            "task_id": "OBB2-benzinga-AnalystSearch",
-            "upstream_model": "AnalystSearch"
-          },
-          {
-            "needs": [
-              "columns.null_sentinel",
-              "columns.rescale",
-              "path.explode",
-              "rows.filter_comparison",
-              "rows.order_limit"
-            ],
-            "provider": "federal_reserve",
-            "task_id": "OBB2-federal_reserve-YieldCurve",
-            "upstream_model": "YieldCurve"
-          }
-        ],
-        "rows_newly_unlocked": 2
-      },
-      {
         "capability": "decode.delimited_headerless",
-        "cumulative_rows_unlocked": 183,
+        "cumulative_rows_unlocked": 180,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3049,9 +3078,27 @@
           }
         ],
         "rows_newly_unlocked": 1
+      },
+      {
+        "capability": "param.relative_default",
+        "cumulative_rows_unlocked": 181,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.derive",
+              "columns.rename",
+              "param.relative_default",
+              "param.value_mapping"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-HistoricalDividends",
+            "upstream_model": "HistoricalDividends"
+          }
+        ],
+        "rows_newly_unlocked": 1
       }
     ],
-    "rows_expressible_today": 5,
+    "rows_expressible_today": 7,
     "rows_outside_engine": [
       {
         "needs": [
@@ -4028,7 +4075,7 @@
         "upstream_model": "EquityScreener"
       }
     ],
-    "rows_pending": 274,
+    "rows_pending": 272,
     "rows_still_locked_after_engine_pool": [
       {
         "needs": [
@@ -5127,55 +5174,16 @@
         "upstream_model": "EquityScreener"
       }
     ],
-    "rows_unlocked_by_greedy_prefix": 183,
+    "rows_unlocked_by_greedy_prefix": 181,
     "rows_with_empty_need_set": [],
     "rows_with_no_engine_work_possible": 12,
-    "shipped_cover_rows": [
-      {
-        "needs": [
-          "param.value_mapping",
-          "path.explode"
-        ],
-        "provider": "intrinio",
-        "task_id": "OBB2-intrinio-CalendarIpo",
-        "upstream_model": "CalendarIpo"
-      },
-      {
-        "needs": [
-          "columns.derive",
-          "columns.rename",
-          "param.value_mapping"
-        ],
-        "provider": "intrinio",
-        "task_id": "OBB2-intrinio-HistoricalDividends",
-        "upstream_model": "HistoricalDividends"
-      },
-      {
-        "needs": [
-          "decode.delimited",
-          "param.value_mapping",
-          "path.explode"
-        ],
-        "provider": "federal_reserve",
-        "task_id": "OBB2-federal_reserve-SvenssonYieldCurve",
-        "upstream_model": "SvenssonYieldCurve"
-      },
-      {
-        "needs": [
-          "decode.delimited",
-          "rows.filter"
-        ],
-        "provider": "cboe",
-        "task_id": "OBB2-cboe-EquitySearch",
-        "upstream_model": "EquitySearch"
-      }
-    ]
+    "shipped_cover_rows": []
   },
-  "round_id": "C90",
+  "round_id": "C91",
   "schema_version": 1,
   "taxonomy": {
-    "canonical_capability_count": 50,
-    "labels_supported": 102,
+    "canonical_capability_count": 51,
+    "labels_supported": 104,
     "mentions_per_capability": {
       "columns.cast": 32,
       "columns.compose": 9,
@@ -5184,10 +5192,10 @@
       "columns.period_cast": 8,
       "columns.rename": 49,
       "columns.rescale": 30,
-      "columns.response_dependent_selection": 9,
+      "columns.response_dependent_selection": 10,
       "columns.select": 25,
       "decode.archive_member": 8,
-      "decode.delimited": 31,
+      "decode.delimited": 30,
       "decode.delimited_headerless": 2,
       "decode.geojson": 4,
       "decode.html_table": 6,
@@ -5210,10 +5218,11 @@
       "outside.source_absent": 2,
       "outside.stateful": 29,
       "param.preset_merge": 1,
-      "param.value_mapping": 38,
+      "param.relative_default": 1,
+      "param.value_mapping": 36,
       "param.value_transform": 10,
       "path.assemble_single_row": 8,
-      "path.explode": 45,
+      "path.explode": 44,
       "path.list_segment": 9,
       "path.object_keys": 18,
       "path.parameterized_pointer": 2,
@@ -5222,14 +5231,14 @@
       "request.caller_url": 7,
       "request.graphql": 9,
       "request.serialised_param": 8,
-      "rows.filter": 57,
-      "rows.filter_comparison": 11,
+      "rows.filter": 56,
+      "rows.filter_comparison": 12,
       "rows.order_limit": 39,
       "shape.columnar": 21,
       "shape.nested_data_message": 6
     },
-    "raw_label_count": 101,
-    "raw_label_mention_count": 1169,
+    "raw_label_count": 103,
+    "raw_label_mention_count": 1171,
     "rows_needing_only_this_capability": {
       "decode.delimited_headerless": 1,
       "decode.tabular_file": 2,
@@ -5262,6 +5271,7 @@
         "outside.sdk",
         "outside.stateful",
         "param.preset_merge",
+        "param.relative_default",
         "param.value_transform",
         "path.assemble_single_row",
         "path.list_segment",

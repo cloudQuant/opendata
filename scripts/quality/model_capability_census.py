@@ -198,6 +198,7 @@ LABEL_TO_CAPABILITY: Final[dict[str, str]] = {
     "strike_scaling": "columns.rescale",
     "tag_column_selection": "columns.select",
     "xbrl_tag_assembly": "columns.response_dependent_selection",
+    "param_driven_column_selection": "columns.response_dependent_selection",
     "field_rename_map": "columns.rename",
     # ``columns.rename`` renames an OUTPUT key. These three rewrite an INPUT: a dict lookup on the
     # value a caller passed, a rule that strips a leading '$' or appends ':US', and a roster that
@@ -221,6 +222,11 @@ LABEL_TO_CAPABILITY: Final[dict[str, str]] = {
     "comparison_row_filter": "rows.filter_comparison",
     "plus_joined_key_segment": "path.list_segment",
     "status_code_fallback_request": "flow.branch",
+    # C91 named two more behaviours the intrinio and federal_reserve re-audits found riding a
+    # canonical they do not fit: a one-year window upstream computes at request time, and a column
+    # set chosen by the value of ``series_type``. Without a spelling of their own each row read as
+    # covered, and the audit wave flipped two flags it should not have.
+    "relative_date_default": "param.relative_default",
     # ---- not an engine capability at all -----------------------------------
     "sdk_delegation": "outside.sdk",
     "html_scraping_sdk": "outside.sdk",
@@ -1398,7 +1404,10 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         why="Each column reads exactly one declared source key, and the columns it may read are a "
         "fixed tuple written before the request. A row whose columns are whichever XBRL tags this "
         "issuer happened to publish cannot be declared; columns.select covers a static selection, "
-        "which is why the SEC statement rows carry both labels.",
+        "which is why the SEC statement rows carry both labels. The same fixed-tuple rule is what "
+        "the federal_reserve Svensson feed breaks from the other direction: its columns are "
+        "whichever group the caller's ``series_type`` names (svensson_yield_curve.py:1123-1145), "
+        "so the selection depends on a request value rather than on the response.",
         probe=DeclarationProbe(call="ModelSpec", keyword="columns_from_response"),
     ),
     CapabilityEntry(
@@ -1539,6 +1548,18 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         anchor="params: tuple[ParamSpec, ...] = ()",
         why="``params`` is a fixed declared tuple with no field that merges a preset filter set "
         "into the caller's parameters, which is what a screener built from a preset ini needs.",
+    ),
+    CapabilityEntry(
+        capability="param.relative_default",
+        claim=False,
+        engine_work=True,
+        proof_file=SPEC_REL,
+        anchor="default: Any = None",
+        why="``default`` is a literal applied when the caller omits the parameter, so a "
+        "bound whose value depends on today -- intrinio's one-year window, filled in "
+        "transform_query when the caller names no dates (historical_dividends.py:74-78) "
+        "-- has no field to be written in. The declaration sends no bound instead, which "
+        "is a wider answer than the upstream one.",
     ),
     CapabilityEntry(
         capability="request.caller_url",

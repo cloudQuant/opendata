@@ -236,12 +236,13 @@
       "needs_engine_capability": [
         "csv_decoder",
         "series_pivot",
-        "param_value_mapping"
+        "comparison_row_filter",
+        "param_driven_column_selection"
       ],
       "expressible_today": false,
       "existing_fetcher_class": "",
       "evidence": "providers/federal_reserve/openbb_federal_reserve/models/svensson_yield_curve.py:143",
-      "notes": "static feds200628.csv; rows are a per-series pivot of a wide CSV, not records"
+      "notes": "declared as SVENSSON_YIELD_CURVE with row_expansion=(WideTablePivotPlan, SeriesPivotPlan) in federal_reserve/specs.py; label sources: csv_decoder = csv.DictReader over the 'Date,'-led body (svensson_yield_curve.py:1149-1157), series_pivot = the per-date wide output keyed by __alias_dict__'s 99 series columns (:247-352, inverted into csv_to_field at :1118-1120) which the pivot stages reproduce, param_driven_column_selection = the series_type-to-column allow-list (:1123-1145), which picks output columns by a request value, plus comparison_row_filter = the start_date/end_date window applied to parsed rows (:1170-1174), which RowFilterOp cannot spell; param_value_mapping is dropped because this spec declares no params and the static CSV endpoint takes none -- what that allow-list does is select columns, not remap a query value; the old note's 'not records' was wrong — upstream rows ARE flat records (:1157-1189, one output per CSV row), a melt is YieldCurve's model, not this one"
     },
     {
       "task_id": "OBB2-federal_reserve-TotalFactorProductivity",

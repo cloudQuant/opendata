@@ -41,10 +41,10 @@
         "per_record_nested_flatten",
         "param_value_mapping"
       ],
-      "expressible_today": false,
+      "expressible_today": true,
       "existing_fetcher_class": "",
       "evidence": "providers/intrinio/openbb_intrinio/models/calendar_ipo.py:183",
-      "notes": "Single GET /companies/ipos; rows under initial_public_offerings. Each item carries nested company and security objects (IntrinioCompany/IntrinioSecurity, :149-155). Query aliases symbol->ticker, limit->page_size, min_value->offer_amount_greater_than, max_value->offer_amount_less_than (:25-30); no next-page loop, page_size only caps size."
+      "notes": "Single GET /companies/ipos; rows under initial_public_offerings (:183). per_record_nested_flatten comes from the nested company/security objects at :149-155 and is carried by specs.CALENDAR_IPO's RecordRepointPlan; param_value_mapping comes from the alias dict at :25-30 (symbol->ticker, limit->page_size, min_value->offer_amount_greater_than, max_value->offer_amount_less_than) restated as ParamSpec.query_key. No next-page loop, page_size only caps size. tests/test_intrinio_engine_provider.py::TestCalendarIpo proves the flattened 35-column rows come out offline."
     },
     {
       "task_id": "OBB2-intrinio-CashFlowStatement",
