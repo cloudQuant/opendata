@@ -25,8 +25,9 @@ EXPECTED = date(2026, 10, 7)
 #: ``cboe_index_search`` joined with its third binding, and the two federal_reserve series joined
 #: when their engine models' domains were registered (transient, query-only, no DDL either).
 #: ``federal_reserve_svensson_yield_curve`` joined with the row-expansion model's domain and the
-#: three intrinio domains with the currency-pair, company-search and dividend-adjustment bindings --
-#: same shape (transient, query-only), so 17 rows became 21 and the measured legacy face stayed 20.
+#: four intrinio domains with the currency-pair, company-search, dividend-adjustment and
+#: calendar-IPO bindings -- same shape (transient, query-only), so 17 rows became 22 and the
+#: measured legacy face stayed 20 domains / 33 legs.
 NATIVE_MODEL_DOMAINS = (
     "balance_of_payments",
     "bls_search",
@@ -43,6 +44,7 @@ NATIVE_MODEL_DOMAINS = (
     "federal_reserve_treasury_rates",
     "fred_search",
     "fred_series",
+    "intrinio_calendar_ipo",
     "intrinio_currency_pairs",
     "intrinio_equity_search",
     "intrinio_historical_dividends",
@@ -125,14 +127,14 @@ def test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tab
         reports, scope = alert_matrix.collect_freshness(engine, expected=EXPECTED)
         tables = alert_matrix.warehouse_tables()
 
-        assert len(legs) == 41
-        assert sum(len(sources) for sources in legs.values()) == 54
+        assert len(legs) == 42
+        assert sum(len(sources) for sources in legs.values()) == 55
         assert scope.domains == 20
         assert scope.deferred_domains == NATIVE_MODEL_DOMAINS
-        assert scope.deferred_legs == 21
+        assert scope.deferred_legs == 22
         assert scope.source_legs + scope.unmapped_legs == 33
-        assert scope.domains + len(scope.deferred_domains) == 41
-        assert scope.source_legs + scope.unmapped_legs + scope.deferred_legs == 54
+        assert scope.domains + len(scope.deferred_domains) == 42
+        assert scope.source_legs + scope.unmapped_legs + scope.deferred_legs == 55
         assert len(reports) == scope.domains + scope.source_legs
         assert len(statements) == len(reports) == 30
         assert all(
@@ -148,7 +150,7 @@ def test_default_scope_accounts_for_all_domains_legs_and_only_queries_legacy_tab
         )
         scope_dict = scope.as_dict()
         assert scope_dict["deferred_domains"] == list(NATIVE_MODEL_DOMAINS)
-        assert scope_dict["deferred_legs"] == 21
+        assert scope_dict["deferred_legs"] == 22
     finally:
         engine.dispose()
 

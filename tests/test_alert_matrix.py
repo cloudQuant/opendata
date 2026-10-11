@@ -176,6 +176,7 @@ class TestCollection:
             "federal_reserve_treasury_rates",
             "fred_search",
             "fred_series",
+            "intrinio_calendar_ipo",
             "intrinio_currency_pairs",
             "intrinio_equity_search",
             "intrinio_historical_dividends",
@@ -183,13 +184,13 @@ class TestCollection:
             "sonia",
             "yield_curve",
         )
-        assert scope.deferred_legs == 21
-        assert scope.domains + len(scope.deferred_domains) == len(legs) == 41
+        assert scope.deferred_legs == 22
+        assert scope.domains + len(scope.deferred_domains) == len(legs) == 42
         assert scope.source_legs + scope.unmapped_legs == 33
         assert (
             scope.source_legs + scope.unmapped_legs + scope.deferred_legs
             == sum(len(v) for v in legs.values())
-            == 54
+            == 55
         )
         assert scope.unmapped_legs > 0  # measured on the registry, not invented
         assert len(reports) == scope.domains + scope.source_legs
@@ -229,7 +230,7 @@ class TestCollection:
 
         assert sum(len(v) for v in legacy_legs.values()) == 33
         assert len(unmapped) == 23
-        assert sum(len(v) for v in legs.values()) == 54
+        assert sum(len(v) for v in legs.values()) == 55
         assert deferred_domains == (
             "balance_of_payments",
             "bls_search",
@@ -246,6 +247,7 @@ class TestCollection:
             "federal_reserve_treasury_rates",
             "fred_search",
             "fred_series",
+            "intrinio_calendar_ipo",
             "intrinio_currency_pairs",
             "intrinio_equity_search",
             "intrinio_historical_dividends",
@@ -253,7 +255,7 @@ class TestCollection:
             "sonia",
             "yield_curve",
         )
-        assert sum(len(legs[domain]) for domain in deferred_domains) == 21
+        assert sum(len(legs[domain]) for domain in deferred_domains) == 22
         assert "stock_daily/akshare" not in unmapped
         assert "economy_cpi/fred" in unmapped
         for leg in (

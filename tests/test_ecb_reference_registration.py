@@ -203,13 +203,19 @@ def test_real_ecb_bindings_register_three_canonical_models_without_auto_promotio
     # 46 capabilities and 13 descriptors held while federal_reserve registered nothing and cboe
     # declared two models; the engine wave added cboe::IndexSearch plus the two Fed release-table
     # models, and the C88 row added cboe::EquitySearch, so both counts grew by the declarations
-    # themselves. C89 adds four more of the same kind and nothing else moves them:
+    # themselves. C89 adds five more of the same kind and nothing else moves them:
     # federal_reserve::SvenssonYieldCurve (ModelSpec.row_expansion) and intrinio::CurrencyPairs /
-    # intrinio::EquitySearch / intrinio::HistoricalDividends (ModelSpec.column_derives), so
-    # 50 -> 54 capabilities and 17 -> 21 descriptors. Auto routing stayed at 23 because all four
+    # intrinio::EquitySearch / intrinio::HistoricalDividends / intrinio::CalendarIpo, so
+    # 50 -> 55 capabilities and 17 -> 22 descriptors. Auto routing stayed at 23 because all five
     # register verified=False.
-    assert len(registry.capabilities()) == 54
-    assert len(descriptors) == 21
+    #
+    # An earlier draft of this comment said four and 54/21, leaving intrinio::CalendarIpo out of
+    # its own enumeration. The manifest the plane re-derives from the registry
+    # (docs/proposals/openbb-migration/provider-inventory.yaml) is what caught it: the shipped file
+    # read 54 while ``ProviderRegistry`` reported 55, and ``--check-manifest``'s byte diff named
+    # exactly those two count lines and nothing else.
+    assert len(registry.capabilities()) == 55
+    assert len(descriptors) == 22
     assert {item.model for item in descriptors if item.source == "cboe"} == {
         "AvailableIndices",
         "IndexConstituents",

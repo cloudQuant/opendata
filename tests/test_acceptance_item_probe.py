@@ -283,8 +283,12 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     facts = measure_ac1_08(Context(REPO_ROOT, (), {}))
 
     assert facts["table_valid"] == "yes"
-    assert facts["rows"] == "15"
-    assert facts["dated"] == facts["rows"] == "15"
+    # 16 rows: row 16 (Intrinio) joined with the C89 provider package, and every row still carries
+    # a 复核日期, which is what ``dated == rows`` is for. The per-row接线 counts in rows 14/15/16
+    # are asserted below against the registry's own cells, so a model wave that lands without moving
+    # a cell is a failure here rather than a stale sentence nobody reads.
+    assert facts["rows"] == "16"
+    assert facts["dated"] == facts["rows"] == "16"
     assert facts["undecided"] == "0"
     assert facts["unlinked"] == "0"
     assert facts["responsible_missing"] == "0"
@@ -315,12 +319,13 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
         10: "ECB / IMF / OECD",
         11: "商业源（FMP/Tiingo/Alpha Vantage/Intrinio/Tradier…）",
     }
-    assert set(rows) == set(range(1, 16))
+    assert set(rows) == set(range(1, 17))
     assert {row_id: rows[row_id]["数据源"] for row_id in historical_sources} == (historical_sources)
     assert rows[12]["数据源"] == "BLS（美国劳工统计局）"
     assert rows[13]["数据源"] == "FMP（EquityHistorical / EquityQuote）"
     assert rows[14]["数据源"] == "Cboe（cdn.cboe.com 公开接口）"
     assert rows[15]["数据源"] == "美联储理事会（Board of Governors）"
+    assert rows[16]["数据源"] == "Intrinio"
 
     restricted = "已复核（受限）"
     not_applicable = "不适用（本迭代未启用）"
@@ -330,10 +335,12 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     assert rows[13]["状态"] == restricted
     assert rows[14]["状态"] == restricted
     assert rows[15]["状态"] == restricted
+    assert rows[16]["状态"] == restricted
     assert {rows[row_id]["复核日期"] for row_id in range(1, 12)} == {"2026-09-30"}
     assert rows[12]["复核日期"] == rows[13]["复核日期"] == "2026-10-08"
     assert rows[14]["复核日期"] == "2026-10-08"
     assert rows[15]["复核日期"] == "2026-10-09"
+    assert rows[16]["复核日期"] == "2026-10-11"
 
     bls = rows[12]
     assert "公共领域数据可附条件使用并注明 BLS 来源" in bls["允许本项目落库"]
@@ -360,7 +367,7 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     assert "cdn.cboe.com" in cboe["接入方式"]
     assert "无凭据" in cboe["接入方式"]
     assert (
-        "AvailableIndices / IndexConstituents / IndexSearch 三条模型描述符已接线"
+        "AvailableIndices / IndexConstituents / IndexSearch / EquitySearch 四条模型描述符已接线"
         in cboe["接入方式"]
     )
     assert "书面同意" in cboe["允许本项目落库"]
@@ -379,7 +386,7 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     assert "datadownload/Output.aspx" in fed["接入方式"]
     assert "rel=H6" in fed["接入方式"] and "rel=H15" in fed["接入方式"]
     assert "无凭据" in fed["接入方式"]
-    assert "MoneyMeasures / TreasuryRates 两条已接线" in fed["接入方式"]
+    assert "MoneyMeasures / TreasuryRates / SvenssonYieldCurve 三条已接线" in fed["接入方式"]
     assert (
         "public domain and may be copied and distributed without permission"
         in fed["允许本项目落库"]
@@ -397,7 +404,7 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     assert "不覆盖 Board 站点其余出版物" in registry
     assert "模型清单实测 federal_reserve 共 13 行（2 DEV_DONE + 11 NOT_RUN）" in registry
     assert "https://www.federalreserve.gov/disclaimer.htm" in registry
-    assert "没有释放 FMP 或 Cboe 或美联储的真实采集、落库或对外分发动作" in registry
+    assert "没有释放 FMP 或 Cboe 或美联储或 Intrinio 的真实采集、落库或对外分发动作" in registry
 
     verdict = judge_ac1_08(facts)
     assert "登记完整性不等于所有用途获准" in registry
