@@ -1,0 +1,29 @@
+[PASS] accept/federal_reserve::FederalFundsRate
+        expected: a row of the reviewed contract FederalReserveFederalFundsRate serializes with all 13 declared fields
+        actual:   accepted, 13 keys
+[PASS] refuse/federal_reserve::FederalFundsRate
+        expected: the same text built as FederalFundsRateRow is refused by the serializer
+        actual:   ProviderModelQueryOutputError
+[PASS] identity/federal_reserve::FederalFundsRate
+        expected: the look-alike and the contract are different classes over the same field names
+        actual:   lookalike=FederalFundsRateRow fields_equal=True
+[PASS] accept/federal_reserve::SOFR
+        expected: a row of the reviewed contract FederalReserveSofr serializes with all 7 declared fields
+        actual:   accepted, 7 keys
+[PASS] refuse/federal_reserve::SOFR
+        expected: the same text built as SOFRRow is refused by the serializer
+        actual:   ProviderModelQueryOutputError
+[PASS] identity/federal_reserve::SOFR
+        expected: the look-alike and the contract are different classes over the same field names
+        actual:   lookalike=SOFRRow fields_equal=True
+[PASS] accept/intrinio::InsiderTrading
+        expected: a row of the reviewed contract IntrinioInsiderTransaction serializes with all 29 declared fields
+        actual:   accepted, 29 keys
+[PASS] refuse/intrinio::InsiderTrading
+        expected: the same text built as InsiderTradingRow is refused by the serializer
+        actual:   ProviderModelQueryOutputError
+[PASS] identity/intrinio::InsiderTrading
+        expected: the look-alike and the contract are different classes over the same field names
+        actual:   lookalike=InsiderTradingRow fields_equal=True
+
+VERDICT: PASS -- the contract branch is what makes these rows readable at query time.

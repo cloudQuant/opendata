@@ -1,0 +1,39 @@
+[PASS] ship/federal_reserve::FederalFundsRate
+        expected: build_row_model returns the reviewed contract FederalReserveFederalFundsRate
+        actual:   FederalReserveFederalFundsRate, is_contract=True, fields=13, columns=13
+[PASS] ship/federal_reserve::SOFR
+        expected: build_row_model returns the reviewed contract FederalReserveSofr
+        actual:   FederalReserveSofr, is_contract=True, fields=7, columns=7
+[PASS] ship/intrinio::InsiderTrading
+        expected: build_row_model returns the reviewed contract IntrinioInsiderTransaction
+        actual:   IntrinioInsiderTransaction, is_contract=True, fields=29, columns=29
+[PASS] drop/federal_reserve::FederalFundsRate -> revision_indicator
+        expected: ValueError naming the dropped column
+        actual:   ValueError: FederalFundsRate: declared columns ['revision_indicator'] do not match contract FederalReserveFederalFundsRate
+[PASS] drop/federal_reserve::SOFR -> volume
+        expected: ValueError naming the dropped column
+        actual:   ValueError: SOFR: declared columns ['volume'] do not match contract FederalReserveSofr
+[PASS] drop/intrinio::InsiderTrading -> report_line_number
+        expected: ValueError naming the dropped column
+        actual:   ValueError: InsiderTrading: declared columns ['report_line_number'] do not match contract IntrinioInsiderTransaction
+[PASS] add/FederalFundsRate->federal_reserve_sofr
+        expected: ValueError naming all 6 columns absent from FederalReserveSofr
+        actual:   ValueError: FederalFundsRate: declared columns ['intraday_high', 'intraday_low', 'revision_indicator', 'standard_deviation', 'target_range_lower', 'target_range_upper'] do not match contract FederalReserveSofr | named 6/6
+[PASS] absence/overnight_bank_funding_rate
+        expected: synthesized InsiderTradingRow, not the shipped contract, and no reviewed contract class behind the domain
+        actual:   row_model=InsiderTradingRow is_contract=False (IntrinioInsiderTransaction); contract_model(domain) refused=True (LookupError: unknown domain 'overnight_bank_funding_rate'; registered: ['balance_of)
+[PASS] map-guard/unregistered
+        expected: OpenBBMapError naming the unknown domain
+        actual:   OpenBBMapError: ours row of 'OvernightBankFundingRate' in /Users/yunjinqi/Documents/new_projects/opendata/opendata/data/openbb_map.yaml names unregistered domain 'overnight_bank_funding_rate'
+[PASS] map-guard/registered/federal_reserve_federal_funds_rate
+        expected: no error, and the spec's contract is FederalReserveFederalFundsRate
+        actual:   accepted; contract=FederalReserveFederalFundsRate semantics_declared=True storage_mode=transient
+[PASS] map-guard/registered/federal_reserve_sofr
+        expected: no error, and the spec's contract is FederalReserveSofr
+        actual:   accepted; contract=FederalReserveSofr semantics_declared=True storage_mode=transient
+[PASS] map-guard/registered/intrinio_insider_trading
+        expected: no error, and the spec's contract is IntrinioInsiderTransaction
+        actual:   accepted; contract=IntrinioInsiderTransaction semantics_declared=True storage_mode=transient
+[INFO] map entries=42 ours_rows=59 covered_pairs=58 capabilities=58 descriptors=25 domains=45
+
+VERDICT: PASS -- every falsifier falsified; the registration is load-bearing.
