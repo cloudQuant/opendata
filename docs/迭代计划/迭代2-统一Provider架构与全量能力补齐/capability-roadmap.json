@@ -1,7 +1,6 @@
 {
   "built_but_unused": [
     "columns.cast",
-    "columns.rescale",
     "decode.archive_member",
     "flow.composite_key_segment",
     "param.value_mapping"
@@ -52,7 +51,7 @@
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 1,
+      "production_declarations": 3,
       "proof_file": "opendata/data/providers/_engine/spec.py",
       "read_from_disk": true,
       "status": "present",
@@ -86,7 +85,7 @@
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 19,
+      "production_declarations": 53,
       "proof_file": "opendata/data/providers/_engine/spec.py",
       "read_from_disk": true,
       "status": "present",
@@ -120,7 +119,7 @@
       "cross_file": "",
       "engine_work": true,
       "present": true,
-      "production_declarations": 46,
+      "production_declarations": 75,
       "proof_file": "opendata/data/providers/_engine/http_json.py",
       "read_from_disk": false,
       "status": "present",
@@ -137,7 +136,7 @@
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 0,
+      "production_declarations": 1,
       "proof_file": "opendata/data/providers/_engine/value_transform.py",
       "read_from_disk": true,
       "status": "present",
@@ -171,7 +170,7 @@
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 11,
+      "production_declarations": 14,
       "proof_file": "opendata/data/providers/_engine/http_json.py",
       "read_from_disk": false,
       "status": "present",
@@ -477,7 +476,7 @@
       "cross_file": "opendata/data/providers/_engine/spec.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 2,
+      "production_declarations": 3,
       "proof_file": "opendata/data/providers/_engine/http_json.py",
       "read_from_disk": false,
       "status": "present",
@@ -613,7 +612,7 @@
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 2,
+      "production_declarations": 6,
       "proof_file": "opendata/data/providers/_engine/spec.py",
       "read_from_disk": true,
       "status": "present",
@@ -681,7 +680,7 @@
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 2,
+      "production_declarations": 3,
       "proof_file": "opendata/data/providers/_engine/spec.py",
       "read_from_disk": true,
       "status": "present",
@@ -919,7 +918,7 @@
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 1,
+      "production_declarations": 3,
       "proof_file": "opendata/data/providers/_engine/spec.py",
       "read_from_disk": true,
       "status": "present",
@@ -1034,23 +1033,28 @@
       "_vendor",
       "__pycache__"
     ],
-    "modules_scanned": 168,
+    "modules_scanned": 171,
     "production_declarations_by_file": {
       "columns.derive": {
+        "opendata/data/providers/federal_reserve/specs.py": 2,
         "opendata/data/providers/intrinio/specs.py": 1
       },
       "columns.null_sentinel": {
-        "opendata/data/providers/federal_reserve/specs.py": 19
+        "opendata/data/providers/federal_reserve/specs.py": 25,
+        "opendata/data/providers/intrinio/specs.py": 28
       },
       "columns.rename": {
         "opendata/data/providers/cboe/specs.py": 19,
-        "opendata/data/providers/federal_reserve/specs.py": 21,
-        "opendata/data/providers/intrinio/specs.py": 6
+        "opendata/data/providers/federal_reserve/specs.py": 41,
+        "opendata/data/providers/intrinio/specs.py": 15
+      },
+      "columns.rescale": {
+        "opendata/data/providers/federal_reserve/specs.py": 1
       },
       "columns.select": {
         "opendata/data/providers/cboe/specs.py": 4,
-        "opendata/data/providers/federal_reserve/specs.py": 3,
-        "opendata/data/providers/intrinio/specs.py": 4
+        "opendata/data/providers/federal_reserve/specs.py": 5,
+        "opendata/data/providers/intrinio/specs.py": 5
       },
       "decode.delimited": {
         "opendata/data/providers/cboe/specs.py": 1,
@@ -1058,34 +1062,35 @@
       },
       "flow.url_template": {
         "opendata/data/providers/cboe/specs.py": 1,
-        "opendata/data/providers/intrinio/specs.py": 1
+        "opendata/data/providers/intrinio/specs.py": 2
       },
       "param.relative_default": {
-        "opendata/data/providers/intrinio/specs.py": 2
+        "opendata/data/providers/federal_reserve/specs.py": 2,
+        "opendata/data/providers/intrinio/specs.py": 4
       },
       "path.explode": {
         "opendata/data/providers/federal_reserve/specs.py": 1,
-        "opendata/data/providers/intrinio/specs.py": 1
+        "opendata/data/providers/intrinio/specs.py": 2
       },
       "rows.filter": {
         "opendata/data/providers/cboe/specs.py": 2,
         "opendata/data/providers/intrinio/specs.py": 1
       },
       "rows.order_limit": {
-        "opendata/data/providers/federal_reserve/specs.py": 1
+        "opendata/data/providers/federal_reserve/specs.py": 3
       }
     },
     "production_declarations_per_capability": {
       "columns.cast": 0,
       "columns.compose": 0,
-      "columns.derive": 1,
+      "columns.derive": 3,
       "columns.many_to_one_rename": 0,
-      "columns.null_sentinel": 19,
+      "columns.null_sentinel": 53,
       "columns.period_cast": 0,
-      "columns.rename": 46,
-      "columns.rescale": 0,
+      "columns.rename": 75,
+      "columns.rescale": 1,
       "columns.response_dependent_selection": 0,
-      "columns.select": 11,
+      "columns.select": 14,
       "decode.archive_member": 0,
       "decode.delimited": 4,
       "decode.delimited_headerless": 0,
@@ -1103,7 +1108,7 @@
       "flow.join": 0,
       "flow.nearest_published_value": 0,
       "flow.preflight_lookup": 0,
-      "flow.url_template": 2,
+      "flow.url_template": 3,
       "outside.anti_bot": 0,
       "outside.bespoke": 0,
       "outside.no_request": 0,
@@ -1111,11 +1116,11 @@
       "outside.source_absent": 0,
       "outside.stateful": 0,
       "param.preset_merge": 0,
-      "param.relative_default": 2,
+      "param.relative_default": 6,
       "param.value_mapping": 0,
       "param.value_transform": 0,
       "path.assemble_single_row": 0,
-      "path.explode": 2,
+      "path.explode": 3,
       "path.list_segment": 0,
       "path.object_keys": 0,
       "path.parameterized_pointer": 0,
@@ -1129,7 +1134,7 @@
       "rows.filter_comparison": 0,
       "rows.needle_transform": 0,
       "rows.order_by_parameter": 0,
-      "rows.order_limit": 1,
+      "rows.order_limit": 3,
       "shape.columnar": 0,
       "shape.long_to_wide_pivot": 0,
       "shape.nested_data_message": 0,
@@ -1150,7 +1155,7 @@
     "greedy_build_order": [
       {
         "capability": "request.serialised_param",
-        "cumulative_rows_unlocked": 11,
+        "cumulative_rows_unlocked": 8,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1195,7 +1200,7 @@
       },
       {
         "capability": "decode.tabular_file",
-        "cumulative_rows_unlocked": 14,
+        "cumulative_rows_unlocked": 11,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1227,7 +1232,7 @@
       },
       {
         "capability": "request.body_pagination",
-        "cumulative_rows_unlocked": 17,
+        "cumulative_rows_unlocked": 14,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1266,7 +1271,7 @@
       },
       {
         "capability": "request.body",
-        "cumulative_rows_unlocked": 26,
+        "cumulative_rows_unlocked": 23,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1354,7 +1359,7 @@
       },
       {
         "capability": "flow.fan_out",
-        "cumulative_rows_unlocked": 34,
+        "cumulative_rows_unlocked": 31,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1454,7 +1459,7 @@
       },
       {
         "capability": "flow.branch",
-        "cumulative_rows_unlocked": 48,
+        "cumulative_rows_unlocked": 45,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1611,7 +1616,7 @@
       },
       {
         "capability": "flow.join",
-        "cumulative_rows_unlocked": 61,
+        "cumulative_rows_unlocked": 58,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1763,7 +1768,7 @@
       },
       {
         "capability": "flow.preflight_lookup",
-        "cumulative_rows_unlocked": 72,
+        "cumulative_rows_unlocked": 69,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1892,7 +1897,7 @@
       },
       {
         "capability": "columns.response_dependent_selection",
-        "cumulative_rows_unlocked": 81,
+        "cumulative_rows_unlocked": 78,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1989,7 +1994,7 @@
       },
       {
         "capability": "request.graphql",
-        "cumulative_rows_unlocked": 90,
+        "cumulative_rows_unlocked": 87,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2084,7 +2089,7 @@
       },
       {
         "capability": "rows.filter_comparison",
-        "cumulative_rows_unlocked": 99,
+        "cumulative_rows_unlocked": 96,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2198,7 +2203,7 @@
       },
       {
         "capability": "shape.columnar",
-        "cumulative_rows_unlocked": 110,
+        "cumulative_rows_unlocked": 107,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2330,7 +2335,7 @@
       },
       {
         "capability": "decode.text_table",
-        "cumulative_rows_unlocked": 116,
+        "cumulative_rows_unlocked": 113,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2403,7 +2408,7 @@
       },
       {
         "capability": "path.object_keys",
-        "cumulative_rows_unlocked": 122,
+        "cumulative_rows_unlocked": 119,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2473,7 +2478,7 @@
       },
       {
         "capability": "decode.xml",
-        "cumulative_rows_unlocked": 127,
+        "cumulative_rows_unlocked": 124,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2529,7 +2534,7 @@
       },
       {
         "capability": "path.assemble_single_row",
-        "cumulative_rows_unlocked": 133,
+        "cumulative_rows_unlocked": 130,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2597,7 +2602,7 @@
       },
       {
         "capability": "param.value_transform",
-        "cumulative_rows_unlocked": 138,
+        "cumulative_rows_unlocked": 135,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2660,7 +2665,7 @@
       },
       {
         "capability": "shape.nested_data_message",
-        "cumulative_rows_unlocked": 143,
+        "cumulative_rows_unlocked": 140,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2722,7 +2727,7 @@
       },
       {
         "capability": "decode.geojson",
-        "cumulative_rows_unlocked": 147,
+        "cumulative_rows_unlocked": 144,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2768,7 +2773,7 @@
       },
       {
         "capability": "decode.html_table",
-        "cumulative_rows_unlocked": 151,
+        "cumulative_rows_unlocked": 148,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2814,7 +2819,7 @@
       },
       {
         "capability": "decode.html_text",
-        "cumulative_rows_unlocked": 154,
+        "cumulative_rows_unlocked": 151,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2851,7 +2856,7 @@
       },
       {
         "capability": "request.caller_url",
-        "cumulative_rows_unlocked": 158,
+        "cumulative_rows_unlocked": 155,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2897,7 +2902,7 @@
       },
       {
         "capability": "decode.opaque_bytes",
-        "cumulative_rows_unlocked": 161,
+        "cumulative_rows_unlocked": 158,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2933,7 +2938,7 @@
       },
       {
         "capability": "rows.needle_transform",
-        "cumulative_rows_unlocked": 164,
+        "cumulative_rows_unlocked": 161,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2981,7 +2986,7 @@
       },
       {
         "capability": "rows.cap_source_order",
-        "cumulative_rows_unlocked": 167,
+        "cumulative_rows_unlocked": 164,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3019,7 +3024,7 @@
       },
       {
         "capability": "columns.compose",
-        "cumulative_rows_unlocked": 169,
+        "cumulative_rows_unlocked": 166,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3052,7 +3057,7 @@
       },
       {
         "capability": "path.parameterized_pointer",
-        "cumulative_rows_unlocked": 171,
+        "cumulative_rows_unlocked": 168,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3077,7 +3082,7 @@
       },
       {
         "capability": "columns.many_to_one_rename",
-        "cumulative_rows_unlocked": 172,
+        "cumulative_rows_unlocked": 169,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3098,7 +3103,7 @@
       },
       {
         "capability": "decode.delimited_headerless",
-        "cumulative_rows_unlocked": 173,
+        "cumulative_rows_unlocked": 170,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3113,7 +3118,7 @@
       },
       {
         "capability": "derive.conditional",
-        "cumulative_rows_unlocked": 174,
+        "cumulative_rows_unlocked": 171,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3132,7 +3137,7 @@
       },
       {
         "capability": "shape.single_record_wrap",
-        "cumulative_rows_unlocked": 176,
+        "cumulative_rows_unlocked": 173,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3164,7 +3169,7 @@
       },
       {
         "capability": "flow.nearest_published_value",
-        "cumulative_rows_unlocked": 177,
+        "cumulative_rows_unlocked": 174,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3183,7 +3188,7 @@
       },
       {
         "capability": "path.list_segment",
-        "cumulative_rows_unlocked": 178,
+        "cumulative_rows_unlocked": 175,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3203,7 +3208,7 @@
       },
       {
         "capability": "columns.period_cast",
-        "cumulative_rows_unlocked": 186,
+        "cumulative_rows_unlocked": 183,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3319,7 +3324,7 @@
       },
       {
         "capability": "rows.order_by_parameter",
-        "cumulative_rows_unlocked": 187,
+        "cumulative_rows_unlocked": 184,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3338,7 +3343,7 @@
       },
       {
         "capability": "shape.long_to_wide_pivot",
-        "cumulative_rows_unlocked": 188,
+        "cumulative_rows_unlocked": 185,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3356,7 +3361,7 @@
         "rows_newly_unlocked": 1
       }
     ],
-    "rows_expressible_today": 8,
+    "rows_expressible_today": 11,
     "rows_outside_engine": [
       {
         "needs": [
@@ -4349,7 +4354,7 @@
         "upstream_model": "EquityScreener"
       }
     ],
-    "rows_pending": 271,
+    "rows_pending": 268,
     "rows_still_locked_after_engine_pool": [
       {
         "needs": [
@@ -5342,7 +5347,7 @@
         "upstream_model": "EquityScreener"
       }
     ],
-    "rows_unlocked_by_greedy_prefix": 188,
+    "rows_unlocked_by_greedy_prefix": 185,
     "rows_with_empty_need_set": [],
     "rows_with_no_engine_work_possible": 12,
     "shipped_cover_rows": [
@@ -5371,28 +5376,6 @@
       },
       {
         "needs": [
-          "columns.null_sentinel",
-          "columns.rename",
-          "param.relative_default",
-          "path.explode"
-        ],
-        "provider": "intrinio",
-        "task_id": "OBB2-intrinio-InsiderTrading",
-        "upstream_model": "InsiderTrading"
-      },
-      {
-        "needs": [
-          "columns.null_sentinel",
-          "columns.rescale",
-          "param.relative_default",
-          "rows.order_limit"
-        ],
-        "provider": "federal_reserve",
-        "task_id": "OBB2-federal_reserve-FederalFundsRate",
-        "upstream_model": "FederalFundsRate"
-      },
-      {
-        "needs": [
           "columns.rescale",
           "param.relative_default",
           "rows.order_limit"
@@ -5400,17 +5383,6 @@
         "provider": "federal_reserve",
         "task_id": "OBB2-federal_reserve-OvernightBankFundingRate",
         "upstream_model": "OvernightBankFundingRate"
-      },
-      {
-        "needs": [
-          "columns.null_sentinel",
-          "columns.rescale",
-          "param.relative_default",
-          "rows.order_limit"
-        ],
-        "provider": "federal_reserve",
-        "task_id": "OBB2-federal_reserve-SOFR",
-        "upstream_model": "SOFR"
       },
       {
         "needs": [
@@ -5426,7 +5398,7 @@
       }
     ]
   },
-  "round_id": "C97",
+  "round_id": "C98",
   "schema_version": 1,
   "taxonomy": {
     "canonical_capability_count": 58,
@@ -5436,10 +5408,10 @@
       "columns.compose": 13,
       "columns.derive": 40,
       "columns.many_to_one_rename": 1,
-      "columns.null_sentinel": 44,
+      "columns.null_sentinel": 41,
       "columns.period_cast": 8,
-      "columns.rename": 49,
-      "columns.rescale": 32,
+      "columns.rename": 48,
+      "columns.rescale": 30,
       "columns.response_dependent_selection": 11,
       "columns.select": 26,
       "decode.archive_member": 8,
@@ -5467,11 +5439,11 @@
       "outside.source_absent": 2,
       "outside.stateful": 30,
       "param.preset_merge": 1,
-      "param.relative_default": 6,
+      "param.relative_default": 3,
       "param.value_mapping": 33,
       "param.value_transform": 11,
       "path.assemble_single_row": 8,
-      "path.explode": 43,
+      "path.explode": 42,
       "path.list_segment": 9,
       "path.object_keys": 20,
       "path.parameterized_pointer": 2,
@@ -5485,7 +5457,7 @@
       "rows.filter_comparison": 28,
       "rows.needle_transform": 6,
       "rows.order_by_parameter": 1,
-      "rows.order_limit": 38,
+      "rows.order_limit": 36,
       "shape.columnar": 21,
       "shape.long_to_wide_pivot": 1,
       "shape.nested_data_message": 6,

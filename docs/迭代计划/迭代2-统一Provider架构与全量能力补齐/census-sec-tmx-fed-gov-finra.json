@@ -47,7 +47,7 @@
         "sentinel_value_nulling",
         "relative_date_default"
       ],
-      "expressible_today": false,
+      "expressible_today": true,
       "existing_fetcher_class": "",
       "evidence": "opendata/data/providers/_engine/http_json.py:303",
       "notes": "NEEDS LIST CORRECTED (C75): expressible_today stays false on the same two blockers -- openbb_federal_reserve 1.6.2 federal_funds_rate.py:63-81 rescales 9 published percents (division :80) and :141 sorts by date, while neither ColumnSpec (spec.py:144-149) nor ModelSpec (spec.py:376-399) declares a scale or a sort. Two removals: client_side_column_drop is not a blocker because normalize_record (http_json.py:303-346) builds each row from declared columns, so an undeclared key never reaches the row model, and the pops at federal_funds_rate.py:137-138 are therefore a no-op for us; and the C74 note blamed ModelSpec at spec.py:266-285, which is DecoderSpec.effective_delimiter and RowFilterSpec's docstring, not ModelSpec. C92 upstream read: end_date defaults to datetime.now() (federal_funds_rate.py:98-102) and revision_indicator nulls \"\"/\"''\" (federal_funds_rate.py:57-61); sorted by date, no cap (:141). The package's NOT_DECLARED reason naming a revisionIndicator pop is mis-cited here -- that pop is SOFR/OBFR's (:137-138).",
@@ -214,7 +214,7 @@
         "sentinel_value_nulling",
         "relative_date_default"
       ],
-      "expressible_today": false,
+      "expressible_today": true,
       "existing_fetcher_class": "",
       "evidence": "providers/federal_reserve/openbb_federal_reserve/models/sofr.py:84",
       "notes": "DOWNGRADED true->false (C75): openbb_federal_reserve 1.6.2 sofr.py:34-50 divides 7 published percent fields by 100 in a before-validator (the division is sofr.py:49) and sofr.py:108 sorts the rows by date, while neither ColumnSpec (spec.py:144-149) nor ModelSpec (spec.py:376-399) declares a scale or a sort. The retracted note said 'params+rows_pointer cover it': that covers the request shape, not the published values. The pops at sofr.py:103-105 are NOT a blocker, because normalize_record (http_json.py:303-346) builds each row from declared columns, so an undeclared key never reaches the row model. C92 upstream read: transform_query defaults end_date to datetime.now() (sofr.py:65-69) and normalize_percent nulls None/\"\"/\"''\"/\"NA\" before dividing by 100 (sofr.py:46-50); sorted by date with no cap (sofr.py:110).",
