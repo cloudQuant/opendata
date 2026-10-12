@@ -7,7 +7,8 @@ PROVIDER = Provider(
     name="Federal Reserve",
     description=(
         "Public Federal Reserve datadownload CSV adapter for the H.6 money stock measures, the "
-        "H.15 daily Treasury yields and the Svensson fitted-factor yield curve."
+        "H.15 daily Treasury yields and the Svensson fitted-factor yield curve, plus the New "
+        "York Fed reference-rate JSON for the effective federal funds rate and SOFR."
     ),
     website="https://www.federalreserve.gov/",
     fetcher_bindings=(
@@ -28,6 +29,18 @@ PROVIDER = Provider(
             "FederalReserveSvenssonYieldCurveFetcher",
             canonical_model_ids=("SvenssonYieldCurve",),
             scenario="Svensson 拟合因子收益率曲线：宽表按序列读出并转置成一行一个日期",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.federal_reserve.models.federal_funds_rate",
+            "FederalReserveFederalFundsRateFetcher",
+            canonical_model_ids=("FederalFundsRate",),
+            scenario="联邦基金有效利率日表：取出纽约联储参考利率 JSON 的百分序列并折成小数",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.federal_reserve.models.sofr",
+            "FederalReserveSOFRFetcher",
+            canonical_model_ids=("SOFR",),
+            scenario="有担保隔夜融资利率日表：取出纽约联储 SOFR JSON 的百分序列并折成小数",
         ),
     ),
     credentials=(),

@@ -65,6 +65,18 @@ CANONICAL_SCENARIOS = {
         "intrinio",
         "CalendarIpo",
     ): "IPO日历：按状态与发行规模取回新股发行日历并展平嵌套公司证券字段",
+    (
+        "federal_reserve",
+        "FederalFundsRate",
+    ): "联邦基金有效利率日表：取出纽约联储参考利率 JSON 的百分序列并折成小数",
+    (
+        "federal_reserve",
+        "SOFR",
+    ): "有担保隔夜融资利率日表：取出纽约联储 SOFR JSON 的百分序列并折成小数",
+    (
+        "intrinio",
+        "InsiderTrading",
+    ): "内部人交易：按公司代码取回内幕交易申报，并把每笔申报的交易逐条展开成行",
 }
 
 

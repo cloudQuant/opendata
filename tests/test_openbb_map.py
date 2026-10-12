@@ -78,6 +78,11 @@ class TestShippedMap:
         # 上游 CalendarIpoData 的每一列都是 Optional（standard_models/calendar_ipo.py:34-39），
         # 所以 symbol/ipo_date 这两个 natural_key 列在契约里仍可空。
         # 该 binding 也只经 registry 投影进本表，能力 verified=False。
+        # FederalFundsRate 与 SOFR 出自 inventory 的 federal_reserve 行（该行的 `models:` 里
+        # 既有 `FederalFundsRate` 也有 `SOFR`，13 个 fetchers 之一），InsiderTrading 出自同一
+        # 清单的 intrinio 行。三个名字与上面的 CalendarIpo 走的是同一条路：domains.yaml 里
+        # 先登记域与受控契约，binding 再由 registry 投影进本表，能力 verified=False。
+        # SOFR 这个名字在本格里不重复计——fred 的 sofr 行早已占位，两条是不同的 domain。
         assert confirmed == {
             "EquityHistorical",
             "ConsumerPriceIndex",
@@ -103,6 +108,8 @@ class TestShippedMap:
             "SvenssonYieldCurve",
             "HistoricalDividends",
             "CalendarIpo",
+            "FederalFundsRate",
+            "InsiderTrading",
         }
 
     def test_enabled_capabilities_are_covered(self):

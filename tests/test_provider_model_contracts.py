@@ -76,6 +76,7 @@ from opendata.data.providers._engine.testing import (
     absent_key_reads_as_null,
     body_from_records,
     damage_record_field,
+    expansion_refuses_before_the_normalizer,
     expected_row_value,
     fixture_context,
     published_records,
@@ -492,18 +493,37 @@ def code_raised(spec: ModelSpec, source: str, *pages: HttpResponse, **kwargs: ob
     return refusal(spec, source, *pages, **kwargs)[0]
 
 
-def shape_refusal_code(spec: ModelSpec) -> str:
-    """The code a body that does not publish a declared column is refused with.
+def shape_refusal_code(spec: ModelSpec, column: ColumnSpec) -> str:
+    """The code a body that does not publish ``column`` is refused with.
 
     A column the row normalizer reads is refused as ``{PREFIX}_SHAPE_INVALID``. A column whose key
-    the expansion consumes before the normalizer is ever reached -- the pivot's timestamp header,
-    one series header -- is refused by that kernel, with the header it could not find. Both name the
-    column the case dropped; only the carrier differs, and it follows from the declaration rather
-    than from which test happened to be written.
+    an expansion kernel consumes before the normalizer is ever reached -- the pivot's timestamp
+    header, one series header, a pointer an explode or repoint plan reads as ``required`` -- is
+    refused by that kernel, with the header or pointer it could not find. Both name the key the case
+    dropped; only the carrier differs, and it follows from the declaration rather than from which
+    test happened to be written, so :func:`refused_shape_face` reads the same predicate this does.
     """
-    if wide_table_expansion(spec) is None:
-        return f"{spec.error_prefix}_SHAPE_INVALID"
-    return str(RowExpansionError(MISSING_POINTER))
+    if expansion_refuses_before_the_normalizer(spec, column):
+        return str(RowExpansionError(MISSING_POINTER))
+    return f"{spec.error_prefix}_SHAPE_INVALID"
+
+
+def refused_shape_face(spec: ModelSpec, column: ColumnSpec) -> str:
+    """The name a refusal of ``column`` carries: the key the kernel lacked, or the column itself.
+
+    The normalizer knows the declared column; the expansion kernel only ever saw a pointer, so it
+    attributes the refusal to that pointer. Picking the face from the same predicate that picks the
+    code is what keeps the two from drifting into two different readings of one declaration.
+    """
+    if not expansion_refuses_before_the_normalizer(spec, column):
+        return column.name
+    key = raw_key(spec, column)
+    if key is None:
+        raise AssertionError(
+            f"{spec.model}: {column.name} is refused by an expansion kernel but its record "
+            f"publishes no key, so this face has nothing to name"
+        )
+    return key
 
 
 @every_model
@@ -770,7 +790,7 @@ class TestDeclarationIsTheContract:
         for column, key in published:
             pages = amend_first_record(spec, pages_for(spec, 1), key, drop=True)
             code = code_raised(spec, source, *pages, **valid_query_kwargs(spec))
-            assert code == shape_refusal_code(spec), column.name
+            assert code == shape_refusal_code(spec, column), column.name
 
     def test_optional_column_absent_reads_as_null(self, source: str, spec: ModelSpec) -> None:
         """The counterpart: an absent optional key is a null, not a shape failure.
@@ -863,9 +883,8 @@ class TestDeclarationIsTheContract:
         column, key = published[0]
         pages = amend_first_record(spec, pages_for(spec, 1), key, drop=True)
         code, named = refusal(spec, source, *pages, **valid_query_kwargs(spec))
-        assert code == shape_refusal_code(spec)
-        refused = key if wide_table_expansion(spec) is not None else column.name
-        assert named == (refused,)
+        assert code == shape_refusal_code(spec, column)
+        assert named == (refused_shape_face(spec, column),)
 
     def test_non_finite_float_is_refused(self, source: str, spec: ModelSpec) -> None:
         floats = [column for column in spec.columns if column.kind == "float"]

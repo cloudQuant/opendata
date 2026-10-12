@@ -63,6 +63,10 @@ SINGLE_SOURCE_EXEMPTIONS: frozenset[str] = frozenset(
 # ``row_expansion``) and the four ``intrinio_*`` ones (the last one ``intrinio_calendar_ipo``,
 # also ``row_expansion``): each is ``verified=False``, single-source and
 # ``storage_mode: transient``, so there is still nothing to rank and no legacy table to watch.
+# This round's three (``federal_reserve_federal_funds_rate``, ``federal_reserve_sofr`` and
+# ``intrinio_insider_trading``) joined on the same reading: their domains are now registered with
+# reviewed contracts, so they leave the authority table for the same reason the other 22 did --
+# one unverified source each, nothing to rank.
 NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
     {
         "bls_search",
@@ -74,7 +78,9 @@ NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
         "currency_reference_rates",
         "equity_historical",
         "equity_quote",
+        "federal_reserve_federal_funds_rate",
         "federal_reserve_money_measures",
+        "federal_reserve_sofr",
         "federal_reserve_svensson_yield_curve",
         "federal_reserve_treasury_rates",
         "fred_search",
@@ -83,6 +89,7 @@ NATIVE_MODEL_DOMAINS: frozenset[str] = frozenset(
         "intrinio_currency_pairs",
         "intrinio_equity_search",
         "intrinio_historical_dividends",
+        "intrinio_insider_trading",
         "sofr",
         "sonia",
         "balance_of_payments",

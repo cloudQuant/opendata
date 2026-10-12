@@ -27,7 +27,9 @@ from opendata.data.models.economic_series import (
 )
 from opendata.data.models.equity_price import EquityHistorical, EquityQuote
 from opendata.data.models.federal_reserve_macro import (
+    FederalReserveFederalFundsRate,
     FederalReserveMoneyMeasure,
+    FederalReserveSofr,
     FederalReserveSvenssonYieldCurve,
     FederalReserveTreasuryRate,
 )
@@ -39,6 +41,7 @@ from opendata.data.models.index import IndexConstituent
 from opendata.data.models.intrinio import (
     IntrinioCurrencyPair,
     IntrinioDividendAdjustment,
+    IntrinioInsiderTransaction,
     IntrinioPublicOffering,
     IntrinioSearchedCompany,
 )
@@ -65,6 +68,7 @@ __all__ = [
     "CboeSearchedIndex",
     "IntrinioCurrencyPair",
     "IntrinioDividendAdjustment",
+    "IntrinioInsiderTransaction",
     "IntrinioPublicOffering",
     "IntrinioSearchedCompany",
     "MacroSeries",
@@ -76,7 +80,9 @@ __all__ = [
     "EcbYieldCurveObservation",
     "EquityHistorical",
     "EquityQuote",
+    "FederalReserveFederalFundsRate",
     "FederalReserveMoneyMeasure",
+    "FederalReserveSofr",
     "FederalReserveSvenssonYieldCurve",
     "FederalReserveTreasuryRate",
     "FinancialIndicator",

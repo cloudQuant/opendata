@@ -10,7 +10,12 @@ became declarable the round the engine grew ``ModelSpec.row_expansion``: its cen
 ``series_pivot``, which is the wide body read once per declared series column and pivoted so one
 row is one timestamp with one column per series, and the declaration states those two stages as
 data instead of hand-writing the composition.
-The other ten need composition the declaration format cannot express and are recorded in
+Two more, :data:`FEDERAL_FUNDS_RATE` and :data:`SOFR`, left :data:`NOT_DECLARED` in C98: the
+New York Fed JSON rows were refused while the rescale, the sentinel-before-the-stage reading, the
+request-date bound and the declared row order were each still missing, and every facet they need
+has since shipped, so the honest move was to declare them and price what little remains in
+:data:`DECLARED_GAPS`.
+The other eight need composition the declaration format cannot express and are recorded in
 :data:`NOT_DECLARED` rather than silently dropped from the count.
 
 One of those eleven was declared here and retracted. ``YieldCurve`` reads the same H.15 download as
@@ -66,6 +71,7 @@ table read one row short. :data:`DECLARED_GAPS` records what these declarations 
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Final
 
 from opendata.data.providers._engine.row_expansion import (
@@ -77,11 +83,20 @@ from opendata.data.providers._engine.spec import (
     DecoderSpec,
     ModelSpec,
     ParamSpec,
+    RelativeDefault,
     RowOrderSpec,
+)
+from opendata.data.providers._engine.value_transform import (
+    DerivePlan,
+    DeriveStage,
+    ScaleSpec,
 )
 
 #: Upstream base for the Fed's ``datadownload`` package endpoint. No model sends a credential.
 FEDERAL_RESERVE_BASE_URL = "https://www.federalreserve.gov"
+
+#: Upstream base for the New York Fed's reference-rate JSON the two C98 rows read.
+NEW_YORK_FED_BASE_URL = "https://markets.newyorkfed.org"
 
 #: The request path every ``Output.aspx`` download below is addressed to.
 DOWNLOAD_PATH = "/datadownload/Output.aspx"
@@ -150,6 +165,39 @@ def _download_params() -> tuple[ParamSpec, ...]:
 H6_NULL_SENTINEL: Final[tuple[str, ...]] = ("ND",)
 H15_NULL_SENTINEL: Final[tuple[str, ...]] = ("ND",)
 SVENSSON_NULL_SENTINEL: Final[tuple[str, ...]] = ("", "NA", "ND", "N/A")
+
+#: The spellings the SOFR validator nulls before it divides (sofr.py:46-48): ``if v not in
+#: (None, "", "''", "NA")``. A JSON ``null`` is not a sentinel here -- an absent or null cell on
+#: a staged column is a refusal the engine keeps as ``ValueTransformError``, which is recorded in
+#: :data:`DECLARED_GAPS`, not a spelling this field can spell (a sentinel matches published text).
+SOFR_NULL_SENTINEL: Final[tuple[str, ...]] = ("", "''", "NA")
+
+#: The spellings the Federal Funds Rate validator nulls on the revision indicator
+#: (federal_funds_rate.py:57-61): ``return None if v in ("", "''") else v``.
+REVISION_NULL_SENTINEL: Final[tuple[str, ...]] = ("", "''")
+
+
+def _percent_fraction_derives(columns: tuple[str, ...]) -> tuple[DerivePlan, ...]:
+    """Declare one divide-by-100 stage per published percent column.
+
+    Both C98 models read a New York Fed reference-rate JSON whose validator divides each percent
+    field it touches (federal_funds_rate.py:76-81, sofr.py:44-50). The rescale is not a ColumnSpec
+    field: it is a :class:`~opendata.data.providers._engine.value_transform.DeriveStage` of kind
+    ``"scale"`` on a record-sourced :class:`DerivePlan`, keyed by the declared column it produces.
+    """
+    return tuple(
+        DerivePlan(
+            column=name,
+            stages=(DeriveStage(kind="scale", scale=ScaleSpec.percent_to_fraction()),),
+            note=(
+                f"{name} is published in percent and rescaled to a fraction by dividing by 100, "
+                "the same rule the upstream before-validator runs (federal_funds_rate.py:80, "
+                "sofr.py:49)."
+            ),
+        )
+        for name in columns
+    )
+
 
 #: H.6 monthly money stock measures, declared from the table the download publishes after its
 #: five metadata rows.
@@ -494,6 +542,224 @@ SVENSSON_YIELD_CURVE = ModelSpec(
     ),
 )
 
+#: The 9 percent columns the effective-federal-funds-rate record publishes and whose upstream
+#: validator divides by 100 (federal_funds_rate.py:63-75, the division at :80). ``volume`` and
+#: ``standard_deviation`` are published alongside them but are NOT in that validator list, so no
+#: rescale is declared for them -- declaring one would divide a cell upstream copies verbatim.
+FFR_PERCENT_FIELDS: Final[tuple[str, ...]] = (
+    "rate",
+    "target_range_upper",
+    "target_range_lower",
+    "percentile_1",
+    "percentile_25",
+    "percentile_75",
+    "percentile_99",
+    "intraday_low",
+    "intraday_high",
+)
+
+#: The effective federal funds rate, one GET of the New York Fed's ``effr/search.json``.
+FEDERAL_FUNDS_RATE = ModelSpec(
+    model="FederalFundsRate",
+    domain="federal_reserve_federal_funds_rate",
+    asset_class="macro",
+    period="d",
+    market="us",
+    base_url=NEW_YORK_FED_BASE_URL,
+    path="/api/rates/unsecured/effr/search.json",
+    rows_pointer="refRates",
+    params=(
+        ParamSpec(
+            "start_date",
+            "date",
+            query_key="startDate",
+            default=date(2016, 3, 1),
+            note="window start; upstream fills 2016-03-01 when the caller names none "
+            "(federal_funds_rate.py:99-100) and spells it into the query string (:116-119)",
+        ),
+        ParamSpec(
+            "end_date",
+            "date",
+            query_key="endDate",
+            relative_default=RelativeDefault(),
+            note="window end: the request date itself, upstream's ``datetime.now().date()`` "
+            "fill (federal_funds_rate.py:101-102) carried as the all-zero RelativeDefault the "
+            "C96 field was grown for; only filled when the caller names no bound",
+        ),
+    ),
+    columns=(
+        ColumnSpec("date", "date", source_key="effectiveDate", required=True, nullable=False),
+        ColumnSpec("rate", "float", source_key="percentRate", units="published percent"),
+        ColumnSpec(
+            "target_range_upper", "float", source_key="targetRateTo", units="published percent"
+        ),
+        ColumnSpec(
+            "target_range_lower", "float", source_key="targetRateFrom", units="published percent"
+        ),
+        ColumnSpec(
+            "percentile_1", "float", source_key="percentPercentile1", units="published percent"
+        ),
+        ColumnSpec(
+            "percentile_25", "float", source_key="percentPercentile25", units="published percent"
+        ),
+        ColumnSpec(
+            "percentile_75", "float", source_key="percentPercentile75", units="published percent"
+        ),
+        ColumnSpec(
+            "percentile_99", "float", source_key="percentPercentile99", units="published percent"
+        ),
+        ColumnSpec("volume", "float", source_key="volumeInBillions", units="billions of USD"),
+        ColumnSpec("intraday_low", "float", source_key="intraDayLow", units="published percent"),
+        ColumnSpec("intraday_high", "float", source_key="intraDayHigh", units="published percent"),
+        ColumnSpec("standard_deviation", "float", source_key="stdDeviation"),
+        ColumnSpec(
+            "revision_indicator",
+            "str",
+            source_key="revisionIndicator",
+            null_sentinel=REVISION_NULL_SENTINEL,
+        ),
+    ),
+    column_derives=_percent_fraction_derives(FFR_PERCENT_FIELDS),
+    order_by=RowOrderSpec(column="effectiveDate", direction="asc", limit=None),
+    scenario="联邦基金有效利率日表：取出纽约联储参考利率 JSON 的百分序列并折成小数",
+    error_prefix="FEDERAL_RESERVE",
+    notes=(
+        "Census carrier OBB2-federal_reserve-FederalFundsRate. One GET of the New York Fed "
+        "endpoint; the rows are the document's refRates list (federal_funds_rate.py:116-127), and "
+        "the date window is a QUERY-PAIR shape, not a path composition: startDate and endDate are "
+        "ordinary query keys the URL literal interpolates (:116-119). Every field name and source "
+        "key is a pair out of the pinned contract's own __alias_dict__ "
+        "(federal_funds_rate.py:24-38). The nine percent columns carry the scale stage this round "
+        "spells via ModelSpec.column_derives (validator list :63-75, division at :80; 0 stays 0 "
+        "there, and 0/100 is 0 here, so the arms agree); revision_indicator carries "
+        "null_sentinel=REVISION_NULL_SENTINEL, the exact ('', \"''\") rewrite of the before-"
+        "validator at :57-61, matched on the record text before any stage -- the upstream order. "
+        "The transform_data pops of type/footnoteId (:137-138) are NO-OPS for this engine: "
+        "normalize_record builds each row from declared columns only, so an undeclared key never "
+        "reaches the row model and no drop facet is declared for them. order_by declares the "
+        "ascending date sort (:141) on the record key the document publishes, limit=None. C98 "
+        "registered the domain federal_reserve_federal_funds_rate in domains.yaml with all six "
+        "semantics fields (series / time_field=date / natural_key=[date] / filter_dims=[date] / "
+        "storage_mode=transient / permissions=[query]) and bound the reviewed contract "
+        "FederalReserveFederalFundsRate, so build_row_model publishes that class instead of "
+        "synthesizing a FederalFundsRateRow look-alike -- measured on this spec: the contract's 13 "
+        "fields against the 13 declared columns leave an empty symmetric difference in both "
+        "directions. No capture for this body is pinned here, so the offline test "
+        "feeds a synthesized document whose cells are spelled the way the kernel reads them: the "
+        "remaining refusals (a JSON float cell, an explicit null on a staged column, a full "
+        "timestamp spelling of effectiveDate) are priced in DECLARED_GAPS, not worked around."
+    ),
+)
+
+#: The 5 percent columns the SOFR record publishes that the upstream validator's list reaches
+#: (sofr.py:34-44). The list also names target_range_upper/target_range_lower, but the contract's
+#: own __alias_dict__ (:24-32) publishes no such key, so those validator arms have nothing to
+#: divide here and no scale stage is declared for them. ``volume`` is likewise outside the list.
+SOFR_PERCENT_FIELDS: Final[tuple[str, ...]] = (
+    "rate",
+    "percentile_1",
+    "percentile_25",
+    "percentile_75",
+    "percentile_99",
+)
+
+#: The secured overnight financing rate, one GET of the New York Fed's ``sofr/search.json``.
+SOFR = ModelSpec(
+    model="SOFR",
+    domain="federal_reserve_sofr",
+    asset_class="macro",
+    period="d",
+    market="us",
+    base_url=NEW_YORK_FED_BASE_URL,
+    path="/api/rates/secured/sofr/search.json",
+    rows_pointer="refRates",
+    params=(
+        ParamSpec(
+            "start_date",
+            "date",
+            query_key="startDate",
+            default=date(2018, 4, 2),
+            note="window start; upstream fills 2018-04-02 when the caller names none (sofr.py:"
+            "66-67) and spells it into the query string (:83-86)",
+        ),
+        ParamSpec(
+            "end_date",
+            "date",
+            query_key="endDate",
+            relative_default=RelativeDefault(),
+            note="window end: the request date itself, upstream's datetime.now().date() fill "
+            "(sofr.py:68-69) carried as the all-zero RelativeDefault; only filled when the "
+            "caller names no bound",
+        ),
+    ),
+    columns=(
+        ColumnSpec("date", "date", source_key="effectiveDate", required=True, nullable=False),
+        ColumnSpec(
+            "rate",
+            "float",
+            source_key="percentRate",
+            units="published percent",
+            null_sentinel=SOFR_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "percentile_1",
+            "float",
+            source_key="percentPercentile1",
+            units="published percent",
+            null_sentinel=SOFR_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "percentile_25",
+            "float",
+            source_key="percentPercentile25",
+            units="published percent",
+            null_sentinel=SOFR_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "percentile_75",
+            "float",
+            source_key="percentPercentile75",
+            units="published percent",
+            null_sentinel=SOFR_NULL_SENTINEL,
+        ),
+        ColumnSpec(
+            "percentile_99",
+            "float",
+            source_key="percentPercentile99",
+            units="published percent",
+            null_sentinel=SOFR_NULL_SENTINEL,
+        ),
+        ColumnSpec("volume", "float", source_key="volumeInBillions", units="billions of USD"),
+    ),
+    column_derives=_percent_fraction_derives(SOFR_PERCENT_FIELDS),
+    order_by=RowOrderSpec(column="effectiveDate", direction="asc", limit=None),
+    scenario="有担保隔夜融资利率日表：取出纽约联储 SOFR JSON 的百分序列并折成小数",
+    error_prefix="FEDERAL_RESERVE",
+    notes=(
+        "Census carrier OBB2-federal_reserve-SOFR. One GET; the rows are the document's refRates "
+        "list (sofr.py:83-92), and sofr.py:83-86 composes the URL by interpolating startDate and "
+        "endDate into the QUERY STRING -- a query-pair shape the two ParamSpecs carry, not a path "
+        "composition, so no path facet was invented for it. Field names and source keys come from "
+        "the pinned contract's __alias_dict__ (:24-32). Each of the five published percent "
+        "columns declares BOTH null_sentinel=SOFR_NULL_SENTINEL and a scale stage: the validator "
+        "at :46-50 nulls None/''/\"''\"/NA BEFORE dividing (:49), and the engine matches a "
+        "sentinel on the record text before the stage runs, so sentinel-plus-scale on one "
+        "record-sourced column is the same composition, in the same order. A published 0 is not a "
+        "sentinel (a sentinel spells text) and 0/100 keeps it 0, matching :49. The pops at "
+        ":103-105 are no-ops here: normalize_record reads declared columns only. order_by declares "
+        "the ascending date sort (:108) with no cap. C98 registered the domain "
+        "federal_reserve_sofr in domains.yaml with all six semantics fields (series / "
+        "time_field=date / natural_key=[date] / filter_dims=[date] / storage_mode=transient / "
+        "permissions=[query]) and bound the reviewed contract FederalReserveSofr, so "
+        "build_row_model publishes that class instead of synthesizing a SOFRRow look-alike -- "
+        "measured on this spec: the contract's 7 fields against the 7 declared columns leave an "
+        "empty symmetric difference in both directions. What remains outside the declaration "
+        "(an explicit JSON null on a staged column, a float-spelled cell) is priced in "
+        "DECLARED_GAPS."
+    ),
+)
+
+
 #: What each declared model still cannot do, per measurement. A declaration is not a finished
 #: capability: these are the post-processing steps the oracle performs and the engine has no field
 #: to express, so a roadmap can price them without re-reading the upstream tree.
@@ -517,9 +783,33 @@ DECLARED_GAPS: dict[str, str] = {
     "unparseable date is skipped upstream and refused here. The zero-coupon and par-yield series "
     "are READ, not computed from the fitted factors -- the earlier gap text said they were, and "
     "transform_data (svensson_yield_curve.py:1107-1196) shows a column allow-list and a copy.",
+    "FederalFundsRate": "the kernel reads a staged column's input as exact decimal text or an "
+    "integer (value_transform refuses a binary float), so a percent cell the endpoint publishes as "
+    "a JSON float is refused rather than divided -- upstream's float(v) absorbs it "
+    "(federal_funds_rate.py:80). Closing this needs a declared float-to-exact-decimal cast "
+    "(Decimal(repr(v))), not a package workaround. An explicit JSON null on one of the nine staged "
+    "columns is likewise refused where the validator returns None (:79-81); the capability would "
+    "be a declared null passthrough for a nullable staged column (an ABSENT key already reads as "
+    "null, so only the explicit null is priced). No capture pins the effectiveDate spelling: a "
+    "full timestamp cell (with time and UTC offset) would refuse against the declared date kind, "
+    "where upstream pydantic reads a date off it; a date_string cast names one format, not a "
+    "spelling family. Upstream raises EmptyDataError on a missing or empty refRates list "
+    "(:122-125); this engine answers an empty list with zero rows and refuses only an "
+    "unfollowable pointer.",
+    "SOFR": "same two kernel-priced refusals as FederalFundsRate: a JSON-float percent cell (the "
+    "float-to-exact-decimal cast is absent) and an explicit null on a staged column, which the "
+    "validator at sofr.py:48 maps to None but no sentinel can spell (a sentinel matches text). "
+    "The validator list (:36-37) also names target_range_upper/target_range_lower, keys the "
+    "contract's own __alias_dict__ (:24-32) does not publish, so those two arms divide nothing "
+    "here and declare nothing. Upstream raises EmptyDataError on a missing or empty refRates "
+    "list (:89-91); this engine answers an empty list with zero rows and refuses only a document "
+    "whose pointer cannot be followed.",
 }
 
-#: The ten upstream models this package does not declare, and the capability each one needs.
+#: The eight upstream models this package does not declare, and the capability each one needs.
+#: ``Sofr`` and ``FederalFundsRate`` left this dict in C98, declared as :data:`SOFR` and
+#: :data:`FEDERAL_FUNDS_RATE` above once the rescale, sentinel, relative bound and row-order
+#: facets had all shipped; the refusal text they carried here was stale by then.
 NOT_DECLARED: dict[str, str] = {
     "YieldCurve": "reads the same H.15 download as TreasuryRates, then melts its eleven maturity "
     "columns into long (date, maturity, rate) rows ordered by a Categorical, selects the requested "
@@ -527,10 +817,6 @@ NOT_DECLARED: dict[str, str] = {
     "declaration of it would be a second model id over the rows TreasuryRates already "
     "publishes and would not be the oracle's model, so the declaration was retracted rather "
     "than reshaped.",
-    "Sofr": "newyorkfed.org JSON whose URL composes the date window (sofr.py:84-90); not a CSV row "
-    "and not judged by this task",
-    "FederalFundsRate": "newyorkfed.org JSON with a composed window and a per-record pop of "
-    "type/footnoteId/revisionIndicator (federal_funds_rate.py:116-127)",
     "OvernightBankFundingRate": "newyorkfed.org JSON whose window this package does not declare "
     "yet. The composed window is declarable now that ``ParamSpec.relative_default`` exists: the "
     "two keys are ordinary query parameters (``startDate``/``endDate``, "
@@ -540,7 +826,10 @@ NOT_DECLARED: dict[str, str] = {
     "holds no ModelSpec for it because ``overnight_bank_funding_rate`` is not a registered domain "
     "in domains.yaml, and a declaration whose domain is unregistered publishes rows no query or "
     "ingest service accepts (http_json.build_row_model). Registering the domain and binding the "
-    "model is the package's act, not an engine capability.",
+    "model is the package's act, not an engine capability, and C98 shipped that act twice in this "
+    "same file (``federal_reserve_federal_funds_rate`` and ``federal_reserve_sofr`` now publish "
+    "their reviewed contract classes through build_row_model), so what remains here is the same "
+    "un-started work rather than a missing capability.",
     "PrimaryDealerFails": "two or three requests concatenated by a condition on the requested date "
     "(primary_dealer_fails.py:83-105)",
     "PrimaryDealerPositioning": "one request per symbol in a category branch, gathered, then "

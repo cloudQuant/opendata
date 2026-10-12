@@ -1295,6 +1295,13 @@ def make_http_json_fetcher(source: str, spec: ModelSpec) -> type[Fetcher[Any, An
                 )
             )
 
+    # ``Any`` is the most that static typing can say about a model built at runtime, but the
+    # catalog's parameter face is read at runtime with ``typing.get_type_hints`` on this method's
+    # return annotation. Without the concrete class on the function object every generated model
+    # advertises an empty parameter list, so a caller sees a callable that accepts nothing -- the
+    # annotation is therefore carried per generated function, which is a fresh object each call.
+    EngineFetcher.transform_query.__annotations__["return"] = declared_query_model
+
     published_name = f"{source.replace('_', ' ').title().replace(' ', '')}{spec.model}Fetcher"
     EngineFetcher.__name__ = published_name
     EngineFetcher.__qualname__ = published_name

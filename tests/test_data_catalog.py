@@ -349,6 +349,13 @@ class TestFiveReadings:
         for descriptor in registry.list_model_descriptors():
             descriptors_by_domain.setdefault(descriptor.domain, set()).add(descriptor.model)
 
+        # These six are the declared DomainSpecs the fixture above un-declares, so the catalog must
+        # reach its metadata-only branch for them. A model domain that ``domains.yaml`` never
+        # carried would land in the same set, and C98 removed the only three that did --
+        # ``federal_reserve_federal_funds_rate``, ``federal_reserve_sofr`` and
+        # ``intrinio_insider_trading`` -- by registering each domain with its reviewed contract, so
+        # they now read as served rows instead. One list names the population, and a new
+        # unregistered model domain breaks this assert rather than passing silently.
         assert model_domains == {
             "bls_search",
             "bls_series",

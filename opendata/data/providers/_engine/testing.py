@@ -15,6 +15,7 @@ import io
 import zipfile
 from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
+from decimal import Decimal
 from typing import TYPE_CHECKING
 from urllib.parse import urlsplit
 
@@ -22,10 +23,12 @@ from opendata.data.protocol import FetchContext
 from opendata.data.providers._engine import http_json
 from opendata.data.providers._engine.http_json import HttpResponse
 from opendata.data.providers._engine.row_expansion import (
+    NestedArrayExpansion,
     RecordRepointPlan,
     SeriesPivotPlan,
     WideTablePivotPlan,
 )
+from opendata.data.providers._engine.value_transform import apply_derive
 from opendata.data.request_budget import (
     GrantDecision,
     RequestBudget,
@@ -201,6 +204,141 @@ def repoint_field(spec: ModelSpec, column: ColumnSpec) -> FieldMapping | None:
     return next((mapping for mapping in plan.fields if mapping.column == published), None)
 
 
+def child_prefix(plan: NestedArrayExpansion) -> str:
+    """The one spelling this fixture uses for a cell inside an exploded child item.
+
+    A :class:`NestedArrayExpansion` reads its child fields out of each item of an array the record
+    publishes, so the cell a row carries is not a field of the record a falsifier is handed. The
+    fixture therefore names it by its two steps -- the array, then the pointer inside the item --
+    and every function that reads or damages a key resolves that spelling before it walks.
+    """
+    return f"{plan.child_array_pointer}."
+
+
+def nested_array_expansion(spec: ModelSpec) -> NestedArrayExpansion | None:
+    """Return the explode ``spec`` expands with, or None if it declares none.
+
+    A :class:`NestedArrayExpansion` splits its record vocabulary in two: ``parent_fields`` are read
+    once from the record :func:`published_records` hands back, and ``child_fields`` from each item
+    of the array ``child_array_pointer`` names, with the two sets' columns merged onto every child
+    row. The scripts and the falsifiers here have to follow that split rather than remember it per
+    model, so both halves are read off the plan.
+
+    Raises:
+        AssertionError: The plan sits alongside another expansion kind, whose combined record
+            vocabulary this fixture cannot decide; the parent and child sets publish the same key,
+            so no spelling says which of the two a row carries; a plan field is read by no declared
+            column; a declared column is published by neither the plan, a stamp, nor the envelope;
+            or a column is both exploded and re-sourced by a record-sourced derive, which would
+            leave the fixture guessing which cell the body carries. Each would otherwise be
+            answered with a body that quietly reads a column as a null -- the silent zero this
+            kernel refuses.
+    """
+    plans = [stage for stage in spec.row_expansion if isinstance(stage, NestedArrayExpansion)]
+    if not plans:
+        return None
+    if len(plans) != len(spec.row_expansion):
+        raise AssertionError(
+            f"{spec.model}: expands through "
+            f"{[type(stage).__name__ for stage in spec.row_expansion]}, so one record vocabulary "
+            f"cannot be read off a composition of expansion kinds"
+        )
+    plan = plans[0]
+    parents = {mapping.column for mapping in plan.parent_fields}
+    children = {mapping.column for mapping in plan.child_fields}
+    shared = sorted(parents & children)
+    if shared:
+        raise AssertionError(
+            f"{spec.model}: {shared} is published by both the filing record and its child item, so "
+            f"no key says which half of the explode a row carries it from"
+        )
+    read_by = {column.source_key or column.name for column in spec.columns}
+    unread = sorted((parents | children) - read_by)
+    if unread:
+        raise AssertionError(
+            f"{spec.model}: its explode publishes {unread}, which no declared column reads"
+        )
+    stamped = {param.column for param in spec.column_derives if param.source_kind != "record"}
+    unreachable = sorted(
+        column.name
+        for column in spec.columns
+        if (column.source_key or column.name) not in (parents | children)
+        and column.name not in (*stamped, *spec.row_envelope)
+    )
+    if unreachable:
+        raise AssertionError(
+            f"{spec.model}: declares {unreachable} that neither its record nor its child item "
+            f"publishes"
+        )
+    return plan
+
+
+def nested_child_field(spec: ModelSpec, column: ColumnSpec) -> FieldMapping | None:
+    """Return the mapping that publishes ``column`` from inside one exploded child item, or None."""
+    plan = nested_array_expansion(spec)
+    if plan is None:
+        return None
+    published = column.source_key or column.name
+    return next((mapping for mapping in plan.child_fields if mapping.column == published), None)
+
+
+def nested_parent_field(spec: ModelSpec, column: ColumnSpec) -> FieldMapping | None:
+    """Return the mapping that copies ``column`` down from the record being exploded, or None."""
+    plan = nested_array_expansion(spec)
+    if plan is None:
+        return None
+    published = column.source_key or column.name
+    return next((mapping for mapping in plan.parent_fields if mapping.column == published), None)
+
+
+def expansion_refuses_before_the_normalizer(spec: ModelSpec, column: ColumnSpec) -> bool:
+    """True when a declared expansion kernel reads ``column``'s key, so it refuses a missing one.
+
+    Two layers can answer "this body does not publish that column", and they disagree about both
+    the code and the name they give: the kernels run ahead of :func:`normalize_record` and refuse
+    with ``ROW_EXPANSION_MISSING_POINTER`` on the *pointer*, while the normalizer refuses with the
+    model's own ``*_SHAPE_INVALID`` on the *column*. Which one a column belongs to is a property of
+    its declaration -- a wide table's every header, or one mapping the plan reads as ``required``
+    -- and reading it here is what keeps the expected code and the expected name from being chosen
+    by two different rules that can drift apart.
+    """
+    if wide_table_expansion(spec) is not None:
+        return True
+    field = nested_child_field(spec, column) or nested_parent_field(spec, column)
+    if field is None:
+        field = repoint_field(spec, column)
+    return field is not None and field.required
+
+
+def explode_child_cell(
+    spec: ModelSpec, record: dict[str, object], key: str
+) -> tuple[dict[str, object], str] | None:
+    """Return the first child item and its in-item pointer when ``key`` addresses one, else None.
+
+    ``key`` arrives in the spelling :func:`child_prefix` gives: the array the plan explodes, then
+    the pointer the plan reads inside an item. The item is the object the kernel actually reads, so
+    this is where a falsifier's edit has to land for the row to move.
+
+    Raises:
+        AssertionError: The key addresses the exploded array but the record publishes no object at
+            that item, so the edit would damage nothing the kernel reads -- the refusal an edit to a
+            byte no read path visits deserves rather than a silent pass.
+    """
+    plan = nested_array_expansion(spec)
+    if plan is None:
+        return None
+    prefix = child_prefix(plan)
+    if not key.startswith(prefix):
+        return None
+    array = record.get(plan.child_array_pointer)
+    if not isinstance(array, list) or not array or not isinstance(array[0], dict):
+        raise AssertionError(
+            f"{spec.model}: its record publishes no {plan.child_array_pointer!r} item, so editing "
+            f"{key!r} damages nothing the explode reads"
+        )
+    return array[0], key[len(prefix) :]
+
+
 def stamped_plan(spec: ModelSpec, column: ColumnSpec) -> DerivePlan | None:
     """Return the plan that produces ``column`` from outside the record, or None.
 
@@ -213,22 +351,74 @@ def stamped_plan(spec: ModelSpec, column: ColumnSpec) -> DerivePlan | None:
     return None
 
 
+def staged_record_plan(spec: ModelSpec, column: ColumnSpec) -> DerivePlan | None:
+    """Return the plan that copies ``column``'s record value and stages something over it, or None.
+
+    The two halves of ``column_derives`` ask different things of a generic fixture. A stamped
+    column has no record key to script and :func:`expected_row_value` refuses to restate its
+    cast; a record-sourced plan is a copy WITH stages -- the record still publishes the key, the
+    kernel runs on the published value, and a fixture that scripted the key but read the row as a
+    verbatim copy would describe a body whose value the declared stages never saw. Every
+    record-sourced plan stages something (:class:`DerivePlan` refuses one that does not), so this
+    is the record half of the seam.
+    """
+    for plan in spec.column_derives:
+        if plan.column == column.name and plan.source_kind == "record" and plan.stages:
+            return plan
+    return None
+
+
+def staged_sample(column: ColumnSpec, index: int) -> object:
+    """The raw cell the generic body publishes for one staged record column.
+
+    The value-transform kernel reads its scale and cast inputs as exact decimal text or integers
+    and refuses a binary float -- "publish it as a string or declare a cast first" -- so for a
+    numeric staged column the fixture spells the kind's sample value as text rather than handing
+    back the float the sample table carries; every other kind keeps its published sample, which
+    is already a string a declared cast reads.
+    """
+    value = sample_value(column.kind, index)
+    if column.kind in ("float", "int") and isinstance(value, float):
+        return str(value)
+    return value
+
+
 def raw_key(spec: ModelSpec, column: ColumnSpec) -> str | None:
     """Return the record key that publishes ``column``, or None when there is no such key.
 
-    Four declaration shapes make a column and its body key different things, and a falsifier that
+    Five declaration shapes make a column and its body key different things, and a falsifier that
     edits the wrong one scripts a body the source could not have sent: a stamped column has no
     record key at all, a wide table's timestamp column is published under the pivot's own header
     (the Fed's ``Date``) rather than under the declared name (``date``), a repointed column is
-    published at the pointer its plan walks -- a dotted path, not a flat name -- and an ordinary
-    column may name a ``source_key`` of its own.
+    published at the pointer its plan walks -- a dotted path, not a flat name -- a column an explode
+    reads out of a child item is published at ``<array>.<pointer>``, one step inside the array the
+    plan iterates, and an ordinary column may name a ``source_key`` of its own. A record-sourced
+    plan may also read a key the model publishes no column for, and :func:`normalize_record`
+    reads it before any stage, so the same override is honored here.
     """
     if stamped_plan(spec, column) is not None:
         return None
+    explode = nested_array_expansion(spec)
+    if explode is not None:
+        child = nested_child_field(spec, column)
+        if child is not None:
+            if staged_record_plan(spec, column) is not None:
+                raise AssertionError(
+                    f"{spec.model}: {column.name} is both exploded out of "
+                    f"{explode.child_array_pointer!r} and re-sourced by a record derive, so this "
+                    f"fixture cannot say which cell the body carries"
+                )
+            return f"{child_prefix(explode)}{child.pointer}"
+        parent = nested_parent_field(spec, column)
+        if parent is not None:
+            return parent.pointer
     field = repoint_field(spec, column)
     if field is not None:
         return field.pointer
     key = column.source_key or column.name
+    plan = staged_record_plan(spec, column)
+    if plan is not None and plan.source.strip():
+        key = plan.source
     expansion = wide_table_expansion(spec)
     if expansion is None:
         return key
@@ -252,6 +442,9 @@ def absent_key_reads_as_null(spec: ModelSpec, column: ColumnSpec) -> str | None:
     key = raw_key(spec, column)
     if key is None:
         return None
+    if nested_array_expansion(spec) is not None:
+        field = nested_child_field(spec, column) or nested_parent_field(spec, column)
+        return None if field is not None and field.required else key
     field = repoint_field(spec, column)
     if field is not None:
         return None if field.required else field.pointer
@@ -309,6 +502,26 @@ def expected_row_value(
                 f"case did not pass"
             )
         return query[plan.source]
+    staged = staged_record_plan(spec, column)
+    if staged is not None:
+        # The body publishes the staged column's raw cell (:func:`staged_sample` spells it the way
+        # the kernel reads it), and the row carries what the plan computes from it. Restating the
+        # composition here is what lets the generic fixture judge a staged declaration at all --
+        # the kernel's own rules are measured by test_engine_value_transform.py, and this only
+        # answers "which value must the row carry". A float row field holds exactly
+        # ``float(produced)`` after pydantic, so the equality compares the same coercion.
+        produced = apply_derive(staged, staged_sample(column, index))
+        if column.kind != "float":
+            return produced
+        # apply_derive's documented product set is date / Decimal / float / bool / the source
+        # itself, so a Decimal reaching a float column is the kernel working as declared, not a
+        # mismatch to refuse. Anything else (a date, a list) would raise TypeError inside float().
+        if not isinstance(produced, (str, bytes, int, float, Decimal)):
+            raise AssertionError(
+                f"{spec.model}: {column.name} is declared float but the staged plan produced "
+                f"{type(produced).__name__}"
+            )
+        return float(produced)
     expansion = wide_table_expansion(spec)
     published: object = sample_value(column.kind, index)
     if expansion is not None and raw_key(spec, column) == expansion[0].timestamp_key:
@@ -386,14 +599,17 @@ def damage_record_field(
             nothing and the case would be judging an unchanged body. A pointer that indexes a list
             or steps through a scalar is refused by :func:`_publish` for the same reason.
     """
-    repoint = repoint_expansion(spec) is not None
+    walks = repoint_expansion(spec) is not None or nested_array_expansion(spec) is not None
+    child = explode_child_cell(spec, record, key)
+    if child is not None:
+        record, key = child
     if not drop:
-        if repoint:
+        if walks:
             _publish(record, key, value)
         else:
             record[key] = value
         return
-    steps = key.split(".") if repoint else [key]
+    steps = key.split(".") if walks else [key]
     parent: dict[str, object] = record
     for step in steps[:-1]:
         if step.isdigit():
@@ -429,7 +645,10 @@ def synthetic_record(spec: ModelSpec, index: int = 0) -> dict[str, object]:
     """
     expansion = wide_table_expansion(spec)
     repoint = repoint_expansion(spec)
+    explode = nested_array_expansion(spec)
     record: dict[str, object] = {}
+    children: dict[str, object] = {}
+    prefix = child_prefix(explode) if explode is not None else ""
     for column in spec.columns:
         key = raw_key(spec, column)
         if key is None:
@@ -437,11 +656,22 @@ def synthetic_record(spec: ModelSpec, index: int = 0) -> dict[str, object]:
         if expansion is not None and key == expansion[0].timestamp_key:
             record[key] = pivot_timestamp(index)
             continue
-        value = sample_value(column.kind, index)
-        if repoint is None:
+        staged = staged_record_plan(spec, column)
+        if staged is not None:
+            # A staged record column is published the way its kernel reads it -- decimal text for
+            # a numeric sample value -- so the declared stages run on the cell the body carries.
+            value = staged_sample(column, index)
+        else:
+            value = sample_value(column.kind, index)
+        if explode is not None and key.startswith(prefix):
+            children[key[len(prefix) :]] = value
+            continue
+        if repoint is None and explode is None:
             record[key] = value
             continue
         _publish(record, key, value)
+    if explode is not None:
+        record[explode.child_array_pointer] = [children]
     return record
 
 
@@ -564,12 +794,13 @@ def body_from_records(
     if not decoder.delimited:
         raise AssertionError(f"{spec.model}: declares a json decoder, so no delimited body exists")
     header = record_vocabulary(spec) if keys is None else list(keys)
-    if repoint_expansion(spec) is not None:
+    if repoint_expansion(spec) is not None or nested_array_expansion(spec) is not None:
         nested = [key for key in header if "." in key]
         if nested:
             raise AssertionError(
-                f"{spec.model}: its repoint reads {nested}, which a {decoder.kind} header cannot "
-                f"carry: the cell decodes back as one flat key, not as a nested object"
+                f"{spec.model}: its expansion reads {nested}, which a {decoder.kind} header cannot "
+                f"carry: the cell decodes back as one flat key, not as a nested object or an array "
+                f"item"
             )
     table = (
         _preamble_rows(decoder.preamble_rows if preamble_rows is None else preamble_rows)
@@ -635,16 +866,18 @@ def valid_query_kwargs(spec: ModelSpec) -> dict[str, object]:
     for parameter in spec.params:
         if not parameter.required and parameter.default is None:
             continue
-        value: object = {
-            "str": "sampler",
-            "int": 1,
-            "float": 1.5,
-            "bool": True,
-            "date": date(2026, 1, 1),
-            "str_list": ["one"],
-        }[parameter.kind]
-        if parameter.kind == "enum":
-            value = parameter.enum[0]
+        value: object = (
+            parameter.enum[0]
+            if parameter.kind == "enum"
+            else {
+                "str": "sampler",
+                "int": 1,
+                "float": 1.5,
+                "bool": True,
+                "date": date(2026, 1, 1),
+                "str_list": ["one"],
+            }[parameter.kind]
+        )
         kwargs[parameter.name] = value
     return kwargs
 

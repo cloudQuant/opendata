@@ -1,4 +1,4 @@
-"""intrinio's 38-row accounting: four declarations, thirty-four recorded refusals, no silent drops.
+"""intrinio's 38-row accounting: five declarations, thirty-three recorded refusals, no silent drops.
 
 The engine's promise is that a censused model is either declared or written down with the capability
 that blocks it. This file judges the second half for intrinio, offline: no socket, no API key, no
@@ -24,6 +24,7 @@ frozen so the next widening of it -- a gate, say -- fails here before the ledger
 from __future__ import annotations
 
 import dataclasses
+import functools
 import json
 import re
 from datetime import date, datetime
@@ -60,6 +61,7 @@ from opendata.data.providers.intrinio import specs
 from opendata.data.providers.intrinio._source import SOURCE
 from opendata.data.providers.intrinio.provider import PROVIDER
 from scripts.quality.model_capability_census import LABEL_TO_CAPABILITY
+from scripts.quality.model_capability_census import run as census_run
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -75,30 +77,20 @@ CENSUS_PATHS: tuple[Path, ...] = tuple(
 #: A blocker is a measurement, so it has to point at the upstream line that shows it.
 CITATION = re.compile(r"[A-Za-z0-9_./-]+\.py:\d+")
 
-#: The canonical capability names the shared engine ships today, measured from ``ModelSpec``'s own
-#: field surface (columns/params/pagination/row_filters/order_by/column_derives/row_expansion/
-#: decoder/static_query/static_headers/row_envelope/composite_keys) plus the decode and path
-#: facets the census reads as present. A ledger entry naming one of these is not a refusal.
-#: ``param.relative_default`` joined this set mid-round (``ParamSpec.relative_default``, resolved at
-#: query time by ``http_json``), which is why two refusals were re-based rather than left standing.
-SHIPPED_CANONICAL: frozenset[str] = frozenset(
-    {
-        "columns.cast",
-        "columns.derive",
-        "columns.rename",
-        "columns.rescale",
-        "columns.select",
-        "decode.archive_member",
-        "decode.delimited",
-        "flow.composite_key_segment",
-        "flow.url_template",
-        "param.relative_default",
-        "param.value_mapping",
-        "path.explode",
-        "rows.filter",
-        "rows.order_limit",
-    }
-)
+
+#: The canonical capability names the shared engine ships today -- read from the census judge rather
+#: than restated here. ``verify_registry`` anchors every entry against ``ModelSpec``'s field
+#: surface and the engine module that performs it, so a kernel that lands in ``_engine`` reopens the
+#: refusals that named it instead of leaving them standing as stale prose. This set used to be typed
+#: by hand and omitted ``columns.null_sentinel`` after C97 shipped that kernel, which is how
+#: ``InsiderTrading`` stayed recorded on a capability the engine performs. The derivation is
+#: and the control below is the witness that the reopened direction fails rather than mutes.
+@functools.lru_cache(maxsize=1)
+def shipped_canonical() -> frozenset[str]:
+    """The registry entries the judge reads as present in this tree, live."""
+    readings = census_run(round_id="refusal-guard").readings
+    return frozenset(name for name, reading in readings.items() if reading.present)
+
 
 #: Every canonical name :data:`specs.NOT_DECLARABLE` is allowed to block on. ``flow.fan_out`` and
 #: ``flow.join`` name the two pure kernels in ``_engine/multi_request.py`` that no ``ModelSpec``
@@ -168,8 +160,8 @@ class TestTheThirtyEightRowAccounting:
             "the package does not account for every census row: "
             f"{sorted(set(specs.UPSTREAM_ROWS) - declared - recorded)}"
         )
-        assert len(declared) == 4
-        assert len(recorded) == 34
+        assert len(declared) == 5
+        assert len(recorded) == 33
 
     def test_declared_models_are_the_runtime_bindings(self) -> None:
         """The ledger's declared half is what the runtime can actually route -- no paper model."""
@@ -179,7 +171,8 @@ class TestTheThirtyEightRowAccounting:
         assert get_provider("intrinio").credentials[0].environment_variable == "INTRINIO_API_KEY"
 
     def test_this_wave_added_no_model_module(self) -> None:
-        """Zero of the 34 refusals turned out declarable, so ``models/`` grew by nothing.
+        """One refusal turned declarable once C97 shipped ``columns.null_sentinel``, so
+        ``models/`` grew by exactly ``insider_trading.py``.
 
         The face is a directory listing rather than a claim in prose: a future declaration has to
         add a module and a binding here, and a recorded row quietly re-declared without one is the
@@ -196,6 +189,7 @@ class TestTheThirtyEightRowAccounting:
             "currency_pairs.py",
             "equity_search.py",
             "historical_dividends.py",
+            "insider_trading.py",
         }
 
 
@@ -213,9 +207,23 @@ class TestEveryRefusalIsAMeasurement:
             return
         primary = primary_blocker(reason)
         assert primary is not None, f"{model}: the blocker names no canonical capability"
-        assert primary not in SHIPPED_CANONICAL, (
+        assert primary not in shipped_canonical(), (
             f"{model}: {primary} is shipped, so this row should be declared, not recorded"
         )
+
+    def test_a_refusal_naming_a_shipped_capability_is_caught_not_muted(self) -> None:
+        """The reopened direction has a witness: a shipped kernel must fail its old refusal.
+
+        ``columns.null_sentinel`` shipped in C97 and the hand-typed set below this line never grew,
+        so a blocker naming it passed the guard one round for free. The derived set carries it, and
+        the same parse the parametrized test runs is pointed at a synthetic reason, so this fails if
+        the derivation ever turns back into a constant -- or if a future kernel ships and its
+        refusals are left standing.
+        """
+        shipped = shipped_canonical()
+        assert "columns.null_sentinel" in shipped, "the derivation no longer reads the live engine"
+        synthetic = "columns.null_sentinel: zeros nulled per row (models/probe.py:1)"
+        assert primary_blocker(synthetic) in shipped
 
     @pytest.mark.parametrize("model", sorted(census_rows()))
     def test_the_census_denies_every_recorded_row(self, model: str) -> None:
@@ -234,7 +242,8 @@ class TestEveryRefusalIsAMeasurement:
         declared it: the upstream one-year default window (historical_dividends.py:74-78) had no
         carrier, so an omitted bound went unsent, and ``HISTORICAL_DIVIDENDS.notes`` wrote that
         down as a divergence instead of hiding it. ``RelativeDefault`` is the carrier that was
-        missing, and the artifact now credits all four declared rows, so the two halves are
+        missing, and the artifact credits a declared row only once its whole need set ships, so
+        two halves are
         re-measured here rather than left as a claim. One divergence does still stand, and the
         notes still say so: there is no parameter-normalization facet, so a lowercase ``symbol``
         reaches a lowercase path.
@@ -261,9 +270,10 @@ class TestEveryRefusalIsAMeasurement:
 
         ``RelativeDefault`` carries an offset and nothing else -- no gate -- so a default
         conditioned on another parameter is still refused, now under ``derive.conditional``. The
-        two rows withheld on ``param.relative_default`` a round ago are recorded on the blocker
-        that survives the new field, which is what makes this a re-measurement rather than a
-        deletion.
+        two rows withheld on ``param.relative_default`` a round ago, only ``CompanyFilings`` is
+        still recorded: its conditional gate has no carrier, while ``InsiderTrading`` left the
+        ledger the round ``columns.null_sentinel`` shipped. The assertion below refuses that row's
+        return, so this stays a re-measurement rather than a deletion.
         """
         assert {field.name for field in dataclasses.fields(RelativeDefault)} == {
             "years",
@@ -274,10 +284,12 @@ class TestEveryRefusalIsAMeasurement:
             "param.relative_default" in reason for reason in specs.NOT_DECLARABLE.values()
         )
         assert primary_blocker(specs.NOT_DECLARABLE["CompanyFilings"]) == "derive.conditional"
-        assert primary_blocker(specs.NOT_DECLARABLE["InsiderTrading"]) == "columns.null_sentinel"
+        assert "InsiderTrading" not in specs.NOT_DECLARABLE, (
+            "C97 shipped columns.null_sentinel, so this row must be declared, not recorded"
+        )
 
     def test_the_blocker_set_names_a_need_its_census_row_records_except_two(self) -> None:
-        """Reconciliation: 32 of 34 refusals quote a need their census row also records.
+        """Reconciliation: 31 of 33 refusals quote a need their census row also records.
 
         The comparison is on canonical capability names, not on the census' free-text labels, and
         the two exceptions are vocabulary gaps rather than ledger slips. CompanyFilings' window is
@@ -321,7 +333,7 @@ class TestEveryRefusalIsAMeasurement:
             for model in specs.NOT_DECLARABLE
             if model not in silent and primary_blocker(specs.NOT_DECLARABLE[model]) is not None
         ]
-        assert len(named) == 32, f"{len(named)} of 34 refusals reconcile, not the documented 32"
+        assert len(named) == 31, f"{len(named)} of 33 refusals reconcile, not the documented 31"
         needs = canonical_needs(census_rows()["CompanyFilings"])
         assert "derive.conditional" not in needs and "rows.filter_comparison" in needs
         reason = specs.NOT_DECLARABLE["CompanyFilings"]
@@ -351,7 +363,6 @@ class TestEveryRefusalIsAMeasurement:
             "flow.preflight_lookup": 3,
             "flow.join": 2,
             "derive.conditional": 1,
-            "columns.null_sentinel": 1,
             "rows.cap_source_order": 1,
             "unnamed": 1,
         }

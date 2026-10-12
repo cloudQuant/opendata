@@ -209,13 +209,18 @@ def test_real_ecb_bindings_register_three_canonical_models_without_auto_promotio
     # 50 -> 55 capabilities and 17 -> 22 descriptors. Auto routing stayed at 23 because all five
     # register verified=False.
     #
+    # C98 wires three more of that same kind: federal_reserve::FederalFundsRate and
+    # federal_reserve::SOFR (the two York Fed reference-rate JSON rows) and
+    # intrinio::InsiderTrading (the nested-array explode), so 55 -> 58 capabilities and
+    # 22 -> 25 descriptors, while auto routing stays 23 for the same verified=False reason.
+    #
     # An earlier draft of this comment said four and 54/21, leaving intrinio::CalendarIpo out of
     # its own enumeration. The manifest the plane re-derives from the registry
     # (docs/proposals/openbb-migration/provider-inventory.yaml) is what caught it: the shipped file
     # read 54 while ``ProviderRegistry`` reported 55, and ``--check-manifest``'s byte diff named
     # exactly those two count lines and nothing else.
-    assert len(registry.capabilities()) == 55
-    assert len(descriptors) == 22
+    assert len(registry.capabilities()) == 58
+    assert len(descriptors) == 25
     assert {item.model for item in descriptors if item.source == "cboe"} == {
         "AvailableIndices",
         "IndexConstituents",

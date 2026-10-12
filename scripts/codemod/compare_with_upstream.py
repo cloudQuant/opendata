@@ -691,10 +691,13 @@ def _compare_frames(
             same = np.isclose(left_values, right_values, rtol=RTOL, equal_nan=True)
             if not bool(same.all()):
                 bad = np.flatnonzero(~same)[:MAX_DIFFS]
-                diffs.extend(
-                    f"cell {column}[{row}]: {left_values[row]!r} != {right_values[row]!r}"
-                    for row in bad
-                )
+                # float() before repr(): numpy 2 prints its scalars as ``np.float64(3.0)`` while
+                # numpy 1 printed ``3.0``, so the raw repr would make a diff line depend on the
+                # installed numpy. The cell and its numbers are the finding; the wrapper is not.
+                for row in bad:
+                    left_cell = float(left_values[row])
+                    right_cell = float(right_values[row])
+                    diffs.append(f"cell {column}[{row}]: {left_cell!r} != {right_cell!r}")
         else:
             diffs.extend(_text_cell_diffs(column, reference[column], ported[column], notes=notes))
     return diffs[:MAX_DIFFS]

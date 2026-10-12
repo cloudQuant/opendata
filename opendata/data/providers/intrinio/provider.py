@@ -8,8 +8,9 @@ PROVIDER = Provider(
     description=(
         "Declared Intrinio Web API v2 JSON adapter for "
         "the forex pair directory, the company search, "
-        "one security's dividend/split adjustment feed "
-        "and the IPO calendar."
+        "one security's dividend/split adjustment feed, "
+        "the IPO calendar and a company's insider "
+        "trading filings."
     ),
     website="https://intrinio.com/",
     fetcher_bindings=(
@@ -36,6 +37,12 @@ PROVIDER = Provider(
             "IntrinioCalendarIpoFetcher",
             canonical_model_ids=("CalendarIpo",),
             scenario="IPO日历：按状态与发行规模取回新股发行日历并展平嵌套公司证券字段",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.insider_trading",
+            "IntrinioInsiderTradingFetcher",
+            canonical_model_ids=("InsiderTrading",),
+            scenario="内部人交易：按公司代码取回内幕交易申报，并把每笔申报的交易逐条展开成行",
         ),
     ),
     credentials=(

@@ -18,6 +18,15 @@ not publish. Upstream builds every row as ``{"symbol": query.symbol, **item}``
 the row carries the symbol the caller asked for. The field is required because the query parameter
 is: a stamped ``None`` would mean the caller named no symbol, and that request never reaches the
 wire.
+
+``IntrinioInsiderTransaction`` is the one contract here whose rows are exploded out of a nested
+array: one row per transaction inside each entry of the document's ``transaction_filings`` list,
+with the filing-level scalars re-published onto every sub-row by the ``nested_array_explode``
+plan. Seven of its 29 fields are required, and six of those seven are still nullable -- the
+expansion must publish the key on every sub-row, yet upstream's before-validator
+(insider_trading.py:109-117) turns a published ``''`` into ``None``, and the declaration mirrors
+that with ``columns.null_sentinel`` -- while ``company_name`` is the single required,
+non-nullable column, exactly the one column that carries no sentinel in the declaration.
 """
 
 from __future__ import annotations
@@ -113,3 +122,46 @@ class IntrinioPublicOffering(ContractModel):
     security_composite_figi: str | None = None
     security_share_class_figi: str | None = None
     security_primary_listing: bool | None = None
+
+
+class IntrinioInsiderTransaction(ContractModel):
+    """One insider transaction, with its filing's identity carried onto the row.
+
+    The 29 fields are exactly the columns ``providers/intrinio/specs.py::INSIDER_TRADING``
+    declares. Six of its spellings are the provider's own aliases, taken from the cited
+    ``alias_dict`` (insider_trading.py:50-57): ``owner_title``, ``transaction_type``,
+    ``acquisition_or_disposition``, ``security_type``, ``securities_owned`` and
+    ``securities_transacted`` are what the upstream model publishes where the SEC filing says
+    ``officer_title``, ``transaction_type_code``, ``acquisition_disposition_code``,
+    ``security_title``, ``total_shares_owned`` and ``amount_of_shares``.
+    """
+
+    symbol: str | None
+    company_cik: str | None
+    company_name: str
+    filing_date: date | None
+    filing_url: str | None
+    owner_cik: str | None
+    owner_name: str | None
+    transaction_date: date | None = None
+    ownership_type: str | None = None
+    owner_title: str | None = None
+    transaction_type: str | None = None
+    acquisition_or_disposition: str | None = None
+    security_type: str | None = None
+    securities_owned: float | None = None
+    securities_transacted: float | None = None
+    transaction_price: float | None = None
+    conversion_exercise_price: float | None = None
+    deemed_execution_date: date | None = None
+    exercise_date: date | None = None
+    expiration_date: date | None = None
+    underlying_security_title: str | None = None
+    underlying_shares: float | None = None
+    nature_of_ownership: str | None = None
+    director: bool | None = None
+    officer: bool | None = None
+    ten_percent_owner: bool | None = None
+    other_relation: bool | None = None
+    derivative_transaction: bool | None = None
+    report_line_number: int | None = None

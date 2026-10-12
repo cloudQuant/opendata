@@ -1,7 +1,11 @@
 """Declarable intrinio provider models.
 
-Thirty-eight intrinio rows were censused; four are declared here and all four survive the
-declaration plane plus the runtime witness. They are single-GET, nested-key JSON endpoints, so
+Thirty-eight intrinio rows were censused; five are declared here. Four survive the declaration plane
+plus the engine's synthetic witness; the fifth, :data:`INSIDER_TRADING`, survives both planes, a
+hand-written offline witness of its own body and, since C98, the engine's synthetic witness too --
+child-array explosion is now a vocabulary :mod:`opendata.data.providers._engine.testing` scripts,
+which its notes record as a closed fixture gap rather than a declaration gap.
+They are single-GET, nested-key JSON endpoints, so
 they are expressed as data (:class:`~opendata.data.providers._engine.spec.ModelSpec`). Their
 capability needs are exactly the shipped vocabulary: ``columns.rename`` (a
 ``ColumnSpec.source_key``), ``rows.filter`` (the substring search on the pair directory, a
@@ -9,28 +13,42 @@ capability needs are exactly the shipped vocabulary: ``columns.rename`` (a
 (``limit`` sent as ``page_size``, a ``ParamSpec.query_key``), ``flow.url_template`` (the adjustment
 feed's ``{symbol}`` path segment), ``columns.derive`` for the one column whose value no record
 publishes (:data:`HISTORICAL_DIVIDENDS` stamps the queried symbol with a
-:class:`~opendata.data.providers._engine.value_transform.DerivePlan`), ``path.explode`` for
-:data:`CALENDAR_IPO`, whose published scalars sit inside per-record ``company`` and ``security``
-objects and are projected out by a
+:class:`~opendata.data.providers._engine.value_transform.DerivePlan`), ``path.explode`` twice over
+-- :data:`CALENDAR_IPO` projects its published scalars out of each record's ``company`` and
+``security`` object with a
 :class:`~opendata.data.providers._engine.row_expansion.RecordRepointPlan`, and
-``param.relative_default`` for the window :data:`HISTORICAL_DIVIDENDS` fills from the request date
-when the caller names no bound (``RelativeDefault``, since C96).
+:data:`INSIDER_TRADING` explodes each filing's ``transactions`` array into one row per transaction
+with the filing-level scalars copied down by a
+:class:`~opendata.data.providers._engine.row_expansion.NestedArrayExpansion` ``parent_fields`` --
+``columns.null_sentinel`` for the ``''`` spellings :data:`INSIDER_TRADING` nulls on 28 of its 29
+columns (the kernel C97 shipped), and
+``param.relative_default`` for the window bounds the two declarations fill from the request date
+when the caller names none (``RelativeDefault``, since C96).
 
-The remaining 34 rows were read upstream, endpoint by endpoint, and re-measured against the same
+The remaining 33 rows were read upstream, endpoint by endpoint, and re-measured against the same
 two planes -- the ``ModelSpec`` field list and what ``http_json`` performs at query time. None of
-them is declarable today, so this round adds no module and no binding; :data:`NOT_DECLARABLE`
+them is declarable today, so this round adds one module and one binding; :data:`NOT_DECLARABLE`
 carries each refusal with the canonical capability that blocks it, the mechanism and the line that
 shows it. Counted by the capability a refusal names first: ``flow.fan_out`` 14 (a request per
 comma-split symbol, per tag, or per id read off an earlier response), ``flow.branch`` 8 (a path,
 rows key or sort column chosen by an optional parameter), ``param.value_transform`` 3,
 ``flow.preflight_lookup`` 3 (a response publishes the URL the rows live at), ``flow.join`` 2,
-``derive.conditional`` 1, ``columns.null_sentinel`` 1, ``rows.cap_source_order`` 1 and 1 row whose
+``derive.conditional`` 1, ``rows.cap_source_order`` 1 and 1 row whose
 need -- de-duplicating across pages, then ordering and capping the assembled set -- no canonical
 names.
 Counted by every capability a refusal mentions, ``flow.fan_out`` appears 23 times and
-``columns.null_sentinel`` and ``flow.branch`` 8 times each. The two kernels that would clear most
+``flow.branch`` 8 and ``columns.null_sentinel`` 7 times each. The two kernels that would clear most
 of it, ``_engine/multi_request.py`` and ``_engine/request_body.py``, exist as pure modules with no
 ``ModelSpec`` field pointing at them, so a declaration cannot reach them from here.
+
+``InsiderTrading`` was refused for one round on ``columns.null_sentinel`` alone, and that refusal
+named the rest of the row as declarable. C97 shipped the sentinel facet, so the row was re-judged
+against the two planes and declared: 28 of its 29 columns carry ``('',)``, matched on the published
+text before any cast, which is what the upstream ``model_validator`` does (insider_trading.py:
+109-117) and what keeps a genuine ``0`` or ``False`` a value. The one column that cannot carry it,
+``company_name``, is the provider's only non-optional field, and a sentinel on a non-nullable column
+is refused by the declaration plane (spec.py:393-397); the divergence that leaves is recorded in the
+declaration's notes rather than papered over.
 
 ``HistoricalDividends`` was withheld for one round for exactly that last reason. Upstream builds
 every row as ``{"symbol": query.symbol, **item}`` (historical_dividends.py:102-104), so the value a
@@ -50,7 +68,11 @@ from __future__ import annotations
 
 from typing import Final
 
-from opendata.data.providers._engine.row_expansion import FieldMapping, RecordRepointPlan
+from opendata.data.providers._engine.row_expansion import (
+    FieldMapping,
+    NestedArrayExpansion,
+    RecordRepointPlan,
+)
 from opendata.data.providers._engine.spec import (
     ColumnSpec,
     ModelSpec,
@@ -413,9 +435,281 @@ CALENDAR_IPO = ModelSpec(
         "to keep. Upstream raises EmptyDataError on an empty list (:190-191); the repoint kernel "
         "refuses the same answer with ROW_EXPANSION_EMPTY_RESULT, so this model does NOT publish "
         "the empty list the CurrencyPairs declaration allows -- the refusal is the closer reading "
-        "of the cited contract. The domain intrinio_calendar_ipo is not yet in domains.yaml, which "
-        "this package may not edit, so build_row_model synthesizes CalendarIpoRow rather than "
-        "publishing a reviewed contract class."
+        "of the cited contract. The domain intrinio_calendar_ipo has been registered in "
+        "domains.yaml since 083b7e4 with declared semantics (event / time_field=ipo_date / "
+        "natural_key=[symbol, ipo_date] / filter_dims=[symbol, ipo_date, status] / "
+        "storage_mode=transient / permissions=[query]) and its reviewed contract "
+        "IntrinioPublicOffering, so build_row_model publishes that class, not a CalendarIpoRow "
+        "look-alike -- measured on this spec: 35 contract fields against 35 declared columns, "
+        "empty symmetric difference in both directions. The sentence this note carried until C98 "
+        "claimed the opposite (that the domain was absent from domains.yaml and the row model was "
+        "synthesized), and it had been false since the commit that shipped the row itself."
+    ),
+)
+
+
+#: The seven scalars one insider-trading filing publishes at its own level, as
+#: ``(row key, record pointer)`` pairs. Upstream copies each of them onto every transaction row it
+#: explodes (insider_trading.py:162-179), indexing them directly -- a filing that omits one raises
+#: there -- so every one is read as required here. ``owner_cik``/``owner_name`` sit inside the
+#: filing's ``owner`` object and reach the row through the dotted pointer grammar the kernel walks.
+INSIDER_TRADING_FILING_FIELDS: Final[tuple[tuple[str, str], ...]] = (
+    ("issuer_ticker", "issuer_ticker"),
+    ("issuer_cik", "issuer_cik"),
+    ("issuer_company", "issuer_company"),
+    ("filing_date", "filing_date"),
+    ("filing_url", "filing_url"),
+    ("owner_cik", "owner.owner_cik"),
+    ("owner_name", "owner.owner_name"),
+)
+
+#: The keys one ``transactions[]`` item publishes for the columns this model carries. Upstream
+#: spreads the whole sub-item onto the row (:168) and every field its model declares is optional
+#: with a ``None`` default (standard_models/insider_trading.py:39-107, insider_trading.py:60-107),
+#: so each is read required=False: an item that omits a key answers null, not refusal.
+INSIDER_TRADING_TRANSACTION_FIELDS: Final[tuple[str, ...]] = (
+    "transaction_date",
+    "ownership_type",
+    "officer_title",
+    "transaction_type_code",
+    "acquisition_disposition_code",
+    "security_title",
+    "total_shares_owned",
+    "amount_of_shares",
+    "transaction_price",
+    "conversion_exercise_price",
+    "deemed_execution_date",
+    "exercise_date",
+    "expiration_date",
+    "underlying_security_title",
+    "underlying_shares",
+    "nature_of_ownership",
+    "director",
+    "officer",
+    "ten_percent_owner",
+    "other_relation",
+    "derivative_transaction",
+    "report_line_number",
+)
+
+#: The one spelling this model's before-validator reads as no value: the empty string
+#: (insider_trading.py:109-117 rewrites ``v == ""`` to ``None`` for every key of the assembled row).
+EMPTY_TEXT: Final[tuple[str, ...]] = ("",)
+
+#: The insider-trading filings of one company: one GET, the document's ``transaction_filings`` list
+#: exploded per ``transactions[]`` item, the filing's own scalars copied onto every child row and
+#: the six renamed transaction keys read out of the record spelling the provider aliases.
+INSIDER_TRADING = ModelSpec(
+    model="InsiderTrading",
+    domain="intrinio_insider_trading",
+    asset_class="equity",
+    period="d",
+    market="us",
+    base_url=INTRINIO_BASE_URL,
+    path="/companies/{symbol}/insider_transaction_filings",
+    rows_pointer="transaction_filings",
+    params=(
+        ParamSpec(
+            "symbol",
+            "str",
+            required=True,
+            note="Addresses the company in the path (insider_trading.py:153-155); upstream drops "
+            "it from the query string (:152), which is the engine's path-consumed rule.",
+        ),
+        ParamSpec(
+            "start_date",
+            "date",
+            relative_default=RelativeDefault(years=-5),
+            note="Window start: upstream fills an omitted bound with ``now - relativedelta("
+            "years=5)`` (:133-137), the five-year default this ledger named as declarable once a "
+            "``RelativeDefault`` resolved one.",
+        ),
+        ParamSpec(
+            "end_date",
+            "date",
+            relative_default=RelativeDefault(),
+            note="Window end: the request date itself (:136-137), the all-zero RelativeDefault.",
+        ),
+        ParamSpec(
+            "ownership_type",
+            "enum",
+            enum=("D", "I"),
+            note="Direct versus indirect ownership; upstream spells the two letters as-is on the "
+            "wire (:37-40), so no value_map restatement is declared.",
+        ),
+        ParamSpec(
+            "sort_by",
+            "enum",
+            enum=("filing_date", "updated_on"),
+            default="updated_on",
+            note="Upstream's own default (:41-44); the sort happens on the server, and this "
+            "declaration asks for no client-side ``order_by`` over the exploded rows.",
+        ),
+        ParamSpec(
+            "limit",
+            "int",
+            query_key="page_size",
+            default=500,
+            note="param.value_mapping face: limit aliased to page_size (:29), and upstream sends "
+            "500 when the caller names none (:151). page_size caps the page; there is no next-page "
+            "loop to declare, so ``pagination`` stays at its none default.",
+        ),
+    ),
+    columns=(
+        ColumnSpec(
+            "symbol",
+            "str",
+            source_key="issuer_ticker",
+            required=True,
+            null_sentinel=EMPTY_TEXT,
+        ),
+        ColumnSpec(
+            "company_cik",
+            "str",
+            source_key="issuer_cik",
+            required=True,
+            null_sentinel=EMPTY_TEXT,
+        ),
+        # The one non-optional field of the provider's own model (:59), so it carries no sentinel:
+        # rewriting ``''`` to None would produce exactly the null the row model refuses.
+        ColumnSpec(
+            "company_name", "str", source_key="issuer_company", required=True, nullable=False
+        ),
+        ColumnSpec("filing_date", "date", required=True, null_sentinel=EMPTY_TEXT),
+        ColumnSpec("filing_url", "str", required=True, null_sentinel=EMPTY_TEXT),
+        ColumnSpec("owner_cik", "str", required=True, null_sentinel=EMPTY_TEXT),
+        ColumnSpec("owner_name", "str", required=True, null_sentinel=EMPTY_TEXT),
+        ColumnSpec("transaction_date", "date", null_sentinel=EMPTY_TEXT),
+        ColumnSpec("ownership_type", "str", null_sentinel=EMPTY_TEXT),
+        ColumnSpec("owner_title", "str", source_key="officer_title", null_sentinel=EMPTY_TEXT),
+        ColumnSpec(
+            "transaction_type",
+            "str",
+            source_key="transaction_type_code",
+            null_sentinel=EMPTY_TEXT,
+        ),
+        ColumnSpec(
+            "acquisition_or_disposition",
+            "str",
+            source_key="acquisition_disposition_code",
+            null_sentinel=EMPTY_TEXT,
+        ),
+        ColumnSpec("security_type", "str", source_key="security_title", null_sentinel=EMPTY_TEXT),
+        ColumnSpec(
+            "securities_owned", "float", source_key="total_shares_owned", null_sentinel=EMPTY_TEXT
+        ),
+        ColumnSpec(
+            "securities_transacted",
+            "float",
+            source_key="amount_of_shares",
+            null_sentinel=EMPTY_TEXT,
+        ),
+        ColumnSpec("transaction_price", "float", null_sentinel=EMPTY_TEXT, units="usd"),
+        ColumnSpec("conversion_exercise_price", "float", null_sentinel=EMPTY_TEXT, units="usd"),
+        ColumnSpec("deemed_execution_date", "date", null_sentinel=EMPTY_TEXT),
+        ColumnSpec("exercise_date", "date", null_sentinel=EMPTY_TEXT),
+        ColumnSpec("expiration_date", "date", null_sentinel=EMPTY_TEXT),
+        ColumnSpec("underlying_security_title", "str", null_sentinel=EMPTY_TEXT),
+        ColumnSpec("underlying_shares", "float", null_sentinel=EMPTY_TEXT),
+        ColumnSpec("nature_of_ownership", "str", null_sentinel=EMPTY_TEXT),
+        ColumnSpec("director", "bool", null_sentinel=EMPTY_TEXT),
+        ColumnSpec("officer", "bool", null_sentinel=EMPTY_TEXT),
+        ColumnSpec("ten_percent_owner", "bool", null_sentinel=EMPTY_TEXT),
+        ColumnSpec("other_relation", "bool", null_sentinel=EMPTY_TEXT),
+        ColumnSpec("derivative_transaction", "bool", null_sentinel=EMPTY_TEXT),
+        ColumnSpec("report_line_number", "int", null_sentinel=EMPTY_TEXT),
+    ),
+    row_expansion=(
+        NestedArrayExpansion(
+            records_pointer="",
+            child_array_pointer="transactions",
+            child_fields=tuple(
+                FieldMapping(key, key, required=False) for key in INSIDER_TRADING_TRANSACTION_FIELDS
+            ),
+            parent_fields=tuple(
+                FieldMapping(key, pointer) for key, pointer in INSIDER_TRADING_FILING_FIELDS
+            ),
+        ),
+    ),
+    credential=INTRINIO_CREDENTIAL,
+    credential_query_key="api_key",
+    scenario="内部人交易：按公司代码取回内幕交易申报，并把每笔申报的交易逐条展开成行",
+    error_prefix="INTRINIO",
+    notes=(
+        "openbb_intrinio/models/insider_trading.py:29,31-44,50-57,59-107,109-117,133-137,150-155,"
+        "162-181 (contract only). One GET of /companies/{symbol}/insider_transaction_filings; rows "
+        "are the document's transaction_filings list (:155) and there is no paging loop -- "
+        "page_size only caps the page (:29,:151). Each filing's transactions array is exploded "
+        "into one row per transaction and the filing-level scalars are copied onto every sub-row, "
+        "which is nested_array_explode and is carried by the NestedArrayExpansion plan: its "
+        "parent_fields are read once per filing and re-published on each child row "
+        "(row_expansion.py:420-435), and its dotted pointers are how owner.owner_cik and "
+        "owner.owner_name reach the flat row (transform_data :174-175). The six renames "
+        "officer_title->owner_title, transaction_type_code->transaction_type, "
+        "acquisition_disposition_code->acquisition_or_disposition, security_title->security_type, "
+        "total_shares_owned->securities_owned and amount_of_shares->securities_transacted are the "
+        "provider's own alias dict (:50-57); symbol, company_cik and company_name are renamed off "
+        "the filing (:171-173). columns.null_sentinel is the blocker this ledger carried for one "
+        "round and C97 shipped: the model_validator at :109-117 rewrites every '' of the assembled "
+        "row to None before any coercion, so 28 of the 29 columns -- every column but the "
+        "non-optional company_name -- declare ('',) and are matched on the published text ahead of "
+        "the cast (http_json.py:553-575,:628-630). A published 0 or False is not that text, so "
+        "securities_transacted=0 and derivative_transaction=False stay themselves. DIVERGENCE, "
+        "recorded: company_name is non-nullable, so an issuer_company published as '' reaches the "
+        "row as the empty string where upstream's validator turns it into None and pydantic turns "
+        "that into a refusal; a sentinel on a non-nullable column is refused by the declaration "
+        "plane itself (spec.py:393-397) and this package weakens neither reading to close the gap. "
+        "Upstream also spreads every other key of the sub-item onto the row (:168); the child "
+        "fields name only the columns this contract publishes, so an undeclared transaction key is "
+        "dropped rather than reaching the row, which is what the engine's extra-forbid row model "
+        "refuses anyway. The standard model coerces numbers to strings for company_cik and admits "
+        "int|str for owner_cik (standard_models/insider_trading.py:46-49,"
+        "insider_trading.py:62-64), and this engine's str column is a strict str, so a numeric CIK "
+        "is a shape failure here where upstream would stringify it. C98 registered the domain "
+        "intrinio_insider_trading in domains.yaml with all six semantics fields (event / "
+        "time_field=filing_date / natural_key=[symbol, filing_date, owner_cik, "
+        "report_line_number] / filter_dims=[symbol, company_cik, owner_cik, filing_date] / "
+        "storage_mode=transient / permissions=[query]) and bound the reviewed contract "
+        "IntrinioInsiderTransaction, so build_row_model publishes that class instead of "
+        "synthesizing an InsiderTradingRow look-alike -- measured on this spec: the contract's 29 "
+        "fields against the 29 declared columns leave an empty symmetric difference in both "
+        "directions. No body of this endpoint has ever been captured in this repo, so the row keys "
+        "rest on the cited contract, exactly as HISTORICAL_DIVIDENDS' do. "
+        "GAP CLOSED, C98, by measurement rather than by a relaxed arm: "
+        "witness.nested_array_body_synthesis was a fixture gap and the shared offline witness "
+        "now speaks the explode. _engine/testing.py reads a plan's child_array_pointer: raw_key "
+        "spells a child column as ``transactions.<pointer>`` off "
+        "NestedArrayExpansion.child_fields and a parent column as its own pointer, "
+        "synthetic_record scripts one child item per filing record, damage_record_field walks the "
+        "same prefix so a falsifier edits the cell the expansion actually reads, and "
+        "absent_key_reads_as_null tells a required pointer (published or refused) from an "
+        "optional one (absent reads as a null). The judge's half was the refusal layer: a required "
+        "child or parent key is refused by expand_nested_array as ROW_EXPANSION_MISSING_POINTER "
+        "naming the POINTER, while an optional one survives the expansion and is refused by "
+        "normalize_record as INTRINIO_SHAPE_INVALID naming the COLUMN, so the contract suite's two "
+        "parallel if-chains became one predicate (expansion_refuses_before_the_normalizer) that "
+        "chooses code and named face together. Face, measured three times on this row: pytest "
+        "tests/test_provider_model_contracts.py -k InsiderTrading was 24 failed, 5 passed, "
+        "6 skipped, moved to 13 failed, 16 passed, 6 skipped when valid_query_kwargs learned its "
+        "enum branch, and is now 29 passed, 6 skipped; suite-wide 542 passed, 165 skipped. "
+        "Invariance, measured on the same edit: over the 37 "
+        "required-column-with-a-published-key cells the two cases judge across 18 models, exactly "
+        "7 change face and all 7 are this row's (symbol, company_cik, company_name, filing_date, "
+        "filing_url, owner_cik, owner_name); the count outside this model is 0, and the only "
+        "models with any kernel-refused cell are this one (7) and "
+        "federal_reserve::SvenssonYieldCurve (1, unchanged). Nothing in this declaration, its "
+        "column keys or its sentinels moved to reach that face, and the hand-written two-filing "
+        "witness tests/test_intrinio_insider_trading_spec.py still witnesses that the spec plane "
+        "expresses the explode, the sentinel, the renames and the window and that the runtime "
+        "reads them. C98's registration also moved this row's catalog face: it no longer lands in "
+        "the metadata-only branch (data_query.py:316) but in the provider_query branch carrying "
+        "reason=transient_model (:358-364), because a declared DomainSpec is what puts a domain in "
+        "``provider_query_domains`` (:271-275). The parameter face is the other half of the same "
+        "round: the catalog reads ``get_type_hints(type(fetcher).transform_query)['return']`` "
+        "(:473), which advertised nothing for any engine-generated model until C98 put the "
+        "generated query model on that annotation (http_json.py:1303). Measured here, "
+        "``InsiderTradingQuery`` publishes the six declared params (symbol, start_date, end_date, "
+        "ownership_type, sort_by, limit)."
     ),
 )
 
@@ -466,11 +760,20 @@ UPSTREAM_ROWS: Final[tuple[str, ...]] = (
     "WorldNews",
 )
 
-#: The four rows this package declares, i.e. :data:`UPSTREAM_ROWS` minus :data:`NOT_DECLARABLE`.
+#: The five rows this package declares, i.e. :data:`UPSTREAM_ROWS` minus :data:`NOT_DECLARABLE`.
 #: Read the model id off the declarations themselves so the tuple cannot drift from them.
 DECLARED_MODELS: Final[tuple[str, ...]] = tuple(
     sorted(
-        {spec.model for spec in (CURRENCY_PAIRS, EQUITY_SEARCH, HISTORICAL_DIVIDENDS, CALENDAR_IPO)}
+        {
+            spec.model
+            for spec in (
+                CURRENCY_PAIRS,
+                EQUITY_SEARCH,
+                HISTORICAL_DIVIDENDS,
+                CALENDAR_IPO,
+                INSIDER_TRADING,
+            )
+        }
     )
 )
 
@@ -478,7 +781,7 @@ DECLARED_MODELS: Final[tuple[str, ...]] = tuple(
 #: the canonical capability that blocks it, the mechanism that needs it and the upstream line read
 #: this round. Re-measured row by row against :mod:`opendata.data.providers._engine.spec` (the only
 #: spec-plane vocabulary) and :mod:`opendata.data.providers._engine.http_json` (what it performs at
-#: query time), not against the census' label mapping: every one of these 34 rows needs at least one
+#: query time), not against the census' label mapping: every one of these 33 rows needs at least one
 #: capability that ``ModelSpec`` has no field for. Two kernels for two of them --
 #: ``_engine/multi_request.py`` (fan-out + join) and ``_engine/request_body.py`` (POST body + body
 #: paging) -- exist as pure modules today and are reachable by no declaration, because adding the
@@ -488,8 +791,9 @@ DECLARED_MODELS: Final[tuple[str, ...]] = tuple(
 #: (spec.py:117-195) landed mid-round and ``http_json`` does perform it at query time
 #: (:229-245), so the two rows that were withheld on it a round ago are now recorded on the
 #: blocker that survives the new field: ``CompanyFilings`` on ``derive.conditional`` -- a
-#: conditional default gates on another parameter and this one cannot -- and ``InsiderTrading``
-#: on ``columns.null_sentinel``.
+#: conditional default gates on another parameter and this one cannot. ``InsiderTrading`` was
+#: withheld on ``columns.null_sentinel`` for exactly that reason and is no longer here: C97 shipped
+#: the sentinel facet, the row was re-judged, and it is declared above.
 #:
 #: The census mis-maps one need and this ledger does not repeat it. Its instrument has no key
 #: for "the pages come from a cursor the response publishes", so it folds that need onto
@@ -580,10 +884,6 @@ NOT_DECLARABLE: dict[str, str] = {
     "IndexHistorical": "param.value_transform + flow.fan_out: ``$``/``^`` are stripped from the "
     "symbol before it addresses the path (index_historical.py:71) and one URL per symbol is "
     "gathered (:74-77), with null-valued rows dropped (:84).",
-    "InsiderTrading": "columns.null_sentinel: a record whose transaction keys are all ``''`` is "
-    "nulled (insider_trading.py:109-117), which no column facet does; its five-year default window "
-    "(:133-137) is declarable now that a ``RelativeDefault`` resolves one, as are the per-record "
-    "explode (:164-179) and the ``{symbol}`` path (:153-155).",
     "KeyMetrics": "flow.fan_out + path.object_keys: 39 hardcoded data-point tags become 39 URLs "
     "per symbol (key_metrics.py:259-318) and one row is assembled by keying each response on the "
     "last path segment of the URL that produced it (:313-315).",

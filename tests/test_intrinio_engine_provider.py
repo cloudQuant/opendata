@@ -1,4 +1,4 @@
-"""The four declared intrinio engine models: offline positives and reachable refusals.
+"""The five declared intrinio engine models: offline positives and reachable refusals.
 
 Every case drives a generated fetcher through the engine's transport seam with a hand-written
 fixture document under the cited row key (``pairs``, ``companies``, ``stock_price_adjustments``,
@@ -143,10 +143,10 @@ class TestRegistration:
     def test_catalog_no_longer_reserves_intrinio(self) -> None:
         provider = get_provider("intrinio")
         assert "reserved" not in provider.description.lower()
-        assert len(provider.fetcher_bindings) == 4
+        assert len(provider.fetcher_bindings) == 5
         assert provider.credentials[0].environment_variable == "INTRINIO_API_KEY"
 
-    def test_registry_publishes_the_four_declared_models(self) -> None:
+    def test_registry_publishes_the_five_declared_models(self) -> None:
         registry = ProviderRegistry()
         capabilities = register_provider("intrinio", registry)
         domains = {c.domain for c in capabilities}
@@ -155,6 +155,7 @@ class TestRegistration:
             "intrinio_equity_search",
             "intrinio_historical_dividends",
             "intrinio_calendar_ipo",
+            "intrinio_insider_trading",
         }
         assert len(capabilities) == len(get_provider("intrinio").fetcher_bindings)
         assert all(c.source == "intrinio" for c in capabilities)

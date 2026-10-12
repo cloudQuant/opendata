@@ -379,7 +379,7 @@ class TestDeclarationIsTheContract:
         assert sent["to"] == "2024-06-25"
         assert encode_query(build_query_model(case.spec)(), case.spec).get("from") is None
 
-    def test_the_provider_descriptor_binds_three_generated_fetchers(self) -> None:
+    def test_the_provider_descriptor_binds_five_generated_fetchers(self) -> None:
         """Registration-ready: the descriptor loads each model out of its own module."""
         assert PROVIDER.source == SOURCE == "federal_reserve"
         assert PROVIDER.credentials == ()
@@ -388,21 +388,29 @@ class TestDeclarationIsTheContract:
             ("MoneyMeasures",),
             ("TreasuryRates",),
             ("SvenssonYieldCurve",),
+            ("FederalFundsRate",),
+            ("SOFR",),
         ]
         assert [type(fetcher).__name__ for fetcher in PROVIDER.fetchers] == [
             "FederalReserveMoneyMeasuresFetcher",
             "FederalReserveTreasuryRatesFetcher",
             "FederalReserveSvenssonYieldCurveFetcher",
+            "FederalReserveFederalFundsRateFetcher",
+            "FederalReserveSOFRFetcher",
         ]
         assert [fetcher.canonical_model for fetcher in PROVIDER.fetchers] == [
             "MoneyMeasures",
             "TreasuryRates",
             "SvenssonYieldCurve",
+            "FederalFundsRate",
+            "SOFR",
         ]
         assert {capability.domain for capability in PROVIDER.capabilities} == {
             "federal_reserve_money_measures",
             "federal_reserve_svensson_yield_curve",
             "federal_reserve_treasury_rates",
+            "federal_reserve_federal_funds_rate",
+            "federal_reserve_sofr",
         }
         assert all(capability.source == SOURCE for capability in PROVIDER.capabilities)
         assert all(not capability.verified for capability in PROVIDER.capabilities)
@@ -425,7 +433,9 @@ class TestDeclarationIsTheContract:
         )
         assert sorted(path.name for path in declared.glob("*.py")) == [
             "__init__.py",
+            "federal_funds_rate.py",
             "money_measures.py",
+            "sofr.py",
             "svensson_yield_curve.py",
             "treasury_rates.py",
         ]
@@ -433,6 +443,8 @@ class TestDeclarationIsTheContract:
             "MoneyMeasures",
             "SvenssonYieldCurve",
             "TreasuryRates",
+            "FederalFundsRate",
+            "SOFR",
         }
         assert not hasattr(specs, "YIELD_CURVE"), "the spec object must be gone, not renamed"
         assert "YieldCurve" not in DECLARED_GAPS
@@ -456,6 +468,8 @@ class TestDeclarationIsTheContract:
                 "MoneyMeasures",
                 "SvenssonYieldCurve",
                 "TreasuryRates",
+                "FederalFundsRate",
+                "SOFR",
             }
         )
         assert models <= declared, "a capture case with no declaration behind it"
@@ -465,7 +479,7 @@ class TestDeclarationIsTheContract:
             assert "preamble_rows=5" in spec.notes, spec.model
         # The gap closed this round must not still be listed as open.
         assert all("metadata rows" not in gap for gap in DECLARED_GAPS.values())
-        assert len(NOT_DECLARED) == 10
+        assert len(NOT_DECLARED) == 8
         assert set(NOT_DECLARED).isdisjoint(declared)
         assert len(NOT_DECLARED) + len(declared) == 13
 

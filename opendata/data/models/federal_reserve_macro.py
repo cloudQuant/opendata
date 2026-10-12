@@ -1,7 +1,8 @@
-"""Source-faithful contracts for the Fed's H.6 money stock and H.15 Treasury tables.
+"""Source-faithful contracts for the Fed's H.6, H.15, Svensson curve and reference-rate rows.
 
-These are the two wide tables the ``datadownload/Output.aspx`` package endpoint publishes after
-its five metadata rows, plus the ``feds200628.csv`` fitted-factor curve, all declared in
+These are the tables and documents the release endpoints publish: the two wide tables behind
+``datadownload/Output.aspx``, the ``feds200628.csv`` fitted-factor curve, and the two
+York Fed reference-rate JSON feeds, all declared in
 ``opendata/data/providers/federal_reserve/specs.py``. Like the cboe and intrinio engine models
 before them, each declaration gets its own contract family and its own domain, and the declaration
 must name exactly these fields: ``build_row_model`` publishes this class -- and refuses with a
@@ -16,6 +17,12 @@ Field types follow the source, not the wish:
   The eleven maturity columns are ``str | None`` on purpose -- the same body carries its own
   missing-data token ``ND`` in 8003 cells, and a numeric column would refuse those published
   rows. ``None`` is the blank cell; ``"ND"`` stays the token the source printed.
+* The two reference-rate rows are the York Fed JSON feeds, and every number in them is
+  ``float | None``: a cell the feed omits stays absent and the engine reads an absent optional key
+  as null, while SOFR spells its gaps ``""``, ``"''"`` and ``"NA"`` which the declaration nulls with
+  ``columns.null_sentinel`` ahead of the cast. So the contract sees a number or a null and never a
+  token. ``revision_indicator`` is the one non-numeric column of the pair -- the Fed prints a
+  revision marker there, not a rate.
 """
 
 from __future__ import annotations
@@ -171,3 +178,52 @@ class FederalReserveSvenssonYieldCurve(ContractModel):
     sveny28: str | None = None
     sveny29: str | None = None
     sveny30: str | None = None
+
+
+class FederalReserveFederalFundsRate(ContractModel):
+    """One day of the effective federal funds rate: the published rate plus its distribution.
+
+    The 13 fields are exactly the columns
+    ``providers/federal_reserve/specs.py::FEDERAL_FUNDS_RATE`` declares, renamed off the feed's own
+    keys (``effectiveDate``, ``percentRate``, ``targetRateTo``). ``date`` is the only non-null one:
+    a row without an effective date is not a day of the series. Eleven of the remaining twelve are
+    floats, and all eleven are nullable because the feed omits cells it has no observation for:
+    nine of them (the rate, its two target-range bounds, the four percentiles and the intraday low
+    and high) are published percents and carry the engine's scale stage, while ``volume`` (billions
+    of USD) and ``standard_deviation`` are read as published. ``revision_indicator`` is the one
+    non-numeric column.
+    """
+
+    date: date_type
+    rate: float | None = None
+    target_range_upper: float | None = None
+    target_range_lower: float | None = None
+    percentile_1: float | None = None
+    percentile_25: float | None = None
+    percentile_75: float | None = None
+    percentile_99: float | None = None
+    volume: float | None = None
+    intraday_low: float | None = None
+    intraday_high: float | None = None
+    standard_deviation: float | None = None
+    revision_indicator: str | None = None
+
+
+class FederalReserveSofr(ContractModel):
+    """One day of the secured overnight financing rate as the York Fed publishes it.
+
+    The 7 fields are ``providers/federal_reserve/specs.py::SOFR``'s columns. The five percent
+    columns are declared with a ``''``/``"''"``/``NA`` null sentinel because that feed spells its
+    gaps three ways; ``volume`` has no such spelling in the body and is nullable only because the
+    key can be absent. ``FederalReserveSofr`` rather than ``...SofrRate`` because the domain is the
+    rate itself, and ``sofr`` -- the FRED leg of the same series -- keeps its own reviewed contract
+    ``FredSofrObservation``.
+    """
+
+    date: date_type
+    rate: float | None = None
+    percentile_1: float | None = None
+    percentile_25: float | None = None
+    percentile_75: float | None = None
+    percentile_99: float | None = None
+    volume: float | None = None

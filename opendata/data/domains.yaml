@@ -368,3 +368,33 @@ domains:
     filter_dims: [date]
     storage_mode: transient
     permissions: [query]
+  federal_reserve_federal_funds_rate:
+    display_name: 美国有效联邦基金利率日表
+    rest_path: macro/federal-reserve-federal-funds-rate
+    contract: FederalReserveFederalFundsRate
+    temporal_kind: series
+    time_field: date
+    natural_key: [date]
+    filter_dims: [date]
+    storage_mode: transient
+    permissions: [query]
+  federal_reserve_sofr:
+    display_name: 美联储 SOFR 担保隔夜融资利率日表
+    rest_path: macro/federal-reserve-sofr
+    contract: FederalReserveSofr
+    temporal_kind: series
+    time_field: date
+    natural_key: [date]
+    filter_dims: [date]
+    storage_mode: transient
+    permissions: [query]
+  intrinio_insider_trading:
+    display_name: Intrinio 内部人交易逐笔申报
+    rest_path: equity/intrinio-insider-trading
+    contract: IntrinioInsiderTransaction
+    temporal_kind: event
+    time_field: filing_date
+    natural_key: [symbol, filing_date, owner_cik, report_line_number]
+    filter_dims: [symbol, company_cik, owner_cik, filing_date]
+    storage_mode: transient
+    permissions: [query]

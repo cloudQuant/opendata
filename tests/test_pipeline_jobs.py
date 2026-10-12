@@ -1757,7 +1757,9 @@ class TestPartitionMaintenanceJob:
             "currency_reference_rates",
             "equity_historical",
             "equity_quote",
+            "federal_reserve_federal_funds_rate",
             "federal_reserve_money_measures",
+            "federal_reserve_sofr",
             "federal_reserve_svensson_yield_curve",
             "federal_reserve_treasury_rates",
             "fred_search",
@@ -1766,6 +1768,7 @@ class TestPartitionMaintenanceJob:
             "intrinio_currency_pairs",
             "intrinio_equity_search",
             "intrinio_historical_dividends",
+            "intrinio_insider_trading",
             "sofr",
             "sonia",
             "balance_of_payments",
@@ -1785,17 +1788,17 @@ class TestPartitionMaintenanceJob:
         deferred_legs = sum(len(legs[domain]) for domain in deferred_domains)
 
         assert ods, "census 里没有 ods 表：注册表读空了，维护面覆盖不到落库层"
-        assert len(known) == 42
+        assert len(known) == 45
         assert deferred_domains <= known
         assert set(legs) == known
-        assert sum(len(sources) for sources in legs.values()) == 55
+        assert sum(len(sources) for sources in legs.values()) == 58
         assert len(measured_domains) == 20
-        assert len(deferred_domains) == 22
+        assert len(deferred_domains) == 25
         assert len(measured_domains) + len(deferred_domains) == len(known)
         assert len(expected_ods) == 33
         assert len(expected_dwd) == 20
-        assert deferred_legs == 22
-        assert len(expected_ods) + deferred_legs == 55
+        assert deferred_legs == 25
+        assert len(expected_ods) + deferred_legs == 58
         assert set(ods) == expected_ods
         for table in ods:
             tail = table[len("ods_") :].rsplit("_", 1)

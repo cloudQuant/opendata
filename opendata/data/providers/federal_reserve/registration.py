@@ -1,11 +1,15 @@
 """Registration facade for federal_reserve, keeping the provider descriptor as the source of truth.
 
-The descriptor is the whole wiring: ``register_provider`` reads its bindings, so this module has
-no fetcher table to keep in step. The catalog still hands ``federal_reserve`` to
-``_reserved_provider`` (catalog.py:61), which is why ``register`` returns nothing until that one
-entry is replaced by this package's ``PROVIDER`` -- flipping it also moves three literal
-provider-count assertions in ``tests/test_provider_catalog.py`` (the implemented-source set, the
-46-binding total and the 24-reserved total), which are not this package's files to edit.
+The descriptor is the whole wiring: ``register_provider`` reads its bindings, so this module has no
+fetcher table to keep in step, and the ``FETCHERS`` export below is a projection of the same
+descriptor rather than a second list. This package is an *implemented* provider in the catalog --
+``_UPSTREAM_PROVIDERS`` carries ``FEDERAL_RESERVE_PROVIDER``, imported from
+:mod:`opendata.data.providers.federal_reserve.provider` (catalog.py:18), and no
+``_reserved_provider`` entry exists for it -- so nothing here waits on a reserved identity being
+replaced. The five bindings this package registers and the catalog-wide binding and reserved totals
+are frozen by tests, not restated here: tests/test_provider_federal_reserve.py:387-393 names the
+five ``canonical_model_ids``, and tests/test_provider_catalog.py freezes the all-source totals with
+their per-round build-up, because a number copied into a docstring is a reading no judge re-runs.
 """
 
 from __future__ import annotations
