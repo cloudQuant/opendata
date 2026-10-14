@@ -58,13 +58,22 @@ class TestExecuteDownload:
         results[1].scalar_one_or_none.return_value = mock_execution
         mock_db.execute.side_effect = results
 
-        with patch.object(
-            svc, "_call_akshare_function", new_callable=AsyncMock, return_value=pd.DataFrame()
+        with (
+            patch.object(
+                svc, "_call_akshare_function", new_callable=AsyncMock, return_value=pd.DataFrame()
+            ),
+            patch.object(
+                svc, "_count_table_rows_if_exists", new_callable=AsyncMock, return_value=0
+            ),
         ):
             result = await svc.execute_download(1, 1, {}, mock_db, data_db=mock_db)
 
         assert result == 0
         assert mock_execution.status == TaskStatus.COMPLETED
+        assert mock_execution.start_time is not None
+        assert mock_execution.end_time is not None
+        assert mock_execution.duration >= 0
+        assert mock_execution.rows_after == 0
 
     @pytest.mark.asyncio
     async def test_successful_download(self, svc):
@@ -79,6 +88,9 @@ class TestExecuteDownload:
         results = [MagicMock(), MagicMock()]
         results[0].scalar_one_or_none.return_value = mock_interface
         results[1].scalar_one_or_none.return_value = mock_execution
+        row_count_result = MagicMock()
+        row_count_result.scalar.return_value = 7
+        results.append(row_count_result)
         mock_db.execute.side_effect = results
 
         df = pd.DataFrame({"col": [1, 2, 3]})
@@ -90,6 +102,11 @@ class TestExecuteDownload:
             result = await svc.execute_download(1, 1, {}, mock_db, data_db=mock_db)
 
         assert result == 3
+        assert mock_execution.status == TaskStatus.COMPLETED
+        assert mock_execution.start_time is not None
+        assert mock_execution.end_time is not None
+        assert mock_execution.duration >= 0
+        assert mock_execution.rows_after == 7
         assert 1 not in svc._active_executions  # cleaned up
 
     @pytest.mark.asyncio
@@ -101,10 +118,13 @@ class TestExecuteDownload:
 
         mock_execution = MagicMock()
         mock_execution.execution_id = "exec1"
+        reloaded_execution = MagicMock()
+        reloaded_execution.status = TaskStatus.RUNNING
 
-        results = [MagicMock(), MagicMock()]
+        results = [MagicMock(), MagicMock(), MagicMock()]
         results[0].scalar_one_or_none.return_value = mock_interface
         results[1].scalar_one_or_none.return_value = mock_execution
+        results[2].scalar_one_or_none.return_value = reloaded_execution
         mock_db.execute.side_effect = results
 
         with (
@@ -118,7 +138,11 @@ class TestExecuteDownload:
         ):
             await svc.execute_download(1, 1, {}, mock_db, data_db=mock_db)
 
-        assert mock_execution.status == TaskStatus.FAILED
+        assert mock_execution.status == TaskStatus.RUNNING
+        assert reloaded_execution.status == TaskStatus.FAILED
+        assert reloaded_execution.error_message == "fail"
+        assert reloaded_execution.end_time is not None
+        assert reloaded_execution.rows_after is None
 
 
 class TestCallAkshareFunction:
@@ -266,3 +290,42 @@ class TestUpdateTableMetadata:
         await svc._update_table_metadata("ak_test", 1, 1, 50, mock_db, data_db=mock_db)
         mock_db.add.assert_called_once()
         # Note: commit is now handled by the caller for transaction consistency
+
+
+class TestWarehouseRowCount:
+    @pytest.mark.asyncio
+    async def test_count_existing_table_uses_total_warehouse_rows(self, svc):
+        warehouse_db = AsyncMock()
+        connection = AsyncMock()
+        connection.run_sync.return_value = True
+        warehouse_db.connection.return_value = connection
+        count_result = MagicMock()
+        count_result.scalar.return_value = 17
+        warehouse_db.execute.return_value = count_result
+
+        result = await svc._count_table_rows_if_exists("ak_test", data_db=warehouse_db)
+
+        assert result == 17
+        warehouse_db.execute.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_missing_table_is_zero_without_running_count_query(self, svc):
+        warehouse_db = AsyncMock()
+        connection = AsyncMock()
+        connection.run_sync.return_value = False
+        warehouse_db.connection.return_value = connection
+
+        result = await svc._count_table_rows_if_exists("ak_test", data_db=warehouse_db)
+
+        assert result == 0
+        warehouse_db.execute.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_count_without_scalar_is_diagnostic(self, svc):
+        warehouse_db = AsyncMock()
+        count_result = MagicMock()
+        count_result.scalar.return_value = None
+        warehouse_db.execute.return_value = count_result
+
+        with pytest.raises(RuntimeError, match="Warehouse row count returned no value"):
+            await svc._count_table_rows("ak_test", data_db=warehouse_db)

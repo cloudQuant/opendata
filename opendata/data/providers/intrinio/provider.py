@@ -9,8 +9,12 @@ PROVIDER = Provider(
         "Declared Intrinio Web API v2 JSON adapter for "
         "the forex pair directory, the company search, "
         "one security's dividend/split adjustment feed, "
-        "the IPO calendar and a company's insider "
-        "trading filings."
+        "the IPO calendar, a company's insider trading filings, "
+        "company and ETF reference records, security and index price histories, "
+        "historical market capitalization, quotes, ETF search and holdings, "
+        "share statistics, price-target consensus, financial statements, ratios and metrics, "
+        "forward analyst estimates, symbol-scoped unusual options activity, and the complete paged "
+        "current options chain."
     ),
     website="https://intrinio.com/",
     fetcher_bindings=(
@@ -43,6 +47,196 @@ PROVIDER = Provider(
             "IntrinioInsiderTradingFetcher",
             canonical_model_ids=("InsiderTrading",),
             scenario="内部人交易：按公司代码取回内幕交易申报，并把每笔申报的交易逐条展开成行",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_market_clean",
+            "IntrinioEquityInfoFetcher",
+            canonical_model_ids=("EquityInfo",),
+            scenario="公司信息：按单个公司标识读取官方文档定义的公司元数据",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_market_clean",
+            "IntrinioEquityHistoricalFetcher",
+            canonical_model_ids=("EquityHistorical",),
+            scenario="证券历史价格：按单个证券与受支持的EOD频率分页读取OHLCV",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_market_clean",
+            "IntrinioEtfInfoFetcher",
+            canonical_model_ids=("EtfInfo",),
+            scenario="ETF信息：按单个ETF标识读取公开基金参考字段",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_market_clean",
+            "IntrinioHistoricalMarketCapFetcher",
+            canonical_model_ids=("HistoricalMarketCap",),
+            scenario="历史市值：按标识和公开频率枚举marketcap历史数据",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_market_clean",
+            "IntrinioIndexHistoricalFetcher",
+            canonical_model_ids=("IndexHistorical",),
+            scenario="指数历史水平：将官方level时间序列映射到标准close字段",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_market_clean",
+            "IntrinioEquityQuoteFetcher",
+            canonical_model_ids=("EquityQuote",),
+            scenario="证券报价：读取官方quote摘要并保留来源、时间和证券元数据",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_market_clean",
+            "IntrinioEtfHistoricalFetcher",
+            canonical_model_ids=("EtfHistorical",),
+            scenario="ETF历史价格：使用证券价格端点读取受支持的EOD频率",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_market_clean",
+            "IntrinioEtfHoldingsFetcher",
+            canonical_model_ids=("EtfHoldings",),
+            scenario="ETF持仓：按ETF标识分页读取持仓与权重",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_market_clean",
+            "IntrinioEtfSearchFetcher",
+            canonical_model_ids=("EtfSearch",),
+            scenario="ETF搜索：按非空关键词分页读取官方基金目录",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_market_clean",
+            "IntrinioOptionsUnusualFetcher",
+            canonical_model_ids=("OptionsUnusual",),
+            scenario="异常期权活动：按底层证券读取官方成交事件字段",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_market_clean",
+            "IntrinioOptionsChainsFetcher",
+            canonical_model_ids=("OptionsChains",),
+            scenario="当前期权链：按证券代码分页读取官方实时合约价格与希腊值",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_market_clean",
+            "IntrinioPriceTargetConsensusFetcher",
+            canonical_model_ids=("PriceTargetConsensus",),
+            scenario="目标价共识：分页读取Zacks共识并保留来源统计",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_market_clean",
+            "IntrinioShareStatisticsFetcher",
+            canonical_model_ids=("ShareStatistics",),
+            scenario="股本统计：返回SEC封面页报告的原始及拆股调整股数",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_news_attributes",
+            "IntrinioCompanyNewsFetcher",
+            canonical_model_ids=("CompanyNews",),
+            scenario="公司新闻：按证券筛选条件分页读取新闻事件",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_news_attributes",
+            "IntrinioWorldNewsFetcher",
+            canonical_model_ids=("WorldNews",),
+            scenario="全球新闻：分页读取新闻事件并按查询筛选",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_news_attributes",
+            "IntrinioCompanyFilingsFetcher",
+            canonical_model_ids=("CompanyFilings",),
+            scenario="公司申报：按证券标识读取监管文件事件",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_news_attributes",
+            "IntrinioSearchAttributesFetcher",
+            canonical_model_ids=("SearchAttributes",),
+            scenario="属性搜索：按财务属性条件检索公开定义",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_news_attributes",
+            "IntrinioLatestAttributesFetcher",
+            canonical_model_ids=("LatestAttributes",),
+            scenario="最新属性：按证券和标签读取最新财务数据",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_news_attributes",
+            "IntrinioHistoricalAttributesFetcher",
+            canonical_model_ids=("HistoricalAttributes",),
+            scenario="历史属性：按证券与标签读取带日期的财务数据",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_news_attributes",
+            "IntrinioFredSeriesFetcher",
+            canonical_model_ids=("FredSeries",),
+            scenario="FRED指标：按一个经济序列标识读取日期值序列",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_financials",
+            "IntrinioBalanceSheetFetcher",
+            canonical_model_ids=("BalanceSheet",),
+            scenario="资产负债表：返回按报告期列明的标准化金融科目",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_financials",
+            "IntrinioCashFlowStatementFetcher",
+            canonical_model_ids=("CashFlowStatement",),
+            scenario="现金流量表：读取公司报告期现金流量科目",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_financials",
+            "IntrinioIncomeStatementFetcher",
+            canonical_model_ids=("IncomeStatement",),
+            scenario="利润表：读取公司报告期收入与费用科目",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_financials",
+            "IntrinioFinancialRatiosFetcher",
+            canonical_model_ids=("FinancialRatios",),
+            scenario="财务比率：按公司标识返回已发布的报告期比率",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_financials",
+            "IntrinioKeyMetricsFetcher",
+            canonical_model_ids=("KeyMetrics",),
+            scenario="关键指标：按公司标识读取公开财务指标",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_financials",
+            "IntrinioReportedFinancialsFetcher",
+            canonical_model_ids=("ReportedFinancials",),
+            scenario="已报告财务数据：读取财报中报告的科目和值",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_financials",
+            "IntrinioForwardEbitdaEstimatesFetcher",
+            canonical_model_ids=("ForwardEbitdaEstimates",),
+            scenario="远期EBITDA预测：读取分析师对报告期的共识估算",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_financials",
+            "IntrinioForwardEpsEstimatesFetcher",
+            canonical_model_ids=("ForwardEpsEstimates",),
+            scenario="远期每股收益预测：读取分析师共识估算",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_financials",
+            "IntrinioForwardPeEstimatesFetcher",
+            canonical_model_ids=("ForwardPeEstimates",),
+            scenario="远期市盈率预测：读取分析师远期估值共识",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_financials",
+            "IntrinioForwardSalesEstimatesFetcher",
+            canonical_model_ids=("ForwardSalesEstimates",),
+            scenario="远期销售预测：读取分析师对未来收入的共识估算",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_snapshots_clean",
+            "IntrinioEtfPricePerformanceFetcher",
+            canonical_model_ids=("EtfPricePerformance",),
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.intrinio.models.iter2_snapshots_clean",
+            "IntrinioMarketSnapshotsFetcher",
+            canonical_model_ids=("MarketSnapshots",),
         ),
     ),
     credentials=(

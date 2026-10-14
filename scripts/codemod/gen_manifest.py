@@ -70,21 +70,32 @@ def generate_manifest(
             raise RuntimeError(
                 f"{rel} is ported but missing from upstream.lock; re-run port_module"
             )
+        manual_edits = record.get("manual_edits", False)
+        manual_edit_reason = record.get("manual_edit_reason")
+        if not isinstance(manual_edits, bool):
+            raise RuntimeError(f"{rel} has a non-boolean manual_edits registration")
+        if manual_edits and not (
+            isinstance(manual_edit_reason, str) and manual_edit_reason.strip()
+        ):
+            raise RuntimeError(f"{rel} has manual_edits=true without a registered reason")
+        if not manual_edits and manual_edit_reason is not None:
+            raise RuntimeError(f"{rel} has a manual edit reason without manual_edits=true")
         if path.suffix == ".py":
             lines = path.read_text(encoding="utf-8").count("\n")
             total_lines += lines
-            files.append(
-                {
-                    "path": rel,
-                    # ``sha256`` is the migrated file bytes; the lock retains
-                    # the pristine upstream source hash separately.
-                    "sha256": digest,
-                    "upstream_sha256": record["sha256"],
-                    "lines": lines,
-                    "upstream_path": record["upstream_path"],
-                    "manual_edits": record.get("manual_edits", False),
-                }
-            )
+            entry = {
+                "path": rel,
+                # ``sha256`` is the migrated file bytes; the lock retains
+                # the pristine upstream source hash separately.
+                "sha256": digest,
+                "upstream_sha256": record["sha256"],
+                "lines": lines,
+                "upstream_path": record["upstream_path"],
+                "manual_edits": manual_edits,
+            }
+            if manual_edit_reason is not None:
+                entry["manual_edit_reason"] = manual_edit_reason
+            files.append(entry)
         else:
             resources.append(
                 {

@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import { AxiosError, type AxiosAdapter, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
 import { enableAutoUnmount, flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { defineComponent, h, type PropType } from 'vue'
@@ -39,6 +39,7 @@ interface RequestCall {
 
 const calls: RequestCall[] = []
 let respond: (call: RequestCall) => WireEnvelope | Promise<WireEnvelope>
+let responseStatus: number | null = null
 const originalAdapter = request.defaults.adapter
 const originalLocalStorageDescriptor = Object.getOwnPropertyDescriptor(window, 'localStorage')
 
@@ -75,6 +76,23 @@ const adapter: AxiosAdapter = async (
     authorization: config.headers?.Authorization as string | undefined,
   }
   calls.push(call)
+  if (responseStatus !== null) {
+    const response = {
+      data: { detail: '邮箱或密码错误' },
+      status: responseStatus,
+      statusText: 'Unauthorized',
+      headers: {},
+      config,
+      request: {},
+    } as AxiosResponse
+    throw new AxiosError(
+      `Request failed with status code ${responseStatus}`,
+      AxiosError.ERR_BAD_REQUEST,
+      config,
+      {},
+      response
+    )
+  }
   return {
     data: await respond(call),
     status: 200,
@@ -166,18 +184,29 @@ const DestinationStub = defineComponent({
   },
 })
 
+const AlertStub = defineComponent({
+  props: {
+    title: { type: String, default: '' },
+  },
+  setup(props, { attrs }) {
+    return () => h('div', { ...attrs, role: 'alert' }, props.title)
+  },
+})
+
 const stubs = {
   'el-card': CardStub,
   'el-form': FormStub,
   'el-form-item': FormItemStub,
   'el-input': InputStub,
   'el-button': ButtonStub,
+  'el-alert': AlertStub,
 }
 
 enableAutoUnmount(afterEach)
 
 beforeEach(() => {
   calls.length = 0
+  responseStatus = null
   respond = (call) => {
     throw new Error(`Unexpected auth request: ${call.method} ${call.url}`)
   }
@@ -242,6 +271,15 @@ async function fillCredentials(wrapper: VueWrapper, email = 'analyst@example.com
 }
 
 describe('LoginView with the real auth store and API wrapper', () => {
+  it('shows a persistent message only for the fixed session-expired reason', async () => {
+    const expired = await mountLogin('/login?reason=session_expired')
+    expect(expired.wrapper.get('[data-testid="session-expired-message"]').text())
+      .toBe('登录已失效，请重新登录')
+
+    const arbitrary = await mountLogin('/login?reason=https%3A%2F%2Fevil.invalid')
+    expect(arbitrary.wrapper.find('[data-testid="session-expired-message"]').exists()).toBe(false)
+  })
+
   it('posts the entered credentials and follows the requested redirect', async () => {
     const { wrapper, router } = await mountLogin('/login?redirect=%2Fdatasets')
     respond = (call) => {
@@ -355,6 +393,22 @@ describe('LoginView with the real auth store and API wrapper', () => {
     expect(router.currentRoute.value.fullPath).toBe('/login?redirect=%2Fdatasets')
     expect(useAuthStore().isAuthenticated).toBe(false)
     expect(messages.error).toHaveBeenCalledWith('账号或密码错误')
+    expect(messages.success).not.toHaveBeenCalled()
+  })
+
+  it('keeps invalid-credential 401 on the login page without a session-expired notice', async () => {
+    const { wrapper, router } = await mountLogin()
+    responseStatus = 401
+
+    await fillCredentials(wrapper)
+    await buttonByText(wrapper, '登录').trigger('click')
+    await flushPromises()
+
+    expect(calls).toHaveLength(1)
+    expect(router.currentRoute.value.fullPath).toBe('/login')
+    expect(useAuthStore().isAuthenticated).toBe(false)
+    expect(wrapper.find('[data-testid="session-expired-message"]').exists()).toBe(false)
+    expect(messages.error).toHaveBeenCalledWith('邮箱或密码错误')
     expect(messages.success).not.toHaveBeenCalled()
   })
 

@@ -44,13 +44,21 @@ import shutil
 # calls use GIT(which) or sys.executable as argv[0], list argv, shell never enabled.
 import subprocess  # nosec B404  # 3 runs: GIT(which)/sys.executable lists, no shell
 import sys
+import tempfile
+from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
+from typing import NamedTuple
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.quality.immutable_evidence import (  # noqa: E402
+    partition_static_files,
+    scan_snapshot_bytes,
+    validate_manifest,
+)
 from scripts.quality.source_layout import PORTED, classify_path  # noqa: E402
 
 BASELINE_PATH = "docs/quality/baseline.json"
@@ -69,6 +77,15 @@ EXCLUDED_ROOT_DIRS = frozenset({"akshare", "frontend"})
 
 # Resolved once so the subprocess call never uses a partial executable path.
 GIT = shutil.which("git")
+
+
+class _MypyTargetResult(NamedTuple):
+    """Preserve the exact process result for one explicit mypy target."""
+
+    path: str
+    returncode: int
+    stdout: str
+    stderr: str
 
 
 def _git(*args: str) -> str:
@@ -218,8 +235,8 @@ def _run(args: list[str]) -> tuple[bool, str]:
 
 
 def _run_streams(args: list[str]) -> tuple[int, str, str]:
-    """Run one tool and keep its stdout and stderr apart, so a parser can use only stdout."""
-    result = subprocess.run(  # noqa: S603  # nosec B603  # sys.executable -m bandit argv
+    """Run one tool and keep its stdout and stderr apart."""
+    result = subprocess.run(  # noqa: S603  # nosec B603  # sys.executable -m bandit or mypy argv
         args,
         cwd=REPO_ROOT,
         capture_output=True,
@@ -228,6 +245,200 @@ def _run_streams(args: list[str]) -> tuple[int, str, str]:
         check=False,
     )
     return result.returncode, (result.stdout or ""), (result.stderr or "")
+
+
+def _mypy_target_chunks(targets: list[str], workers: int) -> list[tuple[int, tuple[str, ...]]]:
+    """Split sorted targets into stable, balanced chunks for persistent workers."""
+    if type(workers) is not int or workers < 1:
+        raise ValueError("mypy workers must be a positive integer")
+    if not targets:
+        return []
+
+    worker_count = min(workers, len(targets))
+    base_size, extra = divmod(len(targets), worker_count)
+    chunks: list[tuple[int, tuple[str, ...]]] = []
+    start = 0
+    for worker_index in range(worker_count):
+        size = base_size + (1 if worker_index < extra else 0)
+        end = start + size
+        chunks.append((worker_index, tuple(targets[start:end])))
+        start = end
+    return chunks
+
+
+def _mypy_worker_cache_dir(cache_parent: Path, worker_index: int) -> Path:
+    """Return a persistent per-invocation cache path private to one worker."""
+    return cache_parent / f"worker-{worker_index:03d}"
+
+
+def _run_mypy_target(path: str, cache_dir: Path | None = None) -> _MypyTargetResult:
+    """Run one mypy root and retain failures raised before a process result exists."""
+    try:
+        args = [
+            sys.executable,
+            "-m",
+            "mypy",
+            "--no-color-output",
+            "--no-error-summary",
+            "--follow-imports=silent",
+        ]
+        if cache_dir is not None:
+            args.extend(("--cache-dir", str(cache_dir)))
+        args.append(path)
+        returncode, stdout, stderr = _run_streams(args)
+    except Exception as error:
+        return _MypyTargetResult(
+            path,
+            127,
+            "",
+            f"mypy target invocation failed ({type(error).__name__})\n",
+        )
+    return _MypyTargetResult(path, returncode, stdout, stderr)
+
+
+def _run_mypy_chunk(
+    cache_parent: Path, worker_index: int, paths: tuple[str, ...]
+) -> list[_MypyTargetResult]:
+    """Run a fixed chunk serially so one worker exclusively owns its cache."""
+    cache_dir = _mypy_worker_cache_dir(cache_parent, worker_index)
+    return [_run_mypy_target(path, cache_dir) for path in paths]
+
+
+def _submit_mypy_chunk(
+    executor: ThreadPoolExecutor,
+    cache_parent: Path,
+    worker_index: int,
+    paths: tuple[str, ...],
+) -> tuple[Future[list[_MypyTargetResult]] | None, str | None]:
+    """Submit a chunk and turn executor errors into explicit target failures."""
+    try:
+        return executor.submit(_run_mypy_chunk, cache_parent, worker_index, paths), None
+    except Exception as error:
+        return None, f"mypy worker scheduling failed ({type(error).__name__})\n"
+
+
+def _report_mypy_parallel_failure(stage: str, error: Exception) -> None:
+    """Write a safe aggregate failure without altering individual tool streams."""
+    print(f"mypy {stage} failed ({type(error).__name__})", file=sys.stderr)
+
+
+def _run_mypy_targets(files: list[str], workers: int = 1) -> tuple[bool, list[_MypyTargetResult]]:
+    """Run isolated mypy roots and retain every target's full process result.
+
+    A single invocation cannot safely accept unrelated same-basename modules from
+    evidence directories. Isolating explicit roots avoids module-name collisions;
+    sorting and exact-path de-duplication make execution deterministic without
+    dropping any unique A2 target. Parallel execution assigns contiguous, balanced
+    chunks to fixed workers, each with a private cache reused by its chunk. Each
+    parallel invocation owns a temporary cache parent. A single worker retains
+    the legacy serial command and default cache behavior.
+    """
+    targets = sorted(set(files))
+    chunks = _mypy_target_chunks(targets, workers)
+    if not targets:
+        return True, []
+    if workers == 1:
+        results = [_run_mypy_target(path) for path in targets]
+        return all(result.returncode == 0 for result in results), results
+
+    results_by_path: dict[str, _MypyTargetResult] = {}
+    aggregate_failure = False
+    try:
+        with tempfile.TemporaryDirectory(prefix="opendata-a2-mypy-") as temp_dir:
+            cache_parent = Path(temp_dir)
+            try:
+                executor = ThreadPoolExecutor(max_workers=len(chunks))
+            except Exception as error:
+                for path in targets:
+                    results_by_path[path] = _MypyTargetResult(
+                        path,
+                        127,
+                        "",
+                        f"mypy worker pool initialization failed ({type(error).__name__})\n",
+                    )
+            else:
+                futures: dict[int, Future[list[_MypyTargetResult]]] = {}
+                try:
+                    with executor:
+                        for worker_index, paths in chunks:
+                            future, error_text = _submit_mypy_chunk(
+                                executor, cache_parent, worker_index, paths
+                            )
+                            if future is None:
+                                for path in paths:
+                                    results_by_path[path] = _MypyTargetResult(
+                                        path,
+                                        127,
+                                        "",
+                                        error_text or "mypy worker scheduling failed\n",
+                                    )
+                            else:
+                                futures[worker_index] = future
+
+                        for worker_index, paths in chunks:
+                            future = futures.get(worker_index)
+                            if future is None:
+                                continue
+                            try:
+                                for result in future.result():
+                                    results_by_path[result.path] = result
+                            except Exception as error:
+                                for path in paths:
+                                    results_by_path.setdefault(
+                                        path,
+                                        _MypyTargetResult(
+                                            path,
+                                            127,
+                                            "",
+                                            f"mypy worker execution failed "
+                                            f"({type(error).__name__})\n",
+                                        ),
+                                    )
+                except Exception as error:
+                    aggregate_failure = True
+                    _report_mypy_parallel_failure("worker pool lifecycle", error)
+    except Exception as error:
+        aggregate_failure = True
+        _report_mypy_parallel_failure("temporary cache lifecycle", error)
+        for path in targets:
+            results_by_path.setdefault(
+                path,
+                _MypyTargetResult(
+                    path,
+                    127,
+                    "",
+                    f"mypy parallel dispatch failed ({type(error).__name__})\n",
+                ),
+            )
+
+    for path in targets:
+        results_by_path.setdefault(
+            path,
+            _MypyTargetResult(
+                path,
+                127,
+                "",
+                "mypy worker produced no result for this target\n",
+            ),
+        )
+    results = [results_by_path[path] for path in targets]
+    passed = not aggregate_failure and all(result.returncode == 0 for result in results)
+    return passed, results
+
+
+def _mypy_results_text(results: list[_MypyTargetResult]) -> str:
+    """Render every mypy target, exact return code, and captured output streams."""
+    lines: list[str] = []
+    for result in results:
+        lines.append(
+            f"  {result.path}: exit={result.returncode} "
+            f"stdout_chars={len(result.stdout)} stderr_chars={len(result.stderr)}"
+        )
+        if result.stdout:
+            lines.extend(("    stdout:", result.stdout))
+        if result.stderr:
+            lines.extend(("    stderr:", result.stderr))
+    return "\n".join(lines)
 
 
 def _bandit(files: list[str]) -> tuple[bool, str]:
@@ -279,7 +490,7 @@ def _drop_reason(name: str) -> str:
     return "not an A2 candidate"
 
 
-def run(explicit: list[str] | None = None) -> int:
+def run(explicit: list[str] | None = None, mypy_workers: int = 1) -> int:
     """Run the A2 zero-tolerance gate and report the result."""
     try:
         files = resolve_files(explicit)
@@ -295,6 +506,18 @@ def run(explicit: list[str] | None = None) -> int:
             "cannot be told apart; A1 debt is already frozen by quality-ratchet."
         )
         return 0
+
+    # Keep the complete resolver output visible. Immutable evidence is a
+    # post-resolution execution partition only; it never changes A2 discovery.
+    evidence = validate_manifest(REPO_ROOT)
+    partition_error = ""
+    try:
+        tool_files, excluded_files = partition_static_files(files, evidence)
+    except ValueError as exc:
+        partition_error = str(exc)
+        tool_files = files
+        excluded_files = []
+    secret_scan = scan_snapshot_bytes(REPO_ROOT, evidence)
 
     if explicit:
         # C45: `--files` used to answer "OK: no A2 files changed" when every
@@ -316,61 +539,101 @@ def run(explicit: list[str] | None = None) -> int:
             )
         else:
             print("OK: no A2 files changed (nothing to check).")
-        return 0
+    else:
+        print(f"A2 files (complete resolver): {len(files)}")
+        for name in files:
+            print(f"  {name}")
+        print()
 
-    print(f"A2 files: {len(files)}")
-    for name in files:
-        print(f"  {name}")
-    print()
+    print(
+        f"Static-tool execution partition: {len(tool_files)} file(s), "
+        f"{len(excluded_files)} verified immutable snapshot(s) excluded."
+    )
+    if excluded_files:
+        for name in excluded_files:
+            print(f"  immutable evidence (static remediation only): {name}")
+    if evidence.historical_ruff_count:
+        print(
+            "Historical Ruff findings: "
+            f"{evidence.historical_ruff_count} (NOT GREEN; historical evidence only)."
+        )
+    if evidence.errors:
+        print("BLOCKED immutable evidence validation:")
+        for error in evidence.errors:
+            print(f"  {error}")
+    for path_name, reasons in evidence.blocked_details:
+        print(f"BLOCKED candidate {path_name}:")
+        for reason in reasons:
+            print(f"  {reason}")
+    if partition_error:
+        print(f"BLOCKED static partition: {partition_error}")
+    if secret_scan.ok:
+        print(f"ok  pinned Gitleaks file scan ({len(secret_scan.scanned_paths)} snapshot file(s))")
+    else:
+        print("FAIL pinned Gitleaks file scan")
+        for error in secret_scan.errors:
+            print(f"  {error}")
 
     failures: list[str] = []
+    if evidence.blocked or partition_error:
+        failures.append("immutable evidence")
+    if not secret_scan.ok:
+        failures.append("immutable evidence secret scan")
 
-    ok, output = _run([sys.executable, "-m", "ruff", "check", *files])
-    print(f"{'ok  ' if ok else 'FAIL'} ruff check")
-    if not ok:
-        failures.append("ruff check")
-        print(output)
-
-    ok, output = _run([sys.executable, "-m", "ruff", "format", "--check", *files])
-    print(f"{'ok  ' if ok else 'FAIL'} ruff format --check")
-    if not ok:
-        failures.append("ruff format")
-        print(output)
-
-    # mypy and bandit follow the spec's layer definitions: test code is C layer,
-    # where mypy is gradual (not enforced) and bandit's assert rule is exempt.
-    typed_files = [name for name in files if not name.startswith("tests/")]
-
-    if typed_files:
-        ok, output = _run(
-            [
-                sys.executable,
-                "-m",
-                "mypy",
-                "--no-color-output",
-                "--no-error-summary",
-                "--follow-imports=silent",
-                *typed_files,
-            ]
-        )
-        print(f"{'ok  ' if ok else 'FAIL'} mypy")
+    if tool_files:
+        ok, output = _run([sys.executable, "-m", "ruff", "check", *tool_files])
+        print(f"{'ok  ' if ok else 'FAIL'} ruff check")
         if not ok:
-            failures.append("mypy")
+            failures.append("ruff check")
             print(output)
 
-        ok, output = _bandit(typed_files)
-        print(f"{'ok  ' if ok else 'FAIL'} bandit")
+        ok, output = _run([sys.executable, "-m", "ruff", "format", "--check", *tool_files])
+        print(f"{'ok  ' if ok else 'FAIL'} ruff format --check")
         if not ok:
-            failures.append("bandit")
+            failures.append("ruff format")
             print(output)
+
+        # mypy and bandit follow the spec's layer definitions: test code is C layer,
+        # where mypy is gradual (not enforced) and bandit's assert rule is exempt.
+        typed_files = [name for name in tool_files if not name.startswith("tests/")]
+
+        if typed_files:
+            ok, mypy_results = _run_mypy_targets(typed_files, workers=mypy_workers)
+            mypy_label = "ok  " if ok else "FAIL "
+            print(f"{mypy_label}mypy ({len(mypy_results)} unique target(s))")
+            rendered_mypy_results = _mypy_results_text(mypy_results)
+            if rendered_mypy_results:
+                print("mypy target results:")
+                print(rendered_mypy_results)
+            if not ok:
+                failures.append("mypy")
+
+            ok, output = _bandit(typed_files)
+            print(f"{'ok  ' if ok else 'FAIL'} bandit")
+            if not ok:
+                failures.append("bandit")
+                print(output)
+        else:
+            print("skip mypy / bandit (no non-test A2 files)")
     else:
-        print("skip mypy / bandit (no non-test A2 files)")
+        print("skip static tools (all resolved A2 files are verified immutable evidence)")
 
     if failures:
         print(f"\nFAIL: A2 gate failed on: {', '.join(failures)}", file=sys.stderr)
         return 1
     print("\nOK: A2 files meet the full A2 standard (ruff + format + mypy + bandit).")
     return 0
+
+
+def _positive_mypy_workers(value: str) -> int:
+    """Parse a positive worker count for the A2 command-line option."""
+    try:
+        workers = int(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("mypy workers must be a positive integer") from error
+    if workers < 1:
+        raise argparse.ArgumentTypeError("mypy workers must be a positive integer")
+    return workers
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -382,8 +645,14 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="check exactly these files instead of the computed A2 set",
     )
+    parser.add_argument(
+        "--mypy-workers",
+        type=_positive_mypy_workers,
+        default=1,
+        help="run isolated mypy targets with this many persistent workers (default: 1)",
+    )
     args = parser.parse_args(argv)
-    return run(args.files)
+    return run(args.files, mypy_workers=args.mypy_workers)
 
 
 if __name__ == "__main__":

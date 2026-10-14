@@ -283,12 +283,12 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     facts = measure_ac1_08(Context(REPO_ROOT, (), {}))
 
     assert facts["table_valid"] == "yes"
-    # 16 rows: row 16 (Intrinio) joined with the C89 provider package, and every row still carries
-    # a 复核日期, which is what ``dated == rows`` is for. The per-row接线 counts in rows 14/15/16
-    # are asserted below against the registry's own cells, so a model wave that lands without moving
-    # a cell is a failure here rather than a stale sentence nobody reads.
-    assert facts["rows"] == "16"
-    assert facts["dated"] == facts["rows"] == "16"
+    # 19 rows: rows 17/18/19 (Benzinga / EconDB / Tiingo) joined with the C99 provider packages, and
+    # every row still carries a 复核日期, which is what ``dated == rows`` is for. The per-row接线
+    # counts in rows 14/15/16 are asserted below against the registry's own cells, so a model wave
+    # that lands without moving a cell is a failure here rather than a stale sentence nobody reads.
+    assert facts["rows"] == "19"
+    assert facts["dated"] == facts["rows"] == "19"
     assert facts["undecided"] == "0"
     assert facts["unlinked"] == "0"
     assert facts["responsible_missing"] == "0"
@@ -319,16 +319,20 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
         10: "ECB / IMF / OECD",
         11: "商业源（FMP/Tiingo/Alpha Vantage/Intrinio/Tradier…）",
     }
-    assert set(rows) == set(range(1, 17))
+    assert set(rows) == set(range(1, 20))
     assert {row_id: rows[row_id]["数据源"] for row_id in historical_sources} == (historical_sources)
     assert rows[12]["数据源"] == "BLS（美国劳工统计局）"
     assert rows[13]["数据源"] == "FMP（EquityHistorical / EquityQuote）"
     assert rows[14]["数据源"] == "Cboe（cdn.cboe.com 公开接口）"
     assert rows[15]["数据源"] == "美联储理事会（Board of Governors）"
     assert rows[16]["数据源"] == "Intrinio"
+    assert rows[17]["数据源"] == "Benzinga（Benzinga Pro API）"
+    assert rows[18]["数据源"] == "EconDB（econdb.com 静态名册 CSV）"
+    assert rows[19]["数据源"] == "Tiingo（api.tiingo.com）"
 
     restricted = "已复核（受限）"
     not_applicable = "不适用（本迭代未启用）"
+    pending_clause = "待复核（本迭代已接入，条款原文未取得）"
     assert [rows[row_id]["状态"] for row_id in range(1, 11)] == [restricted] * 10
     assert rows[11]["状态"] == not_applicable
     assert rows[12]["状态"] == restricted
@@ -336,11 +340,15 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     assert rows[14]["状态"] == restricted
     assert rows[15]["状态"] == restricted
     assert rows[16]["状态"] == restricted
+    assert rows[17]["状态"] == pending_clause
+    assert rows[18]["状态"] == pending_clause
+    assert rows[19]["状态"] == restricted
     assert {rows[row_id]["复核日期"] for row_id in range(1, 12)} == {"2026-09-30"}
     assert rows[12]["复核日期"] == rows[13]["复核日期"] == "2026-10-08"
     assert rows[14]["复核日期"] == "2026-10-08"
     assert rows[15]["复核日期"] == "2026-10-09"
     assert rows[16]["复核日期"] == "2026-10-11"
+    assert rows[17]["复核日期"] == rows[18]["复核日期"] == rows[19]["复核日期"] == "2026-10-12"
 
     bls = rows[12]
     assert "公共领域数据可附条件使用并注明 BLS 来源" in bls["允许本项目落库"]
@@ -398,6 +406,43 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     assert "unless otherwise indicated" in fed["允许商业使用"]
     assert "本轮两张表未见另示" in fed["允许商业使用"]
     assert fed["责任人"] == "cloudQuant / Codex"
+    assert "同包另注册 FederalFundsRate / SOFR / OvernightBankFundingRate 三条" in fed["接入方式"]
+    assert "markets.newyorkfed.org" in fed["接入方式"]
+    assert "该包共 6 条能力" in fed["接入方式"]
+
+    intrinio = rows[16]
+    assert (
+        "CurrencyPairs / EquitySearch / HistoricalDividends / CalendarIpo / InsiderTrading 五条"
+        in intrinio["接入方式"]
+    )
+
+    benzinga = rows[17]
+    econdb = rows[18]
+    tiingo = rows[19]
+    assert "opendata/data/providers/benzinga" in benzinga["接入方式"]
+    assert "api.benzinga.com/api/v2.1/calendar/ratings" in benzinga["接入方式"]
+    assert "BENZINGA_API_KEY" in benzinga["接入方式"]
+    assert "PriceTarget 一条" in benzinga["接入方式"]
+    assert "opendata/data/providers/econdb" in econdb["接入方式"]
+    assert "static/help/main_tickers.csv" in econdb["接入方式"]
+    assert "无凭据" in econdb["接入方式"]
+    assert "AvailableIndicators 一条" in econdb["接入方式"]
+    assert "opendata/data/providers/tiingo" in tiingo["接入方式"]
+    assert "api.tiingo.com/tiingo/crypto/prices" in tiingo["接入方式"]
+    assert "TIINGO_TOKEN" in tiingo["接入方式"]
+    assert "CryptoHistorical 一条" in tiingo["接入方式"]
+    for new_row in (benzinga, econdb, tiingo):
+        for use in ("允许本项目落库", "允许再分发", "允许商业使用"):
+            assert "暂不批准" in new_row[use]
+        assert new_row["责任人"] == "cloudQuant / Codex"
+    assert "HTTP 403" in benzinga["允许本项目落库"]
+    assert "HTTP 403" in econdb["允许本项目落库"]
+    assert "you may not write, save, archive, back up" in tiingo["允许本项目落库"]
+    assert "Redistribution is only available upon special request" in tiingo["允许再分发"]
+    assert "you must sign up for a Commercial plan" in tiingo["允许商业使用"]
+    assert "数值权利属于发布机构" in econdb["允许本项目落库"]
+    assert "未签订任何 Benzinga 协议" in benzinga["允许本项目落库"]
+
     assert "这不是供应商授权" in registry
     assert "不覆盖 cboe 其余 8 个上游模型（清单实测 11 行 = 3 DEV_DONE + 8 NOT_RUN）" in registry
     assert "evidence/C72/cboe-rights-review.md" in registry
@@ -405,6 +450,21 @@ def test_ac1_08_real_registry_measures_complete_restricted_review() -> None:
     assert "模型清单实测 federal_reserve 共 13 行（2 DEV_DONE + 11 NOT_RUN）" in registry
     assert "https://www.federalreserve.gov/disclaimer.htm" in registry
     assert "没有释放 FMP 或 Cboe 或美联储或 Intrinio 的真实采集、落库或对外分发动作" in registry
+    assert "不足以支撑一次「已复核」" in registry
+    assert "不覆盖第15行的覆盖声明" not in registry  # the split is stated in row 15's own cell
+    assert "逐源条款行列入 §2 待办第 7 项" in registry
+
+    # §1.1 cites 待办 items 6 and 7; a citation with no row in the 待办 table is a promise
+    # to no one.
+    todo = registry.split("## 2. 待办与责任", maxsplit=1)[1]
+    todo_ids = {
+        line.strip().strip("|").split("|")[0].strip()
+        for line in todo.splitlines()
+        if line.startswith("| ") and line.split("|")[1].strip().isdigit()
+    }
+    assert {"1", "2", "3", "4", "5", "6", "7"} <= todo_ids
+    assert "Benzinga 与 EconDB 的条款页" in todo
+    assert "markets.newyorkfed.org" in todo
 
     verdict = judge_ac1_08(facts)
     assert "登记完整性不等于所有用途获准" in registry

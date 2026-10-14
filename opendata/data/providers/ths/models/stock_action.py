@@ -32,6 +32,8 @@ class ThsStockActionFetcher(Fetcher[StockActionQuery, tuple[CorporateAction, ...
     against the live endpoint (A3.2/A3.4 live cases).
     """
 
+    canonical_model: ClassVar[str] = "stock_action"
+
     async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(

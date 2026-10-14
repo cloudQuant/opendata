@@ -64,7 +64,15 @@ class FactorEvent:
         bonus: Stock dividend, shares per share held.
         allotment_ratio: Rights shares per share held.
         allotment_price: Price paid per rights share (CNY).
-        event_key: Source event identifier retained for traceability.
+        event_key: Source payload digest retained only for traceability. It
+            is not an economic event identity.
+        source: Source name when supplied by the version store.
+        event_identity: Stable source-scoped identity; never inferred from a
+            payload digest.
+        economic_event_id: Reviewed cross-source identity used to recognize
+            mirrors of the same event.
+        pre_event_share_basis: Explicit identifier for the shared per-share
+            basis used by same-day event components.
     """
 
     symbol: str
@@ -74,6 +82,12 @@ class FactorEvent:
     allotment_ratio: float = 0.0
     allotment_price: float = 0.0
     event_key: str | None = None
+    source: str | None = None
+    event_identity: str | None = None
+    economic_event_id: str | None = None
+    pre_event_share_basis: str | None = None
+    source_revision: str | None = None
+    content_digest: str | None = None
 
 
 def event_ratio(event: FactorEvent, prev_close: float) -> float:
@@ -127,6 +141,122 @@ def validate_event(event: FactorEvent) -> None:
             raise ValueError(
                 f"{event.symbol} @ {event.ex_date}: {name} must be finite and non-negative"
             )
+
+
+def coalesce_same_day_events(events: Iterable[FactorEvent]) -> list[FactorEvent]:
+    """Combine explicitly identified same-day actions on one share basis.
+
+    One event per date remains the legacy path. Multiple actions are
+    combined only when each row has a stable identity and the same explicit
+    pre-event share basis. Repeated source rows and reviewed cross-source
+    mirrors are deduplicated; ambiguous mirrors and unreviewed legacy rows
+    fail closed. Cash, shares, and rights subscription amounts are summed
+    independently, then an equivalent rights price is derived from the
+    aggregate rights amount.
+    """
+    grouped: dict[tuple[str, date], list[FactorEvent]] = {}
+    for event in events:
+        grouped.setdefault((event.symbol, event.ex_date), []).append(event)
+
+    combined: list[FactorEvent] = []
+    for (symbol, ex_date), same_day in sorted(grouped.items()):
+        for event in same_day:
+            validate_event(event)
+        if len(same_day) == 1:
+            combined.append(same_day[0])
+            continue
+
+        if any(not event.event_identity or not event.event_identity.strip() for event in same_day):
+            raise ValueError(f"{symbol} @ {ex_date}: ambiguous multiple corporate actions")
+        bases = {event.pre_event_share_basis for event in same_day}
+        if len(bases) != 1 or None in bases or "" in bases:
+            raise ValueError(
+                f"{symbol} @ {ex_date}: same-day actions need one explicit pre-event share basis"
+            )
+
+        unique: list[FactorEvent] = []
+        for candidate in same_day:
+            duplicate_index = next(
+                (
+                    index
+                    for index, existing in enumerate(unique)
+                    if _same_event_identity(existing, candidate)
+                ),
+                None,
+            )
+            if duplicate_index is None:
+                if any(
+                    _cross_source_without_reviewed_mirror(existing, candidate)
+                    for existing in unique
+                ):
+                    raise ValueError(
+                        f"{symbol} @ {ex_date}: cross-source same-day action identity is unresolved"
+                    )
+                unique.append(candidate)
+                continue
+            existing = unique[duplicate_index]
+            if not _same_event_facts(existing, candidate):
+                raise ValueError(
+                    f"{symbol} @ {ex_date}: one corporate action identity has conflicting payloads"
+                )
+
+        if len(unique) == 1:
+            combined.append(unique[0])
+            continue
+
+        rights_shares = sum(event.allotment_ratio for event in unique)
+        rights_amount = sum(event.allotment_ratio * event.allotment_price for event in unique)
+        combined.append(
+            FactorEvent(
+                symbol=symbol,
+                ex_date=ex_date,
+                cash_dividend=sum(event.cash_dividend for event in unique),
+                bonus=sum(event.bonus for event in unique),
+                allotment_ratio=rights_shares,
+                allotment_price=(rights_amount / rights_shares if rights_shares else 0.0),
+                pre_event_share_basis=next(iter(bases)),
+            )
+        )
+    return combined
+
+
+def _same_event_identity(left: FactorEvent, right: FactorEvent) -> bool:
+    """Whether two observations carry an explicitly equivalent identity."""
+    if left.source == right.source and left.event_identity == right.event_identity:
+        return True
+    return bool(
+        left.source != right.source
+        and left.economic_event_id
+        and left.economic_event_id == right.economic_event_id
+    )
+
+
+def _same_event_facts(left: FactorEvent, right: FactorEvent) -> bool:
+    """Compare values that affect event math and the shared basis."""
+    return (
+        left.symbol,
+        left.ex_date,
+        left.cash_dividend,
+        left.bonus,
+        left.allotment_ratio,
+        left.allotment_price,
+        left.pre_event_share_basis,
+    ) == (
+        right.symbol,
+        right.ex_date,
+        right.cash_dividend,
+        right.bonus,
+        right.allotment_ratio,
+        right.allotment_price,
+        right.pre_event_share_basis,
+    )
+
+
+def _cross_source_without_reviewed_mirror(left: FactorEvent, right: FactorEvent) -> bool:
+    """Refuse cross-source components unless their relationship was reviewed."""
+    if left.source is None or right.source is None or left.source == right.source:
+        return False
+    return not left.economic_event_id or not right.economic_event_id
 
 
 def _event_transform(event: FactorEvent) -> tuple[float, float]:
@@ -187,12 +317,8 @@ def cumulate_factors(
         symbols.add(symbol)
 
     by_symbol: dict[str, list[FactorEvent]] = {}
-    for event in events:
+    for event in coalesce_same_day_events(events):
         symbol_events = by_symbol.setdefault(event.symbol, [])
-        if any(existing.ex_date == event.ex_date for existing in symbol_events):
-            raise ValueError(
-                f"{event.symbol} @ {event.ex_date}: ambiguous multiple corporate actions"
-            )
         symbol_events.append(event)
         symbols.add(event.symbol)
 

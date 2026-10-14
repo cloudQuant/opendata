@@ -1,69 +1,9 @@
-"""sec's 24 upstream rows measured against the declarative engine, not hand-written around it.
+"""SEC model accounting for the shared declarative engine.
 
-The sec denominator is the pinned upstream provider dictionary
-(``providers/sec/openbb_sec/__init__.py:36-59``, ledger ids ``OBB2-sec-<model>``). Every row was
-read in that tree and judged against what the shared engine actually performs at query time
-(:mod:`opendata.data.providers._engine.http_json`): one GET whose body decodes as JSON, a record
-list that *is* a JSON array (``resolve_rows`` raises ``*_SHAPE_INVALID`` for anything else,
-http_json.py:218), output columns that are keys of each record or of the enclosing document
-(``normalize_record``, http_json.py:236-263), and parameters that go into the query string or into
-one fixed path template (``encode_query``/``render_path``, http_json.py:142-178).
-
-Measured result: none of the 24 rows has that shape, so :data:`DECLARED_MODELS` is empty and
-:data:`NOT_DECLARABLE` accounts for all 24 with the capability that blocks each one. The blockers
-are not stylistic; four engine capabilities would have to exist first:
-
-* **non-row documents** - ``company_tickers.json`` is an object keyed by row ordinal
-  (helpers.py:57), ``company_tickers_mf.json`` is an array of bare arrays named by a ``fields``
-  list (helpers.py:123), and ``submissions`` filings are column-oriented parallel arrays
-  (company_filings.py:233). Nothing in the engine turns any of those into records.
-* **derived columns** - several published columns are built after the response arrives, by string
-  concatenation (company_filings.py:319-331) or by a join against a second request
-  (frames.py:176-181). The engine reads a value out of the document or it emits a null.
-* **more than one request** - a pre-flight decides the URL (equity_ftd.py:74), a second request
-  fills columns (nport_disclosure.py:255), or a document is re-read per filing
-  (form_13FHR.py:77, latest_financial_reports.py:165).
-* **other formats** - Form 4 and NPORT XML (form4.py:295, nport_disclosure.py:326), an RSS feed
-  (rss_litigation.py:73), HTML tables (sic_search.py:96) and HTML-to-markdown bodies
-  (sec_filing.py:542, htm_file.py:97) are not JSON documents.
-
-SEC fair-access headers, recorded because it is the first question any future sec declaration asks:
-upstream's ``User-Agent`` is a **literal default**, not a value composed from a caller-supplied
-email - ``openbb_sec/utils/definitions.py:9-13`` and ``:17-20`` both send
-``"my real company name definitelynot@fakecompany.com"`` (``latest_financial_reports.py:117-118``
-repeats it inline; ``utils/form4.py:8-9`` sends a different literal). So ``static_headers`` *can*
-carry it verbatim; nothing about the header blocks a declaration. The upstream literal is a
-placeholder contact address, which is why it is recorded here rather than wired into a production
-declaration. One caveat for whoever declares first: ``SEC_HEADERS`` also pins a ``Host`` field to
-``www.sec.gov`` (definitions.py:12), and upstream sends the ``HEADERS`` variant without it to
-``data.sec.gov`` (company_filings.py:225) because, as its own comment says, some endpoints do not
-like that field -- so the pair a declaration sends has to be chosen per host, not per provider.
-
-Re-check of the three rows the roadmap used to list as already covered (iteration-2 round):
-``capability-roadmap.json`` put ``CashFlowStatement``, ``IncomeStatement`` and
-``InstitutionsSearch`` in ``roadmap.shipped_cover_rows``, each with a single need that named a
-capability the engine does ship (``columns.select`` for the two statements, ``decode.delimited``
-for the filer list). That list was a label-to-capability mapping over the *engine-work residue*,
-and it was not a re-measurement. Splitting the two over-collapsed labels in
-``scripts/quality/model_capability_census.py`` moved all three out of it: ``tag_column_selection``
-maps to ``columns.response_dependent_selection`` and the filer list's headerless body maps to
-``decode.delimited_headerless``, both read ``absent`` by the registry, so the roadmap's own face for
-sec now measures **no** shipped-coverage rows at all and these three sit in the greedy build pool.
-The census rows themselves, re-read this round from ``census-sec-tmx-fed-gov-finra.json``, still
-carry ``expressible_today: false`` and name the need that blocks them -- ``xbrl_tag_assembly`` and
-``tag_column_selection`` for the statements, ``delimited_rows_without_published_header`` for the
-filer list. The engine's shipped ``decode.delimited`` reads a delimited body only when its first row
-publishes a header naming a declared column (:meth:`decoders._rows_from_text`, which raises
-``HEADER_MISMATCH`` otherwise), and a column copies exactly one fixed source key
-(``normalize_record``), so neither need is met by what exists. Independently of the capability
-question, no endpoint, column name or JSON pointer for these three rows is traceable in this repo:
-no ``sec`` module is vendored under any ``opendata/data/providers/*/_vendor`` tree (the repo has
-exactly one such tree today), this package has never held a hand-written fetcher, and the only
-``sec.gov`` strings in the tree are the provider
-website and the prose cites above. Rule 2 of the declaration contract -- every URL and column must
-trace to a recorded fact -- therefore refuses all three by itself. So ``DECLARED_MODELS`` is still
-empty, ``provider.py`` still binds nothing, and :data:`RECHECKED_THIS_ROUND` names the three rows
-with the census record that settles each one.
+``DECLARED_MODELS`` and ``NOT_DECLARABLE`` describe only generated ``ModelSpec`` coverage. The
+source-owned SEC package also supplies hand-written fetchers; their distinct model identities are
+listed by :data:`IMPLEMENTED_MODELS` and bound from :mod:`opendata.data.providers.sec.provider`.
+The engine's three synthetic refusal probes below continue to measure only declarative capabilities.
 """
 
 from __future__ import annotations
@@ -98,12 +38,35 @@ UPSTREAM_ROWS: tuple[str, ...] = (
     "SymbolMap",
 )
 
-#: Models this package declares as ``ModelSpec`` records. Empty, by measurement: see the docstring.
-#: Re-measured this round by the three-row re-check below, which refused all three; this module
-#: still constructs no ``ModelSpec``.
-#: A name added here becomes discoverable through ``catalog.engine_declared_models()`` as soon as
-#: ``provider.py`` binds the fetcher its declaration generates - no other wiring is missing.
+#: Models represented by generated ``ModelSpec`` records. Source-owned fetchers are tracked below.
 DECLARED_MODELS: tuple[str, ...] = ()
+
+#: Source-authored models registered through SEC's normal provider descriptor.
+IMPLEMENTED_MODELS: tuple[str, ...] = (
+    "BalanceSheet",
+    "BalanceSheetGrowth",
+    "CashFlowStatement",
+    "CashFlowStatementGrowth",
+    "CikMap",
+    "CompanyFilings",
+    "CompareCompanyFacts",
+    "EquityFTD",
+    "EquitySearch",
+    "Filings",
+    "Form13FHR",
+    "SecHtmFile",
+    "IncomeStatement",
+    "IncomeStatementGrowth",
+    "InsiderTrading",
+    "LatestFinancialReports",
+    "ManagementDiscussionAnalysis",
+    "NportDisclosure",
+    "RssLitigation",
+    "SchemaFiles",
+    "SecFiling",
+    "SicSearch",
+    "SymbolMap",
+)
 
 #: The three rows ``capability-roadmap.json`` listed under ``roadmap.shipped_cover_rows`` against a
 #: capability the engine already ships (``columns.select`` for the statements, ``decode.delimited``

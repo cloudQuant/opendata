@@ -99,14 +99,28 @@ class DataAcquisitionService:
         if execution is None:
             raise ValueError(f"Execution {execution_id} not found")
 
+        # Keep values needed by the exception path before any commit can
+        # expire ORM attributes or leave the metadata session in a failed
+        # transaction state.
+        interface_name = interface.name
+
         # Track active execution
+        started_at = datetime.now(timezone.utc)
         self._active_executions[execution_id] = {
             "interface_id": interface_id,
             "parameters": parameters,
-            "started_at": datetime.now(timezone.utc),
+            "started_at": started_at,
         }
 
         try:
+            execution.status = TaskStatus.RUNNING
+            execution.start_time = started_at
+            execution.end_time = None
+            execution.duration = None
+            execution.rows_after = None
+            execution.error_message = None
+            await db.commit()
+
             # Execute the interface fetch (registry-routed with legacy
             # fallback, A1.7)
             logger.info(f"Executing interface {interface.name} with parameters: {parameters}")
@@ -115,9 +129,13 @@ class DataAcquisitionService:
 
             if data is None or (isinstance(data, pd.DataFrame) and data.empty):
                 logger.warning(f"Interface {interface.name} returned no data")
+                table_name = self._generate_table_name(interface.name)
+                rows_after = await self._count_table_rows_if_exists(table_name, data_db=data_db)
+                finished_at = datetime.now(timezone.utc)
                 execution.status = TaskStatus.COMPLETED
-                execution.end_time = datetime.now(timezone.utc)
-                execution.rows_after = 0
+                execution.end_time = finished_at
+                execution.duration = max((finished_at - started_at).total_seconds(), 0.0)
+                execution.rows_after = rows_after
                 await db.commit()
                 return 0
 
@@ -131,17 +149,107 @@ class DataAcquisitionService:
                 db=db,
                 data_db=data_db,
             )
+            table_name = self._generate_table_name(interface.name)
+            rows_after = await self._count_table_rows(table_name, data_db=data_db)
             await data_db.commit()
+
+            finished_at = datetime.now(timezone.utc)
+            execution.status = TaskStatus.COMPLETED
+            execution.end_time = finished_at
+            execution.duration = max((finished_at - started_at).total_seconds(), 0.0)
+            execution.rows_after = rows_after
             await db.commit()
 
             return rows_affected
 
         except Exception as e:
-            logger.error(f"Data acquisition failed for {interface.name}: {e}")
-            execution.status = TaskStatus.FAILED
-            execution.error_message = str(e)
-            execution.end_time = datetime.now(timezone.utc)
-            await db.commit()
+            logger.error("Data acquisition failed for {}: {}", interface_name, e)
+            metadata_rollback_succeeded = False
+            try:
+                await db.rollback()
+                metadata_rollback_succeeded = True
+            except Exception as rollback_error:
+                logger.error(
+                    "Could not roll back execution metadata transaction for {}: {}",
+                    execution_id,
+                    type(rollback_error).__name__,
+                )
+            try:
+                await data_db.rollback()
+            except Exception as rollback_error:
+                logger.error(
+                    "Could not roll back warehouse transaction for {}: {}",
+                    execution_id,
+                    type(rollback_error).__name__,
+                )
+
+            if metadata_rollback_succeeded:
+                try:
+                    failed_result = await db.execute(
+                        select(TaskExecution).where(TaskExecution.id == execution_id)
+                    )
+                    failed_execution = failed_result.scalar_one_or_none()
+                    if failed_execution is None:
+                        logger.error(
+                            "Could not reload execution {} after rollback; original error: {}",
+                            execution_id,
+                            e,
+                        )
+                    elif failed_execution.status in {
+                        TaskStatus.COMPLETED,
+                        TaskStatus.FAILED,
+                        TaskStatus.TIMEOUT,
+                        TaskStatus.CANCELLED,
+                    }:
+                        logger.warning(
+                            "Not overwriting terminal execution {} status {} after error: {}",
+                            execution_id,
+                            failed_execution.status.value,
+                            e,
+                        )
+                    else:
+                        finished_at = datetime.now(timezone.utc)
+                        failed_execution.status = TaskStatus.FAILED
+                        failed_execution.start_time = started_at
+                        failed_execution.error_message = str(e)
+                        failed_execution.end_time = finished_at
+                        failed_execution.duration = max(
+                            (finished_at - started_at).total_seconds(), 0.0
+                        )
+                        failed_execution.rows_after = None
+                        try:
+                            await db.commit()
+                        except Exception as persist_error:
+                            try:
+                                await db.rollback()
+                            except Exception as rollback_error:
+                                logger.error(
+                                    "Could not roll back failed-status persistence for {}: {}",
+                                    execution_id,
+                                    type(rollback_error).__name__,
+                                )
+                            logger.error(
+                                "Could not persist failed execution {} after original error {}: {}",
+                                execution_id,
+                                e,
+                                type(persist_error).__name__,
+                            )
+                except Exception as persist_error:
+                    try:
+                        await db.rollback()
+                    except Exception as rollback_error:
+                        logger.error(
+                            "Could not roll back failed-status persistence for {}: {}",
+                            execution_id,
+                            type(rollback_error).__name__,
+                        )
+                    logger.error(
+                        "Could not reload or persist failed execution {} after "
+                        "original error {}: {}",
+                        execution_id,
+                        e,
+                        type(persist_error).__name__,
+                    )
             raise
 
         finally:
@@ -490,9 +598,7 @@ class DataAcquisitionService:
         table_meta = result.scalar_one_or_none()
 
         # Get current total row count from the warehouse table
-        quoted_name = safe_table_name(table_name)
-        count_result = await data_db.execute(text(f"SELECT COUNT(*) FROM {quoted_name}"))  # nosec B608  # table from safe_table_name regex+backticks
-        total_rows = count_result.scalar() or 0
+        total_rows = await self._count_table_rows(table_name, data_db=data_db)
 
         if table_meta:
             # Update existing
@@ -511,6 +617,40 @@ class DataAcquisitionService:
             db.add(table_meta)
 
         # Note: commit handled by caller for transaction consistency
+
+    async def _count_table_rows(
+        self,
+        table_name: str,
+        *,
+        data_db: AsyncSession,
+    ) -> int:
+        """Return the current row count, preserving query failures as errors."""
+        quoted_name = safe_table_name(table_name)
+        # SQL identifiers cannot be bound as values; validate and quote the name.
+        count_result = await data_db.execute(
+            text(f"SELECT COUNT(*) FROM {quoted_name}")  # nosec B608: validated table identifier
+        )
+        value = count_result.scalar()
+        if value is None:
+            raise RuntimeError(f"Warehouse row count returned no value for {table_name}")
+        return int(value)
+
+    async def _count_table_rows_if_exists(
+        self,
+        table_name: str,
+        *,
+        data_db: AsyncSession,
+    ) -> int:
+        """Return zero only when the generated warehouse table is absent."""
+        from sqlalchemy import inspect
+
+        connection = await data_db.connection()
+        table_exists = await connection.run_sync(
+            lambda sync_connection: inspect(sync_connection).has_table(table_name)
+        )
+        if not table_exists:
+            return 0
+        return await self._count_table_rows(table_name, data_db=data_db)
 
     def get_progress(self, execution_id: int) -> dict[str, Any]:
         """Get progress of an active execution.

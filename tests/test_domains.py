@@ -101,10 +101,17 @@ class TestRegistry:
         assert {domain for domain, spec in load_domains().items() if spec.priority == "P0"} == (
             expected
         )
+        assert {domain for domain, spec in load_domains().items() if spec.priority == "P1"} == {
+            "energy_petroleum_status_report",
+            "energy_short_term_energy_outlook",
+        }
+        assert {domain for domain, spec in load_domains().items() if spec.priority == "P2"} == {
+            "cftc_commitment_of_traders",
+            "cftc_market_directory",
+        }
         assert all(
-            spec.priority is None
-            for domain, spec in load_domains().items()
-            if domain not in expected
+            spec.priority is None or spec.priority in {"P0", "P1", "P2"}
+            for spec in load_domains().values()
         )
 
     def test_every_domain_derives_all_names(self):

@@ -59,6 +59,8 @@ class ThsFundActionFetcher(Fetcher[ThsFundActionQuery, tuple[CorporateAction, ..
     for digit (see ``docs/evidence/C15``).
     """
 
+    canonical_model: ClassVar[str] = "fund_action"
+
     async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(

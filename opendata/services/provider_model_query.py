@@ -120,11 +120,14 @@ async def query_provider_model(
         market=fetcher.capability.market,
     )
     context = _trusted_context(ctx)
+    from opendata.data.providers._engine.http_json import ProviderEngineQueryError
 
     try:
         output = await fetcher.fetch_async(ctx=context, **normalized_query)
     except asyncio.CancelledError:
         raise
+    except ProviderEngineQueryError:
+        raise ProviderModelQueryValidationError from None
     except ValidationError:
         raise ProviderModelQueryValidationError from None
     except (AsyncExecutionTimeoutError, RequestExecutionDeadlineError, TimeoutError):

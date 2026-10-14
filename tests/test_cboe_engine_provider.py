@@ -9,11 +9,20 @@ generated fetcher.
 
 from __future__ import annotations
 
+import asyncio
+import json
+from datetime import datetime, time
+from types import SimpleNamespace
+
 import pytest
 
 from opendata.data.providers._engine.http_json import HttpResponse, make_http_json_fetcher
 from opendata.data.providers._engine.spec import ColumnSpec, ModelSpec, ParamSpec
-from opendata.data.providers._engine.testing import SyntheticTransport, fixture_context
+from opendata.data.providers._engine.testing import (
+    FixedResponseTransport,
+    SyntheticTransport,
+    fixture_context,
+)
 from opendata.data.providers.catalog import get_provider, register_provider
 from opendata.data.providers.cboe import specs
 from opendata.data.providers.cboe._source import SOURCE
@@ -23,8 +32,14 @@ from opendata.data.providers.cboe.models.available_indices import (
 from opendata.data.providers.cboe.models.index_constituents import (
     CboeIndexConstituentsFetcher,
 )
-from opendata.data.providers.cboe.specs import AVAILABLE_INDICES, INDEX_CONSTITUENTS
+from opendata.data.providers.cboe.models.index_search import CboeIndexSearchFetcher
+from opendata.data.providers.cboe.specs import (
+    AVAILABLE_INDICES,
+    INDEX_CONSTITUENTS,
+    INDEX_SEARCH,
+)
 from opendata.data.registry import ProviderRegistry
+from opendata.services import provider_model_query
 
 DIRECTORY_URL = "https://cdn.cboe.com/api/global/us_indices/definitions/all_indices.json"
 CONSTITUENTS_URL = (
@@ -84,8 +99,10 @@ class TestProviderRegistration:
     def test_catalog_no_longer_reserves_cboe(self) -> None:
         provider = get_provider("cboe")
         assert "reserved" not in provider.description.lower()
-        assert provider.credentials == ()
-        assert len(provider.fetcher_bindings) == 4
+        assert len(provider.credentials) == 1
+        assert provider.credentials[0].environment_variable == "CBOE_LIVEVOL_ACCESS_TOKEN"
+        assert provider.credentials[0].required_for_health is False
+        assert len(provider.fetcher_bindings) == 9
 
     def test_registry_publishes_every_declared_model(self) -> None:
         registry = ProviderRegistry()
@@ -94,8 +111,13 @@ class TestProviderRegistration:
         assert domains == {
             "cboe_available_indices",
             "cboe_equity_search",
+            "cboe_equity_historical",
+            "cboe_etf_historical",
+            "cboe_equity_quote",
+            "cboe_options_chains",
             "cboe_index_constituent_quotes",
             "cboe_index_search",
+            "cboe_index_historical",
         }
         # Two cross-faces so a silent drop cannot hide in the literal: no two bindings publish the
         # same domain, and the published count equals the descriptor's binding count.
@@ -112,15 +134,99 @@ class TestStaticPathModel:
             {(DIRECTORY_URL, frozenset()): HttpResponse(200, [DIRECTORY_RECORD])}
         )
         fetcher = _with_transport(CboeAvailableIndicesFetcher, transport)
-        result = fetcher.fetch(ctx=fixture_context(SOURCE, AVAILABLE_INDICES, sends=1))
+        result = fetcher.fetch(
+            ctx=fixture_context(SOURCE, AVAILABLE_INDICES, sends=1),
+            source=SOURCE,
+            market=AVAILABLE_INDICES.market,
+        )
         rows = list(result)
         assert len(rows) == 1
         assert rows[0].symbol == "SPX"
         assert rows[0].name == "S&P 500"
-        assert rows[0].data_delay == "15 min"
+        assert rows[0].data_delay == 15
+        assert rows[0].open_time == time(8, 30)
+        assert rows[0].close_time == time(17, 0)
         assert set(rows[0].model_dump()) == {column.name for column in AVAILABLE_INDICES.columns}
         assert transport.calls[0]["url"] == DIRECTORY_URL
         assert transport.calls[0]["params"] == {}
+
+    def test_zero_delay_and_explicit_null_times_are_preserved(self) -> None:
+        record = {
+            **DIRECTORY_RECORD,
+            "mkt_data_delay": "0 min",
+            "calc_start_time": None,
+            "calc_end_time": None,
+        }
+        fetcher = _with_transport(
+            CboeAvailableIndicesFetcher,
+            FixedResponseTransport(HttpResponse(200, [record])),
+        )
+        rows = list(
+            fetcher.fetch(
+                ctx=fixture_context(SOURCE, AVAILABLE_INDICES, sends=1),
+                source=SOURCE,
+                market=AVAILABLE_INDICES.market,
+            )
+        )
+        assert rows[0].data_delay == 0
+        assert rows[0].open_time is None
+        assert rows[0].close_time is None
+
+    def test_available_indices_allows_nullable_name_but_requires_symbol(self) -> None:
+        record = {**DIRECTORY_RECORD, "index_name": None}
+        fetcher = _with_transport(
+            CboeAvailableIndicesFetcher,
+            FixedResponseTransport(HttpResponse(200, [record])),
+        )
+        rows = list(
+            fetcher.fetch(
+                ctx=fixture_context(SOURCE, AVAILABLE_INDICES, sends=1),
+                source=SOURCE,
+                market=AVAILABLE_INDICES.market,
+            )
+        )
+        assert rows[0].name is None
+
+        from opendata.data.providers._engine.http_json import ProviderEngineError
+
+        missing_symbol = {**DIRECTORY_RECORD, "index_symbol": None}
+        broken_fetcher = _with_transport(
+            CboeAvailableIndicesFetcher,
+            FixedResponseTransport(HttpResponse(200, [missing_symbol])),
+        )
+        with pytest.raises(ProviderEngineError, match="CBOE_SHAPE_INVALID"):
+            list(
+                broken_fetcher.fetch(
+                    ctx=fixture_context(SOURCE, AVAILABLE_INDICES, sends=1),
+                    source=SOURCE,
+                    market=AVAILABLE_INDICES.market,
+                )
+            )
+
+    @pytest.mark.parametrize(
+        "bad_fields",
+        [
+            {"mkt_data_delay": "delayed"},
+            {"calc_start_time": "25:70"},
+        ],
+    )
+    def test_directory_refuses_unparseable_public_contract_values(
+        self, bad_fields: dict[str, object]
+    ) -> None:
+        from opendata.data.providers._engine.http_json import ProviderEngineError
+
+        fetcher = _with_transport(
+            CboeAvailableIndicesFetcher,
+            FixedResponseTransport(HttpResponse(200, [{**DIRECTORY_RECORD, **bad_fields}])),
+        )
+        with pytest.raises(ProviderEngineError, match="CBOE_SHAPE_INVALID"):
+            list(
+                fetcher.fetch(
+                    ctx=fixture_context(SOURCE, AVAILABLE_INDICES, sends=1),
+                    source=SOURCE,
+                    market=AVAILABLE_INDICES.market,
+                )
+            )
 
 
 class TestTemplatedPathModel:
@@ -134,7 +240,10 @@ class TestTemplatedPathModel:
     def _fetch(self, transport: SyntheticTransport, symbol: str = "BUK100P"):
         fetcher = _with_transport(CboeIndexConstituentsFetcher, transport)
         return fetcher.fetch(
-            ctx=fixture_context(SOURCE, INDEX_CONSTITUENTS, sends=1), symbol=symbol
+            ctx=fixture_context(SOURCE, INDEX_CONSTITUENTS, sends=1),
+            symbol=symbol,
+            source=SOURCE,
+            market=INDEX_CONSTITUENTS.market,
         )
 
     def test_symbol_is_addressed_in_the_path_not_the_query(self) -> None:
@@ -145,6 +254,7 @@ class TestTemplatedPathModel:
         assert rows[0].last_price == 148.2
         assert rows[0].change_percent == 47.5
         assert rows[0].asset_type == "Equity"
+        assert rows[0].last_trade_time == datetime(2026, 10, 8, 15, 32, 11)
 
     def test_envelope_facts_do_not_overwrite_the_record_symbol(self) -> None:
         transport = self._transport()
@@ -156,6 +266,187 @@ class TestTemplatedPathModel:
         rows = list(self._fetch(transport))
         assert "currency" not in CONSTITUENT_RECORD
         assert rows[0].currency == "GBP"
+
+    def test_explicit_null_last_trade_time_is_preserved(self) -> None:
+        document = {
+            **CONSTITUENTS_DOCUMENT,
+            "data": [{**CONSTITUENT_RECORD, "last_trade_time": None}],
+        }
+        fetcher = _with_transport(
+            CboeIndexConstituentsFetcher,
+            FixedResponseTransport(HttpResponse(200, document)),
+        )
+        rows = list(
+            fetcher.fetch(
+                ctx=fixture_context(SOURCE, INDEX_CONSTITUENTS, sends=1),
+                symbol="BUK100P",
+                source=SOURCE,
+                market=INDEX_CONSTITUENTS.market,
+            )
+        )
+        assert rows[0].last_trade_time is None
+
+    def test_unparseable_last_trade_time_is_refused(self) -> None:
+        from opendata.data.providers._engine.http_json import ProviderEngineError
+
+        document = {
+            **CONSTITUENTS_DOCUMENT,
+            "data": [{**CONSTITUENT_RECORD, "last_trade_time": "not-a-timestamp"}],
+        }
+        fetcher = _with_transport(
+            CboeIndexConstituentsFetcher,
+            FixedResponseTransport(HttpResponse(200, document)),
+        )
+        with pytest.raises(ProviderEngineError, match="CBOE_SHAPE_INVALID"):
+            list(
+                fetcher.fetch(
+                    ctx=fixture_context(SOURCE, INDEX_CONSTITUENTS, sends=1),
+                    symbol="BUK100P",
+                    source=SOURCE,
+                    market=INDEX_CONSTITUENTS.market,
+                )
+            )
+
+    def test_constituent_requires_nonnull_symbol(self) -> None:
+        from opendata.data.providers._engine.http_json import ProviderEngineError
+
+        document = {
+            **CONSTITUENTS_DOCUMENT,
+            "data": [{**CONSTITUENT_RECORD, "symbol": None}],
+        }
+        fetcher = _with_transport(
+            CboeIndexConstituentsFetcher,
+            FixedResponseTransport(HttpResponse(200, document)),
+        )
+        with pytest.raises(ProviderEngineError, match="CBOE_SHAPE_INVALID"):
+            list(
+                fetcher.fetch(
+                    ctx=fixture_context(SOURCE, INDEX_CONSTITUENTS, sends=1),
+                    symbol="BUK100P",
+                    source=SOURCE,
+                    market=INDEX_CONSTITUENTS.market,
+                )
+            )
+
+
+def test_index_search_rejects_nullable_public_identity_fields() -> None:
+    from opendata.data.providers._engine.http_json import ProviderEngineError
+
+    for broken in (
+        {**DIRECTORY_RECORD, "index_symbol": None},
+        {**DIRECTORY_RECORD, "index_name": None},
+    ):
+        transport = FixedResponseTransport(HttpResponse(200, [broken]))
+        fetcher = _with_transport(CboeIndexSearchFetcher, transport)
+        with pytest.raises(ProviderEngineError, match="CBOE_SHAPE_INVALID"):
+            list(
+                fetcher.fetch(
+                    ctx=fixture_context(SOURCE, INDEX_SEARCH, sends=1),
+                    query="Broad",
+                    is_symbol=False,
+                    source=SOURCE,
+                    market=INDEX_SEARCH.market,
+                )
+            )
+
+
+@pytest.mark.parametrize(
+    ("model", "fetcher_class", "spec", "query", "url", "params", "document", "expected"),
+    [
+        (
+            "IndexSearch",
+            CboeIndexSearchFetcher,
+            INDEX_SEARCH,
+            {"query": "SPX", "is_symbol": True},
+            DIRECTORY_URL,
+            {"query": "SPX", "is_symbol": "true"},
+            [DIRECTORY_RECORD],
+            {
+                "symbol": "SPX",
+                "name": "S&P 500",
+                "currency": "USD",
+                "description": "Broad US equities",
+                "data_delay": 15,
+                "open_time": "08:30:00",
+                "close_time": "17:00:00",
+                "time_zone": "America/Chicago",
+                "tick_days": "1",
+                "tick_frequency": "15",
+                "tick_period": "minutes",
+            },
+        ),
+        (
+            "IndexConstituents",
+            CboeIndexConstituentsFetcher,
+            INDEX_CONSTITUENTS,
+            {"symbol": "BUK100P"},
+            CONSTITUENTS_URL,
+            {},
+            CONSTITUENTS_DOCUMENT,
+            {
+                "symbol": "AZL.L",
+                "name": "AstraZeneca",
+                "currency": "GBP",
+                "security_type": None,
+                "last_price": 148.2,
+                "open": 147.0,
+                "high": 149.0,
+                "low": 146.5,
+                "close": 148.0,
+                "volume": 3_400_000,
+                "prev_close": 147.5,
+                "change": 0.7,
+                "change_percent": 47.5,
+                "tick": "U",
+                "last_trade_time": "2026-10-08T15:32:11",
+                "asset_type": "Equity",
+            },
+        ),
+    ],
+)
+def test_service_injects_identity_and_serializes_typed_cboe_rows(
+    monkeypatch: pytest.MonkeyPatch,
+    model: str,
+    fetcher_class: type,
+    spec: ModelSpec,
+    query: dict[str, object],
+    url: str,
+    params: dict[str, str],
+    document: object,
+    expected: dict[str, object],
+) -> None:
+    registry = ProviderRegistry()
+    register_provider("cboe", registry)
+    transport = SyntheticTransport({(url, frozenset(params.items())): HttpResponse(200, document)})
+    monkeypatch.setattr(fetcher_class, "http_transport", transport)
+    captured_query: dict[str, object] = {}
+    original_transform_query = fetcher_class.transform_query
+
+    def capture_query(fetcher: object, **kwargs: object) -> object:
+        captured_query.update(kwargs)
+        return original_transform_query(fetcher, **kwargs)
+
+    monkeypatch.setattr(fetcher_class, "transform_query", capture_query)
+    principal = SimpleNamespace(allows_domain=lambda domain: domain.startswith("cboe_"))
+    response = asyncio.run(
+        provider_model_query.query_provider_model(
+            registry=registry,
+            source=SOURCE,
+            model=model,
+            query=query,
+            principal=principal,
+            ctx=fixture_context(SOURCE, spec, sends=1),
+        )
+    )
+
+    assert captured_query["source"] == SOURCE
+    assert captured_query["market"] == spec.market
+    assert response["source"] == SOURCE
+    assert response["model"] == model
+    assert response["results"] == [expected]
+    assert json.dumps(response["results"], allow_nan=False)
+    assert transport.calls[0]["url"] == url
+    assert transport.calls[0]["params"] == params
 
 
 class TestDeclarationRejectsMalformedTemplate:
@@ -194,6 +485,8 @@ class TestDeclarationRejectsMalformedTemplate:
             fetcher.fetch(
                 ctx=fixture_context("templated", self._spec("/quotes/{symbol}.json"), sends=1),
                 symbol=unsafe,
+                source="templated",
+                market="all",
             )
         assert "PARAM_UNENCODABLE" in str(caught.value)
         assert transport.calls == []
@@ -203,30 +496,22 @@ class TestDeclarationRejectsMalformedTemplate:
         transport = SyntheticTransport({})
         fetcher = _with_transport(make_http_json_fetcher("templated", spec), transport)
         with pytest.raises(Exception) as caught:
-            fetcher.fetch(ctx=fixture_context("templated", spec, sends=1))
+            fetcher.fetch(
+                ctx=fixture_context("templated", spec, sends=1),
+                source="templated",
+                market="all",
+            )
         assert "QUERY_INVALID" in str(caught.value)
         assert transport.calls == []
 
 
-def test_pilot_records_the_non_declarable_remainder_by_name() -> None:
-    """The honest denominator: seven of eleven still need composition a declaration cannot express.
-
-    ``IndexSearch`` left this set when the engine grew ``row_filters`` and ``EquitySearch`` left it
-    when the engine grew ``decode.delimited``, the CSV body decoder. Every cboe upstream model is
-    named exactly once across the declared four and the remaining seven, so a model cannot
-    leave the remainder without arriving in the declared column -- the two sets are checked
-    against each other, not just against their own literals.
-    """
+def test_pilot_records_the_two_models_without_reviewed_source_protocols() -> None:
+    """Keep the fixed eleven-model count while naming the two protocol gaps explicitly."""
     assert set(specs.NOT_DECLARABLE) == {
-        "EquityHistorical",
-        "EtfHistorical",
-        "EquityQuote",
         "FuturesCurve",
-        "IndexHistorical",
         "IndexSnapshots",
-        "OptionsChains",
     }
-    assert len(specs.NOT_DECLARABLE) == 7
+    assert len(specs.NOT_DECLARABLE) == 2
     declared = {
         AVAILABLE_INDICES.model,
         INDEX_CONSTITUENTS.model,
@@ -235,4 +520,13 @@ def test_pilot_records_the_non_declarable_remainder_by_name() -> None:
     }
     assert len(declared) == 4
     assert declared.isdisjoint(specs.NOT_DECLARABLE)
-    assert len(declared | set(specs.NOT_DECLARABLE)) == 11
+    handwritten = {
+        "EquityHistorical",
+        "EtfHistorical",
+        "EquityQuote",
+        "IndexHistorical",
+        "OptionsChains",
+    }
+    assert declared.isdisjoint(handwritten)
+    assert handwritten.isdisjoint(specs.NOT_DECLARABLE)
+    assert len(declared | handwritten | set(specs.NOT_DECLARABLE)) == 11

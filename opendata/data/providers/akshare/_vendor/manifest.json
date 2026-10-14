@@ -11,7 +11,8 @@
       "upstream_sha256": "42391b2448bbe670a7d1bc8f20d57d40b415793d1dc883d3bb81735ecd20b362",
       "lines": 2001,
       "upstream_path": "akshare/__init__.py",
-      "manual_edits": false
+      "manual_edits": true,
+      "manual_edit_reason": "Generated lazy flat facade preserves available upstream exports while deferring vendor module imports to module-level __getattr__; __dir__ keeps export discovery available without eagerly importing the vendored package tree."
     },
     {
       "path": "_version.py",
@@ -75,7 +76,8 @@
       "upstream_sha256": "4e90ab2e4db354e15865d769f22b47fb8da9b3657590600d1d3d6382bcd52a55",
       "lines": 446,
       "upstream_path": "akshare/bond/bond_china_money.py",
-      "manual_edits": true
+      "manual_edits": true,
+      "manual_edit_reason": "chinamoney site key -> CHINAMONEY_API_KEY env var"
     },
     {
       "path": "bond/bond_convert.py",
@@ -83,7 +85,8 @@
       "upstream_sha256": "9291a7d21a118a38250dd8fffe95ed6fec5da9ce4caac7904aec283bd7934fb9",
       "lines": 588,
       "upstream_path": "akshare/bond/bond_convert.py",
-      "manual_edits": true
+      "manual_edits": true,
+      "manual_edit_reason": "jisilu credentials -> JSL_USER/JSL_PASSWORD env vars"
     },
     {
       "path": "bond/bond_em.py",
@@ -163,7 +166,8 @@
       "upstream_sha256": "acab91359aea8ba20cb19f67caf3b7471d368ecd2d1f7ccc2e3cfc1d0340a0f4",
       "lines": 43,
       "upstream_path": "akshare/datasets.py",
-      "manual_edits": true
+      "manual_edits": true,
+      "manual_edit_reason": "akshare.data resource package never existed upstream; fail closed with a clear error (A2.3 标注不可用)"
     },
     {
       "path": "economic/__init__.py",
@@ -643,7 +647,8 @@
       "upstream_sha256": "95e9ae4b106967b3995ef373fa57b1a6844cb6480c0a795a3fc0533077cd6878",
       "lines": 255,
       "upstream_path": "akshare/futures/futures_hf_em.py",
-      "manual_edits": true
+      "manual_edits": true,
+      "manual_edit_reason": "eastmoney site token -> EM_API_TOKEN env var"
     },
     {
       "path": "futures/futures_hist_em.py",
@@ -939,7 +944,8 @@
       "upstream_sha256": "b2ca1599163bdfa34b59039a449a28cc30ec81ab057a94f7c39bedbdf2a75fed",
       "lines": 343,
       "upstream_path": "akshare/index/index_cons.py",
-      "manual_edits": true
+      "manual_edits": true,
+      "manual_edit_reason": "中证权重文件：传输失败/非 200/坏 body 吞成空帧 → 抛错（C11a 静默欠抓缺陷）"
     },
     {
       "path": "index/index_csindex.py",
@@ -1115,7 +1121,8 @@
       "upstream_sha256": "9783e29bb93a1201276296114ecfe875067f7d5addd6a0a87da3fd58f013db78",
       "lines": 310,
       "upstream_path": "akshare/index/index_zh_em.py",
-      "manual_edits": true
+      "manual_edits": true,
+      "manual_edit_reason": "东财指数 K 线：吞错返回空帧 → 走 request_eastmoney 并在全部候选被拒时抛错（C11a 静默欠抓缺陷）"
     },
     {
       "path": "option/__init__.py",
@@ -1203,7 +1210,8 @@
       "upstream_sha256": "a77f7b60416e33079c08ae4bc0c28321fb5a4200673a444b17c7e68b367ce9b2",
       "lines": 223,
       "upstream_path": "akshare/option/option_em.py",
-      "manual_edits": true
+      "manual_edits": true,
+      "manual_edit_reason": "eastmoney site token -> EM_API_TOKEN env var"
     },
     {
       "path": "option/option_finance.py",
@@ -1323,7 +1331,8 @@
       "upstream_sha256": "89600a5738e0f6f1a58b23edec409e0c1e3892fe18418eeafa015de674ec6f8b",
       "lines": 1138,
       "upstream_path": "akshare/stock/cons.py",
-      "manual_edits": true
+      "manual_edits": true,
+      "manual_edit_reason": "xueqiu token -> XQ_A_TOKEN env var"
     },
     {
       "path": "stock/stock_allotment_cninfo.py",
@@ -2379,7 +2388,8 @@
       "upstream_sha256": "6e3604e1a8673f94bc75becaac08b3689c7deedf8a6ae1ca73ed9a45c0b6a66f",
       "lines": 827,
       "upstream_path": "akshare/stock_fundamental/stock_finance_sina.py",
-      "manual_edits": true
+      "manual_edits": true,
+      "manual_edit_reason": "新浪财报 更新日期：datetime.fromtimestamp 按本机时区渲染 → 固定按北京时区渲染（C21 时区漂移缺陷：同一份应答在 +08:00 与 +03:00 的机器上差 5 小时）"
     },
     {
       "path": "stock_fundamental/stock_finance_ths.py",

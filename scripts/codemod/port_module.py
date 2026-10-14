@@ -260,6 +260,7 @@ class PortResult:
     import_rewrites: int = 0
     string_rewrites: int = 0
     manual_edits: bool = False
+    manual_edit_reason: str | None = None
     upstream_sha256: str = ""
     ported_sha256: str = ""
     todos: list[str] = field(default_factory=list)
@@ -325,13 +326,22 @@ class UpstreamLock:
 
     def record(self, result: PortResult) -> None:
         """Upsert one ported file's baseline record."""
+        if result.manual_edits and not (
+            isinstance(result.manual_edit_reason, str) and result.manual_edit_reason.strip()
+        ):
+            raise ValueError(f"{result.ported_path}: manual edit must have a registered reason")
+        if not result.manual_edits and result.manual_edit_reason is not None:
+            raise ValueError(f"{result.ported_path}: manual edit reason requires manual_edits=True")
         rel = result.ported_path
-        self.files[rel] = {
+        record = {
             "path": rel,
             "upstream_path": result.upstream_path,
             "sha256": result.upstream_sha256,
             "manual_edits": result.manual_edits,
         }
+        if result.manual_edit_reason is not None:
+            record["manual_edit_reason"] = result.manual_edit_reason
+        self.files[rel] = record
 
 
 def sha256_text(text: str) -> str:
@@ -504,7 +514,10 @@ def port_source(
     source, result.import_rewrites = rewrite_imports(source)
     source, result.string_rewrites = rewrite_strings(source)
     source, result.todos = apply_manual_edits(source, upstream_path)
-    result.manual_edits = any(edit.upstream_path == upstream_path for edit in MANUAL_EDITS)
+    matched_edits = [edit for edit in MANUAL_EDITS if edit.upstream_path == upstream_path]
+    result.manual_edits = bool(matched_edits)
+    if matched_edits:
+        result.manual_edit_reason = "; ".join(edit.description for edit in matched_edits)
     result.ported_sha256 = sha256_text(source)
     return source, result
 
@@ -767,7 +780,7 @@ def port_submodule(
                 result.status = "skipped-identical"
         elif upstream_path == _INIT_UPSTREAM_PATH:
             source_text = path.read_text(encoding="utf-8")
-            facade_payload, _facade_report = vendor_init_facade(
+            facade_payload, facade_report = vendor_init_facade(
                 path, PORTED_ROOT, lock.url, lock.commit
             )
             payload = facade_payload
@@ -775,6 +788,8 @@ def port_submodule(
                 upstream_path=upstream_path,
                 ported_path=target.relative_to(PORTED_ROOT).as_posix(),
                 status="ported",
+                manual_edits=facade_report["manual_edits"],
+                manual_edit_reason=facade_report["manual_edit_reason"],
                 upstream_sha256=sha256_text(source_text),
                 ported_sha256=sha256_bytes(facade_payload),
             )

@@ -18,6 +18,7 @@ import math
 import threading
 import time
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 from datetime import date
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeAlias, TypeVar, cast
@@ -44,7 +45,7 @@ from opendata.data.request_budget import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable, Sequence
+    from collections.abc import Awaitable, Callable
     from threading import Event
 
     import pandas as pd
@@ -53,8 +54,8 @@ if TYPE_CHECKING:
     from opendata.data.models import ContractModel
     from opendata.data.request_budget import RequestExecutionScope
 
-#: Query parameter type; concrete fetchers narrow it (bound: QueryParams).
-QueryT = TypeVar("QueryT", bound="QueryParams")
+#: Query parameter type; concrete fetchers narrow it to a scalar or multi-symbol query.
+QueryT = TypeVar("QueryT", bound="BaseQueryParams")
 #: Raw extraction type; an implementation detail of each fetcher.
 RawT = TypeVar("RawT")
 CaptureT = TypeVar("CaptureT")
@@ -172,19 +173,32 @@ async def _await_with_cancellation(
         raise
 
 
-class QueryParams(BaseModel):
-    """Common query parameters shared by every domain (design §4.2).
-
-    Domain-specific queries subclass this and add their own fields
-    (and may narrow ``symbol`` to a required field, as in the §7.1
-    template). Unknown fields are rejected so typos fail closed.
-    """
+class BaseQueryParams(BaseModel):
+    """Source and market identity shared by scalar and multi-symbol queries."""
 
     model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     source: str = "auto"
     market: str | None = None
+
+
+class QueryParams(BaseQueryParams):
+    """Common scalar-symbol query parameters shared by provider domains.
+
+    Domain-specific queries subclass this and add their own fields
+    (and may narrow ``symbol`` to a required field). Unknown fields are
+    rejected so typos fail closed.
+    """
+
     symbol: str | None = None
+    start_date: date | None = None
+    end_date: date | None = None
+
+
+class MultiSymbolQueryParams(BaseQueryParams):
+    """Common query fields for provider models that preserve symbol lists."""
+
+    symbol: str | Sequence[str | None] | None = None
     start_date: date | None = None
     end_date: date | None = None
 

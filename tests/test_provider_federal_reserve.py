@@ -29,7 +29,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pytest
@@ -379,8 +378,8 @@ class TestDeclarationIsTheContract:
         assert sent["to"] == "2024-06-25"
         assert encode_query(build_query_model(case.spec)(), case.spec).get("from") is None
 
-    def test_the_provider_descriptor_binds_five_generated_fetchers(self) -> None:
-        """Registration-ready: the descriptor loads each model out of its own module."""
+    def test_the_provider_descriptor_binds_all_thirteen_models(self) -> None:
+        """Registration-ready: each model loads from its own provider module."""
         assert PROVIDER.source == SOURCE == "federal_reserve"
         assert PROVIDER.credentials == ()
         assert get_provider(SOURCE).website == "https://www.federalreserve.gov/"
@@ -390,6 +389,14 @@ class TestDeclarationIsTheContract:
             ("SvenssonYieldCurve",),
             ("FederalFundsRate",),
             ("SOFR",),
+            ("OvernightBankFundingRate",),
+            ("YieldCurve",),
+            ("PrimaryDealerFails",),
+            ("PrimaryDealerPositioning",),
+            ("CentralBankHoldings",),
+            ("InflationExpectations",),
+            ("TotalFactorProductivity",),
+            ("FomcDocuments",),
         ]
         assert [type(fetcher).__name__ for fetcher in PROVIDER.fetchers] == [
             "FederalReserveMoneyMeasuresFetcher",
@@ -397,6 +404,14 @@ class TestDeclarationIsTheContract:
             "FederalReserveSvenssonYieldCurveFetcher",
             "FederalReserveFederalFundsRateFetcher",
             "FederalReserveSOFRFetcher",
+            "FederalReserveOvernightBankFundingRateFetcher",
+            "FederalReserveYieldCurveFetcher",
+            "FederalReservePrimaryDealerFailsFetcher",
+            "FederalReservePrimaryDealerPositioningFetcher",
+            "FederalReserveCentralBankHoldingsFetcher",
+            "FederalReserveInflationExpectationsFetcher",
+            "FederalReserveTotalFactorProductivityFetcher",
+            "FederalReserveFomcDocumentsFetcher",
         ]
         assert [fetcher.canonical_model for fetcher in PROVIDER.fetchers] == [
             "MoneyMeasures",
@@ -404,6 +419,14 @@ class TestDeclarationIsTheContract:
             "SvenssonYieldCurve",
             "FederalFundsRate",
             "SOFR",
+            "OvernightBankFundingRate",
+            "YieldCurve",
+            "PrimaryDealerFails",
+            "PrimaryDealerPositioning",
+            "CentralBankHoldings",
+            "InflationExpectations",
+            "TotalFactorProductivity",
+            "FomcDocuments",
         ]
         assert {capability.domain for capability in PROVIDER.capabilities} == {
             "federal_reserve_money_measures",
@@ -411,45 +434,24 @@ class TestDeclarationIsTheContract:
             "federal_reserve_treasury_rates",
             "federal_reserve_federal_funds_rate",
             "federal_reserve_sofr",
+            "federal_reserve_overnight_bank_funding_rate",
+            "federal_reserve_yield_curve",
+            "federal_reserve_primary_dealer_fails",
+            "federal_reserve_primary_dealer_positioning",
+            "federal_reserve_central_bank_holdings",
+            "federal_reserve_inflation_expectations",
+            "federal_reserve_total_factor_productivity",
+            "federal_reserve_fomc_documents",
         }
         assert all(capability.source == SOURCE for capability in PROVIDER.capabilities)
         assert all(not capability.verified for capability in PROVIDER.capabilities)
         assert PROVIDER.health_check().status == "ready"
 
-    def test_the_retracted_model_leaves_no_half_declaration_behind(self) -> None:
-        """A retraction is only honest if the id cannot still be reached from any face.
-
-        ``YieldCurve`` was withdrawn because the oracle's model is the long melt of this table, not
-        the table itself. A leftover module, binding, spec or gap row would keep the id addressable
-        while answering with the wrong shape, so each of those is read here.
-        """
-        declared = (
-            Path(__file__).resolve().parents[1]
-            / "opendata"
-            / "data"
-            / "providers"
-            / "federal_reserve"
-            / "models"
-        )
-        assert sorted(path.name for path in declared.glob("*.py")) == [
-            "__init__.py",
-            "federal_funds_rate.py",
-            "money_measures.py",
-            "sofr.py",
-            "svensson_yield_curve.py",
-            "treasury_rates.py",
-        ]
-        assert {fetcher.canonical_model for fetcher in PROVIDER.fetchers} == {
-            "MoneyMeasures",
-            "SvenssonYieldCurve",
-            "TreasuryRates",
-            "FederalFundsRate",
-            "SOFR",
-        }
-        assert not hasattr(specs, "YIELD_CURVE"), "the spec object must be gone, not renamed"
-        assert "YieldCurve" not in DECLARED_GAPS
-        reason = NOT_DECLARED["YieldCurve"]
-        assert "melt" in reason and "yield_curve.py" in reason
+    def test_yield_curve_has_a_dedicated_long_form_adapter(self) -> None:
+        """The long-form model is bound to its own source-specific implementation."""
+        assert "YieldCurve" in {fetcher.canonical_model for fetcher in PROVIDER.fetchers}
+        assert "YieldCurve" not in NOT_DECLARED
+        assert not hasattr(specs, "YIELD_CURVE"), "the obsolete wide ModelSpec stays absent"
         assert PROVIDER.source == SOURCE
 
     def test_each_declared_model_records_what_it_cannot_do(self) -> None:
@@ -459,29 +461,35 @@ class TestDeclarationIsTheContract:
         declared model with no pinned body still owes a gap row, which is the face that kept
         ``SvenssonYieldCurve`` honest when its 100 columns landed without a capture root.
         """
-        declared = {fetcher.canonical_model for fetcher in PROVIDER.fetchers}
+        registered = {fetcher.canonical_model for fetcher in PROVIDER.fetchers}
+        generated = {
+            "MoneyMeasures",
+            "SvenssonYieldCurve",
+            "TreasuryRates",
+            "FederalFundsRate",
+            "SOFR",
+            "OvernightBankFundingRate",
+        }
         models = {case.name for case in CASES}
-        assert (
-            declared
-            == set(DECLARED_GAPS)
-            == {
-                "MoneyMeasures",
-                "SvenssonYieldCurve",
-                "TreasuryRates",
-                "FederalFundsRate",
-                "SOFR",
-            }
-        )
-        assert models <= declared, "a capture case with no declaration behind it"
+        assert set(DECLARED_GAPS) == generated
+        assert registered == generated | {
+            "YieldCurve",
+            "PrimaryDealerFails",
+            "PrimaryDealerPositioning",
+            "CentralBankHoldings",
+            "InflationExpectations",
+            "TotalFactorProductivity",
+            "FomcDocuments",
+        }
+        assert models <= registered, "a capture case with no provider binding behind it"
         assert all(gap.strip() for gap in DECLARED_GAPS.values())
         for spec in (MONEY_MEASURES, TREASURY_RATES):
             assert "header=5" in spec.notes, spec.model
             assert "preamble_rows=5" in spec.notes, spec.model
         # The gap closed this round must not still be listed as open.
         assert all("metadata rows" not in gap for gap in DECLARED_GAPS.values())
-        assert len(NOT_DECLARED) == 8
-        assert set(NOT_DECLARED).isdisjoint(declared)
-        assert len(NOT_DECLARED) + len(declared) == 13
+        assert NOT_DECLARED == {}
+        assert len(registered) == 13
 
 
 class TestRowsByValue:

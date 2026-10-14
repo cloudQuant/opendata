@@ -107,6 +107,10 @@ class ProviderEngineError(RuntimeError):
         super().__init__(code + detail)
 
 
+class ProviderEngineQueryError(ProviderEngineError):
+    """The caller's query fields failed the generated model's strict validation."""
+
+
 @dataclass(frozen=True)
 class HttpResponse:
     """A status code, the document a JSON body parsed into, and the raw body a decoder reads.
@@ -158,17 +162,50 @@ def _param_type(parameter: ParamSpec) -> Any:  # noqa: ANN401 - dynamic pydantic
     return {"str": str, "int": int, "float": float, "bool": bool}[parameter.kind]
 
 
-def build_query_model(spec: ModelSpec) -> type[Any]:
-    """Build the strict typed query class accepting exactly the declared params."""
+def build_query_model(
+    spec: ModelSpec,
+    *,
+    source: str | None = None,
+    market: str | None = None,
+) -> type[Any]:
+    """Build a strict query class for wire params and optional governed identity fields.
+
+    ``source`` and ``market`` are accepted only when the fetcher factory supplies their registered
+    values. They validate the service's governance identity on the generated query; they are not
+    ``ModelSpec.params`` and therefore never enter :func:`encode_query`. The factory values are
+    defaults so direct fetcher callers can continue to provide only declared query parameters;
+    explicitly supplied alternate identities are still rejected. Omitting these keyword arguments
+    keeps the original one-argument builder contract unchanged.
+    """
+    identity_values = tuple(
+        (name, value)
+        for name, value in (("source", source), ("market", market))
+        if value is not None
+    )
+    declared_names = {parameter.name for parameter in spec.params}
+    collisions = sorted(name for name, _ in identity_values if name in declared_names)
+    if collisions:
+        raise ValueError(
+            f"{spec.model}: governance identity collides with declared wire params {collisions}"
+        )
+
     fields: dict[str, tuple[Any, Any]] = {}
     for parameter in spec.params:
         annotation = _param_type(parameter)
+        if parameter.serialise == "json":
+            # A json-serialised parameter carries a structure, not a scalar of the declared kind:
+            # the strict per-kind annotation would refuse the very blob the declaration says to
+            # send. Validation moves to the wire, where anything ``json.dumps`` cannot render is
+            # refused as ``_PARAM_UNENCODABLE`` rather than quietly stringified.
+            annotation = Any
         if parameter.required:
             fields[parameter.name] = (annotation, ...)
         elif parameter.default is not None:
             fields[parameter.name] = (annotation, parameter.default)
         else:
             fields[parameter.name] = (annotation | None, None)
+    for name, value in identity_values:
+        fields[name] = (Literal[value], value)
     name = f"{spec.model}Query"
     generated = create_model(  # type: ignore[call-overload]
         name,
@@ -397,7 +434,15 @@ def _render_composite(
 
 
 def _encode_value(parameter: ParamSpec, value: object, spec: ModelSpec) -> str:
-    """Render one parameter as an upstream query-string value."""
+    """Render one parameter as an upstream query-string value.
+
+    A parameter that declares ``serialise`` is rendered by :func:`_serialise_value` instead: the
+    declaration names the wire form, so the kind's own default rendering never sees the value.
+    Every other parameter -- the whole shipped population before this field existed -- is
+    rendered exactly as before, byte for byte.
+    """
+    if parameter.serialise:
+        return _serialise_value(parameter, value, spec)
     if isinstance(value, date):
         return value.isoformat()
     if isinstance(value, bool):
@@ -412,6 +457,42 @@ def _encode_value(parameter: ParamSpec, value: object, spec: ModelSpec) -> str:
     if not _SAFE_VALUE.match(text):
         raise ProviderEngineError(f"{spec.error_prefix}_PARAM_UNENCODABLE")
     return text
+
+
+def _serialise_value(parameter: ParamSpec, value: object, spec: ModelSpec) -> str:
+    """Render one parameter in exactly the wire form its declaration's ``serialise`` names.
+
+    This is the request-side half of ``request.serialised_param``: a query parameter whose value
+    must reach the endpoint in a spelling the parameter's own kind does not give. ``json``
+    renders the caller's structure as one compact JSON blob -- wsj's ``id=`` parameter is a
+    URL-encoded JSON document (gainers.py:88 builds it before the get), and the transport's own
+    URL encoding is what turns the blob into the ``%7B...%7D`` the endpoint reads. The
+    ``strftime:<format>`` spelling renders a date through that literal format --
+    TreasuryAuctions assembles ``%m/%d/%Y`` strings into ``startDate``/``endDate`` on the
+    request side (treasury_auctions.py:209 and :212), not ISO. A value the named form cannot
+    render is attributed as ``_PARAM_UNENCODABLE``, the same refusal the unserialised path
+    raises for an unsafe list; it is never answered with the kind's default text, because a
+    request sent in a form the record does not describe is the silent face the declaration
+    exists to prevent.
+    """
+    if parameter.serialise == "json":
+        try:
+            return json.dumps(value, separators=(",", ":"), ensure_ascii=True)
+        except (TypeError, ValueError) as exc:
+            raise ProviderEngineError(
+                f"{spec.error_prefix}_PARAM_UNENCODABLE",
+                rejected=(parameter.name,),
+                url=spec.path,
+            ) from exc
+    fmt = parameter.serialise.removeprefix("strftime:")
+    render = getattr(value, "strftime", None)
+    if not callable(render):
+        raise ProviderEngineError(
+            f"{spec.error_prefix}_PARAM_UNENCODABLE",
+            rejected=(parameter.name,),
+            url=spec.path,
+        )
+    return str(render(fmt))
 
 
 def _apply_value_map(parameter: ParamSpec, text: str, spec: ModelSpec) -> str:
@@ -833,6 +914,21 @@ def effective_page_size(spec: ModelSpec, params: Mapping[str, str]) -> int:
 def _next_cursor(document: object, spec: ModelSpec) -> str | None:
     """Read the continuation cursor from a response document."""
     field_name = spec.pagination.cursor_field
+    if spec.pagination.strict_nullable_string:
+        if not isinstance(document, dict) or field_name is None or field_name not in document:
+            raise ProviderEngineError(
+                f"{spec.error_prefix}_SHAPE_INVALID",
+                missing=() if field_name is None else (field_name,),
+            )
+        value = document[field_name]
+        if value is None:
+            return None
+        if isinstance(value, str) and value:
+            return value
+        raise ProviderEngineError(
+            f"{spec.error_prefix}_SHAPE_INVALID",
+            invalid=(field_name,),
+        )
     if field_name is None or not isinstance(document, dict) or field_name not in document:
         return None
     value = document[field_name]
@@ -880,6 +976,7 @@ def fetch_pages(
     collected = 0
     page_number = 1
     cursor: str | None = None
+    seen_cursors: set[str] = set()
     paging = spec.pagination
     while True:
         params = _page_request(spec, base_params, page_number, collected)
@@ -906,6 +1003,10 @@ def fetch_pages(
             cursor = _next_cursor(document, spec)
             if cursor is None:
                 break
+            if paging.strict_nullable_string:
+                if cursor in seen_cursors:
+                    raise ProviderEngineError(f"{spec.error_prefix}_INCOMPLETE", url=url)
+                seen_cursors.add(cursor)
             page_number += 1
             if page_number > paging.max_pages:
                 raise ProviderEngineError(f"{spec.error_prefix}_INCOMPLETE", url=url)
@@ -1189,7 +1290,7 @@ def apply_row_order(records: list[Any], query: object, spec: ModelSpec) -> list[
 
 def make_http_json_fetcher(source: str, spec: ModelSpec) -> type[Fetcher[Any, Any]]:
     """Build one provider model's fetcher class from its declaration."""
-    declared_query_model = build_query_model(spec)
+    declared_query_model = build_query_model(spec, source=source, market=spec.market)
     declared_row_model = build_row_model(spec)
     declared_capability = Capability(
         asset_class=spec.asset_class,
@@ -1237,7 +1338,7 @@ def make_http_json_fetcher(source: str, spec: ModelSpec) -> type[Fetcher[Any, An
                     else:
                         face = "invalid"
                     faces[face].add(str(error["loc"][0]))
-                raise ProviderEngineError(
+                raise ProviderEngineQueryError(
                     f"{spec.error_prefix}_QUERY_INVALID",
                     rejected=sorted(faces["rejected"]),
                     missing=sorted(faces["missing"]),

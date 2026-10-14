@@ -7,9 +7,14 @@ model identities already present in that registry.
 
 from __future__ import annotations
 
+import ast
+import inspect
 import keyword
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, get_type_hints
+from types import FunctionType, GenericAlias
+from typing import TYPE_CHECKING, Any
+
+from pydantic import BaseModel
 
 if TYPE_CHECKING:
     from opendata.data.registry import ProviderModelDescriptor, ProviderRegistry
@@ -25,6 +30,129 @@ class ProviderModelNotFoundError(LookupError):
 
 class ProviderModelSchemaError(RuntimeError):
     """Raised when a registered fetcher does not expose a safe query schema."""
+
+
+_MISSING = object()
+
+
+def _invalid_query_schema() -> ProviderModelSchemaError:
+    """Build a sanitized error for an invalid static query declaration."""
+    return ProviderModelSchemaError("registered model query schema is invalid")
+
+
+def _concrete_query_model(value: object) -> type[BaseModel]:
+    """Require a concrete Pydantic model without executing provider code."""
+    if value is BaseModel or not isinstance(value, type):
+        raise _invalid_query_schema()
+    from opendata.data.protocol import BaseQueryParams, MultiSymbolQueryParams
+
+    if value is BaseQueryParams or value is MultiSymbolQueryParams:
+        raise _invalid_query_schema()
+    try:
+        model_mro = type.__getattribute__(value, "__mro__")
+    except TypeError:
+        raise _invalid_query_schema() from None
+    if not isinstance(model_mro, tuple) or BaseModel not in model_mro:
+        raise _invalid_query_schema()
+    return value
+
+
+def _raw_method(fetcher_type: type[object], name: str) -> FunctionType | None:
+    """Read a method function statically; never bind or call a descriptor."""
+    member = inspect.getattr_static(fetcher_type, name, _MISSING)
+    if member is _MISSING:
+        return None
+    if isinstance(member, (staticmethod, classmethod)):
+        member = member.__func__
+    if not isinstance(member, FunctionType):
+        raise _invalid_query_schema()
+    return member
+
+
+def _annotation_expression(annotation: object) -> ast.expr:
+    """Parse only a simple name, allowing Python's quoted future annotations."""
+    if not isinstance(annotation, str):
+        raise _invalid_query_schema()
+    try:
+        expression = ast.parse(annotation, mode="eval").body
+        if isinstance(expression, ast.Constant) and isinstance(expression.value, str):
+            expression = ast.parse(expression.value, mode="eval").body
+    except (RecursionError, SyntaxError, ValueError, TypeError):
+        raise _invalid_query_schema() from None
+    return expression
+
+
+def _named_model(expression: ast.expr, namespace: dict[str, object]) -> type[BaseModel]:
+    """Resolve one AST name through the function's existing globals mapping."""
+    if not isinstance(expression, ast.Name):
+        raise _invalid_query_schema()
+    return _concrete_query_model(namespace.get(expression.id, _MISSING))
+
+
+def _plain_return_model(function: FunctionType) -> type[BaseModel]:
+    """Resolve an exact model return annotation without evaluating strings."""
+    annotations = function.__annotations__
+    if not isinstance(annotations, dict) or "return" not in annotations:
+        raise _invalid_query_schema()
+    annotation = annotations["return"]
+    if isinstance(annotation, type):
+        return _concrete_query_model(annotation)
+    expression = _annotation_expression(annotation)
+    return _named_model(expression, function.__globals__)
+
+
+def _query_type_return_model(function: FunctionType) -> type[BaseModel]:
+    """Safely resolve ``type[ConcreteQuery]`` used by legacy query factories."""
+    annotations = function.__annotations__
+    if not isinstance(annotations, dict) or "return" not in annotations:
+        raise _invalid_query_schema()
+    annotation = annotations["return"]
+    if isinstance(annotation, str):
+        expression = _annotation_expression(annotation)
+        if (
+            not isinstance(expression, ast.Subscript)
+            or not isinstance(expression.value, ast.Name)
+            or expression.value.id != "type"
+        ):
+            raise _invalid_query_schema()
+        return _named_model(expression.slice, function.__globals__)
+
+    if type(annotation) is not GenericAlias or annotation.__origin__ is not type:
+        raise _invalid_query_schema()
+    arguments = annotation.__args__
+    if len(arguments) != 1:
+        raise _invalid_query_schema()
+    return _concrete_query_model(arguments[0])
+
+
+def resolve_query_model_type(fetcher: object) -> type[BaseModel]:
+    """Find a fetcher's concrete query model from its static declaration.
+
+    Explicit ``query_model``/``query_type`` class attributes take priority.
+    If neither is present, the resolver accepts only a raw, simple model return
+    annotation or a raw ``_query_type() -> type[ConcreteModel]`` annotation.
+    It never invokes fetcher methods or descriptors, and never evaluates an
+    annotation expression.
+    """
+    fetcher_type = fetcher if isinstance(fetcher, type) else type(fetcher)
+    declared_models: list[type[BaseModel]] = []
+    for name in ("query_model", "query_type"):
+        declaration = inspect.getattr_static(fetcher_type, name, _MISSING)
+        if declaration is not _MISSING:
+            declared_models.append(_concrete_query_model(declaration))
+    if declared_models:
+        if any(model is not declared_models[0] for model in declared_models[1:]):
+            raise _invalid_query_schema()
+        return declared_models[0]
+
+    query_type_method = _raw_method(fetcher_type, "_query_type")
+    if query_type_method is not None:
+        return _query_type_return_model(query_type_method)
+
+    transform_method = _raw_method(fetcher_type, "transform_query")
+    if transform_method is None:
+        raise _invalid_query_schema()
+    return _plain_return_model(transform_method)
 
 
 @dataclass(frozen=True)
@@ -145,11 +273,7 @@ def query_schema_for_model(
         raise ProviderModelNotFoundError("provider model not found") from None
 
     try:
-        query_type = get_type_hints(type(fetcher).transform_query).get("return")
-        from opendata.data.protocol import QueryParams
-
-        if not isinstance(query_type, type) or not issubclass(query_type, QueryParams):
-            raise ProviderModelSchemaError("registered model query schema is invalid")
+        query_type = resolve_query_model_type(fetcher)
         schema = query_type.model_json_schema(mode="validation")
     except ProviderModelSchemaError:
         raise

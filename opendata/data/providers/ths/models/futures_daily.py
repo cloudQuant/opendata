@@ -37,6 +37,8 @@ class ThsFuturesDailyFetcher(Fetcher[ThsFuturesDailyQuery, tuple[Bar, ...]]):
     an independent futures series (see ``docs/evidence/C6``).
     """
 
+    canonical_model: ClassVar[str] = "futures_daily"
+
     async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(

@@ -69,6 +69,8 @@ class ThsTradingCalendarFetcher(Fetcher[ThsTradingCalendarQuery, tuple[TradingCa
     nothing here: it is the same vendor as the calendar.
     """
 
+    canonical_model: ClassVar[str] = "trading_calendar"
+
     async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(

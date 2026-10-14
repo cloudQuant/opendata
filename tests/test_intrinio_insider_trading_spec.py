@@ -41,7 +41,6 @@ from opendata.data.providers._engine.row_expansion import (
     NestedArrayExpansion,
     RowExpansionError,
 )
-from opendata.data.providers._engine.spec import PaginationSpec
 from opendata.data.providers._engine.testing import (
     FixedResponseTransport,
     SequencedResponseTransport,
@@ -51,6 +50,7 @@ from opendata.data.providers.intrinio._source import SOURCE
 from opendata.data.providers.intrinio.provider import PROVIDER
 from opendata.data.providers.intrinio.specs import (
     DECLARED_MODELS,
+    ENGINE_MODELS,
     INSIDER_TRADING,
     NOT_DECLARABLE,
     UPSTREAM_ROWS,
@@ -133,7 +133,8 @@ DOCUMENT = {
             "owner": {"owner_cik": "0001510762", "owner_name": "Adams Katherine L"},
             "transactions": [dict(EMPTY_TRANSACTION)],
         },
-    ]
+    ],
+    "next_page": None,
 }
 
 #: One filing carrying one real transaction, so a paging counterfact has a short second page to
@@ -149,7 +150,8 @@ SECOND_TRANSACTION_PAGE = {
             "owner": {"owner_cik": "0000890100", "owner_name": "Wagner Janne"},
             "transactions": [dict(REAL_TRANSACTION, transaction_date="2022-05-02")],
         }
-    ]
+    ],
+    "next_page": None,
 }
 
 
@@ -217,24 +219,21 @@ class TestCensusRowIsDeclared:
         assert not set(DECLARED_MODELS) & set(NOT_DECLARABLE), "declared *and* refused"
         assert set(UPSTREAM_ROWS) == set(DECLARED_MODELS) | set(NOT_DECLARABLE), "a silent drop"
 
-    def test_the_five_bindings_are_the_five_declarations(self) -> None:
-        """``DECLARED_MODELS`` stays derived: the registry ids are the records' own model names."""
+    def test_routable_bindings_include_the_engine_declarations(self) -> None:
+        """The engine's five ModelSpecs remain distinct from clean typed fetcher bindings."""
         bound = {
             model_id
             for binding in PROVIDER.fetcher_bindings
             for model_id in binding.canonical_model_ids
         }
-        assert (
-            bound
-            == set(DECLARED_MODELS)
-            == {
-                "CalendarIpo",
-                "CurrencyPairs",
-                "EquitySearch",
-                "HistoricalDividends",
-                "InsiderTrading",
-            }
-        )
+        assert set(ENGINE_MODELS) == {
+            "CalendarIpo",
+            "CurrencyPairs",
+            "EquitySearch",
+            "HistoricalDividends",
+            "InsiderTrading",
+        }
+        assert bound == set(DECLARED_MODELS)
 
     def test_the_four_census_needs_are_all_carried_by_fields_that_exist(self) -> None:
         expansion = INSIDER_TRADING.row_expansion[0]
@@ -262,7 +261,7 @@ class TestCensusRowIsDeclared:
         }
         assert bounds["start_date"].years == -5
         assert bounds["end_date"].years == 0 and bounds["end_date"].months == 0
-        assert INSIDER_TRADING.pagination.kind == "none"
+        assert INSIDER_TRADING.pagination.kind == "cursor"
 
 
 class TestNestedArrayExplode:
@@ -338,6 +337,13 @@ class TestNestedArrayExplode:
         """Absent and empty stay two different answers, as the kernel documents."""
         _, rows = _run(document=replace_document(transactions_key=[]), symbol="AAPL")
         assert len(rows) == 2
+
+    def test_an_empty_published_filings_array_is_a_valid_zero_result(self) -> None:
+        _, rows = _run(
+            document={"transaction_filings": [], "next_page": None},
+            symbol="AAPL",
+        )
+        assert rows == []
 
     def test_a_filing_that_publishes_no_transactions_array_is_a_shape_failure(self) -> None:
         document = replace_document(transactions_key=MISSING)
@@ -446,8 +452,8 @@ class TestRelativeWindow:
         assert "end_date" not in calls[0]["params"]
 
 
-class TestNoPagingLoop:
-    """POSITIVE: ``limit`` is aliased to page_size and caps one page; nothing loops."""
+class TestCursorPagination:
+    """POSITIVE: ``limit`` sets page_size and the documented next_page cursor is followed."""
 
     def test_limit_is_aliased_to_page_size_with_upstreams_default(self) -> None:
         calls, _ = _run(symbol="AAPL")
@@ -463,25 +469,19 @@ class TestNoPagingLoop:
             HttpResponse(200, DOCUMENT), HttpResponse(200, SECOND_TRANSACTION_PAGE)
         )
         calls, rows = _fetch(INSIDER_TRADING, transport, sends=4, symbol="AAPL")
-        assert len(calls) == 1, "page_size caps a page, it does not drive a loop"
+        assert len(calls) == 1, "an explicit null next_page is terminal"
         assert len(rows) == 3
 
-    def test_a_paging_variant_over_the_same_script_asks_twice(self) -> None:
-        """COUNTERFACT: the loop the model does not declare is a separate facet."""
-        paging = replace(
-            INSIDER_TRADING,
-            pagination=PaginationSpec(kind="page", limit_key="page_size", offset_key="page"),
-            params=tuple(
-                replace(parameter, default=2) if parameter.name == "limit" else parameter
-                for parameter in INSIDER_TRADING.params
-            ),
-        )
+    def test_a_non_null_cursor_fetches_and_appends_the_next_filing_page(self) -> None:
+        first_page = {**DOCUMENT, "next_page": "INSIDER-CURSOR-2"}
         transport = SequencedResponseTransport(
-            HttpResponse(200, DOCUMENT), HttpResponse(200, SECOND_TRANSACTION_PAGE)
+            HttpResponse(200, first_page), HttpResponse(200, SECOND_TRANSACTION_PAGE)
         )
-        calls, rows = _fetch(paging, transport, sends=4, symbol="AAPL")
+        calls, rows = _fetch(INSIDER_TRADING, transport, sends=4, symbol="AAPL")
         assert len(calls) == 2
         assert len(rows) == 4
+        assert "next_page" not in calls[0]["params"]
+        assert calls[1]["params"]["next_page"] == "INSIDER-CURSOR-2"
 
 
 class TestReachableRefusals:

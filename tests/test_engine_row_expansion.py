@@ -345,16 +345,14 @@ def test_expand_nested_array_refuses_a_required_parent_field_the_parent_lacks() 
     _assert_refusal(excinfo, MISSING_POINTER, pointer="issuer.name", record_index=0)
 
 
-def test_expand_nested_array_refuses_the_silent_zero_from_empty_record_lists() -> None:
-    """Zero parents, or parents whose every child array is empty, publish nothing: refuse."""
+def test_expand_nested_array_allows_empty_records_but_refuses_empty_children() -> None:
+    """An empty source record list is valid; nonempty parents with no child rows are not."""
     empty_records = NestedArrayExpansion(
         records_pointer="recs",
         child_array_pointer="holdings",
         child_fields=(FieldMapping("w", "w"),),
     )
-    with pytest.raises(RowExpansionError) as excinfo:
-        expand_nested_array({"recs": []}, empty_records)
-    _assert_refusal(excinfo, EMPTY_RESULT, pointer="holdings", saw_contains="0 record(s)")
+    assert expand_nested_array({"recs": []}, empty_records) == []
     with pytest.raises(RowExpansionError) as excinfo:
         expand_nested_array({"recs": [{"holdings": []}, {"holdings": []}]}, empty_records)
     _assert_refusal(excinfo, EMPTY_RESULT, pointer="holdings", saw_contains="2 record(s)")
@@ -676,7 +674,7 @@ def test_repoint_records_golden_path_flattens_nested_objects() -> None:
     ]
 
 
-def test_repoint_refuses_records_pointer_failures_and_the_silent_zero() -> None:
+def test_repoint_refuses_records_pointer_failures_but_allows_empty_records() -> None:
     plan = RecordRepointPlan(fields=(FieldMapping("c", "c"),))
     with pytest.raises(RowExpansionError) as excinfo:
         repoint_records(
@@ -688,9 +686,7 @@ def test_repoint_refuses_records_pointer_failures_and_the_silent_zero() -> None:
             {"items": "flat"}, RecordRepointPlan(records_pointer="items", fields=plan.fields)
         )
     _assert_refusal(excinfo, NOT_A_RECORD_LIST, pointer="items", saw_contains="a str")
-    with pytest.raises(RowExpansionError) as excinfo:
-        repoint_records([], plan)
-    _assert_refusal(excinfo, EMPTY_RESULT, pointer="", saw_contains="0 rows from the published")
+    assert repoint_records([], plan) == []
 
 
 def test_repoint_refuses_a_record_that_is_not_a_mapping() -> None:

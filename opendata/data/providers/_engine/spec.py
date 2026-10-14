@@ -214,6 +214,14 @@ class ParamSpec:
             parameter, in place of a literal :attr:`default`. Declared last for the house reason:
             a positional ``ParamSpec(...)`` written before relative bounds existed keeps binding to
             the same fields.
+        serialise: The exact wire form this parameter's value must reach the endpoint in, when
+            the rendering its kind would give is not that form: ``"json"`` sends the caller's
+            structure as one compact JSON blob (wsj's ``id=`` parameter is a URL-encoded JSON
+            document), and ``"strftime:<format>"`` renders a declared date through that literal
+            format (TreasuryAuctions builds ``%m/%d/%Y`` dates into its query string before the
+            send, treasury_auctions.py:209 and :212). The empty string is every declaration that
+            predates the field: :func:`_encode_value` sees no serialiser and the value keeps the
+            rendering its kind had before this field existed, byte for byte.
     """
 
     name: str
@@ -225,6 +233,7 @@ class ParamSpec:
     value_map: tuple[tuple[str, str], ...] = ()
     note: str = ""
     relative_default: RelativeDefault | None = None
+    serialise: str = ""
 
     def __post_init__(self) -> None:
         """Reject malformed parameter declarations at construction time."""
@@ -241,6 +250,7 @@ class ParamSpec:
             raise ValueError(f"parameter {self.name!r} cannot be required and defaulted")
         self._check_value_map()
         self._check_relative_default()
+        self._check_serialise()
 
     def _check_value_map(self) -> None:
         """Resolve a value mapping against this parameter's own value domain.
@@ -313,6 +323,53 @@ class ParamSpec:
                 f"parameter {self.name!r} cannot be required and relatively defaulted: a required "
                 "parameter has no omission for the bound to fill"
             )
+
+    def _check_serialise(self) -> None:
+        """Resolve a declared wire form against this parameter's own declaration.
+
+        A serialiser *replaces* the rendering a value's kind would give, so it is refused
+        wherever the declaration already answers the same render another way or the named form
+        could not apply. Each refusal is the fail-closed half of a combination that would
+        otherwise reach the wire: ``json`` has no structure to serialise out of an ``int`` or a
+        ``date``; ``strftime:`` only knows things that have a format, and a date kind is the only
+        one the query model guarantees; an empty format would send the ISO text while the record
+        claims a format was applied; and a ``value_map`` translates the rendered text afterwards,
+        so pairing it with a serialiser would double-translate one value through two renderers
+        that each believe they own the wire spelling. An unknown spelling is refused for the
+        house reason every other guard here gives: a serialiser the runtime does not read would
+        be dead text the record still claims is a behaviour.
+        """
+        if self.serialise == "":
+            return
+        if self.value_map:
+            raise ValueError(
+                f"parameter {self.name!r} declares both a value_map and a serialiser: one value "
+                "cannot be translated twice on its way out"
+            )
+        if self.serialise == "json":
+            if self.kind not in ("str", "str_list"):
+                raise ValueError(
+                    f"parameter {self.name!r} may serialise as json only when its kind is str "
+                    f"or str_list, got {self.kind!r}; nothing else carries a structure"
+                )
+            return
+        if self.serialise.startswith("strftime:"):
+            fmt = self.serialise[len("strftime:") :]
+            if not fmt:
+                raise ValueError(
+                    f"parameter {self.name!r} declares strftime with an empty format: the ISO "
+                    "text it would send is exactly what an undeclared date already sends"
+                )
+            if self.kind != "date":
+                raise ValueError(
+                    f"parameter {self.name!r} declares a strftime serialiser but its kind is "
+                    f"{self.kind!r}; only a date has a format to render"
+                )
+            return
+        raise ValueError(
+            f"parameter {self.name!r} declares unknown serialiser {self.serialise!r}; the "
+            "engine reads 'json' and 'strftime:<format>'"
+        )
 
     @property
     def mapped_values(self) -> dict[str, str]:
@@ -407,6 +464,9 @@ class PaginationSpec:
         offset_key: Query key for the row/page offset, for ``offset``/``page``.
         cursor_key: Query key carrying the returned cursor, for ``cursor``.
         cursor_field: Response field holding the next cursor.
+        strict_nullable_string: Whether a cursor response field must be present and contain either
+            ``None`` (terminal) or a non-empty string. This is opt-in because older declarations
+            preserve their existing cursor semantics.
         total_key: Response field holding the declared total, when published.
         max_pages: Hard bound; exceeding it is reported as incomplete.
         max_rows: Hard bound; exceeding it is reported as incomplete.
@@ -420,11 +480,16 @@ class PaginationSpec:
     total_key: str | None = None
     max_pages: int = 50
     max_rows: int = 100_000
+    strict_nullable_string: bool = False
 
     def __post_init__(self) -> None:
         """Reject a page bound that cannot be enforced or is unbounded."""
         if self.kind not in {"none", "offset", "page", "cursor"}:
             raise ValueError(f"unknown pagination kind {self.kind!r}")
+        if type(self.strict_nullable_string) is not bool:
+            raise ValueError("strict_nullable_string must be a bool")
+        if self.strict_nullable_string and self.kind != "cursor":
+            raise ValueError("strict_nullable_string requires cursor pagination")
         if not 0 < self.max_pages <= 1000:
             raise ValueError("max_pages must be between 1 and 1000")
         if not 0 < self.max_rows <= 1_000_000:

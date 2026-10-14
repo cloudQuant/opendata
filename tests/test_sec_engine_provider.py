@@ -68,6 +68,37 @@ RESERVED_SENTENCE = "Catalog identity reserved; no local fetcher is implemented.
 #: The sec denominator: the ledger rows and the upstream dictionary's 24 keys.
 UPSTREAM_ROW_COUNT = 24
 
+# The current provider descriptor explicitly binds these 24 public model identities. Keep this
+# inventory literal: deriving it from the bindings would make the assertion tautological.
+EXPECTED_PROVIDER_BINDING_MODEL_IDS = frozenset(
+    {
+        "BalanceSheet",
+        "BalanceSheetGrowth",
+        "CashFlowStatement",
+        "CashFlowStatementGrowth",
+        "CikMap",
+        "CompanyFilings",
+        "CompareCompanyFacts",
+        "EquityFTD",
+        "EquitySearch",
+        "Filings",
+        "Form13FHR",
+        "SecHtmFile",
+        "IncomeStatement",
+        "IncomeStatementGrowth",
+        "InsiderTrading",
+        "InstitutionsSearch",
+        "LatestFinancialReports",
+        "ManagementDiscussionAnalysis",
+        "NportDisclosure",
+        "RssLitigation",
+        "SchemaFiles",
+        "SecFiling",
+        "SicSearch",
+        "SymbolMap",
+    }
+)
+
 
 def ledger_sec_rows() -> list[str]:
     """Return the upstream model names the iteration-2 ledger fixes for sec."""
@@ -137,15 +168,16 @@ class TestTheTwentyFourRowAccounting:
             assert "static_header" not in lowered, model
             assert "accept-encoding" not in lowered, model
 
-    def test_provider_bindings_and_declarations_stay_in_step(self) -> None:
-        """The descriptor binds one generated fetcher per declaration, never a hand-written one."""
-        assert len(PROVIDER.fetcher_bindings) == len(specs.DECLARED_MODELS)
-        bound = {
+    def test_provider_bindings_match_source_owned_models(self) -> None:
+        """The descriptor binds its 24 reviewed identities, separate from engine declarations."""
+        bound = [
             model_id
             for binding in PROVIDER.fetcher_bindings
             for model_id in binding.canonical_model_ids
-        }
-        assert bound == set(specs.DECLARED_MODELS)
+        ]
+        assert len(PROVIDER.fetcher_bindings) == 24
+        assert len(bound) == 24
+        assert set(bound) == EXPECTED_PROVIDER_BINDING_MODEL_IDS
 
 
 class TestNothingHereIsLiveVerified:
@@ -274,7 +306,12 @@ class TestTheRoadmapThreeStayRefused:
         )
         assert source_text.count("ModelSpec(") == 0
         assert specs.DECLARED_MODELS == ()
-        assert PROVIDER.fetcher_bindings == ()
+        bound = {
+            model_id
+            for binding in PROVIDER.fetcher_bindings
+            for model_id in binding.canonical_model_ids
+        }
+        assert bound == EXPECTED_PROVIDER_BINDING_MODEL_IDS
         assert {spec.model for source, spec in engine_declared_models() if source == "sec"} == set()
 
     def test_the_recheck_only_names_recorded_rows(self) -> None:

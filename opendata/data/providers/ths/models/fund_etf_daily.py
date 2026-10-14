@@ -68,6 +68,8 @@ class ThsFundEtfDailyFetcher(Fetcher[ThsFundEtfDailyQuery, tuple[Bar, ...]]):
     were discriminated on live ex-dates (see ``docs/evidence/C20``).
     """
 
+    canonical_model: ClassVar[str] = "fund_etf_daily"
+
     async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(

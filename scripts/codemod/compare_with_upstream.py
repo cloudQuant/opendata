@@ -34,6 +34,7 @@ import base64
 import gzip
 import json
 import sys
+import urllib.parse
 from collections.abc import Sequence  # noqa: TC003 - no future annotations in this script
 from dataclasses import dataclass
 from datetime import date
@@ -294,14 +295,15 @@ class HttpRecorder:
 class HttpReplayer:
     """Replay a recorded transcript into the patched requests functions.
 
-    Matching is positional: the Nth patched call consumes the Nth
-    recorded entry, so both trees see an identical request order.
+    Each call must match the next recorded method and canonical request target before its
+    response can be consumed. The query target includes both the URL query and ``params``.
     """
 
     def __init__(self, entries: list[dict[str, Any]]) -> None:
         """Bind a transcript and rewind the cursor."""
         self.entries = entries
         self.cursor = 0
+        self.request_attempts = 0
         self._real_get: Any = None
         self._real_post: Any = None
 
@@ -311,8 +313,8 @@ class HttpReplayer:
 
         self._real_get = requests.get
         self._real_post = requests.post
-        _patch_attribute(requests, "get", self._replay)
-        _patch_attribute(requests, "post", self._replay)
+        _patch_attribute(requests, "get", self._get)
+        _patch_attribute(requests, "post", self._post)
         return self
 
     def __exit__(self, *exc: object) -> None:
@@ -324,13 +326,59 @@ class HttpReplayer:
         self._real_get = None
         self._real_post = None
 
-    def _replay(self, url: str, **kwargs: Any) -> Any:  # noqa: ANN401
+    def _get(self, url: str, **kwargs: Any) -> Any:  # noqa: ANN401
+        return self._replay("GET", url, **kwargs)
+
+    def _post(self, url: str, **kwargs: Any) -> Any:  # noqa: ANN401
+        return self._replay("POST", url, **kwargs)
+
+    def _replay(self, method: str, url: str, **kwargs: Any) -> Any:  # noqa: ANN401
+        self.request_attempts += 1
         if self.cursor >= len(self.entries):
-            message = f"replay exhausted: call {len(self.entries) + 1} to {url!r}"
-            raise RuntimeError(f"{message} has no recorded response")
+            raise ReplayExhaustedError(
+                f"replay exhausted at call {self.cursor + 1}; no recorded response remains"
+            )
         entry = self.entries[self.cursor]
+        recorded_request = {
+            "method": entry.get("method"),
+            "url": entry.get("url"),
+            "params": entry.get("params"),
+        }
+        assessment = route_assessment(
+            {"method": method, "url": url, "params": kwargs.get("params")},
+            recorded_request,
+        )
+        mismatches = [
+            name
+            for name, field in (
+                ("method", "method_matches"),
+                ("URL", "url_matches"),
+                ("query/params", "params_matches"),
+            )
+            if assessment.get(field) is not True
+        ]
+        if mismatches:
+            raise ReplayRequestMismatchError(self.cursor, tuple(mismatches))
+        response = _deserialize_response(entry)
         self.cursor += 1
-        return _deserialize_response(entry)
+        return response
+
+
+class ReplayRequestMismatchError(RuntimeError):
+    """A replay call differs from the recorded HTTP request identity."""
+
+    def __init__(self, index: int, fields: tuple[str, ...]) -> None:
+        """Create a mismatch diagnostic without embedding request values."""
+        self.index = index
+        self.fields = fields
+        super().__init__(
+            f"request mismatch before replay cursor advance at call {index + 1}: "
+            f"{', '.join(fields)}"
+        )
+
+
+class ReplayExhaustedError(RuntimeError):
+    """The actual client called beyond the available recorded responses."""
 
 
 def _serialize_call(
@@ -364,6 +412,78 @@ def _deserialize_response(entry: dict[str, Any]) -> Any:  # noqa: ANN401  # unty
     response.url = entry["url"]
     response.encoding = entry.get("encoding")
     return response
+
+
+def _canonical_request_parts(url: object, params: object) -> tuple[str, str]:
+    """Return the normalized URL origin/path and complete ordered query target.
+
+    ``requests.Request.prepare`` applies the same URL and parameter encoding as the client.
+    Query components remain ordered and raw after preparation, so duplicate keys, blank values,
+    and every encoded value remain part of the compared request identity.
+    """
+    import requests
+
+    if not isinstance(url, str):
+        raise ValueError("request URL must be a string")
+    prepared_url = requests.Request("GET", url, params=params).prepare().url
+    if prepared_url is None:
+        raise ValueError("request URL could not be prepared")
+    parsed = urllib.parse.urlsplit(prepared_url)
+    hostname = parsed.hostname
+    if hostname is None:
+        raise ValueError("request URL must include a host")
+    try:
+        port = parsed.port
+    except ValueError as error:
+        raise ValueError("request URL has an invalid port") from error
+    scheme = parsed.scheme.lower()
+    default_port = (scheme == "http" and port == 80) or (scheme == "https" and port == 443)
+    normalized_port = None if default_port else port
+    host = hostname.lower()
+    if ":" in host and not host.startswith("["):
+        host = f"[{host}]"
+    userinfo = parsed.netloc.rsplit("@", maxsplit=1)[0] + "@" if "@" in parsed.netloc else ""
+    authority = userinfo + host
+    if normalized_port is not None:
+        authority += f":{normalized_port}"
+    base_url = urllib.parse.urlunsplit((scheme, authority, parsed.path, "", parsed.fragment))
+    query_present = "?" in prepared_url.split("#", maxsplit=1)[0]
+    query = ("?" if query_present else "") + parsed.query
+    return base_url, query
+
+
+def route_assessment(actual: dict[str, Any], recorded: dict[str, Any]) -> dict[str, Any]:
+    """Compare HTTP method and fully prepared URL query identity for one call."""
+    import requests
+
+    actual_method = actual.get("method")
+    recorded_method = recorded.get("method")
+    method_matches = (
+        isinstance(actual_method, str)
+        and isinstance(recorded_method, str)
+        and actual_method.upper() == recorded_method.upper()
+    )
+    try:
+        actual_base, actual_query = _canonical_request_parts(
+            actual.get("url"), actual.get("params")
+        )
+        recorded_base, recorded_query = _canonical_request_parts(
+            recorded.get("url"), recorded.get("params")
+        )
+    except (TypeError, ValueError, UnicodeError, requests.exceptions.RequestException):
+        url_matches = False
+        params_matches = False
+    else:
+        url_matches = actual_base == recorded_base
+        params_matches = actual_query == recorded_query
+    return {
+        "method_matches": method_matches,
+        "url_matches": url_matches,
+        "params_matches": params_matches,
+        "status": (
+            "ROUTE_MATCH" if method_matches and url_matches and params_matches else "ROUTE_MISMATCH"
+        ),
+    }
 
 
 def _load_case_function(module_name: str, function: str) -> Any:  # noqa: ANN401  # dynamic fetch
@@ -597,8 +717,47 @@ def compare() -> int:
         reference = _read_reference_frame(reference_path)
         function = _load_case_function(_PORTED_CASE_MODULE, case.function)
         replayer = HttpReplayer(entries)
-        with replayer:
-            frame = function(**case.kwargs)
+        try:
+            with replayer:
+                frame = function(**case.kwargs)
+        except ReplayRequestMismatchError as error:
+            results.append(
+                {
+                    "case": case,
+                    "rows": "NOT_COMPARED",
+                    "calls": replayer.request_attempts,
+                    "recorded_calls": len(entries),
+                    "replayed_calls": replayer.cursor,
+                    "diffs": [str(error)],
+                    "tolerated": [],
+                    "failure_kind": "request_identity_mismatch",
+                    "ok": False,
+                }
+            )
+            print(
+                f"FAIL {case.name}: request rejected before response consumption "
+                f"({replayer.request_attempts}/{len(entries)} actual/recorded call(s))"
+            )
+            continue
+        except ReplayExhaustedError as error:
+            results.append(
+                {
+                    "case": case,
+                    "rows": "NOT_COMPARED",
+                    "calls": replayer.request_attempts,
+                    "recorded_calls": len(entries),
+                    "replayed_calls": replayer.cursor,
+                    "diffs": [str(error)],
+                    "tolerated": [],
+                    "failure_kind": "replay_exhausted",
+                    "ok": False,
+                }
+            )
+            print(
+                f"FAIL {case.name}: transcript exhausted "
+                f"({replayer.request_attempts}/{len(entries)} actual/recorded call(s))"
+            )
+            continue
         notes: list[str] = []
         diffs = _compare_frames(reference, frame, meta.get("dtypes"), notes=notes)
         if replayer.cursor != len(entries):
@@ -612,6 +771,8 @@ def compare() -> int:
                 "case": case,
                 "rows": len(frame),
                 "calls": len(entries),
+                "recorded_calls": len(entries),
+                "replayed_calls": replayer.cursor,
                 "diffs": diffs,
                 "tolerated": notes,
                 "ok": not diffs,
@@ -919,14 +1080,26 @@ def _write_report(
         "replayed into the ported tree; outputs are compared with identical",
         f"columns/shape/dtypes and cell equality (float rtol={RTOL}).",
         "",
-        "| case | function | rows | http calls | result | 文本不同而浮点一致 |",
-        "|------|----------|------|-----------|--------|--------------------|",
+        "| case | function | rows | actual/recorded HTTP calls | result | 文本不同而浮点一致 |",
+        "|------|----------|------|---------------------------|--------|--------------------|",
     ]
     for entry in results:
         case = entry["case"]
+        call_count = entry.get("calls", entry.get("replayed_calls", 0))
+        recorded_count = entry.get("recorded_calls", entry["calls"])
+        result_label = (
+            "FAIL: request mismatch"
+            if entry.get("failure_kind") == "request_identity_mismatch"
+            else "FAIL: replay exhausted"
+            if entry.get("failure_kind") == "replay_exhausted"
+            else "PASS"
+            if entry["ok"]
+            else "FAIL"
+        )
         lines.append(
-            f"| {case.name} | `{case.function}` | {entry['rows']} | {entry['calls']} | "
-            f"{'PASS' if entry['ok'] else 'FAIL'} | {len(entry.get('tolerated', ()))} |"
+            f"| {case.name} | `{case.function}` | {entry['rows']} | "
+            f"{call_count}/{recorded_count} | {result_label} | "
+            f"{len(entry.get('tolerated', ()))} |"
         )
     if pending:
         lines += [

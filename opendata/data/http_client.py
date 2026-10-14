@@ -388,6 +388,7 @@ class GovernedHttpClient:
         timeout: float | tuple[float, float] | None = None,
         source: str = "unspecified",
         cache_context: Mapping[str, Any] | None = None,
+        use_cache: bool = True,
     ) -> requests.Response:
         """Issue a governed, retried GET request.
 
@@ -399,14 +400,18 @@ class GovernedHttpClient:
             source: Stable source name included in structured events.
             cache_context: Optional data-interpretation dimensions used only
                 to partition raw-response cache entries.
+            use_cache: Whether to read or write the raw-response cache.
 
         Returns:
             The successful transport response.
 
         Raises:
             ValueError: If the URL has no host.
+            TypeError: If ``use_cache`` is not a bool.
             HttpFetchError: On terminal, classified failure.
         """
+        if type(use_cache) is not bool:
+            raise TypeError("use_cache must be a bool")
         return self.request(
             "GET",
             url,
@@ -415,6 +420,7 @@ class GovernedHttpClient:
             timeout=timeout,
             source=source,
             cache_context=cache_context,
+            use_cache=use_cache,
         )
 
     def request(
@@ -428,6 +434,7 @@ class GovernedHttpClient:
         source: str = "unspecified",
         cache_context: Mapping[str, Any] | None = None,
         json_body: Mapping[str, Any] | None = None,
+        use_cache: bool = True,
     ) -> requests.Response:
         """Issue a governed request; retries apply to GET only.
 
@@ -441,14 +448,18 @@ class GovernedHttpClient:
             cache_context: Optional data-interpretation dimensions used only
                 to partition raw-response cache entries.
             json_body: Optional JSON object sent with non-GET/HEAD requests.
+            use_cache: Whether to read or write the raw-response cache.
 
         Returns:
             The successful transport response.
 
         Raises:
             ValueError: If the URL has no host.
+            TypeError: If ``use_cache`` is not a bool.
             HttpFetchError: On terminal, classified failure.
         """
+        if type(use_cache) is not bool:
+            raise TypeError("use_cache must be a bool")
         request_body = _snapshot_json_body(json_body)
         method_upper = method.upper()
         if request_body is not None and method_upper in {"GET", "HEAD"}:
@@ -464,11 +475,13 @@ class GovernedHttpClient:
         is_get = method_upper == "GET"
         attempts = self._config.max_attempts if is_get else 1
         request_id = uuid.uuid4().hex
-        raw_cache = self._raw_response_cache_override
-        if raw_cache is None and is_get:
-            raw_cache = get_configured_raw_response_cache()
+        raw_cache: RawResponseCache | None = None
+        if use_cache:
+            raw_cache = self._raw_response_cache_override
+            if raw_cache is None and is_get:
+                raw_cache = get_configured_raw_response_cache()
         cache_identity: _CacheRequestIdentity | None = None
-        if raw_cache is not None and is_get:
+        if use_cache and raw_cache is not None and is_get:
             session = self._get_session()
             cache_identity = self._prepare_cache_identity(
                 session, url, params=params, headers=headers
@@ -511,7 +524,7 @@ class GovernedHttpClient:
                 attempt,
                 source,
                 request_id,
-                raw_cache if is_get and cache_identity is not None else None,
+                raw_cache if use_cache and is_get and cache_identity is not None else None,
                 cache_context,
                 cache_identity,
                 scopes,

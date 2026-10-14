@@ -1,18 +1,15 @@
-"""Declarable cboe provider models.
+"""Declarative Cboe index models and the remaining protocol evidence boundary.
 
-Four of cboe's eleven upstream models are single-GET, path-addressed endpoints and are declared
-here as data (:class:`~opendata.data.providers._engine.spec.ModelSpec`). Three of them read a JSON
-document; ``EquitySearch`` downloads a CSV, which the engine's delimited body decoder
-(:class:`~opendata.data.providers._engine.spec.DecoderSpec`, capability ``decode.delimited``) now
-reads. The other seven need composition the declaration format cannot express -- a pre-flight
-directory lookup whose answer decides a second request, a four-request join, delegation to another
-fetcher, or regex parsing of an option contract symbol -- and are recorded in
-``NOT_DECLARABLE`` below rather than silently dropped from the task count.
+The four index/directory ModelSpecs below remain executable through the declaration engine.
+Handwritten typed adapters in ``models.all_access`` additionally implement EquityHistorical,
+EtfHistorical, EquityQuote, EquitySearch, and OptionsChains from Cboe's documented All Access API.
+``NOT_DECLARABLE`` names only the two fixed identities without a documented source protocol:
+FuturesCurve and IndexSnapshots. A separate handwritten adapter handles the limited public
+volatility-index subset of IndexHistorical.
 
-The third one is a *search*: it reads the same directory document ``AvailableIndices`` reads and
-keeps the rows whose symbol, name or description contains the caller's needle. That selection is
-declared with :class:`~opendata.data.providers._engine.spec.RowFilterSpec`, so the engine no longer
-has to hand-write a fetcher for it.
+The ``EQUITY_SEARCH`` ModelSpec is retained as an engine-format fixture for the existing delimited
+decoder, but is no longer the provider binding. Runtime EquitySearch uses the documented All
+Access symbol reference API and does not download the website CSV.
 """
 
 from __future__ import annotations
@@ -49,7 +46,7 @@ AVAILABLE_INDICES = ModelSpec(
         ColumnSpec("exchange", "str"),
         ColumnSpec("currency", "str"),
         ColumnSpec("description", "str"),
-        ColumnSpec("data_delay", "str", source_key="mkt_data_delay"),
+        ColumnSpec("data_delay", "int", source_key="mkt_data_delay", units="minutes"),
         ColumnSpec("open_time", "str", source_key="calc_start_time"),
         ColumnSpec("close_time", "str", source_key="calc_end_time"),
         ColumnSpec("time_zone", "str"),
@@ -66,8 +63,12 @@ AVAILABLE_INDICES = ModelSpec(
         "such a client-side selection now (:class:`RowFilterSpec`, and ``IndexSearch`` below does "
         "declare one), but this catalogue publishes what the endpoint returns, and a filter on a "
         "``source`` key the document does not always carry would discard the rows that omit it. "
-        "Output-to-source key names follow the upstream ``__alias_dict__`` direction and are not "
-        "yet SOURCE_VERIFIED against a live response."
+        "The directory row contract publishes data_delay as integer minutes and session bounds as "
+        "datetime.time; its typed contract parses the fixture's minute-count text and local clock "
+        "strings while preserving nulls. Cboe's public pages identify the feed but do not "
+        "document these JSON fields' wire encodings; those source encodings remain unverified. "
+        "Output-to-source key names follow the upstream public contract mapping and are not yet "
+        "SOURCE_VERIFIED against an official raw response example."
     ),
 )
 
@@ -110,17 +111,23 @@ INDEX_CONSTITUENTS = ModelSpec(
             units="percent",
         ),
         ColumnSpec("tick", "str"),
-        ColumnSpec("last_trade_time", "str", units="source format %Y-%m-%dT%H:%M:%S"),
+        ColumnSpec(
+            "last_trade_time",
+            "str",
+            units="ISO datetime text; official raw encoding unverified",
+        ),
         ColumnSpec("asset_type", "str", source_key="type"),
     ),
     scenario="成分股快照：取出一只欧洲指数在源端发布的全部成分及其盘中报价",
     error_prefix="CBOE",
     row_envelope=("symbol", "name", "currency"),
     notes=(
-        "Upstream divides ``price_change_percent`` by 100 after the call, so this "
-        "declaration keeps the published percent scale and lets the consumer decide. A "
-        "value the source publishes as 0 is turned into a null upstream; the engine "
-        "reports 0, which is the source fact. ``symbol``/``name``/``currency`` are "
+        "The local contract parses last_trade_time to datetime and preserves explicit null. The "
+        "public Cboe contract describes change_percent as a normalized percentage, but Cboe's "
+        "official public source material reviewed here does not establish the raw "
+        "price_change_percent scale. This adapter therefore preserves the numeric source value "
+        "without an unsupported scale conversion; percentage parity remains unverified. "
+        "``symbol``/``name``/``currency`` are "
         "response-level facts, used only where the constituent record publishes none."
     ),
 )
@@ -158,7 +165,7 @@ INDEX_SEARCH = ModelSpec(
         ColumnSpec("name", "str", source_key="index_name", required=True),
         ColumnSpec("currency", "str"),
         ColumnSpec("description", "str"),
-        ColumnSpec("data_delay", "str", source_key="mkt_data_delay"),
+        ColumnSpec("data_delay", "int", source_key="mkt_data_delay", units="minutes"),
         ColumnSpec("open_time", "str", source_key="calc_start_time"),
         ColumnSpec("close_time", "str", source_key="calc_end_time"),
         ColumnSpec("time_zone", "str"),
@@ -198,8 +205,11 @@ INDEX_SEARCH = ModelSpec(
         "while this package's ``AvailableIndices`` maps ``index_name`` -- because no live response "
         "has settled which key the directory publishes, and a search that could not match on an "
         "index's name would not be a search. Whether the published column names and scales "
-        "below match the document is likewise NOT yet checked against a live response; they "
-        "follow the upstream source reading. Two upstream facts are deliberately not declared: the "
+        "below match the document is likewise NOT yet checked against an official raw response "
+        "example; the output value types follow the published public contract. The typed row "
+        "parser converts a supported minute-count spelling into an integer and local session "
+        "clock text into datetime.time; unsupported encodings fail closed. Two upstream facts are "
+        "deliberately not declared: the "
         "``source == 'morningstar'`` records upstream discards (a filter on a key most rows do not "
         "publish would discard every row, and the published document is the source fact), and "
         "``use_cache``, which no declaration can express. ``query`` and ``is_symbol`` are "
@@ -286,15 +296,10 @@ EQUITY_SEARCH = ModelSpec(
     ),
 )
 
-#: Every upstream cboe model, and why the remaining seven are not declared here.
+#: Fixed Cboe identities without a documented source protocol in this implementation.
 NOT_DECLARABLE: dict[str, str] = {
-    "EquityHistorical": "pre-flight index directory decides the URL; date window filtered "
-    "client-side after a full download",
-    "EtfHistorical": "alias of EquityHistorical in the upstream package",
-    "EquityQuote": "four requests joined on symbol; percent columns scaled after the call",
-    "FuturesCurve": "delegates to the historical and quote fetchers for a VX symbol list",
-    "IndexHistorical": "interval branch selects between two URL roots and drops volume",
-    "IndexSnapshots": "region branch addresses two unrelated paths and drops different columns",
-    "OptionsChains": "contract symbol parsed by regex, strike scaled by 1/1000, result published "
-    "columnar rather than as rows",
+    "FuturesCurve": "The reviewed official All Access docs do not establish the fixed model's "
+    "underlying list, quote/history join, or curve output protocol.",
+    "IndexSnapshots": "No official endpoint/response mapping for the fixed regional snapshot "
+    "identity was evidenced in this slice.",
 }

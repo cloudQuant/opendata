@@ -39,6 +39,8 @@ class ThsIndexDailyFetcher(Fetcher[ThsIndexDailyQuery, tuple[Bar, ...]]):
     an independent index series (see ``docs/evidence/C5``).
     """
 
+    canonical_model: ClassVar[str] = "index_daily"
+
     async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(

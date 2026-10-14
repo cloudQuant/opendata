@@ -65,6 +65,8 @@ class ThsFinancialStatementFetcher(
     effective figure, so there is no restatement series to number.
     """
 
+    canonical_model: ClassVar[str] = "financial_statement"
+
     async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(

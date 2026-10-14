@@ -35,6 +35,8 @@
 
 ---
 
+- **逐项历史证据分类**：A2 仍先用完整 resolver 收集原集合；只有 `docs/quality/immutable-evidence.json` 中逐项绑定源 SHA、收据 SHA/JSON Pointer、活动入口和独立审核单的精确副本，才可从 Ruff、format、mypy、bandit 的整改执行集合中分出。目录和通配符不得豁免；缺事实、未审核、活动入口误分类或任一 pin 漂移均阻断且不排除该文件。历史 Ruff 诊断持续标为非绿色；原全历史 secret scan 不变，另以既有版本和配置对清单中的副本逐文件扫描。活动入口仍留在 A2 集合中。
+
 ## 2. Lint 与格式（ruff）
 
 ### 2.1 自研代码规则集

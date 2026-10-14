@@ -6,12 +6,7 @@ import axios, {
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
 import { logger } from '@/utils/logger'
-
-/** API error response shape */
-interface ApiErrorData {
-  message?: string
-  detail?: string
-}
+import { getApiErrorMessage } from '@/utils/error'
 
 // Create axios instance
 const request: AxiosInstance = axios.create({
@@ -25,6 +20,32 @@ const request: AxiosInstance = axios.create({
 // Token refresh lock – prevents concurrent refresh requests
 let isRefreshing = false
 let refreshSubscribers: Array<(token: string) => void> = []
+const SESSION_EXPIRED_LOGIN_PATH = '/login?reason=session_expired'
+const PUBLIC_AUTH_POST_PATHS = new Set(['/auth/login', '/auth/register'])
+
+function isPublicAuthPost(config: InternalAxiosRequestConfig | undefined): boolean {
+  if (!config || (config.method ?? 'get').toLowerCase() !== 'post' || !config.url) return false
+
+  try {
+    const fallbackOrigin = window.location.origin
+    const baseUrl = new URL(config.baseURL || fallbackOrigin, fallbackOrigin)
+    const basePath = baseUrl.pathname.replace(/\/+$/, '')
+    const requestUrl = /^https?:\/\//i.test(config.url)
+      ? new URL(config.url)
+      : new URL(`${basePath}/${config.url.replace(/^\/+/, '')}`, baseUrl.origin)
+    const expectedPaths = new Set(
+      Array.from(PUBLIC_AUTH_POST_PATHS, (path) => `${basePath}${path}` || path)
+    )
+    return requestUrl.origin === baseUrl.origin && expectedPaths.has(requestUrl.pathname)
+  } catch {
+    return false
+  }
+}
+
+function endSessionAndRedirect(authStore: ReturnType<typeof useAuthStore>): void {
+  authStore.logout()
+  window.location.href = SESSION_EXPIRED_LOGIN_PATH
+}
 
 function onTokenRefreshed(token: string) {
   refreshSubscribers.forEach((cb) => cb(token))
@@ -72,6 +93,10 @@ request.interceptors.response.use(
     if (error.response) {
       switch (error.response.status) {
         case 401: {
+          // Invalid credentials are a normal login failure, not an expired
+          // authenticated session. Leave the response for the caller to show.
+          if (isPublicAuthPost(error.config)) break
+
           // Prevent infinite loop: check if this is a refresh token request
           const isRefreshRequest = error.config?.url?.includes('/refresh')
 
@@ -102,14 +127,12 @@ request.interceptors.response.use(
               // Token refresh failed - log and force re-login
               logger.error('Token refresh failed', { error: refreshError })
               refreshSubscribers = []
-              authStore.logout()
-              window.location.href = '/login'
+              endSessionAndRedirect(authStore)
             } finally {
               isRefreshing = false
             }
           } else {
-            authStore.logout()
-            window.location.href = '/login'
+            endSessionAndRedirect(authStore)
           }
           break
         }
@@ -119,16 +142,17 @@ request.interceptors.response.use(
         case 404:
           ElMessage.error('请求的资源不存在')
           break
+        case 422:
+          ElMessage.error(getApiErrorMessage(error))
+          break
         case 429:
           ElMessage.error('请求过于频繁，请稍后再试')
           break
         case 500:
           ElMessage.error('服务器错误，请稍后再试')
           break
-        default: {
-          const data = error.response?.data as ApiErrorData | undefined
-          ElMessage.error(data?.message ?? data?.detail ?? '请求失败')
-        }
+        default:
+          ElMessage.error(getApiErrorMessage(error))
       }
     } else if (error.request) {
       ElMessage.error('网络错误，请检查网络连接')

@@ -101,6 +101,8 @@ class ThsInstrumentFetcher(Fetcher[ThsInstrumentQuery, tuple[Instrument, ...]]):
     what trades *today*, not a survivorship-bias-free one.
     """
 
+    canonical_model: ClassVar[str] = "instrument"
+
     async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(

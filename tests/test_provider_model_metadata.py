@@ -24,6 +24,19 @@ from opendata.data.protocol import FetchContext, Fetcher, FetchResult
 from opendata.data.registry import ProviderRegistry
 from opendata.services import provider_models
 
+_LOCAL_MODEL_IDENTITIES = frozenset(
+    {
+        ("fred", "FredSearch"),
+        ("fred", "FredSeries"),
+        ("fred", "SOFR"),
+        ("fred", "SONIA"),
+        ("bls", "BlsSearch"),
+        ("bls", "BlsSeries"),
+        ("fmp", "EquityHistorical"),
+        ("fmp", "EquityQuote"),
+    }
+)
+
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Callable
 
@@ -68,14 +81,24 @@ def _local_registry() -> ProviderRegistry:
     from opendata.data.providers.fred.provider import PROVIDER as FRED
 
     registry = ProviderRegistry()
+    found: set[tuple[str, str]] = set()
     for descriptor in (FRED, BLS, FMP):
         for binding in descriptor.fetcher_bindings:
-            if binding.canonical_model_ids:
+            model_ids = tuple(
+                model_id
+                for model_id in binding.canonical_model_ids
+                if (descriptor.source, model_id) in _LOCAL_MODEL_IDENTITIES
+            )
+            if model_ids:
                 registry.register_provider_models(
                     descriptor.source,
-                    binding.canonical_model_ids,
+                    model_ids,
                     binding.load(descriptor.source),
                 )
+                found.update((descriptor.source, model_id) for model_id in model_ids)
+    assert found == _LOCAL_MODEL_IDENTITIES
+    for source, model in _LOCAL_MODEL_IDENTITIES:
+        registry.resolve_model(source, model)
     return registry
 
 
@@ -238,16 +261,7 @@ def test_registry_listing_is_exact_and_an_empty_registry_stays_empty() -> None:
         envelope = response.json()
         assert envelope["success"] is True
         models = envelope["data"]
-        assert {(item["source"], item["model"]) for item in models} == {
-            ("fred", "FredSearch"),
-            ("fred", "FredSeries"),
-            ("fred", "SOFR"),
-            ("fred", "SONIA"),
-            ("bls", "BlsSearch"),
-            ("bls", "BlsSeries"),
-            ("fmp", "EquityHistorical"),
-            ("fmp", "EquityQuote"),
-        }
+        assert {(item["source"], item["model"]) for item in models} == _LOCAL_MODEL_IDENTITIES
         assert all(item["verified"] is False for item in models)
         assert all(
             item["capability_identity"]["source"] == item["source"]

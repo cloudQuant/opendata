@@ -6,335 +6,335 @@
 
 ## 逐文件对照（改写计数与重放一致性）
 
-| 文件 | 上游路径 | 上游 SHA-256 | 搬运 SHA-256 | import 改写 | 字符串改写 | 人工改动 | 重放一致 |
-|------|---------|------------|-------------|------------|-----------|---------|---------|
-| `__init__.py` | `akshare/__init__.py` | `42391b2448bb` | `0a5d0d9eb41d` | 0 | 0 | False | ✓ |
-| `_version.py` | `akshare/_version.py` | `aabe70222b65` | `8a3008ebe2f3` | 0 | 0 | False | ✓ |
-| `bond/__init__.py` | `akshare/bond/__init__.py` | `44c4dfd5b4f9` | `c21b9119462f` | 0 | 0 | False | ✓ |
-| `bond/bond_buy_back_em.py` | `akshare/bond/bond_buy_back_em.py` | `897be22b879b` | `d271057305c4` | 0 | 0 | False | ✓ |
-| `bond/bond_cb_sina.py` | `akshare/bond/bond_cb_sina.py` | `fb586d02c59d` | `6d8801e0a2df` | 0 | 0 | False | ✓ |
-| `bond/bond_cb_ths.py` | `akshare/bond/bond_cb_ths.py` | `b31a5c1abe6d` | `73cd4ed37744` | 0 | 0 | False | ✓ |
-| `bond/bond_cbond.py` | `akshare/bond/bond_cbond.py` | `cd0500fbc245` | `5ce0dc1d55fe` | 1 | 0 | False | ✓ |
-| `bond/bond_china.py` | `akshare/bond/bond_china.py` | `1a3a76c7668d` | `322f9b5240e0` | 2 | 0 | False | ✓ |
-| `bond/bond_china_money.py` | `akshare/bond/bond_china_money.py` | `4e90ab2e4db3` | `11a1382970b9` | 1 | 0 | True | ✓ |
-| `bond/bond_convert.py` | `akshare/bond/bond_convert.py` | `9291a7d21a11` | `57b245a9ac14` | 1 | 0 | True | ✓ |
-| `bond/bond_em.py` | `akshare/bond/bond_em.py` | `139d7d07aa70` | `5bfe835cfed7` | 1 | 0 | False | ✓ |
-| `bond/bond_gb_sina.py` | `akshare/bond/bond_gb_sina.py` | `fcdefb0ff358` | `43086479f5b6` | 0 | 0 | False | ✓ |
-| `bond/bond_info_cm.py` | `akshare/bond/bond_info_cm.py` | `fbb40bacb26b` | `fd70d2644052` | 2 | 0 | False | ✓ |
-| `bond/bond_issue_cninfo.py` | `akshare/bond/bond_issue_cninfo.py` | `b4fa19845fbf` | `9c630b5b793f` | 1 | 0 | False | ✓ |
-| `bond/bond_nafmii.py` | `akshare/bond/bond_nafmii.py` | `71e91ca1bc97` | `649c0bd5c177` | 0 | 0 | False | ✓ |
-| `bond/bond_summary.py` | `akshare/bond/bond_summary.py` | `fd9d8e563137` | `9941f00abaf9` | 0 | 0 | False | ✓ |
-| `bond/bond_zh_cov.py` | `akshare/bond/bond_zh_cov.py` | `a4acf1b04b0c` | `3f8617074d79` | 5 | 0 | False | ✓ |
-| `bond/bond_zh_sina.py` | `akshare/bond/bond_zh_sina.py` | `1846ae534624` | `b7d7a2b5539b` | 4 | 0 | False | ✓ |
-| `bond/cons.py` | `akshare/bond/cons.py` | `958dff329357` | `263058a8dc9b` | 0 | 0 | False | ✓ |
-| `datasets.py` | `akshare/datasets.py` | `acab91359aea` | `5e3b7e47b60d` | 0 | 2 | True | ✓ |
-| `economic/__init__.py` | `akshare/economic/__init__.py` | `edd5894ab3ec` | `c3f23b25c5aa` | 0 | 0 | False | ✓ |
-| `economic/cons.py` | `akshare/economic/cons.py` | `81451fba3382` | `6716813e5452` | 0 | 0 | False | ✓ |
-| `economic/macro_australia.py` | `akshare/economic/macro_australia.py` | `6307c401be9e` | `ff35f5fb12d5` | 0 | 0 | False | ✓ |
-| `economic/macro_bank.py` | `akshare/economic/macro_bank.py` | `c06feee70e58` | `91a9a4dd69d9` | 0 | 0 | False | ✓ |
-| `economic/macro_canada.py` | `akshare/economic/macro_canada.py` | `20a5ea182878` | `958e1d69001b` | 0 | 0 | False | ✓ |
-| `economic/macro_china.py` | `akshare/economic/macro_china.py` | `42aeab61c394` | `b4c511095519` | 3 | 0 | False | ✓ |
-| `economic/macro_china_hk.py` | `akshare/economic/macro_china_hk.py` | `c1e6c6fef565` | `409d83cdd795` | 0 | 0 | False | ✓ |
-| `economic/macro_china_nbs.py` | `akshare/economic/macro_china_nbs.py` | `ab5784ddde65` | `2a2b2a632efa` | 0 | 0 | False | ✓ |
-| `economic/macro_constitute.py` | `akshare/economic/macro_constitute.py` | `7027d6ba9289` | `a33fbbbb4d55` | 0 | 0 | False | ✓ |
-| `economic/macro_euro.py` | `akshare/economic/macro_euro.py` | `98914d1d5de5` | `afbd5fad3ef5` | 0 | 0 | False | ✓ |
-| `economic/macro_finance_ths.py` | `akshare/economic/macro_finance_ths.py` | `bb4a9549955a` | `37999bc54fed` | 0 | 0 | False | ✓ |
-| `economic/macro_germany.py` | `akshare/economic/macro_germany.py` | `e08ec1f24079` | `0c78ef46f7b6` | 0 | 0 | False | ✓ |
-| `economic/macro_info_ws.py` | `akshare/economic/macro_info_ws.py` | `b743c372c582` | `86ef35a7126c` | 0 | 0 | False | ✓ |
-| `economic/macro_japan.py` | `akshare/economic/macro_japan.py` | `0211cab609b4` | `3d2e04656f01` | 0 | 0 | False | ✓ |
-| `economic/macro_other.py` | `akshare/economic/macro_other.py` | `547b9d465fb2` | `989bb034d0cc` | 0 | 0 | False | ✓ |
-| `economic/macro_swiss.py` | `akshare/economic/macro_swiss.py` | `372d80926ac3` | `282ade310e29` | 0 | 0 | False | ✓ |
-| `economic/macro_uk.py` | `akshare/economic/macro_uk.py` | `961d89282bec` | `7ba231574ac3` | 0 | 0 | False | ✓ |
-| `economic/macro_usa.py` | `akshare/economic/macro_usa.py` | `139621c32d52` | `8b03ebd87fa2` | 0 | 0 | False | ✓ |
-| `economic/marco_cnbs.py` | `akshare/economic/marco_cnbs.py` | `8162f2e3cf5e` | `0c6afb5f6496` | 0 | 0 | False | ✓ |
-| `exceptions.py` | `akshare/exceptions.py` | `5842632214a6` | `8991c9e6c4f0` | 0 | 0 | False | ✓ |
-| `file_fold/__init__.py` | `akshare/file_fold/__init__.py` | `44c4dfd5b4f9` | `c21b9119462f` | 0 | 0 | False | ✓ |
-| `file_fold/calendar.json` | `akshare/file_fold/calendar.json` | `f1f1ce33c5cc` | `f1f1ce33c5cc` | 0 | 0 | False | ✓ |
-| `fund/__init__.py` | `akshare/fund/__init__.py` | `44c4dfd5b4f9` | `c21b9119462f` | 0 | 0 | False | ✓ |
-| `fund/fund_amac.py` | `akshare/fund/fund_amac.py` | `b03a24a8d484` | `236b0ef62b3f` | 1 | 0 | False | ✓ |
-| `fund/fund_announcement_em.py` | `akshare/fund/fund_announcement_em.py` | `e44d3f793e76` | `e1f904cac92d` | 0 | 0 | False | ✓ |
-| `fund/fund_aum_em.py` | `akshare/fund/fund_aum_em.py` | `2f95ad8010e4` | `5eee705f55d2` | 0 | 0 | False | ✓ |
-| `fund/fund_em.py` | `akshare/fund/fund_em.py` | `385a95982c18` | `88e92ec93921` | 4 | 0 | False | ✓ |
-| `fund/fund_etf_em.py` | `akshare/fund/fund_etf_em.py` | `b962b42763e1` | `33b1ee8b83fb` | 2 | 0 | False | ✓ |
-| `fund/fund_etf_sina.py` | `akshare/fund/fund_etf_sina.py` | `2c83042b7e98` | `a307ee265ef4` | 2 | 0 | False | ✓ |
-| `fund/fund_etf_sse.py` | `akshare/fund/fund_etf_sse.py` | `11643f655712` | `c0791856eab6` | 0 | 0 | False | ✓ |
-| `fund/fund_etf_szse.py` | `akshare/fund/fund_etf_szse.py` | `05d9087044e3` | `8d1c5c0d9f48` | 0 | 0 | False | ✓ |
-| `fund/fund_etf_ths.py` | `akshare/fund/fund_etf_ths.py` | `411a161687df` | `2ad2a0a19d3a` | 0 | 0 | False | ✓ |
-| `fund/fund_fee_em.py` | `akshare/fund/fund_fee_em.py` | `fb0447b1eb99` | `2eaa994e0f89` | 0 | 0 | False | ✓ |
-| `fund/fund_fhsp_em.py` | `akshare/fund/fund_fhsp_em.py` | `1bd8ffc1bd94` | `c3fc1c959f2d` | 1 | 0 | False | ✓ |
-| `fund/fund_info_ths.py` | `akshare/fund/fund_info_ths.py` | `936c0a25a0d8` | `8f25b9dba788` | 1 | 0 | False | ✓ |
-| `fund/fund_init_em.py` | `akshare/fund/fund_init_em.py` | `f67adabd7237` | `aa7936ae4d8d` | 1 | 0 | False | ✓ |
-| `fund/fund_init_ths.py` | `akshare/fund/fund_init_ths.py` | `dd32785a8a41` | `a43ab2c8297b` | 0 | 0 | False | ✓ |
-| `fund/fund_lof_em.py` | `akshare/fund/fund_lof_em.py` | `0947b9766d1a` | `1d1c8c9d4634` | 2 | 0 | False | ✓ |
-| `fund/fund_manager.py` | `akshare/fund/fund_manager.py` | `a62422d406ea` | `eb0bb0443ac8` | 2 | 0 | False | ✓ |
-| `fund/fund_overview_em.py` | `akshare/fund/fund_overview_em.py` | `2364876945e7` | `599203076c89` | 0 | 0 | False | ✓ |
-| `fund/fund_portfolio_em.py` | `akshare/fund/fund_portfolio_em.py` | `8cc629b77ceb` | `fa998dbee981` | 1 | 0 | False | ✓ |
-| `fund/fund_position_lg.py` | `akshare/fund/fund_position_lg.py` | `9540407ed0ba` | `e38f7a1d540a` | 1 | 0 | False | ✓ |
-| `fund/fund_rank_em.py` | `akshare/fund/fund_rank_em.py` | `86634488cb6c` | `fce2997f17d0` | 1 | 0 | False | ✓ |
-| `fund/fund_rating.py` | `akshare/fund/fund_rating.py` | `8a0986332f21` | `99d5e8fe3fee` | 0 | 0 | False | ✓ |
-| `fund/fund_report_cninfo.py` | `akshare/fund/fund_report_cninfo.py` | `ae1ced69adc9` | `29002d5d4ca5` | 1 | 0 | False | ✓ |
-| `fund/fund_scale_em.py` | `akshare/fund/fund_scale_em.py` | `165e2bbbe8f5` | `9c0adad4c35b` | 1 | 0 | False | ✓ |
-| `fund/fund_scale_sina.py` | `akshare/fund/fund_scale_sina.py` | `034a88cd6050` | `35dffba9fa5e` | 1 | 0 | False | ✓ |
-| `fund/fund_scale_szse.py` | `akshare/fund/fund_scale_szse.py` | `0bfb4ba1b67d` | `4d63a1371a6c` | 0 | 0 | False | ✓ |
-| `fund/fund_xq.py` | `akshare/fund/fund_xq.py` | `03131907ef78` | `039c195dc459` | 0 | 0 | False | ✓ |
-| `futures/__init__.py` | `akshare/futures/__init__.py` | `44c4dfd5b4f9` | `c21b9119462f` | 0 | 0 | False | ✓ |
-| `futures/cons.py` | `akshare/futures/cons.py` | `543704ff6aa5` | `4066ac6387c5` | 0 | 0 | False | ✓ |
-| `futures/cot.py` | `akshare/futures/cot.py` | `074245d8069f` | `0c59f9f14a9c` | 3 | 0 | False | ✓ |
-| `futures/futures_basis.py` | `akshare/futures/futures_basis.py` | `b068f3079728` | `6dd7dd3bc41a` | 3 | 0 | False | ✓ |
-| `futures/futures_comex_em.py` | `akshare/futures/futures_comex_em.py` | `34fc0e083ea5` | `03f1405a9097` | 1 | 0 | False | ✓ |
-| `futures/futures_comm_ctp.py` | `akshare/futures/futures_comm_ctp.py` | `232551094be1` | `da7b84b38427` | 0 | 0 | False | ✓ |
-| `futures/futures_comm_js.py` | `akshare/futures/futures_comm_js.py` | `0bf873880597` | `b5c569d40cf1` | 0 | 0 | False | ✓ |
-| `futures/futures_comm_qihuo.py` | `akshare/futures/futures_comm_qihuo.py` | `1fecdfee3974` | `bc3678087ff3` | 0 | 0 | False | ✓ |
-| `futures/futures_contract_detail.py` | `akshare/futures/futures_contract_detail.py` | `f162d8a8bab1` | `981d5b35450a` | 1 | 0 | False | ✓ |
-| `futures/futures_daily_bar.py` | `akshare/futures/futures_daily_bar.py` | `c547fcc877d3` | `ad0bd1944ecf` | 2 | 0 | False | ✓ |
-| `futures/futures_foreign.py` | `akshare/futures/futures_foreign.py` | `7f93ace536b8` | `1161148e598d` | 1 | 0 | False | ✓ |
-| `futures/futures_hf_em.py` | `akshare/futures/futures_hf_em.py` | `95e9ae4b1069` | `1af064603142` | 1 | 0 | True | ✓ |
-| `futures/futures_hist_em.py` | `akshare/futures/futures_hist_em.py` | `c97902fe6732` | `9eb6ca039203` | 1 | 0 | False | ✓ |
-| `futures/futures_hq_sina.py` | `akshare/futures/futures_hq_sina.py` | `64bb14137f7f` | `82fa1c6767c7` | 1 | 0 | False | ✓ |
-| `futures/futures_index_ccidx.py` | `akshare/futures/futures_index_ccidx.py` | `c35a76c1a3aa` | `717cfb8c0502` | 0 | 0 | False | ✓ |
-| `futures/futures_inventory_99.py` | `akshare/futures/futures_inventory_99.py` | `9df8b33f5bd7` | `b6ef1327b05a` | 0 | 0 | False | ✓ |
-| `futures/futures_inventory_em.py` | `akshare/futures/futures_inventory_em.py` | `6c6b251bf02c` | `77a53f8e9751` | 1 | 0 | False | ✓ |
-| `futures/futures_inventory_em_varieties.py` | `akshare/futures/futures_inventory_em_varieties.py` | `bfcc46ea04c2` | `4ba154e9c799` | 0 | 0 | False | ✓ |
-| `futures/futures_news_shmet.py` | `akshare/futures/futures_news_shmet.py` | `d5ea59dccc03` | `42b94f0b1627` | 0 | 0 | False | ✓ |
-| `futures/futures_roll_yield.py` | `akshare/futures/futures_roll_yield.py` | `b49e614fce84` | `20f960b9c621` | 3 | 0 | False | ✓ |
-| `futures/futures_rule.py` | `akshare/futures/futures_rule.py` | `f514e8bc45a6` | `e2f749023901` | 0 | 0 | False | ✓ |
-| `futures/futures_rule_em.py` | `akshare/futures/futures_rule_em.py` | `a9c5df61989b` | `2e1090c33bce` | 1 | 0 | False | ✓ |
-| `futures/futures_settle.py` | `akshare/futures/futures_settle.py` | `96bb258b3368` | `e0eee3d04af7` | 2 | 0 | False | ✓ |
-| `futures/futures_settlement_price_sgx.py` | `akshare/futures/futures_settlement_price_sgx.py` | `a19d1987d013` | `60de0ac51732` | 1 | 0 | False | ✓ |
-| `futures/futures_spot_stock_em.py` | `akshare/futures/futures_spot_stock_em.py` | `e3708f900a2e` | `1c7f423ae46e` | 1 | 0 | False | ✓ |
-| `futures/futures_stock_js.py` | `akshare/futures/futures_stock_js.py` | `f9814817dd32` | `a72c0223b56a` | 0 | 0 | False | ✓ |
-| `futures/futures_to_spot.py` | `akshare/futures/futures_to_spot.py` | `991438eebb0c` | `4c628ea9a3df` | 0 | 0 | False | ✓ |
-| `futures/futures_warehouse_receipt.py` | `akshare/futures/futures_warehouse_receipt.py` | `9b63da9e9a43` | `25c5bf51a481` | 0 | 0 | False | ✓ |
-| `futures/futures_zh_sina.py` | `akshare/futures/futures_zh_sina.py` | `b44bac3e81ad` | `76fefca6aa19` | 3 | 0 | False | ✓ |
-| `futures/receipt.py` | `akshare/futures/receipt.py` | `8d2d37045f79` | `ff4c53d37689` | 3 | 0 | False | ✓ |
-| `futures/requests_fun.py` | `akshare/futures/requests_fun.py` | `d29203f27448` | `ae805834e2b4` | 0 | 0 | False | ✓ |
-| `futures/symbol_var.py` | `akshare/futures/symbol_var.py` | `d0d386dc0a32` | `96b3f27ada96` | 1 | 0 | False | ✓ |
-| `futures_derivative/__init__.py` | `akshare/futures_derivative/__init__.py` | `08e1723f4d60` | `114189e2960d` | 0 | 0 | False | ✓ |
-| `futures_derivative/cons.py` | `akshare/futures_derivative/cons.py` | `5641b51ccc0f` | `327b7128e988` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_contract_info_cffex.py` | `akshare/futures_derivative/futures_contract_info_cffex.py` | `7551dda8fee7` | `0c1d207af79a` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_contract_info_czce.py` | `akshare/futures_derivative/futures_contract_info_czce.py` | `3d039c5f50c1` | `4687ff67ec2d` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_contract_info_dce.py` | `akshare/futures_derivative/futures_contract_info_dce.py` | `6dde32af1464` | `243de9981501` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_contract_info_gfex.py` | `akshare/futures_derivative/futures_contract_info_gfex.py` | `9e521e5df2a8` | `8cb7a965a3dc` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_contract_info_ine.py` | `akshare/futures_derivative/futures_contract_info_ine.py` | `bf008f1be565` | `fed1e4c551f3` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_contract_info_shfe.py` | `akshare/futures_derivative/futures_contract_info_shfe.py` | `36324d62a465` | `2409c6014224` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_cot_sina.py` | `akshare/futures_derivative/futures_cot_sina.py` | `0a6a19bbfa48` | `4029298d5261` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_hog.py` | `akshare/futures_derivative/futures_hog.py` | `f1555def0e4b` | `d3e38994a9c0` | 0 | 0 | False | ✓ |
-| `futures_derivative/futures_index_sina.py` | `akshare/futures_derivative/futures_index_sina.py` | `b98926e18bd7` | `da4c9e567a76` | 2 | 0 | False | ✓ |
-| `futures_derivative/futures_spot_sys.py` | `akshare/futures_derivative/futures_spot_sys.py` | `1d6d55b967d4` | `8d3467c5e729` | 0 | 0 | False | ✓ |
-| `index/__init__.py` | `akshare/index/__init__.py` | `44c4dfd5b4f9` | `c21b9119462f` | 0 | 0 | False | ✓ |
-| `index/cons.py` | `akshare/index/cons.py` | `b2cb71be1b5d` | `e81d1f4dfbfe` | 0 | 0 | False | ✓ |
-| `index/index_cflp.py` | `akshare/index/index_cflp.py` | `1d62a2eba986` | `e34641e1bdbb` | 0 | 0 | False | ✓ |
-| `index/index_cni.py` | `akshare/index/index_cni.py` | `422d323130e9` | `922458c10d4d` | 0 | 0 | False | ✓ |
-| `index/index_cons.py` | `akshare/index/index_cons.py` | `b2ca1599163b` | `c739e4332665` | 1 | 0 | True | ✓ |
-| `index/index_csindex.py` | `akshare/index/index_csindex.py` | `f8bbe4ba0c4d` | `5d83676de505` | 0 | 0 | False | ✓ |
-| `index/index_cx.py` | `akshare/index/index_cx.py` | `8cb1977deda1` | `89c7c7ec3840` | 0 | 0 | False | ✓ |
-| `index/index_drewry.py` | `akshare/index/index_drewry.py` | `04ced5e8ff0a` | `da04c67073cc` | 1 | 0 | False | ✓ |
-| `index/index_eri.py` | `akshare/index/index_eri.py` | `375c8fdbf9f4` | `6b7225df9ada` | 0 | 0 | False | ✓ |
-| `index/index_global_em.py` | `akshare/index/index_global_em.py` | `f5d5d680541e` | `0417eb2906cd` | 1 | 0 | False | ✓ |
-| `index/index_global_sina.py` | `akshare/index/index_global_sina.py` | `340a2850a0fa` | `ec4c0a942c8e` | 1 | 0 | False | ✓ |
-| `index/index_hog.py` | `akshare/index/index_hog.py` | `91bf3aec155a` | `1d44c1544977` | 0 | 0 | False | ✓ |
-| `index/index_kq_fz.py` | `akshare/index/index_kq_fz.py` | `c1316ac47588` | `eee729b6e89f` | 0 | 0 | False | ✓ |
-| `index/index_kq_ss.py` | `akshare/index/index_kq_ss.py` | `54b8692926b5` | `14f74c90eebc` | 0 | 0 | False | ✓ |
-| `index/index_option_qvix.py` | `akshare/index/index_option_qvix.py` | `d4791ea2ab60` | `0d163c8c9ca1` | 0 | 0 | False | ✓ |
-| `index/index_research_fund_sw.py` | `akshare/index/index_research_fund_sw.py` | `22c5f0945d5b` | `e9cc1e404dea` | 1 | 0 | False | ✓ |
-| `index/index_research_sw.py` | `akshare/index/index_research_sw.py` | `cbcc7cd07417` | `5fa7ad855b32` | 1 | 0 | False | ✓ |
-| `index/index_spot.py` | `akshare/index/index_spot.py` | `99e4c14c2a76` | `5a5a54731d39` | 0 | 0 | False | ✓ |
-| `index/index_stock_hk.py` | `akshare/index/index_stock_hk.py` | `da70b36ab524` | `95c4ca61219c` | 2 | 0 | False | ✓ |
-| `index/index_stock_us_sina.py` | `akshare/index/index_stock_us_sina.py` | `2313a4e06e3d` | `a63768c5909b` | 1 | 0 | False | ✓ |
-| `index/index_stock_zh.py` | `akshare/index/index_stock_zh.py` | `bb136b769235` | `220068f28c82` | 5 | 0 | False | ✓ |
-| `index/index_stock_zh_csindex.py` | `akshare/index/index_stock_zh_csindex.py` | `b115680c3f9f` | `92de38948a9e` | 0 | 0 | False | ✓ |
-| `index/index_sugar.py` | `akshare/index/index_sugar.py` | `16ca26699ab8` | `7dc3abe69ed3` | 0 | 0 | False | ✓ |
-| `index/index_sw.py` | `akshare/index/index_sw.py` | `94d0aaf8e345` | `db1b52b8f9d3` | 1 | 0 | False | ✓ |
-| `index/index_yw.py` | `akshare/index/index_yw.py` | `a50a05ffd1cf` | `eed459c6026b` | 0 | 0 | False | ✓ |
-| `index/index_zh_a_scope.py` | `akshare/index/index_zh_a_scope.py` | `f5f126381be5` | `27e70b6b0e0d` | 0 | 0 | False | ✓ |
-| `index/index_zh_em.py` | `akshare/index/index_zh_em.py` | `9783e29bb93a` | `4bedaf3227bf` | 1 | 0 | True | ✓ |
-| `option/__init__.py` | `akshare/option/__init__.py` | `44c4dfd5b4f9` | `c21b9119462f` | 0 | 0 | False | ✓ |
-| `option/cons.py` | `akshare/option/cons.py` | `5a0797e14be4` | `14e29337d223` | 0 | 0 | False | ✓ |
-| `option/option_comm_qihuo.py` | `akshare/option/option_comm_qihuo.py` | `9236dda7ef78` | `b7ec3d8f63e6` | 0 | 0 | False | ✓ |
-| `option/option_commodity.py` | `akshare/option/option_commodity.py` | `363cb5bde80a` | `3853816a217e` | 1 | 0 | False | ✓ |
-| `option/option_commodity_sina.py` | `akshare/option/option_commodity_sina.py` | `34ddaacb07c6` | `4d9c45f54043` | 1 | 0 | False | ✓ |
-| `option/option_contract_info_ctp.py` | `akshare/option/option_contract_info_ctp.py` | `a9e8b968dd80` | `62c1229b6048` | 0 | 0 | False | ✓ |
-| `option/option_current_sse.py` | `akshare/option/option_current_sse.py` | `eb17857392b0` | `ef887c9afa9e` | 0 | 0 | False | ✓ |
-| `option/option_current_szse.py` | `akshare/option/option_current_szse.py` | `736e99a7acdd` | `0921792a951a` | 1 | 0 | False | ✓ |
-| `option/option_czce.py` | `akshare/option/option_czce.py` | `f450a0aa0c6b` | `f7c008947fc3` | 0 | 0 | False | ✓ |
-| `option/option_daily_stats_sse_szse.py` | `akshare/option/option_daily_stats_sse_szse.py` | `33c0c016f290` | `212451638d90` | 1 | 0 | False | ✓ |
-| `option/option_em.py` | `akshare/option/option_em.py` | `a77f7b60416e` | `d637d4f4e24f` | 1 | 0 | True | ✓ |
-| `option/option_finance.py` | `akshare/option/option_finance.py` | `c84ccd0d053e` | `5cb363b23d2f` | 2 | 0 | False | ✓ |
-| `option/option_finance_sina.py` | `akshare/option/option_finance_sina.py` | `b64570909816` | `98a4813a022e` | 2 | 0 | False | ✓ |
-| `option/option_lhb_em.py` | `akshare/option/option_lhb_em.py` | `9730134e8eda` | `329af0f98cef` | 0 | 0 | False | ✓ |
-| `option/option_margin.py` | `akshare/option/option_margin.py` | `8f9c32b7ca5d` | `26f3b9e015b2` | 0 | 0 | False | ✓ |
-| `option/option_premium_analysis_em.py` | `akshare/option/option_premium_analysis_em.py` | `134fd15529c4` | `ca6e5c6677d1` | 1 | 0 | False | ✓ |
-| `option/option_risk_analysis_em.py` | `akshare/option/option_risk_analysis_em.py` | `39c999e36130` | `74219604d512` | 1 | 0 | False | ✓ |
-| `option/option_risk_indicator_sse.py` | `akshare/option/option_risk_indicator_sse.py` | `0d0e1ef851d4` | `dcc525974077` | 0 | 0 | False | ✓ |
-| `option/option_value_analysis_em.py` | `akshare/option/option_value_analysis_em.py` | `288ccb2716b1` | `6906383e6a2c` | 1 | 0 | False | ✓ |
-| `pro/__init__.py` | `akshare/pro/__init__.py` | `e3b0c44298fc` | `43703466bd5f` | 0 | 0 | False | ✓ |
-| `pro/client.py` | `akshare/pro/client.py` | `5e2013e6e10a` | `91992d4d391a` | 0 | 0 | False | ✓ |
-| `pro/cons.py` | `akshare/pro/cons.py` | `6574ee8a1977` | `f4d8b39a8a58` | 0 | 0 | False | ✓ |
-| `pro/data_pro.py` | `akshare/pro/data_pro.py` | `5cba6a699354` | `9a673489d736` | 2 | 0 | False | ✓ |
-| `request.py` | `akshare/request.py` | `ec5bd1f864a1` | `e20988c185f5` | 2 | 0 | False | ✓ |
-| `stock/__init__.py` | `akshare/stock/__init__.py` | `8d26bddbad1d` | `20bf4f7ee5f1` | 0 | 0 | False | ✓ |
-| `stock/cons.py` | `akshare/stock/cons.py` | `89600a5738e0` | `e16cc610d105` | 0 | 0 | True | ✓ |
-| `stock/stock_allotment_cninfo.py` | `akshare/stock/stock_allotment_cninfo.py` | `3958d5756a76` | `ded1e074d40e` | 1 | 0 | False | ✓ |
-| `stock/stock_ask_bid_em.py` | `akshare/stock/stock_ask_bid_em.py` | `6e8ed5364a75` | `ba2b3b2fca73` | 0 | 0 | False | ✓ |
-| `stock/stock_board_concept_em.py` | `akshare/stock/stock_board_concept_em.py` | `0bfb52c0dda7` | `c178424b1fe5` | 2 | 0 | False | ✓ |
-| `stock/stock_board_industry_em.py` | `akshare/stock/stock_board_industry_em.py` | `d64d9666ca6c` | `b817943200c5` | 2 | 0 | False | ✓ |
-| `stock/stock_cg_equity_mortgage.py` | `akshare/stock/stock_cg_equity_mortgage.py` | `fd2ffb80eb65` | `1ddd6afdbbc3` | 1 | 0 | False | ✓ |
-| `stock/stock_cg_guarantee.py` | `akshare/stock/stock_cg_guarantee.py` | `b6ceea710861` | `262e6f773e65` | 1 | 0 | False | ✓ |
-| `stock/stock_cg_lawsuit.py` | `akshare/stock/stock_cg_lawsuit.py` | `644f74740e64` | `1ef97bf09bc6` | 1 | 0 | False | ✓ |
-| `stock/stock_dividend_cninfo.py` | `akshare/stock/stock_dividend_cninfo.py` | `a3d548dd1296` | `af5ca7c88b29` | 1 | 0 | False | ✓ |
-| `stock/stock_dzjy_em.py` | `akshare/stock/stock_dzjy_em.py` | `0cacf03a0d81` | `a741a3796868` | 0 | 0 | False | ✓ |
-| `stock/stock_fund_em.py` | `akshare/stock/stock_fund_em.py` | `3f59c10ac497` | `dae5ec1935ee` | 3 | 0 | False | ✓ |
-| `stock/stock_fund_hold.py` | `akshare/stock/stock_fund_hold.py` | `625bf24d6821` | `37921713cab4` | 0 | 0 | False | ✓ |
-| `stock/stock_gsrl_em.py` | `akshare/stock/stock_gsrl_em.py` | `2c5f3c3451eb` | `19b0aac4d54c` | 0 | 0 | False | ✓ |
-| `stock/stock_hk_comparison_em.py` | `akshare/stock/stock_hk_comparison_em.py` | `bd73dfaad00e` | `bb6ab8ba82fe` | 0 | 0 | False | ✓ |
-| `stock/stock_hk_famous.py` | `akshare/stock/stock_hk_famous.py` | `2540468929eb` | `949188c75827` | 1 | 0 | False | ✓ |
-| `stock/stock_hk_fhpx_ths.py` | `akshare/stock/stock_hk_fhpx_ths.py` | `68c2958e183b` | `da0c0bce45c5` | 0 | 0 | False | ✓ |
-| `stock/stock_hk_hot_rank_em.py` | `akshare/stock/stock_hk_hot_rank_em.py` | `397766d37016` | `376d17e309d3` | 0 | 0 | False | ✓ |
-| `stock/stock_hk_sina.py` | `akshare/stock/stock_hk_sina.py` | `bf20327adc78` | `7567b4b01d7c` | 2 | 0 | False | ✓ |
-| `stock/stock_hold_control_cninfo.py` | `akshare/stock/stock_hold_control_cninfo.py` | `2750865f5b59` | `8704cd61dab2` | 1 | 0 | False | ✓ |
-| `stock/stock_hold_control_em.py` | `akshare/stock/stock_hold_control_em.py` | `cc91fe1d76f2` | `a8ea33925574` | 0 | 0 | False | ✓ |
-| `stock/stock_hold_num_cninfo.py` | `akshare/stock/stock_hold_num_cninfo.py` | `258f4b719321` | `96625f2185c8` | 1 | 0 | False | ✓ |
-| `stock/stock_hot_rank_em.py` | `akshare/stock/stock_hot_rank_em.py` | `92d4476f1cac` | `303c2eec4db1` | 0 | 0 | False | ✓ |
-| `stock/stock_hot_search_baidu.py` | `akshare/stock/stock_hot_search_baidu.py` | `1781dcdf56d1` | `504dd49c03a9` | 0 | 0 | False | ✓ |
-| `stock/stock_hot_up_em.py` | `akshare/stock/stock_hot_up_em.py` | `692575408a53` | `7e0b8d6245de` | 0 | 0 | False | ✓ |
-| `stock/stock_hsgt_em.py` | `akshare/stock/stock_hsgt_em.py` | `b88e3373c22c` | `575888ab880b` | 1 | 0 | False | ✓ |
-| `stock/stock_industry.py` | `akshare/stock/stock_industry.py` | `806f05c3294a` | `c4cf4eba1ce2` | 1 | 0 | False | ✓ |
-| `stock/stock_industry_cninfo.py` | `akshare/stock/stock_industry_cninfo.py` | `faa80a58409c` | `9a3c8a0e8b69` | 1 | 0 | False | ✓ |
-| `stock/stock_industry_pe_cninfo.py` | `akshare/stock/stock_industry_pe_cninfo.py` | `970fb807b639` | `1df9a0a907c7` | 1 | 0 | False | ✓ |
-| `stock/stock_industry_sw.py` | `akshare/stock/stock_industry_sw.py` | `66266f02bd7c` | `33418fdada8e` | 1 | 0 | False | ✓ |
-| `stock/stock_info.py` | `akshare/stock/stock_info.py` | `6d69fb52d46a` | `30cb5cde1337` | 2 | 0 | False | ✓ |
-| `stock/stock_info_em.py` | `akshare/stock/stock_info_em.py` | `326443619390` | `cece843abf16` | 0 | 0 | False | ✓ |
-| `stock/stock_intraday_em.py` | `akshare/stock/stock_intraday_em.py` | `22dbeed8e8a5` | `718349d21bbc` | 1 | 0 | False | ✓ |
-| `stock/stock_intraday_sina.py` | `akshare/stock/stock_intraday_sina.py` | `eb197e670f79` | `9b07648f9e26` | 1 | 0 | False | ✓ |
-| `stock/stock_ipo_summary_cninfo.py` | `akshare/stock/stock_ipo_summary_cninfo.py` | `31afb9e06b0e` | `cce83a2c2a28` | 1 | 0 | False | ✓ |
-| `stock/stock_new_cninfo.py` | `akshare/stock/stock_new_cninfo.py` | `e99869bae7bd` | `885201198c19` | 1 | 0 | False | ✓ |
-| `stock/stock_news_cx.py` | `akshare/stock/stock_news_cx.py` | `05489bddcca2` | `588cf2a2888a` | 0 | 0 | False | ✓ |
-| `stock/stock_profile_cninfo.py` | `akshare/stock/stock_profile_cninfo.py` | `520507dc62b9` | `ce0ba3f892ad` | 1 | 0 | False | ✓ |
-| `stock/stock_profile_em.py` | `akshare/stock/stock_profile_em.py` | `a31844428bb0` | `71d24eebab6f` | 0 | 0 | False | ✓ |
-| `stock/stock_rank_forecast.py` | `akshare/stock/stock_rank_forecast.py` | `e54d1f6b8b73` | `bb06ae7bdf80` | 1 | 0 | False | ✓ |
-| `stock/stock_repurchase_em.py` | `akshare/stock/stock_repurchase_em.py` | `e827bd95ad12` | `1e83742653b2` | 0 | 0 | False | ✓ |
-| `stock/stock_share_changes_cninfo.py` | `akshare/stock/stock_share_changes_cninfo.py` | `b22cb83e2660` | `5471a4e035a2` | 1 | 0 | False | ✓ |
-| `stock/stock_share_hold.py` | `akshare/stock/stock_share_hold.py` | `870551b38959` | `53d1ced7235b` | 1 | 0 | False | ✓ |
-| `stock/stock_stop.py` | `akshare/stock/stock_stop.py` | `59116f9e5748` | `015f75e7ce72` | 0 | 0 | False | ✓ |
-| `stock/stock_summary.py` | `akshare/stock/stock_summary.py` | `d543f024d2e9` | `70ca6d12ac28` | 1 | 0 | False | ✓ |
-| `stock/stock_us_famous.py` | `akshare/stock/stock_us_famous.py` | `8e26d5a34ce1` | `27c6bfd0bc2f` | 1 | 0 | False | ✓ |
-| `stock/stock_us_js.py` | `akshare/stock/stock_us_js.py` | `56578651beca` | `074f77a0fb96` | 0 | 0 | False | ✓ |
-| `stock/stock_us_pink.py` | `akshare/stock/stock_us_pink.py` | `91d9fec8c05e` | `8d4e90f0f979` | 2 | 0 | False | ✓ |
-| `stock/stock_us_sina.py` | `akshare/stock/stock_us_sina.py` | `06548a314bf6` | `3a4abcb9216c` | 1 | 0 | False | ✓ |
-| `stock/stock_weibo_nlp.py` | `akshare/stock/stock_weibo_nlp.py` | `fa4ee0cc0bac` | `e9c7b2199c33` | 0 | 0 | False | ✓ |
-| `stock/stock_xq.py` | `akshare/stock/stock_xq.py` | `711a3c067287` | `6220fb74da26` | 0 | 0 | False | ✓ |
-| `stock/stock_zh_a_sina.py` | `akshare/stock/stock_zh_a_sina.py` | `a3acc9462598` | `ca1df55bdf97` | 3 | 0 | False | ✓ |
-| `stock/stock_zh_a_special.py` | `akshare/stock/stock_zh_a_special.py` | `136054ef714b` | `ba9b8b751ede` | 1 | 0 | False | ✓ |
-| `stock/stock_zh_a_tick_163.py` | `akshare/stock/stock_zh_a_tick_163.py` | `7af1d9423f62` | `d24439349f85` | 0 | 0 | False | ✓ |
-| `stock/stock_zh_a_tick_tx.py` | `akshare/stock/stock_zh_a_tick_tx.py` | `f873a2962a40` | `70a51f0a03c7` | 0 | 0 | False | ✓ |
-| `stock/stock_zh_a_tx.py` | `akshare/stock/stock_zh_a_tx.py` | `3ae12ea8f929` | `ad4448f5201a` | 0 | 0 | False | ✓ |
-| `stock/stock_zh_ah_tx.py` | `akshare/stock/stock_zh_ah_tx.py` | `ac7ec852d56a` | `9cf426233ec9` | 3 | 0 | False | ✓ |
-| `stock/stock_zh_b_sina.py` | `akshare/stock/stock_zh_b_sina.py` | `90b648e13cf0` | `efd46364a7a7` | 2 | 0 | False | ✓ |
-| `stock/stock_zh_comparison_em.py` | `akshare/stock/stock_zh_comparison_em.py` | `317782e8c97e` | `b0174c8d4f2d` | 0 | 0 | False | ✓ |
-| `stock/stock_zh_kcb_report.py` | `akshare/stock/stock_zh_kcb_report.py` | `ef3468bcd1aa` | `58b2fd92d431` | 0 | 0 | False | ✓ |
-| `stock/stock_zh_kcb_sina.py` | `akshare/stock/stock_zh_kcb_sina.py` | `64a168caaf58` | `89cd3b1f9bdb` | 2 | 0 | False | ✓ |
-| `stock_feature/__init__.py` | `akshare/stock_feature/__init__.py` | `736543046ca0` | `2ac9dca80627` | 0 | 0 | False | ✓ |
-| `stock_feature/cons.py` | `akshare/stock_feature/cons.py` | `87f70884ee18` | `5fb603a2baaf` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_a_below_net_asset_statistics.py` | `akshare/stock_feature/stock_a_below_net_asset_statistics.py` | `ea232570b96a` | `5919eb3c136c` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_a_high_low.py` | `akshare/stock_feature/stock_a_high_low.py` | `61b6c7e2bd86` | `fd3189b7e833` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_a_indicator.py` | `akshare/stock_feature/stock_a_indicator.py` | `ebf8134791e2` | `75b87198476d` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_a_pe_and_pb.py` | `akshare/stock_feature/stock_a_pe_and_pb.py` | `7617c1f0c005` | `998ac37905a2` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_account_em.py` | `akshare/stock_feature/stock_account_em.py` | `e15875ce8457` | `7425beec08c6` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_all_pb.py` | `akshare/stock_feature/stock_all_pb.py` | `e7b848a5ee45` | `0cef71b51f88` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_analyst_em.py` | `akshare/stock_feature/stock_analyst_em.py` | `745510a60399` | `e28330f222cf` | 2 | 0 | False | ✓ |
-| `stock_feature/stock_board_concept_ths.py` | `akshare/stock_feature/stock_board_concept_ths.py` | `4ac27f90f6ec` | `40edad9f13ca` | 3 | 0 | False | ✓ |
-| `stock_feature/stock_board_industry_ths.py` | `akshare/stock_feature/stock_board_industry_ths.py` | `7ae2bc95a75b` | `62f2e8942721` | 3 | 0 | False | ✓ |
-| `stock_feature/stock_buffett_index_lg.py` | `akshare/stock_feature/stock_buffett_index_lg.py` | `057336add918` | `ff71c2a29b03` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_classify_sina.py` | `akshare/stock_feature/stock_classify_sina.py` | `6bf01f5cf4df` | `daa17c9f7308` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_comment_em.py` | `akshare/stock_feature/stock_comment_em.py` | `2fc88b45bb1c` | `cdb258e97c87` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_concept_futu.py` | `akshare/stock_feature/stock_concept_futu.py` | `8ca27d99f749` | `083f0e311af7` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_congestion_lg.py` | `akshare/stock_feature/stock_congestion_lg.py` | `9401bee608a8` | `b28b3bf69d2f` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_cyq_em.py` | `akshare/stock_feature/stock_cyq_em.py` | `4cca1411e6d8` | `d212c9118e71` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_disclosure_cninfo.py` | `akshare/stock_feature/stock_disclosure_cninfo.py` | `565f4c04b428` | `9fe8d7867a80` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_dxsyl_em.py` | `akshare/stock_feature/stock_dxsyl_em.py` | `1e0a100ab98f` | `c4d6ac502848` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_ebs_lg.py` | `akshare/stock_feature/stock_ebs_lg.py` | `66300805cf87` | `e21fea524e42` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_esg_sina.py` | `akshare/stock_feature/stock_esg_sina.py` | `28f716d62107` | `06a2af1653ca` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_fhps_em.py` | `akshare/stock_feature/stock_fhps_em.py` | `131df9e6a8f5` | `1ffdf135e983` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_fhps_ths.py` | `akshare/stock_feature/stock_fhps_ths.py` | `87b35395af99` | `0399446b1587` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_fund_flow.py` | `akshare/stock_feature/stock_fund_flow.py` | `72a06ab05af3` | `586af2aa49b2` | 2 | 0 | False | ✓ |
-| `stock_feature/stock_gddh_em.py` | `akshare/stock_feature/stock_gddh_em.py` | `378b07fea17b` | `5fa6a208a607` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_gdfx_em.py` | `akshare/stock_feature/stock_gdfx_em.py` | `2d9b8fbba3d7` | `1266f6a4264f` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_gdhs.py` | `akshare/stock_feature/stock_gdhs.py` | `f4b47e70a132` | `69059c683c5f` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_gdzjc_em.py` | `akshare/stock_feature/stock_gdzjc_em.py` | `8666748103db` | `6cb6c263fb20` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_gpzy_em.py` | `akshare/stock_feature/stock_gpzy_em.py` | `efbdd8ac788d` | `9b092f183c47` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_gxl_lg.py` | `akshare/stock_feature/stock_gxl_lg.py` | `8f0685a231ea` | `0263b2b3629b` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_hist_em.py` | `akshare/stock_feature/stock_hist_em.py` | `292477c55d31` | `3d577e17cf6c` | 2 | 0 | False | ✓ |
-| `stock_feature/stock_hist_tx.py` | `akshare/stock_feature/stock_hist_tx.py` | `f392762da9dd` | `352a16f193cb` | 3 | 0 | False | ✓ |
-| `stock_feature/stock_hk_valuation_baidu.py` | `akshare/stock_feature/stock_hk_valuation_baidu.py` | `ed43948255c9` | `157a7d9700b3` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_hot_xq.py` | `akshare/stock_feature/stock_hot_xq.py` | `ba4aee8c9075` | `42364b88f5ad` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_hsgt_em.py` | `akshare/stock_feature/stock_hsgt_em.py` | `a62b50475098` | `9fcc8b52ce18` | 2 | 0 | False | ✓ |
-| `stock_feature/stock_hsgt_exchange_rate.py` | `akshare/stock_feature/stock_hsgt_exchange_rate.py` | `447ea8c0d7ce` | `146c2782329a` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_hsgt_min_em.py` | `akshare/stock_feature/stock_hsgt_min_em.py` | `0c136b6706db` | `bc8a2dc196c2` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_info.py` | `akshare/stock_feature/stock_info.py` | `059dfc396846` | `82c64d63dddc` | 2 | 0 | False | ✓ |
-| `stock_feature/stock_inner_trade_xq.py` | `akshare/stock_feature/stock_inner_trade_xq.py` | `5cd79085e796` | `2947a65e2e46` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_irm_cninfo.py` | `akshare/stock_feature/stock_irm_cninfo.py` | `c43d36f20965` | `3b63a93d8634` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_jgdy_em.py` | `akshare/stock_feature/stock_jgdy_em.py` | `86fb62dc1d9c` | `64ad652fbd3b` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_lh_yybpm.py` | `akshare/stock_feature/stock_lh_yybpm.py` | `ed596a03e506` | `e9b144ac8d63` | 2 | 0 | False | ✓ |
-| `stock_feature/stock_lhb_em.py` | `akshare/stock_feature/stock_lhb_em.py` | `1752f980b832` | `1591cb132267` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_lhb_sina.py` | `akshare/stock_feature/stock_lhb_sina.py` | `4ff01a3d3169` | `7e6a8bd52347` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_margin_em.py` | `akshare/stock_feature/stock_margin_em.py` | `0d1b99de7c2d` | `8a423aad0d08` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_margin_sse.py` | `akshare/stock_feature/stock_margin_sse.py` | `4f49448784b1` | `c9244e50136a` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_margin_szse.py` | `akshare/stock_feature/stock_margin_szse.py` | `186f168e00fc` | `e8998e999210` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_market_legu.py` | `akshare/stock_feature/stock_market_legu.py` | `15dbbba255d5` | `632223b6a320` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_pankou_em.py` | `akshare/stock_feature/stock_pankou_em.py` | `a329ef2469ad` | `4ee77b24977e` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_qsjy_em.py` | `akshare/stock_feature/stock_qsjy_em.py` | `2b1e74dee4ce` | `a2300d0c67d0` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_report_em.py` | `akshare/stock_feature/stock_report_em.py` | `fe75546ab3d2` | `60f57c232d0e` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_research_report_em.py` | `akshare/stock_feature/stock_research_report_em.py` | `ff3446c8eed6` | `853349d3e170` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_sns_sseinfo.py` | `akshare/stock_feature/stock_sns_sseinfo.py` | `eec83b1d3a6a` | `96469d504512` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_sy_em.py` | `akshare/stock_feature/stock_sy_em.py` | `1b2b0fd56bcf` | `813681353f67` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_technology_ths.py` | `akshare/stock_feature/stock_technology_ths.py` | `a7e2709dd779` | `414fb9da69df` | 2 | 0 | False | ✓ |
-| `stock_feature/stock_tfp_em.py` | `akshare/stock_feature/stock_tfp_em.py` | `6378e367be7c` | `60dc133736c2` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_three_report_em.py` | `akshare/stock_feature/stock_three_report_em.py` | `ea74754eff4d` | `15447385e0dd` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_ttm_lyr.py` | `akshare/stock_feature/stock_ttm_lyr.py` | `7ed95dfdae62` | `c3679d570931` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_us_valuation_baidu.py` | `akshare/stock_feature/stock_us_valuation_baidu.py` | `51c296782021` | `64c38e7642f3` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_value_em.py` | `akshare/stock_feature/stock_value_em.py` | `440f38d9d91e` | `89e2324e7f7c` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_yjbb_em.py` | `akshare/stock_feature/stock_yjbb_em.py` | `85006bd5a8fc` | `3e2db8c21f75` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_yjyg_cninfo.py` | `akshare/stock_feature/stock_yjyg_cninfo.py` | `28cd0ee6b1c1` | `33f001f0aef9` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_yjyg_em.py` | `akshare/stock_feature/stock_yjyg_em.py` | `20907350c580` | `60105e74c744` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_yzxdr_em.py` | `akshare/stock_feature/stock_yzxdr_em.py` | `fb5e8a0cfb41` | `15f3999640e2` | 2 | 0 | False | ✓ |
-| `stock_feature/stock_zdhtmx_em.py` | `akshare/stock_feature/stock_zdhtmx_em.py` | `c4245ad231e0` | `27aa09748d47` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_zf_pg.py` | `akshare/stock_feature/stock_zf_pg.py` | `9d8275b8b381` | `b8ce42293928` | 1 | 0 | False | ✓ |
-| `stock_feature/stock_zh_valuation_baidu.py` | `akshare/stock_feature/stock_zh_valuation_baidu.py` | `a316081cfebc` | `36c7d012de67` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_zh_vote_baidu.py` | `akshare/stock_feature/stock_zh_vote_baidu.py` | `7d4199954291` | `8fa8ac3936bb` | 0 | 0 | False | ✓ |
-| `stock_feature/stock_ztb_em.py` | `akshare/stock_feature/stock_ztb_em.py` | `ef31c6302677` | `961f802b5bdd` | 0 | 0 | False | ✓ |
-| `stock_feature/ths.js` | `akshare/stock_feature/ths.js` | `0163e41dfdcb` | `0163e41dfdcb` | 0 | 0 | False | ✓ |
-| `stock_fundamental/__init__.py` | `akshare/stock_fundamental/__init__.py` | `ba6b5d135e75` | `95d8957fa12b` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_basic_info_xq.py` | `akshare/stock_fundamental/stock_basic_info_xq.py` | `e53a67e09157` | `354d5eb73b69` | 1 | 0 | False | ✓ |
-| `stock_fundamental/stock_finance_hk_em.py` | `akshare/stock_fundamental/stock_finance_hk_em.py` | `892b4e17d7fb` | `aa53125a1678` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_finance_sina.py` | `akshare/stock_fundamental/stock_finance_sina.py` | `6e3604e1a867` | `7d5befe7e83c` | 1 | 0 | True | ✓ |
-| `stock_fundamental/stock_finance_ths.py` | `akshare/stock_fundamental/stock_finance_ths.py` | `cee9f881cf02` | `6e8f896ff628` | 1 | 0 | False | ✓ |
-| `stock_fundamental/stock_finance_us_em.py` | `akshare/stock_fundamental/stock_finance_us_em.py` | `9396d618e2e2` | `ffa6bf14d21e` | 1 | 0 | False | ✓ |
-| `stock_fundamental/stock_gbjg_em.py` | `akshare/stock_fundamental/stock_gbjg_em.py` | `83717cd733fc` | `e0c1efb90c15` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_hold.py` | `akshare/stock_fundamental/stock_hold.py` | `862271da2de1` | `ef5729778b9b` | 1 | 0 | False | ✓ |
-| `stock_fundamental/stock_ipo_declare.py` | `akshare/stock_fundamental/stock_ipo_declare.py` | `324858020327` | `49f1173e56d5` | 2 | 0 | False | ✓ |
-| `stock_fundamental/stock_ipo_review.py` | `akshare/stock_fundamental/stock_ipo_review.py` | `5a27943847cf` | `64ac60ae32d1` | 2 | 0 | False | ✓ |
-| `stock_fundamental/stock_ipo_ths.py` | `akshare/stock_fundamental/stock_ipo_ths.py` | `d4a2960f1000` | `3e781cfe8558` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_ipo_tutor.py` | `akshare/stock_fundamental/stock_ipo_tutor.py` | `97645d3608af` | `dc748cf590ba` | 2 | 0 | False | ✓ |
-| `stock_fundamental/stock_kcb_detail_sse.py` | `akshare/stock_fundamental/stock_kcb_detail_sse.py` | `536c38c14b8e` | `ad00ff0882f1` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_kcb_sse.py` | `akshare/stock_fundamental/stock_kcb_sse.py` | `7030819429bb` | `6b2215405fe0` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_notice.py` | `akshare/stock_fundamental/stock_notice.py` | `67070fcd919e` | `93e6f384da17` | 1 | 0 | False | ✓ |
-| `stock_fundamental/stock_profit_forecast_em.py` | `akshare/stock_fundamental/stock_profit_forecast_em.py` | `fd9956932cfe` | `8471073a3259` | 1 | 0 | False | ✓ |
-| `stock_fundamental/stock_profit_forecast_hk_etnet.py` | `akshare/stock_fundamental/stock_profit_forecast_hk_etnet.py` | `534039a11aae` | `b4008e88b314` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_profit_forecast_ths.py` | `akshare/stock_fundamental/stock_profit_forecast_ths.py` | `f1fccf1b205c` | `ce8e15181a10` | 1 | 0 | False | ✓ |
-| `stock_fundamental/stock_recommend.py` | `akshare/stock_fundamental/stock_recommend.py` | `a75595170784` | `000247b3809f` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_register_em.py` | `akshare/stock_fundamental/stock_register_em.py` | `64521bb25681` | `07b3f9b78a67` | 2 | 0 | False | ✓ |
-| `stock_fundamental/stock_restricted_em.py` | `akshare/stock_fundamental/stock_restricted_em.py` | `7b91b7a22641` | `d5dad781b94c` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_zygc.py` | `akshare/stock_fundamental/stock_zygc.py` | `84b82d66641a` | `f06076f740d3` | 0 | 0 | False | ✓ |
-| `stock_fundamental/stock_zyjs_ths.py` | `akshare/stock_fundamental/stock_zyjs_ths.py` | `e5a9e249ff56` | `9627fb0a5fe0` | 0 | 0 | False | ✓ |
-| `utils/__init__.py` | `akshare/utils/__init__.py` | `1db2943f6bd9` | `ee81dc81ba86` | 0 | 0 | False | ✓ |
-| `utils/cons.py` | `akshare/utils/cons.py` | `3c56677641b7` | `6af0c61db0cd` | 0 | 0 | False | ✓ |
-| `utils/context.py` | `akshare/utils/context.py` | `1e5e243d4cd0` | `1967a47f2b4e` | 0 | 0 | False | ✓ |
-| `utils/demjson.py` | `akshare/utils/demjson.py` | `c53d1f714903` | `4fd9219ed697` | 0 | 0 | False | ✓ |
-| `utils/func.py` | `akshare/utils/func.py` | `9a3511623dda` | `23c46b78b4a1` | 2 | 0 | False | ✓ |
-| `utils/multi_decrypt.py` | `akshare/utils/multi_decrypt.py` | `696a0bda210f` | `57eb1ae9007f` | 0 | 0 | False | ✓ |
-| `utils/request.py` | `akshare/utils/request.py` | `54affea122c2` | `6a128f6abc04` | 0 | 0 | False | ✓ |
-| `utils/token_process.py` | `akshare/utils/token_process.py` | `9c6b609d9191` | `f9eacb12718c` | 1 | 0 | False | ✓ |
-| `utils/tqdm.py` | `akshare/utils/tqdm.py` | `32e3cdc1cb30` | `11085cbf982b` | 0 | 0 | False | ✓ |
+| 文件 | 上游路径 | 上游 SHA-256 | 搬运 SHA-256 | import 改写 | 字符串改写 | 人工改动 | 人工差异原因 | 重放一致 |
+|------|---------|------------|-------------|------------|-----------|---------|-------------|---------|
+| `__init__.py` | `akshare/__init__.py` | `42391b2448bbe670a7d1bc8f20d57d40b415793d1dc883d3bb81735ecd20b362` | `0a5d0d9eb41d033d894206ebf942f6118a8afedffea973123b5a4c42ba2b4865` | 0 | 0 | True | Generated lazy flat facade preserves available upstream exports while deferring vendor module imports to module-level __getattr__; __dir__ keeps export discovery available without eagerly importing the vendored package tree. | ✓ |
+| `_version.py` | `akshare/_version.py` | `aabe70222b650cd3bd59acd84ae8e31bf5b88d841e9d6a3a2a688aa6b24ffaf2` | `8a3008ebe2f312c877e3ea89f2d28f0c3246c3e5dd614e8da0b41c90c105aab0` | 0 | 0 | False |  | ✓ |
+| `bond/__init__.py` | `akshare/bond/__init__.py` | `44c4dfd5b4f910e137b6d5a99f7846bb52ed526b15c43a1ad16ed6d205c73b2f` | `c21b9119462fe4ea9e51cb2248d75ad74b085e628f3808a01fcf146aca34da01` | 0 | 0 | False |  | ✓ |
+| `bond/bond_buy_back_em.py` | `akshare/bond/bond_buy_back_em.py` | `897be22b879b08779ef6e07008703728c5e50f8d78ccbe784d4a588704e44806` | `d271057305c46582a8a2284d64b2bc630692f7cde3970fcf1227767c0ca11ae6` | 0 | 0 | False |  | ✓ |
+| `bond/bond_cb_sina.py` | `akshare/bond/bond_cb_sina.py` | `fb586d02c59d02780731843ffd803edfad52c613ae425b6598a7cf9ce7a6afd9` | `6d8801e0a2df0d3c52cf89ea8f5ff33bb22272c2bb4c774a93f9d24d34da5cad` | 0 | 0 | False |  | ✓ |
+| `bond/bond_cb_ths.py` | `akshare/bond/bond_cb_ths.py` | `b31a5c1abe6d7944747d21a89412a5d5b0d491d03de2029d5dd2efaf93520b45` | `73cd4ed377441f43d71d84eeeaca39d812e9a85d1ed4be8687bb232c29ea455a` | 0 | 0 | False |  | ✓ |
+| `bond/bond_cbond.py` | `akshare/bond/bond_cbond.py` | `cd0500fbc24592947906f4484b7e64dd794865f67315911e165abd49087fe1aa` | `5ce0dc1d55fead6a922fa584934ec82ab3796015d206c75bcaa89d08bf8dbcd7` | 1 | 0 | False |  | ✓ |
+| `bond/bond_china.py` | `akshare/bond/bond_china.py` | `1a3a76c7668d1519467c71694185ff3ebbf5f55f5ae08362c393bde3aacb2ed0` | `322f9b5240e0bb76fa119f9ae8ebb30a586497bc702794dafda5bea8514cf3f2` | 2 | 0 | False |  | ✓ |
+| `bond/bond_china_money.py` | `akshare/bond/bond_china_money.py` | `4e90ab2e4db354e15865d769f22b47fb8da9b3657590600d1d3d6382bcd52a55` | `11a1382970b9952533ebdae0d1e7f656c1846249be79a3bc97c6d7cf4296330a` | 1 | 0 | True | chinamoney site key -> CHINAMONEY_API_KEY env var | ✓ |
+| `bond/bond_convert.py` | `akshare/bond/bond_convert.py` | `9291a7d21a118a38250dd8fffe95ed6fec5da9ce4caac7904aec283bd7934fb9` | `57b245a9ac141204463098178728875e6aa0df5bb32f25a2d1dcd63519d95446` | 1 | 0 | True | jisilu credentials -> JSL_USER/JSL_PASSWORD env vars | ✓ |
+| `bond/bond_em.py` | `akshare/bond/bond_em.py` | `139d7d07aa7088bd4ce5a3c49c34c0616d4e4b0afbd6c68de96396d2fc6761c8` | `5bfe835cfed7d2d0db85c983b6c1bd1e2b9ea62975c37577e096cd4a3460dbeb` | 1 | 0 | False |  | ✓ |
+| `bond/bond_gb_sina.py` | `akshare/bond/bond_gb_sina.py` | `fcdefb0ff358b2572251f5a2e48417bb92b535a2d9e9426c4c690f3f93657a48` | `43086479f5b6a28f85f732f05b00f08bfb02221396b0fdf4a9de44eeeecde713` | 0 | 0 | False |  | ✓ |
+| `bond/bond_info_cm.py` | `akshare/bond/bond_info_cm.py` | `fbb40bacb26baefb657a205248922e0579f48a4d5f9d6a7e7181d24f98c77f88` | `fd70d26440524392f87b27944a17c449305be279146a0c74ff2b32d09563e44b` | 2 | 0 | False |  | ✓ |
+| `bond/bond_issue_cninfo.py` | `akshare/bond/bond_issue_cninfo.py` | `b4fa19845fbfb085fdced08a0742b4f99e0a77d6fedfcf5b3f7fc27452bb59bd` | `9c630b5b793fc0e88d55af123ca9f2f438bd4c713c497abdb74734f1825bf644` | 1 | 0 | False |  | ✓ |
+| `bond/bond_nafmii.py` | `akshare/bond/bond_nafmii.py` | `71e91ca1bc9728c1b5cc3b8cf301d63a7fff4ae5842f16265307c65662d13f8d` | `649c0bd5c1770a6f6f7fdcc7163724fee4f8dbcc23aaee02ed306f5997099fff` | 0 | 0 | False |  | ✓ |
+| `bond/bond_summary.py` | `akshare/bond/bond_summary.py` | `fd9d8e5631375297f13761a143616813d7870a340510dcf40d2b72250718907e` | `9941f00abaf9e42f8162a2945c31ca486638211a35244589977f0613e0c3e2ae` | 0 | 0 | False |  | ✓ |
+| `bond/bond_zh_cov.py` | `akshare/bond/bond_zh_cov.py` | `a4acf1b04b0cb2c286521c49d63cb4b71334b49e002598ca17438f24bfe6fa7b` | `3f8617074d797c9aebbc814f6cff9282ce959cb770c1f1edec84047b0366eef6` | 5 | 0 | False |  | ✓ |
+| `bond/bond_zh_sina.py` | `akshare/bond/bond_zh_sina.py` | `1846ae534624101623ab61b72426e2c23529f168b6b23b17fc44bb44ccfd9747` | `b7d7a2b5539b2866a91abef1a246e03e109ef98c91be230c84432169c8ef1cdb` | 4 | 0 | False |  | ✓ |
+| `bond/cons.py` | `akshare/bond/cons.py` | `958dff329357e5fe8543f10ee7abe379bc4479c4172df82092e8567f8c726ef4` | `263058a8dc9bcd0564f42c971d49e12bcec6a29ccc01f3415c7ed923ae238e60` | 0 | 0 | False |  | ✓ |
+| `datasets.py` | `akshare/datasets.py` | `acab91359aea8ba20cb19f67caf3b7471d368ecd2d1f7ccc2e3cfc1d0340a0f4` | `5e3b7e47b60db6b2da0f3455ccde96f4b91d629c2f23ea70dc187a31a1749f6b` | 0 | 2 | True | akshare.data resource package never existed upstream; fail closed with a clear error (A2.3 标注不可用) | ✓ |
+| `economic/__init__.py` | `akshare/economic/__init__.py` | `edd5894ab3ececa4e3f7f15fb3e652dda603adfdefe273a7658ab0519dc3266b` | `c3f23b25c5aaeb1d9d55b565f7faabb814b0ee7e1d8617fef373635afb4240e4` | 0 | 0 | False |  | ✓ |
+| `economic/cons.py` | `akshare/economic/cons.py` | `81451fba33829bcd107542b109ae350266179781fe1a587093f0d09be0ee0483` | `6716813e5452a1148c20347ec8b947622f7dbf081d3ce5e1d7c95a96a0829eae` | 0 | 0 | False |  | ✓ |
+| `economic/macro_australia.py` | `akshare/economic/macro_australia.py` | `6307c401be9ec116b36b585a7b07070e2b639e4b01a2a899a017fd5412d401bc` | `ff35f5fb12d54b0efc8538c0270e92fa08859ad4902e19d6554e1e16046b2eca` | 0 | 0 | False |  | ✓ |
+| `economic/macro_bank.py` | `akshare/economic/macro_bank.py` | `c06feee70e588de1519f5c2bf917bbb72fecd826d0d10a61c6cfdb205ff6d144` | `91a9a4dd69d967dfdb435b2925a5c05de77a3929f8fa4680bbd03dd604ac4b01` | 0 | 0 | False |  | ✓ |
+| `economic/macro_canada.py` | `akshare/economic/macro_canada.py` | `20a5ea182878e98c2a55cd6ee6caa293f0e7f6e2e53bae055cf1cfa184d125c5` | `958e1d69001b9a02f0d22da2edb62823c974541ad6a9a150975ad025241e5356` | 0 | 0 | False |  | ✓ |
+| `economic/macro_china.py` | `akshare/economic/macro_china.py` | `42aeab61c39444dc722443322117b0641b9ea408f0b21e84488c37055c71361f` | `b4c5110955195705b28606f01ece2c0102280b058c9173b403cfc71fab93561c` | 3 | 0 | False |  | ✓ |
+| `economic/macro_china_hk.py` | `akshare/economic/macro_china_hk.py` | `c1e6c6fef5657fb38fe93747451dbc1a37c5ceec917bc9c81d71057e0d107fe9` | `409d83cdd7959857e604a1876f900bfc8c6263c0e232a91110081475104282bd` | 0 | 0 | False |  | ✓ |
+| `economic/macro_china_nbs.py` | `akshare/economic/macro_china_nbs.py` | `ab5784ddde6585b05db7a666754e790bc20d2c061138c83d66547b411e1f3442` | `2a2b2a632efa52607e83f7264170d4f02d5fcbc61b8ce96e8a5240c174fa844e` | 0 | 0 | False |  | ✓ |
+| `economic/macro_constitute.py` | `akshare/economic/macro_constitute.py` | `7027d6ba9289f3ab94ce0fe950bb20d42d8595e1dbdb99986df138c76f559ca0` | `a33fbbbb4d55bd9ebbb711828aa590c3fa65f83ba9163d485e2aaff34b9e8be6` | 0 | 0 | False |  | ✓ |
+| `economic/macro_euro.py` | `akshare/economic/macro_euro.py` | `98914d1d5de5d2e4d0bae3d15480e30c1c896c1b4ec66795d2781815e49964c3` | `afbd5fad3ef517b7562eb1a5219b7eb068e9f4d8aef8ca02fea3a0a6b9807805` | 0 | 0 | False |  | ✓ |
+| `economic/macro_finance_ths.py` | `akshare/economic/macro_finance_ths.py` | `bb4a9549955ae45b6ed5081e8405fe6ce7a79667a3272cb741696c7fc0b95b5e` | `37999bc54fedc1ef0a044ebb6a10bc50ac8dd973a6a53fb7bbebe1d96960c605` | 0 | 0 | False |  | ✓ |
+| `economic/macro_germany.py` | `akshare/economic/macro_germany.py` | `e08ec1f24079a1506f5fb1262d450b99848a15ec99fd0dcd19cb27592e308244` | `0c78ef46f7b620c149ca3f638c1d6059bfb6457b27481055c4a0ee671ec26320` | 0 | 0 | False |  | ✓ |
+| `economic/macro_info_ws.py` | `akshare/economic/macro_info_ws.py` | `b743c372c5820f8bedf1eab5b166b7cdf898b718a5d5e921695eb5caef51df66` | `86ef35a7126cd94d0b6d69c055b796d222c7aee11d21a68a7905ae80ef3c3850` | 0 | 0 | False |  | ✓ |
+| `economic/macro_japan.py` | `akshare/economic/macro_japan.py` | `0211cab609b4792125dbc51441de65f8baa5d894c0e5340707d475d658f35093` | `3d2e04656f012384bb6b324b2c26415d01af1f5b332eb4f7c18f7499b4780add` | 0 | 0 | False |  | ✓ |
+| `economic/macro_other.py` | `akshare/economic/macro_other.py` | `547b9d465fb2bb6eb88f99a579d7b73bdcfd7070da501ded992af9b40fa01ed8` | `989bb034d0cc75ba756ef3fc5af8ee9405e8d18b1162f9ca8a0845cfdb16a9a2` | 0 | 0 | False |  | ✓ |
+| `economic/macro_swiss.py` | `akshare/economic/macro_swiss.py` | `372d80926ac384bf9072a482cb8b943b9e9d3d26d907b5ebb7bec5a6da36c6a7` | `282ade310e29d9ea049e7e4ad9b705232d48bee46f5911ac282866563d39fd2f` | 0 | 0 | False |  | ✓ |
+| `economic/macro_uk.py` | `akshare/economic/macro_uk.py` | `961d89282becb5868a21485997b4b090ab58d409e793e6493da09ce74c687da7` | `7ba231574ac3c87921bd32e81494600b134f0f32a753df821b3cf390d1b63d80` | 0 | 0 | False |  | ✓ |
+| `economic/macro_usa.py` | `akshare/economic/macro_usa.py` | `139621c32d527a5e211da9969087a59c5f95d516424d8a9560464126d2efe8bc` | `8b03ebd87fa2440cb36ee8e4d440f6d275b4df93b6915283487779eb619cfd96` | 0 | 0 | False |  | ✓ |
+| `economic/marco_cnbs.py` | `akshare/economic/marco_cnbs.py` | `8162f2e3cf5e110af1aaaa68ced96ce459cceb224a4b0f87ee8e34b0aeacb0c5` | `0c6afb5f649646fbab47342e85a8f292b9cdb61a940bc52f2b876673a8197647` | 0 | 0 | False |  | ✓ |
+| `exceptions.py` | `akshare/exceptions.py` | `5842632214a627fc57356ea0af05789ee7c4fdc7e69b2ba19ae7951a23755408` | `8991c9e6c4f0b588c9e551e5c85bb6476a5b87e3e0859805d52593017caac87b` | 0 | 0 | False |  | ✓ |
+| `file_fold/__init__.py` | `akshare/file_fold/__init__.py` | `44c4dfd5b4f910e137b6d5a99f7846bb52ed526b15c43a1ad16ed6d205c73b2f` | `c21b9119462fe4ea9e51cb2248d75ad74b085e628f3808a01fcf146aca34da01` | 0 | 0 | False |  | ✓ |
+| `file_fold/calendar.json` | `akshare/file_fold/calendar.json` | `f1f1ce33c5cceb5c530c3271fc951405cb5624d2f30becec85dc7a85fd47e656` | `f1f1ce33c5cceb5c530c3271fc951405cb5624d2f30becec85dc7a85fd47e656` | 0 | 0 | False |  | ✓ |
+| `fund/__init__.py` | `akshare/fund/__init__.py` | `44c4dfd5b4f910e137b6d5a99f7846bb52ed526b15c43a1ad16ed6d205c73b2f` | `c21b9119462fe4ea9e51cb2248d75ad74b085e628f3808a01fcf146aca34da01` | 0 | 0 | False |  | ✓ |
+| `fund/fund_amac.py` | `akshare/fund/fund_amac.py` | `b03a24a8d484fa714e97fe02657d79b9a2e5237f9fa7e5b48e01444e7ff8acc7` | `236b0ef62b3f5853c72fceaabece57055220984b06dccc67ca4f7acc581dcc18` | 1 | 0 | False |  | ✓ |
+| `fund/fund_announcement_em.py` | `akshare/fund/fund_announcement_em.py` | `e44d3f793e764c35667a028920cb53f86fb02be0eedcd9eba3e3014d707a2642` | `e1f904cac92dc8594dcf8edff1aee1ac58e1b5864e729d402b9bbad3facd18c5` | 0 | 0 | False |  | ✓ |
+| `fund/fund_aum_em.py` | `akshare/fund/fund_aum_em.py` | `2f95ad8010e40c298b6936d1ad80331f2c1838812d2331deca477256c319da3b` | `5eee705f55d2c8a1b8f111d5e14860c7d0a152b3129a06f180beab6308f4a5ca` | 0 | 0 | False |  | ✓ |
+| `fund/fund_em.py` | `akshare/fund/fund_em.py` | `385a95982c184faee5c0d6313a664a9135ed987dacb13e5a3751ef06e1848186` | `88e92ec939212bf9be107d21dd2d08de184c70828b8892ae3722e5302c2f365f` | 4 | 0 | False |  | ✓ |
+| `fund/fund_etf_em.py` | `akshare/fund/fund_etf_em.py` | `b962b42763e1f72ab4a9d0c953cc4ad7da11da4e7e8ae6f2af572983971801b7` | `33b1ee8b83fbd813b2bf97373a5de6c3fcbf61c39cc55c7f5673869b5b45439b` | 2 | 0 | False |  | ✓ |
+| `fund/fund_etf_sina.py` | `akshare/fund/fund_etf_sina.py` | `2c83042b7e98016885f03fcd34ed115d4581b40004b2b3bb68320bef712c4ead` | `a307ee265ef4161c433e7707f8cb2e95c34253cb19324469c4a06e8281a0111b` | 2 | 0 | False |  | ✓ |
+| `fund/fund_etf_sse.py` | `akshare/fund/fund_etf_sse.py` | `11643f6557126b0567c2489cb64a4e5df8794ee49bf7436863ac145780a97ff0` | `c0791856eab6239012939733b04673ffef57be70c1bbea887cf55fd342eed2a1` | 0 | 0 | False |  | ✓ |
+| `fund/fund_etf_szse.py` | `akshare/fund/fund_etf_szse.py` | `05d9087044e3284b8565e86d28a23bd7ff821c7c6bc2b966d1971d2d320ab034` | `8d1c5c0d9f48aeba0016eddb1ee787592cf9a27793c37377ee6563dc0d8526f1` | 0 | 0 | False |  | ✓ |
+| `fund/fund_etf_ths.py` | `akshare/fund/fund_etf_ths.py` | `411a161687dfe38325c4956670a1012ecf86e470312cd633f639a755dec54c73` | `2ad2a0a19d3ac65dcbaa4f1defc71573ff9b2e3e5bbf622cca5817440d001bbd` | 0 | 0 | False |  | ✓ |
+| `fund/fund_fee_em.py` | `akshare/fund/fund_fee_em.py` | `fb0447b1eb993163ff0db012267a1fee983fd79803d376f90c2bce397b0492d3` | `2eaa994e0f89b939d8a26608565d229c31737d14426390987e1141107637f3a3` | 0 | 0 | False |  | ✓ |
+| `fund/fund_fhsp_em.py` | `akshare/fund/fund_fhsp_em.py` | `1bd8ffc1bd9496dbc7bc103122546777dbceb13642c3f99a4e0c01e8f0035149` | `c3fc1c959f2d159216d7b759944fc658045260f049eee853df58476eb393b547` | 1 | 0 | False |  | ✓ |
+| `fund/fund_info_ths.py` | `akshare/fund/fund_info_ths.py` | `936c0a25a0d8e577a666a0acb775a5bc1a0f48d3c3491aec7c3d18436237528f` | `8f25b9dba7888893d833ccb7869b78d36df079dbd3b21f3f902d4048701a7908` | 1 | 0 | False |  | ✓ |
+| `fund/fund_init_em.py` | `akshare/fund/fund_init_em.py` | `f67adabd72376b2bc84724441f2d3b53c80ef7f74f4cda21dd6dfa881ca19a13` | `aa7936ae4d8dcc20f469cae56f3d174572b587c7b8bf7192b885f2d761b752dd` | 1 | 0 | False |  | ✓ |
+| `fund/fund_init_ths.py` | `akshare/fund/fund_init_ths.py` | `dd32785a8a41a17d397a6dbdd467f2081534bfc783c25b60350eb8e2969fc191` | `a43ab2c8297bb52f7d586bbe7f35bbcf278a1ce01db55d90cca0a2ea26725017` | 0 | 0 | False |  | ✓ |
+| `fund/fund_lof_em.py` | `akshare/fund/fund_lof_em.py` | `0947b9766d1ae00cab77a5f2e810001282a2c3da93bb2d3561fb0f3649867944` | `1d1c8c9d46342a43ba427e03a6447ed441b731a1715ce72c7a23e8394ed84393` | 2 | 0 | False |  | ✓ |
+| `fund/fund_manager.py` | `akshare/fund/fund_manager.py` | `a62422d406ea9b7bb81341714cec224c6c7e29391a707d2d0b19be9c02e5ca36` | `eb0bb0443ac8f84562d8dee0961151fdd8036021607d6c4b08393782d406d853` | 2 | 0 | False |  | ✓ |
+| `fund/fund_overview_em.py` | `akshare/fund/fund_overview_em.py` | `2364876945e7b7a84507cf24b945b0dbf23ef141f52b47064f78d78d6873b729` | `599203076c8996b7f894ec4e05e0139b18b2fa8e6dabb263adffbadb1c8cf329` | 0 | 0 | False |  | ✓ |
+| `fund/fund_portfolio_em.py` | `akshare/fund/fund_portfolio_em.py` | `8cc629b77ceb50299add7703b8b2b0b1d4e7a7f5b4faa5eea6fa3cbe322cbbab` | `fa998dbee98165910a16af2f54124d8a1eaefadeb73fe39c8076b43a64a46c83` | 1 | 0 | False |  | ✓ |
+| `fund/fund_position_lg.py` | `akshare/fund/fund_position_lg.py` | `9540407ed0baa466610e9e0faa61ec52fba0a0a4405d7d910c5d8f788eb7b966` | `e38f7a1d540ae1f743d5b5d7270799c5d3607f044b3e02f71eff0aa57aa2f6b8` | 1 | 0 | False |  | ✓ |
+| `fund/fund_rank_em.py` | `akshare/fund/fund_rank_em.py` | `86634488cb6c6cd8a43b7f071c37767500af71ce8aee9d204256855f3c4b3e78` | `fce2997f17d0169091ecdd0c40901e7af8dbb1a505135148f5c0d3ddc2da8db2` | 1 | 0 | False |  | ✓ |
+| `fund/fund_rating.py` | `akshare/fund/fund_rating.py` | `8a0986332f21f8645a7a1371b02c8220caa6ca9685ae35d5fddbe6cce9d46a4c` | `99d5e8fe3fee012199054ea8a230778c4f6e82aa35461f8667765cd5d28a03dd` | 0 | 0 | False |  | ✓ |
+| `fund/fund_report_cninfo.py` | `akshare/fund/fund_report_cninfo.py` | `ae1ced69adc9e3c55d9c211714097cc0c83e3fb308da241ad0772e964bcbf022` | `29002d5d4ca5a5cedb4234f712096f16dfb5bb467e58de2e7af4e707e6d063c0` | 1 | 0 | False |  | ✓ |
+| `fund/fund_scale_em.py` | `akshare/fund/fund_scale_em.py` | `165e2bbbe8f587df7e6847166405ba45dfa5bec950e39e91d113dd2183e8a201` | `9c0adad4c35beb82c1e943924e9e85360f7fb99eb9bcb53aae5e66268073127d` | 1 | 0 | False |  | ✓ |
+| `fund/fund_scale_sina.py` | `akshare/fund/fund_scale_sina.py` | `034a88cd6050744dc8192f7e7313bdfc5369b87f81006e4784f9392b34c54c57` | `35dffba9fa5e17905037552fc6952c5a4959dfc911a8127b77330194c343c1f2` | 1 | 0 | False |  | ✓ |
+| `fund/fund_scale_szse.py` | `akshare/fund/fund_scale_szse.py` | `0bfb4ba1b67d4d99717e4731fe18ec6bf4cf3742e90bd3ccb6df6ff8ce2a0c56` | `4d63a1371a6c673f0666d72383047c20cbc9deb358d0d0b5eccf461cd0f1d2a7` | 0 | 0 | False |  | ✓ |
+| `fund/fund_xq.py` | `akshare/fund/fund_xq.py` | `03131907ef78d1b358efe05ab552d98ac787371896035ee14334dfbb11a26cf5` | `039c195dc459f60aa9967a0a379c91647b21548ca49f64fd3fca00d9cc61c458` | 0 | 0 | False |  | ✓ |
+| `futures/__init__.py` | `akshare/futures/__init__.py` | `44c4dfd5b4f910e137b6d5a99f7846bb52ed526b15c43a1ad16ed6d205c73b2f` | `c21b9119462fe4ea9e51cb2248d75ad74b085e628f3808a01fcf146aca34da01` | 0 | 0 | False |  | ✓ |
+| `futures/cons.py` | `akshare/futures/cons.py` | `543704ff6aa5cf776dbbddd1265e8b3db6cfbdb2ecb357f45292228f8b29daa5` | `4066ac6387c516014d87fb1edf0f4883d442484c8df52b61b0c8191466cf362a` | 0 | 0 | False |  | ✓ |
+| `futures/cot.py` | `akshare/futures/cot.py` | `074245d8069f92d666ce0bc7fa3928308049090e455b04369d5bbde81403a3cc` | `0c59f9f14a9cf9b4d1f0d2dc7515584dacd5868346cd8bb13498ffffd9963614` | 3 | 0 | False |  | ✓ |
+| `futures/futures_basis.py` | `akshare/futures/futures_basis.py` | `b068f3079728893515234447975bd2704f4786a3d1c810e715db46d4e99e81d4` | `6dd7dd3bc41a43c732ebcdfbcaa5c5d7bd8742585dae40879e90f9fe4dd3521d` | 3 | 0 | False |  | ✓ |
+| `futures/futures_comex_em.py` | `akshare/futures/futures_comex_em.py` | `34fc0e083ea56540cbe30946c6f6e6989205910956e36ec444ed2f4eec75dd65` | `03f1405a90979603c958679f65cac4fd2fea4aaffcca8384f81820df32ea4cae` | 1 | 0 | False |  | ✓ |
+| `futures/futures_comm_ctp.py` | `akshare/futures/futures_comm_ctp.py` | `232551094be12d317399c515be521a619d5edfc965ec017c131860b572aeceb2` | `da7b84b384273d7942378d851ff4906420914ec27cb92fc51f0e4e7b4c6c2e16` | 0 | 0 | False |  | ✓ |
+| `futures/futures_comm_js.py` | `akshare/futures/futures_comm_js.py` | `0bf873880597d0e732588a837474e9db0fa22681d690836a24d38474d34ebcda` | `b5c569d40cf173536fd22edfced3f55e888fa9130c08a019264ae75e3cb6ec58` | 0 | 0 | False |  | ✓ |
+| `futures/futures_comm_qihuo.py` | `akshare/futures/futures_comm_qihuo.py` | `1fecdfee397410486e16413fbe78e830f9c8c2a2261ad5a281766edf552f62d9` | `bc3678087ff3d22b39090e4818e46d551ce8c2a6b8d4f5decc256e4eb45f3b6f` | 0 | 0 | False |  | ✓ |
+| `futures/futures_contract_detail.py` | `akshare/futures/futures_contract_detail.py` | `f162d8a8bab1dee8beaf100f083213e98638631e7e30b6ffd4383e6d3e8a338a` | `981d5b35450a7dee9f772b82787cc6bee6530bb4389a920727a0f1b55e9c239c` | 1 | 0 | False |  | ✓ |
+| `futures/futures_daily_bar.py` | `akshare/futures/futures_daily_bar.py` | `c547fcc877d3a4da6d0ed60a8a660a7a4b41e2f85e299818c72eb17b19eb8dca` | `ad0bd1944ecfb7bab7f1ea68acd468f45d06959134a6e2def6864e1856bb2d9a` | 2 | 0 | False |  | ✓ |
+| `futures/futures_foreign.py` | `akshare/futures/futures_foreign.py` | `7f93ace536b8834269669449b938bd844ad91838edf43b12f225491891bf4614` | `1161148e598db2125cf5165ffa39451c4ef3bbd8ac10410ba6ff3911dae3b08d` | 1 | 0 | False |  | ✓ |
+| `futures/futures_hf_em.py` | `akshare/futures/futures_hf_em.py` | `95e9ae4b106967b3995ef373fa57b1a6844cb6480c0a795a3fc0533077cd6878` | `1af06460314265404c9441411988dc895522bf9a6f0fb45bac2ce77043682bf5` | 1 | 0 | True | eastmoney site token -> EM_API_TOKEN env var | ✓ |
+| `futures/futures_hist_em.py` | `akshare/futures/futures_hist_em.py` | `c97902fe6732a54ebb8f86904b3c174297b9b60fe620f49811e29cdca44c780b` | `9eb6ca03920394c367ce806fb54626f21a99fee885741bb87dda081a0dd1c181` | 1 | 0 | False |  | ✓ |
+| `futures/futures_hq_sina.py` | `akshare/futures/futures_hq_sina.py` | `64bb14137f7fbf1c73fbd4f3720e15901f09fd884e2896c969d1a6d6f1edef66` | `82fa1c6767c7625518fd0bd766fc905e2877975c11feb856bffaa093c5faee40` | 1 | 0 | False |  | ✓ |
+| `futures/futures_index_ccidx.py` | `akshare/futures/futures_index_ccidx.py` | `c35a76c1a3aae8b0bdee483871fc92cba934b679fb2c7b75be343196fdef5c41` | `717cfb8c05028096b504701fc74fec285084456786ce3ea93047af6162471cbc` | 0 | 0 | False |  | ✓ |
+| `futures/futures_inventory_99.py` | `akshare/futures/futures_inventory_99.py` | `9df8b33f5bd73dadcef373ec1e1d2200048ca2facec44addfe3f0e5e154d7904` | `b6ef1327b05ac6fe8b93ef147f888b76a268e46c514a4685ef4a8cf1329a4d92` | 0 | 0 | False |  | ✓ |
+| `futures/futures_inventory_em.py` | `akshare/futures/futures_inventory_em.py` | `6c6b251bf02c7e5855e12e42bf27f54900ecfadb7bd518c4fe34259e0bf8d3a4` | `77a53f8e97511e86bc03fc534d26212f0a25ca3766171e85a294cfa62be7ffe2` | 1 | 0 | False |  | ✓ |
+| `futures/futures_inventory_em_varieties.py` | `akshare/futures/futures_inventory_em_varieties.py` | `bfcc46ea04c263ed40e8c34df440b50e9148f21e0ce081a92baf4356bb74e5f6` | `4ba154e9c799eca3730586f98f9251222cf39a0f5aef1db49579d8b5cb09ae76` | 0 | 0 | False |  | ✓ |
+| `futures/futures_news_shmet.py` | `akshare/futures/futures_news_shmet.py` | `d5ea59dccc0373e4f69f589ee124837ef51a06232948bd10ff16f656867f9655` | `42b94f0b162770024cc64e271683ba877f5399f450082b46463553a3a0afd590` | 0 | 0 | False |  | ✓ |
+| `futures/futures_roll_yield.py` | `akshare/futures/futures_roll_yield.py` | `b49e614fce84a3ae736b413ca12a1a6259149bbfe81c4d53bed130f05ba22837` | `20f960b9c6215da1fd20c0e82e466988f1de8e7e21cc2ef0d09916b8e5a446ea` | 3 | 0 | False |  | ✓ |
+| `futures/futures_rule.py` | `akshare/futures/futures_rule.py` | `f514e8bc45a62b46f725508269e7e5fdc5122da198d3705468451d13e3ddc7e8` | `e2f7490239010c8aff4c3a6e3c1e8ee06ef90ce0455cf727c213695abd638af5` | 0 | 0 | False |  | ✓ |
+| `futures/futures_rule_em.py` | `akshare/futures/futures_rule_em.py` | `a9c5df61989b4492cdda96f7c9b34890da2750e8c332f4a2ac6e712a44685aa9` | `2e1090c33bce8cb6dee76ef9e65f6e1e4653d46e3b575808fdd8dae31e8bc9cd` | 1 | 0 | False |  | ✓ |
+| `futures/futures_settle.py` | `akshare/futures/futures_settle.py` | `96bb258b33681c8b6fb897552d759fd232eb7c21ffd353dda3471e376a937e6c` | `e0eee3d04af7ea25ecc1311469cfcd1fba09ec6df938208fa71fd1371170bb27` | 2 | 0 | False |  | ✓ |
+| `futures/futures_settlement_price_sgx.py` | `akshare/futures/futures_settlement_price_sgx.py` | `a19d1987d013bc25fd26f736d0fbb0ec572eea0df1dcd03e5327ee9fb9eb03fa` | `60de0ac51732e54624fb3d78501bbee3c89c0ede458983e48474307364ac614a` | 1 | 0 | False |  | ✓ |
+| `futures/futures_spot_stock_em.py` | `akshare/futures/futures_spot_stock_em.py` | `e3708f900a2e0eeebdd4ce9a08c74ed5218a8254da93669b6b6369edfb6401d8` | `1c7f423ae46eef6b4804d59003537aca977b94ed16afe6f244f516b88faa18ec` | 1 | 0 | False |  | ✓ |
+| `futures/futures_stock_js.py` | `akshare/futures/futures_stock_js.py` | `f9814817dd3268d9bd40ac445ee9f152b1f9e4f46a22c06050c75b13594b0192` | `a72c0223b56ae6854498ec2b1ba6e1731e0fa2d7513038f506e7f14783ce19ee` | 0 | 0 | False |  | ✓ |
+| `futures/futures_to_spot.py` | `akshare/futures/futures_to_spot.py` | `991438eebb0ca6e4c478f2a2048189bbd4aadb4eac3c9583ad241a09f70eff6f` | `4c628ea9a3dffbdd407670428283a142838229f2a90e3c1797b0d7da02cc4af5` | 0 | 0 | False |  | ✓ |
+| `futures/futures_warehouse_receipt.py` | `akshare/futures/futures_warehouse_receipt.py` | `9b63da9e9a43b46bb30417429a959419ec285ffb148cc42a0535daa63c094114` | `25c5bf51a481974ebeb76444b8063d4ae7bdcf276784cfdeb96995d94deaea18` | 0 | 0 | False |  | ✓ |
+| `futures/futures_zh_sina.py` | `akshare/futures/futures_zh_sina.py` | `b44bac3e81ad5bca93eb436f0cccf4a3f53ba92e18bf1666fc880ca0ebe167a6` | `76fefca6aa19b31fbb692d007a6c22518bfc5cacabe5d118f807c9c98f425b2d` | 3 | 0 | False |  | ✓ |
+| `futures/receipt.py` | `akshare/futures/receipt.py` | `8d2d37045f7976c68fd4821c73168412ea9675cbb492679fbb895482a02c541d` | `ff4c53d37689dff6609fbdcbf97f4c36cfd5bbfbfdf41ad10297b498e291900c` | 3 | 0 | False |  | ✓ |
+| `futures/requests_fun.py` | `akshare/futures/requests_fun.py` | `d29203f27448ba46e09881192586443ece6904110ec2f50ef032dd36cf2f6def` | `ae805834e2b4a12dc814f84d6e56e7a16db7b494cb4cd8f348f1ceec033c6dee` | 0 | 0 | False |  | ✓ |
+| `futures/symbol_var.py` | `akshare/futures/symbol_var.py` | `d0d386dc0a3238fa6b581cf4d49e1dc692a08b3794aa1bf3c45ffe7cf4313ec1` | `96b3f27ada96d9e4c9a8173e0c3b334858061d35186493bfd64135ddc9443f4f` | 1 | 0 | False |  | ✓ |
+| `futures_derivative/__init__.py` | `akshare/futures_derivative/__init__.py` | `08e1723f4d60214856b38101afa8702fbdc1ec859e3c8ce0eef3fba046371b72` | `114189e2960d671f233479c4cb49b8d6c8acb28abe9a8688f427d0465b23fc77` | 0 | 0 | False |  | ✓ |
+| `futures_derivative/cons.py` | `akshare/futures_derivative/cons.py` | `5641b51ccc0f571be3ec168c89f72f0e94582ec7dde74ea7a5536210868b17fb` | `327b7128e988cf5389104bd347269ef79eaf4b0e71056acf050728ca7522b616` | 0 | 0 | False |  | ✓ |
+| `futures_derivative/futures_contract_info_cffex.py` | `akshare/futures_derivative/futures_contract_info_cffex.py` | `7551dda8fee72dea3c64ae306e20d76f6d04d216533ff046927514f5ec93c383` | `0c1d207af79acd4f7d46fb44191f8d6a267d527722481f05f2f5585fecbcc309` | 0 | 0 | False |  | ✓ |
+| `futures_derivative/futures_contract_info_czce.py` | `akshare/futures_derivative/futures_contract_info_czce.py` | `3d039c5f50c1a61a9d7f4d54f731f90f9bea66f3ee4a27f94e5a62b27af397f5` | `4687ff67ec2dfc2efcd1c6d37061cb23bffc868298a11b4e7f7767f067119400` | 0 | 0 | False |  | ✓ |
+| `futures_derivative/futures_contract_info_dce.py` | `akshare/futures_derivative/futures_contract_info_dce.py` | `6dde32af14646ea5669a2c005d15f00bbbca55b993b3d867978afaeab35df123` | `243de998150148aed52af8a074c3bc195fa0a1d09ff0eace281e4afbed15a1f6` | 0 | 0 | False |  | ✓ |
+| `futures_derivative/futures_contract_info_gfex.py` | `akshare/futures_derivative/futures_contract_info_gfex.py` | `9e521e5df2a83de37cae7ee499ceb18c3e4b845d91c8fa0e21d78aaa90ba12b8` | `8cb7a965a3dcdfffe8b07ca77c71a2ec840d88f77f26e50f10e5ff6f4f49c846` | 0 | 0 | False |  | ✓ |
+| `futures_derivative/futures_contract_info_ine.py` | `akshare/futures_derivative/futures_contract_info_ine.py` | `bf008f1be565f1cfd6cb7c9d059d7582130ce608ee3cdd31f5016fc96c5ec172` | `fed1e4c551f3f4c4851e7e088cec5fd8aec0048ca11d550832ada0beceba41a0` | 0 | 0 | False |  | ✓ |
+| `futures_derivative/futures_contract_info_shfe.py` | `akshare/futures_derivative/futures_contract_info_shfe.py` | `36324d62a465d153bbbe56125662c0d432262dc52c1b9aea3f810d26f9b0eac3` | `2409c60142245ab4805ec4189e86ca8eb61b614755fb5918cc764452d44368bc` | 0 | 0 | False |  | ✓ |
+| `futures_derivative/futures_cot_sina.py` | `akshare/futures_derivative/futures_cot_sina.py` | `0a6a19bbfa48b70a97d1036c24ca6612ef48f3818169086ae1d21490fd0f8b2c` | `4029298d52615aa7c24e953a5f44746e33c1a64ba577019a60e81541f725690c` | 0 | 0 | False |  | ✓ |
+| `futures_derivative/futures_hog.py` | `akshare/futures_derivative/futures_hog.py` | `f1555def0e4b09465615d91f7d5efe76a8a119ca9d26547592cd5ebe9714f4ed` | `d3e38994a9c02fc40a15c791f2c6991e0a2c6a9d0f50b3f0b9b87690e835fc05` | 0 | 0 | False |  | ✓ |
+| `futures_derivative/futures_index_sina.py` | `akshare/futures_derivative/futures_index_sina.py` | `b98926e18bd71a892980252119c7082b71afe62323668b949f27c20f1f03d2b3` | `da4c9e567a76b17dfb42e060a1f452b569851c4bab81767bad33c1d9d05185f9` | 2 | 0 | False |  | ✓ |
+| `futures_derivative/futures_spot_sys.py` | `akshare/futures_derivative/futures_spot_sys.py` | `1d6d55b967d479e6a2ceabab2facae8a4a9019e040eedbb17fc46ce8c3317aa4` | `8d3467c5e7295468a382efe4262147f26029981fc65055cdfbf94e1e5a145954` | 0 | 0 | False |  | ✓ |
+| `index/__init__.py` | `akshare/index/__init__.py` | `44c4dfd5b4f910e137b6d5a99f7846bb52ed526b15c43a1ad16ed6d205c73b2f` | `c21b9119462fe4ea9e51cb2248d75ad74b085e628f3808a01fcf146aca34da01` | 0 | 0 | False |  | ✓ |
+| `index/cons.py` | `akshare/index/cons.py` | `b2cb71be1b5d1b79b68a722113681e6599c7a8d2d7acae86ba172a7c8ff313a4` | `e81d1f4dfbfe235d2d5cebfa93a2d70825f8a3c27ffcbc0c3f56aa4ed2ac56e9` | 0 | 0 | False |  | ✓ |
+| `index/index_cflp.py` | `akshare/index/index_cflp.py` | `1d62a2eba9868af0b97d489601a669edfc149db75557bfd244d15219b7e0bce9` | `e34641e1bdbbca39b22333a781f6c81791d23eeb1ba97c5af9151b062c40e197` | 0 | 0 | False |  | ✓ |
+| `index/index_cni.py` | `akshare/index/index_cni.py` | `422d323130e94dab91d6610584554fddc5c16beed576862229892398ff80f0b6` | `922458c10d4dea6bd7b63bbd98f25a4e04d39cab4313b513978b4829c38db675` | 0 | 0 | False |  | ✓ |
+| `index/index_cons.py` | `akshare/index/index_cons.py` | `b2ca1599163bdfa34b59039a449a28cc30ec81ab057a94f7c39bedbdf2a75fed` | `c739e4332665945fee645f149f911ceb1707859a9cfc50784a35a93c3ecdc677` | 1 | 0 | True | 中证权重文件：传输失败/非 200/坏 body 吞成空帧 → 抛错（C11a 静默欠抓缺陷） | ✓ |
+| `index/index_csindex.py` | `akshare/index/index_csindex.py` | `f8bbe4ba0c4da6f1c213c5d0cea26e6df7611d914220602b5bdb0ecdea5d387c` | `5d83676de505e69513a26ab3e887c4d2930fa6ffacbbae9b05b13e15e57b7cbf` | 0 | 0 | False |  | ✓ |
+| `index/index_cx.py` | `akshare/index/index_cx.py` | `8cb1977deda12ca7ade32608d99a876ab25fd15cf1be5117cf5decde1169af1e` | `89c7c7ec3840cdfcfb587d3183a3bafc0a288140864f1e79616fb91895a65fd1` | 0 | 0 | False |  | ✓ |
+| `index/index_drewry.py` | `akshare/index/index_drewry.py` | `04ced5e8ff0ae10505400aec75a591bb9a89519682a32373f7bfdbf1d98b782c` | `da04c67073cc963fa276448855064356536dbfef91f1b370eeef78d54e7a7fcb` | 1 | 0 | False |  | ✓ |
+| `index/index_eri.py` | `akshare/index/index_eri.py` | `375c8fdbf9f4e1608827fbdd3dbef0e7175234c21da26aa0678dd683af61cedb` | `6b7225df9adacbe2391ff45d16bb5270c1b00f036fe98e12c54463a1023c1e4d` | 0 | 0 | False |  | ✓ |
+| `index/index_global_em.py` | `akshare/index/index_global_em.py` | `f5d5d680541eb8fd14bc5b0cc5eaac11ac10bc2dd188e723014ed117783038dd` | `0417eb2906cdb2f63bca3e45363ac8eaa56f58133695836614c90e75949f8696` | 1 | 0 | False |  | ✓ |
+| `index/index_global_sina.py` | `akshare/index/index_global_sina.py` | `340a2850a0faba20720fdfd8fb32e4d59662b5ae9699c07752445337abf82141` | `ec4c0a942c8e7a4d21ff5912aa66c8d8d0a195e37e917b435063d4a043f96476` | 1 | 0 | False |  | ✓ |
+| `index/index_hog.py` | `akshare/index/index_hog.py` | `91bf3aec155a82def4ff2719327db692ce59f639556cc8ae4ecbeae728237a28` | `1d44c1544977c0dd0a43e802084e12b358f6e36532826e8b1bccd7729b3a50aa` | 0 | 0 | False |  | ✓ |
+| `index/index_kq_fz.py` | `akshare/index/index_kq_fz.py` | `c1316ac475886e2ad0ba800f145e17d62471a8d1c625264ac5a5b9a151a31b6e` | `eee729b6e89fbdb65cc25fa45ee32ab84362c8786026b826deac8a28966ef81e` | 0 | 0 | False |  | ✓ |
+| `index/index_kq_ss.py` | `akshare/index/index_kq_ss.py` | `54b8692926b53094c57e46230fb679a08f293bfe0d6d622972c9f837bb0213ce` | `14f74c90eebc0c1447c281ecab6e7dbc073d773d5c5e5f62ba272a7595379eb7` | 0 | 0 | False |  | ✓ |
+| `index/index_option_qvix.py` | `akshare/index/index_option_qvix.py` | `d4791ea2ab60a058244adc75422196f737177ddc899b1f1b4e59db6645697dc6` | `0d163c8c9ca1e1afbb9645852ee9d5fc79225bb8e4c224f5804e88c83dd598f9` | 0 | 0 | False |  | ✓ |
+| `index/index_research_fund_sw.py` | `akshare/index/index_research_fund_sw.py` | `22c5f0945d5bea3630491089580989dc900b0b25e86925c5c1ebef5319d329df` | `e9cc1e404dea6ccf452d60477057bf176cf5a3edfeb2dc1ccb842abf68aa511e` | 1 | 0 | False |  | ✓ |
+| `index/index_research_sw.py` | `akshare/index/index_research_sw.py` | `cbcc7cd07417fb0d5467b3ffce5890158614be39d0f39d5efd86d5668a78bf2a` | `5fa7ad855b3218b6509662ba2052537ecbf1b4758f8bcddead8caf8081838a50` | 1 | 0 | False |  | ✓ |
+| `index/index_spot.py` | `akshare/index/index_spot.py` | `99e4c14c2a760cf5535ff377aa908bb6423ed2add786b27782774dba044118a8` | `5a5a54731d399dc5ffec100f21a5d8a7f2f32a318cfa6b89658974d000edf974` | 0 | 0 | False |  | ✓ |
+| `index/index_stock_hk.py` | `akshare/index/index_stock_hk.py` | `da70b36ab5245969cd48532f1d1e01031d02eb2cef9cdfdd32e283085da1f6be` | `95c4ca61219c48f8bb74d4d800af0ac8b66e57c00b22faa51e5a19d2231eea5d` | 2 | 0 | False |  | ✓ |
+| `index/index_stock_us_sina.py` | `akshare/index/index_stock_us_sina.py` | `2313a4e06e3da1ab2fec47c441e9cbf7e18bb9e97252eb3a73824fc9195a3b36` | `a63768c5909b0e935ed95f29e24206c4ec2753e112fec819fdbd9ed133c74083` | 1 | 0 | False |  | ✓ |
+| `index/index_stock_zh.py` | `akshare/index/index_stock_zh.py` | `bb136b769235fedb58f9eb900330195b97aa34b3082d44747a7285061dc9fdb6` | `220068f28c82f17a56b23f9298a6185e1d3dbf1c3a9fccbb2f27a641219eaf88` | 5 | 0 | False |  | ✓ |
+| `index/index_stock_zh_csindex.py` | `akshare/index/index_stock_zh_csindex.py` | `b115680c3f9f8ada8032e0ecd173e6d680b3da767641392f36cc0bd56bd7a70a` | `92de38948a9e98b8515634e68d4d7d2885d6eb405175651a6c1300c73e0980a2` | 0 | 0 | False |  | ✓ |
+| `index/index_sugar.py` | `akshare/index/index_sugar.py` | `16ca26699ab80a4b44dd4e0646433c73c6e62ee3b3bc34b988f9ad6e8c678825` | `7dc3abe69ed3c5d557e757813e775e050294326968756a768f98b71121c4e384` | 0 | 0 | False |  | ✓ |
+| `index/index_sw.py` | `akshare/index/index_sw.py` | `94d0aaf8e3453772d901a56bb7a9c8b41d21c7d854d917d3440cd5d271afb580` | `db1b52b8f9d3480665e1139e22583f10e48cae4a290c1d6d763c6fc8df6ac5a8` | 1 | 0 | False |  | ✓ |
+| `index/index_yw.py` | `akshare/index/index_yw.py` | `a50a05ffd1cfd4c10dde69c8d315322cd67de8a9ccf644292300343f9e49379d` | `eed459c6026b6c6ea2813b3d8db56df04a3eeeae618ce650e9bc8c8a2915106c` | 0 | 0 | False |  | ✓ |
+| `index/index_zh_a_scope.py` | `akshare/index/index_zh_a_scope.py` | `f5f126381be50271ab508937bee44cfd6aadb310d80c8059a48fc898ac01da03` | `27e70b6b0e0d0b887c74910dcf89694d58f87bc00045b76f6bed6581bff55ca3` | 0 | 0 | False |  | ✓ |
+| `index/index_zh_em.py` | `akshare/index/index_zh_em.py` | `9783e29bb93a1201276296114ecfe875067f7d5addd6a0a87da3fd58f013db78` | `4bedaf3227bf6a1723621b85b18650c61c28c93b76756cc848ae77561dcca09d` | 1 | 0 | True | 东财指数 K 线：吞错返回空帧 → 走 request_eastmoney 并在全部候选被拒时抛错（C11a 静默欠抓缺陷） | ✓ |
+| `option/__init__.py` | `akshare/option/__init__.py` | `44c4dfd5b4f910e137b6d5a99f7846bb52ed526b15c43a1ad16ed6d205c73b2f` | `c21b9119462fe4ea9e51cb2248d75ad74b085e628f3808a01fcf146aca34da01` | 0 | 0 | False |  | ✓ |
+| `option/cons.py` | `akshare/option/cons.py` | `5a0797e14be4bc5993b0d4cc6305dc20992a49f0b0e80de19f7a8cef742b20cd` | `14e29337d223b539e2032665007e592373a50fc0ea9a7960cd212fb798f9d6ca` | 0 | 0 | False |  | ✓ |
+| `option/option_comm_qihuo.py` | `akshare/option/option_comm_qihuo.py` | `9236dda7ef782892498b57b1e54d3769bb6582f8aac0fd006a16fa17075d3e49` | `b7ec3d8f63e6195e4839c6f5a0413200c4fa4542be8f94c5d4dfe76ea0be44e7` | 0 | 0 | False |  | ✓ |
+| `option/option_commodity.py` | `akshare/option/option_commodity.py` | `363cb5bde80afa98d5248ee6be3839fbaf5dadb45519fbec1730504eaa17c4d7` | `3853816a217e7c7ffb516e6e12ed01cebdff6871086104e5fbbda6ab643158b5` | 1 | 0 | False |  | ✓ |
+| `option/option_commodity_sina.py` | `akshare/option/option_commodity_sina.py` | `34ddaacb07c666984a947884bb053bff768d5d310a6971f452b53cc4b210e574` | `4d9c45f54043e3735088ed5460e6fae7bb7f149d7d8cd9123d26ba30eb0658dd` | 1 | 0 | False |  | ✓ |
+| `option/option_contract_info_ctp.py` | `akshare/option/option_contract_info_ctp.py` | `a9e8b968dd8022085bc67c536a9db1414a2ec0c0f6565114239df31c163a985b` | `62c1229b604853beb0820dc17cae5d06b2ce6278124d8e110d04050c5102a33a` | 0 | 0 | False |  | ✓ |
+| `option/option_current_sse.py` | `akshare/option/option_current_sse.py` | `eb17857392b0017575c4206d872b6bd92ae726201deefd624311d91f9ebfd925` | `ef887c9afa9e39aca0246cd690c87dc22c09eb40bb1d478d03b538b8b9f2baaa` | 0 | 0 | False |  | ✓ |
+| `option/option_current_szse.py` | `akshare/option/option_current_szse.py` | `736e99a7acdd8b85b2701c6f3e90b73bf1b9ed53a0dda8ef91a9ffabb2c39191` | `0921792a951aeb881145de6bca60be2af3577bb749f4a0cb0d8f2d2e80e36d7b` | 1 | 0 | False |  | ✓ |
+| `option/option_czce.py` | `akshare/option/option_czce.py` | `f450a0aa0c6b1d7dc305dbe0dc5e876751eceee48eef0db52895a94bc5b29208` | `f7c008947fc3577723f54ddf20d1ea92674f85c1d7b9a1c417f4384b078100b9` | 0 | 0 | False |  | ✓ |
+| `option/option_daily_stats_sse_szse.py` | `akshare/option/option_daily_stats_sse_szse.py` | `33c0c016f290f39a861fd12155dcf9e6a0dfb6e157c2df1c6b665c7ac59d69ce` | `212451638d90ef5ff9e97b5cbdead7e561a2837061b01b6fd62063e69f212908` | 1 | 0 | False |  | ✓ |
+| `option/option_em.py` | `akshare/option/option_em.py` | `a77f7b60416e33079c08ae4bc0c28321fb5a4200673a444b17c7e68b367ce9b2` | `d637d4f4e24fcb7bf1164bbc260c29a163250d19db8a798e7a6eb6938c0ebb39` | 1 | 0 | True | eastmoney site token -> EM_API_TOKEN env var | ✓ |
+| `option/option_finance.py` | `akshare/option/option_finance.py` | `c84ccd0d053e4a36a6428d54ec68c17dc1747953478f71a16c8790b1760673f9` | `5cb363b23d2f5bf9b8bbcd12d908dc5729ad54c6bf23b9706460f21d54b92ed1` | 2 | 0 | False |  | ✓ |
+| `option/option_finance_sina.py` | `akshare/option/option_finance_sina.py` | `b645709098166553d8f8117df674bf5ffd4e1c348034566a47d48415a2c85d1b` | `98a4813a022e5ba0f8842f83f4eab5663242bb078aa2a4f27f85e268844617d7` | 2 | 0 | False |  | ✓ |
+| `option/option_lhb_em.py` | `akshare/option/option_lhb_em.py` | `9730134e8eda5de25e02ad42aa91a24625861cf7dd0c0a3d466dc2d00a2e921e` | `329af0f98cef452c42872978c0ea7a17d9a3e6e26fea6df1ab1dec0776d56fbf` | 0 | 0 | False |  | ✓ |
+| `option/option_margin.py` | `akshare/option/option_margin.py` | `8f9c32b7ca5d07cfa4d6dd19737b3976078cfbc619b07a9eb9b891512b6519d5` | `26f3b9e015b2e05b5e600032db99d4f00b6d85ef5e508478317dbb365bbf5eee` | 0 | 0 | False |  | ✓ |
+| `option/option_premium_analysis_em.py` | `akshare/option/option_premium_analysis_em.py` | `134fd15529c471406589c1efd467561b98096330a0ab1eae4d763cd72e0b6397` | `ca6e5c6677d13dd394438a27492c55140b880b207558871649d83ce97f409a61` | 1 | 0 | False |  | ✓ |
+| `option/option_risk_analysis_em.py` | `akshare/option/option_risk_analysis_em.py` | `39c999e3613083d5c2264343b7cb8b8ed17d6a498ab0476817d66ef7b1f3e1e1` | `74219604d51229a88cabc7b783681a5b97986bc637d50bcf4a57f13ecaecae89` | 1 | 0 | False |  | ✓ |
+| `option/option_risk_indicator_sse.py` | `akshare/option/option_risk_indicator_sse.py` | `0d0e1ef851d46df7415317ab6bcdeee387c05c76064291789187a1de17f1f991` | `dcc52597407701c20fa80024d156bd96bf611a6245bb2a97ed83b92630905823` | 0 | 0 | False |  | ✓ |
+| `option/option_value_analysis_em.py` | `akshare/option/option_value_analysis_em.py` | `288ccb2716b1d4ff12b885050f40a79c4a539ed4a768e6f0628b469f6f038286` | `6906383e6a2c205dbaae22c8497070252840726e34a88fc24b273dddc7d8bf3d` | 1 | 0 | False |  | ✓ |
+| `pro/__init__.py` | `akshare/pro/__init__.py` | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` | `43703466bd5f1003ed87c67499de776075deb632155085495cef65e268cbbd01` | 0 | 0 | False |  | ✓ |
+| `pro/client.py` | `akshare/pro/client.py` | `5e2013e6e10a42b62e820d4c8a511dc972672624b0bd2d7771fb51f18638b600` | `91992d4d391a0045b0c9dbe707a1315fa0617fcf74e63c79140abd7531b1092f` | 0 | 0 | False |  | ✓ |
+| `pro/cons.py` | `akshare/pro/cons.py` | `6574ee8a19773de8fce0ed7b61d146d52a8f85f0fa750477e0fa7c20a6a4ee84` | `f4d8b39a8a580fbd3bc1d796709d56a436c847323abdef7b46fbe74a147f9bc7` | 0 | 0 | False |  | ✓ |
+| `pro/data_pro.py` | `akshare/pro/data_pro.py` | `5cba6a6993543dd74e05c14ad6306f7f800e6271c9027a1e122b53b34980035d` | `9a673489d73635ac1e95f33037b44228b53cab5fa0875ba486b82b24b004a919` | 2 | 0 | False |  | ✓ |
+| `request.py` | `akshare/request.py` | `ec5bd1f864a1cceeea367405c154edf302b6743d8e1d75f17221b998dc618f45` | `e20988c185f5b8a2a7c6ba55208924362aff41438aa8c433429ec47c0bde3ab8` | 2 | 0 | False |  | ✓ |
+| `stock/__init__.py` | `akshare/stock/__init__.py` | `8d26bddbad1de9a3596a3696ebc7212369a93e40d25cb3a08b7797aeaa38310f` | `20bf4f7ee5f1b061b40f01d3431736ba467d898359d5103df206edc97737890c` | 0 | 0 | False |  | ✓ |
+| `stock/cons.py` | `akshare/stock/cons.py` | `89600a5738e0f6f1a58b23edec409e0c1e3892fe18418eeafa015de674ec6f8b` | `e16cc610d105bdeaf0cd791f1977c1fae95f53cc5053712e1e3611b035be9539` | 0 | 0 | True | xueqiu token -> XQ_A_TOKEN env var | ✓ |
+| `stock/stock_allotment_cninfo.py` | `akshare/stock/stock_allotment_cninfo.py` | `3958d5756a765d544d6c9bd582d8155680663c1260041e11c8822003ff501ccf` | `ded1e074d40eb427ac8cfebc87581daf31d2faa11e411b09266d2daa10c9814a` | 1 | 0 | False |  | ✓ |
+| `stock/stock_ask_bid_em.py` | `akshare/stock/stock_ask_bid_em.py` | `6e8ed5364a753e62b867e18f66e567fc8f8801dcde5bc72cdd6ffbe4aa1dc428` | `ba2b3b2fca73b7fd05b49671df580bc5020bb4bcf9621d7aae24415f0d0ae8d3` | 0 | 0 | False |  | ✓ |
+| `stock/stock_board_concept_em.py` | `akshare/stock/stock_board_concept_em.py` | `0bfb52c0dda759a75781ee89d879e7f938e8add4498063951d3831168d6fe685` | `c178424b1fe50de2f0da9bbe9a51e4f8e834dd573bbd34f9b81ce8fb6c8b3927` | 2 | 0 | False |  | ✓ |
+| `stock/stock_board_industry_em.py` | `akshare/stock/stock_board_industry_em.py` | `d64d9666ca6c84b61ea77562b67cd83a2a7298f7c1e99018e333756b9a431796` | `b817943200c5650dc84825e2778e3f1ba269e1407bf267c8fed84cf36fb01c39` | 2 | 0 | False |  | ✓ |
+| `stock/stock_cg_equity_mortgage.py` | `akshare/stock/stock_cg_equity_mortgage.py` | `fd2ffb80eb65d59e519aa14f285704a903d1909d43ab6ca975297acd05699fdd` | `1ddd6afdbbc3e0c0a7dcce2f1cf5d8c3fe72cda9323c173f19ae114146c4335a` | 1 | 0 | False |  | ✓ |
+| `stock/stock_cg_guarantee.py` | `akshare/stock/stock_cg_guarantee.py` | `b6ceea710861c8dd4f1c1ed0e1794c9f7f0785f56fb9b3af932f5165f9943fde` | `262e6f773e65ae4b22679c26df4894deab8f676cdc1aa0ad0968528c349a9fb1` | 1 | 0 | False |  | ✓ |
+| `stock/stock_cg_lawsuit.py` | `akshare/stock/stock_cg_lawsuit.py` | `644f74740e6407c5ea2f79d028d4115deac79ee64e179e700117480898237119` | `1ef97bf09bc668940b451c6067685b80f5263add46c9eb416577afd3850875b9` | 1 | 0 | False |  | ✓ |
+| `stock/stock_dividend_cninfo.py` | `akshare/stock/stock_dividend_cninfo.py` | `a3d548dd1296cb5c565ae9ad1a2f60a49209bcf49f3153193425cce6ad8b2914` | `af5ca7c88b2989817f6c25b83684c22aa49b368e66d9e89fd328051519b1d7d2` | 1 | 0 | False |  | ✓ |
+| `stock/stock_dzjy_em.py` | `akshare/stock/stock_dzjy_em.py` | `0cacf03a0d81b504631c424ce3e6aa450a9368df0c58b0c769b66f73317d1ff7` | `a741a3796868ed30532025077964b6b94f3684b3ea4b0d29cf0b63a61042bab2` | 0 | 0 | False |  | ✓ |
+| `stock/stock_fund_em.py` | `akshare/stock/stock_fund_em.py` | `3f59c10ac49760659d233486c20d0d17908a3976ca3190e52699d5de97a94e6b` | `dae5ec1935ee84ee0cbf5e6dd31bc57e889f95b254d8c841e6e8fef98cacd37b` | 3 | 0 | False |  | ✓ |
+| `stock/stock_fund_hold.py` | `akshare/stock/stock_fund_hold.py` | `625bf24d68210b6fe2ccc07b90b59549442fadaba1a6f964aa15a52daa92ceae` | `37921713cab482d447dbcfeb044ffb0a75770e7b6b6a8513677909e80d36e5d3` | 0 | 0 | False |  | ✓ |
+| `stock/stock_gsrl_em.py` | `akshare/stock/stock_gsrl_em.py` | `2c5f3c3451eb5b8b635304f70a5a19c689a77ee238f61eee0a647f46981dcbfd` | `19b0aac4d54cae9314159e1c937cedf550d7d894f07a8dd492be69be16a6f73c` | 0 | 0 | False |  | ✓ |
+| `stock/stock_hk_comparison_em.py` | `akshare/stock/stock_hk_comparison_em.py` | `bd73dfaad00e7894a4ffe102bc750d275daca182bb521788cb57ce9b9276f033` | `bb6ab8ba82fe86bc2eb1265d5ec169d4dcdfac9d8ec3583aedcc228cbe06b2d6` | 0 | 0 | False |  | ✓ |
+| `stock/stock_hk_famous.py` | `akshare/stock/stock_hk_famous.py` | `2540468929eb95ea406e0ba046a0bae9c6d2a7da4a3388d43a86a430633d236b` | `949188c758270a2a0be32c0b858201a32dbd6eb344271470a39103b4a1711125` | 1 | 0 | False |  | ✓ |
+| `stock/stock_hk_fhpx_ths.py` | `akshare/stock/stock_hk_fhpx_ths.py` | `68c2958e183b9c479729b54fb2aec191d4deda1a68d498511ee5b13ee2e55684` | `da0c0bce45c5878f4c647ca1f9201ab0e1be82b484f815bf9cd62547e4ff93b5` | 0 | 0 | False |  | ✓ |
+| `stock/stock_hk_hot_rank_em.py` | `akshare/stock/stock_hk_hot_rank_em.py` | `397766d37016ff833b56e59c89abaafed97414e91bd58962e056e7bb3e24a785` | `376d17e309d3f513e3ceec7ed58af683f7fc804c07b2f7eebb14875bed0a0a89` | 0 | 0 | False |  | ✓ |
+| `stock/stock_hk_sina.py` | `akshare/stock/stock_hk_sina.py` | `bf20327adc7883738603b0199ebf3bcdf13e4a4ce94acbcfbe6ddc9ed7451207` | `7567b4b01d7c6da2bae2d27f4127c88fad7ca6f9e4681294e659697e1b986791` | 2 | 0 | False |  | ✓ |
+| `stock/stock_hold_control_cninfo.py` | `akshare/stock/stock_hold_control_cninfo.py` | `2750865f5b59db650974e5809040f5f68eef744d741e47bdd5c11b88dd512184` | `8704cd61dab2d82ad1fb3943597d02b1bf5b77dbb3280073a717b8ffca88296f` | 1 | 0 | False |  | ✓ |
+| `stock/stock_hold_control_em.py` | `akshare/stock/stock_hold_control_em.py` | `cc91fe1d76f2e09093b90c36d3c6b519bde5cfb9b187bfe0dbee7d9cc9875d36` | `a8ea3392557470f64b088300dd3e8a2eb48d5d64d71be512d7ed972839314ee9` | 0 | 0 | False |  | ✓ |
+| `stock/stock_hold_num_cninfo.py` | `akshare/stock/stock_hold_num_cninfo.py` | `258f4b7193218538821df409bf8a7032b2eba54c532862c4e28443ea9bdf96c5` | `96625f2185c8c4f99e145e355ca341f51eabd75d3fec9a9b9c6e4a228c233bbf` | 1 | 0 | False |  | ✓ |
+| `stock/stock_hot_rank_em.py` | `akshare/stock/stock_hot_rank_em.py` | `92d4476f1cac96be96b6352fd4ab9b711916894d012c10f15421464aaf8ef1d8` | `303c2eec4db12f128793c06ccc58e13dffe4c946e554c1eb4c8d3f4af463b833` | 0 | 0 | False |  | ✓ |
+| `stock/stock_hot_search_baidu.py` | `akshare/stock/stock_hot_search_baidu.py` | `1781dcdf56d1c93e1614c791b1ae3f860abc933a601f5311a4c48c3f7aa9275e` | `504dd49c03a97e5bfb4637c4a974657452b92550c1e8fb01b61301f045a82d0e` | 0 | 0 | False |  | ✓ |
+| `stock/stock_hot_up_em.py` | `akshare/stock/stock_hot_up_em.py` | `692575408a5378b2e4b876c1e863f5d00f1515709f72a2d5dc7ba64537638880` | `7e0b8d6245deb7bfbbabd5cc38aeeaab42f29fefeb16ac52e6acba5b627c6591` | 0 | 0 | False |  | ✓ |
+| `stock/stock_hsgt_em.py` | `akshare/stock/stock_hsgt_em.py` | `b88e3373c22c53daef2dc217e786a8e7c9ae3bdd0c8684b9100d9479336afd29` | `575888ab880beedd9c0a1b1c5bdecad6c16f99c1d3d15e2ea33e60d9f10f0065` | 1 | 0 | False |  | ✓ |
+| `stock/stock_industry.py` | `akshare/stock/stock_industry.py` | `806f05c3294ab2d2e02ff96f33409649081cb1dee97be6b8a0249dcc2af86c4a` | `c4cf4eba1ce259180bca8f7acb873971d8858dc2066c8c32bdabf3b0c833096e` | 1 | 0 | False |  | ✓ |
+| `stock/stock_industry_cninfo.py` | `akshare/stock/stock_industry_cninfo.py` | `faa80a58409c91db04377a39079edabc163b42b21668954146c384d7e8044e16` | `9a3c8a0e8b69588c08e06ccbae338d501c59caac0611325ed7920692c5552675` | 1 | 0 | False |  | ✓ |
+| `stock/stock_industry_pe_cninfo.py` | `akshare/stock/stock_industry_pe_cninfo.py` | `970fb807b6395e9e1377e813bb70d6cdb1b125ca925367ad88c9675849af103a` | `1df9a0a907c776ee3ee2e1175d3c2b58897aac4bb4b7258b422b0fa2426d931e` | 1 | 0 | False |  | ✓ |
+| `stock/stock_industry_sw.py` | `akshare/stock/stock_industry_sw.py` | `66266f02bd7c31a95dde8b3393d513fdd3fba755084dc695f891b00556b5ab6d` | `33418fdada8e829b7303c6101ff4f9eef546645f060dbf48d3f3895b9770c65a` | 1 | 0 | False |  | ✓ |
+| `stock/stock_info.py` | `akshare/stock/stock_info.py` | `6d69fb52d46a539003e1e155bd2117a56a9221eb19c6ca12bb32ede8d3c591e4` | `30cb5cde1337dead0ff41b8bb60fc93786fde886d38e26463c8f3d34d5d604aa` | 2 | 0 | False |  | ✓ |
+| `stock/stock_info_em.py` | `akshare/stock/stock_info_em.py` | `3264436193901655cccf914560327ceb7fc7dbf919785984da6451ca5ea5d33f` | `cece843abf165c106293f63fa30a0153daf2b8830307a055f4fd69a7583a8368` | 0 | 0 | False |  | ✓ |
+| `stock/stock_intraday_em.py` | `akshare/stock/stock_intraday_em.py` | `22dbeed8e8a576a1c511647ace84cf01ad71051219f277f946384920e4478a9e` | `718349d21bbc45632d7bd0460a2f6a20c077f62297936d4e8ecb4f007869fe3c` | 1 | 0 | False |  | ✓ |
+| `stock/stock_intraday_sina.py` | `akshare/stock/stock_intraday_sina.py` | `eb197e670f797238d4515f440be99b89973d17c5b454e2d24e536f1007954de5` | `9b07648f9e26b8d053b1fac981211b92d2530d234912b94a010e91fc3b5b1b37` | 1 | 0 | False |  | ✓ |
+| `stock/stock_ipo_summary_cninfo.py` | `akshare/stock/stock_ipo_summary_cninfo.py` | `31afb9e06b0e3a1456c6294b1fe4269b45556e925019fd9758a689f0d0528006` | `cce83a2c2a283ccbf875396d46c11ca2e2a5391137e024a37d5fbdaaf95aa96e` | 1 | 0 | False |  | ✓ |
+| `stock/stock_new_cninfo.py` | `akshare/stock/stock_new_cninfo.py` | `e99869bae7bd990c0a4694ce3e9ac28d6c6789b6c33ba8bb7e5b20ed739a442d` | `885201198c196af42417f474de9f02ca46e3481a2d80744ca9251adfa9be9694` | 1 | 0 | False |  | ✓ |
+| `stock/stock_news_cx.py` | `akshare/stock/stock_news_cx.py` | `05489bddcca2835bd76cbb917a361d13e4dcd6936578203507e01815ca5eb272` | `588cf2a2888afb1e01c7a32ded77e02015d0570875336ac9f4d4ccad531412ae` | 0 | 0 | False |  | ✓ |
+| `stock/stock_profile_cninfo.py` | `akshare/stock/stock_profile_cninfo.py` | `520507dc62b9d97976e6cdd62179459954e52b30dde901a24d38e3d25f862ac9` | `ce0ba3f892adbd5ecc36254446771b80d9336bc31de84dccc84f312272341f31` | 1 | 0 | False |  | ✓ |
+| `stock/stock_profile_em.py` | `akshare/stock/stock_profile_em.py` | `a31844428bb098315c5c8bb7ebde8887ec126f0193b8f5fcaa3d614b1a6a1690` | `71d24eebab6ff5077be5e2551719cd772f935a7ca36dd2ece4c35e57f9b9ccf0` | 0 | 0 | False |  | ✓ |
+| `stock/stock_rank_forecast.py` | `akshare/stock/stock_rank_forecast.py` | `e54d1f6b8b7386a2abc3990345a8540854ab6eb131fda46d96a66ada6a5e25a5` | `bb06ae7bdf8032753d23de3be49a1f16b88e7f9a36fb7110ecc277b7ac632fb5` | 1 | 0 | False |  | ✓ |
+| `stock/stock_repurchase_em.py` | `akshare/stock/stock_repurchase_em.py` | `e827bd95ad12ee2d048c54c69f482ff759f0ceca8a6b6869c115334bb38a8b96` | `1e83742653b2863b5c38b29d2c8892048b30333e26fd572ff34f867274ab2a8b` | 0 | 0 | False |  | ✓ |
+| `stock/stock_share_changes_cninfo.py` | `akshare/stock/stock_share_changes_cninfo.py` | `b22cb83e266062e3509f98d4520d86ec2c99ff2bee5cd8b73155031617b99e96` | `5471a4e035a2c260ad5ae43b12e6f18496d0e589356ae16bec2d0c19b2edf41e` | 1 | 0 | False |  | ✓ |
+| `stock/stock_share_hold.py` | `akshare/stock/stock_share_hold.py` | `870551b3895946e9103f76a753d2f4f4e1727e5e22463f9d312b120dbe434a16` | `53d1ced7235b454299b63e13d204c1ad2aa98dafb9a979a507dc1303b8489e3c` | 1 | 0 | False |  | ✓ |
+| `stock/stock_stop.py` | `akshare/stock/stock_stop.py` | `59116f9e57489a4c0d23c6fc637900752e946baf43506e6ce6794a1d96afed1d` | `015f75e7ce72a01f4870947e3a6a4cfb72a060f3f84824490dafa254e212b4e6` | 0 | 0 | False |  | ✓ |
+| `stock/stock_summary.py` | `akshare/stock/stock_summary.py` | `d543f024d2e90e4b86d94265d7353b34037de8b891f0752ef376a4f0842c4319` | `70ca6d12ac28e0752d126d07b86244fafbd10fe63fe05edf2d0fd4821b53cfc0` | 1 | 0 | False |  | ✓ |
+| `stock/stock_us_famous.py` | `akshare/stock/stock_us_famous.py` | `8e26d5a34ce1f4e68fb2a0435459d901d1677c9ca5a0479cc24bae02a755a807` | `27c6bfd0bc2f3c83cd1fbec53629554a0d99d4b5783fdefeb4cc98c018b0d1ce` | 1 | 0 | False |  | ✓ |
+| `stock/stock_us_js.py` | `akshare/stock/stock_us_js.py` | `56578651becaf8d8e65b78cc3d17368f01d733408cab823354cf64529c144434` | `074f77a0fb960d673dbc93d99e639e76142775e699844a7a3d37ddb165c594e1` | 0 | 0 | False |  | ✓ |
+| `stock/stock_us_pink.py` | `akshare/stock/stock_us_pink.py` | `91d9fec8c05ec09534388d9a491a5d0d1bdd3c225955253391b10f3a934c29db` | `8d4e90f0f97955b91ed0385b06eb8397b0b0731bd697149fdf429db116af53b8` | 2 | 0 | False |  | ✓ |
+| `stock/stock_us_sina.py` | `akshare/stock/stock_us_sina.py` | `06548a314bf642ff5faf526450a175e96d118c49044f715ae2fc3b876768ac58` | `3a4abcb9216cbbb0af9be89414701e72c5fcf5aedb063876965b941b78fcb956` | 1 | 0 | False |  | ✓ |
+| `stock/stock_weibo_nlp.py` | `akshare/stock/stock_weibo_nlp.py` | `fa4ee0cc0bac6fcfc3e25d2b73a6cecd0df1e1bd9d1415c9da180e9edc0419cf` | `e9c7b2199c33d48c3309387190b68de5c76d7e9bb8557c5eed94c837efd595ef` | 0 | 0 | False |  | ✓ |
+| `stock/stock_xq.py` | `akshare/stock/stock_xq.py` | `711a3c06728751f74d745d8902c2bae57f0b122b166668b5eabd4d85578396c4` | `6220fb74da267bf45e23c3c912e11707585e363ed4cca7338c5e12419dab1ac0` | 0 | 0 | False |  | ✓ |
+| `stock/stock_zh_a_sina.py` | `akshare/stock/stock_zh_a_sina.py` | `a3acc94625983ec233b769d36afe742107dd865588ccf3799b582babd72de2b8` | `ca1df55bdf970f08d317bf6e4453192f1a10434b25b12d65db181db572e12784` | 3 | 0 | False |  | ✓ |
+| `stock/stock_zh_a_special.py` | `akshare/stock/stock_zh_a_special.py` | `136054ef714bc8e0bedcb71788b115428b19e95beeeac220a3e11eeba933cd33` | `ba9b8b751ede89724f137ae13b0892aa7daaac2c11aa3c5f830d714d158d2221` | 1 | 0 | False |  | ✓ |
+| `stock/stock_zh_a_tick_163.py` | `akshare/stock/stock_zh_a_tick_163.py` | `7af1d9423f626d6934c7cb6cc29dc5736600612348790a746b8c7fa4c58f000a` | `d24439349f85ad5547939725b2ef24bb0ba39f9b599c261f0595d825f646f875` | 0 | 0 | False |  | ✓ |
+| `stock/stock_zh_a_tick_tx.py` | `akshare/stock/stock_zh_a_tick_tx.py` | `f873a2962a400b3f851195a59125f2f651fc03e069373b8b0dc5ebfd1bfa7584` | `70a51f0a03c7358016acde2fb2e80cf3d0e3abe6dbfb342a46ce5f4b428367a8` | 0 | 0 | False |  | ✓ |
+| `stock/stock_zh_a_tx.py` | `akshare/stock/stock_zh_a_tx.py` | `3ae12ea8f9298d3e175903e667f6222c195c4cf7875ef9c8bb7f7f60fca1c7da` | `ad4448f5201a6da7cb064b9c2462e361fa3b3f42f8d459f73b10925da671f4ae` | 0 | 0 | False |  | ✓ |
+| `stock/stock_zh_ah_tx.py` | `akshare/stock/stock_zh_ah_tx.py` | `ac7ec852d56a6f074a08f1a1462eeff156e7de2f7f7eda5d39a77efb9bd3d3c0` | `9cf426233ec9cf59536889863a539fa31766db79087aae869d59fa7b88d9e16e` | 3 | 0 | False |  | ✓ |
+| `stock/stock_zh_b_sina.py` | `akshare/stock/stock_zh_b_sina.py` | `90b648e13cf016e5cb2659a32623e0ffd08bbf9b7809910aa9dc0bbfbe4adbca` | `efd46364a7a7528a87a3ecfe82d25e248390edaa83f02d995715a42b41b14cbd` | 2 | 0 | False |  | ✓ |
+| `stock/stock_zh_comparison_em.py` | `akshare/stock/stock_zh_comparison_em.py` | `317782e8c97eed39a8c6f412bab3b7503c33a6bce3d7914800a74e34295930c5` | `b0174c8d4f2df0a3bea05bdc12cc8b7a1f7725b5d5d0bca4b0b784067630eaea` | 0 | 0 | False |  | ✓ |
+| `stock/stock_zh_kcb_report.py` | `akshare/stock/stock_zh_kcb_report.py` | `ef3468bcd1aa5eb3c862d523f42de2be56337e2b9d91a78136260f625cc35a44` | `58b2fd92d4316dc7457f5e3edf1c97b76a19212ae3f0536c32e6ec83823acaa7` | 0 | 0 | False |  | ✓ |
+| `stock/stock_zh_kcb_sina.py` | `akshare/stock/stock_zh_kcb_sina.py` | `64a168caaf58fba2e106860445ce0eaafe6adcb9699deee7803219702b3c62ad` | `89cd3b1f9bdb9d61be63f9ceb865c93785f779950879c2173a727f7ba4c3db3c` | 2 | 0 | False |  | ✓ |
+| `stock_feature/__init__.py` | `akshare/stock_feature/__init__.py` | `736543046ca0f2759960bbed9e74aa52843dd82bba749ed414e789b01d867dff` | `2ac9dca80627c69161a2ad779b1eb4c6c879457c7f34fb28bde5d1b48b01c756` | 0 | 0 | False |  | ✓ |
+| `stock_feature/cons.py` | `akshare/stock_feature/cons.py` | `87f70884ee18131f23a0fa33c04e7e8c70013ec4fcb4deed919e6ffa07137e6c` | `5fb603a2baaf35743d2f22534919712d5251f6f4e18c6bd49cb4f6cc8e2e24e5` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_a_below_net_asset_statistics.py` | `akshare/stock_feature/stock_a_below_net_asset_statistics.py` | `ea232570b96ab40e752c087452779a49e67fb726cc7872ded7bcd6a42cc1319e` | `5919eb3c136c14937603fb04e5aa638960ac939f46d3f9d74752bcdb558144b5` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_a_high_low.py` | `akshare/stock_feature/stock_a_high_low.py` | `61b6c7e2bd860a01041c13f7a09c1cc5877aa95249561745fec8bed24213e2fc` | `fd3189b7e8338ee8e5ab9f98716d329719f291c959bbc8e8f6aae1ec3d48de08` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_a_indicator.py` | `akshare/stock_feature/stock_a_indicator.py` | `ebf8134791e20df3efe9cf780c3e0016a20f5d1440c603f1b7f03c7ee9d0aedb` | `75b87198476d79e1b33f2347385c04a478e8e70b4860e8953544d5d5048d4574` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_a_pe_and_pb.py` | `akshare/stock_feature/stock_a_pe_and_pb.py` | `7617c1f0c0052bb4956c1c09f7cb7138c81f3ee7377b684aca32e2dffbc2982a` | `998ac37905a2fbaa32451babbc6dadd4dce59f3295c0646239812993bfe574f8` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_account_em.py` | `akshare/stock_feature/stock_account_em.py` | `e15875ce84579aea065aed43c3ae5cf6684800ba8e5696fd3cba86e412604158` | `7425beec08c6b55e358ddd2e17af5816dd31ad07ed6219ab3f19767dc9198736` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_all_pb.py` | `akshare/stock_feature/stock_all_pb.py` | `e7b848a5ee45ae50e28b00475cf26bc90232b927ffda3771bcdf1223cbcf61d2` | `0cef71b51f88747fb93edfa80fbb0e7076e89b9ab3f664f3989a26790d9ebf7a` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_analyst_em.py` | `akshare/stock_feature/stock_analyst_em.py` | `745510a60399531526bc808504b45824feeb8e520b4ad1b09bc2f42cb6f26bb3` | `e28330f222cfc2f5dc1158b5c7266bb2b38edb2dc0826a4a6857480d74a5a970` | 2 | 0 | False |  | ✓ |
+| `stock_feature/stock_board_concept_ths.py` | `akshare/stock_feature/stock_board_concept_ths.py` | `4ac27f90f6ece2ff5381edb918b7b72c0fa678df9cfc4fe70061c5dc77e2d086` | `40edad9f13cadd0ceb14c698a2031253836ee543db5e71f29a1751d7574b6a5f` | 3 | 0 | False |  | ✓ |
+| `stock_feature/stock_board_industry_ths.py` | `akshare/stock_feature/stock_board_industry_ths.py` | `7ae2bc95a75b9ad2eafdcf578f3ce96d77ce1dcd802450cbb15745da530420d4` | `62f2e894272154578bb0ab0f7b5419d67d310410365d39245308dc45f99a9801` | 3 | 0 | False |  | ✓ |
+| `stock_feature/stock_buffett_index_lg.py` | `akshare/stock_feature/stock_buffett_index_lg.py` | `057336add918c0da08c86e0548a1828cab02fcce361ce3d6f32441935f40ae7c` | `ff71c2a29b031d83f863efd1a4e1d588a07174fa04f0b6a4e98048b833551428` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_classify_sina.py` | `akshare/stock_feature/stock_classify_sina.py` | `6bf01f5cf4df6f51b09637ac8da5b83627dcd01c59e5b89bdb91f281f237d782` | `daa17c9f7308eab82587813f07e8d99eedf8e3ce59427714cabac80db940b944` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_comment_em.py` | `akshare/stock_feature/stock_comment_em.py` | `2fc88b45bb1ca97399a9a3d437672ba799c813b3f05d886fd57839db3d28fe72` | `cdb258e97c871b01d05baeca530f2dd13f2f35d4cffb3e51e7861d70b63632f9` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_concept_futu.py` | `akshare/stock_feature/stock_concept_futu.py` | `8ca27d99f7495e05f070c6f7815a5b0e5e62bebfb370c92e18eee38e0c80de8b` | `083f0e311af77477f6496252baca55f671045c18f56dfa547eab8a784b7c2465` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_congestion_lg.py` | `akshare/stock_feature/stock_congestion_lg.py` | `9401bee608a8f79fc87c05b25ab0c0bc86087faec6ea70aea4d86c4bda44fb75` | `b28b3bf69d2fe933be55fae2864c4032e97a2f3f248cdb1a69a5b5a406654876` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_cyq_em.py` | `akshare/stock_feature/stock_cyq_em.py` | `4cca1411e6d81cb6ab493a7cbf1cd64ced34ae2a7e6b89d95fa02c24991b3f5e` | `d212c9118e7184ed962986326593211b334e914e657b999122d76f71af2676e1` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_disclosure_cninfo.py` | `akshare/stock_feature/stock_disclosure_cninfo.py` | `565f4c04b428807d52cc24f0f05f67928ac70965b8afd9c2184561e13bd28f40` | `9fe8d7867a805cd8b66c93a96e0ee37b6856ff649ee803b45a4498aad526b533` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_dxsyl_em.py` | `akshare/stock_feature/stock_dxsyl_em.py` | `1e0a100ab98fb3e66fd0da4324824fa95a1db4ed100c5123e683a3abe8bc0720` | `c4d6ac502848251ce83ea0cba1dc522a3a3e3fc188118b75a9669df9d7c0ae64` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_ebs_lg.py` | `akshare/stock_feature/stock_ebs_lg.py` | `66300805cf8758ec291a48c6783613d39a379640ace9593a8dda0c3870e94fcf` | `e21fea524e4228818a2e7bc143d5331700678cbc9f262d7fa088738e8822ae8b` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_esg_sina.py` | `akshare/stock_feature/stock_esg_sina.py` | `28f716d62107006c958230b125f70bf5d355e2c4b1649cc484a3d9ff6938b22f` | `06a2af1653cab08d3ad689a91f4e32c003c8b57696f7d87bff0f192ac8fb16be` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_fhps_em.py` | `akshare/stock_feature/stock_fhps_em.py` | `131df9e6a8f58ff11fb8cec898e6ee149a1452aa573bbddafb35da0c930a56e5` | `1ffdf135e98300d8a833b75a72e9878789fd74be1a5daec879113d602ec5eb8c` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_fhps_ths.py` | `akshare/stock_feature/stock_fhps_ths.py` | `87b35395af99411b72121152f411f387e1d3193e5a8f73a614becbfd9da72880` | `0399446b15872a4a2366be674b562753e9ed4086d5b30ded7fa437abc3f3143b` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_fund_flow.py` | `akshare/stock_feature/stock_fund_flow.py` | `72a06ab05af3c26b8b3f7937c18433bd6d3ce505147c76789c15bc671ede8244` | `586af2aa49b23b7678141786737f65ab6c90f4d8da34ff0066bf47e0d1fabe20` | 2 | 0 | False |  | ✓ |
+| `stock_feature/stock_gddh_em.py` | `akshare/stock_feature/stock_gddh_em.py` | `378b07fea17b2d9bccb38eadede1ad6e76a136b10140f0e4ead4523ffd4ca1d3` | `5fa6a208a6074053b5c8d53266334e9e18412d4cc36e479ac8120b0a23df0cb2` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_gdfx_em.py` | `akshare/stock_feature/stock_gdfx_em.py` | `2d9b8fbba3d7ec4aa212aebb0934b287cb670d9aa070c1b30bd68888691d3826` | `1266f6a4264f9a3c27cf91baa1ff35a9fe4a2e324cb797478a81db684ae777a4` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_gdhs.py` | `akshare/stock_feature/stock_gdhs.py` | `f4b47e70a1328355d1775fdc65922fbfee4d35628cc835eb5fbfd04e053d67d5` | `69059c683c5f4a64ba6ee85922e7ae6f27ba1e84e1da46a28d35747b757d74df` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_gdzjc_em.py` | `akshare/stock_feature/stock_gdzjc_em.py` | `8666748103dbd4a551e7f0fc27fc8a79274c01ee66882b69652d4401ba6c6eee` | `6cb6c263fb201646367abe734655716a5bb0cfc255859b14772a62a211628090` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_gpzy_em.py` | `akshare/stock_feature/stock_gpzy_em.py` | `efbdd8ac788d3b22e7f99e1157b199d74e4ee933e3baffebc2c3c768dc79bb8f` | `9b092f183c474324ca1efe5b139123cd9517b5255e85b5d8a1fa631d96c9e416` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_gxl_lg.py` | `akshare/stock_feature/stock_gxl_lg.py` | `8f0685a231ea4b6fc5aa7f41dcf444b94090104d547e8c2d31a674d0ae1c313c` | `0263b2b3629be1d67bad6257cc3e7c7eb44048b2e186f863bfde0dfaddf6dbe3` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_hist_em.py` | `akshare/stock_feature/stock_hist_em.py` | `292477c55d31fc627bd0ba744e6f90fda9f1ee498f9242c4254be034a5e84efb` | `3d577e17cf6c87d021e8e82bb71b0418c19e40d98c213ec7df5498f4fcc2238b` | 2 | 0 | False |  | ✓ |
+| `stock_feature/stock_hist_tx.py` | `akshare/stock_feature/stock_hist_tx.py` | `f392762da9dd2aa6cfb4906bfc2f87086735344803824b2ba3d9e48d603ac415` | `352a16f193cb285cf405d9b11209a6d9db83cc2b6e6366b8e59c3377114f2d83` | 3 | 0 | False |  | ✓ |
+| `stock_feature/stock_hk_valuation_baidu.py` | `akshare/stock_feature/stock_hk_valuation_baidu.py` | `ed43948255c9b4b6ed8fd8e1e919ca47b5c0fe6419e794c6261a8cc48b280383` | `157a7d9700b36736e86aef9c74c361e7c25c86ebc597a95951c7b8032b14113a` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_hot_xq.py` | `akshare/stock_feature/stock_hot_xq.py` | `ba4aee8c907548f9c7b060c5a3d8068c8b9d9e6d2f943f8c3e1006ed4f873d91` | `42364b88f5ad7f9aa62cbe041cfa19d528184e6dca7427d22ba8abdd22cc7e64` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_hsgt_em.py` | `akshare/stock_feature/stock_hsgt_em.py` | `a62b504750981ed73ce52833e8c1858d5735f088ac9a691b9caf22ba287cd40a` | `9fcc8b52ce18c0c0ae20d0c5e306f85aa474da2e76687657ab786c3443523775` | 2 | 0 | False |  | ✓ |
+| `stock_feature/stock_hsgt_exchange_rate.py` | `akshare/stock_feature/stock_hsgt_exchange_rate.py` | `447ea8c0d7cece93b501390fc829c7581ad692311a439a6259185da0379735ff` | `146c2782329a6d7ef574aa9ebf37bd7b11cd0995328f4d75588cd0fd1fc84805` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_hsgt_min_em.py` | `akshare/stock_feature/stock_hsgt_min_em.py` | `0c136b6706db47f5e81af187be2faf7b15ac06ad43762a3ca9ed0bf5c9348aa6` | `bc8a2dc196c2953bf0270ba278dd8093fd89774bcd3c7de0687c175f66283000` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_info.py` | `akshare/stock_feature/stock_info.py` | `059dfc396846e0ab8f2710d24fbc6e892cf17574f18364ec1d6bdb41fddbd5d6` | `82c64d63dddceb1a84078766e356e61766b531ccfc8d749a36964c8bd947468f` | 2 | 0 | False |  | ✓ |
+| `stock_feature/stock_inner_trade_xq.py` | `akshare/stock_feature/stock_inner_trade_xq.py` | `5cd79085e796723761baf7ced8d5adfe6d7dd475fcf074b8e769d97571419bdc` | `2947a65e2e4633fd153d2fe2c4d71f6e07d4f668da06ac1610cb58f13e98dc71` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_irm_cninfo.py` | `akshare/stock_feature/stock_irm_cninfo.py` | `c43d36f20965cda1d88fac54f6944abd22c8fe02245610939c51f47523efd606` | `3b63a93d863455a23fac6b04e0d0b32e139321978268d497e4928ec2929b1ee7` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_jgdy_em.py` | `akshare/stock_feature/stock_jgdy_em.py` | `86fb62dc1d9cb883821d26ef1da5c8707851c9b5a99c171d4e4c8b30694b8c04` | `64ad652fbd3b9b07711b6d5fda102dd4e9999389730a8babd17fb97cfaa5c415` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_lh_yybpm.py` | `akshare/stock_feature/stock_lh_yybpm.py` | `ed596a03e5066df890e1ecfb021f739c87d471523eec5c71cff574dc93bc2d36` | `e9b144ac8d63f269e7dc12318486bd8dbabded02209f44db6029f3f89b92d692` | 2 | 0 | False |  | ✓ |
+| `stock_feature/stock_lhb_em.py` | `akshare/stock_feature/stock_lhb_em.py` | `1752f980b8324bef95087db70f4af700d145dd6cbc8eea248c4d38138ee2b4f0` | `1591cb132267af25a2b4b50f26d303bb845e1e3c794a0eabc0bc23e7a9e00617` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_lhb_sina.py` | `akshare/stock_feature/stock_lhb_sina.py` | `4ff01a3d31696fceb1ccc4cd151d273634c40a10c76cab2f62420c4f653377ee` | `7e6a8bd523475c89523223dc7210e04de325e711b2e55f9f48c168f4f5e4ec39` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_margin_em.py` | `akshare/stock_feature/stock_margin_em.py` | `0d1b99de7c2da58ab9e58ab7585f231658f8c44a2eddb7fd92b71cfc96c938f3` | `8a423aad0d0898fdd716d9cc8f58bd2324beff8ba4405c17a10a8bbb371dd20f` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_margin_sse.py` | `akshare/stock_feature/stock_margin_sse.py` | `4f49448784b1fb223677f12cdbd4a4b059fbd2ae098b6350f9e939fd1910ed32` | `c9244e50136a65cecadfd9d86ec8a96af5cbb2f82277d2b1269fbe06181fec80` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_margin_szse.py` | `akshare/stock_feature/stock_margin_szse.py` | `186f168e00fcbe80d07865bd33c5adb07a1fba843c56fa3b551b642308863bf3` | `e8998e9992105542f0528bb5f73515ce69e7a1cd0a7b15596f0b30499e0deb62` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_market_legu.py` | `akshare/stock_feature/stock_market_legu.py` | `15dbbba255d5f10cfab7d65fcf6186815a7e536e333e96b2fe600e2e3805f220` | `632223b6a32089c7e1ff9c8628ddfaa2fe28ff898262af137b70f86b2ce12418` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_pankou_em.py` | `akshare/stock_feature/stock_pankou_em.py` | `a329ef2469ad94cb224fa35304e6acad1f9449ecaf71cbd8805795d425206267` | `4ee77b24977e1a4b8e0c3c518b9e4d952356617d72df962e72dc3662ba0876f2` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_qsjy_em.py` | `akshare/stock_feature/stock_qsjy_em.py` | `2b1e74dee4ce657e8bdfa8ee18f8f04ee153d4f6cf00eef25f5918a07a1949d5` | `a2300d0c67d0f9a781d9aeb48714183f9878dd4770a863648b3dc58e6d16a0e2` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_report_em.py` | `akshare/stock_feature/stock_report_em.py` | `fe75546ab3d2efcfeebeae1408fa64ebd9025e2618081969f57d6374f627c8b1` | `60f57c232d0e6a679b6ab7ee6a5d4dbaa7b8a283e3d003325059a62d859cfc91` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_research_report_em.py` | `akshare/stock_feature/stock_research_report_em.py` | `ff3446c8eed6c541b6c2994f8c5cc719f1e9f7127d9378f80863bc5074a38c16` | `853349d3e170ee3338c2bd5c75c3bd5130e30bbfdde923e89675a8210b589725` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_sns_sseinfo.py` | `akshare/stock_feature/stock_sns_sseinfo.py` | `eec83b1d3a6ab4cad62a9e896a75b3882b7bcc030662dffd2891b03c9204c792` | `96469d504512703c3efa42aa44bb76c039fd2f91043437aeb453c97ea466e7c5` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_sy_em.py` | `akshare/stock_feature/stock_sy_em.py` | `1b2b0fd56bcfa6a08b85b0915c7e6cc7099708f62f82d6c9610fe396d0ea680d` | `813681353f675ba43dd39dd39cf704d0d4865eff0114623d770bacf63abd98af` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_technology_ths.py` | `akshare/stock_feature/stock_technology_ths.py` | `a7e2709dd77966ca7a7e4950817c0a022c38a486ca36bef142bf0aa0c4dd65c0` | `414fb9da69dfa5c9f7d0b31676304a15eddee9f20a7cd6c45f73cb963fb98abb` | 2 | 0 | False |  | ✓ |
+| `stock_feature/stock_tfp_em.py` | `akshare/stock_feature/stock_tfp_em.py` | `6378e367be7c0250af9921ebeed953d02324e4c6b06cb967d1c32d97576a60c6` | `60dc133736c256d072ac6644ce71b52358f436bf4f0f42b98da6450573dd2a4e` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_three_report_em.py` | `akshare/stock_feature/stock_three_report_em.py` | `ea74754eff4ddf119b7466ab798849c89b3b966f37709bec7e79c3ad33f70011` | `15447385e0dd81f0ea48631d9c6af3fb79f854e02a423d718c8199a915bb7c38` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_ttm_lyr.py` | `akshare/stock_feature/stock_ttm_lyr.py` | `7ed95dfdae62bbbbf568acf1a18f1a8420f6f28a20143fe5e5c8c08643edd3aa` | `c3679d57093142e0b2d5893617ee1003da36b105aa96c6a4e1fe557bac04bb85` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_us_valuation_baidu.py` | `akshare/stock_feature/stock_us_valuation_baidu.py` | `51c296782021ec23dce378af24e8b60d55ca6ba719e0a3c04ce46001d6c2e21f` | `64c38e7642f3777cbfca74b78c818f453f8e61bedfcd54ed177d9b6415c067ea` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_value_em.py` | `akshare/stock_feature/stock_value_em.py` | `440f38d9d91e0a1484a12df237d7e21b14b7783cd88de51dae95db9ed7b2cd96` | `89e2324e7f7c8b7924935762de29d2896641eb39658ab56df0d51fff4a8a9e22` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_yjbb_em.py` | `akshare/stock_feature/stock_yjbb_em.py` | `85006bd5a8fcd3c01d03cf18fdda6e47b1b599be3cee17116a60f7d5466eb3eb` | `3e2db8c21f753515f86dd0f75aa1cf4e0a9dfb9b7c0329f590f19ae512e31d4b` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_yjyg_cninfo.py` | `akshare/stock_feature/stock_yjyg_cninfo.py` | `28cd0ee6b1c19150310e5e1d980fd6020a8158932e68c2e84363f227e54f062e` | `33f001f0aef933e41a5c6ed98865a53eab728acbc26ce47966b9c274d74ddb6c` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_yjyg_em.py` | `akshare/stock_feature/stock_yjyg_em.py` | `20907350c580b3b8133940c39e2222fe5794c242ee658406354ab1e04ae162d5` | `60105e74c744ed1e872d53bbec72ad3a26de1d7a00a7c444cf4f20c4a2d322d4` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_yzxdr_em.py` | `akshare/stock_feature/stock_yzxdr_em.py` | `fb5e8a0cfb410d791b1d1b3b68d0323f2df95eeac38fb2c871b580b6682f3fae` | `15f3999640e2bc572c96e2cb790402285c0a415b96cef32bd16f47ba04c656b6` | 2 | 0 | False |  | ✓ |
+| `stock_feature/stock_zdhtmx_em.py` | `akshare/stock_feature/stock_zdhtmx_em.py` | `c4245ad231e04c07a8e1760da26eff77ff7839025b3038929c6932f2675eb611` | `27aa09748d479ed16b0333e988e666b3f59d3d9e32b3b86b6bbe5161975b079e` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_zf_pg.py` | `akshare/stock_feature/stock_zf_pg.py` | `9d8275b8b38177333f3c3caae0c35e5a8093ae2a453003e802268f7e10ea91c8` | `b8ce422939280613c313608e9be3212f5265090791ab50be260ec2aee846ec47` | 1 | 0 | False |  | ✓ |
+| `stock_feature/stock_zh_valuation_baidu.py` | `akshare/stock_feature/stock_zh_valuation_baidu.py` | `a316081cfebca45bc0632aa30af669ddaf6da5ccd31625a14b1674c387b2a3b2` | `36c7d012de670ce6df06da448ef46b1d590c59401d4ed1f6d1e52e1e1bd04cfd` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_zh_vote_baidu.py` | `akshare/stock_feature/stock_zh_vote_baidu.py` | `7d4199954291daaae9f2d3e98a5f96b696275ed70cab4668da2630c5ac0c345b` | `8fa8ac3936bbece5882a89636cfcdcffce58ff1a5e84b2cf6c8232d187f97e28` | 0 | 0 | False |  | ✓ |
+| `stock_feature/stock_ztb_em.py` | `akshare/stock_feature/stock_ztb_em.py` | `ef31c63026771edbdeb7b394b0b83632af3e6e0a854a94023ce85f9ef9cd0b82` | `961f802b5bdd2df9e0dad1222e9185fdfe646927bf44ed2b07046416c8cf2902` | 0 | 0 | False |  | ✓ |
+| `stock_feature/ths.js` | `akshare/stock_feature/ths.js` | `0163e41dfdcbd889755142f4179a83a8d9f575f5343a56413546cc7fc0262376` | `0163e41dfdcbd889755142f4179a83a8d9f575f5343a56413546cc7fc0262376` | 0 | 0 | False |  | ✓ |
+| `stock_fundamental/__init__.py` | `akshare/stock_fundamental/__init__.py` | `ba6b5d135e757456cb7d7973580a871d58bcca3e2534f96ad70457d50e4230d3` | `95d8957fa12ba376dafe8968d4ed6fcf7a9532d93585b2d57225cc0efbf52475` | 0 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_basic_info_xq.py` | `akshare/stock_fundamental/stock_basic_info_xq.py` | `e53a67e091573a32e58a04f0769cbc29e5774fc7982deb3410a1d6506c3b045d` | `354d5eb73b697274f4b24c256a9ad3701a2a6dcc6ccc78a00896791e5b60a991` | 1 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_finance_hk_em.py` | `akshare/stock_fundamental/stock_finance_hk_em.py` | `892b4e17d7fb7b488fc77a7aaa65dd14e04373b2249f72d1fa9fcd1a1f630bc8` | `aa53125a167857a40115e3e545416d2aeabbcf99694f9858eb97ed365e92f357` | 0 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_finance_sina.py` | `akshare/stock_fundamental/stock_finance_sina.py` | `6e3604e1a8673f94bc75becaac08b3689c7deedf8a6ae1ca73ed9a45c0b6a66f` | `7d5befe7e83c1cfaef08182342f2e0411f9adb65e5c15b4c1ad7fc155b5a2e23` | 1 | 0 | True | 新浪财报 更新日期：datetime.fromtimestamp 按本机时区渲染 → 固定按北京时区渲染（C21 时区漂移缺陷：同一份应答在 +08:00 与 +03:00 的机器上差 5 小时） | ✓ |
+| `stock_fundamental/stock_finance_ths.py` | `akshare/stock_fundamental/stock_finance_ths.py` | `cee9f881cf0207f47b50e88ea15790c2b69edd8b2bd94107f529496cf8a07da2` | `6e8f896ff6283adc372f179bf3d0e0eb091325571152704c70ecc867b837f0dc` | 1 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_finance_us_em.py` | `akshare/stock_fundamental/stock_finance_us_em.py` | `9396d618e2e2e3c8cae3c6e611d53acbc29c7409b680da5af8ff93d16523a9d1` | `ffa6bf14d21ea7dd2f86de63701bd0dde534a181b3353fd6b2fed239d48b6c1c` | 1 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_gbjg_em.py` | `akshare/stock_fundamental/stock_gbjg_em.py` | `83717cd733fca9751a05ab4167647e28c5272d4639069ecd32c311cea9b2bdbb` | `e0c1efb90c153276ac5bb83ba1b69733f497ab16b8c0af260aa184b338aae85d` | 0 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_hold.py` | `akshare/stock_fundamental/stock_hold.py` | `862271da2de1096eca97b90cb382a1d5036fb20fac214391be041a7868ce07e6` | `ef5729778b9bd130404d192af7c455707773dcc22df81537e07b7485a93e3863` | 1 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_ipo_declare.py` | `akshare/stock_fundamental/stock_ipo_declare.py` | `3248580203278e572b41c150ac23a5e3f0619fc04b26ccf3fc9da5edcb47ce64` | `49f1173e56d582f3ebb8f69b325a49d4aa95f8e8935190ae30c674afb2a06862` | 2 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_ipo_review.py` | `akshare/stock_fundamental/stock_ipo_review.py` | `5a27943847cffbb7af17d309cbc91ac217da0033e86749e7d6d20991f227533e` | `64ac60ae32d1819d224c18e98a484147507e2a1e49c2f639e015da75aad4158b` | 2 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_ipo_ths.py` | `akshare/stock_fundamental/stock_ipo_ths.py` | `d4a2960f100086713c93bb91e8982571880fc59d96f81d22887ae6f23b239952` | `3e781cfe8558f3568134dbbd63aa1bc156b78488c8b72911b9413c9a9c590f0a` | 0 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_ipo_tutor.py` | `akshare/stock_fundamental/stock_ipo_tutor.py` | `97645d3608af2564b40a88aee1c463b068c73e28c6bad52ba928c6c6933e731a` | `dc748cf590ba671f4fef58d081abaa4bbc896fdfd4e1bb9b7537c5df007b5739` | 2 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_kcb_detail_sse.py` | `akshare/stock_fundamental/stock_kcb_detail_sse.py` | `536c38c14b8e4e76afa8d12639d41b4d97e71240dd4acf75b3cd98740eabc0d4` | `ad00ff0882f1468212527d152e93fdb584f220c1fb39e3d6dca6475b63fd8c20` | 0 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_kcb_sse.py` | `akshare/stock_fundamental/stock_kcb_sse.py` | `7030819429bb3c9075cc0f57212a6477616acc02678647dba76d5abbc3258b2f` | `6b2215405fe0f44c8fa7bc9ff23f05e885b3fea0064e941e72e8e20d2764eda9` | 0 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_notice.py` | `akshare/stock_fundamental/stock_notice.py` | `67070fcd919e65bed727be72e424a6f4650b54ef62d9e8058e667bc1781141bf` | `93e6f384da17cd5b64f7f83f984f76f12b60bbc83d5de9c43b4c81aa4fbf49b0` | 1 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_profit_forecast_em.py` | `akshare/stock_fundamental/stock_profit_forecast_em.py` | `fd9956932cfe16cc252026e393f6221e3470ae52dfb66fe989020f16464cae31` | `8471073a3259cfdb6cca6a07c7214193555580f207a8a59a4a771d5dbcd2c66b` | 1 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_profit_forecast_hk_etnet.py` | `akshare/stock_fundamental/stock_profit_forecast_hk_etnet.py` | `534039a11aae33f6b8533f767b5ed93ccf21fb8fe57ba4393786c58b5c95f45c` | `b4008e88b3140f46b8d9137a2aaa6c1ea564505d7fa2889be8ceb39c49a99671` | 0 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_profit_forecast_ths.py` | `akshare/stock_fundamental/stock_profit_forecast_ths.py` | `f1fccf1b205cc564afa1aed46647bd6c39fb3f49de48aae48c701e85580b1c93` | `ce8e15181a10ce58fd55398e9506f4b669342f6eefc4b794cb7ded4a6a63f2ee` | 1 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_recommend.py` | `akshare/stock_fundamental/stock_recommend.py` | `a75595170784ca84ca48688a04557cb7114a7fa667c3d4b622ce6db1ba4b3aea` | `000247b3809fb2e0281270ead48a93b7e441c33a36c84b99fdf2463bc5ff2e25` | 0 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_register_em.py` | `akshare/stock_fundamental/stock_register_em.py` | `64521bb25681718d58e76bf1032a1ef3318e4032988900e82b3377fe7f085b2c` | `07b3f9b78a67a80f108d53e9a0db01ccf5b85391301478b7c83217e3ba358f75` | 2 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_restricted_em.py` | `akshare/stock_fundamental/stock_restricted_em.py` | `7b91b7a226417fd77f6bcaae5f99cbce7dd1820785e325f78fe8779c06414660` | `d5dad781b94ca939373bbc7128531f9d09b8b69013bd7eac89c8215ae8d3d23d` | 0 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_zygc.py` | `akshare/stock_fundamental/stock_zygc.py` | `84b82d66641ae210627ff029f20981d987fff8401edea07f5083e19088b6faa9` | `f06076f740d3deb351e1b5ba7135c2af52e61dc284a7dc92020af850dbca277f` | 0 | 0 | False |  | ✓ |
+| `stock_fundamental/stock_zyjs_ths.py` | `akshare/stock_fundamental/stock_zyjs_ths.py` | `e5a9e249ff56a7e8f47ec0a76bd74153c480d8ce021d3a4df8600152fe985943` | `9627fb0a5fe06e6dc1f59564d4bb05bc01ccd2550534c294a970e4efa80a44c7` | 0 | 0 | False |  | ✓ |
+| `utils/__init__.py` | `akshare/utils/__init__.py` | `1db2943f6bd90296de2b63d36553bf9beea4014ca67c3c26db2bf72abe11ff50` | `ee81dc81ba86bab7d2d6d432c9724870f9b21ba8a8954b8c22b95917566eedbe` | 0 | 0 | False |  | ✓ |
+| `utils/cons.py` | `akshare/utils/cons.py` | `3c56677641b794c5b542183ec2a719992a30157c1052c61808b653e2cd579307` | `6af0c61db0cdf5ac817e0e3db6b0294473837dcbb6b7fcf905b282fd4c7d3782` | 0 | 0 | False |  | ✓ |
+| `utils/context.py` | `akshare/utils/context.py` | `1e5e243d4cd0d4279c473bb926f4caa53a6230b7f30336331bb179864b65b024` | `1967a47f2b4eb7b7b3e433cae0467f3a1657238cfa80a782f406b0a2b3fd8e5c` | 0 | 0 | False |  | ✓ |
+| `utils/demjson.py` | `akshare/utils/demjson.py` | `c53d1f7149035569232eab97d2b4089029a98d2b9e16ea744de5ef33f7a29465` | `4fd9219ed6978f26630b3765f0e6dcfe25bed888b73a4749c1ad412a097bf4d8` | 0 | 0 | False |  | ✓ |
+| `utils/func.py` | `akshare/utils/func.py` | `9a3511623dda4cdb4a3906e2c100d4cffe7d29a5a21555c8e0ca2f4ef7a1395f` | `23c46b78b4a184910f0f8e1f1b69de7a58a44621426f3e5e5aacb53f2e6ef6ce` | 2 | 0 | False |  | ✓ |
+| `utils/multi_decrypt.py` | `akshare/utils/multi_decrypt.py` | `696a0bda210f7ae5c7260f3e9fb3ad30a8b12e72217f37a90028317eb7e6401e` | `57eb1ae9007f97902ec62a9c320a371a97a52dba2cf8ffa67684ad72c493243d` | 0 | 0 | False |  | ✓ |
+| `utils/request.py` | `akshare/utils/request.py` | `54affea122c27a456d0631d61324da8f268df62ecb297d138dea60c099c7ca59` | `6a128f6abc042a1aa645f955417ff09badadf6c52f25bcaccd30224e1fff6d0f` | 0 | 0 | False |  | ✓ |
+| `utils/token_process.py` | `akshare/utils/token_process.py` | `9c6b609d9191a6b5c99212d71fc99c507e13808170cec4ce6f411a10f6b412ea` | `f9eacb12718c1d0f461ef850e0905d1b75ced10da8d0054d1d04e2834d05543a` | 1 | 0 | False |  | ✓ |
+| `utils/tqdm.py` | `akshare/utils/tqdm.py` | `32e3cdc1cb3090e1a3c1640e3165e2f59bd0fd1996e286c25918f68bb1ccec51` | `11085cbf982b3896df60cfa837e5052b7bcfb4896d062bcedf2f3dd67affffd3` | 0 | 0 | False |  | ✓ |
 
 ## 人工待办清单
 

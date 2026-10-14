@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import threading
 from datetime import date, datetime, timedelta, timezone
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -16,6 +17,7 @@ from opendata.data.protocol import CapturedFetch, FetchContext
 from opendata.data.providers.fred.models._client import FredProviderError
 from opendata.data.providers.fred.models._iorb_query import FredIorbQuery
 from opendata.data.providers.fred.models.series import FredSeriesQuery
+from opendata.data.providers.fred.provider import PROVIDER as FRED_PROVIDER
 from opendata.data.registry import ProviderRegistry
 from opendata.data.request_budget import (
     GrantDecision,
@@ -26,6 +28,7 @@ from opendata.data.request_budget import (
     current_request_scopes,
     reserve_scoped_attempt,
 )
+from opendata.services import provider_model_query
 
 TRANSFORMS = ("lin", "chg", "ch1", "pch", "pc1", "pca", "cch", "cca", "log")
 FREQUENCIES = (
@@ -157,11 +160,13 @@ def make_budget(
 
 
 def test_fetcher_declares_only_unverified_variable_iorb_capability() -> None:
-    # The consumer of the declared canonical id is ``ProviderRegistry.resolve_model``: the fred
-    # descriptor (opendata/data/providers/fred/provider.py) binds no IORB row yet, so the binding
-    # is made here with the same operation ``catalog.register_provider`` uses for a real one.
+    binding = FRED_PROVIDER.fetcher_dict["IORB"]
+    assert binding.module == "opendata.data.providers.fred.models.iorb"
+    assert binding.class_name == "FredIorbFetcher"
+    fetcher = binding.load("fred")
+    assert isinstance(fetcher, iorb_module.FredIorbFetcher)
+
     registry = ProviderRegistry()
-    fetcher = iorb_module.FredIorbFetcher()
     registry.register_provider_models("fred", (fetcher.canonical_model,), fetcher)
     assert registry.resolve_model("fred", "IORB") is fetcher
     assert iorb_module.FredIorbFetcher.capability.model_dump() == {
@@ -173,6 +178,82 @@ def test_fetcher_declares_only_unverified_variable_iorb_capability() -> None:
         "verified": False,
         "notes": "",
     }
+
+
+def test_provider_model_query_injects_identity_and_serializes_iorb_rows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fetcher = FRED_PROVIDER.fetcher_dict["IORB"].load("fred")
+    received: list[tuple[str, str | None]] = []
+    original_transform = fetcher.transform_query
+
+    def observe_query(**kwargs: object) -> FredIorbQuery:
+        params = original_transform(**kwargs)
+        assert type(params) is FredIorbQuery
+        received.append((params.source, params.market))
+        return params
+
+    fetcher.transform_query = observe_query  # type: ignore[method-assign]
+    query_value = query()
+    fake_client(monkeypatch, (page(query_value, row()),))
+    capability = fetcher.capability
+    descriptor = SimpleNamespace(
+        source="fred",
+        model="IORB",
+        domain=capability.domain,
+        verified=capability.verified,
+        full_capability_identity=(
+            capability.asset_class,
+            capability.domain,
+            capability.period,
+            capability.market,
+            capability.source,
+        ),
+    )
+    monkeypatch.setattr(
+        provider_model_query,
+        "_resolve_fetcher",
+        lambda *_args: (descriptor, fetcher),
+    )
+    monkeypatch.setattr(
+        provider_model_query,
+        "_reviewed_query_contract",
+        lambda _domain: (None, FredIorbObservation),
+    )
+
+    class Principal:
+        def allows_domain(self, domain: str) -> bool:
+            return domain == capability.domain
+
+    response = asyncio.run(
+        provider_model_query.query_provider_model(
+            registry=object(),
+            source="fred",
+            model="IORB",
+            query={"start_date": "2025-01-02"},
+            principal=Principal(),
+            ctx=FetchContext(timeout=5, request_budget=make_budget()),
+        )
+    )
+
+    assert received == [("fred", "us")]
+    assert response["source"] == "fred"
+    assert response["model"] == "IORB"
+    assert response["results"] == [
+        {
+            "series_id": "IORB",
+            "date": "2025-01-02",
+            "value": 4.25,
+            "realtime_start": "2025-01-01",
+            "realtime_end": "2025-12-31",
+            "transform_units": "lin",
+            "output_type": 1,
+            "requested_frequency": None,
+            "requested_aggregation_method": "avg",
+            "source_value": "4.2500",
+            "native_units": "Percent",
+        }
+    ]
 
 
 def test_query_transform_preserves_typed_validation_error_for_client400() -> None:

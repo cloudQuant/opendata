@@ -6,10 +6,11 @@ descriptor rather than a second list. This package is an *implemented* provider 
 ``_UPSTREAM_PROVIDERS`` carries ``FEDERAL_RESERVE_PROVIDER``, imported from
 :mod:`opendata.data.providers.federal_reserve.provider` (catalog.py:18), and no
 ``_reserved_provider`` entry exists for it -- so nothing here waits on a reserved identity being
-replaced. The five bindings this package registers and the catalog-wide binding and reserved totals
-are frozen by tests, not restated here: tests/test_provider_federal_reserve.py:387-393 names the
-five ``canonical_model_ids``, and tests/test_provider_catalog.py freezes the all-source totals with
-their per-round build-up, because a number copied into a docstring is a reading no judge re-runs.
+replaced. The thirteen bindings this package registers and the catalog-wide binding and reserved
+totals are frozen by tests, not restated here: ``tests/test_provider_federal_reserve.py`` names all
+thirteen ``canonical_model_ids`` on the descriptor test, and ``tests/test_provider_catalog.py``
+freezes the all-source totals with their per-round build-up, because a number copied into a
+docstring is a reading no judge re-runs.
 """
 
 from __future__ import annotations

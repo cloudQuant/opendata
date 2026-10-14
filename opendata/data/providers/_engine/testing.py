@@ -28,7 +28,8 @@ from opendata.data.providers._engine.row_expansion import (
     SeriesPivotPlan,
     WideTablePivotPlan,
 )
-from opendata.data.providers._engine.value_transform import apply_derive
+from opendata.data.providers._engine.spec import ROW_FILTER_VALUE_SEPARATOR
+from opendata.data.providers._engine.value_transform import CastSpec, apply_derive
 from opendata.data.request_budget import (
     GrantDecision,
     RequestBudget,
@@ -60,8 +61,13 @@ _SAMPLE_VALUES: dict[str, tuple[object, ...]] = {
 def sample_value(kind: str, index: int = 0) -> object:
     """Return a raw JSON value of ``kind`` that the engine's row model will accept.
 
-    Dates are published as ISO strings because that is what a JSON endpoint sends; the engine's
-    declared ``date`` column is what turns it into a ``date``.
+    Dates are published as ISO strings because that is what a JSON endpoint sends and what an uncast
+    ``date`` column reads: :func:`opendata.data.providers._engine.http_json.normalize_record` hands
+    the cell to the row model, which parses the ISO text into a ``date``. A column whose declaration
+    runs a ``cast`` stage reads a different wire shape altogether -- an epoch integer, a date in the
+    source's own format, a bool spelled the source's way -- and its cell comes from
+    :func:`cast_input_sample` rather than from this table, because the declaration says what the
+    body has to publish.
     """
     options = _SAMPLE_VALUES.get(kind)
     if options is None:
@@ -78,6 +84,16 @@ PIVOT_TIMESTAMP_EPOCH = date(2026, 1, 1)
 def pivot_timestamp(index: int) -> str:
     """Return the ISO timestamp a wide-table record at position ``index`` publishes."""
     return (PIVOT_TIMESTAMP_EPOCH + timedelta(days=index)).isoformat()
+
+
+def descending_timestamp(index: int) -> str:
+    """Return the ISO date a record at position ``index`` publishes for a descending sort column.
+
+    The same epoch :func:`pivot_timestamp` counts up from, run the other way: strictly descending
+    and duplicate-free, which is what makes the page a ``RowOrderSpec`` with ``direction="desc"``
+    hands back the page this fixture scripted. See :func:`ordered_cell`.
+    """
+    return (PIVOT_TIMESTAMP_EPOCH - timedelta(days=index)).isoformat()
 
 
 def wide_table_expansion(spec: ModelSpec) -> tuple[WideTablePivotPlan, SeriesPivotPlan] | None:
@@ -368,15 +384,96 @@ def staged_record_plan(spec: ModelSpec, column: ColumnSpec) -> DerivePlan | None
     return None
 
 
-def staged_sample(column: ColumnSpec, index: int) -> object:
+#: The instant a declared cast's wire sample counts up from, one day per record position, in UTC.
+#: It is the same calendar day :data:`_SAMPLE_VALUES` spells for a ``date`` column: a cast changes
+#: the shape the body publishes, not the day the row carries, so the epoch sample and the ISO sample
+#: have to agree on which day they are describing.
+CAST_SAMPLE_MOMENT = datetime(2026, 1, 1, tzinfo=timezone.utc)
+
+#: The cast kinds whose input is an epoch count, spelled here rather than imported from the kernel's
+#: private set so the fixture keeps its own reading of the declaration's vocabulary.
+_EPOCH_CASTS = ("epoch_ms_to_date", "epoch_ms_to_datetime", "epoch_s_to_date")
+
+
+def declared_cast(plan: DerivePlan) -> CastSpec | None:
+    """Return the cast one record-sourced plan runs, or None when it stages no cast.
+
+    ``STAGE_SEQUENCE`` admits at most one cast and puts it ahead of the rescale, so a plan carries
+    no more than one input vocabulary for the fixture to read.
+    """
+    for stage in plan.stages:
+        if stage.kind == "cast" and stage.cast is not None:
+            return stage.cast
+    return None
+
+
+def cast_input_sample(cast: CastSpec, kind: str, index: int) -> object:
+    """Return the raw cell ``cast`` reads, for the sample of ``kind`` at position ``index``.
+
+    A :class:`~opendata.data.providers._engine.value_transform.CastSpec` names its own input shape,
+    and it is not the shape of the value the column publishes: the epoch kinds read an integer
+    count (milliseconds or seconds, per the kind), ``date_string_to_iso`` reads text in the format
+    the declaration names, ``bool_from_spellings`` reads one of the two spelling sets it declares,
+    and the numeric kinds refuse a binary float and so take an integer or exact decimal text. The
+    generic body therefore has to spell the cast's *input* while the row keeps the value the cast
+    produces -- the same day, said the way the source says it. Reading it off the declaration is
+    what keeps a new epoch provider testable without editing shared code, exactly as
+    :func:`wide_table_expansion` reads a pivot's vocabulary off its plans.
+
+    Raises:
+        AssertionError: The column's declared kind has no sample this cast's input can be spelled
+            from -- a bool cast on a non-boolean column, an epoch cast on anything but a ``date``, a
+            numeric cast on a kind that is not a quantity -- so the fixture would be scripting a
+            value the declaration was never written to read.
+    """
+    moment = CAST_SAMPLE_MOMENT + timedelta(days=index)
+    if cast.kind in _EPOCH_CASTS:
+        if kind != "date":
+            raise AssertionError(
+                f"cast {cast.kind} on a {kind!r} column: the epoch kinds produce a date, so no "
+                f"published count reaches a {kind!r} row field"
+            )
+        seconds = int(moment.timestamp())
+        return seconds * 1000 if cast.kind.startswith("epoch_ms") else seconds
+    if cast.kind == "date_string_to_iso":
+        if kind not in ("date", "str"):
+            raise AssertionError(
+                f"cast {cast.kind} on a {kind!r} column: a published date string is text, so only "
+                f"a date or a text column can read it"
+            )
+        return moment.strftime(cast.input_format)
+    if cast.kind == "bool_from_spellings":
+        if kind != "bool":
+            raise AssertionError(
+                f"cast {cast.kind} on a {kind!r} column: a bool cast produces True or False, so no "
+                f"spelling reaches a {kind!r} row field"
+            )
+        spellings = cast.true_spellings if index % 2 == 0 else cast.false_spellings
+        return spellings[0]
+    if kind not in ("int", "float"):
+        raise AssertionError(
+            f"cast {cast.kind} on a {kind!r} column: the numeric casts read a quantity, so a "
+            f"{kind!r} column has no published number to rescale"
+        )
+    # The kernel refuses a binary float, so a float sample goes as exact decimal text.
+    value = sample_value(kind, index)
+    return str(value) if isinstance(value, float) else value
+
+
+def staged_sample(column: ColumnSpec, index: int, plan: DerivePlan) -> object:
     """The raw cell the generic body publishes for one staged record column.
 
-    The value-transform kernel reads its scale and cast inputs as exact decimal text or integers
-    and refuses a binary float -- "publish it as a string or declare a cast first" -- so for a
-    numeric staged column the fixture spells the kind's sample value as text rather than handing
-    back the float the sample table carries; every other kind keeps its published sample, which
-    is already a string a declared cast reads.
+    Two halves of a plan ask two different things of the cell, and both are read off the plan
+    rather than remembered per model. A ``cast`` stage names its own input shape, so the cell comes
+    from :func:`cast_input_sample` -- an epoch integer for ``epoch_s_to_date``, never the ISO text a
+    plain ``date`` column publishes. A scale-only plan reads a quantity, and the kernel refuses a
+    binary float -- "publish it as a string or declare a cast first" -- so a numeric staged column
+    spells the kind's sample value as text rather than handing back the float the sample table
+    carries; every other kind keeps its published sample, which is already a string its stages read.
     """
+    cast = declared_cast(plan)
+    if cast is not None:
+        return cast_input_sample(cast, column.kind, index)
     value = sample_value(column.kind, index)
     if column.kind in ("float", "int") and isinstance(value, float):
         return str(value)
@@ -454,20 +551,137 @@ def absent_key_reads_as_null(spec: ModelSpec, column: ColumnSpec) -> str | None:
     return key
 
 
+def selection_vocabulary(spec: ModelSpec, index: int = 0) -> dict[str, object]:
+    """The cells one generic record publishes for the keys its ``row_filters`` test.
+
+    :func:`opendata.data.providers._engine.http_json.apply_row_filters` judges a selection on the
+    decoded record and says so itself: a filter can test a key the model does not publish. econdb's
+    roster is exactly that shape -- ``iso`` selects the obsolete OECD block out of the published
+    file and becomes no output column of its own -- and the same function reads a record that does
+    not publish a tested key as a non-match, so a record list carrying no ``iso`` makes *every* row
+    fail a ``not_equals`` and the declaration answers with nothing: the empty answer every positive
+    face of the contract suite then mistakes for the model. These keys therefore join the scripted
+    record and, through :func:`record_vocabulary`, the rendered header.
+
+    A key spelled as a declared column's name or ``source_key`` is not one of them: a filter may
+    test the output name where the record publishes the renamed key (cboe's search declares both
+    spellings precisely because no live body has settled which one the directory uses), and
+    inventing a second cell for one column would script a record the source does not send.
+
+    Each cell comes from its own predicate, because a literal needle is the declaration's own
+    constant and a body written against anything else is a body the declaration discards: the needle
+    for the ops that read it (``equals``, ``contains``, ``prefix``), the first alternative of an
+    ``in`` set, and for ``not_equals`` the string sample at ``index`` that differs from it.
+
+    Raises:
+        AssertionError: The declaration expands its rows, so the keys a filter reads are the ones
+            its stages write and no record this module scripts can carry them; or the needle comes
+            from a parameter, so whether a row survives is the caller's question rather than the
+            declaration's; or every string sample is a needle the ``not_equals`` refuses, so no cell
+            can say "different from this". Each would be answered with a body whose rows the
+            selection discards -- the silent zero this kernel exists to refuse.
+    """
+    cells: dict[str, object] = {}
+    if not spec.row_filters:
+        return cells
+    carried = {column.name for column in spec.columns}
+    carried |= {column.source_key or column.name for column in spec.columns}
+    carried |= {key for key in (raw_key(spec, column) for column in spec.columns) if key}
+    for row_filter in spec.row_filters:
+        for key in row_filter.columns:
+            if key in carried or key in cells:
+                continue
+            if spec.row_expansion:
+                raise AssertionError(
+                    f"{spec.model}: its row filter tests {key!r}, which no column publishes, while "
+                    f"its row_expansion writes the very records the filter is judged on, so no "
+                    f"record this fixture scripts can carry the key"
+                )
+            if row_filter.value_param:
+                raise AssertionError(
+                    f"{spec.model}: its row filter tests the undeclared key {key!r} against "
+                    f"parameter {row_filter.value_param!r}, so which rows survive is the caller's "
+                    f"needle and not a cell this fixture can script"
+                )
+            needle = row_filter.value
+            if row_filter.op == "in":
+                cells[key] = needle.split(ROW_FILTER_VALUE_SEPARATOR)[0]
+            elif row_filter.op == "not_equals":
+                folded = needle.casefold() if row_filter.ignore_case else needle
+                options = [
+                    str(option)
+                    for option in _SAMPLE_VALUES["str"]
+                    if (str(option).casefold() if row_filter.ignore_case else str(option)) != folded
+                ]
+                if not options:
+                    raise AssertionError(
+                        f"{spec.model}: every string sample of {key!r} is the needle "
+                        f"{needle!r} its not_equals refuses, so this fixture cannot publish a cell "
+                        f"the selection keeps"
+                    )
+                cells[key] = options[index % len(options)]
+            else:
+                cells[key] = needle
+    return cells
+
+
+def ordered_cell(spec: ModelSpec, column: ColumnSpec, index: int) -> object | None:
+    """The cell the generic body publishes for the column ``spec``'s ``order_by`` reads, or None.
+
+    :func:`expected_row_value` answers for the row at position ``index``, while the ordering stage
+    puts the records wherever its declared direction says they belong. A body whose cells count
+    *against* that direction therefore comes back reordered, and every column of the row at position
+    ``index`` then carries the sample of some other position -- a disagreement no reading of the
+    declaration can untangle, because the sample table is exactly what the case was told to expect.
+    Ascending is what the samples already do (each kind counts up with ``index``, the way
+    :func:`pivot_timestamp` counts up for a wide table), so an ascending declaration is answered
+    with None and its published sample stands; a descending one gets its sort column from
+    :func:`descending_timestamp`, which makes the page the ordering stage hands back the page this
+    module scripted. Ties and unrankable cells keep published order, as ``apply_row_order``
+    documents, so nothing else moves.
+
+    Raises:
+        AssertionError: The declaration sorts descending on a column this fixture has no descending
+            cell for -- a kind other than ``date``, or one a derive stage computes, whose wire shape
+            is the cast's input rather than the row's value. Scripting either against the declared
+            direction reverses the page, and publishing equal cells for every row would leave the
+            ordering stage nothing to judge; both belong named rather than absorbed.
+    """
+    order = spec.order_by
+    if order is None or order.direction != "desc":
+        return None
+    carried = {column.name, column.source_key or column.name, raw_key(spec, column)}
+    if order.column not in carried:
+        return None
+    staged = staged_record_plan(spec, column)
+    if column.kind != "date" or staged is not None:
+        raise AssertionError(
+            f"{spec.model}: order_by sorts {order.column!r} descending, and this fixture has no "
+            f"descending cell for a {column.kind!r} column"
+            f"{' its derive plan computes' if staged is not None else ''}, so the page it scripts "
+            f"would come back ordered against the declaration"
+        )
+    return descending_timestamp(index)
+
+
 def record_vocabulary(spec: ModelSpec) -> list[str]:
     """The keys one raw record of ``spec``'s source publishes, in header order.
 
     For a declaration that repoints, these are the pointers its plan re-resolves per record, so a
-    dotted entry names a path through a nested object rather than one flat key.
+    dotted entry names a path through a nested object rather than one flat key. The keys its row
+    filters test beyond its columns join the list, because the header a source prints is every key
+    its records carry, not only the ones a declaration turns into output columns.
     """
+    cells = selection_vocabulary(spec)
     expansion = wide_table_expansion(spec)
     if expansion is not None:
-        return [expansion[0].timestamp_key, *expansion[0].series_keys]
+        return [expansion[0].timestamp_key, *expansion[0].series_keys, *cells]
     keys: list[str] = []
     for column in spec.columns:
         key = raw_key(spec, column)
         if key is not None:
             keys.append(key)
+    keys.extend(cells)
     return keys
 
 
@@ -477,11 +691,15 @@ def expected_row_value(
     """The value the row at position ``index`` must carry for ``column``, given this module's body.
 
     The synthesis publishes the raw cell a JSON or text body would carry; the engine's declared kind
-    is what turns a ``date`` column into a ``date``, and a stamped column's plan is what turns the
-    query parameter into the column. Reading both sides here is what keeps a fixture edit and the
-    case that judges it from disagreeing about what "normalize the declared columns" promised. A
-    column its plan repoints is answered with the same sample, because a repoint moves where in the
-    record the value is published, not what value reaches the row.
+    is what turns a ``date`` column into a ``date``, a stamped column's plan is what turns the query
+    parameter into the column, a record-sourced plan is what turns its cast's wire input into the
+    row's value, and a wide table's pivot header is what the timestamp column reads. Reading both
+    sides here is what keeps a fixture edit and the case that judges it from disagreeing about what
+    "normalize the declared columns" promised. A column its plan repoints is answered with the same
+    sample, because a repoint moves where in the record the value is published, not what value
+    reaches the row, and the column an ``order_by`` sorts is answered with the cell
+    :func:`ordered_cell` scripts for it, because the ordering stage decides which record reaches
+    which position.
 
     Raises:
         AssertionError: The stamp declares stages -- re-running the cast here would be the
@@ -504,13 +722,18 @@ def expected_row_value(
         return query[plan.source]
     staged = staged_record_plan(spec, column)
     if staged is not None:
+        # Asked for its verdict only: a descending ``order_by`` over a column its plan computes has
+        # no cell this fixture can count down, because the body carries the cast's input rather than
+        # the row's value, and a page that comes back ordered against the declaration makes every
+        # other column's per-index expectation a lie about a different record.
+        ordered_cell(spec, column, index)
         # The body publishes the staged column's raw cell (:func:`staged_sample` spells it the way
         # the kernel reads it), and the row carries what the plan computes from it. Restating the
         # composition here is what lets the generic fixture judge a staged declaration at all --
         # the kernel's own rules are measured by test_engine_value_transform.py, and this only
         # answers "which value must the row carry". A float row field holds exactly
         # ``float(produced)`` after pydantic, so the equality compares the same coercion.
-        produced = apply_derive(staged, staged_sample(column, index))
+        produced = apply_derive(staged, staged_sample(column, index, staged))
         if column.kind != "float":
             return produced
         # apply_derive's documented product set is date / Decimal / float / bool / the source
@@ -526,6 +749,10 @@ def expected_row_value(
     published: object = sample_value(column.kind, index)
     if expansion is not None and raw_key(spec, column) == expansion[0].timestamp_key:
         published = pivot_timestamp(index)
+    else:
+        ordered = ordered_cell(spec, column, index)
+        if ordered is not None:
+            published = ordered
     if column.kind != "date":
         return published
     # Both producers hand back the ISO string a body would carry; str() only says so to mypy.
@@ -639,9 +866,13 @@ def synthetic_record(spec: ModelSpec, index: int = 0) -> dict[str, object]:
     the facets that do not publish their declared columns verbatim are scripted the way their
     source looks: a wide-table declaration gets the table its own decoder produces -- a strictly
     ascending timestamp header plus one cell per series column -- a declaration that repoints gets
-    the nested object each of its plan's pointers walks through, and a column a
-    ``column_derives`` plan stamps from a parameter or a constant is left out, because the record
-    list does not carry it.
+    the nested object each of its plan's pointers walks through, a column a ``column_derives`` plan
+    casts or rescales gets the raw cell that plan reads (:func:`staged_sample`), the column an
+    ``order_by`` sorts gets the cell :func:`ordered_cell` counts in its declared direction, and a
+    column a ``column_derives`` plan stamps from a parameter or a constant is left out, because the
+    record list does not carry it. The keys the declaration's ``row_filters`` test beyond its
+    columns join the record too (:func:`selection_vocabulary`), since a source that selects on a key
+    prints that key.
     """
     expansion = wide_table_expansion(spec)
     repoint = repoint_expansion(spec)
@@ -653,16 +884,18 @@ def synthetic_record(spec: ModelSpec, index: int = 0) -> dict[str, object]:
         key = raw_key(spec, column)
         if key is None:
             continue
+        ordered = ordered_cell(spec, column, index)
         if expansion is not None and key == expansion[0].timestamp_key:
             record[key] = pivot_timestamp(index)
             continue
         staged = staged_record_plan(spec, column)
         if staged is not None:
-            # A staged record column is published the way its kernel reads it -- decimal text for
-            # a numeric sample value -- so the declared stages run on the cell the body carries.
-            value = staged_sample(column, index)
+            # A staged record column is published the way its kernel reads it -- the raw shape its
+            # cast declares, or decimal text for a numeric sample value -- so the declared stages
+            # run on the cell the body carries.
+            value = staged_sample(column, index, staged)
         else:
-            value = sample_value(column.kind, index)
+            value = sample_value(column.kind, index) if ordered is None else ordered
         if explode is not None and key.startswith(prefix):
             children[key[len(prefix) :]] = value
             continue
@@ -670,6 +903,7 @@ def synthetic_record(spec: ModelSpec, index: int = 0) -> dict[str, object]:
             record[key] = value
             continue
         _publish(record, key, value)
+    record.update(selection_vocabulary(spec, index))
     if explode is not None:
         record[explode.child_array_pointer] = [children]
     return record

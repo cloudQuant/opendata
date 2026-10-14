@@ -24,7 +24,7 @@ import asyncio
 from dataclasses import dataclass, replace
 from datetime import date
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Literal, get_type_hints
+from typing import TYPE_CHECKING, Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -69,6 +69,7 @@ from opendata.pipeline.query import (
     window_bounds,
 )
 from opendata.pipeline.trading_calendar import resolve_calendar
+from opendata.services.provider_models import ProviderModelSchemaError, resolve_query_model_type
 from opendata.utils.serialization import serialize_for_json
 
 if TYPE_CHECKING:
@@ -153,6 +154,8 @@ class _QueryPlan:
     columns: tuple[str, ...]
     key: tuple[str, ...]
     selected: tuple[str, ...]
+    window_start: date
+    window_end: date
     time_field: str | None = None
     symbol_field: str | None = None
     period_field: str | None = None
@@ -470,20 +473,29 @@ def _catalog_capability(
     a provider fetch. ``model_query_endpoint`` is an independent exact-model
     POST route and is present only for a declared query-capable binding.
     """
-    query_model = get_type_hints(type(fetcher).transform_query).get("return")
-    model_fields = getattr(query_model, "model_fields", {})
     parameters: list[dict[str, Any]] = []
-    for name, field in model_fields.items():
-        annotation = field.annotation
-        field_type = getattr(annotation, "__name__", str(annotation))
-        parameters.append(
-            {
-                "name": name,
-                "type": field_type,
-                "required": field.is_required(),
-                "description": field.description,
-            }
-        )
+    try:
+        query_model = resolve_query_model_type(fetcher)
+        model_fields = query_model.model_fields
+        if not isinstance(model_fields, dict):
+            raise ProviderModelSchemaError("registered model query schema is invalid")
+        for name, field in model_fields.items():
+            annotation = field.annotation
+            field_type = getattr(annotation, "__name__", str(annotation))
+            parameters.append(
+                {
+                    "name": name,
+                    "type": field_type,
+                    "required": field.is_required(),
+                    "description": field.description,
+                }
+            )
+        query_schema_status = "available"
+        query_schema_error = None
+    except ProviderModelSchemaError:
+        parameters = []
+        query_schema_status = "unavailable"
+        query_schema_error = "PROVIDER_QUERY_SCHEMA_UNAVAILABLE"
 
     fetcher_type = type(fetcher)
     endpoint = (
@@ -511,6 +523,8 @@ def _catalog_capability(
         "endpoint": endpoint,
         "model_query_endpoint": model_query_endpoint,
         "parameters": parameters,
+        "query_schema_status": query_schema_status,
+        "query_schema_error": query_schema_error,
     }
     return result
 
@@ -722,6 +736,14 @@ async def query_domain_data(
     fields: str | None = Query(None, description="Comma separated field filter"),
     period: str | None = Query(None),
     report_date: date | None = Query(None),
+    as_of: str | None = Query(
+        None,
+        description=(
+            "Financial PIT selector: YYYY-MM-DD (end of day in certified source timezone) "
+            "or a timezone-aware ISO-8601 timestamp"
+        ),
+    ),
+    market: str | None = Query(None),
     page: int = Query(1, ge=1),
     page_size: int = Query(DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
     engine: Engine = Depends(get_warehouse_engine),
@@ -748,6 +770,89 @@ async def query_domain_data(
         page=page,
         page_size=page_size,
     )
+    if as_of is not None:
+        if layer != "dwd":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="financial PIT as_of is available only for layer=dwd",
+            )
+        if adjust != "none":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="financial PIT as_of is unavailable with price adjustment",
+            )
+        if domain not in {"financial_statement", "financial_indicator"}:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="as_of is available only for financial domains",
+            )
+        try:
+            from opendata.pipeline.financial_pit import (
+                FinancialPitConflict,
+                FinancialPitCoverageGap,
+                FinancialPitError,
+                FinancialPitUnsupported,
+            )
+            from opendata.services.financial_pit import query_financial_as_of
+
+            pit_page = await asyncio.to_thread(
+                query_financial_as_of,
+                engine,
+                domain=domain,
+                source=source,
+                market=market or "",
+                symbols=plan.query.symbols,
+                report_period_start=plan.window_start,
+                report_period_end=plan.window_end,
+                as_of=as_of,
+                selected_fields=plan.selected,
+                period=period,
+                report_date=report_date,
+                page=page,
+                page_size=page_size,
+            )
+        except FinancialPitCoverageGap as exc:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"{exc.code}: {exc}",
+            ) from exc
+        except FinancialPitConflict as exc:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"{exc.code}: {exc}",
+            ) from exc
+        except FinancialPitUnsupported as exc:
+            raise HTTPException(
+                status_code=status.HTTP_501_NOT_IMPLEMENTED,
+                detail=f"{exc.code}: {exc}",
+            ) from exc
+        except FinancialPitError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"{exc.code}: {exc}",
+            ) from exc
+        return APIResponse(
+            success=True,
+            message="success",
+            data={
+                "domain": domain,
+                "asset_class": asset_class,
+                "layer": layer,
+                "source": source,
+                "adjust": adjust,
+                "columns": pit_page["columns"],
+                "rows": pit_page["rows"],
+                "page": pit_page["page"],
+                "page_size": pit_page["page_size"],
+                "count": pit_page["count"],
+                "pit": pit_page["pit"],
+            },
+        )
+    if market is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="market is available only with financial PIT as_of",
+        )
     try:
         fetch_query = _query_for_adjustment(plan.query, plan.selected)
         sql, params = build_data_select(
@@ -1284,6 +1389,8 @@ async def _validated_query(
         columns=tuple(columns),
         key=key,
         selected=tuple(selected),
+        window_start=query_start,
+        window_end=query_end,
         time_field=time_field,
         symbol_field=symbol_field,
         period_field=period_field,

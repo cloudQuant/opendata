@@ -8,9 +8,21 @@ PROVIDER = Provider(
     description="ECB Data Portal adapter for euro-area macroeconomic series.",
     website="https://data.ecb.europa.eu/",
     fetcher_bindings=(
-        LazyFetcherBinding("opendata.data.providers.ecb.models.cpi", "EcbCpiFetcher"),
-        LazyFetcherBinding("opendata.data.providers.ecb.models.gdp", "EcbGdpFetcher"),
-        LazyFetcherBinding("opendata.data.providers.ecb.models.rate", "EcbRateFetcher"),
+        LazyFetcherBinding(
+            "opendata.data.providers.ecb.models.cpi",
+            "EcbCpiFetcher",
+            scenario="宏观 CPI（AI 研究 / 资产配置）",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.ecb.models.gdp",
+            "EcbGdpFetcher",
+            scenario="宏观 GDP（AI 研究 / 资产配置）",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.ecb.models.rate",
+            "EcbRateFetcher",
+            scenario="宏观利率（AI 研究 / 资产配置 / 回测融资成本）",
+        ),
         LazyFetcherBinding(
             "opendata.data.providers.ecb.models.reference_rates",
             "EcbCurrencyReferenceRatesFetcher",

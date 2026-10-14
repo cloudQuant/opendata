@@ -104,6 +104,15 @@ def record_batch(engine: Engine, watermark: BatchWatermark) -> None:
         engine: Warehouse engine.
         watermark: The batch to record.
     """
+    dialect_name = getattr(getattr(engine, "dialect", None), "name", "mysql")
+    if dialect_name == "sqlite":
+        conflict_clause = (
+            "ON CONFLICT(`batch_id`) DO UPDATE SET `rows_written` = excluded.`rows_written`"
+        )
+    elif dialect_name in {"mysql", "mariadb"}:
+        conflict_clause = "ON DUPLICATE KEY UPDATE `rows_written` = VALUES(`rows_written`)"
+    else:
+        raise RuntimeError(f"unsupported batch watermark dialect {dialect_name!r}")
     with engine.begin() as connection:
         connection.execute(
             text(
@@ -111,8 +120,7 @@ def record_batch(engine: Engine, watermark: BatchWatermark) -> None:
                 "(`batch_id`, `domain`, `source`, `layer`, `window_start`, `window_end`, "
                 "`rows_written`, `created_at`) "
                 "VALUES (:batch_id, :domain, :source, :layer, :window_start, :window_end, "
-                ":rows, :created_at) "
-                "ON DUPLICATE KEY UPDATE `rows_written` = VALUES(`rows_written`)"
+                f":rows, :created_at) {conflict_clause}"
             ),
             {
                 "batch_id": watermark.batch_id,
@@ -211,12 +219,40 @@ def _to_watermark(row: dict[str, Any]) -> BatchWatermark:
         domain=str(row["domain"]),
         source=str(row["source"]),
         layer=str(row["layer"]),
-        window_start=row["window_start"],
-        window_end=row["window_end"],
+        window_start=_coerce_optional_date(row["window_start"], "window_start"),
+        window_end=_coerce_optional_date(row["window_end"], "window_end"),
         rows=int(row["rows_written"]),
-        created_at=row["created_at"],
+        created_at=_coerce_datetime(row["created_at"], "created_at"),
         seq=int(row["seq"]),
     )
+
+
+def _coerce_optional_date(value: object, field: str) -> date | None:
+    """Normalize driver-native DATE values into the public watermark type."""
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    if isinstance(value, str):
+        try:
+            return date.fromisoformat(value)
+        except ValueError as exc:
+            raise ValueError(f"invalid watermark {field} {value!r}") from exc
+    raise ValueError(f"invalid watermark {field} value {value!r}")
+
+
+def _coerce_datetime(value: object, field: str) -> datetime:
+    """Normalize driver-native DATETIME values into a Python datetime."""
+    if isinstance(value, datetime):
+        return value
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError as exc:
+            raise ValueError(f"invalid watermark {field} {value!r}") from exc
+    raise ValueError(f"invalid watermark {field} value {value!r}")
 
 
 def utcnow() -> datetime:

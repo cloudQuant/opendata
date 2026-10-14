@@ -1,8 +1,9 @@
-"""intrinio's 38-row accounting: five declarations, thirty-three recorded refusals, no silent drops.
+"""Intrinio's 38-row accounting: thirty-five routable models, three recorded refusals.
 
-The engine's promise is that a censused model is either declared or written down with the capability
-that blocks it. This file judges the second half for intrinio, offline: no socket, no API key, no
-live call. It reads the three iteration-2 census artifacts as the denominator, re-measures
+The provider's promise is that a censused model is either routable or written down with the
+declaration-plane capability that blocks it. This file judges the second half for Intrinio, offline:
+no socket, no API key, and no live call. It reads the three iteration-2 census artifacts as the
+denominator, re-measures
 :data:`opendata.data.providers.intrinio.specs.NOT_DECLARABLE` against the live ``ModelSpec`` field
 surface, and replays one hand-written two-page cursor fixture through the engine's transport seam to
 witness the one claim the ledger's whole shape rests on -- that a published ``next_page`` cursor is
@@ -160,37 +161,50 @@ class TestTheThirtyEightRowAccounting:
             "the package does not account for every census row: "
             f"{sorted(set(specs.UPSTREAM_ROWS) - declared - recorded)}"
         )
-        assert len(declared) == 5
-        assert len(recorded) == 33
+        assert len(declared) == 35
+        assert len(recorded) == 3
 
     def test_declared_models_are_the_runtime_bindings(self) -> None:
         """The ledger's declared half is what the runtime can actually route -- no paper model."""
-        bound = {spec.model for source, spec in engine_declared_models() if source == SOURCE}
+        engine_bound = {spec.model for source, spec in engine_declared_models() if source == SOURCE}
+        assert engine_bound == set(specs.ENGINE_MODELS)
+        bound = {
+            model_id
+            for binding in PROVIDER.fetcher_bindings
+            for model_id in binding.canonical_model_ids
+        }
         assert bound == set(specs.DECLARED_MODELS)
         assert len(PROVIDER.fetcher_bindings) == len(specs.DECLARED_MODELS)
         assert get_provider("intrinio").credentials[0].environment_variable == "INTRINIO_API_KEY"
 
-    def test_this_wave_added_no_model_module(self) -> None:
-        """One refusal turned declarable once C97 shipped ``columns.null_sentinel``, so
-        ``models/`` grew by exactly ``insider_trading.py``.
-
-        The face is a directory listing rather than a claim in prose: a future declaration has to
-        add a module and a binding here, and a recorded row quietly re-declared without one is the
-        failure this refuses.
-        """
+    def test_clean_typed_module_is_present_and_quarantined_modules_are_absent(self) -> None:
+        """Keep the accepted clean slice while ensuring exposed worker files leave the package."""
         modules = {
             path.name
             for path in (REPO_ROOT / "opendata/data/providers/intrinio/models").iterdir()
             if path.suffix == ".py"
         }
-        assert modules == {
+        assert {
             "__init__.py",
             "calendar_ipo.py",
             "currency_pairs.py",
             "equity_search.py",
             "historical_dividends.py",
             "insider_trading.py",
-        }
+            "iter2_market_clean.py",
+        } <= modules
+        assert (
+            not {
+                "fixed.py",
+                "equity_info.py",
+                "equity_historical.py",
+                "etf_info.py",
+                "historical_market_cap.py",
+                "index_historical.py",
+                "iter2_market.py",
+            }
+            & modules
+        )
 
 
 class TestEveryRefusalIsAMeasurement:
@@ -250,10 +264,10 @@ class TestEveryRefusalIsAMeasurement:
         """
         credited = [
             model
-            for model in specs.DECLARED_MODELS
+            for model in specs.ENGINE_MODELS
             if census_rows()[model]["expressible_today"] is True
         ]
-        assert credited == sorted(specs.DECLARED_MODELS)
+        assert credited == sorted(specs.ENGINE_MODELS)
         window = census_rows()["HistoricalDividends"]["needs_engine_capability"]
         assert "relative_date_default" in window
         bounds = sorted(
@@ -269,11 +283,10 @@ class TestEveryRefusalIsAMeasurement:
         """The refusal vocabulary re-read against the field the engine grew mid-round.
 
         ``RelativeDefault`` carries an offset and nothing else -- no gate -- so a default
-        conditioned on another parameter is still refused, now under ``derive.conditional``. The
-        two rows withheld on ``param.relative_default`` a round ago, only ``CompanyFilings`` is
-        still recorded: its conditional gate has no carrier, while ``InsiderTrading`` left the
-        ledger the round ``columns.null_sentinel`` shipped. The assertion below refuses that row's
-        return, so this stays a re-measurement rather than a deletion.
+        conditioned on another parameter remains outside that declaration-plane field. The two
+        rows withheld on ``param.relative_default`` a round ago are now routed: CompanyFilings has
+        a typed fetcher, while InsiderTrading left the ledger when
+        ``columns.null_sentinel`` shipped.
         """
         assert {field.name for field in dataclasses.fields(RelativeDefault)} == {
             "years",
@@ -283,40 +296,26 @@ class TestEveryRefusalIsAMeasurement:
         assert not any(
             "param.relative_default" in reason for reason in specs.NOT_DECLARABLE.values()
         )
-        assert primary_blocker(specs.NOT_DECLARABLE["CompanyFilings"]) == "derive.conditional"
+        assert "CompanyFilings" in specs.DECLARED_MODELS
+        assert "CompanyFilings" not in specs.NOT_DECLARABLE
         assert "InsiderTrading" not in specs.NOT_DECLARABLE, (
             "C97 shipped columns.null_sentinel, so this row must be declared, not recorded"
         )
 
-    def test_the_blocker_set_names_a_need_its_census_row_records_except_two(self) -> None:
-        """Reconciliation: 31 of 33 refusals quote a need their census row also records.
+    def test_each_refusal_names_a_need_its_census_row_records(self) -> None:
+        """Reconciliation: all three current refusals quote a need their census row records.
 
-        The comparison is on canonical capability names, not on the census' free-text labels, and
-        the two exceptions are vocabulary gaps rather than ledger slips. CompanyFilings' window is
-        a *query* default pair built in ``transform_query`` (company_filings.py:96-100) -- the file
-        sends no client-side date comparison anywhere -- yet the census records it as
-        ``date_window_filter``, which its own instrument maps to ``rows.filter_comparison``, and it
-        credits ``flow.fan_out``/``flow.join`` for what is one GET plus a ``next_page`` cursor loop
-        (:124-149). No census label names a conditional default, so the ledger's
-        ``derive.conditional`` cannot meet the row's need set.
-
-        WorldNews is silent for the mirror-image reason, and it is a finding rather than a fix: it
-        is the one refusal that names no canonical blocker at all -- it carries :data:`GAP_MARKER`
-        and says so in prose (``rows.order_limit`` is only offered as "nearest") -- so its blocker
-        token set is empty by construction and an empty set can never intersect a census row. Its
-        own row (world_news.py:216-230) records ``client_side_sort_limit``/
-        ``client_side_row_filter``, which the instrument folds onto ``rows.order_limit`` and
-        ``rows.filter``: needs the engine ships, which is exactly why the row cannot be refused on
-        them, and why the missing facet -- cross-page dedupe -- has no canonical name to be
-        refused with. Recorded here so the repair stays an act, not a silent disagreement.
+        The comparison is on canonical capability names, not the census' free-text labels. The
+        seven news/attributes rows that previously exposed two ledger mismatches are now routed by
+        typed fetchers, so the remaining refused rows have a named blocker that intersects their
+        recorded need set.
         """
         gap_models = sorted(
             m for m, r in specs.NOT_DECLARABLE.items() if primary_blocker(r) is None
         )
-        assert gap_models == ["WorldNews"], (
+        assert gap_models == [], (
             f"a refusal that names no canonical blocker is a vocabulary gap: {gap_models}"
         )
-        assert GAP_MARKER in specs.NOT_DECLARABLE["WorldNews"]
         silent = [
             model
             for model, reason in specs.NOT_DECLARABLE.items()
@@ -325,24 +324,14 @@ class TestEveryRefusalIsAMeasurement:
                 & {token for token in BLOCKERS if token in reason}
             )
         ]
-        assert silent == ["CompanyFilings", "WorldNews"], (
-            f"the ledger and the census no longer agree on {sorted(silent)}"
-        )
+        assert silent == [], f"the ledger and the census no longer agree on {sorted(silent)}"
         named = [
             model
             for model in specs.NOT_DECLARABLE
             if model not in silent and primary_blocker(specs.NOT_DECLARABLE[model]) is not None
         ]
-        assert len(named) == 31, f"{len(named)} of 33 refusals reconcile, not the documented 31"
-        needs = canonical_needs(census_rows()["CompanyFilings"])
-        assert "derive.conditional" not in needs and "rows.filter_comparison" in needs
-        reason = specs.NOT_DECLARABLE["CompanyFilings"]
-        assert "derive.conditional" in reason and "rows.filter_comparison" not in reason
-        world_needs = canonical_needs(census_rows()["WorldNews"])
-        assert {"rows.order_limit", "rows.filter"} <= world_needs
-        assert not [token for token in BLOCKERS if token in specs.NOT_DECLARABLE["WorldNews"]], (
-            "the gap row names no blocker, so its silence must stay attributable to GAP_MARKER"
-        )
+        assert len(named) == 3, f"{len(named)} of 3 refusals reconcile, not the documented 3"
+        assert {"CompanyFilings", "WorldNews"} <= set(specs.DECLARED_MODELS)
 
     def test_no_refusal_is_about_effort(self) -> None:
         banned = re.compile(r"\b(hard|later|todo|too complex|not written yet|effort|manual)\b")
@@ -357,22 +346,14 @@ class TestEveryRefusalIsAMeasurement:
             key = primary_blocker(reason) or "unnamed"
             histogram[key] = histogram.get(key, 0) + 1
         assert histogram == {
-            "flow.fan_out": 14,
-            "flow.branch": 8,
-            "param.value_transform": 3,
-            "flow.preflight_lookup": 3,
-            "flow.join": 2,
-            "derive.conditional": 1,
-            "rows.cap_source_order": 1,
-            "unnamed": 1,
+            "flow.join": 1,
+            "flow.preflight_lookup": 2,
         }
         assert sum(histogram.values()) == len(specs.NOT_DECLARABLE)
         assert "param.relative_default" not in histogram, (
             "the engine performs this default now, so it cannot be a primary blocker"
         )
-        for model, reason in specs.NOT_DECLARABLE.items():
-            if primary_blocker(reason) is None:
-                assert model == "WorldNews"
+        assert all(primary_blocker(reason) is not None for reason in specs.NOT_DECLARABLE.values())
 
 
 class TestTheSpecPlaneStillRefusesThem:
@@ -484,7 +465,12 @@ class TestTheCursorFindingIsWitnessed:
         )
         generated = make_http_json_fetcher(SOURCE, CURSOR_PROBE)
         cls = type(generated.__name__, (generated,), {"http_transport": transport})
-        rows = list(cls().fetch(ctx=fixture_context(SOURCE, CURSOR_PROBE, sends=2), symbol="AAPL"))
+        rows = list(
+            cls().fetch(
+                ctx=fixture_context(SOURCE, CURSOR_PROBE, sends=2),
+                symbol="AAPL",
+            )
+        )
         assert [row.id for row in rows] == ["A", "B"]
         assert len(transport.calls) == 2
         assert transport.calls[0]["params"].get("next_page") is None
@@ -640,7 +626,10 @@ class TestTheRelativeDefaultReachesTheWire:
         generated = make_http_json_fetcher(SOURCE, RELATIVE_PROBE)
         cls = type(generated.__name__, (generated,), {"http_transport": transport})
         rows = list(
-            cls().fetch(ctx=fixture_context(SOURCE, RELATIVE_PROBE, sends=1), symbol="AAPL")
+            cls().fetch(
+                ctx=fixture_context(SOURCE, RELATIVE_PROBE, sends=1),
+                symbol="AAPL",
+            )
         )
         assert [row.id for row in rows] == ["A"]
         call = transport.calls[0]

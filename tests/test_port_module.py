@@ -12,6 +12,7 @@ from pathlib import Path
 import pytest
 
 from scripts.codemod import port_module
+from scripts.codemod.migrate_provider_layout import LAZY_VENDOR_FACADE_MANUAL_EDIT_REASON
 from scripts.codemod.port_module import (
     MANUAL_EDITS,
     UpstreamLock,
@@ -221,6 +222,10 @@ class TestSubmodulePort:
         assert "from importlib import import_module as _import_module" in facade
         assert "from opendata.data.providers.akshare._vendor.utils import decode" not in facade
         assert lock.files["__init__.py"]["sha256"] == sha256_text(upstream_bytes.decode("utf-8"))
+        assert lock.files["__init__.py"]["manual_edits"] is True
+        assert lock.files["__init__.py"]["manual_edit_reason"] == (
+            LAZY_VENDOR_FACADE_MANUAL_EDIT_REASON
+        )
         assert results[0].ported_sha256 == sha256_bytes((ported_root / "__init__.py").read_bytes())
 
     def test_manual_edit_recorded_in_lock(self, tmp_path, monkeypatch):
@@ -233,6 +238,7 @@ class TestSubmodulePort:
 
         record = lock.files["stock/cons.py"]
         assert record["manual_edits"] is True
+        assert record["manual_edit_reason"] == MANUAL_EDITS[0].description
         ported = (ported_root / "stock" / "cons.py").read_text(encoding="utf-8")
         assert "placeholder-secret" not in ported
         assert 'os.environ.get("XQ_A_TOKEN", "")' in ported
@@ -288,12 +294,16 @@ class TestLock:
                 ported_path="utils/cons.py",
                 status="ported",
                 manual_edits=True,
+                manual_edit_reason="registered synthetic test adaptation",
                 upstream_sha256="x",
             )
         )
         lock.save(path)
         loaded = UpstreamLock.load(path)
         assert loaded.files["utils/cons.py"]["manual_edits"] is True
+        assert loaded.files["utils/cons.py"]["manual_edit_reason"] == (
+            "registered synthetic test adaptation"
+        )
         assert loaded.commit == "abc"
 
 
@@ -323,6 +333,56 @@ def test_manifest_keeps_migrated_and_upstream_hashes_separate(tmp_path):
     assert entry["sha256"] == sha256_bytes(migrated)
     assert entry["upstream_sha256"] == upstream_sha
     assert entry["sha256"] != entry["upstream_sha256"]
+
+
+def test_manifest_rejects_unregistered_manual_edit(tmp_path):
+    from scripts.codemod.gen_manifest import generate_manifest
+
+    ported_root = tmp_path / "_vendor"
+    ported_root.mkdir()
+    (ported_root / "module.py").write_text("value = 1\n", encoding="utf-8")
+    lock = UpstreamLock(
+        url=URL,
+        commit="abc",
+        files={
+            "module.py": {
+                "path": "module.py",
+                "upstream_path": "akshare/module.py",
+                "sha256": "source-hash",
+                "manual_edits": True,
+            }
+        },
+    )
+
+    with pytest.raises(RuntimeError, match="without a registered reason"):
+        generate_manifest(ported_root, lock)
+
+
+def test_manifest_preserves_registered_manual_edit_reason(tmp_path):
+    from scripts.codemod.gen_manifest import generate_manifest
+
+    ported_root = tmp_path / "_vendor"
+    ported_root.mkdir()
+    (ported_root / "module.py").write_text("value = 1\n", encoding="utf-8")
+    reason = "synthetic adaptation with a documented purpose"
+    lock = UpstreamLock(
+        url=URL,
+        commit="abc",
+        files={
+            "module.py": {
+                "path": "module.py",
+                "upstream_path": "akshare/module.py",
+                "sha256": "source-hash",
+                "manual_edits": True,
+                "manual_edit_reason": reason,
+            }
+        },
+    )
+
+    manifest = generate_manifest(ported_root, lock)
+
+    assert manifest["files"][0]["manual_edits"] is True
+    assert manifest["files"][0]["manual_edit_reason"] == reason
 
 
 def test_report_compares_resource_hashes_as_raw_bytes(tmp_path):
@@ -355,6 +415,35 @@ def test_report_compares_resource_hashes_as_raw_bytes(tmp_path):
     assert table[0]["upstream_sha256"] == digest
     assert table[0]["ported_sha256"] == digest
     assert table[0]["replay_matches"] is True
+
+
+def test_report_requires_lazy_facade_registration_and_exact_reason(tmp_path, monkeypatch):
+    from scripts.codemod.migrate_provider_layout import LAZY_VENDOR_FACADE_MANUAL_EDIT_REASON
+    from scripts.codemod.report_port import collect_drift
+
+    upstream_repo = make_upstream_repo(tmp_path)
+    ported_root = tmp_path / "_vendor"
+    monkeypatch.setattr(port_module, "PORTED_ROOT", ported_root)
+    monkeypatch.setattr(port_module, "LOCK_PATH", ported_root / "upstream.lock")
+    lock = UpstreamLock(url=URL, commit="fake-commit", files={})
+    port_submodule("__init__", upstream_repo=upstream_repo, lock=lock)
+
+    todos, table = collect_drift(ported_root, lock, upstream_repo)
+    assert todos == []
+    root_row = next(row for row in table if row["path"] == "__init__.py")
+    assert root_row["manual_edit_reason"] == LAZY_VENDOR_FACADE_MANUAL_EDIT_REASON
+    assert len(root_row["upstream_sha256"]) == 64
+    assert len(root_row["ported_sha256"]) == 64
+
+    lock.files["__init__.py"]["manual_edits"] = False
+    false_flag_todos, _ = collect_drift(ported_root, lock, upstream_repo)
+    assert any("manual_edits registration does not match" in todo for todo in false_flag_todos)
+
+    lock.files["__init__.py"]["manual_edits"] = True
+    lock.files["__init__.py"].pop("manual_edit_reason")
+    missing_reason_todos, _ = collect_drift(ported_root, lock, upstream_repo)
+    assert any("non-empty reason" in todo for todo in missing_reason_todos)
+    assert any("reason does not match" in todo for todo in missing_reason_todos)
 
 
 def test_report_fails_closed_for_unlocked_vendor_files(tmp_path):

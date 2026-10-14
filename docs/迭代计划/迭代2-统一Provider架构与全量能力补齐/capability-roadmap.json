@@ -1,9 +1,8 @@
 {
   "built_but_unused": [
-    "columns.cast",
     "decode.archive_member",
     "flow.composite_key_segment",
-    "param.value_mapping"
+    "request.serialised_param"
   ],
   "capability_registry": {
     "columns.cast": {
@@ -17,7 +16,7 @@
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 0,
+      "production_declarations": 1,
       "proof_file": "opendata/data/providers/_engine/value_transform.py",
       "read_from_disk": true,
       "status": "present",
@@ -44,14 +43,14 @@
       "anchor": "column_derives: tuple[DerivePlan, ...] = ()",
       "anchor_found": true,
       "anchor_line": "column_derives: tuple[DerivePlan, ...] = ()",
-      "anchor_line_number": 727,
+      "anchor_line_number": 784,
       "claim": false,
       "cross_anchor": "def _stamped_value",
       "cross_anchor_found": true,
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 3,
+      "production_declarations": 5,
       "proof_file": "opendata/data/providers/_engine/spec.py",
       "read_from_disk": true,
       "status": "present",
@@ -61,7 +60,7 @@
       "anchor": "source_key: str | None = None",
       "anchor_found": true,
       "anchor_line": "source_key: str | None = None",
-      "anchor_line_number": 353,
+      "anchor_line_number": 410,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -78,14 +77,14 @@
       "anchor": "null_sentinel: tuple[str, ...] = ()",
       "anchor_found": true,
       "anchor_line": "null_sentinel: tuple[str, ...] = ()",
-      "anchor_line_number": 357,
+      "anchor_line_number": 414,
       "claim": false,
       "cross_anchor": "def _is_null_sentinel(",
       "cross_anchor_found": true,
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 53,
+      "production_declarations": 81,
       "proof_file": "opendata/data/providers/_engine/spec.py",
       "read_from_disk": true,
       "status": "present",
@@ -112,14 +111,14 @@
       "anchor": "key = column.source_key or column.name",
       "anchor_found": true,
       "anchor_line": "key = column.source_key or column.name",
-      "anchor_line_number": 619,
+      "anchor_line_number": 669,
       "claim": true,
       "cross_anchor": "",
       "cross_anchor_found": true,
       "cross_file": "",
       "engine_work": true,
       "present": true,
-      "production_declarations": 75,
+      "production_declarations": 100,
       "proof_file": "opendata/data/providers/_engine/http_json.py",
       "read_from_disk": false,
       "status": "present",
@@ -146,7 +145,7 @@
       "anchor": "key = column.source_key or column.name",
       "anchor_found": true,
       "anchor_line": "key = column.source_key or column.name",
-      "anchor_line_number": 619,
+      "anchor_line_number": 669,
       "claim": false,
       "cross_anchor": "columns: tuple[ColumnSpec, ...]",
       "cross_anchor_found": true,
@@ -163,14 +162,14 @@
       "anchor": "for column in spec.columns:",
       "anchor_found": true,
       "anchor_line": "for column in spec.columns:",
-      "anchor_line_number": 207,
+      "anchor_line_number": 213,
       "claim": true,
       "cross_anchor": "extra=\"forbid\"",
       "cross_anchor_found": true,
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 14,
+      "production_declarations": 18,
       "proof_file": "opendata/data/providers/_engine/http_json.py",
       "read_from_disk": false,
       "status": "present",
@@ -204,7 +203,7 @@
       "cross_file": "opendata/data/providers/_engine/spec.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 4,
+      "production_declarations": 5,
       "proof_file": "opendata/data/providers/_engine/decoders.py",
       "read_from_disk": false,
       "status": "present",
@@ -367,7 +366,7 @@
       "anchor": "base_url: str",
       "anchor_found": true,
       "anchor_line": "base_url: str",
-      "anchor_line_number": 701,
+      "anchor_line_number": 758,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -384,7 +383,7 @@
       "anchor": "composite_keys: tuple[CompositeKeySpec, ...] = ()",
       "anchor_found": true,
       "anchor_line": "composite_keys: tuple[CompositeKeySpec, ...] = ()",
-      "anchor_line_number": 721,
+      "anchor_line_number": 778,
       "claim": false,
       "cross_anchor": "def _render_composite(",
       "cross_anchor_found": true,
@@ -401,7 +400,7 @@
       "anchor": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
       "anchor_found": true,
       "anchor_line": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
-      "anchor_line_number": 876,
+      "anchor_line_number": 926,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -418,7 +417,7 @@
       "anchor": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
       "anchor_found": true,
       "anchor_line": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
-      "anchor_line_number": 876,
+      "anchor_line_number": 926,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -435,7 +434,7 @@
       "anchor": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
       "anchor_found": true,
       "anchor_line": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
-      "anchor_line_number": 876,
+      "anchor_line_number": 926,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -452,7 +451,7 @@
       "anchor": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
       "anchor_found": true,
       "anchor_line": "url = f\"{spec.base_url.rstrip('/')}{render_path(spec, query)}\"",
-      "anchor_line_number": 876,
+      "anchor_line_number": 926,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -469,7 +468,7 @@
       "anchor": "path.replace(f\"{{{name}}}\", text)",
       "anchor_found": true,
       "anchor_line": "path = path.replace(f\"{{{name}}}\", text)",
-      "anchor_line_number": 342,
+      "anchor_line_number": 348,
       "claim": true,
       "cross_anchor": "path_placeholders",
       "cross_anchor_found": true,
@@ -486,7 +485,7 @@
       "anchor": "429: \"RATE_LIMITED\"",
       "anchor_found": true,
       "anchor_line": "429: \"RATE_LIMITED\",",
-      "anchor_line_number": 765,
+      "anchor_line_number": 815,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -520,7 +519,7 @@
       "anchor": "if not self.base_url.startswith(\"https://\"):",
       "anchor_found": true,
       "anchor_line": "if not self.base_url.startswith(\"https://\"):",
-      "anchor_line_number": 773,
+      "anchor_line_number": 830,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -571,7 +570,7 @@
       "anchor": "static_headers: tuple[tuple[str, str], ...] = ()",
       "anchor_found": true,
       "anchor_line": "static_headers: tuple[tuple[str, str], ...] = ()",
-      "anchor_line_number": 713,
+      "anchor_line_number": 770,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -588,7 +587,7 @@
       "anchor": "params: tuple[ParamSpec, ...] = ()",
       "anchor_found": true,
       "anchor_line": "params: tuple[ParamSpec, ...] = ()",
-      "anchor_line_number": 704,
+      "anchor_line_number": 761,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -605,14 +604,14 @@
       "anchor": "relative_default: RelativeDefault | None = None",
       "anchor_found": true,
       "anchor_line": "relative_default: RelativeDefault | None = None",
-      "anchor_line_number": 227,
+      "anchor_line_number": 235,
       "claim": false,
       "cross_anchor": "def resolve_bound(",
       "cross_anchor_found": true,
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 6,
+      "production_declarations": 9,
       "proof_file": "opendata/data/providers/_engine/spec.py",
       "read_from_disk": true,
       "status": "present",
@@ -622,14 +621,14 @@
       "anchor": "value_map: tuple[tuple[str, str], ...] = ()",
       "anchor_found": true,
       "anchor_line": "value_map: tuple[tuple[str, str], ...] = ()",
-      "anchor_line_number": 225,
+      "anchor_line_number": 233,
       "claim": false,
       "cross_anchor": "def _apply_value_map(",
       "cross_anchor_found": true,
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 0,
+      "production_declarations": 2,
       "proof_file": "opendata/data/providers/_engine/spec.py",
       "read_from_disk": true,
       "status": "present",
@@ -639,7 +638,7 @@
       "anchor": "query_key: str | None = None",
       "anchor_found": true,
       "anchor_line": "query_key: str | None = None",
-      "anchor_line_number": 221,
+      "anchor_line_number": 229,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -656,7 +655,7 @@
       "anchor": "def normalize_record",
       "anchor_found": true,
       "anchor_line": "def normalize_record(",
-      "anchor_line_number": 578,
+      "anchor_line_number": 628,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -673,14 +672,14 @@
       "anchor": "row_expansion: tuple[RowExpansionPlan, ...] = ()",
       "anchor_found": true,
       "anchor_line": "row_expansion: tuple[RowExpansionPlan, ...] = ()",
-      "anchor_line_number": 724,
+      "anchor_line_number": 781,
       "claim": false,
       "cross_anchor": "def _expand_rows(",
       "cross_anchor_found": true,
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 3,
+      "production_declarations": 4,
       "proof_file": "opendata/data/providers/_engine/spec.py",
       "read_from_disk": true,
       "status": "present",
@@ -707,7 +706,7 @@
       "anchor": "if not isinstance(current, list):",
       "anchor_found": true,
       "anchor_line": "if not isinstance(current, list):",
-      "anchor_line_number": 498,
+      "anchor_line_number": 548,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -724,7 +723,7 @@
       "anchor": "rows = resolve_rows(document, spec.rows_pointer, spec)",
       "anchor_found": true,
       "anchor_line": "rows = resolve_rows(document, spec.rows_pointer, spec)",
-      "anchor_line_number": 898,
+      "anchor_line_number": 948,
       "claim": false,
       "cross_anchor": "rows_pointer: str = \"\"",
       "cross_anchor_found": true,
@@ -741,7 +740,7 @@
       "anchor": "get_shared_http_client",
       "anchor_found": true,
       "anchor_line": "from opendata.data.http_client import HttpFetchError, get_shared_http_client",
-      "anchor_line_number": 691,
+      "anchor_line_number": 741,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -758,7 +757,7 @@
       "anchor": "params[paging.offset_key] = str(collected)",
       "anchor_found": true,
       "anchor_line": "params[paging.offset_key] = str(collected)",
-      "anchor_line_number": 792,
+      "anchor_line_number": 842,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -775,7 +774,7 @@
       "anchor": "path: str",
       "anchor_found": true,
       "anchor_line": "path: str",
-      "anchor_line_number": 702,
+      "anchor_line_number": 759,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -792,7 +791,7 @@
       "anchor": "get_shared_http_client",
       "anchor_found": true,
       "anchor_line": "from opendata.data.http_client import HttpFetchError, get_shared_http_client",
-      "anchor_line_number": 691,
+      "anchor_line_number": 741,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -806,27 +805,27 @@
       "why": "The same GET-only send seam is the proof there is no query-template request shape."
     },
     "request.serialised_param": {
-      "anchor": "\",\".join(str(item) for item in value)",
+      "anchor": "serialise: str = \"\"",
       "anchor_found": true,
-      "anchor_line": "return \",\".join(str(item) for item in value)",
-      "anchor_line_number": 408,
+      "anchor_line": "serialise: str = \"\"",
+      "anchor_line_number": 236,
       "claim": false,
-      "cross_anchor": "",
+      "cross_anchor": "def _serialise_value(",
       "cross_anchor_found": true,
-      "cross_file": "",
+      "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
-      "present": false,
+      "present": true,
       "production_declarations": 0,
-      "proof_file": "opendata/data/providers/_engine/http_json.py",
-      "read_from_disk": false,
-      "status": "absent",
-      "why": "_encode_value renders a list parameter by comma-joining it; nothing serialises a JSON object or a key/date mapping into one query value."
+      "proof_file": "opendata/data/providers/_engine/spec.py",
+      "read_from_disk": true,
+      "status": "present",
+      "why": "Presence is read off both planes: ParamSpec carries a ``serialise`` field whose __post_init__ refuses an unknown spelling, a json form on a kind that carries no structure, an empty or non-date strftime and any pairing with a value_map, and :func:`_serialise_value` is the first branch :func:`_encode_value` takes, so the wsj URL-encoded JSON ``id=`` blob (gainers.py:88) and the TreasuryAuctions ``%m/%d/%Y`` request-side date rendering (treasury_auctions.py:209, :212) each have one field to be written in. An undeclared composite still dies at ``_PARAM_UNENCODABLE``, which is the absence face the counterfact reads; the comma-join this entry used to anchor on is a shipped list spelling, not this capability."
     },
     "rows.cap_source_order": {
       "anchor": "column: str",
       "anchor_found": true,
       "anchor_line": "column: str",
-      "anchor_line_number": 608,
+      "anchor_line_number": 665,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -843,14 +842,14 @@
       "anchor": "row_filters: tuple[RowFilterSpec, ...] = ()",
       "anchor_found": true,
       "anchor_line": "row_filters: tuple[RowFilterSpec, ...] = ()",
-      "anchor_line_number": 719,
+      "anchor_line_number": 776,
       "claim": false,
       "cross_anchor": "def apply_row_filters(",
       "cross_anchor_found": true,
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 3,
+      "production_declarations": 4,
       "proof_file": "opendata/data/providers/_engine/spec.py",
       "read_from_disk": true,
       "status": "present",
@@ -877,7 +876,7 @@
       "anchor": "def _needle(row_filter: RowFilterSpec, query: object) -> str:",
       "anchor_found": true,
       "anchor_line": "def _needle(row_filter: RowFilterSpec, query: object) -> str:",
-      "anchor_line_number": 976,
+      "anchor_line_number": 1026,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -894,7 +893,7 @@
       "anchor": "direction: RowOrderDirection = \"asc\"",
       "anchor_found": true,
       "anchor_line": "direction: RowOrderDirection = \"asc\"",
-      "anchor_line_number": 609,
+      "anchor_line_number": 666,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -911,14 +910,14 @@
       "anchor": "order_by: RowOrderSpec | None = None",
       "anchor_found": true,
       "anchor_line": "order_by: RowOrderSpec | None = None",
-      "anchor_line_number": 730,
+      "anchor_line_number": 787,
       "claim": false,
       "cross_anchor": "def apply_row_order(",
       "cross_anchor_found": true,
       "cross_file": "opendata/data/providers/_engine/http_json.py",
       "engine_work": true,
       "present": true,
-      "production_declarations": 3,
+      "production_declarations": 6,
       "proof_file": "opendata/data/providers/_engine/spec.py",
       "read_from_disk": true,
       "status": "present",
@@ -928,7 +927,7 @@
       "anchor": "if not isinstance(current, list):",
       "anchor_found": true,
       "anchor_line": "if not isinstance(current, list):",
-      "anchor_line_number": 498,
+      "anchor_line_number": 548,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -979,7 +978,7 @@
       "anchor": "if not isinstance(current, list):",
       "anchor_found": true,
       "anchor_line": "if not isinstance(current, list):",
-      "anchor_line_number": 498,
+      "anchor_line_number": 548,
       "claim": false,
       "cross_anchor": "",
       "cross_anchor_found": true,
@@ -1033,31 +1032,44 @@
       "_vendor",
       "__pycache__"
     ],
-    "modules_scanned": 171,
+    "modules_scanned": 193,
     "production_declarations_by_file": {
+      "columns.cast": {
+        "opendata/data/providers/benzinga/specs.py": 1
+      },
       "columns.derive": {
-        "opendata/data/providers/federal_reserve/specs.py": 2,
+        "opendata/data/providers/benzinga/specs.py": 1,
+        "opendata/data/providers/federal_reserve/specs.py": 3,
         "opendata/data/providers/intrinio/specs.py": 1
       },
       "columns.null_sentinel": {
+        "opendata/data/providers/benzinga/specs.py": 19,
+        "opendata/data/providers/econdb/specs.py": 9,
         "opendata/data/providers/federal_reserve/specs.py": 25,
         "opendata/data/providers/intrinio/specs.py": 28
       },
       "columns.rename": {
+        "opendata/data/providers/benzinga/specs.py": 13,
         "opendata/data/providers/cboe/specs.py": 19,
-        "opendata/data/providers/federal_reserve/specs.py": 41,
-        "opendata/data/providers/intrinio/specs.py": 15
+        "opendata/data/providers/econdb/specs.py": 2,
+        "opendata/data/providers/federal_reserve/specs.py": 48,
+        "opendata/data/providers/intrinio/specs.py": 15,
+        "opendata/data/providers/tiingo/specs.py": 3
       },
       "columns.rescale": {
         "opendata/data/providers/federal_reserve/specs.py": 1
       },
       "columns.select": {
+        "opendata/data/providers/benzinga/specs.py": 1,
         "opendata/data/providers/cboe/specs.py": 4,
-        "opendata/data/providers/federal_reserve/specs.py": 5,
-        "opendata/data/providers/intrinio/specs.py": 5
+        "opendata/data/providers/econdb/specs.py": 1,
+        "opendata/data/providers/federal_reserve/specs.py": 6,
+        "opendata/data/providers/intrinio/specs.py": 5,
+        "opendata/data/providers/tiingo/specs.py": 1
       },
       "decode.delimited": {
         "opendata/data/providers/cboe/specs.py": 1,
+        "opendata/data/providers/econdb/specs.py": 1,
         "opendata/data/providers/federal_reserve/specs.py": 3
       },
       "flow.url_template": {
@@ -1065,34 +1077,43 @@
         "opendata/data/providers/intrinio/specs.py": 2
       },
       "param.relative_default": {
-        "opendata/data/providers/federal_reserve/specs.py": 2,
-        "opendata/data/providers/intrinio/specs.py": 4
+        "opendata/data/providers/federal_reserve/specs.py": 3,
+        "opendata/data/providers/intrinio/specs.py": 4,
+        "opendata/data/providers/tiingo/specs.py": 2
+      },
+      "param.value_mapping": {
+        "opendata/data/providers/benzinga/specs.py": 1,
+        "opendata/data/providers/tiingo/specs.py": 1
       },
       "path.explode": {
         "opendata/data/providers/federal_reserve/specs.py": 1,
-        "opendata/data/providers/intrinio/specs.py": 2
+        "opendata/data/providers/intrinio/specs.py": 2,
+        "opendata/data/providers/tiingo/specs.py": 1
       },
       "rows.filter": {
         "opendata/data/providers/cboe/specs.py": 2,
+        "opendata/data/providers/econdb/specs.py": 1,
         "opendata/data/providers/intrinio/specs.py": 1
       },
       "rows.order_limit": {
-        "opendata/data/providers/federal_reserve/specs.py": 3
+        "opendata/data/providers/econdb/specs.py": 1,
+        "opendata/data/providers/federal_reserve/specs.py": 4,
+        "opendata/data/providers/tiingo/specs.py": 1
       }
     },
     "production_declarations_per_capability": {
-      "columns.cast": 0,
+      "columns.cast": 1,
       "columns.compose": 0,
-      "columns.derive": 3,
+      "columns.derive": 5,
       "columns.many_to_one_rename": 0,
-      "columns.null_sentinel": 53,
+      "columns.null_sentinel": 81,
       "columns.period_cast": 0,
-      "columns.rename": 75,
+      "columns.rename": 100,
       "columns.rescale": 1,
       "columns.response_dependent_selection": 0,
-      "columns.select": 14,
+      "columns.select": 18,
       "decode.archive_member": 0,
-      "decode.delimited": 4,
+      "decode.delimited": 5,
       "decode.delimited_headerless": 0,
       "decode.geojson": 0,
       "decode.html_table": 0,
@@ -1116,11 +1137,11 @@
       "outside.source_absent": 0,
       "outside.stateful": 0,
       "param.preset_merge": 0,
-      "param.relative_default": 6,
-      "param.value_mapping": 0,
+      "param.relative_default": 9,
+      "param.value_mapping": 2,
       "param.value_transform": 0,
       "path.assemble_single_row": 0,
-      "path.explode": 3,
+      "path.explode": 4,
       "path.list_segment": 0,
       "path.object_keys": 0,
       "path.parameterized_pointer": 0,
@@ -1130,11 +1151,11 @@
       "request.graphql": 0,
       "request.serialised_param": 0,
       "rows.cap_source_order": 0,
-      "rows.filter": 3,
+      "rows.filter": 4,
       "rows.filter_comparison": 0,
       "rows.needle_transform": 0,
       "rows.order_by_parameter": 0,
-      "rows.order_limit": 3,
+      "rows.order_limit": 6,
       "shape.columnar": 0,
       "shape.long_to_wide_pivot": 0,
       "shape.nested_data_message": 0,
@@ -1154,53 +1175,8 @@
     ],
     "greedy_build_order": [
       {
-        "capability": "request.serialised_param",
-        "cumulative_rows_unlocked": 8,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "request.serialised_param",
-              "rows.order_limit"
-            ],
-            "provider": "wsj",
-            "task_id": "OBB2-wsj-ETFGainers",
-            "upstream_model": "ETFGainers"
-          },
-          {
-            "needs": [
-              "request.serialised_param",
-              "rows.order_limit"
-            ],
-            "provider": "wsj",
-            "task_id": "OBB2-wsj-ETFLosers",
-            "upstream_model": "ETFLosers"
-          },
-          {
-            "needs": [
-              "request.serialised_param",
-              "rows.order_limit"
-            ],
-            "provider": "wsj",
-            "task_id": "OBB2-wsj-ETFActive",
-            "upstream_model": "ETFActive"
-          },
-          {
-            "needs": [
-              "columns.null_sentinel",
-              "columns.rescale",
-              "param.value_mapping",
-              "request.serialised_param"
-            ],
-            "provider": "government_us",
-            "task_id": "OBB2-government_us-TreasuryAuctions",
-            "upstream_model": "TreasuryAuctions"
-          }
-        ],
-        "rows_newly_unlocked": 4
-      },
-      {
         "capability": "decode.tabular_file",
-        "cumulative_rows_unlocked": 11,
+        "cumulative_rows_unlocked": 7,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1232,7 +1208,7 @@
       },
       {
         "capability": "request.body_pagination",
-        "cumulative_rows_unlocked": 14,
+        "cumulative_rows_unlocked": 10,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1271,7 +1247,7 @@
       },
       {
         "capability": "request.body",
-        "cumulative_rows_unlocked": 23,
+        "cumulative_rows_unlocked": 19,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1359,7 +1335,7 @@
       },
       {
         "capability": "flow.fan_out",
-        "cumulative_rows_unlocked": 31,
+        "cumulative_rows_unlocked": 26,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1434,17 +1410,6 @@
           },
           {
             "needs": [
-              "columns.derive",
-              "flow.fan_out",
-              "param.value_mapping",
-              "request.body_pagination"
-            ],
-            "provider": "intrinio",
-            "task_id": "OBB2-intrinio-HistoricalAttributes",
-            "upstream_model": "HistoricalAttributes"
-          },
-          {
-            "needs": [
               "columns.select",
               "flow.fan_out",
               "request.body_pagination",
@@ -1455,11 +1420,11 @@
             "upstream_model": "PriceTargetConsensus"
           }
         ],
-        "rows_newly_unlocked": 8
+        "rows_newly_unlocked": 7
       },
       {
         "capability": "flow.branch",
-        "cumulative_rows_unlocked": 45,
+        "cumulative_rows_unlocked": 38,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1580,28 +1545,6 @@
           },
           {
             "needs": [
-              "columns.cast",
-              "flow.branch",
-              "flow.fan_out",
-              "param.value_mapping"
-            ],
-            "provider": "tiingo",
-            "task_id": "OBB2-tiingo-EquityHistorical",
-            "upstream_model": "EquityHistorical"
-          },
-          {
-            "needs": [
-              "columns.cast",
-              "flow.branch",
-              "flow.fan_out",
-              "param.value_mapping"
-            ],
-            "provider": "tiingo",
-            "task_id": "OBB2-tiingo-EtfHistorical",
-            "upstream_model": "EtfHistorical"
-          },
-          {
-            "needs": [
               "columns.null_sentinel",
               "columns.rescale",
               "columns.select",
@@ -1612,11 +1555,11 @@
             "upstream_model": "IndexSnapshots"
           }
         ],
-        "rows_newly_unlocked": 14
+        "rows_newly_unlocked": 12
       },
       {
         "capability": "flow.join",
-        "cumulative_rows_unlocked": 58,
+        "cumulative_rows_unlocked": 51,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1768,7 +1711,7 @@
       },
       {
         "capability": "flow.preflight_lookup",
-        "cumulative_rows_unlocked": 69,
+        "cumulative_rows_unlocked": 62,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1897,7 +1840,7 @@
       },
       {
         "capability": "columns.response_dependent_selection",
-        "cumulative_rows_unlocked": 78,
+        "cumulative_rows_unlocked": 71,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -1993,8 +1936,115 @@
         "rows_newly_unlocked": 9
       },
       {
+        "capability": "param.value_transform",
+        "cumulative_rows_unlocked": 80,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.null_sentinel",
+              "columns.rescale",
+              "flow.fan_out",
+              "flow.join",
+              "param.value_transform",
+              "rows.order_limit"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-EtfHoldings",
+            "upstream_model": "EtfHoldings"
+          },
+          {
+            "needs": [
+              "flow.fan_out",
+              "param.value_transform",
+              "rows.order_limit"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-EtfInfo",
+            "upstream_model": "EtfInfo"
+          },
+          {
+            "needs": [
+              "param.value_transform",
+              "request.body_pagination"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-FredSeries",
+            "upstream_model": "FredSeries"
+          },
+          {
+            "needs": [
+              "columns.derive",
+              "flow.fan_out",
+              "param.value_transform",
+              "request.body_pagination"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-HistoricalAttributes",
+            "upstream_model": "HistoricalAttributes"
+          },
+          {
+            "needs": [
+              "columns.null_sentinel",
+              "columns.rename",
+              "flow.fan_out",
+              "param.value_transform"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-IndexHistorical",
+            "upstream_model": "IndexHistorical"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "flow.branch",
+              "flow.fan_out",
+              "param.value_transform"
+            ],
+            "provider": "tiingo",
+            "task_id": "OBB2-tiingo-EquityHistorical",
+            "upstream_model": "EquityHistorical"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "flow.branch",
+              "flow.fan_out",
+              "param.value_transform"
+            ],
+            "provider": "tiingo",
+            "task_id": "OBB2-tiingo-EtfHistorical",
+            "upstream_model": "EtfHistorical"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "param.relative_default",
+              "param.value_transform",
+              "path.explode",
+              "rows.order_limit"
+            ],
+            "provider": "tiingo",
+            "task_id": "OBB2-tiingo-CryptoHistorical",
+            "upstream_model": "CryptoHistorical"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "columns.response_dependent_selection",
+              "flow.fan_out",
+              "param.value_transform",
+              "rows.order_limit"
+            ],
+            "provider": "tiingo",
+            "task_id": "OBB2-tiingo-CurrencyHistorical",
+            "upstream_model": "CurrencyHistorical"
+          }
+        ],
+        "rows_newly_unlocked": 9
+      },
+      {
         "capability": "request.graphql",
-        "cumulative_rows_unlocked": 87,
+        "cumulative_rows_unlocked": 89,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2089,7 +2139,7 @@
       },
       {
         "capability": "rows.filter_comparison",
-        "cumulative_rows_unlocked": 96,
+        "cumulative_rows_unlocked": 98,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2203,7 +2253,7 @@
       },
       {
         "capability": "shape.columnar",
-        "cumulative_rows_unlocked": 107,
+        "cumulative_rows_unlocked": 109,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2335,7 +2385,7 @@
       },
       {
         "capability": "decode.text_table",
-        "cumulative_rows_unlocked": 113,
+        "cumulative_rows_unlocked": 115,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2408,7 +2458,7 @@
       },
       {
         "capability": "path.object_keys",
-        "cumulative_rows_unlocked": 119,
+        "cumulative_rows_unlocked": 121,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2478,7 +2528,7 @@
       },
       {
         "capability": "decode.xml",
-        "cumulative_rows_unlocked": 124,
+        "cumulative_rows_unlocked": 126,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2534,7 +2584,7 @@
       },
       {
         "capability": "path.assemble_single_row",
-        "cumulative_rows_unlocked": 130,
+        "cumulative_rows_unlocked": 131,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2569,17 +2619,6 @@
             "needs": [
               "columns.rename",
               "flow.fan_out",
-              "param.value_mapping",
-              "path.assemble_single_row"
-            ],
-            "provider": "econdb",
-            "task_id": "OBB2-econdb-ExportDestinations",
-            "upstream_model": "ExportDestinations"
-          },
-          {
-            "needs": [
-              "columns.rename",
-              "flow.fan_out",
               "path.assemble_single_row",
               "path.object_keys"
             ],
@@ -2598,74 +2637,11 @@
             "upstream_model": "TopRetail"
           }
         ],
-        "rows_newly_unlocked": 6
-      },
-      {
-        "capability": "param.value_transform",
-        "cumulative_rows_unlocked": 135,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.null_sentinel",
-              "columns.rescale",
-              "flow.fan_out",
-              "flow.join",
-              "param.value_transform",
-              "rows.order_limit"
-            ],
-            "provider": "intrinio",
-            "task_id": "OBB2-intrinio-EtfHoldings",
-            "upstream_model": "EtfHoldings"
-          },
-          {
-            "needs": [
-              "flow.fan_out",
-              "param.value_transform",
-              "rows.order_limit"
-            ],
-            "provider": "intrinio",
-            "task_id": "OBB2-intrinio-EtfInfo",
-            "upstream_model": "EtfInfo"
-          },
-          {
-            "needs": [
-              "param.value_mapping",
-              "param.value_transform",
-              "request.body_pagination"
-            ],
-            "provider": "intrinio",
-            "task_id": "OBB2-intrinio-FredSeries",
-            "upstream_model": "FredSeries"
-          },
-          {
-            "needs": [
-              "columns.null_sentinel",
-              "columns.rename",
-              "flow.fan_out",
-              "param.value_transform"
-            ],
-            "provider": "intrinio",
-            "task_id": "OBB2-intrinio-IndexHistorical",
-            "upstream_model": "IndexHistorical"
-          },
-          {
-            "needs": [
-              "columns.cast",
-              "columns.response_dependent_selection",
-              "flow.fan_out",
-              "param.value_transform",
-              "rows.order_limit"
-            ],
-            "provider": "tiingo",
-            "task_id": "OBB2-tiingo-CurrencyHistorical",
-            "upstream_model": "CurrencyHistorical"
-          }
-        ],
         "rows_newly_unlocked": 5
       },
       {
         "capability": "shape.nested_data_message",
-        "cumulative_rows_unlocked": 140,
+        "cumulative_rows_unlocked": 136,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2727,7 +2703,7 @@
       },
       {
         "capability": "decode.geojson",
-        "cumulative_rows_unlocked": 144,
+        "cumulative_rows_unlocked": 140,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2773,7 +2749,7 @@
       },
       {
         "capability": "decode.html_table",
-        "cumulative_rows_unlocked": 148,
+        "cumulative_rows_unlocked": 144,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2818,8 +2794,52 @@
         "rows_newly_unlocked": 4
       },
       {
+        "capability": "columns.compose",
+        "cumulative_rows_unlocked": 147,
+        "newly_unlocked_rows": [
+          {
+            "needs": [
+              "columns.compose",
+              "columns.rename",
+              "flow.fan_out",
+              "path.assemble_single_row"
+            ],
+            "provider": "econdb",
+            "task_id": "OBB2-econdb-ExportDestinations",
+            "upstream_model": "ExportDestinations"
+          },
+          {
+            "needs": [
+              "columns.compose",
+              "columns.derive",
+              "columns.null_sentinel",
+              "columns.rename",
+              "flow.branch",
+              "flow.fan_out"
+            ],
+            "provider": "intrinio",
+            "task_id": "OBB2-intrinio-EquityQuote",
+            "upstream_model": "EquityQuote"
+          },
+          {
+            "needs": [
+              "columns.cast",
+              "columns.compose",
+              "columns.null_sentinel",
+              "flow.branch",
+              "param.relative_default",
+              "param.value_mapping"
+            ],
+            "provider": "tradingeconomics",
+            "task_id": "OBB2-tradingeconomics-EconomicCalendar",
+            "upstream_model": "EconomicCalendar"
+          }
+        ],
+        "rows_newly_unlocked": 3
+      },
+      {
         "capability": "decode.html_text",
-        "cumulative_rows_unlocked": 151,
+        "cumulative_rows_unlocked": 150,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2856,7 +2876,7 @@
       },
       {
         "capability": "request.caller_url",
-        "cumulative_rows_unlocked": 155,
+        "cumulative_rows_unlocked": 154,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2902,7 +2922,7 @@
       },
       {
         "capability": "decode.opaque_bytes",
-        "cumulative_rows_unlocked": 158,
+        "cumulative_rows_unlocked": 157,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2938,7 +2958,7 @@
       },
       {
         "capability": "rows.needle_transform",
-        "cumulative_rows_unlocked": 161,
+        "cumulative_rows_unlocked": 160,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -2986,7 +3006,7 @@
       },
       {
         "capability": "rows.cap_source_order",
-        "cumulative_rows_unlocked": 164,
+        "cumulative_rows_unlocked": 163,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3023,41 +3043,8 @@
         "rows_newly_unlocked": 3
       },
       {
-        "capability": "columns.compose",
-        "cumulative_rows_unlocked": 166,
-        "newly_unlocked_rows": [
-          {
-            "needs": [
-              "columns.compose",
-              "columns.derive",
-              "columns.null_sentinel",
-              "columns.rename",
-              "flow.branch",
-              "flow.fan_out"
-            ],
-            "provider": "intrinio",
-            "task_id": "OBB2-intrinio-EquityQuote",
-            "upstream_model": "EquityQuote"
-          },
-          {
-            "needs": [
-              "columns.cast",
-              "columns.compose",
-              "columns.null_sentinel",
-              "flow.branch",
-              "param.relative_default",
-              "param.value_mapping"
-            ],
-            "provider": "tradingeconomics",
-            "task_id": "OBB2-tradingeconomics-EconomicCalendar",
-            "upstream_model": "EconomicCalendar"
-          }
-        ],
-        "rows_newly_unlocked": 2
-      },
-      {
         "capability": "path.parameterized_pointer",
-        "cumulative_rows_unlocked": 168,
+        "cumulative_rows_unlocked": 165,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3082,7 +3069,7 @@
       },
       {
         "capability": "columns.many_to_one_rename",
-        "cumulative_rows_unlocked": 169,
+        "cumulative_rows_unlocked": 166,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3103,7 +3090,7 @@
       },
       {
         "capability": "decode.delimited_headerless",
-        "cumulative_rows_unlocked": 170,
+        "cumulative_rows_unlocked": 167,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3118,7 +3105,7 @@
       },
       {
         "capability": "derive.conditional",
-        "cumulative_rows_unlocked": 171,
+        "cumulative_rows_unlocked": 168,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3137,7 +3124,7 @@
       },
       {
         "capability": "shape.single_record_wrap",
-        "cumulative_rows_unlocked": 173,
+        "cumulative_rows_unlocked": 170,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3169,7 +3156,7 @@
       },
       {
         "capability": "flow.nearest_published_value",
-        "cumulative_rows_unlocked": 174,
+        "cumulative_rows_unlocked": 171,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3188,7 +3175,7 @@
       },
       {
         "capability": "path.list_segment",
-        "cumulative_rows_unlocked": 175,
+        "cumulative_rows_unlocked": 172,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3208,7 +3195,7 @@
       },
       {
         "capability": "columns.period_cast",
-        "cumulative_rows_unlocked": 183,
+        "cumulative_rows_unlocked": 180,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3324,7 +3311,7 @@
       },
       {
         "capability": "rows.order_by_parameter",
-        "cumulative_rows_unlocked": 184,
+        "cumulative_rows_unlocked": 181,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3343,7 +3330,7 @@
       },
       {
         "capability": "shape.long_to_wide_pivot",
-        "cumulative_rows_unlocked": 185,
+        "cumulative_rows_unlocked": 182,
         "newly_unlocked_rows": [
           {
             "needs": [
@@ -3361,7 +3348,7 @@
         "rows_newly_unlocked": 1
       }
     ],
-    "rows_expressible_today": 11,
+    "rows_expressible_today": 14,
     "rows_outside_engine": [
       {
         "needs": [
@@ -3562,10 +3549,10 @@
           "columns.cast",
           "flow.fan_out",
           "flow.join",
+          "flow.preflight_lookup",
           "outside.anti_bot",
           "outside.bespoke",
           "outside.stateful",
-          "param.value_mapping",
           "path.object_keys",
           "request.caller_url"
         ],
@@ -4354,7 +4341,7 @@
         "upstream_model": "EquityScreener"
       }
     ],
-    "rows_pending": 268,
+    "rows_pending": 265,
     "rows_still_locked_after_engine_pool": [
       {
         "needs": [
@@ -4555,10 +4542,10 @@
           "columns.cast",
           "flow.fan_out",
           "flow.join",
+          "flow.preflight_lookup",
           "outside.anti_bot",
           "outside.bespoke",
           "outside.stateful",
-          "param.value_mapping",
           "path.object_keys",
           "request.caller_url"
         ],
@@ -5347,75 +5334,68 @@
         "upstream_model": "EquityScreener"
       }
     ],
-    "rows_unlocked_by_greedy_prefix": 185,
+    "rows_unlocked_by_greedy_prefix": 182,
     "rows_with_empty_need_set": [],
     "rows_with_no_engine_work_possible": 12,
     "shipped_cover_rows": [
       {
         "needs": [
-          "columns.cast",
-          "columns.null_sentinel",
-          "columns.select",
-          "param.value_mapping"
-        ],
-        "provider": "benzinga",
-        "task_id": "OBB2-benzinga-PriceTarget",
-        "upstream_model": "PriceTarget"
-      },
-      {
-        "needs": [
-          "columns.derive",
-          "columns.null_sentinel",
-          "decode.delimited",
-          "rows.filter",
+          "request.serialised_param",
           "rows.order_limit"
         ],
-        "provider": "econdb",
-        "task_id": "OBB2-econdb-AvailableIndicators",
-        "upstream_model": "AvailableIndicators"
+        "provider": "wsj",
+        "task_id": "OBB2-wsj-ETFGainers",
+        "upstream_model": "ETFGainers"
       },
       {
         "needs": [
+          "request.serialised_param",
+          "rows.order_limit"
+        ],
+        "provider": "wsj",
+        "task_id": "OBB2-wsj-ETFLosers",
+        "upstream_model": "ETFLosers"
+      },
+      {
+        "needs": [
+          "request.serialised_param",
+          "rows.order_limit"
+        ],
+        "provider": "wsj",
+        "task_id": "OBB2-wsj-ETFActive",
+        "upstream_model": "ETFActive"
+      },
+      {
+        "needs": [
+          "columns.null_sentinel",
           "columns.rescale",
-          "param.relative_default",
-          "rows.order_limit"
-        ],
-        "provider": "federal_reserve",
-        "task_id": "OBB2-federal_reserve-OvernightBankFundingRate",
-        "upstream_model": "OvernightBankFundingRate"
-      },
-      {
-        "needs": [
-          "columns.cast",
-          "param.relative_default",
           "param.value_mapping",
-          "path.explode",
-          "rows.order_limit"
+          "request.serialised_param"
         ],
-        "provider": "tiingo",
-        "task_id": "OBB2-tiingo-CryptoHistorical",
-        "upstream_model": "CryptoHistorical"
+        "provider": "government_us",
+        "task_id": "OBB2-government_us-TreasuryAuctions",
+        "upstream_model": "TreasuryAuctions"
       }
     ]
   },
-  "round_id": "C98",
+  "round_id": "C99",
   "schema_version": 1,
   "taxonomy": {
     "canonical_capability_count": 58,
     "labels_supported": 118,
     "mentions_per_capability": {
-      "columns.cast": 34,
-      "columns.compose": 13,
-      "columns.derive": 40,
+      "columns.cast": 33,
+      "columns.compose": 14,
+      "columns.derive": 39,
       "columns.many_to_one_rename": 1,
-      "columns.null_sentinel": 41,
+      "columns.null_sentinel": 39,
       "columns.period_cast": 8,
       "columns.rename": 48,
-      "columns.rescale": 30,
+      "columns.rescale": 29,
       "columns.response_dependent_selection": 11,
-      "columns.select": 26,
+      "columns.select": 25,
       "decode.archive_member": 8,
-      "decode.delimited": 30,
+      "decode.delimited": 29,
       "decode.delimited_headerless": 2,
       "decode.geojson": 4,
       "decode.html_table": 6,
@@ -5430,7 +5410,7 @@
       "flow.fan_out": 131,
       "flow.join": 64,
       "flow.nearest_published_value": 1,
-      "flow.preflight_lookup": 46,
+      "flow.preflight_lookup": 47,
       "flow.url_template": 1,
       "outside.anti_bot": 33,
       "outside.bespoke": 25,
@@ -5439,9 +5419,9 @@
       "outside.source_absent": 2,
       "outside.stateful": 30,
       "param.preset_merge": 1,
-      "param.relative_default": 3,
-      "param.value_mapping": 33,
-      "param.value_transform": 11,
+      "param.relative_default": 2,
+      "param.value_mapping": 25,
+      "param.value_transform": 15,
       "path.assemble_single_row": 8,
       "path.explode": 42,
       "path.list_segment": 9,
@@ -5453,11 +5433,11 @@
       "request.graphql": 9,
       "request.serialised_param": 8,
       "rows.cap_source_order": 3,
-      "rows.filter": 42,
+      "rows.filter": 41,
       "rows.filter_comparison": 28,
       "rows.needle_transform": 6,
       "rows.order_by_parameter": 1,
-      "rows.order_limit": 36,
+      "rows.order_limit": 34,
       "shape.columnar": 21,
       "shape.long_to_wide_pivot": 1,
       "shape.nested_data_message": 6,
@@ -5505,7 +5485,6 @@
         "request.body_pagination",
         "request.caller_url",
         "request.graphql",
-        "request.serialised_param",
         "rows.cap_source_order",
         "rows.filter_comparison",
         "rows.needle_transform",
@@ -5530,6 +5509,7 @@
         "param.relative_default",
         "param.value_mapping",
         "path.explode",
+        "request.serialised_param",
         "rows.filter",
         "rows.order_limit"
       ],

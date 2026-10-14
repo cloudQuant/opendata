@@ -1,4 +1,4 @@
-"""intrinio's IPO calendar: one GET, rows under a nested key, nested scalars projected flat.
+"""intrinio's IPO calendar: cursor-paged rows with nested scalars projected flat.
 
 The declaration in :data:`~opendata.data.providers.intrinio.specs.CALENDAR_IPO` carries the row
 key, the four query aliases, the parameter value domains and the ``RecordRepointPlan`` that reads

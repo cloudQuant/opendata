@@ -1379,11 +1379,21 @@ REGISTRY: Final[tuple[CapabilityEntry, ...]] = (
         capability="request.serialised_param",
         claim=False,
         engine_work=True,
-        proof_file=HTTP_JSON_REL,
-        anchor='",".join(str(item) for item in value)',
-        why="_encode_value renders a list parameter by comma-joining it; nothing serialises a JSON "
-        "object or a key/date mapping into one query value.",
-        probe=DeclarationProbe(call="ModelSpec", keyword="param_encoder"),
+        proof_file=SPEC_REL,
+        anchor='serialise: str = ""',
+        read_from_disk=True,
+        cross_file=HTTP_JSON_REL,
+        cross_anchor="def _serialise_value(",
+        why="Presence is read off both planes: ParamSpec carries a ``serialise`` field whose "
+        "__post_init__ refuses an unknown spelling, a json form on a kind that carries no "
+        "structure, an empty or non-date strftime and any pairing with a value_map, and "
+        ":func:`_serialise_value` is the first branch :func:`_encode_value` takes, so the wsj "
+        "URL-encoded JSON ``id=`` blob (gainers.py:88) and the TreasuryAuctions ``%m/%d/%Y`` "
+        "request-side date rendering (treasury_auctions.py:209, :212) each have one field to be "
+        "written in. An undeclared composite still dies at ``_PARAM_UNENCODABLE``, which is the "
+        "absence face the counterfact reads; the comma-join this entry used to anchor on is a "
+        "shipped list spelling, not this capability.",
+        probe=DeclarationProbe(call="ParamSpec", keyword="serialise", non_empty=True),
     ),
     CapabilityEntry(
         capability="flow.fan_out",

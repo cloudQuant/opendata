@@ -11,18 +11,36 @@ from typing import TYPE_CHECKING, Any
 
 from opendata.data.provider import CredentialSpec, Provider, ProviderHealth
 from opendata.data.providers.akshare.provider import PROVIDER as AKSHARE_PROVIDER
+from opendata.data.providers.alpha_vantage.provider import PROVIDER as ALPHA_VANTAGE_PROVIDER
+from opendata.data.providers.benzinga.provider import PROVIDER as BENZINGA_PROVIDER
 from opendata.data.providers.bls.provider import PROVIDER as BLS_PROVIDER
 from opendata.data.providers.cboe.provider import PROVIDER as CBOE_PROVIDER
+from opendata.data.providers.cftc.provider import PROVIDER as CFTC_PROVIDER
 from opendata.data.providers.congress_gov.provider import PROVIDER as CONGRESS_GOV_PROVIDER
+from opendata.data.providers.deribit.provider import PROVIDER as DERIBIT_PROVIDER
 from opendata.data.providers.ecb.provider import PROVIDER as ECB_PROVIDER
+from opendata.data.providers.econdb.provider import PROVIDER as ECONDB_PROVIDER
+from opendata.data.providers.eia.provider import PROVIDER as EIA_PROVIDER
+from opendata.data.providers.famafrench.provider import PROVIDER as FAMAFRENCH_PROVIDER
 from opendata.data.providers.federal_reserve.provider import PROVIDER as FEDERAL_RESERVE_PROVIDER
+from opendata.data.providers.finra.provider import PROVIDER as FINRA_PROVIDER
+from opendata.data.providers.finviz.provider import PROVIDER as FINVIZ_PROVIDER
 from opendata.data.providers.fmp.provider import PROVIDER as FMP_PROVIDER
 from opendata.data.providers.fred.provider import PROVIDER as FRED_PROVIDER
+from opendata.data.providers.government_us.provider import PROVIDER as GOVERNMENT_US_PROVIDER
 from opendata.data.providers.imf.provider import PROVIDER as IMF_PROVIDER
 from opendata.data.providers.intrinio.provider import PROVIDER as INTRINIO_PROVIDER
+from opendata.data.providers.multpl.provider import PROVIDER as MULTPL_PROVIDER
+from opendata.data.providers.nasdaq.provider import PROVIDER as NASDAQ_PROVIDER
 from opendata.data.providers.oecd.provider import PROVIDER as OECD_PROVIDER
 from opendata.data.providers.sec.provider import PROVIDER as SEC_PROVIDER
 from opendata.data.providers.ths.provider import PROVIDER as THS_PROVIDER
+from opendata.data.providers.tiingo.provider import PROVIDER as TIINGO_PROVIDER
+from opendata.data.providers.tmx.provider import PROVIDER as TMX_PROVIDER
+from opendata.data.providers.tradier.provider import PROVIDER as TRADIER_PROVIDER
+from opendata.data.providers.tradingeconomics.provider import (
+    PROVIDER as TRADINGECONOMICS_PROVIDER,
+)
 from opendata.data.providers.yfinance.provider import PROVIDER as YFINANCE_PROVIDER
 
 if TYPE_CHECKING:
@@ -56,32 +74,32 @@ _UPSTREAM_PROVIDERS: tuple[Provider, ...] = (
     IMF_PROVIDER,
     OECD_PROVIDER,
     YFINANCE_PROVIDER,
-    _reserved_provider("alpha_vantage", "api_key"),
+    ALPHA_VANTAGE_PROVIDER,
     BLS_PROVIDER,
-    _reserved_provider("econdb", "api_key"),
-    _reserved_provider("eia", "api_key"),
-    _reserved_provider("famafrench"),
+    ECONDB_PROVIDER,
+    EIA_PROVIDER,
+    FAMAFRENCH_PROVIDER,
     FEDERAL_RESERVE_PROVIDER,
     FMP_PROVIDER,
     INTRINIO_PROVIDER,
-    _reserved_provider("multpl"),
+    MULTPL_PROVIDER,
     _reserved_provider("seeking_alpha"),
-    _reserved_provider("tiingo", "token"),
-    _reserved_provider("tradingeconomics", "api_key"),
-    _reserved_provider("benzinga", "api_key"),
+    TIINGO_PROVIDER,
+    TRADINGECONOMICS_PROVIDER,
+    BENZINGA_PROVIDER,
     _reserved_provider("biztoc", "api_key"),
     CBOE_PROVIDER,
-    _reserved_provider("cftc", "app_token"),
+    CFTC_PROVIDER,
     CONGRESS_GOV_PROVIDER,
-    _reserved_provider("deribit"),
-    _reserved_provider("finra"),
-    _reserved_provider("finviz"),
-    _reserved_provider("government_us"),
-    _reserved_provider("nasdaq", "api_key"),
+    DERIBIT_PROVIDER,
+    FINRA_PROVIDER,
+    FINVIZ_PROVIDER,
+    GOVERNMENT_US_PROVIDER,
+    NASDAQ_PROVIDER,
     SEC_PROVIDER,
     _reserved_provider("stockgrid"),
-    _reserved_provider("tmx"),
-    _reserved_provider("tradier", "api_key", "account_type"),
+    TMX_PROVIDER,
+    TRADIER_PROVIDER,
     _reserved_provider("wsj"),
 )
 

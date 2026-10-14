@@ -18,8 +18,38 @@ export function getErrorMessage(error: unknown): string {
 
 /** API error response shape (axios error.response.data) */
 interface ApiErrorPayload {
-  detail?: string
-  message?: string
+  detail?: unknown
+  message?: unknown
+}
+
+function formatValidationDetails(detail: unknown): string | undefined {
+  if (!Array.isArray(detail)) return undefined
+
+  const messages = detail.flatMap((issue: unknown) => {
+    if (!issue || typeof issue !== 'object') return []
+
+    const record = issue as { loc?: unknown; msg?: unknown }
+    const message = typeof record.msg === 'string' ? record.msg.trim() : ''
+    if (!message) return []
+
+    const location = Array.isArray(record.loc)
+      ? record.loc
+          .filter(
+            (part): part is string | number =>
+              (typeof part === 'string' || typeof part === 'number') &&
+              !['body', 'query', 'path', 'header'].includes(String(part))
+          )
+          .map(String)
+          .join('.')
+      : ''
+
+    if (message === 'Field required') {
+      return [location ? `缺少必填字段：${location}` : '缺少必填字段']
+    }
+    return [location ? `${location}：${message}` : message]
+  })
+
+  return messages.length ? messages.join('；') : undefined
 }
 
 /**
@@ -29,7 +59,10 @@ interface ApiErrorPayload {
 export function getApiErrorMessage(error: unknown, fallback = '请求失败'): string {
   if (error && typeof error === 'object' && 'response' in error) {
     const data = (error as { response?: { data?: ApiErrorPayload } }).response?.data
-    return data?.detail ?? data?.message ?? fallback
+    if (typeof data?.detail === 'string') return data.detail
+    const validationMessage = formatValidationDetails(data?.detail)
+    if (validationMessage) return validationMessage
+    return typeof data?.message === 'string' ? data.message : fallback
   }
   return getErrorMessage(error) || fallback
 }

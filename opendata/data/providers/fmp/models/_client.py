@@ -7,6 +7,7 @@ import os
 from typing import TYPE_CHECKING, Any, cast
 
 from opendata.data.http_client import HttpFetchError, get_shared_http_client
+from opendata.data.providers._engine.http_json import ProviderEngineQueryError
 from opendata.data.request_budget import RequestBudgetError
 
 if TYPE_CHECKING:
@@ -37,6 +38,18 @@ class FMPProviderError(RuntimeError):
         self.requests_made = requests_made
         detail = "" if status is None else f" status={status}"
         super().__init__(code + detail)
+
+
+class FMPQueryValidationError(ProviderEngineQueryError, FMPProviderError):
+    """An invalid FMP query recognized by both provider and query services."""
+
+    def __init__(self) -> None:
+        """Preserve the sanitized FMP code and initialize both exception contracts."""
+        FMPProviderError.__init__(self, "FMP_BAD_QUERY")
+        self.url = None
+        self.rejected: tuple[str, ...] = ()
+        self.missing: tuple[str, ...] = ()
+        self.invalid: tuple[str, ...] = ()
 
 
 class FMPQueryLimitError(FMPProviderError):

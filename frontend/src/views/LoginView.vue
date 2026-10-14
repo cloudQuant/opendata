@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, type FormRules } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
 import type { LoginRequest } from '@/types'
-import { getErrorMessage } from '@/utils/error'
+import { getApiErrorMessage } from '@/utils/error'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const sessionExpired = computed(() => route.query.reason === 'session_expired')
 
 const formRef = ref()
 const loading = ref(false)
@@ -42,7 +43,7 @@ async function handleLogin() {
     const redirect = route.query.redirect as string
     await router.push(redirect || '/')
   } catch (error: unknown) {
-    const msg = getErrorMessage(error)
+    const msg = getApiErrorMessage(error, '登录失败，请检查邮箱和密码')
     if (msg) {
       ElMessage.error(msg)
     }
@@ -65,6 +66,15 @@ function goToRegister() {
           <p>金融数据管理平台</p>
         </div>
       </template>
+
+      <el-alert
+        v-if="sessionExpired"
+        data-testid="session-expired-message"
+        title="登录已失效，请重新登录"
+        type="warning"
+        :closable="false"
+        show-icon
+      />
 
       <el-form
         ref="formRef"

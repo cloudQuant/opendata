@@ -1,13 +1,19 @@
 import { describe, it, expect, vi, beforeAll, afterAll, beforeEach } from 'vitest'
-import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import { AxiosError, type AxiosAdapter, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios'
+
+const authStoreMocks = vi.hoisted(() => ({
+  logout: vi.fn(),
+  refreshAccessToken: vi.fn(),
+}))
+let authRefreshToken: string | null = 'test-refresh'
 
 // Mock pinia store before importing request
 vi.mock('@/stores/auth', () => ({
   useAuthStore: vi.fn(() => ({
     accessToken: 'test-token',
-    refreshToken: 'test-refresh',
-    refreshAccessToken: vi.fn(),
-    logout: vi.fn(),
+    refreshToken: authRefreshToken,
+    refreshAccessToken: authStoreMocks.refreshAccessToken,
+    logout: authStoreMocks.logout,
   })),
 }))
 
@@ -26,6 +32,7 @@ vi.mock('element-plus', () => ({
 // was defined, which is true of any axios instance and of none of the
 // behaviour the api modules depend on.)
 const bodies = new Map<string, unknown>()
+let responseStatus: number | null = null
 
 let lastConfig: InternalAxiosRequestConfig | undefined
 
@@ -33,6 +40,23 @@ const adapter: AxiosAdapter = async (
   config: InternalAxiosRequestConfig,
 ): Promise<AxiosResponse> => {
   lastConfig = config
+  if (responseStatus !== null) {
+    const response = {
+      data: { detail: 'Invalid email or password' },
+      status: responseStatus,
+      statusText: 'Unauthorized',
+      headers: {},
+      config,
+      request: {},
+    } as AxiosResponse
+    throw new AxiosError(
+      `Request failed with status code ${responseStatus}`,
+      AxiosError.ERR_BAD_REQUEST,
+      config,
+      {},
+      response
+    )
+  }
   return {
     data: bodies.get(config.url ?? ''),
     status: 200,
@@ -60,6 +84,10 @@ beforeEach(() => {
   vi.clearAllMocks()
   bodies.clear()
   lastConfig = undefined
+  responseStatus = null
+  authRefreshToken = 'test-refresh'
+  authStoreMocks.logout.mockReset()
+  authStoreMocks.refreshAccessToken.mockReset()
 })
 
 describe('Request Utils', () => {
@@ -105,5 +133,33 @@ describe('Request Utils', () => {
 
     await expect(request.post('/settings/database/test')).rejects.toThrow('连接失败')
     expect(ElMessage.error).toHaveBeenCalledWith('连接失败')
+  })
+
+  it('leaves an exact login 401 to the caller without expiring the session', async () => {
+    responseStatus = 401
+
+    await expect(request.post('/auth/login', { email: 'bad@example.com', password: 'wrong' }))
+      .rejects.toThrow('Request failed with status code 401')
+
+    expect(authStoreMocks.logout).not.toHaveBeenCalled()
+    expect(authStoreMocks.refreshAccessToken).not.toHaveBeenCalled()
+    expect(ElMessage.error).not.toHaveBeenCalled()
+  })
+
+  it('expires a protected request session and redirects with the fixed reason', async () => {
+    responseStatus = 401
+    authRefreshToken = null
+    const fakeWindow = { location: { origin: 'http://localhost', href: '/' } }
+    vi.stubGlobal('window', fakeWindow)
+    try {
+      await expect(request.post('/data/download', { interface_id: 7 })).rejects.toThrow(
+        'Request failed with status code 401'
+      )
+
+      expect(authStoreMocks.logout).toHaveBeenCalledOnce()
+      expect(fakeWindow.location.href).toBe('/login?reason=session_expired')
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 })

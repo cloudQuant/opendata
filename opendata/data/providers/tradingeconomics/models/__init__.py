@@ -1,0 +1,1 @@
+"""Trading Economics model fetchers."""

@@ -15,15 +15,15 @@ New York Fed JSON rows were refused while the rescale, the sentinel-before-the-s
 request-date bound and the declared row order were each still missing, and every facet they need
 has since shipped, so the honest move was to declare them and price what little remains in
 :data:`DECLARED_GAPS`.
-The other eight need composition the declaration format cannot express and are recorded in
-:data:`NOT_DECLARED` rather than silently dropped from the count.
+The remaining identities use dedicated source-specific fetchers where the declaration format
+cannot express their response composition. Their provider bindings and typed contracts are kept
+beside those fetchers; :data:`NOT_DECLARED` records only identities with no implementation.
 
 One of those eleven was declared here and retracted. ``YieldCurve`` reads the same H.15 download as
-:data:`TREASURY_RATES`, so a wide declaration of it was a second model id for rows the first one
-already published; the oracle's ``YieldCurve`` is not that table at all but the long triple
-``(date, maturity, rate)`` it builds after the response arrives by melting eleven columns, ordering
-maturity by a ``Categorical`` and selecting the requested dates with ``DatetimeIndex.asof``
-(yield_curve.py:88-115). Melting is not declarable, so the record moved to :data:`NOT_DECLARED`.
+:data:`TREASURY_RATES`, so a wide declaration would be a second model id for rows the first one
+already publishes. The separate long-form ``YieldCurve`` identity is represented by a dedicated
+adapter that expands the eleven published maturity columns into ``(date, maturity, rate)`` rows;
+that response composition is not expressible by this declaration format.
 
 What the read-only oracle actually publishes, with its two halves separated because they are not
 equally carried. The upstream helper is not a helper: each of the three models inlines
@@ -759,6 +759,95 @@ SOFR = ModelSpec(
     ),
 )
 
+#: The 5 percent columns the OBFR record publishes and whose upstream validator divides by 100
+#: (overnight_bank_funding_rate.py:47-55, the division at :60). ``volume`` is published alongside
+#: them (the alias dict at :26-34) but is outside that validator list, so no scale stage runs on
+#: it -- declaring one would divide a cell upstream copies verbatim.
+OBFR_PERCENT_FIELDS: Final[tuple[str, ...]] = (
+    "rate",
+    "percentile_1",
+    "percentile_25",
+    "percentile_75",
+    "percentile_99",
+)
+
+#: The overnight bank funding rate, one GET of the New York Fed's ``obfr/search.json``.
+OVERNIGHT_BANK_FUNDING_RATE = ModelSpec(
+    model="OvernightBankFundingRate",
+    domain="federal_reserve_overnight_bank_funding_rate",
+    asset_class="macro",
+    period="d",
+    market="us",
+    base_url=NEW_YORK_FED_BASE_URL,
+    path="/api/rates/unsecured/obfr/search.json",
+    rows_pointer="refRates",
+    params=(
+        ParamSpec(
+            "start_date",
+            "date",
+            query_key="startDate",
+            default=date(2016, 3, 1),
+            note="window start; upstream fills the ABSOLUTE literal 2016-03-01 when the caller "
+            "names none (overnight_bank_funding_rate.py:79-80) and spells it into the query "
+            "string (:96-98)",
+        ),
+        ParamSpec(
+            "end_date",
+            "date",
+            query_key="endDate",
+            relative_default=RelativeDefault(),
+            note="window end: the request date itself, upstream's datetime.now().date() fill "
+            "(overnight_bank_funding_rate.py:78, 81-82) carried as the all-zero RelativeDefault; "
+            "only filled when the caller names no bound",
+        ),
+    ),
+    columns=(
+        ColumnSpec("date", "date", source_key="effectiveDate", required=True, nullable=False),
+        ColumnSpec("rate", "float", source_key="percentRate", units="published percent"),
+        ColumnSpec(
+            "percentile_1", "float", source_key="percentPercentile1", units="published percent"
+        ),
+        ColumnSpec(
+            "percentile_25", "float", source_key="percentPercentile25", units="published percent"
+        ),
+        ColumnSpec(
+            "percentile_75", "float", source_key="percentPercentile75", units="published percent"
+        ),
+        ColumnSpec(
+            "percentile_99", "float", source_key="percentPercentile99", units="published percent"
+        ),
+        ColumnSpec("volume", "float", source_key="volumeInBillions", units="billions of USD"),
+    ),
+    column_derives=_percent_fraction_derives(OBFR_PERCENT_FIELDS),
+    order_by=RowOrderSpec(column="effectiveDate", direction="asc", limit=None),
+    scenario="隔夜银行融资利率日表：取出纽约联储 OBFR JSON 的五个百分序列并折成小数",
+    error_prefix="FEDERAL_RESERVE",
+    notes=(
+        "Census carrier OBB2-federal_reserve-OvernightBankFundingRate, the sibling of SOFR on the "
+        "same New York Fed reference-rate shape: one GET, the rows are the document's refRates "
+        "list (overnight_bank_funding_rate.py:102-103), and :96-98 interpolates startDate and "
+        "endDate into the query string -- a query-pair shape, not a path composition. Field "
+        "names and source keys are the pinned contract's own __alias_dict__ (:26-34). The five "
+        "percent columns carry the scale stage (validator list :47-55, division at :60; 0 stays 0 "
+        "there and 0/100 is 0 here). NO null sentinel is declared on this row, and that is "
+        "measured, not omitted: normalize_percent guards ONLY None (:57-61) -- where SOFR's "
+        "validator at sofr.py:48 nulls '', \"''\" and NA before dividing, this one divides "
+        "whatever is not None, so there is no published text token this column nulls ahead of "
+        "the cast (the C92 sentinel claim the census refuted, re-measured on the oracle at "
+        ":57-61). The revision_indicator validator (:41-45) is dead text FOR THE PUBLISHED ROW: "
+        "transform_data pops type/revisionIndicator/footnoteId (:117-119) before validation, so "
+        "the row carries no revision cell; normalize_record reads declared columns only, so all "
+        "three pops are no-ops here and none is declared, exactly as for SOFR's :103-105. "
+        "order_by declares the ascending date sort (:122) with no cap. The census need set "
+        "(published_value_rescale, client_side_sort, relative_date_default) is complete: all "
+        "three facets ship as columns.rescale, rows.order_limit and param.relative_default, "
+        "which is why this row was in roadmap shipped_cover_rows rather than the build pool. "
+        "C99 registered this domain in domains.yaml beside federal_reserve_sofr and bound the "
+        "reviewed contract FederalReserveOvernightBankFundingRate: its 7 fields against the 7 "
+        "declared columns leave an empty symmetric difference, so no row class is synthesized."
+    ),
+)
+
 
 #: What each declared model still cannot do, per measurement. A declaration is not a finished
 #: capability: these are the post-processing steps the oracle performs and the engine has no field
@@ -804,42 +893,17 @@ DECLARED_GAPS: dict[str, str] = {
     "here and declare nothing. Upstream raises EmptyDataError on a missing or empty refRates "
     "list (:89-91); this engine answers an empty list with zero rows and refuses only a document "
     "whose pointer cannot be followed.",
+    "OvernightBankFundingRate": "the same two kernel-priced refusals as SOFR, plus one the "
+    "census priced from the first reading: a JSON-float percent cell is refused where upstream's "
+    "v / 100 (:60) absorbs it, and an explicit JSON null on a staged column is refused where "
+    "normalize_percent returns None (:59-61) -- an absent key already reads as null. No capture "
+    "pins this body, so the offline test feeds a synthesized document. Upstream raises "
+    "EmptyDataError on a missing or empty refRates list (:104-105); this engine answers zero "
+    "rows. The C99 splice registered the domain and bound the reviewed contract, so the class the "
+    "fetcher publishes is that contract, not a row model synthesized from the declaration.",
 }
 
-#: The eight upstream models this package does not declare, and the capability each one needs.
-#: ``Sofr`` and ``FederalFundsRate`` left this dict in C98, declared as :data:`SOFR` and
-#: :data:`FEDERAL_FUNDS_RATE` above once the rescale, sentinel, relative bound and row-order
-#: facets had all shipped; the refusal text they carried here was stale by then.
-NOT_DECLARED: dict[str, str] = {
-    "YieldCurve": "reads the same H.15 download as TreasuryRates, then melts its eleven maturity "
-    "columns into long (date, maturity, rate) rows ordered by a Categorical, selects the requested "
-    "dates with DatetimeIndex.asof and divides rate by 100 (yield_curve.py:88-115). A wide "
-    "declaration of it would be a second model id over the rows TreasuryRates already "
-    "publishes and would not be the oracle's model, so the declaration was retracted rather "
-    "than reshaped.",
-    "OvernightBankFundingRate": "newyorkfed.org JSON whose window this package does not declare "
-    "yet. The composed window is declarable now that ``ParamSpec.relative_default`` exists: the "
-    "two keys are ordinary query parameters (``startDate``/``endDate``, "
-    "overnight_bank_funding_rate.py:96-98), the absolute start literal is a plain ``default`` and "
-    "the request-date end bound is an all-zero ``RelativeDefault`` (both filled only when the "
-    "caller named none, :78-82). What still blocks the record is not the vocabulary: the package "
-    "holds no ModelSpec for it because ``overnight_bank_funding_rate`` is not a registered domain "
-    "in domains.yaml, and a declaration whose domain is unregistered publishes rows no query or "
-    "ingest service accepts (http_json.build_row_model). Registering the domain and binding the "
-    "model is the package's act, not an engine capability, and C98 shipped that act twice in this "
-    "same file (``federal_reserve_federal_funds_rate`` and ``federal_reserve_sofr`` now publish "
-    "their reviewed contract classes through build_row_model), so what remains here is the same "
-    "un-started work rather than a missing capability.",
-    "PrimaryDealerFails": "two or three requests concatenated by a condition on the requested date "
-    "(primary_dealer_fails.py:83-105)",
-    "PrimaryDealerPositioning": "one request per symbol in a category branch, gathered, then "
-    "columns mapped from two dictionaries (primary_dealer_positioning.py:108-122)",
-    "CentralBankHoldings": "delegates to a SomaHoldings helper that resolves the endpoint per data "
-    "type (central_bank_holdings.py:317)",
-    "InflationExpectations": "an Excel workbook read from a zipped download "
-    "(inflation_expectations.py:149-154)",
-    "TotalFactorProductivity": "an Excel workbook with per-sheet skiprows "
-    "(total_factor_productivity.py:549-557)",
-    "FomcDocuments": "enumerates document URLs from a packaged asset and downloads each document "
-    "(pdf/htm) separately (fomc_documents.py:100-129)",
-}
+#: Models with no local adapter or typed contract. Iteration 2 added dedicated source-owned
+#: parsers for the remaining seven identities; the list stays explicit so provider census tests
+#: can assert it is empty rather than silently dropping models.
+NOT_DECLARED: dict[str, str] = {}

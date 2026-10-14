@@ -263,6 +263,10 @@ def test_apply_is_lazy_hash_reported_and_idempotent(tmp_path: Path, monkeypatch)
     generated_facade = (tmp_path / "newpkg/akshare/_vendor/__init__.py").read_bytes()
     assert generated_facade.startswith(AKSHARE_SOURCE_HEADER)
     assert b"# Migration note: lazy compatibility facade;" in generated_facade
+    assert first["lazy_vendor_facade"]["manual_edits"] is True
+    assert first["lazy_vendor_facade"]["manual_edit_reason"] == (
+        migration.LAZY_VENDOR_FACADE_MANUAL_EDIT_REASON
+    )
     assert (tmp_path / "LICENSE-AKSHARE").read_bytes() == license_before
     for relative, content in sentinels.items():
         assert (tmp_path / relative).read_text() == content

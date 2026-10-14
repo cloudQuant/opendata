@@ -289,15 +289,15 @@ domains:
     storage_mode: transient
     permissions: [query]
   cboe_equity_search:
-    display_name: CBOE 美国期权公司目录检索
-    rest_path: equity/cboe-equity-search
-    contract: CboeEquitySearchListing
-    temporal_kind: snapshot
+    display_name: "Cboe 股票目录检索"
+    rest_path: "cboe/equity/search"
+    contract: "CboeEquitySearchListing"
+    temporal_kind: "snapshot"
     time_field: null
-    natural_key: [symbol]
-    filter_dims: [symbol]
-    storage_mode: transient
-    permissions: [query]
+    natural_key: ["symbol"]
+    filter_dims: ["symbol", "name"]
+    storage_mode: "transient"
+    permissions: ["query"]
   intrinio_currency_pairs:
     display_name: Intrinio 外汇货币对目录
     rest_path: forex/intrinio-currency-pairs
@@ -381,7 +381,17 @@ domains:
   federal_reserve_sofr:
     display_name: 美联储 SOFR 担保隔夜融资利率日表
     rest_path: macro/federal-reserve-sofr
-    contract: FederalReserveSofr
+    contract: SOFR
+    temporal_kind: series
+    time_field: date
+    natural_key: [date]
+    filter_dims: []
+    storage_mode: upsert
+    permissions: [query]
+  federal_reserve_overnight_bank_funding_rate:
+    display_name: 美联储 OBFR 隔夜银行融资利率日表
+    rest_path: macro/federal-reserve-overnight-bank-funding-rate
+    contract: FederalReserveOvernightBankFundingRate
     temporal_kind: series
     time_field: date
     natural_key: [date]
@@ -398,3 +408,4033 @@ domains:
     filter_dims: [symbol, company_cik, owner_cik, filing_date]
     storage_mode: transient
     permissions: [query]
+  benzinga_price_target:
+    display_name: Benzinga 分析师目标价评级日历
+    rest_path: equity/benzinga-price-target
+    contract: BenzingaPriceTarget
+    temporal_kind: event
+    time_field: published_date
+    natural_key: [symbol, published_date, analyst_id, id]
+    filter_dims: [symbol, published_date, action]
+    storage_mode: transient
+    permissions: [query]
+  tiingo_crypto_historical:
+    display_name: Tiingo 加密货币历史行情
+    rest_path: crypto/tiingo-crypto-historical
+    contract: TiingoCryptoHistorical
+    temporal_kind: series
+    time_field: date
+    natural_key: [symbol, date]
+    filter_dims: [symbol, date]
+    storage_mode: transient
+    permissions: [query]
+  econdb_available_indicators:
+    display_name: EconDB 可用指标名册
+    rest_path: macro/econdb-available-indicators
+    contract: EconDBAvailableIndicators
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [symbol]
+    filter_dims: [symbol]
+    storage_mode: transient
+    permissions: [query]
+  fmp_index_directory:
+    display_name: FMP全球股票指数目录
+    rest_path: market/fmp/index-directory
+    contract: AvailableIndex
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [symbol, exchange]
+    filter_dims: [symbol, exchange, currency]
+    storage_mode: transient
+    permissions: [query]
+  fmp_dividend_calendar:
+    display_name: FMP股息日历
+    rest_path: market/fmp/calendar-dividend
+    contract: DividendCalendarEvent
+    temporal_kind: event
+    time_field: date
+    natural_key: [symbol, date]
+    filter_dims: [symbol, date, record_date, payment_date, declaration_date]
+    storage_mode: transient
+    permissions: [query]
+  fmp_earnings_calendar:
+    display_name: FMP业绩日历
+    rest_path: market/fmp/calendar-earnings
+    contract: EarningsCalendarEvent
+    temporal_kind: event
+    time_field: date
+    natural_key: [symbol, date]
+    filter_dims: [symbol, date]
+    storage_mode: transient
+    permissions: [query]
+  tradier_equity_historical:
+    display_name: Tradier美股历史行情
+    rest_path: tradier/equity/historical
+    contract: TradierEquityHistorical
+    temporal_kind: series
+    time_field: date
+    natural_key: [symbol, date]
+    filter_dims: [symbol, date, interval, dividend_adjustment_semantics, split_adjustment_semantics]
+    storage_mode: upsert
+    permissions: [query, store, export]
+  tradier_etf_historical:
+    display_name: Tradier ETF历史行情
+    rest_path: tradier/etf/historical
+    contract: TradierEtfHistorical
+    temporal_kind: series
+    time_field: date
+    natural_key: [symbol, date]
+    filter_dims: [symbol, date, interval, dividend_adjustment_semantics, split_adjustment_semantics]
+    storage_mode: upsert
+    permissions: [query, store, export]
+  tradier_equity_quote:
+    display_name: Tradier美股报价快照
+    rest_path: tradier/equity/quote
+    contract: TradierEquityQuote
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [symbol]
+    filter_dims: [symbol, security_type]
+    storage_mode: transient
+    permissions: [query]
+  tradier_equity_search:
+    display_name: Tradier证券目录检索
+    rest_path: tradier/equity/search
+    contract: TradierEquitySearch
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [symbol, exchange]
+    filter_dims: [symbol, exchange, security_type]
+    storage_mode: transient
+    permissions: [query]
+  tradier_options_chains:
+    display_name: Tradier期权链快照
+    rest_path: tradier/options/chains
+    contract: TradierOptionChain
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [symbol]
+    filter_dims: [symbol, underlying, expiration_date, option_type, strike]
+    storage_mode: transient
+    permissions: [query]
+  economic_calendar:
+    display_name: Trading Economics 经济日历
+    rest_path: macro/tradingeconomics-economic-calendar
+    contract: TradingEconomicsEconomicCalendar
+    temporal_kind: event
+    time_field: date
+    natural_key: [calendar_id]
+    filter_dims: [date, country, category, event, importance, calendar_id]
+    storage_mode: transient
+    permissions: [query]
+  sp500_multiples:
+    display_name: Multpl S&P 500 valuation multiples
+    rest_path: multpl/sp500/multiples
+    contract: SP500Multiples
+    temporal_kind: series
+    time_field: date
+    natural_key: [metric, date]
+    filter_dims: [metric, date]
+    storage_mode: upsert
+    permissions: [query, store, export]
+  alpha_vantage_equity_historical:
+    display_name: Alpha Vantage Equity Historical
+    rest_path: alphavantage/equity/historical
+    contract: AlphaVantageEquityHistorical
+    temporal_kind: series
+    time_field: date
+    natural_key: [symbol, date]
+    filter_dims: [symbol, date]
+    storage_mode: upsert
+    permissions: [query, store, export]
+  alpha_vantage_etf_historical:
+    display_name: Alpha Vantage ETF Historical
+    rest_path: alphavantage/etf/historical
+    contract: AlphaVantageEtfHistorical
+    temporal_kind: series
+    time_field: date
+    natural_key: [symbol, date]
+    filter_dims: [symbol, date]
+    storage_mode: upsert
+    permissions: [query, store, export]
+  alpha_vantage_historical_eps:
+    display_name: Alpha Vantage Historical EPS
+    rest_path: alphavantage/equity/historical-eps
+    contract: AlphaVantageHistoricalEps
+    temporal_kind: series
+    time_field: date
+    natural_key: [symbol, date]
+    filter_dims: [symbol, date]
+    storage_mode: upsert
+    permissions: [query, store, export]
+  fred_treasury_constant_maturity:
+    display_name: FRED国债恒定期限收益率
+    rest_path: fred/treasury/constant-maturity
+    contract: FredTreasuryConstantMaturity
+    temporal_kind: series
+    time_field: date
+    natural_key: [date]
+    filter_dims: [date]
+    storage_mode: transient
+    permissions: [query]
+  fred_selected_treasury_bill:
+    display_name: FRED国库券收益率
+    rest_path: fred/treasury/selected-bill
+    contract: FredSelectedTreasuryBill
+    temporal_kind: series
+    time_field: date
+    natural_key: [date]
+    filter_dims: [date]
+    storage_mode: transient
+    permissions: [query]
+  fred_selected_treasury_constant_maturity:
+    display_name: FRED选定期限国债收益率
+    rest_path: fred/treasury/selected-constant-maturity
+    contract: FredSelectedTreasuryConstantMaturity
+    temporal_kind: series
+    time_field: date
+    natural_key: [date]
+    filter_dims: [date]
+    storage_mode: transient
+    permissions: [query]
+  fred_ameribor:
+    display_name: FRED AMERIBOR 利率
+    rest_path: fred/ameribor
+    contract: FredAmeribor
+    temporal_kind: series
+    time_field: date
+    natural_key: [date, symbol]
+    filter_dims: [date, maturity, symbol]
+    storage_mode: transient
+    permissions: [query]
+  fred_discount_window_primary_credit_rate:
+    display_name: FRED 贴现窗一级信贷利率
+    rest_path: fred/discount-window/primary-credit-rate
+    contract: FredDiscountWindowPrimaryCreditRate
+    temporal_kind: series
+    time_field: date
+    natural_key: [date]
+    filter_dims: [date]
+    storage_mode: transient
+    permissions: [query]
+  fred_european_central_bank_interest_rates:
+    display_name: FRED 欧洲央行政策利率
+    rest_path: fred/european-central-bank/interest-rates
+    contract: FredEuropeanCentralBankInterestRate
+    temporal_kind: series
+    time_field: date
+    natural_key: [date]
+    filter_dims: [date]
+    storage_mode: transient
+    permissions: [query]
+  fred_tips_yields:
+    display_name: FRED TIPS 恒定期限收益率
+    rest_path: fred/treasury/tips-yields
+    contract: FredTipsYield
+    temporal_kind: series
+    time_field: date
+    natural_key: [date, symbol]
+    filter_dims: [date, symbol]
+    storage_mode: transient
+    permissions: [query]
+  congress_bills:
+    display_name: 美国国会法案
+    rest_path: congress/bills
+    contract: CongressBill
+    temporal_kind: snapshot
+    time_field: update_date
+    natural_key: [congress, bill_type, bill_number]
+    filter_dims: [congress, bill_type, update_date, latest_action_date]
+    storage_mode: transient
+    permissions: [query]
+  congress_bill_info:
+    display_name: 美国国会法案详情
+    rest_path: congress/bill-info
+    contract: CongressBillInfo
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [source_url]
+    filter_dims: []
+    storage_mode: transient
+    permissions: [query]
+  congress_bill_text:
+    display_name: 美国国会法案文本版本
+    rest_path: congress/bill-text
+    contract: CongressBillText
+    temporal_kind: document
+    time_field: version_date
+    natural_key: [congress, bill_type, bill_number, source_url]
+    filter_dims: [congress, bill_type, bill_number, version_date, document_format]
+    storage_mode: transient
+    permissions: [query]
+  congress_amendments:
+    display_name: 美国国会修正案
+    rest_path: congress/amendments
+    contract: CongressAmendment
+    temporal_kind: snapshot
+    time_field: update_date
+    natural_key: [congress, amendment_type, number]
+    filter_dims: [congress, amendment_type, update_date, latest_action_date]
+    storage_mode: transient
+    permissions: [query]
+  congress_amendment_info:
+    display_name: 美国国会修正案详情
+    rest_path: congress/amendment-info
+    contract: CongressAmendmentInfo
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [source_url]
+    filter_dims: []
+    storage_mode: transient
+    permissions: [query]
+  congress_amendment_text:
+    display_name: 美国国会修正案文本版本
+    rest_path: congress/amendment-text
+    contract: CongressAmendmentText
+    temporal_kind: document
+    time_field: version_date
+    natural_key: [congress, amendment_type, amendment_number, source_url]
+    filter_dims: [congress, amendment_type, amendment_number, version_date, document_format]
+    storage_mode: transient
+    permissions: [query]
+  congress_committee_info:
+    display_name: 美国国会委员会详情
+    rest_path: congress/committee-info
+    contract: CongressCommitteeInfo
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [source_url]
+    filter_dims: []
+    storage_mode: transient
+    permissions: [query]
+  congress_committee_documents:
+    display_name: 美国国会委员会文件元数据
+    rest_path: congress/committee-documents
+    contract: CongressCommitteeDocument
+    temporal_kind: event
+    time_field: event_date
+    natural_key: [document_category, committee_code, chamber, congress, document_id]
+    filter_dims: [document_category, committee_code, chamber, congress, event_date]
+    storage_mode: transient
+    permissions: [query]
+
+  tmx_company_filings:
+    display_name: TMX公司文件
+    rest_path: company/tmx/filings
+    contract: TmxCompanyFiling
+    temporal_kind: document
+    time_field: filing_date
+    natural_key:
+    - symbol
+    - filing_date
+    - report_url
+    filter_dims:
+    - symbol
+    - filing_date
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_equity_historical:
+    display_name: TMX股票日历史
+    rest_path: market/tmx/equity-historical
+    contract: TmxEquityHistorical
+    temporal_kind: series
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    filter_dims:
+    - symbol
+    - date
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_equity_info:
+    display_name: TMX股票公司信息
+    rest_path: company/tmx/equity-info
+    contract: TmxEquityInfo
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - stock_exchange
+    - sector
+    - issue_type
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_equity_quote:
+    display_name: TMX股票报价
+    rest_path: market/tmx/equity-quote
+    contract: TmxEquityQuote
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - exchange
+    - currency
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_equity_search:
+    display_name: TMX股票搜索
+    rest_path: market/tmx/equity-search
+    contract: TmxEquitySearch
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - name
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_historical_dividends:
+    display_name: TMX历史股息
+    rest_path: market/tmx/historical-dividends
+    contract: TmxHistoricalDividend
+    temporal_kind: event
+    time_field: ex_dividend_date
+    natural_key:
+    - symbol
+    - ex_dividend_date
+    - amount
+    - currency
+    filter_dims:
+    - symbol
+    - ex_dividend_date
+    - currency
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_index_constituents:
+    display_name: TMX指数成分
+    rest_path: market/tmx/index-constituents
+    contract: TmxIndexConstituent
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - exchange
+    storage_mode: transient
+    permissions:
+    - query
+  tmx_price_target_consensus:
+    display_name: TMX分析师目标价共识
+    rest_path: market/tmx/price-target-consensus
+    contract: TmxPriceTargetConsensus
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - consensus_action
+    storage_mode: transient
+    permissions:
+    - query
+  deribit_futures_curve:
+    display_name: Deribit current futures curve
+    rest_path: derivatives/deribit/futures-curve
+    contract: DeribitFuturesCurve
+    priority: null
+    temporal_kind: snapshot
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    - expiration
+    filter_dims:
+    - symbol
+    - date
+    - expiration
+    - price
+    - last_price
+    storage_mode: transient
+    permissions:
+    - query
+  deribit_futures_historical:
+    display_name: Deribit futures historical candles
+    rest_path: derivatives/deribit/futures-historical
+    contract: DeribitFuturesHistorical
+    priority: null
+    temporal_kind: series
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    filter_dims:
+    - symbol
+    - date
+    - close
+    - volume_notional
+    storage_mode: transient
+    permissions:
+    - query
+  deribit_futures_info:
+    display_name: Deribit live futures quote and session statistics
+    rest_path: derivatives/deribit/futures-info
+    contract: DeribitFuturesInfo
+    priority: null
+    temporal_kind: snapshot
+    time_field: timestamp
+    natural_key:
+    - symbol
+    - timestamp
+    filter_dims:
+    - symbol
+    - timestamp
+    - bid
+    - ask
+    - mark_price
+    storage_mode: transient
+    permissions:
+    - query
+  deribit_futures_instruments:
+    display_name: Deribit futures instrument definitions
+    rest_path: derivatives/deribit/futures-instruments
+    contract: DeribitFuturesInstruments
+    priority: null
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    - instrument_id
+    filter_dims:
+    - symbol
+    - instrument_id
+    - base_currency
+    - settlement_currency
+    - state
+    storage_mode: transient
+    permissions:
+    - query
+  deribit_options_chains:
+    display_name: Deribit current option chain quotes
+    rest_path: derivatives/deribit/options-chains
+    contract: DeribitOptionsChains
+    priority: null
+    temporal_kind: snapshot
+    time_field: timestamp
+    natural_key:
+    - contract_symbol
+    - timestamp
+    filter_dims:
+    - contract_symbol
+    - underlying_symbol
+    - expiration
+    - strike
+    - option_type
+    - bid
+    - ask
+    - mark
+    storage_mode: transient
+    permissions:
+    - query
+  sec_cik_map:
+    display_name: SEC CikMap
+    rest_path: equity/sec/cik-map
+    contract: SecCikMapRecord
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - ticker
+    - cik
+    filter_dims:
+    - ticker
+    - cik
+    storage_mode: transient
+    permissions:
+    - query
+    priority: null
+  sec_symbol_map:
+    display_name: SEC SymbolMap
+    rest_path: equity/sec/symbol-map
+    contract: SecSymbolMapRecord
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - cik
+    - ticker
+    filter_dims:
+    - cik
+    - ticker
+    storage_mode: transient
+    permissions:
+    - query
+    priority: null
+  sec_equity_search:
+    display_name: SEC EquitySearch
+    rest_path: equity/sec/equity-search
+    contract: SecEquitySearchRecord
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - cik
+    - ticker
+    - exchange
+    filter_dims:
+    - cik
+    - ticker
+    - exchange
+    storage_mode: transient
+    permissions:
+    - query
+    priority: null
+  sec_sic_search:
+    display_name: SEC SicSearch
+    rest_path: publicdata/sec/sic-search
+    contract: SecSicCode
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - sic_code
+    filter_dims:
+    - sic_code
+    - office
+    - industry_title
+    storage_mode: transient
+    permissions:
+    - query
+    priority: null
+  sec_balance_sheet:
+    display_name: SEC BalanceSheet
+    rest_path: equity/sec/balance-sheet
+    contract: SecBalanceSheetStatement
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - cik
+    - accession
+    - period_ending
+    filter_dims:
+    - symbol
+    - cik
+    - fiscal_period
+    - fiscal_year
+    - form
+    - reported_currency
+    storage_mode: transient
+    permissions:
+    - query
+    priority: null
+  sec_balance_sheet_growth:
+    display_name: SEC BalanceSheetGrowth
+    rest_path: equity/sec/balance-sheet-growth
+    contract: SecBalanceSheetGrowthRow
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - cik
+    - accession
+    - period_ending
+    filter_dims:
+    - symbol
+    - cik
+    - fiscal_period
+    - fiscal_year
+    - form
+    - reported_currency
+    storage_mode: transient
+    permissions:
+    - query
+    priority: null
+  sec_cash_flow_statement:
+    display_name: SEC CashFlowStatement
+    rest_path: equity/sec/cash-flow-statement
+    contract: SecCashFlowStatementRow
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - cik
+    - accession
+    - period_ending
+    filter_dims:
+    - symbol
+    - cik
+    - fiscal_period
+    - fiscal_year
+    - form
+    - reported_currency
+    storage_mode: transient
+    permissions:
+    - query
+    priority: null
+  sec_cash_flow_statement_growth:
+    display_name: SEC CashFlowStatementGrowth
+    rest_path: equity/sec/cash-flow-statement-growth
+    contract: SecCashFlowStatementGrowthRow
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - cik
+    - accession
+    - period_ending
+    filter_dims:
+    - symbol
+    - cik
+    - fiscal_period
+    - fiscal_year
+    - form
+    - reported_currency
+    storage_mode: transient
+    permissions:
+    - query
+    priority: null
+  sec_income_statement:
+    display_name: SEC IncomeStatement
+    rest_path: equity/sec/income-statement
+    contract: SecIncomeStatementRow
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - cik
+    - accession
+    - period_ending
+    filter_dims:
+    - symbol
+    - cik
+    - fiscal_period
+    - fiscal_year
+    - form
+    - reported_currency
+    storage_mode: transient
+    permissions:
+    - query
+    priority: null
+  sec_income_statement_growth:
+    display_name: SEC IncomeStatementGrowth
+    rest_path: equity/sec/income-statement-growth
+    contract: SecIncomeStatementGrowthRow
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - cik
+    - accession
+    - period_ending
+    filter_dims:
+    - symbol
+    - cik
+    - fiscal_period
+    - fiscal_year
+    - form
+    - reported_currency
+    storage_mode: transient
+    permissions:
+    - query
+    priority: null
+  sec_compare_company_facts:
+    display_name: SEC CompareCompanyFacts
+    rest_path: equity/sec/compare-company-facts
+    contract: SecCompanyFactComparison
+    temporal_kind: series
+    time_field: reported_date
+    natural_key:
+    - cik
+    - accession
+    - tag
+    - unit
+    - period_ending
+    filter_dims:
+    - cik
+    - symbol
+    - tag
+    - unit
+    - frame
+    - period_ending
+    - reported_date
+    - form
+    storage_mode: transient
+    permissions:
+    - query
+    priority: null
+  sec_equity_ftd:
+    display_name: SEC EquityFTD
+    rest_path: equity/sec/equity-ftd
+    contract: SecFtdRecord
+    temporal_kind: series
+    time_field: settlement_date
+    natural_key:
+    - settlement_date
+    - cusip
+    - symbol
+    filter_dims:
+    - settlement_date
+    - cusip
+    - symbol
+    storage_mode: transient
+    permissions:
+    - query
+    priority: null
+  sec_insider_trading:
+    display_name: SEC InsiderTrading
+    rest_path: equity/sec/insider-trading
+    contract: SecInsiderTransaction
+    temporal_kind: event
+    time_field: transaction_date
+    natural_key:
+    - issuer_cik
+    - accession_number
+    - security_type
+    - security_title
+    - transaction_date
+    - transaction_code
+    - acquired_disposed
+    - shares
+    filter_dims:
+    - company_cik
+    - symbol
+    - filing_date
+    - transaction_date
+    - security_type
+    - transaction_type
+    - ownership_type
+    storage_mode: transient
+    permissions:
+    - query
+    priority: null
+  sec_company_filings:
+    display_name: SEC公司申报
+    rest_path: company/sec/company-filings
+    contract: SecCompanyFiling
+    priority: null
+    temporal_kind: event
+    time_field: filing_date
+    natural_key:
+    - accession_number
+    filter_dims:
+    - filing_date
+    - report_type
+    - report_date
+    - accession_number
+    storage_mode: transient
+    permissions:
+    - query
+  sec_filings:
+    display_name: SEC申报列表
+    rest_path: company/sec/filings
+    contract: SecCompanyFiling
+    priority: null
+    temporal_kind: event
+    time_field: filing_date
+    natural_key:
+    - accession_number
+    filter_dims:
+    - filing_date
+    - report_type
+    - report_date
+    - accession_number
+    storage_mode: transient
+    permissions:
+    - query
+  sec_filing:
+    display_name: SEC单份申报文件
+    rest_path: equity/sec/sec-filing
+    contract: SecFilingHeader
+    priority: null
+    temporal_kind: document
+    time_field: null
+    natural_key:
+    - cik
+    - accession_number
+    filter_dims:
+    - cik
+    - accession_number
+    - filing_date
+    - period_ending
+    - document_type
+    storage_mode: transient
+    permissions:
+    - query
+  sec_htm_file:
+    display_name: SEC HTML申报文件
+    rest_path: equity/sec/sec-htm-file
+    contract: SecHtmFileData
+    priority: null
+    temporal_kind: document
+    time_field: null
+    natural_key:
+    - url
+    filter_dims:
+    - url
+    storage_mode: transient
+    permissions:
+    - query
+  sec_rss_litigation:
+    display_name: SEC诉讼公告
+    rest_path: publicdata/sec/rss-litigation
+    contract: SecRssLitigationItem
+    priority: null
+    temporal_kind: event
+    time_field: published
+    natural_key:
+    - id
+    filter_dims:
+    - published
+    - title
+    - id
+    storage_mode: transient
+    permissions:
+    - query
+  sec_schema_files:
+    display_name: SEC XBRL taxonomy元素
+    rest_path: publicdata/sec/schema-files
+    contract: SecSchemaFile
+    priority: null
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - name
+    - url
+    filter_dims:
+    - name
+    - category
+    - xbrl_type
+    - period_type
+    - balance_type
+    storage_mode: transient
+    permissions:
+    - query
+  sec_latest_financial_reports:
+    display_name: SEC最新财务申报
+    rest_path: equity/sec/latest-financial-reports
+    contract: SecLatestFinancialReport
+    priority: null
+    temporal_kind: event
+    time_field: filing_date
+    natural_key:
+    - cik
+    - filing_date
+    - report_type
+    - url
+    filter_dims:
+    - filing_date
+    - period_ending
+    - symbol
+    - cik
+    - report_type
+    storage_mode: transient
+    permissions:
+    - query
+  sec_management_discussion_analysis:
+    display_name: SEC管理层讨论与分析
+    rest_path: equity/sec/management-discussion-analysis
+    contract: SecManagementDiscussionAnalysis
+    priority: null
+    temporal_kind: document
+    time_field: null
+    natural_key:
+    - symbol
+    - calendar_year
+    - calendar_period
+    - url
+    filter_dims:
+    - symbol
+    - calendar_year
+    - calendar_period
+    - period_ending
+    storage_mode: transient
+    permissions:
+    - query
+  sec_form_13f_hr:
+    display_name: SEC Form 13F-HR持仓
+    rest_path: equity/sec/form13-fhr
+    contract: SecForm13FHRHolding
+    priority: null
+    temporal_kind: event
+    time_field: filing_date
+    natural_key:
+    - manager_cik
+    - accession_number
+    - period_ending
+    - cusip
+    - issuer
+    - asset_class
+    - security_type
+    - option_type
+    - investment_discretion
+    - other_manager
+    filter_dims:
+    - manager_cik
+    - manager_name
+    - accession_number
+    - filing_date
+    - period_ending
+    - cusip
+    - issuer
+    - other_manager
+    storage_mode: transient
+    permissions:
+    - query
+  sec_nport_disclosure:
+    display_name: SEC N-PORT基金持仓
+    rest_path: fund/sec/nport-disclosure
+    contract: SecNportDisclosureHolding
+    priority: null
+    temporal_kind: event
+    time_field: filing_date
+    natural_key:
+    - fund_cik
+    - accession_number
+    - period_ending
+    - cusip
+    - isin
+    - other_id
+    - asset_symbol
+    - name
+    - title
+    - asset_category
+    filter_dims:
+    - symbol
+    - asset_symbol
+    - fund_cik
+    - fund_name
+    - accession_number
+    - filing_date
+    - acceptance_datetime
+    - period_ending
+    - as_of
+    - cusip
+    - isin
+    - other_id
+    - country
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_balance_sheet:
+    display_name: yfinance balance sheet
+    rest_path: equity/yfinance/balance-sheet
+    contract: YfinanceFinancialStatementObservation
+    temporal_kind: series
+    time_field: report_period
+    natural_key:
+    - symbol
+    - statement_type
+    - frequency
+    - report_period
+    - line_item
+    filter_dims:
+    - symbol
+    - report_period
+    - frequency
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_cash_flow_statement:
+    display_name: yfinance cash flow statement
+    rest_path: equity/yfinance/cash-flow-statement
+    contract: YfinanceFinancialStatementObservation
+    temporal_kind: series
+    time_field: report_period
+    natural_key:
+    - symbol
+    - statement_type
+    - frequency
+    - report_period
+    - line_item
+    filter_dims:
+    - symbol
+    - report_period
+    - frequency
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_income_statement:
+    display_name: yfinance income statement
+    rest_path: equity/yfinance/income-statement
+    contract: YfinanceFinancialStatementObservation
+    temporal_kind: series
+    time_field: report_period
+    natural_key:
+    - symbol
+    - statement_type
+    - frequency
+    - report_period
+    - line_item
+    filter_dims:
+    - symbol
+    - report_period
+    - frequency
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_dividend_history:
+    display_name: yfinance historical dividends
+    rest_path: equity/yfinance/dividend-history
+    contract: YfinanceDividendObservation
+    temporal_kind: series
+    time_field: ex_dividend_date
+    natural_key:
+    - symbol
+    - ex_dividend_date
+    filter_dims:
+    - symbol
+    - ex_dividend_date
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_crypto_historical:
+    display_name: yfinance crypto daily history
+    rest_path: marketdata/yfinance/crypto-historical
+    contract: YfinanceHistoricalBar
+    temporal_kind: series
+    time_field: session_date
+    natural_key:
+    - symbol
+    - session_date
+    - model_id
+    filter_dims:
+    - symbol
+    - session_date
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_currency_historical:
+    display_name: yfinance currency daily history
+    rest_path: marketdata/yfinance/currency-historical
+    contract: YfinanceHistoricalBar
+    temporal_kind: series
+    time_field: session_date
+    natural_key:
+    - symbol
+    - session_date
+    - model_id
+    filter_dims:
+    - symbol
+    - session_date
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_equity_historical:
+    display_name: yfinance equity daily history
+    rest_path: equity/yfinance/equity-historical
+    contract: YfinanceHistoricalBar
+    temporal_kind: series
+    time_field: session_date
+    natural_key:
+    - symbol
+    - session_date
+    - model_id
+    filter_dims:
+    - symbol
+    - session_date
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_etf_historical:
+    display_name: yfinance ETF daily history
+    rest_path: equity/yfinance/etf-historical
+    contract: YfinanceHistoricalBar
+    temporal_kind: series
+    time_field: session_date
+    natural_key:
+    - symbol
+    - session_date
+    - model_id
+    filter_dims:
+    - symbol
+    - session_date
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_futures_historical:
+    display_name: yfinance continuous-futures daily history
+    rest_path: derivatives/yfinance/futures-historical
+    contract: YfinanceHistoricalBar
+    temporal_kind: series
+    time_field: session_date
+    natural_key:
+    - symbol
+    - session_date
+    - model_id
+    filter_dims:
+    - symbol
+    - session_date
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_index_historical:
+    display_name: yfinance index daily history
+    rest_path: marketdata/yfinance/index-historical
+    contract: YfinanceHistoricalBar
+    temporal_kind: series
+    time_field: session_date
+    natural_key:
+    - symbol
+    - session_date
+    - model_id
+    filter_dims:
+    - symbol
+    - session_date
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_company_news:
+    display_name: yfinance company news
+    rest_path: equity/yfinance/company-news
+    contract: YfinanceCompanyNewsObservation
+    temporal_kind: series
+    time_field: published_at_utc
+    natural_key:
+    - symbol
+    - ordinal
+    - raw_payload_json
+    filter_dims:
+    - symbol
+    - published_at_utc
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_equity_info:
+    display_name: yfinance equity info snapshot
+    rest_path: equity/yfinance/equity-info
+    contract: YfinancePayloadObservation
+    temporal_kind: snapshot
+    time_field: retrieved_at_utc
+    natural_key:
+    - model_id
+    - symbol
+    - retrieved_at_utc
+    filter_dims:
+    - symbol
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_equity_quote:
+    display_name: yfinance fast equity quote snapshot
+    rest_path: equity/yfinance/equity-quote
+    contract: YfinancePayloadObservation
+    temporal_kind: snapshot
+    time_field: retrieved_at_utc
+    natural_key:
+    - model_id
+    - symbol
+    - retrieved_at_utc
+    filter_dims:
+    - symbol
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_etf_info:
+    display_name: yfinance ETF funds-data snapshot
+    rest_path: equity/yfinance/etf-info
+    contract: YfinancePayloadObservation
+    temporal_kind: snapshot
+    time_field: retrieved_at_utc
+    natural_key:
+    - model_id
+    - symbol
+    - retrieved_at_utc
+    filter_dims:
+    - symbol
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_key_executives:
+    display_name: yfinance company officers snapshot
+    rest_path: equity/yfinance/key-executives
+    contract: YfinanceKeyExecutiveObservation
+    temporal_kind: snapshot
+    time_field: retrieved_at_utc
+    natural_key:
+    - symbol
+    - ordinal
+    - retrieved_at_utc
+    filter_dims:
+    - symbol
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_share_statistics:
+    display_name: yfinance share statistics snapshot
+    rest_path: equity/yfinance/share-statistics
+    contract: YfinancePayloadObservation
+    temporal_kind: snapshot
+    time_field: retrieved_at_utc
+    natural_key:
+    - model_id
+    - symbol
+    - retrieved_at_utc
+    filter_dims:
+    - symbol
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_equity_active:
+    display_name: yfinance most active equities
+    rest_path: equity/yfinance/equity-active
+    contract: YfinanceScreenerObservation
+    temporal_kind: snapshot
+    time_field: ordinal
+    natural_key:
+    - screener_id
+    - ordinal
+    - symbol
+    filter_dims:
+    - symbol
+    - ordinal
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_equity_aggressive_small_caps:
+    display_name: yfinance aggressive small-cap equities
+    rest_path: equity/yfinance/equity-aggressive-small-caps
+    contract: YfinanceScreenerObservation
+    temporal_kind: snapshot
+    time_field: ordinal
+    natural_key:
+    - screener_id
+    - ordinal
+    - symbol
+    filter_dims:
+    - symbol
+    - ordinal
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_equity_gainers:
+    display_name: yfinance daily equity gainers
+    rest_path: equity/yfinance/equity-gainers
+    contract: YfinanceScreenerObservation
+    temporal_kind: snapshot
+    time_field: ordinal
+    natural_key:
+    - screener_id
+    - ordinal
+    - symbol
+    filter_dims:
+    - symbol
+    - ordinal
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_equity_losers:
+    display_name: yfinance daily equity losers
+    rest_path: equity/yfinance/equity-losers
+    contract: YfinanceScreenerObservation
+    temporal_kind: snapshot
+    time_field: ordinal
+    natural_key:
+    - screener_id
+    - ordinal
+    - symbol
+    filter_dims:
+    - symbol
+    - ordinal
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_equity_undervalued_growth:
+    display_name: yfinance undervalued growth equities
+    rest_path: equity/yfinance/equity-undervalued-growth
+    contract: YfinanceScreenerObservation
+    temporal_kind: snapshot
+    time_field: ordinal
+    natural_key:
+    - screener_id
+    - ordinal
+    - symbol
+    filter_dims:
+    - symbol
+    - ordinal
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_equity_undervalued_large_caps:
+    display_name: yfinance undervalued large-cap equities
+    rest_path: equity/yfinance/equity-undervalued-large-caps
+    contract: YfinanceScreenerObservation
+    temporal_kind: snapshot
+    time_field: ordinal
+    natural_key:
+    - screener_id
+    - ordinal
+    - symbol
+    filter_dims:
+    - symbol
+    - ordinal
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_growth_tech_equities:
+    display_name: yfinance growth technology equities
+    rest_path: equity/yfinance/growth-tech-equities
+    contract: YfinanceScreenerObservation
+    temporal_kind: snapshot
+    time_field: ordinal
+    natural_key:
+    - screener_id
+    - ordinal
+    - symbol
+    filter_dims:
+    - symbol
+    - ordinal
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_equity_screener:
+    display_name: yfinance custom equity screener
+    rest_path: equity/yfinance/equity-screener
+    contract: YfinanceScreenerObservation
+    temporal_kind: snapshot
+    time_field: ordinal
+    natural_key:
+    - screener_id
+    - ordinal
+    - symbol
+    filter_dims:
+    - symbol
+    - ordinal
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_key_metrics:
+    display_name: yfinance valuation measures
+    rest_path: equity/yfinance/key-metrics
+    contract: YfinanceKeyMetricObservation
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - symbol
+    - period_kind
+    - period_ending
+    filter_dims:
+    - symbol
+    - period_kind
+    - period_ending
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_options_chains:
+    display_name: yfinance dated options chain
+    rest_path: derivatives/yfinance/options-chains
+    contract: YfinanceOptionChainObservation
+    temporal_kind: snapshot
+    time_field: expiration_date
+    natural_key:
+    - symbol
+    - expiration_date
+    - option_type
+    - contract_symbol
+    filter_dims:
+    - symbol
+    - expiration_date
+    - option_type
+    storage_mode: transient
+    permissions:
+    - query
+  yfinance_price_target_consensus:
+    display_name: yfinance current analyst price-target consensus
+    rest_path: equity/yfinance/price-target-consensus
+    contract: YfinancePriceTargetConsensus
+    temporal_kind: snapshot
+    time_field: retrieved_at_utc
+    natural_key:
+    - symbol
+    - retrieved_at_utc
+    filter_dims:
+    - symbol
+    storage_mode: transient
+    permissions:
+    - query
+  government_us_commodity_psd_data:
+    display_name: USDA PSD annual commodity data
+    rest_path: macro/government-us/commodity-psd-data
+    contract: CommodityPsdData
+    temporal_kind: series
+    time_field: marketing_year
+    natural_key:
+    - region
+    - country
+    - commodity
+    - attribute
+    - marketing_year
+    filter_dims:
+    - region
+    - country
+    - commodity
+    - attribute
+    - marketing_year
+    - unit
+    storage_mode: transient
+    permissions:
+    - query
+  government_us_commodity_psd_report:
+    display_name: USDA PSD circular report document
+    rest_path: macro/government-us/commodity-psd-report
+    contract: CommodityPsdReport
+    temporal_kind: document
+    time_field: null
+    natural_key:
+    - content
+    filter_dims: []
+    storage_mode: transient
+    permissions:
+    - query
+  government_us_treasury_auctions:
+    display_name: U.S. Treasury securities auction records
+    rest_path: fixedincome/government-us/treasury-auctions
+    contract: TreasuryAuction
+    temporal_kind: event
+    time_field: auction_date
+    natural_key:
+    - cusip
+    - auction_date
+    filter_dims:
+    - cusip
+    - security_type
+    - auction_date
+    storage_mode: transient
+    permissions:
+    - query
+  government_us_weather_bulletin:
+    display_name: NOAA/NWS weather bulletin product
+    rest_path: weather/government-us/bulletin
+    contract: WeatherBulletin
+    temporal_kind: event
+    time_field: issuance_time
+    natural_key:
+    - id
+    filter_dims:
+    - product_code
+    - issuing_office
+    - issuance_time
+    storage_mode: transient
+    permissions:
+    - query
+  government_us_weather_bulletin_download:
+    display_name: NOAA/NWS bulletin source document download
+    rest_path: weather/government-us/bulletin-download
+    contract: WeatherBulletinDownload
+    temporal_kind: document
+    time_field: null
+    natural_key:
+    - content
+    filter_dims: []
+    storage_mode: transient
+    permissions:
+    - query
+  finra_otc_aggregate:
+    display_name: FINRA latest weekly OTC/ATS aggregates
+    rest_path: equity/finra/otc-aggregate
+    contract: OTCAggregate
+    temporal_kind: series
+    time_field: update_date
+    natural_key:
+    - symbol
+    - update_date
+    filter_dims:
+    - symbol
+    - update_date
+    storage_mode: transient
+    permissions:
+    - query
+  finra_equity_short_interest:
+    display_name: FINRA consolidated OTC equity short interest
+    rest_path: equity/finra/short-interest
+    contract: EquityShortInterest
+    temporal_kind: series
+    time_field: settlement_date
+    natural_key:
+    - symbol
+    - settlement_date
+    filter_dims:
+    - symbol
+    - settlement_date
+    - market_class
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_calendar_events:
+    display_name: FMP公司事件日历
+    rest_path: market/fmp/calendar-events
+    contract: FmpCalendarEvent
+    temporal_kind: event
+    time_field: date
+    natural_key:
+    - date
+    - symbol
+    filter_dims:
+    - date
+    - symbol
+    storage_mode: transient
+    permissions:
+    - query
+    priority: null
+  fmp_ipo_calendar:
+    display_name: FMP CalendarIpo
+    rest_path: market/fmp/ipo-calendar
+    contract: IpoCalendarEvent
+    priority: null
+    temporal_kind: event
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    filter_dims:
+    - symbol
+    - date
+    - exchange
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_splits_calendar:
+    display_name: FMP CalendarSplits
+    rest_path: market/fmp/splits-calendar
+    contract: SplitsCalendarEvent
+    priority: null
+    temporal_kind: event
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    - numerator
+    - denominator
+    - split_type
+    filter_dims:
+    - symbol
+    - date
+    - split_type
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_economic_calendar:
+    display_name: FMP EconomicCalendar
+    rest_path: market/fmp/economic-calendar
+    contract: EconomicCalendarEvent
+    priority: null
+    temporal_kind: event
+    time_field: date
+    natural_key:
+    - date
+    - country
+    - event
+    - currency
+    filter_dims:
+    - date
+    - country
+    - event
+    - currency
+    - impact
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_treasury_rates:
+    display_name: FMP TreasuryRates
+    rest_path: market/fmp/treasury-rates
+    contract: TreasuryRateObservation
+    priority: null
+    temporal_kind: series
+    time_field: date
+    natural_key:
+    - date
+    filter_dims:
+    - date
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_market_risk_premium:
+    display_name: FMP RiskPremium
+    rest_path: market/fmp/market-risk-premium
+    contract: MarketRiskPremium
+    priority: null
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - country
+    filter_dims:
+    - country
+    - continent
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_analyst_estimates:
+    display_name: FMP AnalystEstimates
+    rest_path: market/fmp/analyst-estimates
+    contract: AnalystEstimate
+    priority: null
+    temporal_kind: series
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    filter_dims:
+    - symbol
+    - date
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_forward_ebitda_estimates:
+    display_name: FMP ForwardEbitdaEstimates
+    rest_path: market/fmp/forward-ebitda-estimates
+    contract: ForwardEbitdaEstimate
+    priority: null
+    temporal_kind: series
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    filter_dims:
+    - symbol
+    - date
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_forward_eps_estimates:
+    display_name: FMP ForwardEpsEstimates
+    rest_path: market/fmp/forward-eps-estimates
+    contract: ForwardEpsEstimate
+    priority: null
+    temporal_kind: series
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    filter_dims:
+    - symbol
+    - date
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_esg_score:
+    display_name: FMP EsgScore
+    rest_path: market/fmp/esg-score
+    contract: FmpEsgScore
+    priority: null
+    temporal_kind: event
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    - accepted_date
+    - form_type
+    filter_dims:
+    - symbol
+    - date
+    - accepted_date
+    - form_type
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_nport_disclosure:
+    display_name: FMP NportDisclosure
+    rest_path: market/fmp/nport-disclosure
+    contract: NportDisclosureHolding
+    priority: null
+    temporal_kind: event
+    time_field: date
+    natural_key:
+    - fund_symbol
+    - cik
+    - date
+    - symbol
+    - cusip
+    - title
+    filter_dims:
+    - fund_symbol
+    - symbol
+    - cik
+    - date
+    - accepted_date
+    - asset_category
+    - issuer_category
+    - investment_country
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_yield_curve:
+    display_name: FMP YieldCurve
+    rest_path: market/fmp/yield-curve
+    contract: FmpYieldCurveObservation
+    priority: null
+    temporal_kind: series
+    time_field: date
+    natural_key:
+    - date
+    - maturity
+    filter_dims:
+    - date
+    - maturity
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_balance_sheet:
+    display_name: FMP BalanceSheet
+    rest_path: market/fmp/balance-sheet-statement
+    contract: BalanceSheet
+    priority: null
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - symbol
+    - period_ending
+    - fiscal_period
+    filter_dims:
+    - symbol
+    - period_ending
+    - fiscal_year
+    - fiscal_period
+    - reported_currency
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_balance_sheet_growth:
+    display_name: FMP BalanceSheetGrowth
+    rest_path: market/fmp/balance-sheet-statement-growth
+    contract: BalanceSheetGrowth
+    priority: null
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - symbol
+    - period_ending
+    - fiscal_period
+    filter_dims:
+    - symbol
+    - period_ending
+    - fiscal_year
+    - fiscal_period
+    - reported_currency
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_cash_flow_statement:
+    display_name: FMP CashFlowStatement
+    rest_path: market/fmp/cash-flow-statement
+    contract: CashFlowStatement
+    priority: null
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - symbol
+    - period_ending
+    - fiscal_period
+    filter_dims:
+    - symbol
+    - period_ending
+    - fiscal_year
+    - fiscal_period
+    - reported_currency
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_cash_flow_statement_growth:
+    display_name: FMP CashFlowStatementGrowth
+    rest_path: market/fmp/cash-flow-statement-growth
+    contract: CashFlowStatementGrowth
+    priority: null
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - symbol
+    - period_ending
+    - fiscal_period
+    filter_dims:
+    - symbol
+    - period_ending
+    - fiscal_year
+    - fiscal_period
+    - reported_currency
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_income_statement:
+    display_name: FMP IncomeStatement
+    rest_path: market/fmp/income-statement
+    contract: IncomeStatement
+    priority: null
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - symbol
+    - period_ending
+    - fiscal_period
+    filter_dims:
+    - symbol
+    - period_ending
+    - fiscal_year
+    - fiscal_period
+    - reported_currency
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_income_statement_growth:
+    display_name: FMP IncomeStatementGrowth
+    rest_path: market/fmp/income-statement-growth
+    contract: IncomeStatementGrowth
+    priority: null
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - symbol
+    - period_ending
+    - fiscal_period
+    filter_dims:
+    - symbol
+    - period_ending
+    - fiscal_year
+    - fiscal_period
+    - reported_currency
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_financial_ratios:
+    display_name: FMP FinancialRatios
+    rest_path: market/fmp/ratios
+    contract: FinancialRatios
+    priority: null
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - symbol
+    - period_ending
+    - fiscal_period
+    filter_dims:
+    - symbol
+    - period_ending
+    - fiscal_year
+    - fiscal_period
+    - currency
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_key_metrics:
+    display_name: FMP KeyMetrics
+    rest_path: market/fmp/key-metrics
+    contract: KeyMetrics
+    priority: null
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - symbol
+    - period_ending
+    - fiscal_period
+    filter_dims:
+    - symbol
+    - period_ending
+    - fiscal_year
+    - fiscal_period
+    - currency
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_revenue_business_line:
+    display_name: FMP RevenueBusinessLine
+    rest_path: market/fmp/revenue-product-segmentation
+    contract: RevenueBusinessLine
+    priority: null
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - symbol
+    - period_ending
+    - fiscal_period
+    - business_line
+    filter_dims:
+    - symbol
+    - period_ending
+    - fiscal_year
+    - fiscal_period
+    - business_line
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_revenue_geographic:
+    display_name: FMP RevenueGeographic
+    rest_path: market/fmp/revenue-geographic-segmentation
+    contract: RevenueGeographic
+    priority: null
+    temporal_kind: series
+    time_field: period_ending
+    natural_key:
+    - symbol
+    - period_ending
+    - fiscal_period
+    - region
+    filter_dims:
+    - symbol
+    - period_ending
+    - fiscal_year
+    - fiscal_period
+    - region
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_company_news:
+    priority: null
+    display_name: FMP公司新闻
+    rest_path: fmp/company-news
+    contract: FmpCompanyNews
+    temporal_kind: event
+    time_field: published_date
+    natural_key:
+    - symbol
+    - published_date
+    - url
+    filter_dims:
+    - symbol
+    - published_date
+    - publisher
+    - site
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_world_news:
+    priority: null
+    display_name: FMP全球新闻
+    rest_path: fmp/world-news
+    contract: FmpWorldNews
+    temporal_kind: event
+    time_field: published_date
+    natural_key:
+    - published_date
+    - url
+    filter_dims:
+    - symbol
+    - published_date
+    - publisher
+    - site
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_company_filings:
+    priority: null
+    display_name: FMP公司SEC文件
+    rest_path: fmp/company-filings
+    contract: FmpCompanyFiling
+    temporal_kind: event
+    time_field: filing_date
+    natural_key:
+    - symbol
+    - cik
+    - filing_date
+    - form_type
+    - link
+    filter_dims:
+    - symbol
+    - filing_date
+    - accepted_date
+    - form_type
+    - has_financials
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_discovery_filings:
+    priority: null
+    display_name: FMP SEC文件发现
+    rest_path: fmp/discovery-filings
+    contract: FmpDiscoveryFiling
+    temporal_kind: event
+    time_field: filing_date
+    natural_key:
+    - cik
+    - filing_date
+    - form_type
+    - link
+    filter_dims:
+    - symbol
+    - cik
+    - filing_date
+    - accepted_date
+    - form_type
+    - has_financials
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_historical_dividends:
+    priority: null
+    display_name: FMP历史分红
+    rest_path: fmp/historical-dividends
+    contract: FmpHistoricalDividend
+    temporal_kind: event
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    filter_dims:
+    - symbol
+    - date
+    - record_date
+    - payment_date
+    - declaration_date
+    - frequency
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_historical_splits:
+    priority: null
+    display_name: FMP历史拆股
+    rest_path: fmp/historical-splits
+    contract: FmpHistoricalSplit
+    temporal_kind: event
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    - numerator
+    - denominator
+    filter_dims:
+    - symbol
+    - date
+    - split_type
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_historical_eps:
+    priority: null
+    display_name: FMP历史EPS
+    rest_path: fmp/historical-eps
+    contract: FmpHistoricalEps
+    temporal_kind: event
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    filter_dims:
+    - symbol
+    - date
+    - last_updated
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_historical_employees:
+    priority: null
+    display_name: FMP历史员工数
+    rest_path: fmp/historical-employees
+    contract: FmpHistoricalEmployee
+    temporal_kind: event
+    time_field: filing_date
+    natural_key:
+    - symbol
+    - period_of_report
+    - filing_date
+    - form_type
+    filter_dims:
+    - symbol
+    - period_of_report
+    - filing_date
+    - form_type
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_historical_market_cap:
+    priority: null
+    display_name: FMP历史市值
+    rest_path: fmp/historical-market-cap
+    contract: FmpHistoricalMarketCap
+    temporal_kind: series
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    filter_dims:
+    - symbol
+    - date
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_earnings_call_transcript:
+    priority: null
+    display_name: FMP业绩电话会文字稿
+    rest_path: fmp/earnings-call-transcript
+    contract: FmpEarningsCallTranscript
+    temporal_kind: event
+    time_field: date
+    natural_key:
+    - symbol
+    - year
+    - period
+    filter_dims:
+    - symbol
+    - year
+    - period
+    - date
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_price_target:
+    priority: null
+    display_name: FMP分析师目标价
+    rest_path: fmp/price-target
+    contract: FmpPriceTarget
+    temporal_kind: event
+    time_field: published_date
+    natural_key:
+    - symbol
+    - published_date
+    - analyst_name
+    - price_target
+    filter_dims:
+    - symbol
+    - published_date
+    - analyst_name
+    - analyst_company
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_price_target_consensus:
+    priority: null
+    display_name: FMP目标价共识
+    rest_path: fmp/price-target-consensus
+    contract: FmpPriceTargetConsensus
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_key_executives:
+    priority: null
+    display_name: FMP关键高管
+    rest_path: fmp/key-executives
+    contract: FmpKeyExecutive
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    - title
+    - name
+    filter_dims:
+    - symbol
+    - title
+    - active
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_executive_compensation:
+    priority: null
+    display_name: FMP高管薪酬
+    rest_path: fmp/executive-compensation
+    contract: FmpExecutiveCompensation
+    temporal_kind: event
+    time_field: filing_date
+    natural_key:
+    - symbol
+    - name_and_position
+    - year
+    - filing_date
+    filter_dims:
+    - symbol
+    - year
+    - filing_date
+    - name_and_position
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_government_trades:
+    priority: null
+    display_name: FMP政府人员交易披露
+    rest_path: fmp/government-trades
+    contract: FmpGovernmentTrade
+    temporal_kind: event
+    time_field: disclosure_date
+    natural_key:
+    - chamber
+    - member_id
+    - symbol
+    - transaction_date
+    - asset_description
+    - amount
+    filter_dims:
+    - symbol
+    - chamber
+    - member_id
+    - disclosure_date
+    - transaction_date
+    - transaction_type
+    - asset_type
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_insider_trading:
+    priority: null
+    display_name: FMP公司内幕交易
+    rest_path: fmp/insider-trading
+    contract: FmpInsiderTrade
+    temporal_kind: event
+    time_field: transaction_date
+    natural_key:
+    - symbol
+    - reporting_cik
+    - filing_date
+    - transaction_date
+    - transaction_type
+    - securities_transacted
+    filter_dims:
+    - symbol
+    - reporting_cik
+    - company_cik
+    - filing_date
+    - transaction_date
+    - transaction_type
+    - form_type
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_institutional_ownership:
+    priority: null
+    display_name: FMP机构持仓汇总
+    rest_path: fmp/institutional-ownership
+    contract: FmpInstitutionalOwnership
+    temporal_kind: series
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    filter_dims:
+    - symbol
+    - date
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_equity_ownership:
+    priority: null
+    display_name: FMP受益所有权披露
+    rest_path: fmp/equity-ownership
+    contract: FmpEquityOwnership
+    temporal_kind: event
+    time_field: filing_date
+    natural_key:
+    - symbol
+    - cik
+    - cusip
+    - filing_date
+    - type_of_reporting_person
+    filter_dims:
+    - symbol
+    - cik
+    - cusip
+    - filing_date
+    - accepted_date
+    - type_of_reporting_person
+    storage_mode: transient
+    permissions:
+    - query
+
+  fmp_etf_countries:
+    display_name: FMP ETF国家配置
+    rest_path: market/fmp/etf/countries
+    contract: FmpEtfCountry
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    - country
+    filter_dims:
+    - symbol
+    - country
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_etf_equity_exposure:
+    display_name: FMP股票ETF持仓暴露
+    rest_path: market/fmp/etf/equity-exposure
+    contract: FmpEtfEquityExposure
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - equity_symbol
+    - etf_symbol
+    filter_dims:
+    - equity_symbol
+    - etf_symbol
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_etf_holdings:
+    display_name: FMP ETF持仓
+    rest_path: market/fmp/etf/holdings
+    contract: FmpEtfHolding
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    - asset
+    filter_dims:
+    - symbol
+    - asset
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_etf_info:
+    display_name: FMP ETF基本信息
+    rest_path: market/fmp/etf/info
+    contract: FmpEtfInfo
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - asset_class
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_etf_price_performance:
+    display_name: FMP ETF单日价格表现
+    rest_path: market/fmp/etf/price-performance
+    contract: FmpEtfPricePerformance
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_etf_search:
+    display_name: FMP ETF目录检索
+    rest_path: market/fmp/etf/search
+    contract: FmpEtfSearch
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - name
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_etf_sectors:
+    display_name: FMP ETF行业配置
+    rest_path: market/fmp/etf/sectors
+    contract: FmpEtfSector
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    - sector
+    filter_dims:
+    - symbol
+    - sector
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_etf_historical:
+    display_name: FMP ETF日历史价格
+    rest_path: market/fmp/etf/historical
+    contract: FmpEtfHistorical
+    temporal_kind: series
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    filter_dims:
+    - symbol
+    - date
+    storage_mode: upsert
+    permissions:
+    - query
+    - store
+    - export
+  fmp_crypto_historical:
+    display_name: FMP加密货币历史日线
+    rest_path: market/fmp/crypto-historical
+    contract: CryptoHistorical
+    priority: null
+    temporal_kind: series
+    time_field: date
+    natural_key:
+    - date
+    filter_dims:
+    - date
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_crypto_search:
+    display_name: FMP加密货币目录搜索
+    rest_path: market/fmp/crypto-search
+    contract: CryptoSearch
+    priority: null
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - name
+    - exchange
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_currency_historical:
+    display_name: FMP外汇历史日线
+    rest_path: market/fmp/currency-historical
+    contract: CurrencyHistorical
+    priority: null
+    temporal_kind: series
+    time_field: date
+    natural_key:
+    - date
+    filter_dims:
+    - date
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_currency_pairs:
+    display_name: FMP外汇货币对目录
+    rest_path: market/fmp/currency-pairs
+    contract: CurrencyPair
+    priority: null
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - name
+    - from_currency
+    - to_currency
+    - from_name
+    - to_name
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_currency_snapshots:
+    display_name: FMP外汇实时报价
+    rest_path: market/fmp/currency-snapshots
+    contract: CurrencySnapshot
+    priority: null
+    temporal_kind: snapshot
+    time_field: last_rate_timestamp
+    natural_key:
+    - base_currency
+    - counter_currency
+    filter_dims:
+    - base_currency
+    - counter_currency
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_equity_active:
+    display_name: FMP活跃股票
+    rest_path: market/fmp/equity-active
+    contract: EquityActive
+    priority: null
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - exchange
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_equity_peers:
+    display_name: FMP股票同行公司
+    rest_path: market/fmp/equity-peers
+    contract: EquityPeers
+    priority: null
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_equity_info:
+    display_name: FMP公司概况
+    rest_path: market/fmp/equity-info
+    contract: EquityInfo
+    priority: null
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - sector
+    - industry_category
+    - hq_country
+    - is_etf
+    - is_fund
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_equity_gainers:
+    display_name: FMP股票涨幅榜
+    rest_path: market/fmp/equity-gainers
+    contract: EquityGainers
+    priority: null
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - exchange
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_equity_losers:
+    display_name: FMP股票跌幅榜
+    rest_path: market/fmp/equity-losers
+    contract: EquityLosers
+    priority: null
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - exchange
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_equity_screener:
+    display_name: FMP股票筛选器
+    rest_path: market/fmp/equity-screener
+    contract: EquityScreener
+    priority: null
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - sector
+    - industry
+    - exchange
+    - exchange_name
+    - country
+    - is_etf
+    - is_fund
+    - actively_trading
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_market_snapshots:
+    display_name: FMP股票行情快照
+    rest_path: market/fmp/market-snapshots
+    contract: MarketSnapshot
+    priority: null
+    temporal_kind: snapshot
+    time_field: last_price_timestamp
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    - exchange
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_price_performance:
+    display_name: FMP股票区间涨跌幅
+    rest_path: market/fmp/price-performance
+    contract: PricePerformance
+    priority: null
+    temporal_kind: snapshot
+    time_field: null
+    natural_key:
+    - symbol
+    filter_dims:
+    - symbol
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_share_statistics:
+    display_name: FMP股票流通股与总股本
+    rest_path: market/fmp/share-statistics
+    contract: ShareStatistics
+    priority: null
+    temporal_kind: snapshot
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    filter_dims:
+    - symbol
+    - date
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_index_constituents:
+    display_name: FMP指数成分及历史变更
+    rest_path: market/fmp/index-constituents
+    contract: FmpIndexConstituent
+    priority: null
+    temporal_kind: event
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    filter_dims:
+    - symbol
+    - name
+    - sector
+    - industry
+    - headquarter
+    - date_added
+    - cik
+    - founded
+    - removed_symbol
+    - reason
+    - date
+    storage_mode: transient
+    permissions:
+    - query
+  fmp_index_historical:
+    display_name: FMP指数历史日线
+    rest_path: market/fmp/index-historical
+    contract: IndexHistorical
+    priority: null
+    temporal_kind: series
+    time_field: date
+    natural_key:
+    - symbol
+    - date
+    filter_dims:
+    - symbol
+    - date
+    storage_mode: transient
+    permissions:
+    - query
+
+  # C100 central wiring batch: exact typed DomainSpecs from frozen source handoffs.
+  intrinio_equity_info:
+    display_name: "Intrinio 公司信息"
+    rest_path: "intrinio/equity-info"
+    contract: "IntrinioEquityInfo"
+    priority: null
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["symbol"]
+    filter_dims: ["symbol"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_equity_historical:
+    display_name: "Intrinio 证券历史价格"
+    rest_path: "intrinio/equity-historical"
+    contract: "IntrinioEquityHistorical"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["symbol", "date"]
+    filter_dims: ["symbol", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_etf_info:
+    display_name: "Intrinio ETF 信息"
+    rest_path: "intrinio/etf-info"
+    contract: "IntrinioEtfInfo"
+    priority: null
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["symbol"]
+    filter_dims: ["symbol", "exchange"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_historical_market_cap:
+    display_name: "Intrinio 历史市值"
+    rest_path: "intrinio/historical-market-cap"
+    contract: "IntrinioHistoricalMarketCap"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["symbol", "date"]
+    filter_dims: ["symbol", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_index_historical:
+    display_name: "Intrinio 指数历史水平"
+    rest_path: "intrinio/index-historical"
+    contract: "IntrinioIndexHistorical"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["symbol", "date"]
+    filter_dims: ["symbol", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_equity_quote:
+    display_name: "Intrinio 证券报价"
+    rest_path: "intrinio/equity-quote"
+    contract: "IntrinioEquityQuote"
+    priority: null
+    temporal_kind: "snapshot"
+    time_field: "updated_on"
+    natural_key: ["symbol", "updated_on"]
+    filter_dims: ["symbol", "exchange", "source"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_etf_historical:
+    display_name: "Intrinio ETF 历史价格"
+    rest_path: "intrinio/etf-historical"
+    contract: "IntrinioEtfHistorical"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["symbol", "date"]
+    filter_dims: ["symbol", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_etf_holdings:
+    display_name: "Intrinio ETF 持仓"
+    rest_path: "intrinio/etf-holdings"
+    contract: "IntrinioEtfHolding"
+    priority: null
+    temporal_kind: "snapshot"
+    time_field: "updated"
+    natural_key: ["symbol", "updated"]
+    filter_dims: ["symbol", "security_type", "updated"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_etf_search:
+    display_name: "Intrinio ETF 搜索"
+    rest_path: "intrinio/etf-search"
+    contract: "IntrinioEtfSearch"
+    priority: null
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["symbol"]
+    filter_dims: ["symbol", "exchange"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_options_chains:
+    display_name: "Intrinio 当前期权链"
+    rest_path: "intrinio/options-chains"
+    contract: "IntrinioOptionsChain"
+    priority: null
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["contract_symbol"]
+    filter_dims: ["underlying_symbol", "expiration", "option_type", "strike"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_options_unusual:
+    display_name: "Intrinio 异常期权活动"
+    rest_path: "intrinio/options-unusual"
+    contract: "IntrinioOptionsUnusual"
+    priority: null
+    temporal_kind: "event"
+    time_field: "trade_timestamp"
+    natural_key: ["contract_symbol", "trade_timestamp", "total_size", "average_price"]
+    filter_dims: ["underlying_symbol", "trade_type", "sentiment", "trade_timestamp"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_price_target_consensus:
+    display_name: "Intrinio 目标价共识"
+    rest_path: "intrinio/price-target-consensus"
+    contract: "IntrinioPriceTargetConsensus"
+    priority: null
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["symbol"]
+    filter_dims: ["symbol", "industry_group_number", "most_recent_date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_share_statistics:
+    display_name: "Intrinio 股本统计"
+    rest_path: "intrinio/share-statistics"
+    contract: "IntrinioShareStatistics"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["symbol", "date"]
+    filter_dims: ["symbol", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_company_news:
+    display_name: "Intrinio Company News"
+    rest_path: "intrinio/company-news"
+    contract: "IntrinioCompanyNews"
+    temporal_kind: "event"
+    time_field: "date"
+    natural_key: ["id"]
+    filter_dims: ["symbols", "source", "sentiment", "topics", "language", "spam"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_world_news:
+    display_name: "Intrinio World News"
+    rest_path: "intrinio/world-news"
+    contract: "IntrinioWorldNews"
+    temporal_kind: "event"
+    time_field: "date"
+    natural_key: ["id"]
+    filter_dims: ["symbols", "source", "sentiment", "topics", "language", "spam"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_company_filings:
+    display_name: "Intrinio Company Filings"
+    rest_path: "intrinio/company-filings"
+    contract: "IntrinioCompanyFiling"
+    temporal_kind: "event"
+    time_field: "filing_date"
+    natural_key: ["id"]
+    filter_dims: ["symbol", "cik", "report_type"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_search_attributes:
+    display_name: "Intrinio Search Attributes"
+    rest_path: "intrinio/search-attributes"
+    contract: "IntrinioSearchAttribute"
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["id"]
+    filter_dims: ["name", "tag", "statement_code", "statement_type", "parent_name", "sequence", "factor", "transaction", "type", "unit"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_latest_attributes:
+    display_name: "Intrinio Latest Attributes"
+    rest_path: "intrinio/latest-attributes"
+    contract: "IntrinioLatestAttribute"
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["symbol", "tag"]
+    filter_dims: ["symbol", "tag"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_historical_attributes:
+    display_name: "Intrinio Historical Attributes"
+    rest_path: "intrinio/historical-attributes"
+    contract: "IntrinioHistoricalAttribute"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "symbol", "tag"]
+    filter_dims: ["symbol", "tag"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_fred_series:
+    display_name: "Intrinio FRED Series"
+    rest_path: "intrinio/fred-series"
+    contract: "IntrinioFredSeries"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date"]
+    filter_dims: []
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_balance_sheet:
+    display_name: "Intrinio Balance Sheet"
+    rest_path: "financial/intrinio/balance-sheet"
+    contract: "IntrinioBalanceSheet"
+    priority: null
+    temporal_kind: "series"
+    time_field: "period_ending"
+    natural_key: ["symbol", "fundamental_id"]
+    filter_dims: ["symbol", "period_ending", "fiscal_period", "fiscal_year", "fundamental_type"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_cash_flow_statement:
+    display_name: "Intrinio Cash Flow Statement"
+    rest_path: "financial/intrinio/cash-flow-statement"
+    contract: "IntrinioCashFlowStatement"
+    priority: null
+    temporal_kind: "series"
+    time_field: "period_ending"
+    natural_key: ["symbol", "fundamental_id"]
+    filter_dims: ["symbol", "period_ending", "fiscal_period", "fiscal_year", "fundamental_type"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_income_statement:
+    display_name: "Intrinio Income Statement"
+    rest_path: "financial/intrinio/income-statement"
+    contract: "IntrinioIncomeStatement"
+    priority: null
+    temporal_kind: "series"
+    time_field: "period_ending"
+    natural_key: ["symbol", "fundamental_id"]
+    filter_dims: ["symbol", "period_ending", "fiscal_period", "fiscal_year", "fundamental_type"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_financial_ratios:
+    display_name: "Intrinio Financial Ratios"
+    rest_path: "financial/intrinio/financial-ratios"
+    contract: "IntrinioFinancialRatios"
+    priority: null
+    temporal_kind: "series"
+    time_field: "period_ending"
+    natural_key: ["symbol", "fundamental_id"]
+    filter_dims: ["symbol", "period_ending", "fiscal_period", "fiscal_year"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_key_metrics:
+    display_name: "Intrinio Key Metrics"
+    rest_path: "financial/intrinio/key-metrics"
+    contract: "IntrinioKeyMetrics"
+    priority: null
+    temporal_kind: "series"
+    time_field: "period_ending"
+    natural_key: ["symbol", "fundamental_id"]
+    filter_dims: ["symbol", "period_ending", "fiscal_period", "fiscal_year"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_reported_financials:
+    display_name: "Intrinio Reported Financials"
+    rest_path: "financial/intrinio/reported-financials"
+    contract: "IntrinioReportedFinancials"
+    priority: null
+    temporal_kind: "series"
+    time_field: "period_ending"
+    natural_key: ["symbol", "fundamental_id"]
+    filter_dims: ["symbol", "period_ending", "fiscal_period", "fiscal_year", "statement_code", "fundamental_type"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_forward_ebitda_estimates:
+    display_name: "Intrinio Forward EBITDA Estimates"
+    rest_path: "financial/intrinio/forward-ebitda-estimates"
+    contract: "IntrinioForwardEbitdaEstimate"
+    priority: null
+    temporal_kind: "series"
+    time_field: "last_updated"
+    natural_key: ["symbol", "estimate_year", "estimate_month", "source_period", "conensus_type", "last_updated"]
+    filter_dims: ["symbol", "estimate_year", "estimate_month", "source_period", "conensus_type"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_forward_eps_estimates:
+    display_name: "Intrinio Forward EPS Estimates"
+    rest_path: "financial/intrinio/forward-eps-estimates"
+    contract: "IntrinioForwardEpsEstimate"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["symbol", "date", "fiscal_year", "fiscal_period", "calendar_year", "calendar_period"]
+    filter_dims: ["symbol", "date", "fiscal_year", "fiscal_period", "calendar_year", "calendar_period"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_forward_pe_estimates:
+    display_name: "Intrinio Forward P/E Estimates"
+    rest_path: "financial/intrinio/forward-pe-estimates"
+    contract: "IntrinioForwardPeEstimate"
+    priority: null
+    temporal_kind: "snapshot"
+    time_field: "last_updated"
+    natural_key: ["symbol", "last_updated"]
+    filter_dims: ["symbol", "last_updated"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  intrinio_forward_sales_estimates:
+    display_name: "Intrinio Forward Sales Estimates"
+    rest_path: "financial/intrinio/forward-sales-estimates"
+    contract: "IntrinioForwardSalesEstimate"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["symbol", "date", "fiscal_year", "fiscal_period", "calendar_year", "calendar_period"]
+    filter_dims: ["symbol", "date", "fiscal_year", "fiscal_period", "calendar_year", "calendar_period"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  fred_federal_funds_rate:
+    display_name: "FRED Federal Funds Rate"
+    rest_path: "fred/federal-funds-rate"
+    contract: "FredFederalFundsRate"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date"]
+    filter_dims: ["date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  fred_overnight_bank_funding_rate:
+    display_name: "FRED Overnight Bank Funding Rate"
+    rest_path: "fred/overnight-bank-funding-rate"
+    contract: "FredOvernightBankFundingRate"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date"]
+    filter_dims: ["date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  fred_release_table:
+    display_name: "FRED release table"
+    rest_path: "fred/release-table"
+    contract: "FredReleaseTable"
+    priority: null
+    temporal_kind: "document"
+    time_field: null
+    natural_key: ["element_id", "date"]
+    filter_dims: ["element_id", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  fred_economic_calendar:
+    display_name: "FRED economic release calendar"
+    rest_path: "fred/economic-calendar"
+    contract: "FredEconomicCalendar"
+    priority: null
+    temporal_kind: "event"
+    time_field: "date"
+    natural_key: ["release_id", "date"]
+    filter_dims: ["date", "release_id", "event"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  fred_regional:
+    display_name: "FRED GeoFRED regional data"
+    rest_path: "fred/regional"
+    contract: "FredRegional"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "code", "series_id"]
+    filter_dims: ["date", "region", "code", "series_id"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  fred_balance_of_payments:
+    display_name: "FRED U.S. balance of payments"
+    rest_path: "fred/balance-of-payments"
+    contract: "FredBalanceOfPayments"
+    priority: null
+    temporal_kind: "series"
+    time_field: "period"
+    natural_key: ["period"]
+    filter_dims: ["period"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  fred_projections:
+    display_name: "FRED FOMC projections"
+    rest_path: "fred/projections"
+    contract: "FredPROJECTIONS"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date"]
+    filter_dims: ["date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  iorb:
+    display_name: "FRED Interest on Reserve Balances"
+    rest_path: "fred/iorb"
+    contract: "FredIorbObservation"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["series_id", "date", "realtime_start", "realtime_end"]
+    filter_dims: ["date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  fred_consumer_price_index:
+    display_name: "FRED U.S. Consumer Price Index"
+    rest_path: "fred/economy/cpi"
+    contract: "FredConsumerPriceIndex"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "country"]
+    filter_dims: ["date", "country"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  fred_nonfarm_payrolls:
+    display_name: "FRED Nonfarm Payroll Employment"
+    rest_path: "fred/economy/nonfarm-payrolls"
+    contract: "FredNonFarmPayroll"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "symbol"]
+    filter_dims: ["date", "symbol"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  fred_personal_consumption_expenditures:
+    display_name: "FRED Personal Income and Consumption Expenditures"
+    rest_path: "fred/economy/personal-consumption-expenditures"
+    contract: "FredPersonalConsumptionExpenditure"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "symbol"]
+    filter_dims: ["date", "symbol"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  fred_university_of_michigan:
+    display_name: "FRED University of Michigan Surveys"
+    rest_path: "fred/economy/university-of-michigan"
+    contract: "FredUniversityOfMichigan"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date"]
+    filter_dims: ["date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  fred_mortgage_indices:
+    display_name: "FRED Optimal Blue Mortgage Indices"
+    rest_path: "fred/fixedincome/mortgage-indices"
+    contract: "FredMortgageIndex"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "symbol"]
+    filter_dims: ["date", "symbol"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  fred_manufacturing_outlook_ny:
+    display_name: "FRED Empire State Manufacturing Outlook"
+    rest_path: "fred/economy/survey/manufacturing-outlook-ny"
+    contract: "FredManufacturingOutlookNY"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "topic"]
+    filter_dims: ["date", "topic"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  fred_manufacturing_outlook_texas:
+    display_name: "FRED Texas Manufacturing Outlook"
+    rest_path: "fred/economy/survey/manufacturing-outlook-texas"
+    contract: "FredManufacturingOutlookTexas"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "topic"]
+    filter_dims: ["date", "topic"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  fred_survey_of_economic_conditions_chicago:
+    display_name: "FRED Chicago Survey of Economic Conditions"
+    rest_path: "fred/economy/survey/chicago-economic-conditions"
+    contract: "FredSurveyOfEconomicConditionsChicago"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date"]
+    filter_dims: ["date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  federal_reserve_yield_curve:
+    display_name: "Federal Reserve Treasury Yield Curve"
+    rest_path: "macro/federal-reserve-yield-curve"
+    contract: "FederalReserveYieldCurveObservation"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "maturity"]
+    filter_dims: ["maturity"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  federal_reserve_primary_dealer_fails:
+    display_name: "Federal Reserve Primary Dealer Fails"
+    rest_path: "macro/federal-reserve-primary-dealer-fails"
+    contract: "PrimaryDealerFails"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "symbol"]
+    filter_dims: []
+    storage_mode: "upsert"
+    permissions: ["query"]
+  federal_reserve_primary_dealer_positioning:
+    display_name: "Federal Reserve Primary Dealer Positioning"
+    rest_path: "macro/federal-reserve-primary-dealer-positioning"
+    contract: "PrimaryDealerPositioning"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "symbol"]
+    filter_dims: []
+    storage_mode: "upsert"
+    permissions: ["query"]
+  central_bank_holdings:
+    display_name: "Federal Reserve SOMA Holdings"
+    rest_path: "macro/federal-reserve-central-bank-holdings"
+    contract: "CentralBankHoldings"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "record_type", "security_type", "cusip"]
+    filter_dims: ["record_type", "security_type", "cusip"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  inflation_expectations:
+    display_name: "Federal Reserve Inflation Expectations"
+    rest_path: "macro/federal-reserve-inflation-expectations"
+    contract: "InflationExpectations"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date"]
+    filter_dims: []
+    storage_mode: "transient"
+    permissions: ["query"]
+  total_factor_productivity:
+    display_name: "Federal Reserve Total Factor Productivity"
+    rest_path: "macro/federal-reserve-total-factor-productivity"
+    contract: "TotalFactorProductivity"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "variable"]
+    filter_dims: ["variable"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  federal_reserve_fomc_documents:
+    display_name: "Federal Reserve FOMC Documents"
+    rest_path: "macro/federal-reserve-fomc-documents"
+    contract: "FederalReserveFomcDocument"
+    temporal_kind: "event"
+    time_field: "date"
+    natural_key: ["date", "doc_type", "doc_format", "url"]
+    filter_dims: ["doc_type", "doc_format"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  nasdaq_calendar_dividend:
+    display_name: "Nasdaq股息日历"
+    rest_path: "market/nasdaq/calendar-dividend"
+    contract: "NasdaqCalendarDividend"
+    temporal_kind: "event"
+    time_field: "ex_dividend_date"
+    natural_key: ["symbol", "ex_dividend_date"]
+    filter_dims: ["symbol", "ex_dividend_date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  nasdaq_calendar_earnings:
+    display_name: "Nasdaq财报日历"
+    rest_path: "market/nasdaq/calendar-earnings"
+    contract: "NasdaqCalendarEarnings"
+    temporal_kind: "event"
+    time_field: "report_date"
+    natural_key: ["symbol", "report_date"]
+    filter_dims: ["symbol", "report_date", "reporting_time"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  nasdaq_calendar_ipo:
+    display_name: "Nasdaq IPO日历"
+    rest_path: "market/nasdaq/calendar-ipo"
+    contract: "NasdaqCalendarIpo"
+    temporal_kind: "event"
+    time_field: "ipo_date"
+    natural_key: ["symbol", "ipo_date", "deal_status"]
+    filter_dims: ["symbol", "ipo_date", "deal_status"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  nasdaq_company_filings:
+    display_name: "Nasdaq公司申报文件"
+    rest_path: "company/nasdaq/filings"
+    contract: "NasdaqCompanyFiling"
+    temporal_kind: "document"
+    time_field: "filing_date"
+    natural_key: ["filing_date", "report_url"]
+    filter_dims: ["filing_date", "report_type", "period_ending"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  nasdaq_economic_calendar:
+    display_name: "Nasdaq经济日历"
+    rest_path: "macro/nasdaq/economic-calendar"
+    contract: "NasdaqEconomicEvent"
+    temporal_kind: "event"
+    time_field: "date"
+    natural_key: ["date", "country", "event"]
+    filter_dims: ["date", "country", "category", "event", "importance"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  nasdaq_equity_search:
+    display_name: "Nasdaq证券目录检索"
+    rest_path: "market/nasdaq/equity-search"
+    contract: "NasdaqEquitySearch"
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["symbol", "exchange"]
+    filter_dims: ["symbol", "name", "exchange", "market_category", "etf"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  nasdaq_equity_screener:
+    display_name: "Nasdaq股票筛选"
+    rest_path: "market/nasdaq/equity-screener"
+    contract: "NasdaqEquityScreener"
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["symbol"]
+    filter_dims: ["symbol", "name", "change_percent", "market_cap"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  nasdaq_historical_dividends:
+    display_name: "Nasdaq历史股息"
+    rest_path: "market/nasdaq/historical-dividends"
+    contract: "NasdaqHistoricalDividend"
+    temporal_kind: "series"
+    time_field: "ex_dividend_date"
+    natural_key: ["symbol", "ex_dividend_date", "dividend_type"]
+    filter_dims: ["symbol", "ex_dividend_date", "dividend_type", "currency"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  nasdaq_top_retail:
+    display_name: "Nasdaq散户活动Top榜"
+    rest_path: "market/nasdaq/top-retail"
+    contract: "NasdaqTopRetail"
+    temporal_kind: "event"
+    time_field: "date"
+    natural_key: ["date", "symbol"]
+    filter_dims: ["date", "symbol", "sentiment"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  economy_imf_available_indicators:
+    display_name: "IMF 指标目录（按指定数据流）"
+    rest_path: "macro/imf/available-indicators"
+    contract: "ImfAvailableIndicator"
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["dataflow_id", "dimension_id", "symbol"]
+    filter_dims: ["symbol_root", "symbol", "country", "iso", "description", "frequency", "agency_id", "dataflow_id", "dataflow_name", "structure_id", "dimension_id"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  economy_imf_cpi:
+    display_name: "IMF 消费者价格指数"
+    rest_path: "macro/imf/cpi"
+    contract: "ImfConsumerPriceIndex"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["series_id", "date"]
+    filter_dims: ["series_id", "date", "country_code", "expenditure"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  economy_imf_direction_of_trade:
+    display_name: "IMF 双边货物贸易"
+    rest_path: "macro/imf/direction-of-trade"
+    contract: "ImfDirectionOfTrade"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["symbol", "date"]
+    filter_dims: ["symbol", "date", "country_code", "counterpart_code", "unit"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  economy_imf_indicators:
+    display_name: "IMF 宏观经济指标"
+    rest_path: "macro/imf/economic-indicators"
+    contract: "ImfEconomicIndicator"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["symbol", "country_code", "date"]
+    filter_dims: ["symbol_root", "symbol", "country_code", "date", "unit"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  economy_oecd_cli:
+    display_name: "OECD 综合领先指标"
+    rest_path: "macro/oecd/composite-leading-indicator"
+    contract: "OecdCompositeLeadingIndicator"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["country", "date"]
+    filter_dims: ["country", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  economy_oecd_cpi:
+    display_name: "OECD 消费者价格指数"
+    rest_path: "macro/oecd/consumer-price-index"
+    contract: "OecdConsumerPriceIndex"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["country", "date", "expenditure"]
+    filter_dims: ["country", "date", "expenditure"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  economy_oecd_interest_rates:
+    display_name: "OECD 国家利率"
+    rest_path: "macro/oecd/country-interest-rates"
+    contract: "OecdCountryInterestRate"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["country", "date"]
+    filter_dims: ["country", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  economy_oecd_gdp_nominal:
+    display_name: "OECD 名义国内生产总值"
+    rest_path: "macro/oecd/gdp-nominal"
+    contract: "OecdGdpNominal"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["country", "date"]
+    filter_dims: ["country", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  economy_oecd_gdp_real:
+    display_name: "OECD 实际国内生产总值"
+    rest_path: "macro/oecd/gdp-real"
+    contract: "OecdGdpReal"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["country", "date"]
+    filter_dims: ["country", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  economy_oecd_gdp_forecast:
+    display_name: "OECD 国内生产总值预测"
+    rest_path: "macro/oecd/gdp-forecast"
+    contract: "OecdGdpForecast"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["country", "date"]
+    filter_dims: ["country", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  economy_oecd_house_price_index:
+    display_name: "OECD 房价指数"
+    rest_path: "macro/oecd/house-price-index"
+    contract: "OecdHousePriceIndex"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["country", "date"]
+    filter_dims: ["country", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  economy_oecd_share_price_index:
+    display_name: "OECD 股票价格指数"
+    rest_path: "macro/oecd/share-price-index"
+    contract: "OecdSharePriceIndex"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["country", "date"]
+    filter_dims: ["country", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  economy_oecd_unemployment:
+    display_name: "OECD 失业率"
+    rest_path: "macro/oecd/unemployment"
+    contract: "OecdUnemployment"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["country", "date"]
+    filter_dims: ["country", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  cftc_commitment_of_traders:
+    display_name: "CFTC Commitments of Traders"
+    rest_path: "cftc/commitment-of-traders"
+    contract: "COT"
+    priority: "P2"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "cftc_contract_market_code", "report_type", "futonly_or_combined"]
+    filter_dims: ["date", "cftc_contract_market_code", "report_type", "futonly_or_combined"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  cftc_market_directory:
+    display_name: "CFTC COT Market Directory"
+    rest_path: "cftc/market-directory"
+    contract: "COTSearch"
+    priority: "P2"
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["code"]
+    filter_dims: ["code", "category", "subcategory"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  energy_petroleum_status_report:
+    display_name: "EIA Weekly Petroleum Status Report"
+    rest_path: "eia/petroleum-status-report"
+    contract: "PetroleumStatusReport"
+    priority: "P1"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "table", "symbol"]
+    filter_dims: ["date", "table", "symbol"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  cboe_equity_historical:
+    display_name: "Cboe 股票历史日线"
+    rest_path: "cboe/equity/historical"
+    contract: "CboeEquityHistorical"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["symbol", "date"]
+    filter_dims: ["symbol", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  cboe_etf_historical:
+    display_name: "Cboe ETF 历史日线"
+    rest_path: "cboe/etf/historical"
+    contract: "CboeEtfHistorical"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["symbol", "date"]
+    filter_dims: ["symbol", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  cboe_equity_quote:
+    display_name: "Cboe 股票行情快照"
+    rest_path: "cboe/equity/quote"
+    contract: "CboeEquityQuote"
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["symbol"]
+    filter_dims: ["symbol"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  cboe_options_chains:
+    display_name: "Cboe 期权链快照"
+    rest_path: "cboe/options/chains"
+    contract: "CboeOptionsChains"
+    temporal_kind: "snapshot"
+    time_field: "eod_date"
+    natural_key: ["underlying_symbol", "contract_symbol", "eod_date"]
+    filter_dims: ["underlying_symbol", "expiration", "strike", "option_type"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  famafrench_breakpoints:
+    display_name: "Fama/French美国断点"
+    rest_path: "market/famafrench/breakpoints"
+    contract: "FamaFrenchBreakpoint"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date"]
+    filter_dims: ["date", "num_firms", "num_firms_less_than_0", "num_firms_greater_than_0", "percentile_5", "percentile_10", "percentile_15", "percentile_20", "percentile_25", "percentile_30", "percentile_35", "percentile_40", "percentile_45", "percentile_50", "percentile_55", "percentile_60", "percentile_65", "percentile_70", "percentile_75", "percentile_80", "percentile_85", "percentile_90", "percentile_95", "percentile_100"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  famafrench_country_portfolio_returns:
+    display_name: "Fama/French国家组合收益"
+    rest_path: "market/famafrench/country-portfolio-returns"
+    contract: "FamaFrenchCountryPortfolioReturn"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date"]
+    filter_dims: ["date", "mkt", "firms", "bm", "be_me_high", "be_me_low", "ep", "e_p_high", "e_p_low", "ce_p", "ce_p_high", "ce_p_low", "yld", "yld_high", "yld_low", "yld_zero"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  famafrench_factors:
+    display_name: "Fama/French因子"
+    rest_path: "market/famafrench/factors"
+    contract: "FamaFrenchFactorObservation"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date"]
+    filter_dims: ["date", "mkt_rf", "smb", "hml", "rmw", "cma", "rf", "mom", "wml", "lt_rev", "st_rev"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  famafrench_international_index_returns:
+    display_name: "Fama/French国际指数组合收益"
+    rest_path: "market/famafrench/international-index-returns"
+    contract: "FamaFrenchInternationalIndexReturn"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date"]
+    filter_dims: ["date", "mkt", "firms", "bm", "be_me_high", "be_me_low", "ep", "e_p_high", "e_p_low", "ce_p", "ce_p_high", "ce_p_low", "yld", "yld_high", "yld_low", "yld_zero"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  famafrench_regional_portfolio_returns:
+    display_name: "Fama/French区域组合收益"
+    rest_path: "market/famafrench/regional-portfolio-returns"
+    contract: "FamaFrenchPortfolioReturn"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "portfolio", "measure"]
+    filter_dims: ["date", "portfolio", "measure", "value"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  famafrench_us_portfolio_returns:
+    display_name: "Fama/French美国组合收益"
+    rest_path: "market/famafrench/us-portfolio-returns"
+    contract: "FamaFrenchPortfolioReturn"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "portfolio", "measure"]
+    filter_dims: ["date", "portfolio", "measure", "value"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  tiingo_equity_historical:
+    display_name: "Tiingo股票历史行情"
+    rest_path: "market/tiingo/equity-historical"
+    contract: "TiingoEquityHistorical"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["symbol", "date"]
+    filter_dims: ["symbol", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  tiingo_etf_historical:
+    display_name: "Tiingo ETF历史行情"
+    rest_path: "market/tiingo/etf-historical"
+    contract: "TiingoEtfHistorical"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["symbol", "date"]
+    filter_dims: ["symbol", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  tiingo_currency_historical:
+    display_name: "Tiingo外汇历史行情"
+    rest_path: "market/tiingo/currency-historical"
+    contract: "TiingoCurrencyHistorical"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["symbol", "date"]
+    filter_dims: ["symbol", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  tiingo_trailing_dividend_yield:
+    display_name: "Tiingo股息分配率"
+    rest_path: "market/tiingo/trailing-dividend-yield"
+    contract: "TiingoTrailingDividendYield"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["symbol", "date"]
+    filter_dims: ["symbol", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  tiingo_company_news:
+    display_name: "Tiingo公司新闻"
+    rest_path: "news/tiingo/company-news"
+    contract: "TiingoCompanyNews"
+    temporal_kind: "event"
+    time_field: "published_date"
+    natural_key: ["id"]
+    filter_dims: ["symbol", "published_date", "source"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  tiingo_world_news:
+    display_name: "Tiingo全球新闻"
+    rest_path: "news/tiingo/world-news"
+    contract: "TiingoWorldNews"
+    temporal_kind: "event"
+    time_field: "published_date"
+    natural_key: ["id"]
+    filter_dims: ["published_date", "source"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  econdb_economic_indicators:
+    display_name: "EconDB宏观经济指标"
+    rest_path: "macro/econdb/economic-indicators"
+    contract: "EconDBEconomicIndicator"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "symbol"]
+    filter_dims: ["date", "symbol", "country"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  econdb_gdp_nominal:
+    display_name: "EconDB名义GDP"
+    rest_path: "macro/econdb/gdp-nominal"
+    contract: "EconDBGdpNominal"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "country", "symbol"]
+    filter_dims: ["date", "country", "symbol"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  econdb_gdp_real:
+    display_name: "EconDB实际GDP"
+    rest_path: "macro/econdb/gdp-real"
+    contract: "EconDBGdpReal"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "country", "symbol"]
+    filter_dims: ["date", "country", "symbol"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  econdb_port_volume:
+    display_name: "EconDB港口集装箱量"
+    rest_path: "shipping/econdb/port-volume"
+    contract: "EconDBPortVolume"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "port_code"]
+    filter_dims: ["date", "port_code", "country_code"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  econdb_yield_curve:
+    display_name: "EconDB收益率曲线"
+    rest_path: "fixedincome/econdb/yield-curve"
+    contract: "EconDBYieldCurve"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "maturity", "symbol"]
+    filter_dims: ["date", "maturity", "symbol", "country"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  benzinga_analyst_search:
+    display_name: "Benzinga分析师评级统计"
+    rest_path: "equity/benzinga/analyst-search"
+    contract: "BenzingaAnalystSearch"
+    temporal_kind: "snapshot"
+    time_field: "updated"
+    natural_key: ["analyst_id"]
+    filter_dims: ["analyst_id", "firm_id"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  benzinga_company_news:
+    display_name: "Benzinga公司新闻"
+    rest_path: "news/benzinga/company-news"
+    contract: "BenzingaCompanyNews"
+    temporal_kind: "event"
+    time_field: "created"
+    natural_key: ["id"]
+    filter_dims: ["symbol", "created"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  benzinga_world_news:
+    display_name: "Benzinga全球新闻"
+    rest_path: "news/benzinga/world-news"
+    contract: "BenzingaWorldNews"
+    temporal_kind: "event"
+    time_field: "created"
+    natural_key: ["id"]
+    filter_dims: ["created", "stocks", "channels"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  euro_short_term_rate:
+    display_name: "FRED Euro Short-Term Rate"
+    rest_path: "fred/euro-short-term-rate"
+    contract: "FredEuroShortTermRate"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date"]
+    filter_dims: ["date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  commercial_paper:
+    display_name: "FRED Commercial Paper Rates"
+    rest_path: "fred/commercial-paper"
+    contract: "FredCommercialPaper"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "symbol"]
+    filter_dims: ["date", "symbol", "maturity", "asset_type"]
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  spot_rate:
+    display_name: "FRED Corporate Spot and Par Rates"
+    rest_path: "fred/spot-rate"
+    contract: "FredSpotRate"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "category", "maturity"]
+    filter_dims: ["date", "category", "maturity"]
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  hqm_corporate_bond:
+    display_name: "FRED High Quality Market Corporate Bond Curve"
+    rest_path: "fred/high-quality-market-corporate-bond"
+    contract: "FredHighQualityMarketCorporateBond"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "yield_curve", "maturity"]
+    filter_dims: ["date", "yield_curve", "maturity"]
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  bond_indices:
+    display_name: "FRED Bond Indices"
+    rest_path: "fred/bond-indices"
+    contract: "FredBondIndices"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "symbol"]
+    filter_dims: ["date", "symbol", "maturity", "title"]
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  commodity_spot_prices:
+    display_name: "FRED Commodity Spot Prices"
+    rest_path: "fred/commodity/spot-prices"
+    contract: "FredCommoditySpotPrices"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "commodity"]
+    filter_dims: ["date", "commodity", "symbol"]
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  fred_yield_curve:
+    display_name: "FRED Yield Curve"
+    rest_path: "fred/yield-curve"
+    contract: "FredYieldCurve"
+    priority: null
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "yield_curve_type", "maturity"]
+    filter_dims: ["date", "yield_curve_type", "maturity"]
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  energy_short_term_energy_outlook:
+    display_name: "EIA Short-Term Energy Outlook"
+    rest_path: "eia/short-term-energy-outlook"
+    contract: "ShortTermEnergyOutlook"
+    priority: "P1"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["release_date", "table", "symbol", "order", "date"]
+    filter_dims: ["release_date", "is_forecast", "table", "symbol", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+  fred_retail_prices:
+    display_name: FRED Retail Average Prices
+    rest_path: fred/economy/retail-prices
+    contract: FredRetailPrice
+    temporal_kind: series
+    time_field: date
+    natural_key: [date, symbol]
+    filter_dims: [symbol, country]
+    storage_mode: transient
+    permissions: [query]
+  sec_institutions_search:
+    display_name: SEC Form 13F institution directory
+    rest_path: equity/sec-institutions-search
+    contract: SecInstitutionSearchResult
+    temporal_kind: snapshot
+    time_field: as_of
+    natural_key: [cik, source_batch]
+    filter_dims: [cik, as_of, source_batch]
+    storage_mode: transient
+    permissions: [query]
+  intrinio_etf_price_performance:
+    display_name: Intrinio ETF price performance
+    rest_path: etf/intrinio-price-performance
+    contract: IntrinioEtfPricePerformance
+    temporal_kind: snapshot
+    time_field: updated
+    natural_key: [symbol, updated, return_type, adjustment]
+    filter_dims: [symbol, updated, return_type, adjustment]
+    storage_mode: transient
+    permissions: [query]
+  intrinio_market_snapshots:
+    display_name: Intrinio current Nasdaq market snapshots
+    rest_path: market/intrinio-snapshots
+    contract: IntrinioMarketSnapshot
+    temporal_kind: snapshot
+    time_field: null
+    natural_key: [exchange, symbol]
+    filter_dims: [exchange, symbol]
+    storage_mode: transient
+    permissions: [query]
+  cboe_index_historical:
+    display_name: Cboe volatility index daily history
+    rest_path: index/cboe-index-historical
+    contract: CboeIndexHistorical
+    temporal_kind: series
+    time_field: date
+    natural_key: [symbol, date]
+    filter_dims: [symbol, date, calls_volume, puts_volume, total_options_volume]
+    storage_mode: transient
+    permissions: [query]
+
+  finviz_compare_groups:
+    display_name: "Finviz行业板块比较"
+    rest_path: "market/finviz/compare-groups"
+    contract: "FinvizGroupComparison"
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["group", "name"]
+    filter_dims: ["group"]
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  finviz_equity_info:
+    display_name: "Finviz公司资料"
+    rest_path: "company/finviz/equity-info"
+    contract: "FinvizEquityInfo"
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["symbol"]
+    filter_dims: ["symbol"]
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  finviz_equity_screener:
+    display_name: "Finviz美股筛选器第一页（11字段子集）"
+    rest_path: "market/finviz/equity-screener-first-page"
+    contract: "FinvizEquityScreener"
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["rank", "symbol"]
+    filter_dims: []
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  finviz_key_metrics:
+    display_name: "Finviz股票关键指标"
+    rest_path: "market/finviz/key-metrics"
+    contract: "FinvizKeyMetrics"
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["symbol"]
+    filter_dims: ["symbol"]
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  finviz_price_target:
+    display_name: "Finviz分析师目标价事件"
+    rest_path: "market/finviz/price-target"
+    contract: "FinvizPriceTarget"
+    temporal_kind: "event"
+    time_field: "date"
+    natural_key: ["symbol", "date", "analyst", "action", "price_target_usd"]
+    filter_dims: ["symbol", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  finviz_price_performance:
+    display_name: "Finviz股票价格表现"
+    rest_path: "market/finviz/price-performance"
+    contract: "FinvizPricePerformance"
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["symbol"]
+    filter_dims: ["symbol"]
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  finviz_etf_price_performance:
+    display_name: "Finviz ETF价格表现"
+    rest_path: "market/finviz/etf-price-performance"
+    contract: "FinvizEtfPricePerformance"
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["symbol"]
+    filter_dims: ["symbol"]
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  imf_port_info:
+    display_name: "IMF PortWatch 港口元数据"
+    rest_path: "macro/imf-port-info"
+    contract: "ImfPortInfo"
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["port_code"]
+    filter_dims: ["country_code", "continent"]
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  imf_port_volume:
+    display_name: "IMF PortWatch 每日港口活动与贸易量"
+    rest_path: "macro/imf-port-volume"
+    contract: "ImfPortVolume"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["port_code", "date"]
+    filter_dims: ["port_code", "country_code", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  imf_maritime_chokepoint_info:
+    display_name: "IMF PortWatch 海上咽喉点元数据"
+    rest_path: "macro/imf-maritime-chokepoint-info"
+    contract: "ImfMaritimeChokePointInfo"
+    temporal_kind: "snapshot"
+    time_field: null
+    natural_key: ["chokepoint_code"]
+    filter_dims: []
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  imf_maritime_chokepoint_volume:
+    display_name: "IMF PortWatch 每日海上咽喉点流量"
+    rest_path: "macro/imf-maritime-chokepoint-volume"
+    contract: "ImfMaritimeChokePointVolume"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["chokepoint", "date"]
+    filter_dims: ["chokepoint", "date"]
+    storage_mode: "transient"
+    permissions: ["query"]
+
+  senior_loan_officer_survey:
+    display_name: "FRED Senior Loan Officer Survey"
+    rest_path: "fred/economy/survey/senior-loan-officer"
+    contract: "FredSeniorLoanOfficerSurvey"
+    temporal_kind: "series"
+    time_field: "date"
+    natural_key: ["date", "symbol", "category", "transform"]
+    filter_dims: ["date", "symbol", "category", "transform"]
+    storage_mode: "transient"
+    permissions: ["query"]

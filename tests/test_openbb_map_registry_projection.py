@@ -77,6 +77,82 @@ CANONICAL_SCENARIOS = {
         "intrinio",
         "InsiderTrading",
     ): "内部人交易：按公司代码取回内幕交易申报，并把每笔申报的交易逐条展开成行",
+    ("benzinga", "PriceTarget"): "目标价评级：按代码与评级动作取回 benzinga 分析师目标价日历单页",
+    (
+        "econdb",
+        "AvailableIndicators",
+    ): "指标目录名册：取出 econdb 静态 main_tickers.csv，剔除 OECD 旧块并按最新更新日期倒序",
+    (
+        "tiingo",
+        "CryptoHistorical",
+    ): "加密货币历史价格：一次请求取回多个 ticker 的嵌套 priceData 并按日期升序展开成行",
+    (
+        "federal_reserve",
+        "OvernightBankFundingRate",
+    ): "隔夜银行融资利率日表：取出纽约联储 OBFR JSON 的五个百分序列并折成小数",
+    ("fmp", "AvailableIndices"): "全球股票指数目录查询",
+    ("fmp", "CalendarDividend"): "按明确日期窗口读取股息日历",
+    ("fmp", "CalendarEarnings"): "按明确日期窗口读取业绩日历",
+    ("fmp", "EtfCountries"): "按ETF代码读取国家资产配置",
+    ("fmp", "EtfEquityExposure"): "按股票代码读取其ETF持仓暴露",
+    ("fmp", "EtfHoldings"): "按ETF代码读取成分持仓",
+    ("fmp", "EtfInfo"): "按ETF代码查询基本信息",
+    ("fmp", "EtfPricePerformance"): "按ETF代码查询单日价格表现",
+    ("fmp", "EtfSearch"): "按代码或名称检索ETF目录",
+    ("fmp", "EtfSectors"): "按ETF代码读取行业资产配置",
+    ("fmp", "EtfHistorical"): "按ETF代码和日期窗口读取日历史价格",
+    ("tradier", "EquityHistorical"): "带显式日期窗口的美股历史日线、周线或月线",
+    ("tradier", "EtfHistorical"): "先核验ETF类型再读取显式日期窗口历史价格",
+    ("tradier", "EquityQuote"): "当前美股报价快照，不接受历史日期窗口",
+    ("tradier", "EquitySearch"): "按部分代码或公司名称检索证券目录",
+    ("tradier", "OptionsChains"): "按标的和到期日读取有界期权链，可选Greeks",
+    (
+        "tradingeconomics",
+        "EconomicCalendar",
+    ): "经济事件日历：按国家、分组、重要度、日期窗或 Trading Economics calendar ID 查询",
+    ("multpl", "SP500Multiples"): "S&P 500 多估值历史：按公开表格中的估值指标和日期返回估算标记",
+    (
+        "alpha_vantage",
+        "EquityHistorical",
+    ): "用于按股票代码分析区间内的历史行情，支持日、周、月及原生分钟级 OHLCV 序列。",
+    (
+        "alpha_vantage",
+        "EtfHistorical",
+    ): "用于按 ETF 代码分析基金历史价格与成交量，支持日、周、月及原生分钟级 OHLCV 序列。",
+    (
+        "alpha_vantage",
+        "HistoricalEps",
+    ): "用于追踪公司年度或季度每股收益及其相对市场预期的历史变化。",
+    (
+        "fred",
+        "TreasuryConstantMaturity",
+    ): "按固定期限查询美国国债恒定期限收益率",
+    ("fred", "SelectedTreasuryBill"): "按固定期限查询美国国库券收益率",
+    (
+        "fred",
+        "SelectedTreasuryConstantMaturity",
+    ): "按固定期限查询美国国债恒定期限收益率",
+    ("fred", "Ameribor"): "查询有官方FRED序列映射的AMERIBOR指标",
+    (
+        "fred",
+        "DiscountWindowPrimaryCreditRate",
+    ): "查询美联储一级信贷贴现窗利率",
+    ("fred", "EuropeanCentralBankInterestRates"): "查询欧洲央行政策利率",
+    ("fred", "TipsYields"): "查询美国通胀保值国债恒定期限收益率",
+    ("congress_gov", "CongressBills"): "按国会届次和法案类型查询官方分页法案列表",
+    ("congress_gov", "CongressBillInfo"): "查询单项法案详情及明确选择的官方子资源",
+    ("congress_gov", "CongressBillText"): "按API公布的文本版本下载法案原始文档",
+    ("congress_gov", "CongressAmendments"): "按届次和修正案类型查询官方分页修正案列表",
+    (
+        "congress_gov",
+        "CongressAmendmentInfo",
+    ): "查询单项修正案详情及明确选择的官方子资源",
+    ("congress_gov", "CongressAmendmentText"): "按API公布的文本版本下载修正案原始文档",
+    ("congress_gov", "CongressCommitteeInfo"): "查询官方委员会身份、历史、分委会及活动计数",
+    (
+        "congress_gov",
+        "CongressCommitteeDocuments",
+    ): "查询官方委员会法案、报告、提名、通信或会议文档元数据",
 }
 
 

@@ -1,7 +1,7 @@
 """Source-faithful contracts for the Fed's H.6, H.15, Svensson curve and reference-rate rows.
 
 These are the tables and documents the release endpoints publish: the two wide tables behind
-``datadownload/Output.aspx``, the ``feds200628.csv`` fitted-factor curve, and the two
+``datadownload/Output.aspx``, the ``feds200628.csv`` fitted-factor curve, and the three
 York Fed reference-rate JSON feeds, all declared in
 ``opendata/data/providers/federal_reserve/specs.py``. Like the cboe and intrinio engine models
 before them, each declaration gets its own contract family and its own domain, and the declaration
@@ -17,17 +17,21 @@ Field types follow the source, not the wish:
   The eleven maturity columns are ``str | None`` on purpose -- the same body carries its own
   missing-data token ``ND`` in 8003 cells, and a numeric column would refuse those published
   rows. ``None`` is the blank cell; ``"ND"`` stays the token the source printed.
-* The two reference-rate rows are the York Fed JSON feeds, and every number in them is
+* The three reference-rate rows are the York Fed JSON feeds, and every number in them is
   ``float | None``: a cell the feed omits stays absent and the engine reads an absent optional key
   as null, while SOFR spells its gaps ``""``, ``"''"`` and ``"NA"`` which the declaration nulls with
   ``columns.null_sentinel`` ahead of the cast. So the contract sees a number or a null and never a
-  token. ``revision_indicator`` is the one non-numeric column of the pair -- the Fed prints a
-  revision marker there, not a rate.
+  token. ``revision_indicator`` is the one non-numeric column anywhere among them, and the federal
+  funds row owns it alone; the OBFR row prints no revision cell at all -- its ``transform_data``
+  pops the marker before validation -- so that declaration publishes seven fields and no sentinel,
+  because its own validator guards only ``None`` and divides whatever else arrives.
 """
 
 from __future__ import annotations
 
 from datetime import date as date_type
+from decimal import Decimal
+from typing import Literal
 
 from opendata.data.models.base import ContractModel
 
@@ -227,3 +231,167 @@ class FederalReserveSofr(ContractModel):
     percentile_75: float | None = None
     percentile_99: float | None = None
     volume: float | None = None
+
+
+class FederalReserveOvernightBankFundingRate(ContractModel):
+    """One day of the overnight bank funding rate as the York Fed publishes it.
+
+    The 7 fields are ``providers/federal_reserve/specs.py::OVERNIGHT_BANK_FUNDING_RATE``'s columns,
+    the same shape as :class:`FederalReserveSofr` beside it and a different set of reasons. Five of
+    the six numbers are percents the declaration folds to fractions with a ``columns.scale`` stage
+    (rate, percentile_1, percentile_25, percentile_75, percentile_99); ``volume`` is published
+    alongside them in billions of USD and carries no stage, exactly as for SOFR. Every non-date
+    field is nullable because the key can be absent from the body.
+
+    What separates this row from its sibling is the sentinel: SOFR's feed spells its gaps ``""``,
+    ``"''"`` and ``NA`` and the declaration nulls all three ahead of the cast, while this one's
+    validator guards only ``None`` and divides whatever is not None -- so this declaration names no
+    sentinel, and a published token would reach the cast rather than become a null here. That is
+    measured on the cited contract, not assumed from the sibling.
+    """
+
+    date: date_type
+    rate: float | None = None
+    percentile_1: float | None = None
+    percentile_25: float | None = None
+    percentile_75: float | None = None
+    percentile_99: float | None = None
+    volume: float | None = None
+
+
+class FederalReserveYieldCurve(ContractModel):
+    """One published H.15 nominal yield observation in long form.
+
+    H.15 publishes rates as annual percentages in a wide CSV. The dedicated
+    YieldCurve adapter expands its eleven published maturity columns into
+    one row per date and maturity and converts those percentage points to
+    decimal fractions.
+    """
+
+    date: date_type
+    maturity: str
+    rate: float | None = None
+
+
+class FederalReservePrimaryDealerFail(ContractModel):
+    """One New York Fed weekly primary-dealer settlement-fails observation.
+
+    The API's numeric text is retained as an exact decimal in millions of
+    U.S. dollars. ``key_id`` and ``description`` preserve the source series
+    identity; New York Fed notes that releases may be revised.
+    """
+
+    date: date_type
+    key_id: str
+    description: str
+    amount_usd_millions: Decimal
+
+
+class FederalReservePrimaryDealerPosition(ContractModel):
+    """One New York Fed weekly primary-dealer position observation.
+
+    The API's numeric text is retained as an exact decimal in millions of
+    U.S. dollars. ``key_id`` and ``description`` preserve the source series
+    identity; New York Fed notes that releases may be revised.
+    """
+
+    date: date_type
+    key_id: str
+    description: str
+    position_usd_millions: Decimal
+
+
+class FederalReserveCentralBankHolding(ContractModel):
+    """One SOMA summary, security detail, or weighted-average-maturity result.
+
+    Monetary amounts use the public holdings contract's thousands-of-USD units. The NY Fed
+    Markets API sends these amounts in dollars, so its adapter divides monetary source values by
+    1,000 using exact ``Decimal`` arithmetic. WAM values remain years. The two WAM fields extend
+    the public data-field list because the public query contract exposes ``wam=True`` while the
+    NY Fed endpoint returns both values.
+    """
+
+    date: date_type
+    security_type: str | None = None
+    description: str | None = None
+    is_aggregated: Literal["Y"] | None = None
+    cusip: str | None = None
+    issuer: str | None = None
+    maturity_date: date_type | None = None
+    term: str | None = None
+    face_value: Decimal | None = None
+    par_value: Decimal | None = None
+    coupon: Decimal | None = None
+    spread: Decimal | None = None
+    percent_outstanding: Decimal | None = None
+    bills: Decimal | None = None
+    frn: Decimal | None = None
+    notes_and_bonds: Decimal | None = None
+    tips: Decimal | None = None
+    mbs: Decimal | None = None
+    cmbs: Decimal | None = None
+    agencies: Decimal | None = None
+    total: Decimal | None = None
+    tips_inflation_compensation: Decimal | None = None
+    change_prior_week: Decimal | None = None
+    change_prior_year: Decimal | None = None
+    wam: float | None = None
+    security_types: tuple[str, ...] | None = None
+
+
+class FederalReserveInflationExpectations(ContractModel):
+    """Quarterly Philadelphia Fed SPF one-year and ten-year inflation expectations."""
+
+    date: date_type
+    infpgdp1yr: float | None = None
+    infcpi1yr: float | None = None
+    infcpi10yr: float | None = None
+
+
+class FederalReserveTotalFactorProductivity(ContractModel):
+    """One quarterly San Francisco Fed productivity workbook observation.
+
+    Growth-rate fields are the source's annualized percentage changes. The
+    vintage date comes from the workbook readme and identifies the revision
+    vintage used for all rows in that file.
+    """
+
+    period: str
+    vintage_date: date_type
+    dY_prod: float | None = None  # noqa: N815 - source workbook column spelling
+    dY_inc: float | None = None  # noqa: N815 - source workbook column spelling
+    dY: float | None = None  # noqa: N815 - source workbook column spelling
+    dhours: float | None = None
+    dLP: float | None = None  # noqa: N815 - source workbook column spelling
+    dk: float | None = None
+    dLQ_BLS_interpolated: float | None = None  # noqa: N815 - source workbook column spelling
+    dLQ_Aaronson_Sullivan: float | None = None  # noqa: N815 - source workbook column spelling
+    dLQ: float | None = None  # noqa: N815 - source workbook column spelling
+    alpha: float | None = None
+    dtfp: float | None = None
+    dutil: float | None = None
+    dtfp_util: float | None = None
+    relativePrice: float | None = None  # noqa: N815 - source workbook column spelling
+    invShare: float | None = None  # noqa: N815 - source workbook column spelling
+    dtfp_I: float | None = None  # noqa: N815 - source workbook column spelling
+    dtfp_C: float | None = None  # noqa: N815 - source workbook column spelling
+    du_invest: float | None = None
+    du_consumption: float | None = None
+    dtfp_I_util: float | None = None  # noqa: N815 - source workbook column spelling
+    dtfp_C_util: float | None = None  # noqa: N815 - source workbook column spelling
+
+
+class FederalReserveFomcDocument(ContractModel):
+    """One official FOMC document link indexed from a Federal Reserve page.
+
+    This contract describes document metadata and the canonical document
+    URL. It does not represent parsed PDF/HTML document contents.
+    """
+
+    year: int
+    document_date: date_type
+    title: str
+    document_type: str
+    format: str
+    url: str
+    meeting_range: str | None = None

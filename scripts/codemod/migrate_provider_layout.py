@@ -70,6 +70,11 @@ _CONTROL_FILES = frozenset(
     }
 )
 _NAMESPACE_RE = re.compile(r"^[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*$")
+LAZY_VENDOR_FACADE_MANUAL_EDIT_REASON = (
+    "Generated lazy flat facade preserves available upstream exports while deferring vendor "
+    "module imports to module-level __getattr__; __dir__ keeps export discovery available "
+    "without eagerly importing the vendored package tree."
+)
 
 
 class MigrationError(RuntimeError):
@@ -975,6 +980,8 @@ def _lazy_vendor_init(
     )
     ast.parse(text)
     return source_header + text.encode("utf-8"), {
+        "manual_edits": True,
+        "manual_edit_reason": LAZY_VENDOR_FACADE_MANUAL_EDIT_REASON,
         "export_count": len(entries),
         "public_export_count": len(public_names),
         "duplicate_export_names": sorted(set(duplicate_names)),

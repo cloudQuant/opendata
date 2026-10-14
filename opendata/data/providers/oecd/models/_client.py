@@ -143,7 +143,9 @@ def fetch_observations(
     status, text = _http_get(url, params, timeout)
     if status != 200:
         raise OecdProviderError("OECD_HTTP_ERROR", status=status, url=url)
-    rows = list(csv.DictReader(io.StringIO(text)))
-    if rows and not {"REF_AREA", "TIME_PERIOD", "OBS_VALUE"} <= set(rows[0]):
+    reader = csv.DictReader(io.StringIO(text))
+    required = {"REF_AREA", "TIME_PERIOD", "OBS_VALUE"}
+    if reader.fieldnames is None or not required <= set(reader.fieldnames):
         raise OecdProviderError("OECD_BAD_RESPONSE", status=status, url=url)
+    rows = list(reader)
     return rows

@@ -1739,66 +1739,83 @@ class TestPartitionMaintenanceJob:
         assert order == ["register", "read"]
 
     def test_the_registered_census_reaches_the_ods_layer(self):
-        """Pin the registry-derived legacy table plan without claiming live table existence."""
+        """Pin the registered census to the independent batch5 identity snapshot."""
+        import json
+        from hashlib import sha256
+        from pathlib import Path
+
         from opendata.data.domains import dwd_table, load_domains, ods_table
         from opendata.data.providers import register_providers
         from opendata.pipeline.alert_matrix import registered_legs, warehouse_tables
 
-        # 每条 ModelSpec 声明都带一个 native model domain，legacy 存储按 _deferred_model_domains
-        # 把这些域从 warehouse 普查里摘出去；这个名字面必须与注册表实测面逐一对应，
-        # 否则下面的 set(ods) == expected_ods 会失配。
-        deferred_domains = {
-            "bls_search",
-            "bls_series",
-            "cboe_available_indices",
-            "cboe_equity_search",
-            "cboe_index_constituent_quotes",
-            "cboe_index_search",
-            "currency_reference_rates",
-            "equity_historical",
-            "equity_quote",
-            "federal_reserve_federal_funds_rate",
-            "federal_reserve_money_measures",
-            "federal_reserve_sofr",
-            "federal_reserve_svensson_yield_curve",
-            "federal_reserve_treasury_rates",
-            "fred_search",
-            "fred_series",
-            "intrinio_calendar_ipo",
-            "intrinio_currency_pairs",
-            "intrinio_equity_search",
-            "intrinio_historical_dividends",
-            "intrinio_insider_trading",
-            "sofr",
-            "sonia",
-            "balance_of_payments",
-            "yield_curve",
+        snapshot_path = Path(__file__).parent / "fixtures" / "registry_batch5_snapshot.json"
+        snapshot_bytes = snapshot_path.read_bytes()
+        assert (
+            sha256(snapshot_bytes).hexdigest()
+            == "7ce0ca613405e10dc3616e2cd1e6964b957331eb068a20ce49d997927b49c9f8"
+        )
+        snapshot = json.loads(snapshot_bytes)
+        counts = snapshot["counts"]
+        expected_domains = set(snapshot["domain_ids"])
+        deferred_domains = set(snapshot["deferred_domain_ids"])
+        expected_legacy_domains = set(snapshot["legacy_dwd_domain_ids"])
+        expected_legs = {
+            (item["domain"], item["source"]) for item in snapshot["source_domain_legs"]
         }
+        expected_deferred_legs = {
+            (item["domain"], item["source"]) for item in snapshot["deferred_source_domain_legs"]
+        }
+        expected_legacy_legs = {
+            (item["domain"], item["source"]) for item in snapshot["legacy_source_domain_legs"]
+        }
+        expected_mapped_ods_legs = {
+            (item["domain"], item["source"]) for item in snapshot["mapped_ods_legs"]
+        }
+        expected_unmapped_ods_legs = {
+            (item["domain"], item["source"]) for item in snapshot["unmapped_ods_legs"]
+        }
+        assert counts["domain_count"] == 337
+        assert counts["deferred_domain_count"] == 317
+        assert counts["registered_source_domain_leg_count"] == 350
+        assert counts["legacy_dwd_domain_count"] == 20
+        assert counts["legacy_source_domain_leg_count"] == 33
+        assert counts["mapped_ods_leg_count"] == 10
+        assert counts["unmapped_ods_leg_count"] == 23
+        assert counts["warehouse_table_catalog_count"] == 53
 
         register_providers()
         tables = warehouse_tables()
         known = set(load_domains())
         legs = registered_legs()
+        actual_legs = {(domain, source) for domain, sources in legs.items() for source in sources}
         measured_domains = known - deferred_domains
         ods = [table for table in tables if table.startswith("ods_")]
-        expected_ods = {
-            ods_table(domain, source) for domain in measured_domains for source in legs[domain]
-        }
-        expected_dwd = {dwd_table(domain) for domain in measured_domains}
+        expected_ods = {ods_table(domain, source) for domain, source in expected_legacy_legs}
+        expected_dwd = {dwd_table(domain) for domain in expected_legacy_domains}
         deferred_legs = sum(len(legs[domain]) for domain in deferred_domains)
 
         assert ods, "census 里没有 ods 表：注册表读空了，维护面覆盖不到落库层"
-        assert len(known) == 45
+        assert known == expected_domains
         assert deferred_domains <= known
         assert set(legs) == known
-        assert sum(len(sources) for sources in legs.values()) == 58
+        assert actual_legs == expected_legs
+        assert measured_domains == expected_legacy_domains
+        assert len(known) == 337
+        assert len(deferred_domains) == 317
+        assert len(actual_legs) == 350
         assert len(measured_domains) == 20
-        assert len(deferred_domains) == 25
-        assert len(measured_domains) + len(deferred_domains) == len(known)
+        assert measured_domains | deferred_domains == known
+        assert expected_deferred_legs | expected_legacy_legs == expected_legs
+        assert expected_deferred_legs.isdisjoint(expected_legacy_legs)
+        assert expected_mapped_ods_legs | expected_unmapped_ods_legs == expected_legacy_legs
+        assert expected_mapped_ods_legs.isdisjoint(expected_unmapped_ods_legs)
         assert len(expected_ods) == 33
         assert len(expected_dwd) == 20
-        assert deferred_legs == 25
-        assert len(expected_ods) + deferred_legs == 58
+        assert len(expected_deferred_legs) == deferred_legs == 317
+        assert len(expected_mapped_ods_legs) == 10
+        assert len(expected_unmapped_ods_legs) == 23
+        assert len(expected_ods) + deferred_legs == 350
+        assert len(tables) == 53
         assert set(ods) == expected_ods
         for table in ods:
             tail = table[len("ods_") :].rsplit("_", 1)

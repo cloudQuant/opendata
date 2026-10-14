@@ -24,6 +24,7 @@ import os
 from collections.abc import Mapping
 from contextlib import suppress
 from dataclasses import dataclass, field, replace
+from datetime import date, datetime
 from typing import TYPE_CHECKING, Any
 
 import httpx
@@ -220,6 +221,7 @@ class Page:
         page: One-based page number.
         page_size: Requested page size.
         count: Rows in this page.
+        pit: PIT query metadata when the API answered an ``as_of`` query.
     """
 
     rows: list[dict[str, Any]]
@@ -227,6 +229,7 @@ class Page:
     page: int = 1
     page_size: int = DEFAULT_PAGE_SIZE
     count: int = 0
+    pit: dict[str, Any] | None = None
 
     def symbols(self) -> set[str]:
         """Return the distinct symbols present in this page.
@@ -417,6 +420,8 @@ class OpendataClient:
         fields: str | Sequence[str] | None = None,
         period: str | None = None,
         report_date: str | None = None,
+        as_of: str | date | datetime | None = None,
+        market: str | None = None,
         page: int = 1,
         page_size: int = DEFAULT_PAGE_SIZE,
     ) -> Page:
@@ -434,6 +439,8 @@ class OpendataClient:
             fields: Field whitelist.
             period: Period filter for domains that need one.
             report_date: Report date filter for financial domains.
+            as_of: Financial PIT selector: ISO date or timezone-aware timestamp.
+            market: Explicit market required when ``as_of`` is supplied.
             page: One-based page number.
             page_size: Rows per page.
 
@@ -453,6 +460,8 @@ class OpendataClient:
                     "fields": _csv(fields),
                     "period": period,
                     "report_date": report_date,
+                    "as_of": as_of.isoformat() if isinstance(as_of, (date, datetime)) else as_of,
+                    "market": market,
                     "page": page,
                     "page_size": page_size,
                 },
@@ -466,6 +475,7 @@ class OpendataClient:
             page=int(data.get("page") or page),
             page_size=int(data.get("page_size") or page_size),
             count=int(data.get("count") or len(rows)),
+            pit=data.get("pit"),
         )
 
     def iter_rows(self, asset_class: str, domain: str, **kwargs: Any) -> Iterator[dict[str, Any]]:  # noqa: ANN401  # forwarded query args
@@ -542,8 +552,16 @@ class OpendataClient:
             All rows across pages.
         """
         kwargs.pop("page", None)
-        kwargs.pop("page_size", None)
-        return list(self.iter_rows("equity", "stock_daily", symbols=symbols, **kwargs))
+        page_size = kwargs.pop("page_size", DEFAULT_PAGE_SIZE)
+        return list(
+            self.iter_rows(
+                "equity",
+                "stock_daily",
+                symbols=symbols,
+                page_size=page_size,
+                **kwargs,
+            )
+        )
 
     def catalog(self) -> list[dict[str, Any]]:
         """List the domains this credential may read (FR-20 / AC-18|02).

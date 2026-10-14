@@ -14,6 +14,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
+from unittest.mock import Mock
 
 import httpx
 import pytest
@@ -124,6 +125,91 @@ def _macro_client(cache: RawResponseCache, adapter: _CountingAdapter):
     # Use the normal thread-local slot, matching the process-shared runtime.
     client._thread_local.session = session
     return client, session
+
+
+def test_use_cache_false_bypasses_explicit_cache_reads_and_writes(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    cache = RawResponseCache(tmp_path, ttl_seconds=60)
+    get_spy = Mock(wraps=cache.get)
+    put_spy = Mock(wraps=cache.put)
+    monkeypatch.setattr(cache, "get", get_spy)
+    monkeypatch.setattr(cache, "put", put_spy)
+    adapter = _CountingAdapter()
+    client, _session = _macro_client(cache, adapter)
+    url = "https://cache.example/uncached"
+
+    first = client.get(url, source="test", use_cache=False)
+    second = client.get(url, source="test", use_cache=False)
+
+    assert first.status_code == second.status_code == 200
+    assert len(adapter.calls) == 2
+    get_spy.assert_not_called()
+    put_spy.assert_not_called()
+    assert not cache.raw_dir.exists()
+
+
+def test_use_cache_false_skips_global_cache_configuration(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def unexpected_cache_configuration() -> RawResponseCache | None:
+        raise AssertionError("cache configuration must be skipped")
+
+    monkeypatch.setattr(
+        "opendata.data.http_client.get_configured_raw_response_cache",
+        unexpected_cache_configuration,
+    )
+    adapter = _CountingAdapter()
+    session = requests.Session()
+    session.trust_env = False
+    session.mount("https://", adapter)
+    client = GovernedHttpClient(
+        HttpClientConfig(rate_limit_per_host=None, max_attempts=1),
+        session=session,
+        sleep=lambda _seconds: None,
+        jitter_fn=lambda: 0.0,
+    )
+
+    response = client.get("https://cache.example/uncached", use_cache=False)
+
+    assert response.status_code == 200
+    assert len(adapter.calls) == 1
+
+
+@pytest.mark.parametrize("entrypoint", ("get", "request"))
+@pytest.mark.parametrize("invalid", (None, 0, 1, "false"))
+def test_use_cache_requires_strict_bool_before_cache_or_transport(
+    monkeypatch: pytest.MonkeyPatch,
+    entrypoint: str,
+    invalid: object,
+) -> None:
+    configuration_calls = 0
+
+    def configured_cache() -> RawResponseCache | None:
+        nonlocal configuration_calls
+        configuration_calls += 1
+        return None
+
+    monkeypatch.setattr(
+        "opendata.data.http_client.get_configured_raw_response_cache", configured_cache
+    )
+    adapter = _CountingAdapter()
+    session = requests.Session()
+    session.trust_env = False
+    session.mount("https://", adapter)
+    client = GovernedHttpClient(
+        HttpClientConfig(rate_limit_per_host=None, max_attempts=1),
+        session=session,
+    )
+
+    with pytest.raises(TypeError, match="use_cache must be a bool"):
+        if entrypoint == "get":
+            client.get("https://cache.example/invalid", use_cache=invalid)
+        else:
+            client.request("GET", "https://cache.example/invalid", use_cache=invalid)
+
+    assert configuration_calls == 0
+    assert adapter.calls == []
 
 
 def test_cache_is_disabled_by_default_and_supports_cache_dir_aliases(

@@ -1,4 +1,4 @@
-"""intrinio's insider-trading feed: one GET per company, every filing's transactions exploded.
+"""intrinio's insider-trading feed: cursor-paged filings with transactions exploded.
 
 The declaration in :data:`~opendata.data.providers.intrinio.specs.INSIDER_TRADING` carries the
 ``{symbol}`` path, the ``transaction_filings`` row key, the per-filing explode that copies the

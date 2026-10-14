@@ -38,6 +38,8 @@ class ThsOptionDailyFetcher(Fetcher[ThsOptionDailyQuery, tuple[Bar, ...]]):
     an independent option series (see ``docs/evidence/C6``).
     """
 
+    canonical_model: ClassVar[str] = "option_daily"
+
     async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(

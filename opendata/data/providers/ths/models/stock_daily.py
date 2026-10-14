@@ -31,6 +31,8 @@ class ThsStockDailyFetcher(Fetcher[StockDailyQuery, tuple[Bar, ...]]):
     cases), which is what the flag means for a first-party client.
     """
 
+    canonical_model: ClassVar[str] = "stock_daily"
+
     async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(

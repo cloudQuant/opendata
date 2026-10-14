@@ -336,6 +336,217 @@ class TestFiveReadings:
             "market",
         }
 
+    async def test_ready_provider_domains_publish_exact_query_service_metadata(
+        self, warehouse
+    ) -> None:
+        """Ready model domains advertise their exact typed query route and semantics."""
+        expected = {
+            "fmp_index_directory": ("fmp", "AvailableIndices", "AvailableIndex"),
+            "fmp_dividend_calendar": (
+                "fmp",
+                "CalendarDividend",
+                "DividendCalendarEvent",
+            ),
+            "fmp_earnings_calendar": (
+                "fmp",
+                "CalendarEarnings",
+                "EarningsCalendarEvent",
+            ),
+            "tradier_equity_historical": (
+                "tradier",
+                "EquityHistorical",
+                "TradierEquityHistorical",
+            ),
+            "tradier_etf_historical": ("tradier", "EtfHistorical", "TradierEtfHistorical"),
+            "tradier_equity_quote": ("tradier", "EquityQuote", "TradierEquityQuote"),
+            "tradier_equity_search": ("tradier", "EquitySearch", "TradierEquitySearch"),
+            "tradier_options_chains": ("tradier", "OptionsChains", "TradierOptionChain"),
+            "economic_calendar": (
+                "tradingeconomics",
+                "EconomicCalendar",
+                "TradingEconomicsEconomicCalendar",
+            ),
+            "sp500_multiples": ("multpl", "SP500Multiples", "SP500Multiples"),
+            "alpha_vantage_equity_historical": (
+                "alpha_vantage",
+                "EquityHistorical",
+                "AlphaVantageEquityHistorical",
+            ),
+            "alpha_vantage_etf_historical": (
+                "alpha_vantage",
+                "EtfHistorical",
+                "AlphaVantageEtfHistorical",
+            ),
+            "alpha_vantage_historical_eps": (
+                "alpha_vantage",
+                "HistoricalEps",
+                "AlphaVantageHistoricalEps",
+            ),
+            "fred_treasury_constant_maturity": (
+                "fred",
+                "TreasuryConstantMaturity",
+                "FredTreasuryConstantMaturity",
+            ),
+            "fred_selected_treasury_bill": (
+                "fred",
+                "SelectedTreasuryBill",
+                "FredSelectedTreasuryBill",
+            ),
+            "fred_selected_treasury_constant_maturity": (
+                "fred",
+                "SelectedTreasuryConstantMaturity",
+                "FredSelectedTreasuryConstantMaturity",
+            ),
+            "fred_ameribor": ("fred", "Ameribor", "FredAmeribor"),
+            "fred_discount_window_primary_credit_rate": (
+                "fred",
+                "DiscountWindowPrimaryCreditRate",
+                "FredDiscountWindowPrimaryCreditRate",
+            ),
+            "fred_european_central_bank_interest_rates": (
+                "fred",
+                "EuropeanCentralBankInterestRates",
+                "FredEuropeanCentralBankInterestRate",
+            ),
+            "fred_tips_yields": ("fred", "TipsYields", "FredTipsYield"),
+            "congress_bills": ("congress_gov", "CongressBills", "CongressBill"),
+            "congress_bill_info": (
+                "congress_gov",
+                "CongressBillInfo",
+                "CongressBillInfo",
+            ),
+            "congress_bill_text": (
+                "congress_gov",
+                "CongressBillText",
+                "CongressBillText",
+            ),
+            "congress_amendments": (
+                "congress_gov",
+                "CongressAmendments",
+                "CongressAmendment",
+            ),
+            "congress_amendment_info": (
+                "congress_gov",
+                "CongressAmendmentInfo",
+                "CongressAmendmentInfo",
+            ),
+            "congress_amendment_text": (
+                "congress_gov",
+                "CongressAmendmentText",
+                "CongressAmendmentText",
+            ),
+            "congress_committee_info": (
+                "congress_gov",
+                "CongressCommitteeInfo",
+                "CongressCommitteeInfo",
+            ),
+            "congress_committee_documents": (
+                "congress_gov",
+                "CongressCommitteeDocuments",
+                "CongressCommitteeDocument",
+            ),
+            "euro_short_term_rate": ("fred", "EuroShortTermRate", "FredEuroShortTermRate"),
+            "commercial_paper": ("fred", "CommercialPaper", "FredCommercialPaper"),
+            "spot_rate": ("fred", "SpotRate", "FredSpotRate"),
+            "hqm_corporate_bond": (
+                "fred",
+                "HighQualityMarketCorporateBond",
+                "FredHighQualityMarketCorporateBond",
+            ),
+            "bond_indices": ("fred", "BondIndices", "FredBondIndices"),
+            "commodity_spot_prices": (
+                "fred",
+                "CommoditySpotPrices",
+                "FredCommoditySpotPrices",
+            ),
+            "fred_yield_curve": ("fred", "YieldCurve", "FredYieldCurve"),
+            "energy_short_term_energy_outlook": (
+                "eia",
+                "ShortTermEnergyOutlook",
+                "ShortTermEnergyOutlook",
+            ),
+            "finviz_compare_groups": ("finviz", "CompareGroups", "FinvizGroupComparison"),
+            "finviz_equity_info": ("finviz", "EquityInfo", "FinvizEquityInfo"),
+            "finviz_key_metrics": ("finviz", "KeyMetrics", "FinvizKeyMetrics"),
+            "finviz_price_target": ("finviz", "PriceTarget", "FinvizPriceTarget"),
+            "imf_port_info": ("imf", "PortInfo", "ImfPortInfo"),
+            "imf_port_volume": ("imf", "PortVolume", "ImfPortVolume"),
+            "imf_maritime_chokepoint_info": (
+                "imf",
+                "MaritimeChokePointInfo",
+                "ImfMaritimeChokePointInfo",
+            ),
+            "imf_maritime_chokepoint_volume": (
+                "imf",
+                "MaritimeChokePointVolume",
+                "ImfMaritimeChokePointVolume",
+            ),
+        }
+        data = await _catalog(warehouse)
+        rows = {row["domain"]: row for row in data["domains"]}
+        domain_specs = load_domains()
+        registry = get_registry()
+
+        for domain, (source, model, _contract) in expected.items():
+            row = rows[domain]
+            spec = domain_specs[domain]
+            assert row["domain_defined"] is True
+            assert row["service_state"] == "provider_query"
+            assert row["reason"] == (
+                "transient_model" if spec.storage_mode == "transient" else "warehouse_not_ready"
+            )
+            assert row["temporal_kind"] == spec.temporal_kind
+            assert row["time_field"] == spec.time_field
+            assert row["natural_key"] == list(spec.natural_key)
+            assert row["filter_dims"] == list(spec.filter_dims)
+            assert row["storage_mode"] == spec.storage_mode
+            assert row["permissions"] == list(spec.permissions)
+            assert (row["layer"], row["table"], row["coverage"], row["quality"]) == (
+                None,
+                None,
+                None,
+                None,
+            )
+
+            capability_rows = [item for item in row["capabilities"] if item["source"] == source]
+            assert len(capability_rows) == 1
+            capability = capability_rows[0]
+            assert capability["verified"] is False
+            assert capability["endpoint"] is None
+            assert capability["model_query_endpoint"] == {
+                "model": model,
+                "method": "POST",
+                "path": f"/api/v1/providers/{source}/models/{model}/query",
+            }
+            fetcher = registry.resolve_model(source, model)
+            assert capability["callable"] == {
+                "module": type(fetcher).__module__,
+                "name": f"{type(fetcher).__name__}.fetch",
+            }
+            query_model = get_type_hints(type(fetcher).transform_query).get("return")
+            query_fields = getattr(query_model, "model_fields", {})
+            expected_parameters = [
+                {
+                    "name": name,
+                    "type": getattr(field.annotation, "__name__", str(field.annotation)),
+                    "required": field.is_required(),
+                    "description": field.description,
+                }
+                for name, field in query_fields.items()
+            ]
+            assert capability["parameters"] == expected_parameters
+            assert row["sources"] == [
+                {
+                    "source": source,
+                    "verified": False,
+                    "table": None,
+                    "status": "unmapped",
+                    "reason": row["reason"],
+                    "latest": None,
+                    "lag_days": None,
+                }
+            ]
+
     async def test_undeclared_model_domains_are_metadata_only(
         self, warehouse, provider_model_domains_unmapped
     ) -> None:

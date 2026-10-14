@@ -51,6 +51,8 @@ class ThsIndexConstituentFetcher(Fetcher[ThsIndexConstituentQuery, tuple[IndexCo
     direction.
     """
 
+    canonical_model: ClassVar[str] = "index_constituent"
+
     async_mode = "bounded_thread"
 
     capability: ClassVar[Capability] = Capability(

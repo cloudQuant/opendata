@@ -8,14 +8,60 @@ PROVIDER = Provider(
     description="OECD SDMX adapter for macroeconomic series.",
     website="https://data-explorer.oecd.org/",
     fetcher_bindings=(
-        LazyFetcherBinding("opendata.data.providers.oecd.models.cpi", "OecdCpiFetcher"),
         LazyFetcherBinding(
-            "opendata.data.providers.oecd.models.unemployment", "OecdUnemploymentFetcher"
+            "opendata.data.providers.oecd.models.cpi",
+            "OecdCpiFetcher",
+            scenario="宏观 CPI（AI 研究 / 资产配置）",
         ),
-        # No engine binding: all nine ledger rows are recorded as not declarable in
-        # ``opendata.data.providers.oecd.specs.NOT_DECLARABLE``, including the two this package
-        # declared last round and retracted when ``declaration_provenance`` showed those
-        # declarations described this repository's own clean-room reader rather than the pinned
-        # upstream models. A row becomes a binding the moment a ``ModelSpec`` for it is added.
+        LazyFetcherBinding(
+            "opendata.data.providers.oecd.models.unemployment",
+            "OecdUnemploymentFetcher",
+            scenario="宏观失业率（AI 研究 / 资产配置）",
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.oecd.models.iter2",
+            "OecdCompositeLeadingIndicatorFetcher",
+            canonical_model_ids=("CompositeLeadingIndicator",),
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.oecd.models.iter2",
+            "OecdConsumerPriceIndexFetcher",
+            canonical_model_ids=("ConsumerPriceIndex",),
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.oecd.models.iter2",
+            "OecdCountryInterestRateFetcher",
+            canonical_model_ids=("CountryInterestRates",),
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.oecd.models.iter2",
+            "OecdGdpNominalFetcher",
+            canonical_model_ids=("GdpNominal",),
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.oecd.models.iter2",
+            "OecdGdpRealFetcher",
+            canonical_model_ids=("GdpReal",),
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.oecd.models.iter2",
+            "OecdGdpForecastFetcher",
+            canonical_model_ids=("GdpForecast",),
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.oecd.models.iter2",
+            "OecdHousePriceIndexFetcher",
+            canonical_model_ids=("HousePriceIndex",),
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.oecd.models.iter2",
+            "OecdSharePriceIndexFetcher",
+            canonical_model_ids=("SharePriceIndex",),
+        ),
+        LazyFetcherBinding(
+            "opendata.data.providers.oecd.models.iter2",
+            "OecdUnemploymentFetcher",
+            canonical_model_ids=("Unemployment",),
+        ),
     ),
 )

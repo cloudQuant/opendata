@@ -28,8 +28,8 @@ version: 1
 upstream_commit: 3e071fcc2cd9f891cac6040ae60296dba76dab46
 upstream_model_count: 350
 unique_upstream_model_count: 202
-registered_source_count: 12
-registered_capability_count: 58
+registered_source_count: 15
+registered_capability_count: 62
 auto_routable_capability_count: 23
 model_implementation_task_status: MIXED
 model_live_verification_status: NOT_RUN
@@ -189,9 +189,10 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 1
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
+    rights_rows: [EconDB（econdb.com 静态名册 CSV）]
   - provider: eia
     batch: P1
     fetchers: 2
@@ -237,7 +238,7 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 5
+    registered_capability_count: 6
     auto_routable_capability_count: 0
     status: 已实现未对照
     rights_rows: [美联储理事会（Board of Governors）]
@@ -320,9 +321,10 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 1
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
+    rights_rows: [Tiingo（api.tiingo.com）]
   - provider: tradingeconomics
     batch: P1
     fetchers: 1
@@ -352,9 +354,10 @@ providers:
     live_verification_status: NOT_RUN
     model_scenario_status: NOT_ASSESSED
     requester_confirmation_status: NOT_ASSESSED
-    registered_capability_count: 0
+    registered_capability_count: 1
     auto_routable_capability_count: 0
-    status: 待实现
+    status: 已实现未对照
+    rights_rows: [Benzinga（Benzinga Pro API）]
   - provider: biztoc
     batch: P2
     fetchers: 1

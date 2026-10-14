@@ -178,6 +178,30 @@ def _sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def _registration_todos(
+    rel: str,
+    record: dict[str, object],
+    *,
+    expected_manual_edits: bool,
+    expected_reason: str | None,
+) -> list[str]:
+    """Require lock provenance to match the replayed manual edit exactly."""
+    manual_edits = record.get("manual_edits", False)
+    reason = record.get("manual_edit_reason")
+    todos: list[str] = []
+    if not isinstance(manual_edits, bool):
+        todos.append(f"{rel}: manual_edits registration must be boolean")
+    elif manual_edits != expected_manual_edits:
+        todos.append(
+            f"{rel}: manual_edits registration does not match generated/ported transformation"
+        )
+    if manual_edits and not (isinstance(reason, str) and reason.strip()):
+        todos.append(f"{rel}: manual edit is not registered with a non-empty reason")
+    if reason != expected_reason:
+        todos.append(f"{rel}: manual edit reason does not match generated/ported transformation")
+    return todos
+
+
 def collect_drift(
     ported_root: Path, lock: UpstreamLock, upstream_repo: Path
 ) -> tuple[list[str], list[dict[str, object]]]:
@@ -219,6 +243,9 @@ def collect_drift(
         ported_sha = _sha256_bytes(ported_bytes)
         if ported.suffix != ".py":
             # Resources are copied verbatim: ported == upstream.
+            todos.extend(
+                _registration_todos(rel, record, expected_manual_edits=False, expected_reason=None)
+            )
             matches = ported_bytes == pristine_bytes
             if not matches:
                 todos.append(f"{rel}: resource differs from the upstream original")
@@ -231,6 +258,7 @@ def collect_drift(
                     "import_rewrites": 0,
                     "string_rewrites": 0,
                     "manual_edits": record.get("manual_edits", False),
+                    "manual_edit_reason": record.get("manual_edit_reason", ""),
                     "replay_matches": matches,
                 }
             )
@@ -238,6 +266,14 @@ def collect_drift(
         if upstream_path == _INIT_UPSTREAM_PATH:
             expected_facade, facade_report = vendor_init_facade(
                 pristine, ported_root, lock.url, lock.commit
+            )
+            todos.extend(
+                _registration_todos(
+                    rel,
+                    record,
+                    expected_manual_edits=facade_report["manual_edits"],
+                    expected_reason=facade_report["manual_edit_reason"],
+                )
             )
             matches = ported_bytes == expected_facade
             if not matches:
@@ -254,12 +290,21 @@ def collect_drift(
                     # sees that, so it is stated here rather than folded into ``import_rewrites``.
                     "facade_export_count": facade_report["export_count"],
                     "manual_edits": record.get("manual_edits", False),
+                    "manual_edit_reason": record.get("manual_edit_reason", ""),
                     "replay_matches": matches,
                 }
             )
             continue
         replay_text = pristine.read_text(encoding="utf-8")
         expected, result = port_source(replay_text, upstream_path, lock.url, lock.commit)
+        todos.extend(
+            _registration_todos(
+                rel,
+                record,
+                expected_manual_edits=result.manual_edits,
+                expected_reason=result.manual_edit_reason,
+            )
+        )
         expected_sha = sha256_text(expected)
         matches = ported_sha == result.ported_sha256 == expected_sha
         if not matches:
@@ -273,6 +318,7 @@ def collect_drift(
                 "import_rewrites": result.import_rewrites,
                 "string_rewrites": result.string_rewrites,
                 "manual_edits": record.get("manual_edits", False),
+                "manual_edit_reason": record.get("manual_edit_reason", ""),
                 "replay_matches": matches,
             }
         )
@@ -306,14 +352,15 @@ def build_report(
         "## 逐文件对照（改写计数与重放一致性）",
         "",
         "| 文件 | 上游路径 | 上游 SHA-256 | 搬运 SHA-256 | import 改写 | 字符串改写 | "
-        "人工改动 | 重放一致 |",
-        "|------|---------|------------|-------------|------------|-----------|---------|---------|",
+        "人工改动 | 人工差异原因 | 重放一致 |",
+        "|------|---------|------------|-------------|------------|-----------|---------|-------------|---------|",
     ]
     lines.extend(
         f"| `{row['path']}` | `{row['upstream_path']}` "
-        f"| `{str(row['upstream_sha256'])[:12]}` | `{str(row['ported_sha256'])[:12]}` "
+        f"| `{row['upstream_sha256']}` | `{row['ported_sha256']}` "
         f"| {row['import_rewrites']} "
         f"| {row['string_rewrites']} | {row['manual_edits']} | "
+        f"{str(row['manual_edit_reason']).replace('|', '&#124;')} | "
         f"{'✓' if row['replay_matches'] else '✗'} |"
         for row in table
     )

@@ -20,8 +20,9 @@ The failure discipline is the census's whole complaint inverted: a shape the pla
 raises :class:`RowExpansionError` with the pointer and record position that made it a shape
 failure, and a row set that came out empty after non-empty input refuses rather than publishing
 the silent zero :func:`~opendata.data.providers._engine.decoders` was written to refuse. An empty
-nested array on one parent record is different input from a missing one: it contributes no rows
-and is a legitimate published answer, while a missing array key is refused.
+source record list is a published empty answer. Within a non-empty parent list, an empty nested
+array contributes no rows and a missing array key is refused; if all non-empty parents yield no
+rows, the expansion still refuses.
 
 Nothing here performs I/O.
 """
@@ -388,11 +389,13 @@ def expand_nested_array(document: object, plan: NestedArrayExpansion) -> list[di
         RowExpansionError: ``MISSING_POINTER``/``NOT_A_RECORD_LIST`` for a records pointer that
             does not reach a list; ``NOT_A_RECORD`` for a parent or child that is not a mapping;
             ``MISSING_POINTER`` for a record that does not carry the child array at all (an empty
-            array is a published answer of no rows and contributes nothing); ``MISSING_POINTER``
-            for a required field path a record does not publish; ``EMPTY_RESULT`` when records
-            exist but no row came out.
+            array contributes no rows); ``MISSING_POINTER`` for a required field path a record does
+            not publish; ``EMPTY_RESULT`` when parent records exist but no row came out. An empty
+            resolved parent list returns an empty result.
     """
     records = _resolve_records(document, plan.records_pointer, plan_field="records")
+    if not records:
+        return []
     rows: list[dict[str, Any]] = []
     for index, record in enumerate(records):
         if not isinstance(record, dict):
@@ -630,9 +633,12 @@ def repoint_records(document: object, plan: RecordRepointPlan) -> list[dict[str,
         RowExpansionError: ``MISSING_POINTER``/``NOT_A_RECORD_LIST`` for a records pointer that
             does not reach a list; ``NOT_A_RECORD`` for a record that is not a mapping;
             ``MISSING_POINTER`` for a required field path the record does not publish;
-            ``EMPTY_RESULT`` when the published record list produced no rows.
+            ``EMPTY_RESULT`` when a non-empty published record list produced no rows. An empty
+            resolved record list returns an empty result.
     """
     records = _resolve_records(document, plan.records_pointer, plan_field="records")
+    if not records:
+        return []
     rows: list[dict[str, Any]] = []
     for index, record in enumerate(records):
         if not isinstance(record, dict):

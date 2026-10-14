@@ -13,7 +13,11 @@ the stored text) is pinned by name below, because reading it wrong would
 report a populated table as missing.
 """
 
+import json
 from datetime import date, datetime, timedelta, timezone
+from hashlib import sha256
+from pathlib import Path
+from typing import Any
 
 import pytest
 from sqlalchemy import Column, Date, MetaData, String, Table, create_engine, event, insert, pool
@@ -24,6 +28,16 @@ from opendata.models.pipeline import ShardStatus
 from opendata.pipeline import alert_matrix
 
 EXPECTED = date(2026, 9, 25)
+_REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+_REGISTRY_SNAPSHOT_PATH = Path(__file__).parent / "fixtures" / "registry_batch5_snapshot.json"
+
+
+def _registry_snapshot() -> dict[str, Any]:
+    snapshot = json.loads(_REGISTRY_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    for relative_path, expected_hash in snapshot["source_hashes_sha256"].items():
+        source_path = _REPOSITORY_ROOT / relative_path
+        assert sha256(source_path.read_bytes()).hexdigest() == expected_hash, relative_path
+    return snapshot
 
 
 @pytest.fixture(autouse=True)
@@ -156,47 +170,41 @@ class TestCollection:
         healthy. Native model domains are accounted for separately from the
         legacy warehouse surface.
         """
+        snapshot = _registry_snapshot()
         reports, scope = alert_matrix.collect_freshness(lagging_warehouse, expected=EXPECTED)
         legs = alert_matrix.registered_legs()
+        expected_domains = set(snapshot["domain_ids"])
+        expected_deferred = tuple(snapshot["deferred_domain_ids"])
+        expected_legs = {
+            (item["domain"], item["source"]) for item in snapshot["source_domain_legs"]
+        }
+        expected_deferred_legs = {
+            (item["domain"], item["source"]) for item in snapshot["deferred_source_domain_legs"]
+        }
+        expected_legacy_legs = {
+            (item["domain"], item["source"]) for item in snapshot["legacy_source_domain_legs"]
+        }
+        actual_legs = {(domain, source) for domain, sources in legs.items() for source in sources}
 
-        assert scope.domains == 20
-        assert scope.deferred_domains == (
-            "balance_of_payments",
-            "bls_search",
-            "bls_series",
-            "cboe_available_indices",
-            "cboe_equity_search",
-            "cboe_index_constituent_quotes",
-            "cboe_index_search",
-            "currency_reference_rates",
-            "equity_historical",
-            "equity_quote",
-            "federal_reserve_federal_funds_rate",
-            "federal_reserve_money_measures",
-            "federal_reserve_sofr",
-            "federal_reserve_svensson_yield_curve",
-            "federal_reserve_treasury_rates",
-            "fred_search",
-            "fred_series",
-            "intrinio_calendar_ipo",
-            "intrinio_currency_pairs",
-            "intrinio_equity_search",
-            "intrinio_historical_dividends",
-            "intrinio_insider_trading",
-            "sofr",
-            "sonia",
-            "yield_curve",
-        )
-        assert scope.deferred_legs == 25
-        assert scope.domains + len(scope.deferred_domains) == len(legs) == 45
-        assert scope.source_legs + scope.unmapped_legs == 33
+        assert set(legs) == expected_domains
+        assert actual_legs == expected_legs
+        assert set(snapshot["legacy_dwd_domain_ids"]) | set(expected_deferred) == expected_domains
+        assert not set(snapshot["legacy_dwd_domain_ids"]) & set(expected_deferred)
+        assert expected_legs == expected_deferred_legs | expected_legacy_legs
+        assert scope.domains == len(snapshot["legacy_dwd_domain_ids"]) == 20
+        assert scope.deferred_domains == expected_deferred
+        assert scope.deferred_legs == len(expected_deferred_legs) == 317
+        assert scope.domains + len(scope.deferred_domains) == len(expected_domains) == 337
+        assert expected_legacy_legs == {
+            (item["domain"], item["source"])
+            for item in snapshot["mapped_ods_legs"] + snapshot["unmapped_ods_legs"]
+        }
+        assert scope.source_legs == len(snapshot["mapped_ods_legs"]) == 10
+        assert scope.unmapped_legs == len(snapshot["unmapped_ods_legs"]) == 23
         assert (
-            scope.source_legs + scope.unmapped_legs + scope.deferred_legs
-            == sum(len(v) for v in legs.values())
-            == 58
+            scope.source_legs + scope.unmapped_legs + scope.deferred_legs == len(actual_legs) == 350
         )
-        assert scope.unmapped_legs > 0  # measured on the registry, not invented
-        assert len(reports) == scope.domains + scope.source_legs
+        assert len(reports) == scope.domains + scope.source_legs == 30
 
     async def test_an_unregistered_domain_is_refused(self) -> None:
         """No invented domain tiers: the shipped template watched "p0"."""
@@ -213,63 +221,60 @@ class TestCollection:
         assert [report.status for report in reports if report.source is None] == ["missing"]
 
     def test_a_leg_with_no_field_mapping_is_the_measured_majority(self) -> None:
-        """Which legs cannot be read, stated as a number rather than a surprise.
-
-        C54 brought the three financial legs into the 口径映射表 with a
-        ``report_period`` column, so the unreadable set went 26 -> 23; the
-        direction is asserted too, or the number could drift either way.
-        """
+        """Pin mapped and unmapped ODS legs from the reviewed batch5 snapshot."""
+        snapshot = _registry_snapshot()
         legs = alert_matrix.registered_legs()
         deferred_domains = alert_matrix._deferred_model_domains(legs)
         legacy_legs = {
             domain: sources for domain, sources in legs.items() if domain not in deferred_domains
         }
-        unmapped = [
-            f"{domain}/{source}"
+        actual_legacy_legs = {
+            (domain, source) for domain, sources in legacy_legs.items() for source in sources
+        }
+        unmapped = {
+            (domain, source)
             for domain, sources in legacy_legs.items()
             for source in sources
             if not _leg_is_measurable(domain, source)
-        ]
+        }
+        mapped = actual_legacy_legs - unmapped
+        expected_deferred_legs = {
+            (item["domain"], item["source"]) for item in snapshot["deferred_source_domain_legs"]
+        }
+        expected_legacy_legs = {
+            (item["domain"], item["source"]) for item in snapshot["legacy_source_domain_legs"]
+        }
+        expected_mapped = {(item["domain"], item["source"]) for item in snapshot["mapped_ods_legs"]}
+        expected_unmapped = {
+            (item["domain"], item["source"]) for item in snapshot["unmapped_ods_legs"]
+        }
 
-        assert sum(len(v) for v in legacy_legs.values()) == 33
-        assert len(unmapped) == 23
-        assert sum(len(v) for v in legs.values()) == 58
-        assert deferred_domains == (
-            "balance_of_payments",
-            "bls_search",
-            "bls_series",
-            "cboe_available_indices",
-            "cboe_equity_search",
-            "cboe_index_constituent_quotes",
-            "cboe_index_search",
-            "currency_reference_rates",
-            "equity_historical",
-            "equity_quote",
-            "federal_reserve_federal_funds_rate",
-            "federal_reserve_money_measures",
-            "federal_reserve_sofr",
-            "federal_reserve_svensson_yield_curve",
-            "federal_reserve_treasury_rates",
-            "fred_search",
-            "fred_series",
-            "intrinio_calendar_ipo",
-            "intrinio_currency_pairs",
-            "intrinio_equity_search",
-            "intrinio_historical_dividends",
-            "intrinio_insider_trading",
-            "sofr",
-            "sonia",
-            "yield_curve",
+        assert tuple(deferred_domains) == tuple(snapshot["deferred_domain_ids"])
+        assert actual_legacy_legs == expected_legacy_legs
+        assert len(expected_legacy_legs) == 33
+        assert (
+            sum(len(legs[domain]) for domain in deferred_domains)
+            == len(expected_deferred_legs)
+            == 317
         )
-        assert sum(len(legs[domain]) for domain in deferred_domains) == 25
-        assert "stock_daily/akshare" not in unmapped
-        assert "economy_cpi/fred" in unmapped
+        assert len(legs) == 337
+        assert (
+            sum(len(sources) for sources in legs.values())
+            == len(expected_legacy_legs) + len(expected_deferred_legs)
+            == 350
+        )
+        assert mapped == expected_mapped
+        assert unmapped == expected_unmapped
+        assert len(mapped) == 10
+        assert len(unmapped) == 23
+        assert ("stock_daily", "akshare") in mapped
+        assert ("economy_cpi", "fred") in unmapped
         for leg in (
-            "financial_statement/ths",
-            "financial_statement/akshare",
-            "financial_indicator/akshare",
+            ("financial_statement", "ths"),
+            ("financial_statement", "akshare"),
+            ("financial_indicator", "akshare"),
         ):
-            assert leg not in unmapped
+            assert leg in mapped
 
 
 def _leg_is_measurable(domain: str, source: str) -> bool:

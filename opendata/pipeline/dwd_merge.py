@@ -166,27 +166,191 @@ class DwdWriter:
         """
         self.engine = engine
 
-    def write(self, frame: pd.DataFrame, *, table: str, key: Sequence[str]) -> int:
+    def write(
+        self,
+        frame: pd.DataFrame,
+        *,
+        table: str,
+        key: Sequence[str],
+        financial_versions: Sequence[object] = (),
+    ) -> int:
         """Upsert a merged frame on its business key.
 
         Args:
             frame: Merged frame (includes the trace columns).
             table: Target dwd table name.
             key: Business-key columns.
+            financial_versions: Optional, explicitly source-normalized PIT
+                records with publication/revision metadata.  Ordinary DWD
+                calls omit this argument and retain the existing latest-value
+                behavior.  The PIT write uses this same transaction; a
+                revision conflict is committed as evidence and prevents the
+                DWD upsert from choosing one conflicting value.
 
         Returns:
             Number of rows written.
         """
         from sqlalchemy import text
 
-        if frame.empty:
+        if frame.empty and not financial_versions:
             return 0
         columns = list(frame.columns)
-        statement = text(build_upsert_sql(table, columns, key))
         records = frame.astype(object).where(frame.notna(), None).to_dict("records")
+        for record in records:
+            for column, value in record.items():
+                if isinstance(value, pd.Timestamp):
+                    record[column] = value.to_pydatetime()
+        if financial_versions:
+            _validate_financial_pit_alignment(
+                records,
+                table=table,
+                key=key,
+                financial_versions=financial_versions,
+            )
+        pit_result = None
         with self.engine.begin() as connection:
-            connection.execute(statement, records)
+            if financial_versions:
+                from opendata.pipeline.financial_pit import FinancialPitConflict
+                from opendata.services.financial_pit import (
+                    ingest_financial_versions_in_transaction,
+                )
+
+                pit_result = ingest_financial_versions_in_transaction(
+                    connection, financial_versions
+                )
+                # Conflicts must commit their evidence, but they must not
+                # select or overwrite the legacy latest-value row.
+                if not pit_result.conflicts and records:
+                    connection.execute(text(build_upsert_sql(table, columns, key)), records)
+            elif records:
+                connection.execute(text(build_upsert_sql(table, columns, key)), records)
+        if pit_result is not None and pit_result.conflicts:
+            raise FinancialPitConflict(
+                "PIT version conflict persisted; DWD latest-value upsert was skipped for this batch"
+            )
         return len(frame)
+
+
+def _validate_financial_pit_alignment(
+    frame_records: Sequence[Mapping[str, object]],
+    *,
+    table: str,
+    key: Sequence[str],
+    financial_versions: Sequence[object],
+) -> None:
+    """Require a one-to-one match before a DWD/PIT dual write begins.
+
+    The PIT payload is a source-normalized contract row.  DWD trace columns
+    such as ``_merged_at`` and ``_as_of`` are deliberately ignored; partial
+    contract updates remain valid as long as the full business key, value,
+    and source are present and any additional contract fields agree.
+    """
+    import json
+
+    from pydantic import BaseModel, TypeAdapter
+
+    from opendata.data.models.financial import FinancialIndicator, FinancialStatement
+    from opendata.pipeline.financial_pit import (
+        FinancialPitError,
+        FinancialVersionInput,
+        prepare_financial_version,
+    )
+
+    table_contracts: dict[str, tuple[str, type[BaseModel], tuple[str, ...]]] = {
+        "dwd_financial_statement": (
+            "financial_statement",
+            FinancialStatement,
+            ("symbol", "statement_type", "report_period", "item"),
+        ),
+        "dwd_financial_indicator": (
+            "financial_indicator",
+            FinancialIndicator,
+            ("symbol", "report_period", "indicator"),
+        ),
+    }
+    contract = table_contracts.get(table)
+    if contract is None:
+        raise FinancialPitError(
+            "financial_versions can only accompany a financial statement or indicator DWD table"
+        )
+    domain, model, business_key = contract
+    if tuple(key) != business_key:
+        raise FinancialPitError(
+            f"DWD key for {table} must match its contract business key {business_key}"
+        )
+    if not frame_records or len(frame_records) != len(financial_versions):
+        raise FinancialPitError(
+            "DWD rows and financial_versions must be non-empty and match one-to-one"
+        )
+
+    contract_fields = tuple(model.model_fields)
+    field_adapters: dict[str, TypeAdapter[object]] = {
+        field: TypeAdapter(field_info.annotation)
+        for field, field_info in model.model_fields.items()
+    }
+    required_frame_fields = {*business_key, "value", "source"}
+    prepared_by_key: dict[tuple[object, ...], tuple[str, dict[str, object]]] = {}
+    for record in financial_versions:
+        if not isinstance(record, FinancialVersionInput):
+            raise FinancialPitError(
+                "every financial DWD write version must be FinancialVersionInput"
+            )
+        if record.domain != domain:
+            raise FinancialPitError(
+                f"financial version domain {record.domain!r} does not match {table}"
+            )
+        prepared = prepare_financial_version(record).values
+        payload = json.loads(str(prepared["payload_json"]))
+        business_id = tuple(payload[field] for field in business_key)
+        if business_id in prepared_by_key:
+            raise FinancialPitError(
+                "financial_versions contain duplicate DWD business keys and cannot align one-to-one"
+            )
+        prepared_by_key[business_id] = (str(prepared["source"]), payload)
+
+    seen_frame_keys: set[tuple[object, ...]] = set()
+    for row in frame_records:
+        missing = sorted(required_frame_fields - set(row))
+        if missing:
+            raise FinancialPitError(f"financial DWD row is missing alignment fields: {missing}")
+        if not isinstance(row["source"], str) or not row["source"]:
+            raise FinancialPitError("financial DWD row source must be explicit")
+        present_contract_fields = set(row).intersection(contract_fields)
+        try:
+            actual_payload = {
+                field: field_adapters[field].dump_python(
+                    field_adapters[field].validate_python(row[field]), mode="json"
+                )
+                for field in present_contract_fields
+            }
+        except Exception as exc:
+            raise FinancialPitError(
+                f"financial DWD row contains invalid {model.__name__} fields: {exc}"
+            ) from exc
+        business_id = tuple(actual_payload[field] for field in business_key)
+        if business_id in seen_frame_keys:
+            raise FinancialPitError("financial DWD frame contains duplicate business keys")
+        seen_frame_keys.add(business_id)
+        expected = prepared_by_key.get(business_id)
+        if expected is None:
+            raise FinancialPitError(
+                "financial DWD business key does not match any financial version"
+            )
+        expected_source, expected_payload = expected
+        if row["source"] != expected_source:
+            raise FinancialPitError(
+                "financial DWD source does not match its source-normalized version"
+            )
+        mismatches = [
+            field
+            for field, actual_value in actual_payload.items()
+            if field in present_contract_fields and actual_value != expected_payload[field]
+        ]
+        if mismatches:
+            raise FinancialPitError(
+                "financial DWD contract fields do not match its source-normalized version: "
+                + ", ".join(sorted(mismatches))
+            )
 
 
 @dataclass

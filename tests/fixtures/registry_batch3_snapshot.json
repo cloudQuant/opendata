@@ -1,0 +1,6382 @@
+{
+  "schema_version": 1,
+  "snapshot_id": "root-guarded-batch3-retake1",
+  "source_hashes_sha256": {
+    "opendata/data/domains.yaml": "51c0abb6b0f4c06e08a56f038254d646d503f254bdb846547883b19dd2914186",
+    "docs/evidence/C100/integration/root-guarded-batch3-retake1/smoke.json": "224c2475432ea6fca4b2c6e1442718ae2b0b829386530bf97a5361fb79897dc9",
+    "docs/evidence/C100/integration/root-guarded-batch3-retake1/receipt.json": "f2e3eb877e7a1ec4f6a080ebbe60137330e50b38d8d5224ac186e0950191bef3",
+    "docs/迭代计划/迭代2-统一Provider架构与全量能力补齐/模型级任务清单.csv": "3bcfc4a0472c4496c714518e9303e33fd543a4170bc52529d7137dc47bc4c5d5",
+    "opendata/data/mappings/akshare.yaml": "fd61df12b1c73593be841f0e450af954fe8ba9dfc35538c02c5fa12270c62cef",
+    "opendata/data/mappings/ths.yaml": "d68eb2658cf7241a0e02c1f1a13a6724a9adc268cc14b19fea9299518b1b7418"
+  },
+  "classification_rule": {
+    "domains": "Domain YAML identities are pinned; complete semantics means exactly the six fields temporal_kind/time_field/natural_key/filter_dims/storage_mode/permissions, with non-null temporal_kind and query permission for deferred candidates.",
+    "canonical_provider_models": "Provider/model/module:class rows are frozen from batch3 smoke and cross-checked against the static catalog LazyFetcherBinding canonical_model_ids (or module basename fallback); all 347 entries match exactly.",
+    "deferred_domains": "Query-semantic domain identities with at least one exact frozen provider/model binding; every one of the 314 query-semantic domains has a frozen binding.",
+    "legacy_dwd_domains": "The 20 domain YAML entries with no complete semantics group; these remain the daily DWD measurement surface.",
+    "ods_legs": "The 33 registered source/domain legs on those legacy domains are split by the 10 explicit legacy freshness-field mappings present in the pinned AkShare/THS mapping YAMLs; the remaining 23 are explicitly unmapped."
+  },
+  "counts": {
+    "domain_count": 334,
+    "query_semantic_domain_count": 314,
+    "legacy_dwd_domain_count": 20,
+    "provider_model_identity_count": 347,
+    "registered_source_domain_leg_count": 347,
+    "deferred_domain_count": 314,
+    "deferred_source_domain_leg_count": 314,
+    "legacy_source_domain_leg_count": 33,
+    "mapped_ods_leg_count": 10,
+    "unmapped_ods_leg_count": 23,
+    "queried_table_count": 30,
+    "warehouse_table_catalog_count": 53
+  },
+  "domain_ids": [
+    "alpha_vantage_equity_historical",
+    "alpha_vantage_etf_historical",
+    "alpha_vantage_historical_eps",
+    "balance_of_payments",
+    "benzinga_analyst_search",
+    "benzinga_company_news",
+    "benzinga_price_target",
+    "benzinga_world_news",
+    "bls_search",
+    "bls_series",
+    "bond_daily",
+    "bond_indices",
+    "cboe_available_indices",
+    "cboe_equity_historical",
+    "cboe_equity_quote",
+    "cboe_equity_search",
+    "cboe_etf_historical",
+    "cboe_index_constituent_quotes",
+    "cboe_index_historical",
+    "cboe_index_search",
+    "cboe_options_chains",
+    "central_bank_holdings",
+    "cftc_commitment_of_traders",
+    "cftc_market_directory",
+    "commercial_paper",
+    "commodity_spot_prices",
+    "congress_amendment_info",
+    "congress_amendment_text",
+    "congress_amendments",
+    "congress_bill_info",
+    "congress_bill_text",
+    "congress_bills",
+    "congress_committee_documents",
+    "congress_committee_info",
+    "currency_reference_rates",
+    "deribit_futures_curve",
+    "deribit_futures_historical",
+    "deribit_futures_info",
+    "deribit_futures_instruments",
+    "deribit_options_chains",
+    "econdb_available_indicators",
+    "econdb_economic_indicators",
+    "econdb_gdp_nominal",
+    "econdb_gdp_real",
+    "econdb_port_volume",
+    "econdb_yield_curve",
+    "economic_calendar",
+    "economy_cpi",
+    "economy_gdp",
+    "economy_imf_available_indicators",
+    "economy_imf_cpi",
+    "economy_imf_direction_of_trade",
+    "economy_imf_indicators",
+    "economy_oecd_cli",
+    "economy_oecd_cpi",
+    "economy_oecd_gdp_forecast",
+    "economy_oecd_gdp_nominal",
+    "economy_oecd_gdp_real",
+    "economy_oecd_house_price_index",
+    "economy_oecd_interest_rates",
+    "economy_oecd_share_price_index",
+    "economy_oecd_unemployment",
+    "economy_rate",
+    "economy_unemployment",
+    "energy_petroleum_status_report",
+    "energy_short_term_energy_outlook",
+    "equity_historical",
+    "equity_quote",
+    "euro_short_term_rate",
+    "famafrench_breakpoints",
+    "famafrench_country_portfolio_returns",
+    "famafrench_factors",
+    "famafrench_international_index_returns",
+    "famafrench_regional_portfolio_returns",
+    "famafrench_us_portfolio_returns",
+    "federal_reserve_federal_funds_rate",
+    "federal_reserve_fomc_documents",
+    "federal_reserve_money_measures",
+    "federal_reserve_overnight_bank_funding_rate",
+    "federal_reserve_primary_dealer_fails",
+    "federal_reserve_primary_dealer_positioning",
+    "federal_reserve_sofr",
+    "federal_reserve_svensson_yield_curve",
+    "federal_reserve_treasury_rates",
+    "federal_reserve_yield_curve",
+    "financial_indicator",
+    "financial_statement",
+    "finra_equity_short_interest",
+    "finra_otc_aggregate",
+    "finviz_compare_groups",
+    "finviz_equity_info",
+    "finviz_key_metrics",
+    "finviz_price_target",
+    "fmp_analyst_estimates",
+    "fmp_balance_sheet",
+    "fmp_balance_sheet_growth",
+    "fmp_calendar_events",
+    "fmp_cash_flow_statement",
+    "fmp_cash_flow_statement_growth",
+    "fmp_company_filings",
+    "fmp_company_news",
+    "fmp_crypto_historical",
+    "fmp_crypto_search",
+    "fmp_currency_historical",
+    "fmp_currency_pairs",
+    "fmp_currency_snapshots",
+    "fmp_discovery_filings",
+    "fmp_dividend_calendar",
+    "fmp_earnings_calendar",
+    "fmp_earnings_call_transcript",
+    "fmp_economic_calendar",
+    "fmp_equity_active",
+    "fmp_equity_gainers",
+    "fmp_equity_info",
+    "fmp_equity_losers",
+    "fmp_equity_ownership",
+    "fmp_equity_peers",
+    "fmp_equity_screener",
+    "fmp_esg_score",
+    "fmp_etf_countries",
+    "fmp_etf_equity_exposure",
+    "fmp_etf_historical",
+    "fmp_etf_holdings",
+    "fmp_etf_info",
+    "fmp_etf_price_performance",
+    "fmp_etf_search",
+    "fmp_etf_sectors",
+    "fmp_executive_compensation",
+    "fmp_financial_ratios",
+    "fmp_forward_ebitda_estimates",
+    "fmp_forward_eps_estimates",
+    "fmp_government_trades",
+    "fmp_historical_dividends",
+    "fmp_historical_employees",
+    "fmp_historical_eps",
+    "fmp_historical_market_cap",
+    "fmp_historical_splits",
+    "fmp_income_statement",
+    "fmp_income_statement_growth",
+    "fmp_index_constituents",
+    "fmp_index_directory",
+    "fmp_index_historical",
+    "fmp_insider_trading",
+    "fmp_institutional_ownership",
+    "fmp_ipo_calendar",
+    "fmp_key_executives",
+    "fmp_key_metrics",
+    "fmp_market_risk_premium",
+    "fmp_market_snapshots",
+    "fmp_nport_disclosure",
+    "fmp_price_performance",
+    "fmp_price_target",
+    "fmp_price_target_consensus",
+    "fmp_revenue_business_line",
+    "fmp_revenue_geographic",
+    "fmp_share_statistics",
+    "fmp_splits_calendar",
+    "fmp_treasury_rates",
+    "fmp_world_news",
+    "fmp_yield_curve",
+    "fred_ameribor",
+    "fred_balance_of_payments",
+    "fred_consumer_price_index",
+    "fred_discount_window_primary_credit_rate",
+    "fred_economic_calendar",
+    "fred_european_central_bank_interest_rates",
+    "fred_federal_funds_rate",
+    "fred_manufacturing_outlook_ny",
+    "fred_manufacturing_outlook_texas",
+    "fred_mortgage_indices",
+    "fred_nonfarm_payrolls",
+    "fred_overnight_bank_funding_rate",
+    "fred_personal_consumption_expenditures",
+    "fred_projections",
+    "fred_regional",
+    "fred_release_table",
+    "fred_retail_prices",
+    "fred_search",
+    "fred_selected_treasury_bill",
+    "fred_selected_treasury_constant_maturity",
+    "fred_series",
+    "fred_survey_of_economic_conditions_chicago",
+    "fred_tips_yields",
+    "fred_treasury_constant_maturity",
+    "fred_university_of_michigan",
+    "fred_yield_curve",
+    "fund_action",
+    "fund_etf_daily",
+    "futures_daily",
+    "futures_fundamentals",
+    "government_us_commodity_psd_data",
+    "government_us_commodity_psd_report",
+    "government_us_treasury_auctions",
+    "government_us_weather_bulletin",
+    "government_us_weather_bulletin_download",
+    "hqm_corporate_bond",
+    "imf_maritime_chokepoint_info",
+    "imf_maritime_chokepoint_volume",
+    "imf_port_info",
+    "imf_port_volume",
+    "index_constituent",
+    "index_daily",
+    "inflation_expectations",
+    "instrument",
+    "intrinio_balance_sheet",
+    "intrinio_calendar_ipo",
+    "intrinio_cash_flow_statement",
+    "intrinio_company_filings",
+    "intrinio_company_news",
+    "intrinio_currency_pairs",
+    "intrinio_equity_historical",
+    "intrinio_equity_info",
+    "intrinio_equity_quote",
+    "intrinio_equity_search",
+    "intrinio_etf_historical",
+    "intrinio_etf_holdings",
+    "intrinio_etf_info",
+    "intrinio_etf_price_performance",
+    "intrinio_etf_search",
+    "intrinio_financial_ratios",
+    "intrinio_forward_ebitda_estimates",
+    "intrinio_forward_eps_estimates",
+    "intrinio_forward_pe_estimates",
+    "intrinio_forward_sales_estimates",
+    "intrinio_fred_series",
+    "intrinio_historical_attributes",
+    "intrinio_historical_dividends",
+    "intrinio_historical_market_cap",
+    "intrinio_income_statement",
+    "intrinio_index_historical",
+    "intrinio_insider_trading",
+    "intrinio_key_metrics",
+    "intrinio_latest_attributes",
+    "intrinio_market_snapshots",
+    "intrinio_options_chains",
+    "intrinio_options_unusual",
+    "intrinio_price_target_consensus",
+    "intrinio_reported_financials",
+    "intrinio_search_attributes",
+    "intrinio_share_statistics",
+    "intrinio_world_news",
+    "iorb",
+    "nasdaq_calendar_dividend",
+    "nasdaq_calendar_earnings",
+    "nasdaq_calendar_ipo",
+    "nasdaq_company_filings",
+    "nasdaq_economic_calendar",
+    "nasdaq_equity_screener",
+    "nasdaq_equity_search",
+    "nasdaq_historical_dividends",
+    "nasdaq_top_retail",
+    "option_daily",
+    "sec_balance_sheet",
+    "sec_balance_sheet_growth",
+    "sec_cash_flow_statement",
+    "sec_cash_flow_statement_growth",
+    "sec_cik_map",
+    "sec_company_filings",
+    "sec_compare_company_facts",
+    "sec_equity_ftd",
+    "sec_equity_search",
+    "sec_filing",
+    "sec_filings",
+    "sec_form_13f_hr",
+    "sec_htm_file",
+    "sec_income_statement",
+    "sec_income_statement_growth",
+    "sec_insider_trading",
+    "sec_institutions_search",
+    "sec_latest_financial_reports",
+    "sec_management_discussion_analysis",
+    "sec_nport_disclosure",
+    "sec_rss_litigation",
+    "sec_schema_files",
+    "sec_sic_search",
+    "sec_symbol_map",
+    "sofr",
+    "sonia",
+    "sp500_multiples",
+    "spot_rate",
+    "stock_action",
+    "stock_adjust",
+    "stock_daily",
+    "stock_daily_overseas",
+    "tiingo_company_news",
+    "tiingo_crypto_historical",
+    "tiingo_currency_historical",
+    "tiingo_equity_historical",
+    "tiingo_etf_historical",
+    "tiingo_trailing_dividend_yield",
+    "tiingo_world_news",
+    "tmx_company_filings",
+    "tmx_equity_historical",
+    "tmx_equity_info",
+    "tmx_equity_quote",
+    "tmx_equity_search",
+    "tmx_historical_dividends",
+    "tmx_index_constituents",
+    "tmx_price_target_consensus",
+    "total_factor_productivity",
+    "tradier_equity_historical",
+    "tradier_equity_quote",
+    "tradier_equity_search",
+    "tradier_etf_historical",
+    "tradier_options_chains",
+    "trading_calendar",
+    "yfinance_balance_sheet",
+    "yfinance_cash_flow_statement",
+    "yfinance_company_news",
+    "yfinance_crypto_historical",
+    "yfinance_currency_historical",
+    "yfinance_dividend_history",
+    "yfinance_equity_active",
+    "yfinance_equity_aggressive_small_caps",
+    "yfinance_equity_gainers",
+    "yfinance_equity_historical",
+    "yfinance_equity_info",
+    "yfinance_equity_losers",
+    "yfinance_equity_quote",
+    "yfinance_equity_screener",
+    "yfinance_equity_undervalued_growth",
+    "yfinance_equity_undervalued_large_caps",
+    "yfinance_etf_historical",
+    "yfinance_etf_info",
+    "yfinance_futures_historical",
+    "yfinance_growth_tech_equities",
+    "yfinance_income_statement",
+    "yfinance_index_historical",
+    "yfinance_key_executives",
+    "yfinance_key_metrics",
+    "yfinance_options_chains",
+    "yfinance_price_target_consensus",
+    "yfinance_share_statistics",
+    "yield_curve"
+  ],
+  "query_semantic_domain_ids": [
+    "alpha_vantage_equity_historical",
+    "alpha_vantage_etf_historical",
+    "alpha_vantage_historical_eps",
+    "balance_of_payments",
+    "benzinga_analyst_search",
+    "benzinga_company_news",
+    "benzinga_price_target",
+    "benzinga_world_news",
+    "bls_search",
+    "bls_series",
+    "bond_indices",
+    "cboe_available_indices",
+    "cboe_equity_historical",
+    "cboe_equity_quote",
+    "cboe_equity_search",
+    "cboe_etf_historical",
+    "cboe_index_constituent_quotes",
+    "cboe_index_historical",
+    "cboe_index_search",
+    "cboe_options_chains",
+    "central_bank_holdings",
+    "cftc_commitment_of_traders",
+    "cftc_market_directory",
+    "commercial_paper",
+    "commodity_spot_prices",
+    "congress_amendment_info",
+    "congress_amendment_text",
+    "congress_amendments",
+    "congress_bill_info",
+    "congress_bill_text",
+    "congress_bills",
+    "congress_committee_documents",
+    "congress_committee_info",
+    "currency_reference_rates",
+    "deribit_futures_curve",
+    "deribit_futures_historical",
+    "deribit_futures_info",
+    "deribit_futures_instruments",
+    "deribit_options_chains",
+    "econdb_available_indicators",
+    "econdb_economic_indicators",
+    "econdb_gdp_nominal",
+    "econdb_gdp_real",
+    "econdb_port_volume",
+    "econdb_yield_curve",
+    "economic_calendar",
+    "economy_imf_available_indicators",
+    "economy_imf_cpi",
+    "economy_imf_direction_of_trade",
+    "economy_imf_indicators",
+    "economy_oecd_cli",
+    "economy_oecd_cpi",
+    "economy_oecd_gdp_forecast",
+    "economy_oecd_gdp_nominal",
+    "economy_oecd_gdp_real",
+    "economy_oecd_house_price_index",
+    "economy_oecd_interest_rates",
+    "economy_oecd_share_price_index",
+    "economy_oecd_unemployment",
+    "energy_petroleum_status_report",
+    "energy_short_term_energy_outlook",
+    "equity_historical",
+    "equity_quote",
+    "euro_short_term_rate",
+    "famafrench_breakpoints",
+    "famafrench_country_portfolio_returns",
+    "famafrench_factors",
+    "famafrench_international_index_returns",
+    "famafrench_regional_portfolio_returns",
+    "famafrench_us_portfolio_returns",
+    "federal_reserve_federal_funds_rate",
+    "federal_reserve_fomc_documents",
+    "federal_reserve_money_measures",
+    "federal_reserve_overnight_bank_funding_rate",
+    "federal_reserve_primary_dealer_fails",
+    "federal_reserve_primary_dealer_positioning",
+    "federal_reserve_sofr",
+    "federal_reserve_svensson_yield_curve",
+    "federal_reserve_treasury_rates",
+    "federal_reserve_yield_curve",
+    "finra_equity_short_interest",
+    "finra_otc_aggregate",
+    "finviz_compare_groups",
+    "finviz_equity_info",
+    "finviz_key_metrics",
+    "finviz_price_target",
+    "fmp_analyst_estimates",
+    "fmp_balance_sheet",
+    "fmp_balance_sheet_growth",
+    "fmp_calendar_events",
+    "fmp_cash_flow_statement",
+    "fmp_cash_flow_statement_growth",
+    "fmp_company_filings",
+    "fmp_company_news",
+    "fmp_crypto_historical",
+    "fmp_crypto_search",
+    "fmp_currency_historical",
+    "fmp_currency_pairs",
+    "fmp_currency_snapshots",
+    "fmp_discovery_filings",
+    "fmp_dividend_calendar",
+    "fmp_earnings_calendar",
+    "fmp_earnings_call_transcript",
+    "fmp_economic_calendar",
+    "fmp_equity_active",
+    "fmp_equity_gainers",
+    "fmp_equity_info",
+    "fmp_equity_losers",
+    "fmp_equity_ownership",
+    "fmp_equity_peers",
+    "fmp_equity_screener",
+    "fmp_esg_score",
+    "fmp_etf_countries",
+    "fmp_etf_equity_exposure",
+    "fmp_etf_historical",
+    "fmp_etf_holdings",
+    "fmp_etf_info",
+    "fmp_etf_price_performance",
+    "fmp_etf_search",
+    "fmp_etf_sectors",
+    "fmp_executive_compensation",
+    "fmp_financial_ratios",
+    "fmp_forward_ebitda_estimates",
+    "fmp_forward_eps_estimates",
+    "fmp_government_trades",
+    "fmp_historical_dividends",
+    "fmp_historical_employees",
+    "fmp_historical_eps",
+    "fmp_historical_market_cap",
+    "fmp_historical_splits",
+    "fmp_income_statement",
+    "fmp_income_statement_growth",
+    "fmp_index_constituents",
+    "fmp_index_directory",
+    "fmp_index_historical",
+    "fmp_insider_trading",
+    "fmp_institutional_ownership",
+    "fmp_ipo_calendar",
+    "fmp_key_executives",
+    "fmp_key_metrics",
+    "fmp_market_risk_premium",
+    "fmp_market_snapshots",
+    "fmp_nport_disclosure",
+    "fmp_price_performance",
+    "fmp_price_target",
+    "fmp_price_target_consensus",
+    "fmp_revenue_business_line",
+    "fmp_revenue_geographic",
+    "fmp_share_statistics",
+    "fmp_splits_calendar",
+    "fmp_treasury_rates",
+    "fmp_world_news",
+    "fmp_yield_curve",
+    "fred_ameribor",
+    "fred_balance_of_payments",
+    "fred_consumer_price_index",
+    "fred_discount_window_primary_credit_rate",
+    "fred_economic_calendar",
+    "fred_european_central_bank_interest_rates",
+    "fred_federal_funds_rate",
+    "fred_manufacturing_outlook_ny",
+    "fred_manufacturing_outlook_texas",
+    "fred_mortgage_indices",
+    "fred_nonfarm_payrolls",
+    "fred_overnight_bank_funding_rate",
+    "fred_personal_consumption_expenditures",
+    "fred_projections",
+    "fred_regional",
+    "fred_release_table",
+    "fred_retail_prices",
+    "fred_search",
+    "fred_selected_treasury_bill",
+    "fred_selected_treasury_constant_maturity",
+    "fred_series",
+    "fred_survey_of_economic_conditions_chicago",
+    "fred_tips_yields",
+    "fred_treasury_constant_maturity",
+    "fred_university_of_michigan",
+    "fred_yield_curve",
+    "government_us_commodity_psd_data",
+    "government_us_commodity_psd_report",
+    "government_us_treasury_auctions",
+    "government_us_weather_bulletin",
+    "government_us_weather_bulletin_download",
+    "hqm_corporate_bond",
+    "imf_maritime_chokepoint_info",
+    "imf_maritime_chokepoint_volume",
+    "imf_port_info",
+    "imf_port_volume",
+    "inflation_expectations",
+    "intrinio_balance_sheet",
+    "intrinio_calendar_ipo",
+    "intrinio_cash_flow_statement",
+    "intrinio_company_filings",
+    "intrinio_company_news",
+    "intrinio_currency_pairs",
+    "intrinio_equity_historical",
+    "intrinio_equity_info",
+    "intrinio_equity_quote",
+    "intrinio_equity_search",
+    "intrinio_etf_historical",
+    "intrinio_etf_holdings",
+    "intrinio_etf_info",
+    "intrinio_etf_price_performance",
+    "intrinio_etf_search",
+    "intrinio_financial_ratios",
+    "intrinio_forward_ebitda_estimates",
+    "intrinio_forward_eps_estimates",
+    "intrinio_forward_pe_estimates",
+    "intrinio_forward_sales_estimates",
+    "intrinio_fred_series",
+    "intrinio_historical_attributes",
+    "intrinio_historical_dividends",
+    "intrinio_historical_market_cap",
+    "intrinio_income_statement",
+    "intrinio_index_historical",
+    "intrinio_insider_trading",
+    "intrinio_key_metrics",
+    "intrinio_latest_attributes",
+    "intrinio_market_snapshots",
+    "intrinio_options_chains",
+    "intrinio_options_unusual",
+    "intrinio_price_target_consensus",
+    "intrinio_reported_financials",
+    "intrinio_search_attributes",
+    "intrinio_share_statistics",
+    "intrinio_world_news",
+    "iorb",
+    "nasdaq_calendar_dividend",
+    "nasdaq_calendar_earnings",
+    "nasdaq_calendar_ipo",
+    "nasdaq_company_filings",
+    "nasdaq_economic_calendar",
+    "nasdaq_equity_screener",
+    "nasdaq_equity_search",
+    "nasdaq_historical_dividends",
+    "nasdaq_top_retail",
+    "sec_balance_sheet",
+    "sec_balance_sheet_growth",
+    "sec_cash_flow_statement",
+    "sec_cash_flow_statement_growth",
+    "sec_cik_map",
+    "sec_company_filings",
+    "sec_compare_company_facts",
+    "sec_equity_ftd",
+    "sec_equity_search",
+    "sec_filing",
+    "sec_filings",
+    "sec_form_13f_hr",
+    "sec_htm_file",
+    "sec_income_statement",
+    "sec_income_statement_growth",
+    "sec_insider_trading",
+    "sec_institutions_search",
+    "sec_latest_financial_reports",
+    "sec_management_discussion_analysis",
+    "sec_nport_disclosure",
+    "sec_rss_litigation",
+    "sec_schema_files",
+    "sec_sic_search",
+    "sec_symbol_map",
+    "sofr",
+    "sonia",
+    "sp500_multiples",
+    "spot_rate",
+    "tiingo_company_news",
+    "tiingo_crypto_historical",
+    "tiingo_currency_historical",
+    "tiingo_equity_historical",
+    "tiingo_etf_historical",
+    "tiingo_trailing_dividend_yield",
+    "tiingo_world_news",
+    "tmx_company_filings",
+    "tmx_equity_historical",
+    "tmx_equity_info",
+    "tmx_equity_quote",
+    "tmx_equity_search",
+    "tmx_historical_dividends",
+    "tmx_index_constituents",
+    "tmx_price_target_consensus",
+    "total_factor_productivity",
+    "tradier_equity_historical",
+    "tradier_equity_quote",
+    "tradier_equity_search",
+    "tradier_etf_historical",
+    "tradier_options_chains",
+    "yfinance_balance_sheet",
+    "yfinance_cash_flow_statement",
+    "yfinance_company_news",
+    "yfinance_crypto_historical",
+    "yfinance_currency_historical",
+    "yfinance_dividend_history",
+    "yfinance_equity_active",
+    "yfinance_equity_aggressive_small_caps",
+    "yfinance_equity_gainers",
+    "yfinance_equity_historical",
+    "yfinance_equity_info",
+    "yfinance_equity_losers",
+    "yfinance_equity_quote",
+    "yfinance_equity_screener",
+    "yfinance_equity_undervalued_growth",
+    "yfinance_equity_undervalued_large_caps",
+    "yfinance_etf_historical",
+    "yfinance_etf_info",
+    "yfinance_futures_historical",
+    "yfinance_growth_tech_equities",
+    "yfinance_income_statement",
+    "yfinance_index_historical",
+    "yfinance_key_executives",
+    "yfinance_key_metrics",
+    "yfinance_options_chains",
+    "yfinance_price_target_consensus",
+    "yfinance_share_statistics",
+    "yield_curve"
+  ],
+  "legacy_dwd_domain_ids": [
+    "bond_daily",
+    "economy_cpi",
+    "economy_gdp",
+    "economy_rate",
+    "economy_unemployment",
+    "financial_indicator",
+    "financial_statement",
+    "fund_action",
+    "fund_etf_daily",
+    "futures_daily",
+    "futures_fundamentals",
+    "index_constituent",
+    "index_daily",
+    "instrument",
+    "option_daily",
+    "stock_action",
+    "stock_adjust",
+    "stock_daily",
+    "stock_daily_overseas",
+    "trading_calendar"
+  ],
+  "provider_model_identities": [
+    {
+      "source": "akshare",
+      "model": "bond_daily",
+      "domain": "bond_daily",
+      "contract": "Bar",
+      "binding": "opendata.data.providers.akshare.models.bond_daily:AkshareBondDailyFetcher"
+    },
+    {
+      "source": "akshare",
+      "model": "financial_indicator",
+      "domain": "financial_indicator",
+      "contract": "FinancialIndicator",
+      "binding": "opendata.data.providers.akshare.models.financial_indicator:AkshareFinancialIndicatorFetcher"
+    },
+    {
+      "source": "akshare",
+      "model": "financial_statement",
+      "domain": "financial_statement",
+      "contract": "FinancialStatement",
+      "binding": "opendata.data.providers.akshare.models.financial_statement:AkshareFinancialStatementFetcher"
+    },
+    {
+      "source": "akshare",
+      "model": "fund_etf_daily",
+      "domain": "fund_etf_daily",
+      "contract": "Bar",
+      "binding": "opendata.data.providers.akshare.models.fund_etf_daily:AkshareFundEtfDailyFetcher"
+    },
+    {
+      "source": "akshare",
+      "model": "futures_daily",
+      "domain": "futures_daily",
+      "contract": "Bar",
+      "binding": "opendata.data.providers.akshare.models.futures_daily:AkshareFuturesDailyFetcher"
+    },
+    {
+      "source": "akshare",
+      "model": "index_constituent",
+      "domain": "index_constituent",
+      "contract": "IndexConstituent",
+      "binding": "opendata.data.providers.akshare.models.index_constituent:AkshareIndexConstituentFetcher"
+    },
+    {
+      "source": "akshare",
+      "model": "index_daily",
+      "domain": "index_daily",
+      "contract": "Bar",
+      "binding": "opendata.data.providers.akshare.models.index_daily:AkshareIndexDailyFetcher"
+    },
+    {
+      "source": "akshare",
+      "model": "option_daily",
+      "domain": "option_daily",
+      "contract": "Bar",
+      "binding": "opendata.data.providers.akshare.models.option_daily:AkshareOptionDailyFetcher"
+    },
+    {
+      "source": "akshare",
+      "model": "stock_action",
+      "domain": "stock_action",
+      "contract": "CorporateAction",
+      "binding": "opendata.data.providers.akshare.models.stock_action:AkshareStockActionFetcher"
+    },
+    {
+      "source": "akshare",
+      "model": "stock_daily",
+      "domain": "stock_daily",
+      "contract": "Bar",
+      "binding": "opendata.data.providers.akshare.models.stock_daily:AkshareStockDailyFetcher"
+    },
+    {
+      "source": "alpha_vantage",
+      "model": "EquityHistorical",
+      "domain": "alpha_vantage_equity_historical",
+      "contract": "AlphaVantageEquityHistorical",
+      "binding": "opendata.data.providers.alpha_vantage.models.equity_historical:AlphaVantageEquityHistoricalFetcher"
+    },
+    {
+      "source": "alpha_vantage",
+      "model": "EtfHistorical",
+      "domain": "alpha_vantage_etf_historical",
+      "contract": "AlphaVantageEtfHistorical",
+      "binding": "opendata.data.providers.alpha_vantage.models.etf_historical:AlphaVantageEtfHistoricalFetcher"
+    },
+    {
+      "source": "alpha_vantage",
+      "model": "HistoricalEps",
+      "domain": "alpha_vantage_historical_eps",
+      "contract": "AlphaVantageHistoricalEps",
+      "binding": "opendata.data.providers.alpha_vantage.models.historical_eps:AlphaVantageHistoricalEpsFetcher"
+    },
+    {
+      "source": "benzinga",
+      "model": "AnalystSearch",
+      "domain": "benzinga_analyst_search",
+      "contract": "BenzingaAnalystSearch",
+      "binding": "opendata.data.providers.benzinga.models.iter2:BenzingaAnalystSearchFetcher"
+    },
+    {
+      "source": "benzinga",
+      "model": "CompanyNews",
+      "domain": "benzinga_company_news",
+      "contract": "BenzingaCompanyNews",
+      "binding": "opendata.data.providers.benzinga.models.iter2:BenzingaCompanyNewsFetcher"
+    },
+    {
+      "source": "benzinga",
+      "model": "PriceTarget",
+      "domain": "benzinga_price_target",
+      "contract": "BenzingaPriceTarget",
+      "binding": "opendata.data.providers.benzinga.models.price_target:BenzingaPriceTargetFetcher"
+    },
+    {
+      "source": "benzinga",
+      "model": "WorldNews",
+      "domain": "benzinga_world_news",
+      "contract": "BenzingaWorldNews",
+      "binding": "opendata.data.providers.benzinga.models.iter2:BenzingaWorldNewsFetcher"
+    },
+    {
+      "source": "bls",
+      "model": "BlsSearch",
+      "domain": "bls_search",
+      "contract": "BlsCatalogItem",
+      "binding": "opendata.data.providers.bls.models.search:BlsSearchFetcher"
+    },
+    {
+      "source": "bls",
+      "model": "BlsSeries",
+      "domain": "bls_series",
+      "contract": "BlsObservation",
+      "binding": "opendata.data.providers.bls.models.series:BlsSeriesFetcher"
+    },
+    {
+      "source": "cboe",
+      "model": "AvailableIndices",
+      "domain": "cboe_available_indices",
+      "contract": "CboeAvailableIndex",
+      "binding": "opendata.data.providers.cboe.models.available_indices:CboeAvailableIndicesFetcher"
+    },
+    {
+      "source": "cboe",
+      "model": "EquityHistorical",
+      "domain": "cboe_equity_historical",
+      "contract": "CboeEquityHistorical",
+      "binding": "opendata.data.providers.cboe.models.all_access:CboeEquityHistoricalFetcher"
+    },
+    {
+      "source": "cboe",
+      "model": "EquityQuote",
+      "domain": "cboe_equity_quote",
+      "contract": "CboeEquityQuote",
+      "binding": "opendata.data.providers.cboe.models.all_access:CboeEquityQuoteFetcher"
+    },
+    {
+      "source": "cboe",
+      "model": "EquitySearch",
+      "domain": "cboe_equity_search",
+      "contract": "CboeEquitySearchListing",
+      "binding": "opendata.data.providers.cboe.models.all_access:CboeEquitySearchFetcher"
+    },
+    {
+      "source": "cboe",
+      "model": "EtfHistorical",
+      "domain": "cboe_etf_historical",
+      "contract": "CboeEtfHistorical",
+      "binding": "opendata.data.providers.cboe.models.all_access:CboeEtfHistoricalFetcher"
+    },
+    {
+      "source": "cboe",
+      "model": "IndexConstituents",
+      "domain": "cboe_index_constituent_quotes",
+      "contract": "CboeIndexConstituentQuote",
+      "binding": "opendata.data.providers.cboe.models.index_constituents:CboeIndexConstituentsFetcher"
+    },
+    {
+      "source": "cboe",
+      "model": "IndexHistorical",
+      "domain": "cboe_index_historical",
+      "contract": "CboeIndexHistorical",
+      "binding": "opendata.data.providers.cboe.models.index_historical_public:CboeIndexHistoricalFetcher"
+    },
+    {
+      "source": "cboe",
+      "model": "IndexSearch",
+      "domain": "cboe_index_search",
+      "contract": "CboeSearchedIndex",
+      "binding": "opendata.data.providers.cboe.models.index_search:CboeIndexSearchFetcher"
+    },
+    {
+      "source": "cboe",
+      "model": "OptionsChains",
+      "domain": "cboe_options_chains",
+      "contract": "CboeOptionsChains",
+      "binding": "opendata.data.providers.cboe.models.all_access:CboeOptionsChainsFetcher"
+    },
+    {
+      "source": "cftc",
+      "model": "COT",
+      "domain": "cftc_commitment_of_traders",
+      "contract": "COT",
+      "binding": "opendata.data.providers.cftc.models.cot:COTFetcher"
+    },
+    {
+      "source": "cftc",
+      "model": "COTSearch",
+      "domain": "cftc_market_directory",
+      "contract": "COTSearch",
+      "binding": "opendata.data.providers.cftc.models.cot_search:COTSearchFetcher"
+    },
+    {
+      "source": "congress_gov",
+      "model": "CongressAmendmentInfo",
+      "domain": "congress_amendment_info",
+      "contract": "CongressAmendmentInfo",
+      "binding": "opendata.data.providers.congress_gov.models.iter2:CongressAmendmentInfoFetcher"
+    },
+    {
+      "source": "congress_gov",
+      "model": "CongressAmendmentText",
+      "domain": "congress_amendment_text",
+      "contract": "CongressAmendmentText",
+      "binding": "opendata.data.providers.congress_gov.models.iter2:CongressAmendmentTextFetcher"
+    },
+    {
+      "source": "congress_gov",
+      "model": "CongressAmendments",
+      "domain": "congress_amendments",
+      "contract": "CongressAmendment",
+      "binding": "opendata.data.providers.congress_gov.models.iter2:CongressAmendmentsFetcher"
+    },
+    {
+      "source": "congress_gov",
+      "model": "CongressBillInfo",
+      "domain": "congress_bill_info",
+      "contract": "CongressBillInfo",
+      "binding": "opendata.data.providers.congress_gov.models.iter2:CongressBillInfoFetcher"
+    },
+    {
+      "source": "congress_gov",
+      "model": "CongressBillText",
+      "domain": "congress_bill_text",
+      "contract": "CongressBillText",
+      "binding": "opendata.data.providers.congress_gov.models.iter2:CongressBillTextFetcher"
+    },
+    {
+      "source": "congress_gov",
+      "model": "CongressBills",
+      "domain": "congress_bills",
+      "contract": "CongressBill",
+      "binding": "opendata.data.providers.congress_gov.models.iter2:CongressBillsFetcher"
+    },
+    {
+      "source": "congress_gov",
+      "model": "CongressCommitteeDocuments",
+      "domain": "congress_committee_documents",
+      "contract": "CongressCommitteeDocument",
+      "binding": "opendata.data.providers.congress_gov.models.iter2:CongressCommitteeDocumentsFetcher"
+    },
+    {
+      "source": "congress_gov",
+      "model": "CongressCommitteeInfo",
+      "domain": "congress_committee_info",
+      "contract": "CongressCommitteeInfo",
+      "binding": "opendata.data.providers.congress_gov.models.iter2:CongressCommitteeInfoFetcher"
+    },
+    {
+      "source": "deribit",
+      "model": "FuturesCurve",
+      "domain": "deribit_futures_curve",
+      "contract": "DeribitFuturesCurve",
+      "binding": "opendata.data.providers.deribit.models.fetchers:DeribitFuturesCurveFetcher"
+    },
+    {
+      "source": "deribit",
+      "model": "FuturesHistorical",
+      "domain": "deribit_futures_historical",
+      "contract": "DeribitFuturesHistorical",
+      "binding": "opendata.data.providers.deribit.models.fetchers:DeribitFuturesHistoricalFetcher"
+    },
+    {
+      "source": "deribit",
+      "model": "FuturesInfo",
+      "domain": "deribit_futures_info",
+      "contract": "DeribitFuturesInfo",
+      "binding": "opendata.data.providers.deribit.models.fetchers:DeribitFuturesInfoFetcher"
+    },
+    {
+      "source": "deribit",
+      "model": "FuturesInstruments",
+      "domain": "deribit_futures_instruments",
+      "contract": "DeribitFuturesInstruments",
+      "binding": "opendata.data.providers.deribit.models.fetchers:DeribitFuturesInstrumentsFetcher"
+    },
+    {
+      "source": "deribit",
+      "model": "OptionsChains",
+      "domain": "deribit_options_chains",
+      "contract": "DeribitOptionsChains",
+      "binding": "opendata.data.providers.deribit.models.fetchers:DeribitOptionsChainsFetcher"
+    },
+    {
+      "source": "ecb",
+      "model": "BalanceOfPayments",
+      "domain": "balance_of_payments",
+      "contract": "EcbBalanceOfPaymentsObservation",
+      "binding": "opendata.data.providers.ecb.models.balance_of_payments:EcbBalanceOfPaymentsFetcher"
+    },
+    {
+      "source": "ecb",
+      "model": "CurrencyReferenceRates",
+      "domain": "currency_reference_rates",
+      "contract": "CurrencyReferenceRate",
+      "binding": "opendata.data.providers.ecb.models.reference_rates:EcbCurrencyReferenceRatesFetcher"
+    },
+    {
+      "source": "ecb",
+      "model": "YieldCurve",
+      "domain": "yield_curve",
+      "contract": "EcbYieldCurveObservation",
+      "binding": "opendata.data.providers.ecb.models.yield_curve:EcbYieldCurveFetcher"
+    },
+    {
+      "source": "ecb",
+      "model": "cpi",
+      "domain": "economy_cpi",
+      "contract": "MacroSeries",
+      "binding": "opendata.data.providers.ecb.models.cpi:EcbCpiFetcher"
+    },
+    {
+      "source": "ecb",
+      "model": "gdp",
+      "domain": "economy_gdp",
+      "contract": "MacroSeries",
+      "binding": "opendata.data.providers.ecb.models.gdp:EcbGdpFetcher"
+    },
+    {
+      "source": "ecb",
+      "model": "rate",
+      "domain": "economy_rate",
+      "contract": "MacroSeries",
+      "binding": "opendata.data.providers.ecb.models.rate:EcbRateFetcher"
+    },
+    {
+      "source": "econdb",
+      "model": "AvailableIndicators",
+      "domain": "econdb_available_indicators",
+      "contract": "EconDBAvailableIndicators",
+      "binding": "opendata.data.providers.econdb.models.available_indicators:EcondbAvailableIndicatorsFetcher"
+    },
+    {
+      "source": "econdb",
+      "model": "EconomicIndicators",
+      "domain": "econdb_economic_indicators",
+      "contract": "EconDBEconomicIndicator",
+      "binding": "opendata.data.providers.econdb.models.iter2:EconDBEconomicIndicatorsFetcher"
+    },
+    {
+      "source": "econdb",
+      "model": "GdpNominal",
+      "domain": "econdb_gdp_nominal",
+      "contract": "EconDBGdpNominal",
+      "binding": "opendata.data.providers.econdb.models.iter2:EconDBGdpNominalFetcher"
+    },
+    {
+      "source": "econdb",
+      "model": "GdpReal",
+      "domain": "econdb_gdp_real",
+      "contract": "EconDBGdpReal",
+      "binding": "opendata.data.providers.econdb.models.iter2:EconDBGdpRealFetcher"
+    },
+    {
+      "source": "econdb",
+      "model": "PortVolume",
+      "domain": "econdb_port_volume",
+      "contract": "EconDBPortVolume",
+      "binding": "opendata.data.providers.econdb.models.iter2:EconDBPortVolumeFetcher"
+    },
+    {
+      "source": "econdb",
+      "model": "YieldCurve",
+      "domain": "econdb_yield_curve",
+      "contract": "EconDBYieldCurve",
+      "binding": "opendata.data.providers.econdb.models.iter2:EconDBYieldCurveFetcher"
+    },
+    {
+      "source": "eia",
+      "model": "PetroleumStatusReport",
+      "domain": "energy_petroleum_status_report",
+      "contract": "PetroleumStatusReport",
+      "binding": "opendata.data.providers.eia.models.petroleum_status_report:PetroleumStatusReportFetcher"
+    },
+    {
+      "source": "eia",
+      "model": "ShortTermEnergyOutlook",
+      "domain": "energy_short_term_energy_outlook",
+      "contract": "ShortTermEnergyOutlook",
+      "binding": "opendata.data.providers.eia.models.short_term_energy_outlook:ShortTermEnergyOutlookFetcher"
+    },
+    {
+      "source": "famafrench",
+      "model": "FamaFrenchBreakpoints",
+      "domain": "famafrench_breakpoints",
+      "contract": "FamaFrenchBreakpoint",
+      "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchBreakpointsFetcher"
+    },
+    {
+      "source": "famafrench",
+      "model": "FamaFrenchCountryPortfolioReturns",
+      "domain": "famafrench_country_portfolio_returns",
+      "contract": "FamaFrenchCountryPortfolioReturn",
+      "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchCountryPortfolioReturnsFetcher"
+    },
+    {
+      "source": "famafrench",
+      "model": "FamaFrenchFactors",
+      "domain": "famafrench_factors",
+      "contract": "FamaFrenchFactorObservation",
+      "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchFactorsFetcher"
+    },
+    {
+      "source": "famafrench",
+      "model": "FamaFrenchInternationalIndexReturns",
+      "domain": "famafrench_international_index_returns",
+      "contract": "FamaFrenchInternationalIndexReturn",
+      "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchInternationalIndexReturnsFetcher"
+    },
+    {
+      "source": "famafrench",
+      "model": "FamaFrenchRegionalPortfolioReturns",
+      "domain": "famafrench_regional_portfolio_returns",
+      "contract": "FamaFrenchPortfolioReturn",
+      "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchRegionalPortfolioReturnsFetcher"
+    },
+    {
+      "source": "famafrench",
+      "model": "FamaFrenchUSPortfolioReturns",
+      "domain": "famafrench_us_portfolio_returns",
+      "contract": "FamaFrenchPortfolioReturn",
+      "binding": "opendata.data.providers.famafrench.models.fetchers:FamaFrenchUSPortfolioReturnsFetcher"
+    },
+    {
+      "source": "federal_reserve",
+      "model": "CentralBankHoldings",
+      "domain": "central_bank_holdings",
+      "contract": "CentralBankHoldings",
+      "binding": "opendata.data.providers.federal_reserve.models.clean_economy:CentralBankHoldingsFetcher"
+    },
+    {
+      "source": "federal_reserve",
+      "model": "FederalFundsRate",
+      "domain": "federal_reserve_federal_funds_rate",
+      "contract": "FederalReserveFederalFundsRate",
+      "binding": "opendata.data.providers.federal_reserve.models.clean_rates:FederalFundsRateFetcher"
+    },
+    {
+      "source": "federal_reserve",
+      "model": "FomcDocuments",
+      "domain": "federal_reserve_fomc_documents",
+      "contract": "FederalReserveFomcDocument",
+      "binding": "opendata.data.providers.federal_reserve.models.clean_documents:FomcDocumentsFetcher"
+    },
+    {
+      "source": "federal_reserve",
+      "model": "InflationExpectations",
+      "domain": "inflation_expectations",
+      "contract": "InflationExpectations",
+      "binding": "opendata.data.providers.federal_reserve.models.clean_economy:InflationExpectationsFetcher"
+    },
+    {
+      "source": "federal_reserve",
+      "model": "MoneyMeasures",
+      "domain": "federal_reserve_money_measures",
+      "contract": "FederalReserveMoneyMeasure",
+      "binding": "opendata.data.providers.federal_reserve.models.clean_rates:MoneyMeasuresFetcher"
+    },
+    {
+      "source": "federal_reserve",
+      "model": "OvernightBankFundingRate",
+      "domain": "federal_reserve_overnight_bank_funding_rate",
+      "contract": "FederalReserveOvernightBankFundingRate",
+      "binding": "opendata.data.providers.federal_reserve.models.clean_rates:OvernightBankFundingRateFetcher"
+    },
+    {
+      "source": "federal_reserve",
+      "model": "PrimaryDealerFails",
+      "domain": "federal_reserve_primary_dealer_fails",
+      "contract": "PrimaryDealerFails",
+      "binding": "opendata.data.providers.federal_reserve.models.clean_nyfed:PrimaryDealerFailsFetcher"
+    },
+    {
+      "source": "federal_reserve",
+      "model": "PrimaryDealerPositioning",
+      "domain": "federal_reserve_primary_dealer_positioning",
+      "contract": "PrimaryDealerPositioning",
+      "binding": "opendata.data.providers.federal_reserve.models.clean_nyfed:PrimaryDealerPositioningFetcher"
+    },
+    {
+      "source": "federal_reserve",
+      "model": "SOFR",
+      "domain": "federal_reserve_sofr",
+      "contract": "SOFR",
+      "binding": "opendata.data.providers.federal_reserve.models.clean_nyfed:SOFRFetcher"
+    },
+    {
+      "source": "federal_reserve",
+      "model": "SvenssonYieldCurve",
+      "domain": "federal_reserve_svensson_yield_curve",
+      "contract": "FederalReserveSvenssonYieldCurve",
+      "binding": "opendata.data.providers.federal_reserve.models.clean_rates:SvenssonYieldCurveFetcher"
+    },
+    {
+      "source": "federal_reserve",
+      "model": "TotalFactorProductivity",
+      "domain": "total_factor_productivity",
+      "contract": "TotalFactorProductivity",
+      "binding": "opendata.data.providers.federal_reserve.models.clean_economy:TotalFactorProductivityFetcher"
+    },
+    {
+      "source": "federal_reserve",
+      "model": "TreasuryRates",
+      "domain": "federal_reserve_treasury_rates",
+      "contract": "FederalReserveTreasuryRate",
+      "binding": "opendata.data.providers.federal_reserve.models.clean_rates:TreasuryRatesFetcher"
+    },
+    {
+      "source": "federal_reserve",
+      "model": "YieldCurve",
+      "domain": "federal_reserve_yield_curve",
+      "contract": "FederalReserveYieldCurveObservation",
+      "binding": "opendata.data.providers.federal_reserve.models.clean_documents:YieldCurveFetcher"
+    },
+    {
+      "source": "finra",
+      "model": "EquityShortInterest",
+      "domain": "finra_equity_short_interest",
+      "contract": "EquityShortInterest",
+      "binding": "opendata.data.providers.finra.models.equity_short_interest:EquityShortInterestFetcher"
+    },
+    {
+      "source": "finra",
+      "model": "OTCAggregate",
+      "domain": "finra_otc_aggregate",
+      "contract": "OTCAggregate",
+      "binding": "opendata.data.providers.finra.models.otc_aggregate:OTCAggregateFetcher"
+    },
+    {
+      "source": "finviz",
+      "model": "CompareGroups",
+      "domain": "finviz_compare_groups",
+      "contract": "FinvizGroupComparison",
+      "binding": "opendata.data.providers.finviz.models.fetchers:FinvizCompareGroupsFetcher"
+    },
+    {
+      "source": "finviz",
+      "model": "EquityInfo",
+      "domain": "finviz_equity_info",
+      "contract": "FinvizEquityInfo",
+      "binding": "opendata.data.providers.finviz.models.fetchers:FinvizEquityInfoFetcher"
+    },
+    {
+      "source": "finviz",
+      "model": "KeyMetrics",
+      "domain": "finviz_key_metrics",
+      "contract": "FinvizKeyMetrics",
+      "binding": "opendata.data.providers.finviz.models.fetchers:FinvizKeyMetricsFetcher"
+    },
+    {
+      "source": "finviz",
+      "model": "PriceTarget",
+      "domain": "finviz_price_target",
+      "contract": "FinvizPriceTarget",
+      "binding": "opendata.data.providers.finviz.models.fetchers:FinvizPriceTargetFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "AnalystEstimates",
+      "domain": "fmp_analyst_estimates",
+      "contract": "AnalystEstimate",
+      "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:AnalystEstimatesFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "AvailableIndices",
+      "domain": "fmp_index_directory",
+      "contract": "AvailableIndex",
+      "binding": "opendata.data.providers.fmp.models.iter2:AvailableIndicesFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "BalanceSheet",
+      "domain": "fmp_balance_sheet",
+      "contract": "BalanceSheet",
+      "binding": "opendata.data.providers.fmp.models.iter2_financials:BalanceSheetFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "BalanceSheetGrowth",
+      "domain": "fmp_balance_sheet_growth",
+      "contract": "BalanceSheetGrowth",
+      "binding": "opendata.data.providers.fmp.models.iter2_financials:BalanceSheetGrowthFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "CalendarDividend",
+      "domain": "fmp_dividend_calendar",
+      "contract": "DividendCalendarEvent",
+      "binding": "opendata.data.providers.fmp.models.iter2:CalendarDividendFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "CalendarEarnings",
+      "domain": "fmp_earnings_calendar",
+      "contract": "EarningsCalendarEvent",
+      "binding": "opendata.data.providers.fmp.models.iter2:CalendarEarningsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "CalendarEvents",
+      "domain": "fmp_calendar_events",
+      "contract": "FmpCalendarEvent",
+      "binding": "opendata.data.providers.fmp.models.iter2:CalendarEventsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "CalendarIpo",
+      "domain": "fmp_ipo_calendar",
+      "contract": "IpoCalendarEvent",
+      "binding": "opendata.data.providers.fmp.models.iter2:CalendarIpoFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "CalendarSplits",
+      "domain": "fmp_splits_calendar",
+      "contract": "SplitsCalendarEvent",
+      "binding": "opendata.data.providers.fmp.models.iter2:CalendarSplitsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "CashFlowStatement",
+      "domain": "fmp_cash_flow_statement",
+      "contract": "CashFlowStatement",
+      "binding": "opendata.data.providers.fmp.models.iter2_financials:CashFlowStatementFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "CashFlowStatementGrowth",
+      "domain": "fmp_cash_flow_statement_growth",
+      "contract": "CashFlowStatementGrowth",
+      "binding": "opendata.data.providers.fmp.models.iter2_financials:CashFlowStatementGrowthFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "CompanyFilings",
+      "domain": "fmp_company_filings",
+      "contract": "FmpCompanyFiling",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:CompanyFilingsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "CompanyNews",
+      "domain": "fmp_company_news",
+      "contract": "FmpCompanyNews",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:CompanyNewsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "CryptoHistorical",
+      "domain": "fmp_crypto_historical",
+      "contract": "CryptoHistorical",
+      "binding": "opendata.data.providers.fmp.models.iter2_market:CryptoHistoricalFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "CryptoSearch",
+      "domain": "fmp_crypto_search",
+      "contract": "CryptoSearch",
+      "binding": "opendata.data.providers.fmp.models.iter2_market:CryptoSearchFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "CurrencyHistorical",
+      "domain": "fmp_currency_historical",
+      "contract": "CurrencyHistorical",
+      "binding": "opendata.data.providers.fmp.models.iter2_market:CurrencyHistoricalFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "CurrencyPairs",
+      "domain": "fmp_currency_pairs",
+      "contract": "CurrencyPair",
+      "binding": "opendata.data.providers.fmp.models.iter2_market:CurrencyPairsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "CurrencySnapshots",
+      "domain": "fmp_currency_snapshots",
+      "contract": "CurrencySnapshot",
+      "binding": "opendata.data.providers.fmp.models.iter2_market:CurrencySnapshotsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "DiscoveryFilings",
+      "domain": "fmp_discovery_filings",
+      "contract": "FmpDiscoveryFiling",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:DiscoveryFilingsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EarningsCallTranscript",
+      "domain": "fmp_earnings_call_transcript",
+      "contract": "FmpEarningsCallTranscript",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:EarningsCallTranscriptFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EconomicCalendar",
+      "domain": "fmp_economic_calendar",
+      "contract": "EconomicCalendarEvent",
+      "binding": "opendata.data.providers.fmp.models.iter2:EconomicCalendarFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EquityActive",
+      "domain": "fmp_equity_active",
+      "contract": "EquityActive",
+      "binding": "opendata.data.providers.fmp.models.iter2_market:EquityActiveFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EquityGainers",
+      "domain": "fmp_equity_gainers",
+      "contract": "EquityGainers",
+      "binding": "opendata.data.providers.fmp.models.iter2_market:EquityGainersFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EquityHistorical",
+      "domain": "equity_historical",
+      "contract": "EquityHistorical",
+      "binding": "opendata.data.providers.fmp.models.equity_historical:EquityHistoricalFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EquityInfo",
+      "domain": "fmp_equity_info",
+      "contract": "EquityInfo",
+      "binding": "opendata.data.providers.fmp.models.iter2_market:EquityInfoFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EquityLosers",
+      "domain": "fmp_equity_losers",
+      "contract": "EquityLosers",
+      "binding": "opendata.data.providers.fmp.models.iter2_market:EquityLosersFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EquityOwnership",
+      "domain": "fmp_equity_ownership",
+      "contract": "FmpEquityOwnership",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:EquityOwnershipFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EquityPeers",
+      "domain": "fmp_equity_peers",
+      "contract": "EquityPeers",
+      "binding": "opendata.data.providers.fmp.models.iter2_market:EquityPeersFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EquityQuote",
+      "domain": "equity_quote",
+      "contract": "EquityQuote",
+      "binding": "opendata.data.providers.fmp.models.equity_quote:EquityQuoteFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EquityScreener",
+      "domain": "fmp_equity_screener",
+      "contract": "EquityScreener",
+      "binding": "opendata.data.providers.fmp.models.iter2_market:EquityScreenerFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EsgScore",
+      "domain": "fmp_esg_score",
+      "contract": "FmpEsgScore",
+      "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:EsgScoreFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EtfCountries",
+      "domain": "fmp_etf_countries",
+      "contract": "FmpEtfCountry",
+      "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfCountriesFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EtfEquityExposure",
+      "domain": "fmp_etf_equity_exposure",
+      "contract": "FmpEtfEquityExposure",
+      "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfEquityExposureFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EtfHistorical",
+      "domain": "fmp_etf_historical",
+      "contract": "FmpEtfHistorical",
+      "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfHistoricalFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EtfHoldings",
+      "domain": "fmp_etf_holdings",
+      "contract": "FmpEtfHolding",
+      "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfHoldingsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EtfInfo",
+      "domain": "fmp_etf_info",
+      "contract": "FmpEtfInfo",
+      "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfInfoFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EtfPricePerformance",
+      "domain": "fmp_etf_price_performance",
+      "contract": "FmpEtfPricePerformance",
+      "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfPricePerformanceFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EtfSearch",
+      "domain": "fmp_etf_search",
+      "contract": "FmpEtfSearch",
+      "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfSearchFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "EtfSectors",
+      "domain": "fmp_etf_sectors",
+      "contract": "FmpEtfSector",
+      "binding": "opendata.data.providers.fmp.models.iter2_etf:EtfSectorsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "ExecutiveCompensation",
+      "domain": "fmp_executive_compensation",
+      "contract": "FmpExecutiveCompensation",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:ExecutiveCompensationFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "FinancialRatios",
+      "domain": "fmp_financial_ratios",
+      "contract": "FinancialRatios",
+      "binding": "opendata.data.providers.fmp.models.iter2_financials:FinancialRatiosFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "ForwardEbitdaEstimates",
+      "domain": "fmp_forward_ebitda_estimates",
+      "contract": "ForwardEbitdaEstimate",
+      "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:ForwardEbitdaEstimatesFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "ForwardEpsEstimates",
+      "domain": "fmp_forward_eps_estimates",
+      "contract": "ForwardEpsEstimate",
+      "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:ForwardEpsEstimatesFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "GovernmentTrades",
+      "domain": "fmp_government_trades",
+      "contract": "FmpGovernmentTrade",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:GovernmentTradesFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "HistoricalDividends",
+      "domain": "fmp_historical_dividends",
+      "contract": "FmpHistoricalDividend",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:HistoricalDividendsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "HistoricalEmployees",
+      "domain": "fmp_historical_employees",
+      "contract": "FmpHistoricalEmployee",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:HistoricalEmployeesFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "HistoricalEps",
+      "domain": "fmp_historical_eps",
+      "contract": "FmpHistoricalEps",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:HistoricalEpsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "HistoricalMarketCap",
+      "domain": "fmp_historical_market_cap",
+      "contract": "FmpHistoricalMarketCap",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:HistoricalMarketCapFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "HistoricalSplits",
+      "domain": "fmp_historical_splits",
+      "contract": "FmpHistoricalSplit",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:HistoricalSplitsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "IncomeStatement",
+      "domain": "fmp_income_statement",
+      "contract": "IncomeStatement",
+      "binding": "opendata.data.providers.fmp.models.iter2_financials:IncomeStatementFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "IncomeStatementGrowth",
+      "domain": "fmp_income_statement_growth",
+      "contract": "IncomeStatementGrowth",
+      "binding": "opendata.data.providers.fmp.models.iter2_financials:IncomeStatementGrowthFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "IndexConstituents",
+      "domain": "fmp_index_constituents",
+      "contract": "FmpIndexConstituent",
+      "binding": "opendata.data.providers.fmp.models.iter2_market:IndexConstituentsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "IndexHistorical",
+      "domain": "fmp_index_historical",
+      "contract": "IndexHistorical",
+      "binding": "opendata.data.providers.fmp.models.iter2_market:IndexHistoricalFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "InsiderTrading",
+      "domain": "fmp_insider_trading",
+      "contract": "FmpInsiderTrade",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:InsiderTradingFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "InstitutionalOwnership",
+      "domain": "fmp_institutional_ownership",
+      "contract": "FmpInstitutionalOwnership",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:InstitutionalOwnershipFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "KeyExecutives",
+      "domain": "fmp_key_executives",
+      "contract": "FmpKeyExecutive",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:KeyExecutivesFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "KeyMetrics",
+      "domain": "fmp_key_metrics",
+      "contract": "KeyMetrics",
+      "binding": "opendata.data.providers.fmp.models.iter2_financials:KeyMetricsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "MarketSnapshots",
+      "domain": "fmp_market_snapshots",
+      "contract": "MarketSnapshot",
+      "binding": "opendata.data.providers.fmp.models.iter2_market:MarketSnapshotsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "NportDisclosure",
+      "domain": "fmp_nport_disclosure",
+      "contract": "NportDisclosureHolding",
+      "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:NportDisclosureFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "PricePerformance",
+      "domain": "fmp_price_performance",
+      "contract": "PricePerformance",
+      "binding": "opendata.data.providers.fmp.models.iter2_market:PricePerformanceFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "PriceTarget",
+      "domain": "fmp_price_target",
+      "contract": "FmpPriceTarget",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:PriceTargetFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "PriceTargetConsensus",
+      "domain": "fmp_price_target_consensus",
+      "contract": "FmpPriceTargetConsensus",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:PriceTargetConsensusFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "RevenueBusinessLine",
+      "domain": "fmp_revenue_business_line",
+      "contract": "RevenueBusinessLine",
+      "binding": "opendata.data.providers.fmp.models.iter2_financials:RevenueBusinessLineFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "RevenueGeographic",
+      "domain": "fmp_revenue_geographic",
+      "contract": "RevenueGeographic",
+      "binding": "opendata.data.providers.fmp.models.iter2_financials:RevenueGeographicFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "RiskPremium",
+      "domain": "fmp_market_risk_premium",
+      "contract": "MarketRiskPremium",
+      "binding": "opendata.data.providers.fmp.models.iter2:MarketRiskPremiumFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "ShareStatistics",
+      "domain": "fmp_share_statistics",
+      "contract": "ShareStatistics",
+      "binding": "opendata.data.providers.fmp.models.iter2_market:ShareStatisticsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "TreasuryRates",
+      "domain": "fmp_treasury_rates",
+      "contract": "TreasuryRateObservation",
+      "binding": "opendata.data.providers.fmp.models.iter2:TreasuryRatesFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "WorldNews",
+      "domain": "fmp_world_news",
+      "contract": "FmpWorldNews",
+      "binding": "opendata.data.providers.fmp.models.iter2_disclosures:WorldNewsFetcher"
+    },
+    {
+      "source": "fmp",
+      "model": "YieldCurve",
+      "domain": "fmp_yield_curve",
+      "contract": "FmpYieldCurveObservation",
+      "binding": "opendata.data.providers.fmp.models.iter2_analyst_macro:YieldCurveFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "Ameribor",
+      "domain": "fred_ameribor",
+      "contract": "FredAmeribor",
+      "binding": "opendata.data.providers.fred.models.fixed_rates:AmeriborFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "BalanceOfPayments",
+      "domain": "fred_balance_of_payments",
+      "contract": "FredBalanceOfPayments",
+      "binding": "opendata.data.providers.fred.models.iter2_auxiliary:BalanceOfPaymentsFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "BondIndices",
+      "domain": "bond_indices",
+      "contract": "FredBondIndices",
+      "binding": "opendata.data.providers.fred.models.iter2_rates_extra:BondIndicesFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "CommercialPaper",
+      "domain": "commercial_paper",
+      "contract": "FredCommercialPaper",
+      "binding": "opendata.data.providers.fred.models.iter2_rates_extra:CommercialPaperFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "CommoditySpotPrices",
+      "domain": "commodity_spot_prices",
+      "contract": "FredCommoditySpotPrices",
+      "binding": "opendata.data.providers.fred.models.iter2_rates_extra:CommoditySpotPricesFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "ConsumerPriceIndex",
+      "domain": "fred_consumer_price_index",
+      "contract": "FredConsumerPriceIndex",
+      "binding": "opendata.data.providers.fred.models.iter2_macro:ConsumerPriceIndexFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "DiscountWindowPrimaryCreditRate",
+      "domain": "fred_discount_window_primary_credit_rate",
+      "contract": "FredDiscountWindowPrimaryCreditRate",
+      "binding": "opendata.data.providers.fred.models.fixed_rates:DiscountWindowPrimaryCreditRateFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "EconomicCalendar",
+      "domain": "fred_economic_calendar",
+      "contract": "FredEconomicCalendar",
+      "binding": "opendata.data.providers.fred.models.iter2_auxiliary:EconomicCalendarFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "EuroShortTermRate",
+      "domain": "euro_short_term_rate",
+      "contract": "FredEuroShortTermRate",
+      "binding": "opendata.data.providers.fred.models.iter2_rates_extra:EuroShortTermRateFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "EuropeanCentralBankInterestRates",
+      "domain": "fred_european_central_bank_interest_rates",
+      "contract": "FredEuropeanCentralBankInterestRate",
+      "binding": "opendata.data.providers.fred.models.fixed_rates:EuropeanCentralBankInterestRatesFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "FederalFundsRate",
+      "domain": "fred_federal_funds_rate",
+      "contract": "FredFederalFundsRate",
+      "binding": "opendata.data.providers.fred.models.federal_funds:FederalFundsRateFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "FredRegional",
+      "domain": "fred_regional",
+      "contract": "FredRegional",
+      "binding": "opendata.data.providers.fred.models.iter2_auxiliary:FredRegionalFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "FredReleaseTable",
+      "domain": "fred_release_table",
+      "contract": "FredReleaseTable",
+      "binding": "opendata.data.providers.fred.models.iter2_auxiliary:FredReleaseTableFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "FredSearch",
+      "domain": "fred_search",
+      "contract": "SeriesCatalogItem",
+      "binding": "opendata.data.providers.fred.models.search:FredSearchFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "FredSeries",
+      "domain": "fred_series",
+      "contract": "SeriesObservation",
+      "binding": "opendata.data.providers.fred.models.series:FredSeriesFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "HighQualityMarketCorporateBond",
+      "domain": "hqm_corporate_bond",
+      "contract": "FredHighQualityMarketCorporateBond",
+      "binding": "opendata.data.providers.fred.models.iter2_rates_extra:HighQualityMarketCorporateBondFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "IORB",
+      "domain": "iorb",
+      "contract": "FredIorbObservation",
+      "binding": "opendata.data.providers.fred.models.iorb:FredIorbFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "ManufacturingOutlookNY",
+      "domain": "fred_manufacturing_outlook_ny",
+      "contract": "FredManufacturingOutlookNY",
+      "binding": "opendata.data.providers.fred.models.iter2_macro:ManufacturingOutlookNYFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "ManufacturingOutlookTexas",
+      "domain": "fred_manufacturing_outlook_texas",
+      "contract": "FredManufacturingOutlookTexas",
+      "binding": "opendata.data.providers.fred.models.iter2_macro:ManufacturingOutlookTexasFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "MortgageIndices",
+      "domain": "fred_mortgage_indices",
+      "contract": "FredMortgageIndex",
+      "binding": "opendata.data.providers.fred.models.iter2_macro:MortgageIndicesFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "NonFarmPayrolls",
+      "domain": "fred_nonfarm_payrolls",
+      "contract": "FredNonFarmPayroll",
+      "binding": "opendata.data.providers.fred.models.iter2_macro:NonFarmPayrollsFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "OvernightBankFundingRate",
+      "domain": "fred_overnight_bank_funding_rate",
+      "contract": "FredOvernightBankFundingRate",
+      "binding": "opendata.data.providers.fred.models.federal_funds:OvernightBankFundingRateFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "PROJECTIONS",
+      "domain": "fred_projections",
+      "contract": "FredPROJECTIONS",
+      "binding": "opendata.data.providers.fred.models.iter2_auxiliary:ProjectionsFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "PersonalConsumptionExpenditures",
+      "domain": "fred_personal_consumption_expenditures",
+      "contract": "FredPersonalConsumptionExpenditure",
+      "binding": "opendata.data.providers.fred.models.iter2_macro:PersonalConsumptionExpendituresFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "RetailPrices",
+      "domain": "fred_retail_prices",
+      "contract": "FredRetailPrice",
+      "binding": "opendata.data.providers.fred.models.iter2_macro_remaining:RetailPricesRemainingFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "SOFR",
+      "domain": "sofr",
+      "contract": "FredSofrObservation",
+      "binding": "opendata.data.providers.fred.models.sofr:FredSofrFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "SONIA",
+      "domain": "sonia",
+      "contract": "FredSoniaObservation",
+      "binding": "opendata.data.providers.fred.models.sonia:FredSoniaFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "SelectedTreasuryBill",
+      "domain": "fred_selected_treasury_bill",
+      "contract": "FredSelectedTreasuryBill",
+      "binding": "opendata.data.providers.fred.models.treasury_rates:SelectedTreasuryBillFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "SelectedTreasuryConstantMaturity",
+      "domain": "fred_selected_treasury_constant_maturity",
+      "contract": "FredSelectedTreasuryConstantMaturity",
+      "binding": "opendata.data.providers.fred.models.treasury_rates:SelectedTreasuryConstantMaturityFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "SpotRate",
+      "domain": "spot_rate",
+      "contract": "FredSpotRate",
+      "binding": "opendata.data.providers.fred.models.iter2_rates_extra:SpotRateFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "SurveyOfEconomicConditionsChicago",
+      "domain": "fred_survey_of_economic_conditions_chicago",
+      "contract": "FredSurveyOfEconomicConditionsChicago",
+      "binding": "opendata.data.providers.fred.models.iter2_macro:SurveyOfEconomicConditionsChicagoFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "TipsYields",
+      "domain": "fred_tips_yields",
+      "contract": "FredTipsYield",
+      "binding": "opendata.data.providers.fred.models.fixed_rates:TipsYieldsFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "TreasuryConstantMaturity",
+      "domain": "fred_treasury_constant_maturity",
+      "contract": "FredTreasuryConstantMaturity",
+      "binding": "opendata.data.providers.fred.models.treasury_rates:TreasuryConstantMaturityFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "UniversityOfMichigan",
+      "domain": "fred_university_of_michigan",
+      "contract": "FredUniversityOfMichigan",
+      "binding": "opendata.data.providers.fred.models.iter2_macro:UniversityOfMichiganFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "YieldCurve",
+      "domain": "fred_yield_curve",
+      "contract": "FredYieldCurve",
+      "binding": "opendata.data.providers.fred.models.iter2_rates_extra:YieldCurveFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "cpi",
+      "domain": "economy_cpi",
+      "contract": "MacroSeries",
+      "binding": "opendata.data.providers.fred.models.cpi:FredCpiFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "gdp",
+      "domain": "economy_gdp",
+      "contract": "MacroSeries",
+      "binding": "opendata.data.providers.fred.models.gdp:FredGdpFetcher"
+    },
+    {
+      "source": "fred",
+      "model": "unemployment",
+      "domain": "economy_unemployment",
+      "contract": "MacroSeries",
+      "binding": "opendata.data.providers.fred.models.unemployment:FredUnemploymentFetcher"
+    },
+    {
+      "source": "government_us",
+      "model": "CommodityPsdData",
+      "domain": "government_us_commodity_psd_data",
+      "contract": "CommodityPsdData",
+      "binding": "opendata.data.providers.government_us.models.commodity_psd_data:CommodityPsdDataFetcher"
+    },
+    {
+      "source": "government_us",
+      "model": "CommodityPsdReport",
+      "domain": "government_us_commodity_psd_report",
+      "contract": "CommodityPsdReport",
+      "binding": "opendata.data.providers.government_us.models.commodity_psd_report:CommodityPsdReportFetcher"
+    },
+    {
+      "source": "government_us",
+      "model": "TreasuryAuctions",
+      "domain": "government_us_treasury_auctions",
+      "contract": "TreasuryAuction",
+      "binding": "opendata.data.providers.government_us.models.treasury_auctions:TreasuryAuctionsFetcher"
+    },
+    {
+      "source": "government_us",
+      "model": "WeatherBulletin",
+      "domain": "government_us_weather_bulletin",
+      "contract": "WeatherBulletin",
+      "binding": "opendata.data.providers.government_us.models.weather_bulletin:WeatherBulletinFetcher"
+    },
+    {
+      "source": "government_us",
+      "model": "WeatherBulletinDownload",
+      "domain": "government_us_weather_bulletin_download",
+      "contract": "WeatherBulletinDownload",
+      "binding": "opendata.data.providers.government_us.models.weather_bulletin_download:WeatherBulletinDownloadFetcher"
+    },
+    {
+      "source": "imf",
+      "model": "AvailableIndicators",
+      "domain": "economy_imf_available_indicators",
+      "contract": "ImfAvailableIndicator",
+      "binding": "opendata.data.providers.imf.models.iter2:ImfAvailableIndicatorsFetcher"
+    },
+    {
+      "source": "imf",
+      "model": "ConsumerPriceIndex",
+      "domain": "economy_imf_cpi",
+      "contract": "ImfConsumerPriceIndex",
+      "binding": "opendata.data.providers.imf.models.iter2:ImfConsumerPriceIndexFetcher"
+    },
+    {
+      "source": "imf",
+      "model": "DirectionOfTrade",
+      "domain": "economy_imf_direction_of_trade",
+      "contract": "ImfDirectionOfTrade",
+      "binding": "opendata.data.providers.imf.models.iter2:ImfDirectionOfTradeFetcher"
+    },
+    {
+      "source": "imf",
+      "model": "EconomicIndicators",
+      "domain": "economy_imf_indicators",
+      "contract": "ImfEconomicIndicator",
+      "binding": "opendata.data.providers.imf.models.iter2:ImfEconomicIndicatorFetcher"
+    },
+    {
+      "source": "imf",
+      "model": "MaritimeChokePointInfo",
+      "domain": "imf_maritime_chokepoint_info",
+      "contract": "ImfMaritimeChokePointInfo",
+      "binding": "opendata.data.providers.imf.models.portwatch:ImfChokePointInfoFetcher"
+    },
+    {
+      "source": "imf",
+      "model": "MaritimeChokePointVolume",
+      "domain": "imf_maritime_chokepoint_volume",
+      "contract": "ImfMaritimeChokePointVolume",
+      "binding": "opendata.data.providers.imf.models.portwatch:ImfChokePointVolumeFetcher"
+    },
+    {
+      "source": "imf",
+      "model": "PortInfo",
+      "domain": "imf_port_info",
+      "contract": "ImfPortInfo",
+      "binding": "opendata.data.providers.imf.models.portwatch:ImfPortInfoFetcher"
+    },
+    {
+      "source": "imf",
+      "model": "PortVolume",
+      "domain": "imf_port_volume",
+      "contract": "ImfPortVolume",
+      "binding": "opendata.data.providers.imf.models.portwatch:ImfPortVolumeFetcher"
+    },
+    {
+      "source": "imf",
+      "model": "cpi",
+      "domain": "economy_cpi",
+      "contract": "MacroSeries",
+      "binding": "opendata.data.providers.imf.models.cpi:ImfCpiFetcher"
+    },
+    {
+      "source": "imf",
+      "model": "gdp",
+      "domain": "economy_gdp",
+      "contract": "MacroSeries",
+      "binding": "opendata.data.providers.imf.models.gdp:ImfGdpFetcher"
+    },
+    {
+      "source": "imf",
+      "model": "unemployment",
+      "domain": "economy_unemployment",
+      "contract": "MacroSeries",
+      "binding": "opendata.data.providers.imf.models.unemployment:ImfUnemploymentFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "BalanceSheet",
+      "domain": "intrinio_balance_sheet",
+      "contract": "IntrinioBalanceSheet",
+      "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioBalanceSheetFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "CalendarIpo",
+      "domain": "intrinio_calendar_ipo",
+      "contract": "IntrinioPublicOffering",
+      "binding": "opendata.data.providers.intrinio.models.calendar_ipo:IntrinioCalendarIpoFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "CashFlowStatement",
+      "domain": "intrinio_cash_flow_statement",
+      "contract": "IntrinioCashFlowStatement",
+      "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioCashFlowStatementFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "CompanyFilings",
+      "domain": "intrinio_company_filings",
+      "contract": "IntrinioCompanyFiling",
+      "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioCompanyFilingsFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "CompanyNews",
+      "domain": "intrinio_company_news",
+      "contract": "IntrinioCompanyNews",
+      "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioCompanyNewsFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "CurrencyPairs",
+      "domain": "intrinio_currency_pairs",
+      "contract": "IntrinioCurrencyPair",
+      "binding": "opendata.data.providers.intrinio.models.currency_pairs:IntrinioCurrencyPairsFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "EquityHistorical",
+      "domain": "intrinio_equity_historical",
+      "contract": "IntrinioEquityHistorical",
+      "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEquityHistoricalFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "EquityInfo",
+      "domain": "intrinio_equity_info",
+      "contract": "IntrinioEquityInfo",
+      "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEquityInfoFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "EquityQuote",
+      "domain": "intrinio_equity_quote",
+      "contract": "IntrinioEquityQuote",
+      "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEquityQuoteFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "EquitySearch",
+      "domain": "intrinio_equity_search",
+      "contract": "IntrinioSearchedCompany",
+      "binding": "opendata.data.providers.intrinio.models.equity_search:IntrinioEquitySearchFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "EtfHistorical",
+      "domain": "intrinio_etf_historical",
+      "contract": "IntrinioEtfHistorical",
+      "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEtfHistoricalFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "EtfHoldings",
+      "domain": "intrinio_etf_holdings",
+      "contract": "IntrinioEtfHolding",
+      "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEtfHoldingsFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "EtfInfo",
+      "domain": "intrinio_etf_info",
+      "contract": "IntrinioEtfInfo",
+      "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEtfInfoFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "EtfPricePerformance",
+      "domain": "intrinio_etf_price_performance",
+      "contract": "IntrinioEtfPricePerformance",
+      "binding": "opendata.data.providers.intrinio.models.iter2_snapshots_clean:IntrinioEtfPricePerformanceFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "EtfSearch",
+      "domain": "intrinio_etf_search",
+      "contract": "IntrinioEtfSearch",
+      "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioEtfSearchFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "FinancialRatios",
+      "domain": "intrinio_financial_ratios",
+      "contract": "IntrinioFinancialRatios",
+      "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioFinancialRatiosFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "ForwardEbitdaEstimates",
+      "domain": "intrinio_forward_ebitda_estimates",
+      "contract": "IntrinioForwardEbitdaEstimate",
+      "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioForwardEbitdaEstimatesFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "ForwardEpsEstimates",
+      "domain": "intrinio_forward_eps_estimates",
+      "contract": "IntrinioForwardEpsEstimate",
+      "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioForwardEpsEstimatesFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "ForwardPeEstimates",
+      "domain": "intrinio_forward_pe_estimates",
+      "contract": "IntrinioForwardPeEstimate",
+      "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioForwardPeEstimatesFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "ForwardSalesEstimates",
+      "domain": "intrinio_forward_sales_estimates",
+      "contract": "IntrinioForwardSalesEstimate",
+      "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioForwardSalesEstimatesFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "FredSeries",
+      "domain": "intrinio_fred_series",
+      "contract": "IntrinioFredSeries",
+      "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioFredSeriesFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "HistoricalAttributes",
+      "domain": "intrinio_historical_attributes",
+      "contract": "IntrinioHistoricalAttribute",
+      "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioHistoricalAttributesFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "HistoricalDividends",
+      "domain": "intrinio_historical_dividends",
+      "contract": "IntrinioDividendAdjustment",
+      "binding": "opendata.data.providers.intrinio.models.historical_dividends:IntrinioHistoricalDividendsFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "HistoricalMarketCap",
+      "domain": "intrinio_historical_market_cap",
+      "contract": "IntrinioHistoricalMarketCap",
+      "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioHistoricalMarketCapFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "IncomeStatement",
+      "domain": "intrinio_income_statement",
+      "contract": "IntrinioIncomeStatement",
+      "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioIncomeStatementFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "IndexHistorical",
+      "domain": "intrinio_index_historical",
+      "contract": "IntrinioIndexHistorical",
+      "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioIndexHistoricalFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "InsiderTrading",
+      "domain": "intrinio_insider_trading",
+      "contract": "IntrinioInsiderTransaction",
+      "binding": "opendata.data.providers.intrinio.models.insider_trading:IntrinioInsiderTradingFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "KeyMetrics",
+      "domain": "intrinio_key_metrics",
+      "contract": "IntrinioKeyMetrics",
+      "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioKeyMetricsFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "LatestAttributes",
+      "domain": "intrinio_latest_attributes",
+      "contract": "IntrinioLatestAttribute",
+      "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioLatestAttributesFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "MarketSnapshots",
+      "domain": "intrinio_market_snapshots",
+      "contract": "IntrinioMarketSnapshot",
+      "binding": "opendata.data.providers.intrinio.models.iter2_snapshots_clean:IntrinioMarketSnapshotsFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "OptionsChains",
+      "domain": "intrinio_options_chains",
+      "contract": "IntrinioOptionsChain",
+      "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioOptionsChainsFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "OptionsUnusual",
+      "domain": "intrinio_options_unusual",
+      "contract": "IntrinioOptionsUnusual",
+      "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioOptionsUnusualFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "PriceTargetConsensus",
+      "domain": "intrinio_price_target_consensus",
+      "contract": "IntrinioPriceTargetConsensus",
+      "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioPriceTargetConsensusFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "ReportedFinancials",
+      "domain": "intrinio_reported_financials",
+      "contract": "IntrinioReportedFinancials",
+      "binding": "opendata.data.providers.intrinio.models.iter2_financials:IntrinioReportedFinancialsFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "SearchAttributes",
+      "domain": "intrinio_search_attributes",
+      "contract": "IntrinioSearchAttribute",
+      "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioSearchAttributesFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "ShareStatistics",
+      "domain": "intrinio_share_statistics",
+      "contract": "IntrinioShareStatistics",
+      "binding": "opendata.data.providers.intrinio.models.iter2_market_clean:IntrinioShareStatisticsFetcher"
+    },
+    {
+      "source": "intrinio",
+      "model": "WorldNews",
+      "domain": "intrinio_world_news",
+      "contract": "IntrinioWorldNews",
+      "binding": "opendata.data.providers.intrinio.models.iter2_news_attributes:IntrinioWorldNewsFetcher"
+    },
+    {
+      "source": "multpl",
+      "model": "SP500Multiples",
+      "domain": "sp500_multiples",
+      "contract": "SP500Multiples",
+      "binding": "opendata.data.providers.multpl.models.sp500_multiples:SP500MultiplesFetcher"
+    },
+    {
+      "source": "nasdaq",
+      "model": "CalendarDividend",
+      "domain": "nasdaq_calendar_dividend",
+      "contract": "NasdaqCalendarDividend",
+      "binding": "opendata.data.providers.nasdaq.models.calendar_dividend:CalendarDividendFetcher"
+    },
+    {
+      "source": "nasdaq",
+      "model": "CalendarEarnings",
+      "domain": "nasdaq_calendar_earnings",
+      "contract": "NasdaqCalendarEarnings",
+      "binding": "opendata.data.providers.nasdaq.models.calendar_earnings:CalendarEarningsFetcher"
+    },
+    {
+      "source": "nasdaq",
+      "model": "CalendarIpo",
+      "domain": "nasdaq_calendar_ipo",
+      "contract": "NasdaqCalendarIpo",
+      "binding": "opendata.data.providers.nasdaq.models.calendar_ipo:CalendarIpoFetcher"
+    },
+    {
+      "source": "nasdaq",
+      "model": "CompanyFilings",
+      "domain": "nasdaq_company_filings",
+      "contract": "NasdaqCompanyFiling",
+      "binding": "opendata.data.providers.nasdaq.models.company_filings:CompanyFilingsFetcher"
+    },
+    {
+      "source": "nasdaq",
+      "model": "EconomicCalendar",
+      "domain": "nasdaq_economic_calendar",
+      "contract": "NasdaqEconomicEvent",
+      "binding": "opendata.data.providers.nasdaq.models.economic_calendar:EconomicCalendarFetcher"
+    },
+    {
+      "source": "nasdaq",
+      "model": "EquityScreener",
+      "domain": "nasdaq_equity_screener",
+      "contract": "NasdaqEquityScreener",
+      "binding": "opendata.data.providers.nasdaq.models.equity_screener:EquityScreenerFetcher"
+    },
+    {
+      "source": "nasdaq",
+      "model": "EquitySearch",
+      "domain": "nasdaq_equity_search",
+      "contract": "NasdaqEquitySearch",
+      "binding": "opendata.data.providers.nasdaq.models.equity_search:EquitySearchFetcher"
+    },
+    {
+      "source": "nasdaq",
+      "model": "HistoricalDividends",
+      "domain": "nasdaq_historical_dividends",
+      "contract": "NasdaqHistoricalDividend",
+      "binding": "opendata.data.providers.nasdaq.models.historical_dividends:HistoricalDividendsFetcher"
+    },
+    {
+      "source": "nasdaq",
+      "model": "TopRetail",
+      "domain": "nasdaq_top_retail",
+      "contract": "NasdaqTopRetail",
+      "binding": "opendata.data.providers.nasdaq.models.top_retail:TopRetailFetcher"
+    },
+    {
+      "source": "oecd",
+      "model": "CompositeLeadingIndicator",
+      "domain": "economy_oecd_cli",
+      "contract": "OecdCompositeLeadingIndicator",
+      "binding": "opendata.data.providers.oecd.models.iter2:OecdCompositeLeadingIndicatorFetcher"
+    },
+    {
+      "source": "oecd",
+      "model": "ConsumerPriceIndex",
+      "domain": "economy_oecd_cpi",
+      "contract": "OecdConsumerPriceIndex",
+      "binding": "opendata.data.providers.oecd.models.iter2:OecdConsumerPriceIndexFetcher"
+    },
+    {
+      "source": "oecd",
+      "model": "CountryInterestRates",
+      "domain": "economy_oecd_interest_rates",
+      "contract": "OecdCountryInterestRate",
+      "binding": "opendata.data.providers.oecd.models.iter2:OecdCountryInterestRateFetcher"
+    },
+    {
+      "source": "oecd",
+      "model": "GdpForecast",
+      "domain": "economy_oecd_gdp_forecast",
+      "contract": "OecdGdpForecast",
+      "binding": "opendata.data.providers.oecd.models.iter2:OecdGdpForecastFetcher"
+    },
+    {
+      "source": "oecd",
+      "model": "GdpNominal",
+      "domain": "economy_oecd_gdp_nominal",
+      "contract": "OecdGdpNominal",
+      "binding": "opendata.data.providers.oecd.models.iter2:OecdGdpNominalFetcher"
+    },
+    {
+      "source": "oecd",
+      "model": "GdpReal",
+      "domain": "economy_oecd_gdp_real",
+      "contract": "OecdGdpReal",
+      "binding": "opendata.data.providers.oecd.models.iter2:OecdGdpRealFetcher"
+    },
+    {
+      "source": "oecd",
+      "model": "HousePriceIndex",
+      "domain": "economy_oecd_house_price_index",
+      "contract": "OecdHousePriceIndex",
+      "binding": "opendata.data.providers.oecd.models.iter2:OecdHousePriceIndexFetcher"
+    },
+    {
+      "source": "oecd",
+      "model": "SharePriceIndex",
+      "domain": "economy_oecd_share_price_index",
+      "contract": "OecdSharePriceIndex",
+      "binding": "opendata.data.providers.oecd.models.iter2:OecdSharePriceIndexFetcher"
+    },
+    {
+      "source": "oecd",
+      "model": "Unemployment",
+      "domain": "economy_oecd_unemployment",
+      "contract": "OecdUnemployment",
+      "binding": "opendata.data.providers.oecd.models.iter2:OecdUnemploymentFetcher"
+    },
+    {
+      "source": "oecd",
+      "model": "cpi",
+      "domain": "economy_cpi",
+      "contract": "MacroSeries",
+      "binding": "opendata.data.providers.oecd.models.cpi:OecdCpiFetcher"
+    },
+    {
+      "source": "oecd",
+      "model": "unemployment",
+      "domain": "economy_unemployment",
+      "contract": "MacroSeries",
+      "binding": "opendata.data.providers.oecd.models.unemployment:OecdUnemploymentFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "BalanceSheet",
+      "domain": "sec_balance_sheet",
+      "contract": "SecBalanceSheetStatement",
+      "binding": "opendata.data.providers.sec.models.iter2_financial:BalanceSheetFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "BalanceSheetGrowth",
+      "domain": "sec_balance_sheet_growth",
+      "contract": "SecBalanceSheetGrowthRow",
+      "binding": "opendata.data.providers.sec.models.iter2_financial:BalanceSheetGrowthFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "CashFlowStatement",
+      "domain": "sec_cash_flow_statement",
+      "contract": "SecCashFlowStatementRow",
+      "binding": "opendata.data.providers.sec.models.iter2_financial:CashFlowStatementFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "CashFlowStatementGrowth",
+      "domain": "sec_cash_flow_statement_growth",
+      "contract": "SecCashFlowStatementGrowthRow",
+      "binding": "opendata.data.providers.sec.models.iter2_financial:CashFlowStatementGrowthFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "CikMap",
+      "domain": "sec_cik_map",
+      "contract": "SecCikMapRecord",
+      "binding": "opendata.data.providers.sec.models.iter2_directory:CikMapFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "CompanyFilings",
+      "domain": "sec_company_filings",
+      "contract": "SecCompanyFiling",
+      "binding": "opendata.data.providers.sec.models.iter2_documents:CompanyFilingsFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "CompareCompanyFacts",
+      "domain": "sec_compare_company_facts",
+      "contract": "SecCompanyFactComparison",
+      "binding": "opendata.data.providers.sec.models.iter2_financial:CompareCompanyFactsFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "EquityFTD",
+      "domain": "sec_equity_ftd",
+      "contract": "SecFtdRecord",
+      "binding": "opendata.data.providers.sec.models.iter2_ftd:EquityFtdFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "EquitySearch",
+      "domain": "sec_equity_search",
+      "contract": "SecEquitySearchRecord",
+      "binding": "opendata.data.providers.sec.models.iter2_directory:EquitySearchFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "Filings",
+      "domain": "sec_filings",
+      "contract": "SecCompanyFiling",
+      "binding": "opendata.data.providers.sec.models.iter2_documents:FilingsFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "Form13FHR",
+      "domain": "sec_form_13f_hr",
+      "contract": "SecForm13FHRHolding",
+      "binding": "opendata.data.providers.sec.models.iter2_documents:Form13FHRFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "IncomeStatement",
+      "domain": "sec_income_statement",
+      "contract": "SecIncomeStatementRow",
+      "binding": "opendata.data.providers.sec.models.iter2_financial:IncomeStatementFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "IncomeStatementGrowth",
+      "domain": "sec_income_statement_growth",
+      "contract": "SecIncomeStatementGrowthRow",
+      "binding": "opendata.data.providers.sec.models.iter2_financial:IncomeStatementGrowthFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "InsiderTrading",
+      "domain": "sec_insider_trading",
+      "contract": "SecInsiderTransaction",
+      "binding": "opendata.data.providers.sec.models.iter2_insider:InsiderTradingFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "InstitutionsSearch",
+      "domain": "sec_institutions_search",
+      "contract": "SecInstitutionSearchResult",
+      "binding": "opendata.data.providers.sec.models.iter2_institutions:InstitutionsSearchFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "LatestFinancialReports",
+      "domain": "sec_latest_financial_reports",
+      "contract": "SecLatestFinancialReport",
+      "binding": "opendata.data.providers.sec.models.iter2_documents:LatestFinancialReportsFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "ManagementDiscussionAnalysis",
+      "domain": "sec_management_discussion_analysis",
+      "contract": "SecManagementDiscussionAnalysis",
+      "binding": "opendata.data.providers.sec.models.iter2_documents:ManagementDiscussionAnalysisFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "NportDisclosure",
+      "domain": "sec_nport_disclosure",
+      "contract": "SecNportDisclosureHolding",
+      "binding": "opendata.data.providers.sec.models.iter2_documents:NportDisclosureFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "RssLitigation",
+      "domain": "sec_rss_litigation",
+      "contract": "SecRssLitigationItem",
+      "binding": "opendata.data.providers.sec.models.iter2_documents:RssLitigationFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "SchemaFiles",
+      "domain": "sec_schema_files",
+      "contract": "SecSchemaFile",
+      "binding": "opendata.data.providers.sec.models.iter2_documents:SchemaFilesFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "SecFiling",
+      "domain": "sec_filing",
+      "contract": "SecFilingHeader",
+      "binding": "opendata.data.providers.sec.models.iter2_documents:SecFilingFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "SecHtmFile",
+      "domain": "sec_htm_file",
+      "contract": "SecHtmFileData",
+      "binding": "opendata.data.providers.sec.models.iter2_documents:SecHtmFileFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "SicSearch",
+      "domain": "sec_sic_search",
+      "contract": "SecSicCode",
+      "binding": "opendata.data.providers.sec.models.iter2_directory:SicSearchFetcher"
+    },
+    {
+      "source": "sec",
+      "model": "SymbolMap",
+      "domain": "sec_symbol_map",
+      "contract": "SecSymbolMapRecord",
+      "binding": "opendata.data.providers.sec.models.iter2_directory:SymbolMapFetcher"
+    },
+    {
+      "source": "ths",
+      "model": "financial_statement",
+      "domain": "financial_statement",
+      "contract": "FinancialStatement",
+      "binding": "opendata.data.providers.ths.models.financial_statement:ThsFinancialStatementFetcher"
+    },
+    {
+      "source": "ths",
+      "model": "fund_action",
+      "domain": "fund_action",
+      "contract": "CorporateAction",
+      "binding": "opendata.data.providers.ths.models.fund_action:ThsFundActionFetcher"
+    },
+    {
+      "source": "ths",
+      "model": "fund_etf_daily",
+      "domain": "fund_etf_daily",
+      "contract": "Bar",
+      "binding": "opendata.data.providers.ths.models.fund_etf_daily:ThsFundEtfDailyFetcher"
+    },
+    {
+      "source": "ths",
+      "model": "futures_daily",
+      "domain": "futures_daily",
+      "contract": "Bar",
+      "binding": "opendata.data.providers.ths.models.futures_daily:ThsFuturesDailyFetcher"
+    },
+    {
+      "source": "ths",
+      "model": "index_constituent",
+      "domain": "index_constituent",
+      "contract": "IndexConstituent",
+      "binding": "opendata.data.providers.ths.models.index_constituent:ThsIndexConstituentFetcher"
+    },
+    {
+      "source": "ths",
+      "model": "index_daily",
+      "domain": "index_daily",
+      "contract": "Bar",
+      "binding": "opendata.data.providers.ths.models.index_daily:ThsIndexDailyFetcher"
+    },
+    {
+      "source": "ths",
+      "model": "instrument",
+      "domain": "instrument",
+      "contract": "Instrument",
+      "binding": "opendata.data.providers.ths.models.instrument:ThsInstrumentFetcher"
+    },
+    {
+      "source": "ths",
+      "model": "option_daily",
+      "domain": "option_daily",
+      "contract": "Bar",
+      "binding": "opendata.data.providers.ths.models.option_daily:ThsOptionDailyFetcher"
+    },
+    {
+      "source": "ths",
+      "model": "stock_action",
+      "domain": "stock_action",
+      "contract": "CorporateAction",
+      "binding": "opendata.data.providers.ths.models.stock_action:ThsStockActionFetcher"
+    },
+    {
+      "source": "ths",
+      "model": "stock_daily",
+      "domain": "stock_daily",
+      "contract": "Bar",
+      "binding": "opendata.data.providers.ths.models.stock_daily:ThsStockDailyFetcher"
+    },
+    {
+      "source": "ths",
+      "model": "trading_calendar",
+      "domain": "trading_calendar",
+      "contract": "TradingCalendar",
+      "binding": "opendata.data.providers.ths.models.trading_calendar:ThsTradingCalendarFetcher"
+    },
+    {
+      "source": "tiingo",
+      "model": "CompanyNews",
+      "domain": "tiingo_company_news",
+      "contract": "TiingoCompanyNews",
+      "binding": "opendata.data.providers.tiingo.models.iter2:TiingoCompanyNewsFetcher"
+    },
+    {
+      "source": "tiingo",
+      "model": "CryptoHistorical",
+      "domain": "tiingo_crypto_historical",
+      "contract": "TiingoCryptoHistorical",
+      "binding": "opendata.data.providers.tiingo.models.crypto_historical:TiingoCryptoHistoricalFetcher"
+    },
+    {
+      "source": "tiingo",
+      "model": "CurrencyHistorical",
+      "domain": "tiingo_currency_historical",
+      "contract": "TiingoCurrencyHistorical",
+      "binding": "opendata.data.providers.tiingo.models.iter2:TiingoCurrencyHistoricalFetcher"
+    },
+    {
+      "source": "tiingo",
+      "model": "EquityHistorical",
+      "domain": "tiingo_equity_historical",
+      "contract": "TiingoEquityHistorical",
+      "binding": "opendata.data.providers.tiingo.models.iter2:TiingoEquityHistoricalFetcher"
+    },
+    {
+      "source": "tiingo",
+      "model": "EtfHistorical",
+      "domain": "tiingo_etf_historical",
+      "contract": "TiingoEtfHistorical",
+      "binding": "opendata.data.providers.tiingo.models.iter2:TiingoEtfHistoricalFetcher"
+    },
+    {
+      "source": "tiingo",
+      "model": "TrailingDividendYield",
+      "domain": "tiingo_trailing_dividend_yield",
+      "contract": "TiingoTrailingDividendYield",
+      "binding": "opendata.data.providers.tiingo.models.iter2:TiingoTrailingDividendYieldFetcher"
+    },
+    {
+      "source": "tiingo",
+      "model": "WorldNews",
+      "domain": "tiingo_world_news",
+      "contract": "TiingoWorldNews",
+      "binding": "opendata.data.providers.tiingo.models.iter2:TiingoWorldNewsFetcher"
+    },
+    {
+      "source": "tmx",
+      "model": "CompanyFilings",
+      "domain": "tmx_company_filings",
+      "contract": "TmxCompanyFiling",
+      "binding": "opendata.data.providers.tmx.models.fetchers:CompanyFilingsFetcher"
+    },
+    {
+      "source": "tmx",
+      "model": "EquityHistorical",
+      "domain": "tmx_equity_historical",
+      "contract": "TmxEquityHistorical",
+      "binding": "opendata.data.providers.tmx.models.fetchers:EquityHistoricalFetcher"
+    },
+    {
+      "source": "tmx",
+      "model": "EquityInfo",
+      "domain": "tmx_equity_info",
+      "contract": "TmxEquityInfo",
+      "binding": "opendata.data.providers.tmx.models.fetchers:EquityInfoFetcher"
+    },
+    {
+      "source": "tmx",
+      "model": "EquityQuote",
+      "domain": "tmx_equity_quote",
+      "contract": "TmxEquityQuote",
+      "binding": "opendata.data.providers.tmx.models.fetchers:EquityQuoteFetcher"
+    },
+    {
+      "source": "tmx",
+      "model": "EquitySearch",
+      "domain": "tmx_equity_search",
+      "contract": "TmxEquitySearch",
+      "binding": "opendata.data.providers.tmx.models.fetchers:EquitySearchFetcher"
+    },
+    {
+      "source": "tmx",
+      "model": "HistoricalDividends",
+      "domain": "tmx_historical_dividends",
+      "contract": "TmxHistoricalDividend",
+      "binding": "opendata.data.providers.tmx.models.fetchers:HistoricalDividendsFetcher"
+    },
+    {
+      "source": "tmx",
+      "model": "IndexConstituents",
+      "domain": "tmx_index_constituents",
+      "contract": "TmxIndexConstituent",
+      "binding": "opendata.data.providers.tmx.models.fetchers:IndexConstituentsFetcher"
+    },
+    {
+      "source": "tmx",
+      "model": "PriceTargetConsensus",
+      "domain": "tmx_price_target_consensus",
+      "contract": "TmxPriceTargetConsensus",
+      "binding": "opendata.data.providers.tmx.models.fetchers:PriceTargetConsensusFetcher"
+    },
+    {
+      "source": "tradier",
+      "model": "EquityHistorical",
+      "domain": "tradier_equity_historical",
+      "contract": "TradierEquityHistorical",
+      "binding": "opendata.data.providers.tradier.models.equity_historical:TradierEquityHistoricalFetcher"
+    },
+    {
+      "source": "tradier",
+      "model": "EquityQuote",
+      "domain": "tradier_equity_quote",
+      "contract": "TradierEquityQuote",
+      "binding": "opendata.data.providers.tradier.models.equity_quote:TradierEquityQuoteFetcher"
+    },
+    {
+      "source": "tradier",
+      "model": "EquitySearch",
+      "domain": "tradier_equity_search",
+      "contract": "TradierEquitySearch",
+      "binding": "opendata.data.providers.tradier.models.equity_search:TradierEquitySearchFetcher"
+    },
+    {
+      "source": "tradier",
+      "model": "EtfHistorical",
+      "domain": "tradier_etf_historical",
+      "contract": "TradierEtfHistorical",
+      "binding": "opendata.data.providers.tradier.models.etf_historical:TradierEtfHistoricalFetcher"
+    },
+    {
+      "source": "tradier",
+      "model": "OptionsChains",
+      "domain": "tradier_options_chains",
+      "contract": "TradierOptionChain",
+      "binding": "opendata.data.providers.tradier.models.options_chains:TradierOptionsChainsFetcher"
+    },
+    {
+      "source": "tradingeconomics",
+      "model": "EconomicCalendar",
+      "domain": "economic_calendar",
+      "contract": "TradingEconomicsEconomicCalendar",
+      "binding": "opendata.data.providers.tradingeconomics.models.economic_calendar:TradingEconomicsEconomicCalendarFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "BalanceSheet",
+      "domain": "yfinance_balance_sheet",
+      "contract": "YfinanceFinancialStatementObservation",
+      "binding": "opendata.data.providers.yfinance.models.iter2:YfinanceBalanceSheetFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "CashFlowStatement",
+      "domain": "yfinance_cash_flow_statement",
+      "contract": "YfinanceFinancialStatementObservation",
+      "binding": "opendata.data.providers.yfinance.models.iter2:YfinanceCashFlowStatementFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "CompanyNews",
+      "domain": "yfinance_company_news",
+      "contract": "YfinanceCompanyNewsObservation",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceCompanyNewsFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "CryptoHistorical",
+      "domain": "yfinance_crypto_historical",
+      "contract": "YfinanceHistoricalBar",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceCryptoHistoricalFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "CurrencyHistorical",
+      "domain": "yfinance_currency_historical",
+      "contract": "YfinanceHistoricalBar",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceCurrencyHistoricalFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "EquityActive",
+      "domain": "yfinance_equity_active",
+      "contract": "YfinanceScreenerObservation",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityActiveFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "EquityAggressiveSmallCaps",
+      "domain": "yfinance_equity_aggressive_small_caps",
+      "contract": "YfinanceScreenerObservation",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityAggressiveSmallCapsFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "EquityGainers",
+      "domain": "yfinance_equity_gainers",
+      "contract": "YfinanceScreenerObservation",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityGainersFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "EquityHistorical",
+      "domain": "yfinance_equity_historical",
+      "contract": "YfinanceHistoricalBar",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityHistoricalFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "EquityInfo",
+      "domain": "yfinance_equity_info",
+      "contract": "YfinancePayloadObservation",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityInfoFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "EquityLosers",
+      "domain": "yfinance_equity_losers",
+      "contract": "YfinanceScreenerObservation",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityLosersFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "EquityQuote",
+      "domain": "yfinance_equity_quote",
+      "contract": "YfinancePayloadObservation",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityQuoteFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "EquityScreener",
+      "domain": "yfinance_equity_screener",
+      "contract": "YfinanceScreenerObservation",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityScreenerFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "EquityUndervaluedGrowth",
+      "domain": "yfinance_equity_undervalued_growth",
+      "contract": "YfinanceScreenerObservation",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityUndervaluedGrowthFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "EquityUndervaluedLargeCaps",
+      "domain": "yfinance_equity_undervalued_large_caps",
+      "contract": "YfinanceScreenerObservation",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEquityUndervaluedLargeCapsFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "EtfHistorical",
+      "domain": "yfinance_etf_historical",
+      "contract": "YfinanceHistoricalBar",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEtfHistoricalFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "EtfInfo",
+      "domain": "yfinance_etf_info",
+      "contract": "YfinancePayloadObservation",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceEtfInfoFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "FuturesHistorical",
+      "domain": "yfinance_futures_historical",
+      "contract": "YfinanceHistoricalBar",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceFuturesHistoricalFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "GrowthTechEquities",
+      "domain": "yfinance_growth_tech_equities",
+      "contract": "YfinanceScreenerObservation",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceGrowthTechEquitiesFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "HistoricalDividends",
+      "domain": "yfinance_dividend_history",
+      "contract": "YfinanceDividendObservation",
+      "binding": "opendata.data.providers.yfinance.models.iter2:YfinanceHistoricalDividendsFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "IncomeStatement",
+      "domain": "yfinance_income_statement",
+      "contract": "YfinanceFinancialStatementObservation",
+      "binding": "opendata.data.providers.yfinance.models.iter2:YfinanceIncomeStatementFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "IndexHistorical",
+      "domain": "yfinance_index_historical",
+      "contract": "YfinanceHistoricalBar",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceIndexHistoricalFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "KeyExecutives",
+      "domain": "yfinance_key_executives",
+      "contract": "YfinancePayloadObservation",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceKeyExecutivesFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "KeyMetrics",
+      "domain": "yfinance_key_metrics",
+      "contract": "YfinanceKeyMetricObservation",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceKeyMetricsFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "OptionsChains",
+      "domain": "yfinance_options_chains",
+      "contract": "YfinanceOptionChainObservation",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceOptionsChainsFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "PriceTargetConsensus",
+      "domain": "yfinance_price_target_consensus",
+      "contract": "YfinancePriceTargetConsensus",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinancePriceTargetFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "ShareStatistics",
+      "domain": "yfinance_share_statistics",
+      "contract": "YfinancePayloadObservation",
+      "binding": "opendata.data.providers.yfinance.models.market_iter2:YfinanceShareStatisticsFetcher"
+    },
+    {
+      "source": "yfinance",
+      "model": "stock_daily",
+      "domain": "stock_daily_overseas",
+      "contract": "OverseasBar",
+      "binding": "opendata.data.providers.yfinance.models.stock_daily:YfinanceStockDailyFetcher"
+    }
+  ],
+  "source_domain_legs": [
+    {
+      "domain": "alpha_vantage_equity_historical",
+      "source": "alpha_vantage"
+    },
+    {
+      "domain": "alpha_vantage_etf_historical",
+      "source": "alpha_vantage"
+    },
+    {
+      "domain": "alpha_vantage_historical_eps",
+      "source": "alpha_vantage"
+    },
+    {
+      "domain": "balance_of_payments",
+      "source": "ecb"
+    },
+    {
+      "domain": "benzinga_analyst_search",
+      "source": "benzinga"
+    },
+    {
+      "domain": "benzinga_company_news",
+      "source": "benzinga"
+    },
+    {
+      "domain": "benzinga_price_target",
+      "source": "benzinga"
+    },
+    {
+      "domain": "benzinga_world_news",
+      "source": "benzinga"
+    },
+    {
+      "domain": "bls_search",
+      "source": "bls"
+    },
+    {
+      "domain": "bls_series",
+      "source": "bls"
+    },
+    {
+      "domain": "bond_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "bond_indices",
+      "source": "fred"
+    },
+    {
+      "domain": "cboe_available_indices",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_equity_historical",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_equity_quote",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_equity_search",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_etf_historical",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_index_constituent_quotes",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_index_historical",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_index_search",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_options_chains",
+      "source": "cboe"
+    },
+    {
+      "domain": "central_bank_holdings",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "cftc_commitment_of_traders",
+      "source": "cftc"
+    },
+    {
+      "domain": "cftc_market_directory",
+      "source": "cftc"
+    },
+    {
+      "domain": "commercial_paper",
+      "source": "fred"
+    },
+    {
+      "domain": "commodity_spot_prices",
+      "source": "fred"
+    },
+    {
+      "domain": "congress_amendment_info",
+      "source": "congress_gov"
+    },
+    {
+      "domain": "congress_amendment_text",
+      "source": "congress_gov"
+    },
+    {
+      "domain": "congress_amendments",
+      "source": "congress_gov"
+    },
+    {
+      "domain": "congress_bill_info",
+      "source": "congress_gov"
+    },
+    {
+      "domain": "congress_bill_text",
+      "source": "congress_gov"
+    },
+    {
+      "domain": "congress_bills",
+      "source": "congress_gov"
+    },
+    {
+      "domain": "congress_committee_documents",
+      "source": "congress_gov"
+    },
+    {
+      "domain": "congress_committee_info",
+      "source": "congress_gov"
+    },
+    {
+      "domain": "currency_reference_rates",
+      "source": "ecb"
+    },
+    {
+      "domain": "deribit_futures_curve",
+      "source": "deribit"
+    },
+    {
+      "domain": "deribit_futures_historical",
+      "source": "deribit"
+    },
+    {
+      "domain": "deribit_futures_info",
+      "source": "deribit"
+    },
+    {
+      "domain": "deribit_futures_instruments",
+      "source": "deribit"
+    },
+    {
+      "domain": "deribit_options_chains",
+      "source": "deribit"
+    },
+    {
+      "domain": "econdb_available_indicators",
+      "source": "econdb"
+    },
+    {
+      "domain": "econdb_economic_indicators",
+      "source": "econdb"
+    },
+    {
+      "domain": "econdb_gdp_nominal",
+      "source": "econdb"
+    },
+    {
+      "domain": "econdb_gdp_real",
+      "source": "econdb"
+    },
+    {
+      "domain": "econdb_port_volume",
+      "source": "econdb"
+    },
+    {
+      "domain": "econdb_yield_curve",
+      "source": "econdb"
+    },
+    {
+      "domain": "economic_calendar",
+      "source": "tradingeconomics"
+    },
+    {
+      "domain": "economy_cpi",
+      "source": "ecb"
+    },
+    {
+      "domain": "economy_cpi",
+      "source": "fred"
+    },
+    {
+      "domain": "economy_cpi",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_cpi",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_gdp",
+      "source": "ecb"
+    },
+    {
+      "domain": "economy_gdp",
+      "source": "fred"
+    },
+    {
+      "domain": "economy_gdp",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_imf_available_indicators",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_imf_cpi",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_imf_direction_of_trade",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_imf_indicators",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_oecd_cli",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_cpi",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_gdp_forecast",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_gdp_nominal",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_gdp_real",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_house_price_index",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_interest_rates",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_share_price_index",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_unemployment",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_rate",
+      "source": "ecb"
+    },
+    {
+      "domain": "economy_unemployment",
+      "source": "fred"
+    },
+    {
+      "domain": "economy_unemployment",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_unemployment",
+      "source": "oecd"
+    },
+    {
+      "domain": "energy_petroleum_status_report",
+      "source": "eia"
+    },
+    {
+      "domain": "energy_short_term_energy_outlook",
+      "source": "eia"
+    },
+    {
+      "domain": "equity_historical",
+      "source": "fmp"
+    },
+    {
+      "domain": "equity_quote",
+      "source": "fmp"
+    },
+    {
+      "domain": "euro_short_term_rate",
+      "source": "fred"
+    },
+    {
+      "domain": "famafrench_breakpoints",
+      "source": "famafrench"
+    },
+    {
+      "domain": "famafrench_country_portfolio_returns",
+      "source": "famafrench"
+    },
+    {
+      "domain": "famafrench_factors",
+      "source": "famafrench"
+    },
+    {
+      "domain": "famafrench_international_index_returns",
+      "source": "famafrench"
+    },
+    {
+      "domain": "famafrench_regional_portfolio_returns",
+      "source": "famafrench"
+    },
+    {
+      "domain": "famafrench_us_portfolio_returns",
+      "source": "famafrench"
+    },
+    {
+      "domain": "federal_reserve_federal_funds_rate",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_fomc_documents",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_money_measures",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_overnight_bank_funding_rate",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_primary_dealer_fails",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_primary_dealer_positioning",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_sofr",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_svensson_yield_curve",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_treasury_rates",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_yield_curve",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "financial_indicator",
+      "source": "akshare"
+    },
+    {
+      "domain": "financial_statement",
+      "source": "akshare"
+    },
+    {
+      "domain": "financial_statement",
+      "source": "ths"
+    },
+    {
+      "domain": "finra_equity_short_interest",
+      "source": "finra"
+    },
+    {
+      "domain": "finra_otc_aggregate",
+      "source": "finra"
+    },
+    {
+      "domain": "finviz_compare_groups",
+      "source": "finviz"
+    },
+    {
+      "domain": "finviz_equity_info",
+      "source": "finviz"
+    },
+    {
+      "domain": "finviz_key_metrics",
+      "source": "finviz"
+    },
+    {
+      "domain": "finviz_price_target",
+      "source": "finviz"
+    },
+    {
+      "domain": "fmp_analyst_estimates",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_balance_sheet",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_balance_sheet_growth",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_calendar_events",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_cash_flow_statement",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_cash_flow_statement_growth",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_company_filings",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_company_news",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_crypto_historical",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_crypto_search",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_currency_historical",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_currency_pairs",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_currency_snapshots",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_discovery_filings",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_dividend_calendar",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_earnings_calendar",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_earnings_call_transcript",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_economic_calendar",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_equity_active",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_equity_gainers",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_equity_info",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_equity_losers",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_equity_ownership",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_equity_peers",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_equity_screener",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_esg_score",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_etf_countries",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_etf_equity_exposure",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_etf_historical",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_etf_holdings",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_etf_info",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_etf_price_performance",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_etf_search",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_etf_sectors",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_executive_compensation",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_financial_ratios",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_forward_ebitda_estimates",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_forward_eps_estimates",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_government_trades",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_historical_dividends",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_historical_employees",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_historical_eps",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_historical_market_cap",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_historical_splits",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_income_statement",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_income_statement_growth",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_index_constituents",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_index_directory",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_index_historical",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_insider_trading",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_institutional_ownership",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_ipo_calendar",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_key_executives",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_key_metrics",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_market_risk_premium",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_market_snapshots",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_nport_disclosure",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_price_performance",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_price_target",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_price_target_consensus",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_revenue_business_line",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_revenue_geographic",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_share_statistics",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_splits_calendar",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_treasury_rates",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_world_news",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_yield_curve",
+      "source": "fmp"
+    },
+    {
+      "domain": "fred_ameribor",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_balance_of_payments",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_consumer_price_index",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_discount_window_primary_credit_rate",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_economic_calendar",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_european_central_bank_interest_rates",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_federal_funds_rate",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_manufacturing_outlook_ny",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_manufacturing_outlook_texas",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_mortgage_indices",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_nonfarm_payrolls",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_overnight_bank_funding_rate",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_personal_consumption_expenditures",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_projections",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_regional",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_release_table",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_retail_prices",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_search",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_selected_treasury_bill",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_selected_treasury_constant_maturity",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_series",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_survey_of_economic_conditions_chicago",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_tips_yields",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_treasury_constant_maturity",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_university_of_michigan",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_yield_curve",
+      "source": "fred"
+    },
+    {
+      "domain": "fund_action",
+      "source": "ths"
+    },
+    {
+      "domain": "fund_etf_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "fund_etf_daily",
+      "source": "ths"
+    },
+    {
+      "domain": "futures_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "futures_daily",
+      "source": "ths"
+    },
+    {
+      "domain": "government_us_commodity_psd_data",
+      "source": "government_us"
+    },
+    {
+      "domain": "government_us_commodity_psd_report",
+      "source": "government_us"
+    },
+    {
+      "domain": "government_us_treasury_auctions",
+      "source": "government_us"
+    },
+    {
+      "domain": "government_us_weather_bulletin",
+      "source": "government_us"
+    },
+    {
+      "domain": "government_us_weather_bulletin_download",
+      "source": "government_us"
+    },
+    {
+      "domain": "hqm_corporate_bond",
+      "source": "fred"
+    },
+    {
+      "domain": "imf_maritime_chokepoint_info",
+      "source": "imf"
+    },
+    {
+      "domain": "imf_maritime_chokepoint_volume",
+      "source": "imf"
+    },
+    {
+      "domain": "imf_port_info",
+      "source": "imf"
+    },
+    {
+      "domain": "imf_port_volume",
+      "source": "imf"
+    },
+    {
+      "domain": "index_constituent",
+      "source": "akshare"
+    },
+    {
+      "domain": "index_constituent",
+      "source": "ths"
+    },
+    {
+      "domain": "index_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "index_daily",
+      "source": "ths"
+    },
+    {
+      "domain": "inflation_expectations",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "instrument",
+      "source": "ths"
+    },
+    {
+      "domain": "intrinio_balance_sheet",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_calendar_ipo",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_cash_flow_statement",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_company_filings",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_company_news",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_currency_pairs",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_equity_historical",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_equity_info",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_equity_quote",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_equity_search",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_etf_historical",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_etf_holdings",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_etf_info",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_etf_price_performance",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_etf_search",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_financial_ratios",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_forward_ebitda_estimates",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_forward_eps_estimates",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_forward_pe_estimates",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_forward_sales_estimates",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_fred_series",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_historical_attributes",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_historical_dividends",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_historical_market_cap",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_income_statement",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_index_historical",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_insider_trading",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_key_metrics",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_latest_attributes",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_market_snapshots",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_options_chains",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_options_unusual",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_price_target_consensus",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_reported_financials",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_search_attributes",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_share_statistics",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_world_news",
+      "source": "intrinio"
+    },
+    {
+      "domain": "iorb",
+      "source": "fred"
+    },
+    {
+      "domain": "nasdaq_calendar_dividend",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "nasdaq_calendar_earnings",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "nasdaq_calendar_ipo",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "nasdaq_company_filings",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "nasdaq_economic_calendar",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "nasdaq_equity_screener",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "nasdaq_equity_search",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "nasdaq_historical_dividends",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "nasdaq_top_retail",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "option_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "option_daily",
+      "source": "ths"
+    },
+    {
+      "domain": "sec_balance_sheet",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_balance_sheet_growth",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_cash_flow_statement",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_cash_flow_statement_growth",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_cik_map",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_company_filings",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_compare_company_facts",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_equity_ftd",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_equity_search",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_filing",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_filings",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_form_13f_hr",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_htm_file",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_income_statement",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_income_statement_growth",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_insider_trading",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_institutions_search",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_latest_financial_reports",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_management_discussion_analysis",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_nport_disclosure",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_rss_litigation",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_schema_files",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_sic_search",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_symbol_map",
+      "source": "sec"
+    },
+    {
+      "domain": "sofr",
+      "source": "fred"
+    },
+    {
+      "domain": "sonia",
+      "source": "fred"
+    },
+    {
+      "domain": "sp500_multiples",
+      "source": "multpl"
+    },
+    {
+      "domain": "spot_rate",
+      "source": "fred"
+    },
+    {
+      "domain": "stock_action",
+      "source": "akshare"
+    },
+    {
+      "domain": "stock_action",
+      "source": "ths"
+    },
+    {
+      "domain": "stock_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "stock_daily",
+      "source": "ths"
+    },
+    {
+      "domain": "stock_daily_overseas",
+      "source": "yfinance"
+    },
+    {
+      "domain": "tiingo_company_news",
+      "source": "tiingo"
+    },
+    {
+      "domain": "tiingo_crypto_historical",
+      "source": "tiingo"
+    },
+    {
+      "domain": "tiingo_currency_historical",
+      "source": "tiingo"
+    },
+    {
+      "domain": "tiingo_equity_historical",
+      "source": "tiingo"
+    },
+    {
+      "domain": "tiingo_etf_historical",
+      "source": "tiingo"
+    },
+    {
+      "domain": "tiingo_trailing_dividend_yield",
+      "source": "tiingo"
+    },
+    {
+      "domain": "tiingo_world_news",
+      "source": "tiingo"
+    },
+    {
+      "domain": "tmx_company_filings",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_equity_historical",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_equity_info",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_equity_quote",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_equity_search",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_historical_dividends",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_index_constituents",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_price_target_consensus",
+      "source": "tmx"
+    },
+    {
+      "domain": "total_factor_productivity",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "tradier_equity_historical",
+      "source": "tradier"
+    },
+    {
+      "domain": "tradier_equity_quote",
+      "source": "tradier"
+    },
+    {
+      "domain": "tradier_equity_search",
+      "source": "tradier"
+    },
+    {
+      "domain": "tradier_etf_historical",
+      "source": "tradier"
+    },
+    {
+      "domain": "tradier_options_chains",
+      "source": "tradier"
+    },
+    {
+      "domain": "trading_calendar",
+      "source": "ths"
+    },
+    {
+      "domain": "yfinance_balance_sheet",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_cash_flow_statement",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_company_news",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_crypto_historical",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_currency_historical",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_dividend_history",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_active",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_aggressive_small_caps",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_gainers",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_historical",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_info",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_losers",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_quote",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_screener",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_undervalued_growth",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_undervalued_large_caps",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_etf_historical",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_etf_info",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_futures_historical",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_growth_tech_equities",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_income_statement",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_index_historical",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_key_executives",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_key_metrics",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_options_chains",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_price_target_consensus",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_share_statistics",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yield_curve",
+      "source": "ecb"
+    }
+  ],
+  "deferred_domain_ids": [
+    "alpha_vantage_equity_historical",
+    "alpha_vantage_etf_historical",
+    "alpha_vantage_historical_eps",
+    "balance_of_payments",
+    "benzinga_analyst_search",
+    "benzinga_company_news",
+    "benzinga_price_target",
+    "benzinga_world_news",
+    "bls_search",
+    "bls_series",
+    "bond_indices",
+    "cboe_available_indices",
+    "cboe_equity_historical",
+    "cboe_equity_quote",
+    "cboe_equity_search",
+    "cboe_etf_historical",
+    "cboe_index_constituent_quotes",
+    "cboe_index_historical",
+    "cboe_index_search",
+    "cboe_options_chains",
+    "central_bank_holdings",
+    "cftc_commitment_of_traders",
+    "cftc_market_directory",
+    "commercial_paper",
+    "commodity_spot_prices",
+    "congress_amendment_info",
+    "congress_amendment_text",
+    "congress_amendments",
+    "congress_bill_info",
+    "congress_bill_text",
+    "congress_bills",
+    "congress_committee_documents",
+    "congress_committee_info",
+    "currency_reference_rates",
+    "deribit_futures_curve",
+    "deribit_futures_historical",
+    "deribit_futures_info",
+    "deribit_futures_instruments",
+    "deribit_options_chains",
+    "econdb_available_indicators",
+    "econdb_economic_indicators",
+    "econdb_gdp_nominal",
+    "econdb_gdp_real",
+    "econdb_port_volume",
+    "econdb_yield_curve",
+    "economic_calendar",
+    "economy_imf_available_indicators",
+    "economy_imf_cpi",
+    "economy_imf_direction_of_trade",
+    "economy_imf_indicators",
+    "economy_oecd_cli",
+    "economy_oecd_cpi",
+    "economy_oecd_gdp_forecast",
+    "economy_oecd_gdp_nominal",
+    "economy_oecd_gdp_real",
+    "economy_oecd_house_price_index",
+    "economy_oecd_interest_rates",
+    "economy_oecd_share_price_index",
+    "economy_oecd_unemployment",
+    "energy_petroleum_status_report",
+    "energy_short_term_energy_outlook",
+    "equity_historical",
+    "equity_quote",
+    "euro_short_term_rate",
+    "famafrench_breakpoints",
+    "famafrench_country_portfolio_returns",
+    "famafrench_factors",
+    "famafrench_international_index_returns",
+    "famafrench_regional_portfolio_returns",
+    "famafrench_us_portfolio_returns",
+    "federal_reserve_federal_funds_rate",
+    "federal_reserve_fomc_documents",
+    "federal_reserve_money_measures",
+    "federal_reserve_overnight_bank_funding_rate",
+    "federal_reserve_primary_dealer_fails",
+    "federal_reserve_primary_dealer_positioning",
+    "federal_reserve_sofr",
+    "federal_reserve_svensson_yield_curve",
+    "federal_reserve_treasury_rates",
+    "federal_reserve_yield_curve",
+    "finra_equity_short_interest",
+    "finra_otc_aggregate",
+    "finviz_compare_groups",
+    "finviz_equity_info",
+    "finviz_key_metrics",
+    "finviz_price_target",
+    "fmp_analyst_estimates",
+    "fmp_balance_sheet",
+    "fmp_balance_sheet_growth",
+    "fmp_calendar_events",
+    "fmp_cash_flow_statement",
+    "fmp_cash_flow_statement_growth",
+    "fmp_company_filings",
+    "fmp_company_news",
+    "fmp_crypto_historical",
+    "fmp_crypto_search",
+    "fmp_currency_historical",
+    "fmp_currency_pairs",
+    "fmp_currency_snapshots",
+    "fmp_discovery_filings",
+    "fmp_dividend_calendar",
+    "fmp_earnings_calendar",
+    "fmp_earnings_call_transcript",
+    "fmp_economic_calendar",
+    "fmp_equity_active",
+    "fmp_equity_gainers",
+    "fmp_equity_info",
+    "fmp_equity_losers",
+    "fmp_equity_ownership",
+    "fmp_equity_peers",
+    "fmp_equity_screener",
+    "fmp_esg_score",
+    "fmp_etf_countries",
+    "fmp_etf_equity_exposure",
+    "fmp_etf_historical",
+    "fmp_etf_holdings",
+    "fmp_etf_info",
+    "fmp_etf_price_performance",
+    "fmp_etf_search",
+    "fmp_etf_sectors",
+    "fmp_executive_compensation",
+    "fmp_financial_ratios",
+    "fmp_forward_ebitda_estimates",
+    "fmp_forward_eps_estimates",
+    "fmp_government_trades",
+    "fmp_historical_dividends",
+    "fmp_historical_employees",
+    "fmp_historical_eps",
+    "fmp_historical_market_cap",
+    "fmp_historical_splits",
+    "fmp_income_statement",
+    "fmp_income_statement_growth",
+    "fmp_index_constituents",
+    "fmp_index_directory",
+    "fmp_index_historical",
+    "fmp_insider_trading",
+    "fmp_institutional_ownership",
+    "fmp_ipo_calendar",
+    "fmp_key_executives",
+    "fmp_key_metrics",
+    "fmp_market_risk_premium",
+    "fmp_market_snapshots",
+    "fmp_nport_disclosure",
+    "fmp_price_performance",
+    "fmp_price_target",
+    "fmp_price_target_consensus",
+    "fmp_revenue_business_line",
+    "fmp_revenue_geographic",
+    "fmp_share_statistics",
+    "fmp_splits_calendar",
+    "fmp_treasury_rates",
+    "fmp_world_news",
+    "fmp_yield_curve",
+    "fred_ameribor",
+    "fred_balance_of_payments",
+    "fred_consumer_price_index",
+    "fred_discount_window_primary_credit_rate",
+    "fred_economic_calendar",
+    "fred_european_central_bank_interest_rates",
+    "fred_federal_funds_rate",
+    "fred_manufacturing_outlook_ny",
+    "fred_manufacturing_outlook_texas",
+    "fred_mortgage_indices",
+    "fred_nonfarm_payrolls",
+    "fred_overnight_bank_funding_rate",
+    "fred_personal_consumption_expenditures",
+    "fred_projections",
+    "fred_regional",
+    "fred_release_table",
+    "fred_retail_prices",
+    "fred_search",
+    "fred_selected_treasury_bill",
+    "fred_selected_treasury_constant_maturity",
+    "fred_series",
+    "fred_survey_of_economic_conditions_chicago",
+    "fred_tips_yields",
+    "fred_treasury_constant_maturity",
+    "fred_university_of_michigan",
+    "fred_yield_curve",
+    "government_us_commodity_psd_data",
+    "government_us_commodity_psd_report",
+    "government_us_treasury_auctions",
+    "government_us_weather_bulletin",
+    "government_us_weather_bulletin_download",
+    "hqm_corporate_bond",
+    "imf_maritime_chokepoint_info",
+    "imf_maritime_chokepoint_volume",
+    "imf_port_info",
+    "imf_port_volume",
+    "inflation_expectations",
+    "intrinio_balance_sheet",
+    "intrinio_calendar_ipo",
+    "intrinio_cash_flow_statement",
+    "intrinio_company_filings",
+    "intrinio_company_news",
+    "intrinio_currency_pairs",
+    "intrinio_equity_historical",
+    "intrinio_equity_info",
+    "intrinio_equity_quote",
+    "intrinio_equity_search",
+    "intrinio_etf_historical",
+    "intrinio_etf_holdings",
+    "intrinio_etf_info",
+    "intrinio_etf_price_performance",
+    "intrinio_etf_search",
+    "intrinio_financial_ratios",
+    "intrinio_forward_ebitda_estimates",
+    "intrinio_forward_eps_estimates",
+    "intrinio_forward_pe_estimates",
+    "intrinio_forward_sales_estimates",
+    "intrinio_fred_series",
+    "intrinio_historical_attributes",
+    "intrinio_historical_dividends",
+    "intrinio_historical_market_cap",
+    "intrinio_income_statement",
+    "intrinio_index_historical",
+    "intrinio_insider_trading",
+    "intrinio_key_metrics",
+    "intrinio_latest_attributes",
+    "intrinio_market_snapshots",
+    "intrinio_options_chains",
+    "intrinio_options_unusual",
+    "intrinio_price_target_consensus",
+    "intrinio_reported_financials",
+    "intrinio_search_attributes",
+    "intrinio_share_statistics",
+    "intrinio_world_news",
+    "iorb",
+    "nasdaq_calendar_dividend",
+    "nasdaq_calendar_earnings",
+    "nasdaq_calendar_ipo",
+    "nasdaq_company_filings",
+    "nasdaq_economic_calendar",
+    "nasdaq_equity_screener",
+    "nasdaq_equity_search",
+    "nasdaq_historical_dividends",
+    "nasdaq_top_retail",
+    "sec_balance_sheet",
+    "sec_balance_sheet_growth",
+    "sec_cash_flow_statement",
+    "sec_cash_flow_statement_growth",
+    "sec_cik_map",
+    "sec_company_filings",
+    "sec_compare_company_facts",
+    "sec_equity_ftd",
+    "sec_equity_search",
+    "sec_filing",
+    "sec_filings",
+    "sec_form_13f_hr",
+    "sec_htm_file",
+    "sec_income_statement",
+    "sec_income_statement_growth",
+    "sec_insider_trading",
+    "sec_institutions_search",
+    "sec_latest_financial_reports",
+    "sec_management_discussion_analysis",
+    "sec_nport_disclosure",
+    "sec_rss_litigation",
+    "sec_schema_files",
+    "sec_sic_search",
+    "sec_symbol_map",
+    "sofr",
+    "sonia",
+    "sp500_multiples",
+    "spot_rate",
+    "tiingo_company_news",
+    "tiingo_crypto_historical",
+    "tiingo_currency_historical",
+    "tiingo_equity_historical",
+    "tiingo_etf_historical",
+    "tiingo_trailing_dividend_yield",
+    "tiingo_world_news",
+    "tmx_company_filings",
+    "tmx_equity_historical",
+    "tmx_equity_info",
+    "tmx_equity_quote",
+    "tmx_equity_search",
+    "tmx_historical_dividends",
+    "tmx_index_constituents",
+    "tmx_price_target_consensus",
+    "total_factor_productivity",
+    "tradier_equity_historical",
+    "tradier_equity_quote",
+    "tradier_equity_search",
+    "tradier_etf_historical",
+    "tradier_options_chains",
+    "yfinance_balance_sheet",
+    "yfinance_cash_flow_statement",
+    "yfinance_company_news",
+    "yfinance_crypto_historical",
+    "yfinance_currency_historical",
+    "yfinance_dividend_history",
+    "yfinance_equity_active",
+    "yfinance_equity_aggressive_small_caps",
+    "yfinance_equity_gainers",
+    "yfinance_equity_historical",
+    "yfinance_equity_info",
+    "yfinance_equity_losers",
+    "yfinance_equity_quote",
+    "yfinance_equity_screener",
+    "yfinance_equity_undervalued_growth",
+    "yfinance_equity_undervalued_large_caps",
+    "yfinance_etf_historical",
+    "yfinance_etf_info",
+    "yfinance_futures_historical",
+    "yfinance_growth_tech_equities",
+    "yfinance_income_statement",
+    "yfinance_index_historical",
+    "yfinance_key_executives",
+    "yfinance_key_metrics",
+    "yfinance_options_chains",
+    "yfinance_price_target_consensus",
+    "yfinance_share_statistics",
+    "yield_curve"
+  ],
+  "deferred_source_domain_legs": [
+    {
+      "domain": "alpha_vantage_equity_historical",
+      "source": "alpha_vantage"
+    },
+    {
+      "domain": "alpha_vantage_etf_historical",
+      "source": "alpha_vantage"
+    },
+    {
+      "domain": "alpha_vantage_historical_eps",
+      "source": "alpha_vantage"
+    },
+    {
+      "domain": "balance_of_payments",
+      "source": "ecb"
+    },
+    {
+      "domain": "benzinga_analyst_search",
+      "source": "benzinga"
+    },
+    {
+      "domain": "benzinga_company_news",
+      "source": "benzinga"
+    },
+    {
+      "domain": "benzinga_price_target",
+      "source": "benzinga"
+    },
+    {
+      "domain": "benzinga_world_news",
+      "source": "benzinga"
+    },
+    {
+      "domain": "bls_search",
+      "source": "bls"
+    },
+    {
+      "domain": "bls_series",
+      "source": "bls"
+    },
+    {
+      "domain": "bond_indices",
+      "source": "fred"
+    },
+    {
+      "domain": "cboe_available_indices",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_equity_historical",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_equity_quote",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_equity_search",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_etf_historical",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_index_constituent_quotes",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_index_historical",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_index_search",
+      "source": "cboe"
+    },
+    {
+      "domain": "cboe_options_chains",
+      "source": "cboe"
+    },
+    {
+      "domain": "central_bank_holdings",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "cftc_commitment_of_traders",
+      "source": "cftc"
+    },
+    {
+      "domain": "cftc_market_directory",
+      "source": "cftc"
+    },
+    {
+      "domain": "commercial_paper",
+      "source": "fred"
+    },
+    {
+      "domain": "commodity_spot_prices",
+      "source": "fred"
+    },
+    {
+      "domain": "congress_amendment_info",
+      "source": "congress_gov"
+    },
+    {
+      "domain": "congress_amendment_text",
+      "source": "congress_gov"
+    },
+    {
+      "domain": "congress_amendments",
+      "source": "congress_gov"
+    },
+    {
+      "domain": "congress_bill_info",
+      "source": "congress_gov"
+    },
+    {
+      "domain": "congress_bill_text",
+      "source": "congress_gov"
+    },
+    {
+      "domain": "congress_bills",
+      "source": "congress_gov"
+    },
+    {
+      "domain": "congress_committee_documents",
+      "source": "congress_gov"
+    },
+    {
+      "domain": "congress_committee_info",
+      "source": "congress_gov"
+    },
+    {
+      "domain": "currency_reference_rates",
+      "source": "ecb"
+    },
+    {
+      "domain": "deribit_futures_curve",
+      "source": "deribit"
+    },
+    {
+      "domain": "deribit_futures_historical",
+      "source": "deribit"
+    },
+    {
+      "domain": "deribit_futures_info",
+      "source": "deribit"
+    },
+    {
+      "domain": "deribit_futures_instruments",
+      "source": "deribit"
+    },
+    {
+      "domain": "deribit_options_chains",
+      "source": "deribit"
+    },
+    {
+      "domain": "econdb_available_indicators",
+      "source": "econdb"
+    },
+    {
+      "domain": "econdb_economic_indicators",
+      "source": "econdb"
+    },
+    {
+      "domain": "econdb_gdp_nominal",
+      "source": "econdb"
+    },
+    {
+      "domain": "econdb_gdp_real",
+      "source": "econdb"
+    },
+    {
+      "domain": "econdb_port_volume",
+      "source": "econdb"
+    },
+    {
+      "domain": "econdb_yield_curve",
+      "source": "econdb"
+    },
+    {
+      "domain": "economic_calendar",
+      "source": "tradingeconomics"
+    },
+    {
+      "domain": "economy_imf_available_indicators",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_imf_cpi",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_imf_direction_of_trade",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_imf_indicators",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_oecd_cli",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_cpi",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_gdp_forecast",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_gdp_nominal",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_gdp_real",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_house_price_index",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_interest_rates",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_share_price_index",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_oecd_unemployment",
+      "source": "oecd"
+    },
+    {
+      "domain": "energy_petroleum_status_report",
+      "source": "eia"
+    },
+    {
+      "domain": "energy_short_term_energy_outlook",
+      "source": "eia"
+    },
+    {
+      "domain": "equity_historical",
+      "source": "fmp"
+    },
+    {
+      "domain": "equity_quote",
+      "source": "fmp"
+    },
+    {
+      "domain": "euro_short_term_rate",
+      "source": "fred"
+    },
+    {
+      "domain": "famafrench_breakpoints",
+      "source": "famafrench"
+    },
+    {
+      "domain": "famafrench_country_portfolio_returns",
+      "source": "famafrench"
+    },
+    {
+      "domain": "famafrench_factors",
+      "source": "famafrench"
+    },
+    {
+      "domain": "famafrench_international_index_returns",
+      "source": "famafrench"
+    },
+    {
+      "domain": "famafrench_regional_portfolio_returns",
+      "source": "famafrench"
+    },
+    {
+      "domain": "famafrench_us_portfolio_returns",
+      "source": "famafrench"
+    },
+    {
+      "domain": "federal_reserve_federal_funds_rate",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_fomc_documents",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_money_measures",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_overnight_bank_funding_rate",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_primary_dealer_fails",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_primary_dealer_positioning",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_sofr",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_svensson_yield_curve",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_treasury_rates",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "federal_reserve_yield_curve",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "finra_equity_short_interest",
+      "source": "finra"
+    },
+    {
+      "domain": "finra_otc_aggregate",
+      "source": "finra"
+    },
+    {
+      "domain": "finviz_compare_groups",
+      "source": "finviz"
+    },
+    {
+      "domain": "finviz_equity_info",
+      "source": "finviz"
+    },
+    {
+      "domain": "finviz_key_metrics",
+      "source": "finviz"
+    },
+    {
+      "domain": "finviz_price_target",
+      "source": "finviz"
+    },
+    {
+      "domain": "fmp_analyst_estimates",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_balance_sheet",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_balance_sheet_growth",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_calendar_events",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_cash_flow_statement",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_cash_flow_statement_growth",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_company_filings",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_company_news",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_crypto_historical",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_crypto_search",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_currency_historical",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_currency_pairs",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_currency_snapshots",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_discovery_filings",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_dividend_calendar",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_earnings_calendar",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_earnings_call_transcript",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_economic_calendar",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_equity_active",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_equity_gainers",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_equity_info",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_equity_losers",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_equity_ownership",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_equity_peers",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_equity_screener",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_esg_score",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_etf_countries",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_etf_equity_exposure",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_etf_historical",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_etf_holdings",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_etf_info",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_etf_price_performance",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_etf_search",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_etf_sectors",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_executive_compensation",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_financial_ratios",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_forward_ebitda_estimates",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_forward_eps_estimates",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_government_trades",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_historical_dividends",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_historical_employees",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_historical_eps",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_historical_market_cap",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_historical_splits",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_income_statement",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_income_statement_growth",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_index_constituents",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_index_directory",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_index_historical",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_insider_trading",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_institutional_ownership",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_ipo_calendar",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_key_executives",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_key_metrics",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_market_risk_premium",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_market_snapshots",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_nport_disclosure",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_price_performance",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_price_target",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_price_target_consensus",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_revenue_business_line",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_revenue_geographic",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_share_statistics",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_splits_calendar",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_treasury_rates",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_world_news",
+      "source": "fmp"
+    },
+    {
+      "domain": "fmp_yield_curve",
+      "source": "fmp"
+    },
+    {
+      "domain": "fred_ameribor",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_balance_of_payments",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_consumer_price_index",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_discount_window_primary_credit_rate",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_economic_calendar",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_european_central_bank_interest_rates",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_federal_funds_rate",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_manufacturing_outlook_ny",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_manufacturing_outlook_texas",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_mortgage_indices",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_nonfarm_payrolls",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_overnight_bank_funding_rate",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_personal_consumption_expenditures",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_projections",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_regional",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_release_table",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_retail_prices",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_search",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_selected_treasury_bill",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_selected_treasury_constant_maturity",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_series",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_survey_of_economic_conditions_chicago",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_tips_yields",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_treasury_constant_maturity",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_university_of_michigan",
+      "source": "fred"
+    },
+    {
+      "domain": "fred_yield_curve",
+      "source": "fred"
+    },
+    {
+      "domain": "government_us_commodity_psd_data",
+      "source": "government_us"
+    },
+    {
+      "domain": "government_us_commodity_psd_report",
+      "source": "government_us"
+    },
+    {
+      "domain": "government_us_treasury_auctions",
+      "source": "government_us"
+    },
+    {
+      "domain": "government_us_weather_bulletin",
+      "source": "government_us"
+    },
+    {
+      "domain": "government_us_weather_bulletin_download",
+      "source": "government_us"
+    },
+    {
+      "domain": "hqm_corporate_bond",
+      "source": "fred"
+    },
+    {
+      "domain": "imf_maritime_chokepoint_info",
+      "source": "imf"
+    },
+    {
+      "domain": "imf_maritime_chokepoint_volume",
+      "source": "imf"
+    },
+    {
+      "domain": "imf_port_info",
+      "source": "imf"
+    },
+    {
+      "domain": "imf_port_volume",
+      "source": "imf"
+    },
+    {
+      "domain": "inflation_expectations",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "intrinio_balance_sheet",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_calendar_ipo",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_cash_flow_statement",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_company_filings",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_company_news",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_currency_pairs",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_equity_historical",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_equity_info",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_equity_quote",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_equity_search",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_etf_historical",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_etf_holdings",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_etf_info",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_etf_price_performance",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_etf_search",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_financial_ratios",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_forward_ebitda_estimates",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_forward_eps_estimates",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_forward_pe_estimates",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_forward_sales_estimates",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_fred_series",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_historical_attributes",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_historical_dividends",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_historical_market_cap",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_income_statement",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_index_historical",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_insider_trading",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_key_metrics",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_latest_attributes",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_market_snapshots",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_options_chains",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_options_unusual",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_price_target_consensus",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_reported_financials",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_search_attributes",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_share_statistics",
+      "source": "intrinio"
+    },
+    {
+      "domain": "intrinio_world_news",
+      "source": "intrinio"
+    },
+    {
+      "domain": "iorb",
+      "source": "fred"
+    },
+    {
+      "domain": "nasdaq_calendar_dividend",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "nasdaq_calendar_earnings",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "nasdaq_calendar_ipo",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "nasdaq_company_filings",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "nasdaq_economic_calendar",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "nasdaq_equity_screener",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "nasdaq_equity_search",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "nasdaq_historical_dividends",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "nasdaq_top_retail",
+      "source": "nasdaq"
+    },
+    {
+      "domain": "sec_balance_sheet",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_balance_sheet_growth",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_cash_flow_statement",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_cash_flow_statement_growth",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_cik_map",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_company_filings",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_compare_company_facts",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_equity_ftd",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_equity_search",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_filing",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_filings",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_form_13f_hr",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_htm_file",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_income_statement",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_income_statement_growth",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_insider_trading",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_institutions_search",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_latest_financial_reports",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_management_discussion_analysis",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_nport_disclosure",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_rss_litigation",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_schema_files",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_sic_search",
+      "source": "sec"
+    },
+    {
+      "domain": "sec_symbol_map",
+      "source": "sec"
+    },
+    {
+      "domain": "sofr",
+      "source": "fred"
+    },
+    {
+      "domain": "sonia",
+      "source": "fred"
+    },
+    {
+      "domain": "sp500_multiples",
+      "source": "multpl"
+    },
+    {
+      "domain": "spot_rate",
+      "source": "fred"
+    },
+    {
+      "domain": "tiingo_company_news",
+      "source": "tiingo"
+    },
+    {
+      "domain": "tiingo_crypto_historical",
+      "source": "tiingo"
+    },
+    {
+      "domain": "tiingo_currency_historical",
+      "source": "tiingo"
+    },
+    {
+      "domain": "tiingo_equity_historical",
+      "source": "tiingo"
+    },
+    {
+      "domain": "tiingo_etf_historical",
+      "source": "tiingo"
+    },
+    {
+      "domain": "tiingo_trailing_dividend_yield",
+      "source": "tiingo"
+    },
+    {
+      "domain": "tiingo_world_news",
+      "source": "tiingo"
+    },
+    {
+      "domain": "tmx_company_filings",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_equity_historical",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_equity_info",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_equity_quote",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_equity_search",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_historical_dividends",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_index_constituents",
+      "source": "tmx"
+    },
+    {
+      "domain": "tmx_price_target_consensus",
+      "source": "tmx"
+    },
+    {
+      "domain": "total_factor_productivity",
+      "source": "federal_reserve"
+    },
+    {
+      "domain": "tradier_equity_historical",
+      "source": "tradier"
+    },
+    {
+      "domain": "tradier_equity_quote",
+      "source": "tradier"
+    },
+    {
+      "domain": "tradier_equity_search",
+      "source": "tradier"
+    },
+    {
+      "domain": "tradier_etf_historical",
+      "source": "tradier"
+    },
+    {
+      "domain": "tradier_options_chains",
+      "source": "tradier"
+    },
+    {
+      "domain": "yfinance_balance_sheet",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_cash_flow_statement",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_company_news",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_crypto_historical",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_currency_historical",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_dividend_history",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_active",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_aggressive_small_caps",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_gainers",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_historical",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_info",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_losers",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_quote",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_screener",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_undervalued_growth",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_equity_undervalued_large_caps",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_etf_historical",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_etf_info",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_futures_historical",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_growth_tech_equities",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_income_statement",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_index_historical",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_key_executives",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_key_metrics",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_options_chains",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_price_target_consensus",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yfinance_share_statistics",
+      "source": "yfinance"
+    },
+    {
+      "domain": "yield_curve",
+      "source": "ecb"
+    }
+  ],
+  "legacy_source_domain_legs": [
+    {
+      "domain": "bond_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "economy_cpi",
+      "source": "ecb"
+    },
+    {
+      "domain": "economy_cpi",
+      "source": "fred"
+    },
+    {
+      "domain": "economy_cpi",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_cpi",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_gdp",
+      "source": "ecb"
+    },
+    {
+      "domain": "economy_gdp",
+      "source": "fred"
+    },
+    {
+      "domain": "economy_gdp",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_rate",
+      "source": "ecb"
+    },
+    {
+      "domain": "economy_unemployment",
+      "source": "fred"
+    },
+    {
+      "domain": "economy_unemployment",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_unemployment",
+      "source": "oecd"
+    },
+    {
+      "domain": "financial_indicator",
+      "source": "akshare"
+    },
+    {
+      "domain": "financial_statement",
+      "source": "akshare"
+    },
+    {
+      "domain": "financial_statement",
+      "source": "ths"
+    },
+    {
+      "domain": "fund_action",
+      "source": "ths"
+    },
+    {
+      "domain": "fund_etf_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "fund_etf_daily",
+      "source": "ths"
+    },
+    {
+      "domain": "futures_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "futures_daily",
+      "source": "ths"
+    },
+    {
+      "domain": "index_constituent",
+      "source": "akshare"
+    },
+    {
+      "domain": "index_constituent",
+      "source": "ths"
+    },
+    {
+      "domain": "index_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "index_daily",
+      "source": "ths"
+    },
+    {
+      "domain": "instrument",
+      "source": "ths"
+    },
+    {
+      "domain": "option_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "option_daily",
+      "source": "ths"
+    },
+    {
+      "domain": "stock_action",
+      "source": "akshare"
+    },
+    {
+      "domain": "stock_action",
+      "source": "ths"
+    },
+    {
+      "domain": "stock_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "stock_daily",
+      "source": "ths"
+    },
+    {
+      "domain": "stock_daily_overseas",
+      "source": "yfinance"
+    },
+    {
+      "domain": "trading_calendar",
+      "source": "ths"
+    }
+  ],
+  "mapped_ods_legs": [
+    {
+      "domain": "financial_indicator",
+      "source": "akshare",
+      "freshness_field": "report_period"
+    },
+    {
+      "domain": "financial_statement",
+      "source": "akshare",
+      "freshness_field": "report_period"
+    },
+    {
+      "domain": "financial_statement",
+      "source": "ths",
+      "freshness_field": "report_period"
+    },
+    {
+      "domain": "futures_daily",
+      "source": "ths",
+      "freshness_field": "trade_date"
+    },
+    {
+      "domain": "index_constituent",
+      "source": "akshare",
+      "freshness_field": "as_of"
+    },
+    {
+      "domain": "index_daily",
+      "source": "ths",
+      "freshness_field": "trade_date"
+    },
+    {
+      "domain": "option_daily",
+      "source": "ths",
+      "freshness_field": "trade_date"
+    },
+    {
+      "domain": "stock_action",
+      "source": "ths",
+      "freshness_field": "ex_date"
+    },
+    {
+      "domain": "stock_daily",
+      "source": "akshare",
+      "freshness_field": "trade_date"
+    },
+    {
+      "domain": "stock_daily",
+      "source": "ths",
+      "freshness_field": "trade_date"
+    }
+  ],
+  "unmapped_ods_legs": [
+    {
+      "domain": "bond_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "economy_cpi",
+      "source": "ecb"
+    },
+    {
+      "domain": "economy_cpi",
+      "source": "fred"
+    },
+    {
+      "domain": "economy_cpi",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_cpi",
+      "source": "oecd"
+    },
+    {
+      "domain": "economy_gdp",
+      "source": "ecb"
+    },
+    {
+      "domain": "economy_gdp",
+      "source": "fred"
+    },
+    {
+      "domain": "economy_gdp",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_rate",
+      "source": "ecb"
+    },
+    {
+      "domain": "economy_unemployment",
+      "source": "fred"
+    },
+    {
+      "domain": "economy_unemployment",
+      "source": "imf"
+    },
+    {
+      "domain": "economy_unemployment",
+      "source": "oecd"
+    },
+    {
+      "domain": "fund_action",
+      "source": "ths"
+    },
+    {
+      "domain": "fund_etf_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "fund_etf_daily",
+      "source": "ths"
+    },
+    {
+      "domain": "futures_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "index_constituent",
+      "source": "ths"
+    },
+    {
+      "domain": "index_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "instrument",
+      "source": "ths"
+    },
+    {
+      "domain": "option_daily",
+      "source": "akshare"
+    },
+    {
+      "domain": "stock_action",
+      "source": "akshare"
+    },
+    {
+      "domain": "stock_daily_overseas",
+      "source": "yfinance"
+    },
+    {
+      "domain": "trading_calendar",
+      "source": "ths"
+    }
+  ]
+}

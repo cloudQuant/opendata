@@ -83,6 +83,17 @@ class TestShippedMap:
         # 清单的 intrinio 行。三个名字与上面的 CalendarIpo 走的是同一条路：domains.yaml 里
         # 先登记域与受控契约，binding 再由 registry 投影进本表，能力 verified=False。
         # SOFR 这个名字在本格里不重复计——fred 的 sofr 行早已占位，两条是不同的 domain。
+        # C99 一次接入四个名字，出处都是 provider-inventory.yaml 的机械解析行，且都只经
+        # registry 投影进本表、能力 verified=False：PriceTarget 在 benzinga 行
+        # （`models: [AnalystSearch, CompanyNews, WorldNews, PriceTarget]`）、
+        # AvailableIndicators 在 econdb 行（该行首个模型）、CryptoHistorical 在 tiingo 行、
+        # OvernightBankFundingRate 在 federal_reserve 行（与 SOFR/FederalFundsRate 同一行）。
+        # AvailableIndicators 与 cboe 的 AvailableIndices 是两个不同的名字，不构成同格重复。
+        # 这四条里只有 econdb 一开始没进本表：binding 把类名写成了品牌拼写
+        # ``EconDBAvailableIndicatorsFetcher``，而 make_http_json_fetcher 的类名是从
+        # **source 路由标签**生成的（"econdb" -> ``Econdb``），:180 的精确 fetcher 比对因此
+        # fail-closed。改名的是 binding 与模块符号，不是引擎的命名规则——cboe 的
+        # ``Cboe…Fetcher`` 早就跟着同一条规则。
         assert confirmed == {
             "EquityHistorical",
             "ConsumerPriceIndex",
@@ -110,6 +121,38 @@ class TestShippedMap:
             "CalendarIpo",
             "FederalFundsRate",
             "InsiderTrading",
+            "PriceTarget",
+            "AvailableIndicators",
+            "CryptoHistorical",
+            "OvernightBankFundingRate",
+            "CalendarDividend",
+            "CalendarEarnings",
+            "EtfCountries",
+            "EtfEquityExposure",
+            "EtfHoldings",
+            "EtfInfo",
+            "EtfPricePerformance",
+            "EtfSearch",
+            "EtfSectors",
+            "HistoricalEps",
+            "TreasuryConstantMaturity",
+            "SelectedTreasuryBill",
+            "SelectedTreasuryConstantMaturity",
+            "Ameribor",
+            "DiscountWindowPrimaryCreditRate",
+            "EuropeanCentralBankInterestRates",
+            "TipsYields",
+            "CongressBills",
+            "CongressBillInfo",
+            "CongressBillText",
+            "CongressAmendments",
+            "CongressAmendmentInfo",
+            "CongressAmendmentText",
+            "CongressCommitteeInfo",
+            "CongressCommitteeDocuments",
+            "OptionsChains",
+            "EconomicCalendar",
+            "SP500Multiples",
         }
 
     def test_enabled_capabilities_are_covered(self):

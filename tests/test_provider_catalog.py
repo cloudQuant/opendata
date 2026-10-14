@@ -82,10 +82,10 @@ class _CapabilityOnlyFetcher:
         self.capability = capability
 
 
-def test_catalog_contains_34_sources_and_only_58_fetcher_bindings() -> None:
+def test_catalog_contains_34_sources_and_only_66_fetcher_bindings() -> None:
     """The frozen catalog denominator, split into the two populations that make it up.
 
-    58 bindings are 44 hand-written fetchers plus 14 declarative engine models. The split is counted
+    66 bindings are 48 hand-written fetchers plus 18 declarative engine models. The split is counted
     apart and the sum is still frozen, because the two kinds of source work grow for different
     reasons: a new hand-written fetcher is one provider's own module, while a declaration adds a
     binding *and* a generated fetcher, and an engine model that registered without a binding
@@ -93,16 +93,21 @@ def test_catalog_contains_34_sources_and_only_58_fetcher_bindings() -> None:
     engine-driven is read the way the runtime reads it -- a fetcher carrying ``model_spec`` -- not
     from a hand-maintained id list, so the count cannot be kept green by editing a list.
 
-    How the 58 is built, since a frozen sum hides a retraction: 46 at the wave-1 baseline, +4 from
+    How the 66 is built, since a frozen sum hides a retraction: 46 at the wave-1 baseline, +4 from
     the cboe declarations, -2 for the oecd rows that shipped as hand-written fetchers first and had
     their declarations withdrawn, +2 for the federal_reserve CSV rows, +1 for the third
     federal_reserve row declared through ``ModelSpec.row_expansion``, +3 for the three intrinio
     declarations, and +1 for intrinio's fourth row (``CalendarIpo``), also declared through
     ``ModelSpec.row_expansion``, +2 for the two federal_reserve rows this round
-    (``FederalFundsRate`` and ``SOFR``) and +1 for intrinio's ``InsiderTrading``. A withdrawn
+    (``FederalFundsRate`` and ``SOFR``) and +1 for intrinio's ``InsiderTrading``; this
+    wave adds +1 for federal_reserve's ``OvernightBankFundingRate`` and +3 for the three
+    packages it registers at once (``benzinga_price_target``, ``tiingo_crypto_historical``,
+    ``econdb_available_indicators``). A withdrawn
     declaration is counted out rather than left to register, so the assert freezes the population
     the runtime can actually route. The
-    hand-written leg stayed 44 while the declared leg went 9 -> 10 -> 11 -> 14: intrinio's third
+    hand-written leg rose from 44 to 48 with four Finviz bindings, while the declared leg went
+    9 -> 10 -> 11 -> 14 -> 18:
+    intrinio's third
     candidate row (``HistoricalDividends``) is no longer withheld -- its spec keeps it in
     ``providers/intrinio/specs.py`` as ``HISTORICAL_DIVIDENDS`` with an empty ``NOT_DECLARABLE`` --
     and its fourth row adds the binding plus the fetcher the engine generates for each of them.
@@ -118,16 +123,20 @@ def test_catalog_contains_34_sources_and_only_58_fetcher_bindings() -> None:
     assert {provider.source for provider in providers} == EXPECTED_SOURCES
     assert {provider.source for provider in providers if provider.is_implemented} == {
         "akshare",
+        "benzinga",
         "bls",
         "cboe",
         "ecb",
+        "econdb",
         "federal_reserve",
+        "finviz",
         "fmp",
         "fred",
         "imf",
         "intrinio",
         "oecd",
         "ths",
+        "tiingo",
         "yfinance",
     }
     declared_ids = {f"{source}::{spec.model}" for source, spec in engine_declared_models()}
@@ -141,9 +150,9 @@ def test_catalog_contains_34_sources_and_only_58_fetcher_bindings() -> None:
         f"{source}::{binding.canonical_model_ids[0]}" for source, binding in engine_bindings
     }
     assert engine_ids == declared_ids, "an engine binding's canonical id is the model it generates"
-    assert len(bindings) == 58
-    assert len(bindings) - len(engine_bindings) == 44
-    assert len(engine_bindings) == len(bindings) - 44
+    assert len(bindings) == 66
+    assert len(bindings) - len(engine_bindings) == 48
+    assert len(engine_bindings) == len(bindings) - 48
     print(
         f"\ncatalog bindings: total={len(bindings)} engine={len(engine_bindings)} "
         f"hand_written={len(bindings) - len(engine_bindings)} engine_ids={sorted(engine_ids)}"
@@ -154,7 +163,7 @@ def test_catalog_contains_34_sources_and_only_58_fetcher_bindings() -> None:
     )
 
     reserved = [provider for provider in providers if not provider.is_implemented]
-    assert len(reserved) == 22
+    assert len(reserved) == 18
     assert all(provider.health_check().status == "not_implemented" for provider in reserved)
     assert all(not provider.fetcher_bindings for provider in reserved)
 

@@ -21,7 +21,8 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from datetime import datetime
+from typing import TYPE_CHECKING, Any, Literal
 
 from loguru import logger
 from sqlalchemy import text
@@ -69,6 +70,9 @@ class BatchNotifier:
         batch_id: str | None = None,
         layer: str = "ods",
         table: str | None = None,
+        payload_mode: Literal["auto", "meta"] = "auto",
+        row_count: int | None = None,
+        created_at: datetime | None = None,
     ) -> None:
         """Bind the notifier to one pipeline run.
 
@@ -79,11 +83,27 @@ class BatchNotifier:
             layer: Layer the batch landed in.
             table: Warehouse table to read a ``full`` payload from;
                 derived from the context when omitted.
+            payload_mode: ``auto`` preserves subscription-selected full
+                payloads; ``meta`` explicitly sends meta frames only.
+            row_count: Trusted count of rows committed by a derived write.
+                When set, the hook does not query ``_batch_id`` or fall back
+                to the context key count.
+            created_at: Stable UTC creation time for an idempotently retried
+                notification batch.
         """
+        if payload_mode not in {"auto", "meta"}:
+            raise ValueError("payload_mode must be 'auto' or 'meta'")
+        if row_count is not None and (type(row_count) is not int or row_count < 0):
+            raise ValueError("row_count must be a non-negative integer")
+        if created_at is not None and not isinstance(created_at, datetime):
+            raise ValueError("created_at must be a datetime")
         self.engine = engine
         self.batch_id = batch_id
         self.layer = layer
         self.table = table
+        self.payload_mode = payload_mode
+        self.row_count = row_count
+        self.created_at = created_at
 
     async def __call__(self, context: PipelineContext) -> NotifyResult:
         """Record and publish the batch of one pipeline run.
@@ -98,7 +118,11 @@ class BatchNotifier:
             the count the hub managed to reach.
         """
         batch_id = self.batch_id or new_batch_id()
-        rows = await asyncio.to_thread(self._count_rows, context, batch_id)
+        rows = (
+            self.row_count
+            if self.row_count is not None
+            else await asyncio.to_thread(self._count_rows, context, batch_id)
+        )
         watermark = BatchWatermark(
             batch_id=batch_id,
             domain=context.domain,
@@ -107,12 +131,12 @@ class BatchNotifier:
             window_start=context.window.start,
             window_end=context.window.end,
             rows=rows,
-            created_at=utcnow(),
+            created_at=self.created_at or utcnow(),
         )
         await asyncio.to_thread(record_batch, self.engine, watermark)
         event = BatchEvent(watermark=watermark, symbols=_symbols_of(context))
         payload = None
-        if hub.wants_full(event):
+        if self.payload_mode == "auto" and hub.wants_full(event):
             payload = await asyncio.to_thread(self._read_rows, context, batch_id)
         try:
             delivered = await hub.publish_batch(event, rows=payload)
@@ -220,6 +244,9 @@ def build_notify_hook(
     batch_id: str | None = None,
     layer: str = "ods",
     table: str | None = None,
+    payload_mode: Literal["auto", "meta"] = "auto",
+    row_count: int | None = None,
+    created_at: datetime | None = None,
 ) -> BatchNotifier:
     """Build the step-5 hook of a pipeline (design §10.2).
 
@@ -228,8 +255,20 @@ def build_notify_hook(
         batch_id: The ods batch id the run stamps on its rows.
         layer: Layer the batch lands in.
         table: Warehouse table override (tests).
+        payload_mode: ``auto`` preserves old full-mode behavior; ``meta``
+            explicitly publishes meta-only frames.
+        row_count: Trusted row count for outputs without ``_batch_id``.
+        created_at: Stable creation time reused by retry notifications.
 
     Returns:
         The hook, ready to be passed to ``DataPipeline(notify=...)``.
     """
-    return BatchNotifier(engine, batch_id=batch_id, layer=layer, table=table)
+    return BatchNotifier(
+        engine,
+        batch_id=batch_id,
+        layer=layer,
+        table=table,
+        payload_mode=payload_mode,
+        row_count=row_count,
+        created_at=created_at,
+    )

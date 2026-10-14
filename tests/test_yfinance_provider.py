@@ -289,7 +289,8 @@ class TestSdkSeam:
         calls: dict[str, Any] = {}
 
         class _Ticker:
-            def __init__(self, symbol: str) -> None:
+            def __init__(self, symbol: str, *, session: object | None = None) -> None:
+                del session
                 calls["symbol"] = symbol
 
             def history(self, **kwargs: object) -> pd.DataFrame:
@@ -302,8 +303,21 @@ class TestSdkSeam:
                     raise calls["splits"]
                 return calls.get("splits_value", pd.Series(dtype="float64"))
 
+        class _YfData:
+            _instances: dict[type[Any], Any] = {}
+
+            def __init__(self, *, session: object) -> None:
+                self._session = session
+                type(self)._instances[type(self)] = self
+
         module = types.ModuleType("yfinance")
+        module.__version__ = "1.7.0"  # type: ignore[attr-defined]
+        module.config = types.SimpleNamespace(  # type: ignore[attr-defined]
+            network=types.SimpleNamespace(retries=0, proxy=None)
+        )
+        module.data = types.SimpleNamespace(YfData=_YfData)  # type: ignore[attr-defined]
         module.Ticker = _Ticker  # type: ignore[attr-defined]
+        calls["sdk"] = module
         monkeypatch.setitem(sys.modules, "yfinance", module)
         return calls
 
@@ -338,6 +352,14 @@ class TestSdkSeam:
         with pytest.raises(YfinanceProviderError) as err:
             _sdk.require_split_history("AAPL")
         assert err.value.code == "YFINANCE_SPLITS_UNAVAILABLE"
+
+    def test_unsupported_sdk_version_fails_before_ticker(self, fake_sdk: dict[str, Any]) -> None:
+        """The supported-version gate rejects an incompatible fake before SDK use."""
+        fake_sdk["sdk"].__version__ = "1.6.9"
+        with pytest.raises(YfinanceProviderError) as err:
+            _sdk.require_history_frame("AAPL", start=None, end=None, timeout=None)
+        assert err.value.code == "YFINANCE_UNSUPPORTED_SDK_VERSION"
+        assert "symbol" not in fake_sdk
 
 
 class TestOverseasBarContract:

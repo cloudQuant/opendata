@@ -543,7 +543,8 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
     ]
     # Presence is re-measured from the shipped engine source for the capabilities whose declaration
     # carrier exists there: one spec field each (row_filters, composite_keys, row_expansion,
-    # column_derives, ParamSpec.value_map, ParamSpec.relative_default, ModelSpec.order_by,
+    # column_derives, ParamSpec.value_map, ParamSpec.relative_default, ParamSpec.serialise,
+    # ModelSpec.order_by,
     # ColumnSpec.null_sentinel), plus the two C90 entries whose carrier is a derive stage on
     # ModelSpec.column_derives (columns.cast and columns.rescale read apply_cast/apply_scale in
     # _engine/value_transform.py). So a field that has not landed yet is reported absent without the
@@ -558,6 +559,7 @@ def test_registry_shape_is_anchored_or_declared_unproven() -> None:
         "param.relative_default",
         "param.value_mapping",
         "path.explode",
+        "request.serialised_param",
         ROW_FILTER_CAPABILITY,
         "rows.order_limit",
     ]
